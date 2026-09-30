@@ -8,7 +8,7 @@ OpenFrame Studio's own license has **not been selected yet** — see `LICENSE-PE
 
 ## Summary
 
-- Rust crates: **389**
+- Rust crates: **393**
 - npm packages: **72**
 - Copyleft or unknown (blocking until resolved): **0**
 - Weak copyleft / needs review: **5**
@@ -31,13 +31,13 @@ None.
 
 | License expression | Packages |
 |---|---:|
-| MIT OR Apache-2.0 | 188 |
-| MIT | 142 |
-| Apache-2.0 OR MIT | 37 |
+| MIT OR Apache-2.0 | 193 |
+| MIT | 139 |
+| Apache-2.0 OR MIT | 38 |
 | Unicode-3.0 | 18 |
 | MIT/Apache-2.0 | 15 |
-| Unlicense OR MIT | 11 |
-| BSD-3-Clause | 5 |
+| Unlicense OR MIT | 10 |
+| BSD-3-Clause | 7 |
 | MPL-2.0 | 5 |
 | Apache-2.0 | 4 |
 | MIT OR Apache-2.0 OR Zlib | 4 |
@@ -46,6 +46,7 @@ None.
 | Zlib | 3 |
 | Apache-2.0 OR ISC OR MIT | 2 |
 | BSD-3-Clause OR Apache-2.0 | 2 |
+| BSD-3-Clause/MIT | 2 |
 | MIT OR Zlib OR Apache-2.0 | 2 |
 | Zlib OR Apache-2.0 OR MIT | 2 |
 | (Apache-2.0 OR MIT) AND BSD-3-Clause | 1 |
@@ -56,10 +57,8 @@ None.
 | Apache-2.0 AND ISC | 1 |
 | Apache-2.0 AND MIT | 1 |
 | Apache-2.0 OR BSL-1.0 | 1 |
-| Apache-2.0/MIT | 1 |
 | BSD-2-Clause OR Apache-2.0 OR MIT | 1 |
 | BSD-3-Clause AND MIT | 1 |
-| BSD-3-Clause/MIT | 1 |
 | CC0-1.0 OR MIT-0 OR Apache-2.0 | 1 |
 | CDLA-Permissive-2.0 | 1 |
 
@@ -68,9 +67,11 @@ None.
 | Package | Version | License | Category | Source |
 |---|---|---|---|---|
 | adler2 | 2.0.1 | 0BSD OR MIT OR Apache-2.0 | permissive | https://github.com/oyvindln/adler2 |
-| aes | 0.8.4 | MIT OR Apache-2.0 | permissive | https://github.com/RustCrypto/block-ciphers |
+| aes | 0.9.3 | MIT OR Apache-2.0 | permissive | https://github.com/RustCrypto/block-ciphers |
 | aho-corasick | 1.1.5 | Unlicense OR MIT | permissive | https://github.com/BurntSushi/aho-corasick |
+| alloc-no-stdlib | 2.0.4 | BSD-3-Clause | permissive | https://github.com/dropbox/rust-alloc-no-stdlib |
 | alloc-no-stdlib | 3.0.0 | BSD-3-Clause | permissive | https://github.com/dropbox/rust-alloc-no-stdlib |
+| alloc-stdlib | 0.2.4 | BSD-3-Clause | permissive | https://github.com/dropbox/rust-alloc-no-stdlib |
 | alloc-stdlib | 0.3.0 | BSD-3-Clause | permissive | https://github.com/dropbox/rust-alloc-no-stdlib |
 | anyhow | 1.0.104 | MIT OR Apache-2.0 | permissive | https://github.com/dtolnay/anyhow |
 | atomic-waker | 1.1.2 | Apache-2.0 OR MIT | permissive | https://github.com/smol-rs/atomic-waker |
@@ -82,12 +83,13 @@ None.
 | bitflags | 1.3.2 | MIT/Apache-2.0 | permissive | https://github.com/bitflags/bitflags |
 | bitflags | 2.13.2 | MIT OR Apache-2.0 | permissive | https://github.com/bitflags/bitflags |
 | block-buffer | 0.10.4 | MIT OR Apache-2.0 | permissive | https://github.com/RustCrypto/utils |
-| block-padding | 0.3.3 | MIT OR Apache-2.0 | permissive | https://github.com/RustCrypto/utils |
+| block-buffer | 0.12.1 | MIT OR Apache-2.0 | permissive | https://github.com/RustCrypto/utils |
+| block-padding | 0.4.2 | MIT OR Apache-2.0 | permissive | https://github.com/RustCrypto/utils |
 | brotli | 9.0.0 | BSD-3-Clause AND MIT | permissive | https://github.com/dropbox/rust-brotli |
+| brotli-decompressor | 5.0.3 | BSD-3-Clause/MIT | permissive | https://github.com/dropbox/rust-brotli-decompressor |
 | brotli-decompressor | 6.0.1 | BSD-3-Clause/MIT | permissive | https://github.com/dropbox/rust-brotli-decompressor |
 | bs58 | 0.5.1 | MIT/Apache-2.0 | permissive | https://github.com/Nullus157/bs58-rs |
 | bumpalo | 3.20.3 | MIT OR Apache-2.0 | permissive | https://github.com/fitzgen/bumpalo |
-| bytecount | 0.6.9 | Apache-2.0/MIT | permissive | https://github.com/llogiq/bytecount |
 | bytemuck | 1.25.2 | Zlib OR Apache-2.0 OR MIT | permissive | https://github.com/Lokathor/bytemuck |
 | byteorder | 1.5.0 | Unlicense OR MIT | permissive | https://github.com/BurntSushi/byteorder |
 | byteorder-lite | 0.1.0 | Unlicense OR MIT | permissive | https://github.com/image-rs/byteorder-lite |
@@ -95,16 +97,18 @@ None.
 | camino | 1.2.6 | MIT OR Apache-2.0 | permissive | https://github.com/camino-rs/camino |
 | cargo_metadata | 0.19.2 | MIT | permissive | https://github.com/oli-obk/cargo_metadata |
 | cargo-platform | 0.1.9 | MIT OR Apache-2.0 | permissive | https://github.com/rust-lang/cargo |
-| cbc | 0.1.2 | MIT OR Apache-2.0 | permissive | https://github.com/RustCrypto/block-modes |
+| cbc | 0.2.1 | MIT OR Apache-2.0 | permissive | https://github.com/RustCrypto/block-modes |
 | cfb | 0.14.0 | MIT | permissive | https://github.com/mdsteele/rust-cfb |
 | cfg-if | 1.0.5 | MIT OR Apache-2.0 | permissive | https://github.com/rust-lang/cfg-if |
 | chacha20 | 0.10.2 | MIT OR Apache-2.0 | permissive | https://github.com/RustCrypto/stream-ciphers |
 | chrono | 0.4.45 | MIT OR Apache-2.0 | permissive | https://github.com/chronotope/chrono |
-| cipher | 0.4.4 | MIT OR Apache-2.0 | permissive | https://github.com/RustCrypto/traits |
+| cipher | 0.5.2 | MIT OR Apache-2.0 | permissive | https://github.com/RustCrypto/traits |
 | color_quant | 1.1.0 | MIT | permissive | https://github.com/image-rs/color_quant |
+| const-oid | 0.10.2 | Apache-2.0 OR MIT | permissive | https://github.com/RustCrypto/formats |
 | const-oid | 0.9.6 | Apache-2.0 OR MIT | permissive | https://github.com/RustCrypto/formats/tree/master/const-oid |
 | cookie | 0.18.2 | MIT OR Apache-2.0 | permissive | https://github.com/SergioBenitez/cookie-rs |
 | core_detect | 1.0.0 | MIT/Apache-2.0 | permissive | https://github.com/thomcc/core_detect |
+| cpubits | 0.1.1 | MIT OR Apache-2.0 | permissive | https://github.com/RustCrypto/utils |
 | cpufeatures | 0.2.17 | MIT OR Apache-2.0 | permissive | https://github.com/RustCrypto/utils |
 | cpufeatures | 0.3.1 | MIT OR Apache-2.0 | permissive | https://github.com/RustCrypto/utils |
 | crc32fast | 1.5.2 | MIT OR Apache-2.0 | permissive | https://github.com/srijs/rust-crc32fast |
@@ -113,6 +117,7 @@ None.
 | crossbeam-epoch | 0.9.21 | MIT OR Apache-2.0 | permissive | https://github.com/crossbeam-rs/crossbeam |
 | crossbeam-utils | 0.8.23 | MIT OR Apache-2.0 | permissive | https://github.com/crossbeam-rs/crossbeam |
 | crypto-common | 0.1.7 | MIT OR Apache-2.0 | permissive | https://github.com/RustCrypto/traits |
+| crypto-common | 0.2.2 | MIT OR Apache-2.0 | permissive | https://github.com/RustCrypto/traits |
 | cssparser | 0.37.0 | MPL-2.0 | weak copyleft / review | https://github.com/servo/rust-cssparser |
 | cssparser-macros | 0.7.1 | MPL-2.0 | weak copyleft / review | https://github.com/servo/rust-cssparser |
 | csv | 1.4.0 | Unlicense/MIT | permissive | https://github.com/BurntSushi/rust-csv |
@@ -131,6 +136,7 @@ None.
 | derive_more | 2.1.1 | MIT | permissive | https://github.com/JelteF/derive_more |
 | derive_more-impl | 2.1.1 | MIT | permissive | https://github.com/JelteF/derive_more |
 | digest | 0.10.7 | MIT OR Apache-2.0 | permissive | https://github.com/RustCrypto/traits |
+| digest | 0.11.3 | MIT OR Apache-2.0 | permissive | https://github.com/RustCrypto/traits |
 | directories | 6.0.0 | MIT OR Apache-2.0 | permissive | https://github.com/soc/directories-rs |
 | dirs | 7.0.0 | MIT OR Apache-2.0 | permissive | https://codeberg.org/dirs/dirs-rs |
 | dirs-sys | 0.5.0 | MIT OR Apache-2.0 | permissive | https://github.com/dirs-dev/dirs-sys-rs |
@@ -141,7 +147,7 @@ None.
 | dtoa-short | 0.3.5 | MPL-2.0 | weak copyleft / review | https://github.com/upsuper/dtoa-short |
 | dunce | 1.0.5 | CC0-1.0 OR MIT-0 OR Apache-2.0 | permissive | https://gitlab.com/kornelski/dunce |
 | dyn-clone | 1.0.20 | MIT OR Apache-2.0 | permissive | https://github.com/dtolnay/dyn-clone |
-| ecb | 0.1.2 | MIT | permissive | https://github.com/magic-akari/ecb |
+| ecb | 0.2.1 | MIT OR Apache-2.0 | permissive | https://github.com/RustCrypto/block-modes |
 | ed25519 | 2.2.3 | Apache-2.0 OR MIT | permissive | https://github.com/RustCrypto/signatures/tree/master/ed25519 |
 | ed25519-dalek | 2.2.0 | BSD-3-Clause | permissive | https://github.com/dalek-cryptography/curve25519-dalek/tree/main/ed25519-dalek |
 | either | 1.18.0 | MIT OR Apache-2.0 | permissive | https://github.com/rayon-rs/either |
@@ -183,6 +189,7 @@ None.
 | http-body-util | 0.1.5 | MIT | permissive | https://github.com/hyperium/http-body |
 | http-range | 0.1.5 | MIT | permissive | https://github.com/bancek/rust-http-range |
 | httparse | 1.10.1 | MIT OR Apache-2.0 | permissive | https://github.com/seanmonstar/httparse |
+| hybrid-array | 0.4.15 | MIT OR Apache-2.0 | permissive | https://github.com/RustCrypto/hybrid-array |
 | hyper | 1.11.1 | MIT | permissive | https://github.com/hyperium/hyper |
 | hyper-rustls | 0.27.10 | Apache-2.0 OR ISC OR MIT | permissive | https://github.com/rustls/hyper-rustls |
 | hyper-util | 0.1.21 | MIT | permissive | https://github.com/hyperium/hyper-util |
@@ -202,12 +209,11 @@ None.
 | indexmap | 1.9.3 | Apache-2.0 OR MIT | permissive | https://github.com/bluss/indexmap |
 | indexmap | 2.14.2 | Apache-2.0 OR MIT | permissive | https://github.com/indexmap-rs/indexmap |
 | infer | 0.22.0 | MIT | permissive | https://github.com/bojand/infer |
-| inout | 0.1.4 | MIT OR Apache-2.0 | permissive | https://github.com/RustCrypto/utils |
+| inout | 0.2.2 | MIT OR Apache-2.0 | permissive | https://github.com/RustCrypto/utils |
 | ipnet | 2.12.2 | MIT OR Apache-2.0 | permissive | https://github.com/krisprice/ipnet |
 | itoa | 1.0.18 | MIT OR Apache-2.0 | permissive | https://github.com/dtolnay/itoa |
 | jiff | 0.2.37 | Unlicense OR MIT | permissive | https://github.com/BurntSushi/jiff |
 | jiff-core | 0.1.1 | Unlicense OR MIT | permissive | https://github.com/BurntSushi/jiff |
-| jiff-static | 0.2.37 | Unlicense OR MIT | permissive | https://github.com/BurntSushi/jiff |
 | jiff-tzdb | 0.1.8 | Unlicense OR MIT | permissive | https://github.com/BurntSushi/jiff |
 | jiff-tzdb-platform | 0.1.3 | Unlicense OR MIT | permissive | https://github.com/BurntSushi/jiff |
 | json-patch | 4.2.0 | MIT/Apache-2.0 | permissive | https://github.com/idubrov/json-patch |
@@ -219,11 +225,11 @@ None.
 | litemap | 0.8.3 | Unicode-3.0 | permissive | https://github.com/unicode-org/icu4x |
 | lock_api | 0.4.14 | MIT OR Apache-2.0 | permissive | https://github.com/Amanieu/parking_lot |
 | log | 0.4.34 | MIT OR Apache-2.0 | permissive | https://github.com/rust-lang/log |
-| lopdf | 0.36.0 | MIT | permissive | https://github.com/J-F-Liu/lopdf |
+| lopdf | 0.45.0 | MIT | permissive | https://github.com/J-F-Liu/lopdf |
 | lru-slab | 0.1.3 | MIT OR Apache-2.0 OR Zlib | permissive | https://github.com/Ralith/lru-slab |
 | markup5ever | 0.39.0 | MIT OR Apache-2.0 | permissive | https://github.com/servo/html5ever |
 | matchers | 0.2.0 | MIT | permissive | https://github.com/hawkw/matchers |
-| md-5 | 0.10.6 | MIT OR Apache-2.0 | permissive | https://github.com/RustCrypto/hashes |
+| md-5 | 0.11.0 | MIT OR Apache-2.0 | permissive | https://github.com/RustCrypto/hashes |
 | memchr | 2.8.3 | Unlicense OR MIT | permissive | https://github.com/BurntSushi/memchr |
 | mime | 0.3.17 | MIT OR Apache-2.0 | permissive | https://github.com/hyperium/mime |
 | miniz_oxide | 0.8.9 | MIT OR Zlib OR Apache-2.0 | permissive | https://github.com/Frommi/miniz_oxide/tree/master/miniz_oxide |
@@ -234,7 +240,6 @@ None.
 | multiversion_no_op | 1.0.0 | Apache-2.0 OR MIT | permissive | https://github.com/hsivonen/multiversion_no_op |
 | new_debug_unreachable | 1.0.6 | MIT | permissive | https://github.com/mbrubeck/rust-debug-unreachable |
 | nom | 8.0.0 | MIT | permissive | https://github.com/rust-bakery/nom |
-| nom_locate | 5.0.0 | MIT | permissive | https://github.com/fflorent/nom_locate |
 | ntapi | 0.4.3 | Apache-2.0 OR MIT | permissive | https://github.com/MSxDOS/ntapi |
 | nu-ansi-term | 0.50.3 | MIT | permissive | https://github.com/nushell/nu-ansi-term |
 | num-conv | 0.2.2 | MIT OR Apache-2.0 | permissive | https://github.com/jhpratt/num-conv |
@@ -262,7 +267,6 @@ None.
 | proc-macro2 | 1.0.107 | MIT OR Apache-2.0 | permissive | https://github.com/dtolnay/proc-macro2 |
 | pxfm | 0.1.30 | BSD-3-Clause OR Apache-2.0 | permissive | https://github.com/awxkee/pxfm |
 | quick-error | 2.0.1 | MIT/Apache-2.0 | permissive | http://github.com/tailhook/quick-error |
-| quick-xml | 0.38.4 | MIT | permissive | https://github.com/tafia/quick-xml |
 | quick-xml | 0.42.0 | MIT | permissive | https://github.com/tafia/quick-xml |
 | quinn | 0.11.12 | MIT OR Apache-2.0 | permissive | https://github.com/quinn-rs/quinn |
 | quinn-proto | 0.11.18 | MIT OR Apache-2.0 | permissive | https://github.com/quinn-rs/quinn |
@@ -270,12 +274,9 @@ None.
 | quote | 1.0.47 | MIT OR Apache-2.0 | permissive | https://github.com/dtolnay/quote |
 | rand | 0.10.3 | MIT OR Apache-2.0 | permissive | https://github.com/rust-random/rand |
 | rand | 0.8.8 | MIT OR Apache-2.0 | permissive | https://github.com/rust-random/rand |
-| rand | 0.9.5 | MIT OR Apache-2.0 | permissive | https://github.com/rust-random/rand |
 | rand_chacha | 0.3.1 | MIT OR Apache-2.0 | permissive | https://github.com/rust-random/rand |
-| rand_chacha | 0.9.0 | MIT OR Apache-2.0 | permissive | https://github.com/rust-random/rand |
 | rand_core | 0.10.1 | MIT OR Apache-2.0 | permissive | https://github.com/rust-random/rand_core |
 | rand_core | 0.6.4 | MIT OR Apache-2.0 | permissive | https://github.com/rust-random/rand |
-| rand_core | 0.9.5 | MIT OR Apache-2.0 | permissive | https://github.com/rust-random/rand |
 | rand_pcg | 0.10.2 | MIT OR Apache-2.0 | permissive | https://github.com/rust-random/rngs |
 | rangemap | 1.8.0 | MIT/Apache-2.0 | permissive | https://github.com/jeffparsons/rangemap |
 | raw-window-handle | 0.6.2 | MIT OR Apache-2.0 OR Zlib | permissive | https://github.com/rust-windowing/raw-window-handle |
@@ -319,6 +320,7 @@ None.
 | serialize-to-javascript-impl | 0.1.2 | MIT OR Apache-2.0 | permissive | https://github.com/chippers/serialize-to-javascript |
 | servo_arc | 0.4.3 | MIT OR Apache-2.0 | permissive | https://github.com/servo/stylo |
 | sha2 | 0.10.9 | MIT OR Apache-2.0 | permissive | https://github.com/RustCrypto/hashes |
+| sha2 | 0.11.0 | MIT OR Apache-2.0 | permissive | https://github.com/RustCrypto/hashes |
 | sharded-slab | 0.1.7 | MIT | permissive | https://github.com/hawkw/sharded-slab |
 | signature | 2.2.0 | Apache-2.0 OR MIT | permissive | https://github.com/RustCrypto/traits/tree/master/signature |
 | simd-adler32 | 0.3.10 | MIT | permissive | https://github.com/mcountryman/simd-adler32 |
@@ -407,6 +409,7 @@ None.
 | webview2-com-macros | 0.8.1 | MIT | permissive | https://github.com/wravery/webview2-rs |
 | webview2-com-sys | 0.39.1 | MIT | permissive | https://github.com/wravery/webview2-rs |
 | weezl | 0.1.12 | MIT OR Apache-2.0 | permissive | https://github.com/image-rs/weezl |
+| weezl | 0.2.1 | MIT OR Apache-2.0 | permissive | https://github.com/image-rs/weezl |
 | winapi | 0.3.9 | MIT/Apache-2.0 | permissive | https://github.com/retep998/winapi-rs |
 | winapi-util | 0.1.11 | Unlicense OR MIT | permissive | https://github.com/BurntSushi/winapi-util |
 | window-vibrancy | 0.8.1 | Apache-2.0 OR MIT | permissive | https://github.com/tauri-apps/tauri-plugin-vibrancy |

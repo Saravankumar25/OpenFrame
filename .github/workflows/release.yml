@@ -12,6 +12,7 @@
 # Required repository variables:
 #   WINDOWS_TIMESTAMP_URL               RFC 3161 timestamp server of the chosen CA
 #   MODEL_DISTRIBUTION_BASE_URL         (only once the local-AI module ships)
+#   OPENFRAME_MANIFEST_PUBLIC_KEY       base64 Ed25519 key the AI model manifest is signed with (never the dev key)
 #
 # Microsoft Store channel (jobs validate-store / store, docs/engineering/27-microsoft-store.md).
 # Needs NO signing secret: Microsoft signs the MSIX during Store ingestion. Identity values are
@@ -72,6 +73,7 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
           WINDOWS_TIMESTAMP_URL: ${{ vars.WINDOWS_TIMESTAMP_URL }}
           MODEL_DISTRIBUTION_BASE_URL: ${{ vars.MODEL_DISTRIBUTION_BASE_URL }}
+          OPENFRAME_MANIFEST_PUBLIC_KEY: ${{ vars.OPENFRAME_MANIFEST_PUBLIC_KEY }}
         run: node scripts/release-validate.mjs --tag "${{ env.RELEASE_TAG }}"
 
       - name: Install cargo-deny
@@ -157,6 +159,7 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
           MODEL_DISTRIBUTION_BASE_URL: ${{ vars.MODEL_DISTRIBUTION_BASE_URL }}
+          OPENFRAME_MANIFEST_PUBLIC_KEY: ${{ vars.OPENFRAME_MANIFEST_PUBLIC_KEY }}
         run: npm --workspace apps/desktop run tauri -- build --bundles nsis,msi --config "$env:RUNNER_TEMP/tauri.release.json"
 
       - name: Verify Authenticode signatures (fail closed)
@@ -252,6 +255,7 @@ jobs:
           MSIX_PUBLISHER_DISPLAY_NAME: ${{ vars.MSIX_PUBLISHER_DISPLAY_NAME }}
           STORE_PRIVACY_POLICY_URL: ${{ vars.STORE_PRIVACY_POLICY_URL }}
           MODEL_DISTRIBUTION_BASE_URL: ${{ vars.MODEL_DISTRIBUTION_BASE_URL }}
+          OPENFRAME_MANIFEST_PUBLIC_KEY: ${{ vars.OPENFRAME_MANIFEST_PUBLIC_KEY }}
         run: node scripts/release-validate.mjs --store --tag "${{ env.RELEASE_TAG }}"
 
       - name: Install cargo-deny
@@ -302,6 +306,7 @@ jobs:
         env:
           OPENFRAME_DISTRIBUTION: store
           MODEL_DISTRIBUTION_BASE_URL: ${{ vars.MODEL_DISTRIBUTION_BASE_URL }}
+          OPENFRAME_MANIFEST_PUBLIC_KEY: ${{ vars.OPENFRAME_MANIFEST_PUBLIC_KEY }}
         run: npm --workspace apps/desktop run tauri -- build --no-bundle -- --locked
 
       - name: Package MSIX (makeappx; unsigned, Microsoft signs Store packages)

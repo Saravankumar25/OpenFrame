@@ -74,7 +74,11 @@ export async function openAsset(assetId: string, opts: { reveal?: boolean; globa
   }
 }
 
-export async function revealLocation(kind: "project" | "globalVault" | "logs" | "exported", id?: string, path?: string): Promise<void> {
+export async function revealLocation(
+  kind: "project" | "globalVault" | "logs" | "exported" | "assetFolder" | "globalAssetFolder",
+  id?: string,
+  path?: string,
+): Promise<void> {
   try {
     await invoke("of_reveal_path", { kind, id, path });
   } catch (e) {

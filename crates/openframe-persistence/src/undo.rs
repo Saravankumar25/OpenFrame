@@ -117,17 +117,24 @@ pub fn install_capture(conn: &Connection) -> AppResult<TableCatalog> {
         };
         let t = quote_ident(&table);
         let lit = table.replace('\'', "''");
+        // Trigger names are identifiers: quote them properly (a table name from a received
+        // project could otherwise break out of `"…"` inside this multi-statement batch).
+        let (ti, tu, td) = (
+            quote_ident(&format!("_cap_{table}_i")),
+            quote_ident(&format!("_cap_{table}_u")),
+            quote_ident(&format!("_cap_{table}_d")),
+        );
         conn.execute_batch(&format!(
-            "DROP TRIGGER IF EXISTS temp.\"_cap_{lit}_i\";
-             DROP TRIGGER IF EXISTS temp.\"_cap_{lit}_u\";
-             DROP TRIGGER IF EXISTS temp.\"_cap_{lit}_d\";
-             CREATE TEMP TRIGGER \"_cap_{lit}_i\" AFTER INSERT ON main.{t} BEGIN
+            "DROP TRIGGER IF EXISTS temp.{ti};
+             DROP TRIGGER IF EXISTS temp.{tu};
+             DROP TRIGGER IF EXISTS temp.{td};
+             CREATE TEMP TRIGGER {ti} AFTER INSERT ON main.{t} BEGIN
                INSERT INTO _undo_capture(tbl,row_id,op,old_json,new_json) VALUES('{lit}', NEW.id, 'I', NULL, {new});
              END;
-             CREATE TEMP TRIGGER \"_cap_{lit}_u\" AFTER UPDATE ON main.{t} BEGIN
+             CREATE TEMP TRIGGER {tu} AFTER UPDATE ON main.{t} BEGIN
                INSERT INTO _undo_capture(tbl,row_id,op,old_json,new_json) VALUES('{lit}', NEW.id, 'U', {old}, {new});
              END;
-             CREATE TEMP TRIGGER \"_cap_{lit}_d\" AFTER DELETE ON main.{t} BEGIN
+             CREATE TEMP TRIGGER {td} AFTER DELETE ON main.{t} BEGIN
                INSERT INTO _undo_capture(tbl,row_id,op,old_json,new_json) VALUES('{lit}', OLD.id, 'D', {old}, NULL);
              END;",
             new = obj("NEW"),

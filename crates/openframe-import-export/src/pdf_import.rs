@@ -86,7 +86,11 @@ fn decode(font: Option<&FontInfo<'_>>, bytes: &[u8]) -> String {
         .collect()
 }
 
-fn page_runs(doc: &Document, page_id: ObjectId) -> Result<Vec<Run>, lopdf::Error> {
+fn page_runs(
+    doc: &Document,
+    page_id: ObjectId,
+    budget: &mut u64,
+) -> Result<Vec<Run>, lopdf::Error> {
     let fonts_raw = doc.get_page_fonts(page_id).unwrap_or_default();
     let mut fonts: BTreeMap<Vec<u8>, FontInfo<'_>> = BTreeMap::new();
     for (name, dict) in fonts_raw {
@@ -103,7 +107,7 @@ fn page_runs(doc: &Document, page_id: ObjectId) -> Result<Vec<Run>, lopdf::Error
             },
         );
     }
-    let data = doc.get_page_content(page_id)?;
+    let data = page_content(doc, page_id, budget)?;
     let content = Content::decode(&data)?;
     let mut runs = Vec::new();
     let mut ctm_stack: Vec<Matrix> = Vec::new();
@@ -299,12 +303,341 @@ fn is_number_token(t: &str) -> bool {
         && t.chars().all(|c| c.is_ascii_alphanumeric())
 }
 
+// ---------------------------------------------------------------- resource limits
+//
+// lopdf 0.36 inflates streams without any size limit and parses nested arrays and
+// dictionaries recursively without a depth limit. `catch_unwind` cannot stop an
+// out-of-memory abort or a stack overflow, so hostile PDFs are screened *before* lopdf
+// sees them (Security review 2026-09-30, PARSE-02):
+//   * nesting of `[`/`<<` in the file and inside object streams is capped;
+//   * every FlateDecode stream is test-inflated with a hard cap, per stream and in total;
+//   * LZW and filter chains lopdf would expand without bounds are refused;
+//   * page content is decompressed by OpenFrame itself with a per-document budget, so a
+//     page that references one large stream thousands of times can't multiply memory;
+//   * parsing runs on a dedicated thread with a large stack as a final safety margin.
+
+/// Maximum nesting of arrays/dictionaries (real PDFs stay well below 20).
+pub const MAX_NESTING: usize = 64;
+/// Maximum inflated size of any single stream.
+pub const MAX_STREAM_INFLATED: u64 = 64 << 20;
+/// Maximum inflated size of all streams together (object streams + content).
+pub const MAX_TOTAL_INFLATED: u64 = 256 << 20;
+/// Maximum number of content streams one page may reference.
+pub const MAX_CONTENT_STREAMS_PER_PAGE: usize = 1_024;
+const PARSE_STACK_BYTES: usize = 256 << 20;
+
+fn too_complex(detail: impl Into<String>) -> AppError {
+    AppError::import(
+        "too_large",
+        "This PDF is too large or too complex to import safely. Try exporting it again from your screenplay app, or import a Final Draft (.fdx) or Fountain file. Your current project was not changed.",
+    )
+    .with_detail(detail)
+}
+
+fn is_ws(b: u8) -> bool {
+    matches!(b, b' ' | b'\t' | b'\r' | b'\n' | b'\x0c' | b'\0')
+}
+
+/// Skip a literal string starting at `i` (which is `(`); returns the index after it.
+fn skip_literal(bytes: &[u8], mut i: usize) -> usize {
+    let mut level = 0usize;
+    while i < bytes.len() {
+        match bytes[i] {
+            b'\\' => i += 1,
+            b'(' => level += 1,
+            b')' => {
+                level = level.saturating_sub(1);
+                if level == 0 {
+                    return i + 1;
+                }
+            }
+            _ => {}
+        }
+        i += 1;
+    }
+    bytes.len()
+}
+
+fn find(hay: &[u8], needle: &[u8], from: usize) -> Option<usize> {
+    if from >= hay.len() {
+        return None;
+    }
+    hay[from..]
+        .windows(needle.len())
+        .position(|w| w == needle)
+        .map(|p| p + from)
+}
+
+fn has_token(dict: &[u8], names: &[&[u8]]) -> bool {
+    names.iter().any(|n| {
+        let mut from = 0;
+        while let Some(p) = find(dict, n, from) {
+            let end = p + n.len();
+            if end >= dict.len() || !dict[end].is_ascii_alphanumeric() {
+                return true;
+            }
+            from = p + 1;
+        }
+        false
+    })
+}
+
+/// Inflate (zlib, falling back to raw deflate) with a hard cap; returns the inflated size,
+/// or `None` if the data isn't valid deflate (e.g. an encrypted stream).
+fn inflated_len(data: &[u8], cap: u64) -> Option<u64> {
+    inflate_capped_inner(data, cap, false).map(|(n, _)| n)
+}
+
+fn inflate_capped(data: &[u8], cap: u64) -> Option<Vec<u8>> {
+    inflate_capped_inner(data, cap, true).map(|(_, v)| v)
+}
+
+/// Inflate up to `cap + 1` bytes. Output produced *before* a decoding error still counts
+/// (lopdf keeps partial output of corrupt streams too). `None` only when nothing decodes.
+fn inflate_capped_inner(data: &[u8], cap: u64, keep: bool) -> Option<(u64, Vec<u8>)> {
+    use std::io::Read;
+    let run = |r: &mut dyn Read| -> (u64, Vec<u8>) {
+        let mut total = 0u64;
+        let mut out = Vec::new();
+        let mut buf = vec![0u8; 64 << 10];
+        while total <= cap {
+            match r.read(&mut buf) {
+                Ok(0) | Err(_) => break,
+                Ok(n) => {
+                    total += n as u64;
+                    if keep {
+                        out.extend_from_slice(&buf[..n]);
+                    }
+                }
+            }
+        }
+        (total, out)
+    };
+    let z = run(&mut flate2::read::ZlibDecoder::new(data));
+    if z.0 > 0 {
+        return Some(z);
+    }
+    let d = run(&mut flate2::read::DeflateDecoder::new(data));
+    (d.0 > 0).then_some(d)
+}
+
+/// Maximum `[`/`<<` nesting in PDF object syntax (strings, comments and hex strings skipped).
+fn nesting_depth(bytes: &[u8]) -> usize {
+    let (mut i, mut depth, mut max) = (0usize, 0usize, 0usize);
+    while i < bytes.len() {
+        match bytes[i] {
+            b'%' => {
+                while i < bytes.len() && bytes[i] != b'\n' && bytes[i] != b'\r' {
+                    i += 1;
+                }
+            }
+            b'(' => {
+                i = skip_literal(bytes, i);
+                continue;
+            }
+            b'<' if bytes.get(i + 1) == Some(&b'<') => {
+                depth += 1;
+                max = max.max(depth);
+                i += 2;
+                continue;
+            }
+            b'<' => {
+                i = find(bytes, b">", i).map(|p| p + 1).unwrap_or(bytes.len());
+                continue;
+            }
+            b'>' if bytes.get(i + 1) == Some(&b'>') => {
+                depth = depth.saturating_sub(1);
+                i += 2;
+                continue;
+            }
+            b'[' => {
+                depth += 1;
+                max = max.max(depth);
+            }
+            b']' => depth = depth.saturating_sub(1),
+            _ => {}
+        }
+        i += 1;
+    }
+    max
+}
+
+/// Screen a PDF before lopdf parses it. See the module notes above.
+pub fn preflight(bytes: &[u8]) -> AppResult<()> {
+    let (mut i, mut depth) = (0usize, 0usize);
+    let mut dict_start = 0usize;
+    let mut total: u64 = 0;
+    while i < bytes.len() {
+        match bytes[i] {
+            b'%' => {
+                while i < bytes.len() && bytes[i] != b'\n' && bytes[i] != b'\r' {
+                    i += 1;
+                }
+            }
+            b'(' => {
+                i = skip_literal(bytes, i);
+                continue;
+            }
+            b'<' if bytes.get(i + 1) == Some(&b'<') => {
+                if depth == 0 {
+                    dict_start = i;
+                }
+                depth += 1;
+                if depth > MAX_NESTING {
+                    return Err(too_complex("object nesting too deep"));
+                }
+                i += 2;
+                continue;
+            }
+            b'<' => {
+                i = find(bytes, b">", i).map(|p| p + 1).unwrap_or(bytes.len());
+                continue;
+            }
+            b'>' if bytes.get(i + 1) == Some(&b'>') => {
+                depth = depth.saturating_sub(1);
+                i += 2;
+                continue;
+            }
+            b'[' => {
+                depth += 1;
+                if depth > MAX_NESTING {
+                    return Err(too_complex("array nesting too deep"));
+                }
+            }
+            b']' => depth = depth.saturating_sub(1),
+            b's' if bytes[i..].starts_with(b"stream")
+                && i > 0
+                && (is_ws(bytes[i - 1]) || bytes[i - 1] == b'>') =>
+            {
+                let mut body = i + b"stream".len();
+                if bytes.get(body) == Some(&b'\r') {
+                    body += 1;
+                }
+                if bytes.get(body) != Some(&b'\n') && bytes.get(body - 1) != Some(&b'\r') {
+                    i += 1;
+                    continue;
+                }
+                if bytes.get(body) == Some(&b'\n') {
+                    body += 1;
+                }
+                let end = find(bytes, b"endstream", body).unwrap_or(bytes.len());
+                let dict = &bytes[dict_start.min(i)..i];
+                if has_token(dict, &[b"/LZWDecode", b"/LZW", b"/BrotliDecode"]) {
+                    return Err(too_complex("LZW/Brotli-compressed stream"));
+                }
+                let flate = has_token(dict, &[b"/FlateDecode", b"/Fl"]);
+                if flate
+                    && has_token(
+                        dict,
+                        &[
+                            b"/ASCII85Decode",
+                            b"/A85",
+                            b"/ASCIIHexDecode",
+                            b"/AHx",
+                            b"/RunLengthDecode",
+                            b"/RL",
+                        ],
+                    )
+                {
+                    return Err(too_complex("chained stream filters"));
+                }
+                if flate {
+                    let data = &bytes[body..end];
+                    if has_token(dict, &[b"/ObjStm"]) {
+                        // Objects inside object streams are parsed by lopdf too: bound their nesting.
+                        if let Some(inner) = inflate_capped(data, MAX_STREAM_INFLATED) {
+                            if inner.len() as u64 > MAX_STREAM_INFLATED {
+                                return Err(too_complex("object stream too large"));
+                            }
+                            if nesting_depth(&inner) > MAX_NESTING {
+                                return Err(too_complex("object stream nesting too deep"));
+                            }
+                            total += inner.len() as u64;
+                        }
+                    } else if let Some(n) = inflated_len(data, MAX_STREAM_INFLATED) {
+                        if n > MAX_STREAM_INFLATED {
+                            return Err(too_complex("stream inflates too far"));
+                        }
+                        total += n;
+                    }
+                    if total > MAX_TOTAL_INFLATED {
+                        return Err(too_complex("streams inflate too far in total"));
+                    }
+                }
+                depth = 0;
+                i = end + b"endstream".len();
+                continue;
+            }
+            _ => {}
+        }
+        i += 1;
+    }
+    Ok(())
+}
+
+/// Page content, decompressed by OpenFrame with a budget shared across the document.
+fn page_content(
+    doc: &Document,
+    page_id: ObjectId,
+    budget: &mut u64,
+) -> Result<Vec<u8>, lopdf::Error> {
+    let ids = doc.get_page_contents(page_id);
+    if ids.len() > MAX_CONTENT_STREAMS_PER_PAGE {
+        return Err(lopdf::Error::Unimplemented("too many content streams"));
+    }
+    let mut content = Vec::new();
+    for id in ids {
+        let Ok(stream) = doc.get_object(id).and_then(Object::as_stream) else {
+            continue;
+        };
+        let filters = stream.filters().unwrap_or_default();
+        let data = match filters.as_slice() {
+            [] => stream.content.clone(),
+            [f] if **f == *b"FlateDecode" => {
+                match inflate_capped(&stream.content, (*budget).min(MAX_STREAM_INFLATED)) {
+                    Some(d) => d,
+                    None => continue,
+                }
+            }
+            // Anything else isn't a text content stream OpenFrame can read.
+            _ => continue,
+        };
+        let len = data.len() as u64;
+        if len > *budget || len > MAX_STREAM_INFLATED {
+            return Err(lopdf::Error::Unimplemented("content budget exceeded"));
+        }
+        *budget -= len;
+        content.extend_from_slice(&data);
+        content.push(b'\n');
+    }
+    Ok(content)
+}
+
 pub fn parse(bytes: &[u8]) -> AppResult<ImportOutcome> {
     let head = &bytes[..bytes.len().min(1024)];
     if !head.windows(5).any(|w| w == b"%PDF-") {
         return Err(unreadable("missing %PDF header"));
     }
-    let loaded = std::panic::catch_unwind(|| Document::load_mem(bytes));
+    preflight(bytes)?;
+    std::thread::scope(|s| {
+        std::thread::Builder::new()
+            .name("openframe-pdf-import".into())
+            .stack_size(PARSE_STACK_BYTES)
+            .spawn_scoped(s, || parse_screened(bytes))
+            .map_err(|e| unreadable(format!("could not start PDF parser: {e}")))?
+            .join()
+            .unwrap_or_else(|_| Err(unreadable("parser panic")))
+    })
+}
+
+fn parse_screened(bytes: &[u8]) -> AppResult<ImportOutcome> {
+    // lopdf ≥ 0.42 also caps nesting itself; its per-stream decompression limit covers
+    // streams the pre-flight can't test (e.g. encrypted object streams, RUSTSEC-2026-0187).
+    let options = lopdf::LoadOptions {
+        max_decompressed_size: Some(MAX_STREAM_INFLATED as usize),
+        ..Default::default()
+    };
+    let loaded = std::panic::catch_unwind(|| Document::load_mem_with_options(bytes, options));
     let doc = match loaded {
         Ok(Ok(d)) => d,
         Ok(Err(e)) => return Err(unreadable(e.to_string())),
@@ -324,8 +657,9 @@ pub fn parse(bytes: &[u8]) -> AppResult<ImportOutcome> {
     let extracted = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
         let mut all: Vec<Line> = Vec::new();
         let mut heights = Vec::new();
+        let mut budget = MAX_TOTAL_INFLATED;
         for (i, (_, id)) in pages.iter().enumerate() {
-            let runs = page_runs(&doc, *id).unwrap_or_default();
+            let runs = page_runs(&doc, *id, &mut budget).unwrap_or_default();
             all.extend(group_lines(i, runs));
             let h = doc
                 .get_dictionary(*id)

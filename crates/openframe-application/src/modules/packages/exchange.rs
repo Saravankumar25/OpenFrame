@@ -1621,6 +1621,7 @@ pub(crate) fn export(
         "create packages from this project",
     )?;
     let dest = format::package_destination(a.path.as_deref().unwrap_or(""), a.package_type)?;
+    crate::util::check_output_file(core, &dest)?;
     let s = core.project()?;
     let root = s.layout.root().to_path_buf();
     let built = s.store.read(|c| build(c, &root, &a))?;

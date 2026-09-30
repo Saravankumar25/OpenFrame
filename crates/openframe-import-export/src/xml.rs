@@ -6,8 +6,8 @@
 
 use std::fmt::Write as _;
 
-use quick_xml::Reader;
 use quick_xml::events::{BytesStart, Event};
+use quick_xml::{Reader, XmlVersion};
 
 pub const MAX_DEPTH: usize = 256;
 pub const MAX_NODES: usize = 2_000_000;
@@ -77,23 +77,34 @@ impl Node {
     }
 }
 
-fn local(name: &[u8]) -> String {
-    let s = String::from_utf8_lossy(name);
-    match s.rfind(':') {
-        Some(i) => s[i + 1..].to_string(),
-        None => s.into_owned(),
+fn local(name: &str) -> String {
+    match name.rfind(':') {
+        Some(i) => name[i + 1..].to_string(),
+        None => name.to_string(),
     }
 }
 
-fn start_node(e: &BytesStart<'_>) -> Result<Node, XmlError> {
+/// Real FDX/DOCX elements carry a handful of attributes; anything beyond this is hostile.
+pub const MAX_ATTRS_PER_ELEMENT: usize = 128;
+
+fn start_node(e: &BytesStart<'_>, budget: &mut usize) -> Result<Node, XmlError> {
     let mut attrs = Vec::new();
-    for a in e.attributes() {
+    // quick-xml's duplicate-attribute check is O(n²) in the attribute count (a single tag with
+    // millions of attributes hangs the parser), so it is disabled and the count is capped instead.
+    for a in e.attributes().with_checks(false) {
+        if attrs.len() >= MAX_ATTRS_PER_ELEMENT {
+            return Err(XmlError::TooLarge);
+        }
+        *budget += 1;
+        if *budget > MAX_NODES {
+            return Err(XmlError::TooLarge);
+        }
         let a = a.map_err(|err| XmlError::Malformed(err.to_string()))?;
         let key = local(a.key.as_ref());
         let value = a
-            .unescape_value()
+            .normalized_value(XmlVersion::Implicit1_0)
             .map(|v| v.into_owned())
-            .unwrap_or_else(|_| String::from_utf8_lossy(&a.value).into_owned());
+            .unwrap_or_else(|_| a.value.to_string());
         attrs.push((key, value));
     }
     Ok(Node {
@@ -144,10 +155,10 @@ pub fn parse(bytes: &[u8]) -> Result<Node, XmlError> {
                 if stack.len() > MAX_DEPTH {
                     return Err(XmlError::TooLarge);
                 }
-                stack.push(start_node(&e)?);
+                stack.push(start_node(&e, &mut count)?);
             }
             Event::Empty(e) => {
-                let n = start_node(&e)?;
+                let n = start_node(&e, &mut count)?;
                 stack.last_mut().unwrap().children.push(Child::Node(n));
             }
             Event::End(_) => {
@@ -158,20 +169,18 @@ pub fn parse(bytes: &[u8]) -> Result<Node, XmlError> {
                 stack.last_mut().unwrap().children.push(Child::Node(n));
             }
             Event::Text(t) => {
-                let s = t
-                    .xml_content()
-                    .map_err(|e| XmlError::Malformed(e.to_string()))?;
+                let s = t.xml_content(XmlVersion::Implicit1_0);
                 push_text(stack.last_mut().unwrap(), &s);
             }
             Event::CData(t) => {
-                let s = String::from_utf8_lossy(&t).into_owned();
+                let s = t.to_string();
                 push_text(stack.last_mut().unwrap(), &s);
             }
             Event::GeneralRef(r) => {
                 let resolved = match r.resolve_char_ref() {
                     Ok(Some(c)) => c.to_string(),
                     _ => {
-                        let name = r.decode().map(|c| c.into_owned()).unwrap_or_default();
+                        let name: String = r.to_string();
                         entity(&name)
                             .map(|s| s.to_string())
                             .unwrap_or_else(|| format!("&{name};"))

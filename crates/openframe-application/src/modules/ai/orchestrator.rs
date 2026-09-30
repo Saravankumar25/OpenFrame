@@ -64,19 +64,31 @@ pub fn escape_untrusted(text: &str) -> String {
         }
         out.push(ch);
     }
-    for tag in ["project_data", "conversation_history", "product_guide"] {
-        for pat in [format!("<{tag}"), format!("</{tag}")] {
-            let lower = out.to_lowercase();
-            let mut result = String::with_capacity(out.len());
-            let mut last = 0;
-            for (i, _) in lower.match_indices(&pat) {
-                result.push_str(&out[last..i]);
-                result.push('‹');
-                last = i + 1;
-            }
-            result.push_str(&out[last..]);
-            out = result;
+    // ASCII-only case folding keeps byte offsets identical between `lower` and `out`
+    // (full Unicode lowercasing changes lengths, e.g. 'İ' 2→3 bytes, which let a closing tag
+    // slip through unescaped or panicked on a non-char boundary).
+    let patterns = [
+        "<project_data",
+        "</project_data",
+        "<conversation_history",
+        "</conversation_history",
+        "<product_guide",
+        "</product_guide",
+        // Rule 3 of the policy: only text after this marker is an instruction.
+        "user request:",
+    ];
+    for pat in patterns {
+        let lower = out.to_ascii_lowercase();
+        let mut result = String::with_capacity(out.len() + 8);
+        let mut last = 0;
+        for (i, _) in lower.match_indices(pat) {
+            result.push_str(&out[last..i]);
+            // Every pattern starts with an ASCII byte, so `i + 1` is a char boundary.
+            result.push('‹');
+            last = i + 1;
         }
+        result.push_str(&out[last..]);
+        out = result;
     }
     out
 }
@@ -174,7 +186,12 @@ fn build_messages(
     proposals: &[&ProposalSpec],
 ) -> Vec<ChatMessage> {
     let system = format!("{POLICY}\n\n{}", tool_catalog_text(proposals));
-    let mut user = format!("Scope: {} ({})\n", scope.kind.label(), scope.label);
+    // The scope label is project text (draft names, scene headings, item titles): escape it too.
+    let mut user = format!(
+        "Scope: {} ({})\n",
+        scope.kind.label(),
+        escape_untrusted(&scope.label).replace('\n', " ")
+    );
     user.push_str(&data_block(&scope.context));
     if !history.is_empty() {
         user.push_str("<conversation_history>\n");

@@ -261,7 +261,9 @@ fn classify(root: &Path, rows: &[AssetRow], include_external: bool) -> Classifie
             continue;
         }
         let ext_path = a.external_path.clone().unwrap_or_default();
-        let exists = !ext_path.is_empty() && Path::new(&ext_path).is_file();
+        let exists = !ext_path.is_empty()
+            && openframe_security::is_local_disk_path(Path::new(&ext_path))
+            && Path::new(&ext_path).is_file();
         let mut r = ExternalRef {
             asset_id: a.id.clone(),
             original_name: a.original_name.clone(),
@@ -468,6 +470,39 @@ pub fn build_project_package(
     if cancelled() {
         return Ok(None);
     }
+    if opts.kind == PackageType::Project {
+        // A Full Project Package is a transfer to another installation (often another
+        // person): it carries the exporting user's own private notes only, never other
+        // members' notes, and no undo history (row images of old text). A Backup Package
+        // is the owner's private recovery copy and keeps everything (Security spec §8.7;
+        // review finding PN-02).
+        let c = openframe_persistence::open_connection(&db_copy, false)?;
+        c.execute_batch("BEGIN IMMEDIATE;")?;
+        let scrub = (|| -> AppResult<()> {
+            c.execute(
+                "DELETE FROM private_note WHERE owner_user_id <> ?1",
+                [&opts.user.user_id],
+            )?;
+            c.execute(
+                "DELETE FROM search_doc WHERE owner_user_id IS NOT NULL AND owner_user_id <> ?1",
+                [&opts.user.user_id],
+            )?;
+            c.execute(
+                "DELETE FROM deleted_item WHERE table_name='private_note' AND object_id NOT IN (SELECT id FROM private_note)",
+                [],
+            )?;
+            c.execute("DELETE FROM sys_undo", [])?;
+            Ok(())
+        })();
+        match scrub {
+            Ok(()) => c.execute_batch("COMMIT;")?,
+            Err(e) => {
+                let _ = c.execute_batch("ROLLBACK;");
+                return Err(e);
+            }
+        }
+        openframe_persistence::checkpoint(&c)?;
+    }
     let (rows, schema_version) = {
         let c = Connection::open_with_flags(&db_copy, OpenFlags::SQLITE_OPEN_READ_ONLY)?;
         let v = openframe_persistence::migrate::current_version(&c)?;
@@ -585,6 +620,7 @@ pub(crate) fn start_project_package(
     )?;
     let session = core.project()?;
     let dest = format::package_destination(&args.path, kind)?;
+    crate::util::check_output_file(core, &dest)?;
     let label = crate::util::optional_text(args.label, "Backup label", 80)?;
     let opts = ProjectPackageOptions {
         kind,
@@ -674,10 +710,15 @@ fn external_status_here(refs: Vec<ExternalRef>) -> Vec<BackupFileEntry> {
         .map(|r| {
             let status = match r.status.as_str() {
                 "copied" => "Copied",
+                // Paths inside a received package are untrusted: only local-disk paths are
+                // probed (a UNC path would leak the user's NTLM hash on inspection, PKG-01).
                 _ if r
                     .external_path
                     .as_deref()
-                    .map(|p| Path::new(p).is_file())
+                    .map(|p| {
+                        openframe_security::is_local_disk_path(Path::new(p))
+                            && Path::new(p).is_file()
+                    })
                     .unwrap_or(false) =>
                 {
                     "External"
@@ -843,6 +884,8 @@ pub fn import_project_package(
             "OpenFrame projects can't be edited directly from a network folder. Choose a folder on this computer.",
         ));
     }
+    // Absolute, local, no device/reserved names, not inside protected folders (PATH-03).
+    crate::util::check_project_parent(core, &parent)?;
     fs::create_dir_all(&parent)?;
     if cancelled() {
         return Ok(None);
@@ -878,6 +921,19 @@ pub fn import_project_package(
             format::incomplete("project database is damaged").with_detail(problems.join("; "))
         );
     }
+    // The database inside a package is untrusted: no foreign triggers/views, no hostile
+    // object names (they would run or be interpolated inside OpenFrame; PKG-03).
+    let sql: Vec<&str> = crate::schema::PROJECT_MIGRATIONS
+        .iter()
+        .map(|m| m.sql)
+        .collect();
+    let problems = openframe_persistence::untrusted_schema_problems(&conn, &sql)?;
+    if !problems.is_empty() {
+        return Err(
+            format::incomplete("project database has an unexpected schema")
+                .with_detail(problems.join("; ")),
+        );
+    }
     let db_id: String = conn
         .query_row("SELECT id FROM project LIMIT 1", [], |r| r.get(0))
         .optional()?
@@ -889,7 +945,12 @@ pub fn import_project_package(
 
     // Linked files: portable copies become project-owned files; the rest keep
     // their reference and are reported when missing here (IEX-026/027).
-    let refs: Vec<ExternalRef> = match fs::read(opened.root().join(EXTERNAL_REFS_ENTRY)) {
+    let refs_path = opened.root().join(EXTERNAL_REFS_ENTRY);
+    // Same cap as inspection (the staged copy is untrusted package content).
+    if fs::metadata(&refs_path).is_ok_and(|m| m.len() > 64 << 20) {
+        return Err(format::incomplete("external references too large"));
+    }
+    let refs: Vec<ExternalRef> = match fs::read(&refs_path) {
         Ok(b) => serde_json::from_slice(&b)
             .map_err(|e| format::incomplete(format!("external references: {e}")))?,
         Err(_) => vec![],
@@ -921,7 +982,10 @@ pub fn import_project_package(
                 let here = r
                     .external_path
                     .as_deref()
-                    .map(|p| Path::new(p).is_file())
+                    .map(|p| {
+                        openframe_security::is_local_disk_path(Path::new(p))
+                            && Path::new(p).is_file()
+                    })
                     .unwrap_or(false);
                 if !here {
                     missing_external.push(BackupFileEntry {
@@ -1008,6 +1072,14 @@ pub fn import_project_package(
                 };
                 build_project_package(&src, &opts, &|_, _| {}, &|| false)?
                     .ok_or_else(|| AppError::internal("safety backup did not complete"))?;
+                // Verify the safety backup is a readable, well-formed package before the
+                // existing project is touched (never replace on an unverified backup).
+                let (bm, _) = format::read_header(&dest)?;
+                if bm.package_type != PackageType::Backup
+                    || bm.source_project_id != existing.project_id
+                {
+                    return Err(AppError::internal("safety backup failed verification"));
+                }
                 drop(lock);
                 dest
             };

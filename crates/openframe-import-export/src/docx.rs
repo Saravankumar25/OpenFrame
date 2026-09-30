@@ -261,7 +261,9 @@ pub fn parse(path: &Path) -> AppResult<ImportOutcome> {
     // Nothing is extracted to disk: only two named parts are read, each through
     // `read_entry`, which enforces a hard byte cap on the *decompressed* stream
     // (zip bombs fail there). `archive::inspect` cannot be used for OOXML because
-    // its entry-name rule rejects the mandatory `_rels/.rels` part.
+    // its entry-name rule rejects the mandatory `_rels/.rels` part. The declared directory
+    // size is still bounded up front (a DOCX has a few dozen parts).
+    archive::check_directory(path, archive::ArchiveLimits::DOCUMENT.max_entries as u64)?;
     let content_types = archive::read_entry(path, "[Content_Types].xml", MAX_STYLES_XML)?;
     if content_types.is_none() {
         return Err(invalid("[Content_Types].xml missing"));

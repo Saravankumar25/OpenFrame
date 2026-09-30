@@ -409,13 +409,19 @@ pub fn accept(core: &AppCore, actor: &Actor, id: &str) -> AppResult<ChangeSetDto
             return get(core, actor, id);
         }
     }
-    // 3. Record the explicit approval.
+    // 3. Record the explicit approval. The state transition is a compare-and-set on
+    //    `Pending`: two concurrent accepts (double-click, two windows) can't both apply.
     store.mutate(actor, ai_meta("ai.change_set.accept"), |tx| {
-        tx.conn().execute(
+        let claimed = tx.conn().execute(
             "UPDATE change_set SET review_state='Accepted', validation_state='Valid', approver_user_id=?1, approved_at=?2, approval_scope='All operations',
-                 stale_reason=NULL, updated_at=?2, rev=rev+1 WHERE id=?3",
+                 stale_reason=NULL, updated_at=?2, rev=rev+1 WHERE id=?3 AND review_state='Pending'",
             params![actor.user_id, now_ms(), id],
         )?;
+        if claimed != 1 {
+            return Err(AppError::conflict(
+                "This proposal is already being applied or has changed. Nothing was changed.",
+            ));
+        }
         set_result_status(tx, id, AiResultStatus::Accepted)
     })?;
     // 4. Apply through the normal command pipeline, all-or-nothing.

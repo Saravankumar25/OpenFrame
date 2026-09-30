@@ -43,7 +43,73 @@ fn rejected(detail: impl Into<String>) -> AppError {
     .with_detail(detail)
 }
 
+/// Hard ceiling for any archive OpenFrame opens (the largest `max_entries` of all limit sets).
+const ABSOLUTE_MAX_ENTRIES: u64 = ArchiveLimits::PACKAGE.max_entries as u64;
+/// Hard ceiling for the central directory (it is read fully into memory by `zip`).
+const ABSOLUTE_MAX_CENTRAL_DIR: u64 = 128 << 20;
+
+fn le_u16(b: &[u8], at: usize) -> Option<u64> {
+    Some(u16::from_le_bytes(b.get(at..at + 2)?.try_into().ok()?) as u64)
+}
+fn le_u32(b: &[u8], at: usize) -> Option<u64> {
+    Some(u32::from_le_bytes(b.get(at..at + 4)?.try_into().ok()?) as u64)
+}
+fn le_u64(b: &[u8], at: usize) -> Option<u64> {
+    Some(u64::from_le_bytes(b.get(at..at + 8)?.try_into().ok()?))
+}
+
+/// Entry count and central-directory size as *declared* by the end-of-central-directory
+/// record (ZIP64 aware), read without parsing the directory. `None` if not found.
+pub fn declared_directory(path: &Path) -> AppResult<Option<(u64, u64)>> {
+    use std::io::{Seek, SeekFrom};
+    let mut f = File::open(path)?;
+    let len = f.metadata()?.len();
+    let tail_len = len.min(65_557 + 20);
+    f.seek(SeekFrom::Start(len - tail_len))?;
+    let mut tail = vec![0u8; tail_len as usize];
+    f.read_exact(&mut tail)?;
+    let Some(eocd) = tail.windows(4).rposition(|w| w == b"PK\x05\x06") else {
+        return Ok(None);
+    };
+    let (mut entries, mut cd_size) = match (le_u16(&tail, eocd + 10), le_u32(&tail, eocd + 12)) {
+        (Some(e), Some(s)) => (e, s),
+        _ => return Ok(None),
+    };
+    // ZIP64: the locator sits 20 bytes before the classic record.
+    if (entries == 0xFFFF || cd_size == 0xFFFF_FFFF)
+        && eocd >= 20
+        && &tail[eocd - 20..eocd - 16] == b"PK\x06\x07"
+        && let Some(rec_off) = le_u64(&tail, eocd - 20 + 8)
+        && rec_off + 56 <= len
+    {
+        let mut rec = [0u8; 56];
+        f.seek(SeekFrom::Start(rec_off))?;
+        f.read_exact(&mut rec)?;
+        if &rec[..4] == b"PK\x06\x06" {
+            entries = le_u64(&rec, 32).unwrap_or(u64::MAX);
+            cd_size = le_u64(&rec, 40).unwrap_or(u64::MAX);
+        }
+    }
+    Ok(Some((entries, cd_size)))
+}
+
+/// Refuse archives whose declared directory exceeds `max_entries` *before* `zip` parses it
+/// (the whole central directory is materialised in memory; millions of tiny entries in a
+/// 100 MB file would cost gigabytes).
+pub fn check_directory(path: &Path, max_entries: u64) -> AppResult<()> {
+    if let Some((entries, cd_size)) = declared_directory(path)? {
+        if entries > max_entries {
+            return Err(rejected(format!("{entries} entries exceeds limit")));
+        }
+        if cd_size > ABSOLUTE_MAX_CENTRAL_DIR {
+            return Err(rejected("central directory too large"));
+        }
+    }
+    Ok(())
+}
+
 fn open(path: &Path) -> AppResult<zip::ZipArchive<File>> {
+    check_directory(path, ABSOLUTE_MAX_ENTRIES)?;
     let f = File::open(path)?;
     zip::ZipArchive::new(f).map_err(|e| rejected(e.to_string()))
 }

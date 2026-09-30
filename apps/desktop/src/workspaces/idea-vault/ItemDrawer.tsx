@@ -282,9 +282,9 @@ function StorageMarker({ item, scope, onRelinked }: { item: VaultItemDto; scope:
     }
   };
   const openLocation = () => {
-    const p = a.path ?? "";
-    const dir = p.replace(/[\\/][^\\/]*$/, "");
-    void revealLocation("exported", undefined, dir).catch(() =>
+    // The folder is resolved from the asset id in Rust: stored paths are content and are
+    // never handed back to the shell from the webview.
+    void revealLocation(scope === "global" ? "globalAssetFolder" : "assetFolder", a.id).catch(() =>
       toast.error("That folder isn't available either. Reconnect the drive or relink the file."),
     );
   };

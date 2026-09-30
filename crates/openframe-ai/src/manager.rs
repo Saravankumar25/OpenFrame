@@ -22,6 +22,10 @@ use crate::supervisor::{
     Launcher, LlamaServerLauncher, RuntimeStatus, StateListener, Supervisor, SupervisorConfig,
 };
 
+/// Upper bounds for the distribution manifest and its signature (bounded reads).
+const MAX_MANIFEST_BYTES: usize = 1 << 20;
+const MAX_SIGNATURE_BYTES: usize = 4 << 10;
+
 #[derive(Clone)]
 pub struct ManagerConfig {
     pub app_data_dir: PathBuf,
@@ -106,6 +110,8 @@ impl AiManager {
         let http = reqwest::Client::builder()
             .user_agent(concat!("OpenFrame-Studio/", env!("CARGO_PKG_VERSION")))
             .connect_timeout(Duration::from_secs(30))
+            // Every redirect hop must stay HTTPS (or loopback), see `manifest::redirect_policy`.
+            .redirect(manifest::redirect_policy())
             .build()
             .map_err(|e| AppError::internal(e.to_string()))?;
         let supervisor = Arc::new(Supervisor::new(cfg.supervisor.clone(), rt.handle()));
@@ -152,13 +158,19 @@ impl AiManager {
             return Ok(m);
         }
         let (bytes, sig) = &self.cfg.embedded_manifest;
-        let mut best = manifest::verify_and_parse(bytes, sig, &self.cfg.trusted_public_key)?;
+        // The embedded manifest is only one candidate: a release build that trusts its own key
+        // but still embeds a development-signed manifest must fall back to a verified cached
+        // (or later, fetched) manifest — and must never trust the embedded one.
+        let embedded = manifest::verify_and_parse(bytes, sig, &self.cfg.trusted_public_key);
+        let mut best: Option<Manifest> = embedded.as_ref().ok().cloned();
         if let (Ok(cbytes), Ok(csig)) = (
             std::fs::read(self.paths.manifest_cache()),
             std::fs::read_to_string(self.paths.manifest_cache_sig()),
         ) {
             match manifest::verify_and_parse(&cbytes, &csig, &self.cfg.trusted_public_key) {
-                Ok(cached) if cached.sequence > best.sequence => best = cached,
+                Ok(cached) if best.as_ref().is_none_or(|b| cached.sequence > b.sequence) => {
+                    best = Some(cached)
+                }
                 Ok(_) => {}
                 Err(e) => {
                     // A tampered cache is never used; remove it so it can't be retried.
@@ -171,6 +183,11 @@ impl AiManager {
                 }
             }
         }
+        let best = match (best, embedded) {
+            (Some(b), _) => b,
+            (None, Err(e)) => return Err(e),
+            (None, Ok(m)) => m,
+        };
         *self.manifest.write() = Some(best.clone());
         Ok(best)
     }
@@ -178,19 +195,19 @@ impl AiManager {
     /// Fetch, verify and cache the manifest from the distribution endpoint.
     /// Keeps the current manifest if the endpoint is unreachable or offers an older one.
     pub fn refresh_manifest(&self) -> AppResult<Manifest> {
-        let current = self.manifest()?;
+        let current = self.manifest();
         let Some(base) = self.cfg.distribution_base_url.clone() else {
-            return Ok(current);
+            return current;
         };
         if !manifest::valid_url(&base) {
-            return Ok(current);
+            return current;
         }
         let http = self.http.clone();
         let fetched = self.rt.run(async move {
-            let get = |u: String| {
+            let get = |u: String, cap: usize| {
                 let http = http.clone();
                 async move {
-                    let r = http
+                    let mut r = http
                         .get(u)
                         .timeout(Duration::from_secs(30))
                         .send()
@@ -199,27 +216,36 @@ impl AiManager {
                     if !r.status().is_success() {
                         return Err(AppError::network(format!("HTTP {}", r.status().as_u16())));
                     }
-                    r.bytes()
+                    // Bounded read: a hostile or broken endpoint can't make us buffer gigabytes.
+                    let mut body = Vec::new();
+                    while let Some(chunk) = r
+                        .chunk()
                         .await
-                        .map_err(|e| AppError::network(e.to_string()))
+                        .map_err(|e| AppError::network(e.to_string()))?
+                    {
+                        if body.len() + chunk.len() > cap {
+                            return Err(AppError::network("manifest response too large"));
+                        }
+                        body.extend_from_slice(&chunk);
+                    }
+                    Ok(body)
                 }
             };
-            let bytes = get(format!("{base}/manifest.json")).await?;
-            let sig = get(format!("{base}/manifest.json.sig")).await?;
-            Ok((
-                bytes.to_vec(),
-                String::from_utf8_lossy(&sig).trim().to_string(),
-            ))
+            let bytes = get(format!("{base}/manifest.json"), MAX_MANIFEST_BYTES).await?;
+            let sig = get(format!("{base}/manifest.json.sig"), MAX_SIGNATURE_BYTES).await?;
+            Ok((bytes, String::from_utf8_lossy(&sig).trim().to_string()))
         });
         let (bytes, sig) = match fetched {
             Ok(v) => v,
             Err(e) => {
                 tracing::info!(code = e.code_str(), "AI manifest refresh skipped");
-                return Ok(current);
+                return current;
             }
         };
         let remote = manifest::verify_and_parse(&bytes, &sig, &self.cfg.trusted_public_key)?;
-        if remote.sequence < current.sequence {
+        if let Ok(current) = current
+            && remote.sequence < current.sequence
+        {
             return Ok(current);
         }
         std::fs::create_dir_all(self.paths.models_dir())?;
@@ -661,11 +687,16 @@ impl AiManager {
                 "Please wait until the current Offline AI download finishes or is cancelled.",
             )
         })?;
-        if profile_id.is_empty() || profile_id.contains(['/', '\\', '.']) {
+        // The id becomes a directory that is deleted recursively: it must be a single safe
+        // component (on Windows `models_dir.join("C:")` would be the current directory of C:).
+        if !manifest::safe_id(profile_id) || profile_id.contains(':') {
             return Err(AppError::invalid_input("That AI profile isn't valid."));
         }
         let dir = self.paths.model_dir(profile_id);
-        if !dir.exists() {
+        if dir.parent() != Some(self.paths.models_dir().as_path()) {
+            return Err(AppError::invalid_input("That AI profile isn't valid."));
+        }
+        if !dir.is_dir() {
             return Err(AppError::not_found("AI model"));
         }
         if self

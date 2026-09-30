@@ -12,6 +12,7 @@ openframe-security.workspace = true
 serde.workspace = true
 quick-xml.workspace = true
 lopdf.workspace = true
+flate2.workspace = true
 pdf-writer.workspace = true
 csv.workspace = true
 rust_xlsxwriter.workspace = true

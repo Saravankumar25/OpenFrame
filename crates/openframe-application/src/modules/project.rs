@@ -576,12 +576,15 @@ fn create(core: &AppCore, actor: &Actor, args: CreateProjectArgs) -> AppResult<O
     let genre = optional_text(args.genre, "Genre", 80)?;
     let creator = optional_text(args.creator, "Creator", 200)?;
     let parent = match args.parent_dir {
-        Some(p) => PathBuf::from(p),
+        Some(p) => PathBuf::from(p.trim()),
         None => core.config.projects_dir.clone(),
     };
     if pf::is_network_path(&parent) {
         return Err(network_location_error());
     }
+    // Absolute, local, no device/reserved names, not inside the open project, app data
+    // or the Global Idea Vault (PATH-03).
+    crate::util::check_project_parent(core, &parent).map_err(network_or)?;
     std::fs::create_dir_all(&parent)?;
     let root = pf::unique_project_dir(&parent, &title);
     let layout = ProjectLayout::new(&root);
@@ -633,6 +636,15 @@ fn open(core: &AppCore, actor: &Actor, args: OpenProjectArgs) -> AppResult<OpenP
     open_at(core, actor, &path)
 }
 
+/// Keep the project-specific wording for network locations.
+fn network_or(e: AppError) -> AppError {
+    if e.is("project_format.network_location") {
+        network_location_error()
+    } else {
+        e
+    }
+}
+
 fn network_location_error() -> AppError {
     AppError::new(
         "project_format.network_location",
@@ -642,6 +654,12 @@ fn network_location_error() -> AppError {
 
 /// Open a project folder (FSD §4, Release/Migration: safety backup before migration).
 pub fn open_at(core: &AppCore, _actor: &Actor, root: &Path) -> AppResult<OpenProjectResult> {
+    // Syntax first: never probe a device, share or reserved name (PATH-03).
+    if pf::is_network_path(root) {
+        return Err(network_location_error());
+    }
+    openframe_security::check_user_path(root, openframe_security::NetworkPaths::Refuse)
+        .map_err(network_or)?;
     if !root.exists() {
         return Err(AppError::new(
             "not_found.project_folder",
@@ -1093,6 +1111,12 @@ fn locate(core: &AppCore, actor: &Actor, args: LocateArgs) -> AppResult<OpenProj
     if path.file_name().and_then(|n| n.to_str()) == Some(pf::MANIFEST_FILE) {
         path = path.parent().map(Path::to_path_buf).unwrap_or(path);
     }
+    // Validate before touching the filesystem or updating Recent Projects.
+    if pf::is_network_path(&path) {
+        return Err(network_location_error());
+    }
+    openframe_security::check_user_path(&path, openframe_security::NetworkPaths::Refuse)
+        .map_err(network_or)?;
     let manifest = pf::read_manifest(&ProjectLayout::new(&path))?;
     if manifest.project_id != args.project_id {
         return Err(AppError::new(

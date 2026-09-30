@@ -1104,23 +1104,12 @@ pub(crate) fn relink(
                     "Only linked files can be relinked.",
                 ));
             }
-            let path = PathBuf::from(&args.path);
-            let meta = std::fs::metadata(&path)?;
-            if !meta.is_file() {
-                return Err(AppError::invalid_input(
-                    "Please choose a file, not a folder.",
-                ));
-            }
-            let abs = path
-                .canonicalize()
-                .unwrap_or(path)
-                .to_string_lossy()
-                .trim_start_matches(r"\\?\")
-                .to_string();
+            let (abs, len) = crate::util::external_link_target(&PathBuf::from(args.path.trim()))?;
+            let abs = abs.to_string_lossy().into_owned();
             // Relinking keeps the same logical asset identity (Domain §22).
             tx.conn().execute(
                 "UPDATE asset SET external_path=?1, byte_size=?2, last_seen_at=?3, updated_at=?3, rev=rev+1 WHERE id=?4",
-                params![abs, meta.len() as i64, now_ms(), asset_id],
+                params![abs, len as i64, now_ms(), asset_id],
             )?;
             touch(tx.conn(), &args.id)?;
             Ok(())

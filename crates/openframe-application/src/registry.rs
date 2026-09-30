@@ -169,6 +169,37 @@ impl Registry {
             AppError::security("unknown_operation", "That action isn't available.")
                 .with_detail(format!("unknown op {name}"))
         })?;
+        check_arg_shape(&args, 0)?;
         (entry.handler)(core, actor, args)
+    }
+}
+
+/// Upper bounds for any operation's arguments, enforced before deserialization: no op
+/// needs more than this many list items or this much nesting. Individual ops keep their
+/// own, tighter limits (Security review 2026-09-30, IPC-01).
+pub const MAX_ARG_ARRAY_LEN: usize = 50_000;
+pub const MAX_ARG_DEPTH: usize = 32;
+
+fn check_arg_shape(v: &Value, depth: usize) -> AppResult<()> {
+    let too_big = || {
+        AppError::invalid_input("That request is too large.").with_detail("argument shape limit")
+    };
+    if depth > MAX_ARG_DEPTH {
+        return Err(too_big());
+    }
+    match v {
+        Value::Array(items) => {
+            if items.len() > MAX_ARG_ARRAY_LEN {
+                return Err(too_big());
+            }
+            items.iter().try_for_each(|i| check_arg_shape(i, depth + 1))
+        }
+        Value::Object(map) => {
+            if map.len() > 1_000 {
+                return Err(too_big());
+            }
+            map.values().try_for_each(|i| check_arg_shape(i, depth + 1))
+        }
+        _ => Ok(()),
     }
 }

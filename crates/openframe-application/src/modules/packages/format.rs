@@ -520,6 +520,17 @@ fn limits_for(ty: PackageType) -> ArchiveLimits {
 /// Validate structure + version + metadata without extracting (Inspect).
 /// Returns the manifest and the entry names.
 pub fn read_header(path: &Path) -> AppResult<(PackageManifest, Vec<String>)> {
+    // A package is a file the user picked: absolute, no device/ADS/reserved names.
+    openframe_security::validate_input_file(path, u64::MAX).map_err(|e| {
+        if e.is("security") {
+            e
+        } else {
+            AppError::new(
+                "not_found.file",
+                "This package can't be found. If it's on an external drive, reconnect it and try again.",
+            )
+        }
+    })?;
     if !path.is_file() {
         return Err(AppError::new(
             "not_found.file",

@@ -163,13 +163,19 @@ fn invalid(detail: impl Into<String>) -> AppError {
     .with_detail(detail)
 }
 
-fn safe_id(id: &str) -> bool {
+/// Identifiers become directory names (`models/<profile_id>`, `runtimes/llama/<runtime_id>`),
+/// so they must be a single, portable, non-reserved path component.
+pub fn safe_id(id: &str) -> bool {
     !id.is_empty()
         && id.len() <= 80
         && id
             .chars()
             .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '-' || c == '.')
         && !id.starts_with('.')
+        && !id.ends_with('.')
+        && !id.contains("..")
+        // Windows device names (`con`, `nul`, `com1.gguf` …) can't be used as folder names.
+        && openframe_security::sanitize_file_name(id) == id
 }
 
 fn valid_sha(s: &str) -> bool {
@@ -180,15 +186,74 @@ fn valid_sha(s: &str) -> bool {
 
 /// Downloads must use HTTPS. Plain HTTP is accepted only for loopback mirrors
 /// (local test servers / an on-machine mirror), never for remote hosts.
+///
+/// The URL is parsed properly (not split on `/` and `:`), so tricks such as
+/// `http://127.0.0.1:80@evil.example/x` (userinfo) are recognised as the remote host they are.
 pub fn valid_url(url: &str) -> bool {
-    if let Some(rest) = url.strip_prefix("https://") {
-        return !rest.is_empty() && !rest.starts_with('/');
+    if url.len() > 2048
+        || url
+            .chars()
+            .any(|c| c.is_control() || c.is_whitespace() || c == '\\')
+    {
+        return false;
     }
-    if let Some(rest) = url.strip_prefix("http://") {
-        let host = rest.split(['/', ':']).next().unwrap_or("");
-        return host == "127.0.0.1" || host == "localhost";
+    // The WHATWG parser "repairs" `https:///host` into `https://host/`; require the host
+    // to follow `://` literally.
+    if url
+        .split_once("://")
+        .is_none_or(|(_, rest)| rest.starts_with('/'))
+    {
+        return false;
     }
-    false
+    let Ok(parsed) = reqwest::Url::parse(url) else {
+        return false;
+    };
+    download_url_allowed(&parsed)
+}
+
+/// Scheme/host policy for every download request, including each redirect hop.
+pub fn download_url_allowed(url: &reqwest::Url) -> bool {
+    if !url.username().is_empty() || url.password().is_some() {
+        return false;
+    }
+    let Some(host) = url.host_str().filter(|h| !h.is_empty()) else {
+        return false;
+    };
+    match url.scheme() {
+        "https" => true,
+        "http" => is_loopback_host(host),
+        _ => false,
+    }
+}
+
+/// `host_str()` of a parsed URL: IPv6 literals keep their brackets.
+fn is_loopback_host(host: &str) -> bool {
+    if host.eq_ignore_ascii_case("localhost") {
+        return true;
+    }
+    if let Some(v6) = host.strip_prefix('[').and_then(|h| h.strip_suffix(']')) {
+        return v6
+            .parse::<std::net::Ipv6Addr>()
+            .is_ok_and(|ip| ip.is_loopback());
+    }
+    host.parse::<std::net::Ipv4Addr>()
+        .is_ok_and(|ip| ip.is_loopback())
+}
+
+/// Redirect policy for the download/manifest client: at most 5 hops, and every hop must itself
+/// satisfy [`download_url_allowed`] (no downgrade from HTTPS to HTTP, no `file:` or other schemes).
+/// Integrity never depends on this (every artifact is SHA-256 verified), but it keeps download
+/// metadata off plain-text connections.
+pub fn redirect_policy() -> reqwest::redirect::Policy {
+    reqwest::redirect::Policy::custom(|attempt| {
+        if attempt.previous().len() >= 5 {
+            attempt.error("too many redirects")
+        } else if download_url_allowed(attempt.url()) {
+            attempt.follow()
+        } else {
+            attempt.stop()
+        }
+    })
 }
 
 /// Verify the signature over the exact bytes, then parse and validate.
@@ -304,5 +369,28 @@ mod tests {
         assert!(!valid_url("http://example.com/x"));
         assert!(!valid_url("file:///C:/x"));
         assert!(!valid_url("ftp://x"));
+    }
+
+    #[test]
+    fn url_userinfo_cannot_disguise_a_remote_http_host() {
+        // Regression (SEC-2026-09-30 AI-04): the old check split on '/' and ':'.
+        assert!(!valid_url("http://127.0.0.1:80@evil.example/x"));
+        assert!(!valid_url("http://localhost@evil.example/x"));
+        assert!(!valid_url("https://user:pw@example.com/x"));
+        assert!(!valid_url("http://127.0.0.1.evil.example/x"));
+        assert!(!valid_url("https:///no-host"));
+        assert!(!valid_url("https://exa mple.com/x"));
+        assert!(valid_url("http://[::1]:9/x"));
+        assert!(valid_url("http://localhost:9/x"));
+    }
+
+    #[test]
+    fn ids_are_single_safe_path_components() {
+        for bad in [
+            "con", "nul", "com1", "aux.gguf", "a..b", "x.", ".x", "", "C:", "a/b",
+        ] {
+            assert!(!safe_id(bad), "{bad} must be rejected");
+        }
+        assert!(safe_id("qwen3-4b-q4.k.m"));
     }
 }

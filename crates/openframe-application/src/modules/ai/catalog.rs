@@ -844,12 +844,17 @@ fn rename_character(
     // Raw dialogue/action text: counted, never changed by default.
     let mut stmt = c.prepare(
         "SELECT e.text FROM screenplay_element e JOIN screenplay_scene s ON s.id=e.scene_id
-         WHERE e.element_type IN ('dialogue','action','parenthetical') AND s.deleted_at IS NULL AND e.text LIKE ?1",
+         WHERE e.element_type IN ('dialogue','action','parenthetical') AND s.deleted_at IS NULL AND e.text LIKE ?1 ESCAPE '\\'",
     )?;
+    // User text: `%` and `_` must match literally (LIKE wildcards).
+    let pattern = format!(
+        "%{}%",
+        from.replace('\\', "\\\\")
+            .replace('%', "\\%")
+            .replace('_', "\\_")
+    );
     let raw: usize = stmt
-        .query_map([format!("%{}%", from.replace('%', ""))], |r| {
-            r.get::<_, String>(0)
-        })?
+        .query_map([pattern], |r| r.get::<_, String>(0))?
         .filter_map(|r| r.ok())
         .map(|t| word_count(&t, &from))
         .sum();

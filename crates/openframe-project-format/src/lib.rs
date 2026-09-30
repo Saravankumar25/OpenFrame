@@ -148,6 +148,14 @@ impl ProjectManifest {
 }
 
 pub fn read_manifest(layout: &ProjectLayout) -> AppResult<ProjectManifest> {
+    // The manifest is a few hundred bytes; a huge one (e.g. inside a received package)
+    // is refused before it is read into memory.
+    if fs::metadata(layout.manifest()).is_ok_and(|m| m.len() > 1 << 20) {
+        return Err(
+            AppError::project_format("This project's information file is damaged.")
+                .with_detail("manifest larger than 1 MiB"),
+        );
+    }
     let bytes = fs::read(layout.manifest()).map_err(|e| {
         if e.kind() == std::io::ErrorKind::NotFound {
             AppError::project_format(

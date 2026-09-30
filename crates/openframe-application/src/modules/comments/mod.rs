@@ -361,7 +361,9 @@ fn check_target_type(c: &Connection, target_type: &str) -> AppResult<()> {
 
 /// Returns Some(deleted) when the target row exists, None when it doesn't.
 fn target_state(c: &Connection, target_type: &str, target_id: &str) -> AppResult<Option<bool>> {
-    if !table_exists(c, target_type)? {
+    // `target_type` comes from stored comment rows (possibly a received project): it is
+    // interpolated below, so it must be a plain identifier.
+    if !is_identifier(target_type) || !table_exists(c, target_type)? {
         return Ok(None);
     }
     if has_column(c, target_type, "deleted_at")? {
@@ -1539,6 +1541,19 @@ fn purge_private_note(tx: &Tx<'_>, row: &DeletedItemRow) -> AppResult<()> {
     }
     tx.conn()
         .execute("DELETE FROM private_note WHERE id=?1", [&row.object_id])?;
+    scrub_undo_history(tx, &row.object_id)?;
+    Ok(())
+}
+
+/// Permanent deletion must really remove the note text: the undo log keeps full row
+/// images, and it travels in backup/project packages (Security review PN-02).
+fn scrub_undo_history(tx: &Tx<'_>, note_id: &str) -> AppResult<()> {
+    if openframe_domain::ids::is_valid_id(note_id) {
+        tx.conn().execute(
+            "DELETE FROM sys_undo WHERE instr(changes_json, ?1) > 0",
+            [note_id],
+        )?;
+    }
     Ok(())
 }
 
@@ -1594,6 +1609,7 @@ pub(crate) fn purge_private_notes_for_targets(
             )?;
             tx.conn()
                 .execute("DELETE FROM private_note WHERE id=?1", [&nid])?;
+            scrub_undo_history(tx, &nid)?;
         }
     }
     Ok(())

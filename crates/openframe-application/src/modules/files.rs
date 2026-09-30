@@ -439,16 +439,12 @@ fn relink(core: &AppCore, actor: &Actor, args: RelinkArgs) -> AppResult<ProjectF
         if mode != "external" {
             return Err(AppError::invalid_input("Only linked files can be relinked."));
         }
-        let path = PathBuf::from(&args.path);
-        let meta = std::fs::metadata(&path)?;
-        if !meta.is_file() {
-            return Err(AppError::invalid_input("Please choose a file, not a folder."));
-        }
-        let abs = path.canonicalize().unwrap_or(path).to_string_lossy().trim_start_matches(r"\\?\").to_string();
+        let (abs, len) = crate::util::external_link_target(&PathBuf::from(args.path.trim()))?;
+        let abs = abs.to_string_lossy().into_owned();
         // Relinking keeps the same logical asset identity (Domain §22).
         tx.conn().execute(
             "UPDATE asset SET external_path=?1, byte_size=?2, last_seen_at=?3, updated_at=?3, rev=rev+1 WHERE id=?4",
-            params![abs, meta.len() as i64, now_ms(), asset_id],
+            params![abs, len as i64, now_ms(), asset_id],
         )?;
         tx.reindex("project_file", &args.id);
         Ok(())
@@ -580,6 +576,9 @@ fn export_copy(core: &AppCore, actor: &Actor, args: ExportCopyArgs) -> AppResult
     if dest.parent().map(|p| !p.is_dir()).unwrap_or(true) {
         return Err(AppError::not_found("folder"));
     }
+    // Never into the project/app-data/vault folders (it could overwrite openframe.json,
+    // recovery data or managed assets), no device/ADS/reserved names (PATH-02).
+    crate::util::check_output_file(core, &dest)?;
     let same = match (src.canonicalize(), dest.canonicalize()) {
         (Ok(a), Ok(b)) => a == b,
         _ => false,
@@ -590,7 +589,14 @@ fn export_copy(core: &AppCore, actor: &Actor, args: ExportCopyArgs) -> AppResult
         ));
     }
     // Copy to a temporary sibling first so a failed copy never leaves a half-written file.
-    let tmp = dest.with_extension("openframe-part");
+    // Unique temporary name: `with_extension` would clobber a sibling such as `a.openframe-part`.
+    let tmp = dest.with_file_name(format!(
+        ".{}.{}.openframe-part",
+        dest.file_name()
+            .map(|n| n.to_string_lossy().into_owned())
+            .unwrap_or_default(),
+        openframe_domain::new_id()
+    ));
     if let Err(e) = std::fs::copy(&src, &tmp).and_then(|_| std::fs::rename(&tmp, &dest)) {
         let _ = std::fs::remove_file(&tmp);
         return Err(AppError::from(e));
@@ -694,7 +700,11 @@ pub fn purge_asset_if_unreferenced(tx: &Tx<'_>, asset_id: &str) -> AppResult<()>
             .filter(|n| *n == "asset_id" || n.ends_with("_asset_id"))
         {
             let used: bool = c.query_row(
-                &format!("SELECT EXISTS(SELECT 1 FROM \"{t}\" WHERE \"{col}\" = ?1)"),
+                &format!(
+                    "SELECT EXISTS(SELECT 1 FROM \"{}\" WHERE \"{}\" = ?1)",
+                    t.replace('"', "\"\""),
+                    col.replace('"', "\"\"")
+                ),
                 [asset_id],
                 |r| r.get(0),
             )?;

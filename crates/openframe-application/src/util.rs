@@ -156,6 +156,68 @@ pub fn media_type_for(name: &str) -> &'static str {
     }
 }
 
+// ------------------------------------------------------------------ user-chosen paths
+
+/// Folders OpenFrame owns. User-chosen outputs are never written inside them
+/// (Security review 2026-09-30, PATH-02/PATH-04).
+pub fn protected_roots(core: &AppCore) -> Vec<PathBuf> {
+    let mut v = vec![
+        core.config.app_data_dir.clone(),
+        core.config.global_vault_dir.clone(),
+    ];
+    if let Some(p) = core.project_opt() {
+        v.push(p.layout.root().to_path_buf());
+    }
+    v
+}
+
+/// Final check for a user-chosen output file (export, package, file copy) after the caller
+/// normalised its extension: well-formed local or network path, no device/ADS/reserved
+/// names, existing folder, not inside a protected folder. The path is remembered so the
+/// UI may later reveal it in Explorer (`of_reveal_path` kind `exported`).
+pub fn check_output_file(core: &AppCore, path: &Path) -> AppResult<()> {
+    let roots = protected_roots(core);
+    let refs: Vec<&Path> = roots.iter().map(PathBuf::as_path).collect();
+    openframe_security::validate_output_file(path, &refs)?;
+    remember_output(core, path);
+    Ok(())
+}
+
+/// A folder chosen to receive a new project (create / open package as copy).
+pub fn check_project_parent(core: &AppCore, dir: &Path) -> AppResult<()> {
+    let roots = protected_roots(core);
+    let refs: Vec<&Path> = roots.iter().map(PathBuf::as_path).collect();
+    openframe_security::validate_output_dir(dir, &refs)
+}
+
+/// Paths OpenFrame wrote for the user in this session (exports, packages, copies).
+#[derive(Default)]
+struct OutputRegistry(parking_lot::Mutex<std::collections::HashSet<String>>);
+
+fn output_key(path: &Path) -> String {
+    openframe_security::display_path(path)
+        .to_string_lossy()
+        .to_lowercase()
+}
+
+pub fn remember_output(core: &AppCore, path: &Path) {
+    let reg = core.service(OutputRegistry::default);
+    let mut set = reg.0.lock();
+    if set.len() < 10_000 {
+        set.insert(output_key(path));
+    }
+}
+
+/// True if `path` is a file (or its folder) that OpenFrame wrote for the user this session.
+/// `of_reveal_path` only reveals such paths — never arbitrary locations from the webview.
+pub fn is_remembered_output(core: &AppCore, path: &Path) -> bool {
+    let Some(reg) = core.existing_service::<OutputRegistry>() else {
+        return false;
+    };
+    let set = reg.0.lock();
+    set.contains(&output_key(path))
+}
+
 fn row_to_info(root: &Path, r: &rusqlite::Row<'_>) -> rusqlite::Result<AssetInfo> {
     let mode: String = r.get(1)?;
     let rel: Option<String> = r.get(2)?;
@@ -167,7 +229,13 @@ fn row_to_info(root: &Path, r: &rusqlite::Row<'_>) -> rusqlite::Result<AssetInfo
     } else {
         ext.map(PathBuf::from)
     };
-    let available = path.as_ref().map(|p| p.is_file()).unwrap_or(false);
+    // Linked (external) paths are content — possibly from a received package. Only
+    // well-formed local-disk paths are ever probed: a UNC path would make Windows connect
+    // to that server (and send the user's NTLM hash) just by listing files (PKG-01).
+    let available = path
+        .as_ref()
+        .map(|p| openframe_security::is_local_disk_path(p) && p.is_file())
+        .unwrap_or(false);
     Ok(AssetInfo {
         id: r.get(0)?,
         storage_mode: mode,
@@ -224,7 +292,15 @@ pub fn asset_file_path(conn: &Connection, root: &Path, id: &str) -> AppResult<Pa
     if mode == "managed" {
         openframe_security::confine(root, rel.as_deref().unwrap_or(""))
     } else {
-        Ok(PathBuf::from(ext.unwrap_or_default()))
+        let p = PathBuf::from(ext.unwrap_or_default());
+        if !openframe_security::is_local_disk_path(&p) {
+            return Err(AppError::new(
+                "not_found.file",
+                "This linked file isn't available on this computer. Relink it to a file on this computer.",
+            )
+            .with_detail("stored external path is not a local-disk path"));
+        }
+        Ok(p)
     }
 }
 
@@ -410,21 +486,23 @@ pub fn ingest_bytes(
     load_asset(tx.conn(), tx.root(), &id)
 }
 
+/// Validate a file the user wants to *link* (add as link, relink): a regular file on a
+/// local drive, resolved through links; returns its canonical display path and size.
+/// Network locations are refused for links: a stored UNC path would be probed on every
+/// listing, and linked files travel as content in packages (PKG-01).
+pub fn external_link_target(source: &Path) -> AppResult<(PathBuf, u64)> {
+    openframe_security::check_user_path(source, openframe_security::NetworkPaths::Refuse)?;
+    let len = openframe_security::validate_input_file(source, u64::MAX)?;
+    let abs = openframe_security::display_path(&source.canonicalize()?);
+    openframe_security::check_user_path(&abs, openframe_security::NetworkPaths::Refuse)?;
+    Ok((abs, len))
+}
+
 /// Record a link to an external file without copying it (FSD §40.4).
 pub fn reference_external(tx: &Tx<'_>, source: &Path) -> AppResult<AssetInfo> {
-    let meta = std::fs::metadata(source)?;
-    if !meta.is_file() {
-        return Err(AppError::invalid_input(
-            "Please choose a file, not a folder.",
-        ));
-    }
-    let abs = source
-        .canonicalize()
-        .unwrap_or_else(|_| source.to_path_buf());
-    let abs_str = abs
-        .to_string_lossy()
-        .trim_start_matches(r"\\?\")
-        .to_string();
+    let (abs, len) = external_link_target(source)?;
+    let abs_str = abs.to_string_lossy().into_owned();
+    let meta_len = len;
     let original_name = source
         .file_name()
         .and_then(|n| n.to_str())
@@ -441,7 +519,7 @@ pub fn reference_external(tx: &Tx<'_>, source: &Path) -> AppResult<AssetInfo> {
         Some(&abs_str),
         &original_name,
         media_type,
-        Some(meta.len() as i64),
+        Some(meta_len as i64),
         None,
         dims,
     )?;

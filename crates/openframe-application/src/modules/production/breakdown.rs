@@ -1542,10 +1542,12 @@ fn planning_notes(c: &Connection, scene_id: &str, lineage: &str) -> AppResult<Ve
         .query_map([], |r| r.get(0))?
         .collect::<Result<_, _>>()?;
     let mut notes: Vec<String> = Vec::new();
-    for t in tables {
+    for raw in tables {
+        // Names come from sqlite_master (a received project can carry any schema): quote them.
+        let t = raw.replace('"', "\"\"");
         let mut cs = c.prepare(&format!(
             "SELECT name FROM pragma_table_info('{}')",
-            t.replace('\'', "''")
+            raw.replace('\'', "''")
         ))?;
         let cols: Vec<String> = cs.query_map([], |r| r.get(0))?.collect::<Result<_, _>>()?;
         let live = if cols.iter().any(|c| c == "deleted_at") {

@@ -249,6 +249,8 @@ pub(crate) fn destination(core: &AppCore, path: &str, fmt: Fmt) -> AppResult<Pat
             "That file name contains characters Windows doesn't allow.",
         ));
     }
+    // Device/ADS/reserved paths, app data and the Global Idea Vault (PATH-03/PATH-04).
+    crate::util::check_output_file(core, &p)?;
     Ok(p)
 }
 

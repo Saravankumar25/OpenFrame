@@ -131,39 +131,44 @@ pub struct TrashItemArgs {
     pub id: String,
 }
 
+/// Private notes never write Activity (visible to all members; PN-01).
+fn quiet_if_private(meta: MutationMeta, row: &DeletedItemRow) -> MutationMeta {
+    if row.table_name == "private_note" || row.object_type == "private_note" {
+        meta.quiet()
+    } else {
+        meta
+    }
+}
+
 fn trash_restore(core: &AppCore, actor: &Actor, args: TrashItemArgs) -> AppResult<DeletedItemRow> {
     with_store(core, args.store, |s| {
-        let title = s
-            .read(|c| crate::store::load_deleted(c, &args.id))?
-            .title
-            .unwrap_or_else(|| "item".into());
-        s.mutate(
-            actor,
+        let row = s.read(|c| crate::store::load_deleted(c, &args.id))?;
+        let title = row.title.clone().unwrap_or_else(|| "item".into());
+        let meta = quiet_if_private(
             MutationMeta::new(
                 "trash.restore",
                 format!("Restored “{title}”"),
                 Capability::SoftDelete,
             ),
-            |tx| restore_deleted(tx, &args.id),
-        )
+            &row,
+        );
+        s.mutate(actor, meta, |tx| restore_deleted(tx, &args.id))
     })
 }
 
 fn trash_purge(core: &AppCore, actor: &Actor, args: TrashItemArgs) -> AppResult<DeletedItemRow> {
     with_store(core, args.store, |s| {
-        let title = s
-            .read(|c| crate::store::load_deleted(c, &args.id))?
-            .title
-            .unwrap_or_else(|| "item".into());
-        s.mutate(
-            actor,
+        let row = s.read(|c| crate::store::load_deleted(c, &args.id))?;
+        let title = row.title.clone().unwrap_or_else(|| "item".into());
+        let meta = quiet_if_private(
             MutationMeta::new(
                 "trash.purge",
                 format!("Permanently deleted “{title}”"),
                 Capability::PermanentDelete,
             )
             .not_undoable(),
-            |tx| purge_deleted(tx, &args.id),
-        )
+            &row,
+        );
+        s.mutate(actor, meta, |tx| purge_deleted(tx, &args.id))
     })
 }

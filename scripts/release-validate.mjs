@@ -181,6 +181,29 @@ if (exists("crates/openframe-application/src/modules/ai")) {
   const base = process.env.MODEL_DISTRIBUTION_BASE_URL;
   if (base && /^https:\/\//.test(base)) pass("Model distribution base URL", "configured");
   else failCheck("Model distribution base URL", "MODEL_DISTRIBUTION_BASE_URL must be an https:// URL for builds that include local AI");
+
+  // 6b. Manifest signing key (security review 2026-09-30, REL-01). Without it the build trusts
+  // the development key compiled in from crates/openframe-ai/keys/manifest-dev.pub, whose
+  // private half lives on developer machines — a public release must never trust it.
+  const releaseKey = (process.env.OPENFRAME_MANIFEST_PUBLIC_KEY || "").trim();
+  const devKey = exists("crates/openframe-ai/keys/manifest-dev.pub") ? read("crates/openframe-ai/keys/manifest-dev.pub").trim() : "";
+  const keyProblem = manifestKeyProblem(releaseKey, devKey);
+  if (keyProblem) failCheck("AI manifest signing key", keyProblem);
+  else pass("AI manifest signing key", "release key configured (not the development key)");
+}
+
+/** Why `key` can't be the release manifest key, or null when it is acceptable. */
+export function manifestKeyProblem(key, devKey) {
+  if (!key) return "OPENFRAME_MANIFEST_PUBLIC_KEY must be set (base64 Ed25519 public key) for builds that include local AI";
+  let raw;
+  try {
+    raw = Buffer.from(key, "base64");
+  } catch {
+    raw = Buffer.alloc(0);
+  }
+  if (raw.length !== 32 || raw.toString("base64") !== key) return "OPENFRAME_MANIFEST_PUBLIC_KEY is not a base64-encoded 32-byte Ed25519 public key";
+  if (devKey && key === devKey) return "OPENFRAME_MANIFEST_PUBLIC_KEY is the development key; releases need the production key";
+  return null;
 }
 
 // 7-10. Microsoft Store --------------------------------------------------------------------------

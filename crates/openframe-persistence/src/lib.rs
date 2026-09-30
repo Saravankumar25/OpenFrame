@@ -57,9 +57,62 @@ fn apply_pragmas(conn: &Connection) -> AppResult<()> {
          PRAGMA foreign_keys=ON;
          PRAGMA temp_store=MEMORY;
          PRAGMA recursive_triggers=OFF;
+         PRAGMA trusted_schema=OFF;
          PRAGMA cache_size=-16000;",
     )?;
+    // OpenFrame never attaches databases. With the limit at 0, SQL that reached a
+    // connection from a received project's schema can't `ATTACH 'C:\…\x'` to create
+    // files elsewhere on disk (Security review 2026-09-30, PKG-03).
+    conn.set_limit(rusqlite::limits::Limit::SQLITE_LIMIT_ATTACHED, 0)?;
     Ok(())
+}
+
+fn safe_schema_name(n: &str) -> bool {
+    !n.is_empty()
+        && n.len() <= 128
+        && n.chars().all(|c| c.is_ascii_alphanumeric() || c == '_')
+        && !n.starts_with(|c: char| c.is_ascii_digit())
+}
+
+fn squash(s: &str) -> String {
+    s.chars().filter(|c| !c.is_whitespace()).collect()
+}
+
+/// Schema screening for databases that may come from someone else (received project or
+/// backup packages, project folders copied from elsewhere). A project database is data,
+/// but SQLite also stores *code* in it (triggers, views) that runs inside OpenFrame's
+/// connection. Every schema object must have a plain identifier name, and every trigger
+/// and view must be one OpenFrame's own migrations create (compared ignoring whitespace).
+/// Returns the problems found (empty = acceptable).
+pub fn untrusted_schema_problems(
+    conn: &Connection,
+    migrations_sql: &[&str],
+) -> AppResult<Vec<String>> {
+    let known = squash(&migrations_sql.concat());
+    let mut stmt = conn.prepare("SELECT type, name, tbl_name, sql FROM main.sqlite_master")?;
+    let rows: Vec<(String, String, String, Option<String>)> = stmt
+        .query_map([], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?, r.get(3)?)))?
+        .collect::<Result<_, _>>()?;
+    let mut problems = Vec::new();
+    for (ty, name, tbl, sql) in rows {
+        if !safe_schema_name(&name) || !safe_schema_name(&tbl) {
+            problems.push(format!("{ty} with an unsafe name"));
+            continue;
+        }
+        if matches!(ty.as_str(), "trigger" | "view") {
+            let ok = sql
+                .as_deref()
+                .map(|s| {
+                    let s = squash(s);
+                    !s.is_empty() && known.contains(&s)
+                })
+                .unwrap_or(false);
+            if !ok {
+                problems.push(format!("unexpected {ty} {name}"));
+            }
+        }
+    }
+    Ok(problems)
 }
 
 /// `PRAGMA quick_check` / `integrity_check`. Returns the problems found (empty = healthy).

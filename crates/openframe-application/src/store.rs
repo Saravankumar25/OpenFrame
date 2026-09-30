@@ -320,6 +320,17 @@ impl Store {
                 )
                 .with_detail(problems.join("; ")));
             }
+            // A project folder may come from anywhere: refuse schemas carrying code
+            // (triggers/views) OpenFrame didn't create, or hostile object names (PKG-03).
+            let sql: Vec<&str> = migrations.iter().map(|m| m.sql).collect();
+            let problems = openframe_persistence::untrusted_schema_problems(&conn, &sql)?;
+            if !problems.is_empty() {
+                return Err(AppError::new(
+                    "project_format.untrusted_schema",
+                    "This project's data file contains content OpenFrame doesn't create, so it was not opened. OpenFrame did not change it.",
+                )
+                .with_detail(problems.join("; ")));
+            }
         }
         let mut report = OpenReport {
             migrated_from: None,
@@ -628,7 +639,11 @@ impl Store {
             format!("{verb}: {label}"),
             Capability::View,
         );
-        record_activity(&tx, actor, &meta)?;
+        // Private notes never produce Activity (it is visible to every project member):
+        // undoing/redoing one must not reveal that a note exists or when it changed (PN-01).
+        if !rows.iter().any(|(t, _)| t == "private_note") {
+            record_activity(&tx, actor, &meta)?;
+        }
         tx.commit()?;
         drop(w);
         self.emit_changed(&applied, &[], "local");
@@ -941,17 +956,21 @@ fn relocation_note(conn: &Connection, row: &DeletedItemRow) -> AppResult<Option<
 /// Restore a recoverably deleted object (FSD §52.5).
 pub fn restore_deleted(tx: &Tx<'_>, deleted_id: &str) -> AppResult<DeletedItemRow> {
     let row = load_deleted(tx.conn(), deleted_id)?;
-    match tx
+    // The deleted_item row is data (a received project can carry any): the table comes
+    // from the registered handler, and must match the row — otherwise a crafted row could
+    // bypass a module's own restore checks (e.g. private-note ownership).
+    let handler = tx
         .registry()
         .trash_for(&row.object_type)
-        .and_then(|h| h.restore)
-    {
+        .filter(|h| h.table == row.table_name)
+        .ok_or_else(|| AppError::not_found("deleted item"))?;
+    match handler.restore {
         Some(restore) => restore(tx, &row)?,
         None => {
             tx.conn().execute(
                 &format!(
                     "UPDATE \"{}\" SET deleted_at=NULL, updated_at=?1, rev=rev+1 WHERE id=?2",
-                    row.table_name.replace('"', "")
+                    handler.table.replace('"', "\"\"")
                 ),
                 params![now_ms(), row.object_id],
             )?;

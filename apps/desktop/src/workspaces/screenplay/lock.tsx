@@ -16,7 +16,8 @@ const SWATCH: Record<string, string> = { Blue: "#8fb3ef", Pink: "#f2a7c3", Yello
 
 export function colourSwatch(c: string | null): string | undefined {
   if (!c) return undefined;
-  return SWATCH[c] ?? (c.startsWith("#") ? c : undefined);
+  // Project data: only a plain hex colour may reach a CSS value (no `url(...)` etc.).
+  return SWATCH[c] ?? (/^#[0-9a-f]{3,8}$/i.test(c) ? c : undefined);
 }
 
 /** "Lock this draft as the Shooting Draft?" (mock 088). */

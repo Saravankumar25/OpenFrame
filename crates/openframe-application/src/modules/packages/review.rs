@@ -462,6 +462,7 @@ pub(crate) fn review_export_response(
         ));
     }
     let dest = format::package_destination(&a.path, PackageType::Response)?;
+    crate::util::check_output_file(core, &dest)?;
     let content = ScriptContent {
         draft: r.content.draft.clone(),
         scenes: r.content.scenes.clone(),

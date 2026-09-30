@@ -33,13 +33,17 @@ impl EventSink for TauriSink {
 
 struct CoreState(Arc<AppCore>);
 
-/// Allow the restricted asset protocol to read only the open project folder and
-/// the Global Idea Vault (images, audio and video previews).
+/// Allow the restricted asset protocol to read only managed media: the open project's
+/// `assets/` and `cache/` folders and the Global Idea Vault's `assets/` (images, audio and
+/// video previews). The databases (`project.sqlite`, `vault.sqlite` — which hold every
+/// user's private notes), recovery data and safety backups are never readable by the
+/// webview, even if it were compromised (Security review 2026-09-30, WEB-02).
 fn sync_asset_scope(app: &AppHandle, core: &AppCore) {
     let scope = app.asset_protocol_scope();
-    let _ = scope.allow_directory(&core.config.global_vault_dir, true);
+    let _ = scope.allow_directory(core.config.global_vault_dir.join("assets"), true);
     if let Some(p) = core.project_opt() {
-        let _ = scope.allow_directory(p.layout.root(), true);
+        let _ = scope.allow_directory(p.layout.assets(), true);
+        let _ = scope.allow_directory(p.layout.cache(), true);
     }
 }
 
@@ -92,13 +96,16 @@ async fn of_open_asset(
         let root = s.root().to_path_buf();
         s.read(|c| openframe_application::util::asset_file_path(c, &root, &asset_id))
     })?;
-    if !path.exists() {
+    if !openframe_security::is_local_disk_path(&path) || !path.exists() {
         return Err(AppError::new(
             "not_found.file",
             "This file isn't available right now. If it's on an external drive, reconnect it or relink the file.",
         ));
     }
-    open_path(&app, &path, reveal.unwrap_or(false))
+    // Files can arrive in received packages with attacker-chosen names: anything Windows
+    // would *execute* is shown in File Explorer instead of being launched (PKG-01).
+    let reveal = reveal.unwrap_or(false) || openframe_security::is_dangerous_to_open(&path);
+    open_path(&app, &path, reveal)
 }
 
 /// Reveal a known location (project folder, export result, backup) in Explorer.
@@ -124,11 +131,35 @@ async fn of_reveal_path(
             None => core.project()?.layout.root().to_path_buf(),
         },
         "globalVault" => core.config.global_vault_dir.clone(),
+        // The folder that should contain a linked file (shown when the file itself is
+        // missing). Resolved from the asset id on the Rust side; local drives only.
+        "assetFolder" | "globalAssetFolder" => {
+            let asset_id = id.unwrap_or_default();
+            let store = if kind == "globalAssetFolder" {
+                openframe_application::StoreKind::Global
+            } else {
+                openframe_application::StoreKind::Project
+            };
+            let file: PathBuf = core.with_store(store, |s| {
+                let root = s.root().to_path_buf();
+                s.read(|c| openframe_application::util::asset_file_path(c, &root, &asset_id))
+            })?;
+            let dir = file
+                .parent()
+                .filter(|d| openframe_security::is_local_disk_path(d) && d.is_dir())
+                .ok_or_else(|| AppError::not_found("folder"))?;
+            return open_path(&app, dir, false);
+        }
         "logs" => core.config.app_data_dir.join("logs"),
-        // Files the user explicitly exported to a location they chose in a save dialog.
+        // Only files OpenFrame itself wrote this session to a location the user chose in a
+        // save dialog (recorded server-side by the export/package/copy operations). An
+        // arbitrary path from the webview — e.g. a UNC path that would leak credentials —
+        // is refused before the filesystem is touched (PATH-01).
         "exported" => {
-            let p = PathBuf::from(path.unwrap_or_default());
-            if !p.is_absolute() || !p.exists() {
+            let raw = path.unwrap_or_default();
+            let p = openframe_security::user_path(&raw, openframe_security::NetworkPaths::Allow)
+                .map_err(|_| AppError::not_found("file"))?;
+            if !openframe_application::util::is_remembered_output(&core, &p) || !p.exists() {
                 return Err(AppError::not_found("file"));
             }
             p
@@ -141,18 +172,12 @@ async fn of_reveal_path(
 /// Open a web link from an Idea Vault URL item in the user's browser (explicit user action).
 #[tauri::command]
 async fn of_open_url(app: AppHandle, url: String) -> Result<(), AppError> {
-    let lower = url.trim().to_ascii_lowercase();
-    if !(lower.starts_with("https://") || lower.starts_with("http://")) || url.len() > 4096 {
-        return Err(AppError::invalid_input(
-            "Only web links (http or https) can be opened.",
-        ));
-    }
-    app.opener()
-        .open_url(url.trim(), None::<&str>)
-        .map_err(|e| {
-            AppError::new("internal.open_failed", "OpenFrame couldn't open that link.")
-                .with_detail(e.to_string())
-        })
+    let url = openframe_security::web_link(&url)
+        .ok_or_else(|| AppError::invalid_input("Only web links (http or https) can be opened."))?;
+    app.opener().open_url(url, None::<&str>).map_err(|e| {
+        AppError::new("internal.open_failed", "OpenFrame couldn't open that link.")
+            .with_detail(e.to_string())
+    })
 }
 
 fn open_path(app: &AppHandle, path: &std::path::Path, reveal: bool) -> Result<(), AppError> {
@@ -194,11 +219,13 @@ fn init_logging(config: &AppConfig) -> Option<tracing_appender::non_blocking::Wo
             .location()
             .map(|l| format!("{}:{}", l.file(), l.line()))
             .unwrap_or_default();
-        tracing::error!(
-            location,
-            "panic: {}",
-            openframe_security::redact(&info.to_string())
-        );
+        let message = info
+            .payload()
+            .downcast_ref::<&str>()
+            .map(|s| s.to_string())
+            .or_else(|| info.payload().downcast_ref::<String>().cloned())
+            .unwrap_or_default();
+        tracing::error!("{}", openframe_security::panic_summary(&message, &location));
         default_hook(info);
     }));
     Some(guard)
@@ -266,7 +293,7 @@ pub fn run() {
         .setup(move |app| {
             let sink = Arc::new(TauriSink { app: app.handle().clone() });
             let core = AppCore::new(config.clone(), sink).map_err(|e| {
-                tracing::error!(code = e.code_str(), detail = ?e.detail, "failed to start application core");
+                tracing::error!(code = e.code_str(), detail = %openframe_security::redact(e.detail.as_deref().unwrap_or("")), "failed to start application core");
                 Box::<dyn std::error::Error>::from(e.message.clone())
             })?;
             sync_asset_scope(app.handle(), &core);

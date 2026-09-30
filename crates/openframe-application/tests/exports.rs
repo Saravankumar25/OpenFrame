@@ -142,7 +142,7 @@ fn pdf_text(path: &str) -> String {
     let doc = lopdf::Document::load(path).expect("PDF parses with lopdf");
     let mut out = String::new();
     for (_, page) in doc.get_pages() {
-        let bytes = doc.get_page_content(page).expect("page content");
+        let bytes = doc.get_page_content(page);
         let content = lopdf::content::Content::decode(&bytes).expect("content stream");
         for op in content.operations {
             if op.operator == "Tj"

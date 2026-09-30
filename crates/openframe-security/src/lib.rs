@@ -19,9 +19,18 @@ use openframe_domain::{AppError, AppResult};
 use sha2::{Digest, Sha256};
 
 const WINDOWS_RESERVED: &[&str] = &[
-    "CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8",
-    "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9",
+    "CON", "PRN", "AUX", "NUL", "COM0", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7",
+    "COM8", "COM9", "COM¹", "COM²", "COM³", "LPT0", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6",
+    "LPT7", "LPT8", "LPT9", "LPT¹", "LPT²", "LPT³", "CONIN$", "CONOUT$", "CLOCK$",
 ];
+
+/// True if `name` (one path component) is a Windows device name such as `NUL`, `com1.txt`
+/// or `CON .log` (Windows ignores trailing spaces/dots before the extension).
+pub fn is_reserved_name(name: &str) -> bool {
+    let stem = name.split('.').next().unwrap_or("");
+    let stem = stem.trim_end_matches([' ', '.']).to_uppercase();
+    WINDOWS_RESERVED.contains(&stem.as_str())
+}
 
 /// Turn arbitrary user text into a safe single file-name component.
 /// Never returns an empty name, a reserved device name, or a name with separators.
@@ -46,8 +55,7 @@ pub fn sanitize_file_name(name: &str) -> String {
             .trim_end_matches(['.', ' '])
             .to_string();
     }
-    let stem = out.split('.').next().unwrap_or("").to_ascii_uppercase();
-    if WINDOWS_RESERVED.contains(&stem.as_str()) {
+    if is_reserved_name(&out) {
         out = format!("_{out}");
     }
     if out.is_empty() {
@@ -114,9 +122,272 @@ pub fn is_within(root: &Path, path: &Path) -> bool {
     }
 }
 
-/// Validate a user-chosen file to read (import/attach): must exist, be a regular
-/// file, and be within `max_bytes`.
+// ------------------------------------------------------------------ user-chosen paths
+//
+// Paths chosen in a file dialog arrive from the webview as strings. The webview is not
+// trusted (threat T1/T4), and some paths come from project or package *content* (linked
+// files). Everything is checked syntactically before the filesystem is touched, so a
+// hostile path can't make Windows open a device (`\\.\PhysicalDrive0`, `\\.\pipe\x`,
+// `\\?\GLOBALROOT\…`, `NUL`), an alternate data stream (`a.txt:secret`) or — where not
+// wanted — connect to a network share (SMB/NTLM credential leak).
+
+/// Whether a user-chosen path may point to a network share (`\\server\share\…`).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum NetworkPaths {
+    /// Files the user picked in a dialog: a NAS or share is a legitimate choice.
+    Allow,
+    /// Project locations (SQLite can't be shared safely) and paths from content.
+    Refuse,
+}
+
+fn path_rejected(detail: impl Into<String>) -> AppError {
+    AppError::security("path_rejected", "That file location isn't allowed.").with_detail(detail)
+}
+
+/// Syntactic validation of an absolute, user-chosen path. No filesystem access.
+pub fn check_user_path(path: &Path, network: NetworkPaths) -> AppResult<()> {
+    let raw = path.as_os_str().to_string_lossy();
+    if raw.is_empty() || raw.len() > 32_000 || raw.chars().any(|c| c.is_control()) {
+        return Err(path_rejected("empty, oversized or control characters"));
+    }
+    if !path.is_absolute() {
+        return Err(AppError::invalid_input(
+            "Choose the location with Browse… (a full path is needed).",
+        ));
+    }
+    let mut components = path.components();
+    #[cfg(windows)]
+    {
+        use std::path::Prefix;
+        match components.next() {
+            Some(Component::Prefix(p)) => match p.kind() {
+                Prefix::Disk(_) | Prefix::VerbatimDisk(_) => {}
+                Prefix::UNC(..) | Prefix::VerbatimUNC(..) if network == NetworkPaths::Allow => {}
+                Prefix::UNC(..) | Prefix::VerbatimUNC(..) => {
+                    return Err(AppError::new(
+                        "project_format.network_location",
+                        "OpenFrame can't use files on a network location here. Copy them to this computer first.",
+                    )
+                    .with_detail("network path refused"));
+                }
+                Prefix::Verbatim(_) | Prefix::DeviceNS(_) => {
+                    return Err(path_rejected("device or verbatim namespace path"));
+                }
+            },
+            _ => return Err(path_rejected("missing drive prefix")),
+        }
+    }
+    for c in components {
+        match c {
+            Component::RootDir => {}
+            Component::Normal(part) => {
+                let part = part.to_string_lossy();
+                if part.contains(':') || is_reserved_name(&part) {
+                    return Err(path_rejected("reserved name or alternate data stream"));
+                }
+            }
+            Component::ParentDir | Component::CurDir | Component::Prefix(_) => {
+                return Err(path_rejected("relative component"));
+            }
+        }
+    }
+    Ok(())
+}
+
+/// `check_user_path` for a string (as received over IPC).
+pub fn user_path(raw: &str, network: NetworkPaths) -> AppResult<PathBuf> {
+    let p = PathBuf::from(raw.trim());
+    check_user_path(&p, network)?;
+    Ok(p)
+}
+
+/// True if `path` is a well-formed absolute path on a local (or mapped) drive — safe to probe
+/// without triggering a network connection. Used for paths stored in content (linked files).
+pub fn is_local_disk_path(path: &Path) -> bool {
+    check_user_path(path, NetworkPaths::Refuse).is_ok()
+}
+
+/// Stored form of a canonicalized path: `\\?\C:\x` → `C:\x`, `\\?\UNC\srv\x` → `\\srv\x`.
+pub fn display_path(canonical: &Path) -> PathBuf {
+    let s = canonical.to_string_lossy();
+    if let Some(rest) = s.strip_prefix(r"\\?\UNC\") {
+        PathBuf::from(format!(r"\\{rest}"))
+    } else if let Some(rest) = s.strip_prefix(r"\\?\") {
+        PathBuf::from(rest)
+    } else {
+        canonical.to_path_buf()
+    }
+}
+
+/// File types Windows *executes* (or that execute code) when "opened" with the default
+/// handler. Project files can come from received packages whose stored names/extensions
+/// are attacker-chosen, so OpenFrame reveals these in Explorer instead of launching them.
+const EXECUTABLE_EXTENSIONS: &[&str] = &[
+    "exe",
+    "com",
+    "scr",
+    "pif",
+    "cpl",
+    "msi",
+    "msp",
+    "mst",
+    "msix",
+    "msixbundle",
+    "appx",
+    "appxbundle",
+    "appref-ms",
+    "application",
+    "bat",
+    "cmd",
+    "ps1",
+    "psm1",
+    "psd1",
+    "ps1xml",
+    "psc1",
+    "vbs",
+    "vbe",
+    "js",
+    "jse",
+    "wsf",
+    "wsh",
+    "ws",
+    "wsc",
+    "hta",
+    "lnk",
+    "url",
+    "scf",
+    "reg",
+    "inf",
+    "ins",
+    "isp",
+    "jar",
+    "dll",
+    "sys",
+    "ocx",
+    "drv",
+    "msc",
+    "gadget",
+    "diagcab",
+    "settingcontent-ms",
+    "library-ms",
+    "search-ms",
+    "searchconnector-ms",
+    "vb",
+    "sct",
+    "shb",
+    "shs",
+    "xbap",
+    "xll",
+    "chm",
+    "hlp",
+    "iqy",
+    "slk",
+    "website",
+    "theme",
+    "themepack",
+    "desktopthemepackfile",
+    "mof",
+    "sh",
+    "py",
+    "pyw",
+    "rb",
+    "pl",
+    "vhd",
+    "vhdx",
+    "iso",
+    "img",
+];
+
+/// True if opening `path` with the shell's default handler could run code.
+pub fn is_dangerous_to_open(path: &Path) -> bool {
+    let name = path
+        .file_name()
+        .map(|n| n.to_string_lossy().to_ascii_lowercase())
+        .unwrap_or_default();
+    // Trailing dots/spaces are ignored by Windows ("a.exe." runs as "a.exe").
+    let name = name.trim_end_matches(['.', ' ']);
+    match name.rsplit_once('.') {
+        Some((_, ext)) => EXECUTABLE_EXTENSIONS.contains(&ext),
+        None => true, // no extension: Windows may still treat it as a program
+    }
+}
+
+fn place_protected() -> AppError {
+    AppError::invalid_input(
+        "OpenFrame keeps its own files in that folder. Choose a different folder.",
+    )
+}
+
+/// Destination file chosen in a save dialog (exports, packages, file copies): an absolute
+/// file path with a portable name in an existing folder that is not inside any of
+/// `protected` (open project folder, app data, Global Idea Vault). The folder is resolved
+/// through symlinks/junctions before the check.
+pub fn validate_output_file(path: &Path, protected: &[&Path]) -> AppResult<()> {
+    check_user_path(path, NetworkPaths::Allow)?;
+    let name = path
+        .file_name()
+        .and_then(|n| n.to_str())
+        .ok_or_else(|| AppError::invalid_input("Choose a file name."))?;
+    if sanitize_file_name(name) != name {
+        return Err(AppError::invalid_input(
+            "That file name can't be used on Windows. Choose a different name.",
+        ));
+    }
+    if path.is_dir() {
+        return Err(AppError::invalid_input("Choose a file name, not a folder."));
+    }
+    let parent = path.parent().filter(|p| p.is_dir()).ok_or_else(|| {
+        AppError::new(
+            "not_found.folder",
+            "That folder can't be found. If it's on an external drive, reconnect it and try again.",
+        )
+    })?;
+    ensure_outside(parent, protected)
+}
+
+/// A folder chosen to hold something new (project parent folder). Network locations are
+/// refused (a project can't live on a share) and protected folders are refused.
+pub fn validate_output_dir(dir: &Path, protected: &[&Path]) -> AppResult<()> {
+    check_user_path(dir, NetworkPaths::Refuse)?;
+    if dir.exists() {
+        if !dir.is_dir() {
+            return Err(AppError::invalid_input("Choose a folder."));
+        }
+        return ensure_outside(dir, protected);
+    }
+    // Not created yet: check the nearest existing ancestor.
+    let mut anc = dir.parent();
+    while let Some(a) = anc {
+        if a.is_dir() {
+            return ensure_outside(a, protected);
+        }
+        anc = a.parent();
+    }
+    Ok(())
+}
+
+fn ensure_outside(existing: &Path, protected: &[&Path]) -> AppResult<()> {
+    let canon = existing.canonicalize()?;
+    check_user_path(&display_path(&canon), NetworkPaths::Allow)?;
+    for root in protected {
+        if let Ok(r) = root.canonicalize()
+            && canon.starts_with(&r)
+        {
+            return Err(place_protected());
+        }
+    }
+    Ok(())
+}
+
+/// Validate a user-chosen file to read (import/attach): a well-formed absolute path
+/// ([`check_user_path`], network shares allowed), an existing regular file after
+/// resolving links (the link target is checked too), within `max_bytes`.
 pub fn validate_input_file(path: &Path, max_bytes: u64) -> AppResult<u64> {
+    check_user_path(path, NetworkPaths::Allow)?;
+    if std::fs::symlink_metadata(path)?.file_type().is_symlink() {
+        let target = path.canonicalize()?;
+        check_user_path(&display_path(&target), NetworkPaths::Allow)?;
+    }
     let meta = std::fs::metadata(path)?;
     if !meta.is_file() {
         return Err(AppError::invalid_input(
@@ -181,6 +452,48 @@ pub fn verify_ed25519(public_key_b64: &str, message: &[u8], signature_b64: &str)
     let sig = ed25519_dalek::Signature::from_bytes(&sig_arr);
     key.verify_strict(message, &sig)
         .map_err(|e| fail(&e.to_string()))
+}
+
+/// A web link that may be handed to the OS browser (`of_open_url`): `http`/`https` only,
+/// a non-empty host without user-info, no whitespace/control/quote characters (the value
+/// goes to ShellExecute), at most 4096 characters. Returns the trimmed link.
+pub fn web_link(raw: &str) -> Option<&str> {
+    let url = raw.trim();
+    if url.is_empty() || url.len() > 4096 {
+        return None;
+    }
+    if url
+        .chars()
+        .any(|c| c.is_control() || c.is_whitespace() || matches!(c, '"' | '<' | '>' | '\\' | '`'))
+    {
+        return None;
+    }
+    let lower = url.to_ascii_lowercase();
+    let rest = lower
+        .strip_prefix("https://")
+        .or_else(|| lower.strip_prefix("http://"))?;
+    let authority = rest.split(['/', '?', '#']).next().unwrap_or("");
+    let host = authority.rsplit_once(':').map_or(authority, |(h, _)| h);
+    if host.is_empty() || authority.contains('@') {
+        return None;
+    }
+    Some(url)
+}
+
+/// Panic text for the log: redacted and truncated (panic messages can quote values).
+pub fn panic_summary(message: &str, location: &str) -> String {
+    let msg: String = redact(message).chars().take(300).collect();
+    let loc = redact(location);
+    // Paths of registry crates contain the build user's home; keep only the tail.
+    let loc = loc
+        .rsplit(['\\', '/'])
+        .take(3)
+        .collect::<Vec<_>>()
+        .into_iter()
+        .rev()
+        .collect::<Vec<_>>()
+        .join("/");
+    format!("panic at {loc}: {msg}")
 }
 
 /// Defence-in-depth redaction for diagnostics text: user home paths, e-mail
