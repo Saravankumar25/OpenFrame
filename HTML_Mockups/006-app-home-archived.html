@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=1200">
+<title>Archived projects — OpenFrame Studio mock</title>
+<link rel="stylesheet" href="assets/openframe.css"></head>
+<body>
+<div class="win"><div class="titlebar"><div class="tl"><span class="logo"><svg class="i s" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="2.2"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg></span><span>OpenFrame Studio</span></div><div class="wc"><span>&#8211;</span><span>&#9633;</span><span class="x">&#10005;</span></div></div><div class="topbar"><div class="brand"><span class="mark"><svg class="i s" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="2.2"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg></span>OpenFrame</div><div class="search" data-n="gs"><svg class="i " viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><span>Search projects…</span></div><div class="tb-actions"><span class="iconbtn"><svg class="i " viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span><span class="avatar " >NV</span></div></div><div class="main"><div class="content" style="padding:20px 28px"><div class="ph"><div><h1 data-n="title">Archived projects</h1><div class="sub">Archived projects are not deleted. They stay on your computer and can be restored at any time.</div></div><div class="pha"><a class="btn  " href="003-app-home.html" ><svg class="i " viewBox="0 0 24 24"><polyline points="15 6 9 12 15 18"/></svg>Back to projects</a></div></div><div class="card"><table class="tbl"><tr><th>Title</th><th>Type</th><th>Status</th><th>Last modified</th><th></th></tr><tr><td class="b">Old Town Blues</td><td>Feature Film</td><td><span class="chip">Archived</span></td><td>3 Mar 2026</td><td data-n="restore" style="text-align:right"><span class="btn sm " >Restore</span><span class="btn sm " >Open</span></td></tr><tr><td class="b">Rain Check</td><td>Short Film</td><td><span class="chip">Archived</span></td><td>11 Jan 2026</td><td style="text-align:right"><span class="btn sm " >Restore</span><span class="btn sm " >Open</span></td></tr><tr><td class="b">Tea Stall</td><td>Episodic</td><td><span class="chip">Archived</span></td><td>2 Nov 2025</td><td style="text-align:right"><span class="btn sm " >Restore</span><span class="btn sm " >Open</span></td></tr></table></div></div></div><div class="status"><span class="it" data-n="st"><span class="dot gray"></span>No project open</span><span class="r"><span class="it" data-n="cn">Offline · Local Project Saved</span></span></div></div>
+<a class="mk-toggle" href="#callouts" onclick="setTimeout(function(){location.reload()},30)" style="position:fixed;right:12px;bottom:10px;font:12px Segoe UI,Arial;color:#fff;background:#0009;padding:5px 10px;border-radius:14px;text-decoration:none">Show manual's numbered markers</a>
+<script>
+(function(){
+  if(location.hash.indexOf('callouts')<0) return;
+  var tg=document.querySelector('.mk-toggle'); if(tg) tg.style.display='none';
+  var win=document.querySelector('.win'); var wr=win.getBoundingClientRect();
+  var MAP={"title": 1, "restore": 2};
+  document.querySelectorAll('[data-n]').forEach(function(e){
+    var key=e.getAttribute('data-n'); if(!(key in MAP)) return;
+    var r=e.getBoundingClientRect(); var p=e.getAttribute('data-np');
+    var cs=getComputedStyle(e); var boxed=(cs.backgroundColor!=='rgba(0, 0, 0, 0)')||parseFloat(cs.borderTopWidth)>0||cs.boxShadow!=='none';
+    if(!p) p=boxed?'tl':'l';
+    var x=r.left-wr.left, y=r.top-wr.top;
+    if(p==='tr'){x=r.right-wr.left-11;y=y-11;} else if(p==='br'){x=r.right-wr.left-11;y=r.bottom-wr.top-11;} else if(p==='bl'){x=x-11;y=r.bottom-wr.top-11;} else if(p==='c'){x=r.left-wr.left+r.width/2-11;y=r.top-wr.top+r.height/2-11;} else if(p==='tl'){x=x-11;y=y-11;} else if(p==='in'){x=x+3;y=y+3;} else {x=x-25;y=y+Math.max(0,Math.min(3,r.height/2-11)); if(x<3){x=x+26;}}
+    var b=document.createElement('div'); b.className='cbadge'; b.textContent=MAP[key];
+    b.style.left=Math.max(2,x)+'px'; b.style.top=Math.max(2,y)+'px'; win.appendChild(b);
+  });
+})();
+</script>
+</body></html>

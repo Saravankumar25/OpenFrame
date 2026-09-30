@@ -1,0 +1,33 @@
+/* Breakdown workspace adjustments on top of the mock vocabulary
+   (.sp-body, .sp-nav, .sp-wrap, .sp-page, .sp-tools, .bd-cat, .bd-el). */
+
+.bdw { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+.bdw .srcbar { border-radius: 0; border-width: 0 0 1px 0; flex: none; }
+.bdw .sp-body { min-height: 0; }
+
+.bdw .sp-nav { width: 214px; overflow: auto; display: flex; flex-direction: column; }
+.bdw .sp-nav .sni { width: 100%; border: 0; background: transparent; text-align: left; flex-wrap: wrap; cursor: pointer; font: inherit; color: inherit; }
+.bdw .sp-nav .sni:hover { background: #f6f4ef; }
+.bdw .sp-nav .sni.on { background: var(--accent-soft); }
+.bdw .sp-nav .sni .chips { width: 100%; padding-left: 30px; display: flex; gap: 4px; flex-wrap: wrap; }
+.bdw .sp-nav .sni.omitted span { text-decoration: line-through; color: var(--muted); }
+.bdw .sp-nav .navfoot { margin-top: auto; padding-top: 8px; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 4px; }
+
+.bdw .sp-wrap { overflow: auto; align-items: flex-start; position: relative; }
+.bdw .sp-page { height: auto; min-height: 100%; padding-bottom: 40px; font-size: 11.5px; width: 420px; user-select: text; }
+.bdw .sp-page .note { color: var(--muted); font-style: italic; margin: 0 0 9px; }
+.bdw .sp-page mark.hl { color: inherit; border-radius: 2px; }
+.bdw .sp-page mark.sugmark { background: transparent; color: inherit; border-bottom: 2px dashed #d9a62b; }
+
+.bdw .sp-tools { width: 352px; overflow: auto; display: flex; flex-direction: column; }
+.bdw .bd-cat .bh { width: 100%; border: 0; text-align: left; cursor: pointer; font: inherit; font-weight: 700; font-size: 12.5px; }
+.bdw .bd-el .nm { flex: 1; min-width: 0; }
+.bdw .bd-el .nm small { display: block; color: var(--muted); font-weight: 400; font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bdw .bd-el.hist { opacity: .75; }
+
+.bdw .tagmenu { position: absolute; z-index: 30; background: #fff; border: 1px solid var(--line2); border-radius: 10px; box-shadow: var(--shadow); padding: 5px; min-width: 210px; font-size: 13px; }
+.bdw .tagmenu .mh { font-size: 10.5px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); padding: 5px 10px 3px; font-weight: 700; }
+.bdw .tagmenu button { display: flex; width: 100%; padding: 5px 10px; border: 0; background: transparent; border-radius: 6px; text-align: left; cursor: pointer; }
+.bdw .tagmenu button:hover, .bdw .tagmenu button:focus-visible { background: var(--accent-soft); }
+
+.bdw .queue { flex: 1; overflow: auto; padding: 16px 20px; background: var(--bg); }

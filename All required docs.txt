@@ -1,0 +1,732 @@
+No. **PRD + ESD + README are not enough for 100% product/build coverage.**
+
+They can get you very far, but each answers a different question:
+
+* **PRD:** What are we building and why?
+* **ESD:** How will the software technically be structured/built?
+* **README:** How does a developer set up, run, understand, and contribute to the project?
+
+The biggest missing piece is usually the exact **behavioral contract between product, design, and engineering**.
+
+For OpenFrame, I would use the following document set.
+
+# The complete documentation stack
+
+| Document                                                  | Main question it answers                                                | Needed?     |
+| --------------------------------------------------------- | ----------------------------------------------------------------------- | ----------- |
+| **1. Product PRD**                                        | What are we building?                                                   | ✅           |
+| **2. Functional Specification / FSD**                     | Exactly how must every feature behave?                                  | ✅ Essential |
+| **3. UX/UI Specification**                                | Exactly how does every screen work and behave?                          | ✅ Essential |
+| **4. ESD / Technical Architecture**                       | How will engineering implement it?                                      | ✅           |
+| **5. Data & Domain Model Specification**                  | What objects exist and how are they related?                            | ✅           |
+| **6. Collaboration / Sync Specification**                 | How does offline, local-network and file-based collaboration behave?    | ✅           |
+| **7. Import / Export Specification**                      | How are FDX/PDF/Fountain/DOCX/TXT/project packages handled?             | ✅           |
+| **8. AI Feature Specification**                           | Exactly what AI can/cannot do and how it changes projects?              | ✅           |
+| **9. QA / Acceptance Specification**                      | How do we prove every feature works correctly?                          | ✅           |
+| **10. Security / Privacy / Data Ownership Specification** | What happens to project files, credentials, sharing, permissions, etc.? | Recommended |
+| **11. Release / Migration Specification**                 | What happens when the application or project format changes?            | Recommended |
+| **12. Developer README / CONTRIBUTING**                   | How does a developer actually work on the codebase?                     | ✅           |
+
+That gives you **complete coverage from product idea all the way to implementation and verification**.
+
+---
+
+# 1. PRD — Product Requirements Document
+
+You already have this.
+
+It should answer:
+
+> What is OpenFrame?
+
+> Who is it for?
+
+> What workflows does it support?
+
+> What features belong in it?
+
+> What intentionally does not belong?
+
+> What is the product's philosophy?
+
+Your Mega PRD is doing this part very well.
+
+---
+
+# 2. FSD — Functional Specification Document
+
+This is the **biggest missing document**.
+
+Your PRD says:
+
+> "Users can create scene cards."
+
+The FSD says exactly what that means.
+
+For example:
+
+### Create Scene Card
+
+**Entry points**
+
+* Story Board → `+ Scene`
+* Sequence context menu → `Add Scene`
+* Keyboard shortcut
+* Convert Beat → Scene
+
+**Default fields**
+
+* Description
+* Optional scene heading
+
+**On creation**
+
+1. New scene receives unique internal identity.
+2. Scene appears at the end of the selected sequence.
+3. Card becomes selected.
+4. Description field receives focus.
+5. User can immediately type.
+6. Scene number is not stored as a user-entered value.
+7. Displayed numbering is calculated from current order.
+
+**On drag**
+
+* Parent sequence changes if moved between sequences.
+* Ordering updates.
+* Displayed numbering updates.
+* Existing screenplay relationship remains attached to the same scene identity.
+
+**On duplicate**
+
+* New scene identity.
+* Content copied.
+* Production associations copied or not copied according to defined rules.
+
+**On delete**
+
+* Confirmation rules.
+* Undo behavior.
+* What happens to screenplay scene?
+* What happens to breakdown?
+* What happens to comments?
+
+That's the level your engineers actually need.
+
+### The FSD should contain every feature.
+
+Not just major modules.
+
+---
+
+# 3. UX/UI Specification
+
+PRD and FSD still don't tell designers exactly what the application should look like.
+
+You need a **screen-by-screen specification**.
+
+For every screen:
+
+### Project Home
+
+* Window layout
+* Sidebar
+* Header
+* Primary actions
+* Cards
+* Empty state
+* Context menu
+* Search
+* Keyboard shortcuts
+* Resize behavior
+* Dialogs
+* Error messages
+
+Then:
+
+### Story Board
+
+Then:
+
+### Idea Vault
+
+Then:
+
+### Screenplay Editor
+
+Then:
+
+### Breakdown
+
+Then:
+
+### Stripboard
+
+Then:
+
+### Call Sheet Editor
+
+etc.
+
+For every UI element:
+
+> visible when?
+
+> hidden when?
+
+> clickable?
+
+> disabled?
+
+> hover?
+
+> drag target?
+
+> right-click?
+
+> keyboard behavior?
+
+> confirmation?
+
+That prevents designers and engineers from interpreting the PRD differently.
+
+---
+
+# 4. ESD — Engineering / Technical Specification
+
+This handles:
+
+> **How do we actually build it?**
+
+This should contain things such as:
+
+* Desktop application architecture
+* module boundaries
+* storage architecture
+* local project format
+* file system model
+* database choice
+* rendering architecture
+* editor architecture
+* background processing
+* import/export pipeline
+* autosave
+* backup
+* crash recovery
+* search/indexing
+* collaboration architecture
+* networking
+* security
+* encryption
+* AI integration
+* logging
+* update mechanism
+
+The ESD should **not redefine product behavior**.
+
+It implements the behavior defined by the FSD.
+
+---
+
+# 5. Data / Domain Model Specification
+
+This is extremely important for OpenFrame.
+
+Your application is fundamentally a network of relationships.
+
+For example:
+
+```text
+PROJECT
+ ├── IDEA
+ ├── STORY BOARD
+ │    ├── ACT
+ │    │    └── SEQUENCE
+ │    │         ├── BEAT
+ │    │         └── SCENE
+ │    └── CHARACTER
+ │
+ ├── SCREENPLAY
+ │    └── SCREENPLAY SCENE
+ │
+ ├── BREAKDOWN
+ │    └── PRODUCTION ELEMENT
+ │
+ ├── LOCATION
+ ├── CAST
+ ├── PROP
+ ├── SHOT
+ ├── SHOOTING DAY
+ └── CALL SHEET
+```
+
+The domain document defines:
+
+> What is a Scene?
+
+> What is an Idea?
+
+> What is a Draft?
+
+> What is a Character?
+
+> What is a Shooting Day?
+
+and:
+
+> How exactly are they related?
+
+This is critical because otherwise two engineers can interpret the same relationship differently.
+
+---
+
+# 6. Collaboration & Offline Specification
+
+Because you specifically decided:
+
+> **No cloud dependency + desktop-first + offline**
+
+this deserves its own document.
+
+It should define three separate workflows:
+
+### Mode 1 — Solo
+
+Everything works locally.
+
+### Mode 2 — Portable exchange
+
+Example:
+
+```text
+Writer A
+   ↓
+Export Review Package
+   ↓
+Send file
+   ↓
+Writer B
+   ↓
+Open package
+   ↓
+Add comments/changes
+   ↓
+Export Response Package
+   ↓
+Writer A
+   ↓
+Import / Review / Merge
+```
+
+### Mode 3 — Local-network collaboration
+
+Example:
+
+```text
+Computer A
+Project Host
+    ↕
+Local Network
+    ↕
+Computer B
+    ↕
+Computer C
+```
+
+The specification needs exact rules for:
+
+* simultaneous editing
+* conflict handling
+* project ownership
+* merge
+* comments
+* file versions
+* offline edits
+* reconnection
+* interrupted transfers
+* package compatibility
+
+Without this document, engineers will invent their own collaboration model.
+
+---
+
+# 7. Import / Export Specification
+
+This deserves its own document because screenplay interchange is deceptively complicated.
+
+You already want:
+
+### Import
+
+* PDF
+* FDX
+* Fountain
+* TXT
+* DOCX
+* pasted screenplay text
+
+### Export
+
+* PDF
+* FDX
+* Fountain
+* DOCX
+
+The specification needs exact behavior for:
+
+### FDX → OpenFrame
+
+What information is preserved?
+
+### PDF → OpenFrame
+
+How does parsing work?
+
+What if the PDF isn't properly formatted?
+
+### OpenFrame → FDX
+
+What happens to unsupported OpenFrame features?
+
+### OpenFrame → PDF
+
+What exact screenplay formatting is produced?
+
+### Re-import
+
+Does:
+
+```text
+Export → Re-import
+```
+
+preserve scene identity?
+
+Those need explicit answers.
+
+---
+
+# 8. AI Specification
+
+Since you want an AI assistant similar in spirit to Amazon Q, don't bury this inside the PRD.
+
+Create:
+
+# OpenFrame AI Specification
+
+It should define:
+
+### AI can
+
+* Search project information
+* Summarize
+* Explain
+* Find relevant scenes
+* Identify likely breakdown elements
+* Create suggested scene cards
+* Transform rough notes into structured notes
+* Help create production documents
+* Answer questions about the current project
+
+### AI cannot
+
+* silently change the screenplay
+* silently delete information
+* silently reorder the story
+* silently alter production data
+
+Every AI-generated modification should have:
+
+> **Review → Accept / Reject**
+
+That distinction is extremely important.
+
+---
+
+# 9. QA / Acceptance Specification
+
+This is what turns:
+
+> "I think this feature works"
+
+into:
+
+> "We have objectively verified this feature."
+
+For every feature:
+
+```text
+Feature
+↓
+Scenario
+↓
+Action
+↓
+Expected Result
+```
+
+Example:
+
+### Scene reorder
+
+**Given**
+
+Scene 4 is before Scene 5.
+
+**When**
+
+User drags Scene 5 before Scene 4.
+
+**Then**
+
+Scene order becomes 1,2,3,5,4.
+
+**And**
+
+Screenplay order reflects the new order if the scene is linked.
+
+**And**
+
+Scene identities remain unchanged.
+
+**And**
+
+Breakdown relationships remain attached.
+
+**And**
+
+Undo restores the original state.
+
+That becomes an automated/manual test case.
+
+---
+
+# 10. Security / Privacy Specification
+
+Because you're dealing with unpublished films and scripts, this matters even for indie software.
+
+Define:
+
+* local project security
+* password protection if supported
+* sharing permissions
+* private notes
+* export permissions
+* AI data handling
+* external API transmission
+* temporary files
+* backups
+* crash reports
+* telemetry
+* user consent
+
+Especially:
+
+> **What leaves the user's computer?**
+
+That needs to be crystal clear.
+
+---
+
+# 11. Version / Migration Specification
+
+This is often forgotten.
+
+Suppose OpenFrame 1.0 creates:
+
+> `Project A`
+
+Then OpenFrame 2.0 changes the project format.
+
+What happens?
+
+You need rules for:
+
+```text
+Project v1
+ ↓
+OpenFrame v2
+ ↓
+Migration
+ ↓
+Project v2
+```
+
+Also:
+
+> Can an old project be opened?
+
+> Is it upgraded automatically?
+
+> Can it be backed up first?
+
+> Can users downgrade?
+
+> What happens if an import fails?
+
+This becomes essential once real filmmakers store years of work in the application.
+
+---
+
+# 12. README
+
+README is actually the **least important** of these from a product-definition perspective.
+
+It should mainly tell developers:
+
+> Install dependencies.
+
+> Run application.
+
+> Run tests.
+
+> Build desktop package.
+
+> Project structure.
+
+> Development commands.
+
+> Contribution rules.
+
+> Branch/commit standards.
+
+It should **not** be the place where product behavior is specified.
+
+---
+
+# The ideal hierarchy
+
+Think of the entire documentation system like this:
+
+```text
+                    PRODUCT VISION
+                         │
+                         ▼
+                       PRD
+                         │
+              "WHAT are we building?"
+                         │
+          ┌──────────────┼───────────────┐
+          ▼              ▼               ▼
+        FSD           UX/UI             DOMAIN
+     "HOW IT         "HOW IT          "WHAT
+      behaves"        looks"          EXISTS"
+          │              │               │
+          └──────────────┼───────────────┘
+                         ▼
+                       ESD
+                 "HOW ENGINEERING
+                  IMPLEMENTS IT"
+                         │
+          ┌──────────────┼───────────────┐
+          ▼              ▼               ▼
+   Collaboration     Import/Export       AI
+   Specification     Specification       Spec
+          │              │               │
+          └──────────────┼───────────────┘
+                         ▼
+                    QA / Acceptance
+                  "HOW WE VERIFY IT"
+                         │
+                         ▼
+                    RELEASE/MIGRATION
+                         │
+                         ▼
+                       README
+```
+
+That is much safer than trying to cram everything into one enormous PRD.
+
+---
+
+# Can you achieve literally "100%" coverage?
+
+Not literally.
+
+No document set can eliminate every engineering question.
+
+During implementation, engineers will encounter unforeseen cases.
+
+What you **can** achieve is:
+
+> **100% planned product coverage before development begins.**
+
+For OpenFrame I'd define that as:
+
+### Product coverage
+
+Every intended feature has a specification.
+
+### Interaction coverage
+
+Every major user action has defined behavior.
+
+### State coverage
+
+Every important object has lifecycle/state rules.
+
+### Relationship coverage
+
+Every connection between modules is defined.
+
+### Failure coverage
+
+Important errors and edge cases have defined responses.
+
+### Data coverage
+
+Every persistent object has defined fields/relationships.
+
+### Import/export coverage
+
+Supported formats have explicit rules.
+
+### Collaboration coverage
+
+Offline/local-network/portable workflows have defined rules.
+
+### QA coverage
+
+Every requirement has acceptance tests.
+
+Once those are covered, your engineering team can make implementation decisions without repeatedly coming back to you asking:
+
+> "What did you mean by this?"
+
+---
+
+# For OpenFrame specifically, I'd recommend this final package
+
+**01 — OpenFrame Product PRD**
+You already have this.
+
+**02 — OpenFrame Functional Specification**
+This is the next document I'd create.
+
+**03 — OpenFrame UX/UI Specification**
+Screen-by-screen behavior and visual interaction.
+
+**04 — OpenFrame Domain & Data Specification**
+Every object and relationship.
+
+**05 — OpenFrame Offline & Collaboration Specification**
+Especially important because you've chosen local-first.
+
+**06 — OpenFrame Import/Export Specification**
+
+**07 — OpenFrame AI Specification**
+
+**08 — OpenFrame QA & Acceptance Specification**
+
+**09 — OpenFrame Security & Privacy Specification**
+
+**10 — OpenFrame Release & Migration Specification**
+
+**11 — OpenFrame ESD / Technical Architecture**
+
+**12 — README + CONTRIBUTING + DEVELOPMENT GUIDE**
+
+That is the documentation set I would hand to a serious engineering team.
+
+And importantly, **we do not need to make every document 100,000 words**. The Mega PRD is the big one because it defines the product comprehensively. The others should be precise and targeted.
+
+The **next document I would create is the Functional Specification**, because that is the biggest gap between your current Mega PRD and “engineers can build exactly what I envisioned.”

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=1200">
+<title>The start-up screen — OpenFrame Studio mock</title>
+<link rel="stylesheet" href="assets/openframe.css"></head>
+<body>
+<div class="win" style="background:#12141c"><div class="titlebar" style="background:#12141c;border-color:#12141c;color:#aaa"><div class="tl"><span class="logo"><svg class="i s" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="2.2"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg></span><span>OpenFrame Studio</span></div><div class="wc" style="color:#bbb"><span style="color:#bbb">&#8211;</span><span style="color:#bbb">&#9633;</span><span class="x" style="color:#bbb">&#10005;</span></div></div><div class="splash" style="position:relative;flex:1"><div data-n="logo" style="width:86px;height:86px;border-radius:22px;background:linear-gradient(135deg,#d9822b,#a4471a);display:flex;align-items:center;justify-content:center;color:#fff"><svg class="i xl" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="2.2"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg></div><div data-n="name" style="font-size:34px;font-weight:700;letter-spacing:.5px">OpenFrame Studio</div><div style="color:#aab;font-size:14px">Capture the idea. Shape the story. Write the script. Plan the shoot.</div><div style="width:260px;margin-top:10px" data-n="load"><div class="bar" style="background:#333a4d"><i style="width:62%"></i></div><div class="xs" style="color:#8a92a8;margin-top:6px;text-align:center">Opening your local projects…</div></div><div class="abs xs" style="bottom:16px;color:#6f7790">Version 1.0 · Your projects stay on this computer</div></div></div>
+<a class="mk-toggle" href="#callouts" onclick="setTimeout(function(){location.reload()},30)" style="position:fixed;right:12px;bottom:10px;font:12px Segoe UI,Arial;color:#fff;background:#0009;padding:5px 10px;border-radius:14px;text-decoration:none">Show manual's numbered markers</a>
+<script>
+(function(){
+  if(location.hash.indexOf('callouts')<0) return;
+  var tg=document.querySelector('.mk-toggle'); if(tg) tg.style.display='none';
+  var win=document.querySelector('.win'); var wr=win.getBoundingClientRect();
+  var MAP={"logo": 1, "name": 2, "load": 3};
+  document.querySelectorAll('[data-n]').forEach(function(e){
+    var key=e.getAttribute('data-n'); if(!(key in MAP)) return;
+    var r=e.getBoundingClientRect(); var p=e.getAttribute('data-np');
+    var cs=getComputedStyle(e); var boxed=(cs.backgroundColor!=='rgba(0, 0, 0, 0)')||parseFloat(cs.borderTopWidth)>0||cs.boxShadow!=='none';
+    if(!p) p=boxed?'tl':'l';
+    var x=r.left-wr.left, y=r.top-wr.top;
+    if(p==='tr'){x=r.right-wr.left-11;y=y-11;} else if(p==='br'){x=r.right-wr.left-11;y=r.bottom-wr.top-11;} else if(p==='bl'){x=x-11;y=r.bottom-wr.top-11;} else if(p==='c'){x=r.left-wr.left+r.width/2-11;y=r.top-wr.top+r.height/2-11;} else if(p==='tl'){x=x-11;y=y-11;} else if(p==='in'){x=x+3;y=y+3;} else {x=x-25;y=y+Math.max(0,Math.min(3,r.height/2-11)); if(x<3){x=x+26;}}
+    var b=document.createElement('div'); b.className='cbadge'; b.textContent=MAP[key];
+    b.style.left=Math.max(2,x)+'px'; b.style.top=Math.max(2,y)+'px'; win.appendChild(b);
+  });
+})();
+</script>
+</body></html>

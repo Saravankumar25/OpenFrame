@@ -1,0 +1,334 @@
+# OpenFrame Studio — release build (docs/engineering/24-windows-packaging-updater.md, 25-ci-cd.md).
+#
+# Triggered by a version tag (vX.Y.Z). FAILS CLOSED: nothing is built unless
+# scripts/release-validate.mjs passes (license selected, versions consistent,
+# signing material present, updater configured, license inventory clean).
+#
+# Required repository secrets (never committed; *.pfx/*.p12/*.key are gitignored):
+#   WINDOWS_CERTIFICATE                 base64-encoded Authenticode .pfx
+#   WINDOWS_CERTIFICATE_PASSWORD        password for the .pfx
+#   TAURI_SIGNING_PRIVATE_KEY           Tauri updater signing key (minisign), content or path
+#   TAURI_SIGNING_PRIVATE_KEY_PASSWORD  password for the updater key
+# Required repository variables:
+#   WINDOWS_TIMESTAMP_URL               RFC 3161 timestamp server of the chosen CA
+#   MODEL_DISTRIBUTION_BASE_URL         (only once the local-AI module ships)
+#
+# Microsoft Store channel (jobs validate-store / store, docs/engineering/27-microsoft-store.md).
+# Needs NO signing secret: Microsoft signs the MSIX during Store ingestion. Identity values are
+# public and may live in packaging/msix/store.config.json instead of these variables:
+#   MSIX_IDENTITY_NAME, MSIX_PUBLISHER, MSIX_PUBLISHER_DISPLAY_NAME   Partner Center > Product identity
+#   STORE_PRIVACY_POLICY_URL                                          hosted docs/store/privacy-policy.md
+#   RELEASE_CHANNELS   which channels a tag builds: "direct,store" (default), "direct" or "store"
+
+name: Release
+
+on:
+  push:
+    tags: ["v*.*.*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to build (vX.Y.Z)"
+        required: true
+      channels:
+        description: "Channels to build: direct,store | direct | store (default: RELEASE_CHANNELS or both)"
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: 0
+  NODE_VERSION: "20"
+  RELEASE_TAG: ${{ github.event.inputs.tag || github.ref_name }}
+
+jobs:
+  validate:
+    name: Release gate (fail closed)
+    if: contains(github.event.inputs.channels || vars.RELEASE_CHANNELS || 'direct,store', 'direct')
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.RELEASE_TAG }}
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Validate release prerequisites
+        env:
+          WINDOWS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE }}
+          WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          WINDOWS_TIMESTAMP_URL: ${{ vars.WINDOWS_TIMESTAMP_URL }}
+          MODEL_DISTRIBUTION_BASE_URL: ${{ vars.MODEL_DISTRIBUTION_BASE_URL }}
+        run: node scripts/release-validate.mjs --tag "${{ env.RELEASE_TAG }}"
+
+      - name: Install cargo-deny
+        run: cargo install cargo-deny --locked
+
+      - name: cargo deny (blocking for releases)
+        run: cargo deny --locked check
+
+  build:
+    name: Build, sign and package (Windows x64)
+    needs: validate
+    runs-on: windows-latest
+    timeout-minutes: 120
+    permissions:
+      contents: write # draft GitHub release
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.RELEASE_TAG }}
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: npm ci
+        run: npm ci
+
+      - name: Full verification before packaging
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force apps/desktop/dist | Out-Null
+          Set-Content -Path apps/desktop/dist/index.html -Value '<!doctype html>'
+          cargo fmt --all -- --check
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --locked
+          npm run typecheck
+          npm --workspace apps/desktop run lint
+          npm run test:web
+          Remove-Item -Recurse -Force apps/desktop/dist
+
+      - name: Import Authenticode certificate
+        id: cert
+        shell: pwsh
+        env:
+          WINDOWS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE }}
+          WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+        run: |
+          $pfx = Join-Path $env:RUNNER_TEMP "openframe-signing.pfx"
+          [IO.File]::WriteAllBytes($pfx, [Convert]::FromBase64String($env:WINDOWS_CERTIFICATE))
+          $pw = ConvertTo-SecureString -String $env:WINDOWS_CERTIFICATE_PASSWORD -Force -AsPlainText
+          $cert = Import-PfxCertificate -FilePath $pfx -CertStoreLocation Cert:\CurrentUser\My -Password $pw
+          Remove-Item $pfx -Force
+          if (-not $cert) { Write-Error "Certificate import failed"; exit 1 }
+          "thumbprint=$($cert.Thumbprint)" >> $env:GITHUB_OUTPUT
+
+      # Signing settings are injected at build time (tauri build --config) so no
+      # certificate details live in the repository.
+      - name: Write release-only Tauri config
+        shell: pwsh
+        env:
+          THUMBPRINT: ${{ steps.cert.outputs.thumbprint }}
+          WINDOWS_TIMESTAMP_URL: ${{ vars.WINDOWS_TIMESTAMP_URL }}
+        run: |
+          $conf = @{
+            bundle = @{
+              createUpdaterArtifacts = $true
+              windows = @{
+                certificateThumbprint = $env:THUMBPRINT
+                digestAlgorithm = "sha256"
+                timestampUrl = $env:WINDOWS_TIMESTAMP_URL
+                tsp = $true
+              }
+            }
+          }
+          $conf | ConvertTo-Json -Depth 5 | Set-Content -Encoding utf8 (Join-Path $env:RUNNER_TEMP "tauri.release.json")
+
+      - name: tauri build (NSIS + MSI, signed, with updater artifacts)
+        shell: pwsh
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          MODEL_DISTRIBUTION_BASE_URL: ${{ vars.MODEL_DISTRIBUTION_BASE_URL }}
+        run: npm --workspace apps/desktop run tauri -- build --bundles nsis,msi --config "$env:RUNNER_TEMP/tauri.release.json"
+
+      - name: Verify Authenticode signatures (fail closed)
+        shell: pwsh
+        run: |
+          $files = Get-ChildItem target/release/bundle -Recurse -Include *.exe,*.msi
+          if (-not $files) { Write-Error "No installers were produced"; exit 1 }
+          $bad = @()
+          foreach ($f in $files) {
+            $sig = Get-AuthenticodeSignature $f.FullName
+            Write-Host "$($f.Name): $($sig.Status)"
+            if ($sig.Status -ne 'Valid') { $bad += $f.Name }
+          }
+          $app = Get-AuthenticodeSignature target/release/openframe-desktop.exe
+          Write-Host "openframe-desktop.exe: $($app.Status)"
+          if ($app.Status -ne 'Valid') { $bad += 'openframe-desktop.exe' }
+          if ($bad.Count) { Write-Error "Unsigned or invalid: $($bad -join ', ')"; exit 1 }
+
+      - name: Software bill of materials (CycloneDX)
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force release-assets | Out-Null
+          cargo install cargo-cyclonedx --locked
+          cargo cyclonedx --format json --target x86_64-pc-windows-msvc
+          Get-ChildItem -Recurse -Filter *.cdx.json -Path apps, crates | ForEach-Object {
+            Copy-Item $_.FullName (Join-Path release-assets ("sbom-rust-" + $_.Name))
+          }
+          npx --yes @cyclonedx/cyclonedx-npm@1 --omit dev --output-format JSON --output-file release-assets/sbom-npm.cdx.json
+
+      - name: Third-party license inventory
+        run: |
+          node scripts/license-inventory.mjs --check --out release-assets/THIRD_PARTY_LICENSES.md
+
+      - name: Collect installers, updater artifacts and checksums
+        shell: pwsh
+        run: |
+          Get-ChildItem target/release/bundle -Recurse -Include *.exe,*.msi,*.sig,*.zip |
+            ForEach-Object { Copy-Item $_.FullName release-assets/ }
+          Push-Location release-assets
+          Get-ChildItem -File | Where-Object Name -ne 'SHA256SUMS.txt' | Sort-Object Name | ForEach-Object {
+            "{0}  {1}" -f (Get-FileHash $_.Name -Algorithm SHA256).Hash.ToLower(), $_.Name
+          } | Set-Content -Encoding ascii SHA256SUMS.txt
+          Pop-Location
+          Get-ChildItem release-assets
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: openframe-${{ env.RELEASE_TAG }}-windows-x64
+          path: release-assets/
+          if-no-files-found: error
+          retention-days: 30
+
+      # A human reviews and publishes the draft. Update manifests (latest.json) are
+      # published separately to the update endpoint after that review.
+      - name: Create draft GitHub release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$env:RELEASE_TAG" --draft --verify-tag --title "OpenFrame Studio $env:RELEASE_TAG" --notes "Draft build. Review installers, signatures, SBOM and notices before publishing." (Get-ChildItem release-assets -File).FullName
+
+      - name: Remove signing certificate from runner
+        if: always()
+        shell: pwsh
+        env:
+          THUMBPRINT: ${{ steps.cert.outputs.thumbprint }}
+        run: |
+          if ($env:THUMBPRINT) { Remove-Item -Force -ErrorAction SilentlyContinue "Cert:\CurrentUser\My\$env:THUMBPRINT" }
+
+  # ---------------------------------------------------------------------------------------------
+  # Microsoft Store channel: MSIX for Partner Center upload. Independent of the direct channel, so
+  # it does not need the Authenticode certificate or the updater keys.
+  validate-store:
+    name: Store release gate (fail closed)
+    if: contains(github.event.inputs.channels || vars.RELEASE_CHANNELS || 'direct,store', 'store')
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.RELEASE_TAG }}
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Validate Store release prerequisites
+        env:
+          MSIX_IDENTITY_NAME: ${{ vars.MSIX_IDENTITY_NAME }}
+          MSIX_PUBLISHER: ${{ vars.MSIX_PUBLISHER }}
+          MSIX_PUBLISHER_DISPLAY_NAME: ${{ vars.MSIX_PUBLISHER_DISPLAY_NAME }}
+          STORE_PRIVACY_POLICY_URL: ${{ vars.STORE_PRIVACY_POLICY_URL }}
+          MODEL_DISTRIBUTION_BASE_URL: ${{ vars.MODEL_DISTRIBUTION_BASE_URL }}
+        run: node scripts/release-validate.mjs --store --tag "${{ env.RELEASE_TAG }}"
+
+      - name: Install cargo-deny
+        run: cargo install cargo-deny --locked
+
+      - name: cargo deny (blocking for releases)
+        run: cargo deny --locked check
+
+  store:
+    name: Build Microsoft Store package (MSIX, x64)
+    needs: validate-store
+    runs-on: windows-latest
+    timeout-minutes: 120
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.RELEASE_TAG }}
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: npm ci
+        run: npm ci
+
+      - name: Full verification before packaging
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force apps/desktop/dist | Out-Null
+          Set-Content -Path apps/desktop/dist/index.html -Value '<!doctype html>'
+          cargo fmt --all -- --check
+          cargo clippy --workspace --all-targets --locked -- -D warnings
+          cargo test --workspace --locked
+          npm run typecheck
+          npm --workspace apps/desktop run lint
+          npm run test:web
+          Remove-Item -Recurse -Force apps/desktop/dist
+
+      # OPENFRAME_DISTRIBUTION=store sets cfg(openframe_store): the in-app updater is compiled out
+      # and the executable carries the "store" channel marker that build-msix.mjs --store requires.
+      - name: tauri build (Store channel, no installer bundles)
+        shell: pwsh
+        env:
+          OPENFRAME_DISTRIBUTION: store
+          MODEL_DISTRIBUTION_BASE_URL: ${{ vars.MODEL_DISTRIBUTION_BASE_URL }}
+        run: npm --workspace apps/desktop run tauri -- build --no-bundle -- --locked
+
+      - name: Package MSIX (makeappx; unsigned, Microsoft signs Store packages)
+        env:
+          MSIX_IDENTITY_NAME: ${{ vars.MSIX_IDENTITY_NAME }}
+          MSIX_PUBLISHER: ${{ vars.MSIX_PUBLISHER }}
+          MSIX_PUBLISHER_DISPLAY_NAME: ${{ vars.MSIX_PUBLISHER_DISPLAY_NAME }}
+        run: node scripts/build-msix.mjs --store
+
+      - name: Collect Store artifacts and checksums
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force store-assets | Out-Null
+          Copy-Item target/msix/*.msix, target/msix/msix-build.json store-assets/
+          node scripts/license-inventory.mjs --check --out store-assets/THIRD_PARTY_LICENSES.md
+          Push-Location store-assets
+          Get-ChildItem -File | Where-Object Name -ne 'SHA256SUMS.txt' | Sort-Object Name | ForEach-Object {
+            "{0}  {1}" -f (Get-FileHash $_.Name -Algorithm SHA256).Hash.ToLower(), $_.Name
+          } | Set-Content -Encoding ascii SHA256SUMS.txt
+          Pop-Location
+          Get-ChildItem store-assets
+
+      # Not attached to the GitHub release: the unsigned MSIX is only for Partner Center upload
+      # (Partner Center > Packages). A human submits it; see docs/engineering/27-microsoft-store.md.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: openframe-${{ env.RELEASE_TAG }}-msstore-x64
+          path: store-assets/
+          if-no-files-found: error
+          retention-days: 30

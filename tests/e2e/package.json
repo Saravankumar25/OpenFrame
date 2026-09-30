@@ -1,0 +1,16 @@
+{
+  "name": "@openframe/e2e",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Desktop end-to-end tests: the real Tauri app driven through tauri-driver + Microsoft Edge WebDriver (WebView2).",
+  "license": "SEE LICENSE IN ../../LICENSE-PENDING.md",
+  "scripts": {
+    "setup": "node scripts/setup-drivers.mjs",
+    "build-app": "node scripts/build-app.mjs",
+    "test": "node run.mjs"
+  },
+  "devDependencies": {
+    "webdriverio": "^9.20.0"
+  }
+}

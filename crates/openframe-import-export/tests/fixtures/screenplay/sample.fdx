@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<!DOCTYPE FinalDraft [
+  <!ENTITY boom "BOOM">
+]>
+<FinalDraft DocumentType="Script" Template="No" Version="5">
+  <Content>
+    <Paragraph Type="Transition">
+      <Text>FADE IN:</Text>
+    </Paragraph>
+    <Paragraph Number="1" Type="Scene Heading">
+      <SceneProperties Length="2 4/8" Page="1" Title=""/>
+      <Text>EXT. BUS STOP - NIGHT</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Rain hammers the tin roof. A </Text>
+      <Text Style="Bold">single</Text>
+      <Text> streetlight flickers &amp; dies.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>MEERA</Text>
+    </Paragraph>
+    <Paragraph Type="Parenthetical">
+      <Text>(stepping into the light)</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text RevisionID="1">You said you would never come back.</Text>
+    </Paragraph>
+    <Paragraph Type="Cast List">
+      <Text>MEERA, ARJUN</Text>
+    </Paragraph>
+    <Paragraph Type="Transition">
+      <Text>CUT TO:</Text>
+    </Paragraph>
+    <Paragraph Number="2" Type="Scene Heading">
+      <Text>INT. APARTMENT - MORNING</Text>
+    </Paragraph>
+    <Paragraph>
+      <DualDialogue>
+        <Paragraph Type="Character">
+          <Text>MEERA</Text>
+        </Paragraph>
+        <Paragraph Type="Dialogue">
+          <Text>Who's there?</Text>
+        </Paragraph>
+        <Paragraph Type="Character">
+          <Text>ARJUN</Text>
+        </Paragraph>
+        <Paragraph Type="Dialogue">
+          <Text>Just me.</Text>
+        </Paragraph>
+      </DualDialogue>
+    </Paragraph>
+    <Paragraph Type="Shot">
+      <Text>CLOSE ON THE KETTLE</Text>
+    </Paragraph>
+    <Paragraph Alignment="Center" Type="Action">
+      <Text>THE END</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>&boom;</Text>
+    </Paragraph>
+  </Content>
+  <TitlePage>
+    <Content>
+      <Paragraph Alignment="Center" Type="Action"><Text></Text></Paragraph>
+      <Paragraph Alignment="Center" Type="Action"><Text>BLACK RAIN</Text></Paragraph>
+      <Paragraph Alignment="Center" Type="Action"><Text></Text></Paragraph>
+      <Paragraph Alignment="Center" Type="Action"><Text>Written by</Text></Paragraph>
+      <Paragraph Alignment="Center" Type="Action"><Text></Text></Paragraph>
+      <Paragraph Alignment="Center" Type="Action"><Text>Nisha Verma</Text></Paragraph>
+      <Paragraph Alignment="Left" Type="Action"><Text>nisha@example.com</Text></Paragraph>
+      <Paragraph Alignment="Right" Type="Action"><Text>Draft 6</Text></Paragraph>
+    </Content>
+  </TitlePage>
+  <Revisions ActiveSet="1" RevisionMode="Off">
+    <Revision Color="#0000FFFF0000" ID="1" Mark="*" Name="Blue Rev." Style=""/>
+  </Revisions>
+  <ScriptNotes>
+    <ScriptNote ID="1" Range="10,20"><Paragraph><Text>Tighten this.</Text></Paragraph></ScriptNote>
+  </ScriptNotes>
+  <SmartType><Characters><Character>MEERA</Character></Characters></SmartType>
+</FinalDraft>

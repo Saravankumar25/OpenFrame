@@ -1,0 +1,47 @@
+/* Screenplay import/export dialogs (mocks 091–096). Reuses openframe.css
+   primitives; only layout specific to these dialogs lives here. */
+
+.ix-steps { list-style: none; padding: 0; margin: 0 0 10px; gap: 6px; }
+.ix-steps .chip { padding: 4px 12px; }
+.ix-facts { grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 8px; }
+.ix-facts b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ix-scenes { max-height: 190px; overflow: auto; }
+.ix-paste { min-height: 138px; width: 100%; font-family: "Courier Prime", "Courier New", Courier, monospace; font-size: 11.5px; }
+.ix-warnings { list-style: none; padding: 0; margin: 8px 0 0; display: flex; flex-direction: column; gap: 6px; max-height: 160px; overflow: auto; }
+.ix-warnings li { display: flex; gap: 8px; align-items: flex-start; font-size: 12.5px; }
+.ix-warnings .chip { flex: none; }
+
+.ix-radio { display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; }
+.ix-radio input { accent-color: var(--accent); width: 16px; height: 16px; margin: 0; }
+.ix-scene-pick { max-height: 150px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; margin-top: 6px; }
+
+/* Print preview (mock 096). */
+.ix-preview { display: flex; align-items: stretch; height: min(640px, calc(100vh - 220px)); margin: -6px -18px -12px; }
+.ix-preview-pane { flex: 1; min-width: 0; background: #dcd8cf; overflow: auto; display: flex; justify-content: center; align-items: flex-start; padding: 14px; }
+.ix-preview-side { width: 280px; flex: none; border-left: 1px solid var(--line); padding: 12px 14px; overflow: auto; background: #fff; }
+.ix-page-frame { flex: none; box-shadow: 0 2px 12px #0003; background: #fff; overflow: hidden; }
+.ix-page { position: relative; background: #fff; color: #111; overflow: hidden; }
+.ix-line {
+  position: absolute;
+  white-space: pre;
+  font-family: "Courier Prime", "Courier New", Courier, monospace;
+  font-size: 12pt;
+  line-height: 12pt;
+}
+.ix-title_main { font-weight: 700; text-decoration: underline; }
+.ix-note, .ix-lyric { font-style: italic; }
+.ix-note { color: #555; }
+
+.ix-print-root { display: none; }
+@media print {
+  @page { size: letter; margin: 0; }
+  body.ix-printing > *:not(.ix-print-root) { display: none !important; }
+  body.ix-printing .ix-print-root { display: block; }
+  body.ix-printing .ix-page { break-after: page; page-break-after: always; }
+  body.ix-printing .ix-page:last-child { break-after: auto; page-break-after: auto; }
+}
+
+.ix-fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+.ix-fieldset legend { padding: 0; }
+.ix-more { background: none; border: 0; padding: 0; margin-top: 6px; color: var(--muted); font-size: 11px; cursor: pointer; text-decoration: underline; }
+.ix-more:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }

@@ -1,0 +1,81 @@
+[workspace]
+resolver = "3"
+members = [
+    "apps/desktop/src-tauri",
+    "crates/openframe-domain",
+    "crates/openframe-persistence",
+    "crates/openframe-security",
+    "crates/openframe-project-format",
+    "crates/openframe-import-export",
+    "crates/openframe-ai",
+    "crates/openframe-application",
+    "crates/openframe-test-support",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+# The final open-source license identifier has not been selected yet (see LICENSE-PENDING.md).
+license = "LicenseRef-OpenFrame-Pending"
+publish = false
+authors = ["OpenFrame Studio contributors"]
+
+[workspace.dependencies]
+openframe-domain = { path = "crates/openframe-domain" }
+openframe-persistence = { path = "crates/openframe-persistence" }
+openframe-project-format = { path = "crates/openframe-project-format" }
+openframe-security = { path = "crates/openframe-security" }
+openframe-search = { path = "crates/openframe-search" }
+openframe-media = { path = "crates/openframe-media" }
+openframe-import-export = { path = "crates/openframe-import-export" }
+openframe-ai = { path = "crates/openframe-ai" }
+openframe-application = { path = "crates/openframe-application" }
+openframe-test-support = { path = "crates/openframe-test-support" }
+
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+uuid = { version = "1", features = ["v4", "v7", "serde"] }
+rusqlite = { version = "0.37", features = ["bundled", "backup", "functions", "serde_json"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+tracing-appender = "0.2"
+ts-rs = { version = "11", features = ["serde-json-impl", "uuid-impl"] }
+parking_lot = "0.12"
+tempfile = "3"
+fs4 = { version = "0.13", features = ["sync"] }
+sha2 = "0.10"
+hex = "0.4"
+zip = { version = "4", default-features = false, features = ["deflate"] }
+quick-xml = "0.38"
+regex = "1"
+similar = "2"
+time = { version = "0.3", features = ["formatting", "parsing", "macros", "local-offset"] }
+directories = "6"
+image = { version = "0.25", default-features = false, features = ["png", "jpeg", "gif", "webp", "bmp"] }
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time", "fs", "io-util", "net", "process"] }
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "stream", "json"] }
+ed25519-dalek = { version = "2", features = ["rand_core"] }
+base64 = "0.22"
+rand = "0.8"
+sysinfo = "0.37"
+csv = "1"
+rust_xlsxwriter = "0.90"
+pdf-writer = "0.13"
+lopdf = "0.36"
+unicode-segmentation = "1"
+anyhow = "1"
+
+[profile.dev]
+opt-level = 0
+debug = 1
+
+[profile.dev.package."*"]
+opt-level = 2
+
+[profile.release]
+codegen-units = 1
+lto = "thin"
+opt-level = 3
+strip = "debuginfo"

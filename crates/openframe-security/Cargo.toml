@@ -1,0 +1,22 @@
+[package]
+name = "openframe-security"
+description = "Security primitives: path confinement, safe archive extraction, integrity hashing, signature verification, log redaction."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+openframe-domain.workspace = true
+zip.workspace = true
+sha2.workspace = true
+hex.workspace = true
+ed25519-dalek.workspace = true
+base64.workspace = true
+regex.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true
+rand.workspace = true

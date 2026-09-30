@@ -1,0 +1,23 @@
+[package]
+name = "openframe-import-export"
+description = "Screenplay interchange (Fountain, FDX, DOCX, TXT, PDF import/export) and a generic report document API (PDF, CSV, XLSX). Pure library: no database access."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+openframe-domain.workspace = true
+openframe-security.workspace = true
+serde.workspace = true
+quick-xml.workspace = true
+lopdf.workspace = true
+pdf-writer.workspace = true
+csv.workspace = true
+rust_xlsxwriter.workspace = true
+regex.workspace = true
+zip.workspace = true
+image.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true

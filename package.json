@@ -1,0 +1,33 @@
+{
+  "name": "openframe-studio",
+  "private": true,
+  "version": "0.1.0",
+  "description": "OpenFrame Studio — local-first desktop filmmaking studio (Tauri v2 + React + Rust + SQLite).",
+  "license": "SEE LICENSE IN LICENSE-PENDING.md",
+  "workspaces": [
+    "apps/desktop",
+    "tests/e2e"
+  ],
+  "scripts": {
+    "setup": "node scripts/setup.mjs",
+    "dev": "npm --workspace apps/desktop run tauri -- dev",
+    "build": "npm --workspace apps/desktop run tauri -- build",
+    "bundle": "npm --workspace apps/desktop run tauri -- build --bundles nsis,msi",
+    "msix": "node scripts/build-msix.mjs",
+    "format": "cargo fmt --all",
+    "format:check": "cargo fmt --all -- --check",
+    "lint": "cargo clippy --workspace --all-targets -- -D warnings && npm --workspace apps/desktop run lint",
+    "typecheck": "npm --workspace apps/desktop run typecheck",
+    "test": "npm run test:rust && npm run test:web",
+    "test:rust": "cargo test --workspace",
+    "test:web": "npm --workspace apps/desktop run test",
+    "e2e:setup": "npm --workspace tests/e2e run setup",
+    "test:e2e": "npm --workspace tests/e2e run test",
+    "bindings": "cargo test --workspace export_bindings --quiet",
+    "licenses": "node scripts/license-inventory.mjs",
+    "verify": "npm run format:check && npm run lint && npm run typecheck && npm run test"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

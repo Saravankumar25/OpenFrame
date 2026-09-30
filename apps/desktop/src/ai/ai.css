@@ -1,0 +1,13 @@
+/* AI Assistant panel additions on top of the mock vocabulary (.ai, .msg, .cs). */
+.ai .body.ai-scroll{overflow:auto}
+.ai .ai-conv{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding-bottom:10px}
+.ai .ai-input{padding:10px 14px;border-top:1px solid var(--line);display:flex;gap:8px;align-items:flex-end}
+.ai .ai-input textarea{flex:1;resize:none;min-height:40px}
+.ai .msg.ai-err{background:var(--red-soft)}
+.ai .ai-items{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:3px}
+.ai .ai-items li{display:flex;align-items:center;gap:6px;font-size:12.5px}
+.ai .ai-items .grow{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.ai .cs .csr.ai-excluded{background:#faf9f6}
+.ai .cs .csr.ai-locked{background:var(--red-soft)}
+.ai .cs .csr b{text-align:right;margin-left:10px}
+.ai .seg{flex-wrap:wrap}

@@ -1,0 +1,28 @@
+/target/
+node_modules/
+apps/desktop/dist/
+apps/desktop/src-tauri/gen/
+*.log
+.DS_Store
+Thumbs.db
+# Local AI runtime/model downloads used in development
+/.dev-models/
+/apps/desktop/src-tauri/binaries/*.exe
+# Signing material must never be committed
+*.pfx
+*.p12
+*.key
+*.pem
+.env
+.env.*
+
+# Claude Code agent worktrees and local settings
+/.claude/
+
+# Desktop E2E: downloaded WebDriver binaries, run data and failure screenshots
+/tests/e2e/.drivers/
+/tests/e2e/.run/
+/tests/e2e/artifacts/
+
+# Local design-hook cache
+/.impeccable/

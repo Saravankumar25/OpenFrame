@@ -1,0 +1,34 @@
+/* Document Export dialog (mocks 072, 122, 139, 147–149). Reuses openframe.css
+   primitives; only layout specific to this dialog lives here. */
+
+.exp-source { font-size: 12.5px; color: var(--muted); margin-bottom: 10px; }
+.exp-source b { color: var(--ink, inherit); }
+.exp-fieldset { border: 0; padding: 0; margin: 0 0 12px; min-width: 0; }
+.exp-fieldset legend { padding: 0; margin-bottom: 6px; }
+.exp-radio { display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; }
+.exp-radio.disabled { opacity: 0.55; cursor: default; }
+.exp-radio input { accent-color: var(--accent); width: 16px; height: 16px; margin: 0; }
+.exp-radio input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.exp-pick { max-height: 170px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; margin-top: 2px; display: flex; flex-direction: column; gap: 4px; }
+.exp-path { word-break: break-all; }
+.exp-name { margin: -4px 0 12px; overflow-wrap: anywhere; }
+.exp-name span { color: var(--ink, inherit); }
+
+.exp-progress { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
+.exp-progress-bar { position: relative; height: 4px; border-radius: 2px; background: var(--line); overflow: hidden; }
+.exp-progress-bar::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 35%;
+  border-radius: 2px;
+  background: var(--accent);
+  animation: exp-slide 1.1s ease-in-out infinite;
+}
+@keyframes exp-slide {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(300%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .exp-progress-bar::after { animation: none; width: 100%; opacity: 0.5; }
+}

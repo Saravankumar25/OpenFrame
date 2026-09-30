@@ -1,0 +1,76 @@
+/* Idea Vault workspace styles. Builds on the mock vocabulary in openframe.css
+   (.vcard, .vpanel, .filecard, .fic, .mbar, .masonry…); only adds what a live,
+   resizable, virtualized view needs. All classes are prefixed vv-. */
+
+.vv-root { display: flex; flex-direction: column; overflow: hidden; }
+.vv-root > .ph { margin-bottom: 10px; }
+.vv-body { flex: 1; min-height: 0; display: flex; gap: 14px; align-items: stretch; }
+.vv-main { flex: 1; min-width: 0; display: flex; flex-direction: column; min-height: 0; }
+.vv-panel { overflow-y: auto; min-height: 0; }
+.vv-scroll { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; padding: 2px 4px 16px 2px; }
+.vv-row { display: grid; gap: 10px; padding-bottom: 10px; align-items: start; }
+
+.vpanel .vv-vi { width: 100%; border: 0; background: transparent; font: inherit; font-size: 13px; text-align: left; cursor: pointer; }
+.vpanel .vv-vi:hover { background: #0000000a; }
+.vpanel .vv-vi.on:hover { background: var(--accent-soft); }
+
+.vv-card { cursor: default; outline: none; }
+.vv-card:hover { box-shadow: var(--shadow); }
+.vv-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.vv-card .vb { word-break: break-word; }
+.vv-clamp-5 { display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; white-space: pre-line; }
+.vv-clamp-12 { display: -webkit-box; -webkit-line-clamp: 12; -webkit-box-orient: vertical; overflow: hidden; white-space: pre-line; }
+.vv-ellipsis { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vv-match { padding: 0 11px 8px; color: var(--accent-d); font-weight: 600; }
+
+/* Selection checkbox: appears on hover/focus, stays visible while selecting. */
+.vv-check { width: 18px; height: 18px; border-radius: 5px; border: 1.5px solid #fff; background: #0005; color: #fff; display: flex; align-items: center; justify-content: center; padding: 0; opacity: 0; z-index: 2; cursor: pointer; }
+.vv-card:hover .vv-check, .vv-card:focus-within .vv-check, .vv-check.show, .vv-check.on { opacity: 1; }
+.vv-check.on { background: var(--accent); border-color: var(--accent); }
+.vv-check:focus-visible { opacity: 1; }
+
+.vv-folder { display: flex; align-items: center; gap: 10px; padding: 12px 14px; width: 100%; border: 1px solid var(--line); cursor: pointer; font: inherit; color: inherit; background: var(--panel); }
+.vv-folder:hover { box-shadow: var(--shadow); }
+.vv-crumbs { gap: 4px; margin-bottom: 10px; font-size: 13px; flex-wrap: wrap; }
+.vv-link { background: none; border: 0; padding: 0; color: var(--accent-d); font: inherit; cursor: pointer; }
+.vv-link:hover { text-decoration: underline; }
+
+/* List view (mock 026) */
+.vv-list { flex: 1; min-height: 0; display: flex; flex-direction: column; background: #fff; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.vv-lrow { display: grid; grid-template-columns: minmax(200px, 3fr) 100px minmax(120px, 1.4fr) minmax(90px, 1fr) 80px 80px; gap: 10px; align-items: center; padding: 0 12px; font-size: 13px; border-bottom: 1px solid var(--line); outline: none; cursor: default; }
+.vv-lrow > span { min-width: 0; }
+.vv-lrow:hover { background: #faf9f6; }
+.vv-lrow.sel { background: var(--accent-soft); }
+.vv-lrow:focus-visible { box-shadow: inset 0 0 0 2px var(--accent); }
+.vv-lhead { height: 32px; font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); font-weight: 700; background: #faf9f6; border-bottom: 1px solid var(--line2); }
+
+.vv-search { flex: 0 0 250px; overflow: hidden; }
+.vv-search input { border: 0; outline: none; background: transparent; flex: 1; min-width: 0; font-size: 13px; }
+.vv-x { border: 0; background: transparent; padding: 0 0 0 3px; display: inline-flex; align-items: center; color: var(--muted); cursor: pointer; }
+.vv-x:hover { color: var(--ink); }
+
+.vv-main .mbar { top: auto; bottom: 12px; left: 8px; right: 8px; }
+
+/* Drag-in overlay (mock 034) */
+.vv-drop { position: absolute; inset: 0; z-index: 30; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; border: 2px dashed var(--accent); border-radius: 12px; background: #fff8efe8; color: var(--accent-d); text-align: center; pointer-events: none; }
+
+/* Drawer previews */
+.vv-preview { display: block; width: 100%; max-height: 280px; object-fit: contain; background: #1d2130; border-radius: 8px; }
+.drawer .chip .vv-x { margin-left: 2px; }
+
+/* Record Note (mock 033) */
+.vv-rec { display: flex; align-items: center; gap: 12px; padding: 14px; margin-bottom: 12px; border-radius: 10px; background: #faf9f6; border: 1px solid var(--line); }
+.vv-recdot { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #e9e5db; color: var(--muted); }
+.vv-recdot.on { background: var(--red); color: #fff; animation: vv-pulse 1.4s ease-in-out infinite; }
+.vv-rectime { font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; min-width: 72px; }
+@keyframes vv-pulse { 50% { box-shadow: 0 0 0 7px #c8443a33; } }
+
+/* Sketch */
+.vv-canvas { display: block; width: 100%; aspect-ratio: 12 / 7; border: 1px solid var(--line2); border-radius: 8px; background: #fff; cursor: crosshair; touch-action: none; margin-bottom: 10px; }
+.vv-swatch { width: 24px; height: 24px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1px var(--line2); padding: 0; cursor: pointer; }
+.vv-swatch.on { box-shadow: 0 0 0 2px var(--accent); }
+
+.vv-fieldset { border: 0; padding: 0; margin: 0 0 12px; }
+.vv-radio { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 7px; cursor: pointer; }
+.vv-radio:hover { background: #faf9f6; }
+.vv-picklist { max-height: 320px; overflow-y: auto; }

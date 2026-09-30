@@ -1,0 +1,22 @@
+{
+  "$comment": "Microsoft Store packaging settings (docs/engineering/27-microsoft-store.md). Identity values are public, not secrets: copy them from Partner Center > your app > Product management > Product identity and commit them. Environment variables MSIX_IDENTITY_NAME, MSIX_PUBLISHER, MSIX_PUBLISHER_DISPLAY_NAME, MSIX_DISPLAY_NAME and STORE_PRIVACY_POLICY_URL override these values (CI repository variables). Values starting with REPLACE_ are placeholders and block Store builds.",
+  "identity": {
+    "name": "REPLACE_WITH_PACKAGE_IDENTITY_NAME",
+    "publisher": "CN=REPLACE_WITH_PACKAGE_IDENTITY_PUBLISHER",
+    "publisherDisplayName": "REPLACE_WITH_PUBLISHER_DISPLAY_NAME"
+  },
+  "displayName": "OpenFrame Studio",
+  "shortName": "OpenFrame",
+  "description": "Local-first filmmaking studio: ideas, story, screenplay and production planning.",
+  "privacyPolicyUrl": "",
+  "supportUrl": "",
+  "minVersion": "10.0.17763.0",
+  "maxVersionTested": "10.0.26100.0",
+  "fileTypeAssociations": {
+    "$comment": "Off until the app handles file activation (opening a package file passed on the command line). Projects are folders, so they are never associated.",
+    "enabled": false,
+    "name": "openframe.exchangepackage",
+    "displayName": "OpenFrame exchange package",
+    "extensions": [".ofstory", ".ofschedule", ".ofshots"]
+  }
+}

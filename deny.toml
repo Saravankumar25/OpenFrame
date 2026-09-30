@@ -1,0 +1,78 @@
+# cargo-deny configuration (https://embarkstudios.github.io/cargo-deny/).
+# Run: cargo deny check            (CI: non-blocking "supply-chain" job; release: blocking)
+#
+# Policy (CONTRIBUTING.md "Dependency policy"):
+#   * shipped dependencies must use permissive licenses;
+#   * weak-copyleft crates are allowed only as explicit, reviewed per-crate exceptions;
+#   * copyleft (GPL/AGPL/LGPL/SSPL/EUPL...) and unknown licenses are rejected;
+#   * crates only from crates.io; no git dependencies without review;
+#   * RustSec advisories fail the check unless explicitly ignored here with a reason.
+
+[graph]
+# OpenFrame v1 ships on Windows only (ESD: Windows 11 first).
+targets = ["x86_64-pc-windows-msvc"]
+all-features = false
+no-default-features = false
+
+[output]
+feature-depth = 1
+
+[advisories]
+version = 2
+yanked = "deny"
+# Every ignored advisory needs: id, reason, and a tracking issue/ADR reference.
+ignore = []
+
+[licenses]
+version = 2
+confidence-threshold = 0.93
+allow = [
+    "0BSD",
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "BSL-1.0",
+    "CC0-1.0",
+    "CDLA-Permissive-2.0",
+    "ISC",
+    "MIT",
+    "MIT-0",
+    "Unicode-3.0",
+    "Unicode-DFS-2016",
+    "Unlicense",
+    "Zlib",
+]
+# Reviewed weak-copyleft exceptions. MPL-2.0 is file-level copyleft: using the
+# unmodified crate is compatible with any OpenFrame license choice; modifying its
+# source files would require publishing those modifications under MPL-2.0.
+# These come in transitively through Tauri (HTML/CSS processing) and `directories`.
+exceptions = [
+    { allow = ["MPL-2.0"], crate = "cssparser" },
+    { allow = ["MPL-2.0"], crate = "cssparser-macros" },
+    { allow = ["MPL-2.0"], crate = "dtoa-short" },
+    { allow = ["MPL-2.0"], crate = "selectors" },
+    { allow = ["MPL-2.0"], crate = "option-ext" },
+]
+
+# First-party crates are `publish = false` and carry the placeholder
+# `LicenseRef-OpenFrame-Pending` until a license is selected (LICENSE-PENDING.md).
+[licenses.private]
+ignore = true
+
+[bans]
+multiple-versions = "warn"
+wildcards = "deny"
+allow-wildcard-paths = true
+highlight = "all"
+deny = [
+    # TLS is rustls-only (reqwest `rustls-tls`); no system OpenSSL on Windows.
+    { crate = "openssl-sys", reason = "OpenFrame uses rustls; OpenSSL is not shipped." },
+    { crate = "native-tls", reason = "OpenFrame uses rustls; see deny.toml." },
+]
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+allow-git = []

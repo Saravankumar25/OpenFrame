@@ -1,0 +1,129 @@
+# OpenFrame Studio — continuous integration (docs/engineering/25-ci-cd.md).
+# Blocking: rust (fmt, clippy -D warnings, tests, bindings drift) and web (tsc, eslint, vitest, vite build).
+# Non-blocking: supply-chain (cargo-deny, npm audit, license inventory) — reported, not gating, until
+# the dependency policy exceptions are stable; release.yml runs the same checks as hard gates.
+
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: 0
+  RUST_BACKTRACE: 1
+  NODE_VERSION: "20"
+
+jobs:
+  rust:
+    name: Rust — fmt, clippy, tests
+    runs-on: windows-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust (stable, MSVC)
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: windows-ci
+
+      - name: cargo fmt --check
+        run: cargo fmt --all -- --check
+
+      # tauri::generate_context!() requires the configured frontendDist to exist at
+      # compile time. The real UI bundle is built and checked in the `web` job.
+      - name: Placeholder frontend bundle for Rust compilation
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force apps/desktop/dist | Out-Null
+          Set-Content -Path apps/desktop/dist/index.html -Value '<!doctype html><title>OpenFrame</title>'
+
+      - name: cargo clippy (deny warnings)
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+
+      - name: cargo test
+        run: cargo test --workspace --locked
+
+      # `cargo test` regenerates apps/desktop/src/ipc/generated via ts-rs. Any diff
+      # means a Rust DTO changed without committing the regenerated TypeScript types.
+      - name: Generated IPC bindings are committed
+        shell: pwsh
+        run: |
+          git status --porcelain -- apps/desktop/src/ipc/generated
+          git diff --exit-code -- apps/desktop/src/ipc/generated
+          $untracked = git ls-files --others --exclude-standard -- apps/desktop/src/ipc/generated
+          if ($untracked) { Write-Error "Untracked generated bindings: $untracked"; exit 1 }
+
+  web:
+    name: Web — typecheck, lint, tests, build
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: npm ci
+        run: npm ci
+
+      - name: TypeScript (tsc --noEmit)
+        run: npm run typecheck
+
+      - name: ESLint (max warnings 0)
+        run: npm --workspace apps/desktop run lint
+
+      - name: Vitest
+        run: npm run test:web
+
+      - name: Production web build
+        run: npm --workspace apps/desktop run build:web
+
+  supply-chain:
+    name: Supply chain (non-blocking)
+    runs-on: windows-latest
+    timeout-minutes: 30
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install cargo-deny
+        run: cargo install cargo-deny --locked
+
+      - name: cargo deny (advisories, licenses, bans, sources)
+        run: cargo deny --locked check
+
+      - name: npm ci
+        run: npm ci
+
+      - name: npm audit (production dependencies)
+        run: npm audit --omit=dev --audit-level=moderate
+
+      - name: License inventory is current and permissive
+        shell: pwsh
+        run: |
+          node scripts/license-inventory.mjs --check
+          git diff --exit-code -- THIRD_PARTY_LICENSES.md

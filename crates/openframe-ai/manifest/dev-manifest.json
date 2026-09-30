@@ -1,0 +1,83 @@
+{
+  "manifestVersion": 1,
+  "sequence": 1,
+  "channel": "dev",
+  "issuedAt": "2026-09-30",
+  "runtimes": [
+    {
+      "runtimeId": "llama-cpp-b11259-win-x64-cpu",
+      "engine": "llama.cpp",
+      "version": "b11259",
+      "backend": "cpu",
+      "os": "windows",
+      "arch": "x86_64",
+      "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11259/llama-b11259-bin-win-cpu-x64.zip",
+      "bytes": 19164803,
+      "sha256": "977c5ddcd24caaaaaf87a9cdcfa46972a1c8ccf2007a013a45c84e8bc31865d9",
+      "archive": "zip",
+      "executable": "llama-server.exe",
+      "licenseId": "MIT"
+    },
+    {
+      "runtimeId": "llama-cpp-b11259-win-x64-vulkan",
+      "engine": "llama.cpp",
+      "version": "b11259",
+      "backend": "vulkan",
+      "os": "windows",
+      "arch": "x86_64",
+      "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11259/llama-b11259-bin-win-vulkan-x64.zip",
+      "bytes": 33078808,
+      "sha256": "afb3ddfc5f41413ec38ffb837ffbb81dfa8f1b23f3a775a03ba2afc1f7ce9610",
+      "archive": "zip",
+      "executable": "llama-server.exe",
+      "licenseId": "MIT"
+    }
+  ],
+  "models": [
+    {
+      "profileId": "qwen3-lightweight-win-x64-v1",
+      "tier": "lightweight",
+      "displayName": "OpenFrame Offline AI — Lightweight",
+      "engine": "llama.cpp",
+      "architecture": "qwen3",
+      "bytes": 1834426016,
+      "sha256": "061b54daade076b5d3362dac252678d17da8c68f07560be70818cace6590cb1a",
+      "url": "https://huggingface.co/Qwen/Qwen3-1.7B-GGUF/resolve/90862c4b9d2787eaed51d12237eafdfe7c5f6077/Qwen3-1.7B-Q8_0.gguf",
+      "minRamBytes": 4294967296,
+      "recommendedRamBytes": 8589934592,
+      "gpuVramBytes": 2684354560,
+      "contextTokens": 8192,
+      "licenseId": "Apache-2.0"
+    },
+    {
+      "profileId": "qwen3-recommended-win-x64-v1",
+      "tier": "recommended",
+      "displayName": "OpenFrame Offline AI — Recommended",
+      "engine": "llama.cpp",
+      "architecture": "qwen3",
+      "bytes": 2497280256,
+      "sha256": "7485fe6f11af29433bc51cab58009521f205840f5b4ae3a32fa7f92e8534fdf5",
+      "url": "https://huggingface.co/Qwen/Qwen3-4B-GGUF/resolve/bc640142c66e1fdd12af0bd68f40445458f3869b/Qwen3-4B-Q4_K_M.gguf",
+      "minRamBytes": 8589934592,
+      "recommendedRamBytes": 12884901888,
+      "gpuVramBytes": 3758096384,
+      "contextTokens": 8192,
+      "licenseId": "Apache-2.0"
+    },
+    {
+      "profileId": "qwen3-high-quality-win-x64-v1",
+      "tier": "highQuality",
+      "displayName": "OpenFrame Offline AI — High Quality",
+      "engine": "llama.cpp",
+      "architecture": "qwen3",
+      "bytes": 5027783488,
+      "sha256": "d98cdcbd03e17ce47681435b5150e34c1417f50b5c0019dd560e4882c5745785",
+      "url": "https://huggingface.co/Qwen/Qwen3-8B-GGUF/resolve/7c41481f57cb95916b40956ab2f0b139b296d974/Qwen3-8B-Q4_K_M.gguf",
+      "minRamBytes": 17179869184,
+      "recommendedRamBytes": 25769803776,
+      "gpuVramBytes": 6979321856,
+      "contextTokens": 8192,
+      "licenseId": "Apache-2.0"
+    }
+  ]
+}

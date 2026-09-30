@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=1200">
+<title>Starting OpenFrame Studio from Windows 11 — OpenFrame Studio mock</title>
+<link rel="stylesheet" href="assets/openframe.css"></head>
+<body>
+<div class="win" style="background:#000"><div class="desk"></div><div class="abs" style="left:24px;top:20px;width:80px;text-align:center;color:#fff;font-size:12px"><div style="width:44px;height:44px;margin:0 auto 4px;border-radius:10px;background:linear-gradient(135deg,#d9822b,#a4471a);display:flex;align-items:center;justify-content:center;color:#fff" data-n="icon"><svg class="i xl" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="2.2"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg></div>OpenFrame Studio</div><div class="startm"><div class="field" style="margin-bottom:12px"><div class="input" style="border-radius:20px;background:#fff"><svg class="i " viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><span>openframe</span></div></div><div class="h4">Best match</div><div class="row" style="background:#fff;border-radius:10px;padding:12px;border:1px solid #cfd6e4" data-n="best"><span style="width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#d9822b,#a4471a);display:flex;align-items:center;justify-content:center;color:#fff"><svg class="i xl" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="2.2"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg></span><div><div class="b" style="font-size:15px">OpenFrame Studio</div><div class="muted sm">App</div></div><span class="chip a" style="margin-left:auto">Press Enter to open</span></div><div class="h4" style="margin-top:16px">Pinned</div><div class="grid g4" style="gap:8px"><div class="card pad xs">Microsoft Edge</div><div class="card pad xs">File Explorer</div><div class="card pad xs">Settings</div><div class="card pad xs">Notepad</div></div></div><div class="tskbar"><span class="ti"><svg class="i " viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span><span class="ti" data-n="task" style="background:#fff;border-bottom:3px solid #d9822b;box-shadow:0 0 0 1px #d9822b"><svg class="i l" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="2.2"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg></span><span class="ti"><svg class="i " viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></span><span class="ti"><svg class="i " viewBox="0 0 24 24"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg></span><span class="abs xs" style="right:14px;color:#223">ENG &nbsp; 10:42 AM &nbsp; 29-09-2026</span></div></div>
+<a class="mk-toggle" href="#callouts" onclick="setTimeout(function(){location.reload()},30)" style="position:fixed;right:12px;bottom:10px;font:12px Segoe UI,Arial;color:#fff;background:#0009;padding:5px 10px;border-radius:14px;text-decoration:none">Show manual's numbered markers</a>
+<script>
+(function(){
+  if(location.hash.indexOf('callouts')<0) return;
+  var tg=document.querySelector('.mk-toggle'); if(tg) tg.style.display='none';
+  var win=document.querySelector('.win'); var wr=win.getBoundingClientRect();
+  var MAP={"icon": 1, "best": 2, "task": 3};
+  document.querySelectorAll('[data-n]').forEach(function(e){
+    var key=e.getAttribute('data-n'); if(!(key in MAP)) return;
+    var r=e.getBoundingClientRect(); var p=e.getAttribute('data-np');
+    var cs=getComputedStyle(e); var boxed=(cs.backgroundColor!=='rgba(0, 0, 0, 0)')||parseFloat(cs.borderTopWidth)>0||cs.boxShadow!=='none';
+    if(!p) p=boxed?'tl':'l';
+    var x=r.left-wr.left, y=r.top-wr.top;
+    if(p==='tr'){x=r.right-wr.left-11;y=y-11;} else if(p==='br'){x=r.right-wr.left-11;y=r.bottom-wr.top-11;} else if(p==='bl'){x=x-11;y=r.bottom-wr.top-11;} else if(p==='c'){x=r.left-wr.left+r.width/2-11;y=r.top-wr.top+r.height/2-11;} else if(p==='tl'){x=x-11;y=y-11;} else if(p==='in'){x=x+3;y=y+3;} else {x=x-25;y=y+Math.max(0,Math.min(3,r.height/2-11)); if(x<3){x=x+26;}}
+    var b=document.createElement('div'); b.className='cbadge'; b.textContent=MAP[key];
+    b.style.left=Math.max(2,x)+'px'; b.style.top=Math.max(2,y)+'px'; win.appendChild(b);
+  });
+})();
+</script>
+</body></html>

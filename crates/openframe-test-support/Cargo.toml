@@ -1,0 +1,13 @@
+[package]
+name = "openframe-test-support"
+description = "Test harness: isolated AppCore environments, op invocation helpers and fixture builders."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+openframe-domain.workspace = true
+openframe-application.workspace = true
+serde_json.workspace = true
+tempfile.workspace = true

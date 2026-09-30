@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  OpenFrame Studio MSIX manifest template (docs/engineering/27-microsoft-store.md).
+  Filled by scripts/build-msix.mjs; never edit a generated AppxManifest.xml by hand.
+
+  {{IDENTITY_NAME}}, {{IDENTITY_PUBLISHER}} and {{PUBLISHER_DISPLAY_NAME}} come from Partner Center
+  (Product management > Product identity) via packaging/msix/store.config.json or the environment
+  variables MSIX_IDENTITY_NAME / MSIX_PUBLISHER / MSIX_PUBLISHER_DISPLAY_NAME.
+  {{VERSION}} is the tauri.conf.json version as X.Y.Z.0 (the Store reserves the fourth part).
+
+  Capabilities:
+    runFullTrust    (restricted) required for every packaged Win32 desktop app. OpenFrame is a
+                    Tauri (Rust + WebView2) desktop app, not a UWP app. Justification text is in
+                    docs/engineering/27-microsoft-store.md section 7.
+    internetClient  declared for transparency only: optional AI model/runtime downloads and
+                    update checks. Full-trust processes are not network-restricted by capabilities.
+-->
+<Package
+  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+  IgnorableNamespaces="uap rescap">
+
+  <Identity
+    Name="{{IDENTITY_NAME}}"
+    Publisher="{{IDENTITY_PUBLISHER}}"
+    Version="{{VERSION}}"
+    ProcessorArchitecture="x64" />
+
+  <Properties>
+    <DisplayName>{{DISPLAY_NAME}}</DisplayName>
+    <PublisherDisplayName>{{PUBLISHER_DISPLAY_NAME}}</PublisherDisplayName>
+    <Logo>Assets\StoreLogo.png</Logo>
+    <Description>{{DESCRIPTION}}</Description>
+  </Properties>
+
+  <Dependencies>
+    <!-- Windows 10 version 1809 (build 17763) or later, desktop only. -->
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="{{MIN_VERSION}}" MaxVersionTested="{{MAX_VERSION_TESTED}}" />
+  </Dependencies>
+
+  <Resources>
+    <Resource Language="en-US" />
+  </Resources>
+
+  <Applications>
+    <Application Id="OpenFrameStudio" Executable="{{EXECUTABLE}}" EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements
+        DisplayName="{{DISPLAY_NAME}}"
+        Description="{{DESCRIPTION}}"
+        BackgroundColor="transparent"
+        Square150x150Logo="Assets\Square150x150Logo.png"
+        Square44x44Logo="Assets\Square44x44Logo.png">
+        <uap:DefaultTile
+          Wide310x150Logo="Assets\Wide310x150Logo.png"
+          Square71x71Logo="Assets\Square71x71Logo.png"
+          Square310x310Logo="Assets\Square310x310Logo.png"
+          ShortName="{{SHORT_NAME}}">
+          <uap:ShowNameOnTiles>
+            <uap:ShowOn Tile="square150x150Logo" />
+            <uap:ShowOn Tile="wide310x150Logo" />
+            <uap:ShowOn Tile="square310x310Logo" />
+          </uap:ShowNameOnTiles>
+        </uap:DefaultTile>
+        <uap:SplashScreen Image="Assets\SplashScreen.png" />
+      </uap:VisualElements>{{APPLICATION_EXTENSIONS}}
+    </Application>
+  </Applications>
+
+  <Capabilities>
+    <Capability Name="internetClient" />
+    <rescap:Capability Name="runFullTrust" />
+  </Capabilities>
+</Package>

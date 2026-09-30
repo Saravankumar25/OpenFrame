@@ -1,0 +1,3 @@
+# Signed bytes: never let git rewrite line endings (the signature covers exact bytes).
+manifest/* -text
+keys/* -text
