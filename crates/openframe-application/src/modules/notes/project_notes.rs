@@ -13,12 +13,18 @@ use crate::store::{DeleteSpec, DeletedItemRow, MutationMeta, Tx, soft_delete};
 use crate::util::{body_text, optional_text};
 
 pub fn register(r: &mut Registry) {
-    r.query("notes.list", list);
-    r.query("notes.get", get);
-    r.command("notes.create", create);
-    r.command("notes.update", update);
-    r.command("notes.set_pinned", set_pinned);
-    r.command("notes.delete", delete);
+    use crate::registry::OperationMetadata as M;
+    r.query("notes.list", list)
+        .meta(M::search("Project Notes (optionally filtered by text)."));
+    r.query("notes.get", get).meta(M::read("One Project Note."));
+    r.command("notes.create", create)
+        .meta(M::edit("Create a Project Note."));
+    r.command("notes.update", update)
+        .meta(M::edit("Edit a Project Note's title or text."));
+    r.command("notes.set_pinned", set_pinned)
+        .meta(M::edit("Pin or unpin a Project Note."));
+    r.command("notes.delete", delete)
+        .meta(M::soft_delete("Move a Project Note to Recently Deleted."));
     r.indexer("project_note", index_note);
     r.trash_handler(TrashHandler {
         object_type: "project_note",

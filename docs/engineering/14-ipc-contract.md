@@ -53,7 +53,7 @@ const move  = useCommand<MoveCardArgs, CardDto>("story.move_card", { onSuccess: 
 
 | `type` | Payload | UI use |
 |---|---|---|
-| `dataChanged` | `store` (`project`/`global`), `tables[]`, `ids[]`, `origin` (`local`; `ai` when Change Sets ship) | Query invalidation, editor reload (ADR-0010) |
+| `dataChanged` | `store` (`project`/`global`), `tables[]`, `ids[]`, `origin` (`local`; `ai` for operations of an applied AI Change Set; `exchange` for package imports) | Query invalidation, editor reload (ADR-0010) |
 | `saveState` | `status` (`Saved`/`Saving`/`SavedPendingExternal`/`Error`), `lastSavedAt`, `error?`, `pendingOperations` | Status bar indicator (FSD §3.3) |
 | `projectOpened` / `projectClosed` | `projectId` | Shell routing |
 | `task` | `taskId, kind, label, state, progress?, message?, error?, result?` | Progress UI for background work |
@@ -89,6 +89,9 @@ self-only.
 
 - The op name and args/DTO shape are a contract between the Rust and TS in the same build (shipped together), so
   there is no version negotiation. Renames must update both sides in one commit.
-- AI Change Set application (🚧) uses the **same op names and args** through `AppCore::dispatch` with
-  `Actor.origin = Ai`. Ops must therefore not assume a UI caller, and must never read UI-only state. There is no
+- AI Change Set application ✅ uses the **same op names and args** through `AppCore::dispatch` with
+  `Actor.origin = Ai`, only after the user clicks **Apply Changes**. Ops must therefore not assume a UI caller, and
+  must never read UI-only state. The review ops `ai.change_set.accept|reject|recheck` are the reverse: they refuse any
+  actor that is not `origin = Local`, so they are reachable only from the UI through `of_invoke`. The model never
+  calls ops directly; it chooses tools (AI specification §7). There is no
   network-facing caller: LAN collaboration was removed (ADR-0007), and OpenFrame opens no listener.

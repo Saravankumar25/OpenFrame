@@ -21,6 +21,7 @@
     "test": "npm run test:rust && npm run test:web",
     "test:rust": "cargo test --workspace",
     "test:web": "npm --workspace apps/desktop run test",
+    "perf": "cargo test --profile perf -p openframe-application --test perf -- --ignored --nocapture --test-threads=1",
     "e2e:setup": "npm --workspace tests/e2e run setup",
     "test:e2e": "npm --workspace tests/e2e run test",
     "bindings": "cargo test --workspace export_bindings --quiet",

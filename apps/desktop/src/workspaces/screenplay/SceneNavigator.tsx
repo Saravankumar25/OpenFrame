@@ -2,7 +2,7 @@
 // headings; click jumps within the same document; "+" adds a scene; drag or
 // "Move up/down" reorders (numbers follow the new order).
 
-import { useEffect, useRef } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef } from "react";
 import { Plus, GripVertical } from "lucide-react";
 import { DndContext, KeyboardSensor, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
@@ -10,12 +10,14 @@ import { CSS } from "@dnd-kit/utilities";
 import { ContextMenu, type MenuItemSpec } from "../../design-system";
 import type { OutlineScene } from "./editor/ScreenplayEditor";
 
-function Row({ s, on, canEdit, onJump, menu }: {
+// Rows are memoised and build their context menu only when it opens: typing in a
+// 180-scene script must not re-render (or rebuild menus for) every row.
+const Row = memo(function Row({ s, on, canEdit, onJump, menuFor }: {
   s: OutlineScene;
   on: boolean;
   canEdit: boolean;
   onJump: (id: string) => void;
-  menu: MenuItemSpec[];
+  menuFor: (s: OutlineScene) => MenuItemSpec[];
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: s.id, disabled: !canEdit });
   const ref = useRef<HTMLDivElement | null>(null);
@@ -23,7 +25,7 @@ function Row({ s, on, canEdit, onJump, menu }: {
     if (on) ref.current?.scrollIntoView({ block: "nearest" });
   }, [on]);
   return (
-    <ContextMenu items={menu}>
+    <ContextMenu items={() => menuFor(s)}>
       <div
         ref={(el) => {
           setNodeRef(el);
@@ -44,9 +46,9 @@ function Row({ s, on, canEdit, onJump, menu }: {
       </div>
     </ContextMenu>
   );
-}
+});
 
-export function SceneNavigator({ scenes, currentSceneId, canEdit, onJump, onNew, onMove, menuFor }: {
+export const SceneNavigator = memo(function SceneNavigator({ scenes, currentSceneId, canEdit, onJump, onNew, onMove, menuFor }: {
   scenes: OutlineScene[];
   currentSceneId: string | null;
   canEdit: boolean;
@@ -59,6 +61,13 @@ export function SceneNavigator({ scenes, currentSceneId, canEdit, onJump, onNew,
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
+  // Callers pass fresh closures on every render; rows see stable wrappers that
+  // always call the latest one.
+  const latest = useRef({ onJump, menuFor });
+  latest.current = { onJump, menuFor };
+  const jump = useCallback((id: string) => latest.current.onJump(id), []);
+  const menu = useCallback((s: OutlineScene) => latest.current.menuFor(s), []);
+  const ids = useMemo(() => scenes.map((s) => s.id), [scenes]);
   const onDragEnd = (e: DragEndEvent) => {
     if (!e.over || e.active.id === e.over.id) return;
     const to = scenes.findIndex((s) => s.id === e.over!.id);
@@ -78,13 +87,13 @@ export function SceneNavigator({ scenes, currentSceneId, canEdit, onJump, onNew,
       </div>
       <div className="spx-scroll spx-nav-list">
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
-          <SortableContext items={scenes.map((s) => s.id)} strategy={verticalListSortingStrategy}>
+          <SortableContext items={ids} strategy={verticalListSortingStrategy}>
             {scenes.map((s) => (
-              <Row key={s.id} s={s} on={s.id === currentSceneId} canEdit={canEdit} onJump={onJump} menu={menuFor(s)} />
+              <Row key={s.id} s={s} on={s.id === currentSceneId} canEdit={canEdit} onJump={jump} menuFor={menu} />
             ))}
           </SortableContext>
         </DndContext>
       </div>
     </nav>
   );
-}
+});

@@ -26,3 +26,6 @@ Thumbs.db
 
 # Local design-hook cache
 /.impeccable/
+
+# graphify knowledge graph (local, rebuilt by git hooks)
+/graphify-out/

@@ -12,7 +12,7 @@
 | Application integration (ops through the real pipeline, real SQLite, temp dirs) | `openframe-test-support::TestEnv` | `crates/openframe-application/tests/*.rs` | CI `rust` job | ✅ `core_pipeline.rs`; 🚧 one file per module |
 | Frontend unit/component | Vitest + Testing Library + jsdom | `apps/desktop/src/**/*.test.ts(x)` | CI `web` job | ✅ harness (`src/test/setup.ts`); 🚧 module tests |
 | Golden files (deterministic exports, import parsing) | Rust tests comparing bytes or normalized text | module test dirs | CI `rust` job | 🚧 with import/export |
-| End-to-end desktop | Playwright (WebView2 CDP) or WebdriverIO + `tauri-driver` against a built app | `tests/e2e/` | Release-candidate pipeline (Windows runner) | 📋 |
+| End-to-end desktop | Playwright (WebView2 CDP) or WebdriverIO + `tauri-driver` against a built app | `tests/e2e/` | Release-candidate pipeline (Windows runner) | 🚧 `specs/01-journey`, `02-restart` (AI: "not installed" only) |
 | Performance | criterion benches + manual traces | 21-performance-budgets.md | RC checklist | 📋 |
 | Accessibility | axe-core in component tests + manual keyboard/screen-reader passes (Narrator, NVDA) | component tests + RC checklist | CI + RC | 📋 |
 
@@ -68,9 +68,34 @@ unmodified.
 | G9 Crash/recovery | Manual kill-during-typing test: reopen offers recovery, and no committed edit is lost | 📋 manual + E2E |
 | G10 Accessibility | Keyboard-only walkthrough of every workspace; visible focus; labelled icon buttons; status not colour-only; usable in Windows High Contrast (ADR-0012 §7) | 📋 manual |
 | G11 Installer | Signed NSIS and MSI install, upgrade over the previous version, and uninstall on clean Windows 11 VMs (per-user; with and without WebView2) | 📋 manual |
-| G12 Offline | Full core workflow with the network disabled; only model download and update check show "unavailable offline" | 📋 manual |
+| G12 Offline | Full core workflow with the network disabled; only model download and update check show "unavailable offline"; an installed Offline AI answers, proposes and applies with the network disabled | 📋 manual |
+| G13 Offline AI profile | For a new AI profile version: `scripts/ai-benchmark.mjs` (tool calling, JSON validity, injection case, latency, memory) and the ignored `real_runtime` test pass on minimum and recommended hardware, including the Vulkan build on a discrete GPU (runtime spec §16) | 📋 manual |
 
-## 6. Defect policy
+## 6. AI test layers
+
+Automated tests never download or run a real model: they use a deterministic scripted `ChatModel` and a
+deterministic test embedder (`openframe_test_support`), never shipped. The real components are exercised by
+opt-in tests and the benchmark.
+
+| Layer | What it proves | Location | Runs in |
+|---|---|---|---|
+| Runtime unit + integration | Manifest trust/format (tampered, foreign key, retired format, rollback), exact plan, resumable/verified downloads, quarantine, supervisor lifecycle, whole install → chat + embeddings → update → Vulkan→CPU fallback → rollback → pause/resume → cancel → uninstall, with the test executable standing in for `llama-server` | `crates/openframe-ai/src/**`, `tests/{install,download,supervisor,lifecycle,security_ai}.rs` | CI `rust` |
+| Derived index | Index open/trust/rebuild on identity change or damage, vector module not global, graph traversal limits, RRF ranking | `crates/openframe-search/src/**` (unit) | CI `rust` |
+| Retrieval | Documents/chunks/vectors/graph for every domain, private notes and contact details, hybrid vs keyword, graph expansion, incremental indexing incl. undo/redo/delete/restore, saves never wait, embedding failure fallback, router, restart/rebuild, index ops, project close | `crates/openframe-application/tests/ai_retrieval.rs` | CI `rust` |
+| Retrieval budgets (§34) | FTS, vector, graph, hybrid + assembly and save latency on a generated feature-length fixture | `tests/ai_retrieval_perf.rs` | CI `rust` (3× budget in debug) |
+| Toolbox | No tool reviews/applies Change Sets or runs `ai.*`; unknown tool / bad args; proposals never write; reads never mutate; role filtering; private notes; ambiguity; every proposal builds registry-valid operations; schema coverage; request-relevant tool subset | `tests/ai_toolbox.rs` | CI `rust` |
+| Coverage matrix | Every registered operation has metadata; tools match metadata; strict bounded schemas; `ai-tool-coverage.md` regenerated from the Registry (fails on drift) | `tests/ai_tool_coverage.rs` | CI `rust` |
+| Agent loop | Multi-step reads, inferred vs exact answers, terminal navigation, 8/12 step limits, repeated-call stop, model failure mid-run, bounded history, composite Change Set, stale recheck, human-only acceptance, destructive confirmation, injection in observations, SQL/oversized args, Viewer denial | `tests/ai_agent.rs` | CI `rust` |
+| Assistant acceptance (AI-AC-xxx) | Works without AI, exact counts, no invented facts, navigation, suggestions create nothing, preview → accept → one undo step, permissions, stale/conflict, rename exclusions, all-or-nothing apply, allow-list, ambiguity, private notes, injection, malformed output, audit without context copies, personal history | `tests/ai.rs`, `tests/security_review.rs` (`ai_01_*`, `ai_02_*`) | CI `rust` |
+| Frontend | Setup view (sizes, steps, pause/cancel, no component names), panel states, proposal card actions, scope options, index notice | `apps/desktop/src/ai/*.test.ts(x)` | CI `web` |
+| E2E | "Offline AI is not installed." journey with **Download Offline AI** (no network needed) | `tests/e2e/specs/01-journey.test.mjs` | RC pipeline |
+| Real components (manual / opt-in) | Plan → install → chat → grammar-constrained JSON → embeddings → uninstall with the real files; model/quantization benchmark | `OPENFRAME_REAL_AI_DIR=.dev-models cargo test -p openframe-ai --test real_runtime -- --ignored`; `node scripts/ai-benchmark.mjs` | Release gate G13 |
+
+Not covered yet: a retrieval **quality** evaluation set (Recall@K / MRR, FTS vs vector vs hybrid vs hybrid+graph,
+agentic spec §35); desktop E2E of ask → retrieve → propose → apply/reject → stale → restart → index rebuild with the
+real model; an automated no-egress test (threat model T33).
+
+## 7. Defect policy
 
 - Data loss, corruption, permission bypass or a security issue is **P0**: it blocks release, and the fix needs a
   regression test.

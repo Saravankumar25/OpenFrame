@@ -12,6 +12,8 @@ use ts_rs::TS;
 #[ts(rename = "AiOperationClass")]
 pub enum OperationClass {
     Read,
+    /// Retrieval / search (agentic spec §6.2). Audited as `Read` in `ai_request`.
+    Search,
     Compute,
     Navigate,
     Suggest,
@@ -22,6 +24,7 @@ impl OperationClass {
     pub fn as_str(self) -> &'static str {
         match self {
             OperationClass::Read => "Read",
+            OperationClass::Search => "Search",
             OperationClass::Compute => "Compute",
             OperationClass::Navigate => "Navigate",
             OperationClass::Suggest => "Suggest",
@@ -144,15 +147,20 @@ impl Confidence {
     }
 }
 
-/// Where an answer came from (AI spec §30).
+/// Where an answer came from (AI spec §30, agentic spec §42): lightweight
+/// references, never copies of project content.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
 #[ts(export)]
 #[ts(rename = "AiProvenance")]
 #[serde(rename_all = "camelCase")]
 pub struct Provenance {
-    /// e.g. "Draft", "Basis", "Product guide".
+    /// e.g. "Draft", "Scene", "Basis", "Product guide".
     pub kind: String,
     pub label: String,
+    /// Where the source can be opened (provenance chips navigate).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[ts(optional)]
+    pub nav: Option<NavTarget>,
 }
 
 impl Provenance {
@@ -160,6 +168,14 @@ impl Provenance {
         Self {
             kind: kind.to_string(),
             label: label.into(),
+            nav: None,
+        }
+    }
+    /// A provenance reference the user can open.
+    pub fn linked(kind: &str, label: impl Into<String>, nav: NavTarget) -> Self {
+        Self {
+            nav: Some(nav),
+            ..Self::new(kind, label)
         }
     }
 }
@@ -227,9 +243,12 @@ pub struct ObjRef {
 pub struct PreviewRow {
     pub label: String,
     pub value: String,
-    /// "normal" | "excluded" | "locked"
+    /// "normal" | "excluded" | "locked" | "destructive" | "section"
     pub tone: String,
 }
+
+/// Preview tone of a destructive change (see [`PreviewRow::destructive`]).
+pub const TONE_DESTRUCTIVE: &str = "destructive";
 
 impl PreviewRow {
     pub fn normal(label: impl Into<String>, value: impl Into<String>) -> Self {
@@ -251,6 +270,24 @@ impl PreviewRow {
             label: label.into(),
             value: value.into(),
             tone: "locked".into(),
+        }
+    }
+    /// A row describing a destructive change (e.g. items moved to Recently Deleted).
+    /// Any such row makes applying the Change Set also require the product's
+    /// destructive confirmation, in addition to approval (agentic spec §7).
+    pub fn destructive(label: impl Into<String>, value: impl Into<String>) -> Self {
+        Self {
+            label: label.into(),
+            value: value.into(),
+            tone: TONE_DESTRUCTIVE.into(),
+        }
+    }
+    /// A heading row separating the parts of a composite Change Set.
+    pub fn section(label: impl Into<String>, value: impl Into<String>) -> Self {
+        Self {
+            label: label.into(),
+            value: value.into(),
+            tone: "section".into(),
         }
     }
 }
@@ -281,6 +318,21 @@ pub struct ChangeSetDraft {
     /// Tool + validated arguments, so "Re-check & Review" can rebuild the proposal.
     pub source_tool: String,
     pub source_args: Value,
+    /// Every (tool, validated arguments) this Change Set was built from, in order: a
+    /// multi-step task ends in ONE composite Change Set (contract C4). Empty means the
+    /// single source is `source_tool` / `source_args`.
+    pub sources: Vec<(String, Value)>,
+}
+
+impl ChangeSetDraft {
+    /// The sources a re-check rebuilds from (falls back to the single legacy source).
+    pub fn all_sources(&self) -> Vec<(String, Value)> {
+        if self.sources.is_empty() {
+            vec![(self.source_tool.clone(), self.source_args.clone())]
+        } else {
+            self.sources.clone()
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, TS)]
@@ -309,6 +361,10 @@ pub struct ChangeSetDto {
     #[ts(type = "number | null")]
     pub applied_at: Option<i64>,
     pub applied_operations: u32,
+    /// Parts of a composite Change Set (1 for a single change); all are applied together.
+    pub part_count: u32,
+    /// Applying also needs the product's destructive confirmation (agentic spec §7).
+    pub requires_confirmation: bool,
 }
 
 #[derive(Debug, Clone, Serialize, TS)]
@@ -326,8 +382,25 @@ pub struct AiResultDto {
     pub nav: Option<NavTarget>,
     pub change_set: Option<ChangeSetDto>,
     pub error_code: Option<String>,
+    /// The audited tool steps of this answer (what was used — never reasoning).
+    pub steps: Vec<AiStepDto>,
+    /// Background task started for this request (long-running tools, agentic spec §29).
+    pub task_id: Option<String>,
     #[ts(type = "number")]
     pub created_at: i64,
+}
+
+/// One audited tool step of an agent run (agentic spec §5).
+#[derive(Debug, Clone, Serialize, TS)]
+#[ts(export)]
+#[serde(rename_all = "camelCase")]
+pub struct AiStepDto {
+    pub index: u32,
+    pub tool: String,
+    /// Plain wording of the step, e.g. "Count scenes".
+    pub label: String,
+    /// Succeeded | Failed | Blocked
+    pub status: String,
 }
 
 /// One user request and the assistant's reply.

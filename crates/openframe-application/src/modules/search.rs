@@ -13,8 +13,14 @@ use crate::events::StoreKind;
 use crate::registry::Registry;
 
 pub fn register(r: &mut Registry) {
-    r.query("search.query", query);
-    r.command("search.rebuild", rebuild);
+    use crate::registry::{OperationMetadata as M, hidden as h};
+    r.module("Search");
+    r.query("search.query", query).meta(M::search(
+        "Global Search across the project (own private notes only; optionally the Global Idea Vault).",
+    ));
+    r.command("search.rebuild", rebuild).meta(
+        M::command(Capability::View, "Rebuild the project search index.").hidden(h::MAINTENANCE),
+    );
 }
 
 #[derive(Debug, Deserialize, TS)]
@@ -76,16 +82,23 @@ fn run(
     types: Option<&[String]>,
     limit: u32,
 ) -> AppResult<Vec<SearchHit>> {
-    let mut stmt = c.prepare(
+    // `ORDER BY rank` (with the same bm25 weights) lets FTS5 sort internally, so
+    // snippet() — which reads the document text — runs only for the returned
+    // rows instead of for every match. Type filtering happens in SQL, before
+    // the LIMIT, so a type-restricted search never loses hits to other types.
+    let types_json = types.map(|t| serde_json::to_string(t).unwrap_or_else(|_| "[]".into()));
+    let mut stmt = c.prepare_cached(
         "SELECT d.entity_type, d.entity_id, d.title,
                 snippet(search_fts, 1, char(1), char(2), '…', 14),
-                d.context, d.nav_json, bm25(search_fts, 4.0, 1.0)
+                d.context, d.nav_json, rank
          FROM search_fts JOIN search_doc d ON d.rowid = search_fts.rowid
-         WHERE search_fts MATCH ?1 AND (d.owner_user_id IS NULL OR d.owner_user_id = ?2)
-         ORDER BY bm25(search_fts, 4.0, 1.0) LIMIT ?3",
+         WHERE search_fts MATCH ?1 AND rank MATCH 'bm25(4.0, 1.0)'
+           AND (d.owner_user_id IS NULL OR d.owner_user_id = ?2)
+           AND (?4 IS NULL OR d.entity_type IN (SELECT value FROM json_each(?4)))
+         ORDER BY rank LIMIT ?3",
     )?;
     let rows = stmt
-        .query_map(params![q, user_id, limit * 3], |r| {
+        .query_map(params![q, user_id, limit, types_json], |r| {
             let nav: String = r.get(5)?;
             Ok(SearchHit {
                 store,
@@ -99,15 +112,7 @@ fn run(
             })
         })?
         .collect::<Result<Vec<_>, _>>()?;
-    Ok(rows
-        .into_iter()
-        .filter(|h| {
-            types
-                .map(|t| t.iter().any(|x| x == &h.entity_type))
-                .unwrap_or(true)
-        })
-        .take(limit as usize)
-        .collect())
+    Ok(rows)
 }
 
 fn query(core: &AppCore, actor: &Actor, args: SearchArgs) -> AppResult<Vec<SearchHit>> {

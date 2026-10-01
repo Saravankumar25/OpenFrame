@@ -24,21 +24,45 @@ use crate::util::{
 };
 
 pub fn register(r: &mut Registry) {
-    r.query("story.characters", list);
-    r.query("story.character", detail);
-    r.query("story.character_usage", usage);
-    r.query("story.relationships", relationships);
-    r.command("story.create_character", create);
-    r.command("story.update_character", update);
-    r.command("story.set_character_archived", set_archived);
-    r.command("story.set_character_image", set_image);
-    r.command("story.clear_character_image", clear_image);
-    r.command("story.delete_character", delete);
-    r.command("story.create_relationship", create_relationship);
-    r.command("story.update_relationship", update_relationship);
-    r.command("story.delete_relationship", delete_relationship);
-    r.command("story.link_character_card", link_card);
-    r.command("story.unlink_character_card", unlink_card);
+    use crate::registry::{FsEffect as Fs, OperationMetadata as M, hidden as h};
+    r.query("story.characters", list)
+        .meta(M::read("Character directory (names, roles, descriptions)."));
+    r.query("story.character", detail).meta(M::read(
+        "One character with description, notes, relationships and linked Scene Cards.",
+    ));
+    r.query("story.character_usage", usage).meta(M::compute(
+        "Where a character is used (Scene Cards, screenplay cues, cast).",
+    ));
+    r.query("story.relationships", relationships)
+        .meta(M::read("Character relationships."));
+    r.command("story.create_character", create).meta(
+        M::edit("Create a character (optionally with an image the user picked).")
+            .fs(Fs::ReadsUserFile),
+    );
+    r.command("story.update_character", update).meta(M::edit(
+        "Edit a character's name, role, description or notes.",
+    ));
+    r.command("story.set_character_archived", set_archived)
+        .meta(M::edit("Archive or unarchive a character."));
+    r.command("story.set_character_image", set_image).meta(
+        M::edit("Set a character's image from a file the user picked.")
+            .fs(Fs::ReadsUserFile)
+            .hidden(h::MEDIA_INPUT),
+    );
+    r.command("story.clear_character_image", clear_image)
+        .meta(M::edit("Remove a character's image."));
+    r.command("story.delete_character", delete)
+        .meta(M::soft_delete("Move a character to Recently Deleted.").confirm());
+    r.command("story.create_relationship", create_relationship)
+        .meta(M::edit("Create a relationship between two characters."));
+    r.command("story.update_relationship", update_relationship)
+        .meta(M::edit("Edit a character relationship."));
+    r.command("story.delete_relationship", delete_relationship)
+        .meta(M::edit("Remove a character relationship.").destructive());
+    r.command("story.link_character_card", link_card)
+        .meta(M::edit("Link a character to a Scene Card."));
+    r.command("story.unlink_character_card", unlink_card)
+        .meta(M::edit("Unlink a character from a Scene Card."));
 }
 
 const NAME_MAX: usize = 120;

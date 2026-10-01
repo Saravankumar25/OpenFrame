@@ -492,6 +492,9 @@ pub fn list(
         let rows = stmt
             .query_map([], |r| Ok((r.get::<_, String>(0)?, r.get::<_, Option<String>>(1)?)))?
             .collect::<Result<Vec<_>, _>>()?;
+        if rows.len() > super::scenes::PRIME_THRESHOLD {
+            ctx.prime_hashes(c)?;
+        }
         let mut out: Vec<(usize, usize, StoryboardSummary)> = Vec::with_capacity(rows.len());
         for (i, (id, lineage)) in rows.into_iter().enumerate() {
             let s = load_summary(c, &root, &ctx, &id)?;

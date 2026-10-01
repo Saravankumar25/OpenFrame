@@ -25,12 +25,24 @@ use crate::store::{MutationMeta, Tx};
 use crate::util::optional_text;
 
 pub fn register(r: &mut Registry) {
-    r.query("production.drafts", drafts);
-    r.query("production.source", source);
-    r.command("production.set_source", set_source);
-    r.query("production.preview_update", preview_update);
-    r.command("production.apply_update", apply_update);
-    r.query("production.overview", overview);
+    use crate::registry::OperationMetadata as M;
+    r.module("Production");
+    r.query("production.drafts", drafts)
+        .meta(M::read("Drafts that can become the Production Source."));
+    r.query("production.source", source)
+        .meta(M::read("The active Production Source draft."));
+    r.command("production.set_source", set_source).meta(
+        M::edit("Choose the Production Source draft (production follows this draft).").confirm(),
+    );
+    r.query("production.preview_update", preview_update)
+        .meta(M::compute(
+            "Preview of updating Production to a newer draft (scenes added, changed, removed).",
+        ));
+    r.command("production.apply_update", apply_update).meta(
+        M::edit("Update Production to a newer draft (breakdown carried by scene identity).")
+            .confirm(),
+    );
+    r.query("production.overview", overview).meta(M::compute("Production overview: source draft, breakdown progress, catalog, locations, cast and crew counts."));
 }
 
 // ------------------------------------------------------------------ DTOs

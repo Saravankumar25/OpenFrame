@@ -30,8 +30,12 @@ connects to the internet, and what control you have.
 - **Your projects stay on your computer.** Everything you write or import is stored in files on
   your device. OpenFrame never uploads it.
 - **Network use is limited and optional.** The app connects to the internet only when you choose to
-  download optional components (the local AI runtime and AI models) or open a web link yourself.
-  No project content is ever sent.
+  download Offline AI (the optional AI components) or open a web link yourself. No project content
+  is ever sent.
+- **AI runs on your computer.** Offline AI processes your requests and project content locally.
+  Nothing is sent to OpenFrame, to Google (whose Gemma model OpenFrame uses) or to any AI cloud
+  service, and prompts, project text, retrieved passages, private notes and AI answers are never
+  transmitted or used for telemetry.
 
 ## What OpenFrame stores, and where
 
@@ -43,7 +47,9 @@ All of the following is stored only on your device, in your Windows user profile
 | Your Global Idea Vault | `Documents\OpenFrame\Global Idea Vault` | Ideas you keep across projects |
 | App settings, the list of recently opened projects, and your local display name | The app's data folder (Microsoft Store edition: the app's private package data folder; direct-download edition: `%LOCALAPPDATA%\OpenFrame`) | Remembering your preferences |
 | Diagnostic log files | The app's data folder, `logs` subfolder, kept for up to 14 days | Troubleshooting. Logs record technical events (for example, that an operation failed). They don't record project text, and sensitive values are redacted. They never leave your device unless you send them to someone yourself. |
-| Downloaded AI runtime and AI models (only if you install them) | The app's data folder | Running the optional AI assistant locally |
+| Offline AI components, only if you install them: the llama.cpp runtime, the Gemma 3 1B Instruct language model and the BGE small (English) search model | The app's data folder (`models` and `runtimes` subfolders), shared by all projects | Running the optional AI assistant locally. Remove them any time in Settings → Offline AI → Remove Offline AI. |
+| AI search index for a project (built on your computer when Offline AI is installed or the assistant is used) | Inside the project folder, `cache\intelligence.sqlite` | Finding relevant project content for the local assistant. It is derived from the project (it contains passages of your project text, never contact details), can be deleted at any time and is rebuilt automatically. It travels with the project folder if you copy the folder. |
+| Your assistant conversations and proposed changes | Inside the project file | Showing your AI history; changes are applied only when you choose Apply Changes |
 
 Your projects can contain personal information that you enter, such as the names and contact
 details of cast and crew on a call sheet. That information stays in your project files. OpenFrame
@@ -52,12 +58,16 @@ does not read it for any purpose other than showing and processing it for you on
 ## When OpenFrame connects to the internet
 
 1. **Optional AI component downloads.** The AI assistant runs entirely on your computer. It never
-   uses a cloud AI service. To use it, you first choose to download the AI runtime and a model
-   file. The download goes to [model download host, e.g. https://models.example.org] over an
-   encrypted (HTTPS) connection. As with any download, that server receives your IP address,
-   standard technical request headers and the name of the file you requested. No project content,
-   prompts, account identifier or device identifier is sent. [Describe how long the download
-   host keeps its server logs, or state that it keeps none.]
+   uses a cloud AI service. To use it, you first click **Download Offline AI**, which downloads
+   the AI components (the runtime, a language model and a small search model; the exact size is
+   shown before anything is downloaded). The app first reads a signed list of the components and
+   then downloads the files from the hosts named in it [production: the OpenFrame model
+   distribution host, e.g. https://models.example.org; development builds: GitHub (runtime) and
+   Hugging Face (models)] over encrypted (HTTPS) connections. As with any download, those servers
+   receive your IP address, standard technical request headers and the name of the file requested.
+   No project content, prompts, account identifier or device identifier is sent, and nothing is
+   sent after the download finishes: using AI needs no internet connection. [Describe how long the
+   download host keeps its server logs, or state that it keeps none.]
 2. **Updates.** The Microsoft Store edition is updated by the Microsoft Store. OpenFrame itself does
    not contact any server to check for updates. [Direct-download edition: if an in-app update check
    is added, describe it here, including what the request contains and how to turn it off.]
@@ -88,8 +98,12 @@ OpenFrame does not receive that data.
 
 Your data is protected by the security of your Windows user account and your device, for example
 your sign-in and, if you enable it, BitLocker device encryption. OpenFrame does not store passwords
-or payment information. Downloads use HTTPS. [Confirm against the shipped AI module before
-publishing: "The app verifies the checksum of downloaded AI components before it runs them."]
+or payment information. Downloads use HTTPS. The app checks the digital signature of the Offline
+AI component list and the SHA-256 checksum of every downloaded AI component before it runs it; a
+file that fails the check is never used. The AI components run only on this computer, reachable
+only from OpenFrame itself. The AI can read only what you are allowed to see, and it can never
+change your project on its own: every change it prepares is shown to you first and applied only
+when you choose Apply Changes.
 
 ## Your choices and control
 
@@ -101,7 +115,8 @@ publishing: "The app verifies the checksum of downloaded AI components before it
   folder (settings, logs, downloaded AI components). Your projects and Global Idea Vault in
   Documents are **not** removed, so your work is never lost by uninstalling. Delete those folders
   yourself if you want to remove them.
-- **AI downloads are optional:** the app works without them.
+- **AI downloads are optional:** the app works without them. You can remove Offline AI at any time
+  in Settings → Offline AI; your projects and assistant history are not affected.
 
 ## Children
 

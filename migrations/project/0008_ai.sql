@@ -113,3 +113,10 @@ CREATE TABLE change_set (
 );
 CREATE INDEX idx_change_set_request ON change_set(ai_request_id);
 CREATE INDEX idx_change_set_user ON change_set(requesting_user_id, review_state);
+
+-- Bounded agent loop (agentic spec §5): one ai_tool_invocation row per tool step of a
+-- request, in order, with the step's provenance references and any background task it
+-- started. Still no reasoning text and no copies of project content.
+ALTER TABLE ai_tool_invocation ADD COLUMN step_index INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE ai_tool_invocation ADD COLUMN provenance_json TEXT NOT NULL DEFAULT '[]';
+ALTER TABLE ai_tool_invocation ADD COLUMN task_id TEXT;

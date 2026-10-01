@@ -31,20 +31,45 @@ use crate::store::{DeleteSpec, DeletedItemRow, MutationMeta, Tx, soft_delete};
 use crate::util::required_text;
 
 pub fn register(r: &mut Registry) {
-    r.query("breakdown.scenes", scenes);
-    r.query("breakdown.scene", scene);
-    r.query("breakdown.scene_changes", scene_changes);
-    r.command("breakdown.suggest", suggest_op);
-    r.command("breakdown.accept", accept);
-    r.command("breakdown.accept_many", accept_many);
-    r.command("breakdown.reject", reject);
-    r.command("breakdown.add_element", add_element);
-    r.command("breakdown.update_element", update_element);
-    r.command("breakdown.remove_element", remove_element);
-    r.command("breakdown.set_archived", set_archived);
-    r.command("breakdown.set_complete", set_complete);
-    r.command("breakdown.mark_reviewed", mark_reviewed);
-    r.command("breakdown.apply_suggested_update", apply_suggested_update);
+    use crate::registry::OperationMetadata as M;
+    r.module("Breakdown");
+    r.query("breakdown.scenes", scenes).meta(M::compute(
+        "Breakdown scene list with element counts, completion and review flags.",
+    ));
+    r.query("breakdown.scene", scene).meta(M::read(
+        "Breakdown of one scene: elements by category with confirmation state.",
+    ));
+    r.query("breakdown.scene_changes", scene_changes)
+        .meta(M::compute(
+            "What changed in a scene since its breakdown was reviewed.",
+        ));
+    r.command("breakdown.suggest", suggest_op).meta(M::edit(
+        "Run the breakdown suggestion engine on a scene (adds Suggested elements for review).",
+    ));
+    r.command("breakdown.accept", accept).meta(
+        M::edit("Confirm a suggested breakdown element (optionally correcting category/name).")
+            .hidden(crate::registry::hidden::DUPLICATE),
+    );
+    r.command("breakdown.accept_many", accept_many)
+        .meta(M::edit("Confirm several suggested breakdown elements."));
+    r.command("breakdown.reject", reject)
+        .meta(M::edit("Reject suggested breakdown elements.").destructive());
+    r.command("breakdown.add_element", add_element)
+        .meta(M::edit("Add a breakdown element to a scene manually."));
+    r.command("breakdown.update_element", update_element)
+        .meta(M::edit("Edit a breakdown element's notes."));
+    r.command("breakdown.remove_element", remove_element)
+        .meta(M::soft_delete("Remove a breakdown element (recoverable)."));
+    r.command("breakdown.set_archived", set_archived)
+        .meta(M::edit("Archive or unarchive a breakdown element."));
+    r.command("breakdown.set_complete", set_complete)
+        .meta(M::edit("Mark a scene's breakdown complete or incomplete."));
+    r.command("breakdown.mark_reviewed", mark_reviewed)
+        .meta(M::edit("Mark a changed scene's breakdown as reviewed."));
+    r.command("breakdown.apply_suggested_update", apply_suggested_update)
+        .meta(M::edit(
+            "Re-run suggestions for a changed scene and keep confirmed elements.",
+        ));
     r.trash_handler(TrashHandler {
         object_type: "breakdown_element",
         table: "breakdown_element",

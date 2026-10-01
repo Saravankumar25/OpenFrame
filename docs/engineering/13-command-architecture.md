@@ -51,6 +51,13 @@ fn move_card(core: &AppCore, actor: &Actor, args: MoveCardArgs) -> AppResult<Car
   DTOs: `#[derive(Serialize, TS)]`. `i64` timestamps are typed `number` for TS.
 - Handlers validate input first (`util::required_text`, `require_id`, …). Validation errors are human
   (`validation.required`: "Title is required.").
+- **Operation metadata ✅.** Every registration is annotated:
+  `r.command("story.create_card", create_card).meta(OperationMetadata::edit("Create a Scene Card."));`
+  `OperationMetadata` records module (set per `register` fn via `r.module(…)`), plain description, AI exposure
+  (`Tool` or `Hidden(reason)`), class (Read/Search/Compute/Navigate/Suggest/Mutate), required capability, destructive,
+  irreversible, extra UI confirmation, file-system effect and long-running. The AI toolbox is built from it and never
+  infers danger from an op name. `tests/ai_tool_coverage.rs` fails if any op lacks metadata and regenerates
+  `docs/engineering/ai-tool-coverage.md` (423 ops today). Metadata never changes handler behaviour or permissions.
 
 Registered foundation ops ✅:
 `app.{info,set_display_name,save_state,cancel_task}`,

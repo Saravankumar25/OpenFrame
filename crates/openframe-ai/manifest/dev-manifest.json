@@ -1,8 +1,14 @@
 {
-  "manifestVersion": 1,
-  "sequence": 1,
+  "manifestVersion": 2,
+  "sequence": 2,
   "channel": "dev",
   "issuedAt": "2026-09-30",
+  "profile": {
+    "profileId": "openframe-local-ai-v1",
+    "version": "1.0.0",
+    "chatModelId": "gemma-3-1b-it-q8-0-v1",
+    "embeddingModelId": "bge-small-en-v1.5-q8-0-v1"
+  },
   "runtimes": [
     {
       "runtimeId": "llama-cpp-b11259-win-x64-cpu",
@@ -35,49 +41,42 @@
   ],
   "models": [
     {
-      "profileId": "qwen3-lightweight-win-x64-v1",
-      "tier": "lightweight",
-      "displayName": "OpenFrame Offline AI — Lightweight",
-      "engine": "llama.cpp",
-      "architecture": "qwen3",
-      "bytes": 1834426016,
-      "sha256": "061b54daade076b5d3362dac252678d17da8c68f07560be70818cace6590cb1a",
-      "url": "https://huggingface.co/Qwen/Qwen3-1.7B-GGUF/resolve/90862c4b9d2787eaed51d12237eafdfe7c5f6077/Qwen3-1.7B-Q8_0.gguf",
+      "modelId": "gemma-3-1b-it-q8-0-v1",
+      "role": "chat",
+      "displayName": "Gemma 3 1B Instruct",
+      "family": "gemma3",
+      "quantization": "Q8_0",
+      "version": "f9c28bc",
+      "url": "https://huggingface.co/ggml-org/gemma-3-1b-it-GGUF/resolve/f9c28bcd85737ffc5aef028638d3341d49869c27/gemma-3-1b-it-Q8_0.gguf",
+      "bytes": 1069306368,
+      "sha256": "b205840c5dcef55078e37d344677869a714ffd42a4ae448c48dcfb52e4bb10d5",
+      "licenseId": "Gemma-Terms-of-Use",
+      "licenseUrl": "https://ai.google.dev/gemma/terms",
+      "contextTokens": 8192,
       "minRamBytes": 4294967296,
       "recommendedRamBytes": 8589934592,
-      "gpuVramBytes": 2684354560,
-      "contextTokens": 8192,
-      "licenseId": "Apache-2.0"
+      "gpuVramBytes": 1879048192,
+      "layers": 26
     },
     {
-      "profileId": "qwen3-recommended-win-x64-v1",
-      "tier": "recommended",
-      "displayName": "OpenFrame Offline AI — Recommended",
-      "engine": "llama.cpp",
-      "architecture": "qwen3",
-      "bytes": 2497280256,
-      "sha256": "7485fe6f11af29433bc51cab58009521f205840f5b4ae3a32fa7f92e8534fdf5",
-      "url": "https://huggingface.co/Qwen/Qwen3-4B-GGUF/resolve/bc640142c66e1fdd12af0bd68f40445458f3869b/Qwen3-4B-Q4_K_M.gguf",
-      "minRamBytes": 8589934592,
-      "recommendedRamBytes": 12884901888,
-      "gpuVramBytes": 3758096384,
-      "contextTokens": 8192,
-      "licenseId": "Apache-2.0"
-    },
-    {
-      "profileId": "qwen3-high-quality-win-x64-v1",
-      "tier": "highQuality",
-      "displayName": "OpenFrame Offline AI — High Quality",
-      "engine": "llama.cpp",
-      "architecture": "qwen3",
-      "bytes": 5027783488,
-      "sha256": "d98cdcbd03e17ce47681435b5150e34c1417f50b5c0019dd560e4882c5745785",
-      "url": "https://huggingface.co/Qwen/Qwen3-8B-GGUF/resolve/7c41481f57cb95916b40956ab2f0b139b296d974/Qwen3-8B-Q4_K_M.gguf",
-      "minRamBytes": 17179869184,
-      "recommendedRamBytes": 25769803776,
-      "gpuVramBytes": 6979321856,
-      "contextTokens": 8192,
-      "licenseId": "Apache-2.0"
+      "modelId": "bge-small-en-v1.5-q8-0-v1",
+      "role": "embedding",
+      "displayName": "BGE small English v1.5",
+      "family": "bert",
+      "quantization": "Q8_0",
+      "version": "f2068ed",
+      "url": "https://huggingface.co/ggml-org/bge-small-en-v1.5-Q8_0-GGUF/resolve/f2068edd9b54f2a369549ccc71f70ed273a2a801/bge-small-en-v1.5-q8_0.gguf",
+      "bytes": 36685152,
+      "sha256": "f046db1dc724cf4f6f0a0c5917e922823b73eb1d27b8f9a9c2797f7866974804",
+      "licenseId": "MIT",
+      "licenseUrl": "https://huggingface.co/BAAI/bge-small-en-v1.5",
+      "contextTokens": 512,
+      "minRamBytes": 268435456,
+      "recommendedRamBytes": 536870912,
+      "gpuVramBytes": 134217728,
+      "layers": 12,
+      "embeddingDim": 384,
+      "pooling": "cls"
     }
   ]
 }

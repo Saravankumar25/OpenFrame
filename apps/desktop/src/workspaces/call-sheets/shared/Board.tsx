@@ -19,7 +19,7 @@ import {
 import { SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { CalendarDays, MoreHorizontal, TriangleAlert } from "lucide-react";
-import { Chip, IconButton, Menu, type MenuItemSpec } from "../../../design-system";
+import { Chip, IconButton, Menu, type MenuItemSpec, type MenuItems } from "../../../design-system";
 import { call } from "../../../ipc/client";
 import { reportError } from "../../../ipc/query";
 import { toast } from "../../../app/toast";
@@ -112,7 +112,7 @@ export function stripMenuItems(s: ScheduleStripDto, view: ScheduleView, ui: Sche
   return items;
 }
 
-function MenuButton({ label, items }: { label: string; items: MenuItemSpec[] }) {
+function MenuButton({ label, items }: { label: string; items: MenuItems }) {
   return (
     <Menu
       align="end"
@@ -229,7 +229,7 @@ export function Board({ view, ui, warnStripIds }: { view: ScheduleView; ui: Sche
               <SortableItem key={s.id} id={s.id} container="pool">
                 {(handle, dragging) => (
                   <div className={dragging ? "of-dragging-wrap" : undefined} style={{ opacity: dragging ? 0.4 : 1 }}>
-                    <StripRow strip={s} warn={warnStripIds.has(s.id)} onOpen={() => ui.openStrip(s.id)} dragHandleProps={handle} menu={<MenuButton label={`Scene ${s.number ?? ""} actions`} items={stripMenuItems(s, view, ui)} />} />
+                    <StripRow strip={s} warn={warnStripIds.has(s.id)} onOpen={() => ui.openStrip(s.id)} dragHandleProps={handle} menu={<MenuButton label={`Scene ${s.number ?? ""} actions`} items={() => stripMenuItems(s, view, ui)} />} />
                   </div>
                 )}
               </SortableItem>
@@ -266,7 +266,7 @@ export function Board({ view, ui, warnStripIds }: { view: ScheduleView; ui: Sche
                     <SortableItem key={i.strip.id} id={i.strip.id} container={d.id}>
                       {(handle, dragging) => (
                         <div style={{ opacity: dragging ? 0.4 : 1 }}>
-                          <StripRow strip={i.strip!} warn={warnStripIds.has(i.strip!.id)} onOpen={() => ui.openStrip(i.strip!.id)} dragHandleProps={handle} menu={<MenuButton label={`Scene ${i.strip!.number ?? ""} actions`} items={stripMenuItems(i.strip!, view, ui)} />} />
+                          <StripRow strip={i.strip!} warn={warnStripIds.has(i.strip!.id)} onOpen={() => ui.openStrip(i.strip!.id)} dragHandleProps={handle} menu={<MenuButton label={`Scene ${i.strip!.number ?? ""} actions`} items={() => stripMenuItems(i.strip!, view, ui)} />} />
                         </div>
                       )}
                     </SortableItem>

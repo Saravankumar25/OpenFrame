@@ -6,7 +6,7 @@
 
 **Platform:** Windows + macOS desktop application
 
-**Operating model:** Local-first, offline-capable, user-owned project files; optional local AI; optional external AI; optional local-network collaboration; no mandatory OpenFrame cloud
+**Operating model:** Local-first, offline-capable, user-owned project files; optional local AI (Offline AI) only; file-based collaboration through packages; no mandatory OpenFrame cloud
 
 **Current source baseline reviewed:**
 - `OpenFrame_Studio_Mega_PRD_Aligned_Updated(2).md`
@@ -22,6 +22,8 @@
 **Status:** Cross-cutting Security / Privacy / Data Ownership baseline.
 
 > This specification specializes security, privacy, and ownership behavior already implied by the product documents. It does not replace the PRD's product scope, the FSD's functional behavior, the UX/UI specification's presentation contract, the Domain/Data specification's logical model, the AI specification's AI boundary, or the specialized Import/Export and Offline/Collaboration specifications.
+
+> **AI amendment — 30 September 2026 (authoritative; ADR-0012 §5, ADR-0013).** OpenFrame ships exactly one AI: Offline AI, a local Gemma 3 1B Instruct model plus a local embedding model, both running on the user's computer. There is **no external AI provider path**. §16–§18 describe the implemented AI boundary; §19, §20 and §35 are retired. Every other passage of this document about external AI, provider disclosure, provider retention, "AI Provider Connected" or AI inside LAN sessions — including §1.5 (external part), §32.4, §38.4, §39.2 (AI part), §44.4, §47.3, §56.8, §63, SEC-020, SEC-021, SEC-022, SEC-023, SEC-025, SEC-060, SEC-AC-017, SEC-AC-018, SEC-AC-019, SEC-AC-049 and Scenario 2 — is retired and must not be implemented. Their protective intent is met by construction: project data never leaves the device through AI. LAN passages are retired by ADR-0007.
 
 ---
 
@@ -133,13 +135,13 @@ Ordinary project creation, opening, editing, saving, importing, exporting, backu
 
 Project information must not be transmitted outside the local application merely because a user opened a project, edited a screenplay, or used a normal offline-capable workflow.
 
-## 1.4 Explicit external AI disclosure
+## 1.4 AI stays on the device
 
-When external AI is used, the user must be informed before project information is sent outside OpenFrame.
+AI processing happens on the user's computer. Project information is never sent to an AI service. The AI subsystem uses the network only for component downloads the user starts (§18.3).
 
-## 1.5 Scope-limited disclosure
+## 1.5 Scope-limited context
 
-Only the context required for the requested external AI operation should be transmitted.
+The local model receives only the context the current user may see: the explicit scope plus bounded, permission-checked retrieval (§16–§17).
 
 ## 1.6 Private-note protection
 
@@ -1042,315 +1044,166 @@ The application should not use Activity History as a mechanism to expose private
 
 # 16. AI Security Boundary
 
+> **Implemented (30 Sept 2026).** This section describes the merged code. Architecture: AI specification §3–§13,
+> ADR-0006, ADR-0013. Threats and tests: `docs/engineering/20-security-threat-model.md` (T17, T18, T25–T33).
+
 ## 16.1 System-wide AI, bounded by OpenFrame
 
-The OpenFrame AI is a system-wide natural-language assistant and command interface.
-
-It is not:
-
-- a separate autonomous filmmaker;
-- an independent database;
-- an authoritative project source;
-- a process with unrestricted filesystem access.
+The OpenFrame AI (Offline AI) is one local language model (Gemma 3 1B Instruct) driven by one bounded agent loop, plus
+a local embedding model used only for retrieval. It is not an autonomous filmmaker, not a database, not an
+authoritative project source, and has no file-system, SQL, shell or network authority.
 
 ## 16.2 Canonical execution boundary
 
-The required logical boundary is:
-
 ```text
-AI
- ↓
-Authorized Application Tools
- ↓
-Canonical Domain/Data Layer
- ↓
-Project
+Model ──chooses──► offered, domain-named tool
+                        │  toolbox::run_tool, as the requesting user
+                        ├─ read / compute / search / navigate ─► canonical data, bounded, permission-filtered
+                        └─ proposal ─► ChangeSetDraft (nothing dispatched)
+                                           │
+                               human clicks Apply Changes (ActorOrigin::Local only)
+                                           │ revalidate permission + row revisions + existence
+                                           ▼
+                               AppCore::dispatch per operation (ActorOrigin::Ai)
+                               → Store::mutate (permission, validation, undo, activity, search) → project.sqlite
 ```
 
-Not:
-
-```text
-AI
- ↓
-Unrestricted project-file write
-```
+There is no path from model output to SQLite, project files or the network that bypasses this chain.
 
 ## 16.3 AI cannot access arbitrary filesystem state
 
-The AI specification explicitly prohibits unrestricted filesystem/project-package access as a substitute for the OpenFrame object model.
-
-This prevents the model from bypassing:
-
-- permissions;
-- private-note visibility;
-- object identity;
-- snapshots;
-- Change Set validation;
-- conflict rules;
-- locked states;
-- recovery controls.
+The model never receives or chooses a file-system path. Every operation that reads or writes a user-picked location
+(imports, exports, packages, adding or relinking files) or returns local file paths is hidden from the assistant by
+explicit operation metadata, with the reason published in `docs/engineering/ai-tool-coverage.md`. The derived
+intelligence index lives in the project's `cache/` folder and is written only by OpenFrame's own indexer.
 
 ## 16.4 AI inherits effective permissions
 
-AI actions occur under the current user's effective permission.
+AI authority is never above the current user's:
 
-Examples:
-
-- Viewer cannot mutate;
-- Commenter cannot mutate prohibited core content;
-- Editor can mutate only permitted content;
-- Owner can perform owner-only operations;
-- AI cannot elevate a user.
+- `UseAi` is needed to ask (Owner, Editor, Commenter, Viewer; not Export-only).
+- Read tools need View. Proposal tools are offered only when the user holds the operation's capability **and**
+  `ApplyChangeSet`; every tool call re-checks the capability as the real user (the offered list is not the boundary).
+- At apply time every operation is checked again against the approving user's role.
+- A Viewer asking for a change gets a denial and no Change Set.
 
 ## 16.5 AI respects state restrictions
 
-AI cannot bypass:
-
-- locked drafts;
-- approved artifacts;
-- stale documents;
-- archived objects;
-- deleted/recoverable-object rules;
-- private-note protection;
-- unavailable external files;
-- collaboration conflicts.
+Proposals go through the same commands as the UI, so locks, finalized call sheets, archived objects and
+Recently-Deleted rules apply unchanged. Proposal builders also exclude and report locked drafts. Permanent deletion is
+never offered to the assistant. Operations whose UI asks for an extra destructive confirmation require that
+confirmation again when the Change Set is applied.
 
 ## 16.6 AI mutation safety
 
-The normative sequence is:
-
 ```text
-User request
-   ↓
-Interpretation
-   ↓
-Scope resolution
-   ↓
-Permission/state checks
-   ↓
-Deterministic tool/application operation
-   ↓
-Proposed Change Set
-   ↓
-Preview
-   ↓
-Explicit user acceptance
-   ↓
-Normal application mutation
-   ↓
-Undo / Activity where supported
+request ─► scope resolution ─► retrieval (derived, re-validated) ─► bounded tool loop
+  ─► proposal tools build ONE composite Change Set (≤ 6 parts) ─► Proposed Changes preview
+  ─► [Reject] leaves the project untouched · [Apply Changes] ─► revalidate ─► Stale / Conflict (not applied)
+                                                                           └► apply all-or-nothing, one undo step
 ```
+
+No auto mode, no "always allow", no remembered approval, no background AI writes. `ai.change_set.accept`, `reject`
+and `recheck` are refused for any actor whose origin is not the local user acting in the UI; no Change Set may contain
+an `ai.*` operation; the `Pending → Accepted` transition is a compare-and-set so a Change Set applies at most once.
 
 ## 16.7 No authority delegation to model output
 
-Model text is not permission.
-
-A model saying:
-
-> “The user wants me to change this.”
-
-does not replace the application's authorization evaluation.
-
-Likewise, model output cannot grant itself storage authority.
+Model text is not permission. Nothing written in project content or in the conversation counts as approval. The model
+output is grammar-constrained JSON naming one offered tool; unknown tools, schema violations and oversized arguments
+are refused before anything runs.
 
 ---
 
 # 17. AI Request / Result Privacy
 
-## 17.1 AI Request
+## 17.1 What is stored
 
-The Domain/Data model supports AI Request with fields including:
+Inside the project database (`0008_ai.sql`), visible only to the user who made the request (`ai.history` is
+personal):
 
-- requesting user;
-- project scope;
-- session context;
-- resolved scope;
-- original request;
-- interpreted intent;
-- operation class;
-- target objects;
-- authorization state;
-- external-processing state;
-- model reference where applicable;
-- status and timestamps.
+- `ai_request`: the request text, resolved scope (kind, object references, label), model reference, intent, class,
+  targets, authorization, status and processing (`Local` / `Not Sent`);
+- `ai_result`: the answer, details, items, navigation, provenance references, confidence, Change Set link, error code;
+- `ai_tool_invocation`: one audit row per tool step — tool, arguments, targets, provenance, authorization, execution
+  status, error code;
+- `change_set`: the proposal, its preview, base revisions and review state.
 
-These records can contain sensitive project information.
+No chain-of-thought and no copy of the assembled context are stored.
 
-## 17.2 AI Result
+## 17.2 What a result may contain
 
-AI Result may contain:
-
-- natural-language response;
-- structured data;
-- provenance;
-- suggested changes;
-- status;
-- error information.
-
-It must not contain another user's restricted private information merely because the model could infer or retrieve it.
+A result is built from tools that already applied the user's permissions. Another user's private notes can never
+appear: they are excluded from intelligence documents, retrieval, every read tool and provenance links; the
+`private_information` tool returns only the requester's own notes.
 
 ## 17.3 Provenance
 
-When a response materially depends on project scope, source/provenance should identify enough context to let the user understand the result without exposing unauthorized data.
+Answers carry references (scene, card, character, location, …) that open the source; vector scores are not shown.
 
 ## 17.4 Exact facts
 
-Exact project facts must come from deterministic application data/calculations.
-
-This reduces both accuracy risk and privacy overreach because the AI does not need broad model-generated guesses about project state.
+Exact project facts come from deterministic tools over canonical data. Model-written text is labelled
+"Inferred · written by Offline AI".
 
 ## 17.5 Conversation context
 
-Conversation context must not silently expand permissions.
+At most the 4 most recent turns of the same conversation, clipped, are passed to the model as data. They never widen
+permissions.
 
-A safe follow-up request may reuse context only within the same effective access boundary.
+## 17.6 The derived intelligence index
+
+`cache/intelligence.sqlite` holds derived copies of permitted project text (chunks), vectors and graph nodes for
+retrieval. It is part of the project folder (so it travels with a copied folder), is never canonical, contains no
+contact details (phone, e-mail, emergency contact), keeps private-note documents tagged with their owner, and is
+opened as untrusted (integrity check, schema allow-list, identity check; any mismatch deletes and rebuilds it).
+Retrieval never trusts its text: every selected item is rebuilt from canonical rows with the current user's
+permissions before it reaches the model.
 
 ---
 
 # 18. Local AI Privacy
 
-## 18.1 Local AI
+## 18.1 Local processing only
 
-Local AI is the preferred path for:
-
-- private project work;
-- offline operation;
-- low-latency assistance where practical;
-- users who do not want project content transmitted externally.
+Inference path: React → Rust → local context and retrieval → `llama-server` on 127.0.0.1 → local model → result.
+Prompts, screenplay text, retrieved passages, private notes and AI answers never leave the computer, and OpenFrame has
+no telemetry. Project data is not sent to Google because the Gemma weights came from Google.
 
 ## 18.2 Local model boundary
 
-The local model still does not become the project source of truth.
+The sidecars bind 127.0.0.1 only on a random port, require a random per-launch key passed through the environment,
+run with a fixed argument list (`--offline`, no web UI) inside a kill-on-close Job Object, and have no project,
+file-system or network authority. Their output is validated by the application.
 
-The model receives permitted context through the application and produces language, suggestions, or tool requests.
+## 18.3 Network use
 
-## 18.3 Offline AI
+The AI subsystem uses the network only when the user clicks **Download Offline AI** or **Update Offline AI**: the
+Ed25519-signed manifest and the component files it lists, each SHA-256-verified before use. Nothing is fetched in the
+background. After installation AI works without internet. If AI is unavailable, core workflows continue.
 
-Configured local AI may remain available offline.
+## 18.4 Truthful labelling
 
-If local AI is unavailable, core OpenFrame workflows continue.
-
-## 18.4 No false cloud indication
-
-When local AI is used, the UI must not claim that project data is being sent to a cloud provider.
-
----
-
-# 19. External AI Privacy
-
-## 19.1 External AI is optional
-
-External AI is a user-selected capability.
-
-It is not required for core OpenFrame workflows.
-
-## 19.2 Pre-transmission disclosure
-
-Before a project-containing external AI request is transmitted, the user must see a disclosure indicating:
-
-- that an external provider is being used;
-- what context is being sent;
-- what category of project information is included;
-- configured provider/model identity where practical;
-- that the user can cancel.
-
-## 19.3 Disclosure must be truthful
-
-The UI must not imply:
-
-- local processing when the request is external;
-- external processing when the request is local;
-- OpenFrame ownership of third-party provider processing;
-- provider retention guarantees that are not actually known.
-
-## 19.4 Minimum necessary external context
-
-Only authorized/requested context should be sent.
-
-The product must not automatically send:
-
-- the entire project;
-- unrelated workspaces;
-- hidden host-only data;
-- another collaborator's Private Notes;
-- unauthorized objects;
-- unrelated project files.
-
-## 19.5 External provider ownership boundary
-
-Sending content to an external AI provider for a requested operation does not make that provider the owner of the OpenFrame project.
-
-However, OpenFrame cannot truthfully promise how an external provider stores or retains transmitted information unless the relevant provider contract/policy is known and represented.
-
-Therefore the product should disclose transmission without making unsupported claims about third-party data retention.
-
-## 19.6 Cancellation
-
-The user must be able to cancel the external request before transmission.
-
-## 19.7 External AI mutation
-
-Even when external AI provides the language/model processing:
-
-- project mutation remains local;
-- application permissions remain authoritative;
-- Change Set rules remain authoritative;
-- user acceptance remains required;
-- the external model never receives direct project-write authority.
-
-## 19.8 Network failure
-
-If an external AI request cannot reach the provider:
-
-- report the failure;
-- do not treat the request as successfully processed;
-- leave local project content unchanged;
-- allow local AI/core workflows to continue where available.
+The UI labels AI as running on this computer ("Runs on this computer", "Working on it on this computer…"). It never
+suggests cloud processing, because none exists.
 
 ---
 
-# 20. AI During Local-Network Collaboration
+# 19. External AI Privacy — retired
 
-## 20.1 Collaboration scope is inherited
+OpenFrame has **no external AI path**: no provider setting, no API key field, no code that sends project content to an
+AI service (ADR-0012 §5, ADR-0013). The previous requirements for pre-transmission disclosure, minimum external
+context, provider retention, cancellation before sending and external-AI failure handling therefore have nothing to
+govern. If an external path were ever proposed, it would need a new ADR and a new version of this section before any
+code is written.
 
-AI receives no more data than the current participant is permitted to access in the active shared scope.
+---
 
-## 20.2 Host-only information
+# 20. AI During Local-Network Collaboration — retired
 
-A participant's AI must not retrieve hidden host-only data.
-
-## 20.3 Private Notes
-
-A participant's AI must not retrieve another participant's Private Notes.
-
-## 20.4 Shared Story-only session
-
-If the host shares Story only:
-
-- Story Board content may be available;
-- unrelated screenplay/production content remains unavailable;
-- private notes remain private.
-
-## 20.5 Shared Screenplay session
-
-If Screenplay is shared:
-
-- screenplay access follows role;
-- private notes remain private;
-- lock/revision state remains enforced.
-
-## 20.6 Shared Production session
-
-If Production is shared:
-
-- only permitted production content is exposed;
-- unrelated private areas remain unavailable.
-
-## 20.7 Concurrent AI Change Sets
-
-If an AI Change Set was prepared against an earlier collaboration state, it must be revalidated before application.
-
-Collaboration does not weaken stale-base protection.
+LAN collaboration was removed (ADR-0007). Collaboration is file-based through packages; package review and apply is a
+human workflow that the assistant cannot perform (hidden operations `packages.*`). Stale-base protection of Change Sets
+is unchanged (§16.6).
 
 ---
 
@@ -1988,40 +1841,10 @@ Correct:
 
 ---
 
-# 35. External AI Data-Disclosure UX Contract
+# 35. External AI Data-Disclosure UX Contract — retired
 
-The disclosure surface should answer five questions quickly:
-
-```text
-What is leaving OpenFrame?
-Where is it going?
-Why is it being sent?
-What project context is included?
-Can I cancel?
-```
-
-Minimum disclosure content:
-
-- external provider indication;
-- provider/model where practical;
-- selected scope;
-- category of data being sent;
-- cancel action.
-
-Example:
-
-```text
-External AI
-
-Provider: [Configured Provider]
-Context: Current Scene + selected screenplay text
-Data sent: Scene heading, action/dialogue text, selected comments
-Private notes: Excluded
-
-[Cancel] [Send to External AI]
-```
-
-This is an illustrative UI contract, not a required visual design.
+There is no external AI path (§19), so there is no external disclosure dialog, "Send to External AI" action or
+"AI Provider Connected" status. The UI instead states that AI runs on this computer (§18.4).
 
 ---
 

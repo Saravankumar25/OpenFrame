@@ -22,16 +22,28 @@ use crate::store::{DeleteSpec, DeletedItemRow, MutationMeta, Tx, soft_delete};
 use crate::util::optional_text;
 
 pub fn register(r: &mut Registry) {
-    r.query("sides.preview", sides_preview);
-    r.query("sides.list", sides_list);
-    r.query("sides.get", sides_get);
-    r.command("sides.create", sides_create);
-    r.command("sides.delete", sides_delete);
-    r.query("reports.generate", reports_generate);
-    r.query("reports.list", reports_list);
-    r.query("reports.get", reports_get);
-    r.command("reports.save", reports_save);
-    r.command("reports.delete", reports_delete);
+    use crate::registry::OperationMetadata as M;
+    r.module("Sides & Reports");
+    r.query("sides.preview", sides_preview).meta(M::compute(
+        "Preview sides (script pages) for a shooting day.",
+    ));
+    r.query("sides.list", sides_list)
+        .meta(M::read("Saved sides."));
+    r.query("sides.get", sides_get)
+        .meta(M::read("One saved sides document."));
+    r.command("sides.create", sides_create)
+        .meta(M::edit("Save sides for a shooting day."));
+    r.command("sides.delete", sides_delete)
+        .meta(M::soft_delete("Move saved sides to Recently Deleted."));
+    r.query("reports.generate", reports_generate).meta(M::compute("Generate a production report (scene, location, cast/scene, prop, schedule, breakdown completeness)."));
+    r.query("reports.list", reports_list)
+        .meta(M::read("Saved production reports."));
+    r.query("reports.get", reports_get)
+        .meta(M::read("One saved production report."));
+    r.command("reports.save", reports_save)
+        .meta(M::edit("Save a production report snapshot."));
+    r.command("reports.delete", reports_delete)
+        .meta(M::soft_delete("Move a saved report to Recently Deleted."));
     r.indexer("side", index_side);
     r.trash_handler(TrashHandler {
         object_type: "side",
@@ -520,7 +532,11 @@ fn report_title(t: &str) -> AppResult<&'static str> {
         .ok_or_else(|| AppError::invalid_input("Choose one of the available reports."))
 }
 
-fn build_report(c: &Connection, report_type: &str, filter: Option<&str>) -> AppResult<ReportData> {
+pub(crate) fn build_report(
+    c: &Connection,
+    report_type: &str,
+    filter: Option<&str>,
+) -> AppResult<ReportData> {
     let title = report_title(report_type)?.to_string();
     let filter = report_filter(filter)?;
     let board = match current_schedule(c)? {

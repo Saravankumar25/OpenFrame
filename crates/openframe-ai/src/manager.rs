@@ -1,6 +1,8 @@
-//! Offline AI façade used by the application layer: manifest trust, hardware
-//! check, recommendation, verified installation with atomic activation and
-//! rollback, model removal, and the chat model backed by the managed sidecar.
+//! Offline AI façade used by the application layer (Local AI Runtime spec; agentic AI spec
+//! §12, §23–§25): manifest trust, device check, the one-click install of the single profile
+//! (runtime + chat model + embedding model) with one combined progress, verified resumable
+//! downloads, health check before activation, atomic activation with rollback, Vulkan → CPU
+//! fallback, uninstall, and the two managed sidecars (chat + embeddings).
 
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
@@ -10,21 +12,31 @@ use openframe_domain::{AppError, AppResult, now_ms};
 use parking_lot::{Mutex, RwLock};
 use serde::Serialize;
 
-use crate::client::{ChatMessage, ChatRequest};
+use crate::client::{self, ChatMessage, ChatRequest, EMBED_BATCH};
 use crate::download::{self, Control, DownloadOptions, DownloadPhase, DownloadSpec};
 use crate::hardware::{self, HardwareInfo};
-use crate::manifest::{self, Backend, Manifest, ModelEntry, RuntimeEntry};
+use crate::manifest::{self, Backend, Manifest, ModelEntry, Pooling, RuntimeEntry};
 use crate::model::{ChatModel, LocalRuntimeModel};
 use crate::rt::AiRuntime;
-use crate::selection::{self, Recommendation};
-use crate::store::{ActiveSelection, AiPaths, ModelMetadata, write_json_atomic};
+use crate::selection::{self, Fitness};
+use crate::store::{ACTIVE_SCHEMA, ActiveInstall, AiPaths, write_json_atomic};
 use crate::supervisor::{
-    Launcher, LlamaServerLauncher, RuntimeStatus, StateListener, Supervisor, SupervisorConfig,
+    EmbeddingServerLauncher, Launcher, LlamaServerLauncher, RuntimeStatus, StateListener,
+    Supervisor, SupervisorConfig, not_installed,
 };
 
 /// Upper bounds for the distribution manifest and its signature (bounded reads).
 const MAX_MANIFEST_BYTES: usize = 1 << 20;
 const MAX_SIGNATURE_BYTES: usize = 4 << 10;
+/// Characters of one input sent to the embedding model (≈ 300–400 English tokens; the model
+/// window is 512). Retrieval chunks should be shorter; longer inputs are cut, and an input the
+/// runtime still refuses (dense text) is retried shorter.
+pub const MAX_EMBED_INPUT_CHARS: usize = 1_500;
+/// Per-request timeout for one embedding batch.
+const EMBED_TIMEOUT: Duration = Duration::from_secs(120);
+
+/// Errors of the Offline AI subsystem (the application-wide error type).
+pub type AiError = AppError;
 
 #[derive(Clone)]
 pub struct ManagerConfig {
@@ -36,9 +48,15 @@ pub struct ManagerConfig {
     /// Optional distribution endpoint serving `manifest.json` + `manifest.json.sig`.
     pub distribution_base_url: Option<String>,
     pub download: DownloadOptions,
+    /// Chat sidecar.
     pub supervisor: SupervisorConfig,
-    /// How long installation waits for the new model to answer its health check.
+    /// Embedding sidecar.
+    pub embedding_supervisor: SupervisorConfig,
+    /// How long installation waits for the new components to answer their health check.
     pub health_timeout: Duration,
+    /// Force the runtime backend instead of the automatic device check (diagnostics and
+    /// tests; `None` in the product).
+    pub backend_override: Option<Backend>,
 }
 
 impl ManagerConfig {
@@ -59,22 +77,30 @@ impl ManagerConfig {
                 log_path: Some(paths.runtime_log()),
                 ..SupervisorConfig::default()
             },
+            embedding_supervisor: SupervisorConfig {
+                log_path: Some(paths.logs_dir().join("ai-embedding.log")),
+                ..SupervisorConfig::default()
+            },
             health_timeout: Duration::from_secs(600),
+            backend_override: None,
         }
     }
 }
 
+/// The steps the user sees (agentic AI spec §24): Checking device → Downloading → Verifying →
+/// Installing → Starting → Ready.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 pub enum InstallPhase {
     Checking,
-    DownloadingRuntime,
-    DownloadingModel,
+    Downloading,
     Verifying,
     Installing,
     Starting,
     Ready,
 }
 
+/// One combined progress for the whole Offline AI package: `done`/`total` are bytes across the
+/// runtime, the chat model and the embedding model (never per file).
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct InstallEvent {
@@ -87,11 +113,115 @@ pub struct InstallEvent {
 #[serde(rename_all = "camelCase")]
 pub struct InstallOutcome {
     pub profile_id: String,
+    pub profile_version: String,
     pub runtime_id: String,
     pub backend: Backend,
+    /// Bytes of superseded components removed after the new install became active.
+    pub freed_bytes: u64,
 }
 
 pub type InstallEvents<'a> = &'a (dyn Fn(InstallEvent) + Send + Sync);
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub enum ComponentKind {
+    Runtime,
+    ChatModel,
+    EmbeddingModel,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PlannedComponent {
+    pub kind: ComponentKind,
+    pub id: String,
+    pub bytes: u64,
+    /// Bytes already on disk from a paused/interrupted download.
+    pub downloaded_bytes: u64,
+    pub installed: bool,
+}
+
+/// Everything the UI must show BEFORE the download starts (exact size, disk preflight, how it
+/// will run on this computer).
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct InstallPlan {
+    pub profile_version: String,
+    pub backend: Backend,
+    pub runtime: RuntimeEntry,
+    pub chat: ModelEntry,
+    pub embedding: ModelEntry,
+    pub components: Vec<PlannedComponent>,
+    /// Exact bytes still to transfer.
+    pub download_bytes: u64,
+    /// Full size of the components that are not installed yet.
+    pub total_bytes: u64,
+    /// Bytes of those components already downloaded (resumable).
+    pub downloaded_bytes: u64,
+    pub required_free_bytes: u64,
+    pub free_disk_bytes: Option<u64>,
+    pub enough_disk: bool,
+    pub fitness: Fitness,
+    /// The active install already is this exact profile version.
+    pub up_to_date: bool,
+}
+
+/// What `ai.status` needs.
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OfflineAiState {
+    pub installed: bool,
+    pub active: Option<ActiveInstall>,
+    /// A newer verified profile version than the active one is available.
+    pub update_available: bool,
+    pub installed_bytes: u64,
+}
+
+/// C1 contract (agentic AI spec §12): identity of the installed embedding model. Part of the
+/// semantic index metadata — a different model/version/hash means the index is rebuilt.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EmbeddingInfo {
+    pub model_id: String,
+    pub version: String,
+    pub sha256: String,
+    pub dim: u32,
+}
+
+/// Technical details for Settings → Offline AI → diagnostics / About (never the normal UI).
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ComponentDiagnostics {
+    pub kind: ComponentKind,
+    pub id: String,
+    pub name: String,
+    pub version: String,
+    pub license_id: String,
+    pub license_url: Option<String>,
+    pub bytes: u64,
+    pub sha256: String,
+    pub installed: bool,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Diagnostics {
+    pub profile_id: String,
+    pub profile_version: Option<String>,
+    pub available_version: Option<String>,
+    pub manifest_channel: Option<String>,
+    pub manifest_sequence: Option<u64>,
+    /// This build still trusts the development manifest key (never a public release).
+    pub development_key: bool,
+    pub backend: Option<Backend>,
+    pub components: Vec<ComponentDiagnostics>,
+    pub chat_runtime: RuntimeStatus,
+    pub embedding_runtime: RuntimeStatus,
+    pub hardware: HardwareInfo,
+    pub store_dir: String,
+    pub log_file: String,
+    pub installed_bytes: u64,
+}
 
 pub struct AiManager {
     cfg: ManagerConfig,
@@ -99,9 +229,40 @@ pub struct AiManager {
     rt: Arc<AiRuntime>,
     http: reqwest::Client,
     supervisor: Arc<Supervisor>,
+    embed_supervisor: Arc<Supervisor>,
+    embedding: RwLock<Option<EmbeddingInfo>>,
     manifest: RwLock<Option<Manifest>>,
     hw_cache: Mutex<Option<(Instant, HardwareInfo)>>,
     install_lock: Mutex<()>,
+}
+
+fn unsupported() -> AppError {
+    AppError::ai(
+        "unsupported",
+        "Offline AI isn't available for this kind of computer yet.",
+    )
+}
+
+fn embedding_info(e: &ModelEntry) -> Option<EmbeddingInfo> {
+    Some(EmbeddingInfo {
+        model_id: e.model_id.clone(),
+        version: e.version.clone(),
+        sha256: e.sha256.clone(),
+        dim: e.embedding_dim?,
+    })
+}
+
+/// Cut an embedding input to `max_chars` on a character boundary; an empty input becomes a
+/// single space (the server refuses empty strings).
+pub fn prepare_embedding_input(s: &str, max_chars: usize) -> String {
+    let t = s.trim();
+    if t.is_empty() {
+        return " ".into();
+    }
+    match t.char_indices().nth(max_chars) {
+        Some((cut, _)) => t[..cut].to_string(),
+        None => t.to_string(),
+    }
 }
 
 impl AiManager {
@@ -115,12 +276,18 @@ impl AiManager {
             .build()
             .map_err(|e| AppError::internal(e.to_string()))?;
         let supervisor = Arc::new(Supervisor::new(cfg.supervisor.clone(), rt.handle()));
+        let embed_supervisor = Arc::new(Supervisor::new(
+            cfg.embedding_supervisor.clone(),
+            rt.handle(),
+        ));
         let m = Self {
             paths: AiPaths::new(&cfg.app_data_dir),
             cfg,
             rt,
             http,
             supervisor,
+            embed_supervisor,
+            embedding: RwLock::new(None),
             manifest: RwLock::new(None),
             hw_cache: Mutex::new(None),
             install_lock: Mutex::new(()),
@@ -133,6 +300,7 @@ impl AiManager {
         &self.paths
     }
 
+    /// Chat runtime state changes (the AI panel refreshes on them).
     pub fn set_state_listener(&self, l: StateListener) {
         self.supervisor.set_listener(l);
     }
@@ -141,13 +309,19 @@ impl AiManager {
         self.supervisor.status()
     }
 
-    /// Begin loading the model in the background (no-op when not installed).
+    pub fn embedding_status(&self) -> RuntimeStatus {
+        self.embed_supervisor.status()
+    }
+
+    /// Begin loading the chat model in the background (no-op error when not installed).
     pub fn warm_up(&self) -> AppResult<()> {
         self.supervisor.start()
     }
 
+    /// Stop both sidecars (memory released; they start again on the next request).
     pub fn stop_runtime(&self) {
         self.supervisor.stop();
+        self.embed_supervisor.stop();
     }
 
     // ------------------------------------------------------------- manifest
@@ -173,7 +347,7 @@ impl AiManager {
                 }
                 Ok(_) => {}
                 Err(e) => {
-                    // A tampered cache is never used; remove it so it can't be retried.
+                    // A tampered (or retired-format) cache is never used; remove it.
                     tracing::warn!(
                         code = e.code_str(),
                         "cached AI manifest failed verification; discarding"
@@ -273,33 +447,118 @@ impl AiManager {
         hw
     }
 
-    pub fn recommend(&self) -> AppResult<Recommendation> {
-        let m = self.manifest()?;
-        selection::recommend(&self.hardware(false), &m).ok_or_else(|| {
-            AppError::ai(
-                "unsupported",
-                "Offline AI isn't available for this kind of computer yet.",
-            )
-        })
-    }
-
     // --------------------------------------------------------------- status
 
-    pub fn active(&self) -> Option<ActiveSelection> {
+    pub fn active(&self) -> Option<ActiveInstall> {
         self.paths.active()
     }
 
-    pub fn installed_models(&self) -> Vec<(ModelMetadata, u64)> {
-        self.paths.installed_profiles()
+    /// Installed = an active install whose components are all present and verified.
+    pub fn state(&self) -> OfflineAiState {
+        let active = self.paths.active();
+        let installed =
+            self.supervisor.status().model_reference.is_some() && self.embedding.read().is_some();
+        let update_available = match (&active, self.manifest()) {
+            (Some(a), Ok(m)) if installed => {
+                a.profile_version != m.profile.version
+                    || a.chat_model_id != m.profile.chat_model_id
+                    || a.embedding_model_id != m.profile.embedding_model_id
+            }
+            _ => false,
+        };
+        OfflineAiState {
+            installed,
+            active: active.filter(|_| installed),
+            update_available,
+            installed_bytes: self.paths.installed_bytes(),
+        }
     }
 
-    /// Bytes already downloaded for a profile (resumable).
-    pub fn partial_bytes(&self, profile_id: &str) -> u64 {
-        let Ok(m) = self.manifest() else { return 0 };
-        match m.model(profile_id) {
-            Some(e) => download::partial_len(&self.model_spec(e)),
-            None => 0,
+    /// Exact download size, disk preflight and device fit — shown before anything is downloaded.
+    pub fn plan(&self) -> AppResult<InstallPlan> {
+        let m = self.manifest()?;
+        self.plan_with(&m, &self.hardware(false))
+    }
+
+    fn plan_with(&self, m: &Manifest, hw: &HardwareInfo) -> AppResult<InstallPlan> {
+        let chat = m.chat_model()?.clone();
+        let embedding = m.embedding_model()?.clone();
+        let active = self.paths.active();
+        let up_to_date = active.as_ref().is_some_and(|a| {
+            a.profile_version == m.profile.version
+                && a.chat_model_id == chat.model_id
+                && a.embedding_model_id == embedding.model_id
+                && self.paths.installed_runtime(&a.runtime_id).is_some()
+                && self.paths.model_installed(&chat)
+                && self.paths.model_installed(&embedding)
+        });
+        // An up-to-date install keeps the runtime it proved healthy with (e.g. after a
+        // graphics-card → processor fallback); otherwise pick one for this computer.
+        let runtime = match active
+            .as_ref()
+            .filter(|_| up_to_date)
+            .and_then(|a| self.paths.installed_runtime(&a.runtime_id))
+        {
+            Some(r) => r,
+            None => {
+                let backend = self
+                    .cfg
+                    .backend_override
+                    .unwrap_or_else(|| selection::choose_backend(hw, &chat));
+                m.runtime_for(backend)
+                    .or_else(|| m.runtime_for(Backend::Cpu))
+                    .ok_or_else(unsupported)?
+                    .clone()
+            }
+        };
+        let fitness = selection::assess(hw, &chat, runtime.backend);
+        let rt_spec = self.runtime_spec(&runtime);
+        let mut components = vec![PlannedComponent {
+            kind: ComponentKind::Runtime,
+            id: runtime.runtime_id.clone(),
+            bytes: runtime.bytes,
+            downloaded_bytes: download::partial_len(&rt_spec),
+            installed: self.paths.runtime_installed(&runtime),
+        }];
+        for (kind, e) in [
+            (ComponentKind::ChatModel, &chat),
+            (ComponentKind::EmbeddingModel, &embedding),
+        ] {
+            components.push(PlannedComponent {
+                kind,
+                id: e.model_id.clone(),
+                bytes: e.bytes,
+                downloaded_bytes: download::partial_len(&self.model_spec(e)),
+                installed: self.paths.model_installed(e),
+            });
         }
+        let pending = || components.iter().filter(|c| !c.installed);
+        let total_bytes: u64 = pending().map(|c| c.bytes).sum();
+        let downloaded_bytes: u64 = pending().map(|c| c.downloaded_bytes.min(c.bytes)).sum();
+        let remaining = |kind_is_runtime: bool| -> u64 {
+            pending()
+                .filter(|c| (c.kind == ComponentKind::Runtime) == kind_is_runtime)
+                .map(|c| c.bytes.saturating_sub(c.downloaded_bytes))
+                .sum()
+        };
+        let required_free_bytes = selection::required_free_bytes(remaining(false), remaining(true));
+        let free_disk_bytes = hw.free_disk_bytes;
+        Ok(InstallPlan {
+            profile_version: m.profile.version.clone(),
+            backend: runtime.backend,
+            runtime,
+            chat,
+            embedding,
+            download_bytes: total_bytes - downloaded_bytes,
+            total_bytes,
+            downloaded_bytes,
+            required_free_bytes,
+            free_disk_bytes,
+            enough_disk: free_disk_bytes.is_none_or(|f| f >= required_free_bytes),
+            fitness,
+            up_to_date,
+            components,
+        })
     }
 
     /// The chat model when Offline AI is installed.
@@ -314,49 +573,132 @@ impl AiManager {
         }))
     }
 
-    fn launcher(
+    // ------------------------------------------------------------ embeddings (C1)
+
+    /// The installed embedding model (None when Offline AI is not installed).
+    pub fn embedding_info(&self) -> Option<EmbeddingInfo> {
+        self.embedding.read().clone()
+    }
+
+    /// Embed texts with the local embedding model. Blocking (call from a background thread);
+    /// batches internally; one L2-normalised vector of `embedding_info().dim` values per input,
+    /// in input order. Inputs are trimmed and bounded to [`MAX_EMBED_INPUT_CHARS`] characters.
+    pub fn embed(&self, inputs: &[String]) -> Result<Vec<Vec<f32>>, AiError> {
+        if inputs.is_empty() {
+            return Ok(Vec::new());
+        }
+        let info = self.embedding_info().ok_or_else(not_installed)?;
+        let dim = info.dim as usize;
+        let ep = self
+            .embed_supervisor
+            .ensure_ready(self.cfg.health_timeout)?;
+        let _busy = self.embed_supervisor.begin_request();
+        let mut out = Vec::with_capacity(inputs.len());
+        for chunk in inputs.chunks(EMBED_BATCH) {
+            let batch: Vec<String> = chunk
+                .iter()
+                .map(|s| prepare_embedding_input(s, MAX_EMBED_INPUT_CHARS))
+                .collect();
+            match self.embed_batch(&ep, batch, dim) {
+                Ok(vectors) => out.extend(vectors),
+                // An input can still exceed the model window (dense or unusual text): retry the
+                // batch one by one, shortening only the input that doesn't fit.
+                Err(e) if e.code_str() == "ai.embedding_rejected" => {
+                    for s in chunk {
+                        out.push(self.embed_shrinking(&ep, s, dim)?);
+                    }
+                }
+                Err(e) => return Err(e),
+            }
+        }
+        Ok(out)
+    }
+
+    fn embed_batch(
+        &self,
+        ep: &client::Endpoint,
+        batch: Vec<String>,
+        dim: usize,
+    ) -> AppResult<Vec<Vec<f32>>> {
+        let http = self.embed_supervisor.http().clone();
+        let ep = ep.clone();
+        self.rt
+            .run(async move { client::embed(&http, &ep, &batch, dim, EMBED_TIMEOUT).await })
+    }
+
+    fn embed_shrinking(&self, ep: &client::Endpoint, s: &str, dim: usize) -> AppResult<Vec<f32>> {
+        let mut limit = MAX_EMBED_INPUT_CHARS;
+        loop {
+            match self.embed_batch(ep, vec![prepare_embedding_input(s, limit)], dim) {
+                Ok(mut v) => return Ok(v.remove(0)),
+                Err(e) if e.code_str() == "ai.embedding_rejected" && limit > 100 => limit /= 2,
+                Err(e) => return Err(e),
+            }
+        }
+    }
+
+    // ------------------------------------------------------------ launchers
+
+    fn threads(hw: &HardwareInfo) -> usize {
+        hw.physical_cpus.unwrap_or(hw.logical_cpus / 2).clamp(1, 16)
+    }
+
+    fn chat_launcher(
         &self,
         runtime: &RuntimeEntry,
-        model: &ModelMetadata,
+        chat: &ModelEntry,
         hw: &HardwareInfo,
     ) -> Arc<dyn Launcher> {
-        let entry_like = ModelEntry {
-            profile_id: model.profile_id.clone(),
-            tier: model.tier,
-            display_name: model.display_name.clone(),
-            engine: "llama.cpp".into(),
-            architecture: String::new(),
-            bytes: model.bytes,
-            sha256: String::new(),
-            url: String::new(),
-            min_ram_bytes: 0,
-            recommended_ram_bytes: 0,
-            gpu_vram_bytes: model.gpu_vram_bytes.max(1),
-            context_tokens: model.context_tokens,
-            license_id: model.license_id.clone(),
-        };
-        let threads = hw.physical_cpus.unwrap_or(hw.logical_cpus / 2).clamp(1, 16);
         Arc::new(LlamaServerLauncher {
             executable: self.paths.runtime_executable(runtime),
-            model_path: self.paths.model_file(&model.profile_id),
-            profile_id: model.profile_id.clone(),
-            context_tokens: model.context_tokens.clamp(2048, 32768),
-            gpu_layers: selection::gpu_layers(hw, &entry_like, runtime.backend),
-            threads,
+            model_path: self.paths.model_file(&chat.model_id),
+            profile_id: format!("{}:{}", manifest::PROFILE_ID, chat.model_id),
+            context_tokens: chat.context_tokens.clamp(2048, 32768),
+            gpu_layers: selection::gpu_layers(hw, chat, runtime.backend),
+            threads: Self::threads(hw),
         })
     }
 
-    /// Point the supervisor at the active model/runtime recorded on disk.
+    fn embedding_launcher(
+        &self,
+        runtime: &RuntimeEntry,
+        emb: &ModelEntry,
+        hw: &HardwareInfo,
+    ) -> Arc<dyn Launcher> {
+        Arc::new(EmbeddingServerLauncher {
+            executable: self.paths.runtime_executable(runtime),
+            model_path: self.paths.model_file(&emb.model_id),
+            model_id: emb.model_id.clone(),
+            pooling: emb.pooling.unwrap_or(Pooling::Cls),
+            context_tokens: emb.context_tokens,
+            // Leave most cores to the chat model when both run.
+            threads: (Self::threads(hw) / 2).clamp(1, 4),
+        })
+    }
+
+    /// Point both sidecars at the active install recorded on disk (or at nothing).
     fn configure_from_active(&self) {
-        let launcher = self.paths.active().and_then(|a| {
+        let found = self.paths.active().and_then(|a| {
             let rt = self.paths.installed_runtime(&a.runtime_id)?;
-            let md = self.paths.model_metadata(&a.profile_id)?;
-            let size = std::fs::metadata(self.paths.model_file(&a.profile_id))
-                .ok()?
-                .len();
-            (size == md.bytes).then(|| self.launcher(&rt, &md, &self.hardware(false)))
+            let chat = self.paths.installed_model(&a.chat_model_id)?;
+            let emb = self.paths.installed_model(&a.embedding_model_id)?;
+            Some((rt, chat, emb))
         });
-        self.supervisor.configure(launcher);
+        match found {
+            Some((rt, chat, emb)) => {
+                let hw = self.hardware(false);
+                self.supervisor
+                    .configure(Some(self.chat_launcher(&rt, &chat, &hw)));
+                self.embed_supervisor
+                    .configure(Some(self.embedding_launcher(&rt, &emb, &hw)));
+                *self.embedding.write() = embedding_info(&emb);
+            }
+            None => {
+                self.supervisor.configure(None);
+                self.embed_supervisor.configure(None);
+                *self.embedding.write() = None;
+            }
+        }
     }
 
     // --------------------------------------------------------------- install
@@ -366,10 +708,10 @@ impl AiManager {
             url: e.url.clone(),
             bytes: e.bytes,
             sha256: e.sha256.clone(),
-            partial: self.paths.model_partial(&e.profile_id),
-            dest: self.paths.model_file(&e.profile_id),
+            partial: self.paths.model_partial(&e.model_id),
+            dest: self.paths.model_file(&e.model_id),
             quarantine_dir: self.paths.quarantine_dir(),
-            label: e.profile_id.clone(),
+            label: e.model_id.clone(),
         }
     }
 
@@ -386,12 +728,12 @@ impl AiManager {
         }
     }
 
-    /// Download, verify and activate a profile (the recommended one when None).
-    /// Blocking; call from a background task. The previously active model stays
-    /// active until the new one passes its health check.
+    /// Download, verify and activate the Offline AI profile (runtime + chat model + embedding
+    /// model). Blocking; call from a background task. The previously active install stays
+    /// active until the new one passes its health check; OpenFrame is usable immediately after
+    /// (no restart).
     pub fn install(
         &self,
-        profile_id: Option<&str>,
         control: &Control,
         events: InstallEvents<'_>,
     ) -> AppResult<InstallOutcome> {
@@ -405,182 +747,170 @@ impl AiManager {
         });
         let manifest = self.refresh_manifest()?;
         let hw = self.hardware(true);
-        let rec = selection::recommend(&hw, &manifest).ok_or_else(|| {
-            AppError::ai(
-                "unsupported",
-                "Offline AI isn't available for this kind of computer yet.",
-            )
-        })?;
-        let model = match profile_id {
-            Some(p) => manifest
-                .model(p)
-                .ok_or_else(|| AppError::not_found("AI profile"))?,
-            None => manifest
-                .model(&rec.profile_id)
-                .ok_or_else(|| AppError::not_found("AI profile"))?,
-        }
-        .clone();
-        let runtime = manifest
-            .runtime_for(rec.backend)
-            .or_else(|| manifest.runtime_for(Backend::Cpu))
-            .ok_or_else(|| {
-                AppError::ai(
-                    "unsupported",
-                    "Offline AI isn't available for this kind of computer yet.",
-                )
-            })?
-            .clone();
+        let plan = self.plan_with(&manifest, &hw)?;
 
-        // Disk-space preflight (nothing is downloaded when space is short).
-        let model_spec = self.model_spec(&model);
-        let model_needed = if self.paths.model_installed(&model) {
-            0
-        } else {
-            model.bytes - download::partial_len(&model_spec)
-        };
-        let runtime_needed = if self.paths.runtime_installed(&runtime) {
-            0
-        } else {
-            runtime.bytes - download::partial_len(&self.runtime_spec(&runtime))
-        };
+        // Disk-space preflight: nothing is downloaded when space is short.
         std::fs::create_dir_all(self.paths.models_dir())?;
-        download::check_disk_space(
-            &self.paths.models_dir(),
-            selection::required_free_bytes(model_needed, runtime_needed),
-        )?;
+        download::check_disk_space(&self.paths.models_dir(), plan.required_free_bytes)?;
 
-        if !self.paths.runtime_installed(&runtime) {
-            self.install_runtime(&runtime, control, events)?;
+        let progress = Progress::new(plan.total_bytes, events);
+        if !self.paths.runtime_installed(&plan.runtime) {
+            self.install_runtime(&plan.runtime, control, &progress)?;
         }
-        if !self.paths.model_installed(&model) {
-            self.download_model(&model, control, events)?;
+        for e in [&plan.chat, &plan.embedding] {
+            if !self.paths.model_installed(e) {
+                self.download_model(e, control, &progress)?;
+            }
         }
 
-        // Health check, then atomic activation (active.json switch).
+        // Health check both sidecars, then atomic activation (active.json switch).
         control.check()?;
-        events(InstallEvent {
-            phase: InstallPhase::Starting,
-            done: 0,
-            total: 0,
-        });
-        let md = self
-            .paths
-            .model_metadata(&model.profile_id)
-            .ok_or_else(|| AppError::internal("model metadata missing"))?;
-        let first = self.try_activate(&runtime, &md, &hw);
-        let used_runtime = match first {
-            Ok(()) => runtime.clone(),
-            Err(e) if runtime.backend != Backend::Cpu => {
+        progress.phase(InstallPhase::Starting);
+        let used_runtime = match self.health_check(&plan.runtime, &plan.chat, &plan.embedding, &hw)
+        {
+            Ok(()) => plan.runtime.clone(),
+            Err(e) if plan.runtime.backend != Backend::Cpu => {
                 // Graphics driver trouble: fall back to the processor build.
                 tracing::warn!(
                     code = e.code_str(),
                     "graphics-card runtime failed its health check; trying the processor runtime"
                 );
-                let cpu = manifest.runtime_for(Backend::Cpu).cloned().ok_or(e)?;
+                let cpu = manifest
+                    .runtime_for(Backend::Cpu)
+                    .cloned()
+                    .ok_or_else(|| self.rollback(&plan.chat.model_id, e))?;
                 if !self.paths.runtime_installed(&cpu) {
-                    self.install_runtime(&cpu, control, events)?;
+                    progress.grow(cpu.bytes);
+                    self.install_runtime(&cpu, control, &progress)?;
+                    progress.phase(InstallPhase::Starting);
                 }
-                self.try_activate(&cpu, &md, &hw)
-                    .map_err(|e| self.rollback(&model.profile_id, e))?;
+                self.health_check(&cpu, &plan.chat, &plan.embedding, &hw)
+                    .map_err(|e| self.rollback(&plan.chat.model_id, e))?;
                 cpu
             }
-            Err(e) => return Err(self.rollback(&model.profile_id, e)),
+            Err(e) => return Err(self.rollback(&plan.chat.model_id, e)),
         };
-        let previous = self
-            .paths
-            .active()
-            .map(|a| a.profile_id)
-            .filter(|p| p != &model.profile_id);
-        self.paths.set_active(Some(&ActiveSelection {
-            profile_id: model.profile_id.clone(),
+        let active = ActiveInstall {
+            schema: ACTIVE_SCHEMA,
+            profile_id: manifest.profile.profile_id.clone(),
+            profile_version: manifest.profile.version.clone(),
             runtime_id: used_runtime.runtime_id.clone(),
-            activated_at: now_ms(),
-            previous_profile_id: previous,
-        }))?;
-        self.paths.mark_health(&model.profile_id, false)?;
-        events(InstallEvent {
-            phase: InstallPhase::Ready,
-            done: 1,
-            total: 1,
-        });
-        Ok(InstallOutcome {
-            profile_id: model.profile_id,
-            runtime_id: used_runtime.runtime_id,
             backend: used_runtime.backend,
+            chat_model_id: plan.chat.model_id.clone(),
+            embedding_model_id: plan.embedding.model_id.clone(),
+            activated_at: now_ms(),
+        };
+        self.paths.set_active(Some(&active))?;
+        self.paths.mark_health(&plan.chat.model_id, false)?;
+        *self.embedding.write() = embedding_info(&plan.embedding);
+        // Only now is anything older removed (superseded versions, the unused runtime build,
+        // leftovers of the retired multi-profile system).
+        let freed_bytes = self.paths.remove_unreferenced(&active);
+        progress.phase(InstallPhase::Ready);
+        Ok(InstallOutcome {
+            profile_id: active.profile_id,
+            profile_version: active.profile_version,
+            runtime_id: active.runtime_id,
+            backend: active.backend,
+            freed_bytes,
         })
     }
 
-    /// Start the runtime with the candidate model and require one real answer.
-    fn try_activate(
+    /// Start both sidecars with the candidate components and require one real answer from each:
+    /// a chat completion and an embedding of the expected dimension.
+    fn health_check(
         &self,
         runtime: &RuntimeEntry,
-        md: &ModelMetadata,
+        chat: &ModelEntry,
+        emb: &ModelEntry,
         hw: &HardwareInfo,
     ) -> AppResult<()> {
         self.supervisor
-            .configure(Some(self.launcher(runtime, md, hw)));
-        let ep = self.supervisor.ensure_ready(self.cfg.health_timeout)?;
-        let _busy = self.supervisor.begin_request();
-        let http = self.supervisor.http().clone();
-        let mut req =
-            ChatRequest::new(vec![ChatMessage::user("Reply with the single word: ready")])
-                .max_tokens(8);
-        req.timeout = Duration::from_secs(120);
-        self.rt
-            .run(async move { crate::client::chat(&http, &ep, &req).await })
-            .map(|_| ())
+            .configure(Some(self.chat_launcher(runtime, chat, hw)));
+        self.embed_supervisor
+            .configure(Some(self.embedding_launcher(runtime, emb, hw)));
+        {
+            let ep = self.supervisor.ensure_ready(self.cfg.health_timeout)?;
+            let _busy = self.supervisor.begin_request();
+            let http = self.supervisor.http().clone();
+            let mut req =
+                ChatRequest::new(vec![ChatMessage::user("Reply with the single word: ready")])
+                    .max_tokens(8);
+            req.timeout = Duration::from_secs(120);
+            self.rt
+                .run(async move { client::chat(&http, &ep, &req).await })?;
+        }
+        let dim = emb.embedding_dim.unwrap_or(0) as usize;
+        let ep = self
+            .embed_supervisor
+            .ensure_ready(self.cfg.health_timeout)?;
+        let _busy = self.embed_supervisor.begin_request();
+        let http = self.embed_supervisor.http().clone();
+        let v = self.rt.run(async move {
+            client::embed(&http, &ep, &["ready".to_string()], dim, EMBED_TIMEOUT).await
+        })?;
+        if v.len() != 1 || v[0].iter().all(|x| *x == 0.0) {
+            return Err(client::malformed(
+                "embedding health check returned no vector",
+            ));
+        }
+        Ok(())
     }
 
     /// The candidate failed: keep the previous setup active and explain.
-    fn rollback(&self, profile_id: &str, cause: AppError) -> AppError {
-        let _ = self.paths.mark_health(profile_id, true);
+    fn rollback(&self, chat_model_id: &str, cause: AppError) -> AppError {
+        let _ = self.paths.mark_health(chat_model_id, true);
         self.configure_from_active();
         AppError::ai(
             "start_failed",
-            "Offline AI was downloaded and verified, but it could not start on this computer. Your previous setup was kept. You can retry or choose a lighter profile.",
+            "Offline AI was downloaded and verified, but it could not start on this computer. Anything you had before was kept. You can try again.",
         )
         .with_detail(format!("{}: {}", cause.code_str(), cause.detail.clone().unwrap_or_default()))
         .retryable()
+    }
+
+    fn fetch(
+        &self,
+        spec: &DownloadSpec,
+        control: &Control,
+        progress: &Progress<'_>,
+    ) -> AppResult<PathBuf> {
+        let http = self.http.clone();
+        let opts = self.cfg.download.clone();
+        let control2 = control.clone();
+        let spec2 = spec.clone();
+        let cb = |phase: DownloadPhase, done: u64, _total: u64| progress.file(phase, done);
+        let path = run_with_progress(
+            &self.rt,
+            move |p| async move {
+                download::download_verified(&http, &spec2, &opts, &control2, &*p).await
+            },
+            &cb,
+        )?;
+        progress.finish_file(spec.bytes);
+        Ok(path)
     }
 
     fn download_model(
         &self,
         model: &ModelEntry,
         control: &Control,
-        events: InstallEvents<'_>,
+        progress: &Progress<'_>,
     ) -> AppResult<()> {
-        let spec = self.model_spec(model);
-        // A leftover directory without valid integrity is replaced (never the active one mid-run:
-        // the active model is always a verified, installed one).
-        let dir = self.paths.model_dir(&model.profile_id);
+        // A leftover folder without valid integrity is replaced. It is never the active install
+        // (the active install is always verified); stop the sidecars anyway if it is referenced.
+        let dir = self.paths.model_dir(&model.model_id);
         if dir.exists() && !self.paths.model_installed(model) {
-            if self
-                .paths
-                .active()
-                .is_some_and(|a| a.profile_id == model.profile_id)
-            {
+            if self.paths.active().is_some_and(|a| {
+                a.chat_model_id == model.model_id || a.embedding_model_id == model.model_id
+            }) {
                 self.supervisor.configure(None);
+                self.embed_supervisor.configure(None);
             }
             std::fs::remove_dir_all(&dir)?;
         }
-        let progress = |phase: DownloadPhase, done: u64, total: u64| {
-            let phase = match phase {
-                DownloadPhase::Transferring => InstallPhase::DownloadingModel,
-                DownloadPhase::Verifying => InstallPhase::Verifying,
-            };
-            events(InstallEvent { phase, done, total });
-        };
-        let http = self.http.clone();
-        let opts = self.cfg.download.clone();
-        let control2 = control.clone();
-        let spec2 = spec.clone();
-        run_with_progress(
-            &self.rt,
-            move |p| async move {
-                download::download_verified(&http, &spec2, &opts, &control2, &*p).await
-            },
-            &progress,
-        )?;
+        self.fetch(&self.model_spec(model), control, progress)?;
+        progress.phase(InstallPhase::Installing);
         self.paths.record_model(model)?;
         Ok(())
     }
@@ -589,32 +919,10 @@ impl AiManager {
         &self,
         runtime: &RuntimeEntry,
         control: &Control,
-        events: InstallEvents<'_>,
+        progress: &Progress<'_>,
     ) -> AppResult<()> {
-        let spec = self.runtime_spec(runtime);
-        let progress = |phase: DownloadPhase, done: u64, total: u64| {
-            let phase = match phase {
-                DownloadPhase::Transferring => InstallPhase::DownloadingRuntime,
-                DownloadPhase::Verifying => InstallPhase::Verifying,
-            };
-            events(InstallEvent { phase, done, total });
-        };
-        let http = self.http.clone();
-        let opts = self.cfg.download.clone();
-        let control2 = control.clone();
-        let spec2 = spec.clone();
-        let zip = run_with_progress(
-            &self.rt,
-            move |p| async move {
-                download::download_verified(&http, &spec2, &opts, &control2, &*p).await
-            },
-            &progress,
-        )?;
-        events(InstallEvent {
-            phase: InstallPhase::Installing,
-            done: 0,
-            total: 0,
-        });
+        let zip = self.fetch(&self.runtime_spec(runtime), control, progress)?;
+        progress.phase(InstallPhase::Installing);
         let final_dir = self.paths.runtime_dir(&runtime.runtime_id);
         let tmp = self
             .paths
@@ -670,6 +978,7 @@ impl AiManager {
                 .is_some_and(|a| a.runtime_id == runtime.runtime_id)
             {
                 self.supervisor.configure(None);
+                self.embed_supervisor.configure(None);
             }
             std::fs::remove_dir_all(&final_dir)?;
         }
@@ -678,50 +987,168 @@ impl AiManager {
         Ok(())
     }
 
-    /// Delete an installed model. Removing the active model turns Offline AI off
-    /// (the rest of OpenFrame is unaffected).
-    pub fn remove_model(&self, profile_id: &str) -> AppResult<()> {
+    /// Remove Offline AI from this computer: both sidecars stop and every downloaded component
+    /// (runtime, models, partial downloads) is deleted. Projects and assistant history are not
+    /// touched; the rest of OpenFrame is unaffected. Returns the bytes freed.
+    pub fn uninstall(&self) -> AppResult<u64> {
         let _guard = self.install_lock.try_lock().ok_or_else(|| {
             AppError::ai(
                 "install_running",
                 "Please wait until the current Offline AI download finishes or is cancelled.",
             )
         })?;
-        // The id becomes a directory that is deleted recursively: it must be a single safe
-        // component (on Windows `models_dir.join("C:")` would be the current directory of C:).
-        if !manifest::safe_id(profile_id) || profile_id.contains(':') {
-            return Err(AppError::invalid_input("That AI profile isn't valid."));
-        }
-        let dir = self.paths.model_dir(profile_id);
-        if dir.parent() != Some(self.paths.models_dir().as_path()) {
-            return Err(AppError::invalid_input("That AI profile isn't valid."));
-        }
-        if !dir.is_dir() {
-            return Err(AppError::not_found("AI model"));
-        }
-        if self
-            .paths
-            .active()
-            .is_some_and(|a| a.profile_id == profile_id)
-        {
-            self.supervisor.configure(None);
-            self.paths.set_active(None)?;
-        }
-        std::fs::remove_dir_all(&dir)?;
-        download::discard_partial(&self.paths.model_partial(profile_id));
-        self.configure_from_active();
-        Ok(())
+        self.supervisor.configure(None);
+        self.embed_supervisor.configure(None);
+        *self.embedding.write() = None;
+        self.paths.remove_all_components()
     }
 
     /// Throw away partially downloaded files (the "Cancel" choice; "Pause" keeps them).
     pub fn discard_partials(&self) {
         let Ok(m) = self.manifest() else { return };
         for e in &m.models {
-            download::discard_partial(&self.paths.model_partial(&e.profile_id));
+            download::discard_partial(&self.paths.model_partial(&e.model_id));
         }
         for r in &m.runtimes {
             download::discard_partial(&self.paths.runtime_partial(&r.runtime_id));
         }
+    }
+
+    // ----------------------------------------------------------- diagnostics
+
+    /// Technical details for Settings → Offline AI → diagnostics / About.
+    pub fn diagnostics(&self) -> Diagnostics {
+        let manifest = self.manifest().ok();
+        let active = self.state().active;
+        let mut components = Vec::new();
+        let model_diag = |kind, e: &ModelEntry, installed: bool| ComponentDiagnostics {
+            kind,
+            id: e.model_id.clone(),
+            name: format!("{} ({})", e.display_name, e.quantization),
+            version: e.version.clone(),
+            license_id: e.license_id.clone(),
+            license_url: Some(e.license_url.clone()),
+            bytes: e.bytes,
+            sha256: e.sha256.clone(),
+            installed,
+        };
+        let runtime_diag = |r: &RuntimeEntry, installed: bool| ComponentDiagnostics {
+            kind: ComponentKind::Runtime,
+            id: r.runtime_id.clone(),
+            name: format!("{} server ({})", r.engine, r.backend.label()),
+            version: r.version.clone(),
+            license_id: r.license_id.clone(),
+            license_url: None,
+            bytes: r.bytes,
+            sha256: r.sha256.clone(),
+            installed,
+        };
+        match &active {
+            Some(a) => {
+                if let Some(r) = self.paths.installed_runtime(&a.runtime_id) {
+                    components.push(runtime_diag(&r, true));
+                }
+                if let Some(e) = self.paths.installed_model(&a.chat_model_id) {
+                    components.push(model_diag(ComponentKind::ChatModel, &e, true));
+                }
+                if let Some(e) = self.paths.installed_model(&a.embedding_model_id) {
+                    components.push(model_diag(ComponentKind::EmbeddingModel, &e, true));
+                }
+            }
+            None => {
+                if let Ok(plan) = self.plan() {
+                    components.push(runtime_diag(&plan.runtime, false));
+                    components.push(model_diag(ComponentKind::ChatModel, &plan.chat, false));
+                    components.push(model_diag(
+                        ComponentKind::EmbeddingModel,
+                        &plan.embedding,
+                        false,
+                    ));
+                }
+            }
+        }
+        Diagnostics {
+            profile_id: manifest::PROFILE_ID.to_string(),
+            profile_version: active.as_ref().map(|a| a.profile_version.clone()),
+            available_version: manifest.as_ref().map(|m| m.profile.version.clone()),
+            manifest_channel: manifest.as_ref().map(|m| m.channel.clone()),
+            manifest_sequence: manifest.as_ref().map(|m| m.sequence),
+            development_key: manifest::using_development_key(),
+            backend: active.as_ref().map(|a| a.backend),
+            components,
+            chat_runtime: self.supervisor.status(),
+            embedding_runtime: self.embed_supervisor.status(),
+            hardware: self.hardware(false),
+            store_dir: self.paths.root().to_string_lossy().into_owned(),
+            log_file: self.paths.runtime_log().to_string_lossy().into_owned(),
+            installed_bytes: self.paths.installed_bytes(),
+        }
+    }
+}
+
+/// Folds per-file download callbacks into ONE progress for the whole package.
+struct Progress<'a> {
+    events: InstallEvents<'a>,
+    state: Mutex<ProgressState>,
+}
+
+struct ProgressState {
+    /// Bytes of files finished earlier in this install.
+    finished: u64,
+    /// Bytes of the file currently transferring (including a resumed partial).
+    current: u64,
+    total: u64,
+    phase: InstallPhase,
+}
+
+impl<'a> Progress<'a> {
+    fn new(total: u64, events: InstallEvents<'a>) -> Self {
+        Self {
+            events,
+            state: Mutex::new(ProgressState {
+                finished: 0,
+                current: 0,
+                total,
+                phase: InstallPhase::Checking,
+            }),
+        }
+    }
+    fn emit(&self, s: &ProgressState) {
+        (self.events)(InstallEvent {
+            phase: s.phase,
+            done: (s.finished + s.current).min(s.total),
+            total: s.total,
+        });
+    }
+    fn file(&self, phase: DownloadPhase, done: u64) {
+        let mut s = self.state.lock();
+        match phase {
+            DownloadPhase::Transferring => {
+                s.phase = InstallPhase::Downloading;
+                s.current = done;
+            }
+            DownloadPhase::Verifying => s.phase = InstallPhase::Verifying,
+        }
+        self.emit(&s);
+    }
+    fn finish_file(&self, bytes: u64) {
+        let mut s = self.state.lock();
+        s.finished += bytes;
+        s.current = 0;
+        self.emit(&s);
+    }
+    fn phase(&self, phase: InstallPhase) {
+        let mut s = self.state.lock();
+        s.phase = phase;
+        if phase == InstallPhase::Ready {
+            s.finished = s.total;
+            s.current = 0;
+        }
+        self.emit(&s);
+    }
+    /// A component was added mid-install (processor runtime after a graphics-card failure).
+    fn grow(&self, bytes: u64) {
+        self.state.lock().total += bytes;
     }
 }
 
@@ -767,5 +1194,47 @@ where
             Err(std::sync::mpsc::RecvTimeoutError::Timeout) => continue,
             Err(_) => return Err(AppError::internal("download task stopped unexpectedly")),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn embedding_inputs_are_bounded_and_never_empty() {
+        assert_eq!(prepare_embedding_input("  ", 10), " ");
+        assert_eq!(prepare_embedding_input(" Ravi ", 10), "Ravi");
+        let long = "é".repeat(MAX_EMBED_INPUT_CHARS + 50);
+        assert_eq!(
+            prepare_embedding_input(&long, MAX_EMBED_INPUT_CHARS)
+                .chars()
+                .count(),
+            MAX_EMBED_INPUT_CHARS
+        );
+    }
+
+    #[test]
+    fn progress_is_one_combined_figure_across_files() {
+        let seen = Mutex::new(Vec::new());
+        let events = |e: InstallEvent| seen.lock().push((e.phase, e.done, e.total));
+        let p = Progress::new(1_000, &events);
+        p.file(DownloadPhase::Transferring, 100); // runtime
+        p.file(DownloadPhase::Verifying, 100);
+        p.finish_file(100);
+        p.file(DownloadPhase::Transferring, 400); // chat model, part way
+        p.finish_file(850);
+        p.file(DownloadPhase::Transferring, 50); // embedding model
+        p.finish_file(50);
+        p.phase(InstallPhase::Ready);
+        let seen = seen.lock().clone();
+        assert!(seen.iter().all(|(_, _, t)| *t == 1_000));
+        let dones: Vec<u64> = seen.iter().map(|(_, d, _)| *d).collect();
+        assert!(
+            dones.windows(2).all(|w| w[0] <= w[1]),
+            "never goes backwards: {dones:?}"
+        );
+        assert_eq!(seen[3], (InstallPhase::Downloading, 500, 1_000));
+        assert_eq!(*seen.last().unwrap(), (InstallPhase::Ready, 1_000, 1_000));
     }
 }

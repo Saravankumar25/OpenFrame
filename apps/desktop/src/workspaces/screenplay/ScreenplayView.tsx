@@ -99,6 +99,14 @@ export function ScreenplayView({ overview, layout, setLayout, onCompare, onRevie
   const [pendingComment, setPendingComment] = useState<CommentTarget | null>(null);
   const [focusCommentId, setFocusCommentId] = useState<string | null>(null);
   const [dialog, setDialog] = useState<DialogState | null>(null);
+  // The editor reports the cursor on every keystroke and the outline after every
+  // typing pause; only real changes may re-render this view (and its panels).
+  const onCursor = useCallback((c: CursorInfo) => {
+    setCursor((prev) => (prev.sceneId === c.sceneId && prev.elementId === c.elementId && prev.elementType === c.elementType ? prev : c));
+  }, []);
+  const onOutline = useCallback((next: OutlineScene[]) => {
+    setOutline((prev) => (sameOutline(prev, next) ? prev : next));
+  }, []);
   const pendingJump = useRef<string | null>(null);
   const blockedAt = useRef(0);
 
@@ -400,8 +408,8 @@ export function ScreenplayView({ overview, layout, setLayout, onCompare, onRevie
             canEdit={doc.data.canEdit}
             showNotes={layout.showNotes}
             comments={threads}
-            onOutline={setOutline}
-            onCursor={setCursor}
+            onOutline={onOutline}
+            onCursor={onCursor}
             onStatus={setSync}
             onBlockedEdit={onBlockedEdit}
             onFindShortcut={() => setFindOpen(true)}
@@ -607,4 +615,12 @@ export function ScreenplayView({ overview, layout, setLayout, onCompare, onRevie
       {!doc.data && !doc.error && <span className="sr-only">Loading the screenplay…</span>}
     </div>
   );
+}
+
+function sameOutline(a: OutlineScene[], b: OutlineScene[]): boolean {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    if (a[i].id !== b[i].id || a[i].number !== b[i].number || a[i].heading !== b[i].heading) return false;
+  }
+  return true;
 }

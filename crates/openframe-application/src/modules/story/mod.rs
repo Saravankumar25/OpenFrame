@@ -28,6 +28,7 @@ pub mod timeline;
 pub mod tree;
 
 pub fn register(r: &mut Registry) {
+    r.module("Story");
     board::register(r);
     build::register(r);
     characters::register(r);

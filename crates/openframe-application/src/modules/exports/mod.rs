@@ -61,16 +61,88 @@ pub use story::ExportStoryOutlineArgs;
 pub use visual::{ExportMoodboardArgs, ExportShotListArgs, ExportStoryboardSheetArgs};
 
 pub fn register(r: &mut Registry) {
-    r.query("story.export_board", story::export);
-    r.query("breakdown.export_report", breakdown::export);
-    r.query("moodboard.export_pdf", visual::export_moodboard);
-    r.query("storyboard.export_sheet", visual::export_storyboards);
-    r.query("shot.export_list", visual::export_shots);
-    r.query("schedule.export_schedule", schedule::export);
-    r.query("callsheets.export_pdf", callsheet::export);
-    r.query("sides.export_pdf", sides::export);
-    r.query("reports.export_report", reports::export);
-    r.query("budget.export_summary", budget::export);
+    use crate::registry::{FsEffect as Fs, OperationMetadata as M, hidden as h};
+    use openframe_domain::Capability as Cap;
+    r.module("Exports");
+    r.query("story.export_board", story::export).meta(
+        M::query(
+            Cap::Export,
+            "Export the Story Board outline (PDF/DOCX/…) to a location the user picked.",
+        )
+        .fs(Fs::WritesUserFile)
+        .hidden(h::USER_PATH),
+    );
+    r.query("breakdown.export_report", breakdown::export).meta(
+        M::query(
+            Cap::Export,
+            "Export breakdown sheets/reports to a location the user picked.",
+        )
+        .fs(Fs::WritesUserFile)
+        .hidden(h::USER_PATH),
+    );
+    r.query("moodboard.export_pdf", visual::export_moodboard)
+        .meta(
+            M::query(
+                Cap::Export,
+                "Export a moodboard to a location the user picked.",
+            )
+            .fs(Fs::WritesUserFile)
+            .hidden(h::USER_PATH),
+        );
+    r.query("storyboard.export_sheet", visual::export_storyboards)
+        .meta(
+            M::query(
+                Cap::Export,
+                "Export storyboard sheets to a location the user picked.",
+            )
+            .fs(Fs::WritesUserFile)
+            .hidden(h::USER_PATH),
+        );
+    r.query("shot.export_list", visual::export_shots).meta(
+        M::query(
+            Cap::Export,
+            "Export a shot list to a location the user picked.",
+        )
+        .fs(Fs::WritesUserFile)
+        .hidden(h::USER_PATH),
+    );
+    r.query("schedule.export_schedule", schedule::export).meta(
+        M::query(
+            Cap::Export,
+            "Export the shooting schedule to a location the user picked.",
+        )
+        .fs(Fs::WritesUserFile)
+        .hidden(h::USER_PATH),
+    );
+    r.query("callsheets.export_pdf", callsheet::export).meta(
+        M::query(
+            Cap::Export,
+            "Export a call sheet to a location the user picked.",
+        )
+        .fs(Fs::WritesUserFile)
+        .hidden(h::USER_PATH),
+    );
+    r.query("sides.export_pdf", sides::export).meta(
+        M::query(Cap::Export, "Export sides to a location the user picked.")
+            .fs(Fs::WritesUserFile)
+            .hidden(h::USER_PATH),
+    );
+    r.query("reports.export_report", reports::export).meta(
+        M::query(
+            Cap::Export,
+            "Export a production report to a location the user picked.",
+        )
+        .fs(Fs::WritesUserFile)
+        .hidden(h::USER_PATH),
+    );
+    r.query("budget.export_summary", budget::export).meta(
+        M::query(
+            Cap::Export,
+            "Export the budget summary to a location the user picked.",
+        )
+        .fs(Fs::WritesUserFile)
+        .hidden(h::USER_PATH),
+    );
 }
 
 /// What every export returns: where the snapshot was written and what it holds.

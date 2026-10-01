@@ -13,6 +13,7 @@
 ├─ project.sqlite-wal / -shm       present only while open
 ├─ assets/<aa>/<assetId>[.<ext>]   managed media; <aa> = last two hex chars of the id (reversed)
 ├─ cache/thumbnails/               rebuildable previews (never canonical)
+├─ cache/intelligence.sqlite       derived AI index (documents, vectors, context graph); deletable, rebuilt (doc 18)
 ├─ recovery/
 │  ├─ session.json                 crash marker (exists while a session is open)
 │  └─ checkpoint.sqlite            last confirmed saved state (explicit Save / clean close)

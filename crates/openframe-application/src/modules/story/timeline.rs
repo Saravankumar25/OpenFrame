@@ -17,9 +17,16 @@ use crate::store::MutationMeta;
 use crate::util::optional_text;
 
 pub fn register(r: &mut Registry) {
-    r.query("story.timeline", timeline);
-    r.command("story.assign_story_day", assign_story_day);
-    r.command("story.set_time_note", set_time_note);
+    use crate::registry::OperationMetadata as M;
+    r.query("story.timeline", timeline).meta(M::read(
+        "Story timeline: Story Day of each screenplay scene.",
+    ));
+    r.command("story.assign_story_day", assign_story_day)
+        .meta(M::edit(
+            "Assign screenplay scenes to a Story Day (or clear it).",
+        ));
+    r.command("story.set_time_note", set_time_note)
+        .meta(M::edit("Set a screenplay scene's time note."));
 }
 
 #[derive(Debug, Clone, Serialize, TS)]

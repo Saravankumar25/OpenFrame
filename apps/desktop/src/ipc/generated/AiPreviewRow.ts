@@ -5,6 +5,6 @@
  */
 export type AiPreviewRow = { label: string, value: string, 
 /**
- * "normal" | "excluded" | "locked"
+ * "normal" | "excluded" | "locked" | "destructive" | "section"
  */
 tone: string, };

@@ -11,16 +11,18 @@ import { useNav } from "../../app/stores";
 import { dayAndTime } from "../../app/home/format";
 import { ProjectSettingsForm } from "./ProjectSettingsForm";
 import { Templates } from "./Templates";
+import OfflineAiSettings from "./OfflineAi";
 
 const TABS = [
   { id: "general", label: "Project settings" },
   { id: "templates", label: "Templates" },
+  { id: "offline-ai", label: "Offline AI" },
 ] as const;
 
 export default function SettingsWorkspace() {
   const route = useNav((s) => s.route);
   const go = useNav((s) => s.go);
-  const tab = route.sub === "templates" ? "templates" : "general";
+  const tab = route.sub === "templates" || route.sub === "offline-ai" ? route.sub : "general";
   return (
     <>
       <div className="subnav" role="tablist" aria-label="Settings">
@@ -36,7 +38,7 @@ export default function SettingsWorkspace() {
           </button>
         ))}
       </div>
-      {tab === "templates" ? <Templates /> : <General />}
+      {tab === "templates" ? <Templates /> : tab === "offline-ai" ? <OfflineAiSettings /> : <General />}
     </>
   );
 }

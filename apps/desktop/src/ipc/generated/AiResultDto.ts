@@ -6,5 +6,14 @@ import type { AiProvenance } from "./AiProvenance";
 import type { AiResultItem } from "./AiResultItem";
 import type { AiResultKind } from "./AiResultKind";
 import type { AiResultStatus } from "./AiResultStatus";
+import type { AiStepDto } from "./AiStepDto";
 
-export type AiResultDto = { id: string, kind: AiResultKind, status: AiResultStatus, content: string, details: Array<string>, confidence: AiConfidence | null, provenance: Array<AiProvenance>, items: Array<AiResultItem>, nav: AiNavTarget | null, changeSet: AiChangeSetDto | null, errorCode: string | null, createdAt: number, };
+export type AiResultDto = { id: string, kind: AiResultKind, status: AiResultStatus, content: string, details: Array<string>, confidence: AiConfidence | null, provenance: Array<AiProvenance>, items: Array<AiResultItem>, nav: AiNavTarget | null, changeSet: AiChangeSetDto | null, errorCode: string | null, 
+/**
+ * The audited tool steps of this answer (what was used — never reasoning).
+ */
+steps: Array<AiStepDto>, 
+/**
+ * Background task started for this request (long-running tools, agentic spec §29).
+ */
+taskId: string | null, createdAt: number, };

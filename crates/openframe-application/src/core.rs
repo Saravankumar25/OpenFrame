@@ -304,7 +304,11 @@ impl AppCore {
     }
 
     pub fn set_project(&self, session: Option<Arc<ProjectSession>>) -> Option<Arc<ProjectSession>> {
-        std::mem::replace(&mut *self.project.write(), session)
+        let prev = std::mem::replace(&mut *self.project.write(), session.clone());
+        // The derived AI intelligence index follows the open project (detach waits for its
+        // background worker to release the project files; attach never blocks).
+        crate::modules::ai::intelligence::session_changed(self, prev.as_ref(), session.as_ref());
+        prev
     }
 
     /// The Global Idea Vault store, opened lazily.

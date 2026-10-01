@@ -17,11 +17,18 @@ use crate::registry::{Registry, SearchDoc, TrashHandler};
 use crate::store::{DeletedItemRow, MutationMeta, Tx};
 
 pub fn register(r: &mut Registry) {
-    r.command("screenplay.update_title_page", update_title_page);
-    r.query("screenplay.view_state", view_state);
-    r.command("screenplay.set_view_state", set_view_state);
-    r.query("screenplay.scene_hub", scene_hub);
-    r.query("screenplay.story_reference", story_reference);
+    use crate::registry::{OperationMetadata as M, hidden as h};
+    use openframe_domain::Capability as Cap;
+    r.command("screenplay.update_title_page", update_title_page)
+        .meta(M::edit("Edit a screenplay's title page."));
+    r.query("screenplay.view_state", view_state)
+        .meta(M::read("The user's screenplay editor layout preferences.").hidden(h::VIEW_STATE));
+    r.command("screenplay.set_view_state", set_view_state).meta(
+        M::command(Cap::View, "Save screenplay editor layout preferences.").hidden(h::VIEW_STATE),
+    );
+    r.query("screenplay.scene_hub", scene_hub).meta(M::compute("Everything linked to a scene across modules (breakdown, shots, storyboards, schedule, comments, story)."));
+    r.query("screenplay.story_reference", story_reference)
+        .meta(M::read("The Scene Card a screenplay scene came from."));
     r.indexer("screenplay_scene", index_scene);
     r.trash_handler(TrashHandler {
         object_type: "screenplay_scene",

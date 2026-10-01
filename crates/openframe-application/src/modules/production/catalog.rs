@@ -41,17 +41,41 @@ openframe_domain::string_enum!(
 );
 
 pub fn register(r: &mut Registry) {
-    r.query("catalog.list", list);
-    r.query("catalog.get", get);
-    r.query("catalog.find_matches", find_matches_op);
-    r.command("catalog.create", create);
-    r.command("catalog.update", update);
-    r.command("catalog.set_image", set_image);
-    r.command("catalog.add_alias", add_alias);
-    r.command("catalog.remove_alias", remove_alias);
-    r.command("catalog.set_archived", set_archived);
-    r.command("catalog.delete", delete);
-    r.command("catalog.replace_in_scenes", replace_in_scenes);
+    use crate::registry::{FsEffect as Fs, OperationMetadata as M, hidden as h};
+    r.module("Production");
+    r.query("catalog.list", list).meta(M::search(
+        "Production Catalog items (by category or search).",
+    ));
+    r.query("catalog.get", get).meta(M::read(
+        "One catalog item with aliases and the scenes that use it.",
+    ));
+    r.query("catalog.find_matches", find_matches_op)
+        .meta(M::search(
+            "Catalog items that match a name (duplicate check).",
+        ));
+    r.command("catalog.create", create)
+        .meta(M::edit("Create a Production Catalog item."));
+    r.command("catalog.update", update).meta(M::edit(
+        "Edit a catalog item (name, status, description, notes, contact).",
+    ));
+    r.command("catalog.set_image", set_image).meta(
+        M::edit("Set or remove a catalog item's image from a file the user picked.")
+            .fs(Fs::ReadsUserFile)
+            .hidden(h::MEDIA_INPUT),
+    );
+    r.command("catalog.add_alias", add_alias).meta(M::edit(
+        "Add an alias (another script name) to a catalog item.",
+    ));
+    r.command("catalog.remove_alias", remove_alias)
+        .meta(M::edit("Remove a catalog alias."));
+    r.command("catalog.set_archived", set_archived)
+        .meta(M::edit("Archive or unarchive a catalog item.").confirm());
+    r.command("catalog.delete", delete)
+        .meta(M::soft_delete("Move a catalog item to Recently Deleted.").confirm());
+    r.command("catalog.replace_in_scenes", replace_in_scenes)
+        .meta(M::edit(
+            "Replace one catalog item with another in selected scenes (old item kept).",
+        ));
     r.indexer("catalog_item", index_item);
     r.trash_handler(TrashHandler {
         object_type: "catalog_item",

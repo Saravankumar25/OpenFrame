@@ -9,5 +9,7 @@ publish.workspace = true
 [dependencies]
 openframe-domain.workspace = true
 openframe-application.workspace = true
+openframe-search.workspace = true
 serde_json.workspace = true
 tempfile.workspace = true
+base64.workspace = true

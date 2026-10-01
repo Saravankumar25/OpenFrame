@@ -23,32 +23,124 @@ use crate::store::{MutationMeta, Store};
 use crate::util::{optional_text, required_text};
 
 pub fn register(r: &mut Registry) {
-    r.query("app.info", app_info);
-    r.command("app.set_display_name", set_display_name);
-    r.query("app.save_state", save_state);
-    r.command("app.cancel_task", cancel_task);
-    r.query("project.list_recent", list_recent);
-    r.command("project.create", create);
-    r.command("project.open", open);
-    r.command("project.close", close);
-    r.query("project.current", current);
-    r.query("project.home", home);
-    r.command("project.update_settings", update_settings);
-    r.command("project.set_status", set_status);
-    r.command("project.save", save_checkpoint);
-    r.command("project.resolve_recovery", resolve_recovery);
-    r.command("project.set_archived", set_archived);
-    r.command("project.duplicate", duplicate);
-    r.command("project.delete", delete_project);
-    r.command("project.remove_recent", remove_recent);
-    r.command("project.locate", locate);
-    r.command("project.set_last_location", set_last_location);
-    r.query("project.members", members);
-    r.command("project.rename", rename);
-    r.command("project.set_pinned", set_pinned);
-    r.query("project.recovery_state", recovery_state);
-    r.query("project.get_settings", get_settings);
-    r.query("project.deleted_items", deleted_items);
+    use crate::registry::{FsEffect as Fs, OperationMetadata as M, hidden as h};
+    r.module("Project");
+    r.query("app.info", app_info).meta(
+        M::app_query("Application version, folders and the local profile.").hidden(h::ASSET_PATH),
+    );
+    r.command("app.set_display_name", set_display_name)
+        .meta(M::app_command("Change the local user's display name.").hidden(h::SESSION_CONTROL));
+    r.query("app.save_state", save_state)
+        .meta(M::app_query("Save indicator state for the status bar.").hidden(h::UI_FLOW));
+    r.command("app.cancel_task", cancel_task)
+        .meta(M::app_command("Cancel a running background task.").hidden(h::SESSION_CONTROL));
+    r.query("project.list_recent", list_recent).meta(
+        M::app_query("Recent projects on this computer (Home project list).")
+            .fs(Fs::ProjectStorage)
+            .hidden(h::APP_LIFECYCLE),
+    );
+    r.command("project.create", create).meta(
+        M::app_command("Create a new project folder and open it.")
+            .fs(Fs::ProjectStorage)
+            .hidden(h::APP_LIFECYCLE),
+    );
+    r.command("project.open", open).meta(
+        M::app_command("Open a project from disk (lock, integrity check, migrate, recover).")
+            .fs(Fs::ProjectStorage)
+            .hidden(h::APP_LIFECYCLE),
+    );
+    r.command("project.close", close)
+        .meta(M::app_command("Close the open project.").hidden(h::APP_LIFECYCLE));
+    r.query("project.current", current)
+        .meta(M::app_query("Summary of the open project, if any.").hidden(h::APP_LIFECYCLE));
+    r.query("project.home", home).meta(M::compute(
+        "Project Home: headline counts, recent activity and continue location.",
+    ));
+    r.command("project.update_settings", update_settings)
+        .meta(M::command(
+            Capability::ManageProject,
+            "Change project settings (title, type, language, genre, creator, logline).",
+        ));
+    r.command("project.set_status", set_status).meta(M::command(
+        Capability::ManageProject,
+        "Change the project status (Idea, Development, …).",
+    ));
+    r.command("project.save", save_checkpoint)
+        .meta(M::edit("Save a checkpoint of the open project now.").hidden(h::SESSION_CONTROL));
+    r.command("project.resolve_recovery", resolve_recovery)
+        .meta(
+            M::command(
+                Capability::Edit,
+                "Keep or discard recovered changes after a crash.",
+            )
+            .fs(Fs::ProjectStorage)
+            .destructive()
+            .confirm()
+            .hidden(h::APP_LIFECYCLE),
+        );
+    r.command("project.set_archived", set_archived).meta(
+        M::command(
+            Capability::ManageProject,
+            "Archive or unarchive a project in the project list.",
+        )
+        .hidden(h::APP_LIFECYCLE),
+    );
+    r.command("project.duplicate", duplicate).meta(
+        M::command(
+            Capability::ManageProject,
+            "Duplicate a project folder on disk.",
+        )
+        .fs(Fs::ProjectStorage)
+        .hidden(h::APP_LIFECYCLE),
+    );
+    r.command("project.delete", delete_project).meta(
+        M::command(
+            Capability::PermanentDelete,
+            "Delete a project (moves its folder to the Recycle Bin).",
+        )
+        .fs(Fs::ProjectStorage)
+        .destructive()
+        .irreversible()
+        .confirm()
+        .hidden(h::DELETE_FOREVER),
+    );
+    r.command("project.remove_recent", remove_recent).meta(
+        M::app_command("Remove a project from the recent-projects list.").hidden(h::APP_LIFECYCLE),
+    );
+    r.command("project.locate", locate).meta(
+        M::app_command("Point a recent project at its moved folder.")
+            .fs(Fs::ProjectStorage)
+            .hidden(h::USER_PATH),
+    );
+    r.command("project.set_last_location", set_last_location)
+        .meta(
+            M::command(Capability::View, "Remember where the user was (Continue).")
+                .hidden(h::VIEW_STATE),
+        );
+    r.query("project.members", members)
+        .meta(M::read("People on this project and their roles."));
+    r.command("project.rename", rename).meta(
+        M::command(
+            Capability::ManageProject,
+            "Rename a project from the project list.",
+        )
+        .hidden(h::APP_LIFECYCLE),
+    );
+    r.command("project.set_pinned", set_pinned).meta(
+        M::app_command("Pin a project in the recent-projects list.").hidden(h::APP_LIFECYCLE),
+    );
+    r.query("project.recovery_state", recovery_state).meta(
+        M::read("Crash-recovery offer for the open project.")
+            .fs(Fs::ProjectStorage)
+            .hidden(h::APP_LIFECYCLE),
+    );
+    r.query("project.get_settings", get_settings).meta(M::read(
+        "Project settings: title, type, status, language, genre, creator, logline.",
+    ));
+    r.query("project.deleted_items", deleted_items)
+        .meta(M::read(
+            "Recently Deleted: items that can still be restored.",
+        ));
 }
 
 /// Keys of `sys_settings` (application database).

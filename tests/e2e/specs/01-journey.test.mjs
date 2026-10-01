@@ -335,8 +335,10 @@ describe("desktop journey", () => {
   test("AI panel says Offline AI is not installed (no network needed)", async () => {
     await step("ai", async () => {
       await click(browser, "Assistant");
-      await waitForText(browser, "Offline AI isn't installed on this computer.");
-      assert.match(await pageText(browser), /Everything else in OpenFrame works normally\./);
+      await waitForText(browser, "Offline AI is not installed.");
+      assert.match(await pageText(browser), /OpenFrame works normally without Offline AI\./);
+      // Ordinary UI never names the model, format or runtime (agentic AI spec §36).
+      assert.doesNotMatch(await pageText(browser), /gemma|gguf|q4_k|llama|embedding/i);
       await button(browser, "Download Offline AI");
       await assertQuietConsole("ai panel");
     });

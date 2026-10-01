@@ -27,47 +27,57 @@ pub struct ToolSpec {
     pub schema: fn() -> Value,
 }
 
+// Strict, bounded argument schemas (agentic spec §39).
+use super::toolbox::schema as sc;
+
 fn no_args() -> Value {
-    json!({"type": "object", "properties": {}, "additionalProperties": false})
+    sc::none()
 }
 fn draft_arg() -> Value {
-    json!({"type": "object", "properties": {"draft": {"type": "string"}}, "additionalProperties": false})
+    sc::obj(&[("draft", sc::s(120))], &[])
 }
 fn characters_args() -> Value {
-    json!({"type": "object", "properties": {
-        "characters": {"type": "array", "items": {"type": "string"}, "minItems": 1, "maxItems": 6},
-        "draft": {"type": "string"}}, "required": ["characters"], "additionalProperties": false})
+    sc::obj(
+        &[
+            ("characters", sc::arr(sc::s(120), 6)),
+            ("draft", sc::s(120)),
+        ],
+        &["characters"],
+    )
 }
 fn text_draft_args() -> Value {
-    json!({"type": "object", "properties": {"text": {"type": "string"}, "draft": {"type": "string"}},
-        "required": ["text"], "additionalProperties": false})
+    sc::obj(&[("text", sc::s(200)), ("draft", sc::s(120))], &["text"])
 }
 fn act_args() -> Value {
-    json!({"type": "object", "properties": {"act": {"type": "string"}}, "required": ["act"], "additionalProperties": false})
+    sc::obj(&[("act", sc::s(200))], &["act"])
 }
 fn compare_args() -> Value {
-    json!({"type": "object", "properties": {"fromDraft": {"type": "string"}, "toDraft": {"type": "string"}},
-        "required": ["fromDraft", "toDraft"], "additionalProperties": false})
+    sc::obj(
+        &[("fromDraft", sc::s(120)), ("toDraft", sc::s(120))],
+        &["fromDraft", "toDraft"],
+    )
 }
 fn text_args() -> Value {
-    json!({"type": "object", "properties": {"text": {"type": "string"}}, "required": ["text"], "additionalProperties": false})
+    sc::obj(&[("text", sc::s(200))], &["text"])
 }
 fn open_scene_args() -> Value {
-    json!({"type": "object", "properties": {"sceneNumber": {"type": "integer", "minimum": 1}, "draft": {"type": "string"}},
-        "required": ["sceneNumber"], "additionalProperties": false})
+    sc::obj(
+        &[("sceneNumber", sc::scene_number()), ("draft", sc::s(120))],
+        &["sceneNumber"],
+    )
 }
 fn workspace_args() -> Value {
     let names: Vec<&str> = WORKSPACES.iter().map(|(id, _)| *id).collect();
-    json!({"type": "object", "properties": {"workspace": {"enum": names}}, "required": ["workspace"], "additionalProperties": false})
+    sc::obj(&[("workspace", sc::en(&names))], &["workspace"])
 }
 fn question_args() -> Value {
-    json!({"type": "object", "properties": {"question": {"type": "string"}}, "required": ["question"], "additionalProperties": false})
+    sc::obj(&[("question", sc::s(1000))], &["question"])
 }
 fn private_args() -> Value {
-    json!({"type": "object", "properties": {"whose": {"enum": ["mine", "someone_else"]}}, "required": ["whose"], "additionalProperties": false})
+    sc::obj(&[("whose", sc::en(&["mine", "someone_else"]))], &["whose"])
 }
 fn scene_opt_args() -> Value {
-    json!({"type": "object", "properties": {"sceneNumber": {"type": "integer", "minimum": 1}}, "additionalProperties": false})
+    sc::obj(&[("sceneNumber", sc::scene_number())], &[])
 }
 
 /// Read / compute / navigate / suggest tools. Mutation proposal tools live in `catalog`.
@@ -378,11 +388,11 @@ impl ToolOutput {
         o.confidence = None;
         o
     }
-    fn detail(mut self, d: impl Into<String>) -> Self {
+    pub(crate) fn detail(mut self, d: impl Into<String>) -> Self {
         self.details.push(d.into());
         self
     }
-    fn prov(mut self, kind: &str, label: impl Into<String>) -> Self {
+    pub(crate) fn prov(mut self, kind: &str, label: impl Into<String>) -> Self {
         self.provenance.push(Provenance::new(kind, label));
         self
     }
@@ -402,7 +412,7 @@ impl ToolCtx<'_> {
     }
 }
 
-fn plural(n: usize, one: &str, many: &str) -> String {
+pub(crate) fn plural(n: usize, one: &str, many: &str) -> String {
     if n == 1 {
         format!("1 {one}")
     } else {
@@ -410,7 +420,7 @@ fn plural(n: usize, one: &str, many: &str) -> String {
     }
 }
 
-fn scene_nav(draft: &DraftRef, s: &SceneRow) -> NavTarget {
+pub(crate) fn scene_nav(draft: &DraftRef, s: &SceneRow) -> NavTarget {
     let nav = NavTarget::to("screenplay")
         .with("draftId", &draft.id)
         .with("sceneId", &s.id);
@@ -420,7 +430,7 @@ fn scene_nav(draft: &DraftRef, s: &SceneRow) -> NavTarget {
     }
 }
 
-fn scene_items(draft: &DraftRef, scenes: &[&SceneRow]) -> Vec<ResultItem> {
+pub(crate) fn scene_items(draft: &DraftRef, scenes: &[&SceneRow]) -> Vec<ResultItem> {
     scenes
         .iter()
         .map(|s| ResultItem {
@@ -791,7 +801,7 @@ fn scenes_with_characters(
     ))
 }
 
-fn title_case(s: &str) -> String {
+pub(crate) fn title_case(s: &str) -> String {
     s.split_whitespace()
         .map(|w| {
             let mut c = w.chars();
@@ -1403,7 +1413,7 @@ pub fn search_hits(
     Ok(rows)
 }
 
-fn nav_from_json(v: &Value) -> Option<NavTarget> {
+pub(crate) fn nav_from_json(v: &Value) -> Option<NavTarget> {
     let workspace = v.get("workspace")?.as_str()?.to_string();
     let sub = v.get("sub").and_then(|s| s.as_str()).map(|s| s.to_string());
     let mut params = BTreeMap::new();

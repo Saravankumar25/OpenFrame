@@ -328,6 +328,18 @@ export interface MenuItemSpec {
   header?: boolean;
 }
 
+/**
+ * Menu items, or a function that builds them. A function is only called when
+ * the menu opens, so long lists (hundreds of cards, strips or scenes, each with
+ * a context menu) don't build every menu on every render.
+ */
+export type MenuItems = MenuItemSpec[] | (() => MenuItemSpec[]);
+
+/** Rendered inside the (only-when-open) menu content, so lazy items are built on open. */
+function MenuItemList<T extends typeof RMenu | typeof RContext>({ ns, items }: { ns: T; items: MenuItems }) {
+  return <>{renderItems(ns, typeof items === "function" ? items() : items)}</>;
+}
+
 function renderItems<T extends typeof RMenu | typeof RContext>(ns: T, items: MenuItemSpec[]) {
   const Item = ns.Item as typeof RMenu.Item;
   const Sep = ns.Separator as typeof RMenu.Separator;
@@ -349,13 +361,13 @@ function renderItems<T extends typeof RMenu | typeof RContext>(ns: T, items: Men
 }
 
 /** Dropdown menu attached to a trigger element. */
-export function Menu({ trigger, items, align = "start" }: { trigger: ReactNode; items: MenuItemSpec[]; align?: "start" | "end" }) {
+export function Menu({ trigger, items, align = "start" }: { trigger: ReactNode; items: MenuItems; align?: "start" | "end" }) {
   return (
     <RMenu.Root>
       <RMenu.Trigger asChild>{trigger}</RMenu.Trigger>
       <RMenu.Portal>
         <RMenu.Content className="menu-pop" align={align} sideOffset={4}>
-          {renderItems(RMenu, items)}
+          <MenuItemList ns={RMenu} items={items} />
         </RMenu.Content>
       </RMenu.Portal>
     </RMenu.Root>
@@ -363,12 +375,14 @@ export function Menu({ trigger, items, align = "start" }: { trigger: ReactNode; 
 }
 
 /** Right-click context menu (FSD §3.6: only actions meaningful for the object). */
-export function ContextMenu({ children, items }: { children: ReactNode; items: MenuItemSpec[] }) {
+export function ContextMenu({ children, items }: { children: ReactNode; items: MenuItems }) {
   return (
     <RContext.Root>
       <RContext.Trigger asChild>{children}</RContext.Trigger>
       <RContext.Portal>
-        <RContext.Content className="menu-pop">{renderItems(RContext, items)}</RContext.Content>
+        <RContext.Content className="menu-pop">
+          <MenuItemList ns={RContext} items={items} />
+        </RContext.Content>
       </RContext.Portal>
     </RContext.Root>
   );

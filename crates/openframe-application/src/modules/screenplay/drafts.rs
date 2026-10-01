@@ -27,19 +27,40 @@ use crate::store::{DeleteSpec, DeletedItemRow, MutationMeta, Tx, soft_delete};
 use crate::util::{optional_text, required_text};
 
 pub fn register(r: &mut Registry) {
-    r.command("screenplay.create", create);
-    r.command("screenplay.new_draft", new_draft);
-    r.command("screenplay.rename_draft", rename_draft);
-    r.command("screenplay.set_current_draft", set_current_draft);
-    r.command("screenplay.restore_draft", restore_draft);
-    r.command("screenplay.delete_draft", delete_draft);
-    r.query("screenplay.lock_summary", lock_summary);
-    r.command("screenplay.lock_draft", lock_draft);
-    r.command("screenplay.unlock_draft", unlock_draft);
-    r.command("screenplay.start_revision", start_revision);
-    r.command("screenplay.update_revision", update_revision);
-    r.query("screenplay.history_points", history_points);
-    r.command("screenplay.restore_history_point", restore_history_point);
+    use crate::registry::{OperationMetadata as M, hidden as h};
+    use openframe_domain::Capability as Cap;
+    r.command("screenplay.create", create)
+        .meta(M::edit("Create a screenplay with its first draft."));
+    r.command("screenplay.new_draft", new_draft)
+        .meta(M::edit("Create a new draft copied from an existing draft."));
+    r.command("screenplay.rename_draft", rename_draft)
+        .meta(M::edit("Rename a draft or edit its note."));
+    r.command("screenplay.set_current_draft", set_current_draft)
+        .meta(M::edit("Make a draft the Current draft."));
+    r.command("screenplay.restore_draft", restore_draft)
+        .meta(M::edit("Restore an earlier draft as a new draft."));
+    r.command("screenplay.delete_draft", delete_draft)
+        .meta(M::soft_delete("Move a draft to Recently Deleted.").confirm());
+    r.query("screenplay.lock_summary", lock_summary)
+        .meta(M::compute(
+            "Lock check for a draft: status, open comments, scene count.",
+        ));
+    r.command("screenplay.lock_draft", lock_draft)
+        .meta(M::command(Cap::LockOrFinalize, "Lock a draft as the shooting draft.").confirm());
+    r.command("screenplay.unlock_draft", unlock_draft)
+        .meta(M::command(Cap::ManageProject, "Unlock a locked draft.").hidden(h::LOCK_OVERRIDE));
+    r.command("screenplay.start_revision", start_revision)
+        .meta(M::edit(
+            "Start a revision of a locked draft (new Revision draft).",
+        ));
+    r.command("screenplay.update_revision", update_revision)
+        .meta(M::edit("Edit a revision's label, colour or reason."));
+    r.query("screenplay.history_points", history_points)
+        .meta(M::read("Automatic history points of a draft."));
+    r.command("screenplay.restore_history_point", restore_history_point)
+        .meta(M::edit(
+            "Restore an automatic history point as a new draft.",
+        ));
     r.trash_handler(TrashHandler {
         object_type: "screenplay_draft",
         table: "screenplay_draft",

@@ -26,18 +26,46 @@ use crate::store::{DeleteSpec, DeletedItemRow, MutationMeta, Tx, soft_delete};
 use crate::util::ingest_file;
 
 pub fn register(r: &mut Registry) {
-    r.query("callsheets.list", list);
-    r.query("callsheets.get", get);
-    r.query("callsheets.refresh_preview", refresh_preview);
-    r.command("callsheets.create", create);
-    r.command("callsheets.update", update);
-    r.command("callsheets.set_ready", set_ready);
-    r.command("callsheets.refresh", refresh);
-    r.command("callsheets.finalize", finalize);
-    r.command("callsheets.issue", issue);
-    r.command("callsheets.new_revision", new_revision);
-    r.command("callsheets.attach", attach);
-    r.command("callsheets.delete", delete);
+    use crate::registry::{FsEffect as Fs, OperationMetadata as M, hidden as h};
+    use openframe_domain::Capability as Cap;
+    r.module("Call Sheets");
+    r.query("callsheets.list", list)
+        .meta(M::read("Call sheets with day, revision and status."));
+    r.query("callsheets.get", get).meta(M::read(
+        "One call sheet document (general info, scenes, cast, crew, notes).",
+    ));
+    r.query("callsheets.refresh_preview", refresh_preview)
+        .meta(M::compute(
+            "What refreshing a call sheet from the schedule would change.",
+        ));
+    r.command("callsheets.create", create)
+        .meta(M::edit("Create a call sheet for a shooting day."));
+    r.command("callsheets.update", update)
+        .meta(M::edit("Save edits to a call sheet document."));
+    r.command("callsheets.set_ready", set_ready)
+        .meta(M::edit("Mark a call sheet Ready (or back to Draft)."));
+    r.command("callsheets.refresh", refresh)
+        .meta(M::edit("Refresh a call sheet from the current schedule."));
+    r.command("callsheets.finalize", finalize).meta(
+        M::command(
+            Cap::LockOrFinalize,
+            "Finalize a call sheet (frozen snapshot).",
+        )
+        .confirm(),
+    );
+    r.command("callsheets.issue", issue).meta(M::command(
+        Cap::LockOrFinalize,
+        "Mark a finalized call sheet as issued.",
+    ));
+    r.command("callsheets.new_revision", new_revision)
+        .meta(M::edit("Start a new revision of a finalized call sheet."));
+    r.command("callsheets.attach", attach).meta(
+        M::edit("Attach a file the user picked to a call sheet.")
+            .fs(Fs::ReadsUserFile)
+            .hidden(h::USER_PATH),
+    );
+    r.command("callsheets.delete", delete)
+        .meta(M::soft_delete("Move a call sheet to Recently Deleted."));
     r.indexer("call_sheet", index_call_sheet);
     r.trash_handler(TrashHandler {
         object_type: "call_sheet",

@@ -45,6 +45,11 @@ pub const PROJECT_MIGRATIONS: &[Migration] = &[
         "collaboration",
         "../../../migrations/project/0009_collaboration.sql"
     ),
+    m!(
+        10,
+        "performance",
+        "../../../migrations/project/0010_performance.sql"
+    ),
 ];
 
 pub const GLOBAL_MIGRATIONS: &[Migration] = &[
@@ -53,6 +58,11 @@ pub const GLOBAL_MIGRATIONS: &[Migration] = &[
         2,
         "idea_vault",
         "../../../migrations/global/0002_idea_vault.sql"
+    ),
+    m!(
+        3,
+        "performance",
+        "../../../migrations/global/0003_performance.sql"
     ),
 ];
 

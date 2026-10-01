@@ -19,16 +19,29 @@ use crate::store::{DeleteSpec, MutationMeta, soft_delete};
 use crate::util::{optional_text, required_text};
 
 pub fn register(r: &mut Registry) {
-    r.query("story.series", series);
-    r.command("story.create_season", create_season);
-    r.command("story.update_season", update_season);
-    r.command("story.move_season", move_season);
-    r.command("story.delete_season", delete_season);
-    r.command("story.create_episode", create_episode);
-    r.command("story.update_episode", update_episode);
-    r.command("story.move_episode", move_episode);
-    r.command("story.delete_episode", delete_episode);
-    r.command("story.duplicate_episode", duplicate_episode);
+    use crate::registry::OperationMetadata as M;
+    r.query("story.series", series)
+        .meta(M::read("Seasons and episodes of a series."));
+    r.command("story.create_season", create_season)
+        .meta(M::edit("Create a season."));
+    r.command("story.update_season", update_season)
+        .meta(M::edit("Rename a season or edit its note."));
+    r.command("story.move_season", move_season)
+        .meta(M::edit("Move a season to another position."));
+    r.command("story.delete_season", delete_season)
+        .meta(M::soft_delete("Move a season to Recently Deleted.").confirm());
+    r.command("story.create_episode", create_episode)
+        .meta(M::edit("Create an episode."));
+    r.command("story.update_episode", update_episode)
+        .meta(M::edit("Edit an episode's title, summary or status."));
+    r.command("story.move_episode", move_episode)
+        .meta(M::edit("Move an episode to another season or position."));
+    r.command("story.delete_episode", delete_episode)
+        .meta(M::soft_delete("Move an episode to Recently Deleted.").confirm());
+    r.command("story.duplicate_episode", duplicate_episode)
+        .meta(M::edit(
+            "Duplicate an episode (optionally with its Story Board).",
+        ));
 }
 
 /// Episode status labels shown on the series home (UX §3.20).

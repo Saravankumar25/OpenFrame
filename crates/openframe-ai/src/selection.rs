@@ -1,43 +1,32 @@
-//! Hardware-aware profile recommendation (Local AI Runtime spec §5).
+//! Device check for the single Offline AI profile (Local AI Runtime spec §5).
 //!
-//! Produces: recommended profile, runtime backend, expected disk usage,
-//! minimum free disk and a "likely slow" warning. Users may override with a
-//! simple profile name; quantization details never reach the UI.
+//! There is no model picker: this module only decides HOW the one profile runs on this computer
+//! (graphics card or processor, how many layers to offload), how much free disk it needs, and
+//! whether answers are likely to be slow. Quantization details never reach the UI.
 
 use serde::Serialize;
 
 use crate::hardware::HardwareInfo;
-use crate::manifest::{Backend, Manifest, ModelEntry, Tier};
+use crate::manifest::{Backend, ModelEntry};
 
 const GIB: u64 = 1024 * 1024 * 1024;
 /// Head-room kept free on the drive after installation.
 pub const DISK_MARGIN_BYTES: u64 = 512 * 1024 * 1024;
 /// Extracted runtime is roughly this many times the archive size.
 const RUNTIME_EXTRACT_FACTOR: u64 = 3;
-/// Minimum graphics memory for the Vulkan build to be worth using.
-const MIN_USEFUL_VRAM: u64 = 3 * GIB;
+/// Graphics memory kept free for the desktop / other applications before offloading.
+const VRAM_HEADROOM: u64 = 512 * 1024 * 1024;
 
+/// How well this computer suits Offline AI.
 #[derive(Debug, Clone, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
-pub struct ProfileFit {
-    pub profile_id: String,
-    pub tier: Tier,
+pub struct Fitness {
+    /// Enough memory to run at all.
     pub suitable: bool,
+    /// Works, but answers may be slow.
     pub likely_slow: bool,
-    /// Plain-language explanation, e.g. "Needs at least 16 GB of memory."
-    pub note: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, PartialEq)]
-#[serde(rename_all = "camelCase")]
-pub struct Recommendation {
-    pub profile_id: String,
-    pub tier: Tier,
-    pub backend: Backend,
-    pub runtime_id: String,
-    pub likely_slow: bool,
+    /// Plain-language warnings (no model or file names).
     pub warnings: Vec<String>,
-    pub fits: Vec<ProfileFit>,
 }
 
 fn gb(bytes: u64) -> String {
@@ -49,9 +38,13 @@ fn gb(bytes: u64) -> String {
     }
 }
 
-/// Use the graphics card when a real adapter with enough memory and a Vulkan driver exist.
-pub fn choose_backend(hw: &HardwareInfo) -> Backend {
-    if hw.vulkan_available && hw.best_vram_bytes() >= MIN_USEFUL_VRAM {
+/// Use the graphics card only when a real (non-software) adapter has enough DEDICATED memory
+/// for the whole chat model plus head-room and a Vulkan driver is installed. Integrated graphics
+/// report little dedicated memory and share system RAM; on those the processor build is used
+/// (see the benchmark in the Local AI Runtime spec §4.2). A graphics-card start failure falls
+/// back to the processor build at install time.
+pub fn choose_backend(hw: &HardwareInfo, chat: &ModelEntry) -> Backend {
+    if hw.vulkan_available && hw.best_vram_bytes() >= chat.gpu_vram_bytes + VRAM_HEADROOM {
         Backend::Vulkan
     } else {
         Backend::Cpu
@@ -68,90 +61,40 @@ pub fn gpu_layers(hw: &HardwareInfo, model: &ModelEntry, backend: Backend) -> i3
     if vram >= model.gpu_vram_bytes {
         999
     } else {
-        // Qwen-class models have ~28-36 layers; offload the share that fits.
-        ((vram as f64 / model.gpu_vram_bytes as f64) * 32.0)
+        let layers = if model.layers > 0 { model.layers } else { 32 } as f64;
+        ((vram as f64 / model.gpu_vram_bytes.max(1) as f64) * layers)
             .floor()
             .max(0.0) as i32
     }
 }
 
-pub fn assess(hw: &HardwareInfo, model: &ModelEntry, backend: Backend) -> ProfileFit {
-    let gpu_full = backend == Backend::Vulkan && hw.best_vram_bytes() >= model.gpu_vram_bytes;
-    let suitable = hw.total_ram_bytes >= model.min_ram_bytes || gpu_full;
+/// Memory/processor assessment for the profile's chat model.
+pub fn assess(hw: &HardwareInfo, chat: &ModelEntry, backend: Backend) -> Fitness {
+    let gpu_full = backend == Backend::Vulkan && hw.best_vram_bytes() >= chat.gpu_vram_bytes;
+    let suitable = hw.total_ram_bytes >= chat.min_ram_bytes || gpu_full;
     let likely_slow =
-        !gpu_full && (hw.total_ram_bytes < model.recommended_ram_bytes || hw.logical_cpus < 4);
-    let note = if !suitable {
-        Some(format!(
-            "Needs at least {} of memory. This computer has {}.",
-            gb(model.min_ram_bytes),
-            gb(hw.total_ram_bytes)
-        ))
-    } else if likely_slow {
-        Some("Works on this computer, but answers may be slow.".to_string())
-    } else {
-        None
-    };
-    ProfileFit {
-        profile_id: model.profile_id.clone(),
-        tier: model.tier,
-        suitable,
-        likely_slow,
-        note,
-    }
-}
-
-/// Pick the best profile this machine runs comfortably; fall back to the
-/// smallest profile (with a warning) on low-memory machines.
-pub fn recommend(hw: &HardwareInfo, manifest: &Manifest) -> Option<Recommendation> {
-    let backend_pref = choose_backend(hw);
-    let (backend, runtime) = match manifest.runtime_for(backend_pref) {
-        Some(r) => (backend_pref, r),
-        None => (Backend::Cpu, manifest.runtime_for(Backend::Cpu)?),
-    };
-    let mut models: Vec<&ModelEntry> = manifest.models.iter().collect();
-    models.sort_by_key(|m| m.tier.rank());
-    let fits: Vec<ProfileFit> = models.iter().map(|m| assess(hw, m, backend)).collect();
-    let comfortable = models
-        .iter()
-        .zip(&fits)
-        .rev()
-        .find(|(_, f)| f.suitable && !f.likely_slow)
-        .map(|(m, _)| *m);
-    let usable = models
-        .iter()
-        .zip(&fits)
-        .rev()
-        .find(|(_, f)| f.suitable)
-        .map(|(m, _)| *m);
-    let chosen = comfortable.or(usable).or_else(|| models.first().copied())?;
-    let fit = fits
-        .iter()
-        .find(|f| f.profile_id == chosen.profile_id)
-        .cloned()?;
+        !gpu_full && (hw.total_ram_bytes < chat.recommended_ram_bytes || hw.logical_cpus < 4);
     let mut warnings = Vec::new();
-    if !fit.suitable {
+    if !suitable {
         warnings.push(format!(
-            "This computer has less memory than Offline AI normally needs ({}). It may be very slow or fail to start.",
-            gb(hw.total_ram_bytes)
+            "This computer has less memory than Offline AI normally needs ({} of {}). It may be very slow or fail to start.",
+            gb(hw.total_ram_bytes),
+            gb(chat.min_ram_bytes)
         ));
-    } else if fit.likely_slow {
+    } else if likely_slow {
         warnings.push(
             "Offline AI will work on this computer, but answers may take a while.".to_string(),
         );
     }
-    Some(Recommendation {
-        profile_id: chosen.profile_id.clone(),
-        tier: chosen.tier,
-        backend,
-        runtime_id: runtime.runtime_id.clone(),
-        likely_slow: fit.likely_slow || !fit.suitable,
+    Fitness {
+        suitable,
+        likely_slow: likely_slow || !suitable,
         warnings,
-        fits,
-    })
+    }
 }
 
 /// Bytes that must be free before downloading: remaining download + extracted
-/// runtime + margin. `partial_bytes` already on disk are not needed again.
+/// runtime + margin. Bytes of partial downloads already on disk are not needed again.
 pub fn required_free_bytes(
     model_bytes_remaining: u64,
     runtime_archive_bytes_remaining: u64,
@@ -183,68 +126,73 @@ mod tests {
             logical_cpus: cpus,
             physical_cpus: Some(cpus / 2),
             cpu_brand: "Test CPU".into(),
-            gpus: if vram_gb > 0 {
-                vec![GpuInfo {
-                    name: "Test GPU".into(),
-                    vendor_id: 0x10de,
-                    dedicated_vram_bytes: vram_gb * GIB,
-                    shared_memory_bytes: 0,
-                    software: false,
-                }]
-            } else {
-                vec![GpuInfo {
-                    name: "Microsoft Basic Render Driver".into(),
-                    vendor_id: 0x1414,
-                    dedicated_vram_bytes: 0,
-                    shared_memory_bytes: 0,
-                    software: true,
-                }]
-            },
-            vulkan_available: vram_gb > 0,
+            gpus: vec![GpuInfo {
+                name: if vram_gb > 0 {
+                    "Test GPU".into()
+                } else {
+                    "Integrated graphics".into()
+                },
+                vendor_id: 0x10de,
+                dedicated_vram_bytes: if vram_gb > 0 {
+                    vram_gb * GIB
+                } else {
+                    128 << 20
+                },
+                shared_memory_bytes: ram_gb * GIB / 2,
+                software: false,
+            }],
+            vulkan_available: true,
             free_disk_bytes: Some(100 * GIB),
         }
     }
 
-    fn manifest() -> Manifest {
-        crate::manifest::embedded().unwrap()
+    fn chat() -> ModelEntry {
+        crate::manifest::embedded()
+            .unwrap()
+            .chat_model()
+            .unwrap()
+            .clone()
     }
 
     #[test]
-    fn low_memory_laptop_gets_lightweight_on_cpu() {
-        let r = recommend(&hw(6, 0, 4), &manifest()).unwrap();
-        assert_eq!(r.tier, Tier::Lightweight);
-        assert_eq!(r.backend, Backend::Cpu);
+    fn integrated_graphics_laptop_runs_on_the_processor() {
+        let h = hw(16, 0, 8);
+        assert_eq!(choose_backend(&h, &chat()), Backend::Cpu);
+        let f = assess(&h, &chat(), Backend::Cpu);
+        assert!(f.suitable && !f.likely_slow && f.warnings.is_empty());
     }
 
     #[test]
-    fn mainstream_laptop_gets_recommended() {
-        let r = recommend(&hw(16, 0, 8), &manifest()).unwrap();
-        assert_eq!(r.tier, Tier::Recommended);
-        assert!(!r.likely_slow);
+    fn discrete_graphics_card_is_used_with_all_layers() {
+        let h = hw(16, 6, 12);
+        assert_eq!(choose_backend(&h, &chat()), Backend::Vulkan);
+        assert_eq!(gpu_layers(&h, &chat(), Backend::Vulkan), 999);
+        assert_eq!(gpu_layers(&h, &chat(), Backend::Cpu), 0);
     }
 
     #[test]
-    fn workstation_with_gpu_gets_high_quality_on_graphics_card() {
-        let r = recommend(&hw(32, 8, 16), &manifest()).unwrap();
-        assert_eq!(r.tier, Tier::HighQuality);
-        assert_eq!(r.backend, Backend::Vulkan);
-        let m = manifest();
-        assert_eq!(
-            gpu_layers(
-                &hw(32, 8, 16),
-                m.model_for_tier(Tier::HighQuality).unwrap(),
-                Backend::Vulkan
-            ),
-            999
-        );
+    fn no_vulkan_driver_means_processor() {
+        let mut h = hw(16, 6, 12);
+        h.vulkan_available = false;
+        assert_eq!(choose_backend(&h, &chat()), Backend::Cpu);
     }
 
     #[test]
-    fn tiny_machine_still_gets_a_profile_with_a_warning() {
-        let r = recommend(&hw(3, 0, 2), &manifest()).unwrap();
-        assert_eq!(r.tier, Tier::Lightweight);
-        assert!(r.likely_slow);
-        assert!(!r.warnings.is_empty());
+    fn partial_offload_is_proportional_to_graphics_memory() {
+        let mut m = chat();
+        m.gpu_vram_bytes = 4 * GIB;
+        m.layers = 26;
+        assert_eq!(gpu_layers(&hw(16, 2, 8), &m, Backend::Vulkan), 13);
+    }
+
+    #[test]
+    fn tiny_machine_is_warned_but_not_refused() {
+        let f = assess(&hw(2, 0, 2), &chat(), Backend::Cpu);
+        assert!(!f.suitable && f.likely_slow);
+        assert!(f.warnings[0].contains("less memory"));
+        for w in &f.warnings {
+            assert!(!w.to_lowercase().contains("gemma") && !w.contains("GGUF"));
+        }
     }
 
     #[test]

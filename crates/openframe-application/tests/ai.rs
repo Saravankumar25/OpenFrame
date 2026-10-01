@@ -180,24 +180,32 @@ fn fsd_ai_001_openframe_works_fully_without_offline_ai() {
     assert_eq!(status["mode"], "Off");
     assert_eq!(status["localOnly"], true);
     assert_eq!(status["runtimeState"], "NotInstalled");
-    let profiles = status["profiles"].as_array().unwrap();
-    let tiers: Vec<&str> = profiles
-        .iter()
-        .map(|p| p["tier"].as_str().unwrap())
-        .collect();
-    assert_eq!(tiers, ["Lightweight", "Recommended", "High Quality"]);
-    // Users never see file formats, quantization codes, ports or hosts.
-    let text = status.to_string().to_lowercase();
-    for jargon in ["gguf", "q4_k", "q8_0", "127.0.0.1", "huggingface", "llama"] {
-        assert!(
-            !text.contains(jargon),
-            "status leaks technical detail: {jargon}"
-        );
+    // One product, no model picker: status carries no profiles/tiers at all.
+    assert!(status.get("profiles").is_none());
+    // Users never see model names, file formats, quantization codes, ports or hosts
+    // (agentic AI spec §36) — neither in the status nor in the setup information.
+    let setup = env.ok("ai.setup_info", json!({}));
+    for v in [&status, &setup] {
+        let text = v.to_string().to_lowercase();
+        for jargon in [
+            "gemma",
+            "gguf",
+            "q4_k",
+            "q8_0",
+            "bge",
+            "embedding",
+            "127.0.0.1",
+            "huggingface",
+            "llama",
+            "qwen",
+            "sqlite-vec",
+        ] {
+            assert!(
+                !text.contains(jargon),
+                "{v} leaks technical detail: {jargon}"
+            );
+        }
     }
-    assert_eq!(
-        profiles.iter().filter(|p| p["recommended"] == true).count(),
-        1
-    );
 
     // Asking without a model explains how to get Offline AI; nothing is recorded.
     assert_eq!(
@@ -220,28 +228,48 @@ fn fsd_ai_001_openframe_works_fully_without_offline_ai() {
 }
 
 #[test]
-fn model_manager_rejects_unknown_profiles_without_downloading() {
+fn offline_ai_setup_shows_exact_size_and_needs_no_choices() {
     let env = TestEnv::new();
-    assert!(
-        env.err("ai.install", json!({ "profileId": "not-a-profile" }))
-            .starts_with("not_found")
-    );
+    // The retired model picker is gone: install takes no profile, and old ops no longer exist.
     assert!(
         env.err(
-            "ai.remove_model",
+            "ai.install",
             json!({ "profileId": "qwen3-recommended-win-x64-v1" })
         )
-        .starts_with("not_found")
+        .starts_with("validation")
     );
+    for retired in ["ai.remove_model", "ai.hardware"] {
+        assert_eq!(env.err(retired, json!({})), "security.unknown_operation");
+    }
     env.ok("ai.cancel_install", json!({ "discard": true }));
-    let hw = env.ok("ai.hardware", json!({}));
-    assert!(hw["memoryBytes"].as_u64().unwrap() > 0);
-    let runs_on = hw["recommendation"]["runsOn"].as_str().unwrap();
+    let setup = env.ok("ai.setup_info", json!({}));
+    assert_eq!(setup["supported"], true);
+    let runs_on = setup["runsOn"].as_str().unwrap();
     assert!(runs_on == "Processor" || runs_on == "Graphics card");
+    // Exact size (runtime + language model + search model) before anything is downloaded.
+    let download = setup["downloadBytes"].as_u64().unwrap();
     assert!(
-        hw["recommendation"]["requiredFreeBytes"].as_u64().unwrap()
-            > hw["recommendation"]["downloadBytes"].as_u64().unwrap()
+        download > 800_000_000 && download < 1_300_000_000,
+        "{download}"
     );
+    assert_eq!(setup["totalBytes"].as_u64().unwrap(), download);
+    assert!(setup["requiredFreeBytes"].as_u64().unwrap() > download);
+    assert_eq!(setup["upToDate"], false);
+    // Diagnostics (Settings only) carry the technical details and licences.
+    let d = env.ok("ai.diagnostics", json!({}));
+    assert_eq!(d["profileId"], "openframe-local-ai-v1");
+    let comps = d["components"].as_array().unwrap();
+    assert_eq!(comps.len(), 3);
+    assert!(comps.iter().any(|c| c["licenseId"] == "Gemma-Terms-of-Use"));
+    assert!(
+        comps
+            .iter()
+            .any(|c| c["role"] == "Search model" && c["licenseId"] == "MIT")
+    );
+    assert!(comps.iter().all(|c| c["installed"] == false));
+    // Uninstalling when nothing is installed is harmless.
+    let u = env.ok("ai.uninstall", json!({}));
+    assert_eq!(u["freedBytes"], 0);
 }
 
 #[test]
@@ -829,6 +857,7 @@ fn ai_spec_20_4_change_set_applies_all_operations_or_none() {
         base_rows: Vec::new(),
         source_tool: "propose_scene_card".into(),
         source_args: json!({}),
+        sources: Vec::new(),
     };
     let cs = change_set::create(&env.core, &env.actor(), &draft).unwrap();
     assert_eq!(cs.state, "Pending");
@@ -863,6 +892,7 @@ fn operations_outside_the_allow_list_are_never_applied() {
         base_rows: Vec::new(),
         source_tool: "none".into(),
         source_args: json!({}),
+        sources: Vec::new(),
     };
     let cs = change_set::create(&env.core, &env.actor(), &draft).unwrap();
     let r = env.ok("ai.change_set.accept", json!({ "id": cs.id }));

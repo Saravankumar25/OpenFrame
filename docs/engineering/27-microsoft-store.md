@@ -135,9 +135,11 @@ and the Global Idea Vault (`Documents\OpenFrame\Global Idea Vault`) are real fil
 and backups can see. They survive uninstall, as the privacy policy promises. File dialogs,
 `opener` open/reveal and the asset protocol scope (project folder + vault) work unchanged.
 
-### 5.4 Local AI runtime (llama.cpp) 📋 (AI module not merged yet)
-Downloaded runtime executables and GGUF models go under `app_data_dir`, which is the package
-`LocalState` folder in Store builds. A full-trust (medium IL) packaged app may start executables
+### 5.4 Local AI runtime (llama.cpp) ✅ (merged; Store-specific checks below still apply)
+Offline AI (Gemma 3 1B Instruct + BGE small English embeddings, run by `llama-server` sidecars) is
+downloaded only when the user clicks **Download Offline AI** in the AI panel or Settings → Offline AI.
+Downloaded runtime executables and GGUF models go under `app_data_dir` (`models/`, `runtimes/llama/`), which is the
+package `LocalState` folder in Store builds. A full-trust (medium IL) packaged app may start executables
 from any folder the user can read. The child process runs with the package's identity, and because
 the path is real (§5.2), no virtualization mismatch can occur. Requirements for the AI module:
 - Store policy 10.2.2 forbids using downloaded code to change or extend the app's *described*
@@ -267,8 +269,10 @@ remain and `…\Packages\<family>` is gone.
    download host and its log retention (§6.4).
 5. Listing details: support contact or website, the screenshots themselves, category choice, and
    the IARC questionnaire answers (the account holder must submit them).
-6. For AI builds: the model distribution host (`MODEL_DISTRIBUTION_BASE_URL`) and a
-   report-inappropriate-content channel (policy 11.16).
+6. For AI builds: the model distribution host (`MODEL_DISTRIBUTION_BASE_URL`), the production manifest signing key
+   (`OPENFRAME_MANIFEST_PUBLIC_KEY`) and a production-signed manifest on that host, the Gemma Terms of Use
+   redistribution review, and a report-inappropriate-content channel (policy 11.16). Full list:
+   23-release-migration.md §7.
 
 Not blockers for the Store: the code-signing certificate and the updater keys, which are needed
 only for the direct channel.

@@ -3,4 +3,4 @@
 /**
  * Operation classes (AI spec §5).
  */
-export type AiOperationClass = "Read" | "Compute" | "Navigate" | "Suggest" | "Mutate";
+export type AiOperationClass = "Read" | "Search" | "Compute" | "Navigate" | "Suggest" | "Mutate";

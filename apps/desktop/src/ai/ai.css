@@ -11,3 +11,16 @@
 .ai .cs .csr.ai-locked{background:var(--red-soft)}
 .ai .cs .csr b{text-align:right;margin-left:10px}
 .ai .seg{flex-wrap:wrap}
+/* Agent answers: sources, steps, project-context notice, Proposed Changes review. */
+.ai .ai-sources{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin-top:6px}
+.ai .ai-sources .ai-src{cursor:pointer;border:0;font:inherit}
+.ai .ai-sources .ai-src:hover{text-decoration:underline}
+.ai .ai-sources .ai-src:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.ai .ai-steps{margin-top:4px}
+.ai .ai-notice{font-size:12px;padding:6px 8px;border-radius:6px;background:var(--yellow-soft)}
+.ai .cs .csr.ai-block{display:block}
+.ai .cs .csr.ai-section{background:#faf9f6}
+.ai .cs .csr.ai-section b{text-align:left;margin-left:0}
+.ai .cs .csr.ai-destructive{background:var(--red-soft)}
+.ai .cs.ai-stale{border-color:var(--yellow)}
+.ai .cs.ai-stale .csh{background:var(--yellow-soft)}

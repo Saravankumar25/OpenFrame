@@ -4,7 +4,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { AiStatusDto } from "../ipc/generated/AiStatusDto";
 import type { AiExchange } from "../ipc/generated/AiExchange";
 import type { AiChangeSetDto } from "../ipc/generated/AiChangeSetDto";
-import type { AiProfileDto } from "../ipc/generated/AiProfileDto";
 import AiPanel from "./AiPanel";
 import { useNav } from "../app/stores";
 
@@ -14,18 +13,13 @@ let status: AiStatusDto;
 let exchanges: AiExchange[] = [];
 let askReply: AiExchange | null = null;
 
-const profile = (tier: string, id: string, recommended = false): AiProfileDto => ({
-  profileId: id, tier, name: tier, sizeBytes: 2_497_280_256, sizeLabel: "2.3 GB", installed: false, active: false, recommended,
-  suitable: true, likelySlow: false, note: null, downloadedBytes: 0, startFailed: false,
-});
-
 function changeSet(state: string, extra: Partial<AiChangeSetDto> = {}): AiChangeSetDto {
   return {
-    id: "cs1", title: "Proposed Scene Card", summary: "", state, validationState: "Valid",
+    id: "cs1", title: "Proposed Scene Card", summary: "I prepared a new Scene Card. Nothing has been added yet.", state, validationState: "Valid",
     rows: [{ label: "Description", value: "Ravi finds the ticket", tone: "normal" }, { label: "Place in", value: "Act One", tone: "normal" }],
     exclusions: [{ label: "Excluded: raw dialogue/action text", value: "2 mentions", tone: "excluded" }],
     affectedModules: ["Story"], targets: [], operationCount: 1, staleReason: null, errorMessage: null, createdAt: 1, approvedAt: null, appliedAt: null,
-    appliedOperations: 0, ...extra,
+    appliedOperations: 0, partCount: 1, requiresConfirmation: false, ...extra,
   };
 }
 
@@ -35,10 +29,12 @@ function exchange(id: string, text: string, result: Partial<AiExchange["result"]
     createdAt: 1,
     result: {
       id: `r${id}`, kind: "Answer", status: "Informational", content: "", details: [], confidence: null, provenance: [], items: [], nav: null,
-      changeSet: null, errorCode: null, createdAt: 1, ...result,
+      changeSet: null, errorCode: null, steps: [], taskId: null, createdAt: 1, ...result,
     },
   };
 }
+
+let indexState: unknown = "Current";
 
 vi.mock("../ipc/client", async () => {
   class OpError extends Error {
@@ -58,14 +54,10 @@ vi.mock("../ipc/client", async () => {
           return { id: "p", title: "BLACK RAIN", projectType: "Feature Film" };
         case "ai.status":
           return status;
-        case "ai.hardware":
+        case "ai.setup_info":
           return {
-            memoryBytes: 16 * 1024 ** 3, availableMemoryBytes: 8 * 1024 ** 3, processor: "CPU", processorThreads: 8, graphics: [], freeDiskBytes: 100 * 1024 ** 3,
-            recommendation: {
-              profileId: "rec", tier: "Recommended", name: "Recommended", sizeBytes: 2_497_280_256, downloadBytes: 2_516_445_059,
-              requiredFreeBytes: 3_100_000_000, runsOn: "Processor", likelySlow: false, warnings: [], enoughDisk: true,
-            },
-            profiles: status.profiles,
+            supported: true, message: null, downloadBytes: 861_908_195, totalBytes: 861_908_195, downloadedBytes: 0, requiredFreeBytes: 1_417_000_000,
+            freeDiskBytes: 100 * 1024 ** 3, enoughDisk: true, runsOn: "Processor", likelySlow: false, warnings: [], upToDate: false,
           };
         case "ai.install":
           return { taskId: "t1" };
@@ -75,6 +67,10 @@ vi.mock("../ipc/client", async () => {
           return askReply;
         case "ai.change_set.accept":
           return changeSet("Applied", { appliedOperations: 1 });
+        case "ai.change_set.reject":
+          return changeSet("Rejected");
+        case "ai.index_status":
+          return indexState;
         default:
           return null;
       }
@@ -95,30 +91,25 @@ beforeEach(() => {
   calls.length = 0;
   exchanges = [];
   askReply = null;
+  indexState = "Current";
   useNav.getState().reset();
-  status = {
-    installed: false, mode: "Off", runtimeState: "NotInstalled", runtimeMessage: null, activeProfile: null,
-    profiles: [profile("Lightweight", "light"), profile("Recommended", "rec", true), profile("High Quality", "hq")], install: null, localOnly: true,
-  };
+  status = { installed: false, mode: "Off", runtimeState: "NotInstalled", runtimeMessage: null, install: null, localOnly: true, updateAvailable: false, installedBytes: 0 };
 });
 
 describe("AI Assistant panel", () => {
   it("works without AI installed and offers the one-click Download Offline AI flow", async () => {
     renderPanel();
-    expect(await screen.findByText("AI is not available right now")).toBeTruthy();
-    expect(screen.getByText(/Everything else in OpenFrame works normally/)).toBeTruthy();
+    expect(await screen.findByText("Offline AI is not installed.")).toBeTruthy();
+    expect(await screen.findByText("822 MB")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Download Offline AI" }));
-    expect(await screen.findByText(/OpenFrame checked this computer and recommends/)).toBeTruthy();
-    // Simple names only — no model files, quantization codes or ports.
-    expect(document.body.textContent).not.toMatch(/gguf|q4_k|127\.0\.0\.1/i);
-    fireEvent.click(screen.getByRole("button", { name: /^Download Offline AI \(/ }));
-    await waitFor(() => expect(calls.some((c) => c.op === "ai.install" && c.args.profileId === "rec")).toBe(true));
+    await waitFor(() => expect(calls.some((c) => c.op === "ai.install")).toBe(true));
+    expect(calls.find((c) => c.op === "ai.install")!.args).toEqual({});
   });
 
   it("shows download progress with pause and cancel", async () => {
-    status = { ...status, install: { taskId: "t1", profileId: "rec", phase: "downloadingModel", bytesDone: 1024 ** 3, bytesTotal: 2 * 1024 ** 3, message: "Downloading the AI model…", error: null, active: true } };
+    status = { ...status, install: { taskId: "t1", phase: "downloading", bytesDone: 1024 ** 3, bytesTotal: 2 * 1024 ** 3, message: "Downloading…", error: null, active: true } };
     renderPanel();
-    expect(await screen.findByText("Downloading the AI model…")).toBeTruthy();
+    expect(await screen.findByText("Downloading…")).toBeTruthy();
     expect(screen.getByText(/1.0 GB of 2.0 GB · 50%/)).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Pause" }));
     await waitFor(() => expect(calls.some((c) => c.op === "ai.cancel_install" && c.args.discard === false)).toBe(true));
@@ -133,12 +124,98 @@ describe("AI Assistant panel", () => {
     renderPanel();
     expect(await screen.findByText("Draft 1 contains 3 scenes.")).toBeTruthy();
     expect(screen.getByText("Exact · from project data")).toBeTruthy();
-    expect(screen.getByText("Based on: Draft: Draft 1")).toBeTruthy();
+    expect(screen.getByText("Draft: Draft 1")).toBeTruthy();
+    // Proposed Changes: summary, affected areas, exact preview, then an explicit choice.
+    const card = screen.getByRole("region", { name: "Proposed Changes" });
+    expect(card.textContent).toContain("I prepared a new Scene Card. Nothing has been added yet.");
+    expect(card.textContent).toContain("Affected areas");
     expect(screen.getByText("Ravi finds the ticket")).toBeTruthy();
     expect(screen.getByText("Excluded: raw dialogue/action text")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Reject" })).toBeTruthy();
     expect(calls.some((c) => c.op === "ai.change_set.accept")).toBe(false);
-    fireEvent.click(screen.getByRole("button", { name: "Apply" }));
+    fireEvent.click(screen.getByRole("button", { name: "Apply Changes" }));
     await waitFor(() => expect(calls.some((c) => c.op === "ai.change_set.accept" && c.args.id === "cs1")).toBe(true));
+    expect(calls.find((c) => c.op === "ai.change_set.accept")!.args.confirmDestructive).toBeUndefined();
+  });
+
+  it("rejecting leaves the project unchanged and never applies", async () => {
+    status = { ...status, installed: true, mode: "Local model", runtimeState: "Ready" };
+    exchanges = [exchange("2", "Create a scene card", { kind: "Proposal", status: "Pending Approval", content: "Prepared.", changeSet: changeSet("Pending") })];
+    renderPanel();
+    fireEvent.click(await screen.findByRole("button", { name: "Reject" }));
+    await waitFor(() => expect(calls.some((c) => c.op === "ai.change_set.reject" && c.args.id === "cs1")).toBe(true));
+    expect(calls.some((c) => c.op === "ai.change_set.accept")).toBe(false);
+  });
+
+  it("asks for the usual confirmation before applying destructive changes", async () => {
+    status = { ...status, installed: true, mode: "Local model", runtimeState: "Ready" };
+    exchanges = [
+      exchange("2", "Tidy up", {
+        kind: "Proposal", status: "Pending Approval", content: "Prepared.",
+        changeSet: changeSet("Pending", { requiresConfirmation: true, rows: [{ label: "Moves to Recently Deleted", value: "2 items", tone: "destructive" }] }),
+      }),
+    ];
+    renderPanel();
+    fireEvent.click(await screen.findByRole("button", { name: "Apply Changes" }));
+    expect(await screen.findByText("Apply changes that delete items?")).toBeTruthy();
+    expect(calls.some((c) => c.op === "ai.change_set.accept")).toBe(false);
+    const buttons = screen.getAllByRole("button", { name: "Apply Changes" });
+    fireEvent.click(buttons[buttons.length - 1]);
+    await waitFor(() => expect(calls.some((c) => c.op === "ai.change_set.accept" && c.args.confirmDestructive === true)).toBe(true));
+  });
+
+  it("shows one review card for a multi-step change, with its parts", async () => {
+    status = { ...status, installed: true, mode: "Local model", runtimeState: "Ready" };
+    exchanges = [
+      exchange("4", "Plan the scout", {
+        kind: "Proposal", status: "Pending Approval", content: "I prepared 2 changes for you to review together.",
+        steps: [
+          { index: 1, tool: "propose_task", label: "Propose task", status: "Succeeded" },
+          { index: 2, tool: "propose_scene_card", label: "Propose scene card", status: "Succeeded" },
+        ],
+        changeSet: changeSet("Pending", {
+          title: "2 changes: New task · New Scene Card", partCount: 2, operationCount: 2, affectedModules: ["Notes & Tasks", "Story"],
+          rows: [
+            { label: "New task", value: "Change 1 of 2", tone: "section" },
+            { label: "Title", value: "Scout the station", tone: "normal" },
+            { label: "New Scene Card", value: "Change 2 of 2", tone: "section" },
+          ],
+        }),
+      }),
+    ];
+    renderPanel();
+    expect(await screen.findAllByRole("region", { name: "Proposed Changes" })).toHaveLength(1);
+    expect(screen.getByText("Change 2 of 2")).toBeTruthy();
+    expect(screen.getByText("Notes & Tasks, Story")).toBeTruthy();
+    expect(screen.getByText(/2 changes in 2 parts, applied together as one step you can undo/)).toBeTruthy();
+    expect(screen.getByText("2 steps: Propose task · Propose scene card")).toBeTruthy();
+  });
+
+  it("opens a source from its provenance chip", async () => {
+    status = { ...status, installed: true, mode: "Local model", runtimeState: "Ready" };
+    exchanges = [
+      exchange("5", "Who is Ravi?", {
+        content: "Ravi is the lead.", confidence: "Inferred",
+        provenance: [
+          { kind: "Scope", label: "Whole Project" },
+          { kind: "Character", label: "Ravi", nav: { workspace: "story", params: { characterId: "c1" } } },
+        ],
+      }),
+    ];
+    renderPanel();
+    fireEvent.click(await screen.findByRole("button", { name: "Character: Ravi" }));
+    await waitFor(() => expect(useNav.getState().route).toEqual({ workspace: "story", params: { characterId: "c1" } }));
+    expect(screen.queryByRole("button", { name: "Whole Project" })).toBeNull();
+    // Ordinary workflow UI never shows model or retrieval internals.
+    expect(document.body.textContent).not.toMatch(/gemma|gguf|q4_k|embedding|sqlite-vec|rrf|context graph/i);
+  });
+
+  it("explains when project context is still being prepared", async () => {
+    status = { ...status, installed: true, mode: "Local model", runtimeState: "Ready" };
+    indexState = "Rebuilding";
+    renderPanel();
+    expect(await screen.findByText("Preparing project context…")).toBeTruthy();
+    expect(screen.getByText(/AI can still answer some questions while project context is being prepared\./)).toBeTruthy();
   });
 
   it("never offers Apply on a stale proposal", async () => {
@@ -150,8 +227,9 @@ describe("AI Assistant panel", () => {
       }),
     ];
     renderPanel();
-    expect(await screen.findByText("This proposal is out of date")).toBeTruthy();
-    expect(screen.queryByRole("button", { name: "Apply" })).toBeNull();
+    expect(await screen.findByText("Proposed Changes — out of date")).toBeTruthy();
+    expect(screen.getByText(/It has not been applied\./)).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Apply Changes" })).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Re-check & Review" }));
     await waitFor(() => expect(calls.some((c) => c.op === "ai.change_set.recheck")).toBe(true));
   });

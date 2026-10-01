@@ -1,14 +1,15 @@
-//! Signed model/runtime distribution manifest (Local AI Runtime spec §4, §6).
+//! Signed Offline AI distribution manifest (Local AI Runtime spec §4, §6; agentic AI spec §23).
 //!
-//! The manifest is the ONLY place that names concrete model files, runtime
-//! builds, URLs and hashes. Everything else in OpenFrame refers to simple
-//! profile tiers (Lightweight / Recommended / High Quality).
+//! OpenFrame ships exactly ONE production AI profile, [`PROFILE_ID`]. The manifest is the only
+//! place that names concrete files: the llama.cpp runtime builds (one per backend), the chat
+//! model and the embedding model — each with HTTPS URL, exact bytes, SHA-256, licence, context
+//! size, memory requirements and version. Nothing else in OpenFrame hard-codes a model file.
 //!
-//! Trust model: the manifest bytes are signed with Ed25519. The public key is
-//! compiled into the application; TLS alone is not trusted. A production build
-//! overrides the development key via the `OPENFRAME_MANIFEST_PUBLIC_KEY`
-//! build-time environment variable (release blocker: public builds must set
-//! it; manifests are signed with `crates/openframe-ai/tools/sign-manifest.mjs`).
+//! Trust model: the manifest bytes are signed with Ed25519. The public key is compiled into the
+//! application; TLS alone is not trusted. A production build overrides the development key via
+//! the `OPENFRAME_MANIFEST_PUBLIC_KEY` build-time environment variable (release blocker: public
+//! builds must set it; `scripts/release-validate.mjs` enforces it). Manifests are signed with
+//! `crates/openframe-ai/tools/sign-manifest.mjs`.
 
 use openframe_domain::{AppError, AppResult};
 use serde::{Deserialize, Serialize};
@@ -36,40 +37,19 @@ pub fn using_development_key() -> bool {
     RELEASE_PUBLIC_KEY_B64.is_none()
 }
 
-pub const SUPPORTED_MANIFEST_VERSION: u32 = 1;
+/// Manifest format 2: one profile = runtime + chat model + embedding model. Format 1 (the
+/// retired three-tier model picker) is rejected.
+pub const SUPPORTED_MANIFEST_VERSION: u32 = 2;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub enum Tier {
-    Lightweight,
-    Recommended,
-    HighQuality,
-}
-
-impl Tier {
-    /// The simple, user-facing name (never a quantization code).
-    pub fn label(self) -> &'static str {
-        match self {
-            Tier::Lightweight => "Lightweight",
-            Tier::Recommended => "Recommended",
-            Tier::HighQuality => "High Quality",
-        }
-    }
-    pub fn rank(self) -> u8 {
-        match self {
-            Tier::Lightweight => 0,
-            Tier::Recommended => 1,
-            Tier::HighQuality => 2,
-        }
-    }
-}
+/// The single production Offline AI profile (internal id; never shown in the normal UI).
+pub const PROFILE_ID: &str = "openframe-local-ai-v1";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum Backend {
     /// Runs on the processor only.
     Cpu,
-    /// Uses the graphics card through Vulkan (falls back to the processor for layers that don't fit).
+    /// Uses the graphics card through Vulkan (falls back to the processor build when it fails).
     Vulkan,
 }
 
@@ -78,6 +58,35 @@ impl Backend {
         match self {
             Backend::Cpu => "Processor",
             Backend::Vulkan => "Graphics card",
+        }
+    }
+}
+
+/// What a model file is used for.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum ModelRole {
+    /// The instruction-tuned language model that plans, answers and drafts.
+    Chat,
+    /// The small retrieval model that turns text into vectors for semantic search.
+    Embedding,
+}
+
+/// Embedding pooling (llama.cpp `--pooling`).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum Pooling {
+    Cls,
+    Mean,
+    Last,
+}
+
+impl Pooling {
+    pub fn as_arg(self) -> &'static str {
+        match self {
+            Pooling::Cls => "cls",
+            Pooling::Mean => "mean",
+            Pooling::Last => "last",
         }
     }
 }
@@ -104,22 +113,51 @@ pub struct RuntimeEntry {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct ModelEntry {
-    pub profile_id: String,
-    pub tier: Tier,
+    /// Versioned, unique id; also the install folder name (`models/<model_id>`).
+    pub model_id: String,
+    pub role: ModelRole,
+    /// Technical name for diagnostics, About and licence notices only (never the normal UI).
     pub display_name: String,
-    pub engine: String,
-    pub architecture: String,
+    /// Model family / architecture (e.g. `gemma3`, `bert`).
+    pub family: String,
+    /// Quantization of the file (e.g. `Q4_K_M`); diagnostics only.
+    pub quantization: String,
+    pub version: String,
+    pub url: String,
     pub bytes: u64,
     pub sha256: String,
-    pub url: String,
-    /// Below this much RAM the profile is not offered as suitable.
+    /// Licence identifier (SPDX where one exists, e.g. `MIT`; `Gemma-Terms-of-Use` otherwise).
+    pub license_id: String,
+    /// Where the licence / terms can be read.
+    pub license_url: String,
+    /// Context window the runtime is started with.
+    pub context_tokens: u32,
+    /// Below this much RAM Offline AI is not expected to work.
     pub min_ram_bytes: u64,
-    /// RAM for comfortable CPU inference.
+    /// RAM for comfortable processor inference.
     pub recommended_ram_bytes: u64,
     /// Graphics memory needed to run fully on the graphics card.
     pub gpu_vram_bytes: u64,
-    pub context_tokens: u32,
-    pub license_id: String,
+    /// Transformer layers (used to offload a share of layers when graphics memory is short).
+    #[serde(default)]
+    pub layers: u32,
+    /// Vector size (embedding models only).
+    #[serde(default)]
+    pub embedding_dim: Option<u32>,
+    /// Pooling (embedding models only).
+    #[serde(default)]
+    pub pooling: Option<Pooling>,
+}
+
+/// The one production profile and the components it consists of.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ProfileEntry {
+    pub profile_id: String,
+    /// Bumped whenever any component changes (drives "update available").
+    pub version: String,
+    pub chat_model_id: String,
+    pub embedding_model_id: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -131,16 +169,26 @@ pub struct Manifest {
     pub sequence: u64,
     pub channel: String,
     pub issued_at: String,
+    pub profile: ProfileEntry,
     pub runtimes: Vec<RuntimeEntry>,
     pub models: Vec<ModelEntry>,
 }
 
 impl Manifest {
-    pub fn model(&self, profile_id: &str) -> Option<&ModelEntry> {
-        self.models.iter().find(|m| m.profile_id == profile_id)
+    pub fn model(&self, model_id: &str) -> Option<&ModelEntry> {
+        self.models.iter().find(|m| m.model_id == model_id)
     }
-    pub fn model_for_tier(&self, tier: Tier) -> Option<&ModelEntry> {
-        self.models.iter().find(|m| m.tier == tier)
+    /// The profile's language model (presence and role are checked by [`validate`]).
+    pub fn chat_model(&self) -> AppResult<&ModelEntry> {
+        self.model(&self.profile.chat_model_id)
+            .filter(|m| m.role == ModelRole::Chat)
+            .ok_or_else(|| invalid("profile chat model missing"))
+    }
+    /// The profile's embedding model (presence and role are checked by [`validate`]).
+    pub fn embedding_model(&self) -> AppResult<&ModelEntry> {
+        self.model(&self.profile.embedding_model_id)
+            .filter(|m| m.role == ModelRole::Embedding)
+            .ok_or_else(|| invalid("profile embedding model missing"))
     }
     pub fn runtime(&self, runtime_id: &str) -> Option<&RuntimeEntry> {
         self.runtimes.iter().find(|r| r.runtime_id == runtime_id)
@@ -163,7 +211,7 @@ fn invalid(detail: impl Into<String>) -> AppError {
     .with_detail(detail)
 }
 
-/// Identifiers become directory names (`models/<profile_id>`, `runtimes/llama/<runtime_id>`),
+/// Identifiers become directory names (`models/<model_id>`, `runtimes/llama/<runtime_id>`),
 /// so they must be a single, portable, non-reserved path component.
 pub fn safe_id(id: &str) -> bool {
     !id.is_empty()
@@ -269,6 +317,10 @@ pub fn verify_and_parse(
     Ok(manifest)
 }
 
+fn valid_text(s: &str, max: usize) -> bool {
+    !s.trim().is_empty() && s.len() <= max && !s.chars().any(char::is_control)
+}
+
 pub fn validate(m: &Manifest) -> AppResult<()> {
     if m.manifest_version != SUPPORTED_MANIFEST_VERSION {
         return Err(invalid(format!(
@@ -276,20 +328,28 @@ pub fn validate(m: &Manifest) -> AppResult<()> {
             m.manifest_version
         )));
     }
+    if m.profile.profile_id != PROFILE_ID || !safe_id(&m.profile.version) {
+        return Err(invalid("manifest describes an unknown AI profile"));
+    }
     if m.models.is_empty() || m.runtimes.is_empty() {
         return Err(invalid("manifest lists no models or runtimes"));
     }
+    let mut seen = std::collections::HashSet::new();
     for r in &m.runtimes {
         if !safe_id(&r.runtime_id)
             || !valid_sha(&r.sha256)
             || !valid_url(&r.url)
             || r.bytes == 0
             || r.archive != "zip"
+            || !valid_text(&r.license_id, 80)
         {
             return Err(invalid(format!(
                 "runtime entry {} is invalid",
                 r.runtime_id
             )));
+        }
+        if !seen.insert(r.runtime_id.clone()) {
+            return Err(invalid(format!("duplicate runtime {}", r.runtime_id)));
         }
         if openframe_security::validate_relative(&r.executable).is_err()
             || !r.executable.to_ascii_lowercase().ends_with(".exe")
@@ -308,23 +368,41 @@ pub fn validate(m: &Manifest) -> AppResult<()> {
     }
     let mut seen = std::collections::HashSet::new();
     for md in &m.models {
-        if !safe_id(&md.profile_id)
+        if !safe_id(&md.model_id)
             || !valid_sha(&md.sha256)
             || !valid_url(&md.url)
+            || !valid_url(&md.license_url)
             || md.bytes == 0
+            || !valid_text(&md.display_name, 120)
+            || !valid_text(&md.family, 40)
+            || !valid_text(&md.quantization, 40)
+            || !valid_text(&md.license_id, 80)
+            || !safe_id(&md.version)
         {
-            return Err(invalid(format!("model entry {} is invalid", md.profile_id)));
+            return Err(invalid(format!("model entry {} is invalid", md.model_id)));
         }
-        if !seen.insert(md.profile_id.clone()) {
-            return Err(invalid(format!("duplicate profile {}", md.profile_id)));
+        if !seen.insert(md.model_id.clone()) {
+            return Err(invalid(format!("duplicate model {}", md.model_id)));
         }
-        if md.context_tokens < 1024 {
-            return Err(invalid(format!(
-                "model entry {} has too small a context",
-                md.profile_id
-            )));
+        match md.role {
+            ModelRole::Chat => {
+                if md.context_tokens < 2048 || md.embedding_dim.is_some() {
+                    return Err(invalid(format!("chat model {} is invalid", md.model_id)));
+                }
+            }
+            ModelRole::Embedding => {
+                let dim_ok = md.embedding_dim.is_some_and(|d| (8..=4096).contains(&d));
+                if !dim_ok || md.pooling.is_none() || md.context_tokens < 128 {
+                    return Err(invalid(format!(
+                        "embedding model {} is invalid",
+                        md.model_id
+                    )));
+                }
+            }
         }
     }
+    m.chat_model()?;
+    m.embedding_model()?;
     Ok(())
 }
 
@@ -342,13 +420,22 @@ mod tests {
     use super::*;
 
     #[test]
-    fn embedded_manifest_verifies_with_compiled_key() {
+    fn embedded_manifest_verifies_and_describes_one_profile() {
         let m = embedded().expect("embedded dev manifest must verify");
-        assert_eq!(m.manifest_version, 1);
-        for tier in [Tier::Lightweight, Tier::Recommended, Tier::HighQuality] {
-            assert!(m.model_for_tier(tier).is_some(), "{tier:?} profile present");
-        }
+        assert_eq!(m.manifest_version, SUPPORTED_MANIFEST_VERSION);
+        assert_eq!(m.profile.profile_id, PROFILE_ID);
+        let chat = m.chat_model().unwrap();
+        assert_eq!(chat.role, ModelRole::Chat);
+        assert_eq!(chat.family, "gemma3");
+        let emb = m.embedding_model().unwrap();
+        assert_eq!(emb.embedding_dim, Some(384));
+        assert!(
+            emb.bytes <= 120 * 1024 * 1024,
+            "embedding model stays small"
+        );
         assert!(m.runtime_for(Backend::Cpu).is_some() || std::env::consts::ARCH != "x86_64");
+        // Exactly one chat and one embedding model: there is no model picker.
+        assert_eq!(m.models.len(), 2);
     }
 
     #[test]
@@ -360,6 +447,50 @@ mod tests {
         let err =
             verify_and_parse(&bytes, EMBEDDED_MANIFEST_SIG, trusted_public_key()).unwrap_err();
         assert_eq!(err.code_str(), "security.signature_invalid");
+    }
+
+    fn sample() -> Manifest {
+        embedded().unwrap()
+    }
+
+    #[test]
+    fn profile_must_be_the_single_production_profile() {
+        let mut m = sample();
+        m.profile.profile_id = "qwen3-recommended-win-x64-v1".into();
+        assert_eq!(
+            validate(&m).unwrap_err().code_str(),
+            "security.manifest_invalid"
+        );
+        let mut m = sample();
+        m.manifest_version = 1;
+        assert!(
+            validate(&m).is_err(),
+            "the retired three-tier format is refused"
+        );
+    }
+
+    #[test]
+    fn profile_components_must_exist_with_the_right_roles() {
+        let mut m = sample();
+        m.profile.embedding_model_id = m.profile.chat_model_id.clone();
+        assert!(validate(&m).is_err(), "chat model can't double as embedder");
+        let mut m = sample();
+        m.models.retain(|x| x.role == ModelRole::Chat);
+        assert!(validate(&m).is_err(), "embedding model required");
+        let mut m = sample();
+        for x in &mut m.models {
+            if x.role == ModelRole::Embedding {
+                x.embedding_dim = None;
+            }
+        }
+        assert!(validate(&m).is_err(), "embedding dimension required");
+        let mut m = sample();
+        m.models[0].license_url = "http://example.com/terms".into();
+        assert!(validate(&m).is_err(), "licence link must be https");
+        let mut m = sample();
+        let dup = m.models[0].clone();
+        m.models.push(dup);
+        assert!(validate(&m).is_err(), "duplicate ids refused");
     }
 
     #[test]
@@ -391,6 +522,6 @@ mod tests {
         ] {
             assert!(!safe_id(bad), "{bad} must be rejected");
         }
-        assert!(safe_id("qwen3-4b-q4.k.m"));
+        assert!(safe_id("gemma-3-1b-it-q4.k.m"));
     }
 }

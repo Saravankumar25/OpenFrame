@@ -38,6 +38,7 @@ import {
   TextInput,
   cx,
   type MenuItemSpec,
+  type MenuItems,
 } from "../../../design-system";
 import { call } from "../../../ipc/client";
 import { reportError, useCommand, useOp } from "../../../ipc/query";
@@ -327,14 +328,16 @@ interface Group {
 
 function groupByScene(shots: ShotDto[]): Group[] {
   const out: Group[] = [];
+  const byLineage = new Map<string, Group>();
   for (const s of shots) {
-    let g = out.find((x) => x.lineage === s.sceneLineageId);
+    let g = byLineage.get(s.sceneLineageId);
     if (!g) {
       const title = s.sceneRemoved
         ? `Removed scene — ${s.sceneHeading || "untitled"}`
         : `Scene ${s.sceneNumber ?? ""} — ${s.sceneHeading || "Untitled scene"}`;
       g = { lineage: s.sceneLineageId, title, needsReview: false, shots: [] };
       out.push(g);
+      byLineage.set(s.sceneLineageId, g);
     }
     g.needsReview ||= s.needsReview;
     g.shots.push(s);
@@ -446,7 +449,7 @@ function ShotList({
                 shot={s}
                 selected={s.id === selectedId || picked.has(s.id)}
                 onClick={(ev) => click(s, ev)}
-                menu={menu(s)}
+                menu={() => menu(s)}
               />
             ))}
           </div>
@@ -458,7 +461,7 @@ function ShotList({
   );
 }
 
-function ShotRow({ shot, selected, onClick, menu }: { shot: ShotDto; selected: boolean; onClick: (e: React.MouseEvent) => void; menu: MenuItemSpec[] }) {
+function ShotRow({ shot, selected, onClick, menu }: { shot: ShotDto; selected: boolean; onClick: (e: React.MouseEvent) => void; menu: MenuItems }) {
   const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({ id: shot.id });
   return (
     <ContextMenu items={menu}>

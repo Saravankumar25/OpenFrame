@@ -241,6 +241,53 @@ function npmInventory() {
   return out;
 }
 
+// ------------------------------------------------------------------ Offline AI components
+
+// Not compiled in: downloaded only when the user clicks "Download Offline AI", described by the
+// signed manifest the build embeds. Listed so their notices ship with the product.
+const AI_MANIFEST = path.join(ROOT, "crates", "openframe-ai", "manifest", "dev-manifest.json");
+
+function aiComponents() {
+  if (!fs.existsSync(AI_MANIFEST)) return [];
+  const m = JSON.parse(fs.readFileSync(AI_MANIFEST, "utf8"));
+  const rows = [];
+  const runtimes = new Map();
+  for (const r of m.runtimes ?? []) {
+    const key = `${r.engine}@${r.version}`;
+    const prev = runtimes.get(key);
+    if (prev) prev.builds.push(r.backend);
+    else runtimes.set(key, { ...r, builds: [r.backend] });
+  }
+  for (const r of runtimes.values()) {
+    rows.push({
+      component: `${r.engine} server (runtime; builds: ${r.builds.join(", ")})`,
+      version: r.version,
+      license: r.licenseId,
+      source: r.url.replace(/\/[^/]+$/, "/"),
+      notes: "Includes the LLVM OpenMP runtime (Apache-2.0 WITH LLVM-exception) in the Windows build.",
+    });
+  }
+  for (const md of m.models ?? []) {
+    const gemma = md.licenseId === "Gemma-Terms-of-Use";
+    rows.push({
+      component: `${md.displayName} (${md.role === "chat" ? "language model" : "search/embedding model"}, ${md.quantization} GGUF)`,
+      version: md.version,
+      license: md.licenseId,
+      source: md.url,
+      notes: gemma
+        ? `Terms: ${md.licenseUrl}. Required notice: "Gemma is provided under and subject to the Gemma Terms of Use found at ai.google.dev/gemma/terms." Use is subject to the Gemma Prohibited Use Policy; redistribution must pass these terms on.`
+        : `Licence: ${md.licenseUrl}.`,
+    });
+  }
+  return rows;
+}
+
+function aiTable(rows) {
+  const lines = ["| Component | Version | License | Source | Notes |", "|---|---|---|---|---|"];
+  for (const r of rows) lines.push(`| ${esc(r.component)} | ${esc(r.version)} | ${esc(r.license)} | ${esc(r.source)} | ${esc(r.notes)} |`);
+  return lines.join("\n");
+}
+
 // ------------------------------------------------------------------ report
 
 const esc = (s) => String(s ?? "").replace(/\|/g, "\\|").replace(/\r?\n/g, " ");
@@ -292,6 +339,20 @@ function render(rust, npm) {
   parts.push(`- Copyleft or unknown (blocking until resolved): **${flagged.length}**`);
   parts.push(`- Weak copyleft / needs review: **${review.length}**`);
   parts.push("");
+  const ai = aiComponents();
+  if (ai.length) {
+    parts.push("## Offline AI components (downloaded only when the user installs Offline AI)");
+    parts.push("");
+    parts.push(
+      "Not part of the installer. When the user clicks **Download Offline AI**, OpenFrame downloads these " +
+        "components from the signed Offline AI manifest (`crates/openframe-ai/manifest/`), verifies their SHA-256 " +
+        "hashes and runs them on the user's computer. They never receive project data from OpenFrame over a network. " +
+        "Their licence texts/terms must be shown in the product's About / third-party notices.",
+    );
+    parts.push("");
+    parts.push(aiTable(ai));
+    parts.push("");
+  }
   parts.push("## Flagged: copyleft or unknown license");
   parts.push("");
   parts.push(flagged.length ? table(flagged) : "None.");

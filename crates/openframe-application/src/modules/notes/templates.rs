@@ -27,12 +27,21 @@ use crate::store::{DeleteSpec, DeletedItemRow, MutationMeta, Tx, soft_delete};
 use crate::util::required_text;
 
 pub fn register(r: &mut Registry) {
-    r.query("templates.list", list);
-    r.query("templates.get", get);
-    r.command("templates.create", create);
-    r.command("templates.update", update);
-    r.command("templates.delete", delete);
-    r.command("templates.copy", copy);
+    use crate::registry::OperationMetadata as M;
+    r.query("templates.list", list)
+        .meta(M::read("Built-in, personal and project templates."));
+    r.query("templates.get", get)
+        .meta(M::read("One template with its content."));
+    r.command("templates.create", create)
+        .meta(M::edit("Create a project or personal template."));
+    r.command("templates.update", update)
+        .meta(M::edit("Rename a template or change its content."));
+    r.command("templates.delete", delete)
+        .meta(M::soft_delete("Delete a project or personal template.").confirm());
+    r.command("templates.copy", copy).meta(
+        M::edit("Copy a template into this project or into My Templates.")
+            .hidden(crate::registry::hidden::CROSS_PROJECT),
+    );
     r.indexer("template", index_template);
     r.trash_handler(TrashHandler {
         object_type: "template",

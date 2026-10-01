@@ -12,13 +12,35 @@ use crate::store::{DeletedItemRow, MutationMeta, UndoInfo, purge_deleted, restor
 use crate::util::{StoreSel, with_store};
 
 pub fn register(r: &mut Registry) {
-    r.command("history.undo", undo);
-    r.command("history.redo", redo);
-    r.query("history.info", info);
-    r.query("history.activity", activity);
-    r.query("trash.list", trash_list);
-    r.command("trash.restore", trash_restore);
-    r.command("trash.purge", trash_purge);
+    use crate::registry::{OperationMetadata as M, hidden as h};
+    r.module("History");
+    r.command("history.undo", undo).meta(
+        M::edit("Undo the user's last change (project or Global Idea Vault).")
+            .hidden(h::SESSION_CONTROL),
+    );
+    r.command("history.redo", redo)
+        .meta(M::edit("Redo the user's last undone change.").hidden(h::SESSION_CONTROL));
+    r.query("history.info", info)
+        .meta(M::read("Labels of the next undo/redo steps.").hidden(h::UI_FLOW));
+    r.query("history.activity", activity)
+        .meta(M::read("Project activity: who changed what, and when."));
+    r.query("trash.list", trash_list).meta(M::read(
+        "Raw Recently Deleted rows (project or Global Idea Vault).",
+    ));
+    r.command("trash.restore", trash_restore).meta(M::command(
+        Capability::SoftDelete,
+        "Restore an item from Recently Deleted.",
+    ));
+    r.command("trash.purge", trash_purge).meta(
+        M::command(
+            Capability::PermanentDelete,
+            "Delete an item forever from Recently Deleted.",
+        )
+        .destructive()
+        .irreversible()
+        .confirm()
+        .hidden(h::DELETE_FOREVER),
+    );
 }
 
 #[derive(Debug, Deserialize, TS)]

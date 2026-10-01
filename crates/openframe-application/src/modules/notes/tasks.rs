@@ -19,12 +19,22 @@ use crate::store::{DeleteSpec, DeletedItemRow, MutationMeta, Tx, soft_delete};
 use crate::util::{optional_text, required_text};
 
 pub fn register(r: &mut Registry) {
-    r.query("tasks.list", list);
-    r.query("tasks.relatable_types", relatable_types);
-    r.command("tasks.create", create);
-    r.command("tasks.update", update);
-    r.command("tasks.set_done", set_done);
-    r.command("tasks.delete", delete);
+    use crate::registry::OperationMetadata as M;
+    r.query("tasks.list", list)
+        .meta(M::read("Project tasks (open, done or all)."));
+    r.query("tasks.relatable_types", relatable_types).meta(
+        M::read("Object types a task can be related to (dialog helper).")
+            .hidden(crate::registry::hidden::UI_FLOW),
+    );
+    r.command("tasks.create", create)
+        .meta(M::edit("Create a project task."));
+    r.command("tasks.update", update).meta(M::edit(
+        "Edit a task (title, due date, owner, notes, related object).",
+    ));
+    r.command("tasks.set_done", set_done)
+        .meta(M::edit("Mark a task done or open."));
+    r.command("tasks.delete", delete)
+        .meta(M::soft_delete("Move a task to Recently Deleted."));
     r.indexer("task", index_task);
     r.trash_handler(TrashHandler {
         object_type: "task",

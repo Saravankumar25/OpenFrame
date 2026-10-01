@@ -39,12 +39,42 @@ pub use import::{
 };
 
 pub fn register(r: &mut Registry) {
-    r.query("screenplay.import_preview", import::preview);
-    r.command("screenplay.import_apply", import::apply);
-    r.query("screenplay.export", export::export);
-    r.query("interchange.export_preview", export::preview);
-    r.query("interchange.sources", export::sources);
-    r.query("interchange.draft_scenes", export::draft_scenes);
+    use crate::registry::{FsEffect as Fs, OperationMetadata as M, hidden as h};
+    use openframe_domain::Capability as Cap;
+    r.module("Import & Export");
+    r.query("screenplay.import_preview", import::preview).meta(
+        M::query(
+            Cap::Import,
+            "Preview importing a screenplay file (FDX/Fountain/…) or pasted text.",
+        )
+        .fs(Fs::ReadsUserFile)
+        .hidden(h::USER_PATH),
+    );
+    r.command("screenplay.import_apply", import::apply).meta(
+        M::command(
+            Cap::Import,
+            "Import a screenplay as a new screenplay or draft.",
+        )
+        .fs(Fs::ReadsUserFile)
+        .hidden(h::USER_PATH),
+    );
+    r.query("screenplay.export", export::export).meta(
+        M::query(
+            Cap::Export,
+            "Export a screenplay draft (PDF/FDX/Fountain/…) to a location the user picked.",
+        )
+        .fs(Fs::WritesUserFile)
+        .hidden(h::USER_PATH),
+    );
+    r.query("interchange.export_preview", export::preview)
+        .meta(M::compute("Print preview of a screenplay export.").hidden(h::UI_FLOW));
+    r.query("interchange.sources", export::sources).meta(
+        M::read("Screenplays and drafts that can be exported (dialog helper).").hidden(h::UI_FLOW),
+    );
+    r.query("interchange.draft_scenes", export::draft_scenes)
+        .meta(
+            M::read("Scenes of a draft for export selection (dialog helper).").hidden(h::UI_FLOW),
+        );
 }
 
 /// A parsing/export warning shown to the user.

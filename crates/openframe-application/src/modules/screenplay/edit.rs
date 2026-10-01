@@ -24,18 +24,41 @@ use crate::store::{DeleteSpec, MutationMeta, Tx, soft_delete};
 use crate::util::require_id;
 
 pub fn register(r: &mut Registry) {
-    r.command("screenplay.apply_edits", apply_edits);
-    r.command("screenplay.insert_element", insert_element_cmd);
-    r.command("screenplay.update_element", update_element_cmd);
-    r.command("screenplay.delete_element", delete_element_cmd);
-    r.command("screenplay.move_element", move_element_cmd);
-    r.command("screenplay.create_scene", create_scene_cmd);
-    r.command("screenplay.update_scene", update_scene_cmd);
-    r.command("screenplay.move_scene", move_scene_cmd);
-    r.command("screenplay.delete_scene", delete_scene_cmd);
-    r.command("screenplay.split_scene", split_scene_cmd);
-    r.command("screenplay.merge_scene", merge_scene_cmd);
-    r.command("screenplay.replace_all", replace_all);
+    use crate::registry::{OperationMetadata as M, hidden as h};
+    r.command("screenplay.apply_edits", apply_edits).meta(
+        M::edit("Apply a batch of typing edits from the screenplay editor.")
+            .hidden(h::EDITOR_PRIMITIVE),
+    );
+    r.command("screenplay.insert_element", insert_element_cmd)
+        .meta(M::edit(
+            "Insert a screenplay element (action, character, dialogue, …) into a scene.",
+        ));
+    r.command("screenplay.update_element", update_element_cmd)
+        .meta(M::edit("Change a screenplay element's text or type."));
+    r.command("screenplay.delete_element", delete_element_cmd)
+        .meta(M::edit("Delete a screenplay element.").destructive());
+    r.command("screenplay.move_element", move_element_cmd).meta(
+        M::edit("Move a screenplay element to another scene or position.")
+            .hidden(h::EDITOR_PRIMITIVE),
+    );
+    r.command("screenplay.create_scene", create_scene_cmd)
+        .meta(M::edit("Create a screenplay scene with a heading."));
+    r.command("screenplay.update_scene", update_scene_cmd)
+        .meta(M::edit(
+            "Edit a scene's heading, synopsis, notes, Story Day or time note.",
+        ));
+    r.command("screenplay.move_scene", move_scene_cmd)
+        .meta(M::edit(
+            "Move a scene to another position in its draft (renumbers scenes).",
+        ));
+    r.command("screenplay.delete_scene", delete_scene_cmd)
+        .meta(M::edit("Delete a scene from a draft.").destructive());
+    r.command("screenplay.split_scene", split_scene_cmd)
+        .meta(M::edit("Split a scene at an element.").hidden(h::EDITOR_PRIMITIVE));
+    r.command("screenplay.merge_scene", merge_scene_cmd)
+        .meta(M::edit("Merge a scene into the previous scene.").hidden(h::EDITOR_PRIMITIVE));
+    r.command("screenplay.replace_all", replace_all)
+        .meta(M::edit("Find and replace text throughout a draft.").destructive());
 }
 
 /// Largest single element (a very long action paragraph is still far below this).

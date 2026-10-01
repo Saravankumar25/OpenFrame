@@ -4,6 +4,7 @@ import {
   applyOps,
   diffSnapshots,
   docFromSnapshot,
+  mayAddBlocks,
   snapshotFromDoc,
   snapshotsEqual,
   type Snapshot,
@@ -215,5 +216,21 @@ describe("SyncController", () => {
     const state = EditorState.create({ doc });
     expect(state.doc.childCount).toBe(1);
     expect(() => schema.nodes.doc.createChecked(null, [schema.nodes.action.create({ id: "y" })])).toThrow();
+  });
+});
+
+describe("block id bookkeeping", () => {
+  const state = () => EditorState.create({ schema, doc: docFromSnapshot(base) });
+  it("typing never needs the id pass", () => {
+    const s = state();
+    expect(mayAddBlocks(s.tr.insertText("x", 3))).toBe(false);
+    expect(mayAddBlocks(s.tr.delete(3, 4))).toBe(false);
+  });
+  it("splitting or inserting blocks does", () => {
+    const s = state();
+    expect(mayAddBlocks(s.tr.split(5))).toBe(true);
+    const para = s.doc.child(1);
+    expect(mayAddBlocks(s.tr.insert(0, para.copy(para.content)))).toBe(true);
+    expect(mayAddBlocks(s.tr.setNodeMarkup(0, undefined, { ...s.doc.child(0).attrs }))).toBe(true);
   });
 });

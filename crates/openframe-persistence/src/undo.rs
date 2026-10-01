@@ -275,9 +275,13 @@ pub fn write_row(
         |r| r.get(0),
     )?;
     if exists {
+        // `id` is never re-assigned (it is the row being restored). Writing it,
+        // even to the same value, makes SQLite verify every foreign key that
+        // references this table, i.e. scan child tables without an index.
         let sets: Vec<String> = cols
             .iter()
             .enumerate()
+            .filter(|(_, c)| c.as_str() != "id")
             .map(|(i, c)| format!("{} = ?{}", quote_ident(c), i + 1))
             .collect();
         let mut params = values;

@@ -29,18 +29,39 @@ use crate::store::{DeleteSpec, DeletedItemRow, MutationMeta, Tx, soft_delete};
 use crate::util::{AssetInfo, ingest_file, load_asset_opt, optional_text, required_text};
 
 pub fn register(r: &mut Registry) {
-    r.query("cast.list", cast_list);
-    r.command("cast.create", cast_create);
-    r.command("cast.update", cast_update);
-    r.command("cast.assign", cast_assign);
-    r.command("cast.set_photo", cast_set_photo);
-    r.command("cast.set_archived", cast_set_archived);
-    r.command("cast.delete", cast_delete);
-    r.query("crew.list", crew_list);
-    r.command("crew.create", crew_create);
-    r.command("crew.update", crew_update);
-    r.command("crew.set_archived", crew_set_archived);
-    r.command("crew.delete", crew_delete);
+    use crate::registry::{FsEffect as Fs, OperationMetadata as M, hidden as h};
+    r.module("Cast & Crew");
+    r.query("cast.list", cast_list).meta(M::read(
+        "Cast directory: performers and the characters they play.",
+    ));
+    r.command("cast.create", cast_create)
+        .meta(M::edit("Add a cast member (performer) for a character."));
+    r.command("cast.update", cast_update).meta(M::edit(
+        "Edit a cast member (name, contact, availability, notes).",
+    ));
+    r.command("cast.assign", cast_assign).meta(M::edit(
+        "Assign a cast member to a character (primary or alternate).",
+    ));
+    r.command("cast.set_photo", cast_set_photo).meta(
+        M::edit("Set or remove a cast member's photo from a file the user picked.")
+            .fs(Fs::ReadsUserFile)
+            .hidden(h::MEDIA_INPUT),
+    );
+    r.command("cast.set_archived", cast_set_archived)
+        .meta(M::edit("Archive or unarchive a cast member."));
+    r.command("cast.delete", cast_delete)
+        .meta(M::soft_delete("Remove a cast member (recoverable).").confirm());
+    r.query("crew.list", crew_list)
+        .meta(M::read("Crew directory: people, roles and departments."));
+    r.command("crew.create", crew_create)
+        .meta(M::edit("Add a crew member."));
+    r.command("crew.update", crew_update).meta(M::edit(
+        "Edit a crew member (name, role, department, contact, notes).",
+    ));
+    r.command("crew.set_archived", crew_set_archived)
+        .meta(M::edit("Archive or unarchive a crew member."));
+    r.command("crew.delete", crew_delete)
+        .meta(M::soft_delete("Remove a crew member (recoverable).").confirm());
     r.indexer("cast_member", index_cast);
     r.indexer("crew_member", index_crew);
     r.trash_handler(TrashHandler {

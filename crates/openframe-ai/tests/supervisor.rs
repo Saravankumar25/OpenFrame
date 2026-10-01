@@ -314,3 +314,31 @@ fn runtime_that_cannot_start_fails_cleanly_without_restart_loops() {
     // An explicit retry is allowed (and fails the same way).
     assert!(sup.ensure_ready(Duration::from_secs(30)).is_err());
 }
+
+#[test]
+fn embedding_server_launch_is_loopback_only_processor_only_and_keyed_by_environment() {
+    use openframe_ai::manifest::Pooling;
+    use openframe_ai::supervisor::EmbeddingServerLauncher;
+    let l = EmbeddingServerLauncher {
+        executable: PathBuf::from("C:/rt/llama-server.exe"),
+        model_path: PathBuf::from("C:/m/embedding.gguf"),
+        model_id: "bge-small-en-v1.5-q8-0-v1".into(),
+        pooling: Pooling::Cls,
+        context_tokens: 512,
+        threads: 2,
+    };
+    let spec = l.launch_spec(51235, "secret-key");
+    let joined = spec.args.join(" ");
+    assert!(joined.contains("--host 127.0.0.1"));
+    assert!(!joined.contains("0.0.0.0"));
+    assert!(joined.contains("--embedding"));
+    assert!(joined.contains("--pooling cls"));
+    assert!(
+        joined.contains("-ngl 0"),
+        "embeddings stay on the processor"
+    );
+    assert!(joined.contains("-ub 512"), "one input fits one batch");
+    assert!(joined.contains("--no-webui") && joined.contains("--offline"));
+    assert!(!joined.contains("secret-key"));
+    assert_eq!(l.model_reference(), "bge-small-en-v1.5-q8-0-v1");
+}

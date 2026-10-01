@@ -22,7 +22,6 @@ import {
 import { call, inTauri, revealLocation } from "../../ipc/client";
 import { reportError, useOp } from "../../ipc/query";
 import type { ProjectSummary } from "../../ipc/generated/ProjectSummary";
-import type { SaveState } from "../../ipc/generated/SaveState";
 import type { UndoInfo } from "../../ipc/generated/UndoInfo";
 import type { RecentProject } from "../../ipc/generated/RecentProject";
 import type { AppInfo } from "../../ipc/generated/AppInfo";
@@ -37,7 +36,7 @@ import { useHomeView } from "../home/homeState";
 import { DisplayNameDialog } from "../home/DisplayNameDialog";
 import { dayAndTime } from "../home/format";
 import { OpenRecoveryDialog, RecoveryOffer, useRecoveryState } from "./RecoveryDialogs";
-import { LeaveGuardDialog, SaveErrorBanner, SaveErrorDialog, guardedLeave, retrySave, useLiveSaveState } from "./SaveStatus";
+import { LeaveGuardDialog, LiveSaveErrorBanner, LiveSaveErrorDialog, guardedLeave, retrySave, useLiveSaveState } from "./SaveStatus";
 
 const aiPanelModules = import.meta.glob<{ default: ComponentType<{ onClose: () => void }> }>("../../ai/AiPanel.tsx", { eager: true });
 const AiPanel = Object.values(aiPanelModules)[0]?.default;
@@ -89,7 +88,8 @@ export function Shell() {
   const { searchOpen, setSearchOpen, aiOpen, setAiOpen, undoScope } = useUi();
   const def = workspaceDef(route.workspace);
   const Workspace = def.component;
-  const save = useLiveSaveState();
+  // Save state is read by the status bar, banner and dialog themselves: the Shell
+  // (and with it the active workspace) must not re-render on every save event.
   const [recoveryOpen, setRecoveryOpen] = useState(false);
   const recovery = useRecoveryState(!!project.data);
   const offerPending = !!recovery.data?.offer;
@@ -176,7 +176,7 @@ export function Shell() {
           </div>
         </nav>
         <main className="main" aria-label={def.label}>
-          {save?.status === "Error" && <SaveErrorBanner onOpenRecovery={() => setRecoveryOpen(true)} />}
+          <LiveSaveErrorBanner onOpenRecovery={() => setRecoveryOpen(true)} />
           <ErrorBoundary key={route.workspace}>
             <Suspense fallback={<div className="content"><Skeleton h={28} w={240} /></div>}>
               <Workspace />
@@ -185,11 +185,11 @@ export function Shell() {
           {aiOpen && AiPanel && <AiPanel onClose={() => setAiOpen(false)} />}
         </main>
       </div>
-      <StatusBar project={project.data ?? null} save={save} onOpenRecovery={() => setRecoveryOpen(true)} />
+      <StatusBar project={project.data ?? null} onOpenRecovery={() => setRecoveryOpen(true)} />
       {searchOpen && <SearchOverlay onClose={() => setSearchOpen(false)} />}
       <RecoveryOffer project={project.data ?? null} state={recovery.data} />
       {/* One modal at a time (UX §2.10): the recovery decision comes first. */}
-      {!offerPending && <SaveErrorDialog state={save} />}
+      {!offerPending && <LiveSaveErrorDialog />}
       <LeaveGuardDialog />
       {recoveryOpen && !offerPending && <OpenRecoveryDialog onClose={() => setRecoveryOpen(false)} />}
       {shellExtensions.map((e, i) => (e.ShellOverlay ? <e.ShellOverlay key={i} /> : null))}
@@ -305,7 +305,8 @@ function TopBar({ project, undoScope }: { project: ProjectSummary | null; undoSc
   );
 }
 
-function StatusBar({ project, save, onOpenRecovery }: { project: ProjectSummary | null; save: SaveState | undefined; onOpenRecovery: () => void }) {
+function StatusBar({ project, onOpenRecovery }: { project: ProjectSummary | null; onOpenRecovery: () => void }) {
+  const save = useLiveSaveState();
   const route = useNav((s) => s.route);
   const [open, setOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);

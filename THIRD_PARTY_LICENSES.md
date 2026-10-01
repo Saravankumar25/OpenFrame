@@ -8,10 +8,20 @@ OpenFrame Studio's own license has **not been selected yet** — see `LICENSE-PE
 
 ## Summary
 
-- Rust crates: **393**
+- Rust crates: **394**
 - npm packages: **72**
 - Copyleft or unknown (blocking until resolved): **0**
 - Weak copyleft / needs review: **5**
+
+## Offline AI components (downloaded only when the user installs Offline AI)
+
+Not part of the installer. When the user clicks **Download Offline AI**, OpenFrame downloads these components from the signed Offline AI manifest (`crates/openframe-ai/manifest/`), verifies their SHA-256 hashes and runs them on the user's computer. They never receive project data from OpenFrame over a network. Their licence texts/terms must be shown in the product's About / third-party notices.
+
+| Component | Version | License | Source | Notes |
+|---|---|---|---|---|
+| llama.cpp server (runtime; builds: cpu, vulkan) | b11259 | MIT | https://github.com/ggml-org/llama.cpp/releases/download/b11259/ | Includes the LLVM OpenMP runtime (Apache-2.0 WITH LLVM-exception) in the Windows build. |
+| Gemma 3 1B Instruct (language model, Q8_0 GGUF) | f9c28bc | Gemma-Terms-of-Use | https://huggingface.co/ggml-org/gemma-3-1b-it-GGUF/resolve/f9c28bcd85737ffc5aef028638d3341d49869c27/gemma-3-1b-it-Q8_0.gguf | Terms: https://ai.google.dev/gemma/terms. Required notice: "Gemma is provided under and subject to the Gemma Terms of Use found at ai.google.dev/gemma/terms." Use is subject to the Gemma Prohibited Use Policy; redistribution must pass these terms on. |
+| BGE small English v1.5 (search/embedding model, Q8_0 GGUF) | f2068ed | MIT | https://huggingface.co/ggml-org/bge-small-en-v1.5-Q8_0-GGUF/resolve/f2068edd9b54f2a369549ccc71f70ed273a2a801/bge-small-en-v1.5-q8_0.gguf | Licence: https://huggingface.co/BAAI/bge-small-en-v1.5. |
 
 ## Flagged: copyleft or unknown license
 
@@ -35,7 +45,7 @@ None.
 | MIT | 139 |
 | Apache-2.0 OR MIT | 38 |
 | Unicode-3.0 | 18 |
-| MIT/Apache-2.0 | 15 |
+| MIT/Apache-2.0 | 16 |
 | Unlicense OR MIT | 10 |
 | BSD-3-Clause | 7 |
 | MPL-2.0 | 5 |
@@ -332,6 +342,7 @@ None.
 | socket2 | 0.6.5 | MIT OR Apache-2.0 | permissive | https://github.com/rust-lang/socket2 |
 | softbuffer | 0.4.8 | MIT OR Apache-2.0 | permissive | https://github.com/rust-windowing/softbuffer |
 | spki | 0.7.3 | Apache-2.0 OR MIT | permissive | https://github.com/RustCrypto/formats/tree/master/spki |
+| sqlite-vec | 0.1.9 | MIT/Apache-2.0 | permissive | https://github.com/asg017/sqlite-vec |
 | stable_deref_trait | 1.2.1 | MIT OR Apache-2.0 | permissive | https://github.com/storyyeller/stable_deref_trait |
 | string_cache | 0.9.0 | MIT OR Apache-2.0 | permissive | https://github.com/servo/string-cache |
 | stringprep | 0.1.5 | MIT/Apache-2.0 | permissive | https://github.com/sfackler/rust-stringprep |

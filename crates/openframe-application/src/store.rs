@@ -14,7 +14,7 @@ use std::sync::Arc;
 use openframe_domain::{Actor, AppError, AppResult, Capability, new_id, now_ms};
 use openframe_persistence::migrate::{self, Migration, MigrationPlan};
 use openframe_persistence::undo::{self, Direction, RowChange, TableCatalog};
-use parking_lot::Mutex;
+use parking_lot::{Mutex, RwLock};
 use rusqlite::{Connection, OptionalExtension, TransactionBehavior, params};
 use serde::Serialize;
 use ts_rs::TS;
@@ -178,6 +178,14 @@ struct Writer {
     catalog: TableCatalog,
 }
 
+/// Told about every committed change of a store, AFTER commit and after the
+/// writer lock is released (mutations, undo/redo, restore, purge, package
+/// apply). For derived indexes only (AI intelligence index): implementations
+/// must just enqueue work — never block, never touch the canonical writer.
+pub trait CommitObserver: Send + Sync {
+    fn committed(&self, changes: &[RowChange], extra: &[(String, String)]);
+}
+
 /// The per-transaction context handed to module code.
 pub struct Tx<'a> {
     conn: &'a Connection,
@@ -287,6 +295,7 @@ pub struct Store {
     registry: Arc<Registry>,
     events: Arc<dyn EventSink>,
     save: Arc<SaveTracker>,
+    observer: RwLock<Option<Arc<dyn CommitObserver>>>,
 }
 
 impl Store {
@@ -373,6 +382,7 @@ impl Store {
                 registry,
                 events,
                 save,
+                observer: RwLock::new(None),
             },
             report,
         ))
@@ -392,6 +402,11 @@ impl Store {
     }
     pub fn registry(&self) -> &Registry {
         &self.registry
+    }
+
+    /// Install (or remove) the post-commit observer.
+    pub fn set_commit_observer(&self, observer: Option<Arc<dyn CommitObserver>>) {
+        *self.observer.write() = observer;
     }
 
     /// Run a read-only query on the reader connection (never blocks the writer).
@@ -499,6 +514,12 @@ impl Store {
     }
 
     fn emit_changed(&self, changes: &[RowChange], extra: &[(String, String)], origin: &str) {
+        let observer = self.observer.read().clone();
+        if let Some(o) = observer
+            && (!changes.is_empty() || !extra.is_empty())
+        {
+            o.committed(changes, extra);
+        }
         let mut tables = undo::touched_tables(changes);
         let mut ids: Vec<String> = changes.iter().map(|c| c.row_id.clone()).collect();
         for (t, id) in extra {

@@ -10,4 +10,12 @@ state: string,
 /**
  * Not Checked | Valid | Invalid | Needs Review
  */
-validationState: string, rows: Array<AiPreviewRow>, exclusions: Array<AiPreviewRow>, affectedModules: Array<string>, targets: Array<AiObjRef>, operationCount: number, staleReason: string | null, errorMessage: string | null, createdAt: number, approvedAt: number | null, appliedAt: number | null, appliedOperations: number, };
+validationState: string, rows: Array<AiPreviewRow>, exclusions: Array<AiPreviewRow>, affectedModules: Array<string>, targets: Array<AiObjRef>, operationCount: number, staleReason: string | null, errorMessage: string | null, createdAt: number, approvedAt: number | null, appliedAt: number | null, appliedOperations: number, 
+/**
+ * Parts of a composite Change Set (1 for a single change); all are applied together.
+ */
+partCount: number, 
+/**
+ * Applying also needs the product's destructive confirmation (agentic spec §7).
+ */
+requiresConfirmation: boolean, };

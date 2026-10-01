@@ -1,8 +1,9 @@
 # ADR-0006: Local-AI-only, managed `llama.cpp` sidecar with signed manifests
 
-- **Status:** Accepted. **Implementation in progress** (AI module). Foundation primitives are implemented:
-  `openframe_security::{verify_ed25519, sha256_file}`, `ActorOrigin::Ai`, `Capability::{UseAi, ApplyChangeSet}`,
-  `ChangeSetState`/`ChangeSetOrigin` enums, and migration slot `0008_ai.sql`.
+- **Status:** Accepted and implemented. **Decision 3 (model policy) is superseded by ADR-0013**: there is one
+  profile (Gemma 3 1B Instruct + BGE small embeddings), no Qwen tiers and no user override. Decisions 1, 2 and 4–7
+  stay in force; ADR-0013 extends them with a second (embedding) sidecar, the derived intelligence index, the universal
+  toolbox and the bounded agent loop. The download-size figure under Consequences is replaced by ADR-0013's.
 - **Date:** 2026-09-30
 - **Related:** Engineering Index locked decisions (Offline AI, Local AI only, no Ollama); ESD §3, §10;
   OpenFrame_Local_AI_Runtime_Model_Management_Specification.md; ADR-0012 (resolution of external-AI passages)
@@ -27,9 +28,10 @@ work, must never mutate directly, and must treat project text as untrusted data 
    preflight. Activation is an atomic rename only after hash verification. The last known-good model is kept until the
    new one passes a health check. Store: `%LOCALAPPDATA%\OpenFrame\{models,runtimes}\`. Projects never contain models.
    Developers may place binaries in the gitignored `apps/desktop/src-tauri/binaries/` or `.dev-models/`.
-3. **Model policy:** Qwen-family GGUF profiles (Lightweight / Recommended / High Quality), chosen automatically from
-   local hardware (RAM, CPU, GPU/VRAM, free disk) with a user override by simple name. The hardware profile never
-   leaves the machine. Model file names live only in the manifest.
+3. ~~**Model policy:** Qwen-family GGUF profiles (Lightweight / Recommended / High Quality), chosen automatically from
+   local hardware (RAM, CPU, GPU/VRAM, free disk) with a user override by simple name.~~ *Superseded by ADR-0013
+   (one profile, no choice).* The hardware profile still never leaves the machine; it now only decides graphics card
+   or processor and the warnings shown before the download.
 4. **Authority boundary:** the model emits structured tool requests validated against a strict schema: tool exists,
    args valid, targets exist, actor permitted, source not stale. Reads run as queries with the requesting user's
    permissions (`Actor { origin: Ai }`). Mutations become a **Change Set** that is previewed and explicitly accepted,

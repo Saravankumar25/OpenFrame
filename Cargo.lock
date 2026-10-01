@@ -2986,6 +2986,7 @@ dependencies = [
  "openframe-import-export",
  "openframe-persistence",
  "openframe-project-format",
+ "openframe-search",
  "openframe-security",
  "openframe-test-support",
  "parking_lot",
@@ -3087,6 +3088,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "openframe-search"
+version = "0.1.0"
+dependencies = [
+ "hex",
+ "rusqlite",
+ "serde",
+ "serde_json",
+ "sha2 0.10.9",
+ "sqlite-vec",
+ "tempfile",
+ "thiserror 2.0.21",
+ "tracing",
+]
+
+[[package]]
 name = "openframe-security"
 version = "0.1.0"
 dependencies = [
@@ -3107,8 +3123,10 @@ dependencies = [
 name = "openframe-test-support"
 version = "0.1.0"
 dependencies = [
+ "base64 0.22.1",
  "openframe-application",
  "openframe-domain",
+ "openframe-search",
  "serde_json",
  "tempfile",
 ]
@@ -4337,6 +4355,15 @@ checksum = "d91ed6c858b01f942cd56b37a94b3e0a1798290327d1236e4d9cf4eaca44d29d"
 dependencies = [
  "base64ct",
  "der",
+]
+
+[[package]]
+name = "sqlite-vec"
+version = "0.1.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d0ba424237a9a5db2f6071f193319e2b6a32f7f3961debb2fbbfe67067abce3f"
+dependencies = [
+ "cc",
 ]
 
 [[package]]

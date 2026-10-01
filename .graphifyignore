@@ -1,0 +1,17 @@
+target/
+node_modules/
+apps/desktop/dist/
+apps/desktop/src-tauri/gen/
+.dev-models/
+tests/e2e/.drivers/
+tests/e2e/.run/
+tests/e2e/artifacts/
+.ruff_cache/
+.claude/
+.impeccable/
+HTML_Mockups/
+*.lock
+package-lock.json
+*.docx
+*.pdf
+graphify-out/

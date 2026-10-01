@@ -43,17 +43,36 @@ openframe_domain::string_enum!(
 );
 
 pub fn register(r: &mut Registry) {
-    r.query("locations.list", list);
-    r.query("locations.get", get);
-    r.command("locations.create", create);
-    r.command("locations.update", update);
-    r.command("locations.set_status", set_status);
-    r.command("locations.add_photos", add_photos);
-    r.command("locations.remove_photo", remove_photo);
-    r.command("locations.move_photo", move_photo);
-    r.command("locations.set_archived", set_archived);
-    r.command("locations.delete", delete);
-    r.command("locations.replace", replace);
+    use crate::registry::{FsEffect as Fs, OperationMetadata as M, hidden as h};
+    r.module("Production");
+    r.query("locations.list", list)
+        .meta(M::search("Production locations (by status or search)."));
+    r.query("locations.get", get).meta(M::read(
+        "One production location with address, contact, notes, photos and scenes.",
+    ));
+    r.command("locations.create", create)
+        .meta(M::edit("Create a production location."));
+    r.command("locations.update", update)
+        .meta(M::edit("Edit a location (name, address, contact, notes)."));
+    r.command("locations.set_status", set_status).meta(M::edit(
+        "Change a location's status (Idea, Shortlisted, Confirmed, Rejected).",
+    ));
+    r.command("locations.add_photos", add_photos).meta(
+        M::edit("Add photos the user picked to a location.")
+            .fs(Fs::ReadsUserFile)
+            .hidden(h::MEDIA_INPUT),
+    );
+    r.command("locations.remove_photo", remove_photo)
+        .meta(M::soft_delete("Remove a location photo (recoverable)."));
+    r.command("locations.move_photo", move_photo)
+        .meta(M::edit("Reorder a location photo.").hidden(h::LAYOUT));
+    r.command("locations.set_archived", set_archived)
+        .meta(M::edit("Archive or unarchive a location."));
+    r.command("locations.delete", delete)
+        .meta(M::soft_delete("Move a location to Recently Deleted.").confirm());
+    r.command("locations.replace", replace).meta(M::edit(
+        "Replace a location with another in selected scenes.",
+    ));
     r.indexer("location", index_location);
     r.trash_handler(TrashHandler {
         object_type: "location",

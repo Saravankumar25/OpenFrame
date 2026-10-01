@@ -31,17 +31,55 @@ use crate::store::{DeleteSpec, DeletedItemRow, MutationMeta, Tx, soft_delete};
 use crate::util::{body_text, require_id};
 
 pub fn register(r: &mut Registry) {
-    r.command("comment.create", create);
-    r.command("comment.reply", reply);
-    r.query("comment.list", list);
-    r.command("comment.update", update);
-    r.command("comment.resolve", resolve);
-    r.command("comment.reopen", reopen);
-    r.command("comment.delete", delete);
-    r.command("private_note.create", note_create);
-    r.query("private_note.list", note_list);
-    r.command("private_note.update", note_update);
-    r.command("private_note.delete", note_delete);
+    use crate::registry::OperationMetadata as M;
+    r.module("Comments & Private Notes");
+    r.command("comment.create", create).meta(M::command(
+        Capability::Comment,
+        "Add a comment to a project object (scene text, Scene Card, shot, …).",
+    ));
+    r.command("comment.reply", reply)
+        .meta(M::command(Capability::Comment, "Reply to a comment."));
+    r.query("comment.list", list).meta(M::read(
+        "Comment threads on an object, scene, draft or review round.",
+    ));
+    r.command("comment.update", update).meta(M::command(
+        Capability::Comment,
+        "Edit a comment's text or discussion status.",
+    ));
+    r.command("comment.resolve", resolve).meta(M::command(
+        Capability::ResolveComments,
+        "Resolve a comment thread.",
+    ));
+    r.command("comment.reopen", reopen).meta(M::command(
+        Capability::ResolveComments,
+        "Reopen a resolved comment thread.",
+    ));
+    r.command("comment.delete", delete).meta(
+        M::command(
+            Capability::Comment,
+            "Delete a comment (own comments; others need SoftDelete).",
+        )
+        .destructive(),
+    );
+    r.command("private_note.create", note_create)
+        .meta(M::command(
+            Capability::View,
+            "Create one of your own Private Notes (visible only to you).",
+        ));
+    r.query("private_note.list", note_list)
+        .meta(M::read("Your own Private Notes (never another user's)."));
+    r.command("private_note.update", note_update)
+        .meta(M::command(
+            Capability::View,
+            "Edit one of your own Private Notes.",
+        ));
+    r.command("private_note.delete", note_delete).meta(
+        M::command(
+            Capability::View,
+            "Delete one of your own Private Notes (recoverable).",
+        )
+        .destructive(),
+    );
     r.indexer("comment", index_comment);
     r.indexer("private_note", index_private_note);
     r.trash_handler(TrashHandler {

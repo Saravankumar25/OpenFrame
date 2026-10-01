@@ -33,33 +33,80 @@ use crate::store::{DeleteSpec, DeletedItemRow, MutationMeta, Tx, soft_delete};
 use crate::util::optional_text;
 
 pub fn register(r: &mut Registry) {
-    r.query("schedule.get", get);
-    r.query("schedule.suggestions", suggestions);
-    r.query("schedule.daily", daily);
-    r.command("schedule.create", create);
-    r.command("schedule.update_settings", update_settings);
-    r.command("schedule.set_status", set_status);
-    r.command("schedule.delete", delete_schedule);
-    r.command("schedule.create_day", create_day);
-    r.command("schedule.set_day_date", set_day_date);
-    r.command("schedule.set_day_notes", set_day_notes);
-    r.command("schedule.set_day_target", set_day_target);
-    r.command("schedule.set_off_day", set_off_day);
-    r.command("schedule.move_day", move_day);
-    r.command("schedule.duplicate_day", duplicate_day);
-    r.command("schedule.delete_day", delete_day);
-    r.command("schedule.move_strip", move_strip);
-    r.command("schedule.move_strips", move_strips);
-    r.command("schedule.set_strip_estimate", set_strip_estimate);
-    r.command("schedule.set_strip_pages", set_strip_pages);
-    r.command("schedule.add_marker", add_marker);
-    r.command("schedule.update_marker", update_marker);
-    r.command("schedule.move_marker", move_marker);
-    r.command("schedule.delete_marker", delete_marker);
-    r.command("schedule.decide_warning", decide_warning);
-    r.command("schedule.reconcile", reconcile);
-    r.command("schedule.acknowledge_change", acknowledge_change);
-    r.command("schedule.confirm_removal", confirm_removal);
+    use crate::registry::OperationMetadata as M;
+    r.module("Schedule");
+    r.query("schedule.get", get).meta(M::read(
+        "Shooting schedule: days with scenes and breaks, Unscheduled scenes, warnings and counts.",
+    ));
+    r.query("schedule.suggestions", suggestions)
+        .meta(M::compute(
+            "Scene grouping suggestions for the schedule (same location, cast, day/night).",
+        ));
+    r.query("schedule.daily", daily).meta(M::read(
+        "One shooting day in detail (scenes, breaks, cast, locations, timing).",
+    ));
+    r.command("schedule.create", create).meta(M::edit(
+        "Create the shooting schedule from the Production Source.",
+    ));
+    r.command("schedule.update_settings", update_settings)
+        .meta(M::edit(
+            "Change schedule settings (name, strict validation, day length).",
+        ));
+    r.command("schedule.set_status", set_status).meta(M::edit(
+        "Change the schedule status (Draft, Active; Finalized needs Lock/Finalize).",
+    ));
+    r.command("schedule.delete", delete_schedule)
+        .meta(M::soft_delete("Move the shooting schedule to Recently Deleted.").confirm());
+    r.command("schedule.create_day", create_day)
+        .meta(M::edit("Add a shooting day (or an off day)."));
+    r.command("schedule.set_day_date", set_day_date)
+        .meta(M::edit("Set or clear a shooting day's date."));
+    r.command("schedule.set_day_notes", set_day_notes)
+        .meta(M::edit("Edit a shooting day's notes."));
+    r.command("schedule.set_day_target", set_day_target)
+        .meta(M::edit("Set a shooting day's target length."));
+    r.command("schedule.set_off_day", set_off_day).meta(M::edit(
+        "Turn a day into an off day or back into a shooting day.",
+    ));
+    r.command("schedule.move_day", move_day)
+        .meta(M::edit("Move a shooting day to another position."));
+    r.command("schedule.duplicate_day", duplicate_day)
+        .meta(M::edit("Duplicate a shooting day's breaks and notes."));
+    r.command("schedule.delete_day", delete_day).meta(
+        M::soft_delete("Delete a shooting day (its scenes return to Unscheduled).").confirm(),
+    );
+    r.command("schedule.move_strip", move_strip).meta(M::edit(
+        "Move a scene strip to a day, position or back to Unscheduled.",
+    ));
+    r.command("schedule.move_strips", move_strips)
+        .meta(M::edit("Move several scene strips to a shooting day."));
+    r.command("schedule.set_strip_estimate", set_strip_estimate)
+        .meta(M::edit("Set a scene's estimated shooting time."));
+    r.command("schedule.set_strip_pages", set_strip_pages)
+        .meta(M::edit("Override a scene's page count (eighths)."));
+    r.command("schedule.add_marker", add_marker).meta(M::edit(
+        "Add a meal, travel, company move or custom break to a day.",
+    ));
+    r.command("schedule.update_marker", update_marker)
+        .meta(M::edit("Edit a schedule break."));
+    r.command("schedule.move_marker", move_marker)
+        .meta(M::edit("Move a schedule break to another day or position."));
+    r.command("schedule.delete_marker", delete_marker)
+        .meta(M::soft_delete("Remove a schedule break (recoverable)."));
+    r.command("schedule.decide_warning", decide_warning).meta(
+        M::edit("Keep, dismiss or restore a schedule warning.")
+            .confirm()
+            .hidden("Keeping or dismissing a schedule warning is the user's own judgement in the warning dialog (\"Keep Anyway\"); proposals never pre-accept warnings."),
+    );
+    r.command("schedule.reconcile", reconcile).meta(M::edit(
+        "Reconcile the schedule with Production Source changes.",
+    ));
+    r.command("schedule.acknowledge_change", acknowledge_change)
+        .meta(M::edit(
+            "Acknowledge that a scheduled scene changed in the script.",
+        ));
+    r.command("schedule.confirm_removal", confirm_removal)
+        .meta(M::edit("Confirm removing a scene that was cut from the script.").destructive());
     r.indexer("shooting_day", index_day);
     r.trash_handler(TrashHandler {
         object_type: "shooting_schedule",

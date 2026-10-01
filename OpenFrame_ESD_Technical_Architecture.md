@@ -36,7 +36,7 @@ These decisions were explicitly approved for the first implementation baseline:
 | Local persistence | SQLite + filesystem assets |
 | Project UX | One `.openframe` project concept; internal files are implementation detail |
 | Offline AI | One-click **Download Offline AI**; OpenFrame installs runtime/model |
-| Model selection | Hardware-aware automatic recommended Qwen profile |
+| Model selection | One profile, no choice: Gemma 3 1B Instruct + BGE small English embeddings (ADR-0013; the earlier Qwen profiles are superseded) |
 | Model distribution | OpenFrame-controlled public model distribution endpoint/CDN |
 | AI providers | **Local AI only** for v1; no cloud AI provider integration |
 | Accounts | No account required |
@@ -86,7 +86,7 @@ OpenFrame must feel like one fast native desktop tool even though the UI is web-
 | Full-text search | SQLite FTS5 | Local index without separate search server |
 | Files | Native filesystem | Media/assets stay outside SQLite blobs |
 | AI runtime | OpenFrame-managed `llama.cpp` sidecar | No Ollama/user setup |
-| AI model family | Manifest-selected Qwen GGUF | Replaceable model policy without product coupling |
+| AI model family | Gemma 3 1B Instruct GGUF (Q8_0) + BGE small English v1.5 GGUF, listed in the signed manifest | One tested profile; the manifest can move it to a new version without product coupling (ADR-0013) |
 | Networking later | Rust WebSocket + mDNS discovery | Host-owned LAN sessions |
 | PDF/doc output | Deterministic local document renderers | Offline professional exports |
 | Logging | `tracing` ecosystem | Structured local diagnostics |
@@ -120,7 +120,7 @@ OpenFrame must feel like one fast native desktop tool even though the UI is web-
                 ▼
 ┌──────────────────────────────────────────────────────────────────────┐
 │ Optional OpenFrame local-AI sidecar                                 │
-│ `llama.cpp` + selected GGUF model                                    │
+│ `llama.cpp` chat (Gemma 3 1B) + embedding (BGE small) sidecars      │
 │ No project filesystem authority                                      │
 │ No direct SQLite authority                                           │
 └──────────────────────────────────────────────────────────────────────┘

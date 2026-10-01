@@ -89,3 +89,29 @@ updater key configured, updater plugin not configured in `tauri.conf.json`.
 - In-app updates: notify, then download and install only after explicit approval (Engineering Index). See
   24-windows-packaging-updater.md.
 - Model updates are separate from app updates (Local AI spec §15).
+
+## 7. Offline AI release prerequisites ⛔
+
+Builds include Offline AI. These must be done before a public release; items 1–2 are enforced by
+`scripts/release-validate.mjs` (checks 6 and 6b), the rest are manual.
+
+1. **Production manifest signing key.** Set `OPENFRAME_MANIFEST_PUBLIC_KEY` (base64 Ed25519) at build time. The gate
+   fails when it is missing, malformed or equal to the development key (`crates/openframe-ai/keys/manifest-dev.pub`).
+   A release build never trusts the embedded development-signed manifest.
+2. **Model distribution base URL.** Set `MODEL_DISTRIBUTION_BASE_URL` (https) at build time. At install the app
+   fetches `<base>/manifest.json` and `<base>/manifest.json.sig` from it.
+3. **Production manifest.** Publish a format-2 manifest (profile `openframe-local-ai-v1`, `channel` ≠ `dev`, `sequence`
+   higher than any shipped one) signed with the production key (`node crates/openframe-ai/tools/sign-manifest.mjs`),
+   listing runtime, Gemma and BGE files with exact bytes and SHA-256. The development manifest points at GitHub and
+   Hugging Face; the production one must point at the OpenFrame-controlled host (Engineering Index §7 open decision).
+4. **Gemma redistribution terms.** Hosting Gemma on the OpenFrame endpoint is redistribution under the Gemma Terms of
+   Use: keep the notice "Gemma is provided under and subject to the Gemma Terms of Use found at
+   ai.google.dev/gemma/terms." in the app (Settings → Offline AI → Technical details) and `THIRD_PARTY_LICENSES.md`,
+   pass the Terms and the Gemma Prohibited Use Policy on to recipients (e.g. alongside the files on the host and in
+   the product's notices), and have the owner confirm the terms were reviewed. BGE small (MIT), llama.cpp (MIT) and
+   the LLVM OpenMP runtime (Apache-2.0 WITH LLVM-exception) notices ship as well.
+5. **Privacy policy.** Fill in the model download host and its log retention (`docs/store/privacy-policy.md`).
+6. **Hardware validation** (QA gate G13): benchmark and `real_runtime` on minimum (8 GB RAM) and recommended hardware,
+   and the Vulkan build on a discrete GPU — not yet done (runtime spec §16).
+7. **Store listing** (Store builds): disclose the on-demand AI download and generative AI, and provide a
+   report-inappropriate-content channel (27-microsoft-store.md §5.4, §10).

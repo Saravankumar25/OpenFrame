@@ -1,5 +1,10 @@
 # AI Specification — Implementation Digest
 
+> **Historical (superseded 30 Sept 2026).** This digest summarises the *previous* 3,919-line AI specification. That
+> specification has been rewritten to the implemented architecture (one Gemma 3 1B Offline AI, local embeddings,
+> hybrid retrieval, universal toolbox, bounded agent loop, human-only Change Set approval; ADR-0013). Qwen tiers,
+> external-AI and LAN passages below no longer apply. Use `OpenFrame_Studio_AI_Specification_Updated.md` instead.
+
 Source: `OpenFrame_Studio_AI_Specification_Updated.md` (3919 lines, 64 sections + Appendices A–E), read in full.
 Cross-refs to `OpenFrame_Studio_Security_Privacy_Data_Ownership_Specification.md` are marked **[SEC §n]**.
 

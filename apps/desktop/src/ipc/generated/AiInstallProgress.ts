@@ -4,11 +4,15 @@ import type { AppError } from "./AppError";
 /**
  * Download/installation progress shown in the panel.
  */
-export type AiInstallProgress = { taskId: string, profileId: string | null, 
+export type AiInstallProgress = { taskId: string, 
 /**
- * checking | downloadingRuntime | downloadingModel | verifying | installing | starting | ready | paused | cancelled | failed
+ * checking | downloading | verifying | installing | starting | ready | paused | cancelled | failed
  */
-phase: string, bytesDone: number, bytesTotal: number, message: string, error: AppError | null, 
+phase: string, 
+/**
+ * One combined figure for the whole Offline AI package (engine + models).
+ */
+bytesDone: number, bytesTotal: number, message: string, error: AppError | null, 
 /**
  * True while the background task is running.
  */

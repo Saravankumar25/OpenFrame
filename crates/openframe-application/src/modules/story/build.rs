@@ -24,10 +24,20 @@ use crate::store::MutationMeta;
 use crate::util::optional_text;
 
 pub fn register(r: &mut Registry) {
-    r.query("story.build_preview", build_preview);
-    r.command("story.build_screenplay", build_screenplay);
-    r.query("story.order_preview", order_preview);
-    r.command("story.apply_order", apply_order);
+    use crate::registry::OperationMetadata as M;
+    r.query("story.build_preview", build_preview)
+        .meta(M::compute(
+            "Preview of Build Screenplay: which Scene Cards become scenes.",
+        ));
+    r.command("story.build_screenplay", build_screenplay)
+        .meta(M::edit(
+            "Build a NEW screenplay or NEW draft from the Story Board (never overwrites).",
+        ));
+    r.query("story.order_preview", order_preview)
+        .meta(M::compute(
+            "Preview of applying the Story Board order to a screenplay draft.",
+        ));
+    r.command("story.apply_order", apply_order).meta(M::edit("Reorder a screenplay draft's scenes to match the Story Board (confirmed when it renumbers).").confirm());
 }
 
 // ===================================================================== DTOs

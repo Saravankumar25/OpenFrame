@@ -25,31 +25,90 @@ use crate::store::{DeleteSpec, MutationMeta, Tx, soft_delete};
 use crate::util::{AssetInfo, body_text, ingest_file, load_asset, optional_text, required_text};
 
 pub fn register(r: &mut Registry) {
-    r.query("story.board", board);
-    r.query("story.card", card_detail);
-    r.query("story.view_state", view_state);
-    r.command("story.set_collapsed", set_collapsed);
-    r.command("story.set_current_episode", set_current_episode);
-    r.command("story.create_act", create_act);
-    r.command("story.update_act", update_act);
-    r.command("story.move_act", move_act);
-    r.command("story.delete_act", delete_act);
-    r.command("story.create_sequence", create_sequence);
-    r.command("story.update_sequence", update_sequence);
-    r.command("story.delete_sequence", delete_sequence);
-    r.command("story.create_beat", create_beat);
-    r.command("story.update_beat", update_beat);
-    r.command("story.convert_beat", convert_beat);
-    r.command("story.create_card", create_card);
-    r.command("story.update_card", update_card);
-    r.command("story.card_to_beat", card_to_beat);
-    r.command("story.move_items", move_items);
-    r.command("story.duplicate_items", duplicate_items);
-    r.command("story.park_items", park_items);
-    r.command("story.restore_from_parking", restore_from_parking);
-    r.command("story.delete_items", delete_items);
-    r.command("story.add_attachment", add_attachment);
-    r.command("story.remove_attachment", remove_attachment);
+    use crate::registry::{FsEffect as Fs, OperationMetadata as M, hidden as h};
+    r.query("story.board", board).meta(M::read(
+        "Story Board: acts, sequences, beats, Scene Cards, Parking Lot and Unassigned.",
+    ));
+    r.query("story.card", card_detail).meta(M::read(
+        "One Scene Card with notes, linked characters, attachments and its screenplay scene.",
+    ));
+    r.query("story.view_state", view_state).meta(
+        M::read("The user's Story Board view state (collapsed rows, current episode).")
+            .hidden(h::VIEW_STATE),
+    );
+    r.command("story.set_collapsed", set_collapsed).meta(
+        M::command(
+            openframe_domain::Capability::View,
+            "Collapse or expand an act or sequence.",
+        )
+        .hidden(h::VIEW_STATE),
+    );
+    r.command("story.set_current_episode", set_current_episode)
+        .meta(
+            M::command(
+                openframe_domain::Capability::View,
+                "Choose which episode the Story Board shows.",
+            )
+            .hidden(h::VIEW_STATE),
+        );
+    r.command("story.create_act", create_act)
+        .meta(M::edit("Create an act on the Story Board."));
+    r.command("story.update_act", update_act)
+        .meta(M::edit("Rename an act or edit its note."));
+    r.command("story.move_act", move_act)
+        .meta(M::edit("Move an act to another position."));
+    r.command("story.delete_act", delete_act).meta(
+        M::soft_delete(
+            "Delete an act (move its contents out, or delete everything inside; recoverable).",
+        )
+        .confirm(),
+    );
+    r.command("story.create_sequence", create_sequence)
+        .meta(M::edit("Create a sequence inside an act."));
+    r.command("story.update_sequence", update_sequence)
+        .meta(M::edit("Rename a sequence or edit its note."));
+    r.command("story.delete_sequence", delete_sequence).meta(
+        M::soft_delete(
+            "Delete a sequence (move its contents out, or delete everything inside; recoverable).",
+        )
+        .confirm(),
+    );
+    r.command("story.create_beat", create_beat)
+        .meta(M::edit("Create a story beat."));
+    r.command("story.update_beat", update_beat)
+        .meta(M::edit("Edit a beat's text, note or colour."));
+    r.command("story.convert_beat", convert_beat)
+        .meta(M::edit("Convert a beat into a Scene Card."));
+    r.command("story.create_card", create_card)
+        .meta(M::edit("Create a Scene Card."));
+    r.command("story.update_card", update_card).meta(M::edit(
+        "Edit a Scene Card's description, heading, notes or colour.",
+    ));
+    r.command("story.card_to_beat", card_to_beat)
+        .meta(M::edit("Convert a Scene Card back into a beat."));
+    r.command("story.move_items", move_items).meta(M::edit(
+        "Move sequences, beats or Scene Cards to another act, sequence, Parking Lot or Unassigned.",
+    ));
+    r.command("story.duplicate_items", duplicate_items)
+        .meta(M::edit("Duplicate sequences, beats or Scene Cards."));
+    r.command("story.park_items", park_items)
+        .meta(M::edit("Move beats or Scene Cards to the Parking Lot."));
+    r.command("story.restore_from_parking", restore_from_parking)
+        .meta(M::edit(
+            "Return parked beats or Scene Cards to where they came from.",
+        ));
+    r.command("story.delete_items", delete_items).meta(
+        M::soft_delete("Move sequences, beats or Scene Cards to Recently Deleted.").confirm(),
+    );
+    r.command("story.add_attachment", add_attachment).meta(
+        M::edit("Attach a file the user picked to a Scene Card, beat or sequence.")
+            .fs(Fs::ReadsUserFile)
+            .hidden(h::USER_PATH),
+    );
+    r.command("story.remove_attachment", remove_attachment)
+        .meta(M::edit(
+            "Remove an attachment from a Scene Card, beat or sequence.",
+        ));
 }
 
 // ===================================================================== DTOs

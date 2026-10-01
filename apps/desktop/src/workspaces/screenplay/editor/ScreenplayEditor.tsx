@@ -20,7 +20,7 @@ import { call, OpError } from "../../../ipc/client";
 import { reportError } from "../../../ipc/query";
 import { toast } from "../../../app/toast";
 import { ELEMENT_META, SHORTCUT_ORDER, isElementType, newId, schema } from "./schema";
-import { blockText, docFromSnapshot, snapshotFromDoc, snapshotFromScenes } from "./model";
+import { blockText, docFromSnapshot, mayAddBlocks, snapshotFromDoc, snapshotFromScenes } from "./model";
 import { nextOnEnter, onEnterEmpty, tabNext, tabPrev } from "./rules";
 import { findInText, type FindOptions } from "./find";
 import { SyncController, type SyncStatus } from "./sync";
@@ -106,6 +106,8 @@ function findDeco(doc: PMNode, matches: FindState["matches"], index: number) {
 }
 
 function commentDeco(doc: PMNode, threads: CommentThread[]): DecorationSet {
+  // No comments (the common case while writing): skip the walk over every block.
+  if (threads.length === 0) return DecorationSet.empty;
   const pos = new Map<string, number>();
   doc.forEach((node, offset) => {
     if (node.attrs.id) pos.set(node.attrs.id as string, offset);
@@ -126,7 +128,9 @@ function commentDeco(doc: PMNode, threads: CommentThread[]): DecorationSet {
 /** Give every block a unique id (split/paste create blocks without one). */
 const idPlugin = new Plugin({
   appendTransaction(trs, _old, state) {
-    if (!trs.some((t) => t.docChanged)) return null;
+    // Walking all blocks of a 6,000-element script on every keystroke is wasted
+    // work: only transactions that insert block nodes can add or duplicate ids.
+    if (!trs.some((t) => t.docChanged && mayAddBlocks(t))) return null;
     const seen = new Set<string>();
     let tr: Transaction | null = null;
     state.doc.forEach((node, offset) => {
@@ -265,16 +269,13 @@ const lineBreakCommand: Command = (state, dispatch) => {
   return true;
 };
 
+/** The scene heading at or before `pos` (walks back from the cursor's block, not the whole script). */
 function sceneAt(doc: PMNode, pos: number): string | null {
-  let id: string | null = null;
-  let offset = 0;
-  for (let i = 0; i < doc.childCount; i++) {
+  for (let i = Math.min(doc.resolve(pos).index(0), doc.childCount - 1); i >= 0; i--) {
     const n = doc.child(i);
-    if (offset > pos) break;
-    if (n.type.name === "scene_heading") id = n.attrs.id as string;
-    offset += n.nodeSize;
+    if (n.type.name === "scene_heading") return n.attrs.id as string;
   }
-  return id;
+  return null;
 }
 
 function headingPositions(doc: PMNode): number[] {

@@ -21,6 +21,9 @@ use ts_rs::TS;
 use crate::core::AppCore;
 use crate::store::{MutationMeta, Tx};
 
+/// Above this many scene fingerprints in one read, compute them all in bulk.
+pub(crate) const PRIME_THRESHOLD: usize = 8;
+
 /// One screenplay scene available for planning.
 #[derive(Debug, Clone)]
 pub struct SceneRow {
@@ -196,6 +199,48 @@ impl SceneCtx {
         Ok(h)
     }
 
+    /// Compute the fingerprints of every planning scene with two queries per draft
+    /// (instead of two per scene). List views call this before walking all scenes.
+    pub fn prime_hashes(&self, c: &Connection) -> AppResult<()> {
+        let mut drafts: Vec<&str> = self.scenes.iter().map(|s| s.draft_id.as_str()).collect();
+        drafts.sort_unstable();
+        drafts.dedup();
+        let mut hashes = self.hashes.borrow_mut();
+        for draft in drafts {
+            let mut builders: HashMap<String, SceneHasher> = HashMap::new();
+            {
+                let mut stmt = c.prepare_cached(
+                    "SELECT id, heading, omitted, updated_at FROM screenplay_scene
+                     WHERE draft_id=?1 AND deleted_at IS NULL",
+                )?;
+                let mut rows = stmt.query([draft])?;
+                while let Some(r) = rows.next()? {
+                    let id: String = r.get(0)?;
+                    let heading: String = r.get(1)?;
+                    builders.insert(id, SceneHasher::new(&heading, r.get(2)?, r.get(3)?));
+                }
+            }
+            let mut stmt = c.prepare_cached(
+                "SELECT e.scene_id, e.element_type, e.text, e.dual, e.updated_at FROM screenplay_element e
+                 JOIN screenplay_scene s ON s.id = e.scene_id
+                 WHERE s.draft_id=?1 AND s.deleted_at IS NULL ORDER BY e.scene_id, e.position, e.id",
+            )?;
+            let mut rows = stmt.query([draft])?;
+            while let Some(r) = rows.next()? {
+                let sid: String = r.get(0)?;
+                if let Some(h) = builders.get_mut(&sid) {
+                    let t: String = r.get(1)?;
+                    let text: String = r.get(2)?;
+                    h.element(&t, &text, r.get(3)?, r.get(4)?);
+                }
+            }
+            for (id, h) in builders {
+                hashes.entry(id).or_insert_with(|| h.finish());
+            }
+        }
+        Ok(())
+    }
+
     /// Review state of a planning object: (scene removed from source, needs review).
     pub fn review_state(
         &self,
@@ -224,32 +269,58 @@ pub fn scene_hash(c: &Connection, scene_id: &str) -> AppResult<(String, i64)> {
             |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)),
         )
         .optional()?;
-    let Some((heading, omitted, mut changed)) = head else {
+    let Some((heading, omitted, changed)) = head else {
         return Err(AppError::not_found("scene"));
     };
-    let mut buf = String::with_capacity(1024);
-    buf.push_str(heading.trim());
-    buf.push('\u{1e}');
-    buf.push(if omitted { '1' } else { '0' });
-    let mut stmt = c.prepare(
+    let mut h = SceneHasher::new(&heading, omitted, changed);
+    let mut stmt = c.prepare_cached(
         "SELECT element_type, text, dual, updated_at FROM screenplay_element WHERE scene_id=?1 ORDER BY position, id",
     )?;
     let mut rows = stmt.query([scene_id])?;
     while let Some(r) = rows.next()? {
         let t: String = r.get(0)?;
         let text: String = r.get(1)?;
-        let dual: bool = r.get(2)?;
-        let at: i64 = r.get(3)?;
-        changed = changed.max(at);
+        h.element(&t, &text, r.get(2)?, r.get(3)?);
+    }
+    Ok(h.finish())
+}
+
+/// Incremental builder of a scene fingerprint, shared by the single-scene and
+/// the bulk path (`SceneCtx::prime_hashes`) so both produce identical hashes.
+struct SceneHasher {
+    buf: String,
+    changed: i64,
+}
+
+impl SceneHasher {
+    fn new(heading: &str, omitted: bool, updated_at: i64) -> Self {
+        let mut buf = String::with_capacity(1024);
+        buf.push_str(heading.trim());
         buf.push('\u{1e}');
-        buf.push_str(&t);
-        buf.push('\u{1f}');
-        buf.push_str(text.trim_end());
-        if dual {
-            buf.push_str("\u{1f}d");
+        buf.push(if omitted { '1' } else { '0' });
+        SceneHasher {
+            buf,
+            changed: updated_at,
         }
     }
-    Ok((openframe_security::sha256_bytes(buf.as_bytes()), changed))
+
+    fn element(&mut self, element_type: &str, text: &str, dual: bool, updated_at: i64) {
+        self.changed = self.changed.max(updated_at);
+        self.buf.push('\u{1e}');
+        self.buf.push_str(element_type);
+        self.buf.push('\u{1f}');
+        self.buf.push_str(text.trim_end());
+        if dual {
+            self.buf.push_str("\u{1f}d");
+        }
+    }
+
+    fn finish(self) -> (String, i64) {
+        (
+            openframe_security::sha256_bytes(self.buf.as_bytes()),
+            self.changed,
+        )
+    }
 }
 
 // ------------------------------------------------------------------ DTOs
@@ -358,6 +429,10 @@ pub fn list_scenes(core: &AppCore, actor: &Actor, _: VisualScenesArgs) -> AppRes
             while let Some(r) = rows.next()? {
                 stats.entry(r.get(0)?).or_default().moods = r.get(1)?;
             }
+        }
+        // Many planned scenes: fingerprint them in bulk rather than two queries each.
+        if stats.values().filter(|st| !st.marks.is_empty()).count() > PRIME_THRESHOLD {
+            ctx.prime_hashes(c)?;
         }
         let mut scenes = Vec::with_capacity(ctx.scenes.len());
         for sc in &ctx.scenes {

@@ -18,8 +18,13 @@ use crate::core::AppCore;
 use crate::registry::Registry;
 
 pub fn register(r: &mut Registry) {
-    r.query("screenplay.compare", compare);
-    r.query("screenplay.revision_changes", revision_changes);
+    use crate::registry::OperationMetadata as M;
+    r.query("screenplay.compare", compare)
+        .meta(M::compute("Compare two drafts scene by scene."));
+    r.query("screenplay.revision_changes", revision_changes)
+        .meta(M::compute(
+            "Changes made in a revision draft since its locked source.",
+        ));
 }
 
 #[derive(Debug, Deserialize, TS)]

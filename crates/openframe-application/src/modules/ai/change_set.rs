@@ -14,21 +14,171 @@
 //! as from the UI) with the actor's origin marked AI. If any operation fails,
 //! the ones already applied are undone through history. On success, their
 //! undo steps are grouped into one "AI-applied: …" step.
+//!
+//! A multi-step request ends in ONE composite Change Set ([`compose`]): the
+//! parts' operations run in order, previews are shown part by part, and
+//! "Re-check & Review" rebuilds every part from its recorded source.
+//!
+//! Review is human-only (agentic spec §3, §40): accept / reject / re-check are
+//! refused for any actor that is not the local user acting in the UI — in
+//! particular for AI-origin actors (the identity operations run under while a
+//! Change Set is applied) — and a Change Set can never contain an `ai.*`
+//! operation, so acceptance can't be nested or chained.
 
 use openframe_domain::auth::ActorOrigin;
 use openframe_domain::{Actor, AppError, AppResult, Capability, new_id, now_ms};
 use openframe_persistence::undo::{self, RowChange};
 use rusqlite::{Connection, OptionalExtension, params};
+use serde::Deserialize;
 use serde_json::{Value, json};
+use ts_rs::TS;
 
-use super::catalog::{self, BuildCtx};
+use super::catalog;
 use super::records::{ai_meta, set_result_status};
+use super::scope::{self, AiScopeArgs, AiScopeKind};
+use super::toolbox;
+use super::tools::ToolCtx;
 use super::types::*;
 use crate::core::AppCore;
 use crate::registry::OpKind;
 use crate::store::{MutationMeta, Store, Tx};
 
 pub const STALE_MESSAGE: &str = "The project changed after this suggestion was prepared. Review is required before applying it.";
+
+/// Most parts one composite Change Set may combine.
+pub const MAX_PARTS: usize = 6;
+
+/// `ai.change_set.accept` arguments. `confirmDestructive` is the product's extra
+/// destructive-change confirmation (required when the preview contains one).
+#[derive(Debug, Deserialize, TS)]
+#[ts(export)]
+#[ts(rename = "AiAcceptArgs")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct AcceptArgs {
+    pub id: String,
+    #[serde(default)]
+    #[ts(optional)]
+    pub confirm_destructive: Option<bool>,
+}
+
+/// Review actions are performed by a person in the UI, never by the assistant, an
+/// applied Change Set or a received package (agentic spec §40).
+pub fn require_human(actor: &Actor) -> AppResult<()> {
+    match actor.origin {
+        ActorOrigin::Local => Ok(()),
+        _ => Err(AppError::new(
+            "permission.denied",
+            "Only you can review proposed changes, from the AI Assistant panel.",
+        )
+        .with_detail("change set review requires a local user action")),
+    }
+}
+
+/// Combine the proposals of one request into a single reviewable Change Set
+/// (contract C4). Operations keep their order; previews are grouped by part;
+/// targets, modules and base rows are unioned. `None` when there is nothing.
+pub fn compose(parts: Vec<ChangeSetDraft>) -> Option<ChangeSetDraft> {
+    let n = parts.len();
+    if n <= 1 {
+        return parts.into_iter().next().map(|mut d| {
+            d.sources = d.all_sources();
+            d
+        });
+    }
+    let titles: Vec<String> = parts.iter().map(|p| p.title.clone()).collect();
+    let first = &parts[0];
+    let mut out = ChangeSetDraft {
+        title: super::queries::truncate_chars(&format!("{n} changes: {}", titles.join(" · ")), 160),
+        summary: super::queries::truncate_chars(
+            &format!(
+                "I prepared {n} changes for you to review together: {}. Nothing changes until you apply them.",
+                titles.join("; ")
+            ),
+            1_000,
+        ),
+        operations: Vec::new(),
+        preview: Vec::new(),
+        exclusions: Vec::new(),
+        targets: Vec::new(),
+        modules: Vec::new(),
+        base_rows: Vec::new(),
+        source_tool: first.source_tool.clone(),
+        source_args: first.source_args.clone(),
+        sources: Vec::new(),
+    };
+    for (i, p) in parts.into_iter().enumerate() {
+        out.sources.extend(p.all_sources());
+        out.preview.push(PreviewRow::section(
+            p.title.clone(),
+            format!("Change {} of {n}", i + 1),
+        ));
+        out.preview.extend(p.preview);
+        for x in p.exclusions {
+            if !out.exclusions.contains(&x) {
+                out.exclusions.push(x);
+            }
+        }
+        out.operations.extend(p.operations);
+        for t in p.targets {
+            if !out
+                .targets
+                .iter()
+                .any(|o| o.table == t.table && o.id == t.id)
+            {
+                out.targets.push(t);
+            }
+        }
+        for m in p.modules {
+            if !out.modules.contains(&m) {
+                out.modules.push(m);
+            }
+        }
+        for r in p.base_rows {
+            if !out.base_rows.contains(&r) {
+                out.base_rows.push(r);
+            }
+        }
+    }
+    Some(out)
+}
+
+fn source_json(d: &ChangeSetDraft) -> Value {
+    let sources: Vec<Value> = d
+        .all_sources()
+        .into_iter()
+        .map(|(tool, args)| json!({"tool": tool, "args": args}))
+        .collect();
+    // `tool` / `args` stay readable by older builds (first part).
+    json!({"tool": d.source_tool, "args": d.source_args, "sources": sources})
+}
+
+/// Sources recorded with a stored Change Set (older records carry only `tool`/`args`).
+fn stored_sources(source: &Value) -> Vec<(String, Value)> {
+    if let Some(list) = source.get("sources").and_then(|v| v.as_array())
+        && !list.is_empty()
+    {
+        return list
+            .iter()
+            .map(|s| {
+                (
+                    s.get("tool")
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("")
+                        .to_string(),
+                    s.get("args").cloned().unwrap_or(Value::Null),
+                )
+            })
+            .collect();
+    }
+    vec![(
+        source
+            .get("tool")
+            .and_then(|v| v.as_str())
+            .unwrap_or("")
+            .to_string(),
+        source.get("args").cloned().unwrap_or(Value::Null),
+    )]
+}
 
 /// Persist a prepared Change Set (inside the caller's AI-record transaction).
 pub fn insert(
@@ -43,7 +193,7 @@ pub fn insert(
         "projectId": catalog::project_id(tx.conn())?,
         "rows": catalog::snapshot(tx.conn(), &d.base_rows)?,
     });
-    let source = json!({"tool": d.source_tool, "args": d.source_args});
+    let source = source_json(d);
     tx.conn().execute(
         "INSERT INTO change_set(id, origin, ai_request_id, ai_result_id, requesting_user_id, requesting_role, title, summary,
                                 target_objects_json, affected_modules_json, operations_json, preview_json, exclusions_json,
@@ -92,18 +242,21 @@ struct Row {
     operations: Vec<OpCall>,
     base: Value,
     source: Value,
+    destructive: bool,
 }
 
 fn load_row(c: &Connection, actor: &Actor, id: &str) -> AppResult<Row> {
     c.query_row(
-        "SELECT id, title, review_state, requesting_role, ai_request_id, operations_json, base_version, source_json
+        "SELECT id, title, review_state, requesting_role, ai_request_id, operations_json, base_version, source_json, preview_json
          FROM change_set WHERE id=?1 AND requesting_user_id=?2 AND deleted_at IS NULL",
         params![id, actor.user_id],
         |r| {
             let ops: String = r.get(5)?;
             let base: String = r.get(6)?;
             let source: Option<String> = r.get(7)?;
+            let preview: Vec<PreviewRow> = parse_json(r.get(8)?);
             Ok(Row {
+                destructive: preview.iter().any(|x| x.tone == TONE_DESTRUCTIVE),
                 id: r.get(0)?,
                 title: r.get(1)?,
                 state: r.get(2)?,
@@ -126,18 +279,23 @@ fn parse_json<T: serde::de::DeserializeOwned + Default>(s: String) -> T {
 pub fn load_dto(c: &Connection, actor: &Actor, id: &str) -> AppResult<Option<ChangeSetDto>> {
     Ok(c.query_row(
         "SELECT id, title, summary, review_state, validation_state, preview_json, exclusions_json, affected_modules_json,
-                target_objects_json, operations_json, stale_reason, error_message, created_at, approved_at, applied_at, applied_operations
+                target_objects_json, operations_json, stale_reason, error_message, created_at, approved_at, applied_at, applied_operations,
+                source_json
          FROM change_set WHERE id=?1 AND requesting_user_id=?2 AND deleted_at IS NULL",
         params![id, actor.user_id],
         |r| {
             let ops: Vec<OpCall> = parse_json(r.get(9)?);
+            let rows: Vec<PreviewRow> = parse_json(r.get(5)?);
+            let source: Value = parse_json(r.get(16)?);
             Ok(ChangeSetDto {
                 id: r.get(0)?,
                 title: r.get(1)?,
                 summary: r.get(2)?,
                 state: r.get(3)?,
                 validation_state: r.get(4)?,
-                rows: parse_json(r.get(5)?),
+                part_count: stored_sources(&source).len().max(1) as u32,
+                requires_confirmation: rows.iter().any(|x| x.tone == TONE_DESTRUCTIVE),
+                rows,
                 exclusions: parse_json(r.get(6)?),
                 affected_modules: parse_json(r.get(7)?),
                 targets: parse_json(r.get(8)?),
@@ -329,10 +487,28 @@ fn group_undo_steps(store: &Store, actor: &Actor, after_seq: i64, label: &str) -
 
 /// Explicit acceptance: revalidate, then apply all operations or none.
 pub fn accept(core: &AppCore, actor: &Actor, id: &str) -> AppResult<ChangeSetDto> {
+    accept_with(core, actor, id, false)
+}
+
+/// Explicit acceptance from the review card. `confirm_destructive` carries the
+/// product's additional confirmation for destructive changes.
+pub fn accept_with(
+    core: &AppCore,
+    actor: &Actor,
+    id: &str,
+    confirm_destructive: bool,
+) -> AppResult<ChangeSetDto> {
+    require_human(actor)?;
     actor.require(Capability::ApplyChangeSet, "apply proposed changes")?;
     let s = core.project()?;
     let store = &s.store;
     let row = store.read(|c| load_row(c, actor, id))?;
+    if row.state == "Pending" && row.destructive && !confirm_destructive {
+        return Err(AppError::new(
+            "validation.confirmation_required",
+            "These changes delete or permanently change items. Confirm them before applying.",
+        ));
+    }
     match row.state.as_str() {
         "Pending" => {}
         "Applied" => return get(core, actor, id),
@@ -375,7 +551,9 @@ pub fn accept(core: &AppCore, actor: &Actor, id: &str) -> AppResult<ChangeSetDto
             .registry
             .get(&op.op)
             .is_some_and(|e| e.kind == OpKind::Command);
-        if !catalog::allowed_op(&op.op) || !registered {
+        // Never an assistant operation (no nested acceptance, no recursive requests).
+        let assistant_op = op.op.starts_with("ai.");
+        if assistant_op || !catalog::allowed_op(&op.op) || !registered {
             let msg = "This proposal contains a change OpenFrame can't apply. Nothing was changed.";
             update_state(
                 store,
@@ -495,6 +673,7 @@ pub fn accept(core: &AppCore, actor: &Actor, id: &str) -> AppResult<ChangeSetDto
 
 /// Rejecting leaves project content unchanged (AI-AC-008).
 pub fn reject(core: &AppCore, actor: &Actor, id: &str) -> AppResult<ChangeSetDto> {
+    require_human(actor)?;
     actor.require(Capability::UseAi, "use the assistant")?;
     let s = core.project()?;
     let row = s.store.read(|c| load_row(c, actor, id))?;
@@ -518,9 +697,11 @@ pub fn reject(core: &AppCore, actor: &Actor, id: &str) -> AppResult<ChangeSetDto
     get(core, actor, id)
 }
 
-/// "Re-check & Review": rebuild the proposal against the current project and
-/// return it to Pending for a fresh, explicit review (never auto-applied).
+/// "Re-check & Review": rebuild every part of the proposal from its recorded
+/// source against the current project and return it to Pending for a fresh,
+/// explicit review. Re-checking never applies anything.
 pub fn recheck(core: &AppCore, actor: &Actor, id: &str) -> AppResult<ChangeSetDto> {
+    require_human(actor)?;
     actor.require(Capability::UseAi, "use the assistant")?;
     let s = core.project()?;
     let row = s.store.read(|c| load_row(c, actor, id))?;
@@ -530,19 +711,39 @@ pub fn recheck(core: &AppCore, actor: &Actor, id: &str) -> AppResult<ChangeSetDt
             row.state.to_lowercase()
         )));
     }
-    let tool = row
-        .source
-        .get("tool")
-        .and_then(|v| v.as_str())
-        .unwrap_or("")
-        .to_string();
-    let args = row.source.get("args").cloned().unwrap_or(Value::Null);
-    if let Some(spec) = catalog::spec(&tool)
-        && !actor.can(spec.cap)
+    let sources = stored_sources(&row.source);
+    let rebuilt: AppResult<Vec<ChangeSetDraft>> = s.store.read(|c| {
+        // Proposal builders take no scope-specific context; a neutral scope is enough.
+        let scope = scope::resolve(
+            c,
+            actor,
+            &AiScopeArgs {
+                kind: AiScopeKind::WholeProject,
+                draft_id: None,
+                scene_id: None,
+                selection: Vec::new(),
+                shooting_day_id: None,
+                call_sheet_id: None,
+            },
+        )?;
+        let ctx = ToolCtx {
+            conn: c,
+            actor,
+            scope: &scope,
+            request_text: "",
+        };
+        Ok(sources
+            .iter()
+            .take(MAX_PARTS)
+            .map(|(tool, args)| toolbox::rebuild_proposal(core, &ctx, tool, args))
+            .collect())
+    })?;
+    if let Err(e) = &rebuilt
+        && e.is("permission")
     {
         let msg = format!(
             "{} Nothing was changed.",
-            catalog::denial_message(actor, spec)
+            e.message.trim_end_matches(" Nothing was changed.")
         );
         update_state(
             &s.store,
@@ -557,14 +758,9 @@ pub fn recheck(core: &AppCore, actor: &Actor, id: &str) -> AppResult<ChangeSetDt
         )?;
         return get(core, actor, id);
     }
-    let rebuilt = s.store.read(|c| {
-        let ctx = BuildCtx {
-            conn: c,
-            actor,
-            registry: &core.registry,
-        };
-        Ok(catalog::build(&ctx, &tool, &args))
-    })?;
+    let rebuilt = rebuilt.and_then(|parts| {
+        compose(parts).ok_or_else(|| AppError::internal("proposal without sources"))
+    });
     match rebuilt {
         Ok(d) => {
             s.store.mutate(actor, ai_meta("ai.change_set.recheck"), |tx| {

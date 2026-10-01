@@ -13,7 +13,7 @@ use ts_rs::TS;
 use super::read_vault;
 use super::search;
 use crate::core::AppCore;
-use crate::util::{AssetInfo, StoreSel, load_asset_opt};
+use crate::util::{AssetInfo, StoreSel, load_asset_opt, load_assets_bulk};
 
 /// Most items returned by the time-ordered "Recently …" views.
 pub const RECENT_LIMIT: i64 = 100;
@@ -378,9 +378,13 @@ fn to_dto(
     r: RawItem,
     tags: &mut HashMap<String, Vec<String>>,
     colls: &mut HashMap<String, Vec<String>>,
+    assets: Option<&HashMap<String, AssetInfo>>,
 ) -> AppResult<VaultItemDto> {
     let item_type = VaultItemType::parse(&r.item_type).unwrap_or(VaultItemType::File);
-    let asset = load_asset_opt(c, root, r.asset_id.as_deref())?;
+    let asset = match (assets, r.asset_id.as_deref()) {
+        (Some(map), Some(id)) => map.get(id).cloned(),
+        _ => load_asset_opt(c, root, r.asset_id.as_deref())?,
+    };
     let display = display_name(
         item_type,
         r.title.as_deref(),
@@ -433,8 +437,10 @@ pub(crate) fn load_items(
     };
     let mut tags = tags_by_item(c, None)?;
     let mut colls = collections_by_item(c, None)?;
+    // One query (and one directory listing) for all files instead of one per item.
+    let assets = load_assets_bulk(c, root, rows.iter().filter_map(|r| r.asset_id.as_deref()))?;
     rows.into_iter()
-        .map(|r| to_dto(c, root, store, r, &mut tags, &mut colls))
+        .map(|r| to_dto(c, root, store, r, &mut tags, &mut colls, Some(&assets)))
         .collect()
 }
 
@@ -455,7 +461,7 @@ pub(crate) fn load_item(
         .ok_or_else(|| AppError::not_found("Idea Vault item"))?;
     let mut tags = tags_by_item(c, Some(id))?;
     let mut colls = collections_by_item(c, Some(id))?;
-    to_dto(c, root, store, row, &mut tags, &mut colls)
+    to_dto(c, root, store, row, &mut tags, &mut colls, None)
 }
 
 pub(crate) fn view_sql(view: &VaultView) -> (String, Vec<SqlValue>, &'static str, Option<i64>) {
@@ -511,6 +517,15 @@ pub(crate) fn list(
             .enumerate()
             .map(|(i, id)| (id.as_str(), i))
             .collect();
+        // Load only the matching items (not the whole vault, then filter).
+        let mut p = p;
+        p.push(SqlValue::Text(
+            serde_json::to_string(&ranked).map_err(|e| AppError::internal(e.to_string()))?,
+        ));
+        let w = format!(
+            "({w}) AND i.id IN (SELECT value FROM json_each(?{}))",
+            p.len()
+        );
         let mut items: Vec<VaultItemDto> = load_items(c, root, args.store, &w, p, order, None)?
             .into_iter()
             .filter(|i| rank.contains_key(i.id.as_str()))

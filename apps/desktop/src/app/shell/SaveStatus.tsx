@@ -33,6 +33,22 @@ export function useLiveSaveState(): SaveState | undefined {
   return q.data;
 }
 
+/** The save state without installing the event listener (the status bar does that). */
+export function useSaveState(): SaveState | undefined {
+  return useOp<SaveState>("app.save_state", {}, ["*"], { refetchInterval: 30_000 }).data;
+}
+
+/** The inline banner, only while saving is failing. Subscribes on its own so save events re-render just this. */
+export function LiveSaveErrorBanner({ onOpenRecovery }: { onOpenRecovery: () => void }) {
+  const save = useSaveState();
+  return save?.status === "Error" ? <SaveErrorBanner onOpenRecovery={onOpenRecovery} /> : null;
+}
+
+/** The save-failure dialog, subscribed on its own (see LiveSaveErrorBanner). */
+export function LiveSaveErrorDialog() {
+  return <SaveErrorDialog state={useSaveState()} />;
+}
+
 /** Explicit Save (Ctrl+S / Retry Save). Returns true on success. */
 export async function retrySave(): Promise<boolean> {
   try {

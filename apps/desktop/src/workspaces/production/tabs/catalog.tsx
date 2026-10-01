@@ -1,7 +1,7 @@
 // Catalog (FSD §28, §98, §143–144, §163; UX §3.23, mocks 113–114):
 // "What things does this film need? Reusable items — not one huge spreadsheet."
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ImagePlus, Plus, X } from "lucide-react";
 import { call } from "../../../ipc/client";
 import { reportError, useCommand, useOp } from "../../../ipc/query";
@@ -75,11 +75,17 @@ export default function CatalogTab() {
   const [replacing, setReplacing] = useState<CatalogItemDto | null>(null);
   const [deleting, setDeleting] = useState<CatalogItemDto | null>(null);
 
+  // Search as you type, without a round trip (and a skeleton flash) per keystroke.
+  const [query, setQuery] = useState(search);
+  useEffect(() => {
+    const t = window.setTimeout(() => setQuery(search), 150);
+    return () => window.clearTimeout(t);
+  }, [search]);
   const args = useMemo(
-    () => ({ category: filter === "all" ? null : filter, search: search.trim() || null, includeArchived: showArchived }),
-    [filter, search, showArchived],
+    () => ({ category: filter === "all" ? null : filter, search: query.trim() || null, includeArchived: showArchived }),
+    [filter, query, showArchived],
   );
-  const items = useOp<CatalogItemDto[]>("catalog.list", args, PROD_TABLES);
+  const items = useOp<CatalogItemDto[]>("catalog.list", args, PROD_TABLES, { placeholderData: (prev) => prev });
   const list = items.data ?? [];
   const current = list.find((i) => i.id === selected) ?? null;
   const detail = useOp<CatalogItemDto>("catalog.get", { id: selected }, PROD_TABLES, { enabled: !!selected && !current });

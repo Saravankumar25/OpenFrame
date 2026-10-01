@@ -3,7 +3,7 @@
     **Product:** OpenFrame Studio  
     **Document class:** Implementation / engineering specification  
     **Baseline:** Windows 11 production architecture, v1  
-    **Generated:** 29 September 2026  
+    **Generated:** 29 September 2026 (AI and LAN rows updated 30 September 2026: ADR-0007, ADR-0013)  
     **Purpose:** Define the implementation-document set, authority boundaries, build order, decision register, and readiness gates for production engineering.
 
 
@@ -35,15 +35,17 @@ These decisions were explicitly approved for the first implementation baseline:
 | Core/business logic | Rust owns domain rules; React is presentation/input |
 | Local persistence | SQLite + filesystem assets |
 | Project UX | One `.openframe` project concept; internal files are implementation detail |
-| Offline AI | One-click **Download Offline AI**; OpenFrame installs runtime/model |
-| Model selection | Hardware-aware automatic recommended Qwen profile |
-| Model distribution | OpenFrame-controlled public model distribution endpoint/CDN |
+| Offline AI | One-click **Download Offline AI**; OpenFrame installs runtime + language model + embedding model in one download |
+| Model selection | **One profile, no choice** (`openframe-local-ai-v1`): Gemma 3 1B Instruct Q8_0 + BGE small English v1.5 (ADR-0013; supersedes the Qwen tiers) |
+| Model distribution | OpenFrame-controlled public model distribution endpoint/CDN, Ed25519-signed manifest |
 | AI providers | **Local AI only** for v1; no cloud AI provider integration |
+| AI retrieval | Derived per-project `cache/intelligence.sqlite`: FTS5 (canonical) + sqlite-vec vectors + SQLite context graph; no vector/graph server (ADR-0013) |
+| AI authority | Universal toolbox from explicit operation metadata; bounded agent loop; every write is a Change Set the user applies; no auto mode; AI authority ≤ user authority (ADR-0013) |
 | Accounts | No account required |
 | Telemetry | Off by default; optional anonymous diagnostics/crash reports with explicit consent |
 | Product model | Free/open-source; exact OSS license identifier must be selected before public release |
-| LAN collaboration | Architecture-ready now; ship after stable solo core |
-| Concurrent collaboration | Soft locks + optimistic version/conflict handling; no CRDT in v1 |
+| LAN collaboration | **Removed** (product-owner decision, ADR-0007); collaboration is file-based through packages |
+| Concurrent collaboration | Removed with LAN (ADR-0007); optimistic revision checks remain for stale UI buffers, AI Change Sets and packages |
 | Autosave | Continuous autosave + transactional writes + recovery history |
 | Encryption | OS security by default; optional encrypted project/package mode is later scope |
 | Updates | Notify user; download/install only after explicit approval |
@@ -76,10 +78,12 @@ The existing OpenFrame documents already define the product in depth. This packa
 | 12 | `12_OpenFrame_Local_Project_File_Format_Specification.md` | `.openframe`, assets, packages and manifests |
 | 13 | `13_OpenFrame_Rust_Domain_Command_Architecture_Specification.md` | Rust domain/application architecture and command model |
 | 14 | `14_OpenFrame_Tauri_IPC_Frontend_Backend_Contract.md` | React ↔ Rust boundary |
-| 15 | `15_OpenFrame_Local_AI_Runtime_Model_Management_Specification.md` | Local inference, model manager and downloads |
-| 16 | `16_OpenFrame_Search_Retrieval_Architecture.md` | Exact search, FTS and optional semantic retrieval |
+| 15 | `OpenFrame_Local_AI_Runtime_Model_Management_Specification.md` (repository root) | Offline AI: one profile, signed manifest, download, sidecars, embeddings API, benchmark |
+| 16 | `docs/engineering/16-search.md` | Canonical FTS5 search (Global Search and the AI's lexical stage) |
 | 17 | `17_OpenFrame_Autosave_Undo_Recovery_Backup_Engineering_Specification.md` | Save/recovery durability |
-| 18 | `18_OpenFrame_LAN_Networking_Conflict_Protocol_Specification.md` | LAN sessions, soft locks and conflicts |
+| 18 | `docs/engineering/18-retrieval-intelligence-index.md` | Derived intelligence index, embeddings, context graph, hybrid retrieval, §34 measurements. (The former LAN protocol document 18 is withdrawn, ADR-0007.) |
+| — | `docs/engineering/ai-tool-coverage.md` | Generated inventory of every operation, its AI exposure and covering tool |
+| — | `OpenFrame_Studio_AI_Specification_Updated.md` (repository root) | AI product, safety, agent loop, toolbox, Change Sets (authoritative for the implemented AI) |
 | 19 | `19_OpenFrame_Import_Export_Implementation_Architecture.md` | Import/export execution architecture |
 | 20 | `20_OpenFrame_Security_Threat_Model_Secure_Storage_Implementation.md` | Threat model and implementation controls |
 | 21 | `21_OpenFrame_Performance_Resource_Budget_Specification.md` | Latency, RAM, disk and startup budgets |
@@ -133,13 +137,13 @@ The existing OpenFrame documents already define the product in depth. This packa
 - shooting schedule.
 - call sheets/reports/sides.
 
-### Phase 5 — Local AI
-- model manager.
-- one-click model download.
-- hardware profile selection.
-- local `llama.cpp` sidecar.
-- deterministic tool registry and Change Set workflow.
-- project-aware retrieval.
+### Phase 5 — Local AI ✅ (merged 30 Sept 2026)
+- one-profile Offline AI (Gemma 3 1B + BGE small embeddings), one-click signed download, CPU/Vulkan.
+- local `llama.cpp` chat and embedding sidecars.
+- derived intelligence index, hybrid retrieval and context graph.
+- operation metadata, universal toolbox and bounded agent loop.
+- Change Sets with human-only approval.
+- open: retrieval evaluation set, real-model E2E, minimum-spec and Vulkan hardware validation.
 
 ### Phase 6 — Collaboration
 - exchange packages first.

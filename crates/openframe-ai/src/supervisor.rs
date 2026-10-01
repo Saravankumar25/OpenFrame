@@ -26,6 +26,7 @@ use serde::Serialize;
 
 use crate::client::{Endpoint, unavailable};
 use crate::job::{KillOnCloseJob, hide_window};
+use crate::manifest::Pooling;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 pub enum RuntimeState {
@@ -100,6 +101,64 @@ impl Launcher for LlamaServerLauncher {
     }
     fn model_reference(&self) -> String {
         self.profile_id.clone()
+    }
+}
+
+/// The same pinned `llama-server` build in embedding-only mode (second managed sidecar).
+/// It always runs on the processor (`-ngl 0`): the embedding model is small, and keeping it off
+/// the graphics card leaves that memory to the chat model.
+#[derive(Debug, Clone)]
+pub struct EmbeddingServerLauncher {
+    pub executable: PathBuf,
+    pub model_path: PathBuf,
+    /// Recorded model reference (the embedding model id, never a file path).
+    pub model_id: String,
+    pub pooling: Pooling,
+    /// The model's maximum sequence length; also the batch size, so one input fits one batch.
+    pub context_tokens: u32,
+    pub threads: usize,
+}
+
+impl Launcher for EmbeddingServerLauncher {
+    fn launch_spec(&self, port: u16, api_key: &str) -> LaunchSpec {
+        let ctx = self.context_tokens.clamp(128, 8192).to_string();
+        let args = vec![
+            "-m".into(),
+            self.model_path.to_string_lossy().into_owned(),
+            "--host".into(),
+            "127.0.0.1".into(),
+            "--port".into(),
+            port.to_string(),
+            "--embedding".into(),
+            "--pooling".into(),
+            self.pooling.as_arg().into(),
+            "-c".into(),
+            ctx.clone(),
+            "-b".into(),
+            ctx.clone(),
+            "-ub".into(),
+            ctx,
+            "-ngl".into(),
+            "0".into(),
+            "-t".into(),
+            self.threads.max(1).to_string(),
+            "--parallel".into(),
+            "1".into(),
+            "--no-webui".into(),
+            "--no-slots".into(),
+            "--offline".into(),
+            "--alias".into(),
+            "openframe-embedding".into(),
+        ];
+        LaunchSpec {
+            program: self.executable.clone(),
+            args,
+            env: vec![("LLAMA_API_KEY".into(), api_key.to_string())],
+            cwd: self.executable.parent().map(|p| p.to_path_buf()),
+        }
+    }
+    fn model_reference(&self) -> String {
+        self.model_id.clone()
     }
 }
 

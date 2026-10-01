@@ -5,6 +5,9 @@
 //! let act = env.ok("story.create_act", json!({ "title": "Act One" }));
 //! ```
 
+pub mod embedder;
+pub mod stress;
+
 use std::sync::Arc;
 
 use openframe_application::events::RecordingSink;

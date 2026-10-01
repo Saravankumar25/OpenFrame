@@ -6,9 +6,15 @@
 //! applied only by `change_set::accept` after explicit user approval.
 //!
 //! A proposal kind is offered only when every operation it needs is registered
-//! in this build, so the assistant never suggests a change it cannot perform.
+//! in this build and explicitly exposed by its metadata, so the assistant never
+//! suggests a change it cannot perform (and never one that is not allowed).
+//!
+//! The catalogue covers every meaningful user mutation (agentic spec §28); the
+//! domain builders live in `catalog/<domain>.rs`. Arguments are validated against
+//! each tool's strict, hand-written schema before a builder runs.
 
 use std::collections::BTreeMap;
+use std::sync::LazyLock;
 
 use openframe_domain::enums::ProjectStatus;
 use openframe_domain::{Actor, AppError, AppResult, Capability};
@@ -17,9 +23,22 @@ use serde::Deserialize;
 use serde_json::{Value, json};
 
 use super::queries::{self, join_or};
+use super::scope::ResolvedScope;
+use super::toolbox::schema as sc;
 use super::tools::parse_args;
 use super::types::*;
-use crate::registry::{OpKind, Registry};
+use crate::registry::Registry;
+
+pub mod kit;
+mod production;
+mod schedule;
+mod screenplay;
+mod story;
+mod visual;
+mod workspace;
+
+/// Builds a Change Set draft from schema-validated arguments. Never writes.
+pub type Builder = fn(&PropCtx<'_>, &ProposalSpec, &Value) -> AppResult<ChangeSetDraft>;
 
 pub struct ProposalSpec {
     pub tool: &'static str,
@@ -33,35 +52,64 @@ pub struct ProposalSpec {
     pub action_phrase: &'static str,
     pub module: &'static str,
     pub schema: fn() -> Value,
+    pub build: Builder,
+}
+
+/// What a proposal builder may read: canonical data through the caller's read
+/// connection, the actor, the registry and (when known) the request's scope.
+pub struct PropCtx<'a> {
+    pub conn: &'a Connection,
+    pub actor: &'a Actor,
+    pub registry: &'a Registry,
+    pub scope: Option<&'a ResolvedScope>,
 }
 
 fn scene_card_schema() -> Value {
-    json!({"type": "object", "properties": {
-        "description": {"type": "string"}, "heading": {"type": "string"}, "act": {"type": "string"}},
-        "required": ["description"], "additionalProperties": false})
+    sc::obj(
+        &[
+            ("description", sc::s(600)),
+            ("heading", sc::s(200)),
+            ("act", sc::reference()),
+            ("sequence", sc::reference()),
+        ],
+        &["description"],
+    )
 }
 fn task_schema() -> Value {
-    json!({"type": "object", "properties": {"title": {"type": "string"}, "notes": {"type": "string"}},
-        "required": ["title"], "additionalProperties": false})
+    sc::obj(
+        &[
+            ("title", sc::s(200)),
+            ("notes", sc::s(2000)),
+            ("dueDate", sc::sd(10, "YYYY-MM-DD")),
+        ],
+        &["title"],
+    )
 }
 fn note_schema() -> Value {
-    json!({"type": "object", "properties": {"title": {"type": "string"}, "body": {"type": "string"}},
-        "required": ["body"], "additionalProperties": false})
+    sc::obj(&[("title", sc::s(200)), ("body", sc::s(20_000))], &["body"])
 }
 fn folder_schema() -> Value {
-    json!({"type": "object", "properties": {"name": {"type": "string"}}, "required": ["name"], "additionalProperties": false})
+    sc::obj(&[("name", sc::s(120))], &["name"])
 }
 fn rename_file_schema() -> Value {
-    json!({"type": "object", "properties": {"currentName": {"type": "string"}, "newName": {"type": "string"}},
-        "required": ["currentName", "newName"], "additionalProperties": false})
+    sc::obj(
+        &[("currentName", sc::reference()), ("newName", sc::s(200))],
+        &["currentName", "newName"],
+    )
 }
 fn status_schema() -> Value {
     let names: Vec<&str> = ProjectStatus::ALL.iter().map(|s| s.as_str()).collect();
-    json!({"type": "object", "properties": {"status": {"enum": names}}, "required": ["status"], "additionalProperties": false})
+    sc::obj(&[("status", sc::en(&names))], &["status"])
 }
 fn rename_character_schema() -> Value {
-    json!({"type": "object", "properties": {"from": {"type": "string"}, "to": {"type": "string"},
-        "includeRawText": {"type": "boolean"}}, "required": ["from", "to"], "additionalProperties": false})
+    sc::obj(
+        &[
+            ("from", sc::s(120)),
+            ("to", sc::s(120)),
+            ("includeRawText", sc::boolean()),
+        ],
+        &["from", "to"],
+    )
 }
 
 // Operation names of the owning modules (registry contract).
@@ -75,26 +123,28 @@ pub const OP_CREATE_FOLDER: &str = "files.create_folder";
 pub const OP_RENAME_FILE: &str = "files.rename";
 pub const OP_SET_STATUS: &str = "project.set_status";
 
-pub const PROPOSALS: &[ProposalSpec] = &[
+const CORE: &[ProposalSpec] = &[
     ProposalSpec {
         tool: "propose_scene_card",
-        description: "Prepare a new Scene Card (optionally in a named act; otherwise in the Parking Lot).",
+        description: "Prepare a new Scene Card (in a named act or sequence; otherwise in the Parking Lot).",
         required_ops: &[OP_CREATE_SCENE_CARD],
         optional_ops: &[],
         cap: Capability::Edit,
         action_phrase: "creating Scene Cards",
         module: "Story",
         schema: scene_card_schema,
+        build: scene_card,
     },
     ProposalSpec {
         tool: "propose_task",
-        description: "Prepare a new project task.",
+        description: "Prepare a new project task (optionally with notes and a due date).",
         required_ops: &[OP_CREATE_TASK],
         optional_ops: &[],
         cap: Capability::Edit,
         action_phrase: "creating tasks",
         module: "Notes & Tasks",
         schema: task_schema,
+        build: task,
     },
     ProposalSpec {
         tool: "propose_project_note",
@@ -105,6 +155,7 @@ pub const PROPOSALS: &[ProposalSpec] = &[
         action_phrase: "creating Project Notes",
         module: "Notes & Tasks",
         schema: note_schema,
+        build: note,
     },
     ProposalSpec {
         tool: "propose_folder",
@@ -115,6 +166,7 @@ pub const PROPOSALS: &[ProposalSpec] = &[
         action_phrase: "changing Project Files",
         module: "Files",
         schema: folder_schema,
+        build: folder,
     },
     ProposalSpec {
         tool: "propose_rename_file",
@@ -125,6 +177,7 @@ pub const PROPOSALS: &[ProposalSpec] = &[
         action_phrase: "renaming files",
         module: "Files",
         schema: rename_file_schema,
+        build: rename_file,
     },
     ProposalSpec {
         tool: "propose_project_status",
@@ -135,6 +188,7 @@ pub const PROPOSALS: &[ProposalSpec] = &[
         action_phrase: "changing the project status",
         module: "Project",
         schema: status_schema,
+        build: project_status,
     },
     ProposalSpec {
         tool: "propose_rename_character",
@@ -145,39 +199,56 @@ pub const PROPOSALS: &[ProposalSpec] = &[
         action_phrase: "renaming characters",
         module: "Story",
         schema: rename_character_schema,
+        build: rename_character,
     },
 ];
 
+/// Every proposal tool, in catalogue order.
+pub static PROPOSALS: LazyLock<Vec<&'static ProposalSpec>> = LazyLock::new(|| {
+    CORE.iter()
+        .chain(workspace::SPECS)
+        .chain(story::SPECS)
+        .chain(screenplay::SPECS)
+        .chain(production::SPECS)
+        .chain(schedule::SPECS)
+        .chain(visual::SPECS)
+        .collect()
+});
+
 pub fn spec(tool: &str) -> Option<&'static ProposalSpec> {
-    PROPOSALS.iter().find(|p| p.tool == tool)
+    PROPOSALS.iter().copied().find(|p| p.tool == tool)
 }
 
 fn op_available(reg: &Registry, op: &str) -> bool {
-    reg.get(op).is_some_and(|e| e.kind == OpKind::Command)
+    super::toolbox::op_exposed(reg, op)
 }
 
 /// Proposal kinds this build can actually perform.
 pub fn available(reg: &Registry) -> Vec<&'static ProposalSpec> {
     PROPOSALS
         .iter()
+        .copied()
         .filter(|p| p.required_ops.iter().all(|op| op_available(reg, op)))
         .collect()
 }
 
-/// Every operation a Change Set may contain (defence in depth at apply time).
+/// Every operation a Change Set may contain (defence in depth at apply time):
+/// listed by a proposal tool AND explicitly exposed by its registry metadata.
+/// `ai.*` operations (Change Set review, the assistant itself) never qualify.
 pub fn allowed_op(op: &str) -> bool {
     PROPOSALS
         .iter()
         .any(|p| p.required_ops.contains(&op) || p.optional_ops.contains(&op))
+        && super::toolbox::op_exposed(crate::registry::catalog(), op)
 }
 
-/// The capability the operation's owning command checks (used to pre-check permission at preview time).
+/// The capability the operation's command checks (from its explicit metadata),
+/// used to pre-check permission at preview and apply time.
 pub fn op_capability(op: &str) -> Capability {
-    PROPOSALS
-        .iter()
-        .find(|p| p.required_ops.contains(&op) || p.optional_ops.contains(&op))
-        .map(|p| p.cap)
-        .unwrap_or(Capability::Edit)
+    crate::registry::catalog()
+        .metadata(op)
+        .and_then(|m| m.required_capability)
+        .unwrap_or(Capability::ManageProject)
 }
 
 /// "You are a Viewer on this project, so renaming characters is not available to you."
@@ -198,6 +269,7 @@ fn article(w: &str) -> &'static str {
     }
 }
 
+/// Compatibility context for callers without a scope (the Change Set re-check path).
 pub struct BuildCtx<'a> {
     pub conn: &'a Connection,
     pub actor: &'a Actor,
@@ -224,10 +296,12 @@ fn draft(tool: &str, title: String, summary: String, module: &str, args: Value) 
         base_rows: Vec::new(),
         source_tool: tool.to_string(),
         source_args: args,
+        sources: Vec::new(),
     }
 }
 
-/// Build a Change Set proposal from validated tool arguments. Does not write anything.
+/// Build a Change Set proposal from tool arguments (validated against the tool's
+/// strict schema here). Does not write anything.
 pub fn build(ctx: &BuildCtx<'_>, tool: &str, args: &Value) -> AppResult<ChangeSetDraft> {
     let spec = spec(tool).ok_or_else(|| {
         AppError::ai(
@@ -245,19 +319,19 @@ pub fn build(ctx: &BuildCtx<'_>, tool: &str, args: &Value) -> AppResult<ChangeSe
             "I can't prepare that change in this version of OpenFrame. Nothing was changed.",
         ));
     }
-    match tool {
-        "propose_scene_card" => scene_card(ctx, spec, args),
-        "propose_task" => task(spec, args),
-        "propose_project_note" => note(spec, args),
-        "propose_folder" => folder(spec, args),
-        "propose_rename_file" => rename_file(ctx, spec, args),
-        "propose_project_status" => project_status(ctx, spec, args),
-        "propose_rename_character" => rename_character(ctx, spec, args),
-        _ => Err(AppError::ai(
-            "unknown_tool",
-            "That isn't something the assistant can do yet.",
-        )),
-    }
+    let args = if args.is_null() {
+        json!({})
+    } else {
+        args.clone()
+    };
+    sc::validate(spec.tool, &(spec.schema)(), &args)?;
+    let pctx = PropCtx {
+        conn: ctx.conn,
+        actor: ctx.actor,
+        registry: ctx.registry,
+        scope: None,
+    };
+    (spec.build)(&pctx, spec, &args)
 }
 
 #[derive(Deserialize)]
@@ -268,10 +342,20 @@ struct SceneCardArgs {
     heading: Option<String>,
     #[serde(default)]
     act: Option<String>,
+    #[serde(default)]
+    sequence: Option<String>,
 }
 
-fn scene_card(ctx: &BuildCtx<'_>, spec: &ProposalSpec, args: &Value) -> AppResult<ChangeSetDraft> {
+fn scene_card(ctx: &PropCtx<'_>, spec: &ProposalSpec, args: &Value) -> AppResult<ChangeSetDraft> {
     let a: SceneCardArgs = parse_args(spec.tool, args)?;
+    if let Some(seq) = a
+        .sequence
+        .as_deref()
+        .map(str::trim)
+        .filter(|s| !s.is_empty())
+    {
+        return story::card_in_sequence(ctx, spec, args, seq, &a.description, a.heading.as_deref());
+    }
     let description = clean(&a.description, "Scene Card description", 600)?;
     let heading = a
         .heading
@@ -370,10 +454,21 @@ struct TaskArgs {
     title: String,
     #[serde(default)]
     notes: Option<String>,
+    #[serde(default)]
+    due_date: Option<String>,
 }
 
-fn task(spec: &ProposalSpec, args: &Value) -> AppResult<ChangeSetDraft> {
+fn task(_ctx: &PropCtx<'_>, spec: &ProposalSpec, args: &Value) -> AppResult<ChangeSetDraft> {
     let a: TaskArgs = parse_args(spec.tool, args)?;
+    let due = match a
+        .due_date
+        .as_deref()
+        .map(str::trim)
+        .filter(|d| !d.is_empty())
+    {
+        Some(d) => Some((d.to_string(), kit::date_ms(d)?)),
+        None => None,
+    };
     let title = clean(&a.title, "task title", 200)?;
     let mut d = draft(
         spec.tool,
@@ -387,6 +482,10 @@ fn task(spec: &ProposalSpec, args: &Value) -> AppResult<ChangeSetDraft> {
         op_args["notes"] = json!(queries::truncate_chars(n, 2000));
         d.preview
             .push(PreviewRow::normal("Notes", queries::truncate_chars(n, 200)));
+    }
+    if let Some((text, ms)) = &due {
+        op_args["dueAt"] = json!(ms);
+        d.preview.push(PreviewRow::normal("Due", text.clone()));
     }
     d.preview
         .insert(0, PreviewRow::normal("Task", title.clone()));
@@ -407,7 +506,7 @@ struct NoteArgs {
     body: String,
 }
 
-fn note(spec: &ProposalSpec, args: &Value) -> AppResult<ChangeSetDraft> {
+fn note(_ctx: &PropCtx<'_>, spec: &ProposalSpec, args: &Value) -> AppResult<ChangeSetDraft> {
     let a: NoteArgs = parse_args(spec.tool, args)?;
     let body = clean(&a.body, "note", 20_000)?;
     let title = a
@@ -447,7 +546,7 @@ struct FolderArgs {
     name: String,
 }
 
-fn folder(spec: &ProposalSpec, args: &Value) -> AppResult<ChangeSetDraft> {
+fn folder(_ctx: &PropCtx<'_>, spec: &ProposalSpec, args: &Value) -> AppResult<ChangeSetDraft> {
     let a: FolderArgs = parse_args(spec.tool, args)?;
     let name = clean(&a.name, "folder name", 120)?;
     let mut d = draft(
@@ -476,7 +575,7 @@ struct RenameFileArgs {
     new_name: String,
 }
 
-fn rename_file(ctx: &BuildCtx<'_>, spec: &ProposalSpec, args: &Value) -> AppResult<ChangeSetDraft> {
+fn rename_file(ctx: &PropCtx<'_>, spec: &ProposalSpec, args: &Value) -> AppResult<ChangeSetDraft> {
     let a: RenameFileArgs = parse_args(spec.tool, args)?;
     let new_name = clean(&a.new_name, "new file name", 200)?;
     let cur = a.current_name.trim().to_lowercase();
@@ -552,7 +651,7 @@ struct StatusArgs {
 }
 
 fn project_status(
-    ctx: &BuildCtx<'_>,
+    ctx: &PropCtx<'_>,
     spec: &ProposalSpec,
     args: &Value,
 ) -> AppResult<ChangeSetDraft> {
@@ -642,7 +741,7 @@ fn word_count(haystack: &str, needle: &str) -> usize {
 /// text are distinct categories; raw dialogue/action text is NOT included by default;
 /// locked drafts are excluded and reported.
 fn rename_character(
-    ctx: &BuildCtx<'_>,
+    ctx: &PropCtx<'_>,
     spec: &ProposalSpec,
     args: &Value,
 ) -> AppResult<ChangeSetDraft> {

@@ -8,6 +8,7 @@ members = [
     "crates/openframe-project-format",
     "crates/openframe-import-export",
     "crates/openframe-ai",
+    "crates/openframe-search",
     "crates/openframe-application",
     "crates/openframe-test-support",
 ]
@@ -27,7 +28,6 @@ openframe-persistence = { path = "crates/openframe-persistence" }
 openframe-project-format = { path = "crates/openframe-project-format" }
 openframe-security = { path = "crates/openframe-security" }
 openframe-search = { path = "crates/openframe-search" }
-openframe-media = { path = "crates/openframe-media" }
 openframe-import-export = { path = "crates/openframe-import-export" }
 openframe-ai = { path = "crates/openframe-ai" }
 openframe-application = { path = "crates/openframe-application" }
@@ -68,6 +68,9 @@ lopdf = "0.45"
 flate2 = "1"
 unicode-segmentation = "1"
 anyhow = "1"
+# Vector KNN for the derived intelligence index, compiled into the binary (SQLITE_CORE; no
+# runtime extension loading). MIT OR Apache-2.0.
+sqlite-vec = "0.1.9"
 
 [profile.dev]
 opt-level = 0
@@ -81,3 +84,11 @@ codegen-units = 1
 lto = "thin"
 opt-level = 3
 strip = "debuginfo"
+
+# `npm run perf`: optimised like release (same opt-level), but without LTO and
+# with parallel codegen so the performance suite builds in minutes.
+[profile.perf]
+inherits = "release"
+lto = false
+codegen-units = 16
+incremental = true

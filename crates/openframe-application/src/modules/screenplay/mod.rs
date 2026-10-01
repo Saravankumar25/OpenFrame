@@ -38,9 +38,18 @@ pub mod review;
 pub use drafts::{NewElement, NewScene, create_screenplay_tx, insert_draft_tx};
 
 pub fn register(r: &mut Registry) {
-    r.query("screenplay.overview", overview);
-    r.query("screenplay.document", document);
-    r.query("screenplay.locate", locate);
+    use crate::registry::OperationMetadata as M;
+    r.module("Screenplay");
+    r.query("screenplay.overview", overview).meta(M::read(
+        "Screenplays and drafts with scene counts (per episode for series).",
+    ));
+    r.query("screenplay.document", document).meta(M::read(
+        "A draft's full document: scenes and their elements.",
+    ));
+    r.query("screenplay.locate", locate).meta(
+        M::read("Resolve a screenplay deep link (scene or draft) to its draft and episode.")
+            .class(crate::registry::OpClass::Navigate),
+    );
     edit::register(r);
     drafts::register(r);
     compare::register(r);

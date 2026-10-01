@@ -265,7 +265,7 @@ function SequenceBlock({ seq, ctx }: { seq: Extract<StoryItem, { kind: "sequence
   const hinted = !!ctx.dnd.hint && sameContainer(ctx.dnd.hint.target, SEQ(seq.id));
   const ui = useStoryUi.getState();
   return (
-    <ContextMenu items={itemMenu(ctx.board, seq, ctx.episodeId, ctx.readOnly)}>
+    <ContextMenu items={() => itemMenu(ctx.board, seq, ctx.episodeId, ctx.readOnly)}>
       <div
         ref={node.setNodeRef}
         className={cx("seq", hinted && "drop-on", node.isDragging && "drag-src", selected && "sel")}
@@ -341,7 +341,7 @@ function CardNode({ item, ctx }: { item: Extract<StoryItem, { kind: "card" | "be
   const converted = isBeat && item.state === "converted";
   const style: CSSProperties = color ? { borderLeftColor: color } : {};
   return (
-    <ContextMenu items={itemMenu(ctx.board, item, ctx.episodeId, ctx.readOnly)}>
+    <ContextMenu items={() => itemMenu(ctx.board, item, ctx.episodeId, ctx.readOnly)}>
       <div
         ref={node.setNodeRef}
         {...(editing ? {} : node.listeners)}

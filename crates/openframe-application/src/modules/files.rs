@@ -17,18 +17,47 @@ use crate::util::{
 };
 
 pub fn register(r: &mut Registry) {
-    r.query("files.list", list);
-    r.command("files.add", add);
-    r.command("files.rename", rename);
-    r.command("files.move", move_file);
-    r.command("files.update_notes", update_notes);
-    r.command("files.delete", delete);
-    r.command("files.relink", relink);
-    r.command("files.create_folder", create_folder);
-    r.command("files.rename_folder", rename_folder);
-    r.command("files.delete_folder", delete_folder);
-    r.query("files.asset", asset);
-    r.command("files.export_copy", export_copy);
+    use crate::registry::{FsEffect as Fs, OperationMetadata as M, hidden as h};
+    r.module("Files");
+    r.query("files.list", list).meta(M::read(
+        "Project Files: folders and files with names and notes.",
+    ));
+    r.command("files.add", add).meta(
+        M::edit("Add files the user picked to Project Files (copy or link).")
+            .fs(Fs::ReadsUserFile)
+            .hidden(h::USER_PATH),
+    );
+    r.command("files.rename", rename)
+        .meta(M::edit("Rename a project file."));
+    r.command("files.move", move_file)
+        .meta(M::edit("Move a project file to another folder."));
+    r.command("files.update_notes", update_notes)
+        .meta(M::edit("Edit a project file's notes."));
+    r.command("files.delete", delete)
+        .meta(M::soft_delete("Move a project file to Recently Deleted."));
+    r.command("files.relink", relink).meta(
+        M::edit("Relink a missing linked file to a new location on disk.")
+            .fs(Fs::ReadsUserFile)
+            .hidden(h::USER_PATH),
+    );
+    r.command("files.create_folder", create_folder)
+        .meta(M::edit("Create a folder in Project Files."));
+    r.command("files.rename_folder", rename_folder)
+        .meta(M::edit("Rename a Project Files folder."));
+    r.command("files.delete_folder", delete_folder).meta(
+        M::soft_delete("Delete a Project Files folder (its files move to the top level).")
+            .confirm(),
+    );
+    r.query("files.asset", asset)
+        .meta(M::read("Local path and media facts of a stored file.").hidden(h::ASSET_PATH));
+    r.command("files.export_copy", export_copy).meta(
+        M::command(
+            Capability::Export,
+            "Write a copy of a project file to a location the user picked.",
+        )
+        .fs(Fs::WritesUserFile)
+        .hidden(h::USER_PATH),
+    );
     r.indexer("project_file", index_file);
     r.trash_handler(TrashHandler {
         object_type: "project_file",

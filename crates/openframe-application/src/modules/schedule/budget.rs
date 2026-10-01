@@ -35,16 +35,34 @@ pub const BUDGET_CATEGORIES: [&str; 9] = [
 const MAX_AMOUNT: i64 = 1_000_000_000_000_000;
 
 pub fn register(r: &mut Registry) {
-    r.query("budget.get", get);
-    r.query("budget.get_snapshot", get_snapshot);
-    r.command("budget.create", create);
-    r.command("budget.update", update);
-    r.command("budget.add_line", add_line);
-    r.command("budget.update_line", update_line);
-    r.command("budget.delete_line", delete_line);
-    r.command("budget.save_snapshot", save_snapshot);
-    r.command("budget.mark_reviewed", mark_reviewed);
-    r.command("budget.delete_snapshot", delete_snapshot);
+    use crate::registry::OperationMetadata as M;
+    r.module("Budget");
+    r.query("budget.get", get).meta(M::read(
+        "Current budget with lines, totals and saved snapshots.",
+    ));
+    r.query("budget.get_snapshot", get_snapshot)
+        .meta(M::read("One saved budget snapshot."));
+    r.command("budget.create", create)
+        .meta(M::edit("Create the project budget."));
+    r.command("budget.update", update).meta(M::edit(
+        "Change budget settings (currency, planned total, contingency, notes).",
+    ));
+    r.command("budget.add_line", add_line)
+        .meta(M::edit("Add a budget line."));
+    r.command("budget.update_line", update_line)
+        .meta(M::edit("Edit a budget line."));
+    r.command("budget.delete_line", delete_line)
+        .meta(M::soft_delete("Remove a budget line (recoverable)."));
+    r.command("budget.save_snapshot", save_snapshot)
+        .meta(M::edit("Save a labelled budget snapshot."));
+    r.command("budget.mark_reviewed", mark_reviewed)
+        .meta(M::edit(
+            "Mark the budget reviewed against production changes.",
+        ));
+    r.command("budget.delete_snapshot", delete_snapshot)
+        .meta(M::soft_delete(
+            "Delete a saved budget snapshot (recoverable).",
+        ));
     r.trash_handler(TrashHandler {
         object_type: "budget_snapshot",
         table: "budget_snapshot",

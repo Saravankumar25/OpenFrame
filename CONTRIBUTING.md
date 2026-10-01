@@ -30,7 +30,7 @@ From the Engineering Package Index §5. Reviewers reject any change that violate
 | # | Invariant | How the codebase enforces it |
 |---|---|---|
 | 1 | React never writes SQLite directly. | The webview has no fs/shell/http plugins (ESLint `no-restricted-imports`, `capabilities/default.json`). Its only data command is `of_invoke`. |
-| 2 | AI never writes SQLite or arbitrary project files directly. | Design contract (ADR-0006; AI module in development): AI proposals become Change Sets that are applied by normal commands under `ActorOrigin::Ai`, and the sidecar has no project authority. |
+| 2 | AI never writes SQLite or arbitrary project files directly. | Implemented (ADR-0006, ADR-0013; tests `ai_agent.rs`, `ai_toolbox.rs`): AI proposals become Change Sets that only a local user action can accept; they are applied by normal commands under `ActorOrigin::Ai`, and the sidecar has no project authority. |
 | 3 | Every persistent project mutation is a Rust application command. | `Registry::command` + `Store::mutate` is the only write path. Nothing else opens a write transaction. |
 | 4 | Every command that mutates canonical state executes in a transaction. | `Store::mutate` uses `BEGIN IMMEDIATE`, and all side effects are rolled back together. |
 | 5 | Every persistent object uses a stable opaque identity; display numbers are not identity. | UUIDv7 `id TEXT PRIMARY KEY`, `position` for order, numbers derived at read time (ADR-0011). |

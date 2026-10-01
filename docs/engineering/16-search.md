@@ -33,8 +33,15 @@ canonical row ──(module indexer: fn(&Connection, id) -> Option<SearchDoc>)�
 - **Full rebuild** (`Store::rebuild_search_index`, op `search.rebuild`): runs on open when the index is empty or after
   a migration, and on demand. It deletes all `search_doc` rows and re-indexes every row of every indexed table.
 
-Indexed today ✅: `project_file` (Files). 🚧 Each module adds its tables (vault items, story cards and beats,
-characters, screenplay scenes, catalog items, locations, cast and crew, notes, comments, …).
+Indexed today ✅ (28 tables): `project_file`, `vault_item`, `episode`, `story_act`, `story_sequence`, `story_beat`,
+`story_scene_card`, `story_character`, `screenplay_scene` (current draft only), `catalog_item`, `location`,
+`cast_member`, `crew_member`, `shooting_day`, `call_sheet`, `side`, `moodboard`, `moodboard_item`, `storyboard`,
+`storyboard_panel`, `shot`, `project_note`, `private_note` (owner only), `task`, `comment`, `template`,
+`exchange_review_record`, `review_queue_item`.
+
+**After commit** (not part of the search transaction): `Store::set_commit_observer` lets the derived AI
+intelligence index (doc 18) learn which rows changed. The observer runs after the writer lock is released and only
+enqueues work; it never delays or fails a save.
 
 ## 3. Query ✅ (`search.query`)
 
@@ -57,15 +64,19 @@ UI ✅: **Ctrl+K** opens the global overlay (keyboard navigation ↑/↓/Enter, 
 ## 4. Budgets
 
 Search p95 < **150 ms** for a 120-page screenplay project with typical story and production data (21-performance-
-budgets.md). FTS5 with prefix indexes meets this with a wide margin, and the budget is verified by the planned
-performance harness.
+budgets.md). The AI's lexical retrieval over this same index (OR query, owner filter, canonical re-validation and
+context assembly included) measured p95 17.1 ms on a 240-scene fixture (doc 18 §9). `search.query` itself (AND query,
+snippets, global merge) has no dedicated measurement yet; that belongs to the planned performance harness.
 
-## 5. Planned 📋
+## 5. Related and planned
 
 - **In-script find** (screenplay Ctrl+F) runs over the open draft's elements in the editor, not over the global index.
   It supports Enter/Shift+Enter/Esc and replace (undoable, atomic).
-- **AI retrieval** reuses FTS as the retrieval stage (Local AI spec §10). Retrieved text is passed to the model as
-  *data*. Optional semantic (embedding) retrieval is later scope and would be an additional rebuildable index, never
-  canonical.
+- ✅ **AI retrieval** (doc 18, `modules/ai/retrieval.rs`): the FTS5 index above is the lexical stage of the AI's
+  hybrid retrieval, queried with an OR query of the question's significant terms (Global Search keeps its AND query).
+  Semantic (embedding) search — sqlite-vec over vectors from the Offline AI embedding model (BGE small English v1.5,
+  computed on this computer) — and the context graph live in the separate, rebuildable `cache/intelligence.sqlite`
+  (crate `openframe-search`): never canonical, no vector or graph server. Global Search (Ctrl+K) stays exact and
+  keyword-based and does not use embeddings. Retrieved text is passed to the model as *data*.
 - Non-Latin tokenization: `unicode61` handles most scripts word-by-word. CJK text has no word boundaries, so CJK
   search quality is a known limitation until a dedicated tokenizer is chosen.

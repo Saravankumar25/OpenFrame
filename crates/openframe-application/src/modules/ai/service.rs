@@ -22,9 +22,9 @@ use crate::events::{AppEvent, EventSink};
 #[serde(rename_all = "camelCase")]
 pub struct InstallProgress {
     pub task_id: String,
-    pub profile_id: Option<String>,
-    /// checking | downloadingRuntime | downloadingModel | verifying | installing | starting | ready | paused | cancelled | failed
+    /// checking | downloading | verifying | installing | starting | ready | paused | cancelled | failed
     pub phase: String,
+    /// One combined figure for the whole Offline AI package (engine + models).
     #[ts(type = "number")]
     pub bytes_done: u64,
     #[ts(type = "number")]
@@ -149,16 +149,14 @@ impl AiService {
     }
 }
 
+/// The user-visible install steps (agentic AI spec §24) — no model, file or engine names.
 pub fn phase_text(p: InstallPhase) -> (&'static str, &'static str) {
     match p {
-        InstallPhase::Checking => ("checking", "Checking this computer…"),
-        InstallPhase::DownloadingRuntime => {
-            ("downloadingRuntime", "Downloading the Offline AI engine…")
-        }
-        InstallPhase::DownloadingModel => ("downloadingModel", "Downloading the AI model…"),
-        InstallPhase::Verifying => ("verifying", "Verifying the download…"),
+        InstallPhase::Checking => ("checking", "Checking device…"),
+        InstallPhase::Downloading => ("downloading", "Downloading…"),
+        InstallPhase::Verifying => ("verifying", "Verifying…"),
         InstallPhase::Installing => ("installing", "Installing…"),
-        InstallPhase::Starting => ("starting", "Starting Offline AI for a first test…"),
+        InstallPhase::Starting => ("starting", "Starting…"),
         InstallPhase::Ready => ("ready", "AI Ready"),
     }
 }

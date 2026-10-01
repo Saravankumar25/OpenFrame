@@ -109,6 +109,7 @@ fn ai_02_concurrent_accepts_apply_a_change_set_exactly_once() {
             base_rows: Vec::new(),
             source_tool: "propose_scene_card".into(),
             source_args: json!({}),
+            sources: Vec::new(),
         };
         let cs = change_set::create(&env.core, &env.actor(), &draft).unwrap();
         let actor = env.actor();

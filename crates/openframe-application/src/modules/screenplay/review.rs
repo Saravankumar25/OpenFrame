@@ -18,10 +18,18 @@ use crate::store::MutationMeta;
 use crate::util::required_text;
 
 pub fn register(r: &mut Registry) {
-    r.query("screenplay.review_rounds", review_rounds);
-    r.command("screenplay.start_review", start_review);
-    r.command("screenplay.update_review", update_review);
-    r.command("screenplay.complete_review", complete_review);
+    use crate::registry::OperationMetadata as M;
+    use openframe_domain::Capability as Cap;
+    r.query("screenplay.review_rounds", review_rounds)
+        .meta(M::read("Review rounds of a screenplay."));
+    r.command("screenplay.start_review", start_review)
+        .meta(M::edit("Start a review round on a draft."));
+    r.command("screenplay.update_review", update_review)
+        .meta(M::edit(
+            "Edit a review round's name, reviewers or deadline.",
+        ));
+    r.command("screenplay.complete_review", complete_review)
+        .meta(M::command(Cap::ResolveComments, "Complete a review round."));
 }
 
 #[derive(Debug, Clone, Serialize, TS)]

@@ -2,15 +2,22 @@ import { describe, expect, it } from "vitest";
 import type { AiChangeSetDto } from "../ipc/generated/AiChangeSetDto";
 import type { AiStatusDto } from "../ipc/generated/AiStatusDto";
 import {
+  DEGRADED_TEXT,
+  PREPARING_TEXT,
+  changeCount,
   changeSetActions,
   changeSetStateText,
   confidenceLabel,
   defaultScope,
   formatBytes,
+  indexNotice,
+  indexStateOf,
   panelMode,
   progressPercent,
   scopeArgs,
   scopeOptions,
+  sourceChips,
+  stepsSummary,
   toRoute,
 } from "./model";
 
@@ -18,12 +25,13 @@ function cs(state: string, extra: Partial<AiChangeSetDto> = {}): AiChangeSetDto 
   return {
     id: "c1", title: "Proposed Scene Card", summary: "", state, validationState: "Valid", rows: [], exclusions: [], affectedModules: ["Story"],
     targets: [], operationCount: 1, staleReason: null, errorMessage: null, createdAt: 1, approvedAt: null, appliedAt: null, appliedOperations: 0,
+    partCount: 1, requiresConfirmation: false,
     ...extra,
   };
 }
 
 function status(p: Partial<AiStatusDto>): AiStatusDto {
-  return { installed: false, mode: "Off", runtimeState: "NotInstalled", runtimeMessage: null, activeProfile: null, profiles: [], install: null, localOnly: true, ...p };
+  return { installed: false, mode: "Off", runtimeState: "NotInstalled", runtimeMessage: null, install: null, localOnly: true, updateAvailable: false, installedBytes: 0, ...p };
 }
 
 describe("scope resolution", () => {
@@ -68,15 +76,16 @@ describe("download display", () => {
   });
 
   it("computes progress and panel mode", () => {
-    const install = { taskId: "t", profileId: null, phase: "downloadingModel", bytesDone: 50, bytesTotal: 200, message: "", error: null, active: true };
+    const install = { taskId: "t", phase: "downloading", bytesDone: 50, bytesTotal: 200, message: "", error: null, active: true };
     expect(progressPercent(install)).toBe(25);
     expect(progressPercent({ ...install, bytesTotal: 0 })).toBeNull();
     expect(panelMode(undefined, false)).toBe("unavailable");
-    expect(panelMode(status({}), false)).toBe("unavailable");
-    expect(panelMode(status({}), true)).toBe("setup");
+    // Not installed → the one-click setup view straight away.
+    expect(panelMode(status({}), false)).toBe("setup");
     expect(panelMode(status({ install }), false)).toBe("installing");
     expect(panelMode(status({ install: { ...install, active: false, phase: "paused" } }), false)).toBe("setup");
-    expect(panelMode(status({ installed: true, mode: "Local model" }), false)).toBe("ready");
+    expect(panelMode(status({ installed: true, mode: "AI Ready" }), false)).toBe("ready");
+    expect(panelMode(status({ installed: true, mode: "AI Ready", updateAvailable: true }), true)).toBe("setup");
   });
 });
 
@@ -91,7 +100,7 @@ describe("change set review", () => {
 
   it("describes outcomes truthfully", () => {
     expect(changeSetStateText(cs("Applied", { appliedOperations: 3 }))).toBe("Applied 3 changes. Use Undo to reverse it.");
-    expect(changeSetStateText(cs("Rejected"))).toBe("Cancelled. Nothing was changed.");
+    expect(changeSetStateText(cs("Rejected"))).toBe("Rejected. Nothing was changed.");
     expect(changeSetStateText(cs("Failed", { errorMessage: "X. Nothing was changed." }))).toBe("X. Nothing was changed.");
     expect(changeSetStateText(cs("Pending"))).toBeNull();
   });
@@ -100,5 +109,45 @@ describe("change set review", () => {
     expect(confidenceLabel("Exact")?.text).toBe("Exact · from project data");
     expect(confidenceLabel("Inferred")?.tone).toBe("b");
     expect(confidenceLabel(null)).toBeNull();
+  });
+
+  it("counts changes plainly", () => {
+    expect(changeCount(1)).toBe("1 change");
+    expect(changeCount(4)).toBe("4 changes");
+  });
+});
+
+describe("agent answers", () => {
+  it("turns provenance into chips that open their source when they can", () => {
+    const chips = sourceChips([
+      { kind: "Scope", label: "Whole Project" },
+      { kind: "Character", label: "Ravi", nav: { workspace: "story", params: { characterId: "c1" } } },
+      { kind: "Scene", label: "Scene 3", nav: { workspace: "not-a-workspace", params: {} } },
+    ]);
+    expect(chips.map((c) => c.text)).toEqual(["Whole Project", "Character: Ravi", "Scene: Scene 3"]);
+    expect(chips[0].route).toBeNull();
+    expect(chips[1].route).toEqual({ workspace: "story", params: { characterId: "c1" } });
+    expect(chips[2].route).toBeNull();
+  });
+
+  it("summarises multi-step answers without exposing reasoning", () => {
+    expect(stepsSummary([{ index: 1, tool: "count_scenes", label: "Count scenes", status: "Succeeded" }])).toBeNull();
+    expect(
+      stepsSummary([
+        { index: 1, tool: "search_project", label: "Search project", status: "Succeeded" },
+        { index: 2, tool: "open_scene", label: "Open scene", status: "Succeeded" },
+      ]),
+    ).toBe("2 steps: Search project · Open scene");
+  });
+
+  it("shows the project-context notice only while it is being rebuilt", () => {
+    expect(indexStateOf("Rebuilding")).toBe("Rebuilding");
+    expect(indexStateOf({ state: "Stale", documents: 3 })).toBe("Stale");
+    expect(indexStateOf(42)).toBeNull();
+    expect(indexNotice("Rebuilding")).toEqual({ preparing: PREPARING_TEXT, degraded: DEGRADED_TEXT });
+    expect(indexNotice("Stale")).not.toBeNull();
+    for (const quiet of ["Current", "Updating", "Failed", "Unavailable", null]) expect(indexNotice(quiet)).toBeNull();
+    expect(PREPARING_TEXT).toBe("Preparing project context…");
+    expect(DEGRADED_TEXT).toBe("AI can still answer some questions while project context is being prepared.");
   });
 });

@@ -37,7 +37,13 @@ Project roles are Owner, Editor, Commenter, Viewer and Export-only. Viewers can 
 Private notes are visible only to the person who wrote them. The assistant can use your own private notes when you ask, but never anyone else's.
 
 ## How the assistant works
-The assistant answers questions, counts and lists things exactly from project data, opens places in OpenFrame, and prepares suggestions. Anything that would change your project is shown first as a proposal with the affected items; nothing changes until you choose Apply. If the project changes before you apply, the proposal is marked out of date and must be re-checked. Rejecting a proposal leaves the project exactly as it was.
+The assistant answers questions, counts and lists things exactly from project data, opens places in OpenFrame, and prepares suggestions. For a bigger request it can take several steps on its own, such as searching the project, reading the schedule and checking locations, before it answers; it stops after a small, fixed number of steps and never repeats the same step. Each answer shows what it is based on: click a source to open it. Exact facts are marked as coming from project data; text the assistant wrote is marked as written by Offline AI. The assistant acts with your role and can never do more than you can.
+
+## Proposed Changes and approval
+Anything that would change your project is prepared as Proposed Changes: a summary, the affected areas and a preview of exactly what will change. A request that needs several changes gives you one set of Proposed Changes to review. Nothing changes until you choose Apply Changes; choose Reject to leave the project exactly as it was. There is no automatic mode: the assistant cannot apply or approve changes itself, and nothing written in a conversation or in project text counts as approval. Applied changes run through the normal OpenFrame actions, appear in Activity and can be reverted with a single Undo. Changes that delete items also ask for the usual confirmation. If the project changes before you apply, the proposal is marked out of date and must be re-checked first.
+
+## Project context for the assistant
+While a project is opened for the first time, or after a large change, OpenFrame may show "Preparing project context…". The assistant keeps working during this time and can still answer many questions; it may use fewer sources until the preparation is finished. Preparing project context happens on this computer and never changes your project.
 
 ## Exporting and sharing
 You can export screenplays, call sheets and other documents from their workspaces, and create project packages or backups to move a project to another computer.

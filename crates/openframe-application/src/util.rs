@@ -156,6 +156,62 @@ pub fn media_type_for(name: &str) -> &'static str {
     }
 }
 
+/// `Path::is_file` for asset availability, answered with one attribute query on
+/// Windows. `std::fs::metadata` opens a file handle (and so wakes on-access
+/// antivirus scanning), which costs ~0.1 ms per file and dominated list views
+/// with hundreds of images. Links and very long paths use the std check.
+pub fn file_exists(path: &Path) -> bool {
+    #[cfg(windows)]
+    {
+        use std::os::windows::ffi::OsStrExt;
+        #[link(name = "kernel32")]
+        unsafe extern "system" {
+            fn GetFileAttributesW(file_name: *const u16) -> u32;
+        }
+        const INVALID_FILE_ATTRIBUTES: u32 = u32::MAX;
+        const FILE_ATTRIBUTE_DIRECTORY: u32 = 0x10;
+        const FILE_ATTRIBUTE_REPARSE_POINT: u32 = 0x400;
+        let os = path.as_os_str();
+        if os.len() < 240 {
+            let wide: Vec<u16> = os.encode_wide().chain(std::iter::once(0)).collect();
+            if !wide[..wide.len() - 1].contains(&0) {
+                // SAFETY: `wide` is a NUL-terminated UTF-16 string that outlives the call.
+                let attrs = unsafe { GetFileAttributesW(wide.as_ptr()) };
+                if attrs == INVALID_FILE_ATTRIBUTES {
+                    return false;
+                }
+                if attrs & FILE_ATTRIBUTE_REPARSE_POINT == 0 {
+                    return attrs & FILE_ATTRIBUTE_DIRECTORY == 0;
+                }
+            }
+        }
+    }
+    path.is_file()
+}
+
+/// Load many assets with one query (list views). Unknown ids are skipped.
+pub fn load_assets_bulk<'a>(
+    conn: &Connection,
+    root: &Path,
+    ids: impl IntoIterator<Item = &'a str>,
+) -> AppResult<std::collections::HashMap<String, AssetInfo>> {
+    let ids: Vec<&str> = ids.into_iter().collect();
+    let mut out = std::collections::HashMap::with_capacity(ids.len());
+    if ids.is_empty() {
+        return Ok(out);
+    }
+    let json = serde_json::to_string(&ids).map_err(|e| AppError::internal(e.to_string()))?;
+    let mut stmt = conn.prepare_cached(&format!(
+        "SELECT {ASSET_COLS} FROM asset WHERE id IN (SELECT value FROM json_each(?1))"
+    ))?;
+    let mut rows = stmt.query([json])?;
+    while let Some(r) = rows.next()? {
+        let info = row_to_info(root, r)?;
+        out.insert(info.id.clone(), info);
+    }
+    Ok(out)
+}
+
 // ------------------------------------------------------------------ user-chosen paths
 
 /// Folders OpenFrame owns. User-chosen outputs are never written inside them
@@ -234,7 +290,7 @@ fn row_to_info(root: &Path, r: &rusqlite::Row<'_>) -> rusqlite::Result<AssetInfo
     // to that server (and send the user's NTLM hash) just by listing files (PKG-01).
     let available = path
         .as_ref()
-        .map(|p| openframe_security::is_local_disk_path(p) && p.is_file())
+        .map(|p| openframe_security::is_local_disk_path(p) && file_exists(p))
         .unwrap_or(false);
     Ok(AssetInfo {
         id: r.get(0)?,

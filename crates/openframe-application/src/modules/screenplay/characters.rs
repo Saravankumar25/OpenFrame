@@ -21,9 +21,16 @@ use crate::registry::Registry;
 use crate::store::MutationMeta;
 
 pub fn register(r: &mut Registry) {
-    r.query("screenplay.characters", characters);
-    r.command("screenplay.set_character_link", set_link);
-    r.command("screenplay.clear_character_link", clear_link);
+    use crate::registry::OperationMetadata as M;
+    r.query("screenplay.characters", characters).meta(M::read(
+        "Screenplay character cues and the Character records they link to.",
+    ));
+    r.command("screenplay.set_character_link", set_link)
+        .meta(M::edit(
+            "Link a screenplay character cue to a Character record (or mark it not a character).",
+        ));
+    r.command("screenplay.clear_character_link", clear_link)
+        .meta(M::edit("Clear a character cue link."));
 }
 
 #[derive(Debug, Clone, Serialize, TS)]

@@ -69,7 +69,11 @@ pub fn finish_request(tx: &Tx<'_>, id: &str, o: &RequestOutcome<'_>) -> AppResul
          WHERE id=?8 AND user_id=?9",
         params![
             o.intent,
-            o.class.map(|c| c.as_str()),
+            // The audit column predates the Search class; searches are reads.
+            o.class.map(|c| match c {
+                OperationClass::Search => "Read",
+                other => other.as_str(),
+            }),
             serde_json::to_string(o.targets).unwrap_or_else(|_| "[]".into()),
             o.authorization,
             o.status,
@@ -82,38 +86,79 @@ pub fn finish_request(tx: &Tx<'_>, id: &str, o: &RequestOutcome<'_>) -> AppResul
     Ok(())
 }
 
-#[allow(clippy::too_many_arguments)]
-pub fn insert_invocation(
-    tx: &Tx<'_>,
-    request_id: &str,
-    tool: &str,
-    params_json: &Value,
-    targets: &[ObjRef],
-    authorization: &str,
-    execution: &str,
-    result_ref: Option<&str>,
-    error_code: Option<&str>,
-) -> AppResult<String> {
+/// One audited tool step of an agent run (agentic spec §5): the tool, its validated
+/// parameters, result references, provenance and status. No reasoning, no content copies.
+pub struct NewStep<'a> {
+    pub request_id: &'a str,
+    pub step_index: u32,
+    pub tool: &'a str,
+    pub params: &'a Value,
+    pub targets: &'a [ObjRef],
+    pub provenance: &'a [Provenance],
+    /// Allowed | Denied
+    pub authorization: &'a str,
+    /// Succeeded | Failed | Blocked
+    pub execution: &'a str,
+    pub result_ref: Option<&'a str>,
+    pub error_code: Option<&'a str>,
+    /// Background task started by this step (long-running tools).
+    pub task_id: Option<&'a str>,
+}
+
+pub fn insert_step(tx: &Tx<'_>, s: &NewStep<'_>) -> AppResult<String> {
     let id = new_id();
     let now = now_ms();
     tx.conn().execute(
         "INSERT INTO ai_tool_invocation(id, request_id, tool_name, parameters_json, target_objects_json, authorization_state,
-                                        execution_state, result_reference, error_code, created_at, updated_at)
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?10)",
+                                        execution_state, result_reference, error_code, step_index, provenance_json, task_id,
+                                        created_at, updated_at)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?13)",
         params![
             id,
-            request_id,
-            tool,
-            params_json.to_string(),
-            serde_json::to_string(targets).unwrap_or_else(|_| "[]".into()),
-            authorization,
-            execution,
-            result_ref,
-            error_code,
+            s.request_id,
+            s.tool,
+            s.params.to_string(),
+            serde_json::to_string(s.targets).unwrap_or_else(|_| "[]".into()),
+            s.authorization,
+            s.execution,
+            s.result_ref,
+            s.error_code,
+            s.step_index,
+            serde_json::to_string(s.provenance).unwrap_or_else(|_| "[]".into()),
+            s.task_id,
             now
         ],
     )?;
     Ok(id)
+}
+
+/// "count_scenes" → "Count scenes".
+pub fn step_label(tool: &str) -> String {
+    let words = tool.replace(['_', '.'], " ");
+    let mut chars = words.trim().chars();
+    match chars.next() {
+        Some(f) => f.to_uppercase().collect::<String>() + chars.as_str(),
+        None => String::new(),
+    }
+}
+
+fn load_steps(c: &Connection, request_id: &str) -> AppResult<Vec<AiStepDto>> {
+    let mut stmt = c.prepare(
+        "SELECT step_index, tool_name, execution_state FROM ai_tool_invocation
+         WHERE request_id=?1 ORDER BY step_index, created_at",
+    )?;
+    let rows = stmt
+        .query_map([request_id], |r| {
+            let tool: String = r.get(1)?;
+            Ok(AiStepDto {
+                index: r.get::<_, i64>(0)? as u32,
+                label: step_label(&tool),
+                tool,
+                status: r.get(2)?,
+            })
+        })?
+        .collect::<Result<_, _>>()?;
+    Ok(rows)
 }
 
 pub struct NewResult<'a> {
@@ -130,12 +175,14 @@ pub struct NewResult<'a> {
     pub confidence: Option<Confidence>,
     pub change_set_id: Option<&'a str>,
     pub error_code: Option<&'a str>,
+    pub task_id: Option<&'a str>,
 }
 
 pub fn insert_result(tx: &Tx<'_>, r: &NewResult<'_>) -> AppResult<()> {
     let now = now_ms();
     // Items are part of the structured payload (deterministic values + navigation).
-    let structured = serde_json::json!({ "data": r.structured, "items": r.items });
+    let structured =
+        serde_json::json!({ "data": r.structured, "items": r.items, "taskId": r.task_id });
     tx.conn().execute(
         "INSERT INTO ai_result(id, request_id, result_kind, content, details_json, structured_json, provenance_json, nav_json,
                                change_set_id, confidence_state, status, error_code, created_at, updated_at)
@@ -287,7 +334,13 @@ fn load_result(c: &Connection, actor: &Actor, request_id: &str) -> AppResult<Opt
         Some(cs) => change_set::load_dto(c, actor, &cs)?,
         None => None,
     };
+    let task_id = structured
+        .get("taskId")
+        .and_then(|v| v.as_str())
+        .map(str::to_string);
     Ok(Some(AiResultDto {
+        steps: load_steps(c, request_id)?,
+        task_id,
         id,
         kind: AiResultKind::parse(&kind),
         status: AiResultStatus::parse(&status),

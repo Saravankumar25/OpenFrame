@@ -6,6 +6,8 @@ import type { AiChangeSetDto } from "../ipc/generated/AiChangeSetDto";
 import type { AiConfidence } from "../ipc/generated/AiConfidence";
 import type { AiInstallProgress } from "../ipc/generated/AiInstallProgress";
 import type { AiNavTarget } from "../ipc/generated/AiNavTarget";
+import type { AiProvenance } from "../ipc/generated/AiProvenance";
+import type { AiStepDto } from "../ipc/generated/AiStepDto";
 import type { AiScopeArgs } from "../ipc/generated/AiScopeArgs";
 import type { AiScopeKind } from "../ipc/generated/AiScopeKind";
 import type { AiStatusDto } from "../ipc/generated/AiStatusDto";
@@ -114,13 +116,12 @@ export function progressPercent(p: AiInstallProgress | null | undefined): number
 
 export type PanelMode = "unavailable" | "setup" | "installing" | "ready";
 
-/** Which top-level view the panel shows. */
+/** Which top-level view the panel shows: not installed → the one-click setup (spec §24). */
 export function panelMode(status: AiStatusDto | undefined, setupRequested: boolean): PanelMode {
   if (!status) return "unavailable";
   if (status.install?.active) return "installing";
-  if (status.installed) return "ready";
-  if (setupRequested || (status.install && ["paused", "failed"].includes(status.install.phase))) return "setup";
-  return "unavailable";
+  if (status.installed && !setupRequested) return "ready";
+  return "setup";
 }
 
 export function runtimeLabel(state: string): string | null {
@@ -168,7 +169,7 @@ export function changeSetStateText(cs: AiChangeSetDto): string | null {
     case "Applied":
       return `Applied ${cs.appliedOperations === 1 ? "1 change" : `${cs.appliedOperations} changes`}. Use Undo to reverse it.`;
     case "Rejected":
-      return "Cancelled. Nothing was changed.";
+      return "Rejected. Nothing was changed.";
     case "Accepted":
       return "Applying…";
     case "Failed":
@@ -178,5 +179,52 @@ export function changeSetStateText(cs: AiChangeSetDto): string | null {
   }
 }
 
+/** "1 change" / "3 changes" — how many registry operations applying will run. */
+export function changeCount(n: number): string {
+  return n === 1 ? "1 change" : `${n} changes`;
+}
+
 export const STALE_HINT = "AI never applies a stale proposal blindly. It must be re-checked against the current project.";
 export const UNAVAILABLE_TEXT = "AI is currently unavailable. OpenFrame's core workflows continue to work normally.";
+export const PREPARING_TEXT = "Preparing project context…";
+export const DEGRADED_TEXT = "AI can still answer some questions while project context is being prepared.";
+
+/**
+ * Project-context (search index) state as reported by `ai.index_status` — a plain
+ * state name, or an object carrying `state`. Anything else counts as unknown.
+ */
+export function indexStateOf(v: unknown): string | null {
+  if (typeof v === "string") return v;
+  if (v && typeof v === "object" && typeof (v as { state?: unknown }).state === "string") return (v as { state: string }).state;
+  return null;
+}
+
+/**
+ * The indexing notice to show, only when it matters to the user: while the project
+ * context is being rebuilt the assistant still works, with fewer sources.
+ * Small incremental updates and fallbacks stay silent.
+ */
+export function indexNotice(state: string | null): { preparing: string; degraded: string } | null {
+  return state === "Rebuilding" || state === "Stale" ? { preparing: PREPARING_TEXT, degraded: DEGRADED_TEXT } : null;
+}
+
+export interface SourceChip {
+  key: string;
+  text: string;
+  route: Route | null;
+}
+
+/** Provenance as chips; a chip navigates when its source can be opened. */
+export function sourceChips(provenance: AiProvenance[]): SourceChip[] {
+  return provenance.map((p, i) => ({
+    key: `${i}:${p.kind}:${p.label}`,
+    text: p.kind === "Scope" || p.kind === "Basis" ? p.label : `${p.kind}: ${p.label}`,
+    route: toRoute(p.nav ?? null),
+  }));
+}
+
+/** Short line describing the tool steps behind an answer (null for single-step answers). */
+export function stepsSummary(steps: AiStepDto[]): string | null {
+  if (steps.length < 2) return null;
+  return `${steps.length} steps: ${steps.map((s) => s.label).join(" · ")}`;
+}

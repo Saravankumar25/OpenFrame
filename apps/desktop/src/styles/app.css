@@ -56,6 +56,9 @@ textarea.textarea { resize: vertical; }
 
 /* Radix menus/popovers reuse the mock menu look. */
 .menu-pop { background: #fff; border: 1px solid var(--line2); border-radius: 10px; box-shadow: var(--shadow); padding: 5px; min-width: 200px; z-index: 60; font-size: 13px; }
+/* Long menus (the project menu has ~25 items) scroll inside the window instead of running off-screen,
+   where their last items (e.g. "Close project") could not be reached at 1366×768. */
+.menu-pop { max-height: var(--radix-dropdown-menu-content-available-height, var(--radix-context-menu-content-available-height, 85vh)); overflow-y: auto; }
 .menu-pop [role="menuitem"], .menu-pop .mi { display: flex; align-items: center; gap: 9px; padding: 6px 10px; border-radius: 6px; color: var(--ink); outline: none; cursor: default; user-select: none; }
 .menu-pop [role="menuitem"][data-highlighted], .menu-pop .mi:hover { background: var(--accent-soft); }
 .menu-pop [role="menuitem"][data-disabled] { opacity: .45; }

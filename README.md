@@ -19,12 +19,12 @@ These statements describe the code in this repository. They are not aspirations.
 | **No account, no sign-in** | There is no login, server or identity provider. On first launch OpenFrame creates a local profile in `%LOCALAPPDATA%\OpenFrame\app.sqlite`: a random UUIDv7 user id plus a display name, defaulting to your Windows user name and changeable in the app. |
 | **Your projects are ordinary folders on your computer** | Each project is a `<Title>.openframe` folder, by default under `Documents\OpenFrame\Projects`. It holds a SQLite database, a JSON manifest and your media under `assets/`. The Global Idea Vault lives in `Documents\OpenFrame\Global Idea Vault`. You can copy, back up or delete these folders yourself. |
 | **No telemetry, analytics or crash upload** | The application contains no telemetry, analytics or crash-reporting code, and makes no background network requests. |
-| **No network listener** | OpenFrame never opens a listening socket. Collaboration is file-based: you export a package and send it however you like. |
+| **No network listener** | OpenFrame opens no listening socket that other computers can reach. Collaboration is file-based: you export a package and send it however you like. The only listeners are the Offline AI sidecars (when installed and in use), bound to `127.0.0.1` on a random port and protected by a random per-launch key. |
 | **The UI cannot reach the network or your disk** | The webview's Content Security Policy allows connections only to the Tauri IPC channel. The webview has no filesystem, shell or HTTP plugin (lint-enforced). Every read and write goes through one allow-listed Rust entry point (`of_invoke`), and files are opened by id with the path resolved in Rust. |
-| **Network use** | The running app itself makes no network requests. There are two exceptions. (1) When you open a web link saved in the Idea Vault, the link is handed to your default browser. (2) If the WebView2 runtime is missing, the installer downloads Microsoft's WebView2 bootstrapper. Windows 11 ships with WebView2, so this normally does not happen. *Planned:* the one-click **Download Offline AI** model download and the update check. Both happen only after you explicitly approve them. |
+| **Network use** | The running app itself makes no network requests. There are two exceptions. (1) When you open a web link saved in the Idea Vault, the link is handed to your default browser. (2) If the WebView2 runtime is missing, the installer downloads Microsoft's WebView2 bootstrapper. Windows 11 ships with WebView2, so this normally does not happen. (3) When you click **Download Offline AI** (or **Update Offline AI**), OpenFrame fetches the signed component list and the AI components it names. No project content is ever sent. *Planned:* the direct-download edition's update check, only after you approve it. |
 | **Logs stay local** | Diagnostic logs are written only to `%LOCALAPPDATA%\OpenFrame\logs` and kept for 14 days. They record operation names, error codes and timings, not project content. Panic messages are redacted (user paths, e-mail addresses, tokens). |
 | **Not encrypted by OpenFrame** | Project data is protected by your Windows account's file permissions, like any document. OpenFrame does not encrypt projects at rest. Optional encrypted projects are later scope. |
-| **AI is local-only, when it ships** | The approved v1 design uses a local `llama.cpp` sidecar with no cloud providers, API keys or Ollama. *The AI assistant is not in this build yet.* |
+| **AI runs on this computer, and only if you install it** | The optional AI assistant uses **Offline AI**: one local model (Google Gemma 3 1B Instruct) and a small local embedding model (BGE small English v1.5), run by OpenFrame-managed `llama.cpp` processes. There are no cloud AI providers, API keys, accounts or Ollama, and no model choice. The download (about 1.1 GB) happens only when you click **Download Offline AI**; afterwards AI works offline. The per-project search index for the assistant (`cache/intelligence.sqlite`) is derived data that can be deleted and is rebuilt. **The AI never changes your project on its own**: every change is shown as *Proposed Changes* and applied only when you click **Apply Changes**, and it can never do more than you are allowed to do. |
 
 ## Feature status
 
@@ -47,7 +47,8 @@ These statements describe the code in this repository. They are not aspirations.
 | Moodboards, storyboards, shot lists | In development |
 | Shooting schedule, call sheets, sides, reports | In development |
 | Import/export (PDF, FDX, Fountain, DOCX, CSV/XLSX), backup packages | In development |
-| Local AI assistant (managed `llama.cpp` sidecar, signed model manifests, Change Sets) | In development |
+| Offline AI: one-click download (signed manifest, resumable, verified), Gemma 3 1B + local embeddings via managed `llama.cpp` sidecars | Implemented. Not yet measured on minimum-spec hardware or with the Vulkan build on a discrete GPU |
+| AI assistant: bounded multi-step agent (≤ 12 steps), universal toolbox over every AI-exposed operation, hybrid retrieval (FTS5 + sqlite-vec + context graph) from a derived per-project index, one reviewable Change Set per request with human-only **Apply Changes** | Implemented. A retrieval-quality evaluation set (Recall@K / MRR) does not exist yet |
 | Collaboration through Exchange / Review / Response packages (file-based; roles govern package and export scope) | In development |
 | Real-time LAN collaboration | **Removed from scope** by product-owner decision (2026-09-30, ADR-0007). OpenFrame opens no network listener. |
 | Signed installer (NSIS/MSI) and in-app updater | Release pipeline written; blocked on certificate, updater key and license selection |
@@ -73,7 +74,7 @@ npm run test       # Rust + frontend tests
 |---|---|
 | [DEVELOPMENT.md](DEVELOPMENT.md) | Setup, commands, repository layout, architecture overview, logs |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Review contract, engineering invariants, testing and dependency policy |
-| [docs/adr/](docs/adr) | Architecture Decision Records (ADR-0001 … ADR-0012) |
+| [docs/adr/](docs/adr) | Architecture Decision Records (ADR-0001 … ADR-0013) |
 | [docs/engineering/](docs/engineering) | Engineering specifications that reflect the implemented code (database, file format, commands, IPC, search, recovery, security, performance, QA, release, packaging, CI, observability) |
 | `OpenFrame_*.md` (repository root) | Authoritative product specifications: PRD, FSD, UX/UI, Domain/Data, AI, Import/Export, Offline/Collaboration, Security. Implementation precedence: PRD > FSD > UX > Domain > cross-cutting specs > engineering docs. The LAN sections are superseded by ADR-0007. |
 | [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md) | Generated inventory of shipped third-party dependencies and their licenses |
