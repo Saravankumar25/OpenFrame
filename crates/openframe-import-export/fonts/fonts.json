@@ -1,0 +1,93 @@
+{
+  "about": "Fonts bundled into screenplay and document PDFs (ADR-0016). Each file ships unmodified under the SIL Open Font License 1.1 (licence text next to it) and is subset only inside the PDFs OpenFrame writes. The tests check every file against its SHA-256 here; replacing a font means updating this list in the same change.",
+  "fonts": [
+    {
+      "file": "CourierPrime-Bold.ttf",
+      "family": "Courier Prime",
+      "style": "Bold",
+      "version": "Version 3.018",
+      "sha256": "ff1f38786c849d1c41fa8e447960abdb2bd75fdfb0cfcdeb524fad65a5af3638",
+      "bytes": 72856,
+      "license": "OFL-1.1",
+      "licenseFile": "OFL-CourierPrime.txt",
+      "source": "https://github.com/quoteunquoteapps/CourierPrime"
+    },
+    {
+      "file": "CourierPrime-Italic.ttf",
+      "family": "Courier Prime",
+      "style": "Italic",
+      "version": "Version 3.018",
+      "sha256": "f1b9a5829789f7e56432a9f3bc7665ef4531dbba1c112639e48bef39621a006b",
+      "bytes": 79980,
+      "license": "OFL-1.1",
+      "licenseFile": "OFL-CourierPrime.txt",
+      "source": "https://github.com/quoteunquoteapps/CourierPrime"
+    },
+    {
+      "file": "CourierPrime-Regular.ttf",
+      "family": "Courier Prime",
+      "style": "Regular",
+      "version": "Version 3.018",
+      "sha256": "72f793376f8e2841656bf21d77a5de010f2929bd6956a22ee848ad0c7eb978af",
+      "bytes": 71188,
+      "license": "OFL-1.1",
+      "licenseFile": "OFL-CourierPrime.txt",
+      "source": "https://github.com/quoteunquoteapps/CourierPrime"
+    },
+    {
+      "file": "NotoSansDevanagari-Regular.ttf",
+      "family": "Noto Sans Devanagari",
+      "style": "Regular",
+      "version": "Version 2.007",
+      "sha256": "9c7d935139ea6a1e6ad9dbac4f6d27ece1e04bca8123c8888d00a0f9df4724cd",
+      "bytes": 184228,
+      "license": "OFL-1.1",
+      "licenseFile": "OFL-NotoSans-devanagari.txt",
+      "source": "https://github.com/notofonts"
+    },
+    {
+      "file": "NotoSansKannada-Regular.ttf",
+      "family": "Noto Sans Kannada",
+      "style": "Regular",
+      "version": "Version 2.006",
+      "sha256": "2870274619c2a4abe5d6b11fcb7c4a372eba765b6b7881d459b0eb0a609a68eb",
+      "bytes": 135488,
+      "license": "OFL-1.1",
+      "licenseFile": "OFL-NotoSans-kannada.txt",
+      "source": "https://github.com/notofonts"
+    },
+    {
+      "file": "NotoSansMalayalam-Regular.ttf",
+      "family": "Noto Sans Malayalam",
+      "style": "Regular",
+      "version": "Version 2.104",
+      "sha256": "cc39bb1f7d63b582a2aec1abf2469a43b805a3523a27e0a0eee8cd32702541d5",
+      "bytes": 77312,
+      "license": "OFL-1.1",
+      "licenseFile": "OFL-NotoSans-malayalam.txt",
+      "source": "https://github.com/notofonts"
+    },
+    {
+      "file": "NotoSansTamil-Regular.ttf",
+      "family": "Noto Sans Tamil",
+      "style": "Regular",
+      "version": "Version 2.004",
+      "sha256": "6634d9cc97a726e670df41281dd32b167a6b9b71f2036e19671ff08fdde0c292",
+      "bytes": 46600,
+      "license": "OFL-1.1",
+      "licenseFile": "OFL-NotoSans-tamil.txt",
+      "source": "https://github.com/notofonts"
+    },
+    {
+      "file": "NotoSansTelugu-Regular.ttf",
+      "family": "Noto Sans Telugu",
+      "style": "Regular",
+      "version": "Version 2.005",
+      "sha256": "dcb86a5da09365a2d73d725e429403dca988e6d50c1b1d564579a25dbc18bd29",
+      "bytes": 165212,
+      "license": "OFL-1.1",
+      "licenseFile": "OFL-NotoSans-telugu.txt",
+      "source": "https://github.com/notofonts"
+    }
+  ]
+}

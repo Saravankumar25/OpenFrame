@@ -1,0 +1,69 @@
+# Decision register
+
+> Updated 2026-10-08 (ADR-0025 added the same day). One place to see every decision, whether it is still in force, and what replaced it.
+> **Active** = governs the code. **Superseded** = replaced; the old text stays for history and carries a pointer.
+> **Proposed** = a recommendation that changes nothing until the owner accepts it
+> ([owner decisions](../implementation/owner-decisions.md)). Precedence: [docs/README.md](../README.md) §1.
+
+## 1. Architecture Decision Records
+
+| ADR | Decision | Status | Replaced or amended by |
+|---|---|---|---|
+| [0001](ADR-0001-tauri-react-rust.md) | Tauri v2, React/TypeScript, Rust | Active | |
+| [0002](ADR-0002-rusqlite-over-sqlx.md) | rusqlite (bundled SQLite, FTS5, online backup) | Active | |
+| [0003](ADR-0003-project-folder-format.md) | `.openframe` project folder, single-writer lock, network paths refused | Active | |
+| [0004](ADR-0004-single-ipc-dispatcher.md) | One allow-listed IPC dispatcher `of_invoke` | Active | |
+| [0005](ADR-0005-generic-undo-redo.md) | Generic trigger-based undo and redo with stale check | Active | |
+| [0006](ADR-0006-local-ai-sidecar.md) | Local-only AI through a managed `llama.cpp` sidecar, signed manifests | Active, **decisions 2 and 3 superseded** | Model policy replaced by [0013](ADR-0013-single-local-model-hybrid-rag-agent.md); runtime download replaced by the bundled runtime of [0020](ADR-0020-ai-runtime-packaging-per-channel.md) (Accepted 2026-10-08); delivery by download replaced by [0025](ADR-0025-offline-ai-bundled-in-every-package.md) (Accepted 2026-10-08) |
+| [0007](ADR-0007-lan-collaboration-removed.md) | Live LAN collaboration removed; file-based packages only | Active | |
+| [0008](ADR-0008-deterministic-pdf.md) | Deterministic PDF with `pdf-writer` and base-14 fonts | Active, **font decision amended** | [0016](ADR-0016-pdf-embedded-fonts-and-shaping.md) (Accepted 2026-10-07) |
+| [0009](ADR-0009-permission-matrix.md) | Permission matrix for cells the Security spec leaves open | Active | |
+| [0010](ADR-0010-editor-focused-undo.md) | Editor-focused undo inside the screenplay editor | Active | |
+| [0011](ADR-0011-uuidv7-identities.md) | UUIDv7 identities, no stored display numbers | Active, **item 3 amended** | [0015](ADR-0015-screenplay-production-numbering.md) (Accepted 2026-10-07) |
+| [0012](ADR-0012-spec-conflict-resolutions.md) | Resolutions of conflicts between specifications | Active, **item 7 superseded; open product questions answered 2026-10-07; several screenplays per project 2026-10-08** | Item 7 superseded by [0014](ADR-0014-appearance-theme-system.md) (Accepted 2026-10-07) |
+| [0013](ADR-0013-single-local-model-hybrid-rag-agent.md) | One Gemma 3 1B model, hybrid RAG, bounded agent, human-only Change Sets | Active, **apply step amended**, **decision 2 superseded** | Apply step amended by [0019](ADR-0019-crash-safe-change-set-apply.md) (Accepted 2026-10-05); "One download" superseded by [0025](ADR-0025-offline-ai-bundled-in-every-package.md) (Accepted 2026-10-08) |
+| [0014](ADR-0014-appearance-theme-system.md) | Light, Dark, System and 15 built-in themes, default unchanged except six Light-mode contrast pairs | **Accepted 2026-10-07**, **decision 2 amended 2026-10-07** | Supersedes ADR-0012 item 7 |
+| [0015](ADR-0015-screenplay-production-numbering.md) | Stored production scene numbers frozen at lock | **Accepted 2026-10-07** | Amends ADR-0011 item 3 |
+| [0016](ADR-0016-pdf-embedded-fonts-and-shaping.md) | PDF embedded fonts and complex-script shaping | **Accepted 2026-10-07** | Amends ADR-0008 |
+| [0017](ADR-0017-cross-platform-windows-and-macos.md) | One codebase, two platform adapters, three release files; Windows 11 only; Apple silicon only | **Accepted 2026-10-06**, **installer amended 2026-10-07** (internal build, [0023](ADR-0023-store-trial-and-internal-installer.md)) | Amends the Engineering Index "Initial OS" decision |
+| [0018](ADR-0018-distribution-licensing-commerce.md) | Business model: paid with a 7-day free trial; Mac App Store trial method decided (zero-price trial and lifetime non-consumables, server-checked expiry); price, refunds and installer purchase proof still open | **Accepted in part 2026-10-06**, **decision 5 superseded on the Mac at trial end** | Replaces "Free/open-source" in the Engineering Index; decision 5 superseded for the Mac trial-ended and revoked states by [0022](ADR-0022-mac-trial-end-lock.md) |
+| [0019](ADR-0019-crash-safe-change-set-apply.md) | Crash-safe multi-operation Change Set apply (apply journal, compensate on open) | **Active** (Accepted 2026-10-05) | Amends ADR-0013 |
+| [0020](ADR-0020-ai-runtime-packaging-per-channel.md) | The AI runtime ships inside every release file (`.msix`, `.pkg`, `.exe`, `.dmg`); ~~only model weights download, after a click~~ | **Accepted 2026-10-08**, **decisions 1 (weights download), 3 and 5 superseded 2026-10-08** | Amends ADR-0006 (runtime no longer downloaded); proposed decision 2 superseded; weight download, its disclosure and the model host superseded by [0025](ADR-0025-offline-ai-bundled-in-every-package.md) |
+| [0021](ADR-0021-diagnostics-telemetry-analytics-policy.md) | Nothing sent automatically; user-initiated diagnostics | **Active** (Accepted 2026-10-05) | Supersedes the Engineering Index "optional anonymous diagnostics" locked decision |
+| [0022](ADR-0022-mac-trial-end-lock.md) | Mac App Store build: trial ended or purchase revoked blocks the app; only Buy and Restore remain | **Accepted 2026-10-07**, confirmed 2026-10-08 | Supersedes ADR-0018 decision 5 for those two Mac states |
+| [0023](ADR-0023-store-trial-and-internal-installer.md) | Microsoft Store runs the trial (StoreContext licence) with the same full block as the Mac; the `.exe` is an internal team build; no price in the app | **Accepted 2026-10-07** | Amends ADR-0017 decision 1; supersedes ADR-0018 decision 3 for the installer; decision 3 extended by [0024](ADR-0024-internal-team-builds.md) |
+| [0024](ADR-0024-internal-team-builds.md) | Four release files; internal `.exe` and `.dmg` for the team behind a password asked on every launch (hash only, never the password) | **Accepted 2026-10-07**, **amended 2026-10-08** (internal builds unsigned for now; signing moves to the store and public step) | Amends ADR-0017 decision 1 and ADR-0023 decision 3 |
+| [0025](ADR-0025-offline-ai-bundled-in-every-package.md) | Every package contains the complete offline AI (runtime, Gemma 3 1B weights, embedding weights, tokenizer, assets) with pinned hashes; no download, no model host; validated per format | **Accepted 2026-10-08** | Supersedes ADR-0006 decision 2, ADR-0013 decision 2 and ADR-0020 decisions 1 (weights download), 3 and 5 |
+
+## 2. Older decisions that are no longer in force (surface the newer one)
+
+| Older decision | Where it was written | Status | Current rule | Authority |
+|---|---|---|---|---|
+| Change Set apply without a journal (crash after operation N leaves a half-applied set) | ADR-0013 apply step | **Superseded 2026-10-05** | Durable apply journal; compensate on project open | ADR-0019 |
+| The project stays readable and exportable whatever a store check says, on the Mac after the trial ends | ADR-0018 decision 5 | **Superseded 2026-10-07** (Mac trial-ended and revoked states only) | Full block; only Buy and Restore | ADR-0022 |
+| Windows installer sold directly with a signed licence file, local trial and payment provider | ADR-0017 decision 1, ADR-0018 decision 3 | **Superseded 2026-10-07** | Internal team build, no trial, licence or payment; public sales only through the two stores | ADR-0023 |
+| OpenFrame Default in Light mode keeps today's six low-contrast pairs | ADR-0014 decision 2, `30-appearance-themes.md` section 6 | **Superseded 2026-10-07** | The six pairs are raised to 4.5 to 1 with the smallest change; backgrounds unchanged | ADR-0014 amendment |
+| Host-authoritative LAN collaboration, soft locks, presence, concurrent editing (PRD-COL-005 and 006, FSD §48 to 49, 119 to 120, 152, Collaboration spec §12 to 18, 31, Security LAN sections, UX 66 to 68, mock-ups 164 to 168, Domain "Collaboration Session") | PRD, FSD, UX, Domain, Collaboration and Security specs | **Superseded**, 57 sections marked in place | File-based Exchange, Review and Response packages; no network listener | ADR-0007 |
+| Three Qwen model profiles, hardware-picked, user override | ADR-0006 decision 3, older AI text | **Superseded** | One profile: Gemma 3 1B Instruct plus BGE small embeddings | ADR-0013 |
+| External or cloud AI providers, API keys | PRD L296 and L2752, AC §210.17 and §210.18 | **Superseded** | Local AI only; no provider setting | ADR-0012 §5, ADR-0006 |
+| One-tool-per-request orchestrator, FTS5-only retrieval | Original AI design | **Superseded** | Bounded multi-step agent, universal toolbox, hybrid retrieval, derived index | ADR-0013 |
+| LAN protocol document (Engineering Index document 18) | Engineering Index | **Withdrawn** | Document 18 is now the retrieval intelligence index | ADR-0007 |
+| "Windows 11 first, macOS-ready" | Engineering Index locked decision | **Superseded 2026-10-06** | One codebase, Windows adapter and macOS adapter, three release files; Windows 11 only; Apple silicon only | ADR-0017 |
+| "Optional anonymous diagnostics with consent" | Engineering Index locked decision | **Superseded 2026-10-05** | Nothing automatic; user-initiated diagnostic bundle | ADR-0021 |
+| "Free/open-source" product model | Engineering Index, `LICENSE-PENDING.md` | **Superseded 2026-10-06** | Paid app with a 7-day free trial; end-user licence agreement | ADR-0018 |
+| "Light theme only" | ADR-0012 §7 | **Superseded 2026-10-07** | Light, Dark, System and 15 themes, default unchanged | ADR-0014 |
+| "Pre-release migration files may still be edited" | `docs/engineering/23-release-migration.md` | **Replaced 2026-10-05** | Migrations 0001 to 0010 freeze when the first build leaves the development team | Reconciliation C10 |
+| Display numbers never stored | ADR-0011 item 3 | **Amended 2026-10-07** | Frozen production number label per scene, identity unchanged | ADR-0015 |
+| Latin-1-only PDF output | ADR-0008 | **Superseded 2026-10-07** | Embedded fonts and shaping for Indic scripts | ADR-0016 |
+| Dark theme absent; mock-ups light only | UX spec, ADR-0012 §7 | **Superseded 2026-10-07** | See ADR-0014 | ADR-0014 |
+| Download Offline AI from a model host after install, with a signed download list (runtime, then weights only) | ADR-0006 decision 2, ADR-0013 decision 2, ADR-0020 decisions 1, 3 and 5 | **Superseded 2026-10-08** | Runtime, weights, tokenizer and assets bundled in every package with pinned hashes; nothing downloaded; no model host or manifest key | ADR-0025 |
+| "Bundling the model in the installer" rejected as too large | ADR-0006 alternatives | **Superseded 2026-10-08** | The model is bundled; package size is measured and recorded | ADR-0025 |
+| Internal `.dmg` Developer ID signed and notarized; internal `.exe` signed | ADR-0024 decision 1 and consequences, masterplan area 20 | **Deferred 2026-10-08** | Internal builds unsigned for now; signing moves to the store and public step | ADR-0024 amendment 2026-10-08 |
+| Schedule "ScheduleItem" unified table (supplied plan) | Archived completion plan | **Rejected** | Extend `schedule_strip`, `schedule_marker`, `shooting_day` | Reconciliation C11 |
+
+## 3. Rules
+
+- A superseded decision is **never deleted**. It keeps its text, gets a pointer to its replacement, and appears in §2.
+- A new ADR names what it supersedes or amends and adds a row to both tables here.
+- A Proposed ADR is not a decision. Code must not assume it.
+- Numbering is permanent; the next free number is 0026.

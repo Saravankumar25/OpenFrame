@@ -1,0 +1,2212 @@
+
+> openframe-studio@0.1.0 verify
+> npm run format:check && npm run lint && npm run typecheck && npm run check:governance && npm run test
+
+
+> openframe-studio@0.1.0 format:check
+> cargo fmt --all -- --check
+
+
+> openframe-studio@0.1.0 lint
+> cargo clippy --workspace --all-targets -- -D warnings && npm --workspace apps/desktop run lint
+
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Checking openframe-platform v0.1.0 (C:\OpenFrame\crates\openframe-platform)
+    Checking openframe-search v0.1.0 (C:\OpenFrame\crates\openframe-search)
+    Checking openframe-domain v0.1.0 (C:\OpenFrame\crates\openframe-domain)
+    Checking openframe-security v0.1.0 (C:\OpenFrame\crates\openframe-security)
+    Checking openframe-persistence v0.1.0 (C:\OpenFrame\crates\openframe-persistence)
+    Checking openframe-entitlement v0.1.0 (C:\OpenFrame\crates\openframe-entitlement)
+    Checking openframe-import-export v0.1.0 (C:\OpenFrame\crates\openframe-import-export)
+    Checking openframe-ai v0.1.0 (C:\OpenFrame\crates\openframe-ai)
+    Checking openframe-project-format v0.1.0 (C:\OpenFrame\crates\openframe-project-format)
+    Checking openframe-application v0.1.0 (C:\OpenFrame\crates\openframe-application)
+    Checking openframe-test-support v0.1.0 (C:\OpenFrame\crates\openframe-test-support)
+    Checking openframe-desktop v0.1.0 (C:\OpenFrame\apps\desktop\src-tauri)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2m 31s
+
+> @openframe/desktop@0.1.0 lint
+> eslint src --max-warnings 0
+
+
+> openframe-studio@0.1.0 typecheck
+> npm --workspace apps/desktop run typecheck
+
+
+> @openframe/desktop@0.1.0 typecheck
+> tsc --noEmit -p .
+
+
+> openframe-studio@0.1.0 check:governance
+> npm run check:architecture && npm run check:migrations && npm run check:feature-status && npm run check:reachability && npm run check:writing && npm run check:links && node scripts/plan-status.mjs --check && node --test scripts/tests/governance.test.mjs
+
+
+> openframe-studio@0.1.0 check:architecture
+> node scripts/architecture-lint.mjs
+
+architecture-lint: OK (98 allow-listed sites)
+
+> openframe-studio@0.1.0 check:migrations
+> node scripts/check-migrations.mjs
+
+check-migrations: OK (project 11, global 3, app 1; not frozen yet)
+
+> openframe-studio@0.1.0 check:feature-status
+> node scripts/check-feature-status.mjs
+
+check-feature-status: OK (168 rows; Specified 42, Designed 38, Built 29, Reachable 55, Verified 1, Process 2)
+
+> openframe-studio@0.1.0 check:reachability
+> node scripts/check-reachability.mjs
+
+check-reachability: OK (30 canonical routes from the feature status file)
+
+> openframe-studio@0.1.0 check:writing
+> node scripts/check-writing-standard.mjs
+
+check-writing-standard: OK (app 305, crates 535, scripts-and-ci 87, root-documents 0, mockups 1311, living-docs 671)
+
+> openframe-studio@0.1.0 check:links
+> node scripts/check-links.mjs
+
+check-links: OK (94 documents)
+ 1. Decisions and owner tasks: 8 of 32
+ 2. Project controls and baseline: 14 of 17
+ 3. Data safety and crash recovery: 4 of 7
+ 4. Runtime resilience and failure testing: 0 of 4
+ 5. Test infrastructure and quality gates: 1 of 12
+ 6. Security hardening from the baseline audit: 0 of 8
+ 7. Platform adapter layer for Windows and Mac: 0 of 10
+ 8. AI assistant quality and hardening: 0 of 15
+ 9. Story Board and Idea Vault: 0 of 8
+10. Writing comfort: 0 of 6
+11. Screenplay engine and file formats: 0 of 23
+12. Appearance and themes: 0 of 10
+13. Breakdown, catalog, locations, cast and crew: 0 of 9
+14. Shooting schedule and Day Out of Days: 0 of 9
+15. Call sheets, budget, templates, samples and exports: 0 of 11
+16. Packages and backup: 0 of 5
+17. Product-wide quality, accessibility and beta: 0 of 14
+18. Payment and free trial in all three channels: 0 of 9
+19. Microsoft Store package: 0 of 15
+20. Windows installer: 0 of 7
+21. Mac App Store package: 0 of 8
+22. Legal, privacy, website and support: 0 of 11
+23. Final review and submission: 0 of 12
+24. Certification, publication and launch: 0 of 7
+25. First 90 days after launch: 0 of 5
+26. Conditions that stop a release: 0 of 7
+Overall: 27 of 281 (9.6%)
+✔ architecture lint passes on the repository (833.3026ms)
+✔ architecture lint passes on the minimal fixture (203.4279ms)
+✔ architecture lint rule W1 catches index.tsx: import { readFile } from "@tauri-apps/plugin-fs"; (209.0672ms)
+✔ architecture lint rule W1 catches index.tsx: const m = await import("node:child_process"); (218.3037ms)
+✔ architecture lint rule W2 catches index.tsx: import { invoke } from "@tauri-apps/api/core"; (210.0559ms)
+✔ architecture lint rule W3 catches index.tsx: export const f = () => fetch("https://example.com" (224.4134ms)
+✔ architecture lint rule W4 catches index.tsx: export const f = (h: string) => <div dangerouslySe (225.8663ms)
+✔ architecture lint rule W4 catches util.ts: export const g = (e: HTMLElement, h: string) => {  (250.2343ms)
+✔ architecture lint rule W1 catches index.tsx: import { openUrl } from "@tauri-apps/plugin-opener (230.2466ms)
+✔ architecture lint rule W2 catches index.tsx: import * as core from "@tauri-apps/api/core";
+core (209.0909ms)
+✔ architecture lint rule W2 catches index.tsx: import { core } from "@tauri-apps/api"; (201.9701ms)
+✔ architecture lint rule W2 catches index.tsx: import { listen } from "@tauri-apps/api/event"; (224.182ms)
+✔ architecture lint rule W3 catches index.tsx: const f = fetch;
+export const g = () => f('x'); (244.3326ms)
+✔ architecture lint rule W4 catches index.tsx: export const g = (s: string) => window.eval(s); (226.2146ms)
+✔ architecture lint rule W4 catches index.tsx: export const g = Function("return 1"); (236.3606ms)
+✔ architecture lint rule R5 catches x.rs: use std::process::Command as C;
+fn f() { C::new("c (226.1576ms)
+✔ architecture lint rule R5 catches x.rs: fn f() { unsafe { ShellExecuteExW(std::ptr::null_m (325.0237ms)
+✔ architecture lint rule R1 catches x.rs: use rusqlite::Connection as Db;
+fn f() { let _ = D (322.851ms)
+✔ architecture lint rule R1 catches x.rs: fn f(c: &rusqlite::Connection) { c.execute_batch(" (192.2998ms)
+✔ architecture lint rule R2 catches agent_x.rs: fn f() { crate::modules::ai::change_set::accept(co (215.3633ms)
+✔ architecture lint rule R3 catches x.rs: fn f() { std::net::TcpListener::bind("0.0.0.0:80") (237.1256ms)
+✔ architecture lint rule R4 catches x.rs: fn f() { unsafe { std::hint::unreachable_unchecked (211.5167ms)
+✔ architecture lint rule R5 catches x.rs: fn f() { std::process::Command::new("cmd").spawn() (218.4307ms)
+✔ architecture lint rule R6 catches x.rs: #[cfg(windows)]
+fn f() {} (233.1839ms)
+✔ architecture lint rule R6 catches x.rs: fn f() { let _ = windows::Win32::Foundation::HANDL (212.2458ms)
+✔ architecture lint rule R6 catches x.rs: use std::os::windows::ffi::OsStrExt;
+fn f() {} (238.2935ms)
+✔ architecture lint rule R6 catches x.rs: #[cfg(target_os = "macos")]
+fn f() {} (207.4734ms)
+✔ architecture lint rule R6 catches x.rs: fn f() -> bool { cfg!(windows) } (198.9987ms)
+✔ architecture lint rule R6 catches x.rs: #[cfg(all(windows, target_env = "msvc"))]
+fn f() { (208.3493ms)
+✔ architecture lint rule R6 catches x.rs: fn f() -> &'static str { std::env::consts::OS } (199.3688ms)
+✔ architecture lint rule R6 catches x.rs: #[cfg_attr(windows, derive(Debug))]
+struct S; (213.7423ms)
+✔ architecture lint rule R6 catches x.rs: #[link(name = "kernel32")]
+extern "system" {} (201.8441ms)
+✔ architecture lint rule R6 catches build.rs: fn main() { if cfg!(target_os = "windows") {} } (200.5463ms)
+✔ architecture lint ignores patterns in comments, strings and test modules (205.5788ms)
+✔ architecture lint catches a weakened CSP and an extra Tauri command (231.0689ms)
+✔ architecture lint rule C5 catches the project cache folder in the asset scope (229.2024ms)
+✔ architecture lint rule C5 catches a path chained after assets() (360.5989ms)
+✔ architecture lint catches a static asset scope, a remote capability and a table-form plugin (293.5507ms)
+✔ architecture lint catches a filesystem capability for the webview (228.191ms)
+✔ migration check passes on the repository (165.3834ms)
+✔ migration check catches a gap and a duplicate number (169.8732ms)
+✔ migration check catches a file the app does not embed (145.9163ms)
+✔ migration check: edits warn before the freeze and fail after it (303.5629ms)
+✔ migration check --base refuses turning the freeze off or dropping a record in the same change (716.2791ms)
+✔ migration check catches a deleted migration (142.9845ms)
+✔ feature status check passes on the repository (110.6721ms)
+✔ feature status check catches Built without tests (86.4135ms)
+✔ feature status check catches Reachable without a route (90.087ms)
+✔ feature status check catches an unverified tag (90.1823ms)
+✔ feature status check catches an unknown build area (114.6539ms)
+✔ feature status check catches an invalid status (91.5591ms)
+✔ feature status check catches an invalid importance (85.8917ms)
+✔ feature status check catches an empty route (90.0525ms)
+✔ feature status check catches a duplicate key and a section without Source (88.9977ms)
+✔ feature status check accepts a complete row and a removed row (92.8463ms)
+✔ reachability check passes on the repository (114.151ms)
+✔ reachability check catches a route that does not exist and a reachable row without a route (398.3921ms)
+ℹ tests 57
+ℹ suites 0
+ℹ pass 57
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 12806.6434
+
+> openframe-studio@0.1.0 test
+> npm run test:rust && npm run test:web
+
+
+> openframe-studio@0.1.0 test:rust
+> cargo test --workspace
+
+   Compiling openframe-security v0.1.0 (C:\OpenFrame\crates\openframe-security)
+   Compiling openframe-import-export v0.1.0 (C:\OpenFrame\crates\openframe-import-export)
+   Compiling openframe-ai v0.1.0 (C:\OpenFrame\crates\openframe-ai)
+   Compiling openframe-project-format v0.1.0 (C:\OpenFrame\crates\openframe-project-format)
+   Compiling openframe-application v0.1.0 (C:\OpenFrame\crates\openframe-application)
+   Compiling openframe-test-support v0.1.0 (C:\OpenFrame\crates\openframe-test-support)
+   Compiling openframe-desktop v0.1.0 (C:\OpenFrame\apps\desktop\src-tauri)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4m 34s
+     Running unittests src\lib.rs (target\debug\deps\openframe_ai-442354158ee7fc08.exe)
+
+running 21 tests
+test manager::tests::embedding_inputs_are_bounded_and_never_empty ... ok
+test client::tests::endpoint_debug_never_prints_key ... ok
+test manager::tests::progress_is_one_combined_figure_across_files ... ok
+test client::tests::embeddings_are_ordered_checked_and_normalised ... ok
+test manifest::tests::ids_are_single_safe_path_components ... ok
+test manifest::tests::url_userinfo_cannot_disguise_a_remote_http_host ... ok
+test client::tests::schema_requests_grammar_constrained_output ... ok
+test client::tests::reasoning_is_stripped ... ok
+test manifest::tests::urls_must_be_https_or_loopback ... ok
+test download::tests::disk_preflight_refuses_when_space_is_short ... ok
+test selection::tests::disk_requirement_includes_margin ... ok
+test manifest::tests::tampered_embedded_manifest_is_rejected ... ok
+test manifest::tests::profile_must_be_the_single_production_profile ... ok
+test selection::tests::integrated_graphics_laptop_runs_on_the_processor ... ok
+test manifest::tests::embedded_manifest_verifies_and_describes_one_profile ... ok
+test selection::tests::discrete_graphics_card_is_used_with_all_layers ... ok
+test selection::tests::no_vulkan_driver_means_processor ... ok
+test selection::tests::partial_offload_is_proportional_to_graphics_memory ... ok
+test selection::tests::tiny_machine_is_warned_but_not_refused ... ok
+test manifest::tests::profile_components_must_exist_with_the_right_roles ... ok
+test hardware::tests::inspection_reports_plausible_values ... ok
+
+test result: ok. 21 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.56s
+
+     Running tests\download.rs (target\debug\deps\download-6b3a492d6499ae18.exe)
+
+running 7 tests
+test missing_file_is_a_clear_failure_without_retry_storm ... ok
+test hash_mismatch_is_quarantined_and_never_used ... ok
+test download_is_verified_and_moved_into_place ... ok
+test stale_partial_for_another_file_is_discarded ... ok
+test interrupted_download_resumes_from_partial_with_a_range_request ... ok
+test paused_download_keeps_partial_and_resumes_later ... ok
+test server_without_range_support_restarts_cleanly ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.25s
+
+     Running tests\install.rs (target\debug\deps\install-80542749a842d316.exe)
+
+running 10 tests
+test insufficient_disk_space_blocks_download_before_it_starts ... ok
+test retired_three_tier_manifest_format_is_refused_even_when_signed ... ok
+test tampered_manifest_is_rejected ... ok
+test manifest_signed_by_another_key_is_rejected ... ok
+test tampered_manifest_cache_is_ignored_and_removed ... ok
+test a_pointer_from_the_retired_profile_system_reads_as_not_installed ... ok
+test remote_manifest_cannot_roll_back_to_an_older_sequence ... ok
+test exact_download_size_and_disk_need_are_known_before_downloading ... ok
+test hash_mismatch_is_quarantined_and_previous_install_stays_active ... ok
+test verified_components_that_cannot_start_are_not_activated ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.52s
+
+     Running tests\lifecycle.rs (target\debug\deps\lifecycle-4734278990a93c00.exe)
+test one_click_install_is_verified_combined_healthy_and_usable_without_restart ... ok
+test update_replaces_components_only_after_the_new_version_is_healthy ... ok
+test graphics_runtime_failure_falls_back_to_the_processor_build ... ok
+test a_new_version_that_cannot_start_keeps_the_previous_install ... ok
+test pause_keeps_progress_and_resume_finishes_cancel_discards ... ok
+test uninstall_removes_everything_and_ai_is_off ... ok
+test uninstall_never_follows_a_junction_out_of_the_ai_folders ... ok
+
+test result: ok. 7 passed; 0 failed
+     Running tests\real_runtime.rs (target\debug\deps\real_runtime-61d62449a71c757c.exe)
+
+running 1 test
+test real_runtime_install_chat_embed_uninstall ... ignored
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\security_ai.rs (target\debug\deps\security_ai-96f59cbf5d134256.exe)
+
+running 2 tests
+test uninstall_and_cleanup_never_leave_the_ai_folders ... ok
+test untrusted_embedded_manifest_is_never_used_but_a_verified_cache_is ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+
+     Running tests\sidecar_log_redaction.rs (target\debug\deps\sidecar_log_redaction-e2d26c798e14e71f.exe)
+
+running 3 tests
+test sidecar_log_never_contains_prompt_text_or_project_paths ... ignored, defect: supervisor.rs pipe_log copies prompt text and non-home paths verbatim
+test fake_sidecar_entry ... ok
+test sidecar_log_redacts_home_paths_emails_and_keys ... ok
+
+test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.08s
+
+     Running tests\soak_sidecar.rs (target\debug\deps\soak_sidecar-7ebae148f8a09ec6.exe)
+
+running 4 tests
+test m1_08_sidecar_soak_long ... ignored, long soak: OPENFRAME_SOAK_SECS=1800 cargo test -p openframe-ai --test soak_sidecar -- --ignored --nocapture m1_08_sidecar_soak_long
+test fake_llama_server_entry ... ok
+test m1_11_sleep_and_resume_during_the_download ... ok
+test m1_08_sidecar_crash_restart_and_cancel_loop ... ok
+
+test result: ok. 3 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 26.10s
+
+     Running tests\supervisor.rs (target\debug\deps\supervisor-257d4b28bbf6f83b.exe)
+
+running 8 tests
+test llama_server_launch_is_loopback_only_and_key_is_not_on_the_command_line ... ok
+test fake_llama_server_entry ... ok
+test embedding_server_launch_is_loopback_only_processor_only_and_keyed_by_environment ... ok
+test m1_10_sidecar_start_retries_on_a_new_port_when_the_picked_port_is_taken ... ok
+test supervisor_starts_serves_restarts_after_crash_and_stops ... ok
+test idle_model_is_unloaded_and_reloads_on_the_next_request ... ok
+test runtime_that_cannot_start_fails_cleanly_without_restart_loops ... ok
+test m1_10_sidecar_port_retries_are_bounded_and_reset_on_an_explicit_start ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.40s
+
+     Running unittests src\lib.rs (target\debug\deps\openframe_application-ea655e6657bc1a40.exe)
+
+running 732 tests
+test modules::ai::catalog::kit::tests::dates_parse_strictly ... ok
+test modules::ai::catalog::schedule::tests::times_and_money_format ... ok
+test modules::ai::catalog::tests::cue_rename_keeps_extensions ... ok
+test modules::ai::catalog::screenplay::tests::replace_counts_respect_case_and_words ... ok
+test modules::ai::intelligence::documents::tests::element_changes_invalidate_their_scene_via_row_images ... ok
+test modules::ai::catalog::tests::raw_mentions_count_whole_words_only ... ok
+test modules::ai::intelligence::documents::tests::every_kind_has_a_listing ... ok
+test modules::ai::intelligence::documents::tests::keys_round_trip_and_unknown_kinds_are_refused ... ok
+test modules::ai::intelligence::retriever::tests::exact_name_matching_is_whole_word ... ok
+test modules::ai::intelligence::retriever::tests::terms_drop_question_words_and_fts_query_is_injection_safe ... ok
+test modules::ai::intelligence::retriever::tests::relation_priorities_follow_the_question ... ok
+test modules::ai::intelligence::router::tests::routing_is_stable ... ok
+test modules::ai::knowledge::tests::guide_has_sections_and_retrieves_by_topic ... ok
+test modules::ai::intelligence::router::tests::spec_examples_route_deterministically ... ok
+test modules::ai::export_bindings_aihistoryargs ... ok
+test core::export_bindings_recoveryoffer ... ok
+test events::export_bindings_storekind ... ok
+test modules::ai::change_set::export_bindings_acceptargs ... ok
+test modules::ai::orchestrator::tests::background_tasks_are_reported_by_long_running_tools ... ok
+test modules::ai::orchestrator::tests::composed_answers_keep_exact_results_and_mark_written_text_inferred ... ok
+test events::export_bindings_savestatus ... ok
+test modules::ai::orchestrator::tests::observations_are_bounded_and_older_ones_shortened ... ok
+test modules::ai::orchestrator::tests::untrusted_text_cannot_close_the_data_block ... ok
+test modules::ai::queries::tests::cues_normalize ... ok
+test modules::ai::orchestrator::tests::step_schema_offers_only_known_tools_and_final_answer ... ok
+test modules::ai::queries::tests::headings_parse ... ok
+test modules::ai::queries::tests::lists_join_naturally ... ok
+test modules::ai::offline::export_bindings_aicancelinstallargs ... ok
+test modules::ai::offline::export_bindings_aicomponentdto ... ok
+test modules::ai::offline::export_bindings_aigpudto ... ok
+test modules::ai::export_bindings_aichangesetargs ... ok
+test modules::ai::offline::export_bindings_aisetupinfodto ... ok
+test modules::ai::offline::export_bindings_aiinstallstarted ... ok
+test events::export_bindings_savestate ... ok
+test core::export_bindings_localprofile ... ok
+test modules::ai::offline::export_bindings_aiuninstallresult ... ok
+test modules::ai::toolbox::resolve::tests::exact_match_wins_over_partial ... ok
+test modules::ai::toolbox::resolve::tests::several_partial_matches_ask_one_question ... ok
+test modules::ai::toolbox::schema::tests::bounds_are_enforced ... ok
+test modules::ai::toolbox::schema::tests::builders_produce_bounded_schemas ... ok
+test modules::ai::export_bindings_aiemptyargs ... ok
+test modules::ai::toolbox::schema::tests::strict_objects_refuse_unknown_fields ... ok
+test events::export_bindings_taskprogress ... ok
+test modules::ai::retrieval::export_bindings_contextsource ... ok
+test modules::ai::retrieval::export_bindings_aiindexargs ... ok
+test modules::ai::retrieval::export_bindings_indexrebuildstarted ... ok
+test modules::ai::retrieval::export_bindings_indexstate ... ok
+test modules::ai::offline::export_bindings_aidiagnosticsdto ... ok
+test modules::ai::retrieval::export_bindings_retrievalroute ... ok
+test modules::ai::scope::export_bindings_selectionref ... ok
+test modules::ai::scope::export_bindings_aiscopekind ... ok
+test modules::ai::types::export_bindings_airesultstatus ... ok
+test modules::ai::types::export_bindings_aistepdto ... ok
+test modules::ai::types::export_bindings_confidence ... ok
+test modules::ai::types::export_bindings_navtarget ... ok
+test modules::ai::retrieval::export_bindings_indexstatusdto ... ok
+test modules::ai::types::export_bindings_objref ... ok
+test modules::ai::scope::export_bindings_aiscopeargs ... ok
+test modules::ai::types::export_bindings_operationclass ... ok
+test modules::ai::types::export_bindings_previewrow ... ok
+test modules::ai::types::export_bindings_airesultkind ... ok
+test modules::ai::types::export_bindings_provenance ... ok
+test modules::ai::types::export_bindings_changesetdto ... ok
+test modules::ai::types::export_bindings_resultitem ... ok
+test modules::ai::service::export_bindings_installprogress ... ok
+test modules::ai::offline::export_bindings_aistatusdto ... ok
+test modules::comments::export_bindings_commenttextanchor ... ok
+test modules::comments::export_bindings_commentanchorinput ... ok
+test modules::comments::tests::identifiers_are_strict ... ok
+test modules::comments::tests::utf16_offsets_follow_the_editor ... ok
+test modules::comments::export_bindings_commentcreateargs ... ok
+test modules::comments::export_bindings_commentreplyargs ... ok
+test modules::comments::export_bindings_commentdto ... ok
+test modules::comments::export_bindings_commentidargs ... ok
+test modules::comments::export_bindings_commentlistargs ... ok
+test modules::ai::orchestrator::export_bindings_askargs ... ok
+test modules::diagnostics::tests::shapes_accept_identifiers_and_refuse_text ... ok
+test modules::diagnostics::tests::unknown_messages_and_panic_text_are_dropped ... ok
+test modules::comments::export_bindings_createprivatenoteargs ... ok
+test modules::comments::export_bindings_listprivatenotesargs ... ok
+test modules::diagnostics::tests::scrub_removes_folders_in_every_spelling ... ok
+test modules::comments::export_bindings_privatenoteidargs ... ok
+test modules::comments::export_bindings_commentupdateargs ... ok
+test modules::comments::export_bindings_privatenotedto ... ok
+test modules::comments::export_bindings_updateprivatenoteargs ... ok
+test modules::diagnostics::export_bindings_diagnosticsexportargs ... ok
+test modules::diagnostics::export_bindings_diagnosticsexportresult ... ok
+test modules::diagnostics::export_bindings_diagnosticsfile ... ok
+test modules::diagnostics::export_bindings_diagnosticspreviewargs ... ok
+test modules::comments::export_bindings_commentthread ... ok
+test modules::ai::export_bindings_aihistorydto ... ok
+test modules::exports::tests::formats_are_limited_to_the_offered_ones ... ok
+test modules::exports::tests::money_groups_like_the_budget_view ... ok
+test modules::entitlement::export_bindings_entitlementstatusargs ... ok
+test modules::entitlement::export_bindings_restorepurchaseargs ... ok
+test modules::exports::breakdown::export_bindings_exportbreakdownargs ... ok
+test modules::exports::budget::export_bindings_exportbudgetargs ... ok
+test modules::exports::callsheet::export_bindings_exportcallsheetargs ... ok
+test modules::exports::export_bindings_exportresult ... ok
+test modules::exports::reports::export_bindings_exportreportargs ... ok
+test modules::exports::schedule::export_bindings_exportscheduleargs ... ok
+test modules::exports::sides::export_bindings_exportsidesargs ... ok
+test modules::exports::story::export_bindings_exportstoryoutlineargs ... ok
+test modules::diagnostics::export_bindings_diagnosticspreview ... ok
+test modules::exports::visual::export_bindings_exportmoodboardargs ... ok
+test modules::exports::visual::export_bindings_exportstoryboardsheetargs ... ok
+test modules::exports::visual::export_bindings_exportshotlistargs ... ok
+test modules::files::export_bindings_addfilesargs ... ok
+test modules::files::export_bindings_exportcopyargs ... ok
+test modules::files::export_bindings_folderdto ... ok
+test events::export_bindings_appevent ... ok
+test modules::files::export_bindings_idargs ... ok
+test modules::files::export_bindings_listargs ... ok
+test modules::files::export_bindings_moveargs ... ok
+test modules::files::export_bindings_notesargs ... ok
+test modules::files::export_bindings_relinkargs ... ok
+test modules::files::export_bindings_renameargs ... ok
+test modules::entitlement::export_bindings_entitlementstatus ... ok
+test modules::files::export_bindings_assetargs ... ok
+test modules::files::export_bindings_folderargs ... ok
+test modules::files::export_bindings_projectfiledto ... ok
+test modules::idea_vault::items::export_bindings_vaultfailedfile ... ok
+test modules::idea_vault::items::export_bindings_vaultidsargs ... ok
+test modules::history::export_bindings_activityargs ... ok
+test modules::idea_vault::items::export_bindings_vaultitemidargs ... ok
+test modules::idea_vault::items::tests::tags_are_cleaned_and_deduplicated ... ok
+test modules::idea_vault::items::tests::urls_are_normalised_and_unsafe_schemes_refused ... ok
+test modules::history::export_bindings_stepresult ... ok
+test modules::history::export_bindings_storeargs ... ok
+test modules::files::export_bindings_fileslisting ... ok
+test modules::history::export_bindings_trashitemargs ... ok
+test modules::idea_vault::items::export_bindings_vaultrelinkargs ... ok
+test modules::idea_vault::items::export_bindings_vaultaddfilesargs ... ok
+test modules::idea_vault::items::export_bindings_vaultcreateargs ... ok
+test modules::idea_vault::items::export_bindings_vaulttagsargs ... ok
+test modules::idea_vault::items::export_bindings_vaultupdateargs ... ok
+test modules::idea_vault::model::tests::durations ... ok
+test modules::idea_vault::model::tests::file_types_are_detected_without_asking ... ok
+test modules::idea_vault::model::export_bindings_vaultcollectiondto ... ok
+test modules::idea_vault::items::export_bindings_vaultmembershipargs ... ok
+test modules::idea_vault::model::tests::generated_names_come_from_content_and_titles_win ... ok
+test modules::idea_vault::model::export_bindings_vaultfolderdto ... ok
+test modules::idea_vault::organize::export_bindings_vaultcreatecollectionargs ... ok
+test modules::idea_vault::model::export_bindings_vaulttagcount ... ok
+test modules::idea_vault::search::tests::prefix_word_matching ... ok
+test modules::idea_vault::items::export_bindings_vaultremovetagargs ... ok
+test modules::idea_vault::items::export_bindings_vaultsetpinnedargs ... ok
+test modules::idea_vault::items::export_bindings_vaultingestbytesargs ... ok
+test modules::idea_vault::model::export_bindings_vaultoverviewargs ... ok
+test modules::idea_vault::model::export_bindings_vaultview ... ok
+test modules::idea_vault::items::export_bindings_vaultmoveargs ... ok
+test modules::idea_vault::model::export_bindings_vaultgetargs ... ok
+test modules::idea_vault::organize::export_bindings_vaultstoreidargs ... ok
+test modules::idea_vault::items::export_bindings_vaultaddfilesresult ... ok
+test modules::ai::types::export_bindings_aiexchange ... ok
+test modules::idea_vault::transfer::tests::clip_keeps_short_text ... ok
+test modules::idea_vault::transfer::export_bindings_vaultcopyresult ... ok
+test modules::idea_vault::transfer::export_bindings_vaultstoryact ... ok
+test modules::idea_vault::transfer::export_bindings_vaultstorysequence ... ok
+test modules::idea_vault::organize::export_bindings_vaultrenamecollectionargs ... ok
+test modules::idea_vault::trash::export_bindings_vaulttrashitemargs ... ok
+test modules::idea_vault::organize::export_bindings_vaultcreatefolderargs ... ok
+test modules::interchange::draft::tests::dual_flag_on_second_speaker_widens_to_block ... ok
+test modules::idea_vault::transfer::export_bindings_vaultstorytarget ... ok
+test modules::idea_vault::organize::export_bindings_vaultrenamefolderargs ... ok
+test modules::ai::types::export_bindings_airesultdto ... ok
+test modules::idea_vault::model::export_bindings_vaultlistargs ... ok
+test modules::idea_vault::model::export_bindings_vaultoverview ... ok
+test modules::idea_vault::transfer::export_bindings_vaultstorytargetsargs ... ok
+test modules::idea_vault::transfer::export_bindings_vaultcopyargs ... ok
+test modules::idea_vault::trash::export_bindings_vaultrestoreresult ... ok
+test modules::interchange::export::export_bindings_interchangedraftscenesargs ... ok
+test modules::idea_vault::model::export_bindings_vaultitemdto ... ok
+test modules::interchange::export::export_bindings_interchangescreenplayexportoptions ... ok
+test modules::interchange::export::export_bindings_interchangeexportscenedto ... ok
+test modules::interchange::export::export_bindings_interchangescreenplayexportargs ... ok
+test modules::interchange::export::export_bindings_interchangeprintline ... ok
+test modules::idea_vault::transfer::export_bindings_vaultstorytargets ... ok
+test modules::interchange::export::export_bindings_interchangesourcedraft ... ok
+test modules::idea_vault::trash::export_bindings_vaulttrashargs ... ok
+test modules::idea_vault::transfer::export_bindings_vaultsendtostoryresult ... ok
+test modules::idea_vault::trash::export_bindings_vaulttrashrow ... ok
+test modules::interchange::export::export_bindings_interchangeexportpreviewargs ... ok
+test modules::interchange::export_bindings_interchangewarning ... ok
+test modules::interchange::import::export_bindings_interchangeimportapplyargs ... ok
+test modules::interchange::export::export_bindings_interchangescreenplayexportresult ... ok
+test modules::interchange::export::export_bindings_interchangeprintpage ... ok
+test modules::interchange::import::export_bindings_interchangeimportpreviewscene ... ok
+test modules::interchange::import::export_bindings_interchangeimportreport ... ok
+test modules::interchange::import::export_bindings_interchangeimporttargetepisode ... ok
+test modules::interchange::import::export_bindings_interchangeimporttargetscreenplay ... ok
+test modules::notes::project_notes::export_bindings_createnoteargs ... ok
+test modules::interchange::export::export_bindings_interchangesourcesargs ... ok
+test modules::interchange::export::export_bindings_interchangesources ... ok
+test modules::interchange::export::export_bindings_interchangesourcescreenplay ... ok
+test modules::idea_vault::transfer::export_bindings_vaultsendtostoryargs ... ok
+test modules::notes::project_notes::export_bindings_notedto ... ok
+test modules::notes::project_notes::export_bindings_noteidargs ... ok
+test modules::notes::project_notes::export_bindings_notelistargs ... ok
+test modules::notes::project_notes::export_bindings_setnotepinnedargs ... ok
+test modules::interchange::import::export_bindings_interchangeimportpreviewargs ... ok
+test modules::notes::project_notes::export_bindings_updatenoteargs ... ok
+test modules::notes::tasks::export_bindings_relatabletype ... ok
+test modules::notes::tasks::export_bindings_relatabletypesargs ... ok
+test modules::notes::tasks::export_bindings_relatedobject ... ok
+test modules::notes::tasks::export_bindings_relatedref ... ok
+test modules::notes::tasks::export_bindings_settaskdoneargs ... ok
+test modules::notes::tasks::export_bindings_taskrefargs ... ok
+test modules::notes::tasks::export_bindings_tasklistargs ... ok
+test modules::notes::templates::export_bindings_templatelistargs ... ok
+test modules::interchange::export::export_bindings_interchangeprintpreview ... ok
+test modules::notes::templates::export_bindings_templatescope ... ok
+test modules::notes::tasks::export_bindings_createtaskargs ... ok
+test modules::packages::backup::export_bindings_backupcreateargs ... ok
+test modules::packages::backup::export_bindings_backupfileentry ... ok
+test modules::notes::tasks::export_bindings_taskdto ... ok
+test modules::packages::backup::export_bindings_packagecollision ... ok
+test modules::notes::tasks::export_bindings_updatetaskargs ... ok
+test modules::notes::templates::export_bindings_copytemplateargs ... ok
+test modules::notes::templates::export_bindings_createtemplateargs ... ok
+test modules::notes::templates::export_bindings_templatedto ... ok
+test modules::notes::templates::export_bindings_templaterefargs ... ok
+test modules::interchange::import::export_bindings_interchangeimportpreview ... ok
+test modules::packages::backup::export_bindings_packageopenmode ... ok
+test modules::notes::templates::export_bindings_templateslisting ... ok
+test modules::packages::exchange::export_bindings_packagedraftoption ... ok
+test modules::packages::backup::export_bindings_backuppreview ... ok
+test modules::packages::backup::export_bindings_backupreport ... ok
+test modules::packages::exchange::export_bindings_packageoption ... ok
+test modules::packages::exchange::export_bindings_packagesceneoption ... ok
+test modules::packages::backup::export_bindings_packageimportprojectargs ... ok
+test modules::packages::backup::export_bindings_packagepathargs ... ok
+test modules::packages::exchange::export_bindings_packagescenesargs ... ok
+test modules::packages::export_bindings_packagecount ... ok
+test modules::notes::templates::export_bindings_updatetemplateargs ... ok
+test modules::packages::format::tests::manifest_checks ... ok
+test modules::packages::export_bindings_packagetaskstarted ... ok
+test modules::packages::export_bindings_packageemptyargs ... ok
+test modules::packages::format::export_bindings_packageref ... ok
+test modules::packages::format::export_bindings_packagescope ... ok
+test modules::packages::exchange::export_bindings_packageexchangesources ... ok
+test modules::packages::exchange::export_bindings_packageexportsummary ... ok
+test modules::packages::format::export_bindings_packagesourcedraft ... ok
+test modules::packages::format::export_bindings_packagesourceversion ... ok
+test modules::packages::format::export_bindings_packagetype ... ok
+test modules::packages::format::export_bindings_packageuser ... ok
+test modules::packages::import::export_bindings_packageapplymode ... ok
+test modules::packages::import::export_bindings_packagechangegroup ... ok
+test modules::packages::import::export_bindings_packagechangekind ... ok
+test modules::packages::import::export_bindings_packagechangestate ... ok
+test modules::packages::import::export_bindings_packagechoice ... ok
+test modules::packages::import::export_bindings_packageimportresult ... ok
+test modules::packages::import::export_bindings_packagelistargs ... ok
+test modules::packages::import::export_bindings_packagelogentry ... ok
+test modules::packages::import::export_bindings_packagequeueattachargs ... ok
+test modules::packages::import::export_bindings_packageapplyargs ... ok
+test modules::packages::import::export_bindings_packagequeueitem ... ok
+test modules::packages::backup::export_bindings_packageprojectimportreport ... ok
+test modules::packages::exchange::export_bindings_packageexchangeargs ... ok
+test modules::packages::import::export_bindings_packagerecordargs ... ok
+test modules::packages::import::export_bindings_packagesessionargs ... ok
+test modules::packages::review::export_bindings_packageresponseexported ... ok
+test modules::packages::review::export_bindings_packagereviewargs ... ok
+test modules::packages::review::export_bindings_packagereviewcomment ... ok
+test modules::packages::import::export_bindings_packageimportsession ... ok
+test modules::packages::review::export_bindings_packagereviewcommentargs ... ok
+test modules::packages::review::export_bindings_packagereviewcommentidargs ... ok
+test modules::packages::import::export_bindings_packagechange ... ok
+test modules::packages::review::export_bindings_packagereviewelement ... ok
+test modules::packages::backup::export_bindings_packageinspection ... ok
+test modules::packages::format::export_bindings_packagemanifest ... ok
+test modules::packages::review::export_bindings_packagereviewexportargs ... ok
+test modules::packages::exchange::export_bindings_packageexportresult ... ok
+test modules::packages::review::export_bindings_packagereviewsummary ... ok
+test modules::packages::import::export_bindings_packagerecordsummary ... ok
+test modules::packages::import::export_bindings_packagesessionsummary ... ok
+test modules::production::breakdown::export_bindings_breakdownacceptmanyresult ... ok
+test modules::production::breakdown::export_bindings_breakdownarchiveargs ... ok
+test modules::production::breakdown::export_bindings_breakdowncompleteargs ... ok
+test modules::production::breakdown::export_bindings_breakdowncountresult ... ok
+test modules::production::breakdown::export_bindings_breakdownidargs ... ok
+test modules::packages::review::export_bindings_packagereviewscene ... ok
+test modules::production::breakdown::export_bindings_breakdownidsargs ... ok
+test modules::production::breakdown::export_bindings_breakdownsceneargs ... ok
+test modules::production::breakdown::export_bindings_breakdownscenerow ... ok
+test modules::production::breakdown::export_bindings_breakdownscenesargs ... ok
+test modules::production::breakdown::export_bindings_breakdowncandidatedto ... ok
+test modules::production::breakdown::export_bindings_breakdownscriptline ... ok
+test modules::production::breakdown::export_bindings_breakdownhistoricalscene ... ok
+test modules::production::breakdown::export_bindings_breakdownsuggestresult ... ok
+test modules::production::breakdown::export_bindings_breakdownupdateargs ... ok
+test modules::packages::review::export_bindings_packagereviewworkspace ... ok
+test modules::production::breakdown::export_bindings_breakdownacceptargs ... ok
+test modules::production::catalog::export_bindings_breakdownchoicemode ... ok
+test modules::production::catalog::export_bindings_catalogaliasargs ... ok
+test modules::production::breakdown::export_bindings_breakdowncategorygroup ... ok
+test modules::production::catalog::export_bindings_catalogaliasdto ... ok
+test modules::production::breakdown::export_bindings_breakdownspan ... ok
+test modules::production::catalog::export_bindings_catalogidargs ... ok
+test modules::production::catalog::export_bindings_breakdowncatalogchoice ... ok
+test modules::production::breakdown::export_bindings_breakdownaddargs ... ok
+test modules::production::catalog::tests::similarity_rules ... ok
+test modules::production::catalog::export_bindings_cataloglistargs ... ok
+test modules::production::catalog::export_bindings_catalogmatchargs ... ok
+test modules::production::catalog::export_bindings_catalogimageargs ... ok
+test modules::production::catalog::export_bindings_catalogmatchdto ... ok
+test modules::production::catalog::export_bindings_catalogreplaceargs ... ok
+test modules::production::catalog::export_bindings_catalogarchiveargs ... ok
+test modules::production::catalog::export_bindings_catalogreplaceresult ... ok
+test modules::production::breakdown::export_bindings_breakdownscenesview ... ok
+test modules::production::catalog::export_bindings_catalogstatus ... ok
+test modules::production::catalog::export_bindings_catalogcreateargs ... ok
+test modules::production::breakdown::export_bindings_breakdownscenechanges ... ok
+test modules::production::breakdown::export_bindings_breakdownelementdto ... ok
+test modules::production::export_bindings_productionsceneref ... ok
+test modules::production::locations::export_bindings_productionlocationarchiveargs ... ok
+test modules::production::locations::export_bindings_productionlocationidargs ... ok
+test modules::production::locations::export_bindings_productionlocationnotes ... ok
+test modules::production::locations::export_bindings_productionlocationphotodto ... ok
+test modules::production::locations::export_bindings_productionlocationrefdto ... ok
+test modules::production::locations::export_bindings_productionlocationreplaceargs ... ok
+test modules::production::locations::export_bindings_productionlocationphotomoveargs ... ok
+test modules::production::locations::export_bindings_productionlocationreplaceresult ... ok
+test modules::production::locations::export_bindings_productionlocationphotosargs ... ok
+test modules::production::locations::export_bindings_productionlocationstatus ... ok
+test modules::production::catalog::export_bindings_catalogupdateargs ... ok
+test modules::production::locations::export_bindings_productionlocationcreateargs ... ok
+test modules::production::locations::export_bindings_productionlocationupdateargs ... ok
+test modules::production::people::export_bindings_productioncastassignargs ... ok
+test modules::production::locations::export_bindings_productionlocationlistargs ... ok
+test modules::production::people::export_bindings_productioncastcreateargs ... ok
+test modules::production::script::tests::cue_names_drop_extensions ... ok
+test modules::production::script::tests::scene_encoding_round_trips ... ok
+test modules::production::people::export_bindings_productioncastdirectory ... ok
+test modules::production::people::export_bindings_productioncastphotoargs ... ok
+test modules::production::people::export_bindings_productioncastupdateargs ... ok
+test modules::production::people::export_bindings_productioncrewcreateargs ... ok
+test modules::production::people::export_bindings_productioncrewmemberdto ... ok
+test modules::production::people::export_bindings_productioncrewupdateargs ... ok
+test modules::production::locations::export_bindings_productionlocationstatusargs ... ok
+test modules::production::locations::export_bindings_productionlocationdto ... ok
+test modules::production::people::export_bindings_productionpeoplearchiveargs ... ok
+test modules::production::source::tests::lcs_finds_stable_order ... ok
+test modules::production::people::export_bindings_productionpeopleidargs ... ok
+test modules::production::suggest::tests::headings_parse_into_facts ... ok
+test modules::production::suggest::tests::keys_normalize_case_plural_and_articles ... ok
+test modules::production::suggest::tests::known_character_mentioned_only_in_action ... ok
+test modules::production::people::export_bindings_productionpeoplelistargs ... ok
+test modules::production::script::export_bindings_productiondraftinfo ... ok
+test modules::production::people::export_bindings_productioncastcharacterdto ... ok
+test modules::production::suggest::tests::plurals_and_word_boundaries ... ok
+test modules::production::breakdown::export_bindings_breakdownscenedetail ... ok
+test modules::production::source::export_bindings_productiondraftargs ... ok
+test modules::production::source::export_bindings_productionemptyargs ... ok
+test modules::production::source::export_bindings_productionoverview ... ok
+test modules::production::suggest::tests::the_example_scene_yields_the_expected_suggestions ... ok
+test modules::production::source::export_bindings_productionscenechange ... ok
+test modules::production::source::export_bindings_productionsetsourceargs ... ok
+test modules::production::source::export_bindings_productionsourceinfo ... ok
+test modules::production::suggest::export_bindings_breakdownscenefacts ... ok
+test modules::production::source::export_bindings_productionupdateresult ... ok
+test modules::production::catalog::export_bindings_catalogitemdto ... ok
+test modules::project::export_bindings_activityentry ... ok
+test modules::project::export_bindings_deleteditemview ... ok
+test modules::project::export_bindings_displaynameargs ... ok
+test modules::project::export_bindings_empty ... ok
+test modules::project::export_bindings_homecount ... ok
+test modules::project::export_bindings_listrecentargs ... ok
+test modules::project::export_bindings_locateargs ... ok
+test modules::project::export_bindings_member ... ok
+test modules::project::export_bindings_openprojectargs ... ok
+test modules::production::source::export_bindings_productionsourceoptions ... ok
+test modules::project::export_bindings_projectidargs ... ok
+test modules::project::export_bindings_createprojectargs ... ok
+test modules::production::people::export_bindings_productioncastmemberdto ... ok
+test modules::project::export_bindings_openprojectresult ... ok
+test modules::project::export_bindings_recentproject ... ok
+test modules::project::export_bindings_recoveryargs ... ok
+test modules::project::export_bindings_renameprojectargs ... ok
+test modules::project::export_bindings_setarchivedargs ... ok
+test modules::project::export_bindings_setlocationargs ... ok
+test modules::production::source::export_bindings_productionupdatepreview ... ok
+test modules::project::export_bindings_setpinnedargs ... ok
+test modules::project::export_bindings_taskidargs ... ok
+test modules::project::export_bindings_appinfo ... ok
+test modules::project::export_bindings_projectsummary ... ok
+test modules::project::export_bindings_updatesettingsargs ... ok
+test modules::schedule::board::export_bindings_callsheetbrief ... ok
+test modules::schedule::board::export_bindings_callsheetsourcebreak ... ok
+test modules::schedule::board::export_bindings_callsheetsourcecast ... ok
+test modules::project::export_bindings_recoverystate ... ok
+test modules::schedule::board::export_bindings_callsheetsourcelocation ... ok
+test modules::schedule::board::export_bindings_callsheetsourcescene ... ok
+test modules::schedule::board::export_bindings_schedulemarkerdto ... ok
+test modules::packages::format::tests::package_round_trip_and_cancel_leaves_nothing ... ok
+test modules::schedule::board::export_bindings_scheduleshootdayitemdto ... ok
+test modules::schedule::board::export_bindings_schedulewarningdto ... ok
+test modules::schedule::budget::export_bindings_budgetcategorytotal ... ok
+test modules::schedule::budget::export_bindings_budgetcreateargs ... ok
+test modules::schedule::budget::export_bindings_budgetgetargs ... ok
+test modules::schedule::budget::export_bindings_budgetidargs ... ok
+test modules::schedule::budget::export_bindings_budgetlineaddargs ... ok
+test modules::schedule::board::export_bindings_scheduledto ... ok
+test modules::schedule::budget::export_bindings_budgetlinedto ... ok
+test modules::project::export_bindings_setstatusargs ... ok
+test modules::project::export_bindings_projectsettings ... ok
+test modules::schedule::budget::export_bindings_budgetlineupdateargs ... ok
+test modules::schedule::board::export_bindings_callsheetsource ... ok
+test modules::schedule::budget::export_bindings_budgetsnapshotargs ... ok
+test modules::schedule::budget::export_bindings_budgetsnapshotrow ... ok
+test modules::schedule::budget::export_bindings_budgetupdateargs ... ok
+test modules::schedule::callsheet::export_bindings_callsheetattachargs ... ok
+test modules::schedule::callsheet::export_bindings_callsheetattachment ... ok
+test modules::schedule::callsheet::export_bindings_callsheetcreateargs ... ok
+test modules::schedule::callsheet::export_bindings_callsheetdoccast ... ok
+test modules::project::export_bindings_projecthome ... ok
+test modules::schedule::board::export_bindings_scheduleshootdaysummary ... ok
+test modules::schedule::callsheet::export_bindings_callsheetdocscene ... ok
+test modules::schedule::callsheet::export_bindings_callsheetdoclocation ... ok
+test modules::schedule::callsheet::export_bindings_callsheetextrafield ... ok
+test modules::schedule::callsheet::export_bindings_callsheetfinalizeargs ... ok
+test modules::schedule::callsheet::tests::merge_keeps_call_times_and_follows_schedule ... ok
+test modules::schedule::callsheet::export_bindings_callsheetidargs ... ok
+test modules::schedule::callsheet::export_bindings_callsheetlistargs ... ok
+test modules::schedule::budget::export_bindings_budgetdto ... ok
+test modules::schedule::callsheet::export_bindings_callsheetlistrow ... ok
+test modules::schedule::callsheet::export_bindings_callsheetpractical ... ok
+test modules::schedule::callsheet::export_bindings_callsheetreadyargs ... ok
+test modules::schedule::callsheet::export_bindings_callsheetrefreshpreview ... ok
+test modules::schedule::callsheet::export_bindings_callsheetrevisionref ... ok
+test modules::schedule::callsheet::export_bindings_callsheetstale ... ok
+test modules::schedule::callsheet::export_bindings_callsheetupdateargs ... ok
+test modules::schedule::docs::export_bindings_reportargs ... ok
+test modules::schedule::docs::export_bindings_reportdata ... ok
+test modules::schedule::docs::export_bindings_reportsavedrow ... ok
+test modules::schedule::docs::export_bindings_scheduledocidargs ... ok
+test modules::schedule::callsheet::export_bindings_callsheetoptional ... ok
+test modules::schedule::fmt::tests::formats ... ok
+test modules::schedule::docs::export_bindings_scheduledoclistargs ... ok
+test modules::schedule::board::export_bindings_schedulestripdto ... ok
+test modules::schedule::board::export_bindings_scheduleshootdaydto ... ok
+test modules::schedule::docs::export_bindings_schedulesiderow ... ok
+test modules::schedule::docs::export_bindings_schedulesidesargs ... ok
+test modules::schedule::docs::export_bindings_schedulesidescontent ... ok
+test modules::schedule::docs::export_bindings_reportsaved ... ok
+test modules::schedule::docs::export_bindings_schedulesidesscene ... ok
+test modules::schedule::ops::export_bindings_schedulecounts ... ok
+test modules::schedule::ops::export_bindings_schedulecreateargs ... ok
+test modules::schedule::ops::export_bindings_scheduledailyargs ... ok
+test modules::schedule::ops::export_bindings_scheduledailycast ... ok
+test modules::schedule::callsheet::export_bindings_callsheetrefreshrow ... ok
+test modules::schedule::ops::export_bindings_scheduledailydayoption ... ok
+test modules::schedule::ops::export_bindings_scheduledailyview ... ok
+test modules::schedule::docs::export_bindings_schedulesidescovercast ... ok
+test modules::schedule::docs::export_bindings_schedulesideselement ... ok
+test modules::schedule::ops::export_bindings_schedulegetargs ... ok
+test modules::schedule::ops::export_bindings_schedulegroupingsuggestion ... ok
+test modules::schedule::ops::export_bindings_schedulegroupingsuggestions ... ok
+test modules::schedule::ops::export_bindings_scheduleidargs ... ok
+test modules::schedule::callsheet::export_bindings_callsheetdetail ... ok
+test modules::schedule::ops::export_bindings_schedulemarkeraddargs ... ok
+test modules::schedule::ops::export_bindings_schedulemarkeridargs ... ok
+test modules::schedule::ops::export_bindings_schedulemarkermoveargs ... ok
+test modules::schedule::ops::export_bindings_scheduledailyday ... ok
+test modules::schedule::docs::export_bindings_schedulesidedetail ... ok
+test modules::schedule::callsheet::export_bindings_callsheetdocument ... ok
+test modules::schedule::ops::export_bindings_schedulemarkerupdateargs ... ok
+test modules::schedule::docs::export_bindings_schedulesidescover ... ok
+test modules::schedule::ops::export_bindings_schedulereconcileresult ... ok
+test modules::schedule::budget::export_bindings_budgetview ... ok
+test modules::schedule::ops::export_bindings_schedulescriptchangerow ... ok
+test modules::schedule::ops::export_bindings_schedulesettingsargs ... ok
+test modules::schedule::ops::export_bindings_scheduleshootdateargs ... ok
+test modules::schedule::ops::export_bindings_scheduleshootdaycreateargs ... ok
+test modules::schedule::ops::export_bindings_scheduleshootdayidargs ... ok
+test modules::schedule::source::tests::initials_are_short_and_upper ... ok
+test modules::schedule::source::tests::page_estimate_uses_55_lines_per_page ... ok
+test modules::schedule::source::tests::parses_common_headings ... ok
+test modules::schedule::ops::export_bindings_scheduleshootdaymoveargs ... ok
+test modules::schedule::ops::export_bindings_scheduleshootdaynotesargs ... ok
+test modules::schedule::ops::export_bindings_scheduleshootdaytargetargs ... ok
+test modules::schedule::ops::export_bindings_scheduleshootoffdayargs ... ok
+test modules::schedule::ops::export_bindings_schedulestripestimateargs ... ok
+test modules::schedule::ops::export_bindings_schedulestripidargs ... ok
+test modules::schedule::ops::export_bindings_schedulestatusargs ... ok
+test modules::screenplay::characters::tests::cues_normalize ... ok
+test modules::schedule::ops::export_bindings_schedulestripmoveargs ... ok
+test modules::schedule::ops::export_bindings_schedulestrippagesargs ... ok
+test modules::schedule::ops::export_bindings_schedulestripsmoveargs ... ok
+test modules::schedule::ops::export_bindings_schedulewarningdecisionargs ... ok
+test modules::schedule::source::export_bindings_schedulecastref ... ok
+test modules::schedule::source::export_bindings_scheduleitemref ... ok
+test modules::schedule::source::export_bindings_schedulelocref ... ok
+test modules::schedule::source::export_bindings_schedulesourceinfo ... ok
+test modules::schedule::ops::export_bindings_schedulescriptchanges ... ok
+test modules::screenplay::characters::export_bindings_screenplaycharacterref ... ok
+test modules::screenplay::characters::export_bindings_screenplaycharactersargs ... ok
+test modules::screenplay::characters::export_bindings_screenplayclearcharacterlinkargs ... ok
+test modules::screenplay::compare::tests::categories ... ok
+test modules::screenplay::compare::tests::heading_fallback_and_ambiguity ... ok
+test modules::screenplay::compare::tests::lis_finds_stable_order ... ok
+test modules::screenplay::characters::export_bindings_screenplaysceneref ... ok
+test modules::screenplay::characters::export_bindings_screenplaysetcharacterlinkargs ... ok
+test modules::screenplay::compare::export_bindings_screenplaycompareargs ... ok
+test modules::screenplay::compare::export_bindings_screenplaycomparesummary ... ok
+test modules::screenplay::compare::export_bindings_screenplaydiffsegment ... ok
+test modules::screenplay::compare::export_bindings_screenplaydiffsegmentkind ... ok
+test modules::screenplay::compare::export_bindings_screenplayrevisionchangesargs ... ok
+test modules::screenplay::compare::export_bindings_screenplayscenechangekind ... ok
+test modules::screenplay::compare::export_bindings_screenplayscenechange ... ok
+test modules::screenplay::drafts::export_bindings_screenplaydraftargs ... ok
+test modules::screenplay::drafts::tests::history_interval ... ok
+test modules::screenplay::drafts::tests::revision_colours ... ok
+test modules::screenplay::drafts::export_bindings_screenplayhistorypoint ... ok
+test modules::screenplay::drafts::export_bindings_screenplayhistorypointargs ... ok
+test modules::screenplay::compare::export_bindings_screenplaydiffrowkind ... ok
+test modules::screenplay::drafts::export_bindings_screenplaynewdraftargs ... ok
+test modules::screenplay::drafts::export_bindings_screenplayrenamedraftargs ... ok
+test modules::screenplay::characters::export_bindings_screenplaycharactercueusage ... ok
+test modules::screenplay::compare::export_bindings_screenplaysceneside ... ok
+test modules::screenplay::drafts::export_bindings_screenplaystartrevisionargs ... ok
+test modules::screenplay::drafts::export_bindings_createscreenplayargs ... ok
+test modules::screenplay::drafts::export_bindings_screenplayupdaterevisionargs ... ok
+test modules::screenplay::edit::export_bindings_screenplaycreatesceneargs ... ok
+test modules::screenplay::compare::export_bindings_screenplaydiffline ... ok
+test modules::screenplay::edit::export_bindings_screenplayeditresult ... ok
+test modules::screenplay::edit::export_bindings_screenplayelementidargs ... ok
+test modules::screenplay::edit::tests::element_validation ... ok
+test modules::screenplay::edit::tests::find_respects_case_and_whole_words ... ok
+test modules::screenplay::edit::tests::typing_batches_coalesce_per_element ... ok
+test modules::screenplay::drafts::export_bindings_screenplaylocksummary ... ok
+test modules::screenplay::characters::export_bindings_screenplaycharacterreport ... ok
+test modules::screenplay::edit::export_bindings_screenplaymoveelementargs ... ok
+test modules::screenplay::edit::export_bindings_screenplaymovesceneargs ... ok
+test modules::screenplay::edit::export_bindings_screenplayreplaceallargs ... ok
+test modules::screenplay::edit::export_bindings_screenplayreplaceresult ... ok
+test modules::screenplay::edit::export_bindings_screenplaysceneidargs ... ok
+test modules::screenplay::edit::export_bindings_screenplayapplyeditsargs ... ok
+test modules::screenplay::edit::export_bindings_screenplaysplitsceneargs ... ok
+test modules::screenplay::edit::export_bindings_screenplayeditop ... ok
+test modules::screenplay::edit::export_bindings_screenplayupdateelementargs ... ok
+test modules::screenplay::edit::export_bindings_screenplayupdatesceneargs ... ok
+test modules::screenplay::edit::export_bindings_screenplayinsertelementargs ... ok
+test modules::screenplay::export_bindings_screenplaydocument ... ok
+test modules::screenplay::export_bindings_screenplaydto ... ok
+test modules::screenplay::export_bindings_screenplayelementdto ... ok
+test modules::screenplay::drafts::export_bindings_createdscreenplay ... ok
+test modules::screenplay::export_bindings_screenplayepisoderef ... ok
+test modules::screenplay::extras::export_bindings_screenplaysceneargs ... ok
+test modules::schedule::ops::export_bindings_scheduleview ... ok
+test modules::screenplay::export_bindings_screenplaylocateargs ... ok
+test modules::screenplay::export_bindings_screenplaylocation ... ok
+test modules::screenplay::export_bindings_screenplayoverviewargs ... ok
+test modules::screenplay::export_bindings_screenplaypermissions ... ok
+test modules::screenplay::export_bindings_screenplaydraftidargs ... ok
+test modules::screenplay::export_bindings_screenplaydraftref ... ok
+test modules::screenplay::extras::export_bindings_screenplaycardref ... ok
+test modules::screenplay::review::tests::deadlines_are_real_dates ... ok
+test modules::screenplay::review::tests::reviewers_are_deduplicated ... ok
+test modules::screenplay::extras::export_bindings_screenplayscenehubrow ... ok
+test modules::screenplay::extras::export_bindings_screenplaysetviewstateargs ... ok
+test modules::screenplay::export_bindings_screenplaytitlepage ... ok
+test modules::search::tests::user_text_cannot_inject_fts_syntax ... ok
+test modules::screenplay::extras::export_bindings_screenplayviewstateargs ... ok
+test modules::screenplay::review::export_bindings_screenplayreviewrounddto ... ok
+test modules::screenplay::export_bindings_screenplayoverview ... ok
+test modules::story::board::export_bindings_storyattachargs ... ok
+test modules::screenplay::compare::export_bindings_screenplaydiffrow ... ok
+test modules::screenplay::review::export_bindings_screenplayreviewroundsargs ... ok
+test modules::screenplay::export_bindings_screenplaydraftdto ... ok
+test modules::screenplay::review::export_bindings_screenplaystartreviewargs ... ok
+test modules::screenplay::compare::export_bindings_screenplaycompareresult ... ok
+test modules::screenplay::review::export_bindings_screenplayupdatereviewargs ... ok
+test modules::screenplay::extras::export_bindings_screenplayscenehub ... ok
+test modules::search::export_bindings_rebuildargs ... ok
+test modules::search::export_bindings_searchargs ... ok
+test modules::screenplay::extras::export_bindings_screenplaystoryreference ... ok
+test modules::screenplay::extras::export_bindings_screenplaytitlepageargs ... ok
+test modules::screenplay::review::export_bindings_screenplayreviewroundidargs ... ok
+test modules::screenplay::export_bindings_screenplayscenedto ... ok
+test modules::story::board::export_bindings_storycollapseargs ... ok
+test modules::story::board::export_bindings_storycreateactargs ... ok
+test modules::story::board::export_bindings_storycreatedmany ... ok
+test modules::story::board::export_bindings_storycreatesequenceargs ... ok
+test modules::story::board::export_bindings_storydeleteactargs ... ok
+test modules::search::export_bindings_searchhit ... ok
+test modules::story::board::export_bindings_storyattachmentdto ... ok
+test modules::story::board::export_bindings_storylinkedscene ... ok
+test modules::story::board::export_bindings_storymoveactargs ... ok
+test modules::story::board::export_bindings_storydeletemode ... ok
+test modules::story::board::export_bindings_storyepisodechoiceargs ... ok
+test modules::story::board::export_bindings_storyactdto ... ok
+test modules::story::board::export_bindings_storyupdateactargs ... ok
+test modules::story::board::export_bindings_storyupdatebeatargs ... ok
+test modules::story::board::export_bindings_storycreatebeatargs ... ok
+test modules::story::board::export_bindings_storycreatecardargs ... ok
+test modules::story::board::export_bindings_storyscopeargs ... ok
+test modules::story::board::export_bindings_storyupdatecardargs ... ok
+test modules::story::board::export_bindings_storyupdatesequenceargs ... ok
+test modules::story::board::export_bindings_storybeatdto ... ok
+test modules::story::board::export_bindings_storyitemsargs ... ok
+test modules::story::board::export_bindings_storyitem ... ok
+test modules::story::board::export_bindings_storyviewstate ... ok
+test modules::story::build::export_bindings_storybuilddestination ... ok
+test modules::story::build::export_bindings_storybuildinclude ... ok
+test modules::story::build::tests::headings ... ok
+test modules::story::build::export_bindings_storybuildpreviewargs ... ok
+test modules::story::build::export_bindings_storybuildresult ... ok
+test modules::story::board::export_bindings_storyplacement ... ok
+test modules::story::build::export_bindings_storydescriptionmode ... ok
+test modules::story::build::export_bindings_storybuildrow ... ok
+test modules::story::build::export_bindings_storyorderargs ... ok
+test modules::story::build::export_bindings_storyscenemove ... ok
+test modules::story::build::export_bindings_storyscreenplayoption ... ok
+test modules::story::characters::export_bindings_storyarchiveargs ... ok
+test modules::story::board::export_bindings_storyscenecarddto ... ok
+test modules::story::characters::export_bindings_storycardlinkargs ... ok
+test modules::story::board::export_bindings_storycarddetail ... ok
+test modules::story::board::export_bindings_storyboardstate ... ok
+test modules::story::board::export_bindings_storydeletesequenceargs ... ok
+test modules::story::characters::export_bindings_storycharacterargs ... ok
+test modules::story::characters::tests::cues ... ok
+test modules::story::characters::export_bindings_storycharacterlistargs ... ok
+test modules::story::characters::export_bindings_storycharacterscene ... ok
+test modules::story::build::export_bindings_storyorderpreview ... ok
+test modules::story::build::export_bindings_storybuildargs ... ok
+test modules::story::board::export_bindings_storymoveargs ... ok
+test modules::story::characters::export_bindings_storycharacterusage ... ok
+test modules::story::characters::export_bindings_storycreatecharacterargs ... ok
+test modules::story::build::export_bindings_storybuildpreview ... ok
+test modules::story::characters::export_bindings_storycreaterelationshipargs ... ok
+test modules::story::characters::export_bindings_storyimageargs ... ok
+test modules::story::board::export_bindings_storysequencedto ... ok
+test modules::story::characters::export_bindings_storyrelationshipdto ... ok
+test modules::story::characters::export_bindings_storylinkedcard ... ok
+test modules::story::characters::export_bindings_storyupdatecharacterargs ... ok
+test modules::story::characters::export_bindings_storyupdaterelationshipargs ... ok
+test modules::story::episodes::export_bindings_storycreateepisodeargs ... ok
+test modules::story::characters::export_bindings_storycharacterdto ... ok
+test modules::story::episodes::export_bindings_storycreateseasonargs ... ok
+test modules::story::episodes::export_bindings_storyduplicateepisodeargs ... ok
+test modules::story::episodes::export_bindings_storymoveseasonargs ... ok
+test modules::story::timeline::tests::natural_day_order ... ok
+test modules::story::episodes::export_bindings_storyepisodedto ... ok
+test modules::story::episodes::export_bindings_storymoveepisodeargs ... ok
+test modules::story::episodes::export_bindings_storyseasondto ... ok
+test modules::story::episodes::export_bindings_storyseriesargs ... ok
+test modules::story::episodes::export_bindings_storyupdateepisodeargs ... ok
+test modules::visual::common::tests::letters_follow_order ... ok
+test modules::visual::common::tests::sniffs_images ... ok
+test modules::visual::common::tests::urls_are_web_only ... ok
+test modules::story::episodes::export_bindings_storyupdateseasonargs ... ok
+test modules::story::export_bindings_storycreated ... ok
+test modules::story::export_bindings_storyidargs ... ok
+test modules::story::timeline::export_bindings_storyassigndayargs ... ok
+test modules::story::timeline::export_bindings_storyscreenplayref ... ok
+test modules::story::timeline::export_bindings_storytimelineargs ... ok
+test modules::story::timeline::export_bindings_storytimelinescene ... ok
+test modules::story::timeline::export_bindings_storytimenoteargs ... ok
+test modules::story::tree::export_bindings_storycontainertype ... ok
+test modules::story::tree::export_bindings_storyitemkind ... ok
+test modules::story::tree::export_bindings_storycontainerref ... ok
+test modules::visual::common::export_bindings_vaultimageref ... ok
+test modules::story::episodes::export_bindings_storyseriesdto ... ok
+test modules::visual::moodboard::export_bindings_addmoodboardimagedataargs ... ok
+test modules::visual::moodboard::export_bindings_addmoodboardimagesargs ... ok
+test modules::visual::moodboard::export_bindings_addmoodboardlinkargs ... ok
+test modules::visual::moodboard::export_bindings_addmoodboardnoteargs ... ok
+test modules::story::timeline::export_bindings_storydaygroup ... ok
+test modules::visual::moodboard::export_bindings_addmoodboardvaultimageargs ... ok
+test modules::visual::moodboard::export_bindings_arrangemoodboarditemargs ... ok
+test modules::visual::moodboard::export_bindings_createmoodboardargs ... ok
+test modules::visual::moodboard::export_bindings_deletemoodboarditemsargs ... ok
+test modules::story::tree::export_bindings_storyitemref ... ok
+test modules::visual::moodboard::export_bindings_moodboardidargs ... ok
+test modules::visual::moodboard::export_bindings_moodboarditemmove ... ok
+test modules::visual::moodboard::export_bindings_moodboardlistargs ... ok
+test modules::visual::moodboard::export_bindings_moodboardnotesargs ... ok
+test modules::visual::moodboard::export_bindings_moodboardsummary ... ok
+test modules::visual::moodboard::export_bindings_renamemoodboardargs ... ok
+test modules::visual::moodboard::export_bindings_reordermoodboardargs ... ok
+test modules::story::characters::export_bindings_storycharacterdetail ... ok
+test modules::visual::moodboard::export_bindings_resizemoodboarditemargs ... ok
+test modules::visual::moodboard::export_bindings_updatemoodboarditemargs ... ok
+test modules::visual::moodboard::export_bindings_vaultimagesargs ... ok
+test modules::visual::scenes::export_bindings_markscenereviewedargs ... ok
+test modules::visual::scenes::export_bindings_scenecharactersargs ... ok
+test modules::visual::scenes::export_bindings_removedvisualscene ... ok
+test modules::visual::scenes::export_bindings_visualscene ... ok
+test modules::visual::moodboard::export_bindings_moodboarditemdto ... ok
+test modules::visual::scenes::export_bindings_visualscenesargs ... ok
+test modules::visual::shots::export_bindings_copyplanningargs ... ok
+test modules::visual::shots::export_bindings_copyplanningresult ... ok
+test modules::visual::moodboard::export_bindings_movemoodboarditemsargs ... ok
+test modules::visual::shots::export_bindings_createshotargs ... ok
+test modules::visual::shots::export_bindings_deleteshotsargs ... ok
+test modules::visual::shots::export_bindings_moveshotargs ... ok
+test modules::visual::shots::export_bindings_reordershotargs ... ok
+test modules::story::timeline::export_bindings_storytimelinedto ... ok
+test modules::visual::shots::export_bindings_shotdto ... ok
+test modules::visual::shots::export_bindings_shotlistargs ... ok
+test modules::visual::shots::export_bindings_shotpanelargs ... ok
+test modules::visual::moodboard::export_bindings_moodboarddto ... ok
+test modules::visual::shots::export_bindings_shotreferenceargs ... ok
+test modules::visual::shots::export_bindings_updateshotargs ... ok
+test modules::visual::storyboard::export_bindings_addpanelargs ... ok
+test modules::visual::storyboard::export_bindings_createstoryboardargs ... ok
+test modules::visual::storyboard::export_bindings_deletepanelsargs ... ok
+test modules::visual::storyboard::export_bindings_linkshotargs ... ok
+test modules::visual::storyboard::export_bindings_movepanelargs ... ok
+test modules::visual::storyboard::export_bindings_renamestoryboardargs ... ok
+test modules::visual::storyboard::export_bindings_reorderpanelargs ... ok
+test util::tests::media_types ... ok
+test modules::visual::shots::export_bindings_shotidargs ... ok
+test util::tests::text_validation ... ok
+test modules::visual::storyboard::export_bindings_setpanelvisualargs ... ok
+test modules::visual::storyboard::export_bindings_setstoryboardsceneargs ... ok
+test modules::visual::storyboard::export_bindings_shotfrompanelargs ... ok
+test modules::visual::shots::export_bindings_shotpanelref ... ok
+test modules::visual::storyboard::export_bindings_storyboardidargs ... ok
+test modules::visual::storyboard::export_bindings_storyboardlistargs ... ok
+test modules::visual::scenes::export_bindings_visualscenes ... ok
+test modules::visual::storyboard::export_bindings_storyboardsummary ... ok
+test modules::visual::storyboard::export_bindings_updatepanelargs ... ok
+test store::export_bindings_deleteditemrow ... ok
+test store::export_bindings_undoinfo ... ok
+test util::export_bindings_assetinfo ... ok
+test modules::visual::storyboard::export_bindings_paneldto ... ok
+test util::export_bindings_storesel ... ok
+test modules::visual::storyboard::export_bindings_storyboarddto ... ok
+test schema::tests::all_migration_sets_apply_cleanly_and_are_undo_trackable ... ok
+test util::tests::png_header_dimensions ... ok
+
+test result: ok. 732 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.25s
+
+     Running tests\ai.rs (target\debug\deps\ai-3ec1d3ca75f65398.exe)
+
+running 23 tests
+test ai_ac_013_other_users_private_notes_never_reach_the_model ... ok
+test ai_ac_002_exact_counts_come_from_canonical_data_with_scope_and_provenance ... ok
+test ai_ac_011_permissions_are_inherited_viewers_cannot_prepare_or_apply ... ok
+test ambiguous_references_ask_one_focused_question ... ok
+test ai_ac_014_stale_change_set_is_revalidated_never_applied_blindly ... ok
+test ai_ac_004_facts_that_cannot_be_found_are_not_invented ... ok
+test ai_ac_023_product_questions_are_grounded_in_the_product_guide ... ok
+test ai_spec_8_unscheduled_scenes_come_from_the_shooting_schedule ... ok
+test ai_records_keep_references_and_audit_without_context_copies ... ok
+test offline_ai_setup_shows_exact_size_and_needs_no_choices ... ok
+test ai_ac_005_navigation_runs_directly_and_changes_nothing ... ok
+test malformed_model_output_is_retried_once_then_rejected ... ok
+test ai_ac_006_breakdown_suggestions_create_nothing ... ok
+test deleted_target_makes_the_change_set_a_conflict ... ok
+test fsd_ai_001_openframe_works_fully_without_offline_ai ... ok
+test ai_ac_007_to_010_proposal_requires_explicit_acceptance_and_is_one_undo_step ... ok
+test ai_spec_20_4_change_set_applies_all_operations_or_none ... ok
+test ai_ac_020_unavailable_runtime_leaves_the_project_unchanged ... ok
+test operations_outside_the_allow_list_are_never_applied ... ok
+test ai_ac_024_history_is_personal_and_survives_restart ... ok
+test prompt_injection_in_project_text_is_data_not_instructions ... ok
+test rename_includes_cast_catalog_and_excludes_locked_or_earlier_drafts ... ok
+test tasks_and_project_notes_are_created_only_after_acceptance ... ok
+
+test result: ok. 23 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.75s
+
+     Running tests\ai_agent.rs (target\debug\deps\ai_agent-015a80c1e471a015.exe)
+
+running 18 tests
+test composition_unions_targets_modules_and_base_rows ... ok
+test destructive_change_sets_need_the_extra_confirmation ... ok
+test final_answer_text_is_marked_inferred_and_keeps_the_exact_facts ... ok
+test repeated_identical_calls_stop_the_loop ... ok
+test no_tool_the_model_can_see_reviews_or_applies_change_sets ... ok
+test recheck_rebuilds_every_part_of_a_stale_composite_change_set ... ok
+test default_step_limit_is_eight_and_the_hard_limit_twelve ... ok
+test navigation_after_reads_is_terminal_and_keeps_sources ... ok
+test a_viewer_asking_for_a_change_gets_a_denial_and_no_change_set ... ok
+test injected_text_in_project_content_stays_data_inside_observations ... ok
+test acceptance_is_refused_for_anything_but_a_local_user_action ... ok
+test a_change_set_can_never_contain_an_assistant_operation ... ok
+test a_model_failure_mid_run_keeps_what_was_found ... ok
+test a_multi_step_mutation_ends_in_one_reviewable_change_set ... ok
+test the_model_cannot_accept_even_when_told_to_in_conversation ... ok
+test history_is_bounded_to_recent_turns ... ok
+test sql_and_oversized_arguments_never_reach_the_database ... ok
+test agent_takes_several_read_steps_and_answers_from_exact_results ... ok
+
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.35s
+
+     Running tests\ai_apply_recovery.rs (target\debug\deps\ai_apply_recovery-412a3b318c973498.exe)
+
+running 8 tests
+test adr_0019_every_change_set_operation_is_database_only ... ok
+test a_change_set_carrying_a_file_argument_is_refused_and_nothing_changes ... ok
+test a_live_failure_closes_the_journal_as_compensated ... ok
+test duplicating_a_project_with_an_unfinished_apply_never_claims_it_was_undone ... ok
+test a_rejected_or_pending_change_set_never_opens_a_journal ... ok
+test a_completed_apply_closes_the_journal_and_survives_a_crash ... ok
+test recovery_runs_once_and_a_second_open_changes_nothing ... ok
+test adr_0019_stop_after_every_apply_boundary_reopens_consistent ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.34s
+
+     Running tests\ai_index_stress.rs (target\debug\deps\ai_index_stress-9be630676a47a10a.exe)
+
+running 1 test
+test close_switch_and_rebuild_while_the_embedding_runtime_is_stalled ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.94s
+
+     Running tests\ai_retrieval.rs (target\debug\deps\ai_retrieval-bda8d54df720a732.exe)
+
+running 17 tests
+test spec_19_hybrid_finds_meaning_that_keyword_search_misses ... ok
+test spec_33_without_an_embedding_runtime_retrieval_is_fts_plus_sql ... ok
+test spec_21_routes_structured_and_product_help_without_project_rag ... ok
+test spec_33_embedding_failure_never_blocks_saves_and_retrieval_falls_back ... ok
+test spec_18_graph_expansion_adds_related_cross_module_context ... ok
+test spec_15_saves_never_wait_for_embedding_and_typing_stays_responsive ... ok
+test spec_20_private_notes_are_only_ever_returned_to_their_owner ... ok
+test spec_32_delete_removes_derived_entries_and_restore_rebuilds_them ... ok
+test spec_13_every_domain_gets_documents_chunks_vectors_and_graph ... ok
+test spec_20_draft_boundaries_and_explicit_scope_come_first ... ok
+test contact_details_never_enter_documents_or_context ... ok
+test retrieval_inherits_permissions_and_bounds_its_input ... ok
+test scene_documents_carry_characters_location_and_story_context ... ok
+test ops_report_index_status_and_rebuild_in_the_background ... ok
+test spec_15_edits_are_indexed_after_commit_and_undo_redo_follow ... ok
+test project_close_stops_the_indexer_and_releases_the_index_file ... ok
+test spec_32_index_survives_restart_and_is_rebuilt_when_invalid ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.13s
+
+     Running tests\ai_retrieval_perf.rs (target\debug\deps\ai_retrieval_perf-8470786ae43593a6.exe)
+
+running 1 test
+test spec_34_retrieval_budgets_on_a_feature_length_fixture ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.51s
+
+     Running tests\ai_stale_proposals.rs (target\debug\deps\ai_stale_proposals-2cdd201b614dfc54.exe)
+
+running 10 tests
+test m1_07_story_character_edited_by_the_user_makes_the_proposal_stale ... ok
+test m1_07_screenplay_line_edited_by_the_user_makes_the_proposal_stale ... ok
+test m1_07_schedule_day_edited_by_the_user_makes_the_proposal_stale ... ok
+test m1_07_visual_shot_edited_by_the_user_makes_the_proposal_stale ... ok
+test m1_07_project_note_deleted_by_the_user_makes_the_proposal_a_conflict ... ok
+test m1_07_project_note_edited_by_the_user_makes_the_proposal_stale ... ok
+test m1_07_breakdown_element_edited_by_the_user_makes_the_proposal_stale ... ok
+test m1_07_call_sheet_edited_by_the_user_makes_the_proposal_stale ... ok
+test m1_07_budget_line_edited_by_the_user_makes_the_proposal_stale ... ok
+test m1_07_cast_and_crew_member_edited_by_the_user_makes_the_proposal_stale ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.20s
+
+     Running tests\ai_tool_coverage.rs (target\debug\deps\ai_tool_coverage-ac3d7f8dcf428b75.exe)
+
+running 4 tests
+test every_registered_operation_has_explicit_metadata ... ok
+test tool_coverage_matches_operation_metadata ... ok
+test coverage_matrix_document_is_generated_from_the_registry ... ok
+test every_tool_schema_is_strict_and_bounded ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests\ai_toolbox.rs (target\debug\deps\ai_toolbox-2acf5e4ec64200a0.exe)
+
+running 10 tests
+test read_tools_never_mutate_and_resist_injection_text ... ok
+test request_relevant_tool_selection_fits_a_small_prompt ... ok
+test no_tool_can_review_apply_or_run_assistant_operations ... ok
+test other_users_private_notes_never_reach_a_tool ... ok
+test tools_are_filtered_by_role_and_enforced_when_run ... ok
+test proposal_tools_only_build_drafts_and_never_write ... ok
+test unknown_tools_and_bad_arguments_are_refused ... ok
+test ambiguous_references_ask_one_question_instead_of_guessing ... ok
+test every_proposal_schema_field_is_understood_by_its_builder ... ok
+test every_proposal_tool_builds_operations_the_registry_accepts ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.51s
+
+     Running tests\comments.rs (target\debug\deps\comments-5d6419556e691104.exe)
+
+running 7 tests
+test anchors_are_validated ... ok
+test comments_attach_to_any_supported_object ... ok
+test fsd_script_033_private_notes_are_invisible_to_other_users_and_their_search ... ok
+test comment_permissions_follow_roles ... ok
+test fsd_script_029_text_anchored_comment_follows_edits_and_flags_context_moved ... ok
+test fsd_script_030_031_032_scene_comment_reply_resolve_keeps_history ... ok
+test deleted_comments_are_recoverable_and_searchable_when_live ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.66s
+
+     Running tests\core_pipeline.rs (target\debug\deps\core_pipeline-f52847498e5fae22.exe)
+
+running 25 tests
+test first_run_display_name_is_confirmed_once ... ok
+test opening_a_non_project_folder_fails_safely ... ok
+test activity_entries_offer_open_only_for_live_objects ... ok
+test corrupt_database_is_refused_without_modification ... ok
+test fsd_52_5_recently_deleted_explains_where_items_were_and_unassigned_restore ... ok
+test file_add_search_undo_redo_and_trash ... ok
+test fsd_6_3_home_stays_empty_until_real_content_exists ... ok
+test validation_errors_are_human_and_nothing_is_created ... ok
+test create_project_opens_at_empty_home ... ok
+test fsd_40_files_export_copy_and_relink ... ok
+test duplicate_creates_independent_identity ... ok
+test fsd_6_2_continue_remembers_last_location_per_workspace ... ok
+test fsd_44_recovery_state_reports_checkpoint_and_offer ... ok
+test permissions_are_enforced_before_any_mutation ... ok
+test fsd_4_5_archive_of_closed_project_is_stored_in_the_project ... ok
+test fsd_3_5_rename_closed_project_updates_title_manifest_and_home ... ok
+test rename_open_project_is_undoable_and_updates_home_list ... ok
+test project_settings_include_project_notes ... ok
+test undo_never_overwrites_later_work_by_someone_else ... ok
+test archive_hides_from_recent_list ... ok
+test closed_project_edits_respect_the_single_writer_lock ... ok
+test crash_offers_recovery_and_keeps_latest_autosave ... ok
+test status_is_manual_and_persists_across_restart ... ok
+test project_is_single_writer ... ok
+test pin_unpin_orders_home_and_survives_reopen ... ok
+
+test result: ok. 25 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.08s
+
+     Running tests\diagnostics.rs (target\debug\deps\diagnostics-84564fe650be5bea.exe)
+
+running 9 tests
+test core_015_operations_are_hidden_from_the_assistant_and_declare_their_effects ... ok
+test core_015_destination_must_be_a_real_location_outside_openframe_folders ... ok
+test core_015_a_users_file_with_the_staging_name_is_never_touched ... ok
+test core_015_works_without_an_open_project_and_without_logs ... ok
+test core_015_read_only_roles_cannot_preview_or_export ... ok
+test core_015_bundle_contains_no_content_paths_contacts_prompts_or_keys ... ok
+test core_015_preview_is_exactly_what_is_saved_and_the_manifest_lists_every_file ... ok
+test core_015_export_is_recorded_in_activity_and_is_not_an_undo_step ... ok
+test core_015_a_failed_write_keeps_the_previous_file_and_leaves_no_partial_file ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.93s
+
+     Running tests\e2e_flows.rs (target\debug\deps\e2e_flows-c1c0d02f004f50b4.exe)
+
+running 8 tests
+test e2e_series_scene_links_carry_their_episode ... ok
+test e2e_search_hits_navigate_to_the_workspace_that_shows_them ... ok
+test e2e_idea_to_call_sheet ... ok
+test e2e_import_fountain_and_fdx_then_breakdown_and_ai_counts ... ok
+test e2e_script_revision_after_production_source_flags_everything_and_deletes_nothing ... ok
+test e2e_undo_redo_across_modules ... ok
+test e2e_recently_deleted_across_modules ... ok
+test e2e_everything_persists_across_restart ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.88s
+
+     Running tests\entitlement.rs (target\debug\deps\entitlement-1191cef8d1e79857.exe)
+
+running 12 tests
+test plat_009_the_assistant_cannot_see_the_licence_operations ... ok
+test plat_009_status_takes_no_arguments ... ok
+test plat_009_without_a_licence_key_the_trial_still_shows_and_the_reason_is_given ... ok
+test plat_009_only_the_person_at_this_computer_can_restore_a_purchase ... ok
+test plat_009_a_later_launch_counts_down_from_the_first_launch ... ok
+test plat_009_first_launch_starts_a_seven_day_trial_and_saves_the_record ... ok
+test plat_009_an_edited_record_without_a_licence_key_is_unknown_and_never_blocks ... ok
+test plat_009_every_project_role_can_read_the_status ... ok
+test plat_009_restore_purchase_reads_the_licence_again_and_unlocks ... ok
+test plat_009_an_unwritable_entitlement_folder_never_fails_startup_or_blocks ... ok
+test plat_009_a_trial_record_that_cannot_be_read_is_unknown_and_startup_still_succeeds ... ok
+test plat_009_an_edited_trial_record_ends_the_trial_but_open_and_export_keep_working ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.47s
+
+     Running tests\exports.rs (target\debug\deps\exports-8c5bd0f399a85f78.exe)
+
+running 18 tests
+test every_export_op_is_registered_as_a_read_only_query ... ok
+test only_roles_with_export_capability_can_export ... ok
+test sides_pdf_contains_only_the_days_scenes_in_screenplay_format ... ok
+test moodboard_pdf_embeds_images_and_excludes_internal_notes_unless_selected ... ok
+test each_export_records_one_activity_entry ... ok
+test storyboard_sheet_has_panels_shot_numbers_framing_and_optional_notes ... ok
+test exports_are_snapshots_and_never_change_the_project ... ok
+test a_failed_write_leaves_the_previous_file_and_no_partial_file ... ok
+test reports_export_live_and_saved_in_every_format ... ok
+test story_board_outline_exports_in_board_order_with_optional_notes ... ok
+test destination_must_be_a_real_location_outside_the_project ... ok
+test shot_list_exports_by_scene_selection_or_whole_project ... ok
+test text_the_pdf_font_cannot_print_is_a_human_error_and_writes_nothing ... ok
+test schedule_export_has_days_markers_summaries_and_unscheduled ... ok
+test breakdown_report_marks_suggested_and_lists_catalog_usage ... ok
+test call_sheet_pdf_has_paper_layout_and_issued_sheet_uses_its_snapshot ... ok
+test story_board_selected_items_scope ... ok
+test budget_summary_exports_totals_and_lines ... ok
+
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.24s
+
+     Running tests\failure_injection.rs (target\debug\deps\failure_injection-97f4a45dbd17c565.exe)
+
+running 16 tests
+test m1_11_permission_denied_on_the_export_folder ... ok
+test m1_11_export_to_a_full_drive_leaves_the_previous_file ... ok
+test m1_11_export_folder_deleted_before_the_write ... ok
+test m1_11_antivirus_lock_on_an_import_source ... ok
+test m1_11_external_volume_removed_while_open ... ok
+test m1_11_very_long_paths ... ok
+test m1_11_read_only_project_database_is_never_modified ... ok
+test m1_11_recovery_folder_deleted_while_open ... ok
+test m1_11_project_folder_moved_while_closed ... ok
+test m1_11_antivirus_lock_on_the_database_at_open ... ok
+test m1_11_non_ascii_project_paths ... ok
+test m1_11_disk_full_and_device_failure_at_commit_lose_nothing ... ok
+test m1_11_read_only_destination_keeps_the_old_file ... ok
+test m1_11_antivirus_lock_on_the_checkpoint_during_save ... ok
+test m1_11_antivirus_lock_on_the_export_destination ... ok
+test m1_11_sleep_and_resume_during_indexing ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.36s
+
+     Running tests\forced_kill.rs (target\debug\deps\forced_kill-5ebccf72394840f9.exe)
+
+running 6 tests
+test worker ... ignored, child process of the forced-kill tests; they spawn it
+test m1_03_forced_kill_during_migration_leaves_a_consistent_database ... ok
+test m1_03_forced_kill_during_export_never_leaves_a_broken_file_or_touches_the_project ... ok
+test m1_03_forced_kill_during_save_loses_no_committed_edit_and_offers_recovery ... ok
+test m1_03_forced_kill_during_backup_never_leaves_a_broken_backup ... ok
+test m1_03_forced_kill_during_package_import_leaves_no_broken_project ... ok
+
+test result: ok. 5 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 5.28s
+
+     Running tests\idea_vault.rs (target\debug\deps\idea_vault-68f7f905c43d3034.exe)
+
+running 24 tests
+test fsd_idea_008_pin_affects_display_only ... ok
+test fsd_idea_015_016_017_send_to_story_copies_and_keeps_original ... ok
+test fsd_idea_007_collection_membership_never_duplicates_or_deletes ... ok
+test fsd_idea_009_search_matches_title_text_caption_tags_filenames ... ok
+test fsd_idea_018_delete_is_recoverable_and_purge_is_deliberate ... ok
+test fsd_idea_012_url_is_authoritative_without_network ... ok
+test fsd_idea_010_previewable_media_exposes_local_paths ... ok
+test global_trash_restore_and_undo ... ok
+test fsd_idea_019_multi_select_batch_organisation ... ok
+test fsd_idea_005_views_present_the_same_items ... ok
+test global_vault_works_with_no_project_open ... ok
+test add_flow_validates_only_what_is_needed ... ok
+test fsd_idea_020_external_files_are_distinguishable_and_relinkable ... ok
+test fsd_idea_006_folder_move_changes_organisation_only ... ok
+test fsd_idea_002_every_item_type_can_be_added ... ok
+test fsd_idea_003_014_global_copy_edited_leaves_global_unchanged ... ok
+test fsd_idea_013_voice_note_saved_and_playable_after_reopen ... ok
+test fsd_idea_004_untitled_files_are_valid_and_reopen ... ok
+test fsd_idea_011_note_autosave_coalesces_and_persists ... ok
+test global_item_can_be_sent_to_story_of_open_project ... ok
+test fsd_idea_001_untitled_note_without_metadata_persists ... ok
+test undo_redo_of_create_and_pin_restore_same_identity ... ok
+test partial_add_keeps_successful_files ... ok
+test permissions_viewer_and_commenter_cannot_change_the_project_vault ... ok
+
+test result: ok. 24 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.42s
+
+     Running tests\interchange.rs (target\debug\deps\interchange-a28d6fd49bd0f509.exe)
+
+running 16 tests
+test drafts_built_from_the_story_board_export_cleanly ... ok
+test episodic_projects_import_one_screenplay_per_episode ... ok
+test fsd_script_043_pasted_text_uses_txt_heuristics_with_honest_warnings ... ok
+test pdf_export_refuses_characters_courier_cannot_print ... ok
+test fsd_script_044_import_into_existing_screenplay_never_replaces_current_draft ... ok
+test fdx_revision_marks_are_kept_on_import_and_exported ... ok
+test fsd_script_040_fountain_preview_shows_what_would_be_created_and_writes_nothing ... ok
+test zip_bomb_docx_is_rejected_without_writing ... ok
+test fsd_script_049_050_title_page_and_derived_scene_numbers_in_pdf ... ok
+test export_destination_is_validated_and_failures_leave_no_file ... ok
+test only_roles_that_may_import_or_export_can ... ok
+test keep_source_file_adds_it_to_project_files_in_the_same_step ... ok
+test fsd_script_038_fdx_import_creates_new_screenplay_with_new_identities ... ok
+test failed_imports_change_nothing ... ok
+test fsd_script_045_to_048_every_format_exports_and_reimports ... ok
+test import_is_one_undoable_step_and_survives_restart ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.33s
+
+     Running tests\migration_failures.rs (target\debug\deps\migration_failures-e9f181b851cc8f78.exe)
+
+running 5 tests
+test m1_05_database_from_a_newer_openframe_is_refused_byte_for_byte_untouched ... ok
+test m1_05_read_only_database_is_refused_untouched_and_opens_once_writable ... ok
+test m1_05_safety_backup_that_cannot_be_written_stops_the_migration ... ok
+test m1_05_damaged_database_needing_migration_is_refused_before_any_backup_or_write ... ok
+test m1_05_full_drive_during_migration_leaves_the_database_untouched ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.26s
+
+     Running tests\migration_fixtures.rs (target\debug\deps\migration_fixtures-b2ad624a86a0c78e.exe)
+
+running 3 tests
+test m1_04_the_app_database_reopens_with_its_recent_projects ... ok
+test m1_04_every_global_vault_schema_version_upgrades_and_keeps_its_items ... ok
+test m1_04_every_project_schema_version_upgrades_with_content_backup_search_and_export ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 11.97s
+
+     Running tests\notes.rs (target\debug\deps\notes-47d8a76dc04f9558.exe)
+
+running 13 tests
+test fsd_59_builtin_templates_are_listed_and_read_only ... ok
+test fsd_59_global_templates_work_without_a_project_and_persist ... ok
+test notes_permissions ... ok
+test fsd_52_project_template_delete_is_recoverable_and_undoable ... ok
+test fsd_52_note_delete_restore_and_purge ... ok
+test fsd_158_task_requires_title_and_validates_owner_and_relation ... ok
+test fsd_158_task_edit_clear_fields_and_related_deleted_is_reported ... ok
+test fsd_106_note_create_edit_pin_and_search ... ok
+test fsd_106_note_edits_are_undoable_and_coalesced ... ok
+test fsd_158_task_delete_is_recoverable_and_permissions_enforced ... ok
+test fsd_113_using_a_template_copies_it_independently ... ok
+test fsd_158_done_never_changes_related_object_and_reopen_works ... ok
+test notes_and_tasks_persist_across_restart ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.36s
+
+     Running tests\packages.rs (target\debug\deps\packages-37416cb9f235cceb.exe)
+
+running 18 tests
+test fsd_46_7_private_notes_are_never_in_exchange_packages ... ok
+test too_new_package_format_is_refused_clearly ... ok
+test fsd_47_7_response_comments_attach_to_matching_scenes ... ok
+test zip_slip_package_is_rejected_and_nothing_is_written ... ok
+test fsd_col_001_exchange_package_can_be_inspected_in_another_installation ... ok
+test fsd_col_002_stale_response_is_imported_as_comments_only_without_changing_text ... ok
+test tampered_checksum_is_rejected_with_zero_mutation ... ok
+test backup_permissions_and_destination_validation ... ok
+test fsd_col_015_016_ambiguous_and_unmatched_notes_go_to_the_review_queue ... ok
+test fsd_50_schedule_package_never_deletes_local_days ... ok
+test fsd_50_story_board_package_copy_as_new_and_same_project_changes ... ok
+test fsd_121_cancel_leaves_the_project_unchanged_and_permissions_apply ... ok
+test call_sheet_review_and_other_project_packages_are_handled_safely ... ok
+test fsd_44_7_portable_backup_copies_linked_files_into_the_project ... ok
+test fsd_44_backup_round_trip_restores_as_copy_with_new_identity ... ok
+test fsd_45_project_package_round_trip_across_installations ... ok
+test fsd_44_interrupted_backup_leaves_no_partial_file ... ok
+test fsd_45_4_identity_collision_open_as_copy_or_replace_after_backup ... ok
+
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.80s
+
+     Running tests\perf.rs (target\debug\deps\perf-a4096a103a4de5db.exe)
+
+running 6 tests
+test perf_feature_120_budgets ... ignored, performance suite: run with `npm run perf` (optimised build)
+test undo_history_queries_use_the_index ... ok
+test search_type_filter_applies_before_the_limit ... ok
+test vault_list_reports_missing_image_files ... ok
+test stress_fixture_small_builds_through_the_op_registry ... ok
+test bulk_scene_fingerprints_flag_exactly_the_changed_scene ... ok
+
+test result: ok. 5 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 1.19s
+
+     Running tests\production.rs (target\debug\deps\production-daf4f32729fe39ab.exe)
+
+running 24 tests
+test fsd_brk_001_breakdown_requires_and_shows_the_selected_source ... ok
+test catalog_and_locations_are_read_only_for_viewers ... ok
+test fsd_breakdown_006_categories_follow_the_defined_order ... ok
+test catalog_crud_archive_delete_and_search ... ok
+test fsd_cat_001_same_prop_across_two_scenes_reuses_the_catalog_item ... ok
+test fsd_breakdown_010_edit_suggestion_category_and_name_before_accepting ... ok
+test fsd_loc_001_location_replacement_never_changes_screenplay_text ... ok
+test fsd_108_overview_is_derived_and_breakdown_complete_is_manual ... ok
+test fsd_cast_001_cast_connects_actors_to_characters_and_scenes ... ok
+test fsd_brk_002_manual_tag_from_selected_text_creates_scene_association ... ok
+test fsd_brk_019_heading_change_and_in_place_edits_flag_review ... ok
+test crew_directory_requires_role ... ok
+test fsd_brk_012_013_ambiguous_matches_require_a_choice ... ok
+test fsd_brk_003_suggestions_never_auto_confirm ... ok
+test catalog_replace_in_selected_scenes_keeps_the_old_item ... ok
+test fsd_brk_014_removing_an_element_keeps_the_catalog_item ... ok
+test fsd_brk_011_batch_accept_asks_for_ambiguous_matches ... ok
+test fsd_brk_016_017_018_production_source_update_never_deletes_breakdown_data ... ok
+test source_selection_is_undoable_and_permission_checked ... ok
+test known_characters_in_action_and_crowds_are_suggested ... ok
+test fsd_prod_004_007_location_status_flow_and_scene_usage ... ok
+test fsd_prod_008_010_cast_availability_is_recorded_as_notes ... ok
+test locations_fields_notes_photos_and_trash ... ok
+test production_data_persists_across_restart ... ok
+
+test result: ok. 24 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.51s
+
+     Running tests\property_invariants.rs (target\debug\deps\property_invariants-90f43f64c28ed897.exe)
+
+running 6 tests
+test generator_is_deterministic_and_covers_its_range ... ok
+test m1_06_fountain_and_fdx_round_trips_keep_scenes_headings_elements_and_text ... ok
+test m1_06_app_import_export_reimport_keeps_scenes_headings_elements_and_text ... ok
+test m1_06_delete_then_restore_returns_same_ids_positions_and_text ... ok
+test m1_06_undo_all_then_redo_all_restores_exact_canonical_content ... ok
+test m1_06_story_board_order_equals_model_after_random_moves_and_restart ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.50s
+
+     Running tests\schedule.rs (target\debug\deps\schedule-85348d5c8d59ca43.exe)
+
+running 24 tests
+test budget_snapshots_can_be_deleted_restored_and_purged ... ok
+test fsd_call_001_call_sheet_generated_from_shooting_day ... ok
+test fsd_sch_002_drag_into_day_is_undoable ... ok
+test fsd_sch_003_warnings_are_advisory_with_keep_anyway ... ok
+test fsd_sched_014_grouping_suggestions_need_explicit_confirmation ... ok
+test fsd_call_002_call_sheet_edits_never_change_the_schedule ... ok
+test fsd_prod_024_sides_are_script_snapshots ... ok
+test fsd_prod_025_budget_is_advisory_and_validated ... ok
+test reorder_within_day_move_between_days_and_unschedule ... ok
+test fsd_sch_001_all_scenes_enter_unscheduled ... ok
+test markers_days_duplicate_off_day_and_delete_restore ... ok
+test fsd_prod_023_reports_are_read_only_projections ... ok
+test fsd_call_009_schedule_change_marks_call_sheet_needs_refresh ... ok
+test fsd_39_6_source_change_prompts_budget_review_without_changing_money ... ok
+test fsd_call_011_finalized_call_sheet_is_immutable_and_revised ... ok
+test fsd_prod_022_daily_view_is_derived ... ok
+test call_sheet_permissions_delete_and_search ... ok
+test fsd_56_script_changes_flag_strips_and_never_delete ... ok
+test schedule_finalized_blocks_edits_until_reopened ... ok
+test schedule_needs_a_production_source_first ... ok
+test ux_3_33_report_filter_keeps_filters_and_says_no_matching_data ... ok
+test strict_validation_offers_keep_anyway ... ok
+test stale_call_sheet_needs_explicit_choice_to_finalize ... ok
+test schedule_and_call_sheets_survive_restart ... ok
+
+test result: ok. 24 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.41s
+
+     Running tests\screenplay.rs (target\debug\deps\screenplay-1717611af1c04182.exe)
+
+running 25 tests
+test fsd_script_015_016_replace_all_is_one_undoable_change ... ok
+test fsd_script_021_7_restoring_an_old_draft_creates_a_new_draft ... ok
+test fsd_script_020_scene_notes_are_non_printing_scene_metadata ... ok
+test fsd_script_025_exactly_one_current_draft ... ok
+test fsd_script_026_automatic_history_is_separate_from_named_drafts ... ok
+test fsd_script_022_undo_redo_groups_typing ... ok
+test fsd_script_023_024_named_drafts_preserve_prior_versions_with_lineage ... ok
+test fsd_script_028_review_round_linked_to_draft_and_completing_never_locks ... ok
+test fsd_script_001_empty_screenplay_without_story_board ... ok
+test fsd_script_027_compare_at_scene_and_text_level ... ok
+test fsd_script_014_050_navigator_numbers_derive_from_order ... ok
+test fsd_script_012_manual_element_switching_is_overridable ... ok
+test fsd_script_005_011_all_element_types_are_supported_and_validated ... ok
+test fsd_script_036_037_revision_leaves_locked_draft_unchanged ... ok
+test character_usage_detection_with_corrections ... ok
+test fsd_script_034_035_locked_draft_rejects_edits ... ok
+test fsd_script_049_title_page_fields ... ok
+test viewers_and_commenters_cannot_edit_the_script ... ok
+test stale_reads_are_detectable_by_edit_sequence ... ok
+test scene_hub_reports_context_without_editing ... ok
+test scenes_of_the_current_draft_are_searchable ... ok
+test scene_delete_is_recoverable_and_restores_position ... ok
+test fsd_script_002_003_004_format_follows_project_type ... ok
+test fsd_script_021_autosave_persisted_on_restart_and_crash ... ok
+test layout_is_remembered_per_user ... ok
+
+test result: ok. 25 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.30s
+
+     Running tests\security_review.rs (target\debug\deps\security_review-74847688cca040bb.exe)
+
+running 11 tests
+test ai_01_prompt_delimiters_survive_unicode_case_folding ... ok
+test pkg_03_connections_cannot_attach_other_files ... ok
+test path_03_links_to_network_device_or_relative_paths_are_refused ... ok
+test sql_01_crafted_trash_rows_cannot_bypass_restore_handlers ... ok
+test pn_01_private_note_undo_restore_and_purge_write_no_activity_pn_02_purge_scrubs_undo ... ok
+test pkg_01_stored_network_paths_are_never_probed_or_opened ... ok
+test ipc_01_oversized_argument_lists_are_refused_before_deserialization ... ok
+test pkg_03_projects_carrying_foreign_triggers_are_refused_unchanged ... ok
+test path_02_file_copies_never_land_in_openframe_folders ... ok
+test ai_02_concurrent_accepts_apply_a_change_set_exactly_once ... ok
+test pn_02_full_project_packages_carry_only_the_exporters_private_notes ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.01s
+
+     Running tests\soak.rs (target\debug\deps\soak-d3c85066c5125908.exe)
+
+running 2 tests
+test m1_08_soak_long ... ignored, long soak: OPENFRAME_SOAK_SECS=1800 cargo test -p openframe-application --test soak -- --ignored --nocapture m1_08_soak_long
+test m1_08_soak_short has been running for over 60 seconds
+test m1_08_soak_short ... ok
+
+test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 68.33s
+
+     Running tests\story.rs (target\debug\deps\story-507b91e9df8112df.exe)
+
+running 33 tests
+test act_delete_choices_recommend_moving_children ... ok
+test fsd_story_010_reorder_act_with_descendants ... ok
+test fsd_story_008_create_at_drop_position ... ok
+test fsd_story_009_move_sequence_between_acts_keeps_children ... ok
+test fsd_story_006_long_description_is_stored_whole ... ok
+test deleting_linked_card_keeps_the_screenplay_scene ... ok
+test fsd_story_002_028_sequence_needs_only_a_name ... ok
+test fsd_story_001_acts_contain_sequences_and_scenes ... ok
+test characters_create_edit_relationships_links_and_scene_usage ... ok
+test fsd_story_011_multi_select_move_preserves_relative_order ... ok
+test episodes_scope_story_content_and_season_board_reorders ... ok
+test fsd_story_005_026_027_card_needs_only_description_blank_allowed ... ok
+test fsd_story_004_015_drag_changes_order_and_undo_restores_it ... ok
+test beats_drag_anywhere ... ok
+test attachments_on_cards_are_copied_by_duplicate_and_survive_undo ... ok
+test character_image_is_a_managed_copy ... ok
+test fsd_story_005_012_parking_lot_persists_and_restores_to_origin ... ok
+test fsd_story_029_convert_beat_keeps_original_as_converted ... ok
+test fsd_story_030_scene_to_beat_retains_source ... ok
+test restored_sequence_whose_act_is_gone_goes_to_unassigned ... ok
+test search_indexes_story_objects_and_drops_deleted_ones ... ok
+test sequence_delete_moves_children_into_its_act_by_default ... ok
+test viewers_and_commenters_cannot_change_the_story ... ok
+test story_timeline_groups_by_day_and_never_reorders ... ok
+test fsd_story_013_duplicate_is_independent_and_has_no_screenplay_link ... ok
+test fsd_story_018_019_collapse_is_view_state_not_story_data ... ok
+test fsd_story_003_reorder_20_cards_keeps_identities_and_order_persists_after_restart ... ok
+test fsd_story_022_heading_supplied_inline_is_saved_on_the_card ... ok
+test fsd_story_024_card_edits_after_build_do_not_change_the_script ... ok
+test fsd_story_016_delete_is_recoverable_and_undoable ... ok
+test fsd_story_020_021_022_build_preview_order_selection_and_missing_headings ... ok
+test fsd_story_023_repeat_build_creates_a_new_draft_never_overwrites ... ok
+test fsd_story_025_applying_board_order_to_a_written_script_requires_confirmation ... ok
+
+test result: ok. 33 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.04s
+
+     Running tests\visual.rs (target\debug\deps\visual-9ddafe41b483b99d.exe)
+
+running 22 tests
+test fsd_53_planning_follows_the_active_production_source_by_scene_identity ... ok
+test fsd_stb_001_panels_associate_with_shots_and_unlinking_deletes_neither ... ok
+test fsd_55_copy_planning_to_a_duplicated_scene ... ok
+test fsd_prod_011_012_moodboard_create_rename_and_add_move_items ... ok
+test fsd_prod_018_020_shot_needs_only_a_description_and_fields_are_optional ... ok
+test moodboard_images_from_the_idea_vault_are_guarded_and_copied ... ok
+test fsd_shot_001_shots_are_ordered_by_drag_and_tied_to_scenes ... ok
+test fsd_34_path_a_script_to_shots_to_storyboard ... ok
+test moodboard_can_reference_a_scene ... ok
+test fsd_55_scene_change_flags_review_and_never_deletes_planning ... ok
+test fsd_prod_014_015_storyboard_for_a_scene_with_panels ... ok
+test fsd_52_shot_delete_restore_returns_to_its_place_and_purge_unlinks_panels ... ok
+test fsd_prod_016_panel_drag_reorder_recalculates_numbers_and_linked_shot_numbers ... ok
+test no_screenplay_yet_offers_no_scenes_but_standalone_boards_work ... ok
+test fsd_34_path_c_shots_only_needs_no_storyboard ... ok
+test fsd_34_path_b_script_to_storyboard_to_shots ... ok
+test search_finds_shots_storyboards_and_moodboards_with_navigation ... ok
+test fsd_52_panel_restore_goes_to_unassigned_when_its_storyboard_is_gone ... ok
+test fsd_52_moodboard_delete_restore_and_item_to_unassigned ... ok
+test viewers_and_commenters_cannot_change_visual_planning ... ok
+test shot_can_move_to_another_scene_and_carry_a_reference_image ... ok
+test visual_planning_persists_across_restart ... ok
+
+test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.29s
+
+     Running unittests src\lib.rs (target\debug\deps\openframe_desktop_lib-1543f5eff185b4ee.exe)
+
+running 13 tests
+test distribution::tests::unpackaged_direct_builds_may_update_in_app ... ok
+test distribution::tests::test_process_is_not_packaged ... ok
+test distribution::tests::packaged_data_dir_is_the_package_local_state_folder ... ok
+test distribution::tests::store_builds_never_allow_in_app_updates ... ok
+test distribution::tests::channel_matches_build_flag ... ok
+test distribution::tests::packaged_direct_builds_never_allow_in_app_updates ... ok
+test tests::development_builds_use_openframe_log_as_written ... ok
+test distribution::tests::family_name_check_is_the_platform_rule ... ok
+test tests::release_builds_cap_third_party_targets_at_info ... ok
+test distribution::tests::malformed_family_names_are_rejected ... ok
+test tests::capped_directives_parse_and_filter_as_intended ... ok
+test distribution::tests::unpackaged_process_keeps_default_data_dir ... ok
+test tests::real_operations_never_write_content_to_the_log ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.75s
+
+     Running unittests src\main.rs (target\debug\deps\openframe_desktop-e1d3569974e8fc35.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\lib.rs (target\debug\deps\openframe_domain-8b523cfa109b047a.exe)
+
+running 26 tests
+test auth::tests::export_only_can_export_but_not_edit ... ok
+test auth::tests::only_owner_manages_permissions_and_hosts ... ok
+test auth::tests::role_round_trip ... ok
+test auth::tests::viewer_cannot_mutate ... ok
+test auth::tests::commenter_cannot_edit_core_content ... ok
+test enums::tests::enums_round_trip_through_text ... ok
+test enums::tests::serde_uses_labels ... ok
+test error::tests::prefix_matching ... ok
+test ids::tests::ids_are_unique_and_valid ... ok
+test error::tests::io_errors_map_to_human_messages ... ok
+test auth::export_bindings_actororigin ... ok
+test ids::tests::ids_sort_by_creation_time ... ok
+test auth::export_bindings_capability ... ok
+test auth::export_bindings_role ... ok
+test enums::export_bindings_confirmationstate ... ok
+test enums::export_bindings_elementtype ... ok
+test enums::export_bindings_breakdowncategory ... ok
+test enums::export_bindings_changesetorigin ... ok
+test enums::export_bindings_draftstatus ... ok
+test enums::export_bindings_projectstatus ... ok
+test enums::export_bindings_vaultitemtype ... ok
+test enums::export_bindings_changesetstate ... ok
+test enums::export_bindings_projecttype ... ok
+test error::export_bindings_apperror ... ok
+test error::export_bindings_errorcode ... ok
+test auth::export_bindings_actor ... ok
+
+test result: ok. 26 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+     Running unittests src\lib.rs (target\debug\deps\openframe_entitlement-bda0211e37092ca1.exe)
+
+running 29 tests
+test adapters::tests::store_stubs_answer_unknown_and_explain_themselves ... ok
+test adapters::tests::direct_adapter_without_a_key_is_unknown ... ok
+test licence::tests::a_licence_from_another_key_is_refused ... ok
+test licence::tests::a_signature_without_the_domain_prefix_is_refused ... ok
+test licence::tests::a_signed_licence_verifies_and_round_trips_through_json ... ok
+test licence::tests::any_change_to_the_payload_breaks_the_signature ... ok
+test licence::tests::the_email_is_hashed_ascii_case_and_space_insensitively_and_never_stored ... ok
+test export_bindings_entitlementstate ... ok
+test licence::tests::the_signature_covers_the_stored_bytes_so_field_order_does_not_matter ... ok
+test tests::only_ended_and_revoked_lock_editing ... ok
+test tests::not_purchased_follows_the_trial_record ... ok
+test tests::purchase_wins_and_revocation_wins_over_the_trial ... ok
+test licence::tests::a_wrong_clock_never_refuses_a_genuine_licence ... ok
+test tests::open_and_export_are_always_allowed ... ok
+test tests::summaries_are_plain_and_have_no_em_dash ... ok
+test licence::tests::wrong_product_unknown_schema_and_garbage_are_refused ... ok
+test tests::unknown_channel_shows_the_running_trial_and_never_says_ended ... ok
+test trial::tests::a_clock_before_the_start_still_shows_the_full_trial ... ok
+test trial::tests::a_clock_turned_back_does_not_give_days_back ... ok
+test trial::tests::a_fresh_trial_has_seven_days_and_counts_down_in_whole_days ... ok
+test export_bindings_channel ... ok
+test trial::tests::extreme_values_never_panic_or_grant_time ... ok
+test trial::tests::an_edited_record_is_detected_and_so_are_unbelievable_times ... ok
+test trial::tests::a_folder_that_cannot_be_written_reports_persisted_false ... ok
+test adapters::tests::a_locked_licence_file_is_unknown_not_a_lockout ... ok
+test trial::tests::a_locked_file_is_an_io_error_and_is_not_overwritten ... ok
+test trial::tests::oversized_file_is_unparseable_not_a_panic_and_only_the_cap_is_read ... ok
+test trial::tests::store_round_trip_first_launch_and_tamper_handling ... ok
+test adapters::tests::direct_adapter_checks_the_signed_file_offline ... ok
+
+test result: ok. 29 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.38s
+
+     Running unittests src\lib.rs (target\debug\deps\openframe_import_export-36eecfac6ab79030.exe)
+
+running 25 tests
+test docx::tests::style_names_map_to_elements ... ok
+test heuristics::tests::cues_and_transitions ... ok
+test heuristics::tests::heading_detection ... ok
+test heuristics::tests::scene_numbers_are_split ... ok
+test fountain::tests::boneyard_and_notes ... ok
+test fdx::tests::parses_basic_fdx_with_dual_and_unknown_types ... ok
+test fountain::tests::parses_core_elements ... ok
+test heuristics::tests::unindented_text_is_classified ... ok
+test layout::tests::heading_is_never_orphaned ... ok
+test model::tests::character_names_drop_extensions ... ok
+test layout::tests::long_dialogue_splits_with_more_and_contd ... ok
+test model::tests::title_page_lookup_is_case_insensitive ... ok
+test heuristics::tests::styled_heading_numbers_are_split_without_prefix ... ok
+test report::tests::wraps_by_width ... ok
+test layout::tests::wrapping_respects_width_and_breaks ... ok
+test fdx::tests::rejects_non_fdx_and_malformed ... ok
+test xml::tests::doctype_entities_are_not_expanded ... ok
+test report::tests::sheet_names_are_valid_and_unique ... ok
+test winansi::tests::decode_round_trips ... ok
+test xml::tests::parses_entities_and_namespaces ... ok
+test xml::tests::rejects_malformed ... ok
+test winansi::tests::encodes_latin_and_replaces_others ... ok
+test winansi::tests::widths ... ok
+test docx::tests::written_docx_parses_back ... ok
+test model::tests::character_name_of_a_hostile_cue_is_linear ... ok
+
+test result: ok. 25 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.17s
+
+     Running tests\docx.rs (target\debug\deps\docx-5ea72e961f3e55bb.exe)
+
+running 5 tests
+test legacy_doc_is_explained ... ok
+test docx_round_trip_keeps_readable_screenplay ... ok
+test plain_word_document_is_classified_by_indentation ... ok
+test garbage_and_non_word_archives_are_rejected ... ok
+test zip_bomb_is_rejected_without_inflating_it ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.18s
+
+     Running tests\fdx.rs (target\debug\deps\fdx-8ee22449afd4487a.exe)
+
+running 5 tests
+test deeply_nested_xml_is_refused ... ok
+test fdx_fixture_maps_paragraph_types ... ok
+test fdx_round_trip_preserves_structure ... ok
+test fountain_to_fdx_and_back_keeps_screenplay ... ok
+test malformed_and_foreign_fdx_are_rejected_humanely ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+     Running tests\fountain.rs (target\debug\deps\fountain-017bf476f653ce31.exe)
+
+running 5 tests
+test forced_elements_survive_export ... ok
+test fountain_fixture_parses_every_construct ... ok
+test fountain_round_trip_is_stable ... ok
+test fountain_export_without_notes_omits_internal_material ... ok
+test fountain_writer_matches_golden_file ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\hostile_corpus.rs (target\debug\deps\hostile_corpus-7a4891b588952f4e.exe)
+
+running 14 tests
+test regenerate_hostile_corpus ... ignored, regenerates committed corpus files; run explicitly after changing a generator
+test m1_15_huge_files_are_refused_before_reading ... ok
+test m1_15_corpus_and_readme_list_the_same_cases ... ok
+test m1_15_pdf_stream_flood_preflight_is_linear ... ok
+test m1_15_huge_pdf_inputs_are_bounded ... ok
+test m1_15_symlinked_and_junctioned_import_sources ... ok
+test m1_15_unicode_paths_import_correctly ... ok
+test m1_15_fountain_hostile_corpus ... ok
+test m1_15_fdx_hostile_corpus ... ok
+test m1_15_pdf_hostile_corpus ... ok
+test m1_15_docx_hostile_corpus ... ok
+test m1_15_huge_fdx_inputs_are_bounded ... ok
+test m1_15_more_marker_flood_is_linear ... ok
+test m1_15_huge_text_patterns_parse_in_bounded_time ... ok
+
+test result: ok. 13 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 27.04s
+
+     Running tests\pdf.rs (target\debug\deps\pdf-b26638361493d30f.exe)
+
+running 6 tests
+test pdf_layout_follows_screenplay_conventions ... ok
+test pdf_is_written_atomically ... ok
+test non_latin_text_is_a_clear_export_error_and_nothing_is_written ... ok
+test split_dialogue_is_rejoined_on_import ... ok
+test scanned_or_broken_pdfs_are_rejected_with_the_standard_message ... ok
+test exported_pdf_parses_back_with_same_scene_count ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests\pdf_golden.rs (target\debug\deps\pdf_golden-e60f5ebc987654ad.exe)
+
+running 8 tests
+test m1_16_defect_long_title_page_draft_line_stays_inside_the_margins ... ignored, product defect: long title-page Draft/Revision lines are not wrapped (layout.rs title_page)
+test m1_16_harness_detects_a_missing_revision_mark ... ok
+test m1_16_harness_detects_a_one_character_change ... ok
+test m1_16_harness_tolerance_limits ... ok
+test m1_16_golden_long_unbroken_word_is_wrapped_not_clipped ... ok
+test m1_16_golden_revision_marks ... ok
+test m1_16_golden_dialogue_continuation_more_contd_and_page_headers ... ok
+test m1_16_golden_title_page_scene_numbers_headings_dialogue ... ok
+
+test result: ok. 7 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 5.72s
+
+     Running tests\performance.rs (target\debug\deps\performance-99acc1942d5e4d8a.exe)
+
+running 1 test
+test feature_length_script_round_trips_quickly ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.22s
+
+     Running tests\report.rs (target\debug\deps\report-325257e5f7296a16.exe)
+
+running 5 tests
+test csv_has_bom_header_and_quoting ... ok
+test strict_pdf_names_unprintable_characters_and_suggests_an_alternative ... ok
+test xlsx_is_a_valid_workbook_with_one_sheet_per_table ... ok
+test report_pdf_paginates_tables_and_is_readable ... ok
+test pictures_section_bars_and_centered_header_render_into_a_valid_pdf ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.52s
+
+     Running tests\security_parsers.rs (target\debug\deps\security_parsers-5d5c528565d43d87.exe)
+
+running 8 tests
+test pdf_object_stream_nesting_is_screened_after_inflating ... ok
+test pdf_deep_nesting_is_rejected_before_lopdf ... ok
+test pdf_preflight_accepts_ordinary_structure ... ok
+test pdf_unbounded_filters_are_refused ... ok
+test fdx_with_attribute_flood_is_rejected_not_hung ... ok
+test pdf_page_content_amplification_is_bounded ... ok
+test xml_attribute_flood_fails_fast ... ok
+test pdf_decompression_bomb_is_rejected ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.32s
+
+     Running tests\txt.rs (target\debug\deps\txt-75598b0558b80cf8.exe)
+
+running 6 tests
+test prose_and_empty_text_are_rejected ... ok
+test legacy_encodings_are_decoded ... ok
+test pasted_fountain_with_a_title_page_is_read_as_fountain ... ok
+test pasted_text_is_recognised_with_honest_warnings ... ok
+test txt_export_reimports ... ok
+test indented_plain_text_uses_layout ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running unittests src\lib.rs (target\debug\deps\openframe_persistence-c833c2fbefa85196.exe)
+
+running 22 tests
+test migrate::tests::non_contiguous_list_rejected ... ok
+test migrate::tests::fresh_then_up_to_date ... ok
+test rows::tests::update_respects_allow_list_and_revision ... ok
+test migrate::tests::failed_migration_rolls_back_completely ... ok
+test rows::tests::place_at_reorders_without_changing_identity ... ok
+test migrate::tests::too_new_database_is_refused ... ok
+test migrate::tests::upgrade_only_runs_pending ... ok
+test migrate::tests::simulated_full_drive_rolls_the_migration_back_at_every_point ... ok
+test undo::tests::insert_update_delete_round_trip ... ok
+test tests::missing_database_without_create_fails_humanely ... ok
+test tests::a_database_another_program_locks_is_refused_not_opened_read_only ... ok
+test undo::tests::untracked_tables_are_skipped ... ok
+test undo::tests::untracked_writes_are_not_captured ... ok
+test undo::tests::merge_coalesces_and_drops_no_ops ... ok
+test undo::tests::undo_refuses_to_overwrite_later_changes ... ok
+test tests::pragmas_applied ... ok
+test tests::a_legacy_partial_file_from_a_crash_is_removed ... ok
+test tests::backup_produces_verified_copy ... ok
+test tests::database_deeper_than_max_path_opens_and_backs_up ... ok
+test tests::backup_into_a_deleted_folder_recreates_it ... ok
+test tests::backup_over_an_existing_copy_replaces_it ... ok
+test tests::failed_rename_leaves_no_staging_file ... ok
+
+test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.49s
+
+     Running unittests src\lib.rs (target\debug\deps\openframe_platform-07ce13b9a5a7286f.exe)
+
+running 23 tests
+test identity::tests::family_name_validation ... ok
+test identity::tests::unpackaged_test_process_has_no_family_name ... ok
+test keys::tests::current_platform_is_one_of_the_two_shipped_adapters_or_other ... ok
+test keys::tests::mac_labels ... ok
+test keys::tests::whitespace_and_empty_parts_are_ignored ... ok
+test keys::tests::windows_labels ... ok
+test atomic::tests::missing_folder_fails_without_creating_anything ... ok
+test dirs::tests::windows_data_folder_is_under_local_app_data ... ok
+test atomic::tests::a_folder_as_destination_is_refused_without_side_effects ... ok
+test atomic::tests::a_failing_writer_keeps_the_old_file_and_cleans_up ... ok
+test exists::tests::files_folders_and_missing_paths ... ok
+test dirs::tests::folders_end_with_openframe_and_are_absolute ... ok
+test atomic::tests::creates_a_missing_destination ... ok
+test atomic::tests::a_panicking_writer_keeps_the_old_file_and_cleans_up ... ok
+test atomic::tests::large_write_is_complete_or_absent ... ok
+test atomic::tests::staged_file_in_place_is_renamed_over_the_destination ... ok
+test atomic::tests::staged_file_must_be_ours_and_in_the_destination_folder ... ok
+test atomic::tests::stale_temps_are_removed_and_fresh_or_user_files_are_not ... ok
+test atomic::tests::temp_names_are_unique_hidden_bounded_and_in_the_folder ... ok
+test exists::tests::long_paths_use_the_fallback_and_stay_correct ... ok
+test atomic::tests::replaces_content_and_leaves_no_temp_file ... ok
+test process::tests::a_guarded_child_dies_when_the_guard_is_dropped ... ok
+test atomic::tests::read_only_destination_keeps_the_old_file_and_reports_the_error ... ok
+
+test result: ok. 23 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.44s
+
+     Running unittests src\lib.rs (target\debug\deps\openframe_project_format-fdf9f15b6e194525.exe)
+
+running 9 tests
+test tests::network_paths_detected ... ok
+test export_bindings_sessionmarker ... ok
+test tests::unique_dirs_and_assets ... ok
+test tests::lock_is_exclusive ... ok
+test tests::folders_delegate_to_the_platform_boundary ... ok
+test export_bindings_projectmanifest ... ok
+test tests::manifest_write_leaves_no_staging_file_and_stale_ones_are_removed ... ok
+test tests::session_marker_detects_unclean_close ... ok
+test tests::manifest_round_trip_and_validation ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+
+     Running unittests src\lib.rs (target\debug\deps\openframe_search-0b86890822e38aea.exe)
+
+running 23 tests
+test chunk::tests::helpers ... ok
+test chunk::tests::short_text_is_one_chunk ... ok
+test embed::tests::cache_embeds_each_query_once_and_evicts ... ok
+test chunk::tests::oversized_units_split_on_sentences_then_hard_cut ... ok
+test rank::tests::boosts_are_explainable_and_bounded ... ok
+test embed::tests::validation_rejects_bad_output ... ok
+test chunk::tests::units_are_never_split_unless_oversized ... ok
+test rank::tests::rrf_rewards_agreement_between_lists ... ok
+test rank::tests::ties_are_deterministic ... ok
+test tests::content_hash_is_stable_and_boundary_aware ... ok
+test vector::tests::module_is_not_global ... ok
+test vector::tests::knn_orders_by_cosine_similarity ... ok
+test docs::tests::delete_removes_everything_derived ... ok
+test docs::tests::stale_embedding_results_are_discarded ... ok
+test graph::tests::permission_filter_applies_to_every_node ... ok
+test graph::tests::one_hop_then_two_hops_with_caps ... ok
+test graph::tests::fragments_replace_and_removed_nodes_go_dormant ... ok
+test graph::tests::relation_priority_orders_results ... ok
+test docs::tests::identical_text_reuses_a_stored_vector ... ok
+test docs::tests::unchanged_documents_are_not_rewritten_and_changed_chunks_only_reembed ... ok
+test db::tests::embedding_model_change_resets_vectors ... ok
+test db::tests::hostile_or_garbage_files_are_replaced ... ok
+test db::tests::creates_then_reuses_then_rebuilds_on_identity_change ... ok
+
+test result: ok. 23 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s
+
+     Running unittests src\lib.rs (target\debug\deps\openframe_security-3506c82bcd5e7d77.exe)
+
+running 20 tests
+test tests::relative_paths_cannot_escape ... ok
+test tests::sanitize_handles_hostile_names ... ok
+test tests::mapped_network_drives_are_refused_for_projects_and_content ... ok
+test tests::unc_text_is_a_network_location_without_filesystem_access ... ok
+test tests::signatures_verify_and_reject_tampering ... ok
+test tests::redaction_removes_personal_data ... ok
+test tests::confine_joins_inside_root ... ok
+test archive::tests::garbage_is_rejected_humanely ... ok
+test tests::hashing_is_stable ... ok
+test archive::tests::zip_slip_rejected_and_nothing_written ... ok
+test archive::tests::duplicate_entry_names_are_refused ... ok
+test archive::tests::a_failed_zip_write_leaves_the_old_archive_and_no_staging_file ... ok
+test archive::tests::writing_over_an_existing_archive_replaces_it_atomically ... ok
+test archive::tests::round_trip ... ok
+test archive::tests::absolute_and_drive_paths_rejected ... ok
+test archive::tests::oversized_entry_rejected ... ok
+test archive::tests::lying_header_bomb_stops_at_the_declared_size ... ok
+test archive::tests::honest_entry_of_exactly_the_declared_size_extracts ... ok
+test archive::tests::case_colliding_names_are_refused ... ok
+test archive::tests::short_name_aliases_are_refused ... ok
+
+test result: ok. 20 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.27s
+
+     Running tests\confinement_and_network.rs (target\debug\deps\confinement_and_network-ed06aa2b1f881c6e.exe)
+
+running 9 tests
+test unc_project_locations_are_network_locations ... ok
+test a_local_folder_that_resolves_to_a_share_is_refused_when_symlinks_can_be_created ... ok
+test the_local_system_drive_is_not_refused ... ok
+test a_dangling_symlink_is_refused_when_symlinks_can_be_created ... ok
+test plain_destinations_are_unchanged ... ok
+test a_junction_deeper_inside_assets_is_refused_too ... ok
+test new_files_below_a_junctioned_assets_folder_are_refused ... ok
+test a_junction_that_stays_inside_the_project_is_allowed ... ok
+test a_project_opened_through_a_junction_still_confines_normally ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+
+     Running tests\security_paths.rs (target\debug\deps\security_paths-4eefe563c1416900.exe)
+
+running 10 tests
+test device_verbatim_and_relative_paths_are_rejected_before_any_filesystem_access ... ok
+test network_paths_follow_the_policy_including_slash_variants ... ok
+test only_plain_web_links_reach_the_browser ... ok
+test reserved_names_cover_all_windows_devices ... ok
+test executables_are_never_shell_opened ... ok
+test panic_log_lines_are_redacted_and_bounded ... ok
+test input_files_must_be_regular_files_within_the_cap ... ok
+test output_files_are_never_written_into_protected_folders ... ok
+test junction_into_a_protected_folder_is_resolved_before_the_check ... ok
+test archives_declaring_too_many_entries_are_refused_before_parsing ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+     Running unittests src\lib.rs (target\debug\deps\openframe_test_support-93f20e194d34c2f0.exe)
+
+running 1 test
+test embedder::tests::concept_words_are_close_and_deterministic ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests openframe_ai
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests openframe_application
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests openframe_desktop_lib
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests openframe_domain
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests openframe_entitlement
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests openframe_import_export
+
+running 1 test
+test crates\openframe-import-export\src\report.rs - report (line 4) ... ignored
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+all doctests ran in 0.75s; merged doctests compilation took 0.74s
+   Doc-tests openframe_persistence
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests openframe_platform
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests openframe_project_format
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests openframe_search
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests openframe_security
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests openframe_test_support
+
+running 1 test
+test crates\openframe-test-support\src\lib.rs - (line 3) ... ignored
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+all doctests ran in 0.40s; merged doctests compilation took 0.39s
+
+> openframe-studio@0.1.0 test:web
+> npm --workspace apps/desktop run test
+
+
+> @openframe/desktop@0.1.0 test
+> vitest run
+
+
+ RUN  v3.2.7 C:/OpenFrame/apps/desktop
+
+ ✓ src/ai/AiPanel.test.tsx (10 tests) 1262ms
+ ✓ src/workspaces/settings/SupportDiagnostics.test.tsx (7 tests) 1536ms
+   ✓ Support > Export Diagnostics > sits under a Support heading and shows every file before anything is saved  510ms
+ ✓ src/app/home/NewProjectDialog.test.tsx (5 tests) 1890ms
+   ✓ New Project validation > keeps Create disabled until a title is entered and explains why  836ms
+   ✓ New Project validation > creates a Series project with only the required fields  710ms
+   ✓ New Project validation > keeps the entries and offers Retry when creation fails  341ms
+ ✓ src/app/home/AppHome.test.tsx (6 tests) 1933ms
+   ✓ Application Home > shows the empty state with the two first actions when there are no projects  369ms
+   ✓ Application Home > opens the New Project dialog from the empty state and with Ctrl+N  543ms
+   ✓ Application Home > asks for the user's name on first run and stores it  431ms
+ ✓ src/workspaces/trash/RecentlyDeleted.test.tsx (3 tests) 1129ms
+   ✓ Recently Deleted > asks for a second, deliberate confirmation before deleting permanently  991ms
+ ✓ src/features/interchange/Interchange.test.tsx (4 tests) 1117ms
+   ✓ ImportScreenplayDialog > previews pasted text, shows uncertainty, and imports only after confirmation  684ms
+ ✓ src/workspaces/idea-vault/IdeaVault.test.tsx (4 tests) 1151ms
+   ✓ Idea Vault workspace > shows the project header, toolbar and the empty state  701ms
+ ✓ src/workspaces/production/catalog.test.tsx (4 tests) 803ms
+stderr | src/workspaces/settings/Licence.test.tsx > Settings > Licence > never throws on an unexpected failure and says so plainly
+[undefined] unknown 
+
+ ✓ src/workspaces/settings/Licence.test.tsx (6 tests) 700ms
+ ✓ src/features/export/export.test.tsx (5 tests) 660ms
+   ✓ ExportDialog > asks where to save, exports the snapshot and offers Reveal in File Manager  474ms
+ ✓ src/workspaces/story/BoardView.test.tsx (4 tests) 727ms
+   ✓ Story Board views > shows acts, sequences, compact cards without scene numbers, and the Parking Lot  432ms
+ ✓ src/workspaces/production/visual/visual.test.tsx (12 tests) 696ms
+   ✓ Shot Lists tab > lists the scene's shots with generated labels and the review indicator  519ms
+ ✓ src/design-system/menu.test.tsx (2 tests) 396ms
+   ✓ ContextMenu > builds lazy items only when the menu opens  336ms
+ ✓ src/workspaces/breakdown/breakdown.test.tsx (5 tests) 442ms
+ ✓ src/ai/OfflineAiSetup.test.tsx (7 tests) 499ms
+ ✓ src/workspaces/production/production.test.tsx (2 tests) 406ms
+   ✓ production workspace tabs > switches tabs through the route (sub = tab id)  401ms
+ ✓ src/workspaces/call-sheets/shared/Strip.test.tsx (2 tests) 262ms
+ ✓ src/workspaces/breakdown/highlight.test.ts (6 tests) 33ms
+ ✓ src/workspaces/screenplay/editor/editor.test.ts (18 tests) 38ms
+ ✓ src/api/schedule.test.ts (5 tests) 44ms
+ ✓ src/ai/model.test.ts (13 tests) 16ms
+ ✓ src/features/packages/packages.test.ts (9 tests) 11ms
+ ✓ src/workspaces/story/model.test.ts (10 tests) 19ms
+ ✓ src/features/interchange/model.test.ts (6 tests) 12ms
+ ✓ src/workspaces/idea-vault/model.test.ts (6 tests) 16ms
+ ✓ src/workspaces/screenplay/lock.security.test.ts (2 tests) 6ms
+
+ Test Files  26 passed (26)
+      Tests  163 passed (163)
+   Start at  19:30:53
+   Duration  48.42s (transform 3.57s, setup 29.46s, collect 24.03s, tests 15.80s, environment 105.77s, prepare 6.60s)
+
+EXIT=0

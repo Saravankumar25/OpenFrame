@@ -1,0 +1,37 @@
+# OpenFrame licence server: validates Mac App Store StoreKit 2 transactions and returns a signed
+# trial and lifetime answer. Design: docs/engineering/38-mac-app-store-trial.md.
+#
+# This is a separate Cargo project. It is not a member of the root workspace. The empty
+# [workspace] table below stops Cargo from attaching it to the workspace in the repository root.
+
+[package]
+name = "openframe-licence-server"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+publish = false
+license = "LicenseRef-OpenFrame-Pending"
+description = "Validates Mac App Store transactions for OpenFrame Studio and signs the answer."
+
+[workspace]
+
+[dependencies]
+axum = { version = "0.8", default-features = false, features = ["http1", "json", "tokio"] }
+axum-server = { version = "0.7", default-features = false, features = ["tls-rustls-no-provider"] }
+rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12", "logging"] }
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "net", "signal", "time"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+base64 = "0.22"
+ring = "0.17"
+x509-parser = { version = "0.17", features = ["verify"] }
+ed25519-dalek = "2"
+hyper-util = { version = "0.1", features = ["tokio"] }
+
+[dev-dependencies]
+rcgen = { version = "0.13", default-features = false, features = ["crypto", "ring", "pem"] }
+tower = { version = "0.5", features = ["util"] }
+http-body-util = "0.1"
+
+[profile.release]
+overflow-checks = true

@@ -1,0 +1,20 @@
+=== title page
+ 18  331 TitleMain      రైలు - THE NIGHT TRAIN
+ 19  398 TitleMain      నిషా వర్మ
+=== page 1
+  0   90 SceneNumber    1
+  0  150 Heading        INT. రైల్వే స్టేషన్ - NIGHT
+  0  760 SceneNumber    1
+  2  150 Action         Rain on the platform. మీరా looks at अर्जुन, then at the clock.
+  4  370 Character      మీరా
+  5  250 Dialogue       మీరా రైలు స్టేషన్‌లో వేచి ఉంది.
+  7  370 Character      अर्जुन
+  8  310 Parenthetical  (धीरे से)
+  9  250 Dialogue       मीरा ने कहा, “क्षमा करें।”
+ 11   90 SceneNumber    2
+ 11  150 Heading        EXT. சென்னை சாலை - DAY
+ 11  760 SceneNumber    2
+ 13  150 Action         நீ எங்கே போகிறாய்? അവന്‍ വന്നു.
+ 15  370 Character      ರವಿ
+ 16  250 Dialogue       ನಾನು ಬರುತ್ತೇನೆ.
+pdf-sha256 047a1633e9080a4a6825645df9d6ddb6d98e381c0fc941b2a9453953412b9309

@@ -1,0 +1,88 @@
+{
+  "scenes": [
+    {
+      "elements": [
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "action",
+          "revision": null,
+          "text": "The radio crackles."
+        },
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "character",
+          "revision": null,
+          "text": "CONTROL"
+        },
+        {
+          "custom": {
+            "exportName": "TELEPHONE",
+            "italic": true,
+            "look": "dialogue",
+            "name": "TELEPHONE",
+            "spaceBefore": 1,
+            "uppercase": true
+          },
+          "dual": false,
+          "kind": "custom",
+          "revision": null,
+          "text": "this is control. clear the line."
+        },
+        {
+          "custom": {
+            "exportName": "Lower Third",
+            "italic": false,
+            "look": "centered",
+            "name": "Lower Third",
+            "spaceBefore": 2,
+            "uppercase": false
+          },
+          "dual": false,
+          "kind": "custom",
+          "revision": null,
+          "text": "Gudur Junction, 2:14 AM"
+        },
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "action",
+          "revision": null,
+          "text": "ASHA lifts the receiver."
+        },
+        {
+          "custom": {
+            "exportName": "TELEPHONE",
+            "italic": true,
+            "look": "dialogue",
+            "name": "TELEPHONE",
+            "spaceBefore": 1,
+            "uppercase": true
+          },
+          "dual": false,
+          "kind": "custom",
+          "revision": null,
+          "text": "say again, signal box."
+        }
+      ],
+      "heading": "INT. CONTROL ROOM - NIGHT",
+      "number": null
+    }
+  ],
+  "titlePage": [],
+  "warnings": [
+    {
+      "code": "fdx_custom_element",
+      "level": "info",
+      "message": "1 “Lower Third” paragraph(s) were kept as the custom element “Lower Third”. You can change how it looks under Advanced.",
+      "scene": null
+    },
+    {
+      "code": "fdx_custom_element",
+      "level": "info",
+      "message": "2 “TELEPHONE” paragraph(s) were kept as the custom element “TELEPHONE”. You can change how it looks under Advanced.",
+      "scene": null
+    }
+  ]
+}

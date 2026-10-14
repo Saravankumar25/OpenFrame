@@ -1,0 +1,189 @@
+{
+  "lockVersion": 1,
+  "bundleId": "openframe-local-ai-v1",
+  "bundleVersion": "1.0.0",
+  "runtimes": [
+    {
+      "runtimeId": "llama-cpp-b11259-win-x64-cpu",
+      "engine": "llama.cpp",
+      "version": "b11259",
+      "os": "windows",
+      "arch": "x86_64",
+      "backend": "cpu",
+      "executable": "llama-server.exe",
+      "licenseId": "MIT",
+      "source": {
+        "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11259/llama-b11259-bin-win-cpu-x64.zip",
+        "bytes": 19164803,
+        "sha256": "977c5ddcd24caaaaaf87a9cdcfa46972a1c8ccf2007a013a45c84e8bc31865d9"
+      },
+      "files": [
+        {
+          "path": "llama-server.exe",
+          "bytes": 9216,
+          "sha256": "a671fe6f24b83a01e46b61b2845edc0a6c05591288d7110abb8e35bfdda2fccd"
+        },
+        {
+          "path": "llama-server-impl.dll",
+          "bytes": 8922624,
+          "sha256": "4635928a56a6c13636d9a4c4b2b87096139b3fd09dd3bc0bf769d54428c35937"
+        },
+        {
+          "path": "llama-common.dll",
+          "bytes": 7849472,
+          "sha256": "67e143fa349b8c835cf6b66f0fe2bc38da030849873143bf84d866938aa91eba"
+        },
+        {
+          "path": "mtmd.dll",
+          "bytes": 1787904,
+          "sha256": "235097e315c83f3da2b4c5a8ef64e9ae0e055deecad866dc8b5591b49cc2909e"
+        },
+        {
+          "path": "llama.dll",
+          "bytes": 3203072,
+          "sha256": "11b7b693e5ba137a88be44b1cd2cd21dda64e046a333253acdff3d23bda33d7c"
+        },
+        {
+          "path": "ggml.dll",
+          "bytes": 79872,
+          "sha256": "92b3d587f6e539077932598941fc2a3f33a679480951d0ddc995554d03158a45"
+        },
+        {
+          "path": "ggml-base.dll",
+          "bytes": 800768,
+          "sha256": "0396d453898eff5f105baf187cd7bfd0d83edba62ebfda0c76c5a2be40170b49"
+        },
+        {
+          "path": "libomp.dll",
+          "bytes": 768000,
+          "sha256": "a12116ba72d1d6820407cf30be23da04ce79d6bb8a71a5ee71759c5a1faa6f1c"
+        },
+        {
+          "path": "ggml-cpu-alderlake.dll",
+          "bytes": 1424384,
+          "sha256": "da2ce899d47ab23f1542865e57f2df80b1d738b6ebba23a548596b966f7a5d6a"
+        },
+        {
+          "path": "ggml-cpu-cannonlake.dll",
+          "bytes": 1649664,
+          "sha256": "b497e0bdf3e1ead781cb2e10f1601596d3d1afce436a9251ce1368e2168df184"
+        },
+        {
+          "path": "ggml-cpu-cascadelake.dll",
+          "bytes": 1634304,
+          "sha256": "47b6a5490b2a81a253cc3e3b61f68f9ae0338779a95079d5947eae5794e2330b"
+        },
+        {
+          "path": "ggml-cpu-cooperlake.dll",
+          "bytes": 1634816,
+          "sha256": "6ec3ed84e477af453a0879c352e299b690cce2fb1bfa09c55d8304f03dcdc0e5"
+        },
+        {
+          "path": "ggml-cpu-haswell.dll",
+          "bytes": 1428992,
+          "sha256": "48ff33c73c3cc747522822c4d088621a66e15f7c4ff98b6c7689b833913d7e31"
+        },
+        {
+          "path": "ggml-cpu-icelake.dll",
+          "bytes": 1640448,
+          "sha256": "ef5669772ac6e26c223a6930f7c99cb6a2985e315320d0a5ca3edbde4b418fff"
+        },
+        {
+          "path": "ggml-cpu-ivybridge.dll",
+          "bytes": 1298944,
+          "sha256": "b6aebe67cd03d570e05d3aa6f20ab5553a66c755f03d623901800a8dfe0e2754"
+        },
+        {
+          "path": "ggml-cpu-piledriver.dll",
+          "bytes": 1303040,
+          "sha256": "0f51a00760ad893c44a8e4488bd2d54a6a4e260df7feaa67e6ea6e9968d39fd9"
+        },
+        {
+          "path": "ggml-cpu-sandybridge.dll",
+          "bytes": 1278976,
+          "sha256": "f60089e2b0d2e4402b18ce1424c327ddf382b3cbaeca32598820cef354c233d0"
+        },
+        {
+          "path": "ggml-cpu-sapphirerapids.dll",
+          "bytes": 1911296,
+          "sha256": "dc1aa0a345af0a75acce01a6baea881b663cd9320acf3272e8bbf3ec96247390"
+        },
+        {
+          "path": "ggml-cpu-skylakex.dll",
+          "bytes": 1643008,
+          "sha256": "cf95e711a1f0863a61217b94fdbda9f68f87c40507838493360c1f5c1eca3cc5"
+        },
+        {
+          "path": "ggml-cpu-sse42.dll",
+          "bytes": 909312,
+          "sha256": "33920a25b6855a69169355fae4d9d4b4f968e11a22a8ea95b79c3611a909f7fa"
+        },
+        {
+          "path": "ggml-cpu-x64.dll",
+          "bytes": 901632,
+          "sha256": "08a7bb90a1640518a5b27a643b8a8b73f18abcd7fe6f92019236c699ea427481"
+        },
+        {
+          "path": "ggml-cpu-zen4.dll",
+          "bytes": 1641472,
+          "sha256": "5775c2cafa9bd74be8c14cc77d58163461f8f4ec709b859e26041ee023041135"
+        },
+        {
+          "path": "LICENSE-LLVM-OpenMP",
+          "bytes": 19741,
+          "sha256": "fdad1758a9e1f9d5a81e18879b3406772115edc92c24bfa36b70c654f325e8e4"
+        }
+      ]
+    }
+  ],
+  "models": [
+    {
+      "modelId": "gemma-3-1b-it-q8-0-v1",
+      "role": "chat",
+      "displayName": "Gemma 3 1B Instruct",
+      "family": "gemma3",
+      "quantization": "Q8_0",
+      "version": "f9c28bc",
+      "licenseId": "Gemma-Terms-of-Use",
+      "licenseUrl": "https://ai.google.dev/gemma/terms",
+      "contextTokens": 8192,
+      "minRamBytes": 4294967296,
+      "recommendedRamBytes": 8589934592,
+      "layers": 26,
+      "tokenizer": "embedded",
+      "source": {
+        "url": "https://huggingface.co/ggml-org/gemma-3-1b-it-GGUF/resolve/f9c28bcd85737ffc5aef028638d3341d49869c27/gemma-3-1b-it-Q8_0.gguf"
+      },
+      "file": {
+        "path": "model.gguf",
+        "bytes": 1069306368,
+        "sha256": "b205840c5dcef55078e37d344677869a714ffd42a4ae448c48dcfb52e4bb10d5"
+      }
+    },
+    {
+      "modelId": "bge-small-en-v1.5-q8-0-v1",
+      "role": "embedding",
+      "displayName": "BGE small English v1.5",
+      "family": "bert",
+      "quantization": "Q8_0",
+      "version": "f2068ed",
+      "licenseId": "MIT",
+      "licenseUrl": "https://huggingface.co/BAAI/bge-small-en-v1.5",
+      "contextTokens": 512,
+      "minRamBytes": 268435456,
+      "recommendedRamBytes": 536870912,
+      "layers": 12,
+      "embeddingDim": 384,
+      "pooling": "cls",
+      "tokenizer": "embedded",
+      "source": {
+        "url": "https://huggingface.co/ggml-org/bge-small-en-v1.5-Q8_0-GGUF/resolve/f2068edd9b54f2a369549ccc71f70ed273a2a801/bge-small-en-v1.5-q8_0.gguf"
+      },
+      "file": {
+        "path": "model.gguf",
+        "bytes": 36685152,
+        "sha256": "f046db1dc724cf4f6f0a0c5917e922823b73eb1d27b8f9a9c2797f7866974804"
+      }
+    }
+  ]
+}

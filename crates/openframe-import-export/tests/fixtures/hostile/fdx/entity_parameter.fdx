@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE FinalDraft [
+  <!ENTITY % remote SYSTEM "file:///C:/Windows/win.ini">
+  %remote;
+  <!ENTITY % wrap "<!ENTITY leak '%remote;'>">
+  %wrap;
+]>
+<FinalDraft DocumentType="Script" Version="5">
+  <Content>
+    <Paragraph Type="Scene Heading"><Text>INT. LAB - NIGHT</Text></Paragraph>
+    <Paragraph Type="Action"><Text>&leak;</Text></Paragraph>
+  </Content>
+</FinalDraft>

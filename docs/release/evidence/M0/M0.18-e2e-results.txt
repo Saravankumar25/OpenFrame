@@ -1,0 +1,29 @@
+WebView2 Runtime 154.0.4258.53
+msedgedriver 154.0.4258.53 already installed.
+tauri-driver already installed.
+  ✔ first launch → name → create project → Project Home
+  ✔ Idea Vault: add a note with Quick Capture
+  ✔ Story: act, sequence, two cards (one with Ctrl+N), keyboard reorder, undo/redo
+  ✔ Build Screenplay lands in the new screenplay at the first scene
+  ✔ type in the screenplay editor (autosaved)
+  ✔ import pasted Fountain from the quick actions menu → opens the new draft
+  ✔ Breakdown: select the Production Source and accept a suggestion
+  ✔ Schedule: all scenes start unscheduled, one moves into a shooting day
+  ✔ Call sheet from the shooting day
+  ✔ Schedule strip → Open in Screenplay opens the production draft at that scene
+  ✔ Search (Ctrl+K) finds the scene and navigates to it
+  ✔ Recently Deleted: delete a Scene Card and restore it
+  ✔ AI panel says Offline AI is not installed (no network needed)
+  ✔ every workspace and production tab renders without console problems or unlabelled controls
+  ✔ close the project cleanly → Application Home lists it
+✔ desktop journey
+  ✔ reopen the project and find the screenplay text, story and call sheet
+✔ relaunch
+  ✔ capture 15 representative screens
+✔ visual baseline
+ℹ tests 17
+ℹ pass 17
+ℹ fail 0
+ℹ skipped 0
+ℹ duration_ms 70124.24
+E2E_EXIT=0

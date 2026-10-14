@@ -1,0 +1,43 @@
+== page 1 792x612
+54,542 16.0 Day Out of Days
+*,526 9.5 Black Rain · Revised <DATE> · Source: Shooting Schedule · Shooting Draft 6 (Locked)
+54,501 9.5 Days
+259,501 9.5 Shoot Day 1 · Mon 14 Jun 2027 to Shoot Day 2 · Tue 15 Jun 2027
+54,488 9.5 Cast
+259,488 9.5 2 cast members
+54,476 9.5 Codes
+259,476 9.5 SW start work · W work · WF work finish · SWF start, work and finish on the same day · H hold (paid, not
+259,463 9.5 working) · T travel · R rehearsal · F fitting · D drop · - not working
+54,451 9.5 Corrections
+259,451 9.5 None; every cell comes from the schedule
+58,431 8.5 #
+90,431 8.5 Cast
+306,431 8.5 Day 1
+306,420 8.5 06-14
+365,431 8.5 Day 2
+365,420 8.5 06-15
+449,431 8.5 Work
+505,431 8.5 Hold
+558,431 8.5 Travel
+591,431 8.5 Start
+667,431 8.5 Finish
+58,403 8.5 1
+90,403 8.5 Karthik Menon (Arjun)
+306,403 8.5 SW
+365,403 8.5 WF
+465,403 8.5 2
+519,403 8.5 0
+578,403 8.5 0
+591,403 8.5 Shoot Day 1
+667,403 8.5 Shoot Day 2
+58,387 8.5 2
+90,387 8.5 Divya Nair (Meera)
+306,387 8.5 SW
+365,387 8.5 WF
+465,387 8.5 2
+519,387 8.5 0
+578,387 8.5 0
+591,387 8.5 Shoot Day 1
+667,387 8.5 Shoot Day 2
+318,34 8.0 Black Rain · Day Out of Days · Page 1 of 1
+65,18 7.0 Created with OpenFrame Studio

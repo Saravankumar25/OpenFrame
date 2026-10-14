@@ -1,0 +1,180 @@
+{
+  "scenes": [
+    {
+      "elements": [
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "character",
+          "revision": null,
+          "text": "DR. RAO"
+        },
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "parenthetical",
+          "revision": null,
+          "text": "(not looking up)"
+        },
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "dialogue",
+          "revision": null,
+          "text": "Sit down."
+        },
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "character",
+          "revision": null,
+          "text": "NISHA"
+        },
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "parenthetical",
+          "revision": null,
+          "text": "(standing)"
+        },
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "dialogue",
+          "revision": null,
+          "text": "I would rather not."
+        },
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "parenthetical",
+          "revision": null,
+          "text": "(a long pause)"
+        },
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "dialogue",
+          "revision": null,
+          "text": "Please."
+        },
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "character",
+          "revision": null,
+          "text": "DR. RAO"
+        },
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "parenthetical",
+          "revision": null,
+          "text": "(beat; then gently)"
+        },
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "dialogue",
+          "revision": null,
+          "text": "The results came back."
+        },
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "character",
+          "revision": null,
+          "text": "NISHA"
+        },
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "parenthetical",
+          "revision": null,
+          "text": "(quietly)"
+        },
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "dialogue",
+          "revision": null,
+          "text": "And?"
+        },
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "parenthetical",
+          "revision": null,
+          "text": "(a long pause)"
+        },
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "dialogue",
+          "revision": null,
+          "text": "Please."
+        },
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "character",
+          "revision": null,
+          "text": "DR. RAO"
+        },
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "parenthetical",
+          "revision": null,
+          "text": "(V.O.)"
+        },
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "dialogue",
+          "revision": null,
+          "text": "And they are clear."
+        },
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "character",
+          "revision": null,
+          "text": "NISHA"
+        },
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "parenthetical",
+          "revision": null,
+          "text": "(laughing, crying)"
+        },
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "dialogue",
+          "revision": null,
+          "text": "Say it again."
+        },
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "parenthetical",
+          "revision": null,
+          "text": "(a long pause)"
+        },
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "dialogue",
+          "revision": null,
+          "text": "Please."
+        }
+      ],
+      "heading": "INT. CLINIC - DAY",
+      "number": null
+    }
+  ],
+  "titlePage": [],
+  "warnings": []
+}

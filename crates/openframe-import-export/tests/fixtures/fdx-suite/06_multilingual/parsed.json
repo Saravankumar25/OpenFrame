@@ -1,0 +1,86 @@
+{
+  "scenes": [
+    {
+      "elements": [
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "action",
+          "revision": null,
+          "text": "Rain on the platform. మీరా looks at अर्जुन, then at the clock."
+        },
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "character",
+          "revision": null,
+          "text": "మీరా"
+        },
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "dialogue",
+          "revision": null,
+          "text": "మీరా రైలు స్టేషన్‌లో వేచి ఉంది."
+        },
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "character",
+          "revision": null,
+          "text": "अर्जुन"
+        },
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "parenthetical",
+          "revision": null,
+          "text": "(धीरे से)"
+        },
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "dialogue",
+          "revision": null,
+          "text": "मीरा ने कहा, “क्षमा करें।”"
+        }
+      ],
+      "heading": "INT. రైల్వే స్టేషన్ - NIGHT",
+      "number": null
+    },
+    {
+      "elements": [
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "action",
+          "revision": null,
+          "text": "நீ எங்கே போகிறாய்? അവന്‍ വന്നു."
+        },
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "character",
+          "revision": null,
+          "text": "ರವಿ"
+        },
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "dialogue",
+          "revision": null,
+          "text": "ನಾನು ಬರುತ್ತೇನೆ."
+        }
+      ],
+      "heading": "EXT. சென்னை சாலை - DAY",
+      "number": null
+    }
+  ],
+  "titlePage": [
+    [
+      "Title",
+      "రైలు - The Night Train\nనిషా వర్మ"
+    ]
+  ],
+  "warnings": []
+}

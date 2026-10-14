@@ -1,0 +1,40 @@
+     24 Error: Test timed out in 5000ms.
+     24      → Test timed out in 5000ms.
+      5 Error: Test timed out in 20000ms.
+      5      → Test timed out in 20000ms.
+      1 ⎯⎯⎯⎯⎯⎯ Unhandled Errors ⎯⎯⎯⎯⎯⎯
+      1  Test Files  14 failed | 10 passed (24)
+      1  FAIL  src/workspaces/trash/RecentlyDeleted.test.tsx > Recently Deleted > restores and says where the item went, including Unassigned
+      1  FAIL  src/workspaces/trash/RecentlyDeleted.test.tsx > Recently Deleted > asks for a second, deliberate confirmation before deleting permanently
+      1  FAIL  src/workspaces/story/BoardView.test.tsx > Story Board views > shows acts, sequences, compact cards without scene numbers, and the Parking Lot
+      1  FAIL  src/workspaces/story/BoardView.test.tsx > Story Board views > selects on click, multi-selects with Ctrl+click and opens the drawer on double-click
+      1  FAIL  src/workspaces/production/visual/visual.test.tsx > Shot Lists tab > shows the no-script state when there are no scenes
+      1  FAIL  src/workspaces/production/visual/visual.test.tsx > Shot Lists tab > lists the scene's shots with generated labels and the review indicator
+      1  FAIL  src/workspaces/production/visual/visual.test.tsx > Shot Lists tab > adds a shot with only a description and validates empty input
+      1  FAIL  src/workspaces/production/production.test.tsx > production workspace tabs > switches tabs through the route (sub = tab id)
+      1  FAIL  src/workspaces/production/catalog.test.tsx > catalog tab > warns about an existing item with the same name when adding
+      1  FAIL  src/workspaces/production/catalog.test.tsx > catalog tab > opens the item drawer with its scenes and offers Archive, not only Delete
+      1  FAIL  src/workspaces/production/catalog.test.tsx > catalog tab > filters by category through the backend query
+      1  FAIL  src/workspaces/call-sheets/shared/Strip.test.tsx > StripRow > shows colour class, missing location text and script flag (never colour-only)
+      1  FAIL  src/workspaces/breakdown/breakdown.test.tsx > scene list > shows derived numbers, headings and status chips
+      1  FAIL  src/workspaces/breakdown/breakdown.test.tsx > elements panel > shows only categories with content and marks suggestions distinctly
+      1  FAIL  src/workspaces/breakdown/breakdown.test.tsx > elements panel > rejecting a suggestion calls the backend (no local truth)
+      1  FAIL  src/workspaces/breakdown/breakdown.test.tsx > elements panel > read-only users see no editing actions
+      1  FAIL  src/features/interchange/Interchange.test.tsx > ImportScreenplayDialog > previews pasted text, shows uncertainty, and imports only after confirmation
+      1  FAIL  src/features/interchange/Interchange.test.tsx > ImportScreenplayDialog > explains a failed import and that the project was not changed
+      1  FAIL  src/features/interchange/Interchange.test.tsx > ExportScreenplayDialog > requires at least one scene when exporting selected scenes
+      1  FAIL  src/features/interchange/Interchange.test.tsx > ExportScreenplayDialog > exports the chosen draft with the chosen options as a snapshot
+      1  FAIL  src/features/export/export.test.tsx > ExportDialog > shows a human error and keeps the dialog open when the export fails
+      1  FAIL  src/features/export/export.test.tsx > ExportDialog > does nothing when the Save dialog is cancelled
+      1  FAIL  src/features/export/export.test.tsx > ExportDialog > asks where to save, exports the snapshot and offers Reveal in File Manager
+      1  FAIL  src/design-system/menu.test.tsx > ContextMenu > still accepts a plain item list
+      1  FAIL  src/design-system/menu.test.tsx > ContextMenu > builds lazy items only when the menu opens
+      1  FAIL  src/app/home/NewProjectDialog.test.tsx > New Project validation > keeps the entries and offers Retry when creation fails
+      1  FAIL  src/app/home/NewProjectDialog.test.tsx > New Project validation > keeps Create disabled until a title is entered and explains why
+      1  FAIL  src/app/home/NewProjectDialog.test.tsx > New Project validation > creates a Series project with only the required fields
+      1  FAIL  src/app/home/AppHome.test.tsx > Application Home > shows the empty state with the two first actions when there are no projects
+      1  FAIL  src/app/home/AppHome.test.tsx > Application Home > opens the New Project dialog from the empty state and with Ctrl+N
+      1  FAIL  src/ai/OfflineAiSetup.test.tsx > Offline AI setup > offers one button with the exact size first, and no technical names
+      1  FAIL  src/ai/AiPanel.test.tsx > AI Assistant panel > works without AI installed and offers the one-click Download Offline AI flow
+      1  FAIL  src/ai/AiPanel.test.tsx > AI Assistant panel > shows one review card for a multi-step change, with its parts
+      1  FAIL  src/ai/AiPanel.test.tsx > AI Assistant panel > shows download progress with pause and cancel

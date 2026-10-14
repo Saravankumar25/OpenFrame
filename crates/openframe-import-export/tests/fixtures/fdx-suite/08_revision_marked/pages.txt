@@ -1,0 +1,17 @@
+=== page 1
+  0   90 SceneNumber    1
+  0  150 Heading        INT. HOUSE - DAY
+  0  760 SceneNumber    1
+  2  150 Action         MEERA packs a bag.
+  4  150 Action         She stops. Unpacks it again.
+  4  770 RevisionMark   *
+  6  370 Character      MEERA
+  6  770 RevisionMark   *
+  7  250 Dialogue       Not today.
+  7  770 RevisionMark   *
+  9   90 SceneNumber    2
+  9  150 Heading        EXT. STREET - DAY
+  9  760 SceneNumber    2
+ 11  150 Action         The bus leaves without her.
+ 11  770 RevisionMark   *
+pdf-sha256 3d5c4a0752f06e943da7620023d699c09821ef7210d6d56f83694e87d12fffc5

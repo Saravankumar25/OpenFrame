@@ -1,0 +1,28 @@
+{
+  "frozen": false,
+  "policy": "docs/engineering/23-release-migration.md section 4. Set frozen to true in the change that produces the first build given to anyone outside the development team; from then on recorded files are append-only and scripts/check-migrations.mjs fails on any edit.",
+  "files": {
+    "app/0001_app.sql": "fd3799b9f366a82ac79528f5bd576f7953d06eff9b9801ff399e35fb517fb24d",
+    "app/0002_appearance.sql": "149a096edab8b03013e9d1c564069ba0feefad9a6abb9d37ce5d6250e594af7f",
+    "global/0001_core.sql": "709e840386976c263df6cbe73f63b000ed7b689f38f3e0c5e1c23f7706e81b7a",
+    "global/0002_idea_vault.sql": "a112a6a1607084a24e61d0cb8aff0e58f672cb5e11376fcd52c5f6c74b88d7be",
+    "global/0003_performance.sql": "20991335c0382f385a6cb227709826c0d4bc4379503929dd3bbd96adaa226caf",
+    "global/0004_vault_research.sql": "3c7f9e7080b746dc0f623b8f18d82d0fdfe38a6e2482ea4d6b83f4c5ac5d4bd5",
+    "project/0001_core.sql": "b1499b505d063f8e1f129f446abcb440f8b5a73b9fbab48d48ee897f6672099a",
+    "project/0002_idea_vault.sql": "2cad662bb14dbe4f0f95a24704026abc4c092d3916f5b720df2a3754dddf0f1c",
+    "project/0003_story.sql": "ffb4e528faa1967de9db19b3fd2a5dcc6572a82b1e04a01848c3313e9647403a",
+    "project/0004_screenplay.sql": "a08ce620dd1436c0d54d6e30aa92c7fbedfd120c6d2c87bf96bf8ceae7bc1676",
+    "project/0005_production.sql": "330ed7284ff47d150744879d1b9db19fd6f50d8f1e223b21a293261fdfd7e0db",
+    "project/0006_visual.sql": "fa89406361b681dcd5d077f7942eaa44984315fdb56dd77a0ed520bcc8099567",
+    "project/0007_schedule.sql": "74dac88110bfa04bad3ecf87c96877eef12ca309950224f23477cbdf59325bde",
+    "project/0008_ai.sql": "b1abe62a298ce0bd14ef17c4d91197c984e4c71ad03f3854c92cd07406db7dae",
+    "project/0009_collaboration.sql": "2be2b6d842cdd3c82c17de203500a83fa766c48efc205efaae76841dc6c601d3",
+    "project/0010_performance.sql": "516eed482685e5c0acc13490a0de6fb964f631044b02790f5b76961644057c51",
+    "project/0011_ai_apply_journal.sql": "22ef0964beb4f6a97106fe9126a5649d42a81e71004685268b179ee42438d6d7",
+    "project/0012_story_card_and_vault_research.sql": "6eabf04061f122affcd50f0a7893c5a15d73111fb0103c5e3da832244b1bd765",
+    "project/0013_screenplay_engine.sql": "0c4954d555dfa567e043902ab1b683c46683ab7121f3c1488dcc591c4cf648f6",
+    "project/0014_production_depth.sql": "7ab7d70f287ca1c8a1500f0fd0f342335e19f81475de5347a81c4524af52f176",
+    "project/0015_schedule_timeline.sql": "0db7b25096d1182490edd7ed79a96ac60b1f4e128157563af251845ebc58d3ac",
+    "project/0016_callsheets_budget.sql": "0ef47380c614c5f72e7c38702487aaa0dbcd887937dc4cfae2a3c68eb9c63008"
+  }
+}

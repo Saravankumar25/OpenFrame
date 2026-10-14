@@ -1,0 +1,197 @@
+{
+  "engine": {
+    "ladder": {
+      "light": {
+        "bg": [95.5, 1], "panel": [99, 0.35], "surface2": [97.4, 0.6], "surface3": [92.6, 1], "hover": [93.6, 1],
+        "well": [89, 1], "chrome": [92.5, 1], "backdrop": [26, 1.5], "ink": [24, 1.6], "ink2": [42, 1.4],
+        "muted": [53, 1.2], "line": [89.5, 1], "line2": [82, 1], "side": [21, 2.2], "side2": [27, 2.2],
+        "side-ink": [84, 1.2], "side-mut": [63, 1.2]
+      },
+      "dark": {
+        "bg": [19.5, 1.4], "panel": [24, 1.4], "surface2": [21.8, 1.4], "surface3": [29, 1.4], "hover": [28, 1.4],
+        "well": [15.5, 1.3], "chrome": [16.5, 1.3], "backdrop": [10, 0.8], "ink": [93, 0.6], "ink2": [80, 0.7],
+        "muted": [67, 0.8], "line": [31, 1.3], "line2": [39, 1.3], "side": [15, 1.5], "side2": [22, 1.5],
+        "side-ink": [80, 0.8], "side-mut": [62, 0.8]
+      }
+    },
+    "accentLightness": { "light": 56, "dark": 70 },
+    "statusLightness": { "light": 54, "dark": 68 },
+    "softMix": { "light": 14, "dark": 20 },
+    "darkAccentInk": [18, 0.02],
+    "lightAccentInk": "#ffffff",
+    "accentStrongMix": 76,
+    "accentLineMix": 32,
+    "accentRingMix": 28,
+    "statusTextMix": 62,
+    "warningTextMix": 48,
+    "statusLineMix": 30,
+    "warningLineMix": 38,
+    "status": {
+      "blue": [0, 0.16, 258], "green": [0, 0.14, 155], "red": [0, 0.18, 27],
+      "purple": [0, 0.15, 300], "teal": [0, 0.10, 195], "yellow": [22, 0.15, 85]
+    },
+    "roles": {
+      "tip-bg": "var(--ink)",
+      "ink-neutral": "var(--ink2)",
+      "dialog-edge": "var(--line2)",
+      "tile-edge": "var(--line)",
+      "dot-neutral": "var(--muted)",
+      "placeholder": "var(--muted)",
+      "parking-ink": "var(--muted)",
+      "parking-edge": "var(--muted)",
+      "grip": "var(--muted)",
+      "connector": "var(--muted)",
+      "file-pdf-ink": "var(--red-t)",
+      "beat-edge": "var(--yellow)",
+      "beat-blue-edge": "var(--blue)",
+      "note-edge": "var(--yellow-line)",
+      "beat-bg": "var(--yellow-soft)",
+      "note-bg": "var(--yellow-soft)",
+      "suggest-bg": "var(--yellow-soft)",
+      "suggest-bg2": "var(--surface2)",
+      "beat-ink": "var(--yellow-t)",
+      "toast-link": "color-mix(in oklab,var(--accent) 60%,var(--panel))",
+      "beat-line": "var(--yellow-line)",
+      "beat-mark": "var(--yellow-t)",
+      "lot-edge": "var(--line2)",
+      "quote-bg": "var(--yellow-soft)",
+      "quote-edge": "var(--yellow)",
+      "danger-hover": "color-mix(in oklab,var(--red) 88%,black)",
+      "label-orange": "oklch(var(--sl) 0.15 62)",
+      "label-pink": "oklch(var(--sl) 0.16 350)",
+      "label-gray": "var(--muted)",
+      "stripe-a": "var(--surface2)",
+      "stripe-b": "var(--surface3)"
+    },
+    "importableTokens": ["bg", "panel", "surface2", "surface3", "hover", "well", "chrome", "ink", "ink2", "muted", "line", "line2", "side", "side2", "side-ink", "side-mut", "accent", "accent-ink", "accent-d", "lg1", "lg2", "lg3"],
+    "logo": {
+      "lg1": "oklch(from var(--accent) l c calc(h - 30))",
+      "lg2": "var(--accent)",
+      "lg3": "oklch(from var(--accent) calc(l + .06) c calc(h + 32))"
+    }
+  },
+  "themes": [
+    {
+      "formatVersion": 1,
+      "id": "openframe-default",
+      "name": "OpenFrame Default",
+      "description": "The standard OpenFrame look.",
+      "author": "OpenFrame",
+      "seeds": { "neutralHue": 85, "neutralTint": 0.008, "accentHue": 62, "accentChroma": 0.15, "accentLightnessNudge": 6 },
+      "overrides": {
+        "light": {
+          "bg": "#f3f1ec", "panel": "#ffffff", "surface2": "#faf9f6", "surface3": "#ece8df", "hover": "#efece5",
+          "well": "#dcd8cf", "chrome": "#eceae5", "backdrop": "#22252d", "ink": "#1e2330", "ink2": "#48505f",
+          "muted": "#666e7c", "line": "#e1ddd4", "line2": "#cfc9bd", "side": "#1a1d26", "side2": "#252936",
+          "side-ink": "#c5cad6", "side-mut": "#7f8799",
+          "accent": "#d9822b", "accent-d": "#a15c17", "accent-soft": "#fcefdc", "accent-ink": "#1e2330",
+          "accent-line": "#f0d3ae", "accent-ring": "#d9822b33",
+          "blue": "#3b6fd4", "blue-soft": "#e6eefc", "blue-t": "#22499a", "blue-line": "#c3d6f6",
+          "green": "#2f8f5b", "green-soft": "#e0f3e8", "green-t": "#1c6440", "green-line": "#b6e0c7",
+          "red": "#c8443a", "red-soft": "#fbe6e3", "red-t": "#8f2b22", "red-line": "#f1bcb6",
+          "purple": "#7a5ac8", "purple-soft": "#eee8fb", "purple-t": "#5b3fa8", "purple-line": "#d5c8f3",
+          "teal": "#1f8a8a", "teal-soft": "#dcf1f1", "teal-t": "#146b6b",
+          "yellow": "#d9a520", "yellow-soft": "#fcf2d2", "yellow-t": "#7a570b", "yellow-line": "#ecd68a",
+          "tip-bg": "#111111", "ink-neutral": "#333333", "dialog-edge": "#00000022", "tile-edge": "#00000011",
+          "dot-neutral": "#9aa1ae", "placeholder": "#a1a7b3", "parking-ink": "#6f675a", "parking-edge": "#aaaaaa",
+          "grip": "#b0aa9c", "connector": "#a09a8c", "file-pdf-ink": "#aa2222", "beat-edge": "#d9b73a",
+          "beat-blue-edge": "#5a86dd", "note-edge": "#efdfae", "beat-bg": "#fbf8ef", "note-bg": "#fff9e8",
+          "suggest-bg": "#fffbee", "suggest-bg2": "#fff6d8", "beat-ink": "#5c4d12", "toast-link": "#ffce8a",
+          "stripe-a": "#f0ede6", "stripe-b": "#e9e5db", "beat-line": "#d5c78a", "beat-mark": "#8a7a3a",
+          "lot-edge": "#bdb6a6", "quote-bg": "#faf6ea", "quote-edge": "#e0b54a", "danger-hover": "#b23a31",
+          "label-orange": "#d9822b", "label-pink": "#d6589a", "label-gray": "#9aa0ab",
+          "lg1": "#ff5d6c", "lg2": "#ff9a3d", "lg3": "#ffc23d"
+        },
+        "dark": { "lg1": "#ff5d6c", "lg2": "#ff9a3d", "lg3": "#ffc23d" }
+      }
+    },
+    {
+      "formatVersion": 1, "id": "studio-amber", "name": "Studio Amber", "description": "Warm and neutral. An all-day workhorse.", "author": "OpenFrame",
+      "seeds": { "neutralHue": 85, "neutralTint": 0.008, "accentHue": 62, "accentChroma": 0.15, "accentLightnessNudge": 6 },
+      "overrides": {
+        "light": { "accent-ink": "oklch(18% 0.02 62)", "lg1": "#ff5d6c", "lg2": "#ff9a3d", "lg3": "#ffc23d" },
+        "dark": { "lg1": "#ff5d6c", "lg2": "#ff9a3d", "lg3": "#ffc23d" }
+      }
+    },
+    {
+      "formatVersion": 1, "id": "slate-noir", "name": "Slate Noir", "description": "Graphite and steel. The interface steps back so the story leads.", "author": "OpenFrame",
+      "seeds": { "neutralHue": 265, "neutralTint": 0.008, "accentHue": 250, "accentChroma": 0.09, "accentLightnessNudge": 2 },
+      "overrides": { "light": { "accent": "oklch(56% 0.09 250)" } }
+    },
+    {
+      "formatVersion": 1, "id": "midnight-reel", "name": "Midnight Reel", "description": "Deep navy for late editing nights.", "author": "OpenFrame",
+      "seeds": { "neutralHue": 255, "neutralTint": 0.03, "accentHue": 238, "accentChroma": 0.15, "accentLightnessNudge": 0 },
+      "overrides": { "light": { "accent": "oklch(55% 0.15 238)" } }
+    },
+    {
+      "formatVersion": 1, "id": "teal-orange", "name": "Teal & Orange", "description": "The blockbuster grade: cool surfaces, warm action.", "author": "OpenFrame",
+      "seeds": { "neutralHue": 205, "neutralTint": 0.026, "accentHue": 48, "accentChroma": 0.17, "accentLightnessNudge": 8 },
+      "overrides": { "light": { "accent-ink": "oklch(18% 0.02 48)", "accent-d": "#9d5528" } }
+    },
+    {
+      "formatVersion": 1, "id": "courier-cream", "name": "Courier & Cream", "description": "A parchment writing room with brick-red ink.", "author": "OpenFrame",
+      "seeds": { "neutralHue": 92, "neutralTint": 0.022, "accentHue": 28, "accentChroma": 0.13, "accentLightnessNudge": 0 }
+    },
+    {
+      "formatVersion": 1, "id": "cutting-room", "name": "Cutting Room", "description": "Restful sage green for editors.", "author": "OpenFrame",
+      "seeds": { "neutralHue": 155, "neutralTint": 0.016, "accentHue": 160, "accentChroma": 0.11, "accentLightnessNudge": 2 },
+      "overrides": { "light": { "accent-ink": "oklch(18% 0.02 160)" } }
+    },
+    {
+      "formatVersion": 1, "id": "velvet-curtain", "name": "Velvet Curtain", "description": "Theatre burgundy and gold. Premiere night.", "author": "OpenFrame",
+      "seeds": { "neutralHue": 12, "neutralTint": 0.028, "accentHue": 85, "accentChroma": 0.13, "accentLightnessNudge": 14 },
+      "overrides": {
+        "light": { "accent-ink": "oklch(20% 0.04 40)", "accent-d": "#8b652b" },
+        "dark": { "accent-ink": "oklch(20% 0.04 40)" }
+      }
+    },
+    {
+      "formatVersion": 1, "id": "sunset-boulevard", "name": "Sunset Boulevard", "description": "Golden-hour rose and coral for development and pitching.", "author": "OpenFrame",
+      "seeds": { "neutralHue": 35, "neutralTint": 0.03, "accentHue": 14, "accentChroma": 0.19, "accentLightnessNudge": 4 },
+      "overrides": { "light": { "accent": "oklch(59% 0.19 14)" } }
+    },
+    {
+      "formatVersion": 1, "id": "arctic-frame", "name": "Arctic Frame", "description": "Crisp daylight for schedules and budgets.", "author": "OpenFrame",
+      "seeds": { "neutralHue": 235, "neutralTint": 0.012, "accentHue": 250, "accentChroma": 0.16, "accentLightnessNudge": 0 }
+    },
+    {
+      "formatVersion": 1, "id": "neon-reel", "name": "Neon Reel", "description": "Violet night with magenta. Science fiction energy.", "author": "OpenFrame",
+      "seeds": { "neutralHue": 300, "neutralTint": 0.036, "accentHue": 333, "accentChroma": 0.23, "accentLightnessNudge": 4 },
+      "overrides": { "light": { "accent": "oklch(59% 0.23 333)" } }
+    },
+    {
+      "formatVersion": 1, "id": "location-scout", "name": "Location Scout", "description": "Earthy olive. Grounded and calm.", "author": "OpenFrame",
+      "seeds": { "neutralHue": 125, "neutralTint": 0.02, "accentHue": 130, "accentChroma": 0.12, "accentLightnessNudge": 3 },
+      "overrides": { "light": { "accent-ink": "oklch(18% 0.02 130)" } }
+    },
+    {
+      "formatVersion": 1, "id": "desert-dune", "name": "Desert Dune", "description": "Sand and rust, soft on the eyes.", "author": "OpenFrame",
+      "seeds": { "neutralHue": 70, "neutralTint": 0.036, "accentHue": 45, "accentChroma": 0.13, "accentLightnessNudge": 0 }
+    },
+    {
+      "formatVersion": 1, "id": "colorist-neutral", "name": "Colorist Neutral", "description": "True grey. No colour cast around your images.", "author": "OpenFrame",
+      "seeds": { "neutralHue": 0, "neutralTint": 0, "accentHue": 250, "accentChroma": 0.05, "accentLightnessNudge": 2 },
+      "overrides": { "light": { "accent": "oklch(56% 0.05 250)" } }
+    },
+    {
+      "formatVersion": 1, "id": "silver-screen", "name": "Silver Screen", "description": "Pure black and white for full focus.", "author": "OpenFrame",
+      "seeds": { "neutralHue": 0, "neutralTint": 0, "accentHue": 0, "accentChroma": 0, "accentLightnessNudge": -4 }
+    },
+    {
+      "formatVersion": 1, "id": "high-contrast", "name": "High Contrast", "description": "Hard black and white edges with a signal-yellow accent.", "author": "OpenFrame",
+      "seeds": { "neutralHue": 0, "neutralTint": 0, "accentHue": 95, "accentChroma": 0.17, "accentLightnessNudge": 16 },
+      "overrides": {
+        "light": {
+          "bg": "#ffffff", "panel": "#ffffff", "surface2": "#f4f4f4", "surface3": "#e6e6e6", "hover": "#e0e0e0", "well": "#e6e6e6", "chrome": "#ffffff",
+          "ink": "#000000", "ink2": "#111111", "muted": "#333333", "line": "#555555", "line2": "#000000", "side": "#000000", "side2": "#262626",
+          "side-ink": "#ffffff", "side-mut": "#d0d0d0", "accent": "oklch(86% 0.17 95)", "accent-ink": "#000000", "accent-d": "#86700e"
+        },
+        "dark": {
+          "bg": "#000000", "panel": "#000000", "surface2": "#0b0b0b", "surface3": "#1c1c1c", "hover": "#242424", "well": "#000000", "chrome": "#000000",
+          "ink": "#ffffff", "ink2": "#f0f0f0", "muted": "#cfcfcf", "line": "#8a8a8a", "line2": "#ffffff", "side": "#000000", "side2": "#222222",
+          "side-ink": "#ffffff", "side-mut": "#cfcfcf", "accent-ink": "#000000"
+        }
+      }
+    }
+  ]
+}

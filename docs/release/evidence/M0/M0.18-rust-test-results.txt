@@ -1,0 +1,114 @@
+     Running unittests src\lib.rs (target\debug\deps\openframe_ai-06ac51f6fc20418a.exe)
+test result: ok. 21 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.25s
+     Running tests\download.rs (target\debug\deps\download-b12150efde66699a.exe)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.20s
+     Running tests\install.rs (target\debug\deps\install-6b172efe8a80a513.exe)
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.33s
+     Running tests\lifecycle.rs (target\debug\deps\lifecycle-ac98ad269836912c.exe)
+test result: ok. 7 passed; 0 failed
+     Running tests\real_runtime.rs (target\debug\deps\real_runtime-20926a52159223f1.exe)
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running tests\security_ai.rs (target\debug\deps\security_ai-059b62d3895bf6e2.exe)
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+     Running tests\supervisor.rs (target\debug\deps\supervisor-26a778b50b9d35b9.exe)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.38s
+     Running unittests src\lib.rs (target\debug\deps\openframe_application-1141092d4d65ba14.exe)
+test result: ok. 721 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.09s
+     Running tests\ai.rs (target\debug\deps\ai-2ffc7e946cf88176.exe)
+test result: ok. 23 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.70s
+     Running tests\ai_agent.rs (target\debug\deps\ai_agent-0a1e21a88e80c881.exe)
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.17s
+     Running tests\ai_retrieval.rs (target\debug\deps\ai_retrieval-e1762d27e8c15a60.exe)
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 7.46s
+     Running tests\ai_retrieval_perf.rs (target\debug\deps\ai_retrieval_perf-a339acd072c3053c.exe)
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 9.95s
+     Running tests\ai_tool_coverage.rs (target\debug\deps\ai_tool_coverage-49c902350ca0b7ed.exe)
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+     Running tests\ai_toolbox.rs (target\debug\deps\ai_toolbox-4ba09a1dd2d73467.exe)
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.92s
+     Running tests\comments.rs (target\debug\deps\comments-5f0ecb07e224405a.exe)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.38s
+     Running tests\core_pipeline.rs (target\debug\deps\core_pipeline-f7fbae1387f5a3b7.exe)
+test result: ok. 25 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 7.35s
+     Running tests\e2e_flows.rs (target\debug\deps\e2e_flows-0b716b5b628a5517.exe)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.56s
+     Running tests\exports.rs (target\debug\deps\exports-5c8cc87c4d3a4434.exe)
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.31s
+     Running tests\idea_vault.rs (target\debug\deps\idea_vault-3b7d14c72d3ed736.exe)
+test result: ok. 24 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 7.52s
+     Running tests\interchange.rs (target\debug\deps\interchange-d48159ecd1422764.exe)
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.69s
+     Running tests\notes.rs (target\debug\deps\notes-f7bc7351ef41ac25.exe)
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.97s
+     Running tests\packages.rs (target\debug\deps\packages-b040572a8aec4acd.exe)
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 9.14s
+     Running tests\perf.rs (target\debug\deps\perf-ca36a5d58f867fb0.exe)
+test result: ok. 5 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 3.16s
+     Running tests\production.rs (target\debug\deps\production-068bc601ae2cc97e.exe)
+test result: ok. 24 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.52s
+     Running tests\schedule.rs (target\debug\deps\schedule-44bea14c5138ee63.exe)
+test result: ok. 24 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 8.32s
+     Running tests\screenplay.rs (target\debug\deps\screenplay-1d8001979e5140a8.exe)
+test result: ok. 25 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 7.34s
+     Running tests\security_review.rs (target\debug\deps\security_review-1e5a1f349b25a77f.exe)
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.65s
+     Running tests\story.rs (target\debug\deps\story-b8ce13793205db82.exe)
+test result: ok. 33 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 9.16s
+     Running tests\visual.rs (target\debug\deps\visual-8676760419ac4bf4.exe)
+test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.10s
+     Running unittests src\lib.rs (target\debug\deps\openframe_desktop_lib-2c0516eab000fbaf.exe)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running unittests src\main.rs (target\debug\deps\openframe_desktop-0c31c133a2c5faf8.exe)
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+     Running unittests src\lib.rs (target\debug\deps\openframe_domain-8b523cfa109b047a.exe)
+test result: ok. 26 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+     Running unittests src\lib.rs (target\debug\deps\openframe_import_export-aaa69d52cffecf16.exe)
+test result: ok. 24 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+     Running tests\docx.rs (target\debug\deps\docx-5b9bd0fa1ad344f5.exe)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.18s
+     Running tests\fdx.rs (target\debug\deps\fdx-7d99bf03cd32ab07.exe)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+     Running tests\fountain.rs (target\debug\deps\fountain-4c4e0a71d4dff159.exe)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running tests\pdf.rs (target\debug\deps\pdf-7e66c120fc33e7cd.exe)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+     Running tests\performance.rs (target\debug\deps\performance-a8bcf92a5a39cf5b.exe)
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.30s
+     Running tests\report.rs (target\debug\deps\report-f038f9381d8a139c.exe)
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.82s
+     Running tests\security_parsers.rs (target\debug\deps\security_parsers-e5896834fefb2dab.exe)
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.46s
+     Running tests\txt.rs (target\debug\deps\txt-9d17b92e5ef82b96.exe)
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+     Running unittests src\lib.rs (target\debug\deps\openframe_persistence-1ed4e41714c54ff0.exe)
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+     Running unittests src\lib.rs (target\debug\deps\openframe_project_format-271566e6b19651f0.exe)
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+     Running unittests src\lib.rs (target\debug\deps\openframe_search-0b86890822e38aea.exe)
+test result: ok. 23 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.17s
+     Running unittests src\lib.rs (target\debug\deps\openframe_security-94eae5ec44f84c64.exe)
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+     Running tests\security_paths.rs (target\debug\deps\security_paths-c3e4f5535d0d03e4.exe)
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.23s
+     Running unittests src\lib.rs (target\debug\deps\openframe_test_support-65246b0e8c48d5d0.exe)
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+   Doc-tests openframe_ai
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+   Doc-tests openframe_application
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+   Doc-tests openframe_desktop_lib
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+   Doc-tests openframe_domain
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+   Doc-tests openframe_import_export
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+   Doc-tests openframe_persistence
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+   Doc-tests openframe_project_format
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+   Doc-tests openframe_search
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+   Doc-tests openframe_security
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+   Doc-tests openframe_test_support
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s

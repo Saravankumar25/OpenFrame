@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<FinalDraft DocumentType="Script" Template="No" Version="5">
+<Content>
+<Paragraph Type="Transition"><Text>FADE IN:</Text></Paragraph>
+<Paragraph Type="Scene Heading"><SceneProperties Length="1/8" Page="1" Title=""/><Text>EXT. HIGHWAY 1 - DAY</Text></Paragraph>
+<Paragraph Type="Action"><Text>A bus passes milestone 1.</Text></Paragraph>
+<Paragraph Type="Transition"><Text>CUT TO:</Text></Paragraph>
+<Paragraph Type="Scene Heading"><SceneProperties Length="1/8" Page="1" Title=""/><Text>EXT. HIGHWAY 2 - DAY</Text></Paragraph>
+<Paragraph Type="Action"><Text>A bus passes milestone 2.</Text></Paragraph>
+<Paragraph Type="Transition"><Text>DISSOLVE TO:</Text></Paragraph>
+<Paragraph Type="Scene Heading"><SceneProperties Length="1/8" Page="1" Title=""/><Text>EXT. HIGHWAY 3 - DAY</Text></Paragraph>
+<Paragraph Type="Action"><Text>A bus passes milestone 3.</Text></Paragraph>
+<Paragraph Type="Transition"><Text>SMASH CUT TO:</Text></Paragraph>
+<Paragraph Type="Scene Heading"><SceneProperties Length="1/8" Page="1" Title=""/><Text>EXT. HIGHWAY 4 - DAY</Text></Paragraph>
+<Paragraph Type="Action"><Text>A bus passes milestone 4.</Text></Paragraph>
+<Paragraph Type="Transition"><Text>MATCH CUT TO:</Text></Paragraph>
+<Paragraph Type="Scene Heading"><SceneProperties Length="1/8" Page="1" Title=""/><Text>EXT. HIGHWAY 5 - DAY</Text></Paragraph>
+<Paragraph Type="Action"><Text>A bus passes milestone 5.</Text></Paragraph>
+<Paragraph Type="Transition"><Text>FADE OUT.</Text></Paragraph>
+</Content>
+</FinalDraft>

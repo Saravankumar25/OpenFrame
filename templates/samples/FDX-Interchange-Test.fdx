@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<!-- Copyright 2026 OpenFrame Studio. Fictional sample written for OpenFrame; you may use it to learn the app. -->
+<!-- FDX Interchange Test. Each construct is listed in FDX-Interchange-Test.README.md. -->
+<FinalDraft DocumentType="Script" Template="No" Version="5">
+  <Content>
+    <Paragraph Type="Transition">
+      <Text>FADE IN:</Text>
+    </Paragraph>
+    <Paragraph Number="1" Type="Scene Heading">
+      <SceneProperties Length="1 2/8" Page="1" Title="The subtitle studio" Color="#FFFF0000FFFF"/>
+      <Text>INT. SUBTITLE STUDIO - NIGHT</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Three desks under one lamp. Three screens show the same frozen frame of a film. A kettle, three cups, one of them chipped.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>ARUNA (40s, Telugu desk), VIKRAM (30s, Hindi desk) and SELVI (50s, Tamil desk) stare at one line of dialogue.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>ARUNA</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>The character says the storm is coming. In Telugu it is simple.</Text>
+    </Paragraph>
+    <Paragraph Type="Parenthetical">
+      <Text>(reading from her screen)</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>తుఫాను వస్తోంది.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>VIKRAM</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text RevisionID="1">In Hindi too. </Text>
+      <Text RevisionID="1" Style="Italic">तूफ़ान आ रहा है।</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>SELVI</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>And in Tamil. புயல் வருகிறது.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>They look at each other. All three lines fit. Nobody has a problem. That is the problem.</Text>
+    </Paragraph>
+    <Paragraph Number="2" Type="Scene Heading">
+      <SceneProperties Length="4/8" Page="1" Title=""/>
+      <Text>INT. SUBTITLE STUDIO - KITCHENETTE - CONTINUOUS</Text>
+    </Paragraph>
+    <Paragraph Type="Shot">
+      <Text>CLOSE ON THE CHIPPED CUP</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Vikram fills it. The handle comes away in his hand.</Text>
+    </Paragraph>
+    <Paragraph>
+      <DualDialogue>
+        <Paragraph Type="Character">
+          <Text>VIKRAM</Text>
+        </Paragraph>
+        <Paragraph Type="Dialogue">
+          <Text>I did not touch it.</Text>
+        </Paragraph>
+        <Paragraph Type="Character">
+          <Text>SELVI</Text>
+        </Paragraph>
+        <Paragraph Type="Parenthetical">
+          <Text>(at the same time)</Text>
+        </Paragraph>
+        <Paragraph Type="Dialogue">
+          <Text>You touched it.</Text>
+        </Paragraph>
+      </DualDialogue>
+    </Paragraph>
+    <Paragraph Alignment="Right" Type="Transition">
+      <Text>CUT TO:</Text>
+    </Paragraph>
+    <Paragraph Number="12" Type="Scene Heading" StartsNewPage="Yes">
+      <SceneProperties Length="2/8" Page="2" Title="Locked numbers after cuts"/>
+      <Text>INT. SUBTITLE STUDIO - NIGHT</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>The lamp is off. Only the screens light the room. The scene numbers jump from 2 to 12 because scenes 3 to 11 were cut after the numbers were locked.</Text>
+    </Paragraph>
+    <Paragraph Type="Text Message">
+      <Text>ARUNA TO VIKRAM: did you save the Hindi file before you left?</Text>
+    </Paragraph>
+    <Paragraph Number="12A" Type="Scene Heading">
+      <SceneProperties Length="3/8" Page="2" Title="Added after locking"/>
+      <Text>EXT. STUDIO ROOF - NIGHT</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text RevisionID="2">Vikram reads the message on the roof, phone held high for signal. </Text>
+      <Text RevisionID="2" Style="Bold+Underline">He did not save it.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>VIKRAM (V.O.)</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Every file has a backup. Every file except this one.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text></Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text/>
+    </Paragraph>
+    <Paragraph Number="12B" Type="Scene Heading">
+      <SceneProperties Length="1/8" Page="2" Title=""/>
+      <Text>INT. SUBTITLE STUDIO - NIGHT</Text>
+    </Paragraph>
+    <Paragraph Type="Lyrics">
+      <Text>Rain on the roof, rain on the road,</Text>
+    </Paragraph>
+    <Paragraph Type="Lyrics">
+      <Text>carry the words home, light as a load.</Text>
+    </Paragraph>
+    <Paragraph Type="General">
+      <Text>A General paragraph: Final Draft uses this type for text that has no screenplay role.</Text>
+    </Paragraph>
+    <Paragraph>
+      <Text>A paragraph with no Type attribute at all. A reader should treat it as General.</Text>
+    </Paragraph>
+    <Paragraph Number="13" Type="Scene Heading">
+      <SceneProperties Length="6/8" Page="3" Title=""/>
+      <Text>INT. SUBTITLE STUDIO - DAWN</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Selvi types fast. Her screen shows the line in all three scripts: </Text>
+      <Text Font="Courier Final Draft" Size="12" Color="#000000000000">&#x0C24;&#x0C41;&#x0C2B;&#x0C3E;&#x0C28;&#x0C41;</Text>
+      <Text>, </Text>
+      <Text AdornmentStyle="0">तूफ़ान</Text>
+      <Text> and புயல்.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>SELVI</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>எல்லோரும் பள்ளிக்குச் செல்லுங்கள். Then the storm cannot catch anybody.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>ARUNA</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>అందరూ బడికి వెళ్ళండి. </Text>
+      <Text Style="AllCaps">same line, </Text>
+      <Text>same meaning.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>VIKRAM</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>सब लोग स्कूल जाओ। Fine. Rock &amp; roll, "quotes" &lt;angle brackets&gt; and it&apos;s done.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text><![CDATA[Saved as studio_final_v2 <really final>.srt & backed up.]]></Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Columns on the whiteboard:&#9;Telugu&#9;Hindi&#9;Tamil</Text>
+    </Paragraph>
+    <Paragraph Type='Action' Alignment='Center'>
+      <Text>THE END</Text>
+    </Paragraph>
+    <Paragraph Type="Transition">
+      <Text>FADE OUT.</Text>
+      <VendorExtension Name="ExampleVendor" Value="An element no reader is expected to know"/>
+    </Paragraph>
+  </Content>
+  <TitlePage>
+    <Content>
+      <Paragraph Alignment="Center" Type="Action"><Text>THE THREE DESKS</Text></Paragraph>
+      <Paragraph Alignment="Center" Type="Action"><Text></Text></Paragraph>
+      <Paragraph Alignment="Center" Type="Action"><Text>Written by</Text></Paragraph>
+      <Paragraph Alignment="Center" Type="Action"><Text>OpenFrame Studio</Text></Paragraph>
+      <Paragraph Alignment="Center" Type="Action"><Text></Text></Paragraph>
+      <Paragraph Alignment="Center" Type="Action"><Text>Based on an idea by the OpenFrame sample writers</Text></Paragraph>
+      <Paragraph Alignment="Left" Type="Action"><Text>OpenFrame Studio</Text></Paragraph>
+      <Paragraph Alignment="Left" Type="Action"><Text>Sample scripts folder</Text></Paragraph>
+      <Paragraph Alignment="Right" Type="Action"><Text>Production draft, Pink revision</Text></Paragraph>
+      <Paragraph Alignment="Right" Type="Action"><Text>2026-10-07</Text></Paragraph>
+      <Paragraph Alignment="Left" Type="Action"><Text>Copyright 2026 OpenFrame Studio. Fictional sample written for OpenFrame; you may use it to learn the app.</Text></Paragraph>
+    </Content>
+  </TitlePage>
+  <ElementSettings Type="Text Message">
+    <FontSpec AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="Italic"/>
+    <ParagraphSpec Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="2.00" RightIndent="6.00" SpaceBefore="12" Spacing="1" StartsNewPage="No"/>
+    <Behavior PaginateAs="Action" ReturnKey="Action" Shortcut="9"/>
+  </ElementSettings>
+  <HeaderAndFooter FooterFirstPage="Yes" FooterVisible="No" HeaderFirstPage="No" HeaderVisible="Yes" StartingPage="1">
+    <Header>
+      <Paragraph Alignment="Right" Type="Header">
+        <Text>Pink revision 2026-10-07</Text>
+      </Paragraph>
+    </Header>
+    <Footer>
+      <Paragraph Alignment="Center" Type="Footer">
+        <Text></Text>
+      </Paragraph>
+    </Footer>
+  </HeaderAndFooter>
+  <PageLayout BackgroundColor="#FFFFFFFFFFFF" BottomMargin="72" BreakDialogueAndActionAtSentences="Yes" DocumentLeading="Normal" FooterMargin="36" ForegroundColor="#000000000000" HeaderMargin="36" InvisiblesColor="#808080808080" TopMargin="72" UsesSmartQuotes="Yes"/>
+  <SmartType>
+    <Characters>
+      <Character>ARUNA</Character>
+      <Character>SELVI</Character>
+      <Character>VIKRAM</Character>
+    </Characters>
+    <Extensions>
+      <Extension>(V.O.)</Extension>
+      <Extension>(O.S.)</Extension>
+      <Extension>(CONT'D)</Extension>
+    </Extensions>
+    <TimesOfDay Separator=" - ">
+      <TimeOfDay>DAWN</TimeOfDay>
+      <TimeOfDay>NIGHT</TimeOfDay>
+      <TimeOfDay>CONTINUOUS</TimeOfDay>
+    </TimesOfDay>
+  </SmartType>
+  <Revisions ActiveSet="2" Location="" RevisionMode="Off" RevisionsShown="Active" ShowAllMarks="No" ShowAllSets="No">
+    <Revision Color="#0000FFFF0000" FullRevision="No" ID="1" Mark="*" Name="Blue Rev." Style=""/>
+    <Revision Color="#FFFF0000FFFF" FullRevision="No" ID="2" Mark="+" Name="Pink Rev." Style=""/>
+  </Revisions>
+  <ScriptNotes>
+    <ScriptNote ID="1" Range="0,12">
+      <Paragraph>
+        <Text>Check that all three scripts render with the right font and no missing glyphs.</Text>
+      </Paragraph>
+    </ScriptNote>
+  </ScriptNotes>
+</FinalDraft>

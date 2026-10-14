@@ -1,0 +1,43 @@
+M1.07 stale-proposal tests per domain: evidence (2026-10-05, Windows 11, debug test profile)
+Command (run 3 times, all passed):
+  cargo test --locked -p openframe-application --test ai_stale_proposals
+Domains: screenplay, story, breakdown, schedule, call sheet, cast and crew, budget, notes (edit + delete/Conflict), visual.
+
+=== run 1
+test m1_07_project_note_deleted_by_the_user_makes_the_proposal_a_conflict ... ok
+test m1_07_schedule_day_edited_by_the_user_makes_the_proposal_stale ... ok
+test m1_07_screenplay_line_edited_by_the_user_makes_the_proposal_stale ... ok
+test m1_07_project_note_edited_by_the_user_makes_the_proposal_stale ... ok
+test m1_07_story_character_edited_by_the_user_makes_the_proposal_stale ... ok
+test m1_07_breakdown_element_edited_by_the_user_makes_the_proposal_stale ... ok
+test m1_07_cast_and_crew_member_edited_by_the_user_makes_the_proposal_stale ... ok
+test m1_07_call_sheet_edited_by_the_user_makes_the_proposal_stale ... ok
+test m1_07_visual_shot_edited_by_the_user_makes_the_proposal_stale ... ok
+test m1_07_budget_line_edited_by_the_user_makes_the_proposal_stale ... ok
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.80s
+
+=== run 2
+test m1_07_breakdown_element_edited_by_the_user_makes_the_proposal_stale ... ok
+test m1_07_budget_line_edited_by_the_user_makes_the_proposal_stale ... ok
+test m1_07_cast_and_crew_member_edited_by_the_user_makes_the_proposal_stale ... ok
+test m1_07_schedule_day_edited_by_the_user_makes_the_proposal_stale ... ok
+test m1_07_project_note_deleted_by_the_user_makes_the_proposal_a_conflict ... ok
+test m1_07_screenplay_line_edited_by_the_user_makes_the_proposal_stale ... ok
+test m1_07_visual_shot_edited_by_the_user_makes_the_proposal_stale ... ok
+test m1_07_call_sheet_edited_by_the_user_makes_the_proposal_stale ... ok
+test m1_07_project_note_edited_by_the_user_makes_the_proposal_stale ... ok
+test m1_07_story_character_edited_by_the_user_makes_the_proposal_stale ... ok
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.93s
+
+=== run 3
+test m1_07_call_sheet_edited_by_the_user_makes_the_proposal_stale ... ok
+test m1_07_budget_line_edited_by_the_user_makes_the_proposal_stale ... ok
+test m1_07_breakdown_element_edited_by_the_user_makes_the_proposal_stale ... ok
+test m1_07_project_note_deleted_by_the_user_makes_the_proposal_a_conflict ... ok
+test m1_07_cast_and_crew_member_edited_by_the_user_makes_the_proposal_stale ... ok
+test m1_07_screenplay_line_edited_by_the_user_makes_the_proposal_stale ... ok
+test m1_07_story_character_edited_by_the_user_makes_the_proposal_stale ... ok
+test m1_07_visual_shot_edited_by_the_user_makes_the_proposal_stale ... ok
+test m1_07_schedule_day_edited_by_the_user_makes_the_proposal_stale ... ok
+test m1_07_project_note_edited_by_the_user_makes_the_proposal_stale ... ok
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.85s

@@ -1,0 +1,47 @@
+✔ architecture lint passes on the repository
+✔ architecture lint passes on the minimal fixture
+✔ architecture lint rule W1 catches index.tsx: import { readFile } from "@tauri-apps/plugin-fs";
+✔ architecture lint rule W1 catches index.tsx: const m = await import("node:child_process");
+✔ architecture lint rule W2 catches index.tsx: import { invoke } from "@tauri-apps/api/core";
+✔ architecture lint rule W3 catches index.tsx: export const f = () => fetch("https://example.com"
+✔ architecture lint rule W4 catches index.tsx: export const f = (h: string) => <div dangerouslySe
+✔ architecture lint rule W4 catches util.ts: export const g = (e: HTMLElement, h: string) => { 
+✔ architecture lint rule W1 catches index.tsx: import { openUrl } from "@tauri-apps/plugin-opener
+✔ architecture lint rule W2 catches index.tsx: import * as core from "@tauri-apps/api/core";
+✔ architecture lint rule W2 catches index.tsx: import { core } from "@tauri-apps/api";
+✔ architecture lint rule W2 catches index.tsx: import { listen } from "@tauri-apps/api/event";
+✔ architecture lint rule W3 catches index.tsx: const f = fetch;
+✔ architecture lint rule W4 catches index.tsx: export const g = (s: string) => window.eval(s);
+✔ architecture lint rule W4 catches index.tsx: export const g = Function("return 1");
+✔ architecture lint rule R5 catches x.rs: use std::process::Command as C;
+✔ architecture lint rule R5 catches x.rs: fn f() { unsafe { ShellExecuteExW(std::ptr::null_m
+✔ architecture lint rule R1 catches x.rs: use rusqlite::Connection as Db;
+✔ architecture lint rule R1 catches x.rs: fn f(c: &rusqlite::Connection) { c.execute_batch("
+✔ architecture lint rule R2 catches agent_x.rs: fn f() { crate::modules::ai::change_set::accept(co
+✔ architecture lint rule R3 catches x.rs: fn f() { std::net::TcpListener::bind("0.0.0.0:80")
+✔ architecture lint rule R4 catches x.rs: fn f() { unsafe { std::hint::unreachable_unchecked
+✔ architecture lint rule R5 catches x.rs: fn f() { std::process::Command::new("cmd").spawn()
+✔ architecture lint ignores patterns in comments, strings and test modules
+✔ architecture lint catches a weakened CSP and an extra Tauri command
+✔ architecture lint rule C5 catches the project cache folder in the asset scope
+✔ architecture lint rule C5 catches a path chained after assets()
+✔ architecture lint catches a static asset scope, a remote capability and a table-form plugin
+✔ architecture lint catches a filesystem capability for the webview
+✔ migration check passes on the repository
+✔ migration check catches a gap and a duplicate number
+✔ migration check catches a file the app does not embed
+✔ migration check: edits warn before the freeze and fail after it
+✔ migration check --base refuses turning the freeze off or dropping a record in the same change
+✔ migration check catches a deleted migration
+✔ ledger check passes on the repository
+✔ ledger check catches S2 without tests
+✔ ledger check catches S3 without a route
+✔ ledger check catches an unverified tag
+✔ ledger check catches a missing milestone
+✔ ledger check catches an invalid state
+✔ ledger check catches an empty route
+✔ ledger check catches a duplicate ID and a section without Source
+✔ ledger check accepts a complete row and a removed row
+ℹ tests 44
+ℹ pass 44
+ℹ fail 0

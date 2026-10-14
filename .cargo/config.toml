@@ -1,0 +1,17 @@
+[env]
+# ts-rs writes generated TypeScript IPC types here when `cargo test` runs.
+TS_RS_EXPORT_DIR = { value = "apps/desktop/src/ipc/generated", relative = true }
+
+# Compile through sccache so every checkout and worktree shares compiled dependencies
+# (docs/development-storage-policy.md). CI runners have no sccache and set RUSTC_WRAPPER to an
+# empty string, which turns this off.
+[build]
+rustc-wrapper = "sccache"
+
+# Dev and test builds link with rust-lld, which is much faster than the Microsoft linker.
+# Release builds (installer, MSIX, `npm run perf`) must keep the Microsoft linker so the binary
+# hardening flags of the security standard apply: they run through scripts/with-msvc-linker.mjs, and
+# .github/workflows/release.yml sets CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER=link.exe, which
+# overrides this setting.
+[target.x86_64-pc-windows-msvc]
+linker = "rust-lld.exe"

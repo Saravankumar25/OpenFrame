@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<FinalDraft DocumentType="Script" Template="No" Version="5">
+<Content>
+<Paragraph Type="Scene Heading"><SceneProperties Length="1/8" Page="1" Title=""/><Text>INT. CONTROL ROOM - NIGHT</Text></Paragraph>
+<Paragraph Type="Action"><Text>The radio crackles.</Text></Paragraph>
+<Paragraph Type="Character"><Text>CONTROL</Text></Paragraph>
+<Paragraph Type="TELEPHONE"><Text>this is control. clear the line.</Text></Paragraph>
+<Paragraph Type="Lower Third"><Text>Gudur Junction, 2:14 AM</Text></Paragraph>
+<Paragraph Type="Action"><Text>ASHA lifts the receiver.</Text></Paragraph>
+<Paragraph Type="TELEPHONE"><Text>say again, signal box.</Text></Paragraph>
+</Content>
+<ElementSettings Type="TELEPHONE"><FontSpec Style="Italic+AllCaps"/><ParagraphSpec Alignment="Left" LeftIndent="2.50" SpaceBefore="12"/></ElementSettings>
+<ElementSettings Type="Lower Third"><FontSpec Style=""/><ParagraphSpec Alignment="Center" SpaceBefore="24"/></ElementSettings>
+</FinalDraft>

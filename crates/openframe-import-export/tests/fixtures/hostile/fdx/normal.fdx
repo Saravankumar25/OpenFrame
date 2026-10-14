@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<FinalDraft DocumentType="Script" Template="No" Version="5">
+  <Content>
+    <Paragraph Number="1" Type="Scene Heading">
+      <Text>INT. RAILWAY PLATFORM - NIGHT</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>A train hisses to a stop. MEERA steps off &amp; looks around.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>MEERA</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Nobody came.</Text>
+    </Paragraph>
+    <Paragraph Number="2" Type="Scene Heading">
+      <Text>EXT. STATION ROAD - CONTINUOUS</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Rain. A single rickshaw waits.</Text>
+    </Paragraph>
+  </Content>
+</FinalDraft>

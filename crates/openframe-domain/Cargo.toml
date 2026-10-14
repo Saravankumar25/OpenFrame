@@ -1,0 +1,21 @@
+[package]
+name = "openframe-domain"
+description = "OpenFrame domain vocabulary: identities, errors, roles/capabilities and canonical enums. No I/O."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+uuid.workspace = true
+ts-rs.workspace = true
+time.workspace = true
+# Only used for the `From<rusqlite::Error> for AppError` conversion; domain types never depend on SQLite.
+rusqlite = { workspace = true, optional = true }
+
+[features]
+default = []
+sqlite = ["dep:rusqlite"]

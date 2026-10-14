@@ -1,0 +1,49 @@
+[package]
+name = "openframe-desktop"
+description = "OpenFrame Studio desktop application (Tauri adapter)."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+default-run = "openframe-desktop"
+
+[lib]
+name = "openframe_desktop_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+# Reads `swift -print-target-info` on macOS to find the Swift runtime for the StoreKit bridge.
+# Already in the build tree through tauri-build.
+serde_json.workspace = true
+# Internal builds only (ADR-0024): Argon2id hash of OPENFRAME_TEAM_PASSWORD with a random salt.
+argon2.workspace = true
+getrandom.workspace = true
+
+[dependencies]
+openframe-domain.workspace = true
+openframe-application.workspace = true
+openframe-security.workspace = true
+openframe-entitlement.workspace = true
+openframe-platform.workspace = true
+tauri = { version = "2", features = [] }
+tauri-plugin-dialog = "2"
+tauri-plugin-single-instance = "2"
+serde.workspace = true
+serde_json.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+tracing-appender.workspace = true
+parking_lot.workspace = true
+
+# Mac App Store build only (platform/mac_inputs.rs): the licence server client over HTTPS (rustls,
+# blocking, used on the entitlement worker thread), request nonces from the system's secure random
+# generator, and the server's Ed25519 response key. Windows builds do not compile these.
+[target.'cfg(target_os = "macos")'.dependencies]
+reqwest = { workspace = true, features = ["blocking"] }
+rand.workspace = true
+hex.workspace = true
+ed25519-dalek.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true

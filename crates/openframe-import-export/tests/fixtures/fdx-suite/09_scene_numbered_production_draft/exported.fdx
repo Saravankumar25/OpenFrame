@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<FinalDraft DocumentType="Script" Template="No" Version="5">
+<Content>
+<Paragraph Number="1" Type="Scene Heading"><Text>INT. HOUSE - DAY</Text></Paragraph>
+<Paragraph Type="Action"><Text>Scene 1 happens here.</Text></Paragraph>
+<Paragraph Number="2" Type="Scene Heading"><Text>EXT. ROAD - DAY</Text></Paragraph>
+<Paragraph Type="Action"><Text>Scene 2 happens here.</Text></Paragraph>
+<Paragraph Number="2A" Type="Scene Heading"><Text>INT. CAR - DAY</Text></Paragraph>
+<Paragraph Type="Action"><Text>Scene 2A happens here.</Text></Paragraph>
+<Paragraph Number="3" Type="Scene Heading"><Text>EXT. TEMPLE - NIGHT</Text></Paragraph>
+<Paragraph Type="Action"><Text>Scene 3 happens here.</Text></Paragraph>
+<Paragraph Number="4" Type="Scene Heading"><Text>INT. HOUSE - NIGHT</Text></Paragraph>
+<Paragraph Type="Action"><Text>Scene 4 happens here.</Text></Paragraph>
+<Paragraph Number="5" Type="Scene Heading"><Text>OMITTED</Text></Paragraph>
+</Content>
+</FinalDraft>

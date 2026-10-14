@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<FinalDraft DocumentType="Script" Template="No" Version="5">
+<Content>
+<Paragraph Type="Scene Heading" Number="1"><SceneProperties Length="1/8" Page="1" Title=""/><Text>INT. HOUSE - DAY</Text></Paragraph>
+<Paragraph Type="Action"><Text>MEERA packs a bag.</Text></Paragraph>
+<Paragraph Type="Action"><Text RevisionID="1">She stops. Unpacks it again.</Text></Paragraph>
+<Paragraph Type="Character"><Text RevisionID="2">MEERA</Text></Paragraph>
+<Paragraph Type="Dialogue"><Text RevisionID="2">Not today.</Text></Paragraph>
+<Paragraph Type="Scene Heading" Number="2"><SceneProperties Length="1/8" Page="1" Title=""/><Text>EXT. STREET - DAY</Text></Paragraph>
+<Paragraph Type="Action"><Text RevisionID="2">The bus leaves without her.</Text></Paragraph>
+</Content>
+<Revisions ActiveSet="2" Location="1" RevisionMode="Off" ShowAllMarks="No" ShowAllSets="No">
+<Revision Color="#0000FFFF0000" FullRevision="No" ID="1" Mark="*" Name="Blue Rev." Style=""/>
+<Revision Color="#FFFF0000FFFF" FullRevision="No" ID="2" Mark="*" Name="Pink Rev." Style=""/>
+</Revisions>
+</FinalDraft>

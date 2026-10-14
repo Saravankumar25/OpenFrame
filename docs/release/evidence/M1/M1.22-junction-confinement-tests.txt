@@ -1,0 +1,30 @@
+M1.22 confine resolves the nearest existing ancestor through junctions and symlinks (M0.28 P2, finding E3)
+Date: 2026-10-05. Machine: Windows 11 Home 10.0.26200. Working tree on master (uncommitted).
+
+Change
+- crates/openframe-security/src/lib.rs confine(): after syntactic validation, the nearest existing entry from the
+  destination up to the root (links included; symlink_metadata, never followed for the existence test) is
+  canonicalized and must lie inside the canonical root, else security.path_escape. A dangling link is refused.
+  A root reached through a link stays valid. Before: only destinations that already existed were resolved.
+  Every managed write destination goes through confine (util::ingest_file, util::ingest_bytes, files.rs,
+  packages/backup.rs, ProjectLayout::asset_path).
+
+Tests (crates/openframe-security/tests/confinement_and_network.rs; junctions via cmd /c mklink /J, no admin)
+- new_files_below_a_junctioned_assets_folder_are_refused
+- a_junction_deeper_inside_assets_is_refused_too
+- a_project_opened_through_a_junction_still_confines_normally
+- a_junction_that_stays_inside_the_project_is_allowed
+- plain_destinations_are_unchanged
+- a_dangling_symlink_is_refused_when_symlinks_can_be_created (SKIPS here: no Developer Mode)
+Regression proof: with the old behaviour restored temporarily, 3 tests FAILED (new_files_below..., a_junction_deeper...,
+a_project_opened_through_a_junction...). With the fix: ok.
+
+Results (3 consecutive runs, CARGO_BUILD_JOBS=8)
+- cargo test --locked -p openframe-security -p openframe-project-format: unit 14, confinement_and_network 9,
+  security_paths 10, project-format 7: all ok (x3)
+- cargo test --locked -p openframe-application --test idea_vault --test packages --test security_review
+  --test visual --test core_pipeline: all ok (x3; run 3 repeated after a concurrent Cargo.toml edit by another agent)
+
+Residual risks
+- Check-then-write race (TOCTOU): a link created between confine and the write is not caught.
+- project.rs copy_dir (project.duplicate) reads through a junctioned source assets/ folder (read, not write).

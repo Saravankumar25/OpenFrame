@@ -1,0 +1,121 @@
+== page 1 612x792
+256,721 16.0 BLACK RAIN
+178,704 10.0 SHOOT DAY 1 · DAY 1 OF 2 · MONDAY 14 JUNE 2027
+246,673 13.0 CREW CALL: 18:00
+161,660 8.5 Call Sheet: Day 1 · v1 · DRAFT, not final · Script: Shooting Draft 6 (Locked)
+60,636 9.5 PRODUCTION
+54,615 9.5 Production company
+205,615 9.5 Northlight Pictures
+54,602 9.5 Director
+205,602 9.5 Asha Rao
+60,576 9.5 DAY AND TIMES
+54,555 9.5 Crew call
+205,555 9.5 18:00
+54,542 9.5 Shooting call
+205,542 9.5 19:00
+54,530 9.5 Breakfast
+205,530 9.5 17:30
+54,517 9.5 Lunch
+205,517 9.5 20:30
+54,505 9.5 Estimated wrap
+205,505 9.5 23:45
+60,478 9.5 LOCATIONS
+54,457 9.5 Location
+205,457 9.5 Police Station
+54,445 9.5 Address
+205,445 9.5 District Rd, Gudur
+54,432 9.5 Nearest hospital
+205,432 9.5 District Hospital, Gudur
+54,414 9.5 Location
+205,414 9.5 Old Railway Station
+54,401 9.5 Address
+205,401 9.5 Station Rd, Gudur
+54,389 9.5 Nearest hospital
+205,389 9.5 Needs input
+60,362 9.5 SCENE SCHEDULE
+58,340 8.5 Start
+96,340 8.5 Sc
+123,340 8.5 Heading
+270,340 8.5 Description
+408,340 8.5 D/N
+443,340 8.5 Cast
+490,340 8.5 Pages
+538,340 8.5 Est.
+58,323 8.5 19:00
+96,323 8.5 1
+123,323 8.5 INT. POLICE STATION - NIGHT
+270,323 8.5 Meera hands the file
+408,323 8.5 N
+443,323 8.5 1, 2
+504,323 8.5 2/8
+526,323 8.5 1h 30m
+58,307 8.5 20:30
+123,307 8.5 MEAL: Meal Break
+537,307 8.5 45m
+58,290 8.5 21:15
+123,290 8.5 TRAVEL: Move to the railway
+123,279 8.5 station
+537,290 8.5 30m
+58,263 8.5 21:45
+96,263 8.5 2
+123,263 8.5 EXT. OLD RAILWAY STATION -
+123,252 8.5 DAY
+270,263 8.5 Arjun walks the platform
+408,263 8.5 D
+443,263 8.5 1
+504,263 8.5 1/8
+545,263 8.5 2h
+60,219 9.5 TALENT
+58,196 8.5 ID
+109,196 8.5 Actor
+299,196 8.5 Character
+474,196 8.5 Call
+58,180 8.5 1
+109,180 8.5 Karthik Menon
+299,180 8.5 ARJUN
+474,180 8.5 17:45
+58,163 8.5 2
+109,163 8.5 Divya Nair
+299,163 8.5 MEERA
+474,163 8.5 Needs input
+60,130 9.5 PRACTICAL NOTES
+54,109 9.5 Transport
+205,109 9.5 Move to the railway station
+54,97 9.5 Meals
+205,97 9.5 Meal Break
+226,34 8.0 Black Rain · Call Sheet: Day 1 · Page 1 of 2
+65,18 7.0 Created with OpenFrame Studio
+== page 2 612x792
+54,728 9.5 Emergency contact
+205,728 9.5 Rohan, 1st AD, 98000 20002
+60,702 9.5 WEATHER
+54,680 9.5 Forecast
+205,680 9.5 Rain after 21:00
+54,668 9.5 Sunrise
+205,668 9.5 05:47
+54,656 9.5 Sunset
+205,656 9.5 18:51
+60,629 9.5 EXTRAS
+58,606 8.5 Group
+246,606 8.5 Qty
+268,606 8.5 Call
+331,606 8.5 On set
+394,606 8.5 Notes
+58,590 8.5 Commuters
+268,590 8.5 Needs input
+394,590 8.5 Sc 2
+60,557 9.5 DEPARTMENT NOTES
+54,536 9.5 Props
+205,536 9.5 Sc 1: Red Folder
+60,509 9.5 ADVANCE SCHEDULE
+54,488 9.5 Day
+205,488 9.5 Shoot Day 2 · Tue 15 Jun 2027
+54,476 9.5 Location
+205,476 9.5 Morgue, Old Railway Station
+54,463 9.5 Cast
+205,463 9.5 MEERA, ARJUN
+60,437 9.5 WALKIE CHANNELS AND CONTACTS
+54,416 9.5 Walkie channels
+205,416 9.5 1 Production, 2 Camera
+226,34 8.0 Black Rain · Call Sheet: Day 1 · Page 2 of 2
+65,18 7.0 Created with OpenFrame Studio

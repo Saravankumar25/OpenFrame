@@ -1,0 +1,15 @@
+=== page 1
+  0   90 SceneNumber    1
+  0  150 Heading        INT. THEATRE - NIGHT
+  0  760 SceneNumber    1
+  2  150 Action         The curtain rises.
+=== page 2
+ -3  730 PageNumber     2.
+  0  415 Centered       ACT TWO
+=== page 3
+ -3  730 PageNumber     3.
+  0   90 SceneNumber    2
+  0  150 Heading        INT. GREEN ROOM - NIGHT
+  0  760 SceneNumber    2
+  2  150 Action         Costumes everywhere.
+pdf-sha256 786de10336f74537067131a3b6d33e7e4cd8d37dd50b704b211a2e05886af139

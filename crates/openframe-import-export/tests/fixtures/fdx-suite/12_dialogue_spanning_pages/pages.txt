@@ -1,0 +1,103 @@
+=== page 1
+  0   90 SceneNumber    1
+  0  150 Heading        INT. COURTROOM - DAY
+  0  760 SceneNumber    1
+  2  150 Action         INSPECTOR DAS rises.
+  4  370 Character      INSPECTOR DAS (V.O.)
+  5  310 Parenthetical  (to the jury)
+  6  250 Dialogue       On the night of the 1th the signal
+  7  250 Dialogue       was green, the platform was empty
+  8  250 Dialogue       and the clock read two fourteen. On
+  9  250 Dialogue       the night of the 2th the signal was
+ 10  250 Dialogue       green, the platform was empty and
+ 11  250 Dialogue       the clock read two fourteen. On the
+ 12  250 Dialogue       night of the 3th the signal was
+ 13  250 Dialogue       green, the platform was empty and
+ 14  250 Dialogue       the clock read two fourteen. On the
+ 15  250 Dialogue       night of the 4th the signal was
+ 16  250 Dialogue       green, the platform was empty and
+ 17  250 Dialogue       the clock read two fourteen. On the
+ 18  250 Dialogue       night of the 5th the signal was
+ 19  250 Dialogue       green, the platform was empty and
+ 20  250 Dialogue       the clock read two fourteen. On the
+ 21  250 Dialogue       night of the 6th the signal was
+ 22  250 Dialogue       green, the platform was empty and
+ 23  250 Dialogue       the clock read two fourteen. On the
+ 24  250 Dialogue       night of the 7th the signal was
+ 25  250 Dialogue       green, the platform was empty and
+ 26  250 Dialogue       the clock read two fourteen. On the
+ 27  250 Dialogue       night of the 8th the signal was
+ 28  250 Dialogue       green, the platform was empty and
+ 29  250 Dialogue       the clock read two fourteen. On the
+ 30  250 Dialogue       night of the 9th the signal was
+ 31  250 Dialogue       green, the platform was empty and
+ 32  250 Dialogue       the clock read two fourteen. On the
+ 33  250 Dialogue       night of the 10th the signal was
+ 34  250 Dialogue       green, the platform was empty and
+ 35  250 Dialogue       the clock read two fourteen. On the
+ 36  250 Dialogue       night of the 11th the signal was
+ 37  250 Dialogue       green, the platform was empty and
+ 38  250 Dialogue       the clock read two fourteen. On the
+ 39  250 Dialogue       night of the 12th the signal was
+ 40  250 Dialogue       green, the platform was empty and
+ 41  250 Dialogue       the clock read two fourteen. On the
+ 42  250 Dialogue       night of the 13th the signal was
+ 43  250 Dialogue       green, the platform was empty and
+ 44  250 Dialogue       the clock read two fourteen. On the
+ 45  250 Dialogue       night of the 14th the signal was
+ 46  250 Dialogue       green, the platform was empty and
+ 47  250 Dialogue       the clock read two fourteen. On the
+ 48  250 Dialogue       night of the 15th the signal was
+ 49  250 Dialogue       green, the platform was empty and
+ 50  250 Dialogue       the clock read two fourteen. On the
+ 51  250 Dialogue       night of the 16th the signal was
+ 52  250 Dialogue       green, the platform was empty and
+ 53  250 Dialogue       the clock read two fourteen. On the
+ 54  370 More           (MORE)
+=== page 2
+ -3  730 PageNumber     2.
+  0  370 Character      INSPECTOR DAS (V.O.) (CONT'D)
+  1  250 Dialogue       night of the 17th the signal was
+  2  250 Dialogue       green, the platform was empty and
+  3  250 Dialogue       the clock read two fourteen. On the
+  4  250 Dialogue       night of the 18th the signal was
+  5  250 Dialogue       green, the platform was empty and
+  6  250 Dialogue       the clock read two fourteen. On the
+  7  250 Dialogue       night of the 19th the signal was
+  8  250 Dialogue       green, the platform was empty and
+  9  250 Dialogue       the clock read two fourteen. On the
+ 10  250 Dialogue       night of the 20th the signal was
+ 11  250 Dialogue       green, the platform was empty and
+ 12  250 Dialogue       the clock read two fourteen. On the
+ 13  250 Dialogue       night of the 21th the signal was
+ 14  250 Dialogue       green, the platform was empty and
+ 15  250 Dialogue       the clock read two fourteen. On the
+ 16  250 Dialogue       night of the 22th the signal was
+ 17  250 Dialogue       green, the platform was empty and
+ 18  250 Dialogue       the clock read two fourteen. On the
+ 19  250 Dialogue       night of the 23th the signal was
+ 20  250 Dialogue       green, the platform was empty and
+ 21  250 Dialogue       the clock read two fourteen. On the
+ 22  250 Dialogue       night of the 24th the signal was
+ 23  250 Dialogue       green, the platform was empty and
+ 24  250 Dialogue       the clock read two fourteen. On the
+ 25  250 Dialogue       night of the 25th the signal was
+ 26  250 Dialogue       green, the platform was empty and
+ 27  250 Dialogue       the clock read two fourteen. On the
+ 28  250 Dialogue       night of the 26th the signal was
+ 29  250 Dialogue       green, the platform was empty and
+ 30  250 Dialogue       the clock read two fourteen. On the
+ 31  250 Dialogue       night of the 27th the signal was
+ 32  250 Dialogue       green, the platform was empty and
+ 33  250 Dialogue       the clock read two fourteen. On the
+ 34  250 Dialogue       night of the 28th the signal was
+ 35  250 Dialogue       green, the platform was empty and
+ 36  250 Dialogue       the clock read two fourteen. On the
+ 37  250 Dialogue       night of the 29th the signal was
+ 38  250 Dialogue       green, the platform was empty and
+ 39  250 Dialogue       the clock read two fourteen. On the
+ 40  250 Dialogue       night of the 30th the signal was
+ 41  250 Dialogue       green, the platform was empty and
+ 42  250 Dialogue       the clock read two fourteen.
+ 44  150 Action         Silence.
+pdf-sha256 282fd35230265557ddefa6e08b1f3f0e4a573c3397d2c6e7751720f89fdf027a

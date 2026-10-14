@@ -1,0 +1,8 @@
+/* Welcome popup community tiles (owner mock 198). Colours come from the theme tokens. */
+.soc { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 600; color: var(--ink2); background: transparent; border: 0; padding: 4px; border-radius: 10px; width: 100%; }
+.soc i { font-style: normal; width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: var(--accent-soft); color: var(--accent-d); font-weight: 800; font-size: 14px; }
+button.soc { cursor: pointer; }
+button.soc:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* The logo at the top of the trial and welcome screens: the top bar's BrandLogo, centred. */
+.lic-brand { display: flex; justify-content: center; padding: 6px 0; }

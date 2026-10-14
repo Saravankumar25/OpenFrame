@@ -1,0 +1,40 @@
+{
+  "scenes": [
+    {
+      "elements": [
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "action",
+          "revision": null,
+          "text": "The light turns one last time."
+        }
+      ],
+      "heading": "EXT. LIGHTHOUSE - DAWN",
+      "number": null
+    }
+  ],
+  "titlePage": [
+    [
+      "Title",
+      "THE LAST LIGHT"
+    ],
+    [
+      "Author",
+      "Asha Rao & K. Menon"
+    ],
+    [
+      "Source",
+      "Based on the short story \"Keeper\""
+    ],
+    [
+      "Draft date",
+      "Shooting Draft\n4 October 2026"
+    ],
+    [
+      "Contact",
+      "Northlight Pictures\n14 Example Road, Pune 411001\n+91 98765 43210"
+    ]
+  ],
+  "warnings": []
+}

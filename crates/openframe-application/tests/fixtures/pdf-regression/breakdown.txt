@@ -1,0 +1,79 @@
+== page 1 612x792
+54,722 16.0 Breakdown Report
+*,706 9.5 Black Rain · Exported <DATE> · Source: Black Rain: Shooting Draft 6
+54,681 9.5 Production Source
+205,681 9.5 Black Rain: Shooting Draft 6
+54,668 9.5 Scenes
+205,668 9.5 4
+54,656 9.5 Confirmed elements
+205,656 9.5 10
+54,643 9.5 Suggested (not confirmed)
+205,643 9.5 0
+54,631 9.5 Catalog items
+205,631 9.5 6
+54,605 13.0 Breakdown by scene
+54,582 11.0 Scene 1: INT. POLICE STATION - NIGHT
+54,565 9.5 Cast
+205,565 9.5 Arjun, Meera
+54,553 9.5 Location / Set
+205,553 9.5 Police Station
+54,540 9.5 Props
+205,540 9.5 Red Folder
+54,517 11.0 Scene 2: EXT. OLD RAILWAY STATION - DAY
+54,499 9.5 Cast
+205,499 9.5 Arjun
+54,487 9.5 Extras / Background
+205,487 9.5 Commuters
+54,474 9.5 Location / Set
+205,474 9.5 Old Railway Station
+54,451 11.0 Scene 3: INT. MORGUE - DAY
+54,434 9.5 Cast
+205,434 9.5 Meera
+54,410 11.0 Scene 4: EXT. OLD RAILWAY STATION - NIGHT
+54,393 9.5 Cast
+205,393 9.5 Arjun
+54,380 9.5 Location / Set
+205,380 9.5 Old Railway Station
+224,34 8.0 Black Rain · Breakdown Report · Page 1 of 2
+65,18 7.0 Created with OpenFrame Studio
+== page 2 612x792
+54,721 13.0 Catalog
+58,701 8.5 Category
+130,701 8.5 Item
+231,701 8.5 Status
+288,701 8.5 Used in scenes
+395,701 8.5 Scenes
+432,701 8.5 Description
+58,685 8.5 Cast
+130,685 8.5 Arjun
+231,685 8.5 Required
+288,685 8.5 1, 2, 4
+420,685 8.5 3
+58,668 8.5 Cast
+130,668 8.5 Meera
+231,668 8.5 Required
+288,668 8.5 1, 3
+420,668 8.5 2
+58,652 8.5 Extras /
+58,641 8.5 Background
+130,652 8.5 Commuters
+231,652 8.5 Required
+288,652 8.5 2
+420,652 8.5 1
+58,624 8.5 Location / Set
+130,624 8.5 Old Railway Station
+231,624 8.5 Required
+288,624 8.5 2, 4
+420,624 8.5 2
+58,608 8.5 Location / Set
+130,608 8.5 Police Station
+231,608 8.5 Required
+288,608 8.5 1
+420,608 8.5 1
+58,591 8.5 Props
+130,591 8.5 Red Folder
+231,591 8.5 Required
+288,591 8.5 1
+420,591 8.5 1
+224,34 8.0 Black Rain · Breakdown Report · Page 2 of 2
+65,18 7.0 Created with OpenFrame Studio

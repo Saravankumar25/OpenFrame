@@ -1,0 +1,16 @@
+=== title page
+ 18  355 TitleMain      THE LAST LIGHT
+ 22  375 TitleText      Written by
+ 24  330 TitleText      Asha Rao & K. Menon
+ 27  260 TitleText      Based on the short story "Keeper"
+ 52  150 TitleText      Northlight Pictures
+ 53  150 TitleText      14 Example Road, Pune 411001
+ 53  610 TitleText      Shooting Draft
+ 54  150 TitleText      +91 98765 43210
+ 54  610 TitleText      4 October 2026
+=== page 1
+  0   90 SceneNumber    1
+  0  150 Heading        EXT. LIGHTHOUSE - DAWN
+  0  760 SceneNumber    1
+  2  150 Action         The light turns one last time.
+pdf-sha256 466662e4ad36355d8ac1f24337e57ecd08e59519dc9736f2ca35d72faa71444f

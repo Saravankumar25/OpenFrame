@@ -1,0 +1,236 @@
+# OpenFrame Studio — continuous integration (docs/engineering/25-ci-cd.md).
+# All jobs are blocking (supply-chain checks, feature status check in CI, architecture lint; 2026-10-05):
+#   rust          fmt, clippy -D warnings, tests, generated bindings and AI coverage drift
+#   web           tsc, eslint, vitest, vite build
+#   e2e           the real desktop app driven through tauri-driver + WebView2 (build plan item end-to-end tests in CI)
+#   governance    architecture lint, migration policy, feature status check, and their self-tests
+#   supply-chain  cargo-deny (advisories, licences, bans, sources), cargo audit, npm audit, licence inventory
+# release.yml runs the supply-chain checks again as hard release gates.
+
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # .cargo/config.toml compiles through sccache, which runners do not have; an empty value turns it off.
+  RUSTC_WRAPPER: ""
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: 0
+  RUST_BACKTRACE: 1
+  NODE_VERSION: "20"
+
+jobs:
+  rust:
+    name: Rust — fmt, clippy, tests
+    runs-on: windows-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Install Rust (1.98.1, MSVC)
+        uses: dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067 # master 2026-10-05
+        with:
+          toolchain: "1.98.1"
+          components: rustfmt, clippy
+
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          shared-key: windows-ci
+
+      - name: cargo fmt --check
+        run: cargo fmt --all -- --check
+
+      # tauri::generate_context!() requires the configured frontendDist to exist at
+      # compile time. The real UI bundle is built and checked in the `web` job.
+      - name: Placeholder frontend bundle for Rust compilation
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force apps/desktop/dist | Out-Null
+          Set-Content -Path apps/desktop/dist/index.html -Value '<!doctype html><title>OpenFrame</title>'
+
+      - name: cargo clippy (deny warnings)
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+
+      - name: cargo test
+        run: cargo test --workspace --locked
+
+      # `cargo test` regenerates apps/desktop/src/ipc/generated via ts-rs. Any diff
+      # means a Rust DTO changed without committing the regenerated TypeScript types.
+      - name: Generated IPC bindings are committed
+        shell: pwsh
+        run: |
+          git status --porcelain -- apps/desktop/src/ipc/generated
+          git diff --exit-code -- apps/desktop/src/ipc/generated
+          $untracked = git ls-files --others --exclude-standard -- apps/desktop/src/ipc/generated
+          if ($untracked) { Write-Error "Untracked generated bindings: $untracked"; exit 1 }
+
+      # `cargo test` regenerates docs/engineering/ai-tool-coverage.md from the live Registry
+      # (tests/ai_tool_coverage.rs). A diff means an operation was added or changed without
+      # committing the regenerated inventory and its AI decision (build plan item AI tool list regenerated, feature AI-009).
+      - name: AI tool coverage inventory is committed
+        shell: pwsh
+        run: git diff --exit-code -- docs/engineering/ai-tool-coverage.md
+
+  governance:
+    name: "Governance: architecture lint, migrations, feature status"
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0 # the migration check compares frozen.json with the base commit
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Architecture lint (CONTRIBUTING section 2, security standard in the build plan)
+        run: node scripts/architecture-lint.mjs --list
+
+      - name: Migration policy (doc 23 §4), compared with the base commit
+        shell: pwsh
+        env:
+          BASE_REF: ${{ github.event_name == 'pull_request' && format('origin/{0}', github.base_ref) || github.event.before }}
+        run: |
+          if ($env:BASE_REF -and $env:BASE_REF -notmatch '^0+$') { node scripts/check-migrations.mjs --base $env:BASE_REF }
+          else { node scripts/check-migrations.mjs }
+
+      - name: Feature status completeness
+        run: node scripts/check-feature-status.mjs
+
+      - name: Feature status routes exist in the app
+        run: node scripts/check-reachability.mjs
+
+      - name: Build plan boxes have evidence
+        run: node scripts/plan-status.mjs --check
+
+      - name: Writing standard (no em dashes, no banned phrases; ratchet)
+        run: node scripts/check-writing-standard.mjs
+
+      - name: Markdown links resolve
+        run: node scripts/check-links.mjs
+
+      - name: Governance check self-tests
+        run: node --test scripts/tests/governance.test.mjs
+
+  e2e:
+    name: Desktop E2E (release gate)
+    runs-on: windows-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - uses: dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067 # master 2026-10-05
+        with:
+          toolchain: "1.98.1"
+
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          shared-key: windows-e2e
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: npm ci
+        run: npm ci
+
+      # Builds the real app (debug, embedded UI), installs msedgedriver matching the runner's
+      # WebView2 and tauri-driver, then runs every spec in tests/e2e/specs: the lifecycle journey,
+      # the relaunch check and the reachability test generated from the feature status file.
+      # The test build carries the bundled Offline AI (ADR-0025; build-app.mjs runs
+      # prepare-ai-assets.mjs), so this job fails closed until OPENFRAME_AI_ASSETS_DIR gives the
+      # runner the pinned runtime and model files.
+      - name: Desktop E2E (tauri-driver + WebView2)
+        env:
+          OPENFRAME_AI_ASSETS_DIR: ${{ vars.OPENFRAME_AI_ASSETS_DIR }}
+        run: npm run test:e2e
+
+      - name: Failure screenshots
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: e2e-artifacts
+          path: tests/e2e/artifacts/
+          if-no-files-found: ignore
+
+  web:
+    name: Web — typecheck, lint, tests, build
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: npm ci
+        run: npm ci
+
+      - name: TypeScript (tsc --noEmit)
+        run: npm run typecheck
+
+      - name: ESLint (max warnings 0)
+        run: npm --workspace apps/desktop run lint
+
+      - name: Vitest
+        run: npm run test:web
+
+      - name: Production web build
+        run: npm --workspace apps/desktop run build:web
+
+  supply-chain:
+    name: Supply chain
+    runs-on: windows-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - uses: dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067 # master 2026-10-05
+        with:
+          toolchain: "1.98.1"
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install cargo-deny
+        run: cargo install cargo-deny --version 0.20.2 --locked
+
+      - name: cargo deny (advisories, licenses, bans, sources)
+        run: cargo deny --locked check
+
+      # cargo audit scans the whole lockfile (all targets). Warnings for crates outside the
+      # Windows graph (GTK on Linux) are informational; vulnerabilities fail the job.
+      - name: Install cargo-audit
+        run: cargo install cargo-audit --version 0.22.2 --locked
+
+      - name: cargo audit (vulnerabilities)
+        run: cargo audit
+
+      - name: npm ci
+        run: npm ci
+
+      - name: npm audit (production dependencies)
+        run: npm audit --omit=dev --audit-level=moderate
+
+      - name: License inventory is current and permissive
+        shell: pwsh
+        run: |
+          node scripts/license-inventory.mjs --check
+          git diff --exit-code -- THIRD_PARTY_LICENSES.md

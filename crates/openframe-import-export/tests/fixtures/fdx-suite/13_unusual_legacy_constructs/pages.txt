@@ -1,0 +1,22 @@
+=== page 1
+  0   90 SceneNumber    1
+  0  150 Heading        INT. ARCHIVE - NIGHT
+  0  760 SceneNumber    1
+  2  150 Action         THE FILE is gone.	Gone.
+  4  150 Action         A paragraph without a type.
+  6  150 Action         General text, & an ampersand é and a non-breaking space.
+  8  150 Action         Dust on the shelves.
+ 10  230 Character      ASHA
+ 10  540 Character      RAVI
+ 11  150 Dialogue       Where is it?
+ 11  460 Dialogue       I never had it.
+ 13  230 Character      ASHA
+ 13  540 Character      RAVI
+ 14  150 Dialogue       Then who?
+ 14  460 Dialogue       Ask the keeper.
+ 16  150 Custom         ASHA, RAVI
+ 18   90 SceneNumber    2
+ 18  150 Heading        INT. ARCHIVE - LATER
+ 18  760 SceneNumber    2
+ 20  150 Action         The lights go out.
+pdf-sha256 3f7b149d359e623db10d99e2ccb02cf7a9fb79b9377fab19c57901b0d73b98af

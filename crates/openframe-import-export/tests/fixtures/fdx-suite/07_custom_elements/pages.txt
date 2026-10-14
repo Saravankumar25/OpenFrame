@@ -1,0 +1,11 @@
+=== page 1
+  0   90 SceneNumber    1
+  0  150 Heading        INT. CONTROL ROOM - NIGHT
+  0  760 SceneNumber    1
+  2  150 Action         The radio crackles.
+  4  370 Character      CONTROL
+  6  250 CustomItalic   THIS IS CONTROL. CLEAR THE LINE.
+  9  335 Custom         Gudur Junction, 2:14 AM
+ 11  150 Action         ASHA lifts the receiver.
+ 13  250 CustomItalic   SAY AGAIN, SIGNAL BOX.
+pdf-sha256 09e33199a97c580100d1030abdfb5af49d57b5d402573e6d6dbf8d33c2c31f51
