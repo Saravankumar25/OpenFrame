@@ -37,7 +37,7 @@ All commands run from the repository root.
 |---|---|
 | `npm install` | Installs the npm workspace (`apps/desktop`) |
 | `npm run dev` | `tauri dev`: starts Vite on `http://127.0.0.1:1420` and the Rust app with hot reload. The first build compiles all crates and takes several minutes. Stages the bundled Offline AI when `.ai-assets` is present (without it the app shows its "Offline AI is missing" state) |
-| `npm run build` | `tauri build`: optimized release build plus NSIS and MSI installers in `target/release/bundle/`, with the bundled Offline AI. Local builds are unsigned. Fails closed when the pinned AI files are missing or altered. |
+| `npm run build` | `tauri build`: optimized release build plus NSIS and MSI installers in `target/release/bundle/`, with the Offline AI runtime and the models as the current build bundles them (ADR-0026 moves the models to a download after install). Local builds are unsigned. Fails closed when the pinned AI files are missing or altered. |
 | `npm run ai:assets` | Verifies `.ai-assets` (or `OPENFRAME_AI_ASSETS_DIR`) against `packaging/ai/ai-assets.lock.json` and stages the files in `.build-cache/ai-bundle` (`-- --check` verifies only). A git worktree uses the main checkout's `.ai-assets`. |
 | `npm run bundle` | Same as `build`, restricted to `--bundles nsis,msi` |
 | `npm run test` | `cargo test --workspace`, then Vitest (`apps/desktop`) |
@@ -74,7 +74,7 @@ cd apps/desktop; npx vitest                          # watch mode
 | Logs | `%LOCALAPPDATA%\OpenFrame\logs\openframe.YYYY-MM-DD.log`: JSON lines, rotated daily, 14 files kept |
 | New projects (default) | `Documents\OpenFrame\Projects\<Title>.openframe\` |
 | Global Idea Vault | `Documents\OpenFrame\Global Idea Vault\` (`vault.sqlite` + `assets/`) |
-| Offline AI runtime and models (bundled, read-only, ADR-0025) | `ai\` next to `openframe-desktop.exe` (installer, MSIX and development builds); writable AI records in `%LOCALAPPDATA%\OpenFrame\ai\` and `logs\` (Store builds: `LocalState\OpenFrame`, see doc 27) |
+| Offline AI runtime (in the package, read-only) and models (bundled in the current build; downloaded after install under ADR-0026) | `ai\` next to `openframe-desktop.exe` (installer, MSIX and development builds); writable AI records in `%LOCALAPPDATA%\OpenFrame\ai\` and `logs\` (Store builds: `LocalState\OpenFrame`, see doc 27) |
 
 **Log level.** Set the `OPENFRAME_LOG` environment variable. It uses
 [`tracing_subscriber::EnvFilter`](https://docs.rs/tracing-subscriber/latest/tracing_subscriber/filter/struct.EnvFilter.html)

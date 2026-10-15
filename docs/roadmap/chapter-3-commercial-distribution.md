@@ -57,7 +57,7 @@ These are the owner's own requirement: "do not assume our proposed payment or tr
 | Signing | The Store signs the package | Developer ID and Mac App Store certificates; hardened runtime; App Sandbox with user-selected files |
 | Notarization | Not needed for the Store | Needed outside the App Store (the internal `.dmg` later) |
 | Validation | Windows App Certification Kit on the exact package | App Store validation and TestFlight |
-| AI engine and models | Bundled, loads under MSIX; the manifest drops the `internetClient` capability | Bundled in the app resources, must load under the sandbox |
+| AI engine and models | Runtime bundled; models downloaded after install on the user's click; `internetClient` is justified by that download (ADR-0026) | Runtime in the app resources and the downloaded models in the app container, both must load under the MSIX package and the sandbox |
 | Updates | Store updates only; no in-app updater | Store updates only |
 | Listing | Description, screenshots from the release candidate, age rating, privacy policy URL, support contact | Same, plus the in-app purchase products |
 

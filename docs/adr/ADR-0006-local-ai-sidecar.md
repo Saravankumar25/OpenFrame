@@ -4,10 +4,10 @@
   profile (Gemma 3 1B Instruct + BGE small embeddings), no Qwen tiers and no user override. Decisions 1, 2 and 4–7
   stay in force; ADR-0013 extends them with a second (embedding) sidecar, the derived intelligence index, the universal
   toolbox and the bounded agent loop. The download-size figure under Consequences is replaced by ADR-0013's.
-- **Decision 2 (delivery by download) superseded 2026-10-08** by
-  [ADR-0025](ADR-0025-offline-ai-bundled-in-every-package.md): the runtime, both models, the tokenizer and every
-  runtime asset ship inside every package with pinned hashes; nothing is downloaded and there is no model host. The
-  "Bundling the model in the installer" rejection and the first two Consequences are superseded with it.
+- **Decision 2 (delivery by download) reinstated 2026-10-15** by
+  [ADR-0026](ADR-0026-offline-ai-download-after-install.md). It had been superseded 2026-10-08 by ADR-0025, which is now
+  itself superseded. The runtime ships in the package; the models and tokenizer download after a user click from a
+  signed manifest. The "Bundling the model in the installer" rejection stays rejected.
 - **Date:** 2026-09-30
 - **Related:** Engineering Index locked decisions (Offline AI, Local AI only, no Ollama); ESD §3, §10;
   OpenFrame_Local_AI_Runtime_Model_Management_Specification.md; ADR-0012 (resolution of external-AI passages)
@@ -25,8 +25,8 @@ work, must never mutate directly, and must treat project text as untrusted data 
    **127.0.0.1 on a random free port**, requires a random per-launch bearer token, and never binds `0.0.0.0`. Its
    generic file and shell agent features are disabled. The sidecar process is placed in a Windows **Job Object** with
    kill-on-close, so it cannot outlive OpenFrame. It is started on demand, never at app startup.
-2. **SUPERSEDED 2026-10-08 by ADR-0025 (offline AI bundled in every package). Kept as history; never implement.**
-   **Delivery:** the runtime and the model are delivered by **Download Offline AI** from the OpenFrame-controlled
+2. **Reinstated 2026-10-15 by [ADR-0026](ADR-0026-offline-ai-download-after-install.md)** (it was superseded 2026-10-08 by
+   ADR-0025). **Delivery:** the runtime and the model are delivered by **Download Offline AI** from the OpenFrame-controlled
    distribution base URL (build-time `MODEL_DISTRIBUTION_BASE_URL`), described by a **signed manifest**. The manifest
    signature is Ed25519, verified with a public key compiled into the app. TLS alone is not trusted. Each artifact's
    SHA-256 and size are pinned in the manifest. Downloads go to `*.partial` with HTTP range resume and a disk-space
@@ -52,9 +52,9 @@ work, must never mutate directly, and must treat project text as untrusted data 
 
 ## Consequences
 
-- *(Superseded 2026-10-08 by ADR-0025: the installer carries the AI and grows by about 1.1 GB.)* The base installer stays small and has no AI dependency. AI needs a one-time download of the order of 1–5 GB,
+- *(Reinstated 2026-10-15 by ADR-0026; the 2026-10-08 bundling had been superseded by ADR-0025.)* The base installer stays small and has no AI model dependency. AI needs a one-time download of the order of 1–5 GB,
   depending on profile.
-- *(Superseded 2026-10-08 by ADR-0025: no download list, no manifest key, no distribution host.)* The signing key for manifests becomes release infrastructure (rotation procedure required before GA). The
+- *(Reinstated 2026-10-15 by ADR-0026.)* The signing key for manifests becomes release infrastructure (rotation procedure required before GA). The
   distribution hostname is still an open decision (Engineering Index §7), and `release-validate.mjs` fails closed
   without it once the AI module exists.
 - Model and runtime licenses must be verified per artifact and shipped as notices (spec §17).
@@ -67,5 +67,5 @@ work, must never mutate directly, and must treat project text as untrusted data 
 | Cloud AI providers / user API keys | Out of scope for v1 (locked decision); contradicts local-first privacy |
 | Ollama or other user-installed runtimes | Requires user setup and a background service outside our control (explicitly excluded) |
 | In-process inference (llama.cpp linked into the app) | A model crash or OOM would take down the editor and risk unsaved state. There would be no resource isolation. |
-| Bundling the model in the installer | Multi-GB installer for a feature that is optional. **Superseded 2026-10-08: chosen by ADR-0025** |
+| Bundling the model in the installer | Multi-GB installer for a feature that is optional. Rejected again by ADR-0026 (ADR-0025 had chosen it, now superseded). |
 | Unsigned manifest over HTTPS | A CDN or DNS compromise would let an attacker swap binaries. The spec requires application-controlled signing. |

@@ -116,7 +116,7 @@ WebView2 runtime present; SmartScreen steps as written.
 Mac: copy to Applications; first start with the Gatekeeper steps as written; the same functional steps; Command key
 shortcuts; spell check; file dialogs; quit with Command+Q right after typing; AI with network off; memory use.
 
-Both: the bundled AI files pass their check at first start; no network connection other than loopback is opened by the
+Both: the AI files (bundled today, downloaded after install under ADR-0026) pass their check at first start; no network connection other than loopback is opened by the
 app; logs contain no script text.
 
 ## 8. Reporting and fixing

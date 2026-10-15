@@ -29,7 +29,7 @@ above the user's.
    **BGE small English v1.5** embedding model (MIT, 384 dimensions), both served by pinned `llama.cpp` `llama-server`
    sidecars on 127.0.0.1. There is no model picker and no user-loaded model. The manifest format 2 describes runtime +
    chat model + embedding model; format 1 (the Qwen tiers) is refused.
-2. **SUPERSEDED 2026-10-08 by ADR-0025 (bundled in every package, no download). Kept as history.** **One download.** **Download Offline AI** fetches the runtime and both models as one combined, resumable,
+2. **Reinstated 2026-10-15 by ADR-0026.** **One download.** **Download Offline AI** fetches the runtime and both models as one combined, resumable,
    SHA-256-verified download from the signed manifest, activates atomically, health-checks both sidecars and is usable
    without a restart. Components are stored once per Windows user, never per project.
 3. **Derived intelligence index.** Each project gets `cache/intelligence.sqlite` (crate `openframe-search`): semantic

@@ -8,7 +8,7 @@
 
 ## Dashboard (update every session from `npm run plan:status`)
 
-**Overall: 128 of 306 boxes (41.8%).** **Current goal** (boxes without the "Later: store publishing" tag): **127 of 223 (57.0%)**. 83 boxes wait for the store publishing step. Counts from `npm run plan:status` on 2026-10-09.
+**Overall: 127 of 306 boxes (41.5%).** **Current goal** (boxes without the "Later: store publishing" tag): **126 of 223 (56.5%)**. Updated 2026-10-15 after the ADR-0026 reopening (one box in area 8 unticked). 83 boxes wait for the store publishing step. Counts from `npm run plan:status` on 2026-10-09.
 
 | # | Area | Done |
 |---|---|---|
@@ -19,7 +19,7 @@
 | 5 | Test infrastructure and quality gates | 4 of 13 |
 | 6 | Security hardening from the baseline audit | 3 of 9 |
 | 7 | Platform adapter layer for Windows and Mac | 1 of 10 |
-| 8 | AI assistant quality and hardening | 2 of 24 |
+| 8 | AI assistant quality and hardening | 1 of 24 |
 | 9 | Story Board and Idea Vault | 8 of 9 |
 | 10 | Writing comfort | 6 of 6 |
 | 11 | Screenplay engine and file formats | 21 of 24 |
@@ -57,6 +57,20 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 ```
 
 ## Entries
+
+### 2026-10-15, download after install reinstated in the documents (no source code changed)
+
+- Owner decision in chat: the AI models download after install on the user's click; the app and the AI runtime ship in
+  every package. Recorded as ADR-0026 (Accepted 2026-10-15). ADR-0025 is superseded in place. The download clauses of
+  ADR-0006 decision 2, ADR-0013 decision 2 and ADR-0020 decisions 1 (weights part), 3 and 5 are reinstated with pointers.
+- Documents updated: ADR register, owner decisions (model host, manifest key and Gemma check back as open owner tasks),
+  masterplan area 8 and the store, privacy and QA items, feature status rows, release and CI docs, runtime and AI
+  specifications (banners), engineering threat model, README, CLAUDE.md, DEVELOPMENT.md, handoff.
+- Plan: the download flow is reopened as "to be done" (masterplan area 8). The download code removed on 2026-10-08 is not
+  restored; it is rebuilt with its own tests.
+- Not done: no source code, no installer build, no model host set up. Current build still bundles the models.
+- Not verified: store rules for downloaded models (to confirm in Partner Center), the package size after the change
+  (estimate 20 to 30 MB), Gemma redistribution for hosting.
 
 ### 2026-10-09, retrospection, audit and documentation restructure (no source code changed)
 - **Areas and items worked:** 2 Project controls (documentation map, instructions, workspace hygiene); a read-only audit across areas 1 to 20. No plan item was built.

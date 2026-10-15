@@ -52,8 +52,8 @@ The internal `.exe` and `.dmg` are for evaluation by the owner and invited teste
 
 - They are not signed and not notarized yet. Windows SmartScreen and macOS Gatekeeper will warn on first run. That is an
   installation restriction, not an application defect, and the test plan says how to get past it.
-- They contain the complete offline AI (runtime, Gemma 3 1B weights, embedding weights). Nothing is downloaded after
-  installation ([ADR-0025](../adr/ADR-0025-offline-ai-bundled-in-every-package.md)).
+- They contain the app and the offline AI runtime. The AI models (Gemma 3 1B weights, embedding weights) download once,
+  after installation, when the user clicks the download button ([ADR-0026](../adr/ADR-0026-offline-ai-download-after-install.md)).
 - They carry no trial, no purchase, no price and no store lock ([ADR-0023](../adr/ADR-0023-store-trial-and-internal-installer.md)).
 - The team password gate of [ADR-0024](../adr/ADR-0024-internal-team-builds.md) is currently on. The owner decides whether
   the writers who test the build keep it (open question in owner-decisions.md).

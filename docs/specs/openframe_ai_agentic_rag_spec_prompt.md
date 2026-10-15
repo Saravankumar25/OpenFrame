@@ -1,9 +1,8 @@
 # OpenFrame — Local Agentic AI + Hybrid RAG + Context Graph Implementation Spec
 
-> **Partly superseded 2026-10-08 by [ADR-0025](../adr/ADR-0025-offline-ai-bundled-in-every-package.md).** Every package now
-> contains the complete offline AI: there is no **Download Offline AI** button, no download, no signed manifest, no model
-> host, no install, update or remove step and no graphics-card build. The runtime and both models are read-only app
-> resources pinned in `packaging/ai/ai-assets.lock.json` and checked before the first engine start. Text below that
+> **Current decision: [ADR-0026](../adr/ADR-0026-offline-ai-download-after-install.md) (2026-10-15).** The app and the AI
+> runtime ship in every package; the models download after install on the user's click from a signed manifest. This
+> reverses ADR-0025 (2026-10-08). The current build still bundles the models from `packaging/ai/ai-assets.lock.json`. Text below that
 > describes downloading, installing or removing Offline AI is history; never implement it.
 
 

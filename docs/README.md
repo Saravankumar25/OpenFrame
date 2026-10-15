@@ -92,7 +92,7 @@ Full table with replaced decisions: [adr/README.md](adr/README.md).
   chapters: finish and test, website, store distribution ([vision](product/vision-and-scope.md)).
 - **Collaboration:** file-based Exchange, Review and Response packages only. Live LAN collaboration is removed (ADR-0007).
 - **AI:** local only; one profile, Gemma 3 1B Instruct plus BGE small embeddings; bounded agent; human-only Change Sets
-  (ADR-0013, ADR-0006 as amended); bundled in every package, no download (ADR-0025).
+  (ADR-0013, ADR-0006 as amended); the runtime ships in every package and the models download after install (ADR-0026).
 - **Data:** SQLite per project, UUIDv7 identities, one mutation pipeline, undo, recovery (ADR-0001 to 0005, 0011).
 - **Platforms:** Windows 11 and Apple silicon only; one codebase, two platform adapters (ADR-0017).
 - **Business model (target, not final):** paid with a 7-day free trial; stores run the trial; the internal builds have no

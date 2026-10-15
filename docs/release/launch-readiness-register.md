@@ -1505,7 +1505,7 @@ Requirements present in the owner's notes (`docs/archive/notes/store-certificati
 | `STORE-009` | Age rating (IARC) answered accurately for screenplays with mature themes or violence | Must ship | Final review and submission |
 | `STORE-010` | Notes for Certification: no login needed, how to test optional AI, network use, capability justification | Must ship | Final review and submission |
 | `STORE-011` | Clean first launch on a bare machine or Windows Sandbox; no locally installed runtime dependency | Must ship | Microsoft Store package |
-| `STORE-012` | Manifest capabilities limited to those used (runFullTrust only; internetClient removed 2026-10-08 because nothing is downloaded, ADR-0025) with written justification | Must ship | Microsoft Store package |
+| `STORE-012` | Manifest capabilities limited to those used (runFullTrust, plus internetClient for the user-clicked AI model download and the update check, ADR-0026; internetClient was removed 2026-10-08 under ADR-0025) with written justification | Must ship | Microsoft Store package |
 | `STORE-013` | At least one clear, uncropped screenshot of the real UI from the release candidate | Must ship | Final review and submission |
 | `STORE-014` | Windows App Certification Kit report (zero failures) archived for the exact package | Must ship | Microsoft Store package |
 | `STORE-015` | Supported Windows versions in manifest, listing and docs agree with what was tested | Must ship | Project controls and baseline |

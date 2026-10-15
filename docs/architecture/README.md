@@ -88,7 +88,7 @@ The Mac code compiles in CI but has never run. The bundled AI engine is pinned o
 | The database | [11-physical-database.md](../engineering/11-physical-database.md) |
 | Autosave, undo, recovery | [17-autosave-undo-recovery.md](../engineering/17-autosave-undo-recovery.md) |
 | Search and retrieval | [16-search.md](../engineering/16-search.md), [18-retrieval-intelligence-index.md](../engineering/18-retrieval-intelligence-index.md) |
-| The AI | [ADR-0013](../adr/ADR-0013-single-local-model-hybrid-rag-agent.md), [ADR-0025](../adr/ADR-0025-offline-ai-bundled-in-every-package.md), [ai-tool-coverage.md](../engineering/ai-tool-coverage.md) |
+| The AI | [ADR-0013](../adr/ADR-0013-single-local-model-hybrid-rag-agent.md), [ADR-0026](../adr/ADR-0026-offline-ai-download-after-install.md) (superseding ADR-0025), [ai-tool-coverage.md](../engineering/ai-tool-coverage.md) |
 | Threats | [20-security-threat-model.md](../engineering/20-security-threat-model.md) |
 | Windows and Mac differences | [37-platform-boundary.md](../engineering/37-platform-boundary.md), [28-cross-platform-compatibility-security.md](../engineering/28-cross-platform-compatibility-security.md) |
 | The target design | [29-desktop-hld-lld.md](../engineering/29-desktop-hld-lld.md) |

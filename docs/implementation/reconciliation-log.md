@@ -6,6 +6,22 @@
 > Renamed on 2026-10-06 from `03-reconciliation-log.md`. Extended on 2026-10-09 (chapter restructure). Checks written "(checked)" were verified in the repository on the
 > date given. Checks written "(stated)" come from a supplied document and were not verified independently.
 
+## 2026-10-15: download after install reinstated (ADR-0026), conflicts and where each went
+
+- ADR-0025 (bundle the whole AI in every package, no download) is superseded in place. ADR-0026 is Accepted by the
+  owner in chat on 2026-10-15 and reinstates the download clauses of ADR-0006 decision 2, ADR-0013 decision 2 and
+  ADR-0020 decisions 1 (weights part), 3 and 5. The runtime stays in the package (ADR-0020 decision 1).
+- Conflicts resolved by rewording to the current decision, with a "Build state" note where the code still bundles the
+  models: the runtime specification, the AI specification, the ESD, the engineering package index, the security
+  specification, engineering documents 20, 22, 23, 25 and 27, the privacy policy draft, the feature status rows, the launch
+  readiness register (STORE-012), the roadmap chapter 3 row, README, CLAUDE.md, DEVELOPMENT.md, docs/README.md, vision and
+  scope, the architecture README and the internal test plan.
+- Owner tasks reopened: model host, production Ed25519 manifest key, Gemma redistribution check for hosting the weights.
+- Checked: `packaging/ai/ai-assets.lock.json` still lists the bundled files, and the code still bundles them. The docs now
+  say so instead of claiming a download exists.
+- Not changed: `docs/archive/`, `docs/audits/`, `docs/release/evidence/` and the dated report
+  `docs/reports/2026-10-09-project-retrospection-and-audit.md` keep the 2026-10-08 wording as history.
+
 ## 2026-10-09: chapter restructure, contradictions found and where each went
 
 Found while reading the repository for the audit report (checked 2026-10-09):

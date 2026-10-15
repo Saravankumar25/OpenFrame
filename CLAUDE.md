@@ -1,14 +1,14 @@
 ## What we are building
 
 OpenFrame Studio is a local-first desktop app for writers, screenwriters and production teams. Everyone uses the same
-application. Stack: Tauri v2, React and TypeScript, Rust, SQLite, and a bundled offline AI (Gemma 3 1B, ADR-0025).
+application. Stack: Tauri v2, React and TypeScript, Rust, SQLite, and an offline AI (Gemma 3 1B, downloaded after install, ADR-0026).
 Windows 11 and Apple silicon only. One codebase, two platform adapters (Windows and macOS). The goal is the complete
 product, tested end to end, with no known security hole.
 
 The work has three chapters (owner decision 2026-10-09; `docs/product/vision-and-scope.md`, `docs/roadmap/README.md`):
 
 1. **Complete, test and validate.** Finish every approved feature, test it, build the internal Windows `.exe` and macOS
-   `.dmg` (unsigned, offline AI inside, team password gate per ADR-0024 unless the owner removes it), install them on the
+   `.dmg` (unsigned, AI runtime inside and the AI models downloaded after install per ADR-0026, team password gate per ADR-0024 unless the owner removes it), install them on the
    owner's own Windows and Mac laptops, then let real writers and production teams use them for 2 to 3 days and fix what
    they find. **This is the only chapter in progress.**
 2. **Website.** Static, Cloudflare Pages, faithful recreations of the real screens. Starts when the screens are stable.

@@ -6,11 +6,12 @@
     **Updated:** 30 September 2026 (single Offline AI profile: Gemma 3 1B Instruct + BGE small embeddings; supersedes the three-tier Qwen design)  
     **Purpose:** Define a zero-technical-setup, local-only AI subsystem where filmmakers click **Download Offline AI** and OpenFrame manages everything else.
 
-> **Partly superseded 2026-10-08 by [ADR-0025](../adr/ADR-0025-offline-ai-bundled-in-every-package.md).** Every package now
-> contains the complete offline AI: there is no **Download Offline AI** button, no download, no signed manifest, no model
-> host, no install, update or remove step and no graphics-card build. The runtime and both models are read-only app
-> resources pinned in `packaging/ai/ai-assets.lock.json` and checked before the first engine start. Text below that
-> describes downloading, installing or removing Offline AI is history; never implement it.
+> **Current decision: [ADR-0026](../adr/ADR-0026-offline-ai-download-after-install.md) (2026-10-15).** The download after
+> install described below is the target design again. The runtime ships in every package; the chat and embedding models
+> and the tokenizer download on the user's click from the signed manifest. This reverses ADR-0025 (2026-10-08), whose
+> bundled-everywhere text is kept as history. **Where this text says the runtime downloads, ADR-0020 decision 1 governs:
+> the runtime is in the package and is never downloaded.** **Build state:** the current build still bundles the models
+> from `packaging/ai/ai-assets.lock.json`; the download flow is an open implementation item in masterplan area 8.
 
 
 

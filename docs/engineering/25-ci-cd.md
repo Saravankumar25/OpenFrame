@@ -12,7 +12,7 @@
 | `rust` | `windows-latest` | stable toolchain (rustfmt, clippy) → rust-cache → `cargo fmt --all -- --check` → placeholder `apps/desktop/dist` (needed by `tauri::generate_context!`) → `cargo clippy --workspace --all-targets --locked -- -D warnings` → `cargo test --workspace --locked` → **no drift** in `apps/desktop/src/ipc/generated` (ts-rs regenerates the types during tests) and in `docs/engineering/ai-tool-coverage.md` (regenerated from the Registry) | Blocking |
 | `web` | `windows-latest` | Node 20 + npm cache → `npm ci` → `npm run typecheck` (tsc) → ESLint `--max-warnings 0` → Vitest → `npm --workspace apps/desktop run build:web` | Blocking |
 | `governance` | `windows-latest` | Node 20 → `scripts/architecture-lint.mjs --list` (webview imports, single IPC, no webview network, capabilities, CSP, command allow-list, SQLite write sites, AI apply boundary, listeners, `unsafe`, process spawn) → `scripts/check-migrations.mjs` (linear numbering, embedded list, freeze checksums) → `scripts/check-feature-status.mjs` (every in-scope row has a source, a build area, a UI route, tests and a status its evidence supports) → `node --test scripts/tests/governance.test.mjs` (each check catches a planted violation) | **Blocking** (build plan: feature status check in CI, architecture lint, migration policy) |
-| `e2e` | `windows-latest` | rust toolchain + cache → Node + `npm ci` → `npm run test:e2e` (verifies and stages the bundled Offline AI from `OPENFRAME_AI_ASSETS_DIR`, builds the real debug app with it, installs msedgedriver matching the runner's WebView2 and tauri-driver, runs `tests/e2e/specs`: lifecycle journey, relaunch, the AI specs with the real model, reachability generated from the feature status file) → failure screenshots uploaded. Fails closed until the runner has the pinned AI files (ADR-0025) | **Blocking**; the same job runs on the release tag in `release.yml` and `build` / `store` need it (build plan: end-to-end tests in CI) |
+| `e2e` | `windows-latest` | rust toolchain + cache → Node + `npm ci` → `npm run test:e2e` (verifies and stages the bundled Offline AI from `OPENFRAME_AI_ASSETS_DIR`, builds the real debug app with it, installs msedgedriver matching the runner's WebView2 and tauri-driver, runs `tests/e2e/specs`: lifecycle journey, relaunch, the AI specs with the real model, reachability generated from the feature status file) → failure screenshots uploaded. Fails closed until the runner has the pinned AI files for today's bundled build; after the download flow is rebuilt, CI tests the download against a test manifest and host (ADR-0026) | **Blocking**; the same job runs on the release tag in `release.yml` and `build` / `store` need it (build plan: end-to-end tests in CI) |
 | `supply-chain` | `windows-latest` | `cargo install cargo-deny` → `cargo deny --locked check` (advisories, licenses, bans, sources) → `cargo install cargo-audit` → `cargo audit` → `npm ci` → `npm audit --omit=dev --audit-level=moderate` → `license-inventory --check` + `THIRD_PARTY_LICENSES.md` must be current | **Blocking** since 2026-10-05 (build plan: supply-chain checks); also a hard gate in releases. An advisory may be ignored only in `deny.toml` with id, reason and tracking reference. |
 
 Locally, `npm run verify` runs format, lint, typecheck, `npm run check:governance` and tests. On a 16 GB machine set
@@ -37,7 +37,7 @@ or start the app and never talks to StoreKit or the App Store.
 
 1. **validate** (fail closed): `scripts/release-validate.mjs --tag` checks versions and tag, license selected,
    signing secrets present, updater configured, license inventory clean and current, and the bundled Offline AI build
-   inputs matching `packaging/ai/ai-assets.lock.json` (ADR-0025). Then `cargo deny check` (blocking).
+   inputs matching `packaging/ai/ai-assets.lock.json` for today's bundled build (ADR-0026 will replace this with the manifest and host checks). Then `cargo deny check` (blocking).
 2. **build** (needs validate): full verification (fmt, clippy, tests, tsc, eslint, vitest) → Authenticode import →
    release-only Tauri config → `prepare-ai-assets.mjs` → `tauri build --bundles nsis,msi --config src-tauri/tauri.bundled-ai.conf.json` with
    updater artifacts → **signature verification**
@@ -56,7 +56,7 @@ or start the app and never talks to StoreKit or the App Store.
 
 Required secrets (direct channel): `WINDOWS_CERTIFICATE`, `WINDOWS_CERTIFICATE_PASSWORD`, `TAURI_SIGNING_PRIVATE_KEY`,
 `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`. Variables: `WINDOWS_TIMESTAMP_URL`, `OPENFRAME_AI_ASSETS_DIR` (folder on the runner
-holding the pinned Offline AI files, ADR-0025; also used by `e2e` and `store`). The former `MODEL_DISTRIBUTION_BASE_URL`
+holding the pinned Offline AI files for today's bundled build; also used by `e2e` and `store`). `MODEL_DISTRIBUTION_BASE_URL`
 and `OPENFRAME_MANIFEST_PUBLIC_KEY` are gone with the download flow.
 **None are configured today, so a tag push fails at `validate` by design.**
 
