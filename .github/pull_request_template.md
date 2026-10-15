@@ -8,7 +8,7 @@ Delete sections that truly do not apply and say why ("n/a: docs only"). Do not l
 - Build plan area and box(es): <!-- e.g. Writing comfort: Custom keyboard shortcuts -->
 - Feature(s) and status change: <!-- e.g. Custom keyboard shortcuts: Designed to Built -->
 - Source requirement: <!-- PRD/FSD/UX section, Revision 1 section, or ADR -->
-- Risk level (see docs/engineering/31-ai-assisted-development-controls.md section 2): <!-- cosmetic, local UI, operation wiring, canonical data, cross-module, security, release, data format, AI authority -->
+- Risk level (see CONTRIBUTING.md section 8): <!-- cosmetic, local UI, operation wiring, canonical data, cross-module, security, release, data format, AI authority -->
 
 ## Feature contract (required for customer-visible changes and for canonical data, cross-module, security, release, data format and AI authority changes)
 

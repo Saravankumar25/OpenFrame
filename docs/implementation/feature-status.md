@@ -293,7 +293,7 @@ Source: Engineering Package Index; `docs/engineering/22` to `28`, `36` and `37`;
 
 ## Documentation work
 
-Source: `docs/README.md`; `docs/engineering/31-ai-assisted-development-controls.md`; build plan §1.
+Source: `docs/README.md`; `CONTRIBUTING.md` section 8; build plan §1.
 
 | Feature | Build area | Status | Key |
 |---|---|---|---|

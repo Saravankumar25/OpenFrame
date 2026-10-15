@@ -22,6 +22,12 @@
 | `2026-10-15-owner-decisions-before-restructure.md` | The owner decisions table including replaced rows | Records what was answered when | [owner-decisions.md](../implementation/owner-decisions.md) |
 | `2026-10-15-vision-and-scope-before-restructure.md` | The vision page of 2026-10-09 | Earlier wording of scope | [vision-and-scope.md](../product/vision-and-scope.md) |
 | `2026-10-15-documentation-map-before-restructure.md` | The documentation map of 2026-10-09 | Earlier layout and precedence | [../README.md](../README.md) |
+| `2026-09-spec-digest/` | Eight digests of the product specifications and their README (about 7,300 lines), written before ADR-0007, ADR-0013 and Revision 1. Moved here in Windows phase W1 | ADR-0009 and ADR-0012 cite them for the contradictions they listed | The full specifications in [../specs/](../specs) |
+| `2026-09-30-agent-brief.md` | The module brief of 2026-09-30 (was `docs/engineering/AGENT_BRIEF.md`). Moved in W1 | ADR-0005 cites its section 4 | [CONTRIBUTING.md](../../CONTRIBUTING.md), [architecture/README.md](../architecture/README.md) |
+| `2026-09-30-security-review.md` | The first security review (was `docs/engineering/SECURITY_REVIEW_2026-09-30.md`). Moved in W1 | `security_review.rs` and `security_paths.rs` name its finding IDs | [20-security-threat-model.md](../engineering/20-security-threat-model.md) |
+| `2026-10-05-cross-platform-compatibility-security-plan.md` | Engineering document 28, the Tauri-on-both cross-platform plan. Moved in W1 | ADR-0017 cites it | [37-platform-boundary.md](../engineering/37-platform-boundary.md), [ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md) |
+| `2026-10-05-desktop-hld-lld-target.md` | Engineering document 29, the target high- and low-level design. Moved in W1 | The ESD specification points to it | [architecture/README.md](../architecture/README.md) |
+| `2026-10-05-ai-assisted-development-controls.md` | Engineering document 31, AI-assisted development controls. Moved in W1 | Its risk levels and feature contract were copied into CONTRIBUTING.md section 8 | [CONTRIBUTING.md](../../CONTRIBUTING.md) section 8 |
 | `notes/documentation-stack-guidance.md` | Raw intake notes on which documents a project needs | Shaped the documentation map | [../README.md](../README.md) |
 | `notes/store-certification-and-launch-gap-notes.md` | Raw intake notes on store certification gaps | Source for the launch register | launch register, [Chapter 3](../roadmap/chapter-3-commercial-distribution.md) |
 
@@ -32,14 +38,10 @@ These files could not be moved without changing source code, scripts or test com
 
 | Path | Status | Why it stays | What to use instead |
 |---|---|---|---|
-| `docs/spec-digest/` (eight digests and a README, about 7,300 lines) | Historical. Derived summaries written before ADR-0007, ADR-0013 and Revision 1; their LAN passages are superseded | Cited by ADRs, the progress log and `scripts/check-writing-standard.mjs` (exempt list) | The full specifications in [../specs/](../specs) |
-| `docs/engineering/AGENT_BRIEF.md` | Partly stale module brief of 2026-09-30 (says specifications are in the repository root, mentions digests) | [DEVELOPMENT.md](../../DEVELOPMENT.md) and ADR-0005 cite it | [CONTRIBUTING.md](../../CONTRIBUTING.md), [architecture/README.md](../architecture/README.md) |
-| `docs/engineering/SECURITY_REVIEW_2026-09-30.md` | Evidence snapshot of the first security review | Rust test files cite its path in comments | [20-security-threat-model.md](../engineering/20-security-threat-model.md) |
 | `docs/audits/` | Two dated audits (2026-10-02, 2026-10-03). Evidence of what was true on those days | Already a record folder | [feature-status.md](../implementation/feature-status.md) |
 | `docs/release/evidence/M0` to `M14`, `release` | Evidence folders named with old item codes | Test results and screenshots; renaming would break citations | The translation tables in the reconciliation log |
 | `docs/implementation/progress-log.md`, section "Earlier entries" | Log entries with old item codes | The history of sessions on 2026-10-05 | The newer entries above it |
 | `docs/website/prompts/` | Two supplied prompts; tool names in them were never verified | Referenced from the website plan | [Chapter 2 plan](../roadmap/chapter-2-website.md) |
-| `docs/engineering/28-...`, `29-...`, `31-...` | Plans promoted from supplied documents on 2026-10-05 (cross-platform plan, target HLD and LLD, AI-assisted development controls) | Their rules are enforced in `CONTRIBUTING.md` and the architecture lint | Current state: [37-platform-boundary.md](../engineering/37-platform-boundary.md), [architecture/README.md](../architecture/README.md) |
 | `HTML_Mockups/` | Design reference, 181 screens. Includes removed features (live LAN, mock-ups 164 to 168) and a roles screen (155) that is not in the product | The UX specification and the visual rules cite them | The running application; [Chapter 2](../roadmap/chapter-2-website.md) explains how website screens are made |
 | `docs/manual/` | The user manual (.docx, .pdf) still has the removed LAN figures 164 to 168 | The manual source is not in the repository as text | To be rebuilt from the shipped interface (build plan area 17) |
 
@@ -48,8 +50,8 @@ These files could not be moved without changing source code, scripts or test com
 Copy it to a living location, update it, and add a row to the [decision register](../adr/README.md) or the reconciliation
 log saying what changed and why. Do not edit the archived copy.
 
-## 4. A later clean-up that needs code changes
+## 4. The clean-up that needed code changes
 
-After the next code change window, the files in section 2 can move into this folder: update the exempt list in
-`scripts/check-writing-standard.mjs`, the comments in the two Rust test files, `DEVELOPMENT.md` and the ADR citations in
-one commit, then run `node scripts/check-links.mjs`.
+Done in Windows phase W1 (2026-10-16): the digests, the agent brief, the first security review and engineering documents
+28, 29 and 31 moved into this folder in one commit, with the writing-check exempt list, the two Rust test comments,
+`DEVELOPMENT.md`, CONTRIBUTING.md and the ADR citations updated together.

@@ -49,7 +49,7 @@ only the existing AI code. W7 and W8 may run side by side after W6.
 - **History that needs code changes.** Move `docs/spec-digest/`, `docs/engineering/AGENT_BRIEF.md`,
   `SECURITY_REVIEW_2026-09-30.md` and the plan documents 28, 29 and 31 into the archive; update the exempt list in
   `scripts/check-writing-standard.mjs`, the comments in the two Rust test files, `DEVELOPMENT.md` and the ADR citations in
-  the same commit; run `node scripts/check-links.mjs`.
+  the same commit; run `node scripts/check-links.mjs`. Done 2026-10-16 (see the archive index).
 - **Storage hygiene.** Lower the debug level of the development profile, merge integration test programs into fewer
   binaries, and review the 39 dead worktree folders and 31 unmerged agent branches. Nothing is deleted before the owner
   approves the review table. Found 2026-10-15: the 39 folders under `.claude/worktrees` (4.2 GB) point at

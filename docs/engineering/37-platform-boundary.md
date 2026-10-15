@@ -7,7 +7,7 @@
 > Decisions behind it: [ADR-0017](../adr/ADR-0017-cross-platform-windows-and-macos.md). Plan area: "Platform adapter layer for
 > Windows and Mac" in [masterplan.md](../implementation/masterplan.md). State of the feature:
 > [feature-status.md](../implementation/feature-status.md) (row PLAT-007). The broader compatibility plan is
-> [28-cross-platform-compatibility-security.md](28-cross-platform-compatibility-security.md).
+> [28-cross-platform-compatibility-security.md](../archive/2026-10-05-cross-platform-compatibility-security-plan.md).
 
 ## 1. The rule
 

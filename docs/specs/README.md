@@ -23,7 +23,7 @@
 | `OpenFrame_Studio_Engineering_Package_Index.md` | Locked engineering decisions, phases, invariants | Active; some locked decisions marked under amendment (see the register) |
 
 The user manual is in [../manual/](../manual) (`.docx` and `.pdf`); it still contains the removed LAN figures 164 to 168
-(regeneration is feature DOC-007; build plan item: User Manual regenerated against the shipped UI). Dense derived digests are in [../spec-digest/](../spec-digest).
+(regeneration is feature DOC-007; build plan item: User Manual regenerated against the shipped UI). Historical derived digests are archived in [../archive/2026-09-spec-digest/](../archive/2026-09-spec-digest).
 
 **Reading rule:** a section carrying "SUPERSEDED by ADR-0007" is history. Do not implement or test it. Where the same
 topic appears elsewhere, the register in [../adr/README.md](../adr/README.md) names the current rule.

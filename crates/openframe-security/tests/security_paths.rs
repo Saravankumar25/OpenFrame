@@ -1,4 +1,4 @@
-//! Regression tests for the 2026-09-30 security review (docs/engineering/SECURITY_REVIEW_2026-09-30.md):
+//! Regression tests for the 2026-09-30 security review (docs/archive/2026-09-30-security-review.md):
 //! user-chosen path validation (PATH-01..04), shell-open safety (PKG-01), web links (WEB-01),
 //! log redaction (LOG-01) and archive directory limits (PARSE-03).
 

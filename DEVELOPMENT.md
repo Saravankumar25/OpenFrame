@@ -133,8 +133,8 @@ Commit the regenerated files with the Rust change. CI fails if `cargo test` leav
 ├─ migrations/{app,global,project}/  embedded SQL migrations (one numbered file per owning module)
 ├─ docs/
 │  ├─ adr/                    Architecture Decision Records
-│  ├─ engineering/            implementation specs (11–26) + AGENT_BRIEF.md (module conventions)
-│  └─ spec-digest/            historical digests of the product specs (see docs/archive/README.md)
+│  ├─ engineering/            implementation specs and contracts (11 to 39)
+│  └─ archive/                history, including the old spec digests (index: docs/archive/README.md)
 ├─ scripts/                   setup.mjs, license-inventory.mjs, release-validate.mjs
 ├─ .github/workflows/         ci.yml, release.yml
 ├─ deny.toml                  cargo-deny policy (licenses, advisories, sources, bans)
@@ -203,7 +203,7 @@ Details: [ADR-0004](docs/adr/ADR-0004-single-ipc-dispatcher.md) (IPC),
 
 ### Adding a module
 
-Follow [docs/engineering/AGENT_BRIEF.md](docs/engineering/AGENT_BRIEF.md). In summary:
+Follow [CONTRIBUTING.md](CONTRIBUTING.md) and [docs/architecture/README.md](docs/architecture/README.md). In summary:
 
 1. Add a migration file under `migrations/project/` (use the number already reserved in `schema.rs`).
 2. Create `crates/openframe-application/src/modules/<m>/` with a `register(r)` function covering ops, indexers and

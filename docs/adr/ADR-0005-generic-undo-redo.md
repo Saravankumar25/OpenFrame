@@ -43,7 +43,7 @@ afterwards by something else.
 ## Consequences
 
 - Every module gets correct undo/redo, including recoverable delete and restore, without writing inverse logic
-  (AGENT_BRIEF §4 forbids it).
+  (the module brief of 2026-09-30, now `docs/archive/2026-09-30-agent-brief.md` §4, forbade it).
 - Undo never overwrites later work. After a schema migration, old entries whose row shapes no longer match fail the
   stale check and are refused safely rather than applied wrongly.
 - Storage cost: JSON row images, at most 300 entries per actor. Very large operations (e.g. importing a 120-page

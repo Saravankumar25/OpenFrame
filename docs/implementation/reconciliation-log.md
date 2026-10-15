@@ -6,6 +6,18 @@
 > Renamed on 2026-10-06 from `03-reconciliation-log.md`. Extended on 2026-10-09 (chapter restructure). Checks written "(checked)" were verified in the repository on the
 > date given. Checks written "(stated)" come from a supplied document and were not verified independently.
 
+## 2026-10-16: Windows phase W1, archive moves and conflict sweep
+
+- Moved into `docs/archive/` (one commit, links rewritten, `check-links` clean): `docs/spec-digest/` to
+  `2026-09-spec-digest/`; `AGENT_BRIEF.md` to `2026-09-30-agent-brief.md`; `SECURITY_REVIEW_2026-09-30.md` to
+  `2026-09-30-security-review.md`; engineering 28, 29 and 31 to `2026-10-05-*`. The risk levels and the feature contract
+  of engineering 31 now live in CONTRIBUTING.md section 8, so no current rule depends on an archived file. The writing-check
+  exempt list lost its spec-digest entry (the archive is skipped as a whole) and its living-docs baseline fell from 37 to 29.
+- CONTRIBUTING.md section 6 still described pull requests for every change and Conventional Commits; it now states the
+  owner git flow of 2026-10-06 and 2026-10-08 (local commits in normal prose, push and pull requests only on the owner word).
+- Plan corrections found in the code: `reqwest` is already macOS-only in the Tauri shell (no W1 change; removed in M1);
+  the 39 worktree folders point at a git folder that no longer exists.
+
 ## 2026-10-15 (later): documentation restructure after the owner's 25 decisions, conflicts and where each went
 
 - New records: ADR-0027 (one Rust core, two shells), ADR-0028 (AI quality program), ADR-0029 (GPU), ADR-0030 (proof levels,

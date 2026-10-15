@@ -53,7 +53,7 @@ const SKIP_PREFIXES = [
   "docs/archive/",
   "docs/release/evidence/",
   "docs/specs/",
-  "docs/spec-digest/",
+
   "docs/manual/",
   "tests/fixtures/",
   "scripts/check-writing-standard.mjs",

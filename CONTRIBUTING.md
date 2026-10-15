@@ -1,6 +1,6 @@
 # Contributing to OpenFrame Studio
 
-OpenFrame holds filmmakers' only copy of their work. Contributions are judged first on **not losing or corrupting
+OpenFrame holds the only copy of the work of writers, screenwriters and production teams. Contributions are judged first on **not losing or corrupting
 user data**, second on **matching the approved product behavior exactly**, and only then on everything else.
 
 > **Licensing notice.** No open-source license has been selected yet ([LICENSE-PENDING.md](LICENSE-PENDING.md)).
@@ -57,7 +57,7 @@ rewrites screenplay text. Call sheet edits never rewrite the schedule. Breakdown
 
 ## 3. Review contract
 
-Every pull request needs at least one reviewer approval and green CI. The author states, and the reviewer verifies:
+Every change needs a review (a person, or the review agents named in `CLAUDE.md`) and green checks. The author states, and the reviewer verifies:
 
 1. **Traceability.** Which PRD/FSD requirement(s) or ADR this implements, with section or ID.
 2. **Data safety.** Mutations go through `Store::mutate` with the right `Capability`. There are no raw write
@@ -66,7 +66,7 @@ Every pull request needs at least one reviewer approval and green CI. The author
 3. **Undo and recovery.** The change is undoable where the FSD requires it (automatic through the pipeline), typing
    uses a coalesce key, and non-undoable actions are marked `.not_undoable()` with a reason.
 4. **Permissions.** Viewer and Commenter are denied mutations. Private content is owner-filtered.
-5. **Errors.** Errors use a stable `AppError` code (ESD §12 taxonomy) and a filmmaker-friendly message with no
+5. **Errors.** Errors use a stable `AppError` code (ESD §12 taxonomy) and a plain message for the person using the app, with no
    SQL or OS jargon. Technical detail goes in `.with_detail()` and never contains project content.
 6. **UI.** Labels match the UX spec and mock-ups exactly. Everything is keyboard reachable with visible focus and
    labelled icon buttons, and status is never shown by colour alone. There is no fake data and no buttons that do
@@ -79,12 +79,11 @@ Every pull request needs at least one reviewer approval and green CI. The author
    documents named in [docs/README.md](docs/README.md) §4 are updated in the same pull request.
 10. **Feature contract.** Any customer-visible feature or high-risk change states: user outcome, entry point,
     canonical data, operations, permissions, undo and recovery, search, **AI exposure (and explicit non-exposure)**,
-    import and export, accessibility, performance, security and privacy, tests and evidence. Use the template in
-    [docs/engineering/31-ai-assisted-development-controls.md](docs/engineering/31-ai-assisted-development-controls.md) §5.
+    import and export, accessibility, performance, security and privacy, tests and evidence. Use the template in section 8.
 11. **Completion states.** A feature is done only when its status is Release-ready; a button plus a backend is only Built. Moving a feature-status row
     up needs evidence (test, E2E, artifact). A feature must be reachable from the UI, survive restart and crash, and
     export and re-import where applicable. No backend-only feature, no UI-only mock.
-12. **Risk level.** State the risk level from `docs/engineering/31-ai-assisted-development-controls.md` section 2. Changes
+12. **Risk level.** State the risk level from section 8. Changes
     that cross modules or touch security, release, data format or AI authority are never merged because "the feature works";
     they need the matching tests and a security review.
 13. **Slice size.** One vertical slice per pull request. No unrelated refactor, rename, framework or dependency migration.
@@ -134,13 +133,16 @@ TLS is rustls-only (`openssl-sys` and `native-tls` are banned in `deny.toml`).
 
 ## 6. Commit and branch conventions
 
-- Branch from `main`, one topic per branch: `feat/<module>-<topic>`, `fix/<topic>`, `docs/<topic>`. Never push to `main`.
-- Every change goes in through a pull request. Merge only when the automatic checks are green. The pull request lists the
-  build plan items, the evidence and the checks run.
-- Use [Conventional Commits](https://www.conventionalcommits.org/): `feat(story): reorder scene cards across sequences`,
-  `fix(persistence): keep FK checks on after failed migration`, `docs(adr): add ADR-0013`. Types: `feat`, `fix`,
-  `perf`, `refactor`, `test`, `docs`, `build`, `ci`, `chore`.
-- The subject is imperative and ≤ 72 characters. The body explains *why* and references the FSD/PRD section or ADR.
+The owner decided this flow on 2026-10-06 and 2026-10-08 (`CLAUDE.md`, "Git flow"). It replaces the earlier pull request
+and Conventional Commits rules of this section.
+
+- Work in the local project folder. GitHub is never needed to develop, run, test, package or build the app.
+- Branch from `main`, one topic per branch: `<area>/<short-name>` (for example `windows/w1-controls`). Never push to `main`.
+- Commit locally in small slices. The message says what changed and why in normal prose: an imperative subject of at most
+  72 characters, then a body that names the plan item, the ADR or specification section and the evidence.
+- Push, open or merge a pull request, or change repository settings only when the owner says so in that conversation.
+  When asked, the pull request lists the plan items, the evidence and the checks, and merges only when the checks are green.
+- Finished work reaches `main` by a local merge only after its unit tests and end-to-end specs pass.
 - Commit generated bindings and `THIRD_PARTY_LICENSES.md` in the same commit as the change that caused them.
 - Never commit secrets or signing material (`*.pfx`, `*.p12`, `*.key`, `.env*` are gitignored). Never commit real user
   projects or personal data as fixtures.
@@ -155,3 +157,27 @@ TLS is rustls-only (`openssl-sys` and `native-tls` are banned in `deny.toml`).
 Do not open public issues for vulnerabilities (path traversal, package extraction, IPC bypass, permission bypass,
 signature verification). Report them privately to the maintainers. The threat model is in
 [docs/engineering/20-security-threat-model.md](docs/engineering/20-security-threat-model.md).
+
+## 8. Risk levels and the feature contract
+
+Moved here in Windows phase W1 from the AI-assisted development controls of 2026-10-05 (now in the archive). Levels, from
+lowest to highest risk:
+
+| Risk level | Example | Required control |
+|---|---|---|
+| Cosmetic | spacing, icon, label | normal review |
+| Local UI logic | filter, sorting, component state | component unit test |
+| Operation wiring | new query or command | Registry and generated types |
+| Canonical data | schema or mutation | migration, transaction and undo |
+| Cross-module | Story to Screenplay to Breakdown | lineage tests and end-to-end test |
+| Security | file system, import, AI permissions | threat model and security test |
+| Release | installer, update, signing | release gate |
+| Data format | migration, import, export | fixture corpus and round trip |
+| AI authority | tools, Change Sets, retrieval | AI coverage, security and the evaluation harness (ADR-0028) |
+
+Changes at the cross-module, security, release, data format and AI authority levels are never merged only because "the
+feature works".
+
+Feature contract, one line each: user outcome; entry points; canonical data; queries; commands; permissions; undo;
+recovery; search; AI exposure (and explicit non-exposure); import; export; cross-platform; accessibility; performance;
+tests; known limitations.

@@ -40,7 +40,7 @@ docs/
   manual/                    user manual (.docx, .pdf)
   audits/                    dated evidence snapshots (do not edit)
   archive/                   history; README is the archive index (do not edit the files)
-  spec-digest/               historical digests (moves to the archive in phase W1)
+  (spec-digest/ moved to archive/2026-09-spec-digest/ in phase W1)
   development-storage-policy.md
 HTML_Mockups/                design reference mock-ups (some show removed features)
 ```
@@ -67,7 +67,7 @@ Chapters 2 and 3 have no implementation plan yet by decision; each is written wh
 | Implementation status | [feature-status.md](implementation/feature-status.md), [progress-log.md](implementation/progress-log.md) | A status moves up only with evidence at a named proof level |
 | Test evidence | [release/evidence/](release/evidence), [audits/](audits) | What was true on a date, not what must be |
 | Operating procedures | [development-storage-policy.md](development-storage-policy.md), [testing/](testing), [engineering/39-packages-restore-drill.md](engineering/39-packages-restore-drill.md) | Rules for people and agents |
-| History | [archive/](archive) (index in [archive/README.md](archive/README.md)), [spec-digest/](spec-digest), [implementation/reconciliation-log.md](implementation/reconciliation-log.md) | Never implement from history |
+| History | [archive/](archive) (index in [archive/README.md](archive/README.md)), [implementation/reconciliation-log.md](implementation/reconciliation-log.md) | Never implement from history |
 
 ## 4. Which document wins
 
@@ -86,7 +86,7 @@ Highest first. A lower item never silently overrides a higher one.
 6. **Execution control**: [roadmap/](roadmap), [masterplan.md](implementation/masterplan.md),
    [feature-status.md](implementation/feature-status.md), [launch readiness register](release/launch-readiness-register.md).
 7. **Evidence**: [audits/](audits) and [release/evidence/](release/evidence).
-8. **History**: [archive/](archive), [spec-digest/](spec-digest), [website/prompts/](website/prompts), `HTML_Mockups/`.
+8. **History**: [archive/](archive), [website/prompts/](website/prompts), `HTML_Mockups/`.
 
 [README.md](../README.md) is the release-state declaration (what is usable today), written from the feature status file.
 
@@ -135,7 +135,7 @@ Full table with replaced decisions: [adr/README.md](adr/README.md). Owner answer
 | 11 to 14, 16, 17, 20 to 26 | Database, file format, command architecture, IPC, search, autosave and recovery, security threat model, performance budgets, QA strategy, release and migration, Windows packaging, CI/CD, observability |
 | 18 | Retrieval intelligence index (AI) |
 | 27 | Microsoft Store distribution (Chapter 3) |
-| 28, 29, 31 | Plans of 2026-10-05 (cross-platform, target HLD and LLD, AI-assisted development controls). History for their Mac and shell statements; they move to the archive in phase W1 |
+| 28, 29, 31 | Archived in phase W1 (`archive/2026-10-05-*`); their risk levels and feature contract now live in CONTRIBUTING.md section 8 |
 | 30 | Appearance and themes |
 | 32, 33 | Screenplay engine contract, production depth contract |
 | 34 | UX laws checklist |
@@ -145,7 +145,7 @@ Full table with replaced decisions: [adr/README.md](adr/README.md). Owner answer
 | 38 | [Mac App Store trial](engineering/38-mac-app-store-trial.md) (Chapter 3) |
 | 39 | [Packages restore drill](engineering/39-packages-restore-drill.md) |
 | ai-tool-coverage | Generated inventory of operations and AI tools (never edit by hand) |
-| AGENT_BRIEF, SECURITY_REVIEW_2026-09-30 | Historical module brief and the first security review; move to the archive in phase W1 |
+| AGENT_BRIEF, SECURITY_REVIEW_2026-09-30 | Archived in phase W1 (`archive/2026-09-30-agent-brief.md`, `archive/2026-09-30-security-review.md`) |
 
 ## 8. Keeping documents in step (mandatory)
 

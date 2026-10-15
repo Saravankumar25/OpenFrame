@@ -3,7 +3,7 @@
 - **Status:** Accepted. Items 1–4 are implemented in the foundation. Items 5–9 are binding on the modules in
   development. Amended 2026-10-07 (owner answers) and 2026-10-08 (several screenplays per project).
 - **Date:** 2026-09-30
-- **Related:** contradiction sections of `docs/spec-digest/fsd-part1.md`, `fsd-part2.md`, `prd.md` (§6.1, §7),
+- **Related:** contradiction sections of `docs/archive/2026-09-spec-digest/fsd-part1.md`, `fsd-part2.md`, `prd.md` (§6.1, §7),
   `ux.md` (§8), `security.md` (§6.1); ADR-0009, ADR-0011
 
 ## Context

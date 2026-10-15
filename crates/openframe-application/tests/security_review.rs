@@ -1,5 +1,5 @@
 //! Regression tests for the 2026-09-30 internal security review
-//! (docs/engineering/SECURITY_REVIEW_2026-09-30.md). Each test names its finding ID.
+//! (docs/archive/2026-09-30-security-review.md). Each test names its finding ID.
 
 use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant};
