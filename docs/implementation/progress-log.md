@@ -58,6 +58,27 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 
 ## Entries
 
+### 2026-10-15 (W1, first session), proof levels, team password minimum 8, secret and address gates
+- **Areas and items worked:** Windows phase W1: **Proof level column**, **Team password minimum**, **Gates**; plan
+  correction for **Windows-only dependencies**.
+- **Done:** branch `windows/w1-controls`, commits 7bd059e (Proof column and checker), 77bb9b1 (minimum 8), eeacccb
+  (`check-secrets.mjs`, app-address allow-list in `check-links.mjs`, `scan-installer.mjs`, npm scripts, CI step),
+  d996d6c (handoff and plan corrections).
+- **Evidence:** `scripts/tests/governance.test.mjs` 86 of 86 passing (new cases for proof levels, planted secrets in
+  history and working tree, app addresses, installer strings); `team_gate::tests::store_builds_carry_no_gate_and_internal_release_builds_need_the_variable`
+  failed first on "use at least 12 characters", then 77 of 77 `openframe-entitlement` tests pass;
+  `check-secrets: OK (2048 files, 6 commits)`; `check-links: OK (130 documents; 10 app addresses)`, also with `--online`.
+- **Features moved:** none. The 65 Verified rows are now labelled proof level 2.
+- **Docs updated:** `feature-status.md`, ADR-0024, `docs/adr/README.md`, `36-entitlement-and-trial.md`, `25-ci-cd.md`,
+  `DEVELOPMENT.md`, `chapter-1a-windows-phases.md` (reqwest correction, orphaned worktree finding), `handoff.md`.
+- **Decisions made or needed:** owner in chat: README sentence for the app description; AI prompts keep their wording until
+  W5; own secret-scan script. Needed later: approval of the worktree review table.
+- **Blocked / risks:** the debug executable holds 2,271 personal paths (W3 fixes, W9 gate refuses). No box ticked until
+  the reviewers run at the end of W1.
+- **Next:** archive moves; conflict sweep and wording; storage hygiene and the worktree table.
+- **Checks run:** `npm run check:governance` passes; `cargo test -p openframe-entitlement` passes. `npm run verify`, the
+  full Rust suite and the end-to-end suite were not run this session.
+
 ### 2026-10-15 (later), documentation restructure after the owner's 25 decisions (no source code changed)
 - **Areas and items worked:** 2 Project controls (documentation, decisions, roadmap). No plan box ticked; no code changed.
 - **Done:** brainstorm and web research; the owner answered 25 decision questions; four new ADRs (0027 to 0030); the
