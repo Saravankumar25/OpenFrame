@@ -2,57 +2,44 @@
 
 > Rewritten (not appended) at the end of every session. One page. It exists so the next session starts from the facts
 > instead of from a long history, which is how context rot is avoided. If this page is older than the newest progress log
-> entry, trust the log and fix this page first. Last rewritten: 2026-10-15 (Windows phase W1, first session).
+> entry, trust the log and fix this page first. Last rewritten: 2026-10-16 (Windows phases W1, W2 and W3).
 
 ## State in six lines
 
-1. **Phase W1 is under way** on branch `windows/w1-controls` (local commits only, not merged, not pushed). Three slices
-   are done; four remain.
-2. **Done:** the Proof column and its checker (65 Verified rows at proof level 2); the team password minimum is 8 in
-   `build_hash.rs` with a test written first; the gates `check-secrets.mjs`, the app-address allow-list in
-   `check-links.mjs` (`scripts/app-addresses.json`) and `scan-installer.mjs`, wired into `check:governance` and CI.
-3. **Corrected in the plan:** `reqwest` is already macOS-only in the shell, so W1 has no code change for it (removed in
-   M1). The 39 worktree folders under `.claude/worktrees` (4.2 GB) are orphans: their git folder `C:/dev/OpenFrame/.git`
-   is gone, and so are the 31 branches.
-4. **Owner answers given 2026-10-15:** start W1; the long description becomes the README sentence ("a local-first desktop
-   studio for writers, screenwriters and production teams, covering ..."); the AI instructions keep "filmmakers" until the
-   W5 measurement exists (ADR-0028); the secret scan is our own Node script, no download.
-5. `scan-installer.mjs` finds 2,271 personal paths in today's debug executable. That is the W3 release-profile item
-   ("no personal paths in panic text"); the W9 gate will refuse the build until W3 fixes it.
-6. No plan box has been ticked yet: the reviewers (`ecc:rust-reviewer`, `ecc:typescript-reviewer`,
-   `ecc:silent-failure-hunter`, security review) run before ticking, once W1 is complete.
+1. **W1, W2 and W3 are done at proof level 2** on branch `windows/w1-controls` (local commits, not merged, not pushed).
+   Evidence: [W2](../release/evidence/w2/close-handshake-and-data-safety-2026-10-16.md), [W3](../release/evidence/w3/fuzz-2026-10-16.md).
+2. W1: proof levels in the status file, team password minimum 8, secret, link and installer gates, archive moves, conflict
+   sweep, audience wording, test binaries merged (46 to 6), dev debug level lowered, 39 orphaned worktrees removed with the
+   owner's approval (unique files in `.build-cache/salvage-2026-09-30`).
+3. W2: the close handshake keeps typed text (40 closes in a row in spec 04), one pending-save registry, cloud-folder warning,
+   start-up refusal without Documents, delete and locate tests, migration backup restore check, stranded-replace error.
+4. W3: six fuzz targets (about 49 million inputs on Windows, libFuzzer job in CI), two new properties, a central capability
+   check with a registry-generated test, release hardening flags, rustls security update, supply chain in `npm run verify`.
+5. **Open finding for W4:** the WebView2 runtime opens background connections to Microsoft (threat model section 4 item 8).
+   Spec `tests/e2e/specs/05-webview-network.test.mjs` fails on purpose until W4 switches that off.
+6. Full Rust suite passed after the last fix (2,035 tests before, 604 application tests rerun after); web 581 tests pass.
 
-## Next items (rest of W1)
+## Next items
 
-1. **Archive moves:** `docs/spec-digest/`, `docs/engineering/AGENT_BRIEF.md`, `SECURITY_REVIEW_2026-09-30.md`, documents 28,
-   29, 31, with the exempt list in `scripts/check-writing-standard.mjs`, the two Rust test comments, `DEVELOPMENT.md` and
-   ADR links in the same commit.
-2. **Conflict sweep and wording:** grep `masterplan.md`, the launch register and the specifications for statements that
-   conflict with ADR-0026 to ADR-0030, mark each, add a reconciliation-log row. Replace "filmmakers" in `tauri.conf.json`
-   (long and short description), CONTRIBUTING, `AppError` text, privacy policy and code comments; not in AI prompts.
-3. **Storage hygiene:** `debug = "line-tables-only"` in `[profile.dev]`; merge the 46 test files of
-   `openframe-application/tests` into a few binaries (test count before and after must match); write the worktree review
-   table (size, newest date, files that differ from `main`) and stop for the owner's approval. Then the reviewers, tick
-   the boxes with evidence, and the W1 exit check.
+1. **Owner:** run the 10-minute OneDrive test ([checklist](../testing/onedrive-typing-test.md)); decide on merging the branch.
+2. **W4 (needs the owner's word for a release executable):** WebView2 background traffic off (`additionalBrowserArgs`,
+   keep wry's defaults), the release-build end-to-end run, `scan-installer` on the release folder, binary flags check.
+3. Low review items left: per-rule `secret-scan: allow` marker; `check-links` skips URLs after `#[cfg(test)]`; Mac half
+   of "typed text survives closing" (Mac phases).
 
 ## Blocked on the owner
 
-- Approval of the worktree review table (after it is written). The macOS version of the Intel MacBook (M1).
-- The meaning of "build the website manually" (Chapter 2). Later: model host and manifest key (W8), laptops and virtual
-  machine (W7, W9), Apple silicon Mac (M8, M9), the pilot team, and the word to build.
+- The OneDrive manual test, the word to build a release executable (W4), the macOS version of the Intel MacBook (M1).
 
 ## Do not
 
-- Do not push, merge to `main`, build an installer or a release executable, or delete worktrees without the owner's word.
+- Do not push, merge, or build an installer or release executable without the owner's word.
 - Do not change the AI prompts or model before the W5 baseline exists (ADR-0028).
-- Do not write shell heredocs that contain backslashes: Git Bash here collapses `\\`, which broke a regular expression
-  and a test string this session. Use the Edit and Write tools for code.
-- Do not edit `docs/archive/`, `docs/audits/` or `docs/release/evidence/`. The team password is never written to a file.
+- Do not write shell heredocs or `node -e` snippets with backslashes or apostrophes; use the Edit and Write tools.
+- Do not edit `docs/archive/`, `docs/audits/` or existing files in `docs/release/evidence/`. The team password is never written to a file.
 
 ## Facts a new session cannot see from the code
 
-- The owner is a beginner in Rust, Tauri and Claude Code: explain simply. Windows 11 Home (no Sandbox or Hyper-V).
-- Hardware: 15.4 GB memory, 18 logical cores, Intel Core Ultra 5 with integrated graphics; an Intel MacBook; an Apple
-  silicon Mac and borrowed laptops are coming.
-- Benchmark of 2026-09-30: Gemma 3 1B Q8_0 gave 38.9 percent correct tool and arguments. The release bar is 90 and 85
-  percent after the harness work. Target prices: 3,000 rupees, 89 dollars, 89 euros (not final).
+- The owner is a beginner in Rust, Tauri and Claude Code: plain words, short replies, smallest working change (ponytail).
+- Hardware: 15.4 GB memory, 18 logical cores, Intel Core Ultra 5; a full Rust rebuild takes 6 to 10 minutes, an
+  end-to-end app build about 10; libFuzzer does not link on this Windows MSVC toolchain.

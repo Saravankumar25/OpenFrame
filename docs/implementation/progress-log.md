@@ -58,6 +58,17 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 
 ## Entries
 
+### 2026-10-16, Windows phases W1, W2 and W3 finished at proof level 2
+- **Areas and items worked:** W1 controls and clean baseline; W2 protect writers' work; W3 harden the core.
+- **Done:** commits 4b14aa5 to 3a778a2 on `windows/w1-controls` (archive moves, sweep and wording, test merge, W2, W3).
+- **Evidence:** docs/release/evidence/w2/close-handshake-and-data-safety-2026-10-16.md; docs/release/evidence/w3/fuzz-2026-10-16.md.
+- **Features moved:** none in the status file; masterplan boxes "Project delete and locate are tested" and "Migration backup restores" ticked.
+- **Docs updated:** threat model, IPC contract, ADR-0004, testing README and OneDrive checklist, roadmap phase status, worktree review.
+- **Decisions made or needed:** owner approved worktree removal; WebView2 background traffic is fixed in W4 (threat model item 8).
+- **Blocked / risks:** spec 05 fails until W4; OneDrive manual test waits for the owner.
+- **Next:** W4 with the owner's word; the OneDrive test.
+- **Checks run:** governance 87/87; full Rust suite (one failure fixed, application tests rerun green); web 581; e2e specs 04 (20 rounds), 10; spec 05 fails by design.
+
 ### 2026-10-15 (W1, first session), proof levels, team password minimum 8, secret and address gates
 - **Areas and items worked:** Windows phase W1: **Proof level column**, **Team password minimum**, **Gates**; plan
   correction for **Windows-only dependencies**.
