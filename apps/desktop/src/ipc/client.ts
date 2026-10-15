@@ -94,6 +94,20 @@ export async function openUrl(url: string): Promise<void> {
   }
 }
 
+/** One step of the window close handshake (app/closeRequest.ts, Rust `of_close_window`). */
+export async function closeWindowStep(step: "flushing" | "held" | "close"): Promise<void> {
+  try {
+    await invoke("of_close_window", { step });
+  } catch (e) {
+    throw toOpError("close_window", e);
+  }
+}
+
+/** Rust asks the page to store pending text before the window closes. */
+export function onCloseRequested(handler: () => void): Promise<UnlistenFn> {
+  return listen("of://close-requested", () => handler());
+}
+
 /** Subscribe to application events pushed from Rust. */
 export function onAppEvent(handler: (e: AppEvent) => void): Promise<UnlistenFn> {
   return listen<AppEvent>("of://event", (msg) => handler(msg.payload));

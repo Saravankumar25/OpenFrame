@@ -8,6 +8,7 @@ import { open as openDialog } from "@tauri-apps/plugin-dialog";
 import { FolderOpen } from "lucide-react";
 import { useCommand, useOp } from "../../ipc/query";
 import type { AppInfo } from "../../ipc/generated/AppInfo";
+import type { LocationCheck } from "../../ipc/generated/LocationCheck";
 import type { OpenProjectResult } from "../../ipc/generated/OpenProjectResult";
 import type { ProjectType } from "../../ipc/generated/ProjectType";
 import { Banner, Button, Dialog, Field, Segmented, TextInput } from "../../design-system";
@@ -42,6 +43,11 @@ export function NewProjectDialog({ onClose }: { onClose: () => void }) {
   const [touched, setTouched] = useState(false);
   const [failed, setFailed] = useState<string | null>(null);
   const info = useOp<AppInfo>("app.info", {}, []);
+  const where = parentDir ?? info.data?.projectsDir ?? null;
+  // A synced folder (OneDrive, Dropbox, Google Drive, iCloud Drive) can lock or split project files.
+  const location = useOp<LocationCheck>("project.location_check", { path: where ?? "" }, [], { enabled: !!where });
+  const cloud = location.data?.cloudService ?? null;
+  const localAlternative = location.data?.localAlternative ?? null;
   const reset = useNav((s) => s.reset);
   const create = useCommand<CreateProjectArgs, OpenProjectResult>("project.create", {
     silent: true,
@@ -153,6 +159,23 @@ export function NewProjectDialog({ onClose }: { onClose: () => void }) {
             </div>
           </Field>
         </details>
+        {cloud && (
+          <div style={{ marginBottom: 10 }}>
+            <Banner
+              tone="warn"
+              actions={
+                localAlternative ? (
+                  <Button size="sm" onClick={() => setParentDir(localAlternative)}>
+                    Use a folder on this computer
+                  </Button>
+                ) : undefined
+              }
+            >
+              <b>This folder is synced by {cloud}.</b> Syncing while you write can lock project files or leave conflict
+              copies. A folder on this computer is safer. Your other projects stay where they are.
+            </Banner>
+          </div>
+        )}
         <div className="hint">You can add or change any of this later. You do not need it to start writing.</div>
         {failed && (
           <div style={{ marginTop: 10 }}>

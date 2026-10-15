@@ -34,6 +34,7 @@ Passing tests are necessary. They are not "production ready".
 | Visual baseline | The 15 main screens look as approved | `90-visual-baseline.test.mjs` | Part of E2E | Part of E2E |
 | Installer and clean machine | Install, start, upgrade, uninstall on a clean computer | Manual until a script exists | An hour per machine | Every internal build |
 | Tester pilot | Real people finish real work | [internal-test-plan.md](internal-test-plan.md) | Days | Once per internal build candidate |
+| Cloud-synced folder | Ten minutes of typing in a OneDrive folder loses nothing and locks nothing | [onedrive-typing-test.md](onedrive-typing-test.md) | 20 minutes by hand | Once per internal build candidate |
 
 ## 3. Which tests are valuable, redundant or weak
 

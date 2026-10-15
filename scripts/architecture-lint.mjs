@@ -121,7 +121,7 @@ const OS_ALLOW = {
     "Desktop shell macOS adapter: the StoreKit 2 bridge over a C ABI, compiled only for target_os = macos; Windows builds get the no-op.",
 };
 
-const TAURI_COMMANDS = ["of_invoke", "of_open_asset", "of_reveal_path", "of_open_url"];
+const TAURI_COMMANDS = ["of_invoke", "of_open_asset", "of_reveal_path", "of_open_url", "of_close_window"];
 
 const IPC_CLIENT = "apps/desktop/src/ipc/client.ts";
 

@@ -42,6 +42,7 @@ import {
 } from "./commands";
 import { computeMatches, type FindOptions } from "./find";
 import { SyncController, type SyncStatus } from "./sync";
+import { usePendingSave } from "../../../app/pendingSaves";
 import { SUGGEST_LIST_ID, acceptSuggestion, createSuggestPlugin, refreshSuggestions, type SuggestView } from "./suggestPlugin";
 import { createSpellPlugin, ignoreWord, missAt, nextMiss, resetSpelling } from "./spelling";
 
@@ -229,6 +230,13 @@ export const ScreenplayEditor = forwardRef<EditorHandle, Props>(function Screenp
   const host = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const syncRef = useRef<SyncController | null>(null);
+  // Window close, workspace switch and project switch wait for the text typed last (W2).
+  usePendingSave(async () => {
+    const s = syncRef.current;
+    if (!s) return true;
+    await s.flush();
+    return !s.isDirty;
+  });
   const propsRef = useRef(props);
   propsRef.current = props;
   const findOpts = useRef<FindOptions | null>(null);

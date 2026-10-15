@@ -14,6 +14,7 @@ import { queryClient, reportError, useOp } from "../../ipc/query";
 import type { SaveState } from "../../ipc/generated/SaveState";
 import { Banner, Button, Dialog } from "../../design-system";
 import { toast } from "../toast";
+import { flushPendingSaves } from "../pendingSaves";
 
 const SAVE_KEY = ["app.save_state", {}];
 
@@ -138,6 +139,8 @@ export const useLeaveGuard = create<LeaveGuardState>((set) => ({
  * in which case the user decides first (FSD §3.4: never silently abandon changes).
  */
 export async function guardedLeave(projectTitle: string, leave: () => void | Promise<void>): Promise<void> {
+  // Text still waiting in an editor is stored first; if it cannot be, the user decides.
+  const flushed = await flushPendingSaves();
   let status: SaveState["status"] = "Saved";
   try {
     status = (await call<SaveState>("app.save_state")).status;
@@ -145,7 +148,7 @@ export async function guardedLeave(projectTitle: string, leave: () => void | Pro
     // If the state can't be read, fall through to the normal close path, which checkpoints.
   }
   const run = () => void Promise.resolve(leave()).catch(reportError);
-  if (status === "Error") useLeaveGuard.getState().ask(projectTitle, run);
+  if (status === "Error" || !flushed) useLeaveGuard.getState().ask(projectTitle, run);
   else run();
 }
 

@@ -22,6 +22,8 @@ permission checks.
    - `of_reveal_path(kind, id?, path?)`: reveal known locations (`project`, `globalVault`, `logs`) or a file the
      user just exported (absolute path, must exist).
    - `of_open_url(url)`: hand an `http(s)` link (≤ 4096 chars) to the default browser, on explicit user action only.
+   - `of_close_window(step)`: the window close handshake added in Windows phase W2 (`flushing`, `held`, `close`). It
+     carries no data and lets the page store typed text before the window closes (`close_gate.rs`).
 2. **Registry = allow-list.** Modules register `query` (read-only) and `command` (mutating) ops named
    `module.action`. Duplicate names panic at startup. Args structs use `#[serde(deny_unknown_fields)]`, so unexpected
    fields are rejected (`validation.invalid_input`).

@@ -168,7 +168,7 @@ test("architecture lint ignores patterns in comments, strings and test modules",
 test("architecture lint catches a weakened CSP and an extra Tauri command", () => {
   const root = fixture(ARCH_FILES);
   edit(root, "apps/desktop/src-tauri/tauri.conf.json", (s) => s.replace("script-src 'self'", "script-src 'self' 'unsafe-eval'"));
-  edit(root, "apps/desktop/src-tauri/src/lib.rs", (s) => s.replace("of_open_url]", "of_open_url, of_run_shell]"));
+  edit(root, "apps/desktop/src-tauri/src/lib.rs", (s) => s.replace("of_close_window]", "of_close_window, of_run_shell]"));
   const r = run("architecture-lint.mjs", root);
   assert.equal(r.status, 1, r.out);
   assert.match(r.out, /C2 .*unsafe-eval/);
@@ -573,3 +573,4 @@ test("installer scan finds the team password in plain text", () => {
   assert.match(r.out, /team password in plain UTF-16 text/);
   assert.ok(!r.out.includes(secret), r.out);
 });
+

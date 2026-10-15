@@ -316,32 +316,24 @@ pub fn is_network_path(path: &Path) -> bool {
     openframe_security::is_network_location(path)
 }
 
-/// The user's Documents folder (platform boundary: `openframe_platform::dirs`).
-///
-/// The platform crate returns `None` when the system cannot name the folder. These wrappers keep
-/// their `PathBuf` signature (and the earlier temp-folder fallback) so callers do not change;
-/// refusing to start instead belongs to the caller that builds `AppConfig`.
-fn documents_dir() -> PathBuf {
-    openframe_platform::dirs::documents_dir().unwrap_or_else(std::env::temp_dir)
-}
+// The folders below come from the platform boundary (`openframe_platform::dirs`) and are `None`
+// when the system cannot name them. There is no temp-folder fallback: projects and settings must
+// never land where the system cleans up. `AppConfig::for_current_user` refuses to start instead.
 
 /// Default location for new projects: `Documents/OpenFrame/Projects`.
-pub fn default_projects_dir() -> PathBuf {
-    documents_dir().join("OpenFrame").join("Projects")
+pub fn default_projects_dir() -> Option<PathBuf> {
+    openframe_platform::dirs::user_content_dir().map(|d| d.join("Projects"))
 }
 
 /// Default location for the user's Global Idea Vault (user content, so it lives in Documents).
-pub fn default_global_vault_dir() -> PathBuf {
-    documents_dir().join("OpenFrame").join("Global Idea Vault")
+pub fn default_global_vault_dir() -> Option<PathBuf> {
+    openframe_platform::dirs::user_content_dir().map(|d| d.join("Global Idea Vault"))
 }
 
 /// Application-private data (`%LOCALAPPDATA%\OpenFrame` on Windows,
 /// `~/Library/Application Support/OpenFrame` on macOS): settings, recents, models, logs.
-/// A thin wrapper over the platform boundary (`openframe_platform::dirs::app_data_dir`); see
-/// [`documents_dir`] for the fallback.
-pub fn app_data_dir() -> PathBuf {
+pub fn app_data_dir() -> Option<PathBuf> {
     openframe_platform::dirs::app_data_dir()
-        .unwrap_or_else(|| std::env::temp_dir().join("OpenFrame"))
 }
 
 #[cfg(test)]
@@ -455,12 +447,9 @@ mod tests {
 
     #[test]
     fn folders_delegate_to_the_platform_boundary() {
+        assert_eq!(app_data_dir(), openframe_platform::dirs::app_data_dir());
         assert_eq!(
-            Some(app_data_dir()),
-            openframe_platform::dirs::app_data_dir()
-        );
-        assert_eq!(
-            Some(default_projects_dir()),
+            default_projects_dir(),
             openframe_platform::dirs::user_content_dir().map(|d| d.join("Projects"))
         );
     }

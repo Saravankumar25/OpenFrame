@@ -86,20 +86,52 @@ impl std::fmt::Debug for AppConfig {
 }
 
 impl AppConfig {
-    pub fn for_current_user(app_version: &str) -> Self {
-        Self {
-            app_data_dir: openframe_project_format::app_data_dir(),
+    /// The configuration for the person signed in to this computer. Refuses (Windows phase W2)
+    /// when the system cannot name Documents or the app data folder, instead of keeping projects
+    /// and settings in a temp folder the system cleans up.
+    pub fn for_current_user(app_version: &str) -> AppResult<Self> {
+        Self::from_system_folders(
+            openframe_project_format::app_data_dir(),
+            openframe_project_format::default_projects_dir(),
+            openframe_project_format::default_global_vault_dir(),
+            app_version,
+        )
+    }
+
+    /// [`AppConfig::for_current_user`] with the folders given (tests).
+    pub fn from_system_folders(
+        app_data_dir: Option<PathBuf>,
+        projects_dir: Option<PathBuf>,
+        global_vault_dir: Option<PathBuf>,
+        app_version: &str,
+    ) -> AppResult<Self> {
+        let (Some(projects_dir), Some(global_vault_dir)) = (projects_dir, global_vault_dir) else {
+            return Err(AppError::new(
+                "storage.documents_unknown",
+                "OpenFrame Studio can't find your Documents folder, so it has no safe place to keep your \
+                 projects. Open File Explorer and check that Documents opens, then start OpenFrame Studio again.",
+            ));
+        };
+        let Some(app_data_dir) = app_data_dir else {
+            return Err(AppError::new(
+                "storage.app_data_unknown",
+                "OpenFrame Studio can't find its settings folder on this computer, so it can't start. \
+                 Restart the computer, then start OpenFrame Studio again.",
+            ));
+        };
+        Ok(Self {
+            app_data_dir,
             ai_bundle_dir: Self::installed_ai_bundle_dir(),
             ai_deterministic: false,
-            projects_dir: openframe_project_format::default_projects_dir(),
-            global_vault_dir: openframe_project_format::default_global_vault_dir(),
+            projects_dir,
+            global_vault_dir,
             app_version: app_version.to_string(),
             channel: Channel::DirectInstaller,
             mac_inputs: None,
             microsoft_store: None,
             entitlement_debug_controls: false,
             team_password_hash: None,
-        }
+        })
     }
 
     /// Where this installation keeps the bundled Offline AI: the `ai` folder of the app
@@ -515,7 +547,8 @@ impl AppCore {
         handle.emit("queued", Some(0.0), None, None, None);
         let core = self.arc();
         let id = handle.id.clone();
-        std::thread::Builder::new()
+        let on_spawn_failure = handle.clone();
+        let spawned = std::thread::Builder::new()
             .name(format!("of-task-{kind}"))
             .spawn(move || {
                 let h = handle.clone();
@@ -529,8 +562,20 @@ impl AppCore {
                     }
                 }
                 core.tasks.running.lock().remove(&h.id);
-            })
-            .expect("spawn task thread");
+            });
+        // The system refused a new thread (out of resources): the task fails with a message instead
+        // of taking the app down.
+        if let Err(e) = spawned {
+            tracing::error!(error = %e, kind, "a background task could not start");
+            self.tasks.running.lock().remove(&id);
+            on_spawn_failure.fail(
+                &AppError::new(
+                    "internal.task_start_failed",
+                    "OpenFrame could not start this task. Close other programs and try again.",
+                )
+                .with_detail(e.to_string()),
+            );
+        }
         id
     }
 

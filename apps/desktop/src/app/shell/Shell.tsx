@@ -29,6 +29,7 @@ import { Button, Dot, Menu, Skeleton, type MenuItemSpec } from "../../design-sys
 import { useIntent, useNav, useUi } from "../stores";
 import { WORKSPACES, workspaceDef } from "../routes";
 import { toast } from "../toast";
+import { flushPendingSaves } from "../pendingSaves";
 import { SearchOverlay } from "./SearchOverlay";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { useAppEvents } from "../useAppEvents";
@@ -38,7 +39,7 @@ import { useHomeView } from "../home/homeState";
 import { DisplayNameDialog } from "../home/DisplayNameDialog";
 import { dayAndTime } from "../home/format";
 import { OpenRecoveryDialog, RecoveryOffer, useRecoveryState } from "./RecoveryDialogs";
-import { LeaveGuardDialog, LiveSaveErrorBanner, LiveSaveErrorDialog, guardedLeave, retrySave, useLiveSaveState } from "./SaveStatus";
+import { LiveSaveErrorBanner, LiveSaveErrorDialog, guardedLeave, retrySave, useLiveSaveState } from "./SaveStatus";
 import { BrandLogo } from "../../theme/BrandLogo";
 
 const aiPanelModules = import.meta.glob<{ default: ComponentType<{ onClose: () => void }> }>("../../ai/AiPanel.tsx", { eager: true });
@@ -163,7 +164,7 @@ export function Shell() {
                 key={w.id}
                 className={`navitem${route.workspace === w.id ? " active" : ""}`}
                 aria-current={route.workspace === w.id ? "page" : undefined}
-                onClick={() => go({ workspace: w.id })}
+                onClick={() => void flushPendingSaves().then(() => go({ workspace: w.id }))}
               >
                 {Icon && <Icon size={16} />}
                 {w.label}
@@ -194,7 +195,6 @@ export function Shell() {
       <RecoveryOffer project={project.data ?? null} state={recovery.data} />
       {/* One modal at a time (UX §2.10): the recovery decision comes first. */}
       {!offerPending && <LiveSaveErrorDialog />}
-      <LeaveGuardDialog />
       {recoveryOpen && !offerPending && <OpenRecoveryDialog onClose={() => setRecoveryOpen(false)} />}
       {shellExtensions.map((e, i) => (e.ShellOverlay ? <e.ShellOverlay key={i} /> : null))}
     </div>

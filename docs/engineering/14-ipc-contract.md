@@ -12,6 +12,7 @@
 | `of_open_asset` | `assetId`, `global?`, `reveal?` | `()` | Opens a file in its default app or reveals it in Explorer. The path is resolved from the asset row in Rust. Missing file → `not_found.file`. |
 | `of_reveal_path` | `kind` ∈ `project`, `globalVault`, `logs`, `exported`; `id?`; `path?` | `()` | `project` resolves the path from recents by id. `exported` requires an absolute, existing path (a file the user just saved). |
 | `of_open_url` | `url` | `()` | `http(s)` only, ≤ 4096 chars, explicit user action (Idea Vault URL items) |
+| `of_close_window` | `step` ∈ `flushing`, `held`, `close` | `()` | Window close handshake (W2). Rust holds a close request, sends `of://close-requested`, and closes after `close`, or by itself when the page does not answer within 3 s (`close_gate.rs`, `app/closeRequest.ts`) |
 
 Plugins: `dialog` (open/save/message/ask/confirm), `opener` (used only from Rust), `single-instance`. There is **no**
 fs, shell or http plugin (ESLint `no-restricted-imports` blocks the packages).

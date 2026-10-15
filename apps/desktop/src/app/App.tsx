@@ -8,14 +8,21 @@ import { useShortcutSync } from "./shortcuts";
 import { BrandLogo } from "../theme/BrandLogo";
 import { useAppearance } from "../theme/useAppearance";
 import { TeamGate } from "../features/team-gate/TeamGate";
+import { useCloseRequest } from "./closeRequest";
+import { LeaveGuardDialog } from "./shell/SaveStatus";
 
 /** Application root. Internal builds ask the team password first (ADR-0024). */
 export function App() {
   useAppearance();
+  useCloseRequest();
   return (
-    <TeamGate>
-      <AppContent />
-    </TeamGate>
+    <>
+      <TeamGate>
+        <AppContent />
+      </TeamGate>
+      {/* On Home too: closing the window can ask about text that could not be stored. */}
+      <LeaveGuardDialog />
+    </>
   );
 }
 

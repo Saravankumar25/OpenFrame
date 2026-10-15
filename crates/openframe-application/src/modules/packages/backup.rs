@@ -1160,7 +1160,12 @@ pub fn import_project_package(
                 .with_detail(e.to_string())
             })?;
             if let Err(e) = fs::rename(&root, &existing_root) {
-                let _ = fs::rename(&displaced, &existing_root);
+                if let Err(back) = put_back(&displaced, &existing_root, &existing.title) {
+                    tracing::error!(error = %back, "the replaced project could not be put back");
+                    return Err(
+                        stranded_error(&displaced, &existing_root).with_detail(e.to_string())
+                    );
+                }
                 return Err(AppError::new(
                     "storage.replace_failed",
                     "OpenFrame couldn't replace the existing project. It was not changed.",
@@ -1176,24 +1181,44 @@ pub fn import_project_package(
         }
     };
     drop(opened);
-    let opened_result = crate::modules::project::open_at(core, actor, &dest);
+    let replaced_title = collision
+        .as_ref()
+        .map(|c| c.title.clone())
+        .unwrap_or_default();
+    let opened_result = if displaced.is_some() && fault::open_fails(&replaced_title) {
+        Err(AppError::internal("simulated open failure (test hook)"))
+    } else {
+        crate::modules::project::open_at(core, actor, &dest)
+    };
     let result = match opened_result {
         Ok(r) => r,
         Err(e) => {
             // Never leave a half-imported project; put a replaced project back.
-            let _ = fs::remove_dir_all(&dest);
-            if let Some(old) = &displaced {
-                let _ = fs::rename(old, &dest);
+            if let Err(rm) = fs::remove_dir_all(&dest)
+                && rm.kind() != std::io::ErrorKind::NotFound
+            {
+                tracing::warn!(error = %rm, "a half-imported project could not be removed");
+            }
+            if let Some(old) = &displaced
+                && let Err(back) = put_back(old, &dest, &replaced_title)
+            {
+                tracing::error!(error = %back, "the replaced project could not be put back");
+                return Err(stranded_error(old, &dest).with_detail(e.message));
             }
             return Err(e);
         }
     };
-    if let Some(old) = displaced {
-        let _ = fs::remove_dir_all(old);
-    }
+    // The old copy stays hidden next to the project if it cannot be removed; say so, never silently.
+    let leftover = displaced.and_then(|old| match fs::remove_dir_all(&old) {
+        Ok(()) => None,
+        Err(e) => {
+            tracing::warn!(error = %e, "the replaced project's old copy could not be removed");
+            Some(old)
+        }
+    });
     if let Some(s) = core.project_opt() {
         let local = core.local_actor();
-        let _ = log_package(
+        if let Err(e) = log_package(
             &s.store,
             &local,
             "import",
@@ -1202,7 +1227,10 @@ pub fn import_project_package(
             &file_name,
             &what,
             None,
-        );
+        ) {
+            // The project is open and whole; only the Activity line is missing.
+            tracing::warn!(code = %e.code.0, "the package import could not be added to Activity");
+        }
     }
     let mut message = match (mode, &collision) {
         (PackageOpenMode::Copy, Some(_)) => {
@@ -1217,6 +1245,12 @@ pub fn import_project_package(
         }
         (PackageOpenMode::Open, _) => "The project was opened on this computer.".to_string(),
     };
+    if let Some(old) = &leftover {
+        message.push_str(&format!(
+            " A hidden copy of the old project is still in \"{}\"; you can delete it.",
+            old.file_name().unwrap_or_default().to_string_lossy()
+        ));
+    }
     if adopted_notes > 0 {
         message.push_str(&format!(
             " {adopted_notes} private note{} from the package {} now yours.",
@@ -1247,4 +1281,79 @@ pub fn import_project_package(
         copied_external,
         message,
     }))
+}
+
+/// Put a replaced project back where it was after a replace failed.
+fn put_back(displaced: &Path, original: &Path, title: &str) -> std::io::Result<()> {
+    if fault::restore_fails(title) {
+        return Err(std::io::Error::other(
+            "simulated rename failure (test hook)",
+        ));
+    }
+    fs::rename(displaced, original)
+}
+
+/// The replaced project could not be put back. It is whole, in a hidden folder next to where it
+/// was; the message names that folder and says how to get the project back, so nothing is lost.
+fn stranded_error(displaced: &Path, original: &Path) -> AppError {
+    let name = |p: &Path| {
+        p.file_name()
+            .unwrap_or_default()
+            .to_string_lossy()
+            .into_owned()
+    };
+    let place = displaced
+        .parent()
+        .map(|p| p.to_string_lossy().into_owned())
+        .unwrap_or_default();
+    AppError::new(
+        "storage.replace_rollback_failed",
+        format!(
+            "OpenFrame couldn't replace the existing project and couldn't put it back in place. \
+             Your project is safe in the hidden folder \"{}\" in {place}. Rename that folder to \"{}\" to use it again.",
+            name(displaced),
+            name(original)
+        ),
+    )
+}
+
+/// Test hooks for the replace path (debug builds only). They act only on the project with the
+/// given title, so other tests running at the same time are not touched. Release builds compile
+/// both checks to `false`.
+pub mod fault {
+    #[cfg(debug_assertions)]
+    static STRAND: std::sync::Mutex<Option<String>> = std::sync::Mutex::new(None);
+
+    /// Make replacing the project with this title fail after the old folder was moved aside, and
+    /// make putting it back fail too (`None` disarms).
+    #[cfg(debug_assertions)]
+    pub fn strand_replace_of(title: Option<&str>) {
+        *STRAND
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner) = title.map(str::to_string);
+    }
+
+    fn armed(title: &str) -> bool {
+        #[cfg(debug_assertions)]
+        {
+            STRAND
+                .lock()
+                .unwrap_or_else(std::sync::PoisonError::into_inner)
+                .as_deref()
+                == Some(title)
+        }
+        #[cfg(not(debug_assertions))]
+        {
+            let _ = title;
+            false
+        }
+    }
+
+    pub(super) fn open_fails(title: &str) -> bool {
+        armed(title)
+    }
+
+    pub(super) fn restore_fails(title: &str) -> bool {
+        armed(title)
+    }
 }

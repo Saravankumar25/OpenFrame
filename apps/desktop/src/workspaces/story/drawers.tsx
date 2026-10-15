@@ -8,6 +8,7 @@ import { Button, Drawer, Field, TextArea, TextInput, cx } from "../../design-sys
 import { openAsset } from "../../ipc/client";
 import { reportError } from "../../ipc/query";
 import { useNav } from "../../app/stores";
+import { usePendingSave } from "../../app/pendingSaves";
 import { story, useCardDetail } from "../../api/story";
 import type { StoryAttachmentDto } from "../../ipc/generated/StoryAttachmentDto";
 import type { StoryBoardState } from "../../ipc/generated/StoryBoardState";
@@ -52,30 +53,39 @@ function AutoField({
   const [v, setV] = useState(value);
   const focused = useRef(false);
   const last = useRef(value);
+  const typed = useRef(value);
   const timer = useRef<number | undefined>(undefined);
   useEffect(() => {
     if (!focused.current) {
       setV(value);
       last.current = value;
+      typed.current = value;
     }
   }, [value]);
-  useEffect(() => () => window.clearTimeout(timer.current), []);
-  const flush = (next: string) => {
+  const flush = (next: string): Promise<boolean> => {
     window.clearTimeout(timer.current);
-    if (next === last.current) return;
+    if (next === last.current) return Promise.resolve(true);
     last.current = next;
     onState("saving");
-    onSave(next)
-      .then(() => onState("saved"))
-      .catch((e) => {
+    return onSave(next).then(
+      () => {
+        onState("saved");
+        return true;
+      },
+      (e: unknown) => {
         onState("error");
         reportError(e);
-      });
+        return false;
+      },
+    );
   };
+  // The text typed last is saved when the drawer or the window closes (it used to be dropped).
+  usePendingSave(() => flush(typed.current));
   const change = (next: string) => {
     setV(next);
+    typed.current = next;
     window.clearTimeout(timer.current);
-    timer.current = window.setTimeout(() => flush(next), 700);
+    timer.current = window.setTimeout(() => void flush(next), 700);
   };
   const common = {
     value: v,
@@ -86,7 +96,7 @@ function AutoField({
     onFocus: () => (focused.current = true),
     onBlur: () => {
       focused.current = false;
-      flush(v);
+      void flush(v);
     },
   };
   const id = `f-${label.replace(/\W+/g, "-").toLowerCase()}`;

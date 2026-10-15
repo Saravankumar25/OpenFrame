@@ -6,6 +6,7 @@
 //! so the webview never holds filesystem, shell or network privileges.
 
 mod asset_scope;
+mod close_gate;
 mod distribution;
 mod platform;
 
@@ -213,6 +214,33 @@ async fn of_open_url(url: String) -> Result<(), AppError> {
     })
 }
 
+/// One step of the window close handshake (`close_gate`): the page received the request
+/// ("flushing"), the user chose to stay ("held"), or the window may close now ("close").
+#[tauri::command]
+async fn of_close_window(
+    window: tauri::Window,
+    gate: State<'_, close_gate::CloseGate>,
+    step: String,
+) -> Result<(), AppError> {
+    tracing::info!(step = %step, "window close step from the page");
+    match step.as_str() {
+        "flushing" => gate.answered(),
+        "held" => gate.held(),
+        "close" => {
+            gate.release();
+            window.close().map_err(|e| {
+                AppError::new(
+                    "internal.close_failed",
+                    "OpenFrame couldn't close the window.",
+                )
+                .with_detail(e.to_string())
+            })?;
+        }
+        _ => return Err(AppError::invalid_input("Unknown close step.")),
+    }
+    Ok(())
+}
+
 /// Open a file with its default program, or show it in the file manager, through the platform
 /// boundary (`openframe_platform::shell`).
 fn open_path(path: &std::path::Path, reveal: bool) -> Result<(), AppError> {
@@ -407,12 +435,25 @@ const TEAM_PASSWORD_HASH: Option<&str> = None;
 pub fn run() {
     let distribution = distribution::Distribution::detect();
     let isolated_root = isolated_data_root();
+    // An isolated (automated-test) root keeps deleted projects in its own folder, never the
+    // computer's Recycle Bin. Debug builds only, like every other test setting here.
+    #[cfg(debug_assertions)]
+    if let Some(root) = &isolated_root {
+        openframe_application::modules::project::fault::trash_into(root.join("recycle-bin"));
+    }
     let mut config = match &isolated_root {
         Some(root) => AppConfig {
             app_version: env!("CARGO_PKG_VERSION").to_string(),
             ..AppConfig::isolated(root)
         },
-        None => AppConfig::for_current_user(env!("CARGO_PKG_VERSION")),
+        None => match AppConfig::for_current_user(env!("CARGO_PKG_VERSION")) {
+            Ok(config) => config,
+            // No Documents or app data folder: say so plainly and stop, never use a temp folder (W2).
+            Err(e) => {
+                distribution::show_startup_error(&e.message);
+                return;
+            }
+        },
     };
     if isolated_root.is_none() {
         // MSIX: keep app-private data in the package's own (real, non-virtualized) data folder.
@@ -497,15 +538,45 @@ pub fn run() {
             app.manage(CoreState(core));
             Ok(())
         })
+        .manage(close_gate::CloseGate::default())
         .on_window_event(|window, event| {
             platform::on_window_event(event);
+            // The close button, Alt+F4 and the system: hold the window until the page has stored
+            // the text its editors still hold, or until it fails to answer (close_gate).
+            if let tauri::WindowEvent::CloseRequested { api, .. } = event
+                && let Some(gate) = window.try_state::<close_gate::CloseGate>()
+                && let close_gate::Request::Hold { ask, round } = gate.on_request()
+            {
+                tracing::info!(ask, round, "window close requested; held for the page");
+                api.prevent_close();
+                if ask {
+                    if let Err(e) = window.emit(close_gate::EVENT, ()) {
+                        tracing::warn!(error = %e, "the close request could not reach the page; closing");
+                        gate.release();
+                        let _ = window.destroy();
+                        return;
+                    }
+                    let w = window.clone();
+                    std::thread::spawn(move || {
+                        std::thread::sleep(close_gate::ANSWER_WAIT);
+                        let gate = w.state::<close_gate::CloseGate>();
+                        if gate.should_force(round) {
+                            tracing::warn!("the page did not answer the close request; closing");
+                            gate.release();
+                            if let Err(e) = w.close() {
+                                tracing::error!(error = %e, "closing the window after the wait failed");
+                            }
+                        }
+                    });
+                }
+            }
             if let tauri::WindowEvent::Destroyed = event
                 && let Some(state) = window.try_state::<CoreState>()
             {
                 state.0.shutdown();
             }
         })
-        .invoke_handler(tauri::generate_handler![of_invoke, of_open_asset, of_reveal_path, of_open_url])
+        .invoke_handler(tauri::generate_handler![of_invoke, of_open_asset, of_reveal_path, of_open_url, of_close_window])
         .build(tauri::generate_context!())
         .expect("error while running OpenFrame Studio")
         .run(|app, event| platform::on_run_event(app, &event));

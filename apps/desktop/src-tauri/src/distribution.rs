@@ -146,6 +146,7 @@ pub fn ensure_webview2() -> bool {
 mod win {
     //! Minimal Win32 bindings (kernel32/user32 are always linked on Windows).
 
+    pub const MB_OK: u32 = 0x0000_0000;
     pub const MB_YESNO: u32 = 0x0000_0004;
     pub const MB_ICONERROR: u32 = 0x0000_0010;
     pub const MB_SETFOREGROUND: u32 = 0x0001_0000;
@@ -172,25 +173,38 @@ pub fn current_package_family_name() -> Option<String> {
     openframe_platform::identity::package_family_name()
 }
 
+/// A message box before any window exists (release builds have no console). Returns the button.
 #[cfg(windows)]
-fn ask_yes_no(title: &str, text: &str) -> bool {
+fn message_box(title: &str, text: &str, buttons: u32) -> i32 {
     let (t, c) = (win::wide(text), win::wide(title));
     // SAFETY: both buffers are NUL-terminated UTF-16 and outlive the call; no owner window.
-    let r = unsafe {
+    unsafe {
         win::MessageBoxW(
             std::ptr::null_mut(),
             t.as_ptr(),
             c.as_ptr(),
-            win::MB_YESNO | win::MB_ICONERROR | win::MB_SETFOREGROUND,
+            buttons | win::MB_ICONERROR | win::MB_SETFOREGROUND,
         )
-    };
-    r == win::IDYES
+    }
+}
+
+#[cfg(windows)]
+fn ask_yes_no(title: &str, text: &str) -> bool {
+    message_box(title, text, win::MB_YESNO) == win::IDYES
 }
 
 #[cfg(not(windows))]
 fn ask_yes_no(_title: &str, text: &str) -> bool {
     eprintln!("{text}");
     false
+}
+
+/// Tell the user, in plain words, why OpenFrame cannot start (no window can open yet).
+pub fn show_startup_error(text: &str) {
+    #[cfg(windows)]
+    message_box("OpenFrame Studio", text, win::MB_OK);
+    #[cfg(not(windows))]
+    eprintln!("{text}");
 }
 
 #[cfg(test)]

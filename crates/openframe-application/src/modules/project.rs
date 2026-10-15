@@ -34,6 +34,13 @@ pub fn register(r: &mut Registry) {
         .meta(M::app_query("Save indicator state for the status bar.").hidden(h::UI_FLOW));
     r.command("app.cancel_task", cancel_task)
         .meta(M::app_command("Cancel a running background task.").hidden(h::SESSION_CONTROL));
+    r.query("project.location_check", location_check).meta(
+        M::app_query(
+            "Whether a folder is synced by a cloud service, and a local folder to use instead.",
+        )
+        .fs(Fs::ProjectStorage)
+        .hidden(h::USER_PATH),
+    );
     r.query("project.list_recent", list_recent).meta(
         M::app_query("Recent projects on this computer (Home project list).")
             .fs(Fs::ProjectStorage)
@@ -411,6 +418,24 @@ pub struct SetArchivedArgs {
 #[derive(Debug, Deserialize, TS)]
 #[ts(export)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct LocationCheckArgs {
+    pub path: String,
+}
+
+/// Where a new project would go (Windows phase W2, cloud-synced folders).
+#[derive(Debug, Clone, Serialize, TS)]
+#[ts(export)]
+#[serde(rename_all = "camelCase")]
+pub struct LocationCheck {
+    /// The service that syncs the folder ("OneDrive", "Dropbox", "Google Drive", "iCloud Drive").
+    pub cloud_service: Option<String>,
+    /// A folder on this computer that no service syncs, offered instead.
+    pub local_alternative: Option<String>,
+}
+
+#[derive(Debug, Deserialize, TS)]
+#[ts(export)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct LocateArgs {
     pub project_id: String,
     pub path: String,
@@ -460,6 +485,29 @@ pub struct TaskIdArgs {
 }
 
 // ------------------------------------------------------------- app-level ops
+
+/// Warn before a project is created in a synced folder. Existing projects are never moved.
+fn location_check(
+    _core: &AppCore,
+    _a: &Actor,
+    args: LocationCheckArgs,
+) -> AppResult<LocationCheck> {
+    let path = PathBuf::from(args.path.trim());
+    if !path.is_absolute() || pf::is_network_path(&path) {
+        // Not a place a project can be created; project.create explains why.
+        return Ok(LocationCheck {
+            cloud_service: None,
+            local_alternative: None,
+        });
+    }
+    let service = openframe_platform::cloud::cloud_service(&path);
+    Ok(LocationCheck {
+        cloud_service: service.map(|s| s.name().to_string()),
+        local_alternative: service
+            .and(openframe_platform::cloud::local_projects_dir())
+            .map(|d| d.to_string_lossy().into_owned()),
+    })
+}
 
 fn app_info(core: &AppCore, _a: &Actor, _: Empty) -> AppResult<AppInfo> {
     let display_name_set = core.with_app_db(|c| {
@@ -991,7 +1039,9 @@ fn resolve_recovery(
             // Close without writing a new checkpoint (that would overwrite the one we restore).
             // Every handle to the session must be released so the database files are closed.
             drop(s);
-            let session = core.set_project(None).expect("project is open");
+            let session = core.set_project(None).ok_or_else(|| {
+                AppError::conflict("The project was closed before it could be restored.")
+            })?;
             drop(session);
             std::fs::create_dir_all(layout.safety_backups())?;
             let keep = layout
@@ -1398,12 +1448,12 @@ fn delete_project(core: &AppCore, actor: &Actor, args: ProjectIdArgs) -> AppResu
         }
         let _lock = ProjectLock::acquire(&ProjectLayout::new(&root))?;
         drop(_lock);
-        trash::delete(&root).map_err(|e| {
+        move_to_recycle_bin(&root).map_err(|e| {
             AppError::new(
                 "storage.delete_failed",
                 "OpenFrame couldn't move this project to the Recycle Bin. Nothing was deleted.",
             )
-            .with_detail(e.to_string())
+            .with_detail(e)
         })?;
     }
     core.with_app_db(|c| {
@@ -1413,6 +1463,36 @@ fn delete_project(core: &AppCore, actor: &Actor, args: ProjectIdArgs) -> AppResu
         )?;
         Ok(())
     })
+}
+
+/// Move a project folder to the Recycle Bin (the Trash on a Mac). In debug builds a test can name
+/// a folder to move it into instead ([`fault::trash_into`]), so the test suite never fills the
+/// real Recycle Bin of the computer it runs on.
+fn move_to_recycle_bin(root: &Path) -> Result<(), String> {
+    #[cfg(debug_assertions)]
+    if let Some(dir) = fault::TRASH.get() {
+        std::fs::create_dir_all(dir).map_err(|e| e.to_string())?;
+        let name = format!(
+            "{}-{}",
+            new_id(),
+            root.file_name().unwrap_or_default().to_string_lossy()
+        );
+        return std::fs::rename(root, dir.join(name)).map_err(|e| e.to_string());
+    }
+    trash::delete(root).map_err(|e| e.to_string())
+}
+
+/// Test hook for `project.delete` (debug builds only).
+pub mod fault {
+    #[cfg(debug_assertions)]
+    pub(super) static TRASH: std::sync::OnceLock<std::path::PathBuf> = std::sync::OnceLock::new();
+
+    /// Deleted projects go into `dir` instead of the Recycle Bin, for the rest of this test
+    /// process (set once: tests running at the same time never fall back to the real bin).
+    #[cfg(debug_assertions)]
+    pub fn trash_into(dir: std::path::PathBuf) -> &'static std::path::Path {
+        TRASH.get_or_init(|| dir)
+    }
 }
 
 // ------------------------------------------------------------ project home

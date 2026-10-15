@@ -3,6 +3,7 @@
 // Backend edits use a coalesce key, so a burst of saves is one undo step.
 
 import { useCallback, useEffect, useRef } from "react";
+import { usePendingSave } from "../../app/pendingSaves";
 import { reportError } from "../../ipc/query";
 
 export function useDebouncedSave<T>(save: (value: T) => Promise<unknown>, delay = 600) {
@@ -13,22 +14,30 @@ export function useDebouncedSave<T>(save: (value: T) => Promise<unknown>, delay 
     saveRef.current = save;
   }, [save]);
 
-  const flush = useCallback(() => {
+  /** Save the pending value now; resolves false when the save failed. */
+  const flush = useCallback((): Promise<boolean> => {
     window.clearTimeout(timer.current);
     const p = pending.current;
     pending.current = null;
-    if (p) void saveRef.current(p.value).catch(reportError);
+    if (!p) return Promise.resolve(true);
+    return saveRef.current(p.value).then(
+      () => true,
+      (e: unknown) => {
+        reportError(e);
+        return false;
+      },
+    );
   }, []);
 
   const schedule = useCallback(
     (value: T) => {
       pending.current = { value };
       window.clearTimeout(timer.current);
-      timer.current = window.setTimeout(flush, delay);
+      timer.current = window.setTimeout(() => void flush(), delay);
     },
     [delay, flush],
   );
 
-  useEffect(() => () => flush(), [flush]);
+  usePendingSave(flush);
   return { schedule, flush };
 }

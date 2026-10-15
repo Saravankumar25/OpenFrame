@@ -2936,3 +2936,64 @@ fn the_lan_wording_check_catches_offers() {
     assert!(!offers_lan("const PLAN = \"plan\"; // PLANS"));
     assert!(!offers_lan("\"Clean up\""));
 }
+
+/// Windows phase W2: a replace that fails, and then cannot put the old project back, says where
+/// the old project is (the hidden `.replaced-` folder) instead of claiming nothing changed. The
+/// project in that folder is whole: renaming it back opens it with work made after the export.
+#[test]
+fn a_failed_replace_that_cannot_put_the_project_back_names_the_hidden_folder() {
+    use openframe_application::modules::packages::backup::fault;
+    const TITLE: &str = "Stranded Replace";
+    let env = TestEnv::with_project(TITLE, "Feature Film");
+    let original = PathBuf::from(env.project_path());
+    let pkg = out_path(&env, "stranded.ofproject");
+    task_ok(
+        &env,
+        &env.ok("packages.export_project", json!({ "path": pkg })),
+    );
+    env.ok(
+        "story.create_act",
+        json!({ "title": "Only in the old copy" }),
+    );
+
+    fault::strand_replace_of(Some(TITLE));
+    let started = env.ok(
+        "packages.import_project",
+        json!({ "path": pkg, "mode": "replace" }),
+    );
+    let (state, err) = wait_task(&env, started["taskId"].as_str().unwrap());
+    fault::strand_replace_of(None);
+    assert_eq!(state, "failed", "{err}");
+    assert_eq!(err["code"], "storage.replace_rollback_failed", "{err}");
+
+    let parent = original.parent().unwrap();
+    let prefix = format!(
+        ".{}.replaced-",
+        original.file_name().unwrap().to_string_lossy()
+    );
+    let hidden: Vec<String> = std::fs::read_dir(parent)
+        .unwrap()
+        .filter_map(|e| e.ok())
+        .map(|e| e.file_name().to_string_lossy().into_owned())
+        .filter(|n| n.starts_with(&prefix))
+        .collect();
+    assert_eq!(hidden.len(), 1, "one hidden copy: {hidden:?}");
+    let message = err["message"].as_str().unwrap();
+    assert!(
+        message.contains(&hidden[0]),
+        "the message names the hidden folder: {message}"
+    );
+    assert!(!original.exists(), "the half-imported project was removed");
+
+    std::fs::rename(parent.join(&hidden[0]), &original).unwrap();
+    env.reopen_project(&original.to_string_lossy());
+    assert_eq!(
+        scalar_i64(
+            &env,
+            "SELECT count(*) FROM story_act WHERE title='Only in the old copy'",
+            &[]
+        ),
+        1,
+        "the old project, with the work made after the export"
+    );
+}

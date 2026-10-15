@@ -13,6 +13,7 @@ import type { VaultItemDto } from "../../ipc/generated/VaultItemDto";
 import { Banner, Button, Chip, Drawer, Field, Select, Skeleton, TextArea, TextInput } from "../../design-system";
 import type { VaultResearchFlag } from "../../ipc/generated/VaultResearchFlag";
 import { toast } from "../../app/toast";
+import { usePendingSave } from "../../app/pendingSaves";
 import { useVaultItem, vault } from "./api";
 import { assetSrc } from "../../ipc/assetSrc";
 import { settleUnknownDuration } from "./media";
@@ -103,14 +104,14 @@ function useAutosave(item: VaultItemDto, scope: Scope) {
     setDraft((d) => ({ ...d, ...Object.fromEntries(changed.map((k) => [k, server[k]])) }));
   }, [item]);
 
-  const flush = useCallback(async (): Promise<void> => {
+  const flush = useCallback(async (): Promise<boolean> => {
     if (timer.current !== null) {
       window.clearTimeout(timer.current);
       timer.current = null;
     }
     if (inflight.current) await inflight.current;
     const keys = [...dirty.current];
-    if (keys.length === 0) return;
+    if (keys.length === 0) return true;
     const snapshot = draftRef.current;
     dirty.current = new Set();
     const args: Record<string, string> = {};
@@ -133,6 +134,7 @@ function useAutosave(item: VaultItemDto, scope: Scope) {
     inflight.current = run;
     await run;
     inflight.current = null;
+    return dirty.current.size === 0;
   }, [item.id, scope]);
 
   const set = useCallback(
@@ -147,8 +149,8 @@ function useAutosave(item: VaultItemDto, scope: Scope) {
     [flush],
   );
 
-  // Never lose typing when the drawer closes or another item opens.
-  useEffect(() => () => void flush(), [flush]);
+  // Never lose typing when the drawer closes, another item opens or the window closes.
+  usePendingSave(flush);
 
   return { draft, set, flush, status, urlError };
 }

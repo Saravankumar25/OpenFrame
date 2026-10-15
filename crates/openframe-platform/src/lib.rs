@@ -21,6 +21,7 @@
 //! written once and tested once.
 
 pub mod atomic;
+pub mod cloud;
 pub mod dirs;
 pub mod drives;
 pub mod exists;

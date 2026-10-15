@@ -10,6 +10,7 @@ import type { FolderDto } from "../../ipc/generated/FolderDto";
 import type { ProjectFileDto } from "../../ipc/generated/ProjectFileDto";
 import { Banner, Button, Chip, Drawer, Field, Select, TextArea, TextInput } from "../../design-system";
 import { toast } from "../../app/toast";
+import { usePendingSave } from "../../app/pendingSaves";
 import { dayAndTime, fileSize } from "../../app/home/format";
 import { deleteFile, exportCopy, fileKind, moveFile, openFile, relinkFile, revealFile, whereOf } from "./fileUtils";
 
@@ -48,16 +49,22 @@ export function FileDetails({ file, folders, onClose, renameSignal }: { file: Pr
       nameRef.current?.select();
     }
   }, [renameSignal]);
-  // Never lose the last keystrokes: flush a pending notes save when the drawer closes.
+  // Never lose the last keystrokes: the pending notes are saved when the drawer or the window closes.
   const pending = useRef<{ id: string; notes: string } | null>(null);
-  useEffect(
-    () => () => {
-      window.clearTimeout(notesTimer.current);
-      const p = pending.current;
-      if (p) void call("files.update_notes", { id: p.id, notes: p.notes.trim() ? p.notes : null }).catch(reportError);
-    },
-    [],
-  );
+  const flushNotes = (): Promise<boolean> => {
+    window.clearTimeout(notesTimer.current);
+    const p = pending.current;
+    pending.current = null;
+    if (!p) return Promise.resolve(true);
+    return call("files.update_notes", { id: p.id, notes: p.notes.trim() ? p.notes : null }).then(
+      () => true,
+      (e: unknown) => {
+        reportError(e);
+        return false;
+      },
+    );
+  };
+  usePendingSave(flushNotes);
 
   const commitName = async () => {
     const n = name.trim();
@@ -78,10 +85,7 @@ export function FileDetails({ file, folders, onClose, renameSignal }: { file: Pr
     setNotes(v);
     pending.current = { id: file.id, notes: v };
     window.clearTimeout(notesTimer.current);
-    notesTimer.current = window.setTimeout(() => {
-      pending.current = null;
-      void call("files.update_notes", { id: file.id, notes: v.trim() ? v : null }).catch(reportError);
-    }, 600);
+    notesTimer.current = window.setTimeout(() => void flushNotes(), 600);
   };
 
   const folderOptions = [{ value: "", label: "Top level" }, ...folders.map((f) => ({ value: f.id, label: folderPathLabel(folders, f.id) }))].sort((a, b) =>

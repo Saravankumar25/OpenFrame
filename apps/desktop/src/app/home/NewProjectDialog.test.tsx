@@ -15,6 +15,7 @@ const callMock = vi.mocked(call);
 // Interaction tests (dialogs, typing) can be slow on a busy machine.
 vi.setConfig({ testTimeout: 20_000 });
 const info = { profile: { userId: "u1", displayName: "Me" }, projectsDir: "C:\\Projects", displayNameSet: true };
+const notSynced = { cloudService: null, localAlternative: null };
 
 describe("New Project validation", () => {
   beforeEach(() => {
@@ -37,7 +38,7 @@ describe("New Project validation", () => {
 
   it("keeps Create disabled until a title is entered and explains why", async () => {
     const user = userEvent.setup();
-    callMock.mockImplementation(answerFrom({ "app.info": info }) as typeof call);
+    callMock.mockImplementation(answerFrom({ "app.info": info, "project.location_check": notSynced }) as typeof call);
     renderWithClient(<NewProjectDialog onClose={() => undefined} />);
     const create = screen.getByRole("button", { name: "Create" });
     expect(create).toBeDisabled();
@@ -56,7 +57,7 @@ describe("New Project validation", () => {
   it("creates a Series project with only the required fields", async () => {
     const user = userEvent.setup();
     const created = vi.fn(() => ({ project: { id: "p", title: "Monsoon Diaries" }, recovery: null, migratedFrom: null }));
-    callMock.mockImplementation(answerFrom({ "app.info": info, "project.create": created }) as typeof call);
+    callMock.mockImplementation(answerFrom({ "app.info": info, "project.location_check": notSynced, "project.create": created }) as typeof call);
     const onClose = vi.fn();
     renderWithClient(<NewProjectDialog onClose={onClose} />);
     await user.type(screen.getByLabelText(/Title/), "  Monsoon Diaries ");
@@ -82,5 +83,22 @@ describe("New Project validation", () => {
     expect(await screen.findByText(/The project could not be created. Nothing was saved and no partial project was made/)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Retry" })).toBeEnabled();
     expect(screen.getByLabelText(/Title/)).toHaveValue("BLACK RAIN");
+  });
+
+  it("warns about a folder OneDrive syncs and offers a folder on this computer (W2)", async () => {
+    const LOCAL = "C:\\Users\\me\\OpenFrame Projects";
+    const user = userEvent.setup();
+    const check = vi.fn((a: Record<string, unknown>) =>
+      String(a.path).includes("OneDrive")
+        ? { cloudService: "OneDrive", localAlternative: LOCAL }
+        : notSynced,
+    );
+    const synced = { ...info, projectsDir: "C:\\Users\\me\\OneDrive\\Documents\\OpenFrame\\Projects" };
+    callMock.mockImplementation(answerFrom({ "app.info": synced, "project.location_check": check }) as typeof call);
+    renderWithClient(<NewProjectDialog onClose={() => undefined} />);
+    expect(await screen.findByText("This folder is synced by OneDrive.")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Use a folder on this computer" }));
+    await waitFor(() => expect(screen.queryByText("This folder is synced by OneDrive.")).not.toBeInTheDocument());
+    expect(screen.getByText(LOCAL)).toBeInTheDocument();
   });
 });

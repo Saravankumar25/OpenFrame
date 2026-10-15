@@ -3,11 +3,14 @@
 // Application Home and Project Home (build plan item end-to-end specs per workspace): create a project, change its status on
 // Project Home with undo/redo, rename, duplicate, archive and restore it on Application Home, and
 // find every change again after quitting and relaunching the app.
-// Delete Project is not exercised: it moves the project folder to the Windows Recycle Bin, which is
-// outside the isolated data root.
+// Delete Project (Windows phase W2): a debug build on an isolated data root moves the deleted folder
+// into <root>/recycle-bin instead of the Windows Recycle Bin, so the step never touches the
+// computer's own bin; the operation, the dialog and the Home list are the real ones.
 
 import { after, before, describe, test } from "node:test";
 import assert from "node:assert/strict";
+import { existsSync, readdirSync } from "node:fs";
+import { join } from "node:path";
 import { click, launchApp, stepper, waitForText } from "../lib/app.mjs";
 import { assertQuiet, closeProject, firstLaunchProject, inDialog, mainText, menuItem, openProject, redo, relaunch, retype, undo } from "../lib/flows.mjs";
 
@@ -118,6 +121,34 @@ describe("home", () => {
       assert.equal(await statusChip(), "Status: Writing. Change status");
       await assertQuiet(browser, "reopened project home");
       await closeProject(browser);
+    });
+  });
+
+  test("Delete Project: the typed name confirms, the folder leaves, Home forgets it after a relaunch", async () => {
+    await step("delete", async () => {
+      const bin = join(process.env.E2E_DATA_ROOT ?? "", "recycle-bin");
+      const before = existsSync(bin) ? readdirSync(bin).length : 0;
+      const doomed = (await cards()).find((c) => !c.startsWith("Open Harbour Lights Redux,"));
+      const title = /^Open (.+), Feature Film, /.exec(doomed ?? "")?.[1];
+      assert.ok(title, `no second project to delete: ${await cards()}`);
+      await click(browser, `More actions for ${title}`);
+      await menuItem(browser, "Delete Project");
+      const confirm = await browser.$("#dp-confirm");
+      await confirm.waitForDisplayed({ timeout: 10_000 });
+      const remove = await browser.$('//*[@role="dialog"]//button[normalize-space(.)="Delete Project"]');
+      assert.equal(await remove.isEnabled(), false, "Delete Project is enabled before the name is typed");
+      await confirm.setValue(title);
+      await remove.waitForEnabled({ timeout: 5_000 });
+      await remove.click();
+      await waitForText(browser, `“${title}” was moved to the Windows Recycle Bin.`);
+      await refreshHome();
+      await browser.waitUntil(async () => (await cards()).length === 1, { timeout: 10_000, timeoutMsg: "the deleted project is still listed" });
+      assert.equal(readdirSync(bin).length, before + 1, "the project folder did not reach the bin");
+
+      browser = await relaunch(browser);
+      const list = await cards();
+      assert.deepEqual(list, ["Open Harbour Lights Redux, Feature Film, Writing"], `projects after relaunch: ${list}`);
+      await assertQuiet(browser, "application home after delete");
     });
   });
 });

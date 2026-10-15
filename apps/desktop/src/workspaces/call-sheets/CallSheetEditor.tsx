@@ -13,6 +13,7 @@ import { call, inTauri, OpError } from "../../ipc/client";
 import { assetSrc } from "../../ipc/assetSrc";
 import { reportError, useOp } from "../../ipc/query";
 import { toast } from "../../app/toast";
+import { usePendingSave } from "../../app/pendingSaves";
 import { useNav } from "../../app/stores";
 import type { AssetInfo } from "../../ipc/generated/AssetInfo";
 import type { CallSheetAttachment } from "../../ipc/generated/CallSheetAttachment";
@@ -768,9 +769,9 @@ export function CallSheetEditor({ id }: { id: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [serverJson]);
 
-  const flush = useCallback(async () => {
+  const flush = useCallback(async (): Promise<boolean> => {
     window.clearTimeout(timer.current);
-    if (!dirty.current || !docRef.current) return;
+    if (!dirty.current || !docRef.current) return true;
     setSaving(true);
     try {
       await call("callsheets.update", { id, document: docRef.current });
@@ -779,9 +780,10 @@ export function CallSheetEditor({ id }: { id: string }) {
       reportError(e);
     }
     setSaving(false);
+    return !dirty.current;
   }, [id]);
 
-  useEffect(() => () => void flush(), [flush]);
+  usePendingSave(flush);
 
   // Actions requested from the list's context menu.
   const action = route.params?.action;
