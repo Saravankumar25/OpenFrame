@@ -62,12 +62,16 @@ function AutoField({
       typed.current = value;
     }
   }, [value]);
-  const flush = (next: string): Promise<boolean> => {
+  const inflight = useRef<Promise<boolean> | null>(null);
+  // Waits for a save already running. A failed save resets `last`, so the next flush retries it.
+  const flush = async (next: string): Promise<boolean> => {
     window.clearTimeout(timer.current);
-    if (next === last.current) return Promise.resolve(true);
+    if (inflight.current) await inflight.current;
+    if (next === last.current) return true;
+    const before = last.current;
     last.current = next;
     onState("saving");
-    return onSave(next).then(
+    const run = onSave(next).then(
       () => {
         onState("saved");
         return true;
@@ -75,9 +79,16 @@ function AutoField({
       (e: unknown) => {
         onState("error");
         reportError(e);
+        if (last.current === next) last.current = before;
         return false;
       },
     );
+    inflight.current = run;
+    try {
+      return await run;
+    } finally {
+      if (inflight.current === run) inflight.current = null;
+    }
   };
   // The text typed last is saved when the drawer or the window closes (it used to be dropped).
   usePendingSave(() => flush(typed.current));

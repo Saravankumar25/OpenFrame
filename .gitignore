@@ -33,3 +33,8 @@ Thumbs.db
 
 # graphify knowledge graph (local, rebuilt by git hooks)
 /graphify-out/
+
+# Fuzzing (Windows phase W3): libFuzzer corpora, crash inputs and coverage stay local.
+fuzz/artifacts/
+fuzz/corpus/
+fuzz/coverage/

@@ -95,7 +95,7 @@ opt-level = 2
 codegen-units = 1
 lto = "thin"
 opt-level = 3
-strip = "debuginfo"
+strip = "symbols"
 
 # The internal build script hashes the team password with Argon2id (64 MiB, 3 passes). Build
 # scripts compile without optimisation in release; these keep that one hash fast.

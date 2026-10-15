@@ -237,3 +237,26 @@ jobs:
         run: |
           node scripts/license-inventory.mjs --check
           git diff --exit-code -- THIRD_PARTY_LICENSES.md
+
+  fuzz:
+    # Windows phase W3: libFuzzer does not link on the Windows MSVC toolchain, so the coverage-guided
+    # run happens here; the Windows machine runs the same targets with `npm run fuzz` (fuzz/src/bin).
+    name: Fuzz the file parsers (60 s per target)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - uses: dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067 # master 2026-10-05
+        with:
+          toolchain: nightly
+
+      - name: Install cargo-fuzz
+        run: cargo install cargo-fuzz --version 0.13.2 --locked
+
+      - name: Run every target
+        working-directory: fuzz
+        run: |
+          for t in fdx fountain xml docx package_archive project_manifest; do
+            cargo fuzz run "$t" -- -max_total_time=60 -rss_limit_mb=2048
+          done

@@ -164,7 +164,7 @@ export function Shell() {
                 key={w.id}
                 className={`navitem${route.workspace === w.id ? " active" : ""}`}
                 aria-current={route.workspace === w.id ? "page" : undefined}
-                onClick={() => void flushPendingSaves().then(() => go({ workspace: w.id }))}
+                onClick={() => void flushPendingSaves().then((stored) => stored && go({ workspace: w.id }))}
               >
                 {Icon && <Icon size={16} />}
                 {w.label}

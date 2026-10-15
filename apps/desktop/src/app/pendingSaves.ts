@@ -57,7 +57,8 @@ export function usePendingSave(flush: Flush): void {
     const unregister = registerPendingSave(run);
     return () => {
       unregister();
-      void Promise.resolve().then(run);
+      // Each flush reports its own failure; this only keeps a throw from going unhandled.
+      void Promise.resolve().then(run).catch(() => undefined);
     };
   }, []);
 }

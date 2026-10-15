@@ -769,17 +769,28 @@ export function CallSheetEditor({ id }: { id: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [serverJson]);
 
+  const inflight = useRef<Promise<void> | null>(null);
+  // Waits for a save already running. Only the document that was sent is marked saved: an edit
+  // made while it was on its way stays dirty and goes in the next save.
   const flush = useCallback(async (): Promise<boolean> => {
     window.clearTimeout(timer.current);
-    if (!dirty.current || !docRef.current) return true;
+    if (inflight.current) await inflight.current;
+    const sent = docRef.current;
+    if (!dirty.current || !sent) return true;
     setSaving(true);
+    const run = call("callsheets.update", { id, document: sent }).then(
+      () => {
+        if (docRef.current === sent) dirty.current = false;
+      },
+      (e: unknown) => reportError(e),
+    );
+    inflight.current = run;
     try {
-      await call("callsheets.update", { id, document: docRef.current });
-      dirty.current = false;
-    } catch (e) {
-      reportError(e);
+      await run;
+    } finally {
+      if (inflight.current === run) inflight.current = null;
+      setSaving(false);
     }
-    setSaving(false);
     return !dirty.current;
   }, [id]);
 

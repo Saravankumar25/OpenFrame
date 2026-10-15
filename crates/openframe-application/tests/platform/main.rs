@@ -11,6 +11,7 @@ mod entitlement;
 mod failure_injection;
 mod migration_failures;
 mod migration_fixtures;
+mod permission_matrix;
 mod project_lifecycle;
 mod property_invariants;
 mod recently_deleted_purge;

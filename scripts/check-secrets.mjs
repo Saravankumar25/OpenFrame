@@ -20,6 +20,12 @@ const ROOT = process.env.OPENFRAME_CHECK_ROOT
 const MAX_BYTES = 5 * 1024 * 1024;
 const hits = [];
 
+// Lines already in history that are not secrets, reviewed one by one. History is never rewritten for them.
+const REVIEWED_HISTORY = [
+  { commit: "eeacccb", file: "scripts/tests/governance.test.mjs", rule: "team-password-value", why: "a test passes the variable name with a test value it builds at run time" },
+];
+const reviewed = (commit, file, rule) => REVIEWED_HISTORY.some((r) => commit.startsWith(r.commit) && r.file === file && r.rule === rule);
+
 // ---------------------------------------------------------------------------- working tree
 
 const files = execFileSync("git", ["ls-files", "-z", "--cached", "--others", "--exclude-standard"], {
@@ -54,7 +60,7 @@ for (const rel of files) {
 
 // ---------------------------------------------------------------------------- history
 
-const git = spawn("git", ["log", "--all", "-p", "--no-color", "--no-ext-diff", "--no-textconv", "--unified=0", "--format=commit %h"], {
+const git = spawn("git", ["-c", "core.quotepath=false", "log", "--all", "-p", "--no-color", "--no-ext-diff", "--no-textconv", "--unified=0", "--format=commit %h"], {
   cwd: ROOT,
 });
 let gitError = "";
@@ -62,6 +68,8 @@ git.stderr.on("data", (d) => (gitError += d));
 let commit = "";
 let file = "";
 let line = 0;
+// A "+++ " line is a file header only right after a "--- " header; inside a hunk it is an added line.
+let afterMinusHeader = false;
 let commits = 0;
 const seenPaths = new Set();
 for await (const raw of readline.createInterface({ input: git.stdout, crlfDelay: Infinity })) {
@@ -70,7 +78,11 @@ for await (const raw of readline.createInterface({ input: git.stdout, crlfDelay:
     commits++;
   } else if (raw.startsWith("diff --git ")) {
     file = "";
-  } else if (raw.startsWith("+++ ")) {
+    afterMinusHeader = false;
+  } else if (!file && raw.startsWith("--- ")) {
+    afterMinusHeader = true;
+  } else if (afterMinusHeader && raw.startsWith("+++ ")) {
+    afterMinusHeader = false;
     file = raw === "+++ /dev/null" ? "" : raw.slice(6);
     if (file && isSecretFile(file) && !seenPaths.has(file)) {
       seenPaths.add(file);
@@ -79,7 +91,7 @@ for await (const raw of readline.createInterface({ input: git.stdout, crlfDelay:
   } else if (raw.startsWith("@@ ")) {
     line = Number(/\+(\d+)/.exec(raw)?.[1] ?? 0);
   } else if (raw.startsWith("+") && file) {
-    for (const id of lineHits(raw.slice(1))) hits.push(`history ${commit} ${file}:${line}  ${id}`);
+    for (const id of lineHits(raw.slice(1))) if (!reviewed(commit, file, id)) hits.push(`history ${commit} ${file}:${line}  ${id}`);
     line++;
   }
 }

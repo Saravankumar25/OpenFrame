@@ -136,7 +136,8 @@ pub fn register(r: &mut Registry) {
     r.command("packages.apply_import", import::apply_import)
         .meta(
             M::command(
-                Cap::Import,
+                // The least any mode needs: comments only. The handler requires Import for object changes.
+                Cap::Comment,
                 "Apply reviewed changes from a received package.",
             )
             .destructive()

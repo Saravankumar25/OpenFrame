@@ -494,6 +494,24 @@ impl Registry {
         // The Mac lock (ADR-0022): after the trial or a refund on the Mac App Store build, only the
         // lock screen's own operations run. Every caller reaches handlers through here.
         core.entitlement.check_operation(name)?;
+        // Defence in depth (Windows phase W3): the capability an operation declares is checked
+        // here for every caller, before its arguments are read. Handlers keep their own checks.
+        // The Global Idea Vault is the local person's own store, whatever their role in the open
+        // project (Domain §4); its operations check that themselves.
+        // Only the operations that open the store named in their arguments.
+        let personal_store = ["vault.", "trash.", "history."]
+            .iter()
+            .any(|p| name.starts_with(p))
+            && args.get("store").and_then(|s| s.as_str()) == Some("global");
+        if let Some(cap) = entry.meta.as_ref().and_then(|m| m.required_capability)
+            && !personal_store
+            && !actor.can(cap)
+        {
+            return Err(AppError::permission_denied("do this").with_detail(format!(
+                "{name} needs {cap:?}; role {}",
+                actor.role.as_str()
+            )));
+        }
         (entry.handler)(core, actor, args)
     }
 }

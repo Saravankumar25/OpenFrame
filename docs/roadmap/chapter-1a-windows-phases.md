@@ -88,6 +88,8 @@ only the existing AI code. W7 and W8 may run side by side after W6.
 
 **Exit.** Every item has its test. The manual OneDrive test finishes with no lock error and no damaged file.
 
+**Status 2026-10-16:** every item done and tested at proof level 2 ([evidence](../release/evidence/w2/close-handshake-and-data-safety-2026-10-16.md)); the manual OneDrive test waits for the owner.
+
 ## 4. Phase W3: harden the core
 
 **Goal.** Make "no known security hole" a sentence backed by evidence. Build plan areas 4, 5 and 6.
@@ -106,6 +108,8 @@ only the existing AI code. W7 and W8 may run side by side after W6.
   processes for network use (threat T33), and record the known limit of the team gate (ADR-0030).
 
 **Exit.** New gates green; fuzz and property results recorded; the threat model has no open item without a decision.
+
+**Status 2026-10-16:** done at proof level 2 ([evidence](../release/evidence/w3/fuzz-2026-10-16.md)). libFuzzer does not link on Windows MSVC, so the targets ran under a seeded mutation driver here (about 49 million inputs, no failure) and run under libFuzzer in the Linux CI job. The property tests extend the existing generator instead of adding `proptest`. The release hardening is configured and is verified on the release build in W4. Finding for W4: the WebView2 runtime opens background connections to Microsoft (threat model section 4, item 8); spec 05 fails until W4 switches them off.
 
 ## 5. Phase W4: prove the core on the release build
 

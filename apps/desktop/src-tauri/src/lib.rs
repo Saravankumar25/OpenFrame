@@ -228,13 +228,15 @@ async fn of_close_window(
         "held" => gate.held(),
         "close" => {
             gate.release();
-            window.close().map_err(|e| {
-                AppError::new(
+            if let Err(e) = window.close() {
+                // The next close request goes through the page again instead of skipping it.
+                gate.unrelease();
+                return Err(AppError::new(
                     "internal.close_failed",
                     "OpenFrame couldn't close the window.",
                 )
-                .with_detail(e.to_string())
-            })?;
+                .with_detail(e.to_string()));
+            }
         }
         _ => return Err(AppError::invalid_input("Unknown close step.")),
     }
@@ -558,13 +560,19 @@ pub fn run() {
                     }
                     let w = window.clone();
                     std::thread::spawn(move || {
-                        std::thread::sleep(close_gate::ANSWER_WAIT);
-                        let gate = w.state::<close_gate::CloseGate>();
-                        if gate.should_force(round) {
-                            tracing::warn!("the page did not answer the close request; closing");
-                            gate.release();
-                            if let Err(e) = w.close() {
-                                tracing::error!(error = %e, "closing the window after the wait failed");
+                        // First: did the page answer at all? Then: did it finish storing?
+                        for (wait, waited_for_answer) in [
+                            (close_gate::ANSWER_WAIT, true),
+                            (close_gate::FLUSH_WAIT, false),
+                        ] {
+                            std::thread::sleep(wait);
+                            if w.state::<close_gate::CloseGate>().try_force(round, waited_for_answer) {
+                                tracing::warn!(waited_for_answer, "the page stopped answering the close request; closing");
+                                if let Err(e) = w.close() {
+                                    w.state::<close_gate::CloseGate>().unrelease();
+                                    tracing::error!(error = %e, "closing the window after the wait failed");
+                                }
+                                return;
                             }
                         }
                     });

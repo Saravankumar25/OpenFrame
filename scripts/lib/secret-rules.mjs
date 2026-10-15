@@ -11,15 +11,18 @@ export const RULES = [
   { id: "github-token", re: /\b(?:gh[pousr]_[A-Za-z0-9]{36,}|github_pat_[A-Za-z0-9_]{60,})\b/ },
   { id: "anthropic-key", re: /\bsk-ant-[A-Za-z0-9_-]{20,}/ },
   { id: "openai-key", re: /\bsk-(?:proj-)?[A-Za-z0-9_-]{20,}T3BlbkFJ[A-Za-z0-9_-]{20,}/ },
-  { id: "google-api-key", re: /\bAIza[0-9A-Za-z_-]{35}\b/ },
+  { id: "google-api-key", re: /\bAIza[0-9A-Za-z_-]{35}(?![0-9A-Za-z_-])/ },
+  // Tauri updater and minisign private keys, as text and in the base64 form Tauri stores.
+  { id: "updater-private-key", re: /(?:rsign|minisign) encrypted secret key|dW50cnVzdGVkIGNvbW1lbnQ6IHJzaWduIGVuY3J5cHRlZCBzZWNyZXQga2V5/ }, // secret-scan: allow (the pattern itself)
   { id: "slack-token", re: /\bxox[abposr]-[A-Za-z0-9-]{10,}/ },
   { id: "stripe-live-key", re: /\b(?:sk|rk)_live_[0-9A-Za-z]{20,}/ },
   { id: "hugging-face-token", re: /\bhf_[A-Za-z0-9]{34,}\b/ },
   { id: "npm-token", re: /\bnpm_[A-Za-z0-9]{36}\b/ },
   // The internal team password is only ever an environment variable on the build computer (ADR-0030).
-  // `NAME=value` (shell, .env), `$env:NAME = "value"` (PowerShell) or `NAME: "value"` (YAML, JSON); a variable
-  // reference such as `${{ secrets.X }}`, `$X` or a bare identifier after a colon is not a value.
-  { id: "team-password-value", re: /OPENFRAME_TEAM_PASSWORD["']?\s*(?:=\s*["']?|:\s*["'])[^\s"'$%{}()<>]{4,}/ },
+  // `NAME=value` (shell, .env), `$env:NAME = "value"` (PowerShell) or `NAME: value` (YAML, JSON). A reference
+  // such as `${{ secrets.X }}`, `$X` or `%X%` is not a value. A line that names the variable on purpose (a test)
+  // carries the allow marker.
+  { id: "team-password-value", re: /OPENFRAME_TEAM_PASSWORD["']?\s*[=:]\s*["']?(?![$%{(<])[^\s"']{4,}/ },
 ];
 
 /** Files that must never be committed, whatever they contain. */

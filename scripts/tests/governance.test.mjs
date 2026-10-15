@@ -568,9 +568,24 @@ test("installer scan finds a personal path in UTF-16, a secret and the user name
 
 test("installer scan finds the team password in plain text", () => {
   const secret = ["door", "lock", "42"].join("-");
-  const r = scan({ "app.exe": binary(Buffer.from(secret, "utf16le")) }, { OPENFRAME_TEAM_PASSWORD: secret });
+  const r = scan({ "app.exe": binary(Buffer.from(secret, "utf16le")) }, { OPENFRAME_TEAM_PASSWORD: secret }); // secret-scan: allow (a variable, not a value)
   assert.equal(r.status, 1, r.out);
   assert.match(r.out, /team password in plain UTF-16 text/);
   assert.ok(!r.out.includes(secret), r.out);
 });
 
+// ---------------------------------------------------------------------------- release hardening
+
+test("release builds get control-flow guard, the Microsoft linker and no personal paths (W3)", async () => {
+  const { hardenedEnv } = await import(url.pathToFileURL(script("with-msvc-linker.mjs")).href);
+  const env = hardenedEnv({ RUSTFLAGS: "-C target-cpu=x86-64-v2" }, { platform: "win32", repo: "D:/work/OpenFrame", home: "C:/Users/Some One" });
+  const flags = env.CARGO_ENCODED_RUSTFLAGS.split("\x1f");
+  assert.equal(env.CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER, "link.exe");
+  assert.deepEqual(flags.slice(0, 2), ["-C", "target-cpu=x86-64-v2"], "flags set by the builder are kept");
+  assert.ok(flags.includes("control-flow-guard"));
+  for (const where of ["D:/work/OpenFrame=openframe", "Some One", ".cargo=cargo", ".rustup=rustup"]) {
+    assert.ok(flags.some((f) => f.startsWith("--remap-path-prefix=") && f.includes(where)), `${where} is remapped: ${flags}`);
+  }
+  assert.equal(env.RUSTFLAGS, undefined, "one source of flags, the encoded one, which allows spaces in paths");
+  assert.deepEqual(hardenedEnv({ A: "1" }, { platform: "darwin" }), { A: "1" });
+});

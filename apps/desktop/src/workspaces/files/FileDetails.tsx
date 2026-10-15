@@ -51,18 +51,28 @@ export function FileDetails({ file, folders, onClose, renameSignal }: { file: Pr
   }, [renameSignal]);
   // Never lose the last keystrokes: the pending notes are saved when the drawer or the window closes.
   const pending = useRef<{ id: string; notes: string } | null>(null);
-  const flushNotes = (): Promise<boolean> => {
+  const inflight = useRef<Promise<boolean> | null>(null);
+  // Waits for a save already running; a failed save stays pending so the next flush retries it.
+  const flushNotes = async (): Promise<boolean> => {
     window.clearTimeout(notesTimer.current);
+    if (inflight.current) await inflight.current;
     const p = pending.current;
+    if (!p) return true;
     pending.current = null;
-    if (!p) return Promise.resolve(true);
-    return call("files.update_notes", { id: p.id, notes: p.notes.trim() ? p.notes : null }).then(
+    const run = call("files.update_notes", { id: p.id, notes: p.notes.trim() ? p.notes : null }).then(
       () => true,
       (e: unknown) => {
         reportError(e);
+        pending.current ??= p;
         return false;
       },
     );
+    inflight.current = run;
+    try {
+      return await run;
+    } finally {
+      if (inflight.current === run) inflight.current = null;
+    }
   };
   usePendingSave(flushNotes);
 

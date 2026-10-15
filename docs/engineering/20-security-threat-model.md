@@ -75,7 +75,16 @@ account protection, and encryption at rest is later scope).
 | T21a | Oversized IPC arguments (memory/CPU) | Registry rejects any argument with > 50,000 list items, > 1,000 object keys or nesting > 32 before deserialization; per-op limits stay tighter | `registry::check_arg_shape` | ✅ `ipc_01_*` |
 | T22 | Supply-chain compromise or license contamination | `cargo deny` (advisories, sources, licenses), `npm audit --omit=dev`, lockfiles (`--locked`, `npm ci`), license inventory, SBOM | `deny.toml`, `ci.yml`, `release.yml`, `scripts/license-inventory.mjs` | ✅ CI jobs (non-blocking in CI, blocking in release) |
 | T23 | Signing keys leaked from the repository | `*.pfx`/`*.p12`/`*.key`/`.env*` gitignored; `release-validate` fails if key files are committed; secrets only in CI; certificate removed from the runner after the build | `.gitignore`, `scripts/release-validate.mjs`, `release.yml` | ✅ |
-| T24 | Silent network egress (privacy) | No telemetry code; CSP blocks webview egress; outbound HTTP only for user-approved downloads | ESD §11, invariant 10 | 🟡 📋 test: no HTTP client use outside downloader modules (`cargo tree -i reqwest` review) |
+| T24 | Silent network egress (privacy). W3: the web view processes are traced by spec 05 (only loopback), see T33 and the W3 evidence | No telemetry code; CSP blocks webview egress; outbound HTTP only for user-approved downloads | ESD §11, invariant 10 | 🟡 📋 test: no HTTP client use outside downloader modules (`cargo tree -i reqwest` review) |
+| T34 | Text typed just before the window closes is lost (close button, Alt+F4, system close) | The close request is held until every editor has stored its text (`close_gate.rs`, `app/closeRequest.ts`, `app/pendingSaves.ts`); text that cannot be stored makes the user decide; a page that does not answer within 3 s cannot keep the app open | `tests/e2e/specs/04-close-keeps-typing.test.mjs` (20 rounds of each way of closing), `close_gate` and `pendingSaves` unit tests | ✅ W2 |
+| T35 | A cloud sync client locks, replaces or splits project files while OpenFrame writes | New projects in a synced folder (OneDrive, Dropbox, Google Drive, iCloud Drive) get a plain warning and a local folder offer; existing projects are never moved | `openframe-platform/src/cloud.rs` tests (fake OneDrive root), `platform/project_lifecycle.rs`, `NewProjectDialog.test.tsx`; manual: `docs/testing/onedrive-typing-test.md` | 🟡 W2 (manual test pending) |
+| T36 | Projects or settings written to a temporary folder the system cleans up | No temp-folder fallback: when Windows cannot name Documents or the app data folder the app refuses to start with a plain message | `project_lifecycle.rs::the_app_refuses_to_start_without_a_documents_folder` | ✅ W2 |
+| T37 | The internal team gate is bypassed by guessing the password offline | Known limit, accepted for the pilot (ADR-0030): Argon2id hash in the program file, minimum 8 characters, waiting after wrong tries; the password is only an environment variable on the build computer and the W9 installer scan refuses it in plain text | `team_gate` tests, `scripts/scan-installer.mjs` | Accepted limit |
+| T38 | The graphics-card probe or runtime crashes the app or loads untrusted code | Planned with the GPU work: probe in a child process, fallback to the processor | ADR-0029, phase W7 | 📋 W7 |
+| T39 | Learned memory or the AI log keeps project content | Planned: the AI log holds numbers only; learned memory is reviewed with the harness | ADR-0028, phases W5 and W6 | 📋 W5, W6 |
+| T40 | The Mac shell interface (UniFFI) widens what the screens can call | Planned: the Swift shell calls the same registry through one entry point | ADR-0027, phase M2 | 📋 M2 |
+| T41 | A crafted outside file (FDX, Fountain, DOCX, XML, package, manifest) crashes or hangs a parser | Bounded parsers and archive limits; six fuzz targets (`fuzz/`) run under libFuzzer on Linux CI and under a seeded mutation driver on Windows; the production `unwrap`/`expect` calls were reviewed (W3) | `docs/release/evidence/w3/fuzz-2026-10-16.md` | ✅ W3 |
+| T42 | A handler forgets its permission check | `Registry::dispatch` checks every operation's declared capability before the handler; a generated test walks the registry for every role | `platform/permission_matrix.rs` | ✅ W3 |
 
 ## 3. Secure storage
 
@@ -93,16 +102,38 @@ account protection, and encryption at rest is later scope).
 - **Deletion:** "delete" is recoverable. Permanent purge removes rows and, after commit, the managed files it
   exclusively owns. Project deletion goes to the Recycle Bin. No secure-erase claims are made.
 
-## 4. Open items (tracked)
+## 4. Open items and their decisions
 
-1. Add tests for T2 (unknown op), T5 (asset-protocol scope, adapter-level) and T20 (log content check).
-2. Foundation cleanup after ADR-0007: remove `Capability::{HostSession, JoinSession}` and `ActorOrigin::Lan`, and fix
-   the `project_format.network_location` message that still suggests a local-network session.
-3. `history.undo`/`redo` should require `Edit` (defence in depth, ADR-0009).
-4. Integrate the Tauri updater plugin with a pinned public key before the first public release (T19).
-5. AI: extend the T33 egress check to the web view processes (the AI E2E covers the app and the engines), and run the real-model prompt-injection case of `scripts/ai-benchmark.mjs` for every profile version.
-6. Package authenticity (PKG-04/PKG-05): exchange and full-project packages are unsigned by design (file-based
-   collaboration, no accounts). Signed packages would need an ADR for key distribution.
+Reviewed in Windows phase W3 (2026-10-16). Every item has a decision; none is open without one.
+
+1. **Tests for T2, T5 and T20: done.** T2 (unknown operation) in `platform/core_pipeline.rs` and `ai/ai.rs`; T5 (asset
+   protocol scope) in `apps/desktop/src-tauri/src/asset_scope.rs` (`a_link_inside_assets_that_points_outside_is_refused`
+   and the scope tests beside it); T20 (log content) in `security_paths.rs::panic_log_lines_are_redacted_and_bounded`
+   and `crates/openframe-ai/tests/sidecar_log_redaction.rs`.
+2. **Foundation cleanup after ADR-0007: done.** `Capability::{HostSession, JoinSession}` and `ActorOrigin::Lan` no
+   longer exist in the code (checked 2026-10-16).
+3. **`history.undo`/`redo` require Edit: done.** They declare Edit (`M::edit`), and since W3 `Registry::dispatch`
+   checks every operation's declared capability before its handler (`platform/permission_matrix.rs` walks the
+   registry and proves every role without the capability is refused).
+4. **Tauri updater with a pinned key (T19): deferred to Chapter 3 by decision.** Internal builds have no in-app
+   updater (ADR-0030: unsigned internal `.exe`, the team installs each build); the updater and signing are Chapter 3
+   work (ADR-0018). Nothing in Chapter 1 downloads an update.
+5. **AI egress and prompt injection.** The web view half is traced by `tests/e2e/specs/05-webview-network.test.mjs`
+   (W3, see T33). The real-model prompt-injection case runs with the evaluation harness for every model profile from
+   phase W5 on (ADR-0028); until then the deterministic checks in `ai_toolbox.rs` and `ai_agent.rs` stand.
+6. **Package authenticity (PKG-04, PKG-05): accepted risk, recorded.** Packages stay unsigned by design (file-based
+   collaboration, no accounts). The mitigations are in place: linked local files in a received package are never
+   copied by a later export, archives are screened (`archive.rs`, fuzzed in W3), and schema screening refuses foreign
+   triggers and views. Signed packages would need an ADR for key distribution; not planned in Chapter 1.
+8. **Web view background traffic (T33, T24): found in W3, fix assigned to W4.** With a project open and no WebDriver,
+   two WebView2 processes of the app held connections to Microsoft addresses (`2603:1046:c06:cc1::2`,
+   `2620:1ec:33::11`) for 40 s. It is the WebView2 runtime's own background traffic, not OpenFrame code, and it breaks
+   "no silent network use". Decision: W4 passes WebView2 arguments that switch off background networking and
+   component updates (keeping wry's SmartScreen and menu defaults) and proves it with spec 05 on the release build.
+   Spec 05 fails until then, on purpose.
+7. **New surfaces of the 2026-10-15 decisions: assigned to the phases that build them.** T38 (graphics-card probe and
+   runtime) is reviewed in W7, T39 (learned memory and the numbers-only AI log) in W5 and W6, and T40 (the Mac shell
+   interface) in M2. Each phase's exit includes its threat review.
 
 ## 5. Internal review 2026-09-30: findings
 

@@ -228,6 +228,24 @@ export function appProcesses() {
   return Array.isArray(v) ? v : [v];
 }
 
+/**
+ * The WebView2 processes of the app under test (threat T33): every `msedgewebview2.exe` whose chain
+ * of parent processes reaches the app. Returns [{ pid, parent, name, path, commandLine }].
+ */
+export function webViewProcesses() {
+  const out = ps(
+    `$all = @(Get-CimInstance Win32_Process); ` +
+      `$app = @($all | Where-Object { $_.ExecutablePath -eq $env:E2E_APP } | ForEach-Object { $_.ProcessId }); ` +
+      `$byId = @{}; foreach ($p in $all) { $byId[[int]$p.ProcessId] = $p }; ` +
+      `$hits = foreach ($p in $all) { if ($p.Name -ne 'msedgewebview2.exe') { continue }; $cur = $p; $n = 0; ` +
+      `  while ($cur -and $n -lt 16) { if ($app -contains $cur.ParentProcessId) { $p; break }; $cur = $byId[[int]$cur.ParentProcessId]; $n++ } }; ` +
+      `@($hits) | Where-Object { $_ } | ForEach-Object { [pscustomobject]@{ pid = $_.ProcessId; parent = $_.ParentProcessId; name = $_.Name; path = $_.ExecutablePath; commandLine = $_.CommandLine } } | ConvertTo-Json -Compress`,
+  ).trim();
+  if (!out) return [];
+  const v = JSON.parse(out);
+  return Array.isArray(v) ? v : [v];
+}
+
 /** Every TCP connection and UDP endpoint owned by the given processes. */
 export function networkUse(pids) {
   if (pids.length === 0) return { tcp: [], udp: [] };

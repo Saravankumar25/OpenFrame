@@ -11,14 +11,24 @@ import { reportError } from "../ipc/query";
 import { flushPendingSaves } from "./pendingSaves";
 import { useLeaveGuard } from "./shell/SaveStatus";
 
+let answering = false;
+
 export async function answerCloseRequest(): Promise<void> {
-  await step("flushing");
-  if (await flushPendingSaves()) {
-    await step("close");
-    return;
+  // A second close request while the first is being answered is the same request.
+  if (answering) return;
+  answering = true;
+  try {
+    await step("flushing");
+    if (await flushPendingSaves()) {
+      await step("close");
+      return;
+    }
+    // Some text could not be stored: the window stays and the user decides.
+    await step("held").catch(reportError);
+    useLeaveGuard.getState().ask("your work", () => void step("close").catch(reportError));
+  } finally {
+    answering = false;
   }
-  await step("held");
-  useLeaveGuard.getState().ask("this project", () => void step("close").catch(reportError));
 }
 
 export function useCloseRequest(): void {
@@ -26,7 +36,7 @@ export function useCloseRequest(): void {
     if (!inTauri()) return;
     const un = onCloseRequested(() => void answerCloseRequest().catch(reportError));
     return () => {
-      void un.then((f) => f());
+      void un.then((f) => f()).catch(() => undefined);
     };
   }, []);
 }

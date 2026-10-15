@@ -1,0 +1,59 @@
+{
+  "at": "2026-10-15T20:57:00.928Z",
+  "processes": [
+    {
+      "pid": 13248,
+      "parent": 29388,
+      "name": "msedgewebview2.exe"
+    },
+    {
+      "pid": 15004,
+      "parent": 13248,
+      "name": "msedgewebview2.exe"
+    },
+    {
+      "pid": 19604,
+      "parent": 13248,
+      "name": "msedgewebview2.exe"
+    },
+    {
+      "pid": 26916,
+      "parent": 13248,
+      "name": "msedgewebview2.exe"
+    },
+    {
+      "pid": 29464,
+      "parent": 13248,
+      "name": "msedgewebview2.exe"
+    },
+    {
+      "pid": 25408,
+      "parent": 13248,
+      "name": "msedgewebview2.exe"
+    }
+  ],
+  "use": {
+    "tcp": [
+      {
+        "pid": 13248,
+        "local": "127.0.0.1",
+        "remote": "127.0.0.1",
+        "state": "Established"
+      },
+      {
+        "pid": 13248,
+        "local": "127.0.0.1",
+        "remote": "0.0.0.0",
+        "state": "Listen"
+      },
+      {
+        "pid": 13248,
+        "local": "127.0.0.1",
+        "remote": "127.0.0.1",
+        "state": "Established"
+      }
+    ],
+    "udp": []
+  },
+  "outside": []
+}

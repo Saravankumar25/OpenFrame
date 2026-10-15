@@ -26,8 +26,8 @@ How the toolbox (`modules/ai/toolbox.rs`, contract C3) enforces this:
   budget, so a small local model's prompt stays short. `retrieve_context` uses the hybrid retrieval
   service when called through `run_tool_unlocked`, and keyword retrieval (FTS5, same privacy rule) otherwise.
 
-- Registered operations: **483** (150 queries, 333 commands)
-- Exposed to the assistant through tools: **305**; not AI-accessible: **178**
+- Registered operations: **484** (151 queries, 333 commands)
+- Exposed to the assistant through tools: **305**; not AI-accessible: **179**
 - Tools: **253** (60 read/compute/navigate, 193 proposal)
 
 Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation · **L** long-running (task id) · file effect: R = reads a user-picked file, W = writes to a user-picked location, P = project storage on disk.
@@ -285,7 +285,7 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 
 | Operation | Kind | Class | Capability | Flags | Args → Result | AI | Covered by |
 |---|---|---|---|---|---|---|---|
-| `packages.apply_import`: Apply reviewed changes from a received package. | command | Mutate | Import | D | `PackageApplyArgs` → `PackageImportSession` | hidden | none |
+| `packages.apply_import`: Apply reviewed changes from a received package. | command | Mutate | Comment | D | `PackageApplyArgs` → `PackageImportSession` | hidden | none |
 | `packages.backup_preview`: What a backup or full project package would contain. | query | Compute | View |  | `PackageEmptyArgs` → `BackupPreview` | hidden | none |
 | `packages.cancel_import`: Cancel a package import session. | command | Mutate | View |  | `PackageSessionArgs` → `PackageImportSession` | hidden | none |
 | `packages.create_backup`: Write a backup package to a location the user picked. | command | Mutate | CreatePackage | L W | `BackupCreateArgs` → `PackageTaskStarted` | hidden | none |
@@ -367,6 +367,7 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 | `project.home`: Project Home: headline counts, recent activity and continue location. | query | Compute | View |  | `Empty` → `ProjectHome` | tool | `project_overview` |
 | `project.list_recent`: Recent projects on this computer (Home project list). | query | Read | app level | P | `ListRecentArgs` → `Vec<RecentProject>` | hidden | none |
 | `project.locate`: Point a recent project at its moved folder. | command | Mutate | app level | P | `LocateArgs` → `OpenProjectResult` | hidden | none |
+| `project.location_check`: Whether a folder is synced by a cloud service, and a local folder to use instead. | query | Read | app level | P | `LocationCheckArgs` → `LocationCheck` | hidden | none |
 | `project.members`: People on this project and their roles. | query | Read | View |  | `Empty` → `Vec<Member>` | tool | `project_settings` |
 | `project.open`: Open a project from disk (lock, integrity check, migrate, recover). | command | Mutate | app level | P | `OpenProjectArgs` → `OpenProjectResult` | hidden | none |
 | `project.recovery_state`: Crash-recovery offer for the open project. | query | Read | View | P | `Empty` → `RecoveryState` | hidden | none |
@@ -690,7 +691,7 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 - **Production scene number overrides and renumbering stay a human decision (ADR-0015, contract doc 32 §2.5); the assistant reads the numbers.**
   `screenplay.renumber_scenes`, `screenplay.restore_omitted_scene`, `screenplay.set_scene_number`
 - **Reads or writes a file-system location the user picks in a file dialog; the assistant never chooses or touches file-system paths (spec §3).**
-  `breakdown.export_report`, `budget.export_summary`, `callsheets.attach`, `callsheets.export_pdf`, `files.add`, `files.export_copy`, `files.relink`, `moodboard.export_pdf`, `packages.create_backup`, `packages.export_exchange`, `packages.export_project`, `packages.import_project`, `packages.inspect_package`, `packages.review_export_response`, `packages.review_open`, `project.locate`, `reports.export_report`, `schedule.export_dood`, `schedule.export_schedule`, `screenplay.export`, `screenplay.import_apply`, `screenplay.import_preview`, `shot.export_list`, `sides.export_pdf`, `story.add_attachment`, `story.export_board`, `storyboard.export_sheet`, `vault.add_files`, `vault.relink`
+  `breakdown.export_report`, `budget.export_summary`, `callsheets.attach`, `callsheets.export_pdf`, `files.add`, `files.export_copy`, `files.relink`, `moodboard.export_pdf`, `packages.create_backup`, `packages.export_exchange`, `packages.export_project`, `packages.import_project`, `packages.inspect_package`, `packages.review_export_response`, `packages.review_open`, `project.locate`, `project.location_check`, `reports.export_report`, `schedule.export_dood`, `schedule.export_schedule`, `screenplay.export`, `screenplay.import_apply`, `screenplay.import_preview`, `shot.export_list`, `sides.export_pdf`, `story.add_attachment`, `story.export_board`, `storyboard.export_sheet`, `vault.add_files`, `vault.relink`
 - **Returns local file paths of managed media; the assistant never receives file-system paths.**
   `app.info`, `files.asset`
 - **Screenplay page layout settings (paper, font, spacing, header and footer, page breaks, custom element looks) stay a human decision (screenplay engine contract doc 32 §2.5); the assistant reads the resulting page facts.**

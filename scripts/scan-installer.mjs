@@ -16,7 +16,8 @@ import os from "node:os";
 import path from "node:path";
 import { lineHits } from "./lib/secret-rules.mjs";
 
-const MAX_BYTES = 1024 * 1024 * 1024;
+// A JavaScript string holds at most about 512 million characters; larger files are refused, not crashed on.
+const MAX_BYTES = 400 * 1024 * 1024;
 const MIN_RUN = 6;
 const PERSONAL_PATH = /[A-Za-z]:[\\/]{1,2}Users[\\/]{1,2}(?!(?:Public|Default|All Users|runneradmin)[\\/])[^\\/\s"]+|\/Users\/(?!Shared\/)[^/\s"]+|\/home\/[^/\s"]+/i;
 const user = (process.env.OPENFRAME_SCAN_USER ?? os.userInfo().username ?? "").trim();
@@ -51,7 +52,7 @@ for (const target of targets) {
   for (const file of walk(target)) {
     const size = fs.statSync(file).size;
     if (size > MAX_BYTES) {
-      findings.push(`${file}  is larger than 1 GB and was not scanned; scan its unpacked contents`);
+      findings.push(`${file}  is larger than 400 MB and was not scanned; scan its unpacked contents`);
       continue;
     }
     files++;

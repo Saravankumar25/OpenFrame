@@ -18,6 +18,14 @@
 //! 4. Import, export, import: random screenplays built from a small vocabulary keep scene count,
 //!    headings, element types and text through Fountain and FDX, both in the interchange library
 //!    and end to end through the application (import, export, re-import as a new draft).
+//! 5. The search index kept up by every edit, undo and redo equals a full rebuild, and the full-text
+//!    index passes SQLite's own integrity check (Windows phase W3).
+//! 6. A mutation fully applies or does not apply: an edit whose commit fails (disk full, write
+//!    failure) leaves the canonical content, the search index and the undo history exactly as
+//!    before, and the project reopens with every stored edit (Windows phase W3).
+//!
+//! W3 named the `proptest` crate; these properties extend this seeded generator instead, so the
+//! repository keeps one way of writing property tests and gains no dependency.
 
 use std::collections::BTreeMap;
 
@@ -985,5 +993,167 @@ fn m1_06_app_import_export_reimport_keeps_scenes_headings_elements_and_text() {
         }
         // Exporting never changed the original draft.
         assert_eq!(draft_semantics(&env, &draft), want, "seed {seed}: original");
+    }
+}
+
+// ------------------------------------------------- 5. the search index equals the database
+
+/// Every row of the derived search index, sorted, without its row number and `updated_at` (the
+/// time the row was indexed, `now_ms()` at indexing, so a rebuild writes a later one).
+fn search_rows(env: &TestEnv) -> Vec<String> {
+    read(env, |c| {
+        let mut stmt = c.prepare(
+            "SELECT source_table, entity_id, entity_type, title, body, context, nav_json,
+                    owner_user_id FROM search_doc",
+        )?;
+        let mut rows: Vec<String> = stmt
+            .query_map([], |r| {
+                let vals: Vec<rusqlite::types::Value> =
+                    (0..8).map(|i| r.get(i)).collect::<Result<_, _>>()?;
+                Ok(format!("{vals:?}"))
+            })?
+            .collect::<Result<_, _>>()?;
+        rows.sort();
+        Ok(rows)
+    })
+}
+
+/// SQLite's own check that the full-text index matches the rows it indexes.
+fn fts_integrity_ok(env: &TestEnv, ctx: &str) {
+    env.core
+        .project()
+        .unwrap()
+        .store
+        .with_writer(|c| {
+            c.execute(
+                "INSERT INTO search_fts(search_fts, rank) VALUES('integrity-check', 1)",
+                [],
+            )?;
+            Ok(())
+        })
+        .unwrap_or_else(|e| panic!("{ctx}: full-text index differs from search_doc: {e:?}"));
+}
+
+#[test]
+fn w3_search_index_equals_a_rebuild_after_random_edits_undo_and_redo() {
+    for seed in seeds(5, 12) {
+        let mut rng = Rng::new(seed);
+        let env = TestEnv::with_project("Search", "Feature Film");
+        let (mut acts, mut seqs, mut cards) = (Vec::new(), Vec::new(), Vec::new());
+        let mut log = Vec::new();
+        for step in 0..rng.range(6, 16) {
+            log.push(random_edit(
+                &env, &mut rng, step, &mut acts, &mut seqs, &mut cards,
+            ));
+            if rng.chance(30) {
+                // Undo and redo update the index through the same path as edits.
+                env.undo();
+                env.redo();
+                log.push("undo and redo".into());
+            }
+        }
+        let ctx = format!("seed {seed} (edits {log:?})");
+        fts_integrity_ok(&env, &ctx);
+        let incremental = search_rows(&env);
+        env.ok("search.rebuild", json!({}));
+        assert_eq!(
+            search_rows(&env),
+            incremental,
+            "{ctx}: the index kept up by each edit differs from a full rebuild"
+        );
+        fts_integrity_ok(&env, &ctx);
+    }
+}
+
+// ------------------------------------------- 6. a mutation fully applies or does not apply
+
+/// One edit that may fail; the model lists change only when it succeeds.
+fn fallible_edit(
+    env: &TestEnv,
+    rng: &mut Rng,
+    step: usize,
+    acts: &[String],
+    cards: &[String],
+) -> (String, Result<Value, openframe_domain::AppError>) {
+    loop {
+        match rng.below(4) {
+            0 => {
+                let r = env.call(
+                    "story.create_act",
+                    json!({ "title": format!("Failed act {step}") }),
+                );
+                return ("create act".into(), r);
+            }
+            1 if !cards.is_empty() => {
+                let c = rng.pick(cards).clone();
+                let r = env.call(
+                    "story.update_card",
+                    json!({ "id": c, "shortDescription": format!("Failed edit {step}") }),
+                );
+                return (format!("update card {c}"), r);
+            }
+            2 if !cards.is_empty() && !acts.is_empty() => {
+                let c = rng.pick(cards).clone();
+                let r = env.call(
+                    "story.move_items",
+                    json!({ "items": [item("card", &c)], "target": container_json("parking", &[], acts) }),
+                );
+                return (format!("park card {c}"), r);
+            }
+            3 if !cards.is_empty() => {
+                let c = rng.pick(cards).clone();
+                let r = env.call("story.delete_items", json!({ "items": [item("card", &c)] }));
+                return (format!("delete card {c}"), r);
+            }
+            _ => continue,
+        }
+    }
+}
+
+#[test]
+fn w3_a_failed_commit_leaves_content_and_index_exactly_as_before() {
+    use openframe_application::store::fault::{CommitFault, fail_commits};
+    for seed in seeds(6, 12) {
+        let mut rng = Rng::new(seed);
+        let env = TestEnv::with_project("Atomic", "Feature Film");
+        let (mut acts, mut seqs, mut cards) = (Vec::new(), Vec::new(), Vec::new());
+        let mut log = Vec::new();
+        for step in 0..rng.range(8, 16) {
+            if step > 2 && rng.chance(40) {
+                let before = (canonical_dump(&env), search_rows(&env), undo_info(&env));
+                let fault = if rng.chance(50) {
+                    CommitFault::DiskFull
+                } else {
+                    CommitFault::WriteFailed
+                };
+                fail_commits(Some(fault));
+                let (what, result) = fallible_edit(&env, &mut rng, step, &acts, &cards);
+                fail_commits(None);
+                let ctx =
+                    format!("seed {seed} step {step}: {what} under {fault:?} (edits {log:?})");
+                assert!(result.is_err(), "{ctx}: the edit claimed success");
+                assert!(
+                    canonical_dump(&env) == before.0,
+                    "{ctx}: part of the failed edit was stored"
+                );
+                assert_eq!(search_rows(&env), before.1, "{ctx}: the index changed");
+                assert_eq!(undo_info(&env), before.2, "{ctx}: the undo history changed");
+                fts_integrity_ok(&env, &ctx);
+                log.push(format!("failed {what}"));
+            } else {
+                log.push(random_edit(
+                    &env, &mut rng, step, &mut acts, &mut seqs, &mut cards,
+                ));
+            }
+        }
+        // After the failures the project keeps working and reopens with every stored edit.
+        let content = canonical_dump(&env);
+        let path = env.project_path();
+        env.ok("project.close", json!({}));
+        env.reopen_project(&path);
+        assert!(
+            canonical_dump(&env) == content,
+            "seed {seed}: content after reopening differs (edits {log:?})"
+        );
     }
 }

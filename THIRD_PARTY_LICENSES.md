@@ -324,7 +324,7 @@ None.
 | rusqlite | 0.37.0 | MIT | permissive | https://github.com/rusqlite/rusqlite |
 | rust_xlsxwriter | 0.90.2 | MIT OR Apache-2.0 | permissive | https://github.com/jmcnamara/rust_xlsxwriter |
 | rustc-hash | 2.1.3 | Apache-2.0 OR MIT | permissive | https://github.com/rust-lang/rustc-hash |
-| rustls | 0.23.45 | Apache-2.0 OR ISC OR MIT | permissive | https://github.com/rustls/rustls |
+| rustls | 0.23.46 | Apache-2.0 OR ISC OR MIT | permissive | https://github.com/rustls/rustls |
 | rustls-pki-types | 1.15.1 | MIT OR Apache-2.0 | permissive | https://github.com/rustls/pki-types |
 | rustls-webpki | 0.103.15 | ISC | permissive | https://github.com/rustls/webpki |
 | rustybuzz | 0.20.1 | MIT | permissive | https://github.com/harfbuzz/rustybuzz |

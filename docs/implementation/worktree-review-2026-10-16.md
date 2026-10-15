@@ -4,6 +4,13 @@
 > follows links or junctions. Rule: [development-storage-policy.md](../development-storage-policy.md) and `CLAUDE.md`
 > ("Storage and workspace hygiene").
 
+## 0. Outcome
+
+The owner approved removal in chat on 2026-10-16 ("if it is safe you can remove the w1 working trees"). Option 1 was
+done: no folder held a junction or link; the 65 files of section 2 (without models and llama.cpp builds) were copied to
+`C:OpenFrame.build-cachesalvage-2026-09-30` (773 KB); the 39 folders were removed and `git worktree prune` run.
+`git worktree list` shows only `C:OpenFrame`. About 4.0 GB freed.
+
 ## 1. What was found
 
 - `C:\OpenFrame\.claude\worktrees` holds 39 folders, about 4.0 GB, all last changed on 2026-09-29 or 2026-09-30.
