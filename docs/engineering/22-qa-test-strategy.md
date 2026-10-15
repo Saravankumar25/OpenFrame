@@ -1,5 +1,7 @@
 # 22: QA & Acceptance Test Strategy
 
+> **Current decisions (2026-10-15).** "Verified" is defined by five proof levels, and the release build, a clean machine and the team pilot are levels 3 to 5 ([ADR-0030](../adr/ADR-0030-verification-ladder-and-release-flow.md)). AI quality is measured by the evaluation harness and its release bar ([ADR-0028](../adr/ADR-0028-ai-quality-program-and-harness.md)). The Mac suite uses Apple's UI testing against the shared scenario list ([ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md)).
+
 > **Status legend:** ✅ implemented · 🚧 in development · 📋 planned.
 > Authority for *what* to test: FSD acceptance criteria and matrices (§68–70, §171), PRD acceptance criteria
 > (§200–210), Security SEC-xxx. This document defines *how*. Contributor rules: CONTRIBUTING.md §4.
@@ -68,19 +70,20 @@ unmodified.
 | Crash and recovery gate | Manual kill-during-typing test: reopen offers recovery, and no committed edit is lost | 📋 manual + E2E |
 | Accessibility gate | Keyboard-only walkthrough of every workspace; visible focus; labelled icon buttons; status not colour-only; usable in Windows High Contrast (ADR-0012 §7) | 📋 manual |
 | Installer gate | Signed NSIS and MSI install, upgrade over the previous version, and uninstall on clean Windows 11 VMs (per-user; with and without WebView2) | 📋 manual |
-| Offline gate | Full core workflow with the network disabled; only the update check shows "unavailable offline"; the bundled Offline AI (ADR-0025) answers, proposes and applies with the network disabled right after install | 📋 manual (the AI part is automated by `72-ai-assistant`: loopback-only sockets of the app and the engines) |
+| Offline gate | Full core workflow with the network disabled; only the update check shows "unavailable offline"; the Offline AI answers, proposes and applies with the network disabled after its one-time model download (ADR-0026); with no download yet, the not-installed state is shown and nothing else breaks | 📋 manual (the AI part is automated by `72-ai-assistant`: loopback-only sockets of the app and the engines) |
 | Offline AI bundle gate | For a new bundle version (a change to `packaging/ai/ai-assets.lock.json`): `scripts/ai-benchmark.mjs` (tool calling, JSON validity, injection case, latency, memory), the ignored `real_runtime` and `ai_real_model` tests and the AI E2E specs pass on minimum and recommended hardware with the processor build (the only bundled build since ADR-0025; runtime spec §16) | 📋 manual |
 
 ## 6. AI test layers
 
-Nothing is ever downloaded (ADR-0025): the runtime and both models ship inside every package, pinned in
-`packaging/ai/ai-assets.lock.json`. Rust tests in CI use a deterministic scripted `ChatModel` and a deterministic
+Target design (ADR-0026): the runtime ships in every package; the two models download after a user click, verified against
+the signed manifest and pinned SHA-256 hashes. The current build still bundles the models (`packaging/ai/ai-assets.lock.json`)
+until the download flow is rebuilt. Rust tests in CI use a deterministic scripted `ChatModel` and a deterministic
 test embedder (`openframe_test_support`), never shipped. The real bundled components are exercised by the opt-in
 Rust tests, the benchmark and the desktop E2E AI specs, which run the test build with the bundled model.
 
 | Layer | What it proves | Location | Runs in |
 |---|---|---|---|
-| Runtime unit + integration | Bundle lock validation (unsafe paths, hashes, roles, embedded tokenizer, processor build only), first launch with no download or setup, hash check before the first engine start with the check record in app data, altered / missing / linked / replaced files, a new app version re-checks everything, engine files re-hashed before every launch, supervisor lifecycle, retired download clean-up, with the test executable standing in for `llama-server` | `crates/openframe-ai/src/**`, `tests/{bundled,supervisor,soak_sidecar,sidecar_log_redaction}.rs` | CI `rust` |
+| Runtime unit + integration | Bundle lock validation (unsafe paths, hashes, roles, embedded tokenizer, processor build only), first launch with the not-installed state and the download offer (to be built, ADR-0026: signature failure, hash mismatch, interrupted and resumed download, disk full, quarantine, atomic activation, last known-good kept), hash check before the first engine start with the check record in app data, altered / missing / linked / replaced files, a new app version re-checks everything, engine files re-hashed before every launch, supervisor lifecycle, retired download clean-up, with the test executable standing in for `llama-server` | `crates/openframe-ai/src/**`, `tests/{bundled,supervisor,soak_sidecar,sidecar_log_redaction}.rs` | CI `rust` |
 | Derived index | Index open/trust/rebuild on identity change or damage, vector module not global, graph traversal limits, RRF ranking | `crates/openframe-search/src/**` (unit) | CI `rust` |
 | Retrieval | Documents/chunks/vectors/graph for every domain, private notes and contact details, hybrid vs keyword, graph expansion, incremental indexing incl. undo/redo/delete/restore, saves never wait, embedding failure fallback, router, restart/rebuild, index ops, project close | `crates/openframe-application/tests/ai_retrieval.rs` | CI `rust` |
 | Retrieval budgets (§34) | FTS, vector, graph, hybrid + assembly and save latency on a generated feature-length fixture | `tests/ai_retrieval_perf.rs` | CI `rust` (3× budget in debug) |
@@ -88,7 +91,7 @@ Rust tests, the benchmark and the desktop E2E AI specs, which run the test build
 | Coverage matrix | Every registered operation has metadata; tools match metadata; strict bounded schemas; `ai-tool-coverage.md` regenerated from the Registry (fails on drift) | `tests/ai_tool_coverage.rs` | CI `rust` |
 | Agent loop | Multi-step reads, inferred vs exact answers, terminal navigation, 8/12 step limits, repeated-call stop, model failure mid-run, bounded history, composite Change Set, stale recheck, human-only acceptance, destructive confirmation, injection in observations, SQL/oversized args, Viewer denial | `tests/ai_agent.rs` | CI `rust` |
 | Assistant acceptance (AI-AC-xxx) | Works without AI, exact counts, no invented facts, navigation, suggestions create nothing, preview → accept → one undo step, permissions, stale/conflict, rename exclusions, all-or-nothing apply, allow-list, ambiguity, private notes, injection, malformed output, audit without context copies, personal history | `tests/ai.rs`, `tests/security_review.rs` (`ai_01_*`, `ai_02_*`) | CI `rust` |
-| Frontend | Panel states (ready, off with the repair message, no download anywhere), proposal card actions, scope options, index notice | `apps/desktop/src/ai/*.test.ts(x)` | CI `web` |
+| Frontend | Panel states (ready, off with the repair message, not installed with the download offer, no download without a click), proposal card actions, scope options, index notice | `apps/desktop/src/ai/*.test.ts(x)` | CI `web` |
 | E2E (real bundled model, deterministic sampling) | Ready on first launch; exact and retrieved answers with sources; navigation; scope in every workspace; propose, apply, undo, redo, reject, stale; kill on apply (ADR-0019 all or nothing) and while the engine answers; missing and altered bundle files; loopback-only network use | `tests/e2e/specs/7{2..6}-ai-*.test.mjs`, journey step in `01-journey.test.mjs` | RC pipeline |
 | Real components (manual / opt-in) | Full check of the staged bundle → chat (deterministic) → grammar-constrained JSON → embeddings → recorded check on the next start; the assistant through the operation registry (exact count, retrieval, propose, apply, undo, reject); model benchmark | `OPENFRAME_AI_BUNDLE_DIR=.build-cache/ai-bundle cargo test -p openframe-ai --test real_runtime -- --ignored`; the same variable with `-p openframe-application --test ai_real_model -- --ignored --test-threads=1`; `node scripts/ai-benchmark.mjs` | Offline AI bundle gate |
 
@@ -105,7 +108,7 @@ agentic spec §35); an E2E index rebuild with the real model; the web view's own
 | Forced-kill gate | Killing the process at every Change Set operation boundary and during save, migration, export and package import leaves a consistent project (build plan: crash-safe AI changes, forced stop at every apply step, forced stop tests) | 📋 |
 | Round-trip gate | The 13 FDX fixture classes and the Revision 1 §50 migration definition of done pass (build plan: Screenplay engine and file formats area) | 📋 |
 | Rendering gate | PDF image-compare regression for screenplay and production documents passes (build plan: PDF image comparison, and golden or image regression for production PDFs) | 📋 |
-| Packaged app gate | WACK passes and the installed MSIX passes the lifecycle journey and answers with the bundled Offline AI on a clean machine with the network off (build plan: Microsoft Store package area; ADR-0025 validation list) | 📋 manual + E2E |
+| Packaged app gate | WACK passes and the installed MSIX passes the lifecycle journey, downloads the AI models with the network on, and answers with the Offline AI on a clean machine with the network off afterwards (build plan: Microsoft Store package area; ADR-0026 validation list) | 📋 manual + E2E |
 | Reachability and feature status gate | Every feature status row has a UI route, tests and a status its evidence supports; reachability test green (build plan: feature status check in CI, reachability test) | 📋 |
 
 ## 7. Soak and failure injection (build plan: soak tests, failure injection)
@@ -141,7 +144,7 @@ project that still opens with every acknowledged change.
 | Path disappears | Export folder deleted after it was chosen; project folder moved while closed; `recovery/` deleted while open |
 | External volume removed | Project on a `subst` drive letter that is removed while open, then mapped again |
 | Read-only destination | Read-only attribute on an existing export or backup file |
-| Sleep and resume | Indexing: the embedder stalls or fails for the "sleep" (nothing is downloaded since ADR-0025, so the former download case is gone) |
+| Sleep and resume | Indexing: the embedder stalls or fails for the "sleep" (the model download is interrupted by sleep and resumes from the `*.partial` file, ADR-0026) |
 | Antivirus-locked file | A handle opened with `FILE_SHARE_READ` only (or no sharing) on the export destination, the checkpoint, `project.sqlite` at open and an import source |
 | Very long paths | Project, export and backup more than 260 characters deep |
 | Non-ASCII project paths | `Résumé/Café/日本` folders, a non-ASCII title and a crash recovered in that folder |

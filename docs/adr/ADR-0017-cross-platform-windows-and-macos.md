@@ -1,5 +1,6 @@
 # ADR-0017: One codebase, two platform adapters, three release files
 
+- **Amended 2026-10-15 by [ADR-0027](ADR-0027-rust-core-two-ui-shells.md):** "one codebase, two platform adapters" becomes one Rust core with two shells (Tauri on Windows, SwiftUI on the Mac). Decisions 2 (Windows 11 only) and 3 (Apple silicon only) stand; the Intel MacBook is a development machine. Decision 3's "AI engine built with Metal" is read together with [ADR-0028](ADR-0028-ai-quality-program-and-harness.md) (Apple's model as an opt-in provider).
 - **Status:** Accepted 2026-10-06 by the owner. Amends the Engineering Package Index locked decision "Initial OS" and supersedes the earlier proposal in this file (Windows now, macOS later).
 - **Date:** 2026-10-05, accepted 2026-10-06
 - **Related:** [ADR-0018](ADR-0018-distribution-licensing-commerce.md), `docs/engineering/28-cross-platform-compatibility-security.md`, `docs/engineering/29-desktop-hld-lld.md`, `docs/implementation/masterplan.md` (areas "Platform adapter layer for Windows and Mac", "Microsoft Store package", "Windows installer", "Mac App Store package")

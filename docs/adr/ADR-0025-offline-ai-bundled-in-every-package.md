@@ -1,6 +1,10 @@
 # ADR-0025: Offline AI bundled in every package
 
-- **Status:** Accepted 2026-10-08 (owner, in chat). Permanent and cross-platform.
+> **SUPERSEDED 2026-10-15 by [ADR-0026](ADR-0026-offline-ai-download-after-install.md)** (owner, in chat: revert to
+> download after install). The text below is history. Never implement it. ADR-0026 reinstates the download clauses of
+> ADR-0006 decision 2, ADR-0013 decision 2 and ADR-0020 decisions 1 (weights part), 3 and 5.
+
+- **Status:** Superseded 2026-10-15 by ADR-0026. Was accepted 2026-10-08 (owner, in chat). Permanent and cross-platform.
 - **Date:** 2026-10-08
 - **Supersedes:** [ADR-0020](ADR-0020-ai-runtime-packaging-per-channel.md) decision 1 where it says only model weights
   download after a click, and decisions 3 and 5; [ADR-0006](ADR-0006-local-ai-sidecar.md) decision 2 (delivery by

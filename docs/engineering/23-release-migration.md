@@ -1,5 +1,7 @@
 # 23: Release, Migration & Compatibility
 
+> **Current decisions (2026-10-15).** The release flow is Windows track, internal `.exe`, team pilot, then Mac track, internal `.dmg`, team pilot, then website, then stores ([ADR-0030](../adr/ADR-0030-verification-ladder-and-release-flow.md)). The team password minimum is 8 characters. Models download after install ([ADR-0026](../adr/ADR-0026-offline-ai-download-after-install.md)); a changed model is a manifest version change ([ADR-0028](../adr/ADR-0028-ai-quality-program-and-harness.md)).
+
 > **Status legend:** ✅ implemented · 🚧 in development · 📋 planned.
 > Source: `persistence/src/migrate.rs`, `application/src/{schema.rs,store.rs}`, `project-format`,
 > `openframe-domain` version constants. Related: 11-physical-database.md §7, ADR-0002, ADR-0003.
@@ -112,16 +114,19 @@ updater key configured, updater plugin not configured in `tauri.conf.json`.
   pre-releases, never offered to stable users.
 - In-app updates: notify, then download and install only after explicit approval (Engineering Index). See
   24-windows-packaging-updater.md.
-- Model updates ship as app updates: the bundled AI is part of the app version (ADR-0025). The former separate
-  model updates (Local AI spec §15) are superseded.
+- Model updates ship as a new signed manifest, so the AI can change without a new installer (ADR-0026). The runtime
+  is part of the app version (ADR-0020). Local AI spec §15 describes the download flow.
 
 ## 7. Offline AI release prerequisites ⛔
 
-Every package contains the complete offline AI and nothing is downloaded (ADR-0025, 2026-10-08). The model host, the
-manifest signing key, the production manifest and their release checks of the former download flow are gone. Item 1 is
-enforced by `scripts/release-validate.mjs` (check 6) and by every package build; the rest are manual.
+Target design (ADR-0026, 2026-10-15, reinstating the download after install): the package holds the app and the AI
+runtime. The Gemma 3 1B chat model, the BGE embedding model and the tokenizer data download on the user's click from a
+signed manifest on the model host. The model host, the manifest signing key and the production manifest are owner
+tasks again, and the download code is to be rebuilt (masterplan area 8). The build still bundles the models until
+that work lands (ADR-0025 state in the code), so the items below describe today's build and the release gates that
+remain. Item 1 is enforced by `scripts/release-validate.mjs` (check 6) and by every package build; the rest are manual.
 
-1. **Bundled AI build inputs.** The runtime and model files pinned in `packaging/ai/ai-assets.lock.json` (path, bytes,
+1. **AI build inputs.** The runtime and model files pinned in `packaging/ai/ai-assets.lock.json` (path, bytes,
    SHA-256, licence) must be present for the build (`.ai-assets/`, or `OPENFRAME_AI_ASSETS_DIR` on a build machine or
    runner). `scripts/prepare-ai-assets.mjs` verifies them and stages them; `npm run build`, `npm run bundle`,
    `build-msix.mjs`, the E2E test build and the release workflow fail closed when a file is missing or altered. The
@@ -130,14 +135,16 @@ enforced by `scripts/release-validate.mjs` (check 6) and by every package build;
    notice "Gemma is provided under and subject to the Gemma Terms of Use found at ai.google.dev/gemma/terms." ships in
    the app (Settings → Offline AI → Technical details, and `ai/notices/` in the package) and in
    `THIRD_PARTY_LICENSES.md`; the Terms and the Gemma Prohibited Use Policy are passed on to recipients; the owner
-   confirms the check before any package leaves the team (ADR-0025 decision 7). BGE small (MIT), llama.cpp (MIT) and
+   confirms the check before the model host goes live and before any package leaves the team (ADR-0026 decision 9). BGE small (MIT), llama.cpp (MIT) and
    the LLVM OpenMP runtime (Apache-2.0 WITH LLVM-exception) notices ship as well.
-3. **Package size.** Each package grows by the bundled AI (1,149,734,816 bytes uncompressed for Windows x64; about
-   1.07 GB compressed). Record the real size of each package when it is first built (ADR-0025 Consequences).
-4. **Validation per format** (ADR-0025 validation list): install, offline inference with the network off, upgrade and
+3. **Package size.** Today's build includes the AI (1,149,734,816 bytes uncompressed for Windows x64; about 1.07 GB
+   compressed). After the download flow is rebuilt, the package holds the app and the runtime only (about 20 to 30 MB,
+   an estimate). Record the real size of each package when it is first built (ADR-0026 Consequences).
+4. **Validation per format** (ADR-0026 decision 10): install with no network, first download, offline inference after
+   the download, upgrade and
    uninstall on a clean machine for each package format before it is claimed as supported.
 5. **Hardware validation** (the Offline AI bundle gate in 22-qa-test-strategy.md): benchmark, `real_runtime` and
    `ai_real_model` on minimum (8 GB RAM) and recommended hardware with the bundled processor build. Not yet done
    (runtime spec §16).
-6. **Store listing** (Store builds): describe the bundled generative AI (no download) and provide a
+6. **Store listing** (Store builds): describe the generative AI and its one-time user-clicked model download, offline use after it, and provide a
    report-inappropriate-content channel (27-microsoft-store.md §5.4, §10).

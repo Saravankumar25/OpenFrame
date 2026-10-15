@@ -1,5 +1,7 @@
 # OpenFrame Studio launch readiness register
 
+> **Current decisions (2026-10-15).** Chapter 3 material; read it when the Chapter 3 plan is written. Rows that assume bundled AI models, a processor-only engine, a Tauri Mac shell or a team password of 12 characters are replaced by [ADR-0026](../adr/ADR-0026-offline-ai-download-after-install.md), [ADR-0029](../adr/ADR-0029-gpu-acceleration.md), [ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md) and [ADR-0030](../adr/ADR-0030-verification-ladder-and-release-flow.md).
+
 > **What this is.** The register of operations, legal, commerce, security, support and release requirements for taking
 > OpenFrame Studio from codebase to a launched, supportable product. Product feature state lives in the
 > [feature status document](../implementation/feature-status.md). Build order and the Store gate live in the
@@ -1505,7 +1507,7 @@ Requirements present in the owner's notes (`docs/archive/notes/store-certificati
 | `STORE-009` | Age rating (IARC) answered accurately for screenplays with mature themes or violence | Must ship | Final review and submission |
 | `STORE-010` | Notes for Certification: no login needed, how to test optional AI, network use, capability justification | Must ship | Final review and submission |
 | `STORE-011` | Clean first launch on a bare machine or Windows Sandbox; no locally installed runtime dependency | Must ship | Microsoft Store package |
-| `STORE-012` | Manifest capabilities limited to those used (runFullTrust only; internetClient removed 2026-10-08 because nothing is downloaded, ADR-0025) with written justification | Must ship | Microsoft Store package |
+| `STORE-012` | Manifest capabilities limited to those used (runFullTrust, plus internetClient for the user-clicked AI model download and the update check, ADR-0026; internetClient was removed 2026-10-08 under ADR-0025) with written justification | Must ship | Microsoft Store package |
 | `STORE-013` | At least one clear, uncropped screenshot of the real UI from the release candidate | Must ship | Final review and submission |
 | `STORE-014` | Windows App Certification Kit report (zero failures) archived for the exact package | Must ship | Microsoft Store package |
 | `STORE-015` | Supported Windows versions in manifest, listing and docs agree with what was tested | Must ship | Project controls and baseline |

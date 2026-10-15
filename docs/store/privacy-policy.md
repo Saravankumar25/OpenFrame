@@ -1,5 +1,5 @@
 > **DRAFT, NOT FOR PUBLICATION (2026-10-05).** Placeholders remain (effective date, publisher legal name, privacy contact,
-> retention; the model host placeholder is gone since the AI ships inside the app, ADR-0025). Rewrite for the chosen business model and diagnostics policy (ADR-0018, ADR-0021), have counsel
+> retention; the model host placeholder returns with the user-clicked AI model download, ADR-0026). Rewrite for the chosen business model and diagnostics policy (ADR-0018, ADR-0021), have counsel
 > review it, and host it on a stable HTTPS URL before Store submission (build plan area: Legal, privacy, website and support).
 
 <!--
@@ -15,6 +15,8 @@
 -->
 
 # OpenFrame Studio Privacy Policy
+
+> **Current decisions (2026-10-15).** A draft for Chapters 2 and 3. It must describe the one AI download, the local numbers-only AI log and the learned-memory screen, and that nothing is sent automatically ([ADR-0026](../adr/ADR-0026-offline-ai-download-after-install.md), [ADR-0028](../adr/ADR-0028-ai-quality-program-and-harness.md), [ADR-0021](../adr/ADR-0021-diagnostics-telemetry-analytics-policy.md)). Counsel reviews it before publication.
 
 **Effective date:** [YYYY-MM-DD]
 **Publisher:** [Publisher legal name as shown in the Microsoft Store]

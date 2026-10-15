@@ -1,10 +1,12 @@
 # OpenFrame Studio — AI Specification
 
-> **Partly superseded 2026-10-08 by [ADR-0025](../adr/ADR-0025-offline-ai-bundled-in-every-package.md).** Every package now
-> contains the complete offline AI: there is no **Download Offline AI** button, no download, no signed manifest, no model
-> host, no install, update or remove step and no graphics-card build. The runtime and both models are read-only app
-> resources pinned in `packaging/ai/ai-assets.lock.json` and checked before the first engine start. Text below that
-> describes downloading, installing or removing Offline AI is history; never implement it.
+> **Current decisions (2026-10-15).** [ADR-0028](../adr/ADR-0028-ai-quality-program-and-harness.md) overrides this text where it differs: measurement first and a release bar of 90 percent correct tool and 85 percent correct end state; English first plus eleven further languages; two model tiers instead of one model; tool offering by embedding similarity instead of word overlap; a verifier-guided loop of at most three passes and 60 seconds; four kinds of memory with a visible learned-memory screen; a local numbers-only log with a manual Export AI report. Delivery is per [ADR-0026](../adr/ADR-0026-offline-ai-download-after-install.md), graphics cards per [ADR-0029](../adr/ADR-0029-gpu-acceleration.md).
+
+> **Current decision: [ADR-0026](../adr/ADR-0026-offline-ai-download-after-install.md) (2026-10-15).** The app and the AI
+> runtime ship in every package. The Gemma 3 1B and BGE models download after install, on the user's click, from a signed
+> manifest with SHA-256 checks. This reverses ADR-0025 (2026-10-08), which had bundled the models in the package.
+> **Build state:** the current build still bundles the models from `packaging/ai/ai-assets.lock.json`, and the download
+> flow is an open implementation item in masterplan area 8.
 
 
 > **Revision notice (2026-10-05).** The implemented AI architecture is defined by ADR-0013, the Local AI Runtime specification and the agentic
@@ -475,8 +477,8 @@ No chain-of-thought and no copies of the assembled context are stored
 
 - Inference path: React → Rust → local context and retrieval → local `llama-server` → local Gemma → result. The
   inference client talks only to 127.0.0.1 (no proxy); `openframe-ai` is the only crate with an HTTP client.
-- The AI subsystem uses the network only when the user clicks **Download Offline AI** or **Update Offline AI**: the
-  signed manifest and the listed component files. Nothing is fetched in the background.
+- The AI subsystem uses the network only when the user clicks **Download Offline AI** or **Update Offline AI** (ADR-0026):
+  the signed manifest and the listed model files. Nothing is fetched in the background, at install, or as a repair.
 - No telemetry exists, so prompts, screenplay text, retrieved chunks, private notes and AI responses are never
   transmitted.
 - The sidecars listen on 127.0.0.1 only, on a random port, with a random per-launch key; they run in a kill-on-close

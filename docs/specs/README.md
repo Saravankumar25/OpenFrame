@@ -1,5 +1,7 @@
 # Product and engineering specifications
 
+> **Current decisions (2026-10-15).** The AI, runtime, ESD, Engineering Index and Security specifications carry a "Current decisions" note under their title that lists the ADRs overriding them ([ADR-0026](../adr/ADR-0026-offline-ai-download-after-install.md) to [ADR-0030](../adr/ADR-0030-verification-ladder-and-release-flow.md)). The [decision register](../adr/README.md) is the authority.
+
 > Moved here from the repository root on 2026-10-05; file names are unchanged and nothing was edited except status
 > banners. Precedence is in [docs/README.md](../README.md) §1. Decisions that replaced older text are in the
 > [decision register](../adr/README.md).

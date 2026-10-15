@@ -1,5 +1,7 @@
 # Platform boundary
 
+> **Current decisions (2026-10-15).** The boundary rules stand. The Mac side is the platform adapter inside the Rust core plus a SwiftUI shell ([ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md)); statements about the Tauri shell on the Mac are history. The Mac adapter first runs in Mac phase M3.
+
 > Written 2026-10-06 from `crates/openframe-platform/src/` (`lib.rs`, `atomic.rs`, `dirs.rs`, `exists.rs`, `identity.rs`,
 > `keys.rs`, `process.rs`; `spelling.rs` added 2026-10-07 for proofing) and from rule R6 and the `OS_ALLOW` list in `scripts/architecture-lint.mjs`.
 > Decisions behind it: [ADR-0017](../adr/ADR-0017-cross-platform-windows-and-macos.md). Plan area: "Platform adapter layer for

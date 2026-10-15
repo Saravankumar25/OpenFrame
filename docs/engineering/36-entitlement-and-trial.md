@@ -1,5 +1,7 @@
 # Entitlement and trial
 
+> **Current decisions (2026-10-15).** Chapter 3 material. The Mac StoreKit bridge moves into the SwiftUI application when Chapter 3 starts ([ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md)). The team gate minimum is 8 characters ([ADR-0030](../adr/ADR-0030-verification-ladder-and-release-flow.md)).
+
 > Written 2026-10-06 from the code in `crates/openframe-entitlement/src/` (then `lib.rs`, `trial.rs`, `licence.rs`, `adapters.rs`).
 > Decisions behind it: [ADR-0018](../adr/ADR-0018-distribution-licensing-commerce.md). Plan area: "Payment and free trial in all
 > three channels" in [masterplan.md](../implementation/masterplan.md). State of the feature: [feature-status.md](../implementation/feature-status.md)

@@ -1,5 +1,6 @@
 # ADR-0013: One local model (Gemma 3 1B), local embeddings, hybrid retrieval with a derived context graph, a universal toolbox and a bounded agent loop
 
+- **Amended 2026-10-15 by [ADR-0028](ADR-0028-ai-quality-program-and-harness.md):** decision 1 ("one model for everyone, Gemma 3 1B only") is superseded. There are two tiers and the model family is chosen by a measured bake-off, with Gemma 3 as the incumbent. The tool picker by word overlap is replaced by embedding similarity plus usage priors. The human-only Change Sets, the hybrid retrieval and the bounded agent stand.
 - **Status:** Accepted and implemented (merged on `master`, 30 Sept 2026). **Supersedes ADR-0006 decision 3**
   (the three Qwen profiles and the user override). The rest of ADR-0006 (managed `llama.cpp` sidecar, signed
   manifest, authority boundary, prompt-injection boundary, persistence, failure isolation) stays in force and is
@@ -29,7 +30,7 @@ above the user's.
    **BGE small English v1.5** embedding model (MIT, 384 dimensions), both served by pinned `llama.cpp` `llama-server`
    sidecars on 127.0.0.1. There is no model picker and no user-loaded model. The manifest format 2 describes runtime +
    chat model + embedding model; format 1 (the Qwen tiers) is refused.
-2. **SUPERSEDED 2026-10-08 by ADR-0025 (bundled in every package, no download). Kept as history.** **One download.** **Download Offline AI** fetches the runtime and both models as one combined, resumable,
+2. **Reinstated 2026-10-15 by ADR-0026.** **One download.** **Download Offline AI** fetches the runtime and both models as one combined, resumable,
    SHA-256-verified download from the signed manifest, activates atomically, health-checks both sidecars and is usable
    without a restart. Components are stored once per Windows user, never per project.
 3. **Derived intelligence index.** Each project gets `cache/intelligence.sqlite` (crate `openframe-search`): semantic

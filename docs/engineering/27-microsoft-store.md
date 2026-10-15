@@ -1,5 +1,7 @@
 # 27: Microsoft Store (MSIX) distribution
 
+> **Current decisions (2026-10-15).** Chapter 3 only; its implementation plan is written after Chapter 2. Statements here about bundling the AI models inside the package are replaced by [ADR-0026](../adr/ADR-0026-offline-ai-download-after-install.md) (runtime in the package, models downloaded on a click). The runtime now includes a Vulkan build ([ADR-0029](../adr/ADR-0029-gpu-acceleration.md)).
+
 > **Status legend:** ✅ implemented · 🚧 in development · 📋 planned · ⛔ blocked on the product owner.
 > Sources: `packaging/msix/*`, `scripts/build-msix.mjs`, `scripts/release-validate.mjs --store`,
 > `.github/workflows/release.yml` (jobs `validate-store`, `store`), `apps/desktop/src-tauri/build.rs`,
@@ -121,7 +123,7 @@ uninstall (Store policy 10.2.7 clean uninstall). Unpackaged builds keep `%LOCALA
 Implemented in the Tauri adapter (`lib.rs` overrides the field); the foundation crates are unchanged.
 
 Consequence: a user who moves from the direct build to the Store build starts with empty settings
-and an empty recent-projects list (the Offline AI comes with either package, nothing to download). Their projects and Global
+and an empty recent-projects list (the AI runtime comes with either package; the AI models download after a user click). Their projects and Global
 Idea Vault are unaffected (§5.3). They reopen projects with *Open project*. 📋 An optional one-time
 import of `%LOCALAPPDATA%\OpenFrame\` settings and recents could be added later.
 
@@ -135,9 +137,12 @@ and the Global Idea Vault (`Documents\OpenFrame\Global Idea Vault`) are real fil
 and backups can see. They survive uninstall, as the privacy policy promises. File dialogs,
 `opener` open/reveal and the `ofasset` media protocol (project `assets/` and vault `assets/`) work unchanged.
 
-### 5.4 Local AI runtime (llama.cpp) bundled in the package (ADR-0025, 2026-10-08)
-Offline AI (Gemma 3 1B Instruct + BGE small English embeddings, run by `llama-server` engines) ships inside the
-package. `build-msix.mjs` verifies the pinned files against `packaging/ai/ai-assets.lock.json` and copies them to
+### 5.4 Local AI runtime (llama.cpp) in the package; models downloaded after install (ADR-0026, 2026-10-15)
+Target design: the `llama.cpp` runtime (with the OpenMP and Visual C++ runtime DLLs) ships inside the package. The
+Gemma 3 1B Instruct and BGE small English embedding models (run by `llama-server` engines) download after install on
+the user's click, from a signed manifest, into the package `LocalState` folder, with SHA-256 checks (ADR-0026 decisions
+1 to 6). The current build still bundles the models, as described below, until the download flow is rebuilt.
+Current build: `build-msix.mjs` verifies the pinned files against `packaging/ai/ai-assets.lock.json` and copies them to
 `ai/` next to `openframe-desktop.exe` in the package layout (`ai/runtimes/<runtime-id>/`, `ai/models/<model-id>/`,
 `ai/notices/`). At run time the app finds them through the platform adapter
 (`openframe_platform::dirs::app_resources_dir`, the executable's folder) and reads them in place: the `WindowsApps`
@@ -145,15 +150,15 @@ install folder is read-only, which is what the bundle needs. The engine is start
 app may start executables from its own install folder) with its working folder there too; it writes nothing.
 Writable AI data (the check record, the engine record, the engine logs) goes to `app_data_dir`, the package
 `LocalState` folder (§5.2). Before the first engine start the app checks every file against the SHA-256 compiled into
-it, and the engine files again before every launch. Nothing is downloaded, so policy 10.2.2 (downloaded code) does
-not apply to the AI. Still required:
+it, and the engine files again before every launch. The runtime is in the package, so policy 10.2.2 (downloaded code)
+does not apply to it; the models are downloaded data, offered only after a user click and disclosed in the listing.
+Confirm the wording of the store's downloaded-content rule with Partner Center before submission. Still required:
 - Store policy 11.16 (live generative AI): disclose generative AI in the listing metadata and in
   Partner Center, and give users a way to report inappropriate output to the developer (the listing
   draft has a placeholder).
-- Never run the runtime from a temp folder. *(Superseded 2026-10-08: the former rule "never run it from the package
-  install folder" belonged to the download flow; the bundled runtime runs from the install folder by design.)*
-- Not yet verified under real MSIX packaging: the packaged launch with the bundled AI (§11) and its validation row in
-  ADR-0025.
+- Never run the runtime from a temp folder. The runtime runs from the install folder, which is read-only in MSIX.
+- Not yet verified under real MSIX packaging: the packaged launch with the bundled runtime and the model download under
+  the package (§11), and the validation row in ADR-0026.
 
 ### 5.5 WebView2 ✅
 The Evergreen WebView2 Runtime is part of Windows 11, the only supported version. MSIX can't run the WebView2 bootstrapper that the NSIS/MSI installers use, and the Store
@@ -205,7 +210,7 @@ services" = No.
    - *Submission options:* restricted capability justification (§7). Notes for certification:
      "No account or sign-in is required. Create a project from the home screen (New project).
      The AI assistant runs entirely on this computer with the AI components included in the package;
-     nothing is downloaded, and the app works fully without using it."
+     the AI model is downloaded only after a click, and the app works fully without using it."
 7. **Submit for certification.** Certification usually takes a few business days. Fix any report
    items and resubmit with a higher version.
 8. **Updates:** each new version is a new submission with a higher `X.Y.Z` (package `X.Y.Z.0`).
@@ -268,13 +273,12 @@ remain and `…\Packages\<family>` is gone.
 3. **Final open-source license**. `release-validate` fails while `LICENSE-PENDING.md` exists, and
    the listing's copyright and license fields depend on it.
 4. **Privacy policy hosting URL** and the placeholders in it: publisher name and contact (§6.4). The model
-   download host is gone with the download flow (ADR-0025).
+   download host is named in the policy again, with what it receives (ADR-0026).
 5. Listing details: support contact or website, the screenshots themselves, category choice, and
    the IARC questionnaire answers (the account holder must submit them).
 6. Offline AI: the pinned AI files on the build machine or runner (`OPENFRAME_AI_ASSETS_DIR`), the Gemma Terms of Use
    redistribution check, the package size recorded, and a report-inappropriate-content channel (policy 11.16). Full
-   list: 23-release-migration.md §7. *(Superseded 2026-10-08: model host, manifest signing key and production
-   manifest are no longer needed.)*
+   list: 23-release-migration.md §7. The model host and the production manifest key are needed again (ADR-0026).
 
 Not blockers for the Store: the code-signing certificate and the updater keys, which are needed
 only for the direct channel.
@@ -314,16 +318,16 @@ build plan (areas: Project controls and baseline, AI assistant quality and harde
 | Missing or dead privacy policy URL | Required for every Win32 app. Hosted HTTPS page, no placeholders (build plan: Legal, privacy, website and support area). |
 | Crash on first launch on a clean machine | Clean-machine run on Windows 11 with no developer tools; WebView2 present and missing cases (build plan: clean-machine matrix, first-launch crash check). |
 | Age rating does not match content | Answer the IARC questionnaire for screenplay content that may include mature themes or violence (build plan: IARC questionnaire). |
-| Reviewer cannot get past the first screen | No account or login exists; say so in Notes for Certification and explain how to start and how to try the bundled AI (build plan: Notes for Certification). |
+| Reviewer cannot get past the first screen | No account or login exists; say so in Notes for Certification and explain how to start and how to download and try the AI (build plan: Notes for Certification). |
 | Over-broad manifest capabilities | Only `runFullTrust`, justified in writing; `release-validate --store` fails if the set changes (build plan: MSIX manifest). |
 | Listing describes features the build lacks | A feature appears only when its row in the feature status file is Release-ready (build plan: Store listing from the shipped build). |
 | Live generative AI without a way to report output | In-app Report AI output action and listing disclosure (build plan: Report AI output action, listing AI disclosure). |
-| Downloaded executable after install | Nothing is downloaded: the runtime, both models and the tokenizers are in the package with pinned hashes (ADR-0025, which supersedes the ADR-0020 weight download). |
+| Downloaded executable after install | No executable is downloaded: the runtime is in the package. The models are data, downloaded after a user click with a signed manifest and SHA-256 checks (ADR-0026). |
 | Unknown OS support claim | Manifest `MinVersion`, listing and docs match Windows 11 only (owner decision "Windows versions", 2026-10-06; build plan: Store manifest minimum version). |
 
 **Current blockers verified or reported on 2026-10-05:** no end-user licence agreement yet; Partner Center identity placeholders in `packaging/msix/store.config.json`;
 privacy policy and listing are drafts with placeholders; no WACK report; no release-candidate MSIX built by the real pipeline; ~~production manifest key
-and model host not provisioned~~ (no longer needed, ADR-0025); minimum hardware not measured; listing claims unshipped features; the manifest minimum still says Windows 10 1809 while Windows 11 only is decided;
+and model host not provisioned~~ (no longer needed, ADR-0025; needed again, ADR-0026); minimum hardware not measured; listing claims unshipped features; the manifest minimum still says Windows 10 1809 while Windows 11 only is decided;
 `cargo deny` reported failing at `d30b588` (re-verify).
 
 **Checklist before upload:** WACK pass on the exact MSIX; clean Windows Sandbox or VM first launch; working privacy URL; support contact; at least one real uncropped

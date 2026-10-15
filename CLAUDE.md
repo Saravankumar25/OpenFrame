@@ -1,28 +1,38 @@
 ## What we are building
 
 OpenFrame Studio is a local-first desktop app for writers, screenwriters and production teams. Everyone uses the same
-application. Stack: Tauri v2, React and TypeScript, Rust, SQLite, and a bundled offline AI (Gemma 3 1B, ADR-0025).
-Windows 11 and Apple silicon only. One codebase, two platform adapters (Windows and macOS). The goal is the complete
-product, tested end to end, with no known security hole.
+application. Stack: one Rust core over SQLite; Tauri v2 with React and TypeScript on Windows; a native SwiftUI shell on the Mac through
+UniFFI (ADR-0027); an offline AI run by llama.cpp behind a provider interface (Gemma 3 as incumbent, models downloaded
+after install, ADR-0026 and ADR-0028). Windows 11 and Apple silicon only. The goal is the complete product, tested end to
+end, with no known security hole.
 
 The work has three chapters (owner decision 2026-10-09; `docs/product/vision-and-scope.md`, `docs/roadmap/README.md`):
 
-1. **Complete, test and validate.** Finish every approved feature, test it, build the internal Windows `.exe` and macOS
-   `.dmg` (unsigned, offline AI inside, team password gate per ADR-0024 unless the owner removes it), install them on the
-   owner's own Windows and Mac laptops, then let real writers and production teams use them for 2 to 3 days and fix what
-   they find. **This is the only chapter in progress.**
-2. **Website.** Static, Cloudflare Pages, faithful recreations of the real screens. Starts when the screens are stable.
+1. **Complete, test and validate**, in two tracks of ten phases each (`docs/roadmap/chapter-1a-windows-phases.md`,
+   `docs/roadmap/chapter-1b-mac-phases.md`). Windows first: finish and prove the Windows app, build the internal `.exe`,
+   the team tests it by hand. Then the Mac: a SwiftUI shell over the same Rust core, the internal `.dmg`, team testing.
+   Builds are unsigned, ask the team password (minimum 8 characters, ADR-0030) and download the AI after install
+   (ADR-0026). **This is the only chapter in progress.**
+2. **Website.** Purchased domain and company email, faithful recreations of the real screens. Its implementation plan is
+   written when Chapter 1 closes.
 3. **Commercial distribution.** Microsoft Store and Mac App Store, 7-day trial, paid activation (target 3,000 rupees,
-   89 dollars, 89 euros), signing and notarization. Starts after Chapter 1. No Chapter 3 code is written in Chapter 1.
+   89 dollars, 89 euros), signing and notarization. Its implementation plan is written when Chapter 2 closes. No
+   Chapter 2 or Chapter 3 code is written in Chapter 1.
 
 Decisions behind this: `docs/adr/` (register in `docs/adr/README.md`) and `docs/implementation/owner-decisions.md`.
+
+AI rules (ADR-0028, permanent): measure first. The evaluation harness and its release bar (90 percent correct tool, 85
+percent correct end state) come before any AI change. While people use the app, only deterministic code judges AI answers,
+never a model, with at most three passes and the answer shown at once when pass 1 passes every check. Claude evaluates at
+development time only, and its findings become code.
 
 ## Start every session this way (stops context rot)
 
 Context rot is the slow loss of accuracy in long sessions and the quiet build-up of stale instructions. Prevent it:
 
 1. Read, in this order and nothing more: this file, `docs/implementation/handoff.md` (one page, rewritten at the end of
-   each session), the page of the chapter you work on (`docs/roadmap/`), then only the one work item you will do.
+   each session), the phase page you work on (`docs/roadmap/chapter-1a-windows-phases.md` or `chapter-1b-mac-phases.md`), then only the
+   one work item you will do.
 2. Say which work item, which components it touches, how it will be verified. Do not start unplanned work; if the owner
    asks for something outside the plan, do it and record it in the log.
 3. Never read a 2,000-line specification or the whole progress log to "get oriented". Use `graphify query "<question>"`
@@ -41,7 +51,7 @@ Context rot is the slow loss of accuracy in long sessions and the quiet build-up
 Map and precedence: `docs/README.md`. Names are descriptive, never item codes.
 
 - `docs/product/vision-and-scope.md`: audience, chapters, what we never claim.
-- `docs/roadmap/`: chapter plans with work items, verification and acceptance.
+- `docs/roadmap/`: chapter plans. Chapter 1 has a Windows track (W1 to W10) and a Mac track (M1 to M10) with exit criteria.
 - `docs/implementation/masterplan.md`: 26 areas with checklists and evidence (the detailed record).
 - `docs/implementation/feature-status.md`: how far each product feature has come (Specified, Designed, Built, Reachable, Verified, Release-ready).
 - `docs/implementation/owner-decisions.md`: decisions and manual tasks that only the owner can make or do.
@@ -89,7 +99,7 @@ building the app. For each finished, verified slice of work:
    `.gitignore` covers build output, dependencies, temporary files, environment files and secrets, and no `.env`, key,
    password, token, certificate or signing key is tracked.
 Never run destructive git operations (force push, hard reset, branch deletion of unmerged work) without the owner's say.
-The repository stays private. **Never build an installer (`npm run build`, `npm run bundle`, `tauri build`, `.msix`,
+The repository stays private. **Never build an installer or a release executable (`npm run build`, `npm run bundle`, `tauri build`, `.msix`,
 `.dmg`) until the owner says so in that conversation.**
 
 ### While working

@@ -1,5 +1,12 @@
 # Internal test plan: writers and production teams, 2 to 3 days
 
+> **Current decisions (2026-10-15).** The pilot runs twice, not once: the Windows `.exe` pilot at the end of the Windows track
+> (phase W10), then the Mac `.dmg` pilot at the end of the Mac track (phase M10) ([ADR-0030](../adr/ADR-0030-verification-ladder-and-release-flow.md)).
+> Read each section for the platform being tested. The team password question is decided: the gate stays, the password has
+> at least 8 characters and is sent separately from the installer. The AI is downloaded once after install
+> ([ADR-0026](../adr/ADR-0026-offline-ai-download-after-install.md)); the pilot also records wrong-language or poor AI answers in
+> the non-English languages ([ADR-0028](../adr/ADR-0028-ai-quality-program-and-harness.md)).
+
 > Written 2026-10-09. This is the plan for the first real-world test of the internal Windows `.exe` and macOS `.dmg`. The
 > testers are working writers, screenwriters and production people, not developers. They install OpenFrame on their own
 > computers and use it as their main tool for 2 to 3 days. Nothing here starts before the owner says the installers may be
@@ -116,7 +123,7 @@ WebView2 runtime present; SmartScreen steps as written.
 Mac: copy to Applications; first start with the Gatekeeper steps as written; the same functional steps; Command key
 shortcuts; spell check; file dialogs; quit with Command+Q right after typing; AI with network off; memory use.
 
-Both: the bundled AI files pass their check at first start; no network connection other than loopback is opened by the
+Both: the AI files (bundled today, downloaded after install under ADR-0026) pass their check at first start; no network connection other than loopback is opened by the
 app; logs contain no script text.
 
 ## 8. Reporting and fixing

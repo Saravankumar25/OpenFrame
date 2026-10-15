@@ -1,16 +1,19 @@
 # OpenFrame Studio — Local AI Runtime & Model Management Specification
 
+> **Current decisions (2026-10-15).** Where this text differs, these records win. One profile and one model: replaced by two tiers chosen by measurement ([ADR-0028](../adr/ADR-0028-ai-quality-program-and-harness.md)). Backend choice (sections 4.3 and 5): replaced by a Vulkan runtime that ships in the package, a pure decision function and a first-run probe with processor fallback ([ADR-0029](../adr/ADR-0029-gpu-acceleration.md)); the runtime is not downloaded after a card check. Delivery: runtime in the package, models downloaded on the user's click ([ADR-0026](../adr/ADR-0026-offline-ai-download-after-install.md)). The engine sits behind an `InferenceProvider` interface and the Mac may add Apple's model as an opt-in provider ([ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md)).
+
     **Product:** OpenFrame Studio  
     **Document class:** Implementation / engineering specification  
     **Baseline:** Windows 11 production architecture, v1  
     **Updated:** 30 September 2026 (single Offline AI profile: Gemma 3 1B Instruct + BGE small embeddings; supersedes the three-tier Qwen design)  
     **Purpose:** Define a zero-technical-setup, local-only AI subsystem where filmmakers click **Download Offline AI** and OpenFrame manages everything else.
 
-> **Partly superseded 2026-10-08 by [ADR-0025](../adr/ADR-0025-offline-ai-bundled-in-every-package.md).** Every package now
-> contains the complete offline AI: there is no **Download Offline AI** button, no download, no signed manifest, no model
-> host, no install, update or remove step and no graphics-card build. The runtime and both models are read-only app
-> resources pinned in `packaging/ai/ai-assets.lock.json` and checked before the first engine start. Text below that
-> describes downloading, installing or removing Offline AI is history; never implement it.
+> **Current decision: [ADR-0026](../adr/ADR-0026-offline-ai-download-after-install.md) (2026-10-15).** The download after
+> install described below is the target design again. The runtime ships in every package; the chat and embedding models
+> and the tokenizer download on the user's click from the signed manifest. This reverses ADR-0025 (2026-10-08), whose
+> bundled-everywhere text is kept as history. **Where this text says the runtime downloads, ADR-0020 decision 1 governs:
+> the runtime is in the package and is never downloaded.** **Build state:** the current build still bundles the models
+> from `packaging/ai/ai-assets.lock.json`; the download flow is an open implementation item in masterplan area 8.
 
 
 
