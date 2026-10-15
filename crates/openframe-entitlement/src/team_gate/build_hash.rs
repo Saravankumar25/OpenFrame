@@ -21,8 +21,8 @@ pub const BUILD_T_COST: u32 = 3;
 pub const BUILD_P_COST: u32 = 1;
 /// Bytes of random salt in the embedded hash.
 pub const SALT_BYTES: usize = 16;
-/// A team password shorter than this is refused at build time.
-pub const MIN_PASSWORD_CHARS: usize = 12;
+/// A team password shorter than this is refused at build time (ADR-0030: 8 for the pilot gate).
+pub const MIN_PASSWORD_CHARS: usize = 8;
 /// A typed password longer than this is wrong without being hashed, so a pasted book cannot keep
 /// the check busy.
 pub const MAX_PASSWORD_BYTES: usize = 1024;

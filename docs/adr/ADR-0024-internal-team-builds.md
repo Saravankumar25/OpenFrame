@@ -1,6 +1,6 @@
 # ADR-0024: Four release files, internal team builds behind a password
 
-- **Amended 2026-10-15 by [ADR-0030](ADR-0030-verification-ladder-and-release-flow.md):** the minimum team password length the build accepts is 8 characters, not 12. Wherever this record says 12, read 8. The gate stays a door lock for the pilot; stronger protection is a Chapter 3 decision.
+- **Amended 2026-10-15 by [ADR-0030](ADR-0030-verification-ladder-and-release-flow.md):** the minimum team password length the build accepts is 8 characters, not 12. Wherever this record says 12, read 8. The code enforces 8 since Windows phase W1 (`MIN_PASSWORD_CHARS` in `build_hash.rs`). The gate stays a door lock for the pilot; stronger protection is a Chapter 3 decision.
 - **Status:** Accepted 2026-10-07 (owner answers in chat the same day).
 - **Amended 2026-10-08 (owner, in chat):** the internal `.exe` and `.dmg` stay unsigned for now; Developer ID signing
   and notarization of the `.dmg` and code signing of the `.exe` move to the store and public step. The team password

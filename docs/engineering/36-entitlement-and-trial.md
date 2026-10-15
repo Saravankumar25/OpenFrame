@@ -448,7 +448,7 @@ the build and the check cannot disagree:
 |---|---|
 | `store` (either store) | No gate and no hash, whatever the variable says. The variable is never read. |
 | `direct`, release profile, variable missing or empty | The build fails and names the variable, never a value. |
-| `direct`, password shorter than 12 characters | The build fails. |
+| `direct`, password shorter than 8 characters (ADR-0030; 12 before phase W1) | The build fails. |
 | `direct`, password set | Gate and hash embedded. |
 | `direct`, debug profile, variable missing | No gate (development and the end-to-end suite; never shipped). |
 

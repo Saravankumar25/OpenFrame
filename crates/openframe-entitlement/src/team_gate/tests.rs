@@ -250,9 +250,16 @@ fn store_builds_carry_no_gate_and_internal_release_builds_need_the_variable() {
         let e = build_plan("direct", "release", missing).unwrap_err();
         assert!(e.contains(TEAM_PASSWORD_ENV), "{e}");
     }
-    // A short password is refused; the message never repeats it.
-    let e = build_plan("direct", "release", Some("short-pw")).unwrap_err();
-    assert!(!e.contains("short-pw"), "{e}");
+    // ADR-0030: 8 characters is the minimum. Seven is refused and the message never repeats it.
+    let e = build_plan("direct", "release", Some("seven-c")).unwrap_err();
+    assert!(!e.contains("seven-c"), "{e}");
+    assert!(e.contains("at least 8 characters"), "{e}");
+    assert_eq!(
+        build_plan("direct", "release", Some("eight-ch")),
+        Ok(GatePlan::Gate("eight-ch".to_string()))
+    );
+    // Characters are counted, not bytes: 7 accented letters are still too short.
+    assert!(build_plan("direct", "release", Some("ééééééé")).is_err());
     assert_eq!(
         build_plan("direct", "release", Some(TEST_PASSWORD)),
         Ok(GatePlan::Gate(TEST_PASSWORD.to_string()))
