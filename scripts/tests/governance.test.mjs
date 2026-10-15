@@ -301,20 +301,28 @@ test("feature status check passes on the repository", () => {
 });
 
 const ROW_HEAD =
-  "| Feature | Importance | What exists today | What is missing | Build area | How a user reaches it | Tests | Status | Key |\n|---|---|---|---|---|---|---|---|---|\n";
+  "| Feature | Importance | What exists today | What is missing | Build area | How a user reaches it | Tests | Status | Proof | Key |\n|---|---|---|---|---|---|---|---|---|---|\n";
 const statusFileWith = (rows, source = "Source: FSD §1.\n\n") =>
   `# Feature status\n\n## Project foundation\n\n${source}${ROW_HEAD}${rows.join("\n")}\n`;
 const PLAN = "# Plan\n\n## 1. Data safety and crash recovery\n\n## 2. Writing comfort\n";
 const AREA = "Data safety and crash recovery";
 
 const statusCases = [
-  ["Built without tests", `| Thing | Must ship | Built | none | ${AREA} | home | pending | Built | CORE-001 |`, /needs passing tests/],
-  ["Reachable without a route", `| Thing | Must ship | Built | none | ${AREA} | pending | core.rs::t | Reachable | CORE-001 |`, /means reachable/],
-  ["an unverified tag", `| Thing | Must ship | Built [R] | none | ${AREA} | home | core.rs::t | Built | CORE-001 |`, /unverified/],
-  ["an unknown build area", "| Thing | Must ship | Built | none | Made up area | home | core.rs::t | Built | CORE-001 |", /Build area "Made up area"/],
-  ["an invalid status", `| Thing | Must ship | Built | none | ${AREA} | home | core.rs::t | done | CORE-001 |`, /Status "done"/],
-  ["an invalid importance", `| Thing | Urgent | Built | none | ${AREA} | home | core.rs::t | Built | CORE-001 |`, /Importance "Urgent"/],
-  ["an empty route", `| Thing | Must ship | Built | none | ${AREA} |  | core.rs::t | Designed | CORE-001 |`, /How a user reaches it is empty/],
+  ["Built without tests", `| Thing | Must ship | Built | none | ${AREA} | home | pending | Built | 1 | CORE-001 |`, /needs passing tests/],
+  ["Reachable without a route", `| Thing | Must ship | Built | none | ${AREA} | pending | core.rs::t | Reachable | 1 | CORE-001 |`, /means reachable/],
+  ["an unverified tag", `| Thing | Must ship | Built [R] | none | ${AREA} | home | core.rs::t | Built | 1 | CORE-001 |`, /unverified/],
+  ["an unknown build area", "| Thing | Must ship | Built | none | Made up area | home | core.rs::t | Built | 1 | CORE-001 |", /Build area "Made up area"/],
+  ["an invalid status", `| Thing | Must ship | Built | none | ${AREA} | home | core.rs::t | done | 1 | CORE-001 |`, /Status "done"/],
+  ["an invalid importance", `| Thing | Urgent | Built | none | ${AREA} | home | core.rs::t | Built | 1 | CORE-001 |`, /Importance "Urgent"/],
+  ["an empty route", `| Thing | Must ship | Built | none | ${AREA} |  | core.rs::t | Designed | none | CORE-001 |`, /How a user reaches it is empty/],
+  ["a Built row without a proof level", `| Thing | Must ship | Built | none | ${AREA} | home | core.rs::t | Built | none | CORE-001 |`, /needs proof level 1 or higher/],
+  ["an invalid proof level", `| Thing | Must ship | Built | none | ${AREA} | home | core.rs::t | Built | high | CORE-001 |`, /Proof "high"/],
+  ["a Verified row below level 2", `| Thing | Must ship | Built | none | ${AREA} | home | core.rs::t; J: thing | Verified | 1 | CORE-001 |`, /Verified needs proof level 2/],
+  ["level 2 without an end-to-end test", `| Thing | Must ship | Built | none | ${AREA} | home | core.rs::t | Verified | 2 | CORE-001 |`, /end-to-end test/],
+  ["level 3 without evidence", `| Thing | Must ship | Built | none | ${AREA} | home | core.rs::t; J: thing | Verified | 3 | CORE-001 |`, /needs evidence/],
+  ["level 3 citing a missing evidence file", `| Thing | Must ship | Built | none | ${AREA} | home | core.rs::t; J: thing | Verified | 3 (ev: docs/release/evidence/none.md) | CORE-001 |`, /does not exist/],
+  ["evidence outside the evidence folder", `| Thing | Must ship | Built | none | ${AREA} | home | core.rs::t; J: thing | Verified | 3 (ev: docs/release/evidence/../../README.md) | CORE-001 |`, /must be a file under docs\/release\/evidence/],
+  ["a Designed row that claims proof", `| Thing | Must ship | Built | none | ${AREA} | home | core.rs::t | Designed | 1 | CORE-001 |`, /Designed claims no proof/],
 ];
 for (const [label, row, re] of statusCases) {
   test(`feature status check catches ${label}`, () => {
@@ -329,7 +337,7 @@ for (const [label, row, re] of statusCases) {
 
 test("feature status check catches a duplicate key and a section without Source", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "of-status-"));
-  const row = `| Thing | Must ship | Built | none | ${AREA} | home | core.rs::t | Built | CORE-001 |`;
+  const row = `| Thing | Must ship | Built | none | ${AREA} | home | core.rs::t | Built | 1 | CORE-001 |`;
   write(root, STATUS_FILE, statusFileWith([row, row], ""));
   const r = run("check-feature-status.mjs", root);
   assert.equal(r.status, 1, r.out);
@@ -340,12 +348,15 @@ test("feature status check catches a duplicate key and a section without Source"
 test("feature status check accepts a complete row and a removed row", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "of-status-"));
   write(root, PLAN_FILE, PLAN);
+  write(root, "docs/release/evidence/w4.md", "# Evidence\n");
   write(
     root,
     STATUS_FILE,
     statusFileWith([
-      `| Thing | Must ship | Built | none | ${AREA} | home | core.rs::t | Reachable | CORE-001 |`,
-      "| Gone | Removed | Removed by ADR | none | Every area | none: removed | none | Not applicable | CORE-002 |",
+      `| Thing | Must ship | Built | none | ${AREA} | home | core.rs::t | Reachable | 1 | CORE-001 |`,
+      "| Gone | Removed | Removed by ADR | none | Every area | none: removed | none | Not applicable | none | CORE-002 |",
+      `| Proved | Must ship | Built | none | ${AREA} | home | core.rs::t; J: thing | Verified | 2 | CORE-003 |`,
+      `| Shipped | Must ship | Built | none | ${AREA} | home | core.rs::t; J: thing | Verified | 3 (ev: docs/release/evidence/w4.md) | CORE-004 |`,
     ]),
   );
   const r = run("check-feature-status.mjs", root);
