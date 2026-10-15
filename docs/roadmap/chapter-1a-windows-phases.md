@@ -41,15 +41,20 @@ only the existing AI code. W7 and W8 may run side by side after W6.
 - **Gates.** Add a secret scan of the working tree and history, a link checker for documents and for every address the
   application can open (with an allow-list), and a scan of a built installer for secrets and personal paths (used in W9).
   Wire them into `npm run` scripts and CI.
-- **Windows-only dependencies.** Remove `reqwest` from the Windows shell build (it served only the Mac shell, which is
-  retired by [ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md)).
+- **Windows-only dependencies.** ~~Remove `reqwest` from the Windows shell build.~~ Corrected 2026-10-15: the shell
+  already compiles `reqwest` for macOS only (`[target.'cfg(target_os = "macos")'.dependencies]` in
+  `apps/desktop/src-tauri/Cargo.toml`, used by `platform/mac_inputs.rs`). Windows builds keep it only through
+  `openframe-ai`, which needs it. The Mac-only code and its dependency go with the Tauri Mac shell in phase M1
+  ([ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md)). No W1 code change.
 - **History that needs code changes.** Move `docs/spec-digest/`, `docs/engineering/AGENT_BRIEF.md`,
   `SECURITY_REVIEW_2026-09-30.md` and the plan documents 28, 29 and 31 into the archive; update the exempt list in
   `scripts/check-writing-standard.mjs`, the comments in the two Rust test files, `DEVELOPMENT.md` and the ADR citations in
   the same commit; run `node scripts/check-links.mjs`.
 - **Storage hygiene.** Lower the debug level of the development profile, merge integration test programs into fewer
   binaries, and review the 39 dead worktree folders and 31 unmerged agent branches. Nothing is deleted before the owner
-  approves the review table.
+  approves the review table. Found 2026-10-15: the 39 folders under `.claude/worktrees` (4.2 GB) point at
+  `C:/dev/OpenFrame/.git`, which no longer exists, so their branches are gone and git does not list them; the review
+  compares each folder's files with `main`.
 - **Wording.** Change "filmmakers" to "writers, screenwriters and production teams" in the window description, the
   installer text, the AI policy text and the README, once the owner approves the sentence.
 - **Owner tasks.** The macOS version of the Intel MacBook; approval of the wording; approval of the worktree review.
