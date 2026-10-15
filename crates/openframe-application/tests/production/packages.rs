@@ -1748,7 +1748,7 @@ const FIXTURE_FILES: [&str; 5] = [
 ];
 
 /// Writes the compatibility fixtures under `tests/fixtures/packages/format-N/`. Run once when a
-/// package format is frozen (`cargo test -p openframe-application --test packages
+/// package format is frozen (`cargo test -p openframe-application --test production packages::
 /// write_package_fixtures -- --ignored`). Committed files of a shipped format are never
 /// regenerated; a new format adds a new folder.
 #[test]

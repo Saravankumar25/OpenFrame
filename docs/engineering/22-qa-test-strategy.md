@@ -11,7 +11,7 @@
 | Level | Tooling | Location | Runs in | Status |
 |---|---|---|---|---|
 | Unit (pure logic, SQL helpers, parsers, security primitives) | `cargo test` `#[cfg(test)]` | each crate | CI `rust` job | ✅ domain, persistence, security, project-format, search |
-| Application integration (ops through the real pipeline, real SQLite, temp dirs) | `openframe-test-support::TestEnv` | `crates/openframe-application/tests/*.rs` | CI `rust` job | ✅ `core_pipeline.rs`; 🚧 one file per module |
+| Application integration (ops through the real pipeline, real SQLite, temp dirs) | `openframe-test-support::TestEnv` | `crates/openframe-application/tests/<area>/*.rs` (four area binaries since W1) | CI `rust` job | ✅ `platform/core_pipeline.rs`; one file per module inside its area |
 | Frontend unit/component | Vitest + Testing Library + jsdom | `apps/desktop/src/**/*.test.ts(x)` | CI `web` job | ✅ harness (`src/test/setup.ts`); 🚧 module tests |
 | Golden files (deterministic exports, import parsing) | Rust tests comparing bytes or normalized text | module test dirs | CI `rust` job | 🚧 with import/export |
 | End-to-end desktop | Playwright (WebView2 CDP) or WebdriverIO + `tauri-driver` against a built app | `tests/e2e/` | Release-candidate pipeline (Windows runner) | 🚧 `specs/01-journey`, `02-restart` (AI: "not installed" only) |
@@ -93,7 +93,7 @@ Rust tests, the benchmark and the desktop E2E AI specs, which run the test build
 | Assistant acceptance (AI-AC-xxx) | Works without AI, exact counts, no invented facts, navigation, suggestions create nothing, preview → accept → one undo step, permissions, stale/conflict, rename exclusions, all-or-nothing apply, allow-list, ambiguity, private notes, injection, malformed output, audit without context copies, personal history | `tests/ai.rs`, `tests/security_review.rs` (`ai_01_*`, `ai_02_*`) | CI `rust` |
 | Frontend | Panel states (ready, off with the repair message, not installed with the download offer, no download without a click), proposal card actions, scope options, index notice | `apps/desktop/src/ai/*.test.ts(x)` | CI `web` |
 | E2E (real bundled model, deterministic sampling) | Ready on first launch; exact and retrieved answers with sources; navigation; scope in every workspace; propose, apply, undo, redo, reject, stale; kill on apply (ADR-0019 all or nothing) and while the engine answers; missing and altered bundle files; loopback-only network use | `tests/e2e/specs/7{2..6}-ai-*.test.mjs`, journey step in `01-journey.test.mjs` | RC pipeline |
-| Real components (manual / opt-in) | Full check of the staged bundle → chat (deterministic) → grammar-constrained JSON → embeddings → recorded check on the next start; the assistant through the operation registry (exact count, retrieval, propose, apply, undo, reject); model benchmark | `OPENFRAME_AI_BUNDLE_DIR=.build-cache/ai-bundle cargo test -p openframe-ai --test real_runtime -- --ignored`; the same variable with `-p openframe-application --test ai_real_model -- --ignored --test-threads=1`; `node scripts/ai-benchmark.mjs` | Offline AI bundle gate |
+| Real components (manual / opt-in) | Full check of the staged bundle → chat (deterministic) → grammar-constrained JSON → embeddings → recorded check on the next start; the assistant through the operation registry (exact count, retrieval, propose, apply, undo, reject); model benchmark | `OPENFRAME_AI_BUNDLE_DIR=.build-cache/ai-bundle cargo test -p openframe-ai --test real_runtime -- --ignored`; the same variable with `-p openframe-application --test ai ai_real_model:: -- --ignored --test-threads=1`; `node scripts/ai-benchmark.mjs` | Offline AI bundle gate |
 
 Not covered yet: a retrieval **quality** evaluation set (Recall@K / MRR, FTS vs vector vs hybrid vs hybrid+graph,
 agentic spec §35); an E2E index rebuild with the real model; the web view's own network use in the no-egress check
@@ -124,7 +124,7 @@ Profiles: `OPENFRAME_SOAK_SECS` sets the total time. The short profile runs in `
 `soak.rs`, 20 s for the sidecar loop). The ignored long profiles default to 30 minutes:
 
 ```text
-OPENFRAME_SOAK_SECS=1800 cargo test -p openframe-application --test soak -- --ignored --nocapture m1_08_soak_long
+OPENFRAME_SOAK_SECS=1800 cargo test -p openframe-application --test platform -- --ignored --nocapture soak::m1_08_soak_long
 OPENFRAME_SOAK_SECS=1800 cargo test -p openframe-ai --test soak_sidecar -- --ignored --nocapture m1_08_sidecar_soak_long
 ```
 

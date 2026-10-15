@@ -60,7 +60,7 @@ Faster inner loops:
 
 ```powershell
 cargo test -p openframe-application                  # application layer only (does not compile Tauri)
-cargo test -p openframe-application --test core_pipeline
+cargo test -p openframe-application --test platform core_pipeline::
 cd apps/desktop; npx vitest                          # watch mode
 ```
 
@@ -209,7 +209,7 @@ Follow [CONTRIBUTING.md](CONTRIBUTING.md) and [docs/architecture/README.md](docs
 2. Create `crates/openframe-application/src/modules/<m>/` with a `register(r)` function covering ops, indexers and
    trash handlers, and add one line to `modules/mod.rs`.
 3. Add `apps/desktop/src/workspaces/<dir>/index.tsx`. It is discovered automatically.
-4. Add tests in `crates/openframe-application/tests/<m>.rs` using `openframe_test_support::TestEnv`.
+4. Add tests in `crates/openframe-application/tests/<area>/<m>.rs` and a `mod <m>;` line in that area's `main.rs`, using `openframe_test_support::TestEnv`.
 5. Run `npm run bindings`, commit the generated types, and run `npm run verify`.
 
 ## 7. Architecture decisions

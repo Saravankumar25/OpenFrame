@@ -95,7 +95,7 @@ Reviewers block a PR for any unaddressed item. "Works on my machine" is not evid
 | Layer | Tooling | Required for |
 |---|---|---|
 | Domain/persistence/security unit tests | `cargo test -p <crate>` (in-module `#[cfg(test)]`) | Pure logic, SQL helpers, parsers, path/zip safety |
-| Application integration tests | `crates/openframe-application/tests/*.rs` with `openframe_test_support::TestEnv` | **Every op**: happy path, validation, undo/redo, delete/restore/purge, permissions (Viewer/Commenter denied), search hits, persistence across `env.restart()`, crash via `env.crash_and_restart()`, and every FSD acceptance criterion of the module |
+| Application integration tests | `crates/openframe-application/tests/<area>/*.rs` (one binary per area: `ai`, `writing`, `production`, `platform`; `perf` and `forced_kill` stand alone) with `openframe_test_support::TestEnv` | **Every op**: happy path, validation, undo/redo, delete/restore/purge, permissions (Viewer/Commenter denied), search hits, persistence across `env.restart()`, crash via `env.crash_and_restart()`, and every FSD acceptance criterion of the module |
 | Frontend unit/component tests | Vitest + Testing Library (`apps/desktop/src/**/*.test.ts(x)`) | Non-trivial pure logic, and components with behavior (keyboard, focus, error states) |
 | Golden/fixture tests | Rust tests with fixtures under the test crate | Import parsers, PDF/FDX/Fountain output determinism |
 

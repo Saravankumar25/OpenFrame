@@ -7,7 +7,7 @@
 // the lock when cargo ends, on Ctrl+C, or when the holder dies (a stale lock is recovered).
 //
 //   node C:/OpenFrame/scripts/cargo-queued.mjs <cargo args...>
-//   e.g. node C:/OpenFrame/scripts/cargo-queued.mjs test -p openframe-application --test schedule_depth
+//   e.g. node C:/OpenFrame/scripts/cargo-queued.mjs test -p openframe-application --test production schedule_depth::
 //
 // OPENFRAME_CARGO_JOBS sets the job count (default 4); RUST_TEST_THREADS defaults to 4.
 // docs/development-storage-policy.md describes the rules.

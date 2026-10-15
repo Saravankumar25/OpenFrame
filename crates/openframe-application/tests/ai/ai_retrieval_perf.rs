@@ -6,7 +6,7 @@
 //! embedding work inside a write transaction (saves stay fast while indexing).
 //!
 //! Debug builds (our crates at opt-level 0) are checked against 3× the budget;
-//! `cargo test --release -p openframe-application --test ai_retrieval_perf -- --nocapture`
+//! `cargo test --release -p openframe-application --test ai ai_retrieval_perf:: -- --nocapture`
 //! checks the budgets as written and prints the numbers recorded in
 //! docs/engineering/18-retrieval-intelligence-index.md.
 

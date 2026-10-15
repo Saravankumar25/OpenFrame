@@ -162,6 +162,63 @@ fn wait_task(sink: &RecordingSink, started: &Value) -> (String, Value) {
     }
 }
 
+/// Every row of every table, as text, sorted (tables without a rowid have no natural order).
+fn table_rows(c: &rusqlite::Connection) -> Vec<(String, Vec<String>)> {
+    let tables: Vec<String> = {
+        let mut st = c
+            .prepare(
+                "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name",
+            )
+            .unwrap();
+        st.query_map([], |r| r.get(0))
+            .unwrap()
+            .collect::<Result<_, _>>()
+            .unwrap()
+    };
+    tables
+        .into_iter()
+        .map(|t| {
+            let mut st = c.prepare(&format!("SELECT * FROM \"{t}\"")).unwrap();
+            let n = st.column_count();
+            let mut rows: Vec<String> = st
+                .query_map([], |r| {
+                    Ok((0..n)
+                        .map(|i| format!("{:?}", r.get::<_, rusqlite::types::Value>(i).unwrap()))
+                        .collect::<Vec<_>>()
+                        .join("|"))
+                })
+                .unwrap()
+                .collect::<Result<_, _>>()
+                .unwrap();
+            rows.sort();
+            (t, rows)
+        })
+        .collect()
+}
+
+/// Open the pre-migration safety backup read-only, as the older version would, and compare it
+/// with the fixture it was taken from: same schema version, a sound file, the same rows.
+fn assert_backup_matches_fixture(backup: &Path, fixture: &Path, version: usize) {
+    let open = |p: &Path| {
+        rusqlite::Connection::open_with_flags(p, rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY)
+            .unwrap_or_else(|e| panic!("v{version}: {} does not open: {e}", p.display()))
+    };
+    let (b, f) = (open(backup), open(fixture));
+    let user_version = |c: &rusqlite::Connection| -> i64 {
+        c.query_row("PRAGMA user_version", [], |r| r.get(0)).unwrap()
+    };
+    assert_eq!(user_version(&b), version as i64, "v{version}: backup schema version");
+    let check: String = b
+        .query_row("PRAGMA integrity_check", [], |r| r.get(0))
+        .unwrap();
+    assert_eq!(check, "ok", "v{version}: backup integrity");
+    assert_eq!(
+        table_rows(&b),
+        table_rows(&f),
+        "v{version}: the safety backup differs from the database it was taken from"
+    );
+}
+
 fn scalar(core: &AppCore, sql: &str) -> i64 {
     core.project()
         .unwrap()
@@ -228,12 +285,13 @@ fn m1_04_every_project_schema_version_upgrades_with_content_backup_search_and_ex
                         .collect()
                 })
                 .unwrap_or_default();
-            assert!(
-                backups
-                    .iter()
-                    .any(|n| n.starts_with(&format!("pre-migration-v{version}-"))),
-                "v{version}: no safety backup in {backups:?}"
-            );
+            let backup = backups
+                .iter()
+                .find(|n| n.starts_with(&format!("pre-migration-v{version}-")))
+                .unwrap_or_else(|| panic!("v{version}: no safety backup in {backups:?}"));
+            // Restore check: the backup is the database as the older version left it, so a reader
+            // that knows only that version opens it and finds every row of the fixture.
+            assert_backup_matches_fixture(&root.join("backups").join(backup), &fixture, version);
         }
         let check: String = core
             .project()

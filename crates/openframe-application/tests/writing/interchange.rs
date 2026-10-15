@@ -8,15 +8,15 @@ use openframe_test_support::TestEnv;
 use serde_json::{Value, json};
 
 const SAMPLE_FOUNTAIN: &[u8] =
-    include_bytes!("../../openframe-import-export/tests/fixtures/screenplay/sample.fountain");
+    include_bytes!("../../../openframe-import-export/tests/fixtures/screenplay/sample.fountain");
 const SAMPLE_FDX: &[u8] =
-    include_bytes!("../../openframe-import-export/tests/fixtures/screenplay/sample.fdx");
+    include_bytes!("../../../openframe-import-export/tests/fixtures/screenplay/sample.fdx");
 const MALFORMED_FDX: &[u8] =
-    include_bytes!("../../openframe-import-export/tests/fixtures/screenplay/malformed.fdx");
+    include_bytes!("../../../openframe-import-export/tests/fixtures/screenplay/malformed.fdx");
 const PASTED: &str =
-    include_str!("../../openframe-import-export/tests/fixtures/screenplay/pasted.txt");
+    include_str!("../../../openframe-import-export/tests/fixtures/screenplay/pasted.txt");
 const PROSE: &[u8] =
-    include_bytes!("../../openframe-import-export/tests/fixtures/screenplay/not_a_screenplay.txt");
+    include_bytes!("../../../openframe-import-export/tests/fixtures/screenplay/not_a_screenplay.txt");
 
 fn count(env: &TestEnv, sql: &str) -> i64 {
     env.core

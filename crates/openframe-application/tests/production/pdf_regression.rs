@@ -13,7 +13,7 @@
 //! Regenerate deliberately after an intended layout change, then review the diff:
 //!
 //! ```text
-//! OPENFRAME_UPDATE_GOLDEN=1 cargo test -p openframe-application --test pdf_regression
+//! OPENFRAME_UPDATE_GOLDEN=1 cargo test -p openframe-application --test production pdf_regression::
 //! ```
 
 use std::path::{Path, PathBuf};

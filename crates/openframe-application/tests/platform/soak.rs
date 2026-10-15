@@ -32,8 +32,8 @@
 //! Profiles (`OPENFRAME_SOAK_SECS` sets the total time of either):
 //!
 //! ```text
-//! cargo test -p openframe-application --test soak                     # short profile, 60 s
-//! OPENFRAME_SOAK_SECS=1800 cargo test -p openframe-application --test soak -- --ignored --nocapture m1_08_soak_long
+//! cargo test -p openframe-application --test platform soak::                     # short profile, 60 s
+//! OPENFRAME_SOAK_SECS=1800 cargo test -p openframe-application --test platform -- --ignored --nocapture soak::m1_08_soak_long
 //! ```
 
 use std::collections::HashMap;
@@ -1227,7 +1227,7 @@ fn m1_08_soak_short() {
 
 /// Long profile for release evidence: 30 minutes by default.
 #[test]
-#[ignore = "long soak: OPENFRAME_SOAK_SECS=1800 cargo test -p openframe-application --test soak -- --ignored --nocapture m1_08_soak_long"]
+#[ignore = "long soak: OPENFRAME_SOAK_SECS=1800 cargo test -p openframe-application --test platform -- --ignored --nocapture soak::m1_08_soak_long"]
 fn m1_08_soak_long() {
     run_soak(secs(1800));
 }

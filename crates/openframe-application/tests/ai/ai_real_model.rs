@@ -2,7 +2,7 @@
 //! files staged by `node scripts/prepare-ai-assets.mjs`:
 //!
 //! ```text
-//! OPENFRAME_AI_BUNDLE_DIR=<repo>/.build-cache/ai-bundle cargo test -p openframe-application --test ai_real_model -- --ignored --nocapture --test-threads=1
+//! OPENFRAME_AI_BUNDLE_DIR=<repo>/.build-cache/ai-bundle cargo test -p openframe-application --test ai ai_real_model:: -- --ignored --nocapture --test-threads=1
 //! ```
 //!
 //! Deterministic settings (temperature 0, fixed seed). The assertions check structure and
