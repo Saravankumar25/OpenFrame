@@ -1,6 +1,6 @@
 # Decision register
 
-> Updated 2026-10-15 (ADR-0026 added; ADR-0025 superseded; download after install reinstated). One place to see every decision, whether it is still in force, and what replaced it.
+> Updated 2026-10-15 (ADR-0027 to ADR-0030 added after the owner's 25 decisions; ADR-0026 added earlier the same day; ADR-0025 superseded). One place to see every decision, whether it is still in force, and what replaced it.
 > **Active** = governs the code. **Superseded** = replaced; the old text stays for history and carries a pointer.
 > **Proposed** = a recommendation that changes nothing until the owner accepts it
 > ([owner decisions](../implementation/owner-decisions.md)). Precedence: [docs/README.md](../README.md) §1.
@@ -9,7 +9,7 @@
 
 | ADR | Decision | Status | Replaced or amended by |
 |---|---|---|---|
-| [0001](ADR-0001-tauri-react-rust.md) | Tauri v2, React/TypeScript, Rust | Active | |
+| [0001](ADR-0001-tauri-react-rust.md) | Tauri v2, React/TypeScript, Rust | Active for Windows and the Rust core; **Mac shell amended 2026-10-15** | The Mac shell is SwiftUI, not Tauri: [0027](ADR-0027-rust-core-two-ui-shells.md) |
 | [0002](ADR-0002-rusqlite-over-sqlx.md) | rusqlite (bundled SQLite, FTS5, online backup) | Active | |
 | [0003](ADR-0003-project-folder-format.md) | `.openframe` project folder, single-writer lock, network paths refused | Active | |
 | [0004](ADR-0004-single-ipc-dispatcher.md) | One allow-listed IPC dispatcher `of_invoke` | Active | |
@@ -21,20 +21,24 @@
 | [0010](ADR-0010-editor-focused-undo.md) | Editor-focused undo inside the screenplay editor | Active | |
 | [0011](ADR-0011-uuidv7-identities.md) | UUIDv7 identities, no stored display numbers | Active, **item 3 amended** | [0015](ADR-0015-screenplay-production-numbering.md) (Accepted 2026-10-07) |
 | [0012](ADR-0012-spec-conflict-resolutions.md) | Resolutions of conflicts between specifications | Active, **item 7 superseded; open product questions answered 2026-10-07; several screenplays per project 2026-10-08** | Item 7 superseded by [0014](ADR-0014-appearance-theme-system.md) (Accepted 2026-10-07) |
-| [0013](ADR-0013-single-local-model-hybrid-rag-agent.md) | One Gemma 3 1B model, hybrid RAG, bounded agent, human-only Change Sets | Active, **apply step amended**, **decision 2 reinstated 2026-10-15** | Apply step amended by [0019](ADR-0019-crash-safe-change-set-apply.md) (Accepted 2026-10-05); "One download" reinstated by [0026](ADR-0026-offline-ai-download-after-install.md) |
+| [0013](ADR-0013-single-local-model-hybrid-rag-agent.md) | One Gemma 3 1B model, hybrid RAG, bounded agent, human-only Change Sets | Active, **apply step amended**, **decision 2 reinstated 2026-10-15**, **decision 1 (one model) amended 2026-10-15** | Apply step amended by [0019](ADR-0019-crash-safe-change-set-apply.md) (Accepted 2026-10-05); "One download" reinstated by [0026](ADR-0026-offline-ai-download-after-install.md); one model becomes two tiers chosen by measurement, and the measured loop, memory and languages are in [0028](ADR-0028-ai-quality-program-and-harness.md) |
 | [0014](ADR-0014-appearance-theme-system.md) | Light, Dark, System and 15 built-in themes, default unchanged except six Light-mode contrast pairs | **Accepted 2026-10-07**, **decision 2 amended 2026-10-07** | Supersedes ADR-0012 item 7 |
 | [0015](ADR-0015-screenplay-production-numbering.md) | Stored production scene numbers frozen at lock | **Accepted 2026-10-07** | Amends ADR-0011 item 3 |
 | [0016](ADR-0016-pdf-embedded-fonts-and-shaping.md) | PDF embedded fonts and complex-script shaping | **Accepted 2026-10-07** | Amends ADR-0008 |
-| [0017](ADR-0017-cross-platform-windows-and-macos.md) | One codebase, two platform adapters, three release files; Windows 11 only; Apple silicon only | **Accepted 2026-10-06**, **installer amended 2026-10-07** (internal build, [0023](ADR-0023-store-trial-and-internal-installer.md)) | Amends the Engineering Index "Initial OS" decision |
+| [0017](ADR-0017-cross-platform-windows-and-macos.md) | One codebase, two platform adapters, three release files; Windows 11 only; Apple silicon only | **Accepted 2026-10-06**, **installer amended 2026-10-07** (internal build, [0023](ADR-0023-store-trial-and-internal-installer.md)), **"one codebase, two adapters" amended 2026-10-15** | Amends the Engineering Index "Initial OS" decision; decisions 2 and 3 (Windows 11 only, Apple silicon only) stay; the Mac shell is SwiftUI over the same Rust core: [0027](ADR-0027-rust-core-two-ui-shells.md) |
 | [0018](ADR-0018-distribution-licensing-commerce.md) | Business model: paid with a 7-day free trial; Mac App Store trial method decided (zero-price trial and lifetime non-consumables, server-checked expiry); price, refunds and installer purchase proof still open | **Accepted in part 2026-10-06**, **decision 5 superseded on the Mac at trial end** | Replaces "Free/open-source" in the Engineering Index; decision 5 superseded for the Mac trial-ended and revoked states by [0022](ADR-0022-mac-trial-end-lock.md) |
 | [0019](ADR-0019-crash-safe-change-set-apply.md) | Crash-safe multi-operation Change Set apply (apply journal, compensate on open) | **Active** (Accepted 2026-10-05) | Amends ADR-0013 |
 | [0020](ADR-0020-ai-runtime-packaging-per-channel.md) | The AI runtime ships inside every release file (`.msix`, `.pkg`, `.exe`, `.dmg`); only model weights download, after a click | **Accepted 2026-10-08**, **decisions 1 (weights download), 3 and 5 reinstated 2026-10-15** | Amends ADR-0006 (runtime is not downloaded); proposed decision 2 superseded; weight download, its disclosure and the model host reinstated by [0026](ADR-0026-offline-ai-download-after-install.md) |
 | [0021](ADR-0021-diagnostics-telemetry-analytics-policy.md) | Nothing sent automatically; user-initiated diagnostics | **Active** (Accepted 2026-10-05) | Supersedes the Engineering Index "optional anonymous diagnostics" locked decision |
 | [0022](ADR-0022-mac-trial-end-lock.md) | Mac App Store build: trial ended or purchase revoked blocks the app; only Buy and Restore remain | **Accepted 2026-10-07**, confirmed 2026-10-08 | Supersedes ADR-0018 decision 5 for those two Mac states |
 | [0023](ADR-0023-store-trial-and-internal-installer.md) | Microsoft Store runs the trial (StoreContext licence) with the same full block as the Mac; the `.exe` is an internal team build; no price in the app | **Accepted 2026-10-07** | Amends ADR-0017 decision 1; supersedes ADR-0018 decision 3 for the installer; decision 3 extended by [0024](ADR-0024-internal-team-builds.md) |
-| [0024](ADR-0024-internal-team-builds.md) | Four release files; internal `.exe` and `.dmg` for the team behind a password asked on every launch (hash only, never the password) | **Accepted 2026-10-07**, **amended 2026-10-08** (internal builds unsigned for now; signing moves to the store and public step) | Amends ADR-0017 decision 1 and ADR-0023 decision 3 |
+| [0024](ADR-0024-internal-team-builds.md) | Four release files; internal `.exe` and `.dmg` for the team behind a password asked on every launch (hash only, never the password) | **Accepted 2026-10-07**, **amended 2026-10-08** (internal builds unsigned for now; signing moves to the store and public step), **amended 2026-10-15** (minimum password length 8) | Amends ADR-0017 decision 1 and ADR-0023 decision 3; the minimum length of 12 is replaced by 8 in [0030](ADR-0030-verification-ladder-and-release-flow.md) |
 | [0025](ADR-0025-offline-ai-bundled-in-every-package.md) | Every package contains the complete offline AI (runtime, Gemma 3 1B weights, embedding weights, tokenizer, assets) with pinned hashes; no download, no model host; validated per format | **Accepted 2026-10-08, superseded 2026-10-15** | Superseded in full by [0026](ADR-0026-offline-ai-download-after-install.md) |
 | [0026](ADR-0026-offline-ai-download-after-install.md) | The app and AI runtime ship in the package; the Gemma 3 1B and BGE models download after install on the user's click, with a signed manifest and SHA-256 checks; no silent download | **Accepted 2026-10-15** | Supersedes ADR-0025; reinstates ADR-0006 decision 2, ADR-0013 decision 2 and ADR-0020 decisions 1 (weights part), 3 and 5 |
+| [0027](ADR-0027-rust-core-two-ui-shells.md) | One Rust core, two shells: Tauri and React on Windows, SwiftUI on the Mac through UniFFI; an `InferenceProvider` interface; Windows first, Mac after | **Accepted 2026-10-15** (three Mac sub-decisions open) | Amends ADR-0001 (Mac shell) and ADR-0017 (one codebase, two adapters) |
+| [0028](ADR-0028-ai-quality-program-and-harness.md) | AI quality program: measure first, English release bar of 90 and 85 percent, eleven further languages, two model tiers, verifier-guided three-pass loop, memory, local numbers-only log, Claude judging at development time, Apple model opt-in | **Accepted 2026-10-15** | Amends ADR-0013 decision 1 |
+| [0029](ADR-0029-gpu-acceleration.md) | Vulkan first, a pure decision function, first-run probe with processor fallback, integrated graphics allowed when the probe passes, speed claims only for measured cards | **Accepted 2026-10-15** | Replaces "processor build only" of ADR-0025 and the 2026-10-08 owner row |
+| [0030](ADR-0030-verification-ladder-and-release-flow.md) | Five proof levels, the strict release flow (Windows, Mac, website, stores), clean-machine proof, minimum team password length 8, secret and link gates | **Accepted 2026-10-15** | Amends ADR-0024 (password length) and the chapter order of the vision page |
 
 ## 2. Older decisions that are no longer in force (surface the newer one)
 
@@ -59,6 +63,13 @@
 | Dark theme absent; mock-ups light only | UX spec, ADR-0012 §7 | **Superseded 2026-10-07** | See ADR-0014 | ADR-0014 |
 | Download Offline AI from a model host after install, with a signed download list (runtime, then weights only) | ADR-0006 decision 2, ADR-0013 decision 2, ADR-0020 decisions 1, 3 and 5 | **Active again 2026-10-15** (the bundled design of ADR-0025 is superseded); the runtime stays in the package | Models download after install on the user's click, with a signed manifest and SHA-256 checks | ADR-0026 |
 | Bundling the offline AI in every package (about 1.1 GB installer) | ADR-0025 | **Superseded 2026-10-15** | The model downloads after install; the installer stays about 20 to 30 MB (estimate) | ADR-0026 |
+| One model for everyone, Gemma 3 1B only; "one profile" | ADR-0013 decision 1, ADR-0006, Runtime specification | **Superseded 2026-10-15** | Two tiers (small default, larger for 16 GB or a card); the family is chosen by measurement | ADR-0028 |
+| AI engine is the processor build only; "a GPU build is considered after launch" | ADR-0025, owner decisions 2026-10-08, Runtime specification section 4.3 | **Superseded 2026-10-15** | Vulkan runtime with a decision function, a first-run probe and a processor fallback | ADR-0029 |
+| Mac app built with Tauri on the Mac ("one codebase, two platform adapters") | ADR-0001, ADR-0017 decision 4, engineering documents 28, 29, 37 | **Amended 2026-10-15** | Mac shell is SwiftUI over the same Rust core through UniFFI | ADR-0027 |
+| Team password minimum of 12 characters | ADR-0024, `build_hash.rs` | **Superseded 2026-10-15** (the code changes in phase W1) | Minimum 8 characters | ADR-0030 |
+| Chapter 1 as seven streams; Mac bring-up as a Tauri build | Earlier Chapter 1 plan, owner decisions of 2026-10-09 | **Superseded 2026-10-15** | Windows track W1 to W10, then Mac track M1 to M10 | [Chapter 1](../roadmap/chapter-1-complete-test-validate.md), ADR-0030 |
+| "Verified" means a test passes on the development machine | Feature status file, build plan | **Superseded 2026-10-15** | Five proof levels; "Verified" needs level 3 or higher on the release build | ADR-0030 |
+| "Localization: English only for the first release" as an open question | Owner decisions (open rows) | **Answered 2026-10-15** | App screens English only; the AI supports twelve languages | ADR-0028 |
 | Internal `.dmg` Developer ID signed and notarized; internal `.exe` signed | ADR-0024 decision 1 and consequences, masterplan area 20 | **Deferred 2026-10-08** | Internal builds unsigned for now; signing moves to the store and public step | ADR-0024 amendment 2026-10-08 |
 | Schedule "ScheduleItem" unified table (supplied plan) | Archived completion plan | **Rejected** | Extend `schedule_strip`, `schedule_marker`, `shooting_day` | Reconciliation C11 |
 
@@ -67,4 +78,4 @@
 - A superseded decision is **never deleted**. It keeps its text, gets a pointer to its replacement, and appears in §2.
 - A new ADR names what it supersedes or amends and adds a row to both tables here.
 - A Proposed ADR is not a decision. Code must not assume it.
-- Numbering is permanent; the next free number is 0027.
+- Numbering is permanent; the next free number is 0031.

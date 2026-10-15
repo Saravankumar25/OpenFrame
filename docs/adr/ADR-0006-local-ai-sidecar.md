@@ -1,5 +1,6 @@
 # ADR-0006: Local-AI-only, managed `llama.cpp` sidecar with signed manifests
 
+- **Amended 2026-10-15 by [ADR-0028](ADR-0028-ai-quality-program-and-harness.md) and [ADR-0029](ADR-0029-gpu-acceleration.md):** the engine sits behind an `InferenceProvider` interface, the model policy is two tiers chosen by measurement, and a Vulkan runtime joins the processor runtime with a first-run probe.
 - **Status:** Accepted and implemented. **Decision 3 (model policy) is superseded by ADR-0013**: there is one
   profile (Gemma 3 1B Instruct + BGE small embeddings), no Qwen tiers and no user override. Decisions 1, 2 and 4–7
   stay in force; ADR-0013 extends them with a second (embedding) sidecar, the derived intelligence index, the universal

@@ -1,5 +1,7 @@
 # OpenFrame — Local Agentic AI + Hybrid RAG + Context Graph Implementation Spec
 
+> **Current decisions (2026-10-15).** [ADR-0028](../adr/ADR-0028-ai-quality-program-and-harness.md) overrides this text where it differs: one Gemma 3 1B model becomes two tiers chosen by a measured bake-off; the graph retrieval stage stays only if the evaluation shows it beats plain hybrid retrieval; tool offering by embedding similarity; a deterministic verifier loop; memory and languages as the ADR states. Human-only Change Sets and crash-safe apply stand. Delivery per [ADR-0026](../adr/ADR-0026-offline-ai-download-after-install.md); engine behind the provider interface of [ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md).
+
 > **Current decision: [ADR-0026](../adr/ADR-0026-offline-ai-download-after-install.md) (2026-10-15).** The app and the AI
 > runtime ship in every package; the models download after install on the user's click from a signed manifest. This
 > reverses ADR-0025 (2026-10-08). The current build still bundles the models from `packaging/ai/ai-assets.lock.json`. Text below that

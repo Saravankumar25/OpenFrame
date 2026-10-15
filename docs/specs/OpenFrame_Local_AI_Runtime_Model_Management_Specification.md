@@ -1,5 +1,7 @@
 # OpenFrame Studio — Local AI Runtime & Model Management Specification
 
+> **Current decisions (2026-10-15).** Where this text differs, these records win. One profile and one model: replaced by two tiers chosen by measurement ([ADR-0028](../adr/ADR-0028-ai-quality-program-and-harness.md)). Backend choice (sections 4.3 and 5): replaced by a Vulkan runtime that ships in the package, a pure decision function and a first-run probe with processor fallback ([ADR-0029](../adr/ADR-0029-gpu-acceleration.md)); the runtime is not downloaded after a card check. Delivery: runtime in the package, models downloaded on the user's click ([ADR-0026](../adr/ADR-0026-offline-ai-download-after-install.md)). The engine sits behind an `InferenceProvider` interface and the Mac may add Apple's model as an opt-in provider ([ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md)).
+
     **Product:** OpenFrame Studio  
     **Document class:** Implementation / engineering specification  
     **Baseline:** Windows 11 production architecture, v1  

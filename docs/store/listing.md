@@ -1,5 +1,7 @@
 # Microsoft Store listing draft (en-US)
 
+> **Current decisions (2026-10-15).** A Chapter 3 draft. Wording about the AI must say that the models download once after install, that supported languages are those with a published report, and that a graphics card is used only when it passes a first-run check ([ADR-0026](../adr/ADR-0026-offline-ai-download-after-install.md), [ADR-0028](../adr/ADR-0028-ai-quality-program-and-harness.md), [ADR-0029](../adr/ADR-0029-gpu-acceleration.md)). Claims follow the claims rule of the [vision page](../product/vision-and-scope.md).
+
 > **DO NOT SUBMIT AS WRITTEN (2026-10-05).** This draft lists features that the README marks "In development", a Windows
 > 10 1809 requirement that the Windows 11 only decision of 2026-10-06 replaces (the manifest still needs the same change), and unfilled placeholders (`[N]`, `[support link or e-mail]`,
 > publisher, copyright). The Store rejects listings that describe features the package lacks. Rule: a feature may appear here only when its

@@ -58,6 +58,26 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 
 ## Entries
 
+### 2026-10-15 (later), documentation restructure after the owner's 25 decisions (no source code changed)
+- **Areas and items worked:** 2 Project controls (documentation, decisions, roadmap). No plan box ticked; no code changed.
+- **Done:** brainstorm and web research; the owner answered 25 decision questions; four new ADRs (0027 to 0030); the
+  roadmap rewritten as Chapter 1 with a Windows track W1 to W10 and a Mac track M1 to M10, and outline pages for Chapters 2
+  and 3; the vision page, owner decisions, documentation map, CLAUDE.md, architecture page, decision register and archive
+  index rewritten or updated; old text copied to `docs/archive/2026-10-15-*`; "Current decisions" notes added to the
+  conflicting specifications and engineering documents; ADR-0001, 0006, 0013, 0017, 0020, 0024 amended in place.
+- **Evidence:** `node scripts/check-links.mjs` and `node scripts/check-writing-standard.mjs` results are in the commit message.
+- **Features moved:** none.
+- **Docs updated:** as above and the [reconciliation log](reconciliation-log.md).
+- **Decisions made or needed:** made in chat (ADR-0027 to 0030, owner-decisions section 1). Needed: macOS version of the
+  Intel MacBook; meaning of "build the website manually"; approval of the wording change and the worktree review; the owner's
+  later choice on the Mac editor approach and the Mac engine launch.
+- **Blocked / risks:** the 90 and 85 percent English bar may be out of reach for a 1B model (the 2026-09-30 benchmark showed
+  38.9 percent tool-and-argument accuracy before the harness); non-English sets are reviewed by Claude only; the team gate
+  minimum of 8 is weaker than 12; the code still enforces 12 until W1.
+- **Next:** phase W1 (see [handoff.md](handoff.md)).
+- **Checks run:** link check and writing check (results in the commit message); build plan, feature status and code tests
+  not run (documents only).
+
 ### 2026-10-15, download after install reinstated in the documents (no source code changed)
 
 - Owner decision in chat: the AI models download after install on the user's click; the app and the AI runtime ship in

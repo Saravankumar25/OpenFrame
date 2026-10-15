@@ -1,5 +1,7 @@
 # OpenFrame Studio build plan
 
+> **Current decisions (2026-10-15).** This plan is the checklist and evidence ledger. The phases W1 to W10 and M1 to M10 in [roadmap/](../roadmap/README.md) say what to do and in what order, and its table maps each area to its phase. Statements in area 8 about the processor build only, one model and bundled models are replaced by [ADR-0026](../adr/ADR-0026-offline-ai-download-after-install.md), [ADR-0028](../adr/ADR-0028-ai-quality-program-and-harness.md) and [ADR-0029](../adr/ADR-0029-gpu-acceleration.md). Mac statements in areas 7 and 20 follow [ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md). "Verified" follows the five proof levels of [ADR-0030](../adr/ADR-0030-verification-ladder-and-release-flow.md); a box ticked before 2026-10-15 is at proof level 2 unless its evidence says more.
+
 > Rewritten 2026-10-06, chapter map added 2026-10-09. This is the single checklist for finishing OpenFrame Studio and shipping it in three files built
 > from one codebase. It replaces the earlier coded checklist. Every item is a plain sentence under a descriptive heading.
 > Companion files: [feature-status.md](feature-status.md) (state of each feature), [owner-decisions.md](owner-decisions.md)

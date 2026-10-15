@@ -16,6 +16,8 @@
 
 # OpenFrame Studio Privacy Policy
 
+> **Current decisions (2026-10-15).** A draft for Chapters 2 and 3. It must describe the one AI download, the local numbers-only AI log and the learned-memory screen, and that nothing is sent automatically ([ADR-0026](../adr/ADR-0026-offline-ai-download-after-install.md), [ADR-0028](../adr/ADR-0028-ai-quality-program-and-harness.md), [ADR-0021](../adr/ADR-0021-diagnostics-telemetry-analytics-policy.md)). Counsel reviews it before publication.
+
 **Effective date:** [YYYY-MM-DD]
 **Publisher:** [Publisher legal name as shown in the Microsoft Store]
 **Contact:** [privacy contact e-mail address or web form]

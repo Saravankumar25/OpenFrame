@@ -27,7 +27,7 @@ npm run setup                          # checks the prerequisites above, prints 
 node scripts/setup.mjs --check-only    # check only
 ```
 
-The Rust and TypeScript code also builds and tests on macOS/Linux. Today only the Windows desktop bundle is built. The Mac App Store package comes from the same codebase through the macOS adapter and is on the release path (ADR-0017).
+The Rust and TypeScript code also builds and tests on macOS/Linux. Today only the Windows desktop bundle is built. The Mac application is a native SwiftUI shell over the same Rust core, built in the Mac track after the Windows track closes (ADR-0027); the Mac App Store package follows in Chapter 3.
 
 ## 2. Commands
 

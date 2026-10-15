@@ -1,5 +1,7 @@
 # 27: Microsoft Store (MSIX) distribution
 
+> **Current decisions (2026-10-15).** Chapter 3 only; its implementation plan is written after Chapter 2. Statements here about bundling the AI models inside the package are replaced by [ADR-0026](../adr/ADR-0026-offline-ai-download-after-install.md) (runtime in the package, models downloaded on a click). The runtime now includes a Vulkan build ([ADR-0029](../adr/ADR-0029-gpu-acceleration.md)).
+
 > **Status legend:** ✅ implemented · 🚧 in development · 📋 planned · ⛔ blocked on the product owner.
 > Sources: `packaging/msix/*`, `scripts/build-msix.mjs`, `scripts/release-validate.mjs --store`,
 > `.github/workflows/release.yml` (jobs `validate-store`, `store`), `apps/desktop/src-tauri/build.rs`,

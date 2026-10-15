@@ -1,5 +1,7 @@
 # OpenFrame Studio: Strong Windows + macOS Compatibility and Security Plan
 
+> **History for the Mac shell (2026-10-15).** This plan of 2026-10-05 assumes Tauri on both platforms. The Mac shell is now SwiftUI over the same Rust core ([ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md)); the Mac plan is [chapter-1b-mac-phases.md](../roadmap/chapter-1b-mac-phases.md). The platform boundary rules in [37-platform-boundary.md](37-platform-boundary.md) stay. This file moves to the archive in Windows phase W1.
+
 > **Repository state 2026-10-06.** This document is a plan. What exists in code today is written in [37-platform-boundary.md](37-platform-boundary.md): the `openframe-platform` crate (app folders, atomic file replace, file existence check, managed child processes, package identity, keyboard labels), lint rule R6 and its allow-list, which parts are verified on Windows, and which parts compile for macOS but are unverified without Mac hardware. Entitlement and trial rules are in [36-entitlement-and-trial.md](36-entitlement-and-trial.md). Where this plan and document 37 disagree about what is built, document 37 wins.
 
 > **Repository integration (2026-10-05).** Promoted from the supplied OS compatibility plan. **Scope is set by

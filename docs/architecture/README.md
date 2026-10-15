@@ -1,6 +1,6 @@
 # Architecture in one page
 
-> Written 2026-10-09 from reading the code. For the full explanation in simple language, with examples, see Part D of the
+> Written 2026-10-09 from reading the code; updated 2026-10-15 for the two-shell decision ([ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md)). For the full explanation in simple language, with examples, see Part D of the
 > [retrospection and audit report](../reports/2026-10-09-project-retrospection-and-audit.md). The detailed contracts are the
 > engineering documents listed at the bottom. This page is the short map to keep current when the structure changes.
 
@@ -42,6 +42,8 @@
    project.sqlite   openframe.json   assets/   cache/   recovery/   backups/
 ```
 
+The diagram shows the Windows shell. On the Mac the top two boxes are replaced by a SwiftUI application ([ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md)); everything below the single door is shared.
+
 Other crates: `openframe-domain` (shared types, errors, roles), `openframe-security` (path confinement, archive limits,
 redaction), `openframe-platform` (everything that differs between Windows and macOS), `openframe-entitlement` (trial,
 licence and team password), `openframe-project-format` (folder layout and the single-writer lock),
@@ -58,7 +60,7 @@ licence and team password), `openframe-project-format` (folder layout and the si
    triggers record an undo step, the search index and the activity list are updated, and the transaction commits.
 6. Rust sends a `dataChanged` event; screens that read those tables refresh themselves.
 
-If step 2 is never reached (the window is destroyed first), up to 400 ms of typing is not saved. See the Chapter 1 plan.
+If step 2 is never reached (the window is destroyed first), up to 400 ms of typing is not saved. See phase W2 of the [Windows plan](../roadmap/chapter-1a-windows-phases.md).
 
 ## 3. Rules the structure enforces
 
@@ -73,9 +75,9 @@ If step 2 is never reached (the window is destroyed first), up to 400 ms of typi
 
 ## 4. Windows and macOS
 
-One code base. `openframe-platform` holds the differences: folders, the atomic file replace, killing child processes with
+One Rust core, two shells. `openframe-platform` holds the differences: folders, the atomic file replace, killing child processes with
 the app (Job Object on Windows, process group on the Mac), key labels, spell checking, power events, package identity.
-The Mac code compiles in CI but has never run. The bundled AI engine is pinned only for Windows today.
+On the Mac the shell is a native SwiftUI application that calls the same core through a generated interface (UniFFI). It is built in the Mac track, after the Windows track closes ([ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md)); the Tauri Mac shell is retired. The Mac platform adapter has never run. The AI engine is pinned only for Windows today (processor build); the engine provider interface, a Vulkan build and the Mac engine come in phases W5, W7 and M8.
 
 ## 5. Where to read more
 
@@ -88,7 +90,7 @@ The Mac code compiles in CI but has never run. The bundled AI engine is pinned o
 | The database | [11-physical-database.md](../engineering/11-physical-database.md) |
 | Autosave, undo, recovery | [17-autosave-undo-recovery.md](../engineering/17-autosave-undo-recovery.md) |
 | Search and retrieval | [16-search.md](../engineering/16-search.md), [18-retrieval-intelligence-index.md](../engineering/18-retrieval-intelligence-index.md) |
-| The AI | [ADR-0013](../adr/ADR-0013-single-local-model-hybrid-rag-agent.md), [ADR-0026](../adr/ADR-0026-offline-ai-download-after-install.md) (superseding ADR-0025), [ai-tool-coverage.md](../engineering/ai-tool-coverage.md) |
+| The AI | [ADR-0013](../adr/ADR-0013-single-local-model-hybrid-rag-agent.md), [ADR-0026](../adr/ADR-0026-offline-ai-download-after-install.md) (superseding ADR-0025), [ADR-0028](../adr/ADR-0028-ai-quality-program-and-harness.md), [ADR-0029](../adr/ADR-0029-gpu-acceleration.md), [ai-tool-coverage.md](../engineering/ai-tool-coverage.md) |
 | Threats | [20-security-threat-model.md](../engineering/20-security-threat-model.md) |
 | Windows and Mac differences | [37-platform-boundary.md](../engineering/37-platform-boundary.md), [28-cross-platform-compatibility-security.md](../engineering/28-cross-platform-compatibility-security.md) |
-| The target design | [29-desktop-hld-lld.md](../engineering/29-desktop-hld-lld.md) |
+| The two-shell structure and the Mac plan | [ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md), [Mac phases](../roadmap/chapter-1b-mac-phases.md). The older [29-desktop-hld-lld.md](../engineering/29-desktop-hld-lld.md) is history |

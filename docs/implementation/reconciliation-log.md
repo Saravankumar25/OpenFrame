@@ -6,6 +6,28 @@
 > Renamed on 2026-10-06 from `03-reconciliation-log.md`. Extended on 2026-10-09 (chapter restructure). Checks written "(checked)" were verified in the repository on the
 > date given. Checks written "(stated)" come from a supplied document and were not verified independently.
 
+## 2026-10-15 (later): documentation restructure after the owner's 25 decisions, conflicts and where each went
+
+- New records: ADR-0027 (one Rust core, two shells), ADR-0028 (AI quality program), ADR-0029 (GPU), ADR-0030 (proof levels,
+  release flow, team gate minimum 8). Rewritten in place after archiving the old text under `docs/archive/2026-10-15-*`:
+  `docs/README.md`, `docs/product/vision-and-scope.md`, `docs/roadmap/README.md` and the three chapter pages,
+  `docs/implementation/owner-decisions.md`. New: `docs/roadmap/chapter-1a-windows-phases.md`, `chapter-1b-mac-phases.md`.
+- Conflicts resolved (decision, old statement, where marked): one model for everyone and the processor-only engine (ADR-0013,
+  ADR-0025, runtime specification, owner row of 2026-10-08) became "Current decisions" notes and register rows pointing to
+  ADR-0028 and ADR-0029; the Tauri Mac shell (ADR-0001, ADR-0017, engineering 28, 29, 37, architecture README, chapter 1
+  stream 5) points to ADR-0027; the team password minimum of 12 (ADR-0024, entitlement code) points to ADR-0030; "Verified"
+  as a passing development test (feature status, masterplan, engineering 22) points to ADR-0030 proof levels; "Localization
+  English only" open row became decided.
+- Notes added under the title of: runtime, AI, agentic, ESD, Engineering Index and Security specifications, specs README,
+  engineering 20, 22, 23, 25, 27, 28, 29, 31, 36, 37, the build plan, feature status, launch register, store listing and
+  privacy policy drafts, website notes. ADR-0001, 0006, 0013, 0017, 0020 and 0024 carry an "Amended" line.
+- Not done in this pass (assigned to phase W1): moving `docs/spec-digest/`, `AGENT_BRIEF.md`, `SECURITY_REVIEW_2026-09-30.md`
+  and documents 28, 29 and 31 into the archive, because scripts and Rust test comments cite their paths; the proof-level
+  column in the feature status file; the password minimum in `build_hash.rs` (code). Not read line by line: the build plan
+  (658 lines), the launch register (1,528 lines) and the long specifications; their old statements are covered by the
+  "Current decisions" notes and by the register, and a full line-level sweep is a W1 item.
+- Not changed: `docs/archive/`, `docs/audits/`, `docs/release/evidence/` and the dated report keep their old wording.
+
 ## 2026-10-15: download after install reinstated (ADR-0026), conflicts and where each went
 
 - ADR-0025 (bundle the whole AI in every package, no download) is superseded in place. ADR-0026 is Accepted by the

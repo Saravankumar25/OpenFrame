@@ -1,5 +1,7 @@
 # OpenFrame Studio: Optimal HLD & LLD for the Desktop Application
 
+> **History for the shell (2026-10-15).** This target design of 2026-10-05 assumes one Tauri shell. The current structure is one Rust core with a Tauri shell on Windows and a SwiftUI shell on the Mac ([ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md), [architecture/README.md](../architecture/README.md)). This file moves to the archive in Windows phase W1.
+
 > **Repository integration (2026-10-05).** Promoted from the supplied HLD/LLD. It describes the **target architecture** and
 > overlaps with `OpenFrame_ESD_Technical_Architecture.md` and docs 13, 14 and 17; where they differ on current behaviour, the ESD and
 > the code win, and this file wins only for the target items (platform services, theme subsystem, screenplay layout service,

@@ -1,5 +1,7 @@
 # OpenFrame Studio: Vibe Coding Gaps and How to Cover Them
 
+> **History (2026-10-15).** A plan of 2026-10-05 whose rules are enforced in `CONTRIBUTING.md` and the architecture lint. Where it speaks of "Done" or "Verified", the five proof levels of [ADR-0030](../adr/ADR-0030-verification-ladder-and-release-flow.md) now apply. This file moves to the archive in Windows phase W1.
+
 > **Repository integration (2026-10-05).** Promoted from the supplied vibe-coding gap analysis. It is the rationale behind
 > the controls in CONTRIBUTING.md and the build plan areas "Project controls and baseline", "Data safety and crash recovery" and "Runtime resilience and failure testing": feature contract, feature status file, architecture lint, migration fixtures,
 > lifecycle E2E, round-trip corpus, AI evaluation, golden rendering, stale-proposal suite. "Windows and macOS" rows apply to

@@ -1,5 +1,6 @@
 # ADR-0013: One local model (Gemma 3 1B), local embeddings, hybrid retrieval with a derived context graph, a universal toolbox and a bounded agent loop
 
+- **Amended 2026-10-15 by [ADR-0028](ADR-0028-ai-quality-program-and-harness.md):** decision 1 ("one model for everyone, Gemma 3 1B only") is superseded. There are two tiers and the model family is chosen by a measured bake-off, with Gemma 3 as the incumbent. The tool picker by word overlap is replaced by embedding similarity plus usage priors. The human-only Change Sets, the hybrid retrieval and the bounded agent stand.
 - **Status:** Accepted and implemented (merged on `master`, 30 Sept 2026). **Supersedes ADR-0006 decision 3**
   (the three Qwen profiles and the user override). The rest of ADR-0006 (managed `llama.cpp` sidecar, signed
   manifest, authority boundary, prompt-injection boundary, persistence, failure isolation) stays in force and is

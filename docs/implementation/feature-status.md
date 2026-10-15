@@ -1,5 +1,7 @@
 # Feature status
 
+> **Current decisions (2026-10-15).** The state words below are read together with the five proof levels of [ADR-0030](../adr/ADR-0030-verification-ladder-and-release-flow.md). Until Windows phase W1 adds the proof-level column, every "Verified" row is proof level 2 (proved on development). AI rows follow [ADR-0028](../adr/ADR-0028-ai-quality-program-and-harness.md): a row is Verified only after the evaluation harness reports its number against the release bar.
+
 > Rewritten 2026-10-06 with descriptive words instead of codes. The single list of **product features** and how far each one
 > has come. Launch, operations, legal and support requirements live in
 > [../release/launch-readiness-register.md](../release/launch-readiness-register.md). The build areas named in the "Build area"

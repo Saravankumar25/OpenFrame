@@ -1,5 +1,7 @@
 # OpenFrame Studio — Engineering Package Index
 
+> **Current decisions (2026-10-15).** Locked decisions on the operating system, the shell, the AI model and AI delivery in this index are replaced by [ADR-0017](../adr/ADR-0017-cross-platform-windows-and-macos.md) as amended by [ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md), and by [ADR-0026](../adr/ADR-0026-offline-ai-download-after-install.md), [ADR-0028](../adr/ADR-0028-ai-quality-program-and-harness.md) and [ADR-0029](../adr/ADR-0029-gpu-acceleration.md). See the [decision register](../adr/README.md).
+
 > **Current decision: [ADR-0026](../adr/ADR-0026-offline-ai-download-after-install.md) (2026-10-15).** The app and the AI
 > runtime ship in every package; the chat and embedding models download after install on the user's click from a signed
 > manifest. This reverses ADR-0025 (2026-10-08). The current build still bundles the models from

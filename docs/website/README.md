@@ -1,5 +1,7 @@
 # OpenFrame website plan
 
+> **Superseded as a plan (2026-10-15).** The website is Chapter 2; its current plan is [chapter-2-website.md](../roadmap/chapter-2-website.md), and its implementation plan is written when Chapter 1 closes. This page stays as source notes.
+
 > Created 2026-10-05. The website is a launch dependency (privacy URL, support URL, download or Store link, policies,
 > theme file downloads). It does not exist in this repository yet. Build plan area: Legal, privacy, website and support; launch register GTM-001 to 010.
 > The two files in [prompts/](prompts) are the supplied Claude Code prompts. Use them as method, not as authority:

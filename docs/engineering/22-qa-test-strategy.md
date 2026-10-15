@@ -1,5 +1,7 @@
 # 22: QA & Acceptance Test Strategy
 
+> **Current decisions (2026-10-15).** "Verified" is defined by five proof levels, and the release build, a clean machine and the team pilot are levels 3 to 5 ([ADR-0030](../adr/ADR-0030-verification-ladder-and-release-flow.md)). AI quality is measured by the evaluation harness and its release bar ([ADR-0028](../adr/ADR-0028-ai-quality-program-and-harness.md)). The Mac suite uses Apple's UI testing against the shared scenario list ([ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md)).
+
 > **Status legend:** ✅ implemented · 🚧 in development · 📋 planned.
 > Authority for *what* to test: FSD acceptance criteria and matrices (§68–70, §171), PRD acceptance criteria
 > (§200–210), Security SEC-xxx. This document defines *how*. Contributor rules: CONTRIBUTING.md §4.

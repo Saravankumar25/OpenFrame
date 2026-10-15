@@ -1,5 +1,7 @@
 # OpenFrame Studio — AI Specification
 
+> **Current decisions (2026-10-15).** [ADR-0028](../adr/ADR-0028-ai-quality-program-and-harness.md) overrides this text where it differs: measurement first and a release bar of 90 percent correct tool and 85 percent correct end state; English first plus eleven further languages; two model tiers instead of one model; tool offering by embedding similarity instead of word overlap; a verifier-guided loop of at most three passes and 60 seconds; four kinds of memory with a visible learned-memory screen; a local numbers-only log with a manual Export AI report. Delivery is per [ADR-0026](../adr/ADR-0026-offline-ai-download-after-install.md), graphics cards per [ADR-0029](../adr/ADR-0029-gpu-acceleration.md).
+
 > **Current decision: [ADR-0026](../adr/ADR-0026-offline-ai-download-after-install.md) (2026-10-15).** The app and the AI
 > runtime ship in every package. The Gemma 3 1B and BGE models download after install, on the user's click, from a signed
 > manifest with SHA-256 checks. This reverses ADR-0025 (2026-10-08), which had bundled the models in the package.

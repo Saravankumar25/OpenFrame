@@ -1,5 +1,7 @@
 # 20: Security Threat Model & Secure Storage
 
+> **Current decisions (2026-10-15).** Known limit added: the team gate accepts passwords of 8 or more characters, so the hash in an internal build is cheaper to guess offline; it is a door lock for the pilot ([ADR-0030](../adr/ADR-0030-verification-ladder-and-release-flow.md)). New surfaces to cover in Windows phase W3: the graphics-card probe and runtime ([ADR-0029](../adr/ADR-0029-gpu-acceleration.md)), learned memory and the numbers-only AI log ([ADR-0028](../adr/ADR-0028-ai-quality-program-and-harness.md)), the Mac shell interface ([ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md)).
+
 > **Status legend:** ✅ implemented (with test) · 🟡 implemented, test missing · 🚧 in development · 📋 planned.
 > Authority: Security, Privacy & Data Ownership spec (digest `docs/spec-digest/security.md`); ESD §13.
 > Decisions: ADR-0003, ADR-0004, ADR-0006, ADR-0007, ADR-0009.

@@ -15,6 +15,13 @@
 | `2026-10-06-owner-decisions-with-item-codes.md` | Owner decisions D1 to D18 with codes | Same | owner-decisions.md |
 | `2026-10-06-reconciliation-log-with-item-codes.md` | The reconciliation log before the rename | Same | reconciliation-log.md |
 | `2026-10-06-launch-register-before-restructure.md` | The launch readiness register before it was cut down | Keeps rows that were moved | [launch-readiness-register.md](../release/launch-readiness-register.md) |
+| `2026-10-15-chapter-1-plan-before-restructure.md` | The seven-stream Chapter 1 plan of 2026-10-09 | Source of the work items now in the Windows and Mac phase plans | [chapter-1a-windows-phases.md](../roadmap/chapter-1a-windows-phases.md), [chapter-1b-mac-phases.md](../roadmap/chapter-1b-mac-phases.md) |
+| `2026-10-15-chapter-2-plan-before-restructure.md` | The Chapter 2 website plan of 2026-10-09 | Page list and the faithful-screens method | [chapter-2-website.md](../roadmap/chapter-2-website.md) |
+| `2026-10-15-chapter-3-plan-before-restructure.md` | The Chapter 3 plan of 2026-10-09 | Store research table and requirements | [chapter-3-commercial-distribution.md](../roadmap/chapter-3-commercial-distribution.md) |
+| `2026-10-15-roadmap-map-before-restructure.md` | The roadmap map of 2026-10-09 | Area-to-chapter table | [roadmap/README.md](../roadmap/README.md) |
+| `2026-10-15-owner-decisions-before-restructure.md` | The owner decisions table including replaced rows | Records what was answered when | [owner-decisions.md](../implementation/owner-decisions.md) |
+| `2026-10-15-vision-and-scope-before-restructure.md` | The vision page of 2026-10-09 | Earlier wording of scope | [vision-and-scope.md](../product/vision-and-scope.md) |
+| `2026-10-15-documentation-map-before-restructure.md` | The documentation map of 2026-10-09 | Earlier layout and precedence | [../README.md](../README.md) |
 | `notes/documentation-stack-guidance.md` | Raw intake notes on which documents a project needs | Shaped the documentation map | [../README.md](../README.md) |
 | `notes/store-certification-and-launch-gap-notes.md` | Raw intake notes on store certification gaps | Source for the launch register | launch register, [Chapter 3](../roadmap/chapter-3-commercial-distribution.md) |
 

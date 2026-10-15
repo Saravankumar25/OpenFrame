@@ -2,67 +2,72 @@
 
 > Rewritten (not appended) at the end of every session. One page. It exists so the next session starts from the facts
 > instead of from a long history, which is how context rot is avoided. If this page is older than the newest progress log
-> entry, trust the log and fix this page first. Last rewritten: 2026-10-15.
+> entry, trust the log and fix this page first. Last rewritten: 2026-10-15 (documentation restructure).
 
-## State in five lines
+## State in six lines
 
-1. **Decision changed 2026-10-15 (owner, in chat): the AI models download after install.** [ADR-0026](../adr/ADR-0026-offline-ai-download-after-install.md)
-   supersedes ADR-0025. The app and the AI runtime ship in every package; Gemma 3 1B, BGE and the tokenizer download
-   on the user's click from a signed manifest. This session changed documents only. No source code changed.
-2. **The code still bundles the models.** The download flow was removed on 2026-10-08 and must be rebuilt. Until then the
-   docs say "current build bundles the models; target downloads".
-3. No installer has ever been built. The owner's word is needed to build one.
-4. The working tree has uncommitted documentation changes from 2026-10-15 (about 30 files). The branch is `main`.
-   Nothing was committed or pushed, because the owner did not ask for a commit.
-5. The only chapter in progress is Chapter 1 ([plan](../roadmap/chapter-1-complete-test-validate.md)).
+1. **Decisions of 2026-10-15 are recorded** in [ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md) (one Rust core, Tauri
+   on Windows, SwiftUI on the Mac), [ADR-0028](../adr/ADR-0028-ai-quality-program-and-harness.md) (AI quality program),
+   [ADR-0029](../adr/ADR-0029-gpu-acceleration.md) (GPU) and [ADR-0030](../adr/ADR-0030-verification-ladder-and-release-flow.md)
+   (proof levels, release flow, team gate minimum 8). They sit with ADR-0026 (models download after install).
+2. **The plan is Chapter 1 in two tracks**: Windows phases W1 to W10 ([plan](../roadmap/chapter-1a-windows-phases.md)), then
+   Mac phases M1 to M10 ([plan](../roadmap/chapter-1b-mac-phases.md)). Chapters 2 (website) and 3 (stores) get their
+   implementation plans only after Chapter 1 and Chapter 2 close.
+3. **This session changed documents only.** No source code changed. The code still enforces a team password minimum of 12,
+   bundles the models, builds only the processor engine and has no evaluation harness.
+4. No installer has ever been built. The owner's word is needed to build one, and now also a release executable.
+5. The work is on branch `docs/restructure-three-chapters-2026-10-15`, committed locally, not merged, not pushed. A baseline
+   commit holds the earlier 2026-10-15 document changes.
+6. The only chapter in progress is Chapter 1, Windows track, phase W1.
 
-## Next items (Chapter 1, AI packaging, then the earlier stream)
+## Next items (Windows phase W1, then W2)
 
-1. **Owner tasks, now open again** ([owner-decisions.md](owner-decisions.md), section 2 and 3): choose and run the HTTPS
-   model host; generate the production Ed25519 manifest key and keep the private key offline; confirm the Gemma
-   redistribution terms for hosting the weights.
-2. **Rebuild the Download OpenFrame AI flow** (masterplan area 8, "to be done" items). Start with the manifest signature
-   check and the `*.partial` download with resume, then the disk-space preflight, the atomic activation and the
-   quarantine. Add the tests named in ADR-0026 decision 10 before any UI work.
-3. The earlier stream, still open: write the failing end-to-end step "type, close the window within 100 ms, reopen, the
-   text is there", then add the close-request flush.
+1. **W1 controls**: proof-level column in the feature status file and its checker; team password minimum 12 to 8 in
+   `crates/openframe-entitlement/src/team_gate/build_hash.rs` with tests; secret scan, link checker with an app-address
+   allow-list; remove `reqwest` from the Windows shell build; move `docs/spec-digest/`, `AGENT_BRIEF.md`,
+   `SECURITY_REVIEW_2026-09-30.md` and documents 28, 29, 31 into the archive with the script and test-comment updates; a
+   line-level sweep of the build plan, launch register and long specifications for old statements.
+2. **W1 hygiene**: lower the development profile debug level, merge integration test programs, review the 39 dead worktree
+   folders and 31 unmerged agent branches (owner approves the table first).
+3. **W2**: write the failing "type, close within 100 ms, reopen" end-to-end step, then the close-request flush with a
+   shared pending-save registry; cloud-synced folder warning; documents-folder-unknown refusal; delete and locate tests.
 
 ## Blocked on the owner
 
-- The model host and the production manifest key (see item 1 above).
-- The word to build the internal `.exe` (and later the `.dmg`).
-- Team password for testers; final prices (3,000 or 2,999 rupees); wording replacing "filmmakers"; support address; domain.
-- Whether the AI must serve Indian-language writers. The answer decides whether a vocabulary trim is worth trying.
-- Review of the 39 dead worktree folders (4.2 GB) under `.claude/worktrees` and the 31 unmerged `worktree-agent-*`
-  branches, before anything is removed.
-- Whether to keep `claude-mem`, the GSD framework and the stale `AGENTS.md` (see CLAUDE.md, "Installed tooling").
+- The macOS version of the Intel MacBook (Mac phase M1).
+- Approval of the wording that replaces "filmmakers"; approval of the worktree review.
+- The meaning of "build the website manually" (Chapter 2 plan).
+- Later: the model host and production manifest key (W8), the borrowed laptops and virtual machine (W7, W9), the Apple
+  silicon Mac (M8, M9), the team for the pilots, and the word to build.
 
 ## Do not
 
-- Do not push, build an installer or delete worktrees without the owner's word in the conversation.
-- Do not run `npm run build`, `tauri build` or any installer step while the model download flow is being rebuilt.
-- Do not change the AI model or the AI architecture without evidence and approval. Quantized or vocabulary-trimmed models
-  are candidates only; the 400-case evaluation suite must exist first.
-- Do not read the whole progress log or a whole specification to get oriented. Read this page, the chapter page, then the
-  one work item; use `graphify query` and `grep` for the rest.
-- Do not trust a feature row without reading the code it names. Three rows were stale on 2026-10-09.
-- Do not edit `docs/archive/`, `docs/audits/` or `docs/release/evidence/` for the 2026-10-15 change. Those are history.
+- Do not push, build an installer or a release executable, or delete worktrees without the owner's word in the conversation.
+- Do not change the AI model or architecture before the baseline from phase W5 exists. No runtime model may judge an AI
+  answer; the evaluator is deterministic code (ADR-0028).
+- Do not rewrite Rust logic in Swift. The Mac shell is a screen layer over the core (ADR-0027).
+- Do not write Chapter 2 or Chapter 3 code, or their phase plans, before the chapter before them closes.
+- Do not read the whole progress log or a whole specification to get oriented. Read this page, the phase page, then the one
+  work item; use `graphify query` and `grep` for the rest.
+- Do not trust a feature row without reading the code it names; every "Verified" row is proof level 2 until W1 relabels it.
+- Do not edit `docs/archive/`, `docs/audits/` or `docs/release/evidence/`. The team password is never written to a file.
 
 ## Facts a new session cannot see from the code
 
-- The owner has both a Windows laptop and a Mac laptop and is a beginner in Rust, Tauri and Claude Code: explain simply.
-- The machine has 15.4 GB of memory and 18 logical cores. Heavy builds go through `scripts/cargo-queued.mjs`.
+- The owner is a beginner in Rust, Tauri and Claude Code: explain simply. Their Windows machine is Windows 11 Home (no
+  Sandbox or Hyper-V): clean-machine tests use a virtual machine tool and borrowed laptops.
+- Hardware: 15.4 GB memory, 18 logical cores, Intel Core Ultra 5 with integrated graphics; an Intel MacBook (macOS version
+  unknown); an Apple silicon Mac is coming; borrowed laptops with other graphics cards are coming.
+- Benchmark of 2026-09-30 (processor, noisy): Gemma 3 1B Q8_0 gave 38.9 percent correct tool and arguments with about 30
+  tools offered, 100 percent valid JSON by grammar. The release bar is 90 and 85 percent after the harness work.
 - Target prices: 3,000 rupees, 89 dollars, 89 euros (not final).
-- Measured sizes: release executable 18.2 MB (2026-09-30); AI files 1,149,732,477 bytes (25 files); the Gemma Q8_0 file
-  1,069,306,368 bytes, gzip saves about 4.5%. A download-after-install package is an estimate of 20 to 30 MB until built.
-- The full audit is [reports/2026-10-09-project-retrospection-and-audit.md](../reports/2026-10-09-project-retrospection-and-audit.md).
-  It is a snapshot: re-check a finding in the code before acting on it.
+- The full audit is [reports/2026-10-09-project-retrospection-and-audit.md](../reports/2026-10-09-project-retrospection-and-audit.md),
+  a snapshot: re-check a finding in the code before acting on it.
 
-## Audit coverage (continuation note)
+## Not done in the 2026-10-15 restructure
 
-Inspected by reading code: the Tauri shell entry file, the registry and dispatch, the mutation pipeline, migrations, the
-persistence core, the project format, the AI orchestrator, change sets and toolbox selection, the AI bundle and engine
-launch, the frontend IPC layer, query layer, routes and editor sync, packages restore, plus the build configuration, test
-and CI layout, scripts, and every document list. Not inspected line by line: most of the 150,000-line application crate
-(module bodies for schedule, call sheets, breakdown, story, exports), the import-export parsers, the entitlement and Mac
-code, the 41,000 lines of screens, the SQL migration contents. The report lists this in its coverage appendix.
+The documents listed in W1 that scripts cite were not moved; the build plan (658 lines), launch register (1,528 lines) and the
+long specifications were not read line by line (they carry "Current decisions" notes instead); the root `README.md` status
+table and `development-storage-policy.md` were not reviewed for the new flow (the Mac sentence of `DEVELOPMENT.md`, the Mac
+test section and a note in the internal test plan were fixed). The link, writing, feature-status and plan checks passed
+after the edits: 130 documents, no broken link; the plan counts are unchanged.

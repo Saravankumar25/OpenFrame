@@ -1,5 +1,6 @@
 # ADR-0001: Tauri v2 + React/TypeScript + Rust
 
+- **Amended 2026-10-15 by [ADR-0027](ADR-0027-rust-core-two-ui-shells.md):** Tauri, React and TypeScript remain the Windows shell. The macOS shell is SwiftUI over the same Rust core, not Tauri. The Rust core, SQLite and the single door decisions stand.
 - **Status:** Accepted (implemented)
 - **Date:** 2026-09-30
 - **Deciders:** Engineering, per the locked decisions in the Engineering Package Index

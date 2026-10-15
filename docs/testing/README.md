@@ -75,10 +75,11 @@ reasons are in [development-storage-policy.md](../development-storage-policy.md)
 
 ## 6. The Mac
 
-`tauri-driver` supports Windows and Linux only; Apple provides no driver for its web view. For the Mac use, in this order:
-(1) a written manual checklist run on the owner's Mac for each internal build, (2) after the first manual pass, evaluate
-the WebdriverIO Tauri service that the Tauri documentation names as the macOS route. Until a Mac test exists, every Mac
-row stays unverified.
+The Mac shell is SwiftUI ([ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md)), so the Windows driver (`tauri-driver`) is
+not used there. The Mac suite is written in Apple's UI testing framework against the shared scenario list in
+`tests/e2e/scenarios/`, plus Rust core tests and Swift package tests, plus a written manual checklist for the team pilot.
+Each Mac row records two levels of evidence, "proved on Intel" and "proved on Apple silicon", and stays unverified until
+both exist ([Mac phase M9](../roadmap/chapter-1b-mac-phases.md)).
 
 ## 7. Evidence rules
 

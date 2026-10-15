@@ -1,5 +1,7 @@
 # 25: CI/CD & Build Reproducibility
 
+> **Current decisions (2026-10-15).** CI tests the AI download against a test manifest and a local host, not the model files. New gates: secret scan, link check, installer string scan ([ADR-0030](../adr/ADR-0030-verification-ladder-and-release-flow.md)), and the AI evaluation harness as a model gate ([ADR-0028](../adr/ADR-0028-ai-quality-program-and-harness.md)). The Tauri Mac compile job is retired in Mac phase M1 ([ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md)).
+
 > **Status legend:** ✅ implemented · 📋 planned.
 > Source: `.github/workflows/{ci.yml,mac.yml,release.yml}`, `deny.toml`, `scripts/*.mjs`, `Cargo.lock`, `package-lock.json`.
 
