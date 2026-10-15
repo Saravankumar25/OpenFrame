@@ -116,7 +116,7 @@ HTML recreations of screens made for the website.
 Listed with their owners in [owner-decisions.md](../implementation/owner-decisions.md) section 2:
 
 1. Final prices, currencies and refund rules.
-2. The wording of the product description. The application text, the AI policy text and the installer description still say
-   "filmmakers"; they change to "writers, screenwriters and production teams" in phase W1 when the owner approves the copy.
+2. Decided 2026-10-16: the product description says "writers, screenwriters and production teams" (window and installer
+   text changed in phase W1). The AI instructions change after the W5 measurement exists (ADR-0028).
 3. The end-user licence agreement, which must pass on every shipped model's use restrictions.
 4. What "build the website manually" means (Chapter 2).

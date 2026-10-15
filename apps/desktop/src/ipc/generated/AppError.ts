@@ -3,7 +3,7 @@ import type { ErrorCode } from "./ErrorCode";
 
 export type AppError = { code: ErrorCode, 
 /**
- * Human, filmmaker-oriented explanation. Safe to show in the UI.
+ * Plain explanation for the person using the app. Safe to show in the UI.
  */
 message: string, 
 /**

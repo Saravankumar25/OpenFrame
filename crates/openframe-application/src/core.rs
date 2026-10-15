@@ -367,7 +367,7 @@ impl AppCore {
         Ok(p.clone())
     }
 
-    /// The local filmmaker. Ordinary local use needs no account (Security §5.3);
+    /// The local user. Ordinary local use needs no account (Security §5.3);
     /// the local user is the project's Owner unless the project says otherwise.
     pub fn local_actor(&self) -> Actor {
         let p = self.profile();

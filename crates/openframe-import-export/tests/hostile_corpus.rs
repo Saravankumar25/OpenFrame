@@ -48,7 +48,7 @@ enum Expect {
     Fails(&'static str),
 }
 
-/// A human error: OpenFrame code family, a sentence for a filmmaker, no parser internals.
+/// A human error: OpenFrame code family, a sentence for the user, no parser internals.
 #[track_caller]
 fn assert_human(e: &AppError, case: &str) {
     let code = e.code_str();

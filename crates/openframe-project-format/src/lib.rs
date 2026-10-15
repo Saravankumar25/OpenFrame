@@ -1,6 +1,6 @@
 //! Local project format (docs/engineering/12-project-file-format.md, ADR-0003).
 //!
-//! A project is one folder named `<Title>.openframe`, presented to filmmakers
+//! A project is one folder named `<Title>.openframe`, presented to users
 //! as a single project. Its internals are an implementation detail:
 //!
 //! ```text
@@ -330,7 +330,7 @@ pub fn default_projects_dir() -> PathBuf {
     documents_dir().join("OpenFrame").join("Projects")
 }
 
-/// Default location for the filmmaker's Global Idea Vault (user content, so it lives in Documents).
+/// Default location for the user's Global Idea Vault (user content, so it lives in Documents).
 pub fn default_global_vault_dir() -> PathBuf {
     documents_dir().join("OpenFrame").join("Global Idea Vault")
 }

@@ -1,7 +1,7 @@
 //! stale proposal tests: stale-proposal tests per domain (AI spec §20, AI-AC-014, ADR-0013, ADR-0019;
 //! CONTRIBUTING §2 invariant 2).
 //!
-//! For every domain the cycle is the one a filmmaker can hit: the assistant retrieves the
+//! For every domain the cycle is the one a user can hit: the assistant retrieves the
 //! project and prepares a Change Set through the real proposal tool; the user then edits a
 //! row that proposal was built on through the normal operation; accepting must refuse
 //! (Stale or Conflict) and change nothing; "Re-check & Review" must rebuild the proposal

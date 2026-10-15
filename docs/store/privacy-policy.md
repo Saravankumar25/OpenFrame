@@ -22,7 +22,7 @@
 **Publisher:** [Publisher legal name as shown in the Microsoft Store]
 **Contact:** [privacy contact e-mail address or web form]
 
-OpenFrame Studio ("OpenFrame", "the app") is a desktop application for filmmakers. It covers
+OpenFrame Studio ("OpenFrame", "the app") is a desktop application for writers, screenwriters and production teams. It covers
 ideas, story, screenplay and production planning. It is built to work on your computer, without an
 account and without sending your work anywhere. This policy explains what the app stores, when it
 connects to the internet, and what control you have.

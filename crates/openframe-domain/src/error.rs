@@ -1,7 +1,7 @@
 //! Stable error taxonomy (ESD §12).
 //!
 //! Every backend error carries a stable machine code (e.g. `storage.disk_full`)
-//! used by the frontend for behaviour, a filmmaker-facing message (never raw
+//! used by the frontend for behaviour, a plain message for the user (never raw
 //! SQLite/OS text), optional technical detail for logs/diagnostics, and a
 //! retry hint. The frontend must branch on `code`, never on `message`.
 
@@ -25,7 +25,7 @@ impl std::fmt::Display for ErrorCode {
 #[error("{code}: {message}")]
 pub struct AppError {
     pub code: ErrorCode,
-    /// Human, filmmaker-oriented explanation. Safe to show in the UI.
+    /// Plain explanation for the person using the app. Safe to show in the UI.
     pub message: String,
     /// Technical detail for diagnostics. Callers must not put project content here.
     #[ts(optional)]

@@ -96,7 +96,7 @@ openframe-ai  AiManager
    ├─ download    resumable, retried, SHA-256 verified, quarantining downloads
    ├─ store       %LOCALAPPDATA%/OpenFrame/{models,runtimes} + atomic active.json
    ├─ supervisor  chat sidecar  (llama-server, loopback, -c 8192)
-   │              embedding sidecar (llama-server --embedding --pooling cls, CPU only)
+   │              embedding sidecar (llama-server --embedding --pooling cls, CPU only)   [Superseded in part, ADR-0029, 2026-10-16 sweep: the graphics-card decision function chooses CPU or GPU per device; CPU stays the fallback.]
    └─ model       ChatModel adapter; AiManager::embed / embedding_info (C1 API)
 ```
 

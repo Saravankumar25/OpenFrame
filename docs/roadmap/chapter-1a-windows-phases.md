@@ -56,7 +56,8 @@ only the existing AI code. W7 and W8 may run side by side after W6.
   `C:/dev/OpenFrame/.git`, which no longer exists, so their branches are gone and git does not list them; the review
   compares each folder's files with `main`.
 - **Wording.** Change "filmmakers" to "writers, screenwriters and production teams" in the window description, the
-  installer text, the AI policy text and the README, once the owner approves the sentence.
+  installer text, the AI policy text and the README, once the owner approves the sentence. Done 2026-10-16 for the window,
+  installer and package text; the owner moved the AI instructions to after the W5 measurement (ADR-0028).
 - **Owner tasks.** The macOS version of the Intel MacBook; approval of the wording; approval of the worktree review.
 
 **Exit.** All gates run and pass. The status file carries proof levels. The repository contains no old rule next to a new one

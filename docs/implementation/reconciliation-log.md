@@ -15,6 +15,15 @@
   exempt list lost its spec-digest entry (the archive is skipped as a whole) and its living-docs baseline fell from 37 to 29.
 - CONTRIBUTING.md section 6 still described pull requests for every change and Conventional Commits; it now states the
   owner git flow of 2026-10-06 and 2026-10-08 (local commits in normal prose, push and pull requests only on the owner word).
+- Conflict sweep (grep of `masterplan.md`, the launch register and `docs/specs/` for bundled models, the Tauri Mac shell,
+  processor-only, the 12-character password, model judges and "one model"): marked in place with "Superseded (ADR-00xx,
+  2026-10-16 sweep)" or an "Amended" note: masterplan "Web view behaviour on Mac" and "Disk image target" (ADR-0027) and
+  "App Store Connect details" (ADR-0026); the runtime specification diagram line "CPU only" (ADR-0029); the AI specification
+  decisions row (ADR-0028, ADR-0029); the ESD "Desktop container" row (ADR-0027). Lines that only state the current build
+  ("the current build still bundles the models") or agree with the ADRs ("no second model acting as critic") were left.
+- Wording: "filmmakers" replaced in `tauri.conf.json` (short and long description), `package.json`, the MSIX store
+  configuration, CONTRIBUTING, the privacy policy draft, the beta rows of the plan and the launch register, and code comments;
+  kept on purpose in the AI instructions (owner, until W5), the specifications, ADR-0003 and the UI phrase "filmmaking".
 - Plan corrections found in the code: `reqwest` is already macOS-only in the Tauri shell (no W1 change; removed in M1);
   the 39 worktree folders point at a git folder that no longer exists.
 

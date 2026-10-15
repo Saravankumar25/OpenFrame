@@ -16,7 +16,7 @@
 //!
 //! - **Unknown never blocks.** When a store cannot be reached or an adapter is not wired, the
 //!   state is [`EntitlementState::Unknown`] and the user can open, edit and export. A paid app
-//!   must never hold a filmmaker's work hostage to a licence server.
+//!   must never hold a writer's work hostage to a licence server.
 //! - **Expiry never loses data.** Nothing is ever deleted. In the two store builds (Mac App Store
 //!   and Microsoft Store) an ended trial or a refunded purchase locks opening, editing and
 //!   exporting until a purchase or a restore (owner decisions 2026-10-07, ADR-0022 and ADR-0023);

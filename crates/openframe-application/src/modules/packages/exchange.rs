@@ -95,7 +95,7 @@ pub struct ExScene {
 }
 
 impl ExScene {
-    /// The scene number a filmmaker sees: the production number when there is one.
+    /// The scene number a user sees: the production number when there is one.
     pub fn label(&self) -> String {
         scene_number_label(self.number, self.production_number.as_deref())
     }

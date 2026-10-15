@@ -84,7 +84,7 @@ OpenFrame must feel like one fast native desktop tool even though the UI is web-
 
 | Area | Choice | Engineering rationale |
 |---|---|---|
-| Desktop container | Tauri v2 | Native Rust backend, OS webview, smaller distribution than bundling Chromium |
+| Desktop container | Tauri v2 | Native Rust backend, OS webview, smaller distribution than bundling Chromium. Windows only since ADR-0027; the Mac shell is SwiftUI over the same Rust core. |
 | Frontend | React + TypeScript + Vite | Mature desktop-style interactive UI and fast iteration |
 | Styling | Tailwind CSS + OpenFrame design tokens | Consistent design system; no business logic in styling |
 | UI primitives | Radix UI or equivalent accessible primitives | Menus/dialogs/focus behavior |

@@ -122,7 +122,7 @@ slow I/O. They do the slow work first, then apply the result in one short `mutat
 `network.*`, `security.*` (`unknown_operation`, `path_rejected`, `path_escape`, `signature_invalid`), `internal.*`
 (`unexpected`, `cancelled`, `open_failed`).
 
-- `message` is filmmaker-friendly and final. `detail` is technical and must never contain project content.
+- `message` is plain, final and written for the person using the app. `detail` is technical and must never contain project content.
 - `std::io::Error` and `rusqlite::Error` map to specific codes: disk full, access denied, drive unavailable, busy,
   corrupt, not found.
 - The UI branches on `code` only (`OpError.is(prefix)`).

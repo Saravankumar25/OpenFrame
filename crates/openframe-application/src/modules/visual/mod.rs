@@ -1,7 +1,7 @@
 //! Visual planning: Moodboards, Storyboards and Shot Lists
 //! (FSD §31–34, §55, §101–103; FSD-SHOT-001, FSD-STB-001, FSD-PROD-011..020).
 //!
-//! The three tools are independent (FSD §34): a filmmaker can go
+//! The three tools are independent (FSD §34): a user can go
 //! script → shots → storyboard, script → storyboard → shots, or shots only.
 //! Shots and scene storyboards follow screenplay scene IDENTITY (lineage) in the
 //! active Production Source draft (or the current draft before production

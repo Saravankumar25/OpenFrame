@@ -112,7 +112,7 @@ impl FsEffect {
 pub struct OperationMetadata {
     /// Product area, e.g. "Story" (set once per module `register` fn).
     pub module: &'static str,
-    /// Plain-language meaning of the operation for a filmmaker.
+    /// Plain-language meaning of the operation for the person using the app.
     pub description: &'static str,
     pub ai_exposure: AiExposure,
     pub operation_class: OpClass,

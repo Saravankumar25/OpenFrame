@@ -223,7 +223,7 @@ pub enum WarningLevel {
 pub struct Warning {
     /// Stable code, e.g. `uncertain_heading`, `unsupported_fdx_element`.
     pub code: String,
-    /// Filmmaker-facing message.
+    /// User-facing message.
     pub message: String,
     pub level: WarningLevel,
     /// Index into [`ScreenplayDoc::scenes`] when the warning concerns one scene.

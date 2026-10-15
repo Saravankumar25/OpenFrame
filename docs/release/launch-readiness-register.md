@@ -628,7 +628,7 @@ Every requirement key belongs to an area. The execution requirements (EXE-01 to 
 | GTM | Website, email and marketing | Acquisition, content, email, social, reviews and marketing truth. |
 | BCP | Backup and business continuity | Company backups, recovery objectives, second operator and recovery drills. |
 | OPS | Release operations | CI/CD, release evidence, launch, monitoring and maintenance. |
-| BETA | Beta programme | Real-filmmaker beta on a release candidate and the hardware matrix. |
+| BETA | Beta programme | Beta with real writers and production teams on a release candidate and the hardware matrix. |
 | REL | Release engineering | Release gates and supply-chain checks. |
 
 # Feature contract template
@@ -1512,7 +1512,7 @@ Requirements present in the owner's notes (`docs/archive/notes/store-certificati
 | `STORE-014` | Windows App Certification Kit report (zero failures) archived for the exact package | Must ship | Microsoft Store package |
 | `STORE-015` | Supported Windows versions in manifest, listing and docs agree with what was tested | Must ship | Project controls and baseline |
 | `STORE-016` | Store policy version re-checked on the submission date | Should ship | Final review and submission |
-| `BETA-001` | Real-filmmaker beta on a release candidate, with feedback channel and a closed list of findings | Must ship | Product-wide quality, accessibility and beta |
+| `BETA-001` | Beta with real writers and production teams on a release candidate, with feedback channel and a closed list of findings | Must ship | Product-wide quality, accessibility and beta |
 | `BETA-002` | Windows hardware matrix (minimum, recommended, discrete GPU, high DPI, multi-monitor) | Must ship | AI assistant quality and hardening; Product-wide quality, accessibility and beta |
 | `GTM-011` | Launch trailer and Store media | Should ship | Certification, publication and launch |
 | `GTM-012` | Founder story and public narrative | Should ship | Certification, publication and launch |

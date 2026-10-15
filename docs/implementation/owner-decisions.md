@@ -102,7 +102,7 @@ The "Recommendation" column is advice, not a decision. "Blocks" names the phase 
 | Beta programme | Chapter 3 | 8 to 15 real users for 3 to 4 weeks on a release candidate | none |
 | Store payment route on Windows | Chapter 3 | Store trial and purchase, or an own system; read the current policy first | Chapter 3 plan |
 | Stronger team-gate protection and encryption at rest | Chapter 3 | Decide with the store builds; options in [ADR-0030](../adr/ADR-0030-verification-ladder-and-release-flow.md) | ADR-0030 |
-| Product wording "filmmakers" | W1 | Replace with "writers, screenwriters and production teams" in the window description, installer, AI policy and README after the owner approves the sentence | [vision](../product/vision-and-scope.md) |
+| Product wording "filmmakers" | W1 | **Decided 2026-10-16 (owner, in chat):** the long description uses the README sentence "a local-first desktop studio for writers, screenwriters and production teams, covering ..."; done in `tauri.conf.json`, package descriptions, CONTRIBUTING, privacy policy draft and code comments. The AI instructions keep their wording until the W5 measurement exists (ADR-0028) | [vision](../product/vision-and-scope.md) |
 | Documents folder unknown | W2 | Refuse to start with a plain message (the Windows plan assumes this; confirm) | [37-platform-boundary.md](../engineering/37-platform-boundary.md) |
 | Where new projects are saved by default | W2 | Warn when Documents is synced and offer a local folder; never move existing projects | W2 |
 | Worktree review | W1 | Approve the table of 39 dead worktree folders and 31 unmerged agent branches before anything is removed | [development-storage-policy.md](../development-storage-policy.md) |

@@ -41,7 +41,7 @@ in §20 ("Not implemented / known limits"), never described as if it were.
 | Canonical full-text search (FTS5) | `docs/engineering/16-search.md` |
 | Every registered operation, its AI exposure and the tool that covers it | `docs/engineering/ai-tool-coverage.md` (generated) |
 | Threats and mitigations | `docs/engineering/20-security-threat-model.md` §2 (T17, T18, T25–T33) |
-| Decisions | ADR-0006 (sidecar, signed manifest), ADR-0013 (single model, hybrid RAG, toolbox, agent loop) |
+| Decisions | ADR-0006 (sidecar, signed manifest), ADR-0013 (single model, hybrid RAG, toolbox, agent loop) Amended by ADR-0028 (one provider interface, measured models) and ADR-0029 (graphics card) on 2026-10-15. |
 | Source specification of this architecture | `openframe_ai_agentic_rag_spec_prompt.md` |
 
 ---

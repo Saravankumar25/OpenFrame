@@ -469,7 +469,7 @@ pub fn unsupported_pdf_characters(lay: &Layout) -> Vec<(char, Option<u32>)> {
 /// The scripts the screenplay PDF fonts cover, for messages.
 pub const PDF_SCRIPTS: &str = "English and other Latin-script languages, Hindi, Marathi and Sanskrit (Devanagari), Telugu, Tamil, Malayalam and Kannada";
 
-/// Filmmaker-facing sentence about characters the PDF fonts can't print.
+/// User-facing sentence about characters the PDF fonts can't print.
 /// `what` names the document, for example "This screenplay".
 pub fn unsupported_characters_message(bad: &[(char, Option<u32>)], what: &str) -> String {
     let sample: String = bad

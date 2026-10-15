@@ -281,7 +281,7 @@ Goal: one product, two thin adapters. Feature code never learns which operating 
 - [ ] **Mac continuous integration** on Apple silicon: format, clippy, Rust tests, web tests, bindings. (Needs Mac hardware)
 - [ ] **AI engine on Mac.** Build the engine for Apple silicon with Metal, supervise it with the same security properties as on Windows, sign it inside the app bundle. (Needs Mac hardware)
 - [ ] **Mac App Store sandbox compatibility.** App Sandbox entitlements, security-scoped access to project folders the user picks, outgoing network only for the model download (ADR-0026), downloaded model files written to the app container, no downloaded programs, helper process allowed to inherit the sandbox. Test all of it. (Later: store publishing) (Needs Mac hardware)
-- [ ] **Web view behaviour on Mac.** Clipboard, input methods, shortcuts, drag and drop, fonts and the screenplay editor tested in WebKit. (Needs Mac hardware)
+- [ ] **Web view behaviour on Mac.** Clipboard, input methods, shortcuts, drag and drop, fonts and the screenplay editor tested in WebKit. (Needs Mac hardware) **Superseded (ADR-0027, 2026-10-16 sweep):** the Mac shell is SwiftUI with no web view; Mac input, clipboard and editor behaviour are tested in the SwiftUI shell in the Mac phases.
 - [ ] **Project round trip between Windows and Mac.** A project made on one opens, edits and exports identically on the other. (Needs Mac hardware)
 - [ ] **Full-journey end-to-end test on Mac.** The same journey as on Windows. (Needs Mac hardware)
 
@@ -463,7 +463,7 @@ Contract: `docs/engineering/33-production-depth-contract.md`. Extend the existin
 - [ ] **Second security review** of IPC, file scope, parsers, packages, themes, AI tools, process lifecycle, and the absence of an updater in store builds; threat model updated; all high findings fixed with tests.
 - [ ] **Offline run** of the full core workflow with the network disabled, with a traffic capture.
 - [ ] **Soak run on a release candidate.** Hours, repeated sleep and resume, repeated project switching.
-- [ ] **Beta.** 8 to 15 real filmmakers use a release candidate for 3 to 4 weeks; feedback comes through the support channel; serious findings fixed; summary archived. (Later: store publishing)
+- [ ] **Beta.** 8 to 15 real writers, screenwriters and production team members use a release candidate for 3 to 4 weeks; feedback comes through the support channel; serious findings fixed; summary archived. (Later: store publishing)
 - [ ] **English-only check.** User text is kept in one place so translation can be added later, or the exception is recorded.
 - [ ] **User manual rebuilt** from the shipped UI; LAN figures removed; Offline AI and new features described; the manual source and how to rebuild it are stored.
 - [ ] **Remaining LAN text removed** from the specification bodies, the security specification and the UX mock-up references.
@@ -524,7 +524,7 @@ Business model: paid, with a 7-day free trial and no credit card to start. One s
 - [ ] **Binary hardening gate** applies to this file too.
 - [ ] **Internal `.exe` build with the team gate on, unsigned.** Built on the owner's build PC with `OPENFRAME_TEAM_PASSWORD` set by the owner (nobody else sees or stores it), unsigned (owner decision 2026-10-08), team password gate on, AI runtime in the package and the model download after install (ADR-0026), no trial, payment or store lock; installs, launches, asks the password and runs the full journey on a clean Windows 11 machine.
 - [ ] **Release-build smoke test.** One end-to-end spec drives the release executable (not the debug test build): start, create, type, close, reopen, an AI answer, and only loopback sockets. With and without the team password gate. Added 2026-10-09: the existing suite drives debug builds only, so the gate, the release log filter and the bundled resource path are covered by unit tests alone.
-- [ ] **Disk image target.** `tauri.conf.json` gains the `dmg` bundle target for the Mac build; the unsigned image and the Gatekeeper steps are documented as an installation restriction. (Needs Mac hardware) Added 2026-10-09: today the configuration lists only `nsis` and `msi`, and the Mac workflow only runs `cargo check`.
+- [ ] **Disk image target.** `tauri.conf.json` gains the `dmg` bundle target for the Mac build; the unsigned image and the Gatekeeper steps are documented as an installation restriction. (Needs Mac hardware) Added 2026-10-09: today the configuration lists only `nsis` and `msi`, and the Mac workflow only runs `cargo check`. **Superseded (ADR-0027, 2026-10-16 sweep):** the `.dmg` comes from the SwiftUI shell build in Mac phase M9, not from `tauri.conf.json`.
 
 **Done when:** the internal unsigned installer passes the clean-machine tests with the team gate on and Offline AI working
 offline, and the updater works. (Changed 2026-10-08 from "a signed installer"; signing is checked at the store and
@@ -540,7 +540,7 @@ Confirm Apple's current rules at build time. Known constraints: App Sandbox is r
 - [ ] **Sandbox behaviour.** Projects open and save in folders the user picks; downloaded model files and writable AI data and logs live in the app container (ADR-0026); AI engine runs as a sandboxed helper. (Later: store publishing) (Needs Mac hardware)
 - [ ] **No updater** in this build; updates come only from the App Store. (Later: store publishing) (Needs Mac hardware)
 - [ ] **TestFlight for Mac** run on a clean Apple silicon Mac: install, first launch, create project, write, save, close, reopen, update, delete, reinstall. (Later: store publishing) (Needs Mac hardware)
-- [ ] **App Store Connect details.** Privacy answers, export compliance (encryption), age rating, category, pricing, screenshots at the required sizes, review notes explaining the bundled offline AI and the trial. (Later: store publishing) (Needs Mac hardware)
+- [ ] **App Store Connect details.** Privacy answers, export compliance (encryption), age rating, category, pricing, screenshots at the required sizes, review notes explaining the bundled offline AI and the trial. (Later: store publishing) (Needs Mac hardware) **Superseded in part (ADR-0026, 2026-10-16 sweep):** the models download after install, so the review notes explain the download, not a bundled model.
 - [ ] **App Review readiness.** Review notes, demo steps and no unfinished features listed. (Later: store publishing)
 
 **Done when:** the package passes Apple's validation and a clean-machine TestFlight run.

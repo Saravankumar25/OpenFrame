@@ -179,7 +179,7 @@ pub fn register(r: &mut Registry) {
 /// The actor used against a vault store.
 ///
 /// The Project Idea Vault follows the project's roles (a Viewer cannot add).
-/// The Global Idea Vault belongs to the filmmaker on this computer (Domain §4:
+/// The Global Idea Vault belongs to the user on this computer (Domain §4:
 /// "filmmaker-owned, cross-project"), so the local user always owns it whatever
 /// their role in the currently open project, while changes arriving from another
 /// person's exchange package can never reach it (project boundaries stay intact).

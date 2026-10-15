@@ -2,7 +2,7 @@
   "name": "openframe-studio",
   "private": true,
   "version": "0.1.0",
-  "description": "OpenFrame Studio — local-first desktop filmmaking studio (Tauri v2 + React + Rust + SQLite).",
+  "description": "OpenFrame Studio: local-first desktop studio for writers, screenwriters and production teams (Tauri v2, React, Rust, SQLite).",
   "license": "SEE LICENSE IN LICENSE-PENDING.md",
   "workspaces": [
     "apps/desktop",

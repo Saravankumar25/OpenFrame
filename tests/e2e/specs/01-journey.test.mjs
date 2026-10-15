@@ -1,4 +1,4 @@
-// The main desktop journey, in ONE running app, as a filmmaker would do it:
+// The main desktop journey, in ONE running app, as a writer would do it:
 // first launch → project → Idea Vault → Story (act, sequence, cards, keyboard
 // reorder, undo) → Build Screenplay → write in the editor → import Fountain →
 // Production Source + accept a suggestion → schedule a scene → call sheet →

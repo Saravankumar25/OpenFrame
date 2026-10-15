@@ -951,7 +951,7 @@ mod hostile {
             err.code_str(),
             err.detail
         );
-        // The message is for a filmmaker: no paths, no parser jargon.
+        // The message is for the writer: no paths, no parser jargon.
         assert!(
             !err.message.contains('\\') && !err.message.contains("serde"),
             "{}",
