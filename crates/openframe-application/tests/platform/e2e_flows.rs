@@ -627,7 +627,9 @@ fn e2e_import_fountain_and_fdx_then_breakdown_and_ai_counts() {
     let env = TestEnv::with_project("Black Rain", "Feature Film");
     let fountain = env.write_file(
         "Black Rain.fountain",
-        include_bytes!("../../../openframe-import-export/tests/fixtures/screenplay/sample.fountain"),
+        include_bytes!(
+            "../../../openframe-import-export/tests/fixtures/screenplay/sample.fountain"
+        ),
     );
     let p = env.ok("screenplay.import_preview", json!({ "path": fountain }));
     assert_eq!(p["sourceFormat"], "fountain");

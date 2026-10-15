@@ -205,9 +205,14 @@ fn assert_backup_matches_fixture(backup: &Path, fixture: &Path, version: usize) 
     };
     let (b, f) = (open(backup), open(fixture));
     let user_version = |c: &rusqlite::Connection| -> i64 {
-        c.query_row("PRAGMA user_version", [], |r| r.get(0)).unwrap()
+        c.query_row("PRAGMA user_version", [], |r| r.get(0))
+            .unwrap()
     };
-    assert_eq!(user_version(&b), version as i64, "v{version}: backup schema version");
+    assert_eq!(
+        user_version(&b),
+        version as i64,
+        "v{version}: backup schema version"
+    );
     let check: String = b
         .query_row("PRAGMA integrity_check", [], |r| r.get(0))
         .unwrap();
