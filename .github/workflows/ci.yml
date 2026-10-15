@@ -83,7 +83,7 @@ jobs:
         run: git diff --exit-code -- docs/engineering/ai-tool-coverage.md
 
   governance:
-    name: "Governance: architecture lint, migrations, feature status"
+    name: "Governance: architecture lint, migrations, feature status, links, secrets"
     runs-on: windows-latest
     timeout-minutes: 10
     steps:
@@ -118,8 +118,11 @@ jobs:
       - name: Writing standard (no em dashes, no banned phrases; ratchet)
         run: node scripts/check-writing-standard.mjs
 
-      - name: Markdown links resolve
+      - name: Markdown links resolve and app addresses are on the allow-list
         run: node scripts/check-links.mjs
+
+      - name: Secret scan of the working tree and the whole history (ADR-0030)
+        run: node scripts/check-secrets.mjs
 
       - name: Governance check self-tests
         run: node --test scripts/tests/governance.test.mjs

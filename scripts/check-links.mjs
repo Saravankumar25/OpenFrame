@@ -54,9 +54,83 @@ for (const file of walk(ROOT)) {
   });
 }
 
+// ---------------------------------------------------------------------------- app addresses
+// Every web address in the shipped app source must be on the allow-list in scripts/app-addresses.json,
+// and every listed address must still appear (no stale entries). Test files and generated bindings are skipped.
+
+const ADDRESS_LIST = "scripts/app-addresses.json";
+const APP_SOURCES = [
+  "apps/desktop/src",
+  "apps/desktop/src-tauri/src",
+  "apps/desktop/src-tauri/capabilities",
+  ...(fs.existsSync(path.join(ROOT, "crates")) ? fs.readdirSync(path.join(ROOT, "crates")).map((c) => `crates/${c}/src`) : []),
+];
+const APP_FILES = ["apps/desktop/src-tauri/tauri.conf.json", "apps/desktop/index.html"];
+const SOURCE_EXT = /\.(ts|tsx|rs|json|html)$/;
+const NOT_SHIPPED = /(\.test\.tsx?$|\/tests?\/|\/tests\.rs$|\/test_[^/]*\.rs$|\/ipc\/generated\/|\/benches\/|\/fuzz\/)/;
+const normalize = (a) => a.replace(/[./]+$/, "");
+
+function* sourceFiles(dir) {
+  if (!fs.existsSync(dir)) return;
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (SKIP_DIRS.has(entry.name)) continue;
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) yield* sourceFiles(full);
+    else if (SOURCE_EXT.test(entry.name)) yield full;
+  }
+}
+
+const allowed = new Map();
+try {
+  for (const a of JSON.parse(fs.readFileSync(path.join(ROOT, ADDRESS_LIST), "utf8")).addresses) {
+    if (!a.address || !a.why) errors.push(`${ADDRESS_LIST}  every entry needs an address and a why`);
+    else allowed.set(a.prefix ? a.address : normalize(a.address), a);
+  }
+} catch (e) {
+  errors.push(`${ADDRESS_LIST}  cannot be read: ${e.message}`);
+}
+const seen = new Set();
+let sources = 0;
+const appFiles = [...APP_SOURCES.flatMap((d) => [...sourceFiles(path.join(ROOT, d))]), ...APP_FILES.map((f) => path.join(ROOT, f))];
+for (const file of appFiles) {
+  const rel = path.relative(ROOT, file).split(path.sep).join("/");
+  if (NOT_SHIPPED.test(`/${rel}`) || !fs.existsSync(file)) continue;
+  sources++;
+  let lines = fs.readFileSync(file, "utf8").split(/\r?\n/);
+  // An inline Rust test module is not shipped; by convention it closes the file.
+  const testModule = rel.endsWith(".rs") ? lines.findIndex((l) => /^\s*#\[cfg\(test\)\]/.test(l)) : -1;
+  if (testModule >= 0) lines = lines.slice(0, testModule);
+  lines.forEach((line, i) => {
+    if (/^\s*(\/\/|\/?\*)/.test(line)) return; // comments are read by people, never opened by the app
+    for (const m of line.matchAll(/\bhttps?:\/\/[A-Za-z0-9][A-Za-z0-9._~:/?#@!$&*+=%-]*/g)) {
+      const address = normalize(m[0]);
+      const prefix = [...allowed.values()].find((a) => a.prefix && address.startsWith(a.address));
+      if (prefix) seen.add(prefix.address);
+      else if (allowed.has(address)) seen.add(address);
+      else errors.push(`${rel}:${i + 1}  app address ${address} is not in ${ADDRESS_LIST}`);
+    }
+  });
+}
+for (const address of allowed.keys()) {
+  if (!seen.has(address)) errors.push(`${ADDRESS_LIST}  ${address} no longer appears in the app; remove it from the list`);
+}
+
+if (process.argv.includes("--online")) {
+  for (const a of allowed.values()) {
+    if (!a.online) continue;
+    try {
+      const r = await fetch(a.address, { method: "GET", redirect: "follow", signal: AbortSignal.timeout(15000) });
+      if (r.status >= 400) errors.push(`${ADDRESS_LIST}  ${a.address} answered ${r.status}`);
+    } catch (e) {
+      errors.push(`${ADDRESS_LIST}  ${a.address} could not be reached: ${e.cause?.code ?? e.message}`);
+    }
+  }
+}
+
 if (errors.length) {
-  console.error(`check-links: ${errors.length} broken link(s)`);
+  console.error(`check-links: ${errors.length} problem(s)`);
   for (const e of errors) console.error(`  ${e}`);
   process.exit(1);
 }
-console.log(`check-links: OK (${checked} documents)`);
+const online = process.argv.includes("--online") ? ", online addresses fetched" : "";
+console.log(`check-links: OK (${checked} documents; ${seen.size} app addresses in ${sources} source files${online})`);

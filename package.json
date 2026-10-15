@@ -33,8 +33,11 @@
     "check:feature-status": "node scripts/check-feature-status.mjs",
     "check:writing": "node scripts/check-writing-standard.mjs",
     "check:links": "node scripts/check-links.mjs",
+    "check:links:online": "node scripts/check-links.mjs --online",
+    "check:secrets": "node scripts/check-secrets.mjs",
+    "scan:installer": "node scripts/scan-installer.mjs",
     "check:reachability": "node scripts/check-reachability.mjs",
-    "check:governance": "npm run check:architecture && npm run check:migrations && npm run check:feature-status && npm run check:reachability && npm run check:writing && npm run check:links && node scripts/plan-status.mjs --check && node --test scripts/tests/governance.test.mjs",
+    "check:governance": "npm run check:architecture && npm run check:migrations && npm run check:feature-status && npm run check:reachability && npm run check:writing && npm run check:links && npm run check:secrets && node scripts/plan-status.mjs --check && node --test scripts/tests/governance.test.mjs",
     "verify": "npm run format:check && npm run lint && npm run typecheck && npm run check:governance && npm run test"
   },
   "engines": {

@@ -1,4 +1,5 @@
-// Self-tests for the governance checks (architecture lint, migration policy, feature status check, reachability).
+// Self-tests for the governance checks (architecture lint, migration policy, feature status check, reachability,
+// secret scan, document links and app addresses, installer string scan).
 // Each test copies the files a check reads into a temporary tree, plants one violation and asserts
 // that the check fails with the expected rule, so a check that silently stops working is caught.
 //
@@ -430,4 +431,145 @@ test("plan status --check catches a checked box without evidence, tagged or not"
   const r = run("plan-status.mjs", root, ["--check"]);
   assert.equal(r.status, 1, r.out);
   assert.match(r.out, /masterplan\.md:7 {2}checked box has no \(ev: \.\.\.\) evidence/);
+});
+
+// ---------------------------------------------------------------------------- secret scan
+
+// Fake secrets are joined at run time so the literal never sits in this file.
+const FAKE_AWS = ["AKIA", "Q7ZTESTONLY12345"].join("");
+const FAKE_PASSWORD_LINE = ["OPENFRAME_TEAM_PASSWORD", "=", "pilot-door-1"].join("");
+
+function gitRepo(files) {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "of-secrets-"));
+  const git = (...args) => {
+    const r = spawnSync("git", ["-c", "user.name=test", "-c", "user.email=test@example.invalid", ...args], { cwd: root, encoding: "utf8" });
+    assert.equal(r.status, 0, r.stderr);
+  };
+  git("init", "-q");
+  for (const [rel, text] of Object.entries(files)) write(root, rel, text);
+  git("add", "-A");
+  git("commit", "-q", "-m", "first");
+  return { root, git };
+}
+
+test("secret scan passes on the repository", () => {
+  const r = run("check-secrets.mjs", REPO);
+  assert.equal(r.status, 0, r.out);
+});
+
+test("secret scan finds a key that was committed and later deleted, without printing it", () => {
+  const { root, git } = gitRepo({ "src/config.ts": `export const key = "${FAKE_AWS}";\n`, "README.md": "ok\n" });
+  fs.rmSync(path.join(root, "src/config.ts"));
+  git("add", "-A");
+  git("commit", "-q", "-m", "remove");
+  const r = run("check-secrets.mjs", root);
+  assert.equal(r.status, 1, r.out);
+  assert.match(r.out, /history \w+ src\/config\.ts:1 {2}aws-access-key/);
+  assert.ok(!r.out.includes(FAKE_AWS), "the finding must not repeat the secret");
+});
+
+test("secret scan finds an untracked .env file and a team password assignment in the working tree", () => {
+  const { root } = gitRepo({ "README.md": "ok\n" });
+  write(root, ".env", "X=1\n");
+  write(root, "build.ps1", `$env:${FAKE_PASSWORD_LINE}\n`);
+  write(root, ".env.example", "X=\n");
+  const r = run("check-secrets.mjs", root);
+  assert.equal(r.status, 1, r.out);
+  assert.match(r.out, /^ {2}\.env {2}secret file/m);
+  assert.match(r.out, /build\.ps1:1 {2}team-password-value/);
+  assert.doesNotMatch(r.out, /\.env\.example/);
+});
+
+test("secret scan accepts a line marked as an allowed example", () => {
+  const { root } = gitRepo({ "docs/rules.md": `Example: ${FAKE_AWS} (secret-scan: allow)\n` });
+  const r = run("check-secrets.mjs", root);
+  assert.equal(r.status, 0, r.out);
+});
+
+// ---------------------------------------------------------------------------- document links and app addresses
+
+const ADDRESSES = (list) => JSON.stringify({ addresses: list });
+const linkTree = (files) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "of-links-"));
+  for (const [rel, text] of Object.entries(files)) write(root, rel, text);
+  return root;
+};
+
+test("link check passes on the repository", () => {
+  const r = run("check-links.mjs", REPO);
+  assert.equal(r.status, 0, r.out);
+});
+
+test("link check catches a broken document link", () => {
+  const root = linkTree({ "docs/a.md": "See [b](b.md).\n", "scripts/app-addresses.json": ADDRESSES([]) });
+  const r = run("check-links.mjs", root);
+  assert.equal(r.status, 1, r.out);
+  assert.match(r.out, /docs\/a\.md:1 {2}broken link b\.md/);
+});
+
+test("link check catches an app address that is not on the allow-list, and a stale entry", () => {
+  const root = linkTree({
+    "apps/desktop/src/help.ts": 'export const HELP = "https://help.example.invalid/start";\n',
+    "apps/desktop/src/help.test.ts": 'const ignored = "https://tests.example.invalid";\n',
+    "crates/core/src/lib.rs": '// https://comment.example.invalid\npub fn f() {}\n#[cfg(test)]\nmod tests { const U: &str = "https://test.example.invalid"; }\n',
+    "scripts/app-addresses.json": ADDRESSES([{ address: "https://gone.example.invalid", why: "old" }]),
+  });
+  const r = run("check-links.mjs", root);
+  assert.equal(r.status, 1, r.out);
+  assert.match(r.out, /help\.ts:1 {2}app address https:\/\/help\.example\.invalid\/start is not in/);
+  assert.match(r.out, /https:\/\/gone\.example\.invalid no longer appears/);
+  assert.doesNotMatch(r.out, /tests\.example|comment\.example|test\.example/);
+});
+
+test("link check accepts listed app addresses and prefix entries", () => {
+  const root = linkTree({
+    "apps/desktop/src/help.ts": 'export const HELP = "https://help.example.invalid/start/";\nconst ns = "http://ns.example.invalid/a/b";\n',
+    "scripts/app-addresses.json": ADDRESSES([
+      { address: "https://help.example.invalid/start", why: "help" },
+      { address: "http://ns.example.invalid/", prefix: true, why: "namespace" },
+    ]),
+  });
+  const r = run("check-links.mjs", root);
+  assert.equal(r.status, 0, r.out);
+});
+
+// ---------------------------------------------------------------------------- installer string scan
+
+function scan(files, env = {}) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "of-scan-"));
+  for (const [rel, buf] of Object.entries(files)) {
+    fs.mkdirSync(path.dirname(path.join(dir, rel)), { recursive: true });
+    fs.writeFileSync(path.join(dir, rel), buf);
+  }
+  const r = spawnSync(process.execPath, [script("scan-installer.mjs"), dir], {
+    encoding: "utf8",
+    env: { ...process.env, OPENFRAME_SCAN_USER: "builderperson", OPENFRAME_TEAM_PASSWORD: "", ...env },
+  });
+  return { status: r.status, out: `${r.stdout}${r.stderr}` };
+}
+const binary = (...parts) => Buffer.concat([Buffer.from([0, 1, 2, 0]), ...parts, Buffer.from([0, 0, 3])]);
+
+test("installer scan passes a clean file", () => {
+  const r = scan({ "app.exe": binary(Buffer.from("OpenFrame Studio release build")) });
+  assert.equal(r.status, 0, r.out);
+});
+
+test("installer scan finds a personal path in UTF-16, a secret and the user name, without printing them", () => {
+  const r = scan({
+    "app.exe": binary(Buffer.from("C:\\Users\\alice\\src\\main.rs", "utf16le"), Buffer.from(`k=${FAKE_AWS}`)),
+    "data/readme.txt": binary(Buffer.from("made by builderperson today")),
+  });
+  assert.equal(r.status, 1, r.out);
+  assert.match(r.out, /app\.exe @\d+ {2}personal path/);
+  assert.match(r.out, /app\.exe @\d+ {2}aws-access-key/);
+  assert.match(r.out, /readme\.txt @\d+ {2}build computer user name/);
+  assert.ok(!r.out.includes("alice") && !r.out.includes(FAKE_AWS), r.out);
+});
+
+test("installer scan finds the team password in plain text", () => {
+  const secret = ["door", "lock", "42"].join("-");
+  const r = scan({ "app.exe": binary(Buffer.from(secret, "utf16le")) }, { OPENFRAME_TEAM_PASSWORD: secret });
+  assert.equal(r.status, 1, r.out);
+  assert.match(r.out, /team password in plain UTF-16 text/);
+  assert.ok(!r.out.includes(secret), r.out);
 });
