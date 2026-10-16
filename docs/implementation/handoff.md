@@ -31,7 +31,16 @@
    script and Rust lock check accept one processor build plus at most one Vulkan build. This PC: Intel Arc integrated,
    driver 32.0.101.8132, Vulkan loader present. Package grows by about 89 MB with two complete engine folders (report in
    W9). Spec 96 now retries the first screen-reader query (the tree is built only when a reader asks).
-8. **W8 not started.** Plan: manifest envelope signed with Ed25519 (`ed25519-dalek` already in the tree), `.partial`
+8. **W8 on `windows/w8-download`** (stacked on W7). Done: step 1 signed manifest (`openframe-ai/src/download.rs`,
+   tests with a fixed test key, never the production key), step 2 `.partial` download with range resume
+   (`openframe-ai/src/fetch.rs`, local test host in its tests), free-space helper (`openframe-platform` `drives::free_bytes`).
+   Next: `install.rs` (preflight, size and hash check, atomic activation into `models/<version>`, keep the last good
+   version until a health check passes, quarantine), the manager reading models from app data instead of the package,
+   the operations and screens, the ADR-0026 decision 10 tests. Release run 2026-10-16 on the open release exe: 29 of 33
+   files green, 3 debug-only skipped, spec 95 needed a Day Out of Days recipe (fixed), spec 96 a retry (fixed); rerun of
+   the shared group was green for 01, 02, 90 at this rewrite. Performance (release): start 0.72 s, open 0.28 s, 174 MB
+   without AI, 524 MB with AI, typing p95 32 ms (budget 16, open item), first AI answer 42.5 s, idle 0.68 percent of a
+   core with the engine loaded. Earlier plan: manifest envelope signed with Ed25519 (`ed25519-dalek` already in the tree), `.partial`
    download with HTTP range resume, HTTPS only (loopback HTTP in debug tests), redirects only to the same host, size cap,
    free-space preflight (new platform helper), atomic activation into `%LOCALAPPDATA%\OpenFrame\models\<version>`,
    quarantine, the ADR-0026 decision 10 tests against a local host, then the screens.
