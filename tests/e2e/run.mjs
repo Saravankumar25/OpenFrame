@@ -161,6 +161,15 @@ async function main() {
   await setupDrivers();
   if (RELEASE === "gated" && args.has("--no-build")) throw new Error("A gated release run always builds: its password exists only for that run.");
   if (!args.has("--no-build") || !existsSync(APP_BINARY)) buildApp({ release: RELEASE, gatePassword: GATE_PASSWORD });
+  if (RELEASE === "gated") {
+    // The gated executable must embed only the hash of its password, never the password itself
+    // (ADR-0030 decision 6). The scan gets this run's throwaway password through its environment.
+    const scan = spawnSync(process.execPath, [join(E2E_ROOT, "..", "..", "scripts", "scan-installer.mjs"), APP_BINARY], {
+      stdio: "inherit",
+      env: { ...process.env, OPENFRAME_TEAM_PASSWORD: GATE_PASSWORD }, // secret-scan: allow (this run's random test password)
+    });
+    if (scan.status !== 0) throw new Error("The gated release executable failed the string scan.");
+  }
 
   const stamp = new Date().toISOString().replace(/[:.]/g, "-");
   const runRoot = join(E2E_ROOT, ".run", stamp);
