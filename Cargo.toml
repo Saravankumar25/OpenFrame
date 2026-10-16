@@ -12,6 +12,8 @@ members = [
     "crates/openframe-ai",
     "crates/openframe-search",
     "crates/openframe-application",
+    "crates/openframe-ai-checks",
+    "crates/openframe-ai-eval",
     "crates/openframe-test-support",
 ]
 

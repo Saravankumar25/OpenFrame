@@ -126,7 +126,7 @@ openframe-application  modules/ai
       ▼                               openframe-search → <Project>.openframe/cache/intelligence.sqlite
 Registry → Store::mutate → project.sqlite (canonical)
       ▲
-openframe-ai  AiManager: manifest · download · store · supervisor (chat + embedding sidecars) · ChatModel · embed()
+openframe-ai  AiManager: manifest · download · store · supervisor (chat + embedding sidecars) · InferenceProvider · embed()
 ```
 
 Dependency direction is preserved: React is presentation and input only; the application layer owns the agent,
@@ -548,7 +548,7 @@ manifest channel, folders, log files) live in Settings → Offline AI → Techni
 | AI-AC-022 | No autonomous mutation | `no_tool_the_model_can_see_reviews_or_applies_change_sets`, `the_model_cannot_accept_even_when_told_to_in_conversation`, `acceptance_is_refused_for_anything_but_a_local_user_action` |
 | AI-AC-023 | Product questions grounded in the product guide | `ai_ac_023_product_questions_are_grounded_in_the_product_guide` |
 | AI-AC-024 | Follow-ups use bounded history; history personal and persistent | `ai_ac_024_…`, `history_is_bounded_to_recent_turns` |
-| AI-AC-025 | The model adapter never changes data semantics or authorization | `ChatModel` boundary; every agent test runs with a scripted test model |
+| AI-AC-025 | The model adapter never changes data semantics or authorization | `InferenceProvider` boundary; every agent test runs with a scripted test model |
 | AI-AC-026 | Bounded loop: default 8, hard 12, repeated calls stop | `default_step_limit_is_eight_and_the_hard_limit_twelve`, `repeated_identical_calls_stop_the_loop` |
 | AI-AC-027 | Saves never wait for indexing; failures fall back | `spec_15_saves_never_wait_for_embedding_and_typing_stays_responsive`, `spec_33_…` |
 

@@ -4,7 +4,7 @@
 
 use std::sync::Arc;
 
-use openframe_ai::{AiManager, ChatModel, ManagerConfig};
+use openframe_ai::{AiManager, InferenceProvider, ManagerConfig};
 use openframe_domain::{AppError, AppResult};
 use parking_lot::RwLock;
 use serde_json::json;
@@ -15,7 +15,7 @@ use crate::events::{AppEvent, EventSink};
 pub struct AiService {
     manager: Option<Arc<AiManager>>,
     init_error: Option<AppError>,
-    attached: RwLock<Option<Arc<dyn ChatModel>>>,
+    attached: RwLock<Option<Arc<dyn InferenceProvider>>>,
     events: Arc<dyn EventSink>,
 }
 
@@ -86,7 +86,7 @@ impl AiService {
 
     /// The chat model answering requests: an attached local backend, else the bundled engine
     /// when the bundled AI is available.
-    pub fn model(&self) -> Option<Arc<dyn ChatModel>> {
+    pub fn model(&self) -> Option<Arc<dyn InferenceProvider>> {
         if let Some(m) = self.attached.read().clone() {
             return Some(m);
         }
@@ -104,7 +104,7 @@ impl AiService {
     /// Attach (or detach) an in-process local model backend. The bundled engine is used when
     /// none is attached. Swapping backends never changes data semantics or authorization
     /// (AI-AC-025).
-    pub fn attach_model(&self, model: Option<Arc<dyn ChatModel>>) {
+    pub fn attach_model(&self, model: Option<Arc<dyn InferenceProvider>>) {
         *self.attached.write() = model;
         emit(&self.events, "runtime", json!({ "attached": true }));
     }

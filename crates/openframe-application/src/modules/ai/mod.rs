@@ -27,6 +27,7 @@ pub mod scope;
 pub mod service;
 pub mod toolbox;
 pub mod tools;
+pub mod trace;
 pub mod types;
 
 use openframe_domain::{Actor, AppResult, Capability};
@@ -50,6 +51,14 @@ pub fn register(r: &mut Registry) {
     );
     r.command("ai.stop_runtime", stop_runtime)
         .meta(M::app_command("Stop the local AI engine.").hidden(h::AI_RUNTIME));
+    r.query("ai.health", trace::health).meta(
+        M::app_query("The AI health card: medians, apply rate, passes and the weakest tool, from the local numbers-only trace.")
+            .hidden(h::AI_RUNTIME),
+    );
+    r.command("ai.export_report", trace::export_report).meta(
+        M::app_command("Write the local AI trace (numbers and ids only) and the health figures to a file the person chose.")
+            .hidden(h::AI_RUNTIME),
+    );
     r.query("ai.diagnostics", diagnostics).meta(
         M::app_query(
             "Offline AI technical details for Settings (versions, licences, hashes, paths).",
@@ -163,12 +172,16 @@ fn change_set_accept(
     actor: &Actor,
     args: change_set::AcceptArgs,
 ) -> AppResult<ChangeSetDto> {
-    change_set::accept_with(
+    let dto = change_set::accept_with(
         core,
         actor,
         &args.id,
         args.confirm_destructive.unwrap_or(false),
-    )
+    )?;
+    if let Some(request) = trace::request_of_change_set(core, &args.id) {
+        trace::set_outcome(core, &request, "applied");
+    }
+    Ok(dto)
 }
 
 fn change_set_reject(
@@ -176,7 +189,11 @@ fn change_set_reject(
     actor: &Actor,
     args: AiChangeSetArgs,
 ) -> AppResult<ChangeSetDto> {
-    change_set::reject(core, actor, &args.id)
+    let dto = change_set::reject(core, actor, &args.id)?;
+    if let Some(request) = trace::request_of_change_set(core, &args.id) {
+        trace::set_outcome(core, &request, "rejected");
+    }
+    Ok(dto)
 }
 
 fn change_set_recheck(

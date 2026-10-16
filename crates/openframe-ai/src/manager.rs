@@ -25,7 +25,7 @@ use serde::Serialize;
 use crate::bundle::{self, AssetLock, BundledAi, ModelEntry, ModelStamp, Pooling};
 use crate::client::{self, EMBED_BATCH};
 use crate::hardware::{self, HardwareInfo};
-use crate::model::{ChatModel, LocalRuntimeModel};
+use crate::model::{InferenceProvider, LocalRuntimeModel};
 use crate::rt::AiRuntime;
 use crate::selection::{self, Fitness};
 use crate::store::AiPaths;
@@ -188,6 +188,8 @@ pub struct AiManager {
     supervisor: Arc<Supervisor>,
     embed_supervisor: Arc<Supervisor>,
     hw_cache: Mutex<Option<HardwareInfo>>,
+    /// Engine numbers of the chat calls since the last `take_usage` (the AI trace).
+    usage: Mutex<client::Usage>,
 }
 
 fn embedding_info(e: &ModelEntry) -> Option<EmbeddingInfo> {
@@ -276,6 +278,7 @@ impl AiManager {
             supervisor,
             embed_supervisor,
             hw_cache: Mutex::new(None),
+            usage: Mutex::new(client::Usage::default()),
         };
         m.configure();
         Ok(m)
@@ -403,7 +406,7 @@ impl AiManager {
     }
 
     /// The chat model when AI is available.
-    pub fn chat_model(self: &Arc<Self>) -> Option<Arc<dyn ChatModel>> {
+    pub fn chat_model(self: &Arc<Self>) -> Option<Arc<dyn InferenceProvider>> {
         if !self.available() {
             return None;
         }
@@ -412,6 +415,11 @@ impl AiManager {
             manager: self.clone(),
             reference,
         }))
+    }
+
+    /// The chat engine's context window: the pinned model's, kept between 2,048 and 32,768 tokens.
+    pub(crate) fn chat_context_tokens(&self) -> u32 {
+        self.cfg.lock.chat_model().context_tokens.clamp(2048, 32768)
     }
 
     /// One chat completion on the chat engine (after the bundle check). Deterministic runs use
@@ -425,8 +433,16 @@ impl AiManager {
         if self.cfg.deterministic {
             req.temperature = 0.0;
         }
-        self.rt
-            .run(async move { client::chat(&http, &ep, &req).await })
+        let (text, usage) = self
+            .rt
+            .run(async move { client::chat(&http, &ep, &req).await })?;
+        self.usage.lock().add(usage);
+        Ok(text)
+    }
+
+    /// The engine numbers of the chat calls since the last call, then zero again.
+    pub(crate) fn take_usage(&self) -> client::Usage {
+        std::mem::take(&mut *self.usage.lock())
     }
 
     // ------------------------------------------------------------ embeddings (C1)
@@ -516,7 +532,7 @@ impl AiManager {
                     engine_files: Some(b.engine_files()),
                     model_path: b.model_file(chat),
                     profile_id: format!("{}:{}", bundle::BUNDLE_ID, chat.model_id),
-                    context_tokens: chat.context_tokens.clamp(2048, 32768),
+                    context_tokens: self.chat_context_tokens(),
                     threads: Self::threads(&hw),
                     seed: self.cfg.deterministic.then_some(DETERMINISTIC_SEED),
                     model_stamp: self.stamps.as_ref().map(|s| s[0].clone()),

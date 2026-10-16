@@ -10,7 +10,7 @@
 //!            ├─ store      writable app data: check record, engine record, logs
 //!            ├─ engines    pinned engine files re-hashed before every launch; stray engine sweep
 //!            ├─ supervisor two `llama-server` engines (chat + `--embedding`), loopback only
-//!            └─ model      ChatModel adapter over the OpenAI-compatible loopback client
+//!            └─ model      InferenceProvider over the OpenAI-compatible loopback client
 //! ```
 //!
 //! Nothing here downloads anything. This crate has no project-database access. The chat model
@@ -29,10 +29,10 @@ pub mod store;
 pub mod supervisor;
 
 pub use bundle::{AssetLock, BUNDLE_ID, BundledAi, RESOURCE_FOLDER};
-pub use client::{ChatMessage, ChatRequest};
+pub use client::{ChatMessage, ChatRequest, Usage};
 pub use manager::{
     AiError, AiManager, BundleState, ComponentKind, Diagnostics, EmbeddingInfo, ManagerConfig,
     OfflineAiState,
 };
-pub use model::ChatModel;
+pub use model::{InferenceProvider, ProviderCapabilities};
 pub use supervisor::{RuntimeState, RuntimeStatus};

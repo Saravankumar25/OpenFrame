@@ -158,6 +158,7 @@ fn chat(rt: &AiRuntime, sup: &Supervisor, ep: &Endpoint, text: &str) -> String {
     let ep = ep.clone();
     let req = ChatRequest::new(vec![ChatMessage::user(text)]);
     rt.run(async move { client::chat(&http, &ep, &req).await })
+        .map(|(text, _usage)| text)
         .unwrap_or_else(|e| panic!("chat failed: {} {:?}", e.message, e.detail))
 }
 

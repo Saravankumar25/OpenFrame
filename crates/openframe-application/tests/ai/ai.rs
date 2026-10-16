@@ -1,7 +1,7 @@
 //! Offline AI Assistant acceptance tests (FSD §42, FSD-AI-001..027, AI-AC-001..025;
 //! Local AI Runtime spec §10–§14), driven through the public operation registry.
 //!
-//! No model is downloaded: a scripted in-process `ChatModel` is attached, so
+//! No model is downloaded: a scripted in-process `InferenceProvider` is attached, so
 //! the tests pin down what the APPLICATION does with any model output: exact
 //! facts from SQL, proposals instead of mutations, permission inheritance,
 //! private-note exclusion, prompt-injection containment and all-or-nothing
@@ -10,7 +10,7 @@
 use std::collections::VecDeque;
 use std::sync::{Arc, Mutex};
 
-use openframe_ai::{ChatModel, ChatRequest};
+use openframe_ai::{ChatRequest, InferenceProvider};
 use openframe_application::MutationMeta;
 use openframe_application::modules::ai::{self, ChangeSetDraft, OpCall, PreviewRow, change_set};
 use openframe_domain::{AppError, AppResult, Capability, Role, new_id, now_ms};
@@ -46,7 +46,7 @@ impl ScriptedModel {
     }
 }
 
-impl ChatModel for ScriptedModel {
+impl InferenceProvider for ScriptedModel {
     fn chat(&self, req: &ChatRequest) -> AppResult<String> {
         self.seen.lock().unwrap().push(req.clone());
         self.replies
@@ -58,11 +58,18 @@ impl ChatModel for ScriptedModel {
     fn model_reference(&self) -> String {
         "test-local-profile".into()
     }
+    fn capabilities(&self) -> openframe_ai::ProviderCapabilities {
+        openframe_ai::ProviderCapabilities {
+            context_tokens: 8192,
+            languages: None,
+            grammar: true,
+        }
+    }
 }
 
 fn attach(env: &TestEnv) -> Arc<ScriptedModel> {
     let m = Arc::new(ScriptedModel::default());
-    ai::service(&env.core).attach_model(Some(m.clone() as Arc<dyn ChatModel>));
+    ai::service(&env.core).attach_model(Some(m.clone() as Arc<dyn InferenceProvider>));
     m
 }
 

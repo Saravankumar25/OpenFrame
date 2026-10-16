@@ -121,7 +121,49 @@ pub fn unavailable(detail: impl Into<String>) -> AppError {
     .retryable()
 }
 
-pub async fn chat(http: &reqwest::Client, ep: &Endpoint, req: &ChatRequest) -> AppResult<String> {
+/// Engine numbers of model calls (ADR-0028 decision 8): token counts from the response's `usage`
+/// and times from llama-server's `timings`. Numbers only; never text.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct Usage {
+    pub calls: u32,
+    pub prompt_tokens: u32,
+    pub completion_tokens: u32,
+    /// The largest prompt of these calls, for the context-fill figure.
+    pub max_prompt_tokens: u32,
+    pub prompt_ms: u32,
+    pub generation_ms: u32,
+}
+
+impl Usage {
+    /// Read the numbers of one response; a field the engine leaves out counts as zero.
+    pub fn from_response(v: &Value) -> Self {
+        let n = |p: &str| v.pointer(p).and_then(Value::as_f64).unwrap_or(0.0).max(0.0) as u32;
+        let prompt = n("/usage/prompt_tokens");
+        Usage {
+            calls: 1,
+            prompt_tokens: prompt,
+            completion_tokens: n("/usage/completion_tokens"),
+            max_prompt_tokens: prompt,
+            prompt_ms: n("/timings/prompt_ms"),
+            generation_ms: n("/timings/predicted_ms"),
+        }
+    }
+
+    pub fn add(&mut self, o: Usage) {
+        self.calls += o.calls;
+        self.prompt_tokens += o.prompt_tokens;
+        self.completion_tokens += o.completion_tokens;
+        self.max_prompt_tokens = self.max_prompt_tokens.max(o.max_prompt_tokens);
+        self.prompt_ms += o.prompt_ms;
+        self.generation_ms += o.generation_ms;
+    }
+}
+
+pub async fn chat(
+    http: &reqwest::Client,
+    ep: &Endpoint,
+    req: &ChatRequest,
+) -> AppResult<(String, Usage)> {
     let url = format!("{}/v1/chat/completions", ep.base_url);
     let resp = http
         .post(&url)
@@ -150,7 +192,7 @@ pub async fn chat(http: &reqwest::Client, ep: &Endpoint, req: &ChatRequest) -> A
         .pointer("/choices/0/message/content")
         .and_then(|c| c.as_str())
         .ok_or_else(|| malformed("response has no message content"))?;
-    Ok(strip_reasoning(content))
+    Ok((strip_reasoning(content), Usage::from_response(&v)))
 }
 
 /// Largest batch sent to the embedding server in one request.
@@ -265,6 +307,46 @@ pub fn malformed(detail: impl Into<String>) -> AppError {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn engine_numbers_are_read_from_usage_and_timings_and_summed() {
+        let v = serde_json::json!({
+            "choices": [{ "message": { "content": "ok" } }],
+            "usage": { "prompt_tokens": 812, "completion_tokens": 40 },
+            "timings": { "prompt_ms": 1503.7, "predicted_ms": 2210.2 }
+        });
+        let one = Usage::from_response(&v);
+        assert_eq!(
+            (
+                one.calls,
+                one.prompt_tokens,
+                one.completion_tokens,
+                one.prompt_ms,
+                one.generation_ms
+            ),
+            (1, 812, 40, 1503, 2210)
+        );
+        let mut sum = one;
+        sum.add(Usage::from_response(
+            &serde_json::json!({ "usage": { "prompt_tokens": 1200 } }),
+        ));
+        assert_eq!(
+            (
+                sum.calls,
+                sum.prompt_tokens,
+                sum.max_prompt_tokens,
+                sum.completion_tokens
+            ),
+            (2, 2012, 1200, 40)
+        );
+        assert_eq!(
+            Usage::from_response(&serde_json::json!({})),
+            Usage {
+                calls: 1,
+                ..Usage::default()
+            }
+        );
+    }
 
     #[test]
     fn reasoning_is_stripped() {

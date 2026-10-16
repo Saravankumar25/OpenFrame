@@ -2990,6 +2990,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "openframe-ai-checks"
+version = "0.1.0"
+dependencies = [
+ "serde_json",
+]
+
+[[package]]
+name = "openframe-ai-eval"
+version = "0.1.0"
+dependencies = [
+ "openframe-ai-checks",
+ "openframe-application",
+ "rusqlite",
+ "serde",
+ "serde_json",
+ "sysinfo",
+ "tempfile",
+]
+
+[[package]]
 name = "openframe-application"
 version = "0.1.0"
 dependencies = [

@@ -97,7 +97,7 @@ openframe-ai  AiManager
    ├─ store       %LOCALAPPDATA%/OpenFrame/{models,runtimes} + atomic active.json
    ├─ supervisor  chat sidecar  (llama-server, loopback, -c 8192)
    │              embedding sidecar (llama-server --embedding --pooling cls, CPU only)   [Superseded in part, ADR-0029, 2026-10-16 sweep: the graphics-card decision function chooses CPU or GPU per device; CPU stays the fallback.]
-   └─ model       ChatModel adapter; AiManager::embed / embedding_info (C1 API)
+   └─ model       InferenceProvider (with capabilities, W5); AiManager::embed / embedding_info (C1 API)
 ```
 
 Neither model has any project-database or filesystem authority. The chat model produces text or grammar-constrained JSON; the embedding model produces vectors. The application validates both.

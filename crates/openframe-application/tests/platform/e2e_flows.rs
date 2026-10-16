@@ -11,7 +11,7 @@
 use std::collections::VecDeque;
 use std::sync::{Arc, Mutex};
 
-use openframe_ai::{ChatModel, ChatRequest};
+use openframe_ai::{ChatRequest, InferenceProvider};
 use openframe_application::modules::ai;
 use openframe_domain::{AppError, AppResult};
 use openframe_test_support::TestEnv;
@@ -609,7 +609,7 @@ impl ScriptedModel {
     }
 }
 
-impl ChatModel for ScriptedModel {
+impl InferenceProvider for ScriptedModel {
     fn chat(&self, _req: &ChatRequest) -> AppResult<String> {
         self.replies
             .lock()
@@ -619,6 +619,13 @@ impl ChatModel for ScriptedModel {
     }
     fn model_reference(&self) -> String {
         "test-local-profile".into()
+    }
+    fn capabilities(&self) -> openframe_ai::ProviderCapabilities {
+        openframe_ai::ProviderCapabilities {
+            context_tokens: 8192,
+            languages: None,
+            grammar: true,
+        }
     }
 }
 
@@ -706,7 +713,7 @@ fn e2e_import_fountain_and_fdx_then_breakdown_and_ai_counts() {
 
     // Offline AI: deterministic count tools answer from the project data.
     let model = Arc::new(ScriptedModel::default());
-    ai::service(&env.core).attach_model(Some(model.clone() as Arc<dyn ChatModel>));
+    ai::service(&env.core).attach_model(Some(model.clone() as Arc<dyn InferenceProvider>));
     model.call("count_scenes", json!({}));
     let a = env.ok(
         "ai.ask",

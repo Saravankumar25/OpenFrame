@@ -41,7 +41,7 @@ use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::{Arc, Mutex, mpsc};
 use std::time::{Duration, Instant};
 
-use openframe_ai::{ChatModel, ChatRequest};
+use openframe_ai::{ChatRequest, InferenceProvider};
 use openframe_application::events::{AppEvent, EventSink, SaveStatus};
 use openframe_application::modules::ai as ai_module;
 use openframe_application::modules::ai::intelligence::{self, IndexSettings};
@@ -115,7 +115,7 @@ struct CancellingModel {
     delay_ms: AtomicU64,
 }
 
-impl ChatModel for CancellingModel {
+impl InferenceProvider for CancellingModel {
     fn chat(&self, _req: &ChatRequest) -> AppResult<String> {
         let n = self.calls.fetch_add(1, Ordering::SeqCst);
         std::thread::sleep(Duration::from_millis(self.delay_ms.load(Ordering::SeqCst)));
@@ -130,6 +130,13 @@ impl ChatModel for CancellingModel {
     }
     fn model_reference(&self) -> String {
         "soak-local-profile".into()
+    }
+    fn capabilities(&self) -> openframe_ai::ProviderCapabilities {
+        openframe_ai::ProviderCapabilities {
+            context_tokens: 8192,
+            languages: None,
+            grammar: true,
+        }
     }
 }
 
@@ -170,7 +177,7 @@ impl Soak {
         intelligence::service(&core).set_settings(settings());
         intelligence::service(&core).set_embedder(Some(embedder.clone() as Arc<dyn Embedder>));
         let model = Arc::new(CancellingModel::default());
-        ai_module::service(&core).attach_model(Some(model.clone() as Arc<dyn ChatModel>));
+        ai_module::service(&core).attach_model(Some(model.clone() as Arc<dyn InferenceProvider>));
         let actor = core.local_actor();
         core.dispatch(
             &actor,

@@ -188,7 +188,8 @@ fn supervisor_starts_serves_restarts_after_crash_and_stops() {
     let ep2 = ep.clone();
     let text = rt
         .run(async move { client::chat(&http, &ep2, &req).await })
-        .unwrap();
+        .unwrap()
+        .0;
     assert_eq!(text, "ready");
     // A wrong key is refused by the server.
     let http = sup.http().clone();
@@ -451,7 +452,8 @@ fn m1_10_sidecar_start_retries_on_a_new_port_when_the_picked_port_is_taken() {
     let ep2 = ep.clone();
     let text = rt
         .run(async move { client::chat(&http, &ep2, &req).await })
-        .unwrap();
+        .unwrap()
+        .0;
     assert_eq!(text, "ready");
     sup.stop();
     assert_eq!(sup.state(), RuntimeState::Installed);

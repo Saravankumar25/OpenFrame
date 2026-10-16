@@ -1,14 +1,14 @@
 //! Bounded agent loop, composite Change Sets and the human-only approval
 //! boundary (agentic spec §5, §7, §29–§30, §40–§43; contracts C3/C4).
 //!
-//! No model is downloaded: a deterministic scripted `ChatModel` (test-only)
+//! No model is downloaded: a deterministic scripted `InferenceProvider` (test-only)
 //! replays one reply per model call and records every request, so these tests
 //! pin down what the APPLICATION does with any sequence of model outputs.
 
 use std::collections::VecDeque;
 use std::sync::{Arc, Mutex};
 
-use openframe_ai::{ChatModel, ChatRequest};
+use openframe_ai::{ChatRequest, InferenceProvider};
 use openframe_application::MutationMeta;
 use openframe_application::modules::ai::scope::{self, AiScopeArgs, AiScopeKind};
 use openframe_application::modules::ai::{
@@ -48,7 +48,7 @@ impl ScriptedModel {
     }
 }
 
-impl ChatModel for ScriptedModel {
+impl InferenceProvider for ScriptedModel {
     fn chat(&self, req: &ChatRequest) -> AppResult<String> {
         self.seen.lock().unwrap().push(req.clone());
         self.replies.lock().unwrap().pop_front().unwrap_or_else(|| {
@@ -61,11 +61,18 @@ impl ChatModel for ScriptedModel {
     fn model_reference(&self) -> String {
         "test-local-profile".into()
     }
+    fn capabilities(&self) -> openframe_ai::ProviderCapabilities {
+        openframe_ai::ProviderCapabilities {
+            context_tokens: 8192,
+            languages: None,
+            grammar: true,
+        }
+    }
 }
 
 fn attach(env: &TestEnv) -> Arc<ScriptedModel> {
     let m = Arc::new(ScriptedModel::default());
-    ai::service(&env.core).attach_model(Some(m.clone() as Arc<dyn ChatModel>));
+    ai::service(&env.core).attach_model(Some(m.clone() as Arc<dyn InferenceProvider>));
     m
 }
 

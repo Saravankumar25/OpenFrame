@@ -1,0 +1,20 @@
+[package]
+name = "openframe-ai-eval"
+description = "Offline AI evaluation harness: runs the gold cases through the real assistant pipeline and scores them with deterministic checks (ADR-0028 decision 1; Windows phase W5). Development only; never shipped."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "ai-eval"
+path = "src/main.rs"
+
+[dependencies]
+openframe-application.workspace = true
+openframe-ai-checks = { path = "../openframe-ai-checks" }
+serde.workspace = true
+serde_json.workspace = true
+rusqlite.workspace = true
+sysinfo.workspace = true
+tempfile.workspace = true
