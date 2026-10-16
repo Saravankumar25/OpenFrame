@@ -13,6 +13,7 @@ import type { AiStatusDto } from "../../ipc/generated/AiStatusDto";
 import type { AiDiagnosticsDto } from "../../ipc/generated/AiDiagnosticsDto";
 import { formatBytes, offReason, runtimeLabel } from "../../ai/model";
 import "../../ai/ai.css";
+import { AiHealthCard } from "./AiHealth";
 
 /** The privacy promise shown wherever Offline AI is described (spec §1). */
 export const OFFLINE_AI_PROMISE =
@@ -78,6 +79,7 @@ export default function OfflineAiSettings() {
           )}
         </section>
         <TechnicalDetails />
+        <AiHealthCard />
       </div>
     </div>
   );
