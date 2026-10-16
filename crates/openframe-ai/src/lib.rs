@@ -20,6 +20,7 @@
 pub mod bundle;
 pub mod client;
 pub mod engines;
+pub mod gpu;
 pub mod hardware;
 pub mod manager;
 pub mod model;
