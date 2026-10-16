@@ -54,6 +54,8 @@ impl ModelsDir {
         self.root.join("staging").join(version)
     }
     pub fn set_dir(&self, version: &str) -> PathBuf {
+        // Only a single safe name ever reaches a path that may be removed.
+        assert!(crate::download::safe_name(version), "unsafe model set name");
         self.root.join(version)
     }
     pub fn partial(&self, version: &str, f: &FileEntry) -> PathBuf {
@@ -144,7 +146,8 @@ impl ModelsDir {
     pub fn active(&self) -> Option<Active> {
         let text = std::fs::read(self.root.join("active.json")).ok()?;
         let a: Active = serde_json::from_slice(&text).ok()?;
-        crate::download::safe_name(&a.version).then_some(a)
+        let safe = crate::download::safe_name(&a.version) && a.previous.as_deref().is_none_or(crate::download::safe_name);
+        safe.then_some(a)
     }
 
     fn write_active(&self, a: &Active) -> AppResult<()> {
@@ -437,5 +440,15 @@ mod tests {
         )
         .unwrap();
         assert!(ModelsDir::new(dir.path()).active().is_none());
+        // A tampered `previous` is refused too, so a health check never removes a folder outside.
+        std::fs::write(
+            dir.path().join("active.json"),
+            br#"{"version":"v1","tier":"small","previous":"..\\..\\Users","activatedAt":0}"#,
+        )
+        .unwrap();
+        let d = ModelsDir::new(dir.path());
+        assert!(d.active().is_none());
+        d.confirm_healthy().unwrap();
+        assert!(dir.path().parent().unwrap().exists());
     }
 }
