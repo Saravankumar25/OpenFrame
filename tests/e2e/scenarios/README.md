@@ -114,6 +114,7 @@ Meera waits for the late train with a red umbrella.
 | `10-home.md` | `10-home.test.mjs` | 6 | Windows Recycle Bin (Mac: Trash) |
 | `15-trial-first-run.md` | `15-trial-first-run.test.mjs` | 7 | "Show in File Explorer" (Mac: Finder); debug only |
 | `16-about.md` | `16-about.test.mjs` | 2 | Debug only |
+| `17-internal-build-release.md` | `17-internal-build-release.test.mjs` | 1 | None |
 | `20-idea-vault.md` | `20-idea-vault.test.mjs` | 4 | None |
 | `21-idea-vault-flow.md` | `21-idea-vault-flow.test.mjs` | 5 | WebView2 fake microphone; Explorer drag-in not covered |
 | `25-recently-deleted-purge.md` | `25-recently-deleted-purge.test.mjs` | 4 | None |
@@ -146,4 +147,4 @@ Meera waits for the late train with a red umbrella.
 | `96-keyboard-and-screen-reader.md` | `96-keyboard-and-screen-reader.test.mjs` | 9 | Windows UI Automation (Narrator's tree) |
 | `97-performance.md` | `97-performance.test.mjs` | 4 | Windows performance counters |
 
-Total: 191 scenarios in 39 files.
+Total: 192 scenarios in 40 files.
