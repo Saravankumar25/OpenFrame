@@ -24,13 +24,15 @@ Some steps ask the core directly ("Ask the core ...", "Through the core: ..."). 
 
 Each scenario file starts in its own empty data folder, unless it says "shared journey data". The shared journey data is one folder used, in this order, by `01-journey` (which creates the demo project "Night Bus"), `02-restart`, `90-visual-baseline`, `91-appearance-themes` and `95-reachability`. Those files depend on each other only through that folder and that order. Every other file creates its own project and never sees the shared folder, so any of them can run alone.
 
+OpenFrame AI is downloaded after install (ADR-0026). Every test build is made with the local model host of the run (`127.0.0.1:47811`, `tests/e2e/lib/model-host.mjs`) and a throwaway test key. Each data folder starts with the model set installed as a finished download leaves it, unless its file has the tag `@e2e-ai-models: none`. "The host" in a scenario is that local model host; a scenario can make it cut a file short, change a byte, send slowly or refuse every request, and can read what it was asked for.
+
 ## Header tags
 
 | Tag | Meaning |
 |---|---|
 | `@e2e-data-root: own` | The spec gets its own empty data folder (see above). |
 | `@e2e-fake-media` | The web view starts with a fake microphone and camera: no device, no permission prompt, so a voice note can be recorded. |
-| `@e2e-ai-bundle: own` | The app reads its bundled AI from a folder of the spec's own, so the spec can remove or damage files without touching the build. |
+| `@e2e-ai-models: none` | The spec starts with OpenFrame AI not downloaded. Every other data folder starts with the model set installed the way a finished download leaves it (ADR-0026). |
 | `@e2e-net-log` | The web view writes a network log of its own network code into the spec's data folder, so the spec can list every host it asked for. |
 | `@e2e-debug-only: <reason>` | The spec needs a switch that the release build refuses (ADR-0031). A release run lists it with the reason and skips it. |
 
@@ -137,7 +139,8 @@ Meera waits for the late train with a red umbrella.
 | `73-ai-workspaces.md` | `73-ai-workspaces.test.mjs` | 5 | None |
 | `74-ai-change-sets.md` | `74-ai-change-sets.test.mjs` | 4 | None |
 | `75-ai-crash-safe-apply.md` | `75-ai-crash-safe-apply.test.mjs` | 2 | Killing processes, `llama-server.exe` |
-| `76-ai-bundle-integrity.md` | `76-ai-bundle-integrity.test.mjs` | 4 | `.dll` engine library, hard links; debug only |
+| `76-ai-files-integrity.md` | `76-ai-files-integrity.test.mjs` | 4 | `.dll` engine library, a copy of the build, hard links |
+| `78-ai-download.md` | `78-ai-download.test.mjs` | 5 | Free space from Windows |
 | `80-notes-tasks.md` | `80-notes-tasks.test.mjs` | 4 | None |
 | `85-project-pages.md` | `85-project-pages.test.mjs` | 4 | None |
 | `86-visual-planning.md` | `86-visual-planning.test.mjs` | 4 | None |
@@ -147,4 +150,4 @@ Meera waits for the late train with a red umbrella.
 | `96-keyboard-and-screen-reader.md` | `96-keyboard-and-screen-reader.test.mjs` | 9 | Windows UI Automation (Narrator's tree) |
 | `97-performance.md` | `97-performance.test.mjs` | 4 | Windows performance counters |
 
-Total: 192 scenarios in 40 files.
+Total: 197 scenarios in 41 files.

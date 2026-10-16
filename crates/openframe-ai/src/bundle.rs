@@ -1,22 +1,23 @@
-//! The Offline AI bundled with the application (ADR-0025).
+//! The Offline AI of this installation (ADR-0026).
 //!
-//! Every package carries the complete offline AI: the llama.cpp server and the libraries it
-//! loads, the chat model and the embedding model (their tokenizers are embedded in the GGUF
-//! files). The committed lock `packaging/ai/ai-assets.lock.json` pins every file by path, bytes
-//! and SHA-256 with its licence id. The build (`scripts/prepare-ai-assets.mjs`) refuses files that
-//! do not match it, and the same lock is compiled into this crate, so the app checks the
-//! installed files against hashes that cannot be changed next to them.
+//! The package carries the engine: the llama.cpp server and the libraries it loads, pinned in the
+//! committed lock `packaging/ai/ai-assets.lock.json` by path, bytes and SHA-256 with its licence
+//! id. The build (`scripts/prepare-ai-assets.mjs`) refuses files that do not match it, and the same
+//! lock is compiled into this crate. The chat model and the embedding model are downloaded after
+//! install, on the person's click, and are checked against the signed manifest of that download
+//! (`download.rs`, `install.rs`); the lock still gives what the app needs to run them (context
+//! window, vector size, pooling, memory).
 //!
 //! ```text
 //! <app resources>/ai/                     read-only, installed and replaced with the app
 //! ├─ runtimes/<runtime-id>/<file>          engine for this platform (re-hashed before every launch)
-//! ├─ models/<model-id>/model.gguf          chat model and embedding model
 //! └─ notices/                              licence notices
+//! <app data>/models/<version>/<file>       the downloaded set in use (install.rs)
 //! <app data>/ai/bundle-check.json          writable: result of the last full check
 //! ```
 //!
-//! Nothing is ever downloaded. When a file is missing or altered, AI does not start and the user
-//! is told to reinstall; the project is never touched.
+//! When an engine file is missing or altered, AI does not start and the person is told to
+//! reinstall; when a model file is, to download OpenFrame AI again. The project is never touched.
 
 use std::path::{Path, PathBuf};
 use std::time::UNIX_EPOCH;
@@ -51,6 +52,22 @@ pub fn damaged() -> AppError {
     AppError::ai(
         "assets_damaged",
         "Offline AI files in this installation were changed or damaged, so OpenFrame did not start them. Reinstall OpenFrame Studio to repair it. Your projects were not changed.",
+    )
+}
+
+/// Shown before OpenFrame AI is downloaded, and after it is removed (ADR-0026 decision 7).
+pub fn not_installed() -> AppError {
+    AppError::ai(
+        "not_installed",
+        "OpenFrame AI is not downloaded yet. Download it in Settings, Offline AI. Everything else in OpenFrame works without it.",
+    )
+}
+
+/// Shown when a downloaded model file is missing or was changed after its check.
+pub fn models_damaged() -> AppError {
+    AppError::ai(
+        "models_damaged",
+        "An OpenFrame AI file is missing or damaged, so OpenFrame did not start it. Remove OpenFrame AI and download it again in Settings, Offline AI. Your projects were not changed.",
     )
 }
 
@@ -381,10 +398,11 @@ impl ModelStamp {
     }
 
     fn current(&self) -> AppResult<u128> {
-        let m = std::fs::symlink_metadata(&self.path)
-            .map_err(|_| missing().with_detail(format!("{} not found", self.path.display())))?;
+        let m = std::fs::symlink_metadata(&self.path).map_err(|_| {
+            models_damaged().with_detail(format!("{} not found", self.path.display()))
+        })?;
         if !m.file_type().is_file() || m.len() != self.bytes {
-            return Err(damaged().with_detail(format!("{} changed", self.path.display())));
+            return Err(models_damaged().with_detail(format!("{} changed", self.path.display())));
         }
         Ok(modified_ms(&m))
     }
@@ -399,32 +417,78 @@ impl ModelStamp {
     /// The file is still the one that was checked.
     pub fn verify(&self) -> AppResult<()> {
         let Some(at_check) = *self.checked.lock() else {
-            return Err(damaged().with_detail("model not checked before launch"));
+            return Err(models_damaged().with_detail("model not checked before launch"));
         };
         if self.current()? != at_check {
-            return Err(
-                damaged().with_detail(format!("{} changed after the check", self.path.display()))
-            );
+            return Err(models_damaged()
+                .with_detail(format!("{} changed after the check", self.path.display())));
         }
         Ok(())
     }
 }
 
-/// One file of the bundle to check: where it is and what the lock says about it.
+/// One file to check: where it is and what the lock or the signed download says about it.
 #[derive(Debug, Clone)]
 struct Pinned {
     rel: String,
     path: PathBuf,
     bytes: u64,
     sha256: String,
+    /// A downloaded model file (its problems say "download again", not "reinstall").
+    model: bool,
 }
 
-/// The bundled AI of this installation: the read-only resource folder plus the lock.
+impl Pinned {
+    fn missing(&self) -> AppError {
+        let e = if self.model {
+            models_damaged()
+        } else {
+            missing()
+        };
+        e.with_detail(format!("{} not found", self.rel))
+    }
+    fn damaged(&self, what: &str) -> AppError {
+        let e = if self.model {
+            models_damaged()
+        } else {
+            damaged()
+        };
+        e.with_detail(format!("{} {what}", self.rel))
+    }
+}
+
+/// The downloaded model set in use (`install.rs`): its folder and the chat and embedding files with
+/// the size and hash the signed manifest gave them.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct InstalledModels {
+    /// The manifest version, also the folder name under `<app data>/models`.
+    pub version: String,
+    pub dir: PathBuf,
+    /// `path` is the file name inside `dir`.
+    pub chat: PinnedFile,
+    pub embedding: PinnedFile,
+}
+
+impl InstalledModels {
+    pub fn file(&self, role: ModelRole) -> &PinnedFile {
+        match role {
+            ModelRole::Chat => &self.chat,
+            ModelRole::Embedding => &self.embedding,
+        }
+    }
+    pub fn path(&self, role: ModelRole) -> PathBuf {
+        self.dir.join(&self.file(role).path)
+    }
+}
+
+/// The Offline AI of this installation: the engine in the read-only resource folder, the lock, and
+/// the downloaded model set when there is one.
 #[derive(Debug, Clone)]
 pub struct BundledAi {
     root: PathBuf,
     lock: AssetLock,
     runtime: RuntimeEntry,
+    models: Option<InstalledModels>,
 }
 
 /// `bundle-check.json` in the writable app data folder.
@@ -456,9 +520,13 @@ fn modified_ms(meta: &std::fs::Metadata) -> u128 {
 }
 
 impl BundledAi {
-    /// The bundle at `root` for this computer. `Err(unsupported)` when the lock pins no engine
-    /// for this platform.
-    pub fn new(root: &Path, lock: AssetLock) -> AppResult<BundledAi> {
+    /// The engine at `root` for this computer and the downloaded `models`, if any.
+    /// `Err(unsupported)` when the lock pins no engine for this platform.
+    pub fn new(
+        root: &Path,
+        lock: AssetLock,
+        models: Option<InstalledModels>,
+    ) -> AppResult<BundledAi> {
         let runtime = lock
             .runtime_for_this_computer()
             .cloned()
@@ -467,6 +535,7 @@ impl BundledAi {
             root: root.to_path_buf(),
             lock,
             runtime,
+            models,
         })
     }
 
@@ -479,23 +548,20 @@ impl BundledAi {
     pub fn runtime(&self) -> &RuntimeEntry {
         &self.runtime
     }
+    pub fn models(&self) -> Option<&InstalledModels> {
+        self.models.as_ref()
+    }
     pub fn runtime_dir(&self) -> PathBuf {
         self.root.join("runtimes").join(&self.runtime.runtime_id)
     }
     pub fn executable(&self) -> PathBuf {
         self.runtime_dir().join(&self.runtime.executable)
     }
-    pub fn model_dir(&self, m: &ModelEntry) -> PathBuf {
-        self.root.join("models").join(&m.model_id)
-    }
-    pub fn model_file(&self, m: &ModelEntry) -> PathBuf {
-        self.model_dir(m).join(&m.file.path)
-    }
     /// The engine files with their pinned hashes (checked again before every launch).
     pub fn engine_files(&self) -> EngineFiles {
         EngineFiles::pinned(&self.runtime_dir(), &self.runtime.files)
     }
-    /// Bytes of every bundled file for this platform.
+    /// Bytes of the engine for this platform and of the downloaded models.
     pub fn total_bytes(&self) -> u64 {
         self.pinned().iter().map(|p| p.bytes).sum()
     }
@@ -510,64 +576,77 @@ impl BundledAi {
                 path: self.runtime_dir().join(&f.path),
                 bytes: f.bytes,
                 sha256: f.sha256.clone(),
+                model: false,
             })
             .collect();
-        for m in &self.lock.models {
-            out.push(Pinned {
-                rel: format!("models/{}/{}", m.model_id, m.file.path),
-                path: self.model_file(m),
-                bytes: m.file.bytes,
-                sha256: m.file.sha256.clone(),
-            });
+        if let Some(m) = &self.models {
+            for f in [&m.chat, &m.embedding] {
+                out.push(Pinned {
+                    rel: format!("models/{}/{}", m.version, f.path),
+                    path: m.dir.join(&f.path),
+                    bytes: f.bytes,
+                    sha256: f.sha256.clone(),
+                    model: true,
+                });
+            }
         }
         out
     }
 
-    /// Folders between the root and the pinned files. None of them may be a link or junction,
-    /// so a pinned path can never lead out of the installed resources.
-    fn folders(&self) -> Vec<PathBuf> {
+    /// Folders between the roots and the pinned files. None of them may be a link or junction, so
+    /// a pinned path can never lead out of the installed resources or the models folder.
+    fn folders(&self) -> Vec<(PathBuf, bool)> {
         let mut v = vec![
-            self.root.clone(),
-            self.root.join("runtimes"),
-            self.runtime_dir(),
-            self.root.join("models"),
+            (self.root.clone(), false),
+            (self.root.join("runtimes"), false),
+            (self.runtime_dir(), false),
         ];
-        v.extend(self.lock.models.iter().map(|m| self.model_dir(m)));
+        if let Some(m) = &self.models {
+            v.extend(m.dir.parent().map(|p| (p.to_path_buf(), true)));
+            v.push((m.dir.clone(), true));
+        }
         v
     }
 
-    /// Cheap check (no hashing): every folder is a real folder and every pinned file is a
-    /// regular file of the pinned size. `Err(missing)` otherwise.
+    /// Cheap check (no hashing): every folder is a real folder and every pinned file is a regular
+    /// file of the pinned size. `Err(missing)` for the engine, `Err(models_damaged)` for a model,
+    /// and `Err(not_installed)` when no model set has been downloaded.
     pub fn check_present(&self) -> AppResult<()> {
-        for dir in self.folders() {
+        for (dir, model) in self.folders() {
+            let p = Pinned {
+                rel: dir.display().to_string(),
+                path: dir.clone(),
+                bytes: 0,
+                sha256: String::new(),
+                model,
+            };
             match std::fs::symlink_metadata(&dir) {
                 Ok(m) if m.file_type().is_dir() => {}
-                Ok(_) => {
-                    return Err(damaged().with_detail(format!("{} is not a folder", dir.display())));
-                }
-                Err(_) => return Err(missing().with_detail(format!("{} not found", dir.display()))),
+                Ok(_) => return Err(p.damaged("is not a folder")),
+                Err(_) => return Err(p.missing()),
             }
         }
         for p in self.pinned() {
             match std::fs::symlink_metadata(&p.path) {
                 Ok(m) if m.file_type().is_file() => {
                     if m.len() != p.bytes {
-                        return Err(damaged().with_detail(format!("{} has the wrong size", p.rel)));
+                        return Err(p.damaged("has the wrong size"));
                     }
                 }
-                Ok(_) => {
-                    return Err(damaged().with_detail(format!("{} is not a regular file", p.rel)));
-                }
-                Err(_) => return Err(missing().with_detail(format!("{} not found", p.rel))),
+                Ok(_) => return Err(p.damaged("is not a regular file")),
+                Err(_) => return Err(p.missing()),
             }
+        }
+        if self.models.is_none() {
+            return Err(not_installed());
         }
         Ok(())
     }
 
     /// Full check against the pinned hashes. A file whose size and modification time match the
     /// last successful check recorded in `record` (same lock, same folder) is not hashed again,
-    /// so the full read happens once per installed version. The engine files are re-hashed
-    /// before every launch regardless ([`EngineFiles::verify`]).
+    /// so the full read happens once per installed version and download. The engine files are
+    /// re-hashed before every launch regardless ([`EngineFiles::verify`]).
     pub fn verify(&self, record: &Path) -> AppResult<()> {
         self.check_present()?;
         let fingerprint = self.lock.fingerprint();
@@ -578,7 +657,7 @@ impl BundledAi {
             });
         let mut checked = Vec::new();
         for p in self.pinned() {
-            let meta = std::fs::symlink_metadata(&p.path).map_err(|_| missing())?;
+            let meta = std::fs::symlink_metadata(&p.path).map_err(|_| p.missing())?;
             let modified = modified_ms(&meta);
             let cached = previous.as_ref().is_some_and(|r| {
                 r.files.iter().any(|c| {
@@ -589,13 +668,10 @@ impl BundledAi {
                 })
             });
             if !cached {
-                let (bytes, sha) = hash_file(&p.path)
-                    .map_err(|_| missing().with_detail(format!("{} unreadable", p.rel)))?;
+                let (bytes, sha) = hash_file(&p.path).map_err(|_| p.missing())?;
                 if bytes != p.bytes || sha != p.sha256 {
                     let _ = std::fs::remove_file(record);
-                    return Err(
-                        damaged().with_detail(format!("{} does not match its pinned hash", p.rel))
-                    );
+                    return Err(p.damaged("does not match its pinned hash"));
                 }
             }
             checked.push(CheckedFile {

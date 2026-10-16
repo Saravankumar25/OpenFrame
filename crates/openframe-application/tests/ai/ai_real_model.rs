@@ -1,5 +1,6 @@
-//! The assistant with the REAL bundled model (ignored by default; ADR-0025). Needs the pinned
-//! files staged by `node scripts/prepare-ai-assets.mjs`:
+//! The assistant with the REAL model (ignored by default; ADR-0026). Needs the engine staged by
+//! `node scripts/prepare-ai-assets.mjs` and the pinned models in `.ai-assets` (or
+//! OPENFRAME_AI_ASSETS_DIR), installed in the test's app data as a finished download would:
 //!
 //! ```text
 //! OPENFRAME_AI_BUNDLE_DIR=<repo>/.build-cache/ai-bundle cargo test -p openframe-application --test ai ai_real_model:: -- --ignored --nocapture --test-threads=1
@@ -50,8 +51,21 @@ impl Env {
 fn env() -> Option<Env> {
     let bundle = std::env::var_os("OPENFRAME_AI_BUNDLE_DIR")?;
     let dir = tempfile::tempdir().unwrap();
+    let assets = std::env::var_os("OPENFRAME_AI_ASSETS_DIR")
+        .map(std::path::PathBuf::from)
+        .unwrap_or_else(|| {
+            std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../.ai-assets")
+        });
+    let app_data = AppConfig::isolated(dir.path()).app_data_dir;
+    let host = openframe_ai::test_support::install_pinned_models(
+        &app_data,
+        &assets,
+        &openframe_ai::AssetLock::embedded().unwrap(),
+    )
+    .unwrap();
     let config = AppConfig {
         ai_bundle_dir: Some(bundle.into()),
+        ai_model_host: Some(host),
         ai_deterministic: true,
         ..AppConfig::isolated(dir.path())
     };

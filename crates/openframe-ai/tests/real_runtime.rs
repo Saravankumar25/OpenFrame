@@ -1,5 +1,6 @@
-//! Validation with the REAL bundled runtime and models (ignored by default; needs the ~1.1 GB of
-//! pinned files staged by `node scripts/prepare-ai-assets.mjs`, ADR-0025):
+//! Validation with the REAL engine and models (ignored by default; needs the engine staged by
+//! `node scripts/prepare-ai-assets.mjs` and the ~1.1 GB of pinned models in `.ai-assets` or
+//! OPENFRAME_AI_ASSETS_DIR, installed in the test's app data as a finished download would; ADR-0026):
 //!
 //! ```text
 //! OPENFRAME_AI_BUNDLE_DIR=<repo>/.build-cache/ai-bundle cargo test -p openframe-ai --test real_runtime -- --ignored --nocapture
@@ -7,14 +8,25 @@
 //!
 //! It runs the product path end to end with the lock compiled into this build: presence check,
 //! the full hash check against the pinned hashes, chat, grammar-constrained JSON, embeddings and
-//! the shortcut on the next start (the check record in app data). Nothing is downloaded.
+//! the shortcut on the next start (the check record in app data). Nothing is downloaded here.
 
 use std::time::{Duration, Instant};
 
 use openframe_ai::{AiManager, BundleState, ChatMessage, ChatRequest, ManagerConfig};
 
 fn config(bundle: &std::path::Path, data: &std::path::Path) -> ManagerConfig {
-    let mut cfg = ManagerConfig::production(data, Some(bundle.to_path_buf())).unwrap();
+    let assets = std::env::var_os("OPENFRAME_AI_ASSETS_DIR")
+        .map(std::path::PathBuf::from)
+        .unwrap_or_else(|| {
+            std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../.ai-assets")
+        });
+    let host = openframe_ai::test_support::install_pinned_models(
+        data,
+        &assets,
+        &openframe_ai::AssetLock::embedded().unwrap(),
+    )
+    .unwrap();
+    let mut cfg = ManagerConfig::production(data, Some(bundle.to_path_buf()), Some(host)).unwrap();
     cfg.deterministic = true;
     cfg.ready_timeout = Duration::from_secs(300);
     cfg.supervisor.start_timeout = Duration::from_secs(300);

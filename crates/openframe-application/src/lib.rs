@@ -26,3 +26,5 @@ pub use crate::core::{AppConfig, AppCore, ProjectSession, TaskHandle};
 pub use crate::events::{AppEvent, EventSink, StoreKind};
 pub use crate::registry::{OpKind, Registry, SearchDoc, TrashHandler};
 pub use crate::store::{DeleteSpec, MutationMeta, Store, Tx};
+/// The build-time model host of the desktop shell (ADR-0026 decision 8).
+pub use openframe_ai::ModelHost;

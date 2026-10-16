@@ -41,12 +41,16 @@ fn unavailable() -> AppError {
 
 impl AiService {
     fn new(config: &AppConfig, events: Arc<dyn EventSink>) -> Self {
-        let made = ManagerConfig::production(&config.app_data_dir, config.ai_bundle_dir.clone())
-            .map(|mut c| {
-                c.deterministic = config.ai_deterministic;
-                c
-            })
-            .and_then(AiManager::new);
+        let made = ManagerConfig::production(
+            &config.app_data_dir,
+            config.ai_bundle_dir.clone(),
+            config.ai_model_host.clone(),
+        )
+        .map(|mut c| {
+            c.deterministic = config.ai_deterministic;
+            c
+        })
+        .and_then(AiManager::new);
         match made {
             Ok(m) => {
                 let ev = events.clone();

@@ -6,7 +6,8 @@
 //! ```text
 //! staging/<version>/<name>.partial   files being downloaded (resumable)
 //! staging/<version>/<name>           a file whose size and SHA-256 matched the signed manifest
-//! <version>/<name>                   an activated set, moved in one rename
+//! staging/<version>/set.json         the signed manifest envelope the set was downloaded from
+//! <version>/<name>, <version>/set.json   an activated set, moved in one rename
 //! quarantine/<time>-<name>.bad       a file that failed its check, kept for support, never used
 //! active.json                        { version, tier, previous, activatedAt }
 //! ```
@@ -14,16 +15,23 @@
 //! A file becomes usable only after its size and hash match; a set becomes active only when every
 //! file of the tier is there and checked, by renaming its staging folder and then replacing
 //! `active.json` atomically. The previous set stays until the new one passes a health check, so a
-//! failure never leaves a half-installed model active.
+//! failure never leaves a half-installed model active. On every start the app reads the sizes and
+//! hashes it checks the set against from `set.json`, whose signature is checked again first, so
+//! editing a file in this writable folder can never make the app trust another model.
 
 use std::io::Read;
 use std::path::{Path, PathBuf};
 
+use ed25519_dalek::VerifyingKey;
 use openframe_domain::{AppError, AppResult, now_ms};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
+use crate::bundle::{InstalledModels, PinnedFile, models_damaged};
 use crate::download::{FileEntry, Tier};
+
+/// The signed manifest kept with each set.
+pub const SET_FILE: &str = "set.json";
 
 /// Room kept free on top of what the download needs.
 pub const PREFLIGHT_MARGIN_BYTES: u64 = 512 * 1024 * 1024;
@@ -146,7 +154,8 @@ impl ModelsDir {
     pub fn active(&self) -> Option<Active> {
         let text = std::fs::read(self.root.join("active.json")).ok()?;
         let a: Active = serde_json::from_slice(&text).ok()?;
-        let safe = crate::download::safe_name(&a.version) && a.previous.as_deref().is_none_or(crate::download::safe_name);
+        let safe = crate::download::safe_name(&a.version)
+            && a.previous.as_deref().is_none_or(crate::download::safe_name);
         safe.then_some(a)
     }
 
@@ -166,12 +175,13 @@ impl ModelsDir {
     /// Step 4b: every file of the tier is checked, so move the set into place in one rename and
     /// point `active.json` at it. The set that was active becomes `previous` until the health check.
     pub fn activate(&self, version: &str, tier: &Tier) -> AppResult<Active> {
-        for f in &tier.files {
-            if !self.checked(version, f).is_file() {
+        let names = tier.files.iter().map(|f| f.name.as_str());
+        for name in names.chain([SET_FILE]) {
+            if !self.staging(version).join(name).is_file() {
                 return Err(install_error(
                     "incomplete",
                     "The OpenFrame AI download is not complete yet.",
-                    format!("{} is missing", f.name),
+                    format!("{name} is missing"),
                 ));
             }
         }
@@ -269,17 +279,58 @@ impl ModelsDir {
         Ok(())
     }
 
-    /// The files of the active set, when every one of them is still there with its signed size.
-    pub fn active_files(&self, tier: &Tier) -> Option<Vec<PathBuf>> {
-        let a = self.active()?;
-        let dir = self.set_dir(&a.version);
-        tier.files
-            .iter()
-            .map(|f| {
-                let p = dir.join(&f.name);
-                (std::fs::metadata(&p).ok()?.len() == f.bytes).then_some(p)
+    /// Keep the signed manifest with the set being downloaded (activation needs it).
+    pub fn stage_manifest(&self, version: &str, envelope: &[u8]) -> AppResult<()> {
+        std::fs::create_dir_all(self.staging(version))
+            .and_then(|()| std::fs::write(self.staging(version).join(SET_FILE), envelope))
+            .map_err(|e| {
+                install_error(
+                    "write_failed",
+                    "OpenFrame AI could not be saved.",
+                    e.kind().to_string(),
+                )
             })
-            .collect()
+    }
+
+    /// The set the app uses: `active.json` names it, and its `set.json` still checks out against
+    /// `keys` and lists one chat and one embedding file for the active tier. `Ok(None)` when
+    /// nothing is installed; `Err(models_damaged)` when the pointer or the signed list is unusable.
+    /// The files themselves are checked by the caller (`BundledAi::verify`).
+    pub fn installed(&self, keys: &[VerifyingKey]) -> AppResult<Option<InstalledModels>> {
+        if !self.root.join("active.json").exists() {
+            return Ok(None);
+        }
+        let bad = |d: &str| models_damaged().with_detail(d.to_string());
+        let a = self
+            .active()
+            .ok_or_else(|| bad("active.json is unreadable"))?;
+        let dir = self.set_dir(&a.version);
+        let envelope = std::fs::read(dir.join(SET_FILE)).map_err(|_| bad("set.json is missing"))?;
+        let m = crate::download::verify(&envelope, keys)
+            .map_err(|e| bad(&format!("set.json: {}", e.detail.unwrap_or_default())))?;
+        if m.manifest_version != a.version {
+            return Err(bad("set.json belongs to another version"));
+        }
+        let tier = m
+            .tier(&a.tier)
+            .ok_or_else(|| bad("the active tier is not in set.json"))?;
+        let pick = |role: &str| {
+            tier.files
+                .iter()
+                .find(|f| f.role == role)
+                .map(|f| PinnedFile {
+                    path: f.name.clone(),
+                    bytes: f.bytes,
+                    sha256: f.sha256.clone(),
+                })
+                .ok_or_else(|| bad("set.json lacks a model"))
+        };
+        Ok(Some(InstalledModels {
+            version: a.version,
+            dir,
+            chat: pick("chat")?,
+            embedding: pick("embedding")?,
+        }))
     }
 }
 
@@ -328,6 +379,14 @@ mod tests {
     fn put_partial(d: &ModelsDir, v: &str, f: &FileEntry, body: &[u8]) {
         std::fs::create_dir_all(d.staging(v)).unwrap();
         std::fs::write(d.partial(v, f), body).unwrap();
+    }
+
+    /// Every file of the tier is in the active set with its signed size.
+    fn active_complete(d: &ModelsDir, t: &Tier) -> bool {
+        let dir = d.set_dir(&d.active().unwrap().version);
+        t.files
+            .iter()
+            .all(|f| std::fs::metadata(dir.join(&f.name)).is_ok_and(|m| m.len() == f.bytes))
     }
 
     #[test]
@@ -394,9 +453,12 @@ mod tests {
         assert!(d.active().is_none());
         put_partial(&d, "v1", &e1, b"embed one");
         d.check_file("v1", &e1).unwrap();
+        // Every model file but no signed list: still nothing is activated.
+        assert!(d.activate("v1", &t1).unwrap_err().is("ai.incomplete"));
+        d.stage_manifest("v1", b"{}").unwrap();
         let a = d.activate("v1", &t1).unwrap();
         assert_eq!((a.version.as_str(), a.previous.as_deref()), ("v1", None));
-        assert_eq!(d.active_files(&t1).unwrap().len(), 2);
+        assert!(active_complete(&d, &t1));
         // A second version becomes active; v1 stays as the fallback until the health check.
         let (c2, e2) = (
             entry("chat.gguf", b"chat two!", "chat"),
@@ -407,25 +469,27 @@ mod tests {
             put_partial(&d, "v2", f, b);
             d.check_file("v2", f).unwrap();
         }
+        d.stage_manifest("v2", b"{}").unwrap();
         let a = d.activate("v2", &t2).unwrap();
         assert_eq!(a.previous.as_deref(), Some("v1"));
         // The new set fails its health check: back to v1, the bad set is set aside.
         d.roll_back().unwrap();
         assert_eq!(d.active().unwrap().version, "v1");
         assert!(!d.set_dir("v2").exists());
-        assert_eq!(d.active_files(&t1).unwrap().len(), 2);
+        assert!(active_complete(&d, &t1));
         // Activate v2 again from a fresh download and confirm it: v1 goes away.
         for (f, b) in [(&c2, &b"chat two!"[..]), (&e2, &b"embed two"[..])] {
             put_partial(&d, "v2", f, b);
             d.check_file("v2", f).unwrap();
         }
+        d.stage_manifest("v2", b"{}").unwrap();
         d.activate("v2", &t2).unwrap();
         d.confirm_healthy().unwrap();
         assert_eq!(d.active().unwrap().previous, None);
         assert!(!d.set_dir("v1").exists());
         // A file of the active set that went missing makes the set unusable, never half used.
         std::fs::remove_file(d.set_dir("v2").join("embed.gguf")).unwrap();
-        assert!(d.active_files(&t2).is_none());
+        assert!(!active_complete(&d, &t2));
         // Remove: nothing is left but the quarantine.
         d.remove_all().unwrap();
         assert!(d.active().is_none() && !d.set_dir("v2").exists());
@@ -450,5 +514,46 @@ mod tests {
         assert!(d.active().is_none());
         d.confirm_healthy().unwrap();
         assert!(dir.path().parent().unwrap().exists());
+    }
+
+    #[test]
+    fn the_set_in_use_is_read_from_its_signed_list_and_a_changed_list_is_refused() {
+        use crate::download::tests::{envelope, payload, test_key};
+        let dir = tempfile::tempdir().unwrap();
+        let d = ModelsDir::new(dir.path());
+        let k = test_key();
+        let keys = [k.verifying_key()];
+        assert_eq!(d.installed(&keys).unwrap(), None, "nothing downloaded yet");
+        let v = "2026.11.1";
+        std::fs::create_dir_all(d.set_dir(v)).unwrap();
+        std::fs::write(d.set_dir(v).join(SET_FILE), envelope(&payload(), &k)).unwrap();
+        d.write_active(&Active {
+            version: v.into(),
+            tier: "small".into(),
+            previous: None,
+            activated_at: 0,
+        })
+        .unwrap();
+        let m = d.installed(&keys).unwrap().unwrap();
+        assert_eq!(m.chat.path, "chat.gguf");
+        assert_eq!(m.embedding.bytes, 37_000_000);
+        assert_eq!(m.dir, d.set_dir(v));
+        // Another key, a list edited in place, or no list at all: the set is not used.
+        let other = ed25519_dalek::SigningKey::from_bytes(&[9u8; 32]).verifying_key();
+        assert!(d.installed(&[other]).unwrap_err().is("ai.models_damaged"));
+        let mut edited = payload();
+        edited["tiers"][0]["files"][0]["sha256"] = serde_json::json!("b".repeat(64));
+        let mut env: serde_json::Value = serde_json::from_slice(&envelope(&payload(), &k)).unwrap();
+        let resigned: serde_json::Value = serde_json::from_slice(&envelope(&edited, &k)).unwrap();
+        // The edited payload under the original signature.
+        env["payload"] = resigned["payload"].clone();
+        std::fs::write(
+            d.set_dir(v).join(SET_FILE),
+            serde_json::to_vec(&env).unwrap(),
+        )
+        .unwrap();
+        assert!(d.installed(&keys).unwrap_err().is("ai.models_damaged"));
+        std::fs::remove_file(d.set_dir(v).join(SET_FILE)).unwrap();
+        assert!(d.installed(&keys).unwrap_err().is("ai.models_damaged"));
     }
 }

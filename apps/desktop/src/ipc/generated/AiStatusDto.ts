@@ -11,11 +11,11 @@ available: boolean,
  */
 mode: string, 
 /**
- * NotChecked | Checking | Verified | Missing | Damaged | Unsupported
+ * NotInstalled | NotChecked | Checking | Verified | Missing | Damaged | Unsupported
  */
 bundleState: string, 
 /**
- * Why AI is off (missing, damaged or unsupported bundle), in plain language.
+ * Why AI is off (not downloaded, missing, damaged or unsupported), in plain language.
  */
 problem: AppError | null, 
 /**

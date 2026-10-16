@@ -20,10 +20,14 @@
 // no other spec gets them.
 //
 // Every spec runs with deterministic Offline AI sampling (OPENFRAME_AI_DETERMINISTIC=1: temperature 0
-// and a fixed seed; honoured by debug builds on an isolated data root only). An own-root spec whose
-// header contains `// @e2e-ai-bundle: own` reads its bundled AI from <root>/ai-bundle
-// (OPENFRAME_AI_BUNDLE_DIR) instead of the build's `ai/` folder, so it can lay out a missing or
-// damaged bundle without touching the build.
+// and a fixed seed; honoured by debug builds on an isolated data root only).
+//
+// OpenFrame AI is downloaded after install (ADR-0026). The run starts the local model host
+// (lib/model-host.mjs) that every test build is compiled with, and each data root starts with the
+// model set installed the way a finished download leaves it, so the AI specs find OpenFrame AI
+// ready. A spec whose header contains `// @e2e-ai-models: none` starts with nothing downloaded (the
+// download specs). Each data root gets its own host control file and request log
+// (E2E_MODEL_HOST_CTL, E2E_MODEL_HOST_LOG).
 //
 // Options: --no-build (reuse the last build), --only=<substring>[,<substring>...] (filter specs),
 // --release=gated | --release=open (drive the release executable, with or without the team password
@@ -31,12 +35,14 @@
 // Failure screenshots and visual diffs go to tests/e2e/artifacts/ (gitignored).
 
 import { spawn, spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, readdirSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import net from "node:net";
 import { DRIVERS, E2E_ROOT, EDGE_DRIVER, TAURI_DRIVER, setupDrivers } from "./scripts/setup-drivers.mjs";
 import { randomBytes } from "node:crypto";
 import { appBinary, buildApp } from "./scripts/build-app.mjs";
+import { testHost } from "../../scripts/model-manifest.mjs";
+import { preinstallModels, startModelHost } from "./lib/model-host.mjs";
 
 const args = new Set(process.argv.slice(2));
 // --release=gated | --release=open: drive the release executable (build-app.mjs explains both).
@@ -51,9 +57,11 @@ const GATE_PASSWORD = RELEASE === "gated" ? randomBytes(18).toString("base64url"
 const DEBUG_ONLY = /^\/\/ @e2e-debug-only: (.+)$/m;
 const PORT = 4444;
 const NATIVE_PORT = 4445;
+// The local model host folder and the current group's control file and log.
+const HOST = { dir: "", ctl: "", log: "" };
 const OWN_ROOT = /^\/\/ @e2e-data-root: own\s*$/m;
 const FAKE_MEDIA = /^\/\/ @e2e-fake-media\s*$/m;
-const OWN_AI_BUNDLE = /^\/\/ @e2e-ai-bundle: own\s*$/m;
+const NO_MODELS = /^\/\/ @e2e-ai-models: none\s*$/m;
 // An own-root spec whose header contains `// @e2e-net-log` runs with a Chromium net log of the web
 // view written to <root>\webview-netlog.json (E2E_NET_LOG), so it can list every host the web view's
 // own network code asked for (spec 05).
@@ -102,8 +110,13 @@ async function waitForPort(port, open, timeoutMs) {
 }
 
 /** Start tauri-driver for one data root, run the given spec files, stop the driver. */
-async function runGroup(files, dataRoot, fakeMedia = false, ownAiBundle = false, netLog = false) {
+async function runGroup(files, dataRoot, fakeMedia = false, noModels = false, netLog = false) {
   mkdirSync(dataRoot, { recursive: true });
+  if (!noModels) preinstallModels(HOST.dir, join(dataRoot, "appdata"));
+  HOST.ctl = join(dataRoot, "model-host-ctl.json");
+  HOST.log = join(dataRoot, "model-host-log.jsonl");
+  writeFileSync(HOST.ctl, "{}");
+  writeFileSync(HOST.log, "");
   console.log(`\nE2E data root: ${dataRoot}\n  specs: ${files.join(", ")}${fakeMedia ? " (fake media devices)" : ""}`);
   const env = {
     ...process.env,
@@ -112,9 +125,10 @@ async function runGroup(files, dataRoot, fakeMedia = false, ownAiBundle = false,
     E2E_APP: APP_BINARY,
     E2E_DATA_ROOT: dataRoot,
     E2E_PORT: String(PORT),
+    E2E_MODEL_HOST_DIR: HOST.dir,
+    E2E_MODEL_HOST_CTL: HOST.ctl,
+    E2E_MODEL_HOST_LOG: HOST.log,
   };
-  delete env.OPENFRAME_AI_BUNDLE_DIR;
-  delete env.E2E_AI_BUNDLE_DIR;
   delete env.E2E_WEBVIEW_ARGS;
   delete env.E2E_TEAM_PASSWORD;
   delete env.OPENFRAME_TEAM_PASSWORD;
@@ -126,7 +140,6 @@ async function runGroup(files, dataRoot, fakeMedia = false, ownAiBundle = false,
     env.E2E_NET_LOG = join(dataRoot, "webview-netlog.json");
     env.E2E_WEBVIEW_ARGS = [env.E2E_WEBVIEW_ARGS, `--log-net-log=${env.E2E_NET_LOG}`].filter(Boolean).join(" ");
   }
-  if (ownAiBundle) env.OPENFRAME_AI_BUNDLE_DIR = env.E2E_AI_BUNDLE_DIR = join(dataRoot, "ai-bundle");
   if (!(await waitForPort(PORT, false, 15_000)) || !(await waitForPort(NATIVE_PORT, false, 15_000))) {
     throw new Error(`Ports ${PORT}/${NATIVE_PORT} are in use by another process; the desktop E2E suite needs them exclusively.`);
   }
@@ -171,6 +184,9 @@ async function main() {
     if (scan.status !== 0) throw new Error("The gated release executable failed the string scan.");
   }
 
+  // The local model host for the whole run; each group points it at its own control file and log.
+  Object.assign(HOST, testHost());
+  const server = startModelHost(HOST.dir, () => HOST.ctl, () => HOST.log);
   const stamp = new Date().toISOString().replace(/[:.]/g, "-");
   const runRoot = join(E2E_ROOT, ".run", stamp);
   mkdirSync(join(E2E_ROOT, "artifacts"), { recursive: true });
@@ -196,7 +212,7 @@ async function main() {
       groups.push({
         own,
         fakeMedia: own && FAKE_MEDIA.test(head),
-        ownAiBundle: own && OWN_AI_BUNDLE.test(head),
+        noModels: own && NO_MODELS.test(head),
         netLog: own && NET_LOG.test(head),
         files: [f],
         root: own ? join(runRoot, f.replace(/\.test\.mjs$/, "")) : join(runRoot, "shared"),
@@ -204,9 +220,10 @@ async function main() {
   }
   const failed = [];
   for (const g of groups) {
-    const code = await runGroup(g.files, g.root, g.fakeMedia, g.ownAiBundle, g.netLog);
+    const code = await runGroup(g.files, g.root, g.fakeMedia, g.noModels, g.netLog);
     if (code !== 0) failed.push(...g.files);
   }
+  await server.close();
   const ran = specs.length - skipped.length;
   if (skipped.length) console.log(`\nSkipped on the release build (debug-only switch):\n  ${skipped.join("\n  ")}`);
   console.log(failed.length ? `\nE2E FAILED: ${failed.join(", ")}` : `\nE2E passed: ${ran} spec files${RELEASE ? ` on the release build (${RELEASE})` : ""}.`);

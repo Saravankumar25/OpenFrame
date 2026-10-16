@@ -36,8 +36,7 @@ connects to the internet, and what control you have.
 - **Your projects stay on your computer.** Everything you write or import is stored in files on
   your device. OpenFrame never uploads it.
 - **Network use is limited.** The app connects to the internet only when you open a web link
-  yourself. Offline AI is installed with the app and never uses the network. No project content is
-  ever sent.
+  yourself, or when you click Download OpenFrame AI. No project content is ever sent.
 - **AI runs on your computer.** Offline AI processes your requests and project content locally.
   Nothing is sent to OpenFrame, to Google (whose Gemma model OpenFrame uses) or to any AI cloud
   service, and prompts, project text, retrieved passages, private notes and AI answers are never
@@ -53,7 +52,7 @@ All of the following is stored only on your device, in your Windows user profile
 | Your Global Idea Vault | `Documents\OpenFrame\Global Idea Vault` | Ideas you keep across projects |
 | App settings, the list of recently opened projects, and your local display name | The app's data folder (Microsoft Store edition: the app's private package data folder; direct-download edition: `%LOCALAPPDATA%\OpenFrame`) | Remembering your preferences |
 | Diagnostic log files | The app's data folder, `logs` subfolder, kept for up to 14 days | Troubleshooting. Logs record technical events (for example, that an operation failed). They don't record project text, and sensitive values are redacted. They never leave your device unless you send them to someone yourself. |
-| Offline AI components: the llama.cpp runtime, the Gemma 3 1B Instruct language model and the BGE small (English) search model | Installed with the app, in its program folder (`ai` subfolder), read-only and shared by all projects. A small record of the last check of these files and the AI engine logs are kept in the app's data folder. | Running the AI assistant locally. They are part of the app: they are installed, updated and removed together with OpenFrame. |
+| Offline AI components: the llama.cpp runtime, the Gemma 3 1B Instruct language model and the BGE small (English) search model | The runtime is installed with the app, in its program folder (`ai` subfolder), read-only. The two models are downloaded when you click Download OpenFrame AI and kept in the app's data folder (`models`), shared by all projects. A small record of the last check of these files and the AI engine logs are kept there too. | Running the AI assistant locally. The runtime is installed, updated and removed with OpenFrame; the models stay until you click Remove OpenFrame AI in Settings. |
 | AI search index for a project (built on your computer when the assistant is used) | Inside the project folder, `cache\intelligence.sqlite` | Finding relevant project content for the local assistant. It is derived from the project (it contains passages of your project text, never contact details), can be deleted at any time and is rebuilt automatically. It travels with the project folder if you copy the folder. |
 | Your assistant conversations and proposed changes | Inside the project file | Showing your AI history; changes are applied only when you choose Apply Changes |
 
@@ -63,9 +62,13 @@ does not read it for any purpose other than showing and processing it for you on
 
 ## When OpenFrame connects to the internet
 
-1. **Offline AI never connects.** The AI assistant runs entirely on your computer with the AI
-   components that are installed with the app. It never uses a cloud AI service and never downloads
-   anything: no model, no update and no repair. Using AI needs no internet connection.
+1. **The one AI download, when you click it.** The AI models are not in the installer. When you
+   click Download OpenFrame AI (in the AI panel or in Settings), the app downloads them once from
+   [model host, chosen by the owner]. That server receives the request for each file and, like any
+   web server, your IP address; it receives no project content and no account. The app checks every
+   file against a signed list before it uses it. OpenFrame never downloads on its own, never repairs
+   a file by downloading it, and never downloads at install time. After the download the AI runs
+   entirely on your computer and needs no internet connection; it never uses a cloud AI service.
 2. **Updates.** The Microsoft Store edition is updated by the Microsoft Store. OpenFrame itself does
    not contact any server to check for updates. [Direct-download edition: if an in-app update check
    is added, describe it here, including what the request contains and how to turn it off.]

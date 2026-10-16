@@ -65,6 +65,8 @@ vi.mock("../ipc/client", async () => {
           return changeSet("Rejected");
         case "ai.index_status":
           return indexState;
+        case "ai.download.status":
+          return { canDownload: true, phase: "Idle", sizeBytes: 1_106_000_000, neededBytes: 1_643_000_000, freeBytes: 40_000_000_000, doneBytes: 0, totalBytes: 0, problem: null };
         default:
           return null;
       }
@@ -91,14 +93,32 @@ beforeEach(() => {
 });
 
 describe("AI Assistant panel", () => {
-  it("is ready right after install: no download, no setup step", async () => {
+  it("is ready once OpenFrame AI is downloaded: no download button, no setup step", async () => {
     renderPanel();
     expect(await screen.findByRole("textbox", { name: "Ask or command" })).toBeTruthy();
     expect(screen.getByText("AI Ready")).toBeTruthy();
     for (const gone of [/download/i, /install offline ai/i, /remove offline ai/i]) {
       expect(screen.queryByRole("button", { name: gone })).toBeNull();
     }
-    expect(calls.some((c) => c.op.startsWith("ai.") && /install|setup/.test(c.op))).toBe(false);
+    expect(calls.some((c) => c.op.startsWith("ai.download"))).toBe(false);
+  });
+
+  it("offers the download while OpenFrame AI is not downloaded, and starts it only on the click", async () => {
+    status = {
+      ...status,
+      available: false,
+      mode: "Off",
+      bundleState: "NotInstalled",
+      runtimeState: "Unavailable",
+      problem: { code: "ai.not_installed", message: "OpenFrame AI is not downloaded yet.", retryable: false },
+    };
+    renderPanel();
+    const start = await screen.findByRole("button", { name: "Download OpenFrame AI" });
+    expect(screen.getByText(/A one-time download of 1.0 GB/)).toBeTruthy();
+    expect(screen.queryByRole("textbox", { name: "Ask or command" })).toBeNull();
+    expect(calls.some((c) => c.op === "ai.download.start")).toBe(false);
+    await userEvent.click(start);
+    await waitFor(() => expect(calls.some((c) => c.op === "ai.download.start")).toBe(true));
   });
 
   it("stays open beside the Offline AI settings it opens (the panel is docked beside the page)", async () => {
@@ -111,7 +131,7 @@ describe("AI Assistant panel", () => {
     expect(onClose).not.toHaveBeenCalled();
   });
 
-  it("says plainly when the bundled AI is damaged and how to repair it, and never offers a download", async () => {
+  it("says plainly when the engine in the app is damaged and how to repair it, and never offers a download", async () => {
     status = {
       ...status,
       available: false,

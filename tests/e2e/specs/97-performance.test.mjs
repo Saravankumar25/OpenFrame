@@ -41,6 +41,26 @@ function cpuPercent(pids, seconds) {
   const sum = "(Get-Process -Id $p -ErrorAction SilentlyContinue | ForEach-Object { $_.TotalProcessorTime.TotalMilliseconds } | Measure-Object -Sum).Sum";
   return Number(ps(`$p = @(${pids.join(",")}); $a = ${sum}; Start-Sleep ${seconds}; $b = ${sum}; [math]::Round(($b - $a) / (${seconds} * 10), 3)`));
 }
+/**
+ * Processor use of `procs` ([{ pid, name }]) over `windows` windows of `seconds` each: per process
+ * (name and command-line role) a list of percents of one core, and the average of their sum.
+ */
+function idleSeries(procs, windows, seconds) {
+  const ids = procs.map((p) => p.pid).join(",");
+  const out = ps(
+    `$ids = @(${ids}); $r = @(); for ($w = 0; $w -le ${windows}; $w++) { ` +
+      `$r += ,@($ids | ForEach-Object { $p = Get-Process -Id $_ -ErrorAction SilentlyContinue; if ($p) { $p.TotalProcessorTime.TotalMilliseconds } else { 0 } }); ` +
+      `if ($w -lt ${windows}) { Start-Sleep ${seconds} } }; ConvertTo-Json -Compress -Depth 3 $r`,
+  ).trim();
+  const samples = JSON.parse(out);
+  const role = (p) => /--type=(\w[\w-]*)/.exec(p.commandLine ?? "")?.[1] ?? p.name.replace(/\.exe$/i, "");
+  const byProcess = {};
+  procs.forEach((p, i) => {
+    byProcess[`${role(p)} ${p.pid}`] = Array.from({ length: windows }, (_, w) => Math.round(((samples[w + 1][i] - samples[w][i]) / (seconds * 10)) * 1000) / 1000);
+  });
+  const total = (samples[windows].reduce((a, b) => a + b, 0) - samples[0].reduce((a, b) => a + b, 0)) / (windows * seconds * 10);
+  return { byProcess, total: Math.round(total * 1000) / 1000 };
+}
 const appTree = () => [...appProcesses().filter((p) => p.name.toLowerCase() !== "llama-server.exe"), ...webViewProcesses()].map((p) => p.pid);
 const engines = () => appProcesses().filter((p) => p.name.toLowerCase() === "llama-server.exe").map((p) => p.pid);
 const pct = (xs, q) => {
@@ -159,7 +179,12 @@ describe("performance with the AI running", () => {
       assert.ok(numbers.P3_typing.work_p95_ms < numbers.budgets.P3, `typing: the app's work per key is ${numbers.P3_typing.work_p95_ms} ms at p95`);
       // P5: no AI running, project open, no input: under half a percent of one core over 60 s.
       await sleep(5000);
-      numbers.P5_idle_no_ai_percent_of_one_core = cpuPercent(appTree(), 60);
+      // Six windows of 10 s; each process's share of one core per window, so the record shows where
+      // the time goes and whether it is steady or settling.
+      const tree = [...appProcesses().filter((p) => p.name.toLowerCase() !== "llama-server.exe"), ...webViewProcesses()];
+      const series = idleSeries(tree, 6, 10);
+      numbers.P5_idle_no_ai_by_process = series.byProcess;
+      numbers.P5_idle_no_ai_percent_of_one_core = series.total;
       assert.ok(numbers.P5_idle_no_ai_percent_of_one_core < numbers.budgets.P5, `idle without AI: ${numbers.P5_idle_no_ai_percent_of_one_core} percent of one core`);
     });
   });

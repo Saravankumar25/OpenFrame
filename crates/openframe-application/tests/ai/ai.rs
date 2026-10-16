@@ -238,10 +238,10 @@ fn fsd_ai_001_openframe_works_fully_without_offline_ai() {
 }
 
 #[test]
-fn bundled_ai_needs_no_setup_and_the_download_operations_are_gone() {
+fn the_download_is_offered_only_through_its_own_operations() {
     let env = TestEnv::new();
-    // ADR-0025: nothing to download, install, pause or remove; the retired operations of the
-    // download flow and of the older model picker no longer exist.
+    // ADR-0026: one download flow (ai.download.*); the operations of the older download flow and
+    // of the older model picker do not exist.
     for retired in [
         "ai.install",
         "ai.setup_info",
@@ -275,6 +275,20 @@ fn bundled_ai_needs_no_setup_and_the_download_operations_are_gone() {
     );
     // Stopping the engines when none runs is harmless.
     env.ok("ai.stop_runtime", json!({}));
+    // A build without a model host: the screen says so before any click, and a click does
+    // nothing but explain. The size is known without any network use.
+    let d = env.ok("ai.download.status", json!({}));
+    assert_eq!(d["canDownload"], false);
+    assert_eq!(d["phase"], "Idle");
+    assert!(d["sizeBytes"].as_u64().unwrap() > 1_000_000_000);
+    assert!(d["neededBytes"].as_u64().unwrap() > d["sizeBytes"].as_u64().unwrap());
+    assert_eq!(
+        env.err("ai.download.start", json!({})),
+        "ai.download_unavailable"
+    );
+    env.ok("ai.download.pause", json!({}));
+    env.ok("ai.download.remove", json!({}));
+    assert_eq!(env.ok("ai.download.status", json!({}))["phase"], "Idle");
 }
 
 #[test]

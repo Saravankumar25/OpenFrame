@@ -14,10 +14,14 @@
 # Required repository variables:
 #   WINDOWS_TIMESTAMP_URL               RFC 3161 timestamp server of the chosen CA
 #   OPENFRAME_AI_ASSETS_DIR             folder on the runner holding the pinned Offline AI build inputs
-#                                       (ADR-0025: runtime and model files listed in
-#                                       packaging/ai/ai-assets.lock.json, about 1.1 GB, never in git).
+#                                       (packaging/ai/ai-assets.lock.json, never in git): the engine,
+#                                       packaged in every release file, and the models, which the
+#                                       end-to-end suite serves from its local test host (ADR-0026).
 #                                       Until the runners get these files, release validation and every
-#                                       package build fail closed at the "Bundled Offline AI" check.
+#                                       package build fail closed.
+#   MODEL_DISTRIBUTION_BASE_URL         the owner's https model host (ADR-0026 decision 8)
+#   OPENFRAME_MANIFEST_PUBLIC_KEY       public half of the owner's offline manifest key (base64); a
+#                                       release build fails without both (apps/desktop/src-tauri/build.rs)
 #
 # Microsoft Store channel (jobs validate-store / store, docs/engineering/27-microsoft-store.md).
 # Needs NO signing secret: Microsoft signs the MSIX during Store ingestion. Identity values are
@@ -122,8 +126,10 @@ jobs:
       # Builds the real app (debug, embedded UI), installs msedgedriver matching the runner's
       # WebView2 and tauri-driver, then runs every spec in tests/e2e/specs: the lifecycle journey,
       # the relaunch check and the reachability test generated from the feature status file.
-      # The test build carries the bundled Offline AI (build-app.mjs runs prepare-ai-assets.mjs), so
-      # this gate fails closed until OPENFRAME_AI_ASSETS_DIR provides the pinned files.
+      # The test build carries the Offline AI engine (build-app.mjs runs prepare-ai-assets.mjs) and is
+      # compiled with the suite's local model host and a throwaway test key; the host serves the
+      # models from the build inputs (ADR-0026). The gate fails closed until OPENFRAME_AI_ASSETS_DIR
+      # provides the pinned files.
       - name: Desktop E2E (tauri-driver + WebView2)
         env:
           OPENFRAME_AI_ASSETS_DIR: ${{ vars.OPENFRAME_AI_ASSETS_DIR }}
@@ -217,10 +223,12 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
           OPENFRAME_TEAM_PASSWORD: ${{ secrets.OPENFRAME_TEAM_PASSWORD }}
           OPENFRAME_AI_ASSETS_DIR: ${{ vars.OPENFRAME_AI_ASSETS_DIR }}
+          MODEL_DISTRIBUTION_BASE_URL: ${{ vars.MODEL_DISTRIBUTION_BASE_URL }}
+          OPENFRAME_MANIFEST_PUBLIC_KEY: ${{ vars.OPENFRAME_MANIFEST_PUBLIC_KEY }}
         run: |
           node scripts/prepare-ai-assets.mjs
           npm --workspace apps/desktop run tauri -- build --bundles nsis,msi --config src-tauri/tauri.bundled-ai.conf.json --config "$env:RUNNER_TEMP/tauri.release.json"
-          # The bundled AI the installers were made from matches the lock (fail closed).
+          # The engine the installers were made from matches the lock (fail closed).
           node scripts/prepare-ai-assets.mjs --check --source target/release/ai
 
       - name: Verify Authenticode signatures (fail closed)
@@ -370,6 +378,8 @@ jobs:
         env:
           OPENFRAME_DISTRIBUTION: store
           OPENFRAME_AI_ASSETS_DIR: ${{ vars.OPENFRAME_AI_ASSETS_DIR }}
+          MODEL_DISTRIBUTION_BASE_URL: ${{ vars.MODEL_DISTRIBUTION_BASE_URL }}
+          OPENFRAME_MANIFEST_PUBLIC_KEY: ${{ vars.OPENFRAME_MANIFEST_PUBLIC_KEY }}
         run: |
           node scripts/prepare-ai-assets.mjs
           npm --workspace apps/desktop run tauri -- build --no-bundle --config src-tauri/tauri.bundled-ai.conf.json -- --locked

@@ -1,19 +1,20 @@
 #!/usr/bin/env node
-// Bundled Offline AI: verify the build inputs against the committed lock and stage them for the
-// Tauri bundle (ADR-0025).
+// Offline AI engine: verify the build inputs against the committed lock and stage the engine for
+// the Tauri bundle (ADR-0026 decision 1).
 //
-// Input:  packaging/ai/ai-assets.lock.json (committed: every bundled file by path, bytes and
-//         SHA-256, plus licence ids) and the git-ignored `.ai-assets/` folder that holds the real
-//         files (runtimes/<runtime-id>/..., models/<model-id>/model.gguf).
-// Output: .build-cache/ai-bundle/ (git-ignored): exactly the files the lock lists for the target
-//         platform, in the same layout, plus packaging/ai/notices/. The Tauri overlay config
+// Input:  packaging/ai/ai-assets.lock.json (committed: every engine and model file by path, bytes
+//         and SHA-256, plus licence ids) and the git-ignored `.ai-assets/` folder that holds the
+//         real files (runtimes/<runtime-id>/..., models/<model-id>/model.gguf).
+// Output: .build-cache/ai-bundle/ (git-ignored): exactly the engine files the lock lists for the
+//         target platform, in the same layout, plus packaging/ai/notices/. The Tauri overlay config
 //         apps/desktop/src-tauri/tauri.bundled-ai.conf.json maps that folder to the `ai/` folder of
-//         the app resources, so every package carries the complete offline AI.
+//         the app resources. The models are not packaged: the person downloads them after install
+//         (ADR-0026), from a host folder made by scripts/model-manifest.mjs.
 //
 // The build fails closed: a missing file, a wrong size, a wrong hash, a link, an unknown target
 // platform or an invalid lock stops it with a plain message and stages nothing. Nothing is ever
-// downloaded. Files are hard-linked into the staging folder when the drive allows it (no second
-// copy of the 1 GB weights), and copied otherwise.
+// downloaded. Files are hard-linked into the staging folder when the drive allows it, and copied
+// otherwise.
 //
 //   node scripts/prepare-ai-assets.mjs                 verify and stage for this computer
 //   node scripts/prepare-ai-assets.mjs --check         verify only, stage nothing
@@ -26,9 +27,9 @@
 // Where the build inputs are looked up: --source, then OPENFRAME_AI_ASSETS_DIR, then `.ai-assets`
 // in this checkout, then `.ai-assets` in the main checkout when this is a git worktree.
 //
-// Changing a bundled file: put the new file in `.ai-assets`, update its entry in the lock (path,
+// Changing a pinned file: put the new file in `.ai-assets`, update its entry in the lock (path,
 // bytes, sha256, licence) in a reviewed change, and raise `bundleVersion`. The app embeds the same
-// lock and checks the installed files against it before it first starts the engine.
+// lock and checks the installed engine against it before it first starts it.
 
 import { spawnSync } from "node:child_process";
 import crypto from "node:crypto";
@@ -114,20 +115,18 @@ export function readLock(lockPath = LOCK_PATH) {
   return lock;
 }
 
-/** Every file the target platform bundles: [{ rel: "runtimes/<id>/<file>", bytes, sha256 }]. */
+/** Every file the target platform packages (the engine): [{ rel: "runtimes/<id>/<file>", bytes, sha256 }]. */
 export function bundledFiles(lock, target) {
   const [os, arch] = target.split("-");
   const runtimes = lock.runtimes.filter((r) => r.os === os && r.arch === arch);
   // Exactly one processor build per platform; a Vulkan build beside it is optional (ADR-0029).
   if (runtimes.filter((r) => r.backend === "cpu").length !== 1 || runtimes.filter((r) => r.backend === "vulkan").length > 1) {
     fail(
-      `No Offline AI engine is pinned for ${target}. Every package must contain the complete offline AI (ADR-0025), so this build stops. ` +
+      `No Offline AI engine is pinned for ${target}. Every package contains the Offline AI engine (ADR-0026 decision 1), so this build stops. ` +
         "Add the engine for this platform to packaging/ai/ai-assets.lock.json and its files to .ai-assets.",
     );
   }
-  const out = runtimes.flatMap((r) => r.files.map((f) => ({ rel: `runtimes/${r.runtimeId}/${f.path}`, bytes: f.bytes, sha256: f.sha256 })));
-  for (const m of lock.models) out.push({ rel: `models/${m.modelId}/${m.file.path}`, bytes: m.file.bytes, sha256: m.file.sha256 });
-  return out;
+  return runtimes.flatMap((r) => r.files.map((f) => ({ rel: `runtimes/${r.runtimeId}/${f.path}`, bytes: f.bytes, sha256: f.sha256 })));
 }
 
 function sha256File(file) {
@@ -220,7 +219,7 @@ export function prepare({ target = currentTarget(), source, out = DEFAULT_OUT, c
   const src = findSource(source);
   if (!src) {
     const msg =
-      "The Offline AI build inputs are missing. Every package contains the complete offline AI (ADR-0025), so the build stops. " +
+      "The Offline AI build inputs are missing. Every package contains the Offline AI engine (ADR-0026 decision 1), so the build stops. " +
       "Put the pinned files in .ai-assets (see packaging/ai/ai-assets.lock.json) or set OPENFRAME_AI_ASSETS_DIR.";
     if (!optional) fail(msg);
     log(`Offline AI: build inputs not found; staging an empty folder for this development run (${path.relative(ROOT, out)}).`);

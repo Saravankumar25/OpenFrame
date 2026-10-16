@@ -13,9 +13,10 @@
 //      removed, manifests no longer carry the pending placeholder);
 //   3. no key material is committed;
 //   5. THIRD_PARTY_LICENSES.md exists and the license inventory has no copyleft/unknown entries;
-//   6. the bundled Offline AI build inputs match packaging/ai/ai-assets.lock.json (ADR-0025: every
-//      package carries the complete offline AI; nothing is downloaded, so there is no model host
-//      and no manifest signing key to check).
+//   6. the Offline AI build inputs match packaging/ai/ai-assets.lock.json (ADR-0026: every package
+//      carries the engine; the models download after install);
+//   6a. the model host and the manifest key are set for the build (ADR-0026 decision 8): an https
+//      MODEL_DISTRIBUTION_BASE_URL and a base64 Ed25519 OPENFRAME_MANIFEST_PUBLIC_KEY.
 // Direct channel only
 //   3a. signing material is present in the environment (never printed):
 //      WINDOWS_CERTIFICATE, WINDOWS_CERTIFICATE_PASSWORD, TAURI_SIGNING_PRIVATE_KEY,
@@ -181,12 +182,22 @@ if (!exists("THIRD_PARTY_LICENSES.md")) {
   }
 }
 
-// 6. bundled Offline AI (ADR-0025) --------------------------------------------------------------
+// 6. Offline AI engine (ADR-0026) ---------------------------------------------------------------
 try {
   const ai = prepareAiAssets({ check: true, log: () => undefined });
-  pass("Bundled Offline AI", `${ai.files.length} pinned files (${(ai.bytes / 1048576).toFixed(0)} MB) match the lock`);
+  pass("Offline AI engine", `${ai.files.length} pinned files (${(ai.bytes / 1048576).toFixed(0)} MB) match the lock`);
 } catch (e) {
-  failCheck("Bundled Offline AI", e.message.replace(/\s*\n\s*/g, " "));
+  failCheck("Offline AI engine", e.message.replace(/\s*\n\s*/g, " "));
+}
+
+// 6a. model host and manifest key (ADR-0026 decision 8) ----------------------------------------------
+{
+  const host = (process.env.MODEL_DISTRIBUTION_BASE_URL ?? "").trim();
+  const keys = (process.env.OPENFRAME_MANIFEST_PUBLIC_KEY ?? "").split(",").map((k) => k.trim()).filter(Boolean);
+  const keyOk = (k) => /^[A-Za-z0-9+/]{43}=$/.test(k) && Buffer.from(k, "base64").length === 32;
+  if (!host.startsWith("https://")) failCheck("Model host", "MODEL_DISTRIBUTION_BASE_URL must be the owner's https model host");
+  else if (keys.length === 0 || !keys.every(keyOk)) failCheck("Model host", "OPENFRAME_MANIFEST_PUBLIC_KEY must be one or more base64 Ed25519 public keys");
+  else pass("Model host", `${new URL(host).host}, ${keys.length} manifest key(s)`);
 }
 
 // 6c. Migration freeze (doc 23 §4, build plan item migration policy). Any build given to people outside the team

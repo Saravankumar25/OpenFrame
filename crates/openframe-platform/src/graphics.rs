@@ -113,7 +113,8 @@ mod tests {
 
     #[test]
     fn driver_versions_read_as_four_parts() {
-        let v: u64 = (31 << 48) | (0 << 32) | (101 << 16) | 5333;
+        // 31.0.101.5333: the second part is zero.
+        let v: u64 = (31 << 48) | (101 << 16) | 5333;
         assert_eq!(driver_version_text(v), "31.0.101.5333");
     }
 

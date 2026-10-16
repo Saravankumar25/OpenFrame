@@ -19,6 +19,12 @@
 //! the variable is set, the script reruns on every build instead of asking Cargo to watch the
 //! variable, because Cargo would otherwise keep its value in the target folder to compare later.
 //!
+//! **Model host (ADR-0026 decision 8).** `MODEL_DISTRIBUTION_BASE_URL` (the owner's https model
+//! host) and `OPENFRAME_MANIFEST_PUBLIC_KEY` (the public half of the owner's offline Ed25519
+//! manifest key, base64, several separated by commas) are read by the crate with `option_env!`.
+//! A release build without both fails here. A loopback `http://127.0.0.1:<port>/` address is the
+//! local test host of the test suite: allowed, and the build says it is a test build.
+//!
 //! On a macOS target the script also builds the Swift StoreKit 2 bridge
 //! (`macos/StoreKitBridge/`) and links it with the StoreKit and Foundation frameworks
 //! (docs/engineering/37-platform-boundary.md). On every other target it does nothing more.
@@ -45,6 +51,7 @@ fn main() {
     }
     println!("cargo:rustc-env=OPENFRAME_DISTRIBUTION={channel}");
     embed_team_gate(channel);
+    check_model_host();
     // The target, not the machine running this script.
     if std::env::var("CARGO_CFG_TARGET_OS").as_deref() == Ok("macos") {
         link_storekit_bridge();
@@ -81,6 +88,40 @@ fn embed_team_gate(channel: &str) {
             std::fs::write(&out, hash).expect("write the team password hash");
             println!("cargo:rustc-cfg=openframe_team_gate");
         }
+    }
+}
+
+/// Panics, which fails the build, when a release build lacks the model host or its key, or when
+/// either is malformed (module notes).
+fn check_model_host() {
+    const URL: &str = "MODEL_DISTRIBUTION_BASE_URL";
+    const KEY: &str = "OPENFRAME_MANIFEST_PUBLIC_KEY";
+    println!("cargo:rerun-if-env-changed={URL}");
+    println!("cargo:rerun-if-env-changed={KEY}");
+    let url = std::env::var(URL).unwrap_or_default();
+    let keys = std::env::var(KEY).unwrap_or_default();
+    let (url, keys) = (url.trim(), keys.trim());
+    if url.is_empty() && keys.is_empty() && std::env::var("PROFILE").as_deref() != Ok("release") {
+        return; // a development build that cannot download
+    }
+    if url.is_empty() || keys.is_empty() {
+        panic!("A release build needs {URL} and {KEY} (ADR-0026 decision 8).");
+    }
+    let test_host = url.starts_with("http://127.0.0.1:");
+    if !(url.starts_with("https://") || test_host) {
+        panic!("{URL} must be an https address.");
+    }
+    let b64 = |c: char| c.is_ascii_alphanumeric() || matches!(c, '+' | '/');
+    let key_ok = |k: &str| k.len() == 44 && k.ends_with('=') && k[..43].chars().all(b64);
+    if !keys.split(',').map(str::trim).all(key_ok) {
+        panic!(
+            "{KEY} must be base64 Ed25519 public keys (44 characters each), separated by commas."
+        );
+    }
+    if test_host {
+        println!(
+            "cargo:warning=This build downloads OpenFrame AI from the local test host {url}: a test build, never for the team."
+        );
     }
 }
 

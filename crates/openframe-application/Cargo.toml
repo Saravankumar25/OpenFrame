@@ -35,6 +35,7 @@ trash = "5"
 
 [dev-dependencies]
 tempfile.workspace = true
+openframe-ai = { workspace = true, features = ["test-support"] }
 openframe-test-support.workspace = true
 # Export tests parse the written PDFs and spreadsheets.
 lopdf.workspace = true

@@ -1,18 +1,20 @@
 //! Offline AI façade used by the application layer (Local AI Runtime spec; agentic AI spec
-//! §12, §23; ADR-0025): the bundled AI that ships with the app, its integrity check before the
-//! first engine start, and the two managed engines (chat and embeddings).
+//! §12, §23; ADR-0026): the engine that ships with the app, the models downloaded after install,
+//! their integrity check before the first engine start, and the two managed engines (chat and
+//! embeddings).
 //!
 //! ```text
-//! new ─► bundle present? (sizes only) ──no──► Missing / Damaged / Unsupported (AI off, plain message)
-//!          │ yes
-//!          ▼
-//!      NotChecked ─first chat / embed / warm-up─► Checking (hashes, once per installed version)
+//! new / reload ─► engine and model set present? (sizes only)
+//!                 ├─ no set ─► NotInstalled (AI off, "Download OpenFrame AI")
+//!                 ├─ broken ─► Missing / Damaged / Unsupported (AI off, plain message)
+//!                 └─ yes ───► NotChecked ─first chat / embed / warm-up─► Checking (hashes, once)
 //!                                                   ├─ ok ──► Verified ─► engines start on demand
 //!                                                   └─ bad ─► Damaged (engines unconfigured)
 //! ```
 //!
-//! Nothing is downloaded or installed at runtime, and a damaged installation is repaired by
-//! reinstalling the app. The project is never touched by any of this.
+//! The download runs only from `start_download` (the person's click; `model_download.rs`). A
+//! damaged engine is repaired by reinstalling the app, a damaged model set by downloading it again.
+//! The project is never touched by any of this.
 
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
@@ -22,10 +24,11 @@ use openframe_domain::{AppError, AppResult};
 use parking_lot::{Mutex, RwLock};
 use serde::Serialize;
 
-use crate::bundle::{self, AssetLock, BundledAi, ModelEntry, ModelStamp, Pooling};
+use crate::bundle::{self, AssetLock, BundledAi, ModelRole, ModelStamp, Pooling};
 use crate::client::{self, EMBED_BATCH};
 use crate::hardware::{self, HardwareInfo};
 use crate::model::{InferenceProvider, LocalRuntimeModel};
+use crate::model_download::{self, DownloadStatus, ModelDownload, ModelHost};
 use crate::rt::AiRuntime;
 use crate::selection::{self, Fitness};
 use crate::store::AiPaths;
@@ -50,9 +53,12 @@ pub type AiError = AppError;
 pub struct ManagerConfig {
     /// Writable app data folder (check record, engine record, logs).
     pub app_data_dir: PathBuf,
-    /// Read-only folder holding the bundled AI (`<app resources>/ai`). `None` when the platform
+    /// Read-only folder holding the engine (`<app resources>/ai`). `None` when the platform
     /// cannot name it: AI then reports itself missing.
     pub bundle_dir: Option<PathBuf>,
+    /// The model host and manifest keys of this build (`None`: this build cannot download, and a
+    /// model set already on disk cannot be checked, so AI stays off).
+    pub model_host: Option<ModelHost>,
     /// The lock the bundle is checked against (the one compiled into this build in the product).
     pub lock: AssetLock,
     /// Chat engine.
@@ -67,11 +73,16 @@ pub struct ManagerConfig {
 
 impl ManagerConfig {
     /// Configuration for the running application.
-    pub fn production(app_data_dir: &Path, bundle_dir: Option<PathBuf>) -> AppResult<Self> {
+    pub fn production(
+        app_data_dir: &Path,
+        bundle_dir: Option<PathBuf>,
+        model_host: Option<ModelHost>,
+    ) -> AppResult<Self> {
         let paths = AiPaths::new(app_data_dir);
         Ok(Self {
             app_data_dir: app_data_dir.to_path_buf(),
             bundle_dir,
+            model_host,
             lock: AssetLock::embedded()?,
             supervisor: SupervisorConfig {
                 log_path: Some(paths.runtime_log()),
@@ -87,18 +98,20 @@ impl ManagerConfig {
     }
 }
 
-/// Where the bundled AI stands on this installation.
+/// Where the Offline AI stands on this installation.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 pub enum BundleState {
+    /// No model set has been downloaded (or it was removed).
+    NotInstalled,
     /// All files are present with the pinned sizes; the full check runs before the first start.
     NotChecked,
     /// The full check is running.
     Checking,
     /// Every file matches its pinned hash.
     Verified,
-    /// Files are missing (a partial or broken installation).
+    /// Engine files are missing (a partial or broken installation).
     Missing,
-    /// Files were changed after installation.
+    /// Engine or model files were changed, or a model file is missing.
     Damaged,
     /// This build carries no engine for this kind of computer.
     Unsupported,
@@ -176,13 +189,19 @@ pub struct Diagnostics {
     pub log_file: String,
 }
 
+/// The engine and model set as last read from disk.
+struct Loaded {
+    bundle: Option<BundledAi>,
+    /// Chat and embedding model files as they were at the last successful check.
+    stamps: Option<[Arc<ModelStamp>; 2]>,
+}
+
 pub struct AiManager {
     cfg: ManagerConfig,
     paths: AiPaths,
     rt: Arc<AiRuntime>,
-    bundle: Option<BundledAi>,
-    /// Chat and embedding model files as they were at the last successful check.
-    stamps: Option<[Arc<ModelStamp>; 2]>,
+    loaded: RwLock<Loaded>,
+    download: ModelDownload,
     state: RwLock<(BundleState, Option<AppError>)>,
     check_lock: Mutex<()>,
     supervisor: Arc<Supervisor>,
@@ -190,15 +209,6 @@ pub struct AiManager {
     hw_cache: Mutex<Option<HardwareInfo>>,
     /// Engine numbers of the chat calls since the last `take_usage` (the AI trace).
     usage: Mutex<client::Usage>,
-}
-
-fn embedding_info(e: &ModelEntry) -> Option<EmbeddingInfo> {
-    Some(EmbeddingInfo {
-        model_id: e.model_id.clone(),
-        version: e.version.clone(),
-        sha256: e.file.sha256.clone(),
-        dim: e.embedding_dim?,
-    })
 }
 
 /// Cut an embedding input to `max_chars` on a character boundary; an empty input becomes a
@@ -218,6 +228,7 @@ fn state_of(e: &AppError) -> BundleState {
     match e.code_str() {
         "ai.unsupported" => BundleState::Unsupported,
         "ai.assets_missing" => BundleState::Missing,
+        "ai.not_installed" => BundleState::NotInstalled,
         _ => BundleState::Damaged,
     }
 }
@@ -226,15 +237,6 @@ impl AiManager {
     pub fn new(cfg: ManagerConfig) -> AppResult<Self> {
         let rt = Arc::new(AiRuntime::new()?);
         let paths = AiPaths::new(&cfg.app_data_dir);
-        // Builds before ADR-0025 downloaded the runtime and models into app data; that copy is
-        // never used again.
-        let freed = paths.remove_retired_downloads();
-        if freed > 0 {
-            tracing::info!(
-                freed,
-                "removed Offline AI files left by the retired download flow"
-            );
-        }
         // Engines left running by a crashed session are stopped before any engine starts.
         let registry = Arc::new(crate::engines::EngineRegistry::new(paths.engine_registry()));
         registry.sweep();
@@ -245,34 +247,13 @@ impl AiManager {
         ));
         supervisor.set_registry(registry.clone());
         embed_supervisor.set_registry(registry);
-        let bundle = match &cfg.bundle_dir {
-            Some(dir) => BundledAi::new(dir, cfg.lock.clone()),
-            None => Err(bundle::missing().with_detail("the app resources folder is unknown")),
-        };
-        let (bundle, state) = match bundle.and_then(|b| b.check_present().map(|()| b)) {
-            Ok(b) => (Some(b), (BundleState::NotChecked, None)),
-            Err(e) => {
-                tracing::warn!(
-                    code = e.code_str(),
-                    detail = e.detail.as_deref().unwrap_or(""),
-                    "the bundled Offline AI is not usable"
-                );
-                (None, (state_of(&e), Some(e)))
-            }
-        };
-        let stamps = bundle.as_ref().map(|b| {
-            let (chat, emb) = (cfg.lock.chat_model(), cfg.lock.embedding_model());
-            [
-                ModelStamp::new(b.model_file(chat), chat.file.bytes),
-                ModelStamp::new(b.model_file(emb), emb.file.bytes),
-            ]
-        });
+        let (loaded, state) = Self::load(&cfg);
         let m = Self {
             cfg,
             paths,
             rt,
-            bundle,
-            stamps,
+            loaded: RwLock::new(loaded),
+            download: ModelDownload::default(),
             state: RwLock::new(state),
             check_lock: Mutex::new(()),
             supervisor,
@@ -282,6 +263,58 @@ impl AiManager {
         };
         m.configure();
         Ok(m)
+    }
+
+    /// Read the engine and the downloaded model set from disk (sizes only).
+    fn load(cfg: &ManagerConfig) -> (Loaded, (BundleState, Option<AppError>)) {
+        let keys = cfg
+            .model_host
+            .as_ref()
+            .map(|h| h.keys.as_slice())
+            .unwrap_or(&[]);
+        let bundle = match &cfg.bundle_dir {
+            Some(dir) => model_download::models_dir(&cfg.app_data_dir)
+                .installed(keys)
+                .and_then(|models| BundledAi::new(dir, cfg.lock.clone(), models)),
+            None => Err(bundle::missing().with_detail("the app resources folder is unknown")),
+        };
+        match bundle.and_then(|b| b.check_present().map(|()| b)) {
+            Ok(b) => {
+                let stamps = b.models().map(|m| {
+                    [ModelRole::Chat, ModelRole::Embedding]
+                        .map(|r| ModelStamp::new(m.path(r), m.file(r).bytes))
+                });
+                let loaded = Loaded {
+                    bundle: Some(b),
+                    stamps,
+                };
+                (loaded, (BundleState::NotChecked, None))
+            }
+            Err(e) => {
+                if !e.is("ai.not_installed") {
+                    tracing::warn!(
+                        code = e.code_str(),
+                        detail = e.detail.as_deref().unwrap_or(""),
+                        "the Offline AI is not usable"
+                    );
+                }
+                let loaded = Loaded {
+                    bundle: None,
+                    stamps: None,
+                };
+                (loaded, (state_of(&e), Some(e)))
+            }
+        }
+    }
+
+    /// Read the engine and model set again (after a download or a removal) and point the engines
+    /// at it. Running engines are stopped first.
+    fn reload(&self) {
+        let _one_check = self.check_lock.lock();
+        let (loaded, state) = Self::load(&self.cfg);
+        *self.loaded.write() = loaded;
+        *self.state.write() = state;
+        self.configure();
     }
 
     pub fn paths(&self) -> &AiPaths {
@@ -356,16 +389,16 @@ impl AiManager {
                 _ => return Err(s.1.clone().unwrap_or_else(bundle::missing)),
             }
         }
-        let Some(b) = &self.bundle else {
+        let (Some(b), stamps) = ({
+            let l = self.loaded.read();
+            (l.bundle.clone(), l.stamps.clone())
+        }) else {
             return Err(self.unavailable_reason());
         };
         *self.state.write() = (BundleState::Checking, None);
-        let checked = b.verify(&self.paths.bundle_check()).and_then(|()| {
-            self.stamps
-                .iter()
-                .flatten()
-                .try_for_each(|s| s.mark_checked())
-        });
+        let checked = b
+            .verify(&self.paths.bundle_check())
+            .and_then(|()| stamps.iter().flatten().try_for_each(|s| s.mark_checked()));
         match checked {
             Ok(()) => {
                 *self.state.write() = (BundleState::Verified, None);
@@ -391,7 +424,12 @@ impl AiManager {
     /// Engine start refused because its pinned files changed (checked before every launch).
     fn guard<T>(&self, r: AppResult<T>) -> AppResult<T> {
         match r {
-            Err(e) if matches!(e.code_str(), "ai.assets_damaged" | "ai.assets_missing") => {
+            Err(e)
+                if matches!(
+                    e.code_str(),
+                    "ai.assets_damaged" | "ai.assets_missing" | "ai.models_damaged"
+                ) =>
+            {
                 Err(self.switch_off(e))
             }
             other => other,
@@ -447,12 +485,20 @@ impl AiManager {
 
     // ------------------------------------------------------------ embeddings (C1)
 
-    /// The bundled embedding model (None when AI is not available).
+    /// The downloaded embedding model (None when AI is not available).
     pub fn embedding_info(&self) -> Option<EmbeddingInfo> {
         if !self.available() {
             return None;
         }
-        embedding_info(self.cfg.lock.embedding_model())
+        let e = self.cfg.lock.embedding_model();
+        let l = self.loaded.read();
+        let models = l.bundle.as_ref()?.models()?;
+        Some(EmbeddingInfo {
+            model_id: e.model_id.clone(),
+            version: e.version.clone(),
+            sha256: models.embedding.sha256.clone(),
+            dim: e.embedding_dim?,
+        })
     }
 
     /// Embed texts with the local embedding model. Blocking (call from a background thread);
@@ -522,31 +568,33 @@ impl AiManager {
     /// Point both engines at the bundle, or at nothing when AI is not usable.
     fn configure(&self) {
         let usable = self.available();
-        match self.bundle.as_ref().filter(|_| usable) {
-            Some(b) => {
+        let l = self.loaded.read();
+        let ready = l.bundle.as_ref().filter(|_| usable);
+        match ready.zip(ready.and_then(|b| b.models())) {
+            Some((b, models)) => {
                 let hw = self.hardware();
                 let chat = self.cfg.lock.chat_model();
                 let emb = self.cfg.lock.embedding_model();
                 let chat_launcher: Arc<dyn Launcher> = Arc::new(LlamaServerLauncher {
                     executable: b.executable(),
                     engine_files: Some(b.engine_files()),
-                    model_path: b.model_file(chat),
+                    model_path: models.path(ModelRole::Chat),
                     profile_id: format!("{}:{}", bundle::BUNDLE_ID, chat.model_id),
                     context_tokens: self.chat_context_tokens(),
                     threads: Self::threads(&hw),
                     seed: self.cfg.deterministic.then_some(DETERMINISTIC_SEED),
-                    model_stamp: self.stamps.as_ref().map(|s| s[0].clone()),
+                    model_stamp: l.stamps.as_ref().map(|s| s[0].clone()),
                 });
                 let embedding_launcher: Arc<dyn Launcher> = Arc::new(EmbeddingServerLauncher {
                     executable: b.executable(),
                     engine_files: Some(b.engine_files()),
-                    model_path: b.model_file(emb),
+                    model_path: models.path(ModelRole::Embedding),
                     model_id: emb.model_id.clone(),
                     pooling: emb.pooling.unwrap_or(Pooling::Cls),
                     context_tokens: emb.context_tokens,
                     // Leave most cores to the chat model when both run.
                     threads: (Self::threads(&hw) / 2).clamp(1, 4),
-                    model_stamp: self.stamps.as_ref().map(|s| s[1].clone()),
+                    model_stamp: l.stamps.as_ref().map(|s| s[1].clone()),
                 });
                 self.supervisor.configure(Some(chat_launcher));
                 self.embed_supervisor.configure(Some(embedding_launcher));
@@ -554,6 +602,124 @@ impl AiManager {
             None => {
                 self.supervisor.configure(None);
                 self.embed_supervisor.configure(None);
+            }
+        }
+    }
+
+    // ------------------------------------------------------------- download
+
+    /// The download screen's state.
+    pub fn download_status(&self) -> DownloadStatus {
+        self.download.status()
+    }
+
+    /// Bytes of the model set this build expects (shown before the click, without any network).
+    pub fn download_size(&self) -> u64 {
+        self.cfg.lock.models.iter().map(|m| m.file.bytes).sum()
+    }
+
+    /// This build has a model host and keys.
+    pub fn can_download(&self) -> bool {
+        self.cfg.model_host.is_some()
+    }
+
+    /// Start (or resume) the download on the person's click. Returns at once; the work runs on a
+    /// background thread and `download_status` reports it.
+    pub fn start_download(self: &Arc<Self>) -> AppResult<()> {
+        let Some(host) = self.cfg.model_host.clone() else {
+            return Err(AppError::ai(
+                "download_unavailable",
+                "This copy of OpenFrame Studio cannot download OpenFrame AI.",
+            ));
+        };
+        if !self.download.begin() {
+            return Ok(());
+        }
+        let me = self.clone();
+        let spawned = std::thread::Builder::new()
+            .name("of-ai-download".into())
+            .spawn(move || {
+                let r = me.run_download(host);
+                if let Err(e) = &r {
+                    tracing::warn!(
+                        code = e.code_str(),
+                        detail = e.detail.as_deref().unwrap_or(""),
+                        "the OpenFrame AI download stopped"
+                    );
+                }
+                me.download.end(&r);
+            });
+        if let Err(e) = spawned {
+            let r = Err(AppError::internal(format!("download thread: {e}")));
+            self.download.end(&r);
+            return r;
+        }
+        Ok(())
+    }
+
+    /// Pause a running download (the downloaded part stays).
+    pub fn pause_download(&self) {
+        self.download.pause();
+    }
+
+    /// Remove the downloaded models (the Remove button). AI is off afterwards until the next
+    /// download; the projects are not touched.
+    pub fn remove_models(&self) -> AppResult<()> {
+        if self.download.running() {
+            return Err(AppError::ai(
+                "download_running",
+                "Pause the OpenFrame AI download before removing it.",
+            ));
+        }
+        self.stop_runtime();
+        let r = model_download::models_dir(&self.cfg.app_data_dir).remove_all();
+        self.download.reset();
+        self.reload();
+        r
+    }
+
+    fn run_download(self: &Arc<Self>, host: ModelHost) -> AppResult<()> {
+        let runtime_version = self
+            .cfg
+            .lock
+            .runtime_for_this_computer()
+            .map(|r| r.version.clone())
+            .ok_or_else(bundle::unsupported)?;
+        let me = self.clone();
+        let h = host.clone();
+        let (envelope, manifest, tier_id) = self
+            .rt
+            .run(async move { me.download.fetch_plan(&h, &runtime_version).await })?;
+        let dir = model_download::models_dir(&self.cfg.app_data_dir);
+        let version = manifest.manifest_version.clone();
+        if dir.active().is_some_and(|a| a.version == version) && self.available() {
+            return Ok(()); // this set is already in use
+        }
+        let tier = manifest
+            .tier(&tier_id)
+            .cloned()
+            .ok_or_else(|| AppError::internal("tier vanished"))?;
+        let me = self.clone();
+        let v = version.clone();
+        self.rt.run(async move {
+            let dir = model_download::models_dir(&me.cfg.app_data_dir);
+            me.download
+                .fetch_files(&host, &dir, &envelope, &v, &tier)
+                .await
+        })?;
+        // The health check: the new set passes its full check and the engine starts on it.
+        self.reload();
+        let healthy = self.ensure_verified().and_then(|()| {
+            self.guard(self.supervisor.ensure_ready(self.cfg.ready_timeout))
+                .map(|_| ())
+        });
+        match healthy {
+            Ok(()) => dir.confirm_healthy(),
+            Err(e) => {
+                self.stop_runtime();
+                dir.roll_back()?;
+                self.reload();
+                Err(e)
             }
         }
     }
@@ -597,6 +763,12 @@ impl AiManager {
                 sha256: m.file.sha256.clone(),
             });
         }
+        if let Some(m) = self.loaded.read().bundle.as_ref().and_then(|b| b.models()) {
+            for (c, f) in components.iter_mut().skip(1).zip([&m.chat, &m.embedding]) {
+                c.bytes = f.bytes;
+                c.sha256 = f.sha256.clone();
+            }
+        }
         let hw = self.hardware();
         Diagnostics {
             bundle_id: lock.bundle_id.clone(),
@@ -615,6 +787,8 @@ impl AiManager {
                 .map(|d| d.to_string_lossy().into_owned())
                 .unwrap_or_default(),
             bundle_bytes: self
+                .loaded
+                .read()
                 .bundle
                 .as_ref()
                 .map(BundledAi::total_bytes)

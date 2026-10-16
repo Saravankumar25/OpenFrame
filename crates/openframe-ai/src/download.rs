@@ -218,7 +218,7 @@ impl Tier {
 /// The tier the hardware check proposes (ADR-0028 decision 4): the larger tier on a computer with
 /// enough memory for it, or with a graphics card that has 6 GB of its own; otherwise the small one.
 /// The person can always choose the other tier.
-pub fn propose_tier<'m>(m: &'m Manifest, memory_gb: u32, best_card_mb: u64) -> Option<&'m Tier> {
+pub fn propose_tier(m: &Manifest, memory_gb: u32, best_card_mb: u64) -> Option<&Tier> {
     let large = m
         .tier("large")
         .filter(|t| memory_gb >= t.min_memory_gb.max(16) || best_card_mb >= 6 * 1024);

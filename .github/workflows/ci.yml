@@ -153,9 +153,10 @@ jobs:
       # Builds the real app (debug, embedded UI), installs msedgedriver matching the runner's
       # WebView2 and tauri-driver, then runs every spec in tests/e2e/specs: the lifecycle journey,
       # the relaunch check and the reachability test generated from the feature status file.
-      # The test build carries the bundled Offline AI (ADR-0025; build-app.mjs runs
-      # prepare-ai-assets.mjs), so this job fails closed until OPENFRAME_AI_ASSETS_DIR gives the
-      # runner the pinned runtime and model files.
+      # The test build carries the Offline AI engine (build-app.mjs runs prepare-ai-assets.mjs) and
+      # is compiled with the suite's local model host and a throwaway test key; the host serves the
+      # pinned models from the build inputs (ADR-0026). The job fails closed until
+      # OPENFRAME_AI_ASSETS_DIR gives the runner the pinned engine and model files.
       - name: Desktop E2E (tauri-driver + WebView2)
         env:
           OPENFRAME_AI_ASSETS_DIR: ${{ vars.OPENFRAME_AI_ASSETS_DIR }}

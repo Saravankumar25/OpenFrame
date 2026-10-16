@@ -36,9 +36,10 @@ All commands run from the repository root.
 | Command | What it does |
 |---|---|
 | `npm install` | Installs the npm workspace (`apps/desktop`) |
-| `npm run dev` | `tauri dev`: starts Vite on `http://127.0.0.1:1420` and the Rust app with hot reload. The first build compiles all crates and takes several minutes. Stages the bundled Offline AI when `.ai-assets` is present (without it the app shows its "Offline AI is missing" state) |
-| `npm run build` | `tauri build`: optimized release build plus NSIS and MSI installers in `target/release/bundle/`, with the Offline AI runtime and the models as the current build bundles them (ADR-0026 moves the models to a download after install). Local builds are unsigned. Fails closed when the pinned AI files are missing or altered. |
-| `npm run ai:assets` | Verifies `.ai-assets` (or `OPENFRAME_AI_ASSETS_DIR`) against `packaging/ai/ai-assets.lock.json` and stages the files in `.build-cache/ai-bundle` (`-- --check` verifies only). A git worktree uses the main checkout's `.ai-assets`. |
+| `npm run dev` | `tauri dev`: starts Vite on `http://127.0.0.1:1420` and the Rust app with hot reload. The first build compiles all crates and takes several minutes. Stages the Offline AI engine when `.ai-assets` is present (without it the app shows its "Offline AI is missing" state). A development build has no model host, so it cannot download the models; use the test suite for that |
+| `npm run build` | `tauri build`: optimized release build plus NSIS and MSI installers in `target/release/bundle/`, with the Offline AI engine; the models download after install (ADR-0026). Needs `MODEL_DISTRIBUTION_BASE_URL` and `OPENFRAME_MANIFEST_PUBLIC_KEY` (the release build fails without them). Local builds are unsigned. Fails closed when the pinned engine files are missing or altered. |
+| `npm run ai:assets` | Verifies `.ai-assets` (or `OPENFRAME_AI_ASSETS_DIR`) against `packaging/ai/ai-assets.lock.json` and stages the engine in `.build-cache/ai-bundle` (`-- --check` verifies only). A git worktree uses the main checkout's `.ai-assets`. |
+| `node scripts/model-manifest.mjs` | The download list (ADR-0026): `new-key` (the owner, once, offline) and `publish` (signs the list and lays out the model host folder). The test suite makes its own throwaway key and host folder in `.build-cache/e2e-model-host`. |
 | `npm run bundle` | Same as `build`, restricted to `--bundles nsis,msi` |
 | `npm run test` | `cargo test --workspace`, then Vitest (`apps/desktop`) |
 | `npm run test:rust` / `npm run test:web` | One side only |
@@ -52,7 +53,7 @@ All commands run from the repository root.
 | `npm run check:links:online` | The link check, plus a fetch of every app address marked `online` in `scripts/app-addresses.json`. Run before a build (ADR-0030); it uses the network |
 | `npm run scan:installer -- <file or folder>` | Refuses built files that hold a secret, a personal path, the build computer's user name or the team password in plain text. Run on the unpacked release folder and on the installer (Windows phase W9) |
 | `npm run e2e:setup` | Installs the desktop E2E drivers into the gitignored `tests/e2e/.drivers/`: `msedgedriver.exe` matching the installed WebView2 Runtime (downloaded from Microsoft) and `tauri-driver` (`cargo install --root`). No global installs. |
-| `npm run test:e2e` | Desktop end-to-end suite: runs `e2e:setup`, verifies and stages the bundled Offline AI, builds the real app with it (`tauri build --debug --no-bundle`) and drives it with WebdriverIO through `tauri-driver` + Edge WebDriver (`tests/e2e/specs/`). Add `-- --no-build` to reuse the last build, `-- --only=05-` to run some specs, and `-- --release=gated` or `-- --release=open` to drive the hardened release executable (`tauri build --no-bundle`, never an installer) with or without the team password screen; specs marked `@e2e-debug-only` are listed and skipped there. The app runs isolated in `tests/e2e/.run/<time>/` (`OPENFRAME_DATA_ROOT`; the release build honours it for file locations only, ADR-0031); failure screenshots go to `tests/e2e/artifacts/`. Close other OpenFrame windows first, because the suite drives real windows and keyboard input. |
+| `npm run test:e2e` | Desktop end-to-end suite: runs `e2e:setup`, verifies and stages the Offline AI engine, builds the real app with it and with the suite's local model host (`127.0.0.1:47811`) and test key compiled in, starts that host, installs the model set in each test data folder as a finished download would (`@e2e-ai-models: none` starts without), (`tauri build --debug --no-bundle`) and drives it with WebdriverIO through `tauri-driver` + Edge WebDriver (`tests/e2e/specs/`). Add `-- --no-build` to reuse the last build, `-- --only=05-` to run some specs, and `-- --release=gated` or `-- --release=open` to drive the hardened release executable (`tauri build --no-bundle`, never an installer) with or without the team password screen; specs marked `@e2e-debug-only` are listed and skipped there. The app runs isolated in `tests/e2e/.run/<time>/` (`OPENFRAME_DATA_ROOT`; the release build honours it for file locations only, ADR-0031); failure screenshots go to `tests/e2e/artifacts/`. Close other OpenFrame windows first, because the suite drives real windows and keyboard input. |
 | `npm --workspace apps/desktop run build:web` | Type-checks and builds only the web bundle (`apps/desktop/dist`) |
 | `node scripts/release-validate.mjs --report-only` | Shows which release prerequisites are still missing |
 
@@ -76,7 +77,7 @@ cd apps/desktop; npx vitest                          # watch mode
 | Logs | `%LOCALAPPDATA%\OpenFrame\logs\openframe.YYYY-MM-DD.log`: JSON lines, rotated daily, 14 files kept |
 | New projects (default) | `Documents\OpenFrame\Projects\<Title>.openframe\` |
 | Global Idea Vault | `Documents\OpenFrame\Global Idea Vault\` (`vault.sqlite` + `assets/`) |
-| Offline AI runtime (in the package, read-only) and models (bundled in the current build; downloaded after install under ADR-0026) | `ai\` next to `openframe-desktop.exe` (installer, MSIX and development builds); writable AI records in `%LOCALAPPDATA%\OpenFrame\ai\` and `logs\` (Store builds: `LocalState\OpenFrame`, see doc 27) |
+| Offline AI engine (in the package, read-only) and models (downloaded after install, ADR-0026) | engine: `ai\` next to `openframe-desktop.exe` (installer, MSIX and development builds); models: `%LOCALAPPDATA%\OpenFrame\models\<version>\`; writable AI records in `%LOCALAPPDATA%\OpenFrame\ai\` and `logs\` (Store builds: `LocalState\OpenFrame`, see doc 27) |
 
 **Log level.** Set the `OPENFRAME_LOG` environment variable. It uses
 [`tracing_subscriber::EnvFilter`](https://docs.rs/tracing-subscriber/latest/tracing_subscriber/filter/struct.EnvFilter.html)
@@ -128,7 +129,7 @@ Commit the regenerated files with the Rust change. CI fails if `cargo test` leav
 │  ├─ openframe-application/  AppCore, op registry, Store (mutation pipeline), modules/*, schema list, AI orchestration
 │  ├─ openframe-search/       derived retrieval primitives: FTS5, sqlite-vec vectors, context graph
 │  ├─ openframe-import-export/ FDX, Fountain, DOCX, PDF import, PDF layout and generation, import reports
-│  ├─ openframe-ai/           Offline AI: bundled files checked against the pinned lock, llama.cpp engine supervision
+│  ├─ openframe-ai/           Offline AI: engine checked against the pinned lock, model download (signed list, resume, check, activation), llama.cpp engine supervision
 │  └─ openframe-test-support/ TestEnv: isolated AppCore, op helpers, crash/restart simulation
 ├─ migrations/{app,global,project}/  embedded SQL migrations (one numbered file per owning module)
 ├─ docs/

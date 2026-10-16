@@ -20,8 +20,10 @@ ways out: let the release build honour the test folder, use a separate Windows t
    Global Idea Vault and deleted projects (which go to `<folder>\recycle-bin` instead of the Recycle Bin). As in the debug
    build, such a run does not take the single-instance lock, so it never hands over to the person's own OpenFrame.
 2. Every other test switch stays debug-only and is refused by the release build whatever the environment says:
-   deterministic AI sampling (`OPENFRAME_AI_DETERMINISTIC`), another AI folder (`OPENFRAME_AI_BUNDLE_DIR`) and the
-   hand-set licence state (`entitlement.debug_set`). A unit test in `lib.rs` holds this.
+   deterministic AI sampling (`OPENFRAME_AI_DETERMINISTIC`) and the hand-set licence state (`entitlement.debug_set`). A
+   unit test in `lib.rs` holds this. (Amended 2026-10-16: the switch for another AI folder, `OPENFRAME_AI_BUNDLE_DIR`, was
+   removed. The models live in the test folder's app data since ADR-0026, and the engine-damage spec runs its own copy
+   of the release build, so no test needs it.)
 3. The team password gate is not affected: a release build made with a team password asks for it on a test folder too.
 
 ## Consequences

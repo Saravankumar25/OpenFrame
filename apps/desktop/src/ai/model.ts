@@ -112,19 +112,25 @@ export function formatBytes(n: number): string {
   return `${Math.max(1, Math.ceil(n / (1024 * 1024)))} MB`;
 }
 
-export type PanelMode = "unavailable" | "off" | "ready";
+export type PanelMode = "unavailable" | "off" | "download" | "ready";
 
 /**
- * Which top-level view the panel shows. Offline AI ships with the app (ADR-0025): it is ready
- * unless its bundled files are missing or damaged ("off", with the reason), and there is never a
- * download or setup step.
+ * Which top-level view the panel shows (ADR-0026). OpenFrame AI is ready once its models are
+ * downloaded; before that, and when a downloaded file is missing or damaged, the panel offers the
+ * download ("download"); a missing or damaged engine needs a reinstall ("off", with the reason).
  */
 export function panelMode(status: AiStatusDto | undefined): PanelMode {
   if (!status) return "unavailable";
-  return status.available ? "ready" : "off";
+  if (status.available) return "ready";
+  return status.bundleState === "NotInstalled" || status.problem?.code === "ai.models_damaged" ? "download" : "off";
 }
 
-/** Plain-language reason Offline AI is off (from the bundled-files check). */
+/** The reason to download again when a downloaded file is missing or damaged, else undefined. */
+export function damagedModels(status: AiStatusDto): string | undefined {
+  return status.problem?.code === "ai.models_damaged" ? status.problem.message : undefined;
+}
+
+/** Plain-language reason Offline AI is off (from the file check). */
 export function offReason(status: AiStatusDto): string {
   return status.problem?.message ?? UNAVAILABLE_TEXT;
 }

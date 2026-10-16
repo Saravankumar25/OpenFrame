@@ -369,20 +369,6 @@ fn isolated_data_root() -> Option<PathBuf> {
     (root.is_absolute() && std::fs::create_dir_all(&root).is_ok()).then_some(root)
 }
 
-/// The bundled Offline AI (ADR-0025) of this installation. A debug build on an isolated test data
-/// root may name another folder with `OPENFRAME_AI_BUNDLE_DIR` (absolute path): the end-to-end
-/// suite uses it for its missing and damaged bundle checks. Release builds ignore it.
-fn ai_bundle_dir(isolated: bool) -> Option<PathBuf> {
-    if cfg!(debug_assertions)
-        && isolated
-        && let Some(dir) = std::env::var_os("OPENFRAME_AI_BUNDLE_DIR").map(PathBuf::from)
-        && dir.is_absolute()
-    {
-        return Some(dir);
-    }
-    AppConfig::installed_ai_bundle_dir()
-}
-
 /// Deterministic Offline AI answers (temperature 0, fixed seed) for the end-to-end suite: only a
 /// debug build on an isolated test data root with `OPENFRAME_AI_DETERMINISTIC=1`.
 fn ai_deterministic(release: bool, isolated: bool) -> bool {
@@ -458,7 +444,12 @@ pub fn run() {
         config.app_data_dir = distribution.app_data_dir(config.app_data_dir.clone());
     }
     config.channel = entitlement_channel();
-    config.ai_bundle_dir = ai_bundle_dir(isolated_root.is_some());
+    config.ai_bundle_dir = AppConfig::installed_ai_bundle_dir();
+    // Fixed at build time (build.rs; ADR-0026 decision 8): nothing at run time can change them.
+    config.ai_model_host = openframe_application::ModelHost::from_build(
+        option_env!("MODEL_DISTRIBUTION_BASE_URL"),
+        option_env!("OPENFRAME_MANIFEST_PUBLIC_KEY"),
+    );
     config.ai_deterministic = ai_deterministic(!cfg!(debug_assertions), isolated_root.is_some());
     // The Mac App Store build hands over the StoreKit bridge and the licence server client; the
     // first check runs on a background thread after setup. Windows: none.
@@ -609,13 +600,12 @@ pub fn run() {
 mod tests {
     use super::*;
 
-    /// Deterministic AI settings and another AI folder are test-only: a release build, or a debug
-    /// build on the user's real data, always uses the installed bundle with normal sampling.
+    /// Deterministic AI settings are test-only: a release build, or a debug build on the user's
+    /// real data, always samples normally. The engine is always the installed one.
     #[test]
     fn ai_test_settings_never_reach_a_release_or_a_real_data_root() {
         assert!(!ai_deterministic(true, true));
         assert!(!ai_deterministic(false, false));
-        assert_eq!(ai_bundle_dir(false), AppConfig::installed_ai_bundle_dir());
         assert!(
             AppConfig::installed_ai_bundle_dir()
                 .is_some_and(|d| d.ends_with("ai") && d.is_absolute())
@@ -660,9 +650,6 @@ mod tests {
         // ADR-0031: the release build honours the test data folder, and nothing else.
         assert!(!ai_deterministic(true, true));
         assert!(!entitlement_debug_controls(true, true));
-        if !cfg!(debug_assertions) {
-            assert_eq!(ai_bundle_dir(true), AppConfig::installed_ai_bundle_dir());
-        }
     }
 
     // ---------------------------------------------------------------- log redaction test log filter (P13)

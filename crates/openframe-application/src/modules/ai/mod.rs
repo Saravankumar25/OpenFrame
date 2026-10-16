@@ -2,15 +2,16 @@
 //! UX §3.40; mockups 174–181).
 //!
 //! Operations:
-//! - `ai.status`, `ai.stop_runtime`, `ai.diagnostics`: the Offline AI bundled with the app
-//!   (ADR-0025; application-level, no project required; see `offline`);
+//! - `ai.status`, `ai.stop_runtime`, `ai.diagnostics`, `ai.download.*`: the engine bundled with
+//!   the app and the models downloaded on the person's click (ADR-0026; application-level, no
+//!   project required; see `offline`);
 //! - `ai.ask`: one request → a bounded multi-step agent run → one AI Result
 //!   (answer / navigation / suggestion / one composite proposal / denial /
 //!   clarification), persisted with per-step audit records and provenance;
 //! - `ai.change_set.get|accept|reject|recheck`: explicit, human-only review of proposals;
 //! - `ai.history`: the user's own conversation history.
 //!
-//! OpenFrame stays fully usable when the bundled AI is missing or damaged: nothing else
+//! OpenFrame stays fully usable when the AI is not downloaded, missing or damaged: nothing else
 //! depends on this module.
 
 pub mod catalog;
@@ -36,8 +37,11 @@ use ts_rs::TS;
 
 use crate::core::AppCore;
 use crate::registry::Registry;
-pub use offline::{AiComponentDto, AiDiagnosticsDto, AiStatusDto};
-use offline::{diagnostics, status, stop_runtime};
+pub use offline::{AiComponentDto, AiDiagnosticsDto, AiDownloadDto, AiStatusDto};
+use offline::{
+    diagnostics, download_pause, download_remove, download_start, download_status, status,
+    stop_runtime,
+};
 pub use orchestrator::AskArgs;
 pub use service::{AiService, service};
 pub use types::*;
@@ -46,11 +50,27 @@ pub fn register(r: &mut Registry) {
     use crate::registry::{OperationMetadata as M, hidden as h};
     r.module("Offline AI");
     r.query("ai.status", status).meta(
-        M::app_query("Offline AI status: available, bundled AI check, engine state.")
+        M::app_query("Offline AI status: available, downloaded models check, engine state.")
             .hidden(h::AI_RUNTIME),
     );
     r.command("ai.stop_runtime", stop_runtime)
         .meta(M::app_command("Stop the local AI engine.").hidden(h::AI_RUNTIME));
+    r.query("ai.download.status", download_status).meta(
+        M::app_query("The Download OpenFrame AI screen: size, free space, progress.")
+            .hidden(h::AI_RUNTIME),
+    );
+    r.command("ai.download.start", download_start).meta(
+        M::app_command("Start or resume the OpenFrame AI download (the person's click; the app's only network use).")
+            .hidden(h::AI_RUNTIME),
+    );
+    r.command("ai.download.pause", download_pause).meta(
+        M::app_command("Pause the OpenFrame AI download; it resumes where it stopped.")
+            .hidden(h::AI_RUNTIME),
+    );
+    r.command("ai.download.remove", download_remove).meta(
+        M::app_command("Remove the downloaded OpenFrame AI models; projects are not touched.")
+            .hidden(h::AI_RUNTIME),
+    );
     r.query("ai.health", trace::health).meta(
         M::app_query("The AI health card: medians, apply rate, passes and the weakest tool, from the local numbers-only trace.")
             .hidden(h::AI_RUNTIME),

@@ -3,10 +3,11 @@
 //
 // Input: the Tauri release build (target/release/openframe-desktop.exe; the frontend is embedded in
 // the executable), packaging/msix/AppxManifest.template.xml, packaging/msix/store.config.json, the
-// visual assets in packaging/msix/Assets and the bundled Offline AI (ADR-0025): the pinned runtime and
-// model files are verified against packaging/ai/ai-assets.lock.json by scripts/prepare-ai-assets.mjs
-// and placed in the package as `ai/` next to the executable, where the app reads them read-only. A
-// missing or altered file stops the build; CI fails here until the build inputs are provided to it.
+// visual assets in packaging/msix/Assets and the Offline AI engine (ADR-0026 decision 1): the pinned
+// engine files are verified against packaging/ai/ai-assets.lock.json by scripts/prepare-ai-assets.mjs
+// and placed in the package as `ai/` next to the executable, where the app reads them read-only. The
+// models are downloaded after install (ADR-0026). A missing or altered file stops the build; CI fails
+// here until the build inputs are provided to it.
 // Output (target/msix/): OpenFrame-Studio-<ver>-x64.msix, optional .msixbundle, msix-build.json.
 //
 //   node scripts/build-msix.mjs --store              Store upload package. Requires the Partner Center

@@ -1,13 +1,15 @@
-// Helpers for the Offline AI specs (72..76): drive the AI Assistant panel the way a user does and
-// inspect the real app and engine processes. The app under test carries the real bundled model
-// (ADR-0025; build-app.mjs) and runs with deterministic sampling (OPENFRAME_AI_DETERMINISTIC=1,
-// set by run.mjs: temperature 0, fixed seed), so the specs assert structure and effects, never the
-// wording of an answer. One real answer takes 20 to 40 seconds on a laptop processor.
+// Helpers for the Offline AI specs (72..78): drive the AI Assistant panel the way a user does and
+// inspect the real app and engine processes. The app under test carries the engine and finds the
+// real models in its app data, installed by run.mjs as a finished download leaves them (ADR-0026).
+// It runs with deterministic sampling (OPENFRAME_AI_DETERMINISTIC=1, set by run.mjs: temperature 0,
+// fixed seed; a debug build only), so the specs assert structure and effects, never the wording of
+// an answer. One real answer takes 20 to 40 seconds on a laptop processor.
 
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { closeSync, copyFileSync, existsSync, linkSync, mkdirSync, openSync, readSync, readdirSync, rmSync, statSync, writeSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { closeSync, copyFileSync, linkSync, mkdirSync, openSync, readFileSync, readSync, readdirSync, renameSync, rmSync, statSync, writeSync } from "node:fs";
+import { basename, dirname, join } from "node:path";
+import { preinstallModels } from "./model-host.mjs";
 import { click, sleep } from "./app.mjs";
 import { projectMenu } from "./flows.mjs";
 
@@ -209,7 +211,7 @@ function ps(script) {
   return execFileSync("powershell.exe", ["-NoProfile", "-NonInteractive", "-Command", script], {
     encoding: "utf8",
     windowsHide: true,
-    env: { ...process.env, E2E_AI_ENGINE_DIR: SPEC_AI_DIR || BUILD_AI_DIR },
+    env: { ...process.env, E2E_AI_ENGINE_DIR: join(dirname(process.env.E2E_APP ?? "."), "ai") },
   });
 }
 
@@ -278,13 +280,16 @@ export function killApp() {
   );
 }
 
-// ------------------------------------------------------------------ bundled AI copies
+// ------------------------------------------------------------------ AI files of a spec
 
-/** The bundled AI of the test build (`ai/` next to the executable). */
-export const BUILD_AI_DIR = join(dirname(process.env.E2E_APP ?? "."), "ai");
+/** The build under test (a spec may launch its own copy instead; see copyApp). */
+const BUILD_APP = process.env.E2E_APP ?? ".";
 
-/** The AI folder this spec's app reads (run.mjs sets it for `// @e2e-ai-bundle: own` specs). */
-export const SPEC_AI_DIR = process.env.E2E_AI_BUNDLE_DIR ?? "";
+/** The engine of the test build (`ai/` next to the executable). */
+export const BUILD_AI_DIR = join(dirname(BUILD_APP), "ai");
+
+/** This spec's models folder (run.mjs installs the set there as a finished download leaves it). */
+const MODELS_DIR = join(process.env.E2E_DATA_ROOT ?? ".", "appdata", "models");
 
 function walk(dir, base = dir, out = []) {
   for (const e of readdirSync(dir, { withFileTypes: true })) {
@@ -295,52 +300,35 @@ function walk(dir, base = dir, out = []) {
   return out;
 }
 
+/** The installed model file for a role ("chat" or "embedding"). */
+export function modelFile(role) {
+  const active = JSON.parse(readFileSync(join(MODELS_DIR, "active.json"), "utf8"));
+  const set = JSON.parse(readFileSync(join(MODELS_DIR, active.version, "set.json"), "utf8"));
+  const files = JSON.parse(Buffer.from(set.payload, "base64").toString("utf8")).tiers[0].files;
+  const f = files.find((x) => x.role === role);
+  assert.ok(f, `no ${role} model in the installed set`);
+  return join(MODELS_DIR, active.version, f.name);
+}
+
 /**
- * Lay out a bundle for SPEC_AI_DIR from the test build's: `copy` lists relative paths that get a
- * real copy (so they can be altered), everything else is hard-linked (no second gigabyte).
- * `skip` lists relative paths left out (a missing file).
+ * Remove a file, or flip one byte in its middle (the size stays the same). A hard link is first
+ * replaced by a real copy, so the host folder and the build inputs are never changed.
  */
-export function layOutBundle({ copy = [], skip = [] } = {}) {
-  assert.ok(SPEC_AI_DIR, "this spec needs `// @e2e-ai-bundle: own`");
-  assert.ok(existsSync(BUILD_AI_DIR), `the test build has no bundled AI in ${BUILD_AI_DIR}`);
-  rmSync(SPEC_AI_DIR, { recursive: true, force: true });
-  for (const rel of walk(BUILD_AI_DIR)) {
-    const norm = rel.replace(/\\/g, "/");
-    if (skip.includes(norm)) continue;
-    const src = join(BUILD_AI_DIR, rel);
-    const dst = join(SPEC_AI_DIR, rel);
-    mkdirSync(dirname(dst), { recursive: true });
-    if (copy.includes(norm)) copyFileSync(src, dst);
-    else {
-      try {
-        linkSync(src, dst);
-      } catch {
-        copyFileSync(src, dst);
-      }
-    }
+export function alterFile(path, { remove = false } = {}) {
+  if (remove) {
+    rmSync(path, { force: true });
+    return;
   }
-}
-
-/** Relative path (with `/`) of the first bundled file matching `test`. */
-export function bundledFile(test) {
-  const rel = walk(BUILD_AI_DIR)
-    .map((r) => r.replace(/\\/g, "/"))
-    .find(test);
-  assert.ok(rel, "no such bundled file");
-  return rel;
-}
-
-export function fileSize(rel) {
-  return statSync(join(SPEC_AI_DIR, rel)).size;
-}
-
-/** Flip one byte in the middle of a copied bundle file (never a hard link into the test build). */
-export function alterByte(rel) {
-  const p = join(SPEC_AI_DIR, rel);
-  assert.equal(statSync(p).nlink, 1, `${rel} must be a copy before it is altered`);
-  const fd = openSync(p, "r+");
+  if (statSync(path).nlink > 1) {
+    const tmp = `${path}.copy`;
+    copyFileSync(path, tmp);
+    rmSync(path);
+    renameSync(tmp, path);
+  }
+  assert.equal(statSync(path).nlink, 1, `${path} must be a copy before it is altered`);
+  const fd = openSync(path, "r+");
   try {
-    const pos = Math.floor(statSync(p).size / 2);
+    const pos = Math.floor(statSync(path).size / 2);
     const b = Buffer.alloc(1);
     readSync(fd, b, 0, 1, pos);
     b[0] ^= 0x5a;
@@ -350,7 +338,43 @@ export function alterByte(rel) {
   }
 }
 
-/** Every engine program running from the test build's bundled AI, whoever started it. */
+/** Install the host's model set again, as a finished download leaves it (the app is not running). */
+export function restoreModels() {
+  rmSync(MODELS_DIR, { recursive: true, force: true });
+  preinstallModels(process.env.E2E_MODEL_HOST_DIR, dirname(MODELS_DIR));
+}
+
+/**
+ * A copy of the test build in this spec's data folder: the executable and its `ai/` folder, every
+ * file hard-linked except `alter` (a path under `ai/`), which is a real copy with one byte changed.
+ * Launch it by pointing E2E_APP at the returned executable. Returns that path.
+ */
+export function copyApp({ alter }) {
+  const dest = join(process.env.E2E_DATA_ROOT, "app-copy");
+  rmSync(dest, { recursive: true, force: true });
+  mkdirSync(join(dest, "ai"), { recursive: true });
+  const exe = join(dest, basename(BUILD_APP));
+  copyFileSync(BUILD_APP, exe);
+  const rels = walk(BUILD_AI_DIR).map((r) => r.replace(/\\/g, "/"));
+  assert.ok(rels.includes(alter), `the build has no ai/${alter}`);
+  for (const rel of rels) {
+    const src = join(BUILD_AI_DIR, rel);
+    const dst = join(dest, "ai", rel);
+    mkdirSync(dirname(dst), { recursive: true });
+    if (rel === alter) copyFileSync(src, dst);
+    else {
+      try {
+        linkSync(src, dst);
+      } catch {
+        copyFileSync(src, dst);
+      }
+    }
+  }
+  alterFile(join(dest, "ai", alter));
+  return exe;
+}
+
+/** Every engine program running from the `ai/` folder of the app under test, whoever started it. */
 export function enginesFromBuild() {
   const out = ps(
     `$dir = $env:E2E_AI_ENGINE_DIR; Get-CimInstance Win32_Process -Filter "Name='llama-server.exe'" | ` +

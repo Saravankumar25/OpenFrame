@@ -1,10 +1,11 @@
-// AI Assistant side panel (FSD §42; UX §3.40; mockups 174 to 181; Local AI Runtime spec §1; ADR-0025).
+// AI Assistant side panel (FSD §42; UX §3.40; mockups 174 to 181; Local AI Runtime spec §1; ADR-0026).
 //
 // - The panel docks beside the page (owner decision 2026-10-08): the Shell places it after the
 //   page in the layout row, so opening it narrows the page and never covers a control.
-// - Offline AI ships with OpenFrame: it works right after install, with no download and no setup.
-//   When its bundled files are missing or damaged the panel says so and how to repair it
-//   (reinstall); nothing else in OpenFrame depends on it.
+// - OpenFrame AI is a one-time download after install, started by the person: until it is
+//   downloaded (or when a downloaded file is damaged) the panel offers the download; when the
+//   engine in the app is missing or damaged it says to reinstall. Nothing else in OpenFrame
+//   depends on it.
 // - Everything runs on this computer; the UI never shows model files, formats or ports.
 // - The conversation, sources and "Proposed Changes" review live in ./Conversation
 //   and ./ProposedChanges: project changes are only ever proposed for the user
@@ -20,7 +21,8 @@ import { useNav } from "../app/stores";
 import { toast } from "../app/toast";
 import type { ProjectSummary } from "../ipc/generated/ProjectSummary";
 import type { AiStatusDto } from "../ipc/generated/AiStatusDto";
-import { UNAVAILABLE_TEXT, offReason, panelMode } from "./model";
+import { UNAVAILABLE_TEXT, damagedModels, offReason, panelMode } from "./model";
+import DownloadAi from "./DownloadAi";
 import Assistant from "./Conversation";
 import "./ai.css";
 
@@ -94,6 +96,10 @@ export default function AiPanel({ onClose }: { onClose: () => void }) {
         </div>
       ) : mode === "unavailable" ? (
         <Unavailable text={UNAVAILABLE_TEXT} />
+      ) : mode === "download" ? (
+        <div className="body">
+          <DownloadAi damaged={damagedModels(s!)} />
+        </div>
       ) : mode === "off" ? (
         <Unavailable text={offReason(s!)} />
       ) : (
@@ -105,7 +111,7 @@ export default function AiPanel({ onClose }: { onClose: () => void }) {
 
 // ----------------------------------------------------------------- unavailable
 
-/** Offline AI cannot run: the subsystem is unreachable, or its bundled files are missing or damaged. */
+/** Offline AI cannot run: the subsystem is unreachable, or the engine in the app is missing or damaged. */
 function Unavailable({ text }: { text: string }) {
   return (
     <div className="body">

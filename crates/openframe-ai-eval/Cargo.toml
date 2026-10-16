@@ -12,6 +12,7 @@ path = "src/main.rs"
 
 [dependencies]
 openframe-application.workspace = true
+openframe-ai = { workspace = true, features = ["test-support"] }
 openframe-ai-checks = { path = "../openframe-ai-checks" }
 serde.workspace = true
 serde_json.workspace = true

@@ -77,6 +77,34 @@ and the store listings and privacy policy must describe the one network use.
   and say which parts the current code does not yet do. Where a document disagrees with this decision, this decision
   wins.
 
+## Implementation notes (2026-10-16, Windows phase W8)
+
+How the code meets the decisions above. None of this changes a decision; each point is a choice the decisions left open.
+
+1. **What is trusted.** The manifest envelope is `{ format, keyId, payload, signature }`, Ed25519 over the exact payload
+   bytes. The envelope is kept with the activated set as `set.json`, and on every start the app checks its signature
+   again before it reads the sizes and hashes it checks the model files against. Editing `set.json` or a model file in
+   the writable app data folder therefore never makes the app trust another file. The compiled lock still pins the
+   engine and gives the model profile (context window, vector size, pooling, memory); the manifest's
+   `profileVersion` must match it (2), and its tier must name the engine version this app carries.
+2. **Tiers.** This build downloads only the `small` tier (the models the lock describes). The larger tier waits for the
+   W6 model choice.
+3. **Layout.** `<app data>/models/staging/<version>/<name>.partial` while downloading, `<app data>/models/<version>/`
+   after activation, `active.json` naming the set in use and the previous one until the health check passes,
+   `quarantine/` for a file or set that failed. The health check is the full hash check plus the engine starting on the
+   new set; a failure rolls back to the previous set, or to none.
+4. **The local test host.** Every test build (debug and release, run by `tests/e2e/run.mjs`) is compiled with
+   `MODEL_DISTRIBUTION_BASE_URL=http://127.0.0.1:47811/` and the public half of a throwaway test key made in the
+   git-ignored build cache (`scripts/model-manifest.mjs testHost()`). Plain HTTP is accepted only when the compiled-in
+   address is that loopback address; the address cannot change at run time, and `build.rs` refuses any other
+   non-https address. Such a build prints that it is a test build.
+5. **The owner's tool.** `node scripts/model-manifest.mjs new-key` (the owner, once, offline) and `publish` (signs the
+   list and lays out the host folder) are the only ways a key or a list is made. The private key never enters the
+   repository or a build computer.
+6. **Test support.** Development tools that need the real models without the network (the AI evaluation harness, the
+   ignored real-model tests) install the pinned files the way a finished download leaves them, with a key that lives
+   only in that process (`openframe-ai` feature `test-support`, never enabled by the app).
+
 ## Alternatives rejected
 
 | Alternative | Reason |

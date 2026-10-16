@@ -26,10 +26,13 @@ const ROLES: [Role; 5] = [
 
 /// Reads that need no open project and return no project content (settings, the app itself,
 /// recent projects, the AI runtime state, the team gate and the licence screens).
-/// Reviewed 2026-10-16: the reviewer workspace (`packages.review_*`) reads packages kept in the app
+/// Reviewed 2026-10-16: `ai.health` reads the numbers-only AI trace in app data and
+/// `ai.download.status` the download state and free space, never the open project; the reviewer workspace (`packages.review_*`) reads packages kept in the app
 /// data folder, and `packages.inspect_package` reads a file the user picked, not the open project.
 const APPLICATION_READS: &[&str] = &[
     "ai.diagnostics",
+    "ai.download.status",
+    "ai.health",
     "ai.status",
     "app.info",
     "app.save_state",

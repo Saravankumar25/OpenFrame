@@ -1,26 +1,30 @@
-// Settings → Offline AI (agentic AI spec §1, §36, §37; ADR-0025). Offline AI ships inside the app,
-// so there is nothing to download, update or remove here: the status, a way to free memory, and
+// Settings → Offline AI (agentic AI spec §1, §36, §37; ADR-0026). The engine ships inside the app;
+// the models are a one-time download the person starts here (or in the AI panel). This page shows
+// the status, the download while OpenFrame AI is not installed, a way to free memory, Remove, and
 // the technical details ordinary UI never shows (component names, versions, licences, sizes and
-// SHA-256 hashes, where the bundle is installed, this computer).
+// SHA-256 hashes, where the engine is installed, this computer).
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { call, onAppEvent } from "../../ipc/client";
 import { reportError, useOp } from "../../ipc/query";
-import { Banner, Button, Chip, PageHeader, Skeleton } from "../../design-system";
+import { Banner, Button, Chip, ConfirmDialog, PageHeader, Skeleton } from "../../design-system";
 import { toast } from "../../app/toast";
 import type { AiStatusDto } from "../../ipc/generated/AiStatusDto";
 import type { AiDiagnosticsDto } from "../../ipc/generated/AiDiagnosticsDto";
-import { formatBytes, offReason, runtimeLabel } from "../../ai/model";
+import { damagedModels, formatBytes, offReason, panelMode, runtimeLabel } from "../../ai/model";
+import DownloadAi from "../../ai/DownloadAi";
 import "../../ai/ai.css";
 import { AiHealthCard } from "./AiHealth";
 
 /** The privacy promise shown wherever Offline AI is described (spec §1). */
 export const OFFLINE_AI_PROMISE =
-  "Offline AI is installed with OpenFrame and runs on this computer. Your project data is not sent to OpenFrame or to an AI cloud service.";
+  "OpenFrame AI runs on this computer after a one-time download. Your project data is not sent to OpenFrame or to an AI cloud service.";
 
 /** Plain-language status line for the settings card. */
 export function offlineAiStateText(s: AiStatusDto): string {
+  if (s.bundleState === "NotInstalled") return "Not downloaded";
+  if (s.problem?.code === "ai.models_damaged") return "Needs a new download";
   if (!s.available) return s.bundleState === "Unsupported" ? "Not available on this computer" : "Needs a reinstall";
   if (s.bundleState === "Checking") return "Checking its files…";
   if (s.runtimeState === "Failed") return "Stopped after a problem. It restarts when you ask something";
@@ -46,6 +50,17 @@ export default function OfflineAiSettings() {
   }, [qc]);
 
   const s = status.data;
+  const [removing, setRemoving] = useState(false);
+  const remove = () =>
+    void call("ai.download.remove")
+      .then(() => {
+        toast.info("OpenFrame AI was removed. You can download it again here.");
+        void qc.invalidateQueries({ queryKey: ["ai.status"] });
+        void qc.invalidateQueries({ queryKey: ["ai.diagnostics"] });
+        void qc.invalidateQueries({ queryKey: ["ai.download.status"] });
+      })
+      .catch(reportError)
+      .finally(() => setRemoving(false));
 
   return (
     <div className="content" style={{ overflow: "auto" }}>
@@ -63,7 +78,7 @@ export default function OfflineAiSettings() {
                 <Chip tone={s.available ? "g" : "default"}>{offlineAiStateText(s)}</Chip>
               </div>
               <p className="sm">{OFFLINE_AI_PROMISE}</p>
-              {!s.available && <Banner tone="err">{offReason(s)}</Banner>}
+              {panelMode(s) === "off" && <Banner tone="err">{offReason(s)}</Banner>}
               {s.available && (
                 <div className="row">
                   <Button
@@ -72,12 +87,30 @@ export default function OfflineAiSettings() {
                   >
                     Stop Offline AI (free memory)
                   </Button>
+                  <Button size="sm" variant="ghost" onClick={() => setRemoving(true)}>
+                    Remove OpenFrame AI…
+                  </Button>
                 </div>
               )}
-              <p className="hint">OpenFrame works normally without Offline AI. Nothing is downloaded: Offline AI is updated together with OpenFrame.</p>
+              <p className="hint">OpenFrame works normally without OpenFrame AI.</p>
+              <ConfirmDialog
+                open={removing}
+                onOpenChange={setRemoving}
+                title="Remove OpenFrame AI?"
+                confirmLabel="Remove"
+                danger
+                onConfirm={remove}
+              >
+                <p className="sm">This frees the space the AI models use on this computer. AI stays off until you download it again. Your projects are not changed.</p>
+              </ConfirmDialog>
             </>
           )}
         </section>
+        {s && panelMode(s) === "download" && (
+          <div className="grow" style={{ maxWidth: 720 }}>
+            <DownloadAi damaged={damagedModels(s)} />
+          </div>
+        )}
         <TechnicalDetails />
         <AiHealthCard />
       </div>
@@ -148,12 +181,12 @@ function TechnicalDetails() {
               </div>
             ))}
             <div className="csr selectable-text" style={{ wordBreak: "break-all" }}>
-              Installed in: {x.bundleDir || "unknown"} ({formatBytes(x.bundleBytes)}, read-only)
+              Engine in: {x.bundleDir || "unknown"} (read-only) · engine and models: {formatBytes(x.bundleBytes)}
             </div>
             <div className="csr selectable-text" style={{ wordBreak: "break-all" }}>
               Log: {x.logFile}
             </div>
-            <p className="xs muted">Everything runs on this computer. Prompts, project text and answers are never sent anywhere, and Offline AI never uses the network.</p>
+            <p className="xs muted">Everything runs on this computer. Prompts, project text and answers are never sent anywhere. The only network use is the model download you start.</p>
           </div>
         )}
       </details>
@@ -169,10 +202,12 @@ function fileCheckText(state: string): string {
       return "checked before the first answer";
     case "Checking":
       return "checking…";
+    case "NotInstalled":
+      return "models not downloaded";
     case "Missing":
-      return "missing, reinstall OpenFrame Studio";
+      return "engine missing, reinstall OpenFrame Studio";
     case "Damaged":
-      return "changed or damaged, reinstall OpenFrame Studio";
+      return "changed or damaged";
     default:
       return "not available on this computer";
   }

@@ -6,7 +6,7 @@ import type { AiComponentDto } from "./AiComponentDto";
  */
 export type AiDiagnosticsDto = { bundleId: string, bundleVersion: string, 
 /**
- * NotChecked | Checking | Verified | Missing | Damaged | Unsupported
+ * NotInstalled | NotChecked | Checking | Verified | Missing | Damaged | Unsupported
  */
 bundleState: string, problem: string | null, components: Array<AiComponentDto>, chatState: string, searchState: string, memoryBytes: number, processor: string, processorThreads: number, 
 /**

@@ -1,6 +1,6 @@
 [package]
 name = "openframe-ai"
-description = "OpenFrame Offline AI: the AI bundled with the app (pinned lock, integrity check before the first start), hardware inspection, managed llama.cpp engine supervisor and local loopback chat client."
+description = "OpenFrame Offline AI: the engine bundled with the app (pinned lock), the models downloaded after install (signed manifest, resume, check, activation), the integrity check before the first start, hardware inspection, managed llama.cpp engine supervisor and local loopback chat client."
 version.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -23,8 +23,15 @@ rand.workspace = true
 parking_lot.workspace = true
 tracing.workspace = true
 
+[features]
+# Development tools and tests only: install the pinned models from the build inputs as a finished
+# download would (test_support.rs). Never enabled by the desktop app.
+test-support = []
+
 [dev-dependencies]
 tempfile.workspace = true
+# The real-model test installs the pinned models with test_support.
+openframe-ai = { path = ".", features = ["test-support"] }
 
 # The bundle test doubles as a fake `llama-server` (it is pinned in a test lock as the bundled
 # engine and launched by the real supervisor), so it needs its own `main`.

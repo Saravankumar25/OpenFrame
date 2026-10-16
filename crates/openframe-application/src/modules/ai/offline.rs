@@ -1,16 +1,19 @@
-//! Offline AI status operations (agentic AI spec §1, §12, §36; Local AI Runtime spec; ADR-0025).
-//! Application-level: no project is needed, and nothing else in OpenFrame depends on these
-//! operations (OpenFrame stays fully usable without AI).
-//!
-//! The AI ships inside the app, so there is nothing to download, install or remove:
+//! Offline AI status and download operations (agentic AI spec §1, §12, §36; Local AI Runtime spec;
+//! ADR-0026). Application-level: no project is needed, and nothing else in OpenFrame depends on
+//! these operations (OpenFrame stays fully usable without AI).
 //!
 //! - `ai.status`: simple state for ordinary UI ("AI Ready" / "Off"; no model names), plus the
-//!   plain-language reason when the bundled AI is missing or damaged;
+//!   plain-language reason when the AI is not downloaded, missing or damaged;
+//! - `ai.download.status`: what the Download OpenFrame AI screen shows (size and free space
+//!   before the click, without any network use; progress after it);
+//! - `ai.download.start` / `ai.download.pause`: the person's click; the only network use of
+//!   the app;
+//! - `ai.download.remove`: delete the downloaded models (AI is off until the next download);
 //! - `ai.stop_runtime`: free memory (the engines start again on the next request);
 //! - `ai.diagnostics`: technical details for Settings > Offline AI (model names, versions,
 //!   licences, hashes, where the bundle is installed, this computer).
 
-use openframe_ai::{BundleState, ComponentKind, RuntimeState};
+use openframe_ai::{BundleState, ComponentKind, DownloadPhase, RuntimeState};
 use openframe_domain::{Actor, AppError, AppResult};
 use serde::Serialize;
 use ts_rs::TS;
@@ -28,9 +31,9 @@ pub struct AiStatusDto {
     pub available: bool,
     /// Header chip: "AI Ready" or "Off".
     pub mode: String,
-    /// NotChecked | Checking | Verified | Missing | Damaged | Unsupported
+    /// NotInstalled | NotChecked | Checking | Verified | Missing | Damaged | Unsupported
     pub bundle_state: String,
-    /// Why AI is off (missing, damaged or unsupported bundle), in plain language.
+    /// Why AI is off (not downloaded, missing, damaged or unsupported), in plain language.
     pub problem: Option<AppError>,
     /// Unavailable | Installed | Starting | LoadingModel | Ready | Busy | Stopping | Failed
     pub runtime_state: String,
@@ -57,6 +60,32 @@ pub struct AiComponentDto {
     pub sha256: String,
 }
 
+/// The Download OpenFrame AI screen.
+#[derive(Debug, Clone, Serialize, TS)]
+#[ts(export)]
+#[serde(rename_all = "camelCase")]
+pub struct AiDownloadDto {
+    /// This build has a model host (a release build always has).
+    pub can_download: bool,
+    /// Idle | Checking | Downloading | Installing | Paused | Failed | Done
+    pub phase: String,
+    /// The size of the download, known before the click (from the compiled lock).
+    #[ts(type = "number")]
+    pub size_bytes: u64,
+    /// Free space the download needs: its size plus a safety margin.
+    #[ts(type = "number")]
+    pub needed_bytes: u64,
+    /// Free space on the drive that holds the models folder, when Windows can say.
+    #[ts(type = "number | null")]
+    pub free_bytes: Option<u64>,
+    #[ts(type = "number")]
+    pub done_bytes: u64,
+    #[ts(type = "number")]
+    pub total_bytes: u64,
+    /// Why the last download stopped, in plain language.
+    pub problem: Option<AppError>,
+}
+
 /// Technical details for Settings > Offline AI (never shown in ordinary workflow UI).
 #[derive(Debug, Clone, Serialize, TS)]
 #[ts(export)]
@@ -64,7 +93,7 @@ pub struct AiComponentDto {
 pub struct AiDiagnosticsDto {
     pub bundle_id: String,
     pub bundle_version: String,
-    /// NotChecked | Checking | Verified | Missing | Damaged | Unsupported
+    /// NotInstalled | NotChecked | Checking | Verified | Missing | Damaged | Unsupported
     pub bundle_state: String,
     pub problem: Option<String>,
     pub components: Vec<AiComponentDto>,
@@ -147,6 +176,50 @@ pub fn status(core: &AppCore, _actor: &Actor, _: super::AiEmptyArgs) -> AppResul
         runtime_message: rs.last_error,
         local_only: true,
     })
+}
+
+pub fn download_status(
+    core: &AppCore,
+    _actor: &Actor,
+    _: super::AiEmptyArgs,
+) -> AppResult<AiDownloadDto> {
+    let m = service(core).manager()?.clone();
+    let st = m.download_status();
+    let size = m.download_size();
+    // The drive of the models folder (or of app data before the first download).
+    let models = core.config.app_data_dir.join("models");
+    let probe = if models.is_dir() {
+        models
+    } else {
+        core.config.app_data_dir.clone()
+    };
+    Ok(AiDownloadDto {
+        can_download: m.can_download(),
+        phase: format!("{:?}", st.phase),
+        size_bytes: size,
+        needed_bytes: size + openframe_ai::install::PREFLIGHT_MARGIN_BYTES,
+        free_bytes: openframe_platform::drives::free_bytes(&probe),
+        done_bytes: st.done_bytes,
+        total_bytes: st.total_bytes,
+        problem: if st.phase == DownloadPhase::Failed {
+            st.problem.map(plain)
+        } else {
+            None
+        },
+    })
+}
+
+pub fn download_start(core: &AppCore, _actor: &Actor, _: super::AiEmptyArgs) -> AppResult<()> {
+    service(core).manager()?.start_download()
+}
+
+pub fn download_pause(core: &AppCore, _actor: &Actor, _: super::AiEmptyArgs) -> AppResult<()> {
+    service(core).manager()?.pause_download();
+    Ok(())
+}
+
+pub fn download_remove(core: &AppCore, _actor: &Actor, _: super::AiEmptyArgs) -> AppResult<()> {
+    service(core).manager()?.remove_models().map_err(plain)
 }
 
 pub fn stop_runtime(core: &AppCore, _actor: &Actor, _: super::AiEmptyArgs) -> AppResult<()> {

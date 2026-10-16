@@ -11,16 +11,21 @@
 //     locations only (ADR-0031).
 //
 // Every build goes through the machine-wide build queue (scripts/cargo-queued.cmd as Tauri's cargo
-// runner). The build carries the complete Offline AI exactly like today's package does:
-// scripts/prepare-ai-assets.mjs verifies the pinned runtime and model files against
+// runner). The build carries the Offline AI engine exactly like the package does:
+// scripts/prepare-ai-assets.mjs verifies the pinned engine files against
 // packaging/ai/ai-assets.lock.json and stages them, and the Tauri overlay config copies them to
-// `ai/` next to the executable. A missing or altered file stops the build (fail closed).
+// `ai/` next to the executable. A missing or altered file stops the build (fail closed). The models
+// are not in the build (ADR-0026): every test build is compiled with the local test host
+// (lib/model-host.mjs, MODEL_DISTRIBUTION_BASE_URL) and the public half of a throwaway test key
+// (scripts/model-manifest.mjs testHost(), OPENFRAME_MANIFEST_PUBLIC_KEY), never the production key.
 
 import { spawnSync } from "node:child_process";
-import { existsSync } from "node:fs";
+import { existsSync, rmSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { prepare } from "../../../scripts/prepare-ai-assets.mjs";
+import { testHost } from "../../../scripts/model-manifest.mjs";
+import { MODEL_HOST_URL } from "../lib/model-host.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 export const REPO_ROOT = join(here, "..", "..", "..");
@@ -32,7 +37,7 @@ const QUEUE_RUNNER = join(REPO_ROOT, "scripts", "cargo-queued.cmd");
 export function appBinary(release = false) {
   return join(TARGET_DIR, release ? "release" : "debug", "openframe-desktop.exe");
 }
-/** The Offline AI next to the test build (the app's resource folder). */
+/** The Offline AI engine next to the test build (the app's resource folder). */
 export function appAiDir(release = false) {
   return join(TARGET_DIR, release ? "release" : "debug", "ai");
 }
@@ -45,8 +50,9 @@ export const APP_AI_DIR = appAiDir(false);
  */
 export function buildApp({ release = false, gatePassword } = {}) {
   prepare();
-  console.log(`Building OpenFrame Studio (${release ? `release, ${release}` : "debug"}, embedded UI, Offline AI)…`);
-  const env = { ...process.env };
+  const host = testHost();
+  console.log(`Building OpenFrame Studio (${release ? `release, ${release}` : "debug"}, embedded UI, Offline AI engine, test model host)…`);
+  const env = { ...process.env, MODEL_DISTRIBUTION_BASE_URL: MODEL_HOST_URL, OPENFRAME_MANIFEST_PUBLIC_KEY: host.publicKey };
   // The debug and open builds never see the build machine's team password, even when it is set.
   delete env.OPENFRAME_TEAM_PASSWORD;
   delete env.OPENFRAME_DISTRIBUTION;
@@ -56,13 +62,15 @@ export function buildApp({ release = false, gatePassword } = {}) {
   } else if (release === "open") {
     env.OPENFRAME_DISTRIBUTION = "store";
   }
+  // Models from builds before ADR-0026 would linger next to the executable; the package has none.
+  rmSync(join(appAiDir(Boolean(release)), "models"), { recursive: true, force: true });
   const tauri = `npm --workspace apps/desktop run tauri -- build ${release ? "" : "--debug "}--no-bundle --runner "${QUEUE_RUNNER}" --config src-tauri/tauri.bundled-ai.conf.json`;
   // npm is a .cmd shim on Windows, so it runs through the shell (fixed command, no user input).
   const command = release ? `node scripts/with-msvc-linker.mjs ${tauri}` : tauri;
   const r = spawnSync(command, { cwd: REPO_ROOT, stdio: "inherit", shell: true, env });
   const binary = appBinary(Boolean(release));
   if (r.status !== 0 || !existsSync(binary)) throw new Error("Building the desktop app failed.");
-  if (!existsSync(join(appAiDir(Boolean(release)), "models"))) throw new Error(`The test build has no Offline AI in ${appAiDir(Boolean(release))}.`);
+  if (!existsSync(join(appAiDir(Boolean(release)), "runtimes"))) throw new Error(`The test build has no Offline AI engine in ${appAiDir(Boolean(release))}.`);
   return binary;
 }
 

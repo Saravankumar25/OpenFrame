@@ -1,7 +1,9 @@
-//! The bundled Offline AI end to end (ADR-0025): AI works on first launch with no download and
-//! no setup, the pinned hashes are checked before the first engine start, writable data stays in
-//! app data, and a missing, altered or linked file switches AI off with a plain message and
-//! never starts an engine.
+//! The Offline AI end to end (ADR-0026): nothing is downloaded until the person starts it; the
+//! download fetches the signed list and the files from a local test host, resumes after a cut,
+//! refuses and sets aside a damaged file, keeps the last good set until the new one passes its
+//! health check, and Remove takes it all away. Once a set is installed, the pinned hashes are
+//! checked before the first engine start, writable data stays in app data, and a missing, altered
+//! or linked file switches AI off with a plain message and never starts an engine.
 //!
 //! No real model is involved: the "engine" pinned in the test lock is THIS test executable.
 //! `harness = false` lets `main` recognise when it is launched as `llama-server` (it gets
@@ -12,14 +14,18 @@
 use std::io::{BufRead, BufReader, Read, Write};
 use std::net::TcpListener;
 use std::path::{Path, PathBuf};
-use std::sync::Arc;
-use std::time::Duration;
+use std::sync::{Arc, Mutex};
+use std::time::{Duration, Instant};
+
+use base64::Engine as _;
+use ed25519_dalek::{Signer, SigningKey};
 
 use openframe_ai::bundle::PinnedFile;
 use openframe_ai::engines::hash_file;
 use openframe_ai::supervisor::SupervisorConfig;
 use openframe_ai::{
-    AiManager, AssetLock, BundleState, ChatMessage, ChatRequest, ManagerConfig, RuntimeState,
+    AiManager, AssetLock, BundleState, ChatMessage, ChatRequest, DownloadPhase, ManagerConfig,
+    ModelHost, RuntimeState,
 };
 
 // ----------------------------------------------------------------- fake llama-server
@@ -38,6 +44,13 @@ fn fake_server(args: &[String]) -> ! {
             .starts_with("GGML_")
     }) {
         std::process::exit(3);
+    }
+    // A model that cannot load (the failed health check of a new download).
+    if arg("-m")
+        .and_then(|m| std::fs::read(m).ok())
+        .is_some_and(|b| b.starts_with(b"BROKEN"))
+    {
+        std::process::exit(4);
     }
     let embedding = args.iter().any(|a| a == "--embedding");
     let key = std::env::var("LLAMA_API_KEY").unwrap_or_default();
@@ -115,7 +128,152 @@ fn fake_server(args: &[String]) -> ! {
     std::process::exit(0)
 }
 
-// --------------------------------------------------------------------------- fixture
+// ------------------------------------------------------------------- local model host
+
+/// Requests the host saw: the path and the range start it asked for.
+type Requests = Arc<Mutex<Vec<(String, Option<u64>)>>>;
+
+/// A tiny model host on loopback: serves the files under `root`, honours `Range: bytes=N-`, and
+/// can cut one answer short (an interrupted download).
+struct Host {
+    base: String,
+    root: PathBuf,
+    /// Every request: path and the range it asked for.
+    requests: Requests,
+    /// The next answer for this path stops after this many body bytes.
+    cut_once: Arc<Mutex<Option<(String, usize)>>>,
+}
+
+impl Host {
+    fn start(root: PathBuf) -> Host {
+        let listener = TcpListener::bind(("127.0.0.1", 0)).unwrap();
+        let base = format!(
+            "http://127.0.0.1:{}/",
+            listener.local_addr().unwrap().port()
+        );
+        let requests = Arc::new(Mutex::new(Vec::new()));
+        let cut_once: Arc<Mutex<Option<(String, usize)>>> = Arc::new(Mutex::new(None));
+        let (dir, reqs, cut) = (root.clone(), requests.clone(), cut_once.clone());
+        std::thread::spawn(move || {
+            for stream in listener.incoming() {
+                let Ok(mut s) = stream else { continue };
+                let mut reader = BufReader::new(s.try_clone().unwrap());
+                let mut first = String::new();
+                reader.read_line(&mut first).unwrap_or(0);
+                let mut from = None;
+                loop {
+                    let mut line = String::new();
+                    if reader.read_line(&mut line).unwrap_or(0) == 0 || line == "\r\n" {
+                        break;
+                    }
+                    if let Some(v) = line.to_ascii_lowercase().strip_prefix("range: bytes=") {
+                        from = v.trim().trim_end_matches('-').parse::<u64>().ok();
+                    }
+                }
+                let path = first
+                    .split_whitespace()
+                    .nth(1)
+                    .unwrap_or("/")
+                    .trim_start_matches('/')
+                    .to_string();
+                reqs.lock().unwrap().push((path.clone(), from));
+                let Ok(body) = std::fs::read(dir.join(&path)) else {
+                    let _ = s.write_all(
+                        b"HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\nConnection: close\r\n\r\n",
+                    );
+                    continue;
+                };
+                let start = from.unwrap_or(0).min(body.len() as u64) as usize;
+                let part = &body[start..];
+                let status = if from.is_some() {
+                    format!(
+                        "206 Partial Content\r\nContent-Range: bytes {start}-{}/{}",
+                        body.len().saturating_sub(1),
+                        body.len()
+                    )
+                } else {
+                    "200 OK".to_string()
+                };
+                let _ = write!(
+                    s,
+                    "HTTP/1.1 {status}\r\nContent-Length: {}\r\nConnection: close\r\n\r\n",
+                    part.len()
+                );
+                let mut c = cut.lock().unwrap();
+                let send = match c.as_ref() {
+                    Some((p, n)) if *p == path => {
+                        let n = *n;
+                        *c = None;
+                        &part[..n.min(part.len())]
+                    }
+                    _ => part,
+                };
+                let _ = s.write_all(send);
+            }
+        });
+        Host {
+            base,
+            root,
+            requests,
+            cut_once,
+        }
+    }
+
+    fn requests(&self) -> Vec<(String, Option<u64>)> {
+        self.requests.lock().unwrap().clone()
+    }
+}
+
+/// A fixed test key: never the production key, which the owner generates and keeps offline.
+fn test_key() -> SigningKey {
+    SigningKey::from_bytes(&[7u8; 32])
+}
+
+/// Model bytes of `len`, different for each `seed`.
+fn model_bytes(seed: u32, len: u32) -> Vec<u8> {
+    (0..len).map(|k| ((k * 31 + seed) % 251) as u8).collect()
+}
+
+/// Put a model set on the host: its files under `<version>/` and `manifest.json` signed by `key`.
+fn publish(
+    host_root: &Path,
+    version: &str,
+    runtime_version: &str,
+    chat: &[u8],
+    embed: &[u8],
+    key: &SigningKey,
+) -> Vec<u8> {
+    let dir = host_root.join(version);
+    std::fs::create_dir_all(&dir).unwrap();
+    let mut files = Vec::new();
+    for (name, role, body) in [
+        ("chat.gguf", "chat", chat),
+        ("embed.gguf", "embedding", embed),
+    ] {
+        std::fs::write(dir.join(name), body).unwrap();
+        let (bytes, sha256) = hash_file(&dir.join(name)).unwrap();
+        files.push(serde_json::json!({ "name": name, "path": format!("{version}/{name}"), "bytes": bytes, "sha256": sha256, "role": role }));
+    }
+    let payload = serde_json::to_vec(&serde_json::json!({
+        "manifestVersion": version,
+        "profileVersion": 2,
+        "tiers": [{ "id": "small", "label": "Standard", "minMemoryGb": 8, "requiresRuntime": runtime_version, "files": files }],
+        "runtimes": []
+    }))
+    .unwrap();
+    let b64 = base64::engine::general_purpose::STANDARD;
+    let envelope = serde_json::to_vec(&serde_json::json!({
+        "format": "openframe-ai-manifest",
+        "keyId": "test",
+        "payload": b64.encode(&payload),
+        "signature": b64.encode(key.sign(&payload).to_bytes()),
+    }))
+    .unwrap();
+    std::fs::write(host_root.join("manifest.json"), &envelope).unwrap();
+    envelope
+}
+
+// ----------------------------------------------------------------------- pinned files
 
 const SERVER: &str = if cfg!(windows) {
     "llama-server.exe"
@@ -132,22 +290,51 @@ fn pin(path: &Path, name: &str) -> PinnedFile {
     }
 }
 
+// --------------------------------------------------------------------------- fixture
+
+const SET: &str = "2026.10.1";
+
 struct Fixture {
     _tmp: tempfile::TempDir,
     bundle: PathBuf,
     data: PathBuf,
     lock: AssetLock,
+    host: Host,
 }
 
 impl Fixture {
-    /// A bundle laid out like the app resources: this test program as the engine, a library
-    /// next to it, and two small "model" files, all pinned in a lock for this computer.
+    /// The engine laid out like the app resources (this test program as the server, a library next
+    /// to it), and a model set "2026.10.1" on the local host and installed in app data the way a
+    /// finished download leaves it.
     fn new() -> Self {
+        let f = Self::without_models();
+        let envelope = std::fs::read(f.host.root.join("manifest.json")).unwrap();
+        let set = f.data.join("models").join(SET);
+        std::fs::create_dir_all(&set).unwrap();
+        for name in ["chat.gguf", "embed.gguf"] {
+            std::fs::copy(f.host.root.join(SET).join(name), set.join(name)).unwrap();
+        }
+        std::fs::write(set.join("set.json"), envelope).unwrap();
+        std::fs::write(
+            f.data.join("models").join("active.json"),
+            format!(r#"{{"version":"{SET}","tier":"small","previous":null,"activatedAt":0}}"#),
+        )
+        .unwrap();
+        f
+    }
+
+    /// The same, before anything was downloaded.
+    fn without_models() -> Self {
         let tmp = tempfile::tempdir().unwrap();
         let bundle = tmp.path().join("resources").join("ai");
         let data = tmp.path().join("appdata");
         let mut lock = AssetLock::embedded().unwrap();
-        let mut rt = lock.runtimes[0].clone();
+        let mut rt = lock
+            .runtimes
+            .iter()
+            .find(|r| r.backend == "cpu")
+            .unwrap()
+            .clone();
         rt.os = openframe_platform::current_os().name().into();
         rt.arch = std::env::consts::ARCH.into();
         rt.executable = SERVER.into();
@@ -160,24 +347,28 @@ impl Fixture {
             pin(&rt_dir.join("ggml.dll"), "ggml.dll"),
         ];
         lock.runtimes = vec![rt];
-        for (i, m) in lock.models.iter_mut().enumerate() {
-            let dir = bundle.join("models").join(&m.model_id);
-            std::fs::create_dir_all(&dir).unwrap();
-            let bytes: Vec<u8> = (0..40_000u32)
-                .map(|k| ((k * 31 + i as u32) % 251) as u8)
-                .collect();
-            std::fs::write(dir.join("model.gguf"), &bytes).unwrap();
-            m.file = pin(&dir.join("model.gguf"), "model.gguf");
+        for m in lock.models.iter_mut() {
             if m.embedding_dim.is_some() {
                 m.embedding_dim = Some(8);
             }
         }
         lock.validate().unwrap();
+        let host_root = tmp.path().join("host");
+        let runtime_version = lock.runtimes[0].version.clone();
+        publish(
+            &host_root,
+            SET,
+            &runtime_version,
+            &model_bytes(0, 40_000),
+            &model_bytes(1, 40_000),
+            &test_key(),
+        );
         Fixture {
             _tmp: tmp,
             bundle,
             data,
             lock,
+            host: Host::start(host_root),
         }
     }
 
@@ -191,6 +382,10 @@ impl Fixture {
         ManagerConfig {
             app_data_dir: self.data.clone(),
             bundle_dir: Some(self.bundle.clone()),
+            model_host: Some(ModelHost {
+                base: self.host.base.clone(),
+                keys: vec![test_key().verifying_key()],
+            }),
             lock: self.lock.clone(),
             supervisor: sup.clone(),
             embedding_supervisor: sup,
@@ -203,14 +398,24 @@ impl Fixture {
         Arc::new(AiManager::new(self.config()).unwrap())
     }
 
+    /// 0: the chat model, 1: the embedding model of the installed set.
     fn model_file(&self, role: usize) -> PathBuf {
-        self.bundle
+        let name = ["chat.gguf", "embed.gguf"][role];
+        let active: serde_json::Value = serde_json::from_slice(
+            &std::fs::read(self.data.join("models").join("active.json")).unwrap(),
+        )
+        .unwrap();
+        self.data
             .join("models")
-            .join(&self.lock.models[role].model_id)
-            .join("model.gguf")
+            .join(active["version"].as_str().unwrap())
+            .join(name)
     }
 
-    /// Every file under the bundle with its size and modification time.
+    fn runtime_version(&self) -> String {
+        self.lock.runtimes[0].version.clone()
+    }
+
+    /// Every file under the app resources with its size and modification time.
     fn snapshot(&self) -> Vec<(PathBuf, u64, std::time::SystemTime)> {
         fn walk(d: &Path, out: &mut Vec<(PathBuf, u64, std::time::SystemTime)>) {
             for e in std::fs::read_dir(d).unwrap().flatten() {
@@ -242,9 +447,284 @@ fn alter(path: &Path) {
     std::fs::write(path, b).unwrap();
 }
 
-// ------------------------------------------------------------------------- scenarios
+/// Start the download and wait until it ends; returns the final phase.
+fn download(m: &Arc<AiManager>) -> DownloadPhase {
+    m.start_download().unwrap();
+    let until = Instant::now() + Duration::from_secs(60);
+    loop {
+        let st = m.download_status();
+        // `start_download` set Checking before it returned, so an end phase is this run's.
+        if matches!(
+            st.phase,
+            DownloadPhase::Done | DownloadPhase::Failed | DownloadPhase::Paused
+        ) {
+            return st.phase;
+        }
+        assert!(Instant::now() < until, "the download never ended: {st:?}");
+        std::thread::sleep(Duration::from_millis(50));
+    }
+}
 
-fn ai_works_on_first_launch_with_no_download_or_setup() {
+fn files_under(d: &Path) -> Vec<String> {
+    let mut v: Vec<String> = std::fs::read_dir(d)
+        .map(|r| {
+            r.flatten()
+                .map(|e| e.file_name().to_string_lossy().into_owned())
+                .collect()
+        })
+        .unwrap_or_default();
+    v.sort();
+    v
+}
+
+// --------------------------------------------------------------- scenarios: download
+
+fn nothing_is_downloaded_until_the_person_starts_it() {
+    let f = Fixture::without_models();
+    let m = f.manager();
+    let st = m.state();
+    assert!(
+        !st.available && st.bundle == BundleState::NotInstalled,
+        "{st:?}"
+    );
+    let e = st.problem.unwrap();
+    assert_eq!(e.code_str(), "ai.not_installed");
+    assert!(
+        e.message.contains("Download it in Settings"),
+        "{}",
+        e.message
+    );
+    assert!(m.chat_model().is_none() && m.embedding_info().is_none());
+    assert_eq!(ask(&m).unwrap_err().code_str(), "ai.not_installed");
+    assert!(m.warm_up().is_err());
+    assert_eq!(m.download_status().phase, DownloadPhase::Idle);
+    assert!(
+        m.download_size() > 0,
+        "the size is known before any network use"
+    );
+    assert!(f.host.requests().is_empty(), "no request before the click");
+}
+
+fn the_download_installs_checks_and_starts_the_ai() {
+    let f = Fixture::without_models();
+    let m = f.manager();
+    assert_eq!(
+        download(&m),
+        DownloadPhase::Done,
+        "{:?}",
+        m.download_status()
+    );
+    let st = m.download_status();
+    assert_eq!((st.done_bytes, st.total_bytes), (80_000, 80_000));
+    // The health check started the engine on the new set; AI answers.
+    assert!(m.state().available);
+    assert!(ask(&m).unwrap().starts_with("ready"));
+    assert_eq!(m.embed(&["Ravi".into()]).unwrap()[0].len(), 8);
+    assert_eq!(
+        m.embedding_info().unwrap().sha256,
+        hash_file(&f.model_file(1)).unwrap().1
+    );
+    // Exactly the signed list and the two files were asked for, nothing else.
+    let paths: Vec<String> = f.host.requests().into_iter().map(|r| r.0).collect();
+    assert_eq!(
+        paths,
+        [
+            "manifest.json",
+            &format!("{SET}/chat.gguf"),
+            &format!("{SET}/embed.gguf")
+        ]
+    );
+    // Only the set, its pointer and an empty staging area are left.
+    assert_eq!(
+        files_under(&f.data.join("models").join(SET)),
+        ["chat.gguf", "embed.gguf", "set.json"]
+    );
+    assert!(files_under(&f.data.join("models").join("staging")).is_empty());
+    // A second click with the same set on the host changes nothing and downloads nothing.
+    let before = f.host.requests().len();
+    assert_eq!(download(&m), DownloadPhase::Done);
+    assert_eq!(f.host.requests().len(), before + 1, "only the list is read");
+    // A new start of the app finds the set without any network use.
+    m.stop_runtime();
+    drop(m);
+    let m = f.manager();
+    assert!(ask(&m).unwrap().starts_with("ready"));
+    assert_eq!(f.host.requests().len(), before + 1);
+}
+
+fn an_interrupted_download_resumes_where_it_stopped() {
+    let f = Fixture::without_models();
+    *f.host.cut_once.lock().unwrap() = Some((format!("{SET}/chat.gguf"), 15_000));
+    let m = f.manager();
+    assert_eq!(download(&m), DownloadPhase::Failed);
+    let e = m.download_status().problem.unwrap();
+    assert_eq!(e.code_str(), "ai.download_failed");
+    assert!(e.message.contains("resume"), "{}", e.message);
+    assert_eq!(m.state().bundle, BundleState::NotInstalled);
+    let partial = f
+        .data
+        .join("models")
+        .join("staging")
+        .join(SET)
+        .join("chat.gguf.partial");
+    assert_eq!(std::fs::metadata(&partial).unwrap().len(), 15_000);
+    // The next click asks only for the rest of the file.
+    assert_eq!(
+        download(&m),
+        DownloadPhase::Done,
+        "{:?}",
+        m.download_status()
+    );
+    assert!(
+        f.host
+            .requests()
+            .contains(&(format!("{SET}/chat.gguf"), Some(15_000)))
+    );
+    assert!(ask(&m).unwrap().starts_with("ready"));
+    assert_eq!(
+        hash_file(&f.model_file(0)).unwrap().1,
+        hash_file(&f.host.root.join(SET).join("chat.gguf"))
+            .unwrap()
+            .1
+    );
+}
+
+fn a_damaged_file_is_refused_set_aside_and_never_used() {
+    let f = Fixture::without_models();
+    // The host now serves other bytes of the same size than the signed list names.
+    alter(&f.host.root.join(SET).join("embed.gguf"));
+    let m = f.manager();
+    assert_eq!(download(&m), DownloadPhase::Failed);
+    let e = m.download_status().problem.unwrap();
+    assert_eq!(e.code_str(), "ai.file_damaged");
+    assert!(e.message.contains("set aside"), "{}", e.message);
+    assert_eq!(
+        files_under(&f.data.join("models").join("quarantine")).len(),
+        1
+    );
+    assert!(!f.data.join("models").join("active.json").exists());
+    assert_eq!(m.state().bundle, BundleState::NotInstalled);
+    assert!(m.chat_model().is_none());
+    // The host is repaired: the next download completes.
+    alter(&f.host.root.join(SET).join("embed.gguf"));
+    assert_eq!(
+        download(&m),
+        DownloadPhase::Done,
+        "{:?}",
+        m.download_status()
+    );
+    assert!(ask(&m).is_ok());
+}
+
+fn a_list_signed_with_another_key_downloads_nothing() {
+    let f = Fixture::without_models();
+    publish(
+        &f.host.root,
+        SET,
+        &f.runtime_version(),
+        &model_bytes(0, 40_000),
+        &model_bytes(1, 40_000),
+        &SigningKey::from_bytes(&[9u8; 32]),
+    );
+    let m = f.manager();
+    assert_eq!(download(&m), DownloadPhase::Failed);
+    assert_eq!(
+        m.download_status().problem.unwrap().code_str(),
+        "ai.manifest_invalid"
+    );
+    assert_eq!(f.host.requests().len(), 1, "only the list was read");
+    assert!(!f.data.join("models").join(SET).exists());
+    // A list for an engine this app does not have is refused the same way, with its own reason.
+    publish(
+        &f.host.root,
+        SET,
+        "b1",
+        &model_bytes(0, 40_000),
+        &model_bytes(1, 40_000),
+        &test_key(),
+    );
+    assert_eq!(download(&m), DownloadPhase::Failed);
+    assert_eq!(
+        m.download_status().problem.unwrap().code_str(),
+        "ai.needs_update"
+    );
+}
+
+fn a_new_set_that_fails_its_health_check_falls_back_to_the_last_good_one() {
+    let f = Fixture::new();
+    let m = f.manager();
+    assert!(ask(&m).is_ok());
+    // A newer set whose chat model cannot load.
+    let mut broken = b"BROKEN".to_vec();
+    broken.extend(model_bytes(5, 40_000));
+    publish(
+        &f.host.root,
+        "2026.11.1",
+        &f.runtime_version(),
+        &broken,
+        &model_bytes(6, 40_000),
+        &test_key(),
+    );
+    assert_eq!(download(&m), DownloadPhase::Failed);
+    // Back on the last good set, which still answers; the bad set is set aside.
+    let active = std::fs::read_to_string(f.data.join("models").join("active.json")).unwrap();
+    assert!(
+        active.contains(SET) && !active.contains("2026.11.1"),
+        "{active}"
+    );
+    assert!(!f.data.join("models").join("2026.11.1").exists());
+    assert!(ask(&m).unwrap().starts_with("ready"));
+    // A good newer set replaces the old one, which is then removed.
+    publish(
+        &f.host.root,
+        "2026.11.2",
+        &f.runtime_version(),
+        &model_bytes(7, 40_000),
+        &model_bytes(8, 40_000),
+        &test_key(),
+    );
+    assert_eq!(
+        download(&m),
+        DownloadPhase::Done,
+        "{:?}",
+        m.download_status()
+    );
+    assert!(!f.data.join("models").join(SET).exists());
+    assert!(ask(&m).is_ok());
+}
+
+fn remove_turns_the_ai_off_and_frees_the_space() {
+    let f = Fixture::new();
+    let m = f.manager();
+    assert!(ask(&m).is_ok());
+    m.remove_models().unwrap();
+    assert_eq!(m.state().bundle, BundleState::NotInstalled);
+    assert_eq!(m.runtime_status().state, RuntimeState::Unavailable);
+    assert!(m.chat_model().is_none());
+    assert!(files_under(&f.data.join("models")).is_empty());
+    // The engine in the app resources is untouched; downloading again works.
+    assert_eq!(download(&m), DownloadPhase::Done);
+    assert!(ask(&m).is_ok());
+}
+
+fn a_build_without_a_model_host_cannot_download_or_use_a_set() {
+    let f = Fixture::new();
+    let mut cfg = f.config();
+    cfg.model_host = None;
+    let m = Arc::new(AiManager::new(cfg).unwrap());
+    assert!(!m.can_download());
+    assert_eq!(
+        m.start_download().unwrap_err().code_str(),
+        "ai.download_unavailable"
+    );
+    // The set on disk cannot be checked against any key, so it is not used.
+    assert_eq!(m.state().bundle, BundleState::Damaged);
+    assert!(f.host.requests().is_empty());
+}
+
+// ------------------------------------------------------------- scenarios: installed set
+
+fn ai_works_once_the_models_are_downloaded() {
     let f = Fixture::new();
     let before = f.snapshot();
     let m = f.manager();
@@ -253,7 +733,7 @@ fn ai_works_on_first_launch_with_no_download_or_setup() {
         st.available && st.bundle == BundleState::NotChecked,
         "{st:?}"
     );
-    // First request: full check, engine start, answer. No download, no install step.
+    // First request: full check, engine start, answer. No network use.
     assert!(ask(&m).unwrap().starts_with("ready t=0.2"));
     assert_eq!(m.state().bundle, BundleState::Verified);
     let v = m.embed(&["Ravi waits at the station".into()]).unwrap();
@@ -262,7 +742,7 @@ fn ai_works_on_first_launch_with_no_download_or_setup() {
         (v[0].iter().map(|x| x * x).sum::<f32>() - 1.0).abs() < 1e-4,
         "normalised"
     );
-    // Writable data lands in app data; the read-only bundle is untouched.
+    // Writable data lands in app data; the read-only resources are untouched.
     assert!(m.paths().bundle_check().is_file());
     assert!(
         m.paths()
@@ -277,7 +757,8 @@ fn ai_works_on_first_launch_with_no_download_or_setup() {
         before,
         "nothing is written into the app resources"
     );
-    // Diagnostics describe the bundle, its licences and where it is, without a download.
+    assert!(f.host.requests().is_empty());
+    // Diagnostics describe the engine and the downloaded models, their licences and sizes.
     let d = m.diagnostics();
     assert_eq!(d.components.len(), 3);
     assert!(
@@ -285,6 +766,7 @@ fn ai_works_on_first_launch_with_no_download_or_setup() {
             .iter()
             .any(|c| c.license_id == "Gemma-Terms-of-Use")
     );
+    assert_eq!(d.components[1].bytes, 40_000);
     assert_eq!(d.bundle, BundleState::Verified);
     assert!(d.bundle_dir.ends_with("ai"));
 }
@@ -314,7 +796,7 @@ fn the_check_is_recorded_and_a_replaced_file_is_checked_again() {
     alter(&f.model_file(1));
     let m = f.manager();
     let e = m.ensure_verified().unwrap_err();
-    assert_eq!(e.code_str(), "ai.assets_damaged");
+    assert_eq!(e.code_str(), "ai.models_damaged");
     assert!(
         !m.paths().bundle_check().exists(),
         "a failed check leaves no record"
@@ -342,7 +824,7 @@ fn a_new_app_version_checks_everything_again() {
     let m = Arc::new(AiManager::new(cfg).unwrap());
     assert_eq!(
         m.ensure_verified().unwrap_err().code_str(),
-        "ai.assets_damaged"
+        "ai.models_damaged"
     );
 }
 
@@ -355,13 +837,9 @@ fn an_altered_model_is_refused_before_any_engine_starts() {
         "the size still matches until the full check"
     );
     let e = ask(&m).unwrap_err();
-    assert_eq!(e.code_str(), "ai.assets_damaged");
-    assert!(
-        e.message.contains("Reinstall OpenFrame Studio"),
-        "{}",
-        e.message
-    );
-    assert!(!e.message.to_lowercase().contains("download"));
+    assert_eq!(e.code_str(), "ai.models_damaged");
+    assert!(e.message.contains("download it again"), "{}", e.message);
+    assert!(!e.message.contains("Reinstall"));
     let st = m.state();
     assert!(!st.available && st.bundle == BundleState::Damaged);
     assert_eq!(m.runtime_status().state, RuntimeState::Unavailable);
@@ -378,18 +856,25 @@ fn a_missing_file_turns_ai_off_with_a_plain_message() {
     std::fs::remove_file(f.model_file(1)).unwrap();
     let m = f.manager();
     let st = m.state();
-    assert!(!st.available && st.bundle == BundleState::Missing, "{st:?}");
+    assert!(!st.available && st.bundle == BundleState::Damaged, "{st:?}");
     let e = st.problem.unwrap();
-    assert_eq!(e.code_str(), "ai.assets_missing");
+    assert_eq!(e.code_str(), "ai.models_damaged");
     assert!(!e.message.contains('\u{2014}'));
     assert!(m.chat_model().is_none());
     assert!(m.embedding_info().is_none());
-    assert_eq!(ask(&m).unwrap_err().code_str(), "ai.assets_missing");
-    // No resources folder at all reads the same way.
+    assert_eq!(ask(&m).unwrap_err().code_str(), "ai.models_damaged");
+    // A missing engine says reinstall.
     let mut cfg = f.config();
     cfg.bundle_dir = None;
     let m = AiManager::new(cfg).unwrap();
     assert_eq!(m.state().bundle, BundleState::Missing);
+    assert!(
+        m.state()
+            .problem
+            .unwrap()
+            .message
+            .contains("Reinstall OpenFrame Studio")
+    );
 }
 
 fn an_engine_file_changed_after_the_check_is_never_launched() {
@@ -426,8 +911,25 @@ fn a_model_replaced_while_the_engine_was_unloaded_is_never_loaded() {
     std::thread::sleep(Duration::from_millis(20));
     alter(&f.model_file(0));
     let e = ask(&m).unwrap_err();
-    assert_eq!(e.code_str(), "ai.assets_damaged");
+    assert_eq!(e.code_str(), "ai.models_damaged");
     assert_eq!(m.state().bundle, BundleState::Damaged);
+}
+
+fn a_set_list_edited_on_disk_is_never_trusted() {
+    let f = Fixture::new();
+    // Someone replaces a model and writes its hash into set.json: the signature no longer holds.
+    let set = f.data.join("models").join(SET).join("set.json");
+    let text = std::fs::read_to_string(&set).unwrap();
+    let mut env: serde_json::Value = serde_json::from_str(&text).unwrap();
+    let b64 = base64::engine::general_purpose::STANDARD;
+    let mut payload: serde_json::Value =
+        serde_json::from_slice(&b64.decode(env["payload"].as_str().unwrap()).unwrap()).unwrap();
+    payload["tiers"][0]["files"][0]["sha256"] = serde_json::json!("0".repeat(64));
+    env["payload"] = serde_json::json!(b64.encode(serde_json::to_vec(&payload).unwrap()));
+    std::fs::write(&set, serde_json::to_vec(&env).unwrap()).unwrap();
+    let m = f.manager();
+    assert_eq!(m.state().bundle, BundleState::Damaged);
+    assert_eq!(ask(&m).unwrap_err().code_str(), "ai.models_damaged");
 }
 
 fn the_engine_starts_with_a_scrubbed_environment() {
@@ -456,17 +958,16 @@ fn a_platform_without_a_pinned_engine_is_unsupported() {
 }
 
 #[cfg(windows)]
-fn a_junction_inside_the_bundle_is_refused() {
+fn a_junction_inside_the_models_folder_is_refused() {
     let f = Fixture::new();
-    // Move one model folder elsewhere and put a junction in its place: same files, but the
-    // path now leaves the installed resources.
-    let model_dir = f.model_file(0).parent().unwrap().to_path_buf();
+    // Move the set elsewhere and put a junction in its place: same files, but the path now
+    // leaves the models folder.
+    let set = f.data.join("models").join(SET);
     let elsewhere = f.data.join("elsewhere");
-    std::fs::create_dir_all(&f.data).unwrap();
-    std::fs::rename(&model_dir, &elsewhere).unwrap();
+    std::fs::rename(&set, &elsewhere).unwrap();
     let ok = std::process::Command::new("cmd")
         .args(["/C", "mklink", "/J"])
-        .arg(&model_dir)
+        .arg(&set)
         .arg(&elsewhere)
         .output()
         .unwrap()
@@ -477,66 +978,11 @@ fn a_junction_inside_the_bundle_is_refused() {
     let st = m.state();
     assert!(!st.available, "{st:?}");
     assert_eq!(st.bundle, BundleState::Damaged);
-    std::fs::remove_dir(&model_dir).unwrap();
+    std::fs::remove_dir(&set).unwrap();
 }
 
 #[cfg(not(windows))]
-fn a_junction_inside_the_bundle_is_refused() {}
-
-fn retired_downloads_are_removed_without_following_links() {
-    let tmp = tempfile::tempdir().unwrap();
-    let data = tmp.path().join("appdata");
-    let outside = tmp.path().join("outside");
-    std::fs::create_dir_all(&outside).unwrap();
-    std::fs::write(outside.join("keep.txt"), b"user file").unwrap();
-    let models = data.join("models");
-    std::fs::create_dir_all(models.join("gemma-3-1b-it-q8-0-v1")).unwrap();
-    std::fs::write(
-        models.join("gemma-3-1b-it-q8-0-v1").join("model.gguf"),
-        vec![1u8; 4096],
-    )
-    .unwrap();
-    std::fs::create_dir_all(models.join(".downloads")).unwrap();
-    std::fs::write(models.join("manifest-cache.json"), b"{}").unwrap();
-    std::fs::create_dir_all(data.join("runtimes").join("llama").join("x")).unwrap();
-    std::fs::write(
-        data.join("runtimes")
-            .join("llama")
-            .join("x")
-            .join("llama-server.exe"),
-        b"x",
-    )
-    .unwrap();
-    std::fs::write(data.join("settings.json"), b"{}").unwrap();
-    #[cfg(windows)]
-    {
-        let ok = std::process::Command::new("cmd")
-            .args(["/C", "mklink", "/J"])
-            .arg(models.join("link"))
-            .arg(&outside)
-            .output()
-            .unwrap()
-            .status
-            .success();
-        assert!(ok);
-    }
-    let paths = openframe_ai::store::AiPaths::new(&data);
-    let freed = paths.remove_retired_downloads();
-    assert!(freed >= 4096);
-    assert!(!models.exists() && !data.join("runtimes").exists());
-    assert!(
-        outside.join("keep.txt").is_file(),
-        "a link is never followed"
-    );
-    assert!(data.join("settings.json").is_file(), "other app data stays");
-    // The manager does the same on start.
-    std::fs::create_dir_all(data.join("models").join("old")).unwrap();
-    let f = Fixture::new();
-    let mut cfg = f.config();
-    cfg.app_data_dir = data.clone();
-    drop(AiManager::new(cfg).unwrap());
-    assert!(!data.join("models").exists());
-}
+fn a_junction_inside_the_models_folder_is_refused() {}
 
 // ------------------------------------------------------------------------------ main
 
@@ -548,8 +994,40 @@ fn main() {
     let filter = args.iter().find(|a| !a.starts_with('-')).cloned();
     let tests: &[(&str, fn())] = &[
         (
-            "ai_works_on_first_launch_with_no_download_or_setup",
-            ai_works_on_first_launch_with_no_download_or_setup,
+            "nothing_is_downloaded_until_the_person_starts_it",
+            nothing_is_downloaded_until_the_person_starts_it,
+        ),
+        (
+            "the_download_installs_checks_and_starts_the_ai",
+            the_download_installs_checks_and_starts_the_ai,
+        ),
+        (
+            "an_interrupted_download_resumes_where_it_stopped",
+            an_interrupted_download_resumes_where_it_stopped,
+        ),
+        (
+            "a_damaged_file_is_refused_set_aside_and_never_used",
+            a_damaged_file_is_refused_set_aside_and_never_used,
+        ),
+        (
+            "a_list_signed_with_another_key_downloads_nothing",
+            a_list_signed_with_another_key_downloads_nothing,
+        ),
+        (
+            "a_new_set_that_fails_its_health_check_falls_back_to_the_last_good_one",
+            a_new_set_that_fails_its_health_check_falls_back_to_the_last_good_one,
+        ),
+        (
+            "remove_turns_the_ai_off_and_frees_the_space",
+            remove_turns_the_ai_off_and_frees_the_space,
+        ),
+        (
+            "a_build_without_a_model_host_cannot_download_or_use_a_set",
+            a_build_without_a_model_host_cannot_download_or_use_a_set,
+        ),
+        (
+            "ai_works_once_the_models_are_downloaded",
+            ai_works_once_the_models_are_downloaded,
         ),
         (
             "deterministic_runs_use_temperature_zero_and_a_fixed_seed",
@@ -580,6 +1058,10 @@ fn main() {
             a_model_replaced_while_the_engine_was_unloaded_is_never_loaded,
         ),
         (
+            "a_set_list_edited_on_disk_is_never_trusted",
+            a_set_list_edited_on_disk_is_never_trusted,
+        ),
+        (
             "the_engine_starts_with_a_scrubbed_environment",
             the_engine_starts_with_a_scrubbed_environment,
         ),
@@ -588,12 +1070,8 @@ fn main() {
             a_platform_without_a_pinned_engine_is_unsupported,
         ),
         (
-            "a_junction_inside_the_bundle_is_refused",
-            a_junction_inside_the_bundle_is_refused,
-        ),
-        (
-            "retired_downloads_are_removed_without_following_links",
-            retired_downloads_are_removed_without_following_links,
+            "a_junction_inside_the_models_folder_is_refused",
+            a_junction_inside_the_models_folder_is_refused,
         ),
     ];
     let mut failed = 0;

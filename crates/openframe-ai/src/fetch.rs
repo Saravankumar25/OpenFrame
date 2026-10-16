@@ -1,7 +1,9 @@
 //! Download after install, step 2: fetching (ADR-0026 decision 5; Windows phase W8).
 //!
-//! HTTPS only: the base address must be `https://`. A debug build may use plain HTTP on the loopback
-//! address for the local test host (CI and the test suite); a release build never can. A redirect is
+//! HTTPS only: the base address must be `https://`. The one exception is a build whose compiled-in
+//! model host is the loopback address (the local test host of the test suite and CI, ADR-0026
+//! decision 10): it may use plain HTTP there and nowhere else. The address is fixed at build time, so
+//! nothing at run time can turn a production build towards plain HTTP. A redirect is
 //! followed only to the same scheme, host and port. Every file goes to `<name>.partial` and resumes
 //! with an HTTP range request; the bytes written can never exceed the size the signed manifest gives.
 //! Each read has a time limit, so a stalled host ends in an error instead of a hang, and a pause is a
@@ -33,14 +35,15 @@ fn failed(detail: impl Into<String>) -> AppError {
 }
 
 impl Source {
-    /// `allow_loopback_http` lets a debug build reach the local test host over plain HTTP.
+    /// `allow_loopback_http` lets a build whose compiled-in host is the local test host reach it
+    /// over plain HTTP; any other address must be https.
     pub fn new(base: &str, allow_loopback_http: bool) -> AppResult<Self> {
         let mut url =
             Url::parse(base.trim()).map_err(|_| failed("the model host address is not valid"))?;
         let loopback = matches!(url.host_str(), Some("127.0.0.1" | "localhost" | "[::1]"));
         let ok = match url.scheme() {
             "https" => true,
-            "http" => allow_loopback_http && loopback && cfg!(debug_assertions),
+            "http" => allow_loopback_http && loopback,
             _ => false,
         };
         if !ok || url.cannot_be_a_base() || !url.username().is_empty() || url.password().is_some() {
@@ -91,7 +94,7 @@ pub fn client(source: &Source) -> AppResult<reqwest::Client> {
         }))
         .connect_timeout(Duration::from_secs(20))
         .read_timeout(Duration::from_secs(60))
-        .https_only(!cfg!(debug_assertions))
+        .https_only(!loopback)
         .user_agent(concat!("OpenFrameStudio/", env!("CARGO_PKG_VERSION")))
         .build()
         .map_err(|e| failed(e.to_string()))
@@ -329,10 +332,7 @@ pub(crate) mod tests {
         assert!(Source::new("http://models.example.com/ai", true).is_err());
         assert!(Source::new("ftp://models.example.com/", true).is_err());
         assert!(Source::new("https://user:pw@models.example.com/", false).is_err());
-        assert_eq!(
-            Source::new("http://127.0.0.1:9/", true).is_ok(),
-            cfg!(debug_assertions)
-        );
+        assert!(Source::new("http://127.0.0.1:9/", true).is_ok());
         assert!(Source::new("http://127.0.0.1:9/", false).is_err());
         let s = Source::new("https://models.example.com/ai", false).unwrap();
         assert_eq!(

@@ -4,8 +4,10 @@
 //! node scripts/cargo-queued.mjs run --release -p openframe-ai-eval -- --gold crates/openframe-ai-eval/gold --out <folder> [--only <text>] [--limit N]
 //! ```
 //!
-//! Needs the Offline AI files staged by `node scripts/prepare-ai-assets.mjs` (OPENFRAME_AI_BUNDLE_DIR,
-//! default `.build-cache/ai-bundle`). Deterministic sampling (temperature 0, fixed seed). One app
+//! Needs the Offline AI engine staged by `node scripts/prepare-ai-assets.mjs` (OPENFRAME_AI_BUNDLE_DIR,
+//! default `.build-cache/ai-bundle`) and the pinned models in the build inputs (OPENFRAME_AI_ASSETS_DIR,
+//! default `.ai-assets`), which it installs in its own app data as a finished download would
+//! (ADR-0026). Deterministic sampling (temperature 0, fixed seed). One app
 //! core and one warm engine for the whole run; every case gets a fresh project with its sample
 //! script, so no case sees another's changes. Writes `results.jsonl` (one line per case, numbers,
 //! tools and answers), `summary.json` and `report.md` into the output folder. Development only.
@@ -70,16 +72,26 @@ fn run() -> Result<(), String> {
         .unwrap_or_else(|| {
             PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../.build-cache/ai-bundle")
         });
-    if !bundle.join("models").exists() {
+    if !bundle.join("runtimes").exists() {
         return Err(format!(
-            "no Offline AI files in {}; run node scripts/prepare-ai-assets.mjs",
+            "no Offline AI engine in {}; run node scripts/prepare-ai-assets.mjs",
             bundle.display()
         ));
     }
+    // The models the compiled lock pins, installed in this run's app data as a finished download
+    // leaves them (from OPENFRAME_AI_ASSETS_DIR or the checkout's .ai-assets).
+    let assets = std::env::var_os("OPENFRAME_AI_ASSETS_DIR")
+        .map(PathBuf::from)
+        .unwrap_or_else(|| PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../.ai-assets"));
     std::fs::create_dir_all(&args.out).map_err(|e| e.to_string())?;
     let data = tempfile::tempdir().map_err(|e| e.to_string())?;
+    let app_data = AppConfig::isolated(data.path()).app_data_dir;
+    let lock = openframe_ai::AssetLock::embedded().map_err(|e| format!("{e:?}"))?;
+    let host = openframe_ai::test_support::install_pinned_models(&app_data, &assets, &lock)
+        .map_err(|e| format!("installing the models: {e:?}"))?;
     let config = AppConfig {
         ai_bundle_dir: Some(bundle.clone()),
+        ai_model_host: Some(host),
         ai_deterministic: true,
         ..AppConfig::isolated(data.path())
     };

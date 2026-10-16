@@ -13,6 +13,7 @@ import {
   indexNotice,
   indexStateOf,
   offReason,
+  damagedModels,
   panelMode,
   scopeArgs,
   scopeOptions,
@@ -68,14 +69,14 @@ describe("navigation targets", () => {
   });
 });
 
-describe("bundled Offline AI", () => {
+describe("Offline AI", () => {
   it("formats sizes in simple units", () => {
     expect(formatBytes(2_497_280_256)).toBe("2.3 GB");
     expect(formatBytes(19_164_803)).toBe("19 MB");
     expect(formatBytes(12 * 1024 ** 3)).toBe("12 GB");
   });
 
-  it("is ready unless its bundled files are missing or damaged; there is no setup step", () => {
+  it("is ready once downloaded; a missing download or model offers the download, a broken engine a reinstall", () => {
     expect(panelMode(undefined)).toBe("unavailable");
     expect(panelMode(status({ available: true, mode: "AI Ready", bundleState: "NotChecked", runtimeState: "Installed" }))).toBe("ready");
     expect(panelMode(status({ available: true, mode: "AI Ready", bundleState: "Verified", runtimeState: "Ready" }))).toBe("ready");
@@ -86,6 +87,11 @@ describe("bundled Offline AI", () => {
     expect(panelMode(damaged)).toBe("off");
     expect(offReason(damaged)).toContain("Reinstall OpenFrame Studio");
     expect(offReason(status({}))).toBe("AI is currently unavailable. OpenFrame's core workflows continue to work normally.");
+    expect(panelMode(status({ bundleState: "NotInstalled", problem: { code: "ai.not_installed", message: "OpenFrame AI is not downloaded yet.", retryable: false } }))).toBe("download");
+    const models = status({ bundleState: "Damaged", problem: { code: "ai.models_damaged", message: "An OpenFrame AI file is missing or damaged.", retryable: false } });
+    expect(panelMode(models)).toBe("download");
+    expect(damagedModels(models)).toBe("An OpenFrame AI file is missing or damaged.");
+    expect(damagedModels(damaged)).toBeUndefined();
   });
 });
 
