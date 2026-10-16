@@ -793,6 +793,30 @@ fn a_build_that_cannot_download_still_uses_an_installed_set() {
 
 // ---------------------------------------------------------------- scenarios: graphics card
 
+fn a_download_checked_while_the_app_warms_up_keeps_the_new_set() {
+    // Found by the release run of 2026-10-16: on a computer with a card, the screen warms the AI
+    // up while the new set is in its health check; the graphics card check then restarts the
+    // engine, and the health check took that for a broken set and threw the download away.
+    let f = Fixture::without_models();
+    let m = Arc::new(AiManager::new(f.with_card("Fast Card")).unwrap());
+    let stop = Arc::new(std::sync::atomic::AtomicBool::new(false));
+    let warm = {
+        let (m, stop) = (m.clone(), stop.clone());
+        std::thread::spawn(move || {
+            while !stop.load(std::sync::atomic::Ordering::SeqCst) {
+                let _ = m.warm_up();
+                std::thread::sleep(Duration::from_millis(5));
+            }
+        })
+    };
+    let phase = download(&m);
+    stop.store(true, std::sync::atomic::Ordering::SeqCst);
+    warm.join().unwrap();
+    assert_eq!(phase, DownloadPhase::Done, "{:?}", m.download_status());
+    assert!(files_under(&f.data.join("models").join("quarantine")).is_empty());
+    assert!(ask(&m).unwrap().starts_with("ready"));
+}
+
 fn a_card_that_passes_its_check_runs_the_chat_engine_and_is_remembered() {
     let f = Fixture::new();
     let m = Arc::new(AiManager::new(f.with_card("Fast Card")).unwrap());
@@ -1169,6 +1193,10 @@ fn main() {
     }
     let filter = args.iter().find(|a| !a.starts_with('-')).cloned();
     let tests: &[(&str, fn())] = &[
+        (
+            "a_download_checked_while_the_app_warms_up_keeps_the_new_set",
+            a_download_checked_while_the_app_warms_up_keeps_the_new_set,
+        ),
         (
             "a_card_that_passes_its_check_runs_the_chat_engine_and_is_remembered",
             a_card_that_passes_its_check_runs_the_chat_engine_and_is_remembered,

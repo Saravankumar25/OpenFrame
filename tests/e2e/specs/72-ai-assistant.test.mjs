@@ -3,8 +3,9 @@
 // Offline AI assistant with the REAL bundled model (ADR-0025; AI spec; agentic RAG spec §5, §21,
 // §30, §36; build plan items "Real-model end-to-end test" and "No-network test").
 //
-// Covers: AI ready on first launch with no download and no setup; Settings > Offline AI shows the
-// bundle (components, licences, hashes, read-only folder) and offers no download or removal; an
+// Covers: AI ready once its models are installed (preinstalled here as a finished download leaves
+// them); Settings > Offline AI shows the installed parts (components, licences, hashes, read-only
+// engine folder), the privacy promise and Remove, and offers no download while installed; an
 // exact answer from project data with its sources, and a source that opens its place; a meaning
 // question answered from retrieved project context; a navigation command; no network use by the
 // app or the engines while AI works (loopback only); Stop Offline AI frees the engines and the
@@ -55,12 +56,12 @@ describe("Offline AI assistant with the bundled model", () => {
     });
   });
 
-  test("Settings > Offline AI shows the bundled components and offers no download or removal", async () => {
+  test("Settings > Offline AI shows the installed components and Remove, and offers no download while installed", async () => {
     await step("settings", async () => {
       await click(browser, "Offline AI settings");
       await menuItem(browser, "Offline AI settings");
       await (await browser.$('//section[@aria-label="Offline AI"]')).waitForDisplayed({ timeout: 15_000 });
-      await waitForText(browser, "Offline AI is installed with OpenFrame");
+      await waitForText(browser, "OpenFrame AI runs on this computer after a one-time download");
       await (await browser.$('//section[@aria-label="Technical details"]//summary')).click();
       await (await browser.$('//table[@aria-label="Offline AI components"]')).waitForDisplayed({ timeout: 10_000 });
       const rows = await browser.execute(() => [...document.querySelectorAll('table[aria-label="Offline AI components"] tbody tr')].map((r) => r.innerText));
@@ -69,9 +70,9 @@ describe("Offline AI assistant with the bundled model", () => {
       assert.ok(rows.every((r) => /[0-9a-f]{64}/.test(r)), "every component shows its pinned SHA-256");
       const details = await browser.execute(() => document.querySelector('section[aria-label="Technical details"]')?.innerText ?? "");
       assert.match(details, /read-only/);
-      assert.match(details, /never uses the network/);
-      for (const gone of ["Download Offline AI", "Remove Offline AI…", "Update Offline AI"]) {
-        assert.equal(await (await browser.$(`//button[normalize-space(.)="${gone}"]`)).isExisting(), false, `"${gone}" must not exist`);
+      assert.ok(await (await browser.$('//button[normalize-space(.)="Remove OpenFrame AI…"]')).isDisplayed(), "Remove is offered");
+      for (const gone of ["Download OpenFrame AI", "Download Offline AI", "Update Offline AI"]) {
+        assert.equal(await (await browser.$(`//button[normalize-space(.)="${gone}"]`)).isExisting(), false, `"${gone}" must not exist while installed`);
       }
     });
   });

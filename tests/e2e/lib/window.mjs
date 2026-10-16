@@ -8,6 +8,8 @@ import { execFileSync, spawn } from "node:child_process";
 
 const SCRIPT = String.raw`
 $ErrorActionPreference = 'Stop'
+# Without this, PowerShell's progress records fill stderr and hide the real error.
+$ProgressPreference = 'SilentlyContinue'
 Add-Type -Namespace OfE2e -Name Close -MemberDefinition @'
 [DllImport("user32.dll")] public static extern bool PostMessage(System.IntPtr hWnd, int msg, System.IntPtr wParam, System.IntPtr lParam);
 [DllImport("user32.dll")] public static extern bool SetForegroundWindow(System.IntPtr hWnd);
@@ -27,7 +29,16 @@ if ($env:OF_CLOSE_METHOD -eq 'alt-f4') { [void][OfE2e.Close]::SetForegroundWindo
 [void][Console]::In.ReadLine()
 if ($env:OF_CLOSE_METHOD -eq 'alt-f4') {
   # Keys go to whatever window is in front: never press Alt+F4 unless it is the app's window.
-  [void][OfE2e.Close]::SetForegroundWindow($hwnd)
+  # Windows may refuse a plain SetForegroundWindow (its foreground lock); a key press first is the
+  # documented way to be allowed, so try a few times with one before giving up.
+  for ($i = 0; $i -lt 10 -and [OfE2e.Close]::GetForegroundWindow() -ne $hwnd; $i++) {
+    if ($i -gt 0) {
+      [OfE2e.Close]::keybd_event(0x12, 0, 0, [System.UIntPtr]::Zero)
+      [OfE2e.Close]::keybd_event(0x12, 0, 2, [System.UIntPtr]::Zero)
+      Start-Sleep -Milliseconds 50
+    }
+    [void][OfE2e.Close]::SetForegroundWindow($hwnd)
+  }
   if ([OfE2e.Close]::GetForegroundWindow() -ne $hwnd) { throw 'The app window is not in front; Alt+F4 was not sent.' }
   $KEYUP = 2
   [OfE2e.Close]::keybd_event(0x12, 0, 0, [System.UIntPtr]::Zero)

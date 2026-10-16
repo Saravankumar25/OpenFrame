@@ -149,10 +149,9 @@ Full policy: `docs/development-storage-policy.md` (sections 7 and 8 hold the roo
 | UI and copy quality | `impeccable`, `frontend-design`, `docs/engineering/34-ux-laws-checklist.md` | The UX specification and real screens win over taste |
 | Review agents | `ecc:rust-reviewer`, `ecc:typescript-reviewer`, `ecc:silent-failure-hunter`, `ecc:pr-test-analyzer` | Before ticking a plan box |
 
-Found on 2026-10-09 and waiting for the owner's decision: `claude-mem` is enabled in the owner's user settings although an
-earlier decision said not to install it; the GSD framework (33 agents, commands and hooks, installed 2026-10-06 from an
-npm package marked unsupported) sits in the git-ignored `.claude/` folder and is not part of this workflow; an untracked
-`AGENTS.md` is an old copy of this file. OmniRoute is not installed on purpose (it routes prompts through third parties).
+Owner decision 2026-10-16: `claude-mem` stays (user settings); the GSD framework and the stale `AGENTS.md` were removed
+(moved to the git-ignored `.build-cache/removed-2026-10-16/`, its hooks dropped from `.claude/settings.json`). OmniRoute
+is not installed on purpose (it routes prompts through third parties).
 Anything named in `docs/website/prompts/` is unverified: check source, licence and permissions first.
 
 ## graphify

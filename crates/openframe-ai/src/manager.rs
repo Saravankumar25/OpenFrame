@@ -1095,7 +1095,11 @@ impl AiManager {
     /// previous set comes back.
     fn health_check(&self, dir: &crate::install::ModelsDir) -> AppResult<()> {
         self.reload();
+        // Same order as a chat: the files, then the engine's place (a first graphics card check
+        // restarts the engine), then the engine. Deciding the place first means a warm-up running
+        // at the same time can no longer restart the engine under the check.
         let healthy = self.ensure_verified().and_then(|()| {
+            self.ensure_placement();
             self.guard(self.supervisor.ensure_ready(self.cfg.ready_timeout))
                 .map(|_| ())
         });

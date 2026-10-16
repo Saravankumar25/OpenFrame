@@ -18,16 +18,17 @@ Before: an empty data folder of its own. The app carries the real bundled model 
 6. Check: no visible text says "download", "install offline AI", "gemma", "gguf", "llama", "q8_0" or "embedding".
 7. Check: the chat engine is not running yet (it starts on the first question).
 
-## Settings, Offline AI shows the bundled parts and offers no download or removal
+## Settings, Offline AI shows the installed parts and Remove, and offers no download while installed
 
 1. Click Offline AI settings, then choose Offline AI settings.
-2. Check: the "Offline AI" section shows "Offline AI is installed with OpenFrame".
+2. Check: the "Offline AI" section shows "OpenFrame AI runs on this computer after a one-time download".
 3. Open the "Technical details" section.
 4. Check: the table "Offline AI components" has exactly three rows.
 5. Check: one row names "Gemma-Terms-of-Use".
 6. Check: every row shows a 64-character SHA-256 hash.
-7. Check: the technical details say "read-only" and "never uses the network".
-8. Check: there is no button "Download Offline AI", "Remove Offline AI…" or "Update Offline AI".
+7. Check: the technical details say "read-only".
+8. Check: the button "Remove OpenFrame AI…" is shown, and there is no button "Download OpenFrame AI", "Download Offline
+   AI" or "Update Offline AI".
 
 ## An exact answer comes from project data, with sources
 

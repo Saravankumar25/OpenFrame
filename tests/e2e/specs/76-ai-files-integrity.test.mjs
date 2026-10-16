@@ -65,7 +65,7 @@ describe("Offline AI files: missing, damaged, whole again", () => {
       await openAssistant(browser);
       await browser.waitUntil(async () => DOWNLOAD_AGAIN.test(await panelText(browser)), { timeout: 15_000, timeoutMsg: "no download-again message" });
       const text = await panelText(browser);
-      assert.match(text, /Download OpenFrame AI again/);
+      assert.match(text, /Download OpenFrame AI again/i); // the heading is shown in capitals
       assert.doesNotMatch(text, REINSTALL, "a model problem never asks for a reinstall");
       assert.equal(await (await browser.$(`${panel}//textarea`)).isExisting(), false, "no question box while AI is off");
       // Settings says the same.

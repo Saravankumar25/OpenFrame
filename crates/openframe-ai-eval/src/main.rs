@@ -14,13 +14,16 @@
 
 use std::io::Write as _;
 use std::path::PathBuf;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
+use openframe_ai::client::build_body;
+use openframe_ai::{ChatRequest, InferenceProvider, ProviderCapabilities, Usage};
 use openframe_ai_eval::{Case, Observation, StateCheck, load_cases, markdown, score, summarize};
 use openframe_application::core::{AppConfig, AppCore};
 use openframe_application::events::RecordingSink;
 use openframe_application::modules::ai::{intelligence, orchestrator, retrieval, scope, toolbox};
+use openframe_domain::AppResult;
 use serde_json::{Value, json};
 
 struct Args {
@@ -102,12 +105,33 @@ fn run() -> Result<(), String> {
     };
     let core =
         AppCore::new(config, Arc::new(RecordingSink::default())).map_err(|e| format!("{e:?}"))?;
+    let svc = openframe_application::modules::ai::service(&core);
+    let recorder = Arc::new(Recorder {
+        inner: svc
+            .model()
+            .ok_or("the Offline AI is not available in this run")?,
+        bodies: Mutex::new(Vec::new()),
+        usage: Mutex::new(Usage::default()),
+        chat_ms: Mutex::new(0),
+    });
+    svc.attach_model(Some(recorder.clone()));
     let mut results =
         std::fs::File::create(args.out.join("results.jsonl")).map_err(|e| e.to_string())?;
+    let mut requests =
+        std::fs::File::create(args.out.join("requests.jsonl")).map_err(|e| e.to_string())?;
     let started = Instant::now();
     let mut scores = Vec::new();
     for (i, case) in cases.iter().enumerate() {
+        recorder.take();
         let o = run_case(&core, case);
+        let (bodies, u, chat_ms) = recorder.take();
+        for (step, body) in bodies.iter().enumerate() {
+            let line = json!({ "case": case.id, "kind": case.kind, "lang": case.lang, "step": step, "body": body });
+            writeln!(requests, "{line}").map_err(|e| e.to_string())?;
+        }
+        let engine = json!({ "calls": u.calls, "promptTokens": u.prompt_tokens,
+            "completionTokens": u.completion_tokens, "maxPromptTokens": u.max_prompt_tokens,
+            "promptMs": u.prompt_ms, "generationMs": u.generation_ms, "chatWallMs": chat_ms });
         let s = score(case, &o);
         eprintln!(
             "[{}/{}] {} {}ms{}",
@@ -123,7 +147,8 @@ fn run() -> Result<(), String> {
         let line = json!({ "case": case.id, "kind": case.kind, "lang": case.lang, "score": s, "observation": {
             "offered": o.offered.len(), "steps": o.steps, "errorCode": o.error_code, "answer": o.answer,
             "proposed": o.proposed, "applied": o.applied, "endState": o.end_state, "rankedScenes": o.ranked_scenes,
-            "elapsedMs": o.elapsed_ms, "engineMb": o.engine_mb, "setupError": o.setup_error } });
+            "elapsedMs": o.elapsed_ms, "engineMb": o.engine_mb, "setupError": o.setup_error },
+            "engine": engine });
         writeln!(results, "{line}").map_err(|e| e.to_string())?;
         scores.push(s);
     }
@@ -169,6 +194,51 @@ fn run() -> Result<(), String> {
         args.out.display()
     );
     Ok(())
+}
+
+/// The real engine, with every request body and the engine numbers of each case recorded for the
+/// measurements (timings per case, and the exact prompts the engine experiments replay). It only
+/// passes calls through; answers and the AI trace are unchanged.
+struct Recorder {
+    inner: Arc<dyn InferenceProvider>,
+    bodies: Mutex<Vec<Value>>,
+    usage: Mutex<Usage>,
+    chat_ms: Mutex<u64>,
+}
+
+impl Recorder {
+    /// The request bodies, the summed engine numbers and the wall time of the chat calls since
+    /// the last case.
+    fn take(&self) -> (Vec<Value>, Usage, u64) {
+        (
+            std::mem::take(&mut *self.bodies.lock().unwrap()),
+            std::mem::take(&mut *self.usage.lock().unwrap()),
+            std::mem::take(&mut *self.chat_ms.lock().unwrap()),
+        )
+    }
+}
+
+impl InferenceProvider for Recorder {
+    fn chat(&self, req: &ChatRequest) -> AppResult<String> {
+        self.bodies.lock().unwrap().push(build_body(req));
+        let t = Instant::now();
+        let r = self.inner.chat(req);
+        *self.chat_ms.lock().unwrap() += t.elapsed().as_millis() as u64;
+        r
+    }
+    fn model_reference(&self) -> String {
+        self.inner.model_reference()
+    }
+    fn capabilities(&self) -> ProviderCapabilities {
+        self.inner.capabilities()
+    }
+    fn take_usage(&self) -> Option<Usage> {
+        let u = self.inner.take_usage();
+        if let Some(u) = u {
+            self.usage.lock().unwrap().add(u);
+        }
+        u
+    }
 }
 
 /// Call one operation as the local person does.

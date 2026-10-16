@@ -3004,6 +3004,7 @@ dependencies = [
  "openframe-ai",
  "openframe-ai-checks",
  "openframe-application",
+ "openframe-domain",
  "rusqlite",
  "serde",
  "serde_json",
