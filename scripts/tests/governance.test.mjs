@@ -611,3 +611,12 @@ test("binary check reads the hardening flags of a PE image and refuses a missing
   assert.ok(weak.some((m) => m.startsWith("a COFF symbol table is present")), weak.join("; "));
   assert.throws(() => peFacts(Buffer.from("not a program at all, just text")), /not an MZ file/);
 });
+
+test("every end-to-end spec has its plain-step scenario file, and every scenario file has its spec (W4)", () => {
+  const specs = fs.readdirSync(path.join(REPO, "tests/e2e/specs")).filter((f) => f.endsWith(".test.mjs")).map((f) => f.replace(/\.test\.mjs$/, ""));
+  const scenarios = fs.readdirSync(path.join(REPO, "tests/e2e/scenarios")).filter((f) => f.endsWith(".md") && f !== "README.md").map((f) => f.replace(/\.md$/, ""));
+  assert.deepEqual(specs.filter((s) => !scenarios.includes(s)), [], "specs without a scenario file in tests/e2e/scenarios/");
+  assert.deepEqual(scenarios.filter((s) => !specs.includes(s)), [], "scenario files without a spec");
+  const readme = fs.readFileSync(path.join(REPO, "tests/e2e/scenarios/README.md"), "utf8");
+  for (const s of scenarios) assert.ok(readme.includes(`\`${s}.md\``), `${s}.md is not listed in the scenario README`);
+});

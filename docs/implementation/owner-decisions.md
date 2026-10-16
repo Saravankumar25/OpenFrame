@@ -85,6 +85,9 @@
 | Documentation | Organised by chapter; history moves to the archive and is not rewritten; no two current documents give different rules; one pass, not several | 2026-10-15 | [docs/README.md](../README.md) |
 | Build folders and storage | One build folder per checkout under `.build-cache`; budgets in the storage policy | 2026-10-08 | [development-storage-policy.md](../development-storage-policy.md) |
 | Unmaintained font crates | Dated exception for `rustybuzz` and `ttf-parser` until 2027-01-06 | 2026-10-08 | `deny.toml`, masterplan area 6 |
+| Release-build tests and real data | The release build honours the test data folder for file locations only; every other test switch stays debug-only | 2026-10-16 | [ADR-0031](../adr/ADR-0031-release-build-test-data-folder.md) |
+| WebView2's own diagnostic data | Allow and disclose: the runtime's Microsoft diagnostic-data upload follows the Windows setting and cannot be switched off by the app; spec 05 tolerates only that shape | 2026-10-16 | Threat model section 4 item 8, privacy policy |
+| W1 to W3 on `main` | Merged locally (no push) before W4 started | 2026-10-16 | progress log |
 
 ## 2. Still open
 

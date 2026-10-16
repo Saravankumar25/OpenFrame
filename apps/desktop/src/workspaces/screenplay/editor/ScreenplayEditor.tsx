@@ -546,6 +546,8 @@ export const ScreenplayEditor = forwardRef<EditorHandle, Props>(function Screenp
         role: "textbox",
         "aria-multiline": "true",
         "aria-label": "Screenplay",
+        // Tab changes the element type here, so keyboard and screen reader users are told the way out (WCAG 2.1.2).
+        "aria-description": "Tab changes the element type. Press Escape to leave the screenplay, then Tab to move on.",
         // OpenFrame draws its own underlines; the web view's checker is used only where
         // OpenFrame has no dictionary adapter.
         spellcheck: p.proofing?.mode === "native" ? "true" : "false",

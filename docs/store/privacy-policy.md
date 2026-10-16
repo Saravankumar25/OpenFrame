@@ -74,7 +74,11 @@ does not read it for any purpose other than showing and processing it for you on
 
 The app displays its interface with the Microsoft Edge WebView2 Runtime, a component of Windows.
 OpenFrame does not load remote web content into it, and its content security policy blocks
-connections to the internet. Microsoft keeps WebView2 up to date under Microsoft's own terms.
+connections to the internet. OpenFrame also switches off WebView2's background networking,
+component updates and proxy detection. WebView2 itself may send Microsoft diagnostic data about
+the component, according to your Windows diagnostic data setting, as it does for every app that
+uses it; it contains none of your project content, OpenFrame cannot switch it off, and OpenFrame
+does not receive it. Microsoft keeps WebView2 up to date under Microsoft's own terms.
 
 ## Sharing
 

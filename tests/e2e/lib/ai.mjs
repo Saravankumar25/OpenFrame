@@ -252,7 +252,7 @@ export function networkUse(pids) {
   const list = pids.join(",");
   const out = ps(
     `$p = @(${list}); ` +
-      `$t = @(Get-NetTCPConnection -ErrorAction SilentlyContinue | Where-Object { $p -contains $_.OwningProcess } | ForEach-Object { [pscustomobject]@{ pid = $_.OwningProcess; local = $_.LocalAddress; remote = $_.RemoteAddress; state = "$($_.State)" } }); ` +
+      `$t = @(Get-NetTCPConnection -ErrorAction SilentlyContinue | Where-Object { $p -contains $_.OwningProcess } | ForEach-Object { [pscustomobject]@{ pid = $_.OwningProcess; local = $_.LocalAddress; remote = $_.RemoteAddress; port = $_.RemotePort; state = "$($_.State)" } }); ` +
       `$u = @(Get-NetUDPEndpoint -ErrorAction SilentlyContinue | Where-Object { $p -contains $_.OwningProcess } | ForEach-Object { [pscustomobject]@{ pid = $_.OwningProcess; local = $_.LocalAddress } }); ` +
       `[pscustomobject]@{ tcp = $t; udp = $u } | ConvertTo-Json -Compress -Depth 4`,
   ).trim();

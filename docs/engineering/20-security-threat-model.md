@@ -131,6 +131,17 @@ Reviewed in Windows phase W3 (2026-10-16). Every item has a decision; none is op
    "no silent network use". Decision: W4 passes WebView2 arguments that switch off background networking and
    component updates (keeping wry's SmartScreen and menu defaults) and proves it with spec 05 on the release build.
    Spec 05 fails until then, on purpose.
+   **W4 result (2026-10-16).** The arguments (`tauri.conf.json`, `additionalBrowserArgs`, plus `--no-proxy-server`
+   after a WPAD lookup was seen) removed the component-update connection (`edge.microsoft.com`) and the proxy
+   lookup. A Chromium net log shows the web view's own network code asks for no outside host. One connection
+   remains, intermittent: the browser process, outside Chromium's network code, sometimes opens TCP 443 to a
+   Microsoft Azure address on start. It is the WebView2 runtime's diagnostic-data upload (`oneds.dll`, the 1DS
+   collector), which follows the Windows diagnostic data setting (this computer: optional data on) and which no app
+   can switch off. **Owner decision 2026-10-16: allow it and disclose it** (privacy policy, "How the app works").
+   Spec 05 tolerates exactly that shape (TCP 443 from the browser process) and fails on anything else.
+   Known limit: a test run on a test folder also keeps the web view profile there (ADR-0031), and the release
+   build honouring `OPENFRAME_DATA_ROOT` lets a same-user process point the app at another folder; that crosses no
+   privilege boundary.
 7. **New surfaces of the 2026-10-15 decisions: assigned to the phases that build them.** T38 (graphics-card probe and
    runtime) is reviewed in W7, T39 (learned memory and the numbers-only AI log) in W5 and W6, and T40 (the Mac shell
    interface) in M2. Each phase's exit includes its threat review.

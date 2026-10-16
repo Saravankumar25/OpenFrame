@@ -54,6 +54,10 @@ const NATIVE_PORT = 4445;
 const OWN_ROOT = /^\/\/ @e2e-data-root: own\s*$/m;
 const FAKE_MEDIA = /^\/\/ @e2e-fake-media\s*$/m;
 const OWN_AI_BUNDLE = /^\/\/ @e2e-ai-bundle: own\s*$/m;
+// An own-root spec whose header contains `// @e2e-net-log` runs with a Chromium net log of the web
+// view written to <root>\webview-netlog.json (E2E_NET_LOG), so it can list every host the web view's
+// own network code asked for (spec 05).
+const NET_LOG = /^\/\/ @e2e-net-log\s*$/m;
 // Chromium's fake media device and auto-accepted prompt, added to the webview's own arguments.
 const FAKE_MEDIA_ARGS = "--use-fake-device-for-media-stream --use-fake-ui-for-media-stream";
 
@@ -98,7 +102,7 @@ async function waitForPort(port, open, timeoutMs) {
 }
 
 /** Start tauri-driver for one data root, run the given spec files, stop the driver. */
-async function runGroup(files, dataRoot, fakeMedia = false, ownAiBundle = false) {
+async function runGroup(files, dataRoot, fakeMedia = false, ownAiBundle = false, netLog = false) {
   mkdirSync(dataRoot, { recursive: true });
   console.log(`\nE2E data root: ${dataRoot}\n  specs: ${files.join(", ")}${fakeMedia ? " (fake media devices)" : ""}`);
   const env = {
@@ -116,7 +120,12 @@ async function runGroup(files, dataRoot, fakeMedia = false, ownAiBundle = false)
   delete env.OPENFRAME_TEAM_PASSWORD;
   if (RELEASE) env.E2E_RELEASE = RELEASE;
   if (GATE_PASSWORD) env.E2E_TEAM_PASSWORD = GATE_PASSWORD;
+  delete env.E2E_NET_LOG;
   if (fakeMedia) env.E2E_WEBVIEW_ARGS = FAKE_MEDIA_ARGS;
+  if (netLog) {
+    env.E2E_NET_LOG = join(dataRoot, "webview-netlog.json");
+    env.E2E_WEBVIEW_ARGS = [env.E2E_WEBVIEW_ARGS, `--log-net-log=${env.E2E_NET_LOG}`].filter(Boolean).join(" ");
+  }
   if (ownAiBundle) env.OPENFRAME_AI_BUNDLE_DIR = env.E2E_AI_BUNDLE_DIR = join(dataRoot, "ai-bundle");
   if (!(await waitForPort(PORT, false, 15_000)) || !(await waitForPort(NATIVE_PORT, false, 15_000))) {
     throw new Error(`Ports ${PORT}/${NATIVE_PORT} are in use by another process; the desktop E2E suite needs them exclusively.`);
@@ -179,13 +188,14 @@ async function main() {
         own,
         fakeMedia: own && FAKE_MEDIA.test(head),
         ownAiBundle: own && OWN_AI_BUNDLE.test(head),
+        netLog: own && NET_LOG.test(head),
         files: [f],
         root: own ? join(runRoot, f.replace(/\.test\.mjs$/, "")) : join(runRoot, "shared"),
       });
   }
   const failed = [];
   for (const g of groups) {
-    const code = await runGroup(g.files, g.root, g.fakeMedia, g.ownAiBundle);
+    const code = await runGroup(g.files, g.root, g.fakeMedia, g.ownAiBundle, g.netLog);
     if (code !== 0) failed.push(...g.files);
   }
   const ran = specs.length - skipped.length;

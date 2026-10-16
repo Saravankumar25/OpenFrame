@@ -1,19 +1,27 @@
 // @e2e-data-root: own
+// @e2e-net-log
 //
 // Threat T33 (Windows phases W3 and W4): the web view never talks to the network. The AI specs check
 // the app and its engines; this one finds every WebView2 process that belongs to the app (the
-// browser process and its renderers, GPU and utility processes), samples every socket they own and
-// fails on anything that is not loopback. It runs twice: once through WebDriver with a project open
-// and the main workspaces walked, and once with the app started directly, as a person starts it,
-// because msedgedriver replaces the webview's arguments with its own and so cannot prove what the
-// app passes. Both runs also check that the browser process got the app's arguments
-// (tauri.conf.json, `additionalBrowserArgs`). The processes and endpoints go to the artifacts folder.
+// browser process and its renderers, GPU and utility processes) and samples every socket they own.
+// It runs twice: once through WebDriver with a project open and the main workspaces walked, and
+// once with the app started directly, as a person starts it, because msedgedriver replaces the
+// webview's arguments with its own and so cannot prove what the app passes. Both runs check that
+// the browser process got the app's arguments (tauri.conf.json, `additionalBrowserArgs`).
+//
+// One exception, by the owner's decision of 2026-10-16 (threat model section 4 item 8): the WebView2
+// runtime's own Microsoft diagnostic-data upload, which follows the person's Windows diagnostic
+// data setting and which no app can switch off. It runs in the browser process outside Chromium's
+// network code. So an outside connection is tolerated only when it is TCP to port 443 and held by
+// the browser process; any socket of a page, GPU or network-service process, any listener beyond
+// loopback and any UDP fails. In the WebDriver run a Chromium net log (run.mjs `@e2e-net-log`) must
+// show that the web view's own network code asked for no host outside this computer.
 
 import { after, before, describe, test } from "node:test";
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
 import net from "node:net";
-import { mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { APP_WEBVIEW_ARGS, launchApp, openWorkspace, sleep, stepper } from "../lib/app.mjs";
 import { firstLaunchProject } from "../lib/flows.mjs";
@@ -21,6 +29,15 @@ import { appProcesses, externalConnections, networkUse, webViewProcesses } from 
 
 let browser;
 const step = stepper(() => browser, "webview-network");
+const LOCAL_HOSTS = new Set(["tauri.localhost", "ipc.localhost", "ofasset.localhost", "localhost", "127.0.0.1", "[::1]"]);
+
+/** Hosts in a Chromium net log that are not this computer. The log may end mid-write (the app is ended). */
+function netLogOutsideHosts(file) {
+  const text = readFileSync(file, "utf8");
+  const hosts = new Set();
+  for (const m of text.matchAll(/"(?:url|host|origin)":"(?:[a-z]+:\/\/)?([^"/:]+)/g)) hosts.add(m[1].toLowerCase());
+  return [...hosts].filter((h) => !LOCAL_HOSTS.has(h) && !h.endsWith(".localhost"));
+}
 
 /** Collects every socket of the app's WebView2 processes over several samples. */
 function tracer() {
@@ -36,8 +53,6 @@ function tracer() {
     async check(name) {
       assert.ok(procs.length >= 2, `the WebView2 processes of the app were not found: ${JSON.stringify(procs)}`);
       // The socket query must see a listener this spec opens itself, or "nothing seen" proves nothing.
-      // (Through WebDriver the browser process also holds a loopback control connection; started
-      // directly it may hold no socket at all, which is the goal.)
       const own = net.createServer();
       await new Promise((r) => own.listen(0, "127.0.0.1", r));
       try {
@@ -47,20 +62,31 @@ function tracer() {
       }
       const appPids = new Set(appProcesses().map((p) => p.pid));
       const main = procs.find((p) => appPids.has(p.parent));
+      assert.ok(main, "the WebView2 browser process of the app was not found");
       const outside = externalConnections(use);
+      const runtimeUpload = (c) => c.pid === main.pid && c.port === 443 && c.state !== "Listen" && "remote" in c;
+      const tolerated = outside.filter(runtimeUpload);
+      const refused = outside.filter((c) => !runtimeUpload(c));
       const dir = join(import.meta.dirname, "..", "artifacts");
       mkdirSync(dir, { recursive: true });
       writeFileSync(
         join(dir, `${name}.json`),
         JSON.stringify(
-          { at: new Date().toISOString(), browserCommandLine: main?.commandLine, processes: procs.map(({ pid, parent, name }) => ({ pid, parent, name })), use, outside },
+          {
+            at: new Date().toISOString(),
+            release: process.env.E2E_RELEASE ?? "debug",
+            browserCommandLine: main.commandLine,
+            processes: procs.map(({ pid, parent, name }) => ({ pid, parent, name })),
+            use,
+            refused,
+            toleratedRuntimeDiagnosticUpload: [...new Set(tolerated.map((c) => `${c.remote}:${c.port}`))],
+          },
           null,
           2,
         ),
       );
-      assert.ok(main, "the WebView2 browser process of the app was not found");
       for (const arg of APP_WEBVIEW_ARGS) assert.ok(main.commandLine.includes(arg), `the web view did not get ${arg}: ${main.commandLine}`);
-      assert.deepEqual(outside, [], `the web view used the network: ${JSON.stringify(outside)}`);
+      assert.deepEqual(refused, [], `the web view used the network: ${JSON.stringify(refused)}`);
     },
   };
 }
@@ -96,6 +122,9 @@ describe("the web view stays off the network", () => {
         t.sample();
       }
       await t.check("webview-network-trace");
+      const log = process.env.E2E_NET_LOG;
+      assert.ok(log && existsSync(log), `the web view's net log was not written: ${log}`);
+      assert.deepEqual(netLogOutsideHosts(log), [], "the web view's own network code asked for a host outside this computer");
     });
   });
 
