@@ -179,6 +179,12 @@ fn run() -> Result<(), String> {
         writeln!(results, "{line}").map_err(|e| e.to_string())?;
         scores.push(s);
     }
+    // Where the chat engine actually ran (the placement the app chose for this run).
+    let placement = svc
+        .manager()
+        .map(|m| m.diagnostics().placement)
+        .unwrap_or_else(|_| "unknown".into());
+    eprintln!("ai-eval: engine place: {placement}");
     let summary = summarize(&scores);
     std::fs::write(
         args.out.join("summary.json"),

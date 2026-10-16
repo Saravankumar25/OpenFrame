@@ -28,7 +28,10 @@ The Idea Vault holds notes, images, links and references. The project Idea Vault
 Deleted items go to Recently Deleted and can be restored. Permanently deleting is a separate, deliberate action. Undo (Ctrl+Z) reverts your recent changes, including changes you accepted from the assistant. Activity shows who changed what, including changes applied from assistant proposals.
 
 ## Saving and working offline
-OpenFrame saves continuously to your computer. Projects are stored locally and everything works without an internet connection. Offline AI is installed with OpenFrame and runs entirely on this computer, with no download and no setup.
+OpenFrame saves continuously to your computer. Projects are stored locally and everything works without an internet connection. OpenFrame AI runs entirely on this computer after a one-time download.
+
+## Getting OpenFrame AI
+OpenFrame AI is downloaded once, after OpenFrame is installed: open Settings, Offline AI (or the AI panel) and click Download OpenFrame AI. The screen shows the size and the free space needed before anything is downloaded; the download can be paused and resumes where it stopped. The files come from Hugging Face, the public site that publishes these models, and each one is checked against the size and fingerprint built into OpenFrame before it is used. If you already have the model files, Import a model file… uses them instead (they are copied, never moved). After that the AI works without the internet, and your projects are never sent anywhere. Remove OpenFrame AI frees the space; your projects are not touched. Settings, Offline AI, Graphics card is Automatic or Off: on Automatic, OpenFrame checks once whether the graphics card answers faster than the processor and uses it when it does. The assistant understands requests in English, Hindi, Telugu, Tamil, Kannada, Malayalam, Spanish, French, German, Chinese, Japanese and Korean, finds project text in those languages, and answers in the language you asked in.
 
 ## Roles and permissions
 Project roles are Owner, Editor, Commenter, Viewer and Export-only. Viewers can read, Commenters can also comment, Editors can edit content, and Owners can also manage the project and permissions. The assistant always acts with your role and can never do more than you can.
