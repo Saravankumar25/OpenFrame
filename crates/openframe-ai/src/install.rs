@@ -415,6 +415,13 @@ impl ModelsDir {
             dir: self.set_dir(&a.version),
             chat: pick("chat")?,
             embedding: pick("embedding")?,
+            // Pinned only by locks that carry the multilingual search model.
+            multilingual: tier
+                .files
+                .iter()
+                .any(|f| f.role == "multilingual_embedding")
+                .then(|| pick("multilingual_embedding"))
+                .transpose()?,
         }))
     }
 }

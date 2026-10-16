@@ -261,7 +261,7 @@ fn the_download_is_offered_only_through_its_own_operations() {
     assert_eq!(d["bundleId"], "openframe-local-ai-v1");
     assert_eq!(d["bundleState"], "Missing");
     let comps = d["components"].as_array().unwrap();
-    assert_eq!(comps.len(), 3);
+    assert_eq!(comps.len(), 4); // the engine and the three models
     assert!(comps.iter().any(|c| c["licenseId"] == "Gemma-Terms-of-Use"));
     assert!(
         comps

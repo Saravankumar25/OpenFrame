@@ -100,7 +100,7 @@ export function readLock(lockPath = LOCK_PATH) {
     }
     if (!names.has(String(r.executable).toLowerCase())) fail(`${where}: the server program ${r.executable} is not in its file list`);
   }
-  const roles = { chat: 0, embedding: 0 };
+  const roles = { chat: 0, embedding: 0, multilingualEmbedding: 0 };
   for (const m of lock.models) {
     const where = `model ${m.modelId}`;
     if (!SAFE_ID.test(m.modelId ?? "") || !safeName(m.modelId) || ids.has(m.modelId)) fail(`${where}: invalid or duplicate id`);
@@ -111,7 +111,7 @@ export function readLock(lockPath = LOCK_PATH) {
     if (m.tokenizer !== "embedded") fail(`${where}: the tokenizer must be embedded in the model file (or listed as its own file)`);
     checkFileEntry(m.file, where);
   }
-  if (roles.chat !== 1 || roles.embedding !== 1) fail("The Offline AI lock file must list exactly one language model and one search model.");
+  if (roles.chat !== 1 || roles.embedding !== 1 || roles.multilingualEmbedding > 1) fail("The Offline AI lock file must list exactly one language model, one search model and at most one multilingual search model.");
   return lock;
 }
 

@@ -127,8 +127,22 @@ pub struct RuntimeEntry {
 pub enum ModelRole {
     /// The instruction-tuned language model that plans, answers and drafts.
     Chat,
-    /// The small retrieval model that turns text into vectors for semantic search.
+    /// The small retrieval model that turns text into vectors for semantic search (English).
     Embedding,
+    /// The search model for every other language and for questions in one language about text
+    /// in another (owner decision 2026-10-16: multilingual E5 small).
+    MultilingualEmbedding,
+}
+
+impl ModelRole {
+    /// The role's name in the download plan and the AI trace.
+    pub fn as_str(self) -> &'static str {
+        match self {
+            ModelRole::Chat => "chat",
+            ModelRole::Embedding => "embedding",
+            ModelRole::MultilingualEmbedding => "multilingual_embedding",
+        }
+    }
 }
 
 /// Embedding pooling (llama.cpp `--pooling`).
@@ -176,6 +190,12 @@ pub struct ModelEntry {
     /// Pooling (embedding models only).
     #[serde(default)]
     pub pooling: Option<Pooling>,
+    /// Text put before a search question (embedding models that need one, such as E5's "query: ").
+    #[serde(default)]
+    pub query_prefix: Option<String>,
+    /// Text put before each indexed passage (E5's "passage: ").
+    #[serde(default)]
+    pub passage_prefix: Option<String>,
     /// "embedded": the tokenizer is part of the GGUF file.
     pub tokenizer: String,
     pub source: Source,
@@ -305,7 +325,7 @@ impl AssetLock {
                 )));
             }
         }
-        let (mut chat, mut emb) = (0, 0);
+        let (mut chat, mut emb, mut multi) = (0, 0, 0);
         for m in &self.models {
             if !safe_id(&m.model_id) || !ids.insert(m.model_id.clone()) {
                 return Err(invalid_lock(format!("model id {}", m.model_id)));
@@ -333,18 +353,26 @@ impl AssetLock {
                         return Err(invalid_lock(format!("chat model {}", m.model_id)));
                     }
                 }
-                ModelRole::Embedding => {
-                    emb += 1;
+                ModelRole::Embedding | ModelRole::MultilingualEmbedding => {
+                    if m.role == ModelRole::Embedding {
+                        emb += 1;
+                    } else {
+                        multi += 1;
+                    }
                     let dim_ok = m.embedding_dim.is_some_and(|d| (8..=4096).contains(&d));
-                    if !dim_ok || m.pooling.is_none() || m.context_tokens < 128 {
+                    let prefix_ok = [&m.query_prefix, &m.passage_prefix].iter().all(|p| {
+                        p.as_ref()
+                            .is_none_or(|p| p.len() <= 32 && !p.chars().any(char::is_control))
+                    });
+                    if !dim_ok || m.pooling.is_none() || m.context_tokens < 128 || !prefix_ok {
                         return Err(invalid_lock(format!("embedding model {}", m.model_id)));
                     }
                 }
             }
         }
-        if chat != 1 || emb != 1 {
+        if chat != 1 || emb != 1 || multi > 1 {
             return Err(invalid_lock(
-                "exactly one chat model and one embedding model",
+                "exactly one chat model, one embedding model and at most one multilingual embedding model",
             ));
         }
         Ok(())
@@ -362,6 +390,13 @@ impl AssetLock {
             .iter()
             .find(|m| m.role == ModelRole::Embedding)
             .expect("validated: one embedding model")
+    }
+
+    /// The multilingual search model, when the lock pins one.
+    pub fn multilingual_embedding_model(&self) -> Option<&ModelEntry> {
+        self.models
+            .iter()
+            .find(|m| m.role == ModelRole::MultilingualEmbedding)
     }
 
     /// The engine pinned for this computer's operating system and processor.
@@ -506,17 +541,35 @@ pub struct InstalledModels {
     /// `path` is the file name inside `dir`.
     pub chat: PinnedFile,
     pub embedding: PinnedFile,
+    /// The multilingual search model, when the lock pins one.
+    pub multilingual: Option<PinnedFile>,
 }
 
 impl InstalledModels {
+    /// The file of a role; the multilingual role falls back to the English search model when no
+    /// multilingual one is pinned.
     pub fn file(&self, role: ModelRole) -> &PinnedFile {
         match role {
             ModelRole::Chat => &self.chat,
             ModelRole::Embedding => &self.embedding,
+            ModelRole::MultilingualEmbedding => {
+                self.multilingual.as_ref().unwrap_or(&self.embedding)
+            }
         }
     }
     pub fn path(&self, role: ModelRole) -> PathBuf {
         self.dir.join(&self.file(role).path)
+    }
+    /// Every file of the set, chat first.
+    pub fn files(&self) -> Vec<&PinnedFile> {
+        [
+            Some(&self.chat),
+            Some(&self.embedding),
+            self.multilingual.as_ref(),
+        ]
+        .into_iter()
+        .flatten()
+        .collect()
     }
 }
 
@@ -633,7 +686,7 @@ impl BundledAi {
             })
             .collect();
         if let Some(m) = &self.models {
-            for f in [&m.chat, &m.embedding] {
+            for f in m.files() {
                 out.push(Pinned {
                     rel: format!("models/{}/{}", m.version, f.path),
                     path: m.dir.join(&f.path),

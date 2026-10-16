@@ -56,10 +56,33 @@ pub enum Placement {
     },
 }
 
-/// The fixed probe request: a short answer under a JSON schema, sampled without randomness.
+/// The probe's version, part of each remembered result: a new way of measuring checks every card
+/// again. Version 2 (2026-10-16): a realistic prompt and the whole request's time. Version 1 timed
+/// only writing on a 20-token prompt and turned down this laptop's Intel Arc graphics, which read
+/// the assistant's real prompts 4.4 times faster than the processor (evidence in
+/// docs/release/evidence/w7/).
+pub const PROBE_VERSION: &str = "2";
+
+/// The engine part of a remembered result: the engine version and the probe version, so a new
+/// engine or a new way of measuring checks the card again. Every record (pass, fail, failure in
+/// use) is written and read with this key.
+pub fn probe_key(runtime_version: &str) -> String {
+    format!("{runtime_version} probe {PROBE_VERSION}")
+}
+
+/// The fixed probe request: about 2,000 tokens of context like the assistant's real prompts (most
+/// of the time of a real request is spent reading the prompt), then a short answer under a JSON
+/// schema, sampled without randomness.
 pub fn probe_request() -> ChatRequest {
+    let context: String = (1..=110)
+        .map(|i| format!("Scene {i}. INT. LOCATION {i} - DAY. Two characters discuss plan {i} and the weather.
+"))
+        .collect();
     let mut r = ChatRequest::new(vec![
-        ChatMessage::system("You reply with JSON only."),
+        ChatMessage::system(format!(
+            "You reply with JSON only.
+{context}"
+        )),
         ChatMessage::user("Write the numbers from one to twenty in words, separated by spaces."),
     ])
     .with_schema(json!({
@@ -86,10 +109,12 @@ pub fn probe_valid(answer: &str) -> bool {
         .unwrap_or(false)
 }
 
-/// Generation speed of one call, from the engine's own numbers.
+/// Tokens handled per second over the whole call (reading the prompt and writing the answer),
+/// from the engine's own numbers.
 pub fn tokens_per_second(u: &Usage) -> Option<f64> {
-    (u.generation_ms > 0 && u.completion_tokens > 0)
-        .then(|| f64::from(u.completion_tokens) * 1000.0 / f64::from(u.generation_ms))
+    let ms = u.prompt_ms + u.generation_ms;
+    let tokens = u.prompt_tokens + u.completion_tokens;
+    (ms > 0 && u.completion_tokens > 0).then(|| f64::from(tokens) * 1000.0 / f64::from(ms))
 }
 
 /// Memory the chat model needs on a card: its file plus room for the context cache.

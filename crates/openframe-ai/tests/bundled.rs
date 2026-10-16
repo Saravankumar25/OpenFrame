@@ -255,7 +255,9 @@ fn model_bytes(seed: u32, len: u32) -> Vec<u8> {
 /// commit `rev` (one hex digit repeated), and put the bytes on the local host at those paths.
 fn publish(host_root: &Path, lock: &mut AssetLock, rev: char, chat: &[u8], embed: &[u8]) {
     let rev: String = std::iter::repeat_n(rev, 40).collect();
-    for (m, body) in lock.models.iter_mut().zip([chat, embed]) {
+    // The multilingual search model (third) gets bytes of its own, made from the embedding model's.
+    let multi: Vec<u8> = embed.iter().map(|b| b.wrapping_add(7)).collect();
+    for (m, body) in lock.models.iter_mut().zip([chat, embed, &multi[..]]) {
         let path = format!("test/{0}/resolve/{rev}/{0}.gguf", m.model_id);
         m.source.url = format!("https://huggingface.co/{path}");
         let file = host_root.join(&path);
@@ -265,7 +267,7 @@ fn publish(host_root: &Path, lock: &mut AssetLock, rev: char, chat: &[u8], embed
     }
 }
 
-/// The host path of model `i` (0 chat, 1 embedding) as the lock pins it.
+/// The host path of model `i` (0 chat, 1 embedding, 2 multilingual search) as the lock pins it.
 fn host_path(lock: &AssetLock, i: usize) -> String {
     lock.models[i]
         .source
@@ -553,7 +555,7 @@ fn the_download_installs_checks_and_starts_the_ai() {
         m.download_status()
     );
     let st = m.download_status();
-    assert_eq!((st.done_bytes, st.total_bytes), (80_000, 80_000));
+    assert_eq!((st.done_bytes, st.total_bytes), (120_000, 120_000));
     // The health check started the engine on the new set; AI answers.
     assert!(m.state().available);
     assert!(ask(&m).unwrap().starts_with("ready"));
@@ -564,7 +566,14 @@ fn the_download_installs_checks_and_starts_the_ai() {
     );
     // Exactly the two pinned files were asked for, nothing else.
     let paths: Vec<String> = f.host.requests().into_iter().map(|r| r.0).collect();
-    assert_eq!(paths, [host_path(&f.lock, 0), host_path(&f.lock, 1)]);
+    assert_eq!(
+        paths,
+        [
+            host_path(&f.lock, 0),
+            host_path(&f.lock, 1),
+            host_path(&f.lock, 2)
+        ]
+    );
     // Only the set, its pointer and an empty staging area are left.
     let mut names: Vec<String> = f
         .lock
@@ -577,13 +586,13 @@ fn the_download_installs_checks_and_starts_the_ai() {
     assert!(files_under(&f.data.join("models").join("staging")).is_empty());
     // A second click with the set in use asks for nothing at all.
     assert_eq!(download(&m), DownloadPhase::Done);
-    assert_eq!(f.host.requests().len(), 2);
+    assert_eq!(f.host.requests().len(), 3);
     // A new start of the app finds the set without any network use.
     m.stop_runtime();
     drop(m);
     let m = f.manager();
     assert!(ask(&m).unwrap().starts_with("ready"));
-    assert_eq!(f.host.requests().len(), 2);
+    assert_eq!(f.host.requests().len(), 3);
 }
 
 fn an_interrupted_download_resumes_where_it_stopped() {
@@ -652,7 +661,7 @@ fn a_file_gone_from_the_host_stops_plainly_and_manual_import_still_works() {
     let copies = f.data.join("my-copies");
     std::fs::create_dir_all(&copies).unwrap();
     let mut mine = Vec::new();
-    for i in 0..2 {
+    for i in 0..3 {
         let src = f.host.root.join(host_path(&f.lock, i));
         let dst = copies.join(format!("copy-{i}.gguf"));
         std::fs::copy(&src, &dst).unwrap();
@@ -671,9 +680,10 @@ fn a_file_gone_from_the_host_stops_plainly_and_manual_import_still_works() {
         "ai.not_a_model"
     );
     assert!(other.is_file());
-    // The two real files: one at a time, then OpenFrame AI is complete and answers.
-    assert!(!m.import_model_file(&mine[0]).unwrap(), "one of two");
-    assert!(m.import_model_file(&mine[1]).unwrap(), "complete");
+    // The three real files: one at a time, then OpenFrame AI is complete and answers.
+    assert!(!m.import_model_file(&mine[0]).unwrap(), "one of three");
+    assert!(!m.import_model_file(&mine[1]).unwrap(), "two of three");
+    assert!(m.import_model_file(&mine[2]).unwrap(), "complete");
     assert!(mine.iter().all(|p| p.is_file()), "copied, never moved");
     assert!(ask(&m).unwrap().starts_with("ready"));
     // Importing again while the set is whole replaces nothing and leaves no copy behind.
@@ -915,6 +925,36 @@ fn a_computer_without_a_card_or_driver_runs_on_the_processor_without_a_check() {
 
 // ------------------------------------------------------------- scenarios: installed set
 
+fn the_multilingual_search_model_runs_on_request_without_touching_the_chat_engine() {
+    let f = Fixture::new();
+    let m = f.manager();
+    assert!(ask(&m).unwrap().starts_with("ready"));
+    let chat_state = m.runtime_status().state;
+    assert_eq!(chat_state, RuntimeState::Ready);
+    assert_eq!(
+        m.embedding_info().unwrap().model_id,
+        f.lock.embedding_model().model_id
+    );
+    assert!(m.has_multilingual_search());
+    m.set_search_model(openframe_ai::bundle::ModelRole::MultilingualEmbedding);
+    let e5 = f.lock.multilingual_embedding_model().unwrap();
+    let info = m.embedding_info().unwrap();
+    assert_eq!(info.model_id, e5.model_id);
+    assert_eq!(info.sha256, e5.file.sha256);
+    // Passages and questions both embed (each with the model's own prefix).
+    assert_eq!(m.embed(&["Ravi".into()]).unwrap()[0].len(), 8);
+    assert_eq!(m.embed_queries(&["Ravi".into()]).unwrap()[0].len(), 8);
+    // The chat engine kept running: switching the search model never restarts it.
+    assert_eq!(m.runtime_status().state, RuntimeState::Ready, "not reconfigured");
+    assert!(ask(&m).unwrap().starts_with("ready"));
+    // Back to English: the English model again.
+    m.set_search_model(openframe_ai::bundle::ModelRole::Embedding);
+    assert_eq!(
+        m.embedding_info().unwrap().model_id,
+        f.lock.embedding_model().model_id
+    );
+}
+
 fn ai_works_once_the_models_are_downloaded() {
     let f = Fixture::new();
     let before = f.snapshot();
@@ -951,7 +991,7 @@ fn ai_works_once_the_models_are_downloaded() {
     assert!(f.host.requests().is_empty());
     // Diagnostics describe the engine and the downloaded models, their licences and sizes.
     let d = m.diagnostics();
-    assert_eq!(d.components.len(), 3);
+    assert_eq!(d.components.len(), 4); // the engine and the three models
     assert!(
         d.components
             .iter()
@@ -1252,6 +1292,10 @@ fn main() {
         (
             "a_build_that_cannot_download_still_uses_an_installed_set",
             a_build_that_cannot_download_still_uses_an_installed_set,
+        ),
+        (
+            "the_multilingual_search_model_runs_on_request_without_touching_the_chat_engine",
+            the_multilingual_search_model_runs_on_request_without_touching_the_chat_engine,
         ),
         (
             "ai_works_once_the_models_are_downloaded",

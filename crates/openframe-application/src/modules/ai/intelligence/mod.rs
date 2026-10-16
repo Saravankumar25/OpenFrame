@@ -66,6 +66,11 @@ mod ai_embedder {
                 .embed(inputs)
                 .map_err(|e| SearchError::Embedding(e.to_string()))
         }
+        fn embed_queries(&self, inputs: &[String]) -> Result<Vec<Vec<f32>>, SearchError> {
+            self.manager
+                .embed_queries(inputs)
+                .map_err(|e| SearchError::Embedding(e.to_string()))
+        }
     }
 }
 
@@ -79,8 +84,21 @@ pub use indexer::{IndexSettings, IndexSnapshot, ProjectIndex};
 
 use crate::core::{AppCore, ProjectSession};
 
+/// Which search model the project index uses (owner decision 2026-10-16: English BGE and
+/// multilingual E5 are both downloaded).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum SearchChoice {
+    /// The multilingual model when the app pins one: it also answers a question in one language
+    /// about text in another (measured 2026-10-16, crates/openframe-ai-eval/bench).
+    #[default]
+    Automatic,
+    English,
+    Multilingual,
+}
+
 /// Long-lived service (one per `AppCore`).
 pub struct IntelligenceService {
+    search_choice: RwLock<SearchChoice>,
     current: Mutex<Option<Arc<ProjectIndex>>>,
     /// Explicitly attached embedder (tests; or a host wiring its own runtime).
     embedder: RwLock<Option<Arc<dyn Embedder>>>,
@@ -91,6 +109,7 @@ pub struct IntelligenceService {
 impl IntelligenceService {
     fn new() -> Self {
         Self {
+            search_choice: RwLock::new(SearchChoice::default()),
             current: Mutex::new(None),
             embedder: RwLock::new(None),
             settings: RwLock::new(IndexSettings::default()),
@@ -116,6 +135,19 @@ impl IntelligenceService {
         production_embedder(core)
     }
 
+    /// Choose the search model; a different model re-embeds the open project.
+    pub fn set_search_choice(&self, c: SearchChoice) {
+        *self.search_choice.write() = c;
+        self.query_cache.clear();
+        if let Some(ix) = self.current() {
+            ix.request_full();
+        }
+    }
+
+    pub fn search_choice(&self) -> SearchChoice {
+        *self.search_choice.read()
+    }
+
     pub fn settings(&self) -> IndexSettings {
         self.settings.read().clone()
     }
@@ -137,6 +169,15 @@ impl IntelligenceService {
 fn production_embedder(core: &AppCore) -> Option<Arc<dyn Embedder>> {
     let svc = crate::modules::ai::service::service(core);
     let m = svc.manager().ok()?.clone();
+    let role = match service(core).search_choice() {
+        SearchChoice::English => openframe_ai::bundle::ModelRole::Embedding,
+        SearchChoice::Multilingual => openframe_ai::bundle::ModelRole::MultilingualEmbedding,
+        SearchChoice::Automatic if m.has_multilingual_search() => {
+            openframe_ai::bundle::ModelRole::MultilingualEmbedding
+        }
+        SearchChoice::Automatic => openframe_ai::bundle::ModelRole::Embedding,
+    };
+    m.set_search_model(role);
     ai_embedder::AiManagerEmbedder::from_manager(m).map(|e| Arc::new(e) as Arc<dyn Embedder>)
 }
 

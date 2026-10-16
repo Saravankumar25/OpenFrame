@@ -70,7 +70,10 @@ fn parse_args() -> Result<Args, String> {
             _ => return Err(format!("unknown argument {k}")),
         }
     }
-    if r.requests.as_os_str().is_empty() || r.exp.is_empty() || r.out.as_os_str().is_empty() {
+    if (r.requests.as_os_str().is_empty() && r.exp != "embed")
+        || r.exp.is_empty()
+        || r.out.as_os_str().is_empty()
+    {
         return Err("--requests, --exp and --out are required".into());
     }
     Ok(r)
@@ -161,7 +164,7 @@ fn start(exe: &Path, model: &Path, threads: usize, device: Option<&str>) -> Resu
     };
     let child = cmd
         .stdout(Stdio::null())
-        .stderr(Stdio::null())
+        .stderr(server_log()?)
         .spawn()
         .map_err(|e| format!("starting {}: {e}", exe.display()))?;
     let engine = Engine { child };
@@ -291,8 +294,147 @@ fn measure(bodies: &[Value], repeats: usize) -> Result<Vec<Timing>, String> {
 
 // ------------------------------------------------------------------ run
 
+/// Start an embedding engine like the app does and wait until it answers `/health`.
+fn start_embed(exe: &Path, model: &Path, pooling: &str) -> Result<Engine, String> {
+    let child = Command::new(exe)
+        .args(["-m"])
+        .arg(model)
+        .args([
+            "--host",
+            "127.0.0.1",
+            "--port",
+            &PORT.to_string(),
+            "--embedding",
+            "--pooling",
+            pooling,
+            "-c",
+            "512",
+            "-b",
+            "512",
+            "-ub",
+            "512",
+            "-ngl",
+            "0",
+            "-t",
+            "4",
+            "--parallel",
+            "1",
+            "--no-webui",
+            "--offline",
+        ])
+        .stdout(Stdio::null())
+        .stderr(server_log()?)
+        .spawn()
+        .map_err(|e| format!("starting {}: {e}", exe.display()))?;
+    let engine = Engine { child };
+    let until = Instant::now() + Duration::from_secs(120);
+    while Instant::now() < until {
+        if let Ok((200, _)) = http("GET", "/health", None) {
+            return Ok(engine);
+        }
+        std::thread::sleep(Duration::from_millis(250));
+    }
+    Err("the embedding engine did not become ready in 120 s".into())
+}
+
+/// Each sentence's English original must be the closest of the ten (the model understands the
+/// language and places meaning, not words). Returns top-1 hits and the mean margin per language.
+fn embed_pairs(model: &Path, pooling: &str, prefix: &str) -> Result<Value, String> {
+    let pairs: Value = serde_json::from_str(
+        &std::fs::read_to_string(
+            root().join("crates/openframe-ai-eval/bench/translation-pairs.json"),
+        )
+        .map_err(|e| e.to_string())?,
+    )
+    .map_err(|e| e.to_string())?;
+    let _e = start_embed(&server_exe(false)?, model, pooling)?;
+    let embed = |lang: &str| -> Result<Vec<Vec<f64>>, String> {
+        let input: Vec<String> = pairs[lang]
+            .as_array()
+            .ok_or(format!("no {lang} sentences"))?
+            .iter()
+            .map(|s| format!("{prefix}{}", s.as_str().unwrap_or_default()))
+            .collect();
+        let (code, v) = http("POST", "/v1/embeddings", Some(&json!({ "input": input })))?;
+        if code != 200 {
+            return Err(format!("embeddings answered {code}: {v}"));
+        }
+        Ok(v["data"]
+            .as_array()
+            .ok_or("no data")?
+            .iter()
+            .map(|d| {
+                d["embedding"]
+                    .as_array()
+                    .into_iter()
+                    .flatten()
+                    .filter_map(Value::as_f64)
+                    .collect()
+            })
+            .collect())
+    };
+    let cos = |a: &[f64], b: &[f64]| {
+        let dot: f64 = a.iter().zip(b).map(|(x, y)| x * y).sum();
+        let n = |v: &[f64]| v.iter().map(|x| x * x).sum::<f64>().sqrt();
+        dot / (n(a) * n(b)).max(1e-12)
+    };
+    let en = embed("en")?;
+    let mut langs = serde_json::Map::new();
+    for lang in [
+        "hi", "te", "ta", "kn", "ml", "es", "fr", "de", "zh", "ja", "ko",
+    ] {
+        let other = embed(lang)?;
+        let (mut hits, mut margins) = (0, Vec::new());
+        for (i, o) in other.iter().enumerate() {
+            let scores: Vec<f64> = en.iter().map(|e| cos(o, e)).collect();
+            let best_other = scores
+                .iter()
+                .enumerate()
+                .filter(|(j, _)| *j != i)
+                .map(|(_, s)| *s)
+                .fold(f64::MIN, f64::max);
+            if scores[i] > best_other {
+                hits += 1;
+            }
+            margins.push(scores[i] - best_other);
+        }
+        langs.insert(
+            lang.into(),
+            json!({ "top1": hits, "of": other.len(), "margin": stats(margins) }),
+        );
+    }
+    Ok(Value::Object(langs))
+}
+
 fn run() -> Result<(), String> {
     let a = parse_args()?;
+    if a.exp == "embed" {
+        let mut runs = Vec::new();
+        let lock = openframe_ai::AssetLock::embedded().map_err(|e| format!("{e:?}"))?;
+        let assets = std::env::var_os("OPENFRAME_AI_ASSETS_DIR")
+            .map(PathBuf::from)
+            .unwrap_or_else(|| root().join(".ai-assets"));
+        let bge = lock.embedding_model();
+        let bge_path = assets
+            .join("models")
+            .join(&bge.model_id)
+            .join(&bge.file.path);
+        runs.push(
+            json!({ "model": "bge-small-en-v1.5 Q8_0 (pinned)", "pooling": "cls", "prefix": "",
+            "languages": embed_pairs(&bge_path, "cls", "")? }),
+        );
+        if let Some(m) = &a.model {
+            runs.push(json!({ "model": m.file_name().map(|n| n.to_string_lossy().into_owned()),
+                "pooling": "mean", "prefix": "query: ", "languages": embed_pairs(m, "mean", "query: ")? }));
+        }
+        std::fs::write(
+            &a.out,
+            serde_json::to_string_pretty(&json!({ "experiment": "embed", "runs": runs })).unwrap(),
+        )
+        .map_err(|e| e.to_string())?;
+        eprintln!("engine-bench: wrote {}", a.out.display());
+        return Ok(());
+    }
     let lines: Vec<Value> = std::fs::read_to_string(&a.requests)
         .map_err(|e| format!("{}: {e}", a.requests.display()))?
         .lines()
@@ -452,4 +594,11 @@ fn seconds_now() -> u64 {
         .duration_since(std::time::UNIX_EPOCH)
         .map(|d| d.as_secs())
         .unwrap_or(0)
+}
+
+/// The engine's own output, kept for when it does not start (`engine-bench-server.log` in the temp folder).
+fn server_log() -> Result<Stdio, String> {
+    std::fs::File::create(std::env::temp_dir().join("engine-bench-server.log"))
+        .map(Stdio::from)
+        .map_err(|e| e.to_string())
 }

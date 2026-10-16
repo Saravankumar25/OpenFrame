@@ -28,7 +28,6 @@ const panel = '//aside[@aria-label="AI Assistant"]';
 // The pinned set: the chat and embedding files at their Hugging Face paths on the test host.
 const { files } = pins();
 const CHAT = files.find((f) => f.role === "chat").path;
-const EMBED = files.find((f) => f.role === "embedding").path;
 
 /** The download card wherever it shows (panel or Settings). */
 const cardText = () =>
@@ -80,7 +79,7 @@ describe("download OpenFrame AI after install", () => {
       const asked = hostRequests().filter((r) => r.path === CHAT);
       assert.equal(asked[0].from, null, "the first request asks for the whole file");
       assert.ok(asked.some((r) => r.from > 0), `the second request resumes with a range: ${JSON.stringify(asked)}`);
-      assert.deepEqual([...new Set(hostRequests().map((r) => r.path))].sort(), [CHAT, EMBED].sort(), "only the pinned files");
+      assert.deepEqual([...new Set(hostRequests().map((r) => r.path))].sort(), files.map((f) => f.path).sort(), "only the pinned files");
       // The app names the set after the model hashes exactly as the harness computes it.
       const active = JSON.parse(readFileSync(join(process.env.E2E_DATA_ROOT, "appdata", "models", "active.json"), "utf8"));
       assert.equal(active.version, pins().version);

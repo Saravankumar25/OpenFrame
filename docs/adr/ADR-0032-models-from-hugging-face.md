@@ -34,8 +34,16 @@ commit and size, and redirect to Hugging Face's own download servers on `*.hf.co
 5. **Manual import.** Settings, Offline AI offers "Import a model file…": the person picks a file (for example one copied
    from another computer); it is used only when its size and SHA-256 match a pinned model, and it is copied, never moved.
 6. **Offline.** After the download (or import) the AI runs without any network.
-7. **Licences.** The Gemma Terms of Use and the MIT licences stay in the notices file and Settings. Before the team build the
-   owner records that the terms allow the app to fetch the pinned files for each person (owner task).
+7. **Licences.** The Gemma Terms of Use and the MIT licences stay in the notices file and Settings. The owner handles
+   licence compliance (owner decision 2026-10-16).
+8. **Model set (owner decision 2026-10-16, amended the same day).** Three pinned files: Gemma 3 1B Instruct Q8_0
+   (`ggml-org/gemma-3-1b-it-GGUF`, chat), BGE small English v1.5 Q8_0 (`ggml-org/bge-small-en-v1.5-Q8_0-GGUF`, English
+   search) and multilingual E5 small Q8_0 (`TwinSunsLLC/multilingual-e5-small-gguf` at `b6cac96`, search in every other
+   language). The official E5 repository has no GGUF; of the public conversions, `cstr/multilingual-e5-small-GGUF` does not
+   load in llama.cpp b11259 ("bert model needs to define token type count") and the TwinSuns file does. It placed all 110
+   test sentences in eleven languages next to their English originals, where BGE managed 1 of 10 in each Indic language
+   (`engine-bench --exp embed`, evidence in `docs/release/evidence/w5/`). E5 needs the prefixes `query: ` and `passage: `,
+   carried by the lock. A project index uses one search model; changing it re-embeds the project.
 
 ## Consequences
 

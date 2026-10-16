@@ -17,6 +17,11 @@ pub trait Embedder: Send + Sync {
     fn dim(&self) -> usize;
     /// Embed a batch. Implementations may batch internally; output order matches input.
     fn embed(&self, inputs: &[String]) -> Result<Vec<Vec<f32>>, SearchError>;
+    /// Embed search questions. Models that tell questions from passages (E5's "query: ")
+    /// override this; for the others a question is embedded like any text.
+    fn embed_queries(&self, inputs: &[String]) -> Result<Vec<Vec<f32>>, SearchError> {
+        self.embed(inputs)
+    }
 }
 
 pub fn l2_normalize(v: &mut [f32]) {
@@ -80,7 +85,7 @@ impl QueryEmbeddingCache {
         {
             return Ok(v.clone());
         }
-        let out = embedder.embed(std::slice::from_ref(&key.1))?;
+        let out = embedder.embed_queries(std::slice::from_ref(&key.1))?;
         let mut v = validate(out, 1, embedder.dim())?;
         let v = v.pop().unwrap_or_default();
         if let Ok(mut g) = self.inner.lock() {

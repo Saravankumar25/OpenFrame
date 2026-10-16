@@ -321,6 +321,33 @@
         "bytes": 36685152,
         "sha256": "f046db1dc724cf4f6f0a0c5917e922823b73eb1d27b8f9a9c2797f7866974804"
       }
+    },
+    {
+      "modelId": "multilingual-e5-small-q8-0-v1",
+      "role": "multilingualEmbedding",
+      "displayName": "Multilingual E5 small",
+      "family": "bert",
+      "quantization": "Q8_0",
+      "version": "b6cac96",
+      "licenseId": "MIT",
+      "licenseUrl": "https://huggingface.co/intfloat/multilingual-e5-small",
+      "contextTokens": 512,
+      "minRamBytes": 268435456,
+      "recommendedRamBytes": 536870912,
+      "layers": 12,
+      "embeddingDim": 384,
+      "pooling": "mean",
+      "queryPrefix": "query: ",
+      "passagePrefix": "passage: ",
+      "tokenizer": "embedded",
+      "source": {
+        "url": "https://huggingface.co/TwinSunsLLC/multilingual-e5-small-gguf/resolve/b6cac9615d4ecce28d7f22539b7322d695fc2886/multilingual-e5-small-q8_0.gguf"
+      },
+      "file": {
+        "path": "model.gguf",
+        "bytes": 132439008,
+        "sha256": "e011debc1208e31bf7b6aebee2d9fc8bd2ca11694a77ed66ac9d0c9d0a877c93"
+      }
     }
   ]
 }

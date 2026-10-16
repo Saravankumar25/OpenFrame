@@ -31,11 +31,13 @@ struct Args {
     out: PathBuf,
     only: Option<String>,
     limit: Option<usize>,
+    /// `english` or `multilingual`: the search model of the run (default: the app's automatic choice).
+    search: Option<String>,
 }
 
 fn parse_args() -> Result<Args, String> {
     let mut a = std::env::args().skip(1);
-    let (mut gold, mut out, mut only, mut limit) = (None, None, None, None);
+    let (mut gold, mut out, mut only, mut limit, mut search) = (None, None, None, None, None);
     while let Some(k) = a.next() {
         let mut v = || a.next().ok_or_else(|| format!("{k} needs a value"));
         match k.as_str() {
@@ -43,6 +45,7 @@ fn parse_args() -> Result<Args, String> {
             "--out" => out = Some(PathBuf::from(v()?)),
             "--only" => only = Some(v()?),
             "--limit" => limit = Some(v()?.parse().map_err(|_| "--limit takes a number")?),
+            "--search" => search = Some(v()?),
             _ => return Err(format!("unknown argument {k}")),
         }
     }
@@ -51,6 +54,7 @@ fn parse_args() -> Result<Args, String> {
         out: out.ok_or("--out <folder> is required")?,
         only,
         limit,
+        search,
     })
 }
 
@@ -105,6 +109,17 @@ fn run() -> Result<(), String> {
     };
     let core =
         AppCore::new(config, Arc::new(RecordingSink::default())).map_err(|e| format!("{e:?}"))?;
+    let choice = match args.search.as_deref() {
+        None | Some("auto") => intelligence::SearchChoice::Automatic,
+        Some("english") => intelligence::SearchChoice::English,
+        Some("multilingual") => intelligence::SearchChoice::Multilingual,
+        Some(other) => {
+            return Err(format!(
+                "--search takes english, multilingual or auto, not {other}"
+            ));
+        }
+    };
+    intelligence::service(&core).set_search_choice(choice);
     let svc = openframe_application::modules::ai::service(&core);
     let recorder = Arc::new(Recorder {
         inner: svc
@@ -173,6 +188,7 @@ fn run() -> Result<(), String> {
                 "release".into()
             },
         ),
+        ("Search model".to_string(), format!("{choice:?}")),
         (
             "Sampling".to_string(),
             "deterministic (temperature 0, fixed seed)".to_string(),

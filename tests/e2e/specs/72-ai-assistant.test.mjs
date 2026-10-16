@@ -65,7 +65,7 @@ describe("Offline AI assistant with the bundled model", () => {
       await (await browser.$('//section[@aria-label="Technical details"]//summary')).click();
       await (await browser.$('//table[@aria-label="Offline AI components"]')).waitForDisplayed({ timeout: 10_000 });
       const rows = await browser.execute(() => [...document.querySelectorAll('table[aria-label="Offline AI components"] tbody tr')].map((r) => r.innerText));
-      assert.equal(rows.length, 3, rows.join("\n"));
+      assert.equal(rows.length, 4, rows.join("\n")); // the engine and the three models
       assert.ok(rows.some((r) => r.includes("Gemma-Terms-of-Use")), "the Gemma terms are named");
       assert.ok(rows.every((r) => /[0-9a-f]{64}/.test(r)), "every component shows its pinned SHA-256");
       const details = await browser.execute(() => document.querySelector('section[aria-label="Technical details"]')?.innerText ?? "");

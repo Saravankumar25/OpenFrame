@@ -73,4 +73,11 @@ test on several laptops with different graphics cards.
 6. **First measurement.** The owner's laptop, Intel Arc integrated graphics (driver 32.0.101.8132): the probe ran on the
    card and gave valid output at 30.3 tokens a second against 32.8 on the processor, so the processor is used
    ([evidence](../release/evidence/w7/graphics-card-2026-10-16.md)). Integrated graphics on this laptop are "checked and
-   not faster"; no speed-up is claimed for any card yet (decision 8).
+   not faster"; no speed-up is claimed for any card yet (decision 8). **Superseded the same day by note 7.**
+7. **The probe measures the whole request (2026-10-16, probe version 2).** The W5 measurements showed that 86 percent of
+   a real assistant request is spent reading the prompt (median 2,851 tokens), not writing. On the same laptop, replaying
+   real requests: the Intel Arc graphics read prompts at 494 tokens a second against 111 on the processor and answered
+   in 7.1 s against 27.2 s (medians of 9 runs, no overlap). Note 2's generation-only rule on a 20-token prompt had
+   turned the card down. The probe now sends about 2,000 tokens of context and compares tokens handled per second over
+   the whole call; the version is part of the remembered result, so every card is checked again
+   ([evidence](../release/evidence/w5/)).

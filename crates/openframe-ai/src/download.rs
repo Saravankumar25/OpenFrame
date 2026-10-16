@@ -7,7 +7,7 @@
 
 use sha2::{Digest, Sha256};
 
-use crate::bundle::{AssetLock, ModelRole};
+use crate::bundle::AssetLock;
 
 /// The largest single model file the app will fetch.
 pub const MAX_FILE_BYTES: u64 = 16 * 1024 * 1024 * 1024;
@@ -52,11 +52,7 @@ pub fn pins(lock: &AssetLock) -> (String, Tier) {
                 url: m.source.url.clone(),
                 bytes: m.file.bytes,
                 sha256: m.file.sha256.clone(),
-                role: match m.role {
-                    ModelRole::Chat => "chat",
-                    ModelRole::Embedding => "embedding",
-                }
-                .into(),
+                role: m.role.as_str().into(),
             }
         })
         .collect();
@@ -112,7 +108,7 @@ mod tests {
         let lock = AssetLock::embedded().unwrap();
         let (v, t) = pins(&lock);
         assert!(v.starts_with("m-") && v.len() == 14 && safe_name(&v));
-        assert_eq!(t.files.len(), 2);
+        assert_eq!(t.files.len(), 3);
         assert!(
             t.files
                 .iter()

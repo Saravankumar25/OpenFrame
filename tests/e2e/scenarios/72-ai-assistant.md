@@ -23,7 +23,7 @@ Before: an empty data folder of its own. The app carries the real bundled model 
 1. Click Offline AI settings, then choose Offline AI settings.
 2. Check: the "Offline AI" section shows "OpenFrame AI runs on this computer after a one-time download".
 3. Open the "Technical details" section.
-4. Check: the table "Offline AI components" has exactly three rows.
+4. Check: the table "Offline AI components" has exactly four rows (the engine and the three models).
 5. Check: one row names "Gemma-Terms-of-Use".
 6. Check: every row shows a 64-character SHA-256 hash.
 7. Check: the technical details say "read-only".

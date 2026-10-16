@@ -1,0 +1,12 @@
+Multilingual E5 small (the Offline AI search model for every language other than English, Q8_0 GGUF file)
+by Liang Wang, Nan Yang, Xiaolong Huang, Linjun Yang, Rangan Majumder and Furu Wei
+https://huggingface.co/intfloat/multilingual-e5-small
+
+Released under the MIT License.
+
+THE MODEL IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+
+The model file is the unmodified GGUF conversion published at
+https://huggingface.co/TwinSunsLLC/multilingual-e5-small-gguf (revision b6cac96).

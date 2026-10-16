@@ -203,8 +203,9 @@ pub struct Diagnostics {
 /// The engine and model set as last read from disk.
 struct Loaded {
     bundle: Option<BundledAi>,
-    /// Chat and embedding model files as they were at the last successful check.
-    stamps: Option<[Arc<ModelStamp>; 2]>,
+    /// The model files (chat, English search, multilingual search) as they were at the last
+    /// successful check.
+    stamps: Option<Vec<(ModelRole, Arc<ModelStamp>)>>,
 }
 
 pub struct AiManager {
@@ -221,6 +222,9 @@ pub struct AiManager {
     /// Where the chat engine runs this session (ADR-0029), and one decision at a time.
     placement: Mutex<Placement>,
     placement_lock: Mutex<()>,
+    /// Which search model the embedding engine runs: `Embedding` (English) or
+    /// `MultilingualEmbedding`. Chosen by the search index for each project.
+    search_model: Mutex<ModelRole>,
     /// Engine numbers of the chat calls since the last `take_usage` (the AI trace).
     usage: Mutex<client::Usage>,
 }
@@ -275,6 +279,7 @@ impl AiManager {
             hw_cache: Mutex::new(None),
             placement: Mutex::new(Placement::Undecided),
             placement_lock: Mutex::new(()),
+            search_model: Mutex::new(ModelRole::Embedding),
             usage: Mutex::new(client::Usage::default()),
         };
         m.configure();
@@ -294,8 +299,14 @@ impl AiManager {
         match bundle.and_then(|b| b.check_present().map(|()| b)) {
             Ok(b) => {
                 let stamps = b.models().map(|m| {
-                    [ModelRole::Chat, ModelRole::Embedding]
-                        .map(|r| ModelStamp::new(m.path(r), m.file(r).bytes))
+                    let mut roles = vec![ModelRole::Chat, ModelRole::Embedding];
+                    if m.multilingual.is_some() {
+                        roles.push(ModelRole::MultilingualEmbedding);
+                    }
+                    roles
+                        .into_iter()
+                        .map(|r| (r, ModelStamp::new(m.path(r), m.file(r).bytes)))
+                        .collect()
                 });
                 let loaded = Loaded {
                     bundle: Some(b),
@@ -421,10 +432,13 @@ impl AiManager {
             return Err(self.unavailable_reason());
         };
         *self.state.write() = (BundleState::Checking, None);
-        stamps.iter().flatten().for_each(|s| s.hold());
-        let checked = b
-            .verify(&self.paths.bundle_check())
-            .and_then(|()| stamps.iter().flatten().try_for_each(|s| s.mark_checked()));
+        stamps.iter().flatten().for_each(|(_, s)| s.hold());
+        let checked = b.verify(&self.paths.bundle_check()).and_then(|()| {
+            stamps
+                .iter()
+                .flatten()
+                .try_for_each(|(_, s)| s.mark_checked())
+        });
         match checked {
             Ok(()) => {
                 *self.state.write() = (BundleState::Verified, None);
@@ -534,29 +548,97 @@ impl AiManager {
 
     // ------------------------------------------------------------ embeddings (C1)
 
-    /// The downloaded embedding model (None when AI is not available).
+    /// The search model the embedding engine runs now and its lock entry (the English model when
+    /// the lock pins no multilingual one).
+    fn search_entry(&self) -> (ModelRole, &crate::bundle::ModelEntry) {
+        let role = *self.search_model.lock();
+        match (role, self.cfg.lock.multilingual_embedding_model()) {
+            (ModelRole::MultilingualEmbedding, Some(m)) => (role, m),
+            _ => (ModelRole::Embedding, self.cfg.lock.embedding_model()),
+        }
+    }
+
+    /// Whether this app pins a multilingual search model.
+    pub fn has_multilingual_search(&self) -> bool {
+        self.cfg.lock.multilingual_embedding_model().is_some()
+    }
+
+    /// The search model in use: `Embedding` (English) or `MultilingualEmbedding`.
+    pub fn search_model(&self) -> ModelRole {
+        self.search_entry().0
+    }
+
+    /// Run the English (`Embedding`) or the multilingual search model. Only the embedding engine
+    /// restarts, and only when the choice changes; the chat engine is never touched.
+    pub fn set_search_model(&self, role: ModelRole) {
+        if role == ModelRole::Chat {
+            return;
+        }
+        {
+            let mut cur = self.search_model.lock();
+            if *cur == role {
+                return;
+            }
+            *cur = role;
+        }
+        tracing::info!(model = role.as_str(), "the search model was chosen");
+        let usable = self.available();
+        let l = self.loaded.read();
+        let launcher = l
+            .bundle
+            .as_ref()
+            .filter(|_| usable)
+            .and_then(|b| b.models().map(|m| self.embedding_launcher(&l, b, m)));
+        self.embed_supervisor.configure(launcher);
+    }
+
+    /// The downloaded search model in use (None when AI is not available).
     pub fn embedding_info(&self) -> Option<EmbeddingInfo> {
         if !self.available() {
             return None;
         }
-        let e = self.cfg.lock.embedding_model();
+        let (role, e) = self.search_entry();
         let l = self.loaded.read();
         let models = l.bundle.as_ref()?.models()?;
         Some(EmbeddingInfo {
             model_id: e.model_id.clone(),
             version: e.version.clone(),
-            sha256: models.embedding.sha256.clone(),
+            sha256: models.file(role).sha256.clone(),
             dim: e.embedding_dim?,
         })
     }
 
-    /// Embed texts with the local embedding model. Blocking (call from a background thread);
-    /// batches internally; one L2-normalised vector of `embedding_info().dim` values per input,
-    /// in input order. Inputs are trimmed and bounded to [`MAX_EMBED_INPUT_CHARS`] characters.
+    /// Embed passages (indexed project text) with the search model in use. Blocking (call from a
+    /// background thread); batches internally; one L2-normalised vector of
+    /// `embedding_info().dim` values per input, in input order. Inputs are trimmed and bounded to
+    /// [`MAX_EMBED_INPUT_CHARS`] characters; a model that needs a passage prefix gets it.
     pub fn embed(&self, inputs: &[String]) -> Result<Vec<Vec<f32>>, AiError> {
+        let prefix = self.search_entry().1.passage_prefix.clone();
+        self.embed_prefixed(inputs, prefix.as_deref())
+    }
+
+    /// Embed search questions: like [`Self::embed`] with the model's query prefix.
+    pub fn embed_queries(&self, inputs: &[String]) -> Result<Vec<Vec<f32>>, AiError> {
+        let prefix = self.search_entry().1.query_prefix.clone();
+        self.embed_prefixed(inputs, prefix.as_deref())
+    }
+
+    fn embed_prefixed(
+        &self,
+        inputs: &[String],
+        prefix: Option<&str>,
+    ) -> Result<Vec<Vec<f32>>, AiError> {
         if inputs.is_empty() {
             return Ok(Vec::new());
         }
+        let owned: Vec<String>;
+        let inputs = match prefix {
+            Some(p) => {
+                owned = inputs.iter().map(|s| format!("{p}{}", s.trim())).collect();
+                &owned[..]
+            }
+            None => inputs,
+        };
         let info = self
             .embedding_info()
             .ok_or_else(|| self.unavailable_reason())?;
@@ -611,7 +693,13 @@ impl AiManager {
     // ------------------------------------------------------------ launchers
 
     fn threads(hw: &HardwareInfo) -> usize {
-        hw.physical_cpus.unwrap_or(hw.logical_cpus / 2).clamp(1, 16)
+        let cores = hw.physical_cpus.unwrap_or(hw.logical_cpus / 2);
+        // Large hybrid chips put low-power cores in the count, and every engine thread waits for
+        // the slowest. Measured 2026-10-16 on an Intel Core Ultra 5 125H (14 cores) with the
+        // assistant's real prompts: 12 threads answered in 21.7 s against 25.7 s for 14, with no
+        // overlap in 9 runs (docs/release/evidence/w5/). Smaller chips keep one thread per core.
+        let threads = if cores >= 12 { cores - 2 } else { cores };
+        threads.clamp(1, 16)
     }
 
     /// Point both engines at the bundle, or at nothing when AI is not usable.
@@ -630,7 +718,6 @@ impl AiManager {
             Some((b, models)) => {
                 let hw = self.hardware();
                 let chat = self.cfg.lock.chat_model();
-                let emb = self.cfg.lock.embedding_model();
                 // The launch plan is the only place that puts the chat engine on a card.
                 let card = match p {
                     Placement::Card { device, .. } => b
@@ -651,19 +738,9 @@ impl AiManager {
                     context_tokens: self.chat_context_tokens(),
                     threads: Self::threads(&hw),
                     seed: self.cfg.deterministic.then_some(DETERMINISTIC_SEED),
-                    model_stamp: l.stamps.as_ref().map(|s| s[0].clone()),
+                    model_stamp: stamp(&l, ModelRole::Chat),
                 });
-                let embedding_launcher: Arc<dyn Launcher> = Arc::new(EmbeddingServerLauncher {
-                    executable: b.executable(),
-                    engine_files: Some(b.engine_files()),
-                    model_path: models.path(ModelRole::Embedding),
-                    model_id: emb.model_id.clone(),
-                    pooling: emb.pooling.unwrap_or(Pooling::Cls),
-                    context_tokens: emb.context_tokens,
-                    // Leave most cores to the chat model when both run.
-                    threads: (Self::threads(&hw) / 2).clamp(1, 4),
-                    model_stamp: l.stamps.as_ref().map(|s| s[1].clone()),
-                });
+                let embedding_launcher = self.embedding_launcher(&l, b, models);
                 self.supervisor.configure(Some(chat_launcher));
                 self.embed_supervisor.configure(Some(embedding_launcher));
             }
@@ -672,6 +749,27 @@ impl AiManager {
                 self.embed_supervisor.configure(None);
             }
         }
+    }
+
+    /// The embedding engine for the search model in use.
+    fn embedding_launcher(
+        &self,
+        l: &Loaded,
+        b: &BundledAi,
+        models: &bundle::InstalledModels,
+    ) -> Arc<dyn Launcher> {
+        let (role, emb) = self.search_entry();
+        Arc::new(EmbeddingServerLauncher {
+            executable: b.executable(),
+            engine_files: Some(b.engine_files()),
+            model_path: models.path(role),
+            model_id: emb.model_id.clone(),
+            pooling: emb.pooling.unwrap_or(Pooling::Cls),
+            context_tokens: emb.context_tokens,
+            // Leave most cores to the chat model when both run.
+            threads: (Self::threads(&self.hardware()) / 2).clamp(1, 4),
+            model_stamp: stamp(l, role),
+        })
     }
 
     // ------------------------------------------------------------- graphics card
@@ -739,7 +837,8 @@ impl AiManager {
         };
         let rec = self.graphics_record();
         let facts = (self.cfg.graphics)();
-        let runtime = b.gpu_runtime().map(|r| r.version.clone());
+        // A result is remembered per engine and per way of measuring (a new probe checks again).
+        let runtime = b.gpu_runtime().map(|r| placement::probe_key(&r.version));
         let need = placement::model_mb(models.chat.bytes, self.chat_context_tokens());
         // Free memory now, not when the hardware was first read.
         let free = hardware::inspect().available_ram_bytes / (1024 * 1024);
@@ -915,7 +1014,7 @@ impl AiManager {
             .read()
             .bundle
             .as_ref()
-            .and_then(|b| b.gpu_runtime().map(|r| r.version.clone()))
+            .and_then(|b| b.gpu_runtime().map(|r| placement::probe_key(&r.version)))
             .unwrap_or_default();
         let mut rec = self.graphics_record();
         rec.remember(ProbeRecord {
@@ -1152,10 +1251,14 @@ impl AiManager {
                     .unwrap_or_default(),
             });
         }
-        for (kind, m) in [
+        let mut models = vec![
             (ComponentKind::ChatModel, lock.chat_model()),
             (ComponentKind::EmbeddingModel, lock.embedding_model()),
-        ] {
+        ];
+        if let Some(m) = lock.multilingual_embedding_model() {
+            models.push((ComponentKind::EmbeddingModel, m));
+        }
+        for (kind, m) in models {
             components.push(ComponentDiagnostics {
                 kind,
                 id: m.model_id.clone(),
@@ -1168,7 +1271,7 @@ impl AiManager {
             });
         }
         if let Some(m) = self.loaded.read().bundle.as_ref().and_then(|b| b.models()) {
-            for (c, f) in components.iter_mut().skip(1).zip([&m.chat, &m.embedding]) {
+            for (c, f) in components.iter_mut().skip(1).zip(m.files()) {
                 c.bytes = f.bytes;
                 c.sha256 = f.sha256.clone();
             }
@@ -1202,6 +1305,15 @@ impl AiManager {
             graphics_off: self.graphics_off(),
         }
     }
+}
+
+/// The stamp of one model file, as it was at the last successful check.
+fn stamp(l: &Loaded, role: ModelRole) -> Option<Arc<ModelStamp>> {
+    l.stamps
+        .as_ref()?
+        .iter()
+        .find(|(r, _)| *r == role)
+        .map(|(_, s)| s.clone())
 }
 
 #[cfg(test)]
