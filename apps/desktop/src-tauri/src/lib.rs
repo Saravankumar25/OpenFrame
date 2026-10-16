@@ -359,14 +359,11 @@ fn init_logging(config: &AppConfig) -> Option<tracing_appender::non_blocking::Wo
     Some(guard)
 }
 
-/// Development/test builds only: `OPENFRAME_DATA_ROOT=<dir>` runs the app fully
-/// isolated in `<dir>` (app data, projects, Global Idea Vault). Used by the
-/// desktop end-to-end suite (`tests/e2e`) so it never touches the user's data.
-/// Release builds ignore it.
+/// `OPENFRAME_DATA_ROOT=<dir>` runs the app fully isolated in `<dir>` (app data, projects, Global
+/// Idea Vault, deleted projects). Used by the desktop end-to-end suite (`tests/e2e`) so it never
+/// touches the user's data. The release build honours it too, for file locations only (ADR-0031),
+/// so the suite can drive the artifact; every other test switch below stays debug-only.
 fn isolated_data_root() -> Option<PathBuf> {
-    if !cfg!(debug_assertions) {
-        return None;
-    }
     let root = std::env::var_os("OPENFRAME_DATA_ROOT")?;
     let root = PathBuf::from(root);
     (root.is_absolute() && std::fs::create_dir_all(&root).is_ok()).then_some(root)
@@ -438,8 +435,7 @@ pub fn run() {
     let distribution = distribution::Distribution::detect();
     let isolated_root = isolated_data_root();
     // An isolated (automated-test) root keeps deleted projects in its own folder, never the
-    // computer's Recycle Bin. Debug builds only, like every other test setting here.
-    #[cfg(debug_assertions)]
+    // computer's Recycle Bin. A file location, so the release build honours it too (ADR-0031).
     if let Some(root) = &isolated_root {
         openframe_application::modules::project::fault::trash_into(root.join("recycle-bin"));
     }
@@ -506,6 +502,8 @@ pub fn run() {
     }
     let assets = Arc::new(asset_scope::AssetScope::default());
     let protocol_scope = assets.clone();
+    // A test run keeps the web view's profile (cache, local storage) in its own folder too (ADR-0031).
+    let webview_dir = isolated_root.as_ref().map(|root| root.join("webview"));
     builder
         .register_asynchronous_uri_scheme_protocol(asset_scope::SCHEME, move |_ctx, request, responder| {
             let scope = protocol_scope.clone();
@@ -538,6 +536,22 @@ pub fn run() {
             let start_core = core.clone();
             std::thread::spawn(move || start_core.startup_maintenance());
             app.manage(CoreState(core));
+            // The main window is built here from its tauri.conf.json entry ("create": false), after
+            // the core is managed, so its first command always finds the core, and a test run can
+            // give its web view a profile folder of its own.
+            let main = app
+                .config()
+                .app
+                .windows
+                .iter()
+                .find(|w| w.label == "main")
+                .cloned()
+                .ok_or("tauri.conf.json has no main window")?;
+            let mut window = tauri::WebviewWindowBuilder::from_config(app.handle(), &main)?;
+            if let Some(dir) = webview_dir {
+                window = window.data_directory(dir);
+            }
+            window.build()?;
             Ok(())
         })
         .manage(close_gate::CloseGate::default())
@@ -639,9 +653,15 @@ mod tests {
         assert!(!entitlement_debug_controls(true, false));
         assert!(!entitlement_debug_controls(false, false));
         assert!(entitlement_debug_controls(false, true));
-        // The isolated data root itself is refused in a release build.
+    }
+
+    #[test]
+    fn release_builds_on_a_test_folder_keep_every_other_test_switch_off() {
+        // ADR-0031: the release build honours the test data folder, and nothing else.
+        assert!(!ai_deterministic(true, true));
+        assert!(!entitlement_debug_controls(true, true));
         if !cfg!(debug_assertions) {
-            assert!(isolated_data_root().is_none());
+            assert_eq!(ai_bundle_dir(true), AppConfig::installed_ai_bundle_dir());
         }
     }
 

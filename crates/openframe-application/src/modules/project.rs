@@ -1465,11 +1465,10 @@ fn delete_project(core: &AppCore, actor: &Actor, args: ProjectIdArgs) -> AppResu
     })
 }
 
-/// Move a project folder to the Recycle Bin (the Trash on a Mac). In debug builds a test can name
-/// a folder to move it into instead ([`fault::trash_into`]), so the test suite never fills the
-/// real Recycle Bin of the computer it runs on.
+/// Move a project folder to the Recycle Bin (the Trash on a Mac). A test run on its own data folder
+/// names a folder to move it into instead ([`fault::trash_into`]), so the test suite never fills
+/// the real Recycle Bin of the computer it runs on, on the debug and the release build alike.
 fn move_to_recycle_bin(root: &Path) -> Result<(), String> {
-    #[cfg(debug_assertions)]
     if let Some(dir) = fault::TRASH.get() {
         std::fs::create_dir_all(dir).map_err(|e| e.to_string())?;
         let name = format!(
@@ -1482,14 +1481,12 @@ fn move_to_recycle_bin(root: &Path) -> Result<(), String> {
     trash::delete(root).map_err(|e| e.to_string())
 }
 
-/// Test hook for `project.delete` (debug builds only).
+/// Test hook for `project.delete`: set only when the app runs on a test data folder.
 pub mod fault {
-    #[cfg(debug_assertions)]
     pub(super) static TRASH: std::sync::OnceLock<std::path::PathBuf> = std::sync::OnceLock::new();
 
     /// Deleted projects go into `dir` instead of the Recycle Bin, for the rest of this test
     /// process (set once: tests running at the same time never fall back to the real bin).
-    #[cfg(debug_assertions)]
     pub fn trash_into(dir: std::path::PathBuf) -> &'static std::path::Path {
         TRASH.get_or_init(|| dir)
     }

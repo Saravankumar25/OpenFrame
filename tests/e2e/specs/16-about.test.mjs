@@ -1,4 +1,5 @@
 // @e2e-data-root: own
+// @e2e-debug-only: sets the licence state by hand through entitlement.debug_set, which a release build never registers
 //
 // Settings > Project settings > About (ADR-0023, ADR-0024; build plan area 18 box "Internal
 // installer build"): the app's name and version, and "Internal build, not for sale." on the

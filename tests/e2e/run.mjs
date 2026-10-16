@@ -25,7 +25,9 @@
 // (OPENFRAME_AI_BUNDLE_DIR) instead of the build's `ai/` folder, so it can lay out a missing or
 // damaged bundle without touching the build.
 //
-// Options: --no-build (reuse target/debug/openframe-desktop.exe), --only=<substring>[,<substring>...] (filter specs).
+// Options: --no-build (reuse the last build), --only=<substring>[,<substring>...] (filter specs),
+// --release=gated | --release=open (drive the release executable, with or without the team password
+// screen; see scripts/build-app.mjs. Specs marked `// @e2e-debug-only: <reason>` are listed and skipped).
 // Failure screenshots and visual diffs go to tests/e2e/artifacts/ (gitignored).
 
 import { spawn, spawnSync } from "node:child_process";
@@ -33,9 +35,20 @@ import { existsSync, mkdirSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import net from "node:net";
 import { DRIVERS, E2E_ROOT, EDGE_DRIVER, TAURI_DRIVER, setupDrivers } from "./scripts/setup-drivers.mjs";
-import { APP_BINARY, buildApp } from "./scripts/build-app.mjs";
+import { randomBytes } from "node:crypto";
+import { appBinary, buildApp } from "./scripts/build-app.mjs";
 
 const args = new Set(process.argv.slice(2));
+// --release=gated | --release=open: drive the release executable (build-app.mjs explains both).
+const RELEASE = [...args].find((a) => a.startsWith("--release="))?.slice("--release=".length) ?? false;
+if (RELEASE && !["gated", "open"].includes(RELEASE)) throw new Error(`Unknown --release=${RELEASE}; use gated or open.`);
+const APP_BINARY = appBinary(Boolean(RELEASE));
+// A gated run builds with a throwaway password made here; it lives only in this run's memory and
+// in the environment of its own spec processes, so a gated build is never reused.
+const GATE_PASSWORD = RELEASE === "gated" ? randomBytes(18).toString("base64url") : undefined;
+// Specs whose header has `// @e2e-debug-only: <reason>` need a switch the release build refuses
+// (ADR-0031); a release run lists them with the reason and skips them.
+const DEBUG_ONLY = /^\/\/ @e2e-debug-only: (.+)$/m;
 const PORT = 4444;
 const NATIVE_PORT = 4445;
 const OWN_ROOT = /^\/\/ @e2e-data-root: own\s*$/m;
@@ -99,6 +112,10 @@ async function runGroup(files, dataRoot, fakeMedia = false, ownAiBundle = false)
   delete env.OPENFRAME_AI_BUNDLE_DIR;
   delete env.E2E_AI_BUNDLE_DIR;
   delete env.E2E_WEBVIEW_ARGS;
+  delete env.E2E_TEAM_PASSWORD;
+  delete env.OPENFRAME_TEAM_PASSWORD;
+  if (RELEASE) env.E2E_RELEASE = RELEASE;
+  if (GATE_PASSWORD) env.E2E_TEAM_PASSWORD = GATE_PASSWORD;
   if (fakeMedia) env.E2E_WEBVIEW_ARGS = FAKE_MEDIA_ARGS;
   if (ownAiBundle) env.OPENFRAME_AI_BUNDLE_DIR = env.E2E_AI_BUNDLE_DIR = join(dataRoot, "ai-bundle");
   if (!(await waitForPort(PORT, false, 15_000)) || !(await waitForPort(NATIVE_PORT, false, 15_000))) {
@@ -133,7 +150,8 @@ async function runGroup(files, dataRoot, fakeMedia = false, ownAiBundle = false)
 
 async function main() {
   await setupDrivers();
-  if (!args.has("--no-build") || !existsSync(APP_BINARY)) buildApp();
+  if (RELEASE === "gated" && args.has("--no-build")) throw new Error("A gated release run always builds: its password exists only for that run.");
+  if (!args.has("--no-build") || !existsSync(APP_BINARY)) buildApp({ release: RELEASE, gatePassword: GATE_PASSWORD });
 
   const stamp = new Date().toISOString().replace(/[:.]/g, "-");
   const runRoot = join(E2E_ROOT, ".run", stamp);
@@ -145,8 +163,14 @@ async function main() {
     .sort();
   // Consecutive shared-root specs run together; every own-root spec runs alone in its own root.
   const groups = [];
+  const skipped = [];
   for (const f of specs) {
     const head = readFileSync(join(E2E_ROOT, "specs", f), "utf8").slice(0, 4000);
+    const debugOnly = head.match(DEBUG_ONLY);
+    if (RELEASE && debugOnly) {
+      skipped.push(`${f}: ${debugOnly[1]}`);
+      continue;
+    }
     const own = OWN_ROOT.test(head);
     const last = groups.at(-1);
     if (!own && last && !last.own) last.files.push(f);
@@ -164,7 +188,9 @@ async function main() {
     const code = await runGroup(g.files, g.root, g.fakeMedia, g.ownAiBundle);
     if (code !== 0) failed.push(...g.files);
   }
-  console.log(failed.length ? `\nE2E FAILED: ${failed.join(", ")}` : `\nE2E passed: ${specs.length} spec files.`);
+  const ran = specs.length - skipped.length;
+  if (skipped.length) console.log(`\nSkipped on the release build (debug-only switch):\n  ${skipped.join("\n  ")}`);
+  console.log(failed.length ? `\nE2E FAILED: ${failed.join(", ")}` : `\nE2E passed: ${ran} spec files${RELEASE ? ` on the release build (${RELEASE})` : ""}.`);
   process.exit(failed.length ? 1 : 0);
 }
 

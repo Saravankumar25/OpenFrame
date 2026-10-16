@@ -3,16 +3,24 @@
 // names), capture console problems and failure screenshots.
 
 import { remote } from "webdriverio";
-import { mkdirSync } from "node:fs";
+import { mkdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 const ARTIFACTS = join(import.meta.dirname, "..", "artifacts");
 
-/** WebView2 browser arguments for this spec (run.mjs sets them for `// @e2e-fake-media`). They go
- * through tauri-driver (`tauri:options.webviewOptions`) to msedgedriver, which starts the webview
- * with them. msedgedriver sets WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS itself, replacing any value
- * the runner gives it, and `tauri:options.args` reach the app's own command line, not the webview. */
-const WEBVIEW_ARGS = (process.env.E2E_WEBVIEW_ARGS ?? "").split(" ").filter(Boolean);
+/** The app's own WebView2 arguments: the one list in tauri.conf.json (`additionalBrowserArgs` of the
+ * main window), which turns off the runtime's background networking and component updates. */
+export const APP_WEBVIEW_ARGS = JSON.parse(
+  readFileSync(join(import.meta.dirname, "..", "..", "..", "apps", "desktop", "src-tauri", "tauri.conf.json"), "utf8"),
+).app.windows[0].additionalBrowserArgs.split(" ");
+
+/** WebView2 browser arguments for the session: the app's own list plus this spec's extras (run.mjs
+ * sets E2E_WEBVIEW_ARGS for `// @e2e-fake-media`). They go through tauri-driver
+ * (`tauri:options.webviewOptions`) to msedgedriver, which starts the webview with them.
+ * msedgedriver sets WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS itself, and that replaces the arguments
+ * the app gives WebView2, so the app's list must be passed here too or the suite would test a
+ * webview without it. `tauri:options.args` reach the app's own command line, not the webview. */
+const WEBVIEW_ARGS = [...APP_WEBVIEW_ARGS, ...(process.env.E2E_WEBVIEW_ARGS ?? "").split(" ").filter(Boolean)];
 
 export async function launchApp() {
   if (!process.env.E2E_APP) throw new Error("Run the suite with `npm run test:e2e` (E2E_APP is not set).");
@@ -26,14 +34,24 @@ export async function launchApp() {
       "wdio:enforceWebDriverClassic": true,
       "tauri:options": {
         application: process.env.E2E_APP,
-        ...(WEBVIEW_ARGS.length ? { webviewOptions: { additionalBrowserArguments: WEBVIEW_ARGS } } : {}),
+        webviewOptions: { additionalBrowserArguments: WEBVIEW_ARGS },
       },
     },
   });
   browser.setTimeout({ implicit: 0 });
   await browser.waitUntil(async () => (await browser.execute(() => document.readyState)) === "complete", { timeout: 30_000 });
   await installConsoleProbe(browser);
+  if (process.env.E2E_TEAM_PASSWORD) await unlockTeamGate(browser, process.env.E2E_TEAM_PASSWORD);
   return browser;
+}
+
+/** A gated release run (run.mjs `--release=gated`): pass the team password screen the way a tester does. */
+export async function unlockTeamGate(browser, password) {
+  const input = await browser.$("#team-password");
+  await input.waitForDisplayed({ timeout: 30_000, timeoutMsg: "The team password screen did not show on the gated build" });
+  await input.setValue(password);
+  await click(browser, "Open OpenFrame Studio");
+  await input.waitForExist({ reverse: true, timeout: 30_000, timeoutMsg: "The team password screen did not close" });
 }
 
 /** Record console errors/warnings and uncaught errors inside the webview. */

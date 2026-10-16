@@ -1,4 +1,5 @@
 // @e2e-data-root: own
+// @e2e-debug-only: sets the licence state by hand through entitlement.debug_set, which a release build never registers
 //
 // Trial, purchase and first-run safety screens (owner mocks 182 to 198; feature rows PLAT-009 and
 // PLAT-015; ADR-0022 and ADR-0023). The test build is the internal installer build: no trial, no

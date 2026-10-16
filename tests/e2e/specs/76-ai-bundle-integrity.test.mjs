@@ -1,5 +1,6 @@
 // @e2e-data-root: own
 // @e2e-ai-bundle: own
+// @e2e-debug-only: reads its AI from its own folder (OPENFRAME_AI_BUNDLE_DIR), which a release build refuses
 //
 // The bundled Offline AI when its files are missing or altered (ADR-0025 decisions 4 and 5; build
 // plan item "Bundle the weights and tokenizer with pinned hashes"). The app reads its AI from this

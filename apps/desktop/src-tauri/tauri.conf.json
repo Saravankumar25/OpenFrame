@@ -13,13 +13,15 @@
     "windows": [
       {
         "label": "main",
+        "create": false,
         "title": "OpenFrame Studio",
         "width": 1440,
         "height": 900,
         "minWidth": 1200,
         "minHeight": 720,
         "center": true,
-        "dragDropEnabled": true
+        "dragDropEnabled": true,
+        "additionalBrowserArgs": "--disable-features=msWebOOUI,msPdfOOUI,msSmartScreenProtection --disable-background-networking --disable-component-update --no-proxy-server"
       }
     ],
     "security": {
