@@ -24,6 +24,7 @@ pub mod engines;
 pub mod fetch;
 pub mod gpu;
 pub mod hardware;
+pub mod install;
 pub mod manager;
 pub mod model;
 pub mod rt;
