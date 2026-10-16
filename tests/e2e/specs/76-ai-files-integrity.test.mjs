@@ -16,7 +16,7 @@ import assert from "node:assert/strict";
 import { click, launchApp, pageText, stepper, waitForText } from "../lib/app.mjs";
 import { closeProject, firstLaunchProject, menuItem, openProject, waitForHome } from "../lib/flows.mjs";
 import { ANSWER_TIMEOUT, alterFile, appProcesses, ask, copyApp, goToTasks, modelFile, openAssistant, openTaskTitles, panelText, restoreModels, send } from "../lib/ai.mjs";
-import { hostRequests } from "../lib/model-host.mjs";
+import { hostRequests, pins } from "../lib/model-host.mjs";
 import { readFileSync } from "node:fs";
 
 // The processor engine the app starts (the Vulkan build runs only after a card passes its check).
@@ -94,7 +94,7 @@ describe("Offline AI files: missing, damaged, whole again", () => {
         timeout: ANSWER_TIMEOUT,
         timeoutMsg: "AI did not become ready after the download",
       });
-      assert.ok(hostRequests().some((r) => r.path === "manifest.json"), "the signed list was read");
+      assert.ok(hostRequests().some((r) => r.path === pins().files[0].path), "the pinned files were fetched again");
       // A plain "Create a task to ..." command is answered without the model (AI specification
       // section 19), so the request is worded to need the model.
       const r = await ask(browser, "Scouting the railway station needs a task.");

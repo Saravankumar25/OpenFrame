@@ -16,15 +16,13 @@
 // packaging/ai/ai-assets.lock.json and stages them, and the Tauri overlay config copies them to
 // `ai/` next to the executable. A missing or altered file stops the build (fail closed). The models
 // are not in the build (ADR-0026): every test build is compiled with the local test host
-// (lib/model-host.mjs, MODEL_DISTRIBUTION_BASE_URL) and the public half of a throwaway test key
-// (scripts/model-manifest.mjs testHost(), OPENFRAME_MANIFEST_PUBLIC_KEY), never the production key.
+// (lib/model-host.mjs, OPENFRAME_TEST_MODEL_SOURCE) in place of Hugging Face (ADR-0032).
 
 import { spawnSync } from "node:child_process";
 import { existsSync, rmSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { prepare } from "../../../scripts/prepare-ai-assets.mjs";
-import { testHost } from "../../../scripts/model-manifest.mjs";
 import { MODEL_HOST_URL } from "../lib/model-host.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -50,10 +48,9 @@ export const APP_AI_DIR = appAiDir(false);
  */
 export function buildApp({ release = false, gatePassword } = {}) {
   prepare();
-  const host = testHost();
   console.log(`Building OpenFrame Studio (${release ? `release, ${release}` : "debug"}, embedded UI, Offline AI engine, test model host)…`);
   // OPENFRAME_TEST_BUILD lets the release profile accept the loopback test host (build.rs).
-  const env = { ...process.env, MODEL_DISTRIBUTION_BASE_URL: MODEL_HOST_URL, OPENFRAME_MANIFEST_PUBLIC_KEY: host.publicKey, OPENFRAME_TEST_BUILD: "1" };
+  const env = { ...process.env, OPENFRAME_TEST_MODEL_SOURCE: MODEL_HOST_URL, OPENFRAME_TEST_BUILD: "1" };
   // The debug and open builds never see the build machine's team password, even when it is set.
   delete env.OPENFRAME_TEAM_PASSWORD;
   delete env.OPENFRAME_DISTRIBUTION;

@@ -1,15 +1,20 @@
-// Download OpenFrame AI (ADR-0026 decisions 3, 5 and 7). The models are not in the package: the
-// person downloads them once, here, by clicking. Before the click the screen shows the size, the
+// Download OpenFrame AI (ADR-0026 decisions 3, 5 and 7; ADR-0032). The models are not in the
+// package: the person downloads them once, here, by clicking, from Hugging Face at the revisions
+// the app pins. A person who already has the files imports them instead (copied, used only when
+// they match the pins). Before the click the screen shows the size, the
 // free space needed and that the download uses the internet; nothing touches the network until the
 // click. Then: progress with Pause, Resume where it stopped, a plain reason and Try again when it
 // fails. Shown in Settings > Offline AI and in the AI panel while OpenFrame AI is not installed.
 
 import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { call } from "../ipc/client";
+import { open as openDialog } from "@tauri-apps/plugin-dialog";
+import { OpError, call } from "../ipc/client";
 import { reportError, useOp } from "../ipc/query";
 import { Banner, Button } from "../design-system";
+import { toast } from "../app/toast";
 import type { AiDownloadDto } from "../ipc/generated/AiDownloadDto";
+import type { AiImportResult } from "../ipc/generated/AiImportResult";
 import { formatBytes } from "./model";
 
 const RUNNING = new Set(["Checking", "Downloading", "Installing"]);
@@ -19,7 +24,7 @@ export function downloadLine(d: AiDownloadDto): string {
   const progress = `${formatBytes(d.doneBytes)} of ${formatBytes(d.totalBytes || d.sizeBytes)}`;
   switch (d.phase) {
     case "Checking":
-      return "Getting the download list…";
+      return "Getting ready to download…";
     case "Downloading":
       return `Downloading: ${progress}`;
     case "Installing":
@@ -44,7 +49,7 @@ export function tooLittleSpace(d: AiDownloadDto, damaged = false): boolean {
 export function phaseAnnouncement(phase: string): string {
   switch (phase) {
     case "Checking":
-      return "Getting the download list.";
+      return "Getting ready to download.";
     case "Downloading":
       return "Downloading OpenFrame AI.";
     case "Installing":
@@ -107,6 +112,34 @@ export default function DownloadAi({ damaged }: { damaged?: string }) {
       .catch(reportError)
       .finally(() => setBusy(false));
   };
+  // A model file the person already has: copied and checked against the pins, never moved.
+  const importFile = async () => {
+    // Busy from the first click: a second click while the dialog is open does nothing.
+    setBusy(true);
+    try {
+      const path = await openDialog({
+        title: "Import an OpenFrame AI model file",
+        multiple: false,
+        filters: [{ name: "Model file", extensions: ["gguf"] }],
+      });
+      if (typeof path !== "string") return;
+      const r = await call<AiImportResult>("ai.download.import", { path });
+      toast.success(r.complete ? "OpenFrame AI is ready." : "The file was added. Import the other model file to finish.");
+      void qc.invalidateQueries({ queryKey: ["ai.status"] });
+      void qc.invalidateQueries({ queryKey: ["ai.diagnostics"] });
+      await qc.invalidateQueries({ queryKey: ["ai.download.status"] });
+    } catch (e) {
+      if (e instanceof OpError) toast.error(e.message);
+      else reportError(e);
+    } finally {
+      setBusy(false);
+    }
+  };
+  const importButton = (
+    <Button size="sm" disabled={busy} onClick={() => void importFile()}>
+      Import a model file…
+    </Button>
+  );
   const running = RUNNING.has(d.phase);
   const pct = d.totalBytes ? Math.round((d.doneBytes / d.totalBytes) * 100) : 0;
 
@@ -117,7 +150,12 @@ export default function DownloadAi({ damaged }: { damaged?: string }) {
       </div>
       {damaged && <Banner tone="err">{damaged}</Banner>}
       {!d.canDownload ? (
-        <p className="sm">This copy of OpenFrame Studio cannot download OpenFrame AI. Everything else works normally.</p>
+        <>
+          <p className="sm">
+            This copy of OpenFrame Studio cannot download OpenFrame AI. You can import model files you already have. Everything else works normally.
+          </p>
+          <div className="row">{importButton}</div>
+        </>
       ) : (
         <>
           <p className="sm">{downloadLine(d)}</p>
@@ -159,6 +197,7 @@ export default function DownloadAi({ damaged }: { damaged?: string }) {
                 {d.phase === "Paused" ? "Resume download" : d.phase === "Failed" ? "Try again" : damaged ? "Download again" : "Download OpenFrame AI"}
               </Button>
             )}
+            {!running && importButton}
           </div>
         </>
       )}

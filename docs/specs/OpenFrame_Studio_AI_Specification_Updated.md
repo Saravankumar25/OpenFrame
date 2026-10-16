@@ -158,7 +158,8 @@ Full contract: runtime spec §1–§9, §14–§15.
   **Pause** (keeps partial files, resumes later) and **Cancel** (discards them). Work continues meanwhile.
 - **Ready:** the header chip reads **AI Ready** (tooltip "Runs on this computer"). No restart is needed.
 - The download is 1,125,156,323 bytes on a processor-only computer (runtime + Gemma + BGE). It is fetched only when the
-  user clicks the button (or **Update Offline AI**); the signed manifest is fetched at that moment too.
+  user clicks the button (or **Update Offline AI**); the signed manifest is fetched at that moment too. (Superseded
+  2026-10-16 by ADR-0032: there is no manifest; the pinned files come from Hugging Face.)
 - **Remove Offline AI** (panel menu or Settings, with confirmation) stops both sidecars and deletes every model,
   runtime and partial download. Projects and assistant history are unaffected.
 - The chat sidecar starts on the first request; the embedding sidecar starts when the background indexer first needs
@@ -478,7 +479,7 @@ No chain-of-thought and no copies of the assembled context are stored
 - Inference path: React → Rust → local context and retrieval → local `llama-server` → local Gemma → result. The
   inference client talks only to 127.0.0.1 (no proxy); `openframe-ai` is the only crate with an HTTP client.
 - The AI subsystem uses the network only when the user clicks **Download Offline AI** or **Update Offline AI** (ADR-0026):
-  the signed manifest and the listed model files. Nothing is fetched in the background, at install, or as a repair.
+  the pinned model files from Hugging Face (ADR-0032; the signed manifest is superseded). Nothing is fetched in the background, at install, or as a repair.
 - No telemetry exists, so prompts, screenplay text, retrieved chunks, private notes and AI responses are never
   transmitted.
 - The sidecars listen on 127.0.0.1 only, on a random port, with a random per-launch key; they run in a kill-on-close

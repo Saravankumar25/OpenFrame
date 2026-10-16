@@ -19,9 +19,8 @@
 #                                       end-to-end suite serves from its local test host (ADR-0026).
 #                                       Until the runners get these files, release validation and every
 #                                       package build fail closed.
-#   MODEL_DISTRIBUTION_BASE_URL         the owner's https model host (ADR-0026 decision 8)
-#   OPENFRAME_MANIFEST_PUBLIC_KEY       public half of the owner's offline manifest key (base64); a
-#                                       release build fails without both (apps/desktop/src-tauri/build.rs)
+#   (no model host variable: every build downloads the models from Hugging Face at the commits
+#    the lock pins, ADR-0032)
 #
 # Microsoft Store channel (jobs validate-store / store, docs/engineering/27-microsoft-store.md).
 # Needs NO signing secret: Microsoft signs the MSIX during Store ingestion. Identity values are
@@ -223,8 +222,9 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
           OPENFRAME_TEAM_PASSWORD: ${{ secrets.OPENFRAME_TEAM_PASSWORD }}
           OPENFRAME_AI_ASSETS_DIR: ${{ vars.OPENFRAME_AI_ASSETS_DIR }}
-          MODEL_DISTRIBUTION_BASE_URL: ${{ vars.MODEL_DISTRIBUTION_BASE_URL }}
-          OPENFRAME_MANIFEST_PUBLIC_KEY: ${{ vars.OPENFRAME_MANIFEST_PUBLIC_KEY }}
+          # Never the test host in a build for people (ADR-0032; build.rs refuses it).
+          OPENFRAME_TEST_MODEL_SOURCE: ""
+          OPENFRAME_TEST_BUILD: ""
         run: |
           node scripts/prepare-ai-assets.mjs
           npm --workspace apps/desktop run tauri -- build --bundles nsis,msi --config src-tauri/tauri.bundled-ai.conf.json --config "$env:RUNNER_TEMP/tauri.release.json"
@@ -378,8 +378,9 @@ jobs:
         env:
           OPENFRAME_DISTRIBUTION: store
           OPENFRAME_AI_ASSETS_DIR: ${{ vars.OPENFRAME_AI_ASSETS_DIR }}
-          MODEL_DISTRIBUTION_BASE_URL: ${{ vars.MODEL_DISTRIBUTION_BASE_URL }}
-          OPENFRAME_MANIFEST_PUBLIC_KEY: ${{ vars.OPENFRAME_MANIFEST_PUBLIC_KEY }}
+          # Never the test host in a build for people (ADR-0032; build.rs refuses it).
+          OPENFRAME_TEST_MODEL_SOURCE: ""
+          OPENFRAME_TEST_BUILD: ""
         run: |
           node scripts/prepare-ai-assets.mjs
           npm --workspace apps/desktop run tauri -- build --no-bundle --config src-tauri/tauri.bundled-ai.conf.json -- --locked

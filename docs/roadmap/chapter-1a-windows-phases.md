@@ -21,7 +21,7 @@
 | W5 | Measure the AI | Evaluation harness, gold sets, baseline report, model bake-off | No |
 | W6 | The AI harness | English bar of 90 and 85 percent met, languages measured | No |
 | W7 | GPU acceleration | Decision function, probe, fallback, measured on laptops | No |
-| W8 | Download after install | Signed manifest, resume, activation, tiers, tests | No |
+| W8 | Download after install | Pinned Hugging Face files, resume, activation, import, tests | No |
 | W9 | Installer and clean-machine proof | Internal `.exe` installed on a virtual machine and a borrowed laptop | Yes |
 | W10 | Team pilot and freeze | Team findings fixed and re-checked, Windows core frozen | Yes (fix builds) |
 
@@ -201,15 +201,14 @@ A card without a measurement is documented as "designed, unit tested".
 
 **Goal.** Rebuild the download flow removed on 2026-10-08 ([ADR-0026](../adr/ADR-0026-offline-ai-download-after-install.md)).
 
-- Order: the manifest signature check; the `*.partial` download with resume; the disk-space preflight; atomic activation;
+- Order (ADR-0032 replaced the signed manifest with pins compiled into the app): the `*.partial` download with resume; the disk-space preflight; atomic activation;
   quarantine for a bad file; the tests named in ADR-0026 decision 10; then the screens (Download OpenFrame AI, progress,
   pause, resume, remove).
-- The manifest carries both tiers and the runtime entries; the hardware check proposes a tier.
-- CI tests the flow against a test manifest and a local host.
-- **Owner tasks (they block the first real download).** Choose and run the HTTPS model host; generate the production Ed25519
-  manifest key and keep the private key offline; confirm the redistribution terms for each chosen model.
+- The lock pins each model file at a Hugging Face commit; a second tier comes with the W6 model choice.
+- CI tests the flow against a local host that serves the same files at the same paths.
+- **Owner task.** Confirm the licence terms for each chosen model (Gemma Terms of Use, MIT for BGE) before the team build.
 
-**Exit.** Every ADR-0026 test passes; a real download from the chosen host works on a clean computer in W9.
+**Exit.** Every ADR-0026 and ADR-0032 test passes; a real download from Hugging Face works on a clean computer in W9.
 
 ## 10. Phase W9: installer and clean-machine proof
 

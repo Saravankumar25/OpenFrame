@@ -41,8 +41,7 @@ import net from "node:net";
 import { DRIVERS, E2E_ROOT, EDGE_DRIVER, TAURI_DRIVER, setupDrivers } from "./scripts/setup-drivers.mjs";
 import { randomBytes } from "node:crypto";
 import { appBinary, buildApp } from "./scripts/build-app.mjs";
-import { testHost } from "../../scripts/model-manifest.mjs";
-import { preinstallModels, startModelHost } from "./lib/model-host.mjs";
+import { preinstallModels, startModelHost, testHost } from "./lib/model-host.mjs";
 
 const args = new Set(process.argv.slice(2));
 // --release=gated | --release=open: drive the release executable (build-app.mjs explains both).

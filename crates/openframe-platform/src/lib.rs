@@ -25,6 +25,7 @@ pub mod cloud;
 pub mod dirs;
 pub mod drives;
 pub mod exists;
+pub mod files;
 pub mod graphics;
 pub mod identity;
 pub mod keys;

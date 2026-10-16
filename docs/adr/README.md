@@ -39,12 +39,14 @@
 | [0028](ADR-0028-ai-quality-program-and-harness.md) | AI quality program: measure first, English release bar of 90 and 85 percent, eleven further languages, two model tiers, verifier-guided three-pass loop, memory, local numbers-only log, Claude judging at development time, Apple model opt-in | **Accepted 2026-10-15** | Amends ADR-0013 decision 1 |
 | [0029](ADR-0029-gpu-acceleration.md) | Vulkan first, a pure decision function, first-run probe with processor fallback, integrated graphics allowed when the probe passes, speed claims only for measured cards | **Accepted 2026-10-15** | Replaces "processor build only" of ADR-0025 and the 2026-10-08 owner row |
 | [0030](ADR-0030-verification-ladder-and-release-flow.md) | Five proof levels, the strict release flow (Windows, Mac, website, stores), clean-machine proof, minimum team password length 8, secret and link gates | **Accepted 2026-10-15** | Amends ADR-0024 (password length) and the chapter order of the vision page |
+| [0032](ADR-0032-models-from-hugging-face.md) | The models download straight from public Hugging Face repositories at pinned commits, checked against the sizes and SHA-256 compiled into the app; no owner host, no signed list, no key; manual import | **Accepted 2026-10-16** | Supersedes ADR-0026 decisions 4 and 8 |
 | [0031](ADR-0031-release-build-test-data-folder.md) | The release build honours `OPENFRAME_DATA_ROOT` for file locations only, so the end-to-end suite can drive it; every other test switch stays debug-only | **Accepted 2026-10-16** | Amends the "debug builds only" rule for the test data folder |
 
 ## 2. Older decisions that are no longer in force (surface the newer one)
 
 | Older decision | Where it was written | Status | Current rule | Authority |
 |---|---|---|---|---|
+| A download list signed with the owner's Ed25519 key, on an owner-run HTTPS model host (`MODEL_DISTRIBUTION_BASE_URL`, `OPENFRAME_MANIFEST_PUBLIC_KEY`) | ADR-0026 decisions 4 and 8 | **Superseded 2026-10-16** | The files come from Hugging Face at pinned commits; the sizes and SHA-256 compiled into the app are the trust root; no host, no key | ADR-0032 |
 | Change Set apply without a journal (crash after operation N leaves a half-applied set) | ADR-0013 apply step | **Superseded 2026-10-05** | Durable apply journal; compensate on project open | ADR-0019 |
 | The project stays readable and exportable whatever a store check says, on the Mac after the trial ends | ADR-0018 decision 5 | **Superseded 2026-10-07** (Mac trial-ended and revoked states only) | Full block; only Buy and Restore | ADR-0022 |
 | Windows installer sold directly with a signed licence file, local trial and payment provider | ADR-0017 decision 1, ADR-0018 decision 3 | **Superseded 2026-10-07** | Internal team build, no trial, licence or payment; public sales only through the two stores | ADR-0023 |
@@ -79,4 +81,4 @@
 - A superseded decision is **never deleted**. It keeps its text, gets a pointer to its replacement, and appears in §2.
 - A new ADR names what it supersedes or amends and adds a row to both tables here.
 - A Proposed ADR is not a decision. Code must not assume it.
-- Numbering is permanent; the next free number is 0031.
+- Numbering is permanent; the next free number is 0033.

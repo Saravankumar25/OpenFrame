@@ -57,7 +57,7 @@ fn env() -> Option<Env> {
             std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../.ai-assets")
         });
     let app_data = AppConfig::isolated(dir.path()).app_data_dir;
-    let host = openframe_ai::test_support::install_pinned_models(
+    let source = openframe_ai::test_support::install_pinned_models(
         &app_data,
         &assets,
         &openframe_ai::AssetLock::embedded().unwrap(),
@@ -65,7 +65,7 @@ fn env() -> Option<Env> {
     .unwrap();
     let config = AppConfig {
         ai_bundle_dir: Some(bundle.into()),
-        ai_model_host: Some(host),
+        ai_model_source: Some(source),
         ai_deterministic: true,
         ..AppConfig::isolated(dir.path())
     };

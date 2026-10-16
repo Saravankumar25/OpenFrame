@@ -1193,7 +1193,8 @@ file-system or network authority. Their output is validated by the application.
 ## 18.3 Network use
 
 The AI subsystem uses the network only when the user clicks **Download Offline AI** or **Update Offline AI**: the
-Ed25519-signed manifest and the component files it lists, each SHA-256-verified before use. Nothing is fetched in the
+model files the app pins, straight from Hugging Face, each checked by the size and SHA-256 compiled into the app
+before use (ADR-0032; the Ed25519-signed manifest is superseded). Nothing is fetched in the
 background. After installation AI works without internet. If AI is unavailable, core workflows continue.
 
 ## 18.4 Truthful labelling

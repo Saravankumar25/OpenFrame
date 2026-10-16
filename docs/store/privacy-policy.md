@@ -1,5 +1,5 @@
 > **DRAFT, NOT FOR PUBLICATION (2026-10-05).** Placeholders remain (effective date, publisher legal name, privacy contact,
-> retention; the model host placeholder returns with the user-clicked AI model download, ADR-0026). Rewrite for the chosen business model and diagnostics policy (ADR-0018, ADR-0021), have counsel
+> retention; the AI model download comes from Hugging Face, ADR-0032). Rewrite for the chosen business model and diagnostics policy (ADR-0018, ADR-0021), have counsel
 > review it, and host it on a stable HTTPS URL before Store submission (build plan area: Legal, privacy, website and support).
 
 <!--
@@ -64,9 +64,13 @@ does not read it for any purpose other than showing and processing it for you on
 
 1. **The one AI download, when you click it.** The AI models are not in the installer. When you
    click Download OpenFrame AI (in the AI panel or in Settings), the app downloads them once from
-   [model host, chosen by the owner]. That server receives the request for each file and, like any
-   web server, your IP address; it receives no project content and no account. The app checks every
-   file against a signed list before it uses it. OpenFrame never downloads on its own, never repairs
+   Hugging Face (huggingface.co and its download network at hf.co), the public site that publishes
+   them. That service receives the request for each file and, like any web server, your IP address;
+   it receives no project content and no account. The app checks every file against the size and
+   SHA-256 fingerprint built into the app before it uses it. If you already have the files, you can
+   import them instead, with no download at all. If your computer is set to use a proxy server,
+   the download goes through it like any other secure web request; the proxy cannot change the
+   files without the app noticing. OpenFrame never downloads on its own, never repairs
    a file by downloading it, and never downloads at install time. After the download the AI runs
    entirely on your computer and needs no internet connection; it never uses a cloud AI service.
 2. **Updates.** The Microsoft Store edition is updated by the Microsoft Store. OpenFrame itself does

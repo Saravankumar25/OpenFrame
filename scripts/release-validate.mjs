@@ -15,8 +15,9 @@
 //   5. THIRD_PARTY_LICENSES.md exists and the license inventory has no copyleft/unknown entries;
 //   6. the Offline AI build inputs match packaging/ai/ai-assets.lock.json (ADR-0026: every package
 //      carries the engine; the models download after install);
-//   6a. the model host and the manifest key are set for the build (ADR-0026 decision 8): an https
-//      MODEL_DISTRIBUTION_BASE_URL and a base64 Ed25519 OPENFRAME_MANIFEST_PUBLIC_KEY.
+//   6a. every model in the lock is pinned to a Hugging Face file at a full commit (ADR-0032), and
+//      the test model source of the test suite is not set (OPENFRAME_TEST_MODEL_SOURCE,
+//      OPENFRAME_TEST_BUILD).
 // Direct channel only
 //   3a. signing material is present in the environment (never printed):
 //      WINDOWS_CERTIFICATE, WINDOWS_CERTIFICATE_PASSWORD, TAURI_SIGNING_PRIVATE_KEY,
@@ -190,21 +191,23 @@ try {
   failCheck("Offline AI engine", e.message.replace(/\s*\n\s*/g, " "));
 }
 
-// 6a. model host and manifest key (ADR-0026 decision 8) ----------------------------------------------
+// 6a. model source (ADR-0032) --------------------------------------------------------------------
 {
-  const host = (process.env.MODEL_DISTRIBUTION_BASE_URL ?? "").trim();
-  const keys = (process.env.OPENFRAME_MANIFEST_PUBLIC_KEY ?? "").split(",").map((k) => k.trim()).filter(Boolean);
-  const keyOk = (k) => /^[A-Za-z0-9+/]{43}=$/.test(k) && Buffer.from(k, "base64").length === 32;
-  let hostName = "";
+  const pinned = /^https:\/\/huggingface\.co\/[A-Za-z0-9][A-Za-z0-9._-]*\/[A-Za-z0-9][A-Za-z0-9._-]*\/resolve\/[0-9a-f]{40}\/[A-Za-z0-9][A-Za-z0-9._-]*$/;
+  let models = null;
   try {
-    hostName = new URL(host).host;
-  } catch {
-    hostName = "";
+    models = JSON.parse(read("packaging/ai/ai-assets.lock.json")).models ?? [];
+  } catch (e) {
+    failCheck("Model source", `the lock cannot be read: ${e.message}`);
   }
-  if (!host.startsWith("https://") || !hostName) failCheck("Model host", "MODEL_DISTRIBUTION_BASE_URL must be the owner's https model host");
-  else if (keys.length === 0 || !keys.every(keyOk)) failCheck("Model host", "OPENFRAME_MANIFEST_PUBLIC_KEY must be one or more base64 Ed25519 public keys");
-  else if (process.env.OPENFRAME_TEST_BUILD) failCheck("Model host", "OPENFRAME_TEST_BUILD is set; it belongs to the test suite only");
-  else pass("Model host", `${hostName}, ${keys.length} manifest key(s)`);
+  const loose = (models ?? []).filter((m) => !pinned.test(m.source?.url ?? "")).map((m) => m.modelId);
+  if (models === null) {
+    // already reported
+  } else if (!models.length) failCheck("Model source", "the lock lists no models");
+  else if (loose.length) failCheck("Model source", `not pinned to a Hugging Face commit: ${loose.join(", ")}`);
+  else if ((process.env.OPENFRAME_TEST_MODEL_SOURCE ?? "").trim()) failCheck("Model source", "OPENFRAME_TEST_MODEL_SOURCE is set; it belongs to the test suite only");
+  else if (process.env.OPENFRAME_TEST_BUILD) failCheck("Model source", "OPENFRAME_TEST_BUILD is set; it belongs to the test suite only");
+  else pass("Model source", `${models.length} models pinned to Hugging Face commits`);
 }
 
 // 6c. Migration freeze (doc 23 §4, build plan item migration policy). Any build given to people outside the team

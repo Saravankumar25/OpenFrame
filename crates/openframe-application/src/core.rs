@@ -32,9 +32,10 @@ pub struct AppConfig {
     /// adapter. `None` when the platform cannot name it and in tests: AI then reports itself
     /// missing and everything else works.
     pub ai_bundle_dir: Option<PathBuf>,
-    /// The model host and manifest keys the desktop build was made with (ADR-0026 decision 8).
-    /// `None` in tests and in a build without them: OpenFrame AI cannot be downloaded then.
-    pub ai_model_host: Option<openframe_ai::ModelHost>,
+    /// Where OpenFrame AI downloads its pinned model files (ADR-0032): Hugging Face, or the local
+    /// test host a test build names. `None` in tests and when a test build names an invalid host:
+    /// OpenFrame AI cannot be downloaded then, and an installed set still works.
+    pub ai_model_source: Option<openframe_ai::ModelSource>,
     /// Temperature 0 and a fixed seed for the Offline AI. Only the end-to-end suite turns it on
     /// (a debug build on an isolated test data root); never in a release build.
     pub ai_deterministic: bool,
@@ -72,10 +73,7 @@ impl std::fmt::Debug for AppConfig {
         f.debug_struct("AppConfig")
             .field("app_data_dir", &self.app_data_dir)
             .field("ai_bundle_dir", &self.ai_bundle_dir)
-            .field(
-                "ai_model_host",
-                &self.ai_model_host.as_ref().map(|h| &h.base),
-            )
+            .field("ai_model_source", &self.ai_model_source)
             .field("ai_deterministic", &self.ai_deterministic)
             .field("projects_dir", &self.projects_dir)
             .field("global_vault_dir", &self.global_vault_dir)
@@ -129,7 +127,7 @@ impl AppConfig {
         Ok(Self {
             app_data_dir,
             ai_bundle_dir: Self::installed_ai_bundle_dir(),
-            ai_model_host: None,
+            ai_model_source: None,
             ai_deterministic: false,
             projects_dir,
             global_vault_dir,
@@ -164,7 +162,7 @@ impl AppConfig {
         Self {
             app_data_dir: root.join("appdata"),
             ai_bundle_dir: None,
-            ai_model_host: None,
+            ai_model_source: None,
             ai_deterministic: false,
             projects_dir: root.join("projects"),
             global_vault_dir: root.join("global-vault"),

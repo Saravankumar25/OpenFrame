@@ -75,9 +75,9 @@ unmodified.
 
 ## 6. AI test layers
 
-Target design (ADR-0026): the runtime ships in every package; the two models download after a user click, verified against
-the signed manifest and pinned SHA-256 hashes. The current build still bundles the models (`packaging/ai/ai-assets.lock.json`)
-until the download flow is rebuilt. Rust tests in CI use a deterministic scripted `InferenceProvider` and a deterministic
+Design (ADR-0026, ADR-0032): the runtime ships in every package; the two models download after a user click, straight
+from Hugging Face at the commits `packaging/ai/ai-assets.lock.json` pins, verified by the sizes and SHA-256 hashes compiled
+into the app. The test suite serves the same files from a local host at the same paths. Rust tests in CI use a deterministic scripted `InferenceProvider` and a deterministic
 test embedder (`openframe_test_support`), never shipped. The real bundled components are exercised by the opt-in
 Rust tests, the benchmark and the desktop E2E AI specs, which run the test build with the bundled model.
 

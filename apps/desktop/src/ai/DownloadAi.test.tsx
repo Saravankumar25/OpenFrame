@@ -11,6 +11,9 @@ let dl: AiDownloadDto;
 
 vi.mock("../ipc/client", async () => {
   class OpError extends Error {
+    constructor(_op: string, e: { message: string }) {
+      super(e.message);
+    }
     code = "x";
     is() {
       return false;
@@ -20,12 +23,25 @@ vi.mock("../ipc/client", async () => {
     OpError,
     inTauri: () => false,
     onAppEvent: () => Promise.resolve(() => undefined),
-    call: vi.fn(async (op: string) => {
-      calls.push(op);
+    call: vi.fn(async (op: string, args?: { path?: string }) => {
+      calls.push(args?.path ? `${op} ${args.path}` : op);
+      if (op === "ai.download.import") {
+        if (imported instanceof Error) throw imported;
+        return imported;
+      }
       return op === "ai.download.status" ? dl : null;
     }),
   };
 });
+
+// The Open dialog: the file the person picks, or null when they cancel. What the import answers.
+let picked: string | null = null;
+let imported: { complete: boolean } | Error = { complete: true };
+const toasts: string[] = [];
+vi.mock("../app/toast", () => ({
+  toast: { success: (m: string) => toasts.push(`ok ${m}`), error: (m: string) => toasts.push(`err ${m}`) },
+}));
+vi.mock("@tauri-apps/plugin-dialog", () => ({ open: vi.fn(async () => picked) }));
 
 const GB = 1024 ** 3;
 const base = (p: Partial<AiDownloadDto> = {}): AiDownloadDto => ({
@@ -52,6 +68,8 @@ function show(damaged?: string) {
 beforeEach(() => {
   calls.length = 0;
   dl = base();
+  picked = null;
+  imported = { complete: true };
 });
 
 describe("Download OpenFrame AI", () => {
@@ -119,7 +137,44 @@ describe("Download OpenFrame AI", () => {
     dl = base({ canDownload: false });
     show();
     expect(await screen.findByText(/cannot download OpenFrame AI/)).toBeTruthy();
-    expect(screen.queryByRole("button")).toBeNull();
-    expect(downloadLine(base({ phase: "Checking" }))).toBe("Getting the download list…");
+    expect(screen.queryByRole("button", { name: "Download OpenFrame AI" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Import a model file…" })).toBeTruthy();
+    expect(downloadLine(base({ phase: "Checking" }))).toBe("Getting ready to download…");
+  });
+
+  it("imports a model file the person picks, and does nothing when they cancel", async () => {
+    show();
+    picked = null;
+    await userEvent.click(await screen.findByRole("button", { name: "Import a model file…" }));
+    expect(calls.some((c) => c.startsWith("ai.download.import"))).toBe(false);
+    picked = "C:\\Models\\gemma.gguf";
+    await userEvent.click(screen.getByRole("button", { name: "Import a model file…" }));
+    await waitFor(() => expect(calls).toContain("ai.download.import C:\\Models\\gemma.gguf"));
+    expect(calls).not.toContain("ai.download.start");
+  });
+
+  it("says when one more file is needed, and shows the plain reason when a file is refused", async () => {
+    toasts.length = 0;
+    show();
+    picked = "C:\\Models\\bge.gguf";
+    imported = { complete: false };
+    await userEvent.click(await screen.findByRole("button", { name: "Import a model file…" }));
+    await waitFor(() => expect(toasts).toContain("ok The file was added. Import the other model file to finish."));
+    const { OpError } = await import("../ipc/client");
+    imported = new OpError("ai.download.import", {
+      code: "ai.not_a_model",
+      message: "This file is not an OpenFrame AI model file, so it was not used. Nothing was changed.",
+      retryable: false,
+    });
+    await userEvent.click(screen.getByRole("button", { name: "Import a model file…" }));
+    await waitFor(() => expect(toasts).toContain("err This file is not an OpenFrame AI model file, so it was not used. Nothing was changed."));
+    expect((screen.getByRole("button", { name: "Import a model file…" }) as HTMLButtonElement).disabled).toBe(false);
+  });
+
+  it("offers no import while a download runs", async () => {
+    dl = base({ phase: "Downloading", doneBytes: 0.1 * GB, totalBytes: 1.1 * GB });
+    show();
+    expect(await screen.findByRole("button", { name: "Pause" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Import a model file…" })).toBeNull();
   });
 });

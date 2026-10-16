@@ -37,10 +37,12 @@ use ts_rs::TS;
 
 use crate::core::AppCore;
 use crate::registry::Registry;
-pub use offline::{AiComponentDto, AiDiagnosticsDto, AiDownloadDto, AiStatusDto};
+pub use offline::{
+    AiComponentDto, AiDiagnosticsDto, AiDownloadDto, AiImportArgs, AiImportResult, AiStatusDto,
+};
 use offline::{
-    diagnostics, download_pause, download_remove, download_start, download_status, set_graphics,
-    status, stop_runtime,
+    diagnostics, download_import, download_pause, download_remove, download_start, download_status,
+    set_graphics, status, stop_runtime,
 };
 pub use orchestrator::AskArgs;
 pub use service::{AiService, service};
@@ -69,6 +71,10 @@ pub fn register(r: &mut Registry) {
     );
     r.command("ai.download.pause", download_pause).meta(
         M::app_command("Pause the OpenFrame AI download; it resumes where it stopped.")
+            .hidden(h::AI_RUNTIME),
+    );
+    r.command("ai.download.import", download_import).meta(
+        M::app_command("Use a model file the person already has; it is copied and used only when it matches a pinned file.")
             .hidden(h::AI_RUNTIME),
     );
     r.command("ai.download.remove", download_remove).meta(

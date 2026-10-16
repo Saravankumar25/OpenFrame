@@ -452,11 +452,10 @@ pub fn run() {
     }
     config.channel = entitlement_channel();
     config.ai_bundle_dir = AppConfig::installed_ai_bundle_dir();
-    // Fixed at build time (build.rs; ADR-0026 decision 8): nothing at run time can change them.
-    config.ai_model_host = openframe_application::ModelHost::from_build(
-        option_env!("MODEL_DISTRIBUTION_BASE_URL"),
-        option_env!("OPENFRAME_MANIFEST_PUBLIC_KEY"),
-    );
+    // Fixed at build time (build.rs; ADR-0032): Hugging Face at the pinned revisions, or the local
+    // test host a test build names. Nothing at run time can change it.
+    config.ai_model_source =
+        openframe_application::ModelSource::from_build(option_env!("OPENFRAME_TEST_MODEL_SOURCE"));
     config.ai_deterministic = ai_deterministic(!cfg!(debug_assertions), isolated_root.is_some());
     // The Mac App Store build hands over the StoreKit bridge and the licence server client; the
     // first check runs on a background thread after setup. Windows: none.
@@ -471,9 +470,11 @@ pub fn run() {
     // Internal builds ask the team password before anything opens; the core enforces it.
     config.team_password_hash = TEAM_PASSWORD_HASH.map(str::to_string);
     let log_guard = init_logging(&config);
-    if config.ai_model_host.is_none() && option_env!("MODEL_DISTRIBUTION_BASE_URL").is_some() {
+    if config.ai_model_source.is_none() {
+        // The value is a loopback test address, never a secret: it says what was wrong.
         tracing::error!(
-            "the model host or manifest key this build was made with is not valid; OpenFrame AI cannot be downloaded"
+            value = option_env!("OPENFRAME_TEST_MODEL_SOURCE").unwrap_or(""),
+            "the test model source this build was made with is not valid; OpenFrame AI cannot be downloaded"
         );
     }
     tracing::info!(

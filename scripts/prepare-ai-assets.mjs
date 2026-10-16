@@ -9,7 +9,7 @@
 //         target platform, in the same layout, plus packaging/ai/notices/. The Tauri overlay config
 //         apps/desktop/src-tauri/tauri.bundled-ai.conf.json maps that folder to the `ai/` folder of
 //         the app resources. The models are not packaged: the person downloads them after install
-//         (ADR-0026), from a host folder made by scripts/model-manifest.mjs.
+//         (ADR-0026), straight from Hugging Face at the revisions this lock pins (ADR-0032).
 //
 // The build fails closed: a missing file, a wrong size, a wrong hash, a link, an unknown target
 // platform or an invalid lock stops it with a plain message and stages nothing. Nothing is ever

@@ -275,7 +275,7 @@ fn the_download_is_offered_only_through_its_own_operations() {
     );
     // Stopping the engines when none runs is harmless.
     env.ok("ai.stop_runtime", json!({}));
-    // A build without a model host: the screen says so before any click, and a click does
+    // A build that cannot download: the screen says so before any click, and a click does
     // nothing but explain. The size is known without any network use.
     let d = env.ok("ai.download.status", json!({}));
     assert_eq!(d["canDownload"], false);
@@ -289,6 +289,28 @@ fn the_download_is_offered_only_through_its_own_operations() {
     env.ok("ai.download.pause", json!({}));
     env.ok("ai.download.remove", json!({}));
     assert_eq!(env.ok("ai.download.status", json!({}))["phase"], "Idle");
+    // Import a model file (ADR-0032 decision 6): a path not from the Open dialog, or a file that
+    // matches no pinned model, is refused plainly and the file stays where it was.
+    assert_eq!(
+        env.err("ai.download.import", json!({ "path": "model.gguf" })),
+        "validation.invalid_input"
+    );
+    let dir = tempfile::tempdir().unwrap();
+    let other = dir.path().join("other.gguf");
+    std::fs::write(&other, b"not a model").unwrap();
+    assert_eq!(
+        env.err("ai.download.import", json!({ "path": other })),
+        "ai.not_a_model"
+    );
+    assert!(other.is_file());
+    // A network share is refused before anything opens it (no network use from the webview).
+    assert_eq!(
+        env.err(
+            "ai.download.import",
+            json!({ "path": r"\\fileserver\share\model.gguf" })
+        ),
+        "project_format.network_location"
+    );
 }
 
 #[test]

@@ -24,7 +24,7 @@ Some steps ask the core directly ("Ask the core ...", "Through the core: ..."). 
 
 Each scenario file starts in its own empty data folder, unless it says "shared journey data". The shared journey data is one folder used, in this order, by `01-journey` (which creates the demo project "Night Bus"), `02-restart`, `90-visual-baseline`, `91-appearance-themes` and `95-reachability`. Those files depend on each other only through that folder and that order. Every other file creates its own project and never sees the shared folder, so any of them can run alone.
 
-OpenFrame AI is downloaded after install (ADR-0026). Every test build is made with the local model host of the run (`127.0.0.1:47811`, `tests/e2e/lib/model-host.mjs`) and a throwaway test key. Each data folder starts with the model set installed as a finished download leaves it, unless its file has the tag `@e2e-ai-models: none`. "The host" in a scenario is that local model host; a scenario can make it cut a file short, change a byte, send slowly or refuse every request, and can read what it was asked for.
+OpenFrame AI is downloaded after install (ADR-0026). Every test build is made with the local model host of the run (`127.0.0.1:47811`, `tests/e2e/lib/model-host.mjs`) in place of Hugging Face; it serves the pinned files at their Hugging Face paths (ADR-0032). Each data folder starts with the model set installed as a finished download leaves it, unless its file has the tag `@e2e-ai-models: none`. "The host" in a scenario is that local model host; a scenario can make it cut a file short, change a byte, send slowly or refuse every request, and can read what it was asked for.
 
 ## Header tags
 

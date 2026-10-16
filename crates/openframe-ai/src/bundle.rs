@@ -229,7 +229,11 @@ fn valid_text(s: &str, max: usize) -> bool {
 }
 
 fn check_file(f: &PinnedFile, owner: &str) -> AppResult<()> {
-    if !safe_file(&f.path) || f.bytes == 0 || !valid_sha(&f.sha256) {
+    if !safe_file(&f.path)
+        || f.bytes == 0
+        || f.bytes > crate::download::MAX_FILE_BYTES
+        || !valid_sha(&f.sha256)
+    {
         return Err(invalid_lock(format!(
             "{owner}: file entry {} is invalid",
             f.path
@@ -307,6 +311,13 @@ impl AssetLock {
                 return Err(invalid_lock(format!("model id {}", m.model_id)));
             }
             check_file(&m.file, &m.model_id)?;
+            // The download address: a Hugging Face file at a full commit (ADR-0032).
+            if !crate::download::huggingface_url_ok(&m.source.url) {
+                return Err(invalid_lock(format!(
+                    "model {} has no pinned Hugging Face address",
+                    m.model_id
+                )));
+            }
             if m.tokenizer != "embedded"
                 || !safe_id(&m.version)
                 || !valid_text(&m.display_name, 120)
@@ -404,14 +415,7 @@ impl ModelStamp {
     /// Hold the file open, sharing it for reading only, before it is hashed. Best effort: when
     /// another program already has it open for writing the check still runs, and says so in the log.
     pub fn hold(&self) {
-        let mut o = std::fs::OpenOptions::new();
-        o.read(true);
-        #[cfg(windows)]
-        {
-            use std::os::windows::fs::OpenOptionsExt;
-            o.share_mode(1); // FILE_SHARE_READ
-        }
-        match o.open(&self.path) {
+        match openframe_platform::files::open_read_only_shared(&self.path) {
             Ok(f) => *self.held.lock() = Some(f),
             Err(e) => {
                 tracing::warn!(kind = %e.kind(), "a model file could not be held during its check")
@@ -812,6 +816,10 @@ mod tests {
                 Box::new(|l| l.models[0].file.sha256 = "AB".into()),
             ),
             ("empty file", Box::new(|l| l.models[0].file.bytes = 0)),
+            (
+                "file larger than any model",
+                Box::new(|l| l.models[0].file.bytes = crate::download::MAX_FILE_BYTES + 1),
+            ),
             (
                 "device name",
                 Box::new(|l| l.models[0].model_id = "con".into()),

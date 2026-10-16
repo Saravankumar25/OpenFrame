@@ -278,7 +278,7 @@ remain and `…\Packages\<family>` is gone.
    the IARC questionnaire answers (the account holder must submit them).
 6. Offline AI: the pinned AI files on the build machine or runner (`OPENFRAME_AI_ASSETS_DIR`), the Gemma Terms of Use
    redistribution check, the package size recorded, and a report-inappropriate-content channel (policy 11.16). Full
-   list: 23-release-migration.md §7. The model host and the production manifest key are needed again (ADR-0026).
+   list: 23-release-migration.md §7. The models download from Hugging Face at pinned commits; no model host or key is needed (ADR-0032).
 
 Not blockers for the Store: the code-signing certificate and the updater keys, which are needed
 only for the direct channel.

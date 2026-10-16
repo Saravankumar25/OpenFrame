@@ -101,7 +101,7 @@ OpenFrame must feel like one fast native desktop tool even though the UI is web-
 | Full-text search | SQLite FTS5 | Local index without separate search server |
 | Files | Native filesystem | Media/assets stay outside SQLite blobs |
 | AI runtime | OpenFrame-managed `llama.cpp` sidecar | No Ollama/user setup |
-| AI model family | Gemma 3 1B Instruct GGUF (Q8_0) + BGE small English v1.5 GGUF, listed in the signed manifest | One tested profile; the manifest can move it to a new version without product coupling (ADR-0013) |
+| AI model family | Gemma 3 1B Instruct GGUF (Q8_0) + BGE small English v1.5 GGUF, pinned in the lock at Hugging Face commits (ADR-0032) | One tested profile; a new app version can move it to new pins |
 | Networking later | Rust WebSocket + mDNS discovery | Host-owned LAN sessions |
 | PDF/doc output | Deterministic local document renderers | Offline professional exports |
 | Logging | `tracing` ecosystem | Structured local diagnostics |

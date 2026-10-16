@@ -87,7 +87,7 @@ fn run() -> Result<(), String> {
     let data = tempfile::tempdir().map_err(|e| e.to_string())?;
     let app_data = AppConfig::isolated(data.path()).app_data_dir;
     let lock = openframe_ai::AssetLock::embedded().map_err(|e| format!("{e:?}"))?;
-    let host = openframe_ai::test_support::install_pinned_models(&app_data, &assets, &lock)
+    let source = openframe_ai::test_support::install_pinned_models(&app_data, &assets, &lock)
         .map_err(|e| format!("installing the models: {e:?}"))?;
     // The same place every run: the processor (a graphics card check would change the timings
     // between runs; ADR-0029 has its own benchmark).
@@ -96,7 +96,7 @@ fn run() -> Result<(), String> {
         .map_err(|e| e.to_string())?;
     let config = AppConfig {
         ai_bundle_dir: Some(bundle.clone()),
-        ai_model_host: Some(host),
+        ai_model_source: Some(source),
         ai_deterministic: true,
         ..AppConfig::isolated(data.path())
     };

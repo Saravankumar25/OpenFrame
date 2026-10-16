@@ -6,6 +6,34 @@
 > Renamed on 2026-10-06 from `03-reconciliation-log.md`. Extended on 2026-10-09 (chapter restructure). Checks written "(checked)" were verified in the repository on the
 > date given. Checks written "(stated)" come from a supplied document and were not verified independently.
 
+## 2026-10-16 (evening): models from Hugging Face (ADR-0032)
+
+- Owner decision in chat: the models download straight from Hugging Face at pinned commits; no manifest, no signing key,
+  no model host. ADR-0032 records it; ADR-0026 decisions 4 and 8 and its implementation notes 1, 4, 5 and the signed
+  parts of 6 are marked superseded in place; the ADR register has a superseded row.
+- Removed with the code it described: `scripts/model-manifest.mjs` (key tool and signed host folder), the build values
+  `MODEL_DISTRIBUTION_BASE_URL` and `OPENFRAME_MANIFEST_PUBLIC_KEY` (build script, release workflow, release check 6a),
+  `set.json` and the list sequence in app data. The test host now serves the pinned files at their Hugging Face paths
+  (`tests/e2e/lib/model-host.mjs`), built with `OPENFRAME_TEST_MODEL_SOURCE`.
+- Stale statements corrected: `DEVELOPMENT.md`, the privacy policy draft (names Hugging Face), threat model T16, QA
+  strategy section 6, release migration sections 6 and 7, Microsoft Store guide, feature row "Production manifest key and
+  model host" (Removed), the masterplan (download box rewritten, two boxes marked N/A with the reason), the W8 phase page
+  and chapter page, scenarios 76, 78 and the index, and the signed-manifest lines of four specifications (marked
+  superseded).
+
+## 2026-10-16 (later): Windows phases W4 to W8
+
+- Renamed: `tests/e2e/scenarios/76-ai-bundle-integrity.md` and its spec to `76-ai-files-integrity` (the models are no longer
+  bundled, ADR-0026); new scenario and spec `78-ai-download`. The scenario index (`tests/e2e/scenarios/README.md`) and its
+  tag table follow (`@e2e-ai-bundle: own` removed, `@e2e-ai-models: none` added).
+- Removed with the code it described: the debug-only AI folder switch `OPENFRAME_AI_BUNDLE_DIR` (ADR-0031 decision 2 amended
+  in place) and the cleanup of the retired download folders (`AiPaths::remove_retired_downloads`), which would now delete the
+  downloaded models.
+- Stale statements corrected in the same change: the privacy policy draft (the AI never connects, models installed with
+  the app), the threat model T16 ("the current build still bundles the models"), `DEVELOPMENT.md` (AI rows), the CI and
+  release workflow comments, `build-msix.mjs` and `release-validate.mjs` headers, the `bundle.rs`, `manager.rs`, `store.rs`
+  and `lib.rs` module notes of `openframe-ai`. ADR-0026 and ADR-0029 gained implementation notes; no decision changed.
+
 ## 2026-10-16: Windows phase W1, archive moves and conflict sweep
 
 - Moved into `docs/archive/` (one commit, links rewritten, `check-links` clean): `docs/spec-digest/` to

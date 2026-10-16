@@ -6,7 +6,8 @@ import type { AppError } from "./AppError";
  */
 export type AiDownloadDto = { 
 /**
- * This build has a model host (a release build always has).
+ * This build can download (every build for people can; only a test build made with an invalid
+ * test host cannot). Importing a model file works either way.
  */
 canDownload: boolean, 
 /**

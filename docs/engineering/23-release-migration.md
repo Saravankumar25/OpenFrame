@@ -114,17 +114,15 @@ updater key configured, updater plugin not configured in `tauri.conf.json`.
   pre-releases, never offered to stable users.
 - In-app updates: notify, then download and install only after explicit approval (Engineering Index). See
   24-windows-packaging-updater.md.
-- Model updates ship as a new signed manifest, so the AI can change without a new installer (ADR-0026). The runtime
+- Model updates ship as new pins in a new app version (ADR-0032); an update that keeps the same models keeps the
+  download. The runtime
   is part of the app version (ADR-0020). Local AI spec §15 describes the download flow.
 
 ## 7. Offline AI release prerequisites ⛔
 
-Target design (ADR-0026, 2026-10-15, reinstating the download after install): the package holds the app and the AI
-runtime. The Gemma 3 1B chat model, the BGE embedding model and the tokenizer data download on the user's click from a
-signed manifest on the model host. The model host, the manifest signing key and the production manifest are owner
-tasks again, and the download code is to be rebuilt (masterplan area 8). The build still bundles the models until
-that work lands (ADR-0025 state in the code), so the items below describe today's build and the release gates that
-remain. Item 1 is enforced by `scripts/release-validate.mjs` (check 6) and by every package build; the rest are manual.
+Design (ADR-0026 and ADR-0032): the package holds the app and the AI runtime. The Gemma 3 1B chat model and the BGE
+embedding model download on the user's click straight from Hugging Face at the commits the lock pins, each checked by
+size and SHA-256. There is no model host and no signing key. The items below are the release gates. Item 1 is enforced by `scripts/release-validate.mjs` (check 6) and by every package build; the rest are manual.
 
 1. **AI build inputs.** The runtime and model files pinned in `packaging/ai/ai-assets.lock.json` (path, bytes,
    SHA-256, licence) must be present for the build (`.ai-assets/`, or `OPENFRAME_AI_ASSETS_DIR` on a build machine or

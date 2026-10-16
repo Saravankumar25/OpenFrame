@@ -26,10 +26,12 @@ use serde::Serialize;
 
 use crate::bundle::{self, AssetLock, BundledAi, ModelRole, ModelStamp, Pooling};
 use crate::client::{self, EMBED_BATCH};
+use crate::download;
+use crate::fetch::ModelSource;
 use crate::gpu::{self, CpuReason, GraphicsRecord, ProbeRecord, Remembered};
 use crate::hardware::{self, HardwareInfo};
 use crate::model::{InferenceProvider, LocalRuntimeModel};
-use crate::model_download::{self, DownloadStatus, ModelDownload, ModelHost};
+use crate::model_download::{self, DownloadStatus, ModelDownload};
 use crate::placement::{self, GraphicsFacts, Placement};
 use crate::rt::AiRuntime;
 use crate::selection::{self, Fitness};
@@ -58,9 +60,9 @@ pub struct ManagerConfig {
     /// Read-only folder holding the engine (`<app resources>/ai`). `None` when the platform
     /// cannot name it: AI then reports itself missing.
     pub bundle_dir: Option<PathBuf>,
-    /// The model host and manifest keys of this build (`None`: this build cannot download, and a
-    /// model set already on disk cannot be checked, so AI stays off).
-    pub model_host: Option<ModelHost>,
+    /// Where the models come from: Hugging Face, or the test host of a test build (ADR-0032).
+    /// `None` only when a test build was made with an invalid test host: it cannot download.
+    pub model_source: Option<ModelSource>,
     /// The lock the bundle is checked against (the one compiled into this build in the product).
     pub lock: AssetLock,
     /// Chat engine.
@@ -80,13 +82,13 @@ impl ManagerConfig {
     pub fn production(
         app_data_dir: &Path,
         bundle_dir: Option<PathBuf>,
-        model_host: Option<ModelHost>,
+        model_source: Option<ModelSource>,
     ) -> AppResult<Self> {
         let paths = AiPaths::new(app_data_dir);
         Ok(Self {
             app_data_dir: app_data_dir.to_path_buf(),
             bundle_dir,
-            model_host,
+            model_source,
             lock: AssetLock::embedded()?,
             supervisor: SupervisorConfig {
                 log_path: Some(paths.runtime_log()),
@@ -281,14 +283,11 @@ impl AiManager {
 
     /// Read the engine and the downloaded model set from disk (sizes only).
     fn load(cfg: &ManagerConfig) -> (Loaded, (BundleState, Option<AppError>)) {
-        let keys = cfg
-            .model_host
-            .as_ref()
-            .map(|h| h.keys.as_slice())
-            .unwrap_or(&[]);
+        // The sizes and hashes the set is checked against: the pins compiled into this app.
+        let (version, tier) = download::pins(&cfg.lock);
         let bundle = match &cfg.bundle_dir {
             Some(dir) => model_download::models_dir(&cfg.app_data_dir)
-                .installed(keys)
+                .installed(&version, &tier)
                 .and_then(|models| BundledAi::new(dir, cfg.lock.clone(), models)),
             None => Err(bundle::missing().with_detail("the app resources folder is unknown")),
         };
@@ -951,15 +950,15 @@ impl AiManager {
         self.cfg.lock.models.iter().map(|m| m.file.bytes).sum()
     }
 
-    /// This build has a model host and keys.
+    /// This build can download (always, unless its test source value was invalid).
     pub fn can_download(&self) -> bool {
-        self.cfg.model_host.is_some()
+        self.cfg.model_source.is_some()
     }
 
     /// Start (or resume) the download on the person's click. Returns at once; the work runs on a
     /// background thread and `download_status` reports it.
     pub fn start_download(self: &Arc<Self>) -> AppResult<()> {
-        let Some(host) = self.cfg.model_host.clone() else {
+        let Some(host) = self.cfg.model_source.clone() else {
             return Err(AppError::ai(
                 "download_unavailable",
                 "This copy of OpenFrame Studio cannot download OpenFrame AI.",
@@ -1016,57 +1015,85 @@ impl AiManager {
         r
     }
 
-    fn run_download(self: &Arc<Self>, host: ModelHost) -> AppResult<()> {
-        let runtime_version = self
-            .cfg
-            .lock
-            .runtime_for_this_computer()
-            .map(|r| r.version.clone())
-            .ok_or_else(bundle::unsupported)?;
-        let me = self.clone();
-        let h = host.clone();
-        let (envelope, manifest, tier_id) = self
-            .rt
-            .run(async move { me.download.fetch_plan(&h, &runtime_version).await })?;
+    fn run_download(self: &Arc<Self>, source: ModelSource) -> AppResult<()> {
+        // What to fetch and trust: the pins compiled into this app (ADR-0032).
+        let (version, tier) = download::pins(&self.cfg.lock);
         let dir = model_download::models_dir(&self.cfg.app_data_dir);
-        let active = dir.active();
-        if active
-            .as_ref()
-            .is_some_and(|a| a.version == manifest.manifest_version)
-            && self.available()
-        {
-            return Ok(()); // this set is already in use
-        }
-        if active
-            .as_ref()
-            .is_some_and(|a| a.version == manifest.manifest_version)
-        {
+        if dir.active().is_some_and(|a| a.version == version) {
+            if self.available() {
+                return Ok(()); // this set is already in use
+            }
             return Err(AppError::ai(
                 "remove_first",
                 "Remove OpenFrame AI in Settings, Offline AI, then download it again.",
             )
             .with_detail("the active set of this version is damaged"));
         }
-        // A list older than the one already activated is a replay: never go back to older models.
-        if let Some(a) = active.filter(|a| manifest.sequence < a.sequence) {
-            return Err(AppError::ai(
-                "manifest_older",
-                "The OpenFrame AI download list is older than the AI you already have, so nothing was downloaded. Try again later.",
-            )
-            .with_detail(format!("sequence {} below {}", manifest.sequence, a.sequence)));
-        }
-        let tier = manifest
-            .tier(&tier_id)
-            .cloned()
-            .ok_or_else(|| AppError::internal("tier vanished"))?;
         let me = self.clone();
+        let (v, t) = (version.clone(), tier.clone());
         self.rt.run(async move {
             let dir = model_download::models_dir(&me.cfg.app_data_dir);
-            me.download
-                .fetch_files(&host, &dir, &envelope, &manifest, &tier)
-                .await
+            me.download.fetch_files(&source, &dir, &v, &t).await
         })?;
-        // The health check: the new set passes its full check and the engine starts on it.
+        self.health_check(&dir)
+    }
+
+    /// Manual import (ADR-0032 decision 5): use a model file the person picked when it matches a
+    /// pin. When both files are there (imported or downloaded before), the set is activated and
+    /// checked like a download. Returns whether OpenFrame AI is now complete.
+    pub fn import_model_file(&self, path: &std::path::Path) -> AppResult<bool> {
+        if !self.download.claim() {
+            return Err(AppError::ai(
+                "download_running",
+                "Pause the OpenFrame AI download before importing a file.",
+            ));
+        }
+        let r = self.import_claimed(path);
+        self.download.release();
+        r
+    }
+
+    fn import_claimed(&self, path: &std::path::Path) -> AppResult<bool> {
+        let (version, tier) = download::pins(&self.cfg.lock);
+        let dir = model_download::models_dir(&self.cfg.app_data_dir);
+        let f = dir.import_file(&version, &tier, path)?;
+        tracing::info!(
+            role = f.role.as_str(),
+            "an OpenFrame AI model file was imported"
+        );
+        let same_version_active = dir.active().is_some_and(|a| a.version == version);
+        if same_version_active && self.ensure_verified().is_ok() {
+            // The set in use is whole: the copy is not needed, and nothing working is replaced.
+            dir.sweep_staging("");
+            return Ok(true);
+        }
+        if !tier
+            .files
+            .iter()
+            .all(|f| dir.checked(&version, f).is_file())
+        {
+            return Ok(false);
+        }
+        if same_version_active {
+            // The same set is active but damaged: replace it with the one just completed. On any
+            // failure the engines come back on whatever is on disk, never left unloaded.
+            self.unload();
+            if let Err(e) = dir
+                .remove_active_set()
+                .and_then(|()| dir.activate(&version, &tier).map(|_| ()))
+            {
+                self.reload();
+                return Err(e);
+            }
+        } else {
+            dir.activate(&version, &tier)?;
+        }
+        self.health_check(&dir).map(|()| true)
+    }
+
+    /// After activation: the new set passes its full check and the engine starts on it, or the
+    /// previous set comes back.
+    fn health_check(&self, dir: &crate::install::ModelsDir) -> AppResult<()> {
         self.reload();
         let healthy = self.ensure_verified().and_then(|()| {
             self.guard(self.supervisor.ensure_ready(self.cfg.ready_timeout))
@@ -1078,10 +1105,20 @@ impl AiManager {
             // stays until a later check passes) instead of throwing gigabytes away.
             Err(e) if e.is("ai.file_busy") || e.is("ai.timeout") => Err(e),
             Err(e) => {
+                tracing::warn!(
+                    code = e.code_str(),
+                    "the new OpenFrame AI set failed its health check; going back to the previous set"
+                );
                 self.unload();
                 let rolled = dir.roll_back();
                 self.reload();
-                rolled?;
+                if let Err(r) = rolled {
+                    tracing::error!(
+                        code = r.code_str(),
+                        "the previous OpenFrame AI set could not be restored"
+                    );
+                }
+                // The health check's own reason is what the person needs to see.
                 Err(e)
             }
         }

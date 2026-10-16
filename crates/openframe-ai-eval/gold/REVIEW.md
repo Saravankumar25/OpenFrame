@@ -1,5 +1,7 @@
 # AI gold sets for the owner's review (Windows phase W5)
 
+**Approved by the owner on 2026-10-16, as they are** (in chat). Any later change to a case is a new review.
+
 Generated from the `*.jsonl` files in this folder; the files are the source. Please read and approve, or tell me what to change. Non-English cases are marked "automated review only" (ADR-0028 decision 9). Scene numbers count from the first scene of each sample script.
 
 Projects: **F** The Tower at Pedda Revu (36 scenes), **S** Lost Property (10), **X** The Three Desks (6, FDX), **O** The Spare Key (1).

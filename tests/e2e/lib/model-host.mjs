@@ -1,6 +1,7 @@
-// The local model host of the test suite (ADR-0026 decision 10): serves the folder made by
-// scripts/model-manifest.mjs testHost() on 127.0.0.1:MODEL_HOST_PORT, the address every test build
-// is compiled with. It honours `Range: bytes=N-` like a real host. Specs steer it through a small
+// The local model host of the test suite (ADR-0032 decision 4): serves the pinned model files at
+// their Hugging Face paths (<org>/<repo>/resolve/<commit>/<file>, from testHost()) on
+// 127.0.0.1:MODEL_HOST_PORT, the address every test build is compiled with
+// (OPENFRAME_TEST_MODEL_SOURCE). It honours `Range: bytes=N-` like a real host. Specs steer it through a small
 // control file (E2E_MODEL_HOST_CTL) and read what was asked for in its log (E2E_MODEL_HOST_LOG):
 //
 //   { "cut": { "path": "<rel>", "after": <bytes> } }   the next answer for that file stops early (once)
@@ -8,12 +9,57 @@
 //   { "throttle": <bytes per second> }                  answers are sent slowly (to press Pause)
 //   { "down": true }                                    every request is refused (no network)
 
+import { createHash } from "node:crypto";
 import http from "node:http";
-import { appendFileSync, renameSync, existsSync, linkSync, mkdirSync, readFileSync, statSync, writeFileSync, copyFileSync, openSync, readSync, closeSync } from "node:fs";
+import { appendFileSync, renameSync, existsSync, linkSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync, copyFileSync, openSync, readSync, closeSync } from "node:fs";
 import { dirname, join, normalize, sep } from "node:path";
+import { AiAssetsError, ROOT, findSource, readLock, verifyFiles } from "../../../scripts/prepare-ai-assets.mjs";
 
 export const MODEL_HOST_PORT = 47811;
 export const MODEL_HOST_URL = `http://127.0.0.1:${MODEL_HOST_PORT}/`;
+export const TEST_HOST_DIR = join(ROOT, ".build-cache", "e2e-model-host");
+
+/**
+ * The set the app pins, computed from the lock the way the app does
+ * (crates/openframe-ai/src/download.rs pins): the version "m-" and the first 12 hex digits of the
+ * SHA-256 over the model hashes, and each file's name in app data, host path, size, hash and role.
+ */
+export function pins() {
+  const lock = readLock();
+  const version = `m-${createHash("sha256").update(lock.models.map((m) => m.file.sha256).join("")).digest("hex").slice(0, 12)}`;
+  const files = lock.models.map((m) => {
+    const path = m.source.url.replace(/^https:\/\/huggingface\.co\//, "");
+    if (path === m.source.url) throw new AiAssetsError(`model ${m.modelId} has no Hugging Face address`);
+    return { name: `${m.modelId}.gguf`, path, bytes: m.file.bytes, sha256: m.file.sha256, role: m.role };
+  });
+  return { version, files };
+}
+
+/**
+ * Lay out the host folder: each pinned model at its Hugging Face path, hard-linked from the build
+ * inputs after they are checked against the lock (copied when the drive cannot link). The folder is
+ * made again each time, so files of an older lock never linger. Returns { dir, version, files }.
+ */
+export function testHost() {
+  const lock = readLock();
+  const src = findSource();
+  if (!src) throw new AiAssetsError("The model files are not in .ai-assets (see packaging/ai/ai-assets.lock.json).");
+  const problems = verifyFiles(src, lock.models.map((m) => ({ rel: `models/${m.modelId}/${m.file.path}`, bytes: m.file.bytes, sha256: m.file.sha256 })));
+  if (problems.length) throw new AiAssetsError(`The model files do not match the lock:\n  - ${problems.join("\n  - ")}`);
+  rmSync(TEST_HOST_DIR, { recursive: true, force: true, maxRetries: 3 });
+  const p = pins();
+  lock.models.forEach((m, i) => {
+    const from = join(src, "models", m.modelId, m.file.path);
+    const to = join(TEST_HOST_DIR, ...p.files[i].path.split("/"));
+    mkdirSync(dirname(to), { recursive: true });
+    try {
+      linkSync(from, to);
+    } catch {
+      copyFileSync(from, to);
+    }
+  });
+  return { dir: TEST_HOST_DIR, ...p };
+}
 
 /** The control file, written whole by steerHost (temp file and rename). A file that does not
  * parse is a broken test, never "normal": it fails loudly. */
@@ -104,29 +150,26 @@ export function startModelHost(dir, ctlAt, logAt) {
 }
 
 /**
- * Install the host's model set in an app data folder the way a finished download leaves it:
- * <appData>/models/<version>/<files> (hard links, never written by the app), set.json (the signed
- * list) and active.json. Specs that alter a model must copy it first (see lib/ai.mjs).
+ * Install the pinned set in an app data folder the way a finished download leaves it:
+ * <appData>/models/<version>/<model-id>.gguf (hard links from the host folder, never written by the
+ * app) and active.json. Specs that alter a model must copy it first (see lib/ai.mjs).
  */
 export function preinstallModels(hostDir, appDataDir) {
-  const envelope = readFileSync(join(hostDir, "manifest.json"));
-  const payload = JSON.parse(Buffer.from(JSON.parse(envelope).payload, "base64").toString("utf8"));
-  const version = payload.manifestVersion;
+  const { version, files } = pins();
   const set = join(appDataDir, "models", version);
   mkdirSync(set, { recursive: true });
-  for (const f of payload.tiers[0].files) {
+  for (const f of files) {
     const dst = join(set, f.name);
-    if (existsSync(dst)) continue;
+    rmSync(dst, { force: true }); // never trust a file left by an earlier run
+    const src = join(hostDir, ...f.path.split("/"));
     try {
-      linkSync(join(hostDir, f.path), dst);
+      linkSync(src, dst);
     } catch {
-      copyFileSync(join(hostDir, f.path), dst);
+      copyFileSync(src, dst);
     }
   }
-  writeFileSync(join(set, "set.json"), envelope);
-  mkdirSync(dirname(join(appDataDir, "models", "active.json")), { recursive: true });
   writeFileSync(join(appDataDir, "models", "active.json"), JSON.stringify({ version, tier: "small", previous: null, activatedAt: 0 }));
-  return { version, files: payload.tiers[0].files };
+  return { version, files };
 }
 
 /** What the host was asked for since the log was made: [{ path, from }]. */

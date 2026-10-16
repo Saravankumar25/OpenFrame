@@ -1,5 +1,6 @@
 //! The Offline AI end to end (ADR-0026): nothing is downloaded until the person starts it; the
-//! download fetches the signed list and the files from a local test host, resumes after a cut,
+//! download fetches the pinned files from a local test host at their Hugging Face paths, resumes
+//! after a cut,
 //! refuses and sets aside a damaged file, keeps the last good set until the new one passes its
 //! health check, and Remove takes it all away. Once a set is installed, the pinned hashes are
 //! checked before the first engine start, writable data stays in app data, and a missing, altered
@@ -17,17 +18,15 @@ use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
-use base64::Engine as _;
-use ed25519_dalek::{Signer, SigningKey};
-
 use openframe_ai::bundle::PinnedFile;
+use openframe_ai::download::pins;
 use openframe_ai::engines::hash_file;
 use openframe_ai::gpu::{Adapter, GraphicsRecord, Remembered};
 use openframe_ai::placement::GraphicsFacts;
 use openframe_ai::supervisor::SupervisorConfig;
 use openframe_ai::{
     AiManager, AssetLock, BundleState, ChatMessage, ChatRequest, DownloadPhase, ManagerConfig,
-    ModelHost, RuntimeState,
+    ModelSource, RuntimeState,
 };
 
 // ----------------------------------------------------------------- fake llama-server
@@ -247,55 +246,33 @@ impl Host {
     }
 }
 
-/// A fixed test key: never the production key, which the owner generates and keeps offline.
-fn test_key() -> SigningKey {
-    SigningKey::from_bytes(&[7u8; 32])
-}
-
 /// Model bytes of `len`, different for each `seed`.
 fn model_bytes(seed: u32, len: u32) -> Vec<u8> {
     (0..len).map(|k| ((k * 31 + seed) % 251) as u8).collect()
 }
 
-/// Put a model set on the host: its files under `<version>/` and `manifest.json` signed by `key`.
-fn publish(
-    host_root: &Path,
-    version: &str,
-    sequence: u32,
-    runtime_version: &str,
-    chat: &[u8],
-    embed: &[u8],
-    key: &SigningKey,
-) -> Vec<u8> {
-    let dir = host_root.join(version);
-    std::fs::create_dir_all(&dir).unwrap();
-    let mut files = Vec::new();
-    for (name, role, body) in [
-        ("chat.gguf", "chat", chat),
-        ("embed.gguf", "embedding", embed),
-    ] {
-        std::fs::write(dir.join(name), body).unwrap();
-        let (bytes, sha256) = hash_file(&dir.join(name)).unwrap();
-        files.push(serde_json::json!({ "name": name, "path": format!("{version}/{name}"), "bytes": bytes, "sha256": sha256, "role": role }));
+/// Pin `chat` and `embed` in `lock` (as a new app version would) at Hugging Face addresses with the
+/// commit `rev` (one hex digit repeated), and put the bytes on the local host at those paths.
+fn publish(host_root: &Path, lock: &mut AssetLock, rev: char, chat: &[u8], embed: &[u8]) {
+    let rev: String = std::iter::repeat_n(rev, 40).collect();
+    for (m, body) in lock.models.iter_mut().zip([chat, embed]) {
+        let path = format!("test/{0}/resolve/{rev}/{0}.gguf", m.model_id);
+        m.source.url = format!("https://huggingface.co/{path}");
+        let file = host_root.join(&path);
+        std::fs::create_dir_all(file.parent().unwrap()).unwrap();
+        std::fs::write(&file, body).unwrap();
+        m.file = pin(&file, "model.gguf");
     }
-    let payload = serde_json::to_vec(&serde_json::json!({
-        "manifestVersion": version,
-        "sequence": sequence,
-        "profileVersion": 2,
-        "tiers": [{ "id": "small", "label": "Standard", "minMemoryGb": 8, "requiresRuntime": runtime_version, "files": files }],
-        "runtimes": []
-    }))
-    .unwrap();
-    let b64 = base64::engine::general_purpose::STANDARD;
-    let envelope = serde_json::to_vec(&serde_json::json!({
-        "format": "openframe-ai-manifest",
-        "keyId": "test",
-        "payload": b64.encode(&payload),
-        "signature": b64.encode(key.sign(&payload).to_bytes()),
-    }))
-    .unwrap();
-    std::fs::write(host_root.join("manifest.json"), &envelope).unwrap();
-    envelope
+}
+
+/// The host path of model `i` (0 chat, 1 embedding) as the lock pins it.
+fn host_path(lock: &AssetLock, i: usize) -> String {
+    lock.models[i]
+        .source
+        .url
+        .strip_prefix("https://huggingface.co/")
+        .unwrap()
+        .to_string()
 }
 
 // ----------------------------------------------------------------------- pinned files
@@ -317,8 +294,6 @@ fn pin(path: &Path, name: &str) -> PinnedFile {
 
 // --------------------------------------------------------------------------- fixture
 
-const SET: &str = "2026.10.1";
-
 struct Fixture {
     _tmp: tempfile::TempDir,
     bundle: PathBuf,
@@ -329,23 +304,27 @@ struct Fixture {
 
 impl Fixture {
     /// The engine laid out like the app resources (this test program as the server, a library next
-    /// to it), and a model set "2026.10.1" on the local host and installed in app data the way a
-    /// finished download leaves it.
+    /// to it), the two models pinned in the lock and served by the local host at their Hugging Face
+    /// paths, and installed in app data the way a finished download leaves them.
     fn new() -> Self {
         let f = Self::without_models();
-        let envelope = std::fs::read(f.host.root.join("manifest.json")).unwrap();
-        let set = f.data.join("models").join(SET);
+        f.install(&f.lock);
+        f
+    }
+
+    /// Install the set `lock` pins from the host, as a finished download leaves it.
+    fn install(&self, lock: &AssetLock) {
+        let (version, tier) = pins(lock);
+        let set = self.data.join("models").join(&version);
         std::fs::create_dir_all(&set).unwrap();
-        for name in ["chat.gguf", "embed.gguf"] {
-            std::fs::copy(f.host.root.join(SET).join(name), set.join(name)).unwrap();
+        for (i, f) in tier.files.iter().enumerate() {
+            std::fs::copy(self.host.root.join(host_path(lock, i)), set.join(&f.name)).unwrap();
         }
-        std::fs::write(set.join("set.json"), envelope).unwrap();
         std::fs::write(
-            f.data.join("models").join("active.json"),
-            format!(r#"{{"version":"{SET}","tier":"small","previous":null,"activatedAt":0}}"#),
+            self.data.join("models").join("active.json"),
+            format!(r#"{{"version":"{version}","tier":"small","previous":null,"activatedAt":0}}"#),
         )
         .unwrap();
-        f
     }
 
     /// The same, before anything was downloaded.
@@ -389,18 +368,15 @@ impl Fixture {
                 m.embedding_dim = Some(8);
             }
         }
-        lock.validate().unwrap();
         let host_root = tmp.path().join("host");
-        let runtime_version = lock.runtimes[0].version.clone();
         publish(
             &host_root,
-            SET,
-            1,
-            &runtime_version,
+            &mut lock,
+            'a',
             &model_bytes(0, 40_000),
             &model_bytes(1, 40_000),
-            &test_key(),
         );
+        lock.validate().unwrap();
         Fixture {
             _tmp: tmp,
             bundle,
@@ -420,10 +396,7 @@ impl Fixture {
         ManagerConfig {
             app_data_dir: self.data.clone(),
             bundle_dir: Some(self.bundle.clone()),
-            model_host: Some(ModelHost {
-                base: self.host.base.clone(),
-                keys: vec![test_key().verifying_key()],
-            }),
+            model_source: Some(ModelSource::test_host(&self.host.base).unwrap()),
             lock: self.lock.clone(),
             supervisor: sup.clone(),
             embedding_supervisor: sup,
@@ -465,7 +438,6 @@ impl Fixture {
 
     /// 0: the chat model, 1: the embedding model of the installed set.
     fn model_file(&self, role: usize) -> PathBuf {
-        let name = ["chat.gguf", "embed.gguf"][role];
         let active: serde_json::Value = serde_json::from_slice(
             &std::fs::read(self.data.join("models").join("active.json")).unwrap(),
         )
@@ -473,11 +445,12 @@ impl Fixture {
         self.data
             .join("models")
             .join(active["version"].as_str().unwrap())
-            .join(name)
+            .join(format!("{}.gguf", self.lock.models[role].model_id))
     }
 
-    fn runtime_version(&self) -> String {
-        self.lock.runtimes[0].version.clone()
+    /// The pinned set version of this app.
+    fn version(&self) -> String {
+        pins(&self.lock).0
     }
 
     /// Every file under the app resources with its size and modification time.
@@ -589,37 +562,34 @@ fn the_download_installs_checks_and_starts_the_ai() {
         m.embedding_info().unwrap().sha256,
         hash_file(&f.model_file(1)).unwrap().1
     );
-    // Exactly the signed list and the two files were asked for, nothing else.
+    // Exactly the two pinned files were asked for, nothing else.
     let paths: Vec<String> = f.host.requests().into_iter().map(|r| r.0).collect();
-    assert_eq!(
-        paths,
-        [
-            "manifest.json",
-            &format!("{SET}/chat.gguf"),
-            &format!("{SET}/embed.gguf")
-        ]
-    );
+    assert_eq!(paths, [host_path(&f.lock, 0), host_path(&f.lock, 1)]);
     // Only the set, its pointer and an empty staging area are left.
-    assert_eq!(
-        files_under(&f.data.join("models").join(SET)),
-        ["chat.gguf", "embed.gguf", "set.json"]
-    );
+    let mut names: Vec<String> = f
+        .lock
+        .models
+        .iter()
+        .map(|m| format!("{}.gguf", m.model_id))
+        .collect();
+    names.sort();
+    assert_eq!(files_under(&f.data.join("models").join(f.version())), names);
     assert!(files_under(&f.data.join("models").join("staging")).is_empty());
-    // A second click with the same set on the host changes nothing and downloads nothing.
-    let before = f.host.requests().len();
+    // A second click with the set in use asks for nothing at all.
     assert_eq!(download(&m), DownloadPhase::Done);
-    assert_eq!(f.host.requests().len(), before + 1, "only the list is read");
+    assert_eq!(f.host.requests().len(), 2);
     // A new start of the app finds the set without any network use.
     m.stop_runtime();
     drop(m);
     let m = f.manager();
     assert!(ask(&m).unwrap().starts_with("ready"));
-    assert_eq!(f.host.requests().len(), before + 1);
+    assert_eq!(f.host.requests().len(), 2);
 }
 
 fn an_interrupted_download_resumes_where_it_stopped() {
     let f = Fixture::without_models();
-    *f.host.cut_once.lock().unwrap() = Some((format!("{SET}/chat.gguf"), 15_000));
+    let chat = host_path(&f.lock, 0);
+    *f.host.cut_once.lock().unwrap() = Some((chat.clone(), 15_000));
     let m = f.manager();
     assert_eq!(download(&m), DownloadPhase::Failed);
     let e = m.download_status().problem.unwrap();
@@ -630,8 +600,8 @@ fn an_interrupted_download_resumes_where_it_stopped() {
         .data
         .join("models")
         .join("staging")
-        .join(SET)
-        .join("chat.gguf.partial");
+        .join(f.version())
+        .join(format!("{}.gguf.partial", f.lock.models[0].model_id));
     assert_eq!(std::fs::metadata(&partial).unwrap().len(), 15_000);
     // The next click asks only for the rest of the file.
     assert_eq!(
@@ -640,24 +610,19 @@ fn an_interrupted_download_resumes_where_it_stopped() {
         "{:?}",
         m.download_status()
     );
-    assert!(
-        f.host
-            .requests()
-            .contains(&(format!("{SET}/chat.gguf"), Some(15_000)))
-    );
+    assert!(f.host.requests().contains(&(chat.clone(), Some(15_000))));
     assert!(ask(&m).unwrap().starts_with("ready"));
     assert_eq!(
         hash_file(&f.model_file(0)).unwrap().1,
-        hash_file(&f.host.root.join(SET).join("chat.gguf"))
-            .unwrap()
-            .1
+        hash_file(&f.host.root.join(&chat)).unwrap().1
     );
 }
 
 fn a_damaged_file_is_refused_set_aside_and_never_used() {
     let f = Fixture::without_models();
-    // The host now serves other bytes of the same size than the signed list names.
-    alter(&f.host.root.join(SET).join("embed.gguf"));
+    // The host now serves other bytes of the same size than the app pins.
+    let embed = f.host.root.join(host_path(&f.lock, 1));
+    alter(&embed);
     let m = f.manager();
     assert_eq!(download(&m), DownloadPhase::Failed);
     let e = m.download_status().problem.unwrap();
@@ -670,8 +635,8 @@ fn a_damaged_file_is_refused_set_aside_and_never_used() {
     assert!(!f.data.join("models").join("active.json").exists());
     assert_eq!(m.state().bundle, BundleState::NotInstalled);
     assert!(m.chat_model().is_none());
-    // The host is repaired: the next download completes.
-    alter(&f.host.root.join(SET).join("embed.gguf"));
+    // The host is repaired: the next download completes (the chat file was kept and checked).
+    alter(&embed);
     assert_eq!(
         download(&m),
         DownloadPhase::Done,
@@ -681,102 +646,96 @@ fn a_damaged_file_is_refused_set_aside_and_never_used() {
     assert!(ask(&m).is_ok());
 }
 
-fn a_list_signed_with_another_key_downloads_nothing() {
+fn a_file_gone_from_the_host_stops_plainly_and_manual_import_still_works() {
     let f = Fixture::without_models();
-    publish(
-        &f.host.root,
-        SET,
-        1,
-        &f.runtime_version(),
-        &model_bytes(0, 40_000),
-        &model_bytes(1, 40_000),
-        &SigningKey::from_bytes(&[9u8; 32]),
-    );
+    // Keep the person's copies, then the host loses the files.
+    let copies = f.data.join("my-copies");
+    std::fs::create_dir_all(&copies).unwrap();
+    let mut mine = Vec::new();
+    for i in 0..2 {
+        let src = f.host.root.join(host_path(&f.lock, i));
+        let dst = copies.join(format!("copy-{i}.gguf"));
+        std::fs::copy(&src, &dst).unwrap();
+        std::fs::remove_file(&src).unwrap();
+        mine.push(dst);
+    }
     let m = f.manager();
     assert_eq!(download(&m), DownloadPhase::Failed);
+    let e = m.download_status().problem.unwrap();
+    assert_eq!(e.code_str(), "ai.download_failed", "{e:?}");
+    // A file that is not a pinned model: refused, left where it was.
+    let other = copies.join("other.gguf");
+    std::fs::write(&other, b"not a model").unwrap();
     assert_eq!(
-        m.download_status().problem.unwrap().code_str(),
-        "ai.manifest_invalid"
+        m.import_model_file(&other).unwrap_err().code_str(),
+        "ai.not_a_model"
     );
-    assert_eq!(f.host.requests().len(), 1, "only the list was read");
-    assert!(!f.data.join("models").join(SET).exists());
-    // A list for an engine this app does not have is refused the same way, with its own reason.
-    publish(
-        &f.host.root,
-        SET,
-        1,
-        "b1",
-        &model_bytes(0, 40_000),
-        &model_bytes(1, 40_000),
-        &test_key(),
-    );
-    assert_eq!(download(&m), DownloadPhase::Failed);
+    assert!(other.is_file());
+    // The two real files: one at a time, then OpenFrame AI is complete and answers.
+    assert!(!m.import_model_file(&mine[0]).unwrap(), "one of two");
+    assert!(m.import_model_file(&mine[1]).unwrap(), "complete");
+    assert!(mine.iter().all(|p| p.is_file()), "copied, never moved");
+    assert!(ask(&m).unwrap().starts_with("ready"));
+    // Importing again while the set is whole replaces nothing and leaves no copy behind.
+    let before = std::fs::read_to_string(f.data.join("models").join("active.json")).unwrap();
+    assert!(m.import_model_file(&mine[0]).unwrap(), "already complete");
+    assert!(files_under(&f.data.join("models").join("staging")).is_empty());
     assert_eq!(
-        m.download_status().problem.unwrap().code_str(),
-        "ai.needs_update"
+        std::fs::read_to_string(f.data.join("models").join("active.json")).unwrap(),
+        before
     );
+    assert!(ask(&m).unwrap().starts_with("ready"));
 }
 
 fn a_new_set_that_fails_its_health_check_falls_back_to_the_last_good_one() {
     let f = Fixture::new();
-    let m = f.manager();
-    assert!(ask(&m).is_ok());
-    // A newer set whose chat model cannot load.
+    let old = f.version();
+    assert!(ask(&f.manager()).is_ok());
+    // An app update pins a new chat model that cannot load.
     let mut broken = b"BROKEN".to_vec();
     broken.extend(model_bytes(5, 40_000));
+    let mut update = f.lock.clone();
     publish(
         &f.host.root,
-        "2026.11.1",
-        2,
-        &f.runtime_version(),
+        &mut update,
+        'b',
         &broken,
         &model_bytes(6, 40_000),
-        &test_key(),
+    );
+    let new = pins(&update).0;
+    let mut cfg = f.config();
+    cfg.lock = update;
+    let m = Arc::new(AiManager::new(cfg).unwrap());
+    assert_eq!(
+        m.state().bundle,
+        BundleState::NotInstalled,
+        "other pins: download again"
     );
     assert_eq!(download(&m), DownloadPhase::Failed);
-    // Back on the last good set, which still answers; the bad set is set aside.
+    // The last good set is the active one again, whole; the bad set is set aside.
     let active = std::fs::read_to_string(f.data.join("models").join("active.json")).unwrap();
-    assert!(
-        active.contains(SET) && !active.contains("2026.11.1"),
-        "{active}"
-    );
-    assert!(!f.data.join("models").join("2026.11.1").exists());
-    assert!(ask(&m).unwrap().starts_with("ready"));
-    // A good newer set replaces the old one, which is then removed.
+    assert!(active.contains(&old) && !active.contains(&new), "{active}");
+    assert!(!f.data.join("models").join(&new).exists());
+    assert!(ask(&f.manager()).unwrap().starts_with("ready"));
+    // A good update replaces it, and the old set is removed.
+    let mut good = f.lock.clone();
     publish(
         &f.host.root,
-        "2026.11.2",
-        3,
-        &f.runtime_version(),
+        &mut good,
+        'c',
         &model_bytes(7, 40_000),
         &model_bytes(8, 40_000),
-        &test_key(),
     );
+    let mut cfg = f.config();
+    cfg.lock = good;
+    let m = Arc::new(AiManager::new(cfg).unwrap());
     assert_eq!(
         download(&m),
         DownloadPhase::Done,
         "{:?}",
         m.download_status()
     );
-    assert!(!f.data.join("models").join(SET).exists());
-    assert!(ask(&m).is_ok());
-    // The first, older list replayed by the host (still validly signed): refused, nothing changes.
-    publish(
-        &f.host.root,
-        SET,
-        1,
-        &f.runtime_version(),
-        &model_bytes(0, 40_000),
-        &model_bytes(1, 40_000),
-        &test_key(),
-    );
-    assert_eq!(download(&m), DownloadPhase::Failed);
-    assert_eq!(
-        m.download_status().problem.unwrap().code_str(),
-        "ai.manifest_older"
-    );
-    let active = std::fs::read_to_string(f.data.join("models").join("active.json")).unwrap();
-    assert!(active.contains("2026.11.2"), "{active}");
+    assert!(!f.data.join("models").join(&old).exists());
     assert!(ask(&m).is_ok());
 }
 
@@ -791,7 +750,7 @@ fn a_damaged_set_of_the_same_version_is_removed_before_it_is_downloaded_again() 
         m.download_status().problem.unwrap().code_str(),
         "ai.remove_first"
     );
-    assert_eq!(f.host.requests().len(), 1, "only the list was read");
+    assert!(f.host.requests().is_empty(), "nothing was fetched");
     // Remove, then download: whole again.
     m.remove_models().unwrap();
     assert_eq!(
@@ -817,18 +776,18 @@ fn remove_turns_the_ai_off_and_frees_the_space() {
     assert!(ask(&m).is_ok());
 }
 
-fn a_build_without_a_model_host_cannot_download_or_use_a_set() {
+fn a_build_that_cannot_download_still_uses_an_installed_set() {
     let f = Fixture::new();
     let mut cfg = f.config();
-    cfg.model_host = None;
+    cfg.model_source = None;
     let m = Arc::new(AiManager::new(cfg).unwrap());
     assert!(!m.can_download());
     assert_eq!(
         m.start_download().unwrap_err().code_str(),
         "ai.download_unavailable"
     );
-    // The set on disk cannot be checked against any key, so it is not used.
-    assert_eq!(m.state().bundle, BundleState::Damaged);
+    // The pins are in the app, so the set on disk is checked and used without any network.
+    assert!(ask(&m).unwrap().starts_with("ready"));
     assert!(f.host.requests().is_empty());
 }
 
@@ -1136,23 +1095,6 @@ fn a_model_cannot_be_changed_while_openframe_uses_it() {
     assert!(!path.exists());
 }
 
-fn a_set_list_edited_on_disk_is_never_trusted() {
-    let f = Fixture::new();
-    // Someone replaces a model and writes its hash into set.json: the signature no longer holds.
-    let set = f.data.join("models").join(SET).join("set.json");
-    let text = std::fs::read_to_string(&set).unwrap();
-    let mut env: serde_json::Value = serde_json::from_str(&text).unwrap();
-    let b64 = base64::engine::general_purpose::STANDARD;
-    let mut payload: serde_json::Value =
-        serde_json::from_slice(&b64.decode(env["payload"].as_str().unwrap()).unwrap()).unwrap();
-    payload["tiers"][0]["files"][0]["sha256"] = serde_json::json!("0".repeat(64));
-    env["payload"] = serde_json::json!(b64.encode(serde_json::to_vec(&payload).unwrap()));
-    std::fs::write(&set, serde_json::to_vec(&env).unwrap()).unwrap();
-    let m = f.manager();
-    assert_eq!(m.state().bundle, BundleState::Damaged);
-    assert_eq!(ask(&m).unwrap_err().code_str(), "ai.models_damaged");
-}
-
 fn the_engine_starts_with_a_scrubbed_environment() {
     // A variable that would point ggml at other backend libraries never reaches the engine (the
     // fake engine exits at once when it sees any GGML_ variable).
@@ -1183,7 +1125,7 @@ fn a_junction_inside_the_models_folder_is_refused() {
     let f = Fixture::new();
     // Move the set elsewhere and put a junction in its place: same files, but the path now
     // leaves the models folder.
-    let set = f.data.join("models").join(SET);
+    let set = f.data.join("models").join(f.version());
     let elsewhere = f.data.join("elsewhere");
     std::fs::rename(&set, &elsewhere).unwrap();
     let ok = std::process::Command::new("cmd")
@@ -1264,8 +1206,8 @@ fn main() {
             a_damaged_file_is_refused_set_aside_and_never_used,
         ),
         (
-            "a_list_signed_with_another_key_downloads_nothing",
-            a_list_signed_with_another_key_downloads_nothing,
+            "a_file_gone_from_the_host_stops_plainly_and_manual_import_still_works",
+            a_file_gone_from_the_host_stops_plainly_and_manual_import_still_works,
         ),
         (
             "a_new_set_that_fails_its_health_check_falls_back_to_the_last_good_one",
@@ -1280,8 +1222,8 @@ fn main() {
             remove_turns_the_ai_off_and_frees_the_space,
         ),
         (
-            "a_build_without_a_model_host_cannot_download_or_use_a_set",
-            a_build_without_a_model_host_cannot_download_or_use_a_set,
+            "a_build_that_cannot_download_still_uses_an_installed_set",
+            a_build_that_cannot_download_still_uses_an_installed_set,
         ),
         (
             "ai_works_once_the_models_are_downloaded",
@@ -1314,10 +1256,6 @@ fn main() {
         (
             "a_model_cannot_be_changed_while_openframe_uses_it",
             a_model_cannot_be_changed_while_openframe_uses_it,
-        ),
-        (
-            "a_set_list_edited_on_disk_is_never_trusted",
-            a_set_list_edited_on_disk_is_never_trusted,
         ),
         (
             "the_engine_starts_with_a_scrubbed_environment",

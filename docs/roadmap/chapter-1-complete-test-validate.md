@@ -59,7 +59,7 @@ Chapter 1 is finished when all of these are true, each with evidence:
 
 Listed with their lead times in [owner-decisions.md](../implementation/owner-decisions.md) section 3. The ones that block
 phases: the macOS version of the Intel MacBook (M1); approval of the wording change and the worktree review (W1); approval of
-the gold sets and the model choice (W5); the model host, the production manifest key and the redistribution check (W8); the
+the gold sets and the model choice (W5); the licence check for the chosen models (W8); the
 word to build (W4, W9, W10, M9, M10); the borrowed laptops (W7, W9); the team for both pilots (W10, M10).
 
 ## 6. What moves to later chapters

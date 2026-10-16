@@ -34,7 +34,8 @@ and the store listings and privacy policy must describe the one network use.
 3. **Download happens only after an explicit user click.** The first run and the AI settings show **Download OpenFrame
    AI** with the size, the free space needed and a plain statement that the download uses the internet. The app never
    starts a download on its own, never downloads as a repair, and never downloads at install time.
-4. **Signed manifest.** The download is described by a manifest signed with Ed25519. The app verifies the signature with
+4. **Superseded 2026-10-16 by [ADR-0032](ADR-0032-models-from-hugging-face.md) (the sizes and SHA-256 in the app are the
+   trust root; no signed list).** **Signed manifest.** The download is described by a manifest signed with Ed25519. The app verifies the signature with
    a public key compiled into the app. TLS alone is not trusted. The manifest gives each file's name, size and SHA-256
    hash, and the profile version (ADR-0013 format 2).
 5. **Verify, then activate.** Files download to `*.partial` with HTTP range resume. A disk-space preflight runs before the
@@ -46,7 +47,8 @@ and the store listings and privacy policy must describe the one network use.
    container, inside App Sandbox.
 7. **Without the AI.** Before the download, and if it is removed, OpenFrame works fully. AI features show "not installed"
    with the download button. Nothing else changes (ADR-0006 decision 7).
-8. **Model host and keys.** The owner chooses and runs the HTTPS model host. The owner generates the production Ed25519
+8. **Superseded 2026-10-16 by [ADR-0032](ADR-0032-models-from-hugging-face.md) (the files come from Hugging Face; no owner
+   host, no key).** **Model host and keys.** The owner chooses and runs the HTTPS model host. The owner generates the production Ed25519
    manifest key and keeps the private key offline. The build sets `MODEL_DISTRIBUTION_BASE_URL` and
    `OPENFRAME_MANIFEST_PUBLIC_KEY`, and the release build fails if either is missing. The host serves the file list and
    the model files only; it receives no project data.
@@ -78,6 +80,8 @@ and the store listings and privacy policy must describe the one network use.
   wins.
 
 ## Implementation notes (2026-10-16, Windows phase W8)
+
+> Notes 1, 4, 5 and the signed-list parts of 6 describe the first build of W8 and are superseded by ADR-0032 the same day.
 
 How the code meets the decisions above. None of this changes a decision; each point is a choice the decisions left open.
 

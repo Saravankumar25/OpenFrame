@@ -23,7 +23,7 @@ Before: an empty data folder of its own, with the model set installed as a finis
 
 1. Click Assistant, then Download again.
 2. Check: within 4 minutes the Ask or command box shows.
-3. Check: the host was asked for the signed list.
+3. Check: the host was asked for the pinned files again.
 4. Ask 'Scouting the railway station needs a task.'
 5. Check: the result is a proposal, an answer or a question back, and at least one engine runs.
 

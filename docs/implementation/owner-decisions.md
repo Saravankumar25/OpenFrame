@@ -42,7 +42,9 @@
 
 | Decision | Answer | Date | Record |
 |---|---|---|---|
-| How the AI ships | The runtime ships in every package. The models download after install on the user's click from a signed manifest with SHA-256 checks; nothing downloads silently | 2026-10-15 | [ADR-0026](../adr/ADR-0026-offline-ai-download-after-install.md) |
+| How the AI ships | The runtime ships in every package. The models download after install on the user's click with SHA-256 checks; nothing downloads silently | 2026-10-15 | [ADR-0026](../adr/ADR-0026-offline-ai-download-after-install.md) |
+| Where the models come from | Straight from the public Hugging Face repositories at pinned commit revisions, each file checked against the size and SHA-256 compiled into the app. No server of OpenFrame's own, no signed list, no signing key, no cloud backend. Resumable download, local cache, manual import of a file, fully offline use after the download. Licensing is verified before release (supersedes ADR-0026 decisions 4 and 8) | 2026-10-16 | [ADR-0032](../adr/ADR-0032-models-from-hugging-face.md) |
+| AI gold sets | The 679 cases are approved as they are (owner, in chat); the official W5 baseline may run | 2026-10-16 | `crates/openframe-ai-eval/gold/REVIEW.md` |
 | Visual C++ runtime for the engine | The Microsoft Visual C++ runtime DLLs ship app-local next to the engine | 2026-10-08 | ADR-0026 |
 | Release bar | English: 90 percent correct tool and arguments, 85 percent correct end state on the gold set, on the release build, on both platforms. Not lowered silently | 2026-10-15 | [ADR-0028](../adr/ADR-0028-ai-quality-program-and-harness.md) |
 | Languages | English first. Also Hindi, Telugu, Tamil, Kannada, Malayalam, Spanish, French, German, Chinese, Japanese, Korean, held to the same retrieval and tool-choice bar, writing slightly plainer | 2026-10-15 | ADR-0028 |
@@ -127,10 +129,10 @@ Lead times are typical, not guaranteed. Start the long ones early.
 | Borrow laptops with different graphics cards and one 8 GB laptop | W5, W7, W9 | procurement | Benchmarks and clean install; store each result with the card name and driver |
 | Report the macOS version of the Intel MacBook | M1 | minutes | Sets the Xcode version |
 | Obtain an Apple silicon Mac | M8, M9 | procurement | Needed for Metal, Apple's model and the `.dmg` |
-| Choose the model host (HTTPS), generate the production Ed25519 manifest key, keep the private key offline, set `OPENFRAME_MANIFEST_PUBLIC_KEY` and `MODEL_DISTRIBUTION_BASE_URL` | W8 | days | The release build fails without both (checked in `build.rs`, 2026-10-16). Steps: on an offline computer run `node scripts/model-manifest.mjs new-key --out <file outside the repository>` and keep that file offline; set the printed `OPENFRAME_MANIFEST_PUBLIC_KEY` and the host address on the build computer; run `node scripts/model-manifest.mjs publish --key <that file> --out <folder>` and upload the folder as it is. The private key never enters the repository |
-| Redistribution check of every shipped model: confirm OpenFrame may host the weights and tokenizer for download; record the confirmation. Same for the embedding model and the runtime | W5 (candidates), W8 (host) | days | ADR-0026 decision 9; [23-release-migration.md](../engineering/23-release-migration.md) |
+| ~~Choose the model host and generate the production manifest key~~ | Closed 2026-10-16 | none | Superseded by the owner's decision to download straight from Hugging Face ([ADR-0032](../adr/ADR-0032-models-from-hugging-face.md)): no host, no key |
+| Licence check of every model before release: the Gemma Terms of Use allow the app to fetch the pinned Gemma file from Hugging Face for each person and require the Gemma notice in the app and the notices file (both ship); the embedding model (MIT) and the runtime (MIT). Record the confirmation | W8 (before the team build) | hours | ADR-0026 decision 9, ADR-0032; [23-release-migration.md](../engineering/23-release-migration.md) |
 | Set `OPENFRAME_TEAM_PASSWORD` on the build computer before building an internal `.exe` or `.dmg` | W9, M9 | minutes | Only the owner and the team know it; never written to a file, chat, log or the repository |
-| Approve the gold sets and the bake-off result | W5 | days | |
+| Approve the bake-off result (the gold sets were approved 2026-10-16) | W5 | days | |
 | Recruit the team for both pilots | W10, M10 | days | |
 | Buy the domain; company email with SPF, DKIM, DMARC; HTTPS hosting | Chapter 2 | days | Needed for the privacy and support links |
 | Register the legal entity or confirm the publisher | Chapter 3 | days to weeks | Blocks Partner Center, licence and policies |

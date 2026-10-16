@@ -44,7 +44,7 @@ impl AiService {
         let made = ManagerConfig::production(
             &config.app_data_dir,
             config.ai_bundle_dir.clone(),
-            config.ai_model_host.clone(),
+            config.ai_model_source.clone(),
         )
         .map(|mut c| {
             c.deterministic = config.ai_deterministic;

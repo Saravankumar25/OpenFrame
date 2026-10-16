@@ -23,7 +23,8 @@ Before: an empty data folder of its own, with nothing downloaded. The host serve
 3. Check: the card shows "The OpenFrame AI download stopped".
 4. Click Try again. Check: ready.
 5. Check: the first request for the language model file asked for the whole file and a later one asked for the rest only (a range).
-6. Check: the host was asked only for the signed list and its two files.
+6. Check: the host was asked only for the two pinned files, at their Hugging Face paths, and the set version in
+   `models/active.json` is the one computed from the lock.
 
 ## With the host down, AI answers on this computer
 

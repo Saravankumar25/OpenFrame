@@ -40,10 +40,11 @@ pub mod test_support;
 
 pub use bundle::{AssetLock, BUNDLE_ID, BundledAi, InstalledModels, RESOURCE_FOLDER};
 pub use client::{ChatMessage, ChatRequest, Usage};
+pub use fetch::ModelSource;
 pub use manager::{
     AiError, AiManager, BundleState, ComponentKind, Diagnostics, EmbeddingInfo, ManagerConfig,
     OfflineAiState,
 };
 pub use model::{InferenceProvider, ProviderCapabilities};
-pub use model_download::{DownloadPhase, DownloadStatus, ModelHost};
+pub use model_download::{DownloadPhase, DownloadStatus};
 pub use supervisor::{RuntimeState, RuntimeStatus};

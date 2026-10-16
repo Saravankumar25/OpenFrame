@@ -12,8 +12,12 @@
 > install described below is the target design again. The runtime ships in every package; the chat and embedding models
 > and the tokenizer download on the user's click from the signed manifest. This reverses ADR-0025 (2026-10-08), whose
 > bundled-everywhere text is kept as history. **Where this text says the runtime downloads, ADR-0020 decision 1 governs:
-> the runtime is in the package and is never downloaded.** **Build state:** the current build still bundles the models
-> from `packaging/ai/ai-assets.lock.json`; the download flow is an open implementation item in masterplan area 8.
+> the runtime is in the package and is never downloaded.**
+>
+> **Where the models come from: [ADR-0032](../adr/ADR-0032-models-from-hugging-face.md) (2026-10-16).** Straight from
+> the public Hugging Face repositories at the commits `packaging/ai/ai-assets.lock.json` pins, each file checked by the
+> size and SHA-256 compiled into the app; a person who has the files imports them instead. Every mention below of a
+> signed manifest, its key, its sequence or a model host is superseded history.
 
 
 
@@ -45,7 +49,7 @@ If an implementation detail conflicts with an authoritative product rule, the im
 | Language model | Google **Gemma 3 1B Instruct**, GGUF **Q8_0** (chosen by benchmark, §4.2) |
 | Embedding model | **BGE small English v1.5**, GGUF Q8_0, 384 dimensions, CLS pooling (MIT) |
 | Runtime | Pinned llama.cpp `llama-server` build (CPU and Vulkan builds), two managed sidecars |
-| Model distribution | Signed manifest (Ed25519); OpenFrame-controlled endpoint in production |
+| Model distribution | ~~Signed manifest (Ed25519); OpenFrame-controlled endpoint in production~~ Hugging Face at pinned commits, sizes and SHA-256 compiled in (ADR-0032) |
 | AI providers | **Local AI only**; no cloud AI, no API keys, no Ollama |
 | Accounts / telemetry | None / none |
 | Collaboration | File packages only (LAN collaboration removed) |
@@ -161,6 +165,8 @@ Collected locally, never transmitted: OS/arch, total/available RAM, logical/phys
 
 ## 6. Manifest (format 2)
 
+**SUPERSEDED 2026-10-16 by [ADR-0032](../adr/ADR-0032-models-from-hugging-face.md):** no manifest, no signing key, no model host; the models come from Hugging Face at the commits the lock pins, checked by the sizes and SHA-256 compiled into the app.
+
 ```json
 {
   "manifestVersion": 2, "sequence": 2, "channel": "dev", "issuedAt": "2026-09-30",
@@ -249,7 +255,9 @@ Owned by the orchestrator / retrieval / tool layers and specified in `OpenFrame_
 
 ## 15. Update and removal
 
-A newer signed manifest whose profile version or model ids differ shows **Update Offline AI** (panel menu and Settings). Only changed components are downloaded (exact size shown first). The current install keeps working until the new one passes its health check; only then does `active.json` switch, and only then are superseded model/runtime folders (and retired-profile leftovers) deleted. Nothing is updated silently.
+(Superseded by ADR-0032: a model update is a new app version with new pins.) A newer signed manifest whose profile version or model ids differ shows **Update Offline AI** (panel menu and Settings). Only changed components are downloaded (exact size shown first). The current install keeps working until the new one passes its health check; only then does `active.json` switch, and only then are superseded model/runtime folders (and retired-profile leftovers) deleted. Nothing is updated silently.
+
+**Import a model file** (ADR-0032 decision 6; Settings and the download card, also when this copy cannot download): the person picks a `.gguf` file; the app copies it, never moves it, and uses it only when its size and SHA-256 match a file the app pins. A file that matches no pin is refused with a plain message and left where it was. When the last pinned file is in place the set is activated and health-checked like a download.
 
 **Remove Offline AI** (Settings / panel menu, with confirmation) stops both sidecars and deletes every model, runtime and partial download; links/junctions inside the AI folders are removed without following them; nothing outside `models/` and `runtimes/llama/` is touched. Projects and assistant history are unaffected; Offline AI can be downloaded again.
 

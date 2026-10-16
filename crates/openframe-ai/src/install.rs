@@ -5,9 +5,8 @@
 //!
 //! ```text
 //! staging/<version>/<name>.partial   files being downloaded (resumable)
-//! staging/<version>/<name>           a file whose size and SHA-256 matched the signed manifest
-//! staging/<version>/set.json         the signed manifest envelope the set was downloaded from
-//! <version>/<name>, <version>/set.json   an activated set, moved in one rename
+//! staging/<version>/<name>           a file whose size and SHA-256 matched the pins in the app
+//! <version>/<name>                   an activated set, moved in one rename
 //! quarantine/<time>-<name>.bad       a file that failed its check, kept for support, never used
 //! active.json                        { version, tier, previous, activatedAt }
 //! ```
@@ -15,23 +14,18 @@
 //! A file becomes usable only after its size and hash match; a set becomes active only when every
 //! file of the tier is there and checked, by renaming its staging folder and then replacing
 //! `active.json` atomically. The previous set stays until the new one passes a health check, so a
-//! failure never leaves a half-installed model active. On every start the app reads the sizes and
-//! hashes it checks the set against from `set.json`, whose signature is checked again first, so
-//! editing a file in this writable folder can never make the app trust another model.
+//! failure never leaves a half-installed model active. The sizes and hashes the set is checked
+//! against come from the app itself (the compiled lock, ADR-0032), never from this writable folder.
 
 use std::io::Read;
 use std::path::{Path, PathBuf};
 
-use ed25519_dalek::VerifyingKey;
 use openframe_domain::{AppError, AppResult, now_ms};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
 use crate::bundle::{InstalledModels, PinnedFile, models_damaged};
 use crate::download::{FileEntry, Tier};
-
-/// The signed manifest kept with each set.
-pub const SET_FILE: &str = "set.json";
 
 /// Room kept free on top of what the download needs.
 pub const PREFLIGHT_MARGIN_BYTES: u64 = 512 * 1024 * 1024;
@@ -44,9 +38,6 @@ pub struct Active {
     /// The set to fall back to until the new one passes its health check.
     pub previous: Option<String>,
     pub activated_at: i64,
-    /// The highest signed-list sequence this app has activated; an older list is refused.
-    #[serde(default)]
-    pub sequence: u32,
 }
 
 /// Read a small file of this folder, refusing one larger than `max` bytes.
@@ -198,9 +189,8 @@ impl ModelsDir {
 
     /// Step 4b: every file of the tier is checked, so move the set into place in one rename and
     /// point `active.json` at it. The set that was active becomes `previous` until the health check.
-    pub fn activate(&self, version: &str, tier: &Tier, sequence: u32) -> AppResult<Active> {
-        let names = tier.files.iter().map(|f| f.name.as_str());
-        for name in names.chain([SET_FILE]) {
+    pub fn activate(&self, version: &str, tier: &Tier) -> AppResult<Active> {
+        for name in tier.files.iter().map(|f| f.name.as_str()) {
             if !self.staging(version).join(name).is_file() {
                 return Err(install_error(
                     "incomplete",
@@ -217,11 +207,6 @@ impl ModelsDir {
                 "This OpenFrame AI version is already in use.",
                 version.to_string(),
             ));
-        }
-        // A previous set that never passed its health check (two new sets in a row) is no longer
-        // needed once a third becomes active: remove it instead of leaving it on the disk.
-        if let Some(stale) = current.as_ref().and_then(|a| a.previous.clone()) {
-            let _ = std::fs::remove_dir_all(self.set_dir(&stale));
         }
         if dest.exists() {
             // A leftover folder of this version that was never activated: replace it.
@@ -243,7 +228,6 @@ impl ModelsDir {
         let a = Active {
             version: version.to_string(),
             tier: tier.id.clone(),
-            sequence: sequence.max(current.as_ref().map_or(0, |c| c.sequence)),
             previous: current.map(|c| c.version),
             activated_at: now_ms(),
         };
@@ -255,6 +239,27 @@ impl ModelsDir {
                 .collect::<Vec<_>>(),
         );
         Ok(a)
+    }
+
+    /// Remove the active set and its pointer (an import replaces a damaged set of the same version).
+    pub fn remove_active_set(&self) -> AppResult<()> {
+        let Some(a) = self.active() else {
+            return Ok(());
+        };
+        let failed = |e: std::io::Error| {
+            install_error(
+                "remove_failed",
+                "OpenFrame AI could not be removed completely. Close OpenFrame and try again.",
+                e.kind().to_string(),
+            )
+        };
+        // The folder first: if it cannot go, the pointer still names it (reported as damaged),
+        // never an orphaned folder that nothing points to.
+        match std::fs::remove_dir_all(self.set_dir(&a.version)) {
+            Err(e) if e.kind() != std::io::ErrorKind::NotFound => return Err(failed(e)),
+            _ => {}
+        }
+        std::fs::remove_file(self.root.join("active.json")).map_err(failed)
     }
 
     /// Delete set folders that `active.json` no longer names (a previous set that could not be
@@ -304,8 +309,6 @@ impl ModelsDir {
                     tier: a.tier,
                     previous: None,
                     activated_at: now_ms(),
-                    // The higher sequence stays: rolling back never reopens older lists.
-                    sequence: a.sequence,
                 })?;
             }
             _ => match std::fs::remove_file(self.root.join("active.json")) {
@@ -372,29 +375,20 @@ impl ModelsDir {
         {
             if e.file_name().to_str() != Some(keep) {
                 let p = e.path();
-                let _ = std::fs::remove_dir_all(&p).or_else(|_| std::fs::remove_file(&p));
+                if let Err(err) = std::fs::remove_dir_all(&p).or_else(|_| std::fs::remove_file(&p))
+                {
+                    tracing::warn!(kind = %err.kind(), "an old OpenFrame AI download could not be removed yet");
+                }
             }
         }
     }
 
-    /// Keep the signed manifest with the set being downloaded (activation needs it).
-    pub fn stage_manifest(&self, version: &str, envelope: &[u8]) -> AppResult<()> {
-        std::fs::create_dir_all(self.staging(version))
-            .and_then(|()| std::fs::write(self.staging(version).join(SET_FILE), envelope))
-            .map_err(|e| {
-                install_error(
-                    "write_failed",
-                    "OpenFrame AI could not be saved.",
-                    e.kind().to_string(),
-                )
-            })
-    }
-
-    /// The set the app uses: `active.json` names it, and its `set.json` still checks out against
-    /// `keys` and lists one chat and one embedding file for the active tier. `Ok(None)` when
-    /// nothing is installed; `Err(models_damaged)` when the pointer or the signed list is unusable.
-    /// The files themselves are checked by the caller (`BundledAi::verify`).
-    pub fn installed(&self, keys: &[VerifyingKey]) -> AppResult<Option<InstalledModels>> {
+    /// The set the app uses: `active.json` names this app's pinned set `version`, and the
+    /// sizes and hashes come from the pins in `tier`. `Ok(None)` when nothing is installed, or
+    /// when the set on disk belongs to other pins (an app update with other models: it is
+    /// downloaded again, and the old set is removed then). `Err(models_damaged)` when the pointer
+    /// is unusable. The files themselves are checked by the caller (`BundledAi::verify`).
+    pub fn installed(&self, version: &str, tier: &Tier) -> AppResult<Option<InstalledModels>> {
         if !self.root.join("active.json").exists() {
             return Ok(None);
         }
@@ -402,17 +396,9 @@ impl ModelsDir {
         let a = self
             .active()
             .ok_or_else(|| bad("active.json is unreadable"))?;
-        let dir = self.set_dir(&a.version);
-        let envelope = read_small(&dir.join(SET_FILE), crate::download::MAX_ENVELOPE_BYTES)
-            .ok_or_else(|| bad("set.json is missing or too large"))?;
-        let m = crate::download::verify(&envelope, keys)
-            .map_err(|e| bad(&format!("set.json: {}", e.detail.unwrap_or_default())))?;
-        if m.manifest_version != a.version {
-            return Err(bad("set.json belongs to another version"));
+        if a.version != version {
+            return Ok(None);
         }
-        let tier = m
-            .tier(&a.tier)
-            .ok_or_else(|| bad("the active tier is not in set.json"))?;
         let pick = |role: &str| {
             tier.files
                 .iter()
@@ -422,18 +408,88 @@ impl ModelsDir {
                     bytes: f.bytes,
                     sha256: f.sha256.clone(),
                 })
-                .ok_or_else(|| bad("set.json lacks a model"))
+                .ok_or_else(|| bad("the pins lack a model"))
         };
         Ok(Some(InstalledModels {
-            version: a.version,
-            dir,
+            version: a.version.clone(),
+            dir: self.set_dir(&a.version),
             chat: pick("chat")?,
             embedding: pick("embedding")?,
         }))
     }
 }
 
-/// Size and SHA-256 of a file against its manifest entry.
+impl ModelsDir {
+    /// Manual import (ADR-0032 decision 5): a file the person picked is used only when its size
+    /// and SHA-256 match a pinned model. It is copied, never moved, into staging and checked again
+    /// there like a download. The person's own file is never changed or set aside.
+    pub fn import_file(&self, version: &str, tier: &Tier, src: &Path) -> AppResult<FileEntry> {
+        let not_model = |d: String| {
+            install_error(
+                "not_a_model",
+                "This file is not an OpenFrame AI model file, so it was not used. Nothing was changed.",
+                d,
+            )
+        };
+        let meta = std::fs::symlink_metadata(src).map_err(|e| {
+            install_error(
+                "file_busy",
+                "The chosen file could not be read. Nothing was changed.",
+                e.kind().to_string(),
+            )
+        })?;
+        if !meta.file_type().is_file() {
+            return Err(not_model("not a regular file".into()));
+        }
+        let same_size: Vec<&FileEntry> = tier
+            .files
+            .iter()
+            .filter(|f| f.bytes == meta.len())
+            .collect();
+        if same_size.is_empty() {
+            return Err(not_model(format!(
+                "{} bytes match no pinned model",
+                meta.len()
+            )));
+        }
+        let mut found = None;
+        for f in same_size {
+            let matches = file_matches(src, f).map_err(|e| {
+                install_error(
+                    "file_busy",
+                    "The chosen file could not be read. Nothing was changed.",
+                    e.kind().to_string(),
+                )
+            })?;
+            if matches {
+                found = Some(f);
+                break;
+            }
+        }
+        let f = found.ok_or_else(|| not_model("its SHA-256 matches no pinned model".into()))?;
+        let write = |e: std::io::Error| {
+            install_error(
+                "write_failed",
+                "OpenFrame AI could not be saved.",
+                e.kind().to_string(),
+            )
+        };
+        std::fs::create_dir_all(self.staging(version)).map_err(write)?;
+        std::fs::copy(src, self.partial(version, f)).map_err(write)?;
+        // The copy is hashed again: a file that changed while it was copied is refused in import
+        // words, not download words.
+        self.check_file(version, f).map_err(|e| {
+            if e.is("ai.file_damaged") {
+                not_model("the copy did not match; the file changed while it was copied".into())
+            } else {
+                e
+            }
+        })?;
+        Ok(f.clone())
+    }
+}
+
+/// Size and SHA-256 of a file against its pinned entry.
 pub fn file_matches(path: &Path, f: &FileEntry) -> std::io::Result<bool> {
     if std::fs::metadata(path)?.len() != f.bytes {
         return Ok(false);
@@ -458,7 +514,10 @@ mod tests {
     fn entry(name: &str, body: &[u8], role: &str) -> FileEntry {
         FileEntry {
             name: name.into(),
-            path: format!("m/{name}"),
+            url: format!(
+                "https://huggingface.co/o/r/resolve/{}/{name}",
+                "a".repeat(40)
+            ),
             bytes: body.len() as u64,
             sha256: hex::encode(Sha256::digest(body)),
             role: role.into(),
@@ -468,9 +527,6 @@ mod tests {
     fn tier(files: Vec<FileEntry>) -> Tier {
         Tier {
             id: "small".into(),
-            label: "Standard".into(),
-            min_memory_gb: 8,
-            requires_runtime: "b11259".into(),
             files,
         }
     }
@@ -548,14 +604,11 @@ mod tests {
         // Only one of two files checked: nothing is activated.
         put_partial(&d, "v1", &c1, b"chat one");
         d.check_file("v1", &c1).unwrap();
-        assert!(d.activate("v1", &t1, 1).unwrap_err().is("ai.incomplete"));
+        assert!(d.activate("v1", &t1).unwrap_err().is("ai.incomplete"));
         assert!(d.active().is_none());
         put_partial(&d, "v1", &e1, b"embed one");
         d.check_file("v1", &e1).unwrap();
-        // Every model file but no signed list: still nothing is activated.
-        assert!(d.activate("v1", &t1, 1).unwrap_err().is("ai.incomplete"));
-        d.stage_manifest("v1", b"{}").unwrap();
-        let a = d.activate("v1", &t1, 1).unwrap();
+        let a = d.activate("v1", &t1).unwrap();
         assert_eq!((a.version.as_str(), a.previous.as_deref()), ("v1", None));
         assert!(active_complete(&d, &t1));
         // A second version becomes active; v1 stays as the fallback until the health check.
@@ -568,15 +621,11 @@ mod tests {
             put_partial(&d, "v2", f, b);
             d.check_file("v2", f).unwrap();
         }
-        d.stage_manifest("v2", b"{}").unwrap();
-        let a = d.activate("v2", &t2, 2).unwrap();
-        assert_eq!(a.sequence, 2);
+        let a = d.activate("v2", &t2).unwrap();
         assert_eq!(a.previous.as_deref(), Some("v1"));
-        // The new set fails its health check: back to v1, the bad set is set aside; the higher
-        // sequence is kept, so the older list stays refused.
+        // The new set fails its health check: back to v1, the bad set is set aside.
         d.roll_back().unwrap();
         assert_eq!(d.active().unwrap().version, "v1");
-        assert_eq!(d.active().unwrap().sequence, 2);
         assert!(!d.set_dir("v2").exists());
         assert!(active_complete(&d, &t1));
         // Activate v2 again from a fresh download and confirm it: v1 goes away.
@@ -584,8 +633,7 @@ mod tests {
             put_partial(&d, "v2", f, b);
             d.check_file("v2", f).unwrap();
         }
-        d.stage_manifest("v2", b"{}").unwrap();
-        d.activate("v2", &t2, 2).unwrap();
+        d.activate("v2", &t2).unwrap();
         d.confirm_healthy().unwrap();
         assert_eq!(d.active().unwrap().previous, None);
         assert!(!d.set_dir("v1").exists());
@@ -619,44 +667,76 @@ mod tests {
     }
 
     #[test]
-    fn the_set_in_use_is_read_from_its_signed_list_and_a_changed_list_is_refused() {
-        use crate::download::tests::{envelope, payload, test_key};
+    fn the_set_in_use_is_the_pinned_one_and_another_set_counts_as_not_installed() {
         let dir = tempfile::tempdir().unwrap();
         let d = ModelsDir::new(dir.path());
-        let k = test_key();
-        let keys = [k.verifying_key()];
-        assert_eq!(d.installed(&keys).unwrap(), None, "nothing downloaded yet");
-        let v = "2026.11.1";
-        std::fs::create_dir_all(d.set_dir(v)).unwrap();
-        std::fs::write(d.set_dir(v).join(SET_FILE), envelope(&payload(), &k)).unwrap();
+        let t = tier(vec![
+            entry("chat.gguf", b"chat", "chat"),
+            entry("embed.gguf", b"embed", "embedding"),
+        ]);
+        assert_eq!(
+            d.installed("m-1", &t).unwrap(),
+            None,
+            "nothing downloaded yet"
+        );
         d.write_active(&Active {
-            version: v.into(),
+            version: "m-1".into(),
             tier: "small".into(),
             previous: None,
             activated_at: 0,
-            sequence: 3,
         })
         .unwrap();
-        let m = d.installed(&keys).unwrap().unwrap();
-        assert_eq!(m.chat.path, "chat.gguf");
-        assert_eq!(m.embedding.bytes, 37_000_000);
-        assert_eq!(m.dir, d.set_dir(v));
-        // Another key, a list edited in place, or no list at all: the set is not used.
-        let other = ed25519_dalek::SigningKey::from_bytes(&[9u8; 32]).verifying_key();
-        assert!(d.installed(&[other]).unwrap_err().is("ai.models_damaged"));
-        let mut edited = payload();
-        edited["tiers"][0]["files"][0]["sha256"] = serde_json::json!("b".repeat(64));
-        let mut env: serde_json::Value = serde_json::from_slice(&envelope(&payload(), &k)).unwrap();
-        let resigned: serde_json::Value = serde_json::from_slice(&envelope(&edited, &k)).unwrap();
-        // The edited payload under the original signature.
-        env["payload"] = resigned["payload"].clone();
-        std::fs::write(
-            d.set_dir(v).join(SET_FILE),
-            serde_json::to_vec(&env).unwrap(),
-        )
-        .unwrap();
-        assert!(d.installed(&keys).unwrap_err().is("ai.models_damaged"));
-        std::fs::remove_file(d.set_dir(v).join(SET_FILE)).unwrap();
-        assert!(d.installed(&keys).unwrap_err().is("ai.models_damaged"));
+        let m = d.installed("m-1", &t).unwrap().unwrap();
+        assert_eq!((m.chat.path.as_str(), m.embedding.bytes), ("chat.gguf", 5));
+        assert_eq!(m.dir, d.set_dir("m-1"));
+        // An app with other pins: the set on disk is not used (it is downloaded again).
+        assert_eq!(d.installed("m-2", &t).unwrap(), None);
+        // A pointer that does not parse is damage, never a quiet "nothing installed".
+        std::fs::write(dir.path().join("active.json"), b"{nope").unwrap();
+        assert!(d.installed("m-1", &t).unwrap_err().is("ai.models_damaged"));
+    }
+
+    #[test]
+    fn an_imported_file_is_used_only_when_it_matches_a_pin_and_is_copied_not_moved() {
+        let dir = tempfile::tempdir().unwrap();
+        let d = ModelsDir::new(dir.path().join("models"));
+        let (c, e) = (
+            entry("chat.gguf", b"the chat model", "chat"),
+            entry("embed.gguf", b"the embed model", "embedding"),
+        );
+        let t = tier(vec![c.clone(), e.clone()]);
+        let mine = dir.path().join("my-copy.gguf");
+        std::fs::write(&mine, b"the chat model").unwrap();
+        let got = d.import_file("m-1", &t, &mine).unwrap();
+        assert_eq!(got.name, "chat.gguf");
+        assert!(d.checked("m-1", &c).is_file(), "ready for activation");
+        assert!(mine.is_file(), "the person's file stays where it was");
+        // Same size, other bytes: refused, and the person's file is not set aside.
+        let wrong = dir.path().join("wrong.gguf");
+        std::fs::write(&wrong, b"the CHAT model").unwrap();
+        assert!(
+            d.import_file("m-1", &t, &wrong)
+                .unwrap_err()
+                .is("ai.not_a_model")
+        );
+        assert!(wrong.is_file());
+        assert!(!dir.path().join("models").join("quarantine").exists());
+        // Another size, or a folder: refused.
+        std::fs::write(&wrong, b"x").unwrap();
+        assert!(
+            d.import_file("m-1", &t, &wrong)
+                .unwrap_err()
+                .is("ai.not_a_model")
+        );
+        assert!(
+            d.import_file("m-1", &t, dir.path())
+                .unwrap_err()
+                .is("ai.not_a_model")
+        );
+        // With the second file imported too, the set can be activated.
+        let mine2 = dir.path().join("embed-copy.gguf");
+        std::fs::write(&mine2, b"the embed model").unwrap();
+        d.import_file("m-1", &t, &mine2).unwrap();
+        assert_eq!(d.activate("m-1", &t).unwrap().version, "m-1");
     }
 }

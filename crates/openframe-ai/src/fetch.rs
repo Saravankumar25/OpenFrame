@@ -1,14 +1,13 @@
-//! Download after install, step 2: fetching (ADR-0026 decision 5; Windows phase W8).
+//! Download after install: fetching (ADR-0026 decision 5, ADR-0032; Windows phase W8).
 //!
-//! HTTPS only: the base address must be `https://`. The one exception is a build whose compiled-in
-//! model host is the loopback address (the local test host of the test suite and CI, ADR-0026
-//! decision 10): it may use plain HTTP there and nowhere else. The address is fixed at build time, so
-//! nothing at run time can turn a production build towards plain HTTP. A redirect is
-//! followed only to the same scheme, host and port. Every file goes to `<name>.partial` and resumes
-//! with an HTTP range request; the bytes written can never exceed the size the signed manifest gives.
-//! Each read has a time limit, so a stalled host ends in an error instead of a hang, and a pause is a
-//! cancel that keeps the `.partial` file for the next resume. Nothing here makes a file usable: the
-//! size and hash check and the atomic activation come after (`install.rs`).
+//! Every model file comes from its Hugging Face `resolve` address at the commit pinned in the app,
+//! over HTTPS. A redirect is followed only to `huggingface.co` or a host under `hf.co`, at most
+//! five times; nothing else is ever contacted. A test build may name a loopback test host instead
+//! (`OPENFRAME_TEST_MODEL_SOURCE`): plain HTTP there and nowhere else. Every file goes to
+//! `<name>.partial` and resumes with an HTTP range request; the bytes written can never exceed the
+//! pinned size. Each read has a time limit, so a stalled host ends in an error instead of a hang, and
+//! a pause is a cancel that keeps the `.partial` file for the next resume. Nothing here makes a file
+//! usable: the size and hash check and the atomic activation come after (`install.rs`).
 
 use std::io::{Seek, SeekFrom, Write};
 use std::path::Path;
@@ -18,12 +17,13 @@ use std::time::Duration;
 use openframe_domain::{AppError, AppResult};
 use reqwest::{StatusCode, Url, header};
 
-use crate::download::{FileEntry, MAX_ENVELOPE_BYTES};
+use crate::download::{FileEntry, huggingface_url_ok};
 
-/// The model host, as configured at build time (`MODEL_DISTRIBUTION_BASE_URL`).
+/// Where the model files come from: Hugging Face (every build for people), or the loopback test
+/// host a test build is made with (ADR-0032 decision 3).
 #[derive(Debug, Clone)]
-pub struct Source {
-    base: Url,
+pub struct ModelSource {
+    test: Option<Url>,
 }
 
 fn failed(detail: impl Into<String>) -> AppError {
@@ -34,59 +34,88 @@ fn failed(detail: impl Into<String>) -> AppError {
     .with_detail(detail.into())
 }
 
-impl Source {
-    /// `allow_loopback_http` lets a build whose compiled-in host is the local test host reach it
-    /// over plain HTTP; any other address must be https.
-    pub fn new(base: &str, allow_loopback_http: bool) -> AppResult<Self> {
+impl ModelSource {
+    pub fn huggingface() -> Self {
+        ModelSource { test: None }
+    }
+
+    /// The loopback test host: plain HTTP on `127.0.0.1` or `localhost`, nothing else.
+    pub fn test_host(base: &str) -> AppResult<Self> {
         let mut url =
-            Url::parse(base.trim()).map_err(|_| failed("the model host address is not valid"))?;
-        let loopback = matches!(url.host_str(), Some("127.0.0.1" | "localhost" | "[::1]"));
-        let ok = match url.scheme() {
-            "https" => true,
-            "http" => allow_loopback_http && loopback,
-            _ => false,
-        };
-        if !ok || url.cannot_be_a_base() || !url.username().is_empty() || url.password().is_some() {
-            return Err(failed("the model host must be an https address"));
+            Url::parse(base.trim()).map_err(|_| failed("the test host address is not valid"))?;
+        let loopback = matches!(url.host_str(), Some("127.0.0.1" | "localhost"));
+        if url.scheme() != "http"
+            || !loopback
+            || !url.username().is_empty()
+            || url.password().is_some()
+        {
+            return Err(failed("the test host must be http on the loopback address"));
         }
         if !url.path().ends_with('/') {
             let p = format!("{}/", url.path());
             url.set_path(&p);
         }
-        Ok(Source { base: url })
+        Ok(ModelSource { test: Some(url) })
     }
 
-    /// The address of a file the manifest names (already checked to be a safe relative path).
-    pub fn url(&self, rel: &str) -> AppResult<Url> {
-        let u = self
-            .base
-            .join(rel)
-            .map_err(|_| failed("a file address is not valid"))?;
-        if !same_origin(&u, &self.base) || !u.path().starts_with(self.base.path()) {
-            return Err(failed("a file address leaves the model host"));
+    /// The build value `OPENFRAME_TEST_MODEL_SOURCE`: absent means Hugging Face; a loopback address
+    /// means that test host; anything else means this build cannot download (the shell logs it).
+    pub fn from_build(test: Option<&str>) -> Option<Self> {
+        match test.map(str::trim).filter(|t| !t.is_empty()) {
+            None => Some(Self::huggingface()),
+            Some(t) => Self::test_host(t).ok(),
         }
-        Ok(u)
+    }
+
+    pub fn is_test(&self) -> bool {
+        self.test.is_some()
+    }
+
+    /// The address of a pinned file: its Hugging Face address, or the same path on the test host.
+    pub fn url_for(&self, pinned: &str) -> AppResult<Url> {
+        if !huggingface_url_ok(pinned) {
+            return Err(failed("not a pinned Hugging Face address"));
+        }
+        let u = Url::parse(pinned).map_err(|_| failed("a file address is not valid"))?;
+        match &self.test {
+            None => Ok(u),
+            Some(t) => t
+                .join(u.path().trim_start_matches('/'))
+                .map_err(|_| failed("a file address is not valid")),
+        }
+    }
+
+    /// A response or a redirect may come only from Hugging Face's own hosts over https, or from
+    /// the test host itself.
+    pub fn allowed(&self, u: &Url) -> bool {
+        match &self.test {
+            Some(t) => {
+                u.scheme() == t.scheme()
+                    && u.host_str() == t.host_str()
+                    && u.port_or_known_default() == t.port_or_known_default()
+            }
+            None => {
+                u.scheme() == "https"
+                    && u.username().is_empty()
+                    && u.password().is_none()
+                    && u.port().is_none()
+                    && matches!(u.host_str(), Some(h) if h == "huggingface.co" || h.ends_with(".hf.co"))
+            }
+        }
     }
 }
 
-fn same_origin(a: &Url, b: &Url) -> bool {
-    a.scheme() == b.scheme()
-        && a.host_str() == b.host_str()
-        && a.port_or_known_default() == b.port_or_known_default()
-}
-
-/// The HTTP client: redirects only within the model host, no cookies, bounded waits.
-pub fn client(source: &Source) -> AppResult<reqwest::Client> {
-    let base = source.base.clone();
-    let loopback = matches!(base.host_str(), Some("127.0.0.1" | "localhost" | "[::1]"));
-    let builder = if loopback {
+/// The HTTP client: redirects only to allowed hosts, no cookies, bounded waits.
+pub fn client(source: &ModelSource) -> AppResult<reqwest::Client> {
+    let check = source.clone();
+    let builder = if source.is_test() {
         reqwest::Client::builder().no_proxy()
     } else {
         reqwest::Client::builder()
     };
     builder
         .redirect(reqwest::redirect::Policy::custom(move |attempt| {
-            if attempt.previous().len() >= 5 || !same_origin(attempt.url(), &base) {
+            if attempt.previous().len() >= 5 || !check.allowed(attempt.url()) {
                 attempt.stop()
             } else {
                 attempt.follow()
@@ -94,40 +123,10 @@ pub fn client(source: &Source) -> AppResult<reqwest::Client> {
         }))
         .connect_timeout(Duration::from_secs(20))
         .read_timeout(Duration::from_secs(60))
-        .https_only(!loopback)
+        .https_only(!source.is_test())
         .user_agent(concat!("OpenFrameStudio/", env!("CARGO_PKG_VERSION")))
         .build()
         .map_err(|e| failed(e.to_string()))
-}
-
-/// The signed manifest envelope, at most `MAX_ENVELOPE_BYTES`.
-pub async fn fetch_manifest(
-    http: &reqwest::Client,
-    source: &Source,
-    rel: &str,
-) -> AppResult<Vec<u8>> {
-    let mut resp = http
-        .get(source.url(rel)?)
-        .send()
-        .await
-        .map_err(|e| failed(e.to_string()))?;
-    if resp.status() != StatusCode::OK {
-        return Err(failed(format!(
-            "the host answered {}",
-            resp.status().as_u16()
-        )));
-    }
-    if !same_origin(resp.url(), &source.base) {
-        return Err(failed("the host sent the list from somewhere else"));
-    }
-    let mut body = Vec::new();
-    while let Some(chunk) = resp.chunk().await.map_err(|e| failed(e.to_string()))? {
-        body.extend_from_slice(&chunk);
-        if body.len() > MAX_ENVELOPE_BYTES {
-            return Err(failed("the download list is larger than allowed"));
-        }
-    }
-    Ok(body)
 }
 
 /// Resolves once `cancel` is set (checked every quarter second).
@@ -148,7 +147,7 @@ pub fn cancelled() -> AppError {
 /// held so far. Returns when the file holds exactly `entry.bytes` bytes (not yet hash-checked).
 pub async fn download_file(
     http: &reqwest::Client,
-    source: &Source,
+    source: &ModelSource,
     entry: &FileEntry,
     partial: &Path,
     progress: &(dyn Fn(u64) + Send + Sync),
@@ -162,13 +161,15 @@ pub async fn download_file(
         progress(have);
         return Ok(());
     }
-    let mut req = http.get(source.url(&entry.path)?);
+    let mut req = http.get(source.url_for(&entry.url)?);
     if have > 0 {
         req = req.header(header::RANGE, format!("bytes={have}-"));
     }
     let mut resp = req.send().await.map_err(|e| failed(e.to_string()))?;
-    if !same_origin(resp.url(), &source.base) {
-        return Err(failed("the host sent the file from somewhere else"));
+    if !source.allowed(resp.url()) {
+        return Err(failed(
+            "the file came from somewhere other than Hugging Face",
+        ));
     }
     let resume = match resp.status() {
         StatusCode::PARTIAL_CONTENT => {
@@ -215,10 +216,10 @@ pub async fn download_file(
         let Some(chunk) = next else { break };
         held += chunk.len() as u64;
         if held > entry.bytes {
-            // More than the signed size: never keep it.
+            // More than the pinned size: never keep it.
             drop(file);
             let _ = std::fs::remove_file(partial);
-            return Err(failed("the host sent more than the signed size"));
+            return Err(failed("the host sent more than the pinned size"));
         }
         file.write_all(&chunk)
             .map_err(|e| failed(format!("cannot write the download: {}", e.kind())))?;
@@ -255,6 +256,13 @@ pub(crate) mod tests {
         NoRanges,
         /// Answer every request with a redirect to another host.
         RedirectAway,
+    }
+
+    pub(crate) const REV: &str = "0123456789abcdef0123456789abcdef01234567";
+
+    /// Where the test host serves a file of this name (its Hugging Face path).
+    pub(crate) fn hf_path(name: &str) -> String {
+        format!("o/r/resolve/{REV}/{name}")
     }
 
     pub(crate) fn host(files: Vec<(String, Vec<u8>)>, mode: Mode) -> TestHost {
@@ -330,7 +338,7 @@ pub(crate) mod tests {
     fn entry(name: &str, bytes: u64) -> FileEntry {
         FileEntry {
             name: name.into(),
-            path: format!("models/{name}"),
+            url: format!("https://huggingface.co/{}", hf_path(name)),
             bytes,
             sha256: "0".repeat(64),
             role: "chat".into(),
@@ -345,20 +353,44 @@ pub(crate) mod tests {
     }
 
     #[test]
-    fn only_https_or_the_loopback_test_host_is_accepted() {
-        assert!(Source::new("https://models.example.com/ai", false).is_ok());
-        assert!(Source::new("http://models.example.com/ai", true).is_err());
-        assert!(Source::new("ftp://models.example.com/", true).is_err());
-        assert!(Source::new("https://user:pw@models.example.com/", false).is_err());
-        assert!(Source::new("http://127.0.0.1:9/", true).is_ok());
-        assert!(Source::new("http://127.0.0.1:9/", false).is_err());
-        let s = Source::new("https://models.example.com/ai", false).unwrap();
-        assert_eq!(
-            s.url("models/x.gguf").unwrap().as_str(),
-            "https://models.example.com/ai/models/x.gguf"
+    fn only_hugging_face_hosts_over_https_or_the_loopback_test_host_are_used() {
+        let hf = ModelSource::huggingface();
+        let ok = |s: &str| hf.allowed(&Url::parse(s).unwrap());
+        assert!(ok("https://huggingface.co/o/r/resolve/x/m.gguf"));
+        assert!(ok("https://us.aws.cdn.hf.co/xet-bridge-us/abc?sig=1"));
+        assert!(ok("https://cdn-lfs.hf.co/repos/x"));
+        for bad in [
+            "http://huggingface.co/x",
+            "http://us.aws.cdn.hf.co/x",
+            "https://evilhf.co/x",
+            "https://huggingface.co.evil.example/x",
+            "https://hf.co.evil.example/x",
+            "https://user:pw@huggingface.co/x",
+            "https://huggingface.co:8443/x",
+            "https://127.0.0.1/x",
+        ] {
+            assert!(!ok(bad), "{bad}");
+        }
+        let pinned = format!("https://huggingface.co/{}", hf_path("m.gguf"));
+        assert_eq!(hf.url_for(&pinned).unwrap().as_str(), pinned);
+        assert!(
+            hf.url_for("https://evil.example/m.gguf").is_err(),
+            "only pinned addresses"
         );
-        assert!(s.url("https://evil.example/x").is_err());
-        assert!(s.url("//evil.example/x").is_err());
+        // The test host: the same path, loopback HTTP only, and nothing else allowed.
+        let t = ModelSource::test_host("http://127.0.0.1:47811").unwrap();
+        assert_eq!(
+            t.url_for(&pinned).unwrap().as_str(),
+            format!("http://127.0.0.1:47811/{}", hf_path("m.gguf"))
+        );
+        assert!(!t.allowed(&Url::parse("https://huggingface.co/x").unwrap()));
+        assert!(ModelSource::test_host("http://models.example.com/").is_err());
+        assert!(ModelSource::test_host("https://127.0.0.1/").is_err());
+        assert!(ModelSource::from_build(None).is_some_and(|s| !s.is_test()));
+        assert!(
+            ModelSource::from_build(Some("http://127.0.0.1:47811/")).is_some_and(|s| s.is_test())
+        );
+        assert!(ModelSource::from_build(Some("https://models.example.com/")).is_none());
     }
 
     #[test]
@@ -370,10 +402,10 @@ pub(crate) mod tests {
         let rt = rt();
         // A host that cuts the first answer short leaves a .partial file and an error.
         let cut = host(
-            vec![("models/chat.gguf".into(), body.clone())],
+            vec![(hf_path("chat.gguf"), body.clone())],
             Mode::CutAfter(70_000),
         );
-        let src = Source::new(&cut.base, true).unwrap();
+        let src = ModelSource::test_host(&cut.base).unwrap();
         let http = client(&src).unwrap();
         let no = AtomicBool::new(false);
         assert!(
@@ -383,11 +415,8 @@ pub(crate) mod tests {
         let after_cut = std::fs::metadata(&partial).unwrap().len();
         assert!(after_cut > 0 && after_cut < body.len() as u64);
         // A whole host resumes from that point with a range request.
-        let ok = host(
-            vec![("models/chat.gguf".into(), body.clone())],
-            Mode::Normal,
-        );
-        let src = Source::new(&ok.base, true).unwrap();
+        let ok = host(vec![(hf_path("chat.gguf"), body.clone())], Mode::Normal);
+        let src = ModelSource::test_host(&ok.base).unwrap();
         let http = client(&src).unwrap();
         let seen = std::sync::Mutex::new(Vec::new());
         rt.block_on(download_file(
@@ -418,8 +447,8 @@ pub(crate) mod tests {
         let dir = tempfile::tempdir().unwrap();
         let partial = dir.path().join("x.partial");
         std::fs::write(&partial, vec![5u8; 20_000]).unwrap();
-        let h = host(vec![("models/x.gguf".into(), body.clone())], Mode::NoRanges);
-        let src = Source::new(&h.base, true).unwrap();
+        let h = host(vec![(hf_path("x.gguf"), body.clone())], Mode::NoRanges);
+        let src = ModelSource::test_host(&h.base).unwrap();
         let http = client(&src).unwrap();
         rt().block_on(download_file(
             &http,
@@ -434,16 +463,13 @@ pub(crate) mod tests {
     }
 
     #[test]
-    fn more_than_the_signed_size_a_redirect_away_and_a_pause_are_all_stopped() {
+    fn more_than_the_pinned_size_a_redirect_away_and_a_pause_are_all_stopped() {
         let dir = tempfile::tempdir().unwrap();
         let rt = rt();
         let no = AtomicBool::new(false);
-        // The host sends 60 000 bytes for a file the manifest signs as 10 000.
-        let big = host(
-            vec![("models/x.gguf".into(), vec![1u8; 60_000])],
-            Mode::Normal,
-        );
-        let src = Source::new(&big.base, true).unwrap();
+        // The host sends 60 000 bytes for a file pinned at 10 000.
+        let big = host(vec![(hf_path("x.gguf"), vec![1u8; 60_000])], Mode::Normal);
+        let src = ModelSource::test_host(&big.base).unwrap();
         let http = client(&src).unwrap();
         let partial = dir.path().join("x.partial");
         assert!(
@@ -460,7 +486,7 @@ pub(crate) mod tests {
         assert!(!partial.exists(), "an oversized download is not kept");
         // A redirect to another host is never followed.
         let away = host(vec![], Mode::RedirectAway);
-        let src = Source::new(&away.base, true).unwrap();
+        let src = ModelSource::test_host(&away.base).unwrap();
         let http = client(&src).unwrap();
         assert!(
             rt.block_on(download_file(
@@ -473,16 +499,9 @@ pub(crate) mod tests {
             ))
             .is_err()
         );
-        assert!(
-            rt.block_on(fetch_manifest(&http, &src, "manifest.json"))
-                .is_err()
-        );
         // Pause: the cancel flag stops the copy and keeps what was written.
-        let h = host(
-            vec![("models/y.gguf".into(), vec![2u8; 300_000])],
-            Mode::Normal,
-        );
-        let src = Source::new(&h.base, true).unwrap();
+        let h = host(vec![(hf_path("y.gguf"), vec![2u8; 300_000])], Mode::Normal);
+        let src = ModelSource::test_host(&h.base).unwrap();
         let http = client(&src).unwrap();
         let stop = AtomicBool::new(true);
         let err = rt

@@ -8,6 +8,7 @@
 //!   before the click, without any network use; progress after it);
 //! - `ai.download.start` / `ai.download.pause`: the person's click; the only network use of
 //!   the app;
+//! - `ai.download.import`: use a model file the person already has (ADR-0032 decision 6);
 //! - `ai.download.remove`: delete the downloaded models (AI is off until the next download);
 //! - `ai.graphics.set`: Settings, Graphics card, Automatic or Off (ADR-0029);
 //! - `ai.stop_runtime`: free memory (the engines start again on the next request);
@@ -16,7 +17,7 @@
 
 use openframe_ai::{BundleState, ComponentKind, DownloadPhase, RuntimeState};
 use openframe_domain::{Actor, AppError, AppResult};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
 use super::service::service;
@@ -66,7 +67,8 @@ pub struct AiComponentDto {
 #[ts(export)]
 #[serde(rename_all = "camelCase")]
 pub struct AiDownloadDto {
-    /// This build has a model host (a release build always has).
+    /// This build can download (every build for people can; only a test build made with an invalid
+    /// test host cannot). Importing a model file works either way.
     pub can_download: bool,
     /// Idle | Checking | Downloading | Installing | Paused | Failed | Done
     pub phase: String,
@@ -229,6 +231,47 @@ pub fn download_start(core: &AppCore, _actor: &Actor, _: super::AiEmptyArgs) -> 
 pub fn download_pause(core: &AppCore, _actor: &Actor, _: super::AiEmptyArgs) -> AppResult<()> {
     service(core).manager()?.pause_download();
     Ok(())
+}
+
+#[derive(Debug, Deserialize, TS)]
+#[ts(export)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct AiImportArgs {
+    /// A model file chosen in the Open dialog.
+    pub path: String,
+}
+
+#[derive(Debug, Clone, Serialize, TS)]
+#[ts(export)]
+#[serde(rename_all = "camelCase")]
+pub struct AiImportResult {
+    /// Every pinned file is in place and OpenFrame AI passed its health check. False: the file
+    /// was kept and another pinned file is still needed.
+    pub complete: bool,
+}
+
+/// Use a model file the person already has (ADR-0032 decision 6): copied, never moved, and used
+/// only when its size and SHA-256 match a file this app pins.
+pub fn download_import(
+    core: &AppCore,
+    _actor: &Actor,
+    a: AiImportArgs,
+) -> AppResult<AiImportResult> {
+    let raw = a.path.trim();
+    let p = std::path::PathBuf::from(raw);
+    if raw.is_empty() || !p.is_absolute() {
+        return Err(AppError::invalid_input(
+            "Choose the model file with the Open dialog.",
+        ));
+    }
+    // A network share is refused: opening a path the webview sent must never reach the network.
+    openframe_security::check_user_path(&p, openframe_security::NetworkPaths::Refuse)?;
+    let complete = service(core)
+        .manager()?
+        .import_model_file(&p)
+        .map_err(plain)?;
+    tracing::info!("an OpenFrame AI model file was imported");
+    Ok(AiImportResult { complete })
 }
 
 pub fn download_remove(core: &AppCore, _actor: &Actor, _: super::AiEmptyArgs) -> AppResult<()> {

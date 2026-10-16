@@ -9,7 +9,7 @@ import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { closeSync, copyFileSync, linkSync, mkdirSync, openSync, readFileSync, readSync, readdirSync, renameSync, rmSync, statSync, writeSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
-import { preinstallModels } from "./model-host.mjs";
+import { pins, preinstallModels } from "./model-host.mjs";
 import { click, sleep } from "./app.mjs";
 import { projectMenu } from "./flows.mjs";
 
@@ -303,9 +303,9 @@ function walk(dir, base = dir, out = []) {
 /** The installed model file for a role ("chat" or "embedding"). */
 export function modelFile(role) {
   const active = JSON.parse(readFileSync(join(MODELS_DIR, "active.json"), "utf8"));
-  const set = JSON.parse(readFileSync(join(MODELS_DIR, active.version, "set.json"), "utf8"));
-  const files = JSON.parse(Buffer.from(set.payload, "base64").toString("utf8")).tiers[0].files;
-  const f = files.find((x) => x.role === role);
+  const p = pins();
+  assert.equal(active.version, p.version, "the installed set is the one this build pins");
+  const f = p.files.find((x) => x.role === role);
   assert.ok(f, `no ${role} model in the installed set`);
   return join(MODELS_DIR, active.version, f.name);
 }

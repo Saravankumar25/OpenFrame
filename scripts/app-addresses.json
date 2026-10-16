@@ -6,6 +6,7 @@
     { "address": "http://localhost:1420", "online": false, "why": "Vite development server (devUrl); not used by release builds." },
     { "address": "http://ipc.localhost", "online": false, "why": "Tauri IPC origin in the content security policy; local to the app, never the network." },
     { "address": "http://ofasset.localhost", "online": false, "why": "Local asset protocol for project images (asset_scope.rs and the content security policy); never the network." },
+    { "address": "https://huggingface.co", "prefix": true, "online": true, "why": "The OpenFrame AI model download after the person's click (download.rs, fetch.rs; ADR-0032): the pinned files at fixed commits, redirects only to huggingface.co or *.hf.co." },
     { "address": "http://127.0.0.1:", "prefix": true, "online": false, "why": "The local llama.cpp server the app starts on a random loopback port (supervisor.rs); never leaves the computer." },
     { "address": "http://schemas.openxmlformats.org/", "prefix": true, "online": false, "why": "XML namespace names written inside exported DOCX files (docx.rs); identifiers, never fetched." },
     { "address": "http://purl.org/dc/elements/1.1", "online": false, "why": "Dublin Core namespace name inside exported DOCX files (docx.rs); an identifier, never fetched." },

@@ -19,15 +19,14 @@ import { join } from "node:path";
 import { click, launchApp, stepper, waitForText } from "../lib/app.mjs";
 import { closeProject, firstLaunchProject, menuItem, openProject, waitForHome } from "../lib/flows.mjs";
 import { ANSWER_TIMEOUT, ask, openAssistant } from "../lib/ai.mjs";
-import { hostRequests, steerHost } from "../lib/model-host.mjs";
+import { hostRequests, pins, steerHost } from "../lib/model-host.mjs";
 
 let browser;
 const step = stepper(() => browser, "ai-download");
 const panel = '//aside[@aria-label="AI Assistant"]';
 
-// The set on the test host: its version and the chat and embedding file paths.
-const manifest = JSON.parse(readFileSync(join(process.env.E2E_MODEL_HOST_DIR, "manifest.json"), "utf8"));
-const files = JSON.parse(Buffer.from(manifest.payload, "base64").toString("utf8")).tiers[0].files;
+// The pinned set: the chat and embedding files at their Hugging Face paths on the test host.
+const { files } = pins();
 const CHAT = files.find((f) => f.role === "chat").path;
 const EMBED = files.find((f) => f.role === "embedding").path;
 
@@ -81,7 +80,10 @@ describe("download OpenFrame AI after install", () => {
       const asked = hostRequests().filter((r) => r.path === CHAT);
       assert.equal(asked[0].from, null, "the first request asks for the whole file");
       assert.ok(asked.some((r) => r.from > 0), `the second request resumes with a range: ${JSON.stringify(asked)}`);
-      assert.deepEqual([...new Set(hostRequests().map((r) => r.path))].sort(), ["manifest.json", CHAT, EMBED].sort(), "only the list and its files");
+      assert.deepEqual([...new Set(hostRequests().map((r) => r.path))].sort(), [CHAT, EMBED].sort(), "only the pinned files");
+      // The app names the set after the model hashes exactly as the harness computes it.
+      const active = JSON.parse(readFileSync(join(process.env.E2E_DATA_ROOT, "appdata", "models", "active.json"), "utf8"));
+      assert.equal(active.version, pins().version);
     });
   });
 
