@@ -50,6 +50,7 @@ pub fn install_pinned_models(
     }
     let payload = serde_json::to_vec(&serde_json::json!({
         "manifestVersion": version,
+        "sequence": 1,
         "profileVersion": PROFILE_VERSION,
         "tiers": [{ "id": "small", "label": "Standard", "minMemoryGb": 8, "requiresRuntime": runtime.version, "files": files }],
         "runtimes": []
@@ -69,6 +70,7 @@ pub fn install_pinned_models(
         tier: "small".into(),
         previous: None,
         activated_at: 0,
+        sequence: 1,
     };
     std::fs::write(
         dir.root.join("active.json"),

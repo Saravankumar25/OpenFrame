@@ -564,12 +564,25 @@ fn ai_ac_007_to_010_proposal_requires_explicit_acceptance_and_is_one_undo_step()
         "Applied"
     );
 
+    let outcomes = |env: &TestEnv| {
+        let h = env.ok("ai.health", json!({}));
+        (h["rejected"].clone(), h["applied"].clone(), h["undone"].clone())
+    };
+    assert_eq!(outcomes(&env), (json!(1), json!(1), json!(0)));
+
     let u = env.undo();
     assert!(
         u.to_string().contains("AI-applied"),
         "undo step is labelled: {u}"
     );
     assert_eq!(cards(&env), 0);
+    // The AI trace records that the applied proposal was undone, and applied again on redo.
+    assert_eq!(outcomes(&env), (json!(1), json!(0), json!(1)));
+    env.redo();
+    assert_eq!(cards(&env), 1);
+    assert_eq!(outcomes(&env), (json!(1), json!(1), json!(0)));
+    env.undo();
+    assert_eq!(outcomes(&env), (json!(1), json!(0), json!(1)));
     // Accepting again is idempotent (already applied): no second card.
     env.ok("ai.change_set.accept", json!({ "id": cs_id }));
     assert_eq!(cards(&env), 0);

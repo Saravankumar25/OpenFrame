@@ -307,6 +307,16 @@ impl AiManager {
         }
     }
 
+    /// Stop the engines and let go of the model files (before they are removed or set aside).
+    fn unload(&self) {
+        self.supervisor.configure(None);
+        self.embed_supervisor.configure(None);
+        *self.loaded.write() = Loaded {
+            bundle: None,
+            stamps: None,
+        };
+    }
+
     /// Read the engine and model set again (after a download or a removal) and point the engines
     /// at it. Running engines are stopped first.
     fn reload(&self) {
@@ -396,6 +406,7 @@ impl AiManager {
             return Err(self.unavailable_reason());
         };
         *self.state.write() = (BundleState::Checking, None);
+        stamps.iter().flatten().for_each(|s| s.hold());
         let checked = b
             .verify(&self.paths.bundle_check())
             .and_then(|()| stamps.iter().flatten().try_for_each(|s| s.mark_checked()));
@@ -665,14 +676,15 @@ impl AiManager {
     /// Remove the downloaded models (the Remove button). AI is off afterwards until the next
     /// download; the projects are not touched.
     pub fn remove_models(&self) -> AppResult<()> {
-        if self.download.running() {
+        if !self.download.claim() {
             return Err(AppError::ai(
                 "download_running",
                 "Pause the OpenFrame AI download before removing it.",
             ));
         }
-        self.stop_runtime();
+        self.unload();
         let r = model_download::models_dir(&self.cfg.app_data_dir).remove_all();
+        self.download.release();
         self.download.reset();
         self.reload();
         r
@@ -691,20 +703,31 @@ impl AiManager {
             .rt
             .run(async move { me.download.fetch_plan(&h, &runtime_version).await })?;
         let dir = model_download::models_dir(&self.cfg.app_data_dir);
-        let version = manifest.manifest_version.clone();
-        if dir.active().is_some_and(|a| a.version == version) && self.available() {
+        let active = dir.active();
+        if active
+            .as_ref()
+            .is_some_and(|a| a.version == manifest.manifest_version)
+            && self.available()
+        {
             return Ok(()); // this set is already in use
+        }
+        // A list older than the one already activated is a replay: never go back to older models.
+        if let Some(a) = active.filter(|a| manifest.sequence < a.sequence) {
+            return Err(AppError::ai(
+                "manifest_older",
+                "The OpenFrame AI download list is older than the AI you already have, so nothing was downloaded. Try again later.",
+            )
+            .with_detail(format!("sequence {} below {}", manifest.sequence, a.sequence)));
         }
         let tier = manifest
             .tier(&tier_id)
             .cloned()
             .ok_or_else(|| AppError::internal("tier vanished"))?;
         let me = self.clone();
-        let v = version.clone();
         self.rt.run(async move {
             let dir = model_download::models_dir(&me.cfg.app_data_dir);
             me.download
-                .fetch_files(&host, &dir, &envelope, &v, &tier)
+                .fetch_files(&host, &dir, &envelope, &manifest, &tier)
                 .await
         })?;
         // The health check: the new set passes its full check and the engine starts on it.
@@ -716,7 +739,7 @@ impl AiManager {
         match healthy {
             Ok(()) => dir.confirm_healthy(),
             Err(e) => {
-                self.stop_runtime();
+                self.unload();
                 dir.roll_back()?;
                 self.reload();
                 Err(e)

@@ -6,6 +6,8 @@ use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
 use crate::core::AppCore;
+use crate::modules::ai::change_set::AI_STEP_KEY;
+use crate::modules::ai::trace;
 use crate::modules::project::{ActivityEntry, recent_activity};
 use crate::registry::Registry;
 use crate::store::{DeletedItemRow, MutationMeta, UndoInfo, purge_deleted, restore_deleted};
@@ -61,23 +63,34 @@ pub struct StepResult {
 }
 
 fn undo(core: &AppCore, actor: &Actor, args: StoreArgs) -> AppResult<StepResult> {
-    with_store(core, args.store, |s| {
-        let label = s.undo(actor)?;
-        Ok(StepResult {
-            label,
-            info: s.undo_info(actor)?,
-        })
-    })
+    step(core, actor, args, true)
 }
 
 fn redo(core: &AppCore, actor: &Actor, args: StoreArgs) -> AppResult<StepResult> {
-    with_store(core, args.store, |s| {
-        let label = s.redo(actor)?;
-        Ok(StepResult {
-            label,
-            info: s.undo_info(actor)?,
-        })
-    })
+    step(core, actor, args, false)
+}
+
+/// Undo or redo one step. When the step is an applied AI proposal, the AI trace records that it
+/// was undone (or applied again on redo).
+fn step(core: &AppCore, actor: &Actor, args: StoreArgs, undo: bool) -> AppResult<StepResult> {
+    let (result, key) = with_store(core, args.store, |s| {
+        let key = s.next_step_key(actor, undo)?;
+        let label = if undo { s.undo(actor)? } else { s.redo(actor)? };
+        Ok((
+            StepResult {
+                label,
+                info: s.undo_info(actor)?,
+            },
+            key,
+        ))
+    })?;
+    let change_set = key.as_deref().and_then(|k| k.strip_prefix(AI_STEP_KEY));
+    if let (Some(_), Some(id)) = (&result.label, change_set)
+        && let Some(request) = trace::request_of_change_set(core, id)
+    {
+        trace::set_outcome(core, &request, if undo { "undone" } else { "applied" });
+    }
+    Ok(result)
 }
 
 fn info(core: &AppCore, actor: &Actor, args: StoreArgs) -> AppResult<UndoInfo> {

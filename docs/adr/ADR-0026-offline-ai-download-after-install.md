@@ -101,7 +101,17 @@ How the code meets the decisions above. None of this changes a decision; each po
 5. **The owner's tool.** `node scripts/model-manifest.mjs new-key` (the owner, once, offline) and `publish` (signs the
    list and lays out the host folder) are the only ways a key or a list is made. The private key never enters the
    repository or a build computer.
-6. **Test support.** Development tools that need the real models without the network (the AI evaluation harness, the
+6. **Security review 2026-10-16 (no critical or high finding), fixed in the same phase.** The signed list carries a
+   `sequence`; the app refuses a list older than the highest one it has activated, so an old list replayed by a host or
+   network cannot take it back to older models (rolling back after a failed health check keeps the higher number).
+   Model files are hashed again in every session (the shortcut record is used for the engine only) and are held open
+   for reading only, from just before that check until the engines stop, so no other program can change, rename or
+   delete them meanwhile. Only the newest quarantined item is kept, and Remove deletes the quarantine too. Names the
+   models folder uses itself (`staging`, `quarantine`, `active.json`, `set.json`, `*.partial`, `*.bad`) and every
+   Windows device name are refused in a signed list. A release build that names the loopback test host fails unless
+   `OPENFRAME_TEST_BUILD=1` (set only by the test scripts). A pause takes effect within a quarter second; Remove and
+   a download cannot run at the same time.
+7. **Test support.** Development tools that need the real models without the network (the AI evaluation harness, the
    ignored real-model tests) install the pinned files the way a finished download leaves them, with a key that lives
    only in that process (`openframe-ai` feature `test-support`, never enabled by the app).
 

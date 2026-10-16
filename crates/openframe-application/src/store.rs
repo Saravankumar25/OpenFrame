@@ -567,6 +567,21 @@ impl Store {
         })
     }
 
+    /// The key of the step the next undo (`undo` true) or redo would take. An AI-applied step
+    /// carries `ai.change_set:<id>`, so the AI trace can record that its proposal was undone.
+    pub fn next_step_key(&self, actor: &Actor, undo: bool) -> AppResult<Option<String>> {
+        let (state, order) = if undo { ("done", "DESC") } else { ("undone", "ASC") };
+        self.read(|c| {
+            Ok(c.query_row(
+                &format!("SELECT coalesce_key FROM sys_undo WHERE state=?1 AND actor_id IS ?2 ORDER BY seq {order} LIMIT 1"),
+                params![state, actor.user_id],
+                |r| r.get::<_, Option<String>>(0),
+            )
+            .optional()?
+            .flatten())
+        })
+    }
+
     /// Undo the actor's most recent step. Returns the step label, or None if nothing to undo.
     pub fn undo(&self, actor: &Actor) -> AppResult<Option<String>> {
         self.step(actor, Direction::Undo)

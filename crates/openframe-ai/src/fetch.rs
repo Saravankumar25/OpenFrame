@@ -130,6 +130,13 @@ pub async fn fetch_manifest(
     Ok(body)
 }
 
+/// Resolves once `cancel` is set (checked every quarter second).
+async fn paused(cancel: &AtomicBool) {
+    while !cancel.load(Ordering::Relaxed) {
+        tokio::time::sleep(Duration::from_millis(250)).await;
+    }
+}
+
 pub fn cancelled() -> AppError {
     AppError::ai(
         "download_paused",
@@ -190,11 +197,17 @@ pub async fn download_file(
     file.seek(SeekFrom::Start(held))
         .map_err(|e| failed(e.kind().to_string()))?;
     progress(held);
-    while let Some(chunk) = resp.chunk().await.map_err(|e| failed(e.to_string()))? {
+    loop {
+        // A pause takes effect at once, not only when the next chunk arrives.
+        let next = tokio::select! {
+            c = resp.chunk() => c.map_err(|e| failed(e.to_string()))?,
+            () = paused(cancel) => None,
+        };
         if cancel.load(Ordering::Relaxed) {
             file.flush().ok();
             return Err(cancelled());
         }
+        let Some(chunk) = next else { break };
         held += chunk.len() as u64;
         if held > entry.bytes {
             // More than the signed size: never keep it.

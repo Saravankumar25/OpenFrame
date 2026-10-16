@@ -52,7 +52,8 @@ export function buildApp({ release = false, gatePassword } = {}) {
   prepare();
   const host = testHost();
   console.log(`Building OpenFrame Studio (${release ? `release, ${release}` : "debug"}, embedded UI, Offline AI engine, test model host)…`);
-  const env = { ...process.env, MODEL_DISTRIBUTION_BASE_URL: MODEL_HOST_URL, OPENFRAME_MANIFEST_PUBLIC_KEY: host.publicKey };
+  // OPENFRAME_TEST_BUILD lets the release profile accept the loopback test host (build.rs).
+  const env = { ...process.env, MODEL_DISTRIBUTION_BASE_URL: MODEL_HOST_URL, OPENFRAME_MANIFEST_PUBLIC_KEY: host.publicKey, OPENFRAME_TEST_BUILD: "1" };
   // The debug and open builds never see the build machine's team password, even when it is set.
   delete env.OPENFRAME_TEAM_PASSWORD;
   delete env.OPENFRAME_DISTRIBUTION;

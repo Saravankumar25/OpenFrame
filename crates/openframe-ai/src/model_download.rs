@@ -121,6 +121,17 @@ impl ModelDownload {
         true
     }
 
+    /// Hold the download slot for another change to the models folder (Remove), so a download
+    /// cannot start in the middle of it. `false` when a download is running.
+    pub fn claim(&self) -> bool {
+        !self.running.swap(true, Ordering::SeqCst)
+    }
+
+    /// Give back the slot taken by `claim`.
+    pub fn release(&self) {
+        self.running.store(false, Ordering::SeqCst);
+    }
+
     /// The run ended: record how.
     pub fn end(&self, r: &AppResult<()>) {
         match r {
@@ -140,10 +151,6 @@ impl ModelDownload {
         if !self.running.load(Ordering::SeqCst) {
             self.set(DownloadPhase::Idle, None);
         }
-    }
-
-    pub fn running(&self) -> bool {
-        self.running.load(Ordering::SeqCst)
     }
 
     fn set(&self, phase: DownloadPhase, problem: Option<AppError>) {
@@ -202,10 +209,12 @@ impl ModelDownload {
         host: &ModelHost,
         dir: &ModelsDir,
         envelope: &[u8],
-        version: &str,
+        m: &Manifest,
         tier: &Tier,
     ) -> AppResult<()> {
+        let version = m.manifest_version.as_str();
         std::fs::create_dir_all(&dir.root).map_err(|e| write_failed(e.kind()))?;
+        dir.sweep_staging(version);
         dir.preflight(
             version,
             tier,
@@ -242,7 +251,7 @@ impl ModelDownload {
             self.progress(finished, total);
         }
         self.set(DownloadPhase::Installing, None);
-        dir.activate(version, tier)?;
+        dir.activate(version, tier, m.sequence)?;
         Ok(())
     }
 }

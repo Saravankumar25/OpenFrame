@@ -23,7 +23,8 @@
 //! host) and `OPENFRAME_MANIFEST_PUBLIC_KEY` (the public half of the owner's offline Ed25519
 //! manifest key, base64, several separated by commas) are read by the crate with `option_env!`.
 //! A release build without both fails here. A loopback `http://127.0.0.1:<port>/` address is the
-//! local test host of the test suite: allowed, and the build says it is a test build.
+//! local test host of the test suite: a release build accepts it only with `OPENFRAME_TEST_BUILD=1`,
+//! which only the test scripts set, so a team or store build can never carry it by accident.
 //!
 //! On a macOS target the script also builds the Swift StoreKit 2 bridge
 //! (`macos/StoreKitBridge/`) and links it with the StoreKit and Foundation frameworks
@@ -98,6 +99,7 @@ fn check_model_host() {
     const KEY: &str = "OPENFRAME_MANIFEST_PUBLIC_KEY";
     println!("cargo:rerun-if-env-changed={URL}");
     println!("cargo:rerun-if-env-changed={KEY}");
+    println!("cargo:rerun-if-env-changed=OPENFRAME_TEST_BUILD");
     let url = std::env::var(URL).unwrap_or_default();
     let keys = std::env::var(KEY).unwrap_or_default();
     let (url, keys) = (url.trim(), keys.trim());
@@ -117,6 +119,11 @@ fn check_model_host() {
         panic!(
             "{KEY} must be base64 Ed25519 public keys (44 characters each), separated by commas."
         );
+    }
+    let release = std::env::var("PROFILE").as_deref() == Ok("release");
+    let test_build = std::env::var("OPENFRAME_TEST_BUILD").as_deref() == Ok("1");
+    if test_host && release && !test_build {
+        panic!("{URL} names the local test host; a release build for people needs the owner's https host.");
     }
     if test_host {
         println!(

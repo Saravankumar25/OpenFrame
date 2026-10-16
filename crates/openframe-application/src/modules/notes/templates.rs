@@ -519,7 +519,7 @@ fn apply(core: &AppCore, actor: &Actor, a: ApplyTemplateArgs) -> AppResult<Appli
     match apply_steps(core, actor, a) {
         Ok(done) => {
             let label = format!("Used template: {}", done.summary);
-            if let Err(e) = group_undo_steps(&s.store, actor, before, &label) {
+            if let Err(e) = group_undo_steps(&s.store, actor, before, &label, None) {
                 // Grouping is a convenience; every step stays undoable on its own.
                 tracing::warn!(code = e.code_str(), "could not group template undo steps");
             }

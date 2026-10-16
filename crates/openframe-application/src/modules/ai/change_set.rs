@@ -418,13 +418,18 @@ pub(crate) fn steps_since(store: &Store, actor: &Actor, seq: i64) -> AppResult<i
     })
 }
 
+/// The undo-step key prefix of an applied Change Set (followed by its id).
+pub(crate) const AI_STEP_KEY: &str = "ai.change_set:";
+
 /// Merge the undo steps created by an applied Change Set into one labelled step,
-/// so "Undo" reverts the whole AI-applied change (FSD §42.18, AI spec §20.4).
+/// so "Undo" reverts the whole AI-applied change (FSD §42.18, AI spec §20.4). `key` marks the
+/// step (`ai.change_set:<id>`) so undoing it is recorded in the AI trace.
 pub(crate) fn group_undo_steps(
     store: &Store,
     actor: &Actor,
     after_seq: i64,
     label: &str,
+    key: Option<&str>,
 ) -> AppResult<()> {
     store.with_writer(|c| {
         c.execute_batch("BEGIN IMMEDIATE")?;
@@ -437,7 +442,7 @@ pub(crate) fn group_undo_steps(
             drop(stmt);
             if steps.len() < 2 {
                 if let Some((seq, _)) = steps.first() {
-                    c.execute("UPDATE sys_undo SET label=?1 WHERE seq=?2", params![label, seq])?;
+                    c.execute("UPDATE sys_undo SET label=?1, coalesce_key=?3 WHERE seq=?2", params![label, seq, key])?;
                 }
                 return Ok(());
             }
@@ -449,8 +454,8 @@ pub(crate) fn group_undo_steps(
             let first = steps[0].0;
             let json = serde_json::to_string(&merged).map_err(|e| AppError::internal(e.to_string()))?;
             c.execute(
-                "UPDATE sys_undo SET label=?1, changes_json=?2, coalesce_key=NULL, updated_at=?3 WHERE seq=?4",
-                params![label, json, now_ms(), first],
+                "UPDATE sys_undo SET label=?1, changes_json=?2, coalesce_key=?5, updated_at=?3 WHERE seq=?4",
+                params![label, json, now_ms(), first, key],
             )?;
             c.execute("DELETE FROM sys_undo WHERE actor_id IS ?1 AND seq > ?2 AND state='done'", params![actor.user_id, first])?;
             Ok(())
@@ -669,7 +674,8 @@ pub fn accept_with(
     }
     fault::stop_at(row.operations.len())?;
     let label = format!("AI-applied: {}", row.title);
-    if let Err(e) = group_undo_steps(store, actor, before, &label) {
+    let key = format!("{AI_STEP_KEY}{id}");
+    if let Err(e) = group_undo_steps(store, actor, before, &label, Some(&key)) {
         // Grouping is a convenience; the individual steps remain undoable.
         tracing::warn!(code = e.code_str(), "could not group AI-applied undo steps");
     }

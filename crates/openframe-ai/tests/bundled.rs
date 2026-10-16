@@ -238,6 +238,7 @@ fn model_bytes(seed: u32, len: u32) -> Vec<u8> {
 fn publish(
     host_root: &Path,
     version: &str,
+    sequence: u32,
     runtime_version: &str,
     chat: &[u8],
     embed: &[u8],
@@ -256,6 +257,7 @@ fn publish(
     }
     let payload = serde_json::to_vec(&serde_json::json!({
         "manifestVersion": version,
+        "sequence": sequence,
         "profileVersion": 2,
         "tiers": [{ "id": "small", "label": "Standard", "minMemoryGb": 8, "requiresRuntime": runtime_version, "files": files }],
         "runtimes": []
@@ -358,6 +360,7 @@ impl Fixture {
         publish(
             &host_root,
             SET,
+            1,
             &runtime_version,
             &model_bytes(0, 40_000),
             &model_bytes(1, 40_000),
@@ -621,6 +624,7 @@ fn a_list_signed_with_another_key_downloads_nothing() {
     publish(
         &f.host.root,
         SET,
+        1,
         &f.runtime_version(),
         &model_bytes(0, 40_000),
         &model_bytes(1, 40_000),
@@ -638,6 +642,7 @@ fn a_list_signed_with_another_key_downloads_nothing() {
     publish(
         &f.host.root,
         SET,
+        1,
         "b1",
         &model_bytes(0, 40_000),
         &model_bytes(1, 40_000),
@@ -660,6 +665,7 @@ fn a_new_set_that_fails_its_health_check_falls_back_to_the_last_good_one() {
     publish(
         &f.host.root,
         "2026.11.1",
+        2,
         &f.runtime_version(),
         &broken,
         &model_bytes(6, 40_000),
@@ -678,6 +684,7 @@ fn a_new_set_that_fails_its_health_check_falls_back_to_the_last_good_one() {
     publish(
         &f.host.root,
         "2026.11.2",
+        3,
         &f.runtime_version(),
         &model_bytes(7, 40_000),
         &model_bytes(8, 40_000),
@@ -690,6 +697,24 @@ fn a_new_set_that_fails_its_health_check_falls_back_to_the_last_good_one() {
         m.download_status()
     );
     assert!(!f.data.join("models").join(SET).exists());
+    assert!(ask(&m).is_ok());
+    // The first, older list replayed by the host (still validly signed): refused, nothing changes.
+    publish(
+        &f.host.root,
+        SET,
+        1,
+        &f.runtime_version(),
+        &model_bytes(0, 40_000),
+        &model_bytes(1, 40_000),
+        &test_key(),
+    );
+    assert_eq!(download(&m), DownloadPhase::Failed);
+    assert_eq!(
+        m.download_status().problem.unwrap().code_str(),
+        "ai.manifest_older"
+    );
+    let active = std::fs::read_to_string(f.data.join("models").join("active.json")).unwrap();
+    assert!(active.contains("2026.11.2"), "{active}");
     assert!(ask(&m).is_ok());
 }
 
@@ -902,17 +927,30 @@ fn an_engine_file_changed_after_the_check_is_never_launched() {
     assert!(ask(&m).is_err());
 }
 
-fn a_model_replaced_while_the_engine_was_unloaded_is_never_loaded() {
+fn a_model_cannot_be_changed_while_openframe_uses_it() {
     let f = Fixture::new();
     let m = f.manager();
     assert!(ask(&m).is_ok());
-    // The engine is unloaded (inactivity or Stop Offline AI); the model is swapped meanwhile.
+    // The engine is unloaded (inactivity or Stop Offline AI); another program tries to change or
+    // delete the model meanwhile.
     m.stop_runtime();
     std::thread::sleep(Duration::from_millis(20));
-    alter(&f.model_file(0));
-    let e = ask(&m).unwrap_err();
-    assert_eq!(e.code_str(), "ai.models_damaged");
-    assert_eq!(m.state().bundle, BundleState::Damaged);
+    let path = f.model_file(0);
+    if cfg!(windows) {
+        // Held open for reading only since its check: writing, renaming and deleting are refused.
+        assert!(std::fs::OpenOptions::new().write(true).open(&path).is_err());
+        assert!(std::fs::remove_file(&path).is_err());
+        assert!(std::fs::rename(&path, path.with_extension("moved")).is_err());
+        assert!(ask(&m).unwrap().starts_with("ready"));
+    } else {
+        // Without the share mode, the check before the next launch catches it.
+        alter(&path);
+        assert_eq!(ask(&m).unwrap_err().code_str(), "ai.models_damaged");
+        assert_eq!(m.state().bundle, BundleState::Damaged);
+    }
+    // Removing OpenFrame AI lets go of the files first.
+    m.remove_models().unwrap();
+    assert!(!path.exists());
 }
 
 fn a_set_list_edited_on_disk_is_never_trusted() {
@@ -1054,8 +1092,8 @@ fn main() {
             an_engine_file_changed_after_the_check_is_never_launched,
         ),
         (
-            "a_model_replaced_while_the_engine_was_unloaded_is_never_loaded",
-            a_model_replaced_while_the_engine_was_unloaded_is_never_loaded,
+            "a_model_cannot_be_changed_while_openframe_uses_it",
+            a_model_cannot_be_changed_while_openframe_uses_it,
         ),
         (
             "a_set_list_edited_on_disk_is_never_trusted",

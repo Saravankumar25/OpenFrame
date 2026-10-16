@@ -39,6 +39,9 @@ struct Envelope {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Manifest {
     pub manifest_version: String,
+    /// Raised with every list the owner signs. The app refuses a list older than the set it uses,
+    /// so an old signed list replayed by a host or network cannot take it back to older models.
+    pub sequence: u32,
     pub profile_version: u32,
     pub tiers: Vec<Tier>,
     #[serde(default)]
@@ -120,10 +123,11 @@ pub fn verify(envelope: &[u8], keys: &[VerifyingKey]) -> AppResult<Manifest> {
 /// One path component made of safe characters: no folder separators, no `..`, no drive letters,
 /// no control characters, no Windows device names.
 pub fn safe_name(s: &str) -> bool {
-    let reserved = [
-        "con", "prn", "aux", "nul", "com1", "com2", "com3", "com4", "lpt1", "lpt2", "lpt3",
-    ];
     let stem = s.split('.').next().unwrap_or("").to_ascii_lowercase();
+    let device = matches!(stem.as_str(), "con" | "prn" | "aux" | "nul" | "conin$" | "conout$")
+        || ((stem.starts_with("com") || stem.starts_with("lpt"))
+            && stem.len() == 4
+            && stem.as_bytes()[3].is_ascii_digit());
     !s.is_empty()
         && s.len() <= 120
         && s != "."
@@ -132,7 +136,17 @@ pub fn safe_name(s: &str) -> bool {
         && !s.ends_with('.')
         && s.chars()
             .all(|c| c.is_ascii_alphanumeric() || matches!(c, '-' | '_' | '.'))
-        && !reserved.contains(&stem.as_str())
+        && !device
+}
+
+/// Names the models folder uses for itself: a set version or a downloaded file may never take
+/// one of them (`install.rs`).
+fn reserved_in_models_folder(s: &str) -> bool {
+    let l = s.to_ascii_lowercase();
+    matches!(l.as_str(), "staging" | "quarantine" | "active.json" | "set.json")
+        || l.ends_with(".partial")
+        || l.ends_with(".bad")
+        || l.ends_with(".tmp")
 }
 
 /// A relative path on the host made of safe components.
@@ -141,7 +155,7 @@ fn safe_rel_path(s: &str) -> bool {
 }
 
 fn validate(m: &Manifest) -> AppResult<()> {
-    if !safe_name(&m.manifest_version) {
+    if !safe_name(&m.manifest_version) || reserved_in_models_folder(&m.manifest_version) {
         return Err(refused("manifest version"));
     }
     if m.tiers.is_empty() || m.tiers.len() > MAX_TIERS || m.runtimes.len() > MAX_RUNTIMES {
@@ -170,6 +184,7 @@ fn validate(m: &Manifest) -> AppResult<()> {
                     .chars()
                     .all(|c| c.is_ascii_hexdigit() && !c.is_ascii_uppercase());
             if !safe_name(&f.name)
+                || reserved_in_models_folder(&f.name)
                 || !names.insert(f.name.to_ascii_lowercase())
                 || !safe_rel_path(&f.path)
                 || f.bytes == 0
@@ -242,6 +257,7 @@ pub(crate) mod tests {
         let file = |name: &str, role: &str, bytes: u64| json!({ "name": name, "path": format!("models/2026.11.1/{name}"), "bytes": bytes, "sha256": "a".repeat(64), "role": role });
         json!({
             "manifestVersion": "2026.11.1",
+            "sequence": 3,
             "profileVersion": 2,
             "tiers": [
                 { "id": "small", "label": "Standard", "minMemoryGb": 8, "requiresRuntime": "b11259", "files": [file("chat.gguf", "chat", 1_069_000_000), file("embed.gguf", "embedding", 37_000_000)] },
@@ -324,6 +340,23 @@ pub(crate) mod tests {
         assert!(bad(&|p| p["tiers"][0]["files"][1]["role"] = json!("chat")));
         assert!(bad(&|p| p["tiers"][0]["id"] = json!("huge")));
         assert!(bad(&|p| p["tiers"] = json!([])));
+        assert!(bad(&|p| p["manifestVersion"] = json!("staging")));
+        assert!(bad(&|p| p["manifestVersion"] = json!("quarantine")));
+        assert!(bad(
+            &|p| p["tiers"][0]["files"][0]["name"] = json!("set.json")
+        ));
+        assert!(bad(
+            &|p| p["tiers"][0]["files"][0]["name"] = json!("embed.gguf.partial")
+        ));
+        assert!(bad(
+            &|p| p["tiers"][0]["files"][0]["name"] = json!("lpt7.gguf")
+        ));
+        assert!(bad(
+            &|p| p["tiers"][0]["files"][0]["name"] = json!("COM9")
+        ));
+        assert!(bad(&|p| {
+            p.as_object_mut().unwrap().remove("sequence");
+        }));
         assert!(bad(&|p| p["extra"] = json!(1)));
         assert!(bad(&|p| p["runtimes"][0]["backend"] = json!("cuda")));
     }

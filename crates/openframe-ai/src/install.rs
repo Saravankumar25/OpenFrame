@@ -44,6 +44,20 @@ pub struct Active {
     /// The set to fall back to until the new one passes its health check.
     pub previous: Option<String>,
     pub activated_at: i64,
+    /// The highest signed-list sequence this app has activated; an older list is refused.
+    #[serde(default)]
+    pub sequence: u32,
+}
+
+/// Read a small file of this folder, refusing one larger than `max` bytes.
+fn read_small(path: &Path, max: usize) -> Option<Vec<u8>> {
+    let mut buf = Vec::new();
+    std::fs::File::open(path)
+        .ok()?
+        .take(max as u64 + 1)
+        .read_to_end(&mut buf)
+        .ok()?;
+    (buf.len() <= max).then_some(buf)
 }
 
 fn install_error(code: &'static str, message: &'static str, detail: impl Into<String>) -> AppError {
@@ -137,9 +151,11 @@ impl ModelsDir {
         Ok(dest)
     }
 
-    /// Step 5: move a bad file aside, never used again. Returns where it went.
+    /// Step 5: move a bad file or set aside, never used again. Only the newest one is kept (for
+    /// support), so repeated bad downloads never fill the disk. Returns where it went.
     pub fn quarantine(&self, path: &Path, name: &str) -> Option<PathBuf> {
         let q = self.root.join("quarantine");
+        let _ = std::fs::remove_dir_all(&q);
         std::fs::create_dir_all(&q).ok()?;
         let dest = q.join(format!("{}-{}.bad", now_ms(), name));
         match std::fs::rename(path, &dest) {
@@ -152,7 +168,7 @@ impl ModelsDir {
     }
 
     pub fn active(&self) -> Option<Active> {
-        let text = std::fs::read(self.root.join("active.json")).ok()?;
+        let text = read_small(&self.root.join("active.json"), 4096)?;
         let a: Active = serde_json::from_slice(&text).ok()?;
         let safe = crate::download::safe_name(&a.version)
             && a.previous.as_deref().is_none_or(crate::download::safe_name);
@@ -174,7 +190,7 @@ impl ModelsDir {
 
     /// Step 4b: every file of the tier is checked, so move the set into place in one rename and
     /// point `active.json` at it. The set that was active becomes `previous` until the health check.
-    pub fn activate(&self, version: &str, tier: &Tier) -> AppResult<Active> {
+    pub fn activate(&self, version: &str, tier: &Tier, sequence: u32) -> AppResult<Active> {
         let names = tier.files.iter().map(|f| f.name.as_str());
         for name in names.chain([SET_FILE]) {
             if !self.staging(version).join(name).is_file() {
@@ -214,6 +230,7 @@ impl ModelsDir {
         let a = Active {
             version: version.to_string(),
             tier: tier.id.clone(),
+            sequence: sequence.max(current.as_ref().map_or(0, |c| c.sequence)),
             previous: current.map(|c| c.version),
             activated_at: now_ms(),
         };
@@ -246,6 +263,8 @@ impl ModelsDir {
                     tier: a.tier,
                     previous: None,
                     activated_at: now_ms(),
+                    // The higher sequence stays: rolling back never reopens older lists.
+                    sequence: a.sequence,
                 })?;
             }
             _ => {
@@ -258,7 +277,8 @@ impl ModelsDir {
         Ok(())
     }
 
-    /// Remove OpenFrame AI (the Remove button): every set, every staging file, the pointer.
+    /// Remove OpenFrame AI (the Remove button): every set, every staging file, the quarantine,
+    /// the pointer. Links inside are removed, never followed.
     pub fn remove_all(&self) -> AppResult<()> {
         let _ = std::fs::remove_file(self.root.join("active.json"));
         for e in std::fs::read_dir(&self.root)
@@ -267,16 +287,28 @@ impl ModelsDir {
             .flatten()
         {
             let p = e.path();
-            if p.file_name().is_some_and(|n| n != "quarantine") {
-                let r = if p.is_dir() {
-                    std::fs::remove_dir_all(&p)
-                } else {
-                    std::fs::remove_file(&p)
-                };
-                r.map_err(|e| install_error("remove_failed", "OpenFrame AI could not be removed completely. Close OpenFrame and try again.", e.kind().to_string()))?;
-            }
+            let r = if e.file_type().is_ok_and(|t| t.is_dir()) {
+                std::fs::remove_dir_all(&p)
+            } else {
+                std::fs::remove_file(&p).or_else(|_| std::fs::remove_dir(&p))
+            };
+            r.map_err(|e| install_error("remove_failed", "OpenFrame AI could not be removed completely. Close OpenFrame and try again.", e.kind().to_string()))?;
         }
         Ok(())
+    }
+
+    /// Delete staging folders of other versions (an abandoned download of an older list).
+    pub fn sweep_staging(&self, keep: &str) {
+        for e in std::fs::read_dir(self.root.join("staging"))
+            .into_iter()
+            .flatten()
+            .flatten()
+        {
+            if e.file_name().to_str() != Some(keep) {
+                let p = e.path();
+                let _ = std::fs::remove_dir_all(&p).or_else(|_| std::fs::remove_file(&p));
+            }
+        }
     }
 
     /// Keep the signed manifest with the set being downloaded (activation needs it).
@@ -305,7 +337,8 @@ impl ModelsDir {
             .active()
             .ok_or_else(|| bad("active.json is unreadable"))?;
         let dir = self.set_dir(&a.version);
-        let envelope = std::fs::read(dir.join(SET_FILE)).map_err(|_| bad("set.json is missing"))?;
+        let envelope = read_small(&dir.join(SET_FILE), crate::download::MAX_ENVELOPE_BYTES)
+            .ok_or_else(|| bad("set.json is missing or too large"))?;
         let m = crate::download::verify(&envelope, keys)
             .map_err(|e| bad(&format!("set.json: {}", e.detail.unwrap_or_default())))?;
         if m.manifest_version != a.version {
@@ -449,14 +482,14 @@ mod tests {
         // Only one of two files checked: nothing is activated.
         put_partial(&d, "v1", &c1, b"chat one");
         d.check_file("v1", &c1).unwrap();
-        assert!(d.activate("v1", &t1).unwrap_err().is("ai.incomplete"));
+        assert!(d.activate("v1", &t1, 1).unwrap_err().is("ai.incomplete"));
         assert!(d.active().is_none());
         put_partial(&d, "v1", &e1, b"embed one");
         d.check_file("v1", &e1).unwrap();
         // Every model file but no signed list: still nothing is activated.
-        assert!(d.activate("v1", &t1).unwrap_err().is("ai.incomplete"));
+        assert!(d.activate("v1", &t1, 1).unwrap_err().is("ai.incomplete"));
         d.stage_manifest("v1", b"{}").unwrap();
-        let a = d.activate("v1", &t1).unwrap();
+        let a = d.activate("v1", &t1, 1).unwrap();
         assert_eq!((a.version.as_str(), a.previous.as_deref()), ("v1", None));
         assert!(active_complete(&d, &t1));
         // A second version becomes active; v1 stays as the fallback until the health check.
@@ -470,11 +503,14 @@ mod tests {
             d.check_file("v2", f).unwrap();
         }
         d.stage_manifest("v2", b"{}").unwrap();
-        let a = d.activate("v2", &t2).unwrap();
+        let a = d.activate("v2", &t2, 2).unwrap();
+        assert_eq!(a.sequence, 2);
         assert_eq!(a.previous.as_deref(), Some("v1"));
-        // The new set fails its health check: back to v1, the bad set is set aside.
+        // The new set fails its health check: back to v1, the bad set is set aside; the higher
+        // sequence is kept, so the older list stays refused.
         d.roll_back().unwrap();
         assert_eq!(d.active().unwrap().version, "v1");
+        assert_eq!(d.active().unwrap().sequence, 2);
         assert!(!d.set_dir("v2").exists());
         assert!(active_complete(&d, &t1));
         // Activate v2 again from a fresh download and confirm it: v1 goes away.
@@ -483,7 +519,7 @@ mod tests {
             d.check_file("v2", f).unwrap();
         }
         d.stage_manifest("v2", b"{}").unwrap();
-        d.activate("v2", &t2).unwrap();
+        d.activate("v2", &t2, 2).unwrap();
         d.confirm_healthy().unwrap();
         assert_eq!(d.active().unwrap().previous, None);
         assert!(!d.set_dir("v1").exists());
@@ -532,6 +568,7 @@ mod tests {
             tier: "small".into(),
             previous: None,
             activated_at: 0,
+            sequence: 3,
         })
         .unwrap();
         let m = d.installed(&keys).unwrap().unwrap();

@@ -378,14 +378,17 @@ impl AssetLock {
     }
 }
 
-/// A model file as it was when the bundle check passed: compared (size, modification time, still a
+/// A model file as it was when the full check passed: compared (size, modification time, still a
 /// regular file) before every engine launch, so a model replaced after the check, for example
-/// while the engine was unloaded after inactivity, is never loaded without a new full check.
+/// while the engine was unloaded after inactivity, is never loaded without a new full check. From
+/// just before its check until the engines stop using it, the file is held open so that no other
+/// program can write, rename or delete it (Windows share mode: read only).
 #[derive(Debug)]
 pub struct ModelStamp {
     path: PathBuf,
     bytes: u64,
     checked: parking_lot::Mutex<Option<u128>>,
+    held: parking_lot::Mutex<Option<std::fs::File>>,
 }
 
 impl ModelStamp {
@@ -394,7 +397,24 @@ impl ModelStamp {
             path,
             bytes,
             checked: parking_lot::Mutex::new(None),
+            held: parking_lot::Mutex::new(None),
         })
+    }
+
+    /// Hold the file open, sharing it for reading only, before it is hashed. Best effort: when
+    /// another program already has it open for writing the check still runs, and says so in the log.
+    pub fn hold(&self) {
+        let mut o = std::fs::OpenOptions::new();
+        o.read(true);
+        #[cfg(windows)]
+        {
+            use std::os::windows::fs::OpenOptionsExt;
+            o.share_mode(1); // FILE_SHARE_READ
+        }
+        match o.open(&self.path) {
+            Ok(f) => *self.held.lock() = Some(f),
+            Err(e) => tracing::warn!(kind = %e.kind(), "a model file could not be held during its check"),
+        }
     }
 
     fn current(&self) -> AppResult<u128> {
@@ -659,7 +679,9 @@ impl BundledAi {
         for p in self.pinned() {
             let meta = std::fs::symlink_metadata(&p.path).map_err(|_| p.missing())?;
             let modified = modified_ms(&meta);
-            let cached = previous.as_ref().is_some_and(|r| {
+            // Model files live in writable app data: always hashed again (they are held open from
+            // just before this check, see ModelStamp::hold). Engine files use the record.
+            let cached = !p.model && previous.as_ref().is_some_and(|r| {
                 r.files.iter().any(|c| {
                     c.rel == p.rel
                         && c.bytes == meta.len()
