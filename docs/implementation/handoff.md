@@ -45,6 +45,21 @@
    free-space preflight (new platform helper), atomic activation into `%LOCALAPPDATA%\OpenFrame\models\<version>`,
    quarantine, the ADR-0026 decision 10 tests against a local host, then the screens.
 
+9. **Owner rule 2026-10-16: every test from a release-ready point of view** (owner-decisions row). The e2e suite counts
+   only on the release exe (open and gated); spec 97 gates P3 (app work per key < 16 ms p95) and P5 (idle without AI
+   < 0.5 percent); the AI harness runs with `--release`; the Rust suite once with `--release`. Spec 17 proves the
+   internal build on release; specs 15 and 16 stay debug-only (store states need a packaged store build, Chapter 3);
+   spec 76 becomes release-capable in W8. Running at this rewrite: `--release=gated` suite (log `e2e-release-gated.log`
+   in the session scratchpad), then the English AI trial (`.build-cache/ai-eval/trial-2026-10-16`, log `ai-eval-trial.log`).
+10. **W8 next step, the plan:** models leave the package. The runtime stays in `ai/runtimes/` of the install; models come
+   from the active set in `<app data>/models/<version>/` with a `set.json` (the signed tier entry) written at activation
+   and checked (sizes, hashes) before the first engine start. `prepare-ai-assets.mjs` stages runtimes only; models go to a
+   local test host folder. Build-time `MODEL_DISTRIBUTION_BASE_URL` and `OPENFRAME_MANIFEST_PUBLIC_KEY` (release build
+   fails without them); test builds get a test key and the local host from `run.mjs`. AI specs pre-activate a models set
+   in their data root (as a finished download would) or click Download against the local host (new spec). Then the
+   operations (`ai.download.*`), the screens (Download OpenFrame AI, progress, pause, resume, remove), spec 76 rewritten
+   for the downloaded set, and the ADR-0026 decision 10 tests. Owner tasks for W8 as a checklist in owner-decisions.
+
 ## Next items
 
 1. Read the release run result; fix failures; run `--release=gated` (scan the gated exe too); write
