@@ -33,11 +33,15 @@ struct Args {
     limit: Option<usize>,
     /// `english` or `multilingual`: the search model of the run (default: the app's automatic choice).
     search: Option<String>,
+    /// `auto`: the app's own engine placement (the graphics card when its check passes); default
+    /// `off`: always the processor, so timings compare between runs.
+    graphics: Option<String>,
 }
 
 fn parse_args() -> Result<Args, String> {
     let mut a = std::env::args().skip(1);
-    let (mut gold, mut out, mut only, mut limit, mut search) = (None, None, None, None, None);
+    let (mut gold, mut out, mut only, mut limit, mut search, mut graphics) =
+        (None, None, None, None, None, None);
     while let Some(k) = a.next() {
         let mut v = || a.next().ok_or_else(|| format!("{k} needs a value"));
         match k.as_str() {
@@ -46,6 +50,7 @@ fn parse_args() -> Result<Args, String> {
             "--only" => only = Some(v()?),
             "--limit" => limit = Some(v()?.parse().map_err(|_| "--limit takes a number")?),
             "--search" => search = Some(v()?),
+            "--graphics" => graphics = Some(v()?),
             _ => return Err(format!("unknown argument {k}")),
         }
     }
@@ -55,6 +60,7 @@ fn parse_args() -> Result<Args, String> {
         only,
         limit,
         search,
+        graphics,
     })
 }
 
@@ -98,9 +104,11 @@ fn run() -> Result<(), String> {
         .map_err(|e| format!("installing the models: {e:?}"))?;
     // The same place every run: the processor (a graphics card check would change the timings
     // between runs; ADR-0029 has its own benchmark).
-    std::fs::create_dir_all(app_data.join("ai")).map_err(|e| e.to_string())?;
-    std::fs::write(app_data.join("ai").join("graphics.json"), r#"{"off":true}"#)
-        .map_err(|e| e.to_string())?;
+    if args.graphics.as_deref() != Some("auto") {
+        std::fs::create_dir_all(app_data.join("ai")).map_err(|e| e.to_string())?;
+        std::fs::write(app_data.join("ai").join("graphics.json"), r#"{"off":true}"#)
+            .map_err(|e| e.to_string())?;
+    }
     let config = AppConfig {
         ai_bundle_dir: Some(bundle.clone()),
         ai_model_source: Some(source),
@@ -147,6 +155,10 @@ fn run() -> Result<(), String> {
         let engine = json!({ "calls": u.calls, "promptTokens": u.prompt_tokens,
             "completionTokens": u.completion_tokens, "maxPromptTokens": u.max_prompt_tokens,
             "promptMs": u.prompt_ms, "generationMs": u.generation_ms, "chatWallMs": chat_ms });
+        let index = intelligence::service(&core).current().map(|ix| {
+            let snap = ix.snapshot();
+            json!({ "semanticReady": snap.semantic_ready, "model": snap.embedding_model })
+        });
         let s = score(case, &o);
         eprintln!(
             "[{}/{}] {} {}ms{}",
@@ -163,7 +175,7 @@ fn run() -> Result<(), String> {
             "offered": o.offered.len(), "steps": o.steps, "errorCode": o.error_code, "answer": o.answer,
             "proposed": o.proposed, "applied": o.applied, "endState": o.end_state, "rankedScenes": o.ranked_scenes,
             "elapsedMs": o.elapsed_ms, "engineMb": o.engine_mb, "setupError": o.setup_error },
-            "engine": engine });
+            "engine": engine, "index": index });
         writeln!(results, "{line}").map_err(|e| e.to_string())?;
         scores.push(s);
     }
@@ -189,6 +201,12 @@ fn run() -> Result<(), String> {
             },
         ),
         ("Search model".to_string(), format!("{choice:?}")),
+        (
+            "Engine place".to_string(),
+            args.graphics
+                .clone()
+                .unwrap_or_else(|| "off (processor)".into()),
+        ),
         (
             "Sampling".to_string(),
             "deterministic (temperature 0, fixed seed)".to_string(),
@@ -263,6 +281,7 @@ fn op(core: &AppCore, name: &str, args: Value) -> Result<Value, String> {
         .map_err(|e| format!("{name}: {} {}", e.code_str(), e.message))
 }
 
+#[derive(Clone)]
 struct Project {
     draft_id: String,
     scene_ids: Vec<String>,
@@ -270,8 +289,31 @@ struct Project {
     text: String,
 }
 
+thread_local! {
+    /// The project shared by retrieval cases of one sample script (they only read it).
+    static SHARED: std::cell::RefCell<Option<(String, Project)>> = const { std::cell::RefCell::new(None) };
+}
+
+/// Retrieval cases without setup steps never change the project, so they share one indexed copy
+/// of their sample script instead of indexing it again for every case.
+fn shared_project(core: &AppCore, case: &Case) -> Result<Project, String> {
+    let cached = SHARED.with(|s| {
+        s.borrow()
+            .as_ref()
+            .filter(|(sample, _)| *sample == case.project)
+            .map(|(_, p)| p.clone())
+    });
+    if let Some(p) = cached.filter(|_| core.project_opt().is_some()) {
+        return Ok(p);
+    }
+    let p = open_project(core, case)?;
+    SHARED.with(|s| *s.borrow_mut() = Some((case.project.clone(), p.clone())));
+    Ok(p)
+}
+
 /// A fresh project holding the case's sample script, with its index caught up.
 fn open_project(core: &AppCore, case: &Case) -> Result<Project, String> {
+    SHARED.with(|s| *s.borrow_mut() = None);
     if core.project_opt().is_some() {
         op(core, "project.close", json!({}))?;
     }
@@ -340,6 +382,22 @@ fn substitute(v: &Value, p: &Project) -> Value {
     }
 }
 
+/// The approved gold cases are frozen (a change is a new review), so a setup written in a
+/// shorthand the operation does not take is translated here: `vault.create` with `type` and
+/// `text` becomes `itemType` and `body`.
+fn setup_args(op: &str, mut args: Value) -> Value {
+    if op == "vault.create"
+        && let Some(o) = args.as_object_mut()
+    {
+        for (from, to) in [("type", "itemType"), ("text", "body")] {
+            if let Some(v) = o.remove(from) {
+                o.entry(to).or_insert(v);
+            }
+        }
+    }
+    args
+}
+
 fn state_holds(core: &AppCore, check: &StateCheck, p: &Project) -> bool {
     let args = if check.args.is_null() {
         json!({})
@@ -392,7 +450,12 @@ fn engine_mb() -> u64 {
 
 fn run_case(core: &AppCore, case: &Case) -> Observation {
     let mut o = Observation::default();
-    let p = match open_project(core, case) {
+    let opened = if case.kind == "retrieval" && case.setup.is_empty() {
+        shared_project(core, case)
+    } else {
+        open_project(core, case)
+    };
+    let p = match opened {
         Ok(p) => p,
         Err(e) => {
             o.setup_error = Some(e);
@@ -401,7 +464,7 @@ fn run_case(core: &AppCore, case: &Case) -> Observation {
     };
     o.source_text = p.text.clone();
     for s in &case.setup {
-        if let Err(e) = op(core, &s.op, substitute(&s.args, &p)) {
+        if let Err(e) = op(core, &s.op, setup_args(&s.op, substitute(&s.args, &p))) {
             o.setup_error = Some(format!("setup {e}"));
             return o;
         }
@@ -415,6 +478,15 @@ fn run_case(core: &AppCore, case: &Case) -> Observation {
     }
     let actor = core.local_actor();
     if case.kind == "retrieval" {
+        // Semantic search needs the project's vectors; without this wait a case would measure
+        // word matching alone.
+        let until = Instant::now() + Duration::from_secs(600);
+        while let Some(ix) = intelligence::service(core).current() {
+            if ix.snapshot().semantic_ready || Instant::now() > until {
+                break;
+            }
+            std::thread::sleep(Duration::from_millis(250));
+        }
         let t = Instant::now();
         let req = retrieval::RetrieveRequest {
             query: case.request.clone(),

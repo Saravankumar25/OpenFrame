@@ -945,7 +945,11 @@ fn the_multilingual_search_model_runs_on_request_without_touching_the_chat_engin
     assert_eq!(m.embed(&["Ravi".into()]).unwrap()[0].len(), 8);
     assert_eq!(m.embed_queries(&["Ravi".into()]).unwrap()[0].len(), 8);
     // The chat engine kept running: switching the search model never restarts it.
-    assert_eq!(m.runtime_status().state, RuntimeState::Ready, "not reconfigured");
+    assert_eq!(
+        m.runtime_status().state,
+        RuntimeState::Ready,
+        "not reconfigured"
+    );
     assert!(ask(&m).unwrap().starts_with("ready"));
     // Back to English: the English model again.
     m.set_search_model(openframe_ai::bundle::ModelRole::Embedding);

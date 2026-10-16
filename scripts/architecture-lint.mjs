@@ -102,6 +102,8 @@ const UNSAFE_ALLOW = {
 
 const SPAWN_ALLOW = {
   "crates/openframe-ai/src/supervisor.rs": "Starts the verified llama.cpp sidecar from the managed runtime folder.",
+  "crates/openframe-ai-eval/src/bin/engine-bench.rs":
+    "Development measurement tool, never shipped (openframe-ai-eval is not a dependency of the app): starts the staged llama-server on 127.0.0.1 to replay recorded requests, one setting at a time, and kills it when done.",
   "crates/openframe-platform/src/process.rs":
     "Configures and guards a child process for the supervisor (no window, kill with the app); spawns only in its own tests.",
   "crates/openframe-platform/src/shell.rs":

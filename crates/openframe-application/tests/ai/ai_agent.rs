@@ -384,7 +384,8 @@ fn a_draft_the_model_made_up_falls_back_to_the_draft_in_scope_but_a_named_one_do
     seed_screenplay(&env);
     let m = attach(&env);
     m.step("count_scenes", json!({ "draft": "scene 1" }), true);
-    let r = ask(&env, "How many scenes are in the script?")["result"].clone();
+    // Worded so no recipe answers it: the model's own (made-up) draft is what is tested.
+    let r = ask(&env, "Count the scenes for me, please.")["result"].clone();
     assert_eq!(r["kind"], "Answer");
     assert_eq!(r["confidence"], "Exact");
     assert_eq!(r["content"], "Draft 1 contains 3 scenes.");

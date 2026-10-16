@@ -17,6 +17,7 @@ openframe-entitlement.workspace = true
 openframe-import-export.workspace = true
 openframe-ai.workspace = true
 openframe-search.workspace = true
+openframe-ai-checks = { path = "../openframe-ai-checks" }
 rusqlite.workspace = true
 serde.workspace = true
 serde_json.workspace = true

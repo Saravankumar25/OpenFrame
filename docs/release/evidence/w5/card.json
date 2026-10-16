@@ -1,0 +1,92 @@
+{
+  "computer": {
+    "cpu": "Intel(R) Core(TM) Ultra 5 125H",
+    "logicalCores": 18,
+    "memoryMb": 15805,
+    "os": "Windows 11 Home Single Language",
+    "physicalCores": 14
+  },
+  "engine": "llama-cpp-b11259-win-x64-cpu",
+  "experiment": "card",
+  "prompts": 3,
+  "repeats": 3,
+  "result": {
+    "runs": [
+      {
+        "figures": {
+          "generationTokensPerSecond": {
+            "max": 29.10209902052457,
+            "median": 26.4052715143338,
+            "min": 20.947715178646845,
+            "n": 9,
+            "p25": 21.959510912105994,
+            "p75": 27.38431232249886
+          },
+          "promptTokens": {
+            "max": 2950.0,
+            "median": 2910.0,
+            "min": 2759.0,
+            "n": 9,
+            "p25": 2759.0,
+            "p75": 2950.0
+          },
+          "promptTokensPerSecond": {
+            "max": 113.39979080661271,
+            "median": 110.72587469635998,
+            "min": 107.34602838565152,
+            "n": 9,
+            "p25": 109.96611019058614,
+            "p75": 112.1438133237581
+          },
+          "wallMs": {
+            "max": 27837.3962,
+            "median": 27219.1379,
+            "min": 26162.7443,
+            "n": 9,
+            "p25": 26690.5152,
+            "p75": 27687.950999999997
+          }
+        },
+        "place": "processor, 12 threads"
+      },
+      {
+        "figures": {
+          "generationTokensPerSecond": {
+            "max": 33.24882590083538,
+            "median": 26.537619644002113,
+            "min": 23.437063372016507,
+            "n": 9,
+            "p25": 24.933064311962504,
+            "p75": 31.62672036180968
+          },
+          "promptTokens": {
+            "max": 2950.0,
+            "median": 2910.0,
+            "min": 2759.0,
+            "n": 9,
+            "p25": 2759.0,
+            "p75": 2950.0
+          },
+          "promptTokensPerSecond": {
+            "max": 575.9345269820445,
+            "median": 493.9334921064405,
+            "min": 435.0979427705063,
+            "n": 9,
+            "p25": 482.56049584003,
+            "p75": 501.4637642283968
+          },
+          "wallMs": {
+            "max": 7707.9806,
+            "median": 7054.7443,
+            "min": 6246.4245,
+            "n": 9,
+            "p25": 6835.7065999999995,
+            "p75": 7442.3632
+          }
+        },
+        "place": "Vulkan0, every layer"
+      }
+    ]
+  },
+  "startedUnixSeconds": 1792158870
+}

@@ -645,6 +645,7 @@ const KNOWN_MESSAGES: &[&str] = &[
     "the Offline AI is not usable",
     "the OpenFrame AI download stopped",
     "an OpenFrame AI model file was imported",
+    "an answer stayed in its first language after the verifier passes",
     "an old OpenFrame AI download could not be removed yet",
     "the new OpenFrame AI set failed its health check; going back to the previous set",
     "the previous OpenFrame AI set could not be restored",

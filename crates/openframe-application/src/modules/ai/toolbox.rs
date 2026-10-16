@@ -362,7 +362,18 @@ pub fn tools_for_request(
 ) -> Vec<ToolDef> {
     let all = tools_for(core, actor, scope);
     let want: Vec<String> = words(request);
-    let wants_change = want.iter().any(|w| MUTATION_WORDS.contains(&w.as_str()));
+    // Meaning, not only English words (W6 tool picker): the tools closest to the request in the
+    // search model's space get a bonus by rank, so a request in Hindi or Japanese finds them too.
+    let bonus = semantic_bonus(core, request, &all);
+    // English requests keep the word rule for proposals; another language has no English
+    // mutation words, so a proposal tool closest in meaning counts as asking for a change.
+    let non_english = openframe_ai_checks::detect_language(request).is_some_and(|l| l != "en");
+    let wants_change = want.iter().any(|w| MUTATION_WORDS.contains(&w.as_str()))
+        || (non_english
+            && all
+                .iter()
+                .zip(&bonus)
+                .any(|(t, b)| t.mutating && *b >= SEMANTIC_TOP_BONUS));
     let scope_words = words(scope.kind.label());
     let mut scored: Vec<(i64, usize, &ToolDef)> = all
         .iter()
@@ -385,6 +396,7 @@ pub fn tools_for_request(
                     score += 1;
                 }
             }
+            score += bonus.get(i).copied().unwrap_or(0);
             (score, i, t)
         })
         .filter(|(s, _, _)| *s > 0)
@@ -403,6 +415,93 @@ pub fn tools_for_request(
         }
         used += len;
         out.push(t.clone());
+    }
+    out
+}
+
+/// The bonus of the two tools closest in meaning; the next ones get less.
+const SEMANTIC_TOP_BONUS: i64 = 4;
+
+/// Tool vectors by search model and tool name, computed once per session.
+static TOOL_VECTORS: std::sync::LazyLock<
+    parking_lot::Mutex<std::collections::HashMap<(String, String), Vec<f32>>>,
+> = std::sync::LazyLock::new(Default::default);
+
+/// A bonus per tool (aligned with `all`) from how close its description is to the request in the
+/// search model's space: 4 for the closest two, 3 for the next two, 2 for the four after.
+/// All zero when no search model runs or embedding fails (the word score alone then decides).
+fn semantic_bonus(core: &AppCore, request: &str, all: &[ToolDef]) -> Vec<i64> {
+    let zero = vec![0; all.len()];
+    let Some(e) = super::intelligence::service(core).embedder(core) else {
+        return zero;
+    };
+    // Never let the search engine hold up the assistant: the work runs aside and the picker waits
+    // at most SEMANTIC_WAIT; a late result still fills the tool vector cache for the next request.
+    let tools: Vec<(String, String)> = all
+        .iter()
+        .map(|t| (t.name.clone(), t.description.clone()))
+        .collect();
+    let request = request.to_string();
+    let (tx, rx) = std::sync::mpsc::channel();
+    std::thread::spawn(move || {
+        let _ = tx.send(semantic_ranks(&*e, &request, &tools));
+    });
+    rx.recv_timeout(SEMANTIC_WAIT).unwrap_or(zero)
+}
+
+/// How long the picker waits for the meaning ranks.
+const SEMANTIC_WAIT: std::time::Duration = std::time::Duration::from_millis(1500);
+
+fn semantic_ranks(
+    e: &dyn openframe_search::Embedder,
+    request: &str,
+    tools: &[(String, String)],
+) -> Vec<i64> {
+    let zero = vec![0; tools.len()];
+    let model = e.model_id();
+    let missing: Vec<&(String, String)> = {
+        let cache = TOOL_VECTORS.lock();
+        tools
+            .iter()
+            .filter(|(name, _)| !cache.contains_key(&(model.clone(), name.clone())))
+            .collect()
+    };
+    if !missing.is_empty() {
+        let texts: Vec<String> = missing
+            .iter()
+            .map(|(name, desc)| format!("{}: {desc}", name.replace('_', " ")))
+            .collect();
+        let Ok(vectors) = e.embed(&texts) else {
+            return zero;
+        };
+        let mut cache = TOOL_VECTORS.lock();
+        for ((name, _), v) in missing.iter().zip(vectors) {
+            cache.insert((model.clone(), name.clone()), v);
+        }
+    }
+    let Ok(mut q) = e.embed_queries(&[request.to_string()]) else {
+        return zero;
+    };
+    let Some(q) = q.pop() else {
+        return zero;
+    };
+    let cache = TOOL_VECTORS.lock();
+    let mut sims: Vec<(f32, usize)> = tools
+        .iter()
+        .enumerate()
+        .filter_map(|(i, (name, _))| {
+            let v = cache.get(&(model.clone(), name.clone()))?;
+            Some((v.iter().zip(&q).map(|(a, b)| a * b).sum::<f32>(), i))
+        })
+        .collect();
+    sims.sort_by(|a, b| b.0.total_cmp(&a.0));
+    let mut out = zero;
+    for (rank, (_, i)) in sims.into_iter().take(8).enumerate() {
+        out[i] = match rank {
+            0 | 1 => SEMANTIC_TOP_BONUS,
+            2 | 3 => 3,
+            _ => 2,
+        };
     }
     out
 }

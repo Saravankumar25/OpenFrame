@@ -347,7 +347,7 @@ fn ai_ac_002_exact_counts_come_from_canonical_data_with_scope_and_provenance() {
     let m = attach(&env);
     let scope = json!({ "kind": "CurrentScreenplay" });
 
-    m.call("count_scenes", json!({}));
+    // A plain count is a recipe (W6): the model is not asked.
     let x = ask(&env, "How many scenes are in the script?", scope.clone());
     assert_eq!(x["scopeLabel"], "Using: Draft 1");
     assert_eq!(x["operationClass"], "Compute");
@@ -1289,4 +1289,52 @@ fn ai_spec_8_unscheduled_scenes_come_from_the_shooting_schedule() {
         .map(|i| i["nav"]["params"]["sceneId"].as_str().unwrap())
         .collect();
     assert_eq!(items, [sp.scenes[1].as_str(), sp.scenes[2].as_str()]);
+}
+
+#[test]
+fn an_answer_in_the_wrong_language_is_rewritten_once_and_keeps_its_numbers() {
+    // W6 verifier: a Hindi question answered in English gets one rewrite; the deterministic
+    // language check passes and every number is kept, so the rewrite is shown.
+    let env = TestEnv::with_project("Railway", "Feature Film");
+    let m = attach(&env);
+    m.call(
+        "final_answer",
+        json!({ "text": "The script has 3 scenes." }),
+    );
+    m.reply("स्क्रिप्ट में 3 दृश्य हैं।");
+    let x = ask(&env, "इस स्क्रिप्ट में कितने दृश्य हैं, कृपया बताइए?", whole());
+    let content = x["result"]["content"].as_str().unwrap();
+    assert!(
+        content.contains("दृश्य") && content.contains('3'),
+        "{content}"
+    );
+    assert!(m.seen_text().contains("Rewrite the text in Hindi"));
+}
+
+#[test]
+fn a_rewrite_that_loses_a_number_is_never_shown() {
+    // Both rewrites drop the number: the first answer stays (never a worse one), after three passes.
+    let env = TestEnv::with_project("Railway", "Feature Film");
+    let m = attach(&env);
+    m.call(
+        "final_answer",
+        json!({ "text": "The script has 3 scenes." }),
+    );
+    m.reply("स्क्रिप्ट में कई दृश्य हैं।");
+    m.reply("स्क्रिप्ट में तीन दृश्य हैं।");
+    let x = ask(&env, "इस स्क्रिप्ट में कितने दृश्य हैं, कृपया बताइए?", whole());
+    assert_eq!(x["result"]["content"], "The script has 3 scenes.");
+}
+
+#[test]
+fn an_english_answer_to_an_english_question_takes_one_pass() {
+    let env = TestEnv::with_project("Railway", "Feature Film");
+    let m = attach(&env);
+    m.call(
+        "final_answer",
+        json!({ "text": "The script has 3 scenes." }),
+    );
+    let x = ask(&env, "Tell me briefly what the script is about.", whole());
+    assert_eq!(x["result"]["content"], "The script has 3 scenes.");
+    assert!(!m.seen_text().contains("Rewrite the text"));
 }

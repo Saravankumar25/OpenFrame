@@ -874,8 +874,9 @@ fn run_agent(
     let mut seen_calls: BTreeSet<String> = BTreeSet::new();
 
     // A plain command ("Create a task to ...") is its tool call; the model is not asked.
-    let mut direct =
-        super::commands::direct_call(text, |name| offered.iter().any(|t| t.name == name));
+    // Any tool this scope has (the picker may not have offered it); the call still runs as the
+    // person, so one without the permission gets the usual clear refusal.
+    let mut direct = super::commands::direct_call(text, |name| known.contains(name));
     for index in 0..max_steps {
         let step = index as u32 + 1;
         let call = match direct.take() {
@@ -1364,6 +1365,9 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
         let linked = s.store.read(|c| link_targets(c, actor, &targets))?;
         push_unique_provenance(&mut outcome.output.provenance, &linked);
     }
+    // The runtime verifier (ADR-0028 decisions 5 and 6): deterministic checks, at most three
+    // passes, an answer that passes on the first is shown at once.
+    let (passes, checks_failed) = verify_language(&*model, &text, &mut outcome.output, started);
     let trace_row = (
         outcome
             .steps
@@ -1391,8 +1395,8 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
             sources,
             usage: model.take_usage(),
             total_ms: started.elapsed().as_millis() as u64,
-            passes: 1,
-            checks_failed: Vec::new(),
+            passes,
+            checks_failed,
             result_kind: &result_kind,
             error_code: error_code.as_deref(),
             proposed,
@@ -1401,6 +1405,83 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
     s.store
         .read(|c| records::load_exchange(c, actor, &request_id))?
         .ok_or_else(|| AppError::internal("assistant exchange not recorded"))
+}
+
+/// The time a request may spend in verifier passes (ADR-0028 decision 6).
+const VERIFY_BUDGET: std::time::Duration = std::time::Duration::from_secs(60);
+/// Passes in all, the first included (ADR-0028 decision 5).
+const MAX_PASSES: u32 = 3;
+
+fn language_name(code: &str) -> Option<&'static str> {
+    Some(match code {
+        "hi" => "Hindi",
+        "te" => "Telugu",
+        "ta" => "Tamil",
+        "kn" => "Kannada",
+        "ml" => "Malayalam",
+        "es" => "Spanish",
+        "fr" => "French",
+        "de" => "German",
+        "zh" => "Chinese",
+        "ja" => "Japanese",
+        "ko" => "Korean",
+        _ => return None,
+    })
+}
+
+/// Every number in `from` (runs of ASCII digits) also appears in `to`.
+fn numbers_kept(from: &str, to: &str) -> bool {
+    let nums = |t: &str| -> Vec<String> {
+        t.split(|c: char| !c.is_ascii_digit())
+            .filter(|n| !n.is_empty())
+            .map(str::to_string)
+            .collect()
+    };
+    let have = nums(to);
+    nums(from).iter().all(|n| have.contains(n))
+}
+
+/// Answer in the language of the request (W6). The check is deterministic code
+/// (`openframe_ai_checks`); when it fails, the model rewrites only the answer text, at most twice
+/// and within the budget, and a rewrite is used only when it passes the check and keeps every
+/// number. Otherwise the first answer stays. Returns the passes made and the checks that failed.
+fn verify_language(
+    model: &dyn InferenceProvider,
+    request: &str,
+    out: &mut ToolOutput,
+    started: std::time::Instant,
+) -> (u32, Vec<String>) {
+    let content = out.content.trim().to_string();
+    let Some(want) = openframe_ai_checks::detect_language(request).filter(|l| *l != "en") else {
+        return (1, Vec::new());
+    };
+    let Some(name) = language_name(want) else {
+        return (1, Vec::new());
+    };
+    if content.is_empty() || openframe_ai_checks::language_matches(&content, want) {
+        return (1, Vec::new());
+    }
+    let mut passes = 1;
+    while passes < MAX_PASSES && started.elapsed() < VERIFY_BUDGET {
+        passes += 1;
+        let system = format!(
+            "Rewrite the text in {name}. Keep every name and every number exactly as written, with the numbers in digits. Reply with the rewritten text only."
+        );
+        let Ok(candidate) = generate_text(model, &system, content.clone(), 500) else {
+            continue;
+        };
+        if openframe_ai_checks::language_matches(&candidate, want)
+            && numbers_kept(&content, &candidate)
+        {
+            out.content = candidate;
+            return (passes, vec!["language".to_string()]);
+        }
+    }
+    tracing::info!(
+        passes,
+        "an answer stayed in its first language after the verifier passes"
+    );
+    (passes, vec!["language".to_string()])
 }
 
 fn persist(core: &AppCore, actor: &Actor, request_id: &str, o: Outcome) -> AppResult<()> {

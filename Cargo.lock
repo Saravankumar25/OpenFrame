@@ -3019,6 +3019,7 @@ dependencies = [
  "base64 0.22.1",
  "lopdf",
  "openframe-ai",
+ "openframe-ai-checks",
  "openframe-domain",
  "openframe-entitlement",
  "openframe-import-export",

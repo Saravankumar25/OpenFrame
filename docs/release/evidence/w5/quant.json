@@ -1,0 +1,94 @@
+{
+  "computer": {
+    "cpu": "Intel(R) Core(TM) Ultra 5 125H",
+    "logicalCores": 18,
+    "memoryMb": 15805,
+    "os": "Windows 11 Home Single Language",
+    "physicalCores": 14
+  },
+  "engine": "llama-cpp-b11259-win-x64-cpu",
+  "experiment": "quant",
+  "prompts": 3,
+  "repeats": 3,
+  "result": {
+    "runs": [
+      {
+        "bytes": 1069306368,
+        "figures": {
+          "generationTokensPerSecond": {
+            "max": 27.82430120613858,
+            "median": 23.689420992342203,
+            "min": 20.030324169024585,
+            "n": 9,
+            "p25": 22.151242970553138,
+            "p75": 25.798259851289856
+          },
+          "promptTokens": {
+            "max": 2950.0,
+            "median": 2910.0,
+            "min": 2759.0,
+            "n": 9,
+            "p25": 2759.0,
+            "p75": 2950.0
+          },
+          "promptTokensPerSecond": {
+            "max": 121.59263792094139,
+            "median": 117.0476766928913,
+            "min": 107.33935881014924,
+            "n": 9,
+            "p25": 114.65393973788927,
+            "p75": 119.68639474993613
+          },
+          "wallMs": {
+            "max": 27547.299899999998,
+            "median": 26385.5172,
+            "min": 24313.980499999998,
+            "n": 9,
+            "p25": 24931.8409,
+            "p75": 26789.600199999997
+          }
+        },
+        "model": "model.gguf"
+      },
+      {
+        "bytes": 806058240,
+        "figures": {
+          "generationTokensPerSecond": {
+            "max": 29.649071017259626,
+            "median": 23.25541421431583,
+            "min": 20.198143790585643,
+            "n": 9,
+            "p25": 21.936736760313444,
+            "p75": 27.7007670804084
+          },
+          "promptTokens": {
+            "max": 2950.0,
+            "median": 2910.0,
+            "min": 2759.0,
+            "n": 9,
+            "p25": 2759.0,
+            "p75": 2950.0
+          },
+          "promptTokensPerSecond": {
+            "max": 129.7009733068802,
+            "median": 124.65862333143146,
+            "min": 119.53447360036579,
+            "n": 9,
+            "p25": 123.3813134148759,
+            "p75": 125.22721639262994
+          },
+          "wallMs": {
+            "max": 26844.1073,
+            "median": 24220.4213,
+            "min": 24066.3393,
+            "n": 9,
+            "p25": 24166.4885,
+            "p75": 24566.548600000002
+          }
+        },
+        "model": "gemma-3-1b-it-Q4_K_M.gguf"
+      }
+    ]
+  },
+  "startedUnixSeconds": 1792160551
+}
