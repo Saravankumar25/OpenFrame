@@ -2,44 +2,51 @@
 
 > Rewritten (not appended) at the end of every session. One page. It exists so the next session starts from the facts
 > instead of from a long history, which is how context rot is avoided. If this page is older than the newest progress log
-> entry, trust the log and fix this page first. Last rewritten: 2026-10-16 (Windows phases W1, W2 and W3).
+> entry, trust the log and fix this page first. Last rewritten: 2026-10-16, mid-session (W4 release run in progress, W5 started).
 
-## State in six lines
+## State
 
-1. **W1, W2 and W3 are done at proof level 2** on branch `windows/w1-controls` (local commits, not merged, not pushed).
-   Evidence: [W2](../release/evidence/w2/close-handshake-and-data-safety-2026-10-16.md), [W3](../release/evidence/w3/fuzz-2026-10-16.md).
-2. W1: proof levels in the status file, team password minimum 8, secret, link and installer gates, archive moves, conflict
-   sweep, audience wording, test binaries merged (46 to 6), dev debug level lowered, 39 orphaned worktrees removed with the
-   owner's approval (unique files in `.build-cache/salvage-2026-09-30`).
-3. W2: the close handshake keeps typed text (40 closes in a row in spec 04), one pending-save registry, cloud-folder warning,
-   start-up refusal without Documents, delete and locate tests, migration backup restore check, stranded-replace error.
-4. W3: six fuzz targets (about 49 million inputs on Windows, libFuzzer job in CI), two new properties, a central capability
-   check with a registry-generated test, release hardening flags, rustls security update, supply chain in `npm run verify`.
-5. **Open finding for W4:** the WebView2 runtime opens background connections to Microsoft (threat model section 4 item 8).
-   Spec `tests/e2e/specs/05-webview-network.test.mjs` fails on purpose until W4 switches that off.
-6. Full Rust suite passed after the last fix (2,035 tests before, 604 application tests rerun after); web 581 tests pass.
+1. **W1 to W3 are on `main`** (local fast-forward, owner's word 2026-10-16; not pushed).
+2. **W4 on `windows/w4-release-proof`** (3 commits): WebView2 arguments in `tauri.conf.json` (`additionalBrowserArgs`, read
+   by the e2e launcher too), release build honours `OPENFRAME_DATA_ROOT` for file locations only (ADR-0031), web view
+   profile of a test run inside the test folder, runner `--release=gated|open`, `@e2e-debug-only` (specs 15, 16, 76),
+   `@e2e-net-log`, `scripts/check-binary.mjs`, new specs 00, 26, 44, 63, 86, 96, 97, all 191 scenarios in
+   `tests/e2e/scenarios/`, screenplay editor tells keyboard and screen reader users that Escape leaves it.
+3. **Release build made** (`tauri build --no-bundle`, open variant, 47.5 MB exe): `check-binary` ok (CFG, ASLR, DEP, no
+   symbols), `scan-installer` on exe + `ai/runtimes` + `ai/notices` clean. Full suite on it was running at this rewrite
+   (`--release=open`, log in the session scratchpad); smoke, journey and relaunch were green.
+4. **Owner decision 2026-10-16:** WebView2's own Microsoft diagnostic-data upload is allowed and disclosed (threat model
+   section 4 item 8, privacy policy); spec 05 tolerates only TCP 443 from the browser process.
+5. **W5 on `windows/w5-measure-ai`** (branched from the W4 tip): `InferenceProvider` with capabilities, token usage, trace
+   table `sys_ai_trace` (app migration 3), `ai.health`, `ai.export_report`, crates `openframe-ai-checks` and
+   `openframe-ai-eval` (`ai-eval` binary), 679 gold cases in `crates/openframe-ai-eval/gold/`.
 
 ## Next items
 
-1. **Owner:** run the 10-minute OneDrive test ([checklist](../testing/onedrive-typing-test.md)); decide on merging the branch.
-2. **W4 (needs the owner's word for a release executable):** WebView2 background traffic off (`additionalBrowserArgs`,
-   keep wry's defaults), the release-build end-to-end run, `scan-installer` on the release folder, binary flags check.
-3. Low review items left: per-rule `secret-scan: allow` marker; `check-links` skips URLs after `#[cfg(test)]`; Mac half
-   of "typed text survives closing" (Mac phases).
+1. Read the release run result; fix failures; run `--release=gated` (scan the gated exe too); write
+   `docs/release/evidence/w4/` (release run, binary checks, performance numbers, keyboard pass); move proven rows to
+   proof level 3; finish the W4 roadmap boxes; then the debug suite once.
+2. W5: Settings AI health card and Export AI report button (`ai.health`, `ai.export_report`; run the application tests so
+   ts-rs writes the new TypeScript types); undo of an applied proposal should set the trace outcome `undone`.
+3. W5: owner approves the gold sets, then the baseline run with `ai-eval` on the release profile; the 8 GB laptop run
+   needs the owner.
 
 ## Blocked on the owner
 
-- The OneDrive manual test, the word to build a release executable (W4), the macOS version of the Intel MacBook (M1).
+- Approving the 679 gold cases (W5). The 8 GB laptop performance and baseline runs. Any model download (W5 bake-off,
+  W7 Vulkan runtime): name, source, size and licence first. The OneDrive manual test.
 
 ## Do not
 
-- Do not push, merge, or build an installer or release executable without the owner's word.
-- Do not change the AI prompts or model before the W5 baseline exists (ADR-0028).
-- Do not write shell heredocs or `node -e` snippets with backslashes or apostrophes; use the Edit and Write tools.
-- Do not edit `docs/archive/`, `docs/audits/` or existing files in `docs/release/evidence/`. The team password is never written to a file.
+- Do not push, merge to `main`, or build an installer, MSI, MSIX or bundle. A release executable for checks is allowed.
+- Do not change prompts, models or AI behaviour before the W5 baseline report exists (ADR-0028).
+- Do not write the team password anywhere; a gated test build uses a random password made by `run.mjs` for that run.
+- Do not edit `docs/archive/`, `docs/audits/` or existing files in `docs/release/evidence/`.
 
 ## Facts a new session cannot see from the code
 
-- The owner is a beginner in Rust, Tauri and Claude Code: plain words, short replies, smallest working change (ponytail).
-- Hardware: 15.4 GB memory, 18 logical cores, Intel Core Ultra 5; a full Rust rebuild takes 6 to 10 minutes, an
-  end-to-end app build about 10; libFuzzer does not link on this Windows MSVC toolchain.
+- The owner is a beginner in Rust, Tauri and Claude Code: plain words, short replies, smallest working change.
+- Hardware: 15.4 GB memory, 18 logical cores, Intel Core Ultra 5; a release app build takes about 20 minutes from cold.
+- `npm run test:e2e -- <flags>` now passes flags through (it silently dropped them before).
+- A stray folder `.claude/worktrees/agent-a056d60c8c58fe10a` (not a registered worktree) holds an old copy; ask the
+  owner before removing it.
