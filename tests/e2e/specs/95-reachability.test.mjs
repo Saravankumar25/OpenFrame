@@ -29,7 +29,7 @@ const PROJECT_PAGE = { trash: "Recently Deleted", activity: "Activity", notes: "
 const SUB_LABEL = {
   production: {
     overview: "Overview", catalog: "Catalog", locations: "Locations", "cast-crew": "Cast & Crew", moodboards: "Moodboards",
-    storyboards: "Storyboards", shots: "Shot Lists", schedule: "Schedule", daily: "Daily View", sides: "Sides",
+    storyboards: "Storyboards", shots: "Shot Lists", schedule: "Schedule", dood: "Day Out of Days", daily: "Daily View", sides: "Sides",
     reports: "Reports", budget: "Budget",
   },
   story: { board: "Board", outline: "Outline", characters: "Characters", timeline: "Timeline", episodes: "Episodes" },

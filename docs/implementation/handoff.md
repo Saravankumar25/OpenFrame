@@ -21,6 +21,21 @@
    table `sys_ai_trace` (app migration 3), `ai.health`, `ai.export_report`, crates `openframe-ai-checks` and
    `openframe-ai-eval` (`ai-eval` binary), 679 gold cases in `crates/openframe-ai-eval/gold/`.
 
+6. **W5 continued:** Settings AI health card and Export AI report (committed). Gold review page
+   `crates/openframe-ai-eval/gold/REVIEW.md`. **Owner 2026-10-16: run a labelled trial of the harness now; the official
+   baseline waits for the owner's approval of the gold sets.** Trace outcome `undone` not done yet.
+7. **W7 on `windows/w7-gpu`** (stacked on W5): decision function with 34 computers (`openframe-ai/src/gpu.rs`), DXGI
+   adapter detection and System32 Vulkan loader check (`openframe-platform/src/graphics.rs`). **Owner approved the Vulkan
+   runtime download**: llama.cpp b11259 Vulkan x64 (33,078,808 bytes, SHA-256 afb3ddfc...9610, MIT), extracted to
+   `.ai-assets/runtimes/llama-cpp-b11259-win-x64-vulkan` and pinned in the lock (uncommitted at this rewrite); staging
+   script and Rust lock check accept one processor build plus at most one Vulkan build. This PC: Intel Arc integrated,
+   driver 32.0.101.8132, Vulkan loader present. Package grows by about 89 MB with two complete engine folders (report in
+   W9). Spec 96 now retries the first screen-reader query (the tree is built only when a reader asks).
+8. **W8 not started.** Plan: manifest envelope signed with Ed25519 (`ed25519-dalek` already in the tree), `.partial`
+   download with HTTP range resume, HTTPS only (loopback HTTP in debug tests), redirects only to the same host, size cap,
+   free-space preflight (new platform helper), atomic activation into `%LOCALAPPDATA%\OpenFrame\models\<version>`,
+   quarantine, the ADR-0026 decision 10 tests against a local host, then the screens.
+
 ## Next items
 
 1. Read the release run result; fix failures; run `--release=gated` (scan the gated exe too); write

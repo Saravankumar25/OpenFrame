@@ -88,7 +88,7 @@ export function readLock(lockPath = LOCK_PATH) {
     if (!SAFE_ID.test(r.runtimeId ?? "") || !safeName(r.runtimeId) || ids.has(r.runtimeId)) fail(`${where}: invalid or duplicate id`);
     ids.add(r.runtimeId);
     if (!["windows", "macos"].includes(r.os) || !["x86_64", "aarch64"].includes(r.arch)) fail(`${where}: unknown platform ${r.os}-${r.arch}`);
-    if (r.backend !== "cpu") fail(`${where}: only the processor build is bundled`);
+    if (!["cpu", "vulkan"].includes(r.backend)) fail(`${where}: unknown engine build ${r.backend} (processor or Vulkan only, ADR-0029)`);
     if (typeof r.licenseId !== "string" || !r.licenseId.trim()) fail(`${where}: licence id missing`);
     if (!Array.isArray(r.files) || r.files.length === 0 || r.files.length > MAX_FILES) fail(`${where}: file list missing or too long`);
     const names = new Set();
@@ -118,13 +118,14 @@ export function readLock(lockPath = LOCK_PATH) {
 export function bundledFiles(lock, target) {
   const [os, arch] = target.split("-");
   const runtimes = lock.runtimes.filter((r) => r.os === os && r.arch === arch);
-  if (runtimes.length !== 1) {
+  // Exactly one processor build per platform; a Vulkan build beside it is optional (ADR-0029).
+  if (runtimes.filter((r) => r.backend === "cpu").length !== 1 || runtimes.filter((r) => r.backend === "vulkan").length > 1) {
     fail(
       `No Offline AI engine is pinned for ${target}. Every package must contain the complete offline AI (ADR-0025), so this build stops. ` +
         "Add the engine for this platform to packaging/ai/ai-assets.lock.json and its files to .ai-assets.",
     );
   }
-  const out = runtimes[0].files.map((f) => ({ rel: `runtimes/${runtimes[0].runtimeId}/${f.path}`, bytes: f.bytes, sha256: f.sha256 }));
+  const out = runtimes.flatMap((r) => r.files.map((f) => ({ rel: `runtimes/${r.runtimeId}/${f.path}`, bytes: f.bytes, sha256: f.sha256 })));
   for (const m of lock.models) out.push({ rel: `models/${m.modelId}/${m.file.path}`, bytes: m.file.bytes, sha256: m.file.sha256 });
   return out;
 }

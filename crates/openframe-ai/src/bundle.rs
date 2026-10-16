@@ -246,7 +246,7 @@ impl AssetLock {
             if !safe_id(&r.runtime_id) || !ids.insert(r.runtime_id.clone()) {
                 return Err(invalid_lock(format!("runtime id {}", r.runtime_id)));
             }
-            if r.backend != "cpu"
+            if !matches!(r.backend.as_str(), "cpu" | "vulkan")
                 || !safe_id(&r.version)
                 || !valid_text(&r.license_id, 80)
                 || r.files.is_empty()
@@ -265,6 +265,22 @@ impl AssetLock {
                 return Err(invalid_lock(format!(
                     "runtime {}: the server program is not pinned",
                     r.runtime_id
+                )));
+            }
+        }
+        // Each platform has exactly one processor build; a Vulkan build beside it is optional
+        // (ADR-0029 decision 1). The processor build stays the fallback.
+        for r in &self.runtimes {
+            let same = |b: &str| {
+                self.runtimes
+                    .iter()
+                    .filter(|o| o.os == r.os && o.arch == r.arch && o.backend == b)
+                    .count()
+            };
+            if same("cpu") != 1 || same("vulkan") > 1 {
+                return Err(invalid_lock(format!(
+                    "{}-{} needs one processor build and at most one Vulkan build",
+                    r.os, r.arch
                 )));
             }
         }
@@ -324,7 +340,18 @@ impl AssetLock {
     pub fn runtime_for_this_computer(&self) -> Option<&RuntimeEntry> {
         let os = openframe_platform::current_os().name();
         let arch = std::env::consts::ARCH;
-        self.runtimes.iter().find(|r| r.os == os && r.arch == arch)
+        self.runtimes
+            .iter()
+            .find(|r| r.os == os && r.arch == arch && r.backend == "cpu")
+    }
+
+    /// The Vulkan build pinned for this computer, when there is one (ADR-0029).
+    pub fn gpu_runtime_for_this_computer(&self) -> Option<&RuntimeEntry> {
+        let os = openframe_platform::current_os().name();
+        let arch = std::env::consts::ARCH;
+        self.runtimes
+            .iter()
+            .find(|r| r.os == os && r.arch == arch && r.backend == "vulkan")
     }
 
     /// Identifies this exact lock (a different app version with other files gets a new one).

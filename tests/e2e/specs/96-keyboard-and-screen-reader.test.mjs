@@ -136,7 +136,19 @@ describe("keyboard and screen reader pass", () => {
           last = f.desc;
         }
         const app = appProcesses().find((p) => p.name.toLowerCase() === "openframe-desktop.exe");
-        const unnamed = unnamedForScreenReader(app.pid).map((u) => `screen reader: unnamed ${u}`);
+        // Windows builds the web view's accessibility tree only once a reader asks, so the first
+        // query of a session can see an empty tree: ask again, a few times, before judging.
+        let found;
+        for (let attempt = 1; ; attempt++) {
+          try {
+            found = unnamedForScreenReader(app.pid);
+            break;
+          } catch (e) {
+            if (attempt >= 4) throw e;
+            await sleep(2000);
+          }
+        }
+        const unnamed = found.map((u) => `screen reader: unnamed ${u}`);
         findings[name] = [...new Set([...issues, ...unnamed])];
         assert.deepEqual(findings[name], [], `${name}:\n  ${findings[name].join("\n  ")}`);
       });
