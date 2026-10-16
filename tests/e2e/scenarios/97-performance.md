@@ -19,11 +19,13 @@ Before: an empty data folder of its own. The app starts for the first time. The 
 2. Click the project row "Open Measured Feature" and time it until the Workspaces navigation shows. Check: under 1.5 seconds.
 3. Check: the private memory of the app and its web view, summed, is under 400 MB.
 
-## P3 typing latency in scene 20 of the screenplay is recorded
+## P3 typing keeps the app's own work per key under 16 ms, and P5 idle stays under budget
 
-1. Click Screenplay. Start recording how long each key press takes until the next paint.
+1. Click Screenplay. Start recording, for every key: its time stamp, when the app finished handling it, and when the next frame started.
 2. Click the twentieth action line, press End, and type ' The rain gets heavier as the night goes on and nobody leaves the bus stop.' at about 100 words a minute.
-3. Record the number of keys, how many took over 16 ms, the median, the 95th percentile and the worst.
+3. Type the first 30 of those characters into a plain text field added for the purpose (the floor for the frame time).
+4. Check: the app's own work per key (time stamp to handled) is under 16 ms at the 95th percentile. Record the frame times of both beside it.
+5. Wait 5 seconds, then measure the processor use of the app and its web view over 60 seconds with no input and no AI. Check: under 0.5 percent of one core.
 
 ## The AI answers, and memory and processor use with the AI loaded are recorded
 

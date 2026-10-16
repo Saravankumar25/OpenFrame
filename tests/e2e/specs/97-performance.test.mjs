@@ -10,7 +10,8 @@
 //   P5  processor use over 30 s with the project open and the AI idle;
 //   AI  time to the first answer, engine load included, and the engines' own memory.
 // The numbers go to tests/e2e/artifacts/performance.json. P1, P2 and P6 (without AI) are gates;
-// P3, P5 and the AI figures are recorded against their budgets for the owner's 8 GB laptop run.
+// P3 (the app's own work per key) and P5 (idle without AI) are gates too, on the release build (owner,
+// 2026-10-16: every test from a release-ready point of view). The AI figures are recorded.
 
 import { after, before, describe, test } from "node:test";
 import assert from "node:assert/strict";
@@ -94,30 +95,72 @@ describe("performance with the AI running", () => {
     });
   });
 
-  test("P3 typing latency in scene 20 of the screenplay is recorded", async () => {
+  test("P3 typing in scene 20 keeps the app's own work per key under 16 ms (p95), and P5 idle stays under budget", async () => {
     await step("typing", async () => {
       await openWorkspace(browser, "Screenplay");
+      // For every key: input delay plus the app's handlers (capture start to the end of the event
+      // loop task, measured with a zero-delay message), and the time until the next frame starts.
+      // The frame time alone cannot go below one frame; a plain text field in the same window gives
+      // the floor, recorded beside it.
       await browser.execute(() => {
-        window.__e2eLatency = [];
-        new PerformanceObserver((list) => {
-          for (const e of list.getEntries()) if (e.name === "keydown") window.__e2eLatency.push(e.duration);
-        }).observe({ type: "event", durationThreshold: 16, buffered: false });
-        window.__e2eKeys = 0;
-        document.addEventListener("keydown", () => window.__e2eKeys++, true);
+        window.__e2eKeys = [];
+        const ch = new MessageChannel();
+        let pending = null;
+        ch.port1.onmessage = () => {
+          if (!pending) return;
+          pending.done = performance.now();
+          pending = null;
+        };
+        document.addEventListener("keydown", (e) => {
+          const k = { at: e.timeStamp, done: 0, frame: 0 };
+          window.__e2eKeys.push(k);
+          pending = k;
+          ch.port2.postMessage(0);
+          requestAnimationFrame((t) => (k.frame = t));
+        }, true);
       });
       const el = await browser.$("(//div[contains(@class,'spx-doc')]//div[@data-type='action'])[20]");
       await el.scrollIntoView({ block: "center" });
       await el.click();
       await browser.keys("End");
-      for (const ch of " The rain gets heavier as the night goes on and nobody leaves the bus stop.".split("")) {
+      const text = " The rain gets heavier as the night goes on and nobody leaves the bus stop.".split("");
+      for (const ch of text) {
         await browser.keys(ch);
         await sleep(110); // about 100 words a minute
       }
       await sleep(1000);
-      const { slow, keys } = await browser.execute(() => ({ slow: window.__e2eLatency, keys: window.__e2eKeys }));
-      // Event Timing reports only events slower than 16 ms; every other key met the budget.
-      const all = [...slow, ...Array(Math.max(0, keys - slow.length)).fill(8)];
-      numbers.P3_typing = { keys, over16ms: slow.length, p50_ms: pct(all, 0.5), p95_ms: pct(all, 0.95), worst_ms: Math.round(Math.max(0, ...slow)) };
+      const editor = await browser.execute(() => window.__e2eKeys.splice(0));
+      // The floor: the same keys into a plain text field added for the measurement.
+      await browser.execute(() => {
+        const i = document.createElement("input");
+        i.id = "e2e-plain";
+        i.setAttribute("aria-label", "plain");
+        document.body.appendChild(i);
+        i.focus();
+      });
+      for (const ch of text.slice(0, 30)) {
+        await browser.keys(ch);
+        await sleep(110);
+      }
+      await sleep(500);
+      const plain = await browser.execute(() => {
+        document.getElementById("e2e-plain")?.remove();
+        return window.__e2eKeys.splice(0);
+      });
+      const work = (ks) => ks.filter((k) => k.done).map((k) => k.done - k.at);
+      const frame = (ks) => ks.filter((k) => k.frame).map((k) => k.frame - k.at);
+      numbers.P3_typing = {
+        keys: editor.length,
+        work_p50_ms: pct(work(editor), 0.5),
+        work_p95_ms: pct(work(editor), 0.95),
+        to_next_frame_p95_ms: pct(frame(editor), 0.95),
+        plain_field_to_next_frame_p95_ms: pct(frame(plain), 0.95),
+      };
+      assert.ok(numbers.P3_typing.work_p95_ms < numbers.budgets.P3, `typing: the app's work per key is ${numbers.P3_typing.work_p95_ms} ms at p95`);
+      // P5: no AI running, project open, no input: under half a percent of one core over 60 s.
+      await sleep(5000);
+      numbers.P5_idle_no_ai_percent_of_one_core = cpuPercent(appTree(), 60);
+      assert.ok(numbers.P5_idle_no_ai_percent_of_one_core < numbers.budgets.P5, `idle without AI: ${numbers.P5_idle_no_ai_percent_of_one_core} percent of one core`);
     });
   });
 

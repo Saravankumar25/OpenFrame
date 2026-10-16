@@ -87,6 +87,7 @@
 | Unmaintained font crates | Dated exception for `rustybuzz` and `ttf-parser` until 2027-01-06 | 2026-10-08 | `deny.toml`, masterplan area 6 |
 | Release-build tests and real data | The release build honours the test data folder for file locations only; every other test switch stays debug-only | 2026-10-16 | [ADR-0031](../adr/ADR-0031-release-build-test-data-folder.md) |
 | WebView2's own diagnostic data | Allow and disclose: the runtime's Microsoft diagnostic-data upload follows the Windows setting and cannot be switched off by the app; spec 05 tolerates only that shape | 2026-10-16 | Threat model section 4 item 8, privacy policy |
+| Tests from a release-ready point of view | Every test that proves a feature runs against the release build and its budgets are gates there: the end-to-end suite on the release executable (open and gated), the performance budgets as hard checks, the AI harness on the release profile, the Rust suite once with `--release`; debug runs are only for working on a change | 2026-10-16 | this file; spec 97; DEVELOPMENT |
 | W1 to W3 on `main` | Merged locally (no push) before W4 started | 2026-10-16 | progress log |
 
 ## 2. Still open
