@@ -1,5 +1,5 @@
 // Self-tests for the governance checks (architecture lint, migration policy, feature status check, reachability,
-// secret scan, document links and app addresses, installer string scan).
+// secret scan, document links and app addresses, installer string scan, binary hardening).
 // Each test copies the files a check reads into a temporary tree, plants one violation and asserts
 // that the check fails with the expected rule, so a check that silently stops working is caught.
 //
@@ -588,4 +588,26 @@ test("release builds get control-flow guard, the Microsoft linker and no persona
   }
   assert.equal(env.RUSTFLAGS, undefined, "one source of flags, the encoded one, which allows spaces in paths");
   assert.deepEqual(hardenedEnv({ A: "1" }, { platform: "darwin" }), { A: "1" });
+});
+
+test("binary check reads the hardening flags of a PE image and refuses a missing one (W4)", async () => {
+  const { peFacts, failures } = await import(url.pathToFileURL(script("check-binary.mjs")).href);
+  // A minimal 64-bit PE: DOS header, PE signature, COFF header, optional header, no sections.
+  const pe = 0x40;
+  const buf = Buffer.alloc(0x200);
+  buf.writeUInt16LE(0x5a4d, 0);
+  buf.writeUInt32LE(pe, 0x3c);
+  buf.writeUInt32LE(0x4550, pe);
+  buf.writeUInt16LE(240, pe + 4 + 16);
+  buf.writeUInt16LE(0x20b, pe + 24);
+  buf.writeUInt16LE(0x20 | 0x40 | 0x100 | 0x4000, pe + 24 + 70);
+  const hardened = peFacts(buf);
+  assert.deepEqual(failures({ ...hardened, guardFlags: 0x100 }), []);
+  assert.deepEqual(failures(hardened), ["the load config does not mark the code as control-flow guard instrumented"]);
+  buf.writeUInt16LE(0x20 | 0x40 | 0x100, pe + 24 + 70);
+  buf.writeUInt32LE(7, pe + 4 + 12);
+  const weak = failures({ ...peFacts(buf), guardFlags: 0x100 });
+  assert.ok(weak.includes("GUARD_CF is not set"), weak.join("; "));
+  assert.ok(weak.some((m) => m.startsWith("a COFF symbol table is present")), weak.join("; "));
+  assert.throws(() => peFacts(Buffer.from("not a program at all, just text")), /not an MZ file/);
 });
