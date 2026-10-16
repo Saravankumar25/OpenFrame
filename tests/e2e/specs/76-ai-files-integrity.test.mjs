@@ -17,6 +17,11 @@ import { click, launchApp, pageText, stepper, waitForText } from "../lib/app.mjs
 import { closeProject, firstLaunchProject, menuItem, openProject, waitForHome } from "../lib/flows.mjs";
 import { ANSWER_TIMEOUT, alterFile, appProcesses, ask, copyApp, goToTasks, modelFile, openAssistant, openTaskTitles, panelText, restoreModels, send } from "../lib/ai.mjs";
 import { hostRequests } from "../lib/model-host.mjs";
+import { readFileSync } from "node:fs";
+
+// The processor engine the app starts (the Vulkan build runs only after a card passes its check).
+const LOCK = JSON.parse(readFileSync(new URL("../../../packaging/ai/ai-assets.lock.json", import.meta.url), "utf8"));
+const CPU_ENGINE = LOCK.runtimes.find((r) => r.backend === "cpu" && r.os === "windows").runtimeId;
 
 let browser;
 const step = stepper(() => browser, "ai-files");
@@ -116,8 +121,7 @@ describe("Offline AI files: missing, damaged, whole again", () => {
 
   test("an altered engine library is caught before launch and asks for a reinstall", async () => {
     await step("damaged-engine", async () => {
-      // The processor engine the app starts (the Vulkan build is only for a graphics card).
-      const copy = copyApp({ alter: "runtimes/llama-cpp-b11259-win-x64-cpu/ggml-base.dll" });
+      const copy = copyApp({ alter: `runtimes/${CPU_ENGINE}/ggml-base.dll` });
       // The models are whole again and this copy of the app carries a changed engine library.
       await restartWith(() => restoreModels(), copy);
       await openAssistant(browser);

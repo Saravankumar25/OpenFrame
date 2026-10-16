@@ -246,7 +246,15 @@ impl ModelDownload {
             if self.cancel.load(Ordering::SeqCst) {
                 return Err(fetch::cancelled());
             }
-            dir.check_file(version, f)?;
+            // Hashing a large file blocks: off the runtime that serves the engines.
+            let (d, v, e) = (
+                ModelsDir::new(dir.root.clone()),
+                version.to_string(),
+                f.clone(),
+            );
+            tokio::task::spawn_blocking(move || d.check_file(&v, &e))
+                .await
+                .map_err(|_| AppError::internal("the file check stopped"))??;
             finished += f.bytes;
             self.progress(finished, total);
         }

@@ -315,8 +315,9 @@ export function modelFile(role) {
  * replaced by a real copy, so the host folder and the build inputs are never changed.
  */
 export function alterFile(path, { remove = false } = {}) {
+  assert.ok(statSync(path, { throwIfNoEntry: false }), `${path} is not there to change`);
   if (remove) {
-    rmSync(path, { force: true });
+    rmSync(path);
     return;
   }
   if (statSync(path).nlink > 1) {
@@ -340,6 +341,7 @@ export function alterFile(path, { remove = false } = {}) {
 
 /** Install the host's model set again, as a finished download leaves it (the app is not running). */
 export function restoreModels() {
+  assert.ok(process.env.E2E_DATA_ROOT && process.env.E2E_MODEL_HOST_DIR, "restoreModels needs the run.mjs data root and model host");
   rmSync(MODELS_DIR, { recursive: true, force: true });
   preinstallModels(process.env.E2E_MODEL_HOST_DIR, dirname(MODELS_DIR));
 }

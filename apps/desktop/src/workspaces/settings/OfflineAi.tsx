@@ -51,16 +51,22 @@ export default function OfflineAiSettings() {
 
   const s = status.data;
   const [removing, setRemoving] = useState(false);
-  const remove = () =>
+  const [removeBusy, setRemoveBusy] = useState(false);
+  const remove = () => {
+    if (removeBusy) return;
+    setRemoveBusy(true);
     void call("ai.download.remove")
-      .then(() => {
-        toast.info("OpenFrame AI was removed. You can download it again here.");
+      .then(() => toast.info("OpenFrame AI was removed. You can download it again here."))
+      .catch(reportError)
+      .finally(() => {
+        // Also after a partial failure: the screens show what is really on the disk now.
         void qc.invalidateQueries({ queryKey: ["ai.status"] });
         void qc.invalidateQueries({ queryKey: ["ai.diagnostics"] });
         void qc.invalidateQueries({ queryKey: ["ai.download.status"] });
-      })
-      .catch(reportError)
-      .finally(() => setRemoving(false));
+        setRemoveBusy(false);
+        setRemoving(false);
+      });
+  };
 
   return (
     <div className="content" style={{ overflow: "auto" }}>
@@ -100,6 +106,7 @@ export default function OfflineAiSettings() {
                 title="Remove OpenFrame AI?"
                 confirmLabel="Remove"
                 danger
+                busy={removeBusy}
                 onConfirm={remove}
               >
                 <p className="sm">This frees the space the AI models use on this computer. AI stays off until you download it again. Your projects are not changed.</p>

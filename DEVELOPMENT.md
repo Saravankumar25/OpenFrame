@@ -77,7 +77,7 @@ cd apps/desktop; npx vitest                          # watch mode
 | Logs | `%LOCALAPPDATA%\OpenFrame\logs\openframe.YYYY-MM-DD.log`: JSON lines, rotated daily, 14 files kept |
 | New projects (default) | `Documents\OpenFrame\Projects\<Title>.openframe\` |
 | Global Idea Vault | `Documents\OpenFrame\Global Idea Vault\` (`vault.sqlite` + `assets/`) |
-| Offline AI engine (in the package, read-only) and models (downloaded after install, ADR-0026) | engine: `ai\` next to `openframe-desktop.exe` (installer, MSIX and development builds); models: `%LOCALAPPDATA%\OpenFrame\models\<version>\`; writable AI records in `%LOCALAPPDATA%\OpenFrame\ai\` and `logs\` (Store builds: `LocalState\OpenFrame`, see doc 27) |
+| Offline AI engine (in the package, read-only) and models (downloaded after install, ADR-0026) | engine: `ai\` next to `openframe-desktop.exe` (installer, MSIX and development builds); models: `%LOCALAPPDATA%\OpenFrame\models\<version>\`; writable AI records in `%LOCALAPPDATA%\OpenFrame\ai\` and `logs\` (Store builds: `LocalState\OpenFrame`, see doc 27). `ai\graphics.json` holds the Graphics card setting and what the card checks found; set `"forceIntegratedProbe": true` there by hand to check integrated graphics even when the memory rule says no (ADR-0029, never shown in the app) |
 
 **Log level.** Set the `OPENFRAME_LOG` environment variable. It uses
 [`tracing_subscriber::EnvFilter`](https://docs.rs/tracing-subscriber/latest/tracing_subscriber/filter/struct.EnvFilter.html)

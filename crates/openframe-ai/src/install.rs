@@ -127,7 +127,15 @@ impl ModelsDir {
     /// manifest; it is then renamed from `.partial`. A mismatch is quarantined (step 5).
     pub fn check_file(&self, version: &str, f: &FileEntry) -> AppResult<PathBuf> {
         let partial = self.partial(version, f);
-        let ok = file_matches(&partial, f).unwrap_or(false);
+        // A file that cannot be read now (another program has it open) is not damaged: it stays
+        // for the next try. Only a real size or hash mismatch is set aside.
+        let ok = file_matches(&partial, f).map_err(|e| {
+            install_error(
+                "file_busy",
+                "A downloaded OpenFrame AI file could not be read. Close other programs and try again.",
+                e.kind().to_string(),
+            )
+        })?;
         if !ok {
             let moved = self.quarantine(&partial, &f.name);
             return Err(install_error(
@@ -210,6 +218,11 @@ impl ModelsDir {
                 version.to_string(),
             ));
         }
+        // A previous set that never passed its health check (two new sets in a row) is no longer
+        // needed once a third becomes active: remove it instead of leaving it on the disk.
+        if let Some(stale) = current.as_ref().and_then(|a| a.previous.clone()) {
+            let _ = std::fs::remove_dir_all(self.set_dir(&stale));
+        }
         if dest.exists() {
             // A leftover folder of this version that was never activated: replace it.
             std::fs::remove_dir_all(&dest).map_err(|e| {
@@ -235,7 +248,33 @@ impl ModelsDir {
             activated_at: now_ms(),
         };
         self.write_active(&a)?;
+        self.sweep_sets(
+            &[a.version.as_str()]
+                .into_iter()
+                .chain(a.previous.as_deref())
+                .collect::<Vec<_>>(),
+        );
         Ok(a)
+    }
+
+    /// Delete set folders that `active.json` no longer names (a previous set that could not be
+    /// removed earlier, a set left by an older download). Never the staging or quarantine folders.
+    pub fn sweep_sets(&self, keep: &[&str]) {
+        for e in std::fs::read_dir(&self.root)
+            .into_iter()
+            .flatten()
+            .flatten()
+        {
+            let name = e.file_name().to_string_lossy().into_owned();
+            let is_dir = e.file_type().is_ok_and(|t| t.is_dir());
+            if is_dir
+                && !matches!(name.as_str(), "staging" | "quarantine")
+                && !keep.contains(&name.as_str())
+                && let Err(err) = std::fs::remove_dir_all(e.path())
+            {
+                tracing::warn!(kind = %err.kind(), "an old OpenFrame AI set could not be removed yet");
+            }
+        }
     }
 
     /// The new set answered its health check: the previous set is no longer needed.
@@ -245,7 +284,9 @@ impl ModelsDir {
         };
         if let Some(prev) = a.previous.take() {
             self.write_active(&a)?;
-            let _ = std::fs::remove_dir_all(self.set_dir(&prev));
+            if let Err(e) = std::fs::remove_dir_all(self.set_dir(&prev)) {
+                tracing::warn!(kind = %e.kind(), "the previous OpenFrame AI set could not be removed yet");
+            }
         }
         Ok(())
     }
@@ -267,9 +308,16 @@ impl ModelsDir {
                     sequence: a.sequence,
                 })?;
             }
-            _ => {
-                let _ = std::fs::remove_file(self.root.join("active.json"));
-            }
+            _ => match std::fs::remove_file(self.root.join("active.json")) {
+                Err(e) if e.kind() != std::io::ErrorKind::NotFound => {
+                    return Err(install_error(
+                        "write_failed",
+                        "OpenFrame AI could not be saved.",
+                        e.kind().to_string(),
+                    ));
+                }
+                _ => {}
+            },
         }
         if bad.is_dir() {
             let _ = self.quarantine(&bad, &a.version);
@@ -280,12 +328,24 @@ impl ModelsDir {
     /// Remove OpenFrame AI (the Remove button): every set, every staging file, the quarantine,
     /// the pointer. Links inside are removed, never followed.
     pub fn remove_all(&self) -> AppResult<()> {
-        let _ = std::fs::remove_file(self.root.join("active.json"));
-        for e in std::fs::read_dir(&self.root)
-            .into_iter()
-            .flatten()
-            .flatten()
-        {
+        let failed = |e: std::io::Error| {
+            install_error(
+                "remove_failed",
+                "OpenFrame AI could not be removed completely. Close OpenFrame and try again.",
+                e.kind().to_string(),
+            )
+        };
+        match std::fs::remove_file(self.root.join("active.json")) {
+            Err(e) if e.kind() != std::io::ErrorKind::NotFound => return Err(failed(e)),
+            _ => {}
+        }
+        let entries = match std::fs::read_dir(&self.root) {
+            Ok(rd) => rd,
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(()),
+            Err(e) => return Err(failed(e)),
+        };
+        for e in entries {
+            let e = e.map_err(failed)?;
             let p = e.path();
             let r = if e.file_type().is_ok_and(|t| t.is_dir()) {
                 std::fs::remove_dir_all(&p)

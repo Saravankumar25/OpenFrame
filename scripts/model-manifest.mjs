@@ -124,10 +124,15 @@ if (process.argv[1] && path.resolve(process.argv[1]) === url.fileURLToPath(impor
     const a = parseArgs(process.argv.slice(2));
     if (a.cmd === "new-key") {
       if (!a.out) throw new AiAssetsError("new-key needs --out <private-key.pem>");
-      if (path.resolve(a.out).startsWith(ROOT + path.sep)) throw new AiAssetsError("Keep the private key outside this repository.");
-      if (fs.existsSync(a.out)) throw new AiAssetsError(`${a.out} exists; a key is never overwritten.`);
+      const inside = path.resolve(a.out).toLowerCase().startsWith((ROOT + path.sep).toLowerCase());
+      if (inside) throw new AiAssetsError("Keep the private key outside this repository.");
       const { privateKey } = crypto.generateKeyPairSync("ed25519");
-      fs.writeFileSync(a.out, privateKey.export({ format: "pem", type: "pkcs8" }), { mode: 0o600 });
+      // "wx": never overwrite a key that exists.
+      try {
+        fs.writeFileSync(a.out, privateKey.export({ format: "pem", type: "pkcs8" }), { flag: "wx" });
+      } catch (e) {
+        throw new AiAssetsError(e.code === "EEXIST" ? `${a.out} exists; a key is never overwritten.` : e.message);
+      }
       console.log(`Private key written to ${a.out}. Keep it offline.\nOPENFRAME_MANIFEST_PUBLIC_KEY=${publicKeyBase64(privateKey)}`);
     } else if (a.cmd === "publish") {
       if (!a.key || !a.out || !a.sequence) throw new AiAssetsError("publish needs --key <private-key.pem>, --out <host folder> and --sequence <n>");

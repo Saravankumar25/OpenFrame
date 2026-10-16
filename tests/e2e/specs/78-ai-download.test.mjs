@@ -124,13 +124,26 @@ describe("download OpenFrame AI after install", () => {
       // Slowly this time, so the download can be paused, then resumed where it stopped.
       steerHost({ throttle: 40 * 1024 * 1024 });
       await click(browser, "Try again");
-      await waitForCard(/Downloading: [1-9]/);
+      // Some bytes of this download have arrived (the engine figure, not the rounded text).
+      await browser.waitUntil(
+        () =>
+          browser.executeAsync((done) =>
+            window.__TAURI_INTERNALS__
+              .invoke("of_invoke", { op: "ai.download.status", args: {} })
+              .then((s) => done(s.phase === "Downloading" && s.doneBytes > 0))
+              .catch(() => done(false)),
+          ),
+        { timeout: 120_000, interval: 250, timeoutMsg: "the slow download never started" },
+      );
+      const mark = hostRequests().length;
       await click(browser, "Pause");
       await waitForCard(/Paused at/);
       steerHost({});
       await click(browser, "Resume download");
       await waitForText(browser, "AI Ready", ANSWER_TIMEOUT);
-      const chat = hostRequests().filter((r) => r.path === CHAT && r.from > 0);
+      const chat = hostRequests()
+        .slice(mark)
+        .filter((r) => r.path === CHAT && r.from > 0);
       assert.ok(chat.length >= 1, `the resume asked for the rest only: ${JSON.stringify(hostRequests())}`);
       await ready(30_000);
     });

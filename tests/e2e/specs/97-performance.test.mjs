@@ -55,10 +55,15 @@ function idleSeries(procs, windows, seconds) {
   const samples = JSON.parse(out);
   const role = (p) => /--type=(\w[\w-]*)/.exec(p.commandLine ?? "")?.[1] ?? p.name.replace(/\.exe$/i, "");
   const byProcess = {};
+  let totalMs = 0;
   procs.forEach((p, i) => {
-    byProcess[`${role(p)} ${p.pid}`] = Array.from({ length: windows }, (_, w) => Math.round(((samples[w + 1][i] - samples[w][i]) / (seconds * 10)) * 1000) / 1000);
+    // A process that ended or started during the windows reads as zero there: count only the
+    // windows in which it ran from start to end, never a negative difference.
+    const deltas = Array.from({ length: windows }, (_, w) => (samples[w][i] > 0 && samples[w + 1][i] >= samples[w][i] ? samples[w + 1][i] - samples[w][i] : 0));
+    totalMs += deltas.reduce((a, b) => a + b, 0);
+    byProcess[`${role(p)} ${p.pid}`] = deltas.map((d) => Math.round((d / (seconds * 10)) * 1000) / 1000);
   });
-  const total = (samples[windows].reduce((a, b) => a + b, 0) - samples[0].reduce((a, b) => a + b, 0)) / (windows * seconds * 10);
+  const total = totalMs / (windows * seconds * 10);
   return { byProcess, total: Math.round(total * 1000) / 1000 };
 }
 const appTree = () => [...appProcesses().filter((p) => p.name.toLowerCase() !== "llama-server.exe"), ...webViewProcesses()].map((p) => p.pid);

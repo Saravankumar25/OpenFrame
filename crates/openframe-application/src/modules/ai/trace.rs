@@ -9,7 +9,7 @@ use std::path::PathBuf;
 
 use openframe_ai::Usage;
 use openframe_domain::{Actor, AppError, AppResult, new_id, now_ms};
-use rusqlite::{Connection, params};
+use rusqlite::{Connection, OptionalExtension, params};
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use ts_rs::TS;
@@ -111,11 +111,17 @@ pub fn request_of_change_set(core: &AppCore, change_set_id: &str) -> Option<Stri
                 [change_set_id],
                 |r| r.get::<_, Option<String>>(0),
             )
-            .ok()
+            .optional()?
             .flatten())
         })
-        .ok()
-        .flatten()
+        // Best effort like every trace write, but a database error is logged.
+        .unwrap_or_else(|e| {
+            tracing::warn!(
+                code = e.code_str(),
+                "the AI trace could not find the request of a proposal"
+            );
+            None
+        })
 }
 
 // ------------------------------------------------------------------ health card

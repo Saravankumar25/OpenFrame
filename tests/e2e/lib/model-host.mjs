@@ -9,18 +9,17 @@
 //   { "down": true }                                    every request is refused (no network)
 
 import http from "node:http";
-import { appendFileSync, existsSync, linkSync, mkdirSync, readFileSync, statSync, writeFileSync, copyFileSync, openSync, readSync, closeSync } from "node:fs";
+import { appendFileSync, renameSync, existsSync, linkSync, mkdirSync, readFileSync, statSync, writeFileSync, copyFileSync, openSync, readSync, closeSync } from "node:fs";
 import { dirname, join, normalize, sep } from "node:path";
 
 export const MODEL_HOST_PORT = 47811;
 export const MODEL_HOST_URL = `http://127.0.0.1:${MODEL_HOST_PORT}/`;
 
+/** The control file, written whole by steerHost (temp file and rename). A file that does not
+ * parse is a broken test, never "normal": it fails loudly. */
 const readCtl = (file) => {
-  try {
-    return JSON.parse(readFileSync(file, "utf8"));
-  } catch {
-    return {};
-  }
+  const text = readFileSync(file, "utf8");
+  return text.trim() ? JSON.parse(text) : {};
 };
 
 /** Start the host on `dir`. `ctlAt` and `logAt` give the current control file and log. Returns { close() }. */
@@ -29,7 +28,13 @@ export function startModelHost(dir, ctlAt, logAt) {
     const ctlFile = ctlAt();
     const logFile = logAt();
     const ctl = readCtl(ctlFile);
-    const rel = decodeURIComponent((req.url ?? "/").split("?")[0]).replace(/^\/+/, "");
+    let rel;
+    try {
+      rel = decodeURIComponent((req.url ?? "/").split("?")[0]).replace(/^\/+/, "");
+    } catch {
+      res.writeHead(400, { "Content-Length": 0, Connection: "close" }).end();
+      return;
+    }
     const range = /^bytes=(\d+)-$/.exec(req.headers.range ?? "");
     const from = range ? Number(range[1]) : null;
     appendFileSync(logFile, `${JSON.stringify({ path: rel, from, at: Date.now() })}\n`);
@@ -39,6 +44,11 @@ export function startModelHost(dir, ctlAt, logAt) {
       return;
     }
     const size = statSync(file).size;
+    if (from !== null && from >= size) {
+      // Like a real host: nothing left to send from there.
+      res.writeHead(416, { "Content-Range": `bytes */${size}`, "Content-Length": 0, Connection: "close" }).end();
+      return;
+    }
     const start = Math.min(from ?? 0, size);
     const headers = { "Content-Length": size - start, Connection: "close" };
     if (from !== null) headers["Content-Range"] = `bytes ${start}-${size - 1}/${size}`;
@@ -57,6 +67,8 @@ export function startModelHost(dir, ctlAt, logAt) {
     let pos = start;
     let sent = 0;
     const pump = () => {
+      // The client went away (a pause): stop, never read from a closed file.
+      if (closed) return;
       while (pos < size) {
         if (sent >= cut) {
           release();
@@ -128,5 +140,6 @@ export function hostRequests(logFile = process.env.E2E_MODEL_HOST_LOG) {
 
 /** Steer the host (see the header); `{}` puts it back to normal. */
 export function steerHost(ctl, ctlFile = process.env.E2E_MODEL_HOST_CTL) {
-  writeFileSync(ctlFile, JSON.stringify(ctl));
+  writeFileSync(`${ctlFile}.tmp`, JSON.stringify(ctl));
+  renameSync(`${ctlFile}.tmp`, ctlFile);
 }

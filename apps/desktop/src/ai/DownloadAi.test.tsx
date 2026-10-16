@@ -93,11 +93,26 @@ describe("Download OpenFrame AI", () => {
     expect(tooLittleSpace(base({ phase: "Paused", freeBytes: 1 * GB, doneBytes: 0.7 * GB }))).toBe(false);
   });
 
-  it("removes a damaged set before downloading it again", async () => {
-    show("An OpenFrame AI file is missing or damaged.");
+  it("removes a damaged set before downloading it again, but resumes a paused download of it", async () => {
+    const { unmount } = show("An OpenFrame AI file is missing or damaged.");
     expect(await screen.findByText("An OpenFrame AI file is missing or damaged.")).toBeTruthy();
     await userEvent.click(screen.getByRole("button", { name: "Download again" }));
     await waitFor(() => expect(calls.filter((c) => c !== "ai.download.status")).toEqual(["ai.download.remove", "ai.download.start"]));
+    unmount();
+    calls.length = 0;
+    dl = base({ phase: "Paused", doneBytes: 0.3 * GB, totalBytes: 1.1 * GB });
+    show("An OpenFrame AI file is missing or damaged.");
+    await userEvent.click(await screen.findByRole("button", { name: "Resume download" }));
+    await waitFor(() => expect(calls).toContain("ai.download.start"));
+    expect(calls).not.toContain("ai.download.remove");
+  });
+
+  it("announces the phase, not every byte, and says so plainly when the status cannot be read", async () => {
+    dl = base({ phase: "Downloading", doneBytes: 0.55 * GB, totalBytes: 1.1 * GB });
+    show();
+    expect((await screen.findByRole("status")).textContent).toBe("Downloading OpenFrame AI.");
+    expect(tooLittleSpace(base({ freeBytes: 1 * GB }), true)).toBe(false);
+    expect(tooLittleSpace(base({ phase: "Failed", freeBytes: 1.2 * GB, doneBytes: 0.5 * GB }))).toBe(false);
   });
 
   it("says plainly when this copy cannot download", async () => {

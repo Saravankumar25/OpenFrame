@@ -549,16 +549,17 @@ pub fn list_devices(program: &std::path::Path, files: Option<&EngineFiles>) -> A
     if let Some(dir) = program.parent() {
         cmd.current_dir(dir);
     }
-    let (mut child, _guard) =
-        spawn_guarded(&mut cmd).map_err(|_| unavailable("the engine could not list devices"))?;
+    let (mut child, _guard) = spawn_guarded(&mut cmd)
+        .map_err(|e| unavailable(format!("the engine could not list devices: {e:?}")))?;
     let mut out = child.stdout.take();
     let reader = std::thread::spawn(move || {
-        let mut s = String::new();
+        // Adapter names can be in the system code page, so bytes that are not UTF-8 are kept.
+        let mut b = Vec::new();
         if let Some(o) = out.as_mut() {
             use std::io::Read;
-            let _ = o.take(64 * 1024).read_to_string(&mut s);
+            let _ = o.take(64 * 1024).read_to_end(&mut b);
         }
-        s
+        String::from_utf8_lossy(&b).into_owned()
     });
     let until = Instant::now() + Duration::from_secs(30);
     loop {

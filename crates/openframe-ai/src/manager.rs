@@ -431,6 +431,11 @@ impl AiManager {
                 *self.state.write() = (BundleState::Verified, None);
                 Ok(())
             }
+            // A busy file is not damage: AI stays usable and the check runs again on the next request.
+            Err(e) if e.is("ai.file_busy") => {
+                *self.state.write() = (BundleState::NotChecked, None);
+                Err(e)
+            }
             Err(e) => Err(self.switch_off(e)),
         }
     }
@@ -466,6 +471,7 @@ impl AiManager {
     /// Check the bundle, then begin loading the chat model in the background.
     pub fn warm_up(&self) -> AppResult<()> {
         self.ensure_verified()?;
+        self.ensure_placement();
         let r = self.supervisor.start();
         self.guard(r)
     }
@@ -495,7 +501,7 @@ impl AiManager {
         match self.chat_once(req) {
             // The engine on the graphics card stopped: remember it and go on on the processor
             // (ADR-0029 decision 5).
-            Err(e) if self.on_card() && (e.is("ai.unavailable") || e.is("ai.timeout")) => {
+            Err(e) if self.on_card() && e.is("ai.unavailable") => {
                 tracing::warn!(
                     code = e.code_str(),
                     "the AI engine on the graphics card stopped; going on on the processor"
@@ -611,6 +617,13 @@ impl AiManager {
 
     /// Point both engines at the bundle, or at nothing when AI is not usable.
     fn configure(&self) {
+        let p = self.placement.lock().clone();
+        self.configure_with(&p);
+    }
+
+    /// Point both engines at the bundle with the chat engine in place `p`, or at nothing when AI
+    /// is not usable.
+    fn configure_with(&self, p: &Placement) {
         let usable = self.available();
         let l = self.loaded.read();
         let ready = l.bundle.as_ref().filter(|_| usable);
@@ -620,7 +633,7 @@ impl AiManager {
                 let chat = self.cfg.lock.chat_model();
                 let emb = self.cfg.lock.embedding_model();
                 // The launch plan is the only place that puts the chat engine on a card.
-                let card = match &*self.placement.lock() {
+                let card = match p {
                     Placement::Card { device, .. } => b
                         .gpu_engine()
                         .map(|(exe, files)| (exe, files, device.clone())),
@@ -676,10 +689,10 @@ impl AiManager {
     /// Settings, Offline AI, Graphics card: `off` keeps the AI on the processor. The engine
     /// restarts in its new place on the next request.
     pub fn set_graphics_off(&self, off: bool) -> AppResult<()> {
+        let _one = self.placement_lock.lock();
         let mut rec = self.graphics_record();
         rec.off = off;
         crate::store::write_json_atomic(&self.paths.graphics(), &rec)?;
-        let _one = self.placement_lock.lock();
         *self.placement.lock() = Placement::Undecided;
         self.configure();
         Ok(())
@@ -690,7 +703,13 @@ impl AiManager {
     }
 
     fn graphics_record(&self) -> GraphicsRecord {
-        crate::store::read_json(&self.paths.graphics()).unwrap_or_default()
+        let path = self.paths.graphics();
+        crate::store::read_json(&path).unwrap_or_else(|| {
+            if path.exists() {
+                tracing::warn!("the graphics card record could not be read; it starts again");
+            }
+            GraphicsRecord::default()
+        })
     }
 
     /// Decide once per session, before the chat engine first starts, where it runs; the probe
@@ -719,11 +738,12 @@ impl AiManager {
         let Some(models) = b.models().cloned() else {
             return Placement::Processor(CpuReason::NoAdapter);
         };
-        let mut rec = self.graphics_record();
+        let rec = self.graphics_record();
         let facts = (self.cfg.graphics)();
         let runtime = b.gpu_runtime().map(|r| r.version.clone());
         let need = placement::model_mb(models.chat.bytes, self.chat_context_tokens());
-        let free = self.hardware().available_ram_bytes / (1024 * 1024);
+        // Free memory now, not when the hardware was first read.
+        let free = hardware::inspect().available_ram_bytes / (1024 * 1024);
         match placement::plan(&facts, &rec, runtime.as_deref(), need, free) {
             gpu::Plan::Cpu(r) => Placement::Processor(r),
             gpu::Plan::Gpu { adapter } => {
@@ -748,7 +768,7 @@ impl AiManager {
             gpu::Plan::Probe { adapter } => {
                 let (a, driver) = facts.adapters[adapter].clone();
                 let runtime = runtime.unwrap_or_default();
-                self.probe(&b, &mut rec, &a, &driver, &runtime)
+                self.probe(&b, &a, &driver, &runtime)
             }
         }
     }
@@ -770,17 +790,11 @@ impl AiManager {
 
     /// ADR-0029 decision 4: the fixed request on the processor, then on the card. The card is used
     /// only when it gave valid output faster; either way the result is remembered.
-    fn probe(
-        &self,
-        b: &BundledAi,
-        rec: &mut GraphicsRecord,
-        a: &gpu::Adapter,
-        driver: &str,
-        runtime: &str,
-    ) -> Placement {
+    fn probe(&self, b: &BundledAi, a: &gpu::Adapter, driver: &str, runtime: &str) -> Placement {
         let device = self.device_for(b, &a.name);
-        // The processor figure (the placement is still undecided, so this is the processor engine).
-        self.configure();
+        // The processor figure. The session's placement stays undecided meanwhile, so no other
+        // request runs on an engine that is still being checked.
+        self.configure_with(&Placement::Undecided);
         let cpu = self.probe_once();
         let card = device.clone().map(|device| Placement::Card {
             adapter: a.name.clone(),
@@ -791,15 +805,21 @@ impl AiManager {
         });
         let gpu = match &card {
             Some(c) => {
-                *self.placement.lock() = c.clone();
-                self.configure();
-                let r = self.probe_once();
-                *self.placement.lock() = Placement::Undecided;
-                r
+                self.configure_with(c);
+                self.probe_once()
             }
             None => (false, None),
         };
         let passed = gpu::probe_passed(gpu.0, gpu.1, cpu.1);
+        // A check that could not run fully (no processor figure, the card not listed, an unknown
+        // driver) is not remembered: the processor is used this session and the card is checked
+        // again next time.
+        if cpu.1.is_none() || card.is_none() || driver.is_empty() {
+            tracing::warn!("the graphics card check could not run fully; the processor is used");
+            return Placement::Processor(CpuReason::ProbeFailed);
+        }
+        // Read again: the setting may have changed while the check ran.
+        let mut rec = self.graphics_record();
         rec.remember(ProbeRecord {
             adapter: a.name.clone(),
             vendor_id: a.vendor_id,
@@ -814,7 +834,7 @@ impl AiManager {
             cpu_tokens_per_second: cpu.1,
             at: openframe_domain::now_ms(),
         });
-        if let Err(e) = crate::store::write_json_atomic(&self.paths.graphics(), rec) {
+        if let Err(e) = crate::store::write_json_atomic(&self.paths.graphics(), &rec) {
             tracing::warn!(
                 code = e.code_str(),
                 "the graphics card check could not be recorded"
@@ -848,7 +868,14 @@ impl AiManager {
     fn probe_once(&self) -> (bool, Option<f64>) {
         let ep = match self.guard(self.supervisor.ensure_ready(Duration::from_secs(180))) {
             Ok(ep) => ep,
-            Err(_) => return (false, None),
+            Err(e) => {
+                tracing::warn!(
+                    code = e.code_str(),
+                    detail = e.detail.as_deref().unwrap_or(""),
+                    "the engine did not start for the graphics card check"
+                );
+                return (false, None);
+            }
         };
         let http = self.supervisor.http().clone();
         let req = placement::probe_request();
@@ -860,7 +887,14 @@ impl AiManager {
                 placement::probe_valid(&text),
                 placement::tokens_per_second(&usage),
             ),
-            Err(_) => (false, None),
+            Err(e) => {
+                tracing::warn!(
+                    code = e.code_str(),
+                    detail = e.detail.as_deref().unwrap_or(""),
+                    "the graphics card check request failed"
+                );
+                (false, None)
+            }
         }
     }
 
@@ -895,7 +929,12 @@ impl AiManager {
             cpu_tokens_per_second: None,
             at: openframe_domain::now_ms(),
         });
-        let _ = crate::store::write_json_atomic(&self.paths.graphics(), &rec);
+        if let Err(e) = crate::store::write_json_atomic(&self.paths.graphics(), &rec) {
+            tracing::warn!(
+                code = e.code_str(),
+                "the graphics card check could not be recorded"
+            );
+        }
         *self.placement.lock() = Placement::Processor(CpuReason::ProbeFailed);
         self.configure();
     }
@@ -933,7 +972,11 @@ impl AiManager {
         let spawned = std::thread::Builder::new()
             .name("of-ai-download".into())
             .spawn(move || {
-                let r = me.run_download(host);
+                // Even a panic ends the run, so the slot is never left taken.
+                let r = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                    me.run_download(host)
+                }))
+                .unwrap_or_else(|_| Err(AppError::internal("the download stopped unexpectedly")));
                 if let Err(e) = &r {
                     tracing::warn!(
                         code = e.code_str(),
@@ -994,6 +1037,16 @@ impl AiManager {
         {
             return Ok(()); // this set is already in use
         }
+        if active
+            .as_ref()
+            .is_some_and(|a| a.version == manifest.manifest_version)
+        {
+            return Err(AppError::ai(
+                "remove_first",
+                "Remove OpenFrame AI in Settings, Offline AI, then download it again.",
+            )
+            .with_detail("the active set of this version is damaged"));
+        }
         // A list older than the one already activated is a replay: never go back to older models.
         if let Some(a) = active.filter(|a| manifest.sequence < a.sequence) {
             return Err(AppError::ai(
@@ -1021,10 +1074,14 @@ impl AiManager {
         });
         match healthy {
             Ok(()) => dir.confirm_healthy(),
+            // A busy file or a slow first start is not a broken set: keep it (the previous set
+            // stays until a later check passes) instead of throwing gigabytes away.
+            Err(e) if e.is("ai.file_busy") || e.is("ai.timeout") => Err(e),
             Err(e) => {
                 self.unload();
-                dir.roll_back()?;
+                let rolled = dir.roll_back();
                 self.reload();
+                rolled?;
                 Err(e)
             }
         }

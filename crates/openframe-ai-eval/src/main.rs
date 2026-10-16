@@ -89,6 +89,11 @@ fn run() -> Result<(), String> {
     let lock = openframe_ai::AssetLock::embedded().map_err(|e| format!("{e:?}"))?;
     let host = openframe_ai::test_support::install_pinned_models(&app_data, &assets, &lock)
         .map_err(|e| format!("installing the models: {e:?}"))?;
+    // The same place every run: the processor (a graphics card check would change the timings
+    // between runs; ADR-0029 has its own benchmark).
+    std::fs::create_dir_all(app_data.join("ai")).map_err(|e| e.to_string())?;
+    std::fs::write(app_data.join("ai").join("graphics.json"), r#"{"off":true}"#)
+        .map_err(|e| e.to_string())?;
     let config = AppConfig {
         ai_bundle_dir: Some(bundle.clone()),
         ai_model_host: Some(host),
@@ -277,7 +282,7 @@ fn scope_args(case: &Case, p: &Project) -> Value {
                 .as_ref()
                 .and_then(|s| s["scene"].as_u64())
                 .unwrap_or(1) as usize;
-            json!({ "kind": "CurrentScene", "draftId": p.draft_id, "sceneId": p.scene_ids.get(n - 1).cloned().unwrap_or_default() })
+            json!({ "kind": "CurrentScene", "draftId": p.draft_id, "sceneId": p.scene_ids.get(n.saturating_sub(1)).cloned().unwrap_or_default() })
         }
         // There is no act scope in the panel: an act request is asked of the whole project.
         _ => json!({ "kind": "WholeProject" }),

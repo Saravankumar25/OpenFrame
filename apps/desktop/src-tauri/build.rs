@@ -114,7 +114,15 @@ fn check_model_host() {
         panic!("{URL} must be an https address.");
     }
     let b64 = |c: char| c.is_ascii_alphanumeric() || matches!(c, '+' | '/');
-    let key_ok = |k: &str| k.len() == 44 && k.ends_with('=') && k[..43].chars().all(b64);
+    // 32 bytes in standard base64: 43 characters and one "=", the last character carrying only
+    // four bits (so it is one of the sixteen below).
+    let key_ok = |k: &str| {
+        k.is_ascii()
+            && k.len() == 44
+            && k.ends_with('=')
+            && k[..43].chars().all(b64)
+            && "AEIMQUYcgkosw048".contains(&k[42..43])
+    };
     if !keys.split(',').map(str::trim).all(key_ok) {
         panic!(
             "{KEY} must be base64 Ed25519 public keys (44 characters each), separated by commas."

@@ -461,6 +461,19 @@ struct Pinned {
 }
 
 impl Pinned {
+    /// A file that cannot be read: missing when it is not there, otherwise busy (another program
+    /// holds it, for example an antivirus scan). Busy is not damage: the check runs again later.
+    fn unreadable(&self, e: &std::io::Error) -> AppError {
+        if e.kind() == std::io::ErrorKind::NotFound {
+            return self.missing();
+        }
+        AppError::ai(
+            "file_busy",
+            "An OpenFrame AI file could not be read right now. Close other programs and try again.",
+        )
+        .with_detail(format!("{} {:?}", self.rel, e.kind()))
+        .retryable()
+    }
     fn missing(&self) -> AppError {
         let e = if self.model {
             models_damaged()
@@ -696,7 +709,7 @@ impl BundledAi {
             });
         let mut checked = Vec::new();
         for p in self.pinned() {
-            let meta = std::fs::symlink_metadata(&p.path).map_err(|_| p.missing())?;
+            let meta = std::fs::symlink_metadata(&p.path).map_err(|e| p.unreadable(&e))?;
             let modified = modified_ms(&meta);
             // Model files live in writable app data: always hashed again (they are held open from
             // just before this check, see ModelStamp::hold). Engine files use the record.
@@ -710,7 +723,16 @@ impl BundledAi {
                     })
                 });
             if !cached {
-                let (bytes, sha) = hash_file(&p.path).map_err(|_| p.missing())?;
+                // Opened first so a busy file is told apart from a missing or damaged one.
+                std::fs::File::open(&p.path).map_err(|e| p.unreadable(&e))?;
+                let (bytes, sha) = hash_file(&p.path).map_err(|e| {
+                    AppError::ai(
+                        "file_busy",
+                        "An OpenFrame AI file could not be read right now. Close other programs and try again.",
+                    )
+                    .with_detail(format!("{} {}", p.rel, e.detail.unwrap_or_default()))
+                    .retryable()
+                })?;
                 if bytes != p.bytes || sha != p.sha256 {
                     let _ = std::fs::remove_file(record);
                     return Err(p.damaged("does not match its pinned hash"));

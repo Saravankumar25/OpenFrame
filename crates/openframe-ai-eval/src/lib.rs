@@ -369,10 +369,19 @@ pub fn summarize(scores: &[Score]) -> Summary {
     }
     s.english_tool_and_args_percent = en_tool.tool_and_args.percent();
     s.english_end_state_percent = en_action.end_state.percent();
-    s.english_bar_met = s.english_tool_and_args_percent.is_some_and(|p| p >= 90.0)
+    // The bar counts only when every English case ran and enough of them were scored: a
+    // percentage of a handful of cases, or of the cases that happened to set up, proves nothing.
+    let en_setup_errors = s.by_lang.get("en").map_or(0, |g| g.setup_errors);
+    s.english_bar_met = en_setup_errors == 0
+        && en_tool.tool_and_args.counted >= MIN_COUNTED
+        && en_action.end_state.counted >= MIN_COUNTED
+        && s.english_tool_and_args_percent.is_some_and(|p| p >= 90.0)
         && s.english_end_state_percent.is_some_and(|p| p >= 85.0);
     s
 }
+
+/// The fewest scored English cases each bar number needs before it can count.
+pub const MIN_COUNTED: usize = 30;
 
 fn pct(r: &Rate) -> String {
     r.percent()
@@ -548,16 +557,30 @@ mod tests {
             end_state: (kind == "action").then_some(end),
             ..Score::default()
         };
-        let mut scores: Vec<Score> = (0..9).map(|_| mk("tool", true, true)).collect();
+        // Too few cases: even perfect numbers do not meet the bar.
+        let few: Vec<Score> = (0..5)
+            .map(|_| mk("tool", true, true))
+            .chain((0..5).map(|_| mk("action", true, true)))
+            .collect();
+        assert!(!summarize(&few).english_bar_met);
+        let mut scores: Vec<Score> = (0..36).map(|_| mk("tool", true, true)).collect();
         scores.push(mk("tool", false, true));
-        scores.extend((0..9).map(|_| mk("action", true, true)));
-        scores.push(mk("action", true, false));
+        scores.extend((0..36).map(|_| mk("action", true, true)));
+        scores.extend((0..4).map(|_| mk("action", true, false)));
         let s = summarize(&scores);
-        assert_eq!(s.english_tool_and_args_percent, Some(95.0));
-        assert_eq!(s.english_end_state_percent, Some(90.0));
-        assert!(s.english_bar_met);
-        scores.push(mk("action", true, false));
-        scores.push(mk("action", true, false));
+        assert!(
+            s.english_bar_met,
+            "{:?} {:?}",
+            s.english_tool_and_args_percent, s.english_end_state_percent
+        );
+        // One English case that did not even set up: the bar is not met.
+        let mut broken = scores.clone();
+        broken.push(Score {
+            setup_error: Some("no project".into()),
+            ..mk("tool", true, true)
+        });
+        assert!(!summarize(&broken).english_bar_met);
+        scores.extend((0..4).map(|_| mk("action", true, false)));
         assert!(!summarize(&scores).english_bar_met);
     }
 

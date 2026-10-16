@@ -185,6 +185,11 @@ pub async fn download_file(
             true
         }
         StatusCode::OK => false,
+        StatusCode::RANGE_NOT_SATISFIABLE => {
+            // The partial file does not fit this file on the host: start it again next time.
+            let _ = std::fs::remove_file(partial);
+            return Err(failed("the host refused to resume; the file starts again"));
+        }
         s => return Err(failed(format!("the host answered {}", s.as_u16()))),
     };
     let mut file = std::fs::OpenOptions::new()

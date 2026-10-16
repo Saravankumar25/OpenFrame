@@ -366,7 +366,14 @@ fn init_logging(config: &AppConfig) -> Option<tracing_appender::non_blocking::Wo
 fn isolated_data_root() -> Option<PathBuf> {
     let root = std::env::var_os("OPENFRAME_DATA_ROOT")?;
     let root = PathBuf::from(root);
-    (root.is_absolute() && std::fs::create_dir_all(&root).is_ok()).then_some(root)
+    if root.is_absolute() && std::fs::create_dir_all(&root).is_ok() {
+        return Some(root);
+    }
+    // A test folder was asked for but cannot be used: never fall back to the person's real data.
+    eprintln!(
+        "OPENFRAME_DATA_ROOT is set but is not an absolute folder that can be created; OpenFrame Studio stops."
+    );
+    std::process::exit(2);
 }
 
 /// Deterministic Offline AI answers (temperature 0, fixed seed) for the end-to-end suite: only a
@@ -464,6 +471,11 @@ pub fn run() {
     // Internal builds ask the team password before anything opens; the core enforces it.
     config.team_password_hash = TEAM_PASSWORD_HASH.map(str::to_string);
     let log_guard = init_logging(&config);
+    if config.ai_model_host.is_none() && option_env!("MODEL_DISTRIBUTION_BASE_URL").is_some() {
+        tracing::error!(
+            "the model host or manifest key this build was made with is not valid; OpenFrame AI cannot be downloaded"
+        );
+    }
     tracing::info!(
         version = env!("CARGO_PKG_VERSION"),
         build = distribution::CHANNEL_MARKER,

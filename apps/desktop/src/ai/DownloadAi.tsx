@@ -33,9 +33,31 @@ export function downloadLine(d: AiDownloadDto): string {
   }
 }
 
-/** Not enough room on the drive for the rest of the download. */
-export function tooLittleSpace(d: AiDownloadDto): boolean {
-  return d.freeBytes != null && d.freeBytes < d.neededBytes - (d.phase === "Paused" ? d.doneBytes : 0);
+/** Not enough room on the drive for the rest of the download. A damaged set frees its own space
+ * when it is removed first, so the app checks that case itself (it refuses with a plain message). */
+export function tooLittleSpace(d: AiDownloadDto, damaged = false): boolean {
+  const done = d.phase === "Paused" || d.phase === "Failed" ? d.doneBytes : 0;
+  return !damaged && d.freeBytes != null && d.freeBytes < d.neededBytes - done;
+}
+
+/** What a screen reader hears: the phase, not every byte count. */
+export function phaseAnnouncement(phase: string): string {
+  switch (phase) {
+    case "Checking":
+      return "Getting the download list.";
+    case "Downloading":
+      return "Downloading OpenFrame AI.";
+    case "Installing":
+      return "Checking the files.";
+    case "Paused":
+      return "Download paused.";
+    case "Failed":
+      return "The download stopped.";
+    case "Done":
+      return "OpenFrame AI is ready.";
+    default:
+      return "";
+  }
 }
 
 export default function DownloadAi({ damaged }: { damaged?: string }) {
@@ -56,7 +78,14 @@ export default function DownloadAi({ damaged }: { damaged?: string }) {
     }
   }, [phase, qc]);
 
-  if (!d) return null;
+  if (!d)
+    return q.isError ? (
+      <section className="card pad" aria-label="Download OpenFrame AI">
+        <Banner tone="err" actions={<Button size="sm" onClick={() => void q.refetch()}>Try again</Button>}>
+          OpenFrame could not show the download right now.
+        </Banner>
+      </section>
+    ) : null;
   const run = (op: string) => {
     setBusy(true);
     void call(op)
@@ -64,12 +93,17 @@ export default function DownloadAi({ damaged }: { damaged?: string }) {
       .catch(reportError)
       .finally(() => setBusy(false));
   };
-  // A damaged set is removed first, then downloaded again.
+  // A damaged set is removed first, then downloaded again. Only before a download of it began:
+  // a paused or stopped download keeps what it already has and resumes.
+  const removeFirst = !!damaged && (d.phase === "Idle" || d.problem?.code === "ai.remove_first");
   const start = () => {
     setBusy(true);
-    void (damaged ? call("ai.download.remove") : Promise.resolve())
+    void (removeFirst ? call("ai.download.remove") : Promise.resolve())
       .then(() => call("ai.download.start"))
-      .then(() => qc.invalidateQueries({ queryKey: ["ai.download.status"] }))
+      .then(() => {
+        void qc.invalidateQueries({ queryKey: ["ai.status"] });
+        return qc.invalidateQueries({ queryKey: ["ai.download.status"] });
+      })
       .catch(reportError)
       .finally(() => setBusy(false));
   };
@@ -86,9 +120,10 @@ export default function DownloadAi({ damaged }: { damaged?: string }) {
         <p className="sm">This copy of OpenFrame Studio cannot download OpenFrame AI. Everything else works normally.</p>
       ) : (
         <>
-          <p className="sm" role="status" aria-live="polite">
-            {downloadLine(d)}
-          </p>
+          <p className="sm">{downloadLine(d)}</p>
+          <span className="sr-only" role="status" aria-live="polite">
+            {phaseAnnouncement(d.phase)}
+          </span>
           {(running || d.phase === "Paused") && (
             <div
               className="bar"
@@ -96,14 +131,16 @@ export default function DownloadAi({ damaged }: { damaged?: string }) {
               aria-label="OpenFrame AI download"
               aria-valuemin={0}
               aria-valuemax={100}
-              aria-valuenow={pct}
+              // Unknown size (getting the list, checking the files): no value, so it reads as busy.
+              aria-valuenow={d.phase === "Downloading" || d.phase === "Paused" ? pct : undefined}
+              aria-valuetext={d.totalBytes ? downloadLine(d) : phaseAnnouncement(d.phase)}
               style={{ marginBottom: 10 }}
             >
               <i style={{ width: `${pct}%` }} />
             </div>
           )}
           {d.phase === "Failed" && d.problem && <Banner tone="err">{d.problem.message}</Banner>}
-          {!running && tooLittleSpace(d) && (
+          {!running && tooLittleSpace(d, !!damaged) && (
             <Banner tone="warn">There is not enough free space on this drive. Free some space, then download.</Banner>
           )}
           {!running && (
@@ -118,7 +155,7 @@ export default function DownloadAi({ damaged }: { damaged?: string }) {
                 Pause
               </Button>
             ) : running ? null : (
-              <Button size="sm" variant="primary" disabled={busy || tooLittleSpace(d)} onClick={start}>
+              <Button size="sm" variant="primary" disabled={busy || tooLittleSpace(d, !!damaged)} onClick={start}>
                 {d.phase === "Paused" ? "Resume download" : d.phase === "Failed" ? "Try again" : damaged ? "Download again" : "Download OpenFrame AI"}
               </Button>
             )}

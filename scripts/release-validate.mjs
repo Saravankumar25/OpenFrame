@@ -195,9 +195,16 @@ try {
   const host = (process.env.MODEL_DISTRIBUTION_BASE_URL ?? "").trim();
   const keys = (process.env.OPENFRAME_MANIFEST_PUBLIC_KEY ?? "").split(",").map((k) => k.trim()).filter(Boolean);
   const keyOk = (k) => /^[A-Za-z0-9+/]{43}=$/.test(k) && Buffer.from(k, "base64").length === 32;
-  if (!host.startsWith("https://")) failCheck("Model host", "MODEL_DISTRIBUTION_BASE_URL must be the owner's https model host");
+  let hostName = "";
+  try {
+    hostName = new URL(host).host;
+  } catch {
+    hostName = "";
+  }
+  if (!host.startsWith("https://") || !hostName) failCheck("Model host", "MODEL_DISTRIBUTION_BASE_URL must be the owner's https model host");
   else if (keys.length === 0 || !keys.every(keyOk)) failCheck("Model host", "OPENFRAME_MANIFEST_PUBLIC_KEY must be one or more base64 Ed25519 public keys");
-  else pass("Model host", `${new URL(host).host}, ${keys.length} manifest key(s)`);
+  else if (process.env.OPENFRAME_TEST_BUILD) failCheck("Model host", "OPENFRAME_TEST_BUILD is set; it belongs to the test suite only");
+  else pass("Model host", `${hostName}, ${keys.length} manifest key(s)`);
 }
 
 // 6c. Migration freeze (doc 23 §4, build plan item migration policy). Any build given to people outside the team

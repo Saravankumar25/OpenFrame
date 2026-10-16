@@ -780,6 +780,29 @@ fn a_new_set_that_fails_its_health_check_falls_back_to_the_last_good_one() {
     assert!(ask(&m).is_ok());
 }
 
+fn a_damaged_set_of_the_same_version_is_removed_before_it_is_downloaded_again() {
+    let f = Fixture::new();
+    alter(&f.model_file(0));
+    let m = f.manager();
+    assert_eq!(ask(&m).unwrap_err().code_str(), "ai.models_damaged");
+    // Download again without Remove: refused at once, before any file is fetched.
+    assert_eq!(download(&m), DownloadPhase::Failed);
+    assert_eq!(
+        m.download_status().problem.unwrap().code_str(),
+        "ai.remove_first"
+    );
+    assert_eq!(f.host.requests().len(), 1, "only the list was read");
+    // Remove, then download: whole again.
+    m.remove_models().unwrap();
+    assert_eq!(
+        download(&m),
+        DownloadPhase::Done,
+        "{:?}",
+        m.download_status()
+    );
+    assert!(ask(&m).is_ok());
+}
+
 fn remove_turns_the_ai_off_and_frees_the_space() {
     let f = Fixture::new();
     let m = f.manager();
@@ -833,7 +856,14 @@ fn a_card_that_passes_its_check_runs_the_chat_engine_and_is_remembered() {
 }
 
 fn a_card_slower_than_the_processor_or_with_bad_output_is_not_used() {
-    for card in ["Slow Card", "Bad Card", "Ghost Card"] {
+    // A card the engine does not list: the processor this session, and nothing remembered (the
+    // check could not run, so it runs again next time).
+    let f = Fixture::new();
+    let m = Arc::new(AiManager::new(f.with_card("Ghost Card")).unwrap());
+    assert!(ask(&m).is_ok());
+    assert!(m.diagnostics().placement.contains("Runs on the processor"));
+    assert!(!f.data.join("ai").join("graphics.json").exists());
+    for card in ["Slow Card", "Bad Card"] {
         let f = Fixture::new();
         let m = Arc::new(AiManager::new(f.with_card(card)).unwrap());
         assert!(ask(&m).unwrap().starts_with("ready"), "{card}");
@@ -1240,6 +1270,10 @@ fn main() {
         (
             "a_new_set_that_fails_its_health_check_falls_back_to_the_last_good_one",
             a_new_set_that_fails_its_health_check_falls_back_to_the_last_good_one,
+        ),
+        (
+            "a_damaged_set_of_the_same_version_is_removed_before_it_is_downloaded_again",
+            a_damaged_set_of_the_same_version_is_removed_before_it_is_downloaded_again,
         ),
         (
             "remove_turns_the_ai_off_and_frees_the_space",

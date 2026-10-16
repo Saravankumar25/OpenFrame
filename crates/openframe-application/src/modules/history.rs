@@ -74,7 +74,14 @@ fn redo(core: &AppCore, actor: &Actor, args: StoreArgs) -> AppResult<StepResult>
 /// was undone (or applied again on redo).
 fn step(core: &AppCore, actor: &Actor, args: StoreArgs, undo: bool) -> AppResult<StepResult> {
     let (result, key) = with_store(core, args.store, |s| {
-        let key = s.next_step_key(actor, undo)?;
+        // The AI trace is a side record: a failure to read it never stops the Undo itself.
+        let key = s.next_step_key(actor, undo).unwrap_or_else(|e| {
+            tracing::warn!(
+                code = e.code_str(),
+                "the AI trace could not read the undo step"
+            );
+            None
+        });
         let label = if undo { s.undo(actor)? } else { s.redo(actor)? };
         Ok((
             StepResult {
