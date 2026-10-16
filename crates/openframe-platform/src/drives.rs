@@ -79,3 +79,50 @@ mod tests {
         const { assert!(DRIVE_LETTERS) };
     }
 }
+
+/// Bytes free for this user on the volume that holds `path` (the folder must exist), or `None`
+/// when the system cannot say. Used by the AI download preflight (ADR-0026 decision 5).
+pub fn free_bytes(path: &std::path::Path) -> Option<u64> {
+    #[cfg(windows)]
+    {
+        use std::os::windows::ffi::OsStrExt;
+        use windows::Win32::Storage::FileSystem::GetDiskFreeSpaceExW;
+        use windows::core::PCWSTR;
+        let wide: Vec<u16> = path
+            .as_os_str()
+            .encode_wide()
+            .chain(std::iter::once(0))
+            .collect();
+        let mut free = 0u64;
+        // SAFETY: `wide` is a NUL-terminated path that outlives the call; `free` is a valid out pointer.
+        unsafe { GetDiskFreeSpaceExW(PCWSTR(wide.as_ptr()), Some(&mut free), None, None) }.ok()?;
+        Some(free)
+    }
+    #[cfg(target_os = "macos")]
+    {
+        use std::os::unix::ffi::OsStrExt;
+        let c = std::ffi::CString::new(path.as_os_str().as_bytes()).ok()?;
+        let mut st: libc::statvfs = unsafe { std::mem::zeroed() };
+        // SAFETY: `c` is a valid C string and `st` a valid out structure for the call.
+        (unsafe { libc::statvfs(c.as_ptr(), &mut st) } == 0)
+            .then(|| st.f_bavail as u64 * st.f_frsize as u64)
+    }
+    #[cfg(not(any(windows, target_os = "macos")))]
+    {
+        let _ = path;
+        None
+    }
+}
+
+#[cfg(test)]
+mod free_space_tests {
+    #[test]
+    fn the_temp_folder_reports_free_space() {
+        let free = super::free_bytes(&std::env::temp_dir());
+        if cfg!(any(windows, target_os = "macos")) {
+            assert!(free.is_some_and(|b| b > 0));
+        }
+        let missing = std::path::Path::new(r"Z:\no\such\folder");
+        assert!(super::free_bytes(missing).is_none() || cfg!(not(windows)));
+    }
+}
