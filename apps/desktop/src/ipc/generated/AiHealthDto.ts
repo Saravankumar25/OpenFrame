@@ -12,4 +12,8 @@ requests: number, medianTotalMs: number | null, medianTokensIn: number | null, m
 /**
  * Applied out of the proposals the person acted on, in percent.
  */
-applyRatePct: number | null, averagePasses: number | null, errors: number, weakestTool: WeakTool | null, };
+applyRatePct: number | null, averagePasses: number | null, errors: number, weakestTool: WeakTool | null, 
+/**
+ * Where the chat engine runs, in one plain sentence (ADR-0029 decision 6).
+ */
+runsOn: string | null, };

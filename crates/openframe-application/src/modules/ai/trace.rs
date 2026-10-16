@@ -139,6 +139,8 @@ pub struct AiHealthDto {
     pub average_passes: Option<f64>,
     pub errors: u32,
     pub weakest_tool: Option<WeakTool>,
+    /// Where the chat engine runs, in one plain sentence (ADR-0029 decision 6).
+    pub runs_on: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, TS)]
@@ -240,7 +242,12 @@ fn health_from(rows: &[Row]) -> AiHealthDto {
 }
 
 pub fn health(core: &AppCore, _actor: &Actor, _args: AiHealthArgs) -> AppResult<AiHealthDto> {
-    core.with_app_db(|c| Ok(health_from(&rows(c, HEALTH_WINDOW)?)))
+    let mut h = core.with_app_db(|c| Ok(health_from(&rows(c, HEALTH_WINDOW)?)))?;
+    h.runs_on = super::service::service(core)
+        .manager()
+        .ok()
+        .map(|m| m.placement_text());
+    Ok(h)
 }
 
 #[derive(Debug, Deserialize, TS)]

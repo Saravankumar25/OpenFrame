@@ -22,6 +22,8 @@ use ed25519_dalek::{Signer, SigningKey};
 
 use openframe_ai::bundle::PinnedFile;
 use openframe_ai::engines::hash_file;
+use openframe_ai::gpu::{Adapter, GraphicsRecord, Remembered};
+use openframe_ai::placement::GraphicsFacts;
 use openframe_ai::supervisor::SupervisorConfig;
 use openframe_ai::{
     AiManager, AssetLock, BundleState, ChatMessage, ChatRequest, DownloadPhase, ManagerConfig,
@@ -53,6 +55,7 @@ fn fake_server(args: &[String]) -> ! {
         std::process::exit(4);
     }
     let embedding = args.iter().any(|a| a == "--embedding");
+    let device = arg("--device");
     let key = std::env::var("LLAMA_API_KEY").unwrap_or_default();
     let listener = TcpListener::bind(("127.0.0.1", port)).unwrap();
     let mut health_calls = 0;
@@ -109,9 +112,29 @@ fn fake_server(args: &[String]) -> ! {
             }
             "/v1/chat/completions" if !embedding && authed => {
                 let req: serde_json::Value = serde_json::from_slice(&body).unwrap_or_default();
-                // Echo the sampling temperature so the deterministic setting is observable.
-                let content = format!("ready t={}", req["temperature"]);
-                let out = serde_json::json!({"choices":[{"message":{"role":"assistant","content":content}}]});
+                let probe = req["response_format"].is_object();
+                // The fake cards (see FAKE_DEVICES): Vulkan2 stops on any request but the probe,
+                // Vulkan3 answers the probe with text that is not the schema's object.
+                if device.as_deref() == Some("Vulkan2") && !probe {
+                    std::process::exit(6);
+                }
+                let content = if probe && device.as_deref() != Some("Vulkan3") {
+                    r#"{"text":"one two three"}"#.to_string()
+                } else {
+                    // Echo the sampling temperature so the deterministic setting is observable.
+                    format!("ready t={}", req["temperature"])
+                };
+                // 20 tokens: the processor at 20 a second, Vulkan1 at 4, the other cards at 200.
+                let ms = match device.as_deref() {
+                    None => 1000,
+                    Some("Vulkan1") => 5000,
+                    Some(_) => 100,
+                };
+                let out = serde_json::json!({
+                    "choices": [{ "message": { "role": "assistant", "content": content } }],
+                    "usage": { "prompt_tokens": 30, "completion_tokens": 20 },
+                    "timings": { "prompt_ms": 10, "predicted_ms": ms }
+                });
                 ("200 OK", out.to_string())
             }
             "/v1/chat/completions" | "/v1/embeddings" if !authed => {
@@ -348,7 +371,19 @@ impl Fixture {
             pin(&rt_dir.join(SERVER), SERVER),
             pin(&rt_dir.join("ggml.dll"), "ggml.dll"),
         ];
-        lock.runtimes = vec![rt];
+        // The Vulkan build beside it: the same fake program (it reads --device).
+        let mut vk = rt.clone();
+        vk.runtime_id = format!("{}-vulkan", rt.runtime_id);
+        vk.backend = "vulkan".into();
+        let vk_dir = bundle.join("runtimes").join(&vk.runtime_id);
+        std::fs::create_dir_all(&vk_dir).unwrap();
+        std::fs::copy(std::env::current_exe().unwrap(), vk_dir.join(SERVER)).unwrap();
+        std::fs::write(vk_dir.join("ggml.dll"), b"ggml vulkan library").unwrap();
+        vk.files = vec![
+            pin(&vk_dir.join(SERVER), SERVER),
+            pin(&vk_dir.join("ggml.dll"), "ggml.dll"),
+        ];
+        lock.runtimes = vec![rt, vk];
         for m in lock.models.iter_mut() {
             if m.embedding_dim.is_some() {
                 m.embedding_dim = Some(8);
@@ -394,7 +429,34 @@ impl Fixture {
             embedding_supervisor: sup,
             ready_timeout: Duration::from_secs(30),
             deterministic: false,
+            // No graphics card unless a scenario gives one (with_card).
+            graphics: Arc::new(GraphicsFacts::default),
         }
+    }
+
+    /// The configuration of a computer with one dedicated card of this name and a working driver.
+    fn with_card(&self, name: &str) -> ManagerConfig {
+        let mut cfg = self.config();
+        let name = name.to_string();
+        cfg.graphics = Arc::new(move || GraphicsFacts {
+            adapters: vec![(
+                Adapter {
+                    name: name.clone(),
+                    vendor_id: 0x10DE,
+                    dedicated_mb: 8192,
+                    shared_mb: 8000,
+                    software: false,
+                },
+                "31.0.15.5222".into(),
+            )],
+            vulkan_loader: true,
+        });
+        cfg
+    }
+
+    fn graphics(&self) -> GraphicsRecord {
+        serde_json::from_slice(&std::fs::read(self.data.join("ai").join("graphics.json")).unwrap())
+            .unwrap()
     }
 
     fn manager(&self) -> Arc<AiManager> {
@@ -747,6 +809,97 @@ fn a_build_without_a_model_host_cannot_download_or_use_a_set() {
     assert!(f.host.requests().is_empty());
 }
 
+// ---------------------------------------------------------------- scenarios: graphics card
+
+fn a_card_that_passes_its_check_runs_the_chat_engine_and_is_remembered() {
+    let f = Fixture::new();
+    let m = Arc::new(AiManager::new(f.with_card("Fast Card")).unwrap());
+    assert!(ask(&m).unwrap().starts_with("ready"));
+    let text = m.diagnostics().placement;
+    assert!(text.contains("graphics card (Fast Card)"), "{text}");
+    let g = f.graphics();
+    assert_eq!(g.probes.len(), 1);
+    let p = &g.probes[0];
+    assert_eq!(p.result, Remembered::Passed);
+    assert!(p.gpu_tokens_per_second.unwrap() > p.cpu_tokens_per_second.unwrap());
+    assert_eq!(p.driver, "31.0.15.5222");
+    // The next session uses the card without probing again.
+    m.stop_runtime();
+    drop(m);
+    let m = Arc::new(AiManager::new(f.with_card("Fast Card")).unwrap());
+    assert!(ask(&m).is_ok());
+    assert_eq!(f.graphics().probes, g.probes, "no second probe");
+    assert!(m.diagnostics().placement.contains("Fast Card"));
+}
+
+fn a_card_slower_than_the_processor_or_with_bad_output_is_not_used() {
+    for card in ["Slow Card", "Bad Card", "Ghost Card"] {
+        let f = Fixture::new();
+        let m = Arc::new(AiManager::new(f.with_card(card)).unwrap());
+        assert!(ask(&m).unwrap().starts_with("ready"), "{card}");
+        let text = m.diagnostics().placement;
+        assert!(text.contains("Runs on the processor"), "{card}: {text}");
+        assert!(text.contains("did not pass its check"), "{card}: {text}");
+        assert_eq!(f.graphics().probes[0].result, Remembered::Failed, "{card}");
+        // Remembered: the next session goes straight to the processor.
+        m.stop_runtime();
+        drop(m);
+        let m = Arc::new(AiManager::new(f.with_card(card)).unwrap());
+        assert!(ask(&m).is_ok());
+        assert_eq!(f.graphics().probes.len(), 1, "{card}: no second probe");
+    }
+}
+
+fn the_setting_off_keeps_the_processor_and_runs_no_check() {
+    let f = Fixture::new();
+    let m = Arc::new(AiManager::new(f.with_card("Fast Card")).unwrap());
+    m.set_graphics_off(true).unwrap();
+    assert!(m.graphics_off());
+    assert!(ask(&m).is_ok());
+    assert!(
+        m.diagnostics()
+            .placement
+            .contains("switched off in Settings")
+    );
+    assert!(f.graphics().probes.is_empty(), "no probe while Off");
+    // Back to Automatic: the next request checks the card and uses it.
+    m.set_graphics_off(false).unwrap();
+    assert!(ask(&m).is_ok());
+    assert!(m.diagnostics().placement.contains("Fast Card"));
+}
+
+fn a_card_engine_that_stops_in_use_falls_back_to_the_processor() {
+    let f = Fixture::new();
+    let m = Arc::new(AiManager::new(f.with_card("Crash Card")).unwrap());
+    // The probe passes; the first real request stops the engine on the card. The answer still
+    // comes, from the processor, and the card is remembered as failed.
+    assert!(ask(&m).unwrap().starts_with("ready"));
+    assert!(m.diagnostics().placement.contains("Runs on the processor"));
+    assert_eq!(f.graphics().probes[0].result, Remembered::Failed);
+    assert!(ask(&m).is_ok());
+}
+
+fn a_computer_without_a_card_or_driver_runs_on_the_processor_without_a_check() {
+    let f = Fixture::new();
+    let m = f.manager();
+    assert!(ask(&m).is_ok());
+    assert!(
+        m.diagnostics()
+            .placement
+            .contains("No graphics card was found")
+    );
+    assert!(!f.data.join("ai").join("graphics.json").exists());
+    let mut cfg = f.with_card("Fast Card");
+    let card = (cfg.graphics)();
+    cfg.graphics = Arc::new(move || GraphicsFacts {
+        vulkan_loader: false,
+        ..card.clone()
+    });
+    let m = Arc::new(AiManager::new(cfg).unwrap());
+    assert!(ask(&m).is_ok());
+    assert!(m.diagnostics().placement.contains("graphics driver"));
+}
+
 // ------------------------------------------------------------- scenarios: installed set
 
 fn ai_works_once_the_models_are_downloaded() {
@@ -1024,13 +1177,46 @@ fn a_junction_inside_the_models_folder_is_refused() {}
 
 // ------------------------------------------------------------------------------ main
 
+/// What the fake Vulkan engine lists: a fast card, a slow card, a card whose engine stops in use,
+/// and a card that answers the probe badly.
+const FAKE_DEVICES: &str = "Available devices:
+  Vulkan0: Fast Card (8192 MiB, 8000 MiB free)
+  Vulkan1: Slow Card (8192 MiB, 8000 MiB free)
+  Vulkan2: Crash Card (8192 MiB, 8000 MiB free)
+  Vulkan3: Bad Card (8192 MiB, 8000 MiB free)
+";
+
 fn main() {
     let args: Vec<String> = std::env::args().skip(1).collect();
+    if args.iter().any(|a| a == "--list-devices") {
+        print!("{FAKE_DEVICES}");
+        std::process::exit(0);
+    }
     if args.iter().any(|a| a == "--host") {
         fake_server(&args);
     }
     let filter = args.iter().find(|a| !a.starts_with('-')).cloned();
     let tests: &[(&str, fn())] = &[
+        (
+            "a_card_that_passes_its_check_runs_the_chat_engine_and_is_remembered",
+            a_card_that_passes_its_check_runs_the_chat_engine_and_is_remembered,
+        ),
+        (
+            "a_card_slower_than_the_processor_or_with_bad_output_is_not_used",
+            a_card_slower_than_the_processor_or_with_bad_output_is_not_used,
+        ),
+        (
+            "the_setting_off_keeps_the_processor_and_runs_no_check",
+            the_setting_off_keeps_the_processor_and_runs_no_check,
+        ),
+        (
+            "a_card_engine_that_stops_in_use_falls_back_to_the_processor",
+            a_card_engine_that_stops_in_use_falls_back_to_the_processor,
+        ),
+        (
+            "a_computer_without_a_card_or_driver_runs_on_the_processor_without_a_check",
+            a_computer_without_a_card_or_driver_runs_on_the_processor_without_a_check,
+        ),
         (
             "nothing_is_downloaded_until_the_person_starts_it",
             nothing_is_downloaded_until_the_person_starts_it,

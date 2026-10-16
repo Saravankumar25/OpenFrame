@@ -67,7 +67,9 @@ pub trait Launcher: Send + Sync {
     }
 }
 
-/// The bundled llama.cpp `llama-server` (processor build: `-ngl 0`, ADR-0025).
+/// The bundled llama.cpp `llama-server`: on the processor (`-ngl 0`), or with every layer on one
+/// graphics card device of the Vulkan build (ADR-0029; the launch plan in the manager is the only
+/// place that chooses).
 #[derive(Debug, Clone)]
 pub struct LlamaServerLauncher {
     pub executable: PathBuf,
@@ -81,6 +83,8 @@ pub struct LlamaServerLauncher {
     pub seed: Option<u32>,
     /// The model file as it was when the bundle check passed, compared before every launch.
     pub model_stamp: Option<Arc<ModelStamp>>,
+    /// The Vulkan device (`Vulkan0`, ...) for every layer; `None` runs on the processor.
+    pub gpu_device: Option<String>,
 }
 
 impl Launcher for LlamaServerLauncher {
@@ -95,7 +99,12 @@ impl Launcher for LlamaServerLauncher {
             "-c".into(),
             self.context_tokens.to_string(),
             "-ngl".into(),
-            "0".into(),
+            if self.gpu_device.is_some() {
+                "999"
+            } else {
+                "0"
+            }
+            .into(),
             "-t".into(),
             self.threads.max(1).to_string(),
             "--parallel".into(),
@@ -111,6 +120,10 @@ impl Launcher for LlamaServerLauncher {
         if let Some(seed) = self.seed {
             args.push("--seed".into());
             args.push(seed.to_string());
+        }
+        if let Some(dev) = &self.gpu_device {
+            args.push("--device".into());
+            args.push(dev.clone());
         }
         LaunchSpec {
             program: self.executable.clone(),
@@ -514,6 +527,54 @@ fn loopback_port_in_use(port: u16) -> bool {
 fn random_key() -> String {
     let bytes: [u8; 32] = rand::random();
     hex::encode(bytes)
+}
+
+/// `llama-server --list-devices` of a pinned engine (its files checked first), with the same
+/// scrubbed environment and kill-on-close guard as a launch. Returns what it printed.
+pub fn list_devices(program: &std::path::Path, files: Option<&EngineFiles>) -> AppResult<String> {
+    if let Some(f) = files {
+        f.verify()?;
+    }
+    let mut cmd = Command::new(program);
+    cmd.arg("--list-devices")
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::null());
+    cmd.env_clear();
+    for k in ENGINE_ENV {
+        if let Some(v) = std::env::var_os(k) {
+            cmd.env(k, v);
+        }
+    }
+    if let Some(dir) = program.parent() {
+        cmd.current_dir(dir);
+    }
+    let (mut child, _guard) =
+        spawn_guarded(&mut cmd).map_err(|_| unavailable("the engine could not list devices"))?;
+    let mut out = child.stdout.take();
+    let reader = std::thread::spawn(move || {
+        let mut s = String::new();
+        if let Some(o) = out.as_mut() {
+            use std::io::Read;
+            let _ = o.take(64 * 1024).read_to_string(&mut s);
+        }
+        s
+    });
+    let until = Instant::now() + Duration::from_secs(30);
+    loop {
+        match child.try_wait() {
+            Ok(Some(_)) => break,
+            Ok(None) if Instant::now() < until => std::thread::sleep(Duration::from_millis(50)),
+            _ => {
+                let _ = child.kill();
+                let _ = child.wait();
+                return Err(unavailable("listing devices took too long"));
+            }
+        }
+    }
+    reader
+        .join()
+        .map_err(|_| unavailable("device listing failed"))
 }
 
 fn spawn_locked(shared: &Arc<Shared>, inner: &mut Inner) -> AppResult<()> {

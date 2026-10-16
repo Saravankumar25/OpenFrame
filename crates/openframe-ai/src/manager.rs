@@ -26,9 +26,11 @@ use serde::Serialize;
 
 use crate::bundle::{self, AssetLock, BundledAi, ModelRole, ModelStamp, Pooling};
 use crate::client::{self, EMBED_BATCH};
+use crate::gpu::{self, CpuReason, GraphicsRecord, ProbeRecord, Remembered};
 use crate::hardware::{self, HardwareInfo};
 use crate::model::{InferenceProvider, LocalRuntimeModel};
 use crate::model_download::{self, DownloadStatus, ModelDownload, ModelHost};
+use crate::placement::{self, GraphicsFacts, Placement};
 use crate::rt::AiRuntime;
 use crate::selection::{self, Fitness};
 use crate::store::AiPaths;
@@ -69,6 +71,8 @@ pub struct ManagerConfig {
     pub ready_timeout: Duration,
     /// Temperature 0 and a fixed seed (end-to-end tests only; `false` in the product).
     pub deterministic: bool,
+    /// This computer's graphics adapters and Vulkan loader (the platform layer in the product).
+    pub graphics: Arc<dyn Fn() -> GraphicsFacts + Send + Sync>,
 }
 
 impl ManagerConfig {
@@ -94,6 +98,7 @@ impl ManagerConfig {
             },
             ready_timeout: Duration::from_secs(600),
             deterministic: false,
+            graphics: Arc::new(placement::detect),
         })
     }
 }
@@ -187,6 +192,10 @@ pub struct Diagnostics {
     pub bundle_dir: String,
     pub bundle_bytes: u64,
     pub log_file: String,
+    /// Where the chat engine runs, in one plain sentence.
+    pub placement: String,
+    /// Settings, Offline AI, Graphics card is Off.
+    pub graphics_off: bool,
 }
 
 /// The engine and model set as last read from disk.
@@ -207,6 +216,9 @@ pub struct AiManager {
     supervisor: Arc<Supervisor>,
     embed_supervisor: Arc<Supervisor>,
     hw_cache: Mutex<Option<HardwareInfo>>,
+    /// Where the chat engine runs this session (ADR-0029), and one decision at a time.
+    placement: Mutex<Placement>,
+    placement_lock: Mutex<()>,
     /// Engine numbers of the chat calls since the last `take_usage` (the AI trace).
     usage: Mutex<client::Usage>,
 }
@@ -259,6 +271,8 @@ impl AiManager {
             supervisor,
             embed_supervisor,
             hw_cache: Mutex::new(None),
+            placement: Mutex::new(Placement::Undecided),
+            placement_lock: Mutex::new(()),
             usage: Mutex::new(client::Usage::default()),
         };
         m.configure();
@@ -324,6 +338,8 @@ impl AiManager {
         let (loaded, state) = Self::load(&self.cfg);
         *self.loaded.write() = loaded;
         *self.state.write() = state;
+        // Another model set may need another place: decide again before the next start.
+        *self.placement.lock() = Placement::Undecided;
         self.configure();
     }
 
@@ -475,6 +491,23 @@ impl AiManager {
     /// temperature 0; the engine was started with a fixed seed.
     pub(crate) fn chat(&self, req: &client::ChatRequest) -> AppResult<String> {
         self.ensure_verified()?;
+        self.ensure_placement();
+        match self.chat_once(req) {
+            // The engine on the graphics card stopped: remember it and go on on the processor
+            // (ADR-0029 decision 5).
+            Err(e) if self.on_card() && (e.is("ai.unavailable") || e.is("ai.timeout")) => {
+                tracing::warn!(
+                    code = e.code_str(),
+                    "the AI engine on the graphics card stopped; going on on the processor"
+                );
+                self.card_failed();
+                self.chat_once(req)
+            }
+            r => r,
+        }
+    }
+
+    fn chat_once(&self, req: &client::ChatRequest) -> AppResult<String> {
         let ep = self.guard(self.supervisor.ensure_ready(self.cfg.ready_timeout))?;
         let _busy = self.supervisor.begin_request();
         let http = self.supervisor.http().clone();
@@ -586,9 +619,21 @@ impl AiManager {
                 let hw = self.hardware();
                 let chat = self.cfg.lock.chat_model();
                 let emb = self.cfg.lock.embedding_model();
+                // The launch plan is the only place that puts the chat engine on a card.
+                let card = match &*self.placement.lock() {
+                    Placement::Card { device, .. } => b
+                        .gpu_engine()
+                        .map(|(exe, files)| (exe, files, device.clone())),
+                    _ => None,
+                };
+                let (chat_exe, chat_files, gpu_device) = match card {
+                    Some((exe, files, dev)) => (exe, files, Some(dev)),
+                    None => (b.executable(), b.engine_files(), None),
+                };
                 let chat_launcher: Arc<dyn Launcher> = Arc::new(LlamaServerLauncher {
-                    executable: b.executable(),
-                    engine_files: Some(b.engine_files()),
+                    executable: chat_exe,
+                    engine_files: Some(chat_files),
+                    gpu_device,
                     model_path: models.path(ModelRole::Chat),
                     profile_id: format!("{}:{}", bundle::BUNDLE_ID, chat.model_id),
                     context_tokens: self.chat_context_tokens(),
@@ -615,6 +660,244 @@ impl AiManager {
                 self.embed_supervisor.configure(None);
             }
         }
+    }
+
+    // ------------------------------------------------------------- graphics card
+
+    fn on_card(&self) -> bool {
+        matches!(*self.placement.lock(), Placement::Card { .. })
+    }
+
+    /// Where the chat engine runs, in one plain sentence (Settings and the health card).
+    pub fn placement_text(&self) -> String {
+        placement::describe(&self.placement.lock())
+    }
+
+    /// Settings, Offline AI, Graphics card: `off` keeps the AI on the processor. The engine
+    /// restarts in its new place on the next request.
+    pub fn set_graphics_off(&self, off: bool) -> AppResult<()> {
+        let mut rec = self.graphics_record();
+        rec.off = off;
+        crate::store::write_json_atomic(&self.paths.graphics(), &rec)?;
+        let _one = self.placement_lock.lock();
+        *self.placement.lock() = Placement::Undecided;
+        self.configure();
+        Ok(())
+    }
+
+    pub fn graphics_off(&self) -> bool {
+        self.graphics_record().off
+    }
+
+    fn graphics_record(&self) -> GraphicsRecord {
+        crate::store::read_json(&self.paths.graphics()).unwrap_or_default()
+    }
+
+    /// Decide once per session, before the chat engine first starts, where it runs; the probe
+    /// runs here the first time an adapter, driver and engine are seen.
+    fn ensure_placement(&self) {
+        if *self.placement.lock() != Placement::Undecided {
+            return;
+        }
+        let _one = self.placement_lock.lock();
+        if *self.placement.lock() != Placement::Undecided {
+            return;
+        }
+        let p = self.choose_placement();
+        tracing::info!(
+            placement = placement::describe(&p),
+            "the AI engine place was chosen"
+        );
+        *self.placement.lock() = p;
+        self.configure();
+    }
+
+    fn choose_placement(&self) -> Placement {
+        let Some(b) = self.loaded.read().bundle.clone() else {
+            return Placement::Processor(CpuReason::NoAdapter);
+        };
+        let Some(models) = b.models().cloned() else {
+            return Placement::Processor(CpuReason::NoAdapter);
+        };
+        let mut rec = self.graphics_record();
+        let facts = (self.cfg.graphics)();
+        let runtime = b.gpu_runtime().map(|r| r.version.clone());
+        let need = placement::model_mb(models.chat.bytes, self.chat_context_tokens());
+        let free = self.hardware().available_ram_bytes / (1024 * 1024);
+        match placement::plan(&facts, &rec, runtime.as_deref(), need, free) {
+            gpu::Plan::Cpu(r) => Placement::Processor(r),
+            gpu::Plan::Gpu { adapter } => {
+                let (a, driver) = &facts.adapters[adapter];
+                let tps = rec
+                    .probes
+                    .iter()
+                    .rev()
+                    .find(|p| p.adapter == a.name && &p.driver == driver)
+                    .and_then(|p| p.gpu_tokens_per_second);
+                match self.device_for(&b, &a.name) {
+                    Some(device) => Placement::Card {
+                        adapter: a.name.clone(),
+                        vendor_id: a.vendor_id,
+                        driver: driver.clone(),
+                        device,
+                        tokens_per_second: tps,
+                    },
+                    None => Placement::Processor(CpuReason::ProbeFailed),
+                }
+            }
+            gpu::Plan::Probe { adapter } => {
+                let (a, driver) = facts.adapters[adapter].clone();
+                let runtime = runtime.unwrap_or_default();
+                self.probe(&b, &mut rec, &a, &driver, &runtime)
+            }
+        }
+    }
+
+    /// The engine device for an adapter, from the Vulkan engine's own list.
+    fn device_for(&self, b: &BundledAi, adapter: &str) -> Option<String> {
+        let (exe, files) = b.gpu_engine()?;
+        match crate::supervisor::list_devices(&exe, Some(&files)) {
+            Ok(listing) => gpu::device_for(adapter, &gpu::parse_devices(&listing)),
+            Err(e) => {
+                tracing::warn!(
+                    code = e.code_str(),
+                    "the graphics card engine could not list devices"
+                );
+                None
+            }
+        }
+    }
+
+    /// ADR-0029 decision 4: the fixed request on the processor, then on the card. The card is used
+    /// only when it gave valid output faster; either way the result is remembered.
+    fn probe(
+        &self,
+        b: &BundledAi,
+        rec: &mut GraphicsRecord,
+        a: &gpu::Adapter,
+        driver: &str,
+        runtime: &str,
+    ) -> Placement {
+        let device = self.device_for(b, &a.name);
+        // The processor figure (the placement is still undecided, so this is the processor engine).
+        self.configure();
+        let cpu = self.probe_once();
+        let card = device.clone().map(|device| Placement::Card {
+            adapter: a.name.clone(),
+            vendor_id: a.vendor_id,
+            driver: driver.to_string(),
+            device,
+            tokens_per_second: None,
+        });
+        let gpu = match &card {
+            Some(c) => {
+                *self.placement.lock() = c.clone();
+                self.configure();
+                let r = self.probe_once();
+                *self.placement.lock() = Placement::Undecided;
+                r
+            }
+            None => (false, None),
+        };
+        let passed = gpu::probe_passed(gpu.0, gpu.1, cpu.1);
+        rec.remember(ProbeRecord {
+            adapter: a.name.clone(),
+            vendor_id: a.vendor_id,
+            driver: driver.to_string(),
+            runtime: runtime.to_string(),
+            result: if passed {
+                Remembered::Passed
+            } else {
+                Remembered::Failed
+            },
+            gpu_tokens_per_second: gpu.1,
+            cpu_tokens_per_second: cpu.1,
+            at: openframe_domain::now_ms(),
+        });
+        if let Err(e) = crate::store::write_json_atomic(&self.paths.graphics(), rec) {
+            tracing::warn!(
+                code = e.code_str(),
+                "the graphics card check could not be recorded"
+            );
+        }
+        tracing::info!(
+            passed,
+            gpu_tps = gpu.1.unwrap_or(0.0),
+            cpu_tps = cpu.1.unwrap_or(0.0),
+            "the graphics card check ran"
+        );
+        match card {
+            Some(Placement::Card {
+                adapter,
+                vendor_id,
+                driver,
+                device,
+                ..
+            }) if passed => Placement::Card {
+                adapter,
+                vendor_id,
+                driver,
+                device,
+                tokens_per_second: gpu.1,
+            },
+            _ => Placement::Processor(CpuReason::ProbeFailed),
+        }
+    }
+
+    /// One probe request on the engine as configured: (valid output, tokens a second).
+    fn probe_once(&self) -> (bool, Option<f64>) {
+        let ep = match self.guard(self.supervisor.ensure_ready(Duration::from_secs(180))) {
+            Ok(ep) => ep,
+            Err(_) => return (false, None),
+        };
+        let http = self.supervisor.http().clone();
+        let req = placement::probe_request();
+        match self
+            .rt
+            .run(async move { client::chat(&http, &ep, &req).await })
+        {
+            Ok((text, usage)) => (
+                placement::probe_valid(&text),
+                placement::tokens_per_second(&usage),
+            ),
+            Err(_) => (false, None),
+        }
+    }
+
+    /// The engine on the card stopped while in use: remember the failure for this adapter,
+    /// driver and engine, and go on on the processor.
+    fn card_failed(&self) {
+        let _one = self.placement_lock.lock();
+        let Placement::Card {
+            adapter,
+            vendor_id,
+            driver,
+            ..
+        } = self.placement.lock().clone()
+        else {
+            return;
+        };
+        let runtime = self
+            .loaded
+            .read()
+            .bundle
+            .as_ref()
+            .and_then(|b| b.gpu_runtime().map(|r| r.version.clone()))
+            .unwrap_or_default();
+        let mut rec = self.graphics_record();
+        rec.remember(ProbeRecord {
+            adapter,
+            vendor_id,
+            driver,
+            runtime,
+            result: Remembered::Failed,
+            gpu_tokens_per_second: None,
+            cpu_tokens_per_second: None,
+            at: openframe_domain::now_ms(),
+        });
+        let _ = crate::store::write_json_atomic(&self.paths.graphics(), &rec);
+        *self.placement.lock() = Placement::Processor(CpuReason::ProbeFailed);
+        self.configure();
     }
 
     // ------------------------------------------------------------- download
@@ -817,6 +1100,8 @@ impl AiManager {
                 .map(BundledAi::total_bytes)
                 .unwrap_or(0),
             log_file: self.paths.runtime_log().to_string_lossy().into_owned(),
+            placement: self.placement_text(),
+            graphics_off: self.graphics_off(),
         }
     }
 }

@@ -30,6 +30,7 @@ pub mod install;
 pub mod manager;
 pub mod model;
 pub mod model_download;
+pub mod placement;
 pub mod rt;
 pub mod selection;
 pub mod store;

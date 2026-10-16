@@ -26,8 +26,8 @@ How the toolbox (`modules/ai/toolbox.rs`, contract C3) enforces this:
   budget, so a small local model's prompt stays short. `retrieve_context` uses the hybrid retrieval
   service when called through `run_tool_unlocked`, and keyword retrieval (FTS5, same privacy rule) otherwise.
 
-- Registered operations: **490** (153 queries, 337 commands)
-- Exposed to the assistant through tools: **305**; not AI-accessible: **185**
+- Registered operations: **491** (153 queries, 338 commands)
+- Exposed to the assistant through tools: **305**; not AI-accessible: **186**
 - Tools: **253** (60 read/compute/navigate, 193 proposal)
 
 Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation · **L** long-running (task id) · file effect: R = reads a user-picked file, W = writes to a user-picked location, P = project storage on disk.
@@ -280,6 +280,7 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 | `ai.download.start`: Start or resume the OpenFrame AI download (the person's click; the app's only network use). | command | Mutate | app level |  | `AiEmptyArgs` → `()` | hidden | none |
 | `ai.download.status`: The Download OpenFrame AI screen: size, free space, progress. | query | Read | app level |  | `AiEmptyArgs` → `AiDownloadDto` | hidden | none |
 | `ai.export_report`: Write the local AI trace (numbers and ids only) and the health figures to a file the person chose. | command | Mutate | app level |  | `AiReportArgs` → `AiReportResult` | hidden | none |
+| `ai.graphics.set`: Settings, Offline AI, Graphics card: Automatic or Off. | command | Mutate | app level |  | `AiGraphicsArgs` → `()` | hidden | none |
 | `ai.health`: The AI health card: medians, apply rate, passes and the weakest tool, from the local numbers-only trace. | query | Read | app level |  | `AiHealthArgs` → `AiHealthDto` | hidden | none |
 | `ai.history`: The user's own assistant conversation history. | query | Read | UseAi |  | `AiHistoryArgs` → `AiHistoryDto` | hidden | none |
 | `ai.index_rebuild`: Rebuild the derived project-context index in the background. | command | Mutate | UseAi | L | `AiIndexArgs` → `IndexRebuildStarted` | hidden | none |
@@ -685,7 +686,7 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 - **Manual visual arrangement (drag position, size, stacking order) with no content meaning; the user arranges directly.**
   `locations.move_photo`, `moodboard.arrange_item`, `moodboard.move_items`, `moodboard.reorder`, `moodboard.resize_item`
 - **Offline AI status and engine control belong to the user in Settings, not to the assistant itself.**
-  `ai.diagnostics`, `ai.download.pause`, `ai.download.remove`, `ai.download.start`, `ai.download.status`, `ai.export_report`, `ai.health`, `ai.status`, `ai.stop_runtime`
+  `ai.diagnostics`, `ai.download.pause`, `ai.download.remove`, `ai.download.start`, `ai.download.status`, `ai.export_report`, `ai.graphics.set`, `ai.health`, `ai.status`, `ai.stop_runtime`
 - **Owner-only override of a lock or finalization; it stays a deliberate human action.**
   `screenplay.unlock_draft`
 - **Per-user view state (collapsed rows, remembered positions, current episode); not project content.**

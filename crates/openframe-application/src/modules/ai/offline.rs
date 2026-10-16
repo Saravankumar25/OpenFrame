@@ -9,6 +9,7 @@
 //! - `ai.download.start` / `ai.download.pause`: the person's click; the only network use of
 //!   the app;
 //! - `ai.download.remove`: delete the downloaded models (AI is off until the next download);
+//! - `ai.graphics.set`: Settings, Graphics card, Automatic or Off (ADR-0029);
 //! - `ai.stop_runtime`: free memory (the engines start again on the next request);
 //! - `ai.diagnostics`: technical details for Settings > Offline AI (model names, versions,
 //!   licences, hashes, where the bundle is installed, this computer).
@@ -111,6 +112,18 @@ pub struct AiDiagnosticsDto {
     #[ts(type = "number")]
     pub bundle_bytes: u64,
     pub log_file: String,
+    /// Where the chat engine runs, in one plain sentence (ADR-0029).
+    pub placement: String,
+    /// Settings, Offline AI, Graphics card: Off.
+    pub graphics_off: bool,
+}
+
+#[derive(Debug, serde::Deserialize, TS)]
+#[ts(export)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct AiGraphicsArgs {
+    /// `true`: the processor only. `false`: Automatic (a checked graphics card when there is one).
+    pub off: bool,
 }
 
 // ------------------------------------------------------------------ handlers
@@ -276,5 +289,11 @@ pub fn diagnostics(
         bundle_dir: d.bundle_dir,
         bundle_bytes: d.bundle_bytes,
         log_file: d.log_file,
+        placement: d.placement,
+        graphics_off: d.graphics_off,
     })
+}
+
+pub fn set_graphics(core: &AppCore, _actor: &Actor, args: AiGraphicsArgs) -> AppResult<()> {
+    service(core).manager()?.set_graphics_off(args.off)
 }

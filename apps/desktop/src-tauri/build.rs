@@ -123,7 +123,9 @@ fn check_model_host() {
     let release = std::env::var("PROFILE").as_deref() == Ok("release");
     let test_build = std::env::var("OPENFRAME_TEST_BUILD").as_deref() == Ok("1");
     if test_host && release && !test_build {
-        panic!("{URL} names the local test host; a release build for people needs the owner's https host.");
+        panic!(
+            "{URL} names the local test host; a release build for people needs the owner's https host."
+        );
     }
     if test_host {
         println!(

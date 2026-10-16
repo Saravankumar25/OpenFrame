@@ -43,6 +43,10 @@ impl AiPaths {
     pub fn embedding_log(&self) -> PathBuf {
         self.logs_dir().join("ai-embedding.log")
     }
+    /// The graphics card setting and what the probes found (ADR-0029, `placement.rs`).
+    pub fn graphics(&self) -> PathBuf {
+        self.root.join("ai").join("graphics.json")
+    }
     /// Engines launched by OpenFrame and not yet stopped (`engines::EngineRegistry`).
     pub fn engine_registry(&self) -> PathBuf {
         self.root.join("engines.json")

@@ -413,7 +413,9 @@ impl ModelStamp {
         }
         match o.open(&self.path) {
             Ok(f) => *self.held.lock() = Some(f),
-            Err(e) => tracing::warn!(kind = %e.kind(), "a model file could not be held during its check"),
+            Err(e) => {
+                tracing::warn!(kind = %e.kind(), "a model file could not be held during its check")
+            }
         }
     }
 
@@ -508,6 +510,8 @@ pub struct BundledAi {
     root: PathBuf,
     lock: AssetLock,
     runtime: RuntimeEntry,
+    /// The Vulkan build for a graphics card, when this platform has one (ADR-0029).
+    gpu_runtime: Option<RuntimeEntry>,
     models: Option<InstalledModels>,
 }
 
@@ -551,10 +555,12 @@ impl BundledAi {
             .runtime_for_this_computer()
             .cloned()
             .ok_or_else(unsupported)?;
+        let gpu_runtime = lock.gpu_runtime_for_this_computer().cloned();
         Ok(BundledAi {
             root: root.to_path_buf(),
             lock,
             runtime,
+            gpu_runtime,
             models,
         })
     }
@@ -581,22 +587,32 @@ impl BundledAi {
     pub fn engine_files(&self) -> EngineFiles {
         EngineFiles::pinned(&self.runtime_dir(), &self.runtime.files)
     }
+    pub fn gpu_runtime(&self) -> Option<&RuntimeEntry> {
+        self.gpu_runtime.as_ref()
+    }
+    /// The Vulkan engine program and its pinned files, when this platform has one.
+    pub fn gpu_engine(&self) -> Option<(PathBuf, EngineFiles)> {
+        let r = self.gpu_runtime.as_ref()?;
+        let dir = self.root.join("runtimes").join(&r.runtime_id);
+        Some((dir.join(&r.executable), EngineFiles::pinned(&dir, &r.files)))
+    }
     /// Bytes of the engine for this platform and of the downloaded models.
     pub fn total_bytes(&self) -> u64 {
         self.pinned().iter().map(|p| p.bytes).sum()
     }
 
     fn pinned(&self) -> Vec<Pinned> {
-        let mut out: Vec<Pinned> = self
-            .runtime
-            .files
-            .iter()
-            .map(|f| Pinned {
-                rel: format!("runtimes/{}/{}", self.runtime.runtime_id, f.path),
-                path: self.runtime_dir().join(&f.path),
-                bytes: f.bytes,
-                sha256: f.sha256.clone(),
-                model: false,
+        let mut out: Vec<Pinned> = std::iter::once(&self.runtime)
+            .chain(self.gpu_runtime.as_ref())
+            .flat_map(|r| {
+                let dir = self.root.join("runtimes").join(&r.runtime_id);
+                r.files.iter().map(move |f| Pinned {
+                    rel: format!("runtimes/{}/{}", r.runtime_id, f.path),
+                    path: dir.join(&f.path),
+                    bytes: f.bytes,
+                    sha256: f.sha256.clone(),
+                    model: false,
+                })
             })
             .collect();
         if let Some(m) = &self.models {
@@ -621,6 +637,9 @@ impl BundledAi {
             (self.root.join("runtimes"), false),
             (self.runtime_dir(), false),
         ];
+        if let Some(r) = &self.gpu_runtime {
+            v.push((self.root.join("runtimes").join(&r.runtime_id), false));
+        }
         if let Some(m) = &self.models {
             v.extend(m.dir.parent().map(|p| (p.to_path_buf(), true)));
             v.push((m.dir.clone(), true));
@@ -681,14 +700,15 @@ impl BundledAi {
             let modified = modified_ms(&meta);
             // Model files live in writable app data: always hashed again (they are held open from
             // just before this check, see ModelStamp::hold). Engine files use the record.
-            let cached = !p.model && previous.as_ref().is_some_and(|r| {
-                r.files.iter().any(|c| {
-                    c.rel == p.rel
-                        && c.bytes == meta.len()
-                        && c.modified_ms == modified
-                        && c.sha256 == p.sha256
-                })
-            });
+            let cached = !p.model
+                && previous.as_ref().is_some_and(|r| {
+                    r.files.iter().any(|c| {
+                        c.rel == p.rel
+                            && c.bytes == meta.len()
+                            && c.modified_ms == modified
+                            && c.sha256 == p.sha256
+                    })
+                });
             if !cached {
                 let (bytes, sha) = hash_file(&p.path).map_err(|_| p.missing())?;
                 if bytes != p.bytes || sha != p.sha256 {

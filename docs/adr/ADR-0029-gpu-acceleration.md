@@ -51,3 +51,26 @@ test on several laptops with different graphics cards.
 - The supervisor stops hard-coding no layers on the card for the chat engine; a launch plan comes from the decision
   function and is the only place the layer count is set.
 - The Mac uses Metal through the same `llama.cpp` runtime and its own decision; Apple's model, when chosen, needs none.
+
+## Implementation notes (2026-10-16, Windows phase W7)
+
+1. **Where it lives.** `gpu.rs` (the pure decision, the probe record, the pass rule, matching an adapter to the engine
+   device by name from `llama-server --list-devices`), `placement.rs` (facts from the platform layer, the probe request,
+   plain sentences), `manager.rs` (decides once per session before the chat engine first starts, runs the probe, falls
+   back), `supervisor.rs` (`-ngl 999 --device VulkanN` only when the plan names a card; the embedding engine stays at
+   `-ngl 0`). Probe results, the setting and the developer flag are in `<app data>/ai/graphics.json`.
+2. **The probe.** A fixed request with a JSON schema (temperature 0, at most 64 tokens) runs first on the processor and
+   then on the card. The card passes when its answer is the schema's object and its generation speed, from the engine's
+   own timings, is higher than the processor's. Without a processor figure the card is not trusted. The record keeps
+   one result per adapter, driver and engine version, at most 16; a new driver or engine probes again. The first AI
+   request after a new driver takes longer once (two model loads).
+3. **Fallback in use.** When a request on the card fails because the engine stopped or timed out, the card is recorded as
+   failed for that driver and engine, and the same request runs again on the processor.
+4. **Order of reasons.** No card (or only a software renderer) is reported before a missing Vulkan loader, so a computer
+   without a card is never told about its driver.
+5. **Developer flag.** `"forceIntegratedProbe": true` in `graphics.json`, set by hand, probes integrated graphics even
+   when the memory rule says no. It is never shown in the app.
+6. **First measurement.** The owner's laptop, Intel Arc integrated graphics (driver 32.0.101.8132): the probe ran on the
+   card and gave valid output at 30.3 tokens a second against 32.8 on the processor, so the processor is used
+   ([evidence](../release/evidence/w7/graphics-card-2026-10-16.md)). Integrated graphics on this laptop are "checked and
+   not faster"; no speed-up is claimed for any card yet (decision 8).

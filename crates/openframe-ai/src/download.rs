@@ -124,10 +124,12 @@ pub fn verify(envelope: &[u8], keys: &[VerifyingKey]) -> AppResult<Manifest> {
 /// no control characters, no Windows device names.
 pub fn safe_name(s: &str) -> bool {
     let stem = s.split('.').next().unwrap_or("").to_ascii_lowercase();
-    let device = matches!(stem.as_str(), "con" | "prn" | "aux" | "nul" | "conin$" | "conout$")
-        || ((stem.starts_with("com") || stem.starts_with("lpt"))
-            && stem.len() == 4
-            && stem.as_bytes()[3].is_ascii_digit());
+    let device = matches!(
+        stem.as_str(),
+        "con" | "prn" | "aux" | "nul" | "conin$" | "conout$"
+    ) || ((stem.starts_with("com") || stem.starts_with("lpt"))
+        && stem.len() == 4
+        && stem.as_bytes()[3].is_ascii_digit());
     !s.is_empty()
         && s.len() <= 120
         && s != "."
@@ -143,8 +145,10 @@ pub fn safe_name(s: &str) -> bool {
 /// one of them (`install.rs`).
 fn reserved_in_models_folder(s: &str) -> bool {
     let l = s.to_ascii_lowercase();
-    matches!(l.as_str(), "staging" | "quarantine" | "active.json" | "set.json")
-        || l.ends_with(".partial")
+    matches!(
+        l.as_str(),
+        "staging" | "quarantine" | "active.json" | "set.json"
+    ) || l.ends_with(".partial")
         || l.ends_with(".bad")
         || l.ends_with(".tmp")
 }
@@ -351,9 +355,7 @@ pub(crate) mod tests {
         assert!(bad(
             &|p| p["tiers"][0]["files"][0]["name"] = json!("lpt7.gguf")
         ));
-        assert!(bad(
-            &|p| p["tiers"][0]["files"][0]["name"] = json!("COM9")
-        ));
+        assert!(bad(&|p| p["tiers"][0]["files"][0]["name"] = json!("COM9")));
         assert!(bad(&|p| {
             p.as_object_mut().unwrap().remove("sequence");
         }));

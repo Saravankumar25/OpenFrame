@@ -566,7 +566,11 @@ fn ai_ac_007_to_010_proposal_requires_explicit_acceptance_and_is_one_undo_step()
 
     let outcomes = |env: &TestEnv| {
         let h = env.ok("ai.health", json!({}));
-        (h["rejected"].clone(), h["applied"].clone(), h["undone"].clone())
+        (
+            h["rejected"].clone(),
+            h["applied"].clone(),
+            h["undone"].clone(),
+        )
     };
     assert_eq!(outcomes(&env), (json!(1), json!(1), json!(0)));
 

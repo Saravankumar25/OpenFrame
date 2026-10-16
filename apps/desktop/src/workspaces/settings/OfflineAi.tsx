@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { call, onAppEvent } from "../../ipc/client";
 import { reportError, useOp } from "../../ipc/query";
-import { Banner, Button, Chip, ConfirmDialog, PageHeader, Skeleton } from "../../design-system";
+import { Banner, Button, Chip, ConfirmDialog, PageHeader, Segmented, Skeleton } from "../../design-system";
 import { toast } from "../../app/toast";
 import type { AiStatusDto } from "../../ipc/generated/AiStatusDto";
 import type { AiDiagnosticsDto } from "../../ipc/generated/AiDiagnosticsDto";
@@ -92,6 +92,7 @@ export default function OfflineAiSettings() {
                   </Button>
                 </div>
               )}
+              {s.available && <GraphicsChoice />}
               <p className="hint">OpenFrame works normally without OpenFrame AI.</p>
               <ConfirmDialog
                 open={removing}
@@ -114,6 +115,42 @@ export default function OfflineAiSettings() {
         <TechnicalDetails />
         <AiHealthCard />
       </div>
+    </div>
+  );
+}
+
+/** Graphics card: Automatic or Off (ADR-0029 decision 6), with where the AI runs now. */
+export function GraphicsChoice() {
+  const qc = useQueryClient();
+  const d = useOp<AiDiagnosticsDto>("ai.diagnostics", {}, [], { staleTime: 10_000 });
+  if (!d.data) return null;
+  const set = (v: "automatic" | "off") =>
+    void call("ai.graphics.set", { off: v === "off" })
+      .then(() => {
+        void qc.invalidateQueries({ queryKey: ["ai.diagnostics"] });
+        void qc.invalidateQueries({ queryKey: ["ai.health"] });
+        toast.info(v === "off" ? "OpenFrame AI will run on the processor." : "OpenFrame AI will use a checked graphics card when there is one.");
+      })
+      .catch(reportError);
+  return (
+    <div style={{ margin: "12px 0" }}>
+      <div className="row" style={{ gap: 12 }}>
+        <span className="sm">
+          <b>Graphics card</b>
+        </span>
+        <Segmented
+          ariaLabel="Graphics card"
+          value={d.data.graphicsOff ? "off" : "automatic"}
+          onChange={set}
+          options={[
+            { value: "automatic", label: "Automatic" },
+            { value: "off", label: "Off" },
+          ]}
+        />
+      </div>
+      <p className="hint" role="status">
+        {d.data.placement} Automatic uses a graphics card only after it passes a short check; the processor is always the fallback.
+      </p>
     </div>
   );
 }
@@ -170,7 +207,7 @@ function TechnicalDetails() {
             </div>
             {x.problem && <div className="csr">{x.problem}</div>}
             <div className="csr">
-              Runs on: processor · language model: {x.chatState} · search model: {x.searchState}
+              Language model: {x.chatState} · search model: {x.searchState} (search always on the processor)
             </div>
             <div className="csr">
               This computer: {formatBytes(x.memoryBytes)} memory · {x.processor} ({x.processorThreads} threads)

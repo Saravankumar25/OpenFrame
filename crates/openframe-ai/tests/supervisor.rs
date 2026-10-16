@@ -250,6 +250,7 @@ fn llama_server_launch_is_loopback_only_and_key_is_not_on_the_command_line() {
         threads: 4,
         seed: None,
         model_stamp: None,
+        gpu_device: None,
     };
     let spec = l.launch_spec(51234, "secret-key");
     let joined = spec.args.join(" ");
@@ -267,9 +268,19 @@ fn llama_server_launch_is_loopback_only_and_key_is_not_on_the_command_line() {
             .iter()
             .any(|(k, v)| k == "LLAMA_API_KEY" && v == "secret-key")
     );
-    // The bundled engine is the processor build; no seed unless a deterministic run asks.
+    // On the processor unless the launch plan names a card; no seed unless a deterministic run asks.
     assert!(joined.contains("-ngl 0"));
+    assert!(!joined.contains("--device"));
     assert!(!joined.contains("--seed"));
+    let card = LlamaServerLauncher {
+        gpu_device: Some("Vulkan1".into()),
+        ..l.clone()
+    };
+    let card = card.launch_spec(1, "k").args.join(" ");
+    assert!(
+        card.contains("-ngl 999") && card.contains("--device Vulkan1"),
+        "{card}"
+    );
     let seeded = LlamaServerLauncher {
         seed: Some(42),
         ..l.clone()
@@ -511,6 +522,7 @@ fn an_engine_whose_files_changed_after_install_is_not_started() {
         threads: 4,
         seed: None,
         model_stamp: None,
+        gpu_device: None,
     };
     let rt = Arc::new(AiRuntime::new().unwrap());
     let sup = Supervisor::new(cfg(), rt.handle());

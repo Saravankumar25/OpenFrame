@@ -39,8 +39,8 @@ use crate::core::AppCore;
 use crate::registry::Registry;
 pub use offline::{AiComponentDto, AiDiagnosticsDto, AiDownloadDto, AiStatusDto};
 use offline::{
-    diagnostics, download_pause, download_remove, download_start, download_status, status,
-    stop_runtime,
+    diagnostics, download_pause, download_remove, download_start, download_status, set_graphics,
+    status, stop_runtime,
 };
 pub use orchestrator::AskArgs;
 pub use service::{AiService, service};
@@ -55,6 +55,10 @@ pub fn register(r: &mut Registry) {
     );
     r.command("ai.stop_runtime", stop_runtime)
         .meta(M::app_command("Stop the local AI engine.").hidden(h::AI_RUNTIME));
+    r.command("ai.graphics.set", set_graphics).meta(
+        M::app_command("Settings, Offline AI, Graphics card: Automatic or Off.")
+            .hidden(h::AI_RUNTIME),
+    );
     r.query("ai.download.status", download_status).meta(
         M::app_query("The Download OpenFrame AI screen: size, free space, progress.")
             .hidden(h::AI_RUNTIME),

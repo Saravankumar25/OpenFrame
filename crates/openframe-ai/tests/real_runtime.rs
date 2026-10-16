@@ -128,14 +128,76 @@ fn real_bundled_runtime_checks_then_chats_and_embeds() {
     drop(model);
     drop(m);
 
-    // Next start of the same installed version: the record lets the check skip the full read.
+    // Next start of the same installed version: the engine files come from the record; the models
+    // in writable app data are read again in full (ADR-0026 implementation note 6).
     let m2 = AiManager::new(config(&bundle, data.path())).unwrap();
     let t = Instant::now();
     m2.ensure_verified().unwrap();
     let quick = t.elapsed();
     println!("check on the next start: {:.2}s", quick.as_secs_f32());
     assert!(
-        quick < Duration::from_secs(2),
-        "the recorded check is reused"
+        quick < Duration::from_secs(15),
+        "the next start check stays short"
     );
+}
+
+/// The graphics card path on THIS computer with the real engines (ADR-0029 decision 9): detection,
+/// the device match, the probe on the processor and on the card, and one longer answer in each
+/// place. Prints the figures and, with OPENFRAME_EVIDENCE_OUT, writes them as JSON evidence.
+#[test]
+#[ignore]
+fn real_graphics_card_probe_and_benchmark() {
+    let Ok(src) = std::env::var("OPENFRAME_AI_BUNDLE_DIR") else {
+        eprintln!("OPENFRAME_AI_BUNDLE_DIR not set; skipping");
+        return;
+    };
+    let bundle = std::path::PathBuf::from(src);
+    let data = tempfile::tempdir().unwrap();
+    let m = std::sync::Arc::new(AiManager::new(config(&bundle, data.path())).unwrap());
+    let facts = openframe_ai::placement::detect();
+    println!(
+        "adapters: {:?}; Vulkan loader: {}",
+        facts.adapters, facts.vulkan_loader
+    );
+    let request = || {
+        ChatRequest::new(vec![ChatMessage::user(
+            "Write a short paragraph describing a rainy bus stop at night for a screenplay.",
+        )])
+        .max_tokens(160)
+    };
+    let place = |off: bool| {
+        m.set_graphics_off(off).unwrap();
+        let model = m.chat_model().expect("AI available");
+        let t = Instant::now();
+        let first = model.chat(&request()).unwrap();
+        let first_s = t.elapsed().as_secs_f32();
+        let t = Instant::now();
+        let warm = model.chat(&request()).unwrap();
+        let warm_s = t.elapsed().as_secs_f32();
+        let words = warm.split_whitespace().count();
+        let text = m.diagnostics().placement;
+        println!(
+            "{text}
+  first answer {first_s:.1}s ({} words), warm answer {warm_s:.1}s ({words} words)",
+            first.split_whitespace().count()
+        );
+        serde_json::json!({ "placement": text, "firstAnswerSeconds": first_s, "warmAnswerSeconds": warm_s, "warmWords": words })
+    };
+    let card = place(false);
+    let processor = place(true);
+    let probe: serde_json::Value = std::fs::read(data.path().join("ai").join("graphics.json"))
+        .ok()
+        .and_then(|b| serde_json::from_slice(&b).ok())
+        .unwrap_or_default();
+    println!("probe record: {probe}");
+    if let Ok(out) = std::env::var("OPENFRAME_EVIDENCE_OUT") {
+        let adapters: Vec<serde_json::Value> = facts
+            .adapters
+            .iter()
+            .map(|(a, d)| serde_json::json!({ "name": a.name, "vendorId": a.vendor_id, "dedicatedMb": a.dedicated_mb, "sharedMb": a.shared_mb, "software": a.software, "driver": d }))
+            .collect();
+        let v = serde_json::json!({ "adapters": adapters, "vulkanLoader": facts.vulkan_loader, "automatic": card, "processorOnly": processor, "probe": probe });
+        std::fs::write(out, serde_json::to_string_pretty(&v).unwrap()).unwrap();
+    }
+    m.stop_runtime();
 }

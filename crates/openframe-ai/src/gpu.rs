@@ -48,7 +48,8 @@ pub enum Setting {
 }
 
 /// What an earlier probe found for one adapter, driver version and runtime version.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub enum Remembered {
     Passed,
     Failed,
@@ -99,17 +100,18 @@ pub fn decide(i: &Inputs<'_>) -> Plan {
     if i.setting == Setting::Off {
         return Plan::Cpu(CpuReason::SettingOff);
     }
-    if !i.vulkan_loader {
-        return Plan::Cpu(CpuReason::NoVulkanLoader);
-    }
-    if !i.vulkan_runtime {
-        return Plan::Cpu(CpuReason::NoVulkanRuntime);
-    }
+    // The plainest true reason first: no card at all before a missing driver piece.
     if i.adapters.is_empty() {
         return Plan::Cpu(CpuReason::NoAdapter);
     }
     if i.adapters.iter().all(|a| a.kind() == AdapterKind::Software) {
         return Plan::Cpu(CpuReason::OnlySoftware);
+    }
+    if !i.vulkan_loader {
+        return Plan::Cpu(CpuReason::NoVulkanLoader);
+    }
+    if !i.vulkan_runtime {
+        return Plan::Cpu(CpuReason::NoVulkanRuntime);
     }
     let need = i.model_mb + MARGIN_MB;
     // Dedicated cards whose own memory holds the model, largest first; then integrated graphics
@@ -140,9 +142,204 @@ pub fn decide(i: &Inputs<'_>) -> Plan {
     Plan::Cpu(CpuReason::ProbeFailed)
 }
 
+impl CpuReason {
+    /// One plain sentence for Settings and the health card.
+    pub fn text(self) -> &'static str {
+        match self {
+            CpuReason::SettingOff => "The graphics card is switched off in Settings.",
+            CpuReason::NoVulkanLoader => {
+                "This computer's graphics driver does not offer what OpenFrame AI needs."
+            }
+            CpuReason::NoVulkanRuntime => {
+                "This copy of OpenFrame Studio has no graphics card engine."
+            }
+            CpuReason::NoAdapter | CpuReason::OnlySoftware => "No graphics card was found.",
+            CpuReason::NotEnoughMemory => {
+                "The graphics card does not have enough memory for OpenFrame AI."
+            }
+            CpuReason::ProbeFailed => {
+                "The graphics card did not pass its check, so the processor is used."
+            }
+        }
+    }
+}
+
+/// Settings, Offline AI, Graphics card, and what the probes on this computer found
+/// (`<app data>/ai/graphics.json`).
+#[derive(Debug, Clone, Default, PartialEq, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GraphicsRecord {
+    /// `false` means Off (ADR-0029 decision 6). Automatic is the default.
+    #[serde(default)]
+    pub off: bool,
+    /// The hidden developer flag (ADR-0029 decision 3): probe integrated graphics even when the
+    /// memory rule says no. Set by hand in the file; never shown.
+    #[serde(default)]
+    pub force_integrated_probe: bool,
+    #[serde(default)]
+    pub probes: Vec<ProbeRecord>,
+}
+
+/// One probe: the adapter, driver and engine it ran with, and what it found.
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ProbeRecord {
+    pub adapter: String,
+    pub vendor_id: u32,
+    pub driver: String,
+    pub runtime: String,
+    pub result: Remembered,
+    pub gpu_tokens_per_second: Option<f64>,
+    pub cpu_tokens_per_second: Option<f64>,
+    pub at: i64,
+}
+
+impl GraphicsRecord {
+    /// What an earlier probe found for this adapter with today's driver and engine.
+    pub fn remembered(
+        &self,
+        adapter: &str,
+        vendor: u32,
+        driver: &str,
+        runtime: &str,
+    ) -> Option<Remembered> {
+        self.probes
+            .iter()
+            .rev()
+            .find(|p| {
+                p.adapter == adapter
+                    && p.vendor_id == vendor
+                    && p.driver == driver
+                    && p.runtime == runtime
+            })
+            .map(|p| p.result)
+    }
+
+    /// Keep one record per adapter, driver and engine (the newest), at most 16.
+    pub fn remember(&mut self, r: ProbeRecord) {
+        self.probes.retain(|p| {
+            !(p.adapter == r.adapter
+                && p.vendor_id == r.vendor_id
+                && p.driver == r.driver
+                && p.runtime == r.runtime)
+        });
+        self.probes.push(r);
+        let extra = self.probes.len().saturating_sub(16);
+        self.probes.drain(..extra);
+    }
+}
+
+/// The engine's device ids by name, from `llama-server --list-devices`
+/// (`  Vulkan0: Intel(R) Arc(TM) Graphics (9009 MiB, 8302 MiB free)`).
+pub fn parse_devices(listing: &str) -> Vec<(String, String)> {
+    listing
+        .lines()
+        .filter_map(|l| {
+            let (id, rest) = l.trim().split_once(": ")?;
+            let id_ok = id.starts_with("Vulkan")
+                && id[6..].chars().all(|c| c.is_ascii_digit())
+                && id.len() > 6;
+            let name = rest.rsplit_once(" (").map_or(rest, |(n, _)| n).trim();
+            (id_ok && !name.is_empty()).then(|| (id.to_string(), name.to_string()))
+        })
+        .collect()
+}
+
+/// The engine device for a Windows adapter: the one with the same name (ignoring case).
+pub fn device_for(adapter: &str, devices: &[(String, String)]) -> Option<String> {
+    let a = adapter.trim().to_ascii_lowercase();
+    devices
+        .iter()
+        .find(|(_, n)| n.to_ascii_lowercase() == a)
+        .map(|(id, _)| id.clone())
+}
+
+/// A probe passes when the card gave valid constrained output and generated faster than the
+/// processor (ADR-0029 decision 4). Without a processor figure the card is not trusted.
+pub fn probe_passed(valid: bool, gpu_tps: Option<f64>, cpu_tps: Option<f64>) -> bool {
+    match (valid, gpu_tps, cpu_tps) {
+        (true, Some(g), Some(c)) => g.is_finite() && g > c,
+        _ => false,
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn engine_devices_are_matched_to_windows_adapters_by_name() {
+        let listing = "ggml_vulkan: Found 2 Vulkan devices:
+Available devices:
+  Vulkan0: NVIDIA GeForce RTX 4060 Laptop GPU (8188 MiB, 7900 MiB free)
+  Vulkan1: Intel(R) Arc(TM) Graphics (9009 MiB, 8302 MiB free)
+";
+        let d = parse_devices(listing);
+        assert_eq!(d.len(), 2);
+        assert_eq!(
+            device_for("Intel(R) Arc(TM) Graphics", &d).as_deref(),
+            Some("Vulkan1")
+        );
+        assert_eq!(
+            device_for("nvidia geforce rtx 4060 laptop gpu", &d).as_deref(),
+            Some("Vulkan0")
+        );
+        assert_eq!(device_for("AMD Radeon 780M", &d), None);
+        assert!(
+            parse_devices(
+                "Vulkan: x
+VulkanX: y (1 MiB)
+"
+            )
+            .is_empty()
+        );
+    }
+
+    #[test]
+    fn a_probe_passes_only_with_valid_output_faster_than_the_processor() {
+        assert!(probe_passed(true, Some(30.0), Some(12.0)));
+        assert!(
+            !probe_passed(true, Some(10.0), Some(12.0)),
+            "slower than the processor"
+        );
+        assert!(
+            !probe_passed(false, Some(30.0), Some(12.0)),
+            "invalid output"
+        );
+        assert!(!probe_passed(true, None, Some(12.0)));
+        assert!(!probe_passed(true, Some(30.0), None), "no processor figure");
+        assert!(!probe_passed(true, Some(f64::NAN), Some(1.0)));
+    }
+
+    #[test]
+    fn probe_results_are_kept_per_adapter_driver_and_engine() {
+        let rec = |driver: &str, result| ProbeRecord {
+            adapter: "Intel(R) Arc(TM) Graphics".into(),
+            vendor_id: INTEL,
+            driver: driver.into(),
+            runtime: "b11259".into(),
+            result,
+            gpu_tokens_per_second: None,
+            cpu_tokens_per_second: None,
+            at: 0,
+        };
+        let mut g = GraphicsRecord::default();
+        g.remember(rec("32.0.101.8132", Remembered::Failed));
+        g.remember(rec("32.0.101.8132", Remembered::Passed));
+        assert_eq!(g.probes.len(), 1, "the newest result replaces the old one");
+        let arc = "Intel(R) Arc(TM) Graphics";
+        assert_eq!(
+            g.remembered(arc, INTEL, "32.0.101.8132", "b11259"),
+            Some(Remembered::Passed)
+        );
+        // A new driver or engine version means a new probe.
+        assert_eq!(g.remembered(arc, INTEL, "32.0.101.9000", "b11259"), None);
+        assert_eq!(g.remembered(arc, INTEL, "32.0.101.8132", "b12000"), None);
+        for k in 0..40 {
+            g.remember(rec(&format!("d{k}"), Remembered::Failed));
+        }
+        assert_eq!(g.probes.len(), 16, "bounded");
+    }
 
     const INTEL: u32 = 0x8086;
     const NVIDIA: u32 = 0x10DE;

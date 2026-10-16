@@ -292,7 +292,13 @@ impl ModelsDir {
             } else {
                 std::fs::remove_file(&p).or_else(|_| std::fs::remove_dir(&p))
             };
-            r.map_err(|e| install_error("remove_failed", "OpenFrame AI could not be removed completely. Close OpenFrame and try again.", e.kind().to_string()))?;
+            r.map_err(|e| {
+                install_error(
+                    "remove_failed",
+                    "OpenFrame AI could not be removed completely. Close OpenFrame and try again.",
+                    e.kind().to_string(),
+                )
+            })?;
         }
         Ok(())
     }

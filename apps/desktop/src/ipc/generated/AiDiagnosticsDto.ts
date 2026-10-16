@@ -16,4 +16,12 @@ likelySlow: boolean, warnings: Array<string>,
 /**
  * Read-only folder of the bundled AI in this installation.
  */
-bundleDir: string, bundleBytes: number, logFile: string, };
+bundleDir: string, bundleBytes: number, logFile: string, 
+/**
+ * Where the chat engine runs, in one plain sentence (ADR-0029).
+ */
+placement: string, 
+/**
+ * Settings, Offline AI, Graphics card: Off.
+ */
+graphicsOff: boolean, };

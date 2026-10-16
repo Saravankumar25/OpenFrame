@@ -75,6 +75,10 @@ export function AiHealthCard() {
               <td>{h.errors}</td>
             </tr>
             <tr>
+              <th scope="row">Runs on</th>
+              <td>{h.runsOn ?? "not known yet"}</td>
+            </tr>
+            <tr>
               <th scope="row">Weakest tool</th>
               <td>{h.weakestTool ? `${h.weakestTool.name}: ${h.weakestTool.failurePct}% of ${h.weakestTool.uses} uses went wrong` : "none stands out"}</td>
             </tr>
