@@ -58,6 +58,26 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 
 ## Entries
 
+### 2026-10-16 (second session), W4 release proof, W5 measurement started, W7 and W8 groundwork
+- **Areas and items worked:** W4 (WebView2 traffic, release build and suite, scenarios, everyday rows, visual planning,
+  keyboard and screen reader, performance); W5 (provider interface, trace, health card, harness, gold sets); W7
+  (decision table, adapter detection, Vulkan pin); W8 (manifest, resumable download, preflight, activation, quarantine).
+- **Done:** W1 to W3 fast-forwarded to `main` (owner's word). Branches stacked: `windows/w4-release-proof`,
+  `windows/w5-measure-ai`, `windows/w7-gpu`, `windows/w8-download` (all local, not pushed).
+- **Evidence:** release run on the open release exe: every spec file green after two test fixes (95, 96), 3 debug-only
+  skipped; `check-binary` ok; `scan-installer` clean on exe and runtime. The W4 evidence file is still to write.
+- **Features moved:** none yet; proof level 3 waits for the W4 evidence file.
+- **Docs updated:** ADR-0031 and register, DEVELOPMENT, threat model item 8, privacy policy, owner decisions, QA strategy,
+  two AI specifications (InferenceProvider), scenarios folder, gold README and review page, handoff.
+- **Decisions made or needed:** owner: merge W1 to W3; ADR-0031; allow and disclose WebView2's own diagnostic data;
+  Vulkan runtime download (done); a trial harness run now, the official baseline after gold approval. Needed: gold
+  approval, model and tier choice after the bake-off, 8 GB laptop runs, W8 model host, production key and terms.
+- **Blocked / risks:** typing latency p95 32 ms against a 16 ms budget; first AI answer 42.5 s; package grows about 89 MB
+  with the Vulkan engine; trace outcome "undone" not recorded; W6 cannot start before the baseline.
+- **Next:** W4 evidence file and the gated release run; W5 trial harness run; W8 manager integration, operations, screens.
+- **Checks run:** writing, links, feature status, plan status, secrets, migrations, governance 89 of 89, cargo fmt, unit
+  tests of the new modules; a security review finding in `install.rs` fixed (3138ade).
+
 ### 2026-10-16, Windows phases W1, W2 and W3 finished at proof level 2
 - **Areas and items worked:** W1 controls and clean baseline; W2 protect writers' work; W3 harden the core.
 - **Done:** commits 4b14aa5 to 3a778a2 on `windows/w1-controls` (archive moves, sweep and wording, test merge, W2, W3).
