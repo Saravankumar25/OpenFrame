@@ -216,7 +216,7 @@ fn xlsx(path: &str) -> (Vec<String>, String) {
     let mut text = String::new();
     for i in 0..z.len() {
         let mut e = z.by_index(i).unwrap();
-        let name = e.name().to_string();
+        let name = e.name().unwrap().to_string();
         if name.starts_with("xl/") && name.ends_with(".xml") {
             let mut s = String::new();
             e.read_to_string(&mut s).unwrap();

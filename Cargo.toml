@@ -53,7 +53,7 @@ tempfile = "3"
 fs4 = { version = "0.13", features = ["sync"] }
 sha2 = "0.10"
 hex = "0.4"
-zip = { version = "4", default-features = false, features = ["deflate"] }
+zip = { version = "9", default-features = false, features = ["deflate"] }
 quick-xml = "0.42"
 regex = "1"
 similar = "2"
@@ -71,7 +71,7 @@ argon2 = { version = "0.6", default-features = false, features = ["alloc", "pass
 getrandom = "0.3"
 sysinfo = "0.37"
 csv = "1"
-rust_xlsxwriter = "0.90"
+rust_xlsxwriter = "0.100"
 pdf-writer = "0.13"
 lopdf = "0.45"
 # Already in the tree via lopdf; used directly to inflate PDF streams with hard caps.

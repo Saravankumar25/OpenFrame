@@ -64,7 +64,7 @@ fn zip_entries(path: &str) -> Vec<(String, String)> {
         let mut e = z.by_index(i).unwrap();
         let mut s = String::new();
         e.read_to_string(&mut s).unwrap();
-        out.push((e.name().to_string(), s));
+        out.push((e.name().unwrap().to_string(), s));
     }
     out
 }

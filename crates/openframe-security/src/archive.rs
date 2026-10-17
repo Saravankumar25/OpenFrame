@@ -192,7 +192,10 @@ pub fn inspect(path: &Path, limits: ArchiveLimits) -> AppResult<Vec<String>> {
     let mut names = Vec::with_capacity(zip.len());
     for i in 0..zip.len() {
         let entry = zip.by_index_raw(i).map_err(|e| rejected(e.to_string()))?;
-        let name = entry.name().to_string();
+        let name = entry
+            .name()
+            .map_err(|_| rejected("entry name is not valid text"))?
+            .to_string();
         if entry.is_dir() {
             continue;
         }
@@ -257,7 +260,10 @@ pub fn extract_all(path: &Path, dest: &Path, limits: ArchiveLimits) -> AppResult
             if entry.is_dir() {
                 continue;
             }
-            let rel = crate::validate_relative(entry.name())
+            let name = entry
+                .name()
+                .map_err(|_| rejected("entry name is not valid text"))?;
+            let rel = crate::validate_relative(&name)
                 .map_err(|_| rejected("unsafe entry name"))?;
             let out_path = dest.join(&rel);
             if let Some(parent) = out_path.parent() {

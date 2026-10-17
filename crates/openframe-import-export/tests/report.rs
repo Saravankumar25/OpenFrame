@@ -93,7 +93,7 @@ fn xlsx_is_a_valid_workbook_with_one_sheet_per_table() {
     assert!(bytes.starts_with(b"PK"));
     let mut zip = zip::ZipArchive::new(std::io::Cursor::new(bytes)).unwrap();
     let names: Vec<String> = (0..zip.len())
-        .map(|i| zip.by_index(i).unwrap().name().to_string())
+        .map(|i| zip.by_index(i).unwrap().name().unwrap().to_string())
         .collect();
     assert!(names.iter().any(|n| n == "xl/worksheets/sheet1.xml"));
     assert!(names.iter().any(|n| n == "xl/worksheets/sheet2.xml"));
