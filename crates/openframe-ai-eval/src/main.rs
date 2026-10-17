@@ -1,7 +1,7 @@
 //! `ai-eval`: run the gold cases through the real assistant pipeline and write the report.
 //!
 //! ```text
-//! node scripts/cargo-queued.mjs run --release -p openframe-ai-eval -- --gold crates/openframe-ai-eval/gold --out <folder> [--only <text>] [--limit N]
+//! node scripts/cargo-queued.mjs run --release -p openframe-ai-eval --bin ai-eval -- --gold crates/openframe-ai-eval/gold --out <folder> [--only <text>] [--limit N]
 //! ```
 //!
 //! Needs the Offline AI engine staged by `node scripts/prepare-ai-assets.mjs` (OPENFRAME_AI_BUNDLE_DIR,

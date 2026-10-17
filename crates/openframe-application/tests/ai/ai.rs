@@ -672,6 +672,32 @@ fn ai_ac_011_permissions_are_inherited_viewers_cannot_prepare_or_apply() {
 }
 
 #[test]
+fn rename_reaches_screenplay_cues_when_the_character_has_no_record() {
+    let env = TestEnv::with_project("Railway", "Feature Film");
+    seed_screenplay(&env);
+    let _m = attach(&env);
+    let x = ask(&env, "Rename Ravi to Raghav.", whole());
+    let cs = &x["result"]["changeSet"];
+    assert!(!cs.is_null(), "{x}");
+    let r = env.ok("ai.change_set.accept", json!({ "id": id(cs) }));
+    assert_eq!(r["state"], "Applied");
+    let cues = |name: &str| {
+        count(
+            &env,
+            &format!(
+                "SELECT count(*) FROM screenplay_element WHERE element_type='character' AND text='{name}'"
+            ),
+        )
+    };
+    assert_eq!(cues("RAGHAV"), 2);
+    assert_eq!(cues("RAVI"), 0);
+
+    // A name in neither the records nor the script is still refused.
+    let x = ask(&env, "Rename Nobody to Somebody.", whole());
+    assert!(x["result"]["changeSet"].is_null(), "{x}");
+}
+
+#[test]
 fn ai_ac_014_stale_change_set_is_revalidated_never_applied_blindly() {
     let env = TestEnv::with_project("Railway", "Feature Film");
     seed_screenplay(&env);

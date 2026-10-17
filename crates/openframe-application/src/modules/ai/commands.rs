@@ -187,7 +187,7 @@ static PRODUCT: LazyLock<Regex> = LazyLock::new(|| {
 
 static SCENE_CARD: LazyLock<Regex> = LazyLock::new(|| {
     re(
-        r#"(?i)^\s*(?:please\s+)?(?:add|create|make)\s+a\s+(?:new\s+)?scene\s+card\s*(?::|where|in\s+which|about)\s*(?P<d>.+?)\s*[.!]*\s*$"#,
+        r#"(?i)^\s*(?:please\s+)?(?:(?:add|create|make)\s+a\s+(?:new\s+)?|new\s+)scene\s+card\s*(?::|where|in\s+which|about)\s*(?P<d>.+?)\s*[.!]*\s*$"#,
     )
 });
 
@@ -235,7 +235,7 @@ static PROPS_FOR: LazyLock<Regex> = LazyLock::new(|| {
 
 static NEW_DRAFT: LazyLock<Regex> = LazyLock::new(|| {
     re(
-        r#"(?i)^\s*(?:please\s+)?(?:create|make)\s+(?:a\s+copy\s+of\s+the\s+current\s+draft|a\s+new\s+draft)\s+(?:named|called)\s+(?P<name>.+?)\s*[.!]*\s*$"#,
+        r#"(?i)^\s*(?:please\s+)?(?:create|make|start)\s+(?:a\s+copy\s+of\s+the\s+current\s+draft|a\s+new\s+draft)\s+(?:named|called)\s+(?P<name>.+?)\s*[.!]*\s*$"#,
     )
 });
 
@@ -243,6 +243,26 @@ static NEW_SCENE: LazyLock<Regex> = LazyLock::new(|| {
     re(
         r#"(?i)^\s*(?:please\s+)?add\s+a\s+(?:new\s+)?scene\s+(?:at\s+the\s+end|after\s+scene\s+(?P<n>\d{1,5}))\s*:\s*(?P<h>(?:INT|EXT|INT\./EXT|I/E)\.?\s+.+?)\s*\.?\s*$"#,
     )
+});
+
+static SCENE_CARD_LOT: LazyLock<Regex> = LazyLock::new(|| {
+    re(
+        r#"(?i)^\s*(?:please\s+)?add\s+a\s+scene\s+card\s+['"‘“](?P<d>[^'"’”]{1,200})['"’”]\s+to\s+the\s+parking\s+lot\s*[.!]*\s*$"#,
+    )
+});
+
+static ACT: LazyLock<Regex> = LazyLock::new(|| {
+    re(
+        r#"(?i)^\s*(?:please\s+)?(?:add|create|make)\s+an?\s+(?:new\s+)?act\s+(?:called|named|titled)\s+(?P<t>.+?)\s*[.!]*\s*$"#,
+    )
+});
+
+static RENAME_DRAFT: LazyLock<Regex> = LazyLock::new(|| {
+    re(r#"(?i)^\s*(?:please\s+)?rename\s+the\s+current\s+draft\s+to\s+(?P<n>.+?)\s*[.!]*\s*$"#)
+});
+
+static PRIVATE_NOTE: LazyLock<Regex> = LazyLock::new(|| {
+    re(r#"(?i)^\s*(?:please\s+)?(?:add|write)\s+a\s+private\s+note\s*:\s*(?P<t>.+?)\s*$"#)
 });
 
 static CAST: LazyLock<Regex> = LazyLock::new(|| {
@@ -304,6 +324,28 @@ fn recipe_more(text: &str) -> Option<StepCall> {
                 json!({ "description": capitalise(d) }),
             )
         });
+    }
+    if let Some(c) = cap(&SCENE_CARD_LOT) {
+        let d = c.name("d")?.as_str().trim();
+        return Some(call("propose_scene_card", json!({ "description": d })));
+    }
+    if let Some(c) = cap(&ACT) {
+        let t = unquote(c.name("t")?.as_str());
+        return (!t.is_empty()).then(|| call("propose_act", json!({ "title": t })));
+    }
+    if let Some(c) = cap(&RENAME_DRAFT) {
+        let n = unquote(c.name("n")?.as_str());
+        return (!n.is_empty()).then(|| {
+            call(
+                "propose_rename_draft",
+                json!({ "draft": "current", "name": n }),
+            )
+        });
+    }
+    if let Some(c) = cap(&PRIVATE_NOTE) {
+        let t = c.name("t")?.as_str().trim();
+        return (!t.is_empty())
+            .then(|| call("propose_private_note", json!({ "text": capitalise(t) })));
     }
     if let Some(c) = cap(&COMMENT_SCENE) {
         let n: u32 = c.name("n")?.as_str().parse().ok().filter(|n| *n >= 1)?;
@@ -847,6 +889,42 @@ mod tests {
             Some((
                 "propose_scene_card".into(),
                 json!({ "description": "Ravi misses the last train" })
+            ))
+        );
+        assert_eq!(
+            call("Add an act called Act Four."),
+            Some(("propose_act".into(), json!({ "title": "Act Four" })))
+        );
+        assert_eq!(
+            call("Rename the current draft to Shooting Script."),
+            Some((
+                "propose_rename_draft".into(),
+                json!({ "draft": "current", "name": "Shooting Script" })
+            ))
+        );
+        assert_eq!(
+            call("Start a new draft called Second Pass."),
+            Some(("propose_new_draft".into(), json!({ "name": "Second Pass" })))
+        );
+        assert_eq!(
+            call("Add a private note: I think act two is too long."),
+            Some((
+                "propose_private_note".into(),
+                json!({ "text": "I think act two is too long." })
+            ))
+        );
+        assert_eq!(
+            call("Add a scene card 'Venkat repairs the radio' to the parking lot."),
+            Some((
+                "propose_scene_card".into(),
+                json!({ "description": "Venkat repairs the radio" })
+            ))
+        );
+        assert_eq!(
+            call("New scene card: Suresh drives to Pedda Revu after the storm."),
+            Some((
+                "propose_scene_card".into(),
+                json!({ "description": "Suresh drives to Pedda Revu after the storm" })
             ))
         );
         assert_eq!(

@@ -759,26 +759,23 @@ fn rename_character(
         .iter()
         .filter(|(_, n, _)| n.eq_ignore_ascii_case(&from))
         .collect();
-    let (char_id, char_name, _) = match exact.len() {
-        1 => exact[0].clone(),
+    // A character written only in the script (no Character record) is renamed in its cues.
+    let record: Option<(String, String)> = match exact.len() {
+        1 => Some((exact[0].0.clone(), exact[0].1.clone())),
         0 => {
             let similar: Vec<String> = records
                 .iter()
                 .filter(|(_, n, _)| n.to_lowercase().contains(&from.to_lowercase()))
                 .map(|(_, n, _)| n.clone())
                 .collect();
-            return Err(if similar.len() > 1 {
-                queries::ambiguous(format!(
+            if similar.len() > 1 {
+                return Err(queries::ambiguous(format!(
                     "There are {} characters with similar names: {}. Which one should I use?",
                     similar.len(),
                     queries::join_and(&similar)
-                ))
-            } else {
-                AppError::ai(
-                    "not_found",
-                    format!("I couldn't find a Character record named “{from}”."),
-                )
-            });
+                )));
+            }
+            None
         }
         _ => {
             return Err(queries::ambiguous(format!(
@@ -789,28 +786,33 @@ fn rename_character(
     let mut d = draft(
         spec.tool,
         String::new(),
-        "I found the Character record and its structured references. Raw dialogue/action mentions are listed separately and not changed by default.".into(),
+        "I found the character and its structured references. Raw dialogue/action mentions are listed separately and not changed by default.".into(),
         spec.module,
         args.clone(),
     );
     let mut modules: BTreeMap<&str, ()> = BTreeMap::new();
-    modules.insert("Story", ());
-    d.base_rows
-        .push(("story_character".into(), char_id.clone()));
-    d.targets.push(ObjRef {
-        table: "story_character".into(),
-        id: char_id.clone(),
-        label: char_name.clone(),
-    });
-    d.operations.push(OpCall {
-        op: OP_UPDATE_CHARACTER.into(),
-        args: json!({"id": char_id, "name": to}),
-        label: format!("Rename Character {char_name} → {to}"),
-    });
-    d.preview.push(PreviewRow::normal(
-        "Canonical Character",
-        format!("{char_name} → {to} · 1 object"),
-    ));
+    let (char_id, char_name) = record
+        .clone()
+        .unwrap_or_else(|| (String::new(), from.clone()));
+    if record.is_some() {
+        modules.insert("Story", ());
+        d.base_rows
+            .push(("story_character".into(), char_id.clone()));
+        d.targets.push(ObjRef {
+            table: "story_character".into(),
+            id: char_id.clone(),
+            label: char_name.clone(),
+        });
+        d.operations.push(OpCall {
+            op: OP_UPDATE_CHARACTER.into(),
+            args: json!({"id": char_id, "name": to}),
+            label: format!("Rename Character {char_name} → {to}"),
+        });
+        d.preview.push(PreviewRow::normal(
+            "Canonical Character",
+            format!("{char_name} → {to} · 1 object"),
+        ));
+    }
 
     // Screenplay Character cues (structured) in the current draft of each
     // screenplay (a project may hold several). Earlier drafts are kept as
@@ -841,6 +843,12 @@ fn rename_character(
     let (locked, open): (Vec<_>, Vec<_>) = in_current
         .into_iter()
         .partition(|(_, _, _, _, status)| status == "Locked");
+    if record.is_none() && open.is_empty() && locked.is_empty() && earlier.is_empty() {
+        return Err(AppError::ai(
+            "not_found",
+            format!("I couldn't find a character named “{from}”."),
+        ));
+    }
     if !open.is_empty() {
         if op_available(ctx.registry, OP_UPDATE_ELEMENT) {
             modules.insert("Screenplay", ());
