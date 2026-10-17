@@ -5,7 +5,8 @@
 //
 // Reads the PE headers and requires: 64-bit image, address space layout randomisation with high entropy
 // (DYNAMIC_BASE, HIGH_ENTROPY_VA), data execution prevention (NX_COMPAT), control-flow guard (GUARD_CF in
-// the header and the CF-instrumented flag in the load config), and no COFF symbol table (symbols stripped).
+// the header and the CF-instrumented flag in the load config), CET shadow-stack compatibility (CETCOMPAT in the
+// extended DLL characteristics debug entry), and no COFF symbol table (symbols stripped).
 // It prints the PDB path the debug directory names, if any, so a personal folder in it is seen; the string
 // scan in scripts/scan-installer.mjs refuses personal paths.
 
@@ -48,15 +49,19 @@ export function peFacts(buf) {
     if (off >= 0 && buf.readUInt32LE(off) >= 0x94) guardFlags = buf.readUInt32LE(off + 0x90);
   }
   let pdb = null;
+  let cetCompat = false;
   const dbg = dir(6);
   const dbgOff = dbg.rva ? toOffset(dbg.rva) : -1;
   for (let i = 0; dbgOff >= 0 && i < dbg.size / 28; i++) {
     const e = dbgOff + i * 28;
-    if (buf.readUInt32LE(e + 12) !== 2) continue; // IMAGE_DEBUG_TYPE_CODEVIEW
+    const type = buf.readUInt32LE(e + 12);
+    // IMAGE_DEBUG_TYPE_EX_DLLCHARACTERISTICS (20): a DWORD of extended flags; bit 0 is CET_COMPAT.
+    if (type === 20 && buf.readUInt32LE(e + 16) >= 4) cetCompat = (buf.readUInt32LE(buf.readUInt32LE(e + 24)) & 1) !== 0;
+    if (type !== 2) continue; // IMAGE_DEBUG_TYPE_CODEVIEW
     const raw = buf.readUInt32LE(e + 24);
     if (buf.toString("latin1", raw, raw + 4) === "RSDS") pdb = buf.toString("utf8", raw + 24, buf.indexOf(0, raw + 24));
   }
-  return { pe64: true, dllCharacteristics, guardFlags, symbolTable, symbols, pdb };
+  return { pe64: true, dllCharacteristics, guardFlags, cetCompat, symbolTable, symbols, pdb };
 }
 
 /** The failed checks for these facts, as plain sentences; empty when the image passes. */
@@ -65,6 +70,7 @@ export function failures(f) {
   const out = [];
   for (const [name, bit] of Object.entries(DLL)) if (!(f.dllCharacteristics & bit)) out.push(`${name} is not set`);
   if (!(f.guardFlags & IMAGE_GUARD_CF_INSTRUMENTED)) out.push("the load config does not mark the code as control-flow guard instrumented");
+  if (!f.cetCompat) out.push("CETCOMPAT is not set (the image is not marked for the hardware shadow stack)");
   if (f.symbolTable !== 0 || f.symbols !== 0) out.push(`a COFF symbol table is present (${f.symbols} symbols)`);
   return out;
 }

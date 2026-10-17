@@ -8,6 +8,7 @@
 //
 // Windows phase W3 adds, for these builds only (dev builds stay fast and unchanged):
 //   - control-flow guard (`-C control-flow-guard`);
+//   - CET shadow-stack compatibility (`/CETCOMPAT`) and SHA-256 source hashing for C code (`/ZH:SHA_256`);
 //   - no personal paths in panic text or file!() strings: the repository, the Cargo home and the
 //     Rust toolchain folders are remapped to short neutral names (`--remap-path-prefix`).
 // Symbols are stripped by the release profile in Cargo.toml (`strip = "symbols"`). Phase W4 checks
@@ -31,6 +32,7 @@ export function hardenedEnv(env, { platform = process.platform, repo = REPO, hom
   const rustupHome = env.RUSTUP_HOME || path.join(home, ".rustup");
   const flags = [
     ["-C", "control-flow-guard"],
+    ["-C", "link-arg=/CETCOMPAT"], // hardware shadow stack (BinSkim BA2025)
     [`--remap-path-prefix=${repo}=openframe`],
     [`--remap-path-prefix=${cargoHome}=cargo`],
     [`--remap-path-prefix=${rustupHome}=rustup`],
@@ -41,6 +43,12 @@ export function hardenedEnv(env, { platform = process.platform, repo = REPO, hom
     : (env.RUSTFLAGS ?? "").split(/\s+/).filter(Boolean);
   out.CARGO_ENCODED_RUSTFLAGS = [...existing, ...flags].join("\x1f");
   delete out.RUSTFLAGS;
+  // SHA-256 source hashing in the debug info of C code built by the `cc` crate, such as bundled SQLite
+  // (BinSkim BA2004). The target-specific variable replaces the generic one in `cc`, so keep the latter.
+  for (const k of ["CFLAGS", "CXXFLAGS"]) {
+    const t = `${k}_x86_64_pc_windows_msvc`;
+    out[t] = [env[t] ?? env[k], "/ZH:SHA_256"].filter(Boolean).join(" ");
+  }
   return out;
 }
 

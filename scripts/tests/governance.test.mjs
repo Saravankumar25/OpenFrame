@@ -583,6 +583,9 @@ test("release builds get control-flow guard, the Microsoft linker and no persona
   assert.equal(env.CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER, "link.exe");
   assert.deepEqual(flags.slice(0, 2), ["-C", "target-cpu=x86-64-v2"], "flags set by the builder are kept");
   assert.ok(flags.includes("control-flow-guard"));
+  assert.ok(flags.includes("link-arg=/CETCOMPAT"));
+  assert.equal(env.CFLAGS_x86_64_pc_windows_msvc, "/ZH:SHA_256");
+  assert.equal(hardenedEnv({ CFLAGS: "/O2" }, { platform: "win32" }).CFLAGS_x86_64_pc_windows_msvc, "/O2 /ZH:SHA_256");
   for (const where of ["D:/work/OpenFrame=openframe", "Some One", ".cargo=cargo", ".rustup=rustup"]) {
     assert.ok(flags.some((f) => f.startsWith("--remap-path-prefix=") && f.includes(where)), `${where} is remapped: ${flags}`);
   }
@@ -602,11 +605,12 @@ test("binary check reads the hardening flags of a PE image and refuses a missing
   buf.writeUInt16LE(0x20b, pe + 24);
   buf.writeUInt16LE(0x20 | 0x40 | 0x100 | 0x4000, pe + 24 + 70);
   const hardened = peFacts(buf);
-  assert.deepEqual(failures({ ...hardened, guardFlags: 0x100 }), []);
-  assert.deepEqual(failures(hardened), ["the load config does not mark the code as control-flow guard instrumented"]);
+  assert.deepEqual(failures({ ...hardened, guardFlags: 0x100, cetCompat: true }), []);
+  assert.deepEqual(failures({ ...hardened, cetCompat: true }), ["the load config does not mark the code as control-flow guard instrumented"]);
+  assert.equal(failures({ ...hardened, guardFlags: 0x100 }).length, 1, "a missing CETCOMPAT is refused");
   buf.writeUInt16LE(0x20 | 0x40 | 0x100, pe + 24 + 70);
   buf.writeUInt32LE(7, pe + 4 + 12);
-  const weak = failures({ ...peFacts(buf), guardFlags: 0x100 });
+  const weak = failures({ ...peFacts(buf), guardFlags: 0x100, cetCompat: true });
   assert.ok(weak.includes("GUARD_CF is not set"), weak.join("; "));
   assert.ok(weak.some((m) => m.startsWith("a COFF symbol table is present")), weak.join("; "));
   assert.throws(() => peFacts(Buffer.from("not a program at all, just text")), /not an MZ file/);

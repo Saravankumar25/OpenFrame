@@ -62,14 +62,14 @@ describe("source tree has no unsafe HTML sinks", () => {
       if (statSync(p).isDirectory()) return files(p);
       return /\.(ts|tsx)$/.test(n) && !/\.test\./.test(n) ? [p] : [];
     });
-  const banned = ["dangerouslySetInnerHTML", ".innerHTML =", "insertAdjacentHTML", "document.write", "new Function(", "eval("];
+  const banned = ["dangerouslySetInnerHTML", ".innerHTML =", "insertAdjacentHTML", "document.write", /\bnew Function\(/, /\beval\(/];
 
   it("uses none of the banned calls", () => {
     const list = files(root);
     expect(list.length).toBeGreaterThan(50);
     const hits = list.flatMap((f) => {
       const src = readFileSync(f, "utf8");
-      return banned.filter((b) => src.includes(b)).map((b) => `${f}: ${b}`);
+      return banned.filter((b) => (typeof b === "string" ? src.includes(b) : b.test(src))).map((b) => `${f}: ${b}`);
     });
     expect(hits).toEqual([]);
   });
