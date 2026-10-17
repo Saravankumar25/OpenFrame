@@ -180,7 +180,8 @@ pub fn is_proposal_tool(name: &str) -> bool {
 /// True when the answer carries a link or file path that the request did not contain.
 pub fn has_foreign_link(answer: &str, request: &str) -> bool {
     let (a, r) = (answer.to_lowercase(), request.to_lowercase());
-    // `file:` and `www.` count only at the start of a word ("profile:" is not a link).
+    // `file:/` (a URI) and `www.` count only at the start of a word. "profile:" and the
+    // app's own label "File: name" are not links.
     let word_start = |t: &str, pat: &str| {
         t.match_indices(pat)
             .any(|(i, _)| !t[..i].chars().next_back().is_some_and(char::is_alphanumeric))
@@ -188,7 +189,7 @@ pub fn has_foreign_link(answer: &str, request: &str) -> bool {
     let url = ["http://", "https://"]
         .iter()
         .any(|p| a.contains(p) && !r.contains(p));
-    let word = ["file:", "www."]
+    let word = ["file:/", "www."]
         .iter()
         .any(|p| word_start(&a, p) && !word_start(&r, p));
     let drive = a.as_bytes().windows(3).any(|w| {
@@ -687,6 +688,8 @@ mod tests {
         };
         assert_eq!(ok("The notes list two tasks.", "retrieve"), Some(true));
         assert_eq!(ok("Your profile: fine.", "retrieve"), Some(true));
+        assert_eq!(ok("Files · File: notes.txt", "retrieve"), Some(true));
+        assert_eq!(ok("file:///C:/x", "retrieve"), Some(false));
         let proposal = catalog_first_proposal();
         assert_eq!(ok("Done.", &proposal), Some(false));
         for bad in [
