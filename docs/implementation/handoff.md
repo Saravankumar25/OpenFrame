@@ -6,8 +6,7 @@
 
 ## State
 
-1. **Branch `windows/w8-download`** holds W4 to W8 and W6 rounds 1 to 3 (W1 to W3 are on `main`). Nothing pushed,
-   not merged to `main`: the owner merges (or asks for the merge) after reading the evidence.
+1. **`main`** holds W1 to W8 (W6 accepted on the bar by the owner, merged locally 2026-10-17). Nothing pushed.
 2. **Release proof (W4):** the whole suite on the gated release executable, 39 spec files, 227 checks, 0 failures
    ([evidence](../release/evidence/w4/README.md)); 64 feature rows at proof level 3. Rust workspace (60 test binaries)
    and vitest (596) green on the same code.
@@ -21,10 +20,10 @@
 
 ## Next three items
 
-1. Owner: accept W6 on the bar, or ask for the remaining W6 items (memory v1 and its screen, the poisoned-retrieval corpus,
-   recipes for bigger jobs, French, Japanese, Korean and Chinese retrieval at 4 or 5 of 8).
-2. On the owner's word only: merge `windows/w8-download` into `main` locally.
-3. On the owner's word only: W9 (installer build and clean-machine proof).
+1. On the owner's word only: W9 (installer build and clean-machine proof).
+2. Remaining W6 items if the owner asks: memory v1 and its screen, the poisoned-retrieval corpus, recipes for bigger jobs,
+   French, Japanese, Korean and Chinese retrieval (4 or 5 of 8).
+3. The nine English end-state misses listed in the [w6 evidence](../release/evidence/w6/README.md).
 
 ## Do not
 

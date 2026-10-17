@@ -94,6 +94,7 @@
 | WebView2's own diagnostic data | Allow and disclose: the runtime's Microsoft diagnostic-data upload follows the Windows setting and cannot be switched off by the app; spec 05 tolerates only that shape | 2026-10-16 | Threat model section 4 item 8, privacy policy |
 | Tests from a release-ready point of view | Every test that proves a feature runs against the release build and its budgets are gates there: the end-to-end suite on the release executable (open and gated), the performance budgets as hard checks, the AI harness on the release profile, the Rust suite once with `--release`; debug runs are only for working on a change | 2026-10-16 | this file; spec 97; DEVELOPMENT |
 | W1 to W3 on `main` | Merged locally (no push) before W4 started | 2026-10-16 | progress log |
+| W6 accepted on the bar; W4 to W8 on `main` | W6 accepted at English correct tool 96.7 percent and end state 88.8 percent; the remaining W6 items wait for a later request. `windows/w8-download` merged into `main` locally, no push | 2026-10-17 | [w6 evidence](../release/evidence/w6/README.md) |
 
 ## 2. Still open
 
