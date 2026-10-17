@@ -31,9 +31,9 @@ describe("the internal build as it ships", () => {
       assert.equal(await browser.$('//*[contains(@aria-label,"Free trial")]').isExisting(), false, "no trial chip");
       assert.equal(await browser.$('//button[normalize-space(.)="Buy full version"]').isExisting(), false, "nothing to buy");
       assert.equal(await browser.$('//*[@role="dialog"]').isExisting(), false, "no licence popup");
-      const appVersion = await browser.executeAsync((done) => {
-        window.__TAURI_INTERNALS__.invoke("of_invoke", { op: "app.info", args: {} }).then((v) => done(v.appVersion)).catch(() => done(""));
-      });
+      const appVersion = await browser.execute(() =>
+        window.__TAURI_INTERNALS__.invoke("of_invoke", { op: "app.info", args: {} }).then((v) => v.appVersion).catch(() => ""),
+      );
       assert.match(appVersion, /^\d+\.\d+\.\d+/);
       await projectMenu(browser, "Project settings");
       // The text as written, not as drawn (the card heading is set in capitals by the stylesheet).

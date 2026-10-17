@@ -209,12 +209,12 @@ async function projectPage(label) {
 
 /** Set the appearance through the app's own operations, as Settings > Appearance does. */
 async function setAppearance(mode, themeId) {
-  const r = await browser.executeAsync(
-    (m, t, done) => {
+  const r = await browser.execute(
+    (m, t) => {
       const invoke = window.__TAURI_INTERNALS__.invoke;
-      invoke("of_invoke", { op: "appearance.set_mode", args: { mode: m } })
+      return invoke("of_invoke", { op: "appearance.set_mode", args: { mode: m } })
         .then(() => invoke("of_invoke", { op: "appearance.set_theme", args: { themeId: t } }))
-        .then(() => done({ ok: true }), (e) => done({ err: JSON.stringify(e) }));
+        .then(() => ({ ok: true }), (e) => ({ err: JSON.stringify(e) }));
     },
     mode,
     themeId,

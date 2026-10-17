@@ -22,12 +22,11 @@ const dir = join(process.env.E2E_DATA_ROOT ?? ".", "exports");
 
 /** Call an application operation exactly as the UI does (ipc/client.ts `call`). */
 async function op(name, args) {
-  return browser.executeAsync((n, a, done) => {
+  return browser.execute((n, a) =>
     window.__TAURI_INTERNALS__
       .invoke("of_invoke", { op: n, args: a })
-      .then((v) => done({ ok: v }))
-      .catch((e) => done({ err: e }));
-  }, name, args).then((r) => {
+      .then((v) => ({ ok: v }))
+      .catch((e) => ({ err: e })), name, args).then((r) => {
     if (r.err) throw new Error(`${name} failed: ${JSON.stringify(r.err)}`);
     return r.ok;
   });

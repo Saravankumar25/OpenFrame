@@ -42,13 +42,12 @@ let callSheetId = "";
 
 /** Call one application operation through the app's own IPC entry point (setup and export paths). */
 async function op(name, args) {
-  const r = await browser.executeAsync(
-    (o, a, done) => {
+  const r = await browser.execute(
+    (o, a) =>
       window.__TAURI_INTERNALS__
         .invoke("of_invoke", { op: o, args: a })
-        .then((v) => done({ ok: v }))
-        .catch((e) => done({ err: String(e?.message ?? JSON.stringify(e)) }));
-    },
+        .then((v) => ({ ok: v }))
+        .catch((e) => ({ err: String(e?.message ?? JSON.stringify(e)) })),
     name,
     args,
   );

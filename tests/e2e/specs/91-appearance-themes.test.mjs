@@ -36,11 +36,11 @@ const step = stepper(() => browser, "themes");
 
 /** Set the appearance through the application operation, exactly as Settings does. */
 async function setAppearance(themeId, mode) {
-  const ok = await browser.executeAsync((themeId, mode, done) => {
+  const ok = await browser.execute((themeId, mode) => {
     const invoke = window.__TAURI_INTERNALS__.invoke;
-    invoke("of_invoke", { op: "appearance.set_mode", args: { mode } })
+    return invoke("of_invoke", { op: "appearance.set_mode", args: { mode } })
       .then(() => invoke("of_invoke", { op: "appearance.set_theme", args: { themeId } }))
-      .then(() => done(true), (e) => done(String(e?.message ?? e)));
+      .then(() => true, (e) => String(e?.message ?? e));
   }, themeId, mode);
   assert.equal(ok, true, `set appearance failed: ${ok}`);
   await browser.waitUntil(
@@ -180,7 +180,7 @@ describe("every built-in theme in Light and Dark", () => {
   after(async () => {
     if (browser) {
       await setAppearance("openframe-default", "light").catch(() => undefined);
-      await browser.executeAsync((done) => window.__TAURI_INTERNALS__.invoke("of_invoke", { op: "appearance.set_mode", args: { mode: "system" } }).then(() => done(), () => done()));
+      await browser.execute(() => window.__TAURI_INTERNALS__.invoke("of_invoke", { op: "appearance.set_mode", args: { mode: "system" } }).then(() => undefined, () => undefined));
       await browser.deleteSession().catch(() => undefined);
     }
   });

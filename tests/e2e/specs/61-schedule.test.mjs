@@ -41,13 +41,12 @@ const step = stepper(() => browser, "schedule");
 
 /** Call one application operation through the app's own IPC entry point (export paths only). */
 async function op(name, args) {
-  return browser.executeAsync(
-    (o, a, done) => {
+  return browser.execute(
+    (o, a) =>
       window.__TAURI_INTERNALS__
         .invoke("of_invoke", { op: o, args: a })
-        .then((r) => done({ ok: r }))
-        .catch((e) => done({ err: String(e?.message ?? JSON.stringify(e)) }));
-    },
+        .then((r) => ({ ok: r }))
+        .catch((e) => ({ err: String(e?.message ?? JSON.stringify(e)) })),
     name,
     args,
   );

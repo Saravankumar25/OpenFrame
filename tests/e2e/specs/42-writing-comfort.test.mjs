@@ -28,12 +28,12 @@ async function waitOption(label) {
 const isEmptyDialogue = (el) => el === "dialogue: " || el === "dialogue: Dialogue";
 /** Story Board character names, read the way the Characters page reads them. */
 const characterNames = () =>
-  browser.executeAsync((done) => {
+  browser.execute(() =>
     window.__TAURI_INTERNALS__
       .invoke("of_invoke", { op: "story.characters", args: {} })
-      .then((r) => done(r.map((c) => c.name)))
-      .catch(() => done([]));
-  });
+      .then((r) => r.map((c) => c.name))
+      .catch(() => []),
+  );
 async function waitElements(pred, msg) {
   await browser.waitUntil(async () => pred(await editorElements(browser)), { timeout: 10_000, timeoutMsg: msg });
 }

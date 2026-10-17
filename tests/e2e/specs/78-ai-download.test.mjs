@@ -128,11 +128,11 @@ describe("download OpenFrame AI after install", () => {
       // Some bytes of this download have arrived (the engine figure, not the rounded text).
       await browser.waitUntil(
         () =>
-          browser.executeAsync((done) =>
+          browser.execute(() =>
             window.__TAURI_INTERNALS__
               .invoke("of_invoke", { op: "ai.download.status", args: {} })
-              .then((s) => done(s.phase === "Downloading" && s.doneBytes > 0))
-              .catch(() => done(false)),
+              .then((s) => s.phase === "Downloading" && s.doneBytes > 0)
+              .catch(() => false),
           ),
         { timeout: 120_000, interval: 250, timeoutMsg: "the slow download never started" },
       );

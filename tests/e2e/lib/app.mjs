@@ -28,6 +28,7 @@ export async function launchApp() {
     hostname: "127.0.0.1",
     port: Number(process.env.E2E_PORT ?? 4444),
     logLevel: "warn",
+    strictSelectors: false,
     connectionRetryTimeout: 120_000,
     capabilities: {
       browserName: "wry",
