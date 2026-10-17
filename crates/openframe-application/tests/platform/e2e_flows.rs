@@ -714,7 +714,7 @@ fn e2e_import_fountain_and_fdx_then_breakdown_and_ai_counts() {
     // Offline AI: deterministic count tools answer from the project data.
     let model = Arc::new(ScriptedModel::default());
     ai::service(&env.core).attach_model(Some(model.clone() as Arc<dyn InferenceProvider>));
-    model.call("count_scenes", json!({}));
+    // Plain counts are W6 recipes: answered from project data without the model.
     let a = env.ok(
         "ai.ask",
         json!({ "text": "How many scenes are in the script?", "scope": { "kind": "CurrentScreenplay" } }),
@@ -723,7 +723,6 @@ fn e2e_import_fountain_and_fdx_then_breakdown_and_ai_counts() {
     assert_eq!(a["result"]["confidence"], "Exact");
     let content = a["result"]["content"].as_str().unwrap();
     assert!(content.contains(&sc.len().to_string()), "{content}");
-    model.call("count_characters", json!({}));
     let a = env.ok(
         "ai.ask",
         json!({ "text": "How many characters speak?", "scope": { "kind": "CurrentScreenplay" } }),

@@ -43,7 +43,7 @@ describe("Offline AI assistant with the bundled model", () => {
     await browser?.deleteSession().catch(() => undefined);
   });
 
-  test("AI is ready on first launch: no download, no setup, no model names", async () => {
+  test("AI is ready once its models are installed: no setup, no model names", async () => {
     await step("ready", async () => {
       await firstLaunchProject(browser, "Night Bus");
       await importFountain(browser, NIGHT_BUS);
@@ -87,8 +87,7 @@ describe("Offline AI assistant with the bundled model", () => {
       assert.ok(r.exact, `the count is marked exact: ${r.text}`);
       assert.match(r.text, /\b3\b/, r.text);
       assert.ok(r.sources.length > 0, "the answer names its sources");
-      // The full check of the bundled files ran before the first engine start; engines run now.
-      assert.ok(chatEngines().length >= 1, "the chat engine runs after the first question");
+      // A plain count is a W6 recipe: answered exactly from project data, without the model.
     });
   });
 
@@ -98,6 +97,8 @@ describe("Offline AI assistant with the bundled model", () => {
       const r = await ask(browser, "Which scene happens at the bus stop?");
       assert.ok(["Answer", "Navigate"].includes(r.kind), `${r.kind}: ${r.text}`);
       assert.ok(r.sources.some((s) => /BUS STOP/i.test(s)), `the bus stop scene is a source: ${r.sources.join(" | ")}`);
+      // The full check of the model files ran before the first engine start; the chat engine runs now.
+      assert.ok(chatEngines().length >= 1, "the chat engine runs after a question that needs the model");
       // A source chip opens the scene it names.
       await openWorkspace(browser, "Home");
       const chip = await browser.$('(//aside[@aria-label="AI Assistant"]//*[contains(@class,"ai-sources")]//button[contains(normalize-space(.),"BUS STOP")])[last()]');

@@ -4,6 +4,7 @@
 // label (e.g. 12A) and dragging panels re-sequences the linked shots in Rust.
 
 import { useEffect, useMemo, useRef, useState, type ClipboardEvent } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   DndContext,
   KeyboardSensor,
@@ -118,9 +119,20 @@ export default function StoryboardsTab() {
   const panels = board?.panels ?? [];
   const panel = panels.find((p) => p.id === selectedPanel);
 
-  const create = useCommand<CreateStoryboardArgs, StoryboardSummary>("storyboard.create");
+  const qc = useQueryClient();
+  // Refresh the storyboards now instead of waiting for the change event: a scene's first panel
+  // also creates its storyboard, and a late event left the new panel off the screen (release run
+  // 2026-10-17, spec 86: the panel was saved but the view still said 0 panels).
+  const refreshBoards = () => {
+    void qc.invalidateQueries({ queryKey: ["storyboard.list"] });
+    void qc.invalidateQueries({ queryKey: ["storyboard.get"] });
+  };
+  const create = useCommand<CreateStoryboardArgs, StoryboardSummary>("storyboard.create", {
+    onSuccess: refreshBoards,
+  });
   const addPanel = useCommand<AddPanelArgs, PanelDto>("storyboard.add_panel", {
     onSuccess: (p) => {
+      refreshBoards();
       toast.undoable(`Added panel ${p.number}`);
       setSketchOpen(false);
     },
@@ -131,7 +143,7 @@ export default function StoryboardsTab() {
     if (sel.boardId) return sel.boardId;
     if (sel.scene) {
       const b = await create.mutateAsync({ sceneId: sel.scene.sceneId });
-      view.set({ sceneBoard: { ...view.sceneBoard, [sel.scene.lineageId]: b.id } });
+      view.set({ boardKey: `scene:${sel.scene.lineageId}`, sceneBoard: { ...view.sceneBoard, [sel.scene.lineageId]: b.id } });
       return b.id;
     }
     setNewOpen(true);
