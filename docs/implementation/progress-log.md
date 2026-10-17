@@ -8,18 +8,18 @@
 
 ## Dashboard (update every session from `npm run plan:status`)
 
-**Overall: 127 of 306 boxes (41.5%).** **Current goal** (boxes without the "Later: store publishing" tag): **126 of 223 (56.5%)**. Updated 2026-10-15 after the ADR-0026 reopening (one box in area 8 unticked). 83 boxes wait for the store publishing step. Counts from `npm run plan:status` on 2026-10-09.
+**Overall: 132 of 306 boxes (43.1%).** **Current goal** (boxes without the "Later: store publishing" tag): **131 of 223 (58.7%)**. Updated 2026-10-17 after the overnight W4 to W8 session.
 
 | # | Area | Done |
 |---|---|---|
 | 1 | Decisions and owner tasks | 16 of 32 |
 | 2 | Project controls and baseline | 14 of 17 |
-| 3 | Data safety and crash recovery | 7 of 11 |
+| 3 | Data safety and crash recovery | 9 of 11 |
 | 4 | Runtime resilience and failure testing | 3 of 4 |
 | 5 | Test infrastructure and quality gates | 4 of 13 |
 | 6 | Security hardening from the baseline audit | 3 of 9 |
 | 7 | Platform adapter layer for Windows and Mac | 1 of 10 |
-| 8 | AI assistant quality and hardening | 1 of 24 |
+| 8 | AI assistant quality and hardening | 3 of 24 |
 | 9 | Story Board and Idea Vault | 8 of 9 |
 | 10 | Writing comfort | 6 of 6 |
 | 11 | Screenplay engine and file formats | 21 of 24 |
@@ -31,7 +31,7 @@
 | 17 | Product-wide quality, accessibility and beta | 0 of 15 |
 | 18 | Payment and free trial in all three channels | 3 of 10 |
 | 19 | Microsoft Store package | 0 of 15 |
-| 20 | Windows installer | 0 of 13 |
+| 20 | Windows installer | 1 of 13 |
 | 21 | Mac App Store package | 0 of 8 |
 | 22 | Legal, privacy, website and support | 0 of 11 |
 | 23 | Final review and submission | 0 of 12 |
@@ -57,6 +57,34 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 ```
 
 ## Entries
+
+### 2026-10-16 to 2026-10-17 (overnight session), W4 to W8 to release proof; W5 measured; W6 first round
+- **Areas and items worked:** AI assistant quality and hardening (download flow, non-English requests, hardware
+  benchmark, harness); test infrastructure (release-executable suite); owner decisions (model set, hardware, licensing,
+  worktree clean-up, tooling).
+- **Done:** models from Hugging Face at pinned commits (ADR-0032) with manual import; multilingual E5 small as the third
+  pinned model and the default search model; card probe version 2 (realistic prompt, whole-call speed); 12 threads on
+  chips with 12 or more cores; W6 recipes, language verifier and multilingual tool picker; fixes for a thrown-away
+  download, a storyboard view that missed its first panel, the close helper; stale help text and specs rewritten.
+  Commits bc7fd21 to the commit of this entry on `windows/w8-download`.
+- **Evidence:** gated release executable, 39 spec files, 227 checks, 0 failures
+  ([w4](../release/evidence/w4/README.md)); W5 measurements and baseline ([w5](../release/evidence/w5/README.md));
+  W6 round 1 ([w6](../release/evidence/w6/README.md)); Rust workspace 60 test binaries and vitest 596 pass.
+- **Features moved:** Offline AI engine in every package, models downloaded after install: Verified, proof 3;
+  hardware benchmark: Specified to Built; 63 spec-proven rows from proof 2 to proof 3; two bundled-era rows to Removed.
+- **Docs updated:** ADR-0026 (superseded parts), ADR-0029 (note 7), ADR-0032 (decision 8, model set), owner decisions,
+  threat model T16, privacy policy draft, release migration, QA strategy, Microsoft Store guide, four specifications,
+  roadmap W5 to W8, masterplan, feature status, knowledge.md, reconciliation log, handoff.
+- **Decisions made or needed:** made by the owner: model set, hardware scope, licensing owner-handled, worktree
+  clean-up, tooling. Needed from the owner (ADR-0028 decision 2): the W6 bar is not met (English tool 72.0 of 90 percent,
+  end state 50.6 of 85); continue W6 or accept the figures.
+- **Blocked / risks:** on this laptop the integrated-graphics memory rule keeps the AI on the processor when less than
+  about 3.3 GB is free (seen at night: 3.2 GB free); W6 remaining items (bigger-job recipes, memory v1, poisoning corpus).
+- **Next:** W6 round 2 (recipes for summarise, continuity and breakdown jobs; retrieval for French, Japanese, Korean and
+  Chinese), then W9 when the owner gives the word to build the installer.
+- **Checks run:** gated release suite green; open release variant (specs 00 and 05) see the W4 evidence page; cargo
+  clippy and tests, vitest, tsc, eslint, check:writing, check-links, check-feature-status, plan-status, architecture-lint
+  green.
 
 ### 2026-10-16 (second session), W4 release proof, W5 measurement started, W7 and W8 groundwork
 - **Areas and items worked:** W4 (WebView2 traffic, release build and suite, scenarios, everyday rows, visual planning,

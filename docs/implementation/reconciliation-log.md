@@ -6,6 +6,17 @@
 > Renamed on 2026-10-06 from `03-reconciliation-log.md`. Extended on 2026-10-09 (chapter restructure). Checks written "(checked)" were verified in the repository on the
 > date given. Checks written "(stated)" come from a supplied document and were not verified independently.
 
+## 2026-10-17: overnight W4 to W8 session
+
+- Corrected stale statements: `knowledge.md` (the assistant still told people the AI comes installed with no download);
+  feature rows "Offline AI bundled in every package" (rewritten for the download design) and "Every package bundles the
+  complete offline AI" (Removed); the hardware benchmark row (scope set by the owner on 2026-10-16); scenarios and specs 72
+  and 76 (bundled-era expectations).
+- Marked superseded in place: the W5 bake-off, the W6 two model tiers and the W7 borrowed-laptop benchmarks in the Windows
+  phase page; the masterplan box "Remove the download flow and model host code" (N/A, superseded by the rebuilt flow).
+- Decisions recorded: the model set and E5 conversion (ADR-0032 decision 8), the probe measuring the whole request
+  (ADR-0029 note 7), the owner's decisions of 2026-10-16 in `owner-decisions.md`.
+
 ## 2026-10-16 (evening): models from Hugging Face (ADR-0032)
 
 - Owner decision in chat: the models download straight from Hugging Face at pinned commits; no manifest, no signing key,

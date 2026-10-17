@@ -148,10 +148,12 @@ only the existing AI code. W7 and W8 may run side by side after W6.
   Tamil, Kannada, Malayalam, Spanish, French, German, Chinese, Japanese and Korean. Drafted by Claude from the four sample
   scripts and read by the owner. The non-English sets carry the label "automated review only" (ADR-0028 decision 9).
 - **Baseline.** Run the harness on today's system on the release build and on an 8 GB laptop; save the report.
-- **Bake-off.** Candidates inside the same harness: Gemma 3 1B (incumbent), larger Gemma models, other open models with a
+- **Bake-off.** *(Superseded 2026-10-16: the owner chose the model set, Gemma 3 1B, BGE small English and multilingual E5
+  small; the harness measures and tunes those, see `owner-decisions.md`.)* Candidates inside the same harness: Gemma 3 1B (incumbent), larger Gemma models, other open models with a
   clean redistribution licence, and embedding models (the current English one against multilingual ones). Each candidate's
   licence is read first.
-- **Owner tasks.** Approve the gold sets; approve the bake-off result and the two model tiers.
+- **Owner tasks.** Approve the gold sets (done 2026-10-16); ~~approve the bake-off result and the two model tiers~~ (superseded
+  by the owner's model set).
 
 **Exit.** The baseline report and the bake-off report are in the evidence folder and the owner has chosen the models.
 
@@ -173,7 +175,8 @@ Each step ends with a rerun of the W5 harness; a step stays only if a number imp
   has learned" screen, caps and decay, writes only from the person's own actions.
 - **Languages.** Instructions in English, answer in the language of the request, language check as a verifier, a
   multilingual embedding model if the bake-off chose one, a language-neutral stop-word handling in retrieval.
-- **Two model tiers** wired through the manifest and the hardware check; update `modules/ai/knowledge.rs` and the policy text.
+- ~~**Two model tiers** wired through the manifest and the hardware check;~~ *(Superseded 2026-10-16 by the owner's model set:
+  one chat model and two search models pinned in the lock, ADR-0032.)* update `modules/ai/knowledge.rs` and the policy text.
 - **Remaining proofs.** Index rebuild end to end, the poisoned-retrieval corpus, a case per feature with its expected tool and
   permission limit.
 
@@ -192,7 +195,9 @@ shown the figures and decides (ADR-0028 decision 2).
   restart on the processor if the engine on the card stops.
 - The Settings choice (Automatic or Off) and the AI health card line.
 - The hidden developer flag, and a run of the whole path on the owner's integrated graphics.
-- Benchmarks on each borrowed laptop (processor against card), stored with the card name and driver version.
+- ~~Benchmarks on each borrowed laptop (processor against card), stored with the card name and driver version.~~ *(Superseded
+  2026-10-16: the owner optimises only computers that can be tested; this laptop is measured, other cards are "designed and
+  unit tested".)*
 
 **Exit.** Unit tests green; the probe and fallback shown on the integrated graphics; each measured card has an evidence file.
 A card without a measurement is documented as "designed, unit tested".

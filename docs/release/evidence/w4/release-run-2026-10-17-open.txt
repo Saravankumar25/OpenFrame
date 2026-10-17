@@ -1,0 +1,12 @@
+  specs: 00-release-smoke.test.mjs
+▶ release smoke
+  ✔ start, create a project, type in the screenplay until it says Saved, close the project (4631.6373ms)
+  ✔ start again, reopen the project, the typed line is there (4780.3956ms)
+  ✔ the Offline AI answers from the project, and nothing leaves this computer (41017.1605ms)
+✔ release smoke (52280.7924ms)
+  specs: 05-webview-network.test.mjs
+▶ the web view stays off the network
+  ✔ through WebDriver, with a project open, no WebView2 process of the app leaves this computer (57458.8036ms)
+  ✔ started directly, as a person starts it, the web view stays on this computer for 45 s (147863.3816ms)
+✔ the web view stays off the network (206538.8406ms)
+E2E passed: 2 spec files on the release build (open).

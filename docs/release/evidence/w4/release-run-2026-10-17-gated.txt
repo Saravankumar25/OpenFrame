@@ -1,0 +1,313 @@
+> npm --workspace tests/e2e run test -- --release=gated
+> node run.mjs --release=gated
+Building OpenFrame Studio (release, gated, embedded UI, Offline AI engine, test model host)…
+    Finished `release` profile [optimized] target(s) in 6m 33s
+       Built application at: C:\OpenFrame\.build-cache\target\release\openframe-desktop.exe
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-17T01-10-55-951Z\00-release-smoke
+  specs: 00-release-smoke.test.mjs
+▶ release smoke
+  ✔ start, create a project, type in the screenplay until it says Saved, close the project (4401.4629ms)
+  ✔ start again, reopen the project, the typed line is there (4553.0136ms)
+  ✔ the Offline AI answers from the project, and nothing leaves this computer (42288.0624ms)
+✔ release smoke (52785.6641ms)
+  specs: 01-journey.test.mjs, 02-restart.test.mjs
+▶ desktop journey
+  ✔ first launch → name → create project → Project Home (1228.0573ms)
+  ✔ Idea Vault: add a note with Quick Capture (1306.0135ms)
+  ✔ Story: act, sequence, two cards (one with Ctrl+N), keyboard reorder, undo/redo (2282.7115ms)
+  ✔ Build Screenplay lands in the new screenplay at the first scene (974.1001ms)
+  ✔ type in the screenplay editor (autosaved) (3474.6951ms)
+  ✔ import pasted Fountain from the quick actions menu → opens the new draft (4283.9811ms)
+  ✔ Breakdown: select the Production Source and accept a suggestion (1162.0637ms)
+  ✔ Schedule: all scenes start unscheduled, one moves into a shooting day (1444.6735ms)
+  ✔ Call sheet from the shooting day (605.2149ms)
+  ✔ Schedule strip → Open in Screenplay opens the production draft at that scene (2936.9553ms)
+  ✔ Search (Ctrl+K) finds the scene and navigates to it (3007.7289ms)
+  ✔ Recently Deleted: delete a Scene Card and restore it (2070.5568ms)
+  ✔ AI panel is ready with the bundled Offline AI: no download, no setup (ADR-0025) (357.6046ms)
+  ✔ every workspace and production tab renders without console problems or unlabelled controls, beside the docked AI panel (27955.8958ms)
+  ✔ close the project cleanly → Application Home lists it (314.4497ms)
+✔ desktop journey (55168.4641ms)
+▶ relaunch
+  ✔ reopen the project and find the screenplay text, story and call sheet (2945.7062ms)
+✔ relaunch (5512.023ms)
+  specs: 04-close-keeps-typing.test.mjs
+▶ closing the window keeps the last typed text
+  ✔ type, close within 100 ms by the close button and by Alt+F4, reopen, find the text (20 rounds) (235775.6069ms)
+✔ closing the window keeps the last typed text (237489.4156ms)
+  specs: 05-webview-network.test.mjs
+▶ the web view stays off the network
+  ✔ through WebDriver, with a project open, no WebView2 process of the app leaves this computer (51834.5011ms)
+  ✔ started directly, as a person starts it, the web view stays on this computer for 45 s (144470.8205ms)
+✔ the web view stays off the network (197714.7708ms)
+  specs: 10-home.test.mjs
+▶ home
+  ✔ first launch creates a project that opens on an empty Project Home (821.7665ms)
+  ✔ status change on Project Home, undo and redo (227.423ms)
+  ✔ Application Home lists a renamed project without leaving the page (763.047ms)
+  ✔ Application Home: rename, duplicate, archive and restore (2207.8827ms)
+  ✔ relaunch: both projects, the new title and the status persist (3471.1916ms)
+  ✔ Delete Project: the typed name confirms, the folder leaves, Home forgets it after a relaunch (2852.0213ms)
+✔ home (11632.4251ms)
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-17T01-10-55-951Z\17-internal-build-release
+  specs: 17-internal-build-release.test.mjs
+▶ the internal build as it ships
+  ✔ no trial chip, no Buy and no popup, and About says internal build, not for sale (2777.7441ms)
+✔ the internal build as it ships (4168.4946ms)
+  specs: 20-idea-vault.test.mjs
+▶ idea vault
+  ✔ Quick Capture adds an idea to the project's Vault (1566.9616ms)
+  ✔ edit the title in the drawer (autosave), undo and redo (1058.4659ms)
+  ✔ delete with the keyboard, undo, redo, then restore from Recently Deleted (391.8142ms)
+  ✔ relaunch: the titled idea and its text persist (4365.3803ms)
+✔ idea vault (8635.1383ms)
+  specs: 21-idea-vault-flow.test.mjs (fake media devices)
+▶ idea vault flow
+  ✔ record a voice note with the microphone (3136.4704ms)
+  ✔ research flags: set, show as words, undo, clear (1620.4013ms)
+  ✔ Global Idea Vault: capture there, copy into the project (2006.8865ms)
+  ✔ Send to Story Board as a Scene Card; the Vault original stays (2403.7562ms)
+  ✔ relaunch: voice note plays, flags and copies persist (5519.7484ms)
+✔ idea vault flow (16058.334ms)
+  specs: 25-recently-deleted-purge.test.mjs
+▶ Recently Deleted 30-day purge
+  ✔ deleted items show 30 days left on both Recently Deleted screens (4283.9486ms)
+  ✔ after 30 days the next open removes what is due, and nothing else (5483.8257ms)
+  ✔ the Owner can still delete an item permanently before its 30 days are up (481.6252ms)
+  ✔ relaunch: nothing removed comes back and the live note stays (4563.4358ms)
+✔ Recently Deleted 30-day purge (16130.4609ms)
+  specs: 26-forced-kill-keeps-work.test.mjs
+▶ work survives a forced kill
+  ✔ add an idea, an act and a card, a character, a note and a screenplay line; each one saves (6113.1326ms)
+  ✔ the app is killed; after a new start every piece of work is there (6657.4493ms)
+  ✔ after the recovery the project takes new work and saves it (753.1725ms)
+✔ work survives a forced kill (14992.3229ms)
+  specs: 30-story.test.mjs
+▶ story
+  ✔ act, sequence and two Scene Cards (2662.7202ms)
+  ✔ edit a card in its drawer, undo and redo (1422.9733ms)
+  ✔ rename the act, undo and redo (432.3318ms)
+  ✔ delete a card: undo, redo, restore from Recently Deleted (815.5163ms)
+  ✔ Characters: create, edit, delete and restore (2288.7194ms)
+  ✔ Outline shows the same structure (778.5675ms)
+  ✔ relaunch: act, cards and character persist (6058.2701ms)
+✔ story (16156.0409ms)
+  specs: 31-story-board-flow.test.mjs
+▶ story board flow
+  ✔ create an act, a sequence and three cards (2269.0012ms)
+  ✔ drag a card with the mouse, undo and redo (1358.0577ms)
+  ✔ Parking Lot: park a card and restore it to its place (838.1635ms)
+  ✔ convert a beat to a Scene Card (1118.4846ms)
+  ✔ long scene description and Card Display presets (2284.1657ms)
+  ✔ Build Screenplay: a card without a heading is left out, never invented (1030.387ms)
+  ✔ delete two cards together and restore them in reverse order (1299.4587ms)
+  ✔ relaunch: order, long description and Card Display survive (4856.7529ms)
+  ✔ episodes scope the Story Board in an episodic project (3328.0864ms)
+✔ story board flow (19660.2003ms)
+  specs: 40-screenplay.test.mjs
+▶ screenplay
+  ✔ new screenplay: write a scene with the Enter flow (autosaved) (2088.421ms)
+  ✔ undo and redo typing from inside the editor (5049.4821ms)
+  ✔ a second draft is edited independently, renamed, deleted and restored (3842.3962ms)
+  ✔ relaunch: both drafts and their text persist (4434.265ms)
+✔ screenplay (16817.0376ms)
+  specs: 41-screenplay-engine.test.mjs
+▶ screenplay engine
+  ✔ write with the element flow and insert a page break (2408.634ms)
+  ✔ title page fields with a live preview (1285.1268ms)
+  ✔ page setup: A4 with a header (667.4133ms)
+  ✔ a custom element under Advanced, used in the script (1953.6837ms)
+  ✔ lock, start a dated revision, edit it and see the changed pages (1627.89ms)
+  ✔ export PDF and FDX, import the FDX back as a draft (86.8768ms)
+  ✔ Telugu and Hindi print in the PDF; the page break follows a remapped shortcut (1113.01ms)
+  ✔ relaunch: page setup, custom element and revision text persist; continue writing (5818.525ms)
+✔ screenplay engine (16450.0525ms)
+  specs: 42-writing-comfort.test.mjs
+▶ writing comfort
+  ✔ smart suggestions build a scene without retyping and never change text silently (3198.1062ms)
+  ✔ element flow: Tab moves through the dialogue block and a manual override sticks (712.7265ms)
+  ✔ one Enter after a new character name creates it and moves on to Dialogue; Undo takes each step back (645.8711ms)
+  ✔ one Enter on a known name from the list fills it and moves on to Dialogue; Undo takes the Dialogue step back first (1140.9225ms)
+  ✔ spelling: unknown words are underlined; Add to dictionary removes the underline (867.1553ms)
+  ✔ find and replace in this scene only, undone in one step (933.9693ms)
+  ✔ navigator columns can be shown and are remembered (394.57ms)
+  ✔ a custom shortcut works in the editor and survives a relaunch; restore all (6859.2516ms)
+  ✔ Home reaches the same shortcut table from Help, and its tooltips name the keys (810.0219ms)
+✔ writing comfort (17082.3179ms)
+  specs: 43-several-screenplays.test.mjs
+▶ several screenplays per project
+  ✔ add a second screenplay, write in both and switch between them (5054.7922ms)
+  ✔ relaunch: both screenplays keep their own text (5042.6547ms)
+  ✔ delete a screenplay to Recently Deleted and restore it with its text (3252.0227ms)
+✔ several screenplays per project (14813.0386ms)
+  specs: 44-scene-hub-comments-compare.test.mjs
+▶ Scene Hub, comments, drafts and compare
+  ✔ the Scene Hub opens from a scene's context menu and lists what exists around the scene (3027.8305ms)
+  ✔ a comment on a scene is counted on the Comments button and survives a restart (4717.8633ms)
+  ✔ a second draft takes a change of its own, and Compare shows the two drafts side by side (1200.9152ms)
+✔ Scene Hub, comments, drafts and compare (10566.8686ms)
+  specs: 50-breakdown.test.mjs
+▶ breakdown
+  ✔ import a screenplay and choose it as the Production Source (3746.0134ms)
+  ✔ suggestions are only added when accepted (429.7321ms)
+  ✔ add an element by hand; undo and redo; edit its notes (1509.0016ms)
+  ✔ remove from the scene and restore from Recently Deleted (987.9134ms)
+  ✔ mark the scene complete; scene 2 has its own breakdown (192.6098ms)
+  ✔ relaunch: source, elements, notes and completion persist (4832.7151ms)
+✔ breakdown (13420.8157ms)
+  specs: 51-breakdown-depth.test.mjs
+▶ breakdown depth
+  ✔ source, and every category shows colour with icon, text and tooltip (4290.5897ms)
+  ✔ Accept Selected is one undo step; Reject Selected removes the rest; Show in script (1489.4893ms)
+  ✔ filters: only missing a breakdown, then quick reuse fills scene 2 (1407.4577ms)
+  ✔ catalog item to all its scenes (1348.4839ms)
+  ✔ location call-sheet fields, availability dates, and crew availability (2584.2669ms)
+  ✔ Advanced settings change a category colour; everything survives a relaunch (6243.1341ms)
+✔ breakdown depth (18775.2954ms)
+  specs: 60-appearance.test.mjs
+▶ appearance
+  ✔ mode, theme, import, rename, restart and delete (9290.5836ms)
+✔ appearance (10912.0877ms)
+  specs: 61-schedule.test.mjs
+▶ shooting schedule and Day Out of Days
+  ✔ create the schedule from the Production Source (9431.79ms)
+  ✔ days, off day, drag a scene into a day (undo, redo), move with the menu (3934.5743ms)
+  ✔ a meal break, day times and the computed timeline (1189.7796ms)
+  ✔ conflicts are advice: Keep anyway; grouping suggestions move nothing (1147.2583ms)
+  ✔ filters only change what is shown (383.7876ms)
+  ✔ call sheet stale review follows the day times (3664.4069ms)
+  ✔ Day Out of Days: derived, corrected by hand, undo (1332.3893ms)
+  ✔ exports: dialogs open, files are byte-reproducible (5575.2391ms)
+  ✔ relaunch: days, scenes, breaks, times and corrections persist (5295.4657ms)
+✔ shooting schedule and Day Out of Days (33294.0061ms)
+  specs: 62-call-sheets-exports.test.mjs
+▶ call sheets, budget, templates, samples and exports
+  ✔ open a sample script that ships with the app (2059.2106ms)
+  ✔ plan two shooting days from the Production Source (1084.5668ms)
+  ✔ create a call sheet: six default sections, Needs input, Add Section (7097.1373ms)
+  ✔ a schedule change marks the sheet Needs refresh and the preview lists what changed (371.2037ms)
+  ✔ finalize freezes a snapshot; a new revision follows the schedule (915.2895ms)
+  ✔ budget keeps Planned and Actual with the difference (1637.8628ms)
+  ✔ a call sheet from the Indie Call Sheet template is an independent copy (70.277ms)
+  ✔ sides, a report and the visual planning exports carry the brand line (481.4539ms)
+  ✔ notes and tasks for the shoot (516.0807ms)
+  ✔ quit, relaunch and find everything again (4228.1483ms)
+✔ call sheets, budget, templates, samples and exports (19871.5235ms)
+  specs: 63-every-export.test.mjs
+▶ every export format
+  ✔ the screenplay exports as PDF, Final Draft, Fountain, DOCX and plain text, and each text format imports back (2319.3343ms)
+  ✔ the Story Board exports as PDF (877.3069ms)
+  ✔ the diagnostics bundle is written where the person chose, and holds no project text (223.8356ms)
+✔ every export format (4653.8475ms)
+  specs: 70-packages.test.mjs
+▶ packages and backup
+  ✔ create a backup through Create Backup and the Save dialog (6956.0693ms)
+  ✔ export a Full Project Package and a screenplay review package (5495.1866ms)
+  ✔ review round trip: comment as the reviewer, send a response, preview and import it (7122.4265ms)
+  ✔ restore the backup from Application Home: the collision choice opens it as a copy (2567.1658ms)
+  ✔ a damaged backup is refused and nothing is created (2528.3597ms)
+  ✔ relaunch: the original and the restored copy are both listed (2645.3632ms)
+✔ packages and backup (28716.9834ms)
+  specs: 72-ai-assistant.test.mjs
+▶ Offline AI assistant with the bundled model
+  ✔ AI is ready once its models are installed: no setup, no model names (4110.1306ms)
+  ✔ Settings > Offline AI shows the installed components and Remove, and offers no download while installed (1024.4375ms)
+  ✔ an exact answer comes from project data, with sources that open their place (4598.6179ms)
+  ✔ a meaning question is answered from retrieved project context (39888.2509ms)
+  ✔ a navigation command opens the place it names (4284.3862ms)
+  ✔ no network: the app and the engines use loopback only while AI works (7176.3125ms)
+  ✔ Stop Offline AI frees the engines; the next question starts them again (5950.6663ms)
+  ✔ the conversation is still there after a relaunch (5053.4756ms)
+  ✔ the docked panel remembers whether it is open when the window loads again (2047.2558ms)
+✔ Offline AI assistant with the bundled model (75565.8437ms)
+  specs: 73-ai-workspaces.test.mjs
+▶ AI entry points in every workspace
+  ✔ the assistant inherits the scope of each workspace (5330.7181ms)
+  ✔ the keyboard shortcut opens and closes the assistant (185.6998ms)
+  ✔ a question asked in the Story Board uses the Story Board (32453.7345ms)
+  ✔ a question asked in the Screenplay is about that screenplay (4412.7134ms)
+  ✔ a question asked in Production uses the Production Workspace (41398.35ms)
+✔ AI entry points in every workspace (85074.1705ms)
+  specs: 74-ai-change-sets.test.mjs
+▶ AI Change Sets: review, apply, undo, reject, stale
+  ✔ a requested change arrives as a proposal and nothing changes before Apply (7690.8897ms)
+  ✔ Apply makes the reviewed change; one Undo reverses all of it; Redo brings it back (1248.1732ms)
+  ✔ Reject leaves the project unchanged (9244.8826ms)
+  ✔ a proposal whose target changed is never applied blindly and must be re-checked (8590.5887ms)
+✔ AI Change Sets: review, apply, undo, reject, stale (28440.2354ms)
+  specs: 75-ai-crash-safe-apply.test.mjs
+▶ AI work survives a crash
+  ✔ killed while applying: after relaunch the Change Set is all there or not there at all (10310.107ms)
+  ✔ killed while the engine answers: no engine is left running, and AI works after relaunch (10817.8663ms)
+✔ AI work survives a crash (22791.9067ms)
+  specs: 76-ai-files-integrity.test.mjs
+▶ Offline AI files: missing, damaged, whole again
+  ✔ a missing model file turns AI off and offers the download again; the rest of OpenFrame works (4409.9691ms)
+  ✔ Download again restores the files from the host and AI answers with the real model (84427.6274ms)
+  ✔ an altered model of the right size is caught before any engine starts (5640.0597ms)
+  ✔ an altered engine library is caught before launch and asks for a reinstall (5534.2733ms)
+✔ Offline AI files: missing, damaged, whole again (101394.7877ms)
+  specs: 78-ai-download.test.mjs
+▶ download OpenFrame AI after install
+  ✔ before the click: the not-installed state with the size, and no request to the host (1249.3058ms)
+  ✔ an interrupted download resumes where it stopped and AI becomes ready (4215.4831ms)
+  ✔ with the host down, AI answers on this computer (41285.5719ms)
+  ✔ a restart with the host down finds OpenFrame AI and asks the host nothing (4300.2032ms)
+  ✔ Remove takes the AI away; a damaged file is set aside; Pause and Resume continue the download (7886.2175ms)
+✔ download OpenFrame AI after install (60583.9028ms)
+  specs: 80-notes-tasks.test.mjs
+▶ notes and tasks
+  ✔ a new note autosaves its title and text; undo and redo the edit (1692.1623ms)
+  ✔ delete the note and restore it from Recently Deleted (1439.5264ms)
+  ✔ add a task, complete it, undo and redo the completion (894.7277ms)
+  ✔ relaunch: the note and the completed task persist (4584.7485ms)
+✔ notes and tasks (10233.1608ms)
+  specs: 85-project-pages.test.mjs
+▶ project pages
+  ✔ Project settings: change title and logline, save, undo, redo (2142.2393ms)
+  ✔ Templates: create two, delete both, restore one, delete the other permanently (2948.0932ms)
+  ✔ Activity lists what happened and filters by kind (687.3762ms)
+  ✔ relaunch: settings, the restored template and the purge persist (4991.0715ms)
+✔ project pages (12106.9743ms)
+  specs: 86-visual-planning.test.mjs
+▶ visual planning
+  ✔ a note on the moodboard canvas is dragged to a new place (5244.9497ms)
+  ✔ the sketch dialog draws, takes a stroke back, and saves a storyboard panel (1771.8997ms)
+  ✔ two empty panels are added and the last one is dragged to the front (1474.8381ms)
+  ✔ after a restart the note is where it was dropped and the panels keep their order (5371.4176ms)
+✔ visual planning (15221.3225ms)
+  specs: 90-visual-baseline.test.mjs, 91-appearance-themes.test.mjs, 95-reachability.test.mjs
+▶ visual regression against the visual baseline baseline
+  ✔ 15 representative screens (35297.8091ms)
+✔ visual regression against the visual baseline baseline (36982.7388ms)
+▶ every built-in theme in Light and Dark
+  ✔ 16 themes x 2 modes x 15 screens are applied and readable; paper stays white (442156.9194ms)
+  ✔ the theme and mode come back after a relaunch (3394.8035ms)
+✔ every built-in theme in Light and Dark (447355.923ms)
+▶ reachability from the feature status file
+  ✔ the feature status routes are valid against the source (1.1382ms)
+  ✔ every canonical route opens in the real app (29211.1162ms)
+✔ reachability from the feature status file (31002.1566ms)
+  specs: 96-keyboard-and-screen-reader.test.mjs
+▶ keyboard and screen reader pass
+  ✔ a project with a screenplay to walk through (2195.0819ms)
+  ✔ Home: every Tab stop is named and visibly focused, and the window has no unnamed control (5956.6077ms)
+  ✔ Idea Vault: every Tab stop is named and visibly focused, and the window has no unnamed control (4236.9747ms)
+  ✔ Story: every Tab stop is named and visibly focused, and the window has no unnamed control (4186.4719ms)
+  ✔ Screenplay: every Tab stop is named and visibly focused, and the window has no unnamed control (4585.8669ms)
+  ✔ Breakdown: every Tab stop is named and visibly focused, and the window has no unnamed control (3419.7688ms)
+  ✔ Production: every Tab stop is named and visibly focused, and the window has no unnamed control (4353.8448ms)
+  ✔ Call Sheets: every Tab stop is named and visibly focused, and the window has no unnamed control (3278.3782ms)
+  ✔ Files: every Tab stop is named and visibly focused, and the window has no unnamed control (3803.8995ms)
+✔ keyboard and screen reader pass (37374.7351ms)
+  specs: 97-performance.test.mjs
+▶ performance with the AI running
+  ✔ a project with the 36-scene Example Feature (1932.0074ms)
+  ✔ P1 start and P2 project open stay inside their budgets (7929.6857ms)
+  ✔ P3 typing in scene 20 keeps the app's own work per key under 16 ms (p95), and P5 idle stays under budget (85672.5127ms)
+  ✔ the AI answers, and memory and processor use with the AI loaded are recorded (84731.1728ms)
+✔ performance with the AI running (181495.0908ms)
+Skipped on the release build (debug-only switch):
+  15-trial-first-run.test.mjs: sets the licence state by hand through entitlement.debug_set, which a release build never registers
+  16-about.test.mjs: sets the licence state by hand through entitlement.debug_set, which a release build never registers
+E2E passed: 39 spec files on the release build (gated).
