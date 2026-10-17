@@ -66,8 +66,14 @@ fn read(env: &TestEnv, tool: &str, args: Value) -> String {
     }
 }
 
+thread_local! {
+    /// Every proposal call a test made on this thread, with its arguments.
+    static PROPOSED: std::cell::RefCell<Vec<(String, Value)>> = const { std::cell::RefCell::new(Vec::new()) };
+}
+
 #[track_caller]
 fn propose(env: &TestEnv, tool: &str, args: Value) -> ChangeSetDraft {
+    PROPOSED.with(|p| p.borrow_mut().push((tool.to_string(), args.clone())));
     match run(env, tool, args) {
         Ok(ToolStep::Proposal(d)) => d,
         Ok(ToolStep::Output(o)) => panic!("{tool} returned output, not a proposal: {}", o.content),
@@ -1813,4 +1819,87 @@ fn several_screenplays_are_named_and_never_picked_silently() {
         json!({ "draft": "Draft 2 of Railway: Short" }),
     );
     assert!(o.starts_with("Draft 2 of “Railway: Short”"), "{o}");
+}
+
+// ------------------------------------------------------------------ read-only roles
+
+/// Every tool that changes the project is refused for Viewer, Commenter and Export-only, and nothing changes.
+#[test]
+fn every_changing_tool_is_refused_for_viewer_commenter_and_export_only() {
+    // Reuse the example arguments of the test above: `propose` records each call it makes.
+    every_proposal_tool_builds_operations_the_registry_accepts();
+    let examples = PROPOSED.with(|p| p.borrow().clone());
+
+    let env = TestEnv::with_project("Railway", "Feature Film");
+    fixture(&env);
+    let mutating: Vec<&str> = toolbox::coverage()
+        .into_iter()
+        .filter(|(_, m, _)| *m)
+        .map(|(t, _, _)| t)
+        .collect();
+    assert!(!mutating.is_empty());
+    assert_eq!(mutating.len(), catalog::PROPOSALS.len());
+    let owner = env.actor_with_role(Role::Owner);
+    let schemas: std::collections::HashMap<String, Value> =
+        toolbox::tools_for(&env.core, &owner, &whole(&env, &owner))
+            .into_iter()
+            .map(|t| (t.name, t.schema))
+            .collect();
+    let before = fingerprint(&env);
+    for role in [Role::Viewer, Role::Commenter, Role::ExportOnly] {
+        let actor = env.actor_with_role(role);
+        for tool in &mutating {
+            // Tools the shared table does not call get arguments built from their own schema.
+            let args = match examples.iter().find(|(t, _)| t == tool) {
+                Some((_, a)) => a.clone(),
+                None => filled(&schemas[*tool]),
+            };
+            let e = run_as(&env, &actor, tool, args)
+                .err()
+                .unwrap_or_else(|| panic!("{tool} ran for {role:?}"));
+            assert_eq!(e.code_str(), "permission.denied", "{tool} as {role:?}");
+        }
+    }
+    assert_eq!(fingerprint(&env), before, "a refused tool changed the project");
+
+    // A Viewer cannot accept a Change Set an Editor proposed.
+    let editor = env.actor_with_role(Role::Editor);
+    let draft = match run_as(&env, &editor, "propose_task", json!({ "title": "Book the station" }))
+        .unwrap()
+    {
+        ToolStep::Proposal(d) => d,
+        ToolStep::Output(_) => panic!("propose_task returned output"),
+    };
+    let cs = change_set::create(&env.core, &editor, &draft).unwrap();
+    let before = fingerprint(&env);
+    let viewer = env.actor_with_role(Role::Viewer);
+    let e = env
+        .call_as(&viewer, "ai.change_set.accept", json!({ "id": cs.id }))
+        .unwrap_err();
+    assert_eq!(e.code_str(), "permission.denied");
+    assert_eq!(fingerprint(&env), before);
+}
+
+/// A sample value for one schema node: the first enum value, or the simplest value of its type.
+fn sample(p: &Value) -> Value {
+    if let Some(first) = p["enum"].get(0) {
+        return first.clone();
+    }
+    match p["type"].as_str() {
+        Some("boolean") => json!(true),
+        Some("integer" | "number") => json!(1),
+        Some("array") => json!([sample(&p["items"])]),
+        Some("object") => filled(p),
+        _ => json!("x"),
+    }
+}
+
+/// Plausible arguments from a tool's JSON schema: every required field filled with a sample.
+fn filled(schema: &Value) -> Value {
+    let mut out = serde_json::Map::new();
+    for key in schema["required"].as_array().into_iter().flatten() {
+        let k = key.as_str().unwrap();
+        out.insert(k.to_string(), sample(&schema["properties"][k]));
+    }
+    Value::Object(out)
 }
