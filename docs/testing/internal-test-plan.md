@@ -154,3 +154,5 @@ app; logs contain no script text.
 The pilot ends when: every Blocker is fixed and re-checked, no Serious report is open without a decision, the end-of-pilot
 answers are collected, and the owner signs off in [the progress log](../implementation/progress-log.md). A short summary of
 findings is stored under `docs/release/evidence/`.
+
+The pilot kit for team members is in [pilot-kit/](pilot-kit/README.md): install note, daily plan, how to send logs and triage.

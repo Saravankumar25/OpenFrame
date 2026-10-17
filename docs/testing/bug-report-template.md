@@ -9,6 +9,7 @@ Who and where
   Your name:
   Computer: Windows 11 / Mac (which chip, which macOS)
   OpenFrame version and build date (Settings, About):
+  Installer file name and SHA-256 (from the file name and the value the owner sent):
   Memory of the computer (if you know):
 
 What you were doing (steps, in order)
@@ -20,11 +21,13 @@ What you expected to happen:
 
 What happened instead:
 
-How bad is it?
-  [ ] Blocker: I lost work, the app crashed or will not open my project, or something looks private or unsafe
-  [ ] Serious: I could not finish what I wanted to do
-  [ ] Annoying: I could finish but it was confusing, slow or ugly
-  [ ] Idea: a wish
+How bad is it? (pick the first that fits)
+  [ ] Loses data
+  [ ] Corrupts a project
+  [ ] Fails a migration or a recovery
+  [ ] The AI changed my project on its own
+  [ ] Exposes private notes
+  [ ] Other: I could not finish what I wanted / it was confusing, slow or ugly / a wish
 
 Does it happen every time? (every time / sometimes / once)
 
@@ -32,7 +35,9 @@ Did you lose any text or data? (yes / no / not sure)
 
 Attachments (please add if you can)
   [ ] A screenshot
-  [ ] The diagnostics file (Settings, General, Support, Export diagnostics)
+  [ ] The diagnostics file (Settings, Project settings, Support, Export Diagnostics)
+  [ ] The AI report (Settings, Offline AI, AI health, Export AI report), if the AI is involved
+  [ ] Logs attached: yes / no
   [ ] A sample script that shows the problem (do not send your real script)
 ```
 
@@ -41,7 +46,7 @@ Attachments (please add if you can)
 | Field | Fill in |
 |---|---|
 | Report number | Next number in the tracking sheet |
-| Severity | After reading, using the scale in the [internal test plan](internal-test-plan.md) |
+| Severity | After reading, using the classes in the [triage page](pilot-kit/triage.md) |
 | Type | Defect, installation restriction, idea, question |
 | Reproduced by | Name and date, or "not reproduced" |
 | Cause | The file and function once known |
