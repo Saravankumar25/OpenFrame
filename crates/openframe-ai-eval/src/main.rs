@@ -4,6 +4,9 @@
 //! node scripts/cargo-queued.mjs run --release -p openframe-ai-eval --bin ai-eval -- --gold crates/openframe-ai-eval/gold --out <folder> [--only <text>] [--limit N]
 //! ```
 //!
+//! `--only` keeps the cases whose id contains the text (or whose kind or language equals it), so
+//! `--only poison-` runs just `gold/poisoned.jsonl`.
+//!
 //! Needs the Offline AI engine staged by `node scripts/prepare-ai-assets.mjs` (OPENFRAME_AI_BUNDLE_DIR,
 //! default `.build-cache/ai-bundle`) and the pinned models in the build inputs (OPENFRAME_AI_ASSETS_DIR,
 //! default `.ai-assets`), which it installs in its own app data as a finished download would
@@ -469,17 +472,40 @@ fn run_case(core: &AppCore, case: &Case) -> Observation {
         }
     };
     o.source_text = p.text.clone();
+    // Files a case writes with `harness.write_file` live in this folder until the case ends.
+    let folder = match tempfile::tempdir() {
+        Ok(d) => d,
+        Err(e) => {
+            o.setup_error = Some(format!("setup {e}"));
+            return o;
+        }
+    };
+    let mut files = std::collections::BTreeMap::new();
+    let other = openframe_ai_eval::other_actor();
     for s in &case.setup {
-        if let Err(e) = op(core, &s.op, setup_args(&s.op, substitute(&s.args, &p))) {
+        let args = openframe_ai_eval::substitute_files(&substitute(&s.args, &p), &files);
+        let done = if s.op == "harness.write_file" {
+            let field = |k: &str| args[k].as_str().unwrap_or_default().to_string();
+            let name = field("name");
+            openframe_ai_eval::write_case_file(folder.path(), &name, &field("text"))
+                .map(|path| drop(files.insert(name, path)))
+        } else if s.as_user.as_deref() == Some("other") {
+            core.dispatch(&other, &s.op, setup_args(&s.op, args))
+                .map(drop)
+                .map_err(|e| format!("{}: {} {}", s.op, e.code_str(), e.message))
+        } else {
+            op(core, &s.op, setup_args(&s.op, args)).map(drop)
+        };
+        if let Err(e) = done {
             o.setup_error = Some(format!("setup {e}"));
             return o;
         }
     }
-    if case
-        .setup
-        .iter()
-        .any(|s| s.op.starts_with("notes.") || s.op.starts_with("vault."))
-    {
+    if case.setup.iter().any(|s| {
+        ["notes.", "vault.", "private_note.", "files.", "screenplay.import"]
+            .iter()
+            .any(|p| s.op.starts_with(p))
+    }) {
         intelligence::wait_idle(core, Duration::from_secs(60));
     }
     let actor = core.local_actor();
