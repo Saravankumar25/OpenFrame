@@ -38,3 +38,10 @@ Thumbs.db
 fuzz/artifacts/
 fuzz/corpus/
 fuzz/coverage/
+
+# Tool and Explorer files that must never be tracked
+AGENTS.md
+.codex/
+desktop.ini
+gsd-install.log
+.ruff_cache/
