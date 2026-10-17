@@ -57,8 +57,21 @@ fn main() {
     if std::env::var("CARGO_CFG_TARGET_OS").as_deref() == Ok("macos") {
         link_storekit_bridge();
     }
-    tauri_build::build()
+    // Only these commands may be invoked by the webview, each named in the capability file.
+    tauri_build::try_build(tauri_build::Attributes::new().app_manifest(
+        tauri_build::AppManifest::new().commands(APP_COMMANDS),
+    ))
+    .expect("the Tauri build step");
 }
+
+/// Must match `generate_handler!` in `src/lib.rs`.
+const APP_COMMANDS: &[&str] = &[
+    "of_invoke",
+    "of_open_asset",
+    "of_reveal_path",
+    "of_open_url",
+    "of_close_window",
+];
 
 /// Write the team password hash for an internal build, or nothing for a store build (see the
 /// module notes). Panics, which fails the build, when an internal release build has no password.

@@ -7,13 +7,12 @@
     "core:event:allow-listen",
     "core:event:allow-unlisten",
     "core:window:allow-set-title",
-    "core:window:allow-set-fullscreen",
-    "core:window:allow-is-fullscreen",
-    "core:app:allow-version",
     "dialog:allow-open",
     "dialog:allow-save",
-    "dialog:allow-message",
-    "dialog:allow-ask",
-    "dialog:allow-confirm"
+    "allow-of-invoke",
+    "allow-of-open-asset",
+    "allow-of-reveal-path",
+    "allow-of-open-url",
+    "allow-of-close-window"
   ]
 }
