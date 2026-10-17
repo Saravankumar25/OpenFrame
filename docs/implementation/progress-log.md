@@ -58,6 +58,18 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 
 ## Entries
 
+### 2026-10-17 (day), W6 rounds 2 and 3: English bar met
+- **Areas and items worked:** AI assistant quality and hardening (W6 recipes, rename, harness checks).
+- **Done:** round 2 and round 3 recipes; a rename of a character written only in the script now renames its cues; eight
+  ai-eval end-state checks that could never pass fixed (requests and expected results unchanged). Commits c51e7c8 to the
+  commit of this entry on `windows/w8-download`.
+- **Evidence:** [w6](../release/evidence/w6/README.md): English correct tool 96.7 percent (bar 90), correct end state 71 of
+  80, 88.8 percent (bar 85), on the release build. openframe-application tests and clippy green.
+- **Features moved:** none.
+- **Docs updated:** W6 evidence, handoff, reconciliation log.
+- **Decisions made or needed:** needed from the owner: accept W6 on the bar or ask for the remaining W6 items (memory v1,
+  poisoned-retrieval corpus, bigger-job recipes); merge `windows/w8-download` into `main`; W9.
+
 ### 2026-10-16 to 2026-10-17 (overnight session), W4 to W8 to release proof; W5 measured; W6 first round
 - **Areas and items worked:** AI assistant quality and hardening (download flow, non-English requests, hardware
   benchmark, harness); test infrastructure (release-executable suite); owner decisions (model set, hardware, licensing,

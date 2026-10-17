@@ -6,6 +6,14 @@
 > Renamed on 2026-10-06 from `03-reconciliation-log.md`. Extended on 2026-10-09 (chapter restructure). Checks written "(checked)" were verified in the repository on the
 > date given. Checks written "(stated)" come from a supplied document and were not verified independently.
 
+## 2026-10-17 (day): ai-eval gold checks
+
+Eight end-state checks in `crates/openframe-ai-eval/gold/tools.en.jsonl` could never pass: `comment.list` (three cases)
+and `screenplay.characters` (four cases) were called without the draft id they require, and the vault folder case read
+`vault.list` (items) instead of `vault.overview` (folders). The checks now pass `$current_draft` or read the overview.
+The approved requests and expected results are unchanged; `gold/REVIEW.md` still describes them correctly. Case
+`action-en-062` asks to replace a word that the sample script does not contain; it is left as approved and reported.
+
 ## 2026-10-17: overnight W4 to W8 session
 
 - Corrected stale statements: `knowledge.md` (the assistant still told people the AI comes installed with no download);
