@@ -50,7 +50,8 @@
       "webviewInstallMode": { "type": "downloadBootstrapper", "silent": true },
       "nsis": {
         "installMode": "currentUser",
-        "displayLanguageSelector": false
+        "displayLanguageSelector": false,
+        "installerHooks": "windows/installer-hooks.nsh"
       },
       "wix": {
         "language": "en-US"

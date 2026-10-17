@@ -35,6 +35,7 @@
     "check:links": "node scripts/check-links.mjs",
     "check:links:online": "node scripts/check-links.mjs --online",
     "check:secrets": "node scripts/check-secrets.mjs",
+    "installer:internal": "node scripts/build-internal-installer.mjs",
     "scan:installer": "node scripts/scan-installer.mjs",
     "check:supply-chain": "cargo deny --locked check && cargo audit",
     "fuzz": "cargo run --release --manifest-path fuzz/Cargo.toml --bin fuzz_drive --",
