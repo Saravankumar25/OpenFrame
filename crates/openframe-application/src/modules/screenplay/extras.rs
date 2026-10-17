@@ -5,6 +5,7 @@
 use openframe_domain::enums::DraftStatus;
 use openframe_domain::{Actor, AppError, AppResult, Capability, now_ms};
 use openframe_persistence::rows::{place_at, text, update_fields};
+use openframe_persistence::undo::quote_ident;
 use rusqlite::{Connection, OptionalExtension, params};
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
@@ -196,7 +197,7 @@ fn table_exists(c: &Connection, t: &str) -> AppResult<bool> {
 }
 
 fn columns(c: &Connection, t: &str) -> AppResult<Vec<String>> {
-    let mut stmt = c.prepare(&format!("PRAGMA table_info(\"{t}\")"))?;
+    let mut stmt = c.prepare(&format!("PRAGMA table_info({})", quote_ident(t)))?;
     let cols = stmt
         .query_map([], |r| r.get::<_, String>(1))?
         .collect::<Result<_, _>>()?;

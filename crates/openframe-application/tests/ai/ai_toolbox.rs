@@ -460,6 +460,42 @@ fn read_tools_never_mutate_and_resist_injection_text() {
     assert_eq!(fingerprint(&env), before, "read tools are read-only");
 }
 
+#[test]
+fn like_searches_treat_underscore_and_percent_as_plain_text() {
+    let env = TestEnv::with_project("Railway", "Feature Film");
+    env.ok("notes.create", json!({ "title": "Plan a_c", "body": "x" }));
+    env.ok("notes.create", json!({ "title": "Plan abc", "body": "y" }));
+    env.ok(
+        "vault.create",
+        json!({ "itemType": "note", "title": "Mood a_c", "body": "x" }),
+    );
+    env.ok(
+        "vault.create",
+        json!({ "itemType": "note", "title": "Mood abc", "body": "y" }),
+    );
+    env.ok(
+        "catalog.create",
+        json!({ "category": "Props", "name": "Prop a_c" }),
+    );
+    env.ok(
+        "catalog.create",
+        json!({ "category": "Props", "name": "Prop abc" }),
+    );
+    env.ok("locations.create", json!({ "name": "Place a_c" }));
+    env.ok("locations.create", json!({ "name": "Place abc" }));
+    for (tool, hit, miss) in [
+        ("project_notes", "Plan a_c", "Plan abc"),
+        ("idea_vault", "Mood a_c", "Mood abc"),
+        ("production_catalog", "Prop a_c", "Prop abc"),
+        ("production_locations", "Place a_c", "Place abc"),
+    ] {
+        let out = read(&env, tool, json!({ "query": "a_c" }));
+        assert!(out.contains(hit), "{tool}: {out}");
+        assert!(!out.contains(miss), "{tool} matched a wildcard: {out}");
+        let _ = read(&env, tool, json!({ "query": "100%" }));
+    }
+}
+
 // ------------------------------------------------------------------ permissions & privacy
 
 #[test]

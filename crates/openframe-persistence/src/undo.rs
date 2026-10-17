@@ -58,7 +58,7 @@ fn is_untracked(name: &str) -> bool {
     UNTRACKED_PREFIXES.iter().any(|p| name.starts_with(p))
 }
 
-pub(crate) fn quote_ident(name: &str) -> String {
+pub fn quote_ident(name: &str) -> String {
     format!("\"{}\"", name.replace('"', "\"\""))
 }
 

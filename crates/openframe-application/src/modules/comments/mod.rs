@@ -19,6 +19,7 @@ use std::collections::{BTreeSet, HashMap};
 
 use openframe_domain::{Actor, AppError, AppResult, Capability, new_id, now_ms};
 use openframe_persistence::rows::{text, update_fields};
+use openframe_persistence::undo::quote_ident;
 use rusqlite::types::Value as SqlValue;
 use rusqlite::{Connection, OptionalExtension, params, params_from_iter};
 use serde::{Deserialize, Serialize};
@@ -372,7 +373,7 @@ fn table_exists(c: &Connection, table: &str) -> AppResult<bool> {
 }
 
 fn has_column(c: &Connection, table: &str, col: &str) -> AppResult<bool> {
-    let mut stmt = c.prepare(&format!("PRAGMA table_info(\"{table}\")"))?;
+    let mut stmt = c.prepare(&format!("PRAGMA table_info({})", quote_ident(table)))?;
     let cols: Vec<String> = stmt
         .query_map([], |r| r.get::<_, String>(1))?
         .collect::<Result<_, _>>()?;
@@ -401,19 +402,25 @@ fn check_target_type(c: &Connection, target_type: &str) -> AppResult<()> {
 fn target_state(c: &Connection, target_type: &str, target_id: &str) -> AppResult<Option<bool>> {
     // `target_type` comes from stored comment rows (possibly a received project): it is
     // interpolated below, so it must be a plain identifier.
-    if !is_identifier(target_type) || !table_exists(c, target_type)? {
+    if !is_identifier(target_type)
+        || !table_exists(c, target_type)?
+        || !has_column(c, target_type, "id")?
+    {
         return Ok(None);
     }
     if has_column(c, target_type, "deleted_at")? {
         Ok(c.query_row(
-            &format!("SELECT deleted_at IS NOT NULL FROM \"{target_type}\" WHERE id=?1"),
+            &format!(
+                "SELECT deleted_at IS NOT NULL FROM {} WHERE id=?1",
+                quote_ident(target_type)
+            ),
             [target_id],
             |r| r.get(0),
         )
         .optional()?)
     } else {
         Ok(c.query_row(
-            &format!("SELECT 0 FROM \"{target_type}\" WHERE id=?1"),
+            &format!("SELECT 0 FROM {} WHERE id=?1", quote_ident(target_type)),
             [target_id],
             |r| r.get::<_, bool>(0),
         )

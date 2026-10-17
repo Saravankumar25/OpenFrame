@@ -10,7 +10,7 @@ use rusqlite::{OptionalExtension, params};
 use serde_json::Value;
 
 use super::super::queries::{self, join_and};
-use super::super::tools::{ToolCtx, ToolOutput, plural, scene_nav};
+use super::super::tools::{ToolCtx, ToolOutput, like_pattern, plural, scene_nav};
 use super::super::types::*;
 use super::reads::{a_bool, a_limit, a_str, a_u32, clip, found, item, not_found, when};
 use super::resolve as rv;
@@ -225,12 +225,12 @@ pub fn production_catalog(ctx: &ToolCtx<'_>, a: &Value) -> AppResult<ToolOutput>
         );
         return Ok(o.prov("Catalog item", it.label));
     }
-    let q = a_str(a, "query").map(|q| format!("%{}%", q.replace('%', "")));
+    let q = a_str(a, "query").map(|q| like_pattern(&q));
     let mut stmt = c.prepare(
         "SELECT i.id, i.category, i.name, i.status, i.archived,
                 (SELECT count(DISTINCT scene_id) FROM breakdown_element b WHERE b.catalog_item_id = i.id AND b.deleted_at IS NULL)
          FROM catalog_item i WHERE i.deleted_at IS NULL AND (?1 = 1 OR i.archived = 0) AND (?2 IS NULL OR i.category = ?2)
-           AND (?3 IS NULL OR i.name LIKE ?3 OR i.id IN (SELECT catalog_item_id FROM catalog_alias WHERE alias LIKE ?3))
+           AND (?3 IS NULL OR i.name LIKE ?3 ESCAPE '\\' OR i.id IN (SELECT catalog_item_id FROM catalog_alias WHERE alias LIKE ?3 ESCAPE '\\'))
          ORDER BY i.category, i.name LIMIT 100",
     )?;
     let rows: Vec<(String, String, String, String, bool, i64)> = stmt
@@ -349,10 +349,10 @@ pub fn production_locations(ctx: &ToolCtx<'_>, a: &Value) -> AppResult<ToolOutpu
         );
         return Ok(o.prov("Location", loc.label));
     }
-    let q = a_str(a, "query").map(|q| format!("%{}%", q.replace('%', "")));
+    let q = a_str(a, "query").map(|q| like_pattern(&q));
     let mut stmt = c.prepare(
         "SELECT id, name, status, COALESCE(address,'') FROM location WHERE deleted_at IS NULL AND archived=0
-           AND (?1 IS NULL OR status=?1) AND (?2 IS NULL OR name LIKE ?2 OR address LIKE ?2) ORDER BY name LIMIT 100",
+           AND (?1 IS NULL OR status=?1) AND (?2 IS NULL OR name LIKE ?2 ESCAPE '\\' OR address LIKE ?2 ESCAPE '\\') ORDER BY name LIMIT 100",
     )?;
     let rows: Vec<(String, String, String, String)> = stmt
         .query_map(params![a_str(a, "status"), q], |r| {

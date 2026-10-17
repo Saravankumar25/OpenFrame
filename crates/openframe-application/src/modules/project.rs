@@ -9,6 +9,7 @@ use std::sync::Arc;
 
 use openframe_domain::enums::{ProjectStatus, ProjectType};
 use openframe_domain::{Actor, AppError, AppResult, Capability, new_id, now_ms};
+use openframe_persistence::undo::quote_ident;
 use openframe_project_format::{self as pf, ProjectLayout, ProjectLock, ProjectManifest};
 use rusqlite::{Connection, OptionalExtension, params};
 use serde::{Deserialize, Serialize};
@@ -1976,28 +1977,28 @@ pub(crate) fn describe_row(
         return Ok(None);
     }
     let cols: Vec<String> = {
-        let mut stmt = c.prepare(&format!(
-            "SELECT name FROM pragma_table_info('{}')",
-            table.replace('\'', "''")
-        ))?;
-        stmt.query_map([], |r| r.get(0))?
+        let mut stmt = c.prepare("SELECT name FROM pragma_table_info(?1)")?;
+        stmt.query_map([table], |r| r.get(0))?
             .collect::<Result<_, _>>()?
     };
+    if !cols.iter().any(|c| c == "id") {
+        return Ok(None);
+    }
     let name_col = ["title", "name", "display_name", "heading"]
         .into_iter()
         .find(|n| cols.iter().any(|c| c == n));
-    let name_sql = name_col
-        .map(|n| format!("\"{n}\""))
-        .unwrap_or_else(|| "NULL".into());
+    let name_sql = name_col.map(quote_ident).unwrap_or_else(|| "NULL".into());
     let deleted_sql = if cols.iter().any(|c| c == "deleted_at") {
         "deleted_at"
     } else {
         "NULL"
     };
-    let t = table.replace('"', "");
     let row: Option<(Option<String>, Option<i64>)> = c
         .query_row(
-            &format!("SELECT {name_sql}, {deleted_sql} FROM \"{t}\" WHERE id=?1"),
+            &format!(
+                "SELECT {name_sql}, {deleted_sql} FROM {} WHERE id=?1",
+                quote_ident(table)
+            ),
             [id],
             |r| Ok((r.get(0)?, r.get(1)?)),
         )
@@ -2089,4 +2090,16 @@ fn deleted_items(
             Ok(out)
         })
     })
+}
+
+#[cfg(test)]
+mod describe_row_tests {
+    use super::*;
+
+    #[test]
+    fn a_table_without_an_id_column_is_not_available() {
+        let c = Connection::open_in_memory().unwrap();
+        c.execute_batch("CREATE TABLE odd(x TEXT)").unwrap();
+        assert_eq!(describe_row(&c, "odd", "1").unwrap(), None);
+    }
 }

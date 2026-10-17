@@ -11,7 +11,7 @@ use serde_json::{Value, json};
 
 use super::super::queries::{self, join_and};
 use super::super::scope::ResolvedScope;
-use super::super::tools::{ToolCtx, ToolOutput, nav_from_json, plural, scene_nav};
+use super::super::tools::{ToolCtx, ToolOutput, like_pattern, nav_from_json, plural, scene_nav};
 use super::super::types::*;
 use super::resolve::{self as rv, Found};
 use super::schema as sc;
@@ -816,10 +816,10 @@ fn project_notes(ctx: &ToolCtx<'_>, a: &Value) -> AppResult<ToolOutput> {
         ));
         return Ok(o.prov("Project Note", n.label));
     }
-    let q = a_str(a, "query").map(|q| format!("%{}%", q.replace('%', "")));
+    let q = a_str(a, "query").map(|q| like_pattern(&q));
     let mut stmt = c.prepare(
         "SELECT id, COALESCE(NULLIF(title,''), substr(body,1,60)), substr(body,1,200), pinned FROM project_note
-         WHERE deleted_at IS NULL AND (?1 IS NULL OR title LIKE ?1 OR body LIKE ?1) ORDER BY pinned DESC, updated_at DESC LIMIT 50",
+         WHERE deleted_at IS NULL AND (?1 IS NULL OR title LIKE ?1 ESCAPE '\\' OR body LIKE ?1 ESCAPE '\\') ORDER BY pinned DESC, updated_at DESC LIMIT 50",
     )?;
     let rows: Vec<(String, String, String, bool)> = stmt
         .query_map([q], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?, r.get(3)?)))?
@@ -1137,14 +1137,14 @@ fn idea_vault(ctx: &ToolCtx<'_>, a: &Value) -> AppResult<ToolOutput> {
         Some(r) => Some(found(ctx, &rv::VAULT_COLLECTION, &r)?.id),
         None => None,
     };
-    let q = a_str(a, "query").map(|q| format!("%{}%", q.replace('%', "")));
+    let q = a_str(a, "query").map(|q| like_pattern(&q));
     let limit = a_limit(a, 30) as i64;
     let mut stmt = c.prepare(
         "SELECT i.id, i.item_type, COALESCE(NULLIF(i.title,''), substr(i.body,1,60), i.caption, i.url, i.item_type),
                 substr(COALESCE(i.body, i.caption, i.url, ''),1,160), i.pinned
          FROM vault_item i WHERE i.deleted_at IS NULL
-           AND (?1 IS NULL OR i.title LIKE ?1 OR i.body LIKE ?1 OR i.caption LIKE ?1 OR i.url LIKE ?1
-                OR i.id IN (SELECT item_id FROM vault_item_tag WHERE tag LIKE ?1))
+           AND (?1 IS NULL OR i.title LIKE ?1 ESCAPE '\\' OR i.body LIKE ?1 ESCAPE '\\' OR i.caption LIKE ?1 ESCAPE '\\' OR i.url LIKE ?1 ESCAPE '\\'
+                OR i.id IN (SELECT item_id FROM vault_item_tag WHERE tag LIKE ?1 ESCAPE '\\'))
            AND (?2 IS NULL OR i.id IN (SELECT item_id FROM vault_item_tag WHERE tag = ?2))
            AND (?3 IS NULL OR i.folder_id = ?3)
            AND (?4 IS NULL OR i.id IN (SELECT item_id FROM vault_item_collection WHERE collection_id = ?4))

@@ -14,6 +14,7 @@ use std::path::{Path, PathBuf};
 use openframe_domain::{
     Actor, AppError, AppResult, Capability, PACKAGE_FORMAT_VERSION, new_id, now_ms,
 };
+use openframe_persistence::undo::quote_ident;
 use openframe_project_format::{self as pf, ProjectLayout, ProjectLock, ProjectManifest};
 use rusqlite::{Connection, OpenFlags, OptionalExtension, params};
 use serde::{Deserialize, Serialize};
@@ -300,7 +301,11 @@ fn table_counts(c: &Connection) -> AppResult<std::collections::BTreeMap<String, 
         if t.starts_with("search_fts") || t.starts_with("sqlite_") {
             continue;
         }
-        let n: i64 = c.query_row(&format!("SELECT count(*) FROM \"{t}\""), [], |r| r.get(0))?;
+        let n: i64 = c.query_row(
+            &format!("SELECT count(*) FROM {}", quote_ident(&t)),
+            [],
+            |r| r.get(0),
+        )?;
         out.insert(t, n);
     }
     Ok(out)
@@ -349,16 +354,17 @@ fn count_live(c: &Connection, tables: &[&str]) -> AppResult<u32> {
             continue;
         }
         let has_deleted: bool = c.query_row(
-            &format!(
-                "SELECT EXISTS(SELECT 1 FROM pragma_table_info('{t}') WHERE name='deleted_at')"
-            ),
-            [],
+            "SELECT EXISTS(SELECT 1 FROM pragma_table_info(?1) WHERE name='deleted_at')",
+            [&t],
             |r| r.get(0),
         )?;
         let sql = if has_deleted {
-            format!("SELECT count(*) FROM \"{t}\" WHERE deleted_at IS NULL")
+            format!(
+                "SELECT count(*) FROM {} WHERE deleted_at IS NULL",
+                quote_ident(t)
+            )
         } else {
-            format!("SELECT count(*) FROM \"{t}\"")
+            format!("SELECT count(*) FROM {}", quote_ident(t))
         };
         n += c.query_row(&sql, [], |r| r.get::<_, i64>(0))?;
     }

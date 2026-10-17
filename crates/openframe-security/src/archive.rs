@@ -263,8 +263,7 @@ pub fn extract_all(path: &Path, dest: &Path, limits: ArchiveLimits) -> AppResult
             let name = entry
                 .name()
                 .map_err(|_| rejected("entry name is not valid text"))?;
-            let rel = crate::validate_relative(&name)
-                .map_err(|_| rejected("unsafe entry name"))?;
+            let rel = crate::validate_relative(&name).map_err(|_| rejected("unsafe entry name"))?;
             let out_path = dest.join(&rel);
             if let Some(parent) = out_path.parent() {
                 fs::create_dir_all(parent)?;

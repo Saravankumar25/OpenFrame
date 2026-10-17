@@ -5,6 +5,7 @@
 use std::collections::{BTreeMap, HashMap};
 
 use openframe_domain::{AppError, AppResult};
+use openframe_persistence::undo::quote_ident;
 use rusqlite::{Connection, OptionalExtension, params};
 
 pub fn table_exists(c: &Connection, name: &str) -> AppResult<bool> {
@@ -19,7 +20,7 @@ pub fn column_exists(c: &Connection, table: &str, column: &str) -> AppResult<boo
     if !valid_ident(table) {
         return Ok(false);
     }
-    let mut stmt = c.prepare(&format!("PRAGMA table_info(\"{table}\")"))?;
+    let mut stmt = c.prepare(&format!("PRAGMA table_info({})", quote_ident(table)))?;
     let cols: Vec<String> = stmt
         .query_map([], |r| r.get::<_, String>(1))?
         .collect::<Result<_, _>>()?;
@@ -589,14 +590,17 @@ pub fn production_source_draft(c: &Connection) -> AppResult<Option<(String, Stri
 
 /// A row's current revision (None when missing or deleted). `table` must be a valid identifier.
 pub fn row_rev(c: &Connection, table: &str, id: &str) -> AppResult<Option<i64>> {
-    if !valid_ident(table) || !table_exists(c, table)? {
+    if !valid_ident(table) || !table_exists(c, table)? || !column_exists(c, table, "id")? {
         return Ok(None);
     }
     let has_deleted = column_exists(c, table, "deleted_at")?;
     let sql = if has_deleted {
-        format!("SELECT rev FROM \"{table}\" WHERE id=?1 AND deleted_at IS NULL")
+        format!(
+            "SELECT rev FROM {} WHERE id=?1 AND deleted_at IS NULL",
+            quote_ident(table)
+        )
     } else {
-        format!("SELECT rev FROM \"{table}\" WHERE id=?1")
+        format!("SELECT rev FROM {} WHERE id=?1", quote_ident(table))
     };
     Ok(c.query_row(&sql, params![id], |r| r.get(0)).optional()?)
 }
@@ -604,6 +608,13 @@ pub fn row_rev(c: &Connection, table: &str, id: &str) -> AppResult<Option<i64>> 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn row_rev_ignores_a_table_without_an_id_column() {
+        let c = Connection::open_in_memory().unwrap();
+        c.execute_batch("CREATE TABLE odd(x TEXT)").unwrap();
+        assert_eq!(row_rev(&c, "odd", "1").unwrap(), None);
+    }
 
     #[test]
     fn cues_normalize() {

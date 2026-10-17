@@ -846,7 +846,7 @@ pub(crate) fn title_case(s: &str) -> String {
         .join(" ")
 }
 
-fn like_pattern(text: &str) -> String {
+pub(crate) fn like_pattern(text: &str) -> String {
     let escaped = text
         .trim()
         .replace('\\', "\\\\")

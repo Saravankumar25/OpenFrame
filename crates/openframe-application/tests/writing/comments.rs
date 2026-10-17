@@ -495,3 +495,27 @@ fn fsd_script_033_private_notes_are_invisible_to_other_users_and_their_search() 
     // Private notes are not comments: comment lists never include them.
     assert!(c.threads().is_empty());
 }
+
+#[test]
+fn a_stored_target_table_without_an_id_column_does_not_break_listing() {
+    let c = setup();
+    c.text_comment();
+    let scene = c.scene.clone();
+    let s = c.env.core.project().unwrap();
+    s.store
+        .with_writer(|conn| {
+            conn.execute_batch("CREATE TABLE odd_no_id(x TEXT)").unwrap();
+            conn.execute(
+                "INSERT INTO comment(id,target_type,target_id,scene_id,body,author_user_id,author_name,created_at,updated_at)
+                 VALUES ('bad1','odd_no_id','x',?1,'Odd target','u2','Ravi',1,1)",
+                [&scene],
+            )
+            .unwrap();
+            Ok(())
+        })
+        .unwrap();
+    let all = c.env.ok("comment.list", json!({ "draftId": c.draft }));
+    let bodies = all.to_string();
+    assert!(bodies.contains("Odd target"), "{bodies}");
+    assert!(bodies.contains("establish the folder earlier"), "{bodies}");
+}
