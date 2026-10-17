@@ -50,7 +50,7 @@ static OPEN_WORKSPACE: LazyLock<Regex> = LazyLock::new(|| {
 
 static COUNT_SCENES: LazyLock<Regex> = LazyLock::new(|| {
     re(
-        r#"(?i)^\s*(?:how\s+many\s+scenes\s+(?:are\s+)?(?:there\s+)?(?:in\s+)?(?:this|the|my)\s+(?:screenplay|script|current\s+draft|draft|film|short)|what(?:'s|\s+is)\s+the\s+scene\s+count(?:\s+(?:of|in)\s+(?:this|the|my)\s+(?:screenplay|script|current\s+draft|draft))?)\s*\?*\s*$"#,
+        r#"(?i)^\s*(?:how\s+many\s+scenes\s+(?:are\s+)?(?:there\s+)?(?:in\s+)?(?:this|the|my)\s+(?:screenplay|script|current\s+draft|draft|film|short)|how\s+many\s+scenes\s+does\s+(?:the|this|my)\s+(?:screenplay|script|draft|film|short)\s+have|what(?:'s|\s+is)\s+the\s+scene\s+count(?:\s+(?:of|in)\s+(?:this|the|my)\s+(?:screenplay|script|current\s+draft|draft))?)\s*\?*\s*$"#,
     )
 });
 
@@ -92,7 +92,7 @@ static CATALOG_AS: LazyLock<Regex> = LazyLock::new(|| {
 
 static CHARACTER: LazyLock<Regex> = LazyLock::new(|| {
     re(
-        r#"(?i)^\s*(?:please\s+)?(?:add|create|make)\s+(?:a\s+)?(?:new\s+)?character(?:\s+(?:called|named)\s+|\s*:\s*)(?P<name>[^,.]+?)(?:\s*,\s*(?P<desc>.+?))?\s*[.!]*\s*$"#,
+        r#"(?i)^\s*(?:please\s+)?(?:add|create|make)\s+(?:a\s+)?(?:new\s+)?character(?:\s+(?:called|named)\s+|\s*:\s*)(?P<name>(?:(?:dr|mr|mrs|ms|prof)\.\s+)?[^,.]+?)(?:\s*,\s*(?P<desc>.+?))?\s*[.!]*\s*$"#,
     )
 });
 
@@ -110,7 +110,7 @@ static REPLACE: LazyLock<Regex> = LazyLock::new(|| {
 
 static NOTE_THAT: LazyLock<Regex> = LazyLock::new(|| {
     re(
-        r#"(?i)^\s*(?:please\s+)?(?:make\s+a\s+note\s+that|remember\s+in\s+a\s+note\s+that|note\s+to\s+self\s*:)\s+(?P<body>.+?)\s*[.!]*\s*$"#,
+        r#"(?i)^\s*(?:please\s+)?(?:make\s+a\s+note\s+that|remember\s+in\s+a\s+note\s+that|note\s+to\s+self\s*:|write\s+a\s+(?:project\s+)?note\s*:)\s+(?P<body>.+?)\s*[.!]*\s*$"#,
     )
 });
 
@@ -149,6 +149,256 @@ static PAGES: LazyLock<Regex> = LazyLock::new(|| {
         r#"(?i)^\s*(?:how\s+many\s+pages\s+(?:is|are\s+in|does)\s+(?:the|this|my)\s+(?:screenplay|script)(?:\s+have)?|what\s+is\s+the\s+page\s+(?:setup|count))\s*\?*\s*$"#,
     )
 });
+
+static MENTIONS: LazyLock<Regex> = LazyLock::new(|| {
+    re(
+        r#"(?i)^\s*which\s+scenes\s+(?:mention|include|feature|refer\s+to|take\s+place\s+(?:at|in)|happen\s+(?:at|in)|are\s+set\s+(?:at|in))\s+(?:the\s+)?(?P<x>[^?]{1,120}?)\s*\?*\s*$"#,
+    )
+});
+
+/// Plain questions that one read tool answers as a whole.
+static PLAIN_READS: LazyLock<Vec<(Regex, &'static str)>> = LazyLock::new(|| {
+    [
+        (r#"(?i)^\s*(?:what(?:'s|\s+is)\s+in|show(?:\s+me)?)\s+(?:the\s+|my\s+)?idea\s+vault\s*[?.]*\s*$"#, "idea_vault"),
+        (r#"(?i)^\s*(?:show|list)(?:\s+me)?\s+(?:the\s+|my\s+)?project\s+notes\s*[?.]*\s*$"#, "project_notes"),
+        (r#"(?i)^\s*(?:what|which)\s+tasks\s+are\s+(?:still\s+)?(?:open|left|pending|not\s+done)\s*[?.]*\s*$"#, "project_tasks"),
+        (r#"(?i)^\s*(?:what\s+(?:has\s+)?changed\s+recently|(?:show(?:\s+me)?|what\s+is)\s+(?:the\s+)?recent\s+activity)\s*[?.]*\s*$"#, "recent_activity"),
+        (r#"(?i)^\s*(?:are\s+there\s+any|show(?:\s+me)?(?:\s+the)?|list(?:\s+the)?)\s+comments\s*[?.]*\s*$"#, "comments"),
+        (r#"(?i)^\s*(?:which|what)\s+templates\s+(?:can\s+i\s+use|are\s+there|do\s+i\s+have)\s*[?.]*\s*$"#, "templates"),
+        (r#"(?i)^\s*(?:(?:which|what)\s+drafts\s+(?:does|do)\s+(?:this|the|my)\s+(?:screenplay|script)\s+have|what\s+is\s+the\s+current\s+draft\s+called|(?:list|show)(?:\s+me)?\s+(?:the\s+)?drafts)\s*[?.]*\s*$"#, "list_drafts"),
+        (r#"(?i)^\s*(?:list|show)(?:\s+me)?\s+(?:all\s+)?the\s+scenes\s+(?:of|in)\s+(?:the|this|my)\s+(?:screenplay|script)\s*[?.]*\s*$"#, "screenplay_scenes"),
+        (r#"(?i)^\s*(?:list|show)(?:\s+me)?\s+(?:all\s+)?the\s+characters\s+on\s+the\s+story\s?board\s*[?.]*\s*$"#, "story_characters"),
+        (r#"(?i)^\s*how\s+many\s+(?:props|costumes|vehicles|items)\s+are\s+(?:there\s+)?in\s+the\s+(?:production\s+)?catalog(?:ue)?\s*[?.]*\s*$"#, "production_statistics"),
+        (r#"(?i)^\s*how\s+many\s+(?:acts|scene\s+cards|acts\s+and\s+scene\s+cards)\s+are\s+(?:there\s+)?on\s+the\s+story\s?board\s*[?.]*\s*$"#, "story_statistics"),
+        (r#"(?i)^\s*how\s+far\s+along\s+is\s+the\s+breakdown\s*[?.]*\s*$"#, "breakdown_status"),
+    ]
+    .into_iter()
+    .map(|(p, t)| (re(p), t))
+    .collect()
+});
+
+/// "How do I export a PDF?": a question about OpenFrame itself, recognised only when it names a
+/// part of the product, so "How do I make Lakshmi kinder?" still goes to the model.
+static PRODUCT: LazyLock<Regex> = LazyLock::new(|| {
+    re(
+        r#"(?i)^\s*how\s+(?:do\s+i|can\s+i|does)\s+.*\b(?:pdf|export|import|undo|redo|backup|back\s+up|restore|package|print|template|call\s+sheet|lock|unlock|password|settings|theme|shortcut|recently\s+deleted|fountain|fdx|docx|offline\s+ai|download)\b.*\?\s*$"#,
+    )
+});
+
+static SCENE_CARD: LazyLock<Regex> = LazyLock::new(|| {
+    re(
+        r#"(?i)^\s*(?:please\s+)?(?:add|create|make)\s+a\s+(?:new\s+)?scene\s+card\s*(?::|where|in\s+which|about)\s*(?P<d>.+?)\s*[.!]*\s*$"#,
+    )
+});
+
+static RENAME: LazyLock<Regex> = LazyLock::new(|| {
+    re(
+        r#"(?i)^\s*(?:please\s+)?rename\s+(?:the\s+character\s+)?(?P<a>[^,.]{1,80}?)\s+to\s+(?P<b>[^,.]{1,80}?)\s*[.!]*\s*$"#,
+    )
+});
+
+static COMMENT_SCENE: LazyLock<Regex> = LazyLock::new(|| {
+    re(
+        r#"(?i)^\s*(?:please\s+)?(?:comment\s+on|leave\s+a\s+comment\s+on|add\s+a\s+comment\s+(?:to|on))\s+scene\s+(?P<n>\d{1,5})\s*:\s*(?P<t>.+?)\s*$"#,
+    )
+});
+
+static VAULT_QUOTE: LazyLock<Regex> = LazyLock::new(|| {
+    re(
+        r#"(?i)^\s*(?:please\s+)?(?:put|add|save)\s+(?:a\s+)?quote\s+(?:in|to|into)\s+the\s+idea\s+vault\s*:\s*(?P<t>.+?)\s*$"#,
+    )
+});
+
+static VAULT_IDEA: LazyLock<Regex> = LazyLock::new(|| {
+    re(
+        r#"(?i)^\s*(?:please\s+)?(?:save\s+this\s+idea|add\s+an?\s+idea\s+to\s+the\s+(?:idea\s+)?vault)\s*:\s*(?P<t>.+?)\s*$"#,
+    )
+});
+
+static PROJECT_STATUS: LazyLock<Regex> = LazyLock::new(|| {
+    re(
+        r#"(?i)^\s*(?:please\s+)?(?:mark|set)\s+the\s+project(?:\s+status)?\s+(?:as|to)\s+(?:in\s+)?(?P<s>[a-z][a-z -]{1,30}?)\s*[.!]*\s*$"#,
+    )
+});
+
+static TIME_NOTE: LazyLock<Regex> = LazyLock::new(|| {
+    re(
+        r#"(?i)^\s*(?:please\s+)?set\s+the\s+time\s+note\s+of\s+scene\s+(?P<n>\d{1,5})\s+to\s+['"‘“]?(?P<t>[^'"’”]{1,80}?)['"’”]?\s*[.!]*\s*$"#,
+    )
+});
+
+static PROPS_FOR: LazyLock<Regex> = LazyLock::new(|| {
+    re(
+        r#"(?i)^\s*what\s+(?:props|elements|breakdown\s+elements)\s+(?:might|does|would|will)\s+scene\s+(?P<n>\d{1,5})\s+need\s*\?*\s*$"#,
+    )
+});
+
+static NEW_DRAFT: LazyLock<Regex> = LazyLock::new(|| {
+    re(
+        r#"(?i)^\s*(?:please\s+)?(?:create|make)\s+(?:a\s+copy\s+of\s+the\s+current\s+draft|a\s+new\s+draft)\s+(?:named|called)\s+(?P<name>.+?)\s*[.!]*\s*$"#,
+    )
+});
+
+static NEW_SCENE: LazyLock<Regex> = LazyLock::new(|| {
+    re(
+        r#"(?i)^\s*(?:please\s+)?add\s+a\s+(?:new\s+)?scene\s+(?:at\s+the\s+end|after\s+scene\s+(?P<n>\d{1,5}))\s*:\s*(?P<h>(?:INT|EXT|INT\./EXT|I/E)\.?\s+.+?)\s*\.?\s*$"#,
+    )
+});
+
+static CAST: LazyLock<Regex> = LazyLock::new(|| {
+    re(
+        r#"(?i)^\s*(?:please\s+)?add\s+a\s+cast\s+member\s*:\s*(?P<p>[^,]{1,80}?)\s+(?:plays|as)\s+(?P<c>[^,]{1,80}?)\s*[.!]*\s*$"#,
+    )
+});
+
+/// The project status a plain phrase means (the values of propose_project_status).
+fn project_status(phrase: &str) -> Option<&'static str> {
+    let p: String = phrase
+        .to_lowercase()
+        .chars()
+        .filter(|c| c.is_ascii_alphabetic())
+        .collect();
+    Some(match p.as_str() {
+        "idea" => "Idea",
+        "development" => "Development",
+        "writing" => "Writing",
+        "rewrite" | "rewriting" => "Rewrite",
+        "shootingdraft" => "Shooting Draft",
+        "preproduction" => "Pre-Production",
+        "shootpreparation" => "Shoot Preparation",
+        "shooting" | "production" => "Shooting",
+        _ => return None,
+    })
+}
+
+/// Round 2 (W6): the shapes the first harness rerun still found going to a general search.
+fn recipe_more(text: &str) -> Option<StepCall> {
+    let cap = |r: &Regex| r.captures(text);
+    if let Some(c) = cap(&MENTIONS) {
+        let x = unquote(c.name("x")?.as_str());
+        return (!x.is_empty()).then(|| call("find_scenes_mentioning", json!({ "text": x })));
+    }
+    if let Some((_, tool)) = PLAIN_READS.iter().find(|(r, _)| r.is_match(text)) {
+        return Some(call(tool, json!({})));
+    }
+    if cap(&PRODUCT).is_some() {
+        return Some(call(
+            "answer_product_question",
+            json!({ "question": text.trim() }),
+        ));
+    }
+    if let Some(c) = cap(&PROPS_FOR) {
+        let n: u32 = c.name("n")?.as_str().parse().ok().filter(|n| *n >= 1)?;
+        return Some(call("suggest_breakdown", json!({ "sceneNumber": n })));
+    }
+    if let Some(c) = cap(&SCENE_CARD) {
+        let d = c.name("d")?.as_str().trim();
+        // A card placed in an act or sequence needs that placement: the model fills it.
+        let placed = d
+            .to_lowercase()
+            .split_whitespace()
+            .any(|w| matches!(w, "act" | "sequence"));
+        return (!d.is_empty() && !placed).then(|| {
+            call(
+                "propose_scene_card",
+                json!({ "description": capitalise(d) }),
+            )
+        });
+    }
+    if let Some(c) = cap(&COMMENT_SCENE) {
+        let n: u32 = c.name("n")?.as_str().parse().ok().filter(|n| *n >= 1)?;
+        let t = c.name("t")?.as_str().trim();
+        return (!t.is_empty())
+            .then(|| call("propose_comment", json!({ "sceneNumber": n, "text": t })));
+    }
+    if let Some(c) = cap(&VAULT_QUOTE) {
+        let t = c.name("t")?.as_str().trim();
+        return (!t.is_empty())
+            .then(|| call("propose_vault_item", json!({ "type": "quote", "text": t })));
+    }
+    if let Some(c) = cap(&VAULT_IDEA) {
+        let t = c.name("t")?.as_str().trim();
+        return (!t.is_empty()).then(|| {
+            call(
+                "propose_vault_item",
+                json!({ "type": "note", "text": capitalise(t) }),
+            )
+        });
+    }
+    if let Some(c) = cap(&PROJECT_STATUS) {
+        let st = project_status(c.name("s")?.as_str())?;
+        return Some(call("propose_project_status", json!({ "status": st })));
+    }
+    if let Some(c) = cap(&TIME_NOTE) {
+        let n: u32 = c.name("n")?.as_str().parse().ok().filter(|n| *n >= 1)?;
+        let t = c.name("t")?.as_str().trim();
+        return (!t.is_empty()).then(|| {
+            call(
+                "propose_time_note",
+                json!({ "sceneNumber": n, "timeNote": t }),
+            )
+        });
+    }
+    if let Some(c) = cap(&NEW_DRAFT) {
+        let name = unquote(c.name("name")?.as_str());
+        return (!name.is_empty()).then(|| call("propose_new_draft", json!({ "name": name })));
+    }
+    if let Some(c) = cap(&NEW_SCENE) {
+        let heading = c.name("h")?.as_str().trim().trim_end_matches('.').trim();
+        let mut args = json!({ "heading": heading });
+        if let Some(n) = c.name("n").and_then(|n| n.as_str().parse::<u32>().ok()) {
+            args["position"] = json!(n + 1);
+        }
+        return Some(call("propose_new_scene", args));
+    }
+    if let Some(c) = cap(&CAST) {
+        let person = unquote(c.name("p")?.as_str());
+        let character = unquote(c.name("c")?.as_str());
+        return (!person.is_empty() && !character.is_empty()).then(|| {
+            call(
+                "propose_cast_member",
+                json!({ "person": person, "characterName": character }),
+            )
+        });
+    }
+    if let Some(c) = cap(&RENAME) {
+        let from = unquote(c.name("a")?.as_str());
+        let mut to = unquote(c.name("b")?.as_str());
+        for tail in [
+            " across the project",
+            " across the script",
+            " throughout the project",
+            " throughout the script",
+            " in the script",
+            " in the screenplay",
+            " everywhere",
+        ] {
+            if to.to_lowercase().ends_with(tail) {
+                to = to[..to.len() - tail.len()].trim();
+            }
+        }
+        if to.split_whitespace().count() > 3 {
+            return None;
+        }
+        // A draft, board or the project is renamed by other tools; this shape is a character.
+        let other = [
+            "draft", "project", "board", "schedule", "folder", "act", "sequence",
+        ];
+        if from.is_empty()
+            || to.is_empty()
+            || other
+                .iter()
+                .any(|w| from.to_lowercase().split_whitespace().any(|x| x == *w))
+        {
+            return None;
+        }
+        return Some(call(
+            "propose_rename_character",
+            json!({ "from": from, "to": to }),
+        ));
+    }
+    None
+}
 
 /// The workspace a plain name means (`open_workspace`'s values).
 fn workspace(name: &str) -> Option<&'static str> {
@@ -205,6 +455,20 @@ pub(crate) fn direct_call(text: &str, offered: impl Fn(&str) -> bool) -> Option<
 }
 
 fn recipe(text: &str) -> Option<StepCall> {
+    // Two requests joined in one ("rename Ravi and add a task") are the model's to plan.
+    let lower = text.to_lowercase();
+    if [
+        " and add ",
+        " and create ",
+        " and make ",
+        " and then ",
+        " then ",
+    ]
+    .iter()
+    .any(|j| lower.contains(j))
+    {
+        return None;
+    }
     let cap = |r: &Regex| r.captures(text);
     if let Some(c) = cap(&CREATE_TASK).or_else(|| cap(&TASK_SHORT)) {
         let what = unquote(c.name("what")?.as_str());
@@ -303,6 +567,9 @@ fn recipe(text: &str) -> Option<StepCall> {
     if let Some(c) = cap(&LOCATION) {
         let name = unquote(c.name("name")?.as_str());
         return (!name.is_empty()).then(|| call("propose_location", json!({ "name": name })));
+    }
+    if let Some(c) = recipe_more(text) {
+        return Some(c);
     }
     if let Some(c) = cap(&OPEN_WORKSPACE)
         && let Some(w) = workspace(c.name("w")?.as_str())
@@ -526,6 +793,149 @@ mod tests {
             call("Add a location: Marina pier."),
             Some(("propose_location".into(), json!({ "name": "Marina pier" })))
         );
+    }
+
+    #[test]
+    fn round_two_reads_and_proposals() {
+        for (text, t) in [
+            ("What is in the Idea Vault?", "idea_vault"),
+            ("Show my project notes.", "project_notes"),
+            ("Which tasks are still open?", "project_tasks"),
+            ("What changed recently?", "recent_activity"),
+            ("Are there any comments?", "comments"),
+            ("Which templates can I use?", "templates"),
+            ("Which drafts does this script have?", "list_drafts"),
+            ("List the scenes of the script.", "screenplay_scenes"),
+            ("Show the characters on the storyboard.", "story_characters"),
+            (
+                "How many vehicles are in the catalog?",
+                "production_statistics",
+            ),
+            (
+                "How many scene cards are on the story board?",
+                "story_statistics",
+            ),
+            ("How far along is the breakdown?", "breakdown_status"),
+            ("How many scenes does the screenplay have?", "count_scenes"),
+            (
+                "How do I import a Fountain file?",
+                "answer_product_question",
+            ),
+        ] {
+            assert_eq!(tool(text).as_deref(), Some(t), "{text}");
+        }
+        assert_eq!(
+            call("Which scenes mention the lantern?"),
+            Some((
+                "find_scenes_mentioning".into(),
+                json!({ "text": "lantern" })
+            ))
+        );
+        assert_eq!(
+            call("Which scenes take place at the harbour?"),
+            Some((
+                "find_scenes_mentioning".into(),
+                json!({ "text": "harbour" })
+            ))
+        );
+        assert_eq!(
+            call("What props might scene 4 need?"),
+            Some(("suggest_breakdown".into(), json!({ "sceneNumber": 4 })))
+        );
+        assert_eq!(
+            call("Add a scene card: Ravi misses the last train."),
+            Some((
+                "propose_scene_card".into(),
+                json!({ "description": "Ravi misses the last train" })
+            ))
+        );
+        assert_eq!(
+            call("Rename Ravi to Raghav across the project"),
+            Some((
+                "propose_rename_character".into(),
+                json!({ "from": "Ravi", "to": "Raghav" })
+            ))
+        );
+        assert_eq!(
+            call("Rename Gopal to Govind."),
+            Some((
+                "propose_rename_character".into(),
+                json!({ "from": "Gopal", "to": "Govind" })
+            ))
+        );
+        assert_eq!(
+            call("Comment on scene 3: is this too long?"),
+            Some((
+                "propose_comment".into(),
+                json!({ "sceneNumber": 3, "text": "is this too long?" })
+            ))
+        );
+        assert_eq!(
+            tool("Put a quote in the Idea Vault: the sea keeps no secrets.").as_deref(),
+            Some("propose_vault_item")
+        );
+        assert_eq!(
+            call("Mark the project as pre-production."),
+            Some((
+                "propose_project_status".into(),
+                json!({ "status": "Pre-Production" })
+            ))
+        );
+        assert_eq!(
+            call("Set the time note of scene 9 to 'Friday 06:10'."),
+            Some((
+                "propose_time_note".into(),
+                json!({ "sceneNumber": 9, "timeNote": "Friday 06:10" })
+            ))
+        );
+        assert_eq!(
+            call("Create a copy of the current draft named Festival Cut."),
+            Some((
+                "propose_new_draft".into(),
+                json!({ "name": "Festival Cut" })
+            ))
+        );
+        assert_eq!(
+            call("Add a scene after scene 4: INT. TEA STALL - DAY."),
+            Some((
+                "propose_new_scene".into(),
+                json!({ "heading": "INT. TEA STALL - DAY", "position": 5 })
+            ))
+        );
+        assert_eq!(
+            call("Add a cast member: Meera plays Selvi."),
+            Some((
+                "propose_cast_member".into(),
+                json!({ "person": "Meera", "characterName": "Selvi" })
+            ))
+        );
+        assert_eq!(
+            call("Create a character named Dr. Anand Rao, the village doctor."),
+            Some((
+                "propose_character".into(),
+                json!({ "name": "Dr. Anand Rao", "description": "The village doctor" })
+            ))
+        );
+        assert_eq!(
+            tool("Write a project note: check the tide tables.").as_deref(),
+            Some("propose_project_note")
+        );
+    }
+
+    #[test]
+    fn round_two_leaves_the_rest_to_the_model() {
+        for text in [
+            "How do I make Lakshmi more sympathetic?",
+            "Rename the draft to Final.",
+            "Which scenes would work better at night?",
+            "Mark the project as almost done.",
+            "Add a scene where Ravi cries.",
+            "What is in scene 4?",
+            "Create a scene card where Ravi finds the ticket in act one",
+            "Rename Ravi to Raghav and add a task to update the cast list",
+        ] {
+            assert_eq!(call(text), None, "{text}");
+        }
     }
 
     #[test]
