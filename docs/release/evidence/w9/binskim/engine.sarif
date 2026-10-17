@@ -1,0 +1,1774 @@
+{
+  "$schema": "https://schemastore.azurewebsites.net/schemas/json/sarif-2.1.0-rtm.6.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "results": [
+        {
+          "ruleId": "BA2008",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "id": "Error",
+            "arguments": [
+              "llama-server.exe"
+            ]
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-cpu/llama-server.exe"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "BA2008",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "id": "Error",
+            "arguments": [
+              "llama-server.exe"
+            ]
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-vulkan/llama-server.exe"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "BA2008",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "id": "Error",
+            "arguments": [
+              "ggml-base.dll"
+            ]
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-cpu/ggml-base.dll"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "BA2008",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "id": "Error",
+            "arguments": [
+              "ggml-cpu-alderlake.dll"
+            ]
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-cpu/ggml-cpu-alderlake.dll"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "BA2008",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "id": "Error",
+            "arguments": [
+              "ggml-cpu-cannonlake.dll"
+            ]
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-cpu/ggml-cpu-cannonlake.dll"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "BA2008",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "id": "Error",
+            "arguments": [
+              "ggml-cpu-cascadelake.dll"
+            ]
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-cpu/ggml-cpu-cascadelake.dll"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "BA2008",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "id": "Error",
+            "arguments": [
+              "ggml-cpu-cooperlake.dll"
+            ]
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-cpu/ggml-cpu-cooperlake.dll"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "BA2008",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "id": "Error",
+            "arguments": [
+              "ggml-cpu-haswell.dll"
+            ]
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-cpu/ggml-cpu-haswell.dll"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "BA2008",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "id": "Error",
+            "arguments": [
+              "ggml-cpu-icelake.dll"
+            ]
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-cpu/ggml-cpu-icelake.dll"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "BA2008",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "id": "Error",
+            "arguments": [
+              "ggml-cpu-ivybridge.dll"
+            ]
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-cpu/ggml-cpu-ivybridge.dll"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "BA2008",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "id": "Error",
+            "arguments": [
+              "ggml-cpu-piledriver.dll"
+            ]
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-cpu/ggml-cpu-piledriver.dll"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "BA2008",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "id": "Error",
+            "arguments": [
+              "ggml-cpu-sandybridge.dll"
+            ]
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-cpu/ggml-cpu-sandybridge.dll"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "BA2008",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "id": "Error",
+            "arguments": [
+              "ggml-cpu-sapphirerapids.dll"
+            ]
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-cpu/ggml-cpu-sapphirerapids.dll"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "BA2008",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "id": "Error",
+            "arguments": [
+              "ggml-cpu-skylakex.dll"
+            ]
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-cpu/ggml-cpu-skylakex.dll"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "BA2008",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "id": "Error",
+            "arguments": [
+              "ggml-cpu-sse42.dll"
+            ]
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-cpu/ggml-cpu-sse42.dll"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "BA2008",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "id": "Error",
+            "arguments": [
+              "ggml-cpu-x64.dll"
+            ]
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-cpu/ggml-cpu-x64.dll"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "BA2008",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "id": "Error",
+            "arguments": [
+              "ggml-cpu-zen4.dll"
+            ]
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-cpu/ggml-cpu-zen4.dll"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "BA2008",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "id": "Error",
+            "arguments": [
+              "ggml.dll"
+            ]
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-cpu/ggml.dll"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "BA2008",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "id": "Error",
+            "arguments": [
+              "libomp.dll"
+            ]
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-cpu/libomp.dll"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "BA2008",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "id": "Error",
+            "arguments": [
+              "llama-common.dll"
+            ]
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-cpu/llama-common.dll"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "BA2008",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "id": "Error",
+            "arguments": [
+              "llama-server-impl.dll"
+            ]
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-cpu/llama-server-impl.dll"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "BA2008",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "id": "Error",
+            "arguments": [
+              "llama.dll"
+            ]
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-cpu/llama.dll"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "BA2008",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "id": "Error",
+            "arguments": [
+              "mtmd.dll"
+            ]
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-cpu/mtmd.dll"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "BA2008",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "id": "Error",
+            "arguments": [
+              "ggml-base.dll"
+            ]
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-vulkan/ggml-base.dll"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "BA2008",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "id": "Error",
+            "arguments": [
+              "ggml-cpu-alderlake.dll"
+            ]
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-vulkan/ggml-cpu-alderlake.dll"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "BA2008",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "id": "Error",
+            "arguments": [
+              "ggml-cpu-cannonlake.dll"
+            ]
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-vulkan/ggml-cpu-cannonlake.dll"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "BA2008",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "id": "Error",
+            "arguments": [
+              "ggml-cpu-cascadelake.dll"
+            ]
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-vulkan/ggml-cpu-cascadelake.dll"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "BA2008",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "id": "Error",
+            "arguments": [
+              "ggml-cpu-cooperlake.dll"
+            ]
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-vulkan/ggml-cpu-cooperlake.dll"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "BA2008",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "id": "Error",
+            "arguments": [
+              "ggml-cpu-haswell.dll"
+            ]
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-vulkan/ggml-cpu-haswell.dll"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "BA2008",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "id": "Error",
+            "arguments": [
+              "ggml-cpu-icelake.dll"
+            ]
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-vulkan/ggml-cpu-icelake.dll"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "BA2008",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "id": "Error",
+            "arguments": [
+              "ggml-cpu-ivybridge.dll"
+            ]
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-vulkan/ggml-cpu-ivybridge.dll"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "BA2008",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "id": "Error",
+            "arguments": [
+              "ggml-cpu-piledriver.dll"
+            ]
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-vulkan/ggml-cpu-piledriver.dll"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "BA2008",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "id": "Error",
+            "arguments": [
+              "ggml-cpu-sandybridge.dll"
+            ]
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-vulkan/ggml-cpu-sandybridge.dll"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "BA2008",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "id": "Error",
+            "arguments": [
+              "ggml-cpu-sapphirerapids.dll"
+            ]
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-vulkan/ggml-cpu-sapphirerapids.dll"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "BA2008",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "id": "Error",
+            "arguments": [
+              "ggml-cpu-skylakex.dll"
+            ]
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-vulkan/ggml-cpu-skylakex.dll"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "BA2008",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "id": "Error",
+            "arguments": [
+              "ggml-cpu-sse42.dll"
+            ]
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-vulkan/ggml-cpu-sse42.dll"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "BA2008",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "id": "Error",
+            "arguments": [
+              "ggml-cpu-x64.dll"
+            ]
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-vulkan/ggml-cpu-x64.dll"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "BA2008",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "id": "Error",
+            "arguments": [
+              "ggml-cpu-zen4.dll"
+            ]
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-vulkan/ggml-cpu-zen4.dll"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "BA2008",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "id": "Error",
+            "arguments": [
+              "ggml-vulkan.dll"
+            ]
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-vulkan/ggml-vulkan.dll"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "BA2008",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "id": "Error",
+            "arguments": [
+              "ggml.dll"
+            ]
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-vulkan/ggml.dll"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "BA2008",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "id": "Error",
+            "arguments": [
+              "libomp.dll"
+            ]
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-vulkan/libomp.dll"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "BA2008",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "id": "Error",
+            "arguments": [
+              "llama-common.dll"
+            ]
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-vulkan/llama-common.dll"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "BA2008",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "id": "Error",
+            "arguments": [
+              "llama-server-impl.dll"
+            ]
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-vulkan/llama-server-impl.dll"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "BA2008",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "id": "Error",
+            "arguments": [
+              "llama.dll"
+            ]
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-vulkan/llama.dll"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "BA2008",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "id": "Error",
+            "arguments": [
+              "mtmd.dll"
+            ]
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-vulkan/mtmd.dll"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "tool": {
+        "driver": {
+          "name": "BinSkim",
+          "organization": "Microsoft",
+          "product": "BinSkim Portable Executable Analyzer",
+          "fullName": "BinSkim 4.4.9.0",
+          "version": "4.4.9",
+          "semanticVersion": "4.4.9.13",
+          "dottedQuadFileVersion": "4.4.9.0",
+          "rules": [
+            {
+              "id": "BA2008",
+              "name": "EnableControlFlowGuard",
+              "fullDescription": {
+                "text": "Binaries should enable the compiler control guard feature (CFG) at build time to prevent attackers from redirecting execution to unexpected, unsafe locations. CFG analyzes and discovers all indirect-call instructions at compilation and link time. It also injects a check that precedes every indirect call in code that ensures the target is an expected, safe location.  If that check fails at runtime, the operating system will close the program."
+              },
+              "help": {
+                "text": "Binaries should enable the compiler control guard feature (CFG) at build time to prevent attackers from redirecting execution to unexpected, unsafe locations. CFG analyzes and discovers all indirect-call instructions at compilation and link time. It also injects a check that precedes every indirect call in code that ensures the target is an expected, safe location.  If that check fails at runtime, the operating system will close the program."
+              },
+              "messageStrings": {
+                "Pass": {
+                  "text": "'{0}' enables the control flow guard mitigation. As a result, the operating system will force an application to close if an attacker is able to redirect execution in the component to an unexpected location."
+                },
+                "Error": {
+                  "text": "'{0}' does not enable the control flow guard (CFG) mitigation.\r\nTo resolve this issue, pass /guard:cf on both the compiler and linker command lines. Binaries also require the /DYNAMICBASE linker option in order to enable CFG.\r\nFor VC projects use ItemDefinitionGroup - ClCompile - ControlFlowGuard property with 'Guard' value, link CFG property will be set automatically."
+                },
+                "NotApplicable_InvalidMetadata": {
+                  "text": "'{0}' was not evaluated for check '{1}' as the analysis is not relevant based on observed metadata: {2}."
+                },
+                "NotApplicable_UnsupportedKernelModeVersion": {
+                  "text": "'{0}' is a kernel mode portable executable compiled for a version of Windows that does not support the control flow guard feature for kernel mode binaries."
+                }
+              },
+              "helpUri": "https://github.com/microsoft/binskim/blob/main/docs/BinSkimRules.md#rule-BA2008EnableControlFlowGuard",
+              "properties": {
+                "equivalentBinScopeRuleReadableName": "ControlFlowGuardCheck"
+              }
+            }
+          ],
+          "properties": {
+            "comments": "A security and correctness analyzer for portable executable and MSIL formats."
+          }
+        }
+      },
+      "invocations": [
+        {
+          "startTimeUtc": "2026-10-17T19:09:36.621Z",
+          "endTimeUtc": "2026-10-17T19:09:37.130Z",
+          "toolConfigurationNotifications": [
+            {
+              "locations": [
+                {
+                  "physicalLocation": {
+                    "artifactLocation": {
+                      "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-cpu/llama-server.exe"
+                    }
+                  }
+                }
+              ],
+              "message": {
+                "text": "'llama-server.exe' was not evaluated because its PDB could not be loaded (E_PDB_NO_DEBUG_INFO)."
+              },
+              "level": "error",
+              "descriptor": {
+                "id": "ERR997.ExceptionLoadingPdb"
+              }
+            },
+            {
+              "locations": [
+                {
+                  "physicalLocation": {
+                    "artifactLocation": {
+                      "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-vulkan/llama-server.exe"
+                    }
+                  }
+                }
+              ],
+              "message": {
+                "text": "'llama-server.exe' was not evaluated because its PDB could not be loaded (E_PDB_NO_DEBUG_INFO)."
+              },
+              "level": "error",
+              "descriptor": {
+                "id": "ERR997.ExceptionLoadingPdb"
+              }
+            },
+            {
+              "locations": [
+                {
+                  "physicalLocation": {
+                    "artifactLocation": {
+                      "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-cpu/ggml-base.dll"
+                    }
+                  }
+                }
+              ],
+              "message": {
+                "text": "'ggml-base.dll' was not evaluated because its PDB could not be loaded (E_PDB_NO_DEBUG_INFO)."
+              },
+              "level": "error",
+              "descriptor": {
+                "id": "ERR997.ExceptionLoadingPdb"
+              }
+            },
+            {
+              "locations": [
+                {
+                  "physicalLocation": {
+                    "artifactLocation": {
+                      "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-cpu/ggml-cpu-alderlake.dll"
+                    }
+                  }
+                }
+              ],
+              "message": {
+                "text": "'ggml-cpu-alderlake.dll' was not evaluated because its PDB could not be loaded (E_PDB_NO_DEBUG_INFO)."
+              },
+              "level": "error",
+              "descriptor": {
+                "id": "ERR997.ExceptionLoadingPdb"
+              }
+            },
+            {
+              "locations": [
+                {
+                  "physicalLocation": {
+                    "artifactLocation": {
+                      "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-cpu/ggml-cpu-cannonlake.dll"
+                    }
+                  }
+                }
+              ],
+              "message": {
+                "text": "'ggml-cpu-cannonlake.dll' was not evaluated because its PDB could not be loaded (E_PDB_NO_DEBUG_INFO)."
+              },
+              "level": "error",
+              "descriptor": {
+                "id": "ERR997.ExceptionLoadingPdb"
+              }
+            },
+            {
+              "locations": [
+                {
+                  "physicalLocation": {
+                    "artifactLocation": {
+                      "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-cpu/ggml-cpu-cascadelake.dll"
+                    }
+                  }
+                }
+              ],
+              "message": {
+                "text": "'ggml-cpu-cascadelake.dll' was not evaluated because its PDB could not be loaded (E_PDB_NO_DEBUG_INFO)."
+              },
+              "level": "error",
+              "descriptor": {
+                "id": "ERR997.ExceptionLoadingPdb"
+              }
+            },
+            {
+              "locations": [
+                {
+                  "physicalLocation": {
+                    "artifactLocation": {
+                      "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-cpu/ggml-cpu-cooperlake.dll"
+                    }
+                  }
+                }
+              ],
+              "message": {
+                "text": "'ggml-cpu-cooperlake.dll' was not evaluated because its PDB could not be loaded (E_PDB_NO_DEBUG_INFO)."
+              },
+              "level": "error",
+              "descriptor": {
+                "id": "ERR997.ExceptionLoadingPdb"
+              }
+            },
+            {
+              "locations": [
+                {
+                  "physicalLocation": {
+                    "artifactLocation": {
+                      "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-cpu/ggml-cpu-haswell.dll"
+                    }
+                  }
+                }
+              ],
+              "message": {
+                "text": "'ggml-cpu-haswell.dll' was not evaluated because its PDB could not be loaded (E_PDB_NO_DEBUG_INFO)."
+              },
+              "level": "error",
+              "descriptor": {
+                "id": "ERR997.ExceptionLoadingPdb"
+              }
+            },
+            {
+              "locations": [
+                {
+                  "physicalLocation": {
+                    "artifactLocation": {
+                      "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-cpu/ggml-cpu-icelake.dll"
+                    }
+                  }
+                }
+              ],
+              "message": {
+                "text": "'ggml-cpu-icelake.dll' was not evaluated because its PDB could not be loaded (E_PDB_NO_DEBUG_INFO)."
+              },
+              "level": "error",
+              "descriptor": {
+                "id": "ERR997.ExceptionLoadingPdb"
+              }
+            },
+            {
+              "locations": [
+                {
+                  "physicalLocation": {
+                    "artifactLocation": {
+                      "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-cpu/ggml-cpu-ivybridge.dll"
+                    }
+                  }
+                }
+              ],
+              "message": {
+                "text": "'ggml-cpu-ivybridge.dll' was not evaluated because its PDB could not be loaded (E_PDB_NO_DEBUG_INFO)."
+              },
+              "level": "error",
+              "descriptor": {
+                "id": "ERR997.ExceptionLoadingPdb"
+              }
+            },
+            {
+              "locations": [
+                {
+                  "physicalLocation": {
+                    "artifactLocation": {
+                      "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-cpu/ggml-cpu-piledriver.dll"
+                    }
+                  }
+                }
+              ],
+              "message": {
+                "text": "'ggml-cpu-piledriver.dll' was not evaluated because its PDB could not be loaded (E_PDB_NO_DEBUG_INFO)."
+              },
+              "level": "error",
+              "descriptor": {
+                "id": "ERR997.ExceptionLoadingPdb"
+              }
+            },
+            {
+              "locations": [
+                {
+                  "physicalLocation": {
+                    "artifactLocation": {
+                      "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-cpu/ggml-cpu-sandybridge.dll"
+                    }
+                  }
+                }
+              ],
+              "message": {
+                "text": "'ggml-cpu-sandybridge.dll' was not evaluated because its PDB could not be loaded (E_PDB_NO_DEBUG_INFO)."
+              },
+              "level": "error",
+              "descriptor": {
+                "id": "ERR997.ExceptionLoadingPdb"
+              }
+            },
+            {
+              "locations": [
+                {
+                  "physicalLocation": {
+                    "artifactLocation": {
+                      "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-cpu/ggml-cpu-sapphirerapids.dll"
+                    }
+                  }
+                }
+              ],
+              "message": {
+                "text": "'ggml-cpu-sapphirerapids.dll' was not evaluated because its PDB could not be loaded (E_PDB_NO_DEBUG_INFO)."
+              },
+              "level": "error",
+              "descriptor": {
+                "id": "ERR997.ExceptionLoadingPdb"
+              }
+            },
+            {
+              "locations": [
+                {
+                  "physicalLocation": {
+                    "artifactLocation": {
+                      "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-cpu/ggml-cpu-skylakex.dll"
+                    }
+                  }
+                }
+              ],
+              "message": {
+                "text": "'ggml-cpu-skylakex.dll' was not evaluated because its PDB could not be loaded (E_PDB_NO_DEBUG_INFO)."
+              },
+              "level": "error",
+              "descriptor": {
+                "id": "ERR997.ExceptionLoadingPdb"
+              }
+            },
+            {
+              "locations": [
+                {
+                  "physicalLocation": {
+                    "artifactLocation": {
+                      "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-cpu/ggml-cpu-sse42.dll"
+                    }
+                  }
+                }
+              ],
+              "message": {
+                "text": "'ggml-cpu-sse42.dll' was not evaluated because its PDB could not be loaded (E_PDB_NO_DEBUG_INFO)."
+              },
+              "level": "error",
+              "descriptor": {
+                "id": "ERR997.ExceptionLoadingPdb"
+              }
+            },
+            {
+              "locations": [
+                {
+                  "physicalLocation": {
+                    "artifactLocation": {
+                      "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-cpu/ggml-cpu-x64.dll"
+                    }
+                  }
+                }
+              ],
+              "message": {
+                "text": "'ggml-cpu-x64.dll' was not evaluated because its PDB could not be loaded (E_PDB_NO_DEBUG_INFO)."
+              },
+              "level": "error",
+              "descriptor": {
+                "id": "ERR997.ExceptionLoadingPdb"
+              }
+            },
+            {
+              "locations": [
+                {
+                  "physicalLocation": {
+                    "artifactLocation": {
+                      "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-cpu/ggml-cpu-zen4.dll"
+                    }
+                  }
+                }
+              ],
+              "message": {
+                "text": "'ggml-cpu-zen4.dll' was not evaluated because its PDB could not be loaded (E_PDB_NO_DEBUG_INFO)."
+              },
+              "level": "error",
+              "descriptor": {
+                "id": "ERR997.ExceptionLoadingPdb"
+              }
+            },
+            {
+              "locations": [
+                {
+                  "physicalLocation": {
+                    "artifactLocation": {
+                      "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-cpu/ggml.dll"
+                    }
+                  }
+                }
+              ],
+              "message": {
+                "text": "'ggml.dll' was not evaluated because its PDB could not be loaded (E_PDB_NO_DEBUG_INFO)."
+              },
+              "level": "error",
+              "descriptor": {
+                "id": "ERR997.ExceptionLoadingPdb"
+              }
+            },
+            {
+              "locations": [
+                {
+                  "physicalLocation": {
+                    "artifactLocation": {
+                      "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-cpu/libomp.dll"
+                    }
+                  }
+                }
+              ],
+              "message": {
+                "text": "'libomp.dll' was not evaluated because its PDB could not be loaded (E_PDB_NO_DEBUG_INFO)."
+              },
+              "level": "error",
+              "descriptor": {
+                "id": "ERR997.ExceptionLoadingPdb"
+              }
+            },
+            {
+              "locations": [
+                {
+                  "physicalLocation": {
+                    "artifactLocation": {
+                      "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-cpu/llama-common.dll"
+                    }
+                  }
+                }
+              ],
+              "message": {
+                "text": "'llama-common.dll' was not evaluated because its PDB could not be loaded (E_PDB_NO_DEBUG_INFO)."
+              },
+              "level": "error",
+              "descriptor": {
+                "id": "ERR997.ExceptionLoadingPdb"
+              }
+            },
+            {
+              "locations": [
+                {
+                  "physicalLocation": {
+                    "artifactLocation": {
+                      "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-cpu/llama-server-impl.dll"
+                    }
+                  }
+                }
+              ],
+              "message": {
+                "text": "'llama-server-impl.dll' was not evaluated because its PDB could not be loaded (E_PDB_NO_DEBUG_INFO)."
+              },
+              "level": "error",
+              "descriptor": {
+                "id": "ERR997.ExceptionLoadingPdb"
+              }
+            },
+            {
+              "locations": [
+                {
+                  "physicalLocation": {
+                    "artifactLocation": {
+                      "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-cpu/llama.dll"
+                    }
+                  }
+                }
+              ],
+              "message": {
+                "text": "'llama.dll' was not evaluated because its PDB could not be loaded (E_PDB_NO_DEBUG_INFO)."
+              },
+              "level": "error",
+              "descriptor": {
+                "id": "ERR997.ExceptionLoadingPdb"
+              }
+            },
+            {
+              "locations": [
+                {
+                  "physicalLocation": {
+                    "artifactLocation": {
+                      "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-cpu/mtmd.dll"
+                    }
+                  }
+                }
+              ],
+              "message": {
+                "text": "'mtmd.dll' was not evaluated because its PDB could not be loaded (E_PDB_NO_DEBUG_INFO)."
+              },
+              "level": "error",
+              "descriptor": {
+                "id": "ERR997.ExceptionLoadingPdb"
+              }
+            },
+            {
+              "locations": [
+                {
+                  "physicalLocation": {
+                    "artifactLocation": {
+                      "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-vulkan/ggml-base.dll"
+                    }
+                  }
+                }
+              ],
+              "message": {
+                "text": "'ggml-base.dll' was not evaluated because its PDB could not be loaded (E_PDB_NO_DEBUG_INFO)."
+              },
+              "level": "error",
+              "descriptor": {
+                "id": "ERR997.ExceptionLoadingPdb"
+              }
+            },
+            {
+              "locations": [
+                {
+                  "physicalLocation": {
+                    "artifactLocation": {
+                      "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-vulkan/ggml-cpu-alderlake.dll"
+                    }
+                  }
+                }
+              ],
+              "message": {
+                "text": "'ggml-cpu-alderlake.dll' was not evaluated because its PDB could not be loaded (E_PDB_NO_DEBUG_INFO)."
+              },
+              "level": "error",
+              "descriptor": {
+                "id": "ERR997.ExceptionLoadingPdb"
+              }
+            },
+            {
+              "locations": [
+                {
+                  "physicalLocation": {
+                    "artifactLocation": {
+                      "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-vulkan/ggml-cpu-cannonlake.dll"
+                    }
+                  }
+                }
+              ],
+              "message": {
+                "text": "'ggml-cpu-cannonlake.dll' was not evaluated because its PDB could not be loaded (E_PDB_NO_DEBUG_INFO)."
+              },
+              "level": "error",
+              "descriptor": {
+                "id": "ERR997.ExceptionLoadingPdb"
+              }
+            },
+            {
+              "locations": [
+                {
+                  "physicalLocation": {
+                    "artifactLocation": {
+                      "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-vulkan/ggml-cpu-cascadelake.dll"
+                    }
+                  }
+                }
+              ],
+              "message": {
+                "text": "'ggml-cpu-cascadelake.dll' was not evaluated because its PDB could not be loaded (E_PDB_NO_DEBUG_INFO)."
+              },
+              "level": "error",
+              "descriptor": {
+                "id": "ERR997.ExceptionLoadingPdb"
+              }
+            },
+            {
+              "locations": [
+                {
+                  "physicalLocation": {
+                    "artifactLocation": {
+                      "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-vulkan/ggml-cpu-cooperlake.dll"
+                    }
+                  }
+                }
+              ],
+              "message": {
+                "text": "'ggml-cpu-cooperlake.dll' was not evaluated because its PDB could not be loaded (E_PDB_NO_DEBUG_INFO)."
+              },
+              "level": "error",
+              "descriptor": {
+                "id": "ERR997.ExceptionLoadingPdb"
+              }
+            },
+            {
+              "locations": [
+                {
+                  "physicalLocation": {
+                    "artifactLocation": {
+                      "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-vulkan/ggml-cpu-haswell.dll"
+                    }
+                  }
+                }
+              ],
+              "message": {
+                "text": "'ggml-cpu-haswell.dll' was not evaluated because its PDB could not be loaded (E_PDB_NO_DEBUG_INFO)."
+              },
+              "level": "error",
+              "descriptor": {
+                "id": "ERR997.ExceptionLoadingPdb"
+              }
+            },
+            {
+              "locations": [
+                {
+                  "physicalLocation": {
+                    "artifactLocation": {
+                      "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-vulkan/ggml-cpu-icelake.dll"
+                    }
+                  }
+                }
+              ],
+              "message": {
+                "text": "'ggml-cpu-icelake.dll' was not evaluated because its PDB could not be loaded (E_PDB_NO_DEBUG_INFO)."
+              },
+              "level": "error",
+              "descriptor": {
+                "id": "ERR997.ExceptionLoadingPdb"
+              }
+            },
+            {
+              "locations": [
+                {
+                  "physicalLocation": {
+                    "artifactLocation": {
+                      "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-vulkan/ggml-cpu-ivybridge.dll"
+                    }
+                  }
+                }
+              ],
+              "message": {
+                "text": "'ggml-cpu-ivybridge.dll' was not evaluated because its PDB could not be loaded (E_PDB_NO_DEBUG_INFO)."
+              },
+              "level": "error",
+              "descriptor": {
+                "id": "ERR997.ExceptionLoadingPdb"
+              }
+            },
+            {
+              "locations": [
+                {
+                  "physicalLocation": {
+                    "artifactLocation": {
+                      "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-vulkan/ggml-cpu-piledriver.dll"
+                    }
+                  }
+                }
+              ],
+              "message": {
+                "text": "'ggml-cpu-piledriver.dll' was not evaluated because its PDB could not be loaded (E_PDB_NO_DEBUG_INFO)."
+              },
+              "level": "error",
+              "descriptor": {
+                "id": "ERR997.ExceptionLoadingPdb"
+              }
+            },
+            {
+              "locations": [
+                {
+                  "physicalLocation": {
+                    "artifactLocation": {
+                      "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-vulkan/ggml-cpu-sandybridge.dll"
+                    }
+                  }
+                }
+              ],
+              "message": {
+                "text": "'ggml-cpu-sandybridge.dll' was not evaluated because its PDB could not be loaded (E_PDB_NO_DEBUG_INFO)."
+              },
+              "level": "error",
+              "descriptor": {
+                "id": "ERR997.ExceptionLoadingPdb"
+              }
+            },
+            {
+              "locations": [
+                {
+                  "physicalLocation": {
+                    "artifactLocation": {
+                      "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-vulkan/ggml-cpu-sapphirerapids.dll"
+                    }
+                  }
+                }
+              ],
+              "message": {
+                "text": "'ggml-cpu-sapphirerapids.dll' was not evaluated because its PDB could not be loaded (E_PDB_NO_DEBUG_INFO)."
+              },
+              "level": "error",
+              "descriptor": {
+                "id": "ERR997.ExceptionLoadingPdb"
+              }
+            },
+            {
+              "locations": [
+                {
+                  "physicalLocation": {
+                    "artifactLocation": {
+                      "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-vulkan/ggml-cpu-skylakex.dll"
+                    }
+                  }
+                }
+              ],
+              "message": {
+                "text": "'ggml-cpu-skylakex.dll' was not evaluated because its PDB could not be loaded (E_PDB_NO_DEBUG_INFO)."
+              },
+              "level": "error",
+              "descriptor": {
+                "id": "ERR997.ExceptionLoadingPdb"
+              }
+            },
+            {
+              "locations": [
+                {
+                  "physicalLocation": {
+                    "artifactLocation": {
+                      "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-vulkan/ggml-cpu-sse42.dll"
+                    }
+                  }
+                }
+              ],
+              "message": {
+                "text": "'ggml-cpu-sse42.dll' was not evaluated because its PDB could not be loaded (E_PDB_NO_DEBUG_INFO)."
+              },
+              "level": "error",
+              "descriptor": {
+                "id": "ERR997.ExceptionLoadingPdb"
+              }
+            },
+            {
+              "locations": [
+                {
+                  "physicalLocation": {
+                    "artifactLocation": {
+                      "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-vulkan/ggml-cpu-x64.dll"
+                    }
+                  }
+                }
+              ],
+              "message": {
+                "text": "'ggml-cpu-x64.dll' was not evaluated because its PDB could not be loaded (E_PDB_NO_DEBUG_INFO)."
+              },
+              "level": "error",
+              "descriptor": {
+                "id": "ERR997.ExceptionLoadingPdb"
+              }
+            },
+            {
+              "locations": [
+                {
+                  "physicalLocation": {
+                    "artifactLocation": {
+                      "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-vulkan/ggml-cpu-zen4.dll"
+                    }
+                  }
+                }
+              ],
+              "message": {
+                "text": "'ggml-cpu-zen4.dll' was not evaluated because its PDB could not be loaded (E_PDB_NO_DEBUG_INFO)."
+              },
+              "level": "error",
+              "descriptor": {
+                "id": "ERR997.ExceptionLoadingPdb"
+              }
+            },
+            {
+              "locations": [
+                {
+                  "physicalLocation": {
+                    "artifactLocation": {
+                      "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-vulkan/ggml-vulkan.dll"
+                    }
+                  }
+                }
+              ],
+              "message": {
+                "text": "'ggml-vulkan.dll' was not evaluated because its PDB could not be loaded (E_PDB_NO_DEBUG_INFO)."
+              },
+              "level": "error",
+              "descriptor": {
+                "id": "ERR997.ExceptionLoadingPdb"
+              }
+            },
+            {
+              "locations": [
+                {
+                  "physicalLocation": {
+                    "artifactLocation": {
+                      "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-vulkan/ggml.dll"
+                    }
+                  }
+                }
+              ],
+              "message": {
+                "text": "'ggml.dll' was not evaluated because its PDB could not be loaded (E_PDB_NO_DEBUG_INFO)."
+              },
+              "level": "error",
+              "descriptor": {
+                "id": "ERR997.ExceptionLoadingPdb"
+              }
+            },
+            {
+              "locations": [
+                {
+                  "physicalLocation": {
+                    "artifactLocation": {
+                      "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-vulkan/libomp.dll"
+                    }
+                  }
+                }
+              ],
+              "message": {
+                "text": "'libomp.dll' was not evaluated because its PDB could not be loaded (E_PDB_NO_DEBUG_INFO)."
+              },
+              "level": "error",
+              "descriptor": {
+                "id": "ERR997.ExceptionLoadingPdb"
+              }
+            },
+            {
+              "locations": [
+                {
+                  "physicalLocation": {
+                    "artifactLocation": {
+                      "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-vulkan/llama-common.dll"
+                    }
+                  }
+                }
+              ],
+              "message": {
+                "text": "'llama-common.dll' was not evaluated because its PDB could not be loaded (E_PDB_NO_DEBUG_INFO)."
+              },
+              "level": "error",
+              "descriptor": {
+                "id": "ERR997.ExceptionLoadingPdb"
+              }
+            },
+            {
+              "locations": [
+                {
+                  "physicalLocation": {
+                    "artifactLocation": {
+                      "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-vulkan/llama-server-impl.dll"
+                    }
+                  }
+                }
+              ],
+              "message": {
+                "text": "'llama-server-impl.dll' was not evaluated because its PDB could not be loaded (E_PDB_NO_DEBUG_INFO)."
+              },
+              "level": "error",
+              "descriptor": {
+                "id": "ERR997.ExceptionLoadingPdb"
+              }
+            },
+            {
+              "locations": [
+                {
+                  "physicalLocation": {
+                    "artifactLocation": {
+                      "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-vulkan/llama.dll"
+                    }
+                  }
+                }
+              ],
+              "message": {
+                "text": "'llama.dll' was not evaluated because its PDB could not be loaded (E_PDB_NO_DEBUG_INFO)."
+              },
+              "level": "error",
+              "descriptor": {
+                "id": "ERR997.ExceptionLoadingPdb"
+              }
+            },
+            {
+              "locations": [
+                {
+                  "physicalLocation": {
+                    "artifactLocation": {
+                      "uri": "file:///C:/OpenFrame/.build-cache/target/release/ai/runtimes/llama-cpp-b11259-win-x64-vulkan/mtmd.dll"
+                    }
+                  }
+                }
+              ],
+              "message": {
+                "text": "'mtmd.dll' was not evaluated because its PDB could not be loaded (E_PDB_NO_DEBUG_INFO)."
+              },
+              "level": "error",
+              "descriptor": {
+                "id": "ERR997.ExceptionLoadingPdb"
+              }
+            }
+          ],
+          "executionSuccessful": false
+        }
+      ],
+      "columnKind": "utf16CodeUnits"
+    }
+  ]
+}

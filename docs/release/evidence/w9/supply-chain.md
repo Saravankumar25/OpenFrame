@@ -55,3 +55,20 @@ which made npm fail to rewrite it (EPERM); the attribute was cleared.
 | Personal paths in history | Two commits hold the owner's name: the first commit (the same `.codex/hooks.json`) and a8f91e2 (a W5 evaluation result that echoes the local display name). Removing them needs a history rewrite, which is the owner's decision (release gate S13 exception) |
 
 The installer scan (`npm run scan:installer`) runs on the final build (gate G1).
+
+## Update 2026-10-18: end-to-end harness back on webdriverio 9
+
+The end-to-end harness went back from webdriverio 10 to 9 (commit 1fbc0db). Version 10 has strict selectors, no
+`executeAsync`, and changed click and key handling. That failed 22 release specs that pass on 9 (see
+[e2e-release-runs.md](e2e-release-runs.md)).
+
+| Check | Result |
+|---|---|
+| `npm audit` (all dependencies) | Reports the webdriverio 9 dependency chain again. Dev only. High findings in `@puppeteer/browsers`, `extract-zip`, `basic-ftp`, `get-uri` and the proxy agents: the browser downloader |
+| `npm audit --omit=dev` | 0 |
+| `cargo audit` | 0 vulnerabilities |
+| `cargo deny` | ok |
+
+**Exception, dated 2026-10-18, review by 2027-01-18 (waiting for the owner).** The harness never calls the browser
+downloader: drivers come from `tests/e2e/scripts/setup-drivers.mjs`. Nothing of the harness ships. It runs only on the
+developer laptop, against the app. Gate S11 stays an exception until the owner approves.

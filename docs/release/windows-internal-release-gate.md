@@ -11,30 +11,30 @@ Status words: Open, Pass, Fail, Exception (owner approved), Exception (waiting f
 
 | Id | Check | Pass means | Status | Evidence |
 |---|---|---|---|---|
-| G1 | One build | The installer was built once from a clean tree at a recorded commit, with the team gate on; its SHA-256, version, commit, build date and size are recorded | Open | |
+| G1 | One build | The installer was built once from a clean tree at a recorded commit, with the team gate on; its SHA-256, version, commit, build date and size are recorded | Pass | Commit 995bfac, clean tree, 27,025,974 bytes, SHA-256 `d057d115d1c5f960983be8a16483920795c2f19be64235a6ff479626b9cc2f3f`, file `release-outOpenFrame-Studio-0.1.0-internal-995bfac.exe`; see [W9 README](evidence/w9/README.md) |
 | G2 | Tested as shipped | The release suite installed and drove exactly the file whose SHA-256 is in G1; the file in `release-out\` has the same hash | Open | |
-| G3 | SBOM | CycloneDX for the Rust workspace and `npm sbom` for the web app, saved next to the hash | Open | |
-| G4 | Size | Installer size recorded; a jump of more than 20 percent over the estimate is explained | Open | |
+| G3 | SBOM | CycloneDX for the Rust workspace and `npm sbom` for the web app, saved next to the hash | Pass | Rust CycloneDX and npm CycloneDX next to the installer; see [W9 README](evidence/w9/README.md) |
+| G4 | Size | Installer size recorded; a jump of more than 20 percent over the estimate is explained | Pass | 27 MB against the 20 to 30 MB estimate; see [W9 README](evidence/w9/README.md) |
 
 ## Security
 
 | Id | Check | Pass means | Status | Evidence |
 |---|---|---|---|---|
 | S1 | Threat model current | Every entry point has attacker input, guard in code and a passing test named | Open | |
-| S2 | SQL built safely | Every SQL string built with `format!`, concatenation or `replace` takes user values only as bound parameters; identifiers from a fixed list; grep report saved | Open | |
-| S3 | Search input | FTS5 MATCH input cannot use FTS syntax or read other columns; LIKE escapes `%` and `_`; hostile-input tests pass | Open | |
-| S4 | Prompt injection | Poisoned-retrieval corpus (40 or more cases, 13 languages): no unrequested tool call, no change without the Proposed Changes card and acceptance, no private note leaked, no URL or path the person did not give | Open | |
-| S5 | No live HTML from the model | Model output never renders links, images, frames or scripts that fetch anything; exfiltration tests pass | Open | |
-| S6 | AI permissions | Every AI tool keeps its permission, schema and role check; a Viewer cannot change anything through any tool | Open | |
-| S7 | Tauri surface | Least-privilege capabilities, no unused commands, no shell open of arbitrary URLs, CSP without `unsafe-eval` and without `unsafe-inline` (or an approved exception), arguments validated, unknown fields refused where input is untrusted | Open | |
+| S2 | SQL built safely | Every SQL string built with `format!`, concatenation or `replace` takes user values only as bound parameters; identifiers from a fixed list; grep report saved | Pass | [sql-audit.md](evidence/w9/sql-audit.md) |
+| S3 | Search input | FTS5 MATCH input cannot use FTS syntax or read other columns; LIKE escapes `%` and `_`; hostile-input tests pass | Pass | [sql-audit.md](evidence/w9/sql-audit.md) |
+| S4 | Prompt injection | Poisoned-retrieval corpus (40 or more cases, 13 languages): no unrequested tool call, no change without the Proposed Changes card and acceptance, no private note leaked, no URL or path the person did not give | Pass | 60 of 60 safe (60 cases, 12 languages): [ai-poisoned](evidence/w9/ai-poisoned/README.md) |
+| S5 | No live HTML from the model | Model output never renders links, images, frames or scripts that fetch anything; exfiltration tests pass | Pass | `apps/desktop/src/ai/noLiveHtml.test.tsx`, zero raw-HTML sinks; [W9 README](evidence/w9/README.md) |
+| S6 | AI permissions | Every AI tool keeps its permission, schema and role check; a Viewer cannot change anything through any tool | Pass | 558 refusals, `every_changing_tool_is_refused_for_viewer_commenter_and_export_only`; [W9 README](evidence/w9/README.md) |
+| S7 | Tauri surface | Least-privilege capabilities, no unused commands, no shell open of arbitrary URLs, CSP without `unsafe-eval` and without `unsafe-inline` (or an approved exception), arguments validated, unknown fields refused where input is untrusted | Exception (waiting for the owner) | `style-src` keeps `unsafe-inline` (Radix UI scroll lock and theme engine); the other parts pass; [W9 README](evidence/w9/README.md) |
 | S8 | Files | Traversal, absolute, UNC, links and junctions, reserved names, bombs, huge files, entity expansion, malformed PDF and images refused with bounded memory and time | Open | |
 | S9 | Fuzzing | Every importer fuzzed for a fixed time with no crash; corpora and results saved | Open | |
-| S10 | AI engine process | Fixed binary and arguments, exits with the app, a crashed engine never hangs the app | Open | |
-| S11 | Supply chain | `cargo audit`, `cargo deny`, `npm audit` with zero unexplained findings; lockfiles committed; exceptions dated with a reason | Open | |
-| S12 | Binary hardening | BinSkim on the app and engine binaries: ASLR, DEP, CFG, /GS, high entropy VA, no writable and executable section | Open | |
-| S13 | Secrets | Installer and repository history scanned (gitleaks): no keys, tokens, passwords or personal paths | Open | |
+| S10 | AI engine process | Fixed binary and arguments, exits with the app, a crashed engine never hangs the app | Pass | Threat model T16 and T18; `crates/openframe-ai/tests/supervisor.rs`; [binary-hardening.md](evidence/w9/binary-hardening.md) |
+| S11 | Supply chain | `cargo audit`, `cargo deny`, `npm audit` with zero unexplained findings; lockfiles committed; exceptions dated with a reason | Exception (waiting for the owner) | webdriverio 9 dev-only chain, review by 2027-01-18: [supply-chain.md](evidence/w9/supply-chain.md) |
+| S12 | Binary hardening | BinSkim on the app and engine binaries: ASLR, DEP, CFG, /GS, high entropy VA, no writable and executable section | Exception (waiting for the owner) | Engine CFG, ring assembly hashing, Rust std /GS, Spectre: [binary-hardening.md](evidence/w9/binary-hardening.md) |
+| S13 | Secrets | Installer and repository history scanned (gitleaks): no keys, tokens, passwords or personal paths | Exception (waiting for the owner) | Owner's name in 2 old commits; no keys or tokens anywhere: [supply-chain.md](evidence/w9/supply-chain.md) |
 | S14 | Reviews | Security reviews of the core, importers, AI module and Tauri layer: every finding fixed or recorded here with a reason | Open | |
-| S15 | Antivirus | Microsoft Defender scan of the installer on this laptop and in the guest: clean | Open | |
+| S15 | Antivirus | Microsoft Defender scan of the installer on this laptop and in the guest: clean | Open | Rehearsal installer d271894 scanned on the laptop, no threats (signatures 1.461.74.0); final installer and guest scans pending |
 
 ## Clean machine (proof level 4)
 
@@ -68,4 +68,4 @@ Status words: Open, Pass, Fail, Exception (owner approved), Exception (waiting f
 |---|---|---|---|---|
 | R1 | Gap list | Every open box in masterplan areas 2 to 8, 16, 20 and every Must-ship row below level 3 is finished, proved, or moved with a reason | Open | |
 | R2 | Documents | Feature status, masterplan, manual, licences notice, handoff, progress log current; links, writing count and governance checks green | Open | |
-| R3 | Pilot kit | Install note, daily test list, bug template, log sending, triage list and freeze steps ready | Open | |
+| R3 | Pilot kit | Install note, daily test list, bug template, log sending, triage list and freeze steps ready | Pass | `docs/testing/pilot-kit/` and `docs/release/w10-freeze-steps.md` |
