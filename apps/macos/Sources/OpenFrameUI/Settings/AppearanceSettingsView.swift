@@ -55,7 +55,7 @@ struct AppearanceSettingsContent: View {
                 }
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Theme").font(.headline)
-                    LazyVGrid(columns: columns, spacing: 12) {
+                    CenteredCards(cardWidth: 190, spacing: 12) {
                         ForEach(themes.themes) { item in
                             ThemeCard(
                                 data: item, mode: theme.mode, catalog: themes.catalog,

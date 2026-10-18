@@ -69,10 +69,12 @@ struct StorySheetFrame<Content: View, Footer: View>: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(spacing: PageSpacing.tight) {
                 Text(title).font(.title3.weight(.semibold)).accessibilityAddTraits(.isHeader)
                 if let sub { Text(sub).font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true) }
             }
+            .multilineTextAlignment(.center)
+            .frame(maxWidth: .infinity)
             content()
             HStack(spacing: 8) {
                 Spacer(minLength: 0)

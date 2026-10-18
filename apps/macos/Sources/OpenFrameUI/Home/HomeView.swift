@@ -72,16 +72,17 @@ struct HomeView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 28) {
+                VStack(alignment: .leading, spacing: PageSpacing.large) {
                     header
                     if home.loading {
                         ProgressView().frame(maxWidth: .infinity)
                     } else if let failure = home.failure, home.recents.isEmpty {
-                        VStack(alignment: .leading, spacing: 8) {
+                        VStack(spacing: PageSpacing.small) {
                             Text("Your projects could not be read.").font(.headline)
-                            Text(failure.message).foregroundStyle(.secondary)
+                            Text(failure.message).foregroundStyle(.secondary).multilineTextAlignment(.center)
                             Button("Try Again") { reload() }
                         }
+                        .frame(maxWidth: .infinity)
                         .accessibilityIdentifier("home-load-error")
                     } else if home.recents.isEmpty {
                         emptyState
@@ -92,9 +93,8 @@ struct HomeView: View {
                     }
                     DataLocationNote()
                 }
-                .padding(32)
-                .frame(maxWidth: 880, alignment: .leading)
-                .frame(maxWidth: .infinity)
+                .padding(.vertical, PageSpacing.page)
+                .pageColumn()
             }
             .background(theme["bg"])
             .toolbar {
@@ -154,27 +154,29 @@ struct HomeView: View {
     private struct TaskKey: Hashable { let running: Bool; let archived: Bool; let changes: Int }
 
     private var header: some View {
-        HStack(spacing: 14) {
-            BrandMark(size: 40)
-            VStack(alignment: .leading, spacing: 2) {
-                Text("OpenFrame Studio")
-                    .font(.system(size: 24, weight: .semibold))
-                    .tracking(-0.3)
-                if let name = app.info?.profile.displayName {
-                    Text("Signed in on this Mac as \(name)")
-                        .font(.callout)
-                        .foregroundStyle(.secondary)
-                }
+        VStack(spacing: PageSpacing.small) {
+            BrandMark(size: 48)
+            Text("OpenFrame Studio")
+                .font(.system(size: 26, weight: .semibold))
+                .tracking(-0.3)
+                .multilineTextAlignment(.center)
+            if let name = app.info?.profile.displayName {
+                Text("Signed in on this Mac as \(name)")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
             }
         }
+        .frame(maxWidth: .infinity)
     }
 
     private var emptyState: some View {
-        VStack(alignment: .leading, spacing: 14) {
+        VStack(spacing: PageSpacing.medium) {
             Text("Start your first project")
                 .font(.title3.weight(.semibold))
             Text("A project holds one film or series: its screenplay, story, breakdown and production plans, in one folder on this Mac.")
                 .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
             HStack(spacing: 12) {
                 Button("New Project") { showNewProject = true }
@@ -185,8 +187,8 @@ struct HomeView: View {
                     .controlSize(.large)
             }
         }
-        .padding(24)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(PageSpacing.large)
+        .frame(maxWidth: .infinity)
         .background(theme["panel"], in: RoundedRectangle(cornerRadius: 12, style: .continuous))
         .accessibilityIdentifier("home-empty")
     }
@@ -198,19 +200,27 @@ struct HomeView: View {
     }
 
     private var noMatches: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(spacing: 6) {
             Text("No projects match \u{201C}\(home.query)\u{201D}.").font(.headline)
             Text("Search looks at the title, the type and the status.").foregroundStyle(.secondary)
         }
+        .multilineTextAlignment(.center)
+        .frame(maxWidth: .infinity)
         .accessibilityIdentifier("home-no-matches")
     }
 
     private func reload() { Task { await home.load(app.core) } }
 
     private func section(_ title: String, _ items: [RecentProject]) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text(title).font(.headline).foregroundStyle(.secondary)
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 240), spacing: 14)], spacing: 14) {
+        VStack(alignment: .leading, spacing: 0) {
+            // The cards are centred as a group, so their caption is centred over them.
+            Text(title)
+                .font(.headline)
+                .accessibilityAddTraits(.isHeader)
+                .frame(maxWidth: .infinity)
+                .padding(.top, PageSpacing.large)
+                .padding(.bottom, PageSpacing.small)
+            CenteredCards(cardWidth: 240) {
                 ForEach(items, id: \.projectId) { project in
                     ProjectCard(project: project, handlers: handlers(for: project))
                 }
@@ -349,12 +359,13 @@ struct DataLocationNote: View {
 
     var body: some View {
         if let info = app.info {
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(spacing: 6) {
                 Label("Your work is stored on this Mac", systemImage: "internaldrive")
                     .font(.subheadline.weight(.semibold))
                 Text("Projects are kept in \(info.projectsDir). Back up the OpenFrame folder in Documents to keep a copy of everything.")
                     .font(.callout)
                     .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
                     .textSelection(.enabled)
                     .fixedSize(horizontal: false, vertical: true)
                 Button("Show in Finder") {
@@ -362,6 +373,7 @@ struct DataLocationNote: View {
                 }
                 .buttonStyle(.link)
             }
+            .frame(maxWidth: .infinity)
             .accessibilityIdentifier("data-location-note")
         }
     }

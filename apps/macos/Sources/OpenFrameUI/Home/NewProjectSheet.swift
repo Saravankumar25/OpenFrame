@@ -27,7 +27,8 @@ struct NewProjectSheet: View {
         VStack(alignment: .leading, spacing: 0) {
             Text("New Project")
                 .font(.title2.weight(.semibold))
-                .padding(.bottom, 16)
+                .frame(maxWidth: .infinity)
+                .padding(.bottom, PageSpacing.medium)
             Form {
                 TextField("Title", text: $title, prompt: Text("Untitled film"))
                     .focused($titleFocused)
@@ -77,7 +78,7 @@ struct NewProjectSheet: View {
             }
             .padding(.top, 16)
         }
-        .padding(24)
+        .padding(PageSpacing.large)
         .frame(width: 500)
         .onAppear { titleFocused = true }
         .task(id: parentDir) { await checkLocation() }

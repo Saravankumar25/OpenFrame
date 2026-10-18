@@ -10,13 +10,15 @@ struct WelcomeNameView: View {
     @FocusState private var focused: Bool
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            VStack(alignment: .leading, spacing: 2) {
+        VStack(alignment: .leading, spacing: PageSpacing.medium) {
+            VStack(spacing: PageSpacing.tight) {
                 Text("Welcome to OpenFrame Studio").font(.title2.weight(.semibold))
+                    .multilineTextAlignment(.center)
                     .accessibilityAddTraits(.isHeader)
                     .accessibilityIdentifier("welcome-title")
                 Text("What should we call you?").font(.callout).foregroundStyle(.secondary)
             }
+            .frame(maxWidth: .infinity)
             VStack(alignment: .leading, spacing: 4) {
                 Text("Your name (required)").font(.callout.weight(.medium))
                 TextField("Your name", text: $model.name)
@@ -36,6 +38,8 @@ struct WelcomeNameView: View {
             }
             Text("Your name appears on notes, tasks and project activity. There is no account. It stays on this computer and you can change it any time in Settings.")
                 .font(.caption).foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity)
                 .fixedSize(horizontal: false, vertical: true)
             HStack {
                 Spacer()
@@ -44,9 +48,10 @@ struct WelcomeNameView: View {
                     .buttonStyle(.borderedProminent)
                     .disabled(model.invalid || model.busy)
                     .accessibilityIdentifier("welcome-continue")
+                Spacer()
             }
         }
-        .padding(22)
+        .padding(PageSpacing.large)
         .frame(width: 420)
         .interactiveDismissDisabled()
         .onAppear { focused = true }

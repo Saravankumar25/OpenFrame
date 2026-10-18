@@ -36,7 +36,7 @@ struct StoryContent: View {
         VStack(spacing: 0) {
             tabBar
             Divider()
-            content
+            content.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
         .background(theme["bg"])
         .overlay(alignment: .bottom) { StoryNoticeBar(model: model) }
@@ -57,7 +57,8 @@ struct StoryContent: View {
     // MARK: Tabs
 
     private var tabBar: some View {
-        HStack(spacing: 12) {
+        ZStack {
+            HStack(spacing: 12) {
             Picker("Story views", selection: $model.tab) {
                 ForEach(model.tabs) { Text($0.title).tag($0) }
             }
@@ -66,6 +67,8 @@ struct StoryContent: View {
             .fixedSize()
             .accessibilityLabel("Story views")
             .accessibilityIdentifier("story-tabs")
+            }
+            HStack(spacing: 8) {
             Spacer()
             if model.showEpisodes && model.tab != .episodes {
                 Text("Episode").font(.caption).foregroundStyle(theme["muted"])
@@ -79,6 +82,7 @@ struct StoryContent: View {
                 .frame(maxWidth: 280)
                 .accessibilityLabel("Episode")
                 .accessibilityIdentifier("story-episode-picker")
+            }
             }
         }
         .padding(.horizontal, 16).padding(.vertical, 8)

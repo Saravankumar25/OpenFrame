@@ -70,12 +70,12 @@ struct StoryTimelineView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                VStack(alignment: .leading, spacing: 2) {
+            VStack(spacing: PageSpacing.small) {
+                VStack(spacing: PageSpacing.tight) {
                     Text("Story Timeline").font(.title2.weight(.semibold)).accessibilityAddTraits(.isHeader)
                     Text("Optional. Useful only when time continuity matters.").foregroundStyle(theme["muted"])
                 }
-                Spacer()
+                HStack(spacing: PageSpacing.small) {
                 if let d = m.data, d.screenplays.count > 1 {
                     Picker("Screenplay", selection: Binding(get: { d.screenplayId ?? "" }, set: { m.screenplayId = $0 })) {
                         ForEach(d.screenplays, id: \.id) { Text($0.title).tag($0.id) }
@@ -88,7 +88,9 @@ struct StoryTimelineView: View {
                 .buttonStyle(.borderedProminent)
                 .disabled(m.picked.isEmpty)
                 .accessibilityIdentifier("story-assign-day")
+                }
             }
+            .frame(maxWidth: .infinity)
             if let d = m.data {
                 if d.draftId == nil {
                     ContentUnavailableView {
@@ -105,6 +107,7 @@ struct StoryTimelineView: View {
                 } else {
                     Text("\(d.draftName ?? "") \u{00B7} \(StoryLogic.plural(Int(d.sceneCount), "scene")). Scene numbers come from the screenplay order.")
                         .font(.callout).foregroundStyle(theme["muted"])
+                        .frame(maxWidth: .infinity)
                     ScrollView {
                         LazyVStack(alignment: .leading, spacing: 12) {
                             ForEach(d.groups, id: \.storyDay) { g in group(g) }

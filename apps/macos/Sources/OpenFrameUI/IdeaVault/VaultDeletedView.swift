@@ -11,15 +11,17 @@ struct VaultDeletedView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            VStack(alignment: .leading, spacing: 4) {
-                HStack {
-                    Text("Recently Deleted").font(.system(size: 24, weight: .semibold))
-                    Spacer()
-                    Button {
-                        model.page = .vault
-                    } label: { Label("Back to Vault", systemImage: "chevron.left") }
-                        .keyboardShortcut(.cancelAction)
-                        .accessibilityIdentifier("vault-back")
+            VStack(spacing: PageSpacing.tight) {
+                ZStack {
+                    Text("Recently Deleted").font(.system(size: 26, weight: .semibold)).tracking(-0.3)
+                    HStack {
+                        Button {
+                            model.page = .vault
+                        } label: { Label("Back to Vault", systemImage: "chevron.left") }
+                            .keyboardShortcut(.cancelAction)
+                            .accessibilityIdentifier("vault-back")
+                        Spacer()
+                    }
                 }
                 Text("Items you deleted can be restored. · \(VaultText.scopeLabel(model.scope))").foregroundStyle(theme["muted"])
             }
@@ -30,7 +32,8 @@ struct VaultDeletedView: View {
             Text("Deleted items stay here for 30 days, then they are removed for good. Restore them before then, or delete them sooner.")
                 .font(.callout)
                 .padding(10)
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity, alignment: .center)
                 .background(theme["blue-soft"], in: RoundedRectangle(cornerRadius: 8, style: .continuous))
                 .foregroundStyle(theme["blue-t"])
                 .padding(.horizontal, 24)

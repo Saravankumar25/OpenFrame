@@ -11,13 +11,15 @@ struct ThemeImportSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(spacing: PageSpacing.tight) {
                 Text("Import theme").font(.title2.weight(.semibold))
                 Text(model.source == .text
                      ? "Paste the text of an OpenFrame theme file. It is checked before anything is saved."
                      : "Checked before anything is saved.")
                     .font(.callout).foregroundStyle(.secondary)
             }
+            .multilineTextAlignment(.center)
+            .frame(maxWidth: .infinity)
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
                     if model.source == .text && model.result == nil { pasteField }
@@ -173,7 +175,7 @@ struct RenameThemeSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Rename theme").font(.title3.weight(.semibold))
+            Text("Rename theme").font(.title3.weight(.semibold)).frame(maxWidth: .infinity)
             TextField("Theme name", text: $name)
                 .accessibilityLabel("Theme name")
                 .accessibilityIdentifier("theme-rename-name")

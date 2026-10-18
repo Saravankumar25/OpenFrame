@@ -17,12 +17,14 @@ struct VaultSheetFrame<Content: View, Footer: View>: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(spacing: PageSpacing.tight) {
                 Text(title).font(.title3.weight(.semibold))
                 if let subtitle {
                     Text(subtitle).font(.callout).foregroundStyle(theme["muted"]).fixedSize(horizontal: false, vertical: true)
                 }
             }
+            .multilineTextAlignment(.center)
+            .frame(maxWidth: .infinity)
             content
             HStack(spacing: 8) { footer }
                 .frame(maxWidth: .infinity, alignment: .trailing)

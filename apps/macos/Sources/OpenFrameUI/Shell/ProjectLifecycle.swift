@@ -126,6 +126,7 @@ struct RenameProjectSheet: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             Text("Rename Project").font(.title2.weight(.semibold))
+                .multilineTextAlignment(.center).frame(maxWidth: .infinity)
             TextField("Title", text: $title)
                 .textFieldStyle(.roundedBorder)
                 .focused($focused)
@@ -187,6 +188,7 @@ struct DeleteProjectSheet: View {
             Text("Delete \u{201C}\(project.title)\u{201D}?")
                 .font(.title2.weight(.semibold))
                 .lineLimit(3)
+                .multilineTextAlignment(.center).frame(maxWidth: .infinity)
             Label("This is the most destructive action in OpenFrame. The whole project will be removed from this Mac.", systemImage: "exclamationmark.triangle.fill")
                 .font(.callout.weight(.semibold))
                 .foregroundStyle(theme["red-t"])
@@ -246,6 +248,7 @@ struct UnavailableProjectSheet: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             Text("This project could not be opened").font(.title2.weight(.semibold))
+                .multilineTextAlignment(.center).frame(maxWidth: .infinity)
             Label("The project location is unavailable. It may be on an external drive that is not connected, or the folder was moved.", systemImage: "exclamationmark.triangle.fill")
                 .font(.callout.weight(.semibold))
                 .foregroundStyle(theme["red-t"])

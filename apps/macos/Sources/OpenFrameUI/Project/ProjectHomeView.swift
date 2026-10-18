@@ -14,17 +14,13 @@ struct ProjectHomeView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(project.title)
-                        .font(.system(size: 28, weight: .semibold))
-                        .tracking(-0.5)
-                    Text([project.projectType.rawValue, project.genre, project.creator.map { "by \($0)" }]
-                        .compactMap { $0 }.joined(separator: " · "))
-                        .foregroundStyle(.secondary)
-                }
+            VStack(alignment: .leading, spacing: PageSpacing.large) {
+                PageHeader(project.title,
+                           subtitle: [project.projectType.rawValue, project.genre, project.creator.map { "by \($0)" }]
+                               .compactMap { $0 }.joined(separator: " · "))
                 if let failure {
                     Text(failure.message).foregroundStyle(theme["red-t"])
+                        .frame(maxWidth: .infinity)
                 }
                 if let home {
                     if home.isEmpty {
@@ -34,12 +30,11 @@ struct ProjectHomeView: View {
                         activity(home.recentActivity)
                     }
                 } else if failure == nil {
-                    ProgressView()
+                    ProgressView().frame(maxWidth: .infinity)
                 }
             }
-            .padding(32)
-            .frame(maxWidth: 900, alignment: .leading)
-            .frame(maxWidth: .infinity)
+            .padding(.bottom, PageSpacing.page)
+            .pageColumn()
         }
         .background(theme["bg"])
         .task(id: app.changes.any) {
@@ -54,9 +49,9 @@ struct ProjectHomeView: View {
     }
 
     private var startingActions: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Start here").font(.headline)
-            HStack(spacing: 14) {
+        VStack(alignment: .leading, spacing: 0) {
+            SectionHeader("Start here")
+            HStack(spacing: PageSpacing.medium) {
                 action("Write the screenplay", "doc.text", .screenplay)
                 action("Plan the story", "rectangle.3.group", .story)
                 action("Collect ideas", "lightbulb", .ideaVault)
@@ -67,12 +62,12 @@ struct ProjectHomeView: View {
 
     private func action(_ title: String, _ symbol: String, _ ws: Workspace) -> some View {
         Button { go(ws) } label: {
-            VStack(alignment: .leading, spacing: 10) {
+            VStack(spacing: 10) {
                 Image(systemName: symbol).font(.title2).foregroundStyle(theme["accent"])
-                Text(title).font(.headline)
+                Text(title).font(.headline).multilineTextAlignment(.center)
             }
-            .padding(18)
-            .frame(maxWidth: .infinity, minHeight: 96, alignment: .topLeading)
+            .padding(PageSpacing.medium)
+            .frame(maxWidth: .infinity, minHeight: 96, alignment: .center)
             .background(theme["panel"], in: RoundedRectangle(cornerRadius: 12, style: .continuous))
             .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(theme["line"]))
             .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
@@ -81,14 +76,14 @@ struct ProjectHomeView: View {
     }
 
     private func counts(_ counts: [HomeCount]) -> some View {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 12)], spacing: 12) {
+        CenteredCards(cardWidth: 160, spacing: PageSpacing.medium) {
             ForEach(counts, id: \.key) { c in
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(spacing: 4) {
                     Text("\(Int(c.count))").font(.system(size: 24, weight: .semibold)).monospacedDigit()
                     Text(c.label).font(.callout).foregroundStyle(.secondary)
                 }
-                .padding(14)
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(PageSpacing.medium)
+                .frame(maxWidth: .infinity, alignment: .center)
                 .background(theme["panel"], in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                 .accessibilityElement(children: .combine)
             }
@@ -96,8 +91,8 @@ struct ProjectHomeView: View {
     }
 
     private func activity(_ items: [ActivityEntry]) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Recent activity").font(.headline)
+        VStack(alignment: .leading, spacing: PageSpacing.small) {
+            SectionHeader("Recent activity")
             if items.isEmpty {
                 Text("Nothing yet.").foregroundStyle(.secondary)
             }

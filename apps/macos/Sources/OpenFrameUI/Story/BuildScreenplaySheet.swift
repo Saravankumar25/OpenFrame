@@ -13,10 +13,12 @@ struct BuildScreenplaySheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(spacing: PageSpacing.tight) {
                 Text("Build Screenplay from Story Board").font(.title3.weight(.semibold)).accessibilityAddTraits(.isHeader)
                 Text("Preview the order before anything is created.").font(.callout).foregroundStyle(.secondary)
             }
+            .multilineTextAlignment(.center)
+            .frame(maxWidth: .infinity)
             if let b, b.preview != nil {
                 form(b)
             } else if let f = b?.failure {

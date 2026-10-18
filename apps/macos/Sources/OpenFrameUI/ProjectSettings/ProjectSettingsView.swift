@@ -103,32 +103,31 @@ struct ProjectGeneralForm: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                HStack(alignment: .top) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Project settings").font(.title2.weight(.semibold)).accessibilityAddTraits(.isHeader)
-                        Text("Project identity fields.").font(.callout).foregroundStyle(.secondary)
+            VStack(alignment: .leading, spacing: PageSpacing.medium) {
+                PageHeader("Project settings", subtitle: "Project identity fields.") {
+                    HStack(spacing: PageSpacing.small) {
+                        Button("Revert") { model.discard() }
+                            .disabled(!model.dirty || model.saving)
+                            .accessibilityIdentifier("project-settings-revert")
+                        Button("Save") { Task { await model.save() } }
+                            .buttonStyle(.borderedProminent)
+                            .disabled(!model.canSave)
+                            .accessibilityIdentifier("project-settings-save")
                     }
-                    Spacer()
-                    Button("Revert") { model.discard() }
-                        .disabled(!model.dirty || model.saving)
-                        .accessibilityIdentifier("project-settings-revert")
-                    Button("Save") { Task { await model.save() } }
-                        .buttonStyle(.borderedProminent)
-                        .disabled(!model.canSave)
-                        .accessibilityIdentifier("project-settings-save")
                 }
                 if model.loading {
                     ProgressView().frame(maxWidth: .infinity, minHeight: 160)
                 } else {
-                    HStack(alignment: .top, spacing: 16) {
+                    HStack(alignment: .top, spacing: PageSpacing.medium) {
                         form.frame(maxWidth: 560, alignment: .leading)
-                        storedCard.frame(width: 280)
+                        storedCard.frame(width: 260)
                     }
+                    .frame(maxWidth: .infinity)
                 }
-                if let error = model.error { SettingsErrorText(message: error) }
+                if let error = model.error { SettingsErrorText(message: error).frame(maxWidth: .infinity) }
             }
-            .padding(20)
+            .padding(.bottom, PageSpacing.large)
+            .pageColumn(maxWidth: PageSpacing.column + 100)
         }
         .accessibilityIdentifier("project-settings-general")
     }

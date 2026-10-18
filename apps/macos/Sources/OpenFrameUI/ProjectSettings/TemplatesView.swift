@@ -19,13 +19,8 @@ struct TemplatesView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 18) {
-                HStack(alignment: .top) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Templates").font(.title2.weight(.semibold)).accessibilityAddTraits(.isHeader)
-                        Text("Would a saved starting point help me begin faster?").font(.callout).foregroundStyle(.secondary)
-                    }
-                    Spacer()
+            VStack(alignment: .leading, spacing: PageSpacing.medium) {
+                PageHeader("Templates", subtitle: "Would a saved starting point help me begin faster?") {
                     Button { editing = EditTarget(template: nil) } label: { Label("Create Template", systemImage: "plus") }
                         .buttonStyle(.borderedProminent)
                         .accessibilityIdentifier("template-create")
@@ -33,8 +28,10 @@ struct TemplatesView: View {
                 content
                 Text("Templates are optional. Every document can also start blank.")
                     .font(.caption).foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity)
             }
-            .padding(20)
+            .padding(.bottom, PageSpacing.large)
+            .pageColumn(maxWidth: PageSpacing.column + 100)
         }
         .task {
             if model == nil { model = TemplatesModel(app: app) }
@@ -91,12 +88,13 @@ struct TemplatesView: View {
                 section("This project", "Copies kept inside this project. Changing a template never changes anything already made from it.", listing.project,
                         empty: "No templates in this project yet. Use a built-in template or one of yours, or create one.", id: "project")
             } else {
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(spacing: 8) {
                     Text("Templates couldn't be loaded.").font(.headline)
-                    if let e = model.error { Text(e).foregroundStyle(.secondary) }
+                    if let e = model.error { Text(e).foregroundStyle(.secondary).multilineTextAlignment(.center) }
                     Button("Try Again") { Task { await model.load() } }
                         .accessibilityIdentifier("templates-retry")
                 }
+                .frame(maxWidth: .infinity)
                 .accessibilityIdentifier("templates-error")
             }
         } else {
@@ -106,8 +104,8 @@ struct TemplatesView: View {
 
     private func section(_ title: String, _ sub: String, _ items: [TemplateDto], empty: String, id: String) -> some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text(title).font(.headline)
-            Text(sub).font(.caption).foregroundStyle(.secondary)
+            SectionHeader(title)
+            Text(sub).font(.caption).foregroundStyle(.secondary).padding(.top, -PageSpacing.small)
             if items.isEmpty {
                 Text(empty)
                     .font(.callout).foregroundStyle(.secondary)
@@ -116,7 +114,7 @@ struct TemplatesView: View {
                     .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(theme["line"]))
                     .accessibilityIdentifier("templates-empty-\(id)")
             } else {
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 190, maximum: 260), spacing: 12, alignment: .top)], spacing: 12) {
+                CenteredCards(cardWidth: 220, spacing: 12) {
                     ForEach(items, id: \.id) { t in card(t) }
                 }
             }
@@ -203,11 +201,13 @@ struct TemplatePreviewSheet: View {
     var body: some View {
         let lists = template.content.filter { $0.value.arrayValue != nil }.sorted { $0.key < $1.key }
         VStack(alignment: .leading, spacing: 12) {
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(spacing: PageSpacing.tight) {
                 Text(template.name).font(.title2.weight(.semibold)).accessibilityIdentifier("template-preview-name")
                 Text("\(template.typeLabel) \u{00B7} \(TemplateKinds.scopeLabel(template.scope))")
                     .font(.callout).foregroundStyle(.secondary)
             }
+            .multilineTextAlignment(.center)
+            .frame(maxWidth: .infinity)
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
                     if let d = template.description, !d.isEmpty { Text(d) }
@@ -289,11 +289,13 @@ struct TemplateEditSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(spacing: PageSpacing.tight) {
                 Text(template == nil ? "Create Template" : "Edit Template").font(.title2.weight(.semibold))
                 Text(template == nil ? "A saved starting point for new documents." : "Changes apply to future use only.")
                     .font(.callout).foregroundStyle(.secondary)
             }
+            .multilineTextAlignment(.center)
+            .frame(maxWidth: .infinity)
             Form {
                 TextField("Name", text: $name, prompt: Text("e.g. My short-film call sheet"))
                     .accessibilityLabel("Template name")
@@ -378,11 +380,13 @@ struct TemplateApplySheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(spacing: PageSpacing.tight) {
                 Text(TemplateKinds.createLabel(type)).font(.title3.weight(.semibold))
                 Text("From \u{201C}\(template.name)\u{201D}. The new document is an independent copy.")
                     .font(.callout).foregroundStyle(.secondary)
             }
+            .multilineTextAlignment(.center)
+            .frame(maxWidth: .infinity)
             if type == "call_sheet" {
                 if loaded && days.isEmpty {
                     Text("Every shooting day already has a call sheet, or the schedule has no shooting day yet.")

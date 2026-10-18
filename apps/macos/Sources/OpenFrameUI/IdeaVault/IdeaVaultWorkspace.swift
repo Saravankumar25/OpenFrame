@@ -154,9 +154,9 @@ struct IdeaVaultScreen: View {
     }
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(spacing: PageSpacing.tight) {
             HStack(spacing: 10) {
-                Text("Idea Vault").font(.system(size: 24, weight: .semibold)).tracking(-0.3)
+                Text("Idea Vault").font(.system(size: 26, weight: .semibold)).tracking(-0.3)
                 Text(model.isGlobal ? "Global" : (model.project?.title ?? "Project"))
                     .font(.caption.weight(.medium))
                     .padding(.horizontal, 8).padding(.vertical, 2)
@@ -168,7 +168,9 @@ struct IdeaVaultScreen: View {
                 ? "Ideas across your whole filmmaking life. Copy them into a film when they are ready."
                 : "Everything collected for this film. Nothing here is classified or synced to the screenplay.")
                 .foregroundStyle(theme["muted"])
+                .multilineTextAlignment(.center)
         }
+        .frame(maxWidth: .infinity)
         .padding(.horizontal, 24)
         .padding(.top, 20)
         .padding(.bottom, 12)
@@ -260,8 +262,8 @@ struct IdeaVaultScreen: View {
 
     private var columns: [GridItem] {
         switch model.mode {
-        case .card: [GridItem(.adaptive(minimum: 300, maximum: 520), spacing: 14, alignment: .top)]
-        default: [GridItem(.adaptive(minimum: 220, maximum: 340), spacing: 14, alignment: .top)]
+        case .card: [GridItem(.adaptive(minimum: 380, maximum: 380), spacing: 14, alignment: .top)]
+        default: [GridItem(.adaptive(minimum: 250, maximum: 250), spacing: 14, alignment: .top)]
         }
     }
 
@@ -278,14 +280,15 @@ struct IdeaVaultScreen: View {
                 if !model.loaded {
                     ProgressView().frame(maxWidth: .infinity).padding(.top, 40)
                 } else if model.items.isEmpty && subfolders.isEmpty {
-                    emptyState
+                    emptyState.frame(maxWidth: .infinity)
                 } else {
                     if !subfolders.isEmpty {
-                        LazyVGrid(columns: columns, spacing: 14) {
+                        LazyVGrid(columns: columns, alignment: .center, spacing: 14) {
                             ForEach(subfolders, id: \.id) { f in
                                 VaultFolderTile(folder: f, open: { model.openFolder(f.id) }, menu: { AnyView(folderMenu(f)) })
                             }
                         }
+                        .frame(maxWidth: .infinity)
                     }
                     let sections = VaultSections.build(model.items, splitPinned: model.view == .all && !model.searching && model.mode != .folder,
                                                        header: !subfolders.isEmpty ? "Items in this folder" : nil)
@@ -301,11 +304,12 @@ struct IdeaVaultScreen: View {
                                 }
                             }
                         } else {
-                            LazyVGrid(columns: columns, spacing: 14) {
+                            LazyVGrid(columns: columns, alignment: .center, spacing: 14) {
                                 ForEach(section.items, id: \.id) { item in
                                     VaultItemCard(item: item, model: model, selected: model.selection.contains(item.id), full: model.mode == .card, actions: actions(for: item))
                                 }
                             }
+                            .frame(maxWidth: .infinity)
                         }
                     }
                 }

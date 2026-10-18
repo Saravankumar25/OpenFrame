@@ -78,10 +78,12 @@ private struct Dialog<Body: View, Footer: View>: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(spacing: PageSpacing.tight) {
                 Text(title).font(.title3.weight(.semibold)).accessibilityAddTraits(.isHeader)
                 if let subtitle { Text(subtitle).font(.callout).foregroundStyle(.secondary) }
             }
+            .multilineTextAlignment(.center)
+            .frame(maxWidth: .infinity)
             content
             HStack(spacing: 8) { footer }
                 .frame(maxWidth: .infinity, alignment: .trailing)
@@ -262,6 +264,7 @@ struct TutorialDialog: View {
                 }
             }
             Text(LicenceRules.tutorialTitles[step]).font(.title3.weight(.semibold))
+                .frame(maxWidth: .infinity)
                 .accessibilityFocused($headingFocused).accessibilityIdentifier("licence-tutorial-heading")
             stepBody
             if let error = licence.saveError { Banner(tone: .error, text: error) }

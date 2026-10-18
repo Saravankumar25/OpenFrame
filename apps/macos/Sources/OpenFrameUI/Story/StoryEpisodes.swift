@@ -176,17 +176,19 @@ struct StoryEpisodesView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                VStack(alignment: .leading, spacing: 2) {
+            VStack(spacing: PageSpacing.small) {
+                VStack(spacing: PageSpacing.tight) {
                     Text("Series: \(m.projectTitle)").font(.title2.weight(.semibold)).accessibilityAddTraits(.isHeader)
                     Text("Which episode am I working on?").foregroundStyle(theme["muted"])
                 }
-                Spacer()
+                HStack(spacing: PageSpacing.small) {
                 Button { Task { await m.addSeason() } } label: { Label("Add Season", systemImage: "plus") }
                 Button { m.sheet = .new(seasonId: m.seasonId) } label: { Label("Add Episode", systemImage: "plus") }
                     .buttonStyle(.borderedProminent)
                     .accessibilityIdentifier("story-add-episode")
+                }
             }
+            .frame(maxWidth: .infinity)
             if let s = m.series {
                 if !s.isEpisodic {
                     Text("This project is a \(s.projectType). Episodes are optional; the Story Board works without them.")
