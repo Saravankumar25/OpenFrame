@@ -12,7 +12,7 @@ import { join, resolve } from "node:path";
 import { DRIVERS, E2E_ROOT, EDGE_DRIVER, TAURI_DRIVER, setupDrivers } from "../scripts/setup-drivers.mjs";
 import { teamPassword } from "../lib/team-password.mjs";
 import { click, launchApp, openWorkspace, sleep } from "../lib/app.mjs";
-import { closeProject, firstLaunchProject, menuItem, openProject } from "../lib/flows.mjs";
+import { closeProject, editorElements, firstLaunchProject, openProject } from "../lib/flows.mjs";
 
 const arg = (n) => process.argv.find((a) => a.startsWith(`--${n}=`))?.slice(n.length + 3);
 const APP = arg("app") ? resolve(arg("app")) : "";
@@ -118,26 +118,38 @@ async function main() {
   const errors = [];
   let loops = 0;
   let crashed = false;
+  let consecutive = 0;
+  let aborted = "";
   let browser;
   const t0 = Date.now();
-  const EL = "//div[contains(@class,'spx-doc')]//div[contains(@class,'sp-el')]";
   try {
     for (let i = 0; i < 80 && !(await listening(PORT)); i++) await sleep(250);
     browser = await launchApp();
     await firstLaunchProject(browser, TITLE);
     const typeKeys = (t) => browser.keys(t.split(""));
-    // Open Screenplay, make sure a screenplay exists, and put the cursor at the end of the last element.
-    const place = async () => {
+    const LAST = "(//div[contains(@class,'spx-doc')]//div[contains(@class,'sp-el')])[last()]";
+    const WORDS = ["lamp", "river", "ladder", "kettle", "window", "station", "ledger", "orchard"];
+    // Spec 04's pattern: open Screenplay, make sure a screenplay exists, wait for the editor.
+    const openEditor = async () => {
       await openWorkspace(browser, "Screenplay");
-      if ((await browser.$$(EL)).length === 0) {
+      await browser.waitUntil(async () => (await editorElements(browser)).length > 0 || (await browser.$$("//button[normalize-space(.)='New Screenplay']")).length > 0, {
+        timeout: 15_000,
+        timeoutMsg: "the screenplay workspace showed neither an editor nor New Screenplay",
+      });
+      if ((await editorElements(browser)).length === 0) {
         await click(browser, "New Screenplay");
-        await browser.waitUntil(async () => (await browser.$$(EL)).length > 0, { timeout: 15_000, timeoutMsg: "the editor did not open" });
+        await browser.waitUntil(async () => (await editorElements(browser)).length > 0, { timeout: 15_000, timeoutMsg: "the editor did not open" });
       }
-      const all = await browser.$$(EL);
-      await all[all.length - 1].click();
-      await browser.keys(["Control", "End"]);
     };
-    await place();
+    // Spec 04's newLineAtEnd: Ctrl+2 makes a plain Action line, so no suggestion list opens.
+    const newLineAtEnd = async () => {
+      await (await browser.$(LAST)).click();
+      await browser.keys(["Control", "End"]);
+      await browser.keys("End");
+      await browser.keys("Enter");
+      await browser.keys(["Control", "2"]);
+    };
+    await openEditor();
     let lastSample = 0;
     const takeSample = () => {
       const s = sample(APP);
@@ -150,32 +162,30 @@ async function main() {
     while (Date.now() - t0 < MINUTES * 60_000 && !crashed) {
       loops += 1;
       try {
-        await browser.keys("Enter");
-        const trigger = await browser.$('//button[starts-with(@aria-label,"Element type: ")]');
-        await trigger.waitForClickable({ timeout: 10_000 });
-        await trigger.click();
-        await menuItem(browser, "Scene Heading");
-        await typeKeys(`INT. SOAK ROOM ${loops} - NIGHT`);
-        await browser.keys("Enter");
-        await typeKeys("Asha checks the gauge and writes the number down.");
-        await browser.keys("Enter");
-        await typeKeys("ASHA");
-        await browser.keys("Escape"); // closes the name suggestions, keeps the name as typed
-        await browser.keys("Enter");
-        await typeKeys("Still holding.");
+        await newLineAtEnd();
+        await typeKeys(`Loop ${loops}: the ${WORDS[loops % WORDS.length]} stays where Asha left it, ${WORDS[(loops * 3) % WORDS.length]} ${loops * 7}.`);
         if (loops % 10 === 0) {
           for (const w of ["Story", "Idea Vault", "Breakdown"]) await openWorkspace(browser, w);
-          await place();
+          await openEditor();
         }
         if (loops % 50 === 0) {
           await sleep(3000); // let autosave settle before the close
           await closeProject(browser);
           await openProject(browser, TITLE);
-          await place();
+          await openEditor();
         }
+        consecutive = 0;
       } catch (e) {
         errors.push(`loop ${loops}: ${e instanceof Error ? e.message.split("\n")[0] : e}`);
-        if (errors.length > 20 && errors.length > loops / 2) break; // the app is not usable any more
+        consecutive += 1;
+        if (consecutive > 3) {
+          aborted = "more than 3 consecutive loops failed";
+          break;
+        }
+        if (errors.length > Math.max(5, loops * 0.05)) {
+          aborted = "errors exceed 5% of loops";
+          break;
+        }
         await browser.keys("Escape").catch(() => undefined);
       }
       if (Date.now() - lastSample >= SAMPLE_MS) {
@@ -208,6 +218,7 @@ async function main() {
     minutesRun: endMin,
     loops,
     errors,
+    aborted,
     crashed,
     start: rows[0],
     end: rows.at(-1),
@@ -219,12 +230,15 @@ async function main() {
     limits: LIMIT,
     budgets97: budgets(),
   };
-  const pass = !crashed && rows.length >= 2 && appSlope < LIMIT.appMbPerHour && webSlope < LIMIT.webMbPerHour;
+  const shortRun = endMin < MINUTES * 0.8;
+  if (shortRun && !aborted) aborted = `measured window ${endMin} min is under 80% of ${MINUTES} min`;
+  const errorRate = loops ? errors.length / loops : 1;
+  const pass = !crashed && !aborted && errorRate <= 0.05 && rows.length >= 2 && appSlope < LIMIT.appMbPerHour && webSlope < LIMIT.webMbPerHour;
   summary.result = pass ? "PASS" : "FAIL";
   writeFileSync(join(art, `soak-${stamp}.json`), JSON.stringify(summary, null, 2));
   console.log(JSON.stringify(summary, null, 2));
   console.log(`\nMemory budgets in specs/97-performance: ${budgets()}`);
-  console.log(`\n${summary.result}: app ${appSlope} MB/h (limit ${LIMIT.appMbPerHour}), webview ${webSlope} MB/h (limit ${LIMIT.webMbPerHour}), crashed: ${crashed}, loops: ${loops}, errors: ${errors.length}`);
+  console.log(`\n${summary.result}: app ${appSlope} MB/h (limit ${LIMIT.appMbPerHour}), webview ${webSlope} MB/h (limit ${LIMIT.webMbPerHour}), crashed: ${crashed}, window: ${endMin} of ${MINUTES} min, ${aborted ? `stopped: ${aborted}, ` : ""}loops: ${loops}, errors: ${errors.length}`);
   process.exit(pass ? 0 : 1);
 }
 
