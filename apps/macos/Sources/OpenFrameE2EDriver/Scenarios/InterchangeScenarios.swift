@@ -137,7 +137,7 @@ extension Scenarios {
     ]
 }
 
-extension UI {
+fileprivate extension UI {
     /// A key press for the sheet on top (or the key window): the sheet is made key first, as a
     /// click on it would, then the key goes through the window's key equivalents and key handling.
     func keyToSheet(_ chars: String, code: UInt16, _ mods: NSEvent.ModifierFlags = []) async throws {
@@ -412,7 +412,7 @@ private func answered(_ panel: AnyObject) -> NSURL? {
     }
 }
 
-extension UI {
+fileprivate extension UI {
     /// Runs `action`, which opens a system Open or Save panel, and answers that panel with `url`
     /// (nil presses Cancel). Returns what the panel asked for, so the scenario can check its title.
     @discardableResult
@@ -453,7 +453,7 @@ extension UI {
     }
 }
 
-extension UI {
+fileprivate extension UI {
     func subrole(_ e: Element) -> String {
         let sel = NSSelectorFromString("accessibilitySubrole")
         guard e.obj.responds(to: sel), let raw = e.obj.perform(sel)?.takeUnretainedValue() as? String else { return "" }
@@ -489,7 +489,7 @@ extension UI {
 
 // MARK: 70-packages
 
-extension UI {
+fileprivate extension UI {
     /// First launch of the packages specs: project 'Harbour Lights' with the Night Shift screenplay.
     func harbourStart(_ ctx: Context) async throws {
         try await launch(ctx)
@@ -737,7 +737,7 @@ extension Scenarios {
 
 import ApplicationServices
 
-extension UI {
+fileprivate extension UI {
     /// The position and size of the first element whose identifier starts with `prefix`, read through
     /// the system accessibility interface (as an assistive app reads it). Top-left origin screen points.
     func axFrame(prefix: String) async -> CGRect? {
@@ -1000,7 +1000,7 @@ extension Scenarios {
 
 // MARK: 41-screenplay-engine (import and export parts)
 
-extension UI {
+fileprivate extension UI {
     /// New project 'Signal Box' with a typed two page script: heading, action, dialogue, an explicit page break.
     func writeSignalBox(_ ctx: Context) async throws {
         try await launch(ctx)
@@ -1091,13 +1091,13 @@ extension Scenarios {
     ]
 }
 
-extension UI {
+fileprivate extension UI {
     func queryText(startsWith prefix: String) -> [String] { all().map(\.text).filter { $0.hasPrefix(prefix) } }
 }
 
 // MARK: AI (72, 73, 74, 75, 76, 78)
 
-extension UI {
+fileprivate extension UI {
     /// Presses a button of an alert or confirmation dialog on screen, by its title, as a click does.
     func pressAlertButton(_ title: String) async throws {
         func buttons(_ v: NSView) -> [NSButton] { (v as? NSButton).map { [$0] } ?? [] + v.subviews.flatMap(buttons) }

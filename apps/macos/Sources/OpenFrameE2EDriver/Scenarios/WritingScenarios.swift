@@ -3,7 +3,7 @@
 import AppKit
 import ObjectiveC
 
-extension Element {
+fileprivate extension Element {
     /// The value, asked in both accessibility APIs.
     var anyValue: String {
         if !value.isEmpty { return value }
@@ -19,14 +19,14 @@ extension Element {
     }
 }
 
-extension UI {
+fileprivate extension UI {
     func dump(_ name: String) {
         let text = all().map(\.description).joined(separator: "\n")
         try? text.write(to: artifacts.appendingPathComponent("dump-\(name).txt"), atomically: true, encoding: .utf8)
     }
 }
 
-extension UI {
+fileprivate extension UI {
     /// Items (titles) the open menu of a pop-up button shows now.
     func openMenuItems(_ button: Element) -> [Element] {
         for ch in button.children where ch.role == "AXMenu" { return ch.children.filter { $0.role == "AXMenuItem" } }
@@ -144,7 +144,7 @@ extension UI {
     }
 }
 
-extension UI {
+fileprivate extension UI {
     /// Runs a named accessibility action of an element (the VoiceOver "Actions" rotor).
     func customAction(_ e: Element, _ name: String) async throws {
         let sel = NSSelectorFromString("accessibilityCustomActions")
@@ -907,7 +907,7 @@ extension UI {
     }
 }
 
-extension UI {
+fileprivate extension UI {
     /// Project undo and redo, as the Edit menu has them (text fields keep their own).
     func undo() async throws { try await menu(["Edit", "Undo Project Change"]) }
     func redo() async throws { try await menu(["Edit", "Redo Project Change"]) }
@@ -973,7 +973,7 @@ extension Scenarios {
 nonisolated(unsafe) var heldModifiers: NSEvent.ModifierFlags = []
 nonisolated(unsafe) var modifierSwizzled = false
 
-extension UI {
+fileprivate extension UI {
     func holdModifiers(_ m: NSEvent.ModifierFlags) {
         if !modifierSwizzled, let meta = object_getClass(NSEvent.self), let method = class_getClassMethod(NSEvent.self, #selector(getter: NSEvent.modifierFlags)) {
             let original = method_getImplementation(method)

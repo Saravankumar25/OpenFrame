@@ -105,6 +105,7 @@ struct CatalogView: View {
             }
         }
         .sheet(item: $model.sheet) { CatalogSheetHost(model: model, sheet: $0) }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("catalog-tab")
     }
 

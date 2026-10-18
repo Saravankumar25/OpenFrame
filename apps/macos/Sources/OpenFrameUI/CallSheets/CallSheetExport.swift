@@ -155,6 +155,7 @@ struct CSExportSheet: View {
             .disabled(model.busy)
             .accessibilityIdentifier("export-run")
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("export-sheet")
     }
 
@@ -192,6 +193,7 @@ struct CSExportSheet: View {
                 .keyboardShortcut(.defaultAction)
                 .accessibilityIdentifier("export-close")
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("export-result")
     }
 

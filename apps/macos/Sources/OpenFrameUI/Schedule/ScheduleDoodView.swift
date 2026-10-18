@@ -26,6 +26,7 @@ struct SchedDoodScreen: View {
                 }
             }
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("dood-tab")
     }
 
@@ -37,6 +38,7 @@ struct SchedDoodScreen: View {
         } actions: {
             Button("Open Schedule") { model.section = .schedule }.accessibilityIdentifier("dood-open-schedule")
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("dood-empty")
     }
 

@@ -32,6 +32,7 @@ struct CSReportsView: View {
         }
         .padding(16)
         .task(id: "\(model.key)|\(app.changes.key(CSTables.reports))") { await model.reload() }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("reports-tab")
     }
 
@@ -202,10 +203,12 @@ struct CSDailyView: View {
                     Button("Open Schedule") { csShowWorkspace(.schedule) }
                         .accessibilityIdentifier("daily-open-schedule")
                 }
+                .accessibilityElement(children: .contain)
                 .accessibilityIdentifier("daily-empty")
             }
         }
         .task(id: "\(app.changes.key(CSTables.schedule))|\(model.dayId ?? "")") { await model.reload() }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("daily-tab")
     }
 

@@ -45,6 +45,15 @@ struct VaultDeletedView: View {
                         Text("Items you delete from the Idea Vault will appear here.")
                     }
                 } else {
+                    HStack(spacing: 12) {
+                        Text("Item").frame(maxWidth: .infinity, alignment: .leading)
+                        Text("Deleted").frame(width: 110, alignment: .trailing)
+                        Text("Removed in").frame(width: 90, alignment: .trailing)
+                        Text("Actions").frame(width: 210, alignment: .trailing).opacity(0).accessibilityHidden(true)
+                    }
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(theme["muted"])
+                    .padding(.horizontal, 28).padding(.top, 8)
                     List(model.trash, id: \.deleted.id) { row in
                         HStack(spacing: 12) {
                             VStack(alignment: .leading, spacing: 2) {

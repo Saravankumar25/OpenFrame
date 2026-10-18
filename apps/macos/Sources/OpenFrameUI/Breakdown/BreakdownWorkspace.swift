@@ -41,6 +41,7 @@ struct BreakdownContent: View {
         .environment(hub)
         .task(id: app.changes.key(BDTables.categoryStyle)) { await hub.reloadStyles() }
         .task(id: app.changes.key(BDTables.members)) { await hub.reloadMembers() }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("breakdown-workspace")
     }
 
@@ -104,6 +105,7 @@ struct BreakdownTabView: View {
         .task(id: dataKey) { await model.reload() }
         .task(id: pickKey) { await model.reloadScene() }
         .sheet(item: $model.sheet) { SheetHost(model: model, sheet: $0) }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("breakdown-tab")
     }
 
@@ -123,6 +125,7 @@ struct BreakdownTabView: View {
                 }
             }
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("breakdown-no-source")
     }
 

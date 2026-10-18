@@ -31,7 +31,15 @@ struct ScheduleContent: View {
     private var dataKey: Int { app.changes.key(SchedTables.all) }
     private var doodKey: String { "\(dataKey)|\(model.section.rawValue)|\(model.doodCast)|\(model.doodFrom)|\(model.doodTo)" }
 
+    /// The screen takes the size the window gives it. Without this the two scroll lists ask for
+    /// about 1500 points of height and the window clips the top of the page.
     var body: some View {
+        GeometryReader { geo in
+            content.frame(width: geo.size.width, height: geo.size.height)
+        }
+    }
+
+    private var content: some View {
         VStack(spacing: 0) {
             sectionBar
             Divider()
@@ -45,6 +53,7 @@ struct ScheduleContent: View {
         .task(id: doodKey) { if model.section == .dood { await model.reloadDood() } }
         .sheet(item: $model.sheet) { ScheduleSheetHost(model: model, sheet: $0) }
         .sheet(item: $model.pendingKeep) { SchedKeepAnywaySheet(model: model, pending: $0) }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("schedule-workspace")
     }
 
@@ -108,6 +117,7 @@ struct ScheduleContent: View {
                 }
             }
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("schedule-empty")
     }
 

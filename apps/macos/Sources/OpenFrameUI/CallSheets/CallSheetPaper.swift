@@ -186,6 +186,7 @@ struct CallSheetPaper: View {
             .shadow(color: .black.opacity(0.12), radius: 4, y: 1)
             .accessibilityElement(children: .contain)
             .accessibilityLabel("Call sheet document")
+            .accessibilityElement(children: .contain)
             .accessibilityIdentifier("callsheet-document")
             .onChange(of: model.focusCrewToken) { _, _ in crewFocused = true }
         }

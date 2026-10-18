@@ -23,6 +23,7 @@ struct CSSidesView: View {
                     Button("Open Schedule") { csShowWorkspace(.schedule) }
                         .accessibilityIdentifier("sides-open-schedule")
                 }
+                .accessibilityElement(children: .contain)
                 .accessibilityIdentifier("sides-empty")
             } else {
                 VStack(alignment: .leading, spacing: 12) {
@@ -37,6 +38,7 @@ struct CSSidesView: View {
         }
         .task(id: app.changes.key(CSTables.sides)) { await model.reload() }
         .task(id: "\(model.previewKey)|\(app.changes.key(CSTables.sides))") { await model.loadPreview() }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("sides-tab")
     }
 

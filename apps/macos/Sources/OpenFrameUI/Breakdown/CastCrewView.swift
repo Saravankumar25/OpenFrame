@@ -62,6 +62,7 @@ struct CastCrewView: View {
             }
         }
         .sheet(item: $model.sheet) { PeopleSheetHost(model: model, sheet: $0) }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("cast-crew-tab")
     }
 

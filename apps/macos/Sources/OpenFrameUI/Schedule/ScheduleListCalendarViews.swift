@@ -36,8 +36,19 @@ struct ScheduleListView: View {
     @State private var selection: Set<String> = []
 
     var body: some View {
+        // The empty line is a sibling of the table, not an overlay: an overlay of a table is not
+        // reachable for a screen reader.
+        ZStack {
+            table
+            if model.listRows.isEmpty {
+                Text("No matching scenes.").foregroundStyle(theme["muted"]).accessibilityIdentifier("list-empty")
+            }
+        }
+    }
+
+    private var table: some View {
         let rows = model.listRows
-        Table(rows, selection: $selection) {
+        return Table(rows, selection: $selection) {
             TableColumn("Sc") { r in
                 Text(r.strip.number.map { String(Int($0)) } ?? "-").fontWeight(.semibold)
                     .accessibilityIdentifier("list-scene-\(r.strip.number.map { String(Int($0)) } ?? r.id)")
@@ -67,11 +78,6 @@ struct ScheduleListView: View {
             if ids.count == 1, let id = ids.first, let s = model.strip(id) { SchedStripMenuItems(model: model, strip: s) }
         } primaryAction: { ids in
             if let id = ids.first { model.drawer = .strip(id) }
-        }
-        .overlay {
-            if rows.isEmpty {
-                Text("No matching scenes.").foregroundStyle(theme["muted"]).accessibilityIdentifier("list-empty")
-            }
         }
         .accessibilityLabel("Scenes of the schedule")
         .accessibilityIdentifier("schedule-list")

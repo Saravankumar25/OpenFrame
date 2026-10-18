@@ -34,6 +34,7 @@ struct CallSheetListView: View {
         .sheet(item: $model.create) { c in
             CSCreateSheet(model: c) { model.create = nil }
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("callsheet-list")
     }
 
@@ -48,6 +49,7 @@ struct CallSheetListView: View {
                 .disabled(!hub.canEdit)
                 .accessibilityIdentifier("callsheet-empty-create")
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("callsheet-empty")
     }
 
@@ -225,6 +227,7 @@ struct CSCreateSheet: View {
             .accessibilityIdentifier("callsheet-create-confirm")
         }
         .task { await model.loadTemplates() }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("callsheet-create-sheet")
     }
 }

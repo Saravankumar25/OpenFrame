@@ -38,6 +38,7 @@ struct CallSheetEditorView: View {
         .sheet(isPresented: Binding(get: { model.dialog == .finalize }, set: { if !$0 { model.dialog = nil } })) {
             if let d = model.detail { CSFinalizeSheet(model: model, detail: d) }
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("callsheet-editor")
     }
 
@@ -230,6 +231,7 @@ struct CSRefreshSheet: View {
             .accessibilityIdentifier("callsheet-refresh-apply")
         }
         .task { await model.loadPreview() }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("callsheet-refresh-sheet")
     }
 
@@ -355,6 +357,7 @@ struct CSFinalizeSheet: View {
                 .accessibilityIdentifier("callsheet-finalize-confirm")
             }
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("callsheet-finalize-sheet")
     }
 }

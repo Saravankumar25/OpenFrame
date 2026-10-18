@@ -72,6 +72,7 @@ struct LocationsView: View {
             }
         }
         .sheet(item: $model.sheet) { LocationSheetHost(model: model, sheet: $0) }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("locations-tab")
     }
 

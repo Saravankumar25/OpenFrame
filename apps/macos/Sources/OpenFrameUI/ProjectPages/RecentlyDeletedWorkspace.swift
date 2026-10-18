@@ -184,6 +184,7 @@ struct RecentlyDeletedScreen: View {
         } message: { item in
             Text("This \(item.typeLabel.lowercased()) will be removed from the project for good. This can't be undone, and it can't be restored afterwards. Anything that was created from it elsewhere in the project is not affected.")
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("trash-workspace")
     }
 
@@ -208,6 +209,7 @@ struct RecentlyDeletedScreen: View {
                 }
                 .padding(.vertical, 12)
             }
+            .accessibilityElement(children: .contain)
             .accessibilityIdentifier("trash-empty")
         } else if model.shown.isEmpty {
             Text("No deleted items match \u{201C}\(model.text)\u{201D}.")
@@ -226,7 +228,9 @@ struct RecentlyDeletedScreen: View {
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(theme["muted"])
                 .padding(.horizontal, 12).padding(.vertical, 8)
-                .accessibilityHidden(true)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("Columns: Item, Type, Deleted, Removed in, Was in")
+                .accessibilityIdentifier("trash-columns")
                 Divider().overlay(theme["line"])
                 LazyVStack(spacing: 0) {
                     ForEach(model.shown, id: \.id) { item in

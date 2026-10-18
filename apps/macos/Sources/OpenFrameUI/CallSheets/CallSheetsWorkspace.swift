@@ -41,6 +41,7 @@ struct CallSheetsContent: View {
         }
         .task(id: app.changes.key(CSTables.members)) { await hub.reloadMembers() }
         .task(id: CallSheetsRoute.shared.pending) { await hub.consumeRoute() }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("callsheets-workspace")
     }
 

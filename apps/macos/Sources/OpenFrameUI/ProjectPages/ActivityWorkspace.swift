@@ -166,6 +166,7 @@ struct ActivityScreen: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .background(theme["bg"])
         .task(id: model.app.changes.any) { await model.reload() }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("activity-workspace")
     }
 

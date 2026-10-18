@@ -113,6 +113,7 @@ struct ElementsPanelView: View {
             }
             .buttonStyle(.plain)
             .accessibilityLabel("\(g.category.rawValue), \(g.confirmed.filter { !$0.archived }.count) elements")
+            .accessibilityHint(hub.look(g.category).tooltip)
             .accessibilityValue(collapsed ? "Collapsed" : "Expanded")
             if !collapsed {
                 ForEach(g.confirmed, id: \.id) { confirmedRow($0) }

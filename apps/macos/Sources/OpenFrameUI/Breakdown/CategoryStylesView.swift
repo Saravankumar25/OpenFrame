@@ -50,6 +50,7 @@ struct BreakdownCategorySettingsView: View {
             }
             .padding(18)
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("categories-tab")
     }
 

@@ -19,6 +19,7 @@ struct ScheduleBoardView: View {
         .padding(.horizontal, 16).padding(.bottom, 12)
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Stripboard")
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("schedule-board")
     }
 

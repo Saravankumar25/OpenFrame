@@ -67,6 +67,7 @@ struct NotesScreen: View {
         }
         .onAppear { model.apply(PageNav.take()) }
         .onReceive(NotificationCenter.default.publisher(for: .openFrameShowWorkspace)) { _ in model.apply(PageNav.take()) }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("notes-workspace")
     }
 
@@ -124,6 +125,7 @@ struct NotesScreen: View {
                 VStack(spacing: 0) {
                     ForEach(model.notes, id: \.id) { note in noteRow(note) }
                 }
+                .accessibilityElement(children: .contain)
                 .accessibilityIdentifier("notes-list")
             }
         }
@@ -143,6 +145,7 @@ struct NotesScreen: View {
                 .accessibilityIdentifier("notes-empty-new-note")
         }
         .padding(.vertical, 12)
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("notes-empty")
     }
 
@@ -227,6 +230,7 @@ struct NotesScreen: View {
                         .accessibilityIdentifier("tasks-empty-new-task")
                 }
                 .padding(.vertical, 12)
+                .accessibilityElement(children: .contain)
                 .accessibilityIdentifier("tasks-empty")
             } else if let message = model.tasksEmptyText {
                 Text(message).font(.callout).foregroundStyle(theme["muted"]).padding(14)
@@ -235,6 +239,7 @@ struct NotesScreen: View {
                 VStack(spacing: 0) {
                     ForEach(model.shownTasks, id: \.id) { task in taskRow(task) }
                 }
+                .accessibilityElement(children: .contain)
                 .accessibilityIdentifier("tasks-list")
             }
         }

@@ -85,6 +85,7 @@ struct FilesScreen: View {
         .task(id: model.app.changes.key(["project_file", "project_file_folder", "asset", "deleted_item"])) { await model.reload() }
         .onAppear { model.apply(PageNav.take()) }
         .onReceive(NotificationCenter.default.publisher(for: .openFrameShowWorkspace)) { _ in model.apply(PageNav.take()) }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("files-workspace")
     }
 
@@ -144,6 +145,7 @@ struct FilesScreen: View {
                     .accessibilityIdentifier("files-empty-add")
             }
             .frame(maxWidth: .infinity, minHeight: 260)
+            .accessibilityElement(children: .contain)
             .accessibilityIdentifier("files-empty")
         } else if let message = model.emptyMessage {
             Text(message)
@@ -538,6 +540,7 @@ private struct FolderNameSheet: View {
         .padding(20)
         .frame(width: 380)
         .onAppear { focused = true }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("folder-sheet")
     }
 
@@ -577,6 +580,7 @@ private struct DeleteFolderSheet: View {
         }
         .padding(20)
         .frame(width: 400)
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("folder-delete-sheet")
     }
 }
