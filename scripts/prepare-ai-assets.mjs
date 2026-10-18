@@ -89,7 +89,7 @@ export function readLock(lockPath = LOCK_PATH) {
     if (!SAFE_ID.test(r.runtimeId ?? "") || !safeName(r.runtimeId) || ids.has(r.runtimeId)) fail(`${where}: invalid or duplicate id`);
     ids.add(r.runtimeId);
     if (!["windows", "macos"].includes(r.os) || !["x86_64", "aarch64"].includes(r.arch)) fail(`${where}: unknown platform ${r.os}-${r.arch}`);
-    if (!["cpu", "vulkan"].includes(r.backend)) fail(`${where}: unknown engine build ${r.backend} (processor or Vulkan only, ADR-0029)`);
+    if (!["cpu", "vulkan", "metal"].includes(r.backend)) fail(`${where}: unknown engine build ${r.backend} (processor, Vulkan or Metal only, ADR-0029, ADR-0033)`);
     if (typeof r.licenseId !== "string" || !r.licenseId.trim()) fail(`${where}: licence id missing`);
     if (!Array.isArray(r.files) || r.files.length === 0 || r.files.length > MAX_FILES) fail(`${where}: file list missing or too long`);
     const names = new Set();
@@ -120,7 +120,10 @@ export function bundledFiles(lock, target) {
   const [os, arch] = target.split("-");
   const runtimes = lock.runtimes.filter((r) => r.os === os && r.arch === arch);
   // Exactly one processor build per platform; a Vulkan build beside it is optional (ADR-0029).
-  if (runtimes.filter((r) => r.backend === "cpu").length !== 1 || runtimes.filter((r) => r.backend === "vulkan").length > 1) {
+  // The Mac carries one Metal build instead (ADR-0033).
+  const count = (b) => runtimes.filter((r) => r.backend === b).length;
+  const ok = count("cpu") + count("metal") === 1 && count("vulkan") <= 1;
+  if (!ok) {
     fail(
       `No Offline AI engine is pinned for ${target}. Every package contains the Offline AI engine (ADR-0026 decision 1), so this build stops. ` +
         "Add the engine for this platform to packaging/ai/ai-assets.lock.json and its files to .ai-assets.",

@@ -59,5 +59,6 @@ rules, the database or the AI safety path.
 1. **Screenplay editor in SwiftUI:** a native text engine, or the existing editor kept in a small web view. The owner chose
    "explain the trade-offs first". Decided after the editor spike in Mac phase 4, with the spike's numbers.
 2. **How the Mac app runs the AI engine:** a separate helper process (crash isolation) or `llama.cpp` linked as a library
-   (simpler under the App Sandbox). Decided in the provider design (Mac phase 8) after reading Apple's sandbox rules.
+   (simpler under the App Sandbox). **Answered 2026-10-18 by [ADR-0033](ADR-0033-mac-ai-engine-helper-process-metal.md):**
+   a helper process, with Metal, started by the shared supervisor as on Windows.
 3. **The macOS version of the owner's Intel MacBook** decides which Xcode and which checks can run there. Owner task.

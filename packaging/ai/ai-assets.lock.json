@@ -271,6 +271,83 @@
           "sha256": "d2d767cc2360cd5fbb4b5301660463605f3d16d433b5a4a94c822c073ee1036d"
         }
       ]
+    },
+    {
+      "runtimeId": "llama-cpp-b11259-macos-arm64-metal",
+      "engine": "llama.cpp",
+      "version": "b11259",
+      "os": "macos",
+      "arch": "aarch64",
+      "backend": "metal",
+      "executable": "llama-server",
+      "licenseId": "MIT",
+      "source": {
+        "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11259/llama-b11259-bin-macos-arm64.tar.gz",
+        "bytes": 11767669,
+        "sha256": "abd2b16d698861ac332a1eff1ea0edb0732aa6f7bb729a920dbe8b6502e353d4"
+      },
+      "files": [
+        {
+          "path": "llama-server",
+          "bytes": 49984,
+          "sha256": "6a072f8bf308ea28144476441d25760ee01b84ed102f86be4662d21ace8d72a6"
+        },
+        {
+          "path": "libllama-server-impl.dylib",
+          "bytes": 9001656,
+          "sha256": "d1f81f05790ca15504712027cc29b134c31cdd25bdfbebb26378ffaa7a415a95"
+        },
+        {
+          "path": "libllama-common.0.dylib",
+          "bytes": 7668232,
+          "sha256": "3e0ab46a7661c796646612a3b1d8cef48e64379276f0726965ab61b7534ccc2b"
+        },
+        {
+          "path": "libmtmd.0.dylib",
+          "bytes": 1382000,
+          "sha256": "20b102425b2d5b99d8924ab0e8e8dab1655cd7dfe81f771f60d9f51d36c618b8"
+        },
+        {
+          "path": "libllama.0.dylib",
+          "bytes": 3158512,
+          "sha256": "0f31d7f02ea91c744bfdf6b7b08b622fefee98ec1a17fbb6f29a9c570526c54e"
+        },
+        {
+          "path": "libggml.0.dylib",
+          "bytes": 60128,
+          "sha256": "83e438eb40f86e3f9604ee8946f946b93c2194ebf0a4c5ed638c9b0ea6e6fc42"
+        },
+        {
+          "path": "libggml-base.0.dylib",
+          "bytes": 734072,
+          "sha256": "02a9b158f21ae00e72d3cca25b236c18df40b09c0e090c99118d7636cfbf3ff3"
+        },
+        {
+          "path": "libggml-cpu.0.dylib",
+          "bytes": 957408,
+          "sha256": "ea643646f017372436bde6119960f8e3b02b7493b3fef29666c4e4f33c0db8e2"
+        },
+        {
+          "path": "libggml-blas.0.dylib",
+          "bytes": 58776,
+          "sha256": "66521923af97fcd650683917711e2791ff922fa8fcd9868aed444f955adc4878"
+        },
+        {
+          "path": "libggml-metal.0.dylib",
+          "bytes": 5289352,
+          "sha256": "ab5af9ed102c52cf17501b3688e454a78d455c4cb6454ba89507b3a856f83e34"
+        },
+        {
+          "path": "libggml-rpc.0.dylib",
+          "bytes": 191920,
+          "sha256": "d9af4bf21c5a8dc63c1ce207245c8b26b1717c3163465135e9573f19709326b4"
+        },
+        {
+          "path": "LICENSE",
+          "bytes": 1078,
+          "sha256": "94f29bbed6a22c35b992c5c6ebf0e7c92f13b836b90f36f461c9cf2f0f1d010d"
+        }
+      ]
     }
   ],
   "models": [

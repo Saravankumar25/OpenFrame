@@ -254,6 +254,19 @@ pub fn device_for(adapter: &str, devices: &[(String, String)]) -> Option<String>
         .map(|(id, _)| id.clone())
 }
 
+/// The Metal device of the Mac engine, from `llama-server --list-devices`
+/// (`  MTL0: Apple M1 (12124 MiB, 12123 MiB free)`): its id and name. The Mac has one graphics
+/// device that shares the memory of the processor (ADR-0033).
+pub fn metal_device(listing: &str) -> Option<(String, String)> {
+    listing.lines().find_map(|l| {
+        let (id, rest) = l.trim().split_once(": ")?;
+        let ok =
+            id.starts_with("MTL") && id.len() > 3 && id[3..].chars().all(|c| c.is_ascii_digit());
+        let name = rest.rsplit_once(" (").map_or(rest, |(n, _)| n).trim();
+        (ok && !name.is_empty()).then(|| (id.to_string(), name.to_string()))
+    })
+}
+
 /// A probe passes when the card gave valid constrained output and generated faster than the
 /// processor (ADR-0029 decision 4). Without a processor figure the card is not trusted.
 pub fn probe_passed(valid: bool, gpu_tps: Option<f64>, cpu_tps: Option<f64>) -> bool {
@@ -266,6 +279,26 @@ pub fn probe_passed(valid: bool, gpu_tps: Option<f64>, cpu_tps: Option<f64>) -> 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn the_mac_engine_lists_one_metal_device() {
+        let listing = "Available devices:
+  MTL0: Apple M1 (12124 MiB, 12123 MiB free)
+  BLAS: Accelerate (0 MiB, 0 MiB free)
+";
+        assert_eq!(
+            metal_device(listing),
+            Some(("MTL0".to_string(), "Apple M1".to_string()))
+        );
+        assert_eq!(
+            metal_device("Available devices:\n  BLAS: Accelerate (0 MiB)"),
+            None
+        );
+        assert_eq!(
+            metal_device("  Vulkan0: NVIDIA GeForce (8188 MiB, 7900 MiB free)"),
+            None
+        );
+    }
 
     #[test]
     fn engine_devices_are_matched_to_windows_adapters_by_name() {

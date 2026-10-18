@@ -1,0 +1,21 @@
+{
+  "adapters": [],
+  "automatic": {
+    "firstAnswerSeconds": 10.59737491607666,
+    "placement": "Runs on the graphics card (Apple M1).",
+    "warmAnswerSeconds": 3.9495768547058105,
+    "warmWords": 125
+  },
+  "probe": {
+    "forceIntegratedProbe": false,
+    "off": true,
+    "probes": []
+  },
+  "processorOnly": {
+    "firstAnswerSeconds": 152.87774658203125,
+    "placement": "Runs on the processor. The graphics card is switched off in Settings.",
+    "warmAnswerSeconds": 143.32742309570312,
+    "warmWords": 119
+  },
+  "vulkanLoader": false
+}

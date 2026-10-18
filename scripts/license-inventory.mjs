@@ -253,7 +253,7 @@ function aiComponents() {
   const rows = [];
   for (const r of lock.runtimes ?? []) {
     rows.push({
-      component: `${r.engine} server (runtime, ${r.os} ${r.arch}, processor build)`,
+      component: `${r.engine} server (runtime, ${r.os} ${r.arch}, ${r.backend === "metal" ? "Metal and processor build" : "processor build"})`,
       version: r.version,
       license: r.licenseId,
       source: r.source.url,

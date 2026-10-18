@@ -112,7 +112,7 @@ pub struct RuntimeEntry {
     pub version: String,
     pub os: String,
     pub arch: String,
-    /// Only the processor build is bundled ("cpu").
+    /// "cpu" or "vulkan" on Windows; "metal" on the Mac (ADR-0033).
     pub backend: String,
     /// The server program inside the runtime folder.
     pub executable: String,
@@ -287,7 +287,7 @@ impl AssetLock {
             if !safe_id(&r.runtime_id) || !ids.insert(r.runtime_id.clone()) {
                 return Err(invalid_lock(format!("runtime id {}", r.runtime_id)));
             }
-            if !matches!(r.backend.as_str(), "cpu" | "vulkan")
+            if !matches!(r.backend.as_str(), "cpu" | "vulkan" | "metal")
                 || !safe_id(&r.version)
                 || !valid_text(&r.license_id, 80)
                 || r.files.is_empty()
@@ -318,9 +318,11 @@ impl AssetLock {
                     .filter(|o| o.os == r.os && o.arch == r.arch && o.backend == b)
                     .count()
             };
-            if same("cpu") != 1 || same("vulkan") > 1 {
+            // One main build per platform: the processor build on Windows, the Metal build on the
+            // Mac (it holds the processor code too, ADR-0033). A Vulkan build beside it is optional.
+            if same("cpu") + same("metal") != 1 || same("vulkan") > 1 {
                 return Err(invalid_lock(format!(
-                    "{}-{} needs one processor build and at most one Vulkan build",
+                    "{}-{} needs one processor or Metal build and at most one Vulkan build",
                     r.os, r.arch
                 )));
             }
@@ -405,7 +407,7 @@ impl AssetLock {
         let arch = std::env::consts::ARCH;
         self.runtimes
             .iter()
-            .find(|r| r.os == os && r.arch == arch && r.backend == "cpu")
+            .find(|r| r.os == os && r.arch == arch && matches!(r.backend.as_str(), "cpu" | "metal"))
     }
 
     /// The Vulkan build pinned for this computer, when there is one (ADR-0029).
@@ -660,9 +662,16 @@ impl BundledAi {
     pub fn gpu_runtime(&self) -> Option<&RuntimeEntry> {
         self.gpu_runtime.as_ref()
     }
-    /// The Vulkan engine program and its pinned files, when this platform has one.
+    /// The build that can put the chat model on the graphics hardware: the Vulkan build beside
+    /// the processor build on Windows, the one Metal build on the Mac (ADR-0033).
+    pub fn graphics_runtime(&self) -> Option<&RuntimeEntry> {
+        self.gpu_runtime
+            .as_ref()
+            .or((self.runtime.backend == "metal").then_some(&self.runtime))
+    }
+    /// The graphics-capable engine program and its pinned files, when this platform has one.
     pub fn gpu_engine(&self) -> Option<(PathBuf, EngineFiles)> {
-        let r = self.gpu_runtime.as_ref()?;
+        let r = self.graphics_runtime()?;
         let dir = self.root.join("runtimes").join(&r.runtime_id);
         Some((dir.join(&r.executable), EngineFiles::pinned(&dir, &r.files)))
     }
@@ -849,6 +858,23 @@ mod tests {
                 assert!(!f.path.contains("rpc"), "{} must not ship", f.path);
             }
         }
+    }
+
+    /// ADR-0033: the Mac has one Metal build as its main build; a second main build is refused.
+    #[test]
+    fn the_mac_engine_is_one_metal_build() {
+        let good = AssetLock::embedded().unwrap();
+        let mac: Vec<_> = good.runtimes.iter().filter(|r| r.os == "macos").collect();
+        assert_eq!(mac.len(), 1);
+        assert_eq!(mac[0].backend, "metal");
+        assert_eq!(mac[0].arch, "aarch64");
+        assert!(mac[0].files.iter().all(|f| !f.path.contains('/')));
+        let mut two = good.clone();
+        let mut cpu = mac[0].clone();
+        cpu.runtime_id = "llama-cpp-b11259-macos-arm64-cpu".into();
+        cpu.backend = "cpu".into();
+        two.runtimes.push(cpu);
+        assert!(two.validate().is_err(), "two main builds on one platform");
     }
 
     #[test]

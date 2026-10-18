@@ -836,6 +836,13 @@ impl AiManager {
             return Placement::Processor(CpuReason::NoAdapter);
         };
         let rec = self.graphics_record();
+        if b.runtime().backend == "metal" {
+            return self.choose_metal(
+                &b,
+                &rec,
+                placement::model_mb(models.chat.bytes, self.chat_context_tokens()),
+            );
+        }
         let facts = (self.cfg.graphics)();
         // A result is remembered per engine and per way of measuring (a new probe checks again).
         let runtime = b.gpu_runtime().map(|r| placement::probe_key(&r.version));
@@ -868,6 +875,47 @@ impl AiManager {
                 let runtime = runtime.unwrap_or_default();
                 self.probe(&b, &a, &driver, &runtime)
             }
+        }
+    }
+
+    /// The Mac (ADR-0033): every Apple silicon Mac has one Metal device that shares the
+    /// processor's memory, and the chat engine runs on it unless the setting is Off, the memory
+    /// is too small, or an earlier session saw the engine fail there. No timing check runs first:
+    /// the Metal build reads and writes several times faster than its own processor code, and a
+    /// processor run on a busy Mac can take minutes. A failure in use falls back (`card_failed`).
+    fn choose_metal(&self, b: &BundledAi, rec: &gpu::GraphicsRecord, model_mb: u64) -> Placement {
+        const APPLE: u32 = 0x106B;
+        const DRIVER: &str = "Metal";
+        if rec.off {
+            return Placement::Processor(CpuReason::SettingOff);
+        }
+        let total_mb = hardware::inspect().total_ram_bytes / (1024 * 1024);
+        if total_mb < model_mb + gpu::MARGIN_MB + gpu::SYSTEM_RESERVE_MB {
+            return Placement::Processor(CpuReason::NotEnoughMemory);
+        }
+        let Some((exe, files)) = b.gpu_engine() else {
+            return Placement::Processor(CpuReason::NoAdapter);
+        };
+        let listing = match crate::supervisor::list_devices(&exe, Some(&files)) {
+            Ok(l) => l,
+            Err(e) => {
+                tracing::warn!(code = e.code_str(), "the Mac engine could not list devices");
+                return Placement::Processor(CpuReason::ProbeFailed);
+            }
+        };
+        let Some((device, name)) = gpu::metal_device(&listing) else {
+            return Placement::Processor(CpuReason::NoAdapter);
+        };
+        let key = placement::probe_key(&b.runtime().version);
+        if rec.remembered(&name, APPLE, DRIVER, &key) == Some(gpu::Remembered::Failed) {
+            return Placement::Processor(CpuReason::ProbeFailed);
+        }
+        Placement::Card {
+            adapter: name,
+            vendor_id: APPLE,
+            driver: DRIVER.to_string(),
+            device,
+            tokens_per_second: None,
         }
     }
 
@@ -1014,7 +1062,10 @@ impl AiManager {
             .read()
             .bundle
             .as_ref()
-            .and_then(|b| b.gpu_runtime().map(|r| placement::probe_key(&r.version)))
+            .and_then(|b| {
+                b.graphics_runtime()
+                    .map(|r| placement::probe_key(&r.version))
+            })
             .unwrap_or_default();
         let mut rec = self.graphics_record();
         rec.remember(ProbeRecord {
