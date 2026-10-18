@@ -1,0 +1,423 @@
+{
+  "overall": {
+    "cases": 79,
+    "setup_errors": 0,
+    "tool_offered": {
+      "passed": 65,
+      "counted": 79
+    },
+    "tool_correct": {
+      "passed": 75,
+      "counted": 79
+    },
+    "tool_and_args": {
+      "passed": 74,
+      "counted": 79
+    },
+    "schema_valid": {
+      "passed": 79,
+      "counted": 79
+    },
+    "end_state": {
+      "passed": 70,
+      "counted": 79
+    },
+    "answer": {
+      "passed": 0,
+      "counted": 0
+    },
+    "language": {
+      "passed": 79,
+      "counted": 79
+    },
+    "length": {
+      "passed": 0,
+      "counted": 0
+    },
+    "safety": {
+      "passed": 0,
+      "counted": 0
+    },
+    "not_empty": {
+      "passed": 79,
+      "counted": 79
+    },
+    "grounding_found": 158,
+    "grounding_total": 223,
+    "recall_at_5": {
+      "passed": 0,
+      "counted": 0
+    },
+    "recall_at_10": {
+      "passed": 0,
+      "counted": 0
+    },
+    "reciprocal_rank_sum": 0.0,
+    "retrieval_cases": 0,
+    "elapsed_ms": [
+      4687,
+      3582,
+      109,
+      132,
+      41221,
+      142,
+      28916,
+      78,
+      84,
+      81,
+      139,
+      134,
+      101,
+      115,
+      104,
+      85,
+      38702,
+      37241,
+      109,
+      102,
+      92,
+      88,
+      86,
+      131,
+      86,
+      123,
+      113,
+      105,
+      103,
+      109,
+      46813,
+      48744,
+      41675,
+      82,
+      47829,
+      142,
+      78,
+      116,
+      69,
+      91,
+      99,
+      81,
+      83,
+      40462,
+      83,
+      101,
+      130,
+      97,
+      41678,
+      96,
+      142,
+      91,
+      102,
+      67,
+      83,
+      87,
+      91,
+      73,
+      74,
+      99,
+      86,
+      109,
+      39266,
+      107,
+      115,
+      42102,
+      122,
+      53850,
+      126,
+      108,
+      80,
+      84,
+      36928,
+      37815,
+      79,
+      35383,
+      42022,
+      90,
+      38338
+    ],
+    "engine_mb_max": 3026
+  },
+  "by_kind": {
+    "action": {
+      "cases": 79,
+      "setup_errors": 0,
+      "tool_offered": {
+        "passed": 65,
+        "counted": 79
+      },
+      "tool_correct": {
+        "passed": 75,
+        "counted": 79
+      },
+      "tool_and_args": {
+        "passed": 74,
+        "counted": 79
+      },
+      "schema_valid": {
+        "passed": 79,
+        "counted": 79
+      },
+      "end_state": {
+        "passed": 70,
+        "counted": 79
+      },
+      "answer": {
+        "passed": 0,
+        "counted": 0
+      },
+      "language": {
+        "passed": 79,
+        "counted": 79
+      },
+      "length": {
+        "passed": 0,
+        "counted": 0
+      },
+      "safety": {
+        "passed": 0,
+        "counted": 0
+      },
+      "not_empty": {
+        "passed": 79,
+        "counted": 79
+      },
+      "grounding_found": 158,
+      "grounding_total": 223,
+      "recall_at_5": {
+        "passed": 0,
+        "counted": 0
+      },
+      "recall_at_10": {
+        "passed": 0,
+        "counted": 0
+      },
+      "reciprocal_rank_sum": 0.0,
+      "retrieval_cases": 0,
+      "elapsed_ms": [
+        4687,
+        3582,
+        109,
+        132,
+        41221,
+        142,
+        28916,
+        78,
+        84,
+        81,
+        139,
+        134,
+        101,
+        115,
+        104,
+        85,
+        38702,
+        37241,
+        109,
+        102,
+        92,
+        88,
+        86,
+        131,
+        86,
+        123,
+        113,
+        105,
+        103,
+        109,
+        46813,
+        48744,
+        41675,
+        82,
+        47829,
+        142,
+        78,
+        116,
+        69,
+        91,
+        99,
+        81,
+        83,
+        40462,
+        83,
+        101,
+        130,
+        97,
+        41678,
+        96,
+        142,
+        91,
+        102,
+        67,
+        83,
+        87,
+        91,
+        73,
+        74,
+        99,
+        86,
+        109,
+        39266,
+        107,
+        115,
+        42102,
+        122,
+        53850,
+        126,
+        108,
+        80,
+        84,
+        36928,
+        37815,
+        79,
+        35383,
+        42022,
+        90,
+        38338
+      ],
+      "engine_mb_max": 3026
+    }
+  },
+  "by_lang": {
+    "en": {
+      "cases": 79,
+      "setup_errors": 0,
+      "tool_offered": {
+        "passed": 65,
+        "counted": 79
+      },
+      "tool_correct": {
+        "passed": 75,
+        "counted": 79
+      },
+      "tool_and_args": {
+        "passed": 74,
+        "counted": 79
+      },
+      "schema_valid": {
+        "passed": 79,
+        "counted": 79
+      },
+      "end_state": {
+        "passed": 70,
+        "counted": 79
+      },
+      "answer": {
+        "passed": 0,
+        "counted": 0
+      },
+      "language": {
+        "passed": 79,
+        "counted": 79
+      },
+      "length": {
+        "passed": 0,
+        "counted": 0
+      },
+      "safety": {
+        "passed": 0,
+        "counted": 0
+      },
+      "not_empty": {
+        "passed": 79,
+        "counted": 79
+      },
+      "grounding_found": 158,
+      "grounding_total": 223,
+      "recall_at_5": {
+        "passed": 0,
+        "counted": 0
+      },
+      "recall_at_10": {
+        "passed": 0,
+        "counted": 0
+      },
+      "reciprocal_rank_sum": 0.0,
+      "retrieval_cases": 0,
+      "elapsed_ms": [
+        4687,
+        3582,
+        109,
+        132,
+        41221,
+        142,
+        28916,
+        78,
+        84,
+        81,
+        139,
+        134,
+        101,
+        115,
+        104,
+        85,
+        38702,
+        37241,
+        109,
+        102,
+        92,
+        88,
+        86,
+        131,
+        86,
+        123,
+        113,
+        105,
+        103,
+        109,
+        46813,
+        48744,
+        41675,
+        82,
+        47829,
+        142,
+        78,
+        116,
+        69,
+        91,
+        99,
+        81,
+        83,
+        40462,
+        83,
+        101,
+        130,
+        97,
+        41678,
+        96,
+        142,
+        91,
+        102,
+        67,
+        83,
+        87,
+        91,
+        73,
+        74,
+        99,
+        86,
+        109,
+        39266,
+        107,
+        115,
+        42102,
+        122,
+        53850,
+        126,
+        108,
+        80,
+        84,
+        36928,
+        37815,
+        79,
+        35383,
+        42022,
+        90,
+        38338
+      ],
+      "engine_mb_max": 3026
+    }
+  },
+  "english_tool_and_args_percent": 93.67088607594937,
+  "english_end_state_percent": 88.60759493670886,
+  "english_bar_met": true
+}
