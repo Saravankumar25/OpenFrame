@@ -115,6 +115,9 @@ public struct OpenFrameStudioApp: App {
                 .task { await model.start() }
                 .task(id: model.isRunning) { await themes.load(from: model) }
         }
+        // The first window is wide enough for every workspace toolbar; at the minimum width the
+        // toolbar buttons move into the overflow menu. macOS keeps the size the person chooses.
+        .defaultSize(width: 1360, height: 860)
         .windowToolbarStyle(.unified)
         .commands { AppCommands(model: model) }
 
