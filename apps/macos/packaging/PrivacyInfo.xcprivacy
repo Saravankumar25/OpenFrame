@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- OpenFrame Studio privacy manifest. The app collects no data, does no tracking and talks to no
+     server except the model download the person starts (ADR-0026). Required-reason APIs: file
+     dates (show and sort the person's own files), free disk space (refuse a save or download that
+     cannot fit), user defaults (the app's own settings). -->
+<plist version="1.0">
+<dict>
+	<key>NSPrivacyTracking</key><false/>
+	<key>NSPrivacyTrackingDomains</key><array/>
+	<key>NSPrivacyCollectedDataTypes</key><array/>
+	<key>NSPrivacyAccessedAPITypes</key>
+	<array>
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key><string>NSPrivacyAccessedAPICategoryFileTimestamp</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key><array><string>C617.1</string><string>3B52.1</string></array>
+		</dict>
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key><string>NSPrivacyAccessedAPICategoryDiskSpace</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key><array><string>E174.1</string></array>
+		</dict>
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key><string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key><array><string>CA92.1</string></array>
+		</dict>
+	</array>
+</dict>
+</plist>

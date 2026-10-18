@@ -12,7 +12,7 @@ public final class SharedScreenplayRules: ScreenplayEditorRules {
     public init(table: ElementRules? = nil) {
         if let table {
             self.table = table
-        } else if let url = Bundle.module.url(forResource: "elementRules", withExtension: "json"),
+        } else if let url = PackagedResources.url("elementRules", "json"),
                   let loaded = try? ElementRules(contentsOf: url) {
             self.table = loaded
         } else {

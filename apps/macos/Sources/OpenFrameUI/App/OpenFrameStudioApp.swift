@@ -50,17 +50,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// counterpart of the Windows close gate). A store that does not answer in 5 seconds does not
     /// keep the app open forever; the core closes the project either way.
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        // Whichever comes first answers: the editors finished storing, or 5 seconds passed. A
+        // task group cannot do this, because it waits for the slower child even after
+        // cancelling it, so a store that never answers would keep the app open for ever.
+        let reply = TerminateReply(sender)
         Task { @MainActor in
-            let flush = Task { await ScreenplayWorkspaceModel.flushAll() }
-            let timeout = Task { try? await Task.sleep(nanoseconds: 5_000_000_000) }
-            _ = await (Task { await withTaskGroup(of: Void.self) { g in
-                g.addTask { await flush.value }
-                g.addTask { await timeout.value }
-                await g.next()
-                g.cancelAll()
-            } }).value
-            sender.reply(toApplicationShouldTerminate: true)
+            await ScreenplayWorkspaceModel.flushAll()
+            reply.answer()
         }
+        // A timer, not the main queue: while AppKit waits for the answer it runs the event
+        // loop in the modal panel mode, which timers added for all common modes still reach.
+        let timer = Timer(timeInterval: 5, repeats: false) { _ in MainActor.assumeIsolated { reply.answer() } }
+        RunLoop.main.add(timer, forMode: .common)
         return .terminateLater
     }
 
@@ -70,6 +71,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             // (checkpoint, crash marker cleared) before the process ends.
             AppDelegate.model?.shutdown()
         }
+    }
+}
+
+/// Answers AppKit's "may the app quit?" exactly once.
+@MainActor
+private final class TerminateReply {
+    private let app: NSApplication
+    private var answered = false
+    init(_ app: NSApplication) { self.app = app }
+    func answer() {
+        guard !answered else { return }
+        answered = true
+        app.reply(toApplicationShouldTerminate: true)
     }
 }
 

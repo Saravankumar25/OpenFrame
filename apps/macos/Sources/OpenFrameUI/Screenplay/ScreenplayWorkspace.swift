@@ -578,7 +578,7 @@ struct ScreenplayWorkspace: View {
                     .font(.caption.monospacedDigit())
                     .foregroundStyle(.secondary)
                     .help("\(model.pagination?.paper ?? ""), \(Int(model.pagination?.linesPerPage ?? 0)) lines per page")
-                    .accessibilityLabel("\(page). \(Int(model.pagination?.pageCount ?? 0)) pages")
+                    .accessibilityLabel(page)
                     .accessibilityIdentifier("editor-page-count")
             }
         }

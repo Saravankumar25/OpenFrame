@@ -8,7 +8,7 @@ extension ThemeStore {
     /// A store with the bundled built-in themes (the same themes.json the Windows app reads).
     public convenience init() {
         let catalog: ThemeCatalog
-        if let url = Bundle.module.url(forResource: "themes", withExtension: "json"),
+        if let url = PackagedResources.url("themes", "json"),
            let data = try? Data(contentsOf: url),
            let loaded = try? ThemeCatalog(json: data) {
             catalog = loaded

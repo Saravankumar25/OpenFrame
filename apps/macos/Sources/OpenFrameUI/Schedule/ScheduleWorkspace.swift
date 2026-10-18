@@ -1,0 +1,259 @@
+// The Schedule workspace (Mac phase M6). Windows has it as the Production tabs Schedule and Day
+// Out of Days; here one workspace holds both. "What do we shoot, and when?" The stripboard, list
+// and calendar of the shooting schedule, the shooting days with their times and timeline, the
+// warnings and grouping advice (never applied on their own), script change review, the exports,
+// and the Day Out of Days. Every read and change is a `schedule.*` operation of the core.
+
+import SwiftUI
+import OpenFrameCore
+
+struct ScheduleWorkspace: View {
+    @Environment(AppModel.self) private var app
+    @State private var model: ScheduleModel?
+
+    var body: some View {
+        Group {
+            if let model {
+                ScheduleContent(model: model)
+            } else {
+                ProgressView()
+            }
+        }
+        .task { if model == nil { model = ScheduleModel(app: app) } }
+    }
+}
+
+struct ScheduleContent: View {
+    @Bindable var model: ScheduleModel
+    @Environment(AppModel.self) private var app
+    @Environment(\.ofTheme) private var theme
+
+    private var dataKey: Int { app.changes.key(SchedTables.all) }
+    private var doodKey: String { "\(dataKey)|\(model.section.rawValue)|\(model.doodCast)|\(model.doodFrom)|\(model.doodTo)" }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            sectionBar
+            Divider()
+            switch model.section {
+            case .schedule: scheduleTab
+            case .dood: SchedDoodScreen(model: model)
+            }
+        }
+        .background(theme["bg"])
+        .task(id: dataKey) { await model.reload() }
+        .task(id: doodKey) { if model.section == .dood { await model.reloadDood() } }
+        .sheet(item: $model.sheet) { ScheduleSheetHost(model: model, sheet: $0) }
+        .sheet(item: $model.pendingKeep) { SchedKeepAnywaySheet(model: model, pending: $0) }
+        .accessibilityIdentifier("schedule-workspace")
+    }
+
+    private var sectionBar: some View {
+        HStack(spacing: 12) {
+            SchedTabs(
+                items: SchedSection.allCases.map { .init(value: $0, title: $0.title, symbol: nil, id: "schedule-section-\($0.rawValue)") },
+                selection: $model.section, label: "Production", identifier: "schedule-sections")
+            Spacer()
+        }
+        .padding(.horizontal, 16).padding(.vertical, 8)
+    }
+
+    // MARK: Schedule tab
+
+    @ViewBuilder private var scheduleTab: some View {
+        if !model.loaded {
+            ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
+        } else if model.view == nil, let f = model.loadFailure {
+            ContentUnavailableView {
+                Label("The schedule could not be loaded.", systemImage: "exclamationmark.triangle")
+            } description: {
+                Text(f.message)
+            } actions: {
+                Button("Try Again") { Task { await model.reload() } }.accessibilityIdentifier("schedule-retry")
+            }
+        } else if model.schedule == nil {
+            noSchedule
+        } else if let day = model.openDay {
+            HStack(spacing: 0) {
+                ScheduleDayView(model: model, day: day)
+                drawer
+            }
+        } else {
+            board
+        }
+    }
+
+    private var noSchedule: some View {
+        Group {
+            if let src = model.view?.activeSource {
+                ContentUnavailableView {
+                    Label("Create a shooting schedule from your screenplay.", systemImage: "calendar")
+                } description: {
+                    Text("Break down your script first, then move scenes into shooting days. Production source: \(src.label) \u{00B7} \(Int(src.sceneCount)) scenes.")
+                } actions: {
+                    Button("Create Shooting Schedule") { model.sheet = .createSchedule }
+                        .buttonStyle(.borderedProminent)
+                        .accessibilityIdentifier("create-shooting-schedule")
+                }
+            } else {
+                ContentUnavailableView {
+                    Label("Create a shooting schedule from your screenplay.", systemImage: "calendar")
+                } description: {
+                    Text("Choose a Production Source in Breakdown first. The schedule is built from the scenes of that screenplay draft.")
+                } actions: {
+                    Button("Open Breakdown") {
+                        NotificationCenter.default.post(name: .openFrameShowWorkspace, object: Workspace.breakdown.rawValue)
+                    }
+                    .accessibilityIdentifier("schedule-open-breakdown")
+                }
+            }
+        }
+        .accessibilityIdentifier("schedule-empty")
+    }
+
+    private var board: some View {
+        HStack(spacing: 0) {
+            VStack(alignment: .leading, spacing: 8) {
+                banners
+                toolbar
+                if model.mode != .calendar { ScheduleFilterBar(model: model) }
+                switch model.mode {
+                case .board: ScheduleBoardView(model: model)
+                case .list: ScheduleListView(model: model).padding(.horizontal, 16)
+                case .calendar: ScheduleCalendarView(model: model)
+                }
+                if let h = model.view?.history, !h.isEmpty, model.mode == .list {
+                    Text("\(SchedFormat.plural(h.count, "scene")) \(h.count == 1 ? "was" : "were") removed from the schedule after script changes (kept in schedule history).")
+                        .font(.caption).foregroundStyle(theme["muted"]).padding(.horizontal, 16)
+                        .accessibilityIdentifier("schedule-history-note")
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .topLeading)
+            drawer
+        }
+    }
+
+    @ViewBuilder private var drawer: some View {
+        if let d = model.drawer { ScheduleDrawerHost(model: model, drawer: d) }
+    }
+
+    private var banners: some View {
+        VStack(spacing: 6) {
+            BDBanner(.info, model.sourceLine).accessibilityIdentifier("schedule-source-line")
+            if model.view?.scriptChanges != nil {
+                BDBanner(tone: .warn, content: {
+                    Text("\(model.changesTitle). Your schedule has not been changed.")
+                }, actions: {
+                    Button("Review changes") { model.sheet = .scriptChanges }
+                        .controlSize(.small).buttonStyle(.borderedProminent)
+                        .accessibilityIdentifier("review-script-changes")
+                })
+                .accessibilityIdentifier("script-changes-banner")
+            }
+            if model.isFinalized {
+                BDBanner(tone: .ok, content: {
+                    Text("This schedule is finalized. Reopen it in settings to make changes.")
+                }, actions: {
+                    Button("Reopen\u{2026}") { model.sheet = .settings }.controlSize(.small)
+                        .accessibilityIdentifier("reopen-schedule")
+                })
+                .accessibilityIdentifier("finalized-banner")
+            }
+        }
+        .padding(.horizontal, 16).padding(.top, 10)
+    }
+
+    private var toolbar: some View {
+        HStack(spacing: 10) {
+            SchedTabs(
+                items: SchedMode.allCases.map { .init(value: $0, title: $0.title, symbol: $0.symbol, id: "schedule-mode-\($0.rawValue)") },
+                selection: $model.mode, label: "Schedule view", identifier: "schedule-modes")
+            Button { model.sheet = .day(.create(offDay: false, afterDayId: nil)) } label: { Label("Create Shooting Day", systemImage: "plus") }
+                .buttonStyle(.borderedProminent)
+                .disabled(model.isFinalized)
+                .keyboardShortcut("n", modifiers: [.command, .shift])
+                .accessibilityIdentifier("create-shooting-day")
+            Button { model.sheet = .day(.create(offDay: true, afterDayId: nil)) } label: { Label("Off Day", systemImage: "moon") }
+                .disabled(model.isFinalized)
+                .accessibilityIdentifier("add-off-day")
+            Button { model.drawer = .suggestions } label: { Label("Suggest Grouping", systemImage: "sparkles") }
+                .accessibilityIdentifier("suggest-grouping")
+            Spacer()
+            Button { model.drawer = .warnings } label: {
+                Label(model.warningsLabel, systemImage: "exclamationmark.triangle")
+                    .foregroundStyle(model.openWarningCount > 0 ? theme["red-t"] : theme["green-t"])
+            }
+            .accessibilityLabel(model.warningsLabel)
+            .accessibilityIdentifier("warnings-button")
+            if model.schedule?.strictValidation == true {
+                SchedChip(text: "Strict validation", tone: .purple).accessibilityIdentifier("strict-chip")
+            }
+            Button { model.sheet = .settings } label: { Image(systemName: "gearshape") }
+                .help("Schedule settings")
+                .accessibilityLabel("Schedule settings")
+                .accessibilityIdentifier("schedule-settings")
+            Button { model.sheet = .export(.schedule(currentDayId: nil)) } label: { Label("Export", systemImage: "square.and.arrow.up") }
+                .accessibilityIdentifier("schedule-export")
+        }
+        .padding(.horizontal, 16)
+    }
+}
+
+// MARK: Filters
+
+struct ScheduleFilterBar: View {
+    @Bindable var model: ScheduleModel
+    @Environment(\.ofTheme) private var theme
+
+    var body: some View {
+        let opts = model.view?.filterOptions ?? SchedFilterOptions()
+        let total = model.allStrips.count
+        let shown = model.matches?.count ?? total
+        HStack(spacing: 8) {
+            menu("Filter by location", $model.filter.location, [("", "All locations")] + opts.locations.map { ($0.value, $0.label) }, "filter-location")
+            menu("Filter by cast", $model.filter.cast, [("", "All cast")] + opts.cast.map { ($0.value, $0.label) }, "filter-cast")
+            menu("Filter by day or night", $model.filter.dayNight, [("", "Day and night"), ("D", "Day scenes"), ("N", "Night scenes")], "filter-day-night")
+            menu(
+                "Filter by scene length",
+                Binding(get: { model.filter.length.rawValue }, set: { model.filter.length = ScheduleFilter.Length(rawValue: $0) ?? .any }),
+                [("any", "Any length"), ("short", "Up to 1 page"), ("mid", "1 to 3 pages"), ("long", "Over 3 pages")], "filter-length")
+            menu(
+                "Filter by scheduled state",
+                Binding(get: { model.filter.scheduled.rawValue }, set: { model.filter.scheduled = ScheduleFilter.Scheduled(rawValue: $0) ?? .any }),
+                [("any", "Scheduled and unscheduled"), ("scheduled", "Scheduled"), ("unscheduled", "Unscheduled")], "filter-scheduled")
+            menu(
+                "Filter by breakdown state",
+                Binding(get: { model.filter.breakdown.rawValue }, set: { model.filter.breakdown = ScheduleFilter.Breakdown(rawValue: $0) ?? .any }),
+                [("any", "Any breakdown"), ("complete", "Breakdown complete"), ("incomplete", "Breakdown incomplete")], "filter-breakdown")
+            menu("Filter by shooting day", $model.filter.day, [("", "All days")] + opts.days.map { ($0.value, $0.label) }, "filter-day")
+            menu(
+                "Filter by script revision",
+                Binding(get: { model.filter.revision.rawValue }, set: { model.filter.revision = ScheduleFilter.Revision(rawValue: $0) ?? .any }),
+                [("any", "Any revision state"), ("changed", "Changed in the script"), ("current", "Unchanged")], "filter-revision")
+            if model.filter.isActive {
+                Text("Showing \(shown) of \(total) scenes").font(.callout).foregroundStyle(theme["muted"])
+                    .accessibilityIdentifier("filter-count")
+                Button { model.filter = ScheduleFilter() } label: { Label("Clear filters", systemImage: "line.3.horizontal.decrease.circle") }
+                    .controlSize(.small)
+                    .accessibilityIdentifier("clear-filters")
+            }
+            Spacer(minLength: 0)
+        }
+        .controlSize(.small)
+        .padding(.horizontal, 16)
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Filter scenes")
+        .accessibilityIdentifier("schedule-filters")
+    }
+
+    private func menu(_ label: String, _ value: Binding<String>, _ options: [(String, String)], _ id: String) -> some View {
+        Picker(label, selection: value) {
+            ForEach(options, id: \.0) { Text($0.1).tag($0.0) }
+        }
+        .labelsHidden()
+        .fixedSize()
+        .frame(maxWidth: 190)
+        .accessibilityLabel(label)
+        .accessibilityIdentifier(id)
+    }
+}

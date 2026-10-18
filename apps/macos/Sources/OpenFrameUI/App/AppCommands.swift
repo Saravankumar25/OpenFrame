@@ -40,10 +40,16 @@ struct AppCommands: Commands {
                 .disabled(!isProject)
         }
         CommandMenu("Go") {
-            ForEach(Workspace.allCases.filter { $0.shortcut != nil }) { ws in
-                Button(ws.title) { NotificationCenter.default.post(name: .openFrameShowWorkspace, object: ws.rawValue) }
-                    .keyboardShortcut(ws.shortcut!, modifiers: [.command, .control])
-                    .disabled(!isProject)
+            // Every workspace, so the keyboard reaches each one; the main ones have a shortcut.
+            ForEach(Workspace.allCases) { ws in
+                if let key = ws.shortcut {
+                    Button(ws.title) { NotificationCenter.default.post(name: .openFrameShowWorkspace, object: ws.rawValue) }
+                        .keyboardShortcut(key, modifiers: [.command, .control])
+                        .disabled(!isProject)
+                } else {
+                    Button(ws.title) { NotificationCenter.default.post(name: .openFrameShowWorkspace, object: ws.rawValue) }
+                        .disabled(!isProject)
+                }
             }
         }
     }

@@ -146,7 +146,7 @@ final class SearchPaletteModel {
             list.append(PaletteCommand(id: "close-project", title: "Close Project", symbol: "xmark.circle", hint: "Shift\u{2318}W") { [app] in
                 await app.closeProject()
             })
-            for ws in Workspace.allCases where ws.macPhase == nil {
+            for ws in Workspace.allCases {
                 list.append(PaletteCommand(id: "go-\(ws.rawValue)", title: "Go to \(ws.title)", symbol: ws.symbol,
                                            hint: ws.shortcut.map { "\u{2303}\u{2318}\(String($0.character))" }) {
                     NotificationCenter.default.post(name: .openFrameShowWorkspace, object: ws.rawValue)

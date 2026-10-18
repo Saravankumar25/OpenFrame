@@ -10,6 +10,7 @@
 //   OpenFrameCore    the typed Swift interface to the core: Core, generated operations and types
 //   OpenFrameUI      screens and their models (no rules: every decision is made by the core)
 //   OpenFrameStudio  the app entry point
+//   OpenFrameE2EDriver  end-to-end driver injected into the release app by E2E/run.sh (AppKit only)
 import PackageDescription
 
 let package = Package(
@@ -20,6 +21,8 @@ let package = Package(
         .library(name: "OpenFrameCore", targets: ["OpenFrameCore"]),
         .library(name: "OpenFrameUI", targets: ["OpenFrameUI"]),
         .executable(name: "OpenFrameStudio", targets: ["OpenFrameStudio"]),
+        // The end-to-end driver, injected into the release app by E2E/run.sh. Never in the app bundle.
+        .library(name: "OpenFrameE2EDriver", type: .dynamic, targets: ["OpenFrameE2EDriver"]),
     ],
     targets: [
         .binaryTarget(name: "OpenFrameFFI", path: "Frameworks/OpenFrameFFI.xcframework"),
@@ -42,6 +45,8 @@ let package = Package(
             resources: [.copy("Resources/themes.json"), .copy("Resources/elementRules.json")]
         ),
         .executableTarget(name: "OpenFrameStudio", dependencies: ["OpenFrameUI"]),
+        .target(name: "OpenFrameE2EShim"),
+        .target(name: "OpenFrameE2EDriver", dependencies: ["OpenFrameE2EShim"], swiftSettings: [.swiftLanguageMode(.v5)]),
         .testTarget(name: "OpenFrameCoreTests", dependencies: ["OpenFrameCore"]),
         .testTarget(
             name: "OpenFrameUITests",

@@ -26,15 +26,13 @@ public struct RootView: View {
                 case let .error(title, failure):
                     return Alert(title: Text(title), message: Text(failure.message), dismissButton: .default(Text("OK")))
                 case let .recovery(_, offer):
+                    let title = Text("OpenFrame closed unexpectedly last time")
+                    let message = Text(RecoveryText.message(offer))
+                    let keep = Alert.Button.default(Text("Keep the latest work")) { Task { await model.resolveRecovery("latest") } }
+                    guard offer.hasCheckpoint else { return Alert(title: title, message: message, dismissButton: keep) }
                     return Alert(
-                        title: Text("OpenFrame closed unexpectedly last time"),
-                        message: Text(RecoveryText.message(offer)),
-                        primaryButton: .default(Text("Keep the latest work")) {
-                            Task { await model.resolveRecovery("latest") }
-                        },
-                        secondaryButton: offer.hasCheckpoint
-                            ? .default(Text("Open the last confirmed save")) { Task { await model.resolveRecovery("checkpoint") } }
-                            : .cancel(Text("Keep the latest work")) { Task { await model.resolveRecovery("latest") } }
+                        title: title, message: message, primaryButton: keep,
+                        secondaryButton: .default(Text("Open the last confirmed save")) { Task { await model.resolveRecovery("checkpoint") } }
                     )
                 }
             }

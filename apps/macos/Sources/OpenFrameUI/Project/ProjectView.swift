@@ -57,15 +57,7 @@ enum Workspace: String, CaseIterable, Identifiable, Hashable {
         }
     }
 
-    /// The Mac phase that brings the workspace to the Mac (chapter-1b-mac-phases.md).
-    var macPhase: String? {
-        switch self {
-        case .home, .screenplay, .story, .ideaVault, .breakdown: nil
-        default: "M6"
-        }
-    }
-
-    /// Keyboard shortcut in the Go menu: Control+Command+1 to 5 for the main workspaces. Command+1
+    /// Keyboard shortcut in the Go menu: Control+Command+1 to 9 for the main workspaces. Command+1
     /// to Command+8 belong to the screenplay elements, as in Mac screenwriting apps.
     var shortcut: KeyEquivalent? {
         switch self {
@@ -74,6 +66,10 @@ enum Workspace: String, CaseIterable, Identifiable, Hashable {
         case .story: "3"
         case .ideaVault: "4"
         case .breakdown: "5"
+        case .schedule: "6"
+        case .callSheets: "7"
+        case .budget: "8"
+        case .visual: "9"
         default: nil
         }
     }
@@ -84,6 +80,8 @@ struct ProjectView: View {
     @Environment(AppModel.self) private var app
     @Environment(\.ofTheme) private var theme
     @SceneStorage("workspace") private var stored: String = Workspace.home.rawValue
+    /// The AI Assistant panel docks beside the page; it stays as the person left it.
+    @SceneStorage("assistantOpen") private var assistantOpen = false
     @State private var selection: Workspace? = .home
     @State private var columns: NavigationSplitViewVisibility = .automatic
     /// The project as the core has it now (title and status change from rename, undo and redo).
@@ -104,7 +102,6 @@ struct ProjectView: View {
                     Section(section) {
                         ForEach(Workspace.allCases.filter { $0.section == section }) { ws in
                             Label(ws.title, systemImage: ws.symbol)
-                                .foregroundStyle(ws.macPhase == nil ? .primary : .secondary)
                                 .tag(ws)
                                 .accessibilityIdentifier("sidebar-\(ws.rawValue)")
                         }
@@ -114,11 +111,23 @@ struct ProjectView: View {
             .navigationSplitViewColumnWidth(min: 190, ideal: 220, max: 300)
             .safeAreaInset(edge: .bottom) { SaveStatusView().padding(10) }
         } detail: {
-            detail(selection ?? .home)
-                .navigationTitle(current.title)
+            // The panel docks after the page in a row (as on Windows), so opening it narrows the page
+            // and never covers a control. A row, not an inspector: workspaces use inspectors of their own.
+            HStack(spacing: 0) {
+                detail(selection ?? .home)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                if assistantOpen {
+                    Divider()
+                    AIPanelView(workspace: selection ?? .home) { assistantOpen = false }
+                        .frame(width: 360)
+                        .transition(.move(edge: .trailing))
+                }
+            }
+            .navigationTitle(current.title)
                 .navigationSubtitle(selection?.title ?? "")
         }
         .toolbar {
+            ToolbarItem(placement: .primaryAction) { assistantButton }
             ToolbarItem(placement: .primaryAction) { projectMenu }
             ToolbarItem(placement: .navigation) {
                 Button {
@@ -146,9 +155,24 @@ struct ProjectView: View {
             let info = note.userInfo ?? [:]
             ScreenplayWorkspaceModel.pendingTarget = (info["screenplayId"] as? String, info["draftId"] as? String, info["sceneId"] as? String)
         }
+        .onReceive(NotificationCenter.default.publisher(for: .openFrameToggleAssistant)) { _ in assistantOpen.toggle() }
         .onReceive(NotificationCenter.default.publisher(for: .openFrameShowWorkspace)) { note in
             if let raw = note.object as? String, let ws = Workspace(rawValue: raw) { selection = ws }
         }
+    }
+
+    /// The project menu: status, rename, duplicate, archive, show in Finder (Windows: the project menu in the top bar).
+    /// Opens and closes the AI Assistant panel (Windows: the Assistant button and Ctrl+J).
+    private var assistantButton: some View {
+        Button {
+            assistantOpen.toggle()
+        } label: {
+            Label("Assistant", systemImage: "sparkles")
+        }
+        .keyboardShortcut("j", modifiers: .command)
+        .help(assistantOpen ? "Close AI Assistant (Command+J)" : "Open AI Assistant (Command+J)")
+        .accessibilityLabel(assistantOpen ? "Close AI Assistant" : "Open AI Assistant")
+        .accessibilityIdentifier("ai-toggle")
     }
 
     /// The project menu: status, rename, duplicate, archive, show in Finder (Windows: the project menu in the top bar).
@@ -194,20 +218,15 @@ struct ProjectView: View {
         case .story: StoryWorkspace()
         case .ideaVault: IdeaVaultWorkspace(store: .project)
         case .breakdown: BreakdownWorkspace()
-        default: NotOnMacYet(workspace: ws)
+        case .schedule: ScheduleWorkspace()
+        case .callSheets: CallSheetsWorkspace()
+        case .budget: BudgetWorkspace()
+        case .visual: VisualPlanningWorkspace()
+        case .files: FilesWorkspace()
+        case .notes: NotesWorkspace()
+        case .activity: ActivityWorkspace()
+        case .recentlyDeleted: RecentlyDeletedWorkspace()
         }
-    }
-}
-
-struct NotOnMacYet: View {
-    let workspace: Workspace
-    var body: some View {
-        ContentUnavailableView {
-            Label(workspace.title, systemImage: workspace.symbol)
-        } description: {
-            Text("\(workspace.title) is not on the Mac yet. It arrives in Mac phase \(workspace.macPhase ?? "M6"). Your data for it is safe in the project and opens on Windows.")
-        }
-        .accessibilityIdentifier("not-on-mac-\(workspace.rawValue)")
     }
 }
 
