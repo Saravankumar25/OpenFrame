@@ -480,6 +480,7 @@ struct ScreenplayWorkspace: View {
             Task { await model.show(screenplayId: info["screenplayId"] as? String, draftId: info["draftId"] as? String, sceneId: info["sceneId"] as? String) }
         }
         .screenplayPanels(model: model, state: panels, caretIndex: currentIndex)
+        .interchangeAnchor()
         .accessibilityIdentifier("screenplay-workspace")
     }
 
@@ -600,6 +601,21 @@ struct ScreenplayWorkspace: View {
             }
             .help("Drafts")
             .accessibilityIdentifier("draft-menu")
+        }
+        ToolbarItem(placement: .automatic) {
+            Menu {
+                Button("Import Screenplay\u{2026}") { InterchangePresenter.shared.present(.importScreenplay(openScreenplayId: model.overview?.screenplay?.id)) }
+                    .disabled(!(model.overview?.permissions.edit ?? true))
+                    .accessibilityIdentifier("screenplay-import")
+                Button("Export Screenplay\u{2026}") { InterchangePresenter.shared.present(.exportScreenplay(draftId: model.draft?.id)) }
+                    .accessibilityIdentifier("screenplay-export")
+                Button("Print\u{2026}") { InterchangePresenter.shared.present(.printPreview(draftId: model.draft?.id)) }
+                    .accessibilityIdentifier("screenplay-print")
+            } label: {
+                Label("Import and Export", systemImage: "square.and.arrow.up")
+            }
+            .help("Import a screenplay, export this draft, or print it")
+            .accessibilityIdentifier("screenplay-interchange-menu")
         }
         ToolbarItem(placement: .automatic) {
             Text(model.syncStatus == "saved" ? "Saved" : model.syncStatus == "error" ? "Not saved" : "Saving")

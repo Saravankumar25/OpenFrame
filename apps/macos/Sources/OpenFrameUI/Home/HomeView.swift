@@ -91,6 +91,9 @@ struct HomeView: View {
                         .accessibilityIdentifier("home-global-vault")
                     Button { openExisting() } label: { Label("Open", systemImage: "folder") }
                         .help("Open a project folder")
+                    Button { InterchangePresenter.shared.present(.openProject) } label: { Label("Restore Backup or Package\u{2026}", systemImage: "archivebox") }
+                        .help("Open a Full Project Package or restore a backup")
+                        .accessibilityIdentifier("home-restore-package")
                     Button { showNewProject = true } label: { Label("New Project", systemImage: "plus") }
                         .help("Create a project")
                         .accessibilityIdentifier("home-new-project")
@@ -103,6 +106,7 @@ struct HomeView: View {
             .navigationTitle("Projects")
             .searchable(text: $home.query, placement: .toolbar, prompt: "Search projects")
         }
+        .interchangeAnchor()
         .sheet(isPresented: $showNewProject) { NewProjectSheet() }
         .sheet(item: $sheet) { sheet in
             switch sheet {

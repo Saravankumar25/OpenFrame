@@ -1,4 +1,4 @@
-// Menus with Mac conventions: File (New Project, Open, Close Project), Edit (project undo and
+// Menus with Mac conventions: File (New Project, Open, Close Project, Import, Export, Print, Packages), Edit (project undo and
 // redo, beside text undo), View (workspaces), Help.
 
 import SwiftUI
@@ -30,6 +30,38 @@ struct AppCommands: Commands {
                 .keyboardShortcut("w", modifiers: [.command, .shift])
                 .disabled(!isProject)
         }
+        CommandGroup(replacing: .importExport) {
+            // Import, export and packages (Mac phase M7): the sheets live in Interchange/ and Packages/.
+            Button("Import Screenplay\u{2026}") { show(.importScreenplay(openScreenplayId: nil)) }
+                .keyboardShortcut("i", modifiers: [.command, .shift])
+                .disabled(!isProject)
+            Button("Export Screenplay\u{2026}") { show(.exportScreenplay(draftId: nil)) }
+                .keyboardShortcut("e", modifiers: [.command, .shift])
+                .disabled(!isProject)
+            Button("Export PDF\u{2026}") { Task { await InterchangePresenter.shared.exportPDFDirectly(app: model, draftId: nil) } }
+                .keyboardShortcut("e", modifiers: [.command, .option, .shift])
+                .disabled(!isProject)
+            Divider()
+            Button("Back Up Project\u{2026}") { show(.backup) }.disabled(!isProject)
+            Button("Export Full Project\u{2026}") { show(.exportProject) }.disabled(!isProject)
+            Menu("Share for Review") {
+                ForEach(PKInfo.exchangeExportTypes, id: \.self) { t in
+                    Button(PKInfo.entry(t).menuLabel) { show(.exportExchange(t)) }
+                }
+            }
+            .disabled(!isProject)
+            Button("Import Exchange Package\u{2026}") { show(.importExchange(sessionId: nil)) }.disabled(!isProject)
+            Button("Open Review Package\u{2026}") { show(.openReview) }.disabled(!isHome && !isProject)
+            Button("Review Queue\u{2026}") { show(.queue) }.disabled(!isProject)
+            Button("Import & Export History\u{2026}") { show(.history) }.disabled(!isProject)
+            Divider()
+            Button("Restore Backup or Package\u{2026}") { show(.openProject) }.disabled(!isHome && !isProject)
+        }
+        CommandGroup(replacing: .printItem) {
+            Button("Print\u{2026}") { show(.printPreview(draftId: nil)) }
+                .keyboardShortcut("p", modifiers: .command)
+                .disabled(!isProject)
+        }
         CommandGroup(after: .undoRedo) {
             Divider()
             Button("Undo Project Change") { Task { await model.undo() } }
@@ -52,6 +84,11 @@ struct AppCommands: Commands {
                 }
             }
         }
+    }
+
+    private func show(_ dialog: InterchangeDialog) {
+        InterchangePresenter.shared.configure(app: model)
+        InterchangePresenter.shared.present(dialog)
     }
 
     private var isHome: Bool { if case .home = model.phase { true } else { false } }

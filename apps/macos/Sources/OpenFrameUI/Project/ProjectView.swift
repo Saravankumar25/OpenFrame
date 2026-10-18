@@ -124,7 +124,8 @@ struct ProjectView: View {
                 }
             }
             .navigationTitle(current.title)
-                .navigationSubtitle(selection?.title ?? "")
+            .interchangeAnchor()
+            .navigationSubtitle(selection?.title ?? "")
         }
         .toolbar {
             ToolbarItem(placement: .primaryAction) { assistantButton }
