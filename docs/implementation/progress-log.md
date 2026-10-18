@@ -8,7 +8,7 @@
 
 ## Dashboard (update every session from `npm run plan:status`)
 
-**Overall: 132 of 306 boxes (43.1%).** **Current goal** (boxes without the "Later: store publishing" tag): **131 of 223 (58.7%)**. Updated 2026-10-17 after the overnight W4 to W8 session.
+**Overall: 132 of 306 boxes (43.1%).** **Current goal** (boxes without the "Later: store publishing" tag): **131 of 223 (58.7%)**. Updated 2026-10-18 after the endgame session.
 
 | # | Area | Done |
 |---|---|---|
@@ -57,6 +57,32 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 ```
 
 ## Entries
+
+### 2026-10-17 to 2026-10-18 (endgame session), W9: installer built, release suite passed, clean-machine proof blocked
+- **Areas and items worked:** Windows installer (area 20); security hardening (area 6); test infrastructure (area 5);
+  AI assistant quality and hardening (poisoned-retrieval set); owner decisions.
+- **Done:** endgame plan and release gate; dependency upgrades to clear audit findings; SQL audit (LIKE escaping, stored
+  table names); Tauri access list; installer pipeline; AI role and no-HTML tests; CET compatible binary and SHA-256
+  hashing; poisoned set (60 cases, 12 languages); W10 pilot kit and freeze steps; webdriverio kept on 9. Internal
+  installer `OpenFrame-Studio-0.1.0-internal-995bfac.exe`, 27,025,974 bytes, SHA-256 `d057d115...2f3f`, from a clean tree
+  at 995bfac, team gate on. Commits 746be09 to 8f92cbb and the documentation commit on `windows/w9-endgame`.
+- **Evidence:** [w9 evidence](../release/evidence/w9/README.md); final release run 39 spec files, 188 tests, 0 failures
+  ([e2e-release-runs.md](../release/evidence/w9/e2e-release-runs.md)); poisoned set 60 of 60 safe; Defender: no threats.
+  The suite drives a same-commit executable built by `run.mjs` with the test model host, not the installer file itself.
+- **Features moved:** none (proof levels left as they are in this pass).
+- **Docs updated:** release gate, handoff, owner decisions, Windows phases (W9 step 2 superseded), reconciliation log,
+  `vm-blocked.md`, `e2e-release-runs.md`.
+- **Decisions made or needed:** decided: no second laptop, VM plus second account (2026-10-17); team password handled
+  (2026-10-17); W1 to W8 closed as accepted, WACK moves to Chapter 3 (2026-10-18); Sonnet subagents write code one at a
+  time (2026-10-18). Needed from the owner: the VM option and the exceptions S7, S11, S12, S13.
+- **Blocked / risks:** the VM proof does not run while Memory Integrity holds the processor's virtualisation
+  ([vm-blocked.md](../release/evidence/w9/vm-blocked.md)). Gate: 13 Pass, 1 Exception approved, 4 Exception waiting,
+  20 Open. Not run: 2-hour memory check, 120-page typing check, VM power-off, full disk and network-pull tests, the
+  150-case English rerun.
+- **Next:** owner picks the VM option and the four exceptions; run the clean-machine proof; hand the installer to the
+  team with the pilot kit and start W10.
+- **Checks run:** `npm run plan:status`: overall 132 of 306 (43.1%), current goal 131 of 223 (58.7%), no box changed.
+  Writing, links, plan-status and feature-status checks: see the final report of this session.
 
 ### 2026-10-17 (day), W6 rounds 2 and 3: English bar met
 - **Areas and items worked:** AI assistant quality and hardening (W6 recipes, rename, harness checks).

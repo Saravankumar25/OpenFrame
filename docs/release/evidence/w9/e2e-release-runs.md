@@ -11,6 +11,7 @@ There are 39 spec files. Two (15 and 16) are skipped by design: they set the lic
 | 1 | webdriverio 10 | 39 files, 2 skipped | 17 | 22 | See below |
 | 2 | webdriverio 10, strict selectors off, `executeAsync` rewritten, rerun of the 22 | 22 | 17 | 5 | See below |
 | 3 | webdriverio 9, specs 01, 02, 41, 62, 90, 91, 95 | 7 | 7 | 0 | |
+| 4 (final) | webdriverio 9, whole suite | 39 files, 2 skipped | 188 tests | 0 | See below |
 
 ## Run 1 (2026-10-18, about 01:50)
 
@@ -35,7 +36,17 @@ The harness went back to webdriverio 9 (commit 1fbc0db). See [supply-chain.md](s
 
 Specs 01, 02, 41, 62, 90, 91 and 95 on webdriverio 9: 7 of 7 passed.
 
+## Run 4 (final)
+
+2026-10-18, about 06:00 to 08:30, gated release executable, nothing else running on the laptop. 39 spec files passed
+(15 and 16 skipped by design: they need the debug-only licence switch), 188 tests, 0 failures. Log:
+`C:\w9-vm\e2e-gated-final.log`. This covers gate P3 and the performance and crash specs named in P1 and P2: spec 97
+(typing, idle and memory budgets), spec 26 (forced kill) and spec 04 (close keeps typing).
+
+Limit. The suite drives an executable that `run.mjs` builds from the same commit with the local test model host compiled
+in. It does not drive the installer file itself. The installer's executable is the same code with Hugging Face as the
+model source. Code commits after 995bfac changed only tests, the test harness, the AI eval harness and documents.
+
 ## Net
 
-Every one of the 37 runnable spec files has passed on the gated release build in these runs. The final full run on the
-final build with nothing else running is still to come (gate P3). It will be added here.
+Every runnable spec file passed on the gated release build in the final run.

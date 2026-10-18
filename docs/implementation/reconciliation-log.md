@@ -6,6 +6,16 @@
 > Renamed on 2026-10-06 from `03-reconciliation-log.md`. Extended on 2026-10-09 (chapter restructure). Checks written "(checked)" were verified in the repository on the
 > date given. Checks written "(stated)" come from a supplied document and were not verified independently.
 
+## 2026-10-18: endgame session (W9)
+
+| Stale or conflicting statement | Where it was | Resolution |
+|---|---|---|
+| Manifest variables in `DEVELOPMENT.md` no longer matched the build scripts | `DEVELOPMENT.md` | Fixed in c2d72f9 (installer pipeline) |
+| Threat model entries T2, T17, T26 and T38 described the old Tauri surface and AI paths | threat model | Refreshed to match the code (access list, role checks, no live HTML) |
+| Masterplan box "Tauri command permissions" | `masterplan.md` | Note already present (done in code, d271894); the box stays unticked until the owner accepts the release run |
+| The endgame brief said "13 languages" for the poisoned set | Endgame brief | The product has 12 languages; the set has 60 cases in 12 languages. Gate row S4 now says 12 |
+| Gate row G1 evidence path lost its backslash | `windows-internal-release-gate.md` | Fixed |
+
 ## 2026-10-17 (day): ai-eval gold checks
 
 Eight end-state checks in `crates/openframe-ai-eval/gold/tools.en.jsonl` could never pass: `comment.list` (three cases)

@@ -222,7 +222,7 @@ Needs the owner's word to build. Build plan area 20.
 
 1. Set the team password in the build computer's environment (never in a file), build the internal `.exe`, check its size
    (about 20 to 30 MB is the estimate) and the secret and personal-path scan of the installer.
-2. Install on a virtual machine and on a borrowed laptop, both with no developer tools. Start, create a project, type, close,
+2. ~~Install on a virtual machine and on a borrowed laptop~~ *(Superseded 2026-10-17: a virtual machine plus a second Windows user account on the owner's laptop, no borrowed laptop; see [owner-decisions.md](../implementation/owner-decisions.md).)* Install on a clean setup with no developer tools. Start, create a project, type, close,
    reopen, download the AI, use it with the network off, export a PDF, back up and restore on a second Windows account,
    upgrade over the previous build, uninstall, reinstall.
 3. Run the gated build through the release end-to-end suite and a wrong-password test (the gate has had unit tests only).

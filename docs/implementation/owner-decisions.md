@@ -36,7 +36,11 @@
 | Signing of internal builds | Unsigned; signing and notarization move to Chapter 3 | 2026-10-08 | ADR-0024 |
 | Team password gate | On the internal builds. Asked on every launch; wrong tries wait 1 minute, doubling to 30. Minimum length 8 characters (was 12). Only a hash from a build-computer environment variable is embedded; nobody else sees the password and agents never ask for it. A door lock, not encryption | 2026-10-15 | ADR-0024, [ADR-0030](../adr/ADR-0030-verification-ladder-and-release-flow.md) |
 | Proof levels | Five levels of proof; "Verified" means level 3 or higher on the release build once W9 is reached | 2026-10-15 | ADR-0030 |
-| Clean-machine testing | A virtual machine on the owner's computer plus borrowed laptops; the owner tests on several laptops with different graphics cards | 2026-10-15 | ADR-0030, [ADR-0029](../adr/ADR-0029-gpu-acceleration.md) |
+| Clean-machine testing | ~~A virtual machine on the owner's computer plus borrowed laptops; the owner tests on several laptops with different graphics cards~~ Superseded 2026-10-17 by the row "Clean-machine testing, no second laptop" | 2026-10-15 | ADR-0030, [ADR-0029](../adr/ADR-0029-gpu-acceleration.md) |
+| Clean-machine testing, no second laptop | A VirtualBox virtual machine on the owner's laptop plus a second Windows user account on that laptop. No second laptop is available | 2026-10-17 | [vm-blocked.md](../release/evidence/w9/vm-blocked.md) |
+| Team password for internal builds | Shared with the team in person. The owner set it as the `OPENFRAME_TEAM_PASSWORD` user variable on the build laptop. Sessions never ask for it again | 2026-10-17 | ADR-0024 |
+| Scope of the endgame session | W1 to W8 are closed as accepted. No re-work of them: no AI language tuning, no full 679-case rerun, no re-fuzzing, no gap-list spec additions. WACK moves to Chapter 3 | 2026-10-18 | [windows-internal-release-gate.md](../release/windows-internal-release-gate.md) |
+| Who writes code | Sonnet subagents write code one at a time; the main session plans and reviews | 2026-10-18 | none |
 
 ### The offline AI
 
