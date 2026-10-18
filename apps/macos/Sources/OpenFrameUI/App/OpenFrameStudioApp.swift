@@ -93,7 +93,13 @@ public struct OpenFrameStudioApp: App {
     @State private var themes: ThemeStore
 
     public init() {
-        let model = AppModel(options: LaunchOptions.make())
+        // The StoreKit bridge and the licensing server client go to the core; only the Mac App
+        // Store build uses them. The internal disk image build ignores them.
+        let runtime = StoreRuntime()
+        var options = LaunchOptions.make()
+        runtime.install(into: &options)
+        let model = AppModel(options: options)
+        model.storeRuntime = runtime
         _model = State(initialValue: model)
         _themes = State(initialValue: ThemeStore())
         AppDelegate.model = model

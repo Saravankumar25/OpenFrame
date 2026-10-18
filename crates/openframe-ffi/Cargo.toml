@@ -46,6 +46,10 @@ tracing.workspace = true
 tracing-subscriber.workspace = true
 tracing-appender.workspace = true
 parking_lot.workspace = true
+serde.workspace = true
+ed25519-dalek.workspace = true
+getrandom.workspace = true
 
 [dev-dependencies]
 tempfile.workspace = true
+base64.workspace = true

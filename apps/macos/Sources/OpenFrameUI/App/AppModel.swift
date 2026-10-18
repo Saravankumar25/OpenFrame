@@ -42,6 +42,10 @@ public final class AppModel {
     public let changes = DataChanges()
 
     public private(set) var core: Core?
+    /// The Mac App Store build's licence and trial screens. Inert in the internal build.
+    public let licence = LicenceModel()
+    /// The StoreKit bridge and the licensing server client handed to the core, set by the app.
+    public var storeRuntime: StoreRuntime?
     private var eventTask: Task<Void, Never>?
     private let options: CoreStartOptions
 
@@ -86,6 +90,7 @@ public final class AppModel {
     private func enterApp() async throws {
         guard let core else { return }
         info = try await core.appInfo()
+        await licence.attach(core: core, runtime: storeRuntime)
         if let current = try await core.projectCurrent() {
             phase = .project(current)
         } else {
@@ -119,6 +124,7 @@ public final class AppModel {
     /// Called from `applicationShouldTerminate`: close the project cleanly.
     public func shutdown() {
         eventTask?.cancel()
+        licence.detach()
         core?.stop()
     }
 
@@ -199,6 +205,9 @@ public final class AppModel {
             changes.bump(store: store, tables: tables)
         case let .saveState(state):
             saveState = state
+        case let .module(module, name, _) where module == "entitlement" && name == "changed":
+            // The store channel's check finished: read the licence state again.
+            Task { await licence.refresh() }
         case .projectClosed:
             if case .project = phase { phase = .home }
         default:

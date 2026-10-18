@@ -17,6 +17,9 @@ public struct RootView: View {
         content
             .overlay(alignment: .bottom) { ToastHost() }
             .overlay(alignment: .top) { paletteOverlay }
+            .licenceScreens(model.licence)
+            .trialCorner(model.licence)
+            .task(id: showsProject) { await model.licence.setProjectOpen(showsProject) }
             .onReceive(NotificationCenter.default.publisher(for: .openFrameShowSearch)) { _ in openPalette() }
             .onReceive(NotificationCenter.default.publisher(for: .openFrameShowAbout)) { _ in openWindow(id: "about") }
             .tint(theme["accent"])
@@ -38,7 +41,14 @@ public struct RootView: View {
             }
     }
 
+    private var showsProject: Bool {
+        if case .project = model.phase { return true }
+        return false
+    }
+
     private func openPalette() {
+        // A licence screen that cannot be closed also holds back the search palette.
+        guard !model.licence.blocksApp else { return }
         switch model.phase {
         case .home, .project: palette = SearchPaletteModel(app: model)
         default: break

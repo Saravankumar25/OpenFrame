@@ -47,8 +47,11 @@ fn start(root: &std::path::Path, rec: &Recorder) -> Arc<CoreHandle> {
             ai_bundle_dir: None,
             write_logs: false,
             test_team_password_hash: None,
+            test_store_response_key_hex: None,
         },
         Box::new(rec.clone()),
+        None,
+        None,
     )
     .expect("core starts on a test folder")
 }
@@ -210,8 +213,11 @@ fn the_team_password_gate_refuses_a_wrong_password_and_opens_with_the_right_one(
             ai_bundle_dir: None,
             write_logs: false,
             test_team_password_hash: Some(hash),
+            test_store_response_key_hex: None,
         },
         Box::new(Recorder::default()),
+        None,
+        None,
     )
     .unwrap();
     let status = call(&core, "team_gate.status", json!({}));

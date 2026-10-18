@@ -1,0 +1,57 @@
+{
+  "identifier" : "0F1E2D3C",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+    {
+      "displayPrice" : "0.00",
+      "familyShareable" : false,
+      "internalID" : "6F3A1C20",
+      "localizations" : [
+        {
+          "description" : "Try every feature of OpenFrame Studio for 7 days. No payment.",
+          "displayName" : "7-day Trial",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.openframe.studio.trial7",
+      "referenceName" : "7-day Trial",
+      "type" : "NonConsumable"
+    },
+    {
+      "displayPrice" : "89.00",
+      "familyShareable" : false,
+      "internalID" : "6F3A1C21",
+      "localizations" : [
+        {
+          "description" : "Unlock OpenFrame Studio for good. One payment, no subscription.",
+          "displayName" : "Lifetime Access",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "com.openframe.studio.lifetime",
+      "referenceName" : "Lifetime Access",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+    "_applicationInternalID" : "6F3A1C00",
+    "_askToBuyEnabled" : false,
+    "_billingGracePeriodEnabled" : false,
+    "_failTransactionsEnabled" : false,
+    "_locale" : "en_US",
+    "_storefront" : "USA",
+    "_storeKitErrors" : [
+
+    ],
+    "_timeRate" : 0
+  },
+  "subscriptionGroups" : [
+
+  ],
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
+}

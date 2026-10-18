@@ -693,6 +693,12 @@ impl<B: StoreKitBridge, S: LicenceServer> ChannelAdapter for MacAppStoreAdapter<
         Some(self.restore_state().to_entitlement_state())
     }
 
+    /// StoreKit's `currentEntitlements` and the licensing server, without `AppStore.sync()`,
+    /// which can show Apple's sign-in window and is for "Restore purchase" only.
+    fn revalidate_channel_state(&self, reason: RevalidateReason) -> Option<EntitlementState> {
+        Some(self.revalidate(reason).to_entitlement_state())
+    }
+
     /// Apple's own payment sheet for the lifetime unlock (`Product.purchase()`).
     fn buy_full_version(&self) -> Option<Result<EntitlementState, PurchaseFailure>> {
         Some(

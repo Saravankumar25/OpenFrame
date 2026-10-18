@@ -450,12 +450,10 @@ impl EntitlementService {
     /// Check again because something changed (see [`RevalidateReason`]). Blocks while StoreKit
     /// and the licence server answer, so the shell calls it from a background thread only.
     ///
-    /// Today this runs the channel's restore check (`restore_channel_state`), which on the Mac
-    /// asks StoreKit's `currentEntitlements` and, during a trial, the licence server. When
-    /// `ChannelAdapter` gains the Mac adapter's `revalidate(reason)`, only
-    /// [`Self::evaluate`]'s `Check::Revalidate` branch changes.
+    /// On the Mac this asks StoreKit's `currentEntitlements` and, during a trial, the licence
+    /// server (`MacAppStoreAdapter::revalidate`), and never `AppStore.sync()`.
     pub fn revalidate(&self, reason: RevalidateReason) -> EntitlementState {
-        let state = self.evaluate(Check::Revalidate);
+        let state = self.evaluate(Check::Revalidate(reason));
         tracing::info!(
             reason = ?reason,
             state = state_name(state),
@@ -505,7 +503,8 @@ impl EntitlementService {
             // The store decides the whole state; OpenFrame keeps no trial timer of its own.
             let channel_state = match check {
                 Check::Launch => adapter.channel_state(),
-                Check::Restore | Check::Revalidate => adapter.restore_channel_state(),
+                Check::Restore => adapter.restore_channel_state(),
+                Check::Revalidate(reason) => adapter.revalidate_channel_state(reason),
             };
             channel_state.unwrap_or(EntitlementState::Unknown)
         }))
@@ -783,8 +782,9 @@ enum Check {
     Launch,
     /// "Restore purchase".
     Restore,
-    /// A check the shell asked for (resume, StoreKit change, lease).
-    Revalidate,
+    /// A check the shell asked for (resume, StoreKit change, lease). It never asks the store to
+    /// sync: `AppStore.sync()` can show Apple's sign-in window, so only "Restore purchase" runs it.
+    Revalidate(RevalidateReason),
 }
 
 impl std::fmt::Debug for EntitlementService {

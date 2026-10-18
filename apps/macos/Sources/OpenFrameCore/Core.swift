@@ -48,6 +48,14 @@ public struct CoreStartOptions: Sendable {
     /// The password screen tests' hash. Honoured by the core only in a debug build on a test
     /// folder (ADR-0031); ignored everywhere else.
     public var testTeamPasswordHash: String?
+    /// The Mac App Store build's StoreKit 2 object. The core uses it in the store channel only;
+    /// the internal disk image build ignores it.
+    public var storeKit: (any StoreKitCallbacks)?
+    /// The Mac App Store build's client for the licensing server (store channel only).
+    public var licenceServer: (any LicenceServerCallbacks)?
+    /// The store screen tests: run as the store channel with this licence response public key
+    /// (64 hex characters). Honoured by the core only in a debug build on a test folder.
+    public var testStoreResponseKeyHex: String?
 
     public init(appVersion: String, isolatedDataRoot: URL? = nil, aiBundleDir: URL? = nil, writeLogs: Bool = true) {
         self.appVersion = appVersion
@@ -120,12 +128,13 @@ public final class Core: CoreInvoking, @unchecked Sendable {
             isolatedDataRoot: options.isolatedDataRoot?.path,
             aiBundleDir: options.aiBundleDir?.path,
             writeLogs: options.writeLogs,
-            testTeamPasswordHash: options.testTeamPasswordHash
+            testTeamPasswordHash: options.testTeamPasswordHash,
+            testStoreResponseKeyHex: options.testStoreResponseKeyHex
         )
         return try await withCheckedThrowingContinuation { continuation in
             DispatchQueue.global(qos: .userInitiated).async {
                 do {
-                    let handle = try CoreHandle.start(config: config, listener: hub)
+                    let handle = try CoreHandle.start(config: config, listener: hub, storekit: options.storeKit, licenceServer: options.licenceServer)
                     continuation.resume(returning: Core(handle: handle, hub: hub))
                 } catch {
                     continuation.resume(throwing: CoreFailure(error))
@@ -158,6 +167,14 @@ public final class Core: CoreInvoking, @unchecked Sendable {
     public func powerEvent(sleeping: Bool) {
         let handle = self.handle
         queue.async { handle.powerEvent(sleeping: sleeping) }
+    }
+
+    /// Ask for a licence and trial check in the store channel: `launch`, `resume`, `storeKitChanged`
+    /// or `leaseExpired`. Returns at once; the answer arrives as an `entitlement` module event.
+    /// Does nothing in the internal build.
+    public func requestStoreCheck(_ reason: String) {
+        let handle = self.handle
+        queue.async { handle.requestStoreCheck(reason: reason) }
     }
 
     public func openAsset(_ assetId: String, global: Bool = false, reveal: Bool = false) async throws {

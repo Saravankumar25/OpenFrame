@@ -1860,12 +1860,21 @@ fn every_changing_tool_is_refused_for_viewer_commenter_and_export_only() {
             assert_eq!(e.code_str(), "permission.denied", "{tool} as {role:?}");
         }
     }
-    assert_eq!(fingerprint(&env), before, "a refused tool changed the project");
+    assert_eq!(
+        fingerprint(&env),
+        before,
+        "a refused tool changed the project"
+    );
 
     // A Viewer cannot accept a Change Set an Editor proposed.
     let editor = env.actor_with_role(Role::Editor);
-    let draft = match run_as(&env, &editor, "propose_task", json!({ "title": "Book the station" }))
-        .unwrap()
+    let draft = match run_as(
+        &env,
+        &editor,
+        "propose_task",
+        json!({ "title": "Book the station" }),
+    )
+    .unwrap()
     {
         ToolStep::Proposal(d) => d,
         ToolStep::Output(_) => panic!("propose_task returned output"),

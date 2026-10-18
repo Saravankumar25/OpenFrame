@@ -19,6 +19,9 @@
 
 mod logging;
 mod shell;
+mod store;
+
+pub use store::{LicenceServerCallbacks, StoreKitCallbacks};
 
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -79,12 +82,21 @@ pub struct CoreConfig {
     /// a run on the person's own data always use the hash embedded at build time.
     #[uniffi(default = None)]
     pub test_team_password_hash: Option<String>,
+    /// The automated tests of the Mac App Store screens: run as the store channel with this
+    /// licence response public key (64 hex characters). Honoured only by a debug build on a test
+    /// folder, like the other test switches (ADR-0031); a release build and a run on the person's
+    /// own data ignore it, so the channel always comes from the build.
+    #[uniffi(default = None)]
+    pub test_store_response_key_hex: Option<String>,
 }
 
 /// The running core. One per app process.
 #[derive(uniffi::Object)]
 pub struct CoreHandle {
     core: Arc<AppCore>,
+    /// The thread that checks the licence and trial of the store channel. `None` in every other
+    /// channel.
+    store_worker: Option<store::StoreWorker>,
     _log_guard: Mutex<Option<tracing_appender::non_blocking::WorkerGuard>>,
 }
 
@@ -138,6 +150,9 @@ fn build_config(config: &CoreConfig) -> Result<(AppConfig, bool), CoreError> {
         None => AppConfig::for_current_user(&config.app_version)?,
     };
     app.channel = channel_for(cfg!(openframe_store));
+    if test_store_key(config, cfg!(debug_assertions), isolated.is_some()).is_some() {
+        app.channel = openframe_entitlement::Channel::MacAppStore;
+    }
     app.ai_bundle_dir = config
         .ai_bundle_dir
         .as_deref()
@@ -161,6 +176,12 @@ fn test_gate(config: &CoreConfig, debug: bool, isolated: bool) -> Option<String>
     (debug && isolated && hash.starts_with("$argon2id$")).then(|| hash.to_string())
 }
 
+/// The test response key of the store screen tests: only a debug build on a test folder.
+fn test_store_key(config: &CoreConfig, debug: bool, isolated: bool) -> Option<&str> {
+    let key = config.test_store_response_key_hex.as_deref()?;
+    (debug && isolated && !key.is_empty()).then_some(key)
+}
+
 /// The disk image is an internal team build; the Mac App Store package is the store channel.
 fn channel_for(store_build: bool) -> openframe_entitlement::Channel {
     if store_build {
@@ -173,12 +194,23 @@ fn channel_for(store_build: bool) -> openframe_entitlement::Channel {
 #[uniffi::export]
 impl CoreHandle {
     /// Start the core: open the app database, the entitlement check and the event stream.
-    #[uniffi::constructor]
+    ///
+    /// `storekit` and `licence_server` are the shell's StoreKit 2 and licensing server client.
+    /// They are used only in the store channel; the internal disk image build ignores them.
+    #[uniffi::constructor(default(storekit = None, licence_server = None))]
     pub fn start(
         config: CoreConfig,
         listener: Box<dyn EventListener>,
+        storekit: Option<Box<dyn StoreKitCallbacks>>,
+        licence_server: Option<Box<dyn LicenceServerCallbacks>>,
     ) -> Result<Arc<Self>, CoreError> {
-        let (app_config, _isolated) = build_config(&config)?;
+        let (mut app_config, isolated) = build_config(&config)?;
+        let key_hex = test_store_key(&config, cfg!(debug_assertions), isolated)
+            .unwrap_or(store::LICENCE_RESPONSE_PUBLIC_KEY_HEX)
+            .to_string();
+        app_config.mac_inputs =
+            store::mac_inputs(app_config.channel, storekit, licence_server, &key_hex);
+        let store_mode = app_config.mac_inputs.is_some();
         let guard = if config.write_logs {
             logging::init(&app_config.app_data_dir)
         } else {
@@ -190,7 +222,7 @@ impl CoreHandle {
             "OpenFrame Studio starting"
         );
         let sink = Arc::new(FfiSink { listener });
-        let core = AppCore::new(app_config, sink).inspect_err(|e| {
+        let core = AppCore::new(app_config, sink.clone()).inspect_err(|e| {
             tracing::error!(
                 code = e.code_str(),
                 detail = %openframe_security::redact(e.detail.as_deref().unwrap_or("")),
@@ -200,8 +232,10 @@ impl CoreHandle {
         // App start: Recently Deleted in the Global Idea Vault drops items older than 30 days.
         let start_core = core.clone();
         std::thread::spawn(move || start_core.startup_maintenance());
+        let store_worker = store_mode.then(|| store::StoreWorker::start(&core, sink));
         Ok(Arc::new(CoreHandle {
             core,
+            store_worker,
             _log_guard: Mutex::new(guard),
         }))
     }
@@ -292,8 +326,21 @@ impl CoreHandle {
         shell::open_url(&url).map_err(Into::into)
     }
 
+    /// Ask for a licence and trial check in the store channel: `launch`, `resume`,
+    /// `storeKitChanged` or `leaseExpired`. Returns at once; the answer arrives later as an
+    /// `entitlement` module event. Does nothing in the internal build.
+    pub fn request_store_check(&self, reason: String) {
+        if let (Some(worker), Some(reason)) = (&self.store_worker, store::reason_from_name(&reason))
+        {
+            worker.request(reason);
+        }
+    }
+
     /// Clean shutdown: close the project (checkpoint, clear the crash marker), stop tasks.
     pub fn stop(&self) {
+        if let Some(worker) = &self.store_worker {
+            worker.stop();
+        }
         self.core.shutdown();
     }
 }
@@ -353,6 +400,7 @@ mod tests {
             ai_bundle_dir: None,
             write_logs: false,
             test_team_password_hash: None,
+            test_store_response_key_hex: None,
         };
         let err = build_config(&config).expect_err("refused");
         let CoreError::Failed { code, .. } = err;
@@ -368,6 +416,7 @@ mod tests {
             ai_bundle_dir: Some("Resources/ai".into()),
             write_logs: false,
             test_team_password_hash: None,
+            test_store_response_key_hex: None,
         };
         let (app, isolated) = build_config(&config).unwrap();
         assert!(isolated);
@@ -383,6 +432,7 @@ mod tests {
             ai_bundle_dir: None,
             write_logs: false,
             test_team_password_hash: Some("$argon2id$v=19$m=65536,t=3,p=1$abc$def".into()),
+            test_store_response_key_hex: None,
         };
         assert!(test_gate(&config, true, true).is_some());
         assert!(test_gate(&config, false, true).is_none(), "release build");

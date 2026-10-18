@@ -53,6 +53,14 @@ pub trait ChannelAdapter: Send + Sync {
         None
     }
 
+    /// Like [`Self::channel_state`], after the shell asked for a new check (resume, a StoreKit
+    /// change, the end of a lease). It must not do what "Restore purchase" does when that can
+    /// show the user a window. The default is the restore check, for a channel without a
+    /// distinction.
+    fn revalidate_channel_state(&self, _reason: crate::mac::RevalidateReason) -> Option<EntitlementState> {
+        self.restore_channel_state()
+    }
+
     /// Buy the full version through the store's own purchase window (the Mac App Store's payment
     /// sheet, the Microsoft Store's purchase dialog), then return the new state. The store shows
     /// the price; OpenFrame never does (ADR-0023). `None`, the default, means the channel cannot

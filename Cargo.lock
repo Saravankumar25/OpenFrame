@@ -3270,6 +3270,8 @@ name = "openframe-ffi"
 version = "0.1.0"
 dependencies = [
  "argon2",
+ "base64 0.22.1",
+ "ed25519-dalek",
  "getrandom 0.3.4",
  "openframe-application",
  "openframe-domain",
@@ -3277,6 +3279,7 @@ dependencies = [
  "openframe-platform",
  "openframe-security",
  "parking_lot",
+ "serde",
  "serde_json",
  "tempfile",
  "thiserror 2.0.21",

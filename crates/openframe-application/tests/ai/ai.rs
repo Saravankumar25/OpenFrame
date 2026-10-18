@@ -261,9 +261,10 @@ fn the_download_is_offered_only_through_its_own_operations() {
     assert_eq!(d["bundleId"], "openframe-local-ai-v1");
     assert_eq!(d["bundleState"], "Missing");
     let comps = d["components"].as_array().unwrap();
-    // The three models, and the engine where the lock pins one for this computer: Windows today.
-    // The Apple silicon engine is pinned in Mac phase M8, which changes this count to 4 there.
-    let engines = usize::from(cfg!(windows));
+    // The three models, and the engine where the lock pins one for this computer: Windows and,
+    // since Mac phase M8 (ADR-0033), Apple silicon Macs.
+    let engines =
+        usize::from(cfg!(windows) || cfg!(all(target_os = "macos", target_arch = "aarch64")));
     assert_eq!(comps.len(), 3 + engines);
     assert!(comps.iter().any(|c| c["licenseId"] == "Gemma-Terms-of-Use"));
     assert!(
