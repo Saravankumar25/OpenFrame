@@ -397,6 +397,50 @@ const EXECUTABLE_EXTENSIONS: &[&str] = &[
     "img",
 ];
 
+/// File types macOS runs, installs or follows when "opened" with the default handler: Terminal
+/// and shell commands, installers, scripts and workflows, disk images, configuration profiles,
+/// and location files that open any path or URL they name. Checked on every platform: on
+/// Windows they only mean that a few more received files are shown instead of opened.
+const MAC_EXECUTABLE_EXTENSIONS: &[&str] = &[
+    "app",
+    "command",
+    "tool",
+    "terminal",
+    "term",
+    "fileloc",
+    "webloc",
+    "inetloc",
+    "afploc",
+    "ftploc",
+    "pkg",
+    "mpkg",
+    "scpt",
+    "scptd",
+    "applescript",
+    "workflow",
+    "action",
+    "dmg",
+    "sparseimage",
+    "sparsebundle",
+    "mobileconfig",
+    "prefpane",
+    "kext",
+    "plugin",
+    "bundle",
+    "osax",
+    "service",
+    "saver",
+    "shortcut",
+    "dylib",
+    "so",
+    "zsh",
+    "bash",
+    "csh",
+    "ksh",
+    "fish",
+    "jnlp",
+];
+
 /// True if opening `path` with the shell's default handler could run code.
 pub fn is_dangerous_to_open(path: &Path) -> bool {
     let name = path
@@ -406,7 +450,9 @@ pub fn is_dangerous_to_open(path: &Path) -> bool {
     // Trailing dots/spaces are ignored by Windows ("a.exe." runs as "a.exe").
     let name = name.trim_end_matches(['.', ' ']);
     match name.rsplit_once('.') {
-        Some((_, ext)) => EXECUTABLE_EXTENSIONS.contains(&ext),
+        Some((_, ext)) => {
+            EXECUTABLE_EXTENSIONS.contains(&ext) || MAC_EXECUTABLE_EXTENSIONS.contains(&ext)
+        }
         None => true, // no extension: Windows may still treat it as a program
     }
 }
@@ -648,6 +694,34 @@ pub fn redact_process_output(line: &str) -> String {
 
 #[cfg(test)]
 mod tests {
+
+    #[test]
+    fn mac_files_that_run_or_open_other_things_are_shown_not_opened() {
+        for name in [
+            "Run me.command",
+            "x.terminal",
+            "home.fileloc",
+            "site.webloc",
+            "Setup.pkg",
+            "do.scpt",
+            "Auto.workflow",
+            "Disk.dmg",
+            "wifi.mobileconfig",
+            "Tool.app",
+            "LIB.DYLIB",
+        ] {
+            assert!(is_dangerous_to_open(Path::new(name)), "{name}");
+        }
+        for name in [
+            "script.fdx",
+            "notes.txt",
+            "board.png",
+            "draft.pdf",
+            "a.fountain",
+        ] {
+            assert!(!is_dangerous_to_open(Path::new(name)), "{name}");
+        }
+    }
     use super::*;
 
     #[test]

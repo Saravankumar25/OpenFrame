@@ -13,8 +13,20 @@ MACOS="$(cd "$HERE/.." && pwd)"
 ROOT="$(cd "$MACOS/../.." && pwd)"
 APP="${1:?usage: run.sh <app or executable> [filter]}"
 FILTER="${2:-}"
+WORK="$(mktemp -d "${TMPDIR:-/tmp}/openframe-e2e.XXXXXX")"
+trap 'rm -rf "$WORK"' EXIT
 if [[ -d "$APP" ]]; then
-  EXE="$APP/Contents/MacOS/$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$APP/Contents/Info.plist")"
+  # The release app has the hardened runtime, which refuses an injected library. Test a private
+  # copy whose only difference is an ad hoc signature without it: same executable code, same
+  # resources (the runner prints both hashes).
+  if codesign -dv "$APP" 2>&1 | grep -q 'flags=.*runtime'; then
+    ditto "$APP" "$WORK/app/$(basename "$APP")"
+    APP_UNDER_TEST="$WORK/app/$(basename "$APP")"
+    codesign --force --sign - --timestamp=none "$APP_UNDER_TEST" >/dev/null 2>&1
+  else
+    APP_UNDER_TEST="$APP"
+  fi
+  EXE="$APP_UNDER_TEST/Contents/MacOS/$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$APP_UNDER_TEST/Contents/Info.plist")"
 else
   EXE="$APP"
 fi
@@ -31,9 +43,6 @@ export OPENFRAME_E2E_FIXTURES="$ROOT/tests/fixtures"
 
 RUN="${OPENFRAME_E2E_RUN_DIR:-$ROOT/release-out/e2e/$(date +%Y%m%d-%H%M%S)}"
 mkdir -p "$RUN"
-WORK="$(mktemp -d "${TMPDIR:-/tmp}/openframe-e2e.XXXXXX")"
-trap 'rm -rf "$WORK"' EXIT
-
 # The scenario list comes from the driver itself.
 OPENFRAME_DATA_ROOT="$WORK/list-data" OPENFRAME_E2E_SCENARIO=__list__ OPENFRAME_E2E_OUT="$WORK/list" \
   DYLD_INSERT_LIBRARIES="$DRIVER" "$EXE" >/dev/null 2>&1
@@ -84,7 +93,8 @@ for s in json.load(open(sys.argv[1])): print("\t".join([s["name"], str(s["phases
 {
   echo "# End-to-end run on the real app"
   echo
-  echo "- App: \`$(basename "$APP")\` ($(shasum -a 256 "$EXE" | cut -c1-16)...)"
+  echo "- App: \`$(basename "$APP")\`, executable under test $(shasum -a 256 "$EXE" | cut -c1-16)..."
+  [[ -d "$APP" ]] && echo "- Code directory hash of the shipped app: $(codesign -dvvv "$APP" 2>&1 | sed -n 's/^CDHash=//p'), of the copy under test: $(codesign -dvvv "${APP_UNDER_TEST:-$APP}" 2>&1 | sed -n 's/^CDHash=//p')"
   echo "- Machine: $(sw_vers -productName) $(sw_vers -productVersion), $(uname -m)"
   echo "- Date: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
   echo "- Result: $pass passed, $fail failed"

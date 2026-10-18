@@ -27,7 +27,9 @@ fi
 [[ "$(uname -m)" == "arm64" ]] || { echo "the release app is built on an Apple silicon Mac" >&2; exit 2; }
 
 # Outside the home folder: build paths end up in the binary and must not name the builder.
-STAGE="/private/tmp/openframe-release-stage/macos"
+# A private per-user temporary folder (mode 700), not a shared fixed path another account could
+# prepare in advance.
+STAGE="$(getconf DARWIN_USER_TEMP_DIR)openframe-release-stage/macos"
 OUT="$ROOT/release-out/mac"
 APP="$OUT/OpenFrame Studio.app"
 VERSION="$(sed -n 's/^version = "\(.*\)"/\1/p' "$ROOT/Cargo.toml" | head -1)"
@@ -96,6 +98,7 @@ cat > "$APP/Contents/Info.plist" <<PLIST
 	<key>NSMicrophoneUsageDescription</key><string>OpenFrame Studio records voice notes into your Idea Vault only when you press Record.</string>
 	<key>NSSupportsAutomaticTermination</key><false/>
 	<key>NSSupportsSuddenTermination</key><false/>
+	<key>LSFileQuarantineEnabled</key><true/>
 </dict>
 </plist>
 PLIST
@@ -103,7 +106,13 @@ plutil -lint "$APP/Contents/Info.plist" >/dev/null
 
 # Ad hoc signature: Apple silicon runs only signed code. The internal build has no Developer ID
 # and is not notarised; the team opens it once with Control-click > Open (pilot kit).
-codesign --force --deep --sign - --timestamp=none "$APP"
+# The hardened runtime is on: no DYLD_* environment variables, no unsigned code loaded into the
+# process. The only exception the app needs is the microphone for voice notes. The end-to-end
+# runner re-signs a private copy without it to inject its driver (apps/macos/E2E/run.sh).
+ENT="$MACOS/packaging/OpenFrameStudio-internal.entitlements"
+# The engine files keep the bytes pinned in packaging/ai/ai-assets.lock.json (the core checks
+# their SHA-256 before every start), so they are sealed as resources and never re-signed.
+codesign --force --sign - --timestamp=none --options runtime --entitlements "$ENT" "$APP"
 codesign --verify --deep --strict "$APP"
 
 echo "== 4. Secret and personal-path scan of the bundle"

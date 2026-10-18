@@ -238,7 +238,12 @@ struct StoryAttachmentsField: View {
                 ForEach(items, id: \.id) { a in
                     HStack(spacing: 4) {
                         Button {
-                            if let p = a.asset.path { NSWorkspace.shared.open(URL(fileURLWithPath: p)) }
+                            // Through the core, like every other open button: it checks the
+                            // asset, the gate and the file type, and shows a program in Finder
+                            // instead of running it.
+                            Task {
+                                do { try await story.app.core?.openAsset(a.asset.id) } catch { story.app.show("Could not open the file", error) }
+                            }
                         } label: {
                             Label(a.asset.originalName, systemImage: "doc")
                         }

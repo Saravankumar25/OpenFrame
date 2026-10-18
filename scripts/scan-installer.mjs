@@ -31,7 +31,9 @@ if (targets.length === 0) {
 }
 
 function* walk(p) {
-  const stat = fs.statSync(p);
+  // Links are not followed: the disk image carries a link to /Applications, which is not part of it.
+  const stat = fs.lstatSync(p);
+  if (stat.isSymbolicLink()) return;
   if (stat.isDirectory()) for (const e of fs.readdirSync(p)) yield* walk(path.join(p, e));
   else if (stat.isFile()) yield p;
 }
