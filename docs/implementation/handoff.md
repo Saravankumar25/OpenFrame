@@ -20,26 +20,24 @@
 3. **Final release end-to-end run (2026-10-18):** 39 spec files passed, 188 tests, 0 failures
    ([e2e-release-runs.md](../release/evidence/w9/e2e-release-runs.md), Run 4).
 4. **Release gate** ([windows-internal-release-gate.md](../release/windows-internal-release-gate.md)), 38 rows: 13 Pass,
-   1 Exception approved (R1), 4 Exception waiting for the owner (S7, S11, S12, S13), 20 Open (G2, S1, S8, S9, S14, S15,
-   C1 to C11, P1, P2, P4).
-5. **Clean-machine proof is blocked** ([vm-blocked.md](../release/evidence/w9/vm-blocked.md)): VirtualBox cannot use the
-   processor's virtualisation while Windows Memory Integrity is on, and the guest stalls at first sign-in. The driver
-   script `tests/e2e/clean-machine/vm-proof.mjs` is written but has not completed a run.
-6. **Other session:** "Rebuild HTML_Mockups" on branch `claude/website-html-mockups-9ecfa7` (worktree
-   `.claude/worktrees/website-html-mockups-9ecfa7`). Its status is unknown to this page; check it before doing anything
-   there.
+   13 Exception approved (R1, C1 to C11, S15), 4 Exception waiting for the owner (S7, S11, S12, S13), 8 Open (G2, S1, S8,
+   S9, S14, P1, P2, P4).
+5. **Clean-machine proof** is carried by the W10 pilot on the team's laptops (owner decision 2026-10-18,
+   [vm-blocked.md](../release/evidence/w9/vm-blocked.md)). The VM and Windows image are deleted. The script
+   `tests/e2e/clean-machine/vm-proof.mjs` stays for a machine where VT-x is free.
+6. **HTML mockups session:** 462 snapshots replace 183 old files, committed on branch `claude/website-html-mockups-9ecfa7`,
+   not merged.
 
 ## Next three items
 
-1. The owner chooses the VM option (turn Memory Integrity off for a rerun, a second Windows account, or the pilot laptops
-   as the clean machines), and decides the four exceptions S7, S11, S12, S13 and confirms the R1 exception.
-2. Run the clean-machine proof by the chosen option, then close the Open rows it covers (C1 to C11, S15, P2).
-3. Hand the installer to the team with `docs/testing/pilot-kit/` and start W10.
+1. The owner decides the four exceptions S7, S11, S12, S13.
+2. Hand the installer and `docs/testing/pilot-kit/` to the team and start W10.
+3. Next session: triage the pilot reports with `docs/testing/pilot-kit/triage.md`.
 
 ## Open blockers
 
-- Owner choice of the VM option (above). Owner decision on S7, S11, S12, S13.
-- Gate rows still Open without a blocker: G2 (installer driven as shipped), S1, S8, S9, S14, P1 and P4 parts not run.
+- Owner decision on S7, S11, S12, S13. The VM is no longer a blocker.
+- Gate rows still Open without a blocker: G2 (installer driven as shipped), S1, S8, S9, S14, P1, P2 and P4 parts not run.
 
 ## Do not
 

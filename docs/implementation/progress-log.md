@@ -81,6 +81,7 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
   150-case English rerun.
 - **Next:** owner picks the VM option and the four exceptions; run the clean-machine proof; hand the installer to the
   team with the pilot kit and start W10.
+- **Update 2026-10-18:** the owner chose option 3. The team pilot laptops are the clean machines, so C1 to C11 and the guest half of S15 are exceptions (owner approved); the VM is deleted.
 - **Checks run:** `npm run plan:status`: overall 132 of 306 (43.1%), current goal 131 of 223 (58.7%), no box changed.
   Writing, links, plan-status and feature-status checks: see the final report of this session.
 

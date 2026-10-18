@@ -1,0 +1,630 @@
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\00-release-smoke
+  specs: 00-release-smoke.test.mjs
+▶ release smoke
+  ✔ start, create a project, type in the screenplay until it says Saved, close the project (3145.6215ms)
+  ✔ start again, reopen the project, the typed line is there (3761.8776ms)
+  ✔ the Offline AI answers from the project, and nothing leaves this computer (8300.1859ms)
+✔ release smoke (16857.0447ms)
+ℹ tests 3
+ℹ suites 1
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 17720.0786
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\shared
+  specs: 01-journey.test.mjs, 02-restart.test.mjs
+▶ desktop journey
+  ✔ first launch → name → create project → Project Home (753.5735ms)
+  ✔ Idea Vault: add a note with Quick Capture (861.0255ms)
+  ✔ Story: act, sequence, two cards (one with Ctrl+N), keyboard reorder, undo/redo (2038.4515ms)
+  ✔ Build Screenplay lands in the new screenplay at the first scene (792.2276ms)
+  ✔ type in the screenplay editor (autosaved) (3332.3116ms)
+  ✔ import pasted Fountain from the quick actions menu → opens the new draft (3691.9539ms)
+  ✔ Breakdown: select the Production Source and accept a suggestion (1068.5817ms)
+  ✔ Schedule: all scenes start unscheduled, one moves into a shooting day (1371.185ms)
+  ✔ Call sheet from the shooting day (538.5814ms)
+  ✔ Schedule strip → Open in Screenplay opens the production draft at that scene (2874.6469ms)
+  ✔ Search (Ctrl+K) finds the scene and navigates to it (2914.4767ms)
+  ✔ Recently Deleted: delete a Scene Card and restore it (869.382ms)
+  ✔ AI panel is ready with the bundled Offline AI: no download, no setup (ADR-0025) (357.2973ms)
+  ✔ every workspace and production tab renders without console problems or unlabelled controls, beside the docked AI panel (27164.5376ms)
+  ✔ close the project cleanly → Application Home lists it (288.9584ms)
+✔ desktop journey (50336.3005ms)
+▶ relaunch
+  ✔ reopen the project and find the screenplay text, story and call sheet (2788.6915ms)
+✔ relaunch (4129.7427ms)
+ℹ tests 16
+ℹ suites 2
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 55491.1277
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\04-close-keeps-typing
+  specs: 04-close-keeps-typing.test.mjs
+▶ closing the window keeps the last typed text
+  ✔ type, close within 100 ms by the close button and by Alt+F4, reopen, find the text (20 rounds) (211167.7142ms)
+✔ closing the window keeps the last typed text (212407.9324ms)
+ℹ tests 1
+ℹ suites 1
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 212807.0514
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\05-webview-network
+  specs: 05-webview-network.test.mjs
+▶ the web view stays off the network
+  ✔ through WebDriver, with a project open, no WebView2 process of the app leaves this computer (46543.0108ms)
+  ✔ started directly, as a person starts it, the web view stays on this computer for 45 s (129619.1022ms)
+✔ the web view stays off the network (177555.893ms)
+ℹ tests 2
+ℹ suites 1
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 177930.9312
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\10-home
+  specs: 10-home.test.mjs
+▶ home
+  ✔ first launch creates a project that opens on an empty Project Home (742.6293ms)
+  ✔ status change on Project Home, undo and redo (227.2867ms)
+  ✔ Application Home lists a renamed project without leaving the page (753.622ms)
+  ✔ Application Home: rename, duplicate, archive and restore (2113.5993ms)
+  ✔ relaunch: both projects, the new title and the status persist (4302.292ms)
+  ✔ Delete Project: the typed name confirms, the folder leaves, Home forgets it after a relaunch (2815.032ms)
+✔ home (12280.4738ms)
+ℹ tests 6
+ℹ suites 1
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 12745.3471
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\17-internal-build-release
+  specs: 17-internal-build-release.test.mjs
+▶ the internal build as it ships
+  ✔ no trial chip, no Buy and no popup, and About says internal build, not for sale (2833.5209ms)
+✔ the internal build as it ships (4090.562ms)
+ℹ tests 1
+ℹ suites 1
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 4529.9738
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\20-idea-vault
+  specs: 20-idea-vault.test.mjs
+▶ idea vault
+  ✔ Quick Capture adds an idea to the project's Vault (1563.1198ms)
+  ✔ edit the title in the drawer (autosave), undo and redo (1013.5349ms)
+  ✔ delete with the keyboard, undo, redo, then restore from Recently Deleted (609.5135ms)
+  ✔ relaunch: the titled idea and its text persist (5002.5049ms)
+✔ idea vault (9523.1098ms)
+ℹ tests 4
+ℹ suites 1
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 9990.6254
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\21-idea-vault-flow
+  specs: 21-idea-vault-flow.test.mjs (fake media devices)
+▶ idea vault flow
+  ✔ record a voice note with the microphone (3317.8944ms)
+  ✔ research flags: set, show as words, undo, clear (1202.5906ms)
+  ✔ Global Idea Vault: capture there, copy into the project (1643.7174ms)
+  ✔ Send to Story Board as a Scene Card; the Vault original stays (1945.422ms)
+  ✔ relaunch: voice note plays, flags and copies persist (5350.7713ms)
+✔ idea vault flow (14952.2576ms)
+ℹ tests 5
+ℹ suites 1
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 15461.8925
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\25-recently-deleted-purge
+  specs: 25-recently-deleted-purge.test.mjs
+▶ Recently Deleted 30-day purge
+  ✔ deleted items show 30 days left on both Recently Deleted screens (4693.8971ms)
+  ✔ after 30 days the next open removes what is due, and nothing else (5554.4095ms)
+  ✔ the Owner can still delete an item permanently before its 30 days are up (356.7687ms)
+  ✔ relaunch: nothing removed comes back and the live note stays (4531.84ms)
+✔ Recently Deleted 30-day purge (16863.9947ms)
+ℹ tests 4
+ℹ suites 1
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 17275.0261
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\26-forced-kill-keeps-work
+  specs: 26-forced-kill-keeps-work.test.mjs
+▶ work survives a forced kill
+  ✔ add an idea, an act and a card, a character, a note and a screenplay line; each one saves (6200.2404ms)
+  ✔ the app is killed; after a new start every piece of work is there (6841.3791ms)
+  ✔ after the recovery the project takes new work and saves it (626.2062ms)
+✔ work survives a forced kill (15159.8739ms)
+ℹ tests 3
+ℹ suites 1
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 15577.2127
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\30-story
+  specs: 30-story.test.mjs
+▶ story
+  ✔ act, sequence and two Scene Cards (2279.5003ms)
+  ✔ edit a card in its drawer, undo and redo (1269.8868ms)
+  ✔ rename the act, undo and redo (398.1442ms)
+  ✔ delete a card: undo, redo, restore from Recently Deleted (979.1194ms)
+  ✔ Characters: create, edit, delete and restore (2289.7702ms)
+  ✔ Outline shows the same structure (798.112ms)
+  ✔ relaunch: act, cards and character persist (5075.4384ms)
+✔ story (14486.1944ms)
+ℹ tests 7
+ℹ suites 1
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 14917.7719
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\31-story-board-flow
+  specs: 31-story-board-flow.test.mjs
+▶ story board flow
+  ✔ create an act, a sequence and three cards (2753.6345ms)
+  ✔ drag a card with the mouse, undo and redo (1094.4227ms)
+  ✔ Parking Lot: park a card and restore it to its place (436.0619ms)
+  ✔ convert a beat to a Scene Card (600.3058ms)
+  ✔ long scene description and Card Display presets (1618.6242ms)
+  ✔ Build Screenplay: a card without a heading is left out, never invented (1030.5192ms)
+  ✔ delete two cards together and restore them in reverse order (948.4135ms)
+  ✔ relaunch: order, long description and Card Display survive (4467.8296ms)
+  ✔ episodes scope the Story Board in an episodic project (2564.4139ms)
+✔ story board flow (16796.244ms)
+ℹ tests 9
+ℹ suites 1
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 17219.6472
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\40-screenplay
+  specs: 40-screenplay.test.mjs
+▶ screenplay
+  ✔ new screenplay: write a scene with the Enter flow (autosaved) (2504.7802ms)
+  ✔ undo and redo typing from inside the editor (5139.4616ms)
+  ✔ a second draft is edited independently, renamed, deleted and restored (3299.7718ms)
+  ✔ relaunch: both drafts and their text persist (4415.2093ms)
+✔ screenplay (16980.0255ms)
+ℹ tests 4
+ℹ suites 1
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 17625.3573
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\41-screenplay-engine
+  specs: 41-screenplay-engine.test.mjs
+▶ screenplay engine
+  ✔ write with the element flow and insert a page break (2141.9097ms)
+  ✔ title page fields with a live preview (970.4689ms)
+  ✔ page setup: A4 with a header (609.0469ms)
+  ✔ a custom element under Advanced, used in the script (1739.1738ms)
+  ✔ lock, start a dated revision, edit it and see the changed pages (1668.5831ms)
+  ✔ export PDF and FDX, import the FDX back as a draft (69.7126ms)
+  ✔ Telugu and Hindi print in the PDF; the page break follows a remapped shortcut (1036.8971ms)
+  ✔ relaunch: page setup, custom element and revision text persist; continue writing (4832.7242ms)
+✔ screenplay engine (14510.5186ms)
+ℹ tests 8
+ℹ suites 1
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 15032.7958
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\42-writing-comfort
+  specs: 42-writing-comfort.test.mjs
+▶ writing comfort
+  ✔ smart suggestions build a scene without retyping and never change text silently (2546.2062ms)
+  ✔ element flow: Tab moves through the dialogue block and a manual override sticks (600.8489ms)
+  ✔ one Enter after a new character name creates it and moves on to Dialogue; Undo takes each step back (693.7401ms)
+  ✔ one Enter on a known name from the list fills it and moves on to Dialogue; Undo takes the Dialogue step back first (1106.9954ms)
+  ✔ spelling: unknown words are underlined; Add to dictionary removes the underline (876.9782ms)
+  ✔ find and replace in this scene only, undone in one step (734.7232ms)
+  ✔ navigator columns can be shown and are remembered (401.0861ms)
+  ✔ a custom shortcut works in the editor and survives a relaunch; restore all (6739.4232ms)
+  ✔ Home reaches the same shortcut table from Help, and its tooltips name the keys (800.1554ms)
+✔ writing comfort (16012.3776ms)
+ℹ tests 9
+ℹ suites 1
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 16492.5146
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\43-several-screenplays
+  specs: 43-several-screenplays.test.mjs
+▶ several screenplays per project
+  ✔ add a second screenplay, write in both and switch between them (4376.485ms)
+  ✔ relaunch: both screenplays keep their own text (4827.6678ms)
+  ✔ delete a screenplay to Recently Deleted and restore it with its text (2813.31ms)
+✔ several screenplays per project (13442.0273ms)
+ℹ tests 3
+ℹ suites 1
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 13886.6651
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\44-scene-hub-comments-compare
+  specs: 44-scene-hub-comments-compare.test.mjs
+▶ Scene Hub, comments, drafts and compare
+  ✔ the Scene Hub opens from a scene's context menu and lists what exists around the scene (2647.4505ms)
+  ✔ a comment on a scene is counted on the Comments button and survives a restart (4641.2016ms)
+  ✔ a second draft takes a change of its own, and Compare shows the two drafts side by side (1402.819ms)
+✔ Scene Hub, comments, drafts and compare (9949.907ms)
+ℹ tests 3
+ℹ suites 1
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 10439.7228
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\50-breakdown
+  specs: 50-breakdown.test.mjs
+▶ breakdown
+  ✔ import a screenplay and choose it as the Production Source (3282.945ms)
+  ✔ suggestions are only added when accepted (410.7635ms)
+  ✔ add an element by hand; undo and redo; edit its notes (1292.268ms)
+  ✔ remove from the scene and restore from Recently Deleted (873.2352ms)
+  ✔ mark the scene complete; scene 2 has its own breakdown (204.7483ms)
+  ✔ relaunch: source, elements, notes and completion persist (4511.6236ms)
+✔ breakdown (12346.7271ms)
+ℹ tests 6
+ℹ suites 1
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 12891.8
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\51-breakdown-depth
+  specs: 51-breakdown-depth.test.mjs
+▶ breakdown depth
+  ✔ source, and every category shows colour with icon, text and tooltip (3808.1076ms)
+  ✔ Accept Selected is one undo step; Reject Selected removes the rest; Show in script (1294.0627ms)
+  ✔ filters: only missing a breakdown, then quick reuse fills scene 2 (1347.9598ms)
+  ✔ catalog item to all its scenes (1179.2656ms)
+  ✔ location call-sheet fields, availability dates, and crew availability (2573.8829ms)
+  ✔ Advanced settings change a category colour; everything survives a relaunch (6487.9109ms)
+✔ breakdown depth (18331.2408ms)
+ℹ tests 6
+ℹ suites 1
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 18744.3273
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\60-appearance
+  specs: 60-appearance.test.mjs
+▶ appearance
+  ✔ mode, theme, import, rename, restart and delete (8178.4429ms)
+✔ appearance (9884.458ms)
+ℹ tests 1
+ℹ suites 1
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 10265.0105
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\61-schedule
+  specs: 61-schedule.test.mjs
+▶ shooting schedule and Day Out of Days
+  ✔ create the schedule from the Production Source (8802.8341ms)
+  ✔ days, off day, drag a scene into a day (undo, redo), move with the menu (3643.5221ms)
+  ✔ a meal break, day times and the computed timeline (1216.1024ms)
+  ✔ conflicts are advice: Keep anyway; grouping suggestions move nothing (1133.8699ms)
+  ✔ filters only change what is shown (347.8416ms)
+  ✔ call sheet stale review follows the day times (3470.7257ms)
+  ✔ Day Out of Days: derived, corrected by hand, undo (1089.7508ms)
+  ✔ exports: dialogs open, files are byte-reproducible (5402.2563ms)
+  ✔ relaunch: days, scenes, breaks, times and corrections persist (6174.4886ms)
+✔ shooting schedule and Day Out of Days (32763.398ms)
+ℹ tests 9
+ℹ suites 1
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 33210.5087
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\62-call-sheets-exports
+  specs: 62-call-sheets-exports.test.mjs
+▶ call sheets, budget, templates, samples and exports
+  ✔ open a sample script that ships with the app (1727.7623ms)
+  ✔ plan two shooting days from the Production Source (1086.7357ms)
+  ✔ create a call sheet: six default sections, Needs input, Add Section (7044.3574ms)
+  ✔ a schedule change marks the sheet Needs refresh and the preview lists what changed (518.1212ms)
+  ✔ finalize freezes a snapshot; a new revision follows the schedule (598.0955ms)
+  ✔ budget keeps Planned and Actual with the difference (1395.2686ms)
+  ✔ a call sheet from the Indie Call Sheet template is an independent copy (55.9221ms)
+  ✔ sides, a report and the visual planning exports carry the brand line (413.5471ms)
+  ✔ notes and tasks for the shoot (463.0851ms)
+  ✔ quit, relaunch and find everything again (3907.154ms)
+✔ call sheets, budget, templates, samples and exports (18482.4059ms)
+ℹ tests 10
+ℹ suites 1
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 18862.9522
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\63-every-export
+  specs: 63-every-export.test.mjs
+▶ every export format
+  ✔ the screenplay exports as PDF, Final Draft, Fountain, DOCX and plain text, and each text format imports back (2379.793ms)
+  ✔ the Story Board exports as PDF (973.1865ms)
+  ✔ the diagnostics bundle is written where the person chose, and holds no project text (257.0895ms)
+✔ every export format (4994.098ms)
+ℹ tests 3
+ℹ suites 1
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5433.7517
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\70-packages
+  specs: 70-packages.test.mjs
+▶ packages and backup
+  ✔ create a backup through Create Backup and the Save dialog (5246.3465ms)
+  ✔ export a Full Project Package and a screenplay review package (4334.871ms)
+  ✔ review round trip: comment as the reviewer, send a response, preview and import it (5868.9426ms)
+  ✔ restore the backup from Application Home: the collision choice opens it as a copy (2537.7671ms)
+  ✔ a damaged backup is refused and nothing is created (2342.5362ms)
+  ✔ relaunch: the original and the restored copy are both listed (2551.3716ms)
+✔ packages and backup (24125.4648ms)
+ℹ tests 6
+ℹ suites 1
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 24555.212
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\72-ai-assistant
+  specs: 72-ai-assistant.test.mjs
+▶ Offline AI assistant with the bundled model
+  ✔ AI is ready once its models are installed: no setup, no model names (4061.3073ms)
+  ✔ Settings > Offline AI shows the installed components and Remove, and offers no download while installed (683.9548ms)
+  ✔ an exact answer comes from project data, with sources that open their place (4401.7118ms)
+  ✔ a meaning question is answered from retrieved project context (70517.0123ms)
+  ✔ a navigation command opens the place it names (3293.1574ms)
+  ✔ no network: the app and the engines use loopback only while AI works (6847.0428ms)
+  ✔ Stop Offline AI frees the engines; the next question starts them again (6571.0081ms)
+  ✔ the conversation is still there after a relaunch (4611.0631ms)
+  ✔ the docked panel remembers whether it is open when the window loads again (1982.0766ms)
+✔ Offline AI assistant with the bundled model (104277.7256ms)
+ℹ tests 9
+ℹ suites 1
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 104730.223
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\73-ai-workspaces
+  specs: 73-ai-workspaces.test.mjs
+▶ AI entry points in every workspace
+  ✔ the assistant inherits the scope of each workspace (6024.3216ms)
+  ✔ the keyboard shortcut opens and closes the assistant (223.2199ms)
+  ✔ a question asked in the Story Board uses the Story Board (72437.3928ms)
+  ✔ a question asked in the Screenplay is about that screenplay (4297.3774ms)
+  ✔ a question asked in Production uses the Production Workspace (16324.6782ms)
+✔ AI entry points in every workspace (100643.5302ms)
+ℹ tests 5
+ℹ suites 1
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 101078.5576
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\74-ai-change-sets
+  specs: 74-ai-change-sets.test.mjs
+▶ AI Change Sets: review, apply, undo, reject, stale
+  ✔ a requested change arrives as a proposal and nothing changes before Apply (7329.3231ms)
+  ✔ Apply makes the reviewed change; one Undo reverses all of it; Redo brings it back (1700.52ms)
+  ✔ Reject leaves the project unchanged (8267.858ms)
+  ✔ a proposal whose target changed is never applied blindly and must be re-checked (6283.8595ms)
+✔ AI Change Sets: review, apply, undo, reject, stale (25112.7703ms)
+ℹ tests 4
+ℹ suites 1
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 25582.0952
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\75-ai-crash-safe-apply
+  specs: 75-ai-crash-safe-apply.test.mjs
+▶ AI work survives a crash
+  ✔ killed while applying: after relaunch the Change Set is all there or not there at all (9837.3727ms)
+  ✔ killed while the engine answers: no engine is left running, and AI works after relaunch (10411.0273ms)
+✔ AI work survives a crash (21806.2005ms)
+ℹ tests 2
+ℹ suites 1
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 22258.2029
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\76-ai-files-integrity
+  specs: 76-ai-files-integrity.test.mjs
+▶ Offline AI files: missing, damaged, whole again
+  ✔ a missing model file turns AI off and offers the download again; the rest of OpenFrame works (3778.7472ms)
+  ✔ Download again restores the files from the host and AI answers with the real model (74719.0885ms)
+  ✔ an altered model of the right size is caught before any engine starts (5859.4886ms)
+  ✔ an altered engine library is caught before launch and asks for a reinstall (4294.5636ms)
+✔ Offline AI files: missing, damaged, whole again (89925.6492ms)
+ℹ tests 4
+ℹ suites 1
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 90308.1807
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\78-ai-download
+  specs: 78-ai-download.test.mjs
+▶ download OpenFrame AI after install
+  ✔ before the click: the not-installed state with the size, and no request to the host (860.1532ms)
+  ✔ an interrupted download resumes where it stopped and AI becomes ready (3401.5078ms)
+  ✔ with the host down, AI answers on this computer (71190.3599ms)
+  ✔ a restart with the host down finds OpenFrame AI and asks the host nothing (3433.9754ms)
+  ✔ Remove takes the AI away; a damaged file is set aside; Pause and Resume continue the download (8018.9889ms)
+✔ download OpenFrame AI after install (88123.815ms)
+ℹ tests 5
+ℹ suites 1
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 88759.1018
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\80-notes-tasks
+  specs: 80-notes-tasks.test.mjs
+▶ notes and tasks
+  ✔ a new note autosaves its title and text; undo and redo the edit (2357.3493ms)
+  ✔ delete the note and restore it from Recently Deleted (980.5915ms)
+  ✔ add a task, complete it, undo and redo the completion (642.2728ms)
+  ✔ relaunch: the note and the completed task persist (4657.2216ms)
+✔ notes and tasks (10489.0844ms)
+ℹ tests 4
+ℹ suites 1
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 11116.4459
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\85-project-pages
+  specs: 85-project-pages.test.mjs
+▶ project pages
+  ✔ Project settings: change title and logline, save, undo, redo (1825.9344ms)
+  ✔ Templates: create two, delete both, restore one, delete the other permanently (2716.6476ms)
+  ✔ Activity lists what happened and filters by kind (633.5128ms)
+  ✔ relaunch: settings, the restored template and the purge persist (5593.9174ms)
+✔ project pages (12008.7934ms)
+ℹ tests 4
+ℹ suites 1
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 12641.0825
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\86-visual-planning
+  specs: 86-visual-planning.test.mjs
+▶ visual planning
+  ✔ a note on the moodboard canvas is dragged to a new place (5091.8162ms)
+  ✔ the sketch dialog draws, takes a stroke back, and saves a storyboard panel (1790.0011ms)
+  ✔ two empty panels are added and the last one is dragged to the front (1646.4786ms)
+  ✔ after a restart the note is where it was dropped and the panels keep their order (5440.2262ms)
+✔ visual planning (15586.1679ms)
+ℹ tests 4
+ℹ suites 1
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 16093.5011
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\shared
+  specs: 90-visual-baseline.test.mjs, 91-appearance-themes.test.mjs, 95-reachability.test.mjs
+▶ visual regression against the visual baseline baseline
+  ✔ 15 representative screens (34515.9796ms)
+✔ visual regression against the visual baseline baseline (36341.1918ms)
+▶ every built-in theme in Light and Dark
+  ✔ 16 themes x 2 modes x 15 screens are applied and readable; paper stays white (424278.3268ms)
+  ✔ the theme and mode come back after a relaunch (2706.5275ms)
+✔ every built-in theme in Light and Dark (428676.8072ms)
+▶ reachability from the feature status file
+  ✔ the feature status routes are valid against the source (1.6534ms)
+  ✔ every canonical route opens in the real app (29734.3549ms)
+✔ reachability from the feature status file (31401.3397ms)
+ℹ tests 5
+ℹ suites 3
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 498227.7331
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\96-keyboard-and-screen-reader
+  specs: 96-keyboard-and-screen-reader.test.mjs
+▶ keyboard and screen reader pass
+  ✔ a project with a screenplay to walk through (2123.0229ms)
+  ✔ Home: every Tab stop is named and visibly focused, and the window has no unnamed control (5734.6087ms)
+  ✔ Idea Vault: every Tab stop is named and visibly focused, and the window has no unnamed control (3873.4829ms)
+  ✔ Story: every Tab stop is named and visibly focused, and the window has no unnamed control (4067.487ms)
+  ✔ Screenplay: every Tab stop is named and visibly focused, and the window has no unnamed control (4241.5112ms)
+  ✔ Breakdown: every Tab stop is named and visibly focused, and the window has no unnamed control (3045.7243ms)
+  ✔ Production: every Tab stop is named and visibly focused, and the window has no unnamed control (3925.3838ms)
+  ✔ Call Sheets: every Tab stop is named and visibly focused, and the window has no unnamed control (2826.0945ms)
+  ✔ Files: every Tab stop is named and visibly focused, and the window has no unnamed control (3387.6831ms)
+✔ keyboard and screen reader pass (34415.9509ms)
+ℹ tests 9
+ℹ suites 1
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 34897.1629
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-18T00-37-25-891Z\97-performance
+  specs: 97-performance.test.mjs
+▶ performance with the AI running
+  ✔ a project with the 36-scene Example Feature (2228.1045ms)
+  ✔ P1 start and P2 project open stay inside their budgets (7931.6617ms)
+  ✔ P3 typing in scene 20 keeps the app's own work per key under 16 ms (p95), and P5 idle stays under budget (85185.3364ms)
+  ✔ the AI answers, and memory and processor use with the AI loaded are recorded (47286.8551ms)
+✔ performance with the AI running (144074.331ms)
+ℹ tests 4
+ℹ suites 1
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 144571.7155
+Skipped on the release build (debug-only switch):
+  15-trial-first-run.test.mjs: sets the licence state by hand through entitlement.debug_set, which a release build never registers
+  16-about.test.mjs: sets the licence state by hand through entitlement.debug_set, which a release build never registers
+E2E passed: 39 spec files on the release build (gated).

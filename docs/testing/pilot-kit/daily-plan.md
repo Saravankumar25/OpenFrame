@@ -4,6 +4,28 @@ Each day: 30 to 60 minutes of real work in the app, then the short checklist. Us
 Write a bug report for anything wrong ([template](../bug-report-template.md)). One problem per report. Do not send your
 real script.
 
+## First install on your laptop (clean-machine checks)
+
+Your laptop is a clean machine, so these checks are part of the proof. Do them once, on day 1, and write the result next to
+each line. Note your laptop model, Windows version, RAM and graphics card, and how long the AI download and the first
+answer took.
+
+- [ ] The installer ran with no administrator prompt.
+- [ ] I followed the SmartScreen steps in the [install note](install-note.md).
+- [ ] The first start showed the password screen.
+- [ ] A wrong password was refused and made me wait.
+- [ ] The right password opened the app.
+- [ ] The AI download finished.
+- [ ] With Wi-Fi off, the assistant still answered.
+- [ ] I exported a PDF.
+- [ ] I made a backup and restored it.
+
+On day 3, also do this:
+- [ ] I uninstalled the app. The message said my projects are kept.
+- [ ] The DocumentsOpenFrame folder was still there.
+- [ ] I reinstalled the app.
+- [ ] With Wi-Fi off, I started it and my project opened.
+
 ## Day 1: writing
 
 Work (30 to 60 minutes):

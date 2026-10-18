@@ -230,7 +230,7 @@ Needs the owner's word to build. Build plan area 20.
    time. Write down the SmartScreen steps as an installation restriction.
 5. Repeat the AI benchmark on each laptop.
 
-**Exit.** Every step passes on two computers and the evidence is saved.
+**Exit.** Every step passes on two computers and the evidence is saved. *(Note 2026-10-18: the clean-machine part is carried by W10, the team pilot on the team's own laptops, by owner decision; see [vm-blocked.md](../release/evidence/w9/vm-blocked.md).)*
 
 ## 11. Phase W10: team pilot and freeze
 

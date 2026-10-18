@@ -26,3 +26,9 @@ first sign-in: display 0x0, guest service never ready, and a 60-second clock lag
 2. Create a second Windows user account on this laptop and run install, gate, journey, uninstall and reinstall there.
    It is not a clean machine, but it is a clean user profile.
 3. Accept that the team pilot laptops are the clean machines (W10).
+
+## Decision 2026-10-18
+
+The owner chose option 3: the team pilot laptops are the clean machines. W10 carries the clean-machine proof.
+The VM and the Windows image are deleted to free disk. The driver script `tests/e2e/clean-machine/vm-proof.mjs` stays
+for a later machine where VT-x is free.
