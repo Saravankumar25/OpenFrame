@@ -125,6 +125,8 @@ public final class ScreenplayTextView: NSTextView, @preconcurrency NSTextContent
     public var beforeSuggestionMoveOn: (() -> Void)?
     /// "Learn Spelling" on a misspelled word.
     public var onLearnSpelling: ((String) -> Void)?
+    /// Escape pressed with no suggestion list open (Focus Mode listens for it).
+    public var onEscape: (() -> Void)?
     /// An empty last paragraph has no character to carry its element, id or custom element. Its
     /// attributes are kept here while the caret is elsewhere; the typing attributes hold them while
     /// the caret is in it.
@@ -565,7 +567,16 @@ public final class ScreenplayTextView: NSTextView, @preconcurrency NSTextContent
     }
 
     public override func cancelOperation(_ sender: Any?) {
-        if suggestions.dismiss() { redrawSuggestions() }
+        if suggestions.dismiss() { redrawSuggestions() } else { onEscape?() }
+    }
+
+    /// The page sits in the middle of the view when the view is wider than the page.
+    public override var textContainerOrigin: NSPoint {
+        var origin = super.textContainerOrigin
+        if let width = textContainer?.size.width, width < bounds.width {
+            origin.x = ((bounds.width - width) / 2).rounded()
+        }
+        return origin
     }
 
     // MARK: Page break and custom elements

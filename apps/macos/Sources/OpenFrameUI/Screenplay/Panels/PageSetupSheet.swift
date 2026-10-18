@@ -15,6 +15,9 @@ final class PageSetupModel {
     var info: ScreenplayPageSetupInfo?
     var setup: ScreenplayPageSetup?
     var titlePage: ScreenplayTitlePage?
+    /// The title page as the PDF lays it out (the core draws it), for the preview beside the fields.
+    var preview: InterchangePrintPreview?
+    var previewFailed = false
     var presetName = ""
     var error: String?
     var busy = false
@@ -104,12 +107,29 @@ final class PageSetupModel {
         info = i
     }
 
+    /// Ask the core to lay the title page out, a moment after typing stops (the caller waits).
+    func refreshPreview() async {
+        guard let core, let id = screenplayId, let titlePage else { return }
+        do {
+            let p = try await core.screenplayTitlePagePreview(ScreenplayTitlePagePreviewArgs(
+                screenplayId: id, titlePage: titlePage, draftId: workspace?.draft?.id))
+            preview = p
+            previewFailed = false
+        } catch {
+            preview = nil
+            previewFailed = true
+        }
+    }
+
     func saveTitlePage() async -> Bool {
         guard let core, let id = screenplayId, let titlePage else { return false }
         busy = true
         defer { busy = false }
         do {
             _ = try await core.screenplayUpdateTitlePage(ScreenplayTitlePageArgs(screenplayId: id, titlePage: titlePage))
+            if let setup, setup.includeTitlePage != info?.setup.includeTitlePage {
+                _ = try await core.screenplayUpdatePageSetup(ScreenplayUpdatePageSetupArgs(screenplayId: id, setup: setup))
+            }
             say("Changed the title page")
             await workspace?.loadOverview()
             return true
@@ -160,12 +180,18 @@ struct PageSetupSheet: View {
             }
         }
         .padding(22)
-        .frame(width: 560, height: 640)
+        .frame(width: page == .page ? 560 : 860, height: 640)
         .background(theme["panel"])
         .task {
             page = initialPage
             model.attach(app, workspace, say: { state.say($0) })
             await model.load()
+        }
+        .task(id: "\(page.rawValue)|\(model.titlePage.map { $0.hashValue } ?? 0)") {
+            guard page == .titlePage, model.titlePage != nil else { return }
+            // The first preview is at once; later ones wait until typing stops.
+            if model.preview != nil { try? await Task.sleep(for: .milliseconds(300)) }
+            if !Task.isCancelled { await model.refreshPreview() }
         }
         .accessibilityIdentifier("page-setup-sheet")
     }
@@ -267,6 +293,7 @@ struct PageSetupSheet: View {
 
     @ViewBuilder private var titleForm: some View {
         if model.titlePage != nil {
+            HStack(alignment: .top, spacing: 18) {
             VStack(alignment: .leading, spacing: 10) {
                 titleField("Title", \.title)
                 titleField("Credit", \.credit, prompt: "Written by")
@@ -284,8 +311,14 @@ struct PageSetupSheet: View {
                 PanelField(label: "Notes") {
                     PanelTextArea(label: "Notes", text: Binding(get: { model.titlePage?.notes ?? "" }, set: { model.titlePage?.notes = $0 }), minHeight: 56)
                 }
+                Toggle("Include the title page when exporting and printing", isOn: bind(\.includeTitlePage))
+                    .disabled(model.setup == nil)
+                    .accessibilityIdentifier("title-page-include")
             }
             .disabled(!model.canEdit)
+            TitlePagePreview(preview: model.preview, failed: model.previewFailed)
+                .frame(width: 300)
+            }
         } else {
             ProgressView().controlSize(.small).frame(maxWidth: .infinity)
         }

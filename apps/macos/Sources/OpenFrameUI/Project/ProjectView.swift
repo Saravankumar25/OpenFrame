@@ -85,9 +85,20 @@ struct ProjectView: View {
     @Environment(\.ofTheme) private var theme
     @SceneStorage("workspace") private var stored: String = Workspace.home.rawValue
     @State private var selection: Workspace? = .home
+    @State private var columns: NavigationSplitViewVisibility = .automatic
+    /// The project as the core has it now (title and status change from rename, undo and redo).
+    @State private var live: ProjectSummary?
+    @State private var renaming: RecentProject?
+
+    private var current: ProjectSummary { live ?? project }
+    private var asRecent: RecentProject {
+        RecentProject(
+            projectId: current.id, path: current.path, title: current.title, projectType: current.projectType.rawValue,
+            status: current.status, archived: current.archived, pinned: false, lastOpenedAt: 0, available: true)
+    }
 
     var body: some View {
-        NavigationSplitView {
+        NavigationSplitView(columnVisibility: $columns) {
             List(selection: $selection) {
                 ForEach(["Writing", "Production", "Project"], id: \.self) { section in
                     Section(section) {
@@ -104,10 +115,11 @@ struct ProjectView: View {
             .safeAreaInset(edge: .bottom) { SaveStatusView().padding(10) }
         } detail: {
             detail(selection ?? .home)
-                .navigationTitle(project.title)
+                .navigationTitle(current.title)
                 .navigationSubtitle(selection?.title ?? "")
         }
         .toolbar {
+            ToolbarItem(placement: .primaryAction) { projectMenu }
             ToolbarItem(placement: .navigation) {
                 Button {
                     Task { await app.closeProject() }
@@ -118,16 +130,61 @@ struct ProjectView: View {
                 .accessibilityIdentifier("close-project")
             }
         }
+        .task(id: app.changes.any) {
+            if let now = try? await app.core?.projectCurrent(), now.id == project.id { live = now }
+        }
+        .sheet(isPresented: Binding(get: { renaming != nil }, set: { if !$0 { renaming = nil } })) {
+            if let recent = renaming { RenameProjectSheet(project: recent, actions: ProjectActions(app: app)) {} }
+        }
         .onAppear { selection = Workspace(rawValue: stored) ?? .home }
         .onChange(of: selection) { _, new in stored = (new ?? .home).rawValue }
+        .onReceive(NotificationCenter.default.publisher(for: .openFrameScreenplayFocus)) { note in
+            columns = (note.object as? Bool) == true ? .detailOnly : .automatic
+        }
         .onReceive(NotificationCenter.default.publisher(for: .openFrameShowScreenplayTarget)) { note in
             // Kept for the Screenplay workspace in case it is not on screen yet.
             let info = note.userInfo ?? [:]
-            ScreenplayWorkspaceModel.pendingTarget = (info["screenplayId"] as? String, info["draftId"] as? String)
+            ScreenplayWorkspaceModel.pendingTarget = (info["screenplayId"] as? String, info["draftId"] as? String, info["sceneId"] as? String)
         }
         .onReceive(NotificationCenter.default.publisher(for: .openFrameShowWorkspace)) { note in
             if let raw = note.object as? String, let ws = Workspace(rawValue: raw) { selection = ws }
         }
+    }
+
+    /// The project menu: status, rename, duplicate, archive, show in Finder (Windows: the project menu in the top bar).
+    private var projectMenu: some View {
+        let actions = ProjectActions(app: app)
+        return Menu {
+            Menu("Status: \(current.status)") {
+                ForEach(ProjectStatus.allCases, id: \.self) { status in
+                    Button {
+                        Task { await actions.setStatus(status) }
+                    } label: {
+                        if status.rawValue == current.status { Label(status.rawValue, systemImage: "checkmark") } else { Text(status.rawValue) }
+                    }
+                }
+            }
+            Divider()
+            Button("Rename\u{2026}") { renaming = asRecent }
+            Button("Duplicate Project") { Task { await actions.duplicate(asRecent) } }
+            Button("Show in Finder") { Task { await actions.reveal(projectId: current.id) } }
+            Divider()
+            Button("Recently Deleted") { selection = .recentlyDeleted }
+            Button("Archive Project") {
+                Task {
+                    await actions.setArchived(asRecent, true)
+                    await app.closeProject()
+                }
+            }
+            Divider()
+            Button("Search and Commands\u{2026}") { NotificationCenter.default.post(name: .openFrameShowSearch, object: nil) }
+            Button("All Projects") { Task { await app.closeProject() } }
+        } label: {
+            Label(current.title, systemImage: "ellipsis.circle")
+        }
+        .help("Project actions")
+        .accessibilityLabel("Project: \(current.title). Switch or manage projects")
+        .accessibilityIdentifier("project-menu")
     }
 
     @ViewBuilder private func detail(_ ws: Workspace) -> some View {

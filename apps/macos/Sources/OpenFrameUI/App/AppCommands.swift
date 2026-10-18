@@ -6,8 +6,18 @@ import OpenFrameCore
 
 struct AppCommands: Commands {
     let model: AppModel
+    @Environment(\.openWindow) private var openWindow
 
     var body: some Commands {
+        CommandGroup(replacing: .appInfo) {
+            Button("About OpenFrame Studio") { openWindow(id: "about") }
+        }
+        CommandGroup(after: .textEditing) {
+            Divider()
+            Button("Search and Commands\u{2026}") { NotificationCenter.default.post(name: .openFrameShowSearch, object: nil) }
+                .keyboardShortcut("k", modifiers: .command)
+                .disabled(!isHome && !isProject)
+        }
         CommandGroup(replacing: .newItem) {
             Button("New Project…") { NotificationCenter.default.post(name: .openFrameNewProject, object: nil) }
                 .keyboardShortcut("n", modifiers: .command)

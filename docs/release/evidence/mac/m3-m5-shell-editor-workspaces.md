@@ -15,7 +15,7 @@ the clicks.
 
 ## Results
 
-`bash apps/macos/scripts/test.sh`: **229 tests in 30 suites, all passing** (suites run one after another;
+`bash apps/macos/scripts/test.sh`: **253 tests in 32 suites, all passing** (after the gap work: Shell lifecycle 18, Editor comfort 6) (suites run one after another;
 see the script's note). Main suites:
 
 | Suite | Tests | Covers |

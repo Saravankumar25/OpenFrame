@@ -10,6 +10,8 @@ import OpenFrameCore
 final class HomeModel {
     var recents: [RecentProject] = []
     var showArchived = false
+    /// Search projects: title, type and status.
+    var query = ""
     var loading = true
     var failure: CoreFailure?
 
@@ -24,17 +26,42 @@ final class HomeModel {
         loading = false
     }
 
-    var pinned: [RecentProject] { recents.filter { $0.pinned && !$0.archived } }
-    var others: [RecentProject] { recents.filter { !$0.pinned && !$0.archived } }
-    var archived: [RecentProject] { recents.filter(\.archived) }
+    private var shown: [RecentProject] {
+        let q = query.trimmingCharacters(in: .whitespaces).lowercased()
+        guard !q.isEmpty else { return recents }
+        return recents.filter {
+            $0.title.lowercased().contains(q) || $0.projectType.lowercased().contains(q) || $0.status.lowercased().contains(q)
+        }
+    }
+    var pinned: [RecentProject] { shown.filter { $0.pinned && !$0.archived } }
+    var others: [RecentProject] { shown.filter { !$0.pinned && !$0.archived } }
+    var archived: [RecentProject] { shown.filter(\.archived) }
+    var hasMatches: Bool { !pinned.isEmpty || !others.isEmpty || (showArchived && !archived.isEmpty) }
 }
 
 struct HomeView: View {
     @Environment(AppModel.self) private var app
     @Environment(\.ofTheme) private var theme
-    @State private var home = HomeModel()
+    @State private var home: HomeModel
     @State private var showNewProject = false
     @State private var showVault = false
+    @State private var sheet: HomeSheet?
+
+    private enum HomeSheet: Identifiable {
+        case rename(RecentProject), delete(RecentProject), unavailable(RecentProject)
+        var id: String {
+            switch self {
+            case let .rename(p): "rename-\(p.projectId)"
+            case let .delete(p): "delete-\(p.projectId)"
+            case let .unavailable(p): "unavailable-\(p.projectId)"
+            }
+        }
+    }
+
+    /// A model that already holds its list is used by the screenshot tests, where tasks do not run off screen.
+    init(model: HomeModel = HomeModel()) { _home = State(initialValue: model) }
+
+    private var actions: ProjectActions { ProjectActions(app: app) }
 
     var body: some View {
         NavigationStack {
@@ -45,6 +72,8 @@ struct HomeView: View {
                         ProgressView().frame(maxWidth: .infinity)
                     } else if home.recents.isEmpty {
                         emptyState
+                    } else if !home.hasMatches {
+                        noMatches
                     } else {
                         projectSections
                     }
@@ -72,8 +101,16 @@ struct HomeView: View {
                 }
             }
             .navigationTitle("Projects")
+            .searchable(text: $home.query, placement: .toolbar, prompt: "Search projects")
         }
         .sheet(isPresented: $showNewProject) { NewProjectSheet() }
+        .sheet(item: $sheet) { sheet in
+            switch sheet {
+            case let .rename(p): RenameProjectSheet(project: p, actions: actions) { reload() }
+            case let .delete(p): DeleteProjectSheet(project: p, actions: actions) { reload() }
+            case let .unavailable(p): UnavailableProjectSheet(project: p, actions: actions) { reload() }
+            }
+        }
         .sheet(isPresented: $showVault) {
             NavigationStack {
                 GlobalIdeaVaultView()
@@ -134,27 +171,50 @@ struct HomeView: View {
         if home.showArchived && !home.archived.isEmpty { section("Archived", home.archived) }
     }
 
+    private var noMatches: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("No projects match \u{201C}\(home.query)\u{201D}.").font(.headline)
+            Text("Search looks at the title, the type and the status.").foregroundStyle(.secondary)
+        }
+        .accessibilityIdentifier("home-no-matches")
+    }
+
+    private func reload() { Task { await home.load(app.core) } }
+
     private func section(_ title: String, _ items: [RecentProject]) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(title).font(.headline).foregroundStyle(.secondary)
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 240), spacing: 14)], spacing: 14) {
                 ForEach(items, id: \.projectId) { project in
-                    ProjectCard(project: project) {
-                        Task { await app.openProject(path: project.path) }
-                    } onPin: { pinned in
-                        Task {
-                            _ = try? await app.core?.projectSetPinned(SetPinnedArgs(projectId: project.projectId, pinned: pinned))
-                            await home.load(app.core)
-                        }
-                    } onRemove: {
-                        Task {
-                            _ = try? await app.core?.projectRemoveRecent(ProjectIdArgs(projectId: project.projectId))
-                            await home.load(app.core)
-                        }
-                    }
+                    ProjectCard(project: project, handlers: handlers(for: project))
                 }
             }
         }
+    }
+
+    private func handlers(for project: RecentProject) -> ProjectCard.Handlers {
+        ProjectCard.Handlers(
+            open: {
+                if project.available {
+                    Task { await app.openProject(path: project.path) }
+                } else {
+                    sheet = .unavailable(project)
+                }
+            },
+            rename: { sheet = .rename(project) },
+            duplicate: { Task { await actions.duplicate(project); reload() } },
+            pin: { pinned in
+                Task {
+                    _ = try? await app.core?.projectSetPinned(SetPinnedArgs(projectId: project.projectId, pinned: pinned))
+                    reload()
+                }
+            },
+            reveal: { Task { await actions.reveal(projectId: project.projectId) } },
+            setArchived: { value in Task { await actions.setArchived(project, value); reload() } },
+            delete: { sheet = .delete(project) },
+            locate: { sheet = .unavailable(project) },
+            remove: { Task { await actions.forget(project); reload() } }
+        )
     }
 
     private func openExisting() {
@@ -171,15 +231,25 @@ struct HomeView: View {
 }
 
 struct ProjectCard: View {
+    struct Handlers {
+        var open: () -> Void
+        var rename: () -> Void
+        var duplicate: () -> Void
+        var pin: (Bool) -> Void
+        var reveal: () -> Void
+        var setArchived: (Bool) -> Void
+        var delete: () -> Void
+        var locate: () -> Void
+        var remove: () -> Void
+    }
+
     let project: RecentProject
-    let onOpen: () -> Void
-    let onPin: (Bool) -> Void
-    let onRemove: () -> Void
+    let handlers: Handlers
     @Environment(\.ofTheme) private var theme
     @State private var hovering = false
 
     var body: some View {
-        Button(action: onOpen) {
+        Button(action: handlers.open) {
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
                     Text(project.title)
@@ -187,10 +257,10 @@ struct ProjectCard: View {
                         .lineLimit(2)
                     Spacer(minLength: 4)
                     if project.pinned {
-                        Image(systemName: "pin.fill").foregroundStyle(.secondary).accessibilityLabel("Pinned")
+                        Image(systemName: "pin.fill").foregroundStyle(.secondary).accessibilityHidden(true)
                     }
                 }
-                Text(project.projectType)
+                Text("\(project.projectType) \u{00B7} \(project.status)")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                 Spacer(minLength: 0)
@@ -212,14 +282,25 @@ struct ProjectCard: View {
         }
         .buttonStyle(PressableCardStyle())
         .onHover { hovering = $0 }
-        .disabled(!project.available)
         .contextMenu {
-            Button("Open") { onOpen() }.disabled(!project.available)
-            Button(project.pinned ? "Unpin" : "Pin") { onPin(!project.pinned) }
+            Button("Open") { handlers.open() }
+            Button("Rename\u{2026}") { handlers.rename() }.disabled(!project.available)
+            Button("Duplicate Project") { handlers.duplicate() }.disabled(!project.available)
+            Button(project.pinned ? "Unpin" : "Pin") { handlers.pin(!project.pinned) }
+            Button("Show in Finder") { handlers.reveal() }.disabled(!project.available)
+            if !project.available { Button("Locate Project\u{2026}") { handlers.locate() } }
             Divider()
-            Button("Remove from Recent") { onRemove() }
+            if project.archived {
+                Button("Restore from Archive") { handlers.setArchived(false) }
+            } else {
+                Button("Archive") { handlers.setArchived(true) }
+            }
+            Button("Remove from Recent") { handlers.remove() }
+            Divider()
+            Button("Delete Project\u{2026}", role: .destructive) { handlers.delete() }
         }
         .accessibilityElement(children: .combine)
+        .accessibilityLabel("Open \(project.title), \(project.projectType), \(project.status)\(project.pinned ? ", pinned" : "")\(project.archived ? ", archived" : "")\(project.available ? "" : ", unavailable")")
         .accessibilityHint("Opens the project")
         .accessibilityIdentifier("project-card-\(project.title)")
     }

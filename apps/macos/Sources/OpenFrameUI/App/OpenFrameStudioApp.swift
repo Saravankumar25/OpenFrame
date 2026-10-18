@@ -98,6 +98,15 @@ public struct OpenFrameStudioApp: App {
         .windowToolbarStyle(.unified)
         .commands { AppCommands(model: model) }
 
+        Window("About OpenFrame Studio", id: "about") {
+            AboutView()
+                .environment(model)
+                .environment(themes)
+                .openFrameTheme(themes)
+        }
+        .windowResizability(.contentSize)
+        .windowToolbarStyle(.unifiedCompact)
+
         Settings {
             SettingsView()
                 .environment(model)

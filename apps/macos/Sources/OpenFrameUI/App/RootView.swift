@@ -7,12 +7,18 @@ public struct RootView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.ofTheme) private var theme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.openWindow) private var openWindow
+    @State private var palette: SearchPaletteModel?
 
     public init() {}
 
     public var body: some View {
         @Bindable var model = model
         content
+            .overlay(alignment: .bottom) { ToastHost() }
+            .overlay(alignment: .top) { paletteOverlay }
+            .onReceive(NotificationCenter.default.publisher(for: .openFrameShowSearch)) { _ in openPalette() }
+            .onReceive(NotificationCenter.default.publisher(for: .openFrameShowAbout)) { _ in openWindow(id: "about") }
             .tint(theme["accent"])
             .animation(reduceMotion ? .easeInOut(duration: 0.15) : .spring(response: 0.35, dampingFraction: 1), value: phaseKey)
             .alert(item: $model.alert) { alert in
@@ -32,6 +38,27 @@ public struct RootView: View {
                     )
                 }
             }
+    }
+
+    private func openPalette() {
+        switch model.phase {
+        case .home, .project: palette = SearchPaletteModel(app: model)
+        default: break
+        }
+    }
+
+    /// The Command+K palette, over a light scrim. A click outside or Escape closes it.
+    @ViewBuilder private var paletteOverlay: some View {
+        if let palette {
+            ZStack(alignment: .top) {
+                Color.black.opacity(0.18)
+                    .ignoresSafeArea()
+                    .onTapGesture { self.palette = nil }
+                SearchPaletteView(model: palette) { self.palette = nil }
+                    .padding(.top, 70)
+            }
+            .transition(.opacity)
+        }
     }
 
     private var phaseKey: String {

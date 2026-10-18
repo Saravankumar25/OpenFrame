@@ -52,7 +52,7 @@ enum ScreenplayParagraphs {
 final class ScreenplayWorkspaceModel {
     /// A screenplay and draft asked for while the workspace was not on screen (Build Screenplay
     /// posts its target before the workspace appears). Read once when the workspace loads.
-    static var pendingTarget: (screenplayId: String?, draftId: String?)?
+    static var pendingTarget: (screenplayId: String?, draftId: String?, sceneId: String?)?
 
     var overview: ScreenplayOverview?
     var document: ScreenplayDocument?
@@ -60,6 +60,8 @@ final class ScreenplayWorkspaceModel {
     var syncStatus: String = "saved"
     var currentScene: String?
     var showNewDraft = false
+    /// Standard, Writing Room or Focus. Kept per project and user in the layout record.
+    var mode: ScreenplayMode = .standard
     /// Characters and locations for the suggestion list.
     var sources: WritingSuggestionSources?
     /// Pages of the saved draft (the core counts them).
@@ -80,6 +82,8 @@ final class ScreenplayWorkspaceModel {
     @ObservationIgnored private var noticeTask: Task<Void, Never>?
     @ObservationIgnored weak var textView: ScreenplayTextView?
     @ObservationIgnored var sync: ScreenplaySync?
+    /// Escape in the editor with nothing to dismiss (leaves Focus Mode).
+    @ObservationIgnored var onEscape: (() -> Void)?
     @ObservationIgnored let rules: SharedScreenplayRules
     @ObservationIgnored private weak var app: AppModel?
     @ObservationIgnored private var screenplayId: String?
@@ -121,6 +125,7 @@ final class ScreenplayWorkspaceModel {
         // A known name filled by Enter is saved on its own before the Dialogue line is added.
         view.beforeSuggestionMoveOn = { [weak self] in self?.sync?.saveThen {} }
         view.onLearnSpelling = { [weak self] word in self?.learn(word) }
+        view.onEscape = { [weak self] in self?.onEscape?() }
         syncViewAttributes()
     }
 
@@ -135,6 +140,27 @@ final class ScreenplayWorkspaceModel {
         if view.suggestionSources != sources {
             view.suggestionSources = sources
             view.setKnownNames((sources?.characters ?? []).map(\.name) + (sources?.locations ?? []).map(\.name))
+        }
+    }
+
+    // MARK: Layout mode
+
+    /// Read the saved mode (the layout record is shared with the Windows app).
+    func loadLayout() async {
+        guard let core = app?.core else { return }
+        if let state = try? await core.screenplayViewState(ScreenplayViewStateArgs()) {
+            mode = ScreenplayMode.from(state)
+        }
+    }
+
+    /// Change the mode and save it, keeping the other keys of the record as they are.
+    func setMode(_ new: ScreenplayMode) {
+        guard new != mode else { return }
+        mode = new
+        guard let core = app?.core else { return }
+        Task {
+            let current = try? await core.screenplayViewState(ScreenplayViewStateArgs())
+            _ = try? await core.screenplaySetViewState(ScreenplaySetViewStateArgs(state: ScreenplayMode.merged(current, mode: new)))
         }
     }
 
@@ -338,11 +364,16 @@ final class ScreenplayWorkspaceModel {
     func textChanged() { sync?.markDirty() }
 
     /// Show a screenplay and draft chosen elsewhere (Build Screenplay in Story).
-    func show(screenplayId: String?, draftId: String?) async {
+    func show(screenplayId: String?, draftId: String?, sceneId: String? = nil) async {
         await flush()
         if let screenplayId { self.screenplayId = screenplayId }
         await loadOverview()
         if let draftId, draftId != draft?.id { await loadDocument(draftId) }
+        // A search result or a Story link names a scene: put the caret on its heading.
+        if let sceneId, let scenes = document?.scenes, let i = scenes.firstIndex(where: { $0.id == sceneId }) {
+            let paragraph = scenes.prefix(i).reduce(0) { $0 + 1 + $1.elements.count }
+            textView?.reveal(paragraph: paragraph)
+        }
     }
 
     /// Store everything typed before leaving (workspace switch, close, quit).
@@ -385,16 +416,20 @@ struct ScreenplayWorkspace: View {
     @State private var currentKind: ElementType = .action
     @State private var currentIndex = 0
     @State private var panels = ScreenplayPanelState()
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private static let contentTables = ["screenplay", "screenplay_draft", "screenplay_scene", "screenplay_element", "screenplay_custom_element", "comment"]
     private static let sourceTables = ["story_character", "cast_member", "location", "story_scene_card"]
 
     var body: some View {
+        let focus = model.mode == .focus
         HSplitView {
-            SceneNavigator(model: model, panels: panels, currentIndex: currentIndex)
-                .frame(minWidth: 200, idealWidth: 240, maxWidth: 340)
+            if !focus {
+                SceneNavigator(model: model, panels: panels, currentIndex: currentIndex)
+                    .frame(minWidth: 200, idealWidth: 240, maxWidth: 340)
+            }
             VStack(spacing: 0) {
-                if model.showReplace { ScreenplayReplaceBar(model: model) }
+                if model.showReplace && !focus { ScreenplayReplaceBar(model: model) }
                 ZStack {
                     theme["well"]
                     ScreenplayEditorHost(model: model, onMove: { p, i in
@@ -405,14 +440,31 @@ struct ScreenplayWorkspace: View {
                 }
             }
             .frame(minWidth: 560)
+            .overlay(alignment: .topTrailing) { if focus { focusBar } }
         }
+        .toolbar(focus ? .hidden : .automatic, for: .windowToolbar)
         .toolbar { toolbar }
+        .background { modeShortcuts }
+        .onChange(of: model.mode) { _, mode in
+            // Focus hides the side pane; Writing Room opens it.
+            if mode == .focus { panels.inspectorShown = false }
+            if mode == .writingRoom { panels.inspectorShown = true }
+            // The project window hides its workspace sidebar too while the writer is in Focus.
+            NotificationCenter.default.post(name: .openFrameScreenplayFocus, object: mode == .focus)
+        }
+        .onDisappear { NotificationCenter.default.post(name: .openFrameScreenplayFocus, object: false) }
+        .onChange(of: panels.inspectorShown) { _, shown in
+            // Asking for a panel leaves Focus, as on Windows.
+            if shown && model.mode == .focus { setMode(.standard) }
+        }
         .overlay { if let f = model.failure, model.document == nil { ContentUnavailableView("Screenplay unavailable", systemImage: "doc.text", description: Text(f.message)) } }
         .task {
             model.attach(app)
+            model.onEscape = { if model.mode == .focus { setMode(.standard) } }
+            await model.loadLayout()
             if let target = ScreenplayWorkspaceModel.pendingTarget {
                 ScreenplayWorkspaceModel.pendingTarget = nil
-                await model.show(screenplayId: target.screenplayId, draftId: target.draftId)
+                await model.show(screenplayId: target.screenplayId, draftId: target.draftId, sceneId: target.sceneId)
             } else {
                 await model.loadOverview()
             }
@@ -425,10 +477,46 @@ struct ScreenplayWorkspace: View {
         .onReceive(NotificationCenter.default.publisher(for: .openFrameShowScreenplayTarget)) { note in
             let info = note.userInfo ?? [:]
             ScreenplayWorkspaceModel.pendingTarget = nil
-            Task { await model.show(screenplayId: info["screenplayId"] as? String, draftId: info["draftId"] as? String) }
+            Task { await model.show(screenplayId: info["screenplayId"] as? String, draftId: info["draftId"] as? String, sceneId: info["sceneId"] as? String) }
         }
         .screenplayPanels(model: model, state: panels, caretIndex: currentIndex)
         .accessibilityIdentifier("screenplay-workspace")
+    }
+
+    /// Change the mode; with Reduce Motion on, the layout changes without animation.
+    private func setMode(_ mode: ScreenplayMode) {
+        if reduceMotion { model.setMode(mode) } else { withAnimation(.easeInOut(duration: 0.18)) { model.setMode(mode) } }
+    }
+
+    /// The small bar Focus Mode keeps: draft name, save state and the way out.
+    private var focusBar: some View {
+        HStack(spacing: 10) {
+            Text(model.draft?.name ?? "").font(.callout.weight(.semibold)).lineLimit(1)
+            Button("Exit Focus") { setMode(.standard) }
+                .controlSize(.small)
+                .accessibilityIdentifier("focus-exit")
+            Text(model.syncStatus == "saved" ? "Saved" : model.syncStatus == "error" ? "Not saved" : "Saving")
+                .font(.caption).foregroundStyle(.secondary)
+                .accessibilityIdentifier("focus-save-status")
+        }
+        .padding(.horizontal, 10).padding(.vertical, 6)
+        .background(theme["panel"].opacity(0.95), in: RoundedRectangle(cornerRadius: 10))
+        .overlay(RoundedRectangle(cornerRadius: 10).stroke(theme["line"]))
+        .padding(12)
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Focus Mode")
+        .accessibilityIdentifier("focus-bar")
+    }
+
+    /// Shortcuts that stay alive when the toolbar is hidden.
+    private var modeShortcuts: some View {
+        ZStack {
+            Button("Focus Mode") { setMode(model.mode == .focus ? .standard : .focus) }
+                .keyboardShortcut("f", modifiers: [.command, .shift])
+            Button("Writing Room Mode") { setMode(model.mode == .writingRoom ? .standard : .writingRoom) }
+                .keyboardShortcut("r", modifiers: [.command, .shift])
+        }
+        .opacity(0).allowsHitTesting(false).accessibilityHidden(true)
     }
 
     @ToolbarContentBuilder private var toolbar: some ToolbarContent {
@@ -461,6 +549,19 @@ struct ScreenplayWorkspace: View {
             .accessibilityLabel("Element")
             .accessibilityValue(elementLabel)
             .accessibilityIdentifier("element-picker")
+        }
+        ToolbarItem(placement: .automatic) {
+            Menu {
+                ForEach(ScreenplayMode.allCases, id: \.self) { m in
+                    Button { setMode(m) } label: {
+                        if model.mode == m { Label(m.title, systemImage: "checkmark") } else { Text(m.title) }
+                    }
+                }
+            } label: {
+                Label("Layout", systemImage: "rectangle.split.3x1")
+            }
+            .help("Standard, Writing Room (side pane) or Focus (only the page). Focus: Shift+Command+F. Writing Room: Shift+Command+R")
+            .accessibilityIdentifier("layout-menu")
         }
         ToolbarItem(placement: .automatic) {
             Button { if model.showReplace { model.showReplace = false } else { model.openReplace() } } label: {
@@ -608,4 +709,9 @@ struct ScreenplayEditorHost: NSViewRepresentable {
             model.caretMoved()
         }
     }
+}
+
+extension Notification.Name {
+    /// Posted with a Bool: the screenplay entered (true) or left (false) Focus Mode.
+    static let openFrameScreenplayFocus = Notification.Name("studio.openframe.screenplayFocus")
 }
