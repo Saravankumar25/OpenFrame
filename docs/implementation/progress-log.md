@@ -58,6 +58,17 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 
 ## Entries
 
+### 2026-10-18, Mac phases M1 to M5 on an Apple M1 Mac
+- **Areas and items worked:** Mac track M1 (toolchain, core on macOS, Tauri Mac shell retired, parity matrix, CI), M2 (core as a Swift library), M3 (SwiftUI shell), M4 (editor spike, choice, native editor), M5 (Story, Idea Vault, Breakdown). Outside the plan, at the owner's request: the apple-design skill installed globally for Claude Code.
+- **Done:** commits ec3d085, adc7b86, 6471122, a3a32ee, 5e008e1 and this documentation commit on branch `mac/m1-toolchain`.
+- **Evidence:** [m1-m2](../release/evidence/mac/m1-m2-core-and-interface.md), [m3-m5](../release/evidence/mac/m3-m5-shell-editor-workspaces.md), [editor spike](../release/evidence/mac/m4-editor-spike.md). Core: 2,037 Rust tests on Apple silicon after three Mac-only test fixes; Swift: 229 tests in 30 suites.
+- **Features moved:** Mac parity matrix: 49 rows "Built; model-level tests pass on Apple silicon", others marked partly built, core-proved or not started with reasons. No Windows feature status changed.
+- **Docs updated:** DEVELOPMENT.md (Mac section), 25-ci-cd.md, 37-platform-boundary.md (Tauri Mac notes superseded), archive note, owner-decisions.md (Mac machine facts, Xcode task, provisional editor choice), reconciliation log, handoff.
+- **Decisions made or needed:** the editor is built on TextKit 2 provisionally under the owner's instruction to decide while away; the owner confirms (ADR-0027 open item 1). Owner task: install full Xcode.
+- **Blocked / risks:** no full Xcode (window-level UI tests, `.dmg`); screen tests share process-wide notifications, so suites run serially.
+- **Next:** close the partly built M3 to M5 rows; M6 or M8; Xcode-based UI tests in M9.
+- **Checks run:** `cargo test --workspace --exclude openframe-desktop` (macOS), `cargo clippy -p openframe-ffi`, `apps/macos/scripts/test.sh` (229 pass), check-writing-standard, check-links, check-secrets. `npm run verify` and `npm run check:governance` not run (no `node_modules` on this Mac).
+
 ### 2026-10-17 to 2026-10-18 (endgame session), W9: installer built, release suite passed, clean-machine proof blocked
 - **Areas and items worked:** Windows installer (area 20); security hardening (area 6); test infrastructure (area 5);
   AI assistant quality and hardening (poisoned-retrieval set); owner decisions.

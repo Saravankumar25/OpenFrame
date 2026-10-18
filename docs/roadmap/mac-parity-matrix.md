@@ -24,56 +24,56 @@ Counts: 119 feature rows (10 not applicable) and 41 scenario files holding 247 s
 
 | Feature | Area | Windows status and proof | Mac phase | Mac status | Mac evidence |
 |---|---|---|---|---|---|
-| Project create, open, close, duplicate, archive, delete to Recycle Bin, recents, locate moved | Product-wide quality, accessibility and beta | Reachable, proof 1 | M3 | Not started |  |
-| Single-writer lock; UNC/network projects refused | Product-wide quality, accessibility and beta | Reachable, proof 1 | M3 | Not started |  |
+| Project create, open, close, duplicate, archive, delete to Recycle Bin, recents, locate moved | Product-wide quality, accessibility and beta | Reachable, proof 1 | M3 | Partly built: create, open, close, recents, pin, locate check; duplicate, archive and delete on the Mac are not built yet | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
+| Single-writer lock; UNC/network projects refused | Product-wide quality, accessibility and beta | Reachable, proof 1 | M3 | Core rule, proved by the Rust tests on Apple silicon | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
 | Continuous autosave, Save checkpoint, save-state indicator | Data safety and crash recovery | Reachable, proof 1 | M9 | Not started |  |
 | Crash detection and recovery offer | Data safety and crash recovery | Reachable, proof 1 | M9 | Not started |  |
 | Migrations: backup first, one transaction, refuse newer | Data safety and crash recovery | Built, proof 1 | M9 | Not started |  |
 | Generic undo/redo, refuses to overwrite later work | Data safety and crash recovery | Verified, proof 2 | M9 | Not started |  |
 | Recently Deleted, Activity | Product-wide quality, accessibility and beta | Verified, proof 3 (ev: docs/release/evidence/w4/README.md) | M6 | Not started |  |
 | Project Files cabinet (managed, external, relink) | Product-wide quality, accessibility and beta | Reachable, proof 1 | M6 | Not started |  |
-| Global search (FTS5), private notes owner-only | Every area | Reachable, proof 1 | M3 | Not started |  |
-| App shell, Home, navigation, command overlay, toasts with Undo | Product-wide quality, accessibility and beta | Reachable, proof 1 | M3 | Not started |  |
-| Roles and capability matrix enforced in Rust (Owner, Editor, Commenter, Viewer, Export-only) | Every area | Built, proof 1 | M3 | Not started |  |
-| Offline operation; only downloads show "unavailable offline" | Product-wide quality, accessibility and beta | Reachable, proof 1 | M3 | Not started |  |
+| Global search (FTS5), private notes owner-only | Every area | Reachable, proof 1 | M3 | Not started on the Mac (core search proved by the Rust tests) | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
+| App shell, Home, navigation, command overlay, toasts with Undo | Product-wide quality, accessibility and beta | Reachable, proof 1 | M3 | Partly built: shell, Home, sidebar navigation; command overlay and undo toasts not built yet | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
+| Roles and capability matrix enforced in Rust (Owner, Editor, Commenter, Viewer, Export-only) | Every area | Built, proof 1 | M3 | Core rule, proved by the Rust tests on Apple silicon | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
+| Offline operation; only downloads show "unavailable offline" | Product-wide quality, accessibility and beta | Reachable, proof 1 | M3 | Core rule, proved by the Rust tests on Apple silicon; the Mac shell makes no network calls | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
 | Local logs, redacted, 14 days | Test infrastructure and quality gates | Built, proof 1 | M9 | Not started |  |
-| Export diagnostics bundle (user-initiated, inspectable, redacted) | Test infrastructure and quality gates | Built, proof 1 | M3 | Not started |  |
+| Export diagnostics bundle (user-initiated, inspectable, redacted) | Test infrastructure and quality gates | Built, proof 1 | M3 | Built; model-level tests pass on Apple silicon | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
 | Windows High Contrast usable; no colour-only meaning | Product-wide quality, accessibility and beta | Built, proof 1 | - | Not applicable on the Mac: Windows High Contrast; the Mac equivalent is Increase Contrast, covered by the accessibility row in M9 |  |
 | Keyboard-only walkthrough of every workspace, visible focus, labelled icon buttons | Product-wide quality, accessibility and beta | Specified, proof none | M9 | Not started |  |
-| Project vault: views (grid, card, list, folder), empty state | Product-wide quality, accessibility and beta | Reachable, proof 1 | M5 | Not started |  |
-| Add note, image, URL, file, voice note, video; autosaved text editor | Product-wide quality, accessibility and beta | Reachable, proof 1 | M5 | Not started |  |
-| Drag-in files, partial success, external file unavailable | Product-wide quality, accessibility and beta | Reachable, proof 1 | M5 | Not started |  |
+| Project vault: views (grid, card, list, folder), empty state | Product-wide quality, accessibility and beta | Reachable, proof 1 | M5 | Built; model-level tests pass on Apple silicon | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
+| Add note, image, URL, file, voice note, video; autosaved text editor | Product-wide quality, accessibility and beta | Reachable, proof 1 | M5 | Built; model-level tests pass on Apple silicon | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
+| Drag-in files, partial success, external file unavailable | Product-wide quality, accessibility and beta | Reachable, proof 1 | M5 | Built; model-level tests pass on Apple silicon | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
 | Selection, context menu, collections, research flags, Recently Deleted | Story Board and Idea Vault | Verified, proof 3 (ev: docs/release/evidence/w4/README.md) | M6 | Not started |  |
-| Global Idea Vault and copy to project | Product-wide quality, accessibility and beta | Reachable, proof 1 | M5 | Not started |  |
-| Search the vault, Quick Capture | Product-wide quality, accessibility and beta | Reachable, proof 1 | M5 | Not started |  |
-| Send to Story Board | Story Board and Idea Vault | Reachable, proof 1 | M5 | Not started |  |
-| Acts, sequences, beats, scene cards; board and outline views; zoom out | Story Board and Idea Vault | Verified, proof 3 (ev: docs/release/evidence/w4/README.md) | M5 | Not started |  |
-| Card drawer, drag with insertion line, multi-select, parking lot, duplicate, convert beat | Story Board and Idea Vault | Verified, proof 3 (ev: docs/release/evidence/w4/README.md) | M5 | Not started |  |
-| Delete rules (non-empty act, card with linked scene) | Story Board and Idea Vault | Verified, proof 3 (ev: docs/release/evidence/w4/README.md) | M5 | Not started |  |
-| Build Screenplay (preview, existing screenplay, reorder warning) | Story Board and Idea Vault | Verified, proof 3 (ev: docs/release/evidence/w4/README.md) | M5 | Not started |  |
-| Characters directory, relationships, timeline, sequence hub | Story Board and Idea Vault | Reachable, proof 1 | M5 | Not started |  |
-| Series, seasons, episodes, season board | Story Board and Idea Vault | Reachable, proof 1 | M5 | Not started |  |
+| Global Idea Vault and copy to project | Product-wide quality, accessibility and beta | Reachable, proof 1 | M5 | Built; model-level tests pass on Apple silicon | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
+| Search the vault, Quick Capture | Product-wide quality, accessibility and beta | Reachable, proof 1 | M5 | Built; model-level tests pass on Apple silicon | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
+| Send to Story Board | Story Board and Idea Vault | Reachable, proof 1 | M5 | Built; model-level tests pass on Apple silicon | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
+| Acts, sequences, beats, scene cards; board and outline views; zoom out | Story Board and Idea Vault | Verified, proof 3 (ev: docs/release/evidence/w4/README.md) | M5 | Built; model-level tests pass on Apple silicon | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
+| Card drawer, drag with insertion line, multi-select, parking lot, duplicate, convert beat | Story Board and Idea Vault | Verified, proof 3 (ev: docs/release/evidence/w4/README.md) | M5 | Built; model-level tests pass on Apple silicon | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
+| Delete rules (non-empty act, card with linked scene) | Story Board and Idea Vault | Verified, proof 3 (ev: docs/release/evidence/w4/README.md) | M5 | Built; model-level tests pass on Apple silicon | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
+| Build Screenplay (preview, existing screenplay, reorder warning) | Story Board and Idea Vault | Verified, proof 3 (ev: docs/release/evidence/w4/README.md) | M5 | Built; model-level tests pass on Apple silicon | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
+| Characters directory, relationships, timeline, sequence hub | Story Board and Idea Vault | Reachable, proof 1 | M5 | Built; model-level tests pass on Apple silicon | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
+| Series, seasons, episodes, season board | Story Board and Idea Vault | Reachable, proof 1 | M5 | Built; model-level tests pass on Apple silicon | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
 | Story Board / Outline PDF export | Call sheets, budget, templates, samples and exports | Reachable, proof 1 | M7 | Not started |  |
-| Editor, eight element types, auto progression, manual override | Writing comfort | Verified, proof 3 (ev: docs/release/evidence/w4/README.md) | M4 | Not started |  |
-| Structured model, stable element ids, not rich text | Screenplay engine and file formats | Built, proof 1 | M4 | Not started |  |
-| Element rule profiles (margins, spacing, next element, page-break, continuation, mapping) | Screenplay engine and file formats | Built, proof 1 | M4 | Not started |  |
-| Find and replace (case, whole word, next/prev, undoable) and scope: scene or whole script | Writing comfort | Verified, proof 3 (ev: docs/release/evidence/w4/README.md) | M4 | Not started |  |
-| Focus mode, Writing Room, scene and private notes, comments | Screenplay engine and file formats | Reachable, proof 1 | M4 | Not started |  |
-| Drafts, history/recovery, compare, review rounds, delete draft | Screenplay engine and file formats | Reachable, proof 1 | M4 | Not started |  |
-| Lock Shooting Draft, Start Revision, revision label/colour/reason | Screenplay engine and file formats | Verified, proof 3 (ev: docs/release/evidence/w4/README.md) | M4 | Not started |  |
-| Production scene numbers: imported, alphanumeric, frozen after lock | Screenplay engine and file formats | Reachable, proof 1 | M4 | Not started |  |
+| Editor, eight element types, auto progression, manual override | Writing comfort | Verified, proof 3 (ev: docs/release/evidence/w4/README.md) | M4 | Built; model-level tests pass on Apple silicon | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
+| Structured model, stable element ids, not rich text | Screenplay engine and file formats | Built, proof 1 | M4 | Built; model-level tests pass on Apple silicon | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
+| Element rule profiles (margins, spacing, next element, page-break, continuation, mapping) | Screenplay engine and file formats | Built, proof 1 | M4 | Built; model-level tests pass on Apple silicon | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
+| Find and replace (case, whole word, next/prev, undoable) and scope: scene or whole script | Writing comfort | Verified, proof 3 (ev: docs/release/evidence/w4/README.md) | M4 | Built; model-level tests pass on Apple silicon | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
+| Focus mode, Writing Room, scene and private notes, comments | Screenplay engine and file formats | Reachable, proof 1 | M4 | Partly built: comments, scene notes in the Scene Hub; focus mode and Writing Room not built yet | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
+| Drafts, history/recovery, compare, review rounds, delete draft | Screenplay engine and file formats | Reachable, proof 1 | M4 | Built; model-level tests pass on Apple silicon | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
+| Lock Shooting Draft, Start Revision, revision label/colour/reason | Screenplay engine and file formats | Verified, proof 3 (ev: docs/release/evidence/w4/README.md) | M4 | Built; model-level tests pass on Apple silicon | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
+| Production scene numbers: imported, alphanumeric, frozen after lock | Screenplay engine and file formats | Reachable, proof 1 | M4 | Built; model-level tests pass on Apple silicon | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
 | Deterministic pagination shared by preview, print and PDF | Screenplay engine and file formats | Reachable, proof 1 | M7 | Not started |  |
-| Keep-together rules (heading, cue, parenthetical, orphan) | Screenplay engine and file formats | Built, proof 1 | M4 | Not started |  |
-| Dialogue continuation (MORE / CONT'D) generated, not typed | Screenplay engine and file formats | Reachable, proof 1 | M4 | Not started |  |
-| Explicit page break directive (insert, remove, undo, export) | Screenplay engine and file formats | Verified, proof 3 (ev: docs/release/evidence/w4/README.md) | M4 | Not started |  |
-| Title page structured fields, preview, export toggle | Screenplay engine and file formats | Verified, proof 3 (ev: docs/release/evidence/w4/README.md) | M4 | Not started |  |
-| Page setup presets (Letter, A4, saved preset, font, size, line spacing) | Screenplay engine and file formats | Verified, proof 3 (ev: docs/release/evidence/w4/README.md) | M4 | Not started |  |
-| Custom elements (name, shortcut, preset, next element, import/export identity) | Screenplay engine and file formats | Verified, proof 3 (ev: docs/release/evidence/w4/README.md) | M4 | Not started |  |
-| Smart structural suggestions (INT./EXT., characters, locations, time terms) | Writing comfort | Verified, proof 3 (ev: docs/release/evidence/w4/README.md) | M4 | Not started |  |
+| Keep-together rules (heading, cue, parenthetical, orphan) | Screenplay engine and file formats | Built, proof 1 | M4 | Core rule, proved by the Rust tests on Apple silicon; shown through the core pagination | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
+| Dialogue continuation (MORE / CONT'D) generated, not typed | Screenplay engine and file formats | Reachable, proof 1 | M4 | Core rule, proved by the Rust tests on Apple silicon; shown through the core pagination | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
+| Explicit page break directive (insert, remove, undo, export) | Screenplay engine and file formats | Verified, proof 3 (ev: docs/release/evidence/w4/README.md) | M4 | Built; model-level tests pass on Apple silicon | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
+| Title page structured fields, preview, export toggle | Screenplay engine and file formats | Verified, proof 3 (ev: docs/release/evidence/w4/README.md) | M4 | Partly built: title page fields in Page Setup; preview and export toggle not built yet | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
+| Page setup presets (Letter, A4, saved preset, font, size, line spacing) | Screenplay engine and file formats | Verified, proof 3 (ev: docs/release/evidence/w4/README.md) | M4 | Built; model-level tests pass on Apple silicon | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
+| Custom elements (name, shortcut, preset, next element, import/export identity) | Screenplay engine and file formats | Verified, proof 3 (ev: docs/release/evidence/w4/README.md) | M4 | Built; model-level tests pass on Apple silicon | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
+| Smart structural suggestions (INT./EXT., characters, locations, time terms) | Writing comfort | Verified, proof 3 (ev: docs/release/evidence/w4/README.md) | M4 | Built; model-level tests pass on Apple silicon | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
 | Multilingual text survives type, save, reload, PDF, FDX, Fountain, DOCX, search, AI | Screenplay engine and file formats | Verified, proof 3 (ev: docs/release/evidence/w4/README.md) | M7 | Not started |  |
 | Print preview identical to PDF (page count, breaks) | Screenplay engine and file formats | Reachable, proof 1 | M7 | Not started |  |
-| Scene Hub, scene context menu, moving a scene already in production | Screenplay engine and file formats | Reachable, proof 1 | M4 | Not started |  |
-| Delete draft with strong confirmation | Screenplay engine and file formats | Verified, proof 3 (ev: docs/release/evidence/w4/README.md) | M4 | Not started |  |
+| Scene Hub, scene context menu, moving a scene already in production | Screenplay engine and file formats | Reachable, proof 1 | M4 | Built; model-level tests pass on Apple silicon | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
+| Delete draft with strong confirmation | Screenplay engine and file formats | Verified, proof 3 (ev: docs/release/evidence/w4/README.md) | M4 | Built; model-level tests pass on Apple silicon | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
 | FDX import with preview, counts, warnings; never flatten unknown constructs | Screenplay engine and file formats | Verified, proof 3 (ev: docs/release/evidence/w4/README.md) | M7 | Not started |  |
 | FDX export structurally valid, re-importable, opens in Final Draft | Screenplay engine and file formats | Reachable, proof 1 | M7 | Not started |  |
 | FDX round-trip fixture suite (13 classes) with parsed, exported, re-imported and PDF snapshots | Screenplay engine and file formats | Built, proof 1 | M7 | Not started |  |
@@ -86,13 +86,13 @@ Counts: 119 feature rows (10 not applicable) and 41 scenario files holding 247 s
 | PDF visual regression (page count, margins, headings, dialogue, title page, numbers, continuation, revision marks, headers) | Screenplay engine and file formats | Built, proof 1 | M7 | Not started |  |
 | Exchange / Review / Response packages: export, open, response, version mismatch, unmatched notes, preview before apply | Packages and backup | Verified, proof 3 (ev: docs/release/evidence/w4/README.md) | M7 | Not started |  |
 | Backup, whole-project package, import with identity collision | Packages and backup | Verified, proof 3 (ev: docs/release/evidence/w4/README.md) | M7 | Not started |  |
-| Production source choice, breakdown view, tagging, suggestions, accept/reject, catalog reuse | Breakdown, catalog, locations, cast and crew | Verified, proof 3 (ev: docs/release/evidence/w4/README.md) | M5 | Not started |  |
-| Script change reconciliation, Needs Review, source update | Breakdown, catalog, locations, cast and crew | Reachable, proof 1 | M5 | Not started |  |
-| Large-project performance (filters, open) | Breakdown, catalog, locations, cast and crew | Reachable, proof 1 | M5 | Not started |  |
-| Catalog: props, equipment, wardrobe, vehicles, effects, VFX, sound, animals; archive/replace | Breakdown, catalog, locations, cast and crew | Reachable, proof 1 | M5 | Not started |  |
-| Locations: address, access, parking, hospital, availability, notes, photos | Breakdown, catalog, locations, cast and crew | Verified, proof 3 (ev: docs/release/evidence/w4/README.md) | M5 | Not started |  |
-| Cast and crew: performer, character, contact, availability, notes, archive | Breakdown, catalog, locations, cast and crew | Verified, proof 3 (ev: docs/release/evidence/w4/README.md) | M5 | Not started |  |
-| Replace a rejected location for selected scenes | Breakdown, catalog, locations, cast and crew | Reachable, proof 1 | M5 | Not started |  |
+| Production source choice, breakdown view, tagging, suggestions, accept/reject, catalog reuse | Breakdown, catalog, locations, cast and crew | Verified, proof 3 (ev: docs/release/evidence/w4/README.md) | M5 | Built; model-level tests pass on Apple silicon | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
+| Script change reconciliation, Needs Review, source update | Breakdown, catalog, locations, cast and crew | Reachable, proof 1 | M5 | Built; model-level tests pass on Apple silicon | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
+| Large-project performance (filters, open) | Breakdown, catalog, locations, cast and crew | Reachable, proof 1 | M5 | Not measured on the Mac yet (M9 performance pass) | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
+| Catalog: props, equipment, wardrobe, vehicles, effects, VFX, sound, animals; archive/replace | Breakdown, catalog, locations, cast and crew | Reachable, proof 1 | M5 | Built; model-level tests pass on Apple silicon | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
+| Locations: address, access, parking, hospital, availability, notes, photos | Breakdown, catalog, locations, cast and crew | Verified, proof 3 (ev: docs/release/evidence/w4/README.md) | M5 | Built; model-level tests pass on Apple silicon | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
+| Cast and crew: performer, character, contact, availability, notes, archive | Breakdown, catalog, locations, cast and crew | Verified, proof 3 (ev: docs/release/evidence/w4/README.md) | M5 | Built; model-level tests pass on Apple silicon | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
+| Replace a rejected location for selected scenes | Breakdown, catalog, locations, cast and crew | Reachable, proof 1 | M5 | Built; model-level tests pass on Apple silicon | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
 | Moodboard canvas and export | Call sheets, budget, templates, samples and exports | Reachable, proof 1 | M6 | Not started |  |
 | Storyboard panels, import/sketch/empty, sketch tool | Call sheets, budget, templates, samples and exports | Reachable, proof 1 | M6 | Not started |  |
 | Shot list and shot details | Call sheets, budget, templates, samples and exports | Reachable, proof 1 | M6 | Not started |  |
@@ -126,7 +126,7 @@ Counts: 119 feature rows (10 not applicable) and 41 scenario files holding 247 s
 | WebView2 missing/broken handling on clean machines | Microsoft Store package | Designed, proof none | - | Not applicable on the Mac: the Mac shell has no web view |  |
 | Platform service boundary (no `cfg(windows)` in modules) | Platform adapter layer for Windows and Mac | Built, proof 1 | M9 | Not started |  |
 | macOS adapter: continuous integration on Apple silicon, AI engine on Mac, sandbox compatibility, end-to-end test | Platform adapter layer for Windows and Mac | Specified, proof none | M9 | Not started |  |
-| End-user licence terms replace the pending open-source licence | Decisions and owner tasks | Specified, proof none | M3 | Not started |  |
+| End-user licence terms replace the pending open-source licence | Decisions and owner tasks | Specified, proof none | M3 | Not applicable to the shell (a document task) | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
 | Partner Center identity and name reserved; MSIX identity filled | Decisions and owner tasks | Specified, proof none | - | Not applicable on the Mac: Microsoft Partner Center; the Apple Developer account is an owner task |  |
 | Store MSIX release candidate built by the real pipeline | Microsoft Store package | Designed, proof none | - | Not applicable on the Mac: Microsoft Store packaging; the Mac App Store package is a Chapter 3 row |  |
 | WACK passes on the exact MSIX; report archived | Microsoft Store package | Specified, proof none | - | Not applicable on the Mac: Microsoft Store packaging; the Mac App Store package is a Chapter 3 row |  |
@@ -140,7 +140,7 @@ Counts: 119 feature rows (10 not applicable) and 41 scenario files holding 247 s
 | Mac App Store package (.pkg) from the macOS adapter | Mac App Store package | Specified, proof none | M9 | Not started |  |
 | Windows 11 package manifest, listing text and tests agree on Windows 11 only | Microsoft Store package | Designed, proof none | - | Not applicable on the Mac: Windows packaging; the Mac minimum version is set in M9 |  |
 | Shared entitlement interface and trial rules | Payment and free trial in all three channels | Built, proof 1 | M9 | Not started |  |
-| Team password gate of the internal builds (.exe, .dmg) | Windows installer | Built, proof 1 | M3 | Not started |  |
+| Team password gate of the internal builds (.exe, .dmg) | Windows installer | Built, proof 1 | M3 | Built; model-level tests pass on Apple silicon | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
 | Microsoft Store and Mac App Store entitlement adapters | Payment and free trial in all three channels | Built, proof 1 | M9 | Not started |  |
 | First-run safety screens after a purchase: data note, 4-step file safety tutorial, welcome | Payment and free trial in all three channels | Reachable, proof 1 | M9 | Not started |  |
 
@@ -150,29 +150,29 @@ The scenario count is the number of second-level headings in the file, one per s
 
 | File | Title | Mac phase | Mac status | Mac test |
 |---|---|---|---|---|
-| `00-release-smoke.md` | Release smoke (5 scenarios) | M3 | Not started |  |
-| `01-journey.md` | Desktop journey (17 scenarios) | M3 | Not started |  |
-| `02-restart.md` | Relaunch keeps the work (2 scenarios) | M3 | Not started |  |
-| `04-close-keeps-typing.md` | Closing the window keeps the last typed text (3 scenarios) | M3 | Not started |  |
+| `00-release-smoke.md` | Release smoke (5 scenarios) | M3 | Not started (release build, M9) |  |
+| `01-journey.md` | Desktop journey (17 scenarios) | M3 | Partly: journey steps of M3 to M5 covered by model-level tests | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
+| `02-restart.md` | Relaunch keeps the work (2 scenarios) | M3 | Built; model-level tests pass on Apple silicon | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
+| `04-close-keeps-typing.md` | Closing the window keeps the last typed text (3 scenarios) | M3 | Built; model-level tests pass on Apple silicon | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
 | `05-webview-network.md` | The web view stays off the network (3 scenarios) | - | Not applicable on the Mac: tests the Windows WebView2 process; the Mac shell has no web view (the Mac equivalent is the network check in M9) |  |
-| `10-home.md` | Application Home and Project Home (8 scenarios) | M3 | Not started |  |
-| `15-trial-first-run.md` | Trial, purchase and first-run safety screens (9 scenarios) | M3 | Not started |  |
-| `16-about.md` | About card (3 scenarios) | M3 | Not started |  |
+| `10-home.md` | Application Home and Project Home (8 scenarios) | M3 | Built; model-level tests pass on Apple silicon | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
+| `15-trial-first-run.md` | Trial, purchase and first-run safety screens (9 scenarios) | M3 | Not applicable: internal build has the team gate, not the trial |  |
+| `16-about.md` | About card (3 scenarios) | M3 | Not started (About window) |  |
 | `17-internal-build-release.md` | The internal build as it ships (2 scenarios) | - | Not applicable on the Mac: checks the Windows NSIS and MSI installers; the Mac disk image has its own checks in M9 |  |
-| `20-idea-vault.md` | Idea Vault basics (5 scenarios) | M5 | Not started |  |
-| `21-idea-vault-flow.md` | Idea Vault full flow (7 scenarios) | M5 | Not started |  |
-| `25-recently-deleted-purge.md` | Recently Deleted 30-day purge (5 scenarios) | M5 | Not started |  |
+| `20-idea-vault.md` | Idea Vault basics (5 scenarios) | M5 | Built; model-level tests pass on Apple silicon | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
+| `21-idea-vault-flow.md` | Idea Vault full flow (7 scenarios) | M5 | Built; model-level tests pass on Apple silicon | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
+| `25-recently-deleted-purge.md` | Recently Deleted 30-day purge (5 scenarios) | M5 | Not started (Recently Deleted screen, M6) |  |
 | `26-forced-kill-keeps-work.md` | Work survives a forced kill (5 scenarios) | M9 | Not started |  |
-| `30-story.md` | Story workspace basics (8 scenarios) | M5 | Not started |  |
-| `31-story-board-flow.md` | Story Board full flow (10 scenarios) | M5 | Not started |  |
-| `40-screenplay.md` | Screenplay workspace basics (5 scenarios) | M4 | Not started |  |
-| `41-screenplay-engine.md` | Screenplay engine (10 scenarios) | M4 | Not started |  |
-| `42-writing-comfort.md` | Writing comfort (11 scenarios) | M4 | Not started |  |
-| `43-several-screenplays.md` | Several screenplays per project (4 scenarios) | M4 | Not started |  |
-| `44-scene-hub-comments-compare.md` | Scene Hub, comments, drafts and compare (5 scenarios) | M4 | Not started |  |
-| `50-breakdown.md` | Breakdown workspace basics (7 scenarios) | M5 | Not started |  |
-| `51-breakdown-depth.md` | Breakdown depth (7 scenarios) | M5 | Not started |  |
-| `60-appearance.md` | Appearance and themes (2 scenarios) | M3 | Not started |  |
+| `30-story.md` | Story workspace basics (8 scenarios) | M5 | Built; model-level tests pass on Apple silicon | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
+| `31-story-board-flow.md` | Story Board full flow (10 scenarios) | M5 | Built; model-level tests pass on Apple silicon | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
+| `40-screenplay.md` | Screenplay workspace basics (5 scenarios) | M4 | Built; model-level tests pass on Apple silicon | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
+| `41-screenplay-engine.md` | Screenplay engine (10 scenarios) | M4 | Built; model-level tests pass on Apple silicon | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
+| `42-writing-comfort.md` | Writing comfort (11 scenarios) | M4 | Built; model-level tests pass on Apple silicon | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
+| `43-several-screenplays.md` | Several screenplays per project (4 scenarios) | M4 | Built; model-level tests pass on Apple silicon | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
+| `44-scene-hub-comments-compare.md` | Scene Hub, comments, drafts and compare (5 scenarios) | M4 | Built; model-level tests pass on Apple silicon | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
+| `50-breakdown.md` | Breakdown workspace basics (7 scenarios) | M5 | Built; model-level tests pass on Apple silicon | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
+| `51-breakdown-depth.md` | Breakdown depth (7 scenarios) | M5 | Built; model-level tests pass on Apple silicon | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
+| `60-appearance.md` | Appearance and themes (2 scenarios) | M3 | Built; model-level tests pass on Apple silicon | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
 | `61-schedule.md` | Shooting schedule and Day Out of Days (10 scenarios) | M6 | Not started |  |
 | `62-call-sheets-exports.md` | Call sheets, budget, templates, samples and exports (11 scenarios) | M6 | Not started |  |
 | `63-every-export.md` | Every export format (4 scenarios) | M7 | Not started |  |
@@ -187,7 +187,7 @@ The scenario count is the number of second-level headings in the file, one per s
 | `85-project-pages.md` | Project pages (5 scenarios) | M6 | Not started |  |
 | `86-visual-planning.md` | Visual planning: canvas, sketch dialog and drag reorder (5 scenarios) | M6 | Not started |  |
 | `90-visual-baseline.md` | Visual baseline and visual comparison (3 scenarios) | M9 | Not started |  |
-| `91-appearance-themes.md` | Every built-in theme in Light and Dark (4 scenarios) | M3 | Not started |  |
+| `91-appearance-themes.md` | Every built-in theme in Light and Dark (4 scenarios) | M3 | Built; model-level tests pass on Apple silicon | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
 | `95-reachability.md` | Reachability from the feature status file (3 scenarios) | M9 | Not started |  |
 | `96-keyboard-and-screen-reader.md` | Keyboard and screen reader pass (4 scenarios) | M9 | Not started |  |
 | `97-performance.md` | Performance with the AI running (5 scenarios) | M9 | Not started |  |
