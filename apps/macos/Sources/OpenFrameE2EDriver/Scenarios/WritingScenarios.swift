@@ -1735,13 +1735,6 @@ extension Scenarios {
             try ui.expect(Set(after) == ["Two Rivers", "Two Rivers: The Short"], "both screenplays are back: \(after)")
             try await ui.quiet()
         },
-        W("zz-probe/rows") { ui, _, ctx in
-            _ = try await scriptProject(ui, ctx, "Glass Harbour")
-            try await ui.chooseMenu(id: "screenplay-tools-menu", ["Drafts"])
-            try await ui.wait(id: "drafts-sheet", timeout: 10)
-            await ui.idle(1)
-            ui.dump("drafts")
-        },
         W("42-writing-comfort/smart-suggestions-build-a-scene") { ui, _, ctx in
             let tv = try await scriptProject(ui, ctx, "Bus Depot")
             try await busDepotScene(ui, tv)
@@ -2448,35 +2441,6 @@ extension Scenarios {
                 try ui.expect("\(c.r) \(c.g) \(c.b)" == saved, "the window background is the same after a relaunch: \(saved) then \(c)")
                 try await ui.closeSettings()
             }
-        },
-        W("zz-probe/keys") { ui, _, ctx in
-            let tv = try await scriptProject(ui, ctx, "Bus Depot")
-            await ui.caretToStart(tv)
-            try await ui.typeHere("INT. A - NIGHT")
-            try await ui.enter()
-            try await ui.typeHere("Meera waits.")
-            try await ui.enter()
-            try await ui.typeHere("MEERA")
-            try await ui.waitSuggestion("Create New: MEERA")
-            try await ui.enter()
-            ui.log("elements \(await ui.elements(tv))")
-            ui.log("rows after elements: \(ui.suggestionRows())")
-            try await ui.typeHere("Is it late?")
-            try await ui.enter()
-            try await ui.enter()
-            try await ui.typeHere("EXT. ROAD - LATER")
-            try await ui.escape()
-            try await ui.enter()
-            try await ui.typeHere("The bus is late.")
-            try await ui.enter()
-            await ui.idle(0.5)
-            ui.log("before ME: label \(ui.currentElementLabel())")
-            try await ui.typeHere("ME")
-            for i in 0..<4 {
-                await ui.idle(0.5)
-                ui.log("t\(i) rows \(ui.suggestionRows()) label \(ui.currentElementLabel()) text tail [\(tv.string.suffix(30).replacingOccurrences(of: "\n", with: "|"))]")
-            }
-            ui.dump("meera")
         },
         W("10-home/first-project-opens-on-project-home") { ui, _, ctx in
             try await ui.startApp(ctx)
