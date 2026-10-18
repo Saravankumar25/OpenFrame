@@ -3,21 +3,21 @@
 > 2026-10-18. Maps the gate rows S1, S8, S9 and P2 to tests that exist. Every test name below was found with grep under
 > `crates/` or `tests/e2e/specs/` before it was written here. Gate: [windows-internal-release-gate.md](../../windows-internal-release-gate.md).
 
-## S1 Threat model current: Open
+## S1 Threat model current: Open (one row left)
 
-The threat model ([20-security-threat-model.md](../../../engineering/20-security-threat-model.md)) was refreshed on
-2026-10-18. More than two rows still carry a yellow or planned mark instead of a named test, so S1 stays Open:
+Rechecked 2026-10-18 against the code and tests. Every test name below was found with grep. Only T39 still lacks a
+named test, so S1 stays Open. Threat model: [20-security-threat-model.md](../../../engineering/20-security-threat-model.md).
 
-| Row | Gap listed in the threat model |
-|---|---|
-| T1 | CI grep for `dangerouslySetInnerHTML` is planned (the no-live-HTML tests cover the web source) |
-| T7 | File-size cap is marked yellow in the table, but `input_files_must_be_regular_files_within_the_cap` exists (see S8) |
-| T19 | Updater plugin not integrated |
-| T24 | No test that bars HTTP client use outside the downloader modules |
-| T33 | The web view is not covered by the loopback-only check |
-| T35 | Manual test pending |
-| T39 | No test names the numbers-only rule of the AI log |
-| T40 | Planned for the Mac track |
+| Row | Status | Test or reason |
+|---|---|---|
+| T1 | Pass | `apps/desktop/src/ai/noLiveHtml.test.tsx`: "source tree has no unsafe HTML sinks" (fails on `dangerouslySetInnerHTML`, `.innerHTML =`, `insertAdjacentHTML`, `document.write`, `new Function(`, `eval(`) and "assistant answers are never live HTML" |
+| T7 | Pass | `crates/openframe-security/tests/security_paths.rs`: `input_files_must_be_regular_files_within_the_cap` |
+| T19 | Not applicable in Chapter 1 | Internal builds have no updater. The store delivers updates in Chapter 3 |
+| T24 | Pass | `tests/e2e/specs/05-webview-network.test.mjs` (all WebView2 processes, WebDriver and direct run, net log) and `72-ai-assistant.test.mjs` ("no network: the app and the engines use loopback only while AI works"); passed in the final release run ([e2e-release-runs.md](e2e-release-runs.md)). No source-level test bars HTTP client use outside the downloader modules; the run-time specs are the proof |
+| T33 | Pass | Same two specs as T24 |
+| T35 | Pass, manual part in W10 pilot | `crates/openframe-platform/src/cloud.rs`: `documents_redirected_to_onedrive_is_found_through_the_environment`, `a_fake_onedrive_root_and_the_other_services_are_found_by_name`, `the_local_alternative_is_not_synced`; `apps/desktop/src/app/home/NewProjectDialog.test.tsx`: "warns about a folder OneDrive syncs and offers a folder on this computer (W2)". The 10-minute typing test on a synced folder is part of the W10 pilot |
+| T39 | Open | `modules/ai/trace.rs` keeps numbers and ids only by its `TraceRow` fields and schema. Its tests (`the_health_card_reports_medians_apply_rate_and_the_weakest_tool`, `the_report_goes_only_to_an_absolute_json_path`) and the `ai.health` checks in `crates/openframe-application/tests/ai/ai.rs` do not assert that no prompt or answer text is stored. Missing: record a request with hostile text, then check that no column of `sys_ai_trace` and no `ai.export_report` output holds it |
+| T40 | Later chapter | Mac track M2, not Chapter 1 Windows |
 
 ## S8 Files: Pass, images noted
 

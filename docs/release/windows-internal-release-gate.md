@@ -20,7 +20,7 @@ Status words: Open, Pass, Fail, Exception (owner approved), Exception (waiting f
 
 | Id | Check | Pass means | Status | Evidence |
 |---|---|---|---|---|
-| S1 | Threat model current | Every entry point has attacker input, guard in code and a passing test named | Open | Kept open: more than two threat model rows still lack a named test (T1 CI grep, T19, T24, T33, T35, T39, T40). Mapping: [security-mapping.md](evidence/w9/security-mapping.md) |
+| S1 | Threat model current | Every entry point has attacker input, guard in code and a passing test named | Open | Kept open: one threat model row still lacks a named test, T39 (AI log holds numbers only). T19 is not applicable in Chapter 1 and T40 belongs to Mac track M2. Mapping: [security-mapping.md](evidence/w9/security-mapping.md) |
 | S2 | SQL built safely | Every SQL string built with `format!`, concatenation or `replace` takes user values only as bound parameters; identifiers from a fixed list; grep report saved | Pass | [sql-audit.md](evidence/w9/sql-audit.md) |
 | S3 | Search input | FTS5 MATCH input cannot use FTS syntax or read other columns; LIKE escapes `%` and `_`; hostile-input tests pass | Pass | [sql-audit.md](evidence/w9/sql-audit.md) |
 | S4 | Prompt injection | Poisoned-retrieval corpus (40 or more cases, 12 languages): no unrequested tool call, no change without the Proposed Changes card and acceptance, no private note leaked, no URL or path the person did not give | Pass | 60 of 60 safe (60 cases, 12 languages): [ai-poisoned](evidence/w9/ai-poisoned/README.md) |
