@@ -17,15 +17,24 @@ export PATH="$HOME/.cargo/bin:$PATH"
 # .cargo/config.toml compiles through sccache; a Mac without it turns that off.
 command -v sccache >/dev/null 2>&1 || export RUSTC_WRAPPER=""
 export MACOSX_DEPLOYMENT_TARGET=14.0
+# Incremental data is several gigabytes and the workspace is rebuilt rarely here (storage policy).
+export CARGO_INCREMENTAL=0
 
 cd "$ROOT"
-CARGO_FLAGS=(-p openframe-ffi --lib --target "$TARGET")
+# On an Apple silicon Mac the host build is the target build: build into target/<profile> and
+# share it with `cargo test` instead of keeping a second copy of every dependency.
+CARGO_FLAGS=(-p openframe-ffi --lib)
+OUT="$ROOT/target"
+if [[ "$(rustc -vV | sed -n 's/^host: //p')" != "$TARGET" ]]; then
+  CARGO_FLAGS+=(--target "$TARGET")
+  OUT="$ROOT/target/$TARGET"
+fi
 if [[ "$PROFILE" == "release" ]]; then
   CARGO_FLAGS+=(--release)
 fi
 echo "Building openframe-ffi ($PROFILE, $TARGET)"
 cargo build "${CARGO_FLAGS[@]}"
-LIB="$ROOT/target/$TARGET/$PROFILE/libopenframe_ffi.a"
+LIB="$OUT/$PROFILE/libopenframe_ffi.a"
 test -f "$LIB" || { echo "missing $LIB" >&2; exit 1; }
 
 GEN_DIR="$(mktemp -d)"
@@ -90,6 +99,8 @@ fi
 # The theme list the Windows app reads, shared by the Mac theme engine (single source of truth).
 mkdir -p "$MACOS/Sources/OpenFrameUI/Resources"
 cp "$ROOT/crates/openframe-application/src/modules/appearance/themes.json" "$MACOS/Sources/OpenFrameUI/Resources/themes.json"
+# The element rules the Windows editor reads, shared by the Mac editor.
+cp "$ROOT/apps/desktop/src/workspaces/screenplay/editor/elementRules.json" "$MACOS/Sources/OpenFrameUI/Resources/elementRules.json"
 
 echo "Generating the Swift operation list and types"
 cargo run -q -p openframe-ffi --features bindgen --bin op-inventory > "$MACOS/Sources/OpenFrameCore/Generated/operations.json"

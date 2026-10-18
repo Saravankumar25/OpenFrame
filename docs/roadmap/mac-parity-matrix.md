@@ -37,7 +37,7 @@ Counts: 119 feature rows (10 not applicable) and 41 scenario files holding 247 s
 | Roles and capability matrix enforced in Rust (Owner, Editor, Commenter, Viewer, Export-only) | Every area | Built, proof 1 | M3 | Not started |  |
 | Offline operation; only downloads show "unavailable offline" | Product-wide quality, accessibility and beta | Reachable, proof 1 | M3 | Not started |  |
 | Local logs, redacted, 14 days | Test infrastructure and quality gates | Built, proof 1 | M9 | Not started |  |
-| Export diagnostics bundle (user-initiated, inspectable, redacted) | Test infrastructure and quality gates | Built, proof 1 | M7 | Not started |  |
+| Export diagnostics bundle (user-initiated, inspectable, redacted) | Test infrastructure and quality gates | Built, proof 1 | M3 | Not started |  |
 | Windows High Contrast usable; no colour-only meaning | Product-wide quality, accessibility and beta | Built, proof 1 | - | Not applicable on the Mac: Windows High Contrast; the Mac equivalent is Increase Contrast, covered by the accessibility row in M9 |  |
 | Keyboard-only walkthrough of every workspace, visible focus, labelled icon buttons | Product-wide quality, accessibility and beta | Specified, proof none | M9 | Not started |  |
 | Project vault: views (grid, card, list, folder), empty state | Product-wide quality, accessibility and beta | Reachable, proof 1 | M5 | Not started |  |
@@ -61,14 +61,14 @@ Counts: 119 feature rows (10 not applicable) and 41 scenario files holding 247 s
 | Focus mode, Writing Room, scene and private notes, comments | Screenplay engine and file formats | Reachable, proof 1 | M4 | Not started |  |
 | Drafts, history/recovery, compare, review rounds, delete draft | Screenplay engine and file formats | Reachable, proof 1 | M4 | Not started |  |
 | Lock Shooting Draft, Start Revision, revision label/colour/reason | Screenplay engine and file formats | Verified, proof 3 (ev: docs/release/evidence/w4/README.md) | M4 | Not started |  |
-| Production scene numbers: imported, alphanumeric, frozen after lock | Screenplay engine and file formats | Reachable, proof 1 | M7 | Not started |  |
+| Production scene numbers: imported, alphanumeric, frozen after lock | Screenplay engine and file formats | Reachable, proof 1 | M4 | Not started |  |
 | Deterministic pagination shared by preview, print and PDF | Screenplay engine and file formats | Reachable, proof 1 | M7 | Not started |  |
 | Keep-together rules (heading, cue, parenthetical, orphan) | Screenplay engine and file formats | Built, proof 1 | M4 | Not started |  |
 | Dialogue continuation (MORE / CONT'D) generated, not typed | Screenplay engine and file formats | Reachable, proof 1 | M4 | Not started |  |
-| Explicit page break directive (insert, remove, undo, export) | Screenplay engine and file formats | Verified, proof 3 (ev: docs/release/evidence/w4/README.md) | M7 | Not started |  |
-| Title page structured fields, preview, export toggle | Screenplay engine and file formats | Verified, proof 3 (ev: docs/release/evidence/w4/README.md) | M7 | Not started |  |
+| Explicit page break directive (insert, remove, undo, export) | Screenplay engine and file formats | Verified, proof 3 (ev: docs/release/evidence/w4/README.md) | M4 | Not started |  |
+| Title page structured fields, preview, export toggle | Screenplay engine and file formats | Verified, proof 3 (ev: docs/release/evidence/w4/README.md) | M4 | Not started |  |
 | Page setup presets (Letter, A4, saved preset, font, size, line spacing) | Screenplay engine and file formats | Verified, proof 3 (ev: docs/release/evidence/w4/README.md) | M4 | Not started |  |
-| Custom elements (name, shortcut, preset, next element, import/export identity) | Screenplay engine and file formats | Verified, proof 3 (ev: docs/release/evidence/w4/README.md) | M7 | Not started |  |
+| Custom elements (name, shortcut, preset, next element, import/export identity) | Screenplay engine and file formats | Verified, proof 3 (ev: docs/release/evidence/w4/README.md) | M4 | Not started |  |
 | Smart structural suggestions (INT./EXT., characters, locations, time terms) | Writing comfort | Verified, proof 3 (ev: docs/release/evidence/w4/README.md) | M4 | Not started |  |
 | Multilingual text survives type, save, reload, PDF, FDX, Fountain, DOCX, search, AI | Screenplay engine and file formats | Verified, proof 3 (ev: docs/release/evidence/w4/README.md) | M7 | Not started |  |
 | Print preview identical to PDF (page count, breaks) | Screenplay engine and file formats | Reachable, proof 1 | M7 | Not started |  |
@@ -93,8 +93,8 @@ Counts: 119 feature rows (10 not applicable) and 41 scenario files holding 247 s
 | Locations: address, access, parking, hospital, availability, notes, photos | Breakdown, catalog, locations, cast and crew | Verified, proof 3 (ev: docs/release/evidence/w4/README.md) | M5 | Not started |  |
 | Cast and crew: performer, character, contact, availability, notes, archive | Breakdown, catalog, locations, cast and crew | Verified, proof 3 (ev: docs/release/evidence/w4/README.md) | M5 | Not started |  |
 | Replace a rejected location for selected scenes | Breakdown, catalog, locations, cast and crew | Reachable, proof 1 | M5 | Not started |  |
-| Moodboard canvas and export | Call sheets, budget, templates, samples and exports | Reachable, proof 1 | M7 | Not started |  |
-| Storyboard panels, import/sketch/empty, sketch tool | Call sheets, budget, templates, samples and exports | Reachable, proof 1 | M7 | Not started |  |
+| Moodboard canvas and export | Call sheets, budget, templates, samples and exports | Reachable, proof 1 | M6 | Not started |  |
+| Storyboard panels, import/sketch/empty, sketch tool | Call sheets, budget, templates, samples and exports | Reachable, proof 1 | M6 | Not started |  |
 | Shot list and shot details | Call sheets, budget, templates, samples and exports | Reachable, proof 1 | M6 | Not started |  |
 | Schedule creation, stripboard (Unscheduled pool and days), list, calendar, drag a scene into a day | Shooting schedule and Day Out of Days | Verified, proof 3 (ev: docs/release/evidence/w4/README.md) | M6 | Not started |  |
 | Break markers: Meal, Travel, Company Move, Custom with time and duration | Shooting schedule and Day Out of Days | Verified, proof 3 (ev: docs/release/evidence/w4/README.md) | M6 | Not started |  |
@@ -108,7 +108,7 @@ Counts: 119 feature rows (10 not applicable) and 41 scenario files holding 247 s
 | Branded, stable, printable PDF | Call sheets, budget, templates, samples and exports | Reachable, proof 1 | M7 | Not started |  |
 | Sides for a day, production reports (6 types) | Call sheets, budget, templates, samples and exports | Verified, proof 3 (ev: docs/release/evidence/w4/README.md) | M6 | Not started |  |
 | Project notes and lightweight tasks; Activity history | Product-wide quality, accessibility and beta | Reachable, proof 1 | M6 | Not started |  |
-| Offline AI engine in every package, models downloaded after install (ADR-0026, ADR-0032): llama.cpp processor and Vulkan builds pinned in the package; Gemma 3 1B, BGE small English and multilingual E5 small fetched from Hugging Face at pinned commits on the person's click, checked by size and SHA-256 before use; import of model files | AI assistant quality and hardening | Verified, proof 3 (ev: docs/release/evidence/w4/README.md) | M7 | Not started |  |
+| Offline AI engine in every package, models downloaded after install (ADR-0026, ADR-0032): llama.cpp processor and Vulkan builds pinned in the package; Gemma 3 1B, BGE small English and multilingual E5 small fetched from Hugging Face at pinned commits on the person's click, checked by size and SHA-256 before use; import of model files | AI assistant quality and hardening | Verified, proof 3 (ev: docs/release/evidence/w4/README.md) | M8 | Not started |  |
 | Assistant: bounded agent (<= 12 steps), toolbox, hybrid retrieval, one Change Set per request, human-only apply | AI assistant quality and hardening | Verified, proof 3 (ev: docs/release/evidence/w4/README.md) | M8 | Not started |  |
 | Retrieval gold set and metrics (Recall@K, MRR, nDCG, grounding, leakage) for FTS, vector, hybrid, hybrid+graph | AI assistant quality and hardening | Specified, proof none | M8 | Not started |  |
 | Hardware benchmark on the computers that can be tested (owner decision 2026-10-16); processor path; graphics card | AI assistant quality and hardening | Built, proof 1 | M8 | Not started |  |
@@ -121,7 +121,7 @@ Counts: 119 feature rows (10 not applicable) and 41 scenario files holding 247 s
 | Supported Windows versions decided and enforced in manifest and docs | Microsoft Store package | Designed, proof none | - | Not applicable on the Mac: Windows packaging; the Mac minimum version is set in M9 |  |
 | CI: Windows runner format, clippy, tests, web, bindings, desktop E2E as a release gate | Test infrastructure and quality gates | Built, proof 1 | - | Not applicable on the Mac: Windows runner; Mac CI is the Mac core check workflow |  |
 | Supply chain green: `cargo deny`, `npm audit`, licence inventory | Project controls and baseline | Built, proof 1 | M9 | Not started |  |
-| Architecture lint (forbidden imports, direct DB writes, unregistered operations, binding drift) | Project controls and baseline | Built, proof 1 | M7 | Not started |  |
+| Architecture lint (forbidden imports, direct DB writes, unregistered operations, binding drift) | Project controls and baseline | Built, proof 1 | M1 | Not started |  |
 | Migration fixture corpus per shipped schema version | Data safety and crash recovery | Built, proof 1 | M9 | Not started |  |
 | WebView2 missing/broken handling on clean machines | Microsoft Store package | Designed, proof none | - | Not applicable on the Mac: the Mac shell has no web view |  |
 | Platform service boundary (no `cfg(windows)` in modules) | Platform adapter layer for Windows and Mac | Built, proof 1 | M9 | Not started |  |

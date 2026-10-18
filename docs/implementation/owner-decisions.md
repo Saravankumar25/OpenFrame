@@ -123,8 +123,8 @@ The "Recommendation" column is advice, not a decision. "Blocks" names the phase 
 | Where new projects are saved by default | W2 | Warn when Documents is synced and offer a local folder; never move existing projects | W2 |
 | ~~Worktree review~~ | W1 | **Decided 2026-10-16 (owner, in chat):** audit every old worktree and agent branch; remove only what is proven merged, duplicated or unused (no uncommitted changes, no untracked files, no unique commits); keep anything active, valuable or uncertain; never force-delete; report what was removed, kept and the space recovered. From now on remove temporary agent worktrees and branches after a verified merge when no unique work remains | [development-storage-policy.md](../development-storage-policy.md) |
 | ~~Which tooling stays~~ | W1 | **Decided 2026-10-16 (owner, in chat):** remove the GSD framework and the stale `AGENTS.md`; keep `claude-mem` | CLAUDE.md |
-| macOS version of the Intel MacBook | M1 | Owner reports it; it sets the Xcode version and what Intel can prove | [ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md) |
-| Screenplay editor on the Mac | M4 | Decide after the spike with its numbers | ADR-0027 open item 1 |
+| macOS version of the Intel MacBook | M1 | Answered by the machine 2026-10-17: the Mac used for the Mac track is Apple silicon (Apple M1, macOS 26.5.2), so no Intel level is needed ([evidence](../release/evidence/mac/m1-m2-core-and-interface.md)) | [ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md) |
+| Screenplay editor on the Mac | M4 | Spike done 2026-10-17 ([numbers](../release/evidence/mac/m4-editor-spike.md)). Built provisionally on the native text engine (TextKit 2) under the owner's instruction of 2026-10-17 to take decisions while away; waiting for the owner to confirm | ADR-0027 open item 1 |
 | How the Mac runs the AI engine | M8 | Helper process or linked library, after reading Apple's sandbox rules | ADR-0027 open item 2 |
 | Meaning of "build the website manually" | Chapter 2 plan | Clarify before the plan is written | [Chapter 2](../roadmap/chapter-2-website.md) |
 | Human review of the non-English gold sets | W5, pilot | Owner chose Claude only; a native-speaker sample from the team during the pilot is recommended | [ADR-0028](../adr/ADR-0028-ai-quality-program-and-harness.md) |
@@ -137,7 +137,8 @@ Lead times are typical, not guaranteed. Start the long ones early.
 |---|---|---|---|
 | Install VirtualBox (or another virtual machine tool) and make a clean Windows 11 machine | W9 | hours | The owner's computer runs Windows 11 Home, which has no Sandbox |
 | Borrow laptops with different graphics cards and one 8 GB laptop | W5, W7, W9 | procurement | Benchmarks and clean install; store each result with the card name and driver |
-| Report the macOS version of the Intel MacBook | M1 | minutes | Sets the Xcode version |
+| Report the macOS version of the Intel MacBook | M1 | minutes | Done 2026-10-17: Apple M1, macOS 26.5.2 |
+| Install full Xcode on the Mac (App Store, Apple ID) | M3, M9 | about an hour, 15 to 20 GB | Needed for the UI testing framework, `xcodebuild`, the disk image and signing. Today only the Command Line Tools are installed; Swift Testing runs without Xcode |
 | Obtain an Apple silicon Mac | M8, M9 | procurement | Needed for Metal, Apple's model and the `.dmg` |
 | ~~Choose the model host and generate the production manifest key~~ | Closed 2026-10-16 | none | Superseded by the owner's decision to download straight from Hugging Face ([ADR-0032](../adr/ADR-0032-models-from-hugging-face.md)): no host, no key |
 | Licence check of every model before release: the Gemma Terms of Use allow the app to fetch the pinned Gemma file from Hugging Face for each person and require the Gemma notice in the app and the notices file (both ship); the embedding model (MIT) and the runtime (MIT). Record the confirmation | W8 (before the team build) | hours | ADR-0026 decision 9, ADR-0032; [23-release-migration.md](../engineering/23-release-migration.md) |

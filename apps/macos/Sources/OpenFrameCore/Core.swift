@@ -45,6 +45,9 @@ public struct CoreStartOptions: Sendable {
     /// `Contents/Resources/ai` inside the app bundle.
     public var aiBundleDir: URL?
     public var writeLogs: Bool
+    /// The password screen tests' hash. Honoured by the core only in a debug build on a test
+    /// folder (ADR-0031); ignored everywhere else.
+    public var testTeamPasswordHash: String?
 
     public init(appVersion: String, isolatedDataRoot: URL? = nil, aiBundleDir: URL? = nil, writeLogs: Bool = true) {
         self.appVersion = appVersion
@@ -116,7 +119,8 @@ public final class Core: CoreInvoking, @unchecked Sendable {
             appVersion: options.appVersion,
             isolatedDataRoot: options.isolatedDataRoot?.path,
             aiBundleDir: options.aiBundleDir?.path,
-            writeLogs: options.writeLogs
+            writeLogs: options.writeLogs,
+            testTeamPasswordHash: options.testTeamPasswordHash
         )
         return try await withCheckedThrowingContinuation { continuation in
             DispatchQueue.global(qos: .userInitiated).async {

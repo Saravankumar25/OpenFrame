@@ -39,7 +39,7 @@ let package = Package(
         .target(
             name: "OpenFrameUI",
             dependencies: ["OpenFrameCore"],
-            resources: [.copy("Resources/themes.json")]
+            resources: [.copy("Resources/themes.json"), .copy("Resources/elementRules.json")]
         ),
         .executableTarget(name: "OpenFrameStudio", dependencies: ["OpenFrameUI"]),
         .testTarget(name: "OpenFrameCoreTests", dependencies: ["OpenFrameCore"]),

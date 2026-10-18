@@ -35,6 +35,11 @@ const FEATURE_NA = [
 
 // Mac phase: decided by build area first, then by words in the feature name.
 const NAME_PHASE = [
+  [/Offline AI engine|AI health|AI report/i, "M8"],
+  [/Export diagnostics bundle|Appearance|themes?\b/i, "M3"],
+  [/scene numbers|page break directive|Title page structured|Custom elements \(/i, "M4"],
+  [/Moodboard|Storyboard panels|Shot list/i, "M6"],
+  [/Architecture lint/i, "M1"],
   [/password gate|Project create, open|Single-writer|App shell|Offline operation|Global search|Roles and capability|End-user licence/i, "M3"],
   [/Idea Vault|Quick Capture|Project vault|voice note|Drag-in files/i, "M5"],
   [/Recently Deleted|Activity|Files cabinet|notes and lightweight tasks/i, "M6"],

@@ -46,6 +46,7 @@ fn start(root: &std::path::Path, rec: &Recorder) -> Arc<CoreHandle> {
             isolated_data_root: Some(root.to_string_lossy().into_owned()),
             ai_bundle_dir: None,
             write_logs: false,
+            test_team_password_hash: None,
         },
         Box::new(rec.clone()),
     )
@@ -193,4 +194,44 @@ fn a_project_reopens_after_the_core_restarts() {
     let doc = call(&core, "screenplay.document", json!({ "draftId": draft })).to_string();
     assert!(doc.contains("HARBOUR"), "{doc}");
     core.stop();
+}
+
+/// The password screen of an internal build, through the interface: a wrong password is refused
+/// with plain words and nothing opens; the right one opens the app.
+#[test]
+fn the_team_password_gate_refuses_a_wrong_password_and_opens_with_the_right_one() {
+    use openframe_entitlement::team_gate::build_hash::{SALT_BYTES, hash_for_build};
+    let hash = hash_for_build("pilot-password-1", &[7u8; SALT_BYTES]).unwrap();
+    let dir = tempfile::tempdir().unwrap();
+    let core = CoreHandle::start(
+        CoreConfig {
+            app_version: "0.1.0-test".into(),
+            isolated_data_root: Some(dir.path().to_string_lossy().into_owned()),
+            ai_bundle_dir: None,
+            write_logs: false,
+            test_team_password_hash: Some(hash),
+        },
+        Box::new(Recorder::default()),
+    )
+    .unwrap();
+    let status = call(&core, "team_gate.status", json!({}));
+    assert_eq!(status["required"], true);
+    assert_eq!(status["unlocked"], false);
+    // Nothing else runs before the password.
+    let locked = core.invoke("project.list_recent".into(), "{}".into()).unwrap_err();
+    assert!(!code_of(locked).is_empty());
+    let wrong = call(&core, "team_gate.unlock", json!({ "password": "wrong-password" }));
+    assert_eq!(wrong["status"]["unlocked"], false);
+    assert!(wrong["message"].as_str().is_some_and(|m| !m.is_empty()));
+    let right = call(&core, "team_gate.unlock", json!({ "password": "pilot-password-1" }));
+    assert_eq!(right["status"]["unlocked"], true, "{right}");
+    call(&core, "project.list_recent", json!({}));
+    core.stop();
+}
+
+#[test]
+#[ignore = "prints a fixed test hash for the Swift gate tests"]
+fn print_swift_test_hash() {
+    use openframe_entitlement::team_gate::build_hash::{SALT_BYTES, hash_for_build};
+    println!("HASH={}", hash_for_build("pilot-password-1", &[7u8; SALT_BYTES]).unwrap());
 }

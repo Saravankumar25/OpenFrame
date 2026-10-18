@@ -5,3 +5,4 @@
 /.swiftpm/
 /build/
 /Sources/OpenFrameUI/Resources/themes.json
+/Sources/OpenFrameUI/Resources/elementRules.json

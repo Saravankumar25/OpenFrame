@@ -74,6 +74,11 @@ pub struct CoreConfig {
     pub ai_bundle_dir: Option<String>,
     /// Write the JSON log files under the app data folder.
     pub write_logs: bool,
+    /// A team password hash for the automated tests of the password screen. Honoured only by a
+    /// debug build on a test folder, like the other test switches (ADR-0031); a release build and
+    /// a run on the person's own data always use the hash embedded at build time.
+    #[uniffi(default = None)]
+    pub test_team_password_hash: Option<String>,
 }
 
 /// The running core. One per app process.
@@ -143,7 +148,17 @@ fn build_config(config: &CoreConfig) -> Result<(AppConfig, bool), CoreError> {
     // Hand-set licence states exist only in a debug build on a test folder (as on Windows).
     app.entitlement_debug_controls = cfg!(debug_assertions) && isolated.is_some();
     app.team_password_hash = TEAM_PASSWORD_HASH.map(str::to_string);
+    if let Some(hash) = test_gate(config, cfg!(debug_assertions), isolated.is_some()) {
+        app.team_password_hash = Some(hash);
+    }
     Ok((app, isolated.is_some()))
+}
+
+/// The test hash of the password screen tests: only a debug build on a test folder, and only a
+/// well-formed Argon2id string (the gate check refuses anything else anyway).
+fn test_gate(config: &CoreConfig, debug: bool, isolated: bool) -> Option<String> {
+    let hash = config.test_team_password_hash.as_deref()?;
+    (debug && isolated && hash.starts_with("$argon2id$")).then(|| hash.to_string())
 }
 
 /// The disk image is an internal team build; the Mac App Store package is the store channel.
@@ -337,6 +352,7 @@ mod tests {
             isolated_data_root: Some("relative/folder".into()),
             ai_bundle_dir: None,
             write_logs: false,
+            test_team_password_hash: None,
         };
         let err = build_config(&config).expect_err("refused");
         let CoreError::Failed { code, .. } = err;
@@ -351,11 +367,28 @@ mod tests {
             isolated_data_root: Some(dir.path().to_string_lossy().into_owned()),
             ai_bundle_dir: Some("Resources/ai".into()),
             write_logs: false,
+            test_team_password_hash: None,
         };
         let (app, isolated) = build_config(&config).unwrap();
         assert!(isolated);
         assert!(app.ai_bundle_dir.is_none());
         assert!(app.projects_dir.starts_with(dir.path()));
+    }
+
+    #[test]
+    fn the_test_gate_hash_is_honoured_only_by_a_debug_build_on_a_test_folder() {
+        let config = CoreConfig {
+            app_version: "0.1.0".into(),
+            isolated_data_root: None,
+            ai_bundle_dir: None,
+            write_logs: false,
+            test_team_password_hash: Some("$argon2id$v=19$m=65536,t=3,p=1$abc$def".into()),
+        };
+        assert!(test_gate(&config, true, true).is_some());
+        assert!(test_gate(&config, false, true).is_none(), "release build");
+        assert!(test_gate(&config, true, false).is_none(), "the person's own data");
+        let junk = CoreConfig { test_team_password_hash: Some("plain".into()), ..config };
+        assert!(test_gate(&junk, true, true).is_none());
     }
 
     #[test]
