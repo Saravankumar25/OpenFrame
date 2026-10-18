@@ -624,3 +624,16 @@ test("every end-to-end spec has its plain-step scenario file, and every scenario
   const readme = fs.readFileSync(path.join(REPO, "tests/e2e/scenarios/README.md"), "utf8");
   for (const s of scenarios) assert.ok(readme.includes(`\`${s}.md\``), `${s}.md is not listed in the scenario README`);
 });
+
+test("the uninstaller never deletes the app data root recursively and removes only folders the app creates", () => {
+  const hook = fs.readFileSync(path.join(REPO, "apps/desktop/src-tauri/windows/installer-hooks.nsh"), "utf8");
+  assert.ok(!/RMDir\s+\/r\s+"\$LOCALAPPDATA\\OpenFrame"/i.test(hook), "recursive delete of the app data root");
+  // Folders the code creates under app_data_dir: models (openframe-ai/src/model_download.rs), ai (store.rs),
+  // logs (apps/desktop/src-tauri/src/lib.rs), entitlement (openframe-entitlement), tmp and reviews
+  // (openframe-application/src/modules/packages).
+  const known = ["models", "ai", "logs", "entitlement", "tmp", "reviews"];
+  const removed = [...hook.matchAll(/^\s*RMDir\s+\/r\s+"\$LOCALAPPDATA\\OpenFrame\\([^"\\]+)"/gim)].map((m) => m[1]);
+  assert.deepEqual(removed.filter((n) => !known.includes(n)), [], "hook removes a folder the app does not create");
+  assert.deepEqual(known.filter((n) => !removed.includes(n)), [], "hook leaves a known folder behind");
+  assert.match(hook, /^\s*RMDir\s+"\$LOCALAPPDATA\\OpenFrame"\s*$/m, "final non-recursive RMDir of the root");
+});

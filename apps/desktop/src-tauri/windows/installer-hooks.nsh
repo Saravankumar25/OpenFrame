@@ -1,13 +1,17 @@
 ; Uninstaller behaviour for the internal Windows installer (Tauri NSIS hooks).
 ;
 ; Uninstalling removes the program. It never touches projects or the Global Idea Vault.
-; The "delete app data" checkbox (Tauri's $DeleteAppDataCheckboxState) removes only the
-; app data folder %LOCALAPPDATA%\OpenFrame: settings, recent projects, downloaded AI models, logs.
+; The "delete app data" checkbox (Tauri's $DeleteAppDataCheckboxState) removes only the items the
+; app itself creates inside %LOCALAPPDATA%\OpenFrame, then the folder itself if it is empty:
+;   folders: models, ai, logs, entitlement, tmp, reviews
+;   files:   app.sqlite (with its -wal, -shm and -journal side files), engines.json
+; Any other item in that folder is never removed, and then the folder stays. The root is never
+; deleted recursively, so a project or anything else a person once placed there survives.
+; The folder list is checked against the code by scripts/tests/governance.test.mjs.
 ;
-; Why that is safe: a project folder or the vault can never be placed inside the app data
-; folder. check_project_parent (openframe-application/src/util.rs) and the other output
-; checks call openframe_security::validate_output_dir / validate_output_file, and
-; protected_roots() lists app_data_dir first, so a path inside it is refused.
+; Projects are normally kept out of this folder: check_project_parent (openframe-application/src/util.rs)
+; refuses it, because protected_roots() lists app_data_dir first. Older builds, received packages and
+; hand-made folders were not covered by that check, hence the explicit list.
 
 !macro NSIS_HOOK_PREUNINSTALL
   ; An update runs the old uninstaller silently; only a person who chose to uninstall sees this.
@@ -20,6 +24,18 @@
 !macro NSIS_HOOK_POSTUNINSTALL
   ${If} $DeleteAppDataCheckboxState = 1
   ${AndIf} $UpdateMode <> 1
-    RMDir /r "$LOCALAPPDATA\OpenFrame"
+    RMDir /r "$LOCALAPPDATA\OpenFrame\models"
+    RMDir /r "$LOCALAPPDATA\OpenFrame\ai"
+    RMDir /r "$LOCALAPPDATA\OpenFrame\logs"
+    RMDir /r "$LOCALAPPDATA\OpenFrame\entitlement"
+    RMDir /r "$LOCALAPPDATA\OpenFrame\tmp"
+    RMDir /r "$LOCALAPPDATA\OpenFrame\reviews"
+    Delete "$LOCALAPPDATA\OpenFrame\app.sqlite"
+    Delete "$LOCALAPPDATA\OpenFrame\app.sqlite-wal"
+    Delete "$LOCALAPPDATA\OpenFrame\app.sqlite-shm"
+    Delete "$LOCALAPPDATA\OpenFrame\app.sqlite-journal"
+    Delete "$LOCALAPPDATA\OpenFrame\engines.json"
+    ; Not recursive: succeeds only when nothing else is left inside.
+    RMDir "$LOCALAPPDATA\OpenFrame"
   ${EndIf}
 !macroend

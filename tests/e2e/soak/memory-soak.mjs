@@ -155,7 +155,7 @@ async function main() {
         await trigger.waitForClickable({ timeout: 10_000 });
         await trigger.click();
         await menuItem(browser, "Scene Heading");
-        await typeKeys(`INT. SOAK ROOM ${loops} — NIGHT`);
+        await typeKeys(`INT. SOAK ROOM ${loops} - NIGHT`);
         await browser.keys("Enter");
         await typeKeys("Asha checks the gauge and writes the number down.");
         await browser.keys("Enter");
