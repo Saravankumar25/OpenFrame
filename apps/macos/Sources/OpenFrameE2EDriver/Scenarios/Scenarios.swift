@@ -3,7 +3,7 @@
 
 enum Scenarios {
     static var all: [Scenario] {
-        releaseSmoke + teamGate + forcedKill + writingGroup + productionGroup + interchangeGroup
+        releaseSmoke + teamGate + forcedKill + writingGroup + productionGroup + interchangeGroup + captureGroup
     }
 }
 
