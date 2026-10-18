@@ -8,7 +8,8 @@
 | G1 | Final installer built once from a clean tree: size, SHA-256, commit | [Final installer](#final-installer) |
 | G3 | SBOMs next to the installer | [Final installer](#final-installer) |
 | G4 | 27 MB against an estimate of 20 to 30 MB | [Final installer](#final-installer) |
-| S1 | Threat model refreshed with the proving test per entry point | [20-security-threat-model.md](../../../engineering/20-security-threat-model.md) |
+| S1 | Threat model refreshed with the proving test per entry point (T39 closed) | [security-mapping.md](security-mapping.md), [20-security-threat-model.md](../../../engineering/20-security-threat-model.md) |
+| S14 | Security review: no critical or high, one medium fixed | [security-mapping.md](security-mapping.md) |
 | S2 | No SQL injection, 3 low findings fixed | [sql-audit.md](sql-audit.md) |
 | S3 | Search input hostile tests | [sql-audit.md](sql-audit.md) |
 | S4 | Prompt injection: 60 of 60 safe | [ai-poisoned/README.md](ai-poisoned/README.md) |
@@ -21,7 +22,10 @@
 | S12 | BinSkim results and exceptions | [binary-hardening.md](binary-hardening.md), [binskim/](binskim/) |
 | S13 | Secrets scan, owner's name in 2 old commits | [supply-chain.md](supply-chain.md) |
 | S15 | Defender scan of the rehearsal installer on the laptop (guest scan pending) | [Other checks](#other-checks) |
-| P3 | End-to-end runs on the release build (final full run still to come) | [e2e-release-runs.md](e2e-release-runs.md) |
+| G2 | The installed program driven by the release suite | [installed-run.md](installed-run.md) |
+| P1 | Memory soak on the installed program | [memory-soak.md](memory-soak.md) |
+| P4 | English AI cases on the release build | [ai-english/](ai-english/) |
+| P3 | End-to-end runs on the release build | [e2e-release-runs.md](e2e-release-runs.md) |
 | R1 | Gap list | [gap-list.md](gap-list.md) |
 
 ## Final installer
@@ -32,7 +36,7 @@
 | Size | 27,025,974 bytes |
 | SHA-256 | `d057d115d1c5f960983be8a16483920795c2f19be64235a6ff479626b9cc2f3f` |
 | Commit | 995bfac, built from a clean tree |
-| Checks | `scan-installer` 53 files, `check-binary` ok |
+| Checks | `scan-installer` OK (53 files), `check-binary` OK, Defender no threats (signatures 1.461.74.0) |
 | SBOMs | Rust CycloneDX and npm CycloneDX, next to the installer |
 
 ## Other checks
@@ -48,7 +52,7 @@
 
 ## Added 2026-10-18 by the main session
 
-- Microsoft Defender on this laptop, final installer `OpenFrame-Studio-0.1.0-internal-995bfac.exe`
+- Microsoft Defender on this laptop, final installer `OpenFrame-Studio-0.1.0-internal-995bfac.exe` (the earlier final; the 028d8b6 file was scanned too and is clean)
   (`MpCmdRun -Scan -ScanType 3 -DisableRemediation`, signatures 1.461.74.0): no threats. The guest scan is part of the
   clean-machine run.
 - Gate S10 (AI engine process) tests: `supervisor_starts_serves_restarts_after_crash_and_stops` and

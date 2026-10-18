@@ -58,6 +58,34 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 
 ## Entries
 
+### 2026-10-18 (last stretch of the endgame session), W9 closed: final installer rebuilt, gate has no Open row
+- **Areas and items worked:** Windows installer (area 20); security hardening (area 6); test infrastructure (area 5);
+  AI assistant quality (English rerun); storage; Mac handoff.
+- **Done:** a security review found a medium issue in the uninstaller (it removed the whole `%LOCALAPPDATA%\OpenFrame`
+  folder when the app data box was ticked). Fixed in 6f9a280: it removes only the app's own items, then the folder only
+  if empty; a governance test guards it. Final installer rebuilt at 028d8b6: `OpenFrame-Studio-0.1.0-internal-028d8b6.exe`,
+  27,016,597 bytes, SHA-256 `97b71221...d50f`, clean tree, gate on, scan-installer OK (53 files), check-binary OK,
+  Defender no threats. It replaces 995bfac; the 995bfac and d271894 files must not be shared. Installed per user and
+  driven by the release suite (`--release=gated`, commit 7e11775). Memory soak on the installed program. T39 test added.
+  Pilot kit simplified for non-technical writers (9c354ad). Mac handoff package `openframe-dmg.zip` built. Disk freed
+  from about 110 GB to 12 GB.
+- **Evidence:** [installed-run.md](../release/evidence/w9/installed-run.md): 179 tests, 178 passed, 1 failed (spec 04
+  helper precondition, no text lost). [memory-soak.md](../release/evidence/w9/memory-soak.md): 2 hour run, core 9.1 MB an
+  hour, web view grows with document size; bounded 75 minute run PASS. English AI cases (release build, processor):
+  correct tool 145 of 150 (96.7 percent), end state 70 of 79 (88.6 percent); poisoned set 60 of 60 safe. Threat model
+  T39: `the_ai_log_and_report_hold_no_prompt_or_project_text`. Mac package SHA-256 `bf65166b...a045b`.
+- **Features moved:** none.
+- **Docs updated:** release gate (G1, G2, S1, S14, P1, P4), W9 evidence index, `installed-run.md`, `memory-soak.md`,
+  `e2e-release-runs.md`, `security-mapping.md`, threat model T39, storage policy rule 11, handoff, reconciliation log.
+- **Decisions made or needed:** none new. Rule for `tests/e2e/.run` and the debug build folder added.
+- **Blocked / risks:** Gate: 20 Pass, 18 Exception (owner approved), 0 Open. Notes: G2 has one written deviation; P1 has a
+  small web view drift at an extreme typing pace and no separate 120-page typing check. The Mac and App Sandbox readiness
+  audit of the core was not done; it is the first M1 work. Low findings recorded, not fixed (future trial record in app
+  data, check-binary bounds, installer script shell strings).
+- **Next:** give the installer and pilot kit to the team; triage reports; freeze after sign-off.
+- **Checks run:** `npm run plan:status`: overall 132 of 306 (43.1%), current goal 131 of 223 (58.7%), no box changed.
+  Writing, links, plan-status and feature-status checks: see the final report. No build, no tests run in this pass.
+
 ### 2026-10-17 to 2026-10-18 (endgame session), W9: installer built, release suite passed, clean-machine proof blocked
 - **Areas and items worked:** Windows installer (area 20); security hardening (area 6); test infrastructure (area 5);
   AI assistant quality and hardening (poisoned-retrieval set); owner decisions.

@@ -6,6 +6,13 @@
 > Renamed on 2026-10-06 from `03-reconciliation-log.md`. Extended on 2026-10-09 (chapter restructure). Checks written "(checked)" were verified in the repository on the
 > date given. Checks written "(stated)" come from a supplied document and were not verified independently.
 
+## 2026-10-18: endgame session, last stretch
+
+| Stale or conflicting statement | Where it was | Resolution |
+|---|---|---|
+| 995bfac named as the final installer | gate G1, W9 README, handoff, progress log | Superseded by `OpenFrame-Studio-0.1.0-internal-028d8b6.exe` (SHA-256 `97b71221...d50f`), rebuilt after the uninstaller fix 6f9a280. The 995bfac and d271894 files must not be shared. Older entries that name 995bfac stay as history |
+| No rule for the end-to-end data folder and the debug build folder | `development-storage-policy.md` | Rule 11 added: delete `tests/e2e/.run` after each final run, prune `.build-cache/target/debug` when not developing |
+
 ## 2026-10-18: endgame session (W9)
 
 | Stale or conflicting statement | Where it was | Resolution |

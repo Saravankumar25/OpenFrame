@@ -3,10 +3,9 @@
 > 2026-10-18. Maps the gate rows S1, S8, S9 and P2 to tests that exist. Every test name below was found with grep under
 > `crates/` or `tests/e2e/specs/` before it was written here. Gate: [windows-internal-release-gate.md](../../windows-internal-release-gate.md).
 
-## S1 Threat model current: Open (one row left)
+## S1 Threat model current: Pass
 
-Rechecked 2026-10-18 against the code and tests. Every test name below was found with grep. Only T39 still lacks a
-named test, so S1 stays Open. Threat model: [20-security-threat-model.md](../../../engineering/20-security-threat-model.md).
+Rechecked 2026-10-18 against the code and tests. Every test name below was found with grep. T39 got its test at the end of the session, so S1 is Pass. Threat model: [20-security-threat-model.md](../../../engineering/20-security-threat-model.md).
 
 | Row | Status | Test or reason |
 |---|---|---|
@@ -16,7 +15,7 @@ named test, so S1 stays Open. Threat model: [20-security-threat-model.md](../../
 | T24 | Pass | `tests/e2e/specs/05-webview-network.test.mjs` (all WebView2 processes, WebDriver and direct run, net log) and `72-ai-assistant.test.mjs` ("no network: the app and the engines use loopback only while AI works"); passed in the final release run ([e2e-release-runs.md](e2e-release-runs.md)). No source-level test bars HTTP client use outside the downloader modules; the run-time specs are the proof |
 | T33 | Pass | Same two specs as T24 |
 | T35 | Pass, manual part in W10 pilot | `crates/openframe-platform/src/cloud.rs`: `documents_redirected_to_onedrive_is_found_through_the_environment`, `a_fake_onedrive_root_and_the_other_services_are_found_by_name`, `the_local_alternative_is_not_synced`; `apps/desktop/src/app/home/NewProjectDialog.test.tsx`: "warns about a folder OneDrive syncs and offers a folder on this computer (W2)". The 10-minute typing test on a synced folder is part of the W10 pilot |
-| T39 | Open | `modules/ai/trace.rs` keeps numbers and ids only by its `TraceRow` fields and schema. Its tests (`the_health_card_reports_medians_apply_rate_and_the_weakest_tool`, `the_report_goes_only_to_an_absolute_json_path`) and the `ai.health` checks in `crates/openframe-application/tests/ai/ai.rs` do not assert that no prompt or answer text is stored. Missing: record a request with hostile text, then check that no column of `sys_ai_trace` and no `ai.export_report` output holds it |
+| T39 | Pass | `crates/openframe-application/tests/ai/ai_agent.rs`: `the_ai_log_and_report_hold_no_prompt_or_project_text`. Markers planted in a scene, a note, the request and the model reply never appear in any column of `sys_ai_trace` or in the exported AI report |
 | T40 | Later chapter | Mac track M2, not Chapter 1 Windows |
 
 ## S8 Files: Pass, images noted
@@ -47,3 +46,7 @@ tests above still run in the normal suite.
 | Full disk before the AI download | `crates/openframe-ai/src/install.rs`: `preflight_counts_what_is_left_and_refuses_a_full_or_unknown_disk` (code `ai.disk_full`) | Pass |
 | Network pulled during the download | `crates/openframe-ai/src/fetch.rs`: `a_file_downloads_then_an_interrupted_one_resumes_where_it_stopped`, `a_host_without_ranges_restarts_cleanly_and_never_doubles_the_file`, `more_than_the_pinned_size_a_redirect_away_and_a_pause_are_all_stopped`; spec `tests/e2e/specs/78-ai-download.test.mjs` (interrupted download resumes with a range request, pause and resume) | Pass |
 | Virtual machine powered off while typing | Covered by the W10 pilot decision ([vm-blocked.md](vm-blocked.md)) | Covered by W10 |
+
+## S14 Reviews: Pass
+
+A security review of the code changes of this session found no critical or high issue. One medium: the uninstaller removed the whole `%LOCALAPPDATA%OpenFrame` folder when the app data box was ticked. Fixed in 6f9a280: it removes only the app's own items, then the folder only if empty, and a governance test guards it. Lows recorded, not fixed: a future trial record in app data (Chapter 3), bounds in `check-binary`, and shell command strings in the installer script that use only trusted paths. Earlier reviews: [sql-audit.md](sql-audit.md), [binary-hardening.md](binary-hardening.md) (BinSkim), gitleaks in [supply-chain.md](supply-chain.md), and the threat model refresh above.

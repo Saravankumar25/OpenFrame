@@ -43,3 +43,7 @@ Mitigations for exception 4:
 - Every engine file hash is checked before each launch (`an_engine_whose_files_changed_after_install_is_not_started` in
   `crates/openframe-ai/tests/supervisor.rs`).
 - Its inputs are only hash-verified model files and local requests.
+
+## Final build 028d8b6 (2026-10-18)
+
+BinSkim on the final release executable: the only results are BA2004 (ring prebuilt assembly), BA2014 (Rust standard library, no stable stack cookies) and BA2024 (Spectre, C only), the same as the owner-approved exception S12. BA2025 stays fixed. SARIF: `binskim/app-028d8b6.sarif`.
