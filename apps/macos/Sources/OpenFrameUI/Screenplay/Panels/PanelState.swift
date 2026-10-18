@@ -228,6 +228,7 @@ struct ScreenplayPanelToolbar: ToolbarContent {
                 Label("Screenplay Tools", systemImage: "ellipsis.circle")
             }
             .help("Comments, drafts, review and page setup")
+            .accessibilityLabel("Screenplay Tools")
             .accessibilityIdentifier("screenplay-tools-menu")
         }
     }

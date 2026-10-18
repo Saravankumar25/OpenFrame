@@ -165,6 +165,8 @@ final class InterchangePresenter {
         } else {
             window.makeKeyAndOrderFront(nil)
         }
+        // Keyboard focus starts in the sheet's content, so Escape and the arrow keys reach it.
+        window.makeFirstResponder(host.view)
         if let openAfter { Task { await openAfter() } }
     }
 

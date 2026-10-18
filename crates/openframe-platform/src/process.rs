@@ -325,17 +325,51 @@ mod imp {
             let pgid = unsafe { libc::getpgid(pid) };
             // Only a child that leads its own group may be guarded; otherwise a group signal
             // would reach OpenFrame itself. `prepare_background` makes the child a leader.
-            (pgid == pid && pid > 1).then_some(Self { pid })
+            if pgid != pid || pid <= 1 {
+                return None;
+            }
+            watch_parent(std::process::id(), pid);
+            Some(Self { pid })
+        }
+    }
+
+    /// macOS has no kernel object that ends children with their parent (Windows has job
+    /// objects). A small watcher, the system shell with a fixed script and numeric arguments
+    /// only, ends the child's group within a second of OpenFrame ending, also after a crash or
+    /// a forced quit, and ends itself when the child ends first. It runs in a group of its
+    /// own, so the signal for the child never reaches it.
+    pub(super) fn watch_parent(parent_pid: u32, child_pid: i32) {
+        use std::os::unix::process::CommandExt;
+        use std::process::Stdio;
+        const SCRIPT: &str = "while kill -0 \"$1\" 2>/dev/null && kill -0 \"$2\" 2>/dev/null; do sleep 1; done; \
+             kill -0 \"$1\" 2>/dev/null || kill -KILL -\"$2\" 2>/dev/null";
+        let parent = parent_pid.to_string();
+        let child = child_pid.to_string();
+        let spawned = Command::new("/bin/sh")
+            .args(["-c", SCRIPT, "openframe-engine-watch", &parent, &child])
+            .env_clear()
+            .stdin(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .process_group(0)
+            .spawn();
+        if let Ok(mut watcher) = spawned {
+            // Reap it when it ends so it never lingers as a zombie of OpenFrame.
+            std::thread::spawn(move || {
+                let _ = watcher.wait();
+            });
         }
     }
 
     impl Drop for Guard {
         fn drop(&mut self) {
             // Signal the group only while the pid still leads it, so a reused pid of an unrelated
-            // process is never hit. SAFETY: plain libc calls on a pid we spawned.
+            // process is never hit. SIGKILL: the engine holds nothing to save, and it does not
+            // always end on SIGTERM while a request runs. SAFETY: plain libc calls on a pid we
+            // spawned.
             unsafe {
                 if libc::getpgid(self.pid) == self.pid {
-                    let _ = libc::killpg(self.pid, libc::SIGTERM);
+                    let _ = libc::killpg(self.pid, libc::SIGKILL);
                 }
             }
         }
@@ -545,11 +579,34 @@ mod tests {
 
     #[cfg(target_os = "macos")]
     #[test]
-    fn a_guarded_child_gets_sigterm_when_the_guard_is_dropped() {
+    fn a_guarded_child_is_killed_when_the_guard_is_dropped() {
         let mut cmd = Command::new("/bin/sleep");
         cmd.arg("30");
         let (mut child, guard) = spawn_guarded(&mut cmd).unwrap();
         drop(guard.expect("process group"));
+        wait_exit(&mut child);
+    }
+
+    /// The engine must not outlive OpenFrame after a crash or a forced quit: the watcher ends
+    /// the child's group once the parent is gone. A stand-in plays the parent here.
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn the_watcher_ends_the_child_when_the_parent_is_gone() {
+        use std::os::unix::process::CommandExt;
+        let mut parent = Command::new("/bin/sleep").arg("30").spawn().unwrap();
+        let mut child = Command::new("/bin/sleep")
+            .arg("30")
+            .process_group(0)
+            .spawn()
+            .unwrap();
+        imp::watch_parent(parent.id(), i32::try_from(child.id()).unwrap());
+        std::thread::sleep(std::time::Duration::from_millis(1500));
+        assert!(
+            child.try_wait().unwrap().is_none(),
+            "the child runs while the parent lives"
+        );
+        parent.kill().unwrap();
+        let _ = parent.wait();
         wait_exit(&mut child);
     }
 }

@@ -37,6 +37,7 @@ struct MoodboardsView: View {
                     .inspectorColumnWidth(min: 300, ideal: 340, max: 460)
             }
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("moodboards-tab")
     }
 
@@ -59,6 +60,7 @@ struct MoodboardsView: View {
                     .buttonStyle(.borderedProminent)
                     .accessibilityIdentifier("moodboard-empty-new")
             }
+            .accessibilityElement(children: .contain)
             .accessibilityIdentifier("moodboard-empty")
         } else {
             HStack(alignment: .top, spacing: 12) {
@@ -692,6 +694,7 @@ private struct VaultImagesSheet: View {
         }
         .padding(20).frame(width: 620)
         .task(id: model.vaultStore) { await model.loadVaultImages() }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("moodboard-vault-sheet")
     }
 }

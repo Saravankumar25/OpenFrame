@@ -17,11 +17,17 @@ final class HomeModel {
 
     func load(_ core: Core?) async {
         guard let core else { return }
-        do {
-            recents = try await core.projectListRecent(ListRecentArgs(includeArchived: showArchived))
-            failure = nil
-        } catch {
-            failure = CoreFailure(asCore: error)
+        // The list is asked again a moment later when the core was busy (right after a project closes),
+        // so Home never shows an empty list that is only a failed read.
+        for attempt in 0..<4 {
+            do {
+                recents = try await core.projectListRecent(ListRecentArgs(includeArchived: showArchived))
+                failure = nil
+                break
+            } catch {
+                failure = CoreFailure(asCore: error)
+                if attempt < 3 { try? await Task.sleep(for: .milliseconds(400)) }
+            }
         }
         loading = false
     }
@@ -70,6 +76,13 @@ struct HomeView: View {
                     header
                     if home.loading {
                         ProgressView().frame(maxWidth: .infinity)
+                    } else if let failure = home.failure, home.recents.isEmpty {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Your projects could not be read.").font(.headline)
+                            Text(failure.message).foregroundStyle(.secondary)
+                            Button("Try Again") { reload() }
+                        }
+                        .accessibilityIdentifier("home-load-error")
                     } else if home.recents.isEmpty {
                         emptyState
                     } else if !home.hasMatches {
@@ -95,7 +108,7 @@ struct HomeView: View {
                         .help("Open a Full Project Package or restore a backup")
                         .accessibilityIdentifier("home-restore-package")
                     Button { showNewProject = true } label: { Label("New Project", systemImage: "plus") }
-                        .help("Create a project")
+                        .help("New Project (Command+N)")
                         .accessibilityIdentifier("home-new-project")
                 }
                 ToolbarItem(placement: .automatic) {

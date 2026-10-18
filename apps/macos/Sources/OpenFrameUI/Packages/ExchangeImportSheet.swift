@@ -175,7 +175,7 @@ struct ExchangeImportSheet: View {
             .background(theme["surface2"])
             Divider()
             ScrollView {
-                LazyVStack(spacing: 0) {
+                VStack(spacing: 0) {
                     ForEach(model.visibleGroups, id: \.key) { g in
                         groupRow(g)
                         if model.expanded.contains(g.key) {

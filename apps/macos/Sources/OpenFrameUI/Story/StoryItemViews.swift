@@ -229,7 +229,9 @@ struct StoryCardView: View {
 
     private func richFacts() -> String {
         guard case let .card(c) = item else { return "" }
-        return StoryCardDisplayRules.facts(c, model.toggles).joined(separator: ", ")
+        // The long description and note previews are on the card face, so a screen reader reads them too.
+        let previews = [StoryCardDisplayRules.longPreview(c, model.toggles), StoryCardDisplayRules.notePreview(c, model.toggles)]
+        return (previews + StoryCardDisplayRules.facts(c, model.toggles)).filter { !$0.isEmpty }.joined(separator: ", ")
     }
 
     @ViewBuilder private func richFace(_ c: StorySceneCardDto, _ t: StoryCardToggles) -> some View {

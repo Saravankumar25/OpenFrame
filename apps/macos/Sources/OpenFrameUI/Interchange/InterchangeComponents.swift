@@ -57,7 +57,8 @@ struct IXBanner<Actions: View>: View {
         .padding(.vertical, 8)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(theme[bg], in: RoundedRectangle(cornerRadius: 8, style: .continuous))
-        .accessibilityElement(children: .combine)
+        // A banner with buttons keeps them as separate controls; a plain banner reads as one line.
+        .accessibilityElement(children: Actions.self == EmptyView.self ? .combine : .contain)
     }
 }
 

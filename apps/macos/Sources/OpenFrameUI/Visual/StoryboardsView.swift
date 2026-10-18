@@ -33,6 +33,7 @@ struct StoryboardsView: View {
             let pb = NSPasteboard.general
             if let data = pb.data(forType: .png) ?? pb.data(forType: .tiff) { Task { await model.addPasted(image: data) } }
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("storyboards-tab")
     }
 
@@ -129,6 +130,7 @@ struct StoryboardsView: View {
                     .buttonStyle(.borderedProminent)
                     .accessibilityIdentifier("storyboard-empty-new")
             }
+            .accessibilityElement(children: .contain)
             .accessibilityIdentifier("storyboard-empty")
         } else {
             ScrollView {
@@ -164,6 +166,7 @@ struct StoryboardsView: View {
             }
         }
         .frame(minHeight: 260)
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("storyboard-no-panels")
     }
 }
@@ -262,7 +265,7 @@ private struct PanelCard: View {
             Button("Delete", role: .destructive) { Task { await model.deletePanels([panel.id]) } }
         }
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("Panel \(number)\(panel.shotLabel.map { ", shot \($0)" } ?? "")\(panel.description.isEmpty ? "" : ": \(panel.description)")")
+        .accessibilityLabel("Panel \(number), \(panel.visualKind == "placeholder" ? "empty" : "picture")\(panel.shotLabel.map { ", shot \($0)" } ?? "")\(panel.description.isEmpty ? "" : ": \(panel.description)")")
         .accessibilityHint("Press to open. Use the actions to move it.")
         .accessibilityAddTraits(selected ? [.isButton, .isSelected] : .isButton)
         .accessibilityAction(named: "Move earlier") { Task { await model.nudge(panel.id, by: -1) } }

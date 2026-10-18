@@ -286,9 +286,34 @@ final class ScreenplayWorkspaceModel {
         }
     }
 
+    /// The screenplay the person had open last in this project (kept in the layout record, beside the mode).
+    @ObservationIgnored private var rememberedScreenplayId: String?
+
+    private func savedScreenplayId() async -> String? {
+        guard let core = app?.core, case let .object(o)? = try? await core.screenplayViewState(ScreenplayViewStateArgs()),
+              case let .string(id)? = o["lastScreenplayId"] else { return nil }
+        return id
+    }
+
+    private func rememberScreenplay(_ id: String) {
+        guard id != rememberedScreenplayId, let core = app?.core else { return }
+        rememberedScreenplayId = id
+        Task {
+            let current = try? await core.screenplayViewState(ScreenplayViewStateArgs())
+            var o: [String: JSONValue] = [:]
+            if case let .object(existing)? = current { o = existing }
+            o["lastScreenplayId"] = .string(id)
+            _ = try? await core.screenplaySetViewState(ScreenplaySetViewStateArgs(state: .object(o)))
+        }
+    }
+
     func loadOverview() async {
         guard let core = app?.core else { return }
         do {
+            if screenplayId == nil, let saved = await savedScreenplayId() {
+                // Reopen the screenplay that was open last; a deleted one falls back to the default.
+                if let back = try? await core.screenplayOverview(ScreenplayOverviewArgs(screenplayId: saved)), back.screenplay?.id == saved { screenplayId = saved; rememberedScreenplayId = saved }
+            }
             var o = try await core.screenplayOverview(ScreenplayOverviewArgs(screenplayId: screenplayId))
             if o.screenplays.isEmpty, o.permissions.edit {
                 // A project starts without a screenplay; the first visit makes one, as on Windows.
@@ -297,6 +322,7 @@ final class ScreenplayWorkspaceModel {
             }
             overview = o
             screenplayId = o.screenplay?.id
+            if let id = screenplayId { rememberScreenplay(id) }
             failure = nil
             if let draftId = o.screenplay?.currentDraftId ?? o.drafts.first?.id {
                 await loadDocument(draftId)
@@ -562,6 +588,7 @@ struct ScreenplayWorkspace: View {
                 Label("Layout", systemImage: "rectangle.split.3x1")
             }
             .help("Standard, Writing Room (side pane) or Focus (only the page). Focus: Shift+Command+F. Writing Room: Shift+Command+R")
+            .accessibilityLabel("Layout")
             .accessibilityIdentifier("layout-menu")
         }
         ToolbarItem(placement: .automatic) {
@@ -600,6 +627,7 @@ struct ScreenplayWorkspace: View {
                 Label(model.draft?.name ?? "Draft", systemImage: "square.stack")
             }
             .help("Drafts")
+            .accessibilityLabel("Draft: \(model.draft?.name ?? "none"). Switch draft")
             .accessibilityIdentifier("draft-menu")
         }
         ToolbarItem(placement: .automatic) {

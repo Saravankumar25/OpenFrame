@@ -32,6 +32,7 @@ struct AISettingsView: View {
                 ProgressView().frame(maxWidth: .infinity).padding(40)
             }
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("settings-ai")
         .onAppear {
             if model == nil {
@@ -167,6 +168,7 @@ struct AITechnicalDetails: View {
                 Text("Not available.").foregroundStyle(theme["muted"]).padding(.top, 6)
             }
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("settings-ai-technical")
     }
 }

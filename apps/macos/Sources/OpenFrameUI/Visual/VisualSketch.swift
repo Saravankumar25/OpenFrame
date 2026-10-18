@@ -275,6 +275,7 @@ struct SketchSheet: View {
             }
         }
         .padding(20)
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("sketch-sheet")
     }
 }

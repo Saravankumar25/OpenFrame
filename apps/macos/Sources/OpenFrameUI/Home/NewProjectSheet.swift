@@ -35,6 +35,8 @@ struct NewProjectSheet: View {
                 Picker("Type", selection: $type) {
                     ForEach(ProjectType.allCases, id: \.self) { Text($0.rawValue).tag($0) }
                 }
+                .accessibilityLabel("Type")
+                .accessibilityIdentifier("new-project-type")
                 TextField("Genre", text: $genre, prompt: Text("Optional"))
                 TextField("Written by", text: $creator, prompt: Text("Optional"))
                 LabeledContent("Location") {

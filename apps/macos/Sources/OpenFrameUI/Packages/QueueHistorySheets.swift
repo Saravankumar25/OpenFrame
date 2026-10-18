@@ -141,6 +141,10 @@ struct PackageHistorySheet: View {
             Button("Close", action: close).keyboardShortcut(.defaultAction).buttonStyle(.borderedProminent)
                 .accessibilityIdentifier("history-close")
         }
+        .background {
+            // Escape closes the sheet, as on every Mac sheet; Return is already the Close button.
+            Button("Close", action: close).keyboardShortcut(.cancelAction).opacity(0).accessibilityHidden(true)
+        }
         .task(id: model.tab) { await model.load() }
         .confirmationDialog("Delete this review record?", isPresented: Binding(get: { model.deleting != nil }, set: { if !$0 { model.deleting = nil } }),
                             titleVisibility: .visible) {

@@ -15,9 +15,28 @@ import ApplicationServices
 struct Element: CustomStringConvertible {
     let obj: NSObject
 
+    /// Table and outline rows answer only the older attribute API (accessibilityAttributeValue:),
+    /// and so do their cell elements; read these through it.
+    private func legacy(_ attribute: String) -> Any? {
+        let sel = NSSelectorFromString("accessibilityAttributeValue:")
+        guard obj.responds(to: sel) else { return nil }
+        return obj.perform(sel, with: attribute)?.takeUnretainedValue()
+    }
+
+    private static let legacyNames = [
+        "accessibilityIdentifier": "AXIdentifier", "accessibilityRole": "AXRole", "accessibilityLabel": "AXDescription",
+        "accessibilityTitle": "AXTitle", "accessibilityValue": "AXValue",
+    ]
+
     private func string(_ selector: String) -> String {
         let sel = NSSelectorFromString(selector)
-        guard obj.responds(to: sel), let raw = obj.perform(sel)?.takeUnretainedValue() else { return "" }
+        guard obj.responds(to: sel), let raw = obj.perform(sel)?.takeUnretainedValue() else {
+            guard let name = Self.legacyNames[selector], let raw = legacy(name) else { return "" }
+            if let s = raw as? String { return s }
+            if let s = raw as? NSAttributedString { return s.string }
+            if let n = raw as? NSNumber { return n.stringValue }
+            return ""
+        }
         if let s = raw as? String { return s }
         if let s = raw as? NSAttributedString { return s.string }
         if let n = raw as? NSNumber { return n.stringValue }
@@ -38,7 +57,10 @@ struct Element: CustomStringConvertible {
 
     var children: [Element] {
         let sel = NSSelectorFromString("accessibilityChildren")
-        guard obj.responds(to: sel), let kids = obj.perform(sel)?.takeUnretainedValue() as? [Any] else { return [] }
+        if obj.responds(to: sel), let kids = obj.perform(sel)?.takeUnretainedValue() as? [Any] {
+            return kids.compactMap { ($0 as? NSObject).map(Element.init) }
+        }
+        guard let kids = legacy("AXChildren") as? [Any] else { return [] }
         return kids.compactMap { ($0 as? NSObject).map(Element.init) }
     }
 

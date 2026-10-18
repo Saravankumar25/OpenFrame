@@ -146,6 +146,11 @@ public final class ScreenplayTextView: NSTextView, @preconcurrency NSTextContent
         return view
     }
 
+    /// When the text last changed. Typing more than 4 seconds after the last change starts a new
+    /// undo step, as in the Windows editor.
+    private var lastEditAt = Date.distantPast
+    static let undoPauseSeconds: TimeInterval = 4
+
     private func configure() {
         isRichText = false
         importsGraphics = false
@@ -679,6 +684,9 @@ public final class ScreenplayTextView: NSTextView, @preconcurrency NSTextContent
     // makes the cached suggestion values stale.
     public override func shouldChangeText(in affectedCharRange: NSRange, replacementString: String?) -> Bool {
         if !isLoading {
+            let now = Date()
+            if now.timeIntervalSince(lastEditAt) > Self.undoPauseSeconds { breakUndoCoalescing() }
+            lastEditAt = now
             let ns = (textStorage?.string ?? "") as NSString
             let replaced = affectedCharRange.length > 0 && affectedCharRange.location + affectedCharRange.length <= ns.length
                 ? ns.substring(with: affectedCharRange) : ""

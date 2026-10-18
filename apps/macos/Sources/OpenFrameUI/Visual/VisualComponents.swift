@@ -294,6 +294,7 @@ struct VisualFormSheet<Content: View>: View {
         }
         .padding(20)
         .frame(width: width)
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier(identifier)
     }
 }
@@ -385,6 +386,7 @@ struct VisualExportSheet: View {
         }
         .padding(20)
         .frame(width: 480)
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier(identifier)
         .onAppear {
             format = formats.first?.id ?? "pdf"

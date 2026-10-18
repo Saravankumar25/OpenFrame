@@ -41,6 +41,7 @@ struct ShotsView: View {
                     .inspectorColumnWidth(min: 320, ideal: 380, max: 500)
             }
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("shots-tab")
     }
 
@@ -599,6 +600,7 @@ private struct AttachPanelSheet: View {
             guard !id.isEmpty else { return }
             Task { await model.loadAttachChoices(for: shot, boardId: id) }
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("shot-attach-sheet")
     }
 }

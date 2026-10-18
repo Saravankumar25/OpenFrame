@@ -48,8 +48,14 @@ final class SuggestionPopover: NSObject {
         }
     }
 
+    /// Closing at once: a closing animation that is still running swallows the next show, and the
+    /// list would stay hidden while the writer types the next word.
     func hide() {
-        if popover.isShown { popover.performClose(nil) }
+        guard popover.isShown else { return }
+        let animated = popover.animates
+        popover.animates = false
+        popover.close()
+        popover.animates = animated
     }
 }
 

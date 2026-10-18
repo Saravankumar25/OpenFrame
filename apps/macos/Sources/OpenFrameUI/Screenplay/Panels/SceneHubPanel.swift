@@ -351,12 +351,20 @@ struct ScreenplayInspector: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Picker("Inspector", selection: $state.tab) {
-                ForEach(ScreenplayInspectorTab.allCases) { Text($0.rawValue).tag($0) }
+            HStack(spacing: 8) {
+                Picker("Inspector", selection: $state.tab) {
+                    ForEach(ScreenplayInspectorTab.allCases) { Text($0.rawValue).tag($0) }
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                .accessibilityLabel("Inspector")
+                Button { state.inspectorShown = false } label: { Image(systemName: "xmark.circle.fill") }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(.secondary)
+                    .help("Close the inspector")
+                    .accessibilityLabel("Close")
+                    .accessibilityIdentifier("inspector-close")
             }
-            .pickerStyle(.segmented)
-            .labelsHidden()
-            .accessibilityLabel("Inspector")
             switch state.tab {
             case .scene: SceneHubPanel(workspace: model, state: state, sceneId: currentSceneId)
             case .comments: CommentsPanel(workspace: model, state: state)

@@ -98,6 +98,9 @@ struct ScreenplayPickerMenu: View {
     @State private var model = ScreenplayPickerModel()
 
     var body: some View {
+        // A task on a toolbar item does not run, so the model is connected while the view is built.
+        // It only stores references, and a toolbar item shows the title as soon as the overview is in.
+        let _ = model.attach(app, workspace, say: { state.say($0) })
         let title = model.open?.title ?? "Screenplay"
         Menu {
             Section(model.screenplays.count > 1 ? "Screenplays in this project (\(model.screenplays.count))" : "Screenplay") {
