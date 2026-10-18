@@ -314,6 +314,17 @@ impl ReadOnlyGuard {
 impl Drop for ReadOnlyGuard {
     fn drop(&mut self) {
         set_readonly(&self.0, false);
+        // On macOS and Linux SQLite creates the -wal and -shm files with the permissions of the
+        // database file, so a look at the read-only database leaves them read-only too. Clearing
+        // the setting means clearing it on all three, as a person would for the project folder.
+        for suffix in ["-wal", "-shm"] {
+            let mut side = self.0.clone().into_os_string();
+            side.push(suffix);
+            let side = PathBuf::from(side);
+            if side.exists() {
+                set_readonly(&side, false);
+            }
+        }
     }
 }
 

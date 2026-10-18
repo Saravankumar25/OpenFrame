@@ -3,7 +3,7 @@
 > **Current decisions (2026-10-15).** CI tests the AI download against a test manifest and a local host, not the model files. New gates: secret scan, link check, installer string scan ([ADR-0030](../adr/ADR-0030-verification-ladder-and-release-flow.md)), and the AI evaluation harness as a model gate ([ADR-0028](../adr/ADR-0028-ai-quality-program-and-harness.md)). The Tauri Mac compile job is retired in Mac phase M1 ([ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md)).
 
 > **Status legend:** ✅ implemented · 📋 planned.
-> Source: `.github/workflows/{ci.yml,mac.yml,release.yml}`, `deny.toml`, `scripts/*.mjs`, `Cargo.lock`, `package-lock.json`.
+> Source: `.github/workflows/{ci.yml,mac-core.yml,release.yml}`, `deny.toml`, `scripts/*.mjs`, `Cargo.lock`, `package-lock.json`.
 
 ## 1. Pipelines
 
@@ -22,18 +22,19 @@ Locally, `npm run verify` runs format, lint, typecheck, `npm run check:governanc
 
 Concurrency cancels superseded runs per ref. Permissions are `contents: read`.
 
-### `mac.yml` (written 2026-10-06, has not run yet)
+### `mac-core.yml` (written 2026-10-17, has not run yet)
 
-Triggered by a pull request or a push to `main` that changes `apps/desktop/src-tauri/**`, `crates/openframe-platform/**`,
-`crates/openframe-entitlement/**` or the workflow itself, and by hand. macOS runner minutes cost ten times Windows minutes, hence the
-path filter.
+Triggered by a pull request or a push to `main` that changes `crates/**`, `apps/macos/**`, `Cargo.lock`, `Cargo.toml` or the
+workflow itself, and by hand. macOS runner minutes cost ten times Windows minutes, hence the path filter.
 
 | Job | Runner | Steps | Gating |
 |---|---|---|---|
-| `mac-build` | `macos-latest` (Apple silicon), 30 minute timeout | Rust 1.98.1 with `aarch64-apple-darwin`, rust-cache (same pinned actions as `ci.yml`) → `swift build -c release --product StoreKitBridge` → placeholder `apps/desktop/dist` → `cargo check -p openframe-desktop --target aarch64-apple-darwin --locked` → `cargo test -p openframe-platform -p openframe-entitlement --target aarch64-apple-darwin --locked` → `cargo test -p openframe-desktop --lib --target aarch64-apple-darwin --locked` (links a binary against the Swift bridge, which `cargo check` does not) | Not a required check yet: make it required once it has passed (doc 37 section 8) |
+| `mac-core` | `macos-latest` (Apple silicon), 60 minute timeout | Rust 1.98.1 with `aarch64-apple-darwin`, rust-cache (same pinned actions as `ci.yml`) → Swift and Xcode versions → `cargo test --workspace --exclude openframe-desktop --locked` → `bash apps/macos/scripts/build-core.sh` → `bash apps/macos/scripts/test.sh` | Not a required check yet: make it required once it has passed |
 
-It compiles and links the macOS shell (doc 37 section 8) and runs the crate and shell unit tests on macOS. It does not sign, package
-or start the app and never talks to StoreKit or the App Store.
+It proves that the shared core builds and passes its tests on Apple silicon and that the Swift package of the native Mac app
+builds and tests against it. It does not sign, package or start the app. The earlier `mac.yml` ("Mac build check", Tauri shell
+and StoreKit bridge) is superseded and retired: see [the archive note](../archive/2026-10-17-tauri-mac-shell-notes.md) and
+[chapter-1b-mac-phases.md](../roadmap/chapter-1b-mac-phases.md).
 
 ### `release.yml` ✅ (tag `v*.*.*`, or manual with an existing tag)
 

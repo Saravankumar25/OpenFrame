@@ -6,6 +6,12 @@
 > Renamed on 2026-10-06 from `03-reconciliation-log.md`. Extended on 2026-10-09 (chapter restructure). Checks written "(checked)" were verified in the repository on the
 > date given. Checks written "(stated)" come from a supplied document and were not verified independently.
 
+## 2026-10-17: Tauri Mac shell retired (Mac phase M1)
+
+| Stale or conflicting statement | Where it was | Resolution |
+|---|---|---|
+| A Mac build check compiles the Tauri desktop shell and the StoreKit bridge on Apple silicon | `.github/workflows/mac.yml`, `docs/engineering/25-ci-cd.md`, `docs/engineering/37-platform-boundary.md` sections 7 and 8 | ADR-0027 decision 3. Workflow deleted and replaced by `mac-core.yml` (Mac core check). The notes moved to `docs/archive/2026-10-17-tauri-mac-shell-notes.md`; the source sections now carry a superseded pointer. The Swift StoreKit bridge source stays and moves to the SwiftUI app in Chapter 3 |
+
 ## 2026-10-18: endgame session (W9)
 
 | Stale or conflicting statement | Where it was | Resolution |

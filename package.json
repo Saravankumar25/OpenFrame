@@ -30,6 +30,8 @@
     "check:architecture": "node scripts/architecture-lint.mjs",
     "check:migrations": "node scripts/check-migrations.mjs",
     "plan:status": "node scripts/plan-status.mjs",
+    "mac:parity": "node scripts/gen-mac-parity.mjs",
+    "mac:types": "node scripts/gen-swift-types.mjs",
     "check:feature-status": "node scripts/check-feature-status.mjs",
     "check:writing": "node scripts/check-writing-standard.mjs",
     "check:links": "node scripts/check-links.mjs",

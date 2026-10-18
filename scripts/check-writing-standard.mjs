@@ -47,9 +47,11 @@ const GROUPS = [
   ["mockups", ["HTML_Mockups"]],
   ["living-docs", ["docs"]],
 ];
-const SKIP_DIRS = new Set(["node_modules", "target", ".git", "graphify-out", "dist", "gen", "artifacts", "build", ".drivers", ".run"]);
+const SKIP_DIRS = new Set(["node_modules", "target", ".git", "graphify-out", "dist", "gen", "artifacts", "build", ".drivers", ".run", ".build", ".swiftpm", "Frameworks"]);
 const SKIP_PREFIXES = [
   "docs/audits/",
+  // Written by UniFFI's generator at build time and never committed (apps/macos/.gitignore).
+  "apps/macos/Sources/OpenFrameCore/Generated/openframe_ffi.swift",
   "docs/archive/",
   "docs/release/evidence/",
   "docs/specs/",
@@ -63,7 +65,7 @@ const SKIP_PREFIXES = [
   "docs/website/prompts/production-readiness-anti-ai-slop-prompt.md",
   "THIRD_PARTY_LICENSES.md",
 ];
-const TEXT_EXT = new Set([".md", ".ts", ".tsx", ".js", ".mjs", ".rs", ".html", ".css", ".json", ".yml", ".yaml", ".toml", ".sql", ".txt", ".xml"]);
+const TEXT_EXT = new Set([".md", ".ts", ".tsx", ".js", ".mjs", ".rs", ".html", ".css", ".json", ".yml", ".yaml", ".toml", ".sql", ".txt", ".xml", ".swift"]);
 
 function* walk(dir, rel) {
   for (const entry of fs.readdirSync(path.join(ROOT, dir), { withFileTypes: true })) {

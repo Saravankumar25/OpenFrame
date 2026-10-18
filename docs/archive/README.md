@@ -28,6 +28,7 @@
 | `2026-10-05-cross-platform-compatibility-security-plan.md` | Engineering document 28, the Tauri-on-both cross-platform plan. Moved in W1 | ADR-0017 cites it | [37-platform-boundary.md](../engineering/37-platform-boundary.md), [ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md) |
 | `2026-10-05-desktop-hld-lld-target.md` | Engineering document 29, the target high- and low-level design. Moved in W1 | The ESD specification points to it | [architecture/README.md](../architecture/README.md) |
 | `2026-10-05-ai-assisted-development-controls.md` | Engineering document 31, AI-assisted development controls. Moved in W1 | Its risk levels and feature contract were copied into CONTRIBUTING.md section 8 | [CONTRIBUTING.md](../../CONTRIBUTING.md) section 8 |
+| `2026-10-17-tauri-mac-shell-notes.md` | The Tauri Mac shell CI job (`mac.yml`) and the StoreKit shell adapter notes from documents 25 and 37. Moved in Mac phase M1 | Records how the retired Tauri Mac build was checked and wired | `.github/workflows/mac-core.yml`, [chapter-1b-mac-phases.md](../roadmap/chapter-1b-mac-phases.md), [ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md) |
 | `notes/documentation-stack-guidance.md` | Raw intake notes on which documents a project needs | Shaped the documentation map | [../README.md](../README.md) |
 | `notes/store-certification-and-launch-gap-notes.md` | Raw intake notes on store certification gaps | Source for the launch register | launch register, [Chapter 3](../roadmap/chapter-3-commercial-distribution.md) |
 

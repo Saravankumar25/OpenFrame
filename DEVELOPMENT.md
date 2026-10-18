@@ -29,6 +29,33 @@ node scripts/setup.mjs --check-only    # check only
 
 The Rust and TypeScript code also builds and tests on macOS/Linux. Today only the Windows desktop bundle is built. The Mac application is a native SwiftUI shell over the same Rust core, built in the Mac track after the Windows track closes (ADR-0027); the Mac App Store package follows in Chapter 3.
 
+## 1b. Prerequisites and commands (Mac, Apple silicon)
+
+The Mac app is a SwiftUI shell over the same Rust core (ADR-0027). Its plan is
+`docs/roadmap/chapter-1b-mac-phases.md`; its checklist is `docs/roadmap/mac-parity-matrix.md`.
+
+- Rust through rustup with the version CI uses: `rustup toolchain install 1.98.1`. Check with `rustc -vV`
+  that the host is `aarch64-apple-darwin`. An Intel Homebrew under `/usr/local` installs x86 tools; use
+  rustup directly.
+- `.cargo/config.toml` compiles through `sccache`. Without it, set `RUSTC_WRAPPER=` (empty), as CI does.
+- Swift 6 from Xcode or the Command Line Tools. Without full Xcode, `swift build` works and Swift Testing
+  runs through `apps/macos/scripts/test.sh`, which adds the framework folder the Command Line Tools keep
+  it in. XCTest and the UI testing framework need full Xcode (needed from phase M9).
+- Node 22 for the generators and the governance scripts.
+
+Commands, from the repository root:
+
+    RUSTC_WRAPPER= cargo test --workspace --exclude openframe-desktop   # the core on macOS
+    apps/macos/scripts/build-core.sh          # Rust core -> XCFramework, Swift interface, generated types
+    apps/macos/scripts/test.sh                # Swift package build and tests
+    npm run mac:types                         # regenerate Swift types after a DTO or operation change
+    npm run mac:parity                        # refresh the Mac parity matrix rows
+    swift run --package-path apps/macos OpenFrameStudio   # run the app (development build)
+
+`OPENFRAME_DATA_ROOT=/absolute/folder` runs the Mac app on a test folder, as on Windows (ADR-0031). The
+debug XCFramework is large (about 420 MB, hard-linked from `target/`); `cargo clean` and removing
+`apps/macos/.build` give the space back.
+
 ## 2. Commands
 
 All commands run from the repository root.

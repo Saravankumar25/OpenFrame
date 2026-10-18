@@ -261,7 +261,10 @@ fn the_download_is_offered_only_through_its_own_operations() {
     assert_eq!(d["bundleId"], "openframe-local-ai-v1");
     assert_eq!(d["bundleState"], "Missing");
     let comps = d["components"].as_array().unwrap();
-    assert_eq!(comps.len(), 4); // the engine and the three models
+    // The three models, and the engine where the lock pins one for this computer: Windows today.
+    // The Apple silicon engine is pinned in Mac phase M8, which changes this count to 4 there.
+    let engines = usize::from(cfg!(windows));
+    assert_eq!(comps.len(), 3 + engines);
     assert!(comps.iter().any(|c| c["licenseId"] == "Gemma-Terms-of-Use"));
     assert!(
         comps
@@ -304,12 +307,19 @@ fn the_download_is_offered_only_through_its_own_operations() {
     );
     assert!(other.is_file());
     // A network share is refused before anything opens it (no network use from the webview).
+    // A UNC path is a network location on Windows; on macOS the same text is not an absolute
+    // path at all and is refused as invalid input, also before anything opens it.
+    let unc_code = if cfg!(windows) {
+        "project_format.network_location"
+    } else {
+        "validation.invalid_input"
+    };
     assert_eq!(
         env.err(
             "ai.download.import",
             json!({ "path": r"\\fileserver\share\model.gguf" })
         ),
-        "project_format.network_location"
+        unc_code
     );
 }
 
