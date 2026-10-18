@@ -79,7 +79,9 @@ struct ProjectView: View {
     let project: ProjectSummary
     @Environment(AppModel.self) private var app
     @Environment(\.ofTheme) private var theme
-    @SceneStorage("workspace") private var stored: String = Workspace.home.rawValue
+    /// "<project id>|<workspace>": the window comes back to the workspace it showed for this
+    /// project; another project (a new one, or one opened from Home) starts on Project Home.
+    @SceneStorage("workspace") private var stored: String = ""
     /// The AI Assistant panel docks beside the page; it stays as the person left it.
     @SceneStorage("assistantOpen") private var assistantOpen = false
     @State private var selection: Workspace? = .home
@@ -146,8 +148,11 @@ struct ProjectView: View {
         .sheet(isPresented: Binding(get: { renaming != nil }, set: { if !$0 { renaming = nil } })) {
             if let recent = renaming { RenameProjectSheet(project: recent, actions: ProjectActions(app: app)) {} }
         }
-        .onAppear { selection = Workspace(rawValue: stored) ?? .home }
-        .onChange(of: selection) { _, new in stored = (new ?? .home).rawValue }
+        .onAppear {
+            let parts = stored.split(separator: "|", maxSplits: 1).map(String.init)
+            selection = parts.count == 2 && parts[0] == project.id ? Workspace(rawValue: parts[1]) ?? .home : .home
+        }
+        .onChange(of: selection) { _, new in stored = "\(project.id)|\((new ?? .home).rawValue)" }
         .onReceive(NotificationCenter.default.publisher(for: .openFrameScreenplayFocus)) { note in
             columns = (note.object as? Bool) == true ? .detailOnly : .automatic
         }

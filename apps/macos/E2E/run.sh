@@ -21,7 +21,10 @@ if [[ -d "$APP" ]]; then
   # The release app has the hardened runtime, which refuses an injected library. Test a private
   # copy whose only difference is an ad hoc signature without it: same executable code, same
   # resources (the runner prints both hashes).
-  if codesign -dv "$APP" 2>&1 | grep -q 'flags=.*runtime'; then
+  # Read the flags first: a grep -q in a pipe would end codesign early, and pipefail would then
+  # count the match as a failure.
+  SIGNING="$(codesign -dv "$APP" 2>&1 || true)"
+  if [[ "$SIGNING" == *"runtime"* ]]; then
     ditto "$APP" "$WORK/app/$(basename "$APP")"
     APP_UNDER_TEST="$WORK/app/$(basename "$APP")"
     codesign --force --sign - --timestamp=none "$APP_UNDER_TEST" >/dev/null 2>&1
@@ -47,7 +50,11 @@ RUN="${OPENFRAME_E2E_RUN_DIR:-$ROOT/release-out/e2e/$(date +%Y%m%d-%H%M%S)}"
 mkdir -p "$RUN"
 # The scenario list comes from the driver itself.
 OPENFRAME_DATA_ROOT="$WORK/list-data" OPENFRAME_E2E_SCENARIO=__list__ OPENFRAME_E2E_OUT="$WORK/list" \
-  DYLD_INSERT_LIBRARIES="$DRIVER" "$EXE" >/dev/null 2>&1
+  DYLD_INSERT_LIBRARIES="$DRIVER" "$EXE" >/dev/null 2>&1 &
+LISTPID=$!
+# The driver writes the list and ends the app at once; an app that ignored the driver is stopped.
+for _ in $(seq 1 150); do kill -0 "$LISTPID" 2>/dev/null || break; sleep 0.2; done
+kill -9 "$LISTPID" 2>/dev/null; wait "$LISTPID" 2>/dev/null
 LIST="$WORK/list/scenarios.json"
 [[ -f "$LIST" ]] || { echo "the driver did not load into the app (hardened runtime or a wrong driver path?)" >&2; exit 3; }
 
