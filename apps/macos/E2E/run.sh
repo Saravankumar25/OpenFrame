@@ -4,6 +4,8 @@
 # the app launch it again on the same folder, and "hold" phases end with SIGKILL (a crash).
 #
 # Usage: apps/macos/E2E/run.sh <OpenFrame Studio.app | executable> [name-filter]
+# OPENFRAME_E2E_FRESH_HOME=1 runs each scenario as a brand-new Mac user would: an empty home folder
+# (HOME and CFFIXED_USER_HOME) and the app's real data locations, with no test data folder.
 # Needs: OPENFRAME_E2E_TEAM_PASSWORD (or OPENFRAME_TEAM_PASSWORD) for an internal build with the
 # team gate; the driver library (swift build --product OpenFrameE2EDriver -c release).
 # Output: release-out/e2e/<timestamp>/ with one folder per scenario, results.tsv and summary.md.
@@ -59,8 +61,14 @@ while IFS=$'\t' read -r name phases timeout ends; do
   IFS=',' read -r -a endlist <<< "$ends"
   for ((p = 1; p <= phases; p++)); do
     end="${endlist[$((p - 1))]}"
-    OPENFRAME_DATA_ROOT="$DATA" OPENFRAME_E2E_WORK="$WORK" OPENFRAME_E2E_SCENARIO="$name" OPENFRAME_E2E_PHASE="$p" \
-      OPENFRAME_E2E_OUT="$OUT" DYLD_INSERT_LIBRARIES="$DRIVER" "$EXE" >"$OUT/app-$p.log" 2>&1 &
+    if [[ "${OPENFRAME_E2E_FRESH_HOME:-}" == 1 ]]; then
+      mkdir -p "$DATA/home/Documents" "$DATA/home/Library"
+      HOME="$DATA/home" CFFIXED_USER_HOME="$DATA/home" OPENFRAME_E2E_WORK="$WORK" OPENFRAME_E2E_SCENARIO="$name" \
+        OPENFRAME_E2E_PHASE="$p" OPENFRAME_E2E_OUT="$OUT" DYLD_INSERT_LIBRARIES="$DRIVER" "$EXE" >"$OUT/app-$p.log" 2>&1 &
+    else
+      OPENFRAME_DATA_ROOT="$DATA" OPENFRAME_E2E_WORK="$WORK" OPENFRAME_E2E_SCENARIO="$name" OPENFRAME_E2E_PHASE="$p" \
+        OPENFRAME_E2E_OUT="$OUT" DYLD_INSERT_LIBRARIES="$DRIVER" "$EXE" >"$OUT/app-$p.log" 2>&1 &
+    fi
     pid=$!
     limit=$(( ${timeout%.*} + 60 )); t=0
     while [[ ! -f "$OUT/result-$p.json" ]] && kill -0 "$pid" 2>/dev/null && (( t < limit * 5 )); do sleep 0.2; t=$((t + 1)); done
