@@ -77,6 +77,8 @@ public struct ElementLook: Sendable {
 @MainActor
 public protocol ScreenplayEditorRules: AnyObject {
     func look(for kind: ElementType) -> ElementLook
+    /// Shift+Enter makes a line break inside these elements; the others treat it as Enter.
+    func isMultiline(_ kind: ElementType) -> Bool
     /// The element a new paragraph gets after Enter at the end of `kind` (empty paragraphs too).
     func kindAfterEnter(_ kind: ElementType, text: String) -> ElementType
     /// The element Tab (forward) or Shift+Tab (backward) turns the paragraph into, or nil.
@@ -86,6 +88,10 @@ public protocol ScreenplayEditorRules: AnyObject {
     func kindForEmptyEnter(_ kind: ElementType) -> ElementType?
     /// The element of Command+digit (the Windows Ctrl+digit shortcuts), or nil.
     func kind(forShortcutDigit digit: Int) -> ElementType?
+}
+
+extension ScreenplayEditorRules {
+    public func isMultiline(_ kind: ElementType) -> Bool { false }
 }
 
 /// Everything the editor tells its owner.
@@ -104,6 +110,29 @@ public final class ScreenplayTextView: NSTextView, @preconcurrency NSTextContent
     public var pointsPerInch: CGFloat = 80 { didSet { restyleAll() } }
     public private(set) var isLoading = false
     private var lastParagraphIndex = -1
+    /// The scene number shown beside each scene heading, by scene id (the document's labels).
+    public var sceneLabels: [String: String] = [:] { didSet { needsDisplay = true } }
+    /// The custom elements of the open screenplay; their look comes from these.
+    public var customDefinitions: [ScreenplayCustomElementDto] = [] { didSet { restyleCustom() } }
+    /// Characters and locations the suggestion list offers besides the script's own values.
+    public var suggestionSources: WritingSuggestionSources? {
+        didSet { suggestions.invalidateValues(); refreshSuggestions(textChanged: false) }
+    }
+    /// "Create New" was accepted: kind, name, and whether the same key press moves on to Dialogue.
+    /// Called before the Dialogue line is added, so the owner can record the new value in order.
+    public var onCreateSuggestion: ((SuggestCreate, String, Bool) -> Void)?
+    /// A known name filled by Enter is about to move on to Dialogue: save the filled name first.
+    public var beforeSuggestionMoveOn: (() -> Void)?
+    /// "Learn Spelling" on a misspelled word.
+    public var onLearnSpelling: ((String) -> Void)?
+    /// An empty last paragraph has no character to carry its element, id or custom element. Its
+    /// attributes are kept here while the caret is elsewhere; the typing attributes hold them while
+    /// the caret is in it.
+    private var trailingAttributes: [NSAttributedString.Key: Any]?
+    /// Names the spell checker must not underline (characters, locations), as single words.
+    var ignoredWordList: [String] = []
+    let suggestions = ScreenplaySuggestionController()
+    var suggestionPopover: SuggestionPopover?
 
     public static let pageTextWidthInches: CGFloat = 6.0
     public static let pageLeftMarginInches: CGFloat = 1.5
@@ -153,7 +182,7 @@ public final class ScreenplayTextView: NSTextView, @preconcurrency NSTextContent
         NSFont(name: "Courier Prime", size: 12) ?? NSFont(name: "Courier New", size: 12) ?? NSFont.userFixedPitchFont(ofSize: 12)!
     }
 
-    private func font(for look: ElementLook) -> NSFont {
+    func font(for look: ElementLook) -> NSFont {
         let base = NSFont(descriptor: Self.screenplayFont.fontDescriptor, size: 12 * pointsPerInch / 72) ?? Self.screenplayFont
         var traits: NSFontDescriptor.SymbolicTraits = []
         if look.bold { traits.insert(.bold) }
@@ -176,8 +205,31 @@ public final class ScreenplayTextView: NSTextView, @preconcurrency NSTextContent
         return style
     }
 
+    /// The look of an element; a custom element takes the look its definition names.
+    func look(for kind: ElementType, custom: String?) -> ElementLook {
+        guard kind == .custom, let id = custom, let def = customDefinitions.first(where: { $0.id == id }) else {
+            return rules?.look(for: kind) ?? .standard(kind)
+        }
+        let base: ElementType
+        switch def.look {
+        case "character": base = .character
+        case "parenthetical": base = .parenthetical
+        case "dialogue": base = .dialogue
+        case "transition": base = .transition
+        case "shot": base = .shot
+        default: base = .action
+        }
+        var look = rules?.look(for: base) ?? .standard(base)
+        if def.look == "centered" { look.alignment = .center }
+        look.uppercase = def.uppercase
+        look.italic = def.italic
+        look.bold = false
+        look.linesBefore = def.spaceBefore
+        return look
+    }
+
     func attributes(for kind: ElementType, elementId: String?, custom: String?, sceneId: String?) -> [NSAttributedString.Key: Any] {
-        let look = rules?.look(for: kind) ?? .standard(kind)
+        let look = self.look(for: kind, custom: custom)
         var attrs: [NSAttributedString.Key: Any] = [
             .font: font(for: look),
             .paragraphStyle: paragraphStyle(for: look),
@@ -195,8 +247,9 @@ public final class ScreenplayTextView: NSTextView, @preconcurrency NSTextContent
     public func textContentStorage(_ textContentStorage: NSTextContentStorage, textParagraphWith range: NSRange) -> NSTextParagraph? {
         guard let storage = textContentStorage.textStorage, range.location < storage.length else { return nil }
         let kindRaw = storage.attribute(.ofKind, at: range.location, effectiveRange: nil) as? String
+        let customId = storage.attribute(.ofCustomId, at: range.location, effectiveRange: nil) as? String
         guard let kind = kindRaw.flatMap(ElementType.init(rawValue:)),
-              (rules?.look(for: kind) ?? .standard(kind)).uppercase else { return nil }
+              look(for: kind, custom: customId).uppercase else { return nil }
         let original = storage.attributedSubstring(from: range)
         let upper = original.string.uppercased()
         // Only when the capitals keep every character's position (true for almost all scripts).
@@ -222,13 +275,34 @@ public final class ScreenplayTextView: NSTextView, @preconcurrency NSTextContent
             text.append(NSAttributedString(string: p.text + (i < paragraphs.count - 1 ? "\n" : ""), attributes: attrs))
         }
         if paragraphs.isEmpty {
-            text.append(NSAttributedString(string: "", attributes: typingAttributes))
+            // Nothing from the previous document may leak into this one (ids, element).
+            typingAttributes = attributes(for: .sceneHeading, elementId: nil, custom: nil, sceneId: nil)
         }
         textStorage?.setAttributedString(text)
+        if let last = paragraphs.last, last.text.isEmpty {
+            // An empty last paragraph has no characters to carry its element and id.
+            trailingAttributes = attributes(for: last.kind, elementId: last.kind == .sceneHeading ? nil : last.elementId, custom: last.customElementId, sceneId: last.sceneId)
+            if text.length == 0, let trailing = trailingAttributes {
+                // A document that is one empty paragraph (a new screenplay's first scene).
+                typingAttributes = trailing
+            }
+        } else {
+            trailingAttributes = nil
+        }
         let location = min(caret.location, text.length)
         setSelectedRange(NSRange(location: location, length: 0))
+        // The typing style must belong to the new content at the caret, never the old document.
+        if location >= text.length, let trailing = trailingAttributes {
+            typingAttributes = trailing
+        } else if text.length > 0 {
+            let ns = text.string as NSString
+            let range = ns.paragraphRange(for: NSRange(location: min(location, text.length - 1), length: 0))
+            typingAttributes = text.attributes(at: range.location, effectiveRange: nil)
+        }
         undoManager?.removeAllActions()
         lastParagraphIndex = -1
+        suggestions.invalidateValues()
+        needsDisplay = true
     }
 
     /// The paragraphs as the person sees them now.
@@ -254,11 +328,29 @@ public final class ScreenplayTextView: NSTextView, @preconcurrency NSTextContent
         } while location < ns.length
         if ns.length > 0, ns.character(at: ns.length - 1) == 10 {
             // A final empty paragraph after a trailing newline.
-            let attrs = typingAttributes
+            let attrs = trailingParagraphAttributes()
             let kind = (attrs[.ofKind] as? String).flatMap(ElementType.init(rawValue:)) ?? .action
-            out.append(EditorParagraph(kind: kind, text: "", elementId: attrs[.ofElementId] as? String))
+            out.append(EditorParagraph(
+                kind: kind, text: "", elementId: attrs[.ofElementId] as? String,
+                customElementId: attrs[.ofCustomId] as? String, sceneId: attrs[.ofSceneId] as? String))
         }
         return out
+    }
+
+    /// The element of the empty last paragraph: the typing style while the caret is in it.
+    func trailingParagraphAttributes() -> [NSAttributedString.Key: Any] {
+        let length = textStorage?.length ?? 0
+        if selectedRange().location >= length { return typingAttributes }
+        return trailingAttributes ?? typingAttributes
+    }
+
+    /// The caret is about to leave the empty last paragraph: keep its element.
+    private func captureTrailingAttributes() {
+        // While a document loads, the typing style still belongs to the previous content; the
+        // load sets the trailing element itself (found in M4: stale ids leaked into a new script).
+        guard !isLoading, let storage = textStorage, storage.length > 0, selectedRange().location >= storage.length,
+              (storage.string as NSString).character(at: storage.length - 1) == 10 else { return }
+        trailingAttributes = typingAttributes
     }
 
     /// The paragraph index of the caret.
@@ -275,12 +367,21 @@ public final class ScreenplayTextView: NSTextView, @preconcurrency NSTextContent
         return index
     }
 
-    private func currentParagraphRange() -> NSRange {
+    /// Where the caret's paragraph text ends (before its line end).
+    func currentParagraphContentEnd() -> Int {
+        let range = currentParagraphRange()
+        let ns = (textStorage?.string ?? "") as NSString
+        var end = NSMaxRange(range)
+        if range.length > 0, ns.character(at: end - 1) == 10 { end -= 1 }
+        return end
+    }
+
+    func currentParagraphRange() -> NSRange {
         let ns = (textStorage?.string ?? "") as NSString
         return ns.paragraphRange(for: NSRange(location: min(selectedRange().location, ns.length), length: 0))
     }
 
-    private func currentKind() -> ElementType {
+    func currentKind() -> ElementType {
         let range = currentParagraphRange()
         if let storage = textStorage, storage.length > 0 {
             let at = min(range.location, storage.length - 1)
@@ -293,7 +394,7 @@ public final class ScreenplayTextView: NSTextView, @preconcurrency NSTextContent
         return (typingAttributes[.ofKind] as? String).flatMap(ElementType.init(rawValue:)) ?? .action
     }
 
-    private func currentText() -> String {
+    func currentText() -> String {
         let range = currentParagraphRange()
         var text = ((textStorage?.string ?? "") as NSString).substring(with: range)
         if text.hasSuffix("\n") { text.removeLast() }
@@ -317,23 +418,129 @@ public final class ScreenplayTextView: NSTextView, @preconcurrency NSTextContent
         notifyMove(force: true)
     }
 
+    func currentCustomId() -> String? {
+        let range = currentParagraphRange()
+        guard range.length > 0 else { return typingAttributes[.ofCustomId] as? String }
+        return textStorage?.attribute(.ofCustomId, at: range.location, effectiveRange: nil) as? String
+    }
+
+    /// The element Enter makes after a custom element: the one its definition names.
+    private func elementAfterCustom(_ customId: String?) -> (ElementType, String?) {
+        let next = customDefinitions.first { $0.id == customId }?.nextElement ?? "action"
+        if next.hasPrefix("custom:") {
+            let id = String(next.dropFirst("custom:".count))
+            if customDefinitions.contains(where: { $0.id == id }) { return (.custom, id) }
+            return (.action, nil)
+        }
+        if let t = ElementType(rawValue: next), t != .custom, t != .pageBreak { return (t, nil) }
+        return (.action, nil)
+    }
+
     public override func insertNewline(_ sender: Any?) {
+        if acceptHighlightedSuggestion(moveOn: true) { return }
+        performEnter(sender)
+    }
+
+    /// Enter, as the shared element rules say: end of an element starts the next one, an empty
+    /// element converts, the middle splits (a heading continues as action), the start keeps the
+    /// text with its element and adds a blank one above.
+    func performEnter(_ sender: Any?) {
+        suggestions.invalidateValues()
         let kind = currentKind()
+        let custom = currentCustomId()
+        if kind == .pageBreak {
+            // Enter on a page break adds an action after it and keeps the break.
+            setSelectedRange(NSRange(location: currentParagraphContentEnd(), length: 0))
+            super.insertNewline(sender)
+            applyToCaretParagraph(kind: .action, custom: nil, newId: true)
+            return
+        }
         if currentText().isEmpty, selectedRange().length == 0 {
             if let converted = rules?.kindForEmptyEnter(kind) { setKind(converted) }
             return
         }
-        let next = rules?.kindAfterEnter(kind, text: currentText()) ?? .action
+        if selectedRange().length > 0 { delete(nil) }
+        let range = currentParagraphRange()
+        let text = currentText() as NSString
+        let offset = selectedRange().location - range.location
+        let atEnd = offset >= text.length
+        let atStart = offset == 0
+        let paragraphAttrs = range.length > 0 ? textStorage?.attributes(at: range.location, effectiveRange: nil) : nil
+        if atEnd, selectedRange().length == 0, kind != .custom, let target = followingEmptyParagraph(after: range),
+           target.kind == (rules?.kindAfterEnter(kind, text: text as String) ?? .action) {
+            // The element that follows is already the empty one Enter would create: go into it
+            // instead of stacking another empty element in front of it.
+            if let attrs = target.implicitAttributes { typingAttributes = attrs }
+            setSelectedRange(NSRange(location: target.location, length: 0))
+            notifyMove(force: true)
+            return
+        }
         super.insertNewline(sender)
-        // The new paragraph is a new element with its own id.
-        let attrs = attributes(for: next, elementId: UUID().uuidString.lowercased(), custom: nil, sceneId: nil)
+        if atEnd {
+            let (nextKind, nextCustom): (ElementType, String?) = kind == .custom
+                ? elementAfterCustom(custom)
+                : (rules?.kindAfterEnter(kind, text: text as String) ?? .action, nil)
+            applyToCaretParagraph(kind: nextKind, custom: nextCustom, newId: true)
+        } else if atStart {
+            // The blank paragraph above is the new one; the text keeps its element and id.
+            let blank = currentParagraphRange(before: true)
+            if blank.length > 0 {
+                textStorage?.setAttributes(attributes(for: kind, elementId: UUID().uuidString.lowercased(), custom: custom, sceneId: nil), range: blank)
+            }
+            if let paragraphAttrs { typingAttributes = paragraphAttrs }
+            notifyMove(force: true)
+        } else {
+            // Split: the part after the caret is new; a heading continues as action.
+            let tail: ElementType = kind == .sceneHeading ? .action : kind
+            applyToCaretParagraph(kind: tail, custom: kind == .custom ? custom : nil, newId: true)
+        }
+    }
+
+    /// The paragraph after `range` when it has no text: where it starts, its element, and for the
+    /// empty last paragraph (no characters of its own) the attributes kept for it.
+    private func followingEmptyParagraph(after range: NSRange) -> (location: Int, kind: ElementType, implicitAttributes: [NSAttributedString.Key: Any]?)? {
+        let ns = (textStorage?.string ?? "") as NSString
+        let start = NSMaxRange(range)
+        guard range.length > 0, ns.character(at: start - 1) == 10 else { return nil }
+        if start >= ns.length {
+            guard let attrs = trailingAttributes else { return nil }
+            let kind = (attrs[.ofKind] as? String).flatMap(ElementType.init(rawValue:)) ?? .action
+            return (ns.length, kind, attrs)
+        }
+        let next = ns.paragraphRange(for: NSRange(location: start, length: 0))
+        let content = next.length > 0 && ns.character(at: NSMaxRange(next) - 1) == 10 ? next.length - 1 : next.length
+        guard content == 0 else { return nil }
+        return (start, kind(atParagraphContaining: start), nil)
+    }
+
+    /// The paragraph before the caret's paragraph (the blank one a split at the start leaves).
+    private func currentParagraphRange(before: Bool) -> NSRange {
+        let ns = (textStorage?.string ?? "") as NSString
+        let current = currentParagraphRange()
+        guard before, current.location > 0 else { return current }
+        return ns.paragraphRange(for: NSRange(location: current.location - 1, length: 0))
+    }
+
+    /// Give the caret's paragraph an element, a new id, and make it the typing style.
+    private func applyToCaretParagraph(kind: ElementType, custom: String?, newId: Bool) {
+        let attrs = attributes(for: kind, elementId: newId ? UUID().uuidString.lowercased() : nil, custom: custom, sceneId: nil)
         typingAttributes = attrs
         let range = currentParagraphRange()
-        if range.length > 0 {
-            textStorage?.setAttributes(attrs, range: range)
-        }
+        if range.length > 0 { textStorage?.setAttributes(attrs, range: range) }
         notifyMove(force: true)
     }
+
+    // Shift+Enter: a line break inside a multi-line element, the same as Enter in the others.
+    public override func insertLineBreak(_ sender: Any?) {
+        let kind = currentKind()
+        if kind != .pageBreak, kind == .custom || (rules?.isMultiline(kind) ?? false) {
+            insertText(ScreenplayParagraphs.lineSeparator, replacementRange: selectedRange())
+        } else {
+            insertNewline(sender)
+        }
+    }
+
+    public override func insertNewlineIgnoringFieldEditor(_ sender: Any?) { insertLineBreak(sender) }
 
     public override func insertTab(_ sender: Any?) {
         if let next = rules?.kindAfterTab(currentKind(), text: currentText(), backward: false) {
@@ -347,28 +554,155 @@ public final class ScreenplayTextView: NSTextView, @preconcurrency NSTextContent
         }
     }
 
+    // MARK: Suggestion keys
+
+    public override func moveDown(_ sender: Any?) {
+        if suggestions.move(by: 1) { redrawSuggestions() } else { super.moveDown(sender) }
+    }
+
+    public override func moveUp(_ sender: Any?) {
+        if suggestions.move(by: -1) { redrawSuggestions() } else { super.moveUp(sender) }
+    }
+
+    public override func cancelOperation(_ sender: Any?) {
+        if suggestions.dismiss() { redrawSuggestions() }
+    }
+
+    // MARK: Page break and custom elements
+
+    /// Insert page break (Command+Return): an explicit page break after the current paragraph,
+    /// then a new paragraph of the same element (an action after a heading or a page break).
+    public func insertPageBreak() {
+        guard isEditable else { return }
+        suggestions.invalidateValues()
+        let kind = currentKind()
+        let custom = currentCustomId()
+        let range = currentParagraphRange()
+        let end = currentParagraphContentEnd()
+        let followKind: ElementType = kind == .sceneHeading || kind == .pageBreak ? .action : kind
+        let followCustom = followKind == .custom ? custom : nil
+        let breakAttrs = attributes(for: .pageBreak, elementId: UUID().uuidString.lowercased(), custom: nil, sceneId: nil)
+        let endsParagraph = attributes(for: kind, elementId: nil, custom: custom, sceneId: nil)
+        let insert = NSMutableAttributedString()
+        // The first newline ends the current paragraph (it keeps its own attributes), the second
+        // ends the page break.
+        var closing = endsParagraph
+        if range.length > 0, let existing = textStorage?.attributes(at: range.location, effectiveRange: nil) { closing = existing }
+        insert.append(NSAttributedString(string: "\n", attributes: closing))
+        insert.append(NSAttributedString(string: "\n", attributes: breakAttrs))
+        let at = NSRange(location: end, length: 0)
+        guard shouldChangeText(in: at, replacementString: "\n\n") else { return }
+        textStorage?.replaceCharacters(in: at, with: insert)
+        didChangeText()
+        // The caret goes into the new paragraph after the break.
+        setSelectedRange(NSRange(location: end + 2, length: 0))
+        applyToCaretParagraph(kind: followKind, custom: followCustom, newId: true)
+        scrollRangeToVisible(selectedRange())
+    }
+
+    /// Turn the caret's paragraph into a custom element.
+    public func setCustomElement(_ id: String) {
+        guard customDefinitions.contains(where: { $0.id == id }) else { return }
+        setKind(.custom, customElementId: id)
+    }
+
     public override func performKeyEquivalent(with event: NSEvent) -> Bool {
-        if event.modifierFlags.intersection(.deviceIndependentFlagsMask) == .command,
-           let chars = event.charactersIgnoringModifiers, let digit = Int(chars), (1...9).contains(digit),
-           window?.firstResponder === self, isEditable,
-           let kind = rules?.kind(forShortcutDigit: digit) {
-            setKind(kind)
-            return true
+        let flags = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
+        if window?.firstResponder === self, isEditable {
+            if flags == .command, let chars = event.charactersIgnoringModifiers, let digit = Int(chars), (1...9).contains(digit),
+               let kind = rules?.kind(forShortcutDigit: digit) {
+                setKind(kind)
+                return true
+            }
+            if flags == .command, event.keyCode == 36 || event.keyCode == 76 {
+                insertPageBreak()
+                return true
+            }
+            if flags == [.command, .option], let chars = event.charactersIgnoringModifiers, let digit = Int(chars), (1...9).contains(digit),
+               let def = customDefinitions.first(where: { $0.shortcut == "Ctrl+Alt+\(digit)" || $0.shortcut == "Cmd+Option+\(digit)" }) {
+                setKind(.custom, customElementId: def.id)
+                return true
+            }
         }
         return super.performKeyEquivalent(with: event)
     }
 
+    public override func draw(_ dirtyRect: NSRect) {
+        super.draw(dirtyRect)
+        drawScreenplayMarks()
+    }
+
+    public override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        // The system restores its own spelling preference when the view joins a window.
+        isContinuousSpellCheckingEnabled = true
+    }
+
+    public override func resignFirstResponder() -> Bool {
+        suggestionPopover?.hide()
+        return super.resignFirstResponder()
+    }
+
+    public override func becomeFirstResponder() -> Bool {
+        let became = super.becomeFirstResponder()
+        if became { refreshSuggestions(textChanged: false) }
+        return became
+    }
+
+    public override func menu(for event: NSEvent) -> NSMenu? {
+        let menu = super.menu(for: event)
+        adjustSpellingMenu(menu, for: event)
+        return menu
+    }
+
     public override func didChangeText() {
         super.didChangeText()
-        if !isLoading { screenplayDelegate?.screenplayTextDidChange(self) }
+        needsDisplay = true
+        if !isLoading {
+            screenplayDelegate?.screenplayTextDidChange(self)
+            refreshSuggestions(textChanged: true)
+        }
+    }
+
+    // A page break holds no text; a line break or paste that touches the script's structure
+    // makes the cached suggestion values stale.
+    public override func shouldChangeText(in affectedCharRange: NSRange, replacementString: String?) -> Bool {
+        if !isLoading {
+            let ns = (textStorage?.string ?? "") as NSString
+            let replaced = affectedCharRange.length > 0 && affectedCharRange.location + affectedCharRange.length <= ns.length
+                ? ns.substring(with: affectedCharRange) : ""
+            if (replacementString ?? "").contains("\n") || replaced.contains("\n") { suggestions.invalidateValues() }
+            if let text = replacementString, !text.isEmpty, !text.contains("\n"), !replaced.contains("\n"),
+               kind(atParagraphContaining: affectedCharRange.location) == .pageBreak {
+                return false
+            }
+        }
+        return super.shouldChangeText(in: affectedCharRange, replacementString: replacementString)
+    }
+
+    func kind(atParagraphContaining location: Int) -> ElementType {
+        guard let storage = textStorage, storage.length > 0 else {
+            return (typingAttributes[.ofKind] as? String).flatMap(ElementType.init(rawValue:)) ?? .action
+        }
+        let ns = storage.string as NSString
+        let loc = min(location, ns.length)
+        let range = ns.paragraphRange(for: NSRange(location: loc, length: 0))
+        if range.length == 0 || range.location >= storage.length {
+            return (typingAttributes[.ofKind] as? String).flatMap(ElementType.init(rawValue:)) ?? .action
+        }
+        return (storage.attribute(.ofKind, at: range.location, effectiveRange: nil) as? String).flatMap(ElementType.init(rawValue:)) ?? .action
     }
 
     public override func setSelectedRanges(_ ranges: [NSValue], affinity: NSSelectionAffinity, stillSelecting: Bool) {
+        if !isLoading { captureTrailingAttributes() }
         super.setSelectedRanges(ranges, affinity: affinity, stillSelecting: stillSelecting)
-        if !stillSelecting && !isLoading { notifyMove(force: false) }
+        if !stillSelecting && !isLoading {
+            notifyMove(force: false)
+            refreshSuggestions(textChanged: false)
+        }
     }
 
-    private func notifyMove(force: Bool) {
+    func notifyMove(force: Bool) {
         let index = caretParagraphIndex
         guard force || index != lastParagraphIndex else { return }
         lastParagraphIndex = index
@@ -382,6 +716,27 @@ public final class ScreenplayTextView: NSTextView, @preconcurrency NSTextContent
             }
         }
         screenplayDelegate?.screenplayTextView(self, didMoveInto: all[index], index: index)
+    }
+
+    /// Custom definitions arrived or changed: restyle the custom paragraphs. Not an edit.
+    private func restyleCustom() {
+        guard let storage = textStorage, storage.length > 0 else { return }
+        let ns = storage.string as NSString
+        var location = 0
+        isLoading = true
+        defer { isLoading = false }
+        storage.beginEditing()
+        repeat {
+            let range = ns.paragraphRange(for: NSRange(location: location, length: 0))
+            if range.length > 0, (storage.attribute(.ofKind, at: range.location, effectiveRange: nil) as? String) == ElementType.custom.rawValue {
+                let custom = storage.attribute(.ofCustomId, at: range.location, effectiveRange: nil) as? String
+                let look = self.look(for: .custom, custom: custom)
+                storage.addAttributes([.font: font(for: look), .paragraphStyle: paragraphStyle(for: look)], range: range)
+            }
+            location = NSMaxRange(range)
+        } while location < ns.length
+        storage.endEditing()
+        needsDisplay = true
     }
 
     private func restyleAll() {

@@ -60,7 +60,24 @@ final class ScreenplayWorkspaceModel {
     var syncStatus: String = "saved"
     var currentScene: String?
     var showNewDraft = false
+    /// Characters and locations for the suggestion list.
+    var sources: WritingSuggestionSources?
+    /// Pages of the saved draft (the core counts them).
+    var pagination: ScreenplayPagination?
+    /// Where the caret is in its scene: the page shown is worked out from it.
+    var sceneProgress: (sceneId: String, fraction: Double)?
+    /// A short line about what just happened ("Added MEERA to Characters"); clears itself.
+    var notice: String?
+    var currentCustomId: String?
+    // Replace All (Command+Option+F).
+    var showReplace = false
+    var findText = ""
+    var replaceText = ""
+    var matchCase = false
+    var wholeWord = false
+    var scopeIsScene = true
 
+    @ObservationIgnored private var noticeTask: Task<Void, Never>?
     @ObservationIgnored weak var textView: ScreenplayTextView?
     @ObservationIgnored var sync: ScreenplaySync?
     @ObservationIgnored let rules: SharedScreenplayRules
@@ -74,7 +91,174 @@ final class ScreenplayWorkspaceModel {
     var draft: ScreenplayDraftDto? { document?.draft }
     var canEdit: Bool { document?.canEdit ?? false }
 
-    func attach(_ app: AppModel) { self.app = app }
+    func attach(_ app: AppModel) {
+        self.app = app
+        Self.register(self)
+    }
+
+    // MARK: Leaving: everything typed reaches the core first
+
+    private final class Weak { weak var model: ScreenplayWorkspaceModel?; init(_ m: ScreenplayWorkspaceModel) { model = m } }
+    private static var live: [Weak] = []
+
+    private static func register(_ model: ScreenplayWorkspaceModel) {
+        live.removeAll { $0.model == nil }
+        if !live.contains(where: { $0.model === model }) { live.append(Weak(model)) }
+    }
+
+    /// Send what every open Screenplay workspace holds to the core. Call it before the project
+    /// closes (`AppModel.closeProject`) and before the app quits (`applicationShouldTerminate`
+    /// answers `.terminateLater`, awaits this, then replies).
+    static func flushAll() async {
+        for entry in live { await entry.model?.flush() }
+    }
+
+    /// Connect the text view: what it shows besides the text, and what it asks of the app.
+    func bind(_ view: ScreenplayTextView) {
+        textView = view
+        view.rules = rules
+        view.onCreateSuggestion = { [weak self] kind, name, movesOn in self?.createValue(kind, name, movesOn: movesOn) }
+        // A known name filled by Enter is saved on its own before the Dialogue line is added.
+        view.beforeSuggestionMoveOn = { [weak self] in self?.sync?.saveThen {} }
+        view.onLearnSpelling = { [weak self] word in self?.learn(word) }
+        syncViewAttributes()
+    }
+
+    /// Scene numbers, custom elements and suggestion values go to the text view. Custom elements
+    /// first: the paragraphs are styled from them when the text loads.
+    func syncViewAttributes() {
+        guard let view = textView else { return }
+        let definitions = document?.customElements ?? []
+        if view.customDefinitions != definitions { view.customDefinitions = definitions }
+        let labels = Dictionary((document?.scenes ?? []).map { ($0.id, $0.label) }, uniquingKeysWith: { a, _ in a })
+        if view.sceneLabels != labels { view.sceneLabels = labels }
+        if view.suggestionSources != sources {
+            view.suggestionSources = sources
+            view.setKnownNames((sources?.characters ?? []).map(\.name) + (sources?.locations ?? []).map(\.name))
+        }
+    }
+
+    func announce(_ message: String) {
+        notice = message
+        noticeTask?.cancel()
+        noticeTask = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(5))
+            if !Task.isCancelled { self?.notice = nil }
+        }
+    }
+
+    func loadSources() async {
+        guard let core = app?.core else { return }
+        if let loaded = try? await core.writingSuggestionSources(WritingSuggestionSourcesArgs()) {
+            sources = loaded
+            syncViewAttributes()
+        }
+    }
+
+    func refreshPagination() async {
+        guard let core = app?.core, let id = draft?.id else { return }
+        if let p = try? await core.screenplayPagination(ScreenplayDraftIdArgs(draftId: id)), p.draftId == draft?.id {
+            pagination = p
+        }
+    }
+
+    func caretMoved() {
+        sceneProgress = textView?.caretSceneProgress()
+    }
+
+    /// "Page 3 of 12", or "12 pages" while the caret is in a scene the core does not know yet.
+    var pageLabel: String? {
+        guard let p = pagination else { return nil }
+        let total = Int(p.pageCount)
+        if let progress = sceneProgress, let scene = p.scenes.first(where: { $0.sceneId == progress.sceneId }) {
+            let first = Int(scene.firstPage), last = max(Int(scene.lastPage), first)
+            let page = min(last, first + Int(progress.fraction * Double(last - first + 1)))
+            return "Page \(page) of \(total)"
+        }
+        return total == 1 ? "1 page" : "\(total) pages"
+    }
+
+    // MARK: Suggestions and spelling (through the core)
+
+    /// "Create New" in the suggestion list. After Enter moved on to Dialogue the new value is recorded
+    /// between the typed name and the Dialogue line (`saveThen`), so project undo takes them back
+    /// in the order they were made.
+    func createValue(_ kind: SuggestCreate, _ name: String, movesOn: Bool) {
+        let work: @MainActor () async throws -> Void = { [weak self] in
+            guard let self, let core = self.app?.core else { return }
+            do {
+                switch kind {
+                case .character: _ = try await core.storyCreateCharacter(StoryCreateCharacterArgs(name: name))
+                case .location: _ = try await core.locationsCreate(ProductionLocationCreateArgs(name: name))
+                }
+                self.announce(kind == .character ? "Added \(name) to Characters" : "Added \(name) to Locations")
+                await self.loadSources()
+            } catch {
+                self.app?.show("Could not add \(name)", error)
+            }
+        }
+        if movesOn, let sync {
+            sync.saveThen(work)
+        } else {
+            Task { try? await work() }
+        }
+    }
+
+    /// "Learn Spelling": the word joins the core's dictionary, which the Windows app reads as well.
+    func learn(_ word: String) {
+        Task { [weak self] in
+            guard let self, let core = self.app?.core else { return }
+            do {
+                _ = try await core.writingDictionaryAdd(WritingWordArgs(word: word))
+                self.announce("Added “\(word)” to your dictionary")
+            } catch {
+                self.app?.show("Could not add the word", error)
+            }
+        }
+    }
+
+    // MARK: Replace All
+
+    func openReplace() {
+        if let view = textView, view.selectedRange().length > 0, view.selectedRange().length < 80 {
+            let text = ((view.string as NSString).substring(with: view.selectedRange()))
+            if !text.contains("\n"), !text.contains(ScreenplayParagraphs.lineSeparator) { findText = text }
+        }
+        showReplace = true
+    }
+
+    /// Replace in the draft or the current scene through the core, after the typed text is saved.
+    /// The editor then shows the core's text. Project undo takes it back in one step.
+    func replaceAll() async {
+        guard canEdit, let core = app?.core, let draftId = draft?.id, !findText.isEmpty else { return }
+        await flush()
+        await loadDocument(draftId)
+        var sceneId: String?
+        var sceneLabel: String?
+        if scopeIsScene {
+            guard let id = textView?.caretSceneProgress()?.sceneId,
+                  let scene = document?.scenes.first(where: { $0.id == id }) else {
+                announce("Put the cursor in a scene first.")
+                return
+            }
+            sceneId = id
+            sceneLabel = scene.label
+        }
+        do {
+            let result = try await core.screenplayReplaceAll(ScreenplayReplaceAllArgs(
+                draftId: draftId, query: findText, replacement: replaceText, matchCase: matchCase,
+                wholeWord: wholeWord, includeNotes: true, sceneId: sceneId))
+            await loadDocument(draftId)
+            let n = Int(result.count)
+            if n == 0 {
+                announce("No matches")
+            } else {
+                announce("Replaced \(n) match\(n == 1 ? "" : "es")" + (sceneLabel.map { " in Scene \($0)" } ?? ""))
+            }
+        } catch {
+            app?.show("Could not replace", error)
+        }
+    }
 
     func loadOverview() async {
         guard let core = app?.core else { return }
@@ -106,6 +290,7 @@ final class ScreenplayWorkspaceModel {
             }
             let switching = doc.draft.id != document?.draft.id
             document = doc
+            syncViewAttributes()
             if switching || sync == nil {
                 makeSync(for: doc)
                 textView?.load(ScreenplayParagraphs.from(ScreenplayModel.snapshot(fromScenes: doc.scenes), rules: rules.table))
@@ -113,6 +298,7 @@ final class ScreenplayWorkspaceModel {
                 sync?.receiveServer(seq: doc.seq, snapshot: ScreenplayModel.snapshot(fromScenes: doc.scenes))
             }
             textView?.isEditable = doc.canEdit
+            await refreshPagination()
         } catch {
             failure = CoreFailure(asCore: error)
         }
@@ -145,6 +331,7 @@ final class ScreenplayWorkspaceModel {
                 },
                 onStatus: { [weak self] status in
                     self?.syncStatus = "\(status)"
+                    if status == .saved { Task { await self?.refreshPagination() } }
                 }))
     }
 
@@ -197,17 +384,25 @@ struct ScreenplayWorkspace: View {
     @State private var model = ScreenplayWorkspaceModel(rules: SharedScreenplayRules.shared)
     @State private var currentKind: ElementType = .action
     @State private var currentIndex = 0
-    @State private var newDraftName = ""
+    @State private var panels = ScreenplayPanelState()
 
     private static let contentTables = ["screenplay", "screenplay_draft", "screenplay_scene", "screenplay_element", "screenplay_custom_element", "comment"]
+    private static let sourceTables = ["story_character", "cast_member", "location", "story_scene_card"]
 
     var body: some View {
         HSplitView {
-            SceneNavigator(model: model, currentIndex: currentIndex)
+            SceneNavigator(model: model, panels: panels, currentIndex: currentIndex)
                 .frame(minWidth: 200, idealWidth: 240, maxWidth: 340)
-            ZStack {
-                theme["well"]
-                ScreenplayEditorHost(model: model, onMove: { p, i in currentKind = p.kind; currentIndex = i })
+            VStack(spacing: 0) {
+                if model.showReplace { ScreenplayReplaceBar(model: model) }
+                ZStack {
+                    theme["well"]
+                    ScreenplayEditorHost(model: model, onMove: { p, i in
+                        currentKind = p.kind
+                        currentIndex = i
+                        model.currentCustomId = p.kind == .custom ? p.customElementId : nil
+                    })
+                }
             }
             .frame(minWidth: 560)
         }
@@ -225,27 +420,66 @@ struct ScreenplayWorkspace: View {
         .task(id: app.changes.key(Self.contentTables)) {
             if let id = model.draft?.id { await model.loadDocument(id) }
         }
+        .task(id: app.changes.key(Self.sourceTables)) { await model.loadSources() }
         .onDisappear { Task { await model.flush() } }
         .onReceive(NotificationCenter.default.publisher(for: .openFrameShowScreenplayTarget)) { note in
             let info = note.userInfo ?? [:]
             ScreenplayWorkspaceModel.pendingTarget = nil
             Task { await model.show(screenplayId: info["screenplayId"] as? String, draftId: info["draftId"] as? String) }
         }
-        .sheet(isPresented: $model.showNewDraft) { newDraftSheet }
+        .screenplayPanels(model: model, state: panels, caretIndex: currentIndex)
         .accessibilityIdentifier("screenplay-workspace")
     }
 
     @ToolbarContentBuilder private var toolbar: some ToolbarContent {
+        ScreenplayPanelToolbar(state: panels, model: model)
         ToolbarItem(placement: .principal) {
-            Picker("Element", selection: Binding(get: { currentKind }, set: { k in currentKind = k; model.textView?.setKind(k) })) {
+            Menu {
                 ForEach(SharedScreenplayRules.shared.menuKinds, id: \.self) { k in
-                    Text(SharedScreenplayRules.shared.label(for: k)).tag(k)
+                    Button { model.textView?.setKind(k) } label: {
+                        if currentKind == k { Label(SharedScreenplayRules.shared.label(for: k), systemImage: "checkmark") }
+                        else { Text(SharedScreenplayRules.shared.label(for: k)) }
+                    }
                 }
+                let customs = model.document?.customElements ?? []
+                if !customs.isEmpty {
+                    Divider()
+                    ForEach(customs, id: \.id) { c in
+                        Button { model.textView?.setCustomElement(c.id) } label: {
+                            if currentKind == .custom && model.currentCustomId == c.id { Label(c.name, systemImage: "checkmark") }
+                            else { Text(c.name) }
+                        }
+                    }
+                }
+                Divider()
+                Button("Insert Page Break") { model.textView?.insertPageBreak() }
+            } label: {
+                Text(elementLabel).frame(minWidth: 130, alignment: .leading)
             }
-            .frame(width: 170)
             .disabled(!model.canEdit)
-            .help("Element of the current line (Command+1 to Command+8, Tab to change)")
+            .help("Element of the current line (Command+1 to Command+7, Tab to change). Insert Page Break: Command+Return")
+            .accessibilityLabel("Element")
+            .accessibilityValue(elementLabel)
             .accessibilityIdentifier("element-picker")
+        }
+        ToolbarItem(placement: .automatic) {
+            Button { if model.showReplace { model.showReplace = false } else { model.openReplace() } } label: {
+                Label("Replace", systemImage: "arrow.left.arrow.right")
+            }
+            .keyboardShortcut("f", modifiers: [.command, .option])
+            .disabled(!model.canEdit)
+            .help("Replace in the script (Command+Option+F). Command+F finds.")
+            .accessibilityIdentifier("replace-toggle")
+        }
+        ToolbarItem(placement: .automatic) {
+            if let page = model.pageLabel {
+                Text(page)
+                    .font(.caption.monospacedDigit())
+                    .foregroundStyle(.secondary)
+                    .help("\(model.pagination?.paper ?? ""), \(Int(model.pagination?.linesPerPage ?? 0)) lines per page")
+                    .accessibilityLabel("\(page). \(Int(model.pagination?.pageCount ?? 0)) pages")
+                    .accessibilityIdentifier("editor-page-count")
+            }
         }
         ToolbarItem(placement: .automatic) {
             Menu {
@@ -257,7 +491,8 @@ struct ScreenplayWorkspace: View {
                     }
                 }
                 Divider()
-                Button("New Draft…") { newDraftName = ""; model.showNewDraft = true }.disabled(!model.canEdit && model.draft?.lockedAt == nil)
+                Button("New Draft…") { panels.sheet = .newDraft }.disabled(!model.canEdit && model.draft?.lockedAt == nil)
+                Button("Manage Drafts…") { panels.sheet = .drafts }
                 Button("Renumber Scenes") { Task { await model.renumber() } }.disabled(!model.canEdit)
             } label: {
                 Label(model.draft?.name ?? "Draft", systemImage: "square.stack")
@@ -271,33 +506,25 @@ struct ScreenplayWorkspace: View {
                 .foregroundStyle(model.syncStatus == "error" ? theme["red-t"] : .secondary)
                 .accessibilityIdentifier("editor-save-status")
         }
-    }
-
-    private var newDraftSheet: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            Text("New Draft").font(.title3.weight(.semibold))
-            Text("The new draft starts as a copy of \(model.draft?.name ?? "the current draft"). The current draft is kept as it is.")
-                .foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
-            TextField("Name", text: $newDraftName, prompt: Text("Second draft"))
-            HStack {
-                Spacer()
-                Button("Cancel", role: .cancel) { model.showNewDraft = false }.keyboardShortcut(.cancelAction)
-                Button("Create") {
-                    let name = newDraftName.trimmingCharacters(in: .whitespaces)
-                    model.showNewDraft = false
-                    Task { await model.newDraft(name: name, note: nil) }
-                }
-                .keyboardShortcut(.defaultAction)
-                .disabled(newDraftName.trimmingCharacters(in: .whitespaces).isEmpty)
+        ToolbarItem(placement: .automatic) {
+            if let notice = model.notice {
+                Text(notice).font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                    .accessibilityIdentifier("editor-notice")
             }
         }
-        .padding(24).frame(width: 420)
+    }
+
+    private var elementLabel: String {
+        if currentKind == .custom, let id = model.currentCustomId,
+           let name = model.document?.customElements.first(where: { $0.id == id })?.name { return name }
+        return SharedScreenplayRules.shared.label(for: currentKind)
     }
 }
 
 /// Scenes of the draft, numbered as the core numbers them. Clicking a scene moves the caret there.
 struct SceneNavigator: View {
     let model: ScreenplayWorkspaceModel
+    let panels: ScreenplayPanelState
     let currentIndex: Int
     @Environment(\.ofTheme) private var theme
 
@@ -318,6 +545,10 @@ struct SceneNavigator: View {
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel("Scene \(scene.label), \(scene.heading)")
+                    .contextMenu {
+                        Button("Scene Hub") { panels.showSceneHub(sceneId: scene.id) }
+                        Button("Add Comment") { panels.addComment(sceneId: scene.id) }
+                    }
                 }
             }
         }
@@ -343,13 +574,12 @@ struct ScreenplayEditorHost: NSViewRepresentable {
         scroll.hasVerticalScroller = true
         scroll.drawsBackground = false
         let view = ScreenplayTextView.make()
-        view.rules = model.rules
+        model.bind(view)
         view.screenplayDelegate = context.coordinator
         view.minSize = NSSize(width: 0, height: 0)
         view.maxSize = NSSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude)
         view.autoresizingMask = [.width]
         scroll.documentView = view
-        model.textView = view
         if let doc = model.document {
             view.load(ScreenplayParagraphs.from(ScreenplayModel.snapshot(fromScenes: doc.scenes), rules: model.rules.table))
             view.isEditable = doc.canEdit
@@ -375,6 +605,7 @@ struct ScreenplayEditorHost: NSViewRepresentable {
         func screenplayTextDidChange(_ view: ScreenplayTextView) { model.textChanged() }
         func screenplayTextView(_ view: ScreenplayTextView, didMoveInto paragraph: EditorParagraph, index: Int) {
             onMove(paragraph, index)
+            model.caretMoved()
         }
     }
 }

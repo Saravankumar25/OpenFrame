@@ -33,6 +33,8 @@ public final class SharedScreenplayRules: ScreenplayEditorRules {
                            bold: kind == .sceneHeading, italic: r.italic, linesBefore: r.spaceBefore)
     }
 
+    public func isMultiline(_ kind: ElementType) -> Bool { table.isMultiline(kind) }
+
     public func kindAfterEnter(_ kind: ElementType, text: String) -> ElementType { table.nextOnEnter(kind) }
 
     public func kindForEmptyEnter(_ kind: ElementType) -> ElementType? { ElementRules.onEnterEmpty(kind) }

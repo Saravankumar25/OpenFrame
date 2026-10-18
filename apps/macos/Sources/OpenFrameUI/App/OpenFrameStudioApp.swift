@@ -46,6 +46,24 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { true }
 
+    /// Command+Q, the Dock and logout: store what the editors still hold, then quit (the Mac
+    /// counterpart of the Windows close gate). A store that does not answer in 5 seconds does not
+    /// keep the app open forever; the core closes the project either way.
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        Task { @MainActor in
+            let flush = Task { await ScreenplayWorkspaceModel.flushAll() }
+            let timeout = Task { try? await Task.sleep(nanoseconds: 5_000_000_000) }
+            _ = await (Task { await withTaskGroup(of: Void.self) { g in
+                g.addTask { await flush.value }
+                g.addTask { await timeout.value }
+                await g.next()
+                g.cancelAll()
+            } }).value
+            sender.reply(toApplicationShouldTerminate: true)
+        }
+        return .terminateLater
+    }
+
     func applicationWillTerminate(_ notification: Notification) {
         MainActor.assumeIsolated {
             // Editors store their text on every change; this closes the project cleanly

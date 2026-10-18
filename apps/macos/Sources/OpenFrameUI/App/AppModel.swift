@@ -153,6 +153,8 @@ public final class AppModel {
 
     public func closeProject() async {
         guard let core else { return }
+        // Text the editors still hold is stored before the project closes.
+        await ScreenplayWorkspaceModel.flushAll()
         do {
             _ = try await core.projectClose()
         } catch {
