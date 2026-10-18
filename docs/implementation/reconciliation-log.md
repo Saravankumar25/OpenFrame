@@ -6,6 +6,14 @@
 > Renamed on 2026-10-06 from `03-reconciliation-log.md`. Extended on 2026-10-09 (chapter restructure). Checks written "(checked)" were verified in the repository on the
 > date given. Checks written "(stated)" come from a supplied document and were not verified independently.
 
+## 2026-10-18: Mac phases M6 to M8 session
+
+| Stale or conflicting statement | Where it was | Resolution |
+|---|---|---|
+| The Windows AI evidence says the English bar is met, but the full round 3 run shows 83.5 percent correct end state, below the 85 percent bar. Its own `round3/report.md` says "Bar met: no". The 88.8 percent figure comes from rerunning only the ten rename cases after their checks were fixed (71 of 80), not from a full run | `docs/release/evidence/w6/README.md`, `w6/round3/report.md`, the gate and gap-list text that repeat "met" | Recorded here, not edited (evidence files). Read the Windows figure as 83.5 percent in the last full run and 88.8 percent after a partial recheck. Gate row P4 already asks for a full English rerun on the release build; that rerun decides it. The Mac run is a full 420-case run at the current commit and meets the bar (96.7 and 88.6 percent, `evidence/mac/m8-ai-evaluation.md`) |
+| ADR-0027 open sub-decision 2 (helper process or linked library for the Mac AI engine) was open | `docs/adr/ADR-0027-rust-core-two-ui-shells.md` | Answered by [ADR-0033](../adr/ADR-0033-mac-ai-engine-helper-process-metal.md): a helper process with Metal. The ADR-0027 text already points to it (checked 2026-10-18); the ADR register has the row |
+| The Mac parity matrix said Not started for M6, M7 and M8 rows | `docs/roadmap/mac-parity-matrix.md` | Updated from the tests and the evidence file `evidence/mac/m6-m8-workspaces-formats-ai.md` |
+
 ## 2026-10-17: Tauri Mac shell retired (Mac phase M1)
 
 | Stale or conflicting statement | Where it was | Resolution |

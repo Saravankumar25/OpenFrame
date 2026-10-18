@@ -119,6 +119,8 @@ The editor is the costliest and riskiest screen, so it comes first inside the sc
 
 **Exit.** Parity rows proved on the same two levels.
 
+**Status 2026-10-18.** Built, with 168 model-level tests passing on Apple silicon; not yet driven in a window beyond three real-app scenarios on the rehearsal build ([evidence](../release/evidence/mac/m6-m8-workspaces-formats-ai.md)).
+
 ## 9. Phase M7: import, export, packages and PDF
 
 - Final Draft, Fountain, Word, PDF, plain text; backups, exchange, review and response packages, restore.
@@ -127,6 +129,8 @@ The editor is the costliest and riskiest screen, so it comes first inside the sc
   work later in Chapter 3.
 
 **Exit.** Every format round-trips on the Mac with the same fixtures as Windows.
+
+**Status 2026-10-18.** Built, with 35 model-level tests passing, including the 13-class FDX suite through every format on the shared fixtures ([evidence](../release/evidence/mac/m6-m8-workspaces-formats-ai.md)).
 
 ## 10. Phase M8: Mac AI
 
@@ -145,6 +149,8 @@ The editor is the costliest and riskiest screen, so it comes first inside the sc
   not the release default.
 
 **Exit.** The bar is met on Apple silicon with the default provider; every figure is in the evidence folder.
+
+**Status 2026-10-18.** Engine decided ([ADR-0033](../adr/ADR-0033-mac-ai-engine-helper-process-metal.md)) and bar met on Apple silicon: 96.7 percent tool, 88.6 percent end state, poisoned set 60 of 60 safe ([figures](../release/evidence/mac/m8-ai-evaluation.md)). Screens built with 45 tests; the Apple model provider, the Intel Mac run and the real-model window scenarios are not done ([evidence](../release/evidence/mac/m6-m8-workspaces-formats-ai.md)).
 
 ## 11. Phase M9: Mac verification and the disk image
 
