@@ -1055,3 +1055,76 @@ fn a_viewer_asking_for_a_change_gets_a_denial_and_no_change_set() {
     let schema = m.request(0).json_schema.unwrap().to_string();
     assert!(!schema.contains("propose_task"));
 }
+
+/// Threat model row T39: the AI trace and its exported report hold numbers and ids only.
+#[test]
+fn the_ai_log_and_report_hold_no_prompt_or_project_text() {
+    const MARKERS: [&str; 4] = ["SECRETSCENE-91Q", "SECRETNOTE-44Z", "SECRETASK-7M3", "SECRETREPLY-2K8"];
+    let env = TestEnv::with_project("Railway", "Feature Film");
+    seed_screenplay(&env);
+    env.core
+        .project()
+        .unwrap()
+        .store
+        .mutate(
+            &env.actor(),
+            MutationMeta::new("test.seed", "Mark a scene", Capability::Edit),
+            |tx| {
+                tx.conn().execute(
+                    "UPDATE screenplay_element SET text = 'SECRETSCENE-91Q at the platform' WHERE text = 'Here.'",
+                    [],
+                )?;
+                Ok(())
+            },
+        )
+        .unwrap();
+    env.ok(
+        "notes.create",
+        json!({ "title": "Plan", "body": "SECRETNOTE-44Z the ending" }),
+    );
+    let m = attach(&env);
+    m.step("retrieve_context", json!({ "query": "SECRETSCENE SECRETNOTE" }), false);
+    m.finish("SECRETREPLY-2K8 is the answer.");
+    ask(&env, "What is SECRETASK-7M3 about?");
+
+    // The observation did carry project text, so the log below is tested against real exposure.
+    let obs = m.request(1).messages.last().unwrap().content.clone();
+    assert!(MARKERS[..2].iter().any(|k| obs.contains(k)), "{obs}");
+
+    // (1) Every column of every row in the trace table, read as text.
+    let rows: Vec<String> = env
+        .core
+        .with_app_db(|c| {
+            let mut st = c.prepare("SELECT * FROM sys_ai_trace")?;
+            let n = st.column_count();
+            let all = st
+                .query_map([], |r| {
+                    let mut line = String::new();
+                    for i in 0..n {
+                        let v: rusqlite::types::Value = r.get(i)?;
+                        line.push_str(&format!("{v:?}|"));
+                    }
+                    Ok(line)
+                })?
+                .collect::<Result<Vec<_>, _>>()?;
+            Ok(all)
+        })
+        .unwrap();
+    assert!(!rows.is_empty(), "the request wrote no trace row");
+    for line in &rows {
+        for k in MARKERS {
+            assert!(!line.contains(k), "{k} leaked into sys_ai_trace: {line}");
+        }
+    }
+
+    // (2) The exported report (plain JSON).
+    let dest = env.dir.path().join("report.json");
+    env.ok("ai.export_report", json!({ "path": dest.to_string_lossy() }));
+    let report = std::fs::read_to_string(&dest).unwrap();
+    assert!(report.contains("\"rows\""));
+    for k in MARKERS {
+        assert!(!report.contains(k), "{k} leaked into the AI report");
+    }
+
+    // (3) App log files: the test environment installs no file logger, so there is nothing to scan.
+}
