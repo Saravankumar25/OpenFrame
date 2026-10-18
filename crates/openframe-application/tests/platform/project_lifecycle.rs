@@ -227,3 +227,48 @@ fn the_app_refuses_to_start_without_a_documents_folder() {
     .unwrap();
     assert_eq!(ok.projects_dir, PathBuf::from(r"C:\Docs\P"));
 }
+
+#[test]
+fn a_project_created_and_closed_at_once_is_on_home_straight_away() {
+    let env = TestEnv::new();
+    env.ok(
+        "project.create",
+        json!({ "title": "Quick Close", "projectType": "Feature Film" }),
+    );
+    let id = env.core.project().unwrap().project_id();
+    env.ok("project.close", json!({}));
+    assert_eq!(recent_ids(&env), vec![id.clone()], "listed right after close");
+    // And a second quick round trip keeps both, newest first.
+    env.ok(
+        "project.create",
+        json!({ "title": "Quick Close Two", "projectType": "Feature Film" }),
+    );
+    let id2 = env.core.project().unwrap().project_id();
+    env.ok("project.close", json!({}));
+    assert_eq!(recent_ids(&env), vec![id2, id]);
+}
+
+#[test]
+fn home_is_told_when_the_recent_list_changes_on_create_and_close() {
+    use openframe_application::events::AppEvent;
+    let env = TestEnv::new();
+    let count = |env: &TestEnv| {
+        env.sink
+            .events
+            .lock()
+            .iter()
+            .filter(|e| {
+                matches!(e, AppEvent::DataChanged { tables, .. }
+                    if tables.iter().any(|t| t == "sys_recent_project"))
+            })
+            .count()
+    };
+    env.ok(
+        "project.create",
+        json!({ "title": "Told", "projectType": "Feature Film" }),
+    );
+    let after_create = count(&env);
+    assert!(after_create >= 1, "create announces the new Home row");
+    env.ok("project.close", json!({}));
+    assert!(count(&env) > after_create, "close announces the list again");
+}

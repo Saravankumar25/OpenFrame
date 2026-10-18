@@ -650,6 +650,13 @@ impl AppCore {
         for flag in self.tasks.running.lock().values() {
             flag.store(true, Ordering::SeqCst);
         }
+        // A normal quit stops both AI engines at once (chat and search) instead of leaving them
+        // to the process-exit guard. Nothing starts the service here: no AI use, nothing to stop.
+        if let Some(ai) = self.existing_service::<crate::modules::ai::service::AiService>()
+            && let Ok(manager) = ai.manager()
+        {
+            manager.stop_runtime();
+        }
     }
 }
 

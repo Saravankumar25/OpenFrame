@@ -1375,3 +1375,32 @@ fn an_english_answer_to_an_english_question_takes_one_pass() {
     assert_eq!(x["result"]["content"], "The script has 3 scenes.");
     assert!(!m.seen_text().contains("Rewrite the text"));
 }
+
+#[test]
+fn a_normal_quit_stops_the_ai_engines_and_never_starts_them() {
+    let env = TestEnv::new();
+    // No AI use yet: quitting creates no AI service.
+    env.core.shutdown();
+    assert!(
+        env.core
+            .existing_service::<openframe_application::modules::ai::service::AiService>()
+            .is_none(),
+        "shutdown must not start the AI service"
+    );
+    // With the service in use, quitting returns promptly and leaves the engines stopped.
+    env.ok("ai.status", json!({}));
+    let started = std::time::Instant::now();
+    env.core.shutdown();
+    assert!(started.elapsed() < std::time::Duration::from_secs(10));
+    let svc = openframe_application::modules::ai::service::service(&env.core);
+    let m = svc.manager().expect("manager");
+    for s in [m.runtime_status().state, m.embedding_status().state] {
+        assert!(
+            !matches!(
+                format!("{s:?}").as_str(),
+                "Starting" | "LoadingModel" | "Ready" | "Busy"
+            ),
+            "engine still running after quit: {s:?}"
+        );
+    }
+}

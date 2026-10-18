@@ -641,7 +641,11 @@ fn record_recent(core: &AppCore, summary: &ProjectSummary) -> AppResult<()> {
             ],
         )?;
         Ok(())
-    })
+    })?;
+    // A Home screen that is already showing must refetch: it cannot tell from ProjectOpened
+    // alone that the list changed, and a quick create-then-close would leave it stale.
+    announce_recent(core, "local", &summary.id);
+    Ok(())
 }
 
 fn refresh_recent(core: &AppCore) -> AppResult<()> {
@@ -661,6 +665,7 @@ fn refresh_recent(core: &AppCore) -> AppResult<()> {
             )?;
             Ok(())
         })?;
+        announce_recent(core, "local", &summary.id);
     }
     Ok(())
 }
@@ -979,7 +984,10 @@ pub fn close_current(core: &AppCore) -> AppResult<()> {
     }
     core.set_project(None);
     drop(session);
-    core.emit(AppEvent::ProjectClosed { project_id: id });
+    core.emit(AppEvent::ProjectClosed {
+        project_id: id.clone(),
+    });
+    announce_recent(core, "local", &id);
     result
 }
 
@@ -1816,6 +1824,10 @@ fn recent_list_changed(core: &AppCore, actor: &Actor, project_id: &str) {
         openframe_domain::auth::ActorOrigin::Exchange { .. } => "exchange",
         openframe_domain::auth::ActorOrigin::Ai { .. } => "ai",
     };
+    announce_recent(core, origin, project_id);
+}
+
+fn announce_recent(core: &AppCore, origin: &str, project_id: &str) {
     core.emit(AppEvent::DataChanged {
         store: StoreKind::Project,
         tables: vec!["sys_recent_project".to_string()],

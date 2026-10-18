@@ -1489,7 +1489,32 @@ fn search_kind(entity_type: &str) -> &'static str {
     }
 }
 
+/// A search for just the word "locations" (or "places", "settings") asks which places the
+/// script uses, not where that word is written. Scene headings and Location records never
+/// contain the word, so a text search finds nothing; the locations tool answers it instead.
+fn is_location_category_query(text: &str) -> bool {
+    let words: Vec<String> = text
+        .split(|c: char| !c.is_alphanumeric())
+        .filter(|w| !w.is_empty())
+        .map(|w| w.to_lowercase())
+        .collect();
+    !words.is_empty()
+        && words.len() <= 2
+        && words.iter().all(|w| {
+            matches!(
+                w.as_str(),
+                "location" | "locations" | "place" | "places" | "setting" | "settings" | "all"
+            )
+        })
+        && words.iter().any(|w| w != "all")
+}
+
 fn search_project(ctx: &ToolCtx<'_>, text: &str) -> AppResult<ToolOutput> {
+    if is_location_category_query(text)
+        && let Ok(o) = location_statistics(ctx, None)
+    {
+        return Ok(o);
+    }
     let hits = search_hits(ctx.conn, ctx.actor, text, 50)?;
     if hits.is_empty() {
         return Ok(ToolOutput::exact(format!(

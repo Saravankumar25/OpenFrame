@@ -1912,3 +1912,86 @@ fn filled(schema: &Value) -> Value {
     }
     Value::Object(out)
 }
+
+fn production_scope(env: &TestEnv, actor: &Actor) -> ResolvedScope {
+    let s = env.core.project().unwrap();
+    s.store
+        .read(|c| {
+            scope::resolve(
+                c,
+                actor,
+                &AiScopeArgs {
+                    kind: AiScopeKind::Production,
+                    draft_id: None,
+                    scene_id: None,
+                    selection: Vec::new(),
+                    shooting_day_id: None,
+                    call_sheet_id: None,
+                },
+            )
+        })
+        .unwrap()
+}
+
+#[test]
+fn a_production_question_about_locations_reaches_the_script_locations() {
+    let env = TestEnv::new();
+    env.ok(
+        "project.create",
+        json!({ "title": "Night Bus", "projectType": "Feature Film" }),
+    );
+    let _ = fixture(&env);
+    let owner = env.actor();
+    let scope = production_scope(&env, &owner);
+    let question = "Which locations are used in the script?";
+
+    // The picker offers the locations tool for this wording in the Production scope.
+    let picked = toolbox::tools_for_request(&env.core, &owner, &scope, question, 6_000);
+    let names: Vec<&str> = picked.iter().map(|t| t.name.as_str()).collect();
+    assert!(names.contains(&"location_statistics"), "{names:?}");
+
+    // It names the places in the scene headings.
+    let out = match toolbox::run_tool_unlocked(
+        &env.core,
+        &owner,
+        &scope,
+        question,
+        "location_statistics",
+        &json!({}),
+    ) {
+        Ok(ToolStep::Output(o)) => o,
+        _ => panic!("location_statistics must answer"),
+    };
+    let text = format!(
+        "{} {}",
+        out.content,
+        out.items
+            .iter()
+            .map(|i| i.label.clone())
+            .collect::<Vec<_>>()
+            .join(" ")
+    );
+    assert!(text.to_uppercase().contains("RAILWAY STATION"), "{text}");
+
+    // A plain search for the category word finds the places too, instead of "Nothing ...".
+    let found = match toolbox::run_tool_unlocked(
+        &env.core,
+        &owner,
+        &scope,
+        question,
+        "search_project",
+        &json!({ "text": "locations" }),
+    ) {
+        Ok(ToolStep::Output(o)) => o,
+        _ => panic!("search_project must answer"),
+    };
+    let all = format!(
+        "{} {}",
+        found.content,
+        found.items.iter().map(|i| i.label.clone()).collect::<Vec<_>>().join(" ")
+    );
+    assert!(
+        !all.contains("Nothing in this project mentions"),
+        "searching the word locations found nothing: {all}"
+    );
+}
