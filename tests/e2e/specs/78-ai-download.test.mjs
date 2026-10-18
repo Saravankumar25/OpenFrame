@@ -1,4 +1,5 @@
 // @e2e-data-root: own
+// @e2e-needs-test-host: starts the download from the local model host and reads its request log
 // @e2e-ai-models: none
 //
 // Download OpenFrame AI after install (ADR-0026 decisions 3, 5, 7 and 10; Windows phase W8), on the

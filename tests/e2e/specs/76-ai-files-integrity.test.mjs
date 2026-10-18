@@ -1,4 +1,5 @@
 // @e2e-data-root: own
+// @e2e-needs-test-host: "Download again" fetches from the local model host and the spec reads its request log
 //
 // The Offline AI files when they are missing or damaged (ADR-0026 decisions 5 and 7; Windows phase
 // W8). The models were downloaded (run.mjs installs the set the way a finished download leaves it);
