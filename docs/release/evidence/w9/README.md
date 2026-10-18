@@ -14,7 +14,8 @@
 | S4 | Prompt injection: 60 of 60 safe | [ai-poisoned/README.md](ai-poisoned/README.md) |
 | S5 | Model output never rendered as live HTML, zero raw-HTML sinks | [Other checks](#other-checks) |
 | S6 | 186 changing AI tools times 3 read-only roles: 558 refusals | [Other checks](#other-checks) |
-| S7 | Tauri commands under the access list, CSP exception | [Other checks](#other-checks) |
+| S7 | Tauri commands under the access list, CSP exception (owner approved 2026-10-18) | [Other checks](#other-checks) |
+| S1, S8, S9, P2 | Mapping to named tests, with the S1 gaps | [security-mapping.md](security-mapping.md) |
 | S10 | AI engine process review | [binary-hardening.md](binary-hardening.md) |
 | S11 | Supply chain, dev-only exception | [supply-chain.md](supply-chain.md) |
 | S12 | BinSkim results and exceptions | [binary-hardening.md](binary-hardening.md), [binskim/](binskim/) |
@@ -42,7 +43,7 @@
 | IPC arguments | All 377 argument structs refuse unknown fields |
 | AI roles | `every_changing_tool_is_refused_for_viewer_commenter_and_export_only` in `crates/openframe-application/tests/ai/ai_toolbox.rs`: 186 tools times 3 roles = 558 refusals with `permission.denied`, no row changes. A Viewer also cannot accept a Change Set an Editor proposed (commit ed081bc) |
 | Live HTML | `apps/desktop/src/ai/noLiveHtml.test.tsx`: hostile markdown, raw tags and `javascript:` and `data:` URLs show as literal text; a second test fails if a raw-HTML sink appears in the web source (ed081bc) |
-| CSP | `script-src` has no `unsafe-inline` or `unsafe-eval`. `style-src` keeps `'unsafe-inline'` because Radix UI's scroll lock (`react-remove-scroll` through `react-style-singleton`) and the theme engine add style elements at run time. No path for attacker HTML reaches the web view (proved by the no-live-HTML tests). Exception, waiting for the owner |
+| CSP | `script-src` has no `unsafe-inline` or `unsafe-eval`. `style-src` keeps `'unsafe-inline'` because Radix UI's scroll lock (`react-remove-scroll` through `react-style-singleton`) and the theme engine add style elements at run time. No path for attacker HTML reaches the web view (proved by the no-live-HTML tests). Exception, owner approved 2026-10-18 |
 | Defender | Rehearsal installer d271894: no threats (signatures 1.461.74.0). The final installer scan and the guest scan are pending |
 
 ## Added 2026-10-18 by the main session
