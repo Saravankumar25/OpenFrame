@@ -27,7 +27,8 @@ const meta = JSON.parse(
   execFileSync("cargo", ["metadata", "--format-version", "1", "--locked", "--filter-platform", "aarch64-apple-darwin"], {
     cwd: ROOT,
     maxBuffer: 256 * 1024 * 1024,
-    env: { ...process.env, PATH: `${process.env.HOME}/.cargo/bin:${process.env.PATH}` },
+    // A Mac without sccache turns the wrapper of .cargo/config.toml off, as the build scripts do.
+    env: { ...process.env, RUSTC_WRAPPER: process.env.RUSTC_WRAPPER ?? "", PATH: `${process.env.HOME}/.cargo/bin:${process.env.PATH}` },
   }).toString(),
 );
 const byId = new Map(meta.packages.map((p) => [p.id, p]));
