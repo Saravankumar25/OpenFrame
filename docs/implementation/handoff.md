@@ -6,7 +6,7 @@
 
 ## State
 
-1. **`main`** holds W1 to W8. Nothing pushed. **Branch `windows/w9-endgame`** (not merged) holds the W9 work. The final
+1. **`main`** holds W1 to W9 (`windows/w9-endgame` merged locally on 2026-10-18 at the owner's word, fast-forward to d4acb83). Nothing pushed. The final
    installer was built from commit 028d8b6; later commits changed only tests, documents and the pilot kit.
 2. **Final internal installer:** `release-out\OpenFrame-Studio-0.1.0-internal-028d8b6.exe`, 27,016,597 bytes, SHA-256
    `97b712214109e5812ce87cf226a4bd234f25b3fac65b68735e97fea0d787d50f`. Clean tree, team gate on, scan-installer OK
