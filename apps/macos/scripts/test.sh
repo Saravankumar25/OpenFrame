@@ -30,4 +30,7 @@ if ! xcodebuild -version >/dev/null 2>&1; then
   fi
 fi
 swift build "${FLAGS[@]+"${FLAGS[@]}"}"
-swift test "${FLAGS[@]+"${FLAGS[@]}"}" "$@"
+# Serial: the screen tests share process-wide notifications (workspace switches, Build
+# Screenplay targets) and debounce timers, so suites running side by side can see each other's
+# notices or miss a timer under load. Each test still uses its own core and data folder.
+swift test --no-parallel "${FLAGS[@]+"${FLAGS[@]}"}" "$@"
