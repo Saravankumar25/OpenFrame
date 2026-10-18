@@ -1,4 +1,4 @@
-// Memory soak for release gate P1: `node tests/e2e/soak/memory-soak.mjs --app=<exe> --minutes=120 [--dry-run]`.
+// Memory soak for release gate P1: `node tests/e2e/soak/memory-soak.mjs --app=<exe> --minutes=120 [--dry-run] [--bounded] [--window=<minutes>]`.
 // Drives an installed (gated) openframe-desktop.exe through tauri-driver: writes in the screenplay, switches
 // workspaces every 10 loops, closes and reopens the project every 50 loops, and samples the working set and
 // private bytes of the app and of its msedgewebview2.exe descendants every 60 s. Output goes to
@@ -19,7 +19,8 @@ const APP = arg("app") ? resolve(arg("app")) : "";
 const MINUTES = Number(arg("minutes") ?? 120);
 const DRY = process.argv.includes("--dry-run");
 const SAMPLE_MS = 60_000;
-const WINDOW_MIN = 90;
+const WINDOW_MIN = Number(arg("window") ?? 90);
+const BOUNDED = process.argv.includes("--bounded");
 const LIMIT = { appMbPerHour: 20, webMbPerHour: 40 };
 const TITLE = "Soak Feature";
 const PORT = 4444;
@@ -121,11 +122,13 @@ async function main() {
   let consecutive = 0;
   let aborted = "";
   let browser;
+  let endElements = -1;
   const t0 = Date.now();
   try {
     for (let i = 0; i < 80 && !(await listening(PORT)); i++) await sleep(250);
     browser = await launchApp();
     await firstLaunchProject(browser, TITLE);
+    const saved = () => browser.execute(() => document.querySelector(".sp-top [aria-live=polite]")?.textContent?.trim() ?? "");
     const typeKeys = (t) => browser.keys(t.split(""));
     const LAST = "(//div[contains(@class,'spx-doc')]//div[contains(@class,'sp-el')])[last()]";
     const WORDS = ["lamp", "river", "ladder", "kettle", "window", "station", "ledger", "orchard"];
@@ -149,6 +152,16 @@ async function main() {
       await browser.keys("Enter");
       await browser.keys(["Control", "2"]);
     };
+    // --bounded: clear the screenplay so document growth cannot pass for a leak.
+    const clearEditor = async () => {
+      await (await browser.$(LAST)).click();
+      await browser.keys(["Control", "a"]);
+      await browser.keys("Delete");
+      await sleep(500); // let the indicator leave a stale Saved
+      await browser.waitUntil(async () => (await saved()) === "Saved", { timeout: 15_000, timeoutMsg: "the editor did not report Saved after clearing" });
+      const n = (await editorElements(browser)).length;
+      if (n >= 10) throw new Error(`clearing left ${n} editor elements`);
+    };
     await openEditor();
     let lastSample = 0;
     const takeSample = () => {
@@ -164,6 +177,7 @@ async function main() {
       try {
         await newLineAtEnd();
         await typeKeys(`Loop ${loops}: the ${WORDS[loops % WORDS.length]} stays where Asha left it, ${WORDS[(loops * 3) % WORDS.length]} ${loops * 7}.`);
+        if (BOUNDED && loops % 25 === 0) await clearEditor();
         if (loops % 10 === 0) {
           for (const w of ["Story", "Idea Vault", "Breakdown"]) await openWorkspace(browser, w);
           await openEditor();
@@ -195,6 +209,7 @@ async function main() {
       await sleep(1000);
     }
     takeSample();
+    endElements = (await editorElements(browser)).length;
   } catch (e) {
     errors.push(`fatal: ${e instanceof Error ? e.message.split("\n")[0] : e}`);
     try {
@@ -216,6 +231,9 @@ async function main() {
     app: APP,
     minutesRequested: MINUTES,
     minutesRun: endMin,
+    bounded: BOUNDED,
+    windowRequestedMinutes: WINDOW_MIN,
+    endEditorElements: endElements,
     loops,
     errors,
     aborted,
@@ -238,7 +256,7 @@ async function main() {
   writeFileSync(join(art, `soak-${stamp}.json`), JSON.stringify(summary, null, 2));
   console.log(JSON.stringify(summary, null, 2));
   console.log(`\nMemory budgets in specs/97-performance: ${budgets()}`);
-  console.log(`\n${summary.result}: app ${appSlope} MB/h (limit ${LIMIT.appMbPerHour}), webview ${webSlope} MB/h (limit ${LIMIT.webMbPerHour}), crashed: ${crashed}, window: ${endMin} of ${MINUTES} min, ${aborted ? `stopped: ${aborted}, ` : ""}loops: ${loops}, errors: ${errors.length}`);
+  console.log(`\n${summary.result}: app ${appSlope} MB/h (limit ${LIMIT.appMbPerHour}), webview ${webSlope} MB/h (limit ${LIMIT.webMbPerHour}), crashed: ${crashed}, bounded: ${BOUNDED}, slope window: ${WINDOW_MIN} min, editor elements at end: ${endElements}, window: ${endMin} of ${MINUTES} min, ${aborted ? `stopped: ${aborted}, ` : ""}loops: ${loops}, errors: ${errors.length}`);
   process.exit(pass ? 0 : 1);
 }
 
