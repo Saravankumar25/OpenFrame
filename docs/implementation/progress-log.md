@@ -58,6 +58,28 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 
 ## Entries
 
+### 2026-10-18 (after the W9 merge), Manual Testing Guide written (owner request outside the plan)
+- **Areas and items worked:** Windows pilot preparation (W10 input). Not a plan item: the owner asked for it directly.
+- **Done:** `docs/manual/OpenFrame_Studio_Manual_Testing_Guide.docx`: 181 figures (one per HTML mock-up), 1,496 numbered
+  markers, 1,889 test cases, 8 chapters, 8 end-to-end journeys, appendices A to M. Companion
+  `OpenFrame_Studio_Manual_Testing_Guide_TestCases.csv` (same IDs) and `docs/manual/test-data/` (valid, empty, corrupt,
+  wrong-type and special-character files plus a script for the oversized files). Each figure was compared with the specs
+  and with the app source; 802 findings (486 mismatches, 316 spec gaps) are in appendix K.
+- **Evidence:** converted to PDF with Word (1,341 pages); all 181 figure bookmarks and 5,421 internal links resolve; no em
+  dashes; no clipped tables. Per-figure content passes a validator (marker rows, 6 or more cases, schema). Nothing was run
+  in the installed app: every expected result comes from the HTML, the specs and the source.
+- **Features moved:** none.
+- **Docs updated:** docs/README.md (manual folder), this log, handoff.
+- **Decisions made or needed:** none. Findings for the owner: permission denials read "... in this project in this
+  project" (double phrase, seen in import, export and edit denials); unlock is Owner-only while ADR-0009 gives it to
+  Owner and Editor; the production source can be set by an Editor while ADR-0009 says Owner; the HTML still shows live
+  LAN screens (figures 164 to 168) and an external-AI dialog (figure 179) that the build does not have.
+- **Blocked / risks:** no tester has run the guide yet. The generator and the per-figure JSON are kept only in the
+  git-ignored `.build-cache/manual-testing-guide-source`.
+- **Next:** give the guide to the W10 testers with the installer; fold their step corrections back; decide whether to
+  commit the generator source.
+- **Checks run:** `node scripts/check-links.mjs` OK (173 documents). `npm run check:writing` OK. App tests and `npm run verify` not run (no code changed).
+
 ### 2026-10-18 (last stretch of the endgame session), W9 closed: final installer rebuilt, gate has no Open row
 - **Areas and items worked:** Windows installer (area 20); security hardening (area 6); test infrastructure (area 5);
   AI assistant quality (English rerun); storage; Mac handoff.

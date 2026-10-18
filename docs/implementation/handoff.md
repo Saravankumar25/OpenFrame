@@ -27,6 +27,10 @@
    models). The mockups worktree is removed; its branch `claude/website-html-mockups-9ecfa7` keeps 462 HTML snapshots,
    not merged. Rule 11 in [development-storage-policy.md](../development-storage-policy.md).
 
+6. **Manual Testing Guide** (owner request, 2026-10-18): `docs/manual/OpenFrame_Studio_Manual_Testing_Guide.docx` (181 figures,
+   1,889 test cases) with a CSV and `docs/manual/test-data/`. Give it to the W10 testers with the installer. Findings for the
+   owner are in the 2026-10-18 progress log entry and its appendix K.
+
 ## Next three items
 
 1. Give the 028d8b6 installer and the pilot kit to the team (W10).

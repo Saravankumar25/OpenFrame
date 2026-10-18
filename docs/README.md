@@ -37,7 +37,7 @@ docs/
   release/                   launch readiness register, evidence folders
   store/                     Microsoft Store listing and privacy policy drafts (Chapter 3)
   website/                   website source notes and supplied prompts (Chapter 2)
-  manual/                    user manual (.docx, .pdf)
+  manual/                    user manual (.docx, .pdf), manual testing guide (.docx, .csv), test-data/ sample files
   audits/                    dated evidence snapshots (do not edit)
   archive/                   history; README is the archive index (do not edit the files)
   (spec-digest/ moved to archive/2026-09-spec-digest/ in phase W1)
