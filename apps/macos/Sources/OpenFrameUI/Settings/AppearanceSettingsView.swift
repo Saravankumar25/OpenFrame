@@ -20,6 +20,10 @@ struct AppearanceSettingsContent: View {
     @State private var error: String?
     @State private var notice: String?
     @State private var message: String?
+    @State private var mine: MyThemesModel?
+    @State private var importing: ThemeImportModel?
+    @State private var renaming: MyTheme?
+    @State private var deleting: MyTheme?
 
     private let columns = [GridItem(.adaptive(minimum: 170, maximum: 220), spacing: 12)]
 
@@ -60,9 +64,8 @@ struct AppearanceSettingsContent: View {
                         }
                     }
                 }
+                myThemesSection
                 HStack {
-                    Button("Import Theme…") { Task { await importTheme() } }
-                        .accessibilityIdentifier("settings-import-theme")
                     Button("Export Selected Theme…") { Task { await exportTheme() } }
                         .accessibilityIdentifier("settings-export-theme")
                 }
@@ -71,7 +74,149 @@ struct AppearanceSettingsContent: View {
             }
         .padding(20)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .task(id: app.isRunning) { await reload() }
+        .task(id: app.isRunning) {
+            if mine == nil { mine = MyThemesModel(app: app, themes: themes) }
+            await reload()
+            await mine?.reload()
+        }
+        .sheet(item: $importing) { model in
+            ThemeImportSheet(model: model)
+        }
+        .sheet(item: $renaming) { theme in
+            if let mine { RenameThemeSheet(theme: theme, model: mine) }
+        }
+        .confirmationDialog(
+            "Delete the theme \u{201C}\(deleting?.name ?? "")\u{201D}?",
+            isPresented: Binding(get: { deleting != nil }, set: { if !$0 { deleting = nil } }),
+            titleVisibility: .visible
+        ) {
+            Button("Delete Theme", role: .destructive) {
+                if let t = deleting { Task { await mine?.delete(t) } }
+                deleting = nil
+            }
+            .accessibilityIdentifier("theme-delete-confirm")
+            Button("Cancel", role: .cancel) { deleting = nil }
+                .accessibilityIdentifier("theme-delete-cancel")
+        } message: {
+            Text("The theme is removed from My Themes. This cannot be undone; export it first if you may want it again."
+                + (deleting?.id == mine?.activeId ? " It is in use, so OpenFrame Default is applied." : "")
+                + " Your projects are not affected.")
+        }
+    }
+
+    // MARK: My Themes
+
+    private var myThemesSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text("My Themes").font(.headline)
+                Spacer()
+                Button("Import Theme File…") { Task { await pickThemeFile() } }
+                    .accessibilityIdentifier("settings-import-theme")
+                Button("Paste Theme…") {
+                    importing = ThemeImportModel(source: .text, app: app, themes: themes)
+                }
+                .accessibilityIdentifier("settings-paste-theme")
+            }
+            let list = mine?.mine ?? []
+            if list.isEmpty {
+                Text("No imported themes yet. Theme files are small .json files, for example from the OpenFrame website.")
+                    .font(.callout).foregroundStyle(.secondary)
+                    .accessibilityIdentifier("my-themes-empty")
+            } else {
+                VStack(spacing: 0) {
+                    ForEach(list, id: \.id) { item in
+                        myThemeRow(item)
+                        if item.id != list.last?.id { Divider() }
+                    }
+                }
+                .background(theme["panel"].opacity(0.4), in: RoundedRectangle(cornerRadius: 8))
+                .overlay(RoundedRectangle(cornerRadius: 8).stroke(theme["line"], lineWidth: 1))
+                .accessibilityElement(children: .contain)
+                .accessibilityLabel("My Themes")
+                .accessibilityIdentifier("my-themes-list")
+            }
+            if let failure = mine?.error { SettingsErrorText(message: failure) }
+        }
+    }
+
+    private func myThemeRow(_ item: MyTheme) -> some View {
+        let active = item.id == (mine?.activeId ?? themes.themeId)
+        return HStack(spacing: 10) {
+            if let dto = item.theme {
+                let own = ThemeEngine.resolve(themeId: dto.id, mode: theme.mode, themes: themes.catalog)
+                HStack(spacing: 0) {
+                    own["side"].frame(width: 10)
+                    own["bg"]
+                    own["accent"].frame(width: 10)
+                }
+                .frame(width: 42, height: 24)
+                .clipShape(RoundedRectangle(cornerRadius: 4))
+                .accessibilityHidden(true)
+            } else {
+                RoundedRectangle(cornerRadius: 4).stroke(theme["line"]).frame(width: 42, height: 24)
+                    .accessibilityHidden(true)
+            }
+            VStack(alignment: .leading, spacing: 1) {
+                Text(item.name).fontWeight(.medium)
+                if let author = item.theme?.author, !author.isEmpty {
+                    Text("By \(author)").font(.caption).foregroundStyle(.secondary)
+                }
+                if let problem = item.problem {
+                    Text("This theme cannot be used. \(problem)").font(.caption).foregroundStyle(theme["red-t"])
+                }
+            }
+            Spacer(minLength: 8)
+            if active {
+                Text("In use").font(.caption.weight(.semibold))
+                    .padding(.horizontal, 8).padding(.vertical, 2)
+                    .background(theme["accent-soft"], in: Capsule())
+                    .accessibilityIdentifier("my-theme-inuse-\(item.id)")
+            }
+            if item.theme != nil && !active {
+                Button("Apply") { Task { await mine?.apply(item) } }
+                    .accessibilityLabel("Apply \(item.name)")
+                    .accessibilityIdentifier("my-theme-apply-\(item.id)")
+            }
+            if item.theme != nil {
+                Button("Rename") { renaming = item }
+                    .accessibilityLabel("Rename \(item.name)")
+                    .accessibilityIdentifier("my-theme-rename-\(item.id)")
+                Button("Export") { Task { await exportMine(item) } }
+                    .accessibilityLabel("Export \(item.name)")
+                    .accessibilityIdentifier("my-theme-export-\(item.id)")
+            }
+            Button("Delete") { deleting = item }
+                .accessibilityLabel("Delete \(item.name)")
+                .accessibilityIdentifier("my-theme-delete-\(item.id)")
+        }
+        .controlSize(.small)
+        .padding(.horizontal, 10).padding(.vertical, 6)
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(item.name)
+        .accessibilityIdentifier("my-theme-\(item.id)")
+    }
+
+    private func exportMine(_ item: MyTheme) async {
+        let panel = NSSavePanel()
+        panel.title = "Export Theme"
+        panel.allowedContentTypes = [.json]
+        // A name is text, not a path: no folder separators or reserved characters in the suggestion.
+        let safe = item.name.components(separatedBy: CharacterSet(charactersIn: "\\/:*?\"<>|")).joined(separator: " ")
+            .trimmingCharacters(in: .whitespaces)
+        panel.nameFieldStringValue = "\(safe.isEmpty ? item.id : safe).json"
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        await mine?.export(item, to: url.path)
+    }
+
+    private func pickThemeFile() async {
+        let panel = NSOpenPanel()
+        panel.title = "Import a Theme"
+        panel.allowedContentTypes = [.json]
+        panel.allowsMultipleSelection = false
+        panel.canChooseDirectories = false
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        importing = ThemeImportModel(source: .file(url.path), app: app, themes: themes)
     }
 
     private var modeBinding: Binding<AppearancePreference> {
@@ -111,31 +256,6 @@ struct AppearanceSettingsContent: View {
         }
     }
 
-    private func importTheme() async {
-        guard let core = app.core else { return }
-        let panel = NSOpenPanel()
-        panel.title = "Import a Theme"
-        panel.allowedContentTypes = [.json]
-        panel.allowsMultipleSelection = false
-        panel.canChooseDirectories = false
-        guard panel.runModal() == .OK, let url = panel.url else { return }
-        error = nil
-        message = nil
-        do {
-            let check = try await core.appearanceCheckTheme(ThemeSourceArgs(path: url.path))
-            if check.status == .rejected {
-                error = check.problems.first ?? "That file is not a theme OpenFrame can use."
-                return
-            }
-            let state = try await core.appearanceImportTheme(
-                ImportThemeArgs(path: url.path, apply: false, expectedDigest: check.digest))
-            themes.apply(state)
-            message = "Imported \(check.theme?.name ?? "the theme")."
-        } catch {
-            self.error = CoreFailure(asCore: error).message
-        }
-    }
-
     private func exportTheme() async {
         guard let core = app.core else { return }
         let panel = NSSavePanel()
@@ -156,6 +276,9 @@ struct AppearanceSettingsContent: View {
 }
 
 /// One theme, drawn with its own colours.
+extension ThemeImportModel: Identifiable { nonisolated var id: ObjectIdentifier { ObjectIdentifier(self) } }
+extension MyTheme: Identifiable {}
+
 struct ThemeCard: View {
     let data: ThemeData
     let mode: ColorMode

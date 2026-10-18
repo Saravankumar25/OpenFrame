@@ -6,7 +6,25 @@ import OpenFrameCore
 import SwiftUI
 
 public enum SettingsTab: String, Hashable, CaseIterable {
-    case general, appearance, ai, diagnostics
+    case general, appearance, shortcuts, ai, diagnostics
+}
+
+/// Opens the Settings window (Command+Comma), on a tab when one is asked for. Every Settings
+/// button, menu item and palette command goes through here.
+@MainActor
+public enum SettingsRouter {
+    /// The tab the window shows next time it appears or is already open.
+    public static var requestedTab: SettingsTab?
+
+    public static func open(tab: SettingsTab? = nil) {
+        requestedTab = tab
+        if let tab { NotificationCenter.default.post(name: .openFrameSettingsTab, object: tab.rawValue) }
+        NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+    }
+}
+
+extension Notification.Name {
+    static let openFrameSettingsTab = Notification.Name("studio.openframe.settingsTab")
 }
 
 public struct SettingsView: View {
@@ -24,6 +42,9 @@ public struct SettingsView: View {
             AppearanceSettingsView()
                 .tabItem { Label("Appearance", systemImage: "paintpalette") }
                 .tag(SettingsTab.appearance)
+            ShortcutsSettingsTab()
+                .tabItem { Label("Keyboard Shortcuts", systemImage: "keyboard") }
+                .tag(SettingsTab.shortcuts)
             AISettingsView()
                 .tabItem { Label("Offline AI", systemImage: "sparkles") }
                 .tag(SettingsTab.ai)
@@ -31,8 +52,14 @@ public struct SettingsView: View {
                 .tabItem { Label("Diagnostics", systemImage: "stethoscope") }
                 .tag(SettingsTab.diagnostics)
         }
-        .frame(width: 640)
+        .frame(width: 760)
         .frame(minHeight: 460)
+        .onAppear {
+            if let asked = SettingsRouter.requestedTab { tab = asked; SettingsRouter.requestedTab = nil }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .openFrameSettingsTab)) { note in
+            if let raw = note.object as? String, let asked = SettingsTab(rawValue: raw) { tab = asked }
+        }
     }
 }
 

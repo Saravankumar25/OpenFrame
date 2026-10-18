@@ -54,7 +54,7 @@ enum SearchRouting {
     @MainActor
     static func go(_ target: SearchTarget) {
         if target.opensSettings {
-            NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+            SettingsRouter.open()
             return
         }
         guard let ws = target.workspace else { return }
@@ -161,7 +161,17 @@ final class SearchPaletteModel {
             })
         }
         list.append(PaletteCommand(id: "settings", title: "Settings", symbol: "gearshape", hint: "\u{2318},") {
-            NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+            SettingsRouter.open()
+        })
+        if inProject {
+            list.append(PaletteCommand(
+                id: "project-settings", title: "Project Settings", symbol: "gearshape.2",
+                hint: ShortcutStore.shared.label("app.project_settings")) {
+                ProjectSettingsRouter.open()
+            })
+        }
+        list.append(PaletteCommand(id: "keyboard-shortcuts", title: "Keyboard Shortcuts", symbol: "keyboard") {
+            NotificationCenter.default.post(name: .openFrameShowShortcuts, object: nil)
         })
         list.append(PaletteCommand(id: "about", title: "About OpenFrame Studio", symbol: "info.circle") {
             NotificationCenter.default.post(name: .openFrameShowAbout, object: nil)

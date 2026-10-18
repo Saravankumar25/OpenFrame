@@ -108,8 +108,17 @@ struct HomeView: View {
                         .help("Open a Full Project Package or restore a backup")
                         .accessibilityIdentifier("home-restore-package")
                     Button { showNewProject = true } label: { Label("New Project", systemImage: "plus") }
-                        .help("New Project (Command+N)")
+                        .help(ShortcutStore.shared.tooltipWords("New Project", "home.new_project"))
                         .accessibilityIdentifier("home-new-project")
+                }
+                // Settings with its name, so it is found at a glance (Command+Comma does the same).
+                ToolbarItem(placement: .primaryAction) {
+                    Button { SettingsRouter.open() } label: {
+                        Label("Settings", systemImage: "gearshape").labelStyle(.titleAndIcon)
+                    }
+                    .help("Settings (Command+Comma)")
+                    .accessibilityLabel("Settings")
+                    .accessibilityIdentifier("home-settings")
                 }
                 ToolbarItem(placement: .automatic) {
                     Toggle("Show archived", isOn: $home.showArchived)

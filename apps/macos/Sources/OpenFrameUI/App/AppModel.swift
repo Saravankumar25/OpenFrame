@@ -98,6 +98,12 @@ public final class AppModel {
         }
     }
 
+    /// Reads the app information again (after the person's name was stored on first launch).
+    public func refreshInfo() async {
+        guard let core else { return }
+        if let fresh = try? await core.appInfo() { info = fresh }
+    }
+
     /// One team password try. Returns the plain message to show when the try did not open.
     public func unlock(password: String) async -> String? {
         guard let core else { return nil }

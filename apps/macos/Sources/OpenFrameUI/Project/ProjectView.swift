@@ -89,6 +89,8 @@ struct ProjectView: View {
     /// The project as the core has it now (title and status change from rename, undo and redo).
     @State private var live: ProjectSummary?
     @State private var renaming: RecentProject?
+    /// Project Settings, as a sheet; the value is the page it opens on.
+    @State private var settingsTab: ProjectSettingsTab?
 
     private var current: ProjectSummary { live ?? project }
     private var asRecent: RecentProject {
@@ -131,6 +133,7 @@ struct ProjectView: View {
         }
         .toolbar {
             ToolbarItem(placement: .primaryAction) { assistantButton }
+            ToolbarItem(placement: .primaryAction) { projectSettingsButton }
             ToolbarItem(placement: .primaryAction) { projectMenu }
             ToolbarItem(placement: .navigation) {
                 Button {
@@ -147,6 +150,12 @@ struct ProjectView: View {
         }
         .sheet(isPresented: Binding(get: { renaming != nil }, set: { if !$0 { renaming = nil } })) {
             if let recent = renaming { RenameProjectSheet(project: recent, actions: ProjectActions(app: app)) {} }
+        }
+        .sheet(item: Binding(get: { settingsTab.map(SettingsSheetTarget.init) }, set: { settingsTab = $0?.tab })) { target in
+            ProjectSettingsView(initialTab: target.tab)
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .openFrameShowProjectSettings)) { note in
+            settingsTab = (note.object as? String).flatMap(ProjectSettingsTab.init(rawValue:)) ?? .general
         }
         .onAppear {
             let parts = stored.split(separator: "|", maxSplits: 1).map(String.init)
@@ -167,7 +176,19 @@ struct ProjectView: View {
         }
     }
 
-    /// The project menu: status, rename, duplicate, archive, show in Finder (Windows: the project menu in the top bar).
+    /// Project Settings, always visible in the top bar with its name (Windows: Project settings in the project menu).
+    private var projectSettingsButton: some View {
+        Button {
+            settingsTab = .general
+        } label: {
+            Label("Project Settings", systemImage: "gearshape")
+                .labelStyle(.titleAndIcon)
+        }
+        .help("Project Settings (\(ShortcutStore.shared.label("app.project_settings")))")
+        .accessibilityLabel("Project Settings")
+        .accessibilityIdentifier("project-settings-button")
+    }
+
     /// Opens and closes the AI Assistant panel (Windows: the Assistant button and Ctrl+J).
     private var assistantButton: some View {
         Button {
@@ -194,6 +215,11 @@ struct ProjectView: View {
                     }
                 }
             }
+            Divider()
+            Button("Project Settings\u{2026}") { settingsTab = .general }
+                .accessibilityIdentifier("project-menu-project-settings")
+            Button("Settings\u{2026}") { SettingsRouter.open() }
+                .accessibilityIdentifier("project-menu-app-settings")
             Divider()
             Button("Rename\u{2026}") { renaming = asRecent }
             Button("Duplicate Project") { Task { await actions.duplicate(asRecent) } }
@@ -234,6 +260,12 @@ struct ProjectView: View {
         case .recentlyDeleted: RecentlyDeletedWorkspace()
         }
     }
+}
+
+/// Identifies the Project Settings page the sheet opens on.
+private struct SettingsSheetTarget: Identifiable {
+    let tab: ProjectSettingsTab
+    var id: String { "project-settings" }
 }
 
 /// Saved, Saving, or a save problem, from the core's save-state events.

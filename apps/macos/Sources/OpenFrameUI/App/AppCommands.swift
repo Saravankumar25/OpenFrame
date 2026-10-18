@@ -7,23 +7,36 @@ import OpenFrameCore
 struct AppCommands: Commands {
     let model: AppModel
     @Environment(\.openWindow) private var openWindow
+    /// The keys now in force for the commands the person can remap (Keyboard Shortcuts).
+    private let keys = ShortcutStore.shared
 
     var body: some Commands {
         CommandGroup(replacing: .appInfo) {
             Button("About OpenFrame Studio") { openWindow(id: "about") }
         }
+        CommandGroup(after: .appSettings) {
+            // Settings\u{2026} (Command+Comma) comes from the Settings window; the project's own settings follow it.
+            Button("Project Settings\u{2026}") { ProjectSettingsRouter.open() }
+                .keyboardShortcut(keys.shortcut("app.project_settings"))
+                .disabled(!isProject)
+        }
+        CommandGroup(after: .help) {
+            Divider()
+            Button("Keyboard Shortcuts\u{2026}") { NotificationCenter.default.post(name: .openFrameShowShortcuts, object: nil) }
+                .disabled(!isHome && !isProject)
+        }
         CommandGroup(after: .textEditing) {
             Divider()
             Button("Search and Commands\u{2026}") { NotificationCenter.default.post(name: .openFrameShowSearch, object: nil) }
-                .keyboardShortcut("k", modifiers: .command)
+                .keyboardShortcut(keys.shortcut("app.search"))
                 .disabled(!isHome && !isProject)
         }
         CommandGroup(replacing: .newItem) {
             Button("New Project…") { NotificationCenter.default.post(name: .openFrameNewProject, object: nil) }
-                .keyboardShortcut("n", modifiers: .command)
+                .keyboardShortcut(keys.shortcut("home.new_project"))
                 .disabled(!isHome)
             Button("Open Project…") { NotificationCenter.default.post(name: .openFrameOpenProject, object: nil) }
-                .keyboardShortcut("o", modifiers: .command)
+                .keyboardShortcut(keys.shortcut("home.open_project"))
                 .disabled(!isHome)
             Divider()
             Button("Close Project") { Task { await model.closeProject() } }
@@ -83,6 +96,11 @@ struct AppCommands: Commands {
                         .disabled(!isProject)
                 }
             }
+            Divider()
+            Button("Project Settings") { ProjectSettingsRouter.open() }
+                .disabled(!isProject)
+            Button("Keyboard Shortcuts") { ProjectSettingsRouter.open(tab: .shortcuts) }
+                .disabled(!isProject)
         }
     }
 

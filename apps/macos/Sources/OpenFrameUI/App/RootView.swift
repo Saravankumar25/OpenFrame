@@ -9,6 +9,8 @@ public struct RootView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.openWindow) private var openWindow
     @State private var palette: SearchPaletteModel?
+    @State private var showShortcuts = false
+    @State private var welcome: WelcomeNameModel?
 
     public init() {}
 
@@ -22,6 +24,13 @@ public struct RootView: View {
             .task(id: showsProject) { await model.licence.setProjectOpen(showsProject) }
             .onReceive(NotificationCenter.default.publisher(for: .openFrameShowSearch)) { _ in openPalette() }
             .onReceive(NotificationCenter.default.publisher(for: .openFrameShowAbout)) { _ in openWindow(id: "about") }
+            .onReceive(NotificationCenter.default.publisher(for: .openFrameShowShortcuts)) { _ in
+                if showsHomeOrProject { showShortcuts = true }
+            }
+            .task(id: model.isRunning) { await ShortcutStore.shared.reload(core: model.core) }
+            .sheet(isPresented: $showShortcuts) { ShortcutsSheet(app: model) }
+            .sheet(item: $welcome) { WelcomeNameView(model: $0) }
+            .task(id: welcomeKey) { updateWelcome() }
             .tint(theme["accent"])
             .animation(reduceMotion ? .easeInOut(duration: 0.15) : .spring(response: 0.35, dampingFraction: 1), value: phaseKey)
             .alert(item: $model.alert) { alert in
@@ -39,6 +48,31 @@ public struct RootView: View {
                     )
                 }
             }
+    }
+
+    private var showsHomeOrProject: Bool {
+        switch model.phase {
+        case .home, .project: !model.licence.blocksApp
+        default: false
+        }
+    }
+
+    /// First launch: after the team gate, on Application Home, until a name is stored.
+    private var welcomeKey: String {
+        "\(model.needsWelcomeName)-\(showsHome)-\(model.licence.blocksApp)"
+    }
+
+    private var showsHome: Bool {
+        if case .home = model.phase { return true }
+        return false
+    }
+
+    private func updateWelcome() {
+        if model.needsWelcomeName && showsHome && !model.licence.blocksApp {
+            if welcome == nil { welcome = WelcomeNameModel(app: model, current: model.info?.profile.displayName ?? "") }
+        } else if welcome != nil, !model.needsWelcomeName {
+            welcome = nil
+        }
     }
 
     private var showsProject: Bool {
@@ -139,3 +173,5 @@ enum Formatting {
         return date.formatted(.relative(presentation: .named))
     }
 }
+
+extension WelcomeNameModel: Identifiable {}

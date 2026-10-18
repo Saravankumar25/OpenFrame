@@ -21,6 +21,22 @@ extension UI {
             await idle(0.2)
         }
         try await waitHome()
+        try await answerWelcome()
+    }
+
+    /// The first launch asks for the person's name (spec 01, case 1). Every scenario answers
+    /// 'E2E Tester' like the Windows suite.
+    func answerWelcome(_ name: String = "E2E Tester") async throws {
+        let deadline = Date().addingTimeInterval(4)
+        while Date() < deadline {
+            if exists(id: "welcome-name") {
+                try await type(name, into: "welcome-name")
+                try await press(id: "welcome-continue", role: "AXButton")
+                try await waitGone(id: "welcome-name", timeout: 15)
+                return
+            }
+            await idle(0.2)
+        }
     }
 
     func waitHome(timeout: Double = 30) async throws {
