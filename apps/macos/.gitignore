@@ -1,0 +1,7 @@
+# Build products of apps/macos/scripts/build-core.sh and SwiftPM.
+/Frameworks/
+/Sources/OpenFrameCore/Generated/openframe_ffi.swift
+/.build/
+/.swiftpm/
+/build/
+/Sources/OpenFrameUI/Resources/themes.json
