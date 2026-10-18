@@ -16,10 +16,12 @@ struct ScreenplayReplaceBar: View {
                 .textFieldStyle(.roundedBorder)
                 .frame(minWidth: 140, maxWidth: 220)
                 .focused($focusFind)
+                .accessibilityLabel("Find")
                 .accessibilityIdentifier("replace-find")
             TextField("Replace with", text: $model.replaceText)
                 .textFieldStyle(.roundedBorder)
                 .frame(minWidth: 140, maxWidth: 220)
+                .accessibilityLabel("Replace with")
                 .accessibilityIdentifier("replace-with")
             Toggle("Match Case", isOn: $model.matchCase)
                 .toggleStyle(.checkbox)
@@ -59,6 +61,7 @@ struct ScreenplayReplaceBar: View {
         .background(theme["panel"])
         .overlay(alignment: .bottom) { Divider() }
         .onAppear { focusFind = true }
+        .onChange(of: model.replaceFocusRequest) { focusFind = true }
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Replace in script")
         .accessibilityIdentifier("replace-bar")

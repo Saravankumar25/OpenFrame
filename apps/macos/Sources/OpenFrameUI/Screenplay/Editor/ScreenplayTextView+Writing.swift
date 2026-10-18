@@ -203,46 +203,91 @@ extension ScreenplayTextView {
         NSSpellChecker.shared.learnWord(trimmed)
         // The checker may drop the document's ignore list when the dictionary changes.
         NSSpellChecker.shared.setIgnoredWords(ignoredWordList, inSpellDocumentWithTag: spellCheckerDocumentTag)
+        // Check the text again, so the underline goes and the context menu stops offering the word.
+        checkTextInDocument(nil)
         onLearnSpelling?(trimmed)
+    }
+
+    /// Take a word back out of the system dictionary (the core's dictionary is the owner's call):
+    /// the text is checked again, so the word is underlined once more.
+    public func unlearnSpelling(word: String) {
+        let trimmed = word.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        NSSpellChecker.shared.unlearnWord(trimmed)
+        NSSpellChecker.shared.setIgnoredWords(ignoredWordList, inSpellDocumentWithTag: spellCheckerDocumentTag)
+        checkTextInDocument(nil)
     }
 
     @objc func learnSpellingFromMenu(_ sender: NSMenuItem) {
         if let word = sender.representedObject as? String { learnSpelling(word: word) }
     }
 
-    /// The word under the click when it is misspelled, else nil.
-    func misspelledWord(at event: NSEvent) -> String? {
-        guard isContinuousSpellCheckingEnabled else { return nil }
+    /// The word under the click, whether or not it is spelled right.
+    func word(at event: NSEvent) -> String? {
         let point = convert(event.locationInWindow, from: nil)
         let index = characterIndexForInsertion(at: point)
         let ns = (textStorage?.string ?? "") as NSString
-        guard index <= ns.length, ns.length > 0 else { return nil }
+        guard ns.length > 0 else { return nil }
         let range = selectionRange(forProposedRange: NSRange(location: min(index, ns.length - 1), length: 0), granularity: .selectByWord)
         guard range.length > 0, NSMaxRange(range) <= ns.length else { return nil }
-        let word = ns.substring(with: range)
-        guard word.rangeOfCharacter(from: .letters) != nil else { return nil }
+        let word = ns.substring(with: range).trimmingCharacters(in: .whitespacesAndNewlines)
+        return word.rangeOfCharacter(from: .letters) == nil ? nil : word
+    }
+
+    /// The word under the click when it is misspelled, else nil.
+    func misspelledWord(at event: NSEvent) -> String? {
+        guard isContinuousSpellCheckingEnabled, let word = word(at: event) else { return nil }
         let found = NSSpellChecker.shared.checkSpelling(
             of: word, startingAt: 0, language: nil, wrap: false, inSpellDocumentWithTag: spellCheckerDocumentTag, wordCount: nil)
         return found.location == NSNotFound ? nil : word
     }
 
-    /// "Learn Spelling" in the context menu teaches the core's dictionary as well.
+    private static func isLearnItem(_ item: NSMenuItem) -> Bool {
+        item.title == "Learn Spelling" || (item.action.map { NSStringFromSelector($0).lowercased().contains("learn") } ?? false)
+    }
+
+    /// "Learn Spelling" in the context menu teaches the core's dictionary as well. The system's own
+    /// item is taken over wherever it sits in the menu; the word is the one under the click, found
+    /// without asking the checker again (the menu only offers Learn Spelling on a flagged word).
     func adjustSpellingMenu(_ menu: NSMenu?, for event: NSEvent) {
-        guard let menu, let word = misspelledWord(at: event) else { return }
-        let learnTitle = NSLocalizedString("Learn Spelling", comment: "")
-        var replaced = false
-        for item in menu.items where item.title == learnTitle || item.action == NSSelectorFromString("learnSpelling:") {
-            item.title = learnTitle
-            item.target = self
-            item.action = #selector(learnSpellingFromMenu(_:))
-            item.representedObject = word
-            replaced = true
+        guard let menu else { return }
+        var learnItems: [NSMenuItem] = []
+        func collect(_ m: NSMenu) {
+            for item in m.items {
+                if Self.isLearnItem(item) { learnItems.append(item) }
+                if let sub = item.submenu { collect(sub) }
+            }
         }
-        if !replaced {
-            let item = NSMenuItem(title: learnTitle, action: #selector(learnSpellingFromMenu(_:)), keyEquivalent: "")
+        collect(menu)
+        if learnItems.isEmpty {
+            // The system offers Ignore Spelling on a flagged word. Without it (and without Learn
+            // Spelling) the word is fine, or was just learned: nothing to add.
+            var ignoreSeen = false
+            func scan(_ m: NSMenu) {
+                for item in m.items {
+                    if item.title == "Ignore Spelling" || (item.action.map { NSStringFromSelector($0).lowercased().contains("ignorespelling") } ?? false) { ignoreSeen = true }
+                    if let sub = item.submenu { scan(sub) }
+                }
+            }
+            scan(menu)
+            guard ignoreSeen, let word = misspelledWord(at: event), !NSSpellChecker.shared.hasLearnedWord(word) else { return }
+            let item = NSMenuItem(title: "Learn Spelling", action: #selector(learnSpellingFromMenu(_:)), keyEquivalent: "")
             item.target = self
             item.representedObject = word
             menu.insertItem(item, at: 0)
+            return
+        }
+        guard let word = word(at: event) else { return }
+        if NSSpellChecker.shared.hasLearnedWord(word) {
+            // Learned already: the system may still list it until the text is checked again.
+            for item in learnItems { item.menu?.removeItem(item) }
+            return
+        }
+        for item in learnItems {
+            item.title = "Learn Spelling"
+            item.target = self
+            item.action = #selector(learnSpellingFromMenu(_:))
+            item.representedObject = word
         }
     }
 }

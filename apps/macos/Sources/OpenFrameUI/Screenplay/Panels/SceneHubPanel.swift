@@ -133,6 +133,7 @@ struct SceneHubPanel: View {
     @Environment(AppModel.self) private var app
     @Environment(\.ofTheme) private var theme
     @State private var model = SceneHubModel()
+    @State private var privateNotes = PrivateNotesModel()
     @State private var error: String?
 
     private static let tables = ["screenplay_scene", "screenplay_element", "comment", "story_scene_card"]
@@ -150,6 +151,7 @@ struct SceneHubPanel: View {
                     storyCard
                     charactersSection
                     fields
+                    PrivateNotesSection(model: privateNotes)
                     sceneComments
                     Text("The hub is navigation and context, not a master edit screen. Each link opens its own workspace.")
                         .font(.caption).foregroundStyle(theme["muted"]).fixedSize(horizontal: false, vertical: true)
@@ -162,6 +164,10 @@ struct SceneHubPanel: View {
         .task(id: "\(sceneId ?? "-")-\(app.changes.key(Self.tables))") {
             model.attach(app, workspace)
             await model.load(sceneId: sceneId)
+        }
+        .task(id: "\(sceneId ?? "-")-\(app.changes.key(["private_note"]))") {
+            privateNotes.attach(app)
+            await privateNotes.load(sceneId: sceneId)
         }
         .accessibilityIdentifier("scene-hub")
     }

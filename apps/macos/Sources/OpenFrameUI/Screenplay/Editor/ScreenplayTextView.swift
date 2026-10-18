@@ -688,6 +688,9 @@ public final class ScreenplayTextView: NSTextView, @preconcurrency NSTextContent
             if now.timeIntervalSince(lastEditAt) > Self.undoPauseSeconds { breakUndoCoalescing() }
             lastEditAt = now
             let ns = (textStorage?.string ?? "") as NSString
+            // Writing at the very end is writing in the empty last paragraph (or making a new one):
+            // what was kept for it before no longer describes it.
+            if affectedCharRange.location >= ns.length { trailingAttributes = nil }
             let replaced = affectedCharRange.length > 0 && affectedCharRange.location + affectedCharRange.length <= ns.length
                 ? ns.substring(with: affectedCharRange) : ""
             if (replacementString ?? "").contains("\n") || replaced.contains("\n") { suggestions.invalidateValues() }
@@ -725,6 +728,13 @@ public final class ScreenplayTextView: NSTextView, @preconcurrency NSTextContent
         let index = caretParagraphIndex
         guard force || index != lastParagraphIndex else { return }
         lastParagraphIndex = index
+        // Back in the empty last paragraph: it has no character to carry its element, so the
+        // attributes kept when the caret left it come back (without this it took on the element
+        // of the paragraph the caret came from).
+        if let storage = textStorage, storage.length > 0, selectedRange().location >= storage.length,
+           (storage.string as NSString).character(at: storage.length - 1) == 10, let trailing = trailingAttributes {
+            typingAttributes = trailing
+        }
         let all = paragraphs()
         guard index < all.count else { return }
         // Typing at the start of an empty paragraph keeps its element.

@@ -24,6 +24,10 @@ enum ScreenplayPanelSheet: Identifiable, Equatable {
     case newScreenplay
     case renameScreenplay
     case deleteScreenplay
+    case customElements
+    case revisions
+    case lock(draftId: String)
+    case pageView
 
     var id: String {
         switch self {
@@ -36,6 +40,10 @@ enum ScreenplayPanelSheet: Identifiable, Equatable {
         case .newScreenplay: "new-screenplay"
         case .renameScreenplay: "rename-screenplay"
         case .deleteScreenplay: "delete-screenplay"
+        case .customElements: "custom-elements"
+        case .revisions: "revisions"
+        case let .lock(draftId): "lock-\(draftId)"
+        case .pageView: "page-view"
         }
     }
 }
@@ -140,6 +148,10 @@ struct ScreenplayPanelsHost: ViewModifier {
                 case .newScreenplay: NewScreenplaySheet(workspace: model, state: state)
                 case .renameScreenplay: RenameScreenplaySheet(workspace: model, state: state)
                 case .deleteScreenplay: DeleteScreenplaySheet(workspace: model, state: state)
+                case .customElements: CustomElementsSheet(workspace: model, state: state)
+                case .revisions: RevisionsSheet(workspace: model, state: state)
+                case let .lock(draftId): LockDraftHost(workspace: model, state: state, draftId: draftId)
+                case .pageView: PageViewSheet(workspace: model, state: state)
                 }
             }
             .overlay(alignment: .top) {
@@ -189,12 +201,49 @@ struct NewDraftHost: View {
     }
 }
 
+/// "Lock as Shooting Draft": the confirmation with the core's summary of the draft.
+struct LockDraftHost: View {
+    let workspace: ScreenplayWorkspaceModel
+    let state: ScreenplayPanelState
+    let draftId: String
+    @Environment(AppModel.self) private var app
+    @State private var model = DraftsPanelModel()
+
+    var body: some View {
+        Group {
+            if let draft = workspace.overview?.drafts.first(where: { $0.id == draftId }) {
+                LockDraftSheet(model: model, draft: draft)
+            } else {
+                PanelSheetFrame(title: "Lock this draft as the Shooting Draft?") { Text("This draft is no longer there.") } footer: {
+                    Button("Cancel") { state.sheet = nil }
+                }
+            }
+        }
+        .task { model.attach(app, workspace, say: { state.say($0) }) }
+    }
+}
+
 // MARK: - Toolbar
+
+/// What the screenplay toolbar holds. The window is 1360 points wide by default and the toolbar
+/// shares it with the project's own items, so only what the writer reaches for all the time has
+/// a place of its own. The rest lives in the Screenplay Tools menu, where nothing is lost to the
+/// system's overflow menu ("more toolbar items"), which the keyboard and VoiceOver reach badly.
+enum ScreenplayToolbarLayout {
+    /// The items on the toolbar itself, left to right.
+    static let primary = [
+        "screenplay-picker", "element-picker", "compare-button", "comments-button",
+        "replace-toggle", "draft-menu", "screenplay-tools-menu", "editor-save-status",
+    ]
+    /// The entries of the Screenplay Tools menu that used to be toolbar items.
+    static let toolsMenuEntries = ["layout-menu", "screenplay-interchange-menu", "custom-elements-menu-item", "page-view-menu-item"]
+}
 
 /// Toolbar items: Compare, the Comments button with its count, and a menu for the rest.
 struct ScreenplayPanelToolbar: ToolbarContent {
     @Bindable var state: ScreenplayPanelState
     let model: ScreenplayWorkspaceModel
+    var setMode: (ScreenplayMode) -> Void = { _ in }
 
     var body: some ToolbarContent {
         ToolbarItem(placement: .navigation) {
@@ -213,23 +262,65 @@ struct ScreenplayPanelToolbar: ToolbarContent {
             .accessibilityLabel("Comments (\(state.comments.openCount))")
             .accessibilityIdentifier("comments-button")
         }
-        ToolbarItem(placement: .automatic) {
-            Menu {
-                Button("Add Comment") { state.addCommentAtCaret() }.keyboardShortcut("m", modifiers: [.command, .option])
-                Button("Scene Hub") { state.tab = .scene; state.inspectorShown = true }
-                Button(state.inspectorShown ? "Hide Inspector" : "Show Inspector") { state.inspectorShown.toggle() }
-                Divider()
-                Button("Drafts\u{2026}") { state.sheet = .drafts }
-                Button("Review\u{2026}") { state.sheet = .review(startFor: nil) }
-                Divider()
-                Button("Page Setup\u{2026}") { state.sheet = .pageSetup }
-                Button("Title Page\u{2026}") { state.sheet = .titlePage }
-            } label: {
-                Label("Screenplay Tools", systemImage: "ellipsis.circle")
+    }
+}
+
+/// The Screenplay Tools menu: comments, drafts, revisions, page setup and the rarer tools.
+struct ScreenplayToolsMenu: View {
+    @Bindable var state: ScreenplayPanelState
+    let model: ScreenplayWorkspaceModel
+    let setMode: (ScreenplayMode) -> Void
+
+    var body: some View {
+        Menu {
+            Button("Add Comment") { state.addCommentAtCaret() }.keyboardShortcut("m", modifiers: [.command, .option])
+            Button("Scene Hub") { state.tab = .scene; state.inspectorShown = true }
+            Button(state.inspectorShown ? "Hide Inspector" : "Show Inspector") { state.inspectorShown.toggle() }
+            Divider()
+            Button("Drafts\u{2026}") { state.sheet = .drafts }
+            Button("Review\u{2026}") { state.sheet = .review(startFor: nil) }
+            if let draft = model.draft {
+                if model.overview?.permissions.lock == true, draft.status != .locked {
+                    Button("Lock as Shooting Draft\u{2026}") { state.sheet = .lock(draftId: draft.id) }
+                        .accessibilityIdentifier("lock-button")
+                }
+                if draft.status == .locked || draft.status == .revision {
+                    Button("Revisions\u{2026}") { state.sheet = .revisions }
+                        .accessibilityIdentifier("revisions-button")
+                }
             }
-            .help("Comments, drafts, review and page setup")
-            .accessibilityLabel("Screenplay Tools")
-            .accessibilityIdentifier("screenplay-tools-menu")
+            Divider()
+            Button("Page Setup\u{2026}") { state.sheet = .pageSetup }
+            Button("Title Page\u{2026}") { state.sheet = .titlePage }
+            Button("Custom Elements\u{2026}") { state.sheet = .customElements }
+                .accessibilityIdentifier("custom-elements-menu-item")
+            Button("Page View\u{2026}") { state.sheet = .pageView }
+                .accessibilityIdentifier("page-view-menu-item")
+            Divider()
+            Menu("Layout") {
+                ForEach(ScreenplayMode.allCases, id: \.self) { m in
+                    Button { setMode(m) } label: {
+                        if model.mode == m { Label(m.title, systemImage: "checkmark") } else { Text(m.title) }
+                    }
+                }
+            }
+            .help("Standard, Writing Room (side pane) or Focus (only the page). Focus: Shift+Command+F. Writing Room: Shift+Command+R")
+            .accessibilityIdentifier("layout-menu")
+            Menu("Import and Export") {
+                Button("Import Screenplay\u{2026}") { InterchangePresenter.shared.present(.importScreenplay(openScreenplayId: model.overview?.screenplay?.id)) }
+                    .disabled(!(model.overview?.permissions.edit ?? true))
+                    .accessibilityIdentifier("screenplay-import")
+                Button("Export Screenplay\u{2026}") { InterchangePresenter.shared.present(.exportScreenplay(draftId: model.draft?.id)) }
+                    .accessibilityIdentifier("screenplay-export")
+                Button("Print\u{2026}") { InterchangePresenter.shared.present(.printPreview(draftId: model.draft?.id)) }
+                    .accessibilityIdentifier("screenplay-print")
+            }
+            .accessibilityIdentifier("screenplay-interchange-menu")
+        } label: {
+            Label("Screenplay Tools", systemImage: "ellipsis.circle")
         }
+        .help("Comments, drafts, revisions, page setup, layout, import and export")
+        .accessibilityLabel("Screenplay Tools")
+        .accessibilityIdentifier("screenplay-tools-menu")
     }
 }

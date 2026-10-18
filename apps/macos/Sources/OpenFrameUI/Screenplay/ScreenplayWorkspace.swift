@@ -71,8 +71,14 @@ final class ScreenplayWorkspaceModel {
     /// A short line about what just happened ("Added MEERA to Characters"); clears itself.
     var notice: String?
     var currentCustomId: String?
+    /// The optional navigator columns the writer chose (kept in the layout record), and what the
+    /// core reports for them. The data loads once a column is shown.
+    var navColumns: [NavigatorColumn] = []
+    var navData: NavigatorColumnData?
     // Replace All (Command+Option+F).
     var showReplace = false
+    /// Counts requests to put the caret in the Find field (the bar is already open when it rises).
+    var replaceFocusRequest = 0
     var findText = ""
     var replaceText = ""
     var matchCase = false
@@ -150,6 +156,33 @@ final class ScreenplayWorkspaceModel {
         guard let core = app?.core else { return }
         if let state = try? await core.screenplayViewState(ScreenplayViewStateArgs()) {
             mode = ScreenplayMode.from(state)
+            navColumns = NavigatorColumn.from(state)
+        }
+        await loadNavigatorColumns()
+    }
+
+    // MARK: Navigator columns
+
+    /// Show or hide one navigator column and keep the choice (other keys of the record stay).
+    func toggleNavColumn(_ column: NavigatorColumn) {
+        navColumns = NavigatorColumn.toggled(navColumns, column)
+        let columns = navColumns
+        Task { await loadNavigatorColumns() }
+        guard let core = app?.core else { return }
+        Task {
+            let current = try? await core.screenplayViewState(ScreenplayViewStateArgs())
+            _ = try? await core.screenplaySetViewState(ScreenplaySetViewStateArgs(state: NavigatorColumn.merged(current, columns: columns)))
+        }
+    }
+
+    /// Ask the core for the pages, notes, revision and production numbers of the draft's scenes.
+    func loadNavigatorColumns() async {
+        guard !navColumns.isEmpty, let core = app?.core, let id = draft?.id else {
+            if navColumns.isEmpty { navData = nil }
+            return
+        }
+        if let r = try? await core.writingNavigatorColumns(WritingNavigatorArgs(draftId: id)), id == draft?.id {
+            navData = NavigatorColumnData(r)
         }
     }
 
@@ -164,8 +197,11 @@ final class ScreenplayWorkspaceModel {
         }
     }
 
+    /// Say what just happened. The line also shows as a toast, which stays reachable when the
+    /// toolbar is crowded (the toolbar has no room for a message of any length).
     func announce(_ message: String) {
         notice = message
+        ToastCenter.shared.show(message)
         noticeTask?.cancel()
         noticeTask = Task { [weak self] in
             try? await Task.sleep(for: .seconds(5))
@@ -186,6 +222,7 @@ final class ScreenplayWorkspaceModel {
         if let p = try? await core.screenplayPagination(ScreenplayDraftIdArgs(draftId: id)), p.draftId == draft?.id {
             pagination = p
         }
+        await loadNavigatorColumns()
     }
 
     func caretMoved() {
@@ -236,10 +273,28 @@ final class ScreenplayWorkspaceModel {
             guard let self, let core = self.app?.core else { return }
             do {
                 _ = try await core.writingDictionaryAdd(WritingWordArgs(word: word))
-                self.announce("Added “\(word)” to your dictionary")
+                let message = "Added “\(word)” to your dictionary"
+                self.notice = message
+                // The toast offers Unlearn, which takes the word out of both dictionaries again.
+                ToastCenter.shared.show(message, actionLabel: "Unlearn") { [weak self] in await self?.unlearn(word) }
             } catch {
                 self.app?.show("Could not add the word", error)
             }
+        }
+    }
+
+    /// Take a learned word back: out of the core's dictionary and the system's, so it is
+    /// underlined again.
+    func unlearn(_ word: String) async {
+        guard let core = app?.core else { return }
+        do {
+            _ = try await core.writingDictionaryRemove(WritingWordArgs(word: word))
+            textView?.unlearnSpelling(word: word)
+            let message = "Removed “\(word)” from your dictionary"
+            notice = message
+            ToastCenter.shared.show(message)
+        } catch {
+            app?.show("Could not remove the word", error)
         }
     }
 
@@ -251,6 +306,7 @@ final class ScreenplayWorkspaceModel {
             if !text.contains("\n"), !text.contains(ScreenplayParagraphs.lineSeparator) { findText = text }
         }
         showReplace = true
+        replaceFocusRequest += 1
     }
 
     /// Replace in the draft or the current scene through the core, after the typed text is saved.
@@ -547,7 +603,7 @@ struct ScreenplayWorkspace: View {
     }
 
     @ToolbarContentBuilder private var toolbar: some ToolbarContent {
-        ScreenplayPanelToolbar(state: panels, model: model)
+        ScreenplayPanelToolbar(state: panels, model: model, setMode: setMode)
         ToolbarItem(placement: .principal) {
             Menu {
                 ForEach(SharedScreenplayRules.shared.menuKinds, id: \.self) { k in
@@ -578,37 +634,16 @@ struct ScreenplayWorkspace: View {
             .accessibilityIdentifier("element-picker")
         }
         ToolbarItem(placement: .automatic) {
-            Menu {
-                ForEach(ScreenplayMode.allCases, id: \.self) { m in
-                    Button { setMode(m) } label: {
-                        if model.mode == m { Label(m.title, systemImage: "checkmark") } else { Text(m.title) }
-                    }
-                }
-            } label: {
-                Label("Layout", systemImage: "rectangle.split.3x1")
-            }
-            .help("Standard, Writing Room (side pane) or Focus (only the page). Focus: Shift+Command+F. Writing Room: Shift+Command+R")
-            .accessibilityLabel("Layout")
-            .accessibilityIdentifier("layout-menu")
-        }
-        ToolbarItem(placement: .automatic) {
-            Button { if model.showReplace { model.showReplace = false } else { model.openReplace() } } label: {
+            // Opens the bar and never closes it: a second press of the same button (a double
+            // click, or an accessibility press followed by a click) must not shut it again. The
+            // bar's own Close button and Escape close it.
+            Button { model.openReplace() } label: {
                 Label("Replace", systemImage: "arrow.left.arrow.right")
             }
             .keyboardShortcut("f", modifiers: [.command, .option])
             .disabled(!model.canEdit)
             .help("Replace in the script (Command+Option+F). Command+F finds.")
             .accessibilityIdentifier("replace-toggle")
-        }
-        ToolbarItem(placement: .automatic) {
-            if let page = model.pageLabel {
-                Text(page)
-                    .font(.caption.monospacedDigit())
-                    .foregroundStyle(.secondary)
-                    .help("\(model.pagination?.paper ?? ""), \(Int(model.pagination?.linesPerPage ?? 0)) lines per page")
-                    .accessibilityLabel(page)
-                    .accessibilityIdentifier("editor-page-count")
-            }
         }
         ToolbarItem(placement: .automatic) {
             Menu {
@@ -631,31 +666,26 @@ struct ScreenplayWorkspace: View {
             .accessibilityIdentifier("draft-menu")
         }
         ToolbarItem(placement: .automatic) {
-            Menu {
-                Button("Import Screenplay\u{2026}") { InterchangePresenter.shared.present(.importScreenplay(openScreenplayId: model.overview?.screenplay?.id)) }
-                    .disabled(!(model.overview?.permissions.edit ?? true))
-                    .accessibilityIdentifier("screenplay-import")
-                Button("Export Screenplay\u{2026}") { InterchangePresenter.shared.present(.exportScreenplay(draftId: model.draft?.id)) }
-                    .accessibilityIdentifier("screenplay-export")
-                Button("Print\u{2026}") { InterchangePresenter.shared.present(.printPreview(draftId: model.draft?.id)) }
-                    .accessibilityIdentifier("screenplay-print")
-            } label: {
-                Label("Import and Export", systemImage: "square.and.arrow.up")
-            }
-            .help("Import a screenplay, export this draft, or print it")
-            .accessibilityIdentifier("screenplay-interchange-menu")
+            ScreenplayToolsMenu(state: panels, model: model, setMode: setMode)
         }
         ToolbarItem(placement: .automatic) {
-            Text(model.syncStatus == "saved" ? "Saved" : model.syncStatus == "error" ? "Not saved" : "Saving")
-                .font(.caption)
-                .foregroundStyle(model.syncStatus == "error" ? theme["red-t"] : .secondary)
-                .accessibilityIdentifier("editor-save-status")
-        }
-        ToolbarItem(placement: .automatic) {
-            if let notice = model.notice {
-                Text(notice).font(.caption).foregroundStyle(.secondary).lineLimit(1)
-                    .accessibilityIdentifier("editor-notice")
+            // The page count and the save state share one item: the toolbar has room for little
+            // more, and both are short.
+            HStack(spacing: 8) {
+                if let page = model.pageLabel {
+                    Text(page)
+                        .font(.caption.monospacedDigit())
+                        .foregroundStyle(.secondary)
+                        .help("\(model.pagination?.paper ?? ""), \(Int(model.pagination?.linesPerPage ?? 0)) lines per page")
+                        .accessibilityLabel(page)
+                        .accessibilityIdentifier("editor-page-count")
+                }
+                Text(model.syncStatus == "saved" ? "Saved" : model.syncStatus == "error" ? "Not saved" : "Saving")
+                    .font(.caption)
+                    .foregroundStyle(model.syncStatus == "error" ? theme["red-t"] : .secondary)
+                    .accessibilityIdentifier("editor-save-status")
             }
+            .fixedSize()
         }
     }
 
@@ -667,6 +697,7 @@ struct ScreenplayWorkspace: View {
 }
 
 /// Scenes of the draft, numbered as the core numbers them. Clicking a scene moves the caret there.
+/// Optional columns (Page, Notes, Revision, Production number) show what the core reports.
 struct SceneNavigator: View {
     let model: ScreenplayWorkspaceModel
     let panels: ScreenplayPanelState
@@ -675,21 +706,67 @@ struct SceneNavigator: View {
 
     var body: some View {
         let scenes = model.document?.scenes ?? []
+        let shown = NavigatorColumnData.shown(model.navColumns, model.navData)
+        VStack(spacing: 0) {
+            HStack {
+                Text("Scenes (\(scenes.count))").font(.headline).accessibilityAddTraits(.isHeader)
+                Spacer()
+                Menu {
+                    ForEach(NavigatorColumn.allCases, id: \.self) { c in
+                        Toggle(NavigatorColumnData.menuTitle(c, chosen: model.navColumns, data: model.navData), isOn: Binding(
+                            get: { model.navColumns.contains(c) },
+                            set: { _ in model.toggleNavColumn(c) }))
+                            .disabled(NavigatorColumnData.isDisabled(c, chosen: model.navColumns, data: model.navData))
+                    }
+                } label: {
+                    Image(systemName: "tablecells")
+                }
+                .menuStyle(.borderlessButton)
+                .fixedSize()
+                .help("Show or hide columns")
+                .accessibilityLabel("Navigator columns")
+                .accessibilityIdentifier("navigator-columns")
+            }
+            .padding(.horizontal, 12).padding(.vertical, 8)
         List {
-            Section("Scenes (\(scenes.count))") {
+            Section {
+                if !shown.isEmpty {
+                    HStack(spacing: 8) {
+                        Text("#").frame(minWidth: 22, alignment: .trailing)
+                        Text("Heading").frame(maxWidth: .infinity, alignment: .leading)
+                        ForEach(shown, id: \.self) { c in Text(c.heading).frame(width: columnWidth(c), alignment: .trailing) }
+                    }
+                    .font(.caption).foregroundStyle(theme["muted"])
+                    .accessibilityElement(children: .contain)
+                    .accessibilityIdentifier("navigator-column-heads")
+                }
                 ForEach(Array(scenes.enumerated()), id: \.element.id) { i, scene in
-                    Button {
-                        model.textView?.reveal(paragraph: paragraphIndex(of: i, in: scenes))
-                        model.textView?.window?.makeFirstResponder(model.textView)
-                    } label: {
-                        HStack(alignment: .firstTextBaseline, spacing: 8) {
-                            Text(scene.label).font(.caption.monospacedDigit()).foregroundStyle(.secondary).frame(minWidth: 22, alignment: .trailing)
-                            Text(scene.heading.isEmpty ? "Untitled scene" : scene.heading.uppercased())
-                                .font(.callout).lineLimit(2)
+                    HStack(alignment: .firstTextBaseline, spacing: 8) {
+                        Button {
+                            model.textView?.reveal(paragraph: model.paragraphIndex(ofScene: scene.id) ?? 0)
+                            model.textView?.window?.makeFirstResponder(model.textView)
+                        } label: {
+                            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                                Text(scene.label).font(.caption.monospacedDigit()).foregroundStyle(.secondary).frame(minWidth: 22, alignment: .trailing)
+                                Text(scene.heading.isEmpty ? "Untitled scene" : scene.heading.uppercased())
+                                    .font(.callout).lineLimit(2)
+                                Spacer(minLength: 0)
+                            }
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("Scene \(scene.label), \(scene.heading)")
+                        .accessibilityIdentifier("scene-row-\(scene.id)")
+                        ForEach(shown, id: \.self) { c in
+                            if let cell = NavigatorColumnData.cell(c, model.navData?.rows[scene.id]) {
+                                Text(cell.value).font(.caption.monospacedDigit()).foregroundStyle(.secondary)
+                                    .frame(width: columnWidth(c), alignment: .trailing)
+                                    .accessibilityLabel(cell.label)
+                                    .accessibilityIdentifier("navigator-cell-\(c.rawValue)")
+                            } else {
+                                Color.clear.frame(width: columnWidth(c), height: 1).accessibilityHidden(true)
+                            }
                         }
                     }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel("Scene \(scene.label), \(scene.heading)")
                     .contextMenu {
                         Button("Scene Hub") { panels.showSceneHub(sceneId: scene.id) }
                         Button("Add Comment") { panels.addComment(sceneId: scene.id) }
@@ -699,10 +776,15 @@ struct SceneNavigator: View {
         }
         .listStyle(.sidebar)
         .accessibilityIdentifier("scene-navigator")
+        }
     }
 
-    private func paragraphIndex(of scene: Int, in scenes: [ScreenplaySceneDto]) -> Int {
-        scenes.prefix(scene).reduce(0) { $0 + 1 + $1.elements.count }
+    private func columnWidth(_ c: NavigatorColumn) -> CGFloat {
+        switch c {
+        case .page, .notes: 34
+        case .revision: 52
+        case .production: 46
+        }
     }
 }
 
