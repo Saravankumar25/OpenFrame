@@ -1227,8 +1227,9 @@ extension Scenarios {
                 try await openDay(ui, 1)
                 try await setField(ui, "day-crew-call", "07:00")
                 try await setField(ui, "day-shooting-start", "08:00")
+                try await ui.blur()
                 try await ui.waitText("Estimated wrap")
-                try await ui.blur(); try await ui.press(id: "day-back")
+                try await ui.press(id: "day-back")
                 try await ui.press(id: "schedule-section-dood")
                 _ = try await ui.wait(id: "dood-table", timeout: 15, "the Day Out of Days table")
                 try await ui.menuButton(id: "dood-cell-1-2", item: "T")
@@ -1517,7 +1518,10 @@ extension Scenarios {
     /// Opens the first call sheet of the list when the list is showing (its rows are hidden from the tree).
     @MainActor static func openFirstCallSheet(_ ui: UI) async throws {
         if ui.exists(id: "callsheet-document") { return }
-        try await selectTableRow(ui, id: "callsheet-list", row: 1)
+        let open = try await ui.waitFor("the Open button of the first call sheet", timeout: 15) {
+            ui.queryPrefix("callsheet-open-").first { $0.role == "AXButton" }
+        }
+        try await ui.press(open)
         _ = try await ui.wait(id: "callsheet-document", timeout: 15, "the call sheet")
     }
 
@@ -1584,7 +1588,7 @@ extension Scenarios {
             try await ui.press(id: "callsheet-review-update")
             try await ui.waitText("Update call sheet: review changes")
             try ui.expect(ui.shows("scene") || ui.shows("Scene"), "the dialog mentions a scene")
-            try await ui.press(id: "callsheet-refresh-apply")
+            try await ui.pressWhenEnabled(id: "callsheet-refresh-apply")
             try await ui.waitGone(id: "callsheet-stale-banner", timeout: 15)
             try ui.expect(callSheetField(ui, "forecast")?.value == "Light rain after 18:00", "the Forecast field still reads the entered text")
             try ui.quiet("after applying the update")
@@ -1596,7 +1600,7 @@ extension Scenarios {
             try await ui.press(id: "callsheet-finalize")
             try await ui.press(id: "callsheet-finalize-confirm")
             try await ui.waitText("Finalized ")
-            try ui.expect(ui.fieldTakesInput(label: "Crew call") == false, "the Crew call field is disabled")
+            try await ui.waitUntil("the Crew call field is disabled") { callSheetField(ui, "crew-call").map { !$0.isEnabled } ?? false }
             let pdf = ctx.work.appendingPathComponent("call-sheet.pdf")
             try await ui.press(id: "callsheet-export")
             try await ui.pressAndSave(id: "export-run", to: pdf)
@@ -1611,7 +1615,7 @@ extension Scenarios {
             try await ui.waitText("Start New Revision")
             try ui.expect(callSheetField(ui, "crew-call")?.value == "07:00", "the Crew call field still reads 07:00")
             try await ui.press(id: "callsheet-start-new-revision")
-            try await ui.press(id: "callsheet-refresh-apply")
+            try await ui.pressWhenEnabled(id: "callsheet-refresh-apply")
             try await ui.waitText("v2")
             try await ui.waitUntil("the Crew call field reads 07:30") { callSheetField(ui, "crew-call")?.value == "07:30" }
             try ui.quiet("after the new revision")
@@ -1620,12 +1624,12 @@ extension Scenarios {
         Scenario("62-call-sheets-exports/budget-keeps-planned-and-actual-with-the-difference", timeout: 300) { ui, _, ctx in
             try await ui.firstLaunch(ctx, title: "Lost Property Unit")
             try await ui.nav("Budget")
-            try await ui.press(label: "Start budget", role: "AXButton")
+            try await ui.press(label: "Start Budget", role: "AXButton")
             try await ui.press(label: "Add Line", role: "AXButton")
-            try await ui.typeIn("Lead actor", into: nil, label: "Description")
-            try await ui.typeIn("50000", into: nil, label: "Planned amount")
-            try await ui.typeIn("55000", into: nil, label: "Actual amount")
-            try await ui.press(id: "budget-line-add")
+            try await ui.typeIn("Lead actor", into: "of-bl-desc")
+            try await ui.typeIn("50000", into: "of-bl-amt")
+            try await ui.typeIn("55000", into: "of-bl-act")
+            try await ui.press(id: "budget-line-sheet-primary")
             try await ui.waitText("over plan")
             try await ui.undoProject()
             try await ui.waitText("No lines yet")
@@ -1651,12 +1655,16 @@ extension Scenarios {
             let dir = ctx.work
             try await segment(ui, group: "callsheets-tabs", "Sides")
             try await ui.press(id: "sides-cover")
-            try await ui.pressAndSave(id: "sides-export", to: dir.appendingPathComponent("sides.pdf"))
+            try await ui.press(id: "sides-export")
+            try await ui.pressAndSave(id: "export-run", to: dir.appendingPathComponent("sides.pdf"))
+            try await ui.waitText("Export complete")
             try await ui.press(id: "export-close")
             try checkPdf(ui, dir.appendingPathComponent("sides.pdf"))
             try await segment(ui, group: "callsheets-tabs", "Reports")
-            try await ui.press(id: "reports-type-scene-report")
-            try await ui.pressAndSave(id: "reports-export", to: dir.appendingPathComponent("scene-report.pdf"))
+            try await ui.press(id: "reports-type-scene")
+            try await ui.press(id: "reports-export")
+            try await ui.pressAndSave(id: "export-run", to: dir.appendingPathComponent("scene-report.pdf"))
+            try await ui.waitText("Export complete")
             try await ui.press(id: "export-close")
             try checkPdf(ui, dir.appendingPathComponent("scene-report.pdf"))
             try await ui.nav("Schedule")
@@ -1664,12 +1672,20 @@ extension Scenarios {
             try checkPdf(ui, dir.appendingPathComponent("schedule.pdf"))
             try await ui.exportTo(kind: "dood", format: "pdf", dir.appendingPathComponent("dood.pdf"))
             try checkPdf(ui, dir.appendingPathComponent("dood.pdf"))
+            try await ui.nav("Visual Planning")
+            try await segment(ui, group: "visual-tabs", "Shot Lists")
+            // The Mac has no Shot List template yet; the shot is typed in by hand, as a person would.
+            try await ui.typeIn("Wide: rain on the platform roof", into: "shots-composer")
+            try await ui.press(id: "shots-composer-add")
+            try await ui.waitText("rain on the platform roof")
+            try await ui.press(id: "shots-export")
+            try await ui.pressAndSave(id: "shots-export-sheet-primary", to: dir.appendingPathComponent("shots.pdf"))
+            try await ui.waitText("Exported shots.pdf")
+            try await ui.press(id: "shots-export-sheet-close")
+            try checkPdf(ui, dir.appendingPathComponent("shots.pdf"))
+            // Spec step 5. Last, so the other exports are proven first. The Mac Breakdown has no export control yet.
             try await ui.nav("Breakdown")
             try await ui.menuButton(label: "Breakdown report", item: "PDF")
-            try await ui.nav("Visual Planning")
-            try await ui.press(label: "Shot List", role: "AXButton")
-            try await ui.pressAndSave(id: "visual-export", to: dir.appendingPathComponent("shots.pdf"))
-            try checkPdf(ui, dir.appendingPathComponent("shots.pdf"))
             try ui.quiet("after the exports")
         },
 
@@ -1703,7 +1719,7 @@ extension Scenarios {
                 try await ui.nav("Call Sheets")
                 try await openFirstCallSheet(ui)
                 try await ui.press(id: "callsheet-start-new-revision")
-                try await ui.press(id: "callsheet-refresh-apply")
+                try await ui.pressWhenEnabled(id: "callsheet-refresh-apply")
                 try await ui.waitText("v2")
                 try await ui.closeProject()
             } else {
@@ -1935,58 +1951,14 @@ fileprivate extension UI {
         try await waitGone(id: "export-close", timeout: 10)
     }
 
-    /// Presses a button that opens a save panel and drives the panel: a folder, a name, the Save button.
-    /// The panel runs its own loop, so a plain block is queued first to answer it while the press waits.
+    /// Presses a button that opens a save panel; the shared panel helper (Panels.swift) answers it with `url`.
+    /// The answer for a save panel is the file the app is to write, so the file is waited for.
     func pressAndSave(id: String, to url: URL) async throws {
         let button = try await wait(id: id, timeout: 15, "the button \(id)")
         try? FileManager.default.removeItem(at: url)
-        var outcome: String?
-        var finished = false
-        // A save panel runs the event loop in the modal panel mode, which serves neither timers nor the main queue.
-        // A helper thread asks the main run loop, in that mode, to look for the panel and answer it.
-        nonisolated(unsafe) var outcomeBox: String?
-        nonisolated(unsafe) var finishedBox = false
-        let modes: [RunLoop.Mode] = [.default, .common, .eventTracking, RunLoop.Mode("NSModalPanelRunLoopMode")]
-        Thread.detachNewThread {
-            for _ in 0..<120 {
-                Thread.sleep(forTimeInterval: 0.25)
-                if finishedBox { return }
-                RunLoop.main.perform(inModes: modes) {
-                    MainActor.assumeIsolated {
-                        guard !finishedBox else { return }
-                        if let panel = NSApp.windows.compactMap({ $0 as? NSSavePanel }).first(where: { $0.isVisible }) {
-                            outcomeBox = UI.answer(panel, url)
-                            finishedBox = true
-                        }
-                    }
-                }
-                CFRunLoopWakeUp(CFRunLoopGetMain())
-            }
-            if !finishedBox { outcomeBox = "no save panel appeared within 30 s"; finishedBox = true }
-        }
         log("press \(id) and save to \(url.lastPathComponent)")
-        if !button.performPress() { try await click(button) }
-        // The press returns when the panel is closed, or at once when the panel opens from a task.
-        let deadline = Date().addingTimeInterval(30)
-        while !finishedBox, Date() < deadline { await idle(0.1) }
-        if let o = outcomeBox, !o.isEmpty { throw DriverError(o) }
-        try expect(finishedBox, "the save panel was never answered")
+        try await choosing(url) { if !button.performPress() { try await click(button) } }
         try await waitUntil("the file \(url.lastPathComponent) exists", timeout: 20) { FileManager.default.fileExists(atPath: url.path) }
-    }
-
-    /// Fills a save panel and presses its Save button. Returns a problem, or nil when it went well.
-    @MainActor static func answer(_ panel: NSSavePanel, _ url: URL) -> String? {
-        panel.directoryURL = url.deletingLastPathComponent()
-        panel.nameFieldStringValue = url.lastPathComponent
-        func buttons(in view: NSView) -> [NSButton] {
-            view.subviews.flatMap { ($0 as? NSButton).map { [$0] } ?? [] } + view.subviews.flatMap { buttons(in: $0) }
-        }
-        let found = panel.contentView.map { buttons(in: $0) } ?? []
-        guard let save = found.first(where: { $0.title == "Save" || $0.title == "Export" }) else {
-            return "no Save button in the save panel: \(found.map(\.title))"
-        }
-        save.performClick(nil)
-        return nil
     }
 }
 
@@ -2021,6 +1993,14 @@ fileprivate extension UI {
         }
     }
 
+    @MainActor final class TrackingFlag { var began = false }
+
+    /// Presses a button once it is enabled: a dialog that is still loading its preview shows the button dimmed.
+    func pressWhenEnabled(id: String, timeout: Double = 20) async throws {
+        try await waitUntil("the button \(id) is enabled", timeout: timeout) { self.query(id: id).first?.isEnabled == true }
+        try await press(id: id)
+    }
+
     /// Opens a menu button, chooses the item whose title starts with the text (searching sub-menus), and closes it.
     func menuButton(id: String? = nil, label: String? = nil, item: String, timeout: Double = 15) async throws {
         let e = try await wait(id: id, label: label, timeout: timeout, "the menu button \(id ?? label ?? "?")")
@@ -2033,15 +2013,23 @@ fileprivate extension UI {
         }
         var target: (NSMenu, Int)?
         let menusBefore = NSApp.windows.filter { $0.isVisible && String(describing: Swift.type(of: $0)).contains("PopupMenu") }.count
+        // The menu is chosen from only after it began tracking. A menu whose click arrives after the
+        // choice was made would open by itself and keep the app from quitting.
+        let tracking = TrackingFlag()
+        let begin = NotificationCenter.default.addObserver(forName: NSMenu.didBeginTrackingNotification, object: nil, queue: .main) { _ in
+            MainActor.assumeIsolated { tracking.began = true }
+        }
+        defer { NotificationCenter.default.removeObserver(begin) }
         for _ in 0..<3 where target == nil {
             let frame = e.frame
+            tracking.began = false
             postClick(atScreen: NSPoint(x: frame.midX, y: frame.midY))
-            let deadline = Date().addingTimeInterval(2)
+            let deadline = Date().addingTimeInterval(3)
             while Date() < deadline {
-                if let m = cell.menu, let t = find(m) { target = t; break }
+                if tracking.began, let m = cell.menu, let t = find(m) { target = t; break }
                 await idle(0.1)
             }
-            if target == nil { cell.menu?.cancelTracking(); await idle(0.3) }
+            if target == nil { cell.menu?.cancelTracking(); await idle(0.5) }
         }
         guard let (menu, index) = target else {
             let titles = cell.menu?.items.map(\.title) ?? []
