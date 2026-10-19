@@ -10,7 +10,7 @@
 use openframe_domain::{Actor, AppError, AppResult};
 use openframe_import_export::layout::{
     self, CHAR_WIDTH_IN, LEFT_MARGIN_IN, LINES_PER_PAGE, LaidOutPage, LayoutOptions, LineStyle,
-    PAGE_WIDTH_IN, PageLine,
+    PAGE_WIDTH_IN, PageLine, RIGHT_EDGE_IN,
 };
 use openframe_import_export::report::{BRAND_LINE, Document};
 use openframe_import_export::{Element, ElementKind, Scene, ScreenplayDoc, pdf_export};
@@ -79,6 +79,37 @@ fn left(row: i32, x: f32, text: &str) -> PageLine {
         text: text.to_string(),
         style: LineStyle::TitleText,
     }
+}
+
+/// Characters of the running header before the page number ("10." plus a gap) starts.
+const HEADER_CHARS: usize = ((RIGHT_EDGE_IN - (LEFT_MARGIN_IN - 0.5)) * 10.0) as usize - 6;
+
+/// Set the running header in lines of at most [`HEADER_CHARS`] characters, breaking only at the
+/// " · " separators (a single part longer than a line wraps at its spaces). At most three lines
+/// fit the header band; anything beyond that is cut at a fixed width and ends with an ellipsis,
+/// so the same header always gives the same lines.
+fn fit_header(header: &str) -> Vec<String> {
+    let mut lines: Vec<String> = Vec::new();
+    for part in header.split(" · ").map(str::trim).filter(|p| !p.is_empty()) {
+        for piece in layout::wrap(part, HEADER_CHARS) {
+            match lines.last_mut() {
+                Some(last) if last.chars().count() + 3 + piece.chars().count() <= HEADER_CHARS => {
+                    last.push_str(" · ");
+                    last.push_str(&piece);
+                }
+                _ => lines.push(piece),
+            }
+        }
+    }
+    if lines.len() > 3 {
+        lines.drain(3..);
+        if let Some(last) = lines.last_mut() {
+            let mut t: String = last.chars().take(HEADER_CHARS - 1).collect();
+            t.push('\u{2026}');
+            *last = t;
+        }
+    }
+    lines
 }
 
 fn fit(s: &str, width: usize) -> String {
@@ -248,42 +279,37 @@ pub(super) fn export(
         page: Default::default(),
     };
     let mut lay = layout::layout(&doc, &opts);
-    // Header on every script page: "BLACK RAIN · SIDES · SHOOT DAY 4 · Draft 6".
-    let header: String = {
-        let h = content.header.trim();
-        // 1" to 7.5" at 10 characters per inch.
-        if h.chars().count() > 65 {
-            let mut t: String = h.chars().take(64).collect();
-            t.push('…');
-            t
-        } else {
-            h.to_string()
-        }
-    };
+    // Running header on every script page: "PROJECT · SIDES · SHOOT DAY 4 · DRAFT". It is set in
+    // the header band beside the page number and wraps at the " · " separators when it is too
+    // long for one line, so nothing is clipped and it never reaches the page number.
+    let header_lines = fit_header(content.header.trim());
+    let first_row = -3 - (header_lines.len() as i32 - 1);
     for page in lay.pages.iter_mut() {
-        page.lines
-            .insert(0, left(-4, LEFT_MARGIN_IN - 0.5, &header));
+        for (k, line) in header_lines.iter().enumerate() {
+            page.lines.insert(
+                0,
+                PageLine {
+                    row: first_row + k as i32,
+                    x_in: LEFT_MARGIN_IN - 0.5,
+                    text: line.clone(),
+                    style: LineStyle::Header,
+                },
+            );
+        }
     }
     if let Some(cover) = cover_page(&content) {
         lay.pages.insert(0, cover);
     }
-    // Sides are a production document, so every page carries the brand line in its bottom
-    // margin (production depth spec §43). Screenplay exports never do.
-    for page in lay.pages.iter_mut() {
-        page.lines.push(PageLine {
-            row: LINES_PER_PAGE as i32 + 2,
-            x_in: LEFT_MARGIN_IN - 0.5,
-            text: BRAND_LINE.to_string(),
-            style: LineStyle::PageNumber,
-        });
-    }
+    // Sides are a production document, so every page carries the OpenFrame attribution in its
+    // bottom margin (production depth spec §43). Screenplay exports never do.
+    lay.brand = Some(BRAND_LINE.to_string());
     let bad = openframe_import_export::unsupported_pdf_characters(&lay);
     if !bad.is_empty() {
         let sample: Vec<String> = bad.iter().take(6).map(|(c, _)| format!("“{c}”")).collect();
         return Err(AppError::export(
             "pdf_unsupported_characters",
             format!(
-                "These sides contain characters the standard screenplay PDF font (Courier) can't print, such as {}. \
+                "These sides contain characters the screenplay PDF fonts can't print, such as {}. \
                  No PDF was written. {HINT_EDIT}",
                 sample.join(" ")
             ),

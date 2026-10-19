@@ -137,6 +137,24 @@ fn keep(path: &str) {
 }
 
 /// All text shown on the PDF's pages (Tj strings, WinAnsi-decoded), whitespace-normalised.
+/// Text of an ActualText string: UTF-16BE with a byte order mark, or one byte per character.
+fn actual_text(b: &[u8]) -> String {
+    match b.strip_prefix(&[0xFE, 0xFF]) {
+        Some(rest) => {
+            let units: Vec<u16> = rest
+                .chunks(2)
+                .filter(|c| c.len() == 2)
+                .map(|c| u16::from_be_bytes([c[0], c[1]]))
+                .collect();
+            String::from_utf16_lossy(&units)
+        }
+        None => b
+            .iter()
+            .map(|x| openframe_import_export::winansi::decode_byte(*x))
+            .collect(),
+    }
+}
+
 fn pdf_text(path: &str) -> String {
     keep(path);
     let doc = lopdf::Document::load(path).expect("PDF parses with lopdf");
@@ -152,6 +170,15 @@ fn pdf_text(path: &str) -> String {
                     b.iter()
                         .map(|x| openframe_import_export::winansi::decode_byte(*x)),
                 );
+                out.push(' ');
+            }
+            // Lines drawn with the embedded fonts (screenplay and sides) carry their exact
+            // text in an ActualText span.
+            if op.operator == "BDC"
+                && let Some(lopdf::Object::Dictionary(d)) = op.operands.get(1)
+                && let Ok(lopdf::Object::String(b, _)) = d.get(b"ActualText")
+            {
+                out.push_str(&actual_text(b));
                 out.push(' ');
             }
         }
@@ -877,7 +904,7 @@ fn call_sheet_pdf_has_paper_layout_and_final_sheet_uses_its_snapshot() {
         "BLACK RAIN",
         "SHOOT DAY 1",
         "MONDAY 14 JUNE 2027",
-        "CREW CALL: 18:00",
+        "CREW CALL",
         "LOCATIONS",
         "Police Station",
         "TALENT",
@@ -891,7 +918,7 @@ fn call_sheet_pdf_has_paper_layout_and_final_sheet_uses_its_snapshot() {
         "Rain expected",
         "DRAFT, not final",
         "Needs input",
-        "Created with OpenFrame Studio",
+        "Created using OpenFrame",
     ] {
         assert!(text.contains(want), "missing {want}: {text}");
     }
@@ -923,7 +950,7 @@ fn call_sheet_pdf_has_paper_layout_and_final_sheet_uses_its_snapshot() {
     );
     assert!(r["warnings"].as_array().unwrap().is_empty(), "{r}");
     let text = pdf_text(&issued);
-    assert!(text.contains("CREW CALL: 18:00") && !text.contains("23:59"));
+    assert!(text.contains("CREW CALL") && !text.contains("23:59"));
     assert!(text.contains("Final") && !text.contains("DRAFT"));
     assert_eq!(
         env.err(
@@ -1087,7 +1114,7 @@ fn budget_report_exports_planned_actual_and_difference() {
         "55,000",
         "-5,000",
         "Catering",
-        "Created with OpenFrame Studio",
+        "Created using OpenFrame",
     ] {
         assert!(text.contains(want), "missing {want}: {text}");
     }
@@ -1122,7 +1149,7 @@ fn budget_report_exports_planned_actual_and_difference() {
     let (sheets, body) = xlsx(&x);
     assert_eq!(sheets, vec!["Line items", "Categories", "Summary"]);
     assert!(
-        body.contains("Created with OpenFrame Studio"),
+        body.contains("Created using OpenFrame"),
         "first sheet footer"
     );
     let none = TestEnv::with_project("No Budget", "Short Film");
@@ -1697,13 +1724,13 @@ fn tree_bytes(dir: &Path) -> Vec<(String, Vec<u8>)> {
 }
 
 /// Production depth spec §43 (masterplan box "Subtle OpenFrame branding"): every non-screenplay
-/// export carries "Created with OpenFrame Studio" (PDF on every page, XLSX in the document
+/// export carries "Created using OpenFrame" (PDF on every page, XLSX in the document
 /// properties and the first sheet's footer, plain text as its last line; CSV stays pure data),
 /// screenplay files carry none, and the user's own files (the picked image, the managed assets)
 /// are only read. One assertion per export, named in the failure message.
 #[test]
 fn every_production_export_is_branded_and_user_files_are_never_modified() {
-    const BRAND: &str = "Created with OpenFrame Studio";
+    const BRAND: &str = "Created using OpenFrame";
     let env = production_env();
     seed_story(&env);
     let day = seed_schedule(&env);

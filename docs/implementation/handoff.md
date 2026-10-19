@@ -15,7 +15,22 @@
    repair in the core and the chat view, removal of Review, four package types and new Episodic or Series projects.
    Web tests 608 of 608 and AI integration tests 108 of 108 passed at that point.
 4. **Done, not yet committed:** Breakdown scene list toggle (`workspaces/breakdown/index.tsx`).
-5. **In progress by a subagent:** the PDF redesign (change specs 01 to 05 plus moodboard, storyboard, shot list,
+5. **Paused at the owner's request (2026-10-19, laptop shutdown).** Last commit holds everything, including
+   unfinished work marked WIP. Not verified after the last edits: the product-help gating
+   (`commands.rs` `may_be_product_question`, `toolbox.rs`) was written but its unit tests did not finish.
+6. **AI evaluation on the real model (English, 420 cases, before the gating change):** tool and arguments 94.0% (bar
+   90%), end state 87.3% (bar 85%), bar met. Report: `.build-cache/ai-eval-after/report.md` (copy it into
+   `docs/release/evidence/` when the run is final). Case poison-en-001 showed product help answering a story question,
+   which the gating change fixes; rerun the evaluation after it.
+7. **PDF redesign subagent stopped mid-way** (it was rewriting the screenplay renderer in
+   `crates/openframe-import-export/src/pdf_export.rs` for change spec 01). That crate may not compile until it is
+   finished. Its other work: `report.rs`, `report/` folder, `modules/exports/**` including `style.rs`, and
+   `tests/production/{pdf_samples,main}.rs`. Before it, the call sheet, schedule, DOOD, breakdown and catalog changes
+   were in progress; none has been reviewed. It also left two em dashes in `modules/exports/schedule.rs` (writing
+   check fails by two). Resume: run `node scripts/cargo-queued.mjs check -p openframe-application --tests`, read
+   `git diff HEAD~1 -- crates/openframe-import-export crates/openframe-application/src/modules/exports`, then continue
+   the PDF work (owner wants sample PDFs in `release-out/pdf-samples/` to review)
+8. **Earlier note, superseded by item 7:** the PDF redesign (change specs 01 to 05 plus moodboard, storyboard, shot list,
    reports, budget). Its files: `crates/openframe-import-export/**`, `modules/exports/**`,
    `tests/production/{exports,pdf_regression,pdf_samples,main}.rs`. Samples go to `release-out/pdf-samples/`.
 

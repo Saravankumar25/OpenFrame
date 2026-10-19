@@ -40,6 +40,13 @@ use openframe_domain::{AppError, AppResult};
 use pdf_writer::Content;
 use unicode_segmentation::UnicodeSegmentation;
 
+mod design;
+pub use design::{
+    Banner, Callout, CalloutCol, Card, CardHead, CardPart, Cards, Cell, CellItem, Chip, Col, Field,
+    Group, GroupItem, HeaderStyle, Legend, LegendItem, Masthead, Metric, Metrics, Row, Rgb, Section,
+    Side, StyledTable, Tile, Tone, Txt, Width, pal,
+};
+
 use crate::fonts;
 use crate::pdf_fonts::{FontPack, ShapedText};
 use crate::pdfgen::{self, PdfBuilder, PdfImage};
@@ -175,6 +182,16 @@ pub enum Block {
     },
     /// Vertical space in points.
     Spacer(f32),
+    // ---- design system blocks (production documents), see `report/design.rs`
+    Masthead(Masthead),
+    Metrics(Metrics),
+    Section(Section),
+    Banner(Banner),
+    Callout(Callout),
+    Cards(Cards),
+    Styled(StyledTable),
+    Legend(Legend),
+    Text(Txt),
 }
 
 // ------------------------------------------------------------------ images
@@ -308,7 +325,7 @@ pub struct Document {
 }
 
 /// The brand line on production exports.
-pub const BRAND_LINE: &str = "Created with OpenFrame Studio";
+pub const BRAND_LINE: &str = "Created using OpenFrame";
 
 #[derive(Debug, Clone)]
 pub struct ReportPdf {
@@ -481,6 +498,15 @@ impl Document {
                     }
                 }
                 Block::PageBreak | Block::Spacer(_) => {}
+                Block::Masthead(_)
+                | Block::Metrics(_)
+                | Block::Section(_)
+                | Block::Banner(_)
+                | Block::Callout(_)
+                | Block::Cards(_)
+                | Block::Styled(_)
+                | Block::Legend(_)
+                | Block::Text(_) => design::scan_block(b, &mut scan),
             }
         }
         out
@@ -706,9 +732,10 @@ fn xlsx(tables: &[&Table], brand: Option<&str>, created: Option<i64>) -> AppResu
 
 // --------------------------------------------------------------------- PDF
 
-const MARGIN: f32 = 54.0;
-const FOOTER_SPACE: f32 = 30.0;
+pub(crate) const MARGIN: f32 = 46.0;
+pub(crate) const FOOTER_SPACE: f32 = 34.0;
 
+#[derive(Clone)]
 enum Op {
     Text {
         bold: bool,
@@ -743,6 +770,50 @@ enum Op {
         y: f32,
         w: f32,
         h: f32,
+    },
+    /// Coloured text with optional letter spacing (design system, `report/design.rs`).
+    TextC {
+        bold: bool,
+        size: f32,
+        x: f32,
+        y: f32,
+        text: String,
+        color: Rgb,
+        track: f32,
+    },
+    /// Filled and/or outlined rectangle, optionally with rounded corners.
+    Shape {
+        x: f32,
+        y: f32,
+        w: f32,
+        h: f32,
+        r: f32,
+        round_top: bool,
+        round_bottom: bool,
+        fill: Option<Rgb>,
+        stroke: Option<(Rgb, f32)>,
+    },
+    LineC {
+        x1: f32,
+        y1: f32,
+        x2: f32,
+        y2: f32,
+        color: Rgb,
+        width: f32,
+    },
+    Circle {
+        x: f32,
+        y: f32,
+        r: f32,
+        fill: Option<Rgb>,
+        stroke: Option<(Rgb, f32)>,
+    },
+    /// The OpenFrame film-frame mark, lower left corner at (x, y).
+    Mark {
+        x: f32,
+        y: f32,
+        size: f32,
+        color: Rgb,
     },
 }
 
@@ -793,7 +864,15 @@ struct Pager<'a> {
     images: Vec<&'a ReportImage>,
 }
 
-impl Pager<'_> {
+impl<'a> Pager<'a> {
+    /// Index of a picture in the document, registered once however often it is drawn.
+    fn image_index(&mut self, img: &'a ReportImage) -> usize {
+        if let Some(i) = self.images.iter().position(|x| std::ptr::eq(*x, img)) {
+            return i;
+        }
+        self.images.push(img);
+        self.images.len() - 1
+    }
     fn new_page(&mut self) {
         self.pages.push(Vec::new());
         self.y = self.h - MARGIN;
@@ -1111,7 +1190,10 @@ fn render_pdf(doc: &Document) -> ReportPdf {
         images: Vec::new(),
     };
     p.new_page();
-    if doc.centered_header {
+    let masthead_first = matches!(doc.blocks.first(), Some(Block::Masthead(_)));
+    if masthead_first {
+        // The design system masthead replaces the plain title lines.
+    } else if doc.centered_header {
         p.centered(&doc.title, 16.0, true, 0.0);
         if let Some(s) = &doc.subtitle {
             p.y -= 2.0;
@@ -1124,9 +1206,20 @@ fn render_pdf(doc: &Document) -> ReportPdf {
             p.text_block(s, 9.5, false, 0.4, 6.0);
         }
     }
-    p.y -= 6.0;
+    if !masthead_first {
+        p.y -= 6.0;
+    }
     for b in &doc.blocks {
         match b {
+            Block::Masthead(m) => design::masthead(&mut p, m),
+            Block::Metrics(m) => design::metrics(&mut p, m),
+            Block::Section(s) => design::section(&mut p, s),
+            Block::Banner(b) => design::banner(&mut p, b),
+            Block::Callout(c) => design::callout(&mut p, c),
+            Block::Cards(c) => design::cards(&mut p, c),
+            Block::Styled(t) => design::styled_table(&mut p, t),
+            Block::Legend(l) => design::legend(&mut p, l),
+            Block::Text(t) => design::text(&mut p, t),
             Block::Heading { text, level } => {
                 let size = if *level <= 1 { 13.0 } else { 11.0 };
                 // Keep headings with what follows them.
@@ -1172,12 +1265,16 @@ fn render_pdf(doc: &Document) -> ReportPdf {
                 p.ensure(bar + 40.0);
                 p.y -= 6.0;
                 let top = p.y;
-                p.ops().push(Op::Rect {
+                p.ops().push(Op::Shape {
                     x: MARGIN,
                     y: top - bar,
                     w: w - 2.0 * MARGIN,
                     h: bar,
-                    gray: 0.18,
+                    r: 3.0,
+                    round_top: true,
+                    round_bottom: true,
+                    fill: Some(pal::NAVY),
+                    stroke: None,
                 });
                 p.ops().push(Op::Text {
                     bold: true,
@@ -1209,19 +1306,19 @@ fn render_pdf(doc: &Document) -> ReportPdf {
     let total = p.pages.len();
     let footers: Vec<String> = (0..total)
         .map(|i| {
-            format!(
-                "{} · Page {} of {}",
-                doc.footer.as_deref().unwrap_or(&doc.title),
-                i + 1,
-                total
-            )
+            let name = doc.footer.as_deref().unwrap_or(&doc.title);
+            if doc.brand.is_some() {
+                format!("{} · Page {} / {}", name.to_uppercase(), i + 1, total)
+            } else {
+                format!("{name} · Page {} of {total}", i + 1)
+            }
         })
         .collect();
     // Pass 1: every run that needs the embedded fonts, shaped once (ADR-0016).
     let mut shaped = Shaped::default();
     for (ops, footer) in p.pages.iter().zip(&footers) {
         for op in ops {
-            if let Op::Text { bold, text, .. } = op {
+            if let Op::Text { bold, text, .. } | Op::TextC { bold, text, .. } = op {
                 shaped.collect(text, *bold);
             }
         }
@@ -1261,6 +1358,60 @@ fn render_pdf(doc: &Document) -> ReportPdf {
                     c.line_to(x2, y2);
                     c.stroke();
                 }
+                Op::TextC {
+                    bold,
+                    size,
+                    x,
+                    y,
+                    text,
+                    color,
+                    track,
+                } => {
+                    c.set_fill_rgb(color.0, color.1, color.2);
+                    c.set_stroke_rgb(color.0, color.1, color.2);
+                    design::draw_text_tracked(
+                        &mut b, &mut c, &shaped, &pack, bold, size, x, y, &text, track,
+                    );
+                    c.set_fill_gray(0.0);
+                    c.set_stroke_gray(0.0);
+                }
+                Op::Shape {
+                    x,
+                    y,
+                    w,
+                    h,
+                    r,
+                    round_top,
+                    round_bottom,
+                    fill,
+                    stroke,
+                } => design::draw_shape(&mut c, x, y, w, h, r, round_top, round_bottom, fill, stroke),
+                Op::LineC {
+                    x1,
+                    y1,
+                    x2,
+                    y2,
+                    color,
+                    width,
+                } => {
+                    c.set_stroke_rgb(color.0, color.1, color.2);
+                    c.set_line_width(width);
+                    c.move_to(x1, y1);
+                    c.line_to(x2, y2);
+                    c.stroke();
+                    c.set_stroke_gray(0.0);
+                }
+                Op::Circle {
+                    x,
+                    y,
+                    r,
+                    fill,
+                    stroke,
+                } => design::draw_circle(&mut c, x, y, r, fill, stroke),
+                Op::Mark { x, y, size, color } => {
+                    draw_mark(&mut c, x, y, size, color);
+                    c.set_stroke_gray(0.0);
+                }
                 Op::Text {
                     bold,
                     size,
@@ -1278,30 +1429,22 @@ fn render_pdf(doc: &Document) -> ReportPdf {
             }
         }
         let footer = &footers[i];
-        let fw = text_width(footer, 8.0, false);
-        c.set_fill_gray(0.45);
-        c.set_stroke_gray(0.45);
-        draw_text(
-            &mut b,
-            &mut c,
-            &shaped,
-            &pack,
-            false,
-            8.0,
-            (w - fw) / 2.0,
-            MARGIN - 20.0,
-            footer,
-        );
-        if let Some(line) = &doc.brand {
-            draw_mark(&mut c, MARGIN, MARGIN - 38.0, 8.0);
-            c.set_fill_gray(0.5);
-            b.text(
+        if doc.brand.is_some() {
+            design::draw_footer(&mut b, &mut c, &shaped, &pack, w, footer, doc.brand.as_deref());
+        } else {
+            let fw = text_width(footer, 8.0, false);
+            c.set_fill_gray(0.45);
+            c.set_stroke_gray(0.45);
+            draw_text(
+                &mut b,
                 &mut c,
-                pdfgen::HELVETICA,
-                7.0,
-                MARGIN + 11.0,
-                MARGIN - 36.5,
-                line,
+                &shaped,
+                &pack,
+                false,
+                8.0,
+                (w - fw) / 2.0,
+                MARGIN - 20.0,
+                footer,
             );
         }
         c.set_fill_gray(0.0);
@@ -1323,11 +1466,11 @@ fn render_pdf(doc: &Document) -> ReportPdf {
 /// The OpenFrame mark (the film frame of the app icon: a rounded square with two
 /// sprocket rails and a centre line), drawn in grey with its lower left corner at
 /// `(x, y)` and `size` points wide.
-fn draw_mark(c: &mut Content, x: f32, y: f32, size: f32) {
+pub(crate) fn draw_mark(c: &mut Content, x: f32, y: f32, size: f32, color: Rgb) {
     let u = size / 24.0;
     let p = |vx: f32, vy: f32| (x + vx * u, y + (24.0 - vy) * u);
-    c.set_stroke_gray(0.45);
-    c.set_line_width(0.6);
+    c.set_stroke_rgb(color.0, color.1, color.2);
+    c.set_line_width((size * 0.075).max(0.6));
     let (x0, y0) = p(2.0, 22.0);
     c.rect(x0, y0, 20.0 * u, 20.0 * u);
     c.stroke();
@@ -1454,6 +1597,83 @@ mod tests {
         assert!(unzip(wb, "xl/worksheets/sheet1.xml").contains(BRAND_LINE));
         let wb = tables_to_xlsx(&[&t]).unwrap();
         assert!(!unzip(wb, "xl/worksheets/sheet1.xml").contains(BRAND_LINE));
+    }
+
+    /// A document that uses every design block, long enough to run onto several pages.
+    fn designed_document() -> Document {
+        let long = "A long synopsis that has to wrap inside its column and never be cut short. ".repeat(6);
+        let mut mast = Masthead::new("MONSOON LETTERS").eyebrow("Call sheet", pal::SLATE);
+        mast.badges.push(Chip::label("Draft", Tone::Warn));
+        mast.side = Some(Side::Dark {
+            label: "Shoot day".into(),
+            big: Some("01".into()),
+            lines: vec![("Monday".into(), true)],
+            foot: Some("Day 1 of 4".into()),
+        });
+        let mut doc = Document::new("Designed").footer("Monsoon Letters · Call sheet");
+        doc.push(Block::Masthead(mast));
+        doc.push(Block::Metrics(Metrics {
+            items: vec![Metric::new("12", "Scenes"), Metric::new("3 3/8", "Pages")],
+            compact: false,
+        }));
+        doc.push(Block::Section(Section::new("Locations", Some("2 total".into()))));
+        let cards: Vec<Card> = (0..8)
+            .map(|i| Card {
+                head: Some(CardHead::new(format!("LOCATION {i}"))),
+                parts: vec![CardPart::Fields(vec![
+                    Field::new("Address", long.clone()),
+                    Field::missing("Hospital", "Needs input"),
+                ])],
+                ..Card::new()
+            })
+            .collect();
+        doc.push(Block::Cards(Cards::new(2, cards)));
+        let mut t = StyledTable::new(vec![Col::pt("Sc", 40.0), Col::weight("Heading", 1.0)]);
+        t.continued = Some("Schedule".into());
+        for i in 0..40 {
+            t.rows.push(Row::new(vec![
+                Cell::new().item(CellItem::Tile(i.to_string())),
+                Cell::text(Txt::new(format!("ROW {i} {long}"))),
+            ]));
+        }
+        doc.push(Block::Styled(t));
+        doc.push(Block::Legend(Legend {
+            title: None,
+            items: vec![LegendItem {
+                swatch: pal::ORANGE,
+                border: None,
+                code: Some(("SW".into(), pal::WHITE)),
+                label: "Start work".into(),
+            }],
+            columns: 0,
+        }));
+        doc.brand(BRAND_LINE)
+    }
+
+    #[test]
+    fn design_blocks_paginate_deterministically_and_keep_every_word() {
+        let doc = designed_document();
+        let a = doc.to_pdf();
+        let b = doc.to_pdf();
+        assert_eq!(a.bytes, b.bytes, "identical input gives identical bytes");
+        assert_eq!(a.replaced_chars, 0);
+        assert!(a.pages >= 3, "{} pages", a.pages);
+        let text = String::from_utf8_lossy(&a.bytes).into_owned();
+        // Wrapped, never cut: the end of the long text is printed for every row.
+        assert!(text.contains("short."), "wrapped text keeps its tail");
+        assert!(!text.contains('\u{2026}'), "no ellipsis in design output");
+        // The lockup text and the page count are on every page.
+        assert_eq!(text.matches(BRAND_LINE).count(), a.pages);
+        assert!(text.contains(&format!("Page {} / {}", a.pages, a.pages)));
+    }
+
+    #[test]
+    fn design_blocks_leave_the_unbranded_report_look_alone() {
+        let doc = Document::new("Plain").with(Block::Paragraph("Scene 1".into()));
+        let pdf = doc.to_pdf();
+        let text = String::from_utf8_lossy(&pdf.bytes).into_owned();
+        assert!(text.contains("Page 1 of 1"), "legacy footer kept");
+        assert!(!text.contains(BRAND_LINE));
     }
 
     #[test]

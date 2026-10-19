@@ -120,6 +120,22 @@ static SMALL_TALK: LazyLock<Regex> = LazyLock::new(|| {
     )
 });
 
+/// Words that make an English request a question about using OpenFrame. Without one, a question is
+/// about the person's own project, and the product guide is not offered: "What is the significance
+/// of the transistor radio in the scene?" was answered from the guide (evaluation case
+/// poison-en-001; OpenFrameAI.docx exhibit E07).
+static PRODUCT_CUE: LazyLock<Regex> = LazyLock::new(|| {
+    re(
+        r#"(?i)\b(?:how\s+(?:do|can|should|would)\s+(?:i|we|you)|how\s+to|where\s+(?:is|are|do|does|can)|is\s+there\s+a\s+way|can\s+(?:i|you)\s+(?:export|import|change|turn|switch|undo|print|share|install)|openframe|open\s+frame|settings?|shortcuts?|keyboard|button|menu|install|download|offline\s+ai|export|import|back\s*up|restore|theme|dark\s+mode|light\s+mode|print|pdf|template|feature|workspace|sidebar|undo|redo|password|licen[cs]e|trial|app)\b"#,
+    )
+});
+
+/// True when an English request may be about using OpenFrame itself. Requests in other languages
+/// are left to the model (the guide answers "not found" when nothing matches).
+pub(crate) fn may_be_product_question(text: &str) -> bool {
+    openframe_ai_checks::detect_language(text).is_some_and(|l| l != "en") || PRODUCT_CUE.is_match(text)
+}
+
 /// The reply to small talk, or None when the text is a real request.
 pub(crate) fn small_talk(text: &str) -> Option<&'static str> {
     let c = SMALL_TALK.captures(text)?;
@@ -782,6 +798,21 @@ mod tests {
         }
         for text in ["Describe the story", "Tell me about this scene", "Describe the opening", "Who is the main character?", "Describe the plot of act one"] {
             assert_ne!(tool(text).as_deref(), Some("character_profile"), "{text}");
+        }
+    }
+
+    #[test]
+    fn product_help_is_offered_only_for_questions_about_the_app() {
+        for q in ["How do I export a PDF?", "Where is the theme setting?", "Can I undo a delete?", "How to lock a draft?"] {
+            assert!(may_be_product_question(q), "{q}");
+        }
+        for q in [
+            "What is the significance of the transistor radio in the scene?",
+            "Describe Karthik",
+            "Why does Meera leave the bus?",
+            "Which scenes are at night?",
+        ] {
+            assert!(!may_be_product_question(q), "{q}");
         }
     }
 

@@ -49,6 +49,7 @@ mod reports;
 mod schedule;
 mod sides;
 mod story;
+mod style;
 mod visual;
 
 use std::path::{Path, PathBuf};
@@ -552,20 +553,6 @@ pub(crate) fn subtitle(project: &str, source: Option<&str>) -> String {
         parts.push(project.trim().to_string());
     }
     parts.push(format!("Exported {}", today_label()));
-    if let Some(s) = source.filter(|s| !s.trim().is_empty()) {
-        parts.push(format!("Source: {s}"));
-    }
-    parts.join(" · ")
-}
-
-/// "BLACK RAIN · Revised 30 Sep 2026 · Source: …" for documents whose content
-/// date is the last change of their data rather than the export clock.
-pub(crate) fn revised_subtitle(project: &str, source: Option<&str>, revised_ms: i64) -> String {
-    let mut parts = Vec::new();
-    if !project.trim().is_empty() {
-        parts.push(project.trim().to_string());
-    }
-    parts.push(format!("Revised {}", date_from_ms(revised_ms)));
     if let Some(s) = source.filter(|s| !s.trim().is_empty()) {
         parts.push(format!("Source: {s}"));
     }

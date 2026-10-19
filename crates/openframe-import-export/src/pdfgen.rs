@@ -117,6 +117,33 @@ impl PdfBuilder {
         c.end_text();
     }
 
+    /// Like [`PdfBuilder::text`] with extra space after every character (letter spacing of small
+    /// upper-case labels). The spacing is reset before the text object ends.
+    #[allow(clippy::too_many_arguments)]
+    pub fn text_tracked(
+        &mut self,
+        c: &mut Content,
+        font: &[u8],
+        size: f32,
+        track: f32,
+        x: f32,
+        y: f32,
+        text: &str,
+    ) {
+        let (bytes, replaced) = crate::winansi::encode(text);
+        self.replaced_chars += replaced;
+        if bytes.is_empty() {
+            return;
+        }
+        c.begin_text();
+        c.set_font(Name(font), size);
+        c.set_char_spacing(track);
+        c.set_text_matrix([1.0, 0.0, 0.0, 1.0, x, y]);
+        c.show(Str(&bytes));
+        c.set_char_spacing(0.0);
+        c.end_text();
+    }
+
     pub fn page_count(&self) -> usize {
         self.pages.len()
     }

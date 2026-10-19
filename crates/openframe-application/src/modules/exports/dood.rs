@@ -6,20 +6,106 @@
 //! never the export clock, so the same data gives byte-identical files.
 
 use openframe_domain::{Actor, AppError, AppResult};
-use openframe_import_export::report::{Block, Column, Document, Table};
+use openframe_import_export::report::{
+    Align, Banner, Block, Cell, CellItem, Col, Column, Document, HeaderStyle, Legend, LegendItem,
+    Masthead, Metric, Metrics, Rgb, Row, Section, Side, StyledTable, Table, Txt, pal,
+};
 use serde::Deserialize;
 use ts_rs::TS;
 
+use super::style::{cell, cell_bold, day_number, nb, short_day_parts};
 use super::{
-    Fmt, HINT_TABLES, Job, Output, deliver, destination, footer, plural, require_export,
-    revised_subtitle,
+    Fmt, HINT_TABLES, Job, Output, date_from_ms, deliver, destination, footer, plural,
+    require_export,
 };
 use crate::core::AppCore;
 use crate::modules::schedule::board::revised_at;
-use crate::modules::schedule::dood::{ScheduleDoodArgs, check_args, report};
+use crate::modules::schedule::dood::{DoodDay, ScheduleDoodArgs, check_args, report};
 
-/// Day columns per PDF table; wider schedules continue in further tables.
-const PDF_DAYS_PER_TABLE: usize = 14;
+/// Schedule-day columns per PDF band (off days count). A band is a layout unit, not a data limit:
+/// longer schedules continue in further bands, each on its own page, so the day headers and
+/// status cells stay readable at print size. Raising it needs a rendered proof at print size.
+const PDF_DAYS_PER_TABLE: usize = 7;
+
+/// Fill and text colour of a status code. Colour reinforces the printed code, never replaces it.
+fn code_colors(code: &str, off_day: bool) -> (Option<Rgb>, Rgb) {
+    let h = Rgb::hex;
+    match code {
+        "SW" => (Some(h(0x1d78b0)), h(0xffffff)),
+        "W" => (Some(h(0xb9e0ee)), h(0x1b4f66)),
+        "WF" => (Some(h(0x62cf9a)), h(0x14472f)),
+        "SWF" => (Some(h(0x16809f)), h(0xffffff)),
+        "H" => (Some(h(0xffd199)), h(0x7a4300)),
+        "T" => (Some(h(0xd5c4f2)), h(0x4a2f7a)),
+        "R" => (Some(h(0xf7e07a)), h(0x5a4a00)),
+        "F" => (Some(h(0xf4b6d0)), h(0x6b1f45)),
+        "D" => (Some(h(0xeab0b0)), h(0x7a1f1f)),
+        "-" => (Some(h(0xeceff3)), pal::SLATE),
+        _ => (off_day.then(|| h(0xeceff3)), pal::SLATE),
+    }
+}
+
+/// "Days 01 to 06 + 1 off day": the range a band covers.
+fn band_title(chunk: &[DoodDay]) -> String {
+    let nums: Vec<i64> = chunk
+        .iter()
+        .filter(|d| !d.is_off_day)
+        .filter_map(|d| day_number(&d.short_label).and_then(|n| n.parse().ok()))
+        .collect();
+    let off = chunk.iter().filter(|d| d.is_off_day).count();
+    let mut s = match (nums.first(), nums.last()) {
+        (Some(a), Some(b)) if a != b => format!("Days {a:02} to {b:02}"),
+        (Some(a), _) => format!("Day {a:02}"),
+        _ => "Off days".to_string(),
+    };
+    if off > 0 && !nums.is_empty() {
+        s.push_str(&format!(" + {}", plural(off, "off day", "off days")));
+    }
+    s
+}
+
+/// Header of one day column: shoot number, date and weekday, in the schedule's own order.
+fn day_header(d: &DoodDay) -> Cell {
+    let off = d.is_off_day;
+    let first = if off {
+        "OFF DAY".to_string()
+    } else {
+        day_number(&d.short_label)
+            .map(|n| format!("SHOOT {n}"))
+            .unwrap_or_else(|| d.short_label.to_uppercase())
+    };
+    let mut c = Cell::new()
+        .align(Align::Center)
+        .middle()
+        .item(CellItem::Text(
+            Txt::new(first).size(7.0).bold().track(0.8).color(if off {
+                pal::SLATE
+            } else {
+                pal::ORANGE
+            }),
+        ));
+    if let Some((wd, day, mon)) = d.date.as_deref().and_then(short_day_parts) {
+        c = c
+            .item(CellItem::Text(
+                Txt::new(day)
+                    .size(17.0)
+                    .bold()
+                    .color(if off { pal::SLATE } else { pal::NAVY })
+                    .leading(1.15),
+            ))
+            .item(CellItem::Text(
+                Txt::new(format!("{wd} · {mon}"))
+                    .size(6.6)
+                    .bold()
+                    .track(0.6)
+                    .color(pal::SLATE),
+            ));
+    }
+    if off {
+        c = c.fill(Rgb::hex(0xe4e8ee));
+    }
+    c
+}
 
 #[derive(Debug, Deserialize, TS)]
 #[ts(export)]
@@ -88,33 +174,33 @@ pub(super) fn export(
         .map(|r| r.cells.iter().filter(|c| c.overridden).count())
         .sum();
 
-    // ---- PDF
+    // ---- PDF: readable day bands (at most PDF_DAYS_PER_TABLE schedule-day columns each), then a
+    // separate totals table for the whole schedule.
+    let cell_text = |code: &str, overridden: bool| {
+        if overridden {
+            format!("{code}*")
+        } else {
+            code.to_string()
+        }
+    };
     let mut doc = Document::new(document)
         .landscape(true)
-        .subtitle(revised_subtitle(
-            &project,
-            Some(&format!("{} · {}", board.schedule.name, source_label)),
-            revised,
-        ))
         .footer(footer(&project, document));
-    doc.push(Block::KeyValues(vec![
-        ("Days".into(), range.clone()),
-        (
-            "Cast".into(),
-            plural(view.rows.len(), "cast member", "cast members"),
-        ),
-        (
-            "Codes".into(),
-            view.legend
-                .iter()
-                .map(|c| format!("{} {}", c.code, c.meaning.to_lowercase()))
-                .collect::<Vec<_>>()
-                .join(" · "),
-        ),
+    let shoot_days = view.days.iter().filter(|d| !d.is_off_day).count();
+    let off_days = view.days.len() - shoot_days;
+    let mut mast = Masthead::new("DAY OUT OF DAYS")
+        .eyebrow("Production planning · Cast commitments", pal::ORANGE);
+    if let Some(p) = nb(&project) {
+        mast.subtitle = Some(format!("{p} · Revised {}", date_from_ms(revised)));
+    }
+    mast.side = Some(Side::Facts(vec![
+        ("Schedule".into(), board.schedule.name.clone()),
+        ("Production source".into(), source_label.clone()),
+        ("Displayed range".into(), range.clone()),
         (
             "Corrections".into(),
             if corrected == 0 {
-                "None; every cell comes from the schedule".into()
+                "None; every cell comes from the schedule".to_string()
             } else {
                 format!(
                     "{} entered by hand (marked *)",
@@ -123,54 +209,197 @@ pub(super) fn export(
             },
         ),
     ]));
-    let cell_text = |code: &str, overridden: bool| {
-        if overridden {
-            format!("{code}*")
-        } else {
-            code.to_string()
-        }
+    doc.push(Block::Masthead(mast));
+    doc.push(Block::Metrics(Metrics {
+        items: vec![
+            Metric::new(shoot_days.to_string(), "Shooting days"),
+            Metric::new(view.rows.len().to_string(), "Cast members"),
+            Metric::new(off_days.to_string(), "Off days"),
+            Metric::new(corrected.to_string(), "Manual corrections"),
+        ],
+        compact: true,
+    }));
+    let bands: Vec<&[DoodDay]> = view.days.chunks(PDF_DAYS_PER_TABLE).collect();
+    doc.push(Block::Section(Section::new(
+        "Cast commitments by shooting day",
+        Some(format!(
+            "{} · up to {PDF_DAYS_PER_TABLE} schedule-day columns per page",
+            plural(bands.len(), "band", "bands")
+        )),
+    )));
+    let legend = Legend {
+        title: Some("Code legend · meanings stay readable without colour".into()),
+        columns: 0,
+        items: view
+            .legend
+            .iter()
+            .map(|c| {
+                let (fill, color) = code_colors(&c.code, false);
+                LegendItem {
+                    swatch: fill.unwrap_or(Rgb::hex(0xffffff)),
+                    border: Some(pal::LINE),
+                    code: Some((c.code.clone(), color)),
+                    label: c.meaning.clone(),
+                }
+            })
+            .chain(std::iter::once(LegendItem {
+                swatch: Rgb::hex(0xffffff),
+                border: Some(pal::LINE),
+                code: None,
+                label: "Blank: no code for that day".into(),
+            }))
+            .collect(),
     };
-    for (chunk_i, chunk) in view.days.chunks(PDF_DAYS_PER_TABLE).enumerate() {
-        let offset = chunk_i * PDF_DAYS_PER_TABLE;
-        let mut cols = vec![
-            Column::new("#").weight(0.3),
-            Column::new("Cast").weight(2.0),
+    for (bi, chunk) in bands.iter().enumerate() {
+        let offset = bi * PDF_DAYS_PER_TABLE;
+        if bi > 0 {
+            doc.push(Block::PageBreak);
+        }
+        let mut b = Banner::new(band_title(chunk));
+        b.eyebrow = Some(format!("Band {} of {}", bi + 1, bands.len()));
+        b.right = Some(plural(
+            chunk.len(),
+            "schedule-day column",
+            "schedule-day columns",
+        ));
+        b.keep_next = 140.0;
+        doc.push(Block::Banner(b));
+        // Day columns keep one width in every band; the cast column takes what is left.
+        let mut cols = vec![Col::pt("#", 26.0), Col::weight("Cast member", 1.0)];
+        cols.extend(chunk.iter().map(|d| Col::pt(d.short_label.clone(), 80.0)));
+        let mut tbl = StyledTable::new(cols);
+        tbl.grid = true;
+        tbl.boxed = true;
+        tbl.pad_y = 5.5;
+        tbl.continued = Some(band_title(chunk));
+        let mut header = vec![
+            Cell::text(Txt::new("#").size(7.0).bold().color(pal::SLATE)).middle(),
+            Cell::text(
+                Txt::new("CAST MEMBER")
+                    .size(7.0)
+                    .bold()
+                    .track(0.8)
+                    .color(pal::SLATE),
+            )
+            .middle(),
         ];
-        for d in chunk {
-            let head = match &d.date {
-                Some(date) => format!("{}\n{}", d.short_label, &date[5..]),
-                None => d.short_label.clone(),
-            };
-            cols.push(Column::new(head).weight(0.55));
-        }
-        let last = offset + chunk.len() >= view.days.len();
-        if last {
-            cols.extend([
-                Column::right("Work").weight(0.5),
-                Column::right("Hold").weight(0.5),
-                Column::right("Travel").weight(0.55),
-                Column::new("Start").weight(0.7),
-                Column::new("Finish").weight(0.7),
-            ]);
-        }
-        let mut t = Table::new("", cols);
+        header.extend(chunk.iter().map(day_header));
+        tbl.header_cells = Some(header);
         for r in &view.rows {
-            let mut row = vec![r.number.to_string(), r.label.clone()];
-            for c in &r.cells[offset..offset + chunk.len()] {
-                row.push(cell_text(&c.code, c.overridden));
+            let mut cells = vec![
+                Cell::new()
+                    .item(CellItem::Tile(r.number.to_string()))
+                    .middle(),
+                Cell::text(
+                    Txt::new(r.label.to_uppercase())
+                        .size(8.8)
+                        .bold()
+                        .color(pal::NAVY)
+                        .leading(1.25),
+                )
+                .middle(),
+            ];
+            for (c, d) in r.cells[offset..offset + chunk.len()]
+                .iter()
+                .zip(chunk.iter())
+            {
+                let (fill, color) = code_colors(&c.code, d.is_off_day);
+                let mut cell = Cell::new().align(Align::Center).middle();
+                if !c.code.is_empty() {
+                    cell = cell.item(CellItem::Text(
+                        Txt::new(cell_text(&c.code, c.overridden))
+                            .size(11.0)
+                            .bold()
+                            .color(color)
+                            .align(Align::Center),
+                    ));
+                }
+                if let Some(f) = fill {
+                    cell = cell.fill(f);
+                }
+                cells.push(cell);
             }
-            if last {
-                row.extend([
-                    r.work_days.to_string(),
-                    r.hold_days.to_string(),
-                    r.travel_days.to_string(),
-                    r.start_label.clone().unwrap_or_default(),
-                    r.finish_label.clone().unwrap_or_default(),
-                ]);
-            }
-            t.push(row);
+            tbl.rows.push(Row::new(cells));
         }
-        doc.push(Block::Table(t));
+        doc.push(Block::Styled(tbl));
+        doc.push(Block::Legend(legend.clone()));
+    }
+
+    // Totals for the whole schedule, in their own table.
+    doc.push(Block::Section(Section::new(
+        "Cast totals across the full schedule",
+        Some("Totals cover the whole schedule, not only the displayed range".into()),
+    )));
+    let mut totals = StyledTable::new(vec![
+        Col::pt("#", 26.0),
+        Col::weight("Cast member", 2.2),
+        Col::weight("Work", 0.6).align(Align::Right),
+        Col::weight("Hold", 0.6).align(Align::Right),
+        Col::weight("Travel", 0.6).align(Align::Right),
+        Col::weight("Other", 0.6).align(Align::Right),
+        Col::weight("Start", 1.0),
+        Col::weight("Finish", 1.0),
+    ]);
+    totals.header = HeaderStyle::Navy;
+    totals.boxed = true;
+    totals.zebra = true;
+    totals.continued = Some("Cast totals".into());
+    let num = |n: i64| {
+        Cell::text(
+            Txt::new(n.to_string())
+                .size(9.4)
+                .bold()
+                .color(pal::NAVY)
+                .align(Align::Right),
+        )
+    };
+    for r in &view.rows {
+        totals.rows.push(Row::new(vec![
+            Cell::new().item(CellItem::Tile(r.number.to_string())),
+            Cell::text(Txt::new(r.label.clone()).size(9.0).bold().color(pal::NAVY)),
+            num(r.work_days),
+            num(r.hold_days),
+            num(r.travel_days),
+            num(r.other_days),
+            cell(r.start_label.clone().unwrap_or_default()),
+            cell(r.finish_label.clone().unwrap_or_default()),
+        ]));
+    }
+    doc.push(Block::Styled(totals));
+
+    // Correction details, only when something was corrected.
+    if corrected > 0 {
+        doc.push(Block::Section(Section::new(
+            "Correction details",
+            Some("Entered by hand; the schedule alone gives the other code".into()),
+        )));
+        let mut ct = StyledTable::new(vec![
+            Col::weight("Cast member", 1.6),
+            Col::weight("Day", 1.4),
+            Col::pt("Shown", 50.0),
+            Col::pt("Schedule", 56.0),
+            Col::weight("Note", 2.0),
+        ]);
+        ct.continued = Some("Correction details".into());
+        for r in &view.rows {
+            for (c, d) in r.cells.iter().zip(view.days.iter()) {
+                if !c.overridden {
+                    continue;
+                }
+                ct.rows.push(Row::new(vec![
+                    cell_bold(r.label.clone()),
+                    cell(d.title.clone()),
+                    cell_bold(c.code.clone()),
+                    cell(if c.derived_code.is_empty() {
+                        "blank".to_string()
+                    } else {
+                        c.derived_code.clone()
+                    }),
+                    cell(c.note.clone().unwrap_or_default()),
+                ]));
+            }
+        }
+        doc.push(Block::Styled(ct));
     }
 
     // ---- spreadsheet
