@@ -214,7 +214,11 @@ public final class AppModel {
         case let .module(module, name, _) where module == "entitlement" && name == "changed":
             // The store channel's check finished: read the licence state again.
             Task { await licence.refresh() }
+        case .projectOpened:
+            // Home lists the recent projects: a project that was just made or opened belongs in it.
+            changes.bump(store: .global, tables: ["sys_recent_project"])
         case .projectClosed:
+            changes.bump(store: .global, tables: ["sys_recent_project"])
             if case .project = phase { phase = .home }
         default:
             break

@@ -298,7 +298,8 @@ struct ShortcutsSettingsTab: View {
     @State private var model: ShortcutsSettingsModel?
 
     var body: some View {
-        Group {
+        // A ZStack, not a Group: an empty Group never appears, so nothing would make the model.
+        ZStack {
             if let model { ShortcutsSettingsView(model: model) }
         }
         .onAppear { if model == nil { model = ShortcutsSettingsModel(app: app) } }

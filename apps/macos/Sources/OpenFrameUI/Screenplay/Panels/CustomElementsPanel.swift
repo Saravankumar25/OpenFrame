@@ -82,7 +82,7 @@ enum CustomElementOptions {
 @Observable
 final class CustomElementsModel {
     @ObservationIgnored weak var app: AppModel?
-    @ObservationIgnored weak var workspace: ScreenplayWorkspaceModel?
+    weak var workspace: ScreenplayWorkspaceModel?
     /// Says what happened. The default shows a toast with Undo (project undo takes it back).
     @ObservationIgnored var notify: (String) -> Void = { _ in }
 

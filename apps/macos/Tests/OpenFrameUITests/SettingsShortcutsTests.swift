@@ -179,3 +179,37 @@ struct SettingsShortcutsTests {
         #expect(ShortcutStore.shared.tooltipWords("New Project", "home.new_project") == "New Project")
     }
 }
+
+@Suite("Screenplay key commands", .serialized)
+@MainActor
+struct ScreenplayKeyCommandTests {
+    private func chord(_ keyCode: UInt16, _ chars: String, command: Bool = true, shift: Bool = false) -> String {
+        guard case let .chord(c) = ShortcutCatalogue.press(
+            keyCode: keyCode, characters: chars, command: command, option: false, shift: shift, control: false)
+        else { return "" }
+        return c
+    }
+
+    @Test func defaultsReachTheEditor() {
+        let store = ShortcutStore()
+        #expect(ScreenplayKeyCommand.command(forChord: chord(36, "\r"), store: store) == .pageBreak)
+        #expect(ScreenplayKeyCommand.command(forChord: chord(18, "1"), store: store) == .element(.sceneHeading))
+        #expect(ScreenplayKeyCommand.command(forChord: chord(3, "f"), store: store) == .find)
+        #expect(ScreenplayKeyCommand.command(forChord: chord(11, "b", shift: true), store: store) == nil)
+    }
+
+    @Test func remappedKeysReplaceTheDefaultsInTheEditor() {
+        let store = ShortcutStore()
+        store.set(ShortcutOverrides(overrides: [
+            ShortcutOverride(commandId: "screenplay.page_break", keys: ["Mod+Shift+B"]),
+            ShortcutOverride(commandId: "screenplay.element_action", keys: ["Mod+1"]),
+            ShortcutOverride(commandId: "screenplay.element_scene_heading", keys: []),
+            ShortcutOverride(commandId: "screenplay.find", keys: ["Mod+Shift+G"]),
+        ]))
+        #expect(ScreenplayKeyCommand.command(forChord: chord(11, "b", shift: true), store: store) == .pageBreak)
+        #expect(ScreenplayKeyCommand.command(forChord: chord(36, "\r"), store: store) == nil)
+        #expect(ScreenplayKeyCommand.command(forChord: chord(18, "1"), store: store) == .element(.action))
+        #expect(ScreenplayKeyCommand.command(forChord: chord(5, "g", shift: true), store: store) == .find)
+        #expect(ScreenplayKeyCommand.command(forChord: chord(3, "f"), store: store) == nil)
+    }
+}

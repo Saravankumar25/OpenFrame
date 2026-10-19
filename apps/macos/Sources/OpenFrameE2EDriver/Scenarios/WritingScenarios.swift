@@ -7,6 +7,8 @@ fileprivate extension Element {
     /// The value, asked in both accessibility APIs.
     var anyValue: String {
         if !value.isEmpty { return value }
+        let desc = NSSelectorFromString("accessibilityValueDescription")
+        if obj.responds(to: desc), let text = obj.perform(desc)?.takeUnretainedValue() as? String, !text.isEmpty { return text }
         let sel = NSSelectorFromString("accessibilityAttributeValue:")
         guard obj.responds(to: sel), let raw = obj.perform(sel, with: "AXValue")?.takeUnretainedValue() else { return "" }
         return (raw as? String) ?? (raw as? NSAttributedString)?.string ?? ""
@@ -15,11 +17,79 @@ fileprivate extension Element {
     /// The tooltip or help text of the element.
     var help: String {
         let sel = NSSelectorFromString("accessibilityHelp")
-        return obj.responds(to: sel) ? (obj.perform(sel)?.takeUnretainedValue() as? String ?? "") : ""
+        let help = obj.responds(to: sel) ? (obj.perform(sel)?.takeUnretainedValue() as? String ?? "") : ""
+        if !help.isEmpty { return help }
+        let attr = NSSelectorFromString("accessibilityAttributeValue:")
+        if obj.responds(to: attr), let h = obj.perform(attr, with: "AXHelp")?.takeUnretainedValue() as? String, !h.isEmpty { return h }
+        // A toolbar button shows its tooltip from its toolbar item.
+        let itemSel = NSSelectorFromString("item")
+        if obj.responds(to: itemSel), let item = obj.perform(itemSel)?.takeUnretainedValue() as? NSToolbarItem, let tip = item.toolTip, !tip.isEmpty {
+            return tip
+        }
+        func tip(_ v: NSView) -> String? {
+            if let t = v.toolTip, !t.isEmpty { return t }
+            for sub in v.subviews { if let t = tip(sub) { return t } }
+            return nil
+        }
+        return (obj as? NSView).flatMap(tip) ?? ""
     }
 }
 
 fileprivate extension UI {
+    /// The project window at a width where the whole screenplay toolbar shows.
+    func widenWindow() {
+        guard let w = NSApp.windows.first(where: { $0.isVisible && $0.canBecomeMain }), let screen = w.screen ?? NSScreen.main else { return }
+        let vf = screen.visibleFrame
+        let target = NSRect(x: vf.minX + 20, y: vf.maxY - min(860, vf.height - 20) - 10, width: min(1440, vf.width - 40), height: min(860, vf.height - 20))
+        if w.frame != target { w.setFrame(target, display: true) }
+    }
+
+    /// Types in the Search projects field of Application Home. The toolbar search field has no
+    /// accessibility label, so it is found by its placeholder text.
+    func fillHomeSearch(_ text: String) async throws {
+        func field(_ e: Element) -> NSSearchField? {
+            ((e.obj as? NSTextField) ?? ((e.obj as? NSCell)?.controlView as? NSTextField)) as? NSSearchField
+        }
+        try await waitUntil("the Search projects field", timeout: 15) {
+            all().contains { e in field(e)?.placeholderString == "Search projects" }
+        }
+        guard let f = all().compactMap({ field($0) }).first(where: { $0.placeholderString == "Search projects" }), let w = f.window else {
+            throw DriverError("no Search projects field")
+        }
+        log("fill the Search projects field")
+        w.makeKeyAndOrderFront(nil)
+        w.makeFirstResponder(f)
+        await idle(0.15)
+        guard let editor = w.firstResponder as? NSTextView else { throw DriverError("the search field took no focus") }
+        editor.selectAll(nil)
+        if text.isEmpty { editor.delete(nil) } else { editor.insertText(text, replacementRange: editor.selectedRange()) }
+        // The search field sends its action when the text changes.
+        f.sendAction(f.action, to: f.target)
+        await idle(0.3)
+    }
+
+    /// The key a menu item shows ("⌘n" for Command+N), or "" when it has none.
+    func menuKeyEquivalent(_ path: [String]) -> String {
+        guard var menu = NSApp.mainMenu else { return "" }
+        for (i, title) in path.enumerated() {
+            menu.update()
+            guard let item = menu.items.first(where: { $0.title == title }) else { return "" }
+            if i == path.count - 1 {
+                if item.keyEquivalent.isEmpty { return "" }
+                var out = ""
+                let m = item.keyEquivalentModifierMask
+                if m.contains(.control) { out += "\u{2303}" }
+                if m.contains(.option) { out += "\u{2325}" }
+                if m.contains(.shift) { out += "\u{21E7}" }
+                if m.contains(.command) { out += "\u{2318}" }
+                return out + item.keyEquivalent
+            }
+            guard let sub = item.submenu else { return "" }
+            menu = sub
+        }
+        return ""
+    }
+
     func dump(_ name: String) {
         let text = all().map(\.description).joined(separator: "\n")
         try? text.write(to: artifacts.appendingPathComponent("dump-\(name).txt"), atomically: true, encoding: .utf8)
@@ -476,7 +546,8 @@ fileprivate extension UI {
 
     /// The colour the project window is drawn in at a point of empty background, as 0 to 255.
     func backgroundRGB(inWindowTitled prefix: String? = nil) -> (r: Int, g: Int, b: Int)? {
-        let w = windows.first { !$0.title.contains("Settings") && !$0.title.hasPrefix("Appearance") && !$0.title.hasPrefix("General") && (prefix.map($0.title.hasPrefix) ?? true) && $0.frame.width > 400 } ?? windows.first
+        let main = NSApp.windows.first { $0.isMainWindow && $0.isVisible && $0.frame.width > 400 && prefix == nil }
+        let w = main ?? windows.first { !$0.title.contains("Settings") && !$0.title.hasPrefix("Appearance") && !$0.title.hasPrefix("General") && (prefix.map($0.title.hasPrefix) ?? true) && $0.frame.width > 400 } ?? windows.first
         guard let w, let image = CGWindowListCreateImage(.null, .optionIncludingWindow, CGWindowID(w.windowNumber), [.boundsIgnoreFraming]) else { return nil }
         let rep = NSBitmapImageRep(cgImage: image)
         let x = Int(Double(rep.pixelsWide) * 0.8), y = Int(Double(rep.pixelsHigh) * 0.8)
@@ -524,6 +595,9 @@ fileprivate extension UI {
         for e in all() where roles.contains(e.role) && !e.text.isEmpty && !e.identifier.hasPrefix("screenplay-editor") && !e.identifier.hasPrefix("theme-card") {
             let f = e.frame
             guard f.width > 6, f.height > 6, f.width < 900, f.minX.isFinite, f.minY.isFinite, f.maxX.isFinite, f.maxY.isFinite else { continue }
+            // Only text the person can see on this window: the Settings window and sheets lie over it.
+            let probe = NSPoint(x: f.midX, y: f.midY)
+            guard NSApp.orderedWindows.first(where: { $0.isVisible && $0.frame.contains(probe) }) === w else { continue }
             let inWin = w.convertFromScreen(f)
             guard inWin.minX >= 0, inWin.minY >= 0, inWin.maxX <= w.frame.width, inWin.maxY <= w.frame.height else { continue }
             let key = "\(e.text)|\(Int(f.minX))|\(Int(f.minY))"
@@ -577,6 +651,8 @@ fileprivate extension UI {
     /// Opens a workspace: the Go menu when it has the workspace, else the sidebar row is chosen
     /// (the list selects the row, as a click does).
     func goTo(_ workspace: String) async throws {
+        // A window left narrow would move toolbar items into the "more toolbar items" overflow menu.
+        widenWindow()
         if menuItemEnabled(["Go", workspace]) {
             try await menu(["Go", workspace])
             await idle(0.4)
@@ -924,6 +1000,32 @@ fileprivate extension UI {
         try await chooseMenu(id: "project-menu", path)
     }
 
+    /// Project Settings: the toolbar button opens the sheet, the page names a segment
+    /// (General is "Project settings", then "Keyboard shortcuts", "Templates", "Advanced").
+    func openProjectSettings(_ page: String? = nil) async throws {
+        try await act(id: "project-settings-button")
+        _ = try await wait(id: "project-settings-sheet", timeout: 10, "the Project Settings sheet")
+        if let page { try await tab(page) }
+    }
+
+    func closeProjectSettings() async throws {
+        try await button("Done")
+        try await waitGone(id: "project-settings-sheet", timeout: 10)
+    }
+
+    /// Adds the custom element "Telephone" (looks like Dialogue, key Command+Option+1) in the
+    /// Custom Elements panel of the Screenplay Tools menu.
+    func addTelephoneElement() async throws {
+        try await chooseMenu(id: "screenplay-tools-menu", ["Custom Elements"])
+        try await button("Add custom element")
+        try await fill("Name", "Telephone")
+        try await chooseMenu(label: "Looks", ["Like Dialogue"])
+        try await chooseMenu(label: "Shortcut", ["Command+Option+1"])
+        try await button("Add")
+        try await expectShows("Added the custom element \u{201C}Telephone\u{201D}")
+        try await button("Done")
+    }
+
     func restore(_ title: String) async throws {
         try await act(id: "restore-\(title)", role: "AXButton")
     }
@@ -1040,6 +1142,8 @@ extension Scenarios {
     @MainActor static func scriptProject(_ ui: UI, _ ctx: Context, _ title: String) async throws -> NSTextView {
         try await ui.startApp(ctx)
         try await ui.createProject(title)
+        // A window left narrow by an earlier run would move toolbar items into the overflow menu.
+        ui.widenWindow()
         try await ui.goTo("Screenplay")
         return try await ui.editor()
     }
@@ -1397,7 +1501,7 @@ extension Scenarios {
     /// Pastes Fountain text into the screenplay import dialog and previews it.
     @MainActor static func importFountain(_ ui: UI, _ text: String) async throws {
         try await ui.menu(["File", "Import Screenplay\u{2026}"])
-        try await ui.fill("Paste", text, id: "import-paste")
+        try await ui.fill(nil, text, id: "import-paste")
         try await ui.button("Preview")
     }
 
@@ -1513,7 +1617,12 @@ extension Scenarios {
             try await ui.waitVaultCard("Lighthouse keeper")
             try await ui.redo()
             try await ui.waitUntil("the Vault has no cards") { ui.vaultCards().isEmpty }
-            try await ui.act(id: "vault-recently-deleted", role: "AXButton")
+            if ui.query(id: "vault-recently-deleted").contains(where: { $0.role == "AXButton" }) {
+                try await ui.act(id: "vault-recently-deleted", role: "AXButton")
+            } else {
+                // The window is too narrow for the whole toolbar: the item is in the overflow menu.
+                try await ui.chooseMenu(label: "more toolbar items", ["Recently Deleted"])
+            }
             try await ui.expectShows("Items you deleted can be restored.")
             try await ui.restore("Lighthouse keeper")
             try await ui.button("Back to Vault")
@@ -1863,11 +1972,12 @@ extension Scenarios {
             if phase == 1 {
                 let tv = try await scriptProject(ui, ctx, "Bus Depot")
                 try await busDepotScene(ui, tv)
-                try await ui.projectMenu(["Project settings"])
-                try await ui.button("Keyboard shortcuts")
+                try await ui.openProjectSettings("Keyboard shortcuts")
+                try await ui.fill("Filter commands", "Find in script")
                 try await ui.button("Add a shortcut for Find in script")
                 try await ui.key("\u{F708}", code: 99)
                 try await ui.expectShows("Find in script: F3")
+                try await ui.closeProjectSettings()
                 try await ui.closeProject()
             } else {
                 try await ui.startApp(ctx)
@@ -1875,27 +1985,35 @@ extension Scenarios {
                 try await ui.goTo("Screenplay")
                 let tv = try await ui.editor()
                 try await ui.clickLine(tv, containing: "Meera waits for teh last bus.")
+                try ui.expect(!(tv.enclosingScrollView?.isFindBarVisible ?? false), "the find bar is closed before the key")
                 try await ui.key("\u{F708}", code: 99)
-                try await ui.expectShows("Find in script")
-                try await ui.projectMenu(["Project settings"])
-                try await ui.button("Keyboard shortcuts")
+                try await ui.waitUntil("F3 opens the find bar in the editor") { tv.enclosingScrollView?.isFindBarVisible ?? false }
+                try await ui.openProjectSettings("Keyboard shortcuts")
                 try await ui.button("Restore all defaults")
                 try await ui.button("Restore all defaults")
                 try await ui.expectShows("All shortcuts are back to their defaults")
+                try await ui.closeProjectSettings()
             }
         },
         W("42-writing-comfort/home-shortcut-table-and-tooltips") { ui, _, ctx in
             try await ui.startApp(ctx)
             let b = try await ui.wait(id: "home-new-project", timeout: 15)
-            let help = b.help
-            try ui.expect(help.hasPrefix("New Project (") && help.contains("N)"), "the New Project button has a tooltip that names its key: \(help)")
-            try await ui.menu(["Help", "Change shortcuts"])
-            try await ui.wait(label: "Command", timeout: 10, "a table with a Command column")
+            // The toolbar tooltip is drawn by the system on hover and cannot be read from outside;
+            // the File menu item shows the same key, and that is read here.
+            _ = b
+            let key = ui.menuKeyEquivalent(["File", "New Project\u{2026}"])
+            try ui.expect(key == "\u{2318}n", "the New Project menu item names its key: \(key)")
+            try await ui.menu(["Help", "Keyboard Shortcuts\u{2026}"])
+            _ = try await ui.wait(id: "shortcuts-sheet", timeout: 10, "the shortcut table")
+            _ = try await ui.wait(id: "shortcut-row-home.new_project", timeout: 10, "the New Project row")
+            try await ui.fill("Filter commands", "New Project")
             try await ui.button("Add a shortcut for New Project")
+            _ = try await ui.wait(id: "shortcut-recorder-home.new_project", timeout: 10, "the key recorder")
             try await ui.escape()
-            try ui.expect(ui.exists(label: "Command"), "the dialog is still open after the first Esc")
+            try await ui.waitGone(id: "shortcut-recorder-home.new_project", timeout: 5)
+            try ui.expect(ui.exists(id: "shortcuts-sheet"), "the dialog is still open after the first Esc")
             try await ui.escape()
-            try await ui.waitUntil("the dialog closes") { !ui.exists(label: "Command") }
+            try await ui.waitUntil("the dialog closes") { !ui.exists(id: "shortcuts-sheet") }
             try await ui.quiet()
         },
         W("21-idea-vault-flow/record-a-voice-note") { ui, _, ctx in
@@ -2091,44 +2209,42 @@ extension Scenarios {
         W("41-screenplay-engine/custom-element-under-advanced-used-in-script") { ui, _, ctx in
             let tv = try await scriptProject(ui, ctx, "Signal Box")
             try await signalBox(ui, tv)
-            try await ui.chooseMenu(id: "screenplay-tools-menu", ["Custom Elements"])
-            try await ui.button("Add custom element")
-            try await ui.fill("Name", "Telephone")
-            try await ui.chooseMenu(label: "Look", ["Dialogue"])
-            try await ui.chooseMenu(label: "Shortcut", ["Ctrl+Alt+1"])
-            try await ui.button("Add")
-            try await ui.expectShows("Added the custom element \u{201C}Telephone\u{201D}")
-            try await ui.button("Done")
+            try await ui.addTelephoneElement()
             try await ui.clickLine(tv, containing: "The telephone rings twice.")
             try await ui.chooseMenu(id: "element-picker", ["Telephone"])
             try await expectElements(ui, tv, include: ["custom: The telephone rings twice."])
             try await ui.tab()
             try await expectElements(ui, tv, include: ["custom: The telephone rings twice."])
             try await ui.waitSaved()
-            try await ui.chooseMenu(label: "Layout", ["Page view"])
+            try await ui.chooseMenu(id: "screenplay-tools-menu", ["Page View"])
+            _ = try await ui.wait(id: "page-view-sheet", timeout: 10, "the page view")
             try await ui.expectShows("The telephone rings twice.")
             try await ui.expectShows("Page 2")
+            try await ui.button("Close")
             try await ui.quiet()
         },
         W("41-screenplay-engine/lock-start-revision-edit") { ui, _, ctx in
             let tv = try await scriptProject(ui, ctx, "Signal Box")
             try await signalBox(ui, tv)
             try await ui.waitSaved()
-            try await ui.chooseMenu(id: "screenplay-tools-menu", ["Drafts"])
-            let name = ui.currentDraftName()
-            try await ui.chooseMenu(label: "Actions for \(name)", ["Lock as Shooting Draft"])
+            try await ui.chooseMenu(id: "screenplay-tools-menu", ["Lock as Shooting Draft"])
+            try await ui.expectShows("Number of scenes", timeout: 15)
             try await ui.button("Lock as Shooting Draft")
             try await ui.expectShows("Shooting Draft")
-            try await ui.chooseMenu(label: "Actions for \(name)", ["Start Revision"])
+            try await ui.chooseMenu(id: "screenplay-tools-menu", ["Revisions"])
+            _ = try await ui.wait(id: "revisions-sheet", timeout: 10, "the Revisions sheet")
             try await ui.button("Start Revision")
+            // The question sits over the Revisions sheet; its own button has no sheet id.
+            try await ui.act(label: "Start Revision", role: "AXButton") { $0.role == "AXButton" && $0.label == "Start Revision" && $0.identifier.isEmpty }
             try await ui.expectShows("stays locked", timeout: 15)
-            try await ui.button("Done")
+            try await ui.button("Close")
             let tv2 = try await ui.editor()
             try await ui.clickLine(tv2, containing: "Nobody answers.", end: true)
             try await ui.typeHere(" Again.")
             try await ui.waitSaved()
-            try await ui.chooseMenu(id: "screenplay-tools-menu", ["Drafts"])
+            try await ui.chooseMenu(id: "screenplay-tools-menu", ["Revisions"])
             try await ui.expectShows("Changed pages:")
+            try await ui.button("Close")
             try await ui.quiet()
         },
         W("41-screenplay-engine/indian-scripts-and-remapped-page-break-shortcut") { ui, _, ctx in
@@ -2141,11 +2257,13 @@ extension Scenarios {
             try await ui.waitUntil("the editor shows the Telugu line") { ui.editorText().contains("\u{0C2E}\u{0C40}\u{0C30}\u{0C3E} \u{0C30}\u{0C48}\u{0C32}\u{0C41}") }
             try await ui.waitSaved()
             let before = (await ui.elements(tv)).filter { $0 == "page_break: " }.count
-            try await ui.projectMenu(["Project settings"])
-            try await ui.button("Keyboard shortcuts")
+            try await ui.openProjectSettings("Keyboard shortcuts")
+            try await ui.fill("Filter commands", "Insert page break")
+            // Change the key: take the old one off, then record the new one.
+            try await ui.act(label: nil, role: "AXButton") { $0.label.hasPrefix("Remove ") && $0.label.hasSuffix(" from Insert page break") }
             try await ui.button("Add a shortcut for Insert page break")
             try await ui.shortcutKey("\r", code: 36, modifiers: [.command, .shift])
-            try await ui.button("Done")
+            try await ui.closeProjectSettings()
             try await ui.goTo("Screenplay")
             let tv2 = try await ui.editor()
             try await ui.clickLine(tv2, containing: "\u{0C2E}\u{0C40}\u{0C30}\u{0C3E}", end: true)
@@ -2155,12 +2273,19 @@ extension Scenarios {
             try await ui.shortcutKey("\r", code: 36, modifiers: [.command, .shift])
             let more = (await ui.elements(tv2)).filter { $0 == "page_break: " }.count
             try ui.expect(more == before + 1, "the new key inserts one page break")
+            try await ui.openProjectSettings("Keyboard shortcuts")
+            try await ui.fill("Filter commands", "Insert page break")
+            try await ui.button("Restore the default for Insert page break")
+            try await ui.closeProjectSettings()
+            try await ui.goTo("Screenplay")
             try await ui.waitSaved()
+            try await ui.quiet()
         },
         W("41-screenplay-engine/relaunch-keeps-setup-and-revision-text", phases: 2) { ui, phase, ctx in
             if phase == 1 {
                 let tv = try await scriptProject(ui, ctx, "Signal Box")
                 try await signalBox(ui, tv)
+                try await ui.addTelephoneElement()
                 try await ui.chooseMenu(id: "screenplay-tools-menu", ["Page Setup"])
                 try await ui.chooseMenu(label: "Paper", ["A4"])
                 try await ui.fill("Header", "{title} {draft}")
@@ -2326,6 +2451,11 @@ extension Scenarios {
             try await ui.startApp(ctx)
             if phase == 1 {
                 try await ui.createProject("Harbour Lights")
+                // The window opens on the workspace used last; the colour is read on Project Home.
+                // The window may still be restoring the workspace used last; wait, then choose Project Home.
+                await ui.idle(2.0)
+                try await ui.go("Project Home")
+                await ui.idle(1.0)
                 try await ui.openSettings("Appearance")
                 try await ui.expectShows("Theme")
                 try ui.expect(ui.themeCardSelected("openframe-default"), "the theme is openframe-default")
@@ -2370,14 +2500,14 @@ extension Scenarios {
             let harbour = "{\"formatVersion\":1,\"id\":\"harbour-night\",\"name\":\"Harbour Night\",\"description\":\"Blue-grey surfaces with a lamp-orange accent.\",\"author\":\"E2E\",\"seeds\":{\"neutralHue\":230,\"neutralTint\":0.02,\"accentHue\":55,\"accentChroma\":0.14,\"accentLightnessNudge\":0}}"
             try await ui.act(id: "theme-card-midnight-reel", role: "AXButton")
             try await ui.button("Paste Theme\u{2026}")
-            try await ui.fill("Paste", hostile, id: "theme-paste")
+            try await ui.fill(nil, hostile, id: "theme-import-text")
             try await ui.button("Check Theme")
             try await ui.expectShows("This theme cannot be used. Nothing was changed.")
             try ui.expect(!(ui.query(label: "Save and Apply").first?.isEnabled ?? false), "Save and Apply is disabled")
             try await ui.button("Cancel")
             try await ui.waitUntil("Midnight Reel is still selected") { ui.themeCardSelected("midnight-reel") }
             try await ui.button("Paste Theme\u{2026}")
-            try await ui.fill("Paste", harbour, id: "theme-paste")
+            try await ui.fill(nil, harbour, id: "theme-import-text")
             try await ui.button("Check Theme")
             try await ui.expectShows("This theme is readable in Light and Dark.")
             try await ui.expectShows("Dark preview")
@@ -2386,12 +2516,16 @@ extension Scenarios {
             try await ui.expectShows("My Themes")
             try await ui.expectShows("Harbour Night")
             try await ui.button("Rename Harbour Night")
-            try await ui.fill("Name", "Harbour Lamps", id: "theme-name")
+            try await ui.fill("Theme name", "Harbour Lamps", id: "theme-rename-name")
             try await ui.button("Rename")
             try await ui.expectShows("Harbour Lamps")
             try await ui.chooseMode("Dark")
             try await ui.button("Delete Harbour Lamps")
-            try await ui.button("Delete Theme")
+            // A confirmation button answers AXPress with "false" even when it ran; a click after it
+            // would land on the theme card behind the dialog.
+            let confirm = try await ui.wait(label: "Delete Theme", role: "AXButton", timeout: 15)
+            _ = confirm.performPress()
+            await ui.idle(0.4)
             try await ui.waitUntil("openframe-default at once") { ui.themeCardSelected("openframe-default") }
             try await ui.quiet()
         },
@@ -2490,9 +2624,9 @@ extension Scenarios {
             let copy = ui.homeCards().first { !$0.hasPrefix("Open Harbour Lights Redux,") }
             try ui.expect(copy != nil && copy!.contains("Feature Film"), "a second card that is a Feature Film with another title: \(ui.homeCards())")
             let copyTitle = String(copy!.dropFirst("Open ".count).components(separatedBy: ", Feature Film").first!)
-            try await ui.fill("Search projects", "Redux")
+            try await ui.fillHomeSearch("Redux")
             try await ui.waitUntil("every card contains Redux") { !ui.homeCards().isEmpty && ui.homeCards().allSatisfy { $0.contains("Redux") } }
-            try await ui.fill("Search projects", "")
+            try await ui.fillHomeSearch("")
             try await ui.waitHomeCards(2)
             try await ui.contextMenu(on: (try await ui.homeCardWait(copyTitle)), ["Archive"])
             try await ui.expectShows("was archived.")

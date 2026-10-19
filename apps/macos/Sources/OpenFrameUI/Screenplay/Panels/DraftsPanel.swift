@@ -16,6 +16,8 @@ final class DraftsPanelModel {
     var history: [ScreenplayHistoryPoint] = []
     var lockSummary: ScreenplayLockSummary?
     var busy = false
+    /// Set once the model has its app and workspace; a sheet's own task waits for it.
+    var attached = false
 
     init() {}
 
@@ -23,6 +25,7 @@ final class DraftsPanelModel {
         self.app = app
         self.workspace = workspace
         self.say = say
+        attached = true
     }
 
     var drafts: [ScreenplayDraftDto] { workspace?.overview?.drafts ?? [] }
@@ -458,7 +461,7 @@ struct LockDraftSheet: View {
             .keyboardShortcut(.defaultAction)
             .disabled(model.lockSummary == nil || model.busy)
         }
-        .task { await model.loadLockSummary(draft) }
+        .task(id: model.attached) { await model.loadLockSummary(draft) }
     }
 
     private func row(_ k: String, _ v: String, bold: Bool = false) -> some View {

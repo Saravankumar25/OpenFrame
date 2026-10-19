@@ -622,18 +622,36 @@ public final class ScreenplayTextView: NSTextView, @preconcurrency NSTextContent
         setKind(.custom, customElementId: id)
     }
 
+    private static let showFindInterfaceItem: NSMenuItem = {
+        let item = NSMenuItem()
+        item.tag = Int(NSTextFinder.Action.showFindInterface.rawValue)
+        return item
+    }()
+
+    /// Runs the screenplay command whose key (as now set in Keyboard Shortcuts) this press is.
+    private func runScreenplayShortcut(_ event: NSEvent) -> Bool {
+        guard case let .chord(chord) = ShortcutCatalogue.press(event),
+              let command = ScreenplayKeyCommand.command(forChord: chord) else { return false }
+        switch command {
+        case let .element(kind): setKind(kind)
+        case .pageBreak: insertPageBreak()
+        case .find: performFindPanelAction(Self.showFindInterfaceItem)
+        }
+        return true
+    }
+
+    /// Keys with no Command, such as F3, reach the view as plain key presses, not as key equivalents.
+    public override func keyDown(with event: NSEvent) {
+        let flags = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
+        let functionKey = event.charactersIgnoringModifiers?.unicodeScalars.first.map { (0xF700...0xF8FF).contains($0.value) } ?? false
+        if isEditable, flags.contains(.command) || flags.contains(.option) || functionKey, runScreenplayShortcut(event) { return }
+        super.keyDown(with: event)
+    }
+
     public override func performKeyEquivalent(with event: NSEvent) -> Bool {
         let flags = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
         if window?.firstResponder === self, isEditable {
-            if flags == .command, let chars = event.charactersIgnoringModifiers, let digit = Int(chars), (1...9).contains(digit),
-               let kind = rules?.kind(forShortcutDigit: digit) {
-                setKind(kind)
-                return true
-            }
-            if flags == .command, event.keyCode == 36 || event.keyCode == 76 {
-                insertPageBreak()
-                return true
-            }
+            if runScreenplayShortcut(event) { return true }
             if flags == [.command, .option], let chars = event.charactersIgnoringModifiers, let digit = Int(chars), (1...9).contains(digit),
                let def = customDefinitions.first(where: { $0.shortcut == "Ctrl+Alt+\(digit)" || $0.shortcut == "Cmd+Option+\(digit)" }) {
                 setKind(.custom, customElementId: def.id)

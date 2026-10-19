@@ -130,7 +130,7 @@ final class PageSetupModel {
             if let setup, setup.includeTitlePage != info?.setup.includeTitlePage {
                 _ = try await core.screenplayUpdatePageSetup(ScreenplayUpdatePageSetupArgs(screenplayId: id, setup: setup))
             }
-            say("Changed the title page")
+            say("Saved the title page")
             await workspace?.loadOverview()
             return true
         } catch {

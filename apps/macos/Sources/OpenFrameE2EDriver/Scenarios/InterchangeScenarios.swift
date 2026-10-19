@@ -174,11 +174,13 @@ fileprivate extension UI {
 
     /// Opens Settings (Command+Comma) on a tab.
     func openSettings(tab: String? = nil) async throws {
-        try await shortcut(",", code: 43)
+        // The app menu's Settings item is the same command as Command+Comma and works without an active app.
+        guard let appMenu = NSApp.mainMenu?.items.first?.title else { throw DriverError("no app menu") }
+        try await menu([appMenu, "Settings\u{2026}"])
         if let tab {
             let deadline = Date().addingTimeInterval(10)
             while Date() < deadline {
-                if let e = query(label: tab).first(where: { ["AXRadioButton", "AXButton", "AXTab"].contains($0.role) }) { log("press \(tab)"); try await focusByClick(e); return }
+                if let e = query(label: tab).first(where: { ["AXRadioButton", "AXButton", "AXTab"].contains($0.role) }) { log("press \(tab)"); try await tap(e); await idle(0.5); return }
                 await idle(0.2)
             }
             throw DriverError("the Settings tab \(tab) did not show: \(all().map(\.description).filter { $0.contains("Radio") || $0.contains("Tab") })")
@@ -466,7 +468,8 @@ fileprivate extension UI {
         let named = ["AXButton", "AXMenuButton", "AXCheckBox", "AXRadioButton", "AXPopUpButton", "AXTextField", "AXTextArea", "AXLink"]
         let unnamed = all().filter { e in
             named.contains(e.role) && e.text.isEmpty
-                && !["AXCloseButton", "AXMinimizeButton", "AXZoomButton", "AXFullScreenButton", "AXToolbarButton"].contains(subrole(e))
+                && !["AXCloseButton", "AXMinimizeButton", "AXZoomButton", "AXFullScreenButton", "AXToolbarButton",
+                     "AXIncrementArrow", "AXDecrementArrow", "AXIncrementPage", "AXDecrementPage"].contains(subrole(e))
         }
         try expect(unnamed.isEmpty, "\(context) the screen is not quiet, controls without a name: \(unnamed.prefix(6).map(\.description))")
         try expect(unexpectedPanels().isEmpty, "\(context) a system panel opened that nobody asked for: \(unexpectedPanels())")
@@ -491,6 +494,15 @@ fileprivate extension UI {
 
 fileprivate extension UI {
     /// First launch of the packages specs: project 'Harbour Lights' with the Night Shift screenplay.
+    /// Adds a private note to the scene shown in the Scene Hub (Screenplay Tools menu, Scene Hub).
+    func addPrivateNote(_ text: String) async throws {
+        try await choose(from: "screenplay-tools-menu", ["Scene Hub"])
+        try await tap(label: "Add private note", role: "AXButton")
+        try await type(text, label: "Private note")
+        try await tap(label: "Save", role: "AXButton")
+        try await waitText(text, timeout: 10)
+    }
+
     func harbourStart(_ ctx: Context) async throws {
         try await launch(ctx)
         try await createProject("Harbour Lights")
@@ -570,12 +582,8 @@ extension Scenarios {
             let f = Findings()
             let dir = try ui.packageDir(ctx)
             try await ui.harbourStart(ctx)
-            // Steps 3 to 6: the private note in the Screenplay toolbar (Notes, Add private note).
-            if ui.exists(label: "Add private note") {
-                try await ui.tap(label: "Add private note")
-            } else {
-                f.add("MISSING FEATURE: the Screenplay workspace has no way to add a private note ('Add private note'), so the backup cannot be checked for one")
-            }
+            // Steps 3 to 6: the private note, in the Scene Hub of the Screenplay Tools menu.
+            try await ui.addPrivateNote("Harbour private note for the restore check")
             try await ui.menu(["File", "Back Up Project…"])
             try await ui.waitText("A recoverable copy of supported project state.", timeout: 20)
             let backup = dir.appendingPathComponent("Harbour Lights backup.ofbackup")
@@ -665,9 +673,7 @@ extension Scenarios {
             let f = Findings()
             let dir = try ui.packageDir(ctx)
             try await ui.harbourStart(ctx)
-            if !ui.exists(label: "Add private note") {
-                f.add("MISSING FEATURE: no private note can be added, so the restore sheet cannot say \"The private note in this package will become yours.\"")
-            }
+            try await ui.addPrivateNote("Harbour private note for the restore check")
             let backup = dir.appendingPathComponent("Harbour Lights backup.ofbackup")
             try await ui.makeBackup(to: backup)
             try await ui.closeToHome()

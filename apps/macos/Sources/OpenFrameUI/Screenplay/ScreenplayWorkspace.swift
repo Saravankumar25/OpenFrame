@@ -390,8 +390,12 @@ final class ScreenplayWorkspaceModel {
 
     func loadDocument(_ draftId: String) async {
         guard let core = app?.core else { return }
+        let openAtStart = document?.draft.id
         do {
             let doc = try await core.screenplayDocument(ScreenplayDraftIdArgs(draftId: draftId))
+            // A refresh of the draft that was open when it began must not bring that draft back
+            // after the person switched to another one while the answer was on its way.
+            if let openAtStart, openAtStart == draftId, let now = document?.draft.id, now != openAtStart { return }
             if let sync, sync.isDirty, doc.draft.id == document?.draft.id {
                 // Never replace text the person is typing; the sync sends it first.
                 return

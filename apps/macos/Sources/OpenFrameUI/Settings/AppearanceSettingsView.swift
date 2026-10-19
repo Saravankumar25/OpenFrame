@@ -79,7 +79,8 @@ struct AppearanceSettingsContent: View {
             await reload()
             await mine?.reload()
         }
-        .sheet(item: $importing) { model in
+        // A saved theme joins My Themes: read the list again when the import sheet closes.
+        .sheet(item: $importing, onDismiss: { Task { await mine?.reload() } }) { model in
             ThemeImportSheet(model: model)
         }
         .sheet(item: $renaming) { theme in

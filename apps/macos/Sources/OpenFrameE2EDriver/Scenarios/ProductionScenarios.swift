@@ -228,7 +228,7 @@ extension Scenarios {
         Scenario("25-recently-deleted-purge/deleted-items-show-30-days-left") { ui, _, ctx in
             try await ui.firstLaunch(ctx, title: "Low Tide")
             try await seedDeleted(ui, project: "Low Tide", withIdea: true)
-            try await ui.press(id: "vault-recently-deleted")
+            try await ui.pressToolbar(id: "vault-recently-deleted", overflowItem: "Recently Deleted")
             try await ui.waitText(deletedBanner)
             try await ui.waitText("Removed in")
             try ui.expect(vaultTrashRows(ui).count == 1, "the Vault Recently Deleted table has exactly one row: \(vaultTrashRows(ui))")
@@ -267,7 +267,7 @@ extension Scenarios {
                 try await ui.waitUntil("Harbour master is listed") { noteRows(ui, "Harbour master").count == 1 }
                 try ui.expect(noteRows(ui, "Old ferry route").isEmpty, "Old ferry route is not listed")
                 try await ui.nav("Idea Vault")
-                try await ui.press(id: "vault-recently-deleted")
+                try await ui.pressToolbar(id: "vault-recently-deleted", overflowItem: "Recently Deleted")
                 try await ui.waitText("Nothing deleted")
                 try await ui.press(label: "Back to Vault", role: "AXButton")
                 try ui.quiet("after the purge")
@@ -1260,22 +1260,65 @@ extension Scenarios {
 // MARK: 85-project-pages
 
 extension Scenarios {
-    @MainActor static var windowTitle: String { NSApp.windows.first { $0.isVisible && $0.title.contains("OpenFrame") || $0.isVisible && $0.isMainWindow }?.title ?? "" }
+    /// The project window's title. On the Mac it is the project's title (Windows adds " - OpenFrame Studio").
+    @MainActor static var windowTitle: String {
+        let names = NSApp.windows.filter { $0.isVisible && !$0.title.isEmpty && $0.title != "OpenFrame Studio" && $0.title != "Projects" }
+        return (names.first { $0.isMainWindow } ?? names.first)?.title ?? ""
+    }
 
     /// Open the project menu and choose an item that starts with the text.
     @MainActor static func projectMenu(_ ui: UI, _ item: String) async throws {
         try await ui.menuButton(id: "project-menu", item: item)
     }
 
-    /// "Templates tab": project menu, Project settings, the Templates tab, Create Template shows.
+    /// Project Settings: the toolbar button opens the sheet (the page is a segment name such as
+    /// "Templates"). A sheet that is already open is left as it is.
+    @MainActor static func openSettings(_ ui: UI, page: String? = nil) async throws {
+        if !ui.exists(id: "project-settings-sheet") {
+            try await ui.press(id: "project-settings-button")
+            _ = try await ui.wait(id: "project-settings-sheet", timeout: 10, "the Project Settings sheet")
+        }
+        if let page {
+            let segment = try await ui.wait(label: page, role: "AXRadioButton", timeout: 10)
+            if !segment.performPress() { try await ui.clickQueued(segment) }
+            await ui.idle(0.4)
+        }
+    }
+
+    @MainActor static func closeSettings(_ ui: UI) async throws {
+        let done = try await ui.wait(label: "Done", role: "AXButton", timeout: 10)
+        if !done.performPress() { try await ui.clickQueued(done) }
+        try await ui.waitGone(id: "project-settings-sheet", timeout: 10)
+    }
+
+    /// "Templates tab": Project Settings, the Templates page, Create Template shows.
     @MainActor static func templatesTab(_ ui: UI) async throws {
-        try await projectMenu(ui, "Project settings")
-        try await segment(ui, group: "settings-tabs", "Templates")
+        try await openSettings(ui, page: "Templates")
         try await ui.waitText("Create Template")
     }
 
+    /// The templates grid draws only what is on screen, so the page is scrolled to its end, where
+    /// the "This project" section is.
+    @MainActor static func scrollSettingsToEnd() {
+        func scan(_ v: NSView, _ out: inout [NSScrollView]) {
+            if let sv = v as? NSScrollView { out.append(sv) }
+            for c in v.subviews { scan(c, &out) }
+        }
+        for w in NSApp.windows where w.isVisible && w.sheetParent != nil {
+            var found: [NSScrollView] = []
+            if let root = w.contentView?.superview { scan(root, &found) }
+            for sv in found where sv.documentView != nil && sv.documentView!.frame.height > sv.contentView.bounds.height {
+                let doc = sv.documentView!
+                let y = doc.isFlipped ? doc.frame.height - sv.contentView.bounds.height : 0
+                sv.contentView.scroll(to: NSPoint(x: 0, y: max(0, y)))
+                sv.reflectScrolledClipView(sv.contentView)
+            }
+        }
+    }
+
     @MainActor static func templateRows(_ ui: UI) -> [Element] {
-        ui.all().filter { $0.label.hasPrefix("Preview ") }
+        scrollSettingsToEnd()
+        return ui.all().filter { $0.label.hasPrefix("Preview ") }
     }
 
     @MainActor static func hasTemplate(_ ui: UI, _ name: String) -> Bool {
@@ -1284,12 +1327,15 @@ extension Scenarios {
 
     @MainActor static func makeTemplate(_ ui: UI, _ name: String) async throws {
         try await ui.press(label: "Create Template", role: "AXButton")
-        try await ui.typeIn(name, into: "template-name")
-        try await ui.press(id: "template-create")
+        try await ui.setField("Template name", name)
+        try await ui.press(label: "Create", role: "AXButton")
+        try await ui.waitText("Created \u{201C}\(name)\u{201D} in this project.", timeout: 10)
         try await ui.waitUntil("the templates include \(name)") { hasTemplate(ui, name) }
     }
 
     @MainActor static func deleteTemplate(_ ui: UI, _ name: String) async throws {
+        scrollSettingsToEnd()
+        await ui.idle(0.5)
         try await ui.menuButton(label: "Actions for \(name)", item: "Delete")
         try await ui.waitText("Moved template \u{201C}\(name)\u{201D} to Recently Deleted")
         try await ui.waitUntil("the templates no longer include \(name)") { !hasTemplate(ui, name) }
@@ -1298,21 +1344,26 @@ extension Scenarios {
     static let projectPages: [Scenario] = [
         Scenario("85-project-pages/project-settings-title-logline-save-undo-redo") { ui, _, ctx in
             try await ui.firstLaunch(ctx, title: "Tide Line")
-            try await projectMenu(ui, "Project settings")
-            try await ui.typeIn("Tide Line Revised", into: "settings-title")
-            try await ui.typeIn("A ferry pilot races the tide to reach her brother.", into: "settings-logline")
-            try await ui.press(id: "settings-save")
+            try await openSettings(ui)
+            try await ui.setField("Title", "Tide Line Revised")
+            try await ui.setField("Logline", "A ferry pilot races the tide to reach her brother.")
+            try await ui.press(id: "project-settings-save")
             try await ui.waitText("Updated project settings")
-            try ui.expect(windowTitle == "Tide Line Revised - OpenFrame Studio", "the window title: \(windowTitle)")
+            try await ui.waitUntil("the window title is Tide Line Revised, now \(windowTitle)") { windowTitle == "Tide Line Revised" }
+            // The sheet holds the keyboard; close it so Undo and Redo act on the project, not on a field.
+            try await closeSettings(ui)
             try await ui.undoProject()
-            try await ui.waitUntil("the old title and an empty logline") {
-                windowTitle == "Tide Line - OpenFrame Studio" && ui.query(id: "settings-logline").first?.value.isEmpty == true
-            }
+            try await ui.waitUntil("the old title, now \(windowTitle)") { windowTitle == "Tide Line" }
+            try await openSettings(ui)
+            try await ui.waitUntil("an empty logline") { ui.query(id: "project-settings-logline").first?.value.isEmpty == true }
+            try await closeSettings(ui)
             try await ui.redoProject()
-            try await ui.waitUntil("the revised title and the logline") {
-                windowTitle == "Tide Line Revised - OpenFrame Studio"
-                    && ui.query(id: "settings-logline").first?.value == "A ferry pilot races the tide to reach her brother."
+            try await ui.waitUntil("the revised title, now \(windowTitle)") { windowTitle == "Tide Line Revised" }
+            try await openSettings(ui)
+            try await ui.waitUntil("the logline is back") {
+                ui.query(id: "project-settings-logline").first?.value == "A ferry pilot races the tide to reach her brother."
             }
+            try await closeSettings(ui)
             try ui.quiet("after undo and redo of the settings")
         },
 
@@ -1324,6 +1375,7 @@ extension Scenarios {
             try await deleteTemplate(ui, "Night exterior call")
             try await deleteTemplate(ui, "Old call template")
             try ui.quiet("after deleting both templates")
+            try await closeSettings(ui)
             try await ui.nav("Recently Deleted")
             try await ui.press(id: "restore-Night exterior call")
             try await ui.waitText("Restored \u{201C}Night exterior call\u{201D}")
@@ -1334,7 +1386,8 @@ extension Scenarios {
             try await ui.waitNoText("Old call template", timeout: 10)
             try ui.quiet("after the permanent delete")
             try await templatesTab(ui)
-            try ui.expect(hasTemplate(ui, "Night exterior call"), "the templates include Night exterior call")
+            try await ui.waitUntil("the templates include Night exterior call") { hasTemplate(ui, "Night exterior call") }
+            try await closeSettings(ui)
         },
 
         Scenario("85-project-pages/activity-lists-what-happened-and-filters-by-kind") { ui, _, ctx in
@@ -1356,16 +1409,17 @@ extension Scenarios {
             try await ui.startApp(ctx)
             if phase == 1 {
                 try await ui.createProject("Tide Line")
-                try await projectMenu(ui, "Project settings")
-                try await ui.typeIn("Tide Line Revised", into: "settings-title")
-                try await ui.typeIn("A ferry pilot races the tide to reach her brother.", into: "settings-logline")
-                try await ui.press(id: "settings-save")
+                try await openSettings(ui)
+                try await ui.setField("Title", "Tide Line Revised")
+                try await ui.setField("Logline", "A ferry pilot races the tide to reach her brother.")
+                try await ui.press(id: "project-settings-save")
                 try await ui.waitText("Updated project settings")
                 try await templatesTab(ui)
                 try await makeTemplate(ui, "Night exterior call")
                 try await makeTemplate(ui, "Old call template")
                 try await deleteTemplate(ui, "Night exterior call")
                 try await deleteTemplate(ui, "Old call template")
+                try await closeSettings(ui)
                 try await ui.nav("Recently Deleted")
                 try await ui.press(id: "restore-Night exterior call")
                 try await ui.waitText("Restored \u{201C}Night exterior call\u{201D}")
@@ -1376,11 +1430,13 @@ extension Scenarios {
             } else {
                 try await ui.openProject("Tide Line Revised")
                 try ui.expect(!(await ui.recoveryOffered(within: 2)), "no recovery question after a clean quit")
-                try await projectMenu(ui, "Project settings")
-                let logline = try await ui.wait(id: "settings-logline", timeout: 15, "the logline field")
+                try await openSettings(ui)
+                let logline = try await ui.wait(label: "Logline", timeout: 15, "the logline field")
                 try ui.expect(logline.value == "A ferry pilot races the tide to reach her brother.", "the logline reads: \(logline.value)")
                 try await templatesTab(ui)
-                try ui.expect(hasTemplate(ui, "Night exterior call") && !hasTemplate(ui, "Old call template"), "the templates after the relaunch")
+                try await ui.waitUntil("the templates include Night exterior call") { hasTemplate(ui, "Night exterior call") }
+                try ui.expect(!hasTemplate(ui, "Old call template"), "the templates do not include Old call template")
+                try await closeSettings(ui)
                 try await ui.nav("Recently Deleted")
                 try await ui.waitText("Nothing has been deleted.")
                 try ui.quiet("after the relaunch")
@@ -1939,8 +1995,22 @@ fileprivate extension UI {
 
 fileprivate extension UI {
     /// A real click on a point, queued like the mouse does, so a menu opens without blocking the driver.
+    /// Presses a toolbar button; when the window is too narrow to show it, the person finds it in
+    /// the "more toolbar items" menu, and so does this.
+    func pressToolbar(id: String, overflowItem: String) async throws {
+        let deadline = Date().addingTimeInterval(3)
+        while Date() < deadline {
+            if let e = query(id: id).first(where: { $0.role == "AXButton" }) { try await press(e); return }
+            await idle(0.2)
+        }
+        log("toolbar button \(id) is in the overflow menu")
+        try await menuButton(label: "more toolbar items", item: overflowItem)
+    }
+
     func postClick(atScreen center: NSPoint) {
-        guard let w = NSApp.orderedWindows.first(where: { $0.isVisible && $0.frame.contains(center) && !String(describing: Swift.type(of: $0)).contains("PopupMenu") }) else { return }
+        let under = NSApp.orderedWindows.filter { $0.isVisible && $0.frame.contains(center) && !String(describing: Swift.type(of: $0)).contains("PopupMenu") }
+        // A sheet lies over its window and takes the click.
+        guard let w = under.first(where: { $0.sheetParent != nil }) ?? under.first else { return }
         w.makeKeyAndOrderFront(nil)
         let local = w.convertPoint(fromScreen: center)
         for t in [NSEvent.EventType.leftMouseDown, .leftMouseUp] {
@@ -2024,6 +2094,43 @@ fileprivate extension UI {
 fileprivate extension UI {
     /// Types into a field after proving that field has the keyboard (the plain driver call trusts the focus request,
     /// and a sheet is a window of its own that may not be the key window).
+    /// A real click, with both mouse events queued together (a control that tracks the mouse
+    /// until the button comes up would hang the driver's own immediate click).
+    func clickQueued(_ e: Element) async throws {
+        let frame = e.frame
+        guard frame.width > 0, frame.height > 0 else { throw DriverError("element has no frame: \(e)") }
+        let center = NSPoint(x: frame.midX, y: frame.midY)
+        let under = NSApp.orderedWindows.filter { $0.isVisible && $0.frame.contains(center) }
+        // A sheet lies over its window and takes the click.
+        guard let target = under.first(where: { $0.sheetParent != nil }) ?? under.first else { throw DriverError("no window under \(e)") }
+        target.makeKeyAndOrderFront(nil)
+        let local = target.convertPoint(fromScreen: center)
+        for type in [NSEvent.EventType.leftMouseDown, .leftMouseUp] {
+            guard let ev = NSEvent.mouseEvent(with: type, location: local, modifierFlags: [], timestamp: ProcessInfo.processInfo.systemUptime,
+                                              windowNumber: target.windowNumber, context: nil, eventNumber: 0, clickCount: 1, pressure: type == .leftMouseDown ? 1 : 0) else { continue }
+            NSApp.postEvent(ev, atStart: false)
+        }
+        await idle(0.4)
+    }
+
+    /// Replaces the text of a field in a sheet: focus it, select all, type.
+    func setField(_ label: String, _ text: String, id: String? = nil) async throws {
+        let e = try await wait(id: id, label: label, timeout: 15)
+        // The click gives the field focus; when the app is not the active one (another window
+        // took the keyboard) the accessibility focus does the same.
+        var focused: NSTextView?
+        for attempt in 0..<4 {
+            if attempt % 2 == 0 { try await clickQueued(e) } else { try await focus(e); await idle(0.3) }
+            if let w = NSApp.keyWindow ?? windows.last, let tv = w.firstResponder as? NSTextView { focused = tv; break }
+        }
+        guard let editor = focused else { throw DriverError("the field took no focus: \(e)") }
+        editor.selectAll(nil)
+        editor.insertText(text, replacementRange: editor.selectedRange())
+        await idle(0.3)
+        let now = try await wait(id: id, label: label, timeout: 5).value
+        if now != text { throw DriverError("the field \(label) reads \(now), not \(text)") }
+    }
+
     func typeIn(_ text: String, into id: String? = nil, label: String? = nil, timeout: Double = 15) async throws {
         var e = try await wait(id: id, label: label, timeout: timeout)
         let ready = Date().addingTimeInterval(5)
@@ -2032,7 +2139,8 @@ fileprivate extension UI {
         e = try await wait(id: id, label: label, timeout: timeout)
         func window(of e: Element) -> NSWindow? {
             let c = NSPoint(x: e.frame.midX, y: e.frame.midY)
-            return NSApp.orderedWindows.first { $0.isVisible && $0.frame.contains(c) }
+            let under = NSApp.orderedWindows.filter { $0.isVisible && $0.frame.contains(c) }
+            return under.first(where: { $0.sheetParent != nil }) ?? under.first
         }
         func hasFocus(_ e: Element) -> NSTextView? {
             guard let w = window(of: e), let tv = w.firstResponder as? NSTextView else { return nil }
