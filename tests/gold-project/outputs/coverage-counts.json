@@ -1,0 +1,2452 @@
+{
+  "ai.ask": {
+    "failed": 0,
+    "ok": 10,
+    "refusedOnPurpose": 0
+  },
+  "ai.change_set.accept": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "ai.change_set.get": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "ai.change_set.recheck": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "ai.change_set.reject": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "ai.diagnostics": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "ai.download.import": {
+    "failed": 0,
+    "ok": 3,
+    "refusedOnPurpose": 0
+  },
+  "ai.download.pause": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "ai.download.remove": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "ai.download.status": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "ai.export_report": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "ai.graphics.set": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "ai.health": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "ai.history": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "ai.index_rebuild": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "ai.index_status": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "ai.status": {
+    "failed": 0,
+    "ok": 5,
+    "refusedOnPurpose": 0
+  },
+  "ai.stop_runtime": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "app.cancel_task": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "app.info": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "app.reset_shortcuts": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "app.save_state": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "app.set_display_name": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "app.set_shortcuts": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "app.shortcuts": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "appearance.check_theme": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "appearance.delete_theme": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "appearance.export_theme": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "appearance.get": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "appearance.import_theme": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "appearance.rename_theme": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "appearance.set_mode": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "appearance.set_theme": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "availability.set": {
+    "failed": 0,
+    "ok": 6,
+    "refusedOnPurpose": 0
+  },
+  "breakdown.accept": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "breakdown.accept_many": {
+    "failed": 0,
+    "ok": 45,
+    "refusedOnPurpose": 0
+  },
+  "breakdown.add_element": {
+    "failed": 0,
+    "ok": 600,
+    "refusedOnPurpose": 0
+  },
+  "breakdown.apply_suggested_update": {
+    "failed": 0,
+    "ok": 3,
+    "refusedOnPurpose": 0
+  },
+  "breakdown.categories": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "breakdown.export_report": {
+    "failed": 0,
+    "ok": 5,
+    "refusedOnPurpose": 0
+  },
+  "breakdown.mark_reviewed": {
+    "failed": 0,
+    "ok": 48,
+    "refusedOnPurpose": 0
+  },
+  "breakdown.quick_reuse": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "breakdown.reject": {
+    "failed": 0,
+    "ok": 45,
+    "refusedOnPurpose": 0
+  },
+  "breakdown.remove_element": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "breakdown.reset_category_styles": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "breakdown.reuse": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "breakdown.scene": {
+    "failed": 0,
+    "ok": 89,
+    "refusedOnPurpose": 0
+  },
+  "breakdown.scene_changes": {
+    "failed": 0,
+    "ok": 4,
+    "refusedOnPurpose": 0
+  },
+  "breakdown.scenes": {
+    "failed": 0,
+    "ok": 11,
+    "refusedOnPurpose": 0
+  },
+  "breakdown.set_archived": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "breakdown.set_category_style": {
+    "failed": 0,
+    "ok": 4,
+    "refusedOnPurpose": 0
+  },
+  "breakdown.set_complete": {
+    "failed": 0,
+    "ok": 45,
+    "refusedOnPurpose": 0
+  },
+  "breakdown.source_anchor": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "breakdown.suggest": {
+    "failed": 0,
+    "ok": 45,
+    "refusedOnPurpose": 0
+  },
+  "breakdown.update_element": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "budget.add_line": {
+    "failed": 0,
+    "ok": 35,
+    "refusedOnPurpose": 0
+  },
+  "budget.create": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "budget.delete_line": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "budget.delete_snapshot": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "budget.export_summary": {
+    "failed": 0,
+    "ok": 4,
+    "refusedOnPurpose": 0
+  },
+  "budget.get": {
+    "failed": 0,
+    "ok": 6,
+    "refusedOnPurpose": 0
+  },
+  "budget.get_snapshot": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "budget.mark_reviewed": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "budget.save_snapshot": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "budget.update": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "budget.update_line": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "callsheets.add_section": {
+    "failed": 0,
+    "ok": 126,
+    "refusedOnPurpose": 0
+  },
+  "callsheets.attach": {
+    "failed": 0,
+    "ok": 4,
+    "refusedOnPurpose": 0
+  },
+  "callsheets.create": {
+    "failed": 0,
+    "ok": 14,
+    "refusedOnPurpose": 0
+  },
+  "callsheets.delete": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "callsheets.export_pdf": {
+    "failed": 0,
+    "ok": 14,
+    "refusedOnPurpose": 0
+  },
+  "callsheets.finalize": {
+    "failed": 0,
+    "ok": 29,
+    "refusedOnPurpose": 0
+  },
+  "callsheets.get": {
+    "failed": 0,
+    "ok": 15,
+    "refusedOnPurpose": 0
+  },
+  "callsheets.list": {
+    "failed": 0,
+    "ok": 6,
+    "refusedOnPurpose": 0
+  },
+  "callsheets.new_revision": {
+    "failed": 0,
+    "ok": 15,
+    "refusedOnPurpose": 0
+  },
+  "callsheets.refresh": {
+    "failed": 0,
+    "ok": 14,
+    "refusedOnPurpose": 0
+  },
+  "callsheets.refresh_preview": {
+    "failed": 0,
+    "ok": 14,
+    "refusedOnPurpose": 0
+  },
+  "callsheets.update": {
+    "failed": 0,
+    "ok": 15,
+    "refusedOnPurpose": 0
+  },
+  "cast.assign": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "cast.create": {
+    "failed": 0,
+    "ok": 20,
+    "refusedOnPurpose": 0
+  },
+  "cast.delete": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "cast.list": {
+    "failed": 0,
+    "ok": 6,
+    "refusedOnPurpose": 0
+  },
+  "cast.set_archived": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "cast.set_photo": {
+    "failed": 0,
+    "ok": 8,
+    "refusedOnPurpose": 0
+  },
+  "cast.update": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "catalog.add_alias": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "catalog.create": {
+    "failed": 0,
+    "ok": 11,
+    "refusedOnPurpose": 0
+  },
+  "catalog.delete": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "catalog.find_matches": {
+    "failed": 0,
+    "ok": 295,
+    "refusedOnPurpose": 0
+  },
+  "catalog.get": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "catalog.list": {
+    "failed": 0,
+    "ok": 7,
+    "refusedOnPurpose": 0
+  },
+  "catalog.remove_alias": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "catalog.replace_in_scenes": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "catalog.set_archived": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "catalog.set_image": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "catalog.update": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "comment.create": {
+    "failed": 0,
+    "ok": 8,
+    "refusedOnPurpose": 0
+  },
+  "comment.delete": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "comment.list": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "comment.reopen": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "comment.reply": {
+    "failed": 0,
+    "ok": 3,
+    "refusedOnPurpose": 0
+  },
+  "comment.resolve": {
+    "failed": 0,
+    "ok": 3,
+    "refusedOnPurpose": 0
+  },
+  "comment.update": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "crew.create": {
+    "failed": 0,
+    "ok": 29,
+    "refusedOnPurpose": 0
+  },
+  "crew.delete": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "crew.list": {
+    "failed": 0,
+    "ok": 6,
+    "refusedOnPurpose": 0
+  },
+  "crew.set_archived": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "crew.update": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "diagnostics.export_bundle": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "diagnostics.preview": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "entitlement.buy": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "entitlement.notice": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "entitlement.record_notice": {
+    "failed": 0,
+    "ok": 0,
+    "refusedOnPurpose": 4
+  },
+  "entitlement.restore_purchase": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "entitlement.start_trial": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "entitlement.status": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "files.add": {
+    "failed": 0,
+    "ok": 4,
+    "refusedOnPurpose": 0
+  },
+  "files.asset": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "files.create_folder": {
+    "failed": 0,
+    "ok": 4,
+    "refusedOnPurpose": 0
+  },
+  "files.delete": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "files.delete_folder": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "files.export_copy": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "files.list": {
+    "failed": 0,
+    "ok": 6,
+    "refusedOnPurpose": 0
+  },
+  "files.move": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "files.relink": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "files.rename": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "files.rename_folder": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "files.update_notes": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "history.activity": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "history.info": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "history.redo": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "history.undo": {
+    "failed": 0,
+    "ok": 4,
+    "refusedOnPurpose": 0
+  },
+  "interchange.draft_scenes": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "interchange.export_preview": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "interchange.sources": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "locations.add_photos": {
+    "failed": 0,
+    "ok": 5,
+    "refusedOnPurpose": 0
+  },
+  "locations.create": {
+    "failed": 0,
+    "ok": 18,
+    "refusedOnPurpose": 0
+  },
+  "locations.delete": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "locations.get": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "locations.list": {
+    "failed": 0,
+    "ok": 7,
+    "refusedOnPurpose": 0
+  },
+  "locations.move_photo": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "locations.remove_photo": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "locations.replace": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "locations.set_archived": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "locations.set_status": {
+    "failed": 0,
+    "ok": 17,
+    "refusedOnPurpose": 0
+  },
+  "locations.update": {
+    "failed": 0,
+    "ok": 18,
+    "refusedOnPurpose": 0
+  },
+  "moodboard.add_image_data": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "moodboard.add_images": {
+    "failed": 0,
+    "ok": 3,
+    "refusedOnPurpose": 0
+  },
+  "moodboard.add_link": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "moodboard.add_note": {
+    "failed": 0,
+    "ok": 4,
+    "refusedOnPurpose": 0
+  },
+  "moodboard.add_vault_image": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "moodboard.arrange_item": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "moodboard.create": {
+    "failed": 0,
+    "ok": 4,
+    "refusedOnPurpose": 0
+  },
+  "moodboard.delete": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "moodboard.delete_items": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "moodboard.export_pdf": {
+    "failed": 0,
+    "ok": 3,
+    "refusedOnPurpose": 0
+  },
+  "moodboard.get": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "moodboard.list": {
+    "failed": 0,
+    "ok": 6,
+    "refusedOnPurpose": 0
+  },
+  "moodboard.move_items": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "moodboard.rename": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "moodboard.reorder": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "moodboard.resize_item": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "moodboard.suggestions": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "moodboard.update_item": {
+    "failed": 0,
+    "ok": 4,
+    "refusedOnPurpose": 0
+  },
+  "moodboard.update_notes": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "notes.create": {
+    "failed": 0,
+    "ok": 7,
+    "refusedOnPurpose": 0
+  },
+  "notes.delete": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "notes.get": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "notes.list": {
+    "failed": 0,
+    "ok": 7,
+    "refusedOnPurpose": 0
+  },
+  "notes.set_pinned": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "notes.update": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "packages.apply_import": {
+    "failed": 0,
+    "ok": 4,
+    "refusedOnPurpose": 0
+  },
+  "packages.backup_preview": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "packages.cancel_import": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "packages.create_backup": {
+    "failed": 0,
+    "ok": 3,
+    "refusedOnPurpose": 0
+  },
+  "packages.exchange_preview": {
+    "failed": 0,
+    "ok": 8,
+    "refusedOnPurpose": 1
+  },
+  "packages.exchange_scenes": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "packages.exchange_sources": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "packages.export_exchange": {
+    "failed": 0,
+    "ok": 8,
+    "refusedOnPurpose": 0
+  },
+  "packages.export_project": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "packages.import_project": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "packages.inspect_package": {
+    "failed": 0,
+    "ok": 4,
+    "refusedOnPurpose": 0
+  },
+  "packages.log": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "packages.open_exchange": {
+    "failed": 0,
+    "ok": 5,
+    "refusedOnPurpose": 0
+  },
+  "packages.queue_attach": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "packages.record_delete": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "packages.record_view": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "packages.records": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "packages.review_comment": {
+    "failed": 0,
+    "ok": 6,
+    "refusedOnPurpose": 0
+  },
+  "packages.review_delete_comment": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "packages.review_export_response": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "packages.review_get": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "packages.review_list": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "packages.review_open": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "packages.review_queue": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "packages.session": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "packages.session_view": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "packages.sessions": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "packages.undo_import": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "private_note.create": {
+    "failed": 0,
+    "ok": 3,
+    "refusedOnPurpose": 0
+  },
+  "private_note.delete": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "private_note.list": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "private_note.update": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "production.apply_update": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "production.drafts": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "production.overview": {
+    "failed": 0,
+    "ok": 3,
+    "refusedOnPurpose": 0
+  },
+  "production.preview_update": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "production.references": {
+    "failed": 0,
+    "ok": 4,
+    "refusedOnPurpose": 0
+  },
+  "production.set_source": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "production.source": {
+    "failed": 0,
+    "ok": 6,
+    "refusedOnPurpose": 0
+  },
+  "project.close": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "project.create": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "project.current": {
+    "failed": 0,
+    "ok": 6,
+    "refusedOnPurpose": 0
+  },
+  "project.deleted_items": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "project.duplicate": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "project.get_settings": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "project.home": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "project.list_recent": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "project.locate": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "project.location_check": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "project.members": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "project.open": {
+    "failed": 0,
+    "ok": 3,
+    "refusedOnPurpose": 0
+  },
+  "project.recovery_state": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "project.remove_recent": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "project.rename": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "project.resolve_recovery": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "project.save": {
+    "failed": 0,
+    "ok": 3,
+    "refusedOnPurpose": 0
+  },
+  "project.set_archived": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "project.set_last_location": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "project.set_pinned": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "project.set_status": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "project.update_settings": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "reports.delete": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "reports.export_report": {
+    "failed": 0,
+    "ok": 9,
+    "refusedOnPurpose": 0
+  },
+  "reports.generate": {
+    "failed": 0,
+    "ok": 7,
+    "refusedOnPurpose": 0
+  },
+  "reports.get": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "reports.list": {
+    "failed": 0,
+    "ok": 6,
+    "refusedOnPurpose": 0
+  },
+  "reports.save": {
+    "failed": 0,
+    "ok": 7,
+    "refusedOnPurpose": 0
+  },
+  "schedule.acknowledge_change": {
+    "failed": 0,
+    "ok": 3,
+    "refusedOnPurpose": 0
+  },
+  "schedule.add_marker": {
+    "failed": 0,
+    "ok": 27,
+    "refusedOnPurpose": 0
+  },
+  "schedule.confirm_removal": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "schedule.create": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "schedule.create_day": {
+    "failed": 0,
+    "ok": 16,
+    "refusedOnPurpose": 0
+  },
+  "schedule.daily": {
+    "failed": 0,
+    "ok": 3,
+    "refusedOnPurpose": 0
+  },
+  "schedule.decide_warning": {
+    "failed": 0,
+    "ok": 15,
+    "refusedOnPurpose": 0
+  },
+  "schedule.delete": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "schedule.delete_day": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "schedule.delete_marker": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "schedule.dood": {
+    "failed": 0,
+    "ok": 3,
+    "refusedOnPurpose": 0
+  },
+  "schedule.duplicate_day": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "schedule.export_dood": {
+    "failed": 0,
+    "ok": 3,
+    "refusedOnPurpose": 0
+  },
+  "schedule.export_schedule": {
+    "failed": 0,
+    "ok": 4,
+    "refusedOnPurpose": 0
+  },
+  "schedule.get": {
+    "failed": 0,
+    "ok": 14,
+    "refusedOnPurpose": 0
+  },
+  "schedule.move_day": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "schedule.move_marker": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "schedule.move_strip": {
+    "failed": 0,
+    "ok": 4,
+    "refusedOnPurpose": 0
+  },
+  "schedule.move_strips": {
+    "failed": 0,
+    "ok": 14,
+    "refusedOnPurpose": 0
+  },
+  "schedule.reconcile": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "schedule.set_day_date": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "schedule.set_day_notes": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "schedule.set_day_target": {
+    "failed": 0,
+    "ok": 4,
+    "refusedOnPurpose": 0
+  },
+  "schedule.set_day_times": {
+    "failed": 0,
+    "ok": 14,
+    "refusedOnPurpose": 0
+  },
+  "schedule.set_dood_override": {
+    "failed": 0,
+    "ok": 5,
+    "refusedOnPurpose": 0
+  },
+  "schedule.set_off_day": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "schedule.set_status": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "schedule.set_strip_estimate": {
+    "failed": 0,
+    "ok": 45,
+    "refusedOnPurpose": 0
+  },
+  "schedule.set_strip_pages": {
+    "failed": 0,
+    "ok": 45,
+    "refusedOnPurpose": 0
+  },
+  "schedule.set_strip_start": {
+    "failed": 0,
+    "ok": 3,
+    "refusedOnPurpose": 0
+  },
+  "schedule.suggestions": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "schedule.update_marker": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "schedule.update_settings": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.apply_edits": {
+    "failed": 0,
+    "ok": 46,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.characters": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.clear_character_link": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.compare": {
+    "failed": 0,
+    "ok": 3,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.complete_review": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.create": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.create_custom_element": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.create_scene": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.custom_elements": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.delete": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.delete_custom_element": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.delete_draft": {
+    "failed": 0,
+    "ok": 3,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.delete_element": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.delete_page_preset": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.delete_scene": {
+    "failed": 0,
+    "ok": 3,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.document": {
+    "failed": 0,
+    "ok": 48,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.export": {
+    "failed": 0,
+    "ok": 8,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.history_points": {
+    "failed": 0,
+    "ok": 3,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.import_apply": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.import_preview": {
+    "failed": 0,
+    "ok": 7,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.insert_element": {
+    "failed": 0,
+    "ok": 4,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.locate": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.lock_draft": {
+    "failed": 0,
+    "ok": 3,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.lock_summary": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.merge_scene": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.move_element": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.move_scene": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.new_draft": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.overview": {
+    "failed": 0,
+    "ok": 7,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.page_setup": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.page_view": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.pagination": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.rename": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.rename_draft": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.renumber_scenes": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.replace_all": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.restore_draft": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.restore_history_point": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.restore_omitted_scene": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.review_rounds": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.revision_changes": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.revision_pages": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.samples": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.save_page_preset": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.scene_hub": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.set_character_link": {
+    "failed": 0,
+    "ok": 15,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.set_current_draft": {
+    "failed": 0,
+    "ok": 4,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.set_scene_number": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.set_view_state": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.split_scene": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.start_review": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.start_revision": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.story_reference": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.title_page_preview": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.unlock_draft": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.update_custom_element": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.update_element": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.update_page_setup": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.update_review": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.update_revision": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.update_scene": {
+    "failed": 0,
+    "ok": 50,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.update_title_page": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "screenplay.view_state": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "search.query": {
+    "failed": 0,
+    "ok": 8,
+    "refusedOnPurpose": 0
+  },
+  "search.rebuild": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "shot.attach_panel": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "shot.copy_planning": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "shot.create": {
+    "failed": 0,
+    "ok": 22,
+    "refusedOnPurpose": 0
+  },
+  "shot.create_panel": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "shot.delete": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "shot.detach_panel": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "shot.duplicate": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "shot.export_list": {
+    "failed": 0,
+    "ok": 3,
+    "refusedOnPurpose": 0
+  },
+  "shot.get": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "shot.list": {
+    "failed": 0,
+    "ok": 7,
+    "refusedOnPurpose": 0
+  },
+  "shot.move": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "shot.reorder": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "shot.set_reference_image": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "shot.update": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "sides.create": {
+    "failed": 0,
+    "ok": 4,
+    "refusedOnPurpose": 0
+  },
+  "sides.delete": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "sides.export_pdf": {
+    "failed": 0,
+    "ok": 4,
+    "refusedOnPurpose": 0
+  },
+  "sides.get": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "sides.list": {
+    "failed": 0,
+    "ok": 6,
+    "refusedOnPurpose": 0
+  },
+  "sides.preview": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "story.add_attachment": {
+    "failed": 0,
+    "ok": 4,
+    "refusedOnPurpose": 0
+  },
+  "story.apply_order": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 1
+  },
+  "story.assign_story_day": {
+    "failed": 0,
+    "ok": 14,
+    "refusedOnPurpose": 0
+  },
+  "story.board": {
+    "failed": 0,
+    "ok": 7,
+    "refusedOnPurpose": 0
+  },
+  "story.build_preview": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "story.build_screenplay": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "story.card": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "story.card_display": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "story.card_to_beat": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "story.character": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "story.character_usage": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "story.characters": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "story.clear_character_image": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "story.convert_beat": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "story.create_act": {
+    "failed": 0,
+    "ok": 4,
+    "refusedOnPurpose": 0
+  },
+  "story.create_beat": {
+    "failed": 0,
+    "ok": 6,
+    "refusedOnPurpose": 0
+  },
+  "story.create_card": {
+    "failed": 0,
+    "ok": 45,
+    "refusedOnPurpose": 0
+  },
+  "story.create_character": {
+    "failed": 0,
+    "ok": 14,
+    "refusedOnPurpose": 0
+  },
+  "story.create_episode": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "story.create_relationship": {
+    "failed": 0,
+    "ok": 10,
+    "refusedOnPurpose": 0
+  },
+  "story.create_season": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "story.create_sequence": {
+    "failed": 0,
+    "ok": 7,
+    "refusedOnPurpose": 0
+  },
+  "story.delete_act": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "story.delete_character": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "story.delete_episode": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "story.delete_items": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "story.delete_relationship": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "story.delete_season": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "story.delete_sequence": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "story.duplicate_episode": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "story.duplicate_items": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "story.export_board": {
+    "failed": 0,
+    "ok": 5,
+    "refusedOnPurpose": 0
+  },
+  "story.link_character_card": {
+    "failed": 0,
+    "ok": 124,
+    "refusedOnPurpose": 0
+  },
+  "story.move_act": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "story.move_episode": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "story.move_items": {
+    "failed": 0,
+    "ok": 3,
+    "refusedOnPurpose": 0
+  },
+  "story.move_season": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "story.order_preview": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "story.park_items": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "story.relationships": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "story.remove_attachment": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "story.restore_from_parking": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "story.series": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "story.set_card_display": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "story.set_character_archived": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "story.set_character_image": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "story.set_collapsed": {
+    "failed": 0,
+    "ok": 3,
+    "refusedOnPurpose": 0
+  },
+  "story.set_current_episode": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "story.set_time_note": {
+    "failed": 0,
+    "ok": 6,
+    "refusedOnPurpose": 0
+  },
+  "story.timeline": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "story.unlink_character_card": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "story.update_act": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "story.update_beat": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "story.update_card": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "story.update_character": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "story.update_episode": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "story.update_relationship": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "story.update_season": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "story.update_sequence": {
+    "failed": 0,
+    "ok": 7,
+    "refusedOnPurpose": 0
+  },
+  "story.view_state": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "storyboard.add_panel": {
+    "failed": 0,
+    "ok": 9,
+    "refusedOnPurpose": 0
+  },
+  "storyboard.create": {
+    "failed": 0,
+    "ok": 5,
+    "refusedOnPurpose": 0
+  },
+  "storyboard.create_shot_from_panel": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "storyboard.delete": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "storyboard.delete_panels": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "storyboard.export_sheet": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "storyboard.get": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "storyboard.link_shot": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "storyboard.list": {
+    "failed": 0,
+    "ok": 6,
+    "refusedOnPurpose": 0
+  },
+  "storyboard.move_panel": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "storyboard.rename": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "storyboard.reorder_panel": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "storyboard.set_panel_visual": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "storyboard.set_scene": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "storyboard.update_panel": {
+    "failed": 0,
+    "ok": 4,
+    "refusedOnPurpose": 0
+  },
+  "tasks.create": {
+    "failed": 0,
+    "ok": 8,
+    "refusedOnPurpose": 0
+  },
+  "tasks.delete": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "tasks.list": {
+    "failed": 0,
+    "ok": 7,
+    "refusedOnPurpose": 0
+  },
+  "tasks.relatable_types": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "tasks.set_done": {
+    "failed": 0,
+    "ok": 4,
+    "refusedOnPurpose": 0
+  },
+  "tasks.update": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "team_gate.status": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "team_gate.unlock": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "templates.apply": {
+    "failed": 0,
+    "ok": 4,
+    "refusedOnPurpose": 0
+  },
+  "templates.copy": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "templates.create": {
+    "failed": 0,
+    "ok": 4,
+    "refusedOnPurpose": 0
+  },
+  "templates.delete": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "templates.get": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "templates.list": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "templates.update": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "trash.list": {
+    "failed": 0,
+    "ok": 4,
+    "refusedOnPurpose": 0
+  },
+  "trash.purge": {
+    "failed": 0,
+    "ok": 5,
+    "refusedOnPurpose": 0
+  },
+  "trash.restore": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "vault.add_files": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "vault.add_tags": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "vault.add_to_collection": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "vault.copy_to_store": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "vault.create": {
+    "failed": 0,
+    "ok": 11,
+    "refusedOnPurpose": 0
+  },
+  "vault.create_collection": {
+    "failed": 0,
+    "ok": 3,
+    "refusedOnPurpose": 0
+  },
+  "vault.create_folder": {
+    "failed": 0,
+    "ok": 5,
+    "refusedOnPurpose": 0
+  },
+  "vault.delete": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "vault.delete_collection": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "vault.delete_folder": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "vault.get": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "vault.ingest_bytes": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "vault.list": {
+    "failed": 0,
+    "ok": 14,
+    "refusedOnPurpose": 0
+  },
+  "vault.move_to_folder": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "vault.overview": {
+    "failed": 0,
+    "ok": 2,
+    "refusedOnPurpose": 0
+  },
+  "vault.purge": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "vault.relink": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "vault.remove_from_collection": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "vault.remove_tag": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "vault.rename_collection": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "vault.rename_folder": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "vault.restore": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "vault.send_to_story": {
+    "failed": 0,
+    "ok": 4,
+    "refusedOnPurpose": 0
+  },
+  "vault.set_pinned": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "vault.set_research_flag": {
+    "failed": 0,
+    "ok": 4,
+    "refusedOnPurpose": 0
+  },
+  "vault.story_targets": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "vault.trash_list": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "vault.update": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "visual.mark_scene_reviewed": {
+    "failed": 0,
+    "ok": 3,
+    "refusedOnPurpose": 0
+  },
+  "visual.scene_characters": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "visual.scenes": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "visual.vault_images": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "writing.check_spelling": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "writing.dictionary": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "writing.dictionary_add": {
+    "failed": 0,
+    "ok": 5,
+    "refusedOnPurpose": 0
+  },
+  "writing.dictionary_remove": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "writing.navigator_columns": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "writing.proofing": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "writing.set_proofing": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "writing.spelling_suggestions": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  },
+  "writing.suggestion_sources": {
+    "failed": 0,
+    "ok": 1,
+    "refusedOnPurpose": 0
+  }
+}

@@ -1,0 +1,1257 @@
+{
+  "source": "docs/implementation/feature-status.md, user-facing rows (How a user reaches it is not none:)",
+  "features": [
+    {
+      "key": "CORE-001",
+      "name": "Project create, open, close, duplicate, archive, delete to Recycle Bin, recents, locate",
+      "ops": [
+        "project.create",
+        "project.open",
+        "project.close",
+        "project.duplicate",
+        "project.set_archived",
+        "project.delete",
+        "project.list_recent",
+        "project.locate"
+      ],
+      "note": ""
+    },
+    {
+      "key": "CORE-002",
+      "name": "Single-writer lock; UNC/network projects refused",
+      "ops": [
+        "project.open",
+        "project.location_check"
+      ],
+      "note": ""
+    },
+    {
+      "key": "CORE-003",
+      "name": "Continuous autosave, Save checkpoint, save-state indicator",
+      "ops": [
+        "project.save",
+        "app.save_state"
+      ],
+      "note": ""
+    },
+    {
+      "key": "CORE-004",
+      "name": "Crash detection and recovery offer",
+      "ops": [
+        "project.recovery_state",
+        "project.resolve_recovery"
+      ],
+      "note": ""
+    },
+    {
+      "key": "CORE-006",
+      "name": "Generic undo/redo, refuses to overwrite later work",
+      "ops": [
+        "history.undo",
+        "history.redo",
+        "history.info"
+      ],
+      "note": ""
+    },
+    {
+      "key": "CORE-007",
+      "name": "Recently Deleted, Activity",
+      "ops": [
+        "project.deleted_items",
+        "trash.restore",
+        "trash.purge",
+        "history.activity"
+      ],
+      "note": ""
+    },
+    {
+      "key": "CORE-008",
+      "name": "Project Files cabinet (managed, external, relink)",
+      "ops": [
+        "files.list",
+        "files.add",
+        "files.relink"
+      ],
+      "note": ""
+    },
+    {
+      "key": "CORE-009",
+      "name": "Global search (FTS5), private notes owner-only",
+      "ops": [
+        "search.query",
+        "private_note.create"
+      ],
+      "note": ""
+    },
+    {
+      "key": "CORE-010",
+      "name": "App shell, Home, navigation, command overlay, toasts with Undo",
+      "ops": [
+        "project.list_recent",
+        "search.query",
+        "history.undo"
+      ],
+      "note": ""
+    },
+    {
+      "key": "CORE-011",
+      "name": "Project Home shows a direct production-planning route and next day / call sheet summary",
+      "ops": [
+        "project.home"
+      ],
+      "note": ""
+    },
+    {
+      "key": "CORE-013",
+      "name": "Offline operation; only downloads show \"unavailable offline\"",
+      "ops": [],
+      "note": "Shell status bar behaviour; no core operation"
+    },
+    {
+      "key": "CORE-015",
+      "name": "Export diagnostics bundle (user-initiated, inspectable, redacted)",
+      "ops": [
+        "diagnostics.preview",
+        "diagnostics.export_bundle"
+      ],
+      "note": ""
+    },
+    {
+      "key": "CORE-016",
+      "name": "Windows High Contrast usable; no colour-only meaning",
+      "ops": [],
+      "note": "Accessibility and theme rendering in the shell; no core operation"
+    },
+    {
+      "key": "CORE-017",
+      "name": "Keyboard-only walkthrough of every workspace, visible focus, labelled icon buttons",
+      "ops": [],
+      "note": "Keyboard focus and labels in the shell; no core operation"
+    },
+    {
+      "key": "VAULT-001",
+      "name": "Project vault: views (grid, card, list, folder), empty state",
+      "ops": [
+        "vault.overview",
+        "vault.list"
+      ],
+      "note": ""
+    },
+    {
+      "key": "VAULT-002",
+      "name": "Add note, image, URL, file, voice note, video; autosaved text editor",
+      "ops": [
+        "vault.create",
+        "vault.add_files",
+        "vault.ingest_bytes",
+        "vault.update"
+      ],
+      "note": ""
+    },
+    {
+      "key": "VAULT-003",
+      "name": "Drag-in files, partial success, external file unavailable",
+      "ops": [
+        "vault.add_files",
+        "vault.relink"
+      ],
+      "note": ""
+    },
+    {
+      "key": "VAULT-004",
+      "name": "Selection, context menu, collections, research flags, Recently Deleted",
+      "ops": [
+        "vault.create_collection",
+        "vault.add_to_collection",
+        "vault.remove_from_collection",
+        "vault.set_research_flag",
+        "vault.delete",
+        "vault.trash_list",
+        "vault.restore",
+        "vault.purge"
+      ],
+      "note": ""
+    },
+    {
+      "key": "VAULT-005",
+      "name": "Global Idea Vault and copy to project",
+      "ops": [
+        "vault.list",
+        "vault.copy_to_store"
+      ],
+      "note": ""
+    },
+    {
+      "key": "VAULT-006",
+      "name": "Search the vault, Quick Capture",
+      "ops": [
+        "vault.list",
+        "vault.create"
+      ],
+      "note": ""
+    },
+    {
+      "key": "VAULT-007",
+      "name": "Send to Story Board",
+      "ops": [
+        "vault.story_targets",
+        "vault.send_to_story"
+      ],
+      "note": ""
+    },
+    {
+      "key": "VAULT-008",
+      "name": "AI read and proposal tools, retrieval projection",
+      "ops": [
+        "ai.ask",
+        "ai.change_set.accept"
+      ],
+      "note": "Vault tools are reached through the assistant"
+    },
+    {
+      "key": "STORY-001",
+      "name": "Acts, sequences, beats, scene cards; board and outline views; zoom out",
+      "ops": [
+        "story.board",
+        "story.create_act",
+        "story.create_sequence",
+        "story.create_beat",
+        "story.create_card"
+      ],
+      "note": ""
+    },
+    {
+      "key": "STORY-002",
+      "name": "Card drawer, drag with insertion line, multi-select, parking lot, duplicate, convert beat",
+      "ops": [
+        "story.card",
+        "story.update_card",
+        "story.move_items",
+        "story.park_items",
+        "story.restore_from_parking",
+        "story.duplicate_items",
+        "story.convert_beat",
+        "story.card_to_beat"
+      ],
+      "note": ""
+    },
+    {
+      "key": "STORY-003",
+      "name": "Delete rules (non-empty act, card with linked scene)",
+      "ops": [
+        "story.delete_act",
+        "story.delete_items"
+      ],
+      "note": ""
+    },
+    {
+      "key": "STORY-004",
+      "name": "Build Screenplay (preview, existing screenplay, reorder warning)",
+      "ops": [
+        "story.build_preview",
+        "story.build_screenplay",
+        "story.order_preview",
+        "story.apply_order"
+      ],
+      "note": ""
+    },
+    {
+      "key": "STORY-005",
+      "name": "Characters directory, relationships, timeline, sequence hub",
+      "ops": [
+        "story.characters",
+        "story.create_character",
+        "story.relationships",
+        "story.create_relationship",
+        "story.timeline",
+        "story.update_sequence"
+      ],
+      "note": ""
+    },
+    {
+      "key": "STORY-006",
+      "name": "Series, seasons, episodes, season board",
+      "ops": [
+        "story.series",
+        "story.create_season",
+        "story.create_episode",
+        "story.duplicate_episode",
+        "story.move_episode",
+        "story.set_current_episode"
+      ],
+      "note": ""
+    },
+    {
+      "key": "STORY-007",
+      "name": "Story Board / Outline PDF export",
+      "ops": [
+        "story.export_board"
+      ],
+      "note": ""
+    },
+    {
+      "key": "SCRIPT-001",
+      "name": "Editor, eight element types, auto progression, manual override",
+      "ops": [
+        "screenplay.document",
+        "screenplay.apply_edits"
+      ],
+      "note": ""
+    },
+    {
+      "key": "SCRIPT-002",
+      "name": "Structured model, stable element ids, not rich text",
+      "ops": [
+        "screenplay.document",
+        "screenplay.apply_edits"
+      ],
+      "note": ""
+    },
+    {
+      "key": "SCRIPT-004",
+      "name": "Find and replace (case, whole word, next/prev, undoable) and scope: scene or whole script",
+      "ops": [
+        "screenplay.replace_all",
+        "history.undo"
+      ],
+      "note": "Finding matches runs in the editor; only Replace All reaches the core"
+    },
+    {
+      "key": "SCRIPT-005",
+      "name": "Focus mode, Writing Room, scene and private notes, comments",
+      "ops": [
+        "screenplay.update_scene",
+        "private_note.create",
+        "private_note.update",
+        "private_note.delete",
+        "comment.create",
+        "comment.reply",
+        "comment.resolve"
+      ],
+      "note": "Focus mode and Writing Room are UI only"
+    },
+    {
+      "key": "SCRIPT-006",
+      "name": "Drafts, history/recovery, compare, review rounds, delete draft",
+      "ops": [
+        "screenplay.new_draft",
+        "screenplay.set_current_draft",
+        "screenplay.history_points",
+        "screenplay.restore_history_point",
+        "screenplay.compare",
+        "screenplay.start_review",
+        "screenplay.update_review",
+        "screenplay.complete_review",
+        "screenplay.delete_draft"
+      ],
+      "note": ""
+    },
+    {
+      "key": "SCRIPT-007",
+      "name": "Lock Shooting Draft, Start Revision, revision label/colour/reason",
+      "ops": [
+        "screenplay.lock_draft",
+        "screenplay.start_revision",
+        "screenplay.lock_summary",
+        "screenplay.revision_changes",
+        "screenplay.revision_pages"
+      ],
+      "note": ""
+    },
+    {
+      "key": "SCRIPT-008",
+      "name": "Production scene numbers: imported, alphanumeric, frozen after lock",
+      "ops": [
+        "screenplay.set_scene_number",
+        "screenplay.renumber_scenes",
+        "screenplay.lock_draft",
+        "screenplay.import_apply"
+      ],
+      "note": ""
+    },
+    {
+      "key": "SCRIPT-009",
+      "name": "Deterministic pagination shared by preview, print and PDF",
+      "ops": [
+        "screenplay.page_view",
+        "screenplay.pagination",
+        "interchange.export_preview",
+        "screenplay.export"
+      ],
+      "note": ""
+    },
+    {
+      "key": "SCRIPT-011",
+      "name": "Dialogue continuation (MORE / CONT'D) generated, not typed",
+      "ops": [
+        "screenplay.page_view",
+        "interchange.export_preview",
+        "screenplay.export"
+      ],
+      "note": ""
+    },
+    {
+      "key": "SCRIPT-012",
+      "name": "Explicit page break directive (insert, remove, undo, export)",
+      "ops": [
+        "screenplay.apply_edits",
+        "history.undo",
+        "screenplay.export",
+        "screenplay.import_apply"
+      ],
+      "note": ""
+    },
+    {
+      "key": "SCRIPT-013",
+      "name": "Title page structured fields, preview, export toggle",
+      "ops": [
+        "screenplay.update_title_page",
+        "screenplay.title_page_preview",
+        "screenplay.update_page_setup"
+      ],
+      "note": ""
+    },
+    {
+      "key": "SCRIPT-014",
+      "name": "Header/footer with placeholders, first-page rule",
+      "ops": [
+        "screenplay.page_setup",
+        "screenplay.update_page_setup"
+      ],
+      "note": ""
+    },
+    {
+      "key": "SCRIPT-015",
+      "name": "Page setup presets (Letter, A4, saved preset, font, size, line spacing)",
+      "ops": [
+        "screenplay.page_setup",
+        "screenplay.update_page_setup",
+        "screenplay.save_page_preset",
+        "screenplay.delete_page_preset"
+      ],
+      "note": ""
+    },
+    {
+      "key": "SCRIPT-016",
+      "name": "Custom elements (name, shortcut, preset, next element, import/export identity)",
+      "ops": [
+        "screenplay.create_custom_element",
+        "screenplay.update_custom_element",
+        "screenplay.delete_custom_element",
+        "screenplay.export",
+        "screenplay.import_apply"
+      ],
+      "note": ""
+    },
+    {
+      "key": "SCRIPT-017",
+      "name": "Scene navigator with optional columns (Page, Notes, Revision, Production)",
+      "ops": [
+        "writing.navigator_columns",
+        "screenplay.set_view_state"
+      ],
+      "note": ""
+    },
+    {
+      "key": "SCRIPT-018",
+      "name": "Smart structural suggestions (INT./EXT., characters, locations, time terms)",
+      "ops": [
+        "writing.suggestion_sources",
+        "story.create_character",
+        "locations.create"
+      ],
+      "note": "The suggestion list is built in the editor from these sources"
+    },
+    {
+      "key": "SCRIPT-019",
+      "name": "Custom keyboard shortcuts with conflict detection and restore",
+      "ops": [
+        "app.shortcuts",
+        "app.set_shortcuts",
+        "app.reset_shortcuts"
+      ],
+      "note": ""
+    },
+    {
+      "key": "SCRIPT-020",
+      "name": "Spell check: project language, toggle, personal dictionary, primary + secondary language",
+      "ops": [
+        "writing.proofing",
+        "writing.set_proofing",
+        "writing.check_spelling",
+        "writing.spelling_suggestions",
+        "writing.dictionary",
+        "writing.dictionary_add",
+        "writing.dictionary_remove"
+      ],
+      "note": ""
+    },
+    {
+      "key": "SCRIPT-021",
+      "name": "Print preview identical to PDF (page count, breaks)",
+      "ops": [
+        "interchange.export_preview",
+        "screenplay.export"
+      ],
+      "note": ""
+    },
+    {
+      "key": "SCRIPT-022",
+      "name": "Scene Hub, scene context menu, moving a scene already in production",
+      "ops": [
+        "screenplay.scene_hub",
+        "screenplay.move_scene",
+        "screenplay.create_scene",
+        "screenplay.delete_scene"
+      ],
+      "note": ""
+    },
+    {
+      "key": "SCRIPT-023",
+      "name": "Delete draft with strong confirmation",
+      "ops": [
+        "screenplay.delete_draft"
+      ],
+      "note": ""
+    },
+    {
+      "key": "SCRIPT-024",
+      "name": "Several screenplays per project: picker to switch, add, rename; each keeps its own drafts",
+      "ops": [
+        "screenplay.overview",
+        "screenplay.create",
+        "screenplay.rename"
+      ],
+      "note": ""
+    },
+    {
+      "key": "SCRIPT-025",
+      "name": "Delete a whole screenplay to Recently Deleted and restore it",
+      "ops": [
+        "screenplay.delete",
+        "trash.restore"
+      ],
+      "note": ""
+    },
+    {
+      "key": "XFER-001",
+      "name": "FDX import with preview, counts, warnings; never flatten unknown constructs",
+      "ops": [
+        "screenplay.import_preview",
+        "screenplay.import_apply"
+      ],
+      "note": "FDX format"
+    },
+    {
+      "key": "XFER-002",
+      "name": "FDX export structurally valid, re-importable, opens in Final Draft",
+      "ops": [
+        "screenplay.export"
+      ],
+      "note": "FDX format"
+    },
+    {
+      "key": "XFER-004",
+      "name": "Fountain import/export with documented fidelity",
+      "ops": [
+        "screenplay.import_preview",
+        "screenplay.import_apply",
+        "screenplay.export"
+      ],
+      "note": "Fountain format"
+    },
+    {
+      "key": "XFER-005",
+      "name": "DOCX import/export as compatibility format",
+      "ops": [
+        "screenplay.import_preview",
+        "screenplay.import_apply",
+        "screenplay.export"
+      ],
+      "note": "DOCX format"
+    },
+    {
+      "key": "XFER-006",
+      "name": "PDF import best effort with preview, detection, page estimate, safe failure",
+      "ops": [
+        "screenplay.import_preview",
+        "screenplay.import_apply"
+      ],
+      "note": "PDF format"
+    },
+    {
+      "key": "XFER-007",
+      "name": "TXT and pasted text import",
+      "ops": [
+        "screenplay.import_preview",
+        "screenplay.import_apply"
+      ],
+      "note": "TXT and pasted text"
+    },
+    {
+      "key": "XFER-008",
+      "name": "Import report useful and exact; export failure leaves source untouched",
+      "ops": [
+        "screenplay.import_apply",
+        "screenplay.export"
+      ],
+      "note": ""
+    },
+    {
+      "key": "XFER-011",
+      "name": "Exchange, Review and Response packages: export, open, response, unmatched notes, preview",
+      "ops": [
+        "packages.exchange_preview",
+        "packages.export_exchange",
+        "packages.open_exchange",
+        "packages.session",
+        "packages.apply_import",
+        "packages.review_open",
+        "packages.review_export_response",
+        "packages.queue_attach"
+      ],
+      "note": ""
+    },
+    {
+      "key": "XFER-012",
+      "name": "Backup, whole-project package, import with identity collision",
+      "ops": [
+        "packages.create_backup",
+        "packages.export_project",
+        "packages.inspect_package",
+        "packages.import_project"
+      ],
+      "note": ""
+    },
+    {
+      "key": "BRK-001",
+      "name": "Production source choice, breakdown view, tagging, suggestions, accept or reject, reuse",
+      "ops": [
+        "production.set_source",
+        "breakdown.scenes",
+        "breakdown.scene",
+        "breakdown.add_element",
+        "breakdown.suggest",
+        "breakdown.accept",
+        "breakdown.reject",
+        "catalog.find_matches"
+      ],
+      "note": ""
+    },
+    {
+      "key": "BRK-002",
+      "name": "Script change reconciliation, Needs Review, source update",
+      "ops": [
+        "breakdown.scene_changes",
+        "breakdown.mark_reviewed",
+        "breakdown.apply_suggested_update",
+        "production.preview_update",
+        "production.apply_update"
+      ],
+      "note": ""
+    },
+    {
+      "key": "BRK-003",
+      "name": "Eleven categories with colour + text + icon + tooltip, customisable in Advanced",
+      "ops": [
+        "breakdown.categories",
+        "breakdown.set_category_style",
+        "breakdown.reset_category_styles"
+      ],
+      "note": ""
+    },
+    {
+      "key": "BRK-004",
+      "name": "Efficiency: accept/reject selected, quick reuse, filters, scene completion state",
+      "ops": [
+        "breakdown.accept_many",
+        "breakdown.reject",
+        "breakdown.quick_reuse",
+        "breakdown.reuse",
+        "breakdown.scenes",
+        "breakdown.set_complete"
+      ],
+      "note": ""
+    },
+    {
+      "key": "BRK-005",
+      "name": "Source-phrase jump, catalog item to all scenes, concise breakdown report",
+      "ops": [
+        "breakdown.source_anchor",
+        "breakdown.scenes",
+        "breakdown.export_report"
+      ],
+      "note": ""
+    },
+    {
+      "key": "BRK-006",
+      "name": "Large-project performance (filters, open)",
+      "ops": [
+        "breakdown.scenes",
+        "breakdown.quick_reuse",
+        "production.references"
+      ],
+      "note": "Performance budget over these operations"
+    },
+    {
+      "key": "PROD-001",
+      "name": "Catalog: props, equipment, wardrobe, vehicles, effects, VFX, sound, animals; archive",
+      "ops": [
+        "catalog.list",
+        "catalog.create",
+        "catalog.update",
+        "catalog.set_archived",
+        "catalog.replace_in_scenes"
+      ],
+      "note": ""
+    },
+    {
+      "key": "PROD-002",
+      "name": "Locations: address, access, parking, hospital, availability, notes, photos",
+      "ops": [
+        "locations.list",
+        "locations.create",
+        "locations.update",
+        "availability.set",
+        "locations.add_photos"
+      ],
+      "note": ""
+    },
+    {
+      "key": "PROD-003",
+      "name": "Cast and crew: performer, character, contact, availability, notes, archive",
+      "ops": [
+        "cast.list",
+        "cast.create",
+        "cast.update",
+        "cast.assign",
+        "crew.list",
+        "crew.create",
+        "crew.update",
+        "availability.set",
+        "cast.set_archived",
+        "crew.set_archived"
+      ],
+      "note": ""
+    },
+    {
+      "key": "PROD-004",
+      "name": "Replace a rejected location for selected scenes",
+      "ops": [
+        "locations.replace"
+      ],
+      "note": ""
+    },
+    {
+      "key": "VIS-001",
+      "name": "Moodboard canvas and export",
+      "ops": [
+        "moodboard.create",
+        "moodboard.get",
+        "moodboard.add_images",
+        "moodboard.add_note",
+        "moodboard.add_link",
+        "moodboard.move_items",
+        "moodboard.resize_item",
+        "moodboard.export_pdf"
+      ],
+      "note": ""
+    },
+    {
+      "key": "VIS-002",
+      "name": "Storyboard panels, import/sketch/empty, sketch tool",
+      "ops": [
+        "storyboard.create",
+        "storyboard.get",
+        "storyboard.add_panel",
+        "storyboard.set_panel_visual",
+        "storyboard.update_panel"
+      ],
+      "note": ""
+    },
+    {
+      "key": "VIS-003",
+      "name": "Shot list and shot details",
+      "ops": [
+        "shot.list",
+        "shot.create",
+        "shot.get",
+        "shot.update"
+      ],
+      "note": ""
+    },
+    {
+      "key": "SCHED-001",
+      "name": "Schedule creation, stripboard (Unscheduled pool and days), list, calendar, drag into a day",
+      "ops": [
+        "schedule.create",
+        "schedule.get",
+        "schedule.create_day",
+        "schedule.move_strip",
+        "schedule.set_day_date"
+      ],
+      "note": ""
+    },
+    {
+      "key": "SCHED-002",
+      "name": "Break markers: Meal, Travel, Company Move, Custom with time and duration",
+      "ops": [
+        "schedule.add_marker",
+        "schedule.update_marker",
+        "schedule.move_marker",
+        "schedule.delete_marker"
+      ],
+      "note": ""
+    },
+    {
+      "key": "SCHED-003",
+      "name": "Day timeline: crew call, shooting start, target wrap",
+      "ops": [
+        "schedule.set_day_times"
+      ],
+      "note": ""
+    },
+    {
+      "key": "SCHED-004",
+      "name": "Scene start time and duration on a strip",
+      "ops": [
+        "schedule.set_strip_start",
+        "schedule.set_strip_estimate"
+      ],
+      "note": ""
+    },
+    {
+      "key": "SCHED-005",
+      "name": "Availability warnings (cast, location, missing location, over target, travel)",
+      "ops": [
+        "schedule.get",
+        "schedule.decide_warning"
+      ],
+      "note": ""
+    },
+    {
+      "key": "SCHED-006",
+      "name": "Filters (location, cast, D/N, length, scheduled, breakdown complete, day, revision)",
+      "ops": [],
+      "note": "View-state filters in the UI; no core operation"
+    },
+    {
+      "key": "SCHED-007",
+      "name": "Stale and review state, grouping suggestion, script-change review",
+      "ops": [
+        "schedule.reconcile",
+        "schedule.acknowledge_change",
+        "schedule.confirm_removal",
+        "schedule.suggestions"
+      ],
+      "note": ""
+    },
+    {
+      "key": "SCHED-008",
+      "name": "Schedule PDF and spreadsheet export",
+      "ops": [
+        "schedule.export_schedule"
+      ],
+      "note": ""
+    },
+    {
+      "key": "SCHED-009",
+      "name": "No automatic optimizer ever moves scenes",
+      "ops": [
+        "schedule.suggestions"
+      ],
+      "note": "Design rule: suggestions never move a scene"
+    },
+    {
+      "key": "DOOD-001",
+      "name": "Derived Day Out of Days, date range, manual correction, PDF and spreadsheet",
+      "ops": [
+        "schedule.dood",
+        "schedule.set_dood_override",
+        "schedule.export_dood"
+      ],
+      "note": ""
+    },
+    {
+      "key": "CALL-001",
+      "name": "Call sheet from a shooting day: snapshot, editor, sections, refresh, finalize, revision",
+      "ops": [
+        "callsheets.create",
+        "callsheets.get",
+        "callsheets.update",
+        "callsheets.add_section",
+        "callsheets.refresh_preview",
+        "callsheets.refresh",
+        "callsheets.finalize",
+        "callsheets.new_revision"
+      ],
+      "note": ""
+    },
+    {
+      "key": "CALL-002",
+      "name": "Production header, day info (calls, wrap, weather, sunrise, sunset)",
+      "ops": [
+        "callsheets.get",
+        "callsheets.update",
+        "schedule.set_day_times"
+      ],
+      "note": "Day times come from the schedule; weather and sun times are typed"
+    },
+    {
+      "key": "CALL-003",
+      "name": "Locations block (address, parking, hospital, emergency, access); unknown shows Needs input",
+      "ops": [
+        "callsheets.get",
+        "locations.update"
+      ],
+      "note": "Block filled from the location records"
+    },
+    {
+      "key": "CALL-004",
+      "name": "Scene schedule table with start time, travel and move rows",
+      "ops": [
+        "callsheets.get",
+        "schedule.set_strip_start",
+        "schedule.add_marker"
+      ],
+      "note": "Rows come from the day timeline"
+    },
+    {
+      "key": "CALL-005",
+      "name": "Talent, extras, department notes, advance schedule, crew, walkies, notes, attachments",
+      "ops": [
+        "callsheets.add_section",
+        "callsheets.update",
+        "callsheets.attach"
+      ],
+      "note": ""
+    },
+    {
+      "key": "CALL-006",
+      "name": "Branded, stable, printable PDF",
+      "ops": [
+        "callsheets.export_pdf"
+      ],
+      "note": ""
+    },
+    {
+      "key": "CALL-007",
+      "name": "Sides for a day, production reports (6 types)",
+      "ops": [
+        "sides.create",
+        "sides.preview",
+        "sides.export_pdf",
+        "reports.generate",
+        "reports.save",
+        "reports.export_report"
+      ],
+      "note": ""
+    },
+    {
+      "key": "BUDGET-001",
+      "name": "Lightweight budget with Planned and Actual, totals and difference",
+      "ops": [
+        "budget.create",
+        "budget.get",
+        "budget.add_line",
+        "budget.update_line",
+        "budget.export_summary"
+      ],
+      "note": ""
+    },
+    {
+      "key": "NOTES-001",
+      "name": "Project notes and lightweight tasks; Activity history",
+      "ops": [
+        "notes.create",
+        "notes.update",
+        "tasks.create",
+        "tasks.update",
+        "tasks.set_done",
+        "history.activity"
+      ],
+      "note": ""
+    },
+    {
+      "key": "TEMP-001",
+      "name": "Template browser: scopes, use, save, rename, delete, independent copy",
+      "ops": [
+        "templates.list",
+        "templates.apply",
+        "templates.create",
+        "templates.update",
+        "templates.delete",
+        "templates.copy"
+      ],
+      "note": ""
+    },
+    {
+      "key": "TEMP-002",
+      "name": "Release inventory of 8 built-in templates incl. three screenplay variants",
+      "ops": [
+        "templates.list"
+      ],
+      "note": ""
+    },
+    {
+      "key": "TEMP-003",
+      "name": "Sample scripts (OpenFrame-authored) used as fixtures",
+      "ops": [
+        "screenplay.samples",
+        "screenplay.import_preview",
+        "screenplay.import_apply"
+      ],
+      "note": ""
+    },
+    {
+      "key": "BRAND-001",
+      "name": "Production exports carry subtle branding; spreadsheets via metadata or footer",
+      "ops": [
+        "breakdown.export_report",
+        "budget.export_summary",
+        "callsheets.export_pdf",
+        "moodboard.export_pdf",
+        "reports.export_report",
+        "schedule.export_dood",
+        "schedule.export_schedule",
+        "shot.export_list",
+        "sides.export_pdf",
+        "story.export_board",
+        "storyboard.export_sheet"
+      ],
+      "note": "Every export that passes through the shared branded delivery"
+    },
+    {
+      "key": "THEME-001",
+      "name": "Light, Dark, System modes; System follows OS live",
+      "ops": [
+        "appearance.get",
+        "appearance.set_mode"
+      ],
+      "note": ""
+    },
+    {
+      "key": "THEME-002",
+      "name": "OpenFrame Default equals today's UI; visual baseline captured first",
+      "ops": [],
+      "note": "Theme rendering and visual baseline in the shell; no core operation"
+    },
+    {
+      "key": "THEME-003",
+      "name": "Tokenize all themeable colours; classify fixed and document colours",
+      "ops": [],
+      "note": "Colour tokens in the shell styles; no core operation"
+    },
+    {
+      "key": "THEME-004",
+      "name": "15 built-in themes from one registry; add a theme without editing components",
+      "ops": [
+        "appearance.get",
+        "appearance.set_theme"
+      ],
+      "note": ""
+    },
+    {
+      "key": "THEME-005",
+      "name": "Import, validate, preview, save, rename, export, delete custom themes",
+      "ops": [
+        "appearance.check_theme",
+        "appearance.import_theme",
+        "appearance.rename_theme",
+        "appearance.export_theme",
+        "appearance.delete_theme"
+      ],
+      "note": ""
+    },
+    {
+      "key": "THEME-006",
+      "name": "Preferences in app.sqlite; invalid or deleted active theme falls back to Default",
+      "ops": [
+        "appearance.get",
+        "appearance.set_theme",
+        "appearance.delete_theme"
+      ],
+      "note": ""
+    },
+    {
+      "key": "THEME-007",
+      "name": "Contrast checks (AA 4.5:1) light and dark; High Contrast theme",
+      "ops": [
+        "appearance.check_theme",
+        "appearance.import_theme",
+        "appearance.set_theme"
+      ],
+      "note": ""
+    },
+    {
+      "key": "THEME-008",
+      "name": "Theme never changes screenplay or call-sheet output",
+      "ops": [
+        "appearance.set_theme",
+        "screenplay.export",
+        "callsheets.export_pdf"
+      ],
+      "note": "Rule: exports never read the theme"
+    },
+    {
+      "key": "AI-001",
+      "name": "Offline AI engine in every package, models downloaded after install and checked, import",
+      "ops": [
+        "ai.download.start",
+        "ai.download.pause",
+        "ai.download.status",
+        "ai.download.import",
+        "ai.download.remove",
+        "ai.status"
+      ],
+      "note": ""
+    },
+    {
+      "key": "AI-002",
+      "name": "Assistant: bounded agent, toolbox, hybrid retrieval, one Change Set, human-only apply",
+      "ops": [
+        "ai.ask",
+        "ai.history",
+        "ai.change_set.accept",
+        "ai.change_set.reject"
+      ],
+      "note": ""
+    },
+    {
+      "key": "AI-005",
+      "name": "Crash-safe multi-operation Change Set apply (ADR-0019)",
+      "ops": [
+        "ai.change_set.accept",
+        "project.open"
+      ],
+      "note": "Compensation runs when the project opens"
+    },
+    {
+      "key": "AI-006",
+      "name": "Real-model E2E: ask, retrieve, propose, apply or reject, stale, restart, index rebuild",
+      "ops": [
+        "ai.ask",
+        "ai.change_set.accept",
+        "ai.change_set.reject",
+        "ai.change_set.recheck",
+        "ai.index_rebuild",
+        "ai.index_status",
+        "history.undo"
+      ],
+      "note": ""
+    },
+    {
+      "key": "AI-010",
+      "name": "Report AI output action (Store policy for live generative AI)",
+      "ops": [],
+      "note": "Not built yet; no core operation reports AI output"
+    },
+    {
+      "key": "AI-014",
+      "name": "Product knowledge covers new features; AI reads and proposes feature data only via tools",
+      "ops": [
+        "ai.ask",
+        "ai.change_set.accept"
+      ],
+      "note": "Knowledge and tools are reached through the assistant"
+    },
+    {
+      "key": "PLAT-009",
+      "name": "Payment and 7-day free trial in both store channels, behind one entitlement interface",
+      "ops": [
+        "entitlement.status",
+        "entitlement.start_trial",
+        "entitlement.buy",
+        "entitlement.restore_purchase"
+      ],
+      "note": ""
+    },
+    {
+      "key": "PLAT-015",
+      "name": "First-run safety screens after a purchase: data note, 4-step file safety tutorial, welcome",
+      "ops": [
+        "entitlement.notice",
+        "entitlement.record_notice"
+      ],
+      "note": ""
+    },
+    {
+      "key": "DOC-001",
+      "name": "Documentation map and governance (this integration)",
+      "ops": [],
+      "note": "Documentation work; no core operation"
+    },
+    {
+      "key": "DOC-002",
+      "name": "Promote supplied documents into the tree with headers",
+      "ops": [],
+      "note": "Documentation work; no core operation"
+    },
+    {
+      "key": "DOC-003",
+      "name": "Mark LAN sections in the PRD, FSD, UX, Domain, Security and other specs as superseded",
+      "ops": [],
+      "note": "Documentation work; no core operation"
+    },
+    {
+      "key": "DOC-004",
+      "name": "Fix stale facts in README, DEVELOPMENT, Engineering Index, ESD, QA strategy and others",
+      "ops": [],
+      "note": "Documentation work; no core operation"
+    },
+    {
+      "key": "DOC-005",
+      "name": "Resolve each ADR proposed here (accept, amend or reject)",
+      "ops": [],
+      "note": "Documentation work; no core operation"
+    },
+    {
+      "key": "DOC-006",
+      "name": "Write contracts: screenplay engine and production depth",
+      "ops": [],
+      "note": "Documentation work; no core operation"
+    },
+    {
+      "key": "DOC-007",
+      "name": "Regenerate the User Manual so it matches the shipped UI and drops figures 164 to 168",
+      "ops": [],
+      "note": "Documentation work; no core operation"
+    },
+    {
+      "key": "DOC-008",
+      "name": "In-app help and public documentation, knowledge base",
+      "ops": [],
+      "note": "Documentation work; no core operation"
+    },
+    {
+      "key": "DOC-009",
+      "name": "Keep this ledger, the build plan and the launch register in step on every merge",
+      "ops": [],
+      "note": "Documentation work; no core operation"
+    },
+    {
+      "key": "DOC-010",
+      "name": "Repository root cleaned: specifications, manual and decision register moved into docs",
+      "ops": [],
+      "note": "Documentation work; no core operation"
+    },
+    {
+      "key": "DOC-011",
+      "name": "Writing standard: no em dashes and no AI-sounding patterns anywhere",
+      "ops": [],
+      "note": "Documentation work; no core operation"
+    },
+    {
+      "key": "DOC-012",
+      "name": "Cleanup when a feature finishes: remove dead code and superseded documents in the same PR",
+      "ops": [],
+      "note": "Documentation work; no core operation"
+    },
+    {
+      "key": "DOC-013",
+      "name": "Plan, status, decision and log documents use descriptive names, not item codes",
+      "ops": [],
+      "note": "Documentation work; no core operation"
+    }
+  ]
+}

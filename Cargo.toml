@@ -16,6 +16,7 @@ members = [
     "crates/openframe-ai-eval",
     "crates/openframe-test-support",
     "crates/openframe-ffi",
+    "crates/openframe-gold-project",
 ]
 
 [workspace.package]

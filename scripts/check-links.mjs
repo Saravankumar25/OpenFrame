@@ -63,7 +63,10 @@ const APP_SOURCES = [
   "apps/desktop/src",
   "apps/desktop/src-tauri/src",
   "apps/desktop/src-tauri/capabilities",
-  ...(fs.existsSync(path.join(ROOT, "crates")) ? fs.readdirSync(path.join(ROOT, "crates")).map((c) => `crates/${c}/src`) : []),
+  // The gold project builder is a development tool, never shipped: its addresses are film research links in project data.
+  ...(fs.existsSync(path.join(ROOT, "crates"))
+    ? fs.readdirSync(path.join(ROOT, "crates")).filter((c) => c !== "openframe-gold-project").map((c) => `crates/${c}/src`)
+    : []),
 ];
 const APP_FILES = ["apps/desktop/src-tauri/tauri.conf.json", "apps/desktop/index.html"];
 const SOURCE_EXT = /\.(ts|tsx|rs|json|html)$/;

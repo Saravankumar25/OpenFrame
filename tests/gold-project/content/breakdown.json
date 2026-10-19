@@ -1,0 +1,3426 @@
+{
+  "scenes": [
+    {
+      "n": 1,
+      "pages": "1 1/8",
+      "estimateMinutes": 300,
+      "elements": [
+        {
+          "category": "Cast",
+          "name": "VARGHESE"
+        },
+        {
+          "category": "Cast",
+          "name": "MARIAMMA",
+          "notes": "Voice only, on radio. Pre-recorded in prep"
+        },
+        {
+          "category": "Extras / Background",
+          "name": "Deckhand on the Little Flower",
+          "notes": "1 featured, non-speaking. Stunt-capable, life jacket under costume"
+        },
+        {
+          "category": "Location / Set",
+          "name": "Open Sea"
+        },
+        {
+          "category": "Location / Set",
+          "name": "Little Flower - Wheelhouse and Deck",
+          "notes": "Wheelhouse built on the gimbal for the tank days"
+        },
+        {
+          "category": "Vehicles",
+          "name": "Fishing boat Little Flower (hero)",
+          "notes": "Wooden thirty-footer, name in blue on the bow. Hero boat plus gimbal wheelhouse"
+        },
+        {
+          "category": "Vehicles",
+          "name": "Fishing boats (fleet)",
+          "notes": "Ten more boats as distant lights, mostly VFX"
+        },
+        {
+          "category": "Props",
+          "name": "Ship-to-shore radio handset",
+          "notes": "Practical, period 1999, with orange-lit dial set bolted above the compass"
+        },
+        {
+          "category": "Props",
+          "name": "Pencil stub"
+        },
+        {
+          "category": "Props",
+          "name": "Plastic bailing can",
+          "notes": "Cut plastic can, 2"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Varghese's oilskin",
+          "notes": "Worn open over bare chest. 3 sets for wet work"
+        },
+        {
+          "category": "Hair / Makeup",
+          "name": "1999 period looks",
+          "notes": "Varghese at 48"
+        },
+        {
+          "category": "Hair / Makeup",
+          "name": "Sea spray wet-down",
+          "notes": "Varghese and deckhand, continuous"
+        },
+        {
+          "category": "Special Effects",
+          "name": "Rain towers and wind machines"
+        },
+        {
+          "category": "Special Effects",
+          "name": "Wave machine and dump tanks",
+          "notes": "Wave over the bow fills frame at scene end. Safety divers on standby"
+        },
+        {
+          "category": "Special Effects",
+          "name": "Lightning flash units",
+          "notes": "Opening reveal and storm interactive light"
+        },
+        {
+          "category": "VFX",
+          "name": "Storm sea extension"
+        },
+        {
+          "category": "VFX",
+          "name": "Fleet masthead lights composite",
+          "notes": "Eleven boats, aerial plate"
+        },
+        {
+          "category": "VFX",
+          "name": "1999 period clean-up"
+        },
+        {
+          "category": "Sound",
+          "name": "Radio playback (Mariamma on air)",
+          "notes": "Playback on set for Varghese to react to"
+        },
+        {
+          "category": "Sound",
+          "name": "Period radio static",
+          "notes": "Signal tears into static on cue"
+        }
+      ]
+    },
+    {
+      "n": 2,
+      "pages": "1 2/8",
+      "estimateMinutes": 240,
+      "elements": [
+        {
+          "category": "Cast",
+          "name": "MARIAMMA"
+        },
+        {
+          "category": "Cast",
+          "name": "YOUNG ANJALI",
+          "notes": "Child performer. Night scene on lit stage, wrap by 19:30"
+        },
+        {
+          "category": "Cast",
+          "name": "JOE",
+          "notes": "Younger and thinner, 1999"
+        },
+        {
+          "category": "Location / Set",
+          "name": "Coast Radio Station - Operations Room",
+          "notes": "1999 dressing: working station, valves lit, chart with pins"
+        },
+        {
+          "category": "Props",
+          "name": "Nagra tape recorder",
+          "notes": "Hero, period. Reel must turn after the blackout on its own batteries"
+        },
+        {
+          "category": "Props",
+          "name": "Quarter-inch reel 14-11-1999",
+          "notes": "Fresh 1999 version, turning on the Nagra"
+        },
+        {
+          "category": "Props",
+          "name": "Transmitter racks",
+          "notes": "Set dressing with practical valve glow on a dimmer"
+        },
+        {
+          "category": "Props",
+          "name": "Wall chart of the coast with pins"
+        },
+        {
+          "category": "Props",
+          "name": "Grease pencil"
+        },
+        {
+          "category": "Props",
+          "name": "Mariamma's wristwatch",
+          "notes": "Propped against the microphone base"
+        },
+        {
+          "category": "Props",
+          "name": "Telegram in plastic sleeve"
+        },
+        {
+          "category": "Props",
+          "name": "Transistor radio (Young Anjali's)",
+          "notes": "With earphone wire"
+        },
+        {
+          "category": "Props",
+          "name": "Fertiliser sack",
+          "notes": "Folded, under the desk"
+        },
+        {
+          "category": "Props",
+          "name": "Wall clock",
+          "notes": "Practical, hands set 23:38 moving to 23:40"
+        },
+        {
+          "category": "Props",
+          "name": "Twin station microphones and handsets",
+          "notes": "Period 1999"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Mariamma's 1999 duty sari"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Young Anjali's school pinafore"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Joe's 1999 khaki station shirt",
+          "notes": "Soaked dark. 3 sets"
+        },
+        {
+          "category": "Hair / Makeup",
+          "name": "1999 period looks",
+          "notes": "Mariamma at 38, Joe aged down"
+        },
+        {
+          "category": "Special Effects",
+          "name": "Rain towers and wind machines",
+          "notes": "Rain on shutters and wind through the door"
+        },
+        {
+          "category": "Special Effects",
+          "name": "Practical lighting blackout",
+          "notes": "All lamps and valves cut at once on cue"
+        },
+        {
+          "category": "VFX",
+          "name": "1999 period clean-up"
+        },
+        {
+          "category": "Sound",
+          "name": "Period radio static",
+          "notes": "Two sets live at once"
+        },
+        {
+          "category": "Sound",
+          "name": "Nagra running in the dark",
+          "notes": "Isolated mechanism sound after blackout"
+        }
+      ]
+    },
+    {
+      "n": 3,
+      "pages": "1 6/8",
+      "estimateMinutes": 150,
+      "elements": [
+        {
+          "category": "Cast",
+          "name": "ANJALI"
+        },
+        {
+          "category": "Cast",
+          "name": "STUDIO PRODUCER"
+        },
+        {
+          "category": "Cast",
+          "name": "FATHIMA",
+          "notes": "Voice on phone, recorded off set"
+        },
+        {
+          "category": "Location / Set",
+          "name": "Soundwave Studio - Edit Suite",
+          "notes": "Windowless suite, grey foam, monitor wall"
+        },
+        {
+          "category": "Props",
+          "name": "Edit suite monitors and audio workstation",
+          "notes": "Waveform graphics prepared by playback team"
+        },
+        {
+          "category": "Props",
+          "name": "Studio headphones"
+        },
+        {
+          "category": "Props",
+          "name": "Mobile phone (Anjali's)",
+          "notes": "Screen shows FATHIMA, three missed calls"
+        },
+        {
+          "category": "Props",
+          "name": "Coffee cups",
+          "notes": "2, Nikhil carries both"
+        },
+        {
+          "category": "Props",
+          "name": "Mariamma's wristwatch",
+          "notes": "Cracked crystal, stopped at 23:52"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Anjali's city clothes"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Nikhil's branded fleece"
+        },
+        {
+          "category": "Hair / Makeup",
+          "name": "Anjali's fatigue makeup",
+          "notes": "Tired, unslept city look"
+        },
+        {
+          "category": "VFX",
+          "name": "Monitor screen replacement",
+          "notes": "Waveform zoom insert, or practical playback"
+        },
+        {
+          "category": "Sound",
+          "name": "Detergent voice-over playback",
+          "notes": "Voice actor line, played many times"
+        },
+        {
+          "category": "Sound",
+          "name": "Phone playback",
+          "notes": "Fathima's side, fed to earpiece"
+        }
+      ]
+    },
+    {
+      "n": 4,
+      "pages": "5/8",
+      "estimateMinutes": 120,
+      "elements": [
+        {
+          "category": "Cast",
+          "name": "ANJALI"
+        },
+        {
+          "category": "Cast",
+          "name": "MARIAMMA",
+          "notes": "Voice only, on cassette"
+        },
+        {
+          "category": "Extras / Background",
+          "name": "Bus passengers",
+          "notes": "30, asleep. Night travel wardrobe"
+        },
+        {
+          "category": "Location / Set",
+          "name": "KSRTC Bus - Interior",
+          "notes": "Process trailer on the highway"
+        },
+        {
+          "category": "Vehicles",
+          "name": "KSRTC bus",
+          "notes": "Red, period-neutral livery, on process trailer"
+        },
+        {
+          "category": "Props",
+          "name": "Walkman (yellow, rubber band)",
+          "notes": "Practical"
+        },
+        {
+          "category": "Props",
+          "name": "Cassette KDK Weather Aug 98",
+          "notes": "Hand-written blue ballpoint label: KDK WEATHER, AUG 98, AMMA"
+        },
+        {
+          "category": "Props",
+          "name": "Foam earphones"
+        },
+        {
+          "category": "Props",
+          "name": "Canvas bag (Anjali's)"
+        },
+        {
+          "category": "Props",
+          "name": "Mariamma's wristwatch"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Anjali's city clothes"
+        },
+        {
+          "category": "Hair / Makeup",
+          "name": "Anjali's fatigue makeup"
+        },
+        {
+          "category": "Special Effects",
+          "name": "Rain towers and wind machines",
+          "notes": "Rain bars on the bus windows"
+        },
+        {
+          "category": "Sound",
+          "name": "Walkman cassette",
+          "notes": "Station jingle then Mariamma's weather and laugh; cut before the laugh ends"
+        },
+        {
+          "category": "Sound",
+          "name": "Station jingle",
+          "notes": "Four notes, toy organ, wobble on old tape"
+        }
+      ]
+    },
+    {
+      "n": 5,
+      "pages": "1 3/8",
+      "estimateMinutes": 210,
+      "elements": [
+        {
+          "category": "Cast",
+          "name": "ANJALI"
+        },
+        {
+          "category": "Cast",
+          "name": "APPACHAN"
+        },
+        {
+          "category": "Cast",
+          "name": "LATHA"
+        },
+        {
+          "category": "Extras / Background",
+          "name": "Autorickshaw driver",
+          "notes": "1"
+        },
+        {
+          "category": "Location / Set",
+          "name": "Coast Radio Station - Exterior and Fence",
+          "notes": "Dune, rusted lattice mast, fence with peeled-back gap"
+        },
+        {
+          "category": "Vehicles",
+          "name": "Autorickshaw"
+        },
+        {
+          "category": "Vehicles",
+          "name": "Police jeep (Mahindra Bolero)",
+          "notes": "White, coastal police markings removed per legal"
+        },
+        {
+          "category": "Props",
+          "name": "Coir string of station keys",
+          "notes": "Ring of old iron keys on coir string. Hero plus 1 spare"
+        },
+        {
+          "category": "Props",
+          "name": "Steel tea tumbler"
+        },
+        {
+          "category": "Props",
+          "name": "Demolition tape",
+          "notes": "Yellow and black, three loops round the fence"
+        },
+        {
+          "category": "Props",
+          "name": "Port Trust board",
+          "notes": "Sun-bleached"
+        },
+        {
+          "category": "Props",
+          "name": "Canvas bag (Anjali's)"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Appachan's vest and mundu",
+          "notes": "Wet. 3 sets"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Latha's police uniform",
+          "notes": "Insignia removed, cleared by legal"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Anjali's city clothes"
+        },
+        {
+          "category": "Hair / Makeup",
+          "name": "Appachan's aging and white stubble"
+        },
+        {
+          "category": "Hair / Makeup",
+          "name": "Appachan's wet-down",
+          "notes": "Damp from the night, sand on the hands"
+        },
+        {
+          "category": "Animals",
+          "name": "Kannan (dog)",
+          "notes": "Lies across Appachan's feet, one tail thump. Trainer on set"
+        },
+        {
+          "category": "Animals",
+          "name": "Crows",
+          "notes": "On the mast stays, wrangled plus CG top-up if needed"
+        },
+        {
+          "category": "Sound",
+          "name": "Dawn ambience with crows and surf"
+        }
+      ]
+    },
+    {
+      "n": 6,
+      "pages": "1 3/8",
+      "estimateMinutes": 150,
+      "elements": [
+        {
+          "category": "Cast",
+          "name": "ANJALI"
+        },
+        {
+          "category": "Cast",
+          "name": "FATHIMA"
+        },
+        {
+          "category": "Cast",
+          "name": "APPACHAN"
+        },
+        {
+          "category": "Location / Set",
+          "name": "Thomas House - Kitchen",
+          "notes": "Red oxide floor, wood stove and gas ring"
+        },
+        {
+          "category": "Props",
+          "name": "Port Trust demolition notice",
+          "notes": "On Port Trust letterhead, readable insert"
+        },
+        {
+          "category": "Props",
+          "name": "Mango fridge magnet"
+        },
+        {
+          "category": "Props",
+          "name": "Dented tea pan and steel tumblers",
+          "notes": "For the pulled tea, practical hot tea"
+        },
+        {
+          "category": "Props",
+          "name": "Rice and fish curry",
+          "notes": "Food, repeats for takes"
+        },
+        {
+          "category": "Props",
+          "name": "Fertiliser company calendar",
+          "notes": "Stuck on an old month"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Fathima's headscarf and everyday clothes"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Appachan's vest and mundu",
+          "notes": "Dry, clean"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Anjali's city clothes"
+        },
+        {
+          "category": "Hair / Makeup",
+          "name": "Appachan's aging and white stubble"
+        },
+        {
+          "category": "Animals",
+          "name": "Kannan (dog)",
+          "notes": "Waits under Appachan's chair"
+        }
+      ]
+    },
+    {
+      "n": 7,
+      "pages": "1 5/8",
+      "estimateMinutes": 240,
+      "elements": [
+        {
+          "category": "Cast",
+          "name": "ANJALI"
+        },
+        {
+          "category": "Cast",
+          "name": "OLD FISHERMAN"
+        },
+        {
+          "category": "Cast",
+          "name": "SURESH"
+        },
+        {
+          "category": "Extras / Background",
+          "name": "Harbour fishermen and fish sellers",
+          "notes": "40, folding nets, haggling over sardine"
+        },
+        {
+          "category": "Extras / Background",
+          "name": "Survey crew",
+          "notes": "3, hard hats"
+        },
+        {
+          "category": "Location / Set",
+          "name": "Kadalkkara Harbour - Wharf"
+        },
+        {
+          "category": "Location / Set",
+          "name": "Coast Radio Station - Exterior and Fence",
+          "notes": "Survey marks on the walls"
+        },
+        {
+          "category": "Vehicles",
+          "name": "Fishing boats (fleet)",
+          "notes": "Rafted three deep: Bismillah, Sea Queen, Ambadi, Jyothi"
+        },
+        {
+          "category": "Vehicles",
+          "name": "Ice truck",
+          "notes": "Reversing with horn"
+        },
+        {
+          "category": "Props",
+          "name": "Fishing nets and net needle",
+          "notes": "Wooden needle for the Old Fisherman"
+        },
+        {
+          "category": "Props",
+          "name": "Sardine baskets"
+        },
+        {
+          "category": "Props",
+          "name": "Survey spray paint",
+          "notes": "Orange, removable for the station walls"
+        },
+        {
+          "category": "Props",
+          "name": "Theodolite on tripod"
+        },
+        {
+          "category": "Props",
+          "name": "Clipboard"
+        },
+        {
+          "category": "Props",
+          "name": "Hard hats"
+        },
+        {
+          "category": "Props",
+          "name": "Contractor's lanyard"
+        },
+        {
+          "category": "Props",
+          "name": "Reading glasses on a cord"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Old Fisherman's lungi and towel"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Suresh's white shirt and lanyard"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Anjali's everyday clothes"
+        },
+        {
+          "category": "Animals",
+          "name": "Crows",
+          "notes": "Working the fish scraps"
+        },
+        {
+          "category": "Animals",
+          "name": "Gulls",
+          "notes": "Natural, no wrangling"
+        },
+        {
+          "category": "Sound",
+          "name": "Harbour ambience",
+          "notes": "Diesel, gulls, ice truck horn"
+        }
+      ]
+    },
+    {
+      "n": 8,
+      "pages": "1",
+      "estimateMinutes": 120,
+      "elements": [
+        {
+          "category": "Cast",
+          "name": "ANJALI"
+        },
+        {
+          "category": "Cast",
+          "name": "PORT OFFICER"
+        },
+        {
+          "category": "Cast",
+          "name": "SURESH",
+          "notes": "Featured, non-speaking"
+        },
+        {
+          "category": "Extras / Background",
+          "name": "Port Trust clerks and peon",
+          "notes": "8"
+        },
+        {
+          "category": "Location / Set",
+          "name": "Port Trust Office",
+          "notes": "Ceiling fans, green steel cupboards"
+        },
+        {
+          "category": "Props",
+          "name": "Form 14"
+        },
+        {
+          "category": "Props",
+          "name": "Red-taped files",
+          "notes": "Towers on every desk"
+        },
+        {
+          "category": "Props",
+          "name": "Rubber stamps"
+        },
+        {
+          "category": "Props",
+          "name": "Site schedule"
+        },
+        {
+          "category": "Props",
+          "name": "Tea tray"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Krishnadas's office shirt and trousers"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Suresh's white shirt and lanyard"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Anjali's everyday clothes"
+        },
+        {
+          "category": "Sound",
+          "name": "Ceiling fan room tone"
+        }
+      ]
+    },
+    {
+      "n": 9,
+      "pages": "2",
+      "estimateMinutes": 210,
+      "elements": [
+        {
+          "category": "Cast",
+          "name": "FATHIMA"
+        },
+        {
+          "category": "Cast",
+          "name": "RAHUL",
+          "notes": "Minor, tutor on set"
+        },
+        {
+          "category": "Cast",
+          "name": "ANJALI"
+        },
+        {
+          "category": "Cast",
+          "name": "MEENU",
+          "notes": "Child performer (12)"
+        },
+        {
+          "category": "Extras / Background",
+          "name": "Radio club kids",
+          "notes": "4 besides Rahul and Meenu, ages 12 to 16"
+        },
+        {
+          "category": "Location / Set",
+          "name": "Fathima's Tea Shop",
+          "notes": "After closing, fluorescent tube, copper urn"
+        },
+        {
+          "category": "Props",
+          "name": "Biscuit-tin transmitter",
+          "notes": "Hero working version, curtain-rod whip aerial, fan regulator switch, Walkman microphone. Low power, props-built"
+        },
+        {
+          "category": "Props",
+          "name": "Shortwave receiver with coat-hanger aerial",
+          "notes": "Practical"
+        },
+        {
+          "category": "Props",
+          "name": "Soldering iron",
+          "notes": "Practical, cold version for handling close-ups"
+        },
+        {
+          "category": "Props",
+          "name": "Exercise book"
+        },
+        {
+          "category": "Props",
+          "name": "Glass of tea"
+        },
+        {
+          "category": "Props",
+          "name": "Banana fritter display case"
+        },
+        {
+          "category": "Props",
+          "name": "Copper tea urn",
+          "notes": "Practical, hissing"
+        },
+        {
+          "category": "Props",
+          "name": "Torch"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Rahul's school clothes"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Meenu's oversized school uniform"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Fathima's headscarf and everyday clothes"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Anjali's everyday clothes"
+        },
+        {
+          "category": "Special Effects",
+          "name": "Soldering smoke",
+          "notes": "Small practical wisp"
+        },
+        {
+          "category": "Sound",
+          "name": "Shortwave receiver playback",
+          "notes": "Whistles, burbles, Rahul's delayed hello"
+        }
+      ]
+    },
+    {
+      "n": 10,
+      "pages": "1 3/8",
+      "estimateMinutes": 150,
+      "elements": [
+        {
+          "category": "Cast",
+          "name": "APPACHAN",
+          "notes": "Malayalam dialogue, subtitles"
+        },
+        {
+          "category": "Cast",
+          "name": "ANJALI",
+          "notes": "Some Malayalam lines"
+        },
+        {
+          "category": "Location / Set",
+          "name": "Thomas House - Appachan's Room",
+          "notes": "Barred window, cot, crucifix"
+        },
+        {
+          "category": "Props",
+          "name": "Coir string of station keys"
+        },
+        {
+          "category": "Props",
+          "name": "Framed photograph of Mariamma",
+          "notes": "At the station microphone, laughing"
+        },
+        {
+          "category": "Props",
+          "name": "Crucifix"
+        },
+        {
+          "category": "Props",
+          "name": "Key nail by the door"
+        },
+        {
+          "category": "Props",
+          "name": "Book"
+        },
+        {
+          "category": "Props",
+          "name": "Mariamma's wristwatch"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Appachan's vest and mundu"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Anjali's everyday clothes"
+        },
+        {
+          "category": "Hair / Makeup",
+          "name": "Appachan's aging and white stubble",
+          "notes": "Clear-eyed moment"
+        },
+        {
+          "category": "Animals",
+          "name": "Kannan (dog)",
+          "notes": "Asleep on the floor"
+        }
+      ]
+    },
+    {
+      "n": 11,
+      "pages": "1 3/8",
+      "estimateMinutes": 180,
+      "elements": [
+        {
+          "category": "Cast",
+          "name": "ANJALI"
+        },
+        {
+          "category": "Cast",
+          "name": "RAHUL"
+        },
+        {
+          "category": "Location / Set",
+          "name": "Coast Radio Station - Operations Room",
+          "notes": "Derelict dressing: gutted racks, rotted chart, mould, broken glass, empty tape shelves"
+        },
+        {
+          "category": "Props",
+          "name": "Quarter-inch reel 14-11-1999",
+          "notes": "Swollen brown tape, salt bloom. Hero plus 2 stand-ins"
+        },
+        {
+          "category": "Props",
+          "name": "Biscuit box (reel container)",
+          "notes": "Warped, stained cardboard"
+        },
+        {
+          "category": "Props",
+          "name": "Label in Mariamma's hand",
+          "notes": "14-11-1999, KDK ops, log tape, M."
+        },
+        {
+          "category": "Props",
+          "name": "Torches and head torch"
+        },
+        {
+          "category": "Props",
+          "name": "Coir string of station keys"
+        },
+        {
+          "category": "Props",
+          "name": "Screwdriver"
+        },
+        {
+          "category": "Props",
+          "name": "Rucksack"
+        },
+        {
+          "category": "Props",
+          "name": "Empty tape shelves",
+          "notes": "Stencilled by month, dust outlines"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Rahul's school clothes"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Anjali's everyday clothes"
+        },
+        {
+          "category": "Special Effects",
+          "name": "Smoke and haze",
+          "notes": "Light haze for torch beams"
+        },
+        {
+          "category": "VFX",
+          "name": "Bat fly-through",
+          "notes": "CG bat past heads"
+        },
+        {
+          "category": "Sound",
+          "name": "Derelict room tone",
+          "notes": "Grit under the door, dripping"
+        }
+      ]
+    },
+    {
+      "n": 12,
+      "pages": "1 1/8",
+      "estimateMinutes": 180,
+      "elements": [
+        {
+          "category": "Cast",
+          "name": "ANJALI"
+        },
+        {
+          "category": "Cast",
+          "name": "RAHUL"
+        },
+        {
+          "category": "Cast",
+          "name": "GUARD"
+        },
+        {
+          "category": "Location / Set",
+          "name": "Coast Radio Station - Exterior and Fence",
+          "notes": "Night, gap in the fence"
+        },
+        {
+          "category": "Location / Set",
+          "name": "Coconut Grove and Coast Road"
+        },
+        {
+          "category": "Vehicles",
+          "name": "Bicycle (Rahul's)",
+          "notes": "Chain comes off on cue. Hero plus repaired double"
+        },
+        {
+          "category": "Props",
+          "name": "Guard's flashlight"
+        },
+        {
+          "category": "Props",
+          "name": "Whistle"
+        },
+        {
+          "category": "Props",
+          "name": "Guard's stick"
+        },
+        {
+          "category": "Props",
+          "name": "Biscuit box (reel container)",
+          "notes": "Inside Anjali's shirt"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Guard's security company shirt"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Rahul's school clothes"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Anjali's everyday clothes"
+        },
+        {
+          "category": "Sound",
+          "name": "Whistle and bicycle bell",
+          "notes": "Chain clank and ticking"
+        }
+      ]
+    },
+    {
+      "n": 13,
+      "pages": "1 4/8",
+      "estimateMinutes": 150,
+      "elements": [
+        {
+          "category": "Cast",
+          "name": "ANJALI"
+        },
+        {
+          "category": "Cast",
+          "name": "RAHUL"
+        },
+        {
+          "category": "Cast",
+          "name": "FATHIMA"
+        },
+        {
+          "category": "Cast",
+          "name": "MEENU"
+        },
+        {
+          "category": "Extras / Background",
+          "name": "Radio club kids",
+          "notes": "4"
+        },
+        {
+          "category": "Location / Set",
+          "name": "Fisheries School - Radio Club Room",
+          "notes": "Leak bucket, gills on blackboard, map with postcards"
+        },
+        {
+          "category": "Props",
+          "name": "Quarter-inch reel 14-11-1999",
+          "notes": "Oxide flaking insert, macro"
+        },
+        {
+          "category": "Props",
+          "name": "Cotton gloves"
+        },
+        {
+          "category": "Props",
+          "name": "Wooden toothpick"
+        },
+        {
+          "category": "Props",
+          "name": "Anglepoise lamp"
+        },
+        {
+          "category": "Props",
+          "name": "Tiffin carrier"
+        },
+        {
+          "category": "Props",
+          "name": "Flask"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Rahul's school clothes"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Meenu's oversized school uniform"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Fathima's headscarf and everyday clothes"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Anjali's everyday clothes"
+        }
+      ]
+    },
+    {
+      "n": 14,
+      "pages": "1 3/8",
+      "estimateMinutes": 135,
+      "elements": [
+        {
+          "category": "Cast",
+          "name": "FATHIMA"
+        },
+        {
+          "category": "Cast",
+          "name": "RAHUL"
+        },
+        {
+          "category": "Cast",
+          "name": "ANJALI"
+        },
+        {
+          "category": "Cast",
+          "name": "MEENU"
+        },
+        {
+          "category": "Extras / Background",
+          "name": "Bakery men",
+          "notes": "2, wheel in the oven"
+        },
+        {
+          "category": "Location / Set",
+          "name": "Fathima's Tea Shop - Kitchen",
+          "notes": "Hot, narrow, blackened pans"
+        },
+        {
+          "category": "Props",
+          "name": "Convection oven",
+          "notes": "Stainless, practical display reading 54. Factory plastic on the panel"
+        },
+        {
+          "category": "Props",
+          "name": "Thermometer alarm (Rahul's)",
+          "notes": "Probe, buzzer, nine-volt battery in soap dish. Chirps on cue"
+        },
+        {
+          "category": "Props",
+          "name": "Wire rack and baking tray"
+        },
+        {
+          "category": "Props",
+          "name": "Quarter-inch reel 14-11-1999"
+        },
+        {
+          "category": "Props",
+          "name": "Plastic chairs",
+          "notes": "2"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Fathima's headscarf and everyday clothes"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Rahul's school clothes"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Meenu's oversized school uniform"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Anjali's everyday clothes"
+        },
+        {
+          "category": "Sound",
+          "name": "Oven fan hum and alarm chirp"
+        }
+      ]
+    },
+    {
+      "n": 15,
+      "pages": "1",
+      "estimateMinutes": 105,
+      "elements": [
+        {
+          "category": "Cast",
+          "name": "APPACHAN"
+        },
+        {
+          "category": "Cast",
+          "name": "ANJALI"
+        },
+        {
+          "category": "Location / Set",
+          "name": "Thomas House - Veranda",
+          "notes": "Tiled veranda, low wall, sea between palms"
+        },
+        {
+          "category": "Props",
+          "name": "Coir string of station keys",
+          "notes": "From Anjali's bag back over his head"
+        },
+        {
+          "category": "Props",
+          "name": "Cane chair"
+        },
+        {
+          "category": "Props",
+          "name": "Drying chillies"
+        },
+        {
+          "category": "Props",
+          "name": "Canvas bag (Anjali's)"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Appachan's good white shirt",
+          "notes": "Buttoned one hole wrong at top of scene"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Anjali's everyday clothes"
+        },
+        {
+          "category": "Hair / Makeup",
+          "name": "Appachan's aging and white stubble",
+          "notes": "Hair combed flat with water"
+        },
+        {
+          "category": "Animals",
+          "name": "Kannan (dog)"
+        }
+      ]
+    },
+    {
+      "n": 16,
+      "pages": "1 5/8",
+      "estimateMinutes": 210,
+      "elements": [
+        {
+          "category": "Cast",
+          "name": "ANJALI"
+        },
+        {
+          "category": "Cast",
+          "name": "RAHUL"
+        },
+        {
+          "category": "Cast",
+          "name": "FATHIMA"
+        },
+        {
+          "category": "Cast",
+          "name": "MEENU"
+        },
+        {
+          "category": "Cast",
+          "name": "MARIAMMA",
+          "notes": "Voice only, on tape"
+        },
+        {
+          "category": "Extras / Background",
+          "name": "Radio club kids",
+          "notes": "4"
+        },
+        {
+          "category": "Location / Set",
+          "name": "Fisheries School - Radio Club Room",
+          "notes": "Night, blinds down, one lamp"
+        },
+        {
+          "category": "Props",
+          "name": "Nagra tape recorder",
+          "notes": "Practical playback. Tape block lifts on cue"
+        },
+        {
+          "category": "Props",
+          "name": "Quarter-inch reel 14-11-1999",
+          "notes": "Rigged stuck block on the left reel"
+        },
+        {
+          "category": "Props",
+          "name": "Laptop and audio interface"
+        },
+        {
+          "category": "Props",
+          "name": "Studio headphones"
+        },
+        {
+          "category": "Props",
+          "name": "Practical speaker"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Rahul's school clothes"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Meenu's oversized school uniform"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Fathima's headscarf and everyday clothes"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Anjali's everyday clothes"
+        },
+        {
+          "category": "Sound",
+          "name": "Reel playback",
+          "notes": "Recorded live on set through the practical speaker. Aged tape, laugh then first call"
+        }
+      ]
+    },
+    {
+      "n": 17,
+      "pages": "1 2/8",
+      "estimateMinutes": 120,
+      "elements": [
+        {
+          "category": "Cast",
+          "name": "ANJALI"
+        },
+        {
+          "category": "Cast",
+          "name": "JOE"
+        },
+        {
+          "category": "Location / Set",
+          "name": "Joe's Room Above the Toddy Shop",
+          "notes": "Outside stair, tin roof below"
+        },
+        {
+          "category": "Props",
+          "name": "Empty bottles (arrack and toddy)",
+          "notes": "Lined up like a fence, labels out, cleared or generic"
+        },
+        {
+          "category": "Props",
+          "name": "Kettle and tea glass"
+        },
+        {
+          "category": "Props",
+          "name": "Framed station photograph (turned to wall)"
+        },
+        {
+          "category": "Props",
+          "name": "Kerosene stove"
+        },
+        {
+          "category": "Props",
+          "name": "Folding cot"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Joe's clean shirt"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Anjali's everyday clothes"
+        },
+        {
+          "category": "Hair / Makeup",
+          "name": "Joe's sweat and stubble"
+        }
+      ]
+    },
+    {
+      "n": 18,
+      "pages": "7/8",
+      "estimateMinutes": 240,
+      "elements": [
+        {
+          "category": "Cast",
+          "name": "SURESH"
+        },
+        {
+          "category": "Cast",
+          "name": "ANJALI"
+        },
+        {
+          "category": "Cast",
+          "name": "FATHIMA"
+        },
+        {
+          "category": "Extras / Background",
+          "name": "Mourners in white",
+          "notes": "200, men in white mundus, women in white saris with black borders"
+        },
+        {
+          "category": "Extras / Background",
+          "name": "Church choir",
+          "notes": "12, under the awning"
+        },
+        {
+          "category": "Location / Set",
+          "name": "St. Antony's Church - Steps and Forecourt"
+        },
+        {
+          "category": "Props",
+          "name": "Lectern"
+        },
+        {
+          "category": "Props",
+          "name": "Sheet of names"
+        },
+        {
+          "category": "Props",
+          "name": "Marigold garlands"
+        },
+        {
+          "category": "Props",
+          "name": "Memorial banner 14 November 1999",
+          "notes": "Cloth, between two palms"
+        },
+        {
+          "category": "Props",
+          "name": "Harmonium"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Suresh's white shirt and mundu"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Anjali's borrowed white churidar"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Mourners' white mundus and saris",
+          "notes": "200 sets"
+        },
+        {
+          "category": "Sound",
+          "name": "Live choir",
+          "notes": "Slow hymn to harmonium, recorded live"
+        }
+      ]
+    },
+    {
+      "n": 19,
+      "pages": "1 2/8",
+      "estimateMinutes": 120,
+      "elements": [
+        {
+          "category": "Cast",
+          "name": "LATHA"
+        },
+        {
+          "category": "Cast",
+          "name": "ANJALI"
+        },
+        {
+          "category": "Location / Set",
+          "name": "Police Outpost - Front Room",
+          "notes": "Counter, wireless set, open cell visible at back"
+        },
+        {
+          "category": "Props",
+          "name": "Trespass complaint letter",
+          "notes": "Contractor's letterhead, Rahul's name misspelled"
+        },
+        {
+          "category": "Props",
+          "name": "Police file: Missing person Mariamma Thomas",
+          "notes": "Thin cardboard, grey string tie, cover dated 15-11-1999"
+        },
+        {
+          "category": "Props",
+          "name": "Latha's reading glasses"
+        },
+        {
+          "category": "Props",
+          "name": "Wireless set"
+        },
+        {
+          "category": "Props",
+          "name": "Constable's lunch box"
+        },
+        {
+          "category": "Props",
+          "name": "Desk drawer key"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Latha's police uniform"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Anjali's everyday clothes"
+        },
+        {
+          "category": "Sound",
+          "name": "Police wireless chatter",
+          "notes": "District frequency, turned down on cue"
+        }
+      ]
+    },
+    {
+      "n": 20,
+      "pages": "1 3/8",
+      "estimateMinutes": 120,
+      "elements": [
+        {
+          "category": "Cast",
+          "name": "ANJALI"
+        },
+        {
+          "category": "Cast",
+          "name": "FATHIMA"
+        },
+        {
+          "category": "Location / Set",
+          "name": "Thomas House - Kitchen",
+          "notes": "Night, one bulb"
+        },
+        {
+          "category": "Props",
+          "name": "Police file: Missing person Mariamma Thomas",
+          "notes": "Contents: statement, sketch map of station and jetty, carbon copy incident report"
+        },
+        {
+          "category": "Props",
+          "name": "Banana chips plate"
+        },
+        {
+          "category": "Props",
+          "name": "Fathima's glasses"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Fathima's headscarf and everyday clothes"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Anjali's everyday clothes"
+        }
+      ]
+    },
+    {
+      "n": 21,
+      "pages": "1 3/8",
+      "estimateMinutes": 210,
+      "elements": [
+        {
+          "category": "Cast",
+          "name": "ANJALI"
+        },
+        {
+          "category": "Cast",
+          "name": "RAHUL"
+        },
+        {
+          "category": "Cast",
+          "name": "MEENU"
+        },
+        {
+          "category": "Cast",
+          "name": "FATHIMA"
+        },
+        {
+          "category": "Cast",
+          "name": "HARBOUR CLERK",
+          "notes": "Voice only, recorded wild"
+        },
+        {
+          "category": "Extras / Background",
+          "name": "Radio club kids",
+          "notes": "4, two of them small"
+        },
+        {
+          "category": "Location / Set",
+          "name": "Kadalkkara Beach"
+        },
+        {
+          "category": "Props",
+          "name": "Fishing-net kite with copper wire antenna",
+          "notes": "Blue net on bamboo, plastic bag tail. Hero plus 2 spares for wind"
+        },
+        {
+          "category": "Props",
+          "name": "Marine transceiver (green box)",
+          "notes": "Practical handset"
+        },
+        {
+          "category": "Props",
+          "name": "Cable drum"
+        },
+        {
+          "category": "Props",
+          "name": "Beach umbrella"
+        },
+        {
+          "category": "Props",
+          "name": "Flask"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Rahul's school clothes"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Meenu's oversized school uniform"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Fathima's headscarf and everyday clothes"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Anjali's everyday clothes"
+        },
+        {
+          "category": "Special Effects",
+          "name": "Wind machine for kite",
+          "notes": "Backup only if natural wind fails"
+        },
+        {
+          "category": "Sound",
+          "name": "Harbour radio voice",
+          "notes": "Bored clerk on the transceiver"
+        },
+        {
+          "category": "Sound",
+          "name": "Period radio static"
+        },
+        {
+          "category": "Sound",
+          "name": "Dual dialogue, overlapping shouts",
+          "notes": "Record Rahul and Meenu on separate radio mics"
+        }
+      ]
+    },
+    {
+      "n": 22,
+      "pages": "4/8",
+      "estimateMinutes": 75,
+      "elements": [
+        {
+          "category": "Cast",
+          "name": "ANJALI"
+        },
+        {
+          "category": "Location / Set",
+          "name": "Thomas House - Appachan's Room",
+          "notes": "Storm night, empty cot"
+        },
+        {
+          "category": "Props",
+          "name": "Kannan's lead (nylon rope)",
+          "notes": "Empty loop on the floor"
+        },
+        {
+          "category": "Props",
+          "name": "Key nail by the door",
+          "notes": "Empty"
+        },
+        {
+          "category": "Props",
+          "name": "Torch"
+        },
+        {
+          "category": "Props",
+          "name": "Towel"
+        },
+        {
+          "category": "Props",
+          "name": "Framed photograph of Mariamma"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Anjali's everyday clothes"
+        },
+        {
+          "category": "Special Effects",
+          "name": "Rain towers and wind machines",
+          "notes": "Rain through the window, shutters banging on a rig"
+        },
+        {
+          "category": "Sound",
+          "name": "Storm wind and banging shutters"
+        }
+      ]
+    },
+    {
+      "n": 23,
+      "pages": "1 3/8",
+      "estimateMinutes": 300,
+      "elements": [
+        {
+          "category": "Cast",
+          "name": "ANJALI"
+        },
+        {
+          "category": "Cast",
+          "name": "SURESH"
+        },
+        {
+          "category": "Cast",
+          "name": "FATHIMA"
+        },
+        {
+          "category": "Cast",
+          "name": "RAHUL"
+        },
+        {
+          "category": "Extras / Background",
+          "name": "Search party fishermen",
+          "notes": "30, plastic sheets, torches and lanterns"
+        },
+        {
+          "category": "Extras / Background",
+          "name": "Kids on bicycles",
+          "notes": "6"
+        },
+        {
+          "category": "Extras / Background",
+          "name": "Site crew",
+          "notes": "2"
+        },
+        {
+          "category": "Location / Set",
+          "name": "Kadalkkara Harbour - Wharf",
+          "notes": "Storm night"
+        },
+        {
+          "category": "Vehicles",
+          "name": "Site generator truck",
+          "notes": "Flatbed with generator and two folding floodlight towers. Practical towers raised on camera"
+        },
+        {
+          "category": "Vehicles",
+          "name": "Bicycle (Rahul's)"
+        },
+        {
+          "category": "Vehicles",
+          "name": "Bicycles (background)",
+          "notes": "6"
+        },
+        {
+          "category": "Props",
+          "name": "Torches and kerosene lanterns",
+          "notes": "Search party, 30"
+        },
+        {
+          "category": "Props",
+          "name": "Floodlight towers"
+        },
+        {
+          "category": "Props",
+          "name": "Rope coil"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Suresh's rain jacket",
+          "notes": "3 sets"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Anjali's everyday clothes",
+          "notes": "Soaked, 3 sets"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Fathima's sari over the head"
+        },
+        {
+          "category": "Hair / Makeup",
+          "name": "Rain wet-down (cast)"
+        },
+        {
+          "category": "Special Effects",
+          "name": "Rain towers and wind machines",
+          "notes": "Full storm, sideways rain"
+        },
+        {
+          "category": "Special Effects",
+          "name": "Wave machine and dump tanks",
+          "notes": "Water over the harbour wall onto the road"
+        },
+        {
+          "category": "VFX",
+          "name": "Storm sea extension",
+          "notes": "Breakwater end under white water in the background"
+        },
+        {
+          "category": "Sound",
+          "name": "Generator hum",
+          "notes": "Coughs, catches, roars"
+        }
+      ]
+    },
+    {
+      "n": 24,
+      "pages": "1 5/8",
+      "estimateMinutes": 300,
+      "elements": [
+        {
+          "category": "Cast",
+          "name": "SURESH",
+          "notes": "Doubles on the far tetrapods"
+        },
+        {
+          "category": "Cast",
+          "name": "APPACHAN",
+          "notes": "Double on the far tetrapods"
+        },
+        {
+          "category": "Cast",
+          "name": "ANJALI"
+        },
+        {
+          "category": "Location / Set",
+          "name": "Harbour Breakwater",
+          "notes": "Dressed tetrapod section at the root, stunt section beyond"
+        },
+        {
+          "category": "Props",
+          "name": "Appachan's torch",
+          "notes": "Hero, plus waterproof underwater version"
+        },
+        {
+          "category": "Props",
+          "name": "Rope coil",
+          "notes": "Safety rope doubles as the story rope"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Suresh's rain jacket",
+          "notes": "Wraps Appachan. 3 sets"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Appachan's vest and mundu",
+          "notes": "Soaked through. 3 sets"
+        },
+        {
+          "category": "Hair / Makeup",
+          "name": "Appachan's wet-down"
+        },
+        {
+          "category": "Hair / Makeup",
+          "name": "Rain wet-down (cast)"
+        },
+        {
+          "category": "Special Effects",
+          "name": "Rain towers and wind machines"
+        },
+        {
+          "category": "Special Effects",
+          "name": "Wave machine and dump tanks",
+          "notes": "Wave rig on the breakwater, biggest wave on cue. Stunt coordinator and safety divers"
+        },
+        {
+          "category": "VFX",
+          "name": "Breakwater wave composite"
+        },
+        {
+          "category": "VFX",
+          "name": "Storm sea extension"
+        },
+        {
+          "category": "Animals",
+          "name": "Kannan (dog)",
+          "notes": "Wet work, trained double dog, handler in the gap between blocks"
+        },
+        {
+          "category": "Sound",
+          "name": "Wave impacts and wind"
+        }
+      ]
+    },
+    {
+      "n": 25,
+      "pages": "2",
+      "estimateMinutes": 180,
+      "elements": [
+        {
+          "category": "Cast",
+          "name": "SURESH"
+        },
+        {
+          "category": "Cast",
+          "name": "ANJALI"
+        },
+        {
+          "category": "Cast",
+          "name": "APPACHAN"
+        },
+        {
+          "category": "Cast",
+          "name": "NURSE"
+        },
+        {
+          "category": "Extras / Background",
+          "name": "Ward patients and relatives",
+          "notes": "15"
+        },
+        {
+          "category": "Location / Set",
+          "name": "Taluk Hospital - Ward",
+          "notes": "Twenty iron beds, ceiling fans"
+        },
+        {
+          "category": "Props",
+          "name": "Drip stand and IV line"
+        },
+        {
+          "category": "Props",
+          "name": "Oxygen prongs"
+        },
+        {
+          "category": "Props",
+          "name": "Patient chart"
+        },
+        {
+          "category": "Props",
+          "name": "Plastic bag of Appachan's things",
+          "notes": "Wet vest, mundu, keys"
+        },
+        {
+          "category": "Props",
+          "name": "Coir string of station keys"
+        },
+        {
+          "category": "Props",
+          "name": "Mariamma's wristwatch",
+          "notes": "Unbuckled and held out"
+        },
+        {
+          "category": "Props",
+          "name": "Hospital blankets",
+          "notes": "2"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Nurse's uniform"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Suresh's white shirt and lanyard",
+          "notes": "Soaked, jacket left on Appachan"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Anjali's everyday clothes",
+          "notes": "Damp"
+        },
+        {
+          "category": "Hair / Makeup",
+          "name": "Hospital pallor (Appachan)"
+        },
+        {
+          "category": "Hair / Makeup",
+          "name": "Rain wet-down (cast)",
+          "notes": "Suresh drying, puddle at his feet"
+        },
+        {
+          "category": "Special Effects",
+          "name": "Rain towers and wind machines",
+          "notes": "Rain on louvred windows only"
+        },
+        {
+          "category": "Sound",
+          "name": "Ward radio film songs",
+          "notes": "Very low, cleared track"
+        }
+      ]
+    },
+    {
+      "n": 26,
+      "pages": "7/8",
+      "estimateMinutes": 90,
+      "elements": [
+        {
+          "category": "Cast",
+          "name": "SURESH"
+        },
+        {
+          "category": "Cast",
+          "name": "ANJALI"
+        },
+        {
+          "category": "Extras / Background",
+          "name": "Sleeping relatives",
+          "notes": "8"
+        },
+        {
+          "category": "Location / Set",
+          "name": "Taluk Hospital - Corridor",
+          "notes": "Dawn light at the end"
+        },
+        {
+          "category": "Props",
+          "name": "Vending machine",
+          "notes": "Practical tea"
+        },
+        {
+          "category": "Props",
+          "name": "Paper tea cups",
+          "notes": "2"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Suresh's white shirt and lanyard",
+          "notes": "Dried in creases"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Anjali's everyday clothes"
+        }
+      ]
+    },
+    {
+      "n": 27,
+      "pages": "1 2/8",
+      "estimateMinutes": 240,
+      "elements": [
+        {
+          "category": "Cast",
+          "name": "ANJALI"
+        },
+        {
+          "category": "Cast",
+          "name": "RAHUL"
+        },
+        {
+          "category": "Cast",
+          "name": "SURESH"
+        },
+        {
+          "category": "Location / Set",
+          "name": "Coast Radio Station - Tape Room",
+          "notes": "Flooded basement set, knee-deep water, heated tank"
+        },
+        {
+          "category": "Props",
+          "name": "Army surplus ammunition box",
+          "notes": "Olive drab, bolted under the stairs, padlock and hasp"
+        },
+        {
+          "category": "Props",
+          "name": "Station logbook 1999",
+          "notes": "Green cloth binding, red spine, wrapped in a plastic rice sack. Hero dry"
+        },
+        {
+          "category": "Props",
+          "name": "Floating tape boxes",
+          "notes": "Swollen, open, 60"
+        },
+        {
+          "category": "Props",
+          "name": "Coir string of station keys",
+          "notes": "Small brass key opens the padlock"
+        },
+        {
+          "category": "Props",
+          "name": "Torches and head torch"
+        },
+        {
+          "category": "Props",
+          "name": "Hard hats"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Rahul's shorts"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Anjali's rubber boots"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Suresh's hard hat and site boots"
+        },
+        {
+          "category": "Special Effects",
+          "name": "Water tank and dirty water dressing",
+          "notes": "Heated water, dust skin on the surface"
+        },
+        {
+          "category": "Sound",
+          "name": "Water movement and drips"
+        }
+      ]
+    },
+    {
+      "n": 28,
+      "pages": "1 4/8",
+      "estimateMinutes": 150,
+      "elements": [
+        {
+          "category": "Cast",
+          "name": "ANJALI"
+        },
+        {
+          "category": "Cast",
+          "name": "SURESH"
+        },
+        {
+          "category": "Cast",
+          "name": "RAHUL"
+        },
+        {
+          "category": "Location / Set",
+          "name": "Coast Radio Station - Operations Room",
+          "notes": "Derelict dressing, daylight through broken shutters"
+        },
+        {
+          "category": "Props",
+          "name": "Station logbook 1999",
+          "notes": "Log pages for 14 November 1999 written by graphics in two hands: entries 18:00 to 23:32, Joe's 23:40 line, Mariamma's 23:41 On battery."
+        },
+        {
+          "category": "Props",
+          "name": "Hard hats"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Suresh's hard hat and site boots"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Rahul's school clothes"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Anjali's everyday clothes"
+        }
+      ]
+    },
+    {
+      "n": 29,
+      "pages": "1 1/8",
+      "estimateMinutes": 180,
+      "elements": [
+        {
+          "category": "Cast",
+          "name": "ANJALI"
+        },
+        {
+          "category": "Cast",
+          "name": "JOE"
+        },
+        {
+          "category": "Cast",
+          "name": "SURESH",
+          "notes": "Featured, non-speaking, at the gate"
+        },
+        {
+          "category": "Extras / Background",
+          "name": "Toddy shop drinkers",
+          "notes": "20, fishermen in lungis"
+        },
+        {
+          "category": "Extras / Background",
+          "name": "Toddy shop owner",
+          "notes": "1"
+        },
+        {
+          "category": "Location / Set",
+          "name": "Toddy Shop - Yard",
+          "notes": "Packed earth under a mango tree, string of bare bulbs"
+        },
+        {
+          "category": "Vehicles",
+          "name": "Ambassador car",
+          "notes": "Cream, one working headlight. Joe drives it out of the yard"
+        },
+        {
+          "category": "Props",
+          "name": "Station logbook 1999"
+        },
+        {
+          "category": "Props",
+          "name": "Toddy pots and tapioca plates",
+          "notes": "Food, repeats"
+        },
+        {
+          "category": "Props",
+          "name": "Cassette player",
+          "notes": "Plays an old film song, switched off on cue"
+        },
+        {
+          "category": "Props",
+          "name": "Wallet and cash"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Joe's clean shirt"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Anjali's everyday clothes"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Drinkers' lungis",
+          "notes": "20"
+        },
+        {
+          "category": "Hair / Makeup",
+          "name": "Joe's sweat and stubble"
+        },
+        {
+          "category": "Sound",
+          "name": "Film song cassette",
+          "notes": "Cleared track"
+        },
+        {
+          "category": "Sound",
+          "name": "Night ambience with frogs"
+        }
+      ]
+    },
+    {
+      "n": 30,
+      "pages": "6/8",
+      "estimateMinutes": 210,
+      "elements": [
+        {
+          "category": "Cast",
+          "name": "JOE",
+          "notes": "Drives on a closed road with police escort"
+        },
+        {
+          "category": "Cast",
+          "name": "LATHA"
+        },
+        {
+          "category": "Location / Set",
+          "name": "Lighthouse Road",
+          "notes": "Coast road on a ridge, bend over the rocks"
+        },
+        {
+          "category": "Vehicles",
+          "name": "Ambassador car",
+          "notes": "Picture car, weaving, sliding on wet gravel. Stunt driver for the slide"
+        },
+        {
+          "category": "Vehicles",
+          "name": "Police jeep (Mahindra Bolero)",
+          "notes": "Blue roof light, overtakes and blocks"
+        },
+        {
+          "category": "Props",
+          "name": "Ambassador car keys"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Joe's clean shirt"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Latha's police uniform"
+        },
+        {
+          "category": "Hair / Makeup",
+          "name": "Joe's sweat and stubble"
+        },
+        {
+          "category": "Special Effects",
+          "name": "Road wet-down",
+          "notes": "Wet gravel shoulder"
+        },
+        {
+          "category": "VFX",
+          "name": "Lighthouse beam enhancement",
+          "notes": "Sweep every twelve seconds"
+        },
+        {
+          "category": "Animals",
+          "name": "Cow (on the road)",
+          "notes": "With neck bell, handler off the road edge. Car never closer than safety mark"
+        }
+      ]
+    },
+    {
+      "n": 31,
+      "pages": "2 1/8",
+      "estimateMinutes": 180,
+      "elements": [
+        {
+          "category": "Cast",
+          "name": "JOE"
+        },
+        {
+          "category": "Cast",
+          "name": "LATHA"
+        },
+        {
+          "category": "Cast",
+          "name": "ANJALI"
+        },
+        {
+          "category": "Location / Set",
+          "name": "Police Outpost - Cell",
+          "notes": "Door that has never been locked"
+        },
+        {
+          "category": "Props",
+          "name": "Steel tumbler of black coffee"
+        },
+        {
+          "category": "Props",
+          "name": "Towel"
+        },
+        {
+          "category": "Props",
+          "name": "Station logbook 1999"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Joe's clean shirt",
+          "notes": "Stained"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Latha's police uniform"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Anjali's everyday clothes"
+        },
+        {
+          "category": "Hair / Makeup",
+          "name": "Joe's sweat and stubble",
+          "notes": "Sick, grey, sweating"
+        },
+        {
+          "category": "Sound",
+          "name": "Bare bulb buzz"
+        }
+      ]
+    },
+    {
+      "n": 32,
+      "pages": "1 6/8",
+      "estimateMinutes": 240,
+      "elements": [
+        {
+          "category": "Cast",
+          "name": "MARIAMMA"
+        },
+        {
+          "category": "Cast",
+          "name": "JOE",
+          "notes": "Younger, 1999"
+        },
+        {
+          "category": "Cast",
+          "name": "YOUNG ANJALI",
+          "notes": "Child performer. Wrap by 19:30"
+        },
+        {
+          "category": "Location / Set",
+          "name": "Coast Radio Station - Operations Room",
+          "notes": "1999 dressing, blackout, candle only"
+        },
+        {
+          "category": "Props",
+          "name": "Emergency battery set (army surplus)",
+          "notes": "Olive green steel box with handle, green lamp, practical hum"
+        },
+        {
+          "category": "Props",
+          "name": "Car batteries",
+          "notes": "2, dummies with practical spark clip"
+        },
+        {
+          "category": "Props",
+          "name": "Candle on saucer"
+        },
+        {
+          "category": "Props",
+          "name": "Headphones (1999)"
+        },
+        {
+          "category": "Props",
+          "name": "Nagra tape recorder",
+          "notes": "Reels turning"
+        },
+        {
+          "category": "Props",
+          "name": "Station logbook 1999",
+          "notes": "1999 fresh version"
+        },
+        {
+          "category": "Props",
+          "name": "Mariamma's wristwatch",
+          "notes": "Buckled onto Young Anjali's wrist, last hole"
+        },
+        {
+          "category": "Props",
+          "name": "Transistor radio (Young Anjali's)"
+        },
+        {
+          "category": "Props",
+          "name": "Pen"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Mariamma's 1999 duty sari"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Joe's 1999 khaki station shirt",
+          "notes": "Soaked"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Young Anjali's school pinafore"
+        },
+        {
+          "category": "Hair / Makeup",
+          "name": "1999 period looks"
+        },
+        {
+          "category": "Special Effects",
+          "name": "Practical sparks",
+          "notes": "Small blue crack at the battery clip. SFX operator controls the clip"
+        },
+        {
+          "category": "Special Effects",
+          "name": "Rain towers and wind machines",
+          "notes": "Outside the door"
+        },
+        {
+          "category": "VFX",
+          "name": "1999 period clean-up"
+        }
+      ]
+    },
+    {
+      "n": 33,
+      "pages": "1 7/8",
+      "estimateMinutes": 180,
+      "elements": [
+        {
+          "category": "Cast",
+          "name": "ANJALI"
+        },
+        {
+          "category": "Cast",
+          "name": "RAHUL"
+        },
+        {
+          "category": "Cast",
+          "name": "FATHIMA"
+        },
+        {
+          "category": "Cast",
+          "name": "MARIAMMA",
+          "notes": "Voice only, on tape"
+        },
+        {
+          "category": "Cast",
+          "name": "VARGHESE",
+          "notes": "Voice only, on tape"
+        },
+        {
+          "category": "Cast",
+          "name": "MEENU",
+          "notes": "Featured, non-speaking"
+        },
+        {
+          "category": "Extras / Background",
+          "name": "Radio club kids",
+          "notes": "4"
+        },
+        {
+          "category": "Location / Set",
+          "name": "Fisheries School - Radio Club Room",
+          "notes": "Night"
+        },
+        {
+          "category": "Props",
+          "name": "Nagra tape recorder"
+        },
+        {
+          "category": "Props",
+          "name": "Quarter-inch reel 14-11-1999",
+          "notes": "Tail flaps on the take-up spool at the end"
+        },
+        {
+          "category": "Props",
+          "name": "Laptop and audio interface"
+        },
+        {
+          "category": "Props",
+          "name": "Studio headphones"
+        },
+        {
+          "category": "Props",
+          "name": "Mariamma's wristwatch"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Rahul's school clothes"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Meenu's oversized school uniform"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Fathima's headscarf and everyday clothes"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Anjali's everyday clothes"
+        },
+        {
+          "category": "Hair / Makeup",
+          "name": "Rahul's tears"
+        },
+        {
+          "category": "Sound",
+          "name": "Reel playback",
+          "notes": "Second half: battery transmissions, Varghese's replies, voice thins to hiss at 23:51"
+        }
+      ]
+    },
+    {
+      "n": 34,
+      "pages": "1",
+      "estimateMinutes": 270,
+      "elements": [
+        {
+          "category": "Cast",
+          "name": "VARGHESE"
+        },
+        {
+          "category": "Cast",
+          "name": "MARIAMMA",
+          "notes": "Voice only, on radio"
+        },
+        {
+          "category": "Extras / Background",
+          "name": "Deckhand on the Little Flower",
+          "notes": "1 featured"
+        },
+        {
+          "category": "Location / Set",
+          "name": "Little Flower - Wheelhouse and Deck"
+        },
+        {
+          "category": "Location / Set",
+          "name": "Open Sea"
+        },
+        {
+          "category": "Vehicles",
+          "name": "Fishing boat Little Flower (hero)",
+          "notes": "Turns away from the river mouth"
+        },
+        {
+          "category": "Vehicles",
+          "name": "Fishing boats (fleet)",
+          "notes": "Boats falling in line, mostly VFX lights"
+        },
+        {
+          "category": "Vehicles",
+          "name": "Fishing boat Seagull (drifting)",
+          "notes": "Low in the water, no lights. Mostly VFX"
+        },
+        {
+          "category": "Props",
+          "name": "Hurricane lantern",
+          "notes": "Hero, lit, swung from the wheelhouse roof. LED safety version for the rig"
+        },
+        {
+          "category": "Props",
+          "name": "Ship-to-shore radio handset",
+          "notes": "Swings on its cord"
+        },
+        {
+          "category": "Props",
+          "name": "Pencil stub",
+          "notes": "Numbers written on the back of the hand: 958 7615"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Varghese's oilskin"
+        },
+        {
+          "category": "Hair / Makeup",
+          "name": "1999 period looks"
+        },
+        {
+          "category": "Hair / Makeup",
+          "name": "Sea spray wet-down"
+        },
+        {
+          "category": "Special Effects",
+          "name": "Rain towers and wind machines"
+        },
+        {
+          "category": "Special Effects",
+          "name": "Wave machine and dump tanks"
+        },
+        {
+          "category": "VFX",
+          "name": "Storm sea extension"
+        },
+        {
+          "category": "VFX",
+          "name": "Fleet masthead lights composite"
+        },
+        {
+          "category": "VFX",
+          "name": "1999 period clean-up"
+        },
+        {
+          "category": "Sound",
+          "name": "Radio playback (Mariamma on air)",
+          "notes": "Tiny, far"
+        },
+        {
+          "category": "Sound",
+          "name": "Period radio static"
+        }
+      ]
+    },
+    {
+      "n": 35,
+      "pages": "1 2/8",
+      "estimateMinutes": 120,
+      "elements": [
+        {
+          "category": "Cast",
+          "name": "ANJALI"
+        },
+        {
+          "category": "Cast",
+          "name": "SURESH"
+        },
+        {
+          "category": "Cast",
+          "name": "VARGHESE",
+          "notes": "Voice only, faint through headphones"
+        },
+        {
+          "category": "Location / Set",
+          "name": "Suresh's House",
+          "notes": "Neat, polished red floor. Window POV from the front step"
+        },
+        {
+          "category": "Props",
+          "name": "Digital recorder"
+        },
+        {
+          "category": "Props",
+          "name": "Closed headphones"
+        },
+        {
+          "category": "Props",
+          "name": "Framed photograph of the Little Flower",
+          "notes": "Launch day, younger Varghese laughing"
+        },
+        {
+          "category": "Props",
+          "name": "Plastic flowers"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Suresh's white shirt and lanyard"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Anjali's everyday clothes"
+        },
+        {
+          "category": "Sound",
+          "name": "Reel playback",
+          "notes": "Leak from headphones only"
+        }
+      ]
+    },
+    {
+      "n": 36,
+      "pages": "1",
+      "estimateMinutes": 90,
+      "elements": [
+        {
+          "category": "Cast",
+          "name": "SURESH"
+        },
+        {
+          "category": "Cast",
+          "name": "PORT OFFICER"
+        },
+        {
+          "category": "Location / Set",
+          "name": "Port Trust Office"
+        },
+        {
+          "category": "Props",
+          "name": "Generator permit sheet",
+          "notes": "Typed, signed and stamped on camera"
+        },
+        {
+          "category": "Props",
+          "name": "Rubber stamps"
+        },
+        {
+          "category": "Props",
+          "name": "Red-taped files"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Krishnadas's office shirt and trousers"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Suresh's white shirt and lanyard"
+        }
+      ]
+    },
+    {
+      "n": 37,
+      "pages": "1",
+      "estimateMinutes": 180,
+      "elements": [
+        {
+          "category": "Cast",
+          "name": "FATHIMA"
+        },
+        {
+          "category": "Cast",
+          "name": "RAHUL"
+        },
+        {
+          "category": "Cast",
+          "name": "SURESH"
+        },
+        {
+          "category": "Cast",
+          "name": "JOE"
+        },
+        {
+          "category": "Cast",
+          "name": "MEENU",
+          "notes": "Featured, non-speaking"
+        },
+        {
+          "category": "Extras / Background",
+          "name": "Villagers setting up",
+          "notes": "40"
+        },
+        {
+          "category": "Extras / Background",
+          "name": "Lantern kids",
+          "notes": "10, on bamboo ladders"
+        },
+        {
+          "category": "Extras / Background",
+          "name": "Tea volunteers",
+          "notes": "3"
+        },
+        {
+          "category": "Extras / Background",
+          "name": "Site crew",
+          "notes": "2"
+        },
+        {
+          "category": "Location / Set",
+          "name": "Kadalkkara Beach",
+          "notes": "Dusk, magic hour"
+        },
+        {
+          "category": "Vehicles",
+          "name": "Site generator truck",
+          "notes": "Driven onto sand, crew pushing. Track mats under the sand"
+        },
+        {
+          "category": "Vehicles",
+          "name": "Fishing boats (fleet)",
+          "notes": "Pulled up in a long row"
+        },
+        {
+          "category": "Props",
+          "name": "Lanterns (paper and kerosene)",
+          "notes": "Strung between boat masts, 120"
+        },
+        {
+          "category": "Props",
+          "name": "Copper tea urn"
+        },
+        {
+          "category": "Props",
+          "name": "Steel tumblers"
+        },
+        {
+          "category": "Props",
+          "name": "Loudspeakers on bamboo stands",
+          "notes": "2, borrowed from the church festival"
+        },
+        {
+          "category": "Props",
+          "name": "Nagra tape recorder"
+        },
+        {
+          "category": "Props",
+          "name": "Bamboo ladders"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Joe's clean shirt"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Suresh's white shirt and lanyard"
+        },
+        {
+          "category": "Hair / Makeup",
+          "name": "Joe's sweat and stubble",
+          "notes": "Cleaner today, still stubbled"
+        },
+        {
+          "category": "Sound",
+          "name": "Generator hum"
+        }
+      ]
+    },
+    {
+      "n": 38,
+      "pages": "7/8",
+      "estimateMinutes": 90,
+      "elements": [
+        {
+          "category": "Cast",
+          "name": "APPACHAN"
+        },
+        {
+          "category": "Cast",
+          "name": "ANJALI"
+        },
+        {
+          "category": "Location / Set",
+          "name": "Thomas House - Appachan's Room",
+          "notes": "Dusk"
+        },
+        {
+          "category": "Props",
+          "name": "Coir string of station keys",
+          "notes": "Taken off the nail and hung back"
+        },
+        {
+          "category": "Props",
+          "name": "Key nail by the door"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Appachan's good white shirt",
+          "notes": "Buttoned correctly"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Anjali's everyday clothes"
+        },
+        {
+          "category": "Hair / Makeup",
+          "name": "Appachan's aging and white stubble",
+          "notes": "Thinner since the hospital"
+        },
+        {
+          "category": "Animals",
+          "name": "Kannan (dog)"
+        }
+      ]
+    },
+    {
+      "n": 39,
+      "pages": "2 6/8",
+      "estimateMinutes": 300,
+      "elements": [
+        {
+          "category": "Cast",
+          "name": "ANJALI"
+        },
+        {
+          "category": "Cast",
+          "name": "SURESH"
+        },
+        {
+          "category": "Cast",
+          "name": "APPACHAN"
+        },
+        {
+          "category": "Cast",
+          "name": "FATHIMA"
+        },
+        {
+          "category": "Cast",
+          "name": "RAHUL",
+          "notes": "Featured, at the Nagra"
+        },
+        {
+          "category": "Cast",
+          "name": "JOE"
+        },
+        {
+          "category": "Cast",
+          "name": "LATHA"
+        },
+        {
+          "category": "Cast",
+          "name": "MARIAMMA",
+          "notes": "Voice only, over the speakers"
+        },
+        {
+          "category": "Cast",
+          "name": "VARGHESE",
+          "notes": "Voice only, over the speakers"
+        },
+        {
+          "category": "Cast",
+          "name": "MEENU",
+          "notes": "Featured, non-speaking"
+        },
+        {
+          "category": "Extras / Background",
+          "name": "Listening night crowd",
+          "notes": "300 on mats and sand, families and children"
+        },
+        {
+          "category": "Extras / Background",
+          "name": "Church choir",
+          "notes": "12, seated, not singing"
+        },
+        {
+          "category": "Extras / Background",
+          "name": "Old skippers",
+          "notes": "6, stand at their boat names"
+        },
+        {
+          "category": "Location / Set",
+          "name": "Kadalkkara Beach",
+          "notes": "Night"
+        },
+        {
+          "category": "Vehicles",
+          "name": "Site generator truck",
+          "notes": "Behind the boats"
+        },
+        {
+          "category": "Vehicles",
+          "name": "Police jeep (Mahindra Bolero)",
+          "notes": "Parked on the road above"
+        },
+        {
+          "category": "Vehicles",
+          "name": "Fishing boats (fleet)"
+        },
+        {
+          "category": "Props",
+          "name": "Lanterns (paper and kerosene)"
+        },
+        {
+          "category": "Props",
+          "name": "Loudspeakers on bamboo stands"
+        },
+        {
+          "category": "Props",
+          "name": "Nagra tape recorder"
+        },
+        {
+          "category": "Props",
+          "name": "Quarter-inch reel 14-11-1999"
+        },
+        {
+          "category": "Props",
+          "name": "Sheet of names"
+        },
+        {
+          "category": "Props",
+          "name": "Plastic chair"
+        },
+        {
+          "category": "Props",
+          "name": "Mats"
+        },
+        {
+          "category": "Props",
+          "name": "Copper tea urn"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Appachan's good white shirt"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Latha's police uniform"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Joe's clean shirt"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Suresh's white shirt and lanyard"
+        },
+        {
+          "category": "Hair / Makeup",
+          "name": "Appachan's aging and white stubble"
+        },
+        {
+          "category": "Hair / Makeup",
+          "name": "Joe's sweat and stubble"
+        },
+        {
+          "category": "VFX",
+          "name": "Aerial beach and lantern extension",
+          "notes": "Crowd and lantern line top-up"
+        },
+        {
+          "category": "Sound",
+          "name": "Reel playback",
+          "notes": "Over the speakers, whole tape. Plan dips under Suresh's names"
+        },
+        {
+          "category": "Sound",
+          "name": "Generator hum"
+        },
+        {
+          "category": "Animals",
+          "name": "Kannan (dog)"
+        }
+      ]
+    },
+    {
+      "n": 40,
+      "pages": "1 3/8",
+      "estimateMinutes": 180,
+      "elements": [
+        {
+          "category": "Cast",
+          "name": "ANJALI"
+        },
+        {
+          "category": "Cast",
+          "name": "RAHUL"
+        },
+        {
+          "category": "Location / Set",
+          "name": "Coast Radio Station - Roof",
+          "notes": "Cracked roof, weeds, mast corner. Parapet height checked for safety"
+        },
+        {
+          "category": "Props",
+          "name": "Biscuit-tin transmitter",
+          "notes": "Hero working version, lamp glows"
+        },
+        {
+          "category": "Props",
+          "name": "Nagra tape recorder",
+          "notes": "Carried up in its suitcase"
+        },
+        {
+          "category": "Props",
+          "name": "Quarter-inch reel 14-11-1999"
+        },
+        {
+          "category": "Props",
+          "name": "Walkman microphone on wooden spoon"
+        },
+        {
+          "category": "Props",
+          "name": "Car battery"
+        },
+        {
+          "category": "Props",
+          "name": "Fish crate"
+        },
+        {
+          "category": "Props",
+          "name": "Crocodile clip cable to the mast"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Rahul's school clothes"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Anjali's everyday clothes"
+        },
+        {
+          "category": "VFX",
+          "name": "Station wide from the sea",
+          "notes": "Drone plate with set extension, stars"
+        },
+        {
+          "category": "Sound",
+          "name": "Anjali's live broadcast",
+          "notes": "Record clean, then play reel into the night ambience"
+        }
+      ]
+    },
+    {
+      "n": 41,
+      "pages": "1 2/8",
+      "estimateMinutes": 300,
+      "elements": [
+        {
+          "category": "Cast",
+          "name": "ANJALI"
+        },
+        {
+          "category": "Cast",
+          "name": "APPACHAN"
+        },
+        {
+          "category": "Cast",
+          "name": "SURESH"
+        },
+        {
+          "category": "Cast",
+          "name": "FATHIMA"
+        },
+        {
+          "category": "Extras / Background",
+          "name": "Demolition crowd",
+          "notes": "100 behind the tape"
+        },
+        {
+          "category": "Extras / Background",
+          "name": "Site crew",
+          "notes": "4"
+        },
+        {
+          "category": "Extras / Background",
+          "name": "Excavator operator",
+          "notes": "1, licensed operator"
+        },
+        {
+          "category": "Extras / Background",
+          "name": "Old fishermen clapping",
+          "notes": "6, from the crowd"
+        },
+        {
+          "category": "Location / Set",
+          "name": "Coast Radio Station - Exterior and Fence",
+          "notes": "Demolition day. False wall built on the north face"
+        },
+        {
+          "category": "Vehicles",
+          "name": "Demolition excavator",
+          "notes": "Tracked, with demolition grab. One take on the false wall, exclusion zone"
+        },
+        {
+          "category": "Vehicles",
+          "name": "Police jeep (Mahindra Bolero)"
+        },
+        {
+          "category": "Props",
+          "name": "Demolition tape"
+        },
+        {
+          "category": "Props",
+          "name": "Police barricades"
+        },
+        {
+          "category": "Props",
+          "name": "Hard hats"
+        },
+        {
+          "category": "Props",
+          "name": "Steel tumblers"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Suresh's hard hat and site boots",
+          "notes": "Plus high-visibility vest"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Appachan's good white shirt"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Fathima's headscarf and everyday clothes"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Anjali's everyday clothes"
+        },
+        {
+          "category": "Hair / Makeup",
+          "name": "Demolition dust on cast",
+          "notes": "Light dust pass after the first wall"
+        },
+        {
+          "category": "Hair / Makeup",
+          "name": "Appachan's aging and white stubble"
+        },
+        {
+          "category": "Special Effects",
+          "name": "Demolition dust and debris",
+          "notes": "Breakaway false wall, dust cannons"
+        },
+        {
+          "category": "Special Effects",
+          "name": "Smoke and haze",
+          "notes": "Dust drift after the mast fall"
+        },
+        {
+          "category": "VFX",
+          "name": "Mast fall",
+          "notes": "Full CG mast from first lean, practical impact debris in the grove"
+        },
+        {
+          "category": "Animals",
+          "name": "Kannan (dog)"
+        },
+        {
+          "category": "Animals",
+          "name": "Crows",
+          "notes": "Go up in a black sheet, CG flock"
+        },
+        {
+          "category": "Sound",
+          "name": "Excavator and concrete groan",
+          "notes": "Steel shriek for the mast"
+        }
+      ]
+    },
+    {
+      "n": 42,
+      "pages": "1 4/8",
+      "estimateMinutes": 120,
+      "elements": [
+        {
+          "category": "Cast",
+          "name": "ANJALI"
+        },
+        {
+          "category": "Cast",
+          "name": "FATHIMA"
+        },
+        {
+          "category": "Cast",
+          "name": "RAHUL"
+        },
+        {
+          "category": "Cast",
+          "name": "MEENU"
+        },
+        {
+          "category": "Cast",
+          "name": "STUDIO PRODUCER",
+          "notes": "Voice on phone, recorded the same day as scene 3"
+        },
+        {
+          "category": "Location / Set",
+          "name": "Fathima's Tea Shop",
+          "notes": "Afternoon lull"
+        },
+        {
+          "category": "Props",
+          "name": "Low Tide Radio sign (jackwood plank)",
+          "notes": "Paint stages: Low Tide Rad, then complete. 3 planks"
+        },
+        {
+          "category": "Props",
+          "name": "White enamel paint and brushes"
+        },
+        {
+          "category": "Props",
+          "name": "Biscuit-tin transmitter",
+          "notes": "Scorched black down one side"
+        },
+        {
+          "category": "Props",
+          "name": "Do not touch sign",
+          "notes": "Cardboard, in Meenu's writing"
+        },
+        {
+          "category": "Props",
+          "name": "Mobile phone (Anjali's)"
+        },
+        {
+          "category": "Props",
+          "name": "Newspapers"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Rahul's school clothes"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Meenu's oversized school uniform"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Fathima's headscarf and everyday clothes"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Anjali's everyday clothes"
+        },
+        {
+          "category": "Sound",
+          "name": "Phone playback",
+          "notes": "Nikhil's side"
+        }
+      ]
+    },
+    {
+      "n": 43,
+      "pages": "6/8",
+      "estimateMinutes": 150,
+      "elements": [
+        {
+          "category": "Cast",
+          "name": "ANJALI",
+          "notes": "Voice only, on radio"
+        },
+        {
+          "category": "Cast",
+          "name": "OLD FISHERMAN",
+          "notes": "Featured, non-speaking, laughs"
+        },
+        {
+          "category": "Extras / Background",
+          "name": "Harbour fishermen",
+          "notes": "40, casting off"
+        },
+        {
+          "category": "Location / Set",
+          "name": "Kadalkkara Harbour - Wharf",
+          "notes": "Dawn"
+        },
+        {
+          "category": "Vehicles",
+          "name": "Fishing boats (fleet)",
+          "notes": "Engines started, boats go out through the harbour mouth in a line"
+        },
+        {
+          "category": "Props",
+          "name": "Transistor radios in wheelhouses",
+          "notes": "8, practical playback"
+        },
+        {
+          "category": "Props",
+          "name": "Marine radio set (Bismillah)"
+        },
+        {
+          "category": "Props",
+          "name": "Mooring lines"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Old Fisherman's lungi and towel"
+        },
+        {
+          "category": "Special Effects",
+          "name": "Smoke and haze",
+          "notes": "Diesel smoke on the water"
+        },
+        {
+          "category": "Sound",
+          "name": "Radio playback (Anjali on air)",
+          "notes": "Played through every boat's radio a little out of step. Laugh left in"
+        }
+      ]
+    },
+    {
+      "n": 44,
+      "pages": "4/8",
+      "estimateMinutes": 120,
+      "elements": [
+        {
+          "category": "Cast",
+          "name": "ANJALI"
+        },
+        {
+          "category": "Cast",
+          "name": "APPACHAN"
+        },
+        {
+          "category": "Location / Set",
+          "name": "Kadalkkara Beach",
+          "notes": "Low tide, wet sand mirror"
+        },
+        {
+          "category": "Props",
+          "name": "Mariamma's wristwatch",
+          "notes": "Wound and set on camera, second hand moves. Practical running version"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Appachan's good white shirt",
+          "notes": "Mundu folded to the knee"
+        },
+        {
+          "category": "Wardrobe",
+          "name": "Anjali's everyday clothes"
+        },
+        {
+          "category": "Hair / Makeup",
+          "name": "Appachan's aging and white stubble"
+        },
+        {
+          "category": "VFX",
+          "name": "Station site clean-up",
+          "notes": "Rubble and steel stump on the dune"
+        },
+        {
+          "category": "Animals",
+          "name": "Kannan (dog)",
+          "notes": "Runs ahead through the pools and back"
+        },
+        {
+          "category": "Sound",
+          "name": "Station jingle",
+          "notes": "Hummed by Appachan, then Anjali"
+        }
+      ]
+    }
+  ]
+}

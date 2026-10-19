@@ -1,0 +1,17 @@
+{
+  "notUsed": {
+    "ai.download.start": "Starts the model download from Hugging Face, the app's only network use. The gold build never uses the network: the same pinned model files were installed from the local build inputs with ai.download.import, the app's own \"use a file I already have\" path.",
+    "project.delete": "Moves the project folder to the system Trash. Not run so that building the gold project never puts files in the person's Trash. The safety copy was archived, moved, located and taken off the recent list instead (project.set_archived, project.locate, project.remove_recent)."
+  },
+  "failureNotes": {},
+  "unsupported": [
+    "Dual dialogue cannot be written through the editor operations: `screenplay.apply_edits`, `screenplay.insert_element` and `screenplay.update_element` have no dual flag. Only import sets it (Fountain `^`, Final Draft, Word). The film's one dual exchange (scene 21, RAHUL and MEENU) is dual in the imported draft \"Writer's Fountain delivery\" and plain stacked dialogue in the drafts written in the app.",
+    "Text before the first scene heading has no place of its own: elements belong to scenes, so the opening `FADE IN:` is stored in scene 1 and prints after its heading.",
+    "Breakdown has eleven fixed categories (FSD 26.3). There is no Set Dressing, Music, Special Equipment, Stunts, Greenery or Security category. In the gold film set dressing is under Props and Location / Set notes, stunts under Special Effects notes, music under Sound.",
+    "Budget has nine fixed categories (Cast, Crew, Locations, Equipment, Art/Props, Travel/Transport, Food, Post/Other, Contingency). A feature budget's departments (story rights, VFX, marine unit, insurance) have to be folded into them; the gold budget keeps the department at the start of each line description.",
+    "A Feature Film project accepts seasons and episodes: `story.create_season`, `story.create_episode` and the other episode operations do not check the project type, although `story.series` reports `isEpisodic: false`. The gold build runs that lifecycle once and removes it again (purged from Recently Deleted).",
+    "The first-run notices (data note, file safety tutorial, welcome, trial reminder) cannot be recorded in an internal build: `entitlement.record_notice` refuses each one because they follow a purchase or a running trial. This is by design (ADR-0023, ADR-0024); `entitlement.buy`, `entitlement.start_trial` and `entitlement.restore_purchase` answer \"Internal build, not for sale\".",
+    "Offline AI answer quality with the real Gemma 3 1B model (measured once here, not by the evaluation harness): \"How many scenes are in the script?\" gave 45 for the Blue Revision, which has 44 live scenes (the count includes the omitted scene 22); \"Which shooting day has the most scenes?\" named Shoot Day 1 (the busiest is Shoot Day 4); \"Who is in this scene?\" for scene 24 described Appachan's condition instead of listing the characters; \"Summarise Act One\" answered from the product guide instead of the Story Board. Proposals worked as designed: nothing changed before Apply, Apply added exactly the proposed task, one Undo removed it, Reject changed nothing.",
+    "The plain text export lays out the title page's left and right blocks line by line, so the copyright line and the representation line are interleaved (outputs/screenplay/Low Tide Radio - Blue Revision.txt, lines 1 to 20)."
+  ]
+}

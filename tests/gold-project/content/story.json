@@ -1,0 +1,178 @@
+{
+  "project": {
+    "title": "Low Tide Radio",
+    "projectType": "Feature Film",
+    "language": "English, Malayalam",
+    "genre": "Drama",
+    "creator": "Meenakshi Varma",
+    "status": "Shooting",
+    "logline": "When the coast radio station where her mother vanished is scheduled for demolition, a burned-out sound engineer returns to her Kerala fishing village with seven days to restore a water-damaged reel that may prove her mother's last broadcast saved the fleet instead of dooming it.",
+    "synopsis": "Anjali Thomas, 34, cleans dialogue for television commercials in a Bengaluru studio and has stopped listening to anything she loves. A call from her childhood friend Fathima brings her home to Kadalkkara, a fishing village on the Kerala coast: her grandfather Appachan, whose memory is failing, was found at dawn beside the mast of the old coast radio station, the place where Anjali's mother Mariamma worked the night of the November 1999 storm. Eleven boats went out that night and three never came back. The village has always said Mariamma's station went silent when the fleet needed it most.\n\nThe Port Trust will demolish the station in seven days. Inside, Anjali and Fathima's nephew Rahul find a single quarter-inch reel dated 14-11-1999, swollen with seawater. Suresh Pillai, the demolition site manager whose father Varghese skippered one of the lost boats, wants the building gone and the story closed. With Rahul's school radio club, Anjali bakes the tape in a borrowed bakery oven and coaxes out fragments of her mother's voice.\n\nWhen Appachan wanders onto the breakwater during a storm, it is Suresh who carries him back. In the hospital the two of them talk for the first time, and Suresh gives Anjali one day inside the building. In the tape room they find the station logbook: the transmitter was shut down at 23:40 by order, signed by the station chief Joseph D'Cruz. Confronted, Joe confesses that the Port ordered the power cut and that Mariamma kept transmitting on a battery set until it died. The restored second half of the reel proves it: Mariamma relays positions and Varghese's boat acknowledges, turning the fleet toward the river mouth.\n\nOn the eve of the demolition the village gathers on the beach to hear the recording. Suresh reads the names of the fleet. Rahul and Anjali send the broadcast out from the old mast one last time. The station falls the next morning. Anjali stays, and the radio club becomes Low Tide Radio, reading the weather to the boats at dawn.",
+    "settings": {
+      "frameRate": "24",
+      "aspectRatio": "2.39:1",
+      "shootingFormat": "ARRI Alexa 35, Open Gate 4.6K",
+      "productionCompany": "Kayal Pictures",
+      "productionNumber": "KP-2027-04",
+      "defaultCurrency": "INR"
+    }
+  },
+  "titlePage": {
+    "title": "LOW TIDE RADIO",
+    "writtenBy": "Meenakshi Varma",
+    "credit": "Written by",
+    "source": "Based on an original story by Meenakshi Varma and Arun Joseph",
+    "contactName": "Kayal Pictures",
+    "address": "14/220 Bazaar Road, Fort Kochi, Kerala 682001",
+    "phone": "+91 484 221 0400",
+    "email": "office@kayalpictures.example",
+    "contact": "",
+    "draftLine": "Shooting Draft",
+    "revisionLine": "",
+    "date": "2026-11-02",
+    "representation": "Representation: Lighthouse Talent, Mumbai",
+    "notes": "Internal production copy. Do not circulate.",
+    "copyright": "Copyright 2026 Kayal Pictures. All rights reserved."
+  },
+  "characters": [
+    { "key": "ANJALI", "name": "ANJALI", "roleLabel": "Protagonist", "description": "Anjali Thomas, 34. Dialogue editor in a Bengaluru studio. Precise, dry, exhausted. Left Kadalkkara at eighteen and calls home twice a year.", "notes": "Arc: from someone who cleans other people's sound to someone who puts her own voice on air. Wears her mother's wristwatch, stopped at 23:52." },
+    { "key": "APPACHAN", "name": "APPACHAN", "roleLabel": "Grandfather", "description": "Thomas Kurian, 71, called Appachan by everyone. Retired fisherman with early dementia. Keeps the station keys on a coir string around his neck.", "notes": "Arc: the past keeps leaking into his present; at the end he can hear Mariamma and let her go. Speaks mostly Malayalam." },
+    { "key": "MARIAMMA", "name": "MARIAMMA", "roleLabel": "Mother (1999)", "description": "Mariamma Thomas, 38 in 1999. Coast radio operator at Kadalkkara. Calm, funny on air, stubborn off it.", "notes": "Seen only in the 1999 flashbacks and heard on the reel. Her voice is the spine of the film." },
+    { "key": "YOUNG ANJALI", "name": "YOUNG ANJALI", "roleLabel": "Anjali at 11 (1999)", "description": "Anjali at eleven, asleep under the operations desk the night of the storm.", "notes": "Child performer. Scenes 2 and 32 only. Working hours limited by the child performer rules." },
+    { "key": "FATHIMA", "name": "FATHIMA", "roleLabel": "Ally", "description": "Fathima Beevi, 33. Runs the tea shop on the harbour road and the school radio club. Lost an uncle in the 1999 storm.", "notes": "Arc: she has kept the village together and finally asks for help herself." },
+    { "key": "RAHUL", "name": "RAHUL", "roleLabel": "Radio club member", "description": "Rahul, 16. Fathima's nephew. Builds antennas out of curtain rods. Talks fast, listens faster.", "notes": "The future of the station. Minor: tutor and chaperone on set." },
+    { "key": "SURESH", "name": "SURESH", "roleLabel": "Antagonist", "description": "Suresh Pillai, 52. Site manager for the demolition contractor. Son of skipper Varghese, lost in 1999.", "notes": "Arc: from blaming Mariamma to reading the fleet names on the beach." },
+    { "key": "JOE", "name": "JOE", "roleLabel": "Former station chief", "description": "Joseph D'Cruz, 60. Station chief in 1999. Lives above the toddy shop and drinks to keep the night quiet.", "notes": "Holds the secret: he cut the station power on the Port's order." },
+    { "key": "LATHA", "name": "LATHA", "roleLabel": "Police inspector", "description": "Inspector Latha Menon, 45. Runs the coastal police outpost. Patient, practical, kind when nobody is looking.", "notes": "Keeps the 1999 file in her own drawer." },
+    { "key": "VARGHESE", "name": "VARGHESE", "roleLabel": "Skipper (1999)", "description": "Varghese Pillai, 48 in 1999. Skipper of the boat Little Flower. Suresh's father.", "notes": "Heard on the reel; seen in the sea flashbacks." },
+    { "key": "PORT OFFICER", "name": "PORT OFFICER", "roleLabel": "Official", "description": "Mr. Krishnadas, 50s. Deputy Traffic Manager at the Port Trust office.", "notes": "Day player." },
+    { "key": "STUDIO PRODUCER", "name": "STUDIO PRODUCER", "roleLabel": "Bengaluru boss", "description": "Nikhil, 40. Producer at Soundwave Studio, Bengaluru.", "notes": "Day player. Scenes 3 and 42 (phone)." }
+  ],
+  "relationships": [
+    { "from": "ANJALI", "to": "APPACHAN", "type": "Granddaughter", "note": "He raised her after 1999. She left; he stayed." },
+    { "from": "ANJALI", "to": "MARIAMMA", "type": "Daughter", "note": "Anjali was eleven when Mariamma disappeared at sea the night of the storm." },
+    { "from": "APPACHAN", "to": "MARIAMMA", "type": "Father-in-law", "note": "He mistakes Anjali for Mariamma in scene 15." },
+    { "from": "ANJALI", "to": "FATHIMA", "type": "Childhood friends", "note": "Twenty years of missed calls between them." },
+    { "from": "FATHIMA", "to": "RAHUL", "type": "Aunt", "note": "Rahul lives with Fathima since his parents moved to the Gulf." },
+    { "from": "SURESH", "to": "VARGHESE", "type": "Son", "note": "Suresh was nineteen and on shore when his father's boat was lost." },
+    { "from": "ANJALI", "to": "SURESH", "type": "Antagonists", "note": "Enemies who become allies after the breakwater rescue." },
+    { "from": "JOE", "to": "MARIAMMA", "type": "Colleagues", "note": "He was her station chief. He cut her power." },
+    { "from": "LATHA", "to": "JOE", "type": "Old acquaintance", "note": "She arrested him twice for drunk driving and never filed it." }
+  ],
+  "acts": [
+    {
+      "title": "Act One: The Call",
+      "note": "Setup. Ends when Anjali finds the reel.",
+      "sequences": [
+        {
+          "title": "Static",
+          "note": "1999 prologue, then Bengaluru and the journey home.",
+          "scenes": [
+            { "n": 1, "heading": "EXT. OPEN SEA - NIGHT (1999)", "short": "Prologue. A storm. Fishing boats in the swell and a woman's voice on the radio reading positions.", "long": "Eleven boats ride a black swell. On the Little Flower, skipper Varghese grips the wheel while Mariamma's calm voice reads coordinates over the set. The signal breaks into static.", "storyDay": "Night of 14 November 1999", "characters": ["MARIAMMA", "VARGHESE"] },
+            { "n": 2, "heading": "INT. COAST RADIO STATION - OPERATIONS ROOM - NIGHT (1999)", "short": "Mariamma at the transmitter. Young Anjali asleep under the desk. The lights die.", "long": "Mariamma works two radios at once. Young Anjali sleeps under the desk with a transistor on her chest. Joe stands in the doorway with a telegram. The lights go out.", "storyDay": "Night of 14 November 1999", "characters": ["MARIAMMA", "YOUNG ANJALI", "JOE"] },
+            { "n": 3, "heading": "INT. SOUNDWAVE STUDIO - BENGALURU - DAY", "short": "Present day. Anjali scrubs breaths out of a detergent ad. Fathima calls: Appachan is missing.", "long": "Anjali removes a voice actor's breaths frame by frame. Her producer Nikhil wants it faster. Her phone buzzes: Fathima, three missed calls. Appachan walked out in the night.", "storyDay": "Day 1", "characters": ["ANJALI", "STUDIO PRODUCER", "FATHIMA"] },
+            { "n": 4, "heading": "INT. KSRTC BUS - MOVING - NIGHT", "short": "The overnight bus to Kochi. Anjali listens to an old cassette of her mother on air.", "long": "Rain on the bus window. Anjali plays a worn cassette on a Walkman: Mariamma reading the weather, laughing at her own mistake. Anjali turns it off before the laugh ends.", "storyDay": "Night 1", "characters": ["ANJALI", "MARIAMMA"] },
+            { "n": 5, "heading": "EXT. COAST RADIO STATION - DAWN", "short": "Anjali arrives. Appachan sits at the foot of the mast with his dog Kannan. Inspector Latha waits by her jeep.", "long": "The station is a concrete box under a rusted mast, wrapped in demolition tape. Appachan sits against the mast in a wet mundu, Kannan beside him. Latha says he climbed the fence at three in the morning.", "storyDay": "Day 2", "characters": ["ANJALI", "APPACHAN", "LATHA"] },
+            { "n": 6, "heading": "INT. THOMAS HOUSE - KITCHEN - DAY", "short": "Tea with Fathima. The Port Trust notice on the fridge: demolition in seven days.", "long": "Fathima makes tea the way Anjali's mother did. Appachan eats with his fingers and calls Fathima by her mother's name. The notice on the fridge gives seven days.", "storyDay": "Day 2", "characters": ["ANJALI", "FATHIMA", "APPACHAN"] }
+          ]
+        },
+        {
+          "title": "Seven Days",
+          "note": "The ticking clock. Anjali meets Suresh and finds the reel.",
+          "scenes": [
+            { "n": 7, "heading": "EXT. KADALKKARA HARBOUR - DAY", "short": "Anjali walks the harbour. Fishermen remember her mother. Suresh runs a survey crew and does not want her there.", "long": "Nets, ice trucks, crows. An old fisherman touches Anjali's face and says her mother's name. At the station fence Suresh's survey crew marks the walls. He tells her the building is coming down and so is the story.", "storyDay": "Day 2", "characters": ["ANJALI", "SURESH"] },
+            { "n": 8, "heading": "INT. PORT TRUST OFFICE - DAY", "short": "Anjali asks for access to the station. The Port Officer refuses. Suresh watches.", "long": "Ceiling fans, files tied with red tape. Krishnadas explains that the building is unsafe and the land is leased. Anjali asks for one hour. Suresh, at the next desk, says nothing and signs the demolition schedule.", "storyDay": "Day 3", "characters": ["ANJALI", "PORT OFFICER", "SURESH"] },
+            { "n": 9, "heading": "INT. FATHIMA'S TEA SHOP - NIGHT", "short": "The school radio club meets over tea. Rahul asks Anjali to look at their homemade transmitter.", "long": "Six kids crowd a bench around a shortwave set. Rahul shows a transmitter built into a biscuit tin. Anjali says it will set the shop on fire. She fixes it anyway.", "storyDay": "Day 3", "characters": ["FATHIMA", "RAHUL", "ANJALI"] },
+            { "n": 10, "heading": "INT. THOMAS HOUSE - APPACHAN'S ROOM - NIGHT", "short": "In a clear moment Appachan gives Anjali the station keys. He speaks in Malayalam.", "long": "Appachan wakes clear-eyed. In Malayalam he tells Anjali the keys were Mariamma's and that she should not let them bury the room. He falls asleep holding her wrist.", "storyDay": "Day 3", "characters": ["APPACHAN", "ANJALI"] },
+            { "n": 11, "heading": "INT. COAST RADIO STATION - OPERATIONS ROOM - NIGHT", "short": "Anjali and Rahul let themselves in. The tape shelves are empty except for one reel dated 14-11-1999.", "long": "Torchlight on mould and broken glass. The shelves were cleared years ago. Inside the transmitter cabinet Rahul finds a swollen quarter-inch reel in a biscuit box, labelled in Mariamma's hand: 14-11-1999.", "storyDay": "Day 3", "characters": ["ANJALI", "RAHUL"] },
+            { "n": 12, "heading": "EXT. COAST RADIO STATION - NIGHT", "short": "A security guard spots their torches. They run. Rahul's bicycle chain comes off.", "long": "A whistle and a flashlight. Anjali and Rahul sprint through the coconut grove with the reel inside her shirt. Rahul's bicycle chain slips. They push it home laughing.", "storyDay": "Day 3", "characters": ["ANJALI", "RAHUL"] }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Act Two: The Reel",
+      "note": "Confrontation. Restoring the tape, the storm, the logbook and Joe's confession.",
+      "sequences": [
+        {
+          "title": "Oxide",
+          "note": "The technical problem and the village's resistance.",
+          "scenes": [
+            { "n": 13, "heading": "INT. FISHERIES SCHOOL - RADIO CLUB ROOM - DAY", "short": "Anjali examines the reel. Sticky-shed damage. It has to be baked before it can be played once.", "long": "Under a desk lamp the oxide flakes like fish scales. Anjali explains to the kids: one play, maybe. If the tape sheds, it is gone. It needs heat, low and slow, for eight hours.", "storyDay": "Day 4", "characters": ["ANJALI", "RAHUL", "FATHIMA"] },
+            { "n": 14, "heading": "INT. FATHIMA'S TEA SHOP - KITCHEN - DAY", "short": "They bake the reel in a borrowed bakery convection oven, watched like a newborn.", "long": "Fathima borrows the convection oven from the bakery next door. Rahul builds a thermometer alarm. The reel goes in at 54 degrees. Nobody is allowed to open the door.", "storyDay": "Day 4", "characters": ["FATHIMA", "RAHUL", "ANJALI"] },
+            { "n": 15, "heading": "INT. THOMAS HOUSE - VERANDA - DAY", "short": "Appachan mistakes Anjali for Mariamma and scolds her for being late for her shift.", "long": "Appachan, in his good shirt, scolds Anjali for being late for the night shift. She almost corrects him. She tells him the sea is calm tonight. He relaxes.", "storyDay": "Day 4", "characters": ["APPACHAN", "ANJALI"] },
+            { "n": 16, "heading": "INT. FISHERIES SCHOOL - RADIO CLUB ROOM - NIGHT", "short": "First playback. Static, a laugh, half a sentence in Mariamma's voice. Then the tape stops.", "long": "The club holds its breath. The borrowed Nagra turns. Static, then Mariamma's laugh, then 'Little Flower, Little Flower, this is Kadalkkara'. The second half is stuck to itself. Anjali stops the machine before it tears.", "storyDay": "Day 4", "characters": ["ANJALI", "RAHUL", "FATHIMA", "MARIAMMA"] },
+            { "n": 17, "heading": "INT. JOE'S ROOM ABOVE THE TODDY SHOP - DAY", "short": "Anjali visits Joe. He will not talk about that night and asks her to leave.", "long": "A room of empty bottles and a framed station photo turned to the wall. Joe pours tea for Anjali and none for himself. When she says the word reel his hand shakes and he asks her to go.", "storyDay": "Day 5", "characters": ["ANJALI", "JOE"] },
+            { "n": 18, "heading": "EXT. ST. ANTONY'S CHURCH - DAY", "short": "The memorial mass for the men lost in 1999. Suresh reads the names. Anjali stands at the back.", "long": "A choir, white mundus, marigolds on the steps. Suresh reads the names of the eight men lost in 1999. Heads turn toward Anjali. Suresh does not look at her.", "storyDay": "Day 5", "characters": ["SURESH", "ANJALI", "FATHIMA"] },
+            { "n": 19, "heading": "INT. POLICE OUTPOST - DAY", "short": "Latha warns Anjali about the trespass complaint, then quietly shows her the 1999 file.", "long": "Latha has a complaint from the contractor with Anjali's name on it. She closes the door, opens a drawer and hands over a thin 1999 file: a missing person report for Mariamma Thomas.", "storyDay": "Day 5", "characters": ["LATHA", "ANJALI"] },
+            { "n": 20, "heading": "INT. THOMAS HOUSE - KITCHEN - NIGHT", "short": "Anjali and Fathima read the file. Fathima talks about her uncle for the first time.", "long": "The file has a time: the station went silent at 23:40. Mariamma was last seen walking to the jetty at midnight. Fathima says her uncle was on the Seagull. She has never said it aloud.", "storyDay": "Day 5", "characters": ["ANJALI", "FATHIMA"] }
+          ]
+        },
+        {
+          "title": "Storm Warning",
+          "note": "Midpoint. Appachan is lost in the storm and Suresh brings him back.",
+          "scenes": [
+            { "n": 21, "heading": "EXT. KADALKKARA BEACH - DAY", "short": "The radio club flies an antenna kite. Anjali teaches them to call the harbour.", "long": "A wire antenna rises on a fishing-net kite. The kids call the harbour office and get an answer from a bored clerk. They scream. Anjali laughs for the first time in the film.", "storyDay": "Day 6", "characters": ["ANJALI", "RAHUL", "FATHIMA"] },
+            { "n": 22, "heading": "INT. THOMAS HOUSE - APPACHAN'S ROOM - NIGHT", "short": "Appachan's bed is empty. The door is open. Kannan is gone too.", "long": "Wind slams the shutters. Appachan's bed is empty and the key string is gone from the nail. Kannan's lead lies on the floor.", "storyDay": "Day 6", "characters": ["ANJALI"] },
+            { "n": 23, "heading": "EXT. KADALKKARA HARBOUR - NIGHT", "short": "The village searches in the storm with torches. Suresh's crew brings the site floodlights.", "long": "Rain in sheets. Fishermen with torches, kids on bicycles. Suresh drives up with the site truck and floodlights and takes charge without asking.", "storyDay": "Day 6", "characters": ["ANJALI", "SURESH", "FATHIMA", "RAHUL"] },
+            { "n": 24, "heading": "EXT. HARBOUR BREAKWATER - NIGHT", "short": "Suresh finds Appachan at the end of the breakwater with Kannan, waving a torch at the sea. He carries him back.", "long": "Waves break over the tetrapods. Appachan stands at the end of the breakwater signalling to boats that are not there. Suresh crawls out, wraps him in his jacket and carries him back as a wave takes the torch.", "storyDay": "Day 6", "characters": ["SURESH", "APPACHAN", "ANJALI"] },
+            { "n": 25, "heading": "INT. TALUK HOSPITAL - WARD - NIGHT", "short": "Appachan on a drip. Suresh tells Anjali about his father and the Little Flower.", "long": "A ward of fans and coughing. Appachan sleeps. Suresh, soaked, tells Anjali that his father heard nothing that night because her mother had gone off the air.", "storyDay": "Night 6", "characters": ["SURESH", "ANJALI", "APPACHAN"] },
+            { "n": 26, "heading": "INT. TALUK HOSPITAL - CORRIDOR - DAWN", "short": "An uneasy truce. Suresh gives Anjali one day inside the station.", "long": "Vending machine tea. Suresh says he will look away for one day. If there is nothing in there, she lets it go.", "storyDay": "Day 7", "characters": ["SURESH", "ANJALI"] },
+            { "n": 27, "heading": "INT. COAST RADIO STATION - TAPE ROOM - DAY", "short": "In the flooded basement they find the station logbook in a sealed ammunition box.", "long": "Knee-deep water and floating tape boxes. Rahul finds an army surplus ammunition box bolted under the stairs. Inside, dry, the station logbook for 1999.", "storyDay": "Day 7", "characters": ["ANJALI", "RAHUL", "SURESH"] },
+            { "n": 28, "heading": "INT. COAST RADIO STATION - OPERATIONS ROOM - DAY", "short": "The logbook: entries stop at 23:40. 'Main power cut by order. J. D'Cruz.'", "long": "Anjali reads the log aloud. Positions, weather, call signs. At 23:40 a different hand: main power cut by order, J. D'Cruz. Below it, in Mariamma's hand, a single line: on battery.", "storyDay": "Day 7", "characters": ["ANJALI", "SURESH", "RAHUL"] }
+          ]
+        },
+        {
+          "title": "What Joe Did",
+          "note": "The confession and the restored second half of the reel.",
+          "scenes": [
+            { "n": 29, "heading": "EXT. TODDY SHOP - NIGHT", "short": "Anjali confronts Joe in front of the drinkers. He walks out to his car.", "long": "Anjali reads the logbook line aloud in the toddy shop yard. The drinkers go quiet. Joe stands, leaves money for everyone's drinks and walks to his old Ambassador.", "storyDay": "Day 7", "characters": ["ANJALI", "JOE"] },
+            { "n": 30, "heading": "EXT. LIGHTHOUSE ROAD - NIGHT", "short": "Joe drives drunk. Latha's jeep pulls him over before the bend.", "long": "The Ambassador weaves along the coast road. Latha's jeep cuts in front of it with its light on. She takes his keys without a word.", "storyDay": "Day 7", "characters": ["JOE", "LATHA"] },
+            { "n": 31, "heading": "INT. POLICE OUTPOST - CELL - NIGHT", "short": "Joe confesses: the Port ordered the power cut. Mariamma kept going on a battery set.", "long": "Behind bars that are never locked, Joe tells Latha and Anjali that the Port wired an order to shut down at 23:40. He obeyed. Mariamma took the battery set and kept transmitting. He went home.", "storyDay": "Night 7", "characters": ["JOE", "LATHA", "ANJALI"] },
+            { "n": 32, "heading": "INT. COAST RADIO STATION - OPERATIONS ROOM - NIGHT (1999)", "short": "Flashback. In the dark Mariamma connects the battery set. Joe leaves. Young Anjali watches.", "long": "By candlelight Mariamma connects a battery set to the emergency antenna. Joe begs her to come home. She hands him the logbook. Young Anjali watches from under the desk.", "storyDay": "Night of 14 November 1999", "characters": ["MARIAMMA", "JOE", "YOUNG ANJALI"] },
+            { "n": 33, "heading": "INT. FISHERIES SCHOOL - RADIO CLUB ROOM - NIGHT", "short": "The second half of the reel plays. Mariamma relays positions. Varghese answers.", "long": "After a second baking the tape plays through. Mariamma reads positions for the river mouth. A crackle, then Varghese's voice: Little Flower copies, turning the boats. Rahul cries. Anjali keeps the levels steady.", "storyDay": "Day 8", "characters": ["ANJALI", "RAHUL", "FATHIMA", "MARIAMMA", "VARGHESE"] },
+            { "n": 34, "heading": "EXT. OPEN SEA - LITTLE FLOWER - NIGHT (1999)", "short": "Flashback. Varghese turns the fleet toward the river mouth, then goes back for the Seagull.", "long": "Varghese repeats the bearing and waves his lantern to the other boats. They turn. Through the rain he sees the Seagull drifting without lights and steers back for it.", "storyDay": "Night of 14 November 1999", "characters": ["VARGHESE", "MARIAMMA"] }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Act Three: The Broadcast",
+      "note": "Resolution. Listening night, the last transmission and the demolition.",
+      "sequences": [
+        {
+          "title": "Listening Night",
+          "note": "The village hears the reel.",
+          "scenes": [
+            { "n": 35, "heading": "INT. SURESH'S HOUSE - DAY", "short": "Anjali brings Suresh the recording. He listens alone to his father's voice.", "long": "A neat house with a framed photo of the Little Flower. Anjali leaves headphones and a recorder on the table and waits outside. Through the window we see Suresh listen, then put his hand flat on the table.", "storyDay": "Day 8", "characters": ["ANJALI", "SURESH", "VARGHESE"] },
+            { "n": 36, "heading": "INT. PORT TRUST OFFICE - DAY", "short": "Suresh asks Krishnadas to delay. Refused. He arranges power for one more night instead.", "long": "Krishnadas will not move the date. Suresh asks for one thing: the site generator, one night, on the beach. Krishnadas signs without reading.", "storyDay": "Day 8", "characters": ["SURESH", "PORT OFFICER"] },
+            { "n": 37, "heading": "EXT. KADALKKARA BEACH - DUSK", "short": "The village sets up for listening night: speakers, lanterns, a generator truck.", "long": "Kids string lanterns between boats. Fathima's urn of tea. Suresh's crew rolls the generator truck onto the sand. Joe arrives last and stands at the edge.", "storyDay": "Day 8", "characters": ["FATHIMA", "RAHUL", "SURESH", "JOE"] },
+            { "n": 38, "heading": "INT. THOMAS HOUSE - APPACHAN'S ROOM - DUSK", "short": "Appachan dresses in his best shirt and asks where Mariamma is. Anjali tells him gently.", "long": "Anjali buttons Appachan's shirt. He asks if Mariamma is on shift tonight. Anjali tells him she is, one last time, and they are going to listen.", "storyDay": "Day 8", "characters": ["APPACHAN", "ANJALI"] },
+            { "n": 39, "heading": "EXT. KADALKKARA BEACH - NIGHT", "short": "Listening night. The reel plays over speakers. Suresh reads the fleet names. Joe stays.", "long": "Three hundred people on the sand. The reel plays. When Varghese's voice comes, Suresh stands and reads the names of the eleven boats. Joe does not leave. Latha stands beside him.", "storyDay": "Day 8", "characters": ["ANJALI", "SURESH", "APPACHAN", "FATHIMA", "RAHUL", "JOE", "LATHA", "MARIAMMA", "VARGHESE"] },
+            { "n": 40, "heading": "EXT. COAST RADIO STATION - ROOF - NIGHT", "short": "Rahul and Anjali send the broadcast out from the old mast one last time.", "long": "On the roof, Rahul's biscuit-tin transmitter is wired to the old mast. Anjali speaks the call sign her mother used, then plays the reel to the sea.", "storyDay": "Day 8", "characters": ["ANJALI", "RAHUL"] }
+          ]
+        },
+        {
+          "title": "Low Tide",
+          "note": "The building falls; the station lives on.",
+          "scenes": [
+            { "n": 41, "heading": "EXT. COAST RADIO STATION - DAY", "short": "Demolition. The excavator bites. The mast comes down. Appachan watches without fear.", "long": "Morning. A crowd behind the tape. The excavator takes the first wall. The mast leans and falls into the grove. Appachan claps once, as if a boat came in.", "storyDay": "Day 9", "characters": ["ANJALI", "APPACHAN", "SURESH", "FATHIMA"] },
+            { "n": 42, "heading": "INT. FATHIMA'S TEA SHOP - DAY", "short": "The radio club paints a sign: Low Tide Radio. Anjali calls Bengaluru and resigns.", "long": "Rahul paints LOW TIDE RADIO on a plank. Anjali calls Nikhil and tells him she is not coming back. Fathima pretends not to listen.", "storyDay": "Day 9", "characters": ["ANJALI", "FATHIMA", "RAHUL", "STUDIO PRODUCER"] },
+            { "n": 43, "heading": "EXT. KADALKKARA HARBOUR - DAWN", "short": "The boats go out. On the radio, Anjali reads the weather.", "long": "Engines cough. On every boat a radio. Anjali's voice reads wind and swell for the day. An old fisherman turns it up.", "storyDay": "Day 10", "characters": ["ANJALI"] },
+            { "n": 44, "heading": "EXT. KADALKKARA BEACH - DAY", "short": "Low tide. Anjali and Appachan walk on the wet sand with Kannan. The end.", "long": "The sea has gone out a long way. Anjali and Appachan walk with Kannan running ahead. He hums the station jingle. She hums it back.", "storyDay": "Day 10", "characters": ["ANJALI", "APPACHAN"] }
+          ]
+        }
+      ]
+    }
+  ],
+  "beats": [
+    { "act": 0, "text": "Inciting incident: Fathima's call. Appachan was found at the station.", "color": "Red" },
+    { "act": 0, "text": "First turn: the reel dated 14-11-1999.", "color": "Orange" },
+    { "act": 1, "text": "Midpoint: Suresh carries Appachan off the breakwater.", "color": "Blue" },
+    { "act": 1, "text": "Low point: the logbook names Joe.", "color": "Purple" },
+    { "act": 2, "text": "Climax: listening night and the last transmission.", "color": "Green" }
+  ],
+  "parking": [
+    { "short": "Cut idea: Anjali records the sound of the station before demolition and builds a sound map.", "long": "Lovely but slows Act Three. Keep for the director's cut or the documentary extra.", "heading": "INT. COAST RADIO STATION - STAIRWELL - DAY" }
+  ]
+}
