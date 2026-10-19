@@ -85,9 +85,48 @@ static COUNT_CHARACTERS_INDIC: LazyLock<Regex> = LazyLock::new(|| {
 /// "Describe Karthik's character" (OpenFrameAI.docx exhibits E07 and E08).
 static DESCRIBE_CHARACTER: LazyLock<Regex> = LazyLock::new(|| {
     re(
-        r#"(?i)^\s*(?:please\s+)?(?:(?:describe|analy[sz]e|summari[sz]e)\s+(?:the\s+)?(?:character\s+(?:of\s+)?)?(?P<a>[\p{L}][\p{L}'’ .-]{0,40}?)(?:'s|’s)?(?:\s+(?:character|as\s+a\s+character|personality|arc))?|tell\s+me\s+(?:more\s+)?about\s+(?:the\s+character\s+)?(?P<b>[\p{L}][\p{L}'’ .-]{0,40}?)|who\s+is\s+(?:the\s+character\s+)?(?P<c>[\p{L}][\p{L}'’ .-]{0,40}?)|what\s+is\s+(?P<d>[\p{L}][\p{L}'’ .-]{0,40}?)\s+like|(?:character\s+(?:analysis|profile|sketch)\s+(?:of|for)\s+)(?P<e>[\p{L}][\p{L}'’ .-]{0,40}?))\s*[?.!]*\s*$"#,
+        r#"(?i)^\s*(?:please\s+)?(?:(?:describe|analy[sz]e|summari[sz]e)\s+(?:the\s+)?(?:character\s+(?:of\s+)?)?(?P<a>[\p{L}][\p{L}'’ .-]*?)(?:'s|’s)?(?:\s+(?:character|as\s+a\s+character|personality|arc))?|tell\s+me\s+(?:more\s+)?about\s+(?:the\s+character\s+)?(?P<b>[\p{L}][\p{L}'’ .-]*?)|who\s+is\s+(?:the\s+character\s+)?(?P<c>[\p{L}][\p{L}'’ .-]*?)|what\s+is\s+(?P<d>[\p{L}][\p{L}'’ .-]*?)\s+like|(?:character\s+(?:analysis|profile|sketch)\s+(?:of|for)\s+)(?P<e>[\p{L}][\p{L}'’ .-]*?)|write\s+(?:a\s+)?(?:short\s+)?character\s+(?:note|description|sketch)\s+(?:for|of|about)\s+(?P<f>[\p{L}][\p{L}'’ .-]*?))(?:\s+in\s+(?:one|a\s+single|two|three|four|five|[1-9])\s+sentences?|\s+for\s+(?:a|an|the)\s+[^?.!]+?)*\s*[?.!]*\s*$"#,
     )
 });
+
+/// "in one sentence", "in three sentences", "a logline": how many sentences the person asked for.
+static SENTENCES: LazyLock<Regex> = LazyLock::new(|| {
+    re(
+        r#"(?i)\bin\s+(?P<n>one|a\s+single|two|three|four|five|[1-9])\s+sentences?\b|\b(?P<l>logline)\b"#,
+    )
+});
+
+pub(crate) fn asked_sentences(text: &str) -> Option<usize> {
+    let c = SENTENCES.captures(text)?;
+    if c.name("l").is_some() {
+        return Some(1);
+    }
+    Some(match c.name("n")?.as_str().to_lowercase().as_str() {
+        "one" => 1,
+        "two" => 2,
+        "three" => 3,
+        "four" => 4,
+        "five" => 5,
+        n if n.starts_with('a') => 1,
+        n => n.parse().ok()?,
+    })
+}
+
+/// "Summarise this scene", "What happens in this scene?", "Write a logline for this scene."
+static THIS_SCENE_SUMMARY: LazyLock<Regex> = LazyLock::new(|| {
+    re(
+        r#"(?i)^\s*(?:please\s+)?(?:summari[sz]e\s+this\s+scene|what\s+happens\s+in\s+this\s+scene|write\s+(?:a\s+)?(?:short\s+)?(?:summary|logline|synopsis)\s+(?:of|for)\s+this\s+scene|give\s+me\s+(?:a\s+)?(?:short\s+)?summary\s+of\s+this\s+scene)(?:\s+(?:in\s+[^?.!]+?sentences?|for\s+(?:a|an|the)\s+[^?.!]+?|briefly))*\s*[?.!]*\s*$"#,
+    )
+});
+
+/// A request about "this scene" when the assistant is pointed at one scene: the summary of that
+/// scene, read from its own rows (AI context brief, question 11, in a scene scope).
+pub(crate) fn scoped_call(text: &str, scene_number: Option<usize>) -> Option<StepCall> {
+    let n = scene_number?;
+    THIS_SCENE_SUMMARY
+        .is_match(text)
+        .then(|| call("scene_fact", json!({ "scene": n, "fact": "summary" })))
+}
 
 /// Words that make a "describe X" request about something other than one character.
 const NOT_A_CHARACTER: &[&str] = &[
@@ -378,9 +417,11 @@ pub(crate) fn follow_up(text: &str, previous: Option<&str>) -> Option<String> {
                 .and_then(|c| c.name("a").or(c.name("b")))
         })
         .or_else(|| {
-            DESCRIBE_CHARACTER
-                .captures(prev)
-                .and_then(|c| ["a", "b", "c", "d", "e"].iter().find_map(|g| c.name(g)))
+            DESCRIBE_CHARACTER.captures(prev).and_then(|c| {
+                ["a", "b", "c", "d", "e", "f"]
+                    .iter()
+                    .find_map(|g| c.name(g))
+            })
         })?;
     Some(format!(
         "{}{}{}",
@@ -943,7 +984,7 @@ fn recipe(text: &str) -> Option<StepCall> {
         return Some(c);
     }
     if let Some(c) = cap(&DESCRIBE_CHARACTER) {
-        let raw = ["a", "b", "c", "d", "e"]
+        let raw = ["a", "b", "c", "d", "e", "f"]
             .iter()
             .find_map(|g| c.name(g))
             .map(|m| m.as_str())
@@ -1117,6 +1158,12 @@ mod tests {
             ("Who is Vivek?", "Vivek"),
             ("What is Shruthi like?", "Shruthi"),
             ("character analysis of Kaushik", "Kaushik"),
+            (
+                "Describe Lakshmi in three sentences for a casting call.",
+                "Lakshmi",
+            ),
+            ("Describe Venkat Rao for the cast list.", "Venkat Rao"),
+            ("Write a short character note for Farooq.", "Farooq"),
         ] {
             assert_eq!(
                 call(text),
@@ -1133,6 +1180,50 @@ mod tests {
         ] {
             assert_ne!(tool(text).as_deref(), Some("character_profile"), "{text}");
         }
+    }
+
+    #[test]
+    fn this_scene_summaries_and_sentence_counts() {
+        for text in [
+            "Summarise this scene.",
+            "Summarise this scene in one sentence.",
+            "Summarise this scene for a production meeting.",
+            "What happens in this scene?",
+            "Write a logline for this scene.",
+        ] {
+            let c = scoped_call(text, Some(4)).map(|c| (c.tool, c.arguments));
+            assert_eq!(
+                c,
+                Some((
+                    "scene_fact".into(),
+                    json!({ "scene": 4, "fact": "summary" })
+                )),
+                "{text}"
+            );
+            assert!(
+                scoped_call(text, None).is_none(),
+                "no scene in scope: {text}"
+            );
+        }
+        assert!(
+            scoped_call(
+                "Summarise this scene card's notes about props and budget",
+                Some(4)
+            )
+            .is_none()
+        );
+        assert!(scoped_call("Delete this scene", Some(4)).is_none());
+        assert_eq!(
+            asked_sentences("Summarise this scene in one sentence."),
+            Some(1)
+        );
+        assert_eq!(asked_sentences("Describe Padma in two sentences."), Some(2));
+        assert_eq!(
+            asked_sentences("Summarise act three in 3 sentences"),
+            Some(3)
+        );
+        assert_eq!(asked_sentences("Write a logline for this scene."), Some(1));
+        assert_eq!(asked_sentences("Summarise this scene."), None);
     }
 
     #[test]

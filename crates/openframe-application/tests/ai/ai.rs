@@ -1094,10 +1094,12 @@ fn prompt_injection_in_project_text_is_data_not_instructions() {
     let env = TestEnv::with_project("Railway", "Feature Film");
     let sp = seed_screenplay(&env);
     let m = attach(&env);
+    // Worded so that the model plans the step ("Summarize this scene" goes straight to the scene
+    // summary): the planner prompt is what this test inspects.
     m.call("summarize_scope", json!({}));
     m.reply("Ravi waits for a late train at the station.");
     let scope = json!({ "kind": "CurrentScene", "sceneId": sp.scenes[1] });
-    let x = ask(&env, "Summarize this scene", scope.clone());
+    let x = ask(&env, "Give me the gist of this scene", scope.clone());
     assert_eq!(
         x["scopeLabel"],
         "Using: Scene 2: EXT. RAILWAY STATION — DAY (Draft 1)"
@@ -1126,7 +1128,7 @@ fn prompt_injection_in_project_text_is_data_not_instructions() {
         );
         assert!(
             user.trim_end()
-                .ends_with("User request: Summarize this scene"),
+                .ends_with("User request: Give me the gist of this scene"),
             "the only instruction is the user's"
         );
         assert!(
@@ -1137,7 +1139,7 @@ fn prompt_injection_in_project_text_is_data_not_instructions() {
     // Even if a model obeyed injected text, it could only produce a proposal.
     let status_before = env.ok("project.current", json!({}))["status"].clone();
     m.call("propose_project_status", json!({ "status": "Shooting" }));
-    let x = ask(&env, "Summarize this scene", scope);
+    let x = ask(&env, "Give me the gist of this scene", scope);
     assert_eq!(x["result"]["kind"], "Proposal");
     assert_eq!(
         env.ok("project.current", json!({}))["status"],
