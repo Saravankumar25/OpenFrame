@@ -4,6 +4,8 @@
 # the app launch it again on the same folder, and "hold" phases end with SIGKILL (a crash).
 #
 # Usage: apps/macos/E2E/run.sh <OpenFrame Studio.app | executable> [name-filter]
+# OPENFRAME_E2E_SHARD=k/n runs only every n-th scenario starting at the k-th (1-based), so n runners
+# can share one machine; each scenario still has its own data folder and its own app process.
 # OPENFRAME_E2E_FRESH_HOME=1 runs each scenario as a brand-new Mac user would: an empty home folder
 # (HOME and CFFIXED_USER_HOME) and the app's real data locations, with no test data folder.
 # Needs: OPENFRAME_E2E_TEAM_PASSWORD (or OPENFRAME_TEAM_PASSWORD) for an internal build with the
@@ -60,8 +62,15 @@ LIST="$WORK/list/scenarios.json"
 
 printf "scenario\tresult\tseconds\tmessage\n" > "$RUN/results.tsv"
 pass=0; fail=0
+SHARD_K=1; SHARD_N=1
+if [[ -n "${OPENFRAME_E2E_SHARD:-}" ]]; then SHARD_K="${OPENFRAME_E2E_SHARD%/*}"; SHARD_N="${OPENFRAME_E2E_SHARD#*/}"; fi
+INDEX=0
 while IFS=$'\t' read -r name phases timeout ends; do
   [[ -n "$FILTER" && "$name" != *"$FILTER"* ]] && continue
+  # The capture tour (MacHTML) runs only when asked for by name.
+  [[ "$name" == zz-capture/* && "$FILTER" != zz-capture* ]] && continue
+  INDEX=$((INDEX + 1))
+  (( (INDEX - SHARD_K) % SHARD_N == 0 )) || continue
   safe="${name//\//__}"
   OUT="$RUN/$safe"; DATA="$WORK/data-$safe"; mkdir -p "$OUT" "$DATA"
   status=pass; msg=""; start=$(date +%s)
