@@ -20,7 +20,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Clapperboard, GripVertical, ImageIcon, MoreHorizontal, Plus, X } from "lucide-react";
+import { Clapperboard, GripVertical, ImageIcon, LayoutGrid, List, MoreHorizontal, Plus, X } from "lucide-react";
 import {
   Button,
   Checkbox,
@@ -33,6 +33,7 @@ import {
   IconButton,
   Menu,
   PageHeader,
+  Segmented,
   Skeleton,
   TextArea,
   TextInput,
@@ -71,6 +72,24 @@ import { ShotListExportButton } from "../../../features/export/buttons";
 
 export const tab = { id: "shots", label: "Shot Lists", order: 60 };
 
+/** List or grid (owner change list item 21); a per-user view preference, never project data. */
+type ShotLayout = "list" | "grid";
+const LAYOUT_KEY = "openframe.shots.layout";
+function readLayout(): ShotLayout {
+  try {
+    return window.localStorage.getItem(LAYOUT_KEY) === "grid" ? "grid" : "list";
+  } catch {
+    return "list";
+  }
+}
+function writeLayout(v: ShotLayout) {
+  try {
+    window.localStorage.setItem(LAYOUT_KEY, v);
+  } catch {
+    // View preference only.
+  }
+}
+
 const HINT = "Add only the shots you need. Camera details are optional. Shot letters are generated from order, so you never renumber by hand.";
 
 export default function ShotsTab() {
@@ -87,6 +106,11 @@ export default function ShotsTab() {
     enabled: !!focusShotId,
   });
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [layout, setLayoutState] = useState<ShotLayout>(readLayout);
+  const setLayout = (v: ShotLayout) => {
+    setLayoutState(v);
+    writeLayout(v);
+  };
   const consumed = useRef<string | null>(null);
   useEffect(() => {
     const key = `${focusShotId ?? ""}|${focusSceneId ?? ""}|${focusLineage ?? ""}`;
@@ -205,6 +229,15 @@ export default function ShotsTab() {
           {shots.length} {shots.length === 1 ? "shot" : "shots"}
         </Chip>
         <span className="sp" />
+        <Segmented<ShotLayout>
+          ariaLabel="Shot list view"
+          value={layout}
+          onChange={setLayout}
+          options={[
+            { value: "list", label: <><List size={13} aria-hidden /> List</> },
+            { value: "grid", label: <><LayoutGrid size={13} aria-hidden /> Grid</> },
+          ]}
+        />
         {picked.size > 1 && (
           <Button size="sm" variant="danger" onClick={() => del.mutate({ ids: [...picked] })}>
             Delete {picked.size} shots
@@ -233,7 +266,7 @@ export default function ShotsTab() {
       {scene && <SceneReviewBanner scene={scene} what="shots and storyboards" />}
       {removed && <RemovedSceneBanner heading={removed.heading} what="shots" />}
 
-      <div style={{ maxWidth: 780 }}>
+      <div style={{ maxWidth: layout === "grid" ? undefined : 780 }}>
         {shotsQ.isLoading ? (
           <Skeleton h={120} />
         ) : sceneKey === "all" ? (
@@ -257,6 +290,7 @@ export default function ShotsTab() {
                   setPicked={setPicked}
                   onOpen={setSelectedId}
                   onDelete={(ids) => del.mutate({ ids })}
+                  grid={layout === "grid"}
                 />
               </section>
             ))
@@ -274,6 +308,7 @@ export default function ShotsTab() {
                 setPicked={setPicked}
                 onOpen={setSelectedId}
                 onDelete={(ids) => del.mutate({ ids })}
+                grid={layout === "grid"}
               />
             )}
             {scene && <Composer inputRef={composerRef} sceneId={scene.sceneId} />}
@@ -355,7 +390,9 @@ function ShotList({
   setPicked,
   onOpen,
   onDelete,
+  grid = false,
 }: {
+  grid?: boolean;
   shots: ShotDto[];
   scenes: VisualScenes;
   selectedId: string | null;
@@ -429,6 +466,33 @@ function ShotList({
     },
   ];
 
+  const dialogs = (
+    <>
+      {moveFor && <MoveShotDialog shot={moveFor} scenes={scenes} onClose={() => setMoveFor(null)} />}
+      {attachFor && <AttachPanelDialog shot={attachFor} onClose={() => setAttachFor(null)} />}
+    </>
+  );
+  const onListKey = (e: React.KeyboardEvent) => {
+    if ((e.key === "Delete" || e.key === "Backspace") && picked.size > 0 && (e.target as HTMLElement).tagName !== "INPUT") {
+      e.preventDefault();
+      onDelete([...picked]);
+    }
+  };
+
+  if (grid) {
+    // Reordering stays in the list view, where the drag handles are.
+    return (
+      <>
+        <div className="shot-grid" role="list" aria-label="Shots" onKeyDown={onListKey}>
+          {shown.map((s) => (
+            <ShotCard key={s.id} shot={s} selected={s.id === selectedId || picked.has(s.id)} onClick={(ev) => click(s, ev)} menu={() => menu(s)} />
+          ))}
+        </div>
+        {dialogs}
+      </>
+    );
+  }
+
   return (
     <>
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
@@ -436,12 +500,7 @@ function ShotList({
           <div
             role="list"
             aria-label="Shots"
-            onKeyDown={(e) => {
-              if ((e.key === "Delete" || e.key === "Backspace") && picked.size > 0 && (e.target as HTMLElement).tagName !== "INPUT") {
-                e.preventDefault();
-                onDelete([...picked]);
-              }
-            }}
+            onKeyDown={onListKey}
           >
             {shown.map((s) => (
               <ShotRow
@@ -455,9 +514,37 @@ function ShotList({
           </div>
         </SortableContext>
       </DndContext>
-      {moveFor && <MoveShotDialog shot={moveFor} scenes={scenes} onClose={() => setMoveFor(null)} />}
-      {attachFor && <AttachPanelDialog shot={attachFor} onClose={() => setAttachFor(null)} />}
+      {dialogs}
     </>
+  );
+}
+
+/** A shot in the grid: its reference image (or first storyboard panel) with the shot details below. */
+function ShotCard({ shot, selected, onClick, menu }: { shot: ShotDto; selected: boolean; onClick: (e: React.MouseEvent) => void; menu: MenuItems }) {
+  const src = assetSrc(shot.referenceAsset) ?? assetSrc(shot.panels.find((p) => p.asset)?.asset ?? null);
+  const meta = [shot.size, shot.angle, shot.movement, shot.lens].filter(Boolean).join(" · ");
+  return (
+    <ContextMenu items={menu}>
+      <button type="button" role="listitem" className={cx("shot-card", selected && "sel")} onClick={onClick} aria-label={`Shot ${shot.label}: ${shot.description}`}>
+        <span className="shot-card-head">
+          <span className="muted">Scene {shot.sceneNumber ?? "?"}</span>
+          <b>Shot {shot.label}</b>
+        </span>
+        <span className="shot-card-img">
+          {src ? (
+            <img src={src} alt="" loading="lazy" />
+          ) : (
+            <span className="shot-card-empty">
+              <ImageIcon size={22} aria-hidden />
+              <span className="xs">No reference image</span>
+            </span>
+          )}
+        </span>
+        {meta && <span className="shot-card-meta">{meta}</span>}
+        <span className="shot-card-desc">{shot.description}</span>
+        {shot.characters.length > 0 && <span className="shot-card-chars xs muted">{shot.characters.join(", ")}</span>}
+      </button>
+    </ContextMenu>
   );
 }
 

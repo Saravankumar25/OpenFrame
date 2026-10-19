@@ -144,19 +144,19 @@ describe("element flow matrix: Tab and Shift+Tab", () => {
       expect(typeAtCaret(run(stateWith(t, "X"), tabCommand(-1, noFail)))).toBe(tabPrev(t));
     });
   }
-  it("the dialogue block cycles: action → character → parenthetical → dialogue → parenthetical", () => {
+  it("Tab goes round every element: action → character → parenthetical → dialogue → transition → shot → scene heading → action", () => {
     let s = stateWith("action", "");
     const seen: string[] = [];
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 7; i++) {
       s = run(s, tabCommand(1, noFail));
       seen.push(typeAtCaret(s));
     }
-    expect(seen).toEqual(["character", "parenthetical", "dialogue", "parenthetical"]);
+    expect(seen).toEqual(["character", "parenthetical", "dialogue", "transition", "shot", "scene_heading", "action"]);
   });
   it("Tab never leaves the page even when nothing changes", () => {
     const s0 = stateWith("transition", "CUT TO:");
     const s = run(s0, tabCommand(1, noFail));
-    expect(typeAtCaret(s)).toBe("action");
+    expect(typeAtCaret(s)).toBe("shot");
   });
 });
 

@@ -283,10 +283,80 @@ fn final_answer_text_is_marked_inferred_and_keeps_the_exact_facts() {
     assert_eq!(r["kind"], "Answer");
     assert_eq!(r["content"], "The script is short: three scenes.");
     assert_eq!(r["confidence"], "Inferred");
-    assert_eq!(
-        r["details"][0],
-        "From project data: Draft 1 contains 3 scenes."
+    // One clean reply (OpenFrameAI.docx section 2.4): the tool facts are kept in the steps, not
+    // repeated under the answer.
+    assert!(
+        texts(&r["details"])
+            .iter()
+            .all(|d| !d.starts_with("From project data"))
     );
+    assert_eq!(r["steps"][0]["tool"], "count_scenes");
+}
+
+#[test]
+fn plain_scene_and_character_questions_are_answered_from_the_screenplay_without_the_model() {
+    // OpenFrameAI.docx exhibits E01, E02 and E06: "How many scenes are there?" was answered
+    // "Nothing in this project mentions scenes". The direct path reads the screenplay rows.
+    let env = TestEnv::with_project("Railway", "Feature Film");
+    seed_screenplay(&env);
+    let m = attach(&env);
+    for q in [
+        "How many scenes are there?",
+        "I ask you again, how many scenes are there ?",
+        "ఈ సినిమాలో ఎన్ని సీన్లు ఉన్నాయి?",
+    ] {
+        let r = ask(&env, q)["result"].clone();
+        assert_eq!(r["kind"], "Answer", "{q}");
+        let c = r["content"].as_str().unwrap();
+        assert!(c.contains('3'), "{q}: {c}");
+        assert!(!c.contains("Nothing"), "{q}: {c}");
+    }
+    let r = ask(&env, "How many characters are there?")["result"].clone();
+    assert!(
+        r["content"].as_str().unwrap().contains("distinct character"),
+        "{}",
+        r["content"]
+    );
+}
+
+#[test]
+fn a_search_for_a_bare_category_word_answers_with_its_count() {
+    let env = TestEnv::with_project("Railway", "Feature Film");
+    seed_screenplay(&env);
+    let m = attach(&env);
+    m.step("search_project", json!({ "text": "scenes" }), true);
+    let r = ask(&env, "Please look up the scenes.")["result"].clone();
+    assert_eq!(r["content"], "Draft 1 contains 3 scenes.");
+}
+
+#[test]
+fn a_character_is_described_from_screenplay_evidence() {
+    // OpenFrameAI.docx exhibits E07 and E08: "Describe Karthik" got product help about the
+    // Character directory. It now reads the character's own scenes and the model writes from them.
+    let env = TestEnv::with_project("Railway", "Feature Film");
+    seed_screenplay(&env);
+    let m = attach(&env);
+    m.reply("Ravi seems to be the one who keeps things moving, asking after Arjun and watching the trains.");
+    let r = ask(&env, "Describe Ravi")["result"].clone();
+    assert_eq!(r["kind"], "Answer");
+    assert!(r["content"].as_str().unwrap().starts_with("Ravi seems"));
+    assert_eq!(r["steps"][0]["tool"], "character_profile");
+    assert_eq!(m.calls(), 1, "one writing pass, no planning step");
+
+    // A name that is not in the screenplay gets an honest answer, not an invented one.
+    let r = ask(&env, "Describe Zephyr")["result"].clone();
+    assert!(r["content"].as_str().unwrap().contains("couldn't find a character called Zephyr"), "{}", r["content"]);
+    assert_eq!(m.calls(), 1);
+}
+
+#[test]
+fn greetings_are_answered_without_tools_or_the_model() {
+    let env = TestEnv::with_project("Railway", "Feature Film");
+    let m = attach(&env);
+    let r = ask(&env, "hello")["result"].clone();
+    assert_eq!(r["kind"], "Answer");
+    assert!(r["content"].as_str().unwrap().starts_with("Hello"));
+    assert_eq!(m.calls(), 0);
 }
 
 #[test]
@@ -346,7 +416,7 @@ fn repeated_identical_calls_stop_the_loop() {
     m.step("count_scenes", json!({}), false);
     m.step("count_scenes", json!({}), false);
     m.step("list_drafts", json!({}), true);
-    let r = ask(&env, "How many scenes?")["result"].clone();
+    let r = ask(&env, "Please look up the scenes.")["result"].clone();
     assert_eq!(m.calls(), 2, "the repeat is detected before it runs");
     assert_eq!(r["content"], "Draft 1 contains 3 scenes.");
     assert!(
@@ -365,7 +435,7 @@ fn a_model_failure_mid_run_keeps_what_was_found() {
     m.step("count_scenes", json!({}), false);
     m.reply("not json");
     m.reply(json!({ "tool": "drop_database", "arguments": {} }).to_string());
-    let r = ask(&env, "How many scenes?")["result"].clone();
+    let r = ask(&env, "Please look up the scenes.")["result"].clone();
     assert_eq!(m.calls(), 3, "one corrected retry, then stop");
     assert_eq!(r["kind"], "Answer");
     assert_eq!(r["content"], "Draft 1 contains 3 scenes.");

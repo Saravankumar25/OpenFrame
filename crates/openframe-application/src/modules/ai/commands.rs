@@ -54,6 +54,84 @@ static COUNT_SCENES: LazyLock<Regex> = LazyLock::new(|| {
     )
 });
 
+/// The plain question "How many scenes are there?" with no screenplay named, and its usual
+/// variants (OpenFrameAI.docx section 2.4: the unqualified question fell through to a text search
+/// for the word "scenes" and was answered "Nothing mentions scenes").
+static COUNT_SCENES_PLAIN: LazyLock<Regex> = LazyLock::new(|| {
+    re(
+        r#"(?i)^\s*(?:(?:so|ok|okay|and|but|i\s+ask\s+you\s+again)[,\s]+)?(?:how\s+many\s+(?:total\s+)?scenes(?:\s+(?:are\s+there|do\s+(?:we|i)\s+have|in\s+total|total|there\s+are|exist))?(?:\s+(?:in\s+)?(?:the|this|my)\s+(?:screenplay|script|draft|film|movie|story|project))?|(?:what(?:'s|\s+is)\s+the\s+)?(?:total\s+)?(?:number\s+of\s+scenes|scene\s+count)|count\s+(?:the\s+)?scenes)\s*[?.!]*\s*(?:\[[^\]]{0,60}\])?\s*$"#,
+    )
+});
+
+/// The same questions in the Indian languages the app supports (OpenFrameAI.docx section 5.3).
+static COUNT_SCENES_INDIC: LazyLock<Regex> = LazyLock::new(|| {
+    re(
+        r#"(?:ఎన్ని\s*(?:సీన్|సన్నివేశ)|कितने\s*(?:सीन|दृश्य)|எத்தனை\s*(?:காட்சி|சீன்)|ಎಷ್ಟು\s*(?:ದೃಶ್ಯ|ಸೀನ್)|എത്ര\s*(?:രംഗ|സീൻ|സീനു))"#,
+    )
+});
+
+/// "How many characters are there?" counts the distinct speaking characters of the screenplay.
+static COUNT_CHARACTERS: LazyLock<Regex> = LazyLock::new(|| {
+    re(
+        r#"(?i)^\s*(?:how\s+many\s+(?:total\s+)?(?:characters|speaking\s+(?:roles|characters|parts))(?:\s+(?:are\s+there|do\s+(?:we|i)\s+have|in\s+total|total|there\s+are))?(?:\s+(?:in\s+)?(?:the|this|my)\s+(?:screenplay|script|draft|film|movie|story|project))?|(?:what(?:'s|\s+is)\s+the\s+)?(?:total\s+)?(?:number\s+of\s+characters|character\s+count))\s*[?.!]*\s*$"#,
+    )
+});
+
+static COUNT_CHARACTERS_INDIC: LazyLock<Regex> = LazyLock::new(|| {
+    re(
+        r#"(?:ఎన్ని\s*పాత్ర|कितने\s*(?:किरदार|पात्र)|எத்தனை\s*(?:கதாபாத்திர|கேரக்டர்)|ಎಷ್ಟು\s*ಪಾತ್ರ|എത്ര\s*കഥാപാത്ര)"#,
+    )
+});
+
+/// "Describe Karthik", "Tell me about Karthik", "Who is Karthik?", "What is Karthik like?",
+/// "Describe Karthik's character" (OpenFrameAI.docx exhibits E07 and E08).
+static DESCRIBE_CHARACTER: LazyLock<Regex> = LazyLock::new(|| {
+    re(
+        r#"(?i)^\s*(?:please\s+)?(?:(?:describe|analy[sz]e|summari[sz]e)\s+(?:the\s+)?(?:character\s+(?:of\s+)?)?(?P<a>[\p{L}][\p{L}'’ .-]{0,40}?)(?:'s|’s)?(?:\s+(?:character|as\s+a\s+character|personality|arc))?|tell\s+me\s+(?:more\s+)?about\s+(?:the\s+character\s+)?(?P<b>[\p{L}][\p{L}'’ .-]{0,40}?)|who\s+is\s+(?:the\s+character\s+)?(?P<c>[\p{L}][\p{L}'’ .-]{0,40}?)|what\s+is\s+(?P<d>[\p{L}][\p{L}'’ .-]{0,40}?)\s+like|(?:character\s+(?:analysis|profile|sketch)\s+(?:of|for)\s+)(?P<e>[\p{L}][\p{L}'’ .-]{0,40}?))\s*[?.!]*\s*$"#,
+    )
+});
+
+/// Words that make a "describe X" request about something other than one character.
+const NOT_A_CHARACTER: &[&str] = &[
+    "scene", "scenes", "story", "plot", "act", "acts", "project", "script", "screenplay", "draft", "location",
+    "locations", "film", "movie", "app", "openframe", "feature", "this", "that", "it", "them", "him", "her", "me",
+    "you", "the", "a", "an", "main", "characters", "everyone", "theme", "themes", "ending", "climax", "opening",
+    "beginning", "breakdown", "schedule", "budget", "shot", "shots", "board", "vault", "idea", "ideas", "page",
+];
+
+/// A character name in a describe request, or None when the words are not one name.
+fn character_name(raw: &str) -> Option<String> {
+    let name = unquote(raw).trim_end_matches(['\'', '’']).trim();
+    let words: Vec<&str> = name.split_whitespace().collect();
+    if words.is_empty() || words.len() > 3 {
+        return None;
+    }
+    if words.iter().any(|w| NOT_A_CHARACTER.contains(&w.to_lowercase().as_str())) {
+        return None;
+    }
+    Some(name.to_string())
+}
+
+/// A greeting or thanks on its own. The assistant answers it at once, like a person would,
+/// without looking anything up (the owner asked for a friendly chatbot for ordinary talk).
+static SMALL_TALK: LazyLock<Regex> = LazyLock::new(|| {
+    re(
+        r#"(?i)^\s*(?P<g>hi|hello|hey|hiya|good\s+(?:morning|afternoon|evening)|namaste|namaskaram|vanakkam)?(?P<t>thanks|thank\s+you|thank\s+u|thx|great|awesome|perfect|nice|cool|ok\s+thanks|okay\s+thanks)?(?:\s+(?:there|so\s+much|a\s+lot|openframe|assistant))?\s*[!.]*\s*$"#,
+    )
+});
+
+/// The reply to small talk, or None when the text is a real request.
+pub(crate) fn small_talk(text: &str) -> Option<&'static str> {
+    let c = SMALL_TALK.captures(text)?;
+    if c.name("t").is_some() {
+        Some("You're welcome. Ask me anything about your project whenever you like.")
+    } else if c.name("g").is_some() {
+        Some("Hello! I can answer questions about your screenplay and production, describe characters, find scenes, and prepare changes for you to review. What would you like to know?")
+    } else {
+        None
+    }
+}
+
 static LOCATION_STATS: LazyLock<Regex> = LazyLock::new(|| {
     re(
         r#"(?i)^\s*(?:how\s+many\s+(?:(?:night|day|interior|exterior|dawn|dusk|morning|evening)(?:\s+(?:and|or)\s+(?:night|day|interior|exterior))?\s+scenes|(?:different\s+)?locations)(?:\s+(?:are\s+there|does\s+(?:the|this)\s+(?:script|screenplay|short|film)\s+(?:have|use)|(?:are\s+)?in\s+(?:the|this)\s+(?:script|screenplay)))?|which\s+location\s+is\s+used\s+(?:the\s+)?most|what\s+locations\s+are\s+(?:in|used\s+in)\s+(?:the|this)\s+(?:script|screenplay))\s*\?*\s*$"#,
@@ -530,8 +608,17 @@ fn recipe(text: &str) -> Option<StepCall> {
         let n: u32 = c.name("n")?.as_str().parse().ok().filter(|n| *n >= 1)?;
         return Some(call("propose_storyboard", json!({ "sceneNumber": n })));
     }
-    if cap(&COUNT_SCENES).is_some() {
+    if cap(&COUNT_SCENES).is_some() || cap(&COUNT_SCENES_PLAIN).is_some() || COUNT_SCENES_INDIC.is_match(text) {
         return Some(call("count_scenes", json!({})));
+    }
+    if cap(&WHO_SPEAKS).is_none() && (cap(&COUNT_CHARACTERS).is_some() || COUNT_CHARACTERS_INDIC.is_match(text)) {
+        return Some(call("count_characters", json!({})));
+    }
+    if let Some(c) = cap(&DESCRIBE_CHARACTER) {
+        let raw = ["a", "b", "c", "d", "e"].iter().find_map(|g| c.name(g)).map(|m| m.as_str()).unwrap_or("");
+        if let Some(name) = character_name(raw) {
+            return Some(call("character_profile", json!({ "name": name })));
+        }
     }
     if cap(&LOCATION_STATS).is_some() {
         return Some(call("location_statistics", json!({})));
@@ -655,6 +742,58 @@ mod tests {
 
     fn tool(text: &str) -> Option<String> {
         call(text).map(|c| c.0)
+    }
+
+    #[test]
+    fn unqualified_and_indian_language_scene_counts_are_the_count_tool() {
+        for text in [
+            "How many scenes are there?",
+            "how many scenes are there ?",
+            "I ask you again, how many scenes are there ?",
+            "How many scenes?",
+            "how many scenes do we have",
+            "number of scenes",
+            "What is the scene count?",
+            "how many scenes are there ? [from tha fountain file]",
+            "ఈ సినిమాలో ఎన్ని సీన్లు ఉన్నాయి?",
+            "इस फिल्म में कितने सीन हैं?",
+            "இந்த படத்தில் எத்தனை காட்சிகள் உள்ளன?",
+        ] {
+            assert_eq!(tool(text).as_deref(), Some("count_scenes"), "{text}");
+        }
+    }
+
+    #[test]
+    fn character_counts_and_descriptions_route_to_their_tools() {
+        for text in ["How many characters are there?", "how many characters", "number of characters", "ఎన్ని పాత్రలు ఉన్నాయి?"] {
+            assert_eq!(tool(text).as_deref(), Some("count_characters"), "{text}");
+        }
+        assert_eq!(tool("How many characters speak?").as_deref(), Some("list_characters"));
+        for (text, name) in [
+            ("Describe Karthik", "Karthik"),
+            ("describe karthik character", "karthik"),
+            ("Describe Karthik's character.", "Karthik"),
+            ("Tell me about Karthik", "Karthik"),
+            ("Who is Vivek?", "Vivek"),
+            ("What is Shruthi like?", "Shruthi"),
+            ("character analysis of Kaushik", "Kaushik"),
+        ] {
+            assert_eq!(call(text), Some(("character_profile".to_string(), json!({ "name": name }))), "{text}");
+        }
+        for text in ["Describe the story", "Tell me about this scene", "Describe the opening", "Who is the main character?", "Describe the plot of act one"] {
+            assert_ne!(tool(text).as_deref(), Some("character_profile"), "{text}");
+        }
+    }
+
+    #[test]
+    fn greetings_and_thanks_get_a_friendly_reply_without_tools() {
+        assert!(small_talk("hi").is_some());
+        assert!(small_talk("Hello there!").is_some());
+        assert!(small_talk("thanks").is_some());
+        assert!(small_talk("Thank you so much.").is_some());
+        assert!(small_talk("hi, how many scenes are there?").is_none());
+        assert!(small_talk("Describe Karthik").is_none());
+        assert!(small_talk("").is_none());
     }
 
     #[test]

@@ -27,3 +27,8 @@
 .ai-tech{font-size:12px}
 .ai-tech td,.ai-tech th{vertical-align:top}
 .ai-tech .hash{font-family:ui-monospace,Consolas,monospace;font-size:11px;word-break:break-all}
+/* Plain answers (OpenFrameAI.docx section 4.1): normal weight, paragraphs kept. */
+.ai .ai-text{white-space:pre-wrap;line-height:1.5;overflow-wrap:anywhere}
+.ai .ai-details{margin-top:6px}
+.ai .ai-details summary{cursor:pointer;width:max-content}
+.ai .ai-details[open] summary{margin-bottom:4px}

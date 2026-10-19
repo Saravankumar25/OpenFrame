@@ -100,8 +100,8 @@ describe("OpenFrame Default stays today's look", () => {
       for (const m of readFileSync(file, "utf8").matchAll(/(?:^|[{;\s])--([a-z0-9-]+)\s*:/g)) defined.add(m[1]);
     }
     const used = new Map<string, string>();
-    // Layout variables, not colours: the Story board zoom factor.
-    const layout = new Set(["z"]);
+    // Layout variables, not colours: the Story board zoom factor and the screenplay and Breakdown page zoom.
+    const layout = new Set(["z", "sp-zoom", "bd-zoom"]);
     for (const file of walk(SRC)) {
       if (file.endsWith(join("theme", "engine.ts"))) continue; // documents var(--token) in prose
       const text = readFileSync(file, "utf8").replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");

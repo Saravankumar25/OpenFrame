@@ -6,11 +6,14 @@
 @import "./openframe.css";
 
 html, body, #root { height: 100%; }
+/* Clip, never hide: a hidden overflow can still be scrolled by script, and the editor's scroll-into-view
+   moved the whole window up, leaving a blank strip at the bottom (owner change list item 5). */
+html, body, #root { overflow: clip; }
 body {
   display: block;
   min-height: 0;
   background: var(--bg);
-  overflow: hidden;
+  overflow: clip;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -19,9 +22,9 @@ button { cursor: pointer; }
 button:disabled { cursor: default; }
 
 /* The mock's fixed 1200×720 frame becomes the real window. */
-.app-root { position: relative; height: 100vh; width: 100vw; background: var(--bg); display: flex; flex-direction: column; overflow: hidden; }
+.app-root { position: relative; height: 100vh; width: 100vw; background: var(--bg); display: flex; flex-direction: column; overflow: clip; }
 .content { overflow: auto; }
-.content.fill { overflow: hidden; display: flex; flex-direction: column; }
+.content.fill { overflow: clip; display: flex; flex-direction: column; }
 .scrim { position: fixed; }
 .toast { position: fixed; }
 
@@ -40,9 +43,6 @@ textarea.textarea { resize: vertical; }
 .input::placeholder, .textarea::placeholder { color: var(--placeholder); }
 
 /* Navigation as buttons */
-.nav button.navitem { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px; font-size: 14px; font-weight: 500; background: transparent; border: 0; color: var(--side-ink); text-align: left; width: 100%; }
-.nav button.navitem:hover { background: var(--side2); }
-.nav button.navitem.active { background: var(--accent); color: var(--accent-ink); }
 .subnav button { padding: 9px 11px; font-size: 13px; color: var(--ink2); border: 0; border-bottom: 2px solid transparent; background: transparent; white-space: nowrap; font-weight: 500; }
 .subnav button.active { color: var(--accent-d); border-bottom-color: var(--accent); font-weight: 600; }
 .seg button { padding: 6px 11px; font-size: 12.5px; font-weight: 600; color: var(--ink2); border: 0; border-right: 1px solid var(--line); background: transparent; display: inline-flex; align-items: center; gap: 6px; }
@@ -91,3 +91,32 @@ textarea.textarea { resize: vertical; }
   .btn.pri, .btn.dan { border: 1px solid ButtonText; }
   .ap-pv { forced-color-adjust: none; }
 }
+
+/* The logo in the top bar is a button that opens all projects (owner change list item 17). */
+.brand-btn { border: 0; background: transparent; padding: 0; cursor: pointer; text-align: left; }
+.brand-btn:hover .wm { color: var(--accent-d); }
+/* The page frame never scrolls as a whole; only the scroll areas inside it do (owner item 5). */
+.layout, .main, .spx, .spx .sp-body { overflow: clip; }
+/* Segmented controls never wrap a label or squeeze an option out of view (owner item 8). */
+.seg { flex: none; flex-wrap: nowrap; }
+.seg button { white-space: nowrap; flex: none; }
+.spx-compare .sp-top { flex-wrap: wrap; row-gap: 6px; }
+/* Shot Lists grid view (owner change list item 21): reference picture on top, shot details below. */
+.shot-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+.shot-card { display: flex; flex-direction: column; gap: 6px; padding: 10px; text-align: left; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow-s); font: inherit; color: var(--ink); cursor: pointer; min-width: 0; }
+.shot-card:hover { border-color: var(--line2); }
+.shot-card.sel { outline: 2px solid var(--blue); }
+.shot-card-head { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; }
+.shot-card-head b { color: var(--accent-d); }
+.shot-card-img { display: block; aspect-ratio: 16 / 9; border-radius: 6px; overflow: hidden; background: var(--surface3); }
+.shot-card-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.shot-card-empty { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: var(--muted); }
+.shot-card-meta { font-size: 11.5px; font-weight: 600; color: var(--ink2); text-align: center; }
+.shot-card-desc { font-size: 12.5px; text-align: center; color: var(--ink); overflow-wrap: anywhere; }
+.shot-card-chars { text-align: center; }
+/* Collapsible left navigation (owner request 2026-10-19): an icon rail when collapsed. */
+.nav.collapsed { width: 52px; padding-left: 6px; padding-right: 6px; }
+.nav.collapsed button.navitem { justify-content: center; padding: 9px 0; }
+.nav .nav-toggle { margin-top: 4px; color: var(--side-mut); }
+.nav .foot + .nav-toggle { margin-top: 0; }
+.nav.collapsed .nav-toggle { margin-top: auto; }

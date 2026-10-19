@@ -58,7 +58,7 @@ export function ScreenplayPicker({ screenplays, openId, canEdit, canDelete = fal
     <Menu
       trigger={
         <button type="button" className="btn" style={{ padding: "5px 10px" }} aria-label={`Screenplay: ${title}. Switch screenplay`}>
-          <Clapperboard size={13} aria-hidden /> <b>{title}</b> <ChevronDown size={13} aria-hidden />
+          <Clapperboard size={13} aria-hidden /> <b className="sp-name" title={title}>{title}</b> <ChevronDown size={13} aria-hidden />
         </button>
       }
       items={items}

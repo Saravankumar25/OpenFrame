@@ -1,9 +1,8 @@
 // The assistant conversation (agentic spec §5, §30, §36, §42; FSD §42; UX §3.40).
 //
-// - One request runs a bounded, multi-step agent on this computer; the answer
-//   shows its sources as chips that open the referenced place in OpenFrame.
-// - Exact facts are marked "Exact · from project data"; text the AI wrote is
-//   marked "Inferred".
+// - One request runs a bounded, multi-step agent on this computer; the answer is
+//   plain conversational text. Sources, steps and how sure the answer is wait behind
+//   "Details" (OpenFrameAI.docx section 4.1); long lists show a preview and "Show all".
 // - Project changes arrive only as a "Proposed Changes" card the user reviews;
 //   nothing is applied without [Apply Changes].
 // - While the project context is rebuilt, a short notice explains that answers
@@ -214,18 +213,27 @@ function ExchangeView({ x, onChanged }: { x: AiExchange; onChanged: () => void }
   );
 }
 
+/** Items shown before "Show all" (a long answer is a preview plus the full list, never "and N more"). */
+const PREVIEW_ITEMS = 8;
+
 export function ResultView({ r, onChanged }: { r: AiResultDto; onChanged: () => void }) {
   const go = useNav((s) => s.go);
+  const [allItems, setAllItems] = useState(false);
   const conf = confidenceLabel(r.confidence);
   const navRoute = toRoute(r.nav);
   const denied = r.kind === "Denied";
   const chips = sourceChips(r.provenance);
   const steps = stepsSummary(r.steps);
+  // A refusal, failure or question needs its reasons in view; for an ordinary answer they are
+  // technical detail and wait behind "Details" (OpenFrameAI.docx section 4.1).
+  const reasonsVisible = denied || r.kind === "Failed" || r.kind === "Unavailable" || r.kind === "Clarify" || r.kind === "Private";
+  const items = allItems ? r.items : r.items.slice(0, PREVIEW_ITEMS);
+  const hasDetails = (!reasonsVisible && r.details.length > 0) || !!conf || chips.length > 0 || !!steps;
   return (
     <>
       <div className={`msg a${r.kind === "Failed" || r.kind === "Unavailable" ? " ai-err" : ""}`} data-kind={r.kind}>
-        {denied || r.kind === "Answer" || r.kind === "Proposal" || r.kind === "Suggestion" ? <b>{r.content}</b> : r.content}
-        {r.details.length > 0 && (
+        <div className="ai-text">{r.content}</div>
+        {reasonsVisible && r.details.length > 0 && (
           <div className="xs muted" style={{ marginTop: 4 }}>
             {r.details.map((d, i) => (
               <div key={i}>{denied && !d.startsWith("Nothing") ? `• ${d}` : d}</div>
@@ -234,7 +242,7 @@ export function ResultView({ r, onChanged }: { r: AiResultDto; onChanged: () => 
         )}
         {r.items.length > 0 && (
           <ul className="ai-items">
-            {r.items.slice(0, 25).map((it, i) => {
+            {items.map((it, i) => {
               const to = toRoute(it.nav);
               return (
                 <li key={i}>
@@ -251,34 +259,47 @@ export function ResultView({ r, onChanged }: { r: AiResultDto; onChanged: () => 
                 </li>
               );
             })}
-            {r.items.length > 25 && <li className="muted">…and {r.items.length - 25} more</li>}
           </ul>
         )}
-        {(conf || navRoute) && (
-          <div className="row" style={{ marginTop: 6, flexWrap: "wrap", gap: 6 }}>
-            {conf && <Chip tone={conf.tone}>{conf.text}</Chip>}
-            {navRoute && (
-              <Button size="xs" onClick={() => go(navRoute)}>
-                {r.kind === "Navigate" ? "Open again" : "Open"}
-              </Button>
-            )}
+        {r.items.length > PREVIEW_ITEMS && (
+          <Button size="xs" variant="ghost" onClick={() => setAllItems(!allItems)} aria-expanded={allItems}>
+            {allItems ? "Show fewer" : `Show all ${r.items.length}`}
+          </Button>
+        )}
+        {navRoute && (
+          <div className="row" style={{ marginTop: 6 }}>
+            <Button size="xs" onClick={() => go(navRoute)}>
+              {r.kind === "Navigate" ? "Open again" : "Open"}
+            </Button>
           </div>
         )}
-        {chips.length > 0 && (
-          <div className="ai-sources" aria-label="Sources">
-            <span className="xs muted">Based on:</span>
-            {chips.map((c) =>
-              c.route ? (
-                <button key={c.key} type="button" className="chip b ai-src" title="Open" onClick={() => go(c.route!)}>
-                  {c.text}
-                </button>
-              ) : (
-                <Chip key={c.key}>{c.text}</Chip>
-              ),
+        {hasDetails && (
+          <details className="ai-details">
+            <summary className="xs muted">Details</summary>
+            {!reasonsVisible &&
+              r.details.map((d, i) => (
+                <div key={i} className="xs muted">
+                  {d}
+                </div>
+              ))}
+            {conf && <div className="xs muted">{conf.text}</div>}
+            {chips.length > 0 && (
+              <div className="ai-sources" aria-label="Sources">
+                <span className="xs muted">Based on:</span>
+                {chips.map((c) =>
+                  c.route ? (
+                    <button key={c.key} type="button" className="chip b ai-src" title="Open" onClick={() => go(c.route!)}>
+                      {c.text}
+                    </button>
+                  ) : (
+                    <Chip key={c.key}>{c.text}</Chip>
+                  ),
+                )}
+              </div>
             )}
-          </div>
+            {steps && <div className="xs muted ai-steps">{steps}</div>}
+          </details>
         )}
-        {steps && <div className="xs muted ai-steps">{steps}</div>}
       </div>
       {r.changeSet && <ProposedChanges cs={r.changeSet} onChanged={onChanged} />}
     </>

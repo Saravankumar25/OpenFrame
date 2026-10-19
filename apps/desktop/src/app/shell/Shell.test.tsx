@@ -7,7 +7,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act, fireEvent, screen, waitFor } from "@testing-library/react";
 import { renderWithClient } from "../home/testUtils";
-import { AI_PANEL_KEY, readAiPanelOpen, useUi } from "../stores";
+import { AI_PANEL_KEY, readAiPanelOpen, useNav, useUi } from "../stores";
 
 vi.mock("@tauri-apps/api/window", () => ({ getCurrentWindow: () => ({ setTitle: async () => undefined }) }));
 vi.mock("../../ipc/client", async (orig) => {
@@ -106,6 +106,47 @@ describe("AI Assistant panel docked beside the page", () => {
     fireEvent.click(button);
     await waitFor(() => expect(panel()).toBeTruthy());
     expect(button.getAttribute("aria-pressed")).toBe("true");
+  });
+});
+
+describe("top bar (owner change list 2026-10-19)", () => {
+  it("has Back, Forward and Settings instead of Undo, Redo and the shortcuts button", async () => {
+    act(() => useNav.getState().reset());
+    renderWithClient(<Shell />);
+    expect(await screen.findByRole("button", { name: "Back" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Forward" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Settings" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "All projects" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: /^Undo/ })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Help" })).toBeNull();
+  });
+
+  it("goes back and forward through the pages visited", () => {
+    act(() => useNav.getState().reset());
+    act(() => useNav.getState().go({ workspace: "story" }));
+    act(() => useNav.getState().go({ workspace: "screenplay" }));
+    act(() => useNav.getState().back());
+    expect(useNav.getState().route.workspace).toBe("story");
+    act(() => useNav.getState().forward());
+    expect(useNav.getState().route.workspace).toBe("screenplay");
+    act(() => useNav.getState().go({ workspace: "files" }));
+    expect(useNav.getState().future).toEqual([]);
+  });
+
+  it("keeps the open page across a reload of the window", () => {
+    act(() => useNav.getState().go({ workspace: "production", sub: "schedule" }));
+    expect(JSON.parse(window.sessionStorage.getItem("openframe.route") ?? "null")).toEqual({ workspace: "production", sub: "schedule" });
+    act(() => useNav.getState().reset());
+    expect(JSON.parse(window.sessionStorage.getItem("openframe.route") ?? "null")).toEqual({ workspace: "home" });
+  });
+
+  it("focus mode hides the top bar, the navigation and the status bar", async () => {
+    act(() => useUi.getState().setFocusMode(true));
+    renderWithClient(<Shell />);
+    await screen.findByRole("main");
+    expect(screen.queryByRole("navigation", { name: "Workspaces" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Back" })).toBeNull();
+    act(() => useUi.getState().setFocusMode(false));
   });
 });
 

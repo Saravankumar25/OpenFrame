@@ -53,7 +53,6 @@ const actions: DraftActions = {
   makeCurrent: vi.fn(),
   restore: vi.fn(),
   lock: vi.fn(),
-  review: vi.fn(),
   compare: vi.fn(),
   newDraft: vi.fn(),
 };

@@ -5,19 +5,21 @@
 import { Suspense, useEffect, useMemo, useRef, useState, type ComponentType } from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import {
+  ArrowLeft,
+  ArrowRight,
   Check,
   ChevronDown,
-  CircleHelp,
   FolderOpen,
   HardDrive,
   History,
+  PanelLeftClose,
+  PanelLeftOpen,
   Plus,
-  Redo2,
   RotateCcw,
   Save,
   Search,
+  Settings,
   Sparkles,
-  Undo2,
 } from "lucide-react";
 import { call, inTauri, revealLocation } from "../../ipc/client";
 import { reportError, useOp } from "../../ipc/query";
@@ -26,7 +28,7 @@ import type { UndoInfo } from "../../ipc/generated/UndoInfo";
 import type { RecentProject } from "../../ipc/generated/RecentProject";
 import type { AppInfo } from "../../ipc/generated/AppInfo";
 import { Button, Dot, Menu, Skeleton, type MenuItemSpec } from "../../design-system";
-import { useIntent, useNav, useUi } from "../stores";
+import { useIntent, useNav, useUi, type Route } from "../stores";
 import { WORKSPACES, workspaceDef } from "../routes";
 import { toast } from "../toast";
 import { flushPendingSaves } from "../pendingSaves";
@@ -85,11 +87,20 @@ function initials(name: string): string {
   return ((parts[0]?.[0] ?? "") + (parts.length > 1 ? parts[parts.length - 1][0] : "")).toUpperCase() || "?";
 }
 
+/** Move to another page after every open editor has stored its text. */
+function navigate(to: (() => void) | Route) {
+  void flushPendingSaves().then((stored) => {
+    if (!stored) return;
+    if (typeof to === "function") to();
+    else useNav.getState().go(to);
+  });
+}
+
 export function Shell() {
   const project = useOp<ProjectSummary | null>("project.current", {}, ["project"]);
   const route = useNav((s) => s.route);
   const go = useNav((s) => s.go);
-  const { searchOpen, setSearchOpen, aiOpen, setAiOpen, undoScope } = useUi();
+  const { searchOpen, setSearchOpen, aiOpen, setAiOpen, undoScope, focusMode, navCollapsed, setNavCollapsed } = useUi();
   const def = workspaceDef(route.workspace);
   const Workspace = def.component;
   // Save state is read by the status bar, banner and dialog themselves: the Shell
@@ -113,6 +124,12 @@ export function Shell() {
     const onKey = (e: KeyboardEvent) => {
       // The browser's own Ctrl+N (new window) is always suppressed.
       if ((e.ctrlKey || e.metaKey) && !e.altKey && (e.key.toLowerCase() === "n" || e.code === "KeyN")) e.preventDefault();
+      // Alt+Left and Alt+Right move through the pages visited, like the toolbar arrows.
+      if (e.altKey && !e.ctrlKey && !e.metaKey && (e.key === "ArrowLeft" || e.key === "ArrowRight") && !isEditable(e.target)) {
+        e.preventDefault();
+        navigate(e.key === "ArrowLeft" ? useNav.getState().back : useNav.getState().forward);
+        return;
+      }
       if (matches(e, "app.quick_capture")) {
         // Quick Capture / New Idea from anywhere (UX §6). The Idea Vault handles it
         // itself while it is showing.
@@ -153,10 +170,10 @@ export function Shell() {
   }, [setSearchOpen, setAiOpen]);
 
   return (
-    <div className="app-root">
-      <TopBar project={project.data ?? null} undoScope={undoScope} />
+    <div className={"app-root" + (focusMode ? " focus-mode" : "")}>
+      {!focusMode && <TopBar project={project.data ?? null} undoScope={undoScope} />}
       <div className="layout">
-        <nav className="nav" aria-label="Workspaces">
+        {!focusMode && <nav className={"nav" + (navCollapsed ? " collapsed" : "")} aria-label="Workspaces">
           {WORKSPACES.filter((w) => w.nav).map((w) => {
             const Icon = w.icon;
             return (
@@ -164,19 +181,34 @@ export function Shell() {
                 key={w.id}
                 className={`navitem${route.workspace === w.id ? " active" : ""}`}
                 aria-current={route.workspace === w.id ? "page" : undefined}
+                aria-label={navCollapsed ? w.label : undefined}
+                title={navCollapsed ? w.label : undefined}
                 onClick={() => void flushPendingSaves().then((stored) => stored && go({ workspace: w.id }))}
               >
                 {Icon && <Icon size={16} />}
-                {w.label}
+                {!navCollapsed && w.label}
               </button>
             );
           })}
-          <div className="foot">
-            Project stored locally
-            <br />
-            on this PC
-          </div>
-        </nav>
+          {!navCollapsed && (
+            <div className="foot">
+              Project stored locally
+              <br />
+              on this PC
+            </div>
+          )}
+          <button
+            type="button"
+            className="navitem nav-toggle"
+            aria-label={navCollapsed ? "Expand the navigation" : "Collapse the navigation"}
+            aria-expanded={!navCollapsed}
+            title={navCollapsed ? "Expand the navigation" : "Collapse the navigation"}
+            onClick={() => setNavCollapsed(!navCollapsed)}
+          >
+            {navCollapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
+            {!navCollapsed && "Collapse"}
+          </button>
+        </nav>}
         <main className="main" aria-label={def.label}>
           <LiveSaveErrorBanner onOpenRecovery={() => setRecoveryOpen(true)} />
           <ErrorBoundary key={route.workspace}>
@@ -188,9 +220,9 @@ export function Shell() {
         {/* The AI Assistant docks beside the page (owner decision 2026-10-08): opening it narrows
             the page instead of covering it, and closing gives the space back. It follows the page
             in the keyboard focus order. */}
-        {aiOpen && AiPanel && <AiPanel onClose={() => setAiOpen(false)} />}
+        {aiOpen && !focusMode && AiPanel && <AiPanel onClose={() => setAiOpen(false)} />}
       </div>
-      <StatusBar project={project.data ?? null} onOpenRecovery={() => setRecoveryOpen(true)} />
+      {!focusMode && <StatusBar project={project.data ?? null} onOpenRecovery={() => setRecoveryOpen(true)} />}
       {searchOpen && <SearchOverlay onClose={() => setSearchOpen(false)} />}
       <RecoveryOffer project={project.data ?? null} state={recovery.data} />
       {/* One modal at a time (UX §2.10): the recovery decision comes first. */}
@@ -212,17 +244,10 @@ function TopBar({ project, undoScope }: { project: ProjectSummary | null; undoSc
     newCard: useShortcutLabel("app.new_scene_card"),
   };
   const withKey = (label: string, key: string) => (key ? `${label} (${key})` : label);
-  const shortcutSummary = [
-    keys.search && `${keys.search} search`,
-    keys.save && `${keys.save} save`,
-    keys.undo && `${keys.undo} undo`,
-    keys.redo && `${keys.redo} redo`,
-    keys.assistant && `${keys.assistant} assistant`,
-  ]
-    .filter(Boolean)
-    .join(" · ");
   const go = useNav((s) => s.go);
   const reset = useNav((s) => s.reset);
+  const canBack = useNav((s) => s.history.length > 0);
+  const canForward = useNav((s) => s.future.length > 0);
   const fire = useIntent((s) => s.fire);
   const { setSearchOpen, aiOpen, setAiOpen } = useUi();
   const undo = useOp<UndoInfo>("history.info", { store: undoScope }, ["*"], { store: undoScope });
@@ -267,6 +292,19 @@ function TopBar({ project, undoScope }: { project: ProjectSummary | null; undoSc
     ...(project ? [{ label: project.title, shortcut: "Open", icon: <Check size={14} />, onSelect: () => go({ workspace: "home" }) }] : []),
     ...recentRows.map(row),
     ...(pinnedRows.length ? [{ label: "Pinned", header: true, separatorBefore: true } as MenuItemSpec, ...pinnedRows.map(row)] : []),
+    { label: "Edit", header: true, separatorBefore: true },
+    {
+      label: undo.data?.undoLabel ? `Undo ${undo.data.undoLabel}` : "Undo",
+      shortcut: keys.undo || undefined,
+      disabled: !undo.data?.canUndo,
+      onSelect: () => void runUndo(undoScope),
+    },
+    {
+      label: undo.data?.redoLabel ? `Redo ${undo.data.redoLabel}` : "Redo",
+      shortcut: keys.redo || undefined,
+      disabled: !undo.data?.canRedo,
+      onSelect: () => void runUndo(undoScope, true),
+    },
     { label: "Project settings", separatorBefore: true, onSelect: () => go({ workspace: "settings" }) },
     { label: "Notes & Tasks", onSelect: () => go({ workspace: "notes" }) },
     { label: "Activity", onSelect: () => go({ workspace: "activity" }) },
@@ -282,9 +320,9 @@ function TopBar({ project, undoScope }: { project: ProjectSummary | null; undoSc
   const name = info.data?.profile.displayName ?? "";
   return (
     <header className="topbar">
-      <div className="brand">
+      <button type="button" className="brand brand-btn" aria-label="All projects" title="All projects" onClick={() => leaveToHome(project)}>
         <BrandLogo />
-      </div>
+      </button>
       <Menu
         trigger={
           <button className="projsel" aria-label={`Project: ${project?.title ?? ""}. Switch or manage projects`}>
@@ -306,27 +344,19 @@ function TopBar({ project, undoScope }: { project: ProjectSummary | null; undoSc
       <div className="tb-actions row">
         <TrialCorner />
         <Menu trigger={<button className="iconbtn" aria-label="Create" title="Create"><Plus size={17} /></button>} items={quick} align="end" />
-        <button className="iconbtn" aria-label={undo.data?.undoLabel ? `Undo ${undo.data.undoLabel}` : "Undo"} title={undo.data?.undoLabel ? withKey(`Undo: ${undo.data.undoLabel}`, keys.undo) : "Nothing to undo"} disabled={!undo.data?.canUndo} onClick={() => void runUndo(undoScope)}>
-          <Undo2 size={16} />
+        {/* Back and Forward move between the pages visited (owner change list item 4). */}
+        <button className="iconbtn" aria-label="Back" title="Back (Alt+Left)" disabled={!canBack} onClick={() => navigate(useNav.getState().back)}>
+          <ArrowLeft size={16} />
         </button>
-        <button className="iconbtn" aria-label={undo.data?.redoLabel ? `Redo ${undo.data.redoLabel}` : "Redo"} title={undo.data?.redoLabel ? withKey(`Redo: ${undo.data.redoLabel}`, keys.redo) : "Nothing to redo"} disabled={!undo.data?.canRedo} onClick={() => void runUndo(undoScope, true)}>
-          <Redo2 size={16} />
+        <button className="iconbtn" aria-label="Forward" title="Forward (Alt+Right)" disabled={!canForward} onClick={() => navigate(useNav.getState().forward)}>
+          <ArrowRight size={16} />
         </button>
         <button className={`iconbtn${aiOpen ? " on" : ""}`} aria-label="Assistant" aria-pressed={aiOpen} title={withKey("Assistant", keys.assistant)} onClick={() => setAiOpen(!aiOpen)}>
           <Sparkles size={16} />
         </button>
-        <button
-          className="iconbtn"
-          aria-label="Help"
-          title={`Keyboard shortcuts: ${shortcutSummary}`}
-          onClick={() =>
-            toast.info(`Shortcuts: ${shortcutSummary}`, {
-              label: "Change shortcuts",
-              run: () => useNav.getState().go({ workspace: "settings", sub: "shortcuts" }),
-            })
-          }
-        >
-          <CircleHelp size={16} />
+        {/* Settings replaces the old shortcuts button (owner item 6): project and global tabs here. */}
+        <button className="iconbtn" aria-label="Settings" title="Settings" onClick={() => go({ workspace: "settings" })}>
+          <Settings size={16} />
         </button>
         <button className="avatar" style={{ border: 0 }} aria-label={`Your name: ${name}. Change`} title={`${name}: change your name`} onClick={() => setNameOpen(true)}>
           {initials(name)}

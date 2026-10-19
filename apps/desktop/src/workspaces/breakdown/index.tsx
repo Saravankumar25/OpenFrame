@@ -4,7 +4,7 @@
 // tagging · right: the scene's breakdown with suggestions.
 
 import { useCallback, useState } from "react";
-import { FileText, Lock, ListChecks } from "lucide-react";
+import { FileText, Lock, ListChecks, PanelRightClose, PanelRightOpen } from "lucide-react";
 import { call } from "../../ipc/client";
 import { reportError, useOp } from "../../ipc/query";
 import type { BreakdownScenesView } from "../../ipc/generated/BreakdownScenesView";
@@ -23,7 +23,7 @@ import { AddElementDialog, EditSuggestionDialog, ElementNotesDialog, SceneChange
 import { suggestName, type TextSelection } from "./highlight";
 import { BreakdownExportButton } from "../../features/export/buttons";
 import { toast } from "../../app/toast";
-import { readFilter, writeFilter, type SavedFilter } from "./filterPref";
+import { readFilter, readPanelHidden, writeFilter, writePanelHidden, type SavedFilter } from "./filterPref";
 import "./breakdown.css";
 
 type Mode = "scene" | "review" | "history";
@@ -84,6 +84,12 @@ export default function BreakdownWorkspace() {
   const [notesEl, setNotesEl] = useState<BreakdownElementDto | null>(null);
   const [selection, setSelection] = useState<TextSelection | null>(null);
   const [jump, setJump] = useState<BreakdownSourceAnchor | null>(null);
+  // The right panel can be hidden so the script gets the room (owner item 10); remembered per person.
+  const [panelHidden, setPanelHiddenState] = useState(readPanelHidden);
+  const setPanelHidden = (v: boolean) => {
+    setPanelHiddenState(v);
+    writePanelHidden(v);
+  };
   const onSelection = useCallback((s: TextSelection | null) => setSelection(s), []);
 
   const data = view.data;
@@ -166,8 +172,8 @@ export default function BreakdownWorkspace() {
   const historicalCount = (data?.historical ?? []).reduce((n, h) => n + h.elements.filter((e) => !e.archived).length, 0);
 
   return (
-    <div className="content flush">
-      <div className="bdw">
+    <div className="content flush fill">
+      <div className={"bdw" + (panelHidden ? " panel-hidden" : "")}>
         <div className="banner info srcbar" role="status">
           {source.draft.status === "Locked" ? <Lock size={13} aria-hidden /> : <FileText size={13} aria-hidden />}
           <span className="sp">
@@ -177,6 +183,16 @@ export default function BreakdownWorkspace() {
           </span>
           {canEdit && <Button size="xs" onClick={() => setSelectOpen(true)}>Change source</Button>}
           <BreakdownExportButton size="xs" sceneId={sceneId} scenes={rows.map((r) => ({ id: r.sceneId, label: `${r.number}: ${r.heading}` }))} />
+          <Button
+            size="xs"
+            variant="ghost"
+            icon={panelHidden ? <PanelRightOpen size={13} /> : <PanelRightClose size={13} />}
+            aria-pressed={!panelHidden}
+            title={panelHidden ? "Show the scene breakdown panel" : "Hide the scene breakdown panel to give the script more room"}
+            onClick={() => setPanelHidden(!panelHidden)}
+          >
+            {panelHidden ? "Show panel" : "Hide panel"}
+          </Button>
         </div>
         {newer && (
           <div className="banner warn srcbar" role="status">
@@ -247,7 +263,7 @@ export default function BreakdownWorkspace() {
           ) : (
             <>
               <ScriptPane detail={d} canEdit={canEdit} onTag={setAddInitial} onSelection={onSelection} jump={jump && jump.sceneId === d.sceneId ? jump : null} />
-              <ElementsPanel
+              {!panelHidden && <ElementsPanel
                 detail={d}
                 canEdit={canEdit}
                 hasSelection={!!selection && d.inSource}
@@ -261,7 +277,7 @@ export default function BreakdownWorkspace() {
                 onChanges={() => setChangesScene(d.sceneId)}
                 onNotes={setNotesEl}
                 onShowSource={(el) => void showSource(el)}
-              />
+              />}
             </>
           )}
         </div>

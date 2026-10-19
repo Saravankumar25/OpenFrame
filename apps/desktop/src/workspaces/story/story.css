@@ -30,8 +30,8 @@
 
 .story-inline { width: 100%; border: 1px solid var(--accent); border-radius: 6px; padding: 4px 6px; font: inherit; background: var(--panel); resize: vertical; box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 13%, transparent); outline: none; }
 .story-empty-hint { color: var(--muted); font-size: 12px; padding: 4px 2px 6px; line-height: 1.4; }
-.story-add-row { display: flex; gap: 4px; margin-top: 4px; }
-.story-add { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; color: var(--muted); background: transparent; border: 1px dashed var(--line2); border-radius: 7px; padding: 3px 7px; text-align: left; }
+.story-add-row { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; min-width: 0; } /* wraps inside a narrow act instead of spilling out (owner item 15) */
+.story-add { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; color: var(--muted); background: transparent; border: 1px dashed var(--line2); border-radius: 7px; padding: 3px 7px; text-align: left; white-space: nowrap; }
 .story-add:hover { color: var(--ink); border-color: var(--accent); background: color-mix(in oklab, var(--panel) 53%, transparent); }
 .story-add-act { flex: none; align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; padding: 10px 14px; border: 2px dashed var(--line2); border-radius: 12px; background: transparent; color: var(--muted); font-weight: 600; }
 .story-add-act:hover { border-color: var(--accent); color: var(--ink); }
@@ -80,3 +80,6 @@
 .sc-rich .sc-facts { font-size: .86em; color: var(--ink2, var(--ink)); margin-top: 4px; font-weight: 600; }
 .sc-rich .ind { gap: 6px; }
 .story-canvas.zoom-low .sc.sc-rich .sc-long, .story-canvas.zoom-low .sc.sc-rich .sc-note { display: none; }
+.rel-suggest { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin: 2px 0 12px; }
+.rel-suggest .chip { border: 0; cursor: pointer; }
+.rel-suggest .chip:hover { background: var(--accent-soft); color: var(--accent-d); }
