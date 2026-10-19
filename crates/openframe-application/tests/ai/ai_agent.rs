@@ -299,7 +299,7 @@ fn plain_scene_and_character_questions_are_answered_from_the_screenplay_without_
     // "Nothing in this project mentions scenes". The direct path reads the screenplay rows.
     let env = TestEnv::with_project("Railway", "Feature Film");
     seed_screenplay(&env);
-    let m = attach(&env);
+    let _model = attach(&env);
     for q in [
         "How many scenes are there?",
         "I ask you again, how many scenes are there ?",

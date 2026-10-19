@@ -83,3 +83,20 @@
 .rel-suggest { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin: 2px 0 12px; }
 .rel-suggest .chip { border: 0; cursor: pointer; }
 .rel-suggest .chip:hover { background: var(--accent-soft); color: var(--accent-d); }
+
+/* Story Board layout (owner request 2026-10-20, openframe-changes.docx item 2): each act is a full-height
+   column that scrolls on its own, the board scrolls only sideways, and a scene card shows its whole
+   text instead of cutting it after two lines. The overview zoom (70 percent and below) still shortens
+   cards; the full text is always in the card drawer. */
+.story-canvas { overflow-x: auto; overflow-y: hidden; }
+.story-canvas .board { height: 100%; min-height: 0; align-items: stretch; }
+.story-canvas .actband { display: flex; flex-direction: column; max-height: 100%; width: calc(256px * var(--z, 1)); }
+.story-canvas .actband > .ah { flex: none; }
+.story-canvas .act-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding-right: 3px; }
+.story-canvas .parking, .story-canvas .unassigned-col { display: flex; flex-direction: column; max-height: 100%; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+.story-canvas .sc { display: block; -webkit-line-clamp: unset; overflow: visible; white-space: normal; overflow-wrap: anywhere; }
+.story-canvas .sc .ind { position: static; margin-top: 5px; }
+.story-canvas .sc.sc-rich { padding-bottom: 7px; }
+.story-canvas .sc-rich .sc-text, .story-canvas .sc-rich .sc-long { display: block; -webkit-line-clamp: unset; overflow: visible; }
+.story-canvas.zoom-low .sc { display: -webkit-box; -webkit-line-clamp: 3; overflow: hidden; }
+.story-canvas .story-add-act { align-self: flex-start; }

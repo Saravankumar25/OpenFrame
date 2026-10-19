@@ -60,3 +60,31 @@ PDFs with sample data go to `release-out/pdf-samples/` for the owner's review.
 
 Rust and web tests, governance checks, end-to-end specs, a real-app walkthrough, the internal installer
 (`npm run installer:internal`, built at the owner's request of 2026-10-19), then install and check the artifact.
+
+## Overnight checklist (owner instruction 2026-10-20: finish everything, build and verify the .exe)
+
+Sources added 2026-10-20 (reference only, not committed): `Downloads/OPENFRAME_WINDOWS_UX_AUDIT_AND_REDESIGN_CLAUDE_CODE_MASTER_PROMPT.md`,
+`Downloads/OPENFRAME_WINDOWS_AI_CONTEXT_ENGINEERING_CLAUDE_CODE_MASTER_PROMPT.md`, `Downloads/openframe-chnages.docx`.
+
+### Change list and change specs
+- all_changes.docx items 1 to 11, 13 to 21: done. Item 12 Daily View export: open.
+- Change specs 01 to 05 and read_this.txt (all PDF exports, samples in release-out/pdf-samples): in progress (subagent).
+- openframe-chnages.docx 1, stripboard colours (EXT Night green, EXT Day yellow, INT Day white, INT Night light blue):
+  done in the app; the schedule PDF follows (subagent brief).
+- openframe-chnages.docx 2, Story Board act columns that scroll on their own with whole card text and a Parking Lot
+  column: done in story.css; check in the running app.
+
+### AI (OpenFrameAI.docx and the context engineering brief)
+- Done: plain and Indian-language counts, character description from evidence, category search, no false applied
+  claims, clean chat UI, greetings, product help only for app questions (its tests pending).
+- Open: scene-level facts (summary from the full scene, who speaks, speaker count, where and when, first and last line,
+  mention check), dialogue facts per character, drafts and omitted counts, follow-ups ("What about Scene 4?", "And
+  Ravi?", "Just give me the number"), gold cases, real-model evaluation after the changes, owner walkthrough.
+
+### UX audit brief
+- Open: measured geometry pass (AI panel, nav, panels, window sizes) with an E2E geometry spec; scroll ownership;
+  clipped text; additive Black on White and White on Black themes; docs/ux deliverables.
+
+### Release
+- Open: fmt, clippy, cargo test, web tests, governance, writing; E2E release suite; real-app walkthrough; installer
+  build, install, smoke; cleanup of worktrees and stale documents; handoff, progress log, local merge to main.
