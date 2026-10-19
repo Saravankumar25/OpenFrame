@@ -234,13 +234,12 @@ struct RecentlyDeletedScreen: View {
                 .accessibilityLabel("Columns: Item, Type, Deleted, Removed in, Was in")
                 .accessibilityIdentifier("trash-columns")
                 Divider().overlay(theme["line"])
-                LazyVStack(spacing: 0) {
+                VStack(spacing: 0) {
                     ForEach(model.shown, id: \.id) { item in
                         row(item)
                         Divider().overlay(theme["line"])
                     }
                 }
-                .accessibilityIdentifier("trash-list")
             }
         }
     }

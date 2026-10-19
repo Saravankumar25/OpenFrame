@@ -152,12 +152,14 @@ extension Scenarios {
     }
 
     @MainActor static func deleteNote(_ ui: UI, _ title: String) async throws {
-        guard let row = noteRows(ui, title).first else { throw DriverError("no note \(title)") }
-        for attempt in 0..<3 {
-            ui.postClick(atScreen: NSPoint(x: row.frame.midX, y: row.frame.midY))
-            await ui.idle(0.8)
+        for attempt in 0..<6 {
+            guard let row = noteRows(ui, title).first else { throw DriverError("no note \(title)") }
+            // A mouse click first, then the accessibility press when the click is not taken (the window may not be active).
+            if attempt % 2 == 1, row.performPress() { await ui.idle(0.8) } else {
+                ui.postClick(atScreen: NSPoint(x: row.frame.midX, y: row.frame.midY))
+                await ui.idle(0.8)
+            }
             if ui.exists(id: "note-delete") { break }
-            _ = attempt
         }
         try await ui.press(id: "note-delete")
         try await ui.waitText("Moved note \u{201C}\(title)\u{201D} to Recently Deleted")
@@ -920,6 +922,7 @@ extension Scenarios {
             try ui.expect(hospital.value == "Town Hospital, Station Road", "the hospital field reads: \(hospital.value)")
             try await ui.setDate(id: "av-location-start", 2027, 6, 20)
             try await ui.setDate(id: "av-location-end", 2027, 6, 22)
+            try await ui.scrollIntoView(id: "av-location-note")
             try await ui.typeIn("Track repairs", into: "av-location-note")
             try await ui.press(id: "av-add-dates")
             try await ui.waitText("Updated availability of Signal Cabin")
@@ -956,6 +959,7 @@ extension Scenarios {
                 try await ui.waitText("Added location \u{201C}Signal Cabin\u{201D}")
                 try await ui.setDate(id: "av-location-start", 2027, 6, 20)
                 try await ui.setDate(id: "av-location-end", 2027, 6, 22)
+                try await ui.scrollIntoView(id: "av-location-note")
                 try await ui.typeIn("Track repairs", into: "av-location-note")
                 try await ui.press(id: "av-add-dates")
                 try await ui.waitText("Updated availability of Signal Cabin")
@@ -1904,6 +1908,33 @@ fileprivate extension UI {
     }
 
     /// Sets a date picker without opening the system date picker.
+    /// The drawer is a scroll view: a field below the fold is scrolled into view the way a person scrolls to it.
+    func scrollIntoView(id: String) async throws {
+        func scrollViews(_ v: NSView, _ out: inout [NSScrollView]) {
+            if let sv = v as? NSScrollView { out.append(sv) }
+            for c in v.subviews { scrollViews(c, &out) }
+        }
+        for _ in 0..<40 {
+            let e = try await wait(id: id, timeout: 15, "the field \(id)")
+            guard let win = NSApp.windows.first(where: { $0.isVisible && $0.sheetParent == nil && !$0.title.isEmpty }) else { return }
+            let f = e.frame
+            if f.minY > win.frame.minY + 4 && f.maxY < win.frame.maxY { return }
+            var found: [NSScrollView] = []
+            if let root = win.contentView?.superview { scrollViews(root, &found) }
+            for sv in found {
+                guard let doc = sv.documentView else { continue }
+                let room = doc.frame.height - sv.contentView.bounds.height
+                guard room > 1 else { continue }
+                let step: CGFloat = f.minY <= win.frame.minY + 4 ? 120 : -120
+                let cur = sv.contentView.bounds.origin.y
+                let target = doc.isFlipped ? cur + (step > 0 ? 120 : -120) : cur - (step > 0 ? 120 : -120)
+                sv.contentView.scroll(to: NSPoint(x: sv.contentView.bounds.origin.x, y: min(max(0, target), room)))
+                sv.reflectScrolledClipView(sv.contentView)
+            }
+            await idle(0.1)
+        }
+    }
+
     func setDate(id: String, _ year: Int, _ month: Int, _ day: Int) async throws {
         let e = try await wait(id: id, timeout: 15, "the date field \(id)")
         func findPicker(_ o: NSObject, _ hops: Int) -> NSDatePicker? {

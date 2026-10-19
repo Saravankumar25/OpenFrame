@@ -202,10 +202,15 @@ fileprivate extension UI {
     /// Titles of a menu without choosing anything; the menu is closed again.
     func menuItemTitles(id: String) async throws -> [String] {
         let b = try await wait(id: id, role: "AXMenuButton")
-        DispatchQueue.main.async { _ = b.performPress() }
         var items: [Element] = []
-        let deadline = Date().addingTimeInterval(5)
-        while Date() < deadline { items = openMenuItems(b); if !items.isEmpty { break }; await idle(0.1) }
+        for attempt in 1...3 {
+            DispatchQueue.main.async { _ = b.performPress() }
+            let deadline = Date().addingTimeInterval(4)
+            while Date() < deadline { items = openMenuItems(b); if !items.isEmpty { break }; await idle(0.1) }
+            if !items.isEmpty { break }
+            log("the menu \(id) did not open, trying again (\(attempt))")
+        }
+        if items.isEmpty { throw DriverError("the menu \(id) did not open") }
         let names = items.map { $0.title.isEmpty ? $0.label : $0.title }
         try await escapeMenu()
         let gone = Date().addingTimeInterval(3)
@@ -2128,7 +2133,16 @@ extension Scenarios {
             try await ui.expectShows("What exists around this scene?")
             try await ui.waitUntil("the drawer title names BUS STOP") { ui.query(id: "scene-hub-title").contains { $0.text.contains("BUS STOP") } }
             try await ui.button("Close")
-            try await ui.waitUntil("the drawer closes") { !ui.exists(label: "Close", role: "AXButton") }
+            // A closed drawer may stay in the tree of the release build while it is collapsed out of sight,
+            // so "closed" means no Close button or heading that a person could see inside a window.
+            func shown(_ e: Element) -> Bool {
+                let f = e.frame
+                guard f.width > 1, f.height > 1 else { return false }
+                return NSApp.windows.contains { $0.isVisible && $0.sheetParent == nil && $0.frame.insetBy(dx: 1, dy: 1).contains(NSPoint(x: f.midX, y: f.midY)) }
+            }
+            try await ui.waitUntil("the drawer closes") {
+                !(ui.query(id: "scene-hub-title") + ui.query(id: "inspector-close")).contains(where: shown)
+            }
             try await ui.quiet()
         },
         W("44-scene-hub-comments-compare/comment-counted-and-survives-restart", phases: 2) { ui, phase, ctx in

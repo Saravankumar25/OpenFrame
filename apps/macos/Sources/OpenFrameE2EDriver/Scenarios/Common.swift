@@ -50,7 +50,16 @@ extension UI {
 
     func createProject(_ title: String) async throws {
         try await menu(["File", "New Project…"])
-        try await type(title, into: "new-project-title")
+        // The sheet may still be sliding in when its field is asked to take the keyboard.
+        var typed = false
+        for attempt in 1...3 where !typed {
+            do {
+                try await type(title, into: "new-project-title")
+                typed = true
+            } catch where attempt < 3 {
+                await idle(0.5)
+            }
+        }
         try await press(id: "new-project-create", role: "AXButton")
         try await wait(id: "project-home", timeout: 30, "Project Home after creating \(title)")
     }
