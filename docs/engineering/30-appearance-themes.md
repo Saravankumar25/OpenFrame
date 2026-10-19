@@ -8,7 +8,8 @@
 ## 1. What the user gets
 
 - **Mode:** Light, Dark or System. System follows Windows live (no restart). Mode and theme are separate settings.
-- **Theme:** OpenFrame Default (today's look, unchanged) plus the fifteen themes of the reference mocks: Studio Amber,
+- **Theme:** OpenFrame Default (today's look, unchanged), Black and White (added 2026-10-20 at the owner's request: black
+  text on white in Light, white text on black in Dark), plus the fifteen themes of the reference mocks: Studio Amber,
   Slate Noir, Midnight Reel, Teal & Orange, Courier & Cream, Cutting Room, Velvet Curtain, Sunset Boulevard, Arctic
   Frame, Neon Reel, Location Scout, Desert Dune, Colorist Neutral, Silver Screen, High Contrast.
 - **Import theme:** a `.json` file or pasted text, checked and previewed in Light and Dark before anything is saved.

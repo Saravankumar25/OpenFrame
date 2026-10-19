@@ -93,11 +93,12 @@ describe("Settings > Appearance", () => {
     expect(within(modes).getByRole("radio", { name: "System" })).toHaveAttribute("aria-checked", "true");
     const themes = screen.getByRole("radiogroup", { name: "Theme" });
     const cards = within(themes).getAllByRole("radio");
-    expect(cards).toHaveLength(16);
+    expect(cards).toHaveLength(17);
     expect(cards[0]).toHaveAccessibleName(/^OpenFrame Default/);
     expect(cards[0]).toHaveAttribute("aria-checked", "true");
     // Each card is drawn in its own theme.
-    expect(cards[3]).toHaveAttribute("data-theme", "midnight-reel");
+    expect(cards[1]).toHaveAttribute("data-theme", "black-and-white");
+    expect(cards[4]).toHaveAttribute("data-theme", "midnight-reel");
   });
 
   it("switches the mode and the theme with a click, without asking twice", async () => {
@@ -115,13 +116,13 @@ describe("Settings > Appearance", () => {
     renderWithClient(<AppearancePanel />);
     const first = await screen.findByRole("radio", { name: /^OpenFrame Default/ });
     expect(first).toHaveAttribute("tabindex", "0");
-    expect(screen.getByRole("radio", { name: /^Studio Amber/ })).toHaveAttribute("tabindex", "-1");
+    expect(screen.getByRole("radio", { name: /^Black and White/ })).toHaveAttribute("tabindex", "-1");
     first.focus();
     await user.keyboard("{ArrowRight}");
-    expect(screen.getByRole("radio", { name: /^Studio Amber/ })).toHaveFocus();
+    expect(screen.getByRole("radio", { name: /^Black and White/ })).toHaveFocus();
     await user.keyboard("{End}");
     expect(screen.getByRole("radio", { name: /^High Contrast/ })).toHaveFocus();
-    await waitFor(() => expect(calls.filter((c) => c.op === "appearance.set_theme").map((c) => c.args.themeId)).toEqual(["studio-amber", "high-contrast"]));
+    await waitFor(() => expect(calls.filter((c) => c.op === "appearance.set_theme").map((c) => c.args.themeId)).toEqual(["black-and-white", "high-contrast"]));
   });
 
   it("imports pasted theme text: check, preview, then save and apply", async () => {
