@@ -26,7 +26,7 @@ struct BreakdownCategorySettingsView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(spacing: PageSpacing.medium) {
                 BDPageHeader(title: "Categories", sub: "Breakdown category colours and icons. Every category also keeps its name and description, so colour is never the only signal.") {
                     if model.canEdit {
                         Button { Task { await model.reset() } } label: { Label("Restore Defaults", systemImage: "arrow.counterclockwise") }
@@ -43,12 +43,12 @@ struct BreakdownCategorySettingsView: View {
                     }
                     .background(theme["panel"], in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                     .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(theme["line"]))
-                    .frame(maxWidth: 860)
                 } else {
                     ProgressView().frame(maxWidth: .infinity, minHeight: 120)
                 }
             }
-            .padding(18)
+            .pageColumn(maxWidth: 900)
+            .padding(.bottom, PageSpacing.large)
         }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("categories-tab")

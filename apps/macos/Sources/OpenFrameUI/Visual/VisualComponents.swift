@@ -12,18 +12,12 @@ struct VisualPageHeader<Actions: View>: View {
     let title: String
     let subtitle: String
     @ViewBuilder var actions: () -> Actions
-    @Environment(\.ofTheme) private var theme
 
     var body: some View {
-        HStack(alignment: .firstTextBaseline, spacing: 10) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title).font(.title2.weight(.semibold)).accessibilityAddTraits(.isHeader)
-                Text(subtitle).font(.callout).foregroundStyle(theme["muted"])
-            }
-            Spacer()
-            actions()
+        PageHeader(title, subtitle: subtitle) {
+            HStack(spacing: PageSpacing.small) { actions() }
         }
-        .padding(.horizontal, 16).padding(.top, 12).padding(.bottom, 8)
+        .padding(.horizontal, PageSpacing.medium)
     }
 }
 
@@ -32,6 +26,8 @@ enum VisualTone { case info, warn, error }
 struct VisualBanner<Content: View, Actions: View>: View {
     var tone: VisualTone = .info
     var identifier: String
+    /// The space left and right of the banner. Pages that already inset their content pass 0.
+    var inset: CGFloat = PageSpacing.medium
     @ViewBuilder var content: () -> Content
     @ViewBuilder var actions: () -> Actions
     @Environment(\.ofTheme) private var theme
@@ -44,7 +40,7 @@ struct VisualBanner<Content: View, Actions: View>: View {
         .padding(.horizontal, 12).padding(.vertical, 8)
         .background(fill, in: RoundedRectangle(cornerRadius: 8))
         .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(edge))
-        .padding(.horizontal, 16).padding(.bottom, 8)
+        .padding(.horizontal, inset).padding(.bottom, PageSpacing.small)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier(identifier)
     }
@@ -277,8 +273,9 @@ struct VisualFormSheet<Content: View>: View {
     @ViewBuilder var content: () -> Content
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            Text(title).font(.title3.weight(.semibold)).accessibilityAddTraits(.isHeader)
+        VStack(alignment: .leading, spacing: PageSpacing.medium) {
+            Text(title).font(.title3.weight(.semibold)).multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity).accessibilityAddTraits(.isHeader)
             content()
             HStack {
                 Spacer()
@@ -292,7 +289,7 @@ struct VisualFormSheet<Content: View>: View {
                     .accessibilityIdentifier("\(identifier)-primary")
             }
         }
-        .padding(20)
+        .padding(PageSpacing.large)
         .frame(width: width)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier(identifier)
@@ -376,15 +373,16 @@ struct VisualExportSheet: View {
     @Environment(\.ofTheme) private var theme
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text(title).font(.title3.weight(.semibold)).accessibilityAddTraits(.isHeader)
+        VStack(alignment: .leading, spacing: PageSpacing.medium) {
+            Text(title).font(.title3.weight(.semibold)).multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity).accessibilityAddTraits(.isHeader)
             if let result {
                 done(result)
             } else {
                 form
             }
         }
-        .padding(20)
+        .padding(PageSpacing.large)
         .frame(width: 480)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier(identifier)

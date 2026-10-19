@@ -20,6 +20,7 @@ struct FilesWorkspace: View {
                 ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
+        .fitsWindow()
         .onAppear {
             if model == nil { model = FilesModel(app: app) }
         }
@@ -34,6 +35,7 @@ struct FilesScreen: View {
     private var view: FilesView { FilesView(rawValue: storedView) ?? .list }
 
     var body: some View {
+        ScrollingPage {
         VStack(alignment: .leading, spacing: 0) {
             ProjectPageHeader(title: "Project Files", subtitle: "What files belong with this film?", identifier: "files") {
                 HStack {
@@ -51,7 +53,7 @@ struct FilesScreen: View {
             }
             toolbar
             if let failure = model.loadFailure {
-                Text(failure.message).foregroundStyle(theme["red-t"]).padding(.horizontal, 24).padding(.bottom, 8)
+                Text(failure.message).foregroundStyle(theme["red-t"]).multilineTextAlignment(.center).frame(maxWidth: .infinity).padding(.horizontal, 24).padding(.bottom, 8)
                     .accessibilityIdentifier("files-load-error")
             }
             if !model.loaded {
@@ -61,10 +63,11 @@ struct FilesScreen: View {
                     FolderPanel(model: model)
                     content
                 }
-                .padding(.horizontal, 24)
-                .padding(.bottom, 16)
+                .pageColumn(maxWidth: PageSpacing.wideColumn)
+                .padding(.bottom, PageSpacing.medium)
                 .frame(maxHeight: .infinity, alignment: .top)
             }
+        }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .background(theme["bg"])
@@ -110,11 +113,11 @@ struct FilesScreen: View {
             .frame(width: 120)
             .accessibilityLabel("View")
             .accessibilityIdentifier("files-view")
-            Spacer()
             Text("Drag files here from Finder to add them.").font(.caption).foregroundStyle(theme["muted"])
         }
-        .padding(.horizontal, 24)
-        .padding(.bottom, 10)
+        .frame(maxWidth: .infinity, alignment: .center)
+        .padding(.horizontal, PageSpacing.large)
+        .padding(.bottom, PageSpacing.medium)
     }
 
     private var dropHint: some View {
@@ -154,7 +157,7 @@ struct FilesScreen: View {
                 .background(theme["panel"], in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                 .accessibilityIdentifier("files-none-shown")
         } else if view == .list {
-            ScrollView { listView }
+            Group { listView }
                 .focusable()
                 .focusEffectDisabled()
                 .onKeyPress(.delete) { deleteSelected() }
@@ -165,12 +168,10 @@ struct FilesScreen: View {
                     return .handled
                 }
         } else {
-            ScrollView {
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 220, maximum: 340), spacing: 12, alignment: .top)], spacing: 12) {
-                    ForEach(model.shown, id: \.id) { f in FileCard(model: model, file: f) }
-                }
-                .accessibilityIdentifier("files-grid")
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 220, maximum: 340), spacing: 12, alignment: .top)], spacing: 12) {
+                ForEach(model.shown, id: \.id) { f in FileCard(model: model, file: f) }
             }
+            .accessibilityIdentifier("files-grid")
         }
     }
 

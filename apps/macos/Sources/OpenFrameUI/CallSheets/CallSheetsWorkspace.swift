@@ -19,6 +19,7 @@ struct CallSheetsWorkspace: View {
                 ProgressView()
             }
         }
+        .fitsWindow()
         .task { if hub == nil { hub = CallSheetsHub(app: app) } }
     }
 }
@@ -32,7 +33,7 @@ struct CallSheetsContent: View {
         VStack(spacing: 0) {
             tabBar
             Divider()
-            content
+            content.frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .background(theme["bg"])
         .environment(hub)
@@ -55,9 +56,9 @@ struct CallSheetsContent: View {
             .fixedSize()
             .accessibilityLabel("Call sheet views")
             .accessibilityIdentifier("callsheets-tabs")
-            Spacer()
         }
-        .padding(.horizontal, 16).padding(.vertical, 8)
+        .frame(maxWidth: .infinity, alignment: .center)
+        .padding(.horizontal, PageSpacing.medium).padding(.vertical, PageSpacing.small)
     }
 
     @ViewBuilder private var content: some View {
@@ -75,21 +76,13 @@ struct CallSheetsContent: View {
     }
 }
 
-/// A page title with a line under it and actions on the right (Windows PageHeader).
+/// A page title and a line under it, centred, with the actions in a row below (Windows PageHeader).
 struct CSPageHeader<Actions: View>: View {
     let title: String
     var sub: String?
     @ViewBuilder var actions: () -> Actions
-    @Environment(\.ofTheme) private var theme
 
     var body: some View {
-        HStack(alignment: .firstTextBaseline, spacing: 10) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title).font(.title2.weight(.semibold)).accessibilityAddTraits(.isHeader)
-                if let sub { Text(sub).font(.callout).foregroundStyle(theme["muted"]) }
-            }
-            Spacer(minLength: 8)
-            actions()
-        }
+        PageHeader(title, subtitle: sub) { HStack(spacing: PageSpacing.small) { actions() } }
     }
 }

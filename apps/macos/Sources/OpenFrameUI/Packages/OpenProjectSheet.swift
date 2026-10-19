@@ -94,7 +94,7 @@ struct OpenProjectSheet: View {
                     HStack { Text(PKText.formatBytes(i.sizeBytes)).fontWeight(.semibold); IXChip(text: "Valid", tone: .green) }
                 }
                 .padding(10).frame(maxWidth: .infinity, alignment: .leading)
-                .background(theme["surface"], in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                .background(theme["surface2"], in: RoundedRectangle(cornerRadius: 8, style: .continuous))
                 .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(theme["line"]))
                 .accessibilityElement(children: .combine)
                 .accessibilityIdentifier("open-project-fact-size")
@@ -137,7 +137,7 @@ struct OpenProjectSheet: View {
             }
             .padding(10)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(theme["surface"], in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .background(theme["surface2"], in: RoundedRectangle(cornerRadius: 8, style: .continuous))
             .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(model.mode == m ? theme["accent"] : theme["line"]))
         }
         .buttonStyle(.plain)

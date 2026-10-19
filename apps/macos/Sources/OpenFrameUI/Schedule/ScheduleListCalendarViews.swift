@@ -64,12 +64,15 @@ struct ScheduleListView: View {
             }
             TableColumn("Start") { r in Text(model.startLabel(r)).monospacedDigit() }
                 .width(min: 60, ideal: 70, max: 100)
+                .alignment(.numeric)
             TableColumn("Pages") { r in Text(SchedFormat.pages(r.strip.pageEighths) + (r.strip.pagesOverridden ? "*" : "")).monospacedDigit() }
                 .width(min: 50, ideal: 60, max: 90)
+                .alignment(.numeric)
             TableColumn("Est. time") { r in
                 if let e = r.strip.estimatedMinutes { Text(SchedFormat.minutes(e)).monospacedDigit() } else { Text("Missing").foregroundStyle(theme["muted"]) }
             }
             .width(min: 60, ideal: 80, max: 110)
+            .alignment(.numeric)
             TableColumn("Cast") { r in Text(r.strip.cast.map(\.character).joined(separator: ", ")).lineLimit(1) }
             TableColumn("Actions") { r in SchedStripMenu(model: model, strip: r.strip) }
                 .width(min: 50, ideal: 56, max: 70)
@@ -110,8 +113,8 @@ struct ScheduleCalendarView: View {
                         .buttonStyle(.borderless)
                         .accessibilityLabel("Next month")
                         .accessibilityIdentifier("calendar-next")
-                    Spacer()
                 }
+                .frame(maxWidth: .infinity, alignment: .center)
                 LazyVGrid(columns: columns, spacing: 4) {
                     ForEach(SchedCalendarGrid.weekdays, id: \.self) { w in
                         Text(w).font(.caption.weight(.bold)).foregroundStyle(theme["muted"]).frame(maxWidth: .infinity)
@@ -122,22 +125,24 @@ struct ScheduleCalendarView: View {
                 .accessibilityLabel("Shooting calendar, \(monthLabel)")
                 .accessibilityIdentifier("schedule-calendar")
                 if !undated.isEmpty {
-                    VStack(alignment: .leading, spacing: 6) {
+                    VStack(spacing: 6) {
                         Text("Not yet dated").font(.headline)
                         HStack {
+                            Spacer(minLength: 0)
                             ForEach(undated, id: \.id) { d in
                                 Button("Set date of \(d.label)") { model.sheet = .day(.date(d)) }
                                     .controlSize(.small)
                                     .accessibilityIdentifier("calendar-set-date-\(d.number.map { String(Int($0)) } ?? d.id)")
                             }
+                            Spacer(minLength: 0)
                         }
                     }
                     .padding(10)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .frame(maxWidth: .infinity)
                     .background(theme["panel"], in: RoundedRectangle(cornerRadius: 8, style: .continuous))
                 }
             }
-            .padding(.horizontal, 16).padding(.bottom, 12)
+            .padding(.horizontal, PageSpacing.medium).padding(.bottom, PageSpacing.medium)
         }
     }
 

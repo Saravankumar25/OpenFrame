@@ -17,10 +17,12 @@ struct ReviewQueueSheet: View {
                     if !model.loaded {
                         ProgressView().frame(maxWidth: .infinity, minHeight: 100)
                     } else if model.items.isEmpty {
-                        VStack(alignment: .leading, spacing: 2) {
+                        VStack(spacing: 2) {
                             Text("Nothing waiting").font(.headline)
                             Text("When an imported comment can't be matched safely, it waits here for you.").foregroundStyle(.secondary)
                         }
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: .infinity)
                         .accessibilityIdentifier("review-queue-empty")
                     } else {
                         Text("Ambiguous mapping (\(model.ambiguous.count))").font(.callout.weight(.semibold))
@@ -93,7 +95,7 @@ private struct QueueRow: View {
         }
         .padding(10)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(theme["surface"], in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .background(theme["surface2"], in: RoundedRectangle(cornerRadius: 8, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(theme["line"]))
         .opacity(attached ? 0.65 : 1)
         .accessibilityElement(children: .contain)
@@ -119,6 +121,7 @@ struct PackageHistorySheet: View {
                     ForEach(PKHistoryTab.allCases, id: \.self) { Text($0.title).tag($0) }
                 }
                 .pickerStyle(.segmented).labelsHidden().fixedSize()
+                .frame(maxWidth: .infinity, alignment: .center)
                 .accessibilityLabel("History").accessibilityIdentifier("history-tabs")
                 ScrollView {
                     VStack(alignment: .leading, spacing: 6) {
@@ -243,11 +246,13 @@ struct PackageHistorySheet: View {
     }
 
     private func empty(_ title: String, detail: String? = nil, id: String) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
+        VStack(spacing: 2) {
             Text(title).font(.headline)
             if let detail { Text(detail).foregroundStyle(.secondary) }
         }
-        .padding(8)
+        .multilineTextAlignment(.center)
+        .frame(maxWidth: .infinity)
+        .padding(PageSpacing.small)
         .accessibilityIdentifier(id)
     }
 
@@ -255,7 +260,7 @@ struct PackageHistorySheet: View {
         HStack(alignment: .center, spacing: 8) { c() }
             .padding(10)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(theme["surface"], in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .background(theme["surface2"], in: RoundedRectangle(cornerRadius: 8, style: .continuous))
             .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(theme["line"]))
             .accessibilityElement(children: .contain)
     }

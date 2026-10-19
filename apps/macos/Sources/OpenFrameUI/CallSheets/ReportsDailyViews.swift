@@ -12,7 +12,8 @@ struct CSReportsView: View {
     @Environment(\.ofTheme) private var theme
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        ScrollingPage {
+        VStack(spacing: PageSpacing.medium) {
             CSPageHeader(title: "Reports", sub: "What concise production information do I need to see or send?") {
                 HStack {
                     if model.savedId == nil {
@@ -25,19 +26,27 @@ struct CSReportsView: View {
                         .accessibilityIdentifier("reports-export")
                 }
             }
-            HStack(alignment: .top, spacing: 14) {
-                sidebar.frame(width: 230)
-                main.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            ViewThatFits(in: .horizontal) {
+                HStack(alignment: .top, spacing: PageSpacing.medium) {
+                    sidebar.frame(width: 230)
+                    main.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                }
+                VStack(spacing: PageSpacing.medium) {
+                    sidebar.frame(maxWidth: .infinity)
+                    main.frame(maxWidth: .infinity, alignment: .topLeading)
+                }
             }
         }
-        .padding(16)
+        .pageColumn(maxWidth: PageSpacing.wideColumn)
+        .padding(.bottom, PageSpacing.medium)
+        }
         .task(id: "\(model.key)|\(app.changes.key(CSTables.reports))") { await model.reload() }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("reports-tab")
     }
 
     private var sidebar: some View {
-        ScrollView {
+        Group {
             VStack(alignment: .leading, spacing: 2) {
                 ForEach(CSReportKind.all) { r in
                     let on = model.savedId == nil && model.type == r.value
@@ -89,7 +98,7 @@ struct CSReportsView: View {
     @ViewBuilder private var main: some View {
         if model.savedId != nil {
             if let s = model.saved {
-                ScrollView {
+                Group {
                     VStack(alignment: .leading, spacing: 8) {
                         CSBanner(
                             tone: .info,
@@ -124,7 +133,7 @@ struct CSReportsView: View {
                     }
                 }
                 if let d = model.live {
-                    ScrollView {
+                    Group {
                         VStack(alignment: .leading, spacing: 6) {
                             Text(d.title).font(.headline)
                             CSReportTable(data: d)
@@ -150,6 +159,7 @@ struct CSReportTable: View {
                 .font(.callout).foregroundStyle(theme["muted"])
                 .accessibilityIdentifier("reports-generated")
             if !data.columns.isEmpty {
+                ScrollView(.horizontal) {
                 Grid(alignment: .topLeading, horizontalSpacing: 14, verticalSpacing: 5) {
                     GridRow {
                         ForEach(Array(data.columns.enumerated()), id: \.offset) { _, c in Text(c).fontWeight(.semibold) }
@@ -164,7 +174,9 @@ struct CSReportTable: View {
                     }
                 }
                 .font(.callout)
+                .frame(minWidth: 720, alignment: .leading)
                 .padding(10)
+                }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(theme["panel"], in: RoundedRectangle(cornerRadius: 8))
                 .overlay(RoundedRectangle(cornerRadius: 8).stroke(theme["line"]))
@@ -191,7 +203,7 @@ struct CSDailyView: View {
             if !model.loaded {
                 ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if let v = model.view, v.hasSchedule, let d = v.day {
-                ScrollView { loaded(v, d).padding(16) }
+                ScrollView { loaded(v, d).pageColumn(maxWidth: PageSpacing.wideColumn).padding(.bottom, PageSpacing.medium) }
             } else if let f = model.failure {
                 CSBanner(.err, f.message).padding(16)
             } else {
@@ -215,7 +227,7 @@ struct CSDailyView: View {
     private func loaded(_ v: ScheduleDailyView, _ d: ScheduleDailyDay) -> some View {
         let s = d.summary
         let calls = d.cast.compactMap(\.callTime)
-        return VStack(alignment: .leading, spacing: 12) {
+        return VStack(spacing: PageSpacing.medium) {
             CSPageHeader(title: d.isToday ? "Today: \(d.label)" : d.label, sub: "\(d.dateLabel ?? "No date yet") \u{00B7} What do I need to know for this day?") {
                 HStack {
                     if d.isOffDay { CSChip(text: "Off day") }
@@ -342,7 +354,7 @@ struct CSDailyView: View {
             Text(title).font(.headline)
             content()
         }
-        .padding(12)
+        .padding(PageSpacing.medium)
         .frame(maxWidth: .infinity, alignment: .topLeading)
         .background(theme["panel"], in: RoundedRectangle(cornerRadius: 8))
         .overlay(RoundedRectangle(cornerRadius: 8).stroke(theme["line"]))

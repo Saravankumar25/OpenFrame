@@ -26,7 +26,7 @@ struct MoodboardsView: View {
                     .keyboardShortcut("n", modifiers: [.command, .option])
                     .accessibilityIdentifier("moodboard-new")
             }
-            content
+            content.frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .task(id: app.changes.key(VisualTables.moodboard)) { await model.reload() }
         .sheet(item: $model.sheet) { MoodSheetHost(model: model, sheet: $0) }
@@ -67,7 +67,7 @@ struct MoodboardsView: View {
                 MoodBoardList(model: model)
                 MoodBoardCanvas(model: model).frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-            .padding(.horizontal, 16).padding(.bottom, 12)
+            .padding(.horizontal, PageSpacing.medium).padding(.bottom, PageSpacing.medium)
         }
     }
 }
@@ -138,7 +138,7 @@ private struct MoodBoardCanvas: View {
     }
 
     private var toolbar: some View {
-        HStack(spacing: 8) {
+        CenteredWrap(spacing: 8, lineSpacing: PageSpacing.small) {
             Menu {
                 Button("From File\u{2026}") { addFromFile() }
                     .accessibilityIdentifier("moodboard-add-image-file")
@@ -151,7 +151,6 @@ private struct MoodBoardCanvas: View {
                 .accessibilityIdentifier("moodboard-add-note")
             Button { model.sheet = .link } label: { Label("Add Link", systemImage: "link") }
                 .accessibilityIdentifier("moodboard-add-link")
-            Spacer()
             if let item = model.single {
                 SelectionBar(model: model, item: item)
             } else if model.selected.count > 1 {
@@ -161,9 +160,10 @@ private struct MoodBoardCanvas: View {
                     .accessibilityIdentifier("moodboard-delete-selected")
             } else {
                 Text("Drag to move. Shift-click to select several. Arrow keys nudge. Paste images or links with Command V.")
-                    .font(.caption).foregroundStyle(theme["muted"]).lineLimit(1)
+                    .font(.caption).foregroundStyle(theme["muted"]).multilineTextAlignment(.center)
             }
         }
+        .frame(maxWidth: .infinity, alignment: .center)
         .controlSize(.small)
     }
 
@@ -172,7 +172,11 @@ private struct MoodBoardCanvas: View {
         if !paths.isEmpty { Task { await model.addImages(paths: paths) } }
     }
 
-    private var canvas: some View {
+    /// The canvas takes the room the page gives it; its scroll view would otherwise ask for the
+    /// full height of the board and push the page out of the window.
+    private var canvas: some View { canvasBody.fitsWindow() }
+
+    private var canvasBody: some View {
         let extent = model.extent
         return ScrollView([.horizontal, .vertical]) {
             ZStack(alignment: .topLeading) {

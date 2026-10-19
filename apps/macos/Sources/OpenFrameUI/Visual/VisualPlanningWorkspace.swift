@@ -18,6 +18,7 @@ struct VisualPlanningWorkspace: View {
                 ProgressView()
             }
         }
+        .fitsWindow()
         .task { if hub == nil { hub = VisualHub(app: app) } }
     }
 }
@@ -71,8 +72,8 @@ struct VisualContent: View {
             .fixedSize()
             .accessibilityLabel("Visual Planning")
             .accessibilityIdentifier("visual-tabs")
-            Spacer()
         }
-        .padding(.horizontal, 16).padding(.vertical, 8)
+        .frame(maxWidth: .infinity, alignment: .center)
+        .padding(.horizontal, PageSpacing.medium).padding(.vertical, PageSpacing.small)
     }
 }

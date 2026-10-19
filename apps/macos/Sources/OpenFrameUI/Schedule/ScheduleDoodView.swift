@@ -44,11 +44,11 @@ struct SchedDoodScreen: View {
 
     private func report(_ v: ScheduleDoodView) -> some View {
         let corrected = model.correctedCount
-        return VStack(alignment: .leading, spacing: 0) {
+        return VStack(spacing: 0) {
             toolbar(v, corrected)
             if v.staleCorrections > 0 {
                 BDBanner(.warn, "\(SchedFormat.plural(Int(v.staleCorrections), "correction")) \(v.staleCorrections == 1 ? "is" : "are") kept for a cast member or day that is no longer in the schedule and not shown.")
-                    .padding(.horizontal, 16).padding(.bottom, 8)
+                    .padding(.horizontal, PageSpacing.medium).padding(.bottom, PageSpacing.small)
                     .accessibilityIdentifier("dood-stale")
             }
             if v.rows.isEmpty {
@@ -57,21 +57,25 @@ struct SchedDoodScreen: View {
                     .accessibilityIdentifier("dood-no-cast")
                 Spacer()
             } else {
-                ScrollView([.horizontal, .vertical]) {
-                    VStack(alignment: .leading, spacing: 8) {
-                        grid(v)
-                        Text(v.legend.map { "\($0.code) \($0.meaning.lowercased())" }.joined(separator: " \u{00B7} ") + ". * corrected by hand. Built from the cast confirmed in Breakdown and the scenes on each day; corrections never change the schedule.")
-                            .font(.caption).foregroundStyle(theme["muted"])
-                            .frame(maxWidth: 760, alignment: .leading)
+                GeometryReader { geo in
+                    ScrollView([.horizontal, .vertical]) {
+                        VStack(spacing: PageSpacing.small) {
+                            grid(v)
+                            Text(v.legend.map { "\($0.code) \($0.meaning.lowercased())" }.joined(separator: " \u{00B7} ") + ". * corrected by hand. Built from the cast confirmed in Breakdown and the scenes on each day; corrections never change the schedule.")
+                                .font(.caption).foregroundStyle(theme["muted"])
+                                .multilineTextAlignment(.center)
+                                .frame(maxWidth: 760)
+                        }
+                        .padding(PageSpacing.medium)
+                        .frame(minWidth: geo.size.width, minHeight: geo.size.height, alignment: .top)
                     }
-                    .padding(16)
                 }
             }
         }
     }
 
     private func toolbar(_ v: ScheduleDoodView, _ corrected: Int) -> some View {
-        HStack(spacing: 10) {
+        CenteredWrap(spacing: 10, lineSpacing: PageSpacing.small) {
             picker("Cast to show", $model.doodCast, [("", "All cast")] + v.allCast.map { ($0.key, $0.label) }, "dood-cast")
             picker("First day", $model.doodFrom, [("", "From the first day")] + v.allDays.map { ($0.id, $0.title) }, "dood-from")
             picker("Last day", $model.doodTo, [("", "To the last day")] + v.allDays.map { ($0.id, $0.title) }, "dood-to")
@@ -82,12 +86,11 @@ struct SchedDoodScreen: View {
             .labelsHidden().fixedSize()
             .accessibilityLabel("Code style")
             .accessibilityIdentifier("dood-code-style")
-            Spacer()
             if corrected > 0 { SchedChip(text: "\(corrected) corrected by hand", tone: .yellow).accessibilityIdentifier("dood-corrected") }
             Button { model.sheet = .export(.dood) } label: { Label("Export", systemImage: "square.and.arrow.up") }
                 .accessibilityIdentifier("dood-export")
         }
-        .padding(.horizontal, 16).padding(.vertical, 8)
+        .padding(.horizontal, PageSpacing.medium).padding(.vertical, PageSpacing.small)
     }
 
     private func picker(_ label: String, _ value: Binding<String>, _ options: [(String, String)], _ id: String) -> some View {

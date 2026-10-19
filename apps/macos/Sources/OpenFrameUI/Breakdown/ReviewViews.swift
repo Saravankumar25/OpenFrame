@@ -9,7 +9,7 @@ struct NeedsReviewView: View {
     @Environment(\.ofTheme) private var theme
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(spacing: PageSpacing.medium) {
             ReviewHeader(title: "Needs Review", sub: "Scenes whose script changed after production planning began.") { model.mode = .scene }
             let list = model.reviewRows.filter(\.needsReview)
             if list.isEmpty {
@@ -39,7 +39,8 @@ struct NeedsReviewView: View {
                 .listStyle(.inset)
             }
         }
-        .padding(18)
+        .pageColumn(maxWidth: PageSpacing.column)
+        .padding(.bottom, PageSpacing.medium)
         .accessibilityIdentifier("needs-review")
     }
 }
@@ -55,9 +56,9 @@ struct HistoricalView: View {
             s.elements = s.elements.filter { showArchived || !$0.archived }
             return s
         }.filter { !$0.elements.isEmpty }
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(spacing: PageSpacing.medium) {
             ReviewHeader(title: "Removed scenes", sub: "Scene removed from current source. Production data is kept here so nothing is lost; archive what you no longer need.") { model.mode = .scene }
-            Toggle("Show archived", isOn: $showArchived).toggleStyle(.checkbox)
+            Toggle("Show archived", isOn: $showArchived).toggleStyle(.checkbox).frame(maxWidth: .infinity, alignment: .center)
             if scenes.isEmpty {
                 ContentUnavailableView("Nothing kept from removed scenes.", systemImage: "clock.arrow.circlepath",
                                        description: Text("When a script update removes a scene, its breakdown stays here."))
@@ -93,7 +94,8 @@ struct HistoricalView: View {
                 .listStyle(.inset)
             }
         }
-        .padding(18)
+        .pageColumn(maxWidth: PageSpacing.column)
+        .padding(.bottom, PageSpacing.medium)
         .accessibilityIdentifier("removed-scenes")
     }
 }
@@ -104,15 +106,14 @@ private struct ReviewHeader: View {
     let back: () -> Void
 
     var body: some View {
-        HStack(alignment: .top) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title).font(.title3.weight(.semibold)).accessibilityAddTraits(.isHeader)
-                Text(sub).font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+        VStack(spacing: PageSpacing.small) {
+            HStack {
+                Button { back() } label: { Label("Back to Breakdown", systemImage: "chevron.left") }
+                    .keyboardShortcut(.cancelAction)
+                    .accessibilityIdentifier("back-to-breakdown")
+                Spacer(minLength: 0)
             }
-            Spacer()
-            Button { back() } label: { Label("Back to Breakdown", systemImage: "chevron.left") }
-                .keyboardShortcut(.cancelAction)
-                .accessibilityIdentifier("back-to-breakdown")
+            PageHeader(title, subtitle: sub)
         }
     }
 }

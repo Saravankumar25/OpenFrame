@@ -269,26 +269,39 @@ struct ScriptPaneView: View {
                              marks: marks, colors: colors, palette: ScriptColors(theme: theme))
     }
 
-    var body: some View {
-        VStack(spacing: 0) {
-            HStack(spacing: 8) {
-                Text("Script").font(.headline)
-                if !detail.inSource { BDChip(text: "Scene removed from current source") }
-                Spacer()
-                if model.canEdit, detail.inSource {
-                    Menu {
-                        ForEach(BDCategory.all, id: \.self) { c in
-                            Button(hub.look(c).label) { model.tagSelection(category: c) }
-                        }
-                    } label: {
+    /// The pane title and the tag menu. In a narrow pane the menu keeps only its icon.
+    private func paneHeader(iconOnly: Bool) -> some View {
+        HStack(spacing: 8) {
+            Text("Script").font(.headline).fixedSize()
+            if !detail.inSource { BDChip(text: "Scene removed from current source") }
+            Spacer(minLength: 0)
+            if model.canEdit, detail.inSource {
+                Menu {
+                    ForEach(BDCategory.all, id: \.self) { c in
+                        Button(hub.look(c).label) { model.tagSelection(category: c) }
+                    }
+                } label: {
+                    if iconOnly {
+                        Label("Tag Selection as", systemImage: "tag").labelStyle(.iconOnly)
+                    } else {
                         Label("Tag Selection as", systemImage: "tag")
                     }
-                    .menuStyle(.borderlessButton)
-                    .fixedSize()
-                    .disabled(model.selection == nil)
-                    .help("Select words in the script, then choose a category")
-                    .accessibilityIdentifier("script-tag-menu")
                 }
+                .menuStyle(.borderlessButton)
+                .fixedSize()
+                .disabled(model.selection == nil)
+                .help("Select words in the script, then choose a category")
+                .accessibilityLabel("Tag Selection as")
+                .accessibilityIdentifier("script-tag-menu")
+            }
+        }
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            ViewThatFits(in: .horizontal) {
+                paneHeader(iconOnly: false)
+                paneHeader(iconOnly: true)
             }
             .padding(.horizontal, 14).padding(.vertical, 8)
             Divider()

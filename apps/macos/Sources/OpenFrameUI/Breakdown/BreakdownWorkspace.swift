@@ -21,6 +21,7 @@ struct BreakdownWorkspace: View {
                 ProgressView()
             }
         }
+        .fitsWindow()
         .task { if hub == nil { hub = BreakdownHub(app: app) } }
     }
 }
@@ -34,7 +35,7 @@ struct BreakdownContent: View {
         VStack(spacing: 0) {
             tabBar
             Divider()
-            content
+            content.frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .background(theme["bg"])
         .overlay(alignment: .bottom) { BDNoticeBar(hub: hub) }
@@ -55,9 +56,9 @@ struct BreakdownContent: View {
             .fixedSize()
             .accessibilityLabel("Production")
             .accessibilityIdentifier("breakdown-tabs")
-            Spacer()
         }
-        .padding(.horizontal, 16).padding(.vertical, 8)
+        .frame(maxWidth: .infinity, alignment: .center)
+        .padding(.horizontal, PageSpacing.medium).padding(.vertical, PageSpacing.small)
     }
 
     @ViewBuilder private var content: some View {
@@ -136,10 +137,12 @@ struct BreakdownTabView: View {
             if let src = model.source { sourceBar(src) }
             if let newer = model.newerDraft { newerBar(newer) }
             if let f = model.view?.catalogFilter { catalogBar(f) }
-            HStack(spacing: 0) {
-                SceneListView(model: model).frame(width: 270)
-                Divider()
-                center
+            GeometryReader { geo in
+                HStack(spacing: 0) {
+                    SceneListView(model: model).frame(width: geo.size.width < 1000 ? 210 : 250)
+                    Divider()
+                    center
+                }
             }
         }
     }
@@ -147,13 +150,14 @@ struct BreakdownTabView: View {
     private func sourceBar(_ src: ProductionSourceInfo) -> some View {
         let locked = src.draft.status == "Locked"
         return HStack(spacing: 8) {
+            Spacer(minLength: 0)
             Image(systemName: locked ? "lock" : "doc.text").accessibilityHidden(true)
             (Text("Production Source: \(src.draft.name) of \(BDText.quoted(src.draft.screenplayTitle))").bold()
                 + Text((locked ? " \u{00B7} Locked" : " \u{00B7} \(src.draft.status)") + " \u{00B7} " + BDText.plural(model.total, "scene")
                        + (model.detail?.number.map { " \u{00B7} Scene \($0) of \(model.total)" } ?? "")))
                 .lineLimit(2)
+                .multilineTextAlignment(.center)
                 .accessibilityIdentifier("production-source-line")
-            Spacer()
             if model.canEdit {
                 Button("Change source") { model.sheet = .selectSource }.controlSize(.small)
                     .accessibilityIdentifier("change-source")
@@ -161,40 +165,45 @@ struct BreakdownTabView: View {
         }
         .font(.callout)
         .foregroundStyle(theme["blue-t"])
-        .padding(.horizontal, 14).padding(.vertical, 7)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, PageSpacing.medium).padding(.vertical, 7)
+        .frame(maxWidth: .infinity)
         .background(theme["blue-soft"])
         .accessibilityElement(children: .contain)
     }
 
     private func newerBar(_ newer: ProductionDraftInfo) -> some View {
         HStack(spacing: 8) {
+            Spacer(minLength: 0)
             Image(systemName: "exclamationmark.triangle").accessibilityHidden(true)
             (Text("Newer revision available: ").bold() + Text("\(newer.name). Production stays on \(model.source?.draft.name ?? "the current draft") until you review the update."))
-            Spacer()
+                .multilineTextAlignment(.center)
             if model.canEdit {
                 Button("Review Production Update") { model.sheet = .updateSource(newer.id) }.controlSize(.small)
             }
             Button("Dismiss") { model.dismissedNewer = newer.id }.controlSize(.small)
+            Spacer(minLength: 0)
         }
         .font(.callout)
         .foregroundStyle(theme["yellow-t"])
-        .padding(.horizontal, 14).padding(.vertical, 7)
+        .padding(.horizontal, PageSpacing.medium).padding(.vertical, 7)
+        .frame(maxWidth: .infinity)
         .background(theme["yellow-soft"])
     }
 
     private func catalogBar(_ f: BreakdownCatalogFilter) -> some View {
         HStack(spacing: 8) {
+            Spacer(minLength: 0)
             Image(systemName: "line.3.horizontal.decrease.circle").accessibilityHidden(true)
             Text("Showing the \(BDText.plural(model.rows.count, "scene")) that use \(f.name) (\(f.category.rawValue)).")
                 .accessibilityIdentifier("catalog-filter-line")
-            Spacer()
             Button("Show all scenes") { model.clearCatalogFilter() }.controlSize(.small)
                 .accessibilityIdentifier("show-all-scenes")
+            Spacer(minLength: 0)
         }
         .font(.callout)
         .foregroundStyle(theme["blue-t"])
-        .padding(.horizontal, 14).padding(.vertical, 7)
+        .padding(.horizontal, PageSpacing.medium).padding(.vertical, 7)
+        .frame(maxWidth: .infinity)
         .background(theme["blue-soft"])
     }
 
@@ -210,10 +219,15 @@ struct BreakdownTabView: View {
                 ContentUnavailableView("No scenes match this filter.", systemImage: "line.3.horizontal.decrease.circle",
                                        description: Text("Choose another filter, or show all scenes."))
             } else if let d = model.detail {
-                HStack(spacing: 0) {
-                    ScriptPaneView(model: model, detail: d).frame(minWidth: 300)
-                    Divider()
-                    ElementsPanelView(model: model, detail: d).frame(width: 360)
+                // The elements panel takes up to 360 points, less when the window is narrow, and the
+                // script takes the rest. Fixed widths from the room given, so no pane asks for more.
+                GeometryReader { geo in
+                    let side = min(360, max(250, geo.size.width * 0.38))
+                    HStack(spacing: 0) {
+                        ScriptPaneView(model: model, detail: d).frame(width: max(120, geo.size.width - side - 1))
+                        Divider()
+                        ElementsPanelView(model: model, detail: d).frame(width: side)
+                    }
                 }
             } else if let f = model.detailFailure {
                 BDBanner(.err, f.message).padding(14).frame(maxHeight: .infinity, alignment: .top)

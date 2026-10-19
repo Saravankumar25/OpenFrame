@@ -15,9 +15,10 @@ struct ScheduleDayView: View {
             header
             Divider()
             HStack(alignment: .top, spacing: 14) {
-                ScrollView { items.padding(16) }
-                ScrollView { side.padding(14) }
-                    .frame(width: 330)
+                ScrollView { items.padding(PageSpacing.medium) }
+                    .frame(minWidth: 0, maxWidth: .infinity)
+                ScrollView { side.padding(PageSpacing.medium) }
+                    .frame(minWidth: 280, idealWidth: 330, maxWidth: 330)
                     .background(theme["panel"])
             }
         }
@@ -28,19 +29,39 @@ struct ScheduleDayView: View {
 
     // MARK: Header
 
+    private var titleBlock: some View {
+        VStack(spacing: 1) {
+            Text(day.title).font(.title3.weight(.semibold)).accessibilityAddTraits(.isHeader)
+                .accessibilityIdentifier("day-title")
+            Text(day.isOffDay ? "Off day: no scenes, notes allowed." : "What exactly are we doing on this day?")
+                .font(.callout).foregroundStyle(theme["muted"])
+                .accessibilityIdentifier("day-subtitle")
+        }
+        .multilineTextAlignment(.center)
+    }
+
+    /// The title sits in the middle with the buttons on both sides. In a narrow window the title
+    /// takes its own line above the buttons instead of being squeezed between them.
     private var header: some View {
-        HStack(alignment: .firstTextBaseline, spacing: 10) {
+        ViewThatFits(in: .horizontal) {
+            ZStack {
+                titleBlock.padding(.horizontal, 300)
+                headerControls
+            }
+            VStack(spacing: PageSpacing.small) {
+                titleBlock
+                headerControls
+            }
+        }
+        .padding(.horizontal, PageSpacing.medium).padding(.vertical, 10)
+    }
+
+    private var headerControls: some View {
+        HStack(alignment: .center, spacing: 10) {
             Button { model.openDayId = nil } label: { Label("Back to schedule", systemImage: "chevron.left") }
                 .keyboardShortcut("[", modifiers: .command)
                 .accessibilityIdentifier("day-back")
-            VStack(alignment: .leading, spacing: 1) {
-                Text(day.title).font(.title3.weight(.semibold)).accessibilityAddTraits(.isHeader)
-                    .accessibilityIdentifier("day-title")
-                Text(day.isOffDay ? "Off day: no scenes, notes allowed." : "What exactly are we doing on this day?")
-                    .font(.callout).foregroundStyle(theme["muted"])
-                    .accessibilityIdentifier("day-subtitle")
-            }
-            Spacer()
+            Spacer(minLength: 0)
             Button("Edit date") { model.sheet = .day(.date(day)) }.accessibilityIdentifier("day-edit-date")
             Menu("Add break") {
                 Button("Meal Break") { model.sheet = .marker(SchedMarkerDialogMode(dayId: day.id, type: "Meal")) }
@@ -57,7 +78,6 @@ struct ScheduleDayView: View {
             .accessibilityIdentifier("day-add-break")
             SchedDayMenu(model: model, day: day, detail: true)
         }
-        .padding(.horizontal, 16).padding(.vertical, 10)
     }
 
     // MARK: Scenes and breaks

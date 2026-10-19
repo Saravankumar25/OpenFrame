@@ -17,6 +17,7 @@ struct NotesWorkspace: View {
                 ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
+        .fitsWindow()
         .onAppear {
             if model == nil { model = NotesModel(app: app) }
         }
@@ -30,6 +31,7 @@ struct NotesScreen: View {
     private var drawerOpen: Bool { model.openNoteId != nil || model.openTask != nil }
 
     var body: some View {
+        ScrollingPage {
         VStack(alignment: .leading, spacing: 0) {
             ProjectPageHeader(title: "Notes & Tasks", subtitle: "Small things that do not belong anywhere else.", identifier: "notes") {
                 HStack {
@@ -41,17 +43,22 @@ struct NotesScreen: View {
                 }
             }
             if let failure = model.loadFailure {
-                Text(failure.message).foregroundStyle(theme["red-t"]).padding(.horizontal, 24)
+                Text(failure.message).foregroundStyle(theme["red-t"]).multilineTextAlignment(.center).frame(maxWidth: .infinity).padding(.horizontal, 24)
                     .accessibilityIdentifier("notes-load-error")
             }
-            ScrollView {
-                HStack(alignment: .top, spacing: 14) {
+            ViewThatFits(in: .horizontal) {
+                HStack(alignment: .top, spacing: PageSpacing.medium) {
                     notesPanel
                     tasksPanel
                 }
-                .padding(.horizontal, 24)
-                .padding(.bottom, 24)
+                VStack(spacing: PageSpacing.medium) {
+                    notesPanel
+                    tasksPanel
+                }
             }
+            .pageColumn(maxWidth: PageSpacing.wideColumn)
+            .padding(.bottom, PageSpacing.large)
+        }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .background(theme["bg"])

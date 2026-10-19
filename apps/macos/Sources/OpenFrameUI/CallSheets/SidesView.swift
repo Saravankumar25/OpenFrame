@@ -26,14 +26,17 @@ struct CSSidesView: View {
                 .accessibilityElement(children: .contain)
                 .accessibilityIdentifier("sides-empty")
             } else {
-                VStack(alignment: .leading, spacing: 12) {
+                ScrollingPage {
+                VStack(spacing: PageSpacing.medium) {
                     CSPageHeader(title: "Sides", sub: "What script pages does this team need for this shooting day?") { EmptyView() }
-                    HStack(alignment: .top, spacing: 14) {
+                    HStack(alignment: .top, spacing: PageSpacing.medium) {
                         setup.frame(width: 320)
-                        preview.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                        preview.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                     }
                 }
-                .padding(16)
+                .pageColumn(maxWidth: PageSpacing.wideColumn)
+                .padding(.bottom, PageSpacing.medium)
+                }
             }
         }
         .task(id: app.changes.key(CSTables.sides)) { await model.reload() }
@@ -45,7 +48,7 @@ struct CSSidesView: View {
     // MARK: Setup
 
     private var setup: some View {
-        ScrollView {
+        Group {
             VStack(alignment: .leading, spacing: 8) {
                 Text("Setup").font(.headline)
                 if model.days.isEmpty {
@@ -127,7 +130,7 @@ struct CSSidesView: View {
                     }
                 }
             }
-            .padding(12)
+            .padding(PageSpacing.medium)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .background(theme["panel"], in: RoundedRectangle(cornerRadius: 8))
@@ -139,7 +142,7 @@ struct CSSidesView: View {
     @ViewBuilder private var preview: some View {
         if model.openId != nil {
             if let s = model.openSaved {
-                ScrollView {
+                Group {
                     VStack(alignment: .leading, spacing: 8) {
                         CSBanner(tone: .info, text: "Saved snapshot \u{201C}\(s.title)\u{201D} \u{00B7} \(CSFormat.dateTime(s.createdAt))") {
                             HStack {
@@ -150,7 +153,7 @@ struct CSSidesView: View {
                             }
                             .controlSize(.small)
                         }
-                        CSSidesPaper(content: s.content)
+                        CSSidesPaper(content: s.content).frame(maxWidth: .infinity)
                     }
                 }
             } else if let f = model.openFailure {
@@ -160,12 +163,13 @@ struct CSSidesView: View {
             }
         } else if !model.ready {
             Text("Choose a shooting day and at least one scene\(model.forMode == .selected ? " and cast member" : "") to preview the sides.")
-                .foregroundStyle(theme["muted"]).padding(20)
+                .foregroundStyle(theme["muted"]).padding(PageSpacing.large)
+                .multilineTextAlignment(.center).frame(maxWidth: .infinity)
                 .accessibilityIdentifier("sides-choose-hint")
         } else if let f = model.previewFailure {
             CSBanner(.warn, f.message).accessibilityIdentifier("sides-preview-error")
         } else if let c = model.preview {
-            ScrollView { CSSidesPaper(content: c) }
+            CSSidesPaper(content: c).frame(maxWidth: .infinity).padding(.bottom, PageSpacing.medium)
         } else {
             ProgressView()
         }

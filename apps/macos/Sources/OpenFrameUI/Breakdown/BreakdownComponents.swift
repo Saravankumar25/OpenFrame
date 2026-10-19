@@ -94,11 +94,12 @@ struct BDSheetFrame<Content: View, Footer: View, Leading: View>: View {
     @Environment(\.ofTheme) private var theme
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title).font(.title3.weight(.semibold)).accessibilityAddTraits(.isHeader)
-                if let sub { Text(sub).font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true) }
+        VStack(alignment: .leading, spacing: PageSpacing.medium) {
+            VStack(spacing: PageSpacing.tight) {
+                Text(title).font(.title3.weight(.semibold)).multilineTextAlignment(.center).accessibilityAddTraits(.isHeader)
+                if let sub { Text(sub).font(.callout).foregroundStyle(.secondary).multilineTextAlignment(.center).fixedSize(horizontal: false, vertical: true) }
             }
+            .frame(maxWidth: .infinity)
             content()
             HStack(spacing: 8) {
                 leading()
@@ -106,7 +107,7 @@ struct BDSheetFrame<Content: View, Footer: View, Leading: View>: View {
                 footer()
             }
         }
-        .padding(22)
+        .padding(PageSpacing.large)
         .frame(width: width)
         .background(theme["panel"])
     }

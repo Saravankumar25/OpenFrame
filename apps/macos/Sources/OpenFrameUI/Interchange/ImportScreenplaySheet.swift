@@ -87,7 +87,7 @@ struct ImportScreenplaySheet: View {
             }
         }
         .frame(width: 250, height: 190)
-        .background(theme["surface"], in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .background(theme["surface2"], in: RoundedRectangle(cornerRadius: 10, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(theme["line2"], style: StrokeStyle(lineWidth: 1, dash: [5, 4])))
         .onDrop(of: [.fileURL], isTargeted: nil) { providers in
             guard let provider = providers.first else { return false }
@@ -108,7 +108,7 @@ struct ImportScreenplaySheet: View {
                 .font(.system(size: 12.5, design: .monospaced))
                 .scrollContentBackground(.hidden)
                 .padding(6)
-                .background(theme["surface"], in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                .background(theme["surface2"], in: RoundedRectangle(cornerRadius: 8, style: .continuous))
                 .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(theme["line"]))
                 .disabled(model.path != nil || model.sample != nil)
                 .opacity(model.path != nil || model.sample != nil ? 0.5 : 1)
@@ -395,7 +395,7 @@ struct IXWarningList: View {
         }
         .padding(10)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(theme["surface"], in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .background(theme["surface2"], in: RoundedRectangle(cornerRadius: 8, style: .continuous))
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Import warnings")
         .accessibilityIdentifier(id)

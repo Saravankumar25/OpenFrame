@@ -50,14 +50,7 @@ struct BDPageHeader<Actions: View>: View {
     @ViewBuilder var actions: () -> Actions
 
     var body: some View {
-        HStack(alignment: .top) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title).font(.title2.weight(.semibold)).accessibilityAddTraits(.isHeader)
-                Text(sub).font(.callout).foregroundStyle(.secondary)
-            }
-            Spacer()
-            actions()
-        }
+        PageHeader(title, subtitle: sub) { actions() }
     }
 }
 
@@ -82,7 +75,8 @@ struct CatalogView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        ScrollingPage {
+        VStack(spacing: PageSpacing.medium) {
             BDPageHeader(title: "Catalog", sub: "What things does this film need? Reusable items, not one huge spreadsheet.") {
                 if model.canEdit {
                     Button { model.sheet = .add(model.filter ?? .props) } label: { Label("Add Item", systemImage: "plus") }
@@ -93,7 +87,9 @@ struct CatalogView: View {
             toolbar
             list
         }
-        .padding(18)
+        .pageColumn(maxWidth: PageSpacing.wideColumn)
+        .padding(.bottom, PageSpacing.medium)
+        }
         .task(id: reloadKey) {
             if !model.search.isEmpty { try? await Task.sleep(for: .milliseconds(150)) }
             guard !Task.isCancelled else { return }
@@ -110,7 +106,7 @@ struct CatalogView: View {
     }
 
     private var toolbar: some View {
-        HStack(spacing: 10) {
+        CenteredWrap(spacing: 10, lineSpacing: PageSpacing.small) {
             HStack(spacing: 4) {
                 Image(systemName: "magnifyingglass").foregroundStyle(theme["muted"]).accessibilityHidden(true)
                 TextField("Search catalog", text: $model.search)
@@ -134,10 +130,10 @@ struct CatalogView: View {
             .menuStyle(.borderlessButton)
             .fixedSize()
             .accessibilityLabel("More categories")
-            Spacer()
             Toggle("Show archived", isOn: $model.showArchived).toggleStyle(.checkbox)
                 .accessibilityIdentifier("catalog-show-archived")
         }
+        .frame(maxWidth: .infinity, alignment: .center)
     }
 
     @ViewBuilder private var list: some View {
@@ -188,6 +184,7 @@ struct CatalogView: View {
             .onDeleteCommand {
                 if let i = model.selected, model.canEdit { model.sheet = .delete(i) }
             }
+            .frame(minHeight: 280)
             .accessibilityLabel("Catalog items")
             .accessibilityIdentifier("catalog-table")
         }

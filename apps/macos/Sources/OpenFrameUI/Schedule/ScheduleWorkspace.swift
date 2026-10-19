@@ -43,10 +43,13 @@ struct ScheduleContent: View {
         VStack(spacing: 0) {
             sectionBar
             Divider()
-            switch model.section {
-            case .schedule: scheduleTab
-            case .dood: SchedDoodScreen(model: model)
+            Group {
+                switch model.section {
+                case .schedule: scheduleTab
+                case .dood: SchedDoodScreen(model: model)
+                }
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .background(theme["bg"])
         .task(id: dataKey) { await model.reload() }
@@ -58,13 +61,11 @@ struct ScheduleContent: View {
     }
 
     private var sectionBar: some View {
-        HStack(spacing: 12) {
-            SchedTabs(
-                items: SchedSection.allCases.map { .init(value: $0, title: $0.title, symbol: nil, id: "schedule-section-\($0.rawValue)") },
-                selection: $model.section, label: "Production", identifier: "schedule-sections")
-            Spacer()
-        }
-        .padding(.horizontal, 16).padding(.vertical, 8)
+        SchedTabs(
+            items: SchedSection.allCases.map { .init(value: $0, title: $0.title, symbol: nil, id: "schedule-section-\($0.rawValue)") },
+            selection: $model.section, label: "Production", identifier: "schedule-sections")
+            .frame(maxWidth: .infinity, alignment: .center)
+            .padding(.horizontal, PageSpacing.medium).padding(.vertical, PageSpacing.small)
     }
 
     // MARK: Schedule tab
@@ -123,7 +124,7 @@ struct ScheduleContent: View {
 
     private var board: some View {
         HStack(spacing: 0) {
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(spacing: PageSpacing.small) {
                 banners
                 toolbar
                 if model.mode != .calendar { ScheduleFilterBar(model: model) }
@@ -134,11 +135,11 @@ struct ScheduleContent: View {
                 }
                 if let h = model.view?.history, !h.isEmpty, model.mode == .list {
                     Text("\(SchedFormat.plural(h.count, "scene")) \(h.count == 1 ? "was" : "were") removed from the schedule after script changes (kept in schedule history).")
-                        .font(.caption).foregroundStyle(theme["muted"]).padding(.horizontal, 16)
+                        .font(.caption).foregroundStyle(theme["muted"]).multilineTextAlignment(.center).padding(.horizontal, PageSpacing.medium)
                         .accessibilityIdentifier("schedule-history-note")
                 }
             }
-            .frame(maxWidth: .infinity, alignment: .topLeading)
+            .frame(maxWidth: .infinity, alignment: .top)
             drawer
         }
     }
@@ -174,7 +175,7 @@ struct ScheduleContent: View {
     }
 
     private var toolbar: some View {
-        HStack(spacing: 10) {
+        CenteredWrap(spacing: 10, lineSpacing: PageSpacing.small) {
             SchedTabs(
                 items: SchedMode.allCases.map { .init(value: $0, title: $0.title, symbol: $0.symbol, id: "schedule-mode-\($0.rawValue)") },
                 selection: $model.mode, label: "Schedule view", identifier: "schedule-modes")
@@ -188,7 +189,6 @@ struct ScheduleContent: View {
                 .accessibilityIdentifier("add-off-day")
             Button { model.drawer = .suggestions } label: { Label("Suggest Grouping", systemImage: "sparkles") }
                 .accessibilityIdentifier("suggest-grouping")
-            Spacer()
             Button { model.drawer = .warnings } label: {
                 Label(model.warningsLabel, systemImage: "exclamationmark.triangle")
                     .foregroundStyle(model.openWarningCount > 0 ? theme["red-t"] : theme["green-t"])
@@ -205,7 +205,7 @@ struct ScheduleContent: View {
             Button { model.sheet = .export(.schedule(currentDayId: nil)) } label: { Label("Export", systemImage: "square.and.arrow.up") }
                 .accessibilityIdentifier("schedule-export")
         }
-        .padding(.horizontal, 16)
+        .padding(.horizontal, PageSpacing.medium)
     }
 }
 
@@ -219,7 +219,7 @@ struct ScheduleFilterBar: View {
         let opts = model.view?.filterOptions ?? SchedFilterOptions()
         let total = model.allStrips.count
         let shown = model.matches?.count ?? total
-        HStack(spacing: 8) {
+        CenteredWrap(spacing: 8, lineSpacing: PageSpacing.small) {
             menu("Filter by location", $model.filter.location, [("", "All locations")] + opts.locations.map { ($0.value, $0.label) }, "filter-location")
             menu("Filter by cast", $model.filter.cast, [("", "All cast")] + opts.cast.map { ($0.value, $0.label) }, "filter-cast")
             menu("Filter by day or night", $model.filter.dayNight, [("", "Day and night"), ("D", "Day scenes"), ("N", "Night scenes")], "filter-day-night")
@@ -247,10 +247,9 @@ struct ScheduleFilterBar: View {
                     .controlSize(.small)
                     .accessibilityIdentifier("clear-filters")
             }
-            Spacer(minLength: 0)
         }
         .controlSize(.small)
-        .padding(.horizontal, 16)
+        .padding(.horizontal, PageSpacing.medium)
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Filter scenes")
         .accessibilityIdentifier("schedule-filters")

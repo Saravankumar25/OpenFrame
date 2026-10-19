@@ -73,7 +73,7 @@ struct ExchangeImportSheet: View {
                         }
                         .padding(10)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(theme["surface"], in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                        .background(theme["surface2"], in: RoundedRectangle(cornerRadius: 8, style: .continuous))
                         .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous)
                             .strokeBorder(model.staleChoice == o.choice ? theme["accent"] : theme["line"]))
                     }
@@ -110,7 +110,7 @@ struct ExchangeImportSheet: View {
                         IXChip(text: s.compatibility, tone: PKText.compatibilityTone(s.compatibility))
                     }
                     .padding(10).frame(maxWidth: .infinity, alignment: .leading)
-                    .background(theme["surface"], in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    .background(theme["surface2"], in: RoundedRectangle(cornerRadius: 8, style: .continuous))
                     .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(theme["line"]))
                     .accessibilityElement(children: .combine)
                     .accessibilityIdentifier("exchange-fact-compatibility")

@@ -276,7 +276,7 @@ enum PageFilePanels {
 
 // MARK: Page layout pieces
 
-/// The title block every project page starts with: a heading and one line of plain words.
+/// The title block every project page starts with: a centred heading, one line of plain words and a row of actions.
 struct ProjectPageHeader<Actions: View>: View {
     let title: String
     let subtitle: String
@@ -285,20 +285,22 @@ struct ProjectPageHeader<Actions: View>: View {
     @Environment(\.ofTheme) private var theme
 
     var body: some View {
-        HStack(alignment: .top, spacing: 12) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title).font(.system(size: 24, weight: .semibold)).tracking(-0.3)
-                    .accessibilityAddTraits(.isHeader)
-                    .accessibilityIdentifier("\(identifier)-title")
-                Text(subtitle).foregroundStyle(theme["muted"])
-                    .accessibilityIdentifier("\(identifier)-subtitle")
-            }
-            Spacer(minLength: 12)
+        VStack(spacing: PageSpacing.small) {
+            Text(title).font(.system(size: 26, weight: .semibold)).tracking(-0.3)
+                .multilineTextAlignment(.center)
+                .accessibilityAddTraits(.isHeader)
+                .accessibilityIdentifier("\(identifier)-title")
+            Text(subtitle).foregroundStyle(theme["muted"])
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+                .accessibilityIdentifier("\(identifier)-subtitle")
             actions
+                .padding(.top, PageSpacing.tight)
         }
-        .padding(.horizontal, 24)
-        .padding(.top, 20)
-        .padding(.bottom, 12)
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, PageSpacing.large)
+        .padding(.top, PageSpacing.page)
+        .padding(.bottom, PageSpacing.large)
     }
 }
 
@@ -308,8 +310,8 @@ struct PageCard<Content: View>: View {
     @Environment(\.ofTheme) private var theme
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) { content }
-            .frame(maxWidth: .infinity, alignment: .leading)
+        VStack(alignment: .center, spacing: 0) { content }
+            .frame(maxWidth: .infinity)
             .background(theme["panel"], in: RoundedRectangle(cornerRadius: 10, style: .continuous))
             .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).stroke(theme["line"], lineWidth: 1))
     }

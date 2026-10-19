@@ -126,8 +126,9 @@ public struct CenteredCardGrid<Content: View>: View {
     }
 
     public var body: some View {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: cardWidth, maximum: cardWidth), spacing: spacing)],
-                  alignment: .center, spacing: spacing) {
+        // A wrapping layout, not an adaptive grid: a grid pins a lone card or a short last row
+        // to the leading edge.
+        CenteredWrap(itemWidth: cardWidth, spacing: spacing) {
             content
         }
         .frame(maxWidth: .infinity)

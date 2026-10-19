@@ -110,7 +110,7 @@ struct ExchangeExportSheet: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 .frame(maxHeight: 150).padding(8)
-                .background(theme["surface"], in: RoundedRectangle(cornerRadius: 8))
+                .background(theme["surface2"], in: RoundedRectangle(cornerRadius: 8))
                 .accessibilityElement(children: .contain)
                 .accessibilityLabel("Scenes to include")
                 .accessibilityIdentifier("exchange-scene-list")
@@ -158,7 +158,7 @@ struct ExchangeExportSheet: View {
         }
         .padding(10)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(theme["surface"], in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .background(theme["surface2"], in: RoundedRectangle(cornerRadius: 8, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(theme["line"]))
         .accessibilityElement(children: .combine)
         .accessibilityIdentifier("exchange-summary")

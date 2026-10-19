@@ -88,14 +88,15 @@ struct IXSheetFrame<Content: View, Footer: View, Leading: View>: View {
     @Environment(\.ofTheme) private var theme
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title).font(.title3.weight(.semibold)).accessibilityAddTraits(.isHeader)
+        VStack(alignment: .leading, spacing: PageSpacing.medium) {
+            VStack(spacing: PageSpacing.tight) {
+                Text(title).font(.title3.weight(.semibold)).multilineTextAlignment(.center).accessibilityAddTraits(.isHeader)
                     .accessibilityIdentifier("\(idPrefix)-title")
                 if let sub {
-                    Text(sub).font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                    Text(sub).font(.callout).foregroundStyle(.secondary).multilineTextAlignment(.center).fixedSize(horizontal: false, vertical: true)
                 }
             }
+            .frame(maxWidth: .infinity)
             content()
             HStack(spacing: 10) {
                 leading()
@@ -103,7 +104,7 @@ struct IXSheetFrame<Content: View, Footer: View, Leading: View>: View {
                 footer()
             }
         }
-        .padding(22)
+        .padding(PageSpacing.large)
         .frame(width: width)
         .background(theme["panel"])
         .accessibilityElement(children: .contain)
@@ -134,7 +135,7 @@ struct IXFact: View {
         }
         .padding(10)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(theme["surface"], in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .background(theme["surface2"], in: RoundedRectangle(cornerRadius: 8, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(theme["line"]))
         .accessibilityElement(children: .combine)
         .accessibilityIdentifier(id)
@@ -160,7 +161,7 @@ struct IXKeyValueTable: View {
                 if i < rows.count - 1 { Divider() }
             }
         }
-        .background(theme["surface"], in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .background(theme["surface2"], in: RoundedRectangle(cornerRadius: 8, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(theme["line"]))
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier(id)

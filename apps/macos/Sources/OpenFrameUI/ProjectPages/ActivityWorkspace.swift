@@ -100,6 +100,7 @@ struct ActivityWorkspace: View {
                 ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
+        .fitsWindow()
         .onAppear {
             if model == nil { model = ActivityModel(app: app) }
         }
@@ -125,7 +126,7 @@ struct ActivityScreen: View {
             ScrollView {
                 VStack(spacing: 12) {
                     if let failure = model.loadFailure {
-                        Text(failure.message).foregroundStyle(theme["red-t"]).frame(maxWidth: .infinity, alignment: .leading)
+                        Text(failure.message).foregroundStyle(theme["red-t"]).multilineTextAlignment(.center).frame(maxWidth: .infinity)
                             .accessibilityIdentifier("activity-load-error")
                     }
                     if !model.loaded {
@@ -159,8 +160,8 @@ struct ActivityScreen: View {
                             .accessibilityIdentifier("activity-older")
                     }
                 }
-                .padding(.horizontal, 24)
-                .padding(.bottom, 24)
+                .pageColumn(maxWidth: PageSpacing.column)
+                .padding(.bottom, PageSpacing.large)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)

@@ -26,7 +26,7 @@ struct PKProgress: View {
             }
         }
         .padding(12)
-        .background(theme["surface"], in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .background(theme["surface2"], in: RoundedRectangle(cornerRadius: 8, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(theme["line"]))
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Package progress")
@@ -71,7 +71,7 @@ struct PKFileStatusTable: View {
                 if i < rows.count - 1 { Divider() }
             }
         }
-        .background(theme["surface"], in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .background(theme["surface2"], in: RoundedRectangle(cornerRadius: 8, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(theme["line"]))
         .accessibilityElement(children: .contain)
         .accessibilityLabel("What this backup contains")

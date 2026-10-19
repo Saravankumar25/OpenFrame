@@ -14,7 +14,8 @@ struct CallSheetListView: View {
             if !model.loaded {
                 ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
-                VStack(alignment: .leading, spacing: 12) {
+                ScrollingPage {
+                VStack(spacing: PageSpacing.medium) {
                     CSPageHeader(title: "Call Sheets", sub: "Which shooting day document do I need?") {
                         Button { model.beginCreate() } label: { Label("Create Call Sheet", systemImage: "plus") }
                             .buttonStyle(.borderedProminent)
@@ -27,7 +28,9 @@ struct CallSheetListView: View {
                     }
                     if model.isEmpty { empty } else { table }
                 }
-                .padding(16)
+                .pageColumn(maxWidth: PageSpacing.wideColumn)
+                .padding(.bottom, PageSpacing.medium)
+                }
             }
         }
         .task(id: app.changes.key(CSTables.callSheet)) { await model.reload() }
@@ -54,8 +57,8 @@ struct CallSheetListView: View {
     }
 
     private var table: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 12) {
+        VStack(spacing: PageSpacing.small) {
+            CenteredWrap(spacing: 12, lineSpacing: PageSpacing.small) {
                 HStack(spacing: 4) {
                     Image(systemName: "magnifyingglass").foregroundStyle(theme["muted"]).accessibilityHidden(true)
                     TextField("Search", text: $model.text)
@@ -74,8 +77,8 @@ struct CallSheetListView: View {
                 .accessibilityIdentifier("callsheet-filter")
                 Toggle("Show replaced revisions", isOn: $model.showOld)
                     .accessibilityIdentifier("callsheet-show-replaced")
-                Spacer()
             }
+            .frame(maxWidth: .infinity, alignment: .center)
             VStack(spacing: 0) {
                 HStack {
                     Text("Shoot day").frame(maxWidth: .infinity, alignment: .leading)
@@ -97,6 +100,7 @@ struct CallSheetListView: View {
                     }
                 }
                 .listStyle(.plain)
+                .frame(minHeight: 240)
                 .onKeyPress(.return) {
                     if let id = model.selection { hub.open(id); return .handled }
                     return .ignored

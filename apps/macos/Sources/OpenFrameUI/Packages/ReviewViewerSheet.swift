@@ -223,7 +223,7 @@ struct ReviewViewerSheet: View {
         }
         .padding(10)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(theme["surface"], in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .background(theme["surface2"], in: RoundedRectangle(cornerRadius: 8, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(theme["line"]))
         .accessibilityElement(children: .combine)
         .accessibilityIdentifier("review-comment-\(c.id)")
@@ -250,7 +250,7 @@ struct ReviewViewerSheet: View {
                 .frame(height: 90)
                 .scrollContentBackground(.hidden)
                 .padding(4)
-                .background(theme["surface"], in: RoundedRectangle(cornerRadius: 6))
+                .background(theme["surface2"], in: RoundedRectangle(cornerRadius: 6))
                 .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(theme["line"]))
                 .accessibilityLabel("Comment")
                 .accessibilityIdentifier("review-comment-field")
@@ -265,7 +265,7 @@ struct ReviewViewerSheet: View {
             }
         }
         .padding(10)
-        .background(theme["surface"], in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .background(theme["surface2"], in: RoundedRectangle(cornerRadius: 8, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(theme["line"]))
     }
 }

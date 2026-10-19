@@ -25,7 +25,8 @@ struct ShotsView: View {
             } else {
                 if let label = hub.scenes?.sourceLabel, !label.isEmpty {
                     Text("Scenes from \(label)").font(.caption).foregroundStyle(theme["muted"])
-                        .frame(maxWidth: .infinity, alignment: .leading).padding(.horizontal, 16).padding(.bottom, 4)
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: .infinity).padding(.horizontal, PageSpacing.medium).padding(.bottom, PageSpacing.tight)
                 }
                 toolbar
                 if let scene = model.scene { SceneReviewBanner(hub: hub, scene: scene, what: "shots and storyboards") }
@@ -33,6 +34,7 @@ struct ShotsView: View {
                 list
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .task(id: "\(dataKey)|\(hub.scenesLoaded)|\(model.sceneKey ?? "")|\(model.showRemoved)") { await model.reload() }
         .sheet(item: $model.sheet) { ShotSheetHost(model: model, sheet: $0) }
         .inspector(isPresented: Binding(get: { model.selected != nil }, set: { if !$0 { model.selectedId = nil } })) {
@@ -65,7 +67,7 @@ struct ShotsView: View {
     }
 
     private var toolbar: some View {
-        HStack(spacing: 10) {
+        CenteredWrap(spacing: 10, lineSpacing: PageSpacing.small) {
             Picker("Scene", selection: Binding(get: { model.sceneKey ?? "" }, set: { k in Task { await model.chooseScene(k) } })) {
                 Text("All scenes").tag("all")
                 if let scenes = hub.scenes?.scenes, !scenes.isEmpty {
@@ -86,7 +88,6 @@ struct ShotsView: View {
                 .font(.caption).padding(.horizontal, 8).padding(.vertical, 3)
                 .background(theme["surface2"], in: Capsule())
                 .accessibilityIdentifier("shots-count")
-            Spacer()
             if model.picked.count > 1 {
                 Button("Delete \(model.picked.count) shots", role: .destructive) { Task { await model.delete(Array(model.picked)) } }
                     .accessibilityIdentifier("shots-delete-picked")
@@ -104,14 +105,15 @@ struct ShotsView: View {
                     .accessibilityIdentifier("shots-more")
             }
         }
-        .padding(.horizontal, 16).padding(.bottom, 8)
+        .frame(maxWidth: .infinity, alignment: .center)
+        .padding(.horizontal, PageSpacing.medium).padding(.bottom, PageSpacing.small)
     }
 
     // MARK: List
 
     private var list: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .center, spacing: 8) {
                 if !model.loaded {
                     ProgressView().frame(maxWidth: .infinity, minHeight: 120)
                 } else if model.shots.isEmpty, let f = model.loadFailure {
@@ -148,11 +150,12 @@ struct ShotsView: View {
                     if model.scene != nil { composerRow }
                 }
                 Text(VisualText.shotHint).font(.caption).foregroundStyle(theme["muted"])
+                    .multilineTextAlignment(.center).frame(maxWidth: .infinity)
             }
-            .frame(maxWidth: 780, alignment: .leading)
-            .padding(.horizontal, 16).padding(.bottom, 16)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .pageColumn(maxWidth: 780)
+            .padding(.bottom, PageSpacing.medium)
         }
+        .frame(minHeight: 0)
     }
 
     private func emptyState(title: String, text: String, id: String) -> some View {

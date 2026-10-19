@@ -16,7 +16,8 @@ struct CastCrewView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        ScrollingPage {
+        VStack(spacing: PageSpacing.medium) {
             BDPageHeader(title: "Cast & Crew", sub: "Who is involved and what role do they have? A small-team directory with no payroll and no contracts.") {
                 if model.canEdit {
                     Button {
@@ -26,7 +27,7 @@ struct CastCrewView: View {
                         .accessibilityIdentifier("add-person")
                 }
             }
-            HStack(spacing: 10) {
+            CenteredWrap(spacing: 10, lineSpacing: PageSpacing.small) {
                 Picker("Directory", selection: $model.view) {
                     ForEach(PeopleView.allCases) { Text($0.title).tag($0) }
                 }
@@ -38,9 +39,9 @@ struct CastCrewView: View {
                 }
                 .padding(.horizontal, 8).padding(.vertical, 5)
                 .background(theme["surface2"], in: RoundedRectangle(cornerRadius: 7, style: .continuous))
-                Spacer()
                 Toggle("Show archived", isOn: $model.showArchived).toggleStyle(.checkbox)
             }
+            .frame(maxWidth: .infinity, alignment: .center)
             if !model.loaded {
                 ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if let f = model.loadFailure, model.directory == nil {
@@ -51,7 +52,9 @@ struct CastCrewView: View {
                 crewListView
             }
         }
-        .padding(18)
+        .pageColumn(maxWidth: PageSpacing.wideColumn)
+        .padding(.bottom, PageSpacing.medium)
+        }
         .task(id: reloadKey) { await model.reload() }
         .inspector(isPresented: Binding(get: { model.view == .cast ? model.castMember != nil : model.crewMember != nil },
                                         set: { if !$0 { model.selectedCast = nil; model.selectedCrew = nil } })) {
@@ -95,7 +98,7 @@ struct CastCrewView: View {
                             }
                             Spacer()
                             Text(m.characterName ?? "None").foregroundStyle(theme["ink2"]).frame(width: 140, alignment: .leading)
-                            Text(m.contactHidden ? "Hidden" : m.contact ?? "").foregroundStyle(theme["muted"]).lineLimit(1).frame(width: 140, alignment: .leading)
+                            Text(m.contactHidden ? "Hidden" : m.contact ?? "").foregroundStyle(theme["muted"]).lineLimit(1).frame(width: 170, alignment: .leading)
                             Text("\(m.scenes.filter(\.inSource).count)").monospacedDigit().frame(width: 40, alignment: .trailing)
                         }
                         .opacity(m.archived ? 0.55 : 1)
@@ -116,7 +119,7 @@ struct CastCrewView: View {
                     HStack {
                         Text("Person"); Spacer()
                         Text("Character").frame(width: 140, alignment: .leading)
-                        Text("Contact").frame(width: 140, alignment: .leading)
+                        Text("Contact").frame(width: 170, alignment: .leading)
                         Text("Scenes").frame(width: 40, alignment: .trailing)
                     }
                     .font(.caption.weight(.semibold))
@@ -128,9 +131,12 @@ struct CastCrewView: View {
                                 Circle().fill(theme["surface2"]).frame(width: 30, height: 30).accessibilityHidden(true)
                                 Text("Unassigned").fontWeight(.semibold).foregroundStyle(theme["muted"])
                                 Spacer()
-                                Text(c.name)
-                                BDChip(text: "Needs casting", tone: .yellow)
-                                if model.canEdit { Button("Assign") { model.sheet = .assign(member: nil, character: c.name) }.controlSize(.small).accessibilityLabel("Assign \(c.name)") }
+                                Text(c.name).frame(width: 140, alignment: .leading)
+                                HStack(spacing: 6) {
+                                    BDChip(text: "Needs casting", tone: .yellow)
+                                    if model.canEdit { Button("Assign") { model.sheet = .assign(member: nil, character: c.name) }.controlSize(.small).accessibilityLabel("Assign \(c.name)") }
+                                }
+                                .frame(width: 170, alignment: .leading)
                                 Text("\(c.scenes.filter(\.inSource).count)").monospacedDigit().frame(width: 40, alignment: .trailing)
                             }
                             .accessibilityElement(children: .contain)
@@ -142,6 +148,7 @@ struct CastCrewView: View {
             .onDeleteCommand {
                 if let m = model.castMember, model.canEdit { model.sheet = .delete(kind: .cast, id: m.id, name: m.personName) }
             }
+            .frame(minHeight: 280)
             .accessibilityLabel("Cast")
             .accessibilityIdentifier("cast-list")
         }
@@ -191,6 +198,7 @@ struct CastCrewView: View {
                 .onDeleteCommand {
                     if let c = model.crewMember, model.canEdit { model.sheet = .delete(kind: .crew, id: c.id, name: c.personName) }
                 }
+                .frame(minHeight: 280)
                 .accessibilityLabel("Crew")
                 .accessibilityIdentifier("crew-list")
                 Text("Departments: \(Departments.all.joined(separator: " \u{00B7} ")). This is a production directory, not HR software.")

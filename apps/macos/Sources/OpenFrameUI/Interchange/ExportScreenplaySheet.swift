@@ -170,7 +170,7 @@ struct ExportScreenplaySheet: View {
                 }
                 .frame(maxHeight: 110)
                 .padding(6)
-                .background(theme["surface"], in: RoundedRectangle(cornerRadius: 6))
+                .background(theme["surface2"], in: RoundedRectangle(cornerRadius: 6))
                 .accessibilityElement(children: .contain)
                 .accessibilityLabel("Scenes to export")
                 .accessibilityIdentifier("export-scene-list")

@@ -18,6 +18,7 @@ struct BudgetWorkspace: View {
                 ProgressView()
             }
         }
+        .fitsWindow()
         .task { if model == nil { model = BudgetModel(app: app) } }
     }
 }
@@ -34,45 +35,41 @@ struct BudgetContent: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 10) {
+            VStack(spacing: PageSpacing.medium) {
                 header
-                VisualBanner(tone: .info, identifier: "budget-advisory") {
+                VisualBanner(tone: .info, identifier: "budget-advisory", inset: 0) {
                     Text("Use a simple estimate for planning. Formal accounting is outside OpenFrame.")
                 } actions: { EmptyView() }
-                    .padding(.horizontal, -16)
                 if !model.loaded {
                     ProgressView().frame(maxWidth: .infinity, minHeight: 120)
                 } else if let f = model.loadFailure, model.view == nil {
-                    VisualBanner(tone: .error, identifier: "budget-load-failed") {
+                    VisualBanner(tone: .error, identifier: "budget-load-failed", inset: 0) {
                         Text(f.message)
                     } actions: {
                         Button("Try Again") { Task { await model.reload() } }.accessibilityIdentifier("budget-retry")
                     }
-                    .padding(.horizontal, -16)
                 } else if let b = model.current {
                     if let reminder = model.reviewReminder {
-                        VisualBanner(tone: .warn, identifier: "budget-review-banner") {
+                        VisualBanner(tone: .warn, identifier: "budget-review-banner", inset: 0) {
                             Text("**Review budget.** \(reminder)")
                         } actions: {
                             Button("Mark reviewed") { Task { await model.markReviewed() } }.accessibilityIdentifier("budget-mark-reviewed")
                         }
-                        .padding(.horizontal, -16)
-                    }
+                        }
                     tiles(b)
                     BudgetTable(budget: b, readOnly: false, onEdit: { model.sheet = .line($0) }, onDelete: { l in Task { await model.deleteLine(l) } })
                     if let notes = b.notes, !notes.isEmpty {
                         Text(notes).font(.callout).textSelection(.enabled).accessibilityIdentifier("budget-notes")
                     }
                     Text("Budget values never change automatically. If the script or schedule changes, review the budget yourself.")
-                        .font(.caption).foregroundStyle(theme["muted"])
+                        .font(.caption).foregroundStyle(theme["muted"]).multilineTextAlignment(.center)
                 } else {
                     startCard
                 }
                 if !model.snapshots.isEmpty { snapshots }
             }
-            .padding(16)
-            .frame(maxWidth: 980, alignment: .leading)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .pageColumn(maxWidth: PageSpacing.wideColumn)
+            .padding(.bottom, PageSpacing.large)
         }
         .background(theme["bg"])
         .task(id: app.changes.key(BudgetTables.all)) { await model.reload() }
@@ -83,21 +80,18 @@ struct BudgetContent: View {
     // MARK: Header
 
     private var header: some View {
-        HStack(alignment: .firstTextBaseline) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Budget").font(.title2.weight(.semibold)).accessibilityAddTraits(.isHeader)
-                Text("What did we plan to spend, and what have we spent?").font(.callout).foregroundStyle(theme["muted"])
-            }
-            Spacer()
+        PageHeader("Budget", subtitle: "What did we plan to spend, and what have we spent?") {
             if model.current != nil {
-                Button { model.sheet = .export(budgetId: nil) } label: { Label("Export", systemImage: "square.and.arrow.up") }
-                    .accessibilityIdentifier("budget-export")
-                Button("Save Snapshot") { model.sheet = .snapshotName }
-                    .accessibilityIdentifier("budget-save-snapshot")
-                Button { model.sheet = .line(nil) } label: { Label("Add Line", systemImage: "plus") }
-                    .buttonStyle(.borderedProminent)
-                    .keyboardShortcut("n", modifiers: [.command, .option])
-                    .accessibilityIdentifier("budget-add-line")
+                HStack(spacing: PageSpacing.small) {
+                    Button { model.sheet = .export(budgetId: nil) } label: { Label("Export", systemImage: "square.and.arrow.up") }
+                        .accessibilityIdentifier("budget-export")
+                    Button("Save Snapshot") { model.sheet = .snapshotName }
+                        .accessibilityIdentifier("budget-save-snapshot")
+                    Button { model.sheet = .line(nil) } label: { Label("Add Line", systemImage: "plus") }
+                        .buttonStyle(.borderedProminent)
+                        .keyboardShortcut("n", modifiers: [.command, .option])
+                        .accessibilityIdentifier("budget-add-line")
+                }
             }
         }
     }
@@ -105,7 +99,7 @@ struct BudgetContent: View {
     // MARK: Start card
 
     private var startCard: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(spacing: PageSpacing.small) {
             Text("Start a budget").font(.headline)
             LabeledBlock(label: "Currency") {
                 Picker("Currency", selection: $model.startCurrency) {
@@ -120,8 +114,8 @@ struct BudgetContent: View {
                 .accessibilityIdentifier("budget-start")
             Text("Optional. You can ignore the budget entirely.").font(.caption).foregroundStyle(theme["muted"])
         }
-        .padding(14)
-        .frame(maxWidth: 440, alignment: .leading)
+        .padding(PageSpacing.medium)
+        .frame(maxWidth: 440)
         .background(theme["panel"], in: RoundedRectangle(cornerRadius: 8))
         .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(theme["line"]))
         .accessibilityIdentifier("budget-empty")
@@ -134,7 +128,7 @@ struct BudgetContent: View {
         let contingency = b.contingencyMode == "percent"
             ? "\(planned % 100 == 0 ? String(planned / 100) : String(format: "%g", Double(planned) / 100))% contingency "
             : "Contingency "
-        return HStack(alignment: .top, spacing: 12) {
+        return HStack(alignment: .top, spacing: PageSpacing.medium) {
             tile("Planned", id: "budget-planned") {
                 Text(BudgetMoney.format(b.plannedLinesTotal, b.currency)).font(.title.weight(.semibold))
                 Text("\(b.plannedTotal.map { "Overall plan \(BudgetMoney.format($0, b.currency))" } ?? "Sum of the Planned amounts") \u{00B7} \(contingency)\(BudgetMoney.format(b.contingencyAmount, b.currency))")
@@ -161,12 +155,13 @@ struct BudgetContent: View {
     }
 
     private func tile<C: View>(_ title: String, id: String, @ViewBuilder content: () -> C) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(spacing: 4) {
             Text(title.uppercased()).font(.caption2.weight(.semibold)).foregroundStyle(theme["muted"])
             content()
         }
-        .padding(12)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .multilineTextAlignment(.center)
+        .padding(PageSpacing.medium)
+        .frame(maxWidth: .infinity)
         .background(theme["panel"], in: RoundedRectangle(cornerRadius: 8))
         .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(theme["line"]))
         .accessibilityElement(children: .contain)
@@ -197,8 +192,8 @@ struct BudgetContent: View {
                 Divider()
             }
         }
-        .padding(14)
-        .frame(maxWidth: 640, alignment: .leading)
+        .padding(PageSpacing.medium)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background(theme["panel"], in: RoundedRectangle(cornerRadius: 8))
         .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(theme["line"]))
         .accessibilityIdentifier("budget-snapshots")
@@ -234,13 +229,22 @@ struct BudgetTable: View {
 
     private var cats: [BudgetCategoryTotal] { budget.categories.filter { $0.count > 0 } }
 
+    /// The table keeps its column widths. In a window too narrow for them it scrolls sideways
+    /// instead of squeezing the line item column to nothing.
     var body: some View {
+        ViewThatFits(in: .horizontal) {
+            grid
+            ScrollView(.horizontal) { grid.frame(width: 800) }
+        }
+    }
+
+    private var grid: some View {
         VStack(spacing: 0) {
             head
             Divider()
             if cats.isEmpty {
                 Text("No lines yet. Add a line for each rough cost you expect.")
-                    .foregroundStyle(theme["muted"]).padding(12).frame(maxWidth: .infinity, alignment: .leading)
+                    .foregroundStyle(theme["muted"]).padding(PageSpacing.medium).frame(maxWidth: .infinity)
                     .accessibilityIdentifier("budget-no-lines")
             } else {
                 ForEach(cats, id: \.category) { c in category(c) }
@@ -259,7 +263,7 @@ struct BudgetTable: View {
     private var head: some View {
         HStack(spacing: 8) {
             Text("Category").frame(width: 130, alignment: .leading)
-            Text("Line item").frame(maxWidth: .infinity, alignment: .leading)
+            Text("Line item").frame(minWidth: 180, maxWidth: .infinity, alignment: .leading)
             Text("Planned").frame(width: 100, alignment: .trailing)
             Text("Actual").frame(width: 100, alignment: .trailing)
             Text("Difference").frame(width: 150, alignment: .trailing)
@@ -278,7 +282,7 @@ struct BudgetTable: View {
                     Text(l.description)
                     if let n = l.notes, !n.isEmpty { Text(n).font(.caption).foregroundStyle(theme["muted"]) }
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .frame(minWidth: 180, maxWidth: .infinity, alignment: .leading)
                 Text(BudgetMoney.format(l.planned, budget.currency)).frame(width: 100, alignment: .trailing)
                 Group {
                     if let a = l.actual { Text(BudgetMoney.format(a, budget.currency)) } else { Text("Not entered").foregroundStyle(theme["muted"]) }
@@ -312,7 +316,7 @@ struct BudgetTable: View {
     private func row(cells: [String], diff: Double?, showDiff: Bool, subtotal: Bool, id: String) -> some View {
         HStack(spacing: 8) {
             Text(cells[0]).frame(width: 130, alignment: .leading)
-            Text(cells[1]).frame(maxWidth: .infinity, alignment: .leading)
+            Text(cells[1]).frame(minWidth: 180, maxWidth: .infinity, alignment: .leading)
             Text(cells[2]).frame(width: 100, alignment: .trailing)
             Text(cells[3]).frame(width: 100, alignment: .trailing)
             Group { if showDiff { BudgetDifference(value: diff, currency: budget.currency) } else { Text("") } }.frame(width: 150, alignment: .trailing)
@@ -472,12 +476,12 @@ private struct SnapshotSheet: View {
     @Environment(\.ofTheme) private var theme
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(spacing: PageSpacing.small) {
             if let s = model.snapshot {
                 Text(s.label ?? "Budget snapshot").font(.title3.weight(.semibold))
                 if let f = s.frozenAt { Text("Saved \(VisualText.formatWhen(f)) \u{00B7} read-only").font(.caption).foregroundStyle(theme["muted"]) }
                 Text("Planned **\(BudgetMoney.format(s.plannedLinesTotal, s.currency))** \u{00B7} Actual **\(s.actualCount > 0 ? BudgetMoney.format(s.actualTotal, s.currency) : "none yet")**\(s.plannedTotal.map { " \u{00B7} Overall plan \(BudgetMoney.format($0, s.currency))" } ?? "")")
-                    .font(.callout).accessibilityIdentifier("budget-snapshot-summary")
+                    .font(.callout).multilineTextAlignment(.center).accessibilityIdentifier("budget-snapshot-summary")
                 ScrollView { BudgetTable(budget: s, readOnly: true) }.frame(maxHeight: 360)
             } else {
                 ProgressView().frame(maxWidth: .infinity, minHeight: 120)
@@ -488,7 +492,7 @@ private struct SnapshotSheet: View {
                 Button("Close") { model.sheet = nil }.keyboardShortcut(.cancelAction).accessibilityIdentifier("budget-snapshot-close")
             }
         }
-        .padding(20).frame(width: 760)
+        .padding(PageSpacing.large).frame(width: 760)
         .task { await model.loadSnapshot(id) }
         .accessibilityIdentifier("budget-snapshot-view")
     }

@@ -27,12 +27,12 @@ struct SchedDrawerFrame<Content: View>: View {
                     .keyboardShortcut(.cancelAction)
                     .accessibilityIdentifier("drawer-close")
             }
-            .padding(14)
+            .padding(PageSpacing.medium)
             Divider()
-            ScrollView { VStack(alignment: .leading, spacing: 10) { content() }.padding(14) }
+            ScrollView { VStack(alignment: .leading, spacing: 10) { content() }.padding(PageSpacing.medium) }
             if let footer {
                 Divider()
-                Text(footer).font(.caption).foregroundStyle(theme["muted"]).padding(10)
+                Text(footer).font(.caption).foregroundStyle(theme["muted"]).padding(PageSpacing.medium)
             }
         }
         .frame(width: 350)
@@ -159,6 +159,7 @@ struct SchedWarningsDrawer: View {
         ) {
             if all.isEmpty {
                 Text("No warnings. The schedule looks consistent.").font(.callout).foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center).frame(maxWidth: .infinity)
                     .accessibilityIdentifier("warnings-empty")
             }
             ForEach(open, id: \.key) { SchedWarningCard(model: model, w: $0) }
@@ -237,6 +238,7 @@ struct SchedSuggestionsDrawer: View {
                 .accessibilityIdentifier("suggestions-ask")
             if let s = model.suggestions, list.isEmpty {
                 Text(s.message ?? "No obvious grouping improvement found.").font(.callout).foregroundStyle(theme["muted"])
+                    .multilineTextAlignment(.center).frame(maxWidth: .infinity)
                     .accessibilityIdentifier("suggestions-empty")
             }
             ForEach(list, id: \.key) { s in

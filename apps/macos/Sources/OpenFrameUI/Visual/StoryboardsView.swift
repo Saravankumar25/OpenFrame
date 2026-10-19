@@ -21,6 +21,7 @@ struct StoryboardsView: View {
             header
             content
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .task(id: "\(dataKey)|\(hub.scenesLoaded)") { await model.reload() }
         .sheet(item: $model.sheet) { StoryboardSheetHost(model: model, sheet: $0) }
         .inspector(isPresented: Binding(get: { model.panel != nil }, set: { if !$0 { model.selectedPanelId = nil } })) {
@@ -71,7 +72,7 @@ struct StoryboardsView: View {
 
     private var toolbar: some View {
         let sel = model.selection
-        return HStack(spacing: 10) {
+        return CenteredWrap(spacing: 10, lineSpacing: PageSpacing.small) {
             Picker("Scene or storyboard", selection: Binding(get: { sel.key ?? "" }, set: { k in Task { await model.choose(key: k) } })) {
                 if let scenes = hub.scenes?.scenes, !scenes.isEmpty {
                     Section(hub.scenes?.sourceLabel.isEmpty == false ? hub.scenes!.sourceLabel : "Scenes") {
@@ -103,10 +104,10 @@ struct StoryboardsView: View {
                 .font(.caption).padding(.horizontal, 8).padding(.vertical, 3)
                 .background(theme["surface2"], in: Capsule())
                 .accessibilityIdentifier("storyboard-panel-count")
-            Spacer()
             if let b = model.board?.board { BoardMenu(model: model, board: b) }
         }
-        .padding(.horizontal, 16).padding(.bottom, 8)
+        .frame(maxWidth: .infinity, alignment: .center)
+        .padding(.horizontal, PageSpacing.medium).padding(.bottom, PageSpacing.small)
     }
 
     // MARK: Content
@@ -134,7 +135,7 @@ struct StoryboardsView: View {
             .accessibilityIdentifier("storyboard-empty")
         } else {
             ScrollView {
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(spacing: PageSpacing.small) {
                     if let scene = model.selection.scene { SceneReviewBanner(hub: hub, scene: scene, what: "storyboard panels and shots").padding(.horizontal, -16) }
                     if let b = model.board?.board, b.sceneRemoved { RemovedSceneBanner(heading: b.sceneHeading ?? "", what: "storyboard panels").padding(.horizontal, -16) }
                     if model.panels.isEmpty {
@@ -143,8 +144,10 @@ struct StoryboardsView: View {
                         PanelGrid(model: model)
                     }
                 }
-                .padding(.horizontal, 16).padding(.bottom, 16)
+                .pageColumn(maxWidth: PageSpacing.wideColumn)
+                .padding(.bottom, PageSpacing.medium)
             }
+            .frame(minHeight: 0)
         }
     }
 
@@ -163,6 +166,7 @@ struct StoryboardsView: View {
                     Button { Task { await model.addPanel(.placeholder) } } label: { Label("Empty Panel", systemImage: "square.dashed") }
                         .accessibilityIdentifier("storyboard-empty-panel")
                 }
+                .fixedSize()
             }
         }
         .frame(minHeight: 260)

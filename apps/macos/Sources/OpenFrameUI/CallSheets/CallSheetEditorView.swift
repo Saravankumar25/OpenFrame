@@ -43,30 +43,47 @@ struct CallSheetEditorView: View {
     }
 
     private func loadedBody(_ d: CallSheetDetail) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(alignment: .firstTextBaseline, spacing: 10) {
-                Button { Task { await hub.closeEditor() } } label: { Label("Call Sheets", systemImage: "chevron.left") }
-                    .keyboardShortcut("[", modifiers: .command)
-                    .accessibilityIdentifier("callsheet-back")
-                VStack(alignment: .leading, spacing: 2) {
-                    HStack(spacing: 8) {
-                        Text(d.title).font(.title2.weight(.semibold)).accessibilityAddTraits(.isHeader)
-                        CSChip(text: model.word, tone: CSStatus.tone(d.status))
-                    }
-                    Text("What does everyone need to know for this day?").font(.callout).foregroundStyle(theme["muted"])
-                }
-                Spacer()
-            }
+        VStack(spacing: PageSpacing.small) {
+            editorHeader(d)
             banners(d)
-            HStack(alignment: .top, spacing: 14) {
-                ScrollView {
-                    CallSheetPaper(model: model).padding(.bottom, 20)
+            HStack(alignment: .top, spacing: PageSpacing.medium) {
+                ScrollView([.vertical, .horizontal]) {
+                    CallSheetPaper(model: model).padding(.bottom, PageSpacing.large)
                 }
-                .frame(maxWidth: .infinity)
+                .frame(minWidth: 0, maxWidth: .infinity)
                 sourcePanel(d)
             }
         }
-        .padding(16)
+        .padding(PageSpacing.medium)
+    }
+
+    /// The title in the middle with the Back button on the left. In a narrow window the Back button
+    /// takes its own line above the title.
+    private func editorHeader(_ d: CallSheetDetail) -> some View {
+        let title = VStack(spacing: PageSpacing.tight) {
+            HStack(spacing: 8) {
+                Text(d.title).font(.title2.weight(.semibold)).accessibilityAddTraits(.isHeader)
+                CSChip(text: model.word, tone: CSStatus.tone(d.status))
+            }
+            Text("What does everyone need to know for this day?").font(.callout).foregroundStyle(theme["muted"])
+        }
+        .multilineTextAlignment(.center)
+        let back = HStack {
+            Button { Task { await hub.closeEditor() } } label: { Label("Call Sheets", systemImage: "chevron.left") }
+                .keyboardShortcut("[", modifiers: .command)
+                .accessibilityIdentifier("callsheet-back")
+            Spacer(minLength: 0)
+        }
+        return ViewThatFits(in: .horizontal) {
+            ZStack {
+                title.padding(.horizontal, 160)
+                back
+            }
+            VStack(spacing: PageSpacing.small) {
+                back
+                title
+            }
+        }
     }
 
     // MARK: Banners
@@ -180,7 +197,7 @@ struct CallSheetEditorView: View {
             }
             .controlSize(.regular)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(12)
+            .padding(PageSpacing.medium)
         }
         .frame(width: 290)
         .background(theme["panel"], in: RoundedRectangle(cornerRadius: 8))

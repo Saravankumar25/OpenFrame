@@ -34,7 +34,8 @@ struct LocationsView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        ScrollingPage {
+        VStack(spacing: PageSpacing.medium) {
             BDPageHeader(title: "Locations", sub: "Which places can we use? A practical scouting notebook.") {
                 if model.canEdit {
                     Button { model.sheet = .add } label: { Label("Add Location", systemImage: "plus") }
@@ -42,7 +43,7 @@ struct LocationsView: View {
                         .accessibilityIdentifier("add-location")
                 }
             }
-            HStack(spacing: 10) {
+            CenteredWrap(spacing: 10, lineSpacing: PageSpacing.small) {
                 HStack(spacing: 4) {
                     Image(systemName: "magnifyingglass").foregroundStyle(theme["muted"]).accessibilityHidden(true)
                     TextField("Search locations", text: $model.search).textFieldStyle(.plain).frame(width: 190)
@@ -55,12 +56,14 @@ struct LocationsView: View {
                     ForEach(ProductionLocationStatus.allCases, id: \.self) { Text($0.rawValue).tag(ProductionLocationStatus?.some($0)) }
                 }
                 .pickerStyle(.segmented).labelsHidden().fixedSize().accessibilityLabel("Status")
-                Spacer()
                 Toggle("Show archived", isOn: $model.showArchived).toggleStyle(.checkbox)
             }
+            .frame(maxWidth: .infinity, alignment: .center)
             content
         }
-        .padding(18)
+        .pageColumn(maxWidth: PageSpacing.wideColumn)
+        .padding(.bottom, PageSpacing.medium)
+        }
         .task(id: reloadKey) {
             if !model.search.isEmpty { try? await Task.sleep(for: .milliseconds(150)) }
             guard !Task.isCancelled else { return }
@@ -94,12 +97,11 @@ struct LocationsView: View {
                 }
             }
         } else {
-            ScrollView {
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 200), spacing: 12, alignment: .top)], spacing: 12) {
-                    ForEach(model.locations, id: \.id) { LocationCard(model: model, loc: $0) }
-                }
-                .padding(.bottom, 20)
+            CenteredWrap(itemWidth: 220) {
+                ForEach(model.locations, id: \.id) { LocationCard(model: model, loc: $0) }
             }
+            .frame(maxWidth: .infinity)
+            .padding(.bottom, PageSpacing.medium)
         }
     }
 }

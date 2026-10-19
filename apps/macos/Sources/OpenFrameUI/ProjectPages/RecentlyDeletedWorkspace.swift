@@ -109,6 +109,7 @@ struct RecentlyDeletedWorkspace: View {
                 ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
+        .fitsWindow()
         .onAppear {
             if model == nil { model = RecentlyDeletedModel(app: app) }
         }
@@ -145,25 +146,26 @@ struct RecentlyDeletedScreen: View {
                     .frame(width: 260)
                     .background(theme["panel"], in: RoundedRectangle(cornerRadius: 6, style: .continuous))
                     .overlay(RoundedRectangle(cornerRadius: 6, style: .continuous).stroke(theme["line"]))
-                    Spacer()
                     Text("\(model.items.count) item\(model.items.count == 1 ? "" : "s")").font(.caption).foregroundStyle(theme["muted"])
                         .accessibilityIdentifier("trash-count")
                 }
-                .padding(.horizontal, 24).padding(.bottom, 10)
+                .frame(maxWidth: .infinity, alignment: .center)
+                .padding(.horizontal, PageSpacing.large).padding(.bottom, PageSpacing.medium)
             }
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
                     body_
                     Text("Delete Permanently asks for a second, deliberate confirmation. If the original place no longer exists, Restore puts the item in an Unassigned area and tells you.")
                         .font(.callout).fontWeight(.semibold)
-                        .padding(10)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .multilineTextAlignment(.center)
+                        .padding(PageSpacing.small + 2)
+                        .frame(maxWidth: .infinity)
                         .background(theme["yellow-soft"], in: RoundedRectangle(cornerRadius: 8, style: .continuous))
                         .foregroundStyle(theme["yellow-t"])
                         .accessibilityIdentifier("trash-banner")
                 }
-                .padding(.horizontal, 24)
-                .padding(.bottom, 24)
+                .pageColumn(maxWidth: PageSpacing.column)
+                .padding(.bottom, PageSpacing.large)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
