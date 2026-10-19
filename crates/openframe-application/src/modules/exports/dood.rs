@@ -212,10 +212,34 @@ pub(super) fn export(
     doc.push(Block::Masthead(mast));
     doc.push(Block::Metrics(Metrics {
         items: vec![
-            Metric::new(shoot_days.to_string(), "Shooting days"),
-            Metric::new(view.rows.len().to_string(), "Cast members"),
-            Metric::new(off_days.to_string(), "Off days"),
-            Metric::new(corrected.to_string(), "Manual corrections"),
+            Metric::new(
+                shoot_days.to_string(),
+                if shoot_days == 1 {
+                    "Shooting day"
+                } else {
+                    "Shooting days"
+                },
+            ),
+            Metric::new(
+                view.rows.len().to_string(),
+                if view.rows.len() == 1 {
+                    "Cast member"
+                } else {
+                    "Cast members"
+                },
+            ),
+            Metric::new(
+                off_days.to_string(),
+                if off_days == 1 { "Off day" } else { "Off days" },
+            ),
+            Metric::new(
+                corrected.to_string(),
+                if corrected == 1 {
+                    "Manual correction"
+                } else {
+                    "Manual corrections"
+                },
+            ),
         ],
         compact: true,
     }));
@@ -262,8 +286,10 @@ pub(super) fn export(
             "schedule-day column",
             "schedule-day columns",
         ));
-        b.keep_next = 140.0;
+        b.keep_next = 190.0;
         doc.push(Block::Banner(b));
+        // The legend sits above the matrix so it can never be left alone on a page of its own.
+        doc.push(Block::Legend(legend.clone()));
         // Day columns keep one width in every band; the cast column takes what is left.
         let mut cols = vec![Col::pt("#", 26.0), Col::weight("Cast member", 1.0)];
         cols.extend(chunk.iter().map(|d| Col::pt(d.short_label.clone(), 80.0)));
@@ -322,7 +348,6 @@ pub(super) fn export(
             tbl.rows.push(Row::new(cells));
         }
         doc.push(Block::Styled(tbl));
-        doc.push(Block::Legend(legend.clone()));
     }
 
     // Totals for the whole schedule, in their own table.

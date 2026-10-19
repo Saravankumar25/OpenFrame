@@ -43,8 +43,8 @@ use unicode_segmentation::UnicodeSegmentation;
 mod design;
 pub use design::{
     Banner, Callout, CalloutCol, Card, CardHead, CardPart, Cards, Cell, CellItem, Chip, Col, Field,
-    Group, GroupItem, HeaderStyle, Legend, LegendItem, Masthead, Metric, Metrics, Row, Rgb, Section,
-    Side, StyledTable, Tile, Tone, Txt, Width, pal,
+    Group, GroupItem, HeaderStyle, Legend, LegendItem, Masthead, Metric, Metrics, Rgb, Row,
+    Section, Side, StyledTable, Tile, Tone, Txt, Width, pal,
 };
 
 use crate::fonts;
@@ -1322,7 +1322,8 @@ fn render_pdf(doc: &Document) -> ReportPdf {
                 shaped.collect(text, *bold);
             }
         }
-        shaped.collect(footer, false);
+        // The branded footer is drawn bold, the plain one regular: shape what will be drawn.
+        shaped.collect(footer, doc.brand.is_some());
     }
     let pack = shaped.pack();
     let mut b = PdfBuilder::new(w, h);
@@ -1385,7 +1386,9 @@ fn render_pdf(doc: &Document) -> ReportPdf {
                     round_bottom,
                     fill,
                     stroke,
-                } => design::draw_shape(&mut c, x, y, w, h, r, round_top, round_bottom, fill, stroke),
+                } => {
+                    design::draw_shape(&mut c, x, y, w, h, r, round_top, round_bottom, fill, stroke)
+                }
                 Op::LineC {
                     x1,
                     y1,
@@ -1430,7 +1433,15 @@ fn render_pdf(doc: &Document) -> ReportPdf {
         }
         let footer = &footers[i];
         if doc.brand.is_some() {
-            design::draw_footer(&mut b, &mut c, &shaped, &pack, w, footer, doc.brand.as_deref());
+            design::draw_footer(
+                &mut b,
+                &mut c,
+                &shaped,
+                &pack,
+                w,
+                footer,
+                doc.brand.as_deref(),
+            );
         } else {
             let fw = text_width(footer, 8.0, false);
             c.set_fill_gray(0.45);
@@ -1601,7 +1612,8 @@ mod tests {
 
     /// A document that uses every design block, long enough to run onto several pages.
     fn designed_document() -> Document {
-        let long = "A long synopsis that has to wrap inside its column and never be cut short. ".repeat(6);
+        let long =
+            "A long synopsis that has to wrap inside its column and never be cut short. ".repeat(6);
         let mut mast = Masthead::new("MONSOON LETTERS").eyebrow("Call sheet", pal::SLATE);
         mast.badges.push(Chip::label("Draft", Tone::Warn));
         mast.side = Some(Side::Dark {
@@ -1616,7 +1628,10 @@ mod tests {
             items: vec![Metric::new("12", "Scenes"), Metric::new("3 3/8", "Pages")],
             compact: false,
         }));
-        doc.push(Block::Section(Section::new("Locations", Some("2 total".into()))));
+        doc.push(Block::Section(Section::new(
+            "Locations",
+            Some("2 total".into()),
+        )));
         let cards: Vec<Card> = (0..8)
             .map(|i| Card {
                 head: Some(CardHead::new(format!("LOCATION {i}"))),
@@ -1650,6 +1665,25 @@ mod tests {
         doc.brand(BRAND_LINE)
     }
 
+    /// Every base-14 text string on the pages, decoded from Windows-1252 (strings with a byte
+    /// above ASCII are written as hex, so the raw file bytes cannot be searched for them).
+    fn page_strings(bytes: &[u8]) -> String {
+        let doc = lopdf::Document::load_mem(bytes).expect("PDF parses");
+        let mut out = String::new();
+        for (_, page) in doc.get_pages() {
+            let content = lopdf::content::Content::decode(&doc.get_page_content(page)).unwrap();
+            for op in content.operations {
+                if let ("Tj", [lopdf::Object::String(b, _), ..]) =
+                    (op.operator.as_str(), op.operands.as_slice())
+                {
+                    out.extend(b.iter().map(|x| crate::winansi::decode_byte(*x)));
+                    out.push('\n');
+                }
+            }
+        }
+        out
+    }
+
     #[test]
     fn design_blocks_paginate_deterministically_and_keep_every_word() {
         let doc = designed_document();
@@ -1664,7 +1698,49 @@ mod tests {
         assert!(!text.contains('\u{2026}'), "no ellipsis in design output");
         // The lockup text and the page count are on every page.
         assert_eq!(text.matches(BRAND_LINE).count(), a.pages);
-        assert!(text.contains(&format!("Page {} / {}", a.pages, a.pages)));
+        assert!(page_strings(&a.bytes).contains(&format!("Page {} / {}", a.pages, a.pages)));
+    }
+
+    #[test]
+    fn design_blocks_shape_indian_scripts_with_the_embedded_fonts() {
+        let mut doc = Document::new("Telugu").footer("మీరా · Call sheet");
+        doc.push(Block::Masthead(Masthead::new("రైలు లేఖలు")));
+        doc.push(Block::Text(Txt::new(
+            "మీరా రైలు స్టేషన్‌లో వేచి ఉంది. मीरा ने कहा, “क्षमा करें, ट्रेन देर से है।”",
+        )));
+        let tel = "మీరా రైలు స్టేషన్";
+        doc.push(Block::Metrics(Metrics {
+            items: vec![Metric::new("12", tel)],
+            compact: false,
+        }));
+        doc.push(Block::Section(Section::new(tel, Some(tel.into()))));
+        doc.push(Block::Banner(Banner::new(tel)));
+        let card = Card {
+            head: Some(CardHead::new(tel)),
+            parts: vec![CardPart::Fields(vec![Field::new(tel, tel)])],
+            ..Card::new()
+        };
+        doc.push(Block::Cards(Cards::new(2, vec![card])));
+        let mut t = StyledTable::new(vec![Col::weight(tel, 1.0)]);
+        t.rows
+            .push(Row::new(vec![Cell::text(Txt::new(tel).bold())]));
+        t.rows.push(Row::new(vec![
+            Cell::new().item(CellItem::Chips(vec![Chip::label(tel, Tone::Info)])),
+        ]));
+        doc.push(Block::Styled(t));
+        let doc = doc.brand(BRAND_LINE);
+        let pdf = doc.to_pdf();
+        assert_eq!(
+            pdf.replaced_chars,
+            0,
+            "no glyph for {:?}",
+            doc.unsupported_chars()
+        );
+        let text = String::from_utf8_lossy(&pdf.bytes).into_owned();
+        assert!(
+            text.contains("/FontFile2") || text.contains("/FontFile3"),
+            "fonts are embedded"
+        );
     }
 
     #[test]
@@ -1672,7 +1748,10 @@ mod tests {
         let doc = Document::new("Plain").with(Block::Paragraph("Scene 1".into()));
         let pdf = doc.to_pdf();
         let text = String::from_utf8_lossy(&pdf.bytes).into_owned();
-        assert!(text.contains("Page 1 of 1"), "legacy footer kept");
+        assert!(
+            page_strings(&pdf.bytes).contains("Page 1 of 1"),
+            "legacy footer kept"
+        );
         assert!(!text.contains(BRAND_LINE));
     }
 

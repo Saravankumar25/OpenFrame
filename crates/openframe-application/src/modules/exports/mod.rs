@@ -31,7 +31,7 @@
 //!   changes nothing in the project).
 //! - Branding (production depth spec §43; doc 33 section 8): every export here
 //!   is a production document, so [`deliver`] brands it in one place. A PDF
-//!   prints the small OpenFrame mark and "Created with OpenFrame Studio" at the
+//!   prints the small OpenFrame mark and "Created using OpenFrame" at the
 //!   bottom of every page (Sides print the line in the page's bottom margin), a
 //!   workbook names OpenFrame Studio in its document properties and the first
 //!   sheet's footer, and a plain-text export ends with the line. CSV stays pure

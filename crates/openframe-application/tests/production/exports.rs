@@ -474,12 +474,12 @@ fn breakdown_report_marks_suggested_and_lists_catalog_usage() {
     let text = pdf_text(&pdf);
     for want in [
         "Breakdown Report",
-        "Scene 1: INT. POLICE STATION - NIGHT",
+        "BREAKDOWN SCENE INT. POLICE STATION - NIGHT",
         "Red Folder",
-        "Hospital Sheet (suggested)",
-        "Catalog",
-        "Used in scenes",
-        "Scene 5: OMITTED",
+        "Hospital Sheet SUGGESTED",
+        "CATALOG",
+        "USED IN SCENES",
+        "BREAKDOWN SCENE OMITTED No breakdown elements yet.",
     ] {
         assert!(text.contains(want), "missing {want}: {text}");
     }
@@ -539,8 +539,12 @@ fn breakdown_report_marks_suggested_and_lists_catalog_usage() {
     );
     assert_eq!(r["scopeLabel"], "1 selected scene");
     let t = pdf_text(&p2);
-    assert!(t.contains("Scene 2: EXT. OLD RAILWAY STATION - DAY"));
-    assert!(!t.contains("Scene 1:") && !t.contains("Hospital Sheet") && !t.contains("Red Folder"));
+    assert!(t.contains("BREAKDOWN SCENE EXT. OLD RAILWAY STATION - DAY"));
+    assert!(
+        !t.contains("INT. POLICE STATION - NIGHT")
+            && !t.contains("Hospital Sheet")
+            && !t.contains("Red Folder")
+    );
     assert_eq!(
         env.err(
             "breakdown.export_report",
@@ -588,7 +592,7 @@ fn moodboard_pdf_embeds_images_and_excludes_internal_notes_unless_selected() {
     assert_eq!(pdf_images(&pdf), 1, "the image is embedded");
     let text = pdf_text(&pdf);
     for want in [
-        "Moodboard: Overall Look",
+        "VISUAL DEVELOPMENT · MOODBOARD Overall Look",
         "Rain on glass — main tone",
         "Cold, wet, blue-grey.",
         "Memories of Murder",
@@ -664,7 +668,7 @@ fn storyboard_sheet_has_panels_shot_numbers_framing_and_optional_notes() {
     assert_eq!(pdf_images(&pdf), 1);
     let text = pdf_text(&pdf);
     for want in [
-        "Storyboard: INT. POLICE STATION - NIGHT",
+        "STORYBOARD: INT. POLICE STATION - NIGHT",
         "Scene 1: INT. POLICE STATION - NIGHT",
         "Panel 1 · Shot 1A",
         "Blank panel",
@@ -775,11 +779,11 @@ fn schedule_export_has_days_markers_summaries_and_unscheduled() {
     let text = pdf_text(&pdf);
     for want in [
         "Shooting Schedule",
-        "Shoot Day 1 · Mon 14 Jun 2027",
+        "SHOOT DAY 01 Day 1 MONDAY · 14 JUNE 2027",
         "INT. POLICE STATION - NIGHT",
         "MEAL",
         "20:30",
-        "Unscheduled",
+        "UNSCHEDULED",
         "INT. MORGUE - DAY",
         "Shooting Draft 6",
     ] {
@@ -809,7 +813,7 @@ fn schedule_export_has_days_markers_summaries_and_unscheduled() {
     );
     assert_eq!(r["scopeLabel"], "Current day only");
     let t = pdf_text(&one);
-    assert!(t.contains("Shoot Day 1") && !t.contains("Unscheduled") && !t.contains("MORGUE"));
+    assert!(t.contains("SHOOT DAY 01") && !t.contains("UNSCHEDULED ·") && !t.contains("MORGUE"));
     assert_eq!(
         env.err(
             "schedule.export_schedule",
@@ -902,11 +906,11 @@ fn call_sheet_pdf_has_paper_layout_and_final_sheet_uses_its_snapshot() {
     let text = pdf_text(&draft);
     for want in [
         "BLACK RAIN",
-        "SHOOT DAY 1",
-        "MONDAY 14 JUNE 2027",
+        "SHOOT DAY 01",
+        "Monday 14 June 2027",
         "CREW CALL",
         "LOCATIONS",
-        "Police Station",
+        "POLICE STATION",
         "TALENT",
         "Karthik Menon",
         "SCENE SCHEDULE",
@@ -916,8 +920,8 @@ fn call_sheet_pdf_has_paper_layout_and_final_sheet_uses_its_snapshot() {
         "Behind the station",
         "WEATHER",
         "Rain expected",
-        "DRAFT, not final",
-        "Needs input",
+        "DRAFT · NOT FINAL",
+        "NEEDS INPUT",
         "Created using OpenFrame",
     ] {
         assert!(text.contains(want), "missing {want}: {text}");
@@ -951,7 +955,7 @@ fn call_sheet_pdf_has_paper_layout_and_final_sheet_uses_its_snapshot() {
     assert!(r["warnings"].as_array().unwrap().is_empty(), "{r}");
     let text = pdf_text(&issued);
     assert!(text.contains("CREW CALL") && !text.contains("23:59"));
-    assert!(text.contains("Final") && !text.contains("DRAFT"));
+    assert!(text.contains("FINAL") && !text.contains("DRAFT"));
     assert_eq!(
         env.err(
             "callsheets.export_pdf",
@@ -1107,8 +1111,8 @@ fn budget_report_exports_planned_actual_and_difference() {
         "10% · INR 1,20,000",
         "Planned in lines",
         "INR 62,000",
-        "Actual so far INR 55,000 (1 line of 2)",
-        "Over plan (lines with an actual) INR 5,000",
+        "INR 55,000 ACTUAL SO FAR, 1 LINE OF 2",
+        "INR 5,000 OVER PLAN, LINES WITH AN ACTUAL",
         "Lead actor",
         "50,000",
         "55,000",

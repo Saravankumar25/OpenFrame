@@ -437,7 +437,7 @@ pub(super) fn export(
             let est = s.minutes.map(minutes).unwrap_or_default();
             let est_cell = Cell::text(
                 Txt::new(if est.is_empty() {
-                    "\u{2014}".to_string()
+                    "\u{2013}".to_string()
                 } else {
                     est
                 })
@@ -832,7 +832,7 @@ pub(super) fn export(
                     cells.push(cell(c.contact.clone()));
                 }
                 let mut row = Row::new(cells);
-                if group % 2 == 0 {
+                if group.is_multiple_of(2) {
                     row.fill = Some(pal::PANEL);
                 }
                 tbl.rows.push(row);

@@ -9,8 +9,10 @@
  54  150 TitleText      +91 98765 43210
  54  610 TitleText      4 October 2026
 === page 1
+ -3  380 PageTitle      THE LAST LIGHT
+ -3  730 PageNumber     1.
   0   90 SceneNumber    1
   0  150 Heading        EXT. LIGHTHOUSE - DAWN
   0  760 SceneNumber    1
   2  150 Action         The light turns one last time.
-pdf-sha256 466662e4ad36355d8ac1f24337e57ecd08e59519dc9736f2ca35d72faa71444f
+pdf-sha256 454bb9b67db9fdc295a04fab1193f105778707e253de0d1c8a1de105550e3dc9

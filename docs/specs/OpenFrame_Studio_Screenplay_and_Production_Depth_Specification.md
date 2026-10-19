@@ -1658,7 +1658,7 @@ Brand:
 Use:
 
 - small OpenFrame logo
-- “Created with OpenFrame Studio”
+- “Created with OpenFrame Studio” (superseded 2026-10-20: the owner's PDF change specs use “Created using OpenFrame”)
 - header/footer or unobtrusive watermark
 
 For spreadsheets, use workbook/first-sheet metadata or footer rather than putting a logo into every row.

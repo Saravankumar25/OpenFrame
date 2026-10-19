@@ -188,7 +188,7 @@ the regular import preview (`screenplay.import_preview` with `sample`); `tests/s
 
 ## 8. Branding (Call sheets, budget, templates, samples and exports area)
 
-Screenplay outputs clean. Production outputs carry a small logo and "Created with OpenFrame Studio"; spreadsheets
+Screenplay outputs clean. Production outputs carry a small logo and "Created using OpenFrame"; spreadsheets
 use workbook metadata or first-sheet footer. User-owned source files are never modified for branding. Packages
 and backups carry a branded manifest or README, not edited user files.
 

@@ -228,3 +228,50 @@ fn call_sheet_shows_missing_values_as_a_state_and_never_invents_them() {
         "no sample value leaks in"
     );
 }
+
+/// The "Confirmed elements" figure and the number of printed "Unnamed element" entries.
+fn confirmed_and_unnamed(film: &Film, file: &str) -> (usize, usize) {
+    let path = export(
+        film,
+        "breakdown.export_report",
+        json!({ "content": "scenes" }),
+        file,
+    );
+    let t = runs(&path);
+    let i = t
+        .iter()
+        .position(|r| r == "CONFIRMED ELEMENTS")
+        .expect("metric");
+    (
+        t[i - 1].parse().expect("a number"),
+        t.iter().filter(|r| *r == "Unnamed element").count(),
+    )
+}
+
+#[test]
+fn breakdown_report_prints_every_counted_element_even_without_a_name() {
+    // Spec 05 reported "19 confirmed, 18 listed". The count and the listing come from one list,
+    // so the only way a counted element could go missing from the page was a blank name, which
+    // used to print as nothing. It now prints as "Unnamed element".
+    let film = build_film();
+    let (before, unnamed_before) = confirmed_and_unnamed(&film, "b1.pdf");
+    assert_eq!(unnamed_before, 0);
+    film.env
+        .core
+        .project()
+        .unwrap()
+        .store
+        .with_writer(|c| {
+            c.execute_batch(
+                "INSERT INTO breakdown_element(id,source_id,scene_id,scene_lineage_id,category,display_name,confirmation_state,created_at,updated_at)
+                 VALUES ('blank1','ps1','s2','L2','Props','','Confirmed',900,900),
+                        ('blank2','ps1','s2','L2','Props','   ','Manual',901,901);",
+            )
+            .expect("fixture sql");
+            Ok(())
+        })
+        .unwrap();
+    let (after, unnamed) = confirmed_and_unnamed(&film, "b2.pdf");
+    assert_eq!(after, before + 2, "both elements are counted");
+    assert_eq!(unnamed, 2, "and both are printed");
+}

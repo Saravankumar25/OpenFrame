@@ -1051,12 +1051,12 @@ fn decorate_pages(
 }
 
 /// Longest running title line, in characters (leaves a clear gap before the page number).
-const PAGE_TITLE_CHARS: usize = 40;
+const PAGE_TITLE_CHARS: usize = 50;
 
 /// The centred, underlined title near the top of the first script page: layout only, never an
 /// element of the script. It sits in the header band above the body, so it never takes a body
 /// row and never shifts the script. When the page also prints a header text, the title moves
-/// one row up so the two never overlap.
+/// one row down so the two never overlap.
 fn running_title(page: &mut LaidOutPage, doc: &ScreenplayDoc, g: &Geometry, header_on_page: bool) {
     let Some(title) = doc.title_page.title() else {
         return;
@@ -1067,7 +1067,7 @@ fn running_title(page: &mut LaidOutPage, doc: &ScreenplayDoc, g: &Geometry, head
     }
     let mut lines = wrap(&title, PAGE_TITLE_CHARS);
     if lines.len() > 2 {
-        // Three lines would climb into the top margin: keep two and end the second with an
+        // A third line would touch the first body row: keep two and end the second with an
         // ellipsis, cut at a fixed width so the result is always the same.
         lines.drain(2..);
         if let Some(last) = lines.last_mut() {
@@ -1077,8 +1077,9 @@ fn running_title(page: &mut LaidOutPage, doc: &ScreenplayDoc, g: &Geometry, head
         }
     }
     let action = rules::rule_for("action");
-    let last_row = if header_on_page { -4 } else { -3 };
-    let first_row = last_row - (lines.len() as i32 - 1);
+    // Lines run downward from the page number row, so a long title never climbs into the top
+    // margin. Row -1 stays empty above the body.
+    let first_row = if header_on_page { -2 } else { -3 };
     for (k, text) in lines.into_iter().enumerate() {
         let x = action.left_in + ((action.width_in - g.text_width_in(&text)) / 2.0).max(0.0);
         page.lines.push(PageLine {

@@ -80,13 +80,15 @@ struct StripPalette {
     muted: Rgb,
 }
 
-/// Print palette for the four strip classes; labels carry the meaning, colour reinforces it.
+/// Classic stripboard colours (owner decision 2026-10-20): EXT + Day yellow, EXT + Night green,
+/// INT + Day white, INT + Night light blue (INT/EXT counts as EXT). The ink stays dark on every
+/// fill so the print is readable; labels carry the meaning, colour reinforces it.
 fn strip_palette(class: &str) -> StripPalette {
     let (fill, stripe, text, muted) = match class {
-        "xd" => (0xf8e4a8, 0xd99a1a, 0x1a2640, 0x5a4a1f),
-        "xn" => (0x2a6f94, 0x15415a, 0xffffff, 0xd5e6f1),
-        "id" => (0xeef2f6, 0xa9b6c6, 0x1a2640, 0x566277),
-        _ => (0xd3deea, 0x6c819b, 0x1a2640, 0x3f4d63),
+        "xd" => (0xfbe98f, 0xd9a400, 0x1a2640, 0x5a4a1f),
+        "xn" => (0xc9e7b8, 0x4c9a3a, 0x1a2640, 0x2f5a25),
+        "id" => (0xffffff, 0xa9b6c6, 0x1a2640, 0x566277),
+        _ => (0xcfe4f6, 0x4a8cc4, 0x1a2640, 0x2f4d6b),
     };
     StripPalette {
         fill: Rgb::hex(fill),
@@ -282,14 +284,32 @@ pub(super) fn export(
     mast.rule = true;
     doc.push(Block::Masthead(mast));
     let mut metrics = vec![
-        Metric::new(format!("{shoot_days:02}"), "Shooting days"),
-        Metric::new(format!("{scheduled:02}"), "Scheduled scenes"),
+        Metric::new(
+            format!("{shoot_days:02}"),
+            if shoot_days == 1 {
+                "Shooting day"
+            } else {
+                "Shooting days"
+            },
+        ),
+        Metric::new(
+            format!("{scheduled:02}"),
+            if scheduled == 1 {
+                "Scheduled scene"
+            } else {
+                "Scheduled scenes"
+            },
+        ),
         Metric::new(pages(total_eighths), "Script pages"),
     ];
     if unscheduled {
         metrics.push(Metric::new(
             format!("{:02}", pool.len()),
-            "Unscheduled scenes",
+            if pool.len() == 1 {
+                "Unscheduled scene"
+            } else {
+                "Unscheduled scenes"
+            },
         ));
     }
     doc.push(Block::Metrics(Metrics {
@@ -338,7 +358,7 @@ pub(super) fn export(
         if any_start {
             cells.push(Cell::text(
                 Txt::new(if t.start.is_empty() {
-                    "\u{2014}".to_string()
+                    "\u{2013}".to_string()
                 } else {
                     t.start.clone()
                 })
@@ -412,7 +432,7 @@ pub(super) fn export(
         if any_est {
             cells.push(Cell::text(
                 Txt::new(if t.est.is_empty() {
-                    "\u{2014}".to_string()
+                    "\u{2013}".to_string()
                 } else {
                     t.est.clone()
                 })
@@ -463,8 +483,17 @@ pub(super) fn export(
         }
         let sum = board.day_summary(d);
         let tl = board.day_timeline(d);
+        // Scene strips only; meals, moves and other rows are counted apart.
+        let others = board.markers.iter().filter(|m| m.day_id == d.id).count();
+        let mut counts = plural(sum.scene_count as usize, "scene", "scenes");
+        if others > 0 {
+            counts.push_str(&format!(
+                ", {}",
+                plural(others, "other item", "other items")
+            ));
+        }
         b.sub_left = vec![
-            (plural(sum.scene_count as usize, "scene", "scenes"), true),
+            (counts, true),
             (" · arranged in production order".into(), false),
         ];
         let page_label = pages(sum.page_eighths);
@@ -577,7 +606,7 @@ pub(super) fn export(
                     if any_start {
                         cells.push(Cell::text(
                             Txt::new(if start.is_empty() {
-                                m.at_time.clone().unwrap_or_else(|| "—".into())
+                                m.at_time.clone().unwrap_or_else(|| "–".into())
                             } else {
                                 start
                             })
@@ -591,7 +620,7 @@ pub(super) fn export(
                     cells.push(Cell::empty());
                     if any_est {
                         cells.push(Cell::text(
-                            Txt::new(dur.unwrap_or_else(|| "—".into()))
+                            Txt::new(dur.unwrap_or_else(|| "–".into()))
                                 .size(9.0)
                                 .color(pal::SLATE)
                                 .align(Align::Right),

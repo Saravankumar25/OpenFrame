@@ -233,11 +233,15 @@ pub(super) fn export_moodboard(
         let cards: Vec<Card> = texts
             .into_iter()
             .map(|(caption, body, private, kind)| {
+                // The kind label is the title when there is no caption, so it is never printed twice.
+                let titled = caption.is_some();
                 let mut head = CardHead::new(caption.unwrap_or_else(|| kind.to_string()));
                 if private {
                     head.right = Some(Chip::label("Internal", Tone::Warn));
                 }
-                head.eyebrow = Some(kind.to_string());
+                if titled {
+                    head.eyebrow = Some(kind.to_string());
+                }
                 Card {
                     head: Some(head),
                     parts: if body.is_empty() {
