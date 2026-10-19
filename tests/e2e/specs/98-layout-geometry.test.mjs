@@ -58,7 +58,8 @@ function measure() {
       const scrolls = /(auto|scroll)/.test(s.overflowX + " " + s.overflowY);
       const hides = /(hidden|clip)/.test(s.overflowX + " " + s.overflowY);
       if (scrolls) {
-        if (r.bottom <= pr.top || r.top >= pr.bottom || r.right <= pr.left || r.left >= pr.right) scrolledAway = true;
+        // Wholly or partly past the edge of its scrolling area: scrolling brings it into view.
+        if (r.bottom > pr.bottom + 1 || r.top < pr.top - 1 || r.right > pr.right + 1 || r.left < pr.left - 1) scrolledAway = true;
         break;
       }
       if (hides && !clipped && (r.right > pr.right + 2 || r.left < pr.left - 2 || r.bottom > pr.bottom + 2 || r.top < pr.top - 2)) clipped = p;
@@ -79,6 +80,16 @@ function measure() {
     if (hit && !el.contains(hit) && !hit.contains(el) && !hit.closest(".toast, .menu-pop, [role=tooltip]")) {
       findings.push({ kind: "covered", control: label(el), by: String(hit.className || hit.tagName).slice(0, 60) });
     }
+  }
+  // A scrolling area that itself runs past the window or under the status bar: the end of its content
+  // can never be reached.
+  const floor = document.querySelector("footer.status")?.getBoundingClientRect().top ?? vh;
+  for (const el of document.querySelectorAll("main *")) {
+    const s = getComputedStyle(el);
+    if (!/(auto|scroll)/.test(s.overflowY) || el.scrollHeight <= el.clientHeight + 1) continue;
+    const r = el.getBoundingClientRect();
+    if (r.height < 1 || el.closest("[aria-hidden='true']")) continue;
+    if (r.bottom > floor + 1) findings.push({ kind: "scroll area past the window", control: String(el.className).slice(0, 50), by: `bottom ${Math.round(r.bottom)} of ${Math.round(floor)}` });
   }
   // Text cut off inside its own box (UX brief section 6): a box that hides overflow, holds text of its
   // own and is smaller than that text. An ellipsis is fine when the full text is in a tooltip or label.
@@ -139,6 +150,12 @@ describe("layout geometry", () => {
     await step("add stress text (UX brief section 6.2)", async () => {
       const op = (name, args) =>
         browser.execute((n, a) => window.__TAURI_INTERNALS__.invoke("of_invoke", { op: n, args: a }).then(() => null, (e) => JSON.stringify(e)), name, args);
+      // The project finishes opening in the core a moment after the page shows: a read that needs an
+      // open project is retried until it answers.
+      await browser.waitUntil(async () => (await op("story.board", { episodeId: null })) === null, {
+        timeout: 20_000,
+        timeoutMsg: "the project did not open in the core",
+      });
       const long = "A long card title that keeps going so that it is far wider than any column, ".repeat(4).trim();
       const unbroken = "https://example.invalid/" + "x".repeat(176);
       const mixed = "రైలు స్టేషన్ ரயில் நிலையம் रेलवे स्टेशन 🚉 Café naïve";
