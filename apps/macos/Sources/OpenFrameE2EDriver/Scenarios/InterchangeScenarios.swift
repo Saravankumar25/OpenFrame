@@ -1513,6 +1513,10 @@ extension Scenarios {
                 try fm.createDirectory(at: work, withIntermediateDirectories: true)
                 let copy = work.appendingPathComponent(bundle.lastPathComponent)
                 _ = ui.run("/bin/cp", ["-cR", bundle.path, copy.path])
+                // The app marks files it writes as downloaded (LSFileQuarantineEnabled); this copy is
+                // the test's own, so the mark comes off before it starts, or macOS would stop it with
+                // a "damaged" dialog on the screen.
+                _ = ui.run("/usr/bin/xattr", ["-dr", "com.apple.quarantine", copy.path])
                 guard let lib = fm.enumerator(at: copy, includingPropertiesForKeys: nil)?.compactMap({ $0 as? URL }).first(where: { $0.lastPathComponent == "libggml-base.0.dylib" }) else { throw DriverError("the copy of the build has no engine library") }
                 try ui.changeOneByte(lib)
                 let childRoot = work.appendingPathComponent("data")

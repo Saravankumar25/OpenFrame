@@ -82,7 +82,7 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 - **Blocked / risks:** checks only a person can do on this Mac with a locked screen (voice recording, drags, Tab walks)
   are in the pilot kit.
 - **Next:** the team pilot on the Mac (M10); fix and re-check findings; store build in Chapter 3.
-- **Checks run:** FINAL_CHECKS
+- **Checks run:** Swift 598 tests pass; Rust workspace passes; final image 5355dc7: 199 real-app scenarios, 160 pass, 39 fail (classes in the Mac release gate), 0 crashes; clean-account 4 of 4; check-links, check:writing, architecture-lint and the script tests green.
 
 ### 2026-10-18, Mac phases M1 to M5 on an Apple M1 Mac
 - **Areas and items worked:** Mac track M1 (toolchain, core on macOS, Tauri Mac shell retired, parity matrix, CI), M2 (core as a Swift library), M3 (SwiftUI shell), M4 (editor spike, choice, native editor), M5 (Story, Idea Vault, Breakdown). Outside the plan, at the owner's request: the apple-design skill installed globally for Claude Code.
