@@ -252,13 +252,13 @@ struct PrintPreviewSheet: View {
                     ProgressView("Preparing the preview\u{2026}")
                 }
             }
-            .frame(minWidth: 480, maxWidth: .infinity, minHeight: 560, maxHeight: .infinity)
+            .frame(minWidth: 480, maxWidth: .infinity, minHeight: 300, maxHeight: .infinity)
             .accessibilityElement(children: .contain)
             .accessibilityLabel("Preview")
             Divider()
             side.frame(width: 240)
         }
-        .frame(width: 820, height: 640)
+        .sheetSize(width: 820, height: 640)
         .background(theme["panel"])
         .background(WindowReader(window: $window))
         .task { await model.load() }

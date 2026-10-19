@@ -86,6 +86,9 @@ struct IXSheetFrame<Content: View, Footer: View, Leading: View>: View {
     @ViewBuilder var footer: () -> Footer
     @ViewBuilder var leading: () -> Leading
     @Environment(\.ofTheme) private var theme
+    @Environment(\.windowContentSize) private var window
+    /// Room the title, the buttons, the padding and the sheet's own margin take.
+    private static var chrome: CGFloat { 190 }
 
     var body: some View {
         VStack(alignment: .leading, spacing: PageSpacing.medium) {
@@ -97,7 +100,12 @@ struct IXSheetFrame<Content: View, Footer: View, Leading: View>: View {
                 }
             }
             .frame(maxWidth: .infinity)
-            content()
+            // The title and the buttons always show; in a window too short for the whole dialog
+            // the part between them scrolls (a sheet taller than its window had its buttons cut off).
+            ScrollView(.vertical) { content() }
+                .frame(maxHeight: max(160, window.height - Self.chrome))
+                .fixedSize(horizontal: false, vertical: true)
+                .scrollBounceBehavior(.basedOnSize)
             HStack(spacing: 10) {
                 leading()
                 Spacer(minLength: 12)

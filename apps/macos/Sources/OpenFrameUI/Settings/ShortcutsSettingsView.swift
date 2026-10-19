@@ -286,7 +286,7 @@ struct ShortcutsSheet: View {
             .padding([.horizontal, .top], 16)
             ShortcutsSettingsView(model: model)
         }
-        .frame(minWidth: 740, idealWidth: 780, minHeight: 540, idealHeight: 640)
+        .sheetFrame(minWidth: 740, idealWidth: 780, minHeight: 540, idealHeight: 640)
         .interactiveDismissDisabled(model.recording != nil)
         .accessibilityIdentifier("shortcuts-sheet")
     }

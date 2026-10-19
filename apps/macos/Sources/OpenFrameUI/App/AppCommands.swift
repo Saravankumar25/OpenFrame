@@ -84,6 +84,14 @@ struct AppCommands: Commands {
                 .keyboardShortcut("z", modifiers: [.command, .option, .shift])
                 .disabled(!isProject)
         }
+        CommandGroup(replacing: .sidebar) {
+            // The project's workspace sidebar (also the sidebar button in the toolbar).
+            Button(ProjectSidebar.shared.shown ? "Hide Sidebar" : "Show Sidebar") {
+                NotificationCenter.default.post(name: .openFrameToggleSidebar, object: nil)
+            }
+            .keyboardShortcut("s", modifiers: [.command, .control])
+            .disabled(!isProject)
+        }
         CommandMenu("Go") {
             // Every workspace, so the keyboard reaches each one; the main ones have a shortcut.
             ForEach(Workspace.allCases) { ws in

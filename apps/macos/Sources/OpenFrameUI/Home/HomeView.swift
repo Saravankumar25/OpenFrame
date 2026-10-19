@@ -142,7 +142,7 @@ struct HomeView: View {
                 GlobalIdeaVaultView()
                     .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Done") { showVault = false } } }
             }
-            .frame(minWidth: 900, minHeight: 620)
+            .sheetFrame(minWidth: 900, minHeight: 620)
         }
         .task(id: TaskKey(running: app.isRunning, archived: home.showArchived, changes: app.changes.any)) {
             await home.load(app.core)

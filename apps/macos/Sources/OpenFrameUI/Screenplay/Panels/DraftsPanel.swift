@@ -231,7 +231,7 @@ struct DraftsSheet: View {
             }
         }
         .padding(PageSpacing.large)
-        .frame(width: 600, height: 620)
+        .sheetSize(width: 600, height: 620)
         .background(theme["panel"])
         .task {
             model.attach(app, workspace, say: { state.say($0) })

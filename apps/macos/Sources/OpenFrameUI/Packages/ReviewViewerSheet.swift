@@ -112,7 +112,7 @@ struct ReviewViewerSheet: View {
                 ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
-        .frame(width: 1040, height: 680)
+        .sheetSize(width: 1040, height: 680)
         .background(theme["panel"])
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Review package")

@@ -166,7 +166,7 @@ struct ReviewSheet: View {
             Divider()
             if let r = model.round { roundBody(r) } else if model.loading { ProgressView().controlSize(.small).frame(maxWidth: .infinity, maxHeight: .infinity) } else { empty }
         }
-        .frame(width: 880, height: 600)
+        .sheetSize(width: 880, height: 600)
         .background(theme["panel"])
         .task {
             model.attach(app, workspace, say: { state.say($0) })

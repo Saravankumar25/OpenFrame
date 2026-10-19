@@ -157,7 +157,7 @@ struct CompareView: View {
             Divider()
             content
         }
-        .frame(width: 940, height: 640)
+        .sheetSize(width: 940, height: 640)
         .background(theme["panel"])
         .accessibilityIdentifier("compare-view")
     }

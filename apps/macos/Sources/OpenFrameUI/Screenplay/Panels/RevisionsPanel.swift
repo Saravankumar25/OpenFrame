@@ -170,7 +170,7 @@ struct RevisionsSheet: View {
             }
         }
         .padding(PageSpacing.large)
-        .frame(width: 600, height: 560)
+        .sheetSize(width: 600, height: 560)
         .background(theme["panel"])
         .task(id: "\(workspace.draft?.id ?? "-")-\(app.changes.key(Self.tables))") {
             model.attach(app, workspace)
@@ -382,7 +382,7 @@ struct PageViewSheet: View {
             }
         }
         .padding(PageSpacing.large)
-        .frame(width: 440, height: 640)
+        .sheetSize(width: 440, height: 640)
         .background(theme["panel"])
         .task {
             model.attach(app, workspace)

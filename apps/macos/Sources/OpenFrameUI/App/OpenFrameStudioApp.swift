@@ -34,6 +34,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     @MainActor static var model: AppModel?
     private var observers: [NSObjectProtocol] = []
 
+    func applicationWillFinishLaunching(_ notification: Notification) {
+        SidebarRestore.clearCollapsed()
+    }
+
     func applicationDidFinishLaunching(_ notification: Notification) {
         let center = NSWorkspace.shared.notificationCenter
         observers.append(center.addObserver(forName: NSWorkspace.willSleepNotification, object: nil, queue: .main) { _ in
@@ -111,12 +115,13 @@ public struct OpenFrameStudioApp: App {
                 .environment(model)
                 .environment(themes)
                 .openFrameTheme(themes)
-                .frame(minWidth: 900, minHeight: 600)
+                .fitsScreen()
                 .task { await model.start() }
                 .task(id: model.isRunning) { await themes.load(from: model) }
         }
         // The first window is wide enough for every workspace toolbar; at the minimum width the
-        // toolbar buttons move into the overflow menu. macOS keeps the size the person chooses.
+        // toolbar buttons move into the overflow menu. macOS keeps the size the person chooses;
+        // on a smaller screen `fitsScreen` brings the window inside the screen.
         .defaultSize(width: 1360, height: 860)
         .windowToolbarStyle(.unified)
         .commands { AppCommands(model: model) }

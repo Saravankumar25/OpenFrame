@@ -149,7 +149,11 @@ final class InterchangePresenter {
     private func present<V: View>(view: V, app: AppModel, openAfter: (@MainActor () async -> Void)? = nil) {
         guard sheetWindow == nil else { return }
         let store = themes ?? ThemeStore()
+        let parentWindow = NSApp.keyWindow ?? NSApp.mainWindow ?? NSApp.windows.first(where: { $0.isVisible })
+        // The sheet frame keeps its middle part short enough for the window it belongs to.
+        let room = parentWindow?.contentLayoutRect.size ?? CGSize(width: 1360, height: 800)
         let root = view
+            .environment(\.windowContentSize, room)
             .environment(app)
             .environment(store)
             .openFrameTheme(store)
@@ -159,7 +163,7 @@ final class InterchangePresenter {
         window.title = ""
         window.isReleasedWhenClosed = false
         sheetWindow = window
-        if let parent = NSApp.keyWindow ?? NSApp.mainWindow ?? NSApp.windows.first(where: { $0.isVisible }) {
+        if let parent = parentWindow {
             self.parent = parent
             parent.beginSheet(window)
         } else {

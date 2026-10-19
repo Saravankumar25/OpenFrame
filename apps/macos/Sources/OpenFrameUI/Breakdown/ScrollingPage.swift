@@ -1,6 +1,8 @@
-// A page that fills the window when it is tall enough and scrolls when it is not. Pages with a
+// A page that fills the window when it is big enough and scrolls when it is not. Pages with a
 // centred header, a toolbar row and a table need more height than a short window has; without
-// this the window's content grew taller than the window and was clipped at the top.
+// this the window's content grew taller than the window and was clipped at the top. A page whose
+// rows have a real minimum width (fixed table columns beside a folder list) scrolls sideways in a
+// narrow window instead of being cut at both edges; text still wraps to the window's width.
 
 import SwiftUI
 
@@ -9,11 +11,36 @@ struct ScrollingPage<Content: View>: View {
 
     var body: some View {
         GeometryReader { geo in
-            ScrollView {
-                content()
+            ScrollView([.vertical, .horizontal]) {
+                AtLeastWidth(width: geo.size.width) { content() }
                     .frame(minHeight: geo.size.height, alignment: .top)
             }
+            .scrollBounceBehavior(.basedOnSize)
         }
+    }
+}
+
+/// Gives its content the given width, or the content's own minimum width when that is larger.
+/// Inside a scroll view that scrolls sideways the proposal has no width, so without this every
+/// line of text would ask for its full length on one line.
+struct AtLeastWidth: Layout {
+    var width: CGFloat
+
+    private func target(_ sub: LayoutSubview, height: CGFloat?) -> CGFloat {
+        let minimum = sub.sizeThatFits(ProposedViewSize(width: 0, height: height)).width
+        return max(width, minimum.isFinite ? minimum.rounded(.up) : width)
+    }
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        guard let sub = subviews.first else { return .zero }
+        let w = target(sub, height: proposal.height)
+        let size = sub.sizeThatFits(ProposedViewSize(width: w, height: proposal.height))
+        return CGSize(width: w, height: size.height)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        guard let sub = subviews.first else { return }
+        sub.place(at: bounds.origin, anchor: .topLeading, proposal: ProposedViewSize(width: bounds.width, height: bounds.height))
     }
 }
 

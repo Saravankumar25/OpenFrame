@@ -85,7 +85,9 @@ struct ProjectView: View {
     /// The AI Assistant panel docks beside the page; it stays as the person left it.
     @SceneStorage("assistantOpen") private var assistantOpen = false
     @State private var selection: Workspace? = .home
-    @State private var columns: NavigationSplitViewVisibility = .automatic
+    @State private var columns: NavigationSplitViewVisibility = .all
+    /// The sidebar was hidden by Screenplay Focus (not by the person), so leaving Focus shows it.
+    @State private var hiddenForFocus = false
     /// The project as the core has it now (title and status change from rename, undo and redo).
     @State private var live: ProjectSummary?
     @State private var renaming: RecentProject?
@@ -114,18 +116,25 @@ struct ProjectView: View {
             }
             .navigationSplitViewColumnWidth(min: 190, ideal: 220, max: 300)
             .safeAreaInset(edge: .bottom) { SaveStatusView().padding(10) }
+            // The project's own sidebar button (below) has a name screen readers and tests can use.
+            .toolbar(removing: .sidebarToggle)
         } detail: {
             // The panel docks after the page in a row (as on Windows), so opening it narrows the page
             // and never covers a control. A row, not an inspector: workspaces use inspectors of their own.
-            HStack(spacing: 0) {
-                detail(selection ?? .home)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                if assistantOpen {
-                    Divider()
-                    AIPanelView(workspace: selection ?? .home) { assistantOpen = false }
-                        .frame(width: 360)
-                        .transition(.move(edge: .trailing))
+            // The reader gives the page exactly the room left: a page never reports a minimum
+            // larger than the window, which would grow the window past the screen.
+            GeometryReader { geo in
+                HStack(spacing: 0) {
+                    detail(selection ?? .home)
+                        .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
+                    if assistantOpen {
+                        Divider()
+                        AIPanelView(workspace: selection ?? .home) { assistantOpen = false }
+                            .frame(width: Self.assistantWidth(for: geo.size.width))
+                            .transition(.move(edge: .trailing))
+                    }
                 }
+                .frame(width: geo.size.width, height: geo.size.height)
             }
             .navigationTitle(current.title)
             .interchangeAnchor()
@@ -135,6 +144,7 @@ struct ProjectView: View {
             ToolbarItem(placement: .primaryAction) { assistantButton }
             ToolbarItem(placement: .primaryAction) { projectSettingsButton }
             ToolbarItem(placement: .primaryAction) { projectMenu }
+            ToolbarItem(placement: .navigation) { sidebarButton }
             ToolbarItem(placement: .navigation) {
                 Button {
                     Task { await app.closeProject() }
@@ -163,7 +173,14 @@ struct ProjectView: View {
         }
         .onChange(of: selection) { _, new in stored = "\(project.id)|\((new ?? .home).rawValue)" }
         .onReceive(NotificationCenter.default.publisher(for: .openFrameScreenplayFocus)) { note in
-            columns = (note.object as? Bool) == true ? .detailOnly : .automatic
+            // Focus hides the sidebar and leaving Focus brings it back; a sidebar the person hid
+            // stays hidden (the Screenplay says "not in Focus" each time it closes).
+            if (note.object as? Bool) == true {
+                if columns != .detailOnly { hiddenForFocus = true; columns = .detailOnly }
+            } else if hiddenForFocus {
+                hiddenForFocus = false
+                columns = .all
+            }
         }
         .onReceive(NotificationCenter.default.publisher(for: .openFrameShowScreenplayTarget)) { note in
             // Kept for the Screenplay workspace in case it is not on screen yet.
@@ -171,9 +188,37 @@ struct ProjectView: View {
             ScreenplayWorkspaceModel.pendingTarget = (info["screenplayId"] as? String, info["draftId"] as? String, info["sceneId"] as? String)
         }
         .onReceive(NotificationCenter.default.publisher(for: .openFrameToggleAssistant)) { _ in assistantOpen.toggle() }
+        .onReceive(NotificationCenter.default.publisher(for: .openFrameToggleSidebar)) { _ in setSidebar(shown: columns == .detailOnly) }
+        .onChange(of: columns, initial: true) { _, now in ProjectSidebar.shared.shown = now != .detailOnly }
         .onReceive(NotificationCenter.default.publisher(for: .openFrameShowWorkspace)) { note in
             if let raw = note.object as? String, let ws = Workspace(rawValue: raw) { selection = ws }
         }
+    }
+
+    /// The AI Assistant panel is 360 points wide, narrower in a narrow window so the page keeps
+    /// room (at least 260 points for the panel).
+    static func assistantWidth(for detail: CGFloat) -> CGFloat {
+        min(360, max(260, (detail * 0.4).rounded()))
+    }
+
+    /// Shows and hides the workspace sidebar (also View > Hide Sidebar, Command+Control+S).
+    private var sidebarButton: some View {
+        let shown = columns != .detailOnly
+        // The target state is fixed when the button is drawn: an accessibility press on a toolbar
+        // button runs its action twice, which a plain toggle would undo.
+        return Button {
+            setSidebar(shown: !shown)
+        } label: {
+            Label(shown ? "Hide Sidebar" : "Show Sidebar", systemImage: "sidebar.left")
+        }
+        .help(shown ? "Hide Sidebar (Command+Control+S)" : "Show Sidebar (Command+Control+S)")
+        .accessibilityLabel(shown ? "Hide Sidebar" : "Show Sidebar")
+        .accessibilityIdentifier("sidebar-toggle")
+    }
+
+    private func setSidebar(shown: Bool) {
+        hiddenForFocus = false
+        withAnimation { columns = shown ? .all : .detailOnly }
     }
 
     /// Project Settings, always visible in the top bar with its name (Windows: Project settings in the project menu).
@@ -297,4 +342,13 @@ struct SaveStatusView: View {
 
 extension Notification.Name {
     static let openFrameShowWorkspace = Notification.Name("studio.openframe.showWorkspace")
+    /// View > Hide Sidebar or Show Sidebar (Command+Control+S).
+    static let openFrameToggleSidebar = Notification.Name("studio.openframe.toggleSidebar")
+}
+
+/// Whether the open project shows its workspace sidebar, so the View menu can name its command.
+@MainActor @Observable
+final class ProjectSidebar {
+    static let shared = ProjectSidebar()
+    var shown = true
 }

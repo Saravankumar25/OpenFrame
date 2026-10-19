@@ -63,11 +63,18 @@ struct EditorComfortTests {
         let rig = try await EditorRig.start(title: "Centre")
         defer { rig.close(); try? FileManager.default.removeItem(at: rig.root) }
         await rig.openScreenplay()
+        // The view takes the width the scroll view shows, so a wide pane centres the page.
+        let scroll = try #require(rig.view.enclosingScrollView)
+        scroll.setFrameSize(NSSize(width: 1200, height: 700))
         rig.view.frame.size.width = 1200
         let width = try #require(rig.view.textContainer?.size.width)
         #expect(abs(rig.view.textContainerOrigin.x - ((1200 - width) / 2).rounded()) < 1)
+        // A pane narrower than the page keeps the page and its scene number gutters whole; the
+        // scroll view scrolls sideways instead of cutting the page.
+        scroll.setFrameSize(NSSize(width: width - 40, height: 700))
         rig.view.frame.size.width = width - 40
-        #expect(rig.view.textContainerOrigin.x == 0)
+        #expect(rig.view.frame.width == width + 2 * ScreenplayTextView.pageGutter)
+        #expect(rig.view.textContainerOrigin.x == ScreenplayTextView.pageGutter)
     }
 
     @Test func theTitlePageIsLaidOutByTheCoreAndTheExportSwitchIsSaved() async throws {

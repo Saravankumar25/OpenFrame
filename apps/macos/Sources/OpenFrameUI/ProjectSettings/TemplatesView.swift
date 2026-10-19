@@ -252,7 +252,7 @@ struct TemplatePreviewSheet: View {
             }
         }
         .padding(20)
-        .frame(width: 560, height: 460)
+        .sheetSize(width: 560, height: 460)
         .accessibilityIdentifier("template-preview-sheet")
     }
 }

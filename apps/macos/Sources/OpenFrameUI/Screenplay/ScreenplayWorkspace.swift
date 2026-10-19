@@ -520,10 +520,12 @@ struct ScreenplayWorkspace: View {
 
     var body: some View {
         let focus = model.mode == .focus
+        GeometryReader { geo in
         HSplitView {
             if !focus {
+                // In a narrow window the scene list gives way first, so the page keeps most of the room.
                 SceneNavigator(model: model, panels: panels, currentIndex: currentIndex)
-                    .frame(minWidth: 200, idealWidth: 240, maxWidth: 340)
+                    .frame(minWidth: 160, idealWidth: 240, maxWidth: max(160, min(340, (geo.size.width * 0.3).rounded())))
             }
             VStack(spacing: 0) {
                 if model.showReplace && !focus { ScreenplayReplaceBar(model: model) }
@@ -536,8 +538,11 @@ struct ScreenplayWorkspace: View {
                     })
                 }
             }
-            .frame(minWidth: 560)
+            // The page scrolls sideways in a narrow pane, so the pane can be narrower than the page
+            // and the workspace still fits a small window with the AI Assistant open.
+            .frame(minWidth: 220)
             .overlay(alignment: .topTrailing) { if focus { focusBar } }
+        }
         }
         .toolbar(focus ? .hidden : .automatic, for: .windowToolbar)
         .toolbar { toolbar }
@@ -814,6 +819,9 @@ struct ScreenplayEditorHost: NSViewRepresentable {
     func makeNSView(context: Context) -> NSScrollView {
         let scroll = NSScrollView()
         scroll.hasVerticalScroller = true
+        // A pane narrower than the page scrolls sideways (the page keeps its width).
+        scroll.hasHorizontalScroller = true
+        scroll.autohidesScrollers = true
         scroll.drawsBackground = false
         let view = ScreenplayTextView.make()
         model.bind(view)
@@ -827,6 +835,13 @@ struct ScreenplayEditorHost: NSViewRepresentable {
             view.isEditable = doc.canEdit
         }
         return scroll
+    }
+
+    /// The scroll view takes exactly the room the pane offers; the page inside it may be wider
+    /// and then scrolls sideways (without this the scroll view grew to the page's width and the
+    /// pane cut it at both edges).
+    func sizeThatFits(_ proposal: ProposedViewSize, nsView: NSScrollView, context: Context) -> CGSize? {
+        CGSize(width: proposal.width ?? 600, height: proposal.height ?? 600)
     }
 
     func updateNSView(_ scroll: NSScrollView, context: Context) {

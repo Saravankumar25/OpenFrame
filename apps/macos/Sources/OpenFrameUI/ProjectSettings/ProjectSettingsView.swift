@@ -71,7 +71,7 @@ struct ProjectSettingsView: View {
             }
             .padding(.horizontal, 16).padding(.vertical, 8)
         }
-        .frame(minWidth: 860, idealWidth: 920, minHeight: 600, idealHeight: 680)
+        .sheetFrame(minWidth: 860, idealWidth: 920, minHeight: 600, idealHeight: 680)
         .background(theme["bg"])
         .accessibilityIdentifier("project-settings-sheet")
         .onReceive(NotificationCenter.default.publisher(for: .openFrameCloseProjectSettings)) { _ in dismiss() }

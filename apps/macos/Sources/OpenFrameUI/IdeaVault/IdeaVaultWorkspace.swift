@@ -106,10 +106,13 @@ struct IdeaVaultScreen: View {
     // MARK: Vault page
 
     private var vault: some View {
-        HStack(spacing: 0) {
-            VaultSidebar(model: model).frame(width: 214)
-            Divider().overlay(theme["line"])
-            main
+        GeometryReader { geo in
+            HStack(spacing: 0) {
+                // A narrow window (or the AI Assistant beside the vault) leaves the items more room.
+                VaultSidebar(model: model).frame(width: geo.size.width < 640 ? 170 : 214)
+                Divider().overlay(theme["line"])
+                main
+            }
         }
         .inspector(isPresented: Binding(get: { model.openId != nil }, set: { if !$0 { model.closeDrawer() } })) {
             if let id = model.openId {
@@ -272,7 +275,10 @@ struct IdeaVaultScreen: View {
     }
 
     private var canvas: some View {
-        ScrollView {
+        // A pane narrower than one card scrolls sideways instead of cutting the cards.
+        GeometryReader { geo in
+        ScrollView([.vertical, .horizontal]) {
+            AtLeastWidth(width: geo.size.width) {
             LazyVStack(alignment: .leading, spacing: 14) {
                 if let failure = model.loadFailure {
                     Text(failure.message).foregroundStyle(theme["red-t"]).accessibilityIdentifier("vault-load-error")
@@ -317,6 +323,9 @@ struct IdeaVaultScreen: View {
             .padding(.horizontal, 24)
             .padding(.bottom, 80)
             .animation(reduceMotion ? nil : .spring(response: 0.3, dampingFraction: 1), value: model.items.map(\.id))
+            }
+        }
+        .scrollBounceBehavior(.basedOnSize)
         }
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Idea Vault items")
