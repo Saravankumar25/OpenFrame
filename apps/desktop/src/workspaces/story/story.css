@@ -46,6 +46,8 @@
 /* Outline */
 .story-outline { padding-bottom: 8px; }
 .story-outline .ol { cursor: default; }
+/* The outline is the reading view of the story: whole lines wrap instead of ending in an ellipsis (UX brief 6.1). */
+.story-outline .ol .truncate { white-space: normal; overflow: visible; overflow-wrap: anywhere; }
 .story-outline .ol.sel { background: var(--blue-soft); }
 .story-outline .grip { cursor: grab; display: inline-flex; }
 .story-outline .story-lot { margin-top: 14px; }

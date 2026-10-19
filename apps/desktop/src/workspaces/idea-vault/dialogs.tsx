@@ -568,7 +568,7 @@ export function CopyDialog({ from, items, projectLabel, onClose, onDone }: {
       <div className="card pad" style={{ marginBottom: 12 }}>
         {items.length === 1 ? (
           <>
-            <div className="b vv-ellipsis">{items[0].displayName}</div>
+            <div className="b vv-ellipsis" title={items[0].displayName}>{items[0].displayName}</div>
             <div className="xs muted">{from === "global" ? "Global" : "Project"} {items[0].itemType === "note" ? "note" : "item"}</div>
           </>
         ) : (
@@ -843,14 +843,14 @@ export function AddResultDialog({ result, onRetry, onClose }: { result: VaultAdd
         <tbody>
           {result.added.map((i) => (
             <tr key={i.id}>
-              <td className="vv-ellipsis">{i.displayName}</td>
+              <td className="vv-ellipsis" title={i.displayName}>{i.displayName}</td>
               <td><span className="chip g">Added</span></td>
               <td />
             </tr>
           ))}
           {result.failed.map((f) => (
             <tr key={f.path}>
-              <td className="vv-ellipsis">{f.name}</td>
+              <td className="vv-ellipsis" title={f.name}>{f.name}</td>
               <td><span className="chip r">Not added</span></td>
               <td className="sm">{f.reason}</td>
             </tr>

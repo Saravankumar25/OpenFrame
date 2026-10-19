@@ -455,7 +455,7 @@ function CardGrid({ projects, menuFor, onOpen, onRename }: {
             >
               <div className={`pv photo ${previewFor(p.projectId)}`} aria-hidden />
               <div className="pb">
-                <div className="pt" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.title}</div>
+                <div className="pt" title={p.title} style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.title}</div>
                 <div className="row gap4 wrap" style={{ margin: "6px 0" }}>
                   <Chip>{p.projectType}</Chip>
                   <Chip tone="b">{p.status}</Chip>

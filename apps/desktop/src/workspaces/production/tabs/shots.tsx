@@ -580,6 +580,7 @@ function ShotRow({ shot, selected, onClick, menu }: { shot: ShotDto; selected: b
           className="grow"
           style={{ fontWeight: 600, textAlign: "left", background: "transparent", border: 0, padding: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
           aria-label={`Open shot ${shot.label}: ${shot.description}`}
+          title={shot.description}
         >
           {shot.description}
         </button>

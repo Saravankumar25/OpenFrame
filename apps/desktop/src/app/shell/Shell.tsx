@@ -327,7 +327,7 @@ function TopBar({ project, undoScope }: { project: ProjectSummary | null; undoSc
         trigger={
           <button className="projsel" aria-label={`Project: ${project?.title ?? ""}. Switch or manage projects`}>
             <span className="col" style={{ gap: 0, alignItems: "flex-start", minWidth: 0 }}>
-              <span style={{ maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{project?.title ?? "…"}</span>
+              <span title={project?.title} style={{ maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{project?.title ?? "…"}</span>
               <small>{project?.projectType}</small>
             </span>
             <span className="grow" />

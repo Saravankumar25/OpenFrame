@@ -341,7 +341,7 @@ function LinkedCards({ detail, episodeId, readOnly }: { detail: StoryCharacterDe
       <ul style={{ listStyle: "none", padding: 0, margin: "6px 0" }}>
         {detail.linkedCards.map((l) => (
           <li key={l.cardId} className="row" style={{ gap: 8, padding: "3px 0" }}>
-            <span className="grow truncate">{l.shortDescription || "Blank scene card"}</span>
+            <span className="grow truncate" title={l.shortDescription || undefined}>{l.shortDescription || "Blank scene card"}</span>
             <span className="muted" style={{ fontSize: 12 }}>{l.location}</span>
             {!readOnly && (
               <button type="button" className="iconbtn sm" aria-label="Unlink card" onClick={() => void story.unlinkCard(c.id, l.cardId).catch(reportError)}>

@@ -8,7 +8,8 @@
 //   * overlap between the page, the left navigation and the docked AI Assistant (a docked panel
 //     narrows the page, it never covers it);
 //   * buttons, tabs and fields of the page that sit outside the window, are cut off by a container
-//     that cannot scroll, or are covered by another element (a modal dialog is not open here).
+//     that cannot scroll, or are covered by another element (a modal dialog is not open here);
+//   * text cut off inside its own box with no tooltip or label that carries the full text.
 // The measurements go to tests/e2e/artifacts/layout-geometry.json. The spec fails on any finding.
 
 import { after, before, describe, test } from "node:test";
@@ -77,6 +78,27 @@ function measure() {
       findings.push({ kind: "covered", control: label(el), by: String(hit.className || hit.tagName).slice(0, 60) });
     }
   }
+  // Text cut off inside its own box (UX brief section 6): a box that hides overflow, holds text of its
+  // own and is smaller than that text. An ellipsis is fine when the full text is in a tooltip or label.
+  const textCuts = [];
+  for (const el of document.querySelectorAll("main *")) {
+    if (el.closest(".ProseMirror, svg, canvas, .sr-only")) continue;
+    const own = [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim());
+    if (!own || el.clientWidth < 1) continue;
+    const s = getComputedStyle(el);
+    if (s.visibility === "hidden") continue;
+    const cutX = /(hidden|clip)/.test(s.overflowX) && el.scrollWidth > el.clientWidth + 2;
+    const cutY = /(hidden|clip)/.test(s.overflowY) && el.scrollHeight > el.clientHeight + 2;
+    if (!cutX && !cutY) continue;
+    const full = el.textContent.trim();
+    const tip = el.closest("[title], [aria-label]");
+    const tipText = tip ? (tip.getAttribute("title") || tip.getAttribute("aria-label") || "").trim() : "";
+    const told = tipText !== "" && (tipText.includes(full.slice(0, 20)) || full.includes(tipText.slice(0, 20)));
+    if (told) continue;
+    textCuts.push({ kind: "text cut", control: full.replace(/\s+/g, " ").slice(0, 50), by: String(el.className).slice(0, 60) });
+    if (textCuts.length >= 12) break;
+  }
+  findings.push(...textCuts);
   return {
     pageOverflowX: Math.max(0, se.scrollWidth - se.clientWidth),
     pageOverflowY: Math.max(0, se.scrollHeight - se.clientHeight),
@@ -112,6 +134,19 @@ describe("layout geometry", () => {
       const keep = await browser.$('//button[normalize-space(.)="Keep Saved Version" and not(@disabled)]');
       if (await keep.waitForDisplayed({ timeout: 4000 }).catch(() => false)) await keep.click();
     });
+    await step("add stress text (UX brief section 6.2)", async () => {
+      const op = (name, args) =>
+        browser.execute((n, a) => window.__TAURI_INTERNALS__.invoke("of_invoke", { op: n, args: a }).then(() => null, (e) => JSON.stringify(e)), name, args);
+      const long = "A long card title that keeps going so that it is far wider than any column, ".repeat(4).trim();
+      const unbroken = "https://example.invalid/" + "x".repeat(176);
+      const mixed = "రైలు స్టేషన్ ரயில் நிலையம் रेलवे स्टेशन 🚉 Café naïve";
+      for (const text of [long, unbroken, mixed]) {
+        const err = await op("story.create_card", { shortDescription: text, parent: null, longDescription: null, notes: null, index: null });
+        assert.equal(err, null, `story.create_card: ${err}`);
+      }
+      const err = await op("story.create_character", { name: "Venkata Satyanarayana Lakshmi Narasimha Rao Garu of Pedda Revu", episodeId: null, imagePath: null });
+      assert.equal(err, null, `story.create_character: ${err}`);
+    });
     const record = async (size, ai, screen) => {
       await sleep(400);
       const m = await browser.execute(measure);
@@ -135,6 +170,12 @@ describe("layout geometry", () => {
                 await click(browser, tab, { within: '//nav[@aria-label="Production"]' });
                 await record(size, ai, `Production · ${tab}`);
               }
+            } else if (ws === "Story") {
+              for (const tab of ["Board", "Outline", "Characters", "Timeline"]) {
+                await click(browser, tab, { within: '//div[@aria-label="Story views"]' });
+                await record(size, ai, `Story · ${tab}`);
+              }
+              await click(browser, "Board", { within: '//div[@aria-label="Story views"]' });
             } else {
               await record(size, ai, ws);
             }
