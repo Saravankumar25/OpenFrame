@@ -16,12 +16,12 @@ extension UI {
                 try await waitGone(id: "team-password", timeout: 30)
                 break
             }
-            if exists(id: "home-new-project") || exists(id: "home-empty") || exists(id: "project-home") { break }
+            if exists(id: "home-new-project") || exists(id: "home-empty") || exists(id: "project-home") || exists(id: "welcome-name") { break }
             if exists(id: "startup-failure") { throw DriverError("the app could not start: \(screenText())") }
             await idle(0.2)
         }
-        try await waitHome()
         try await answerWelcome()
+        try await waitHome()
     }
 
     /// The first launch asks for the person's name (spec 01, case 1). Every scenario answers

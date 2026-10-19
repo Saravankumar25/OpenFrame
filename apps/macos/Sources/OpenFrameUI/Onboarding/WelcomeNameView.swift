@@ -1,5 +1,5 @@
-// The first-launch welcome sheet. It cannot be dismissed without a name: the name goes on notes,
-// tasks and activity, so the app asks once, in plain words.
+// The first-launch welcome page, shown in the window before Application Home. It asks once, in
+// plain words, for the name that goes on notes, tasks and activity.
 
 import OpenFrameCore
 import SwiftUI
@@ -53,7 +53,6 @@ struct WelcomeNameView: View {
         }
         .padding(PageSpacing.large)
         .frame(width: 420)
-        .interactiveDismissDisabled()
         .onAppear { focused = true }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("welcome-sheet")

@@ -142,7 +142,9 @@ final class Runner {
             if force { exit(status == "pass" ? 0 : 3) }
             // Command+Q goes into the event queue, as a key press does, so the app's quit path
             // runs from the event loop and not from inside this task.
-            let w = NSApp.keyWindow ?? NSApp.windows.first
+            // A sheet takes the keyboard from its window, as it does for a person.
+            let front = NSApp.keyWindow ?? NSApp.windows.first
+            let w = front?.attachedSheet ?? front
             for win in NSApp.windows {
                 log("window \(type(of: win)) visible=\(win.isVisible) title=\(win.title) sheet=\(win.attachedSheet.map { String(describing: type(of: $0)) } ?? "-") level=\(win.level.rawValue)")
             }

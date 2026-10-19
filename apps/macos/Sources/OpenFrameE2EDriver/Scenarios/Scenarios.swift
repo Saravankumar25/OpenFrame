@@ -50,6 +50,7 @@ extension Scenarios {
             try ui.expect(!ui.exists(id: "home-new-project"), "a wrong password does not open the app")
             try await ui.type(ctx.teamPassword, into: "team-password")
             try await ui.press(id: "team-gate-continue", role: "AXButton")
+            try await ui.answerWelcome()
             try await ui.waitHome()
         },
     ]

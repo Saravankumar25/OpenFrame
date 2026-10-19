@@ -29,7 +29,6 @@ public struct RootView: View {
             }
             .task(id: model.isRunning) { await ShortcutStore.shared.reload(core: model.core) }
             .sheet(isPresented: $showShortcuts) { ShortcutsSheet(app: model) }
-            .sheet(item: $welcome) { WelcomeNameView(model: $0) }
             .task(id: welcomeKey) { updateWelcome() }
             .tint(theme["accent"])
             .animation(reduceMotion ? .easeInOut(duration: 0.15) : .spring(response: 0.35, dampingFraction: 1), value: phaseKey)
@@ -125,7 +124,15 @@ public struct RootView: View {
         case let .teamGate(status):
             TeamGateView(status: status)
         case .home:
-            HomeView()
+            // The first-launch welcome fills the window, like the team gate, instead of being a
+            // sheet: a sheet that needs a name before it closes would keep macOS from quitting.
+            if let welcome {
+                WelcomeNameView(model: welcome)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(theme["bg"])
+            } else {
+                HomeView()
+            }
         case let .project(project):
             ProjectView(project: project)
                 .id(project.id)
