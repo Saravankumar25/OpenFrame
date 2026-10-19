@@ -121,6 +121,9 @@ enum AILogic {
     static func panelMode(_ s: AiStatusDto?) -> PanelMode {
         guard let s else { return .unavailable }
         if s.available { return .ready }
+        // Installed and not known to be broken, only not checked again since the engine was
+        // stopped: the next question checks the files and starts the engine, so the Ask box stays.
+        if s.problem == nil, ["NotChecked", "Checking", "Verified"].contains(s.bundleState) { return .ready }
         return s.bundleState == "NotInstalled" || s.problem?.code == "ai.models_damaged" ? .download : .off
     }
 

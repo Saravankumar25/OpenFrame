@@ -28,15 +28,22 @@ cat > "$STAGE/Read Me First.txt" <<'TXT'
 OpenFrame Studio, internal team build
 
 1. Drag OpenFrame Studio onto Applications.
-2. This build is for the team only. It is not signed by Apple, so the first time macOS says it
-   cannot check the app. To open it:
-   - In Applications, hold Control, click OpenFrame Studio, choose Open, then click Open.
-   - If macOS still refuses (macOS 15 and later): open System Settings > Privacy & Security,
-     scroll down to the message about OpenFrame Studio and click Open Anyway.
-   - Or, in Terminal: xattr -dr com.apple.quarantine "/Applications/OpenFrame Studio.app"
-3. Enter the team password when the app asks for it.
-4. The offline AI is downloaded inside the app after install (Settings > AI). Nothing else
-   leaves this Mac.
+
+2. Before the first start, open Terminal (Applications > Utilities > Terminal), paste this line
+   and press Return:
+
+   xattr -dr com.apple.quarantine "/Applications/OpenFrame Studio.app"
+
+   Why: this team build is not signed with an Apple Developer ID yet (that comes with the store
+   release). macOS marks every downloaded app, and for an app without that signature it says
+   "OpenFrame Studio is damaged and can't be opened" or "Apple could not verify". The app is not
+   damaged: the line above only removes the download mark from this one app. Check the SHA-256
+   your owner sent first (shasum -a 256 <the .dmg file>) so you know the file is the right one.
+
+3. Open OpenFrame Studio from Applications and enter the team password.
+
+4. The offline AI is downloaded inside the app when you ask for it (Settings > Offline AI).
+   Nothing else leaves this Mac.
 
 Apple silicon Macs only, macOS 14 or later.
 TXT

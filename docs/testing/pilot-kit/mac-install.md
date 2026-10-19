@@ -29,20 +29,21 @@ The owner sends you a long value called a SHA-256 along with the file. It proves
 2. Drag OpenFrame Studio onto Applications.
 3. Eject the disk image (the eject button next to "OpenFrame Studio" in the Finder sidebar).
 
-## 4. "macOS cannot verify" on the first start
+## 4. Before the first start: remove the download mark
 
-This is an internal build. It is not signed by Apple yet; signing comes with the store release. macOS therefore stops it
-the first time. This is expected, as long as the SHA-256 matched in step 2. Do one of these, once:
+This is an internal build. It is not signed with an Apple Developer ID yet; that comes with the store release. macOS
+therefore says **"OpenFrame Studio is damaged and can't be opened"** (or "Apple could not verify it"). The app is not
+damaged, as long as the SHA-256 matched in step 2. Do this once, before the first start:
 
-- **Control-click:** in Applications, hold Control, click OpenFrame Studio, choose **Open**, then click **Open** in the
-  message.
-- **macOS 15 and later**, if there is no Open button: try to open the app once, then open **System Settings > Privacy &
-  Security**, scroll down to the message about OpenFrame Studio, click **Open Anyway** and confirm.
-- **Terminal**, if neither works:
+1. Open Terminal (Applications > Utilities > Terminal).
+2. Paste this line and press Return:
 
-  `xattr -dr com.apple.quarantine "/Applications/OpenFrame Studio.app"`
+   `xattr -dr com.apple.quarantine "/Applications/OpenFrame Studio.app"`
 
-After that the app opens normally.
+3. Open OpenFrame Studio from Applications.
+
+The line only removes the download mark from this one app. On macOS 15 and later, Control-click > Open and System
+Settings > Privacy & Security > Open Anyway do not help for an app that macOS calls damaged; the line above does.
 
 ## 5. First start
 

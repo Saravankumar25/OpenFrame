@@ -2,43 +2,40 @@
 
 > Rewritten (not appended) at the end of every session. One page. It exists so the next session starts from the facts
 > instead of from a long history, which is how context rot is avoided. If this page is older than the newest progress log
-> entry, trust the log and fix this page first. Last rewritten: 2026-10-18, after the Mac M1 to M5 session.
+> entry, trust the log and fix this page first. Last rewritten: 2026-10-19, end of the Mac M6 to M10 session.
 
 ## State
 
-1. **Windows track:** unchanged since the W9 endgame (branch `windows/w9-endgame`, not merged; installer and gate as in
-   [windows-internal-release-gate.md](../release/windows-internal-release-gate.md)). W10 pilot waits on the owner.
-2. **Mac track, branch `mac/m1-toolchain`** (cut from `windows/w9-endgame`, not merged, nothing pushed), on the owner's
-   Apple M1 Mac (macOS 26.5.2, Rust 1.98.1, Swift 6.3.3 from the Command Line Tools, **no full Xcode**):
-   - M1 done: core tests pass on Apple silicon; Tauri Mac shell retired; parity matrix
-     ([mac-parity-matrix.md](../roadmap/mac-parity-matrix.md)); `mac-core.yml` CI. Evidence:
-     [m1-m2](../release/evidence/mac/m1-m2-core-and-interface.md).
-   - M2 done: `crates/openframe-ffi` (UniFFI), XCFramework, 819 generated Swift types and 492 typed operations.
-   - M3, M4, M5 built: SwiftUI shell, Home, team gate, 16 themes, Settings; the native TextKit 2 editor with drafts,
-     compare, review, comments, scene hub, page setup; Story, Idea Vault (project and global), Breakdown.
-     **253 Swift tests pass.** Evidence: [m3-m5](../release/evidence/mac/m3-m5-shell-editor-workspaces.md),
-     [editor spike](../release/evidence/mac/m4-editor-spike.md).
-3. **Editor engine choice** (ADR-0027 open item 1): built on TextKit 2 **provisionally**, under the owner's instruction of
-   2026-10-17 to decide while away. Waiting for the owner to confirm (owner-decisions.md).
+1. **Windows track:** closed at W9 (installer 028d8b6, gate 0 Open); W10 is the team pilot. Unchanged this session.
+2. **Mac track (branch `mac/m1-toolchain`):** M1 to M9 built and tested; M10 is the team pilot.
+   - All thirteen workspaces, import and export in every format, the Metal AI engine (ADR-0033; English bar met: 96.7
+     and 88.6 percent), StoreKit 2 (off in the internal build), Project Settings, shortcuts, custom themes, the
+     first-launch welcome, centred and symmetric pages, and the window always inside the screen.
+   - Internal disk image: `release-out/mac/OpenFrame-Studio-0.1.0-internal-<commit>.dmg` with its SHA-256, SBOM and
+     manifest; the gate is [mac-internal-release-gate.md](../release/mac-internal-release-gate.md).
+   - Real-app end-to-end: an injected driver runs about 200 scenarios on the app copied out of the disk image
+     (`apps/macos/E2E/run-parallel.sh`); results in `release-out/e2e/`.
+   - Gold reference project **Low Tide Radio** in `tests/gold-project/` (490 of 492 operations, exported, re-imported
+     and compared).
+   - Every Mac screen as HTML in Light and Dark: `release-out/MacHTML/` (regenerate with `apps/macos/E2E/capture.sh`).
+3. **GitHub** (owner decision, ADR-0034): the repository holds two folders, `windows/` and `mac/`; GitHub main before
+   the change is kept as `backup/main-before-two-folders`.
 
 ## Next three items
 
-1. Owner: confirm the TextKit 2 editor choice; install full Xcode (needed for window-level UI tests and the `.dmg`).
-2. Run the next session with mac-m6-m10-session-prompt.md (M6 to M10, release readiness
-   and the internal `.dmg`). Small M3 to M5 leftovers are listed in the parity matrix (Global Idea Vault scope in
-   Command+K search).
-3. Start M6 (production workspaces) or M8 (Mac AI); M5 to M7 may run in any order (phase page section 2).
+1. Give the disk image and [the Mac install note](../testing/pilot-kit/mac-install.md) to the team (M10). Checks only a
+   person can do are listed in the pilot kit (voice recording, drags, Tab walks).
+2. Triage pilot reports with `docs/testing/pilot-kit/triage.md`; fix, rebuild with
+   `apps/macos/scripts/build-release-app.sh` and `build-dmg.sh`, rerun the end-to-end suite on the new image.
+3. Gaps found by the gold project (dual dialogue editing, fixed breakdown and budget categories, the opening transition,
+   weak 1B model answers) in `tests/gold-project/COVERAGE.md`.
 
 ## Open blockers
 
-- Full Xcode is not installed: no XCUITest, no `xcodebuild`, no signing. Swift Testing runs without it
-  (`apps/macos/scripts/test.sh`).
-- Owner decisions S7, S11, S12, S13 and the W10 pilot (Windows), unchanged.
+- Owner: install full Xcode for XCUITest and StoreKit testing; licence server address and response key (Chapter 3).
 
 ## Do not
 
-- Do not push or merge either branch without the owner's word. Do not build the `.dmg` (M9, owner's word).
-- Do not change the Tauri adapter or other Windows-only code: the Windows build evidence stays valid only while the app
-  code it was built from is unchanged. Mac-only fixes in shared code go behind `cfg(unix)` or into the Mac crate.
-- Do not run Swift test suites in parallel (`--no-parallel` is in the script for a reason).
-- Keep disk use low: about 39 GB free; `target/` about 11 GB, `apps/macos/.build` about 2 GB. Never `rm -rf` a worktree.
+- Do not push or merge without the owner's word. Do not keep two copies of the shared core drifting: a core change goes
+  into both `windows/` and `mac/` on GitHub (ADR-0034).
+- Do not let a SwiftUI view feed a measured size back into its own layout (the Scene Hub crash of 2026-10-19).

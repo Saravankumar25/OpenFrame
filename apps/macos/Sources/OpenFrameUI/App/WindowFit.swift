@@ -208,15 +208,20 @@ private struct WindowFitter: NSViewRepresentable {
 enum SidebarRestore {
     /// AppKit saves the sidebar's width and whether it was collapsed under this key, and on the
     /// next launch restores a collapsed sidebar behind SwiftUI's back: the window then showed no
-    /// sidebar while its button still said Hide Sidebar. The saved width is kept; only the
-    /// collapsed mark is cleared, before any window is made.
+    /// sidebar while its button still said Hide Sidebar. The saved width is kept unless it is
+    /// below the minimum; the collapsed mark is cleared, before any window is made.
     static func clearCollapsed(in defaults: UserDefaults = .standard) {
         for key in defaults.dictionaryRepresentation().keys
         where key.hasPrefix("NSSplitView Subview Frames main") && key.hasSuffix("SidebarNavigationSplitView") {
             guard var frames = defaults.array(forKey: key) as? [String], let first = frames.first else { continue }
             var parts = first.components(separatedBy: ", ")
-            guard parts.count >= 5, parts[4] == "YES" else { continue }
-            parts[4] = "NO"
+            guard parts.count >= 5 else { continue }
+            var changed = false
+            if parts[4] == "YES" { parts[4] = "NO"; changed = true }
+            // AppKit restores a saved width even when it is below the sidebar's minimum, which
+            // cut the sidebar's labels; a width under 200 points comes back as the usual 220.
+            if let width = Double(parts[2]), width < 200 { parts[2] = "220.000000"; changed = true }
+            guard changed else { continue }
             frames[0] = parts.joined(separator: ", ")
             defaults.set(frames, forKey: key)
         }
