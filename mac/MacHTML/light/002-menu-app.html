@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OpenFrame Studio menu - OpenFrame Studio for Mac</title><style>
+:root{--bg:#d9d9de;--fg:#1d1d1f;--mut:#6b6b73;--card:#f6f6f8;--line:#c4c4cc;--acc:#c46a00;--hi:rgba(255,149,0,.9)}
+@media (prefers-color-scheme:dark){:root{--bg:#2a2a2d;--fg:#f2f2f4;--mut:#a0a0a8;--card:#1f1f22;--line:#3a3a40;--acc:#ff9f0a}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",system-ui,sans-serif}
+a{color:var(--acc)}
+header.top{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline;padding:14px 20px;border-bottom:1px solid var(--line);background:var(--card)}
+header.top h1{font-size:18px;margin:0}
+header.top .meta{color:var(--mut)}
+nav.pager{display:flex;gap:12px;margin-left:auto;flex-wrap:wrap}
+nav.pager a,nav.pager label{padding:4px 10px;border:1px solid var(--line);border-radius:6px;text-decoration:none;background:var(--bg);color:var(--fg);font-size:13px}
+section.info{padding:10px 20px;color:var(--mut);font-size:13px}
+section.info ul{margin:4px 0 0;padding-left:18px;columns:3 260px}
+.wrap{overflow:auto;padding:28px 40px 56px;display:flex}
+.stage{position:relative;margin:0 auto;flex:none;overflow:hidden;border-radius:10px;background:var(--stagebg,#1c1c1e);box-shadow:0 22px 70px 4px rgba(0,0,0,.55),0 0 0 .5px rgba(0,0,0,.5);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;color:var(--sfg,#fff)}
+.stage>img{display:block;position:absolute;left:0;top:0;width:100%;height:100%;border-radius:10px;user-select:none;image-rendering:auto}
+.el{position:absolute;margin:0;padding:0;border:0;background:transparent;color:transparent;font:inherit;font-size:13px;text-align:left;overflow:hidden;text-decoration:none;appearance:none;-webkit-appearance:none;-webkit-text-fill-color:transparent;opacity:1}
+.txt{white-space:pre;cursor:text;user-select:text}
+.txt.multi{white-space:pre-wrap}
+.txt::selection,.field::selection{background:rgba(255,149,0,.45);color:transparent}
+.field{caret-color:transparent;resize:none;cursor:text}
+.field:focus{outline:2px solid var(--hi)}
+.ctl,.link{cursor:pointer;display:block}
+.ctl:hover,.link:hover{outline:2px solid var(--hi);outline-offset:-1px;background:rgba(255,149,0,.12)}
+.ctl.off{cursor:not-allowed}
+.box{pointer-events:none}
+.link.area:hover{background:rgba(255,149,0,.08)}
+body.behind .win-main{pointer-events:none}
+body.show .ctl,body.show .field{outline:1px dashed rgba(255,149,0,.9);outline-offset:-1px}
+body.show .link{outline:2px solid rgba(0,160,255,.9);outline-offset:-1px;background:rgba(0,160,255,.12)}
+body.show .box{outline:1px dotted rgba(128,128,255,.45)}
+/* HTML only: the picture is hidden and the real elements draw the screen */
+body.htmlonly .stage>img{display:none}
+body.htmlonly .txt,body.htmlonly .ctl,body.htmlonly .field{color:var(--sfg);-webkit-text-fill-color:var(--sfg)}
+body.htmlonly .ctl,body.htmlonly .field{border:1px solid rgba(128,128,128,.35);border-radius:6px;display:flex;align-items:center;justify-content:center;padding:0 6px;background:rgba(128,128,128,.12)}
+body.htmlonly .field{justify-content:flex-start}
+body.htmlonly .box{outline:1px dotted rgba(128,128,128,.25)}
+body.htmlonly .win-sheet.box,body.htmlonly .win-menu.ctl{background:var(--stagebg)}
+/* bare: just the window at its own size, for the pixel check */
+body.bare header.top,body.bare section.info{display:none}
+html:has(body.bare){overflow:hidden}
+body.bare{background:#000;overflow:hidden}
+body.bare .wrap{padding:0;display:block;overflow:hidden}
+body.bare .stage{margin:0;box-shadow:none;border-radius:0;background:#000}
+body.bare .stage>img{border-radius:0}
+body.bare .el{outline:none!important;background:transparent!important}
+.index{padding:20px;max-width:1500px;margin:0 auto}
+.index h2{margin:28px 0 10px;font-size:16px;border-bottom:1px solid var(--line);padding-bottom:4px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;text-decoration:none;color:var(--fg);display:block}
+.card:hover{border-color:var(--acc)}
+.card img{width:100%;aspect-ratio:1440/652;object-fit:cover;object-position:top left;display:block;background:#000}
+.card div{padding:8px 10px;font-size:13px}
+.card small{color:var(--mut);display:block}
+</style></head>
+<body class="behind">
+<header class="top">
+<h1>OpenFrame Studio menu</h1>
+<span class="meta">Menus &middot; page 002 of 179 &middot; window 1280&times;637 pt &middot; light appearance (<a href="../dark/002-menu-app.html">dark version</a>)</span>
+<nav class="pager">
+<a rel="prev" href="001-home-empty.html">&larr; Application Home, no projects yet</a>
+<a href="../index.html#light">All pages</a>
+<a rel="next" href="003-menu-file-home.html">File menu &rarr;</a>
+<label><input type="checkbox" id="show"> Show controls</label>
+<label><input type="checkbox" id="htmlonly"> Show HTML only</label>
+</nav>
+</header>
+<section class="info">
+Reached from <a href="001-home-empty.html">Application Home, no projects yet</a> by <code>menu-bar</code>. Controls on this screen:
+<ul><li>New Project <small>(button, home-empty)</small></li><li>Open a Project Folder <small>(button, home-empty)</small></li><li>Show in Finder <small>(link, data-location-note)</small></li><li>Global Idea Vault <small>(button, home-global-vault)</small></li><li>Open <small>(button)</small></li><li>Restore Backup or Package… <small>(button, home-restore-package)</small></li><li>Settings <small>(button, home-settings)</small></li><li>Show archived <small>(checkbox)</small></li><li>Search <small>(button)</small></li><li>About OpenFrame Studio <small>(menuitem, menu-item-0)</small></li><li>Project Settings… <small>(menuitem, menu-item-2)</small></li><li>Settings… <small>(menuitem, menu-item-3)</small></li><li>Services <small>(menuitem, menu-item-5)</small></li><li>Hide OpenFrame Studio <small>(menuitem, menu-item-7)</small></li><li>Hide Others <small>(menuitem, menu-item-8)</small></li><li>Show All <small>(menuitem, menu-item-9)</small></li><li>Quit OpenFrame Studio <small>(menuitem, menu-item-11)</small></li></ul>
+</section>
+<div class="wrap"><div class="stage" style="width:1280px;height:637px;--stagebg:#1e1b15;--sfg:#1d1d1f">
+<img src="assets/menu-app.png" alt="OpenFrame Studio menu" width="1280" height="637">
+<span class="el win-main txt multi" data-id="" data-role="AXStaticText"  style="left:532.00px;top:140.00px;width:216.00px;height:30.00px;line-height:16.00px;font-size:13.00px">OpenFrame Studio</span>
+<span class="el win-main txt" data-id="" data-role="AXStaticText"  style="left:539.50px;top:178.00px;width:201.00px;height:15.00px;line-height:15.00px;font-size:12.00px">Signed in on this Mac as E2E Tester</span>
+<span class="el win-main txt" data-id="home-empty" data-role="AXStaticText"  style="left:560.75px;top:241.00px;width:158.50px;height:19.00px;line-height:19.00px;font-size:15.20px">Start your first project</span>
+<span class="el win-main txt" data-id="home-empty" data-role="AXStaticText"  style="left:294.00px;top:276.00px;width:692.00px;height:16.00px;line-height:16.00px;font-size:12.80px">A project holds one film or series: its screenplay, story, breakdown and production plans, in one folder on this Mac.</span>
+<button type="button" class="el win-main ctl" data-id="home-empty" data-role="AXButton" style="left:503.50px;top:308.00px;width:101.50px;height:28.00px" aria-label="New Project" title="New Project">New Project</button>
+<button type="button" class="el win-main ctl" data-id="home-empty" data-role="AXButton" style="left:617.00px;top:308.00px;width:160.00px;height:28.00px" aria-label="Open a Project Folder" title="Open a Project Folder">Open a Project Folder</button>
+<span class="el win-main txt" data-id="data-location-note" data-role="AXStaticText"  style="left:544.00px;top:384.00px;width:193.75px;height:14.00px;line-height:14.00px;font-size:11.20px">Your work is stored on this Mac</span>
+<span class="el win-main txt multi" data-id="data-location-note" data-role="AXStaticText"  style="left:281.00px;top:404.00px;width:718.50px;height:30.00px;line-height:16.00px;font-size:13.00px">Projects are kept in /var/folders/59/zg368c6s7qq8wsd3qqfpzgh40000gn/T//openframe-e2e.j4TYn1/data-zz-capture__00-start/projects. Back up the OpenFrame folder in Documents to keep a copy of everything.</span>
+<button type="button" class="el win-main ctl" data-id="data-location-note" data-role="AXLink" style="left:595.50px;top:440.00px;width:89.50px;height:16.00px" aria-label="Show in Finder" title="Show in Finder">Show in Finder</button>
+<button type="button" class="el win-main ctl" data-id="home-global-vault" data-role="AXButton" style="left:565.00px;top:0.00px;width:41.00px;height:52.00px" aria-label="Global Idea Vault" title="Global Idea Vault">Global Idea Vault</button>
+<button type="button" class="el win-main ctl" data-id="" data-role="AXButton" style="left:606.00px;top:0.00px;width:40.00px;height:52.00px" aria-label="Open" title="Open">Open</button>
+<button type="button" class="el win-main ctl" data-id="home-restore-package" data-role="AXButton" style="left:646.00px;top:0.00px;width:38.00px;height:52.00px" aria-label="Restore Backup or Package…" title="Restore Backup or Package…">Restore Backup or Package…</button>
+<button type="button" class="el win-main ctl" data-id="home-new-project" data-role="AXButton" style="left:684.00px;top:0.00px;width:37.00px;height:52.00px" aria-label="New Project" title="New Project">New Project</button>
+<button type="button" class="el win-main ctl" data-id="home-settings" data-role="AXButton" style="left:721.00px;top:0.00px;width:98.00px;height:52.00px" aria-label="Settings" title="Settings">Settings</button>
+<button type="button" class="el win-main ctl" data-id="" data-role="AXCheckBox" style="left:818.00px;top:17.00px;width:111.50px;height:18.00px" aria-label="Show archived" title="Show archived">Show archived</button>
+<input class="el win-main field" data-id="" data-role="AXTextField" style="left:946.00px;top:7.00px;width:327.00px;height:38.00px" value="">
+<button type="button" class="el win-main ctl" data-id="" data-role="AXButton" style="left:957.00px;top:22.00px;width:16.00px;height:9.00px" aria-label="Search" title="Search">Search</button>
+<button type="button" class="el win-main ctl" data-id="" data-role="AXButton" style="left:18.00px;top:18.00px;width:16.00px;height:16.00px"></button>
+<button type="button" class="el win-main ctl" data-id="" data-role="AXButton" style="left:64.00px;top:18.00px;width:16.00px;height:16.00px"></button>
+<button type="button" class="el win-main ctl" data-id="" data-role="AXButton" style="left:41.00px;top:18.00px;width:16.00px;height:16.00px"></button>
+<span class="el win-main txt multi" data-id="" data-role="AXStaticText"  style="left:92.00px;top:0.00px;width:473.00px;height:52.00px;line-height:16.00px;font-size:13.00px">Projects</span>
+<button type="button" class="el win-menu ctl" data-id="menu-item-0" data-role="AXMenuItem" style="left:20.00px;top:36.00px;width:240.00px;height:22.00px" aria-label="About OpenFrame Studio" title="About OpenFrame Studio">About OpenFrame Studio</button>
+<button type="button" class="el win-menu off ctl" data-id="menu-item-2" data-role="AXMenuItem" style="left:20.00px;top:67.00px;width:240.00px;height:22.00px" aria-label="Project Settings…" title="Project Settings…" disabled>Project Settings…</button>
+<button type="button" class="el win-menu ctl" data-id="menu-item-3" data-role="AXMenuItem" style="left:20.00px;top:89.00px;width:240.00px;height:22.00px" aria-label="Settings…" title="Settings…">Settings…</button>
+<button type="button" class="el win-menu ctl" data-id="menu-item-5" data-role="AXMenuItem" style="left:20.00px;top:120.00px;width:240.00px;height:22.00px" aria-label="Services" title="Services">Services</button>
+<button type="button" class="el win-menu ctl" data-id="menu-item-7" data-role="AXMenuItem" style="left:20.00px;top:151.00px;width:240.00px;height:22.00px" aria-label="Hide OpenFrame Studio" title="Hide OpenFrame Studio">Hide OpenFrame Studio</button>
+<button type="button" class="el win-menu ctl" data-id="menu-item-8" data-role="AXMenuItem" style="left:20.00px;top:173.00px;width:240.00px;height:22.00px" aria-label="Hide Others" title="Hide Others">Hide Others</button>
+<button type="button" class="el win-menu off ctl" data-id="menu-item-9" data-role="AXMenuItem" style="left:20.00px;top:195.00px;width:240.00px;height:22.00px" aria-label="Show All" title="Show All" disabled>Show All</button>
+<button type="button" class="el win-menu ctl" data-id="menu-item-11" data-role="AXMenuItem" style="left:20.00px;top:226.00px;width:240.00px;height:22.00px" aria-label="Quit OpenFrame Studio" title="Quit OpenFrame Studio">Quit OpenFrame Studio</button>
+</div></div>
+<script>
+(function(){
+var b=document.body;
+if(location.hash==='#bare')b.classList.add('bare');
+if(location.hash==='#html')b.classList.add('htmlonly');
+function bind(id,cls){var c=document.getElementById(id);if(c)c.addEventListener('change',function(){b.classList.toggle(cls,c.checked)});}
+bind('show','show');bind('htmlonly','htmlonly');
+document.addEventListener('keydown',function(e){if(e.target&&/INPUT|TEXTAREA|SELECT/.test(e.target.tagName))return;
+var a=document.querySelector(e.key==='ArrowLeft'?'a[rel=prev]':e.key==='ArrowRight'?'a[rel=next]':'a[rel=none]');if(a)location.href=a.href;});
+})();
+</script>
+</body></html>

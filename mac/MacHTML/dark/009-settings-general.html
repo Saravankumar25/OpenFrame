@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Settings: General - OpenFrame Studio for Mac</title><style>
+:root{--bg:#d9d9de;--fg:#1d1d1f;--mut:#6b6b73;--card:#f6f6f8;--line:#c4c4cc;--acc:#c46a00;--hi:rgba(255,149,0,.9)}
+@media (prefers-color-scheme:dark){:root{--bg:#2a2a2d;--fg:#f2f2f4;--mut:#a0a0a8;--card:#1f1f22;--line:#3a3a40;--acc:#ff9f0a}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",system-ui,sans-serif}
+a{color:var(--acc)}
+header.top{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline;padding:14px 20px;border-bottom:1px solid var(--line);background:var(--card)}
+header.top h1{font-size:18px;margin:0}
+header.top .meta{color:var(--mut)}
+nav.pager{display:flex;gap:12px;margin-left:auto;flex-wrap:wrap}
+nav.pager a,nav.pager label{padding:4px 10px;border:1px solid var(--line);border-radius:6px;text-decoration:none;background:var(--bg);color:var(--fg);font-size:13px}
+section.info{padding:10px 20px;color:var(--mut);font-size:13px}
+section.info ul{margin:4px 0 0;padding-left:18px;columns:3 260px}
+.wrap{overflow:auto;padding:28px 40px 56px;display:flex}
+.stage{position:relative;margin:0 auto;flex:none;overflow:hidden;border-radius:10px;background:var(--stagebg,#1c1c1e);box-shadow:0 22px 70px 4px rgba(0,0,0,.55),0 0 0 .5px rgba(0,0,0,.5);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;color:var(--sfg,#fff)}
+.stage>img{display:block;position:absolute;left:0;top:0;width:100%;height:100%;border-radius:10px;user-select:none;image-rendering:auto}
+.el{position:absolute;margin:0;padding:0;border:0;background:transparent;color:transparent;font:inherit;font-size:13px;text-align:left;overflow:hidden;text-decoration:none;appearance:none;-webkit-appearance:none;-webkit-text-fill-color:transparent;opacity:1}
+.txt{white-space:pre;cursor:text;user-select:text}
+.txt.multi{white-space:pre-wrap}
+.txt::selection,.field::selection{background:rgba(255,149,0,.45);color:transparent}
+.field{caret-color:transparent;resize:none;cursor:text}
+.field:focus{outline:2px solid var(--hi)}
+.ctl,.link{cursor:pointer;display:block}
+.ctl:hover,.link:hover{outline:2px solid var(--hi);outline-offset:-1px;background:rgba(255,149,0,.12)}
+.ctl.off{cursor:not-allowed}
+.box{pointer-events:none}
+.link.area:hover{background:rgba(255,149,0,.08)}
+body.behind .win-main{pointer-events:none}
+body.show .ctl,body.show .field{outline:1px dashed rgba(255,149,0,.9);outline-offset:-1px}
+body.show .link{outline:2px solid rgba(0,160,255,.9);outline-offset:-1px;background:rgba(0,160,255,.12)}
+body.show .box{outline:1px dotted rgba(128,128,255,.45)}
+/* HTML only: the picture is hidden and the real elements draw the screen */
+body.htmlonly .stage>img{display:none}
+body.htmlonly .txt,body.htmlonly .ctl,body.htmlonly .field{color:var(--sfg);-webkit-text-fill-color:var(--sfg)}
+body.htmlonly .ctl,body.htmlonly .field{border:1px solid rgba(128,128,128,.35);border-radius:6px;display:flex;align-items:center;justify-content:center;padding:0 6px;background:rgba(128,128,128,.12)}
+body.htmlonly .field{justify-content:flex-start}
+body.htmlonly .box{outline:1px dotted rgba(128,128,128,.25)}
+body.htmlonly .win-sheet.box,body.htmlonly .win-menu.ctl{background:var(--stagebg)}
+/* bare: just the window at its own size, for the pixel check */
+body.bare header.top,body.bare section.info{display:none}
+html:has(body.bare){overflow:hidden}
+body.bare{background:#000;overflow:hidden}
+body.bare .wrap{padding:0;display:block;overflow:hidden}
+body.bare .stage{margin:0;box-shadow:none;border-radius:0;background:#000}
+body.bare .stage>img{border-radius:0}
+body.bare .el{outline:none!important;background:transparent!important}
+.index{padding:20px;max-width:1500px;margin:0 auto}
+.index h2{margin:28px 0 10px;font-size:16px;border-bottom:1px solid var(--line);padding-bottom:4px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;text-decoration:none;color:var(--fg);display:block}
+.card:hover{border-color:var(--acc)}
+.card img{width:100%;aspect-ratio:1440/652;object-fit:cover;object-position:top left;display:block;background:#000}
+.card div{padding:8px 10px;font-size:13px}
+.card small{color:var(--mut);display:block}
+</style></head>
+<body class="">
+<header class="top">
+<h1>Settings: General</h1>
+<span class="meta">Settings &middot; page 009 of 179 &middot; window 760&times;548 pt &middot; dark appearance (<a href="../light/009-settings-general.html">light version</a>)</span>
+<nav class="pager">
+<a rel="prev" href="008-new-project-type-menu.html">&larr; New Project, project type</a>
+<a href="../index.html">All pages</a>
+<a rel="next" href="010-settings-appearance.html">Settings: Appearance &rarr;</a>
+<label><input type="checkbox" id="show"> Show controls</label>
+<label><input type="checkbox" id="htmlonly"> Show HTML only</label>
+</nav>
+</header>
+<section class="info">
+Reached from <a href="002-menu-app.html">OpenFrame Studio menu</a> by <code>General</code>. Controls on this screen:
+<ul><li>Display name <small>(textfield, settings-display-name)</small></li><li>Save Name <small>(button, settings-save-name)</small></li><li>Show in Finder <small>(button, settings-show-data)</small></li><li>General <small>(button)</small></li><li>Appearance <small>(button)</small></li><li>Keyboard Shortcuts <small>(button)</small></li><li>Offline AI <small>(button)</small></li><li>Diagnostics <small>(button)</small></li></ul>
+</section>
+<div class="wrap"><div class="stage" style="width:760px;height:548px;--stagebg:#2e3437;--sfg:#f2f2f4">
+<img src="assets/settings-general.png" alt="Settings: General" width="760" height="548">
+<span class="el win-main txt" data-id="" data-role="AXHeading"  style="left:38.00px;top:108.00px;width:23.50px;height:16.00px;line-height:16.00px;font-size:12.80px">You</span>
+<span class="el win-main txt" data-id="" data-role="AXStaticText"  style="left:38.00px;top:144.00px;width:81.00px;height:16.00px;line-height:16.00px;font-size:12.80px">Display name</span>
+<input class="el win-main field" data-id="settings-display-name" data-role="AXTextField" style="left:127.00px;top:144.00px;width:595.00px;height:16.00px" aria-label="Display name" title="Display name" value="E2E Tester">
+<button type="button" class="el win-main off ctl" data-id="settings-save-name" data-role="AXButton" style="left:38.00px;top:181.00px;width:92.00px;height:24.00px" aria-label="Save Name" title="Save Name" disabled>Save Name</button>
+<span class="el win-main txt" data-id="" data-role="AXStaticText"  style="left:38.00px;top:226.50px;width:464.00px;height:15.00px;line-height:15.00px;font-size:12.00px">This name appears on your notes, comments and history in the projects you open.</span>
+<span class="el win-main txt" data-id="" data-role="AXHeading"  style="left:38.00px;top:282.00px;width:70.50px;height:16.00px;line-height:16.00px;font-size:12.80px">Data folder</span>
+<span class="el win-main txt" data-id="" data-role="AXStaticText"  style="left:38.00px;top:318.00px;width:50.00px;height:16.00px;line-height:16.00px;font-size:12.80px">Projects</span>
+<span class="el win-main txt multi" data-id="" data-role="AXStaticText"  style="left:107.50px;top:342.00px;width:614.50px;height:32.00px;line-height:16.00px;font-size:13.00px">/var/folders/59/zg368c6s7qq8wsd3qqfpzgh40000gn/T//openframe-e2e.ajIR0L/data-zz-capture__00-start/projects</span>
+<span class="el win-main txt" data-id="" data-role="AXStaticText"  style="left:38.00px;top:395.00px;width:85.00px;height:16.00px;line-height:16.00px;font-size:12.80px">Shared library</span>
+<span class="el win-main txt multi" data-id="" data-role="AXStaticText"  style="left:75.50px;top:419.00px;width:646.50px;height:32.00px;line-height:16.00px;font-size:13.00px">/var/folders/59/zg368c6s7qq8wsd3qqfpzgh40000gn/T//openframe-e2e.ajIR0L/data-zz-capture__00-start/global-vault</span>
+<button type="button" class="el win-main ctl" data-id="settings-show-data" data-role="AXButton" style="left:38.00px;top:472.00px;width:113.50px;height:24.00px" aria-label="Show in Finder" title="Show in Finder">Show in Finder</button>
+<span class="el win-main txt" data-id="" data-role="AXHeading"  style="left:38.00px;top:536.00px;width:47.50px;height:16.00px;line-height:16.00px;font-size:12.80px">Version</span>
+<div class="el win-main box" data-id="" data-role="AXScrollBar" style="left:742.00px;top:87.00px;width:19.00px;height:454.50px" aria-label="0" title="0"></div>
+<div class="el win-main off box" data-id="" data-role="AXValueIndicator" style="left:746.00px;top:91.00px;width:11.00px;height:373.50px" aria-label="0" title="0"></div>
+<button type="button" class="el win-main off ctl" data-id="" data-role="AXButton" style="left:746.00px;top:465.00px;width:11.00px;height:72.50px" disabled></button>
+<button type="button" class="el win-main ctl" data-id="" data-role="AXButton" style="left:188.00px;top:32.00px;width:55.00px;height:56.00px" aria-label="General" title="General">General</button>
+<a class="el win-main ctl link" data-id="" data-role="AXButton" style="left:244.00px;top:32.00px;width:75.00px;height:56.00px" aria-label="Appearance" title="Appearance" href="010-settings-appearance.html" title="Appearance (opens: Settings: Appearance)">Appearance</a>
+<button type="button" class="el win-main ctl" data-id="" data-role="AXButton" style="left:320.00px;top:32.00px;width:116.00px;height:56.00px" aria-label="Keyboard Shortcuts" title="Keyboard Shortcuts">Keyboard Shortcuts</button>
+<button type="button" class="el win-main ctl" data-id="" data-role="AXButton" style="left:437.00px;top:32.00px;width:61.00px;height:56.00px" aria-label="Offline AI" title="Offline AI">Offline AI</button>
+<button type="button" class="el win-main ctl" data-id="" data-role="AXButton" style="left:499.00px;top:32.00px;width:73.50px;height:56.00px" aria-label="Diagnostics" title="Diagnostics">Diagnostics</button>
+<button type="button" class="el win-main ctl" data-id="" data-role="AXButton" style="left:8.00px;top:8.00px;width:16.00px;height:16.00px"></button>
+<button type="button" class="el win-main off ctl" data-id="" data-role="AXButton" style="left:54.00px;top:8.00px;width:16.00px;height:16.00px" disabled></button>
+<button type="button" class="el win-main off ctl" data-id="" data-role="AXButton" style="left:31.00px;top:8.00px;width:16.00px;height:16.00px" disabled></button>
+<span class="el win-main txt" data-id="" data-role="AXStaticText"  style="left:353.00px;top:7.00px;width:55.00px;height:16.00px;line-height:16.00px;font-size:12.80px">General</span>
+</div></div>
+<script>
+(function(){
+var b=document.body;
+if(location.hash==='#bare')b.classList.add('bare');
+if(location.hash==='#html')b.classList.add('htmlonly');
+function bind(id,cls){var c=document.getElementById(id);if(c)c.addEventListener('change',function(){b.classList.toggle(cls,c.checked)});}
+bind('show','show');bind('htmlonly','htmlonly');
+document.addEventListener('keydown',function(e){if(e.target&&/INPUT|TEXTAREA|SELECT/.test(e.target.tagName))return;
+var a=document.querySelector(e.key==='ArrowLeft'?'a[rel=prev]':e.key==='ArrowRight'?'a[rel=next]':'a[rel=none]');if(a)location.href=a.href;});
+})();
+</script>
+</body></html>

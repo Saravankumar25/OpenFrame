@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Edit menu - OpenFrame Studio for Mac</title><style>
+:root{--bg:#d9d9de;--fg:#1d1d1f;--mut:#6b6b73;--card:#f6f6f8;--line:#c4c4cc;--acc:#c46a00;--hi:rgba(255,149,0,.9)}
+@media (prefers-color-scheme:dark){:root{--bg:#2a2a2d;--fg:#f2f2f4;--mut:#a0a0a8;--card:#1f1f22;--line:#3a3a40;--acc:#ff9f0a}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",system-ui,sans-serif}
+a{color:var(--acc)}
+header.top{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline;padding:14px 20px;border-bottom:1px solid var(--line);background:var(--card)}
+header.top h1{font-size:18px;margin:0}
+header.top .meta{color:var(--mut)}
+nav.pager{display:flex;gap:12px;margin-left:auto;flex-wrap:wrap}
+nav.pager a,nav.pager label{padding:4px 10px;border:1px solid var(--line);border-radius:6px;text-decoration:none;background:var(--bg);color:var(--fg);font-size:13px}
+section.info{padding:10px 20px;color:var(--mut);font-size:13px}
+section.info ul{margin:4px 0 0;padding-left:18px;columns:3 260px}
+.wrap{overflow:auto;padding:28px 40px 56px;display:flex}
+.stage{position:relative;margin:0 auto;flex:none;overflow:hidden;border-radius:10px;background:var(--stagebg,#1c1c1e);box-shadow:0 22px 70px 4px rgba(0,0,0,.55),0 0 0 .5px rgba(0,0,0,.5);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;color:var(--sfg,#fff)}
+.stage>img{display:block;position:absolute;left:0;top:0;width:100%;height:100%;border-radius:10px;user-select:none;image-rendering:auto}
+.el{position:absolute;margin:0;padding:0;border:0;background:transparent;color:transparent;font:inherit;font-size:13px;text-align:left;overflow:hidden;text-decoration:none;appearance:none;-webkit-appearance:none;-webkit-text-fill-color:transparent;opacity:1}
+.txt{white-space:pre;cursor:text;user-select:text}
+.txt.multi{white-space:pre-wrap}
+.txt::selection,.field::selection{background:rgba(255,149,0,.45);color:transparent}
+.field{caret-color:transparent;resize:none;cursor:text}
+.field:focus{outline:2px solid var(--hi)}
+.ctl,.link{cursor:pointer;display:block}
+.ctl:hover,.link:hover{outline:2px solid var(--hi);outline-offset:-1px;background:rgba(255,149,0,.12)}
+.ctl.off{cursor:not-allowed}
+.box{pointer-events:none}
+.link.area:hover{background:rgba(255,149,0,.08)}
+body.behind .win-main{pointer-events:none}
+body.show .ctl,body.show .field{outline:1px dashed rgba(255,149,0,.9);outline-offset:-1px}
+body.show .link{outline:2px solid rgba(0,160,255,.9);outline-offset:-1px;background:rgba(0,160,255,.12)}
+body.show .box{outline:1px dotted rgba(128,128,255,.45)}
+/* HTML only: the picture is hidden and the real elements draw the screen */
+body.htmlonly .stage>img{display:none}
+body.htmlonly .txt,body.htmlonly .ctl,body.htmlonly .field{color:var(--sfg);-webkit-text-fill-color:var(--sfg)}
+body.htmlonly .ctl,body.htmlonly .field{border:1px solid rgba(128,128,128,.35);border-radius:6px;display:flex;align-items:center;justify-content:center;padding:0 6px;background:rgba(128,128,128,.12)}
+body.htmlonly .field{justify-content:flex-start}
+body.htmlonly .box{outline:1px dotted rgba(128,128,128,.25)}
+body.htmlonly .win-sheet.box,body.htmlonly .win-menu.ctl{background:var(--stagebg)}
+/* bare: just the window at its own size, for the pixel check */
+body.bare header.top,body.bare section.info{display:none}
+html:has(body.bare){overflow:hidden}
+body.bare{background:#000;overflow:hidden}
+body.bare .wrap{padding:0;display:block;overflow:hidden}
+body.bare .stage{margin:0;box-shadow:none;border-radius:0;background:#000}
+body.bare .stage>img{border-radius:0}
+body.bare .el{outline:none!important;background:transparent!important}
+.index{padding:20px;max-width:1500px;margin:0 auto}
+.index h2{margin:28px 0 10px;font-size:16px;border-bottom:1px solid var(--line);padding-bottom:4px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;text-decoration:none;color:var(--fg);display:block}
+.card:hover{border-color:var(--acc)}
+.card img{width:100%;aspect-ratio:1440/652;object-fit:cover;object-position:top left;display:block;background:#000}
+.card div{padding:8px 10px;font-size:13px}
+.card small{color:var(--mut);display:block}
+</style></head>
+<body class="behind">
+<header class="top">
+<h1>Edit menu</h1>
+<span class="meta">Menus &middot; page 018 of 179 &middot; window 1280&times;637 pt &middot; light appearance (<a href="../dark/018-menu-edit-project.html">dark version</a>)</span>
+<nav class="pager">
+<a rel="prev" href="017-menu-file-project.html">&larr; File menu</a>
+<a href="../index.html#light">All pages</a>
+<a rel="next" href="019-menu-go.html">Go menu &rarr;</a>
+<label><input type="checkbox" id="show"> Show controls</label>
+<label><input type="checkbox" id="htmlonly"> Show HTML only</label>
+</nav>
+</header>
+<section class="info">
+Reached from <a href="015-project-home.html">Project Home</a> by <code>menu-bar</code>. Controls on this screen:
+<ul><li>Assistant <small>(button, ai-toggle)</small></li><li>Project Settings <small>(button, project-settings-button)</small></li><li>Project: Night Bus. Switch or manage projects <small>(menubutton, project-menu)</small></li><li>Hide Sidebar <small>(button, sidebar-toggle)</small></li><li>All Projects <small>(button, close-project)</small></li><li>Undo <small>(menuitem, menu-item-0)</small></li><li>Redo <small>(menuitem, menu-item-1)</small></li><li>Undo Project Change <small>(menuitem, menu-item-3)</small></li><li>Redo Project Change <small>(menuitem, menu-item-4)</small></li><li>Cut <small>(menuitem, menu-item-6)</small></li><li>Copy <small>(menuitem, menu-item-7)</small></li><li>Paste <small>(menuitem, menu-item-8)</small></li><li>Delete <small>(menuitem, menu-item-9)</small></li><li>Select All <small>(menuitem, menu-item-10)</small></li><li>Search and Commands… <small>(menuitem, menu-item-13)</small></li><li>Writing Tools <small>(menuitem, menu-item-15)</small></li><li>AutoFill <small>(menuitem, menu-item-16)</small></li><li>Start Dictation… <small>(menuitem, menu-item-17)</small></li></ul>
+</section>
+<div class="wrap"><div class="stage" style="width:1280px;height:637px;--stagebg:#f3f2ed;--sfg:#1d1d1f">
+<img src="assets/menu-edit-project.png" alt="Edit menu" width="1280" height="637">
+<div class="el win-main box" data-id="" data-role="AXOutline" style="left:7.00px;top:51.00px;width:142.00px;height:538.00px" aria-label="Sidebar" title="Sidebar"></div>
+<span class="el win-main txt" data-id="" data-role="AXHeading"  style="left:22.00px;top:54.50px;width:40.00px;height:14.00px;line-height:14.00px;font-size:11.20px">Writing</span>
+<span class="el win-main txt" data-id="sidebar-screenplay" data-role="AXStaticText"  style="left:31.50px;top:79.04px;width:90.00px;height:16.00px;line-height:16.00px;font-size:12.80px">Screenplay</span>
+<span class="el win-main txt" data-id="sidebar-story" data-role="AXStaticText"  style="left:28.00px;top:111.00px;width:58.50px;height:16.00px;line-height:16.00px;font-size:12.80px">Story</span>
+<span class="el win-main txt" data-id="sidebar-ideaVault" data-role="AXStaticText"  style="left:33.00px;top:143.08px;width:81.00px;height:16.00px;line-height:16.00px;font-size:12.80px">Idea Vault</span>
+<span class="el win-main txt" data-id="" data-role="AXHeading"  style="left:22.00px;top:182.50px;width:60.00px;height:14.00px;line-height:14.00px;font-size:11.20px">Production</span>
+<span class="el win-main txt" data-id="sidebar-breakdown" data-role="AXStaticText"  style="left:29.50px;top:207.00px;width:92.00px;height:16.00px;line-height:16.00px;font-size:12.80px">Breakdown</span>
+<span class="el win-main txt" data-id="sidebar-schedule" data-role="AXStaticText"  style="left:30.50px;top:239.00px;width:80.00px;height:16.00px;line-height:16.00px;font-size:12.80px">Schedule</span>
+<span class="el win-main txt" data-id="sidebar-callSheets" data-role="AXStaticText"  style="left:31.50px;top:271.04px;width:91.00px;height:16.00px;line-height:16.00px;font-size:12.80px">Call Sheets</span>
+<span class="el win-main txt" data-id="sidebar-budget" data-role="AXStaticText"  style="left:30.50px;top:303.00px;width:67.50px;height:16.00px;line-height:16.00px;font-size:12.80px">Budget</span>
+<span class="el win-main txt" data-id="sidebar-visual" data-role="AXStaticText"  style="left:29.00px;top:335.00px;width:101.50px;height:16.00px;line-height:16.00px;font-size:12.80px">Visual Planning</span>
+<span class="el win-main txt" data-id="" data-role="AXHeading"  style="left:22.00px;top:374.50px;width:39.50px;height:14.00px;line-height:14.00px;font-size:11.20px">Project</span>
+<span class="el win-main txt" data-id="sidebar-home" data-role="AXStaticText"  style="left:29.50px;top:399.00px;width:99.00px;height:16.00px;line-height:16.00px;font-size:12.80px">Project Home</span>
+<span class="el win-main txt" data-id="sidebar-files" data-role="AXStaticText"  style="left:30.00px;top:431.00px;width:52.00px;height:16.00px;line-height:16.00px;font-size:12.80px">Files</span>
+<span class="el win-main txt" data-id="sidebar-notes" data-role="AXStaticText"  style="left:30.00px;top:463.00px;width:96.50px;height:16.00px;line-height:16.00px;font-size:12.80px">Notes and Tasks</span>
+<span class="el win-main txt" data-id="sidebar-activity" data-role="AXStaticText"  style="left:29.50px;top:495.00px;width:70.00px;height:16.00px;line-height:16.00px;font-size:12.80px">Activity</span>
+<span class="el win-main txt" data-id="sidebar-recentlyDeleted" data-role="AXStaticText"  style="left:31.00px;top:527.29px;width:99.00px;height:16.00px;line-height:16.00px;font-size:12.80px">Recently Deleted</span>
+<span class="el win-main txt" data-id="save-status" data-role="AXStaticText"  style="left:19.00px;top:606.00px;width:46.50px;height:13.00px;line-height:13.00px;font-size:10.40px">Saved</span>
+<div class="el win-main off box" data-id="project-home" data-role="AXScrollArea" style="left:148.00px;top:52.00px;width:1132.00px;height:585.00px" aria-label="project-home" title="project-home"></div>
+<span class="el win-main txt multi" data-id="" data-role="AXHeading"  style="left:657.75px;top:84.00px;width:112.50px;height:30.00px;line-height:16.00px;font-size:13.00px">Night Bus</span>
+<span class="el win-main txt" data-id="" data-role="AXStaticText"  style="left:679.00px;top:122.00px;width:70.00px;height:15.00px;line-height:15.00px;font-size:12.00px">Feature Film</span>
+<span class="el win-main txt multi" data-id="" data-role="AXStaticText"  style="left:546.00px;top:185.00px;width:160.00px;height:79.00px;line-height:16.00px;font-size:13.00px">1, Screenplay drafts</span>
+<span class="el win-main txt multi" data-id="" data-role="AXStaticText"  style="left:722.00px;top:185.00px;width:160.00px;height:79.00px;line-height:16.00px;font-size:13.00px">10, Screenplay scenes</span>
+<span class="el win-main txt" data-id="" data-role="AXHeading"  style="left:334.00px;top:312.00px;width:97.00px;height:16.00px;line-height:16.00px;font-size:12.80px">Recent activity</span>
+<span class="el win-main txt" data-id="" data-role="AXStaticText"  style="left:334.00px;top:344.00px;width:244.00px;height:16.00px;line-height:16.00px;font-size:12.80px">Imported screenplay “LOST PROPERTY”</span>
+<span class="el win-main txt" data-id="" data-role="AXStaticText"  style="left:1023.00px;top:347.00px;width:71.00px;height:13.00px;line-height:13.00px;font-size:10.40px">3 seconds ago</span>
+<span class="el win-main txt" data-id="" data-role="AXStaticText"  style="left:334.00px;top:377.00px;width:169.00px;height:16.00px;line-height:16.00px;font-size:12.80px">Created project “Night Bus”</span>
+<span class="el win-main txt" data-id="" data-role="AXStaticText"  style="left:1023.00px;top:380.00px;width:71.00px;height:13.00px;line-height:13.00px;font-size:10.40px">5 seconds ago</span>
+<button type="button" class="el win-main ctl" data-id="ai-toggle" data-role="AXButton" style="left:1030.00px;top:0.00px;width:41.00px;height:52.00px" aria-label="Assistant" title="Assistant">Assistant</button>
+<button type="button" class="el win-main ctl" data-id="project-settings-button" data-role="AXButton" style="left:1071.00px;top:0.00px;width:149.00px;height:52.00px" aria-label="Project Settings" title="Project Settings">Project Settings</button>
+<select class="el win-main ctl menu" data-id="project-menu" data-role="AXMenuButton" style="left:1223.50px;top:7.00px;width:49.50px;height:38.00px" aria-label="Project: Night Bus. Switch or manage projects" title="Project: Night Bus. Switch or manage projects"><option>More</option></select>
+<button type="button" class="el win-main ctl" data-id="sidebar-toggle" data-role="AXButton" style="left:152.00px;top:0.00px;width:44.00px;height:52.00px" aria-label="Hide Sidebar" title="Hide Sidebar">Hide Sidebar</button>
+<button type="button" class="el win-main ctl" data-id="close-project" data-role="AXButton" style="left:196.00px;top:0.00px;width:41.00px;height:52.00px" aria-label="All Projects" title="All Projects">All Projects</button>
+<button type="button" class="el win-main ctl" data-id="" data-role="AXButton" style="left:18.00px;top:18.00px;width:16.00px;height:16.00px"></button>
+<button type="button" class="el win-main ctl" data-id="" data-role="AXButton" style="left:64.00px;top:18.00px;width:16.00px;height:16.00px"></button>
+<button type="button" class="el win-main ctl" data-id="" data-role="AXButton" style="left:41.00px;top:18.00px;width:16.00px;height:16.00px"></button>
+<span class="el win-main txt multi" data-id="" data-role="AXStaticText"  style="left:237.00px;top:0.00px;width:793.00px;height:52.00px;line-height:16.00px;font-size:13.00px">Night Bus</span>
+<span class="el win-main txt multi" data-id="" data-role="AXStaticText"  style="left:237.00px;top:0.00px;width:793.00px;height:52.00px;line-height:16.00px;font-size:13.00px">Project Home</span>
+<button type="button" class="el win-menu off ctl" data-id="menu-item-0" data-role="AXMenuItem" style="left:82.00px;top:36.00px;width:249.00px;height:22.00px" aria-label="Undo" title="Undo" disabled>Undo</button>
+<button type="button" class="el win-menu off ctl" data-id="menu-item-1" data-role="AXMenuItem" style="left:82.00px;top:58.00px;width:249.00px;height:22.00px" aria-label="Redo" title="Redo" disabled>Redo</button>
+<button type="button" class="el win-menu ctl" data-id="menu-item-3" data-role="AXMenuItem" style="left:82.00px;top:89.00px;width:249.00px;height:22.00px" aria-label="Undo Project Change" title="Undo Project Change">Undo Project Change</button>
+<button type="button" class="el win-menu ctl" data-id="menu-item-4" data-role="AXMenuItem" style="left:82.00px;top:111.00px;width:249.00px;height:22.00px" aria-label="Redo Project Change" title="Redo Project Change">Redo Project Change</button>
+<button type="button" class="el win-menu off ctl" data-id="menu-item-6" data-role="AXMenuItem" style="left:82.00px;top:142.00px;width:249.00px;height:22.00px" aria-label="Cut" title="Cut" disabled>Cut</button>
+<button type="button" class="el win-menu off ctl" data-id="menu-item-7" data-role="AXMenuItem" style="left:82.00px;top:164.00px;width:249.00px;height:22.00px" aria-label="Copy" title="Copy" disabled>Copy</button>
+<button type="button" class="el win-menu off ctl" data-id="menu-item-8" data-role="AXMenuItem" style="left:82.00px;top:186.00px;width:249.00px;height:22.00px" aria-label="Paste" title="Paste" disabled>Paste</button>
+<button type="button" class="el win-menu off ctl" data-id="menu-item-9" data-role="AXMenuItem" style="left:82.00px;top:208.00px;width:249.00px;height:22.00px" aria-label="Delete" title="Delete" disabled>Delete</button>
+<button type="button" class="el win-menu off ctl" data-id="menu-item-10" data-role="AXMenuItem" style="left:82.00px;top:230.00px;width:249.00px;height:22.00px" aria-label="Select All" title="Select All" disabled>Select All</button>
+<button type="button" class="el win-menu ctl" data-id="menu-item-13" data-role="AXMenuItem" style="left:82.00px;top:270.00px;width:249.00px;height:22.00px" aria-label="Search and Commands…" title="Search and Commands…">Search and Commands…</button>
+<button type="button" class="el win-menu ctl" data-id="menu-item-15" data-role="AXMenuItem" style="left:82.00px;top:301.00px;width:249.00px;height:22.00px" aria-label="Writing Tools" title="Writing Tools">Writing Tools</button>
+<button type="button" class="el win-menu ctl" data-id="menu-item-16" data-role="AXMenuItem" style="left:82.00px;top:323.00px;width:249.00px;height:22.00px" aria-label="AutoFill" title="AutoFill">AutoFill</button>
+<button type="button" class="el win-menu ctl" data-id="menu-item-17" data-role="AXMenuItem" style="left:82.00px;top:345.00px;width:249.00px;height:22.00px" aria-label="Start Dictation…" title="Start Dictation…">Start Dictation…</button>
+<button type="button" class="el win-menu ctl" data-id="menu-item-18" data-role="AXMenuItem" style="left:82.00px;top:367.00px;width:249.00px;height:22.00px" aria-label="Emoji &amp; Symbols" title="Emoji &amp; Symbols">Emoji &amp; Symbols</button>
+</div></div>
+<script>
+(function(){
+var b=document.body;
+if(location.hash==='#bare')b.classList.add('bare');
+if(location.hash==='#html')b.classList.add('htmlonly');
+function bind(id,cls){var c=document.getElementById(id);if(c)c.addEventListener('change',function(){b.classList.toggle(cls,c.checked)});}
+bind('show','show');bind('htmlonly','htmlonly');
+document.addEventListener('keydown',function(e){if(e.target&&/INPUT|TEXTAREA|SELECT/.test(e.target.tagName))return;
+var a=document.querySelector(e.key==='ArrowLeft'?'a[rel=prev]':e.key==='ArrowRight'?'a[rel=next]':'a[rel=none]');if(a)location.href=a.href;});
+})();
+</script>
+</body></html>

@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Visual Planning: Export moodboard - OpenFrame Studio for Mac</title><style>
+:root{--bg:#d9d9de;--fg:#1d1d1f;--mut:#6b6b73;--card:#f6f6f8;--line:#c4c4cc;--acc:#c46a00;--hi:rgba(255,149,0,.9)}
+@media (prefers-color-scheme:dark){:root{--bg:#2a2a2d;--fg:#f2f2f4;--mut:#a0a0a8;--card:#1f1f22;--line:#3a3a40;--acc:#ff9f0a}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",system-ui,sans-serif}
+a{color:var(--acc)}
+header.top{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline;padding:14px 20px;border-bottom:1px solid var(--line);background:var(--card)}
+header.top h1{font-size:18px;margin:0}
+header.top .meta{color:var(--mut)}
+nav.pager{display:flex;gap:12px;margin-left:auto;flex-wrap:wrap}
+nav.pager a,nav.pager label{padding:4px 10px;border:1px solid var(--line);border-radius:6px;text-decoration:none;background:var(--bg);color:var(--fg);font-size:13px}
+section.info{padding:10px 20px;color:var(--mut);font-size:13px}
+section.info ul{margin:4px 0 0;padding-left:18px;columns:3 260px}
+.wrap{overflow:auto;padding:28px 40px 56px;display:flex}
+.stage{position:relative;margin:0 auto;flex:none;overflow:hidden;border-radius:10px;background:var(--stagebg,#1c1c1e);box-shadow:0 22px 70px 4px rgba(0,0,0,.55),0 0 0 .5px rgba(0,0,0,.5);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;color:var(--sfg,#fff)}
+.stage>img{display:block;position:absolute;left:0;top:0;width:100%;height:100%;border-radius:10px;user-select:none;image-rendering:auto}
+.el{position:absolute;margin:0;padding:0;border:0;background:transparent;color:transparent;font:inherit;font-size:13px;text-align:left;overflow:hidden;text-decoration:none;appearance:none;-webkit-appearance:none;-webkit-text-fill-color:transparent;opacity:1}
+.txt{white-space:pre;cursor:text;user-select:text}
+.txt.multi{white-space:pre-wrap}
+.txt::selection,.field::selection{background:rgba(255,149,0,.45);color:transparent}
+.field{caret-color:transparent;resize:none;cursor:text}
+.field:focus{outline:2px solid var(--hi)}
+.ctl,.link{cursor:pointer;display:block}
+.ctl:hover,.link:hover{outline:2px solid var(--hi);outline-offset:-1px;background:rgba(255,149,0,.12)}
+.ctl.off{cursor:not-allowed}
+.box{pointer-events:none}
+.link.area:hover{background:rgba(255,149,0,.08)}
+body.behind .win-main{pointer-events:none}
+body.show .ctl,body.show .field{outline:1px dashed rgba(255,149,0,.9);outline-offset:-1px}
+body.show .link{outline:2px solid rgba(0,160,255,.9);outline-offset:-1px;background:rgba(0,160,255,.12)}
+body.show .box{outline:1px dotted rgba(128,128,255,.45)}
+/* HTML only: the picture is hidden and the real elements draw the screen */
+body.htmlonly .stage>img{display:none}
+body.htmlonly .txt,body.htmlonly .ctl,body.htmlonly .field{color:var(--sfg);-webkit-text-fill-color:var(--sfg)}
+body.htmlonly .ctl,body.htmlonly .field{border:1px solid rgba(128,128,128,.35);border-radius:6px;display:flex;align-items:center;justify-content:center;padding:0 6px;background:rgba(128,128,128,.12)}
+body.htmlonly .field{justify-content:flex-start}
+body.htmlonly .box{outline:1px dotted rgba(128,128,128,.25)}
+body.htmlonly .win-sheet.box,body.htmlonly .win-menu.ctl{background:var(--stagebg)}
+/* bare: just the window at its own size, for the pixel check */
+body.bare header.top,body.bare section.info{display:none}
+html:has(body.bare){overflow:hidden}
+body.bare{background:#000;overflow:hidden}
+body.bare .wrap{padding:0;display:block;overflow:hidden}
+body.bare .stage{margin:0;box-shadow:none;border-radius:0;background:#000}
+body.bare .stage>img{border-radius:0}
+body.bare .el{outline:none!important;background:transparent!important}
+.index{padding:20px;max-width:1500px;margin:0 auto}
+.index h2{margin:28px 0 10px;font-size:16px;border-bottom:1px solid var(--line);padding-bottom:4px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;text-decoration:none;color:var(--fg);display:block}
+.card:hover{border-color:var(--acc)}
+.card img{width:100%;aspect-ratio:1440/652;object-fit:cover;object-position:top left;display:block;background:#000}
+.card div{padding:8px 10px;font-size:13px}
+.card small{color:var(--mut);display:block}
+</style></head>
+<body class="behind">
+<header class="top">
+<h1>Visual Planning: Export moodboard</h1>
+<span class="meta">Visual Planning &middot; page 140 of 179 &middot; window 1280&times;637 pt &middot; dark appearance (<a href="../light/140-moodboard-export-moodboard.html">light version</a>)</span>
+<nav class="pager">
+<a rel="prev" href="139-moodboard-add-a-link.html">&larr; Visual Planning: Add a link</a>
+<a href="../index.html">All pages</a>
+<a rel="next" href="141-visual-tab-moodboards.html">Visual Planning: Moodboards &rarr;</a>
+<label><input type="checkbox" id="show"> Show controls</label>
+<label><input type="checkbox" id="htmlonly"> Show HTML only</label>
+</nav>
+</header>
+<section class="info">
+Reached from <a href="135-moodboard-canvas.html">Moodboard canvas</a> by <code>moodboard-export</code>. Controls on this screen:
+<ul><li>Moodboards <small>(radiobutton)</small></li><li>Storyboards <small>(radiobutton)</small></li><li>Shot Lists <small>(radiobutton)</small></li><li>Export <small>(button, moodboard-export)</small></li><li>New Moodboard <small>(button, moodboard-new)</small></li><li>Moodboard Night Bus look, 0 items <small>(button, moodboard-row-01a153ac-f05f-7244-9c8d-5b7bab4688c0)</small></li><li>Add Image <small>(menubutton, moodboard-add-image)</small></li><li>From File… <small>(menuitem, moodboard-add-image-file)</small></li><li>From Idea Vault… <small>(menuitem, moodboard-add-image-vault)</small></li><li>Add Note <small>(button, moodboard-add-note)</small></li><li>Add Link <small>(button, moodboard-add-link)</small></li><li>Assistant <small>(button, ai-toggle)</small></li><li>Project Settings <small>(button, project-settings-button)</small></li><li>Project: Night Bus. Switch or manage projects <small>(menubutton, project-menu)</small></li><li>Hide Sidebar <small>(button, sidebar-toggle)</small></li><li>All Projects <small>(button, close-project)</small></li><li>Project title and board name <small>(checkbox, moodboard-export-sheet-includeTitle)</small></li><li>Images <small>(checkbox, moodboard-export-sheet-includeImages)</small></li></ul>
+</section>
+<div class="wrap"><div class="stage" style="width:1280px;height:637px;--stagebg:#1c1c1b;--sfg:#f2f2f4">
+<img src="assets/moodboard-export-moodboard.png" alt="Visual Planning: Export moodboard" width="1280" height="637">
+<div class="el win-main box" data-id="" data-role="AXOutline" style="left:7.00px;top:51.00px;width:142.00px;height:538.00px" aria-label="Sidebar" title="Sidebar"></div>
+<span class="el win-main txt" data-id="" data-role="AXHeading"  style="left:22.00px;top:54.50px;width:40.00px;height:14.00px;line-height:14.00px;font-size:11.20px">Writing</span>
+<span class="el win-main txt" data-id="sidebar-screenplay" data-role="AXStaticText"  style="left:31.50px;top:79.04px;width:90.00px;height:16.00px;line-height:16.00px;font-size:12.80px">Screenplay</span>
+<span class="el win-main txt" data-id="sidebar-story" data-role="AXStaticText"  style="left:28.00px;top:111.00px;width:58.50px;height:16.00px;line-height:16.00px;font-size:12.80px">Story</span>
+<span class="el win-main txt" data-id="sidebar-ideaVault" data-role="AXStaticText"  style="left:33.00px;top:143.08px;width:81.00px;height:16.00px;line-height:16.00px;font-size:12.80px">Idea Vault</span>
+<span class="el win-main txt" data-id="" data-role="AXHeading"  style="left:22.00px;top:182.50px;width:60.00px;height:14.00px;line-height:14.00px;font-size:11.20px">Production</span>
+<span class="el win-main txt" data-id="sidebar-breakdown" data-role="AXStaticText"  style="left:29.50px;top:207.00px;width:92.00px;height:16.00px;line-height:16.00px;font-size:12.80px">Breakdown</span>
+<span class="el win-main txt" data-id="sidebar-schedule" data-role="AXStaticText"  style="left:30.50px;top:239.00px;width:80.00px;height:16.00px;line-height:16.00px;font-size:12.80px">Schedule</span>
+<span class="el win-main txt" data-id="sidebar-callSheets" data-role="AXStaticText"  style="left:31.50px;top:271.04px;width:91.00px;height:16.00px;line-height:16.00px;font-size:12.80px">Call Sheets</span>
+<span class="el win-main txt" data-id="sidebar-budget" data-role="AXStaticText"  style="left:30.50px;top:303.00px;width:67.50px;height:16.00px;line-height:16.00px;font-size:12.80px">Budget</span>
+<span class="el win-main txt" data-id="sidebar-visual" data-role="AXStaticText"  style="left:29.00px;top:335.00px;width:101.50px;height:16.00px;line-height:16.00px;font-size:12.80px">Visual Planning</span>
+<span class="el win-main txt" data-id="" data-role="AXHeading"  style="left:22.00px;top:374.50px;width:39.50px;height:14.00px;line-height:14.00px;font-size:11.20px">Project</span>
+<span class="el win-main txt" data-id="sidebar-home" data-role="AXStaticText"  style="left:29.50px;top:399.00px;width:99.00px;height:16.00px;line-height:16.00px;font-size:12.80px">Project Home</span>
+<span class="el win-main txt" data-id="sidebar-files" data-role="AXStaticText"  style="left:30.00px;top:431.00px;width:52.00px;height:16.00px;line-height:16.00px;font-size:12.80px">Files</span>
+<span class="el win-main txt" data-id="sidebar-notes" data-role="AXStaticText"  style="left:30.00px;top:463.00px;width:96.50px;height:16.00px;line-height:16.00px;font-size:12.80px">Notes and Tasks</span>
+<span class="el win-main txt" data-id="sidebar-activity" data-role="AXStaticText"  style="left:29.50px;top:495.00px;width:70.00px;height:16.00px;line-height:16.00px;font-size:12.80px">Activity</span>
+<span class="el win-main txt" data-id="sidebar-recentlyDeleted" data-role="AXStaticText"  style="left:31.00px;top:527.29px;width:99.00px;height:16.00px;line-height:16.00px;font-size:12.80px">Recently Deleted</span>
+<span class="el win-main txt" data-id="save-status" data-role="AXStaticText"  style="left:19.00px;top:606.00px;width:46.50px;height:13.00px;line-height:13.00px;font-size:10.40px">Saved</span>
+<div class="el win-main box" data-id="visual-workspace" data-role="AXGroup" style="left:0.00px;top:0.00px;width:1280.00px;height:640.50px" aria-label="visual-workspace" title="visual-workspace"></div>
+<div class="el win-main box" data-id="visual-tabs" data-role="AXRadioGroup" style="left:569.50px;top:56.50px;width:289.50px;height:24.00px" aria-label="Visual Planning views, Visual Planning" title="Visual Planning views, Visual Planning"></div>
+<button type="button" class="el win-main ctl" data-id="" data-role="AXRadioButton" style="left:569.50px;top:56.50px;width:96.50px;height:24.00px" aria-label="Moodboards" title="Moodboards">Moodboards</button>
+<button type="button" class="el win-main ctl" data-id="" data-role="AXRadioButton" style="left:667.00px;top:56.50px;width:95.50px;height:24.00px" aria-label="Storyboards" title="Storyboards">Storyboards</button>
+<button type="button" class="el win-main ctl" data-id="" data-role="AXRadioButton" style="left:763.50px;top:56.50px;width:95.50px;height:24.00px" aria-label="Shot Lists" title="Shot Lists">Shot Lists</button>
+<div class="el win-main box" data-id="moodboards-tab" data-role="AXGroup" style="left:0.00px;top:89.50px;width:1280.00px;height:551.00px" aria-label="moodboards-tab" title="moodboards-tab"></div>
+<span class="el win-main txt multi" data-id="" data-role="AXHeading"  style="left:640.75px;top:121.50px;width:146.50px;height:30.00px;line-height:16.00px;font-size:13.00px">Moodboards</span>
+<span class="el win-main txt" data-id="" data-role="AXStaticText"  style="left:628.00px;top:159.50px;width:172.00px;height:15.00px;line-height:15.00px;font-size:12.00px">What should this film feel like?</span>
+<button type="button" class="el win-main ctl" data-id="moodboard-export" data-role="AXButton" style="left:594.00px;top:186.50px;width:86.50px;height:25.50px" aria-label="Export" title="Export">Export</button>
+<button type="button" class="el win-main ctl" data-id="moodboard-new" data-role="AXButton" style="left:688.50px;top:187.50px;width:146.00px;height:24.00px" aria-label="New Moodboard" title="New Moodboard">New Moodboard</button>
+<div class="el win-main off box" data-id="moodboard-list" data-role="AXScrollArea" style="left:164.00px;top:236.00px;width:200.00px;height:388.50px" aria-label="Moodboards" title="Moodboards"></div>
+<button type="button" class="el win-main ctl" data-id="moodboard-row-01a153ac-f05f-7244-9c8d-5b7bab4688c0" data-role="AXButton" style="left:164.00px;top:236.00px;width:200.00px;height:32.00px" aria-label="Moodboard Night Bus look, 0 items" title="Moodboard Night Bus look, 0 items">Moodboard Night Bus look, 0 items</button>
+<select class="el win-main ctl menu" data-id="moodboard-add-image" data-role="AXMenuButton" style="left:426.00px;top:239.50px;width:95.00px;height:14.00px" aria-label="Add Image" title="Add Image"><option>Add Image</option></select>
+<button type="button" class="el win-main ctl" data-id="moodboard-add-image-file" data-role="AXMenuItem" style="left:426.00px;top:262.00px;width:121.00px;height:22.00px" aria-label="From File…" title="From File…">From File…</button>
+<button type="button" class="el win-main ctl" data-id="moodboard-add-image-vault" data-role="AXMenuItem" style="left:426.00px;top:284.00px;width:121.00px;height:22.00px" aria-label="From Idea Vault…" title="From Idea Vault…">From Idea Vault…</button>
+<button type="button" class="el win-main ctl" data-id="moodboard-add-note" data-role="AXButton" style="left:529.00px;top:236.50px;width:91.50px;height:20.00px" aria-label="Add Note" title="Add Note">Add Note</button>
+<button type="button" class="el win-main ctl" data-id="moodboard-add-link" data-role="AXButton" style="left:628.50px;top:236.00px;width:88.50px;height:20.50px" aria-label="Add Link" title="Add Link">Add Link</button>
+<span class="el win-main txt" data-id="" data-role="AXStaticText"  style="left:725.00px;top:239.83px;width:489.00px;height:13.00px;line-height:13.00px;font-size:10.40px">Drag to move. Shift-click to select several. Arrow keys nudge. Paste images or links with Command V.</span>
+<div class="el win-main off box" data-id="moodboard-canvas" data-role="AXScrollArea" style="left:664.00px;top:264.50px;width:600.00px;height:360.00px" aria-label="Moodboard canvas: Night Bus look" title="Moodboard canvas: Night Bus look"></div>
+<span class="el win-main txt multi" data-id="" data-role="AXStaticText"  style="left:520.00px;top:264.50px;width:600.00px;height:400.00px;line-height:16.00px;font-size:13.00px">Drop images, notes and references here.</span>
+<div class="el win-main box" data-id="" data-role="AXScrollBar" style="left:1246.00px;top:263.50px;width:19.00px;height:357.00px" aria-label="0" title="0"></div>
+<div class="el win-main off box" data-id="" data-role="AXValueIndicator" style="left:1250.00px;top:267.50px;width:11.00px;height:314.00px" aria-label="0" title="0"></div>
+<button type="button" class="el win-main off ctl" data-id="" data-role="AXButton" style="left:1250.00px;top:582.00px;width:11.00px;height:34.50px" disabled></button>
+<button type="button" class="el win-main ctl" data-id="ai-toggle" data-role="AXButton" style="left:1030.00px;top:0.00px;width:41.00px;height:52.00px" aria-label="Assistant" title="Assistant">Assistant</button>
+<button type="button" class="el win-main ctl" data-id="project-settings-button" data-role="AXButton" style="left:1071.00px;top:0.00px;width:149.00px;height:52.00px" aria-label="Project Settings" title="Project Settings">Project Settings</button>
+<select class="el win-main ctl menu" data-id="project-menu" data-role="AXMenuButton" style="left:1223.50px;top:7.00px;width:49.50px;height:38.00px" aria-label="Project: Night Bus. Switch or manage projects" title="Project: Night Bus. Switch or manage projects"><option>More</option></select>
+<button type="button" class="el win-main ctl" data-id="sidebar-toggle" data-role="AXButton" style="left:152.00px;top:0.00px;width:44.00px;height:52.00px" aria-label="Hide Sidebar" title="Hide Sidebar">Hide Sidebar</button>
+<button type="button" class="el win-main ctl" data-id="close-project" data-role="AXButton" style="left:196.00px;top:0.00px;width:41.00px;height:52.00px" aria-label="All Projects" title="All Projects">All Projects</button>
+<button type="button" class="el win-main off ctl" data-id="" data-role="AXButton" style="left:18.00px;top:18.00px;width:16.00px;height:16.00px" disabled></button>
+<button type="button" class="el win-main ctl" data-id="" data-role="AXButton" style="left:64.00px;top:18.00px;width:16.00px;height:16.00px"></button>
+<button type="button" class="el win-main ctl" data-id="" data-role="AXButton" style="left:41.00px;top:18.00px;width:16.00px;height:16.00px"></button>
+<span class="el win-main txt multi" data-id="" data-role="AXStaticText"  style="left:237.00px;top:0.00px;width:793.00px;height:52.00px;line-height:16.00px;font-size:13.00px">Night Bus</span>
+<span class="el win-main txt multi" data-id="" data-role="AXStaticText"  style="left:237.00px;top:0.00px;width:793.00px;height:52.00px;line-height:16.00px;font-size:13.00px">Visual Planning</span>
+<div class="el win-main box" data-id="moodboard-export-sheet" data-role="AXGroup" style="left:424.00px;top:222.16px;width:432.00px;height:192.84px" aria-label="moodboard-export-sheet" title="moodboard-export-sheet"></div>
+<span class="el win-main txt" data-id="" data-role="AXHeading"  style="left:517.25px;top:222.16px;width:245.50px;height:19.00px;line-height:19.00px;font-size:15.20px">Export moodboard: Night Bus look</span>
+<button type="button" class="el win-main ctl" data-id="moodboard-export-sheet-includeTitle" data-role="AXCheckBox" style="left:424.00px;top:257.00px;width:192.50px;height:16.50px" aria-label="Project title and board name" title="Project title and board name">Project title and board name</button>
+<button type="button" class="el win-main ctl" data-id="moodboard-export-sheet-includeImages" data-role="AXCheckBox" style="left:424.00px;top:279.50px;width:65.00px;height:16.50px" aria-label="Images" title="Images">Images</button>
+<button type="button" class="el win-main ctl" data-id="moodboard-export-sheet-includeCaptions" data-role="AXCheckBox" style="left:424.00px;top:302.00px;width:75.00px;height:16.50px" aria-label="Captions" title="Captions">Captions</button>
+<button type="button" class="el win-main ctl" data-id="moodboard-export-sheet-includeInternalNotes" data-role="AXCheckBox" style="left:424.00px;top:324.50px;width:104.00px;height:16.50px" aria-label="Internal notes" title="Internal notes">Internal notes</button>
+<span class="el win-main txt multi" data-id="" data-role="AXStaticText"  style="left:424.00px;top:352.84px;width:411.00px;height:26.00px;line-height:16.00px;font-size:13.00px">Private and internal notes are left out unless you tick Internal notes. Export creates a snapshot and does not change your project.</span>
+<button type="button" class="el win-main ctl" data-id="moodboard-export-sheet-cancel" data-role="AXButton" style="left:708.00px;top:391.00px;width:66.00px;height:24.00px" aria-label="Cancel" title="Cancel">Cancel</button>
+<button type="button" class="el win-main ctl" data-id="moodboard-export-sheet-primary" data-role="AXButton" style="left:782.00px;top:391.00px;width:74.00px;height:24.00px" aria-label="Export…" title="Export…">Export…</button>
+<div class="el win-sheet box" data-id="moodboard-export-sheet" data-role="AXGroup" style="left:424.00px;top:222.16px;width:432.00px;height:192.84px" aria-label="moodboard-export-sheet" title="moodboard-export-sheet"></div>
+<span class="el win-sheet txt" data-id="" data-role="AXHeading"  style="left:517.25px;top:222.16px;width:245.50px;height:19.00px;line-height:19.00px;font-size:15.20px">Export moodboard: Night Bus look</span>
+<button type="button" class="el win-sheet ctl" data-id="moodboard-export-sheet-includeTitle" data-role="AXCheckBox" style="left:424.00px;top:257.00px;width:192.50px;height:16.50px" aria-label="Project title and board name" title="Project title and board name">Project title and board name</button>
+<button type="button" class="el win-sheet ctl" data-id="moodboard-export-sheet-includeImages" data-role="AXCheckBox" style="left:424.00px;top:279.50px;width:65.00px;height:16.50px" aria-label="Images" title="Images">Images</button>
+<button type="button" class="el win-sheet ctl" data-id="moodboard-export-sheet-includeCaptions" data-role="AXCheckBox" style="left:424.00px;top:302.00px;width:75.00px;height:16.50px" aria-label="Captions" title="Captions">Captions</button>
+<button type="button" class="el win-sheet ctl" data-id="moodboard-export-sheet-includeInternalNotes" data-role="AXCheckBox" style="left:424.00px;top:324.50px;width:104.00px;height:16.50px" aria-label="Internal notes" title="Internal notes">Internal notes</button>
+<span class="el win-sheet txt multi" data-id="" data-role="AXStaticText"  style="left:424.00px;top:352.84px;width:411.00px;height:26.00px;line-height:16.00px;font-size:13.00px">Private and internal notes are left out unless you tick Internal notes. Export creates a snapshot and does not change your project.</span>
+<button type="button" class="el win-sheet ctl" data-id="moodboard-export-sheet-cancel" data-role="AXButton" style="left:708.00px;top:391.00px;width:66.00px;height:24.00px" aria-label="Cancel" title="Cancel">Cancel</button>
+<button type="button" class="el win-sheet ctl" data-id="moodboard-export-sheet-primary" data-role="AXButton" style="left:782.00px;top:391.00px;width:74.00px;height:24.00px" aria-label="Export…" title="Export…">Export…</button>
+</div></div>
+<script>
+(function(){
+var b=document.body;
+if(location.hash==='#bare')b.classList.add('bare');
+if(location.hash==='#html')b.classList.add('htmlonly');
+function bind(id,cls){var c=document.getElementById(id);if(c)c.addEventListener('change',function(){b.classList.toggle(cls,c.checked)});}
+bind('show','show');bind('htmlonly','htmlonly');
+document.addEventListener('keydown',function(e){if(e.target&&/INPUT|TEXTAREA|SELECT/.test(e.target.tagName))return;
+var a=document.querySelector(e.key==='ArrowLeft'?'a[rel=prev]':e.key==='ArrowRight'?'a[rel=next]':'a[rel=none]');if(a)location.href=a.href;});
+})();
+</script>
+</body></html>

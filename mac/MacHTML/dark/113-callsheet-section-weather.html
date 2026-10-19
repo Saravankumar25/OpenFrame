@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Call Sheets: Weather - OpenFrame Studio for Mac</title><style>
+:root{--bg:#d9d9de;--fg:#1d1d1f;--mut:#6b6b73;--card:#f6f6f8;--line:#c4c4cc;--acc:#c46a00;--hi:rgba(255,149,0,.9)}
+@media (prefers-color-scheme:dark){:root{--bg:#2a2a2d;--fg:#f2f2f4;--mut:#a0a0a8;--card:#1f1f22;--line:#3a3a40;--acc:#ff9f0a}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",system-ui,sans-serif}
+a{color:var(--acc)}
+header.top{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline;padding:14px 20px;border-bottom:1px solid var(--line);background:var(--card)}
+header.top h1{font-size:18px;margin:0}
+header.top .meta{color:var(--mut)}
+nav.pager{display:flex;gap:12px;margin-left:auto;flex-wrap:wrap}
+nav.pager a,nav.pager label{padding:4px 10px;border:1px solid var(--line);border-radius:6px;text-decoration:none;background:var(--bg);color:var(--fg);font-size:13px}
+section.info{padding:10px 20px;color:var(--mut);font-size:13px}
+section.info ul{margin:4px 0 0;padding-left:18px;columns:3 260px}
+.wrap{overflow:auto;padding:28px 40px 56px;display:flex}
+.stage{position:relative;margin:0 auto;flex:none;overflow:hidden;border-radius:10px;background:var(--stagebg,#1c1c1e);box-shadow:0 22px 70px 4px rgba(0,0,0,.55),0 0 0 .5px rgba(0,0,0,.5);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;color:var(--sfg,#fff)}
+.stage>img{display:block;position:absolute;left:0;top:0;width:100%;height:100%;border-radius:10px;user-select:none;image-rendering:auto}
+.el{position:absolute;margin:0;padding:0;border:0;background:transparent;color:transparent;font:inherit;font-size:13px;text-align:left;overflow:hidden;text-decoration:none;appearance:none;-webkit-appearance:none;-webkit-text-fill-color:transparent;opacity:1}
+.txt{white-space:pre;cursor:text;user-select:text}
+.txt.multi{white-space:pre-wrap}
+.txt::selection,.field::selection{background:rgba(255,149,0,.45);color:transparent}
+.field{caret-color:transparent;resize:none;cursor:text}
+.field:focus{outline:2px solid var(--hi)}
+.ctl,.link{cursor:pointer;display:block}
+.ctl:hover,.link:hover{outline:2px solid var(--hi);outline-offset:-1px;background:rgba(255,149,0,.12)}
+.ctl.off{cursor:not-allowed}
+.box{pointer-events:none}
+.link.area:hover{background:rgba(255,149,0,.08)}
+body.behind .win-main{pointer-events:none}
+body.show .ctl,body.show .field{outline:1px dashed rgba(255,149,0,.9);outline-offset:-1px}
+body.show .link{outline:2px solid rgba(0,160,255,.9);outline-offset:-1px;background:rgba(0,160,255,.12)}
+body.show .box{outline:1px dotted rgba(128,128,255,.45)}
+/* HTML only: the picture is hidden and the real elements draw the screen */
+body.htmlonly .stage>img{display:none}
+body.htmlonly .txt,body.htmlonly .ctl,body.htmlonly .field{color:var(--sfg);-webkit-text-fill-color:var(--sfg)}
+body.htmlonly .ctl,body.htmlonly .field{border:1px solid rgba(128,128,128,.35);border-radius:6px;display:flex;align-items:center;justify-content:center;padding:0 6px;background:rgba(128,128,128,.12)}
+body.htmlonly .field{justify-content:flex-start}
+body.htmlonly .box{outline:1px dotted rgba(128,128,128,.25)}
+body.htmlonly .win-sheet.box,body.htmlonly .win-menu.ctl{background:var(--stagebg)}
+/* bare: just the window at its own size, for the pixel check */
+body.bare header.top,body.bare section.info{display:none}
+html:has(body.bare){overflow:hidden}
+body.bare{background:#000;overflow:hidden}
+body.bare .wrap{padding:0;display:block;overflow:hidden}
+body.bare .stage{margin:0;box-shadow:none;border-radius:0;background:#000}
+body.bare .stage>img{border-radius:0}
+body.bare .el{outline:none!important;background:transparent!important}
+.index{padding:20px;max-width:1500px;margin:0 auto}
+.index h2{margin:28px 0 10px;font-size:16px;border-bottom:1px solid var(--line);padding-bottom:4px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;text-decoration:none;color:var(--fg);display:block}
+.card:hover{border-color:var(--acc)}
+.card img{width:100%;aspect-ratio:1440/652;object-fit:cover;object-position:top left;display:block;background:#000}
+.card div{padding:8px 10px;font-size:13px}
+.card small{color:var(--mut);display:block}
+</style></head>
+<body class="">
+<header class="top">
+<h1>Call Sheets: Weather</h1>
+<span class="meta">Call Sheets &middot; page 113 of 179 &middot; window 1280&times;637 pt &middot; dark appearance (<a href="../light/113-callsheet-section-weather.html">light version</a>)</span>
+<nav class="pager">
+<a rel="prev" href="112-callsheet-section-menu.html">&larr; Call Sheets: callsheet-add-section menu</a>
+<a href="../index.html">All pages</a>
+<a rel="next" href="114-callsheet-section-extras.html">Call Sheets: Extras &rarr;</a>
+<label><input type="checkbox" id="show"> Show controls</label>
+<label><input type="checkbox" id="htmlonly"> Show HTML only</label>
+</nav>
+</header>
+<section class="info">
+Reached from <a href="112-callsheet-section-menu.html">Call Sheets: callsheet-add-section menu</a> by <code>callsheet-add-section</code>. Controls on this screen:
+<ul><li>Undo <small>(button, toast-action)</small></li><li>Dismiss <small>(button, xmark)</small></li><li>Call Sheets <small>(radiobutton)</small></li><li>Daily View <small>(radiobutton)</small></li><li>Sides <small>(radiobutton)</small></li><li>Reports <small>(radiobutton)</small></li><li>Production title <small>(textfield, callsheet-field-production-title)</small></li><li>Production company <small>(textfield, callsheet-field-production-company)</small></li><li>Production office address <small>(textfield, callsheet-field-production-office-address)</small></li><li>Producer <small>(textfield, callsheet-field-producer)</small></li><li>Director <small>(textfield, callsheet-field-director)</small></li><li>1st AD <small>(textfield, callsheet-field-1st-ad)</small></li><li>Production contact <small>(textfield, callsheet-field-production-contact)</small></li><li>Crew call <small>(textfield, callsheet-field-crew-call)</small></li><li>General call <small>(textfield, callsheet-field-general-call)</small></li><li>Shooting call <small>(textfield, callsheet-field-shooting-call)</small></li><li>Breakfast <small>(textfield, callsheet-field-breakfast)</small></li><li>Lunch <small>(textfield, callsheet-field-lunch)</small></li></ul>
+</section>
+<div class="wrap"><div class="stage" style="width:1280px;height:637px;--stagebg:#29251f;--sfg:#f2f2f4">
+<img src="assets/callsheet-section-weather.png" alt="Call Sheets: Weather" width="1280" height="637">
+<div class="el win-main box" data-id="toast" data-role="AXGroup" style="left:500.50px;top:574.00px;width:279.50px;height:35.00px" aria-label="toast" title="toast"></div>
+<span class="el win-main txt" data-id="" data-role="AXStaticText"  style="left:516.25px;top:584.00px;width:181.50px;height:15.00px;line-height:15.00px;font-size:12.00px">Added Weather to the call sheet</span>
+<button type="button" class="el win-main ctl" data-id="toast-action" data-role="AXButton" style="left:709.75px;top:584.00px;width:31.50px;height:15.00px" aria-label="Undo" title="Undo">Undo</button>
+<button type="button" class="el win-main ctl" data-id="xmark" data-role="AXButton" style="left:754.50px;top:587.50px;width:8.50px;height:8.50px" aria-label="Dismiss" title="Dismiss">Dismiss</button>
+<div class="el win-main box" data-id="" data-role="AXOutline" style="left:7.00px;top:51.00px;width:142.00px;height:538.00px" aria-label="Sidebar" title="Sidebar"></div>
+<span class="el win-main txt" data-id="" data-role="AXHeading"  style="left:22.00px;top:54.50px;width:40.00px;height:14.00px;line-height:14.00px;font-size:11.20px">Writing</span>
+<span class="el win-main txt" data-id="sidebar-screenplay" data-role="AXStaticText"  style="left:31.50px;top:79.04px;width:90.00px;height:16.00px;line-height:16.00px;font-size:12.80px">Screenplay</span>
+<span class="el win-main txt" data-id="sidebar-story" data-role="AXStaticText"  style="left:28.00px;top:111.00px;width:58.50px;height:16.00px;line-height:16.00px;font-size:12.80px">Story</span>
+<span class="el win-main txt" data-id="sidebar-ideaVault" data-role="AXStaticText"  style="left:33.00px;top:143.08px;width:81.00px;height:16.00px;line-height:16.00px;font-size:12.80px">Idea Vault</span>
+<span class="el win-main txt" data-id="" data-role="AXHeading"  style="left:22.00px;top:182.50px;width:60.00px;height:14.00px;line-height:14.00px;font-size:11.20px">Production</span>
+<span class="el win-main txt" data-id="sidebar-breakdown" data-role="AXStaticText"  style="left:29.50px;top:207.00px;width:92.00px;height:16.00px;line-height:16.00px;font-size:12.80px">Breakdown</span>
+<span class="el win-main txt" data-id="sidebar-schedule" data-role="AXStaticText"  style="left:30.50px;top:239.00px;width:80.00px;height:16.00px;line-height:16.00px;font-size:12.80px">Schedule</span>
+<span class="el win-main txt" data-id="sidebar-callSheets" data-role="AXStaticText"  style="left:31.50px;top:271.04px;width:91.00px;height:16.00px;line-height:16.00px;font-size:12.80px">Call Sheets</span>
+<span class="el win-main txt" data-id="sidebar-budget" data-role="AXStaticText"  style="left:30.50px;top:303.00px;width:67.50px;height:16.00px;line-height:16.00px;font-size:12.80px">Budget</span>
+<span class="el win-main txt" data-id="sidebar-visual" data-role="AXStaticText"  style="left:29.00px;top:335.00px;width:101.50px;height:16.00px;line-height:16.00px;font-size:12.80px">Visual Planning</span>
+<span class="el win-main txt" data-id="" data-role="AXHeading"  style="left:22.00px;top:374.50px;width:39.50px;height:14.00px;line-height:14.00px;font-size:11.20px">Project</span>
+<span class="el win-main txt" data-id="sidebar-home" data-role="AXStaticText"  style="left:29.50px;top:399.00px;width:99.00px;height:16.00px;line-height:16.00px;font-size:12.80px">Project Home</span>
+<span class="el win-main txt" data-id="sidebar-files" data-role="AXStaticText"  style="left:30.00px;top:431.00px;width:52.00px;height:16.00px;line-height:16.00px;font-size:12.80px">Files</span>
+<span class="el win-main txt" data-id="sidebar-notes" data-role="AXStaticText"  style="left:30.00px;top:463.00px;width:96.50px;height:16.00px;line-height:16.00px;font-size:12.80px">Notes and Tasks</span>
+<span class="el win-main txt" data-id="sidebar-activity" data-role="AXStaticText"  style="left:29.50px;top:495.00px;width:70.00px;height:16.00px;line-height:16.00px;font-size:12.80px">Activity</span>
+<span class="el win-main txt" data-id="sidebar-recentlyDeleted" data-role="AXStaticText"  style="left:31.00px;top:527.29px;width:99.00px;height:16.00px;line-height:16.00px;font-size:12.80px">Recently Deleted</span>
+<span class="el win-main txt" data-id="save-status" data-role="AXStaticText"  style="left:19.00px;top:606.00px;width:46.50px;height:13.00px;line-height:13.00px;font-size:10.40px">Saved</span>
+<div class="el win-main box" data-id="callsheets-workspace" data-role="AXGroup" style="left:0.00px;top:0.00px;width:1280.00px;height:637.00px" aria-label="callsheets-workspace" title="callsheets-workspace"></div>
+<div class="el win-main box" data-id="callsheets-tabs" data-role="AXRadioGroup" style="left:537.00px;top:60.00px;width:354.00px;height:24.00px" aria-label="Call sheet views, Call sheet views" title="Call sheet views, Call sheet views"></div>
+<button type="button" class="el win-main ctl" data-id="" data-role="AXRadioButton" style="left:537.00px;top:60.00px;width:88.50px;height:24.00px" aria-label="Call Sheets" title="Call Sheets">Call Sheets</button>
+<button type="button" class="el win-main ctl" data-id="" data-role="AXRadioButton" style="left:626.50px;top:60.00px;width:87.50px;height:24.00px" aria-label="Daily View" title="Daily View">Daily View</button>
+<button type="button" class="el win-main ctl" data-id="" data-role="AXRadioButton" style="left:715.00px;top:60.00px;width:87.50px;height:24.00px" aria-label="Sides" title="Sides">Sides</button>
+<button type="button" class="el win-main ctl" data-id="" data-role="AXRadioButton" style="left:803.50px;top:60.00px;width:87.50px;height:24.00px" aria-label="Reports" title="Reports">Reports</button>
+<div class="el win-main box" data-id="callsheet-editor" data-role="AXGroup" style="left:164.00px;top:109.00px;width:1100.50px;height:512.50px" aria-label="callsheet-editor" title="callsheet-editor"></div>
+<span class="el win-main txt" data-id="" data-role="AXHeading"  style="left:624.00px;top:109.00px;width:132.50px;height:20.50px;line-height:20.50px;font-size:16.40px">Call Sheet: Day 1</span>
+<span class="el win-main txt" data-id="" data-role="AXStaticText"  style="left:771.50px;top:112.75px;width:25.50px;height:13.00px;line-height:13.00px;font-size:10.40px">Draft</span>
+<span class="el win-main txt" data-id="" data-role="AXStaticText"  style="left:580.00px;top:133.50px;width:268.00px;height:15.00px;line-height:15.00px;font-size:12.00px">What does everyone need to know for this day?</span>
+<button type="button" class="el win-main ctl" data-id="callsheet-back" data-role="AXButton" style="left:164.00px;top:117.00px;width:110.50px;height:24.00px" aria-label="Call Sheets" title="Call Sheets">Call Sheets</button>
+<div class="el win-main box" data-id="callsheet-document" data-role="AXGroup" style="left:164.00px;top:156.50px;width:860.00px;height:1627.00px" aria-label="Call sheet document" title="Call sheet document"></div>
+<div class="el win-main box" data-id="callsheet-section-production-header" data-role="AXGroup" style="left:186.00px;top:178.50px;width:816.00px;height:130.50px" aria-label="Production header" title="Production header"></div>
+<span class="el win-main txt" data-id="" data-role="AXStaticText"  style="left:194.00px;top:181.50px;width:136.50px;height:14.00px;line-height:14.00px;font-size:11.20px">PRODUCTION HEADER</span>
+<input class="el win-main field" data-id="callsheet-field-production-title" data-role="AXTextField" style="left:198.00px;top:202.50px;width:792.00px;height:25.00px" aria-label="Production title" title="Production title" value="Night Bus">
+<span class="el win-main txt" data-id="callsheet-day-line" data-role="AXStaticText"  style="left:439.00px;top:231.50px;width:163.50px;height:15.00px;line-height:15.00px;font-size:12.00px">SHOOT DAY 1 (Day 1 of 2) · </span>
+<span class="el win-main txt" data-id="callsheet-day-line" data-role="AXStaticText"  style="left:606.50px;top:231.50px;width:142.50px;height:15.00px;line-height:15.00px;font-size:12.00px">MONDAY 14 JUNE 2027</span>
+<span class="el win-main txt" data-id="" data-role="AXStaticText"  style="left:190.00px;top:253.50px;width:117.50px;height:14.00px;line-height:14.00px;font-size:11.20px">Production company</span>
+<input class="el win-main field" data-id="callsheet-field-production-company" data-role="AXTextField" style="left:324.00px;top:252.00px;width:262.00px;height:17.00px" aria-label="Production company" title="Production company" value="">
+<span class="el win-main txt" data-id="" data-role="AXStaticText"  style="left:602.00px;top:253.50px;width:147.00px;height:14.00px;line-height:14.00px;font-size:11.20px">Production office address</span>
+<input class="el win-main field" data-id="callsheet-field-production-office-address" data-role="AXTextField" style="left:755.00px;top:252.00px;width:243.00px;height:17.00px" aria-label="Production office address" title="Production office address" value="">
+<span class="el win-main txt" data-id="" data-role="AXStaticText"  style="left:190.00px;top:273.50px;width:52.50px;height:14.00px;line-height:14.00px;font-size:11.20px">Producer</span>
+<input class="el win-main field" data-id="callsheet-field-producer" data-role="AXTextField" style="left:324.00px;top:272.00px;width:262.00px;height:17.00px" aria-label="Producer" title="Producer" value="">
+<span class="el win-main txt" data-id="" data-role="AXStaticText"  style="left:602.00px;top:273.50px;width:46.50px;height:14.00px;line-height:14.00px;font-size:11.20px">Director</span>
+<input class="el win-main field" data-id="callsheet-field-director" data-role="AXTextField" style="left:736.00px;top:272.00px;width:262.00px;height:17.00px" aria-label="Director" title="Director" value="">
+<span class="el win-main txt" data-id="" data-role="AXStaticText"  style="left:190.00px;top:293.50px;width:36.50px;height:14.00px;line-height:14.00px;font-size:11.20px">1st AD</span>
+<input class="el win-main field" data-id="callsheet-field-1st-ad" data-role="AXTextField" style="left:324.00px;top:292.00px;width:262.00px;height:17.00px" aria-label="1st AD" title="1st AD" value="">
+<span class="el win-main txt" data-id="" data-role="AXStaticText"  style="left:602.00px;top:293.50px;width:109.00px;height:14.00px;line-height:14.00px;font-size:11.20px">Production contact</span>
+<input class="el win-main field" data-id="callsheet-field-production-contact" data-role="AXTextField" style="left:736.00px;top:292.00px;width:262.00px;height:17.00px" aria-label="Production contact" title="Production contact" value="">
+<div class="el win-main box" data-id="callsheet-section-day-and-times" data-role="AXGroup" style="left:186.00px;top:326.50px;width:816.00px;height:127.00px" aria-label="Day and times" title="Day and times"></div>
+<span class="el win-main txt" data-id="" data-role="AXStaticText"  style="left:194.00px;top:329.50px;width:97.00px;height:14.00px;line-height:14.00px;font-size:11.20px">DAY AND TIMES</span>
+<span class="el win-main txt" data-id="" data-role="AXStaticText"  style="left:204.00px;top:351.50px;width:72.50px;height:15.00px;line-height:15.00px;font-size:12.00px">CREW CALL:</span>
+<input class="el win-main field" data-id="callsheet-field-crew-call" data-role="AXTextField" style="left:282.50px;top:350.50px;width:701.50px;height:17.00px" aria-label="Crew call" title="Crew call" value="">
+<span class="el win-main txt" data-id="" data-role="AXStaticText"  style="left:190.00px;top:374.50px;width:67.00px;height:14.00px;line-height:14.00px;font-size:11.20px">General call</span>
+<input class="el win-main field" data-id="callsheet-field-general-call" data-role="AXTextField" style="left:324.00px;top:373.00px;width:124.50px;height:17.00px" aria-label="General call" title="General call" value="">
+<span class="el win-main txt" data-id="" data-role="AXStaticText"  style="left:464.67px;top:374.50px;width:74.00px;height:14.00px;line-height:14.00px;font-size:11.20px">Shooting call</span>
+<input class="el win-main field" data-id="callsheet-field-shooting-call" data-role="AXTextField" style="left:598.50px;top:373.00px;width:125.00px;height:17.00px" aria-label="Shooting call" title="Shooting call" value="">
+<span class="el win-main txt" data-id="" data-role="AXStaticText"  style="left:739.33px;top:374.50px;width:55.00px;height:14.00px;line-height:14.00px;font-size:11.20px">Breakfast</span>
+<input class="el win-main field" data-id="callsheet-field-breakfast" data-role="AXTextField" style="left:873.50px;top:373.00px;width:124.50px;height:17.00px" aria-label="Breakfast" title="Breakfast" value="">
+<span class="el win-main txt" data-id="" data-role="AXStaticText"  style="left:190.00px;top:394.50px;width:35.00px;height:14.00px;line-height:14.00px;font-size:11.20px">Lunch</span>
+<input class="el win-main field" data-id="callsheet-field-lunch" data-role="AXTextField" style="left:324.00px;top:393.00px;width:124.50px;height:17.00px" aria-label="Lunch" title="Lunch" value="">
+<span class="el win-main txt" data-id="" data-role="AXStaticText"  style="left:464.67px;top:394.50px;width:88.50px;height:14.00px;line-height:14.00px;font-size:11.20px">Estimated wrap</span>
+<input class="el win-main field" data-id="callsheet-field-estimated-wrap" data-role="AXTextField" style="left:598.50px;top:393.00px;width:125.00px;height:17.00px" aria-label="Estimated wrap" title="Estimated wrap" value="">
+<span class="el win-main txt" data-id="" data-role="AXStaticText"  style="left:190.00px;top:415.50px;width:109.00px;height:14.00px;line-height:14.00px;font-size:11.20px">Notes from the day</span>
+<input class="el win-main field" data-id="callsheet-field-notes-from-the-day" data-role="AXTextField" style="left:324.00px;top:415.50px;width:674.00px;height:38.00px" aria-label="Notes from the day" title="Notes from the day" value="">
+<div class="el win-main box" data-id="callsheet-section-locations" data-role="AXGroup" style="left:186.00px;top:469.50px;width:816.00px;height:158.50px" aria-label="Locations" title="Locations"></div>
+<span class="el win-main txt" data-id="" data-role="AXStaticText"  style="left:194.00px;top:472.50px;width:71.50px;height:14.00px;line-height:14.00px;font-size:11.20px">LOCATIONS</span>
+<span class="el win-main txt" data-id="" data-role="AXStaticText"  style="left:190.00px;top:493.50px;width:250.50px;height:15.00px;line-height:15.00px;font-size:12.00px">Kesarganj Junction - Lost Property Office</span>
+<span class="el win-main txt" data-id="" data-role="AXStaticText"  style="left:190.00px;top:511.50px;width:47.00px;height:14.00px;line-height:14.00px;font-size:11.20px">Address</span>
+<input class="el win-main field" data-id="callsheet-field-address" data-role="AXTextField" style="left:324.00px;top:510.00px;width:262.00px;height:17.00px" aria-label="Address" title="Address" value="">
+<span class="el win-main txt" data-id="" data-role="AXStaticText"  style="left:602.00px;top:511.50px;width:78.50px;height:14.00px;line-height:14.00px;font-size:11.20px">Meeting point</span>
+<input class="el win-main field" data-id="callsheet-field-meeting-point" data-role="AXTextField" style="left:736.00px;top:510.00px;width:262.00px;height:17.00px" aria-label="Meeting point" title="Meeting point" value="">
+<span class="el win-main txt" data-id="" data-role="AXStaticText"  style="left:190.00px;top:531.50px;width:43.50px;height:14.00px;line-height:14.00px;font-size:11.20px">Parking</span>
+<input class="el win-main field" data-id="callsheet-field-parking" data-role="AXTextField" style="left:324.00px;top:530.00px;width:262.00px;height:17.00px" aria-label="Parking" title="Parking" value="">
+<span class="el win-main txt" data-id="" data-role="AXStaticText"  style="left:602.00px;top:531.50px;width:41.00px;height:14.00px;line-height:14.00px;font-size:11.20px">Access</span>
+<input class="el win-main field" data-id="callsheet-field-access" data-role="AXTextField" style="left:736.00px;top:530.00px;width:262.00px;height:17.00px" aria-label="Access" title="Access" value="">
+<span class="el win-main txt" data-id="" data-role="AXStaticText"  style="left:190.00px;top:551.50px;width:93.50px;height:14.00px;line-height:14.00px;font-size:11.20px">Nearest hospital</span>
+<input class="el win-main field" data-id="callsheet-field-nearest-hospital" data-role="AXTextField" style="left:324.00px;top:550.00px;width:262.00px;height:17.00px" aria-label="Nearest hospital" title="Nearest hospital" value="">
+<span class="el win-main txt" data-id="" data-role="AXStaticText"  style="left:602.00px;top:551.50px;width:95.50px;height:14.00px;line-height:14.00px;font-size:11.20px">Location contact</span>
+<input class="el win-main field" data-id="callsheet-field-location-contact" data-role="AXTextField" style="left:736.00px;top:550.00px;width:262.00px;height:17.00px" aria-label="Location contact" title="Location contact" value="">
+<span class="el win-main txt" data-id="" data-role="AXStaticText"  style="left:190.00px;top:571.50px;width:33.50px;height:14.00px;line-height:14.00px;font-size:11.20px">Notes</span>
+<input class="el win-main field" data-id="callsheet-field-notes" data-role="AXTextField" style="left:324.00px;top:570.00px;width:262.00px;height:17.00px" aria-label="Notes" title="Notes" value="">
+<span class="el win-main txt" data-id="" data-role="AXStaticText"  style="left:190.00px;top:594.50px;width:191.50px;height:15.00px;line-height:15.00px;font-size:12.00px">Kesarganj Junction - Platform 3</span>
+<span class="el win-main txt" data-id="" data-role="AXStaticText"  style="left:190.00px;top:612.50px;width:47.00px;height:14.00px;line-height:14.00px;font-size:11.20px">Address</span>
+<input class="el win-main field" data-id="callsheet-field-address" data-role="AXTextField" style="left:324.00px;top:611.00px;width:262.00px;height:17.00px" aria-label="Address" title="Address" value="">
+<span class="el win-main txt" data-id="" data-role="AXStaticText"  style="left:602.00px;top:612.50px;width:78.50px;height:14.00px;line-height:14.00px;font-size:11.20px">Meeting point</span>
+<input class="el win-main field" data-id="callsheet-field-meeting-point" data-role="AXTextField" style="left:736.00px;top:611.00px;width:262.00px;height:17.00px" aria-label="Meeting point" title="Meeting point" value="">
+<div class="el win-main box" data-id="" data-role="AXScrollBar" style="left:163.00px;top:603.00px;width:779.00px;height:19.00px" aria-label="0" title="0"></div>
+<div class="el win-main off box" data-id="" data-role="AXValueIndicator" style="left:167.00px;top:607.00px;width:696.50px;height:11.00px" aria-label="0" title="0"></div>
+<button type="button" class="el win-main off ctl" data-id="" data-role="AXButton" style="left:864.00px;top:607.00px;width:74.00px;height:11.00px" disabled></button>
+<div class="el win-main box" data-id="" data-role="AXScrollBar" style="left:940.00px;top:155.50px;width:19.00px;height:449.50px" aria-label="0" title="0"></div>
+<div class="el win-main off box" data-id="" data-role="AXValueIndicator" style="left:944.00px;top:159.50px;width:11.00px;height:132.50px" aria-label="0" title="0"></div>
+<button type="button" class="el win-main off ctl" data-id="" data-role="AXButton" style="left:944.00px;top:292.50px;width:11.00px;height:308.50px" disabled></button>
+<span class="el win-main txt" data-id="" data-role="AXStaticText"  style="left:990.00px;top:172.50px;width:45.50px;height:16.00px;line-height:16.00px;font-size:12.80px">Source</span>
+<button type="button" class="el win-main ctl" data-id="callsheet-source-day" data-role="AXLink" style="left:990.00px;top:196.50px;width:187.50px;height:16.00px" aria-label="Shoot Day 1 · Mon 14 Jun 2027" title="Shoot Day 1 · Mon 14 Jun 2027">Shoot Day 1 · Mon 14 Jun 2027</button>
+<span class="el win-main txt" data-id="" data-role="AXStaticText"  style="left:997.00px;top:222.50px;width:25.50px;height:13.00px;line-height:13.00px;font-size:10.40px">Draft</span>
+<span class="el win-main txt" data-id="callsheet-revision" data-role="AXStaticText"  style="left:1035.50px;top:222.50px;width:10.50px;height:13.00px;line-height:13.00px;font-size:10.40px">v1</span>
+<span class="el win-main txt" data-id="callsheet-missing-count" data-role="AXStaticText"  style="left:990.00px;top:245.50px;width:134.00px;height:13.00px;line-height:13.00px;font-size:10.40px">10 values read Needs input.</span>
+<span class="el win-main txt multi" data-id="" data-role="AXStaticText"  style="left:990.00px;top:266.50px;width:237.50px;height:52.00px;line-height:16.00px;font-size:13.00px">Scenes, times, cast and locations come from the schedule. Editable fields use dashed highlights. Editing this sheet never changes the screenplay, breakdown or schedule.</span>
+<select class="el win-main ctl menu" data-id="callsheet-add-section" data-role="AXMenuButton" style="left:990.00px;top:335.50px;width:121.00px;height:24.00px" aria-label="Add Section" title="Add Section"><option>Add Section</option></select>
+<button type="button" class="el win-main off ctl" data-id="callsheet-add-weather" data-role="AXMenuItem" style="left:985.00px;top:368.00px;width:212.00px;height:24.00px" aria-label="Weather" title="Weather" disabled>Weather</button>
+<button type="button" class="el win-main ctl" data-id="callsheet-add-extras" data-role="AXMenuItem" style="left:985.00px;top:392.00px;width:212.00px;height:24.00px" aria-label="Extras" title="Extras">Extras</button>
+<button type="button" class="el win-main off ctl" data-id="callsheet-add-departments" data-role="AXMenuItem" style="left:985.00px;top:416.00px;width:212.00px;height:24.00px" aria-label="Department notes" title="Department notes" disabled>Department notes</button>
+<button type="button" class="el win-main off ctl" data-id="callsheet-add-advance" data-role="AXMenuItem" style="left:985.00px;top:440.00px;width:212.00px;height:24.00px" aria-label="Advance schedule" title="Advance schedule" disabled>Advance schedule</button>
+<button type="button" class="el win-main ctl" data-id="callsheet-add-crew" data-role="AXMenuItem" style="left:985.00px;top:464.00px;width:212.00px;height:24.00px" aria-label="Crew" title="Crew">Crew</button>
+<button type="button" class="el win-main ctl" data-id="callsheet-add-communication" data-role="AXMenuItem" style="left:985.00px;top:488.00px;width:212.00px;height:24.00px" aria-label="Walkie channels and contacts" title="Walkie channels and contacts">Walkie channels and contacts</button>
+<button type="button" class="el win-main ctl" data-id="callsheet-add-referenceimages" data-role="AXMenuItem" style="left:985.00px;top:512.00px;width:212.00px;height:24.00px" aria-label="Reference images" title="Reference images">Reference images</button>
+<button type="button" class="el win-main ctl" data-id="callsheet-add-attachments" data-role="AXMenuItem" style="left:985.00px;top:536.00px;width:212.00px;height:24.00px" aria-label="Attachments" title="Attachments">Attachments</button>
+<button type="button" class="el win-main ctl" data-id="callsheet-add-specialnotes" data-role="AXMenuItem" style="left:985.00px;top:560.00px;width:212.00px;height:24.00px" aria-label="Special notes" title="Special notes">Special notes</button>
+<button type="button" class="el win-main off ctl" data-id="" data-role="AXMenuItem" style="left:985.00px;top:584.00px;width:212.00px;height:11.00px" disabled></button>
+<button type="button" class="el win-main ctl" data-id="callsheet-add-custom-field" data-role="AXMenuItem" style="left:985.00px;top:595.00px;width:212.00px;height:24.00px" aria-label="Custom field" title="Custom field">Custom field</button>
+<button type="button" class="el win-main ctl" data-id="callsheet-refresh" data-role="AXButton" style="left:990.00px;top:367.50px;width:161.00px;height:24.00px" aria-label="Refresh from schedule" title="Refresh from schedule">Refresh from schedule</button>
+<button type="button" class="el win-main ctl" data-id="callsheet-finalize" data-role="AXButton" style="left:990.00px;top:399.50px;width:80.00px;height:24.00px" aria-label="Finalize…" title="Finalize…">Finalize…</button>
+<button type="button" class="el win-main ctl" data-id="callsheet-export" data-role="AXButton" style="left:990.00px;top:431.50px;width:115.00px;height:25.00px" aria-label="Export PDF" title="Export PDF">Export PDF</button>
+<button type="button" class="el win-main ctl" data-id="callsheet-delete" data-role="AXButton" style="left:990.00px;top:473.50px;width:125.00px;height:24.00px" aria-label="Delete call sheet" title="Delete call sheet">Delete call sheet</button>
+<button type="button" class="el win-main ctl" data-id="ai-toggle" data-role="AXButton" style="left:1030.00px;top:0.00px;width:41.00px;height:52.00px" aria-label="Assistant" title="Assistant">Assistant</button>
+<button type="button" class="el win-main ctl" data-id="project-settings-button" data-role="AXButton" style="left:1071.00px;top:0.00px;width:149.00px;height:52.00px" aria-label="Project Settings" title="Project Settings">Project Settings</button>
+<select class="el win-main ctl menu" data-id="project-menu" data-role="AXMenuButton" style="left:1223.50px;top:7.00px;width:49.50px;height:38.00px" aria-label="Project: Night Bus. Switch or manage projects" title="Project: Night Bus. Switch or manage projects"><option>More</option></select>
+<button type="button" class="el win-main ctl" data-id="sidebar-toggle" data-role="AXButton" style="left:152.00px;top:0.00px;width:44.00px;height:52.00px" aria-label="Hide Sidebar" title="Hide Sidebar">Hide Sidebar</button>
+<button type="button" class="el win-main ctl" data-id="close-project" data-role="AXButton" style="left:196.00px;top:0.00px;width:41.00px;height:52.00px" aria-label="All Projects" title="All Projects">All Projects</button>
+<button type="button" class="el win-main ctl" data-id="" data-role="AXButton" style="left:18.00px;top:18.00px;width:16.00px;height:16.00px"></button>
+<button type="button" class="el win-main ctl" data-id="" data-role="AXButton" style="left:64.00px;top:18.00px;width:16.00px;height:16.00px"></button>
+<button type="button" class="el win-main ctl" data-id="" data-role="AXButton" style="left:41.00px;top:18.00px;width:16.00px;height:16.00px"></button>
+<span class="el win-main txt multi" data-id="" data-role="AXStaticText"  style="left:237.00px;top:0.00px;width:793.00px;height:52.00px;line-height:16.00px;font-size:13.00px">Night Bus</span>
+<span class="el win-main txt multi" data-id="" data-role="AXStaticText"  style="left:237.00px;top:0.00px;width:793.00px;height:52.00px;line-height:16.00px;font-size:13.00px">Call Sheets</span>
+</div></div>
+<script>
+(function(){
+var b=document.body;
+if(location.hash==='#bare')b.classList.add('bare');
+if(location.hash==='#html')b.classList.add('htmlonly');
+function bind(id,cls){var c=document.getElementById(id);if(c)c.addEventListener('change',function(){b.classList.toggle(cls,c.checked)});}
+bind('show','show');bind('htmlonly','htmlonly');
+document.addEventListener('keydown',function(e){if(e.target&&/INPUT|TEXTAREA|SELECT/.test(e.target.tagName))return;
+var a=document.querySelector(e.key==='ArrowLeft'?'a[rel=prev]':e.key==='ArrowRight'?'a[rel=next]':'a[rel=none]');if(a)location.href=a.href;});
+})();
+</script>
+</body></html>
