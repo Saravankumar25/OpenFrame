@@ -4,7 +4,7 @@
 // tagging · right: the scene's breakdown with suggestions.
 
 import { useCallback, useState } from "react";
-import { FileText, Lock, ListChecks, PanelRightClose, PanelRightOpen } from "lucide-react";
+import { FileText, Lock, ListChecks, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen } from "lucide-react";
 import { call } from "../../ipc/client";
 import { reportError, useOp } from "../../ipc/query";
 import type { BreakdownScenesView } from "../../ipc/generated/BreakdownScenesView";
@@ -86,6 +86,7 @@ export default function BreakdownWorkspace() {
   const [jump, setJump] = useState<BreakdownSourceAnchor | null>(null);
   // The right panel can be hidden so the script gets the room (owner item 10); remembered per person.
   const [panelHidden, setPanelHiddenState] = useState(readPanelHidden);
+  const [listHidden, setListHidden] = useState(false);
   const setPanelHidden = (v: boolean) => {
     setPanelHiddenState(v);
     writePanelHidden(v);
@@ -186,6 +187,16 @@ export default function BreakdownWorkspace() {
           <Button
             size="xs"
             variant="ghost"
+            icon={listHidden ? <PanelLeftOpen size={13} /> : <PanelLeftClose size={13} />}
+            aria-pressed={!listHidden}
+            title={listHidden ? "Show the scene list" : "Hide the scene list"}
+            onClick={() => setListHidden(!listHidden)}
+          >
+            {listHidden ? "Show scenes" : "Hide scenes"}
+          </Button>
+          <Button
+            size="xs"
+            variant="ghost"
             icon={panelHidden ? <PanelRightOpen size={13} /> : <PanelRightClose size={13} />}
             aria-pressed={!panelHidden}
             title={panelHidden ? "Show the scene breakdown panel" : "Hide the scene breakdown panel to give the script more room"}
@@ -212,7 +223,7 @@ export default function BreakdownWorkspace() {
           </div>
         )}
         <div className="sp-body">
-          <SceneList
+          {!listHidden && <SceneList
             rows={rows}
             total={total}
             counts={data?.counts ?? null}
@@ -229,7 +240,7 @@ export default function BreakdownWorkspace() {
             historicalCount={historicalCount}
             onOpenReview={() => setMode("review")}
             onOpenHistory={() => setMode("history")}
-          />
+          />}
           {mode === "review" ? (
             <NeedsReviewView
               rows={reviewRows.data?.scenes ?? []}
