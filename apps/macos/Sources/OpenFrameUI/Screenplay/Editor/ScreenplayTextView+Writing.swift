@@ -265,7 +265,8 @@ extension ScreenplayTextView {
             var ignoreSeen = false
             func scan(_ m: NSMenu) {
                 for item in m.items {
-                    if item.title == "Ignore Spelling" || (item.action.map { NSStringFromSelector($0).lowercased().contains("ignorespelling") } ?? false) { ignoreSeen = true }
+                    let selectorName = item.action.map(NSStringFromSelector)?.lowercased() ?? ""
+                    if item.title == "Ignore Spelling" || selectorName.contains("ignorespelling") { ignoreSeen = true }
                     if let sub = item.submenu { scan(sub) }
                 }
             }
