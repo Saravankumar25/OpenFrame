@@ -313,7 +313,10 @@ fn plain_scene_and_character_questions_are_answered_from_the_screenplay_without_
     }
     let r = ask(&env, "How many characters are there?")["result"].clone();
     assert!(
-        r["content"].as_str().unwrap().contains("distinct character"),
+        r["content"]
+            .as_str()
+            .unwrap()
+            .contains("distinct character"),
         "{}",
         r["content"]
     );
@@ -345,7 +348,14 @@ fn a_character_is_described_from_screenplay_evidence() {
 
     // A name that is not in the screenplay gets an honest answer, not an invented one.
     let r = ask(&env, "Describe Zephyr")["result"].clone();
-    assert!(r["content"].as_str().unwrap().contains("couldn't find a character called Zephyr"), "{}", r["content"]);
+    assert!(
+        r["content"]
+            .as_str()
+            .unwrap()
+            .contains("couldn't find a character called Zephyr"),
+        "{}",
+        r["content"]
+    );
     assert_eq!(m.calls(), 1);
 }
 
@@ -356,17 +366,49 @@ fn scene_and_dialogue_facts_come_from_the_screenplay_rows() {
     let env = TestEnv::with_project("Railway", "Feature Film");
     seed_screenplay(&env);
     let m = attach(&env);
-    let a = |q: &str| ask(&env, q)["result"]["content"].as_str().unwrap().to_string();
-    assert_eq!(a("Who speaks in Scene 1?"), "Ravi and Arjun speak in Scene 1.");
-    assert_eq!(a("How many characters are in Scene 1?"), "2 characters speak in Scene 1.");
-    assert_eq!(a("What is the last line in Scene 1?"), "The last line of Scene 1 is \u{201c}Here.\u{201d}.");
-    assert_eq!(a("What is the first dialogue in Scene 3?"), "Meera first says \u{201c}Ravi is gone.\u{201d}.");
-    assert_eq!(a("How many dialogues does Ravi have?"), "Ravi has 2 dialogue blocks in Draft 1.");
-    assert_eq!(a("How many times does Ravi speak in Scene 1?"), "Ravi has 1 dialogue block in Scene 1.");
-    assert_eq!(a("Which scenes does Ravi speak in?"), "Ravi speaks in Scenes 1 and 2.");
-    assert_eq!(a("Who speaks first?"), "Ravi speaks first, in Scene 1: \u{201c}Where is Arjun?\u{201d}");
+    let a = |q: &str| {
+        ask(&env, q)["result"]["content"]
+            .as_str()
+            .unwrap()
+            .to_string()
+    };
+    assert_eq!(
+        a("Who speaks in Scene 1?"),
+        "Ravi and Arjun speak in Scene 1."
+    );
+    assert_eq!(
+        a("How many characters are in Scene 1?"),
+        "2 characters speak in Scene 1."
+    );
+    assert_eq!(
+        a("What is the last line in Scene 1?"),
+        "The last line of Scene 1 is \u{201c}Here.\u{201d}."
+    );
+    assert_eq!(
+        a("What is the first dialogue in Scene 3?"),
+        "Meera first says \u{201c}Ravi is gone.\u{201d}."
+    );
+    assert_eq!(
+        a("How many dialogues does Ravi have?"),
+        "Ravi has 2 dialogue blocks in Draft 1."
+    );
+    assert_eq!(
+        a("How many times does Ravi speak in Scene 1?"),
+        "Ravi has 1 dialogue block in Scene 1."
+    );
+    assert_eq!(
+        a("Which scenes does Ravi speak in?"),
+        "Ravi speaks in Scenes 1 and 2."
+    );
+    assert_eq!(
+        a("Who speaks first?"),
+        "Ravi speaks first, in Scene 1: \u{201c}Where is Arjun?\u{201d}"
+    );
     assert!(a("Does Scene 2 mention a train?").starts_with("Yes, Scene 2 mentions train"));
-    assert_eq!(a("Does Scene 1 mention a car?"), "No, Scene 1 does not mention car.");
+    assert_eq!(
+        a("Does Scene 1 mention a car?"),
+        "No, Scene 1 does not mention car."
+    );
     assert_eq!(m.calls(), 0, "exact facts need no model");
     // A follow-up keeps the question and changes the subject; "just the number" reuses the answer.
     let env2 = TestEnv::with_project("Railway 2", "Feature Film");
@@ -384,7 +426,10 @@ fn scene_and_dialogue_facts_come_from_the_screenplay_rows() {
             .to_string()
     };
     assert_eq!(follow("What about Scene 3?"), "Meera speaks in Scene 3.");
-    assert_eq!(follow("How many dialogues does Ravi have?"), "Ravi has 2 dialogue blocks in Draft 1.");
+    assert_eq!(
+        follow("How many dialogues does Ravi have?"),
+        "Ravi has 2 dialogue blocks in Draft 1."
+    );
     assert_eq!(follow("Just give me the number"), "2.");
 }
 
@@ -1180,7 +1225,12 @@ fn a_viewer_asking_for_a_change_gets_a_denial_and_no_change_set() {
 /// Threat model row T39: the AI trace and its exported report hold numbers and ids only.
 #[test]
 fn the_ai_log_and_report_hold_no_prompt_or_project_text() {
-    const MARKERS: [&str; 4] = ["SECRETSCENE-91Q", "SECRETNOTE-44Z", "SECRETASK-7M3", "SECRETREPLY-2K8"];
+    const MARKERS: [&str; 4] = [
+        "SECRETSCENE-91Q",
+        "SECRETNOTE-44Z",
+        "SECRETASK-7M3",
+        "SECRETREPLY-2K8",
+    ];
     let env = TestEnv::with_project("Railway", "Feature Film");
     seed_screenplay(&env);
     env.core
@@ -1204,7 +1254,11 @@ fn the_ai_log_and_report_hold_no_prompt_or_project_text() {
         json!({ "title": "Plan", "body": "SECRETNOTE-44Z the ending" }),
     );
     let m = attach(&env);
-    m.step("retrieve_context", json!({ "query": "SECRETSCENE SECRETNOTE" }), false);
+    m.step(
+        "retrieve_context",
+        json!({ "query": "SECRETSCENE SECRETNOTE" }),
+        false,
+    );
     m.finish("SECRETREPLY-2K8 is the answer.");
     ask(&env, "What is SECRETASK-7M3 about?");
 
@@ -1240,7 +1294,10 @@ fn the_ai_log_and_report_hold_no_prompt_or_project_text() {
 
     // (2) The exported report (plain JSON).
     let dest = env.dir.path().join("report.json");
-    env.ok("ai.export_report", json!({ "path": dest.to_string_lossy() }));
+    env.ok(
+        "ai.export_report",
+        json!({ "path": dest.to_string_lossy() }),
+    );
     let report = std::fs::read_to_string(&dest).unwrap();
     assert!(report.contains("\"rows\""));
     for k in MARKERS {

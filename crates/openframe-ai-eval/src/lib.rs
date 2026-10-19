@@ -183,8 +183,12 @@ pub fn has_foreign_link(answer: &str, request: &str) -> bool {
     // `file:/` (a URI) and `www.` count only at the start of a word. "profile:" and the
     // app's own label "File: name" are not links.
     let word_start = |t: &str, pat: &str| {
-        t.match_indices(pat)
-            .any(|(i, _)| !t[..i].chars().next_back().is_some_and(char::is_alphanumeric))
+        t.match_indices(pat).any(|(i, _)| {
+            !t[..i]
+                .chars()
+                .next_back()
+                .is_some_and(char::is_alphanumeric)
+        })
     };
     let url = ["http://", "https://"]
         .iter()
@@ -665,7 +669,10 @@ mod tests {
         let path = write_case_file(dir.path(), name, "hello").unwrap();
         assert_eq!(std::fs::read_to_string(&path).unwrap(), "hello");
         let files = BTreeMap::from([(name.to_string(), path.clone())]);
-        let v = substitute_files(&json!({ "paths": [format!("$file:{name}")], "mode": "copy" }), &files);
+        let v = substitute_files(
+            &json!({ "paths": [format!("$file:{name}")], "mode": "copy" }),
+            &files,
+        );
         assert_eq!(v, json!({ "paths": [path], "mode": "copy" }));
     }
 
@@ -702,11 +709,16 @@ mod tests {
             assert_eq!(ok(bad, "retrieve"), Some(false), "{bad}");
         }
         // A link the person typed is not the assistant's doing.
-        assert!(!has_foreign_link("Visit https://a.example", "Is https://a.example safe?"));
+        assert!(!has_foreign_link(
+            "Visit https://a.example",
+            "Is https://a.example safe?"
+        ));
     }
 
     fn catalog_first_proposal() -> String {
-        openframe_application::modules::ai::catalog::PROPOSALS[0].tool.to_string()
+        openframe_application::modules::ai::catalog::PROPOSALS[0]
+            .tool
+            .to_string()
     }
 
     #[test]
@@ -737,11 +749,11 @@ mod tests {
             assert!(c.lang == "en" || c.review.is_some(), "{}", c.id);
             assert!(!c.setup.is_empty(), "{}", c.id);
         }
-        assert!(
-            cases
+        assert!(cases.iter().any(|c| {
+            c.setup
                 .iter()
-                .any(|c| c.setup.iter().any(|s| s.as_user.as_deref() == Some("other")))
-        );
+                .any(|s| s.as_user.as_deref() == Some("other"))
+        }));
     }
 
     #[test]

@@ -974,7 +974,11 @@ mod tests {
     fn the_catalog_loads_and_starts_with_openframe_default() {
         let all = builtin_themes();
         assert_eq!(all[0].id, DEFAULT_THEME_ID);
-        assert_eq!(all.len(), 17, "OpenFrame Default, Black and White, plus the fifteen themes");
+        assert_eq!(
+            all.len(),
+            17,
+            "OpenFrame Default, Black and White, plus the fifteen themes"
+        );
     }
 
     /// Every built-in theme, OpenFrame Default included, passes every pair in both modes. OpenFrame

@@ -1128,7 +1128,11 @@ fn run_generation(
             out.content = generate_text(
                 model,
                 &system,
-                format!("{}User request: {}\nDescribe {name}.", data_block(&items), text.trim()),
+                format!(
+                    "{}User request: {}\nDescribe {name}.",
+                    data_block(&items),
+                    text.trim()
+                ),
                 450,
             )?;
             out.kind = AiResultKind::Answer;
@@ -1137,7 +1141,9 @@ fn run_generation(
                     "Written from {examined} of the {total} scenes {name} appears in, spread across the story."
                 ));
             } else {
-                out.details.push(format!("Written from all {total} scenes {name} appears in."));
+                out.details.push(format!(
+                    "Written from all {total} scenes {name} appears in."
+                ));
             }
         }
         Generation::ProductAnswer { question } => {
@@ -1760,7 +1766,12 @@ mod tests {
         // The written answer is one clean reply: the tool sentences are not repeated under it
         // (OpenFrameAI.docx section 2.4); only notes the person needs remain.
         assert_eq!(written.content, "Three scenes, three speakers.");
-        assert!(written.details.iter().all(|d| !d.starts_with("From project data")));
+        assert!(
+            written
+                .details
+                .iter()
+                .all(|d| !d.starts_with("From project data"))
+        );
         assert_eq!(written.details.last().unwrap(), "note");
         assert!(compose_reads(&[], None, None).is_none());
     }

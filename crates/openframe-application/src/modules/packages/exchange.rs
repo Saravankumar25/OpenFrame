@@ -1198,11 +1198,12 @@ pub(crate) fn build(c: &Connection, root: &Path, a: &PackageExchangeArgs) -> App
         PackageType::Story => build_story(c, root, a),
         // Removed at the owner's request on 2026-10-19 (change list item 9). Files of these types
         // made earlier can still be opened and imported.
-        PackageType::Breakdown | PackageType::Shots | PackageType::Schedule | PackageType::CallReview => {
-            Err(AppError::invalid_input(
-                "This package type is no longer offered. Share the screenplay or the Story Board instead.",
-            ))
-        }
+        PackageType::Breakdown
+        | PackageType::Shots
+        | PackageType::Schedule
+        | PackageType::CallReview => Err(AppError::invalid_input(
+            "This package type is no longer offered. Share the screenplay or the Story Board instead.",
+        )),
         PackageType::Response => Err(AppError::invalid_input(
             "Response packages are exported from the review package viewer.",
         )),

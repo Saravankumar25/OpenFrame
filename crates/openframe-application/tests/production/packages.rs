@@ -1530,11 +1530,18 @@ fn removed_package_types_are_refused_on_export() {
     let env = TestEnv::with_project("Removed", "Feature Film");
     for ty in ["breakdown", "shots", "schedule", "callReview"] {
         let path = out_path(&env, &format!("x.{ty}"));
-        let e = env.err(
-            "packages.export_exchange",
-            json!({ "packageType": ty, "path": path }),
+        let e = env
+            .call(
+                "packages.export_exchange",
+                json!({ "packageType": ty, "path": path }),
+            )
+            .expect_err("a removed package type must be refused");
+        assert_eq!(e.code.0, "validation.invalid_input", "{ty}");
+        assert!(
+            e.message.contains("no longer offered"),
+            "{ty}: {}",
+            e.message
         );
-        assert!(e.contains("no longer offered"), "{ty}: {e}");
         assert!(!std::path::Path::new(&path).exists(), "{ty} wrote a file");
     }
 }

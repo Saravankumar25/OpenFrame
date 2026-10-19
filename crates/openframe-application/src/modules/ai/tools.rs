@@ -101,7 +101,14 @@ fn dialogue_fact_args() -> Value {
             ("scene", sc::scene_number()),
             (
                 "fact",
-                sc::en(&["blocks", "words", "scenes", "first_scene", "most", "first_speaker"]),
+                sc::en(&[
+                    "blocks",
+                    "words",
+                    "scenes",
+                    "first_scene",
+                    "most",
+                    "first_speaker",
+                ]),
             ),
             ("draft", sc::s(120)),
         ],
@@ -794,7 +801,11 @@ fn count_scenes(ctx: &ToolCtx<'_>, draft: Option<&str>) -> AppResult<ToolOutput>
             plural(omitted, "is", "are")
         )
     } else {
-        format!("{} contains {}.", d.label(), plural(scenes.len(), "scene", "scenes"))
+        format!(
+            "{} contains {}.",
+            d.label(),
+            plural(scenes.len(), "scene", "scenes")
+        )
     });
     let mut o = o;
     o.structured = Some(json!({"draftId": d.id, "sceneCount": scenes.len(), "omitted": omitted}));
@@ -862,20 +873,31 @@ fn match_cue<'a>(cues: &'a BTreeMap<String, Vec<String>>, wanted: &str) -> Optio
     if let Some((k, _)) = cues.get_key_value(&w) {
         return Some(k.as_str());
     }
-    let starts: Vec<&String> = cues.keys().filter(|k| k.split_whitespace().next() == Some(w.as_str())).collect();
+    let starts: Vec<&String> = cues
+        .keys()
+        .filter(|k| k.split_whitespace().next() == Some(w.as_str()))
+        .collect();
     match starts.as_slice() {
         [one] => Some(one.as_str()),
         _ => {
             // "KARTHIK" over "KARTHIK'S FATHER": the shortest cue that starts with the name.
-            starts.iter().min_by_key(|k| k.len()).map(|k| k.as_str()).filter(|k| k.starts_with(&w))
+            starts
+                .iter()
+                .min_by_key(|k| k.len())
+                .map(|k| k.as_str())
+                .filter(|k| k.starts_with(&w))
         }
     }
 }
 
 /// One scene's evidence for a character: what they say and the action lines that name them.
 fn scene_evidence(c: &Connection, scene_id: &str, cue: &str) -> AppResult<String> {
-    let mut stmt = c.prepare("SELECT element_type, text FROM screenplay_element WHERE scene_id=?1 ORDER BY position, id")?;
-    let rows: Vec<(String, String)> = stmt.query_map([scene_id], |r| Ok((r.get(0)?, r.get(1)?)))?.collect::<Result<_, _>>()?;
+    let mut stmt = c.prepare(
+        "SELECT element_type, text FROM screenplay_element WHERE scene_id=?1 ORDER BY position, id",
+    )?;
+    let rows: Vec<(String, String)> = stmt
+        .query_map([scene_id], |r| Ok((r.get(0)?, r.get(1)?)))?
+        .collect::<Result<_, _>>()?;
     let first = cue.split_whitespace().next().unwrap_or(cue).to_lowercase();
     let mut out = String::new();
     let mut speaking = false;
@@ -913,23 +935,31 @@ fn character_profile(ctx: &ToolCtx<'_>, name: &str, draft: Option<&str>) -> AppR
         None => {
             return Err(AppError::ai(
                 "not_found",
-                format!("I couldn't find a character called {} in {}.", name.trim(), d.label()),
+                format!(
+                    "I couldn't find a character called {} in {}.",
+                    name.trim(),
+                    d.label()
+                ),
             ));
         }
     };
     let scenes = queries::scenes(ctx.conn, &d.id)?;
-    let speaks: BTreeSet<&str> = cues.get(&cue).map(|v| v.iter().map(String::as_str).collect()).unwrap_or_default();
+    let speaks: BTreeSet<&str> = cues
+        .get(&cue)
+        .map(|v| v.iter().map(String::as_str).collect())
+        .unwrap_or_default();
     let first = cue.split_whitespace().next().unwrap_or(&cue).to_lowercase();
     let mut relevant: Vec<(&SceneRow, String)> = Vec::new();
     for s in &scenes {
-        let mentioned = !speaks.contains(s.id.as_str()) && {
-            let n: i64 = ctx.conn.query_row(
+        let mentioned = !speaks.contains(s.id.as_str())
+            && {
+                let n: i64 = ctx.conn.query_row(
                 "SELECT count(*) FROM screenplay_element WHERE scene_id=?1 AND element_type='action' AND lower(text) LIKE ?2",
                 params![s.id, format!("%{first}%")],
                 |r| r.get(0),
             )?;
-            n > 0
-        };
+                n > 0
+            };
         if speaks.contains(s.id.as_str()) || mentioned {
             let ev = scene_evidence(ctx.conn, &s.id, &cue)?;
             if !ev.is_empty() {
@@ -943,18 +973,28 @@ fn character_profile(ctx: &ToolCtx<'_>, name: &str, draft: Option<&str>) -> AppR
     let picked: Vec<usize> = if total <= fit {
         (0..total).collect()
     } else {
-        (0..fit).map(|i| i * (total - 1) / (fit - 1)).collect::<BTreeSet<_>>().into_iter().collect()
+        (0..fit)
+            .map(|i| i * (total - 1) / (fit - 1))
+            .collect::<BTreeSet<_>>()
+            .into_iter()
+            .collect()
     };
     let mut items = Vec::new();
     let mut used = 0usize;
     for i in picked {
         let (s, ev) = &relevant[i];
-        let text = queries::truncate_chars(ev, (PROFILE_CHARS - used.min(PROFILE_CHARS)).min(PROFILE_SCENE_CHARS));
+        let text = queries::truncate_chars(
+            ev,
+            (PROFILE_CHARS - used.min(PROFILE_CHARS)).min(PROFILE_SCENE_CHARS),
+        );
         if text.is_empty() {
             break;
         }
         used += text.len();
-        items.push(ContextItem { source: s.label(), text });
+        items.push(ContextItem {
+            source: s.label(),
+            text,
+        });
     }
     // A Character record's own words come first when the writer made one.
     if let Ok(Some((role, desc))) = ctx
@@ -977,13 +1017,22 @@ fn character_profile(ctx: &ToolCtx<'_>, name: &str, draft: Option<&str>) -> AppR
             d.label()
         )));
     }
-    let examined = items.iter().filter(|i| i.source.starts_with("Scene")).count();
+    let examined = items
+        .iter()
+        .filter(|i| i.source.starts_with("Scene"))
+        .count();
     let mut o = ToolOutput::of_kind(AiResultKind::Answer, String::new());
     o.confidence = Some(Confidence::Inferred);
     o.provenance.push(Provenance::new("Draft", d.label()));
     o.provenance.push(Provenance::new("Character", cue.clone()));
-    o.structured = Some(json!({"character": cue, "scenesWithCharacter": total, "scenesExamined": examined}));
-    o.generation = Some(Generation::CharacterProfile { name: cue, items, examined, total });
+    o.structured =
+        Some(json!({"character": cue, "scenesWithCharacter": total, "scenesExamined": examined}));
+    o.generation = Some(Generation::CharacterProfile {
+        name: cue,
+        items,
+        examined,
+        total,
+    });
     Ok(o)
 }
 
@@ -996,7 +1045,10 @@ fn scene_elements(c: &Connection, scene_id: &str) -> AppResult<Vec<(String, Stri
     let rows: Vec<(String, String)> = stmt
         .query_map([scene_id], |r| Ok((r.get(0)?, r.get(1)?)))?
         .collect::<Result<_, _>>()?;
-    Ok(rows.into_iter().filter(|(_, t)| !t.trim().is_empty()).collect())
+    Ok(rows
+        .into_iter()
+        .filter(|(_, t)| !t.trim().is_empty())
+        .collect())
 }
 
 /// Dialogue blocks in order: (speaker cue, dialogue text). A block is one character cue followed by
@@ -1034,7 +1086,11 @@ fn dialogue_blocks(rows: &[(String, String)]) -> Vec<(String, String)> {
     out
 }
 
-fn scene_by_number(ctx: &ToolCtx<'_>, n: u32, draft: Option<&str>) -> AppResult<(DraftRef, SceneRow)> {
+fn scene_by_number(
+    ctx: &ToolCtx<'_>,
+    n: u32,
+    draft: Option<&str>,
+) -> AppResult<(DraftRef, SceneRow)> {
     let d = ctx.draft(draft)?;
     let s = queries::scenes(ctx.conn, &d.id)?
         .into_iter()
@@ -1071,7 +1127,10 @@ fn scene_fact(ctx: &ToolCtx<'_>, a: &SceneFactArgs) -> AppResult<ToolOutput> {
         "speakers" => match speakers.len() {
             0 => format!("Nobody speaks in {name}."),
             1 => format!("{} speaks in {name}.", title(&speakers[0])),
-            _ => format!("{} speak in {name}.", join_and(&speakers.iter().map(|w| title(w)).collect::<Vec<_>>())),
+            _ => format!(
+                "{} speak in {name}.",
+                join_and(&speakers.iter().map(|w| title(w)).collect::<Vec<_>>())
+            ),
         },
         "speaker_count" => format!(
             "{} in {name}.",
@@ -1088,17 +1147,31 @@ fn scene_fact(ctx: &ToolCtx<'_>, a: &SceneFactArgs) -> AppResult<ToolOutput> {
                 format!("{name} takes place at {}.", heading.location.trim())
             }
         }
-        "time" => match heading.time.as_deref().map(str::trim).filter(|t| !t.is_empty()) {
+        "time" => match heading
+            .time
+            .as_deref()
+            .map(str::trim)
+            .filter(|t| !t.is_empty())
+        {
             Some(t) => format!("{name} is set at {}.", t.to_lowercase()),
             None => format!("{name}'s heading does not say the time of day."),
         },
         "first_line" | "last_line" => {
-            let body: Vec<&(String, String)> = rows.iter().filter(|(t, _)| t != "scene_heading").collect();
-            let pick = if a.fact == "first_line" { body.first() } else { body.last() };
+            let body: Vec<&(String, String)> =
+                rows.iter().filter(|(t, _)| t != "scene_heading").collect();
+            let pick = if a.fact == "first_line" {
+                body.first()
+            } else {
+                body.last()
+            };
             match pick {
                 Some((_, t)) => format!(
                     "The {} line of {name} is \u{201c}{}\u{201d}.",
-                    if a.fact == "first_line" { "first" } else { "last" },
+                    if a.fact == "first_line" {
+                        "first"
+                    } else {
+                        "last"
+                    },
                     t.trim()
                 ),
                 None => format!("{name} has no lines yet."),
@@ -1149,16 +1222,24 @@ fn scene_fact(ctx: &ToolCtx<'_>, a: &SceneFactArgs) -> AppResult<ToolOutput> {
             o.provenance.push(Provenance::new("Scene", s.label()));
             o.nav = Some(scene_nav(&d, &s));
             if !full {
-                o.details.push(format!("{name} is long; the summary is written from its beginning and its end."));
+                o.details.push(format!(
+                    "{name} is long; the summary is written from its beginning and its end."
+                ));
             }
             o.generation = Some(Generation::Summary {
-                items: vec![ContextItem { source: s.label(), text: evidence }],
+                items: vec![ContextItem {
+                    source: s.label(),
+                    text: evidence,
+                }],
             });
             return Ok(o);
         }
         other => {
-            return Err(AppError::ai("unknown_tool", "That isn't something the assistant can do yet.")
-                .with_detail(format!("scene fact {other}")));
+            return Err(AppError::ai(
+                "unknown_tool",
+                "That isn't something the assistant can do yet.",
+            )
+            .with_detail(format!("scene fact {other}")));
         }
     };
     let mut o = ToolOutput::exact(content);
@@ -1175,7 +1256,9 @@ fn dialogue_fact(ctx: &ToolCtx<'_>, a: &DialogueFactArgs) -> AppResult<ToolOutpu
             let s = scenes
                 .iter()
                 .find(|s| s.number == n as usize)
-                .ok_or_else(|| AppError::ai("not_found", format!("{} has no Scene {n}.", d.label())))?;
+                .ok_or_else(|| {
+                    AppError::ai("not_found", format!("{} has no Scene {n}.", d.label()))
+                })?;
             vec![s]
         }
         None => scenes.iter().filter(|s| !s.omitted).collect(),
@@ -1188,7 +1271,11 @@ fn dialogue_fact(ctx: &ToolCtx<'_>, a: &DialogueFactArgs) -> AppResult<ToolOutpu
         Some(n) => format!("Scene {n}"),
         None => d.label(),
     };
-    let words = |t: &str| t.split_whitespace().filter(|w| w.chars().any(char::is_alphanumeric)).count();
+    let words = |t: &str| {
+        t.split_whitespace()
+            .filter(|w| w.chars().any(char::is_alphanumeric))
+            .count()
+    };
     let title = |w: &str| {
         w.split_whitespace()
             .map(|p| {
@@ -1210,12 +1297,24 @@ fn dialogue_fact(ctx: &ToolCtx<'_>, a: &DialogueFactArgs) -> AppResult<ToolOutpu
                 }
             }
             match tally.iter().max_by(|x, y| x.1.cmp(y.1).then(y.0.cmp(x.0))) {
-                Some((w, n)) => format!("{} has the most dialogue in {where_}: {}.", title(w), plural(*n, "dialogue block", "dialogue blocks")),
+                Some((w, n)) => format!(
+                    "{} has the most dialogue in {where_}: {}.",
+                    title(w),
+                    plural(*n, "dialogue block", "dialogue blocks")
+                ),
                 None => format!("Nobody speaks in {where_}."),
             }
         }
-        "first_speaker" => match per_scene.iter().find_map(|(s, b)| b.first().map(|x| (s, x))) {
-            Some((s, (w, t))) => format!("{} speaks first, in Scene {}: \u{201c}{}\u{201d}", title(w), s.number, queries::truncate_chars(t, 160)),
+        "first_speaker" => match per_scene
+            .iter()
+            .find_map(|(s, b)| b.first().map(|x| (s, x)))
+        {
+            Some((s, (w, t))) => format!(
+                "{} speaks first, in Scene {}: \u{201c}{}\u{201d}",
+                title(w),
+                s.number,
+                queries::truncate_chars(t, 160)
+            ),
             None => format!("Nobody speaks in {where_}."),
         },
         fact => {
@@ -1232,12 +1331,22 @@ fn dialogue_fact(ctx: &ToolCtx<'_>, a: &DialogueFactArgs) -> AppResult<ToolOutpu
             };
             let mine: Vec<(u32, &String)> = per_scene
                 .iter()
-                .flat_map(|(s, b)| b.iter().filter(|(w, _)| *w == cue).map(move |(_, t)| (s.number as u32, t)))
+                .flat_map(|(s, b)| {
+                    b.iter()
+                        .filter(|(w, _)| *w == cue)
+                        .map(move |(_, t)| (s.number as u32, t))
+                })
                 .collect();
             let name = title(&cue);
             match fact {
-                "blocks" => format!("{name} has {} in {where_}.", plural(mine.len(), "dialogue block", "dialogue blocks")),
-                "words" => format!("{name} speaks {} in {where_}.", plural(mine.iter().map(|(_, t)| words(t)).sum(), "word", "words")),
+                "blocks" => format!(
+                    "{name} has {} in {where_}.",
+                    plural(mine.len(), "dialogue block", "dialogue blocks")
+                ),
+                "words" => format!(
+                    "{name} speaks {} in {where_}.",
+                    plural(mine.iter().map(|(_, t)| words(t)).sum(), "word", "words")
+                ),
                 "scenes" | "first_scene" => {
                     let mut nums: Vec<u32> = mine.iter().map(|(n, _)| *n).collect();
                     nums.dedup();
@@ -1247,19 +1356,27 @@ fn dialogue_fact(ctx: &ToolCtx<'_>, a: &DialogueFactArgs) -> AppResult<ToolOutpu
                         format!("{name} first speaks in Scene {}.", nums[0])
                     } else {
                         let list: Vec<String> = nums.iter().map(u32::to_string).collect();
-                        format!("{name} speaks in {} {}.", if nums.len() == 1 { "Scene" } else { "Scenes" }, join_and(&list))
+                        format!(
+                            "{name} speaks in {} {}.",
+                            if nums.len() == 1 { "Scene" } else { "Scenes" },
+                            join_and(&list)
+                        )
                     }
                 }
                 other => {
-                    return Err(AppError::ai("unknown_tool", "That isn't something the assistant can do yet.")
-                        .with_detail(format!("dialogue fact {other}")));
+                    return Err(AppError::ai(
+                        "unknown_tool",
+                        "That isn't something the assistant can do yet.",
+                    )
+                    .with_detail(format!("dialogue fact {other}")));
                 }
             }
         }
     };
-    Ok(ToolOutput::exact(content)
-        .prov("Draft", d.label())
-        .prov("Basis", "screenplay dialogue blocks (a character cue and its dialogue)"))
+    Ok(ToolOutput::exact(content).prov("Draft", d.label()).prov(
+        "Basis",
+        "screenplay dialogue blocks (a character cue and its dialogue)",
+    ))
 }
 
 fn scenes_with_characters(
@@ -2022,17 +2139,33 @@ fn category_query(text: &str) -> Option<&'static str> {
         .split(|c: char| !c.is_alphanumeric())
         .filter(|w| !w.is_empty())
         .map(|w| w.to_lowercase())
-        .filter(|w| !matches!(w.as_str(), "all" | "the" | "of" | "in" | "my" | "this" | "total" | "number" | "count"))
+        .filter(|w| {
+            !matches!(
+                w.as_str(),
+                "all" | "the" | "of" | "in" | "my" | "this" | "total" | "number" | "count"
+            )
+        })
         .collect();
     if words.is_empty() || words.len() > 2 {
         return None;
     }
     let one = |set: &[&str]| words.iter().all(|w| set.contains(&w.as_str()));
-    if one(&["scene", "scenes", "screenplay", "script"]) && words.iter().any(|w| w.starts_with("scene")) {
+    if one(&["scene", "scenes", "screenplay", "script"])
+        && words.iter().any(|w| w.starts_with("scene"))
+    {
         Some("scenes")
     } else if one(&["character", "characters", "cast", "speaking", "people"]) {
         Some("characters")
-    } else if one(&["location", "locations", "place", "places", "setting", "settings", "set", "sets"]) {
+    } else if one(&[
+        "location",
+        "locations",
+        "place",
+        "places",
+        "setting",
+        "settings",
+        "set",
+        "sets",
+    ]) {
         Some("locations")
     } else {
         None
