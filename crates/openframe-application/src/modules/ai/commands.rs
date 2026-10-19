@@ -424,6 +424,11 @@ static PLAIN_READS: LazyLock<Vec<(Regex, &'static str)>> = LazyLock::new(|| {
         (r#"(?i)^\s*how\s+many\s+(?:props|costumes|vehicles|items)\s+are\s+(?:there\s+)?in\s+the\s+(?:production\s+)?catalog(?:ue)?\s*[?.]*\s*$"#, "production_statistics"),
         (r#"(?i)^\s*how\s+many\s+(?:acts|scene\s+cards|acts\s+and\s+scene\s+cards)\s+are\s+(?:there\s+)?on\s+the\s+story\s?board\s*[?.]*\s*$"#, "story_statistics"),
         (r#"(?i)^\s*how\s+far\s+along\s+is\s+the\s+breakdown\s*[?.]*\s*$"#, "breakdown_status"),
+        // Plain wording of the same questions (AI context brief, questions 3, 4 and 31).
+        (r#"(?i)^\s*how\s+many\s+(?:acts|sequences|beats|scene\s+cards)(?:\s+are\s+there|\s+do\s+(?:we|i)\s+have)?(?:\s+in\s+(?:the|this|my)\s+(?:story|project))?\s*[?.]*\s*$"#, "story_statistics"),
+        (r#"(?i)^\s*how\s+many\s+drafts(?:\s+are\s+there|\s+do\s+(?:we|i)\s+have|\s+does\s+(?:the|this|my)\s+(?:screenplay|script)\s+have)?\s*[?.]*\s*$"#, "list_drafts"),
+        (r#"(?i)^\s*(?:which|what)\s+(?:is\s+the\s+)?current\s+draft\s*[?.]*\s*$"#, "list_drafts"),
+        (r#"(?i)^\s*how\s+many\s+(?:scenes\s+are\s+(?:omitted|marked\s+omitted)|omitted\s+scenes(?:\s+are\s+there)?)\s*[?.]*\s*$"#, "count_scenes"),
     ]
     .into_iter()
     .map(|(p, t)| (re(p), t))

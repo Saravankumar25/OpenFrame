@@ -785,17 +785,18 @@ fn count_scenes(ctx: &ToolCtx<'_>, draft: Option<&str>) -> AppResult<ToolOutput>
     let d = ctx.draft(draft)?;
     let scenes = queries::scenes(ctx.conn, &d.id)?;
     let omitted = scenes.iter().filter(|s| s.omitted).count();
-    let mut o = ToolOutput::exact(format!(
-        "{} contains {}.",
-        d.label(),
-        plural(scenes.len(), "scene", "scenes")
-    ));
-    if omitted > 0 {
-        o = o.detail(format!(
-            "{} marked omitted.",
-            plural(omitted, "scene is", "scenes are")
-        ));
-    }
+    // Omitted scenes are part of the answer, not a hidden detail (AI context brief, question 2).
+    let o = ToolOutput::exact(if omitted > 0 {
+        format!(
+            "{} contains {}; {} marked omitted.",
+            d.label(),
+            plural(scenes.len(), "scene", "scenes"),
+            plural(omitted, "is", "are")
+        )
+    } else {
+        format!("{} contains {}.", d.label(), plural(scenes.len(), "scene", "scenes"))
+    });
+    let mut o = o;
     o.structured = Some(json!({"draftId": d.id, "sceneCount": scenes.len(), "omitted": omitted}));
     Ok(o.prov("Draft", d.label())
         .prov("Basis", "screenplay scenes in the draft"))
