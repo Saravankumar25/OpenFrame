@@ -613,7 +613,7 @@ fn a_search_with_few_hits_names_them_and_offers_them_as_sources() {
     seed_screenplay(&env);
     let m = attach(&env);
     m.step("search_project", json!({ "text": "railway" }), true);
-    let r = ask(&env, "Which scene happens at the railway station?")["result"].clone();
+    let r = ask(&env, "What happens at the railway station?")["result"].clone();
     let content = r["content"].as_str().unwrap();
     assert!(
         content.starts_with("1 result: ") && content.contains("RAILWAY STATION"),

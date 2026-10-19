@@ -564,7 +564,8 @@ static PAGES: LazyLock<Regex> = LazyLock::new(|| {
 
 static MENTIONS: LazyLock<Regex> = LazyLock::new(|| {
     re(
-        r#"(?i)^\s*which\s+scenes\s+(?:mention|include|feature|refer\s+to|take\s+place\s+(?:at|in)|happen\s+(?:at|in)|are\s+set\s+(?:at|in))\s+(?:the\s+)?(?P<x>[^?]{1,120}?)\s*\?*\s*$"#,
+        // "Which scene happens at the bus stop?" (singular) as well as "Which scenes take place at ...".
+        r#"(?i)^\s*which\s+scenes?\s+(?:mentions?|includes?|features?|refers?\s+to|takes?\s+place\s+(?:at|in)|happens?\s+(?:at|in)|(?:are|is)\s+set\s+(?:at|in))\s+(?:the\s+)?(?P<x>[^?]{1,120}?)\s*\?*\s*$"#,
     )
 });
 
@@ -1621,7 +1622,7 @@ mod tests {
             ))
         );
         assert_eq!(
-            call("Which scenes take place at the harbour?"),
+            call("Which scene happens at the harbour?"),
             Some((
                 "find_scenes_mentioning".into(),
                 json!({ "text": "harbour" })

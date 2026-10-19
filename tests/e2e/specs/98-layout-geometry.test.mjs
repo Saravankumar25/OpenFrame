@@ -183,7 +183,10 @@ describe("layout geometry", () => {
             }
           }
           await click(browser, "Settings", { within: "//header" });
-          await record(size, ai, "Settings");
+          for (const tab of ["Project settings", "Writing", "Keyboard shortcuts", "Templates", "Offline AI", "Advanced", "Appearance"]) {
+            await click(browser, tab, { within: '//div[@aria-label="Settings"]' });
+            await record(size, ai, `Settings · ${tab}`);
+          }
         });
       }
     }
