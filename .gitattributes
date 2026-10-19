@@ -1,1 +1,27 @@
 graphify-out/graph.json merge=graphify
+
+# Binary files are stored byte for byte (core.autocrlf=input on this Mac would otherwise turn CRLF into LF
+# inside PDFs that look like text, which breaks them).
+*.pdf binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.icns binary
+*.dmg binary
+*.zip binary
+*.m4a binary
+*.aiff binary
+*.wav binary
+*.docx binary
+*.xlsx binary
+*.sqlite binary
+*.ofproject binary
+*.ofbackup binary
+*.ofbreakdown binary
+*.ofcallreview binary
+*.ofresponse binary
+*.ofschedule binary
+*.ofscriptreview binary
+*.ofshots binary
+*.ofstory binary
