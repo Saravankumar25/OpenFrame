@@ -91,6 +91,9 @@ static DESCRIBE_CHARACTER: LazyLock<Regex> = LazyLock::new(|| {
 
 /// Words that make a "describe X" request about something other than one character.
 const NOT_A_CHARACTER: &[&str] = &[
+    // "Who is cast as Ravi?" asks about casting, not about the character.
+    "cast",
+    "playing",
     "scene",
     "scenes",
     "story",
@@ -525,6 +528,13 @@ static MENTIONS: LazyLock<Regex> = LazyLock::new(|| {
 });
 
 /// Plain questions that one read tool answers as a whole.
+/// "Which scene comes first?", "What is the opening scene?" (AI context brief question 9).
+static FIRST_SCENE: LazyLock<Regex> = LazyLock::new(|| {
+    re(
+        r#"(?i)^\s*(?:which\s+scene\s+comes\s+first|what\s+is\s+the\s+(?:first|opening)\s+scene|how\s+does\s+the\s+(?:screenplay|script)\s+(?:open|begin|start))\s*[?.]*\s*$"#,
+    )
+});
+
 static PLAIN_READS: LazyLock<Vec<(Regex, &'static str)>> = LazyLock::new(|| {
     [
         (r#"(?i)^\s*(?:what(?:'s|\s+is)\s+in|show(?:\s+me)?)\s+(?:the\s+|my\s+)?idea\s+vault\s*[?.]*\s*$"#, "idea_vault"),
@@ -544,6 +554,15 @@ static PLAIN_READS: LazyLock<Vec<(Regex, &'static str)>> = LazyLock::new(|| {
         (r#"(?i)^\s*how\s+many\s+drafts(?:\s+are\s+there|\s+do\s+(?:we|i)\s+have|\s+does\s+(?:the|this|my)\s+(?:screenplay|script)\s+have)?\s*[?.]*\s*$"#, "list_drafts"),
         (r#"(?i)^\s*(?:which|what)\s+(?:is\s+the\s+)?current\s+draft\s*[?.]*\s*$"#, "list_drafts"),
         (r#"(?i)^\s*how\s+many\s+(?:scenes\s+are\s+(?:omitted|marked\s+omitted)|omitted\s+scenes(?:\s+are\s+there)?)\s*[?.]*\s*$"#, "count_scenes"),
+        // AI context brief section 6, questions 5, 10, 61, 71, 77 and 88: plain wording
+        // answered by the read tool that holds the fact, with no model call.
+        (r#"(?i)^\s*(?:list|show)(?:\s+me)?\s+(?:all\s+)?(?:the\s+)?scene\s+headings\s*[?.]*\s*$"#, "screenplay_scenes"),
+        (r#"(?i)^\s*how\s+long\s+is\s+(?:the|this|my)\s+(?:screenplay|script)\s*[?.]*\s*$"#, "screenplay_pages"),
+        (r#"(?i)^\s*(?:how\s+many|which|what)\s+scenes\s+are\s+(?:still\s+)?(?:unscheduled|not\s+scheduled)(?:\s+yet)?\s*[?.]*\s*$"#, "unscheduled_scenes"),
+        (r#"(?i)^\s*(?:what|which)\s+(?:open\s+)?tasks\s+do\s+i\s+have(?:\s+open)?\s*[?.]*\s*$"#, "project_tasks"),
+        (r#"(?i)^\s*(?:are\s+there\s+(?:any\s+)?|how\s+many\s+|show(?:\s+me)?\s+(?:the\s+)?)(?:unresolved|open)\s+comments(?:\s+are\s+there)?\s*[?.]*\s*$"#, "comments"),
+        // "What is the Production Source?" alone asks what the term means, so it stays with the product guide.
+        (r#"(?i)^\s*(?:which\s+draft\s+is\s+the\s+production\s+source|what\s+is\s+the\s+production\s+source\s+draft|which\s+draft\s+does\s+production\s+use)\s*[?.]*\s*$"#, "production_source"),
     ]
     .into_iter()
     .map(|(p, t)| (re(p), t))
@@ -670,6 +689,9 @@ fn recipe_more(text: &str) -> Option<StepCall> {
     if let Some(c) = cap(&MENTIONS) {
         let x = unquote(c.name("x")?.as_str());
         return (!x.is_empty()).then(|| call("find_scenes_mentioning", json!({ "text": x })));
+    }
+    if FIRST_SCENE.is_match(text) {
+        return Some(call("scene_fact", json!({ "scene": 1, "fact": "setting" })));
     }
     if let Some((_, tool)) = PLAIN_READS.iter().find(|(r, _)| r.is_match(text)) {
         return Some(call(tool, json!({})));
@@ -1474,6 +1496,13 @@ mod tests {
             ),
             ("How far along is the breakdown?", "breakdown_status"),
             ("How many scenes does the screenplay have?", "count_scenes"),
+            ("List the scene headings.", "screenplay_scenes"),
+            ("How long is the screenplay?", "screenplay_pages"),
+            ("How many scenes are unscheduled?", "unscheduled_scenes"),
+            ("What open tasks do I have?", "project_tasks"),
+            ("Are there unresolved comments?", "comments"),
+            ("Which draft is the production source?", "production_source"),
+            ("Which scene comes first?", "scene_fact"),
             (
                 "How do I import a Fountain file?",
                 "answer_product_question",
@@ -1481,6 +1510,18 @@ mod tests {
         ] {
             assert_eq!(tool(text).as_deref(), Some(t), "{text}");
         }
+        // A casting question is not a character description.
+        assert_ne!(
+            tool("Who is cast as Ravi?").as_deref(),
+            Some("character_profile")
+        );
+        assert_eq!(
+            call("Which scene comes first?"),
+            Some((
+                "scene_fact".into(),
+                json!({ "scene": 1, "fact": "setting" })
+            ))
+        );
         assert_eq!(
             call("Which scenes mention the lantern?"),
             Some((

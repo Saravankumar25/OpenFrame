@@ -67,23 +67,23 @@ Sources added 2026-10-20 (reference only, not committed): `Downloads/OPENFRAME_W
 `Downloads/OPENFRAME_WINDOWS_AI_CONTEXT_ENGINEERING_CLAUDE_CODE_MASTER_PROMPT.md`, `Downloads/openframe-chnages.docx`.
 
 ### Change list and change specs
-- all_changes.docx items 1 to 11, 13 to 21: done. Item 12 Daily View export: open.
-- Change specs 01 to 05 and read_this.txt (all PDF exports, samples in release-out/pdf-samples): in progress (subagent).
+- all_changes.docx items 1 to 21: done (item 12, Daily View export, in e6b02e9).
+- Change specs 01 to 05 and read_this.txt (all PDF exports): done in a6fcaaf; 23 sample documents in
+  release-out/pdf-samples for the owner (not committed).
 - openframe-chnages.docx 1, stripboard colours (EXT Night green, EXT Day yellow, INT Day white, INT Night light blue):
-  done in the app; the schedule PDF follows (subagent brief).
+  done in the app and in the schedule PDF.
 - openframe-chnages.docx 2, Story Board act columns that scroll on their own with whole card text and a Parking Lot
-  column: done in story.css; check in the running app.
+  column: done in story.css; measured by the layout geometry spec.
 
 ### AI (OpenFrameAI.docx and the context engineering brief)
 - Done: plain and Indian-language counts, character description from evidence, category search, no false applied
-  claims, clean chat UI, greetings, product help only for app questions (its tests pending).
-- Open: scene-level facts (summary from the full scene, who speaks, speaker count, where and when, first and last line,
-  mention check), dialogue facts per character, drafts and omitted counts, follow-ups ("What about Scene 4?", "And
-  Ravi?", "Just give me the number"), gold cases, real-model evaluation after the changes, owner walkthrough.
+  claims, clean chat UI, greetings, product help only for app questions, scene-level facts, dialogue facts, drafts
+  and omitted counts, follow-ups, ten new gold cases, the owner walkthrough (docs/engineering/ai-answer-paths.md).
+- Real-model evaluation after the changes: see the progress log entry of 2026-10-20.
 
 ### UX audit brief
-- Open: measured geometry pass (AI panel, nav, panels, window sizes) with an E2E geometry spec; scroll ownership;
-  clipped text; additive Black on White and White on Black themes; docs/ux deliverables.
+- Done: layout geometry spec (96 screen states, stress text, cut-text check) with every finding fixed; scroll
+  ownership contract; Black and White theme; the five docs/ux deliverables.
 
 ### Release
 - Open: fmt, clippy, cargo test, web tests, governance, writing; E2E release suite; real-app walkthrough; installer

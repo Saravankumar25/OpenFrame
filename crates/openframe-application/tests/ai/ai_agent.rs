@@ -382,11 +382,11 @@ fn scene_and_dialogue_facts_come_from_the_screenplay_rows() {
     );
     assert_eq!(
         a("What is the last line in Scene 1?"),
-        "The last line of Scene 1 is \u{201c}Here.\u{201d}."
+        "The last line of Scene 1 is \u{201c}Here.\u{201d}"
     );
     assert_eq!(
         a("What is the first dialogue in Scene 3?"),
-        "Meera first says \u{201c}Ravi is gone.\u{201d}."
+        "Meera first says \u{201c}Ravi is gone.\u{201d}"
     );
     assert_eq!(
         a("How many dialogues does Ravi have?"),
@@ -431,6 +431,41 @@ fn scene_and_dialogue_facts_come_from_the_screenplay_rows() {
         "Ravi has 2 dialogue blocks in Draft 1."
     );
     assert_eq!(follow("Just give me the number"), "2.");
+}
+
+#[test]
+fn plain_project_questions_are_answered_from_the_read_tools() {
+    // AI context brief section 6, questions 5, 9, 10, 61, 71, 77 and 88: answered by the
+    // read tool that holds the fact, with no model call.
+    let env = TestEnv::with_project("Railway", "Feature Film");
+    seed_screenplay(&env);
+    let m = attach(&env);
+    let answer = |q: &str| {
+        let r = ask(&env, q)["result"].clone();
+        assert_eq!(r["kind"], "Answer", "{q}: {r}");
+        let text = r["content"].as_str().unwrap_or("").to_string();
+        assert!(!text.trim().is_empty(), "{q}: empty answer {r}");
+        (text, r)
+    };
+    let (first, _) = answer("Which scene comes first?");
+    assert!(
+        first.contains("Scene 1") && first.contains("POLICE STATION"),
+        "{first}"
+    );
+    let (headings, r) = answer("List the scene headings.");
+    let all = format!("{headings} {}", r["items"]);
+    assert!(all.contains("RAILWAY STATION"), "{all}");
+    for q in [
+        "How long is the screenplay?",
+        "How many scenes are unscheduled?",
+        "What open tasks do I have?",
+        "Are there unresolved comments?",
+        "Which draft is the production source?",
+    ] {
+        answer(q);
+    }
+    assert_eq!(answer("What open tasks do I have?").0, "No open tasks.");
+    assert_eq!(m.calls(), 0, "these facts need no model");
 }
 
 #[test]

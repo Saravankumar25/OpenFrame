@@ -891,6 +891,17 @@ fn match_cue<'a>(cues: &'a BTreeMap<String, Vec<String>>, wanted: &str) -> Optio
 }
 
 /// One scene's evidence for a character: what they say and the action lines that name them.
+/// A screenplay line in quotes that ends the sentence: “Here.” keeps its own full stop and gets
+/// no second one; “Wait” gets one after the closing quote.
+fn quoted_end(t: &str) -> String {
+    let t = t.trim();
+    if t.ends_with(['.', '!', '?', '\u{2026}']) {
+        format!("\u{201c}{t}\u{201d}")
+    } else {
+        format!("\u{201c}{t}\u{201d}.")
+    }
+}
+
 fn scene_evidence(c: &Connection, scene_id: &str, cue: &str) -> AppResult<String> {
     let mut stmt = c.prepare(
         "SELECT element_type, text FROM screenplay_element WHERE scene_id=?1 ORDER BY position, id",
@@ -1166,19 +1177,19 @@ fn scene_fact(ctx: &ToolCtx<'_>, a: &SceneFactArgs) -> AppResult<ToolOutput> {
             };
             match pick {
                 Some((_, t)) => format!(
-                    "The {} line of {name} is \u{201c}{}\u{201d}.",
+                    "The {} line of {name} is {}",
                     if a.fact == "first_line" {
                         "first"
                     } else {
                         "last"
                     },
-                    t.trim()
+                    quoted_end(t)
                 ),
                 None => format!("{name} has no lines yet."),
             }
         }
         "first_dialogue" => match blocks.first() {
-            Some((who, t)) => format!("{} first says \u{201c}{t}\u{201d}.", title(who)),
+            Some((who, t)) => format!("{} first says {}", title(who), quoted_end(t)),
             None => format!("Nobody speaks in {name}."),
         },
         "mentions" => {
@@ -1310,10 +1321,10 @@ fn dialogue_fact(ctx: &ToolCtx<'_>, a: &DialogueFactArgs) -> AppResult<ToolOutpu
             .find_map(|(s, b)| b.first().map(|x| (s, x)))
         {
             Some((s, (w, t))) => format!(
-                "{} speaks first, in Scene {}: \u{201c}{}\u{201d}",
+                "{} speaks first, in Scene {}: {}",
                 title(w),
                 s.number,
-                queries::truncate_chars(t, 160)
+                quoted_end(&queries::truncate_chars(t, 160))
             ),
             None => format!("Nobody speaks in {where_}."),
         },

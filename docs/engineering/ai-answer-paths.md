@@ -28,6 +28,7 @@
 | Scene summary | Summarize Scene 3, what happens in Scene 3 | `scene_fact` summary: the whole scene (beginning and end kept for very long scenes, and the answer says so) | 1 |
 | Dialogue | How many dialogues does Ravi have, in Scene 3, how many words, which scenes, first speaking scene, most dialogue, who speaks first | `dialogue_fact`, counting dialogue blocks (one cue and its dialogue; parentheticals belong to the block) | 0 |
 | Character | Describe Karthik, who is Karthik | `character_profile`: every scene the character speaks in or is named in, sampled evenly across the story when more than the budget holds | 1 |
+| Project facts | Which scene comes first, list the scene headings, how long is the screenplay, how many scenes are unscheduled, which draft is the production source, what open tasks do I have, are there unresolved comments | The read tool that holds the fact (scene facts, scene list, pages, schedule, production source, tasks, comments) | 0 |
 | Search | Which scenes mention the station | Full-text search over the project; a bare category word ("scenes") answers with its count | 0 or 1 |
 | Product help | How do I export a PDF | The versioned product guide; "not covered" when no section matches | 1 |
 | Changes | Rename Karthik to Ravi, create a task | A proposal card; nothing changes until the person applies it | 0 or more |
@@ -55,6 +56,11 @@
 
 - The 100,000-document synthetic benchmark of the context brief was not built. The app's own data sizes (one project,
   hundreds of scenes) are what is measured.
+- Of the 100 questions in section 6 of the context brief, 38 now go to a tool directly by their wording and two
+  more ("And Ravi?", "Just give me the number") are answered from the conversation (router probe, 2026-10-20). The
+  rest go to the model with a short list of tools. Wording that could mean two things stays with the model: "What is
+  the Production Source?" (the term or the draft), "What changed yesterday?" (the activity list is not filtered by
+  date) and "Is the shooting draft locked?" (the draft status answer does not yet state the lock first).
 - "Does Ravi speak to Maya?", "When do they meet?", continuity checks and schedule-change history still go to the model
   with retrieved snippets; they are not computed.
 - File contents: the assistant reads file names and notes, not the bodies of attached PDFs or documents.
