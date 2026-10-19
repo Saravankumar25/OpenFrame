@@ -17,7 +17,8 @@ Before: the shared data folder after the journey (01), which holds the project "
 
 ## Every screen at two window sizes, with the AI Assistant closed and open
 
-This scenario runs four times: 1280 by 720 and 1920 by 1080, each with the AI Assistant closed and then open.
+This scenario runs six times: 1200 by 720 (the smallest window), 1280 by 720 and 1920 by 1080, each with the AI
+Assistant closed and then open.
 
 1. Set the window size. Open or close the AI Assistant with its top bar button.
 2. Visit, in order: Home; Idea Vault; Story with its Board, Outline, Characters and Timeline views; Screenplay;

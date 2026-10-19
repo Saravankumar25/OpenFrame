@@ -12,7 +12,8 @@
 2. Layout geometry spec: the journey project "Night Bus" plus stress text (a 300-character card title, a 200-character
    unbroken address, mixed Telugu, Tamil, Devanagari, emoji and accented Latin, a 62-character character name). It
    opens Home, Idea Vault, the four Story views, Screenplay, Breakdown, all 14 Production tabs, Call Sheets, Files and
-   Settings at 1280 by 720 and 1920 by 1080, with the AI panel closed and open: 96 screen states per run. On each it
+   Settings at 1200 by 720 (the window minimum), 1280 by 720 and 1920 by 1080, with the AI panel closed and open: 144
+   screen states per run. On each it
    measures page scroll, panel overlap, controls outside the window, cut off or covered, and text cut off with no
    tooltip or label carrying the full text.
 

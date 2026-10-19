@@ -5,7 +5,7 @@
 
 | Check | Screens | Window sizes | AI panel | Themes | Data | Evidence |
 |---|---|---|---|---|---|---|
-| Layout geometry (spec 98) | Home, Idea Vault, Story, Screenplay, Breakdown, all 14 Production tabs, Call Sheets, Files, Settings | 1280 by 720, 1920 by 1080 | closed and open | default | seeded journey project "Night Bus" | `tests/e2e/artifacts/layout-geometry.json` |
+| Layout geometry (spec 98) | Home, Idea Vault, Story, Screenplay, Breakdown, all 14 Production tabs, Call Sheets, Files, Settings | 1200 by 720, 1280 by 720, 1920 by 1080 | closed and open | default | seeded journey project "Night Bus" | `tests/e2e/artifacts/layout-geometry.json` |
 | Visual baseline (spec 90) | 15 screens | runner default | closed | default light | seeded project | baseline PNGs in `docs/release/evidence/M0/M0.20-visual-baseline/`, diffs under `tests/e2e/artifacts/` |
 | Appearance themes (spec 91) | the same 15 screens | runner default | closed | 17 built-in themes, light and dark | seeded project | spec log; paper stays white |
 | Reachability (spec 95) | every route and production tab | runner default | open | default | seeded project | spec log |

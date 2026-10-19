@@ -1,5 +1,5 @@
 // Layout geometry in the real app (UX brief 2026-10-20, sections 4 and 11): every workspace and
-// production tab, with the AI Assistant closed and open, at 1280x720 and 1920x1080 window sizes.
+// production tab, with the AI Assistant closed and open, at 1200x720 (the minimum), 1280x720 and 1920x1080.
 //
 // Runs in the shared journey data root after 95-reachability and reopens the demo project
 // "Night Bus". For each screen it measures, in the page itself:
@@ -19,7 +19,9 @@ import { join } from "node:path";
 import { click, launchApp, openWorkspace, sleep, stepper, waitForText } from "../lib/app.mjs";
 
 const OUT = join(import.meta.dirname, "..", "artifacts");
+// 1200 by 720 is the window minimum (tauri.conf.json), the narrowest a person can make it.
 const SIZES = [
+  [1200, 720],
   [1280, 720],
   [1920, 1080],
 ];

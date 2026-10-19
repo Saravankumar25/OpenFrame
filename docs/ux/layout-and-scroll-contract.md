@@ -48,7 +48,7 @@ Day Out of Days grids, and a zoomed screenplay page.
 
 ## 5. Window sizes
 
-The geometry test runs at 1280 by 720 (the smallest supported working size) and 1920 by 1080, with the AI panel closed
+The geometry test runs at 1200 by 720 (the window minimum), 1280 by 720 and 1920 by 1080, with the AI panel closed
 and open, over Home, every workspace, every Production tab and Settings. It fails on any of: page overflow, the AI panel
 or rail overlapping the workspace, a control outside the window, a control cut off by its container, or a control
 covered by another element. The measured numbers are written to `tests/e2e/artifacts/layout-geometry.json`.
