@@ -5,7 +5,6 @@
    (panels close before the text is compressed, UX §105.3). */
 
 .spx { display: flex; flex-direction: column; height: 100%; min-height: 0; position: relative; }
-.spx .sp-top { overflow-x: auto; overflow-y: hidden; }
 .spx .sp-body { flex: 1; display: flex; min-height: 0; }
 .spx-scroll { overflow: auto; }
 
@@ -176,4 +175,6 @@
 /* Long screenplay and draft names are shortened with an ellipsis; the full name is in the tooltip
    (owner change list item 18), so the toolbar never needs a sideways scroll bar. */
 .sp-name { display: inline-block; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: bottom; }
-.spx .sp-top { flex-wrap: wrap; row-gap: 6px; overflow: visible; }
+/* The toolbar grows to a second row in a narrow window (fixed 46px height let the second row slide under the
+   scene list; measured by the layout geometry E2E spec). */
+.spx .sp-top { flex-wrap: wrap; row-gap: 6px; overflow: visible; height: auto; min-height: 46px; padding-block: 6px; }
