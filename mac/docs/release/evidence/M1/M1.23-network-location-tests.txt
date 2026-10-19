@@ -1,0 +1,31 @@
+M1.23 Network-location policy refuses mapped network drives and paths that resolve to UNC (M0.28 P3, finding E4)
+Date: 2026-10-05. Machine: Windows 11 Home 10.0.26200. Working tree on master (uncommitted).
+
+Changes
+- crates/openframe-security/src/lib.rs
+  - drive_kind(letter): GetDriveTypeW (DRIVE_REMOTE = 4). Declared with extern "system" like util.rs and
+    distribution.rs, so no Cargo.toml or Cargo.lock change and no new windows-crate feature. One unsafe call with a
+    SAFETY comment; file added to UNSAFE_ALLOW in scripts/architecture-lint.mjs with the reason.
+  - check_user_path(Refuse) refuses a mapped network drive (project_format.network_location); Allow (dialog-chosen
+    import/export files) keeps accepting shares and mapped drives: the deliberate exception, recorded in doc 20 T4a.
+  - is_network_location(path): UNC syntax first (no filesystem access), then drive type, then for well-formed local
+    paths the nearest existing ancestor is canonicalized and refused if it resolves to a share or mapped drive.
+  - validate_output_dir (project parent folders) now rechecks the canonical folder with Refuse (was Allow).
+  - The decision is split: check_user_path_with / is_network_location_with take an injected drive classifier.
+- crates/openframe-project-format/src/lib.rs is_network_path delegates to is_network_location.
+
+Tests
+- lib unit: mapped_network_drives_are_refused_for_projects_and_content (classifier says Z: is remote; upper,
+  lower and verbatim forms refused; Allow still accepts; C: unaffected; with an all-local classifier Z: passes,
+  which proves the refusal comes from the drive-type check), unc_text_is_a_network_location_without_filesystem_access.
+- confinement_and_network.rs: the_local_system_drive_is_not_refused (real GetDriveTypeW on the temp drive),
+  unc_project_locations_are_network_locations,
+  a_local_folder_that_resolves_to_a_share_is_refused_when_symlinks_can_be_created (SKIPS here: no Developer Mode).
+- project-format: network_paths_detected (extended: verbatim UNC, // form, real temp folder not refused).
+
+Results (3 consecutive runs): see M1.22 file (same suites); all ok.
+
+Residual risks
+- Canonicalizing a local path that is a symlink to a share contacts the share once before the refusal.
+- No machine here has a mapped drive or symlink privilege: the real DRIVE_REMOTE and symlink-to-share paths are
+  covered by the injected classifier and a skipped test, not by a live mapping.

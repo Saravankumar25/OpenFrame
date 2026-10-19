@@ -1,0 +1,19 @@
+{
+  "author": "Kayal Pictures art department",
+  "description": "Night-sea surfaces with a lantern accent, for the Low Tide Radio grade sessions.",
+  "formatVersion": 1,
+  "id": "low-tide-night",
+  "name": "Low Tide Night (grade)",
+  "overrides": {
+    "dark": {
+      "accent": "oklch(76% 0.15 70)"
+    }
+  },
+  "seeds": {
+    "accentChroma": 0.15,
+    "accentHue": 70.0,
+    "accentLightnessNudge": 0.0,
+    "neutralHue": 235.0,
+    "neutralTint": 0.03
+  }
+}

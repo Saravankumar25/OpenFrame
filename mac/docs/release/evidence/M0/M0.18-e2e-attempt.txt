@@ -1,0 +1,7 @@
+WebView2 Runtime 154.0.4258.53
+tauri-driver already installed.
+Building OpenFrame Studio (debug, embedded UI)…
+memory allocation of 1114128 bytes failed
+memory allocation of 3031056 bytes failed
+Error: Building the desktop app failed.
+E2E_EXIT=1

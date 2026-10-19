@@ -1,0 +1,25 @@
+=== page 1
+  0   90 SceneNumber    1
+  0  150 Heading        INT. HOUSE - DAY
+  0  760 SceneNumber    1
+  2  150 Action         Scene 1 happens here.
+  4   90 SceneNumber    2
+  4  150 Heading        EXT. ROAD - DAY
+  4  760 SceneNumber    2
+  6  150 Action         Scene 2 happens here.
+  8   80 SceneNumber    2A
+  8  150 Heading        INT. CAR - DAY
+  8  760 SceneNumber    2A
+ 10  150 Action         Scene 2A happens here.
+ 12   90 SceneNumber    3
+ 12  150 Heading        EXT. TEMPLE - NIGHT
+ 12  760 SceneNumber    3
+ 14  150 Action         Scene 3 happens here.
+ 16   90 SceneNumber    4
+ 16  150 Heading        INT. HOUSE - NIGHT
+ 16  760 SceneNumber    4
+ 18  150 Action         Scene 4 happens here.
+ 20   90 SceneNumber    5
+ 20  150 Heading        OMITTED
+ 20  760 SceneNumber    5
+pdf-sha256 317c2b0fb2224d0aca15bec1e9e25f06656f96dad378559abd48ecd3e4b16f0e

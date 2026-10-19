@@ -1,0 +1,29 @@
+/* AI Assistant panel additions on top of the mock vocabulary (.ai, .msg, .cs). */
+.ai .ai-conv{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding-bottom:10px}
+.ai .ai-input{padding:10px 14px;border-top:1px solid var(--line);display:flex;gap:8px;align-items:flex-end}
+.ai .ai-input textarea{flex:1;resize:none;min-height:40px}
+.ai .msg.ai-err{background:var(--red-soft)}
+.ai .ai-items{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:3px}
+.ai .ai-items li{display:flex;align-items:center;gap:6px;font-size:12.5px}
+.ai .ai-items .grow{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.ai .cs .csr.ai-excluded{background:var(--surface2)}
+.ai .cs .csr.ai-locked{background:var(--red-soft)}
+.ai .cs .csr b{text-align:right;margin-left:10px}
+.ai .seg{flex-wrap:wrap}
+/* Agent answers: sources, steps, project-context notice, Proposed Changes review. */
+.ai .ai-sources{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin-top:6px}
+.ai .ai-sources .ai-src{cursor:pointer;border:0;font:inherit}
+.ai .ai-sources .ai-src:hover{text-decoration:underline}
+.ai .ai-sources .ai-src:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.ai .ai-steps{margin-top:4px}
+.ai .ai-notice{font-size:12px;padding:6px 8px;border-radius:6px;background:var(--yellow-soft)}
+.ai .cs .csr.ai-block{display:block}
+.ai .cs .csr.ai-section{background:var(--surface2)}
+.ai .cs .csr.ai-section b{text-align:left;margin-left:0}
+.ai .cs .csr.ai-destructive{background:var(--red-soft)}
+.ai .cs.ai-stale{border-color:var(--yellow)}
+.ai .cs.ai-stale .csh{background:var(--yellow-soft)}
+/* Settings > Offline AI > Technical details */
+.ai-tech{font-size:12px}
+.ai-tech td,.ai-tech th{vertical-align:top}
+.ai-tech .hash{font-family:ui-monospace,Consolas,monospace;font-size:11px;word-break:break-all}

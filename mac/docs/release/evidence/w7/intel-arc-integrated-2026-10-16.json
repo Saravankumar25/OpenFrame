@@ -1,0 +1,49 @@
+{
+  "adapters": [
+    {
+      "dedicatedMb": 128,
+      "driver": "32.0.101.8132",
+      "name": "Intel(R) Arc(TM) Graphics",
+      "sharedMb": 9009,
+      "software": false,
+      "vendorId": 32902
+    },
+    {
+      "dedicatedMb": 0,
+      "driver": "10.0.26100.9711",
+      "name": "Microsoft Basic Render Driver",
+      "sharedMb": 9009,
+      "software": true,
+      "vendorId": 5140
+    }
+  ],
+  "automatic": {
+    "firstAnswerSeconds": 25.73118782043457,
+    "placement": "Runs on the processor. The graphics card did not pass its check, so the processor is used.",
+    "warmAnswerSeconds": 3.8560945987701416,
+    "warmWords": 114
+  },
+  "probe": {
+    "forceIntegratedProbe": false,
+    "off": true,
+    "probes": [
+      {
+        "adapter": "Intel(R) Arc(TM) Graphics",
+        "at": 1792125149577,
+        "cpuTokensPerSecond": 32.804232804232804,
+        "driver": "32.0.101.8132",
+        "gpuTokensPerSecond": 30.285714285714285,
+        "result": "failed",
+        "runtime": "b11259",
+        "vendorId": 32902
+      }
+    ]
+  },
+  "processorOnly": {
+    "firstAnswerSeconds": 6.9929633140563965,
+    "placement": "Runs on the processor. The graphics card is switched off in Settings.",
+    "warmAnswerSeconds": 4.08071231842041,
+    "warmWords": 114
+  },
+  "vulkanLoader": true
+}

@@ -1,0 +1,1553 @@
+{
+  "header": {
+    "company": "Kayal Pictures",
+    "address": "14/220 Bazaar Road, Fort Kochi, Kerala 682001",
+    "producer": "Arun Joseph",
+    "firstAd": "Priya Ramesh",
+    "director": "Meenakshi Varma",
+    "contact": "Gopan Nair, Unit Production Manager, +91 98470 20114"
+  },
+  "cast": [
+    {
+      "character": "ANJALI",
+      "person": "Nimisha Raghavan",
+      "contact": "nimisha.r@lighthousetalent.example, +91 98470 30001",
+      "availability": "Available for the whole shoot. Blocked 2027-01-30 for a dubbing session in Chennai.",
+      "notes": "Learns basic tape baking and Nagra threading from the sound department in prep week.",
+      "photo": "cast-anjali.png",
+      "unavailable": [
+        [
+          "2027-01-30",
+          "2027-01-30",
+          "Dubbing session in Chennai"
+        ]
+      ]
+    },
+    {
+      "character": "APPACHAN",
+      "person": "K. P. Gopinathan",
+      "contact": "+91 94470 30002 (through his son Vinod)",
+      "availability": "Maximum ten hours a day. No work after 22:00 on consecutive days.",
+      "notes": "Hearing aid in the left ear; the sound department hides the boom accordingly.",
+      "photo": "cast-appachan.png",
+      "unavailable": []
+    },
+    {
+      "character": "MARIAMMA",
+      "person": "Divya Mathew",
+      "contact": "divya.mathew@lighthousetalent.example, +91 98950 30003",
+      "availability": "Flashback days and the reel voice session only.",
+      "notes": "Records the reel voice in prep at the Kochi studio on 2027-01-05.",
+      "photo": "cast-mariamma.png",
+      "unavailable": [
+        [
+          "2027-01-18",
+          "2027-01-20",
+          "Stage show in Thrissur"
+        ]
+      ]
+    },
+    {
+      "character": "YOUNG ANJALI",
+      "person": "Ameya Suresh",
+      "contact": "Parent: Suresh Kumar, +91 98460 30004",
+      "availability": "School holidays only. Child performer rules: no work after 20:00 without a written exemption.",
+      "notes": "Chaperone and tutor on set. Night scenes 2 and 32 shot on a lit stage with a 19:30 wrap.",
+      "photo": null,
+      "unavailable": []
+    },
+    {
+      "character": "FATHIMA",
+      "person": "Sabitha Rasheed",
+      "contact": "sabitha.rasheed@example.in, +91 97450 30005",
+      "availability": "Available.",
+      "notes": "Fluent in Malayalam and Arabic; coaches the radio club kids between setups.",
+      "photo": "cast-fathima.png",
+      "unavailable": []
+    },
+    {
+      "character": "RAHUL",
+      "person": "Aditya Nair",
+      "contact": "Parent: Rekha Nair, +91 98470 30006",
+      "availability": "Minor (16). Tutor on set. Twelve-hour turnaround.",
+      "notes": "Can solder. Built a working replica of the biscuit-tin transmitter with the props team.",
+      "photo": "cast-rahul.png",
+      "unavailable": []
+    },
+    {
+      "character": "SURESH",
+      "person": "Sajan Kuriakose",
+      "contact": "sajan.k@lighthousetalent.example, +91 98950 30007",
+      "availability": "Available except 2027-01-22.",
+      "notes": "Does his own breakwater crawl with the stunt coordinator; harness rig on the far side.",
+      "photo": "cast-suresh.png",
+      "unavailable": [
+        [
+          "2027-01-22",
+          "2027-01-22",
+          "Family wedding"
+        ]
+      ]
+    },
+    {
+      "character": "JOE",
+      "person": "Lal Fernandez",
+      "contact": "+91 94460 30008",
+      "availability": "Available.",
+      "notes": "Drives the Ambassador himself on a closed road; police escort booked.",
+      "photo": "cast-joe.png",
+      "unavailable": []
+    },
+    {
+      "character": "LATHA",
+      "person": "Reshmi Pillai",
+      "contact": "reshmi.pillai@example.in, +91 97440 30009",
+      "availability": "Available.",
+      "notes": "Kerala Police uniform hire with insignia removed, cleared by the legal team.",
+      "photo": "cast-latha.png",
+      "unavailable": []
+    },
+    {
+      "character": "VARGHESE",
+      "person": "Thampi Cherian",
+      "contact": "+91 94950 30010",
+      "availability": "Sea days and the radio voice session.",
+      "notes": "Former fisherman. Comfortable on the boat; still wears a life jacket under the costume.",
+      "photo": null,
+      "unavailable": []
+    },
+    {
+      "character": "PORT OFFICER",
+      "person": "Ramesh Kaimal",
+      "contact": "+91 94470 30011",
+      "availability": "Day player.",
+      "notes": null,
+      "photo": null,
+      "unavailable": []
+    },
+    {
+      "character": "STUDIO PRODUCER",
+      "person": "Karan Shetty",
+      "contact": "+91 98450 30012",
+      "availability": "Day player, travels from Bengaluru.",
+      "notes": "Phone voice for scene 42 recorded on the same day as scene 3.",
+      "photo": null,
+      "unavailable": []
+    },
+    {
+      "character": "OLD FISHERMAN",
+      "person": "Pappan Kuttan",
+      "contact": "Through Munambam harbour union, +91 94460 30013",
+      "availability": "Harbour days.",
+      "notes": "Real harbour worker. Paid at the day player rate.",
+      "photo": null,
+      "unavailable": []
+    },
+    {
+      "character": "GUARD",
+      "person": "Shibu Das",
+      "contact": "+91 98470 30014",
+      "availability": "Day player.",
+      "notes": null,
+      "photo": null,
+      "unavailable": []
+    },
+    {
+      "character": "MEENU",
+      "person": "Gauri Krishna",
+      "contact": "Parent: Krishna Prasad, +91 98460 30015",
+      "availability": "Child performer (12). Weekends and holidays.",
+      "notes": "Radio club. Dual dialogue with Rahul in scene 21.",
+      "photo": null,
+      "unavailable": []
+    },
+    {
+      "character": "HARBOUR CLERK",
+      "person": "Anoop Paul",
+      "contact": "+91 94470 30016",
+      "availability": "Voice only, recorded wild.",
+      "notes": null,
+      "photo": null,
+      "unavailable": []
+    },
+    {
+      "character": "NURSE",
+      "person": "Sini Joseph",
+      "contact": "+91 97450 30017",
+      "availability": "Hospital day.",
+      "notes": null,
+      "photo": null,
+      "unavailable": []
+    }
+  ],
+  "alternates": [
+    {
+      "character": "MARIAMMA",
+      "person": "Leena Abraham",
+      "contact": "+91 98950 30018",
+      "notes": "Voice double for the damaged-tape passages if Divya is unavailable for ADR."
+    }
+  ],
+  "crew": [
+    {
+      "person": "Meenakshi Varma",
+      "role": "Director",
+      "department": "Direction",
+      "contact": "meenakshi@kayalpictures.example, +91 98470 40001"
+    },
+    {
+      "person": "Arun Joseph",
+      "role": "Producer",
+      "department": "Production",
+      "contact": "arun@kayalpictures.example, +91 98470 40002"
+    },
+    {
+      "person": "Thomas Mathew",
+      "role": "Line Producer",
+      "department": "Production",
+      "contact": "+91 98470 40003"
+    },
+    {
+      "person": "Gopan Nair",
+      "role": "Unit Production Manager",
+      "department": "Production",
+      "contact": "+91 98470 20114"
+    },
+    {
+      "person": "Priya Ramesh",
+      "role": "First Assistant Director",
+      "department": "Direction",
+      "contact": "+91 98470 40005"
+    },
+    {
+      "person": "Harish K.",
+      "role": "Second Assistant Director",
+      "department": "Direction",
+      "contact": "+91 98470 40006"
+    },
+    {
+      "person": "Anitha George",
+      "role": "Script Supervisor",
+      "department": "Direction",
+      "contact": "+91 98470 40007"
+    },
+    {
+      "person": "Vivek Anand",
+      "role": "Director of Photography",
+      "department": "Camera",
+      "contact": "+91 98470 40008"
+    },
+    {
+      "person": "Jijo Paul",
+      "role": "First Assistant Camera",
+      "department": "Camera",
+      "contact": "+91 98470 40009"
+    },
+    {
+      "person": "Shaji Kumar",
+      "role": "Gaffer",
+      "department": "Electric",
+      "contact": "+91 98470 40010"
+    },
+    {
+      "person": "Murali Das",
+      "role": "Key Grip",
+      "department": "Grip",
+      "contact": "+91 98470 40011"
+    },
+    {
+      "person": "Lakshmi Iyer",
+      "role": "Production Designer",
+      "department": "Art",
+      "contact": "+91 98470 40012"
+    },
+    {
+      "person": "Sunil Babu",
+      "role": "Art Director",
+      "department": "Art",
+      "contact": "+91 98470 40013"
+    },
+    {
+      "person": "Neha Joseph",
+      "role": "Costume Designer",
+      "department": "Wardrobe",
+      "contact": "+91 98470 40014"
+    },
+    {
+      "person": "Ranjit Kumar",
+      "role": "Makeup and Hair Head of Department",
+      "department": "Hair and Makeup",
+      "contact": "+91 98470 40015"
+    },
+    {
+      "person": "Farhan Ali",
+      "role": "Production Sound Mixer",
+      "department": "Sound",
+      "contact": "+91 98470 40016"
+    },
+    {
+      "person": "Vinod Thampi",
+      "role": "Boom Operator",
+      "department": "Sound",
+      "contact": "+91 98470 40017"
+    },
+    {
+      "person": "Dileep Raj",
+      "role": "Special Effects Supervisor",
+      "department": "Special Effects",
+      "contact": "+91 98470 40018"
+    },
+    {
+      "person": "Ashwin Rao",
+      "role": "VFX Supervisor",
+      "department": "VFX",
+      "contact": "+91 98470 40019"
+    },
+    {
+      "person": "Sreejith Nair",
+      "role": "Location Manager",
+      "department": "Locations",
+      "contact": "+91 98470 11218"
+    },
+    {
+      "person": "Raju Peter",
+      "role": "Transport Captain",
+      "department": "Transport",
+      "contact": "+91 98470 40021"
+    },
+    {
+      "person": "Benny Thomas",
+      "role": "Animal Wrangler",
+      "department": "Animals",
+      "contact": "+91 98470 40022"
+    },
+    {
+      "person": "Captain Joy Antony",
+      "role": "Marine Coordinator",
+      "department": "Marine",
+      "contact": "+91 98470 40023"
+    },
+    {
+      "person": "Dr. Asha Kurian",
+      "role": "Set Medic",
+      "department": "Health and Safety",
+      "contact": "+91 98470 40024"
+    },
+    {
+      "person": "Sister Lissy",
+      "role": "Child Tutor and Chaperone",
+      "department": "Production",
+      "contact": "+91 98470 40025"
+    },
+    {
+      "person": "Karthik Iyer",
+      "role": "Editor",
+      "department": "Post-production",
+      "contact": "+91 98470 40026"
+    },
+    {
+      "person": "Deepak Menon",
+      "role": "Composer",
+      "department": "Music",
+      "contact": "+91 98470 40027"
+    }
+  ],
+  "locations": [
+    {
+      "key": "station",
+      "name": "Coast Radio Station (Old Signal Station, Vypin)",
+      "address": "Beach Road, Vypin, Kochi, Kerala 682508",
+      "contact": "Port Trust Estate Office, Mr. Hamid, +91 484 266 6400",
+      "hospital": "Government Taluk Hospital, Njarakkal, 4 km, 10 minutes. Casualty open all night.",
+      "emergency": "Sreejith Nair (Location Manager) +91 98470 11218; Vypin Police Station +91 484 249 2000",
+      "status": "Confirmed",
+      "notes": {
+        "access": "Single lane from Beach Road. Trucks over 7 tonnes must unload at the church ground and shuttle.",
+        "parking": "Unit base on the church ground, 600 m south. Twelve cars at the gate only.",
+        "noise": "Ferry horn every 20 minutes until 21:00. Mosque call at 18:40. Sea wind on the roof.",
+        "power": "No mains. 125 kVA generator parked 80 m away behind the grove, cable run through the coconut trees.",
+        "permission": "Port Trust permit KP-PT-2027-118 for 2027-01-11 to 2027-01-26. Demolition day agreed in writing for 2027-01-26.",
+        "toilets": "Two honey wagons at unit base. None in the building.",
+        "facilities": "Ground floor ops room is a constructed set inside the shell. Basement floods at high tide; pumps on standby.",
+        "travel": "35 minutes from the Fort Kochi unit hotel by the Vypin bridge.",
+        "general": "Asbestos survey cleared 2026-12-02. Roof access only with harness above the parapet line."
+      },
+      "photos": [
+        "station-day.png",
+        "station-dusk.png",
+        "station-night.png"
+      ],
+      "unavailable": [
+        [
+          "2027-01-24",
+          "2027-01-24",
+          "Port Trust inspection, no filming"
+        ]
+      ]
+    },
+    {
+      "key": "house",
+      "name": "Thomas House (private home, Chellanam)",
+      "address": "Kandakkadavu, Chellanam, Kochi, Kerala 682008",
+      "contact": "Owner Mrs. Elsy Pereira, +91 94470 50002",
+      "hospital": "Lourdes Hospital, Ernakulam, 14 km, 30 minutes",
+      "emergency": "Sreejith Nair +91 98470 11218",
+      "status": "Confirmed",
+      "notes": {
+        "access": "Narrow lane. Equipment by hand cart from the main road, 150 m.",
+        "parking": "School ground opposite, after 16:00 on weekdays.",
+        "noise": "Neighbour's goats. A temple loudspeaker on festival days.",
+        "power": "Tie-in agreed with the owner; small genny as backup.",
+        "permission": "Signed location agreement, 2027-01-14 and one standby day.",
+        "toilets": "Owner's outside toilet for cast only. Honey wagon on the school ground.",
+        "facilities": "Kitchen, veranda and back bedroom used. The family keeps the front room.",
+        "travel": "25 minutes from the unit hotel.",
+        "general": "No smoking anywhere on the property."
+      },
+      "photos": [],
+      "unavailable": []
+    },
+    {
+      "key": "teashop",
+      "name": "Tea Shop and Toddy Shop Row (Mattancherry)",
+      "address": "Bazaar Road, Mattancherry, Kochi 682002",
+      "contact": "Shop owner Mr. Ashraf, +91 98950 50003",
+      "hospital": "Fort Kochi Taluk Hospital, 2 km",
+      "emergency": "Sreejith Nair +91 98470 11218",
+      "status": "Confirmed",
+      "notes": {
+        "access": "Street closed 10:00 to 23:00 with police permission.",
+        "parking": "Unit base at the old warehouse yard.",
+        "noise": "Traffic on the main road; tourist boats.",
+        "power": "Generator in the warehouse yard.",
+        "permission": "Corporation of Kochi street permit CK-2027-044.",
+        "toilets": "Warehouse yard.",
+        "facilities": "Tea shop interior, kitchen, the toddy shop yard and the room upstairs (Joe's room) in the same building.",
+        "travel": "10 minutes from the unit hotel.",
+        "general": "Shops stay open; extras are the real shopkeepers where they agree."
+      },
+      "photos": [],
+      "unavailable": []
+    },
+    {
+      "key": "school",
+      "name": "Government Fisheries School Laboratory (Kalamassery)",
+      "address": "Fisheries School Road, Kalamassery, Kochi 683104",
+      "contact": "Headmistress Mrs. Ancy, +91 484 255 0300",
+      "hospital": "Medical College Hospital, Kalamassery, 3 km",
+      "emergency": "Sreejith Nair +91 98470 11218",
+      "status": "Confirmed",
+      "notes": {
+        "access": "Weekends and school holidays only.",
+        "parking": "School ground.",
+        "noise": "Quiet on Sundays. Airport approach path overhead.",
+        "power": "School mains, 3-phase in the lab.",
+        "permission": "District education office letter DEO-EKM-2027-07.",
+        "toilets": "School toilets.",
+        "facilities": "Lab benches, blackout curtains installed by the art department.",
+        "travel": "40 minutes from the unit hotel.",
+        "general": "Return every bench and chart to its photo-documented place."
+      },
+      "photos": [],
+      "unavailable": [
+        [
+          "2027-01-11",
+          "2027-01-15",
+          "School term, weekdays"
+        ],
+        [
+          "2027-01-18",
+          "2027-01-19",
+          "School term, weekdays"
+        ]
+      ],
+      "available": [
+        [
+          "2027-01-16",
+          "2027-01-17",
+          "Weekend"
+        ]
+      ]
+    },
+    {
+      "key": "harbour",
+      "name": "Munambam Fishing Harbour",
+      "address": "Munambam, Ernakulam district, Kerala 683515",
+      "contact": "Harbour Engineer's office, +91 484 248 0123",
+      "hospital": "Taluk Hospital, North Paravur, 12 km",
+      "emergency": "Coastal police Munambam +91 484 248 0100",
+      "status": "Confirmed",
+      "notes": {
+        "access": "Harbour gate opens 04:00. Fish auction 05:00 to 08:00, keep the lanes clear.",
+        "parking": "Ice factory yard.",
+        "noise": "Diesel engines, auction calls, crows.",
+        "power": "Generator only.",
+        "permission": "Fisheries department permission FD-2027-12 and harbour union consent.",
+        "toilets": "Honey wagon at the ice factory yard.",
+        "facilities": "Real boats with their crews as background.",
+        "travel": "55 minutes from the unit hotel.",
+        "general": "Do not block working boats. Rain towers on the breakwater side only."
+      },
+      "photos": [
+        "harbour-dawn.png"
+      ],
+      "unavailable": []
+    },
+    {
+      "key": "breakwater",
+      "name": "Munambam Breakwater (stunt section)",
+      "address": "North breakwater, Munambam Harbour",
+      "contact": "Harbour Engineer's office, +91 484 248 0123",
+      "hospital": "Taluk Hospital, North Paravur, 12 km. Ambulance on standby on the night.",
+      "emergency": "Marine coordinator Captain Joy Antony +91 98470 40023",
+      "status": "Confirmed",
+      "notes": {
+        "access": "Tetrapods: only harnessed crew past the yellow marker.",
+        "parking": "Same as the harbour.",
+        "noise": "Sea.",
+        "power": "Generator on the harbour road.",
+        "permission": "Same permit as the harbour, plus the marine safety plan signed 2027-01-08.",
+        "toilets": "Harbour base.",
+        "facilities": "Rescue boat and two safety divers.",
+        "travel": "Same as the harbour.",
+        "general": "Wave machine and rain towers. Stop work in winds above 25 knots."
+      },
+      "photos": [],
+      "unavailable": []
+    },
+    {
+      "key": "beach",
+      "name": "Cherai Beach (north end)",
+      "address": "Cherai, Vypin, Kerala 683514",
+      "contact": "Panchayat office, +91 484 248 1234",
+      "hospital": "Taluk Hospital, North Paravur, 9 km",
+      "emergency": "Lifeguard post 4, +91 98470 50007",
+      "status": "Confirmed",
+      "notes": {
+        "access": "Sand: trackway for the generator truck.",
+        "parking": "Resort car park by arrangement.",
+        "noise": "Resort music until 22:00, agreed off for the listening night.",
+        "power": "Generator truck in shot as a picture vehicle, and a silent unit behind the dunes.",
+        "permission": "Panchayat letter and police permission for 300 extras.",
+        "toilets": "Four honey wagons.",
+        "facilities": "Holding tent for 300 extras.",
+        "travel": "50 minutes from the unit hotel.",
+        "general": "Low tide on 2027-01-20 at 08:12 for scene 44."
+      },
+      "photos": [
+        "beach-lanterns.png"
+      ],
+      "unavailable": []
+    },
+    {
+      "key": "church",
+      "name": "St. Antony's Church (Kadalkkara set dressing)",
+      "address": "Chellanam, Kochi 682008",
+      "contact": "Parish priest Fr. Joseph, +91 94470 50008",
+      "hospital": "Lourdes Hospital, 14 km",
+      "emergency": "Sreejith Nair +91 98470 11218",
+      "status": "Confirmed",
+      "notes": {
+        "access": "Steps and yard only; not inside during mass hours.",
+        "parking": "Church ground.",
+        "noise": "Bells on the hour.",
+        "power": "Church mains for practicals, generator for lights.",
+        "permission": "Parish permission letter, donation agreed.",
+        "toilets": "Church hall.",
+        "facilities": "Choir of the parish, rehearsed by the composer.",
+        "travel": "25 minutes.",
+        "general": "Respectful dress for all crew."
+      },
+      "photos": [],
+      "unavailable": []
+    },
+    {
+      "key": "police",
+      "name": "Police Outpost (set, Navodaya Studio Floor 2)",
+      "address": "Navodaya Studio, Kakkanad, Kochi 682030",
+      "contact": "Studio manager, +91 484 242 0011",
+      "hospital": "Sunrise Hospital, Kakkanad, 2 km",
+      "emergency": "Studio security +91 484 242 0012",
+      "status": "Confirmed",
+      "notes": {
+        "access": "Studio gate 2.",
+        "parking": "Studio lot.",
+        "noise": "Soundproof floor.",
+        "power": "Studio supply.",
+        "permission": "Studio booking SB-2027-031.",
+        "toilets": "Studio.",
+        "facilities": "Outpost office and cell built as one set.",
+        "travel": "30 minutes.",
+        "general": "The cell door is a practical lock; the key stays with the props master."
+      },
+      "photos": [],
+      "unavailable": []
+    },
+    {
+      "key": "port",
+      "name": "Port Trust Office (heritage building, Willingdon Island)",
+      "address": "Willingdon Island, Kochi 682003",
+      "contact": "Public relations office, +91 484 266 6000",
+      "hospital": "Naval hospital emergency by arrangement, 3 km",
+      "emergency": "Sreejith Nair +91 98470 11218",
+      "status": "Confirmed",
+      "notes": {
+        "access": "Security clearance list 48 hours ahead.",
+        "parking": "Visitors' car park.",
+        "noise": "Ceiling fans (practical), port traffic.",
+        "power": "Building mains.",
+        "permission": "Port Trust media permission PT-MED-2027-02.",
+        "toilets": "Building.",
+        "facilities": "Records room and the deputy's office.",
+        "travel": "15 minutes.",
+        "general": "No filming of real documents or port security areas."
+      },
+      "photos": [],
+      "unavailable": []
+    },
+    {
+      "key": "hospital",
+      "name": "Taluk Hospital Ward (closed wing, Njarakkal)",
+      "address": "Njarakkal, Vypin, Kochi 682505",
+      "contact": "Superintendent's office, +91 484 249 0500",
+      "hospital": "This is a hospital. The working casualty is in the next building.",
+      "emergency": "Superintendent's office +91 484 249 0500",
+      "status": "Confirmed",
+      "notes": {
+        "access": "Closed wing, rear entrance.",
+        "parking": "Rear yard.",
+        "noise": "Real hospital nearby: silent generators only.",
+        "power": "Hospital supply with a separate board.",
+        "permission": "Health department letter HD-EKM-2027-03.",
+        "toilets": "Wing toilets.",
+        "facilities": "Six beds, drip stands supplied by the art department.",
+        "travel": "30 minutes.",
+        "general": "No real patients in shot. No smoke or haze."
+      },
+      "photos": [],
+      "unavailable": []
+    },
+    {
+      "key": "sureshhouse",
+      "name": "Suresh's House (Vypin)",
+      "address": "Elankunnapuzha, Vypin 682503",
+      "contact": "Owner Mr. Raghavan, +91 94470 50011",
+      "hospital": "Taluk Hospital, Njarakkal, 3 km",
+      "emergency": "Sreejith Nair +91 98470 11218",
+      "status": "Confirmed",
+      "notes": {
+        "access": "Small house: minimal crew of twelve inside.",
+        "parking": "Roadside.",
+        "noise": "School next door until 15:30.",
+        "power": "House tie-in.",
+        "permission": "Location agreement for one day.",
+        "toilets": "Owner's toilet by permission.",
+        "facilities": "Living room only.",
+        "travel": "30 minutes.",
+        "general": "Framed photo of the Little Flower supplied by props."
+      },
+      "photos": [],
+      "unavailable": []
+    },
+    {
+      "key": "studio",
+      "name": "Soundwave Studio (Kochi stand-in for Bengaluru)",
+      "address": "Panampilly Nagar, Kochi 682036",
+      "contact": "Studio owner, +91 484 231 2200",
+      "hospital": "Medical Trust Hospital, 2 km",
+      "emergency": "Studio office +91 484 231 2200",
+      "status": "Confirmed",
+      "notes": {
+        "access": "Lift to the second floor.",
+        "parking": "Basement.",
+        "noise": "Treated room.",
+        "power": "Studio mains.",
+        "permission": "Paid booking.",
+        "toilets": "Studio.",
+        "facilities": "Real mixing room with Pro Tools rig.",
+        "travel": "15 minutes.",
+        "general": "Exterior plate of Bengaluru shot by the second unit."
+      },
+      "photos": [],
+      "unavailable": []
+    },
+    {
+      "key": "bus",
+      "name": "KSRTC Bus (process trailer, NH 66)",
+      "address": "Unit base: Aroor bypass lay-by, NH 66",
+      "contact": "KSRTC depot Ernakulam, hire office, +91 484 237 2033",
+      "hospital": "Lakeshore Hospital, 10 km",
+      "emergency": "Transport captain Raju Peter +91 98470 40021",
+      "status": "Confirmed",
+      "notes": {
+        "access": "Highway lay-by.",
+        "parking": "Lay-by.",
+        "noise": "Traffic; dialogue is post-synced if needed.",
+        "power": "Process trailer generator.",
+        "permission": "Highway police permission for low-speed towing 22:00 to 02:00.",
+        "toilets": "Unit base.",
+        "facilities": "Bus on a low loader with rain bars.",
+        "travel": "20 minutes.",
+        "general": "Night work: high-visibility vests for all crew outside the bus."
+      },
+      "photos": [],
+      "unavailable": []
+    },
+    {
+      "key": "road",
+      "name": "Lighthouse Road (Puthuvype coast road)",
+      "address": "Puthuvype, Vypin, Kochi 682508",
+      "contact": "Vypin Police Station, +91 484 249 2000",
+      "hospital": "Taluk Hospital, Njarakkal, 6 km",
+      "emergency": "Police escort, Sub-Inspector on duty",
+      "status": "Confirmed",
+      "notes": {
+        "access": "Road closed 21:00 to 01:00.",
+        "parking": "Lighthouse car park.",
+        "noise": "Sea.",
+        "power": "Generator truck.",
+        "permission": "Police road closure order.",
+        "toilets": "Lighthouse car park honey wagon.",
+        "facilities": "Lighthouse beam visible: VFX may keep or remove.",
+        "travel": "35 minutes.",
+        "general": "Picture car stunt speed limit 30 km/h."
+      },
+      "photos": [],
+      "unavailable": []
+    },
+    {
+      "key": "sea",
+      "name": "Open Sea off Vypin (2 nautical miles out)",
+      "address": "Departure: Kalamukku fishing jetty, Vypin",
+      "contact": "Marine coordinator Captain Joy Antony +91 98470 40023",
+      "hospital": "Taluk Hospital, Njarakkal via the jetty, 25 minutes",
+      "emergency": "Coast Guard Kochi +91 484 266 6400 (MRSC), rescue boat on channel 16",
+      "status": "Confirmed",
+      "notes": {
+        "access": "Crew transfer by two support boats, 25 minutes each way.",
+        "parking": "Kalamukku jetty.",
+        "noise": "Engines off for takes where possible.",
+        "power": "Batteries and a small genny on the support boat.",
+        "permission": "Coast Guard intimation and Fisheries department sea permission.",
+        "toilets": "On the support boat.",
+        "facilities": "Two period fishing boats (Little Flower and Seagull), camera boat, rescue boat.",
+        "travel": "Unit hotel to jetty 30 minutes, then 25 minutes by sea.",
+        "general": "Life jackets for everyone. Stop if the swell is over 1.5 m."
+      },
+      "photos": [
+        "sea-storm-1999.png"
+      ],
+      "unavailable": []
+    },
+    {
+      "key": "coastguard",
+      "name": "Coast Guard Station, Alappuzha (scouted for the radio station)",
+      "address": "Beach Road, Alappuzha 688012",
+      "contact": "Station commander's office",
+      "hospital": "Medical College Hospital, Alappuzha",
+      "emergency": "Station duty officer",
+      "status": "Rejected",
+      "notes": {
+        "general": "Rejected 2026-12-10: active defence site, no permission for night work or demolition."
+      },
+      "photos": [],
+      "unavailable": []
+    }
+  ],
+  "sceneLocations": {
+    "station": [
+      2,
+      5,
+      11,
+      12,
+      27,
+      28,
+      32,
+      40,
+      41
+    ],
+    "house": [
+      6,
+      10,
+      15,
+      20,
+      22,
+      38
+    ],
+    "teashop": [
+      9,
+      14,
+      17,
+      29,
+      42
+    ],
+    "school": [
+      13,
+      16,
+      33
+    ],
+    "harbour": [
+      7,
+      23,
+      43
+    ],
+    "breakwater": [
+      24
+    ],
+    "beach": [
+      21,
+      37,
+      39,
+      44
+    ],
+    "church": [
+      18
+    ],
+    "police": [
+      19,
+      31
+    ],
+    "port": [
+      8,
+      36
+    ],
+    "hospital": [
+      25,
+      26
+    ],
+    "sureshhouse": [
+      35
+    ],
+    "studio": [
+      3
+    ],
+    "bus": [
+      4
+    ],
+    "road": [
+      30
+    ],
+    "sea": [
+      1,
+      34
+    ]
+  },
+  "schedule": {
+    "name": "Low Tide Radio shooting schedule (Shooting Draft)",
+    "dayDurationMinutes": 660,
+    "days": [
+      {
+        "n": 1,
+        "date": "2027-01-11",
+        "scenes": [
+          27,
+          28
+        ],
+        "crewCall": "07:00",
+        "start": "08:00",
+        "wrap": "18:00",
+        "notes": "Coast Radio Station interiors, day. Basement water pumped from 05:00.",
+        "markers": [
+          {
+            "type": "Meal",
+            "label": "Lunch",
+            "at": "13:00",
+            "minutes": 60
+          }
+        ]
+      },
+      {
+        "n": 2,
+        "date": "2027-01-12",
+        "scenes": [
+          2,
+          32,
+          11
+        ],
+        "crewCall": "14:00",
+        "start": "15:00",
+        "wrap": "01:00",
+        "notes": "1999 operations room. Child performer works 15:00 to 19:30 only (scenes 2 and 32 first).",
+        "markers": [
+          {
+            "type": "Meal",
+            "label": "Dinner",
+            "at": "19:30",
+            "minutes": 45
+          }
+        ]
+      },
+      {
+        "n": 3,
+        "date": "2027-01-13",
+        "scenes": [
+          12,
+          40,
+          5
+        ],
+        "crewCall": "17:00",
+        "start": "18:00",
+        "wrap": "07:00",
+        "notes": "Night at the station: scenes 12 and 40, then scene 5 at first light (06:10). Crew rest of 12 hours before day 4.",
+        "markers": [
+          {
+            "type": "Meal",
+            "label": "Night lunch",
+            "at": "23:00",
+            "minutes": 45
+          }
+        ]
+      },
+      {
+        "n": 4,
+        "date": "2027-01-14",
+        "scenes": [
+          6,
+          15,
+          10,
+          22,
+          38,
+          20
+        ],
+        "crewCall": "07:00",
+        "start": "08:00",
+        "wrap": "21:00",
+        "notes": "Thomas House all day. Blackout tents on the windows for the night scenes.",
+        "markers": [
+          {
+            "type": "Meal",
+            "label": "Lunch",
+            "at": "13:00",
+            "minutes": 60
+          }
+        ]
+      },
+      {
+        "n": 5,
+        "date": "2027-01-15",
+        "scenes": [
+          9,
+          14,
+          17,
+          29
+        ],
+        "crewCall": "08:00",
+        "start": "09:00",
+        "wrap": "23:00",
+        "notes": "Mattancherry street closure 10:00 to 23:00. Long day on one street; overtime agreed with the crew.",
+        "markers": [
+          {
+            "type": "Meal",
+            "label": "Lunch",
+            "at": "13:30",
+            "minutes": 60
+          },
+          {
+            "type": "Company Move",
+            "label": "Tea shop to toddy shop yard (same street)",
+            "at": "18:00",
+            "minutes": 30
+          }
+        ]
+      },
+      {
+        "n": 6,
+        "date": "2027-01-16",
+        "scenes": [
+          13,
+          16,
+          33
+        ],
+        "crewCall": "07:00",
+        "start": "08:00",
+        "wrap": "20:00",
+        "notes": "Fisheries school, Saturday. Reel playback cues from the sound department.",
+        "markers": [
+          {
+            "type": "Meal",
+            "label": "Lunch",
+            "at": "13:00",
+            "minutes": 60
+          }
+        ]
+      },
+      {
+        "n": 7,
+        "date": "2027-01-17",
+        "off": true,
+        "notes": "Rest day. Art department dresses the harbour; marine safety drill at 10:00."
+      },
+      {
+        "n": 8,
+        "date": "2027-01-18",
+        "scenes": [
+          43,
+          7,
+          21
+        ],
+        "crewCall": "04:00",
+        "start": "05:00",
+        "wrap": "18:30",
+        "notes": "Harbour dawn for scene 43 before the auction, then scene 7; company move to Cherai for scene 21 (the antenna kite) in the afternoon wind.",
+        "markers": [
+          {
+            "type": "Meal",
+            "label": "Breakfast",
+            "at": "07:30",
+            "minutes": 30
+          },
+          {
+            "type": "Meal",
+            "label": "Lunch",
+            "at": "12:30",
+            "minutes": 45
+          },
+          {
+            "type": "Company Move",
+            "label": "Munambam harbour to Cherai beach",
+            "at": "12:00",
+            "minutes": 30
+          }
+        ]
+      },
+      {
+        "n": 9,
+        "date": "2027-01-19",
+        "scenes": [
+          23,
+          24
+        ],
+        "crewCall": "15:00",
+        "start": "17:00",
+        "wrap": "03:00",
+        "notes": "Storm night. Rain towers, wind machines, wave machine. Safety divers and ambulance on standby.",
+        "markers": [
+          {
+            "type": "Meal",
+            "label": "Dinner",
+            "at": "21:00",
+            "minutes": 45
+          }
+        ]
+      },
+      {
+        "n": 10,
+        "date": "2027-01-20",
+        "scenes": [
+          44,
+          37,
+          39
+        ],
+        "crewCall": "06:30",
+        "start": "07:30",
+        "wrap": "23:30",
+        "notes": "Cherai beach. Low tide 08:12 for scene 44. 300 extras from 16:00 for the listening night.",
+        "markers": [
+          {
+            "type": "Meal",
+            "label": "Lunch",
+            "at": "12:30",
+            "minutes": 60
+          },
+          {
+            "type": "Meal",
+            "label": "Dinner (extras fed first)",
+            "at": "18:30",
+            "minutes": 45
+          }
+        ]
+      },
+      {
+        "n": 11,
+        "date": "2027-01-21",
+        "scenes": [
+          18,
+          8,
+          36,
+          35
+        ],
+        "crewCall": "06:30",
+        "start": "07:30",
+        "wrap": "19:30",
+        "notes": "Church at 07:30 (mass at 06:00 finishes first), then the Port Trust office and Suresh's house.",
+        "markers": [
+          {
+            "type": "Company Move",
+            "label": "Church to Willingdon Island",
+            "at": "11:00",
+            "minutes": 45
+          },
+          {
+            "type": "Meal",
+            "label": "Lunch",
+            "at": "13:00",
+            "minutes": 45
+          },
+          {
+            "type": "Company Move",
+            "label": "Willingdon Island to Vypin",
+            "at": "16:00",
+            "minutes": 40
+          }
+        ]
+      },
+      {
+        "n": 12,
+        "date": "2027-01-22",
+        "scenes": [
+          19,
+          31,
+          25,
+          26,
+          30
+        ],
+        "crewCall": "09:00",
+        "start": "10:00",
+        "wrap": "01:00",
+        "notes": "Studio outpost set, hospital wing, then the coast road at night. Sajan (SURESH) is unavailable today: scenes 25 and 26 moved to day 13.",
+        "markers": [
+          {
+            "type": "Meal",
+            "label": "Lunch",
+            "at": "14:00",
+            "minutes": 45
+          },
+          {
+            "type": "Company Move",
+            "label": "Studio to Njarakkal hospital",
+            "at": "16:30",
+            "minutes": 50
+          },
+          {
+            "type": "Travel",
+            "label": "Hospital to Lighthouse Road",
+            "at": "21:30",
+            "minutes": 20
+          }
+        ]
+      },
+      {
+        "n": 13,
+        "date": "2027-01-23",
+        "scenes": [
+          3,
+          4
+        ],
+        "crewCall": "10:00",
+        "start": "11:00",
+        "wrap": "01:00",
+        "notes": "Soundwave Studio, the Njarakkal hospital (scenes 25 and 26 join from day 12), then the bus on the process trailer.",
+        "markers": [
+          {
+            "type": "Meal",
+            "label": "Lunch",
+            "at": "14:00",
+            "minutes": 45
+          },
+          {
+            "type": "Company Move",
+            "label": "Studio to Njarakkal hospital",
+            "at": "15:00",
+            "minutes": 40
+          },
+          {
+            "type": "Company Move",
+            "label": "Hospital to Aroor lay-by",
+            "at": "21:00",
+            "minutes": 45
+          }
+        ]
+      },
+      {
+        "n": 14,
+        "date": "2027-01-24",
+        "off": true,
+        "notes": "Rest day. Port Trust inspection of the station."
+      },
+      {
+        "n": 15,
+        "date": "2027-01-25",
+        "scenes": [
+          1,
+          34
+        ],
+        "crewCall": "13:00",
+        "start": "16:30",
+        "wrap": "02:00",
+        "notes": "Sea unit. Crew transfer by boat. Stop if swell is over 1.5 m.",
+        "markers": [
+          {
+            "type": "Travel",
+            "label": "Boat transfer to the sea location",
+            "at": "15:30",
+            "minutes": 50
+          },
+          {
+            "type": "Meal",
+            "label": "Dinner on the support boat",
+            "at": "20:30",
+            "minutes": 40
+          }
+        ]
+      },
+      {
+        "n": 16,
+        "date": "2027-01-26",
+        "scenes": [
+          41,
+          42
+        ],
+        "crewCall": "06:00",
+        "start": "07:00",
+        "wrap": "18:00",
+        "notes": "Demolition: one take for the mast fall, three cameras. Then the tea shop for scene 42 (same story day).",
+        "markers": [
+          {
+            "type": "Meal",
+            "label": "Lunch",
+            "at": "12:30",
+            "minutes": 45
+          },
+          {
+            "type": "Company Move",
+            "label": "Vypin to Mattancherry",
+            "at": "13:15",
+            "minutes": 45
+          }
+        ]
+      }
+    ],
+    "moves": [
+      {
+        "scene": 25,
+        "toDay": 13,
+        "why": "SURESH unavailable on 2027-01-22"
+      },
+      {
+        "scene": 26,
+        "toDay": 13,
+        "why": "SURESH unavailable on 2027-01-22"
+      }
+    ]
+  },
+  "budget": {
+    "currency": "INR",
+    "plannedTotal": 46000000,
+    "contingencyMode": "percent",
+    "contingencyValue": 10,
+    "notes": "Approved by Kayal Pictures and the co-producer on 2026-12-18. The department is named at the start of each line because the app has nine fixed budget categories. Amounts in rupees in this file; the app stores paise.",
+    "lines": [
+      [
+        "Post/Other",
+        "Story and Screenplay: Story rights (Meenakshi Varma and Arun Joseph)",
+        500000,
+        500000,
+        "Paid on signing."
+      ],
+      [
+        "Post/Other",
+        "Story and Screenplay: Screenplay fee and two rewrites",
+        1200000,
+        1200000,
+        null
+      ],
+      [
+        "Crew",
+        "Producers and Director: Director fee",
+        2500000,
+        null,
+        "Thirty percent on the first shooting day."
+      ],
+      [
+        "Crew",
+        "Producers and Director: Producer fees",
+        1500000,
+        null,
+        null
+      ],
+      [
+        "Cast",
+        "Lead cast (Nimisha Raghavan, K. P. Gopinathan)",
+        4000000,
+        null,
+        null
+      ],
+      [
+        "Cast",
+        "Supporting cast (six)",
+        2800000,
+        null,
+        null
+      ],
+      [
+        "Cast",
+        "Day players and voices",
+        450000,
+        null,
+        null
+      ],
+      [
+        "Cast",
+        "Child performers, tutor and chaperone",
+        160000,
+        null,
+        "Includes the child performer permits."
+      ],
+      [
+        "Cast",
+        "Extras and background (300 on the listening night)",
+        640000,
+        null,
+        null
+      ],
+      [
+        "Crew",
+        "Production Staff: Line producer, UPM, ADs, production office",
+        1400000,
+        350000,
+        "Prep weeks paid."
+      ],
+      [
+        "Equipment",
+        "Camera: Alexa 35 package with anamorphic lenses, 16 days",
+        1920000,
+        null,
+        null
+      ],
+      [
+        "Crew",
+        "Camera: Camera crew",
+        960000,
+        null,
+        null
+      ],
+      [
+        "Equipment",
+        "Grip and Electric: Lighting package and balloon lights",
+        1400000,
+        null,
+        null
+      ],
+      [
+        "Equipment",
+        "Grip and Electric: Generators (125 kVA and silent unit)",
+        320000,
+        null,
+        null
+      ],
+      [
+        "Crew",
+        "Grip and Electric: Grip and electric crew",
+        720000,
+        null,
+        null
+      ],
+      [
+        "Art/Props",
+        "Art Department: Operations room set build and dressing",
+        1800000,
+        1940000,
+        "Over: period radio racks rebuilt after the first test."
+      ],
+      [
+        "Art/Props",
+        "Art Department: Props (reel, Nagra, biscuit-tin transmitter, logbook)",
+        480000,
+        210000,
+        null
+      ],
+      [
+        "Art/Props",
+        "Art Department: Picture vehicles (Ambassador, KSRTC bus, police jeep, excavator)",
+        360000,
+        null,
+        null
+      ],
+      [
+        "Art/Props",
+        "Wardrobe: Costumes, 1999 period and present day",
+        420000,
+        120000,
+        null
+      ],
+      [
+        "Art/Props",
+        "Hair and Makeup: Makeup, hair, aging and wet-downs",
+        280000,
+        null,
+        null
+      ],
+      [
+        "Locations",
+        "Location fees",
+        1200000,
+        300000,
+        "Deposits paid."
+      ],
+      [
+        "Locations",
+        "Permits and police",
+        180000,
+        195000,
+        "Over: extra police for the beach night."
+      ],
+      [
+        "Travel/Transport",
+        "Transport: Unit vehicles and drivers",
+        840000,
+        null,
+        null
+      ],
+      [
+        "Food",
+        "Catering: Meals for 16 days, crew of 85",
+        672000,
+        null,
+        null
+      ],
+      [
+        "Equipment",
+        "Sound: Production sound package and crew",
+        560000,
+        null,
+        null
+      ],
+      [
+        "Equipment",
+        "Special Effects: Rain towers, wind machines, wave machine, smoke",
+        900000,
+        null,
+        null
+      ],
+      [
+        "Post/Other",
+        "VFX: Storm sea extension, mast fall, period clean-up (64 shots)",
+        3800000,
+        null,
+        null
+      ],
+      [
+        "Equipment",
+        "Marine: Boats, crews, safety divers and rescue boat",
+        650000,
+        null,
+        null
+      ],
+      [
+        "Cast",
+        "Animals: Kannan (two trained dogs) and wrangler",
+        120000,
+        null,
+        null
+      ],
+      [
+        "Post/Other",
+        "Post-production: Editing (12 weeks)",
+        1000000,
+        null,
+        null
+      ],
+      [
+        "Post/Other",
+        "Post-production: Colour grade",
+        800000,
+        null,
+        null
+      ],
+      [
+        "Post/Other",
+        "Post-production: Sound design and mix",
+        1200000,
+        null,
+        null
+      ],
+      [
+        "Post/Other",
+        "Music: Score, choir session and licences",
+        1500000,
+        null,
+        null
+      ],
+      [
+        "Post/Other",
+        "Insurance and Legal: Production insurance, legal and clearances",
+        600000,
+        600000,
+        "Policy KP-INS-2027-11."
+      ]
+    ]
+  },
+  "notes": [
+    {
+      "title": "Director's statement",
+      "pinned": true,
+      "body": "Low Tide Radio is about listening. The village has told one story about Mariamma for twenty years because nobody heard the other one. Every department serves that idea: sound leads, picture follows. We shoot the 1999 scenes on the same lenses as the present, graded warmer and grainier, never as a separate film."
+    },
+    {
+      "title": "Sound philosophy",
+      "pinned": true,
+      "body": "The reel is a character. Farhan records every playback live on set from the real Nagra with the restored tape transfer. No score under any scene where the reel plays. Static is designed per scene from real VHF recordings made at Munambam in December 2026."
+    },
+    {
+      "title": "Safety plan: water and night work",
+      "pinned": false,
+      "body": "Breakwater (scene 24): harness on all crew past the yellow marker, two safety divers, rescue boat on channel 16, ambulance at the harbour road. Sea unit (scenes 1, 34): life jackets for everyone, stop if swell is over 1.5 m. Rain towers use fresh water from a tanker, never seawater, near electrics."
+    },
+    {
+      "title": "Child performers",
+      "pinned": false,
+      "body": "Ameya (YOUNG ANJALI) and Gauri (MEENU): permits from the district labour office received 2026-12-20. No work after 20:00 without a written exemption. Sister Lissy tutors and chaperones. Night scenes 2 and 32 are shot first on day 2 with a 19:30 wrap."
+    },
+    {
+      "title": "Malayalam dialogue and subtitles",
+      "pinned": false,
+      "body": "Scene 10 is in Malayalam with English subtitles. Subtitle text lives as notes in the screenplay. Anitha (script supervisor) checks every take against the Malayalam line; Divya Mathew coaches the pronunciation of the 1999 radio phrases."
+    }
+  ],
+  "tasks": [
+    {
+      "title": "Book the Nagra IV-S and spare heads from the Chennai rental house",
+      "due": "2027-01-04",
+      "notes": "Pick-up by road on 2027-01-06; insure in transit.",
+      "related": "catalog:Nagra IV-S reel-to-reel recorder"
+    },
+    {
+      "title": "Get the demolition date in writing from the Port Trust",
+      "due": "2026-12-20",
+      "notes": "Needed for the insurance on day 16.",
+      "related": "location:station",
+      "done": true
+    },
+    {
+      "title": "Water tanker for the rain towers on day 9",
+      "due": "2027-01-18",
+      "notes": "Fresh water only, 20,000 litres.",
+      "related": "location:breakwater"
+    },
+    {
+      "title": "Child performer permits for Ameya and Gauri",
+      "due": "2026-12-22",
+      "notes": "Received on 2026-12-20.",
+      "related": null,
+      "done": true
+    },
+    {
+      "title": "Recce the breakwater with the marine coordinator at low tide",
+      "due": "2027-01-08",
+      "notes": "Mark the yellow line and the harness anchor points.",
+      "related": "location:breakwater"
+    },
+    {
+      "title": "Clear the Kerala Police uniform with the legal team",
+      "due": "2027-01-05",
+      "notes": "Insignia removed, shoulder badge redesigned.",
+      "related": "cast:LATHA"
+    },
+    {
+      "title": "Record Mariamma's reel voice before the shoot",
+      "due": "2027-01-05",
+      "notes": "Kochi studio, half day, with Divya Mathew and Thampi Cherian.",
+      "related": "scene:33"
+    }
+  ]
+}

@@ -1,0 +1,376 @@
+
+> openframe-studio@0.1.0 test:e2e
+> npm --workspace tests/e2e run test
+
+
+> @openframe/e2e@0.1.0 test
+> node run.mjs
+
+WebView2 Runtime 154.0.4258.53
+msedgedriver 154.0.4258.53 already installed.
+tauri-driver already installed.
+Building OpenFrame Studio (debug, embedded UI)…
+
+> @openframe/desktop@0.1.0 tauri
+> tauri build --debug --no-bundle
+
+        Info Looking up installed tauri packages to check mismatched versions...
+     Running beforeBuildCommand `npm run build:web`
+
+> @openframe/desktop@0.1.0 build:web
+> tsc --noEmit -p . && vite build
+
+vite v7.3.6 building client environment for production...
+transforming...
+✓ 1965 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                0.40 kB │ gzip:   0.27 kB
+dist/assets/buttons-DF6KDf99.css               1.32 kB │ gzip:   0.61 kB
+dist/assets/index-DeuskQhi.css                 2.17 kB │ gzip:   0.81 kB
+dist/assets/schedule-ui-BmRK-GIs.css           3.46 kB │ gzip:   1.30 kB
+dist/assets/index-Bpjd24Ei.css                 4.44 kB │ gzip:   1.38 kB
+dist/assets/index-PH65K-s2.css                 4.61 kB │ gzip:   1.46 kB
+dist/assets/index-VvwG6M8E.css                 9.49 kB │ gzip:   2.61 kB
+dist/assets/index-V9S68owU.css                41.58 kB │ gzip:   9.47 kB
+dist/assets/chevron-left-CtBhDjbR.js           0.13 kB │ gzip:   0.15 kB
+dist/assets/arrow-right-Dk3T4oJr.js            0.17 kB │ gzip:   0.16 kB
+dist/assets/paperclip-BI4hOtez.js              0.23 kB │ gzip:   0.19 kB
+dist/assets/download-DmGrUtaX.js               0.23 kB │ gzip:   0.19 kB
+dist/assets/link-2-C9pEnjbK.js                 0.24 kB │ gzip:   0.20 kB
+dist/assets/external-link-BRj-_oDt.js          0.25 kB │ gzip:   0.20 kB
+dist/assets/eye-CR_FuURw.js                    0.25 kB │ gzip:   0.20 kB
+dist/assets/list-todo-SWaMfzaL.js              0.30 kB │ gzip:   0.22 kB
+dist/assets/folder-plus-DtshXH_r.js            0.31 kB │ gzip:   0.23 kB
+dist/assets/useRememberLocation-CbvgLOtM.js    0.36 kB │ gzip:   0.28 kB
+dist/assets/square-DMbYcQyx.js                 0.38 kB │ gzip:   0.28 kB
+dist/assets/layers-FxnxznGh.js                 0.42 kB │ gzip:   0.24 kB
+dist/assets/notebook-pen-uLUbvMyU.js           0.48 kB │ gzip:   0.29 kB
+dist/assets/users-FFFKo1kX.js                  0.56 kB │ gzip:   0.34 kB
+dist/assets/image-aQylnPrk.js                  0.72 kB │ gzip:   0.36 kB
+dist/assets/index-ydKLh5j_.js                  2.43 kB │ gzip:   1.25 kB
+dist/assets/fileUtils-ZXRKbFya.js              2.89 kB │ gzip:   1.21 kB
+dist/assets/schedule-ui-DP5WtwBY.js            3.15 kB │ gzip:   1.46 kB
+dist/assets/webview-DUCgRJ8k.js                3.29 kB │ gzip:   1.12 kB
+dist/assets/index-p0OXlOrk.js                  4.88 kB │ gzip:   1.97 kB
+dist/assets/ProjectSettingsForm-DgRpO8ll.js    5.32 kB │ gzip:   2.11 kB
+dist/assets/sortable.esm-Dm83K4he.js           6.98 kB │ gzip:   2.91 kB
+dist/assets/SourceDialogs-BfvnwKCz.js          8.41 kB │ gzip:   3.47 kB
+dist/assets/index-qF9GTN3V.js                 10.66 kB │ gzip:   3.45 kB
+dist/assets/buttons-UDPJhEI-.js               15.17 kB │ gzip:   4.68 kB
+dist/assets/index-DIWdGARC.js                 15.43 kB │ gzip:   5.21 kB
+dist/assets/index-CQC40bVi.js                 18.28 kB │ gzip:   6.42 kB
+dist/assets/index-CtucHKGX.js                 23.60 kB │ gzip:   6.97 kB
+dist/assets/index-CJ0bjF6a.js                 23.98 kB │ gzip:   7.85 kB
+dist/assets/index-DtEvre3L.js                 33.54 kB │ gzip:  10.86 kB
+dist/assets/core.esm-DX9YTDR6.js              43.58 kB │ gzip:  14.49 kB
+dist/assets/index-DOE9e9_b.js                 92.31 kB │ gzip:  28.78 kB
+dist/assets/index-DTTyQdut.js                104.12 kB │ gzip:  29.54 kB
+dist/assets/index-CyIW1dVg.js                187.85 kB │ gzip:  52.33 kB
+dist/assets/index-WsaF8uym.js                320.14 kB │ gzip:  96.43 kB
+dist/assets/index-BqA1uI3B.js                519.81 kB │ gzip: 159.53 kB
+✓ built in 23.82s
+   Compiling openframe-security v0.1.0 (C:\OpenFrame\crates\openframe-security)
+   Compiling openframe-entitlement v0.1.0 (C:\OpenFrame\crates\openframe-entitlement)
+   Compiling openframe-project-format v0.1.0 (C:\OpenFrame\crates\openframe-project-format)
+   Compiling openframe-import-export v0.1.0 (C:\OpenFrame\crates\openframe-import-export)
+   Compiling openframe-ai v0.1.0 (C:\OpenFrame\crates\openframe-ai)
+   Compiling openframe-application v0.1.0 (C:\OpenFrame\crates\openframe-application)
+   Compiling openframe-desktop v0.1.0 (C:\OpenFrame\apps\desktop\src-tauri)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1m 12s
+       Built application at: C:\OpenFrame\target\debug\openframe-desktop.exe
+
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-06T16-18-22-850Z\shared
+  specs: 01-journey.test.mjs, 02-restart.test.mjs
+▶ desktop journey
+  ✔ first launch → name → create project → Project Home (1046.52ms)
+  ✔ Idea Vault: add a note with Quick Capture (1088.835ms)
+  ✔ Story: act, sequence, two cards (one with Ctrl+N), keyboard reorder, undo/redo (3217.955ms)
+  ✔ Build Screenplay lands in the new screenplay at the first scene (1270.7253ms)
+  ✔ type in the screenplay editor (autosaved) (3773.3802ms)
+  ✔ import pasted Fountain from the quick actions menu → opens the new draft (5387.2548ms)
+  ✔ Breakdown: select the Production Source and accept a suggestion (2095.7221ms)
+  ✔ Schedule: all scenes start unscheduled, one moves into a shooting day (2303.1696ms)
+  ✔ Call sheet from the shooting day (865.4395ms)
+  ✔ Schedule strip → Open in Screenplay opens the production draft at that scene (3399.6824ms)
+  ✔ Search (Ctrl+K) finds the scene and navigates to it (3125.1159ms)
+  ✔ Recently Deleted: delete a Scene Card and restore it (1611.6652ms)
+  ✔ AI panel says Offline AI is not installed (no network needed) (958.508ms)
+  ✔ every workspace and production tab renders without console problems or unlabelled controls (29218.9604ms)
+  ✔ close the project cleanly → Application Home lists it (742.9917ms)
+✔ desktop journey (62622.6068ms)
+▶ relaunch
+  ✔ reopen the project and find the screenplay text, story and call sheet (3034.8032ms)
+✔ relaunch (3942.5578ms)
+ℹ tests 16
+ℹ suites 2
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 86876.877
+
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-06T16-18-22-850Z\10-home
+  specs: 10-home.test.mjs
+▶ home
+  ✔ first launch creates a project that opens on an empty Project Home (883.9527ms)
+  ✔ status change on Project Home, undo and redo (302.3094ms)
+  ⚠ Application Home lists a renamed project without leaving the page (10949.4927ms) # product defect: the list stays stale after Rename on Application Home (AppHome.tsx:485 has no refetch; project.rs rename of a closed project emits no change event)
+  ✔ Application Home: rename, duplicate, archive and restore (4022.2403ms)
+  ✔ relaunch: both projects, the new title and the status persist (3171.624ms)
+✔ home (20168.5847ms)
+ℹ tests 5
+ℹ suites 1
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 1
+ℹ duration_ms 20850.4735
+
+✖ failing tests:
+
+test at specs\10-home.test.mjs:59:3
+⚠ Application Home lists a renamed project without leaving the page (10949.4927ms) # product defect: the list stays stale after Rename on Application Home (AppHome.tsx:485 has no refetch; project.rs rename of a closed project emits no change event)
+  Error: rename-refresh failed: card not renamed until Application Home is reopened
+    screenshot: C:\OpenFrame\tests\e2e\artifacts\home-03-rename-refresh.png
+      at file:///C:/OpenFrame/tests/e2e/lib/app.mjs:120:13
+      at async TestContext.<anonymous> (file:///C:/OpenFrame/tests/e2e/specs/10-home.test.mjs:60:5)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    [cause]: Error: card not renamed until Application Home is reopened
+        at file:///C:/OpenFrame/node_modules/webdriverio/build/node.js:6474:15
+        at async Browser.wrapCommandFn (file:///C:/OpenFrame/node_modules/@wdio/utils/build/index.js:1100:23)
+        at async file:///C:/OpenFrame/tests/e2e/specs/10-home.test.mjs:68:7
+        at async file:///C:/OpenFrame/tests/e2e/lib/app.mjs:116:7
+        at async TestContext.<anonymous> (file:///C:/OpenFrame/tests/e2e/specs/10-home.test.mjs:60:5)
+        at async Test.run (node:internal/test_runner/test:1125:7)
+        at async Suite.processPendingSubtests (node:internal/test_runner/test:787:7)
+  }
+
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-06T16-18-22-850Z\20-idea-vault
+  specs: 20-idea-vault.test.mjs
+▶ idea vault
+  ✔ Quick Capture adds an idea to the project's Vault (1552.2169ms)
+  ✔ edit the title in the drawer (autosave), undo and redo (1350.7166ms)
+  ✔ delete with the keyboard, undo, redo, then restore from Recently Deleted (957.9547ms)
+  ✔ relaunch: the titled idea and its text persist (4337.3418ms)
+✔ idea vault (8938.4163ms)
+ℹ tests 4
+ℹ suites 1
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 9305.6825
+
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-06T16-18-22-850Z\30-story
+  specs: 30-story.test.mjs
+▶ story
+  ✔ act, sequence and two Scene Cards (2330.7147ms)
+  ✔ edit a card in its drawer, undo and redo (1612.5292ms)
+  ✔ rename the act, undo and redo (792.3289ms)
+  ✔ delete a card: undo, redo, restore from Recently Deleted (1551.0133ms)
+  ✔ Characters: create, edit, delete and restore (3649.5884ms)
+  ✔ Outline shows the same structure (995.4139ms)
+  ✔ relaunch: act, cards and character persist (4901.088ms)
+✔ story (16781.617ms)
+ℹ tests 7
+ℹ suites 1
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 17232.0578
+
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-06T16-18-22-850Z\40-screenplay
+  specs: 40-screenplay.test.mjs
+▶ screenplay
+  ✔ new screenplay: write a scene with the Enter flow (autosaved) (2418.3167ms)
+  ✔ undo and redo typing from inside the editor (5133.5382ms)
+  ✖ a second draft is edited independently, renamed, deleted and restored (13508.3082ms)
+  ✔ relaunch: both drafts and their text persist (4193.0401ms)
+✖ screenplay (26093.7703ms)
+ℹ tests 4
+ℹ suites 1
+ℹ pass 3
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 26797.9537
+
+✖ failing tests:
+
+test at specs\40-screenplay.test.mjs:91:3
+✖ a second draft is edited independently, renamed, deleted and restored (13508.3082ms)
+  Error: drafts failed: draft not renamed
+    screenshot: C:\OpenFrame\tests\e2e\artifacts\screenplay-03-drafts.png
+      at file:///C:/OpenFrame/tests/e2e/lib/app.mjs:120:13
+      at async TestContext.<anonymous> (file:///C:/OpenFrame/tests/e2e/specs/40-screenplay.test.mjs:92:5)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    [cause]: Error: draft not renamed
+        at file:///C:/OpenFrame/node_modules/webdriverio/build/node.js:6474:15
+        at async Browser.wrapCommandFn (file:///C:/OpenFrame/node_modules/@wdio/utils/build/index.js:1100:23)
+        at async file:///C:/OpenFrame/tests/e2e/specs/40-screenplay.test.mjs:122:7
+        at async file:///C:/OpenFrame/tests/e2e/lib/app.mjs:116:7
+        at async TestContext.<anonymous> (file:///C:/OpenFrame/tests/e2e/specs/40-screenplay.test.mjs:92:5)
+        at async Test.run (node:internal/test_runner/test:1125:7)
+        at async Suite.processPendingSubtests (node:internal/test_runner/test:787:7)
+  }
+
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-06T16-18-22-850Z\50-breakdown
+  specs: 50-breakdown.test.mjs
+▶ breakdown
+  ✔ import a screenplay and choose it as the Production Source (3563.0729ms)
+  ✔ suggestions are only added when accepted (474.367ms)
+  ✔ add an element by hand; undo and redo; edit its notes (2211.0496ms)
+  ✔ remove from the scene and restore from Recently Deleted (1479.8128ms)
+  ✔ mark the scene complete; scene 2 has its own breakdown (536.719ms)
+  ✔ relaunch: source, elements, notes and completion persist (4062.3107ms)
+✔ breakdown (13201.3409ms)
+ℹ tests 6
+ℹ suites 1
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 13761.5247
+
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-06T16-18-22-850Z\80-notes-tasks
+  specs: 80-notes-tasks.test.mjs
+▶ notes and tasks
+  ✔ a new note autosaves its title and text; undo and redo the edit (2124.6458ms)
+  ✔ delete the note and restore it from Recently Deleted (1593.0337ms)
+  ✔ add a task, complete it, undo and redo the completion (1249.247ms)
+  ✔ relaunch: the note and the completed task persist (4353.16ms)
+✔ notes and tasks (10151.0725ms)
+ℹ tests 4
+ℹ suites 1
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 10512.9102
+
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-06T16-18-22-850Z\85-project-pages
+  specs: 85-project-pages.test.mjs
+▶ project pages
+  ✔ Project settings: change title and logline, save, undo, redo (2026.3193ms)
+  ✔ Templates: create two, delete both, restore one, delete the other permanently (4858.2232ms)
+  ✔ Activity lists what happened and filters by kind (1052.2657ms)
+  ✖ relaunch: settings, the restored template and the purge persist (4197.3226ms)
+✖ project pages (12945.5871ms)
+ℹ tests 4
+ℹ suites 1
+ℹ pass 3
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 13306.0264
+
+✖ failing tests:
+
+test at specs\85-project-pages.test.mjs:116:3
+✖ relaunch: settings, the restored template and the purge persist (4197.3226ms)
+  Error: relaunch failed: restored template missing after relaunch: 
+    screenshot: C:\OpenFrame\tests\e2e\artifacts\project-pages-04-relaunch.png
+      at file:///C:/OpenFrame/tests/e2e/lib/app.mjs:120:13
+      at async TestContext.<anonymous> (file:///C:/OpenFrame/tests/e2e/specs/85-project-pages.test.mjs:117:5)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Suite.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    [cause]: AssertionError [ERR_ASSERTION]: restored template missing after relaunch: 
+        at file:///C:/OpenFrame/tests/e2e/specs/85-project-pages.test.mjs:125:14
+        at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+        at async file:///C:/OpenFrame/tests/e2e/lib/app.mjs:116:7
+        at async TestContext.<anonymous> (file:///C:/OpenFrame/tests/e2e/specs/85-project-pages.test.mjs:117:5)
+        at async Test.run (node:internal/test_runner/test:1125:7)
+        at async Suite.processPendingSubtests (node:internal/test_runner/test:787:7) {
+      generatedMessage: false,
+      code: 'ERR_ASSERTION',
+      actual: false,
+      expected: true,
+      operator: '==',
+      diff: 'simple'
+    }
+  }
+
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-06T16-18-22-850Z\shared
+  specs: 90-visual-baseline.test.mjs, 95-reachability.test.mjs
+2026-10-06T16:21:51.022Z WARN webdriver: Request encountered a stale element - terminating request
+2026-10-06T16:21:51.025Z WARN webdriver: Request encountered a stale element - terminating request
+  visual ok   01-application-home: 0 px differ (0.0000 %), 2 ignore regions
+  visual FAIL 02-project-home: 70931 px differ (2.6674 %), 8 ignore regions — 70931 of 2659209 pixels differ (2.667 % > 0.100 %); C:\OpenFrame\tests\e2e\artifacts\visual\02-project-home.{actual,diff}.png
+  visual ok   03-idea-vault: 0 px differ (0.0000 %), 2 ignore regions
+  visual ok   04-story-board: 0 px differ (0.0000 %), 1 ignore regions
+  visual ok   05-story-outline: 0 px differ (0.0000 %), 0 ignore regions
+  visual FAIL 06-screenplay-editor: 23897 px differ (0.8195 %), 0 ignore regions — 23897 of 2916000 pixels differ (0.820 % > 0.100 %); C:\OpenFrame\tests\e2e\artifacts\visual\06-screenplay-editor.{actual,diff}.png
+  visual ok   07-breakdown: 0 px differ (0.0000 %), 0 ignore regions
+  visual ok   08-production-overview: 0 px differ (0.0000 %), 0 ignore regions
+  visual ok   09-production-catalog: 0 px differ (0.0000 %), 0 ignore regions
+  visual ok   10-production-schedule: 0 px differ (0.0000 %), 0 ignore regions
+  visual ok   11-call-sheets: 0 px differ (0.0000 %), 0 ignore regions
+  visual ok   12-files: 0 px differ (0.0000 %), 1 ignore regions
+  visual ok   13-notes-and-tasks: 0 px differ (0.0000 %), 0 ignore regions
+  visual ok   14-recently-deleted: 0 px differ (0.0000 %), 0 ignore regions
+  visual FAIL 15-project-settings: 42859 px differ (1.4893 %), 3 ignore regions — 42859 of 2877742 pixels differ (1.489 % > 0.100 %); C:\OpenFrame\tests\e2e\artifacts\visual\15-project-settings.{actual,diff}.png
+▶ visual regression against the visual baseline baseline
+  ✖ 15 representative screens (38818.1221ms)
+✖ visual regression against the visual baseline baseline (40114.6135ms)
+▶ reachability from the feature status file
+  ✔ the feature status routes are valid against the source (1.1781ms)
+  ✔ every canonical route opens in the real app (22416.7388ms)
+✔ reachability from the feature status file (23615.1769ms)
+ℹ tests 3
+ℹ suites 2
+ℹ pass 2
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 65228.7026
+
+✖ failing tests:
+
+test at specs\90-visual-baseline.test.mjs:180:3
+✖ 15 representative screens (38818.1221ms)
+  AssertionError [ERR_ASSERTION]: screens differ from the visual baseline baseline (see artifacts/visual/)
+  + actual - expected
+  
+  + [
+  +   '02-project-home: 70931 of 2659209 pixels differ (2.667 % > 0.100 %)',
+  +   '06-screenplay-editor: 23897 of 2916000 pixels differ (0.820 % > 0.100 %)',
+  +   '15-project-settings: 42859 of 2877742 pixels differ (1.489 % > 0.100 %)'
+  + ]
+  - []
+  
+      at TestContext.<anonymous> (file:///C:/OpenFrame/tests/e2e/specs/90-visual-baseline.test.mjs:245:14)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Promise.all (index 0)
+      at async Suite.run (node:internal/test_runner/test:1533:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:358:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: [ '02-project-home: 70931 of 2659209 pixels differ (2.667 % > 0.100 %)', '06-screenplay-editor: 23897 of 2916000 pixels differ (0.820 % > 0.100 %)', '15-project-settings: 42859 of 2877742 pixels differ (1.489 % > 0.100 %)' ],
+    expected: [],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+E2E FAILED: 40-screenplay.test.mjs, 85-project-pages.test.mjs, 90-visual-baseline.test.mjs, 95-reachability.test.mjs
+npm error Lifecycle script `test` failed with error:
+npm error code 1
+npm error path C:\OpenFrame\tests\e2e
+npm error workspace @openframe/e2e@0.1.0
+npm error location C:\OpenFrame\tests\e2e
+npm error command failed
+npm error command C:\Windows\system32\cmd.exe /d /s /c node run.mjs
+EXIT=1

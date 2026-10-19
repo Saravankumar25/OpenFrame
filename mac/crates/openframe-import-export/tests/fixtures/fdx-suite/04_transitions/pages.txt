@@ -1,0 +1,28 @@
+=== page 1
+  0  670 Transition     FADE IN:
+  2   90 SceneNumber    1
+  2  150 Heading        EXT. HIGHWAY 1 - DAY
+  2  760 SceneNumber    1
+  4  150 Action         A bus passes milestone 1.
+  6  680 Transition     CUT TO:
+  8   90 SceneNumber    2
+  8  150 Heading        EXT. HIGHWAY 2 - DAY
+  8  760 SceneNumber    2
+ 10  150 Action         A bus passes milestone 2.
+ 12  630 Transition     DISSOLVE TO:
+ 14   90 SceneNumber    3
+ 14  150 Heading        EXT. HIGHWAY 3 - DAY
+ 14  760 SceneNumber    3
+ 16  150 Action         A bus passes milestone 3.
+ 18  620 Transition     SMASH CUT TO:
+ 20   90 SceneNumber    4
+ 20  150 Heading        EXT. HIGHWAY 4 - DAY
+ 20  760 SceneNumber    4
+ 22  150 Action         A bus passes milestone 4.
+ 24  620 Transition     MATCH CUT TO:
+ 26   90 SceneNumber    5
+ 26  150 Heading        EXT. HIGHWAY 5 - DAY
+ 26  760 SceneNumber    5
+ 28  150 Action         A bus passes milestone 5.
+ 30  660 Transition     FADE OUT.
+pdf-sha256 f457efe07403e1661c16514d69342a350dea1bfdf8c28f7130d425a0b26109f6

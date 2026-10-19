@@ -1,0 +1,53 @@
+{
+  "scenes": [
+    {
+      "elements": [
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "action",
+          "revision": null,
+          "text": "The curtain rises."
+        },
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "page_break",
+          "revision": null,
+          "text": ""
+        },
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "centered",
+          "revision": null,
+          "text": "ACT TWO"
+        },
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "page_break",
+          "revision": null,
+          "text": ""
+        }
+      ],
+      "heading": "INT. THEATRE - NIGHT",
+      "number": null
+    },
+    {
+      "elements": [
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "action",
+          "revision": null,
+          "text": "Costumes everywhere."
+        }
+      ],
+      "heading": "INT. GREEN ROOM - NIGHT",
+      "number": null
+    }
+  ],
+  "titlePage": [],
+  "warnings": []
+}

@@ -1,0 +1,20 @@
+[
+  {
+    "name": "prepare",
+    "start": "2026-10-17T21:45:30.089Z",
+    "end": "2026-10-17T21:45:58.601Z",
+    "result": "fail",
+    "notes": {
+      "error": "VBoxManage startvm OpenFrame-W9-Clean --type headless failed (1): VBoxManage.exe: error: The VM session was closed before any attempt to power it on\r\nVBoxManage.exe: error: Details: code E_FAIL (0x80004005), component SessionMachine, interface ISession"
+    }
+  },
+  {
+    "name": "prepare",
+    "start": "2026-10-17T21:48:00.830Z",
+    "end": "2026-10-17T22:03:47.529Z",
+    "result": "fail",
+    "notes": {
+      "error": "The guest did not become ready (no guest control or no desktop) within the time limit."
+    }
+  }
+]

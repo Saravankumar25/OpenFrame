@@ -1,0 +1,159 @@
+{
+  "computer": {
+    "cpu": "Intel(R) Core(TM) Ultra 5 125H",
+    "logicalCores": 18,
+    "memoryMb": 15805,
+    "os": "Windows 11 Home Single Language",
+    "physicalCores": 14
+  },
+  "engine": "llama-cpp-b11259-win-x64-cpu",
+  "experiment": "reuse",
+  "prompts": 4,
+  "repeats": 2,
+  "result": {
+    "cacheOff": {
+      "generationTokensPerSecond": {
+        "max": 29.19648728175626,
+        "median": 26.219725237976846,
+        "min": 20.270845163549716,
+        "n": 16,
+        "p25": 24.195853445863023,
+        "p75": 27.414177114825726
+      },
+      "promptTokens": {
+        "max": 3367.0,
+        "median": 2882.0,
+        "min": 1691.0,
+        "n": 16,
+        "p25": 2515.25,
+        "p75": 2973.75
+      },
+      "promptTokensPerSecond": {
+        "max": 113.9840729670627,
+        "median": 109.00837165749058,
+        "min": 94.36617669591533,
+        "n": 16,
+        "p25": 106.60230638639,
+        "p75": 111.28619216354346
+      },
+      "wallMs": {
+        "max": 39485.3453,
+        "median": 27806.79535,
+        "min": 15962.3062,
+        "n": 16,
+        "p25": 24074.309525,
+        "p75": 29696.217950000002
+      }
+    },
+    "cacheOn": {
+      "generationTokensPerSecond": {
+        "max": 29.53625511105632,
+        "median": 25.54613639744764,
+        "min": 21.635731060883643,
+        "n": 16,
+        "p25": 24.289646491355825,
+        "p75": 26.639614580036703
+      },
+      "promptTokens": {
+        "max": 3367.0,
+        "median": 2882.0,
+        "min": 1691.0,
+        "n": 16,
+        "p25": 2515.25,
+        "p75": 2973.75
+      },
+      "promptTokensPerSecond": {
+        "max": 111.4992607817319,
+        "median": 91.64842467803075,
+        "min": 49.030663777126215,
+        "n": 16,
+        "p25": 74.5224900120072,
+        "p75": 108.12252204608663
+      },
+      "wallMs": {
+        "max": 28666.803600000003,
+        "median": 7434.48255,
+        "min": 1481.0163,
+        "n": 16,
+        "p25": 3056.06535,
+        "p75": 26361.740775
+      }
+    },
+    "cases": 4,
+    "perCase": [
+      {
+        "cacheOffMs": 62042.7786,
+        "cacheOnMs": 4563.3057,
+        "case": "tool-de-009",
+        "steps": 2
+      },
+      {
+        "cacheOffMs": 56060.128899999996,
+        "cacheOnMs": 31880.679300000003,
+        "case": "tool-de-010",
+        "steps": 2
+      },
+      {
+        "cacheOffMs": 60625.696500000005,
+        "cacheOnMs": 34764.5133,
+        "case": "tool-de-011",
+        "steps": 2
+      },
+      {
+        "cacheOffMs": 33918.6162,
+        "cacheOnMs": 19819.4253,
+        "case": "tool-de-013",
+        "steps": 2
+      },
+      {
+        "cacheOffMs": 58408.787,
+        "cacheOnMs": 30981.099899999997,
+        "case": "tool-de-009",
+        "steps": 2
+      },
+      {
+        "cacheOffMs": 54807.5524,
+        "cacheOnMs": 29239.0059,
+        "case": "tool-de-010",
+        "steps": 2
+      },
+      {
+        "cacheOffMs": 66169.283,
+        "cacheOnMs": 35015.0322,
+        "case": "tool-de-011",
+        "steps": 2
+      },
+      {
+        "cacheOffMs": 33519.5034,
+        "cacheOnMs": 24786.8453,
+        "case": "tool-de-013",
+        "steps": 2
+      }
+    ],
+    "promptMsCacheOff": {
+      "max": 35680.157,
+      "median": 26318.44,
+      "min": 14835.406,
+      "n": 16,
+      "p25": 22668.5205,
+      "p75": 28116.19375
+    },
+    "promptMsCacheOn": {
+      "max": 27169.422,
+      "median": 4220.66,
+      "min": 101.977,
+      "n": 16,
+      "p25": 1299.84825,
+      "p75": 25155.97275
+    },
+    "reusedShareOfLaterSteps": {
+      "max": 0.9688013136288999,
+      "median": 0.9572916699400731,
+      "min": 0.8648648648648649,
+      "n": 8,
+      "p25": 0.9271186825839293,
+      "p75": 0.9672353669496216
+    }
+  },
+  "startedUnixSeconds": 1792159288
+}

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FinalDraft DocumentType="Script" Version="5">
+  <Content>
+    <Paragraph Type="Scene Heading"><Text>INT. CAFÉ ÉTOILE - NUIT</Text></Paragraph>
+    <Paragraph Type="Action"><Text>Zoë orders 抹茶. A sign reads שלום / مرحبا. Combining: e&#x0301; n&#x0303;. Zero width:&#x200B;here. Emoji: 🎬🎞️.</Text></Paragraph>
+    <Paragraph Type="Character"><Text>ZOË</Text></Paragraph>
+    <Paragraph Type="Dialogue"><Text>Ça va? 你好吗?</Text></Paragraph>
+    <Paragraph Type="Scene Heading"><Text>EXT. 東京駅 - 夜</Text></Paragraph>
+    <Paragraph Type="Action"><Text>Bidi override test: &#x202E;txt.exe&#x202C; stays text.</Text></Paragraph>
+  </Content>
+</FinalDraft>

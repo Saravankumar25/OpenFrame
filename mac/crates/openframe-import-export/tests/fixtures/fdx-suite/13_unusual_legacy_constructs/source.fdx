@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<FinalDraft DocumentType="Script" Template="No" Version="2">
+<Content>
+<Paragraph Type="Scene Heading"><SceneProperties Length="1/8" Page="1" Title=""/><Text>INT. ARCHIVE - NIGHT</Text></Paragraph>
+<Paragraph Type="Action"><Text Style="Bold">THE FILE </Text><Text Style="Underline">is gone</Text><Text>.	Gone.</Text></Paragraph>
+<Paragraph><Text>A paragraph without a type.</Text></Paragraph>
+<Paragraph Type="General"><Text>General text, &amp; an ampersand &#233; and a non-breaking space.</Text></Paragraph>
+<Paragraph Type="Action"><ScriptNote><Paragraph><Text>a note from the producer</Text></Paragraph></ScriptNote><Text>Dust on the shelves.</Text></Paragraph>
+<Paragraph><DualDialogue>
+<Paragraph Type="Character"><Text>ASHA</Text></Paragraph>
+<Paragraph Type="Dialogue"><Text>Where is it?</Text></Paragraph>
+<Paragraph Type="Character"><Text>RAVI</Text></Paragraph>
+<Paragraph Type="Dialogue"><Text>I never had it.</Text></Paragraph>
+</DualDialogue></Paragraph>
+<DualDialogue>
+<Paragraph Type="Character"><Text>ASHA</Text></Paragraph>
+<Paragraph Type="Dialogue"><Text>Then who?</Text></Paragraph>
+<Paragraph Type="Character"><Text>RAVI</Text></Paragraph>
+<Paragraph Type="Dialogue"><Text>Ask the keeper.</Text></Paragraph>
+</DualDialogue>
+<Outline><Text>an outline block this importer does not read</Text></Outline>
+<Paragraph Type="Cast List"><Text>ASHA, RAVI</Text></Paragraph>
+<Paragraph Type="Scene Heading"><Text>   </Text></Paragraph>
+<Paragraph Type="Scene Heading"><SceneProperties Length="1/8" Page="1" Title=""/><Text>int. archive - later</Text></Paragraph>
+<Paragraph Type="Action"><Text>The lights go out.</Text></Paragraph>
+</Content>
+<HeaderAndFooter><Header><Paragraph><Text>legacy header</Text></Paragraph></Header></HeaderAndFooter>
+<SmartType><Characters><Character>ASHA</Character></Characters></SmartType>
+<PageLayout BackgroundColor="#FFFFFFFFFFFF"/>
+</FinalDraft>

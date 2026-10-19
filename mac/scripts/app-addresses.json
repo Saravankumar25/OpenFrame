@@ -1,0 +1,16 @@
+{
+  "about": "Every web address written into the shipped app (apps/desktop and crates source, tauri.conf.json, index.html). scripts/check-links.mjs fails on an address that is not listed here and on a listed address that no longer appears. `prefix: true` entries cover every address that starts with them. `online: true` addresses are fetched by `node scripts/check-links.mjs --online` before a build (ADR-0030 decision 6). Addresses a writer types (Idea Vault links, mood board links) are not listed: they are the writer's own.",
+  "addresses": [
+    { "address": "https://developer.microsoft.com/microsoft-edge/webview2/consumer/", "online": true, "why": "Offered when the WebView2 runtime is missing (distribution.rs); the user chooses to open it." },
+    { "address": "https://schema.tauri.app/config/2", "online": false, "why": "JSON schema reference in tauri.conf.json for editors; the app never opens it." },
+    { "address": "http://localhost:1420", "online": false, "why": "Vite development server (devUrl); not used by release builds." },
+    { "address": "http://ipc.localhost", "online": false, "why": "Tauri IPC origin in the content security policy; local to the app, never the network." },
+    { "address": "http://ofasset.localhost", "online": false, "why": "Local asset protocol for project images (asset_scope.rs and the content security policy); never the network." },
+    { "address": "https://huggingface.co", "prefix": true, "online": true, "why": "The OpenFrame AI model download after the person's click (download.rs, fetch.rs; ADR-0032): the pinned files at fixed commits, redirects only to huggingface.co or *.hf.co." },
+    { "address": "http://127.0.0.1:", "prefix": true, "online": false, "why": "The local llama.cpp server the app starts on a random loopback port (supervisor.rs); never leaves the computer." },
+    { "address": "http://schemas.openxmlformats.org/", "prefix": true, "online": false, "why": "XML namespace names written inside exported DOCX files (docx.rs); identifiers, never fetched." },
+    { "address": "http://purl.org/dc/elements/1.1", "online": false, "why": "Dublin Core namespace name inside exported DOCX files (docx.rs); an identifier, never fetched." },
+    { "address": "https://licence.openframe.invalid/v1/mac/validate", "online": false, "why": "Placeholder in the retired Tauri Mac shell (mac_inputs.rs, Mac builds only); the .invalid domain cannot resolve. Removed in Mac phase M1 (ADR-0027)." },
+    { "address": "https://licence-sandbox.openframe.invalid/v1/mac/validate", "online": false, "why": "Sandbox placeholder next to the one above; removed in Mac phase M1 (ADR-0027)." }
+  ]
+}

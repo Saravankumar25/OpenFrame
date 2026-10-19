@@ -1,0 +1,94 @@
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-17T21-34-55-469Z\shared
+  specs: 01-journey.test.mjs, 02-restart.test.mjs
+▶ desktop journey
+  ✔ first launch → name → create project → Project Home (1039.7245ms)
+  ✔ Idea Vault: add a note with Quick Capture (924.5576ms)
+  ✔ Story: act, sequence, two cards (one with Ctrl+N), keyboard reorder, undo/redo (2490.2148ms)
+  ✔ Build Screenplay lands in the new screenplay at the first scene (855.3422ms)
+  ✔ type in the screenplay editor (autosaved) (3321.0896ms)
+  ✔ import pasted Fountain from the quick actions menu → opens the new draft (3750.5385ms)
+  ✔ Breakdown: select the Production Source and accept a suggestion (1251.6629ms)
+  ✔ Schedule: all scenes start unscheduled, one moves into a shooting day (1437.8216ms)
+  ✔ Call sheet from the shooting day (595.792ms)
+  ✔ Schedule strip → Open in Screenplay opens the production draft at that scene (2941.4822ms)
+  ✔ Search (Ctrl+K) finds the scene and navigates to it (2970.3914ms)
+  ✔ Recently Deleted: delete a Scene Card and restore it (939.0706ms)
+  ✔ AI panel is ready with the bundled Offline AI: no download, no setup (ADR-0025) (866.2814ms)
+  ✔ every workspace and production tab renders without console problems or unlabelled controls, beside the docked AI panel (28747.1869ms)
+  ✔ close the project cleanly → Application Home lists it (289.9815ms)
+✔ desktop journey (54413.2304ms)
+▶ relaunch
+  ✔ reopen the project and find the screenplay text, story and call sheet (3351.6897ms)
+✔ relaunch (6408.1911ms)
+ℹ tests 16
+ℹ suites 2
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 62847.3984
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-17T21-34-55-469Z\41-screenplay-engine
+  specs: 41-screenplay-engine.test.mjs
+▶ screenplay engine
+  ✔ write with the element flow and insert a page break (2472.9329ms)
+  ✔ title page fields with a live preview (1198.2507ms)
+  ✔ page setup: A4 with a header (614.6942ms)
+  ✔ a custom element under Advanced, used in the script (1829.5545ms)
+  ✔ lock, start a dated revision, edit it and see the changed pages (1802.5802ms)
+  ✔ export PDF and FDX, import the FDX back as a draft (108.1721ms)
+  ✔ Telugu and Hindi print in the PDF; the page break follows a remapped shortcut (1074.6559ms)
+  ✔ relaunch: page setup, custom element and revision text persist; continue writing (5699.3554ms)
+✔ screenplay engine (16482.6772ms)
+ℹ tests 8
+ℹ suites 1
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 16925.6705
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-17T21-34-55-469Z\62-call-sheets-exports
+  specs: 62-call-sheets-exports.test.mjs
+▶ call sheets, budget, templates, samples and exports
+  ✔ open a sample script that ships with the app (2723.5183ms)
+  ✔ plan two shooting days from the Production Source (1212.1884ms)
+  ✔ create a call sheet: six default sections, Needs input, Add Section (7162.4108ms)
+  ✔ a schedule change marks the sheet Needs refresh and the preview lists what changed (539.7488ms)
+  ✔ finalize freezes a snapshot; a new revision follows the schedule (801.1423ms)
+  ✔ budget keeps Planned and Actual with the difference (1483.0756ms)
+  ✔ a call sheet from the Indie Call Sheet template is an independent copy (92.8747ms)
+  ✔ sides, a report and the visual planning exports carry the brand line (444.6163ms)
+  ✔ notes and tasks for the shoot (502.7894ms)
+  ✔ quit, relaunch and find everything again (4785.2408ms)
+✔ call sheets, budget, templates, samples and exports (21678.7437ms)
+ℹ tests 10
+ℹ suites 1
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 22128.7723
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-17T21-34-55-469Z\shared
+  specs: 90-visual-baseline.test.mjs, 91-appearance-themes.test.mjs, 95-reachability.test.mjs
+▶ visual regression against the visual baseline baseline
+  ✔ 15 representative screens (35822.0779ms)
+✔ visual regression against the visual baseline baseline (38255.1073ms)
+▶ every built-in theme in Light and Dark
+  ✔ 16 themes x 2 modes x 15 screens are applied and readable; paper stays white (430394.8409ms)
+  ✔ the theme and mode come back after a relaunch (3046.8653ms)
+✔ every built-in theme in Light and Dark (435456.4321ms)
+▶ reachability from the feature status file
+  ✔ the feature status routes are valid against the source (1.4021ms)
+  ✔ every canonical route opens in the real app (29423.2232ms)
+✔ reachability from the feature status file (31346.9317ms)
+ℹ tests 5
+ℹ suites 3
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 507273.984
+E2E passed: 7 spec files on the release build (gated).

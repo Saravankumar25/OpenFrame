@@ -1,0 +1,63 @@
+ ✓ src/workspaces/breakdown/highlight.test.ts (6 tests)
+ ✓ src/workspaces/screenplay/editor/editor.test.ts (18 tests)
+ ✓ src/features/export/export.test.tsx (5 tests)
+   ✓ ExportDialog > asks where to save, exports the snapshot and offers Reveal in File Manager 
+ ✓ src/design-system/menu.test.tsx (2 tests)
+   ✓ ContextMenu > builds lazy items only when the menu opens 
+   ✓ ContextMenu > still accepts a plain item list 
+ ✓ src/workspaces/idea-vault/IdeaVault.test.tsx (4 tests)
+   ✓ Idea Vault workspace > shows the project header, toolbar and the empty state 
+   ✓ Idea Vault workspace > lists items in List view with the mock's columns 
+   ✓ Idea Vault workspace > opens Quick Capture from the shell intent 
+ ✓ src/features/interchange/Interchange.test.tsx (4 tests)
+   ✓ ImportScreenplayDialog > previews pasted text, shows uncertainty, and imports only after confirmation 
+   ✓ ImportScreenplayDialog > explains a failed import and that the project was not changed 
+   ✓ ExportScreenplayDialog > exports the chosen draft with the chosen options as a snapshot 
+   ✓ ExportScreenplayDialog > requires at least one scene when exporting selected scenes 
+ ✓ src/app/home/NewProjectDialog.test.tsx (5 tests)
+   ✓ New Project validation > keeps Create disabled until a title is entered and explains why 
+   ✓ New Project validation > creates a Series project with only the required fields 
+   ✓ New Project validation > keeps the entries and offers Retry when creation fails 
+ ✓ src/ai/AiPanel.test.tsx (10 tests)
+   ✓ AI Assistant panel > works without AI installed and offers the one-click Download Offline AI flow 
+   ✓ AI Assistant panel > previews a Change Set and applies it only on explicit Apply 
+   ✓ AI Assistant panel > asks for the usual confirmation before applying destructive changes 
+   ✓ AI Assistant panel > shows one review card for a multi-step change, with its parts 
+   ✓ AI Assistant panel > opens a source from its provenance chip 
+   ✓ AI Assistant panel > never offers Apply on a stale proposal 
+ ✓ src/workspaces/call-sheets/shared/Strip.test.tsx (2 tests)
+   ✓ StripRow > shows colour class, missing location text and script flag (never colour-only) 
+ ✓ src/app/home/AppHome.test.tsx (6 tests)
+   ✓ Application Home > shows the empty state with the two first actions when there are no projects 
+   ✓ Application Home > opens the New Project dialog from the empty state and with Ctrl+N 
+   ✓ Application Home > lists pinned projects before recent ones and hides archived ones 
+   ✓ Application Home > asks for the user's name on first run and stores it 
+   ✓ Application Home > opens the Global Idea Vault with no project open, with global undo, and returns 
+ ✓ src/workspaces/story/BoardView.test.tsx (4 tests)
+   ✓ Story Board views > shows acts, sequences, compact cards without scene numbers, and the Parking Lot 
+   ✓ Story Board views > selects on click, multi-selects with Ctrl+click and opens the drawer on double-click 
+ ✓ src/workspaces/trash/RecentlyDeleted.test.tsx (3 tests)
+   ✓ Recently Deleted > asks for a second, deliberate confirmation before deleting permanently 
+ ✓ src/ai/OfflineAiSetup.test.tsx (7 tests)
+   ✓ Offline AI setup > offers one button with the exact size first, and no technical names 
+ ✓ src/api/schedule.test.ts (5 tests)
+ ✓ src/workspaces/production/catalog.test.tsx (4 tests)
+   ✓ catalog tab > lists items with category, status and derived scene usage 
+   ✓ catalog tab > filters by category through the backend query 
+   ✓ catalog tab > opens the item drawer with its scenes and offers Archive, not only Delete 
+   ✓ catalog tab > warns about an existing item with the same name when adding 
+ ✓ src/workspaces/idea-vault/model.test.ts (6 tests)
+ ✓ src/workspaces/story/model.test.ts (10 tests)
+ ✓ src/workspaces/production/visual/visual.test.tsx (12 tests)
+   ✓ Shot Lists tab > lists the scene's shots with generated labels and the review indicator 
+ ✓ src/workspaces/breakdown/breakdown.test.tsx (5 tests)
+   ✓ scene list > shows derived numbers, headings and status chips 
+ ✓ src/features/interchange/model.test.ts (6 tests)
+ ✓ src/workspaces/production/production.test.tsx (2 tests)
+   ✓ production workspace tabs > switches tabs through the route (sub = tab id) 
+ ✓ src/features/packages/packages.test.ts (9 tests)
+ ✓ src/ai/model.test.ts (13 tests)
+ ✓ src/workspaces/screenplay/lock.security.test.ts (2 tests)
+ Test Files  24 passed (24)
+      Tests  150 passed (150)
+   Duration  19.79s (transform 10.16s, setup 9.82s, collect 35.69s, tests 30.76s, environment 61.72s, prepare 9.07s)

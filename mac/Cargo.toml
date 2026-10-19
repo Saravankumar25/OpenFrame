@@ -1,0 +1,118 @@
+[workspace]
+resolver = "3"
+members = [
+    "apps/desktop/src-tauri",
+    "crates/openframe-domain",
+    "crates/openframe-persistence",
+    "crates/openframe-security",
+    "crates/openframe-platform",
+    "crates/openframe-entitlement",
+    "crates/openframe-project-format",
+    "crates/openframe-import-export",
+    "crates/openframe-ai",
+    "crates/openframe-search",
+    "crates/openframe-application",
+    "crates/openframe-ai-checks",
+    "crates/openframe-ai-eval",
+    "crates/openframe-test-support",
+    "crates/openframe-ffi",
+    "crates/openframe-gold-project",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+# The final open-source license identifier has not been selected yet (see LICENSE-PENDING.md).
+license = "LicenseRef-OpenFrame-Pending"
+publish = false
+authors = ["OpenFrame Studio contributors"]
+
+[workspace.dependencies]
+openframe-domain = { path = "crates/openframe-domain" }
+openframe-persistence = { path = "crates/openframe-persistence" }
+openframe-project-format = { path = "crates/openframe-project-format" }
+openframe-security = { path = "crates/openframe-security" }
+openframe-platform = { path = "crates/openframe-platform" }
+openframe-entitlement = { path = "crates/openframe-entitlement" }
+openframe-search = { path = "crates/openframe-search" }
+openframe-import-export = { path = "crates/openframe-import-export" }
+openframe-ai = { path = "crates/openframe-ai" }
+openframe-application = { path = "crates/openframe-application" }
+openframe-test-support = { path = "crates/openframe-test-support" }
+
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+uuid = { version = "1", features = ["v4", "v7", "serde"] }
+rusqlite = { version = "0.37", features = ["bundled", "backup", "functions", "serde_json", "limits"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+tracing-appender = "0.2"
+ts-rs = { version = "11", features = ["serde-json-impl", "uuid-impl"] }
+parking_lot = "0.12"
+tempfile = "3"
+fs4 = { version = "0.13", features = ["sync"] }
+sha2 = "0.10"
+hex = "0.4"
+zip = { version = "9", default-features = false, features = ["deflate"] }
+quick-xml = "0.42"
+regex = "1"
+similar = "2"
+time = { version = "0.3", features = ["formatting", "parsing", "macros", "local-offset"] }
+directories = "6"
+image = { version = "0.25", default-features = false, features = ["png", "jpeg", "gif", "webp", "bmp"] }
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time", "fs", "io-util", "net", "process"] }
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "stream", "json"] }
+ed25519-dalek = { version = "2", features = ["rand_core"] }
+base64 = "0.22"
+rand = "0.8"
+# Team password gate of the internal builds (ADR-0024): Argon2id hash at build time, check at launch.
+argon2 = { version = "0.6", default-features = false, features = ["alloc", "password-hash"] }
+# Random salt for that hash, read in the desktop build script only.
+getrandom = "0.3"
+sysinfo = "0.37"
+csv = "1"
+rust_xlsxwriter = "0.100"
+pdf-writer = "0.13"
+lopdf = "0.45"
+# Already in the tree via lopdf; used directly to inflate PDF streams with hard caps.
+flate2 = "1"
+unicode-segmentation = "1"
+# Screenplay PDF fonts (ADR-0016): complex-script shaping and deterministic font subsetting.
+# rustybuzz is a pure-Rust HarfBuzz port (MIT); subsetter is the Typst subsetter (MIT OR Apache-2.0).
+rustybuzz = "0.20"
+subsetter = { version = "0.2", default-features = false }
+anyhow = "1"
+# Vector KNN for the derived intelligence index, compiled into the binary (SQLITE_CORE; no
+# runtime extension loading). MIT OR Apache-2.0.
+sqlite-vec = "0.1.9"
+
+[profile.dev]
+opt-level = 0
+debug = "line-tables-only"
+
+[profile.dev.package."*"]
+opt-level = 2
+
+[profile.release]
+codegen-units = 1
+lto = "thin"
+opt-level = 3
+strip = "symbols"
+
+# The internal build script hashes the team password with Argon2id (64 MiB, 3 passes). Build
+# scripts compile without optimisation in release; these keep that one hash fast.
+[profile.release.package.argon2]
+opt-level = 3
+
+[profile.release.package.blake2]
+opt-level = 3
+
+# `npm run perf`: optimised like release (same opt-level), but without LTO and
+# with parallel codegen so the performance suite builds in minutes.
+[profile.perf]
+inherits = "release"
+lto = false
+codegen-units = 16
+incremental = true

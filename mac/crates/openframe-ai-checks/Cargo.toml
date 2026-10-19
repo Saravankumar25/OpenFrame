@@ -1,0 +1,10 @@
+[package]
+name = "openframe-ai-checks"
+description = "Deterministic checks of AI answers (language, length, arguments, grounding), shared by the offline evaluation harness and the runtime verifier (ADR-0028 decisions 5 and 9)."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+serde_json.workspace = true

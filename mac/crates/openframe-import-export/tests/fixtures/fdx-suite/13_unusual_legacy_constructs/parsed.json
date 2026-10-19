@@ -1,0 +1,155 @@
+{
+  "scenes": [
+    {
+      "elements": [
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "action",
+          "revision": null,
+          "text": "THE FILE is gone.\tGone."
+        },
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "action",
+          "revision": null,
+          "text": "A paragraph without a type."
+        },
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "action",
+          "revision": null,
+          "text": "General text, & an ampersand é and a non-breaking space."
+        },
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "action",
+          "revision": null,
+          "text": "Dust on the shelves."
+        },
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "note",
+          "revision": null,
+          "text": "a note from the producer"
+        },
+        {
+          "custom": null,
+          "dual": true,
+          "kind": "character",
+          "revision": null,
+          "text": "ASHA"
+        },
+        {
+          "custom": null,
+          "dual": true,
+          "kind": "dialogue",
+          "revision": null,
+          "text": "Where is it?"
+        },
+        {
+          "custom": null,
+          "dual": true,
+          "kind": "character",
+          "revision": null,
+          "text": "RAVI"
+        },
+        {
+          "custom": null,
+          "dual": true,
+          "kind": "dialogue",
+          "revision": null,
+          "text": "I never had it."
+        },
+        {
+          "custom": null,
+          "dual": true,
+          "kind": "character",
+          "revision": null,
+          "text": "ASHA"
+        },
+        {
+          "custom": null,
+          "dual": true,
+          "kind": "dialogue",
+          "revision": null,
+          "text": "Then who?"
+        },
+        {
+          "custom": null,
+          "dual": true,
+          "kind": "character",
+          "revision": null,
+          "text": "RAVI"
+        },
+        {
+          "custom": null,
+          "dual": true,
+          "kind": "dialogue",
+          "revision": null,
+          "text": "Ask the keeper."
+        },
+        {
+          "custom": {
+            "exportName": "Cast List",
+            "italic": false,
+            "look": "action",
+            "name": "Cast List",
+            "spaceBefore": 1,
+            "uppercase": false
+          },
+          "dual": false,
+          "kind": "custom",
+          "revision": null,
+          "text": "ASHA, RAVI"
+        }
+      ],
+      "heading": "INT. ARCHIVE - NIGHT",
+      "number": null
+    },
+    {
+      "elements": [
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "action",
+          "revision": null,
+          "text": "The lights go out."
+        }
+      ],
+      "heading": "int. archive - later",
+      "number": null
+    }
+  ],
+  "titlePage": [],
+  "warnings": [
+    {
+      "code": "fdx_unknown_block",
+      "level": "attention",
+      "message": "1 “Outline” block(s) in the script could not be read and were left out; check the script against the original.",
+      "scene": null
+    },
+    {
+      "code": "fdx_custom_element",
+      "level": "info",
+      "message": "1 “Cast List” paragraph(s) were kept as the custom element “Cast List”. You can change how it looks under Advanced.",
+      "scene": null
+    },
+    {
+      "code": "fdx_script_notes_kept",
+      "level": "info",
+      "message": "1 Final Draft script note(s) attached to paragraphs were kept as notes in the scene (notes never print).",
+      "scene": null
+    },
+    {
+      "code": "fdx_settings_not_used",
+      "level": "info",
+      "message": "Final Draft settings in this file (SmartType, HeaderAndFooter, PageLayout) were not used; OpenFrame applies the screenplay's own page setup.",
+      "scene": null
+    }
+  ]
+}

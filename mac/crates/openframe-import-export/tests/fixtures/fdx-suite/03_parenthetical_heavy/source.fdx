@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<FinalDraft DocumentType="Script" Template="No" Version="5">
+<Content>
+<Paragraph Type="Scene Heading"><SceneProperties Length="1/8" Page="1" Title=""/><Text>INT. CLINIC - DAY</Text></Paragraph>
+<Paragraph Type="Character"><Text>DR. RAO</Text></Paragraph>
+<Paragraph Type="Parenthetical"><Text>(not looking up)</Text></Paragraph>
+<Paragraph Type="Dialogue"><Text>Sit down.</Text></Paragraph>
+<Paragraph Type="Character"><Text>NISHA</Text></Paragraph>
+<Paragraph Type="Parenthetical"><Text>(standing)</Text></Paragraph>
+<Paragraph Type="Dialogue"><Text>I would rather not.</Text></Paragraph>
+<Paragraph Type="Parenthetical"><Text>(a long pause)</Text></Paragraph>
+<Paragraph Type="Dialogue"><Text>Please.</Text></Paragraph>
+<Paragraph Type="Character"><Text>DR. RAO</Text></Paragraph>
+<Paragraph Type="Parenthetical"><Text>(beat; then gently)</Text></Paragraph>
+<Paragraph Type="Dialogue"><Text>The results came back.</Text></Paragraph>
+<Paragraph Type="Character"><Text>NISHA</Text></Paragraph>
+<Paragraph Type="Parenthetical"><Text>(quietly)</Text></Paragraph>
+<Paragraph Type="Dialogue"><Text>And?</Text></Paragraph>
+<Paragraph Type="Parenthetical"><Text>(a long pause)</Text></Paragraph>
+<Paragraph Type="Dialogue"><Text>Please.</Text></Paragraph>
+<Paragraph Type="Character"><Text>DR. RAO</Text></Paragraph>
+<Paragraph Type="Parenthetical"><Text>(V.O.)</Text></Paragraph>
+<Paragraph Type="Dialogue"><Text>And they are clear.</Text></Paragraph>
+<Paragraph Type="Character"><Text>NISHA</Text></Paragraph>
+<Paragraph Type="Parenthetical"><Text>(laughing, crying)</Text></Paragraph>
+<Paragraph Type="Dialogue"><Text>Say it again.</Text></Paragraph>
+<Paragraph Type="Parenthetical"><Text>(a long pause)</Text></Paragraph>
+<Paragraph Type="Dialogue"><Text>Please.</Text></Paragraph>
+</Content>
+</FinalDraft>

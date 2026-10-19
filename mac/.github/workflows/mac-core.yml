@@ -1,0 +1,80 @@
+# OpenFrame Studio: Mac core check (docs/engineering/25-ci-cd.md, docs/roadmap/chapter-1b-mac-phases.md).
+#
+# Checks that the shared Rust core builds and passes its tests on Apple silicon, then runs the two
+# scripts of the native Mac app: apps/macos/scripts/build-core.sh (builds the core and its Swift
+# interface) and apps/macos/scripts/test.sh (runs the Swift package tests). It does not sign,
+# package or start the app. The Tauri desktop shell is not built here (ADR-0027 decision 3).
+#
+# macOS runner minutes cost ten times Windows minutes, so this workflow runs only when a path that
+# can change the Mac build changes, plus on demand.
+
+name: Mac core check
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "crates/**"
+      - "apps/macos/**"
+      - "Cargo.lock"
+      - "Cargo.toml"
+      - ".github/workflows/mac-core.yml"
+  pull_request:
+    paths:
+      - "crates/**"
+      - "apps/macos/**"
+      - "Cargo.lock"
+      - "Cargo.toml"
+      - ".github/workflows/mac-core.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mac-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # .cargo/config.toml compiles through sccache, which runners do not have; an empty value turns it off.
+  RUSTC_WRAPPER: ""
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: 0
+  RUST_BACKTRACE: 1
+
+jobs:
+  mac-core:
+    name: Mac core check (Apple silicon)
+    runs-on: macos-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Install Rust (1.98.1, aarch64-apple-darwin)
+        uses: dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067 # master 2026-10-05
+        with:
+          toolchain: "1.98.1"
+          targets: aarch64-apple-darwin
+
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          shared-key: mac-core
+
+      - name: Swift and Xcode versions
+        run: |
+          swift --version
+          xcodebuild -version || true
+
+      - name: cargo test (whole workspace except the Windows desktop shell)
+        run: cargo test --workspace --exclude openframe-desktop --locked
+
+      - name: Build the core for the Mac app
+        run: bash apps/macos/scripts/build-core.sh
+
+      - name: Swift package tests
+        run: bash apps/macos/scripts/test.sh
+
+      # The Swift operation list and types are generated from the same registry and ts-rs output
+      # as the TypeScript bindings (ADR-0027 decision 4); a stale committed copy fails here.
+      - name: Generated Swift types are up to date
+        run: git diff --exit-code -- apps/macos/Sources/OpenFrameCore/Generated/

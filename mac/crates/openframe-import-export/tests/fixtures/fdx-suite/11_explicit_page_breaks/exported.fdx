@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<FinalDraft DocumentType="Script" Template="No" Version="5">
+<Content>
+<Paragraph Type="Scene Heading"><Text>INT. THEATRE - NIGHT</Text></Paragraph>
+<Paragraph Type="Action"><Text>The curtain rises.</Text></Paragraph>
+<Paragraph Type="Action" Alignment="Center" StartsNewPage="Yes"><Text>ACT TWO</Text></Paragraph>
+<Paragraph StartsNewPage="Yes" Type="Scene Heading"><Text>INT. GREEN ROOM - NIGHT</Text></Paragraph>
+<Paragraph Type="Action"><Text>Costumes everywhere.</Text></Paragraph>
+</Content>
+</FinalDraft>

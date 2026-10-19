@@ -1,0 +1,58 @@
+=== page 1
+  0   90 SceneNumber    1
+  0  150 Heading        INT. KITCHEN - NIGHT
+  0  760 SceneNumber    1
+  2  370 Character      MEERA
+  3  250 Dialogue       You said you would call.
+  5  370 Character      ARJUN
+  6  250 Dialogue       I did call. Twice.
+  8  370 Character      MEERA
+  9  250 Dialogue       From whose phone?
+ 11  370 Character      ARJUN
+ 12  250 Dialogue       Does it matter?
+ 14  370 Character      MEERA
+ 15  250 Dialogue       It matters to me.
+ 17  370 Character      ARJUN
+ 18  250 Dialogue       Then it was Ravi's.
+ 20  370 Character      MEERA
+ 21  250 Dialogue       Ravi has been in Pune since Monday.
+ 23  370 Character      ARJUN
+ 24  250 Dialogue       Then I was wrong about the phone,
+ 25  250 Dialogue       not about calling.
+ 27  370 Character      MEERA
+ 28  250 Dialogue       You said you would call.
+ 30  370 Character      ARJUN
+ 31  250 Dialogue       I did call. Twice.
+ 33  370 Character      MEERA
+ 34  250 Dialogue       From whose phone?
+ 36  370 Character      ARJUN
+ 37  250 Dialogue       Does it matter?
+ 39  370 Character      MEERA
+ 40  250 Dialogue       It matters to me.
+ 42  370 Character      ARJUN
+ 43  250 Dialogue       Then it was Ravi's.
+ 45  370 Character      MEERA
+ 46  250 Dialogue       Ravi has been in Pune since Monday.
+ 48  370 Character      ARJUN
+ 49  250 Dialogue       Then I was wrong about the phone,
+ 50  250 Dialogue       not about calling.
+ 52  370 Character      MEERA
+ 53  250 Dialogue       You said you would call.
+=== page 2
+ -3  730 PageNumber     2.
+  0  370 Character      ARJUN
+  1  250 Dialogue       I did call. Twice.
+  3  370 Character      MEERA
+  4  250 Dialogue       From whose phone?
+  6  370 Character      ARJUN
+  7  250 Dialogue       Does it matter?
+  9  370 Character      MEERA
+ 10  250 Dialogue       It matters to me.
+ 12  370 Character      ARJUN
+ 13  250 Dialogue       Then it was Ravi's.
+ 15  370 Character      MEERA
+ 16  250 Dialogue       Ravi has been in Pune since Monday.
+ 18  370 Character      ARJUN
+ 19  250 Dialogue       Then I was wrong about the phone,
+ 20  250 Dialogue       not about calling.
+pdf-sha256 8a7fc898c4351ec02a89700a2ce9e933ded2dcd50f91a0500c8094e293ef7dc2

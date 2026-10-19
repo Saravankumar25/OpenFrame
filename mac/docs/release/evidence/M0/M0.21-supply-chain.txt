@@ -1,0 +1,36 @@
+# M0.21 supply chain, local run 2026-10-05 (Windows 11, cargo-deny 0.20.2, cargo-audit 0.22.2, npm 11.9.0)
+
+## cargo deny --locked check (before fix, baseline lockfile)
+advisories FAILED, bans ok, licenses ok, sources ok
+error[yanked]: detected yanked crate (try `cargo update -p yoke-derive`)  yoke-derive v0.8.3
+
+## fix
+cargo update -p yoke-derive  =>  yoke-derive v0.8.3 -> v0.8.4 (Cargo.lock: 3 lines changed)
+
+## cargo deny --locked check (after fix)
+advisories ok, bans ok, licenses ok, sources ok
+
+## cargo audit (whole lockfile, all targets)
+    Scanning Cargo.lock for vulnerabilities (621 crate dependencies)
+Crate:     proc-macro-error
+Version:   1.0.4
+Warning:   unmaintained
+ID:        RUSTSEC-2024-0370
+Crate:     glib
+Version:   0.18.5
+Warning:   unsound
+ID:        RUSTSEC-2024-0429
+warning: 2 allowed warnings found
+(glib and proc-macro-error are Linux GTK dependencies outside the Windows target graph checked by cargo deny)
+
+## npm audit --omit=dev --audit-level=moderate
+found 0 vulnerabilities
+
+## node scripts/license-inventory.mjs --check (compared with committed THIRD_PARTY_LICENSES.md)
+license-inventory: 394 Rust crates, 72 npm packages → <temp file>
+  review   cargo cssparser@0.37.0: MPL-2.0
+  review   cargo cssparser-macros@0.7.1: MPL-2.0
+  review   cargo dtoa-short@0.3.5: MPL-2.0
+  review   cargo option-ext@0.2.0: MPL-2.0
+  review   cargo selectors@0.38.0: MPL-2.0
+difference: yoke-derive 0.8.3 -> 0.8.4 only; THIRD_PARTY_LICENSES.md regenerated with `npm run licenses` and `--check` passes

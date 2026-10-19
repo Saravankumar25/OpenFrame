@@ -1,0 +1,18 @@
+﻿#,Cast,Character,Day 1 (Mon 11 Jan 2027),Day 2 (Tue 12 Jan 2027),Day 3 (Wed 13 Jan 2027),Day 4 (Thu 14 Jan 2027),Day 5 (Fri 15 Jan 2027),Day 6 (Sat 16 Jan 2027),Off (Sun 17 Jan 2027),Day 7 (Mon 18 Jan 2027),Day 8 (Tue 19 Jan 2027),Day 9 (Wed 20 Jan 2027),Day 10 (Thu 21 Jan 2027),Day 11 (Fri 22 Jan 2027),Day 12 (Sat 23 Jan 2027),Off (Sun 24 Jan 2027),Day 13 (Mon 25 Jan 2027),Day 14 (Tue 26 Jan 2027),Work,Hold,Travel,Other,Start,Finish
+1,Nimisha Raghavan,ANJALI,SW,W,W,W,W,W,R*,W,W,W,W,W,W,,H,WF,13,1,0,1,Shoot Day 1,Shoot Day 14
+2,Lal Fernandez,JOE,SW,W,H,H,W,H,,H,H,W,H,WF,,,,,5,6,0,0,Shoot Day 1,Shoot Day 11
+3,Aditya Nair,RAHUL,SW,W,W,H,W,W,,W,W,W,H,H,H,,H,WF,9,5,0,0,Shoot Day 1,Shoot Day 14
+4,Sajan Kuriakose,SURESH,SW,H,H,H,W,H,,W,W,W,W,H,W,,H,WF,8,6,0,0,Shoot Day 1,Shoot Day 14
+5,Divya Mathew,MARIAMMA,F*,SW,W,W,H,W,,H,H,W,H,W,W,,WF,,8,4,0,1,Shoot Day 2,Shoot Day 13
+6,Ameya Suresh,YOUNG ANJALI,,SWF,,,,,,,,,,,,,,,1,0,0,0,Shoot Day 2,Shoot Day 2
+7,K. P. Gopinathan,APPACHAN,,,SW,W,H,H,,H,W,W,H,H,W,,H,WF,6,6,0,0,Shoot Day 3,Shoot Day 14
+8,,Guard,,,SWF,,,,,,,,,,,,,,1,0,0,0,Shoot Day 3,Shoot Day 3
+9,Reshmi Pillai,LATHA,,,SW,H,H,H,,H,H,W,H,W,H,,H,WF,4,8,0,0,Shoot Day 3,Shoot Day 14
+10,Sabitha Rasheed,FATHIMA,,,,SW,W,W,,W,W,W,W,H,W,,H,WF,9,2,0,0,Shoot Day 4,Shoot Day 14
+11,Gauri Krishna,MEENU,,,,,SW,W,,W,H,W,H,H,H,,H,WF,5,5,0,0,Shoot Day 5,Shoot Day 14
+12,,Nurse,,,,,SW,H,,H,H,H,H,H,WF,,,,2,6,0,0,Shoot Day 5,Shoot Day 12
+13,Thampi Cherian,VARGHESE,,,,,,SW,,H,H,W,W,H,H,,WF,,4,4,0,0,Shoot Day 6,Shoot Day 13
+14,,Harbour Clerk,,,,,,,,SWF,,,,,,,,,1,0,0,0,Shoot Day 7,Shoot Day 7
+15,,Old Fisherman,,,,,,,,SW,H,H,H,H,H,,H,WF,2,6,0,0,Shoot Day 7,Shoot Day 14
+16,Ramesh Kaimal,PORT OFFICER,,,,,,,,,,,SWF,,,,,,1,0,0,0,Shoot Day 10,Shoot Day 10
+17,Karan Shetty,STUDIO PRODUCER,,,,,,,,,,,,T*,SW,,H,WF,2,1,1,0,Shoot Day 12,Shoot Day 14

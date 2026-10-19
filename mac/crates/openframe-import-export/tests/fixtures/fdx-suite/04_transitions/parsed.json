@@ -1,0 +1,119 @@
+{
+  "scenes": [
+    {
+      "elements": [
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "transition",
+          "revision": null,
+          "text": "FADE IN:"
+        }
+      ],
+      "heading": "",
+      "number": null
+    },
+    {
+      "elements": [
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "action",
+          "revision": null,
+          "text": "A bus passes milestone 1."
+        },
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "transition",
+          "revision": null,
+          "text": "CUT TO:"
+        }
+      ],
+      "heading": "EXT. HIGHWAY 1 - DAY",
+      "number": null
+    },
+    {
+      "elements": [
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "action",
+          "revision": null,
+          "text": "A bus passes milestone 2."
+        },
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "transition",
+          "revision": null,
+          "text": "DISSOLVE TO:"
+        }
+      ],
+      "heading": "EXT. HIGHWAY 2 - DAY",
+      "number": null
+    },
+    {
+      "elements": [
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "action",
+          "revision": null,
+          "text": "A bus passes milestone 3."
+        },
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "transition",
+          "revision": null,
+          "text": "SMASH CUT TO:"
+        }
+      ],
+      "heading": "EXT. HIGHWAY 3 - DAY",
+      "number": null
+    },
+    {
+      "elements": [
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "action",
+          "revision": null,
+          "text": "A bus passes milestone 4."
+        },
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "transition",
+          "revision": null,
+          "text": "MATCH CUT TO:"
+        }
+      ],
+      "heading": "EXT. HIGHWAY 4 - DAY",
+      "number": null
+    },
+    {
+      "elements": [
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "action",
+          "revision": null,
+          "text": "A bus passes milestone 5."
+        },
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "transition",
+          "revision": null,
+          "text": "FADE OUT."
+        }
+      ],
+      "heading": "EXT. HIGHWAY 5 - DAY",
+      "number": null
+    }
+  ],
+  "titlePage": [],
+  "warnings": []
+}

@@ -1,0 +1,77 @@
+== page 1 792x612
+54,542 16.0 Shooting Schedule
+*,526 9.5 Black Rain · Revised <DATE> · Source: Shooting Schedule · Shooting Draft 6 (Locked)
+54,501 9.5 Schedule
+259,501 9.5 Shooting Schedule
+54,488 9.5 Production Source
+259,488 9.5 Shooting Draft 6 (Locked)
+54,476 9.5 Days
+259,476 9.5 2 shooting days
+54,463 9.5 Scenes
+259,463 9.5 4 scheduled · 0 unscheduled
+54,440 11.0 Shoot Day 1 · Mon 14 Jun 2027
+54,424 8.5 2 scenes · 4h 45m · wrap 23:45 · 3/8 pages · 18:00 crew call · wrap about 23:45 (target 02:00 (+1))
+58,406 8.5 Start
+99,406 8.5 Sc
+130,406 8.5 I/E
+167,406 8.5 D/N
+203,406 8.5 Heading / location
+366,406 8.5 Synopsis
+529,406 8.5 Cast
+664,406 8.5 Pages
+718,406 8.5 Est.
+58,389 8.5 19:00
+99,389 8.5 1
+130,389 8.5 INT
+167,389 8.5 Night
+203,389 8.5 INT. POLICE STATION - NIGHT
+366,389 8.5 Meera hands the file
+529,389 8.5 Arjun (Karthik Menon), Meera
+529,379 8.5 (Divya Nair)
+677,389 8.5 2/8
+706,389 8.5 1h 30m
+58,362 8.5 20:30
+203,362 8.5 MEAL BREAK (45m)
+58,345 8.5 21:15
+203,345 8.5 MOVE TO THE RAILWAY STATION
+203,335 8.5 (30m)
+58,318 8.5 21:45
+99,318 8.5 2
+130,318 8.5 EXT
+167,318 8.5 Day
+203,318 8.5 EXT. OLD RAILWAY STATION - DAY
+366,318 8.5 Arjun walks the platform
+529,318 8.5 Arjun (Karthik Menon)
+677,318 8.5 1/8
+725,318 8.5 2h
+54,288 11.0 Shoot Day 2 · Tue 15 Jun 2027
+54,272 8.5 2 scenes · 1h 45m · 2/8 pages
+58,254 8.5 Start
+99,254 8.5 Sc
+130,254 8.5 I/E
+167,254 8.5 D/N
+203,254 8.5 Heading / location
+366,254 8.5 Synopsis
+529,254 8.5 Cast
+664,254 8.5 Pages
+718,254 8.5 Est.
+99,238 8.5 3
+130,238 8.5 INT
+167,238 8.5 Day
+203,238 8.5 INT. MORGUE - DAY
+366,238 8.5 Time of death
+529,238 8.5 Meera (Divya Nair)
+677,238 8.5 1/8
+725,238 8.5 1h
+99,221 8.5 4
+130,221 8.5 EXT
+167,221 8.5 Night
+203,221 8.5 EXT. OLD RAILWAY STATION - NIGHT
+366,221 8.5 Watcher on platform
+529,221 8.5 Arjun (Karthik Menon)
+677,221 8.5 1/8
+717,221 8.5 45m
+54,191 11.0 Unscheduled (0)
+54,174 10.0 Every scene is scheduled.
+314,34 8.0 Black Rain · Shooting Schedule · Page 1 of 1
+65,18 7.0 Created with OpenFrame Studio

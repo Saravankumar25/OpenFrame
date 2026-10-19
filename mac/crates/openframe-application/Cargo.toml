@@ -1,0 +1,43 @@
+[package]
+name = "openframe-application"
+description = "OpenFrame application layer: command/query pipeline, permissions, undo, activity, search indexing and all module services."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+openframe-domain = { workspace = true, features = ["sqlite"] }
+openframe-persistence.workspace = true
+openframe-project-format.workspace = true
+openframe-security.workspace = true
+openframe-platform.workspace = true
+# Licence and free-trial state (build plan area "Payment and free trial in all three channels").
+openframe-entitlement.workspace = true
+openframe-import-export.workspace = true
+openframe-ai.workspace = true
+openframe-search.workspace = true
+openframe-ai-checks = { path = "../openframe-ai-checks" }
+rusqlite.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+ts-rs.workspace = true
+parking_lot.workspace = true
+tracing.workspace = true
+uuid.workspace = true
+time.workspace = true
+regex.workspace = true
+similar.workspace = true
+unicode-segmentation.workspace = true
+base64.workspace = true
+# OS name and version for the support diagnostics bundle (M1.19); already in the tree via openframe-ai.
+sysinfo.workspace = true
+trash = "5"
+
+[dev-dependencies]
+tempfile.workspace = true
+openframe-ai = { workspace = true, features = ["test-support"] }
+openframe-test-support.workspace = true
+# Export tests parse the written PDFs and spreadsheets.
+lopdf.workspace = true
+zip.workspace = true

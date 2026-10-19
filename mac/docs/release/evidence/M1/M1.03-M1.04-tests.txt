@@ -1,0 +1,10 @@
+test m1_03_forced_kill_during_export_never_leaves_a_broken_file_or_touches_the_project ... ok
+test m1_03_forced_kill_during_migration_leaves_a_consistent_database ... ok
+test m1_03_forced_kill_during_backup_never_leaves_a_broken_backup ... ok
+test m1_03_forced_kill_during_save_loses_no_committed_edit_and_offers_recovery ... ok
+test m1_03_forced_kill_during_package_import_leaves_no_broken_project ... ok
+test result: ok. 5 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 6.16s
+test m1_04_the_app_database_reopens_with_its_recent_projects ... ok
+test m1_04_every_global_vault_schema_version_upgrades_and_keeps_its_items ... ok
+test m1_04_every_project_schema_version_upgrades_with_content_backup_search_and_export ... ok
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 21.33s

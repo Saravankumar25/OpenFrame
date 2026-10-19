@@ -1,0 +1,29 @@
+=== page 1
+  0   90 SceneNumber    1
+  0  150 Heading        INT. CLINIC - DAY
+  0  760 SceneNumber    1
+  2  370 Character      DR. RAO
+  3  310 Parenthetical  (not looking up)
+  4  250 Dialogue       Sit down.
+  6  370 Character      NISHA
+  7  310 Parenthetical  (standing)
+  8  250 Dialogue       I would rather not.
+  9  310 Parenthetical  (a long pause)
+ 10  250 Dialogue       Please.
+ 12  370 Character      DR. RAO
+ 13  310 Parenthetical  (beat; then gently)
+ 14  250 Dialogue       The results came back.
+ 16  370 Character      NISHA
+ 17  310 Parenthetical  (quietly)
+ 18  250 Dialogue       And?
+ 19  310 Parenthetical  (a long pause)
+ 20  250 Dialogue       Please.
+ 22  370 Character      DR. RAO
+ 23  310 Parenthetical  (V.O.)
+ 24  250 Dialogue       And they are clear.
+ 26  370 Character      NISHA
+ 27  310 Parenthetical  (laughing, crying)
+ 28  250 Dialogue       Say it again.
+ 29  310 Parenthetical  (a long pause)
+ 30  250 Dialogue       Please.
+pdf-sha256 18518efb54e675cc803bd5e55c3b7ea46a79b8beac48c666220ccf3f24c269fa

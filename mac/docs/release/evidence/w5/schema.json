@@ -1,0 +1,93 @@
+{
+  "computer": {
+    "cpu": "Intel(R) Core(TM) Ultra 5 125H",
+    "logicalCores": 18,
+    "memoryMb": 15805,
+    "os": "Windows 11 Home Single Language",
+    "physicalCores": 14
+  },
+  "engine": "llama-cpp-b11259-win-x64-cpu",
+  "experiment": "schema",
+  "prompts": 3,
+  "repeats": 3,
+  "result": {
+    "promptsWithSchema": 3,
+    "runs": [
+      {
+        "figures": {
+          "generationTokensPerSecond": {
+            "max": 28.96477379771002,
+            "median": 26.55146187210075,
+            "min": 22.196143742226877,
+            "n": 9,
+            "p25": 23.950874438699667,
+            "p75": 28.7453648099244
+          },
+          "promptTokens": {
+            "max": 2950.0,
+            "median": 2910.0,
+            "min": 2759.0,
+            "n": 9,
+            "p25": 2759.0,
+            "p75": 2950.0
+          },
+          "promptTokensPerSecond": {
+            "max": 112.56547510115517,
+            "median": 109.01739029675545,
+            "min": 105.12494989990269,
+            "n": 9,
+            "p25": 107.31373229926302,
+            "p75": 110.03192854322378
+          },
+          "wallMs": {
+            "max": 28913.447900000003,
+            "median": 27557.513199999998,
+            "min": 26443.0385,
+            "n": 9,
+            "p25": 27195.842800000002,
+            "p75": 28152.2087
+          }
+        },
+        "schema": true
+      },
+      {
+        "figures": {
+          "generationTokensPerSecond": {
+            "max": 29.99979375141796,
+            "median": 29.31639063113303,
+            "min": 27.91109708814446,
+            "n": 9,
+            "p25": 29.064117259181085,
+            "p75": 29.543552119749865
+          },
+          "promptTokens": {
+            "max": 2950.0,
+            "median": 2910.0,
+            "min": 2759.0,
+            "n": 9,
+            "p25": 2759.0,
+            "p75": 2950.0
+          },
+          "promptTokensPerSecond": {
+            "max": 113.1297668792042,
+            "median": 110.65605838918839,
+            "min": 103.53241001375297,
+            "n": 9,
+            "p25": 108.52935292195713,
+            "p75": 112.39873540221423
+          },
+          "wallMs": {
+            "max": 29747.3669,
+            "median": 26726.663099999998,
+            "min": 25447.3656,
+            "n": 9,
+            "p25": 26043.0255,
+            "p75": 27890.043999999998
+          }
+        },
+        "schema": false
+      }
+    ]
+  },
+  "startedUnixSeconds": 1792159995
+}

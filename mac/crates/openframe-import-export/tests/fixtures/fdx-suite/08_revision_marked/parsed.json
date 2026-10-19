@@ -1,0 +1,53 @@
+{
+  "scenes": [
+    {
+      "elements": [
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "action",
+          "revision": null,
+          "text": "MEERA packs a bag."
+        },
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "action",
+          "revision": "Blue",
+          "text": "She stops. Unpacks it again."
+        },
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "character",
+          "revision": "Pink",
+          "text": "MEERA"
+        },
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "dialogue",
+          "revision": "Pink",
+          "text": "Not today."
+        }
+      ],
+      "heading": "INT. HOUSE - DAY",
+      "number": "1"
+    },
+    {
+      "elements": [
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "action",
+          "revision": "Pink",
+          "text": "The bus leaves without her."
+        }
+      ],
+      "heading": "EXT. STREET - DAY",
+      "number": "2"
+    }
+  ],
+  "titlePage": [],
+  "warnings": []
+}

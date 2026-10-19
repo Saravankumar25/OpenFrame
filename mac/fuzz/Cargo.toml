@@ -1,0 +1,76 @@
+# Fuzz targets for the parsers that read files from outside (Windows phase W3). Not part of the
+# workspace: cargo-fuzz builds them with the nightly toolchain and libFuzzer.
+#   rustup toolchain install nightly --profile minimal
+#   cargo install cargo-fuzz --locked
+#   node scripts/fuzz.mjs            (every target for the time in scripts/fuzz.mjs)
+[package]
+name = "openframe-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2024"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+tempfile = "3"
+openframe-import-export = { path = "../crates/openframe-import-export" }
+openframe-security = { path = "../crates/openframe-security" }
+openframe-project-format = { path = "../crates/openframe-project-format" }
+
+[workspace]
+members = ["."]
+
+[profile.release]
+debug = 1
+
+[[bin]]
+name = "fdx"
+path = "fuzz_targets/fdx.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "fountain"
+path = "fuzz_targets/fountain.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "docx"
+path = "fuzz_targets/docx.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "xml"
+path = "fuzz_targets/xml.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "package_archive"
+path = "fuzz_targets/package_archive.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "project_manifest"
+path = "fuzz_targets/project_manifest.rs"
+test = false
+doc = false
+bench = false
+
+# The stable mutation driver (src/bin/fuzz_drive.rs) used where libFuzzer does not link.
+[[bin]]
+name = "fuzz_drive"
+path = "src/bin/fuzz_drive.rs"
+test = false
+doc = false
+bench = false

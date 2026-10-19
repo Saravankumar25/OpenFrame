@@ -1,0 +1,9 @@
+test adr_0019_every_change_set_operation_is_database_only ... ok
+test a_change_set_carrying_a_file_argument_is_refused_and_nothing_changes ... ok
+test a_rejected_or_pending_change_set_never_opens_a_journal ... ok
+test a_live_failure_closes_the_journal_as_compensated ... ok
+test duplicating_a_project_with_an_unfinished_apply_never_claims_it_was_undone ... ok
+test a_completed_apply_closes_the_journal_and_survives_a_crash ... ok
+test recovery_runs_once_and_a_second_open_changes_nothing ... ok
+test adr_0019_stop_after_every_apply_boundary_reopens_consistent ... ok
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.65s

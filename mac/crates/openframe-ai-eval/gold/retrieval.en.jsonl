@@ -1,0 +1,164 @@
+{"id":"retrieval-en-001","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does Farooq's bus first arrive?","expect":{"scenes":[1],"k":5}}
+{"id":"retrieval-en-002","kind":"retrieval","lang":"en","project":"example-feature","request":"Which scene shows the bus with number plate RYP 0417?","expect":{"scenes":[1],"k":5}}
+{"id":"retrieval-en-003","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does Farooq toss Lakshmi her umbrella?","expect":{"scenes":[1],"k":5}}
+{"id":"retrieval-en-004","kind":"retrieval","lang":"en","project":"example-feature","request":"Who says it has not rained for forty days?","expect":{"scenes":[1],"k":5}}
+{"id":"retrieval-en-005","kind":"retrieval","lang":"en","project":"example-feature","request":"Find the scene where Venkat Rao is soldering at his workbench.","expect":{"scenes":[2],"k":5}}
+{"id":"retrieval-en-006","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does Lakshmi call the marine receiver the fridge radio?","expect":{"scenes":[2],"k":5}}
+{"id":"retrieval-en-007","kind":"retrieval","lang":"en","project":"example-feature","request":"When does Venkat hand Lakshmi a multimeter?","expect":{"scenes":[2],"k":5}}
+{"id":"retrieval-en-008","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does Lakshmi say she studied signals and systems?","expect":{"scenes":[2],"k":5}}
+{"id":"retrieval-en-009","kind":"retrieval","lang":"en","project":"example-feature","request":"Which scene has the rusted antenna mast on the rooftop?","expect":{"scenes":[3],"k":5}}
+{"id":"retrieval-en-010","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does Venkat say the mast is older than Lakshmi's mother?","expect":{"scenes":[3],"k":5}}
+{"id":"retrieval-en-011","kind":"retrieval","lang":"en","project":"example-feature","request":"Find the rooftop scene at dusk with the guy wires.","expect":{"scenes":[3],"k":5}}
+{"id":"retrieval-en-012","kind":"retrieval","lang":"en","project":"example-feature","request":"Which scene has the newsreader warning about a deep depression over the Bay?","expect":{"scenes":[4],"k":5}}
+{"id":"retrieval-en-013","kind":"retrieval","lang":"en","project":"example-feature","request":"Where do they eat rice and rasam?","expect":{"scenes":[4],"k":5}}
+{"id":"retrieval-en-014","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does Venkat mention he built the transmitter in 1989?","expect":{"scenes":[4,15],"k":5}}
+{"id":"retrieval-en-015","kind":"retrieval","lang":"en","project":"example-feature","request":"When does Venkat say phones happened and everybody stopped listening?","expect":{"scenes":[4],"k":5}}
+{"id":"retrieval-en-016","kind":"retrieval","lang":"en","project":"example-feature","request":"Which scene shows the transistor radio held together with tape?","expect":{"scenes":[4],"k":5}}
+{"id":"retrieval-en-017","kind":"retrieval","lang":"en","project":"example-feature","request":"Find the district office corridor with green walls.","expect":{"scenes":[5],"k":5}}
+{"id":"retrieval-en-018","kind":"retrieval","lang":"en","project":"example-feature","request":"Where is the wall clock that runs four minutes slow?","expect":{"scenes":[5],"k":5}}
+{"id":"retrieval-en-019","kind":"retrieval","lang":"en","project":"example-feature","request":"Where do we first meet Suresh the district clerk?","expect":{"scenes":[5],"k":5}}
+{"id":"retrieval-en-020","kind":"retrieval","lang":"en","project":"example-feature","request":"Which scene has the pedestal fan that turns its head?","expect":{"scenes":[6],"k":5}}
+{"id":"retrieval-en-021","kind":"retrieval","lang":"en","project":"example-feature","request":"When does Venkat show the old ledger with the cracked spine?","expect":{"scenes":[6],"k":5}}
+{"id":"retrieval-en-022","kind":"retrieval","lang":"en","project":"example-feature","request":"Where do we learn the tower was decommissioned on paper in 2011?","expect":{"scenes":[6],"k":5}}
+{"id":"retrieval-en-023","kind":"retrieval","lang":"en","project":"example-feature","request":"Which scene ends with the sky turning a strange yellow?","expect":{"scenes":[6],"k":5}}
+{"id":"retrieval-en-024","kind":"retrieval","lang":"en","project":"example-feature","request":"Find the market scene with Padma.","expect":{"scenes":[7],"k":5}}
+{"id":"retrieval-en-025","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does Padma shout Radio Venkat, you are alive?","expect":{"scenes":[7],"k":5}}
+{"id":"retrieval-en-026","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does Padma say the warning came after the water?","expect":{"scenes":[7],"k":5}}
+{"id":"retrieval-en-027","kind":"retrieval","lang":"en","project":"example-feature","request":"Which scene has Padma arguing with a vendor over a coil of rope?","expect":{"scenes":[7],"k":5}}
+{"id":"retrieval-en-028","kind":"retrieval","lang":"en","project":"example-feature","request":"Where do they open the crate of spare valves?","expect":{"scenes":[8],"k":5}}
+{"id":"retrieval-en-029","kind":"retrieval","lang":"en","project":"example-feature","request":"Which scene shows the transformer tagged Pedda Revu spare?","expect":{"scenes":[8],"k":5}}
+{"id":"retrieval-en-030","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does Lakshmi say you kept spares for thirty years?","expect":{"scenes":[8],"k":5}}
+{"id":"retrieval-en-031","kind":"retrieval","lang":"en","project":"example-feature","request":"When does Venkat say Farooq leaves at six?","expect":{"scenes":[8],"k":5}}
+{"id":"retrieval-en-032","kind":"retrieval","lang":"en","project":"example-feature","request":"Which scene carries the note about the company move to the coast?","expect":{"scenes":[8],"k":5}}
+{"id":"retrieval-en-033","kind":"retrieval","lang":"en","project":"example-feature","request":"Find the dawn scene at the bus stand.","expect":{"scenes":[9],"k":5}}
+{"id":"retrieval-en-034","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does Venkat carry the transformer like a newborn?","expect":{"scenes":[9],"k":5}}
+{"id":"retrieval-en-035","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does Farooq say the radio belongs in a museum?","expect":{"scenes":[9],"k":5}}
+{"id":"retrieval-en-036","kind":"retrieval","lang":"en","project":"example-feature","request":"Which scene has a goat standing in the bus aisle?","expect":{"scenes":[10],"k":5}}
+{"id":"retrieval-en-037","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does Farooq talk about his father's Sunday radio show?","expect":{"scenes":[10],"k":5}}
+{"id":"retrieval-en-038","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does Lakshmi read the ledger entry for Sunday at 0700?","expect":{"scenes":[10],"k":5}}
+{"id":"retrieval-en-039","kind":"retrieval","lang":"en","project":"example-feature","request":"Which scene shows the bus driving through paddy fields?","expect":{"scenes":[10],"k":5}}
+{"id":"retrieval-en-040","kind":"retrieval","lang":"en","project":"example-feature","request":"Find the coastal highway with casuarina trees.","expect":{"scenes":[11,35],"k":5}}
+{"id":"retrieval-en-041","kind":"retrieval","lang":"en","project":"example-feature","request":"Where is the police jeep parked across the road?","expect":{"scenes":[11],"k":5}}
+{"id":"retrieval-en-042","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does Constable Raju stop the bus?","expect":{"scenes":[12],"k":5}}
+{"id":"retrieval-en-043","kind":"retrieval","lang":"en","project":"example-feature","request":"Which scene has the cyclone warning at the checkpost?","expect":{"scenes":[12],"k":5}}
+{"id":"retrieval-en-044","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does Raju give them until the evening?","expect":{"scenes":[12],"k":5}}
+{"id":"retrieval-en-045","kind":"retrieval","lang":"en","project":"example-feature","request":"Who drags the barrier aside and where?","expect":{"scenes":[12],"k":5}}
+{"id":"retrieval-en-046","kind":"retrieval","lang":"en","project":"example-feature","request":"Find the beach with fishing boats painted blue and red.","expect":{"scenes":[13],"k":5}}
+{"id":"retrieval-en-047","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does Bittu shout that the bus brought a grandfather?","expect":{"scenes":[13],"k":5}}
+{"id":"retrieval-en-048","kind":"retrieval","lang":"en","project":"example-feature","request":"Where do we first see the steel tower forty metres high?","expect":{"scenes":[14],"k":5}}
+{"id":"retrieval-en-049","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does Venkat say she is still standing about the tower?","expect":{"scenes":[14],"k":5}}
+{"id":"retrieval-en-050","kind":"retrieval","lang":"en","project":"example-feature","request":"Which scene has a bird's nest on the mixing desk?","expect":{"scenes":[15],"k":5}}
+{"id":"retrieval-en-051","kind":"retrieval","lang":"en","project":"example-feature","request":"Where is the brass plate that reads built by V. Rao?","expect":{"scenes":[15],"k":5}}
+{"id":"retrieval-en-052","kind":"retrieval","lang":"en","project":"example-feature","request":"Where do spiders scatter from the transmitter cabinet?","expect":{"scenes":[15],"k":5}}
+{"id":"retrieval-en-053","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does Venkat say every good engineer signs his work?","expect":{"scenes":[15],"k":5}}
+{"id":"retrieval-en-054","kind":"retrieval","lang":"en","project":"example-feature","request":"Find the veranda dinner at Padma's house.","expect":{"scenes":[16],"k":5}}
+{"id":"retrieval-en-055","kind":"retrieval","lang":"en","project":"example-feature","request":"Where do they eat fish curry on banana leaves by a kerosene lantern?","expect":{"scenes":[16],"k":5}}
+{"id":"retrieval-en-056","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does Padma say we listened, we just did not tell you?","expect":{"scenes":[16],"k":5}}
+{"id":"retrieval-en-057","kind":"retrieval","lang":"en","project":"example-feature","request":"Which scene shows Padma's phone with no bars?","expect":{"scenes":[16],"k":5}}
+{"id":"retrieval-en-058","kind":"retrieval","lang":"en","project":"example-feature","request":"Where do Lakshmi and Venkat test valves by lantern light?","expect":{"scenes":[17],"k":5}}
+{"id":"retrieval-en-059","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does Lakshmi count seven good valves and three dead?","expect":{"scenes":[17],"k":5}}
+{"id":"retrieval-en-060","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does Venkat say seven is always enough?","expect":{"scenes":[17],"k":5}}
+{"id":"retrieval-en-061","kind":"retrieval","lang":"en","project":"example-feature","request":"Find the children on the upturned boat at night.","expect":{"scenes":[18],"k":5}}
+{"id":"retrieval-en-062","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does Bittu say his father thinks the sea is angry?","expect":{"scenes":[18],"k":5}}
+{"id":"retrieval-en-063","kind":"retrieval","lang":"en","project":"example-feature","request":"Which scene has a wave running further up the sand than before?","expect":{"scenes":[18],"k":5}}
+{"id":"retrieval-en-064","kind":"retrieval","lang":"en","project":"example-feature","request":"Where is Farooq lying on the back seat with a towel over his eyes?","expect":{"scenes":[19],"k":5}}
+{"id":"retrieval-en-065","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does Farooq turn the dial of his battery radio through static?","expect":{"scenes":[19],"k":5}}
+{"id":"retrieval-en-066","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does Farooq tell the radio you did it for my father?","expect":{"scenes":[19],"k":5}}
+{"id":"retrieval-en-067","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does Lakshmi put on the climbing harness?","expect":{"scenes":[20],"k":5}}
+{"id":"retrieval-en-068","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does Venkat say the feeder is broken at the top?","expect":{"scenes":[20],"k":5}}
+{"id":"retrieval-en-069","kind":"retrieval","lang":"en","project":"example-feature","request":"Where do they argue about Venkat getting dizzy on a chair?","expect":{"scenes":[20],"k":5}}
+{"id":"retrieval-en-070","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does Venkat tell Lakshmi to clip in at every section?","expect":{"scenes":[20],"k":5}}
+{"id":"retrieval-en-071","kind":"retrieval","lang":"en","project":"example-feature","request":"Find the scene at the top of the tower.","expect":{"scenes":[21],"k":5}}
+{"id":"retrieval-en-072","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does Lakshmi strip the cable with her teeth?","expect":{"scenes":[21],"k":5}}
+{"id":"retrieval-en-073","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does Venkat shout do not say done until it works?","expect":{"scenes":[21],"k":5}}
+{"id":"retrieval-en-074","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does the old transformer crack and smoke?","expect":{"scenes":[22],"k":5}}
+{"id":"retrieval-en-075","kind":"retrieval","lang":"en","project":"example-feature","request":"When do the dials drop to zero after the main switch?","expect":{"scenes":[22],"k":5}}
+{"id":"retrieval-en-076","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does Farooq suggest the boat batteries?","expect":{"scenes":[22],"k":5}}
+{"id":"retrieval-en-077","kind":"retrieval","lang":"en","project":"example-feature","request":"Which scene shows Padma's boat named Lakshmi Devi?","expect":{"scenes":[23],"k":5}}
+{"id":"retrieval-en-078","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does Padma take the marine battery out from under the deck?","expect":{"scenes":[23],"k":5}}
+{"id":"retrieval-en-079","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does Bittu carry the cables like a crown?","expect":{"scenes":[23],"k":5}}
+{"id":"retrieval-en-080","kind":"retrieval","lang":"en","project":"example-feature","request":"Where is the spare transformer wired in at dusk?","expect":{"scenes":[24],"k":5}}
+{"id":"retrieval-en-081","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does Venkat press a hand to his chest?","expect":{"scenes":[24],"k":5}}
+{"id":"retrieval-en-082","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does Lakshmi say it is not hot?","expect":{"scenes":[24],"k":5}}
+{"id":"retrieval-en-083","kind":"retrieval","lang":"en","project":"example-feature","request":"Find the primary health centre scene.","expect":{"scenes":[25],"k":5}}
+{"id":"retrieval-en-084","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does Dr. Kavitha Nair check Venkat's blood pressure?","expect":{"scenes":[25],"k":5}}
+{"id":"retrieval-en-085","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does the doctor say his heart is tired, not broken?","expect":{"scenes":[25],"k":5}}
+{"id":"retrieval-en-086","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does Venkat give Lakshmi the ledger and tell her the frequency is on page one?","expect":{"scenes":[25],"k":5}}
+{"id":"retrieval-en-087","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does Lakshmi run uphill in the rain with the ledger in her jacket?","expect":{"scenes":[26],"k":5}}
+{"id":"retrieval-en-088","kind":"retrieval","lang":"en","project":"example-feature","request":"Which scene has palm fronds skidding down the lane and a dog running?","expect":{"scenes":[26],"k":5}}
+{"id":"retrieval-en-089","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does Lakshmi throw a plastic sheet over the mixing desk?","expect":{"scenes":[27],"k":5}}
+{"id":"retrieval-en-090","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does Lakshmi first go on air and say testing?","expect":{"scenes":[27],"k":5}}
+{"id":"retrieval-en-091","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does she tell everyone in Pedda Revu to go to the school?","expect":{"scenes":[27,29],"k":5}}
+{"id":"retrieval-en-092","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does Suresh hear the broadcast in the control room?","expect":{"scenes":[28],"k":5}}
+{"id":"retrieval-en-093","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does Suresh drop his cup of tea?","expect":{"scenes":[28],"k":5}}
+{"id":"retrieval-en-094","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does Suresh phone to say Pedda Revu is on air?","expect":{"scenes":[28],"k":5}}
+{"id":"retrieval-en-095","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does Padma bang on doors with a torch?","expect":{"scenes":[29],"k":5}}
+{"id":"retrieval-en-096","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does Lakshmi say take water, take medicines, leave the boats?","expect":{"scenes":[29],"k":5}}
+{"id":"retrieval-en-097","kind":"retrieval","lang":"en","project":"example-feature","request":"Where do families crowd into classrooms on high ground?","expect":{"scenes":[30],"k":5}}
+{"id":"retrieval-en-098","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does a teacher keep a chalk tally on the blackboard?","expect":{"scenes":[30],"k":5}}
+{"id":"retrieval-en-099","kind":"retrieval","lang":"en","project":"example-feature","request":"Where is Venkat wheeled in on a chair with bicycle wheels?","expect":{"scenes":[30],"k":5}}
+{"id":"retrieval-en-100","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does Venkat say turn it up, she is doing it properly?","expect":{"scenes":[30],"k":5}}
+{"id":"retrieval-en-101","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does Lakshmi jam a pencil against the battery clamp?","expect":{"scenes":[31],"k":5}}
+{"id":"retrieval-en-102","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does Lakshmi warn people on the beach road not to walk?","expect":{"scenes":[31],"k":5}}
+{"id":"retrieval-en-103","kind":"retrieval","lang":"en","project":"example-feature","request":"Where do headlights appear through the rain with a long horn?","expect":{"scenes":[31],"k":5}}
+{"id":"retrieval-en-104","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does Farooq's bus crawl up the lane with water to the hubcaps?","expect":{"scenes":[32],"k":5}}
+{"id":"retrieval-en-105","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does Farooq reverse the bus all the way up the hill to the school?","expect":{"scenes":[32],"k":5}}
+{"id":"retrieval-en-106","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does Farooq pick up people from the beach road?","expect":{"scenes":[32],"k":5}}
+{"id":"retrieval-en-107","kind":"retrieval","lang":"en","project":"example-feature","request":"Find the beach at dawn after the storm.","expect":{"scenes":[33],"k":5}}
+{"id":"retrieval-en-108","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does Padma say still a goddess about her boat?","expect":{"scenes":[33],"k":5}}
+{"id":"retrieval-en-109","kind":"retrieval","lang":"en","project":"example-feature","request":"Which scene shows the tower a little crooked against a clean sky?","expect":{"scenes":[33],"k":5}}
+{"id":"retrieval-en-110","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does Lakshmi sleep at the desk with headphones on?","expect":{"scenes":[34],"k":5}}
+{"id":"retrieval-en-111","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does Venkat write the new ledger line about everyone going to the school?","expect":{"scenes":[34],"k":5}}
+{"id":"retrieval-en-112","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does Constable Raju wave in his torn raincoat?","expect":{"scenes":[35],"k":5}}
+{"id":"retrieval-en-113","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does Padma read the fish prices on the radio?","expect":{"scenes":[36],"k":5}}
+{"id":"retrieval-en-114","kind":"retrieval","lang":"en","project":"example-feature","request":"Where does Farooq claim next Sunday's film songs slot?","expect":{"scenes":[36],"k":5}}
+{"id":"retrieval-en-115","kind":"retrieval","lang":"en","project":"example-short","request":"Where does Kiran first ask about a kite?","expect":{"scenes":[1],"k":5}}
+{"id":"retrieval-en-116","kind":"retrieval","lang":"en","project":"example-short","request":"Which scene mentions the goat that was handed in last Tuesday?","expect":{"scenes":[1],"k":5}}
+{"id":"retrieval-en-117","kind":"retrieval","lang":"en","project":"example-short","request":"Where do we see the birdcage with no bird?","expect":{"scenes":[1],"k":5}}
+{"id":"retrieval-en-118","kind":"retrieval","lang":"en","project":"example-short","request":"Where does Kiran describe the red kite with a newspaper tail?","expect":{"scenes":[1],"k":5}}
+{"id":"retrieval-en-119","kind":"retrieval","lang":"en","project":"example-short","request":"Where does Devi eat peanuts and fill in the register?","expect":{"scenes":[1,10],"k":5}}
+{"id":"retrieval-en-120","kind":"retrieval","lang":"en","project":"example-short","request":"Where does Kiran sit on a bench watching the sky?","expect":{"scenes":[2],"k":5}}
+{"id":"retrieval-en-121","kind":"retrieval","lang":"en","project":"example-short","request":"Which scene has a goods train that does not stop?","expect":{"scenes":[2],"k":5}}
+{"id":"retrieval-en-122","kind":"retrieval","lang":"en","project":"example-short","request":"Where does Devi say no kites without looking up?","expect":{"scenes":[3],"k":5}}
+{"id":"retrieval-en-123","kind":"retrieval","lang":"en","project":"example-short","request":"Where does Devi say nobody comes three nights in a row for a shoe?","expect":{"scenes":[4],"k":5}}
+{"id":"retrieval-en-124","kind":"retrieval","lang":"en","project":"example-short","request":"Where does Kiran almost smile?","expect":{"scenes":[4],"k":5}}
+{"id":"retrieval-en-125","kind":"retrieval","lang":"en","project":"example-short","request":"Which scene is in the store room under the platforms?","expect":{"scenes":[5],"k":5}}
+{"id":"retrieval-en-126","kind":"retrieval","lang":"en","project":"example-short","request":"Where does Devi search with a torch and move a broken harmonium?","expect":{"scenes":[5],"k":5}}
+{"id":"retrieval-en-127","kind":"retrieval","lang":"en","project":"example-short","request":"Where is the kite found behind a stack of suitcases?","expect":{"scenes":[5],"k":5}}
+{"id":"retrieval-en-128","kind":"retrieval","lang":"en","project":"example-short","request":"Where does Devi say you were hiding?","expect":{"scenes":[5],"k":5}}
+{"id":"retrieval-en-129","kind":"retrieval","lang":"en","project":"example-short","request":"Where does the tube light buzz and flicker?","expect":{"scenes":[5],"k":5}}
+{"id":"retrieval-en-130","kind":"retrieval","lang":"en","project":"example-short","request":"Where does Devi mend the kite with glue and bamboo sticks?","expect":{"scenes":[6],"k":5}}
+{"id":"retrieval-en-131","kind":"retrieval","lang":"en","project":"example-short","request":"Where does Devi patch the kite with a page from the register?","expect":{"scenes":[6],"k":5}}
+{"id":"retrieval-en-132","kind":"retrieval","lang":"en","project":"example-short","request":"Where does Kiran say his father made the kite?","expect":{"scenes":[6],"k":5}}
+{"id":"retrieval-en-133","kind":"retrieval","lang":"en","project":"example-short","request":"Where does Devi say broken and mended are different?","expect":{"scenes":[6],"k":5}}
+{"id":"retrieval-en-134","kind":"retrieval","lang":"en","project":"example-short","request":"Where does Devi slide the kite under the bars?","expect":{"scenes":[6],"k":5}}
+{"id":"retrieval-en-135","kind":"retrieval","lang":"en","project":"example-short","request":"Where do they climb the footbridge steps in the wind?","expect":{"scenes":[7],"k":5}}
+{"id":"retrieval-en-136","kind":"retrieval","lang":"en","project":"example-short","request":"Where does Devi say she is not running?","expect":{"scenes":[7],"k":5}}
+{"id":"retrieval-en-137","kind":"retrieval","lang":"en","project":"example-short","request":"Where does Kiran shout let go?","expect":{"scenes":[8],"k":5}}
+{"id":"retrieval-en-138","kind":"retrieval","lang":"en","project":"example-short","request":"Where does the kite catch the wind and climb over the station roof?","expect":{"scenes":[8],"k":5}}
+{"id":"retrieval-en-139","kind":"retrieval","lang":"en","project":"example-short","request":"Where does a night train pass beneath them?","expect":{"scenes":[8,9],"k":5}}
+{"id":"retrieval-en-140","kind":"retrieval","lang":"en","project":"example-short","request":"Which scene shows a tired man with a lunch tin looking out of a train window?","expect":{"scenes":[9],"k":5}}
+{"id":"retrieval-en-141","kind":"retrieval","lang":"en","project":"example-short","request":"Where does the man press his hand flat against the glass?","expect":{"scenes":[9],"k":5}}
+{"id":"retrieval-en-142","kind":"retrieval","lang":"en","project":"example-short","request":"Where does Kiran fall asleep with the string tied around his wrist?","expect":{"scenes":[10],"k":5}}
+{"id":"retrieval-en-143","kind":"retrieval","lang":"en","project":"example-short","request":"Where does Devi write one kite, red, returned to owner?","expect":{"scenes":[10],"k":5}}
+{"id":"retrieval-en-144","kind":"retrieval","lang":"en","project":"example-short","request":"Find the dawn scene on the footbridge.","expect":{"scenes":[10],"k":5}}
+{"id":"retrieval-en-145","kind":"retrieval","lang":"en","project":"example-short","request":"Where does Devi tell Kiran his father will want to know it still flies?","expect":{"scenes":[6],"k":5}}
+{"id":"retrieval-en-146","kind":"retrieval","lang":"en","project":"example-short","request":"Which scene happens inside the second class compartment?","expect":{"scenes":[9],"k":5}}
+{"id":"retrieval-en-147","kind":"retrieval","lang":"en","project":"fdx-interchange-test","request":"Where do the three translators stare at one line about the storm?","expect":{"scenes":[1],"k":5}}
+{"id":"retrieval-en-148","kind":"retrieval","lang":"en","project":"fdx-interchange-test","request":"Which scene shows the storm line in Telugu, Hindi and Tamil?","expect":{"scenes":[1,6],"k":5}}
+{"id":"retrieval-en-149","kind":"retrieval","lang":"en","project":"fdx-interchange-test","request":"Where does the handle come off the chipped cup?","expect":{"scenes":[2],"k":5}}
+{"id":"retrieval-en-150","kind":"retrieval","lang":"en","project":"fdx-interchange-test","request":"Where does Selvi say you touched it?","expect":{"scenes":[2],"k":5}}
+{"id":"retrieval-en-151","kind":"retrieval","lang":"en","project":"fdx-interchange-test","request":"Where do we learn scenes 3 to 11 were cut?","expect":{"scenes":[3],"k":5}}
+{"id":"retrieval-en-152","kind":"retrieval","lang":"en","project":"fdx-interchange-test","request":"Which scene has the text message about saving the Hindi file?","expect":{"scenes":[3],"k":5}}
+{"id":"retrieval-en-153","kind":"retrieval","lang":"en","project":"fdx-interchange-test","request":"Where does Vikram read the message on the roof?","expect":{"scenes":[4],"k":5}}
+{"id":"retrieval-en-154","kind":"retrieval","lang":"en","project":"fdx-interchange-test","request":"Where does Vikram say every file has a backup except this one?","expect":{"scenes":[4],"k":5}}
+{"id":"retrieval-en-155","kind":"retrieval","lang":"en","project":"fdx-interchange-test","request":"Which scene has the lyrics about rain on the roof?","expect":{"scenes":[5],"k":5}}
+{"id":"retrieval-en-156","kind":"retrieval","lang":"en","project":"fdx-interchange-test","request":"Where does Selvi type the line in all three scripts at dawn?","expect":{"scenes":[6],"k":5}}
+{"id":"retrieval-en-157","kind":"retrieval","lang":"en","project":"fdx-interchange-test","request":"Where does Vikram say rock and roll and quotes?","expect":{"scenes":[6],"k":5}}
+{"id":"retrieval-en-158","kind":"retrieval","lang":"en","project":"fdx-interchange-test","request":"Where is the whiteboard with columns for Telugu, Hindi and Tamil?","expect":{"scenes":[6],"k":5}}
+{"id":"retrieval-en-159","kind":"retrieval","lang":"en","project":"example-scene","request":"Where do Nandini and Rohan argue about the spare key?","expect":{"scenes":[1],"k":5}}
+{"id":"retrieval-en-160","kind":"retrieval","lang":"en","project":"example-scene","request":"Which scene has the pressure cooker whistle?","expect":{"scenes":[1],"k":5}}
+{"id":"retrieval-en-161","kind":"retrieval","lang":"en","project":"example-scene","request":"Where does the delivery boy ask for a signature?","expect":{"scenes":[1],"k":5}}
+{"id":"retrieval-en-162","kind":"retrieval","lang":"en","project":"example-scene","request":"Where is the key with the green tag found?","expect":{"scenes":[1],"k":5}}
+{"id":"retrieval-en-163","kind":"retrieval","lang":"en","project":"example-scene","request":"Where does Rohan sing badly to cover the silence?","expect":{"scenes":[1],"k":5}}
+{"id":"retrieval-en-164","kind":"retrieval","lang":"en","project":"example-scene","request":"Which scene is in the rooftop flat kitchen?","expect":{"scenes":[1],"k":5}}

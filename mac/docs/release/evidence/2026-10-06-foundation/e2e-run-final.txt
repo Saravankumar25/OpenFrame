@@ -1,0 +1,270 @@
+
+> openframe-studio@0.1.0 test:e2e
+> npm --workspace tests/e2e run test
+
+
+> @openframe/e2e@0.1.0 test
+> node run.mjs
+
+WebView2 Runtime 154.0.4258.53
+msedgedriver 154.0.4258.53 already installed.
+tauri-driver already installed.
+Building OpenFrame Studio (debug, embedded UI)…
+
+> @openframe/desktop@0.1.0 tauri
+> tauri build --debug --no-bundle
+
+        Info Looking up installed tauri packages to check mismatched versions...
+     Running beforeBuildCommand `npm run build:web`
+
+> @openframe/desktop@0.1.0 build:web
+> tsc --noEmit -p . && vite build
+
+vite v7.3.6 building client environment for production...
+transforming...
+✓ 1965 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                0.40 kB │ gzip:   0.27 kB
+dist/assets/buttons-DF6KDf99.css               1.32 kB │ gzip:   0.61 kB
+dist/assets/index-DeuskQhi.css                 2.17 kB │ gzip:   0.81 kB
+dist/assets/schedule-ui-BmRK-GIs.css           3.46 kB │ gzip:   1.30 kB
+dist/assets/index-Bpjd24Ei.css                 4.44 kB │ gzip:   1.38 kB
+dist/assets/index-PH65K-s2.css                 4.61 kB │ gzip:   1.46 kB
+dist/assets/index-VvwG6M8E.css                 9.49 kB │ gzip:   2.61 kB
+dist/assets/index-V9S68owU.css                41.58 kB │ gzip:   9.47 kB
+dist/assets/chevron-left-BOvRUx2s.js           0.13 kB │ gzip:   0.14 kB
+dist/assets/arrow-right-RpfdxTsq.js            0.17 kB │ gzip:   0.16 kB
+dist/assets/paperclip-mcZLD8jO.js              0.23 kB │ gzip:   0.19 kB
+dist/assets/download-omB8a3Vk.js               0.23 kB │ gzip:   0.19 kB
+dist/assets/link-2-Bmw47XEw.js                 0.24 kB │ gzip:   0.20 kB
+dist/assets/external-link-C8hzM11t.js          0.25 kB │ gzip:   0.20 kB
+dist/assets/eye-CkG9zmPy.js                    0.25 kB │ gzip:   0.20 kB
+dist/assets/list-todo-BbDaDZdZ.js              0.30 kB │ gzip:   0.22 kB
+dist/assets/folder-plus-CxinfWXF.js            0.31 kB │ gzip:   0.23 kB
+dist/assets/useRememberLocation-DbSzlDFe.js    0.36 kB │ gzip:   0.28 kB
+dist/assets/square-S8dGhXHn.js                 0.38 kB │ gzip:   0.28 kB
+dist/assets/layers-BBYQvdXr.js                 0.42 kB │ gzip:   0.24 kB
+dist/assets/notebook-pen-COr6iKhK.js           0.48 kB │ gzip:   0.29 kB
+dist/assets/users-CZlNwU7r.js                  0.56 kB │ gzip:   0.34 kB
+dist/assets/image-BkD0XHmZ.js                  0.72 kB │ gzip:   0.36 kB
+dist/assets/index-CVK1_dMH.js                  2.43 kB │ gzip:   1.24 kB
+dist/assets/fileUtils-Dt5gKJrV.js              2.89 kB │ gzip:   1.21 kB
+dist/assets/schedule-ui-BYbUIpoa.js            3.15 kB │ gzip:   1.46 kB
+dist/assets/webview-DxZHT6wk.js                3.29 kB │ gzip:   1.12 kB
+dist/assets/index-DVuUryqN.js                  4.88 kB │ gzip:   1.97 kB
+dist/assets/ProjectSettingsForm-AEl_C6wX.js    5.32 kB │ gzip:   2.11 kB
+dist/assets/sortable.esm-7b2EhSYf.js           6.98 kB │ gzip:   2.91 kB
+dist/assets/SourceDialogs-CC9Tezdj.js          8.41 kB │ gzip:   3.47 kB
+dist/assets/index-jGyCFVda.js                 10.66 kB │ gzip:   3.45 kB
+dist/assets/buttons-DPNW97tz.js               15.17 kB │ gzip:   4.68 kB
+dist/assets/index-CzkYBGxj.js                 15.43 kB │ gzip:   5.21 kB
+dist/assets/index-C773ccDG.js                 18.28 kB │ gzip:   6.42 kB
+dist/assets/index-DXaZgVbO.js                 23.60 kB │ gzip:   6.97 kB
+dist/assets/index-D_9ciVFA.js                 23.98 kB │ gzip:   7.85 kB
+dist/assets/index-laJpWnmP.js                 33.54 kB │ gzip:  10.86 kB
+dist/assets/core.esm-CgmWM9MF.js              43.58 kB │ gzip:  14.49 kB
+dist/assets/index-dvJl-L3y.js                 92.31 kB │ gzip:  28.78 kB
+dist/assets/index-Be2wdDq1.js                104.12 kB │ gzip:  29.55 kB
+dist/assets/index-SVf4vHY_.js                187.85 kB │ gzip:  52.33 kB
+dist/assets/index-DZ1BXu75.js                320.16 kB │ gzip:  96.47 kB
+dist/assets/index-DpOlf3XY.js                519.83 kB │ gzip: 159.55 kB
+✓ built in 10.15s
+   Compiling openframe-application v0.1.0 (C:\OpenFrame\crates\openframe-application)
+   Compiling openframe-desktop v0.1.0 (C:\OpenFrame\apps\desktop\src-tauri)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 48.10s
+       Built application at: C:\OpenFrame\target\debug\openframe-desktop.exe
+
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-06T16-57-38-799Z\shared
+  specs: 01-journey.test.mjs, 02-restart.test.mjs
+▶ desktop journey
+  ✔ first launch → name → create project → Project Home (953.9ms)
+  ✔ Idea Vault: add a note with Quick Capture (867.4256ms)
+  ✔ Story: act, sequence, two cards (one with Ctrl+N), keyboard reorder, undo/redo (2886.8134ms)
+  ✔ Build Screenplay lands in the new screenplay at the first scene (1689.0862ms)
+  ✔ type in the screenplay editor (autosaved) (3907.036ms)
+  ✔ import pasted Fountain from the quick actions menu → opens the new draft (4951.8546ms)
+  ✔ Breakdown: select the Production Source and accept a suggestion (2442.8941ms)
+  ✔ Schedule: all scenes start unscheduled, one moves into a shooting day (2100.6049ms)
+  ✔ Call sheet from the shooting day (816.6386ms)
+  ✔ Schedule strip → Open in Screenplay opens the production draft at that scene (3371.7654ms)
+  ✔ Search (Ctrl+K) finds the scene and navigates to it (3203.5263ms)
+  ✔ Recently Deleted: delete a Scene Card and restore it (1712.0944ms)
+  ✔ AI panel says Offline AI is not installed (no network needed) (870.7051ms)
+  ✔ every workspace and production tab renders without console problems or unlabelled controls (29803.5072ms)
+  ✔ close the project cleanly → Application Home lists it (527.7806ms)
+✔ desktop journey (62537.0454ms)
+▶ relaunch
+  ✔ reopen the project and find the screenplay text, story and call sheet (3153.515ms)
+✔ relaunch (4142.5014ms)
+ℹ tests 16
+ℹ suites 2
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 68742.8519
+
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-06T16-57-38-799Z\10-home
+  specs: 10-home.test.mjs
+▶ home
+  ✔ first launch creates a project that opens on an empty Project Home (1424.6746ms)
+  ✔ status change on Project Home, undo and redo (480.1579ms)
+  ✔ Application Home lists a renamed project without leaving the page (1458.6483ms)
+  ✔ Application Home: rename, duplicate, archive and restore (4122.4678ms)
+  ✔ relaunch: both projects, the new title and the status persist (3372.9161ms)
+✔ home (12106.0616ms)
+ℹ tests 5
+ℹ suites 1
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 13104.632
+
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-06T16-57-38-799Z\20-idea-vault
+  specs: 20-idea-vault.test.mjs
+▶ idea vault
+  ✔ Quick Capture adds an idea to the project's Vault (1946.769ms)
+  ✔ edit the title in the drawer (autosave), undo and redo (1185.294ms)
+  ✔ delete with the keyboard, undo, redo, then restore from Recently Deleted (1011.5472ms)
+  ✔ relaunch: the titled idea and its text persist (4412.8025ms)
+✔ idea vault (9466.2817ms)
+ℹ tests 4
+ℹ suites 1
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 9922.0093
+
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-06T16-57-38-799Z\30-story
+  specs: 30-story.test.mjs
+▶ story
+  ✔ act, sequence and two Scene Cards (3054.2989ms)
+  ✔ edit a card in its drawer, undo and redo (1860.5378ms)
+  ✔ rename the act, undo and redo (1196.4363ms)
+  ✔ delete a card: undo, redo, restore from Recently Deleted (1573.3035ms)
+  ✔ Characters: create, edit, delete and restore (3791.5939ms)
+  ✔ Outline shows the same structure (960.2086ms)
+  ✔ relaunch: act, cards and character persist (5398.2626ms)
+✔ story (18899.4387ms)
+ℹ tests 7
+ℹ suites 1
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 19402.1966
+
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-06T16-57-38-799Z\40-screenplay
+  specs: 40-screenplay.test.mjs
+▶ screenplay
+  ✔ new screenplay: write a scene with the Enter flow (autosaved) (2782.508ms)
+  ✔ undo and redo typing from inside the editor (5133.3205ms)
+  ✔ a second draft is edited independently, renamed, deleted and restored (6025.3637ms)
+  ✔ relaunch: both drafts and their text persist (4582.9458ms)
+✔ screenplay (19567.536ms)
+ℹ tests 4
+ℹ suites 1
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 20290.8725
+
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-06T16-57-38-799Z\50-breakdown
+  specs: 50-breakdown.test.mjs
+▶ breakdown
+  ✔ import a screenplay and choose it as the Production Source (4042.4522ms)
+  ✔ suggestions are only added when accepted (576.623ms)
+  ✔ add an element by hand; undo and redo; edit its notes (2274.4162ms)
+  ✔ remove from the scene and restore from Recently Deleted (1291.5174ms)
+  ✔ mark the scene complete; scene 2 has its own breakdown (418.7521ms)
+  ✔ relaunch: source, elements, notes and completion persist (4017.6021ms)
+✔ breakdown (13495.5808ms)
+ℹ tests 6
+ℹ suites 1
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 14193.7825
+
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-06T16-57-38-799Z\80-notes-tasks
+  specs: 80-notes-tasks.test.mjs
+▶ notes and tasks
+  ✔ a new note autosaves its title and text; undo and redo the edit (2080.6973ms)
+  ✔ delete the note and restore it from Recently Deleted (1602.0508ms)
+  ✔ add a task, complete it, undo and redo the completion (1223.8618ms)
+  ✔ relaunch: the note and the completed task persist (4470.5938ms)
+✔ notes and tasks (10218.6132ms)
+ℹ tests 4
+ℹ suites 1
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 10676.7175
+
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-06T16-57-38-799Z\85-project-pages
+  specs: 85-project-pages.test.mjs
+▶ project pages
+  ✔ Project settings: change title and logline, save, undo, redo (1919.9664ms)
+  ✔ Templates: create two, delete both, restore one, delete the other permanently (3288.3041ms)
+  ✔ Activity lists what happened and filters by kind (1230.3243ms)
+  ✔ relaunch: settings, the restored template and the purge persist (4661.9495ms)
+✔ project pages (11954.87ms)
+ℹ tests 4
+ℹ suites 1
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 12337.9262
+
+E2E data root: C:\OpenFrame\tests\e2e\.run\2026-10-06T16-57-38-799Z\shared
+  specs: 90-visual-baseline.test.mjs, 95-reachability.test.mjs
+2026-10-06T17:00:37.000Z WARN webdriver: Request encountered a stale element - terminating request
+2026-10-06T17:00:37.009Z WARN webdriver: Request encountered a stale element - terminating request
+  visual ok   01-application-home: 0 px differ (0.0000 %), 2 ignore regions
+  visual ok   02-project-home: 0 px differ (0.0000 %), 8 ignore regions
+  visual ok   03-idea-vault: 0 px differ (0.0000 %), 2 ignore regions
+  visual ok   04-story-board: 0 px differ (0.0000 %), 1 ignore regions
+  visual ok   05-story-outline: 0 px differ (0.0000 %), 0 ignore regions
+  visual ok   06-screenplay-editor: 0 px differ (0.0000 %), 0 ignore regions
+  visual ok   07-breakdown: 0 px differ (0.0000 %), 0 ignore regions
+  visual ok   08-production-overview: 0 px differ (0.0000 %), 0 ignore regions
+  visual ok   09-production-catalog: 0 px differ (0.0000 %), 0 ignore regions
+  visual ok   10-production-schedule: 0 px differ (0.0000 %), 0 ignore regions
+  visual ok   11-call-sheets: 0 px differ (0.0000 %), 0 ignore regions
+  visual ok   12-files: 0 px differ (0.0000 %), 1 ignore regions
+  visual ok   13-notes-and-tasks: 0 px differ (0.0000 %), 0 ignore regions
+  visual ok   14-recently-deleted: 0 px differ (0.0000 %), 0 ignore regions
+  visual ok   15-project-settings: 0 px differ (0.0000 %), 3 ignore regions
+▶ visual regression against the visual baseline baseline
+  ✔ 15 representative screens (41212.5034ms)
+✔ visual regression against the visual baseline baseline (42474.6461ms)
+▶ reachability from the feature status file
+  ✔ the feature status routes are valid against the source (0.9168ms)
+  ✔ every canonical route opens in the real app (22095.5352ms)
+✔ reachability from the feature status file (23461.3615ms)
+ℹ tests 3
+ℹ suites 2
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 67392.9901
+
+E2E passed: 11 spec files.
+EXIT=0

@@ -1,0 +1,19 @@
+=== page 1
+  0   90 SceneNumber    1
+  0  150 Heading        INT. SIGNAL BOX - NIGHT
+  0  760 SceneNumber    1
+  2  150 Action         A single lamp. ASHA (40s) watches the rails.
+  4  370 Character      ASHA
+  5  250 Dialogue       The last train is late again.
+  7   90 SceneNumber    2
+  7  150 Heading        EXT. PLATFORM - CONTINUOUS
+  7  760 SceneNumber    2
+  9  150 Action         Rain on the tin roof.
+ 11  370 Character      RAVI
+ 12  250 Dialogue       It always is.
+ 14  680 Transition     CUT TO:
+ 16   90 SceneNumber    3
+ 16  150 Heading        INT. WAITING ROOM - NIGHT
+ 16  760 SceneNumber    3
+ 18  150 Action         Empty benches. A clock ticks.
+pdf-sha256 905b9d2efe01818f110da1b8b51d93454785167fc861e01f902b16f5ae479c72

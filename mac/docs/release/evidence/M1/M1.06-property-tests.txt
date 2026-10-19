@@ -1,0 +1,34 @@
+M1.06 property tests: evidence (2026-10-05, Windows 11, debug test profile)
+Deterministic seeded xorshift64* generator, no new dependencies. Seeds per run: board order 8 x 30 moves,
+undo/redo 12, delete/restore 12, Fountain/FDX library 300, app import/export/import 10.
+OPENFRAME_PROPERTY_CASES=<n> multiplies the seed count for a soak.
+Command (run 3 times, all passed):
+  cargo test --locked --no-fail-fast -p openframe-application --test property_invariants
+
+=== application run 1
+     Running tests\property_invariants.rs (target\debug\deps\property_invariants-e957cccc829956b4.exe)
+test generator_is_deterministic_and_covers_its_range ... ok
+test m1_06_fountain_and_fdx_round_trips_keep_scenes_headings_elements_and_text ... ok
+test m1_06_app_import_export_reimport_keeps_scenes_headings_elements_and_text ... ok
+test m1_06_delete_then_restore_returns_same_ids_positions_and_text ... ok
+test m1_06_undo_all_then_redo_all_restores_exact_canonical_content ... ok
+test m1_06_story_board_order_equals_model_after_random_moves_and_restart ... ok
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 9.25s
+=== application run 2
+     Running tests\property_invariants.rs (target\debug\deps\property_invariants-e957cccc829956b4.exe)
+test generator_is_deterministic_and_covers_its_range ... ok
+test m1_06_fountain_and_fdx_round_trips_keep_scenes_headings_elements_and_text ... ok
+test m1_06_app_import_export_reimport_keeps_scenes_headings_elements_and_text ... ok
+test m1_06_delete_then_restore_returns_same_ids_positions_and_text ... ok
+test m1_06_undo_all_then_redo_all_restores_exact_canonical_content ... ok
+test m1_06_story_board_order_equals_model_after_random_moves_and_restart ... ok
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 11.76s
+=== application run 3
+     Running tests\property_invariants.rs (target\debug\deps\property_invariants-e957cccc829956b4.exe)
+test generator_is_deterministic_and_covers_its_range ... ok
+test m1_06_fountain_and_fdx_round_trips_keep_scenes_headings_elements_and_text ... ok
+test m1_06_app_import_export_reimport_keeps_scenes_headings_elements_and_text ... ok
+test m1_06_undo_all_then_redo_all_restores_exact_canonical_content ... ok
+test m1_06_delete_then_restore_returns_same_ids_positions_and_text ... ok
+test m1_06_story_board_order_equals_model_after_random_moves_and_restart ... ok
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 12.38s

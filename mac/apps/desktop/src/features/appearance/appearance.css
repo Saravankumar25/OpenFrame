@@ -1,0 +1,30 @@
+/* Settings > Appearance (ADR-0014; spec 47A.9). Every colour is a theme token. Each preview card carries
+   its own data-theme and data-mode, so it is drawn in the theme it stands for. */
+.ap-section { margin-bottom: 22px; }
+.ap-section > h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); margin: 0 0 8px; font-weight: 700; }
+.ap-note { font-size: 12px; color: var(--muted); margin: 6px 0 0; }
+.ap-grid { --ap-ring: var(--accent); display: grid; grid-template-columns: repeat(auto-fill, minmax(196px, 1fr)); gap: 10px; }
+.ap-card { display: flex; flex-direction: column; gap: 6px; padding: 8px; border-radius: 10px; background: var(--bg); color: var(--ink); border: 1px solid var(--line2); text-align: left; font: inherit; cursor: pointer; min-width: 0; }
+.ap-card:hover { border-color: var(--ap-ring); }
+.ap-card[aria-checked="true"] { outline: 2px solid var(--ap-ring); outline-offset: 1px; }
+.ap-card:focus-visible { outline: 2px solid var(--ap-ring); outline-offset: 2px; }
+.ap-card strong { font-size: 12.5px; line-height: 1.2; display: flex; align-items: center; gap: 6px; }
+.ap-card small { font-size: 11px; line-height: 1.3; color: var(--muted); }
+.ap-pv { display: flex; height: 44px; border-radius: 6px; overflow: hidden; border: 1px solid var(--line); flex: none; }
+.ap-pv b { width: 22%; background: var(--side); display: flex; align-items: center; justify-content: center; }
+.ap-pv b .mk { width: 16px; height: 16px; }
+.ap-pv span { flex: 1; background: var(--panel); display: flex; flex-direction: column; gap: 5px; padding: 7px; }
+.ap-pv span::before { content: ""; height: 5px; width: 60%; border-radius: 3px; background: var(--ink2); }
+.ap-pv span::after { content: ""; height: 8px; width: 34%; border-radius: 3px; background: var(--accent); }
+.ap-mine { display: flex; flex-direction: column; gap: 8px; }
+.ap-row { display: flex; align-items: center; gap: 12px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); }
+.ap-row .ap-pv { width: 120px; }
+.ap-row .grow { min-width: 0; }
+.ap-row .ap-name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ap-previews { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0; }
+.ap-previews .ap-card { cursor: default; }
+.ap-list { margin: 6px 0 0; padding-left: 18px; font-size: 12.5px; }
+.ap-contrast { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 6px; }
+.ap-contrast th, .ap-contrast td { text-align: left; padding: 3px 6px; border-bottom: 1px solid var(--line); }
+.ap-contrast td.num { text-align: right; font-variant-numeric: tabular-nums; }
+.ap-paste { font-family: Consolas, "Courier New", monospace; font-size: 12px; min-height: 160px; }

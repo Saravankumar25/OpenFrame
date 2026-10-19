@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Mac App Store build (Chapter 3): App Sandbox with the least the app needs. Not used by the
+     internal disk image. Each key, and why:
+     - app-sandbox: required for the store.
+     - files.user-selected.read-write: projects, imports and exports are files the person picks.
+     - files.bookmarks.app-scope: reopen the projects and linked files the person picked before.
+     - network.client: the offline AI model download the person starts (ADR-0026); nothing else.
+     - network.server: the AI engine helper listens on 127.0.0.1 only; it inherits this sandbox.
+     - device.audio-input: voice notes in the Idea Vault, only while the person records. -->
+<plist version="1.0">
+<dict>
+	<key>com.apple.security.app-sandbox</key><true/>
+	<key>com.apple.security.files.user-selected.read-write</key><true/>
+	<key>com.apple.security.files.bookmarks.app-scope</key><true/>
+	<key>com.apple.security.network.client</key><true/>
+	<key>com.apple.security.network.server</key><true/>
+	<key>com.apple.security.device.audio-input</key><true/>
+</dict>
+</plist>

@@ -1,0 +1,21 @@
+[package]
+name = "openframe-gold-project"
+description = "Builds, exports and verifies the gold reference film project (tests/gold-project) through the same core operations the app calls."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+openframe-domain.workspace = true
+openframe-application.workspace = true
+openframe-import-export.workspace = true
+# Installs the pinned Offline AI models from the local build inputs, as a finished download would.
+openframe-ai = { workspace = true, features = ["test-support"] }
+serde_json.workspace = true
+base64.workspace = true
+sha2.workspace = true
+hex.workspace = true
+rusqlite.workspace = true
+zip.workspace = true
+image.workspace = true

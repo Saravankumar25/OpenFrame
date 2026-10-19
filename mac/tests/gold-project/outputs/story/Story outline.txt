@@ -1,0 +1,175 @@
+﻿STORY BOARD OUTLINE
+Low Tide Radio · Exported 19 Oct 2026 · Source: Current Story Board
+
+ACT ONE: THE CALL
+  Note: Setup. Ends when Anjali finds the reel. 12 scenes.
+
+  SEQUENCE: Static
+    Note: 1999 prologue, then Bengaluru and the journey home.
+    Scene Card 1 · EXT. OPEN SEA - NIGHT (1999)
+      Prologue. A storm. Fishing boats in the swell and a woman's voice on the radio reading positions.
+      Note: Story day: Night of 14 November 1999. Characters: MARIAMMA, VARGHESE.
+    Scene Card 2 · INT. COAST RADIO STATION - OPERATIONS ROOM - NIGHT (1999)
+      Mariamma at the transmitter. Young Anjali asleep under the desk. The lights die.
+      Note: Story day: Night of 14 November 1999. Characters: MARIAMMA, YOUNG ANJALI, JOE.
+    Scene Card 3 · INT. SOUNDWAVE STUDIO - BENGALURU - DAY
+      Present day. Anjali scrubs breaths out of a detergent ad. Fathima calls: Appachan is missing.
+      Note: Story day: Day 1. Characters: ANJALI, STUDIO PRODUCER, FATHIMA.
+    Scene Card 4 · INT. KSRTC BUS - MOVING - NIGHT
+      The overnight bus to Kochi. Anjali listens to an old cassette of her mother on air.
+      Note: Story day: Night 1. Characters: ANJALI, MARIAMMA.
+    Scene Card 5 · EXT. COAST RADIO STATION - DAWN
+      Anjali arrives. Appachan sits at the foot of the mast with his dog Kannan. Inspector Latha waits by her jeep.
+      Note: Story day: Day 2. Characters: ANJALI, APPACHAN, LATHA.
+    Scene Card 6 · INT. THOMAS HOUSE - KITCHEN - DAY
+      Tea with Fathima. The Port Trust notice on the fridge: demolition in seven days.
+      Note: Story day: Day 2. Characters: ANJALI, FATHIMA, APPACHAN.
+
+  SEQUENCE: Seven Days
+    Note: The ticking clock. Anjali meets Suresh and finds the reel.
+    Scene Card 7 · EXT. KADALKKARA HARBOUR - DAY
+      Anjali walks the harbour. Fishermen remember her mother. Suresh runs a survey crew and does not want her there.
+      Note: Story day: Day 2. Characters: ANJALI, SURESH.
+    Scene Card 8 · INT. PORT TRUST OFFICE - DAY
+      Anjali asks for access to the station. The Port Officer refuses. Suresh watches.
+      Note: Story day: Day 3. Characters: ANJALI, PORT OFFICER, SURESH.
+    Scene Card 9 · INT. FATHIMA'S TEA SHOP - NIGHT
+      The school radio club meets over tea. Rahul asks Anjali to look at their homemade transmitter.
+      Note: Story day: Day 3. Characters: FATHIMA, RAHUL, ANJALI.
+    Scene Card 10 · INT. THOMAS HOUSE - APPACHAN'S ROOM - NIGHT
+      In a clear moment Appachan gives Anjali the station keys. He speaks in Malayalam.
+      Note: Story day: Day 3. Characters: APPACHAN, ANJALI.
+    Scene Card 11 · INT. COAST RADIO STATION - OPERATIONS ROOM - NIGHT
+      Anjali and Rahul let themselves in. The tape shelves are empty except for one reel dated 14-11-1999.
+      Note: Story day: Day 3. Characters: ANJALI, RAHUL.
+    Scene Card 12 · EXT. COAST RADIO STATION - NIGHT
+      A security guard spots their torches. They run. Rahul's bicycle chain comes off.
+      Note: Story day: Day 3. Characters: ANJALI, RAHUL.
+  Beat: Tone: the sea before the story. No titles until the static cuts out.
+  Beat: Inciting incident: Fathima's call. Appachan was found at the station.
+  Beat: First turn: the reel dated 14-11-1999.
+
+ACT TWO: THE REEL
+  Note: Confrontation. Restoring the tape, the storm, the logbook and Joe's confession.
+
+  SEQUENCE: Oxide
+    Note: The technical problem and the village's resistance.
+    Scene Card 13 · INT. FISHERIES SCHOOL - RADIO CLUB ROOM - DAY
+      Anjali examines the reel. Sticky-shed damage. It has to be baked before it can be played once.
+      Note: Story day: Day 4. Characters: ANJALI, RAHUL, FATHIMA.
+    Scene Card 14 · INT. FATHIMA'S TEA SHOP - KITCHEN - DAY
+      They bake the reel in a borrowed bakery convection oven, watched like a newborn.
+      Note: Story day: Day 4. Characters: FATHIMA, RAHUL, ANJALI.
+    Scene Card 15 · INT. THOMAS HOUSE - VERANDA - DAY
+      Appachan mistakes Anjali for Mariamma and scolds her for being late for her shift.
+      Note: Story day: Day 4. Characters: APPACHAN, ANJALI.
+    Scene Card 16 · INT. FISHERIES SCHOOL - RADIO CLUB ROOM - NIGHT
+      First playback. Static, a laugh, half a sentence in Mariamma's voice. Then the tape stops.
+      Note: Story day: Day 4. Characters: ANJALI, RAHUL, FATHIMA, MARIAMMA.
+    Scene Card 17 · INT. JOE'S ROOM ABOVE THE TODDY SHOP - DAY
+      Anjali visits Joe. He will not talk about that night and asks her to leave.
+      Note: Story day: Day 5. Characters: ANJALI, JOE.
+    Scene Card 18 · EXT. ST. ANTONY'S CHURCH - DAY
+      The memorial mass for the men lost in 1999. Suresh reads the names. Anjali stands at the back.
+      Note: Story day: Day 5. Characters: SURESH, ANJALI, FATHIMA.
+    Scene Card 19 · INT. POLICE OUTPOST - DAY
+      Latha warns Anjali about the trespass complaint, then quietly shows her the 1999 file.
+      Note: Story day: Day 5. Characters: LATHA, ANJALI.
+    Scene Card 20 · INT. THOMAS HOUSE - KITCHEN - NIGHT
+      Anjali and Fathima read the file. Fathima talks about her uncle for the first time.
+      Note: Story day: Day 5. Characters: ANJALI, FATHIMA.
+
+  SEQUENCE: Storm Warning
+    Note: Midpoint. Appachan is lost in the storm and Suresh brings him back.
+    Scene Card 21 · EXT. KADALKKARA BEACH - DAY
+      The radio club flies an antenna kite. Anjali teaches them to call the harbour.
+      Note: Story day: Day 6. Characters: ANJALI, RAHUL, FATHIMA.
+    Scene Card 22 · INT. THOMAS HOUSE - APPACHAN'S ROOM - NIGHT
+      Appachan's bed is empty. The door is open. Kannan is gone too.
+      Note: Story day: Day 6. Characters: ANJALI.
+    Scene Card 23 · EXT. KADALKKARA HARBOUR - NIGHT
+      The village searches in the storm with torches. Suresh's crew brings the site floodlights.
+      Note: Story day: Day 6. Characters: ANJALI, SURESH, FATHIMA, RAHUL.
+    Scene Card 24 · EXT. HARBOUR BREAKWATER - NIGHT
+      Suresh finds Appachan at the end of the breakwater with Kannan, waving a torch at the sea. He carries him back.
+      Note: Midpoint. Stunt and marine safety plan applies. Protect a full night for it.
+    Scene Card 25 · INT. TALUK HOSPITAL - WARD - NIGHT
+      Appachan on a drip. Suresh tells Anjali about his father and the Little Flower.
+      Note: Story day: Night 6. Characters: SURESH, ANJALI, APPACHAN.
+    Scene Card 26 · INT. TALUK HOSPITAL - CORRIDOR - DAWN
+      An uneasy truce. Suresh gives Anjali one day inside the station.
+      Note: Story day: Day 7. Characters: SURESH, ANJALI.
+    Scene Card 27 · INT. COAST RADIO STATION - TAPE ROOM - DAY
+      In the flooded basement they find the station logbook in a sealed ammunition box.
+      Note: Story day: Day 7. Characters: ANJALI, RAHUL, SURESH.
+    Scene Card 28 · INT. COAST RADIO STATION - OPERATIONS ROOM - DAY
+      The logbook: entries stop at 23:40. 'Main power cut by order. J. D'Cruz.'
+      Note: Story day: Day 7. Characters: ANJALI, SURESH, RAHUL.
+  Beat: Midpoint: Suresh carries Appachan off the breakwater.
+    Note: Everything turns on Suresh choosing to help.
+  Beat: Low point: the logbook names Joe.
+
+  SEQUENCE: What Joe Did
+    Note: The confession and the restored second half of the reel.
+    Scene Card 29 · EXT. TODDY SHOP - NIGHT
+      Anjali confronts Joe in front of the drinkers. He walks out to his car.
+      Note: Story day: Day 7. Characters: ANJALI, JOE.
+    Scene Card 30 · EXT. LIGHTHOUSE ROAD - NIGHT
+      Joe drives drunk. Latha's jeep pulls him over before the bend.
+      Note: Story day: Day 7. Characters: JOE, LATHA.
+    Scene Card 31 · INT. POLICE OUTPOST - CELL - NIGHT
+      Joe confesses: the Port ordered the power cut. Mariamma kept going on a battery set.
+      Note: Story day: Night 7. Characters: JOE, LATHA, ANJALI.
+    Scene Card 32 · INT. COAST RADIO STATION - OPERATIONS ROOM - NIGHT (1999)
+      Flashback. In the dark Mariamma connects the battery set. Joe leaves. Young Anjali watches.
+      Note: Story day: Night of 14 November 1999. Characters: MARIAMMA, JOE, YOUNG ANJALI.
+    Scene Card 33 · INT. FISHERIES SCHOOL - RADIO CLUB ROOM - NIGHT
+      The second half of the reel plays. Mariamma relays positions. Varghese answers.
+      Note: Story day: Day 8. Characters: ANJALI, RAHUL, FATHIMA, MARIAMMA, VARGHESE.
+    Scene Card 34 · EXT. OPEN SEA - LITTLE FLOWER - NIGHT (1999)
+      Flashback. Varghese turns the fleet toward the river mouth, then goes back for the Seagull.
+      Note: Story day: Night of 14 November 1999. Characters: VARGHESE, MARIAMMA.
+
+ACT THREE: THE BROADCAST
+  Note: Resolution. Listening night, the last transmission and the demolition.
+
+  SEQUENCE: Listening Night
+    Note: The village hears the reel.
+    Scene Card 35 · INT. SURESH'S HOUSE - DAY
+      Anjali brings Suresh the recording. He listens alone to his father's voice.
+      Note: Story day: Day 8. Characters: ANJALI, SURESH, VARGHESE.
+    Scene Card 36 · INT. PORT TRUST OFFICE - DAY
+      Suresh asks Krishnadas to delay. Refused. He arranges power for one more night instead.
+      Note: Story day: Day 8. Characters: SURESH, PORT OFFICER.
+    Scene Card 37 · EXT. KADALKKARA BEACH - DUSK
+      The village sets up for listening night: speakers, lanterns, a generator truck.
+      Note: Story day: Day 8. Characters: FATHIMA, RAHUL, SURESH, JOE.
+    Scene Card 38 · INT. THOMAS HOUSE - APPACHAN'S ROOM - DUSK
+      Appachan dresses in his best shirt and asks where Mariamma is. Anjali tells him gently.
+      Note: Story day: Day 8. Characters: APPACHAN, ANJALI.
+    Scene Card 39 · EXT. KADALKKARA BEACH - NIGHT
+      Listening night. The reel plays over speakers. Suresh reads the fleet names. Joe stays.
+      Note: Story day: Day 8. Characters: ANJALI, SURESH, APPACHAN, FATHIMA, RAHUL, JOE, LATHA, MARIAMMA, VARGHESE.
+    Scene Card 40 · EXT. COAST RADIO STATION - ROOF - NIGHT
+      Rahul and Anjali send the broadcast out from the old mast one last time.
+      Note: Story day: Day 8. Characters: ANJALI, RAHUL.
+
+  SEQUENCE: Low Tide
+    Note: The building falls; the station lives on.
+    Scene Card 41 · EXT. COAST RADIO STATION - DAY
+      Demolition. The excavator bites. The mast comes down. Appachan watches without fear.
+      Note: Story day: Day 9. Characters: ANJALI, APPACHAN, SURESH, FATHIMA.
+    Scene Card 42 · INT. FATHIMA'S TEA SHOP - DAY
+      The radio club paints a sign: Low Tide Radio. Anjali calls Bengaluru and resigns.
+      Note: Story day: Day 9. Characters: ANJALI, FATHIMA, RAHUL, STUDIO PRODUCER.
+    Scene Card 43 · EXT. KADALKKARA HARBOUR - DAWN
+      The boats go out. On the radio, Anjali reads the weather.
+      Note: Story day: Day 10. Characters: ANJALI.
+    Scene Card 44 · EXT. KADALKKARA BEACH - DAY
+      Low tide. Anjali and Appachan walk on the wet sand with Kannan. The end.
+      Note: Story day: Day 10. Characters: ANJALI, APPACHAN.
+  Beat: Climax: listening night and the last transmission.
+
+Private notes excluded.
+
+Created with OpenFrame Studio

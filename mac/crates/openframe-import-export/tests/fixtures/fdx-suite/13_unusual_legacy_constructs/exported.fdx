@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<FinalDraft DocumentType="Script" Template="No" Version="5">
+<Content>
+<Paragraph Type="Scene Heading"><Text>INT. ARCHIVE - NIGHT</Text></Paragraph>
+<Paragraph Type="Action"><Text>THE FILE is gone.	Gone.</Text></Paragraph>
+<Paragraph Type="Action"><Text>A paragraph without a type.</Text></Paragraph>
+<Paragraph Type="Action"><Text>General text, &amp; an ampersand é and a non-breaking space.</Text></Paragraph>
+<Paragraph Type="Action"><Text>Dust on the shelves.</Text></Paragraph>
+<Paragraph><DualDialogue><Paragraph Type="Character"><Text>ASHA</Text></Paragraph><Paragraph Type="Dialogue"><Text>Where is it?</Text></Paragraph><Paragraph Type="Character"><Text>RAVI</Text></Paragraph><Paragraph Type="Dialogue"><Text>I never had it.</Text></Paragraph><Paragraph Type="Character"><Text>ASHA</Text></Paragraph><Paragraph Type="Dialogue"><Text>Then who?</Text></Paragraph><Paragraph Type="Character"><Text>RAVI</Text></Paragraph><Paragraph Type="Dialogue"><Text>Ask the keeper.</Text></Paragraph></DualDialogue></Paragraph>
+<Paragraph Type="Cast List"><Text>ASHA, RAVI</Text></Paragraph>
+<Paragraph Type="Scene Heading"><Text>int. archive - later</Text></Paragraph>
+<Paragraph Type="Action"><Text>The lights go out.</Text></Paragraph>
+</Content>
+<ElementSettings Type="Cast List"><FontSpec Font="Courier Final Draft" Size="12" Style=""/><ParagraphSpec Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.50" RightIndent="7.50" SpaceBefore="12" Spacing="1" StartsNewPage="No"/><Behavior PaginateAs="Action" ReturnKey="Action" Shortcut=""/></ElementSettings>
+</FinalDraft>

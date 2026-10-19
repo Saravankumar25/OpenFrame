@@ -1,0 +1,52 @@
+allowed  R4 crates/openframe-ai/src/hardware.rs:114 unsafe
+allowed  R4 crates/openframe-ai/src/job.rs:14 unsafe
+allowed  R4 crates/openframe-ai/src/job.rs:15 unsafe
+allowed  R4 crates/openframe-ai/src/job.rs:29 unsafe
+allowed  R4 crates/openframe-ai/src/job.rs:64 unsafe
+allowed  R3 crates/openframe-ai/src/supervisor.rs:426 TcpListener
+allowed  R5 crates/openframe-ai/src/supervisor.rs:19 process::{Child, Command, Stdio}
+allowed  R5 crates/openframe-ai/src/supervisor.rs:440 Command::new
+allowed  R1 crates/openframe-application/src/core.rs:210 open_connection(
+allowed  R1 crates/openframe-application/src/modules/ai/change_set.rs:447 BEGIN IMMEDIATE
+allowed  R1 crates/openframe-application/src/modules/ai/intelligence/indexer.rs:420 open_connection(
+allowed  R1 crates/openframe-application/src/modules/ai/intelligence/indexer.rs:576 .transaction()
+allowed  R1 crates/openframe-application/src/modules/ai/intelligence/indexer.rs:717 .transaction()
+allowed  R1 crates/openframe-application/src/modules/packages/backup.rs:466 open_connection(
+allowed  R1 crates/openframe-application/src/modules/packages/backup.rs:479 open_connection(
+allowed  R1 crates/openframe-application/src/modules/packages/backup.rs:480 BEGIN IMMEDIATE
+allowed  R1 crates/openframe-application/src/modules/packages/backup.rs:507 Connection::open
+allowed  R1 crates/openframe-application/src/modules/packages/backup.rs:910 open_connection(
+allowed  R1 crates/openframe-application/src/modules/packages/backup.rs:960 .transaction()
+allowed  R1 crates/openframe-application/src/modules/project.rs:687 open_connection(
+allowed  R1 crates/openframe-application/src/modules/project.rs:969 open_connection(
+allowed  R1 crates/openframe-application/src/modules/project.rs:1253 open_connection(
+allowed  R1 crates/openframe-application/src/modules/project.rs:1260 open_connection(
+allowed  R1 crates/openframe-application/src/modules/project.rs:1316 open_connection(
+allowed  R1 crates/openframe-application/src/modules/project.rs:1321 open_connection(
+allowed  R1 crates/openframe-application/src/modules/project.rs:1606 open_connection(
+allowed  R1 crates/openframe-application/src/modules/project.rs:1614 .transaction()
+allowed  R1 crates/openframe-application/src/store.rs:322 open_connection(
+allowed  R1 crates/openframe-application/src/store.rs:373 open_connection(
+allowed  R1 crates/openframe-application/src/store.rs:458 transaction_with_behavior
+allowed  R1 crates/openframe-application/src/store.rs:611 transaction_with_behavior
+allowed  R1 crates/openframe-application/src/store.rs:679 transaction_with_behavior
+allowed  R4 crates/openframe-application/src/util.rs:168 unsafe
+allowed  R4 crates/openframe-application/src/util.rs:179 unsafe
+allowed  R1 crates/openframe-persistence/src/lib.rs:25 open_connection(
+allowed  R1 crates/openframe-persistence/src/lib.rs:32 Connection::open
+allowed  R1 crates/openframe-persistence/src/lib.rs:39 Connection::open
+allowed  R1 crates/openframe-persistence/src/lib.rs:156 Connection::open
+allowed  R1 crates/openframe-persistence/src/lib.rs:161 Connection::open
+allowed  R1 crates/openframe-persistence/src/migrate.rs:109 .transaction()
+allowed  R1 crates/openframe-search/src/db.rs:156 Connection::open
+allowed  R1 crates/openframe-search/src/db.rs:336 .transaction()
+allowed  R1 crates/openframe-search/src/db.rs:358 .transaction()
+allowed  R4 crates/openframe-search/src/vector.rs:40 unsafe
+allowed  R4 crates/openframe-search/src/vector.rs:53 unsafe
+allowed  R4 apps/desktop/src-tauri/src/distribution.rs:166 unsafe
+allowed  R4 apps/desktop/src-tauri/src/distribution.rs:172 unsafe
+allowed  R4 apps/desktop/src-tauri/src/distribution.rs:194 unsafe
+allowed  R4 apps/desktop/src-tauri/src/distribution.rs:217 unsafe
+architecture-lint: OK (49 allow-listed sites)
+check-migrations: OK (project 10, global 3, app 1; not frozen yet)
+check-ledger: OK (159 rows; S0 44, S1 36, S2 22, S3 54, S4 1, process 1)

@@ -1,0 +1,3938 @@
+[
+  {
+    "argType": "AskArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Offline AI",
+    "name": "ai.ask",
+    "resultType": "AiExchange"
+  },
+  {
+    "argType": "AcceptArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Offline AI",
+    "name": "ai.change_set.accept",
+    "resultType": "ChangeSetDto"
+  },
+  {
+    "argType": "AiChangeSetArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Offline AI",
+    "name": "ai.change_set.get",
+    "resultType": "ChangeSetDto"
+  },
+  {
+    "argType": "AiChangeSetArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Offline AI",
+    "name": "ai.change_set.recheck",
+    "resultType": "ChangeSetDto"
+  },
+  {
+    "argType": "AiChangeSetArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Offline AI",
+    "name": "ai.change_set.reject",
+    "resultType": "ChangeSetDto"
+  },
+  {
+    "argType": "AiEmptyArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Offline AI",
+    "name": "ai.diagnostics",
+    "resultType": "AiDiagnosticsDto"
+  },
+  {
+    "argType": "AiImportArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Offline AI",
+    "name": "ai.download.import",
+    "resultType": "AiImportResult"
+  },
+  {
+    "argType": "AiEmptyArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Offline AI",
+    "name": "ai.download.pause",
+    "resultType": "()"
+  },
+  {
+    "argType": "AiEmptyArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Offline AI",
+    "name": "ai.download.remove",
+    "resultType": "()"
+  },
+  {
+    "argType": "AiEmptyArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Offline AI",
+    "name": "ai.download.start",
+    "resultType": "()"
+  },
+  {
+    "argType": "AiEmptyArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Offline AI",
+    "name": "ai.download.status",
+    "resultType": "AiDownloadDto"
+  },
+  {
+    "argType": "AiReportArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Offline AI",
+    "name": "ai.export_report",
+    "resultType": "AiReportResult"
+  },
+  {
+    "argType": "AiGraphicsArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Offline AI",
+    "name": "ai.graphics.set",
+    "resultType": "()"
+  },
+  {
+    "argType": "AiHealthArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Offline AI",
+    "name": "ai.health",
+    "resultType": "AiHealthDto"
+  },
+  {
+    "argType": "AiHistoryArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Offline AI",
+    "name": "ai.history",
+    "resultType": "AiHistoryDto"
+  },
+  {
+    "argType": "AiIndexArgs",
+    "kind": "command",
+    "longRunning": true,
+    "module": "Offline AI",
+    "name": "ai.index_rebuild",
+    "resultType": "IndexRebuildStarted"
+  },
+  {
+    "argType": "AiIndexArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Offline AI",
+    "name": "ai.index_status",
+    "resultType": "IndexStatusDto"
+  },
+  {
+    "argType": "AiEmptyArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Offline AI",
+    "name": "ai.status",
+    "resultType": "AiStatusDto"
+  },
+  {
+    "argType": "AiEmptyArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Offline AI",
+    "name": "ai.stop_runtime",
+    "resultType": "()"
+  },
+  {
+    "argType": "TaskIdArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Project",
+    "name": "app.cancel_task",
+    "resultType": "bool"
+  },
+  {
+    "argType": "Empty",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Project",
+    "name": "app.info",
+    "resultType": "AppInfo"
+  },
+  {
+    "argType": "ShortcutsArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Writing",
+    "name": "app.reset_shortcuts",
+    "resultType": "ShortcutOverrides"
+  },
+  {
+    "argType": "Empty",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Project",
+    "name": "app.save_state",
+    "resultType": "SaveState"
+  },
+  {
+    "argType": "DisplayNameArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Project",
+    "name": "app.set_display_name",
+    "resultType": "LocalProfile"
+  },
+  {
+    "argType": "SetShortcutsArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Writing",
+    "name": "app.set_shortcuts",
+    "resultType": "ShortcutOverrides"
+  },
+  {
+    "argType": "ShortcutsArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Writing",
+    "name": "app.shortcuts",
+    "resultType": "ShortcutOverrides"
+  },
+  {
+    "argType": "ThemeSourceArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Appearance",
+    "name": "appearance.check_theme",
+    "resultType": "ThemeCheck"
+  },
+  {
+    "argType": "DeleteThemeArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Appearance",
+    "name": "appearance.delete_theme",
+    "resultType": "AppearanceState"
+  },
+  {
+    "argType": "ExportThemeArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Appearance",
+    "name": "appearance.export_theme",
+    "resultType": "ExportThemeResult"
+  },
+  {
+    "argType": "AppearanceGetArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Appearance",
+    "name": "appearance.get",
+    "resultType": "AppearanceState"
+  },
+  {
+    "argType": "ImportThemeArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Appearance",
+    "name": "appearance.import_theme",
+    "resultType": "AppearanceState"
+  },
+  {
+    "argType": "RenameThemeArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Appearance",
+    "name": "appearance.rename_theme",
+    "resultType": "AppearanceState"
+  },
+  {
+    "argType": "SetModeArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Appearance",
+    "name": "appearance.set_mode",
+    "resultType": "AppearanceState"
+  },
+  {
+    "argType": "SetThemeArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Appearance",
+    "name": "appearance.set_theme",
+    "resultType": "AppearanceState"
+  },
+  {
+    "argType": "AvailabilitySetArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Production",
+    "name": "availability.set",
+    "resultType": "Vec<AvailabilityWindowDto>"
+  },
+  {
+    "argType": "BreakdownAcceptArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Breakdown",
+    "name": "breakdown.accept",
+    "resultType": "BreakdownElementDto"
+  },
+  {
+    "argType": "BreakdownIdsArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Breakdown",
+    "name": "breakdown.accept_many",
+    "resultType": "BreakdownAcceptManyResult"
+  },
+  {
+    "argType": "BreakdownAddArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Breakdown",
+    "name": "breakdown.add_element",
+    "resultType": "BreakdownElementDto"
+  },
+  {
+    "argType": "BreakdownSceneArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Breakdown",
+    "name": "breakdown.apply_suggested_update",
+    "resultType": "BreakdownSuggestResult"
+  },
+  {
+    "argType": "BreakdownCategoriesArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Breakdown",
+    "name": "breakdown.categories",
+    "resultType": "BreakdownCategoryStyles"
+  },
+  {
+    "argType": "ExportBreakdownArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Exports",
+    "name": "breakdown.export_report",
+    "resultType": "ExportResult"
+  },
+  {
+    "argType": "BreakdownSceneArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Breakdown",
+    "name": "breakdown.mark_reviewed",
+    "resultType": "BreakdownSceneDetail"
+  },
+  {
+    "argType": "BreakdownSceneArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Breakdown",
+    "name": "breakdown.quick_reuse",
+    "resultType": "Vec<BreakdownReuseItem>"
+  },
+  {
+    "argType": "BreakdownIdsArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Breakdown",
+    "name": "breakdown.reject",
+    "resultType": "BreakdownCountResult"
+  },
+  {
+    "argType": "BreakdownIdArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Breakdown",
+    "name": "breakdown.remove_element",
+    "resultType": "()"
+  },
+  {
+    "argType": "BreakdownCategoriesArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Breakdown",
+    "name": "breakdown.reset_category_styles",
+    "resultType": "BreakdownCategoryStyles"
+  },
+  {
+    "argType": "BreakdownReuseArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Breakdown",
+    "name": "breakdown.reuse",
+    "resultType": "BreakdownCountResult"
+  },
+  {
+    "argType": "BreakdownSceneArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Breakdown",
+    "name": "breakdown.scene",
+    "resultType": "BreakdownSceneDetail"
+  },
+  {
+    "argType": "BreakdownSceneArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Breakdown",
+    "name": "breakdown.scene_changes",
+    "resultType": "BreakdownSceneChanges"
+  },
+  {
+    "argType": "BreakdownScenesArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Breakdown",
+    "name": "breakdown.scenes",
+    "resultType": "BreakdownScenesView"
+  },
+  {
+    "argType": "BreakdownArchiveArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Breakdown",
+    "name": "breakdown.set_archived",
+    "resultType": "BreakdownElementDto"
+  },
+  {
+    "argType": "BreakdownCategoryStyleArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Breakdown",
+    "name": "breakdown.set_category_style",
+    "resultType": "BreakdownCategoryStyles"
+  },
+  {
+    "argType": "BreakdownCompleteArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Breakdown",
+    "name": "breakdown.set_complete",
+    "resultType": "BreakdownSceneDetail"
+  },
+  {
+    "argType": "BreakdownIdArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Breakdown",
+    "name": "breakdown.source_anchor",
+    "resultType": "BreakdownSourceAnchor"
+  },
+  {
+    "argType": "BreakdownSceneArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Breakdown",
+    "name": "breakdown.suggest",
+    "resultType": "BreakdownSuggestResult"
+  },
+  {
+    "argType": "BreakdownUpdateArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Breakdown",
+    "name": "breakdown.update_element",
+    "resultType": "BreakdownElementDto"
+  },
+  {
+    "argType": "BudgetLineAddArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Budget",
+    "name": "budget.add_line",
+    "resultType": "String"
+  },
+  {
+    "argType": "BudgetCreateArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Budget",
+    "name": "budget.create",
+    "resultType": "String"
+  },
+  {
+    "argType": "BudgetIdArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Budget",
+    "name": "budget.delete_line",
+    "resultType": "()"
+  },
+  {
+    "argType": "BudgetIdArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Budget",
+    "name": "budget.delete_snapshot",
+    "resultType": "()"
+  },
+  {
+    "argType": "ExportBudgetArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Exports",
+    "name": "budget.export_summary",
+    "resultType": "ExportResult"
+  },
+  {
+    "argType": "BudgetGetArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Budget",
+    "name": "budget.get",
+    "resultType": "BudgetView"
+  },
+  {
+    "argType": "BudgetIdArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Budget",
+    "name": "budget.get_snapshot",
+    "resultType": "BudgetDto"
+  },
+  {
+    "argType": "BudgetIdArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Budget",
+    "name": "budget.mark_reviewed",
+    "resultType": "()"
+  },
+  {
+    "argType": "BudgetSnapshotArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Budget",
+    "name": "budget.save_snapshot",
+    "resultType": "String"
+  },
+  {
+    "argType": "BudgetUpdateArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Budget",
+    "name": "budget.update",
+    "resultType": "()"
+  },
+  {
+    "argType": "BudgetLineUpdateArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Budget",
+    "name": "budget.update_line",
+    "resultType": "()"
+  },
+  {
+    "argType": "CallSheetAddSectionArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Call Sheets",
+    "name": "callsheets.add_section",
+    "resultType": "()"
+  },
+  {
+    "argType": "CallSheetAttachArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Call Sheets",
+    "name": "callsheets.attach",
+    "resultType": "CallSheetAttachment"
+  },
+  {
+    "argType": "CallSheetCreateArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Call Sheets",
+    "name": "callsheets.create",
+    "resultType": "String"
+  },
+  {
+    "argType": "CallSheetIdArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Call Sheets",
+    "name": "callsheets.delete",
+    "resultType": "()"
+  },
+  {
+    "argType": "ExportCallSheetArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Exports",
+    "name": "callsheets.export_pdf",
+    "resultType": "ExportResult"
+  },
+  {
+    "argType": "CallSheetFinalizeArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Call Sheets",
+    "name": "callsheets.finalize",
+    "resultType": "String"
+  },
+  {
+    "argType": "CallSheetIdArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Call Sheets",
+    "name": "callsheets.get",
+    "resultType": "CallSheetDetail"
+  },
+  {
+    "argType": "CallSheetListArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Call Sheets",
+    "name": "callsheets.list",
+    "resultType": "Vec<CallSheetListRow>"
+  },
+  {
+    "argType": "CallSheetIdArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Call Sheets",
+    "name": "callsheets.new_revision",
+    "resultType": "String"
+  },
+  {
+    "argType": "CallSheetIdArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Call Sheets",
+    "name": "callsheets.refresh",
+    "resultType": "()"
+  },
+  {
+    "argType": "CallSheetIdArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Call Sheets",
+    "name": "callsheets.refresh_preview",
+    "resultType": "CallSheetRefreshPreview"
+  },
+  {
+    "argType": "CallSheetUpdateArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Call Sheets",
+    "name": "callsheets.update",
+    "resultType": "i64"
+  },
+  {
+    "argType": "ProductionCastAssignArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Cast & Crew",
+    "name": "cast.assign",
+    "resultType": "ProductionCastMemberDto"
+  },
+  {
+    "argType": "ProductionCastCreateArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Cast & Crew",
+    "name": "cast.create",
+    "resultType": "ProductionCastMemberDto"
+  },
+  {
+    "argType": "ProductionPeopleIdArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Cast & Crew",
+    "name": "cast.delete",
+    "resultType": "()"
+  },
+  {
+    "argType": "ProductionPeopleListArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Cast & Crew",
+    "name": "cast.list",
+    "resultType": "ProductionCastDirectory"
+  },
+  {
+    "argType": "ProductionPeopleArchiveArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Cast & Crew",
+    "name": "cast.set_archived",
+    "resultType": "()"
+  },
+  {
+    "argType": "ProductionCastPhotoArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Cast & Crew",
+    "name": "cast.set_photo",
+    "resultType": "ProductionCastMemberDto"
+  },
+  {
+    "argType": "ProductionCastUpdateArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Cast & Crew",
+    "name": "cast.update",
+    "resultType": "ProductionCastMemberDto"
+  },
+  {
+    "argType": "CatalogAliasArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Production",
+    "name": "catalog.add_alias",
+    "resultType": "CatalogItemDto"
+  },
+  {
+    "argType": "CatalogCreateArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Production",
+    "name": "catalog.create",
+    "resultType": "CatalogItemDto"
+  },
+  {
+    "argType": "CatalogIdArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Production",
+    "name": "catalog.delete",
+    "resultType": "()"
+  },
+  {
+    "argType": "CatalogMatchArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Production",
+    "name": "catalog.find_matches",
+    "resultType": "Vec<CatalogMatchDto>"
+  },
+  {
+    "argType": "CatalogIdArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Production",
+    "name": "catalog.get",
+    "resultType": "CatalogItemDto"
+  },
+  {
+    "argType": "CatalogListArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Production",
+    "name": "catalog.list",
+    "resultType": "Vec<CatalogItemDto>"
+  },
+  {
+    "argType": "CatalogIdArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Production",
+    "name": "catalog.remove_alias",
+    "resultType": "()"
+  },
+  {
+    "argType": "CatalogReplaceArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Production",
+    "name": "catalog.replace_in_scenes",
+    "resultType": "CatalogReplaceResult"
+  },
+  {
+    "argType": "CatalogArchiveArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Production",
+    "name": "catalog.set_archived",
+    "resultType": "CatalogItemDto"
+  },
+  {
+    "argType": "CatalogImageArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Production",
+    "name": "catalog.set_image",
+    "resultType": "CatalogItemDto"
+  },
+  {
+    "argType": "CatalogUpdateArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Production",
+    "name": "catalog.update",
+    "resultType": "CatalogItemDto"
+  },
+  {
+    "argType": "CommentCreateArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Comments & Private Notes",
+    "name": "comment.create",
+    "resultType": "CommentThread"
+  },
+  {
+    "argType": "CommentIdArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Comments & Private Notes",
+    "name": "comment.delete",
+    "resultType": "()"
+  },
+  {
+    "argType": "CommentListArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Comments & Private Notes",
+    "name": "comment.list",
+    "resultType": "Vec<CommentThread>"
+  },
+  {
+    "argType": "CommentIdArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Comments & Private Notes",
+    "name": "comment.reopen",
+    "resultType": "CommentThread"
+  },
+  {
+    "argType": "CommentReplyArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Comments & Private Notes",
+    "name": "comment.reply",
+    "resultType": "CommentThread"
+  },
+  {
+    "argType": "CommentIdArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Comments & Private Notes",
+    "name": "comment.resolve",
+    "resultType": "CommentThread"
+  },
+  {
+    "argType": "CommentUpdateArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Comments & Private Notes",
+    "name": "comment.update",
+    "resultType": "CommentThread"
+  },
+  {
+    "argType": "ProductionCrewCreateArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Cast & Crew",
+    "name": "crew.create",
+    "resultType": "ProductionCrewMemberDto"
+  },
+  {
+    "argType": "ProductionPeopleIdArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Cast & Crew",
+    "name": "crew.delete",
+    "resultType": "()"
+  },
+  {
+    "argType": "ProductionPeopleListArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Cast & Crew",
+    "name": "crew.list",
+    "resultType": "Vec<ProductionCrewMemberDto>"
+  },
+  {
+    "argType": "ProductionPeopleArchiveArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Cast & Crew",
+    "name": "crew.set_archived",
+    "resultType": "ProductionCrewMemberDto"
+  },
+  {
+    "argType": "ProductionCrewUpdateArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Cast & Crew",
+    "name": "crew.update",
+    "resultType": "ProductionCrewMemberDto"
+  },
+  {
+    "argType": "DiagnosticsExportArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Diagnostics",
+    "name": "diagnostics.export_bundle",
+    "resultType": "DiagnosticsExportResult"
+  },
+  {
+    "argType": "DiagnosticsPreviewArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Diagnostics",
+    "name": "diagnostics.preview",
+    "resultType": "DiagnosticsPreview"
+  },
+  {
+    "argType": "BuyArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Licence and trial",
+    "name": "entitlement.buy",
+    "resultType": "BuyOutcome"
+  },
+  {
+    "argType": "EntitlementNoticeArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Licence and trial",
+    "name": "entitlement.notice",
+    "resultType": "EntitlementNotice"
+  },
+  {
+    "argType": "RecordNoticeArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Licence and trial",
+    "name": "entitlement.record_notice",
+    "resultType": "EntitlementNotice"
+  },
+  {
+    "argType": "RestorePurchaseArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Licence and trial",
+    "name": "entitlement.restore_purchase",
+    "resultType": "EntitlementStatus"
+  },
+  {
+    "argType": "StartTrialArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Licence and trial",
+    "name": "entitlement.start_trial",
+    "resultType": "BuyOutcome"
+  },
+  {
+    "argType": "EntitlementStatusArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Licence and trial",
+    "name": "entitlement.status",
+    "resultType": "EntitlementStatus"
+  },
+  {
+    "argType": "AddFilesArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Files",
+    "name": "files.add",
+    "resultType": "Vec<ProjectFileDto>"
+  },
+  {
+    "argType": "AssetArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Files",
+    "name": "files.asset",
+    "resultType": "AssetInfo"
+  },
+  {
+    "argType": "FolderArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Files",
+    "name": "files.create_folder",
+    "resultType": "FolderDto"
+  },
+  {
+    "argType": "IdArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Files",
+    "name": "files.delete",
+    "resultType": "()"
+  },
+  {
+    "argType": "IdArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Files",
+    "name": "files.delete_folder",
+    "resultType": "()"
+  },
+  {
+    "argType": "ExportCopyArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Files",
+    "name": "files.export_copy",
+    "resultType": "String"
+  },
+  {
+    "argType": "ListArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Files",
+    "name": "files.list",
+    "resultType": "FilesListing"
+  },
+  {
+    "argType": "MoveArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Files",
+    "name": "files.move",
+    "resultType": "ProjectFileDto"
+  },
+  {
+    "argType": "RelinkArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Files",
+    "name": "files.relink",
+    "resultType": "ProjectFileDto"
+  },
+  {
+    "argType": "RenameArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Files",
+    "name": "files.rename",
+    "resultType": "ProjectFileDto"
+  },
+  {
+    "argType": "RenameArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Files",
+    "name": "files.rename_folder",
+    "resultType": "()"
+  },
+  {
+    "argType": "NotesArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Files",
+    "name": "files.update_notes",
+    "resultType": "ProjectFileDto"
+  },
+  {
+    "argType": "ActivityArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "History",
+    "name": "history.activity",
+    "resultType": "Vec<ActivityEntry>"
+  },
+  {
+    "argType": "StoreArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "History",
+    "name": "history.info",
+    "resultType": "UndoInfo"
+  },
+  {
+    "argType": "StoreArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "History",
+    "name": "history.redo",
+    "resultType": "StepResult"
+  },
+  {
+    "argType": "StoreArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "History",
+    "name": "history.undo",
+    "resultType": "StepResult"
+  },
+  {
+    "argType": "InterchangeDraftScenesArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Import & Export",
+    "name": "interchange.draft_scenes",
+    "resultType": "Vec<InterchangeExportSceneDto>"
+  },
+  {
+    "argType": "InterchangeExportPreviewArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Import & Export",
+    "name": "interchange.export_preview",
+    "resultType": "InterchangePrintPreview"
+  },
+  {
+    "argType": "InterchangeSourcesArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Import & Export",
+    "name": "interchange.sources",
+    "resultType": "InterchangeSources"
+  },
+  {
+    "argType": "ProductionLocationPhotosArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Production",
+    "name": "locations.add_photos",
+    "resultType": "ProductionLocationDto"
+  },
+  {
+    "argType": "ProductionLocationCreateArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Production",
+    "name": "locations.create",
+    "resultType": "ProductionLocationDto"
+  },
+  {
+    "argType": "ProductionLocationIdArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Production",
+    "name": "locations.delete",
+    "resultType": "()"
+  },
+  {
+    "argType": "ProductionLocationIdArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Production",
+    "name": "locations.get",
+    "resultType": "ProductionLocationDto"
+  },
+  {
+    "argType": "ProductionLocationListArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Production",
+    "name": "locations.list",
+    "resultType": "Vec<ProductionLocationDto>"
+  },
+  {
+    "argType": "ProductionLocationPhotoMoveArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Production",
+    "name": "locations.move_photo",
+    "resultType": "()"
+  },
+  {
+    "argType": "ProductionLocationIdArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Production",
+    "name": "locations.remove_photo",
+    "resultType": "()"
+  },
+  {
+    "argType": "ProductionLocationReplaceArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Production",
+    "name": "locations.replace",
+    "resultType": "ProductionLocationReplaceResult"
+  },
+  {
+    "argType": "ProductionLocationArchiveArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Production",
+    "name": "locations.set_archived",
+    "resultType": "ProductionLocationDto"
+  },
+  {
+    "argType": "ProductionLocationStatusArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Production",
+    "name": "locations.set_status",
+    "resultType": "ProductionLocationDto"
+  },
+  {
+    "argType": "ProductionLocationUpdateArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Production",
+    "name": "locations.update",
+    "resultType": "ProductionLocationDto"
+  },
+  {
+    "argType": "AddMoodboardImageDataArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Visual Planning",
+    "name": "moodboard.add_image_data",
+    "resultType": "MoodboardItemDto"
+  },
+  {
+    "argType": "AddMoodboardImagesArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Visual Planning",
+    "name": "moodboard.add_images",
+    "resultType": "Vec<MoodboardItemDto>"
+  },
+  {
+    "argType": "AddMoodboardLinkArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Visual Planning",
+    "name": "moodboard.add_link",
+    "resultType": "MoodboardItemDto"
+  },
+  {
+    "argType": "AddMoodboardNoteArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Visual Planning",
+    "name": "moodboard.add_note",
+    "resultType": "MoodboardItemDto"
+  },
+  {
+    "argType": "AddMoodboardVaultImageArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Visual Planning",
+    "name": "moodboard.add_vault_image",
+    "resultType": "MoodboardItemDto"
+  },
+  {
+    "argType": "ArrangeMoodboardItemArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Visual Planning",
+    "name": "moodboard.arrange_item",
+    "resultType": "()"
+  },
+  {
+    "argType": "CreateMoodboardArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Visual Planning",
+    "name": "moodboard.create",
+    "resultType": "MoodboardSummary"
+  },
+  {
+    "argType": "MoodboardIdArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Visual Planning",
+    "name": "moodboard.delete",
+    "resultType": "()"
+  },
+  {
+    "argType": "DeleteMoodboardItemsArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Visual Planning",
+    "name": "moodboard.delete_items",
+    "resultType": "()"
+  },
+  {
+    "argType": "ExportMoodboardArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Exports",
+    "name": "moodboard.export_pdf",
+    "resultType": "ExportResult"
+  },
+  {
+    "argType": "MoodboardIdArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Visual Planning",
+    "name": "moodboard.get",
+    "resultType": "MoodboardDto"
+  },
+  {
+    "argType": "MoodboardListArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Visual Planning",
+    "name": "moodboard.list",
+    "resultType": "Vec<MoodboardSummary>"
+  },
+  {
+    "argType": "MoveMoodboardItemsArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Visual Planning",
+    "name": "moodboard.move_items",
+    "resultType": "()"
+  },
+  {
+    "argType": "RenameMoodboardArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Visual Planning",
+    "name": "moodboard.rename",
+    "resultType": "MoodboardSummary"
+  },
+  {
+    "argType": "ReorderMoodboardArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Visual Planning",
+    "name": "moodboard.reorder",
+    "resultType": "()"
+  },
+  {
+    "argType": "ResizeMoodboardItemArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Visual Planning",
+    "name": "moodboard.resize_item",
+    "resultType": "()"
+  },
+  {
+    "argType": "MoodboardListArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Visual Planning",
+    "name": "moodboard.suggestions",
+    "resultType": "Vec<String>"
+  },
+  {
+    "argType": "UpdateMoodboardItemArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Visual Planning",
+    "name": "moodboard.update_item",
+    "resultType": "MoodboardItemDto"
+  },
+  {
+    "argType": "MoodboardNotesArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Visual Planning",
+    "name": "moodboard.update_notes",
+    "resultType": "()"
+  },
+  {
+    "argType": "CreateNoteArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Cast & Crew",
+    "name": "notes.create",
+    "resultType": "NoteDto"
+  },
+  {
+    "argType": "NoteIdArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Cast & Crew",
+    "name": "notes.delete",
+    "resultType": "()"
+  },
+  {
+    "argType": "NoteIdArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Cast & Crew",
+    "name": "notes.get",
+    "resultType": "NoteDto"
+  },
+  {
+    "argType": "NoteListArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Cast & Crew",
+    "name": "notes.list",
+    "resultType": "Vec<NoteDto>"
+  },
+  {
+    "argType": "SetNotePinnedArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Cast & Crew",
+    "name": "notes.set_pinned",
+    "resultType": "NoteDto"
+  },
+  {
+    "argType": "UpdateNoteArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Cast & Crew",
+    "name": "notes.update",
+    "resultType": "NoteDto"
+  },
+  {
+    "argType": "PackageApplyArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Packages",
+    "name": "packages.apply_import",
+    "resultType": "PackageImportSession"
+  },
+  {
+    "argType": "PackageEmptyArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Packages",
+    "name": "packages.backup_preview",
+    "resultType": "BackupPreview"
+  },
+  {
+    "argType": "PackageSessionArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Packages",
+    "name": "packages.cancel_import",
+    "resultType": "PackageImportSession"
+  },
+  {
+    "argType": "BackupCreateArgs",
+    "kind": "command",
+    "longRunning": true,
+    "module": "Packages",
+    "name": "packages.create_backup",
+    "resultType": "PackageTaskStarted"
+  },
+  {
+    "argType": "PackageExchangeArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Packages",
+    "name": "packages.exchange_preview",
+    "resultType": "PackageExportSummary"
+  },
+  {
+    "argType": "PackageScenesArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Packages",
+    "name": "packages.exchange_scenes",
+    "resultType": "Vec<PackageSceneOption>"
+  },
+  {
+    "argType": "PackageEmptyArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Packages",
+    "name": "packages.exchange_sources",
+    "resultType": "PackageExchangeSources"
+  },
+  {
+    "argType": "PackageExchangeArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Packages",
+    "name": "packages.export_exchange",
+    "resultType": "PackageExportResult"
+  },
+  {
+    "argType": "BackupCreateArgs",
+    "kind": "command",
+    "longRunning": true,
+    "module": "Packages",
+    "name": "packages.export_project",
+    "resultType": "PackageTaskStarted"
+  },
+  {
+    "argType": "PackageImportProjectArgs",
+    "kind": "command",
+    "longRunning": true,
+    "module": "Packages",
+    "name": "packages.import_project",
+    "resultType": "PackageTaskStarted"
+  },
+  {
+    "argType": "PackagePathArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Packages",
+    "name": "packages.inspect_package",
+    "resultType": "PackageInspection"
+  },
+  {
+    "argType": "PackageListArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Packages",
+    "name": "packages.log",
+    "resultType": "Vec<PackageLogEntry>"
+  },
+  {
+    "argType": "PackagePathArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Packages",
+    "name": "packages.open_exchange",
+    "resultType": "PackageImportSession"
+  },
+  {
+    "argType": "PackageQueueAttachArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Packages",
+    "name": "packages.queue_attach",
+    "resultType": "PackageQueueItem"
+  },
+  {
+    "argType": "PackageRecordArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Packages",
+    "name": "packages.record_delete",
+    "resultType": "()"
+  },
+  {
+    "argType": "PackageRecordArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Packages",
+    "name": "packages.record_view",
+    "resultType": "PackageReviewWorkspace"
+  },
+  {
+    "argType": "PackageListArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Packages",
+    "name": "packages.records",
+    "resultType": "Vec<PackageRecordSummary>"
+  },
+  {
+    "argType": "PackageReviewCommentArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Packages",
+    "name": "packages.review_comment",
+    "resultType": "PackageReviewWorkspace"
+  },
+  {
+    "argType": "PackageReviewCommentIdArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Packages",
+    "name": "packages.review_delete_comment",
+    "resultType": "PackageReviewWorkspace"
+  },
+  {
+    "argType": "PackageReviewExportArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Packages",
+    "name": "packages.review_export_response",
+    "resultType": "PackageResponseExported"
+  },
+  {
+    "argType": "PackageReviewArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Packages",
+    "name": "packages.review_get",
+    "resultType": "PackageReviewWorkspace"
+  },
+  {
+    "argType": "PackageListArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Packages",
+    "name": "packages.review_list",
+    "resultType": "Vec<PackageReviewSummary>"
+  },
+  {
+    "argType": "PackagePathArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Packages",
+    "name": "packages.review_open",
+    "resultType": "PackageReviewWorkspace"
+  },
+  {
+    "argType": "PackageListArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Packages",
+    "name": "packages.review_queue",
+    "resultType": "Vec<PackageQueueItem>"
+  },
+  {
+    "argType": "PackageSessionArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Packages",
+    "name": "packages.session",
+    "resultType": "PackageImportSession"
+  },
+  {
+    "argType": "PackageSessionArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Packages",
+    "name": "packages.session_view",
+    "resultType": "PackageReviewWorkspace"
+  },
+  {
+    "argType": "PackageListArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Packages",
+    "name": "packages.sessions",
+    "resultType": "Vec<PackageSessionSummary>"
+  },
+  {
+    "argType": "PackageSessionArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Packages",
+    "name": "packages.undo_import",
+    "resultType": "PackageImportSession"
+  },
+  {
+    "argType": "CreatePrivateNoteArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Comments & Private Notes",
+    "name": "private_note.create",
+    "resultType": "PrivateNoteDto"
+  },
+  {
+    "argType": "PrivateNoteIdArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Comments & Private Notes",
+    "name": "private_note.delete",
+    "resultType": "()"
+  },
+  {
+    "argType": "ListPrivateNotesArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Comments & Private Notes",
+    "name": "private_note.list",
+    "resultType": "Vec<PrivateNoteDto>"
+  },
+  {
+    "argType": "UpdatePrivateNoteArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Comments & Private Notes",
+    "name": "private_note.update",
+    "resultType": "PrivateNoteDto"
+  },
+  {
+    "argType": "ProductionSetSourceArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Production",
+    "name": "production.apply_update",
+    "resultType": "ProductionUpdateResult"
+  },
+  {
+    "argType": "ProductionEmptyArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Production",
+    "name": "production.drafts",
+    "resultType": "ProductionSourceOptions"
+  },
+  {
+    "argType": "ProductionEmptyArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Production",
+    "name": "production.overview",
+    "resultType": "ProductionOverview"
+  },
+  {
+    "argType": "ProductionDraftArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Production",
+    "name": "production.preview_update",
+    "resultType": "ProductionUpdatePreview"
+  },
+  {
+    "argType": "ProductionReferencesArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Production",
+    "name": "production.references",
+    "resultType": "ProductionReferences"
+  },
+  {
+    "argType": "ProductionSetSourceArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Production",
+    "name": "production.set_source",
+    "resultType": "ProductionSourceInfo"
+  },
+  {
+    "argType": "ProductionEmptyArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Production",
+    "name": "production.source",
+    "resultType": "Option<ProductionSourceInfo>"
+  },
+  {
+    "argType": "Empty",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Project",
+    "name": "project.close",
+    "resultType": "()"
+  },
+  {
+    "argType": "CreateProjectArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Project",
+    "name": "project.create",
+    "resultType": "OpenProjectResult"
+  },
+  {
+    "argType": "Empty",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Project",
+    "name": "project.current",
+    "resultType": "Option<ProjectSummary>"
+  },
+  {
+    "argType": "ProjectIdArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Project",
+    "name": "project.delete",
+    "resultType": "()"
+  },
+  {
+    "argType": "StoreArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Project",
+    "name": "project.deleted_items",
+    "resultType": "Vec<DeletedItemView>"
+  },
+  {
+    "argType": "ProjectIdArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Project",
+    "name": "project.duplicate",
+    "resultType": "RecentProject"
+  },
+  {
+    "argType": "Empty",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Project",
+    "name": "project.get_settings",
+    "resultType": "ProjectSettings"
+  },
+  {
+    "argType": "Empty",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Project",
+    "name": "project.home",
+    "resultType": "ProjectHome"
+  },
+  {
+    "argType": "ListRecentArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Project",
+    "name": "project.list_recent",
+    "resultType": "Vec<RecentProject>"
+  },
+  {
+    "argType": "LocateArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Project",
+    "name": "project.locate",
+    "resultType": "OpenProjectResult"
+  },
+  {
+    "argType": "LocationCheckArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Project",
+    "name": "project.location_check",
+    "resultType": "LocationCheck"
+  },
+  {
+    "argType": "Empty",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Project",
+    "name": "project.members",
+    "resultType": "Vec<Member>"
+  },
+  {
+    "argType": "OpenProjectArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Project",
+    "name": "project.open",
+    "resultType": "OpenProjectResult"
+  },
+  {
+    "argType": "Empty",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Project",
+    "name": "project.recovery_state",
+    "resultType": "RecoveryState"
+  },
+  {
+    "argType": "ProjectIdArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Project",
+    "name": "project.remove_recent",
+    "resultType": "()"
+  },
+  {
+    "argType": "RenameProjectArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Project",
+    "name": "project.rename",
+    "resultType": "RecentProject"
+  },
+  {
+    "argType": "RecoveryArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Project",
+    "name": "project.resolve_recovery",
+    "resultType": "OpenProjectResult"
+  },
+  {
+    "argType": "Empty",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Project",
+    "name": "project.save",
+    "resultType": "i64"
+  },
+  {
+    "argType": "SetArchivedArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Project",
+    "name": "project.set_archived",
+    "resultType": "()"
+  },
+  {
+    "argType": "SetLocationArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Project",
+    "name": "project.set_last_location",
+    "resultType": "()"
+  },
+  {
+    "argType": "SetPinnedArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Project",
+    "name": "project.set_pinned",
+    "resultType": "RecentProject"
+  },
+  {
+    "argType": "SetStatusArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Project",
+    "name": "project.set_status",
+    "resultType": "ProjectSummary"
+  },
+  {
+    "argType": "UpdateSettingsArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Project",
+    "name": "project.update_settings",
+    "resultType": "ProjectSummary"
+  },
+  {
+    "argType": "ScheduleDocIdArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Sides & Reports",
+    "name": "reports.delete",
+    "resultType": "()"
+  },
+  {
+    "argType": "ExportReportArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Exports",
+    "name": "reports.export_report",
+    "resultType": "ExportResult"
+  },
+  {
+    "argType": "ReportArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Sides & Reports",
+    "name": "reports.generate",
+    "resultType": "ReportData"
+  },
+  {
+    "argType": "ScheduleDocIdArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Sides & Reports",
+    "name": "reports.get",
+    "resultType": "ReportSaved"
+  },
+  {
+    "argType": "ScheduleDocListArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Sides & Reports",
+    "name": "reports.list",
+    "resultType": "Vec<ReportSavedRow>"
+  },
+  {
+    "argType": "ReportArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Sides & Reports",
+    "name": "reports.save",
+    "resultType": "String"
+  },
+  {
+    "argType": "ScheduleStripIdArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Schedule",
+    "name": "schedule.acknowledge_change",
+    "resultType": "()"
+  },
+  {
+    "argType": "ScheduleMarkerAddArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Schedule",
+    "name": "schedule.add_marker",
+    "resultType": "String"
+  },
+  {
+    "argType": "ScheduleStripIdArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Schedule",
+    "name": "schedule.confirm_removal",
+    "resultType": "()"
+  },
+  {
+    "argType": "ScheduleCreateArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Schedule",
+    "name": "schedule.create",
+    "resultType": "ScheduleDto"
+  },
+  {
+    "argType": "ScheduleShootDayCreateArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Schedule",
+    "name": "schedule.create_day",
+    "resultType": "String"
+  },
+  {
+    "argType": "ScheduleDailyArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Schedule",
+    "name": "schedule.daily",
+    "resultType": "ScheduleDailyView"
+  },
+  {
+    "argType": "ScheduleWarningDecisionArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Schedule",
+    "name": "schedule.decide_warning",
+    "resultType": "()"
+  },
+  {
+    "argType": "ScheduleIdArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Schedule",
+    "name": "schedule.delete",
+    "resultType": "()"
+  },
+  {
+    "argType": "ScheduleShootDayIdArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Schedule",
+    "name": "schedule.delete_day",
+    "resultType": "()"
+  },
+  {
+    "argType": "ScheduleMarkerIdArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Schedule",
+    "name": "schedule.delete_marker",
+    "resultType": "()"
+  },
+  {
+    "argType": "ScheduleDoodArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Schedule",
+    "name": "schedule.dood",
+    "resultType": "ScheduleDoodView"
+  },
+  {
+    "argType": "ScheduleShootDayIdArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Schedule",
+    "name": "schedule.duplicate_day",
+    "resultType": "String"
+  },
+  {
+    "argType": "ExportDoodArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Exports",
+    "name": "schedule.export_dood",
+    "resultType": "ExportResult"
+  },
+  {
+    "argType": "ExportScheduleArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Exports",
+    "name": "schedule.export_schedule",
+    "resultType": "ExportResult"
+  },
+  {
+    "argType": "ScheduleGetArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Schedule",
+    "name": "schedule.get",
+    "resultType": "ScheduleView"
+  },
+  {
+    "argType": "ScheduleShootDayMoveArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Schedule",
+    "name": "schedule.move_day",
+    "resultType": "()"
+  },
+  {
+    "argType": "ScheduleMarkerMoveArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Schedule",
+    "name": "schedule.move_marker",
+    "resultType": "()"
+  },
+  {
+    "argType": "ScheduleStripMoveArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Schedule",
+    "name": "schedule.move_strip",
+    "resultType": "()"
+  },
+  {
+    "argType": "ScheduleStripsMoveArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Schedule",
+    "name": "schedule.move_strips",
+    "resultType": "()"
+  },
+  {
+    "argType": "ScheduleIdArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Schedule",
+    "name": "schedule.reconcile",
+    "resultType": "ScheduleReconcileResult"
+  },
+  {
+    "argType": "ScheduleShootDateArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Schedule",
+    "name": "schedule.set_day_date",
+    "resultType": "()"
+  },
+  {
+    "argType": "ScheduleShootDayNotesArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Schedule",
+    "name": "schedule.set_day_notes",
+    "resultType": "()"
+  },
+  {
+    "argType": "ScheduleShootDayTargetArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Schedule",
+    "name": "schedule.set_day_target",
+    "resultType": "()"
+  },
+  {
+    "argType": "ScheduleDayTimesArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Schedule",
+    "name": "schedule.set_day_times",
+    "resultType": "()"
+  },
+  {
+    "argType": "ScheduleDoodOverrideArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Schedule",
+    "name": "schedule.set_dood_override",
+    "resultType": "()"
+  },
+  {
+    "argType": "ScheduleShootOffDayArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Schedule",
+    "name": "schedule.set_off_day",
+    "resultType": "()"
+  },
+  {
+    "argType": "ScheduleStatusArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Schedule",
+    "name": "schedule.set_status",
+    "resultType": "()"
+  },
+  {
+    "argType": "ScheduleStripEstimateArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Schedule",
+    "name": "schedule.set_strip_estimate",
+    "resultType": "()"
+  },
+  {
+    "argType": "ScheduleStripPagesArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Schedule",
+    "name": "schedule.set_strip_pages",
+    "resultType": "()"
+  },
+  {
+    "argType": "ScheduleStripStartArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Schedule",
+    "name": "schedule.set_strip_start",
+    "resultType": "()"
+  },
+  {
+    "argType": "ScheduleGetArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Schedule",
+    "name": "schedule.suggestions",
+    "resultType": "ScheduleGroupingSuggestions"
+  },
+  {
+    "argType": "ScheduleMarkerUpdateArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Schedule",
+    "name": "schedule.update_marker",
+    "resultType": "()"
+  },
+  {
+    "argType": "ScheduleSettingsArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Schedule",
+    "name": "schedule.update_settings",
+    "resultType": "()"
+  },
+  {
+    "argType": "ScreenplayApplyEditsArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.apply_edits",
+    "resultType": "ScreenplayEditResult"
+  },
+  {
+    "argType": "ScreenplayCharactersArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.characters",
+    "resultType": "ScreenplayCharacterReport"
+  },
+  {
+    "argType": "ScreenplayClearCharacterLinkArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.clear_character_link",
+    "resultType": "()"
+  },
+  {
+    "argType": "ScreenplayCompareArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.compare",
+    "resultType": "ScreenplayCompareResult"
+  },
+  {
+    "argType": "ScreenplayReviewRoundIdArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.complete_review",
+    "resultType": "ScreenplayReviewRoundDto"
+  },
+  {
+    "argType": "CreateScreenplayArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.create",
+    "resultType": "CreatedScreenplay"
+  },
+  {
+    "argType": "ScreenplayCustomElementArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.create_custom_element",
+    "resultType": "ScreenplayCustomElementDto"
+  },
+  {
+    "argType": "ScreenplayCreateSceneArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.create_scene",
+    "resultType": "ScreenplayEditResult"
+  },
+  {
+    "argType": "ScreenplayIdArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.custom_elements",
+    "resultType": "Vec<ScreenplayCustomElementDto>"
+  },
+  {
+    "argType": "ScreenplayDeleteArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.delete",
+    "resultType": "()"
+  },
+  {
+    "argType": "ScreenplayIdOnlyArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.delete_custom_element",
+    "resultType": "()"
+  },
+  {
+    "argType": "ScreenplayDraftArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.delete_draft",
+    "resultType": "()"
+  },
+  {
+    "argType": "ScreenplayElementIdArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.delete_element",
+    "resultType": "ScreenplayEditResult"
+  },
+  {
+    "argType": "ScreenplayIdOnlyArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.delete_page_preset",
+    "resultType": "()"
+  },
+  {
+    "argType": "ScreenplaySceneIdArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.delete_scene",
+    "resultType": "ScreenplayEditResult"
+  },
+  {
+    "argType": "ScreenplayDraftIdArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.document",
+    "resultType": "ScreenplayDocument"
+  },
+  {
+    "argType": "InterchangeScreenplayExportArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Import & Export",
+    "name": "screenplay.export",
+    "resultType": "InterchangeScreenplayExportResult"
+  },
+  {
+    "argType": "ScreenplayDraftArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.history_points",
+    "resultType": "Vec<ScreenplayHistoryPoint>"
+  },
+  {
+    "argType": "InterchangeImportApplyArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Import & Export",
+    "name": "screenplay.import_apply",
+    "resultType": "InterchangeImportReport"
+  },
+  {
+    "argType": "InterchangeImportPreviewArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Import & Export",
+    "name": "screenplay.import_preview",
+    "resultType": "InterchangeImportPreview"
+  },
+  {
+    "argType": "ScreenplayInsertElementArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.insert_element",
+    "resultType": "ScreenplayEditResult"
+  },
+  {
+    "argType": "ScreenplayLocateArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.locate",
+    "resultType": "ScreenplayLocation"
+  },
+  {
+    "argType": "ScreenplayDraftArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.lock_draft",
+    "resultType": "ScreenplayDraftDto"
+  },
+  {
+    "argType": "ScreenplayDraftArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.lock_summary",
+    "resultType": "ScreenplayLockSummary"
+  },
+  {
+    "argType": "ScreenplaySceneIdArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.merge_scene",
+    "resultType": "ScreenplayEditResult"
+  },
+  {
+    "argType": "ScreenplayMoveElementArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.move_element",
+    "resultType": "ScreenplayEditResult"
+  },
+  {
+    "argType": "ScreenplayMoveSceneArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.move_scene",
+    "resultType": "ScreenplayEditResult"
+  },
+  {
+    "argType": "ScreenplayNewDraftArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.new_draft",
+    "resultType": "ScreenplayDraftDto"
+  },
+  {
+    "argType": "ScreenplayOverviewArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.overview",
+    "resultType": "ScreenplayOverview"
+  },
+  {
+    "argType": "ScreenplayIdArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.page_setup",
+    "resultType": "ScreenplayPageSetupInfo"
+  },
+  {
+    "argType": "ScreenplayPageViewArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.page_view",
+    "resultType": "InterchangePrintPreview"
+  },
+  {
+    "argType": "ScreenplayDraftIdArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.pagination",
+    "resultType": "ScreenplayPagination"
+  },
+  {
+    "argType": "ScreenplayRenameArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.rename",
+    "resultType": "ScreenplayDto"
+  },
+  {
+    "argType": "ScreenplayRenameDraftArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.rename_draft",
+    "resultType": "ScreenplayDraftDto"
+  },
+  {
+    "argType": "ScreenplayDraftIdArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.renumber_scenes",
+    "resultType": "()"
+  },
+  {
+    "argType": "ScreenplayReplaceAllArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.replace_all",
+    "resultType": "ScreenplayReplaceResult"
+  },
+  {
+    "argType": "ScreenplayDraftArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.restore_draft",
+    "resultType": "ScreenplayDraftDto"
+  },
+  {
+    "argType": "ScreenplayHistoryPointArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.restore_history_point",
+    "resultType": "ScreenplayDraftDto"
+  },
+  {
+    "argType": "ScreenplaySceneIdArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.restore_omitted_scene",
+    "resultType": "()"
+  },
+  {
+    "argType": "ScreenplayReviewRoundsArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.review_rounds",
+    "resultType": "Vec<ScreenplayReviewRoundDto>"
+  },
+  {
+    "argType": "ScreenplayRevisionChangesArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.revision_changes",
+    "resultType": "ScreenplayCompareResult"
+  },
+  {
+    "argType": "ScreenplayDraftIdArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.revision_pages",
+    "resultType": "ScreenplayRevisionPages"
+  },
+  {
+    "argType": "InterchangeSamplesArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Import & Export",
+    "name": "screenplay.samples",
+    "resultType": "Vec<InterchangeSample>"
+  },
+  {
+    "argType": "ScreenplaySavePagePresetArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.save_page_preset",
+    "resultType": "ScreenplayPagePreset"
+  },
+  {
+    "argType": "ScreenplaySceneArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.scene_hub",
+    "resultType": "ScreenplaySceneHub"
+  },
+  {
+    "argType": "ScreenplaySetCharacterLinkArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.set_character_link",
+    "resultType": "()"
+  },
+  {
+    "argType": "ScreenplayDraftArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.set_current_draft",
+    "resultType": "ScreenplayDraftDto"
+  },
+  {
+    "argType": "ScreenplaySetSceneNumberArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.set_scene_number",
+    "resultType": "ScreenplaySceneNumberResult"
+  },
+  {
+    "argType": "ScreenplaySetViewStateArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.set_view_state",
+    "resultType": "()"
+  },
+  {
+    "argType": "ScreenplaySplitSceneArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.split_scene",
+    "resultType": "ScreenplayEditResult"
+  },
+  {
+    "argType": "ScreenplayStartReviewArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.start_review",
+    "resultType": "ScreenplayReviewRoundDto"
+  },
+  {
+    "argType": "ScreenplayStartRevisionArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.start_revision",
+    "resultType": "ScreenplayDraftDto"
+  },
+  {
+    "argType": "ScreenplaySceneArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.story_reference",
+    "resultType": "ScreenplayStoryReference"
+  },
+  {
+    "argType": "ScreenplayTitlePagePreviewArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.title_page_preview",
+    "resultType": "InterchangePrintPreview"
+  },
+  {
+    "argType": "ScreenplayDraftArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.unlock_draft",
+    "resultType": "ScreenplayDraftDto"
+  },
+  {
+    "argType": "ScreenplayCustomElementArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.update_custom_element",
+    "resultType": "ScreenplayCustomElementDto"
+  },
+  {
+    "argType": "ScreenplayUpdateElementArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.update_element",
+    "resultType": "ScreenplayEditResult"
+  },
+  {
+    "argType": "ScreenplayUpdatePageSetupArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.update_page_setup",
+    "resultType": "ScreenplayPageSetup"
+  },
+  {
+    "argType": "ScreenplayUpdateReviewArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.update_review",
+    "resultType": "ScreenplayReviewRoundDto"
+  },
+  {
+    "argType": "ScreenplayUpdateRevisionArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.update_revision",
+    "resultType": "ScreenplayDraftDto"
+  },
+  {
+    "argType": "ScreenplayUpdateSceneArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.update_scene",
+    "resultType": "ScreenplayEditResult"
+  },
+  {
+    "argType": "ScreenplayTitlePageArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.update_title_page",
+    "resultType": "ScreenplayDto"
+  },
+  {
+    "argType": "ScreenplayViewStateArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Screenplay",
+    "name": "screenplay.view_state",
+    "resultType": "Value"
+  },
+  {
+    "argType": "SearchArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Search",
+    "name": "search.query",
+    "resultType": "Vec<SearchHit>"
+  },
+  {
+    "argType": "RebuildArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Search",
+    "name": "search.rebuild",
+    "resultType": "usize"
+  },
+  {
+    "argType": "ShotPanelArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Visual Planning",
+    "name": "shot.attach_panel",
+    "resultType": "ShotDto"
+  },
+  {
+    "argType": "CopyPlanningArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Visual Planning",
+    "name": "shot.copy_planning",
+    "resultType": "CopyPlanningResult"
+  },
+  {
+    "argType": "CreateShotArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Visual Planning",
+    "name": "shot.create",
+    "resultType": "ShotDto"
+  },
+  {
+    "argType": "ShotIdArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Visual Planning",
+    "name": "shot.create_panel",
+    "resultType": "PanelDto"
+  },
+  {
+    "argType": "DeleteShotsArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Visual Planning",
+    "name": "shot.delete",
+    "resultType": "()"
+  },
+  {
+    "argType": "ShotPanelArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Visual Planning",
+    "name": "shot.detach_panel",
+    "resultType": "ShotDto"
+  },
+  {
+    "argType": "ShotIdArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Visual Planning",
+    "name": "shot.duplicate",
+    "resultType": "ShotDto"
+  },
+  {
+    "argType": "ExportShotListArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Exports",
+    "name": "shot.export_list",
+    "resultType": "ExportResult"
+  },
+  {
+    "argType": "ShotIdArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Visual Planning",
+    "name": "shot.get",
+    "resultType": "ShotDto"
+  },
+  {
+    "argType": "ShotListArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Visual Planning",
+    "name": "shot.list",
+    "resultType": "Vec<ShotDto>"
+  },
+  {
+    "argType": "MoveShotArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Visual Planning",
+    "name": "shot.move",
+    "resultType": "ShotDto"
+  },
+  {
+    "argType": "ReorderShotArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Visual Planning",
+    "name": "shot.reorder",
+    "resultType": "()"
+  },
+  {
+    "argType": "ShotReferenceArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Visual Planning",
+    "name": "shot.set_reference_image",
+    "resultType": "ShotDto"
+  },
+  {
+    "argType": "UpdateShotArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Visual Planning",
+    "name": "shot.update",
+    "resultType": "ShotDto"
+  },
+  {
+    "argType": "ScheduleSidesArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Sides & Reports",
+    "name": "sides.create",
+    "resultType": "String"
+  },
+  {
+    "argType": "ScheduleDocIdArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Sides & Reports",
+    "name": "sides.delete",
+    "resultType": "()"
+  },
+  {
+    "argType": "ExportSidesArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Exports",
+    "name": "sides.export_pdf",
+    "resultType": "ExportResult"
+  },
+  {
+    "argType": "ScheduleDocIdArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Sides & Reports",
+    "name": "sides.get",
+    "resultType": "ScheduleSideDetail"
+  },
+  {
+    "argType": "ScheduleDocListArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Sides & Reports",
+    "name": "sides.list",
+    "resultType": "Vec<ScheduleSideRow>"
+  },
+  {
+    "argType": "ScheduleSidesArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Sides & Reports",
+    "name": "sides.preview",
+    "resultType": "ScheduleSidesContent"
+  },
+  {
+    "argType": "StoryAttachArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.add_attachment",
+    "resultType": "StoryAttachmentDto"
+  },
+  {
+    "argType": "StoryOrderArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.apply_order",
+    "resultType": "StoryOrderPreview"
+  },
+  {
+    "argType": "StoryAssignDayArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.assign_story_day",
+    "resultType": "()"
+  },
+  {
+    "argType": "StoryScopeArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.board",
+    "resultType": "StoryBoardState"
+  },
+  {
+    "argType": "StoryBuildPreviewArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.build_preview",
+    "resultType": "StoryBuildPreview"
+  },
+  {
+    "argType": "StoryBuildArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.build_screenplay",
+    "resultType": "StoryBuildResult"
+  },
+  {
+    "argType": "StoryIdArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.card",
+    "resultType": "StoryCardDetail"
+  },
+  {
+    "argType": "StoryCardDisplayArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.card_display",
+    "resultType": "StoryCardDisplayState"
+  },
+  {
+    "argType": "StoryIdArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.card_to_beat",
+    "resultType": "StoryCreated"
+  },
+  {
+    "argType": "StoryCharacterArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.character",
+    "resultType": "StoryCharacterDetail"
+  },
+  {
+    "argType": "StoryIdArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.character_usage",
+    "resultType": "StoryCharacterUsage"
+  },
+  {
+    "argType": "StoryCharacterListArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.characters",
+    "resultType": "Vec<StoryCharacterDto>"
+  },
+  {
+    "argType": "StoryIdArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.clear_character_image",
+    "resultType": "()"
+  },
+  {
+    "argType": "StoryIdArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.convert_beat",
+    "resultType": "StoryCreated"
+  },
+  {
+    "argType": "StoryCreateActArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.create_act",
+    "resultType": "StoryCreated"
+  },
+  {
+    "argType": "StoryCreateBeatArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.create_beat",
+    "resultType": "StoryCreated"
+  },
+  {
+    "argType": "StoryCreateCardArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.create_card",
+    "resultType": "StoryCreated"
+  },
+  {
+    "argType": "StoryCreateCharacterArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.create_character",
+    "resultType": "StoryCreated"
+  },
+  {
+    "argType": "StoryCreateEpisodeArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.create_episode",
+    "resultType": "StoryCreated"
+  },
+  {
+    "argType": "StoryCreateRelationshipArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.create_relationship",
+    "resultType": "StoryCreated"
+  },
+  {
+    "argType": "StoryCreateSeasonArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.create_season",
+    "resultType": "StoryCreated"
+  },
+  {
+    "argType": "StoryCreateSequenceArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.create_sequence",
+    "resultType": "StoryCreated"
+  },
+  {
+    "argType": "StoryDeleteActArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.delete_act",
+    "resultType": "()"
+  },
+  {
+    "argType": "StoryIdArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.delete_character",
+    "resultType": "()"
+  },
+  {
+    "argType": "StoryIdArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.delete_episode",
+    "resultType": "()"
+  },
+  {
+    "argType": "StoryItemsArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.delete_items",
+    "resultType": "()"
+  },
+  {
+    "argType": "StoryIdArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.delete_relationship",
+    "resultType": "()"
+  },
+  {
+    "argType": "StoryIdArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.delete_season",
+    "resultType": "()"
+  },
+  {
+    "argType": "StoryDeleteSequenceArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.delete_sequence",
+    "resultType": "()"
+  },
+  {
+    "argType": "StoryDuplicateEpisodeArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.duplicate_episode",
+    "resultType": "StoryCreated"
+  },
+  {
+    "argType": "StoryItemsArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.duplicate_items",
+    "resultType": "StoryCreatedMany"
+  },
+  {
+    "argType": "ExportStoryOutlineArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Exports",
+    "name": "story.export_board",
+    "resultType": "ExportResult"
+  },
+  {
+    "argType": "StoryCardLinkArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.link_character_card",
+    "resultType": "()"
+  },
+  {
+    "argType": "StoryMoveActArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.move_act",
+    "resultType": "()"
+  },
+  {
+    "argType": "StoryMoveEpisodeArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.move_episode",
+    "resultType": "()"
+  },
+  {
+    "argType": "StoryMoveArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.move_items",
+    "resultType": "()"
+  },
+  {
+    "argType": "StoryMoveSeasonArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.move_season",
+    "resultType": "()"
+  },
+  {
+    "argType": "StoryOrderArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.order_preview",
+    "resultType": "StoryOrderPreview"
+  },
+  {
+    "argType": "StoryItemsArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.park_items",
+    "resultType": "()"
+  },
+  {
+    "argType": "StoryCharacterListArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.relationships",
+    "resultType": "Vec<StoryRelationshipDto>"
+  },
+  {
+    "argType": "StoryIdArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.remove_attachment",
+    "resultType": "()"
+  },
+  {
+    "argType": "StoryItemsArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.restore_from_parking",
+    "resultType": "Vec<StoryPlacement>"
+  },
+  {
+    "argType": "StorySeriesArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.series",
+    "resultType": "StorySeriesDto"
+  },
+  {
+    "argType": "StorySetCardDisplayArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.set_card_display",
+    "resultType": "StoryCardDisplayState"
+  },
+  {
+    "argType": "StoryArchiveArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.set_character_archived",
+    "resultType": "()"
+  },
+  {
+    "argType": "StoryImageArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.set_character_image",
+    "resultType": "()"
+  },
+  {
+    "argType": "StoryCollapseArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.set_collapsed",
+    "resultType": "StoryViewState"
+  },
+  {
+    "argType": "StoryEpisodeChoiceArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.set_current_episode",
+    "resultType": "StoryViewState"
+  },
+  {
+    "argType": "StoryTimeNoteArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.set_time_note",
+    "resultType": "()"
+  },
+  {
+    "argType": "StoryTimelineArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.timeline",
+    "resultType": "StoryTimelineDto"
+  },
+  {
+    "argType": "StoryCardLinkArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.unlink_character_card",
+    "resultType": "()"
+  },
+  {
+    "argType": "StoryUpdateActArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.update_act",
+    "resultType": "()"
+  },
+  {
+    "argType": "StoryUpdateBeatArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.update_beat",
+    "resultType": "()"
+  },
+  {
+    "argType": "StoryUpdateCardArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.update_card",
+    "resultType": "()"
+  },
+  {
+    "argType": "StoryUpdateCharacterArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.update_character",
+    "resultType": "()"
+  },
+  {
+    "argType": "StoryUpdateEpisodeArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.update_episode",
+    "resultType": "()"
+  },
+  {
+    "argType": "StoryUpdateRelationshipArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.update_relationship",
+    "resultType": "()"
+  },
+  {
+    "argType": "StoryUpdateSeasonArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.update_season",
+    "resultType": "()"
+  },
+  {
+    "argType": "StoryUpdateSequenceArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.update_sequence",
+    "resultType": "()"
+  },
+  {
+    "argType": "StoryScopeArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.view_state",
+    "resultType": "StoryViewState"
+  },
+  {
+    "argType": "AddPanelArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Visual Planning",
+    "name": "storyboard.add_panel",
+    "resultType": "PanelDto"
+  },
+  {
+    "argType": "CreateStoryboardArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Visual Planning",
+    "name": "storyboard.create",
+    "resultType": "StoryboardSummary"
+  },
+  {
+    "argType": "ShotFromPanelArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Visual Planning",
+    "name": "storyboard.create_shot_from_panel",
+    "resultType": "ShotDto"
+  },
+  {
+    "argType": "StoryboardIdArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Visual Planning",
+    "name": "storyboard.delete",
+    "resultType": "()"
+  },
+  {
+    "argType": "DeletePanelsArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Visual Planning",
+    "name": "storyboard.delete_panels",
+    "resultType": "()"
+  },
+  {
+    "argType": "ExportStoryboardSheetArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Exports",
+    "name": "storyboard.export_sheet",
+    "resultType": "ExportResult"
+  },
+  {
+    "argType": "StoryboardIdArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Visual Planning",
+    "name": "storyboard.get",
+    "resultType": "StoryboardDto"
+  },
+  {
+    "argType": "LinkShotArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Visual Planning",
+    "name": "storyboard.link_shot",
+    "resultType": "PanelDto"
+  },
+  {
+    "argType": "StoryboardListArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Visual Planning",
+    "name": "storyboard.list",
+    "resultType": "Vec<StoryboardSummary>"
+  },
+  {
+    "argType": "MovePanelArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Visual Planning",
+    "name": "storyboard.move_panel",
+    "resultType": "PanelDto"
+  },
+  {
+    "argType": "RenameStoryboardArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Visual Planning",
+    "name": "storyboard.rename",
+    "resultType": "StoryboardSummary"
+  },
+  {
+    "argType": "ReorderPanelArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Visual Planning",
+    "name": "storyboard.reorder_panel",
+    "resultType": "()"
+  },
+  {
+    "argType": "SetPanelVisualArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Visual Planning",
+    "name": "storyboard.set_panel_visual",
+    "resultType": "PanelDto"
+  },
+  {
+    "argType": "SetStoryboardSceneArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Visual Planning",
+    "name": "storyboard.set_scene",
+    "resultType": "StoryboardSummary"
+  },
+  {
+    "argType": "UpdatePanelArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Visual Planning",
+    "name": "storyboard.update_panel",
+    "resultType": "PanelDto"
+  },
+  {
+    "argType": "CreateTaskArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Cast & Crew",
+    "name": "tasks.create",
+    "resultType": "TaskDto"
+  },
+  {
+    "argType": "TaskRefArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Cast & Crew",
+    "name": "tasks.delete",
+    "resultType": "()"
+  },
+  {
+    "argType": "TaskListArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Cast & Crew",
+    "name": "tasks.list",
+    "resultType": "Vec<TaskDto>"
+  },
+  {
+    "argType": "RelatableTypesArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Cast & Crew",
+    "name": "tasks.relatable_types",
+    "resultType": "Vec<RelatableType>"
+  },
+  {
+    "argType": "SetTaskDoneArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Cast & Crew",
+    "name": "tasks.set_done",
+    "resultType": "TaskDto"
+  },
+  {
+    "argType": "UpdateTaskArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Cast & Crew",
+    "name": "tasks.update",
+    "resultType": "TaskDto"
+  },
+  {
+    "argType": "TeamGateStatusArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Licence and trial",
+    "name": "team_gate.status",
+    "resultType": "TeamGateStatus"
+  },
+  {
+    "argType": "TeamGateUnlockArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Licence and trial",
+    "name": "team_gate.unlock",
+    "resultType": "TeamGateAnswer"
+  },
+  {
+    "argType": "ApplyTemplateArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Cast & Crew",
+    "name": "templates.apply",
+    "resultType": "AppliedTemplate"
+  },
+  {
+    "argType": "CopyTemplateArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Cast & Crew",
+    "name": "templates.copy",
+    "resultType": "TemplateDto"
+  },
+  {
+    "argType": "CreateTemplateArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Cast & Crew",
+    "name": "templates.create",
+    "resultType": "TemplateDto"
+  },
+  {
+    "argType": "TemplateRefArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Cast & Crew",
+    "name": "templates.delete",
+    "resultType": "()"
+  },
+  {
+    "argType": "TemplateRefArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Cast & Crew",
+    "name": "templates.get",
+    "resultType": "TemplateDto"
+  },
+  {
+    "argType": "TemplateListArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Cast & Crew",
+    "name": "templates.list",
+    "resultType": "TemplatesListing"
+  },
+  {
+    "argType": "UpdateTemplateArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Cast & Crew",
+    "name": "templates.update",
+    "resultType": "TemplateDto"
+  },
+  {
+    "argType": "StoreArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "History",
+    "name": "trash.list",
+    "resultType": "Vec<DeletedItemRow>"
+  },
+  {
+    "argType": "TrashItemArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "History",
+    "name": "trash.purge",
+    "resultType": "DeletedItemRow"
+  },
+  {
+    "argType": "TrashItemArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "History",
+    "name": "trash.restore",
+    "resultType": "DeletedItemRow"
+  },
+  {
+    "argType": "VaultAddFilesArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Idea Vault",
+    "name": "vault.add_files",
+    "resultType": "VaultAddFilesResult"
+  },
+  {
+    "argType": "VaultTagsArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Idea Vault",
+    "name": "vault.add_tags",
+    "resultType": "()"
+  },
+  {
+    "argType": "VaultMembershipArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Idea Vault",
+    "name": "vault.add_to_collection",
+    "resultType": "()"
+  },
+  {
+    "argType": "VaultCopyArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Idea Vault",
+    "name": "vault.copy_to_store",
+    "resultType": "VaultCopyResult"
+  },
+  {
+    "argType": "VaultCreateArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Idea Vault",
+    "name": "vault.create",
+    "resultType": "VaultItemDto"
+  },
+  {
+    "argType": "VaultCreateCollectionArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Idea Vault",
+    "name": "vault.create_collection",
+    "resultType": "VaultCollectionDto"
+  },
+  {
+    "argType": "VaultCreateFolderArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Idea Vault",
+    "name": "vault.create_folder",
+    "resultType": "VaultFolderDto"
+  },
+  {
+    "argType": "VaultIdsArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Idea Vault",
+    "name": "vault.delete",
+    "resultType": "()"
+  },
+  {
+    "argType": "VaultStoreIdArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Idea Vault",
+    "name": "vault.delete_collection",
+    "resultType": "()"
+  },
+  {
+    "argType": "VaultStoreIdArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Idea Vault",
+    "name": "vault.delete_folder",
+    "resultType": "()"
+  },
+  {
+    "argType": "VaultGetArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Idea Vault",
+    "name": "vault.get",
+    "resultType": "VaultItemDto"
+  },
+  {
+    "argType": "VaultIngestBytesArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Idea Vault",
+    "name": "vault.ingest_bytes",
+    "resultType": "VaultItemDto"
+  },
+  {
+    "argType": "VaultListArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Idea Vault",
+    "name": "vault.list",
+    "resultType": "Vec<VaultItemDto>"
+  },
+  {
+    "argType": "VaultMoveArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Idea Vault",
+    "name": "vault.move_to_folder",
+    "resultType": "()"
+  },
+  {
+    "argType": "VaultOverviewArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Idea Vault",
+    "name": "vault.overview",
+    "resultType": "VaultOverview"
+  },
+  {
+    "argType": "VaultTrashItemArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Idea Vault",
+    "name": "vault.purge",
+    "resultType": "DeletedItemRow"
+  },
+  {
+    "argType": "VaultRelinkArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Idea Vault",
+    "name": "vault.relink",
+    "resultType": "VaultItemDto"
+  },
+  {
+    "argType": "VaultMembershipArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Idea Vault",
+    "name": "vault.remove_from_collection",
+    "resultType": "()"
+  },
+  {
+    "argType": "VaultRemoveTagArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Idea Vault",
+    "name": "vault.remove_tag",
+    "resultType": "()"
+  },
+  {
+    "argType": "VaultRenameCollectionArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Idea Vault",
+    "name": "vault.rename_collection",
+    "resultType": "()"
+  },
+  {
+    "argType": "VaultRenameFolderArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Idea Vault",
+    "name": "vault.rename_folder",
+    "resultType": "()"
+  },
+  {
+    "argType": "VaultTrashItemArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Idea Vault",
+    "name": "vault.restore",
+    "resultType": "VaultRestoreResult"
+  },
+  {
+    "argType": "VaultSendToStoryArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Idea Vault",
+    "name": "vault.send_to_story",
+    "resultType": "VaultSendToStoryResult"
+  },
+  {
+    "argType": "VaultSetPinnedArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Idea Vault",
+    "name": "vault.set_pinned",
+    "resultType": "()"
+  },
+  {
+    "argType": "VaultSetResearchFlagArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Idea Vault",
+    "name": "vault.set_research_flag",
+    "resultType": "()"
+  },
+  {
+    "argType": "VaultStoryTargetsArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Idea Vault",
+    "name": "vault.story_targets",
+    "resultType": "VaultStoryTargets"
+  },
+  {
+    "argType": "VaultTrashArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Idea Vault",
+    "name": "vault.trash_list",
+    "resultType": "Vec<VaultTrashRow>"
+  },
+  {
+    "argType": "VaultUpdateArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Idea Vault",
+    "name": "vault.update",
+    "resultType": "VaultItemDto"
+  },
+  {
+    "argType": "MarkSceneReviewedArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Visual Planning",
+    "name": "visual.mark_scene_reviewed",
+    "resultType": "()"
+  },
+  {
+    "argType": "SceneCharactersArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Visual Planning",
+    "name": "visual.scene_characters",
+    "resultType": "Vec<String>"
+  },
+  {
+    "argType": "VisualScenesArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Visual Planning",
+    "name": "visual.scenes",
+    "resultType": "VisualScenes"
+  },
+  {
+    "argType": "VaultImagesArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Visual Planning",
+    "name": "visual.vault_images",
+    "resultType": "Vec<VaultImageRef>"
+  },
+  {
+    "argType": "WritingCheckSpellingArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Writing",
+    "name": "writing.check_spelling",
+    "resultType": "WritingSpellingCheck"
+  },
+  {
+    "argType": "WritingDictionaryArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Writing",
+    "name": "writing.dictionary",
+    "resultType": "WritingDictionary"
+  },
+  {
+    "argType": "WritingWordArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Writing",
+    "name": "writing.dictionary_add",
+    "resultType": "WritingDictionary"
+  },
+  {
+    "argType": "WritingWordArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Writing",
+    "name": "writing.dictionary_remove",
+    "resultType": "WritingDictionary"
+  },
+  {
+    "argType": "WritingNavigatorArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Writing",
+    "name": "writing.navigator_columns",
+    "resultType": "WritingNavigatorColumns"
+  },
+  {
+    "argType": "WritingProofingArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Writing",
+    "name": "writing.proofing",
+    "resultType": "WritingProofingState"
+  },
+  {
+    "argType": "WritingSetProofingArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Writing",
+    "name": "writing.set_proofing",
+    "resultType": "ProofingSettings"
+  },
+  {
+    "argType": "WritingWordArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Writing",
+    "name": "writing.spelling_suggestions",
+    "resultType": "WritingSpellingSuggestions"
+  },
+  {
+    "argType": "WritingSuggestionSourcesArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Writing",
+    "name": "writing.suggestion_sources",
+    "resultType": "WritingSuggestionSources"
+  }
+]

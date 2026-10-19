@@ -1,0 +1,55 @@
+[package]
+name = "openframe-ffi"
+description = "The Rust core as a Swift library for the SwiftUI Mac shell (UniFFI, ADR-0027)."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+authors.workspace = true
+
+[lib]
+name = "openframe_ffi"
+# staticlib: linked into the Mac app through the XCFramework. lib: Rust tests and the bindgen tool.
+crate-type = ["lib", "staticlib"]
+
+[[bin]]
+# Generates the Swift bindings from the compiled library (apps/macos/scripts/build-core.sh).
+# A development tool only; never linked into the app.
+name = "uniffi-bindgen"
+path = "src/bin/uniffi-bindgen.rs"
+required-features = ["bindgen"]
+
+[[bin]]
+# Prints the operation inventory as JSON for scripts/gen-swift-types.mjs. Development tool only.
+name = "op-inventory"
+path = "src/bin/op-inventory.rs"
+required-features = ["bindgen"]
+
+[features]
+bindgen = ["uniffi/cli"]
+
+[build-dependencies]
+# Internal builds only (ADR-0024): Argon2id hash of OPENFRAME_TEAM_PASSWORD with a random salt.
+argon2.workspace = true
+getrandom.workspace = true
+
+[dependencies]
+openframe-domain.workspace = true
+openframe-application.workspace = true
+openframe-security.workspace = true
+openframe-platform.workspace = true
+openframe-entitlement.workspace = true
+uniffi = "0.32.2"
+serde_json.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+tracing-appender.workspace = true
+parking_lot.workspace = true
+serde.workspace = true
+ed25519-dalek.workspace = true
+getrandom.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true
+base64.workspace = true

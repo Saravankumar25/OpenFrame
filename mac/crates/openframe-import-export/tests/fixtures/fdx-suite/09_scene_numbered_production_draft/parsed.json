@@ -1,0 +1,83 @@
+{
+  "scenes": [
+    {
+      "elements": [
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "action",
+          "revision": null,
+          "text": "Scene 1 happens here."
+        }
+      ],
+      "heading": "INT. HOUSE - DAY",
+      "number": "1"
+    },
+    {
+      "elements": [
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "action",
+          "revision": null,
+          "text": "Scene 2 happens here."
+        }
+      ],
+      "heading": "EXT. ROAD - DAY",
+      "number": "2"
+    },
+    {
+      "elements": [
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "action",
+          "revision": null,
+          "text": "Scene 2A happens here."
+        }
+      ],
+      "heading": "INT. CAR - DAY",
+      "number": "2A"
+    },
+    {
+      "elements": [
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "action",
+          "revision": null,
+          "text": "Scene 3 happens here."
+        }
+      ],
+      "heading": "EXT. TEMPLE - NIGHT",
+      "number": "3"
+    },
+    {
+      "elements": [
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "action",
+          "revision": null,
+          "text": "Scene 4 happens here."
+        }
+      ],
+      "heading": "INT. HOUSE - NIGHT",
+      "number": "4"
+    },
+    {
+      "elements": [],
+      "heading": "OMITTED",
+      "number": "5"
+    }
+  ],
+  "titlePage": [],
+  "warnings": [
+    {
+      "code": "empty_scene",
+      "level": "attention",
+      "message": "“OMITTED” has no content under its heading.",
+      "scene": 5
+    }
+  ]
+}

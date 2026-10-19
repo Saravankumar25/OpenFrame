@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<FinalDraft DocumentType="Script" Template="No" Version="5">
+<Content>
+<Paragraph Type="Scene Heading"><SceneProperties Length="1/8" Page="1" Title=""/><Text>INT. రైల్వే స్టేషన్ - NIGHT</Text></Paragraph>
+<Paragraph Type="Action"><Text>Rain on the platform. మీరా looks at अर्जुन, then at the clock.</Text></Paragraph>
+<Paragraph Type="Character"><Text>మీరా</Text></Paragraph>
+<Paragraph Type="Dialogue"><Text>మీరా రైలు స్టేషన్‌లో వేచి ఉంది.</Text></Paragraph>
+<Paragraph Type="Character"><Text>अर्जुन</Text></Paragraph>
+<Paragraph Type="Parenthetical"><Text>(धीरे से)</Text></Paragraph>
+<Paragraph Type="Dialogue"><Text>मीरा ने कहा, “क्षमा करें।”</Text></Paragraph>
+<Paragraph Type="Scene Heading"><SceneProperties Length="1/8" Page="1" Title=""/><Text>EXT. சென்னை சாலை - DAY</Text></Paragraph>
+<Paragraph Type="Action"><Text>நீ எங்கே போகிறாய்? അവന്‍ വന്നു.</Text></Paragraph>
+<Paragraph Type="Character"><Text>ರವಿ</Text></Paragraph>
+<Paragraph Type="Dialogue"><Text>ನಾನು ಬರುತ್ತೇನೆ.</Text></Paragraph>
+</Content>
+<TitlePage>
+<Content>
+<Paragraph Alignment="Center" Type="General"><Text>రైలు - The Night Train</Text></Paragraph>
+<Paragraph Alignment="Center" Type="General"><Text>నిషా వర్మ</Text></Paragraph>
+</Content>
+</TitlePage>
+</FinalDraft>

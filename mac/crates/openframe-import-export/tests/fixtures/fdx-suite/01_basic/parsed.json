@@ -1,0 +1,80 @@
+{
+  "scenes": [
+    {
+      "elements": [
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "action",
+          "revision": null,
+          "text": "A single lamp. ASHA (40s) watches the rails."
+        },
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "character",
+          "revision": null,
+          "text": "ASHA"
+        },
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "dialogue",
+          "revision": null,
+          "text": "The last train is late again."
+        }
+      ],
+      "heading": "INT. SIGNAL BOX - NIGHT",
+      "number": null
+    },
+    {
+      "elements": [
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "action",
+          "revision": null,
+          "text": "Rain on the tin roof."
+        },
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "character",
+          "revision": null,
+          "text": "RAVI"
+        },
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "dialogue",
+          "revision": null,
+          "text": "It always is."
+        },
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "transition",
+          "revision": null,
+          "text": "CUT TO:"
+        }
+      ],
+      "heading": "EXT. PLATFORM - CONTINUOUS",
+      "number": null
+    },
+    {
+      "elements": [
+        {
+          "custom": null,
+          "dual": false,
+          "kind": "action",
+          "revision": null,
+          "text": "Empty benches. A clock ticks."
+        }
+      ],
+      "heading": "INT. WAITING ROOM - NIGHT",
+      "number": null
+    }
+  ],
+  "titlePage": [],
+  "warnings": []
+}

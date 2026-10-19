@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- OpenFrame app icon (owner request 2026-10-07, Trial_Licensing_Mocks section 5): the film-frame
+       mark in the OpenFrame Default logo gradient on the dark sidebar colour. Regenerate the icon set by
+       running "npx tauri icon src-tauri/icons/source.svg" in apps/desktop (see docs/engineering/30-appearance-themes.md). -->
+  <rect width="1024" height="1024" rx="224" fill="#1a1d26"/>
+  <svg x="176" y="176" width="672" height="672" viewBox="0 0 24 24">
+    <defs>
+      <linearGradient id="ofg" gradientUnits="userSpaceOnUse" x1="2" y1="2" x2="22" y2="22">
+        <stop offset="0" stop-color="#ff5d6c"/>
+        <stop offset=".55" stop-color="#ff9a3d"/>
+        <stop offset="1" stop-color="#ffc23d"/>
+      </linearGradient>
+    </defs>
+    <g fill="none" stroke="url(#ofg)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="2" y="2" width="20" height="20" rx="2.2"/>
+      <line x1="7" y1="2" x2="7" y2="22"/>
+      <line x1="17" y1="2" x2="17" y2="22"/>
+      <line x1="2" y1="12" x2="22" y2="12"/>
+      <line x1="2" y1="7" x2="7" y2="7"/>
+      <line x1="2" y1="17" x2="7" y2="17"/>
+      <line x1="22" y1="7" x2="17" y2="7"/>
+      <line x1="22" y1="17" x2="17" y2="17"/>
+    </g>
+  </svg>
+</svg>

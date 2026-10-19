@@ -1,0 +1,110 @@
+M1.05 migration failure fixtures: evidence (2026-10-05, Windows 11, debug test profile)
+Commands (each run 3 times, all passed):
+  cargo test --locked -p openframe-persistence --lib
+  cargo test --locked --no-fail-fast -p openframe-application --test migration_failures -- --nocapture
+  RUSTFLAGS="-D warnings" cargo check --locked -p openframe-persistence --lib --target-dir target/check-release-cfg --config 'profile.dev.debug-assertions=false'  (clean: fault hook is a no-op in release)
+Interrupted migration: covered by forced_kill.rs m1_03_forced_kill_during_migration_leaves_a_consistent_database (M1.03 evidence).
+
+=== persistence run 1
+test migrate::tests::non_contiguous_list_rejected ... ok
+test rows::tests::place_at_reorders_without_changing_identity ... ok
+test migrate::tests::too_new_database_is_refused ... ok
+test rows::tests::update_respects_allow_list_and_revision ... ok
+test migrate::tests::upgrade_only_runs_pending ... ok
+test migrate::tests::fresh_then_up_to_date ... ok
+test migrate::tests::failed_migration_rolls_back_completely ... ok
+test tests::missing_database_without_create_fails_humanely ... ok
+test migrate::tests::simulated_full_drive_rolls_the_migration_back_at_every_point ... ok
+test undo::tests::untracked_writes_are_not_captured ... ok
+test undo::tests::untracked_tables_are_skipped ... ok
+test undo::tests::undo_refuses_to_overwrite_later_changes ... ok
+test undo::tests::merge_coalesces_and_drops_no_ops ... ok
+test undo::tests::insert_update_delete_round_trip ... ok
+test tests::pragmas_applied ... ok
+test tests::backup_produces_verified_copy ... ok
+test tests::backup_over_an_existing_copy_replaces_it ... ok
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+=== persistence run 2
+test migrate::tests::non_contiguous_list_rejected ... ok
+test rows::tests::update_respects_allow_list_and_revision ... ok
+test rows::tests::place_at_reorders_without_changing_identity ... ok
+test migrate::tests::upgrade_only_runs_pending ... ok
+test migrate::tests::too_new_database_is_refused ... ok
+test migrate::tests::failed_migration_rolls_back_completely ... ok
+test migrate::tests::fresh_then_up_to_date ... ok
+test tests::missing_database_without_create_fails_humanely ... ok
+test migrate::tests::simulated_full_drive_rolls_the_migration_back_at_every_point ... ok
+test undo::tests::untracked_tables_are_skipped ... ok
+test undo::tests::untracked_writes_are_not_captured ... ok
+test undo::tests::undo_refuses_to_overwrite_later_changes ... ok
+test undo::tests::insert_update_delete_round_trip ... ok
+test undo::tests::merge_coalesces_and_drops_no_ops ... ok
+test tests::pragmas_applied ... ok
+test tests::backup_produces_verified_copy ... ok
+test tests::backup_over_an_existing_copy_replaces_it ... ok
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+=== persistence run 3
+test rows::tests::update_respects_allow_list_and_revision ... ok
+test migrate::tests::failed_migration_rolls_back_completely ... ok
+test rows::tests::place_at_reorders_without_changing_identity ... ok
+test tests::missing_database_without_create_fails_humanely ... ok
+test migrate::tests::fresh_then_up_to_date ... ok
+test migrate::tests::too_new_database_is_refused ... ok
+test migrate::tests::upgrade_only_runs_pending ... ok
+test undo::tests::untracked_tables_are_skipped ... ok
+test migrate::tests::non_contiguous_list_rejected ... ok
+test migrate::tests::simulated_full_drive_rolls_the_migration_back_at_every_point ... ok
+test undo::tests::undo_refuses_to_overwrite_later_changes ... ok
+test undo::tests::untracked_writes_are_not_captured ... ok
+test undo::tests::merge_coalesces_and_drops_no_ops ... ok
+test undo::tests::insert_update_delete_round_trip ... ok
+test tests::pragmas_applied ... ok
+test tests::backup_produces_verified_copy ... ok
+test tests::backup_over_an_existing_copy_replaces_it ... ok
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+
+     Running tests\migration_failures.rs (target\debug\deps\migration_failures-ca943f1c759be8d4.exe)
+damaged page: refused with project_format.corrupt "This project's data file is damaged. OpenFrame will not modify it. Restore from a backup or recovery point."
+newer schema: refused with project_format.too_new "This project was saved by a newer version of OpenFrame. Update OpenFrame to open it — the project has not been changed."
+safety backup unwritable: refused with storage.write_failed "OpenFrame could not save this change yet. Your work is still open and has not been discarded."
+newer schema: refused with project_format.too_new "This project was saved by a newer version of OpenFrame. Update OpenFrame to open it — the project has not been changed."
+test m1_05_database_from_a_newer_openframe_is_refused_byte_for_byte_untouched ... ok
+read-only project.sqlite: refused with migration.failed "OpenFrame couldn't upgrade this project. The original project was left untouched and a safety backup was kept."
+disk full at Step(11): refused with migration.failed "OpenFrame couldn't upgrade this project. The original project was left untouched and a safety backup was kept."
+damaged header: refused with project_format.corrupt "This project's data file is damaged. OpenFrame will not modify it. Restore from a backup or recovery point."
+test m1_05_damaged_database_needing_migration_is_refused_before_any_backup_or_write ... ok
+test m1_05_safety_backup_that_cannot_be_written_stops_the_migration ... ok
+test m1_05_read_only_database_is_refused_untouched_and_opens_once_writable ... ok
+disk full at Commit: refused with storage.disk_full "The drive is full, so OpenFrame could not save this change. Free up some space and try again — your work is still open."
+test m1_05_full_drive_during_migration_leaves_the_database_untouched ... ok
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.96s
+     Running tests\migration_failures.rs (target\debug\deps\migration_failures-ca943f1c759be8d4.exe)
+damaged page: refused with project_format.corrupt "This project's data file is damaged. OpenFrame will not modify it. Restore from a backup or recovery point."
+safety backup unwritable: refused with storage.write_failed "OpenFrame could not save this change yet. Your work is still open and has not been discarded."
+newer schema: refused with project_format.too_new "This project was saved by a newer version of OpenFrame. Update OpenFrame to open it — the project has not been changed."
+disk full at Step(11): refused with migration.failed "OpenFrame couldn't upgrade this project. The original project was left untouched and a safety backup was kept."
+newer schema: refused with project_format.too_new "This project was saved by a newer version of OpenFrame. Update OpenFrame to open it — the project has not been changed."
+read-only project.sqlite: refused with migration.failed "OpenFrame couldn't upgrade this project. The original project was left untouched and a safety backup was kept."
+test m1_05_database_from_a_newer_openframe_is_refused_byte_for_byte_untouched ... ok
+damaged header: refused with project_format.corrupt "This project's data file is damaged. OpenFrame will not modify it. Restore from a backup or recovery point."
+test m1_05_damaged_database_needing_migration_is_refused_before_any_backup_or_write ... ok
+test m1_05_safety_backup_that_cannot_be_written_stops_the_migration ... ok
+test m1_05_read_only_database_is_refused_untouched_and_opens_once_writable ... ok
+disk full at Commit: refused with storage.disk_full "The drive is full, so OpenFrame could not save this change. Free up some space and try again — your work is still open."
+test m1_05_full_drive_during_migration_leaves_the_database_untouched ... ok
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.31s
+     Running tests\migration_failures.rs (target\debug\deps\migration_failures-ca943f1c759be8d4.exe)
+damaged page: refused with project_format.corrupt "This project's data file is damaged. OpenFrame will not modify it. Restore from a backup or recovery point."
+newer schema: refused with project_format.too_new "This project was saved by a newer version of OpenFrame. Update OpenFrame to open it — the project has not been changed."
+safety backup unwritable: refused with storage.write_failed "OpenFrame could not save this change yet. Your work is still open and has not been discarded."
+newer schema: refused with project_format.too_new "This project was saved by a newer version of OpenFrame. Update OpenFrame to open it — the project has not been changed."
+disk full at Step(11): refused with migration.failed "OpenFrame couldn't upgrade this project. The original project was left untouched and a safety backup was kept."
+read-only project.sqlite: refused with migration.failed "OpenFrame couldn't upgrade this project. The original project was left untouched and a safety backup was kept."
+test m1_05_database_from_a_newer_openframe_is_refused_byte_for_byte_untouched ... ok
+damaged header: refused with project_format.corrupt "This project's data file is damaged. OpenFrame will not modify it. Restore from a backup or recovery point."
+test m1_05_damaged_database_needing_migration_is_refused_before_any_backup_or_write ... ok
+test m1_05_read_only_database_is_refused_untouched_and_opens_once_writable ... ok
+test m1_05_safety_backup_that_cannot_be_written_stops_the_migration ... ok
+disk full at Commit: refused with storage.disk_full "The drive is full, so OpenFrame could not save this change. Free up some space and try again — your work is still open."
+test m1_05_full_drive_during_migration_leaves_the_database_untouched ... ok
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.37s
