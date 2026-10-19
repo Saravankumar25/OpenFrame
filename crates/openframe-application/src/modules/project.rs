@@ -1653,7 +1653,14 @@ fn set_last_location(core: &AppCore, actor: &Actor, args: SetLocationArgs) -> Ap
         .contains(&workspace)
         .then(|| format!("continue:{workspace}"));
     s.store.with_writer(|c| {
-        let now = now_ms();
+        // Strictly after the newest stored location, so two saves in the same millisecond still
+        // read back in the order they were made ("latest first" on Project Home).
+        let newest: Option<i64> = c.query_row(
+            "SELECT MAX(updated_at) FROM sys_view_state WHERE user_id=?1 AND (key='continue' OR key LIKE 'continue:%')",
+            params![actor.user_id],
+            |r| r.get(0),
+        )?;
+        let now = newest.map_or(now_ms(), |n| now_ms().max(n + 1));
         for key in std::iter::once("continue".to_string()).chain(per_workspace) {
             c.execute(
                 "INSERT INTO sys_view_state(user_id, key, value_json, updated_at) VALUES (?1, ?2, ?3, ?4)
