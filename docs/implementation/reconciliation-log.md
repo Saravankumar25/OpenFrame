@@ -19,6 +19,12 @@
 | Stale or conflicting statement | Where it was | Resolution |
 |---|---|---|
 | A Mac build check compiles the Tauri desktop shell and the StoreKit bridge on Apple silicon | `.github/workflows/mac.yml`, `docs/engineering/25-ci-cd.md`, `docs/engineering/37-platform-boundary.md` sections 7 and 8 | ADR-0027 decision 3. Workflow deleted and replaced by `mac-core.yml` (Mac core check). The notes moved to `docs/archive/2026-10-17-tauri-mac-shell-notes.md`; the source sections now carry a superseded pointer. The Swift StoreKit bridge source stays and moves to the SwiftUI app in Chapter 3 |
+## 2026-10-18: endgame session, last stretch
+
+| Stale or conflicting statement | Where it was | Resolution |
+|---|---|---|
+| 995bfac named as the final installer | gate G1, W9 README, handoff, progress log | Superseded by `OpenFrame-Studio-0.1.0-internal-028d8b6.exe` (SHA-256 `97b71221...d50f`), rebuilt after the uninstaller fix 6f9a280. The 995bfac and d271894 files must not be shared. Older entries that name 995bfac stay as history |
+| No rule for the end-to-end data folder and the debug build folder | `development-storage-policy.md` | Rule 11 added: delete `tests/e2e/.run` after each final run, prune `.build-cache/target/debug` when not developing |
 
 ## 2026-10-18: endgame session (W9)
 

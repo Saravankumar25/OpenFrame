@@ -101,6 +101,7 @@
 | Tests from a release-ready point of view | Every test that proves a feature runs against the release build and its budgets are gates there: the end-to-end suite on the release executable (open and gated), the performance budgets as hard checks, the AI harness on the release profile, the Rust suite once with `--release`; debug runs are only for working on a change | 2026-10-16 | this file; spec 97; DEVELOPMENT |
 | W1 to W3 on `main` | Merged locally (no push) before W4 started | 2026-10-16 | progress log |
 | W6 accepted on the bar; W4 to W8 on `main` | W6 accepted at English correct tool 96.7 percent and end state 88.8 percent; the remaining W6 items wait for a later request. `windows/w8-download` merged into `main` locally, no push | 2026-10-17 | [w6 evidence](../release/evidence/w6/README.md) |
+| W9 on `main` | `windows/w9-endgame` merged into `main` locally (fast-forward to d4acb83) after the W9 gate closed; no push | 2026-10-18 | Owner, in chat; [release gate](../release/windows-internal-release-gate.md) |
 
 ## 2. Still open
 

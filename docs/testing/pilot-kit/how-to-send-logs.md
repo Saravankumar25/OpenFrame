@@ -1,31 +1,33 @@
 # How to send logs
 
-Nothing is uploaded by the app. You save a file and send it to the owner yourself. Attach both files to a bug report when
-you can.
+The app never uploads anything. You save a file and send it to the owner yourself. Attach both files to your bug report
+when you can.
 
-## Diagnostics
+## Diagnostics file
 
 1. Open Settings, then **Project settings**. Scroll to the **Support** card.
 2. Click **Export Diagnostics...**
-3. The window shows every file the bundle will contain. You can read them before saving.
-4. Choose where to save the ZIP file. Save it outside your project folder.
+3. The window lists every file inside. You can read them before you save.
+4. Choose where to save the file. Pick your Desktop, not your project folder.
 
-What it holds: app and Windows version, computer type, settings versions, AI state, and a trimmed copy of the recent log.
+It holds: the app and Windows version, the type of computer, the AI state and a short copy of the recent log.
 
-What it does not hold: your script or any project text, project names, file paths, your user name, email addresses, keys or
-tokens. Free text in the log is replaced by "[message omitted]".
+It does not hold: your script, project text, project names, file paths, your user name, email addresses or keys.
 
 ## AI report
 
 1. Open Settings, then **Offline AI**. Find the **AI health** card.
 2. Click **Export AI report**.
-3. Choose where to save the JSON file.
+3. Choose where to save the file.
 
-What it holds: numbers only, such as how many requests and how long they took. No questions, answers or project text.
+It holds numbers only, such as how many requests were made and how long they took. It holds no questions, answers or
+project text.
 
 ## Send them
 
-Send the ZIP and the JSON file to the owner directly (email or message). No automatic upload exists. If you do not want to
-send a file, tell the owner what you saw and describe the problem in words.
+Attach the file or files to your message to the owner. If you would rather not send a file, describe what you saw in
+words.
 
-Logs live in `%LOCALAPPDATA%\OpenFrame\logs` if the owner asks you to look. Do not edit or delete them.
+## For the owner
+
+The app keeps its logs in `%LOCALAPPDATA%\OpenFrame\logs`. Ask a tester to look there only if the export buttons fail.

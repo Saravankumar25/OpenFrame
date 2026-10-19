@@ -109,3 +109,4 @@ Why the folders grew, from the files themselves (no deletion was done to find ou
    start and end of every session with `du -sh .build-cache .claude/worktrees`.
 10. **Reproducible, not valuable:** `target`, `node_modules`, `.build-cache`, `graphify-out`, packages, caches, logs. **Valuable:**
     source, commits, branches, databases, user data, `.ai-assets` (1.1 GB, not in git, needed to build), evidence files.
+11. **After each final run**, delete `tests/e2e/.run`. Every end-to-end data folder hard-links the 1.2 GB model set, so Explorer counts it many times and shows far more than the real size (347 GB shown against about 110 GB real on 2026-10-18). Prune `.build-cache/target/debug` (about 79 GB) when you are not developing.
