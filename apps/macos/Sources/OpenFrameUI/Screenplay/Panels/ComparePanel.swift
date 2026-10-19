@@ -153,7 +153,7 @@ struct CompareView: View {
     var body: some View {
         VStack(spacing: 0) {
             toolbar
-                .padding(12)
+                .padding(PageSpacing.medium)
             Divider()
             content
         }

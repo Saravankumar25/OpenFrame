@@ -193,10 +193,10 @@ struct DraftsSheet: View {
     @State private var dialog: DraftDialog?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: PageSpacing.medium) {
+            PanelTitle("Drafts")
             HStack {
-                Text("Drafts").font(.title3.weight(.semibold)).accessibilityAddTraits(.isHeader)
-                Spacer()
+                Spacer(minLength: 0)
                 Button("Compare\u{2026}") { state.sheet = .compare(a: nil, b: nil) }
                     .disabled(model.drafts.count < 2)
                     .accessibilityIdentifier("drafts-compare")
@@ -204,10 +204,13 @@ struct DraftsSheet: View {
                     Button("New Draft\u{2026}") { dialog = .newFrom(source) }
                         .accessibilityIdentifier("drafts-new")
                 }
+                Spacer(minLength: 0)
             }
             if let current = model.current, current.lineage.count > 1 {
                 Text(current.lineage.map(\.name).joined(separator: " \u{2192} "))
                     .font(.callout).foregroundStyle(theme["muted"])
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity)
                     .accessibilityLabel("Draft lineage: \(current.lineage.map(\.name).joined(separator: ", then "))")
             }
             List {
@@ -227,7 +230,7 @@ struct DraftsSheet: View {
                 Button("Done") { state.sheet = nil }.keyboardShortcut(.defaultAction)
             }
         }
-        .padding(22)
+        .padding(PageSpacing.large)
         .frame(width: 600, height: 620)
         .background(theme["panel"])
         .task {

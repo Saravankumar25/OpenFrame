@@ -124,8 +124,8 @@ struct RevisionsSheet: View {
     private static let tables = ["screenplay_draft", "screenplay_scene", "screenplay_element", "screenplay_revision", "screenplay_lock_baseline"]
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Revisions").font(.title3.weight(.semibold)).accessibilityAddTraits(.isHeader)
+        VStack(alignment: .leading, spacing: PageSpacing.medium) {
+            PanelTitle("Revisions")
             ScrollView {
                 VStack(alignment: .leading, spacing: 10) {
                     Text("Revision history").font(.headline).accessibilityAddTraits(.isHeader)
@@ -169,7 +169,7 @@ struct RevisionsSheet: View {
                     .accessibilityIdentifier("revisions-close")
             }
         }
-        .padding(22)
+        .padding(PageSpacing.large)
         .frame(width: 600, height: 560)
         .background(theme["panel"])
         .task(id: "\(workspace.draft?.id ?? "-")-\(app.changes.key(Self.tables))") {
@@ -340,8 +340,8 @@ struct PageViewSheet: View {
     @State private var model = PageViewModel()
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("Page view").font(.title3.weight(.semibold)).accessibilityAddTraits(.isHeader)
+        VStack(alignment: .leading, spacing: PageSpacing.medium) {
+            PanelTitle("Page view")
             HStack(spacing: 12) {
                 Toggle("Show revision marks", isOn: Binding(get: { model.marks }, set: { model.marks = $0; Task { await model.load() } }))
                     .toggleStyle(.checkbox)
@@ -381,7 +381,7 @@ struct PageViewSheet: View {
                     .accessibilityIdentifier("page-view-close")
             }
         }
-        .padding(22)
+        .padding(PageSpacing.large)
         .frame(width: 440, height: 640)
         .background(theme["panel"])
         .task {

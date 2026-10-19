@@ -211,20 +211,50 @@ struct PanelSheetFrame<Content: View, Footer: View>: View {
     @Environment(\.ofTheme) private var theme
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: PageSpacing.medium) {
+            VStack(spacing: PageSpacing.tight) {
                 Text(title).font(.title3.weight(.semibold)).accessibilityAddTraits(.isHeader)
-                if let sub { Text(sub).font(.callout).foregroundStyle(theme["muted"]).fixedSize(horizontal: false, vertical: true) }
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                if let sub {
+                    Text(sub).font(.callout).foregroundStyle(theme["muted"])
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
             }
+            .frame(maxWidth: .infinity)
             content()
-            HStack(spacing: 8) {
+            HStack(spacing: PageSpacing.small) {
                 Spacer(minLength: 0)
                 footer()
             }
         }
-        .padding(22)
+        .padding(PageSpacing.large)
         .frame(width: width)
         .background(theme["panel"])
+    }
+}
+
+/// The centred title of a dialog (and its optional sub line).
+struct PanelTitle: View {
+    let title: String
+    var sub: String?
+    @Environment(\.ofTheme) private var theme
+
+    init(_ title: String, sub: String? = nil) { self.title = title; self.sub = sub }
+
+    var body: some View {
+        VStack(spacing: PageSpacing.tight) {
+            Text(title).font(.title3.weight(.semibold)).accessibilityAddTraits(.isHeader)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+            if let sub {
+                Text(sub).font(.callout).foregroundStyle(theme["muted"])
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .frame(maxWidth: .infinity)
     }
 }
 

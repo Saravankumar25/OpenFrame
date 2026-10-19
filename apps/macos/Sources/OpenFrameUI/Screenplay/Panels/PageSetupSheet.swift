@@ -152,11 +152,10 @@ struct PageSetupSheet: View {
     @State private var page = Page.page
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text(page == .page ? "Page setup" : "Title page").font(.title3.weight(.semibold)).accessibilityAddTraits(.isHeader)
-            Text(page == .page ? "Saved with this screenplay. The page view, print preview and PDF all use it."
-                              : "Shown on the title page when you export or print.")
-                .font(.callout).foregroundStyle(theme["muted"])
+        VStack(alignment: .leading, spacing: PageSpacing.medium) {
+            PanelTitle(page == .page ? "Page setup" : "Title page",
+                       sub: page == .page ? "Saved with this screenplay. The page view, print preview and PDF all use it."
+                                          : "Shown on the title page when you export or print.")
             Picker("Section", selection: $page) {
                 ForEach(Page.allCases) { Text($0.rawValue).tag($0) }
             }
@@ -179,7 +178,7 @@ struct PageSetupSheet: View {
                 .accessibilityIdentifier("page-setup-save")
             }
         }
-        .padding(22)
+        .padding(PageSpacing.large)
         .frame(width: page == .page ? 560 : 860, height: 640)
         .background(theme["panel"])
         .task {

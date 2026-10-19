@@ -140,8 +140,8 @@ struct ReviewSheet: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            PanelTitle("Review").padding(.top, PageSpacing.medium)
             HStack(spacing: 10) {
-                Text("Review").font(.title3.weight(.semibold)).accessibilityAddTraits(.isHeader)
                 if model.rounds.count > 1 {
                     Picker("Review round", selection: Binding(get: { model.roundId ?? "" }, set: { id in Task { await model.select(id) } })) {
                         ForEach(model.rounds, id: \.id) { Text($0.name + ($0.status == "Complete" ? " (complete)" : "")).tag($0.id) }
@@ -162,7 +162,7 @@ struct ReviewSheet: View {
                 }
                 Button("Done") { state.sheet = nil }.keyboardShortcut(.cancelAction)
             }
-            .padding(12)
+            .padding(PageSpacing.medium)
             Divider()
             if let r = model.round { roundBody(r) } else if model.loading { ProgressView().controlSize(.small).frame(maxWidth: .infinity, maxHeight: .infinity) } else { empty }
         }

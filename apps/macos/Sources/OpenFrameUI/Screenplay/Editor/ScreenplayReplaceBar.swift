@@ -56,8 +56,8 @@ struct ScreenplayReplaceBar: View {
             .accessibilityLabel("Close replace")
             .accessibilityIdentifier("replace-close")
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
+        .padding(.horizontal, PageSpacing.medium)
+        .padding(.vertical, PageSpacing.small)
         .background(theme["panel"])
         .overlay(alignment: .bottom) { Divider() }
         .onAppear { focusFind = true }

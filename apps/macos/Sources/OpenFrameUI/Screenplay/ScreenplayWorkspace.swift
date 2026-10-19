@@ -166,12 +166,27 @@ final class ScreenplayWorkspaceModel {
     /// Show or hide one navigator column and keep the choice (other keys of the record stay).
     func toggleNavColumn(_ column: NavigatorColumn) {
         navColumns = NavigatorColumn.toggled(navColumns, column)
-        let columns = navColumns
         Task { await loadNavigatorColumns() }
+        saveLayout(columns: true, mode: false)
+    }
+
+    /// The last save of the layout record. Saves run one after the other: two quick changes
+    /// each read the record, change their own key and write it back, and run in parallel the
+    /// later read could miss the earlier write and undo it.
+    private var layoutSave: Task<Void, Never>?
+
+    /// Save the chosen keys as they are when the save runs (the newest values win); the other
+    /// keys of the record stay.
+    private func saveLayout(columns: Bool, mode saveMode: Bool) {
         guard let core = app?.core else { return }
-        Task {
-            let current = try? await core.screenplayViewState(ScreenplayViewStateArgs())
-            _ = try? await core.screenplaySetViewState(ScreenplaySetViewStateArgs(state: NavigatorColumn.merged(current, columns: columns)))
+        let before = layoutSave
+        layoutSave = Task { [weak self] in
+            await before?.value
+            guard let self else { return }
+            var state = try? await core.screenplayViewState(ScreenplayViewStateArgs())
+            if saveMode { state = ScreenplayMode.merged(state, mode: self.mode) }
+            if columns { state = NavigatorColumn.merged(state, columns: self.navColumns) }
+            _ = try? await core.screenplaySetViewState(ScreenplaySetViewStateArgs(state: state ?? .object([:])))
         }
     }
 
@@ -190,11 +205,7 @@ final class ScreenplayWorkspaceModel {
     func setMode(_ new: ScreenplayMode) {
         guard new != mode else { return }
         mode = new
-        guard let core = app?.core else { return }
-        Task {
-            let current = try? await core.screenplayViewState(ScreenplayViewStateArgs())
-            _ = try? await core.screenplaySetViewState(ScreenplaySetViewStateArgs(state: ScreenplayMode.merged(current, mode: new)))
-        }
+        saveLayout(columns: false, mode: true)
     }
 
     /// Say what just happened. The line also shows as a toast, which stays reachable when the
@@ -586,10 +597,10 @@ struct ScreenplayWorkspace: View {
                 .font(.caption).foregroundStyle(.secondary)
                 .accessibilityIdentifier("focus-save-status")
         }
-        .padding(.horizontal, 10).padding(.vertical, 6)
+        .padding(.horizontal, PageSpacing.small + 4).padding(.vertical, PageSpacing.small - 2)
         .background(theme["panel"].opacity(0.95), in: RoundedRectangle(cornerRadius: 10))
         .overlay(RoundedRectangle(cornerRadius: 10).stroke(theme["line"]))
-        .padding(12)
+        .padding(PageSpacing.medium)
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Focus Mode")
         .accessibilityIdentifier("focus-bar")
@@ -731,7 +742,7 @@ struct SceneNavigator: View {
                 .accessibilityLabel("Navigator columns")
                 .accessibilityIdentifier("navigator-columns")
             }
-            .padding(.horizontal, 12).padding(.vertical, 8)
+            .padding(.horizontal, PageSpacing.medium).padding(.vertical, PageSpacing.small)
         List {
             Section {
                 if !shown.isEmpty {
