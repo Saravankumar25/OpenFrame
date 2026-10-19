@@ -237,7 +237,11 @@ fn a_project_created_and_closed_at_once_is_on_home_straight_away() {
     );
     let id = env.core.project().unwrap().project_id();
     env.ok("project.close", json!({}));
-    assert_eq!(recent_ids(&env), vec![id.clone()], "listed right after close");
+    assert_eq!(
+        recent_ids(&env),
+        vec![id.clone()],
+        "listed right after close"
+    );
     // And a second quick round trip keeps both, newest first.
     env.ok(
         "project.create",

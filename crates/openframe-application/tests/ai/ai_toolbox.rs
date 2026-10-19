@@ -1988,7 +1988,12 @@ fn a_production_question_about_locations_reaches_the_script_locations() {
     let all = format!(
         "{} {}",
         found.content,
-        found.items.iter().map(|i| i.label.clone()).collect::<Vec<_>>().join(" ")
+        found
+            .items
+            .iter()
+            .map(|i| i.label.clone())
+            .collect::<Vec<_>>()
+            .join(" ")
     );
     assert!(
         !all.contains("Nothing in this project mentions"),
