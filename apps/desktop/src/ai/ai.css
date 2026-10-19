@@ -32,3 +32,7 @@
 .ai .ai-details{margin-top:6px}
 .ai .ai-details summary{cursor:pointer;width:max-content}
 .ai .ai-details[open] summary{margin-bottom:4px}
+/* Resize handle on the panel's left edge (UX brief 4.2). */
+.ai{position:relative}
+.ai .ai-resize{position:absolute;left:-3px;top:0;bottom:0;width:6px;cursor:col-resize;z-index:5}
+.ai .ai-resize:hover,.ai .ai-resize:focus-visible{background:var(--accent-line);outline:none}
