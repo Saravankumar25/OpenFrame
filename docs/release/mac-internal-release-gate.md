@@ -51,6 +51,10 @@ image is therefore authorised; signing, notarisation and the stores are Chapter 
 
 ## Known limits of this build
 
+A re-run of only the failed cases (owner instruction 2026-10-19), 2 runners at a time on the same app, got through 12 of
+the 21 non-environment failures before it was stopped: 4 now pass (window fit default, maximised and resize stress; the
+altered-engine check), 8 still fail (listed below); 9 were not re-run (`release-out/e2e/rerun-failed-5355dc7/`).
+
 Recorded from the final run on the 5355dc7 image (`release-out/e2e/final-5355dc7/results.tsv`), by class:
 
 - **This Mac cannot do it (locked screen, no person at the keyboard):** 14 Tab-walk keyboard checks (spec 96), 3
