@@ -137,6 +137,165 @@ pub(crate) fn may_be_product_question(text: &str) -> bool {
 }
 
 /// The reply to small talk, or None when the text is a real request.
+static SCENE_N: LazyLock<Regex> = LazyLock::new(|| re(r#"(?i)\bscene\s+(?P<n>\d{1,4})\b"#));
+
+/// Words that make a request a change, not a question: those go to the proposal tools.
+static CHANGE_WORDS: LazyLock<Regex> = LazyLock::new(|| {
+    re(
+        r#"(?i)\b(?:create|add|delete|remove|move|rename|change|edit|write|rewrite|make|insert|schedule|reorder|replace|update|mark|split|merge|omit|restore|open|show|go\s+to|jump)\b"#,
+    )
+});
+
+/// A question about one numbered scene, answered from that scene's own text (AI context brief,
+/// questions 11 to 19): summary, speakers, speaker count, setting, time, first or last line,
+/// first dialogue, or whether it mentions something. Classified by meaning words, not by one
+/// fixed phrasing, so "Summarize Scene 3", "what happens in scene 3?" and "scene 3 recap" agree.
+fn scene_intent(text: &str) -> Option<StepCall> {
+    let n: u32 = SCENE_N.captures(text)?.name("n")?.as_str().parse().ok().filter(|n| *n >= 1)?;
+    if SCENE_N.find_iter(text).count() > 1 || text.chars().count() > 140 {
+        return None;
+    }
+    let l = text.to_lowercase();
+    if let Some(i) = l.find("mention") {
+        let rest = l[i..].split_once(' ').map(|(_, r)| r).unwrap_or("");
+        let what = rest
+            .trim()
+            .trim_start_matches("a ")
+            .trim_start_matches("an ")
+            .trim_start_matches("the ")
+            .trim_end_matches(['?', '.', '!'])
+            .trim();
+        return (!what.is_empty() && !what.contains("scene"))
+            .then(|| call("scene_fact", json!({ "scene": n, "fact": "mentions", "text": what })));
+    }
+    // "Open Scene 3" or "Move Scene 3 to Day 2" are not questions about the scene's text.
+    if CHANGE_WORDS.is_match(&l) {
+        return None;
+    }
+    let has = |w: &[&str]| w.iter().any(|x| l.contains(x));
+    let fact = if has(&["summar", "what happens", "what happened", "recap", "describe", "tell me about", "about scene", "explain scene"]) {
+        "summary"
+    } else if has(&["how many"]) && has(&["character", "people", "speaker", "speak", "talk"]) {
+        "speaker_count"
+    } else if has(&["who"]) && has(&["speak", "talk", "dialogue", "in scene", "in it"]) {
+        "speakers"
+    } else if has(&["last line", "final line", "ends with", "last thing"]) {
+        "last_line"
+    } else if has(&["first dialogue", "first says", "first spoken", "first words"]) {
+        "first_dialogue"
+    } else if has(&["first line", "opens with", "begins with", "starts with"]) {
+        "first_line"
+    } else if has(&["where", "location", "take place", "set in", "set at"]) {
+        "setting"
+    } else if has(&["day or night", "night or day", "time of day", "what time", "is it night", "is it day", " night?", " day?"]) {
+        "time"
+    } else {
+        return None;
+    };
+    Some(call("scene_fact", json!({ "scene": n, "fact": fact })))
+}
+
+static DIALOGUE_COUNT: LazyLock<Regex> = LazyLock::new(|| {
+    re(
+        r#"(?i)^\s*how\s+many\s+(?P<what>dialogues?|dialogue\s+blocks?|lines|times|speeches|words)\s+does\s+(?P<c>[\p{L}][\p{L}'’ .-]{0,40}?)\s+(?:have|speak|say|get|talk)(?:\s+in\s+(?:the\s+)?(?:script|screenplay|draft|film|movie|total))?(?:\s+in\s+scene\s+(?P<n>\d{1,4}))?\s*[?.!]*\s*$"#,
+    )
+});
+static DIALOGUE_SCENES: LazyLock<Regex> = LazyLock::new(|| {
+    re(
+        r#"(?i)^\s*(?:(?:which|what|in\s+which)\s+scenes\s+does\s+(?P<a>[\p{L}][\p{L}'’ .-]{0,40}?)\s+(?:speak|talk|have\s+dialogue)(?:\s+in)?|(?:where|when|in\s+which\s+scene)\s+does\s+(?P<b>[\p{L}][\p{L}'’ .-]{0,40}?)\s+first\s+(?:speak|talk))\s*[?.!]*\s*$"#,
+    )
+});
+static DIALOGUE_MOST: LazyLock<Regex> = LazyLock::new(|| {
+    re(
+        r#"(?i)^\s*who\s+(?:has\s+the\s+most\s+(?:dialogue|lines|dialogues)|speaks\s+the\s+most|talks\s+the\s+most|has\s+most\s+dialogue)(?:\s+in\s+scene\s+(?P<n>\d{1,4}))?\s*[?.!]*\s*$"#,
+    )
+});
+static DIALOGUE_FIRST: LazyLock<Regex> = LazyLock::new(|| {
+    re(r#"(?i)^\s*who\s+(?:speaks|talks)\s+first(?:\s+in\s+(?:the\s+)?(?:script|screenplay|film|movie))?\s*[?.!]*\s*$"#)
+});
+
+/// Dialogue questions (AI context brief, questions 21 to 27): counted from the screenplay's
+/// dialogue blocks, never from how often a name appears in the text.
+fn dialogue_intent(text: &str) -> Option<StepCall> {
+    if let Some(c) = DIALOGUE_COUNT.captures(text) {
+        let name = character_name(c.name("c")?.as_str())?;
+        let fact = if c.name("what")?.as_str().eq_ignore_ascii_case("words") { "words" } else { "blocks" };
+        let mut args = json!({ "character": name, "fact": fact });
+        if let Some(n) = c.name("n").and_then(|n| n.as_str().parse::<u32>().ok()) {
+            args["scene"] = json!(n);
+        }
+        return Some(call("dialogue_fact", args));
+    }
+    if let Some(c) = DIALOGUE_SCENES.captures(text) {
+        let (raw, fact) = match (c.name("a"), c.name("b")) {
+            (Some(a), _) => (a.as_str(), "scenes"),
+            (_, Some(b)) => (b.as_str(), "first_scene"),
+            _ => return None,
+        };
+        let name = character_name(raw)?;
+        return Some(call("dialogue_fact", json!({ "character": name, "fact": fact })));
+    }
+    if let Some(c) = DIALOGUE_MOST.captures(text) {
+        let mut args = json!({ "fact": "most" });
+        if let Some(n) = c.name("n").and_then(|n| n.as_str().parse::<u32>().ok()) {
+            args["scene"] = json!(n);
+        }
+        return Some(call("dialogue_fact", args));
+    }
+    DIALOGUE_FIRST
+        .is_match(text)
+        .then(|| call("dialogue_fact", json!({ "fact": "first_speaker" })))
+}
+
+static FOLLOW_SCENE: LazyLock<Regex> = LazyLock::new(|| {
+    re(r#"(?i)^\s*(?:and|what\s+about|how\s+about|same\s+for|now)\s+scene\s+(?P<n>\d{1,4})\s*[?.!]*\s*$"#)
+});
+static FOLLOW_NAME: LazyLock<Regex> = LazyLock::new(|| {
+    re(r#"(?i)^\s*(?:and|what\s+about|how\s+about|same\s+for|now)\s+(?P<c>[\p{L}][\p{L}'’.-]{0,30})\s*[?.!]*\s*$"#)
+});
+static JUST_NUMBER: LazyLock<Regex> = LazyLock::new(|| {
+    re(r#"(?i)^\s*(?:(?:just|only)\s+(?:give\s+me\s+|tell\s+me\s+)?(?:the\s+)?(?:number|count|answer)|(?:the\s+)?number\s+only)(?:\s*,?\s*(?:please|no\s+explanation))?\s*[?.!]*\s*$"#)
+});
+
+/// A short follow-up rewritten into a full question from the previous one (AI context brief,
+/// questions 91 and 92): "What about Scene 4?" after "Who speaks in Scene 3?" asks who speaks in
+/// Scene 4; "And Ravi?" after "How many dialogue blocks does Meera have?" asks about Ravi.
+pub(crate) fn follow_up(text: &str, previous: Option<&str>) -> Option<String> {
+    let prev = previous?;
+    if let Some(c) = FOLLOW_SCENE.captures(text) {
+        let n = c.name("n")?.as_str();
+        let m = SCENE_N.captures(prev)?.name("n")?;
+        return Some(format!("{}{}{}", &prev[..m.start()], n, &prev[m.end()..]));
+    }
+    let c = FOLLOW_NAME.captures(text)?;
+    let new = c.name("c")?.as_str();
+    if NOT_A_CHARACTER.contains(&new.to_lowercase().as_str()) {
+        return None;
+    }
+    // The name the previous question was about, from the same patterns that route it.
+    let old = DIALOGUE_COUNT
+        .captures(prev)
+        .and_then(|c| c.name("c"))
+        .or_else(|| DIALOGUE_SCENES.captures(prev).and_then(|c| c.name("a").or(c.name("b"))))
+        .or_else(|| DESCRIBE_CHARACTER.captures(prev).and_then(|c| ["a", "b", "c", "d", "e"].iter().find_map(|g| c.name(g))))?;
+    Some(format!("{}{}{}", &prev[..old.start()], new, &prev[old.end()..]))
+}
+
+/// "Just give me the number": the first number of the previous answer, said on its own.
+pub(crate) fn just_the_number(text: &str, previous_answer: Option<&str>) -> Option<String> {
+    if !JUST_NUMBER.is_match(text) {
+        return None;
+    }
+    // The counted number, not a number that is part of a name ("Draft 1", "Scene 3", "Day 2").
+    const NAMED: &[&str] = &["draft", "scene", "scenes", "act", "day", "episode", "sequence", "page", "shot"];
+    let words: Vec<&str> = previous_answer?.split_whitespace().collect();
+    words.iter().enumerate().find_map(|(i, w)| {
+        let n = w.trim_matches(|c: char| !c.is_ascii_digit());
+        let named = i > 0 && NAMED.contains(&words[i - 1].to_lowercase().trim_matches(|c: char| !c.is_alphanumeric()));
+        (!n.is_empty() && n.chars().all(|c| c.is_ascii_digit()) && !named).then(|| format!("{n}."))
+    })
+}
+
 pub(crate) fn small_talk(text: &str) -> Option<&'static str> {
     let c = SMALL_TALK.captures(text)?;
     if c.name("t").is_some() {
@@ -630,6 +789,12 @@ fn recipe(text: &str) -> Option<StepCall> {
     if cap(&WHO_SPEAKS).is_none() && (cap(&COUNT_CHARACTERS).is_some() || COUNT_CHARACTERS_INDIC.is_match(text)) {
         return Some(call("count_characters", json!({})));
     }
+    if let Some(c) = dialogue_intent(text) {
+        return Some(c);
+    }
+    if let Some(c) = scene_intent(text) {
+        return Some(c);
+    }
     if let Some(c) = cap(&DESCRIBE_CHARACTER) {
         let raw = ["a", "b", "c", "d", "e"].iter().find_map(|g| c.name(g)).map(|m| m.as_str()).unwrap_or("");
         if let Some(name) = character_name(raw) {
@@ -814,6 +979,61 @@ mod tests {
         ] {
             assert!(!may_be_product_question(q), "{q}");
         }
+    }
+
+    #[test]
+    fn scene_questions_route_to_the_scene_fact_tool_by_meaning() {
+        for (q, fact) in [
+            ("Summarize Scene 3.", "summary"),
+            ("what happens in scene 3?", "summary"),
+            ("Tell me about scene 3", "summary"),
+            ("Who speaks in Scene 3?", "speakers"),
+            ("How many characters are in Scene 3?", "speaker_count"),
+            ("How many speaking characters in Scene 3?", "speaker_count"),
+            ("Where is Scene 3 set?", "setting"),
+            ("Where does scene 3 take place?", "setting"),
+            ("Is Scene 3 day or night?", "time"),
+            ("What is the last line in Scene 3?", "last_line"),
+            ("What is the first line of scene 3?", "first_line"),
+            ("What is the first dialogue in Scene 3?", "first_dialogue"),
+        ] {
+            assert_eq!(call(q), Some(("scene_fact".to_string(), json!({ "scene": 3, "fact": fact }))), "{q}");
+        }
+        assert_eq!(
+            call("Does Scene 3 mention a car?"),
+            Some(("scene_fact".to_string(), json!({ "scene": 3, "fact": "mentions", "text": "car" })))
+        );
+        for q in ["Open Scene 3", "Move Scene 3 to Day 2", "Delete Scene 3", "Compare scene 3 and scene 4"] {
+            assert_ne!(tool(q).as_deref(), Some("scene_fact"), "{q}");
+        }
+    }
+
+    #[test]
+    fn dialogue_questions_count_dialogue_blocks() {
+        assert_eq!(call("How many dialogues does Ravi have?"), Some(("dialogue_fact".to_string(), json!({ "character": "Ravi", "fact": "blocks" }))));
+        assert_eq!(
+            call("How many times does Ravi speak in Scene 3?"),
+            Some(("dialogue_fact".to_string(), json!({ "character": "Ravi", "fact": "blocks", "scene": 3 })))
+        );
+        assert_eq!(call("How many words does Ravi speak?"), Some(("dialogue_fact".to_string(), json!({ "character": "Ravi", "fact": "words" }))));
+        assert_eq!(call("Which scenes does Ravi speak in?"), Some(("dialogue_fact".to_string(), json!({ "character": "Ravi", "fact": "scenes" }))));
+        assert_eq!(call("Where does Ravi first speak?"), Some(("dialogue_fact".to_string(), json!({ "character": "Ravi", "fact": "first_scene" }))));
+        assert_eq!(call("Who has the most dialogue?"), Some(("dialogue_fact".to_string(), json!({ "fact": "most" }))));
+        assert_eq!(call("Who speaks first?"), Some(("dialogue_fact".to_string(), json!({ "fact": "first_speaker" }))));
+    }
+
+    #[test]
+    fn follow_ups_reuse_the_previous_question() {
+        assert_eq!(follow_up("What about Scene 4?", Some("Who speaks in Scene 3?")).as_deref(), Some("Who speaks in Scene 4?"));
+        assert_eq!(
+            follow_up("And Meera?", Some("How many dialogues does Ravi have?")).as_deref(),
+            Some("How many dialogues does Meera have?")
+        );
+        assert_eq!(follow_up("And Meera?", Some("Describe Ravi")).as_deref(), Some("Describe Meera"));
+        assert_eq!(follow_up("What about Scene 4?", Some("How many characters are there?")), None);
+        assert_eq!(follow_up("And the story?", Some("Describe Ravi")), None);
+        assert_eq!(just_the_number("Just give me the number", Some("Draft 1 contains 130 scenes.")).as_deref(), Some("130."));
+        assert_eq!(just_the_number("Describe Ravi", Some("Draft 1 contains 130 scenes.")), None);
     }
 
     #[test]

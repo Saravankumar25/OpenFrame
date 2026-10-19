@@ -350,6 +350,57 @@ fn a_character_is_described_from_screenplay_evidence() {
 }
 
 #[test]
+fn scene_and_dialogue_facts_come_from_the_screenplay_rows() {
+    // AI context brief, questions 13 to 26: exact facts about one scene and about dialogue are
+    // computed from the screenplay, with no model call.
+    let env = TestEnv::with_project("Railway", "Feature Film");
+    seed_screenplay(&env);
+    let m = attach(&env);
+    let a = |q: &str| ask(&env, q)["result"]["content"].as_str().unwrap().to_string();
+    assert_eq!(a("Who speaks in Scene 1?"), "Ravi and Arjun speak in Scene 1.");
+    assert_eq!(a("How many characters are in Scene 1?"), "2 characters speak in Scene 1.");
+    assert_eq!(a("What is the last line in Scene 1?"), "The last line of Scene 1 is \u{201c}Here.\u{201d}.");
+    assert_eq!(a("What is the first dialogue in Scene 3?"), "Meera first says \u{201c}Ravi is gone.\u{201d}.");
+    assert_eq!(a("How many dialogues does Ravi have?"), "Ravi has 2 dialogue blocks in Draft 1.");
+    assert_eq!(a("How many times does Ravi speak in Scene 1?"), "Ravi has 1 dialogue block in Scene 1.");
+    assert_eq!(a("Which scenes does Ravi speak in?"), "Ravi speaks in Scenes 1 and 2.");
+    assert_eq!(a("Who speaks first?"), "Ravi speaks first, in Scene 1: \u{201c}Where is Arjun?\u{201d}");
+    assert!(a("Does Scene 2 mention a train?").starts_with("Yes, Scene 2 mentions train"));
+    assert_eq!(a("Does Scene 1 mention a car?"), "No, Scene 1 does not mention car.");
+    assert_eq!(m.calls(), 0, "exact facts need no model");
+    // A follow-up keeps the question and changes the subject; "just the number" reuses the answer.
+    let env2 = TestEnv::with_project("Railway 2", "Feature Film");
+    seed_screenplay(&env2);
+    let _m2 = attach(&env2);
+    let first = ask(&env2, "Who speaks in Scene 1?");
+    let conv = first["conversationId"].as_str().unwrap().to_string();
+    let follow = |q: &str| {
+        env2.ok(
+            "ai.ask",
+            json!({ "text": q, "scope": whole(), "conversationId": conv }),
+        )["result"]["content"]
+            .as_str()
+            .unwrap()
+            .to_string()
+    };
+    assert_eq!(follow("What about Scene 3?"), "Meera speaks in Scene 3.");
+    assert_eq!(follow("How many dialogues does Ravi have?"), "Ravi has 2 dialogue blocks in Draft 1.");
+    assert_eq!(follow("Just give me the number"), "2.");
+}
+
+#[test]
+fn a_scene_summary_reads_the_whole_named_scene() {
+    let env = TestEnv::with_project("Railway", "Feature Film");
+    seed_screenplay(&env);
+    let m = attach(&env);
+    m.reply("Meera tells someone that Ravi is gone.");
+    let r = ask(&env, "Summarize Scene 3")["result"].clone();
+    assert_eq!(r["content"], "Meera tells someone that Ravi is gone.");
+    assert_eq!(r["steps"][0]["tool"], "scene_fact");
+    assert_eq!(m.calls(), 1, "one writing pass");
+}
+
+#[test]
 fn greetings_are_answered_without_tools_or_the_model() {
     let env = TestEnv::with_project("Railway", "Feature Film");
     let m = attach(&env);

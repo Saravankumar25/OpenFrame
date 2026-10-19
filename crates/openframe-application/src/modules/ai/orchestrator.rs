@@ -843,6 +843,17 @@ fn run_agent(
     max_steps: usize,
 ) -> AppResult<Outcome> {
     core.project()?;
+    // A short follow-up ("What about Scene 4?", "And Ravi?") is the previous question about a new
+    // subject; "Just the number" is the previous answer's number (AI context brief, 91 to 94).
+    let previous = history.last();
+    if let Some(n) = super::commands::just_the_number(text, previous.map(|h| h.1.as_str())) {
+        return Ok(Run::default().outcome(
+            ToolOutput::of_kind(AiResultKind::Answer, n),
+            AiResultStatus::Informational,
+        ));
+    }
+    let rewritten = super::commands::follow_up(text, previous.map(|h| h.0.as_str()));
+    let text: &str = rewritten.as_deref().unwrap_or(text);
     // Only the core tools plus the ones relevant to this request, within a prompt budget, so
     // the small local model's context stays short (the full permitted set is ~250 tools).
     let offered: Vec<ToolDef> =
@@ -1094,7 +1105,7 @@ fn run_generation(
     match g {
         Generation::Summary { items } => {
             let system = format!(
-                "You summarize project material for a filmmaker in at most 6 plain sentences. {DATA_RULE}"
+                "You summarize project material for a filmmaker in one to three plain sentences, more only when the user asks for detail. Say what happens, in order, with the names used in the text. {DATA_RULE}"
             );
             out.content = generate_text(
                 model,
