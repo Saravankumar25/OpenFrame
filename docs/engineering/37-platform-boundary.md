@@ -7,7 +7,7 @@
 > Decisions behind it: [ADR-0017](../adr/ADR-0017-cross-platform-windows-and-macos.md). Plan area: "Platform adapter layer for
 > Windows and Mac" in [masterplan.md](../implementation/masterplan.md). State of the feature:
 > [feature-status.md](../implementation/feature-status.md) (row PLAT-007). The broader compatibility plan is
-> [28-cross-platform-compatibility-security.md](../archive/2026-10-05-cross-platform-compatibility-security-plan.md).
+> 28-cross-platform-compatibility-security.md.
 
 ## 1. The rule
 
@@ -137,7 +137,7 @@ Each item that is done ends with the entry removed from `OS_ALLOW` or from this 
 ## 7. Next steps for Mac continuous integration
 
 **SUPERSEDED (2026-10-17, ADR-0027 decision 3).** The Tauri-based Mac job (`mac.yml`) and its step list are retired; the text is
-kept in [the archive note](../archive/2026-10-17-tauri-mac-shell-notes.md). Mac continuous integration is now
+kept in the archive note. Mac continuous integration is now
 `.github/workflows/mac-core.yml`, which runs the whole workspace tests except the Windows desktop shell and the scripts of
 `apps/macos`. The plan is in [chapter-1b-mac-phases.md](../roadmap/chapter-1b-mac-phases.md). Mac hardware and an Apple Developer
 account remain owner tasks in [owner-decisions.md](../implementation/owner-decisions.md).
@@ -146,6 +146,6 @@ account remain owner tasks in [owner-decisions.md](../implementation/owner-decis
 
 **SUPERSEDED (2026-10-17, ADR-0027 decision 3) as a Tauri shell design.** The Tauri Mac shell is retired and its CI job
 (`mac.yml`) is removed. The description of how the bridge was wired into the Tauri desktop shell is kept in
-[the archive note](../archive/2026-10-17-tauri-mac-shell-notes.md). The Swift StoreKit bridge source stays in the repository and
+the archive note. The Swift StoreKit bridge source stays in the repository and
 moves to the SwiftUI app in Chapter 3 ([chapter-1b-mac-phases.md](../roadmap/chapter-1b-mac-phases.md)). The product rules are in
 [38-mac-app-store-trial.md](38-mac-app-store-trial.md).

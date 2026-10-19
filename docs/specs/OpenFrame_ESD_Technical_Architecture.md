@@ -20,7 +20,7 @@
 > sessions, no soft locks); read every LAN reference as removed. The crates `openframe-search`, `openframe-import-export`
 > and `openframe-ai` now exist; `-media` and `-collaboration` do not and will not. The AI sections are superseded by
 > ADR-0013. The target architecture additions (platform services, theme subsystem, screenplay layout service) are in
-> [docs/archive/2026-10-05-desktop-hld-lld-target.md](../archive/2026-10-05-desktop-hld-lld-target.md); documentation precedence is in [docs/README.md](../README.md).
+> docs/archive/2026-10-05-desktop-hld-lld-target.md; documentation precedence is in [docs/README.md](../README.md).
 
 ## Authority and non-conflict rule
 

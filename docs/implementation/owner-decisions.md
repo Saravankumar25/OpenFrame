@@ -3,7 +3,7 @@
 > Rewritten 2026-10-15 so that every row is a decision still in force. Decisions here belong to the product owner. Engineers
 > and agents must not decide them silently. Mark a decision **Decided** only when its ADR is Accepted or the owner has
 > answered in chat and the answer is written here. The earlier table, with its replaced rows and old wording, is kept in
-> [the archive](../archive/2026-10-15-owner-decisions-before-restructure.md). The build plan is [masterplan.md](masterplan.md);
+> the archive. The build plan is [masterplan.md](masterplan.md);
 > the phases are in [../roadmap/](../roadmap/README.md).
 
 ## 1. Decided

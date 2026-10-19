@@ -4,7 +4,7 @@
 > Windows track finished and froze ([ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md)). It starts only when Windows
 > phase W10 has closed ([chapter-1a-windows-phases.md](chapter-1a-windows-phases.md), [ADR-0030](../adr/ADR-0030-verification-ladder-and-release-flow.md)).
 > It replaces stream 5 of the earlier Chapter 1 plan, which assumed a Tauri Mac app (see the
-> [archive](../archive/2026-10-15-chapter-1-plan-before-restructure.md)). Release target: Apple silicon Macs only. Sizes as
+> archive). Release target: Apple silicon Macs only. Sizes as
 > in the Windows plan.
 
 ## 1. What can be proved where

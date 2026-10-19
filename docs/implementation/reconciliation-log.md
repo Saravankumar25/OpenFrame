@@ -315,10 +315,10 @@ All plan documents now use plain headings. Nothing was deleted: the coded origin
 
 | New document | Replaces | Archived original |
 |---|---|---|
-| [masterplan.md](masterplan.md): 26 numbered areas with checklists | `00-masterplan.md` (milestones M0 to M16, waves W1 to W5, gates G0 to G14) | [2026-10-06-masterplan-with-item-codes.md](../archive/2026-10-06-masterplan-with-item-codes.md) |
-| [feature-status.md](feature-status.md): one row per feature, plain status words | `01-feature-ledger.md` (priorities P0 to P2, states S0 to S5, milestone column) | [2026-10-06-feature-ledger-with-item-codes.md](../archive/2026-10-06-feature-ledger-with-item-codes.md) |
-| [owner-decisions.md](owner-decisions.md): decisions and manual work by name | `02-owner-decisions-and-manual-work.md` (D1 to D18, X1 to X21) | [2026-10-06-owner-decisions-with-item-codes.md](../archive/2026-10-06-owner-decisions-with-item-codes.md) |
-| this file | `03-reconciliation-log.md` | [2026-10-06-reconciliation-log-with-item-codes.md](../archive/2026-10-06-reconciliation-log-with-item-codes.md) (content also carried over below) |
+| [masterplan.md](masterplan.md): 26 numbered areas with checklists | `00-masterplan.md` (milestones M0 to M16, waves W1 to W5, gates G0 to G14) | 2026-10-06-masterplan-with-item-codes.md |
+| [feature-status.md](feature-status.md): one row per feature, plain status words | `01-feature-ledger.md` (priorities P0 to P2, states S0 to S5, milestone column) | 2026-10-06-feature-ledger-with-item-codes.md |
+| [owner-decisions.md](owner-decisions.md): decisions and manual work by name | `02-owner-decisions-and-manual-work.md` (D1 to D18, X1 to X21) | 2026-10-06-owner-decisions-with-item-codes.md |
+| this file | `03-reconciliation-log.md` | 2026-10-06-reconciliation-log-with-item-codes.md (content also carried over below) |
 | [progress-log.md](progress-log.md) | `04-progress-log.md` | none (entries carried over under "Earlier entries"; file created 2026-10-06 in the first build session, the restructure had left only the old file) |
 
 Scripts renamed with them: `scripts/check-ledger.mjs` is now `scripts/check-feature-status.mjs`, and `scripts/lib/ledger.mjs` is now

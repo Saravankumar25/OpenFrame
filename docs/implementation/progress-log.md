@@ -58,6 +58,32 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 
 ## Entries
 
+### 2026-10-18 to 2026-10-19, Mac phases M6 to M9 built, tested on the real app, internal disk image; GitHub in two folders
+- **Areas and items worked:** Mac track M6 (production workspaces), M7 (import, export, packages, PDF, printing), M8
+  (Mac AI engine, AI screens, StoreKit 2), M9 (real-app end-to-end driver, security review, release build, disk image),
+  M10 (pilot kit, release gate), plus owner requests of the session: visible Settings at app and project level, every
+  screen as HTML (MacHTML, Light and Dark), centred titles and symmetric pages, the window and clipping fix, and the
+  two-folder GitHub layout (ADR-0034).
+- **Done:** all thirteen Mac workspaces built over the shared core; import and export in every format with the Windows
+  fixtures; the Metal AI engine pinned and measured (ADR-0033); StoreKit 2 wired and off in the internal build; Project
+  Settings, shortcuts, custom themes, the first-launch welcome; the Screenplay gaps (custom elements, revisions,
+  navigator columns, private notes); an end-to-end driver injected into the real release app (no full Xcode here), about
+  190 scenarios; bugs it found fixed (quit hang with a screenplay open, AI engines outliving the app, a new project
+  opening in the previous project's workspace, the welcome sheet blocking Quit, Recently Deleted rows missing, a draft
+  switch undone by a stale refresh, layout saves racing, and others in the commit messages); the security review's two
+  High and two Medium findings fixed.
+- **Evidence:** `docs/release/evidence/mac/` (m6-m8, m8 AI evaluation, m9 security review), the release gate
+  `docs/release/mac-internal-release-gate.md`, end-to-end runs under `release-out/e2e/`.
+- **Features moved:** Mac parity matrix rows for M6 to M8 off Not started (see the matrix).
+- **Docs updated:** parity matrix, chapter-1b phase page, masterplan, reconciliation log, ADR-0033, ADR-0034, pilot kit
+  (Mac install note), handoff.
+- **Decisions made or needed:** ADR-0033 (owner delegated), ADR-0034 (owner). Owner: licence server URLs and response
+  key for the store build (Chapter 3); full Xcode for XCUITest and StoreKit testing.
+- **Blocked / risks:** checks only a person can do on this Mac with a locked screen (voice recording, drags, Tab walks)
+  are in the pilot kit.
+- **Next:** the team pilot on the Mac (M10); fix and re-check findings; store build in Chapter 3.
+- **Checks run:** FINAL_CHECKS
+
 ### 2026-10-18, Mac phases M1 to M5 on an Apple M1 Mac
 - **Areas and items worked:** Mac track M1 (toolchain, core on macOS, Tauri Mac shell retired, parity matrix, CI), M2 (core as a Swift library), M3 (SwiftUI shell), M4 (editor spike, choice, native editor), M5 (Story, Idea Vault, Breakdown). Outside the plan, at the owner's request: the apple-design skill installed globally for Claude Code.
 - **Done:** commits ec3d085, adc7b86, 6471122, a3a32ee, 5e008e1 and this documentation commit on branch `mac/m1-toolchain`.

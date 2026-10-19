@@ -579,15 +579,10 @@ public final class ScreenplayTextView: NSTextView, @preconcurrency NSTextContent
     /// Room beside the page for the scene numbers.
     static let pageGutter: CGFloat = 48
 
-    /// The page never gets narrower than its text and scene numbers: in a narrow pane the
-    /// scroll view scrolls sideways instead of cutting the page at both edges.
-    public override func setFrameSize(_ newSize: NSSize) {
-        let page = (textContainer?.size.width ?? 0) + 2 * Self.pageGutter
-        // The visible width, not the width autoresizing asks for: once the page was wider than
-        // the pane, autoresizing would carry that difference into every later size.
-        let visible = enclosingScrollView?.contentView.bounds.width ?? newSize.width
-        super.setFrameSize(NSSize(width: max(visible, page), height: newSize.height))
-    }
+    /// The width the view needs so the page and its scene numbers are never cut: in a pane
+    /// narrower than this the scroll view scrolls sideways (set by the host, see
+    /// `ScreenplayEditorHost.fitDocumentWidth`).
+    var pageWidthWithGutters: CGFloat { (textContainer?.size.width ?? 0) + 2 * Self.pageGutter }
 
     public override var textContainerOrigin: NSPoint {
         var origin = super.textContainerOrigin

@@ -520,12 +520,10 @@ struct ScreenplayWorkspace: View {
 
     var body: some View {
         let focus = model.mode == .focus
-        GeometryReader { geo in
         HSplitView {
             if !focus {
-                // In a narrow window the scene list gives way first, so the page keeps most of the room.
                 SceneNavigator(model: model, panels: panels, currentIndex: currentIndex)
-                    .frame(minWidth: 160, idealWidth: 240, maxWidth: max(160, min(340, (geo.size.width * 0.3).rounded())))
+                    .frame(minWidth: 120, idealWidth: 240, maxWidth: 340)
             }
             VStack(spacing: 0) {
                 if model.showReplace && !focus { ScreenplayReplaceBar(model: model) }
@@ -538,11 +536,10 @@ struct ScreenplayWorkspace: View {
                     })
                 }
             }
-            // The page scrolls sideways in a narrow pane, so the pane can be narrower than the page
-            // and the workspace still fits a small window with the AI Assistant open.
-            .frame(minWidth: 220)
+            // Small enough for a 900-point window with the sidebar and the scene list: a narrower
+            // pane scrolls the page sideways; with more room the page is centred.
+            .frame(minWidth: 340)
             .overlay(alignment: .topTrailing) { if focus { focusBar } }
-        }
         }
         .toolbar(focus ? .hidden : .automatic, for: .windowToolbar)
         .toolbar { toolbar }
@@ -768,8 +765,10 @@ struct SceneNavigator: View {
                         } label: {
                             HStack(alignment: .firstTextBaseline, spacing: 8) {
                                 Text(scene.label).font(.caption.monospacedDigit()).foregroundStyle(.secondary).frame(minWidth: 22, alignment: .trailing)
+                                // One line, so a row's height never follows the list's width.
                                 Text(scene.heading.isEmpty ? "Untitled scene" : scene.heading.uppercased())
-                                    .font(.callout).lineLimit(2)
+                                    .font(.callout).lineLimit(1).truncationMode(.tail)
+                                    .help(scene.heading)
                                 Spacer(minLength: 0)
                             }
                         }
@@ -819,17 +818,26 @@ struct ScreenplayEditorHost: NSViewRepresentable {
     func makeNSView(context: Context) -> NSScrollView {
         let scroll = NSScrollView()
         scroll.hasVerticalScroller = true
-        // A pane narrower than the page scrolls sideways (the page keeps its width).
-        scroll.hasHorizontalScroller = true
-        scroll.autohidesScrollers = true
         scroll.drawsBackground = false
         let view = ScreenplayTextView.make()
         model.bind(view)
         view.screenplayDelegate = context.coordinator
         view.minSize = NSSize(width: 0, height: 0)
         view.maxSize = NSSize(width: CGFloat.greatestFiniteMagnitude, height: CGFloat.greatestFiniteMagnitude)
-        view.autoresizingMask = [.width]
+        // The page keeps its width in a narrow pane and scrolls sideways. The width follows the
+        // visible area from a notification after layout, never from inside a layout pass, and
+        // resizing the document never resizes the scroll view, so nothing feeds back.
+        scroll.hasHorizontalScroller = true
+        scroll.autohidesScrollers = true
+        view.autoresizingMask = []
         scroll.documentView = view
+        scroll.contentView.postsFrameChangedNotifications = true
+        context.coordinator.frameObserver = NotificationCenter.default.addObserver(
+            forName: NSView.frameDidChangeNotification, object: scroll.contentView, queue: .main
+        ) { [weak scroll] _ in
+            MainActor.assumeIsolated { if let scroll { Self.fitDocumentWidth(scroll) } }
+        }
+        DispatchQueue.main.async { [weak scroll] in if let scroll { Self.fitDocumentWidth(scroll) } }
         if let doc = model.document {
             view.load(ScreenplayParagraphs.from(ScreenplayModel.snapshot(fromScenes: doc.scenes), rules: model.rules.table))
             view.isEditable = doc.canEdit
@@ -837,11 +845,19 @@ struct ScreenplayEditorHost: NSViewRepresentable {
         return scroll
     }
 
-    /// The scroll view takes exactly the room the pane offers; the page inside it may be wider
-    /// and then scrolls sideways (without this the scroll view grew to the page's width and the
-    /// pane cut it at both edges).
-    func sizeThatFits(_ proposal: ProposedViewSize, nsView: NSScrollView, context: Context) -> CGSize? {
-        CGSize(width: proposal.width ?? 600, height: proposal.height ?? 600)
+    /// The text view is as wide as the visible area, or as the page with its scene numbers when
+    /// the pane is narrower.
+    static func fitDocumentWidth(_ scroll: NSScrollView) {
+        guard let view = scroll.documentView as? ScreenplayTextView else { return }
+        let width = max(scroll.contentView.bounds.width, view.pageWidthWithGutters)
+        if abs(view.frame.width - width) > 0.5 {
+            view.setFrameSize(NSSize(width: width, height: max(view.frame.height, scroll.contentView.bounds.height)))
+        }
+    }
+
+    static func dismantleNSView(_ scroll: NSScrollView, coordinator: Coordinator) {
+        if let observer = coordinator.frameObserver { NotificationCenter.default.removeObserver(observer) }
+        coordinator.frameObserver = nil
     }
 
     func updateNSView(_ scroll: NSScrollView, context: Context) {
@@ -855,6 +871,7 @@ struct ScreenplayEditorHost: NSViewRepresentable {
     final class Coordinator: NSObject, ScreenplayTextViewDelegate {
         let model: ScreenplayWorkspaceModel
         var onMove: (EditorParagraph, Int) -> Void
+        var frameObserver: NSObjectProtocol?
         init(model: ScreenplayWorkspaceModel, onMove: @escaping (EditorParagraph, Int) -> Void) {
             self.model = model
             self.onMove = onMove

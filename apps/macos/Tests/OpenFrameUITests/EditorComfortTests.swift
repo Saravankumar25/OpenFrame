@@ -72,7 +72,7 @@ struct EditorComfortTests {
         // A pane narrower than the page keeps the page and its scene number gutters whole; the
         // scroll view scrolls sideways instead of cutting the page.
         scroll.setFrameSize(NSSize(width: width - 40, height: 700))
-        rig.view.frame.size.width = width - 40
+        ScreenplayEditorHost.fitDocumentWidth(scroll)
         #expect(rig.view.frame.width == width + 2 * ScreenplayTextView.pageGutter)
         #expect(rig.view.textContainerOrigin.x == ScreenplayTextView.pageGutter)
     }

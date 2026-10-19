@@ -1258,7 +1258,7 @@ extension Scenarios {
             let engines = ui.engines()
             f.check(!engines.isEmpty, "at least one engine is running")
             for e in engines {
-                f.check(e.contains("/OFInt.app/Contents/Resources/ai/"), "the engine runs from the bundled AI folder: \(e.prefix(200))")
+                f.check(e.contains(Bundle.main.bundlePath + "/Contents/Resources/ai/"), "the engine runs from the bundled AI folder of the app under test: \(e.prefix(200))")
                 f.check(e.contains("--host 127.0.0.1"), "the engine listens on 127.0.0.1 only: \(e.prefix(300))")
                 f.check(e.contains("--offline") || e.contains("LLAMA_OFFLINE"), "the engine was started in offline mode: \(e)")
                 f.check(!e.contains("--api-key"), "no engine has an API key on its command line")

@@ -272,6 +272,13 @@ final class AIAssistantModel {
 
     func stopRuntime() async {
         guard let core else { return }
+        // A question still waiting for its answer is let go first, as Cancel does: otherwise the
+        // panel would keep waiting for an engine that was just stopped, with the Ask box disabled.
+        if pending != nil {
+            await cancel()
+            ToastCenter.shared.show("Offline AI stopped. It starts again when you ask something.")
+            return
+        }
         do {
             _ = try await core.aiStopRuntime()
             ToastCenter.shared.show("Offline AI stopped. It starts again when you ask something.")

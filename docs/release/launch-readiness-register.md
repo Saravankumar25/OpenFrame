@@ -16,7 +16,7 @@
 > intake notes are at the end of this document.
 >
 > The version of this register from before the restructure is kept at
-> [launch-register-before-restructure](../archive/2026-10-06-launch-register-before-restructure.md).
+> launch-register-before-restructure.
 
 **Purpose:** the single execution control document for taking OpenFrame Studio from codebase to a commercially launchable, secure, supportable and maintainable desktop product under the umbrella company.
 
@@ -1407,7 +1407,7 @@ The goal is not zero bugs forever. The goal is that known data, security, compat
 
 # Earlier version of this register
 
-The version of this register from before the restructure, including the old traceability appendix that repeated the execution requirements, is kept at [launch-register-before-restructure](../archive/2026-10-06-launch-register-before-restructure.md).
+The version of this register from before the restructure, including the old traceability appendix that repeated the execution requirements, is kept at launch-register-before-restructure.
 
 # Dependency-aware implementation order
 

@@ -77,7 +77,7 @@ struct WindowFitTests {
     @Test func theAssistantNarrowsInANarrowWindow() {
         #expect(ProjectView.assistantWidth(for: 1060) == 360)
         #expect(ProjectView.assistantWidth(for: 680) == 272)
-        #expect(ProjectView.assistantWidth(for: 400) == 260)
+        #expect(ProjectView.assistantWidth(for: 400) == 220)
     }
 
     @Test func aPageWiderThanTheWindowKeepsItsMinimumWidth() {
@@ -93,11 +93,11 @@ struct WindowFitTests {
         let view = ScreenplayTextView.make()
         let scroll = NSScrollView(frame: NSRect(x: 0, y: 0, width: 300, height: 400))
         scroll.documentView = view
-        view.setFrameSize(NSSize(width: 300, height: 400))
+        ScreenplayEditorHost.fitDocumentWidth(scroll)
         let page = (view.textContainer?.size.width ?? 0) + 2 * ScreenplayTextView.pageGutter
         #expect(view.frame.width == max(scroll.contentView.bounds.width, page))
         scroll.setFrameSize(NSSize(width: 1400, height: 400))
-        view.setFrameSize(NSSize(width: 5000, height: 400))
+        ScreenplayEditorHost.fitDocumentWidth(scroll)
         #expect(view.frame.width == max(scroll.contentView.bounds.width, page))
     }
 }

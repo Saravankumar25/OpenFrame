@@ -33,7 +33,7 @@ workflow itself, and by hand. macOS runner minutes cost ten times Windows minute
 
 It proves that the shared core builds and passes its tests on Apple silicon and that the Swift package of the native Mac app
 builds and tests against it. It does not sign, package or start the app. The earlier `mac.yml` ("Mac build check", Tauri shell
-and StoreKit bridge) is superseded and retired: see [the archive note](../archive/2026-10-17-tauri-mac-shell-notes.md) and
+and StoreKit bridge) is superseded and retired: see the archive note and
 [chapter-1b-mac-phases.md](../roadmap/chapter-1b-mac-phases.md).
 
 ### `release.yml` ✅ (tag `v*.*.*`, or manual with an existing tag)

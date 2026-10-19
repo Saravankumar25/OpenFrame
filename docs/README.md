@@ -2,7 +2,7 @@
 
 > Rewritten 2026-10-15 around the three chapters and the owner's 25 decisions. Start here. It says where every document
 > lives, which one wins when two disagree, what is current and what is history, and what must be updated when the code
-> changes. The earlier map is in [the archive](archive/2026-10-15-documentation-map-before-restructure.md).
+> changes. The earlier map is in the archive.
 
 ## 0. Start here
 
@@ -67,7 +67,7 @@ Chapters 2 and 3 have no implementation plan yet by decision; each is written wh
 | Implementation status | [feature-status.md](implementation/feature-status.md), [progress-log.md](implementation/progress-log.md) | A status moves up only with evidence at a named proof level |
 | Test evidence | [release/evidence/](release/evidence), [audits/](audits) | What was true on a date, not what must be |
 | Operating procedures | [development-storage-policy.md](development-storage-policy.md), [testing/](testing), [engineering/39-packages-restore-drill.md](engineering/39-packages-restore-drill.md) | Rules for people and agents |
-| History | [archive/](archive) (index in [archive/README.md](archive/README.md)), [implementation/reconciliation-log.md](implementation/reconciliation-log.md) | Never implement from history |
+| History | git history (the archive folder was removed on 2026-10-19 at the owner's request), [implementation/reconciliation-log.md](implementation/reconciliation-log.md) | Never implement from history |
 
 ## 4. Which document wins
 
@@ -86,7 +86,7 @@ Highest first. A lower item never silently overrides a higher one.
 6. **Execution control**: [roadmap/](roadmap), [masterplan.md](implementation/masterplan.md),
    [feature-status.md](implementation/feature-status.md), [launch readiness register](release/launch-readiness-register.md).
 7. **Evidence**: [audits/](audits) and [release/evidence/](release/evidence).
-8. **History**: [archive/](archive), [website/prompts/](website/prompts), `HTML_Mockups/`.
+8. **History**: git history, [website/prompts/](website/prompts), `HTML_Mockups/`.
 
 [README.md](../README.md) is the release-state declaration (what is usable today), written from the feature status file.
 
@@ -164,7 +164,7 @@ When a change alters behaviour it must also update, in the same change:
 | README status claims | The feature status file first; README follows it |
 | A feature's screen or tests | The "How a user reaches it" and "Tests" columns of the feature status file (checked by `scripts/check-feature-status.mjs`) |
 | An architecture exception (raw SQLite write, `unsafe`, listener, process, IPC command, asset scope) | The reviewed allow-list and reason in `scripts/architecture-lint.mjs`; a security review |
-| A moved or renamed document | Links (run the link check), this map, [archive/README.md](archive/README.md) if it is history, [implementation/reconciliation-log.md](implementation/reconciliation-log.md) |
+| A moved or renamed document | Links (run the link check), this map, archive/README.md if it is history, [implementation/reconciliation-log.md](implementation/reconciliation-log.md) |
 | User-visible text or a new document | [engineering/35-writing-standard.md](engineering/35-writing-standard.md); `npm run check:writing` |
 | A finished feature | Delete the dead code and mark replaced documents superseded in the same change |
 

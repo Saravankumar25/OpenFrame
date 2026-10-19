@@ -150,7 +150,7 @@ Reviewed in Windows phase W3 (2026-10-16). Every item has a decision; none is op
 
 ## 5. Internal review 2026-09-30: findings
 
-This review covered the code on `master` at `a31ee7f`. The summary is in [`SECURITY_REVIEW_2026-09-30.md`](../archive/2026-09-30-security-review.md).
+This review covered the code on `master` at `a31ee7f`. The summary is in `SECURITY_REVIEW_2026-09-30.md`.
 Severity combines impact and reachability. OpenFrame is a single-user desktop app, so the review treats its webview as
 untrusted and assumes that imported files and packages come from other people. Regression tests are in
 `crates/*/tests/security_*.rs` and `apps/desktop/src/**/*.security.test.ts`.

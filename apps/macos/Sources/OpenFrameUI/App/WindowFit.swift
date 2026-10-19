@@ -29,7 +29,9 @@ final class WindowFit {
         let fitting = CGSize(width: min(Self.preferred.width, vf.width.rounded(.down)),
                              height: min(Self.preferred.height, (vf.height - chrome).rounded(.down)))
         if fitting != minimum { minimum = fitting }
-        let now = window.contentLayoutRect.size
+        // Whole points only: sub-point changes during a layout pass must not re-run the layout.
+        let r = window.contentLayoutRect.size
+        let now = CGSize(width: r.width.rounded(), height: r.height.rounded())
         if now != content { content = now }
     }
 
@@ -181,12 +183,15 @@ private struct WindowFitter: NSViewRepresentable {
 
         /// Updates the content minimum, then (once SwiftUI has applied it) the frame.
         func refit(move: Bool) {
-            guard let window = watched, !adjusting else { return }
-            fit?.update(for: window)
-            // A full-screen window belongs to macOS; a window in a live resize follows the pointer.
-            guard !window.styleMask.contains(.fullScreen), !window.inLiveResize else { return }
+            guard watched != nil, !adjusting else { return }
+            // Never change SwiftUI state inside the layout pass that sent the notification: that
+            // marks the window for another constraints pass, again and again, until AppKit stops
+            // the app (seen when the Screenplay inspector opened). Everything runs after the pass.
             DispatchQueue.main.async { [weak self] in
-                guard let self, let window = self.watched, !window.styleMask.contains(.fullScreen) else { return }
+                guard let self, let window = self.watched else { return }
+                self.fit?.update(for: window)
+                // A full-screen window belongs to macOS; a window in a live resize follows the pointer.
+                guard !window.styleMask.contains(.fullScreen), !window.inLiveResize else { return }
                 let vf = WindowFit.visibleFrame(of: window)
                 let target = WindowFit.fitted(window.frame, in: vf, move: move)
                 guard target != window.frame else { return }

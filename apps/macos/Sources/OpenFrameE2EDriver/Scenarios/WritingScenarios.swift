@@ -1481,6 +1481,12 @@ extension Scenarios {
             try await ui.quiet()
         case 13:
             try await ui.button("Assistant")
+            // On the Mac the AI is downloaded after install (ADR-0026): the first time, press the
+            // card's Download button and wait for the real download from the model host.
+            if ui.exists(id: "ai-download-start") {
+                try await ui.press(id: "ai-download-start")
+                _ = try await ui.wait(id: "ai-input", timeout: 1200, "the Ask box after the download")
+            }
             try await ui.wait(label: "Ask or command", timeout: 15, "the Ask or command box")
             try await ui.expectShows("AI Ready")
             let text = ui.screenText().lowercased()

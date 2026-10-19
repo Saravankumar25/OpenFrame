@@ -187,7 +187,7 @@ struct ProjectView: View {
             let info = note.userInfo ?? [:]
             ScreenplayWorkspaceModel.pendingTarget = (info["screenplayId"] as? String, info["draftId"] as? String, info["sceneId"] as? String)
         }
-        .onReceive(NotificationCenter.default.publisher(for: .openFrameToggleAssistant)) { _ in assistantOpen.toggle() }
+        .onReceive(NotificationCenter.default.publisher(for: .openFrameToggleAssistant)) { _ in toggleAssistant() }
         .onReceive(NotificationCenter.default.publisher(for: .openFrameToggleSidebar)) { _ in setSidebar(shown: columns == .detailOnly) }
         .onChange(of: columns, initial: true) { _, now in ProjectSidebar.shared.shown = now != .detailOnly }
         .onReceive(NotificationCenter.default.publisher(for: .openFrameShowWorkspace)) { note in
@@ -197,8 +197,20 @@ struct ProjectView: View {
 
     /// The AI Assistant panel is 360 points wide, narrower in a narrow window so the page keeps
     /// room (at least 260 points for the panel).
+    /// Opens or closes the AI panel. In a window too narrow for the sidebar, the page and the
+    /// panel side by side, opening the panel hides the sidebar (as macOS split views do); the
+    /// sidebar button brings it back.
+    private func toggleAssistant() {
+        assistantOpen.toggle()
+        if assistantOpen, columns != .detailOnly,
+           let width = NSApp.keyWindow?.contentLayoutRect.width ?? NSApp.mainWindow?.contentLayoutRect.width,
+           width < 1040 {
+            columns = .detailOnly
+        }
+    }
+
     static func assistantWidth(for detail: CGFloat) -> CGFloat {
-        min(360, max(260, (detail * 0.4).rounded()))
+        min(360, max(220, (detail * 0.4).rounded()))
     }
 
     /// Shows and hides the workspace sidebar (also View > Hide Sidebar, Command+Control+S).
@@ -237,7 +249,7 @@ struct ProjectView: View {
     /// Opens and closes the AI Assistant panel (Windows: the Assistant button and Ctrl+J).
     private var assistantButton: some View {
         Button {
-            assistantOpen.toggle()
+            toggleAssistant()
         } label: {
             Label("Assistant", systemImage: "sparkles")
         }
