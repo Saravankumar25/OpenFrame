@@ -101,10 +101,32 @@ extension UI {
     func capture(_ name: String, title: String, area: String, from: String? = nil, via: String? = nil,
                  menu: NSMenu? = nil, anchor: CGPoint = CGPoint(x: 40, y: 60), settle: Double = 0.8) async {
         await idle(settle)
+        // A window that drifted a few points from the tour size (the app sizes itself to its content now and
+        // then) is put back; a size chosen on purpose for a narrow-window state is left alone.
+        if let w = capturePrimary(), w.sheets.isEmpty,
+           abs(w.frame.width - UI.captureSize.width) < 16, abs(w.frame.height - UI.captureSize.height) < 16,
+           w.frame.size != UI.captureSize {
+            capBigWindow()
+            await idle(0.4)
+        }
         guard CaptureState.names.insert(name).inserted else { log("capture \(name): already taken"); return }
         guard let primary = capturePrimary() else { log("capture \(name): no window"); return }
         let overlays = captureOverlays(primary)
-        guard let base = captureRender(primary) else { log("capture \(name): could not draw"); return }
+        // Runners share one screen: a window covered by another app's window stops drawing its content and the
+        // window server then hands back a blank picture. Bring the window forward and take it again.
+        var picture = captureRender(primary)
+        for attempt in 0..<4 {
+            guard let rep = picture, captureLooksBlank(rep) else { break }
+            log("capture \(name): blank picture, taking it again (\(attempt + 1))")
+            NSApp.activate(ignoringOtherApps: true)
+            primary.orderFrontRegardless()
+            for o in overlays { o.orderFrontRegardless() }
+            primary.contentView?.needsDisplay = true
+            primary.displayIfNeeded()
+            await idle(0.8)
+            picture = captureRender(primary)
+        }
+        guard let base = picture else { log("capture \(name): could not draw"); return }
         let scale = CGFloat(base.pixelsWide) / primary.frame.width
         let size = primary.frame.size
         guard let out = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: base.pixelsWide, pixelsHigh: base.pixelsHigh, bitsPerSample: 8,
@@ -163,6 +185,24 @@ extension UI {
         } catch {
             log("capture \(name): write failed \(error)")
         }
+    }
+
+    /// True when the window's content below the toolbar is a single flat colour: the picture of a window whose
+    /// content was not drawn. Every real screen has some text there, so it has several colours.
+    func captureLooksBlank(_ rep: NSBitmapImageRep) -> Bool {
+        let w = rep.pixelsWide, h = rep.pixelsHigh
+        guard w > 100, h > 200 else { return false }
+        var seen = Set<UInt32>()
+        let top = Int(Double(h) * 0.14)
+        for y in stride(from: top, to: h - 8, by: 6) {
+            for x in stride(from: 4, to: w - 4, by: 6) {
+                guard let c = rep.colorAt(x: x, y: y) else { continue }
+                let key = (UInt32(c.redComponent * 31) << 10) | (UInt32(c.greenComponent * 31) << 5) | UInt32(c.blueComponent * 31)
+                seen.insert(key)
+                if seen.count > 3 { return false }
+            }
+        }
+        return true
     }
 
     /// Draws an open menu the way macOS shows it, and returns its items as elements.
@@ -279,7 +319,11 @@ extension UI {
     }
 
     /// Makes the main window a fixed, roomy size so every page is the same shape.
-    func capBigWindow(width: CGFloat = 1440, height: CGFloat = 900) {
+    /// The one window size of the tour (points). It fits the visible part of a 1280 by 720 point display, the
+    /// smallest the tour runs on, so the window server never trims it and every page has the same size.
+    nonisolated static let captureSize = CGSize(width: 1280, height: 620)
+
+    func capBigWindow(width: CGFloat = UI.captureSize.width, height: CGFloat = UI.captureSize.height) {
         guard let w = NSApp.windows.filter({ $0.isVisible && $0.canBecomeMain && $0.sheetParent == nil && $0.frame.width > 900 }).max(by: { $0.frame.width < $1.frame.width }) else { return }
         let screen = w.screen ?? NSScreen.main
         let vf = screen?.visibleFrame ?? NSRect(x: 0, y: 0, width: 1728, height: 1080)
