@@ -3,6 +3,13 @@
    zoomable, keyboard-accessible board. Zoom only changes presentation. */
 
 .story-page { position: relative; }
+
+/* Story page: one plain writing area, centred at a comfortable reading width. Colours are tokens only. */
+.story-write-col { flex: 1; min-height: 0; width: 100%; max-width: 80ch; margin: 0 auto; display: flex; flex-direction: column; gap: 6px; }
+.story-write-area { flex: 1; min-height: 0; width: 100%; resize: none; box-sizing: border-box; padding: 20px 24px; border: 1px solid var(--line2); border-radius: 10px; background: var(--panel); color: var(--ink); font: inherit; font-size: 16px; line-height: 1.75; overflow: auto; }
+.story-write-area::placeholder { color: var(--muted); }
+.story-write-area:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.story-write-foot { display: flex; justify-content: space-between; padding: 0 4px; }
 .story-canvas { flex: 1; min-height: 0; overflow: auto; position: relative; padding-bottom: 12px; }
 .story-canvas .board { height: auto; min-height: 100%; overflow: visible; align-items: flex-start; padding: 2px 2px 16px; }
 

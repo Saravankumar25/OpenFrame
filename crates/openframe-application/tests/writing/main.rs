@@ -15,6 +15,7 @@ mod screenplay_engine;
 mod screenplay_formats;
 mod story;
 mod story_cards;
+mod story_page;
 mod vault_research;
 mod visual;
 mod writing_comfort;

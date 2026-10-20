@@ -26,8 +26,8 @@ How the toolbox (`modules/ai/toolbox.rs`, contract C3) enforces this:
   budget, so a small local model's prompt stays short. `retrieve_context` uses the hybrid retrieval
   service when called through `run_tool_unlocked`, and keyword retrieval (FTS5, same privacy rule) otherwise.
 
-- Registered operations: **492** (153 queries, 339 commands)
-- Exposed to the assistant through tools: **305**; not AI-accessible: **187**
+- Registered operations: **495** (155 queries, 340 commands)
+- Exposed to the assistant through tools: **305**; not AI-accessible: **190**
 - Tools: **256** (63 read/compute/navigate, 193 proposal)
 
 Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation · **L** long-running (task id) · file effect: R = reads a user-picked file, W = writes to a user-picked location, P = project storage on disk.
@@ -176,6 +176,7 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 | `shot.export_list`: Export a shot list to a location the user picked. | query | Read | Export | W | `ExportShotListArgs` → `ExportResult` | hidden | none |
 | `sides.export_pdf`: Export sides to a location the user picked. | query | Read | Export | W | `ExportSidesArgs` → `ExportResult` | hidden | none |
 | `story.export_board`: Export the Beat Board outline (PDF/DOCX/…) to a location the user picked. | query | Read | Export | W | `ExportStoryOutlineArgs` → `ExportResult` | hidden | none |
+| `story.page.export`: Export the Story page as plain text, PDF or Word to a location the user picked. | query | Read | Export | W | `ExportStoryPageArgs` → `ExportResult` | hidden | none |
 | `storyboard.export_sheet`: Export storyboard sheets to a location the user picked. | query | Read | Export | W | `ExportStoryboardSheetArgs` → `ExportResult` | hidden | none |
 
 ### Files
@@ -552,6 +553,8 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 | `story.move_items`: Move sequences, beats or Scene Cards to another act, sequence, Parking Lot or Unassigned. | command | Mutate | Edit |  | `StoryMoveArgs` → `()` | tool | `propose_move_story_items` |
 | `story.move_season`: Move a season to another position. | command | Mutate | Edit |  | `StoryMoveSeasonArgs` → `()` | tool | `propose_update_season` |
 | `story.order_preview`: Preview of applying the Beat Board order to a screenplay draft. | query | Compute | View |  | `StoryOrderArgs` → `StoryOrderPreview` | tool | `story_outline` |
+| `story.page.get`: The text of the Story page. | query | Read | View |  | `StoryPageGetArgs` → `StoryPageDto` | hidden | none |
+| `story.page.save`: Save the text of the Story page. | command | Mutate | Edit |  | `StoryPageSaveArgs` → `StoryPageSaved` | hidden | none |
 | `story.park_items`: Move beats or Scene Cards to the Parking Lot. | command | Mutate | Edit |  | `StoryItemsArgs` → `()` | tool | `propose_park_story_items` |
 | `story.relationships`: Character relationships. | query | Read | View |  | `StoryCharacterListArgs` → `Vec<StoryRelationshipDto>` | tool | `story_characters` |
 | `story.remove_attachment`: Remove an attachment from a Scene Card, beat or sequence. | command | Mutate | Edit |  | `StoryIdArgs` → `()` | tool | `propose_remove_story_attachment` |
@@ -699,7 +702,7 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 - **Production scene number overrides and renumbering stay a human decision (ADR-0015, contract doc 32 §2.5); the assistant reads the numbers.**
   `screenplay.renumber_scenes`, `screenplay.restore_omitted_scene`, `screenplay.set_scene_number`
 - **Reads or writes a file-system location the user picks in a file dialog; the assistant never chooses or touches file-system paths (spec §3).**
-  `breakdown.export_report`, `budget.export_summary`, `callsheets.attach`, `callsheets.export_pdf`, `files.add`, `files.export_copy`, `files.relink`, `moodboard.export_pdf`, `packages.create_backup`, `packages.export_exchange`, `packages.export_project`, `packages.import_project`, `packages.inspect_package`, `packages.review_export_response`, `packages.review_open`, `project.locate`, `project.location_check`, `reports.export_report`, `schedule.export_dood`, `schedule.export_schedule`, `screenplay.export`, `screenplay.import_apply`, `screenplay.import_preview`, `shot.export_list`, `sides.export_pdf`, `story.add_attachment`, `story.export_board`, `storyboard.export_sheet`, `vault.add_files`, `vault.relink`
+  `breakdown.export_report`, `budget.export_summary`, `callsheets.attach`, `callsheets.export_pdf`, `files.add`, `files.export_copy`, `files.relink`, `moodboard.export_pdf`, `packages.create_backup`, `packages.export_exchange`, `packages.export_project`, `packages.import_project`, `packages.inspect_package`, `packages.review_export_response`, `packages.review_open`, `project.locate`, `project.location_check`, `reports.export_report`, `schedule.export_dood`, `schedule.export_schedule`, `screenplay.export`, `screenplay.import_apply`, `screenplay.import_preview`, `shot.export_list`, `sides.export_pdf`, `story.add_attachment`, `story.export_board`, `story.page.export`, `storyboard.export_sheet`, `vault.add_files`, `vault.relink`
 - **Returns local file paths of managed media; the assistant never receives file-system paths.**
   `app.info`, `files.asset`
 - **Screenplay page layout settings (paper, font, spacing, header and footer, page breaks, custom element looks) stay a human decision (screenplay engine contract doc 32 §2.5); the assistant reads the resulting page facts.**
@@ -710,6 +713,8 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
   `ai.ask`, `ai.history`
 - **The team password of an internal build belongs to the person at this computer; the assistant never reads or types it.**
   `team_gate.status`, `team_gate.unlock`
+- **The writer's own free-writing Story page; it is kept apart from every other page and tool on purpose (owner request 2026-10-20), so the assistant neither reads nor changes it.**
+  `story.page.get`, `story.page.save`
 
 ## Tools
 

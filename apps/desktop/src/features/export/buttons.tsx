@@ -72,6 +72,39 @@ export function StoryExportButton({ episodeId, selectedIds, ...t }: Trigger & { 
   );
 }
 
+// ------------------------------------------------------------------ Story page (free writing)
+
+const STORY_PAGE_FORMATS: ExportFormatOption[] = [
+  { value: "txt", label: "Plain text (.txt)" },
+  { value: "pdf", label: "PDF" },
+  { value: "docx", label: "Word (.docx)" },
+];
+
+/** Exports the Story page. `beforeOpen` stores the text typed so far; the file must hold it. */
+export function StoryPageExportButton({ beforeOpen, ...t }: Trigger & { beforeOpen?: () => Promise<boolean> }) {
+  const d = useOpen();
+  return (
+    <>
+      <TriggerButton
+        {...t}
+        onClick={() => {
+          void (beforeOpen ? beforeOpen() : Promise.resolve(true)).then((stored) => stored && d.show());
+        }}
+      />
+      <ExportDialog
+        open={d.open}
+        onClose={d.hide}
+        title="Export Story"
+        source={<>Source: <b>the Story page</b></>}
+        documentName="Story"
+        op="story.page.export"
+        formats={STORY_PAGE_FORMATS}
+        note="Export creates a snapshot and does not change your project."
+      />
+    </>
+  );
+}
+
 // ------------------------------------------------------------------ Breakdown & Catalog
 
 export function BreakdownExportButton({ sceneId, scenes, ...t }: Trigger & { sceneId?: string | null; scenes: Item[] }) {

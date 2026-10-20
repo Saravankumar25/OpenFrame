@@ -54,7 +54,7 @@ impl Fixture {
     fn new() -> Fixture {
         assert_eq!(
             latest(),
-            16,
+            17,
             "update `downgrade_to_previous` when a project migration is added"
         );
         let env = TestEnv::with_project("Night Bus", "Feature Film");
@@ -95,12 +95,13 @@ impl Fixture {
         self.project.to_string_lossy().into_owned()
     }
 
-    /// Undo migrations 16 to 11 exactly (same SQL the forced-kill worker uses).
+    /// Undo migrations 17 to 11 exactly (same SQL the forced-kill worker uses).
     fn downgrade_to_previous(&self) {
         let mut c = Connection::open(self.db()).unwrap();
         let tx = c.transaction().unwrap();
         tx.execute_batch(
-            "ALTER TABLE budget_line DROP COLUMN actual;
+            "DROP TABLE story_page;
+             ALTER TABLE budget_line DROP COLUMN actual;
              DROP INDEX idx_dood_override_key;
              DROP TABLE dood_override;
              ALTER TABLE shooting_schedule DROP COLUMN dood_code_style;
@@ -143,7 +144,7 @@ impl Fixture {
              ALTER TABLE story_scene_card DROP COLUMN long_description;
              DROP INDEX IF EXISTS sys_ai_apply_journal_open;
              DROP TABLE IF EXISTS sys_ai_apply_journal;
-             DELETE FROM _schema_migrations WHERE version IN (11, 12, 13, 14, 15, 16);
+             DELETE FROM _schema_migrations WHERE version IN (11, 12, 13, 14, 15, 16, 17);
              PRAGMA user_version = 10;",
         )
         .unwrap();

@@ -185,7 +185,8 @@ fn worker() {
     }
 }
 
-/// Turn a schema-16 project database back into a genuine schema-10 one (0016 only adds
+/// Turn a schema-17 project database back into a genuine schema-10 one (0017 only adds the
+/// `story_page` table; 0016 only adds
 /// `budget_line.actual` and maps call sheet status words, which the older schema also allows; 0015 only adds the
 /// schedule day times, strip start, Day Out of Days code style and corrections table; 0014 only adds the
 /// breakdown category styles, availability windows and three location and crew columns; 0011 only adds the
@@ -198,6 +199,17 @@ fn downgrade_to_v10(project: &str) {
     let mut v: i64 = c
         .query_row("PRAGMA user_version", [], |r| r.get(0))
         .unwrap();
+    if v == 17 {
+        let tx = c.transaction().unwrap();
+        tx.execute_batch(
+            "DROP TABLE story_page;
+             DELETE FROM _schema_migrations WHERE version = 17;
+             PRAGMA user_version = 16;",
+        )
+        .unwrap();
+        tx.commit().unwrap();
+        v = 16;
+    }
     if v == 16 {
         let tx = c.transaction().unwrap();
         tx.execute_batch(
@@ -517,7 +529,7 @@ fn m1_03_forced_kill_during_migration_leaves_a_consistent_database() {
                 "the migration worker completed no cycle before the kill"
             );
         }
-        // Before the app touches it: a complete schema 10 to 16 (each migration commits whole).
+        // Before the app touches it: a complete schema 10 to 17 (each migration commits whole).
         let raw = rusqlite::Connection::open(Path::new(&h.project).join("project.sqlite")).unwrap();
         let version: i64 = raw
             .query_row("PRAGMA user_version", [], |r| r.get(0))
@@ -530,7 +542,7 @@ fn m1_03_forced_kill_during_migration_leaves_a_consistent_database() {
             )
             .unwrap();
         assert!(
-            matches!((version, journal), (10, false) | (11..=16, true)),
+            matches!((version, journal), (10, false) | (11..=17, true)),
             "half-migrated: v{version}, journal {journal}"
         );
         drop(raw);
@@ -542,7 +554,7 @@ fn m1_03_forced_kill_during_migration_leaves_a_consistent_database() {
             .store
             .read(|c| Ok(c.query_row("PRAGMA user_version", [], |r| r.get(0))?))
             .unwrap();
-        assert_eq!(schema, 16, "{opened}");
+        assert_eq!(schema, 17, "{opened}");
         let cards = card_texts(&core);
         assert!(
             cards.contains(&"Baseline one".to_string())

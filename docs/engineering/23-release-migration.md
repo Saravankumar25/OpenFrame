@@ -11,7 +11,7 @@
 | Identifier | Where | Current | Changes when |
 |---|---|---|---|
 | App version (SemVer) | `Cargo.toml [workspace.package].version`, `package.json`, `apps/desktop/package.json`, `tauri.conf.json` | 0.1.0 | Every release. All four must match; `release-validate` checks this and the git tag `vX.Y.Z`. |
-| Project schema version | `PRAGMA user_version` = number of project migrations; mirrored in `openframe.json.schemaVersion` | 16 (`0001_core` to `0016_callsheets_budget`; 10 corrected from 9 on 2026-10-05, 11 added by the crash-safe AI changes item of the build plan, 12 to 14 by the Beat Board, screenplay engine and production depth areas, 15 by the shooting schedule area, 16 by the call sheets, budget, templates, samples and exports area) | A migration is appended |
+| Project schema version | `PRAGMA user_version` = number of project migrations; mirrored in `openframe.json.schemaVersion` | 17 (`0001_core` to `0017_story_page`; 10 corrected from 9 on 2026-10-05, 11 added by the crash-safe AI changes item of the build plan, 12 to 14 by the Beat Board, screenplay engine and production depth areas, 15 by the shooting schedule area, 16 by the call sheets, budget, templates, samples and exports area, 17 by the Story page) | A migration is appended |
 | Project format version | `PROJECT_FORMAT_VERSION`, `openframe.json.formatVersion` | 1 | Folder layout or manifest changes incompatibly |
 | Package format version | `PACKAGE_FORMAT_VERSION` (oldest read: `OLDEST_PACKAGE_FORMAT_VERSION`) | 2 | Package container or manifest changes; add a `format-N` fixture folder |
 | AI compatibility version | `AI_COMPATIBILITY_VERSION`, `openframe.json.aiCompatibilityVersion` | 1 | AI tool or Change Set schemas change incompatibly |
@@ -77,7 +77,7 @@ content, and recents can be rebuilt by opening projects.
      the Beat Board long scene description took project `0012` (`0012_story_card_and_vault_research.sql`, which also
      adds the Idea Vault research flag; the Global Idea Vault gets the same column in global `0004_vault_research.sql`);
      the Revision 1 screenplay schema (Screenplay engine and file formats area) took `0013`; production depth took `0014`;
-     the shooting schedule day timeline and Day Out of Days took `0015` (`0015_schedule_timeline.sql`), and call sheets and the budget took `0016` (`0016_callsheets_budget.sql`).
+     the shooting schedule day timeline and Day Out of Days took `0015` (`0015_schedule_timeline.sql`), call sheets and the budget took `0016` (`0016_callsheets_budget.sql`), and the Story page took `0017` (`0017_story_page.sql`).
 2. Each migration is plain SQL executed inside the runner's transaction. Do not use `BEGIN`/`COMMIT` or
    `PRAGMA foreign_keys` inside it.
 3. Table rebuilds: `CREATE TABLE new_x … ; INSERT INTO new_x SELECT … ; DROP TABLE x; ALTER TABLE new_x RENAME TO x;`

@@ -1,7 +1,7 @@
 // Pure helpers for the document Export dialog (FSD §20.7, §60, §122;
 // Import/Export §3). No project truth lives here.
 
-export type ExportFormatValue = "pdf" | "csv" | "xlsx" | "txt";
+export type ExportFormatValue = "pdf" | "csv" | "xlsx" | "txt" | "docx";
 
 export interface ExportFormatOption {
   value: ExportFormatValue;
@@ -14,6 +14,7 @@ export const FORMAT_LABELS: Record<ExportFormatValue, string> = {
   csv: "CSV",
   xlsx: "Excel (XLSX)",
   txt: "Plain text",
+  docx: "Word (.docx)",
 };
 
 /** Commonly offered format sets. */

@@ -140,6 +140,7 @@ pub mod hidden {
     pub const USER_PATH: &str = "Reads or writes a file-system location the user picks in a file dialog; the assistant never chooses or touches file-system paths (spec §3).";
     pub const DELETE_FOREVER: &str = "Permanent deletion ('Delete forever') is never offered to the assistant (spec §28); items stay in Recently Deleted.";
     pub const VIEW_STATE: &str = "Per-user view state (collapsed rows, remembered positions, current episode); not project content.";
+    pub const FREE_WRITING: &str = "The writer's own free-writing Story page; it is kept apart from every other page and tool on purpose (owner request 2026-10-20), so the assistant neither reads nor changes it.";
     pub const SESSION_CONTROL: &str = "Immediate session control (undo/redo, save, cancel a running task, display name) stays a direct user action; an applied Change Set is itself one undo step.";
     pub const MAINTENANCE: &str = "Internal maintenance with no user-visible project change.";
     pub const PACKAGE_REVIEW: &str = "Exchange and review packages bring other people's changes in from package files; opening, reviewing and applying them stays a human workflow.";

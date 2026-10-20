@@ -25,6 +25,8 @@ import type { StoryCreatedMany } from "../ipc/generated/StoryCreatedMany";
 import type { StoryDeleteMode } from "../ipc/generated/StoryDeleteMode";
 import type { StoryItemRef } from "../ipc/generated/StoryItemRef";
 import type { StoryOrderPreview } from "../ipc/generated/StoryOrderPreview";
+import type { StoryPageDto } from "../ipc/generated/StoryPageDto";
+import type { StoryPageSaved } from "../ipc/generated/StoryPageSaved";
 import type { StoryPlacement } from "../ipc/generated/StoryPlacement";
 import type { StoryRelationshipDto } from "../ipc/generated/StoryRelationshipDto";
 import type { StorySeriesDto } from "../ipc/generated/StorySeriesDto";
@@ -131,6 +133,11 @@ export const story = {
       },
     );
   },
+
+  // the Story page (plain free writing, not linked to anything). Read once when the tab opens: the
+  // page is the only writer of its text, so there is no live query to refresh it under the cursor.
+  pageGet: () => call<StoryPageDto>("story.page.get", {}),
+  pageSave: (text: string, expectedRev: number) => call<StoryPageSaved>("story.page.save", { text, expectedRev }),
 
   // acts
   createAct: (a: Scope & { title: string; beforeId?: string | null }) => call<StoryCreated>("story.create_act", a),

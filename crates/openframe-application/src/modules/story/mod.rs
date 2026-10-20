@@ -8,6 +8,7 @@
 //! * `characters`: character directory, relationships, manual card links
 //! * `timeline`: Story Day assignment on screenplay scenes (never reorders)
 //! * `episodes`: seasons and episodes for Episodic and Series projects
+//! * `page`: the plain free-writing Story page (not linked to any other data)
 //! * `index`: search indexers and Recently Deleted handlers
 //!
 //! Source-of-truth rules: the Beat Board is a reference layer. Nothing here
@@ -28,6 +29,7 @@ pub mod display;
 pub mod episodes;
 pub mod index;
 pub mod links;
+pub mod page;
 pub mod timeline;
 pub mod tree;
 
@@ -39,6 +41,7 @@ pub fn register(r: &mut Registry) {
     characters::register(r);
     timeline::register(r);
     episodes::register(r);
+    page::register(r);
     index::register(r);
 }
 

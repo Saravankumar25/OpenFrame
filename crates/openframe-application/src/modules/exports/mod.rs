@@ -5,6 +5,7 @@
 //! | op                         | document                                  | formats         |
 //! |----------------------------|-------------------------------------------|-----------------|
 //! | `story.export_board`       | Beat Board outline / board               | PDF · TXT · CSV |
+//! | `story.page.export`        | Story page (free writing)                 | TXT · PDF · DOCX|
 //! | `breakdown.export_report`  | Breakdown by scene + Catalog with usage   | PDF · CSV · XLSX|
 //! | `moodboard.export_pdf`     | Moodboard presentation                    | PDF             |
 //! | `storyboard.export_sheet`  | Storyboard sheet (panel grid)             | PDF             |
@@ -39,7 +40,8 @@
 //!   files (`screenplay.export`, interchange module) never use this path and
 //!   carry no branding. Branding is only ever added to the new file; the
 //!   project and the user's own files (images, attachments, imported scripts)
-//!   are only read.
+//!   are only read. The Story page is the writer's own manuscript and is the one
+//!   exception here: its exports carry no branding (`Output::unbranded`).
 
 mod breakdown;
 mod budget;
@@ -49,6 +51,7 @@ mod reports;
 mod schedule;
 mod sides;
 mod story;
+mod story_page;
 mod style;
 mod visual;
 
@@ -75,6 +78,7 @@ pub use reports::ExportReportArgs;
 pub use schedule::ExportScheduleArgs;
 pub use sides::ExportSidesArgs;
 pub use story::ExportStoryOutlineArgs;
+pub use story_page::ExportStoryPageArgs;
 pub use visual::{ExportMoodboardArgs, ExportShotListArgs, ExportStoryboardSheetArgs};
 
 pub fn register(r: &mut Registry) {
@@ -85,6 +89,14 @@ pub fn register(r: &mut Registry) {
         M::query(
             Cap::Export,
             "Export the Beat Board outline (PDF/DOCX/…) to a location the user picked.",
+        )
+        .fs(Fs::WritesUserFile)
+        .hidden(h::USER_PATH),
+    );
+    r.query("story.page.export", story_page::export).meta(
+        M::query(
+            Cap::Export,
+            "Export the Story page as plain text, PDF or Word to a location the user picked.",
         )
         .fs(Fs::WritesUserFile)
         .hidden(h::USER_PATH),
@@ -205,6 +217,7 @@ pub(crate) enum Fmt {
     Csv,
     Xlsx,
     Txt,
+    Docx,
 }
 
 impl Fmt {
@@ -214,6 +227,7 @@ impl Fmt {
             "csv" => Some(Fmt::Csv),
             "xlsx" | "excel" => Some(Fmt::Xlsx),
             "txt" | "text" => Some(Fmt::Txt),
+            "docx" | "word" => Some(Fmt::Docx),
             _ => None,
         };
         match f {
@@ -233,6 +247,7 @@ impl Fmt {
             Fmt::Csv => "csv",
             Fmt::Xlsx => "xlsx",
             Fmt::Txt => "txt",
+            Fmt::Docx => "docx",
         }
     }
     pub fn label(self) -> &'static str {
@@ -241,6 +256,7 @@ impl Fmt {
             Fmt::Csv => "CSV",
             Fmt::Xlsx => "Excel (XLSX)",
             Fmt::Txt => "Plain text",
+            Fmt::Docx => "Word (DOCX)",
         }
     }
 }
@@ -259,6 +275,10 @@ pub(crate) struct Output {
     /// bytes and page count. Takes precedence over `doc`.
     pub pdf: Option<(Vec<u8>, u32)>,
     pub warnings: Vec<String>,
+    /// A Word document built by the module, for exports that offer DOCX.
+    pub docx: Option<Vec<u8>>,
+    /// The writer's own document: no brand mark, no brand line, and plain text exactly as written.
+    pub unbranded: bool,
     /// Last change of the exported data (milliseconds). When set, the spreadsheet
     /// carries this date instead of the clock, so the same data gives the same
     /// bytes (reproducible exports).
@@ -274,6 +294,8 @@ impl Output {
             pdf_hint,
             pdf: None,
             warnings: Vec::new(),
+            docx: None,
+            unbranded: false,
             revised_at: None,
         }
     }
@@ -384,7 +406,9 @@ pub(crate) fn deliver(
     job: Job,
     mut out: Output,
 ) -> AppResult<ExportResult> {
-    out.doc.brand = Some(BRAND_LINE.to_string());
+    if !out.unbranded {
+        out.doc.brand = Some(BRAND_LINE.to_string());
+    }
     let (bytes, pages) = match fmt {
         Fmt::Pdf => match out.pdf {
             Some((bytes, pages)) => (bytes, Some(pages)),
@@ -415,11 +439,21 @@ pub(crate) fn deliver(
             let t = out.text.as_ref().ok_or_else(|| {
                 AppError::invalid_input("This document can't be exported as plain text.")
             })?;
-            let branded = format!("{}\n\n{BRAND_LINE}\n", t.trim_end());
-            let mut b = Vec::with_capacity(branded.len() + 3);
+            let body = if out.unbranded {
+                t.replace("\r\n", "\n")
+            } else {
+                format!("{}\n\n{BRAND_LINE}\n", t.trim_end())
+            };
+            let mut b = Vec::with_capacity(body.len() + 3);
             b.extend_from_slice(b"\xEF\xBB\xBF");
-            b.extend_from_slice(branded.replace('\n', "\r\n").as_bytes());
+            b.extend_from_slice(body.replace('\n', "\r\n").as_bytes());
             (b, None)
+        }
+        Fmt::Docx => {
+            let d = out.docx.take().ok_or_else(|| {
+                AppError::invalid_input("This document can't be exported as a Word document.")
+            })?;
+            (d, None)
         }
     };
     fault::before_write().map_err(export_error)?;

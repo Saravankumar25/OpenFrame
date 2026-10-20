@@ -1,5 +1,6 @@
 // Story workspace root (FSD §7–14, §18, §25; UX §3.6–3.10, §3.20).
-// Tabs: Board | Outline | Characters | Timeline (+ Episodes for series).
+// Tabs: Story | Board | Outline | Characters | Timeline (+ Episodes for series).
+// The Story tab is a plain writing page that is not linked to any other data.
 // Board and Outline render the SAME Rust-owned structure; switching views
 // never changes data.
 
@@ -23,13 +24,15 @@ import { EpisodesView } from "./Episodes";
 import { focusItem } from "./items";
 import { PARKING, containers, refKey } from "./model";
 import { OutlineView } from "./OutlineView";
+import { StoryPage } from "./StoryPage";
 import { TimelineView } from "./Timeline";
 import { ZOOM_LEVELS, keyToRef, useStoryUi } from "./ui";
 import { StoryExportButton } from "../../features/export/buttons";
 import "./story.css";
 
-type Tab = "board" | "outline" | "characters" | "timeline" | "episodes";
+type Tab = "page" | "board" | "outline" | "characters" | "timeline" | "episodes";
 const TABS: { id: Tab; label: string }[] = [
+  { id: "page", label: "Story" },
   { id: "board", label: "Board" },
   { id: "outline", label: "Outline" },
   { id: "characters", label: "Characters" },
@@ -56,7 +59,7 @@ export default function StoryWorkspace() {
   const episodes = useMemo(() => allEpisodes(series.data), [series.data]);
   const episodic = series.data?.isEpisodic ?? false;
   const showEpisodes = episodic || episodes.length > 0;
-  const tab: Tab = (["board", "outline", "characters", "timeline", "episodes"] as Tab[]).includes(route.sub as Tab) ? (route.sub as Tab) : "board";
+  const tab: Tab = (["page", "board", "outline", "characters", "timeline", "episodes"] as Tab[]).includes(route.sub as Tab) ? (route.sub as Tab) : "board";
 
   // Episode scope: explicit route param > the user's last choice > first episode.
   const paramEpisode = route.params?.episodeId;
@@ -136,7 +139,7 @@ export default function StoryWorkspace() {
           </button>
         )}
         <span style={{ flex: 1 }} />
-        {showEpisodes && tab !== "episodes" && (
+        {showEpisodes && tab !== "episodes" && tab !== "page" && (
           <div className="row" style={{ gap: 6, padding: "4px 0" }}>
             <span className="muted" style={{ fontSize: 12 }}>Episode</span>
             <Select
@@ -151,7 +154,9 @@ export default function StoryWorkspace() {
           </div>
         )}
       </div>
-      {tab === "characters" ? (
+      {tab === "page" ? (
+        <StoryPage />
+      ) : tab === "characters" ? (
         <div className="content fill">
           <PageHeader title="Characters" sub="A lightweight directory. Its most useful feature is the list of scenes each character appears in." />
           <CharactersView episodeId={episodeId} readOnly={READ_ONLY} focusId={route.params?.characterId} wantNew={wantCharacter} onNewHandled={onNewCharacterHandled} />
