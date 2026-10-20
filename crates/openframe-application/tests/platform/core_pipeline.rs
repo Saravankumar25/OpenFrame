@@ -395,10 +395,22 @@ fn pin_archive_duplicate_and_remove_emit_a_project_list_change_event() {
     use openframe_application::events::{AppEvent, StoreKind};
     let (env, id, _) = closed_project("Monsoon Ferry");
     let calls = [
-        ("project.set_pinned", json!({ "projectId": id, "pinned": true })),
-        ("project.set_pinned", json!({ "projectId": id, "pinned": false })),
-        ("project.set_archived", json!({ "projectId": id, "archived": true })),
-        ("project.set_archived", json!({ "projectId": id, "archived": false })),
+        (
+            "project.set_pinned",
+            json!({ "projectId": id, "pinned": true }),
+        ),
+        (
+            "project.set_pinned",
+            json!({ "projectId": id, "pinned": false }),
+        ),
+        (
+            "project.set_archived",
+            json!({ "projectId": id, "archived": true }),
+        ),
+        (
+            "project.set_archived",
+            json!({ "projectId": id, "archived": false }),
+        ),
     ];
     for (op, args) in calls {
         env.sink.events.lock().clear();
