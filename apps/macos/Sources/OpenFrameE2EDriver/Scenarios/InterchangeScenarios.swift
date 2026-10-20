@@ -381,6 +381,11 @@ fileprivate extension UI {
     }
 
     /// The text of the element with this identifier.
+    /// Opens "See sources" under the newest answer, when it has sources.
+    func openLastSources() async throws {
+        if let button = query(id: "ai-see-sources").last { try await tap(button) }
+    }
+
     func textOf(id: String) -> String { query(id: id).map(\.text).joined(separator: " ") }
 }
 
@@ -1216,9 +1221,12 @@ extension Scenarios {
             try await ui.choose(from: "ai-scope", ["Current Screenplay"])
             let kind = try await ui.ask("How many scenes are in the script?")
             f.check(kind == "answer", "the result is an Answer, is \(kind)")
-            f.check(ui.textOf(id: "ai-confidence").contains("Exact"), "the answer is marked exact: \"\(ui.textOf(id: "ai-confidence"))\"")
+            // A plain answer: no "Exact" badge or step list in the conversation (OpenFrameAI.docx 4.1).
+            f.check(ui.query(id: "ai-confidence").isEmpty && ui.query(id: "ai-steps").isEmpty, "the answer carries no badge or step list")
             f.check(ui.lastAnswerText().contains("3"), "the answer contains 3: \(ui.lastAnswerText())")
-            f.check(ui.query(id: "ai-source").count >= 1, "the answer has at least one source")
+            f.check(ui.query(id: "ai-source").isEmpty, "its sources stay closed until asked for")
+            try await ui.openLastSources()
+            f.check(ui.query(id: "ai-source").count >= 1, "See sources lists at least one source")
             f.check(!ui.engines().isEmpty, "the chat engine is now running")
             try f.finish()
         },
@@ -1229,6 +1237,7 @@ extension Scenarios {
             try await ui.choose(from: "ai-scope", ["Whole Project"])
             let kind = try await ui.ask("Which scene happens at the bus stop?")
             f.check(kind == "answer" || kind == "navigate", "the result is an Answer or a Navigate, is \(kind)")
+            try await ui.openLastSources()
             let chips = ui.query(id: "ai-source").filter { $0.text.uppercased().contains("BUS STOP") }
             f.check(!chips.isEmpty, "one of its sources names BUS STOP: \(ui.query(id: "ai-source").map(\.text))")
             try await ui.go("Project Home")
@@ -1376,6 +1385,7 @@ extension Scenarios {
             try await ui.openAssistant()
             let kind = try await ui.ask("Which locations are used in the script?")
             f.check(isAnswered(kind), "the question was answered, result is \(kind)")
+            try await ui.openLastSources()
             let a = (ui.lastAnswerText() + " " + ui.query(id: "ai-source").map(\.text).joined(separator: " ") + " " + ui.query(id: "ai-items").map(\.text).joined(separator: " ")).uppercased()
             f.check(a.contains("BUS STOP") || a.contains("RAILWAY STATION") || a.contains("POLICE STATION"), "the answer or its sources name a location: \(a)")
             try f.finish()

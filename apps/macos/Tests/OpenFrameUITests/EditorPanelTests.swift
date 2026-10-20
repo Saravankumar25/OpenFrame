@@ -174,8 +174,10 @@ struct PanelHelperTests {
         #expect(PageSetupModel.appending("{title}", to: "") == "{title}")
         #expect(PageSetupModel.appending("{page}", to: "{title}") == "{title} {page}")
         #expect(ScreenplayPickerModel.titleTaken([], "x") == false)
-        #expect(SceneHubModel.workspace(forRow: "breakdown") == .breakdown)
-        #expect(SceneHubModel.workspace(forRow: "screenplay") == nil)
+        #expect(SceneHubModel.place(forRow: "breakdown") == ProjectPlace(.breakdown))
+        #expect(SceneHubModel.place(forRow: "shots") == ProjectPlace(.production, tab: .shotLists))
+        #expect(SceneHubModel.place(forRow: "schedule") == ProjectPlace(.production, tab: .schedule))
+        #expect(SceneHubModel.place(forRow: "screenplay") == nil)
     }
 }
 
@@ -508,46 +510,6 @@ struct EditorPanelTests {
         #expect(rig.scenes().count == 2)
     }
 
-    // MARK: Review
-
-    @Test func reviewRoundsCollectNotesAndComplete() async throws {
-        let rig = try await PanelRig.start()
-        defer { rig.close(); try? FileManager.default.removeItem(at: rig.editor.root) }
-        try await rig.seedNightBus()
-        let review = ReviewPanelModel()
-        review.attach(rig.app, rig.model, say: { rig.state.say($0) })
-        await review.reload()
-        #expect(review.rounds.isEmpty)
-
-        let draft = try #require(rig.model.draft)
-        #expect(await review.start(draftId: draft.id, name: "Review of First Draft", reviewers: ["Anika"], deadline: "2026-11-01") == nil)
-        #expect(rig.state.notice == "Started review \u{201C}Review of First Draft\u{201D}")
-        let round = try #require(review.round)
-        #expect(round.status == "Open")
-        #expect(round.reviewers == ["Anika"])
-        #expect(round.deadline == "2026-11-01")
-        #expect(ReviewPanelModel.deadlineText("2026-11-01").contains("1"))
-        #expect(await review.addReviewer("Ravi") == nil)
-        #expect(review.round?.reviewers == ["Anika", "Ravi"])
-
-        // A note made while the round is open belongs to the round.
-        let busStop = try #require(rig.scenes().first)
-        rig.state.addComment(sceneId: busStop.id)
-        #expect(await rig.comments.post("Cut the first line.") == nil)
-        await review.reload()
-        #expect(review.threads.map(\.comment.body) == ["Cut the first line."])
-        #expect(review.groups.count == 1)
-        #expect(review.groups[0].label.hasPrefix("Scene "))
-        #expect(review.round?.openCount == 1)
-
-        await review.complete()
-        #expect(review.round?.status == "Complete")
-        #expect(rig.state.notice == "Completed \u{201C}Review of First Draft\u{201D}. The script was not locked.")
-        // The script was not locked.
-        #expect(rig.model.draft?.status != .locked)
-        #expect(rig.model.canEdit)
-    }
-
     // MARK: Page setup
 
     @Test func pageSetupAndTitlePageAreSavedWithTheScreenplay() async throws {
@@ -615,7 +577,6 @@ struct EditorPanelTests {
             #expect(snapshot(view, app: rig.app, name: "panel-inspector-\(tab.rawValue.lowercased())", size: CGSize(width: 340, height: 720)) != nil)
         }
         #expect(snapshot(DraftsSheet(workspace: rig.model, state: rig.state), app: rig.app, name: "panel-drafts", size: CGSize(width: 600, height: 620)) != nil)
-        #expect(snapshot(ReviewSheet(workspace: rig.model, state: rig.state, startFor: nil), app: rig.app, name: "panel-review", size: CGSize(width: 880, height: 600)) != nil)
     }
 
     // MARK: Scenario 43

@@ -26,7 +26,8 @@ struct CSRig {
     var day2Id = ""
     var scenes: [ScheduleStripDto] = []
 
-    static let brand = "Created with OpenFrame Studio"
+    /// The footer line of every production PDF (report.rs BRAND_LINE).
+    static let brand = "Created using OpenFrame"
 
     static func make(title: String = "Lost Property Unit") async throws -> CSRig {
         let root = try Fixture.root()

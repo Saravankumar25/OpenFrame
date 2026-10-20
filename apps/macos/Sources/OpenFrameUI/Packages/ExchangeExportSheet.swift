@@ -59,25 +59,6 @@ struct ExchangeExportSheet: View {
                     .accessibilityLabel("Source draft").accessibilityIdentifier("exchange-draft")
                 }
             }
-            if model.packageType == .breakdown {
-                field("Production Source") { Text(src.productionSource?.label ?? "No Production Source has been chosen yet.") }
-            }
-            if model.packageType == .schedule {
-                field("Schedule") { Text(src.schedule?.label ?? "This project has no shooting schedule yet.") }
-            }
-            if model.packageType == .callReview {
-                field("Call sheet") {
-                    if src.callSheets.isEmpty {
-                        Text("This project has no call sheet yet.").foregroundStyle(.secondary)
-                    } else {
-                        Picker("Call sheet", selection: $model.callSheetId) {
-                            ForEach(src.callSheets, id: \.id) { Text($0.label).tag($0.id) }
-                        }
-                        .labelsHidden().fixedSize()
-                        .accessibilityLabel("Call sheet").accessibilityIdentifier("exchange-call-sheet")
-                    }
-                }
-            }
             if !model.scopeChoices.isEmpty {
                 field("Scope") {
                     Picker("Scope", selection: Binding(get: { model.scope }, set: { s in Task { await model.setScope(s) } })) {

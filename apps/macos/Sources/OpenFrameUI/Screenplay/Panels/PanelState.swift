@@ -18,7 +18,6 @@ enum ScreenplayPanelSheet: Identifiable, Equatable {
     case drafts
     case newDraft
     case compare(a: String?, b: String?)
-    case review(startFor: String?)
     case pageSetup
     case titlePage
     case newScreenplay
@@ -34,7 +33,6 @@ enum ScreenplayPanelSheet: Identifiable, Equatable {
         case .drafts: "drafts"
         case .newDraft: "new-draft"
         case let .compare(a, b): "compare-\(a ?? "-")-\(b ?? "-")"
-        case let .review(d): "review-\(d ?? "-")"
         case .pageSetup: "page-setup"
         case .titlePage: "title-page"
         case .newScreenplay: "new-screenplay"
@@ -142,7 +140,6 @@ struct ScreenplayPanelsHost: ViewModifier {
                 case .drafts: DraftsSheet(workspace: model, state: state)
                 case .newDraft: NewDraftHost(workspace: model, state: state)
                 case let .compare(a, b): CompareSheet(workspace: model, state: state, initialA: a, initialB: b)
-                case let .review(startFor): ReviewSheet(workspace: model, state: state, startFor: startFor)
                 case .pageSetup: PageSetupSheet(workspace: model, state: state)
                 case .titlePage: PageSetupSheet(workspace: model, state: state, initialPage: .titlePage)
                 case .newScreenplay: NewScreenplaySheet(workspace: model, state: state)
@@ -278,7 +275,6 @@ struct ScreenplayToolsMenu: View {
             Button(state.inspectorShown ? "Hide Inspector" : "Show Inspector") { state.inspectorShown.toggle() }
             Divider()
             Button("Drafts\u{2026}") { state.sheet = .drafts }
-            Button("Review\u{2026}") { state.sheet = .review(startFor: nil) }
             if let draft = model.draft {
                 if model.overview?.permissions.lock == true, draft.status != .locked {
                     Button("Lock as Shooting Draft\u{2026}") { state.sheet = .lock(draftId: draft.id) }

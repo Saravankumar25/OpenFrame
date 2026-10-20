@@ -7,31 +7,38 @@ import SwiftUI
 import OpenFrameCore
 
 struct VisualPlanningWorkspace: View {
+    /// The one tab this place shows (Production > Moodboards, Storyboards or Shot Lists); nil
+    /// shows all three with their own tab bar (tests and previews).
+    var fixed: VisualTab?
     @Environment(AppModel.self) private var app
-    @State private var hub: VisualHub?
+    @Environment(ProjectHubs.self) private var hubs: ProjectHubs?
+    @State private var own: VisualHub?
 
     var body: some View {
         Group {
-            if let hub {
-                VisualContent(hub: hub)
+            if let hub = hubs?.visual ?? own {
+                VisualContent(hub: hub, fixed: fixed)
             } else {
                 ProgressView()
             }
         }
         .fitsWindow()
-        .task { if hub == nil { hub = VisualHub(app: app) } }
+        .task { if hubs == nil, own == nil { own = VisualHub(app: app) } }
     }
 }
 
 struct VisualContent: View {
     @Bindable var hub: VisualHub
+    var fixed: VisualTab?
     @Environment(AppModel.self) private var app
     @Environment(\.ofTheme) private var theme
 
     var body: some View {
         VStack(spacing: 0) {
-            tabBar
-            Divider()
+            if fixed == nil {
+                tabBar
+                Divider()
+            }
             Group {
                 if let f = hub.scenesFailure, hub.scenes == nil {
                     ContentUnavailableView {
@@ -46,7 +53,7 @@ struct VisualContent: View {
                 } else if !hub.scenesLoaded {
                     ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
-                    switch hub.tab {
+                    switch fixed ?? hub.tab {
                     case .moodboards: MoodboardsView(model: hub.moodboards)
                     case .storyboards: StoryboardsView(model: hub.storyboards)
                     case .shots: ShotsView(model: hub.shots)
@@ -55,6 +62,7 @@ struct VisualContent: View {
             }
         }
         .background(theme["bg"])
+        .followsHubTab(hub.tab, fixed: fixed, set: { hub.tab = $0 }, place: { $0.place })
         .environment(hub)
         .task(id: app.changes.key(VisualTables.scenes)) { await hub.reloadScenes() }
         .task(id: app.changes.key(["project_member"])) { await hub.reloadMembers() }

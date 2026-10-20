@@ -20,7 +20,7 @@ struct CSSidesView: View {
                 } description: {
                     Text("Create a shooting schedule and a shooting day first. Sides contain that day's screenplay scenes.")
                 } actions: {
-                    Button("Open Schedule") { csShowWorkspace(.schedule) }
+                    Button("Open Schedule") { ProjectNav.show(.production, tab: .schedule) }
                         .accessibilityIdentifier("sides-open-schedule")
                 }
                 .accessibilityElement(children: .contain)

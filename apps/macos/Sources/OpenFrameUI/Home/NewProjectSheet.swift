@@ -34,7 +34,7 @@ struct NewProjectSheet: View {
                     .focused($titleFocused)
                     .accessibilityIdentifier("new-project-title")
                 Picker("Type", selection: $type) {
-                    ForEach(ProjectType.allCases, id: \.self) { Text($0.rawValue).tag($0) }
+                    ForEach(ProjectSettingsDraft.offeredTypes, id: \.self) { Text($0.rawValue).tag($0) }
                 }
                 .accessibilityLabel("Type")
                 .accessibilityIdentifier("new-project-type")

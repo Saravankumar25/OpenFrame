@@ -175,7 +175,7 @@ struct AIAssistantTests {
         defer { r.close() }
         let expected: [(Workspace, String)] = [
             (.home, "Using: Whole Project"), (.ideaVault, "Using: Whole Project"), (.story, "Using: Story Board"),
-            (.breakdown, "Using: Production Workspace"), (.schedule, "Using: Production Workspace"),
+            (.breakdown, "Using: Production Workspace"), (.production, "Using: Production Workspace"),
             (.callSheets, "Using: Production Workspace"), (.screenplay, "Using: Current Screenplay"), (.notes, "Using: Whole Project"),
         ]
         for (ws, line) in expected {

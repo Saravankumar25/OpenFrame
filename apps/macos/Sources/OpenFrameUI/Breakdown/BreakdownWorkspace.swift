@@ -10,33 +10,41 @@ import SwiftUI
 import OpenFrameCore
 
 struct BreakdownWorkspace: View {
+    /// The one tab this place shows (the Breakdown workspace, or a Production tab); nil shows
+    /// the hub with its own tab bar (tests and previews).
+    var fixed: BDTab?
     @Environment(AppModel.self) private var app
-    @State private var hub: BreakdownHub?
+    @Environment(ProjectHubs.self) private var hubs: ProjectHubs?
+    @State private var own: BreakdownHub?
 
     var body: some View {
         Group {
-            if let hub {
-                BreakdownContent(hub: hub)
+            if let hub = hubs?.breakdown ?? own {
+                BreakdownContent(hub: hub, fixed: fixed)
             } else {
                 ProgressView()
             }
         }
         .fitsWindow()
-        .task { if hub == nil { hub = BreakdownHub(app: app) } }
+        .task { if hubs == nil, own == nil { own = BreakdownHub(app: app) } }
     }
 }
 
 struct BreakdownContent: View {
     @Bindable var hub: BreakdownHub
+    var fixed: BDTab?
     @Environment(AppModel.self) private var app
     @Environment(\.ofTheme) private var theme
 
     var body: some View {
         VStack(spacing: 0) {
-            tabBar
-            Divider()
+            if fixed == nil {
+                tabBar
+                Divider()
+            }
             content.frame(maxWidth: .infinity, maxHeight: .infinity)
         }
+        .followsHubTab(hub.tab, fixed: fixed, set: { hub.tab = $0 }, place: { $0.place })
         .background(theme["bg"])
         .overlay(alignment: .bottom) { BDNoticeBar(hub: hub) }
         .environment(hub)
@@ -62,7 +70,7 @@ struct BreakdownContent: View {
     }
 
     @ViewBuilder private var content: some View {
-        switch hub.tab {
+        switch fixed ?? hub.tab {
         case .breakdown: BreakdownTabView(model: hub.breakdown)
         case .catalog: CatalogView(model: hub.catalog)
         case .locations: LocationsView(model: hub.locations)

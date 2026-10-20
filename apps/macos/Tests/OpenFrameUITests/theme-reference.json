@@ -25,15 +25,39 @@
     "lg1": "#ff5d6c"
    },
    "dark": {
-    "bg": "#17150f",
-    "panel": "#221f19",
-    "ink": "#e9e8e4",
-    "accent": "#f4993c",
-    "accent-soft": "#473523",
-    "side": "#0d0b06",
-    "red": "#f36358",
-    "yellow-t": "#fae0ab",
+    "bg": "#151821",
+    "panel": "#1c2029",
+    "ink": "#e9ebf1",
+    "accent": "#ea9441",
+    "accent-soft": "#3a2918",
+    "side": "#10131a",
+    "red": "#ee6e63",
+    "yellow-t": "#f2d88f",
     "lg1": "#ff5d6c"
+   }
+  },
+  "black-and-white": {
+   "light": {
+    "bg": "#ffffff",
+    "panel": "#ffffff",
+    "ink": "#000000",
+    "accent": "#111111",
+    "accent-soft": "#e6e6e6",
+    "side": "#ffffff",
+    "red": "#c1332f",
+    "yellow-t": "#503b04",
+    "lg1": "#111111"
+   },
+   "dark": {
+    "bg": "#000000",
+    "panel": "#0b0b0b",
+    "ink": "#ffffff",
+    "accent": "#f2f2f2",
+    "accent-soft": "#2b2b2b",
+    "side": "#000000",
+    "red": "#f36358",
+    "yellow-t": "#ffecb8",
+    "lg1": "#f2f2f2"
    }
   },
   "studio-amber": {

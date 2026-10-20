@@ -1,79 +1,10 @@
-// The open project: a sidebar of workspaces and the selected workspace. Each workspace reads
-// from the core and reloads on the core's change events.
+// The open project: a sidebar of workspaces and the selected workspace (structure as on Windows,
+// see ProjectNavigation.swift). Each workspace reads from the core and reloads on the core's
+// change events. The toolbar carries All Projects, Back and Forward, the project menu, the AI
+// Assistant and Settings, each with a visible name.
 
 import SwiftUI
 import OpenFrameCore
-
-/// The workspaces of a project, in sidebar order. Workspaces of later Mac phases are listed
-/// so the structure matches Windows, and say plainly that they are not on the Mac yet.
-enum Workspace: String, CaseIterable, Identifiable, Hashable {
-    case home, screenplay, story, ideaVault, breakdown
-    case schedule, callSheets, budget, visual, files, notes, activity, recentlyDeleted
-
-    var id: String { rawValue }
-
-    var title: String {
-        switch self {
-        case .home: "Project Home"
-        case .screenplay: "Screenplay"
-        case .story: "Story"
-        case .ideaVault: "Idea Vault"
-        case .breakdown: "Breakdown"
-        case .schedule: "Schedule"
-        case .callSheets: "Call Sheets"
-        case .budget: "Budget"
-        case .visual: "Visual Planning"
-        case .files: "Files"
-        case .notes: "Notes and Tasks"
-        case .activity: "Activity"
-        case .recentlyDeleted: "Recently Deleted"
-        }
-    }
-
-    var symbol: String {
-        switch self {
-        case .home: "house"
-        case .screenplay: "doc.text"
-        case .story: "rectangle.3.group"
-        case .ideaVault: "lightbulb"
-        case .breakdown: "list.bullet.rectangle"
-        case .schedule: "calendar"
-        case .callSheets: "doc.richtext"
-        case .budget: "dollarsign.circle"
-        case .visual: "photo.on.rectangle"
-        case .files: "folder"
-        case .notes: "checklist"
-        case .activity: "clock.arrow.circlepath"
-        case .recentlyDeleted: "trash"
-        }
-    }
-
-    var section: String {
-        switch self {
-        case .home: "Project"
-        case .screenplay, .story, .ideaVault: "Writing"
-        case .breakdown, .schedule, .callSheets, .budget, .visual: "Production"
-        case .files, .notes, .activity, .recentlyDeleted: "Project"
-        }
-    }
-
-    /// Keyboard shortcut in the Go menu: Control+Command+1 to 9 for the main workspaces. Command+1
-    /// to Command+8 belong to the screenplay elements, as in Mac screenwriting apps.
-    var shortcut: KeyEquivalent? {
-        switch self {
-        case .home: "1"
-        case .screenplay: "2"
-        case .story: "3"
-        case .ideaVault: "4"
-        case .breakdown: "5"
-        case .schedule: "6"
-        case .callSheets: "7"
-        case .budget: "8"
-        case .visual: "9"
-        default: nil
-        }
-    }
-}
 
 struct ProjectView: View {
     let project: ProjectSummary
@@ -85,6 +16,17 @@ struct ProjectView: View {
     /// The AI Assistant panel docks beside the page; it stays as the person left it.
     @SceneStorage("assistantOpen") private var assistantOpen = false
     @State private var selection: Workspace? = .home
+    /// The Production tab shown (Windows: the Production subnav).
+    @State private var productionTab: ProductionTab = .overview
+    /// Pages visited, for Back and Forward.
+    @State private var history = PlaceHistory()
+    /// The place last shown, so a sidebar click is recorded as a move from it.
+    @State private var shown = ProjectPlace(.home)
+    /// Set while Back or Forward moves the window, so that move is not recorded again.
+    @State private var replaying = false
+    /// Screenplay Focus hides everything but the page (owner change list item 13).
+    @State private var focus = false
+    @State private var hubs: ProjectHubs?
     @State private var columns: NavigationSplitViewVisibility = .all
     /// The sidebar was hidden by Screenplay Focus (not by the person), so leaving Focus shows it.
     @State private var hiddenForFocus = false
@@ -102,20 +44,29 @@ struct ProjectView: View {
     }
 
     var body: some View {
+        withNavigation(withSheets(splitView))
+    }
+
+    private var splitView: some View {
         NavigationSplitView(columnVisibility: $columns) {
             List(selection: $selection) {
-                ForEach(["Writing", "Production", "Project"], id: \.self) { section in
-                    Section(section) {
-                        ForEach(Workspace.allCases.filter { $0.section == section }) { ws in
-                            Label(ws.title, systemImage: ws.symbol)
-                                .tag(ws)
-                                .accessibilityIdentifier("sidebar-\(ws.rawValue)")
-                        }
-                    }
+                ForEach(Workspace.sidebar) { ws in
+                    Label(ws.title, systemImage: ws.symbol)
+                        .tag(ws)
+                        .accessibilityIdentifier("sidebar-\(ws.rawValue)")
                 }
             }
             .navigationSplitViewColumnWidth(min: 190, ideal: 220, max: 300)
-            .safeAreaInset(edge: .bottom) { SaveStatusView().padding(10) }
+            .safeAreaInset(edge: .bottom) {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Project stored locally on this Mac")
+                        .font(.caption)
+                        .foregroundStyle(theme["muted"])
+                        .fixedSize(horizontal: false, vertical: true)
+                    SaveStatusView()
+                }
+                .padding(10)
+            }
             // The project's own sidebar button (below) has a name screen readers and tests can use.
             .toolbar(removing: .sidebarToggle)
         } detail: {
@@ -127,7 +78,7 @@ struct ProjectView: View {
                 HStack(spacing: 0) {
                     detail(selection ?? .home)
                         .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
-                    if assistantOpen {
+                    if assistantOpen && !focus {
                         Divider()
                         AIPanelView(workspace: selection ?? .home) { assistantOpen = false }
                             .frame(width: Self.assistantWidth(for: geo.size.width))
@@ -138,23 +89,31 @@ struct ProjectView: View {
             }
             .navigationTitle(current.title)
             .interchangeAnchor()
-            .navigationSubtitle(selection?.title ?? "")
+            .navigationSubtitle(currentPlace.title)
+            .environment(hubs)
         }
         .toolbar {
-            ToolbarItem(placement: .primaryAction) { assistantButton }
-            ToolbarItem(placement: .primaryAction) { projectSettingsButton }
-            ToolbarItem(placement: .primaryAction) { projectMenu }
             ToolbarItem(placement: .navigation) { sidebarButton }
             ToolbarItem(placement: .navigation) {
                 Button {
                     Task { await app.closeProject() }
                 } label: {
-                    Label("All Projects", systemImage: "chevron.left")
+                    Label("All Projects", systemImage: "square.grid.2x2")
+                        .labelStyle(.titleAndIcon)
                 }
                 .help("Close this project and show all projects")
                 .accessibilityIdentifier("close-project")
             }
+            ToolbarItem(placement: .navigation) { backForward }
+            ToolbarItem(placement: .primaryAction) { projectMenu }
+            ToolbarItem(placement: .primaryAction) { assistantButton }
+            ToolbarItem(placement: .primaryAction) { projectSettingsButton }
         }
+        .toolbar(focus ? .hidden : .automatic, for: .windowToolbar)
+    }
+
+    private func withSheets(_ content: some View) -> some View {
+        content
         .task(id: app.changes.any) {
             if let now = try? await app.core?.projectCurrent(), now.id == project.id { live = now }
         }
@@ -167,15 +126,34 @@ struct ProjectView: View {
         .onReceive(NotificationCenter.default.publisher(for: .openFrameShowProjectSettings)) { note in
             settingsTab = (note.object as? String).flatMap(ProjectSettingsTab.init(rawValue:)) ?? .general
         }
+    }
+
+    private func withNavigation(_ content: some View) -> some View {
+        content
         .onAppear {
+            if hubs == nil { hubs = ProjectHubs(app: app) }
             let parts = stored.split(separator: "|", maxSplits: 1).map(String.init)
-            selection = parts.count == 2 && parts[0] == project.id ? Workspace(rawValue: parts[1]) ?? .home : .home
+            let place = parts.count == 2 && parts[0] == project.id ? ProjectPlace(key: parts[1]) ?? ProjectPlace(.home) : ProjectPlace(.home)
+            // Restoring the saved page is not a move the person made.
+            if place != currentPlace { replaying = true }
+            apply(place)
+            shown = place
         }
-        .onChange(of: selection) { _, new in stored = "\(project.id)|\((new ?? .home).rawValue)" }
+        .onChange(of: currentPlace) { _, new in
+            stored = "\(project.id)|\(new.key)"
+            if replaying {
+                replaying = false
+            } else {
+                history.moved(from: shown, to: new)
+            }
+            shown = new
+        }
         .onReceive(NotificationCenter.default.publisher(for: .openFrameScreenplayFocus)) { note in
-            // Focus hides the sidebar and leaving Focus brings it back; a sidebar the person hid
-            // stays hidden (the Screenplay says "not in Focus" each time it closes).
-            if (note.object as? Bool) == true {
+            // Focus hides the sidebar, the toolbar and the AI panel, and leaving Focus brings them
+            // back; a sidebar the person hid stays hidden (the Screenplay says "not in Focus"
+            // each time it closes).
+            focus = (note.object as? Bool) == true
+            if focus {
                 if columns != .detailOnly { hiddenForFocus = true; columns = .detailOnly }
             } else if hiddenForFocus {
                 hiddenForFocus = false
@@ -191,8 +169,60 @@ struct ProjectView: View {
         .onReceive(NotificationCenter.default.publisher(for: .openFrameToggleSidebar)) { _ in setSidebar(shown: columns == .detailOnly) }
         .onChange(of: columns, initial: true) { _, now in ProjectSidebar.shared.shown = now != .detailOnly }
         .onReceive(NotificationCenter.default.publisher(for: .openFrameShowWorkspace)) { note in
-            if let raw = note.object as? String, let ws = Workspace(rawValue: raw) { selection = ws }
+            if let raw = note.object as? String, let place = ProjectPlace(key: raw) { apply(place) }
         }
+        .onReceive(NotificationCenter.default.publisher(for: .openFrameNavigateBack)) { _ in goBack() }
+        .onReceive(NotificationCenter.default.publisher(for: .openFrameNavigateForward)) { _ in goForward() }
+        .onChange(of: history, initial: true) { _, h in
+            ProjectSidebar.shared.canGoBack = h.canGoBack
+            ProjectSidebar.shared.canGoForward = h.canGoForward
+        }
+    }
+
+    /// The place on screen now.
+    private var currentPlace: ProjectPlace { ProjectPlace(selection ?? .home, tab: productionTab) }
+
+    private func apply(_ place: ProjectPlace) {
+        if let tab = place.tab { productionTab = tab }
+        selection = place.workspace
+    }
+
+    private func goBack() {
+        guard let target = history.goBack(from: currentPlace) else { return }
+        replaying = true
+        apply(target)
+        if target == currentPlace { replaying = false }
+    }
+
+    private func goForward() {
+        guard let target = history.goForward(from: currentPlace) else { return }
+        replaying = true
+        apply(target)
+        if target == currentPlace { replaying = false }
+    }
+
+    /// Back and Forward through the pages visited (Windows: the top-bar arrows, Alt+Left and
+    /// Alt+Right; here Command+[ and Command+], as in Finder and Safari).
+    private var backForward: some View {
+        ControlGroup {
+            Button {
+                goBack()
+            } label: {
+                Label("Back", systemImage: "chevron.left")
+            }
+            .disabled(!history.canGoBack)
+            .help("Back (Command+[)")
+            .accessibilityIdentifier("nav-back")
+            Button {
+                goForward()
+            } label: {
+                Label("Forward", systemImage: "chevron.right")
+            }
+            .disabled(!history.canGoForward)
+            .help("Forward (Command+])")
+            .accessibilityIdentifier("nav-forward")
+        }
+        .controlGroupStyle(.navigation)
     }
 
     /// The AI Assistant panel is 360 points wide, narrower in a narrow window so the page keeps
@@ -282,7 +312,13 @@ struct ProjectView: View {
             Button("Duplicate Project") { Task { await actions.duplicate(asRecent) } }
             Button("Show in Finder") { Task { await actions.reveal(projectId: current.id) } }
             Divider()
+            Button("Notes and Tasks") { selection = .notes }
+                .accessibilityIdentifier("project-menu-notes")
+            Button("Activity") { selection = .activity }
+                .accessibilityIdentifier("project-menu-activity")
             Button("Recently Deleted") { selection = .recentlyDeleted }
+                .accessibilityIdentifier("project-menu-recently-deleted")
+            Divider()
             Button("Archive Project") {
                 Task {
                     await actions.setArchived(asRecent, true)
@@ -303,14 +339,12 @@ struct ProjectView: View {
     @ViewBuilder private func detail(_ ws: Workspace) -> some View {
         switch ws {
         case .home: ProjectHomeView(project: project) { selection = $0 }
-        case .screenplay: ScreenplayWorkspace()
-        case .story: StoryWorkspace()
         case .ideaVault: IdeaVaultWorkspace(store: .project)
-        case .breakdown: BreakdownWorkspace()
-        case .schedule: ScheduleWorkspace()
-        case .callSheets: CallSheetsWorkspace()
-        case .budget: BudgetWorkspace()
-        case .visual: VisualPlanningWorkspace()
+        case .story: StoryWorkspace()
+        case .screenplay: ScreenplayWorkspace()
+        case .breakdown: BreakdownWorkspace(fixed: .breakdown)
+        case .production: ProductionWorkspace(tab: $productionTab)
+        case .callSheets: CallSheetsWorkspace(fixed: .callSheets)
         case .files: FilesWorkspace()
         case .notes: NotesWorkspace()
         case .activity: ActivityWorkspace()
@@ -356,6 +390,9 @@ extension Notification.Name {
     static let openFrameShowWorkspace = Notification.Name("studio.openframe.showWorkspace")
     /// View > Hide Sidebar or Show Sidebar (Command+Control+S).
     static let openFrameToggleSidebar = Notification.Name("studio.openframe.toggleSidebar")
+    /// Go > Back and Go > Forward (Command+[ and Command+]).
+    static let openFrameNavigateBack = Notification.Name("studio.openframe.navigateBack")
+    static let openFrameNavigateForward = Notification.Name("studio.openframe.navigateForward")
 }
 
 /// Whether the open project shows its workspace sidebar, so the View menu can name its command.
@@ -363,4 +400,7 @@ extension Notification.Name {
 final class ProjectSidebar {
     static let shared = ProjectSidebar()
     var shown = true
+    /// Whether Back and Forward have somewhere to go, so the Go menu can enable them.
+    var canGoBack = false
+    var canGoForward = false
 }

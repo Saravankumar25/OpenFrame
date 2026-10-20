@@ -60,7 +60,7 @@ final class AIScopeHints {
             draftId: workspace == .screenplay ? draftId : nil,
             sceneId: workspace == .screenplay ? sceneId : nil,
             selectionIds: selectionIds,
-            shootingDayId: workspace == .schedule || workspace == .callSheets ? shootingDayId : nil,
+            shootingDayId: workspace == .production || workspace == .callSheets ? shootingDayId : nil,
             callSheetId: workspace == .callSheets ? callSheetId : nil)
     }
 }
@@ -91,7 +91,7 @@ enum AILogic {
         switch c.workspace {
         case .screenplay: return .currentScreenplay
         case .story: return .storyBoard
-        case .breakdown, .schedule, .callSheets, .budget, .visual: return .production
+        case .breakdown, .production, .callSheets: return .production
         default: return .wholeProject
         }
     }
@@ -166,15 +166,17 @@ enum AILogic {
 
     // MARK: Answers
 
-    struct Confidence: Equatable { var text: String; var tone: String }
+    /// Items shown before "Show all": a long answer is a preview plus the full list, never "and N more".
+    static let previewItems = 8
 
-    static func confidence(_ c: AiConfidence?) -> Confidence? {
-        switch c {
-        case .exact?: Confidence(text: "Exact \u{00B7} from project data", tone: "green")
-        case .inferred?: Confidence(text: "Inferred \u{00B7} written by Offline AI", tone: "blue")
-        case .unavailable?: Confidence(text: "Not available in project data", tone: "yellow")
-        case nil: nil
-        }
+    static func visibleItems(_ items: [AiResultItem], all: Bool) -> [AiResultItem] {
+        all ? items : Array(items.prefix(previewItems))
+    }
+
+    /// A refusal, a failure, a private item or a question back needs its reasons next to it. For
+    /// an ordinary answer the details are how it was worked out and stay out of the conversation.
+    static func reasonsVisible(_ kind: AiResultKind) -> Bool {
+        [.denied, .failed, .unavailable, .clarify, .private].contains(kind)
     }
 
     struct SourceChip: Identifiable, Equatable {
@@ -183,17 +185,17 @@ enum AILogic {
         var route: AIRoute?
     }
 
-    static func sourceChips(_ provenance: [AiProvenance]) -> [SourceChip] {
-        provenance.enumerated().map { i, p in
-            SourceChip(
-                id: "\(i):\(p.kind):\(p.label)",
-                text: p.kind == "Scope" || p.kind == "Basis" ? p.label : "\(p.kind): \(p.label)",
-                route: AIRoute(p.nav))
+    /// The sources listed under "See sources": the places the answer was read from. The scope and
+    /// the basis ("Using: Whole Project") are settings of the question, not sources, so they are
+    /// left out; repeats are listed once.
+    static func answerSources(_ provenance: [AiProvenance]) -> [SourceChip] {
+        var seen = Set<String>()
+        return provenance.enumerated().compactMap { i, p in
+            guard p.kind != "Scope", p.kind != "Basis" else { return nil }
+            let text = "\(p.kind): \(p.label)"
+            guard seen.insert(text).inserted else { return nil }
+            return SourceChip(id: "\(i):\(text)", text: text, route: AIRoute(p.nav))
         }
-    }
-
-    static func stepsSummary(_ steps: [AiStepDto]) -> String? {
-        steps.count < 2 ? nil : "\(steps.count) steps: " + steps.map(\.label).joined(separator: " \u{00B7} ")
     }
 
     // MARK: Change Sets
@@ -291,6 +293,12 @@ struct AIRoute: Equatable {
         params = nav.params
     }
 
+    /// The Production tab named by the link ("sub"), Overview when it names none.
+    var tab: ProductionTab? {
+        guard workspace == .production else { return nil }
+        return params["sub"].flatMap(ProductionTab.init(windowsId:)) ?? .overview
+    }
+
     /// Windows workspace ids to the Mac workspaces. Unknown ids are ignored.
     static func workspace(for id: String) -> Workspace? {
         switch id {
@@ -299,7 +307,7 @@ struct AIRoute: Equatable {
         case "story": .story
         case "screenplay": .screenplay
         case "breakdown": .breakdown
-        case "production": .schedule
+        case "production": .production
         case "callsheets": .callSheets
         case "files": .files
         case "trash": .recentlyDeleted
@@ -311,7 +319,7 @@ struct AIRoute: Equatable {
 
     /// Open the place. Navigation is application control, not a project change (AI spec section 5.3).
     @MainActor func perform() {
-        NotificationCenter.default.post(name: .openFrameShowWorkspace, object: workspace.rawValue)
+        ProjectNav.show(workspace, tab: tab)
         if workspace == .screenplay, params["sceneId"] != nil || params["draftId"] != nil {
             var info: [String: Any] = [:]
             for key in ["screenplayId", "draftId", "sceneId"] { if let v = params[key] { info[key] = v } }

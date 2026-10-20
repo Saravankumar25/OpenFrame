@@ -24,9 +24,11 @@ enum PKInfo {
         }
     }
 
-    /// Exchange package types that can be exported from a project, in menu order.
-    static let exchangeExportTypes: [PackageType] = [.scriptReview, .story, .breakdown, .shots, .schedule, .callReview]
-    static let exchangeOpenTypes: [PackageType] = [.scriptReview, .story, .breakdown, .shots, .schedule, .callReview, .response]
+    /// Exchange package types that can be exported from a project, in menu order. The Breakdown,
+    /// Shot List, Schedule and Call Sheet Review packages were removed (owner change list item 9,
+    /// 2026-10-19, as on Windows); only the script review and Story Board packages remain.
+    static let exchangeExportTypes: [PackageType] = [.scriptReview, .story]
+    static let exchangeOpenTypes: [PackageType] = [.scriptReview, .story, .response]
     static let projectOpenTypes: [PackageType] = [.project, .backup]
     static let reviewOpenTypes: [PackageType] = [.scriptReview, .response]
 

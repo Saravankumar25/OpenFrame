@@ -51,6 +51,14 @@ struct ProjectSettingsDraft: Equatable {
     }
 
     static func isEpisodic(_ t: ProjectType) -> Bool { t == .episodic || t == .series }
+
+    /// New projects are films: Episodic and Series are no longer offered (owner change list item
+    /// 9, 2026-10-19, as on Windows). A project made with one of them earlier keeps it.
+    static let offeredTypes: [ProjectType] = [.featureFilm, .shortFilm]
+
+    static func typeChoices(current: ProjectType) -> [ProjectType] {
+        offeredTypes.contains(current) ? offeredTypes : offeredTypes + [current]
+    }
 }
 
 @MainActor

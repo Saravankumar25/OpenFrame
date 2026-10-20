@@ -8,33 +8,41 @@ import SwiftUI
 import OpenFrameCore
 
 struct CallSheetsWorkspace: View {
+    /// The one tab this place shows (Call Sheets, or a Production tab); nil shows the hub with
+    /// its own tab bar (tests and previews).
+    var fixed: CSTab?
     @Environment(AppModel.self) private var app
-    @State private var hub: CallSheetsHub?
+    @Environment(ProjectHubs.self) private var hubs: ProjectHubs?
+    @State private var own: CallSheetsHub?
 
     var body: some View {
         Group {
-            if let hub {
-                CallSheetsContent(hub: hub)
+            if let hub = hubs?.callSheets ?? own {
+                CallSheetsContent(hub: hub, fixed: fixed)
             } else {
                 ProgressView()
             }
         }
         .fitsWindow()
-        .task { if hub == nil { hub = CallSheetsHub(app: app) } }
+        .task { if hubs == nil, own == nil { own = CallSheetsHub(app: app) } }
     }
 }
 
 struct CallSheetsContent: View {
     @Bindable var hub: CallSheetsHub
+    var fixed: CSTab?
     @Environment(AppModel.self) private var app
     @Environment(\.ofTheme) private var theme
 
     var body: some View {
         VStack(spacing: 0) {
-            tabBar
-            Divider()
+            if fixed == nil {
+                tabBar
+                Divider()
+            }
             content.frame(maxWidth: .infinity, maxHeight: .infinity)
         }
+        .followsHubTab(hub.tab, fixed: fixed, set: { hub.tab = $0 }, place: { $0.place })
         .background(theme["bg"])
         .environment(hub)
         .sheet(item: $hub.exportModel) { m in
@@ -62,7 +70,7 @@ struct CallSheetsContent: View {
     }
 
     @ViewBuilder private var content: some View {
-        switch hub.tab {
+        switch fixed ?? hub.tab {
         case .callSheets:
             if let editor = hub.editor {
                 CallSheetEditorView(model: editor).id(editor.id)

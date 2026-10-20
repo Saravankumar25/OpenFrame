@@ -8,23 +8,28 @@ import SwiftUI
 import OpenFrameCore
 
 struct ScheduleWorkspace: View {
+    /// The one section this place shows (Production > Schedule or Day Out of Days); nil shows
+    /// both with their own tab bar (tests and previews).
+    var fixed: SchedSection?
     @Environment(AppModel.self) private var app
-    @State private var model: ScheduleModel?
+    @Environment(ProjectHubs.self) private var hubs: ProjectHubs?
+    @State private var own: ScheduleModel?
 
     var body: some View {
         Group {
-            if let model {
-                ScheduleContent(model: model)
+            if let model = hubs?.schedule ?? own {
+                ScheduleContent(model: model, fixed: fixed)
             } else {
                 ProgressView()
             }
         }
-        .task { if model == nil { model = ScheduleModel(app: app) } }
+        .task { if hubs == nil, own == nil { own = ScheduleModel(app: app) } }
     }
 }
 
 struct ScheduleContent: View {
     @Bindable var model: ScheduleModel
+    var fixed: SchedSection?
     @Environment(AppModel.self) private var app
     @Environment(\.ofTheme) private var theme
 
@@ -41,10 +46,12 @@ struct ScheduleContent: View {
 
     private var content: some View {
         VStack(spacing: 0) {
-            sectionBar
-            Divider()
+            if fixed == nil {
+                sectionBar
+                Divider()
+            }
             Group {
-                switch model.section {
+                switch fixed ?? model.section {
                 case .schedule: scheduleTab
                 case .dood: SchedDoodScreen(model: model)
                 }
@@ -52,6 +59,7 @@ struct ScheduleContent: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .background(theme["bg"])
+        .followsHubTab(model.section, fixed: fixed, set: { model.section = $0 }, place: { $0.place })
         .task(id: dataKey) { await model.reload() }
         .task(id: doodKey) { if model.section == .dood { await model.reloadDood() } }
         .sheet(item: $model.sheet) { ScheduleSheetHost(model: model, sheet: $0) }

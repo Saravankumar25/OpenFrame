@@ -141,7 +141,7 @@ struct ProjectGeneralForm: View {
             }
             field("Type", required: true, hint: model.typeHint) {
                 Picker("Type", selection: $model.draft.projectType) {
-                    ForEach(ProjectType.allCases, id: \.self) { Text($0.rawValue).tag($0) }
+                    ForEach(ProjectSettingsDraft.typeChoices(current: model.initial.projectType), id: \.self) { Text($0.rawValue).tag($0) }
                 }
                 .labelsHidden()
                 .accessibilityLabel("Type")

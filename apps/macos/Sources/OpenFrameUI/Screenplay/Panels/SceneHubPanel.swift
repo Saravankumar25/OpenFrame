@@ -115,12 +115,13 @@ final class SceneHubModel {
     }
 
     /// The workspace a hub row opens, or nil for the row that is the script itself.
-    static func workspace(forRow key: String) -> Workspace? {
+    static func place(forRow key: String) -> ProjectPlace? {
         switch key {
-        case "breakdown": .breakdown
-        case "story": .story
-        case "shots", "storyboard": .visual
-        case "schedule": .schedule
+        case "breakdown": ProjectPlace(.breakdown)
+        case "story": ProjectPlace(.story)
+        case "shots": ProjectPlace(.production, tab: .shotLists)
+        case "storyboard": ProjectPlace(.production, tab: .storyboards)
+        case "schedule": ProjectPlace(.production, tab: .schedule)
         default: nil
         }
     }
@@ -178,8 +179,8 @@ struct SceneHubPanel: View {
                 ForEach(hub.rows, id: \.key) { r in
                     Button {
                         if r.key == "comments" { state.tab = .comments }
-                        else if let ws = SceneHubModel.workspace(forRow: r.key) {
-                            NotificationCenter.default.post(name: .openFrameShowWorkspace, object: ws.rawValue)
+                        else if let place = SceneHubModel.place(forRow: r.key) {
+                            ProjectNav.show(place)
                         }
                     } label: {
                         HStack {

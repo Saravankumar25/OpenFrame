@@ -36,7 +36,7 @@ struct AILogicTests {
         #expect(scope(.ideaVault) == .wholeProject)
         #expect(scope(.story) == .storyBoard)
         #expect(scope(.breakdown) == .production)
-        #expect(scope(.schedule) == .production)
+        #expect(scope(.production) == .production)
         #expect(scope(.callSheets) == .production)
         #expect(scope(.screenplay) == .currentScreenplay)
         #expect(scope(.screenplay, scene: "s1") == .currentScene)
@@ -131,34 +131,48 @@ struct AILogicTests {
 
     // MARK: Answers
 
-    @Test func answersShowTheirSourcesAndHowSureTheyAre() {
-        #expect(AILogic.confidence(.exact)?.text == "Exact \u{00B7} from project data")
-        #expect(AILogic.confidence(.inferred)?.text == "Inferred \u{00B7} written by Offline AI")
-        #expect(AILogic.confidence(.unavailable)?.text == "Not available in project data")
-        #expect(AILogic.confidence(nil) == nil)
-        let chips = AILogic.sourceChips([
+    @Test func answersListOnlyRealSourcesUnderSeeSources() {
+        let chips = AILogic.answerSources([
             AiProvenance(kind: "Scope", label: "Using: Whole Project"),
+            AiProvenance(kind: "Basis", label: "Exact"),
+            AiProvenance(kind: "Scene", label: "BUS STOP", nav: AiNavTarget(workspace: "screenplay", params: ["sceneId": "s1"])),
             AiProvenance(kind: "Scene", label: "BUS STOP", nav: AiNavTarget(workspace: "screenplay", params: ["sceneId": "s1"])),
             AiProvenance(kind: "Draft", label: "Draft 1", nav: AiNavTarget(workspace: "elsewhere", params: [:])),
         ])
-        #expect(chips.map(\.text) == ["Using: Whole Project", "Scene: BUS STOP", "Draft: Draft 1"])
-        #expect(chips[0].route == nil)
-        #expect(chips[1].route?.workspace == .screenplay)
-        #expect(chips[1].route?.params["sceneId"] == "s1")
+        // The scope is a setting of the question, not a source; a repeat is listed once.
+        #expect(chips.map(\.text) == ["Scene: BUS STOP", "Draft: Draft 1"])
+        #expect(chips[0].route?.workspace == .screenplay)
+        #expect(chips[0].route?.params["sceneId"] == "s1")
         // An unknown workspace is ignored, never guessed.
-        #expect(chips[2].route == nil)
-        #expect(AILogic.stepsSummary([]) == nil)
+        #expect(chips[1].route == nil)
+        #expect(AILogic.answerSources([AiProvenance(kind: "Scope", label: "Using: Current Screenplay")]).isEmpty)
+    }
+
+    @Test func longListsShowAPreviewAndTheWholeListOnRequest() {
+        let items = (1...30).map { AiResultItem(label: "Scene \($0)") }
+        #expect(AILogic.visibleItems(items, all: false).count == AILogic.previewItems)
+        #expect(AILogic.visibleItems(items, all: true).count == 30)
+        #expect(AILogic.visibleItems(Array(items.prefix(3)), all: false).count == 3)
+    }
+
+    @Test func onlyRefusalsFailuresAndQuestionsShowTheirReasons() {
+        for kind in [AiResultKind.denied, .failed, .unavailable, .clarify, .private] { #expect(AILogic.reasonsVisible(kind), "\(kind)") }
+        for kind in [AiResultKind.answer, .navigate, .suggestion, .proposal] { #expect(!AILogic.reasonsVisible(kind), "\(kind)") }
     }
 
     @Test func navigationTargetsMapToMacWorkspaces() {
         let expected: [(String, Workspace)] = [
             ("home", .home), ("vault", .ideaVault), ("story", .story), ("screenplay", .screenplay), ("breakdown", .breakdown),
-            ("production", .schedule), ("callsheets", .callSheets), ("files", .files), ("trash", .recentlyDeleted),
+            ("production", .production), ("callsheets", .callSheets), ("files", .files), ("trash", .recentlyDeleted),
             ("activity", .activity), ("notes", .notes),
         ]
         for (id, ws) in expected { #expect(AIRoute.workspace(for: id) == ws, "\(id)") }
         #expect(AIRoute.workspace(for: "settings") == nil)
         #expect(AIRoute(nil) == nil)
+        // A Production link opens its tab, Overview when it names none.
+        #expect(AIRoute(AiNavTarget(workspace: "production", params: ["sub": "cast-crew"]))?.tab == .castCrew)
+        #expect(AIRoute(AiNavTarget(workspace: "production", params: [:]))?.tab == .overview)
+        #expect(AIRoute(AiNavTarget(workspace: "screenplay", params: [:]))?.tab == nil)
     }
 
     @Test func indexNoticeShowsOnlyWhileContextIsRebuilt() {

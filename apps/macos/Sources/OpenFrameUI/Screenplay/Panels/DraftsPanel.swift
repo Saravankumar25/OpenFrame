@@ -281,7 +281,6 @@ struct DraftsSheet: View {
                 if !d.isCurrent, let current = model.current {
                     Button("Compare With Current") { state.sheet = .compare(a: d.id, b: current.id) }
                 }
-                if canEdit { Button("Start Review\u{2026}") { state.sheet = .review(startFor: d.id) } }
                 if d.status == .revision, canEdit { Button("Revision Label and Colour\u{2026}") { dialog = .revision(d) } }
                 if permissions?.lock == true, d.status != .locked { Button("Lock as Shooting Draft\u{2026}") { dialog = .lock(d) } }
                 if d.status == .locked, canEdit { Button("Start Revision\u{2026}") { dialog = .startRevision(d) } }

@@ -69,7 +69,8 @@ struct WindowFitTests {
         defaults.set(["keep"], forKey: "NSSplitView Subview Frames other")
         SidebarRestore.clearCollapsed(in: defaults)
         let frames = try #require(defaults.array(forKey: key) as? [String])
-        #expect(frames[0] == "0.000000, 0.000000, 198.000000, 632.000000, NO, NO")
+        // Not collapsed any more, and a width under the sidebar's minimum comes back as 220.
+        #expect(frames[0] == "0.000000, 0.000000, 220.000000, 632.000000, NO, NO")
         #expect(frames[1] == "0.000000, 0.000000, 1240.000000, 652.000000, NO, NO")
         #expect(defaults.array(forKey: "NSSplitView Subview Frames other") as? [String] == ["keep"])
     }

@@ -64,6 +64,12 @@ struct ProjectSettingsTests {
         #expect(m.typeHint == nil)
     }
 
+    @Test func newProjectsAreFilmsAndAnOldEpisodicProjectKeepsItsType() {
+        #expect(ProjectSettingsDraft.offeredTypes == [.featureFilm, .shortFilm])
+        #expect(ProjectSettingsDraft.typeChoices(current: .shortFilm) == [.featureFilm, .shortFilm])
+        #expect(ProjectSettingsDraft.typeChoices(current: .series) == [.featureFilm, .shortFilm, .series])
+    }
+
     @Test func clearingNotesAndFieldsStoresEmpty() async throws {
         let (app, root) = try await open()
         defer { app.shutdown(); try? FileManager.default.removeItem(at: root) }
