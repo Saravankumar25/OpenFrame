@@ -182,9 +182,12 @@ struct HomeView: View {
         ProjectSearchField(text: $home.query)
             .frame(width: 220)
         Button { openExisting() } label: { Label("Open Project", systemImage: "folder").labelStyle(.titleAndIcon) }
+            .buttonStyle(.bordered)
             .help(ShortcutStore.shared.tooltipWords("Open Project", "home.open_project"))
             .accessibilityIdentifier("home-open-project")
         Button { InterchangePresenter.shared.present(.openProject) } label: { Label("Restore Backup or Package\u{2026}", systemImage: "archivebox").labelStyle(.titleAndIcon) }
+            .buttonStyle(.borderless)
+            .foregroundStyle(.primary)
             .help("Restore a backup or open a project package")
             .accessibilityIdentifier("home-restore-package")
         Button { showNewProject = true } label: { Label("New Project", systemImage: "plus").labelStyle(.titleAndIcon) }
@@ -194,9 +197,36 @@ struct HomeView: View {
             .accessibilityIdentifier("home-new-project")
     }
 
+    /// As on Windows: the title and its line on the left, search and the three buttons in one row
+    /// on the right; in a narrow window the buttons go under the title instead of off the edge.
+    private var homeHeader: some View {
+        let titleBlock = VStack(alignment: .leading, spacing: 4) {
+            Text("Your projects")
+                .font(.system(size: 24, weight: .semibold))
+                .tracking(-0.3)
+                .accessibilityAddTraits(.isHeader)
+            Text("Pick up where you left off, or start something new.")
+                .font(.callout)
+                .foregroundStyle(.secondary)
+        }
+        return ViewThatFits(in: .horizontal) {
+            HStack(alignment: .center, spacing: PageSpacing.medium) {
+                titleBlock.fixedSize()
+                Spacer(minLength: PageSpacing.medium)
+                HStack(spacing: 10) { pageActions }.fixedSize()
+            }
+            VStack(alignment: .leading, spacing: PageSpacing.medium) {
+                titleBlock
+                BDFlowLayout(spacing: 10) { pageActions }
+            }
+        }
+        .padding(.top, PageSpacing.page)
+        .padding(.bottom, PageSpacing.small)
+    }
+
     private var projectsPage: some View {
         VStack(alignment: .leading, spacing: PageSpacing.medium) {
-            PageHeader("Your projects", subtitle: "Pick up where you left off, or start something new.") { pageActions }
+            homeHeader
             if !home.hasMatches {
                 noMatches
             } else {
