@@ -74,7 +74,10 @@ pub fn board(g: &Gold, ctx: &mut Ctx) {
     g.ok("story.update_act", json!({ "id": act_ids[0], "title": null, "note": "Setup. Ends when Anjali finds the reel. 12 scenes.", "expectedRev": null }));
 
     // Fold the prologue act into Act One.
-    g.ok("story.delete_act", json!({ "id": prologue, "mode": "moveContents", "moveToActId": act_ids[0] }));
+    g.ok(
+        "story.delete_act",
+        json!({ "id": prologue, "mode": "moveContents", "moveToActId": act_ids[0] }),
+    );
 
     // Beats.
     for b in arr(&story["beats"]) {
@@ -115,19 +118,35 @@ pub fn board(g: &Gold, ctx: &mut Ctx) {
         json!({ "items": [{ "kind": "sequence", "id": joe }], "target": { "parentType": "act", "parentId": act_ids[1] },
                 "before": null, "episodeId": null }),
     );
-    g.ok("story.move_act", json!({ "id": act_ids[2], "beforeId": act_ids[1] }));
-    g.ok("story.move_act", json!({ "id": act_ids[2], "beforeId": null }));
+    g.ok(
+        "story.move_act",
+        json!({ "id": act_ids[2], "beforeId": act_ids[1] }),
+    );
+    g.ok(
+        "story.move_act",
+        json!({ "id": act_ids[2], "beforeId": null }),
+    );
 
     // Scene 40 (the roof broadcast) was nearly cut: parked, then restored.
     let c40 = ctx.cards[&40].clone();
     g.ok("story.park_items", json!({ "items": [card_ref(&c40)] }));
-    g.ok("story.restore_from_parking", json!({ "items": [card_ref(&c40)] }));
+    g.ok(
+        "story.restore_from_parking",
+        json!({ "items": [card_ref(&c40)] }),
+    );
     // Splitting the harbour search into two scenes was tried and dropped.
-    let dup = g.ok("story.duplicate_items", json!({ "items": [card_ref(&ctx.cards[&23])] }));
-    let dup_ids: Vec<Value> = arr(&dup["ids"]).iter().chain(arr(&dup["created"]).iter()).map(|v| {
-        let id = if v.is_string() { s(v) } else { g.id(v) };
-        card_ref(&id)
-    }).collect();
+    let dup = g.ok(
+        "story.duplicate_items",
+        json!({ "items": [card_ref(&ctx.cards[&23])] }),
+    );
+    let dup_ids: Vec<Value> = arr(&dup["ids"])
+        .iter()
+        .chain(arr(&dup["created"]).iter())
+        .map(|v| {
+            let id = if v.is_string() { s(v) } else { g.id(v) };
+            card_ref(&id)
+        })
+        .collect();
     if !dup_ids.is_empty() {
         g.ok("story.delete_items", json!({ "items": dup_ids }));
     }
@@ -140,13 +159,19 @@ pub fn board(g: &Gold, ctx: &mut Ctx) {
         g.ok("story.card_to_beat", json!({ "id": opening }));
     }
     let parking = g.ok("story.board", json!({ "episodeId": null }));
-    if let Some(quote_beat) = arr(&parking["parking"]).iter().find(|i| s(&i["kind"]) == "beat" && (i.to_string().contains("came home on a voice") || i.to_string().contains("Pappan"))) {
+    if let Some(quote_beat) = arr(&parking["parking"]).iter().find(|i| {
+        s(&i["kind"]) == "beat"
+            && (i.to_string().contains("came home on a voice") || i.to_string().contains("Pappan"))
+    }) {
         g.ok("story.convert_beat", json!({ "id": quote_beat["id"] }));
     }
     // The coda sequence from the vault was cut.
     let coda = ctx.id("codaSequence");
     if !coda.is_empty() {
-        g.ok("story.delete_sequence", json!({ "id": coda, "mode": "deleteAll", "moveTo": null }));
+        g.ok(
+            "story.delete_sequence",
+            json!({ "id": coda, "mode": "deleteAll", "moveTo": null }),
+        );
     }
 
     // Attachments.
@@ -173,16 +198,28 @@ pub fn board(g: &Gold, ctx: &mut Ctx) {
 
     // Display settings and view state.
     g.ok("story.card_display", json!({}));
-    g.ok("story.set_card_display", json!({ "preset": "story", "toggles": null }));
+    g.ok(
+        "story.set_card_display",
+        json!({ "preset": "story", "toggles": null }),
+    );
     g.ok(
         "story.set_card_display",
         json!({ "preset": "custom", "toggles": { "sceneHeading": true, "shortDescription": true, "longDescriptionPreview": false,
                 "notes": true, "attachments": true, "characterCount": true, "location": true, "dayNight": true, "comments": true,
                 "revisionChange": true, "breakdownStatus": true, "shotStatus": true } }),
     );
-    g.ok("story.set_collapsed", json!({ "id": act_ids[0], "collapsed": true }));
-    g.ok("story.set_collapsed", json!({ "id": act_ids[0], "collapsed": false }));
-    g.ok("story.set_collapsed", json!({ "id": ctx.id("seq:Static"), "collapsed": true }));
+    g.ok(
+        "story.set_collapsed",
+        json!({ "id": act_ids[0], "collapsed": true }),
+    );
+    g.ok(
+        "story.set_collapsed",
+        json!({ "id": act_ids[0], "collapsed": false }),
+    );
+    g.ok(
+        "story.set_collapsed",
+        json!({ "id": ctx.id("seq:Static"), "collapsed": true }),
+    );
     g.ok("story.view_state", json!({ "episodeId": null }));
     g.ok("story.card", json!({ "id": ctx.cards[&1] }));
     let b = g.ok("story.board", json!({ "episodeId": null }));
@@ -195,17 +232,32 @@ pub fn board(g: &Gold, ctx: &mut Ctx) {
 fn episode_probe(g: &Gold, ctx: &mut Ctx) {
     let season = g.id(&g.ok("story.create_season", json!({ "title": "Probe season" })));
     let series = g.ok("story.series", json!({}));
-    ctx.facts.insert("featureFilmAcceptsSeasons".into(), json!({ "created": !season.is_empty(), "isEpisodic": series["isEpisodic"] }));
+    ctx.facts.insert(
+        "featureFilmAcceptsSeasons".into(),
+        json!({ "created": !season.is_empty(), "isEpisodic": series["isEpisodic"] }),
+    );
     if season.is_empty() {
         return;
     }
     g.ok("story.update_season", json!({ "id": season, "title": "Probe season (to remove)", "note": "Feature films should not offer seasons." }));
     let other = g.id(&g.ok("story.create_season", json!({ "title": "Probe season 2" })));
-    g.ok("story.move_season", json!({ "id": other, "beforeId": season }));
-    let ep = g.id(&g.ok("story.create_episode", json!({ "seasonId": season, "title": "Probe episode", "summary": null, "status": null })));
+    g.ok(
+        "story.move_season",
+        json!({ "id": other, "beforeId": season }),
+    );
+    let ep = g.id(&g.ok(
+        "story.create_episode",
+        json!({ "seasonId": season, "title": "Probe episode", "summary": null, "status": null }),
+    ));
     g.ok("story.update_episode", json!({ "id": ep, "title": null, "summary": "Created only to check the project type rule.", "status": null, "expectedRev": null }));
-    let copy = g.id(&g.ok("story.duplicate_episode", json!({ "id": ep, "copyStory": false })));
-    g.ok("story.move_episode", json!({ "id": copy, "seasonId": other, "beforeId": null }));
+    let copy = g.id(&g.ok(
+        "story.duplicate_episode",
+        json!({ "id": ep, "copyStory": false }),
+    ));
+    g.ok(
+        "story.move_episode",
+        json!({ "id": copy, "seasonId": other, "beforeId": null }),
+    );
     g.ok("story.set_current_episode", json!({ "episodeId": ep }));
     g.ok("story.set_current_episode", json!({ "episodeId": null }));
     for id in [&copy, &ep] {
@@ -217,7 +269,10 @@ fn episode_probe(g: &Gold, ctx: &mut Ctx) {
     let trash = g.ok("trash.list", json!({ "store": "project" }));
     for row in arr(&trash) {
         if row.to_string().contains("Probe") {
-            g.ok("trash.purge", json!({ "store": "project", "id": row["id"] }));
+            g.ok(
+                "trash.purge",
+                json!({ "store": "project", "id": row["id"] }),
+            );
         }
     }
 }
@@ -236,8 +291,15 @@ fn find_scene(story: &Value, n: u32) -> Value {
 }
 
 fn create_card(g: &Gold, seq_id: &str, sc: &Value) -> String {
-    let notes = format!("Story day: {}. Characters: {}.", s(&sc["storyDay"]),
-        arr(&sc["characters"]).iter().map(s).collect::<Vec<_>>().join(", "));
+    let notes = format!(
+        "Story day: {}. Characters: {}.",
+        s(&sc["storyDay"]),
+        arr(&sc["characters"])
+            .iter()
+            .map(s)
+            .collect::<Vec<_>>()
+            .join(", ")
+    );
     g.id(&g.ok(
         "story.create_card",
         json!({ "parent": { "parentType": "sequence", "parentId": seq_id }, "episodeId": null,
@@ -259,7 +321,10 @@ fn characters(g: &Gold, ctx: &mut Ctx) {
     ];
     for c in arr(&ctx.story["characters"]) {
         let key = s(&c["key"]);
-        let image = pics.iter().find(|(k, _)| *k == key).map(|(_, f)| ctx.media.path(f));
+        let image = pics
+            .iter()
+            .find(|(k, _)| *k == key)
+            .map(|(_, f)| ctx.media.path(f));
         let id = g.id(&g.ok(
             "story.create_character",
             json!({ "name": c["name"], "roleLabel": c["roleLabel"], "description": c["description"], "notes": c["notes"],
@@ -269,9 +334,15 @@ fn characters(g: &Gold, ctx: &mut Ctx) {
     }
     // Latha's picture arrived after casting; a wrong file was set first and cleared.
     let latha = ctx.chars["LATHA"].clone();
-    g.ok("story.set_character_image", json!({ "id": latha, "path": ctx.media.path("cast-fathima.png") }));
+    g.ok(
+        "story.set_character_image",
+        json!({ "id": latha, "path": ctx.media.path("cast-fathima.png") }),
+    );
     g.ok("story.clear_character_image", json!({ "id": latha }));
-    g.ok("story.set_character_image", json!({ "id": latha, "path": ctx.media.path("cast-latha.png") }));
+    g.ok(
+        "story.set_character_image",
+        json!({ "id": latha, "path": ctx.media.path("cast-latha.png") }),
+    );
     g.ok(
         "story.update_character",
         json!({ "id": ctx.chars["SURESH"], "name": null, "roleLabel": "Antagonist, then ally", "description": null, "notes": null, "expectedRev": null }),
@@ -282,7 +353,10 @@ fn characters(g: &Gold, ctx: &mut Ctx) {
         json!({ "name": "BAKER", "roleLabel": "Cut role", "description": "Lends the convection oven in scene 14. Lines given to Fathima in the second draft.",
                 "notes": null, "episodeId": null, "imagePath": null }),
     ));
-    g.ok("story.set_character_archived", json!({ "id": baker, "archived": true }));
+    g.ok(
+        "story.set_character_archived",
+        json!({ "id": baker, "archived": true }),
+    );
     // The harbour master was merged into the Port Officer.
     let hm = g.id(&g.ok(
         "story.create_character",
@@ -291,7 +365,10 @@ fn characters(g: &Gold, ctx: &mut Ctx) {
     g.ok("story.delete_character", json!({ "id": hm }));
 
     for r in arr(&ctx.story["relationships"]) {
-        let (Some(from), Some(to)) = (ctx.chars.get(&s(&r["from"])), ctx.chars.get(&s(&r["to"]))) else { continue };
+        let (Some(from), Some(to)) = (ctx.chars.get(&s(&r["from"])), ctx.chars.get(&s(&r["to"])))
+        else {
+            continue;
+        };
         let id = g.id(&g.ok(
             "story.create_relationship",
             json!({ "fromCharacterId": from, "toCharacterId": to, "relationshipType": r["type"], "note": r["note"] }),
@@ -316,22 +393,45 @@ fn characters(g: &Gold, ctx: &mut Ctx) {
         for seq in arr(&act["sequences"]) {
             for sc in arr(&seq["scenes"]) {
                 let n = sc["n"].as_u64().unwrap_or(0) as u32;
-                let Some(card) = ctx.cards.get(&n) else { continue };
+                let Some(card) = ctx.cards.get(&n) else {
+                    continue;
+                };
                 for ch in arr(&sc["characters"]) {
                     if let Some(cid) = ctx.chars.get(&s(&ch)) {
-                        g.ok("story.link_character_card", json!({ "characterId": cid, "cardId": card }));
+                        g.ok(
+                            "story.link_character_card",
+                            json!({ "characterId": cid, "cardId": card }),
+                        );
                     }
                 }
             }
         }
     }
     // Joe was linked to scene 18 by mistake (he does not go to the mass).
-    g.ok("story.link_character_card", json!({ "characterId": ctx.chars["JOE"], "cardId": ctx.cards[&18] }));
-    g.ok("story.unlink_character_card", json!({ "characterId": ctx.chars["JOE"], "cardId": ctx.cards[&18] }));
-    g.ok("story.characters", json!({ "episodeId": null, "includeArchived": true }));
-    g.ok("story.relationships", json!({ "episodeId": null, "includeArchived": false }));
-    g.ok("story.character", json!({ "id": ctx.chars["ANJALI"], "episodeId": null }));
-    g.ok("story.character_usage", json!({ "id": ctx.chars["APPACHAN"] }));
+    g.ok(
+        "story.link_character_card",
+        json!({ "characterId": ctx.chars["JOE"], "cardId": ctx.cards[&18] }),
+    );
+    g.ok(
+        "story.unlink_character_card",
+        json!({ "characterId": ctx.chars["JOE"], "cardId": ctx.cards[&18] }),
+    );
+    g.ok(
+        "story.characters",
+        json!({ "episodeId": null, "includeArchived": true }),
+    );
+    g.ok(
+        "story.relationships",
+        json!({ "episodeId": null, "includeArchived": false }),
+    );
+    g.ok(
+        "story.character",
+        json!({ "id": ctx.chars["ANJALI"], "episodeId": null }),
+    );
+    g.ok(
+        "story.character_usage",
+        json!({ "id": ctx.chars["APPACHAN"] }),
+    );
 }
 
 /// After the first build: put scene 32 in its place, apply the order to the script, then the
@@ -345,9 +445,18 @@ pub fn after_script(g: &Gold, ctx: &mut Ctx) {
         json!({ "items": [card_ref(&c32)], "target": { "parentType": "sequence", "parentId": ctx.id("seq:What Joe Did") },
                 "before": card_ref(&c33), "episodeId": null }),
     );
-    g.ok("story.order_preview", json!({ "episodeId": null, "draftId": null, "confirmed": false }));
-    g.refused("story.apply_order", json!({ "episodeId": null, "draftId": null, "confirmed": false }));
-    g.ok("story.apply_order", json!({ "episodeId": null, "draftId": null, "confirmed": true }));
+    g.ok(
+        "story.order_preview",
+        json!({ "episodeId": null, "draftId": null, "confirmed": false }),
+    );
+    g.refused(
+        "story.apply_order",
+        json!({ "episodeId": null, "draftId": null, "confirmed": false }),
+    );
+    g.ok(
+        "story.apply_order",
+        json!({ "episodeId": null, "draftId": null, "confirmed": true }),
+    );
     crate::phases::screenplay::map_scenes(g, ctx);
 
     // Story Days and time notes.
@@ -358,19 +467,41 @@ pub fn after_script(g: &Gold, ctx: &mut Ctx) {
             for sc in arr(&seq["scenes"]) {
                 let n = sc["n"].as_u64().unwrap_or(0) as u32;
                 if let Some(id) = ctx.scenes.get(&n) {
-                    by_day.entry(s(&sc["storyDay"])).or_default().push(id.clone());
+                    by_day
+                        .entry(s(&sc["storyDay"]))
+                        .or_default()
+                        .push(id.clone());
                 }
             }
         }
     }
     for (day, ids) in &by_day {
-        g.ok("story.assign_story_day", json!({ "sceneIds": ids, "storyDay": day }));
+        g.ok(
+            "story.assign_story_day",
+            json!({ "sceneIds": ids, "storyDay": day }),
+        );
     }
-    for (n, note) in [(1u32, "23:10, the storm peaks"), (2, "23:40, power cut"), (32, "23:45 to 00:30"), (34, "about 00:20"), (5, "06:10"), (43, "05:30")] {
+    for (n, note) in [
+        (1u32, "23:10, the storm peaks"),
+        (2, "23:40, power cut"),
+        (32, "23:45 to 00:30"),
+        (34, "about 00:20"),
+        (5, "06:10"),
+        (43, "05:30"),
+    ] {
         if let Some(id) = ctx.scenes.get(&n) {
-            g.ok("story.set_time_note", json!({ "sceneId": id, "timeNote": note }));
+            g.ok(
+                "story.set_time_note",
+                json!({ "sceneId": id, "timeNote": note }),
+            );
         }
     }
-    ctx.facts.insert("timeline".into(), g.ok("story.timeline", json!({ "episodeId": null, "screenplayId": null })));
+    ctx.facts.insert(
+        "timeline".into(),
+        g.ok(
+            "story.timeline",
+            json!({ "episodeId": null, "screenplayId": null }),
+        ),
+    );
     g.ok("story.build_preview", json!({ "episodeId": null }));
 }

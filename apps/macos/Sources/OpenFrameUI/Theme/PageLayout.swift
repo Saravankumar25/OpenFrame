@@ -54,26 +54,42 @@ public struct PageHeader<Accessory: View>: View {
         self.accessory = accessory()
     }
 
+    /// As on Windows (design-system PageHeader): the title and its line on the left, the page's
+    /// actions on the right; in a narrow page the actions go under the title instead of off the edge.
     public var body: some View {
-        VStack(spacing: PageSpacing.small) {
+        ViewThatFits(in: .horizontal) {
+            HStack(alignment: .top, spacing: PageSpacing.medium) {
+                titleBlock.fixedSize(horizontal: false, vertical: true)
+                Spacer(minLength: PageSpacing.medium)
+                actions.fixedSize()
+            }
+            VStack(alignment: .leading, spacing: PageSpacing.small) {
+                titleBlock
+                actions
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.top, PageSpacing.page)
+        .padding(.bottom, PageSpacing.medium)
+    }
+
+    private var titleBlock: some View {
+        VStack(alignment: .leading, spacing: 4) {
             Text(title)
-                .font(.system(size: 26, weight: .semibold))
-                .tracking(-0.3)
-                .multilineTextAlignment(.center)
+                .font(.system(size: 22, weight: .bold))
+                .tracking(-0.2)
                 .accessibilityAddTraits(.isHeader)
             if let subtitle, !subtitle.isEmpty {
                 Text(subtitle)
                     .font(.callout)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
+                    .foregroundStyle(theme["muted"])
                     .fixedSize(horizontal: false, vertical: true)
             }
-            accessory
-                .padding(.top, PageSpacing.tight)
         }
-        .frame(maxWidth: .infinity)
-        .padding(.top, PageSpacing.page)
-        .padding(.bottom, PageSpacing.large)
+    }
+
+    private var actions: some View {
+        HStack(spacing: PageSpacing.small) { accessory }
     }
 }
 
@@ -95,8 +111,12 @@ public struct SectionHeader<Trailing: View>: View {
 
     public var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: PageSpacing.small) {
+            // Small grey capitals, as the Windows section titles (".h4").
             Text(title)
-                .font(.headline)
+                .textCase(.uppercase)
+                .font(.caption.weight(.bold))
+                .tracking(0.7)
+                .foregroundStyle(.secondary)
                 .accessibilityAddTraits(.isHeader)
             Spacer(minLength: PageSpacing.small)
             trailing

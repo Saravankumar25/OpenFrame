@@ -529,6 +529,11 @@ struct ScreenplayWorkspace: View {
 
     var body: some View {
         let focus = model.mode == .focus
+        VStack(spacing: 0) {
+        if !focus {
+            pageBar
+            Divider()
+        }
         HSplitView {
             if !focus && scenesShown {
                 SceneNavigator(model: model, panels: panels, currentIndex: currentIndex)
@@ -550,8 +555,8 @@ struct ScreenplayWorkspace: View {
             .frame(minWidth: 340)
             .overlay(alignment: .topTrailing) { if focus { focusBar } }
         }
+        }
         .toolbar(focus ? .hidden : .automatic, for: .windowToolbar)
-        .toolbar { toolbar }
         .background { modeShortcuts }
         .onChange(of: model.mode) { _, mode in
             // Focus hides the side pane; Writing Room opens it.
@@ -628,9 +633,21 @@ struct ScreenplayWorkspace: View {
         .opacity(0).allowsHitTesting(false).accessibilityHidden(true)
     }
 
-    @ToolbarContentBuilder private var toolbar: some ToolbarContent {
-        ScreenplayPanelToolbar(state: panels, model: model, setMode: setMode)
-        ToolbarItem(placement: .principal) {
+    /// The screenplay's own controls in a row above the script; a narrow page wraps them.
+    private var pageBar: some View {
+        BDFlowLayout(spacing: 8) {
+            ScreenplayPanelButtons(state: panels, model: model)
+            elementPicker
+            pageBarRest
+        }
+        .controlSize(.small)
+        .padding(.horizontal, 12).padding(.vertical, 6)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("screenplay-page-bar")
+    }
+
+    private var elementPicker: some View {
             Menu {
                 ForEach(SharedScreenplayRules.shared.menuKinds, id: \.self) { k in
                     Button { model.textView?.setKind(k) } label: {
@@ -658,8 +675,10 @@ struct ScreenplayWorkspace: View {
             .accessibilityLabel("Element")
             .accessibilityValue(elementLabel)
             .accessibilityIdentifier("element-picker")
-        }
-        ToolbarItem(placement: .automatic) {
+            .fixedSize()
+    }
+
+    @ViewBuilder private var pageBarRest: some View {
             Button { scenesHidden.toggle() } label: {
                 Label("Scenes", systemImage: "list.bullet.rectangle").labelStyle(.titleAndIcon)
             }
@@ -668,15 +687,11 @@ struct ScreenplayWorkspace: View {
                   : scenesHidden ? "Show the scene list" : "Hide the scene list to give the page more room")
             .accessibilityLabel(scenesShown ? "Hide Scenes" : "Show Scenes")
             .accessibilityIdentifier("scenes-toggle")
-        }
-        ToolbarItem(placement: .automatic) {
             Button { model.textView?.showFind() } label: {
                 Label("Find", systemImage: "magnifyingglass").labelStyle(.titleAndIcon)
             }
             .help("Find in the script (Command+F)")
             .accessibilityIdentifier("find-button")
-        }
-        ToolbarItem(placement: .automatic) {
             // Opens the bar and never closes it: a second press of the same button (a double
             // click, or an accessibility press followed by a click) must not shut it again. The
             // bar's own Close button and Escape close it.
@@ -687,8 +702,6 @@ struct ScreenplayWorkspace: View {
             .disabled(!model.canEdit)
             .help("Replace in the script (Command+Option+F). Command+F finds.")
             .accessibilityIdentifier("replace-toggle")
-        }
-        ToolbarItem(placement: .automatic) {
             Menu {
                 if let drafts = model.overview?.drafts {
                     ForEach(drafts, id: \.id) { d in
@@ -714,8 +727,7 @@ struct ScreenplayWorkspace: View {
             .help("Draft: \(model.draft?.name ?? "none")")
             .accessibilityLabel("Draft: \(model.draft?.name ?? "none"). Switch draft")
             .accessibilityIdentifier("draft-menu")
-        }
-        ToolbarItem(placement: .automatic) {
+            .fixedSize()
             ControlGroup {
                 Button { zoom = ScreenplayZoom.zoomOut(zoom) } label: { Label("Zoom Out", systemImage: "minus.magnifyingglass").labelStyle(.titleAndIcon) }
                     .keyboardShortcut("-", modifiers: .command)
@@ -733,13 +745,9 @@ struct ScreenplayWorkspace: View {
                     .help("Zoom in (Command+Plus)")
                     .accessibilityIdentifier("screenplay-zoom-in")
             }
-        }
-        ToolbarItem(placement: .automatic) {
+            .fixedSize()
             ScreenplayToolsMenu(state: panels, model: model, setMode: setMode)
-        }
-        ToolbarItem(placement: .automatic) {
-            // The page count and the save state share one item: the toolbar has room for little
-            // more, and both are short.
+                .fixedSize()
             HStack(spacing: 8) {
                 if let page = model.pageLabel {
                     Text(page)
@@ -755,7 +763,6 @@ struct ScreenplayWorkspace: View {
                     .accessibilityIdentifier("editor-save-status")
             }
             .fixedSize()
-        }
     }
 
     private var elementLabel: String {

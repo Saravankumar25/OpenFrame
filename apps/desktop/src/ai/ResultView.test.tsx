@@ -38,7 +38,7 @@ describe("assistant answers", () => {
 
   it("show no See sources when the answer has only its scope", () => {
     renderWithClient(
-      <ResultView r={result({ provenance: [{ kind: "Scope", label: "Whole Project", nav: null }] } as Partial<AiResultDto>)} onChanged={() => undefined} />,
+      <ResultView r={result({ provenance: [{ kind: "Scope", label: "Whole Project" }] } as unknown as Partial<AiResultDto>)} onChanged={() => undefined} />,
     );
     expect(screen.queryByText("See sources")).toBeNull();
   });

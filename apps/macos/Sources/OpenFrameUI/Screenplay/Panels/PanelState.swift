@@ -222,10 +222,11 @@ struct LockDraftHost: View {
 
 // MARK: - Toolbar
 
-/// What the screenplay toolbar holds. The window is 1360 points wide by default and the toolbar
-/// shares it with the project's own items, so only what the writer reaches for all the time has
-/// a place of its own. The rest lives in the Screenplay Tools menu, where nothing is lost to the
-/// system's overflow menu ("more toolbar items"), which the keyboard and VoiceOver reach badly.
+/// What the screenplay's page bar holds (Windows: the screenplay toolbar inside the page). With
+/// every button named, these no longer fit the window toolbar beside the project's own items on a
+/// 1280-point screen, and macOS moved the draft menu and the screenplay picker into its overflow
+/// menu, which the keyboard and VoiceOver reach badly. In the page they wrap onto a second row
+/// instead. The rarer tools live in the Screenplay Tools menu.
 enum ScreenplayToolbarLayout {
     /// The items on the toolbar itself, left to right.
     static let primary = [
@@ -236,29 +237,22 @@ enum ScreenplayToolbarLayout {
     static let toolsMenuEntries = ["layout-menu", "screenplay-interchange-menu", "custom-elements-menu-item", "page-view-menu-item"]
 }
 
-/// Toolbar items: Compare, the Comments button with its count, and a menu for the rest.
-struct ScreenplayPanelToolbar: ToolbarContent {
+/// The screenplay picker, Compare and the Comments button with its count, for the page bar.
+struct ScreenplayPanelButtons: View {
     @Bindable var state: ScreenplayPanelState
     let model: ScreenplayWorkspaceModel
-    var setMode: (ScreenplayMode) -> Void = { _ in }
 
-    var body: some ToolbarContent {
-        ToolbarItem(placement: .navigation) {
-            ScreenplayPickerMenu(workspace: model, state: state)
+    var body: some View {
+        ScreenplayPickerMenu(workspace: model, state: state)
+        Button { state.sheet = .compare(a: nil, b: nil) } label: { Label("Compare", systemImage: "rectangle.split.2x1").labelStyle(.titleAndIcon) }
+            .help("Compare two drafts")
+            .accessibilityIdentifier("compare-button")
+        Button { state.toggleComments() } label: {
+            Label("Comments (\(state.comments.openCount))", systemImage: "text.bubble").labelStyle(.titleAndIcon)
         }
-        ToolbarItem(placement: .automatic) {
-            Button { state.sheet = .compare(a: nil, b: nil) } label: { Label("Compare", systemImage: "rectangle.split.2x1").labelStyle(.titleAndIcon) }
-                .help("Compare two drafts")
-                .accessibilityIdentifier("compare-button")
-        }
-        ToolbarItem(placement: .automatic) {
-            Button { state.toggleComments() } label: {
-                Label("Comments (\(state.comments.openCount))", systemImage: "text.bubble").labelStyle(.titleAndIcon)
-            }
-            .help("Show the comments of this draft")
-            .accessibilityLabel("Comments (\(state.comments.openCount))")
-            .accessibilityIdentifier("comments-button")
-        }
+        .help("Show the comments of this draft")
+        .accessibilityLabel("Comments (\(state.comments.openCount))")
+        .accessibilityIdentifier("comments-button")
     }
 }
 

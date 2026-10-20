@@ -103,7 +103,9 @@ fn run() -> Result<(), String> {
     let assets = std::env::var_os("OPENFRAME_AI_ASSETS_DIR")
         .map(PathBuf::from)
         .unwrap_or_else(|| PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../.ai-assets"));
-    let assets = assets.canonicalize().map_err(|e| format!("{}: {e}", assets.display()))?;
+    let assets = assets
+        .canonicalize()
+        .map_err(|e| format!("{}: {e}", assets.display()))?;
     std::fs::create_dir_all(&args.out).map_err(|e| e.to_string())?;
     let data = tempfile::tempdir().map_err(|e| e.to_string())?;
     let app_data = AppConfig::isolated(data.path()).app_data_dir;

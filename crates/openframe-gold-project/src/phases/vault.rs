@@ -16,14 +16,35 @@ pub fn run(g: &Gold, ctx: &mut Ctx) {
     let p = &ctx.story["project"];
     let store = "project";
 
-    let research = g.id(&g.ok("vault.create_folder", json!({ "store": store, "name": "Research", "parentId": null })));
-    let storm = g.id(&g.ok("vault.create_folder", json!({ "store": store, "name": "1999 storm", "parentId": research })));
-    let look = g.id(&g.ok("vault.create_folder", json!({ "store": store, "name": "Look and sound", "parentId": null })));
-    let fragments = g.id(&g.ok("vault.create_folder", json!({ "store": store, "name": "Story fragments", "parentId": null })));
-    g.ok("vault.rename_folder", json!({ "store": store, "id": look, "name": "Look, light and sound", "expectedRev": null }));
+    let research = g.id(&g.ok(
+        "vault.create_folder",
+        json!({ "store": store, "name": "Research", "parentId": null }),
+    ));
+    let storm = g.id(&g.ok(
+        "vault.create_folder",
+        json!({ "store": store, "name": "1999 storm", "parentId": research }),
+    ));
+    let look = g.id(&g.ok(
+        "vault.create_folder",
+        json!({ "store": store, "name": "Look and sound", "parentId": null }),
+    ));
+    let fragments = g.id(&g.ok(
+        "vault.create_folder",
+        json!({ "store": store, "name": "Story fragments", "parentId": null }),
+    ));
+    g.ok(
+        "vault.rename_folder",
+        json!({ "store": store, "id": look, "name": "Look, light and sound", "expectedRev": null }),
+    );
     let mariamma = g.id(&g.ok("vault.create_collection", json!({ "store": store, "name": "Mariamma's world", "note": "Everything about the 1999 station and her voice." })));
-    let design = g.id(&g.ok("vault.create_collection", json!({ "store": store, "name": "Production design", "note": null })));
-    let unsorted = g.id(&g.ok("vault.create_collection", json!({ "store": store, "name": "Scouting photos (unsorted)", "note": null })));
+    let design = g.id(&g.ok(
+        "vault.create_collection",
+        json!({ "store": store, "name": "Production design", "note": null }),
+    ));
+    let unsorted = g.id(&g.ok(
+        "vault.create_collection",
+        json!({ "store": store, "name": "Scouting photos (unsorted)", "note": null }),
+    ));
     g.ok("vault.rename_collection", json!({ "store": store, "id": design, "name": "Production design references", "note": "Shared with Lakshmi Iyer.", "expectedRev": null }));
 
     let treatment_body = format!(
@@ -110,12 +131,18 @@ pub fn run(g: &Gold, ctx: &mut Ctx) {
         json!({ "store": store, "paths": [palette_src.to_string_lossy()], "mode": "link", "folderId": look,
                 "collectionId": unsorted, "itemType": null }),
     );
-    let palette = arr(&linked["added"]).first().map(|v| s(&v["id"])).unwrap_or_default();
+    let palette = arr(&linked["added"])
+        .first()
+        .map(|v| s(&v["id"]))
+        .unwrap_or_default();
     // The share was reorganised: the palette moved, and the vault item is pointed at it again.
     let palette_new = shared.join("grade").join("palette-monsoon-v2.png");
     std::fs::create_dir_all(palette_new.parent().unwrap()).ok();
     std::fs::rename(&palette_src, &palette_new).ok();
-    g.ok("vault.relink", json!({ "store": store, "id": palette, "path": palette_new.to_string_lossy() }));
+    g.ok(
+        "vault.relink",
+        json!({ "store": store, "id": palette, "path": palette_new.to_string_lossy() }),
+    );
     ctx.set("vaultPalette", palette.clone());
     if let Some(img) = files.get(1) {
         ctx.set("vaultOpsRoomImage", img.clone());
@@ -125,7 +152,8 @@ pub fn run(g: &Gold, ctx: &mut Ctx) {
     }
 
     // The director's voice memo and a drawn sketch, as the app records them.
-    let memo = std::fs::read(ctx.media.dir.join("director-memo-breakwater.m4a")).unwrap_or_default();
+    let memo =
+        std::fs::read(ctx.media.dir.join("director-memo-breakwater.m4a")).unwrap_or_default();
     let voice = if memo.is_empty() {
         Value::Null
     } else {
@@ -147,22 +175,64 @@ pub fn run(g: &Gold, ctx: &mut Ctx) {
     let sketch_id = g.id(&sk);
 
     // Organise.
-    g.ok("vault.add_tags", json!({ "store": store, "ids": [treatment, night, quote], "tags": ["mariamma"] }));
-    g.ok("vault.add_tags", json!({ "store": store, "ids": [sketch_id, palette], "tags": ["look", "temp"] }));
-    g.ok("vault.remove_tag", json!({ "store": store, "ids": [sketch_id, palette], "tag": "temp" }));
-    g.ok("vault.set_pinned", json!({ "store": store, "ids": [treatment, night], "pinned": true }));
-    g.ok("vault.set_research_flag", json!({ "store": store, "ids": [imd], "flag": "checked" }));
+    g.ok(
+        "vault.add_tags",
+        json!({ "store": store, "ids": [treatment, night, quote], "tags": ["mariamma"] }),
+    );
+    g.ok(
+        "vault.add_tags",
+        json!({ "store": store, "ids": [sketch_id, palette], "tags": ["look", "temp"] }),
+    );
+    g.ok(
+        "vault.remove_tag",
+        json!({ "store": store, "ids": [sketch_id, palette], "tag": "temp" }),
+    );
+    g.ok(
+        "vault.set_pinned",
+        json!({ "store": store, "ids": [treatment, night], "pinned": true }),
+    );
+    g.ok(
+        "vault.set_research_flag",
+        json!({ "store": store, "ids": [imd], "flag": "checked" }),
+    );
     if let Some(pdf) = files.first() {
-        g.ok("vault.set_research_flag", json!({ "store": store, "ids": [pdf], "flag": "needsExpertCheck" }));
+        g.ok(
+            "vault.set_research_flag",
+            json!({ "store": store, "ids": [pdf], "flag": "needsExpertCheck" }),
+        );
     }
-    g.ok("vault.set_research_flag", json!({ "store": store, "ids": [tape, quote], "flag": "unchecked" }));
-    g.ok("vault.set_research_flag", json!({ "store": store, "ids": [quote], "flag": null }));
-    g.ok("vault.add_to_collection", json!({ "store": store, "ids": [palette], "collectionId": design }));
-    g.ok("vault.remove_from_collection", json!({ "store": store, "ids": [palette], "collectionId": unsorted }));
-    g.ok("vault.delete_collection", json!({ "store": store, "id": unsorted }));
-    g.ok("vault.move_to_folder", json!({ "store": store, "ids": [tape], "folderId": storm }));
-    g.ok("vault.move_to_folder", json!({ "store": store, "ids": [tape], "folderId": research }));
-    let temp = g.id(&g.ok("vault.create_folder", json!({ "store": store, "name": "Inbox", "parentId": null })));
+    g.ok(
+        "vault.set_research_flag",
+        json!({ "store": store, "ids": [tape, quote], "flag": "unchecked" }),
+    );
+    g.ok(
+        "vault.set_research_flag",
+        json!({ "store": store, "ids": [quote], "flag": null }),
+    );
+    g.ok(
+        "vault.add_to_collection",
+        json!({ "store": store, "ids": [palette], "collectionId": design }),
+    );
+    g.ok(
+        "vault.remove_from_collection",
+        json!({ "store": store, "ids": [palette], "collectionId": unsorted }),
+    );
+    g.ok(
+        "vault.delete_collection",
+        json!({ "store": store, "id": unsorted }),
+    );
+    g.ok(
+        "vault.move_to_folder",
+        json!({ "store": store, "ids": [tape], "folderId": storm }),
+    );
+    g.ok(
+        "vault.move_to_folder",
+        json!({ "store": store, "ids": [tape], "folderId": research }),
+    );
+    let temp = g.id(&g.ok(
+        "vault.create_folder",
+        json!({ "store": store, "name": "Inbox", "parentId": null }),
+    ));
     g.ok("vault.delete_folder", json!({ "store": store, "id": temp }));
     g.ok(
         "vault.update",
@@ -182,7 +252,10 @@ pub fn run(g: &Gold, ctx: &mut Ctx) {
         "vault.copy_to_store",
         json!({ "from": "global", "to": "project", "ids": [global_note], "collectionId": mariamma, "folderId": look }),
     );
-    g.ok("vault.list", json!({ "store": "global", "view": null, "search": null }));
+    g.ok(
+        "vault.list",
+        json!({ "store": "global", "view": null, "search": null }),
+    );
 
     // Views and search, the way the left panel and the search box show them.
     for view in [
@@ -194,16 +267,25 @@ pub fn run(g: &Gold, ctx: &mut Ctx) {
         json!({ "kind": "collection", "collectionId": mariamma }),
         json!({ "kind": "tag", "tag": "1999" }),
     ] {
-        g.ok("vault.list", json!({ "store": store, "view": view, "search": null }));
+        g.ok(
+            "vault.list",
+            json!({ "store": store, "view": view, "search": null }),
+        );
     }
-    g.ok("vault.list", json!({ "store": store, "view": null, "search": "tape" }));
+    g.ok(
+        "vault.list",
+        json!({ "store": store, "view": null, "search": "tape" }),
+    );
     g.ok("vault.get", json!({ "store": store, "id": night }));
     g.ok("vault.overview", json!({ "store": store }));
     g.ok("visual.vault_images", json!({ "store": store }));
 
     // Clean-up: the obsolete titles list is removed for good; the duplicate idea is restored from
     // the vault's Recently Deleted because the producer wanted to keep its wording.
-    g.ok("vault.delete", json!({ "store": store, "ids": [obsolete, duplicate] }));
+    g.ok(
+        "vault.delete",
+        json!({ "store": store, "ids": [obsolete, duplicate] }),
+    );
     let trash = g.ok("vault.trash_list", json!({ "store": store }));
     for row in arr(&trash) {
         let title = s(&row["deleted"]["title"]);

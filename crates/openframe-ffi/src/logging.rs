@@ -109,7 +109,10 @@ mod tests {
 
     #[test]
     fn development_builds_take_the_variable_as_written() {
-        assert_eq!(filter_directives(Some("reqwest=trace"), false), "reqwest=trace");
+        assert_eq!(
+            filter_directives(Some("reqwest=trace"), false),
+            "reqwest=trace"
+        );
         assert_eq!(filter_directives(None, false), "info");
     }
 }

@@ -60,7 +60,7 @@ the merge), **Same** (the Mac already matched), **Exception** (a deliberate plat
 | 16 | OpenFrame Default dark | Core (themes.json); the Mac engine matches the reference for all 17 themes |
 | 17 | Logo or name to all projects | Done (labelled button) |
 | 18 | Long draft names | Done (the toolbar draft menu shortens a long name in the middle; the full name is in the tooltip and the menu) |
-| 19 | Breakdown sidebar breaking the page | Same (Mac split view); hide scenes and panel buttons Open |
+| 19 | Breakdown sidebar breaking the page | Same (Mac split view); "Hide scenes" and "Hide panel" in the source bar, remembered on this Mac | 
 | (screenplay toolbar) | Scenes toggle and Find button | Done (Scenes hides the scene list; Find opens the find bar on the page) |
 | 20 | Dark mode contrast | Core themes; Mac uses theme tokens |
 | 21 | Shot list grid view | Done (List and Grid; a card shows the reference image or the first storyboard panel, then size, angle, movement, lens, description and characters; reordering stays in List as on Windows) |
@@ -74,7 +74,7 @@ the merge), **Same** (the Mac already matched), **Exception** (a deliberate plat
 | Area not scrollable (Story outline) | Mac outline scrolls; Same |
 | Compare top glitch | Mac compare is its own sheet; Same |
 | Offline AI technical details overlapping | Mac shows it as a list in the AI settings; Same |
-| Find navigates the scene list but not the screenplay | To check on the Mac (Open) |
+| Find navigates the scene list but not the screenplay | Same: the Mac Find is the macOS find bar of the script itself, so it selects and scrolls to the match in the screenplay |
 | Stripboard colour codes | Same (INT Day white, EXT Day yellow, INT Night blue, EXT Night green) |
 | Story Board columns and Parking Lot like the reference | Done (whole card text, columns scroll on their own) |
 
@@ -96,6 +96,8 @@ the merge), **Same** (the Mac already matched), **Exception** (a deliberate plat
 | Catalog and Locations filter rows past the page with the assistant open | Fixed: the row of filter buttons becomes a pop-up menu when the page is narrow |
 | Screenplay scene list over the sidebar at 900 points with the assistant open | Fixed: the scene list steps aside when the page has no room for it (the Scenes button says why) |
 | Smallest window taller than a 720-point screen | Fixed: the minimum is checked again when the toolbar changes height |
+| Settings button did nothing | Fixed: the Home Settings button and "Offline AI settings" used a message recent macOS ignores; they now use SwiftUI's openSettings action, and the window-fit scenario clicks the button |
+| Page and section headers | Done: every page header has the Windows layout (title and line on the left, actions on the right, under the title in a narrow page); section titles are small grey capitals; Home cards carry the five Windows previews |
 
 ## 4. AI (OpenFrameAI.docx and the Windows AI brief)
 

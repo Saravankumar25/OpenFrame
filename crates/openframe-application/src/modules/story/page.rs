@@ -26,12 +26,10 @@ pub(crate) const BODY_MAX_CHARS: usize = 2_000_000;
 
 pub fn register(r: &mut Registry) {
     use crate::registry::{FsEffect as Fs, OperationMetadata as M, hidden as h};
-    r.query("story.page", get).meta(
-        M::read("The text of the project's Story page.").hidden(h::STANDALONE_PAGE),
-    );
-    r.command("story.save_page", save).meta(
-        M::edit("Save the text of the project's Story page.").hidden(h::STANDALONE_PAGE),
-    );
+    r.query("story.page", get)
+        .meta(M::read("The text of the project's Story page.").hidden(h::STANDALONE_PAGE));
+    r.command("story.save_page", save)
+        .meta(M::edit("Save the text of the project's Story page.").hidden(h::STANDALONE_PAGE));
     r.query("story.export_page", export).meta(
         M::query(
             Capability::Export,

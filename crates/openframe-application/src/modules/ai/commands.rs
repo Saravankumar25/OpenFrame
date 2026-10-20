@@ -29,9 +29,8 @@ static CREATE_TASK: LazyLock<Regex> = LazyLock::new(|| {
 
 /// A due date written into a task request ("..., due 2026-11-20"): it belongs in the task's due
 /// date, not its title (evaluation case action-en-025).
-static TASK_DUE: LazyLock<Regex> = LazyLock::new(|| {
-    re(r#"(?i)\s*,?\s*\b(?:due|by)\s+(?:on\s+)?(?P<d>\d{4}-\d{2}-\d{2})\s*$"#)
-});
+static TASK_DUE: LazyLock<Regex> =
+    LazyLock::new(|| re(r#"(?i)\s*,?\s*\b(?:due|by)\s+(?:on\s+)?(?P<d>\d{4}-\d{2}-\d{2})\s*$"#));
 
 static TASK_SHORT: LazyLock<Regex> =
     LazyLock::new(|| re(r#"(?i)^\s*(?:remind\s+me\s+to|task\s*:)\s+(?P<what>.+?)\s*[.!]*\s*$"#));
@@ -683,6 +682,14 @@ static PRODUCT_TERM: LazyLock<Regex> = LazyLock::new(|| {
     )
 });
 
+/// "Add a relationship: Lakshmi is Venkat Rao's granddaughter." The card reads "Lakshmi ·
+/// granddaughter · Venkat Rao" (evaluation case action-en-063 named the type "relationship").
+static RELATIONSHIP_IS: LazyLock<Regex> = LazyLock::new(|| {
+    re(
+        r#"(?i)^\s*(?:please\s+)?add\s+(?:a\s+)?relationship\s*:\s*(?P<a>[^,.:;]+?)\s+is\s+(?P<b>[^,.:;]+?)['’]s\s+(?P<t>[a-z][a-z \-]{1,40}?)\s*[.!]*\s*$"#,
+    )
+});
+
 static SCENE_CARD: LazyLock<Regex> = LazyLock::new(|| {
     re(
         r#"(?i)^\s*(?:please\s+)?(?:(?:add|create|make)\s+a\s+(?:new\s+)?|new\s+)scene\s+card\s*(?::|where|in\s+which|about)\s*(?P<d>.+?)\s*[.!]*\s*$"#,
@@ -807,6 +814,17 @@ fn recipe_more(text: &str) -> Option<StepCall> {
             "answer_product_question",
             json!({ "question": text.trim() }),
         ));
+    }
+    if let Some(c) = cap(&RELATIONSHIP_IS) {
+        let a = unquote(c.name("a")?.as_str());
+        let b = unquote(c.name("b")?.as_str());
+        let t = c.name("t")?.as_str().trim().to_lowercase();
+        return (!a.is_empty() && !b.is_empty() && !t.is_empty()).then(|| {
+            call(
+                "propose_relationship",
+                json!({ "from": a, "to": b, "type": t }),
+            )
+        });
     }
     if let Some(c) = cap(&SHOT) {
         let n: u32 = c.name("n")?.as_str().parse().ok().filter(|n| *n >= 1)?;
@@ -1123,7 +1141,9 @@ fn recipe(text: &str) -> Option<StepCall> {
             return None;
         }
         // "Create characters: Nandini, Ravi" names several: the model proposes each one.
-        let several = c.name("many").is_some_and(|m| m.as_str().eq_ignore_ascii_case("characters"));
+        let several = c
+            .name("many")
+            .is_some_and(|m| m.as_str().eq_ignore_ascii_case("characters"));
         if several && (c.name("desc").is_some() || name.to_lowercase().contains(" and ")) {
             return None;
         }
@@ -1963,7 +1983,10 @@ mod tests {
         );
         assert_eq!(
             call("Add three desks as set dressing."),
-            Some(("propose_catalog_item".into(), json!({ "name": "three desks", "category": "Props" })))
+            Some((
+                "propose_catalog_item".into(),
+                json!({ "name": "three desks", "category": "Props" })
+            ))
         );
         assert_eq!(
             call("Create characters for this scene: Nandini."),
@@ -1980,14 +2003,40 @@ mod tests {
         );
         assert_eq!(
             call("Add a scene card 'Venkat repairs Farooq's radio' to the parking lot."),
-            Some(("propose_scene_card".into(), json!({ "description": "Venkat repairs Farooq's radio" })))
+            Some((
+                "propose_scene_card".into(),
+                json!({ "description": "Venkat repairs Farooq's radio" })
+            ))
         );
-        for text in ["What is a Change Set?", "What does the Production Source mean?", "what's the beat board for?"] {
-            assert_eq!(tool(text).as_deref(), Some("answer_product_question"), "{text}");
+        assert_eq!(
+            call("Add a relationship: Lakshmi is Venkat Rao's granddaughter."),
+            Some((
+                "propose_relationship".into(),
+                json!({ "from": "Lakshmi", "to": "Venkat Rao", "type": "granddaughter" })
+            ))
+        );
+        for text in [
+            "What is a Change Set?",
+            "What does the Production Source mean?",
+            "what's the beat board for?",
+        ] {
+            assert_eq!(
+                tool(text).as_deref(),
+                Some("answer_product_question"),
+                "{text}"
+            );
         }
         // Story words stay with the project.
-        for text in ["What is the parking lot?", "What are the sides of the coin?", "What is the significance of the radio?"] {
-            assert_ne!(tool(text).as_deref(), Some("answer_product_question"), "{text}");
+        for text in [
+            "What is the parking lot?",
+            "What are the sides of the coin?",
+            "What is the significance of the radio?",
+        ] {
+            assert_ne!(
+                tool(text).as_deref(),
+                Some("answer_product_question"),
+                "{text}"
+            );
         }
     }
 

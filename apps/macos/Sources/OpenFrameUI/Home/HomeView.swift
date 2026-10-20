@@ -197,36 +197,9 @@ struct HomeView: View {
             .accessibilityIdentifier("home-new-project")
     }
 
-    /// As on Windows: the title and its line on the left, search and the three buttons in one row
-    /// on the right; in a narrow window the buttons go under the title instead of off the edge.
-    private var homeHeader: some View {
-        let titleBlock = VStack(alignment: .leading, spacing: 4) {
-            Text("Your projects")
-                .font(.system(size: 24, weight: .semibold))
-                .tracking(-0.3)
-                .accessibilityAddTraits(.isHeader)
-            Text("Pick up where you left off, or start something new.")
-                .font(.callout)
-                .foregroundStyle(.secondary)
-        }
-        return ViewThatFits(in: .horizontal) {
-            HStack(alignment: .center, spacing: PageSpacing.medium) {
-                titleBlock.fixedSize()
-                Spacer(minLength: PageSpacing.medium)
-                HStack(spacing: 10) { pageActions }.fixedSize()
-            }
-            VStack(alignment: .leading, spacing: PageSpacing.medium) {
-                titleBlock
-                BDFlowLayout(spacing: 10) { pageActions }
-            }
-        }
-        .padding(.top, PageSpacing.page)
-        .padding(.bottom, PageSpacing.small)
-    }
-
     private var projectsPage: some View {
         VStack(alignment: .leading, spacing: PageSpacing.medium) {
-            homeHeader
+            PageHeader("Your projects", subtitle: "Pick up where you left off, or start something new.") { pageActions }
             if !home.hasMatches {
                 noMatches
             } else {
@@ -349,18 +322,7 @@ struct HomeView: View {
 
     private func section(_ title: String, _ items: [RecentProject], trailing: AnyView?) -> some View {
         VStack(alignment: .leading, spacing: PageSpacing.small) {
-            // Small capitals as on Windows ("RECENT PROJECTS"), with Open Archived at the right.
-            HStack(alignment: .firstTextBaseline, spacing: PageSpacing.small) {
-                Text(title)
-                    .textCase(.uppercase)
-                    .font(.caption.weight(.bold))
-                    .tracking(0.7)
-                    .foregroundStyle(theme["muted"])
-                    .accessibilityAddTraits(.isHeader)
-                Spacer(minLength: PageSpacing.small)
-                if let trailing { trailing }
-            }
-            .padding(.top, PageSpacing.large)
+            SectionHeader(title) { if let trailing { trailing } }
             if items.isEmpty {
                 Text(home.activeCount == 0
                      ? "All your projects are archived. Open Archived to restore one, or create a new project."
