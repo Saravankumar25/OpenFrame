@@ -26,8 +26,8 @@ How the toolbox (`modules/ai/toolbox.rs`, contract C3) enforces this:
   budget, so a small local model's prompt stays short. `retrieve_context` uses the hybrid retrieval
   service when called through `run_tool_unlocked`, and keyword retrieval (FTS5, same privacy rule) otherwise.
 
-- Registered operations: **492** (153 queries, 339 commands)
-- Exposed to the assistant through tools: **305**; not AI-accessible: **187**
+- Registered operations: **496** (156 queries, 340 commands)
+- Exposed to the assistant through tools: **305**; not AI-accessible: **191**
 - Tools: **256** (63 read/compute/navigate, 193 proposal)
 
 Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation · **L** long-running (task id) · file effect: R = reads a user-picked file, W = writes to a user-picked location, P = project storage on disk.
@@ -131,7 +131,7 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 | `tasks.relatable_types`: Object types a task can be related to (dialog helper). | query | Read | View |  | `RelatableTypesArgs` → `Vec<RelatableType>` | hidden | none |
 | `tasks.set_done`: Mark a task done or open. | command | Mutate | Edit |  | `SetTaskDoneArgs` → `TaskDto` | tool | `propose_task_done` |
 | `tasks.update`: Edit a task (title, due date, owner, notes, related object). | command | Mutate | Edit |  | `UpdateTaskArgs` → `TaskDto` | tool | `propose_update_task` |
-| `templates.apply`: Create the document a template describes (screenplay starter, Story Board, call sheet, shot list, moodboard or budget) in this project. | command | Mutate | Edit |  | `ApplyTemplateArgs` → `AppliedTemplate` | hidden | none |
+| `templates.apply`: Create the document a template describes (screenplay starter, Beat Board, call sheet, shot list, moodboard or budget) in this project. | command | Mutate | Edit |  | `ApplyTemplateArgs` → `AppliedTemplate` | hidden | none |
 | `templates.copy`: Copy a template into this project or into My Templates. | command | Mutate | Edit |  | `CopyTemplateArgs` → `TemplateDto` | hidden | none |
 | `templates.create`: Create a project or personal template. | command | Mutate | Edit |  | `CreateTemplateArgs` → `TemplateDto` | tool | `propose_project_template` |
 | `templates.delete`: Delete a project or personal template. | command | Mutate | SoftDelete | DC | `TemplateRefArgs` → `()` | tool | `propose_delete_template` |
@@ -171,11 +171,13 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 | `callsheets.export_pdf`: Export a call sheet to a location the user picked. | query | Read | Export | W | `ExportCallSheetArgs` → `ExportResult` | hidden | none |
 | `moodboard.export_pdf`: Export a moodboard to a location the user picked. | query | Read | Export | W | `ExportMoodboardArgs` → `ExportResult` | hidden | none |
 | `reports.export_report`: Export a production report to a location the user picked. | query | Read | Export | W | `ExportReportArgs` → `ExportResult` | hidden | none |
+| `schedule.export_daily_view`: Export one shooting day's Daily View to a location the user picked. | query | Read | Export | W | `ExportDailyViewArgs` → `ExportResult` | hidden | none |
 | `schedule.export_dood`: Export the Day Out of Days to a location the user picked. | query | Read | Export | W | `ExportDoodArgs` → `ExportResult` | hidden | none |
 | `schedule.export_schedule`: Export the shooting schedule to a location the user picked. | query | Read | Export | W | `ExportScheduleArgs` → `ExportResult` | hidden | none |
 | `shot.export_list`: Export a shot list to a location the user picked. | query | Read | Export | W | `ExportShotListArgs` → `ExportResult` | hidden | none |
 | `sides.export_pdf`: Export sides to a location the user picked. | query | Read | Export | W | `ExportSidesArgs` → `ExportResult` | hidden | none |
-| `story.export_board`: Export the Story Board outline (PDF/DOCX/…) to a location the user picked. | query | Read | Export | W | `ExportStoryOutlineArgs` → `ExportResult` | hidden | none |
+| `story.export_board`: Export the Beat Board outline (PDF/DOCX/…) to a location the user picked. | query | Read | Export | W | `ExportStoryOutlineArgs` → `ExportResult` | hidden | none |
+| `story.page.export`: Export the Story page as plain text, PDF or Word to a location the user picked. | query | Read | Export | W | `ExportStoryPageArgs` → `ExportResult` | hidden | none |
 | `storyboard.export_sheet`: Export storyboard sheets to a location the user picked. | query | Read | Export | W | `ExportStoryboardSheetArgs` → `ExportResult` | hidden | none |
 
 ### Files
@@ -516,20 +518,20 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 | Operation | Kind | Class | Capability | Flags | Args → Result | AI | Covered by |
 |---|---|---|---|---|---|---|---|
 | `story.add_attachment`: Attach a file the user picked to a Scene Card, beat or sequence. | command | Mutate | Edit | R | `StoryAttachArgs` → `StoryAttachmentDto` | hidden | none |
-| `story.apply_order`: Reorder a screenplay draft's scenes to match the Story Board (confirmed when it renumbers). | command | Mutate | Edit | C | `StoryOrderArgs` → `StoryOrderPreview` | tool | `propose_story_order` |
+| `story.apply_order`: Reorder a screenplay draft's scenes to match the Beat Board (confirmed when it renumbers). | command | Mutate | Edit | C | `StoryOrderArgs` → `StoryOrderPreview` | tool | `propose_story_order` |
 | `story.assign_story_day`: Assign screenplay scenes to a Story Day (or clear it). | command | Mutate | Edit |  | `StoryAssignDayArgs` → `()` | tool | `propose_story_day` |
-| `story.board`: Story Board: acts, sequences, beats, Scene Cards, Parking Lot and Unassigned. | query | Read | View |  | `StoryScopeArgs` → `StoryBoardState` | tool | `story_outline` |
+| `story.board`: Beat Board: acts, sequences, beats, Scene Cards, Parking Lot and Unassigned. | query | Read | View |  | `StoryScopeArgs` → `StoryBoardState` | tool | `story_outline` |
 | `story.build_preview`: Preview of Build Screenplay: which Scene Cards become scenes. | query | Compute | View |  | `StoryBuildPreviewArgs` → `StoryBuildPreview` | tool | `story_outline` |
-| `story.build_screenplay`: Build a NEW screenplay or NEW draft from the Story Board (never overwrites). | command | Mutate | Edit |  | `StoryBuildArgs` → `StoryBuildResult` | tool | `propose_build_screenplay` |
+| `story.build_screenplay`: Build a NEW screenplay or NEW draft from the Beat Board (never overwrites). | command | Mutate | Edit |  | `StoryBuildArgs` → `StoryBuildResult` | tool | `propose_build_screenplay` |
 | `story.card`: One Scene Card with notes, linked characters, attachments and its screenplay scene. | query | Read | View |  | `StoryIdArgs` → `StoryCardDetail` | tool | `story_card` |
-| `story.card_display`: What minimized Scene Cards show on this user's Story Board (view setting). | query | Read | View |  | `StoryCardDisplayArgs` → `StoryCardDisplayState` | hidden | none |
+| `story.card_display`: What minimized Scene Cards show on this user's Beat Board (view setting). | query | Read | View |  | `StoryCardDisplayArgs` → `StoryCardDisplayState` | hidden | none |
 | `story.card_to_beat`: Convert a Scene Card back into a beat. | command | Mutate | Edit |  | `StoryIdArgs` → `StoryCreated` | tool | `propose_convert_card_to_beat` |
 | `story.character`: One character with description, notes, relationships and linked Scene Cards. | query | Read | View |  | `StoryCharacterArgs` → `StoryCharacterDetail` | tool | `story_characters` |
 | `story.character_usage`: Where a character is used (Scene Cards, screenplay cues, cast). | query | Compute | View |  | `StoryIdArgs` → `StoryCharacterUsage` | tool | `story_characters` |
 | `story.characters`: Character directory (names, roles, descriptions). | query | Read | View |  | `StoryCharacterListArgs` → `Vec<StoryCharacterDto>` | tool | `story_characters` |
 | `story.clear_character_image`: Remove a character's image. | command | Mutate | Edit |  | `StoryIdArgs` → `()` | tool | `propose_remove_character_image` |
 | `story.convert_beat`: Convert a beat into a Scene Card. | command | Mutate | Edit |  | `StoryIdArgs` → `StoryCreated` | tool | `propose_convert_beat` |
-| `story.create_act`: Create an act on the Story Board. | command | Mutate | Edit |  | `StoryCreateActArgs` → `StoryCreated` | tool | `propose_act` |
+| `story.create_act`: Create an act on the Beat Board. | command | Mutate | Edit |  | `StoryCreateActArgs` → `StoryCreated` | tool | `propose_act` |
 | `story.create_beat`: Create a story beat. | command | Mutate | Edit |  | `StoryCreateBeatArgs` → `StoryCreated` | tool | `propose_beat` |
 | `story.create_card`: Create a Scene Card. | command | Mutate | Edit |  | `StoryCreateCardArgs` → `StoryCreated` | tool | `propose_scene_card` |
 | `story.create_character`: Create a character (optionally with an image the user picked). | command | Mutate | Edit | R | `StoryCreateCharacterArgs` → `StoryCreated` | tool | `propose_character` |
@@ -544,14 +546,16 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 | `story.delete_relationship`: Remove a character relationship. | command | Mutate | Edit | D | `StoryIdArgs` → `()` | tool | `propose_delete_relationship` |
 | `story.delete_season`: Move a season to Recently Deleted. | command | Mutate | SoftDelete | DC | `StoryIdArgs` → `()` | tool | `propose_delete_season` |
 | `story.delete_sequence`: Delete a sequence (move its contents out, or delete everything inside; recoverable). | command | Mutate | SoftDelete | DC | `StoryDeleteSequenceArgs` → `()` | tool | `propose_delete_sequence` |
-| `story.duplicate_episode`: Duplicate an episode (optionally with its Story Board). | command | Mutate | Edit |  | `StoryDuplicateEpisodeArgs` → `StoryCreated` | tool | `propose_duplicate_episode` |
+| `story.duplicate_episode`: Duplicate an episode (optionally with its Beat Board). | command | Mutate | Edit |  | `StoryDuplicateEpisodeArgs` → `StoryCreated` | tool | `propose_duplicate_episode` |
 | `story.duplicate_items`: Duplicate sequences, beats or Scene Cards. | command | Mutate | Edit |  | `StoryItemsArgs` → `StoryCreatedMany` | tool | `propose_duplicate_story_items` |
 | `story.link_character_card`: Link a character to a Scene Card. | command | Mutate | Edit |  | `StoryCardLinkArgs` → `()` | tool | `propose_link_character_card` |
 | `story.move_act`: Move an act to another position. | command | Mutate | Edit |  | `StoryMoveActArgs` → `()` | tool | `propose_update_act` |
 | `story.move_episode`: Move an episode to another season or position. | command | Mutate | Edit |  | `StoryMoveEpisodeArgs` → `()` | tool | `propose_update_episode` |
 | `story.move_items`: Move sequences, beats or Scene Cards to another act, sequence, Parking Lot or Unassigned. | command | Mutate | Edit |  | `StoryMoveArgs` → `()` | tool | `propose_move_story_items` |
 | `story.move_season`: Move a season to another position. | command | Mutate | Edit |  | `StoryMoveSeasonArgs` → `()` | tool | `propose_update_season` |
-| `story.order_preview`: Preview of applying the Story Board order to a screenplay draft. | query | Compute | View |  | `StoryOrderArgs` → `StoryOrderPreview` | tool | `story_outline` |
+| `story.order_preview`: Preview of applying the Beat Board order to a screenplay draft. | query | Compute | View |  | `StoryOrderArgs` → `StoryOrderPreview` | tool | `story_outline` |
+| `story.page.get`: The text of the Story page. | query | Read | View |  | `StoryPageGetArgs` → `StoryPageDto` | hidden | none |
+| `story.page.save`: Save the text of the Story page. | command | Mutate | Edit |  | `StoryPageSaveArgs` → `StoryPageSaved` | hidden | none |
 | `story.park_items`: Move beats or Scene Cards to the Parking Lot. | command | Mutate | Edit |  | `StoryItemsArgs` → `()` | tool | `propose_park_story_items` |
 | `story.relationships`: Character relationships. | query | Read | View |  | `StoryCharacterListArgs` → `Vec<StoryRelationshipDto>` | tool | `story_characters` |
 | `story.remove_attachment`: Remove an attachment from a Scene Card, beat or sequence. | command | Mutate | Edit |  | `StoryIdArgs` → `()` | tool | `propose_remove_story_attachment` |
@@ -561,7 +565,7 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 | `story.set_character_archived`: Archive or unarchive a character. | command | Mutate | Edit |  | `StoryArchiveArgs` → `()` | tool | `propose_archive_character` |
 | `story.set_character_image`: Set a character's image from a file the user picked. | command | Mutate | Edit | R | `StoryImageArgs` → `()` | hidden | none |
 | `story.set_collapsed`: Collapse or expand an act or sequence. | command | Mutate | View |  | `StoryCollapseArgs` → `StoryViewState` | hidden | none |
-| `story.set_current_episode`: Choose which episode the Story Board shows. | command | Mutate | View |  | `StoryEpisodeChoiceArgs` → `StoryViewState` | hidden | none |
+| `story.set_current_episode`: Choose which episode the Beat Board shows. | command | Mutate | View |  | `StoryEpisodeChoiceArgs` → `StoryViewState` | hidden | none |
 | `story.set_time_note`: Set a screenplay scene's time note. | command | Mutate | Edit |  | `StoryTimeNoteArgs` → `()` | tool | `propose_time_note` |
 | `story.timeline`: Story timeline: Story Day of each screenplay scene. | query | Read | View |  | `StoryTimelineArgs` → `StoryTimelineDto` | tool | `story_timeline` |
 | `story.unlink_character_card`: Unlink a character from a Scene Card. | command | Mutate | Edit |  | `StoryCardLinkArgs` → `()` | tool | `propose_link_character_card` |
@@ -573,7 +577,7 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 | `story.update_relationship`: Edit a character relationship. | command | Mutate | Edit |  | `StoryUpdateRelationshipArgs` → `()` | tool | `propose_update_relationship` |
 | `story.update_season`: Rename a season or edit its note. | command | Mutate | Edit |  | `StoryUpdateSeasonArgs` → `()` | tool | `propose_update_season` |
 | `story.update_sequence`: Rename a sequence or edit its note. | command | Mutate | Edit |  | `StoryUpdateSequenceArgs` → `()` | tool | `propose_update_sequence` |
-| `story.view_state`: The user's Story Board view state (collapsed rows, current episode). | query | Read | View |  | `StoryScopeArgs` → `StoryViewState` | hidden | none |
+| `story.view_state`: The user's Beat Board view state (collapsed rows, current episode). | query | Read | View |  | `StoryScopeArgs` → `StoryViewState` | hidden | none |
 
 ### Visual Planning
 
@@ -644,7 +648,7 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 | `writing.proofing`: Proofing settings of the project and the spelling languages installed on this computer. | query | Read | View |  | `WritingProofingArgs` → `WritingProofingState` | hidden | none |
 | `writing.set_proofing`: Turn spell checking on or off and choose the project's main and second spelling language. | command | Mutate | Edit |  | `WritingSetProofingArgs` → `ProofingSettings` | hidden | none |
 | `writing.spelling_suggestions`: Spelling suggestions for one word. | query | Compute | View |  | `WritingWordArgs` → `WritingSpellingSuggestions` | hidden | none |
-| `writing.suggestion_sources`: Character names and locations from the Story Board, cast and production locations, for the editor's suggestion list. | query | Read | View |  | `WritingSuggestionSourcesArgs` → `WritingSuggestionSources` | hidden | none |
+| `writing.suggestion_sources`: Character names and locations from the Beat Board, cast and production locations, for the editor's suggestion list. | query | Read | View |  | `WritingSuggestionSourcesArgs` → `WritingSuggestionSources` | hidden | none |
 
 ## Not AI-accessible, and why
 
@@ -699,7 +703,7 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 - **Production scene number overrides and renumbering stay a human decision (ADR-0015, contract doc 32 §2.5); the assistant reads the numbers.**
   `screenplay.renumber_scenes`, `screenplay.restore_omitted_scene`, `screenplay.set_scene_number`
 - **Reads or writes a file-system location the user picks in a file dialog; the assistant never chooses or touches file-system paths (spec §3).**
-  `breakdown.export_report`, `budget.export_summary`, `callsheets.attach`, `callsheets.export_pdf`, `files.add`, `files.export_copy`, `files.relink`, `moodboard.export_pdf`, `packages.create_backup`, `packages.export_exchange`, `packages.export_project`, `packages.import_project`, `packages.inspect_package`, `packages.review_export_response`, `packages.review_open`, `project.locate`, `project.location_check`, `reports.export_report`, `schedule.export_dood`, `schedule.export_schedule`, `screenplay.export`, `screenplay.import_apply`, `screenplay.import_preview`, `shot.export_list`, `sides.export_pdf`, `story.add_attachment`, `story.export_board`, `storyboard.export_sheet`, `vault.add_files`, `vault.relink`
+  `breakdown.export_report`, `budget.export_summary`, `callsheets.attach`, `callsheets.export_pdf`, `files.add`, `files.export_copy`, `files.relink`, `moodboard.export_pdf`, `packages.create_backup`, `packages.export_exchange`, `packages.export_project`, `packages.import_project`, `packages.inspect_package`, `packages.review_export_response`, `packages.review_open`, `project.locate`, `project.location_check`, `reports.export_report`, `schedule.export_daily_view`, `schedule.export_dood`, `schedule.export_schedule`, `screenplay.export`, `screenplay.import_apply`, `screenplay.import_preview`, `shot.export_list`, `sides.export_pdf`, `story.add_attachment`, `story.export_board`, `story.page.export`, `storyboard.export_sheet`, `vault.add_files`, `vault.relink`
 - **Returns local file paths of managed media; the assistant never receives file-system paths.**
   `app.info`, `files.asset`
 - **Screenplay page layout settings (paper, font, spacing, header and footer, page breaks, custom element looks) stay a human decision (screenplay engine contract doc 32 §2.5); the assistant reads the resulting page facts.**
@@ -710,6 +714,8 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
   `ai.ask`, `ai.history`
 - **The team password of an internal build belongs to the person at this computer; the assistant never reads or types it.**
   `team_gate.status`, `team_gate.unlock`
+- **The writer's own free-writing Story page; it is kept apart from every other page and tool on purpose (owner request 2026-10-20), so the assistant neither reads nor changes it.**
+  `story.page.get`, `story.page.save`
 
 ## Tools
 

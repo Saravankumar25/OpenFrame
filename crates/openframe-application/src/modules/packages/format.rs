@@ -35,7 +35,7 @@ pub const CONTENT_ENTRY: &str = "content.json";
 /// Metadata entries are small; anything larger is not a real manifest.
 const MAX_META_BYTES: u64 = 4 << 20;
 /// `content.json` of an exchange package is text: a feature screenplay is well under 1 MB, a
-/// large Story Board or schedule a few MB. A bigger file is refused before it is parsed, so
+/// large Beat Board or schedule a few MB. A bigger file is refused before it is parsed, so
 /// a hostile package can't make the app build a multi-gigabyte JSON tree in memory.
 pub const MAX_CONTENT_BYTES: u64 = 64 << 20;
 
@@ -88,7 +88,7 @@ impl PackageType {
             PackageType::Backup => "Backup Package",
             PackageType::Project => "Full Project Package",
             PackageType::ScriptReview => "Screenplay review package",
-            PackageType::Story => "Story Board package",
+            PackageType::Story => "Beat Board package",
             PackageType::Breakdown => "Breakdown package",
             PackageType::Shots => "Shot List package",
             PackageType::Schedule => "Schedule package",
@@ -916,7 +916,7 @@ mod hostile {
         serde_json::to_vec(&serde_json::json!({ "algorithm": "sha256", "files": files })).unwrap()
     }
 
-    /// A well-formed Story Board package whose checksums match, plus `extra` raw entries.
+    /// A well-formed Beat Board package whose checksums match, plus `extra` raw entries.
     fn package(path: &Path, manifest: &[u8], content: &[u8], extra: &[(&str, &[u8], Option<u32>)]) {
         let mut listed: Vec<(&str, &[u8])> =
             vec![(MANIFEST_ENTRY, manifest), (CONTENT_ENTRY, content)];
@@ -1510,7 +1510,7 @@ mod hostile {
         );
     }
 
-    /// Wrong kind: a Story Board package offered where a backup is expected is refused by kind,
+    /// Wrong kind: a Beat Board package offered where a backup is expected is refused by kind,
     /// before anything is extracted.
     #[test]
     fn a_package_of_another_kind_is_refused_before_extraction() {
@@ -1523,7 +1523,7 @@ mod hostile {
         let staging = dir.join("staging");
         fs::create_dir_all(&staging).unwrap();
         let err = match open_package(&f, &staging, &[PackageType::Backup], "a backup") {
-            Ok(_) => panic!("a Story Board package was opened as a backup"),
+            Ok(_) => panic!("a Beat Board package was opened as a backup"),
             Err(e) => e,
         };
         assert_eq!(err.code_str(), "import.wrong_package_kind");

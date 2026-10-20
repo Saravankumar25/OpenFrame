@@ -113,7 +113,7 @@ struct Seed {
     external_path: PathBuf,
 }
 
-/// A project with a screenplay (3 scenes), a Story Board act + card, a comment,
+/// A project with a screenplay (3 scenes), a Beat Board act + card, a comment,
 /// a private note, a managed file and a linked external file.
 fn seed(env: &TestEnv) -> Seed {
     let created = env.ok("screenplay.create", json!({}));
@@ -425,6 +425,36 @@ fn fsd_44_backup_round_trip_restores_as_copy_with_new_identity() {
     // The original project is untouched and still opens with its own identity.
     env.reopen_project(&original_path);
     assert_eq!(project_id(&env), original_id);
+}
+
+#[test]
+fn story_page_text_travels_in_backup_and_project_packages() {
+    let a = TestEnv::with_project("Night Bus", "Feature Film");
+    let text = "The last bus leaves at midnight.\n\nनमस्ते";
+    a.ok("story.page.save", json!({ "text": text, "expectedRev": 0 }));
+    let backup = out_path(&a, "Night Bus.ofbackup");
+    task_ok(
+        &a,
+        &a.ok("packages.create_backup", json!({ "path": backup })),
+    );
+    let started = a.ok(
+        "packages.import_project",
+        json!({ "path": backup, "mode": "copy" }),
+    );
+    task_ok(&a, &started);
+    let restored = a.ok("story.page.get", json!({}));
+    assert_eq!(restored["text"], text, "the restored copy holds the page");
+    assert_eq!(restored["rev"], 1);
+
+    let pkg = out_path(&a, "Night Bus.ofproject");
+    task_ok(&a, &a.ok("packages.export_project", json!({ "path": pkg })));
+    let b = TestEnv::new();
+    let started = b.ok(
+        "packages.import_project",
+        json!({ "path": pkg, "mode": "open" }),
+    );
+    task_ok(&b, &started);
+    assert_eq!(b.ok("story.page.get", json!({}))["text"], text);
 }
 
 #[test]
@@ -1736,7 +1766,7 @@ fn write_package_fixtures() {
 
 /// Every committed package format still opens: a backup restores on a new computer (its
 /// database migrates from the schema it was written with), and the project, review, response
-/// and Story Board packages of the same project open (packages carry the new data:
+/// and Beat Board packages of the same project open (packages carry the new data:
 /// compatibility).
 #[test]
 fn older_package_formats_still_open() {
@@ -2426,7 +2456,7 @@ fn package_roles_scope_what_each_member_can_send_and_apply() {
             assert_eq!(e.code.0, "permission.denied");
         }
     }
-    // A same-project Story Board package with a changed card: an object change, not a comment.
+    // A same-project Beat Board package with a changed card: an object change, not a comment.
     let pkg = out_path(&env, "change.ofstory");
     env.ok(
         "story.update_card",

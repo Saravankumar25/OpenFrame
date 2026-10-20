@@ -5,7 +5,7 @@
 // shortcut everywhere, inherits the scope of the place the user is in, and answers a question
 // asked there with that scope.
 //
-// Covers: Home and Idea Vault → Whole Project; Story → Story Board; Screenplay → Current
+// Covers: Home and Idea Vault → Whole Project; Story → Beat Board; Screenplay → Current
 // Scene / Current Screenplay; Breakdown, Production and Call Sheets → Production Workspace;
 // Notes & Tasks → Whole Project; the keyboard shortcut; a scoped question answered in the Story
 // Board, Screenplay and Production workspaces.
@@ -48,7 +48,7 @@ describe("AI entry points in every workspace", () => {
       const expected = [
         ["Home", "Using: Whole Project"],
         ["Idea Vault", "Using: Whole Project"],
-        ["Story", "Using: Story Board"],
+        ["Story", "Using: Beat Board"],
         ["Breakdown", "Using: Production Workspace"],
         ["Production", "Using: Production Workspace"],
         ["Call Sheets", "Using: Production Workspace"],
@@ -74,13 +74,13 @@ describe("AI entry points in every workspace", () => {
     });
   });
 
-  test("a question asked in the Story Board uses the Story Board", async () => {
+  test("a question asked in the Beat Board uses the Beat Board", async () => {
     await step("story", async () => {
       await openWorkspace(browser, "Story");
       await openAssistant(browser);
-      const r = await ask(browser, "What is on the Story Board?");
+      const r = await ask(browser, "What is on the Beat Board?");
       assert.ok(answered(r), `${r.kind}: ${r.text}`);
-      assert.equal((await scopeInfo(browser)).using, "Using: Story Board");
+      assert.equal((await scopeInfo(browser)).using, "Using: Beat Board");
     });
   });
 

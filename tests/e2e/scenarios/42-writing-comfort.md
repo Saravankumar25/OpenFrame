@@ -6,7 +6,7 @@ Tags: `@e2e-data-root: own`
 
 Before: an empty data folder of its own. The app starts for the first time.
 
-"The elements" means the screenplay editor elements, read as "type: text". "The last element" is the bottom one. "An empty dialogue line" is a dialogue element with no text (it may show its "Dialogue" placeholder). "Check: Saved" means the editor toolbar status reads "Saved". "Check: the list offers X" means the suggestion list under the cursor shows the option X. "The Story Board characters" is the list the Characters page shows (the spec asks the core for it).
+"The elements" means the screenplay editor elements, read as "type: text". "The last element" is the bottom one. "An empty dialogue line" is a dialogue element with no text (it may show its "Dialogue" placeholder). "Check: Saved" means the editor toolbar status reads "Saved". "Check: the list offers X" means the suggestion list under the cursor shows the option X. "The Beat Board characters" is the list the Characters page shows (the spec asks the core for it).
 
 ## Smart suggestions build a scene without retyping and never change text silently
 
@@ -51,14 +51,14 @@ Before: an empty data folder of its own. The app starts for the first time.
 2. Type 'NISHA'. Check: the list offers "Create New: NISHA". Press Enter.
 3. Check: the screen shows "Added NISHA to Characters".
 4. Check: the last two elements are "character: NISHA" and an empty dialogue line.
-5. Check: the Story Board characters include "NISHA".
+5. Check: the Beat Board characters include "NISHA".
 6. Check: Saved.
 7. Press Ctrl+Z.
 8. Check: the last element is "character: NISHA" (only the Dialogue step was taken back).
 9. Check: Saved.
-10. Check: the Story Board characters still include "NISHA".
+10. Check: the Beat Board characters still include "NISHA".
 11. Press Ctrl+Z.
-12. Check: the Story Board characters no longer include "NISHA".
+12. Check: the Beat Board characters no longer include "NISHA".
 13. Check: the last element is still "character: NISHA" (the typed name stays until its own undo).
 14. Check: the screen is quiet.
 
@@ -103,6 +103,24 @@ Before: an empty data folder of its own. The app starts for the first time.
 11. Press Ctrl+Z.
 12. Check: the elements include "action: The bus is late." again.
 13. Check: the screen is quiet.
+
+## Find scrolls the page to every match; Replace, Replace All, Match case and Whole word work
+
+1. Click the second Action line, press End, then press Enter and type sixty short lines, each after an Enter. Lines 3 and 58 read "Walk 3, a torch burns." and "Walk 58, a torch burns."; the others read "Walk N goes on.".
+2. Check: within 15 seconds the editor says "Saved", and the last line reads "Walk 60 goes on.".
+3. Press Ctrl+F and type "torch" in the Find box.
+4. Check: the count reads "1 of 2", and the highlighted match (line 3, far above the caret) is inside the visible part of the page.
+5. Press Enter in the Find box.
+6. Check: the count reads "2 of 2", and the highlighted match (line 58) is inside the visible part of the page.
+7. Press Shift+Enter.
+8. Check: the count reads "1 of 2" and the first match is on screen again.
+9. Tick Match case and type "Torch": the count reads "No matches found". Untick Match case: the count reads "1 of 2".
+10. Tick Whole word and type "torc": the count reads "No matches found". Untick Whole word and type "torch": the count reads "1 of 2".
+11. Type "lamp" in Replace with and click Replace.
+12. Check: line 3 reads "Walk 3, a lamp burns.", line 58 still reads "torch", the count reads "1 of 1", and the match on line 58 is on screen.
+13. Click Replace All.
+14. Check: the screen shows "Replaced 1 match", line 58 reads "lamp", and the count reads "No matches found".
+15. Click Close find, check that the editor says "Saved" and that the screen is quiet.
 
 ## Navigator columns can be shown and are remembered
 

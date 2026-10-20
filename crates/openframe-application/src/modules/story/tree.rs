@@ -1,4 +1,4 @@
-//! Story Board structure: containers, shared sibling ordering and moves.
+//! Beat Board structure: containers, shared sibling ordering and moves.
 //!
 //! Children of one container share a single position space across tables:
 //! an Act's sequences, beats and cards interleave; a Sequence's beats and

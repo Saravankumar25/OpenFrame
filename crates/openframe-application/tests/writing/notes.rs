@@ -664,7 +664,7 @@ fn the_eight_built_in_templates_follow_the_owner_decision() {
         ("Feature Film Screenplay", "screenplay"),
         ("Short Film Screenplay", "screenplay"),
         ("Episodic / Series", "screenplay"),
-        ("Simple Story Board", "story_board"),
+        ("Simple Beat Board", "story_board"),
         ("Indie Call Sheet", "call_sheet"),
         ("Shot List", "shot_list"),
         ("Moodboard", "moodboard"),
@@ -766,7 +766,7 @@ fn using_a_template_makes_independent_documents_in_one_undo_step() {
         0,
         "the template edit is its own step"
     );
-    // Story Board and moodboard.
+    // Beat Board and moodboard.
     env.ok(
         "templates.apply",
         json!({ "scope": "builtin", "id": "builtin:story_board" }),

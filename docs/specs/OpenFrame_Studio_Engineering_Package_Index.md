@@ -135,7 +135,7 @@ The existing OpenFrame documents already define the product in depth. This packa
 
 ### Phase 2 — Creative core
 - Idea Vault.
-- Story Board, Acts, Sequences, Beats and Scene Cards.
+- Beat Board, Acts, Sequences, Beats and Scene Cards.
 - Characters and Story Timeline.
 - global search/indexing.
 

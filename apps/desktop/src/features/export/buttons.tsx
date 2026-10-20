@@ -35,7 +35,7 @@ type Item = { id: string; label: string };
 export function StoryExportButton({ episodeId, selectedIds, ...t }: Trigger & { episodeId: string | null; selectedIds: string[] }) {
   const d = useOpen();
   const scopes: ExportScope[] = [
-    { value: "board", label: "Current page (whole Story Board)", args: { scope: "board", episodeId } },
+    { value: "board", label: "Current page (whole Beat Board)", args: { scope: "board", episodeId } },
     {
       value: "selected",
       label: selectedIds.length ? `Selected items only (${selectedIds.length})` : "Selected items only",
@@ -55,9 +55,9 @@ export function StoryExportButton({ episodeId, selectedIds, ...t }: Trigger & { 
       <ExportDialog
         open={d.open}
         onClose={d.hide}
-        title="Export Story Board"
-        source={<>Source: <b>current Story Board</b></>}
-        documentName="Story Board"
+        title="Export Beat Board"
+        source={<>Source: <b>current Beat Board</b></>}
+        documentName="Beat Board"
         op="story.export_board"
         formats={formats}
         scopes={scopes}
@@ -67,6 +67,39 @@ export function StoryExportButton({ episodeId, selectedIds, ...t }: Trigger & { 
           { kind: "checkbox", key: "includeNotes", label: "Include notes", default: false },
           { kind: "checkbox", key: "includeComments", label: "Include comments", default: false },
         ]}
+      />
+    </>
+  );
+}
+
+// ------------------------------------------------------------------ Story page (free writing)
+
+const STORY_PAGE_FORMATS: ExportFormatOption[] = [
+  { value: "txt", label: "Plain text (.txt)" },
+  { value: "pdf", label: "PDF" },
+  { value: "docx", label: "Word (.docx)" },
+];
+
+/** Exports the Story page. `beforeOpen` stores the text typed so far; the file must hold it. */
+export function StoryPageExportButton({ beforeOpen, ...t }: Trigger & { beforeOpen?: () => Promise<boolean> }) {
+  const d = useOpen();
+  return (
+    <>
+      <TriggerButton
+        {...t}
+        onClick={() => {
+          void (beforeOpen ? beforeOpen() : Promise.resolve(true)).then((stored) => stored && d.show());
+        }}
+      />
+      <ExportDialog
+        open={d.open}
+        onClose={d.hide}
+        title="Export Story"
+        source={<>Source: <b>the Story page</b></>}
+        documentName="Story"
+        op="story.page.export"
+        formats={STORY_PAGE_FORMATS}
+        note="Export creates a snapshot and does not change your project."
       />
     </>
   );
@@ -206,9 +239,7 @@ export function ShotListExportButton({ scene, scenes, ...t }: Trigger & { scene?
 
 // ------------------------------------------------------------------ Schedule (mock 139)
 
-/** `dayFirst`: opened from the Daily View (owner change list item 12), so the shown day is the first
- * choice and unscheduled scenes are left out unless the person ticks them. */
-export function ScheduleExportButton({ days, currentDayId, sourceLabel, dayFirst = false, ...t }: Trigger & { days: Item[]; currentDayId?: string | null; sourceLabel?: string | null; dayFirst?: boolean }) {
+export function ScheduleExportButton({ days, currentDayId, sourceLabel, ...t }: Trigger & { days: Item[]; currentDayId?: string | null; sourceLabel?: string | null }) {
   const d = useOpen();
   const current = days.find((x) => x.id === currentDayId);
   const scopes: ExportScope[] = [
@@ -216,24 +247,49 @@ export function ScheduleExportButton({ days, currentDayId, sourceLabel, dayFirst
     { value: "day", label: current ? `Current day only (${current.label})` : "Current day only", args: { dayIds: current ? [current.id] : [] }, disabled: !current },
     { value: "days", label: "Selected days", picker: { argKey: "dayIds", items: days, emptyText: "Create a shooting day first." } },
   ];
-  if (dayFirst && current) scopes.unshift(scopes.splice(1, 1)[0]);
   return (
     <>
       <TriggerButton {...t} onClick={d.show} />
       <ExportDialog
         open={d.open}
         onClose={d.hide}
-        title={dayFirst ? "Export Shooting Day" : "Export Shooting Schedule"}
+        title="Export Shooting Schedule"
         source={<>Source: <b>Shooting Schedule{sourceLabel ? ` · ${sourceLabel}` : ""}</b></>}
         documentName="Shooting Schedule"
         op="schedule.export_schedule"
         formats={[TABLE_FORMATS[0], { value: "xlsx", label: "Spreadsheet (XLSX)" }, { value: "csv", label: "CSV" }]}
         scopes={scopes}
         options={[
-          { kind: "checkbox", key: "includeUnscheduled", label: "Include unscheduled scenes", default: !dayFirst },
+          { kind: "checkbox", key: "includeUnscheduled", label: "Include unscheduled scenes", default: true },
           { kind: "checkbox", key: "includeNotes", label: "Include scene notes", default: false },
         ]}
         note="Private notes excluded. Export is a snapshot of the schedule; the schedule is not changed."
+      />
+    </>
+  );
+}
+
+// ------------------------------------------------------------------ Daily View
+
+/** The Daily View document of the day on the screen: it prints what the page shows, so it has no
+ * scope choices. The document name is "Shoot Day N - Daily View". */
+export function DailyViewExportButton({ dayId, dayLabel, ...t }: Trigger & { dayId: string; dayLabel: string }) {
+  const d = useOpen();
+  const documentName = `${dayLabel} - Daily View`;
+  return (
+    <>
+      <TriggerButton {...t} onClick={d.show} />
+      <ExportDialog
+        open={d.open}
+        onClose={d.hide}
+        title="Export Daily View"
+        source={<>Source: <b>{documentName}</b></>}
+        documentName={documentName}
+        bare
+        op="schedule.export_daily_view"
+        baseArgs={{ dayId }}
+        formats={[{ value: "pdf", label: "PDF", hint: "printable" }, { value: "txt", label: "Plain text" }]}
+        note="Private notes excluded. The document shows what the Daily View shows; the schedule is not changed."
       />
     </>
   );

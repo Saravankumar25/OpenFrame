@@ -127,6 +127,14 @@
 /* ------------------------------------------------------------ compare / review */
 .spx-compare, .spx-review { display: flex; flex-direction: column; height: 100%; min-height: 0; }
 .spx-compare .sp-nav { overflow: auto; width: 270px; }
+/* The compare bar sits outside .spx, so it never got the toolbar rule below: its 46 px height stayed fixed while the
+   two draft pickers (select.select is full width by default) wrapped to a row of their own and ran over the changes
+   list and the summary (owner change list 2026-10-20, item 3). The bar grows with its rows, the pickers keep a
+   sensible width, and the two groups (drafts, view controls) wrap as whole groups. */
+.spx-compare .sp-top { flex-wrap: wrap; justify-content: space-between; row-gap: 6px; column-gap: 12px; height: auto; min-height: 46px; padding-block: 6px; overflow: visible; }
+/* Each group stays one row; when the bar is too narrow the view controls move below as a whole. */
+.spx-cmp-group { display: flex; align-items: center; gap: 8px; min-width: 0; flex-wrap: nowrap; }
+.spx-cmp-group select.select { width: auto; flex: 0 1 220px; min-width: 140px; max-width: 260px; }
 .spx-compare .sni { width: 100%; background: none; border: 0; text-align: left; font: inherit; color: inherit; cursor: pointer; align-items: center; }
 .spx-diff { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
 .spx-diff-h, .spx-diff-r { display: grid; grid-template-columns: 1fr 1fr; }

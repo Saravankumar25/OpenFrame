@@ -220,6 +220,10 @@ fn assert_locked(core: &AppCore, path: &str) {
             "schedule.export_dood",
             json!({ "format": "pdf", "path": "C:/never.pdf" }),
         ),
+        (
+            "schedule.export_daily_view",
+            json!({ "format": "pdf", "path": "C:/never.pdf" }),
+        ),
         // Call sheets, budget, templates, samples and exports (area 15).
         (
             "callsheets.add_section",

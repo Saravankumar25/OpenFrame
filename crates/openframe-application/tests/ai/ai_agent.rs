@@ -409,7 +409,11 @@ fn a_licence_or_payment_request_is_refused_without_a_proposal() {
     );
     assert!(r["proposal"].is_null());
     assert_eq!(m.calls(), 0);
-    assert_eq!(count(&env, "SELECT count(*) FROM ai_tool_invocation"), 0, "no tool ran");
+    assert_eq!(
+        count(&env, "SELECT count(*) FROM ai_tool_invocation"),
+        0,
+        "no tool ran"
+    );
 }
 
 #[test]

@@ -1,5 +1,5 @@
 // Episodic / Series home and Season Board (FSD §25, UX §3.20, mocks 073–074).
-// Each episode has its own Story Board; opening an episode scopes the board.
+// Each episode has its own Beat Board; opening an episode scopes the board.
 
 import { useState } from "react";
 import { DndContext, PointerSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
@@ -66,12 +66,12 @@ export function EpisodesView({ readOnly, onOpenEpisode }: { readOnly: boolean; o
       />
       {!data.isEpisodic && (
         <p className="muted" style={{ fontSize: 12.5 }}>
-          This project is a {data.projectType}. Episodes are optional; the Story Board works without them.
+          This project is a {data.projectType}. Episodes are optional; the Beat Board works without them.
         </p>
       )}
       {total === 0 && data.seasons.length === 0 ? (
         <EmptyState icon={<Tv size={28} />} title="Create your first episode." actions={!readOnly ? <Button variant="primary" onClick={() => setDialog({ mode: "new", seasonId: null })}>Add Episode</Button> : undefined}>
-          Each episode has its own Story Board, screenplay drafts and production planning.
+          Each episode has its own Beat Board, screenplay drafts and production planning.
         </EmptyState>
       ) : (
         <div className="row" style={{ alignItems: "flex-start", gap: 16 }}>
@@ -149,7 +149,7 @@ export function EpisodesView({ readOnly, onOpenEpisode }: { readOnly: boolean; o
             void story.deleteEpisode(e.id).then(() => toast.undoable(`Deleted episode “${e.title}”`)).catch(reportError);
           }}
         >
-          <p style={{ marginTop: 0 }}>The episode and its Story Board move to Recently Deleted together. You can restore them or use Undo.</p>
+          <p style={{ marginTop: 0 }}>The episode and its Beat Board move to Recently Deleted together. You can restore them or use Undo.</p>
         </ConfirmDialog>
       )}
       {renameSeason && <RenameSeasonDialog id={renameSeason} current={data.seasons.find((s) => s.id === renameSeason)?.title ?? ""} onClose={() => setRenameSeason(null)} />}
@@ -167,7 +167,7 @@ function EpisodeMenu({ e, readOnly, onEdit, onDuplicate, onDelete, onOpen }: { e
         </button>
       }
       items={[
-        { label: "Open Story Board", onSelect: onOpen },
+        { label: "Open Beat Board", onSelect: onOpen },
         { label: "Edit…", disabled: readOnly, onSelect: onEdit },
         { label: "Duplicate…", disabled: readOnly, onSelect: onDuplicate },
         { label: "Delete", danger: true, separatorBefore: true, disabled: readOnly, onSelect: onDelete },
@@ -315,7 +315,7 @@ function DuplicateDialog({ e, onClose }: { e: StoryEpisodeDto; onClose: () => vo
         </>
       }
     >
-      <Checkbox checked={copyStory} onChange={setCopyStory} label="Also copy its Story Board (new, independent cards)" />
+      <Checkbox checked={copyStory} onChange={setCopyStory} label="Also copy its Beat Board (new, independent cards)" />
       <p className="muted" style={{ fontSize: 12.5 }}>The copy is a new episode. Screenplay links are not copied.</p>
     </Dialog>
   );

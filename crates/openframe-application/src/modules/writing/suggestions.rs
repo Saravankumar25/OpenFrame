@@ -2,8 +2,8 @@
 //!
 //! The editor builds the list itself: scene heading prefixes and time words are fixed, and
 //! character names, locations and parentheticals already typed in the script are read from the
-//! live document. This query adds what lives elsewhere in the project: Story Board characters,
-//! cast character names, production locations and the locations of Story Board scene headings.
+//! live document. This query adds what lives elsewhere in the project: Beat Board characters,
+//! cast character names, production locations and the locations of Beat Board scene headings.
 //! The result is deterministic (fixed order, case-insensitive de-duplication) and bounded.
 
 use std::collections::HashSet;
@@ -22,7 +22,7 @@ pub const MAX_VALUES: usize = 500;
 pub fn register(r: &mut Registry) {
     use crate::registry::{OperationMetadata as M, hidden as h};
     r.query("writing.suggestion_sources", sources).meta(
-        M::read("Character names and locations from the Story Board, cast and production locations, for the editor's suggestion list.")
+        M::read("Character names and locations from the Beat Board, cast and production locations, for the editor's suggestion list.")
             .hidden(h::UI_FLOW),
     );
 }

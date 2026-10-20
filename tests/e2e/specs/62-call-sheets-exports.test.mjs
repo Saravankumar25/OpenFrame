@@ -220,7 +220,7 @@ describe("call sheets, budget, templates, samples and exports", () => {
     await step("template", async () => {
       const listing = await op("templates.list", {});
       const names = listing.builtin.map((t) => t.name);
-      for (const n of ["Feature Film Screenplay", "Short Film Screenplay", "Episodic / Series", "Simple Story Board", "Indie Call Sheet", "Shot List", "Moodboard", "Lightweight Budget"]) {
+      for (const n of ["Feature Film Screenplay", "Short Film Screenplay", "Episodic / Series", "Simple Beat Board", "Indie Call Sheet", "Shot List", "Moodboard", "Lightweight Budget"]) {
         assert.ok(names.includes(n), `built-in template ${n} is missing`);
       }
       const view = await op("schedule.get", {});

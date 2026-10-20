@@ -29,6 +29,8 @@ Assistant closed and then open.
    - Check: no button, tab or field of the page is outside the window, cut off by a box that cannot scroll, or covered
      by another element.
    - Check: no text is cut off inside its box unless a tooltip or label holds the full text.
+4. On Story > Outline: check that the outline list scrolls inside the page to its last row (wheel, and Page Down after focusing the list), while the toolbar above it stays where it is.
+5. On Settings > Offline AI, open Technical details: check that the card is as wide as the page, the component table stays inside it, no card covers another, and no card is narrower than 300 pixels. Close Technical details again.
 
 ## Notes
 

@@ -2,7 +2,7 @@
 //
 // Every export format a writer uses (Windows phase W4, "every export format"). The screenplay goes
 // out as PDF, Final Draft, Fountain, DOCX and plain text, and each text format comes back in as a
-// new draft with its three scenes and its dialogue; the Story Board goes out as PDF; the
+// new draft with its three scenes and its dialogue; the Beat Board goes out as PDF; the
 // diagnostics bundle is written where the person chose. Production exports (schedule, Day Out of
 // Days, call sheet, sides, reports, shot list, storyboard sheet, moodboard) are proved in specs 61
 // and 62, and packages in spec 70. The exports call the same operations the Export dialogs call,
@@ -68,7 +68,7 @@ describe("every export format", () => {
     });
   });
 
-  test("the Story Board exports as PDF", async () => {
+  test("the Beat Board exports as PDF", async () => {
     await step("story", async () => {
       await openWorkspace(browser, "Story");
       await click(browser, "Add Act");
@@ -80,7 +80,7 @@ describe("every export format", () => {
       await browser.keys("Enter");
       const path = join(dir, "story-board.pdf");
       await op("story.export_board", { format: "pdf", path });
-      assert.ok(written(path, 500), "the Story Board PDF was not written");
+      assert.ok(written(path, 500), "the Beat Board PDF was not written");
       assert.ok(readFileSync(path, "latin1").startsWith("%PDF-"));
     });
   });

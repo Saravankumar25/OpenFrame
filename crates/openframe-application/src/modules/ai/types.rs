@@ -379,6 +379,9 @@ pub struct AiResultDto {
     pub confidence: Option<Confidence>,
     pub provenance: Vec<Provenance>,
     pub items: Vec<ResultItem>,
+    /// True when `items` are the answer itself (a list the person asked for). Otherwise they are
+    /// supporting evidence and the screen keeps them under "See sources".
+    pub items_are_answer: bool,
     pub nav: Option<NavTarget>,
     pub change_set: Option<ChangeSetDto>,
     pub error_code: Option<String>,

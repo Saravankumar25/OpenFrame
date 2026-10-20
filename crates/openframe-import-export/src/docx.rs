@@ -853,8 +853,11 @@ pub fn package_parts(doc: &ScreenplayDoc, opts: &DocxOptions) -> Vec<(String, Ve
 /// Entry names here are fixed constants (never user input), so the zip-slip
 /// concern that validation guards against does not arise.
 pub fn to_bytes(doc: &ScreenplayDoc, opts: &DocxOptions) -> AppResult<Vec<u8>> {
+    zip_package(&package_parts(doc, opts))
+}
+
+fn zip_package(parts: &[(String, Vec<u8>)]) -> AppResult<Vec<u8>> {
     use std::io::Write;
-    let parts = package_parts(doc, opts);
     let mut zip = zip::ZipWriter::new(std::io::Cursor::new(Vec::new()));
     let o = zip::write::SimpleFileOptions::default()
         .compression_method(zip::CompressionMethod::Deflated);
@@ -862,11 +865,121 @@ pub fn to_bytes(doc: &ScreenplayDoc, opts: &DocxOptions) -> AppResult<Vec<u8>> {
         AppError::export("docx_failed", "The Word document could not be created.")
             .with_detail(e.to_string())
     };
-    for (name, bytes) in &parts {
+    for (name, bytes) in parts {
         zip.start_file(name.as_str(), o).map_err(err)?;
         zip.write_all(bytes)?;
     }
     Ok(zip.finish().map_err(err)?.into_inner())
+}
+
+// ------------------------------------------------------------------ plain prose
+
+/// The paragraphs of a plain text. A run of non-blank lines is one paragraph (its line breaks are
+/// kept as `\n`); one blank line separates paragraphs; every further blank line is an empty
+/// paragraph, so the page the writer sees is the page that is exported. Trailing blanks are dropped.
+pub fn prose_paragraphs(text: &str) -> Vec<String> {
+    let mut out: Vec<String> = Vec::new();
+    let mut cur: Vec<&str> = Vec::new();
+    let normalised = text.replace("\r\n", "\n").replace('\r', "\n");
+    for line in normalised.split('\n') {
+        if line.trim().is_empty() {
+            if !cur.is_empty() {
+                out.push(cur.join("\n"));
+                cur.clear();
+            } else {
+                out.push(String::new());
+            }
+        } else {
+            cur.push(line);
+        }
+    }
+    if !cur.is_empty() {
+        out.push(cur.join("\n"));
+    }
+    while out.last().is_some_and(String::is_empty) {
+        out.pop();
+    }
+    out
+}
+
+fn prose_paragraph(w: &mut XmlWriter, style: &str, text: &str) {
+    if text.is_empty() {
+        w.raw("<w:p/>");
+        return;
+    }
+    w.open("w:p", &[]);
+    w.open("w:pPr", &[]);
+    w.empty("w:pStyle", &[("w:val", style)]);
+    w.close("w:pPr");
+    for (i, line) in text.split('\n').enumerate() {
+        w.open("w:r", &[]);
+        if let Some(script) = crate::fonts::first_indic_script(line) {
+            w.open("w:rPr", &[]);
+            w.empty("w:rFonts", &[("w:cs", INDIC_DOCX_FONT)]);
+            w.empty("w:lang", &[("w:bidi", script.language_tag())]);
+            w.close("w:rPr");
+        }
+        if i > 0 {
+            w.empty("w:br", &[]);
+        }
+        for (j, part) in line.split('\t').enumerate() {
+            if j > 0 {
+                w.empty("w:tab", &[]);
+            }
+            w.open("w:t", &[("xml:space", "preserve")]);
+            w.text(part);
+            w.close("w:t");
+        }
+        w.close("w:r");
+    }
+    w.close("w:p");
+}
+
+const PROSE_CONTENT_TYPES: &str = r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/><Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/></Types>"#;
+
+const PROSE_DOC_RELS: &str = r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rIdStyles" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>"#;
+
+fn prose_styles_xml() -> String {
+    format!(
+        "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<w:styles xmlns:w=\"{W_NS}\"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii=\"Calibri\" w:hAnsi=\"Calibri\" w:cs=\"{INDIC_DOCX_FONT}\"/><w:sz w:val=\"22\"/><w:szCs w:val=\"22\"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after=\"160\" w:line=\"300\" w:lineRule=\"auto\"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type=\"paragraph\" w:default=\"1\" w:styleId=\"Normal\"><w:name w:val=\"Normal\"/><w:qFormat/></w:style><w:style w:type=\"paragraph\" w:styleId=\"Title\"><w:name w:val=\"Title\"/><w:basedOn w:val=\"Normal\"/><w:next w:val=\"Normal\"/><w:qFormat/><w:pPr><w:spacing w:after=\"360\"/></w:pPr><w:rPr><w:b/><w:bCs/><w:sz w:val=\"40\"/><w:szCs w:val=\"40\"/></w:rPr></w:style></w:styles>"
+    )
+}
+
+/// A plain Word document: `title` as the heading, then the paragraphs of `text`. US Letter with one
+/// inch margins. An empty text gives a valid document that holds only the title.
+pub fn prose_to_bytes(title: &str, text: &str) -> AppResult<Vec<u8>> {
+    let mut w = XmlWriter::new();
+    w.open("w:document", &[("xmlns:w", W_NS), ("xmlns:r", R_NS)]);
+    w.open("w:body", &[]);
+    prose_paragraph(&mut w, "Title", title);
+    for p in prose_paragraphs(text) {
+        prose_paragraph(&mut w, "Normal", &p);
+    }
+    w.raw("<w:sectPr><w:pgSz w:w=\"12240\" w:h=\"15840\"/><w:pgMar w:top=\"1440\" w:right=\"1440\" w:bottom=\"1440\" w:left=\"1440\" w:header=\"720\" w:footer=\"720\" w:gutter=\"0\"/></w:sectPr>");
+    w.close("w:body");
+    w.close("w:document");
+    zip_package(&[
+        (
+            "[Content_Types].xml".to_string(),
+            PROSE_CONTENT_TYPES.as_bytes().to_vec(),
+        ),
+        ("_rels/.rels".to_string(), ROOT_RELS.as_bytes().to_vec()),
+        (
+            "word/_rels/document.xml.rels".to_string(),
+            PROSE_DOC_RELS.as_bytes().to_vec(),
+        ),
+        ("word/document.xml".to_string(), w.out.into_bytes()),
+        (
+            "word/styles.xml".to_string(),
+            prose_styles_xml().into_bytes(),
+        ),
+        (
+            "docProps/core.xml".to_string(),
+            core_xml(title).into_bytes(),
+        ),
+    ])
 }
 
 /// Write the DOCX atomically to `dest`.
@@ -888,6 +1001,53 @@ mod tests {
             Some(LineHint::Kind(ElementKind::Dialogue))
         );
         assert_eq!(hint_for_style("Heading 1"), None);
+    }
+
+    #[test]
+    fn prose_paragraphs_keep_line_breaks_and_extra_blank_lines() {
+        assert!(prose_paragraphs("").is_empty());
+        assert!(prose_paragraphs("\n\n  \n").is_empty());
+        assert_eq!(
+            prose_paragraphs("One\r\ntwo\n\nThree"),
+            vec!["One\ntwo", "Three"]
+        );
+        assert_eq!(prose_paragraphs("A\n\n\n\nB\n\n"), vec!["A", "", "", "B"]);
+        assert_eq!(prose_paragraphs("\n\nA"), vec!["", "", "A"]);
+    }
+
+    #[test]
+    fn prose_docx_is_a_valid_package_with_escaped_text() {
+        let bytes = prose_to_bytes("Story", "Tom & <Jerry>\nsecond\tline\n\nनमस्ते").unwrap();
+        let mut zip = zip::ZipArchive::new(std::io::Cursor::new(bytes)).unwrap();
+        let mut names: Vec<String> = (0..zip.len())
+            .map(|i| zip.by_index(i).unwrap().name().unwrap().into_owned())
+            .collect();
+        names.sort();
+        assert_eq!(
+            names,
+            [
+                "[Content_Types].xml",
+                "_rels/.rels",
+                "docProps/core.xml",
+                "word/_rels/document.xml.rels",
+                "word/document.xml",
+                "word/styles.xml"
+            ]
+        );
+        let mut doc = String::new();
+        std::io::Read::read_to_string(&mut zip.by_name("word/document.xml").unwrap(), &mut doc)
+            .unwrap();
+        let root = xml::parse(doc.as_bytes()).expect("well-formed document.xml");
+        assert_eq!(root.name, "document");
+        assert!(doc.contains("Tom &amp; &lt;Jerry&gt;"), "{doc}");
+        assert!(doc.contains("<w:br/>") && doc.contains("<w:tab/>"), "{doc}");
+        assert!(
+            doc.contains("नमस्ते") && doc.contains("w:cs=\"Nirmala UI\""),
+            "{doc}"
+        );
+        // An empty page is a valid document with only the title.
+        let empty = prose_to_bytes("Story", "").unwrap();
+        assert!(zip::ZipArchive::new(std::io::Cursor::new(empty)).is_ok());
     }
 
     #[test]

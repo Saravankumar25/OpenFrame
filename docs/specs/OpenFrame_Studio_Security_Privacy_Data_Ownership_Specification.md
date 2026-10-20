@@ -209,7 +209,7 @@ The product must not claim encryption, cloud backup, secure synchronization, pro
 A project consists of the user's filmmaking work represented by the OpenFrame domain model, including as applicable:
 
 - Idea Vault content;
-- Story Board content;
+- Beat Board content;
 - screenplay drafts and scenes;
 - comments;
 - Private Notes;
@@ -714,7 +714,7 @@ OpenFrame should expose only the context required for the current operation.
 Examples:
 
 - a scene question should not require the entire production workspace;
-- a Story Board query should not require unrelated private notes;
+- a Beat Board query should not require unrelated private notes;
 - a schedule question should not automatically transmit screenplay-private material;
 - an external AI request should not transmit unrelated project modules.
 
@@ -1404,7 +1404,7 @@ Examples:
 | FDX | Selected Screenplay Draft |
 | Fountain | Selected Screenplay Draft |
 | DOCX screenplay | Selected Screenplay Draft |
-| Story Board PDF | Current Story Board |
+| Beat Board PDF | Current Beat Board |
 | Breakdown PDF | Breakdown + selected Production Source context |
 | Catalog export | Production Catalog |
 | Shot List PDF | Shot List |
@@ -1930,7 +1930,7 @@ Denied unless the current user is the authorized owner/private context.
 | FDX | Selected draft | Excluded |
 | Fountain | Selected draft | Excluded |
 | DOCX screenplay | Selected draft | Excluded |
-| Story Board PDF | Current Story Board scope | Excluded |
+| Beat Board PDF | Current Beat Board scope | Excluded |
 | Breakdown export | Breakdown/source scope | Excluded |
 | Schedule export | Schedule scope | Excluded |
 | Call Sheet PDF | Call Sheet scope | Excluded |
@@ -2064,7 +2064,7 @@ Canonical sources remain:
 | Area | Source of truth |
 |---|---|
 | Idea Vault | Global/Project Idea Vault |
-| Story Board | Acts / Sequences / Beats / Scene Cards |
+| Beat Board | Acts / Sequences / Beats / Scene Cards |
 | Screenplay | Screenplay Draft / Scene / Element |
 | Production Source | Selected Draft |
 | Breakdown | Breakdown + Catalog references |

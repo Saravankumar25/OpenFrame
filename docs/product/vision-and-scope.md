@@ -15,7 +15,7 @@ application. There are no separate editions for different kinds of user.
 A person can go from a first idea to a shoot day inside one project folder on their own computer:
 
 - Idea Vault: notes, images, links, files and voice notes.
-- Story Board: acts, sequences, beats and scene cards.
+- Beat Board: acts, sequences, beats and scene cards.
 - Screenplay: a professional screenplay editor with drafts, comparison, review rounds, locking and revisions.
 - Breakdown: tagging the elements of every scene, plus the catalog, locations, cast and crew.
 - Visual planning: moodboards, storyboards and shot lists.

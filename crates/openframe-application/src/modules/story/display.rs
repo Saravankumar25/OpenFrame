@@ -1,4 +1,4 @@
-//! Story Board Card Display Settings (Screenplay and Production Depth Specification sections
+//! Beat Board Card Display Settings (Screenplay and Production Depth Specification sections
 //! 21.2, 21.3 and 52; docs/engineering/33-production-depth-contract.md section 1).
 //!
 //! What a minimized Scene Card shows is a per-user view setting, stored in `sys_view_state`
@@ -20,7 +20,7 @@ const KEY: &str = "story.card_display";
 pub fn register(r: &mut Registry) {
     use crate::registry::{OperationMetadata as M, hidden as h};
     r.query("story.card_display", get).meta(
-        M::read("What minimized Scene Cards show on this user's Story Board (view setting).")
+        M::read("What minimized Scene Cards show on this user's Beat Board (view setting).")
             .hidden(h::VIEW_STATE),
     );
     r.command("story.set_card_display", set).meta(
@@ -45,7 +45,7 @@ pub enum StoryCardPreset {
     Custom,
 }
 
-/// The twelve checkboxes of Story Board, Card Display Settings (section 21.2).
+/// The twelve checkboxes of Beat Board, Card Display Settings (section 21.2).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize, TS)]
 #[ts(export)]
 #[serde(rename_all = "camelCase", default)]
@@ -208,7 +208,7 @@ fn write(tx: &Tx<'_>, d: &StoryCardDisplay) -> AppResult<()> {
 }
 
 fn get(core: &AppCore, actor: &Actor, _: StoryCardDisplayArgs) -> AppResult<StoryCardDisplayState> {
-    actor.require(Capability::View, "view the Story Board")?;
+    actor.require(Capability::View, "view the Beat Board")?;
     let current = core.project()?.store.read(|c| read(c, &actor.user_id))?;
     Ok(StoryCardDisplayState {
         current,
@@ -241,7 +241,7 @@ fn set(
         actor,
         MutationMeta::new(
             "story.set_card_display",
-            "Changed what Story Board cards show",
+            "Changed what Beat Board cards show",
             Capability::View,
         )
         .not_undoable()

@@ -53,12 +53,12 @@ Before: an empty data folder of its own. The app starts for the first time, with
 7. Check: a card starting with "A city where every letter" shows.
 8. Check: the screen is quiet.
 
-## Send to the Story Board as a scene card; the Vault original stays
+## Send to the Beat Board as a scene card; the Vault original stays
 
 1. Quick capture 'Meera finds her own handwriting on an old envelope.'
 2. Card menu "Meera finds her own", then Send to Story.
-3. Check: the screen shows "Send to Story Board".
-4. Click Create Copy in Story Board in the dialog.
+3. Check: the screen shows "Send to Beat Board".
+4. Click Create Copy in Beat Board in the dialog.
 5. Check: the Vault still has a card starting with "Meera finds her own".
 6. Click Story in the Workspaces navigation.
 7. If the Parking Lot button is not pressed, click it.
