@@ -42,6 +42,9 @@ final class CSExportModel: Identifiable {
     let formats: [CSExportFormat]
     let options: [CSExportOption]
     let projectTitle: String?
+    /// The file name without the project and date, when the document has a name of its own
+    /// ("Shoot Day 4 - Daily view").
+    let plainName: Bool
 
     var format: String
     var values: [String: Bool]
@@ -54,7 +57,7 @@ final class CSExportModel: Identifiable {
 
     init(
         title: String, sub: String? = nil, source: String, documentName: String, note: String,
-        formats: [CSExportFormat], options: [CSExportOption] = [], projectTitle: String?,
+        formats: [CSExportFormat], options: [CSExportOption] = [], projectTitle: String?, plainName: Bool = false,
         run: @escaping (String, String, [String: Bool]) async throws -> ExportResult
     ) {
         self.title = title
@@ -65,13 +68,14 @@ final class CSExportModel: Identifiable {
         self.formats = formats
         self.options = options
         self.projectTitle = projectTitle
+        self.plainName = plainName
         self.run = run
         format = formats.first?.value ?? "pdf"
         values = Dictionary(uniqueKeysWithValues: options.map { ($0.key, $0.defaultValue) })
     }
 
     var suggestedName: String {
-        CSFormat.exportFileName(project: projectTitle, document: documentName, format: format)
+        plainName ? "\(documentName).\(format)" : CSFormat.exportFileName(project: projectTitle, document: documentName, format: format)
     }
 
     /// Writes the file. The message of a refusal stays in `error`; nothing is lost.

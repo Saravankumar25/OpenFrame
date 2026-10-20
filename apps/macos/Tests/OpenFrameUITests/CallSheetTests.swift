@@ -928,6 +928,27 @@ struct SidesReportsDailyTests {
         #expect(r.quiet)
     }
 
+    /// Export on the Daily View writes that day as its own document (owner request 2026-10-20).
+    @Test func theDailyViewExportsTheShownDayAsItsOwnDocument() async throws {
+        let r = try await planned()
+        defer { r.close() }
+        let m: CSDailyModel = r.hub.daily
+        m.pick(r.dayId)
+        await m.reload()
+        let d = try #require(m.day)
+        r.hub.exportDaily(dayId: d.id, label: d.label)
+        let e = try #require(r.hub.exportModel)
+        #expect(e.title == "Export Daily View")
+        #expect(e.suggestedName == "\(d.label) - Daily view.pdf")
+        #expect(e.formats.map(\.value) == ["pdf", "csv", "xlsx"])
+        #expect(await e.export(to: r.path("daily.pdf")))
+        #expect(e.result?.document == "\(d.label) - Daily view")
+        try r.checkPDF("daily.pdf")
+        e.format = "csv"
+        #expect(await e.export(to: r.path("daily.csv")))
+        #expect(FileManager.default.fileExists(atPath: r.path("daily.csv")))
+    }
+
     @Test func statusWordsFormattingAndMarkers() {
         #expect(CSStatus.word("Final") == "Final")
         #expect(CSStatus.word("Needs refresh") == "Needs refresh")

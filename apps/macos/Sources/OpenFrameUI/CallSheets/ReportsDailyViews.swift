@@ -237,6 +237,13 @@ struct CSDailyView: View {
                     .labelsHidden().fixedSize()
                     .accessibilityLabel("Shooting day")
                     .accessibilityIdentifier("daily-day")
+                    Button {
+                        model.hub.exportDaily(dayId: d.id, label: d.label)
+                    } label: {
+                        Label("Export", systemImage: "square.and.arrow.up")
+                    }
+                    .help("Export \(d.label) as its own document")
+                    .accessibilityIdentifier("daily-export")
                 }
             }
             if !model.openIssues.isEmpty {

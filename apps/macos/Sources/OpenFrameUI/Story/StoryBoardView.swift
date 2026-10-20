@@ -147,7 +147,8 @@ struct StoryActColumn: View {
                         if act.items.isEmpty && model.addingSequenceIn != act.id {
                             Text("Add a sequence or scene.").font(.caption).foregroundStyle(theme["muted"]).padding(.vertical, 4)
                         }
-                        HStack(spacing: 6) {
+                        // The add row wraps inside a narrow column instead of spilling out (owner item 15).
+                        BDFlowLayout(spacing: 6) {
                             Button { Task { await model.newCard(in: .act(act.id)) } } label: { Label("Scene", systemImage: "plus") }
                                 .accessibilityLabel("Add Scene")
                             Button { model.addingSequenceIn = act.id } label: { Label("Sequence", systemImage: "plus") }
@@ -224,7 +225,8 @@ struct StoryParkingColumn: View {
                         Text("Drag cards and beats here to keep them out of the story without deleting them.")
                             .font(.caption).foregroundStyle(theme["muted"]).padding(.vertical, 4)
                     }
-                    HStack(spacing: 6) {
+                    // The add row wraps inside a narrow column instead of spilling out (owner item 15).
+                    BDFlowLayout(spacing: 6) {
                         Button { Task { await model.newBeat(in: .parking) } } label: { Label("Beat", systemImage: "plus") }
                             .accessibilityLabel("Add Beat to the Parking Lot")
                         Button { Task { await model.newCard(in: .parking) } } label: { Label("Scene", systemImage: "plus") }

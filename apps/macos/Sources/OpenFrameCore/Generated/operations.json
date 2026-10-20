@@ -2016,6 +2016,14 @@
     "resultType": "String"
   },
   {
+    "argType": "ExportDailyArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Exports",
+    "name": "schedule.export_daily",
+    "resultType": "ExportResult"
+  },
+  {
     "argType": "ExportDoodArgs",
     "kind": "query",
     "longRunning": false,

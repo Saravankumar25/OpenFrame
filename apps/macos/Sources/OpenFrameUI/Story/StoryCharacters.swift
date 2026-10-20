@@ -733,28 +733,37 @@ struct RelationshipMapView: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 12) {
                         Canvas { ctx, size in
-                            let r = min(size.width, size.height) / 2 - 50
-                            var pos: [String: CGPoint] = [:]
-                            for (i, n) in nodes.enumerated() {
-                                let a = 2 * Double.pi * Double(i) / Double(max(nodes.count, 1)) - Double.pi / 2
-                                pos[n.id] = CGPoint(x: size.width / 2 + r * cos(a), y: size.height / 2 + r * sin(a))
-                            }
+                            let layout = RelationshipMapLayout.layout(
+                                ids: nodes.map(\.id),
+                                rels: rels.map { .init(id: $0.id, from: $0.fromCharacterId, to: $0.toCharacterId) },
+                                size: size)
                             for rel in rels {
-                                guard let a = pos[rel.fromCharacterId], let b = pos[rel.toCharacterId] else { continue }
-                                var p = Path(); p.move(to: a); p.addLine(to: b)
+                                guard let a = layout.positions[rel.fromCharacterId], let b = layout.positions[rel.toCharacterId],
+                                      let e = layout.edges[rel.id] else { continue }
+                                var p = Path(); p.move(to: a); p.addQuadCurve(to: b, control: e.control)
                                 ctx.stroke(p, with: .color(theme["line2"]), lineWidth: 2)
-                                ctx.draw(Text(rel.relationshipType).font(.system(size: 11)).foregroundColor(theme["ink2"]),
-                                         at: CGPoint(x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 - 8))
+                            }
+                            // Labels after every line, on a pill, so no line runs through a word.
+                            for rel in rels {
+                                guard let e = layout.edges[rel.id] else { continue }
+                                let label = ctx.resolve(Text(rel.relationshipType).font(.system(size: 11)).foregroundColor(theme["ink2"]))
+                                let sz = label.measure(in: CGSize(width: 160, height: 40))
+                                let pill = Path(roundedRect: CGRect(x: e.label.x - sz.width / 2 - 5, y: e.label.y - sz.height / 2 - 2,
+                                                                    width: sz.width + 10, height: sz.height + 4), cornerRadius: 6)
+                                ctx.fill(pill, with: .color(theme["panel"]))
+                                ctx.draw(label, at: e.label)
                             }
                             for n in nodes {
-                                guard let p = pos[n.id] else { continue }
-                                let circle = Path(ellipseIn: CGRect(x: p.x - 26, y: p.y - 26, width: 52, height: 52))
+                                guard let p = layout.positions[n.id] else { continue }
+                                let circle = Path(ellipseIn: CGRect(x: p.x - 22, y: p.y - 22, width: 44, height: 44))
                                 ctx.fill(circle, with: .color(theme["accent-soft"]))
                                 ctx.stroke(circle, with: .color(theme["accent"]), lineWidth: 1)
-                                ctx.draw(Text(String(n.name.uppercased().prefix(10))).font(.system(size: 11, weight: .bold)).foregroundColor(theme["ink"]), at: p)
+                                ctx.draw(Text(RelationshipMapLayout.initials(n.name)).font(.system(size: 12, weight: .bold)).foregroundColor(theme["ink"]), at: p)
+                                ctx.draw(Text(n.name).font(.system(size: 11, weight: .semibold)).foregroundColor(theme["ink"]),
+                                         at: CGPoint(x: p.x, y: p.y + 34))
                             }
                         }
-                        .frame(height: 380)
+                        .frame(height: RelationshipMapLayout.height(for: nodes.count))
                         .accessibilityElement()
                         .accessibilityLabel("Relationship map")
                         .accessibilityValue(rels.map { "\($0.fromName) \($0.relationshipType) \($0.toName)" }.joined(separator: ", "))
@@ -773,4 +782,104 @@ struct RelationshipMapView: View {
 
 fileprivate extension String {
     var nilIfEmpty: String? { isEmpty ? nil : self }
+}
+
+/// Where the relationship map puts characters, lines and labels (Windows: layoutRelationshipMap
+/// in Characters.tsx, owner change list item 3). Characters sit on a circle in the order with the
+/// fewest crossing lines; several relationships between one pair bend apart; each label is moved
+/// along its line until it no longer sits on a name or another label.
+enum RelationshipMapLayout {
+    struct Rel { let id: String; let from: String; let to: String }
+    struct Edge { let control: CGPoint; let label: CGPoint }
+    struct Result { let positions: [String: CGPoint]; let edges: [String: Edge] }
+
+    static func height(for count: Int) -> CGFloat { CGFloat(max(380, min(560, 260 + count * 34))) }
+
+    static func initials(_ name: String) -> String {
+        let parts = name.split(separator: " ")
+        let s = (parts.first.map { String($0.prefix(1)) } ?? "") + (parts.count > 1 ? String(parts.last!.prefix(1)) : "")
+        return s.uppercased()
+    }
+
+    static func layout(ids: [String], rels: [Rel], size: CGSize) -> Result {
+        let n = ids.count
+        let r = max(40, min(size.width, size.height) / 2 - 62)
+        let order = n <= 8 ? fewestCrossings(ids, rels) : ids
+        let step = 2 * Double.pi / Double(max(n, 1))
+        var positions: [String: CGPoint] = [:]
+        for (i, id) in order.enumerated() {
+            let a = step * Double(i) - Double.pi / 2
+            positions[id] = CGPoint(x: size.width / 2 + r * cos(a), y: size.height / 2 + r * sin(a))
+        }
+        // Names sit under each circle; labels keep clear of them.
+        var placed: [CGPoint] = positions.values.map { CGPoint(x: $0.x, y: $0.y + 34) } + Array(positions.values)
+        var pairCount: [String: Int] = [:]
+        var edges: [String: Edge] = [:]
+        for rel in rels {
+            guard let a = positions[rel.from], let b = positions[rel.to] else { continue }
+            let key = [rel.from, rel.to].sorted().joined(separator: "|")
+            let k = pairCount[key, default: 0]
+            pairCount[key] = k + 1
+            let dir: Double = rel.from < rel.to ? 1 : -1
+            let bend: Double = k == 0 ? 0 : Double((k + 1) / 2) * 46 * (k % 2 == 1 ? 1 : -1) * dir
+            let dx = b.x - a.x, dy = b.y - a.y
+            let len = max(hypot(dx, dy), 1)
+            let control = CGPoint(x: (a.x + b.x) / 2 + (-dy / len) * bend, y: (a.y + b.y) / 2 + (dx / len) * bend)
+            func at(_ t: Double) -> CGPoint {
+                CGPoint(x: (1 - t) * (1 - t) * a.x + 2 * (1 - t) * t * control.x + t * t * b.x,
+                        y: (1 - t) * (1 - t) * a.y + 2 * (1 - t) * t * control.y + t * t * b.y)
+            }
+            var label = at(0.5)
+            for t in [0.5, 0.38, 0.62, 0.28, 0.72, 0.44, 0.56] {
+                let p = at(t)
+                if placed.allSatisfy({ abs($0.x - p.x) > 70 || abs($0.y - p.y) > 18 }) { label = p; break }
+            }
+            placed.append(label)
+            edges[rel.id] = Edge(control: control, label: label)
+        }
+        return Result(positions: positions, edges: edges)
+    }
+
+    /// The order of characters round the circle with the fewest crossing lines (up to 8, every
+    /// order tried; the first character stays in place because rotations are the same picture).
+    static func fewestCrossings(_ ids: [String], _ rels: [Rel]) -> [String] {
+        guard ids.count >= 4 else { return ids }
+        let index = Dictionary(uniqueKeysWithValues: ids.enumerated().map { ($1, $0) })
+        let pairs = rels.compactMap { r -> (Int, Int)? in
+            guard let a = index[r.from], let b = index[r.to], a != b else { return nil }
+            return (a, b)
+        }
+        var perm = Array(ids.indices)
+        var slot = Array(repeating: 0, count: ids.count)
+        var best = perm
+        var bestScore = Int.max
+        func crossings() -> Int {
+            for (i, p) in perm.enumerated() { slot[p] = i }
+            var c = 0
+            for i in pairs.indices {
+                let lo = min(slot[pairs[i].0], slot[pairs[i].1]), hi = max(slot[pairs[i].0], slot[pairs[i].1])
+                for j in (i + 1)..<pairs.count {
+                    let p = slot[pairs[j].0], q = slot[pairs[j].1]
+                    if p == lo || p == hi || q == lo || q == hi { continue }
+                    if (p > lo && p < hi) != (q > lo && q < hi) { c += 1 }
+                }
+            }
+            return c
+        }
+        func visit(_ k: Int) {
+            if bestScore == 0 { return }
+            if k == perm.count {
+                let c = crossings()
+                if c < bestScore { bestScore = c; best = perm }
+                return
+            }
+            for i in k..<perm.count {
+                perm.swapAt(k, i)
+                visit(k + 1)
+                perm.swapAt(k, i)
+            }
+        }
+        visit(1)
+        return best.map { ids[$0] }
+    }
 }
