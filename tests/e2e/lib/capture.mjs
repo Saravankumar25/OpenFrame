@@ -104,7 +104,7 @@ function serialize() {
       img.removeAttribute("src");
       img.removeAttribute("srcset");
       img.setAttribute("data-cap-raster", String(raster.length));
-      raster.push({ tag: el.tagName.toLowerCase(), ...rectOf(el) });
+      raster.push({ tag: el.tagName.toLowerCase(), src, ...rectOf(el) });
     }
   });
   copy.querySelectorAll("script, noscript, link, style, template").forEach((n) => n.remove());
@@ -114,11 +114,17 @@ function serialize() {
   const sheets = [];
   const take = (s) => {
     if (s.ownerNode === freeze) return;
-    let text = "";
-    try {
-      text = [...s.cssRules].map((r) => r.cssText).join("\n");
-    } catch {
-      text = "";
+    // The source text, not cssRules: Chromium serializes a rule that mixes a var() shorthand with
+    // a longhand (the app's kbd rule) as empty declarations. A linked sheet is read from the built
+    // app by the generator; a <style> keeps its own text, and only a sheet built in script falls
+    // back to cssRules.
+    let text = s.href ? "" : s.ownerNode?.textContent ?? "";
+    if (!s.href && !text.trim()) {
+      try {
+        text = [...s.cssRules].map((r) => r.cssText).join("\n");
+      } catch {
+        text = "";
+      }
     }
     sheets.push({ href: s.href, media: s.media?.mediaText ?? "", text });
   };

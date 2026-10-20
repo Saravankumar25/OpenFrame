@@ -12,7 +12,7 @@
 
 import { createHash } from "node:crypto";
 import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { basename, join, resolve } from "node:path";
+import { basename, extname, join, resolve } from "node:path";
 import { decodePng, encodePng } from "../../tests/e2e/lib/png.mjs";
 
 const REPO = resolve(import.meta.dirname, "..", "..");
@@ -43,6 +43,28 @@ function rewriteUrls(text, sheetHref) {
     copyFileSync(file, join(out, "assets", "files", basename(file)));
     return `url("files/${basename(file)}")`;
   });
+}
+
+const MIME = { ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".gif": "image/gif", ".webp": "image/webp", ".svg": "image/svg+xml", ".bmp": "image/bmp" };
+
+/**
+ * The original file behind an app image (the ofasset protocol URL carries the file path), as a data
+ * URI, so a picture under a dialog is not dimmed twice. Null when it is not a readable image file.
+ */
+function assetFile(src) {
+  const m = /^(?:http:\/\/ofasset\.localhost|ofasset:\/\/localhost)\/(.+)$/.exec(src ?? "");
+  if (!m) return null;
+  const file = decodeURIComponent(m[1].split("?")[0]);
+  const mime = MIME[extname(file).toLowerCase()];
+  if (!mime || !existsSync(file)) return null;
+  return `data:${mime};base64,${readFileSync(file).toString("base64")}`;
+}
+
+/** A linked style sheet as the built app ships it (apps/desktop/dist, the build the tour ran). */
+function builtSheet(href) {
+  const file = join(DIST, decodeURIComponent(new URL(href).pathname));
+  if (!existsSync(file)) throw new Error(`style sheet ${href} is not in the built app (${file}); rebuild before generating`);
+  return readFileSync(file, "utf8");
 }
 
 /** Cut a CSS-pixel rectangle out of a decoded screenshot, as a PNG data URI. */
@@ -83,7 +105,7 @@ export function build({ commit = "unknown", from = RAW, to = OUT } = {}) {
       const dom = JSON.parse(readFileSync(join(raw, mode, `${s.id}.json`), "utf8"));
       const links = [];
       for (const sheet of dom.sheets) {
-        const text = rewriteUrls(sheet.text, sheet.href);
+        const text = rewriteUrls(sheet.href ? builtSheet(sheet.href) : sheet.text, sheet.href);
         const name = `${hash(text)}.css`;
         if (!sheetFiles.has(name)) {
           writeFileSync(join(out, "assets", name), text);
@@ -93,9 +115,11 @@ export function build({ commit = "unknown", from = RAW, to = OUT } = {}) {
       }
       let html = dom.html.replace(/<meta http-equiv[^>]*>/gi, "");
       if (dom.raster.length) {
-        const png = decodePng(readFileSync(join(raw, mode, `${s.id}.png`)));
+        let png;
         dom.raster.forEach((r, i) => {
-          html = html.replace(`data-cap-raster="${i}"`, `data-cap-raster="${i}" src="${crop(png, r, dom.dpr)}" alt=""`);
+          let src = assetFile(r.src);
+          if (!src) src = crop((png ??= decodePng(readFileSync(join(raw, mode, `${s.id}.png`)))), r, dom.dpr);
+          html = html.replace(`data-cap-raster="${i}"`, `data-cap-raster="${i}" src="${src}"`);
         });
       }
       const overlays = [];
