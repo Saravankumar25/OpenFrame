@@ -58,6 +58,32 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 
 ## Entries
 
+### 2026-10-20 to 2026-10-21, Beat Board, Story page, owner change list, AI See sources
+- **Areas and items worked:** owner work outside the plan: rename Story Board to Beat Board, a Story writing page,
+  `new changes.docx` items 1 to 5, and the AI brief (plain answers, metadata behind See sources, better routing).
+- **Done:** branch `story/beat-board-notepad-fixes`, merged locally to `main`. Beat Board in every visible text (AI
+  routing accepts both names). Story tab: one plain writing page (migration 17, `story_page`), autosave and close
+  flush, TXT, PDF and Word export. Daily View exports its own document, `Shoot Day N - Daily View.pdf`. Beat Board
+  outline scrolls; Compare draft pickers sit on one row; Offline AI technical details span the width; Find scrolls the
+  script to the match, Replace moves past the replacement, the count follows edits. AI: answers are plain text; details,
+  confidence, sources, steps and supporting rows sit behind See sources; a list stays under the answer only when it is
+  the answer; model text is cleaned of markdown; new direct routes (product terms, notes reads, other people's private
+  notes, shots, moodboards, set dressing, draft comments, pinned notes, characters for a scene, which locations, what is
+  on the Beat Board); the locations answer names the places.
+- **Evidence:** web 640 tests, `openframe-application` lib 990, AI integration 115, production 153, writing 232, platform
+  145, clippy and fmt clean, governance 90 of 90. E2E full run then reruns of every failure on the final code: all spec
+  files pass (42, 44, 73, 80, 96, 97 and the visual group rerun after fixes; six visual baseline screens regenerated,
+  their only change the Beat Board text). Real-model evaluation, English, 430 cases (`.build-cache/ai-eval-final3`):
+  tool and arguments 98.1 percent (bar 90, was 94.4), end state 91.2 percent (bar 85, was 87.3), safety 46 of 46 (was
+  43), writing within length 100.0 percent, answer facts 99.0 percent, retrieval recall at 5 99.4 percent, median 136 ms.
+- **Docs updated:** feature status (STORY-PAGE-001, SCRIPT-004), physical database and release migration (migration
+  17), layout and scroll contract, UX change log, feature preservation matrix, AI answer paths, AI tool coverage, doc 33,
+  E2E scenarios, this log, handoff, `next-session-windows-html-prompt.md` (the owner's next task).
+- **Decisions made or needed:** none new.
+- **Blocked / risks:** writing grounding 67.1 percent; the installed `OpenFrame-3.exe` predates this work.
+- **Next:** build `OpenFrame-4.exe` when the owner asks; WindowsHTML in a new session (prompt file).
+- **Checks run:** listed under Evidence. `npm run verify` as one command: not run (its parts were run).
+
 ### 2026-10-20 (noon), licence requests refused plainly; spec 04 close helper compiled
 - **Done:** a request to change or get around the licence, payment, activation or team password gets a fixed refusal
   with no tool and no model call (`commands.rs` `not_the_assistants`; story uses such as a licence plate or a driving
