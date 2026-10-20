@@ -918,7 +918,11 @@ fn run_agent(
     // Any tool this scope has (the picker may not have offered it); the call still runs as the
     // person, so one without the permission gets the usual clear refusal.
     // A greeting or thanks on its own is answered at once, without tools or the model.
-    if let Some(reply) = super::commands::small_talk(text) {
+    // A request to change or get around the licence, payment or team password gets a plain
+    // refusal: no tool can do it, and left to the model it proposed unrelated project settings.
+    if let Some(reply) =
+        super::commands::small_talk(text).or_else(|| super::commands::not_the_assistants(text))
+    {
         let mut o = ToolOutput::of_kind(AiResultKind::Answer, reply);
         o.confidence = None;
         return Ok(run.outcome(o, AiResultStatus::Informational));
