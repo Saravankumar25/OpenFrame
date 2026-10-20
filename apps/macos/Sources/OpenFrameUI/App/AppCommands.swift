@@ -112,7 +112,7 @@ struct AppCommands: Commands {
                         .disabled(!isProject)
                 }
             }
-            Menu("Production") {
+            Menu("Production Tab") {
                 ForEach(ProductionTab.allCases) { tab in
                     Button(tab.title) { ProjectNav.show(.production, tab: tab) }
                 }

@@ -208,6 +208,9 @@ final class UI {
     // MARK: actions
 
     func press(id: String? = nil, label: String? = nil, role: String? = nil, timeout: Double = 15) async throws {
+        // The Schedule and Day Out of Days switch of the first Mac layout is two Production tabs now.
+        if id == "schedule-section-dood" { try await go("Day Out of Days"); return }
+        if id == "schedule-section-schedule" { try await go("Schedule"); return }
         let e = try await wait(id: id, label: label, role: role, timeout: timeout)
         try await press(e)
     }

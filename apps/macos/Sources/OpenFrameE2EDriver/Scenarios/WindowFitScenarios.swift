@@ -8,10 +8,17 @@
 import AppKit
 
 extension Scenarios {
+    /// Every page the window-fit checks visit: the sidebar workspaces, every Production tab and
+    /// the project pages of the project menu.
     static let windowFitWorkspaces = [
-        "Project Home", "Screenplay", "Story", "Idea Vault", "Breakdown", "Schedule", "Call Sheets", "Budget",
-        "Visual Planning", "Files", "Notes and Tasks", "Activity", "Recently Deleted",
+        "Home", "Idea Vault", "Story", "Screenplay", "Breakdown", "Production", "Call Sheets", "Files",
+        "Catalog", "Locations", "Cast & Crew", "Moodboards", "Storyboards", "Shot Lists", "Schedule",
+        "Day Out of Days", "Daily View", "Sides", "Reports", "Budget",
+        "Notes and Tasks", "Activity", "Recently Deleted",
     ]
+
+    /// The sidebar rows, in the Windows order.
+    static let windowFitSidebar = ["Home", "Idea Vault", "Story", "Screenplay", "Breakdown", "Production", "Call Sheets", "Files"]
 
     static let windowFitGroup: [Scenario] = [
         windowFit(.minimum), windowFit(.standard), windowFit(.zoomed), windowFit(.laptop),
@@ -449,7 +456,7 @@ extension UI {
             let content = w.convertToScreen(w.contentLayoutRect)
             let sidebarList = query(label: "Sidebar", role: "AXOutline").first { $0.identifier.isEmpty && $0.frame.width > 1 }?.frame
             if let list = sidebarList, list.width < 180 { report.add(place, "the sidebar \(list.short) is only \(Int(list.width)) points wide") }
-            for ws in Scenarios.windowFitWorkspaces {
+            for ws in Scenarios.windowFitSidebar {
                 let key = UI.workspaceKey(ws)
                 guard let row = query(id: "sidebar-\(key)").first(where: { $0.frame.width > 1 }) else {
                     report.add(place, "the sidebar row \(ws) is missing"); continue

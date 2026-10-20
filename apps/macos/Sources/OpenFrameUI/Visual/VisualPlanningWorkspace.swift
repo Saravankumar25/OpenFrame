@@ -66,8 +66,7 @@ struct VisualContent: View {
         .environment(hub)
         .task(id: app.changes.key(VisualTables.scenes)) { await hub.reloadScenes() }
         .task(id: app.changes.key(["project_member"])) { await hub.reloadMembers() }
-        .accessibilityElement(children: .contain)
-        .accessibilityIdentifier("visual-workspace")
+        .hubContainer("visual-workspace", standalone: fixed == nil)
     }
 
     private var tabBar: some View {

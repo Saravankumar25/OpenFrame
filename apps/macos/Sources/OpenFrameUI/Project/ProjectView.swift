@@ -15,6 +15,10 @@ struct ProjectView: View {
     @SceneStorage("workspace") private var stored: String = ""
     /// The AI Assistant panel docks beside the page; it stays as the person left it.
     @SceneStorage("assistantOpen") private var assistantOpen = false
+    /// The width the person dragged the AI panel to (kept for this Mac).
+    @AppStorage("openframe.ai.width") private var assistantPreferred: Double = Double(ProjectView.assistantDefaultWidth)
+    /// The width at the start of a drag.
+    @State private var dragStartWidth: CGFloat?
     @State private var selection: Workspace? = .home
     /// The Production tab shown (Windows: the Production subnav).
     @State private var productionTab: ProductionTab = .overview
@@ -80,8 +84,10 @@ struct ProjectView: View {
                         .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
                     if assistantOpen && !focus {
                         Divider()
+                        let width = Self.assistantWidth(for: geo.size.width, preferred: assistantPreferred)
                         AIPanelView(workspace: selection ?? .home) { assistantOpen = false }
-                            .frame(width: Self.assistantWidth(for: geo.size.width))
+                            .frame(width: width)
+                            .overlay(alignment: .leading) { assistantResizeHandle(current: width, detail: geo.size.width) }
                             .transition(.move(edge: .trailing))
                     }
                 }
@@ -132,6 +138,7 @@ struct ProjectView: View {
         content
         .onAppear {
             if hubs == nil { hubs = ProjectHubs(app: app) }
+            if let core = app.core { Task { await SpellingPreference.shared.load(from: core) } }
             let parts = stored.split(separator: "|", maxSplits: 1).map(String.init)
             let place = parts.count == 2 && parts[0] == project.id ? ProjectPlace(key: parts[1]) ?? ProjectPlace(.home) : ProjectPlace(.home)
             // Restoring the saved page is not a move the person made.
@@ -239,8 +246,46 @@ struct ProjectView: View {
         }
     }
 
-    static func assistantWidth(for detail: CGFloat) -> CGFloat {
-        min(360, max(220, (detail * 0.4).rounded()))
+    /// The AI panel's width (Windows: AiPanel.tsx): what the person dragged it to (360 points at
+    /// first), between 300 points and the smaller of 640 points and 45 percent of the window, so the
+    /// page always keeps most of the room. A very narrow window still gets a 220-point panel.
+    static let assistantDefaultWidth: CGFloat = 360
+
+    static func assistantWidth(for detail: CGFloat, preferred: CGFloat = assistantDefaultWidth) -> CGFloat {
+        let most = max(220, min(640, (detail * 0.45).rounded()))
+        let least = min(300, most)
+        return min(most, max(least, preferred.rounded()))
+    }
+
+    /// The left edge of the AI panel: drag to make it wider or narrower, double-click to go back to
+    /// 360 points, or use the arrow keys (24 points a press) when it has the keyboard.
+    private func assistantResizeHandle(current: CGFloat, detail: CGFloat) -> some View {
+        Color.clear
+            .frame(width: 6)
+            .contentShape(Rectangle())
+            .onHover { inside in if inside { NSCursor.resizeLeftRight.push() } else { NSCursor.pop() } }
+            .gesture(
+                DragGesture(minimumDistance: 1)
+                    .onChanged { g in
+                        let start = dragStartWidth ?? current
+                        dragStartWidth = start
+                        assistantPreferred = Double(Self.assistantWidth(for: detail, preferred: start - g.translation.width))
+                    }
+                    .onEnded { _ in dragStartWidth = nil }
+            )
+            .onTapGesture(count: 2) { assistantPreferred = Double(Self.assistantDefaultWidth) }
+            .focusable()
+            .onKeyPress(.leftArrow) { assistantPreferred = Double(Self.assistantWidth(for: detail, preferred: current + 24)); return .handled }
+            .onKeyPress(.rightArrow) { assistantPreferred = Double(Self.assistantWidth(for: detail, preferred: current - 24)); return .handled }
+            .help("Drag to resize the AI Assistant. Double-click for the usual width.")
+            .accessibilityElement()
+            .accessibilityLabel("Resize the AI Assistant")
+            .accessibilityValue("\(Int(current)) points")
+            .accessibilityAdjustableAction { direction in
+                let step: CGFloat = direction == .increment ? 24 : -24
+                assistantPreferred = Double(Self.assistantWidth(for: detail, preferred: current + step))
+            }
+            .accessibilityIdentifier("ai-resize")
     }
 
     /// Shows and hides the workspace sidebar (also View > Hide Sidebar, Command+Control+S).

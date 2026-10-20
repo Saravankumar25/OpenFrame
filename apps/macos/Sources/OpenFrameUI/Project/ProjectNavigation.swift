@@ -270,6 +270,17 @@ extension VisualTab {
 }
 
 extension View {
+    /// A hub shown with its own tab bar is one accessibility container. Shown as one place
+    /// (Production > Schedule), it is not: with a single page inside, SwiftUI would fold the page's
+    /// own container (and its name, "day-detail" for one) into the hub's.
+    @ViewBuilder func hubContainer(_ id: String, standalone: Bool) -> some View {
+        if standalone {
+            accessibilityElement(children: .contain).accessibilityIdentifier(id)
+        } else {
+            self
+        }
+    }
+
     /// Keeps a shared hub on the tab this place shows, and follows the hub to the place of
     /// another tab when the page moves the person there (opening a catalog item from a scene).
     func followsHubTab<Tab: Equatable>(_ tab: Tab, fixed: Tab?, set: @escaping (Tab) -> Void, place: @escaping (Tab) -> ProjectPlace?) -> some View {

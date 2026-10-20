@@ -91,19 +91,53 @@ extension UI {
         try await waitHome()
     }
 
-    /// Opens a workspace with the Go menu (Command+Control+number), the keyboard path.
+    /// Opens a workspace with the Go menu (Command+Control+number), the keyboard path. The
+    /// project has the Windows structure: Schedule, Budget, the visual pages, Catalog, Locations,
+    /// Cast & Crew, Daily View, Sides and Reports are tabs of Production, so the names of the
+    /// places the Mac had before still work and open that tab.
     func go(_ workspace: String) async throws {
-        if menuItemEnabled(["Go", workspace]) {
-            try await menu(["Go", workspace])
+        let name = workspace == "Project Home" ? "Home" : workspace == "Visual Planning" ? "Moodboards" : workspace
+        if let tab = Self.productionTabs[name] {
+            try await goProduction(name, id: tab)
+            return
+        }
+        if menuItemEnabled(["Go", name]) {
+            try await menu(["Go", name])
         } else {
             try await press(id: "sidebar-\(Self.workspaceKey(workspace))")
         }
         await idle(0.4)
     }
 
+    /// The Production tabs by title, with their element names (production-tab-<id>).
+    static let productionTabs: [String: String] = [
+        "Overview": "overview", "Catalog": "catalog", "Locations": "locations", "Cast & Crew": "castCrew",
+        "Moodboards": "moodboards", "Storyboards": "storyboards", "Shot Lists": "shotLists", "Schedule": "schedule",
+        "Day Out of Days": "dayOutOfDays", "Daily View": "daily", "Sides": "sides", "Reports": "reports", "Budget": "budget",
+    ]
+
+    /// Production, then one of its tabs (Go > Production > tab, or the sidebar and the tab strip).
+    func goProduction(_ title: String, id: String) async throws {
+        if menuItemEnabled(["Go", "Production Tab", title]) {
+            try await menu(["Go", "Production Tab", title])
+        } else {
+            try await press(id: "sidebar-production")
+            try await press(id: "production-tab-\(id)")
+        }
+        await idle(0.5)
+    }
+
+    /// Project Settings on the given page (the breakdown category looks are on Advanced, as on Windows).
+    func openProjectSettings(page: String) async throws {
+        try await menu(["Go", "Project Settings"])
+        await idle(0.6)
+        try await Scenarios.segment(self, group: "project-settings-tabs", page)
+    }
+
     static func workspaceKey(_ title: String) -> String {
         switch title {
-        case "Project Home": "home"
+        case "Project Home", "Home": "home"
+        case "Production": "production"
         case "Screenplay": "screenplay"
         case "Story": "story"
         case "Idea Vault": "ideaVault"

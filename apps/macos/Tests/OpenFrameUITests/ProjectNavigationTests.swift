@@ -87,3 +87,17 @@ struct ProjectNavigationTests {
         #expect(steps == PlaceHistory.limit)
     }
 }
+
+struct ScreenplayZoomTests {
+    @Test func zoomStepsStayBetweenHalfAndDoubleSize() {
+        #expect(ScreenplayZoom.zoomIn(1) == 1.1)
+        #expect(ScreenplayZoom.zoomOut(1) == 0.9)
+        #expect(ScreenplayZoom.zoomIn(2) == 2)
+        #expect(ScreenplayZoom.zoomOut(0.5) == 0.5)
+        #expect(ScreenplayZoom.clamp(3.7) == 2)
+        #expect(ScreenplayZoom.clamp(0.1) == 0.5)
+        // A pinch can stop anywhere; the next press lands on a tenth.
+        #expect(ScreenplayZoom.zoomIn(1.234) == 1.3)
+        #expect(ScreenplayZoom.label(0.97) == "97%")
+    }
+}

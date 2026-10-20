@@ -64,8 +64,7 @@ struct ScheduleContent: View {
         .task(id: doodKey) { if model.section == .dood { await model.reloadDood() } }
         .sheet(item: $model.sheet) { ScheduleSheetHost(model: model, sheet: $0) }
         .sheet(item: $model.pendingKeep) { SchedKeepAnywaySheet(model: model, pending: $0) }
-        .accessibilityElement(children: .contain)
-        .accessibilityIdentifier("schedule-workspace")
+        .hubContainer("schedule-workspace", standalone: fixed == nil)
     }
 
     private var sectionBar: some View {

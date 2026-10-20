@@ -430,7 +430,19 @@ extension Scenarios {
 extension Scenarios {
     /// Chooses a segment of a segmented control by its group identifier and the segment's name.
     @MainActor static func segment(_ ui: UI, group: String, _ name: String) async throws {
-        let names = ["breakdown-tabs": "Production", "people-view": "Directory", "callsheets-tabs": "Call sheet views"]
+        // The Breakdown and Call Sheets tab bars of the Mac's first layout are places of their own
+        // now (the Windows structure): Breakdown and Call Sheets in the sidebar, the rest Production
+        // tabs, the category looks in Project Settings > Advanced.
+        if group == "breakdown-tabs" || group == "callsheets-tabs" {
+            switch name {
+            case "Categories": try await ui.openProjectSettings(page: "Advanced")
+            case "Breakdown", "Call Sheets": try await ui.go(name)
+            default: try await ui.go(name)
+            }
+            return
+        }
+        let names = ["breakdown-tabs": "Production", "people-view": "Directory", "callsheets-tabs": "Call sheet views",
+                     "project-settings-tabs": "Project settings page"]
         let g = try await ui.waitFor("the choice \(group)", timeout: 10) {
             ui.all().first { e in e.role == "AXRadioGroup" && (e.identifier == group || (names[group].map { e.label.contains($0) } ?? false)) }
         }
@@ -966,6 +978,7 @@ extension Scenarios {
                 try await segment(ui, group: "breakdown-tabs", "Categories")
                 try await ui.press(id: "color-Props-red")
                 try await ui.waitText("Changed the look of Props")
+                try await ui.press(label: "Done", role: "AXButton")
                 try ui.quiet("after changing the Props colour")
                 try await ui.closeProject()
             } else {
@@ -975,6 +988,7 @@ extension Scenarios {
                 try await segment(ui, group: "breakdown-tabs", "Categories")
                 let red = try await ui.wait(id: "color-Props-red", timeout: 15, "the Red colour of Props")
                 try ui.expect(red.isSelectedChoice, "Red in the Props colour group is pressed: \(red)")
+                try await ui.press(label: "Done", role: "AXButton")
                 try await segment(ui, group: "breakdown-tabs", "Locations")
                 try await ui.press(id: "location-card-Signal Cabin")
                 let hospital = try await ui.wait(id: "loc-hospital", timeout: 15, "the hospital field")
@@ -2095,14 +2109,18 @@ fileprivate extension UI {
     /// Opens a workspace: the Go menu when it has one, otherwise a click on the sidebar row.
     func nav(_ workspace: String) async throws {
         if ProcessInfo.processInfo.environment["E2E_NOBIG"] == nil { bigWindow() }
-        if menuItemEnabled(["Go", workspace]) { try await menu(["Go", workspace]); await idle(0.4); return }
-        let order = ["Screenplay", "Story", "Idea Vault", "|", "Breakdown", "Schedule", "Call Sheets", "Budget", "Visual Planning", "|", "Project Home", "Files", "Notes and Tasks", "Activity", "Recently Deleted"]
+        try await go(workspace)
+    }
+
+    /// The sidebar row of a workspace, clicked through the outline (when the Go menu is not there).
+    func navByRow(_ workspace: String) async throws {
+        let order = ["Home", "Idea Vault", "Story", "Screenplay", "Breakdown", "Production", "Call Sheets", "Files"]
         guard let outline = try? await wait(label: "Sidebar", timeout: 10, "the sidebar"), let view = outline.obj as? NSOutlineView else {
             throw DriverError("no sidebar to click \(workspace)")
         }
         guard let idx = order.firstIndex(of: workspace) else { throw DriverError("unknown workspace \(workspace)") }
-        // Rows: three section headers and the workspaces in order.
-        let row = idx + 1
+        // Rows: the workspaces in order, no section headers.
+        let row = idx
         view.window?.makeFirstResponder(view)
         view.scrollRowToVisible(row)
         view.selectRowIndexes(IndexSet(integer: row), byExtendingSelection: false)

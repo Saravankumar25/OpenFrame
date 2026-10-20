@@ -6,6 +6,16 @@
 > Renamed on 2026-10-06 from `03-reconciliation-log.md`. Extended on 2026-10-09 (chapter restructure). Checks written "(checked)" were verified in the repository on the
 > date given. Checks written "(stated)" come from a supplied document and were not verified independently.
 
+## 2026-10-20: Mac takes the Windows structure (owner prompt "macOS structural parity")
+
+| Stale or conflicting statement | Where it was | Resolution |
+|---|---|---|
+| The Mac sidebar had three headed groups and 13 items; Windows has one flat list of 8 with Production holding 13 tabs | `apps/macos/.../Project/ProjectView.swift` | Mac follows Windows (owner: Windows defines the structure); Notes, Activity and Recently Deleted move to the project menu, as on Windows. [Parity page](../roadmap/mac-windows-structure-parity.md) |
+| The Mac core copy lacked the Windows final polish (AI repair, PDF redesign, themes, removed packages) | `crates/` on the Mac branch | Windows `324cd963` merged (`af5e41f`); one core again |
+| The owner's Mac prompt asks for a "See sources" disclosure; Windows shows "Details" holding sources, steps and how sure | Owner prompt 7.3; `apps/desktop/src/ai/Conversation.tsx` | Mac uses "See sources" with sources only (the newer, more specific request). Windows gap recorded; the owner chooses one name |
+| Daily View export: the owner wants a document of its own named "Shoot Day N - Daily view"; Windows exports the schedule with the day first | `new changes.docx` item 1; `features/export/buttons.tsx` | New core query `schedule.export_daily`; the Mac uses it; Windows front end still to call it |
+| Mac test expectations: 16 themes, the brand line "Created with OpenFrame Studio", a 198-point sidebar width kept | `apps/macos/Tests/...` | Updated to the merged core (17 themes, "Created using OpenFrame") and to the 220-point rule of 5355dc7 |
+
 ## 2026-10-19: Windows final polish (owner change list, AI brief, PDF specs)
 
 | Stale or conflicting statement | Where it was | Resolution |

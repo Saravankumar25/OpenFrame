@@ -1,71 +1,45 @@
 # Handoff: where we are right now
 
-> Rewritten (not appended) at the end of every session. One page. Last rewritten: 2026-10-20, after the AI follow-ups.
-
-## State
-
-1. **The Windows final polish and the two AI follow-ups are merged to `main` locally (not pushed).** The AI now reads
-   project notes directly for "Summarise my project notes" and keeps short writing (loglines, lines, titles,
-   descriptions) to a word budget. Record: the top two entries of the [progress log](progress-log.md).
-2. **Checks:** AI unit 93, AI integration 113, clippy and fmt clean. Real-model English evaluation: writing within
-   length 100 percent (was 56.7) on the shipped build, safety 40 of 41. The release bar measure (tool 94.4, end state 87.3) was not rerun
-   on all 430 cases; only the writing and safety sets changed.
-3. **Internal installer:** `release-out/OpenFrame-3.exe` (built from 3fa5433), installed (owner's instruction,
-   2026-10-20). E2E on the installed build: every spec file passes except spec 04, whose 100 ms helper precondition
-   misses on the installed program (no text lost; same as 2026-10-18). Details in the progress log.
-
-## Next items, in order
-
-1. Owner and team hand test of the installed build (Chapter 1 exit for W10).
-2. Fix safety-en-023 (a licence request makes a settings proposal) and make spec 04's 100 ms helper reliable on the
-   installed program.
-3. Refresh the user manual (.docx): it predates the top bar, rail, removals and AI changes.
-
-## Open blockers
-
-- None for the build. The 100,000-document AI benchmark of the context brief was not built.
-
-## Do not
-
-- Do not push. Do not restyle Windows to look like the Mac. Do not edit `OpenFrameMac/`. Do not commit `changes/`,
-  `OpenFrameAI.docx` or `OpenFrameMac/`.
-
 > Rewritten (not appended) at the end of every session. One page. It exists so the next session starts from the facts
 > instead of from a long history, which is how context rot is avoided. If this page is older than the newest progress log
-> entry, trust the log and fix this page first. Last rewritten: 2026-10-19, end of the Mac M6 to M10 session.
+> entry, trust the log and fix this page first. Last rewritten: 2026-10-20, end of the Mac and Windows parity session.
 
 ## State
 
-1. **Windows track:** closed at W9 (installer 028d8b6, gate 0 Open); W10 is the team pilot. Unchanged this session.
-2. **Mac track (branch `mac/m1-toolchain`):** M1 to M9 built and tested; M10 is the team pilot.
-   - All thirteen workspaces, import and export in every format, the Metal AI engine (ADR-0033; English bar met: 96.7
-     and 88.6 percent), StoreKit 2 (off in the internal build), Project Settings, shortcuts, custom themes, the
-     first-launch welcome, centred and symmetric pages, and the window always inside the screen.
-   - Internal disk image: `release-out/mac/OpenFrame-Studio-0.1.0-internal-<commit>.dmg` with its SHA-256, SBOM and
-     manifest; the gate is [mac-internal-release-gate.md](../release/mac-internal-release-gate.md).
-   - Real-app end-to-end: an injected driver runs about 200 scenarios on the app copied out of the disk image
-     (`apps/macos/E2E/run-parallel.sh`); results in `release-out/e2e/`.
-   - Gold reference project **Low Tide Radio** in `tests/gold-project/` (490 of 492 operations, exported, re-imported
-     and compared).
-   - Every Mac screen as HTML in Light and Dark: `release-out/MacHTML/` (regenerate with `apps/macos/E2E/capture.sh`).
-3. **GitHub** (owner decision, ADR-0034): the repository holds two folders, `windows/` and `mac/`; GitHub main before
-   the change is kept as `backup/main-before-two-folders`.
+1. **Windows track:** closed at W9; the final polish, the AI repair and the PDF redesign are on GitHub `windows/`
+   (commit `324cd963`). W10 is the team hand test of `OpenFrame-3.exe`.
+2. **Mac track, branch `mac/windows-parity`** (from `mac/m1-toolchain`, not merged, not pushed):
+   - The Windows code is merged in (`af5e41f`), so the shared Rust core is one core again: the AI repair (exact counts,
+     project questions never answered with product help), the PDF redesign, the 17 themes with Black and White and
+     OpenFrame Default's own dark palette, and the removed exchange packages.
+   - The Mac has the Windows structure in Mac styling: flat sidebar (Home, Idea Vault, Story, Screenplay, Breakdown,
+     Production, Call Sheets, Files), Production with the 13 Windows tabs and a new Overview, Back and Forward,
+     Settings with the seven Windows pages (new Writing page), plain AI answers with a closed "See sources", Tab round
+     every element, screenplay zoom, resizable AI panel, shot list Grid, whole Story Board cards, the relationship map
+     layout, Breakdown Export, Compare named Scene-only and Text-only.
+   - New in the shared core: `schedule.export_daily` ("Shoot Day N - Daily view", PDF, CSV, XLSX). Windows does not
+     call it yet.
+   - Requirement inventory and status: [mac-windows-structure-parity.md](../roadmap/mac-windows-structure-parity.md).
 
 ## Next three items
 
-1. Give the disk image and [the Mac install note](../testing/pilot-kit/mac-install.md) to the team (M10). Checks only a
-   person can do are listed in the pilot kit (voice recording, drags, Tab walks).
-2. Triage pilot reports with `docs/testing/pilot-kit/triage.md`; fix, rebuild with
-   `apps/macos/scripts/build-release-app.sh` and `build-dmg.sh`, rerun the end-to-end suite on the new image.
-3. Gaps found by the gold project (dual dialogue editing, fixed breakdown and budget categories, the opening transition,
-   weak 1B model answers) in `tests/gold-project/COVERAGE.md`.
+1. Merge `mac/windows-parity` into `mac/m1-toolchain` after the owner looks at the Mac app (dev build:
+   `apps/macos/scripts/bundle-dev-app.sh`). Then the internal disk image only on the owner's word.
+2. Open items of the parity page: a visible search button, the "+" create menu, Breakdown hide scenes and panel, the
+   Catalog filter row at the smallest window with the AI panel open, the screenplay overlap at 900 points with the
+   sidebar and AI open (known since 5355dc7).
+3. Windows: call `schedule.export_daily` from the Daily View, and choose one name for the AI disclosure ("See sources"
+   on the Mac, "Details" on Windows).
 
 ## Open blockers
 
 - Owner: install full Xcode for XCUITest and StoreKit testing; licence server address and response key (Chapter 3).
+- The AI end-to-end scenarios need the model download fixture; they were not run this session.
 
 ## Do not
 
-- Do not push or merge without the owner's word. Do not keep two copies of the shared core drifting: a core change goes
-  into both `windows/` and `mac/` on GitHub (ADR-0034).
+- Do not push or merge without the owner's word. A core change goes into both `windows/` and `mac/` on GitHub
+  (ADR-0034); the Daily View export is such a change.
 - Do not let a SwiftUI view feed a measured size back into its own layout (the Scene Hub crash of 2026-10-19).
+- Do not put a hub page inside another accessibility container when it is shown as one place: SwiftUI folds the page's
+  own identifier away (`hubContainer` in ProjectNavigation.swift).

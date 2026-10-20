@@ -47,11 +47,11 @@ struct BreakdownContent: View {
         .followsHubTab(hub.tab, fixed: fixed, set: { hub.tab = $0 }, place: { $0.place })
         .background(theme["bg"])
         .overlay(alignment: .bottom) { BDNoticeBar(hub: hub) }
+        .sheet(item: $hub.exportModel) { m in CSExportSheet(model: m) { hub.exportModel = nil } }
         .environment(hub)
         .task(id: app.changes.key(BDTables.categoryStyle)) { await hub.reloadStyles() }
         .task(id: app.changes.key(BDTables.members)) { await hub.reloadMembers() }
-        .accessibilityElement(children: .contain)
-        .accessibilityIdentifier("breakdown-workspace")
+        .hubContainer("breakdown-workspace", standalone: fixed == nil)
     }
 
     private var tabBar: some View {
@@ -170,6 +170,14 @@ struct BreakdownTabView: View {
                 Button("Change source") { model.sheet = .selectSource }.controlSize(.small)
                     .accessibilityIdentifier("change-source")
             }
+            Button {
+                hub.exportBreakdown(currentSceneId: model.detail?.sceneId, sceneLabel: model.detail?.number.map { "Scene \($0)" })
+            } label: {
+                Label("Export", systemImage: "square.and.arrow.up")
+            }
+            .controlSize(.small)
+            .help("Export the breakdown as PDF, CSV or a spreadsheet")
+            .accessibilityIdentifier("breakdown-export")
         }
         .font(.callout)
         .foregroundStyle(theme["blue-t"])

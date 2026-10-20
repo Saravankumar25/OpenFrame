@@ -12,6 +12,7 @@
 | What to do next | [implementation/handoff.md](implementation/handoff.md), then [roadmap/README.md](roadmap/README.md) |
 | The Windows plan, ten phases | [roadmap/chapter-1a-windows-phases.md](roadmap/chapter-1a-windows-phases.md) |
 | The Mac plan, ten phases | [roadmap/chapter-1b-mac-phases.md](roadmap/chapter-1b-mac-phases.md) |
+| Mac and Windows structure parity, owner change lists on the Mac | [roadmap/mac-windows-structure-parity.md](roadmap/mac-windows-structure-parity.md) |
 | How it is built, in simple words | [architecture/README.md](architecture/README.md), then the [report](reports/2026-10-09-project-retrospection-and-audit.md) (a snapshot) |
 | What works and how well it is proved | [implementation/feature-status.md](implementation/feature-status.md) |
 | How we test and how the pilot runs | [testing/README.md](testing/README.md), [testing/internal-test-plan.md](testing/internal-test-plan.md) |

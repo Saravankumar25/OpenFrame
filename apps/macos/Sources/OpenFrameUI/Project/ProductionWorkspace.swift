@@ -11,9 +11,10 @@ struct ProductionWorkspace: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            // As tall as the segmented bars the pages had before, so every page keeps its room.
             ProductionTabBar(selection: $tab)
                 .padding(.horizontal, PageSpacing.medium)
-                .padding(.vertical, PageSpacing.small)
+                .padding(.vertical, 5)
             Divider()
             page.frame(maxWidth: .infinity, maxHeight: .infinity)
         }
@@ -41,14 +42,31 @@ struct ProductionWorkspace: View {
     }
 }
 
-/// The Production tabs: labelled buttons in the style of the other Mac tab strips, wrapping
-/// when the window is narrow so every tab stays visible.
+/// The Production tabs: labelled buttons in the style of the other Mac tab strips, on one line.
+/// When the pane is too narrow for all thirteen (a small window with the AI Assistant open), the
+/// strip becomes a menu that names the tab shown, so the page keeps its height.
 struct ProductionTabBar: View {
     @Binding var selection: ProductionTab
     @Environment(\.ofTheme) private var theme
 
     var body: some View {
-        BDFlowLayout(spacing: 2) {
+        ViewThatFits(in: .horizontal) {
+            strip
+            compact
+        }
+    }
+
+    private var compact: some View {
+        Picker("Production", selection: $selection) {
+            ForEach(ProductionTab.allCases) { Text($0.title).tag($0) }
+        }
+        .fixedSize()
+        .frame(maxWidth: .infinity, alignment: .center)
+        .accessibilityIdentifier("production-tab-menu")
+    }
+
+    private var strip: some View {
+        HStack(spacing: 2) {
             ForEach(ProductionTab.allCases) { tab in
                 let on = tab == selection
                 Button {
@@ -58,7 +76,7 @@ struct ProductionTabBar: View {
                         .font(.callout.weight(on ? .semibold : .regular))
                         .lineLimit(1)
                         .fixedSize()
-                        .padding(.horizontal, 10).padding(.vertical, 4)
+                        .padding(.horizontal, 10).padding(.vertical, 3)
                         .foregroundStyle(on ? theme["accent-ink"] : theme["ink2"])
                         .background(on ? theme["accent-soft"] : Color.clear, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
                         .contentShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
@@ -70,6 +88,7 @@ struct ProductionTabBar: View {
         }
         .padding(2)
         .background(theme["surface2"], in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .fixedSize()
         .frame(maxWidth: .infinity, alignment: .center)
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Production")

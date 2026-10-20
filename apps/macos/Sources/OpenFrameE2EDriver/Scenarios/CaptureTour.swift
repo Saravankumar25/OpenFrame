@@ -347,15 +347,19 @@ fileprivate extension UI {
     /// Opens a workspace with the Go menu, else by selecting the sidebar row.
     func capNav(_ workspace: String) async throws {
         capBigWindow()
-        if menuItemEnabled(["Go", workspace]) { try await menu(["Go", workspace]); await idle(0.5); return }
-        let order = ["Screenplay", "Story", "Idea Vault", "|", "Breakdown", "Schedule", "Call Sheets", "Budget", "Visual Planning", "|", "Project Home", "Files", "Notes and Tasks", "Activity", "Recently Deleted"]
+        try await go(workspace)
+        await idle(0.2)
+    }
+
+    func capNavByRow(_ workspace: String) async throws {
+        let order = ["Home", "Idea Vault", "Story", "Screenplay", "Breakdown", "Production", "Call Sheets", "Files"]
         guard let outline = try? await wait(label: "Sidebar", timeout: 10, "the sidebar"), let view = outline.obj as? NSOutlineView else {
             throw DriverError("no sidebar to click \(workspace)")
         }
         guard let idx = order.firstIndex(of: workspace) else { throw DriverError("unknown workspace \(workspace)") }
         view.window?.makeFirstResponder(view)
-        view.scrollRowToVisible(idx + 1)
-        view.selectRowIndexes(IndexSet(integer: idx + 1), byExtendingSelection: false)
+        view.scrollRowToVisible(idx)
+        view.selectRowIndexes(IndexSet(integer: idx), byExtendingSelection: false)
         await idle(0.7)
     }
 
@@ -1216,11 +1220,11 @@ extension Scenarios {
             await ui.exploreButtons([("schedule-filters", "Filters"), ("suggest-grouping", "Suggest grouping"), ("warnings-button", "Warnings"), ("schedule-settings", "Schedule settings"),
                                      ("schedule-export", "Export schedule"), ("schedule-pool", "Unscheduled pool")], area: "Schedule", prefix: "schedule", from: "schedule-board")
             await ui.step("dood") {
-                try await ui.act(id: "schedule-section-dood")
+                try await ui.go("Day Out of Days")
                 _ = try await ui.wait(id: "dood-table", timeout: 10)
                 await ui.capture("schedule-dood", title: "Day Out of Days", area: "Schedule", from: "schedule-board", via: "schedule-section-dood")
                 await ui.exploreButtons([("dood-export", "Export Day Out of Days"), ("dood-note", "Day Out of Days note")], area: "Schedule", prefix: "schedule-dood", from: "schedule-dood")
-                try await ui.act(id: "schedule-section-schedule")
+                try await ui.go("Schedule")
             }
         },
     ]
