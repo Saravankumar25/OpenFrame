@@ -58,6 +58,31 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 
 ## Entries
 
+### 2026-10-20 (late night), MacHTML rebuilt: 692 Mac states in Light and Dark from picture and accessibility tree
+- **Areas and items worked:** owner request "rebuild MacHTML" (time box 90 minutes, parallel agents allowed).
+- **Done:** the capture tour is split into one file per area (`CaptureTour*.swift`) and extended by ten parallel agents
+  with a file-ownership map; elements now record subrole, selected, focused and pop-up choices; the tour fixes its
+  window size and retakes blank pictures; `build-mac-html.mjs` writes standalone pages (picture cut into container
+  regions, real HTML per accessibility element, CSS-only HTML only and Light or Dark switches, no script, no network);
+  `check-pages.swift` checks pixels and the HTML layer; `run.sh` takes `OPENFRAME_E2E_ID_SUFFIX`. Commits `0605b0f`,
+  `8d40f4e` and this one on `mac/machtml-rebuild`. Old `release-out/MacHTML/` (179 screens) deleted.
+- **Evidence:** final run, 4 runners per mode side by side: 37 of 37 tour scenarios pass in Light and in Dark; 692
+  states; check 692 of 692 pages pass in each mode, 0 HTML misses (`MacHTML/README.md`).
+- **Features moved:** none.
+- **Docs updated:** handoff, Mac release gate Q5 note, `.gitignore` (MacHTML is generated).
+- **Decisions made or needed:** owner: commit the MacHTML pictures (583 MB) or keep them generated; merge order.
+- **Blocked / risks:** not captured: AI answers and See sources (no engine in the dev build), images and media (system
+  Open panel), drag and drop, microphone, print panel, crashes, disk failures, multi-select (live modifier keys). App
+  problems the agents saw (not fixed, app code untouched): Writing Room Mode crashes on hiding the scene list at 1280
+  points ("Update Constraints in Window"); inspector runs off the right edge with the sidebar shown at 1280 points;
+  budget row Edit and Delete squeezed to one letter per line; AI panel header wraps at 300 points; the `ai-toggle`,
+  Back and sidebar toolbar buttons do nothing when pressed through accessibility; "Opened as a copy" shown twice in
+  Recent; container identifiers hide inner identifiers in several sheets and pages; the call sheet Finalize state did
+  not appear within 12 seconds.
+- **Next:** owner review of MacHTML and the parity branch; fix the crash and the 1280-point layout problems above.
+- **Checks run:** tour and page check as above. Swift unit tests, `npm run verify` and the full E2E suite not run (the
+  app code did not change).
+
 ### 2026-10-20 (night), Mac page bars and Windows headers, fresh-install fixes, E2E isolation, Windows checks on the Mac
 - **Areas and items worked:** Mac and Windows structure parity (owner: "do everything before the push or the disk
   image"), E2E reliability.

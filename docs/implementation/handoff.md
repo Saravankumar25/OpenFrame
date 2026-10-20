@@ -2,7 +2,7 @@
 
 > Rewritten (not appended) at the end of every session. One page. It exists so the next session starts from the facts
 > instead of from a long history, which is how context rot is avoided. If this page is older than the newest progress log
-> entry, trust the log and fix this page first. Last rewritten: 2026-10-20, night, end of the Mac page bar, headers and E2E isolation round.
+> entry, trust the log and fix this page first. Last rewritten: 2026-10-20, late night, end of the MacHTML rebuild.
 
 ## State
 
@@ -30,10 +30,19 @@
    - The E2E runner tests a copy with its own bundle identifier and clears its preferences per scenario: the owner's
      own use of the dev app otherwise leaks into the scenarios.
 
+3. **MacHTML rebuilt, branch `mac/machtml-rebuild`** (from `mac/windows-parity`, not merged, not pushed): 692 states of
+   the Mac app, each in Light and Dark, as standalone HTML pages in `MacHTML/` (git-ignored, 583 MB; regenerate with
+   `apps/macos/E2E/capture.sh "apps/macos/build/OpenFrame Studio.app"`, `OPENFRAME_E2E_PARALLEL=4` for speed). Each page
+   is the 2x window picture cut into its containers plus real HTML for every accessibility element. 692 of 692 pages
+   pass the WebKit check (0.5 percent pixels, channel over 24) in both modes with 0 HTML misses. The old 179-screen
+   `release-out/MacHTML/` is deleted. Limits are in `MacHTML/README.md` (window heights vary by a few points, some
+   windows drawn inactive, no AI answers, no images).
+
 ## Next three items
 
-1. Merge `mac/windows-parity` into `mac/m1-toolchain` after the owner looks at the Mac app (dev build:
-   `apps/macos/scripts/bundle-dev-app.sh`). Then the internal disk image only on the owner's word.
+1. Merge `mac/windows-parity` (and `mac/machtml-rebuild` on top of it) into `mac/m1-toolchain` after the owner looks at
+   the Mac app (dev build: `apps/macos/scripts/bundle-dev-app.sh`). Then the internal disk image only on the owner's
+   word. Owner to decide whether MacHTML pictures are committed (583 MB) or kept generated.
 2. Windows machine: `npm run verify` (needs `cargo-deny` and `cargo-audit`, not installed on the Mac) and the Tauri
    E2E suite for the Story page, Beat Board, See sources and the Daily View export.
 3. Remaining AI misses (comment on the current draft, pin a note, sequence without an act): measure, then route.
@@ -44,6 +53,9 @@
 - The AI end-to-end scenarios need the model download fixture; they were not run this session.
 
 ## Do not
+
+- Do not run the capture tour with more runners than the display can show frontmost if inactive-looking windows matter;
+  app bugs the tour found are listed in the progress log entry of 2026-10-20 (late night).
 
 - Do not push or merge without the owner's word. A core change goes into both `windows/` and `mac/` on GitHub
   (ADR-0034); the Daily View export is such a change.
