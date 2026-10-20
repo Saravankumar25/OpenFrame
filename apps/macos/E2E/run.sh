@@ -32,7 +32,8 @@ if [[ -d "$APP" ]]; then
   ditto "$APP" "$WORK/app/$(basename "$APP")"
   APP_UNDER_TEST="$WORK/app/$(basename "$APP")"
   PLIST="$APP_UNDER_TEST/Contents/Info.plist"
-  TEST_ID="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$PLIST").e2e$(echo "${OPENFRAME_E2E_SHARD:-1/1}" | cut -d/ -f1)"
+  # OPENFRAME_E2E_ID_SUFFIX keeps runners that are started separately (not as shards of one run) apart.
+  TEST_ID="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$PLIST").e2e${OPENFRAME_E2E_ID_SUFFIX:-}$(echo "${OPENFRAME_E2E_SHARD:-1/1}" | cut -d/ -f1)"
   /usr/libexec/PlistBuddy -c "Set :CFBundleIdentifier $TEST_ID" "$PLIST"
   codesign --force --sign - --timestamp=none "$APP_UNDER_TEST" >/dev/null 2>&1
   defaults delete "$TEST_ID" >/dev/null 2>&1 || true

@@ -25,7 +25,7 @@ struct Element: CustomStringConvertible {
 
     private static let legacyNames = [
         "accessibilityIdentifier": "AXIdentifier", "accessibilityRole": "AXRole", "accessibilityLabel": "AXDescription",
-        "accessibilityTitle": "AXTitle", "accessibilityValue": "AXValue",
+        "accessibilityTitle": "AXTitle", "accessibilityValue": "AXValue", "accessibilitySubrole": "AXSubrole",
     ]
 
     private func string(_ selector: String) -> String {
@@ -45,6 +45,7 @@ struct Element: CustomStringConvertible {
 
     var identifier: String { string("accessibilityIdentifier") }
     var role: String { string("accessibilityRole") }
+    var subrole: String { string("accessibilitySubrole") }
     var label: String { string("accessibilityLabel") }
     var title: String { string("accessibilityTitle") }
     var value: String {
@@ -88,6 +89,8 @@ struct Element: CustomStringConvertible {
     }
 
     var isEnabled: Bool { callBool("isAccessibilityEnabled") ?? true }
+    var isSelected: Bool { callBool("isAccessibilitySelected") ?? false }
+    var isFocused: Bool { callBool("isAccessibilityFocused") ?? false }
     func performPress() -> Bool { callBool("accessibilityPerformPress") ?? false }
 
     var description: String { "\(role) id=\(identifier) label=\(label) title=\(title) value=\(value.prefix(60))" }
