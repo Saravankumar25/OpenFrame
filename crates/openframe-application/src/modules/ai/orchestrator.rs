@@ -579,9 +579,13 @@ pub fn compose_reads(
     let single = reads.len() == 1 && text.is_none();
     if !single {
         for r in reads {
-            for it in &r.items {
-                if out.items.len() < MAX_RESULT_ITEMS && !out.items.contains(it) {
-                    out.items.push(it.clone());
+            // Passages the model wrote its answer from are its sources (provenance), not a list
+            // under the answer; they are listed only when there is no written answer.
+            if text.is_none() || !is_retrieval(r) {
+                for it in &r.items {
+                    if out.items.len() < MAX_RESULT_ITEMS && !out.items.contains(it) {
+                        out.items.push(it.clone());
+                    }
                 }
             }
             push_unique_provenance(&mut out.provenance, &r.provenance);
@@ -620,6 +624,13 @@ pub fn without_false_change_claim(text: &str) -> String {
     } else {
         text.to_string()
     }
+}
+
+/// The passages `retrieve_context` returned: only that read reports the index state.
+fn is_retrieval(out: &ToolOutput) -> bool {
+    out.structured
+        .as_ref()
+        .is_some_and(|s| s.get("indexState").is_some())
 }
 
 /// A background task started by a long-running tool: the tool reports it as
@@ -1117,6 +1128,30 @@ fn keep_sentences(text: String, n: usize) -> String {
     text
 }
 
+/// Drops whole sentences from the end until the text fits `max` words, keeping at least one.
+/// Used only when the person named no length, so the default reply stays short to read.
+fn fit_words(text: String, max: usize) -> String {
+    let words = |t: &str| t.split_whitespace().count();
+    let mut fit = keep_sentences(text.clone(), 1);
+    for n in 2.. {
+        let t = keep_sentences(text.clone(), n);
+        if words(&t) > max {
+            break;
+        }
+        if t == text {
+            return text;
+        }
+        fit = t;
+    }
+    fit
+}
+
+/// Default lengths, in words, when the request names no sentence count.
+const SUMMARY_WORDS: usize = 40;
+const PROFILE_WORDS: usize = 40;
+const WRITING_WORDS: usize = 30;
+const PARAGRAPH_WORDS: usize = 90;
+
 fn run_generation(
     model: &dyn InferenceProvider,
     g: Generation,
@@ -1125,27 +1160,60 @@ fn run_generation(
 ) -> AppResult<()> {
     let asked = super::commands::asked_sentences(text);
     match g {
-        Generation::Summary { items } => {
+        Generation::Summary { items } if super::commands::asks_for_summary(text) => {
             let length = match asked {
-                Some(1) => "in exactly one plain sentence".to_string(),
-                Some(n) => format!("in exactly {n} plain sentences"),
-                None => "in one to three plain sentences, more only when the user asks for detail"
-                    .into(),
+                Some(1) => "in exactly one plain sentence of under 25 words".to_string(),
+                Some(n) => format!("in exactly {n} plain sentences, each under 20 words"),
+                None => format!(
+                    "in one to three short plain sentences, under {SUMMARY_WORDS} words in all"
+                ),
             };
             let system = format!(
                 "You summarize project material for a filmmaker {length}. Say what happens, in order, with the names used in the text. {DATA_RULE}"
             );
-            out.content = keep_sentences(
-                generate_text(
-                    model,
-                    &system,
-                    format!("{}User request: {}", data_block(&items), text.trim()),
-                    450,
-                )?,
-                asked.unwrap_or(3),
-            );
+            let summary = generate_text(
+                model,
+                &system,
+                format!("{}User request: {}", data_block(&items), text.trim()),
+                450,
+            )?;
+            out.content = match asked {
+                Some(n) => keep_sentences(summary, n),
+                None => fit_words(keep_sentences(summary, 3), SUMMARY_WORDS),
+            };
             out.details
                 .push("Summary written by Offline AI from the content in scope.".into());
+        }
+        // Any other short piece of writing from the scope: a logline, a line, a title, a description.
+        Generation::Summary { items } => {
+            let paragraph = text.to_lowercase().contains("paragraph");
+            let title = !paragraph && text.to_lowercase().contains("title");
+            let length = match asked {
+                Some(1) => "in exactly one sentence of under 30 words".to_string(),
+                Some(n) => format!("in exactly {n} sentences, each under 20 words"),
+                None if title => "as a title of at most six words".into(),
+                None if paragraph => {
+                    format!("in one short paragraph, under {PARAGRAPH_WORDS} words")
+                }
+                None => {
+                    format!("in one or two short sentences, under {WRITING_WORDS} words in all")
+                }
+            };
+            let system = format!(
+                "You help a writer with their own story. Do exactly what the request asks, {length}, about the story told in the project material, using its characters, places and events by name. Reply with only the requested text: no preamble, no label, no explanation. {DATA_RULE}"
+            );
+            let written = generate_text(
+                model,
+                &system,
+                format!("{}User request: {}", data_block(&items), text.trim()),
+                300,
+            )?;
+            out.content = match asked {
+                Some(n) => keep_sentences(written, n),
+                None if title => keep_sentences(written, 1),
+                None if paragraph => fit_words(written, PARAGRAPH_WORDS),
+                None => fit_words(keep_sentences(written, 2), WRITING_WORDS),
+            };
         }
         Generation::CharacterProfile {
             name,
@@ -1154,26 +1222,29 @@ fn run_generation(
             total,
         } => {
             let length = match asked {
-                Some(1) => "Write exactly one sentence".to_string(),
-                Some(n) => format!("Write exactly {n} sentences"),
-                None => "Write one short paragraph of at most four sentences".into(),
+                Some(1) => "Write exactly one sentence of under 30 words".to_string(),
+                Some(n) => format!("Write exactly {n} sentences, each under 20 words,"),
+                None => format!(
+                    "Write two or three short sentences, under {PROFILE_WORDS} words in all,"
+                ),
             };
             let system = format!(
                 "You describe a character in a screenplay for the person writing it. Use only the scene evidence given. {length} of plain, natural prose: who the character is, what they want, how they behave and talk, and who matters to them. Use words like 'seems' for interpretation. Do not invent events, names or backstory, do not list scenes or sources, and use no headings, bullet points or bold text. {DATA_RULE}"
             );
-            out.content = keep_sentences(
-                generate_text(
-                    model,
-                    &system,
-                    format!(
-                        "{}User request: {}\nDescribe {name}.",
-                        data_block(&items),
-                        text.trim()
-                    ),
-                    450,
-                )?,
-                asked.unwrap_or(4),
-            );
+            let profile = generate_text(
+                model,
+                &system,
+                format!(
+                    "{}User request: {}\nDescribe {name}.",
+                    data_block(&items),
+                    text.trim()
+                ),
+                450,
+            )?;
+            out.content = match asked {
+                Some(n) => keep_sentences(profile, n),
+                None => fit_words(keep_sentences(profile, 3), PROFILE_WORDS),
+            };
             out.kind = AiResultKind::Answer;
             if examined < total {
                 out.details.push(format!(
@@ -1830,6 +1901,47 @@ mod tests {
         );
         assert_eq!(written.details.last().unwrap(), "note");
         assert!(compose_reads(&[], None, None).is_none());
+    }
+
+    #[test]
+    fn retrieved_passages_are_sources_of_a_written_answer_not_a_list() {
+        let mut passages = ToolOutput::exact("2 passages related to “kite”.");
+        passages.items.push(ResultItem {
+            label: "Screenplay · Scene 4".into(),
+            detail: None,
+            nav: None,
+        });
+        passages
+            .provenance
+            .push(Provenance::new("Scene", "Scene 4"));
+        passages.structured = Some(json!({ "indexState": "Ready" }));
+        let mut list = ToolOutput::exact("1 scene mentions the kite.");
+        list.items.push(ResultItem {
+            label: "Scene 9".into(),
+            detail: None,
+            nav: None,
+        });
+        let reads = [passages, list];
+        let written = compose_reads(&reads, Some("The kite stays home."), None).unwrap();
+        let labels: Vec<&str> = written.items.iter().map(|i| i.label.as_str()).collect();
+        assert_eq!(labels, ["Scene 9"]);
+        assert_eq!(written.provenance.len(), 1, "the passage is still cited");
+        // With no written answer the passages are what was found, so they stay listed.
+        assert_eq!(compose_reads(&reads, None, None).unwrap().items.len(), 2);
+    }
+
+    #[test]
+    fn default_length_drops_whole_sentences_to_fit() {
+        let t = "One two three four. Five six seven eight. Nine ten.".to_string();
+        assert_eq!(fit_words(t.clone(), 10), t);
+        assert_eq!(
+            fit_words(t.clone(), 8),
+            "One two three four. Five six seven eight."
+        );
+        assert_eq!(fit_words(t.clone(), 5), "One two three four.");
+        // A single long sentence is never cut mid-sentence.
+        assert_eq!(fit_words(t.clone(), 2), "One two three four.");
+        assert_eq!(fit_words("No end mark here".into(), 2), "No end mark here");
     }
 
     #[test]

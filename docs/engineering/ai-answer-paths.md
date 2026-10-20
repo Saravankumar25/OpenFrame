@@ -30,6 +30,7 @@
 | Character | Describe Karthik, who is Karthik | `character_profile`: every scene the character speaks in or is named in, sampled evenly across the story when more than the budget holds | 1 |
 | Project facts | Which scene comes first, list the scene headings, how long is the screenplay, how many scenes are unscheduled, which draft is the production source, what open tasks do I have, are there unresolved comments | The read tool that holds the fact (scene facts, scene list, pages, schedule, production source, tasks, comments) | 0 |
 | Search | Which scenes mention the station | Full-text search over the project; a bare category word ("scenes") answers with its count | 0 or 1 |
+| Short writing | Write a logline, write a tagline, suggest a line for Bittu, rewrite Padma's last line, suggest a better title, what is the theme of this story, what is the point of this scene | `summarize_scope`: the content in scope, then a writing prompt that asks for only the requested text. A request that names a scene or act ("a logline for Scene 4") is left to the tools that read it | 1 |
 | Product help | How do I export a PDF | The versioned product guide; "not covered" when no section matches | 1 |
 | Changes | Rename Karthik to Ravi, create a task | A proposal card; nothing changes until the person applies it | 0 or more |
 
@@ -44,6 +45,13 @@
 4. **No graph or global summary cache added.** The measured failures were routing and evidence selection, not missing
    relationships. A cached global summary would go stale on every edit.
 5. **Plain answers, details on demand.** The badges, "From project data" lines and step counts moved behind "Details".
+6. **Short by default, exact when asked.** A request that names a sentence count ("in two sentences", "a
+   one-sentence card", "a logline") gets that many sentences. Without one, a summary or a character description keeps
+   whole sentences up to about 40 words, other short writing up to about 30, a paragraph up to about 90. Sentences are
+   dropped from the end, never cut in the middle. When the model writes an answer from retrieved passages, the passages
+   are its sources, not a list under the answer.
+7. **Notes are read, never obeyed.** "Summarise my project notes" goes straight to the notes reader, so text inside a
+   note cannot become a request to the model.
 
 ## 4. Measured
 

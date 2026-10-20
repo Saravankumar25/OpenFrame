@@ -16,7 +16,7 @@ use serde::de::DeserializeOwned;
 use serde_json::{Value, json};
 
 use super::queries::{self, DraftRef, SceneRow, join_and};
-use super::scope::{ContextItem, ResolvedScope};
+use super::scope::{AiScopeKind, ContextItem, ResolvedScope};
 use super::types::*;
 
 /// Tool specification offered to the model (name, class, description, argument schema).
@@ -2364,6 +2364,43 @@ fn summarize_scope(ctx: &ToolCtx<'_>) -> AppResult<ToolOutput> {
                 source: "Story Board outline".into(),
                 text: queries::truncate_chars(&outline, super::scope::CONTEXT_BUDGET),
             });
+        }
+    }
+    let whole = matches!(
+        ctx.scope.kind,
+        AiScopeKind::WholeProject | AiScopeKind::CurrentScreenplay | AiScopeKind::SpecificDraft
+    );
+    if items.is_empty() && whole {
+        // No Story Board yet (an imported screenplay): the opening of every scene, in order.
+        let draft = match &ctx.scope.draft {
+            Some(d) => Some(d.clone()),
+            None => queries::current_draft(ctx.conn)?,
+        };
+        if let Some(d) = draft {
+            let scenes: Vec<_> = queries::scenes(ctx.conn, &d.id)?
+                .into_iter()
+                .filter(|s| !s.omitted)
+                .collect();
+            let each = (super::scope::CONTEXT_BUDGET / scenes.len().max(1)).clamp(80, 400);
+            let mut outline = String::new();
+            for s in &scenes {
+                let text = queries::scene_text(ctx.conn, &s.id, each)?;
+                let flat = text.split_whitespace().collect::<Vec<_>>().join(" ");
+                outline.push_str(&format!(
+                    "{}: {}\n",
+                    s.label(),
+                    queries::truncate_chars(&flat, each)
+                ));
+                if outline.len() >= super::scope::CONTEXT_BUDGET {
+                    break;
+                }
+            }
+            if !outline.trim().is_empty() {
+                items.push(ContextItem {
+                    source: format!("{} outline", d.label()),
+                    text: queries::truncate_chars(&outline, super::scope::CONTEXT_BUDGET),
+                });
+            }
         }
     }
     if items.is_empty() {
