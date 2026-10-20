@@ -3,7 +3,7 @@
 > **Revision notice (2026-10-05).** UX mock-ups 164 to 168 (LAN sessions) are **removed** (ADR-0007). The "light theme only" rule
 > (ADR-0012 §7) is pending replacement by ADR-0014. [Screenplay and Production Depth Specification (Revision 1)](OpenFrame_Studio_Screenplay_and_Production_Depth_Specification.md) adds screens and controls not mocked yet: Appearance (Mode, Theme, Import, My Themes),
 > Keyboard Shortcuts, Card Display Settings, Page Setup, Header and Footer, Custom Elements, DOOD, expanded Call Sheet sections, suggestion lists.
-> New screens need mock-ups in `HTML_Mockups/` before build. Precedence: [docs/README.md](../README.md).
+> SUPERSEDED 2026-10-21: the rule "new screens need mock-ups in `HTML_Mockups/` before build" ended when the owner removed that folder; `WindowsHTML/` now records the shipped screens. Precedence: [docs/README.md](../README.md).
 
 ## Desktop Edition — Product / Functional Alignment Baseline
 
@@ -59,7 +59,7 @@ Contextual status indicators are allowed where the FSD requires them, for exampl
 ## 0.3 Plain-language design
 OpenFrame should use ordinary language wherever possible:
 
-- **Story Board** instead of structural-analysis terminology.
+- **Beat Board** instead of structural-analysis terminology.
 - **Scene Cards** instead of abstract story-unit terminology.
 - **Shooting Schedule** alongside Stripboard where professional language is useful.
 - **Project Files** instead of asset-repository terminology.
@@ -232,7 +232,7 @@ The object the user came to manipulate should normally dominate the workspace.
 ## 3.2 Density by workflow
 Idea Vault can be visually rich and moderately dense.
 
-Story Board should be dense enough to show many cards at once.
+Beat Board should be dense enough to show many cards at once.
 
 Screenplay should be visually quiet and reading-focused.
 
@@ -342,7 +342,7 @@ Top: project title, type, status, last opened.
 
 Main: Continue section with the last meaningful workspaces.
 
-Quick Access: Idea Vault, Story Board, Screenplay, Breakdown, Production, Call Sheets.
+Quick Access: Idea Vault, Beat Board, Screenplay, Breakdown, Production, Call Sheets.
 
 Lower: Recent and Project Files.
 
@@ -351,7 +351,7 @@ Production status indicators appear only after production content exists.
 ## Visible controls
 - Continue
 - Idea Vault
-- Story Board
+- Beat Board
 - Screenplay
 - Breakdown
 - Production
@@ -537,7 +537,7 @@ The user can move/copy a useful item into Story as Beat, Scene Card, Sequence id
 The same recovery rules as Global Vault apply.
 
 ## Cross-module connections
-This workspace remains independent from Story Board and Screenplay.
+This workspace remains independent from Beat Board and Screenplay.
 
 # 9. Idea Vault Item Detail / Preview
 Preview lets the filmmaker inspect or edit one item without forcing structure.
@@ -631,8 +631,8 @@ Quick Capture creates a normal Idea Vault item; it does not create a Scene Card 
 - Enter/Ctrl+Enter — save if chosen
 - Escape — cancel
 
-# 11. Story Board — Board View
-The Story Board is the primary visual outlining surface.
+# 11. Beat Board — Board View
+The Beat Board is the primary visual outlining surface.
 
 ## Primary question
 > **How does my story fit together?**
@@ -642,7 +642,7 @@ The Story Board is the primary visual outlining surface.
 - Shell > Story
 
 ## Recommended layout
-Header: Story Board, Board/Outline switcher, Add menu, search/filter, optional zoom, Undo/Redo.
+Header: Beat Board, Board/Outline switcher, Add menu, search/filter, optional zoom, Undo/Redo.
 
 Main canvas: Acts separated visually; Sequences grouped inside Acts; Scene Cards arranged within Sequences; Beats may appear where valid.
 
@@ -686,21 +686,21 @@ Use the PRD copy:
 Drag failure, save failure and invalid targets never silently change the data.
 
 ## Cross-module connections
-Story ordering can be used for Build Screenplay, but later Story Board edits do not automatically rewrite screenplay content.
+Story ordering can be used for Build Screenplay, but later Beat Board edits do not automatically rewrite screenplay content.
 
 ## Keyboard / desktop shortcuts
 - Ctrl/Cmd+Z — undo
 - Ctrl/Cmd+Shift+Z — redo
 - Arrow keys — navigate selected items where natural
 
-# 12. Story Board — Outline View
+# 12. Beat Board — Outline View
 Outline View exposes the same story structure as a compact hierarchy.
 
 ## Primary question
 > **Where does each Act, Sequence, Beat and Scene Card sit?**
 
 ## Entry points
-- Story Board > Outline
+- Beat Board > Outline
 
 ## Recommended layout
 Indented rows:
@@ -748,7 +748,7 @@ Acts provide high-level story grouping.
 > **What major section of the story am I looking at?**
 
 ## Entry points
-- Story Board > Add Act
+- Beat Board > Add Act
 - Context menu
 
 ## Recommended layout
@@ -782,7 +782,7 @@ Act rename does not edit screenplay text.
 Deletion warnings explain exactly what is retained.
 
 ## Cross-module connections
-Acts are Story Board structures, not screenplay text elements.
+Acts are Beat Board structures, not screenplay text elements.
 
 # 14. Sequence
 Sequences are simple named containers for groups of scenes.
@@ -791,7 +791,7 @@ Sequences are simple named containers for groups of scenes.
 > **What group of scenes belongs together?**
 
 ## Entry points
-- Story Board > Add Sequence
+- Beat Board > Add Sequence
 
 ## Recommended layout
 Sequence header shows name, child count, collapse and context menu. One text field dominates when creating it.
@@ -821,7 +821,7 @@ Dragging between Acts changes parent while preserving identities.
 Invalid moves do not mutate. Deleting a populated sequence uses the safe child-reassignment/delete flow.
 
 ## Cross-module connections
-Sequence grouping remains Story Board reference structure; it is not automatically inserted into screenplay text.
+Sequence grouping remains Beat Board reference structure; it is not automatically inserted into screenplay text.
 
 # 15. Beat Card
 Beat Cards represent small events/ideas that may later become scenes.
@@ -830,7 +830,7 @@ Beat Cards represent small events/ideas that may later become scenes.
 > **What happens next in the story?**
 
 ## Entry points
-- Story Board > Add Beat
+- Beat Board > Add Beat
 - Idea Vault > Send to Story as Beat
 
 ## Recommended layout
@@ -871,7 +871,7 @@ Scene Cards are the compact scene reminders used for visual story shaping.
 > **What happens in this scene?**
 
 ## Entry points
-- Story Board > Add Scene
+- Beat Board > Add Scene
 - Convert Beat
 - Send Idea to Story as Scene Card
 
@@ -964,7 +964,7 @@ A small location label shows Act/Sequence context.
 - Convert
 
 ## User actions and behavior
-Heading remains optional in Story Board. Build Screenplay is responsible for validating heading before conversion.
+Heading remains optional in Beat Board. Build Screenplay is responsible for validating heading before conversion.
 
 ## Visible states
 - Editing
@@ -979,7 +979,7 @@ Description is the primary field and should receive focus on a newly created car
 No production or character fields are introduced here.
 
 ## Cross-module connections
-The card remains the same Story Board identity throughout.
+The card remains the same Beat Board identity throughout.
 
 # 23. Screenplay — Standard Mode
 Professional writing surface with minimal distractions.
@@ -1040,7 +1040,7 @@ New screenplay: blank page + `Start writing or use Build Screenplay.`
 Saving problems preserve the local editing state. Search and export failures are localized.
 
 ## Cross-module connections
-Screenplay is authoritative written content; Story Board and Idea Vault are separate reference surfaces.
+Screenplay is authoritative written content; Beat Board and Idea Vault are separate reference surfaces.
 
 ## Keyboard / desktop shortcuts
 - Ctrl/Cmd+F
@@ -1097,7 +1097,7 @@ Left: scene navigator.
 
 Center: screenplay.
 
-Right: optional panel area with choices for Story Board reference, Scene Notes, Characters, Comments or Draft Information.
+Right: optional panel area with choices for Beat Board reference, Scene Notes, Characters, Comments or Draft Information.
 
 ## Visible controls
 - Open panel
@@ -1107,7 +1107,7 @@ Right: optional panel area with choices for Story Board reference, Scene Notes, 
 - Focus Mode
 
 ## User actions and behavior
-Only one or two panels should normally be visible. Panels can be resized and closed. The Story Board panel is reference-only and does not create live synchronization.
+Only one or two panels should normally be visible. Panels can be resized and closed. The Beat Board panel is reference-only and does not create live synchronization.
 
 ## Visible states
 - No panel
@@ -1207,7 +1207,7 @@ Initial screenplay has one clear current draft. Explain recovery history only wh
 If a draft is unavailable, preserve the currently open draft and show recovery/retry.
 
 ## Cross-module connections
-Review rounds and locks reference named drafts; Story Board remains separate.
+Review rounds and locks reference named drafts; Beat Board remains separate.
 
 # 28. Draft Comparison
 Side-by-side or change-focused comparison.
@@ -1426,7 +1426,7 @@ The preview helps the user understand how the source was interpreted before comm
 Import failure leaves existing project content untouched.
 
 ## Cross-module connections
-Imported screenplay becomes screenplay/draft content and does not automatically create Story Board or production data.
+Imported screenplay becomes screenplay/draft content and does not automatically create Beat Board or production data.
 
 # 33. Screenplay Export and Print
 Professional document output.
@@ -1572,7 +1572,7 @@ Selecting an episode enters the same Story/Screenplay/Production workspaces in e
 - Status
 
 ## User actions and behavior
-Each episode may have its own Idea Vault subset, Story Board, screenplay drafts, breakdown and production plan. A small series-level character/location reference can be available without forcing cross-episode continuity management.
+Each episode may have its own Idea Vault subset, Beat Board, screenplay drafts, breakdown and production plan. A small series-level character/location reference can be available without forcing cross-episode continuity management.
 
 ## Visible states
 - No episodes
@@ -1643,7 +1643,7 @@ Shots
 Storyboard
 Schedule
 Comments
-Story Board
+Beat Board
 
 Each can show a count/status where useful.
 
@@ -1654,7 +1654,7 @@ Each can show a count/status where useful.
 - Open Storyboard
 - Open Schedule
 - Open Comments
-- Open Story Board
+- Open Beat Board
 
 ## User actions and behavior
 Selecting a link opens the dedicated workspace focused on the same scene. The hub can show simple statuses like `Scheduled: Shoot Day 7` without displaying all production fields.
@@ -3076,7 +3076,7 @@ Clicking it opens a small status/recovery panel rather than taking the user away
 - Open project location
 
 ## User actions and behavior
-When offline, core workflows remain enabled: idea editing, story boards, screenplay, breakdown, schedule, call sheet and export.
+When offline, core workflows remain enabled: idea editing, Beat Boards, screenplay, breakdown, schedule, call sheet and export.
 
 AI may be unavailable.
 
@@ -3351,7 +3351,7 @@ Every empty state uses three parts:
 
 Example:
 
-`Your Story Board is empty.`
+`Your Beat Board is empty.`
 
 `Scene Cards are short reminders of what happens in each scene. Drag them until the story works.`
 
@@ -3454,7 +3454,7 @@ Clicking a related link navigates; it does not open an enormous nested view insi
 Every major object should expose `Open in…` where the FSD/PRD provides a meaningful destination.
 
 For a screenplay scene:
-- Story Board
+- Beat Board
 - Screenplay
 - Breakdown
 - Shot List
@@ -3485,7 +3485,7 @@ Do not create a second permanent navigation tree for every context. `Open in…`
 |Object|Context menu order|
 |---|---|
 |Scene Card|Open · Duplicate · Move · Send to Parking Lot · Convert to Screenplay Scene · Add Comment · Export · Delete|
-|Screenplay Scene|Open in Story Board · Break down · Create Shot List · Create Storyboard · Add Comment · Copy Scene · Export Scene|
+|Screenplay Scene|Open in Beat Board · Break down · Create Shot List · Create Storyboard · Add Comment · Copy Scene · Export Scene|
 |Beat|Open/Edit · Convert to Scene · Duplicate · Move · Park · Add Comment · Delete|
 |Sequence|Open · Rename · Move · Add Scene · Add Beat · Add Comment · Delete|
 |Act|Rename · Move · Add Sequence · Add Scene · Add Comment · Delete|
@@ -3503,7 +3503,7 @@ Only actions that make sense for the selected object appear. Menu order should p
 ## 77.1 Where multi-select is supported
 Core multi-select applies to:
 
-- Story Board cards
+- Beat Board cards
 - Idea Vault items
 - selected production items where batch operations are explicitly useful
 - exchange package selections
@@ -3536,7 +3536,7 @@ Use familiar desktop conventions:
 - Ctrl/Cmd+O — Open Project/Document
 - Escape — close current drawer/dialog/panel or clear transient mode
 
-## 78.2 Story Board shortcuts
+## 78.2 Beat Board shortcuts
 Where implemented:
 
 - Arrow keys — move focus through cards
@@ -3572,7 +3572,7 @@ Dragging several mixed files into the Vault should show a compact import confirm
 ## 79.2 Visual hierarchy
 Images/video receive larger previews. Text notes receive text-first cards. Files receive file-type cues. The Vault should therefore feel naturally visual rather than forcing every item into one identical rectangle.
 
-# 80. Story Board Visual Rules
+# 80. Beat Board Visual Rules
 
 ## 80.1 Act visual treatment
 Acts create broad visual bands or columns. They should be visually stronger than sequences but not so large that a three-act short film consumes the entire screen.
@@ -3908,7 +3908,7 @@ A finalized call sheet shows a clear `Finalized` badge and reduced editing affor
 |---|---|---|---|
 |Home|Open/Create Project|Archive, Duplicate, Rename, Search|Production metadata|
 |Idea Vault|Add|Search, View, Folder/Collection, Pin, Copy to Project, Export|Required classification|
-|Story Board|Add Scene|Add Act/Sequence/Beat, Move, Duplicate, Park, Build Screenplay|Production fields|
+|Beat Board|Add Scene|Add Act/Sequence/Beat, Move, Duplicate, Park, Build Screenplay|Production fields|
 |Characters|Add Character|Edit, Archive/Delete, Open Scenes, Relationships|Payroll/HR|
 |Screenplay|Write/Edit|Drafts, Compare, Comment, Review, Export, Lock/Revision|Live Idea Vault sync|
 |Breakdown|Tag/Suggest|Catalog, Scene filter, Complete, Reports|Silent auto-confirm|
@@ -3926,7 +3926,7 @@ A finalized call sheet shows a clear `Finalized` badge and reduced editing affor
 |Home|Empty / Recent / Archived / Project unavailable|Page content and small status message|Create/Open/Search|
 |Project Home|New / Development / Writing / Production|Status + relevant shortcuts|Continue/Open|
 |Idea Vault|Empty / Populated / Filtering / Preview / Unavailable|Toolbar + content state|Add/Browse/Search|
-|Story Board|Empty / Populated / Filtering / Expanded / Dragging / Building / Saving / Error|Board + small status|Edit/Move/Build|
+|Beat Board|Empty / Populated / Filtering / Expanded / Dragging / Building / Saving / Error|Board + small status|Edit/Move/Build|
 |Screenplay|Loading / Editing / Searching / Comparing / Review / Locked / Revision / Saving / Error|Draft/status + editor mode|Write/Search/Review|
 |Breakdown|No Source / Loading / Reviewing / Suggesting / Suggestions Ready / Complete / Needs Review|Source banner + scene state|Tag/Suggest/Confirm|
 |Schedule|No Schedule / Unscheduled Pool / Planning / Conflict Warning / Day Selected / Export Preview|Strip/day status|Drag/Date/Review|
@@ -4006,7 +4006,7 @@ A finalized call sheet shows a clear `Finalized` badge and reduced editing affor
 |FDX|Selected draft|Screenplay > Export|Format + source|None|
 |Fountain|Selected draft|Screenplay > Export|Format + source|None|
 |DOCX|Selected draft|Screenplay > Export|Format + source|None|
-|Outline PDF|Story Board|Story Board > Export|Included Acts/Sequences/Scenes|None|
+|Outline PDF|Beat Board|Beat Board > Export|Included Acts/Sequences/Scenes|None|
 |Moodboard PDF|Moodboard|Board > Export|Board preview|None|
 |Storyboard PDF|Storyboard|Storyboard > Export|Panel preview|None|
 |Shot List PDF|Shot List|Shot List > Export|Scene/shot scope|None|
@@ -4026,7 +4026,7 @@ A finalized call sheet shows a clear `Finalized` badge and reduced editing affor
 |PRD-IDEA-003|P0|FSD-IDEA-005, FSD-IDEA-006, FSD-IDEA-007, FSD-IDEA-008, FSD-IDEA-019|Idea Vault Views and Organization|
 |PRD-IDEA-004|P0|FSD-IDEA-009, FSD-IDEA-010, FSD-IDEA-020|Idea Vault Item Detail; Global Search|
 |PRD-IDEA-005|P0|FSD-IDEA-015, FSD-IDEA-016, FSD-IDEA-017|Idea Vault Move/Copy / Quick Capture|
-|PRD-STORY-001|P0|FSD-STORY-001, FSD-STORY-002, FSD-STORY-003, FSD-STORY-017, FSD-STORY-018, FSD-STORY-019, FSD-STORY-028|Story Board Board/Outline; Acts; Sequences|
+|PRD-STORY-001|P0|FSD-STORY-001, FSD-STORY-002, FSD-STORY-003, FSD-STORY-017, FSD-STORY-018, FSD-STORY-019, FSD-STORY-028|Beat Board Board/Outline; Acts; Sequences|
 |PRD-STORY-002|P0|FSD-STORY-004, FSD-STORY-029, FSD-STORY-030|Beat Card|
 |PRD-STORY-003|P0|FSD-STORY-005, FSD-STORY-006, FSD-STORY-007, FSD-STORY-026, FSD-STORY-027|Scene Card; Scene Card Detail|
 |PRD-STORY-004|P0|FSD-STORY-008, FSD-STORY-009, FSD-STORY-010, FSD-STORY-011, FSD-STORY-012, FSD-STORY-013, FSD-STORY-014, FSD-STORY-015, FSD-STORY-016|Drag/Multi-select/Parking Lot|
@@ -4101,9 +4101,9 @@ The FSD contains 232 canonical functional requirement rows. The table below prov
 |FSD-IDEA-018|PRD-CORE-002|P0|Soft delete|Global Command/Search; Shared Interaction Patterns; Drag/Selection|
 |FSD-IDEA-019|PRD-IDEA-003|P0|Multi-select|Idea Vault Views and Organization|
 |FSD-IDEA-020|PRD-IDEA-004|P0|External file awareness|Idea Vault Item Detail; Global Search|
-|FSD-STORY-001|PRD-STORY-001|P0|Create Act|Story Board Board/Outline; Acts; Sequences|
-|FSD-STORY-002|PRD-STORY-001|P0|Create Sequence|Story Board Board/Outline; Acts; Sequences|
-|FSD-STORY-003|PRD-STORY-001|P0|Sequence contains scenes|Story Board Board/Outline; Acts; Sequences|
+|FSD-STORY-001|PRD-STORY-001|P0|Create Act|Beat Board Board/Outline; Acts; Sequences|
+|FSD-STORY-002|PRD-STORY-001|P0|Create Sequence|Beat Board Board/Outline; Acts; Sequences|
+|FSD-STORY-003|PRD-STORY-001|P0|Sequence contains scenes|Beat Board Board/Outline; Acts; Sequences|
 |FSD-STORY-004|PRD-STORY-002|P0|Create Beat|Beat Card|
 |FSD-STORY-005|PRD-STORY-003|P0|Create Scene|Scene Card; Scene Card Detail|
 |FSD-STORY-006|PRD-STORY-003|P0|Compact card|Scene Card; Scene Card Detail|
@@ -4117,9 +4117,9 @@ The FSD contains 232 canonical functional requirement rows. The table below prov
 |FSD-STORY-014|PRD-STORY-004|P0|No branch engine|Drag/Multi-select/Parking Lot|
 |FSD-STORY-015|PRD-STORY-004|P0|Undo move|Drag/Multi-select/Parking Lot|
 |FSD-STORY-016|PRD-STORY-004|P0|Undo delete|Drag/Multi-select/Parking Lot|
-|FSD-STORY-017|PRD-STORY-001|P0|Outline view parity|Story Board Board/Outline; Acts; Sequences|
-|FSD-STORY-018|PRD-STORY-001|P0|Collapse act|Story Board Board/Outline; Acts; Sequences|
-|FSD-STORY-019|PRD-STORY-001|P0|Collapse sequence|Story Board Board/Outline; Acts; Sequences|
+|FSD-STORY-017|PRD-STORY-001|P0|Outline view parity|Beat Board Board/Outline; Acts; Sequences|
+|FSD-STORY-018|PRD-STORY-001|P0|Collapse act|Beat Board Board/Outline; Acts; Sequences|
+|FSD-STORY-019|PRD-STORY-001|P0|Collapse sequence|Beat Board Board/Outline; Acts; Sequences|
 |FSD-STORY-020|PRD-STORY-005|P0|Build screenplay selection|Build Screenplay Preview|
 |FSD-STORY-021|PRD-STORY-005|P0|Build preview|Build Screenplay Preview|
 |FSD-STORY-022|PRD-STORY-005|P0|Missing heading warning|Build Screenplay Preview|
@@ -4128,7 +4128,7 @@ The FSD contains 232 canonical functional requirement rows. The table below prov
 |FSD-STORY-025|PRD-STORY-005|P0|Script order warning|Build Screenplay Preview|
 |FSD-STORY-026|PRD-STORY-003|P0|Characters optional|Scene Card; Scene Card Detail|
 |FSD-STORY-027|PRD-STORY-003|P0|Story day optional|Scene Card; Scene Card Detail|
-|FSD-STORY-028|PRD-STORY-001|P0|Sequence freeform name|Story Board Board/Outline; Acts; Sequences|
+|FSD-STORY-028|PRD-STORY-001|P0|Sequence freeform name|Beat Board Board/Outline; Acts; Sequences|
 |FSD-STORY-029|PRD-STORY-002|P0|Beat conversion|Beat Card|
 |FSD-STORY-030|PRD-STORY-002|P0|Scene-to-beat conversion|Beat Card|
 |FSD-SCRIPT-001|PRD-SCRIPT-001|P0|New screenplay|Screenplay Standard; Focus; Writing Room; Navigation/Search|
@@ -4342,10 +4342,10 @@ The FSD contains 232 canonical functional requirement rows. The table below prov
 # 101. UX Data Relationship Visualization Rules
 
 ## 101.1 One object, many focused views
-The same underlying scene can be represented in Story Board, Screenplay, Breakdown, Shot List, Storyboard and Schedule. Each view should identify it using the most useful human-readable context, but the UI should not require the user to learn internal identities.
+The same underlying scene can be represented in Beat Board, Screenplay, Breakdown, Shot List, Storyboard and Schedule. Each view should identify it using the most useful human-readable context, but the UI should not require the user to learn internal identities.
 
 ## 101.2 Scene number is display data
-Scene number is generated from screenplay order. Story Board cards remain unnumbered. Production documents can display the generated number. A user moving a Story Board card does not have to renumber it.
+Scene number is generated from screenplay order. Beat Board cards remain unnumbered. Production documents can display the generated number. A user moving a Beat Board card does not have to renumber it.
 
 ## 101.3 Derived data labels
 When a field is derived from another workspace, label it only when that prevents confusion. Examples:
@@ -4367,7 +4367,7 @@ Exported/issued documents should show a small state label internally such as `Fi
 |---|---|---|---|
 |Scene Card|Screenplay|Convert to Screenplay Scene / Open Screenplay|Open created or linked scene|
 |Scene Card|Breakdown|Open Breakdown|Open same scene in source view|
-|Screenplay Scene|Story Board|Open in Story Board|Select corresponding card if present|
+|Screenplay Scene|Beat Board|Open in Beat Board|Select corresponding card if present|
 |Screenplay Scene|Breakdown|Break Down|Open same scene|
 |Screenplay Scene|Shot List|Create Shot List|Open selected scene shot list|
 |Screenplay Scene|Storyboard|Create Storyboard|Open selected scene storyboard|
@@ -4385,7 +4385,7 @@ The destination opens with the selected object already focused. The user should 
 |Screen|Target density|Default visible information|Hidden until requested|
 |---|---|---|---|
 |Idea Vault|Medium/high|Content preview + minimal metadata|Optional tags/collections/source details|
-|Story Board|High|Acts, sequences, short scene descriptions|Scene notes, attachments, comments|
+|Beat Board|High|Acts, sequences, short scene descriptions|Scene notes, attachments, comments|
 |Scene Card detail|Medium|Heading, description, notes, attachments|Production data|
 |Screenplay|Low|Script text + navigation|Secondary panels|
 |Breakdown|Medium/high|Script + production categories|Advanced detail|
@@ -4423,10 +4423,10 @@ Do not rely on a color alone. A visible label, icon, count or change in control 
 # 105. Responsive Desktop Behavior Rules
 
 ## 105.1 Wide desktop
-At wide widths, Story Board can display multiple sequences side by side; Writing Room can expose one or two panels; Schedule can display several days in parallel.
+At wide widths, Beat Board can display multiple sequences side by side; Writing Room can expose one or two panels; Schedule can display several days in parallel.
 
 ## 105.2 Medium desktop
-Secondary panels reduce width first. The central workspace remains readable. Story Board cards may wrap into fewer columns. Schedule can move to one day at a time while keeping the Unscheduled pool accessible.
+Secondary panels reduce width first. The central workspace remains readable. Beat Board cards may wrap into fewer columns. Schedule can move to one day at a time while keeping the Unscheduled pool accessible.
 
 ## 105.3 Narrow desktop
 Use collapsible navigation and drawers. Do not compress screenplay text until it becomes difficult to read. On narrow widths, secondary panels should close rather than force tiny writing surfaces.
@@ -4436,8 +4436,8 @@ Fullscreen is especially important for Screenplay. Other workspaces can use maxi
 
 # 106. Multi-Monitor Workflow Rules
 
-## 106.1 Screenplay + Story Board
-If separate windows are available, the user can place Screenplay on one monitor and Story Board on another. Each window retains project identity/context.
+## 106.1 Screenplay + Beat Board
+If separate windows are available, the user can place Screenplay on one monitor and Beat Board on another. Each window retains project identity/context.
 
 ## 106.2 Schedule + scene context
 A second window can show the selected scene's screenplay/breakdown while Stripboard remains on the primary monitor.
@@ -4481,7 +4481,7 @@ Recovery states tell the user whether they are looking at saved content, a recov
 |---|---|---|---|
 |HR-UX-001|Move Scene Card|Move card to another sequence|Correct order/parent; screenplay unchanged|
 |HR-UX-002|Build screenplay missing heading|Build with one headerless card|Prompt to resolve/exclude|
-|HR-UX-003|Reorder after script exists|Apply Story Board order|Explicit warning before screenplay order changes|
+|HR-UX-003|Reorder after script exists|Apply Beat Board order|Explicit warning before screenplay order changes|
 |HR-UX-004|Delete linked Scene Card|Delete card|Warn screenplay scene remains|
 |HR-UX-005|Lock draft|Lock current draft|Locked state visible and safe|
 |HR-UX-006|Edit locked draft|Type into locked draft|Revision prompt appears|
@@ -4510,7 +4510,7 @@ Recovery states tell the user whether they are looking at saved content, a recov
 |Portable exchange collaboration represented|Yes|PASS|
 |Optional LAN collaboration represented|Yes|PASS|
 |AI optional with explicit mutation approval|Yes|PASS|
-|Story Board not live-synced to screenplay|Yes|PASS|
+|Beat Board not live-synced to screenplay|Yes|PASS|
 |Scene Card has no permanent manual number|Yes|PASS|
 |Sequences are simple scene containers|Yes|PASS|
 |Production source updates are reviewable, not silent|Yes|PASS|

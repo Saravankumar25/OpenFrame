@@ -33,6 +33,7 @@ modules can be developed independently:
 | 14 | `0014_production_depth.sql` | `modules/production`: breakdown category styles, availability windows, location and crew columns | ✅ |
 | 15 | `0015_schedule_timeline.sql` | `modules/schedule`: day times (`shooting_day.crew_call`, `shooting_start`, `target_wrap`), `schedule_strip.start_minutes`, `shooting_schedule.dood_code_style`, `dood_override` (Day Out of Days corrections). Contract: 33-production-depth-contract.md section 4 | ✅ |
 | 16 | `0016_callsheets_budget.sql` | `modules/schedule`: `budget_line.actual` (Actual next to the Planned `amount`; every earlier amount is Planned), call sheet status words mapped to Draft, Needs refresh and Final (owner decision 2026-10-07; "Needs refresh" is derived, so only Draft and Final are stored). Contract: 33-production-depth-contract.md sections 5 and 6 | ✅ |
+| 17 | `0017_story_page.sql` | `modules/story/page.rs`: `story_page`, one row holding the free text of the Story page (Story tab). Not linked to any other table; saves are not undoable, write no activity entry and are not offered to the assistant. Backup and Full Project Packages carry it; exchange packages do not (`modules/packages/coverage.rs`) | ✅ |
 
 ## 2. Connection policy ✅ (`open_connection`)
 

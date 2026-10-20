@@ -492,7 +492,7 @@ fn m1_04_the_app_database_reopens_with_its_recent_projects() {
     assert_eq!(recents.as_array().unwrap().len(), 1, "{recents}");
 }
 
-/// Project schema 11 to 12 (Story Board and Idea Vault area): the long scene description and the
+/// Project schema 11 to 12 (Beat Board and Idea Vault area): the long scene description and the
 /// research flag arrive empty, every card and vault item keeps its text, both new fields can be
 /// written right after the upgrade, and the research flag column accepts only the three flags.
 #[test]

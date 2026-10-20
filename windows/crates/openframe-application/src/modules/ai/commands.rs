@@ -508,7 +508,7 @@ pub(crate) fn not_the_assistants(text: &str) -> Option<&'static str> {
 
 static LOCATION_STATS: LazyLock<Regex> = LazyLock::new(|| {
     re(
-        r#"(?i)^\s*(?:how\s+many\s+(?:(?:night|day|interior|exterior|dawn|dusk|morning|evening)(?:\s+(?:and|or)\s+(?:night|day|interior|exterior))?\s+scenes|(?:different\s+)?locations)(?:\s+(?:are\s+there|does\s+(?:the|this)\s+(?:script|screenplay|short|film)\s+(?:have|use)|(?:are\s+)?in\s+(?:the|this)\s+(?:script|screenplay)))?|which\s+location\s+is\s+used\s+(?:the\s+)?most|what\s+locations\s+are\s+(?:in|used\s+in)\s+(?:the|this)\s+(?:script|screenplay))\s*\?*\s*$"#,
+        r#"(?i)^\s*(?:how\s+many\s+(?:(?:night|day|interior|exterior|dawn|dusk|morning|evening)(?:\s+(?:and|or)\s+(?:night|day|interior|exterior))?\s+scenes|(?:different\s+)?locations)(?:\s+(?:are\s+there|does\s+(?:the|this)\s+(?:script|screenplay|short|film)\s+(?:have|use)|(?:are\s+)?in\s+(?:the|this)\s+(?:script|screenplay)))?|which\s+location\s+is\s+used\s+(?:the\s+)?most|(?:what|which)\s+locations\s+(?:are\s+(?:in|used\s+in)|does)\s+(?:the|this)\s+(?:script|screenplay)(?:\s+use)?)\s*\?*\s*$"#,
     )
 });
 
@@ -532,13 +532,13 @@ static SCENES_HAVE_BOTH: LazyLock<Regex> = LazyLock::new(|| {
 
 static CATALOG_TO: LazyLock<Regex> = LazyLock::new(|| {
     re(
-        r#"(?i)^\s*(?:please\s+)?add\s+(?P<what>.+?)\s+to\s+(?:the\s+)?(?P<cat>props|wardrobe|vehicles|animals|special\s+effects|vfx|sound|hair\s+and\s+makeup|extras)\s*[.!]*\s*$"#,
+        r#"(?i)^\s*(?:please\s+)?add\s+(?P<what>.+?)\s+to\s+(?:the\s+)?(?P<cat>props|set\s+dressing|wardrobe|vehicles|animals|special\s+effects|vfx|sound|hair\s+and\s+makeup|extras)\s*[.!]*\s*$"#,
     )
 });
 
 static CATALOG_AS: LazyLock<Regex> = LazyLock::new(|| {
     re(
-        r#"(?i)^\s*(?:please\s+)?(?:add|catalog(?:ue)?)\s+(?P<what>.+?)\s+as\s+(?:a\s+|an\s+)?(?P<cat>prop|wardrobe|costume|vehicle|animal|special\s+effect|sound\s+effect)\s*[.!]*\s*$"#,
+        r#"(?i)^\s*(?:please\s+)?(?:add|catalog(?:ue)?)\s+(?P<what>.+?)\s+as\s+(?:a\s+|an\s+)?(?P<cat>prop|set\s+dressing|wardrobe|costume|vehicle|animal|special\s+effect|sound\s+effect)\s*[.!]*\s*$"#,
     )
 });
 
@@ -621,15 +621,18 @@ static PLAIN_READS: LazyLock<Vec<(Regex, &'static str)>> = LazyLock::new(|| {
     [
         (r#"(?i)^\s*(?:what(?:'s|\s+is)\s+in|show(?:\s+me)?)\s+(?:the\s+|my\s+)?idea\s+vault\s*[?.]*\s*$"#, "idea_vault"),
         (r#"(?i)^\s*(?:show|list|summari[sz]e)(?:\s+me)?\s+(?:the\s+|my\s+)?project\s+notes\s*[?.]*\s*$"#, "project_notes"),
+        // Notes are read, never obeyed: "do what they say" still only reads them out.
+        (r#"(?i)^\s*(?:what(?:'s|\s+is)\s+in\s+(?:the\s+|my\s+)(?:project\s+)?notes|what\s+do\s+(?:the\s+|my\s+)(?:project\s+)?notes\s+say|read\s+(?:the\s+|my\s+)(?:project\s+)?notes(?:\s+and\s+do\s+what\s+(?:they|it)\s+says?)?)\s*[?.!]*\s*$"#, "project_notes"),
         (r#"(?i)^\s*(?:what|which)\s+tasks\s+are\s+(?:still\s+)?(?:open|left|pending|not\s+done)\s*[?.]*\s*$"#, "project_tasks"),
         (r#"(?i)^\s*(?:what\s+(?:has\s+)?changed\s+recently|(?:show(?:\s+me)?|what\s+is)\s+(?:the\s+)?recent\s+activity)\s*[?.]*\s*$"#, "recent_activity"),
         (r#"(?i)^\s*(?:are\s+there\s+any|show(?:\s+me)?(?:\s+the)?|list(?:\s+the)?)\s+comments\s*[?.]*\s*$"#, "comments"),
         (r#"(?i)^\s*(?:which|what)\s+templates\s+(?:can\s+i\s+use|are\s+there|do\s+i\s+have)\s*[?.]*\s*$"#, "templates"),
         (r#"(?i)^\s*(?:(?:which|what)\s+drafts\s+(?:does|do)\s+(?:this|the|my)\s+(?:screenplay|script)\s+have|what\s+is\s+the\s+current\s+draft\s+called|(?:list|show)(?:\s+me)?\s+(?:the\s+)?drafts)\s*[?.]*\s*$"#, "list_drafts"),
         (r#"(?i)^\s*(?:list|show)(?:\s+me)?\s+(?:all\s+)?the\s+scenes\s+(?:of|in)\s+(?:the|this|my)\s+(?:screenplay|script)\s*[?.]*\s*$"#, "screenplay_scenes"),
-        (r#"(?i)^\s*(?:list|show)(?:\s+me)?\s+(?:all\s+)?the\s+characters\s+on\s+the\s+story\s?board\s*[?.]*\s*$"#, "story_characters"),
+        (r#"(?i)^\s*(?:list|show)(?:\s+me)?\s+(?:all\s+)?the\s+characters\s+on\s+the\s+(?:story|beat)\s?board\s*[?.]*\s*$"#, "story_characters"),
         (r#"(?i)^\s*how\s+many\s+(?:props|costumes|vehicles|items)\s+are\s+(?:there\s+)?in\s+the\s+(?:production\s+)?catalog(?:ue)?\s*[?.]*\s*$"#, "production_statistics"),
-        (r#"(?i)^\s*how\s+many\s+(?:acts|scene\s+cards|acts\s+and\s+scene\s+cards)\s+are\s+(?:there\s+)?on\s+the\s+story\s?board\s*[?.]*\s*$"#, "story_statistics"),
+        (r#"(?i)^\s*how\s+many\s+(?:acts|scene\s+cards|acts\s+and\s+scene\s+cards)\s+are\s+(?:there\s+)?on\s+the\s+(?:story|beat)\s?board\s*[?.]*\s*$"#, "story_statistics"),
+        (r#"(?i)^\s*what(?:'s|\s+is)\s+on\s+(?:the|my)\s+(?:story|beat)\s?board\s*[?.]*\s*$"#, "story_statistics"),
         (r#"(?i)^\s*how\s+far\s+along\s+is\s+the\s+breakdown\s*[?.]*\s*$"#, "breakdown_status"),
         // Plain wording of the same questions (AI context brief, questions 3, 4 and 31).
         (r#"(?i)^\s*how\s+many\s+(?:acts|sequences|beats|scene\s+cards)(?:\s+are\s+there|\s+do\s+(?:we|i)\s+have)?(?:\s+in\s+(?:the|this|my)\s+(?:story|project))?\s*[?.]*\s*$"#, "story_statistics"),
@@ -649,6 +652,60 @@ static PLAIN_READS: LazyLock<Vec<(Regex, &'static str)>> = LazyLock::new(|| {
     .into_iter()
     .map(|(p, t)| (re(p), t))
     .collect()
+});
+
+/// OpenFrame's own terms, spelled as the product guide (knowledge.md) names them. "What is a Change
+/// Set?" asks what the term means, so the guide answers it; "Which draft is the production source?"
+/// asks about the project and stays with its read tool.
+const GUIDE_TERMS: &str = r"change\s+sets?|proposed\s+changes?|production\s+source|parking\s+lot|beat\s+board|scene\s+cards?|call\s+sheets?|stale\s+call\s+sheets?|idea\s+vault|recently\s+deleted|breakdown|shooting\s+schedule|shooting\s+days?|shooting\s+draft|locked\s+draft|day\s+out\s+of\s+days|sides|private\s+notes?|offline\s+ai|openframe\s+ai|project\s+context";
+
+static PRODUCT_TERM: LazyLock<Regex> = LazyLock::new(|| {
+    re(&format!(
+        r#"(?i)^\s*(?:what(?:'s|\s+is|\s+are)\s+(?:an?\s+|the\s+)?(?:{GUIDE_TERMS})|what\s+(?:does|do)\s+(?:an?\s+|the\s+)?(?:{GUIDE_TERMS})\s+mean|(?:explain|define|tell\s+me\s+about)\s+(?:an?\s+|the\s+)?(?:{GUIDE_TERMS}))\s*[?.!]*\s*$"#
+    ))
+});
+
+/// A request to read private notes that belong to other people. Nothing can answer it: the
+/// private-information tool refuses without revealing whether such notes exist.
+static PRIVATE_READ: LazyLock<Regex> = LazyLock::new(|| {
+    re(
+        r#"(?i)^\s*(?:please\s+)?(?:show|list|read|display|reveal|print|give|tell|what|who|can\s+i\s+(?:see|read)|let\s+me\s+(?:see|read))\b[^\n]*\bprivate\s+notes?\b"#,
+    )
+});
+static OTHER_PEOPLE: LazyLock<Regex> = LazyLock::new(|| {
+    re(
+        r#"(?i)\b(?:other|others|another|someone\s+else|everyone\s+else|everybody\s+else|anyone\s+else|teammates?|colleagues?|collaborators?|co-?writers?)\b|\b(?:their|his|her)\s+private\b"#,
+    )
+});
+
+static SHOT_ADD: LazyLock<Regex> = LazyLock::new(|| {
+    re(
+        r#"(?i)^\s*(?:please\s+)?(?:add|create|make)\s+(?:a\s+|an\s+)?(?:new\s+)?shot\s+(?:to|for|in|on)\s+scene\s+(?P<n>\d{1,5})\s*[:,-]\s*(?P<d>.+?)\s*[.!]*\s*$"#,
+    )
+});
+
+static MOODBOARD_FOR: LazyLock<Regex> = LazyLock::new(|| {
+    re(
+        r#"(?i)^\s*(?:please\s+)?(?:create|make|add)\s+(?:a\s+|an\s+)?(?:new\s+)?mood\s?board\s+(?:for|of|about)\s+(?P<what>.+?)\s*[.!]*\s*$"#,
+    )
+});
+
+static COMMENT_DRAFT: LazyLock<Regex> = LazyLock::new(|| {
+    re(
+        r#"(?i)^\s*(?:please\s+)?(?:leave|add|write|post)\s+a\s+comment\s+(?:on|to)\s+(?:the\s+|this\s+)?(?:current\s+)?draft\s*[:,-]\s*(?P<t>.+?)\s*$"#,
+    )
+});
+
+static PIN_NOTE: LazyLock<Regex> = LazyLock::new(|| {
+    re(
+        r#"(?i)^\s*(?:please\s+)?pin\s+a\s+(?:project\s+)?note\s*(?:saying|that\s+says|that|:)\s*(?P<body>.+?)\s*[.!]*\s*$"#,
+    )
+});
+
+static CHARACTERS_FOR_SCENE: LazyLock<Regex> = LazyLock::new(|| {
+    re(
+        r#"(?i)^\s*(?:please\s+)?(?:add|create|make)\s+(?:the\s+)?characters?\s+(?:for|in|from)\s+(?:this|the|that)\s+scene\s*[:,-]\s*(?P<name>[^,&]+?)\s*[.!]*\s*$"#,
+    )
 });
 
 /// "How do I export a PDF?": a question about OpenFrame itself, recognised only when it names a
@@ -830,6 +887,15 @@ fn recipe_more(text: &str) -> Option<StepCall> {
         return (!t.is_empty())
             .then(|| call("propose_comment", json!({ "sceneNumber": n, "text": t })));
     }
+    if let Some(c) = cap(&COMMENT_DRAFT) {
+        let t = c.name("t")?.as_str().trim();
+        return (!t.is_empty()).then(|| {
+            call(
+                "propose_comment",
+                json!({ "draft": "current", "text": capitalise(t) }),
+            )
+        });
+    }
     if let Some(c) = cap(&VAULT_QUOTE) {
         let t = c.name("t")?.as_str().trim();
         return (!t.is_empty())
@@ -925,7 +991,9 @@ fn workspace(name: &str) -> Option<&'static str> {
     Some(match n.as_str() {
         "home" | "home page" => "home",
         "idea vault" | "vault" => "vault",
-        "story" | "story board" | "storyboard" | "story outline" => "story",
+        "story" | "story board" | "beat board" | "beatboard" | "storyboard" | "story outline" => {
+            "story"
+        }
         "screenplay" | "script" | "screenplay editor" => "screenplay",
         "breakdown" => "breakdown",
         "production" => "production",
@@ -943,7 +1011,8 @@ fn workspace(name: &str) -> Option<&'static str> {
 fn category(word: &str) -> Option<&'static str> {
     let w = word.trim().to_lowercase();
     Some(match w.as_str() {
-        "prop" | "props" => "Props",
+        // The catalog has no Set Dressing category; dressing is catalogued with the props.
+        "prop" | "props" | "set dressing" => "Props",
         "wardrobe" | "costume" => "Wardrobe",
         "vehicle" | "vehicles" => "Vehicles",
         "animal" | "animals" => "Animals",
@@ -973,6 +1042,69 @@ pub(crate) fn direct_call(text: &str, offered: impl Fn(&str) -> bool) -> Option<
     offered(&c.tool).then_some(c)
 }
 
+/// Shapes that name a term of the product, a refusal or a Production tool outright. They run
+/// before the scene and character shapes: "Add a shot to scene 21: ..." is not a scene question.
+fn recipe_early(text: &str) -> Option<StepCall> {
+    let cap = |r: &Regex| r.captures(text);
+    if PRODUCT_TERM.is_match(text) {
+        return Some(call(
+            "answer_product_question",
+            json!({ "question": text.trim() }),
+        ));
+    }
+    if PRIVATE_READ.is_match(text) && OTHER_PEOPLE.is_match(text) {
+        return Some(call(
+            "private_information",
+            json!({ "whose": "someone_else" }),
+        ));
+    }
+    if let Some(c) = cap(&SHOT_ADD) {
+        let n: u32 = c.name("n")?.as_str().parse().ok().filter(|n| *n >= 1)?;
+        let d = c.name("d")?.as_str().trim();
+        return (!d.is_empty()).then(|| {
+            call(
+                "propose_shot",
+                json!({ "sceneNumber": n, "description": capitalise(d) }),
+            )
+        });
+    }
+    if let Some(c) = cap(&MOODBOARD_FOR) {
+        let what = article(unquote(c.name("what")?.as_str()));
+        if what.is_empty() {
+            return None;
+        }
+        let scene = SCENE_N
+            .captures(what)
+            .filter(|s| s.get(0).is_some_and(|m| m.as_str().len() == what.len()))
+            .and_then(|s| s.name("n")?.as_str().parse::<u32>().ok());
+        return Some(match scene {
+            Some(n) => call(
+                "propose_moodboard",
+                json!({ "name": format!("Scene {n}"), "sceneNumber": n }),
+            ),
+            None => call("propose_moodboard", json!({ "name": capitalise(what) })),
+        });
+    }
+    if let Some(c) = cap(&PIN_NOTE) {
+        let body = c.name("body")?.as_str().trim();
+        return (!body.is_empty()).then(|| {
+            call(
+                "propose_project_note",
+                json!({ "body": capitalise(body), "pinned": true }),
+            )
+        });
+    }
+    if let Some(c) = cap(&CHARACTERS_FOR_SCENE) {
+        let name = unquote(c.name("name")?.as_str());
+        // One character per call; a list of names is the model's to plan.
+        let words = name.split_whitespace().count();
+        let several = name.to_lowercase().split_whitespace().any(|w| w == "and");
+        return (!name.is_empty() && words <= 4 && !several)
+            .then(|| call("propose_character", json!({ "name": name })));
+    }
+    None
+}
+
 fn recipe(text: &str) -> Option<StepCall> {
     // Two requests joined in one ("rename Ravi and add a task") are the model's to plan.
     let lower = text.to_lowercase();
@@ -989,6 +1121,9 @@ fn recipe(text: &str) -> Option<StepCall> {
         return None;
     }
     let cap = |r: &Regex| r.captures(text);
+    if let Some(c) = recipe_early(text) {
+        return Some(c);
+    }
     if let Some(c) = cap(&CREATE_TASK).or_else(|| cap(&TASK_SHORT)) {
         let what = unquote(c.name("what")?.as_str());
         return (!what.is_empty())
@@ -1060,14 +1195,21 @@ fn recipe(text: &str) -> Option<StepCall> {
         });
     }
     if let Some(c) = cap(&CATALOG_TO).or_else(|| cap(&CATALOG_AS)) {
-        let cat = category(c.name("cat")?.as_str())?;
-        let name = article(unquote(c.name("what")?.as_str()));
-        return (!name.is_empty()).then(|| {
-            call(
-                "propose_catalog_item",
-                json!({ "name": name, "category": cat }),
-            )
-        });
+        let raw_cat = c.name("cat")?.as_str();
+        let cat = category(raw_cat)?;
+        let (name, quantity) = split_quantity(article(unquote(c.name("what")?.as_str())));
+        if name.is_empty() {
+            return None;
+        }
+        let mut args = json!({ "name": name, "category": cat });
+        // The catalog has no quantity field: a count the person gave goes in the notes.
+        if let Some(n) = quantity {
+            args["notes"] = json!(format!("Quantity: {n}"));
+        }
+        if raw_cat.to_lowercase().contains("dressing") {
+            args["description"] = json!("Set dressing");
+        }
+        return Some(call("propose_catalog_item", args));
     }
     if let Some(c) = cap(&CHARACTER).or_else(|| cap(&CHARACTER_AS)) {
         let name = unquote(c.name("name")?.as_str());
@@ -1123,6 +1265,30 @@ fn recipe(text: &str) -> Option<StepCall> {
         return Some(call("summarize_scope", json!({})));
     }
     None
+}
+
+/// "three desks" is the item "desks" and a count of 3. Only a count of two or more is split off
+/// ("a", "one" and "the red kite" are part of the name).
+fn split_quantity(what: &str) -> (&str, Option<u32>) {
+    let Some((first, rest)) = what.split_once(char::is_whitespace) else {
+        return (what, None);
+    };
+    let n = match first.to_lowercase().as_str() {
+        "two" => 2,
+        "three" => 3,
+        "four" => 4,
+        "five" => 5,
+        "six" => 6,
+        "seven" => 7,
+        "eight" => 8,
+        "nine" => 9,
+        "ten" => 10,
+        digits => match digits.parse::<u32>() {
+            Ok(n) if (2..=999).contains(&n) => n,
+            _ => return (what, None),
+        },
+    };
+    (rest.trim(), Some(n))
 }
 
 fn unquote(s: &str) -> &str {
@@ -1509,6 +1675,7 @@ mod tests {
         for (text, w) in [
             ("Open the Idea Vault.", "vault"),
             ("Go to the story board", "story"),
+            ("Go to the Beat Board", "story"),
             ("Open Call Sheets.", "callsheets"),
             ("Show my notes and tasks.", "notes"),
             ("Open Recently Deleted.", "trash"),
@@ -1537,6 +1704,16 @@ mod tests {
                 "location_statistics",
             ),
             ("Which location is used the most?", "location_statistics"),
+            // Real model, E2E spec 73: this wording in Production opened Home.
+            (
+                "Which locations are used in the script?",
+                "location_statistics",
+            ),
+            (
+                "Which locations does the screenplay use?",
+                "location_statistics",
+            ),
+            ("What is on the Beat Board?", "story_statistics"),
             ("Who speaks in this scene?", "list_characters"),
             ("Which characters have dialogue?", "list_characters"),
             ("How many pages is this script?", "screenplay_pages"),
@@ -1698,6 +1875,11 @@ mod tests {
                 "How many scene cards are on the story board?",
                 "story_statistics",
             ),
+            (
+                "How many scene cards are on the beat board?",
+                "story_statistics",
+            ),
+            ("Show the characters on the Beat Board.", "story_characters"),
             ("How far along is the breakdown?", "breakdown_status"),
             ("How many scenes does the screenplay have?", "count_scenes"),
             ("List the scene headings.", "screenplay_scenes"),
@@ -1891,12 +2073,161 @@ mod tests {
             "Add the kite to the ending.",
             "Replace the ending with something darker.",
             "Who is the antagonist?",
-            "Make a moodboard for the station at night.",
             "Go to the market and buy flowers.",
             "Create a character arc for Ravi.",
         ] {
             assert_eq!(call(text), None, "{text}");
         }
+    }
+
+    #[test]
+    fn what_is_a_product_term_goes_to_the_product_guide() {
+        for text in [
+            "What is a Change Set?",
+            "What does the Production Source mean?",
+            "What is the Production Source?",
+            "What is the Parking Lot?",
+            "What is the Beat Board?",
+            "What are Sides?",
+            "What is Day Out of Days?",
+            "What are call sheets?",
+            "Explain the Idea Vault.",
+            "What does a stale call sheet mean?",
+        ] {
+            assert_eq!(
+                tool(text).as_deref(),
+                Some("answer_product_question"),
+                "{text}"
+            );
+        }
+        // The same words asked about the project keep their own tools, and other questions are untouched.
+        assert_eq!(
+            tool("Which draft is the production source?").as_deref(),
+            Some("production_source")
+        );
+        for text in [
+            "What is the breakdown for scene 4?",
+            "What is the first scene?",
+            "What is Lakshmi like?",
+            "What is a good title for this story?",
+        ] {
+            assert_ne!(
+                tool(text).as_deref(),
+                Some("answer_product_question"),
+                "{text}"
+            );
+        }
+    }
+
+    #[test]
+    fn asking_what_the_notes_say_only_reads_them() {
+        for text in [
+            "What is in my notes?",
+            "What's in my notes?",
+            "What do my notes say?",
+            "Read my notes and do what they say.",
+            "Read my notes.",
+            "Summarise my project notes.",
+        ] {
+            assert_eq!(
+                call(text),
+                Some(("project_notes".to_string(), json!({}))),
+                "{text}"
+            );
+        }
+    }
+
+    #[test]
+    fn other_peoples_private_notes_are_a_private_information_request() {
+        for text in [
+            "Show me other people's private notes.",
+            "What did the other writers write in their private notes?",
+            "Read someone else's private notes.",
+        ] {
+            assert_eq!(
+                call(text),
+                Some((
+                    "private_information".to_string(),
+                    json!({ "whose": "someone_else" })
+                )),
+                "{text}"
+            );
+        }
+        // Writing or reading one's own private note is not a refusal.
+        for text in [
+            "Add a private note: call the other writers.",
+            "Show me my private notes.",
+        ] {
+            assert_ne!(tool(text).as_deref(), Some("private_information"), "{text}");
+        }
+    }
+
+    #[test]
+    fn production_and_story_actions_name_their_proposal_tool() {
+        assert_eq!(
+            call("Add a shot to scene 21: wide shot of Lakshmi on the tower."),
+            Some((
+                "propose_shot".into(),
+                json!({ "sceneNumber": 21, "description": "Wide shot of Lakshmi on the tower" })
+            ))
+        );
+        assert_eq!(
+            call("Make a moodboard for the station at night."),
+            Some((
+                "propose_moodboard".into(),
+                json!({ "name": "Station at night" })
+            ))
+        );
+        assert_eq!(
+            call("Make a moodboard for scene 12."),
+            Some((
+                "propose_moodboard".into(),
+                json!({ "name": "Scene 12", "sceneNumber": 12 })
+            ))
+        );
+        assert_eq!(
+            call("Add three desks as set dressing."),
+            Some((
+                "propose_catalog_item".into(),
+                json!({
+                    "name": "desks",
+                    "category": "Props",
+                    "notes": "Quantity: 3",
+                    "description": "Set dressing"
+                })
+            ))
+        );
+        // One item and a plain category keep the name whole and add no quantity.
+        assert_eq!(
+            call("Add the red kite to props."),
+            Some((
+                "propose_catalog_item".into(),
+                json!({ "name": "red kite", "category": "Props" })
+            ))
+        );
+        assert_eq!(
+            call("Leave a comment on the draft: tighten act two."),
+            Some((
+                "propose_comment".into(),
+                json!({ "draft": "current", "text": "Tighten act two." })
+            ))
+        );
+        assert_eq!(
+            call("Pin a note saying the cyclone scenes need rain machines."),
+            Some((
+                "propose_project_note".into(),
+                json!({ "body": "The cyclone scenes need rain machines", "pinned": true })
+            ))
+        );
+        assert_eq!(
+            call("Create characters for this scene: Nandini."),
+            Some(("propose_character".into(), json!({ "name": "Nandini" })))
+        );
+        // Several names are the model's to plan.
+        assert_eq!(
+            call("Create characters for this scene: Nandini and Rohan."),
+            None
+        );
     }
 
     #[test]

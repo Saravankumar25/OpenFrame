@@ -9,7 +9,7 @@ import type { StoryBuildPreview } from "../../ipc/generated/StoryBuildPreview";
 const buildScreenplay = vi.fn(async (..._args: unknown[]) => ({
   screenplayId: "sp",
   draftId: "d1",
-  draftName: "Draft 1 from Story Board",
+  draftName: "Draft 1 from Beat Board",
   firstSceneId: "s1",
   sceneCount: 2,
   createdScreenplay: true,
@@ -93,7 +93,7 @@ describe("Build Screenplay preview", () => {
           currentDraftId: "d2",
           currentDraftName: "Draft 2",
           hasWrittenScenes: true,
-          nextDraftName: "Draft 3 from Story Board",
+          nextDraftName: "Draft 3 from Beat Board",
         },
       ],
     };

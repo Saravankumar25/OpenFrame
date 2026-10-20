@@ -458,7 +458,7 @@ export function SendToStoryDialog({ scope, item, onClose }: { scope: Scope; item
     const parentType = target === "character" ? null : kind === "act" ? "act" : kind === "seq" ? "sequence" : "parking";
     try {
       const r = await vault.sendToStory({ store: scope, id: item.id, target, parentType, parentId: id ?? null });
-      toast.info(r.message, { label: "Open Story Board", run: () => go({ workspace: "story" }) });
+      toast.info(r.message, { label: "Open Beat Board", run: () => go({ workspace: "story" }) });
       onClose();
     } catch (e) {
       setError(errText(e));
@@ -472,13 +472,13 @@ export function SendToStoryDialog({ scope, item, onClose }: { scope: Scope; item
     <Dialog
       open
       onOpenChange={(v) => !v && onClose()}
-      title="Send to Story Board"
+      title="Send to Beat Board"
       sub={<>What should this become? This creates a <b>copy</b>. The original stays in your Idea Vault.</>}
       size="md"
       footer={
         <>
           <Button onClick={onClose}>Cancel</Button>
-          <Button variant="primary" disabled={busy || needsAct || targets.isLoading} onClick={() => void submit()}>Create Copy in Story Board</Button>
+          <Button variant="primary" disabled={busy || needsAct || targets.isLoading} onClick={() => void submit()}>Create Copy in Beat Board</Button>
         </>
       }
     >
@@ -498,7 +498,7 @@ export function SendToStoryDialog({ scope, item, onClose }: { scope: Scope; item
       {target !== "character" && (
         <Field label="Place it in" htmlFor="vv-story-place" hint={target === "sequence" ? "A sequence idea goes into an act." : "Or leave it in the Parking Lot."}>
           {needsAct ? (
-            <Banner tone="info">There are no acts yet. Add an act on the Story Board first, or choose Beat or Scene Card.</Banner>
+            <Banner tone="info">There are no acts yet. Add an act on the Beat Board first, or choose Beat or Scene Card.</Banner>
           ) : (
             <select id="vv-story-place" className="select" value={place} onChange={(e) => setPlace(e.target.value)}>
               {placeOptions.map((o) => (

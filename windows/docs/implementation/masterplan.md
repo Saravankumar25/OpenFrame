@@ -118,7 +118,7 @@ Work down this table. An area starts when the areas it needs are far enough alon
 | 6 | Security hardening from the baseline audit | Project controls | none |
 | 7 | Platform adapter layer for Windows and Mac | Test infrastructure | none (Mac hardware needed for tests) |
 | 8 | AI assistant quality and hardening | Test infrastructure | support address, AI test hardware |
-| 9 | Story Board and Idea Vault | Test infrastructure | one product question |
+| 9 | Beat Board and Idea Vault | Test infrastructure | one product question |
 | 10 | Writing comfort | Test infrastructure | none |
 | 11 | Screenplay engine and file formats | Data safety, Test infrastructure | production numbers, PDF fonts |
 | 12 | Appearance and themes | Test infrastructure | themes decision |
@@ -317,7 +317,7 @@ Goal: one product, two thin adapters. Feature code never learns which operating 
 
 **Done when:** retrieval quality meets the approved thresholds, hardware results are archived, the AI never writes on its own, and no private note or other user's data reaches the AI.
 
-## 9. Story Board and Idea Vault
+## 9. Beat Board and Idea Vault
 
 - [x] **Long scene description** as a real field, searchable and readable by the AI. Uses the next free migration. (ev: story_cards.rs::long_scene_description_is_a_real_field_saved_undone_and_kept_after_restart, ::long_scene_description_is_searchable_and_leaves_search_when_cleared_or_deleted, ::long_scene_description_is_readable_by_the_assistant_and_editable_only_by_proposal; migration_fixtures.rs::v11_to_v12_adds_long_description_and_research_flag_without_touching_content (project migration 0012); E2E 31-story-board-flow.test.mjs "long scene description and Card Display presets", green in docs/release/evidence/2026-10-08-session-2/e2e-session-2.md section 8)
 - [x] **Card display settings** (12 toggles) stored as view settings, never as content; changing the layout never changes scene or screenplay text. (ev: story_cards.rs::changing_card_display_never_changes_scene_or_screenplay_data, ::card_display_is_per_user_and_viewers_may_choose_their_own, ::board_cards_carry_what_the_display_toggles_need; BoardView.test.tsx; E2E 31-story-board-flow.test.mjs, green in docs/release/evidence/2026-10-08-session-2/e2e-session-2.md section 8)
@@ -622,7 +622,7 @@ Any one of these blocks submission.
 | Security hardening from the baseline audit | | | | no |
 | Platform adapter layer for Windows and Mac | | | | no |
 | AI assistant quality and hardening | | | | no |
-| Story Board and Idea Vault | | | | no |
+| Beat Board and Idea Vault | | | | no |
 | Writing comfort | | | | no |
 | Screenplay engine and file formats | | | | no |
 | Appearance and themes | | | | no |

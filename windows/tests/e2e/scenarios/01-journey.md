@@ -39,7 +39,7 @@ Before: the shared journey data folder is empty. The app starts for the first ti
 7. Check: the screen shows "The return".
 8. Click Add, then choose Scene Card from the menu.
 9. Type 'Bus stop reunion in the rain' in the Short description field and press Enter.
-10. Click the "Story Board" heading so no text field has focus.
+10. Click the "Beat Board" heading so no text field has focus.
 11. Press Ctrl+N.
 12. Check: a new Short description field shows.
 13. Type 'Arjun confesses at the police station' and press Enter.
@@ -112,9 +112,9 @@ Before: the shared journey data folder is empty. The app starts for the first ti
 
 1. Click Breakdown in the Workspaces navigation.
 2. Click Select Source.
-3. In the dialog, click the draft whose label starts with "Draft 1 from Story Board".
+3. In the dialog, click the draft whose label starts with "Draft 1 from Beat Board".
 4. Click Set as Production Source.
-5. Check: the screen shows "Production Source: Draft 1 from Story Board".
+5. Check: the screen shows "Production Source: Draft 1 from Beat Board".
 6. Click Suggest Elements.
 7. Click Accept Pistol.
 8. Click Accept Arjun.
@@ -149,7 +149,7 @@ Before: the shared journey data folder is empty. The app starts for the first ti
 1. Click Production in the Workspaces navigation, then the Schedule tab.
 2. Click the strip for scene 1 in the shooting day column.
 3. Click Open in Screenplay.
-4. Check: the Screenplay workspace shows "Draft 1 from Story Board" (not the imported draft that was open last).
+4. Check: the Screenplay workspace shows "Draft 1 from Beat Board" (not the imported draft that was open last).
 5. Check: the cursor sits on the scene heading "INT. POLICE STATION [em dash] NIGHT".
 6. Wait about 3 seconds with the cursor still.
 7. Check: the screen is quiet.

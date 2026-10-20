@@ -884,7 +884,7 @@ fn fsd_story_022_heading_supplied_inline_is_saved_on_the_card() {
         "story.build_screenplay",
         json!({ "include": [{ "cardId": c, "heading": "ext. level crossing - night" }], "destination": "newScreenplay" }),
     );
-    assert_eq!(r["draftName"], "Draft 1 from Story Board");
+    assert_eq!(r["draftName"], "Draft 1 from Beat Board");
     assert_eq!(
         env.ok("story.card", json!({ "id": c }))["card"]["sceneHeading"],
         "ext. level crossing - night"
@@ -966,7 +966,7 @@ fn fsd_story_023_repeat_build_creates_a_new_draft_never_overwrites() {
     assert_eq!(p["screenplays"][0]["id"], sp.as_str());
     assert_eq!(
         p["screenplays"][0]["nextDraftName"],
-        "Draft 2 from Story Board"
+        "Draft 2 from Beat Board"
     );
     // NewDraft requires the target screenplay.
     assert_eq!(

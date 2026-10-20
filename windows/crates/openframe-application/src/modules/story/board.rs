@@ -1,4 +1,4 @@
-//! Story Board: acts, sequences, beats, scene cards, parking lot, multi-select
+//! Beat Board: acts, sequences, beats, scene cards, parking lot, multi-select
 //! operations and the board read model (FSD §7–12, §51, §89–90).
 
 use std::collections::HashMap;
@@ -29,13 +29,13 @@ use crate::util::{AssetInfo, body_text, ingest_file, load_asset, optional_text, 
 pub fn register(r: &mut Registry) {
     use crate::registry::{FsEffect as Fs, OperationMetadata as M, hidden as h};
     r.query("story.board", board).meta(M::read(
-        "Story Board: acts, sequences, beats, Scene Cards, Parking Lot and Unassigned.",
+        "Beat Board: acts, sequences, beats, Scene Cards, Parking Lot and Unassigned.",
     ));
     r.query("story.card", card_detail).meta(M::read(
         "One Scene Card with notes, linked characters, attachments and its screenplay scene.",
     ));
     r.query("story.view_state", view_state).meta(
-        M::read("The user's Story Board view state (collapsed rows, current episode).")
+        M::read("The user's Beat Board view state (collapsed rows, current episode).")
             .hidden(h::VIEW_STATE),
     );
     r.command("story.set_collapsed", set_collapsed).meta(
@@ -49,12 +49,12 @@ pub fn register(r: &mut Registry) {
         .meta(
             M::command(
                 openframe_domain::Capability::View,
-                "Choose which episode the Story Board shows.",
+                "Choose which episode the Beat Board shows.",
             )
             .hidden(h::VIEW_STATE),
         );
     r.command("story.create_act", create_act)
-        .meta(M::edit("Create an act on the Story Board."));
+        .meta(M::edit("Create an act on the Beat Board."));
     r.command("story.update_act", update_act)
         .meta(M::edit("Rename an act or edit its note."));
     r.command("story.move_act", move_act)
@@ -336,7 +336,7 @@ pub struct StoryCreateActArgs {
     pub title: String,
     #[serde(default)]
     pub note: Option<String>,
-    /// Insert before this act; None = at the end of the Story Board (FSD §8.1).
+    /// Insert before this act; None = at the end of the Beat Board (FSD §8.1).
     #[serde(default)]
     pub before_id: Option<String>,
 }
@@ -915,7 +915,7 @@ fn write_view_state(tx: &Tx<'_>, state: &StoryViewState) -> AppResult<()> {
 }
 
 fn board(core: &AppCore, actor: &Actor, a: StoryScopeArgs) -> AppResult<StoryBoardState> {
-    actor.require(Capability::View, "view the Story Board")?;
+    actor.require(Capability::View, "view the Beat Board")?;
     let s = core.project()?;
     let root = s.layout.root().to_path_buf();
     s.store.read(|c| {
@@ -989,7 +989,7 @@ pub(crate) fn location_label(
 }
 
 fn card_detail(core: &AppCore, actor: &Actor, a: StoryIdArgs) -> AppResult<StoryCardDetail> {
-    actor.require(Capability::View, "view the Story Board")?;
+    actor.require(Capability::View, "view the Beat Board")?;
     let s = core.project()?;
     let root = s.layout.root().to_path_buf();
     s.store.read(|c| {
@@ -1008,7 +1008,7 @@ fn card_detail(core: &AppCore, actor: &Actor, a: StoryIdArgs) -> AppResult<Story
 }
 
 fn view_state(core: &AppCore, actor: &Actor, _: StoryScopeArgs) -> AppResult<StoryViewState> {
-    actor.require(Capability::View, "view the Story Board")?;
+    actor.require(Capability::View, "view the Beat Board")?;
     core.project()?
         .store
         .read(|c| read_view_state(c, &actor.user_id))
@@ -1547,7 +1547,7 @@ fn description_text(v: String) -> AppResult<String> {
     )
 }
 
-/// Long description (Story Board card redesign, section 21.1): kept exactly as typed apart from
+/// Long description (Beat Board card redesign, section 21.1): kept exactly as typed apart from
 /// trailing whitespace; blank clears it. Limited in characters, so Telugu, Hindi and English
 /// writers get the same room.
 pub(crate) fn long_description_text(v: String) -> AppResult<Option<String>> {

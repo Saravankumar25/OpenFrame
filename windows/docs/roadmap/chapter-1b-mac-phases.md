@@ -103,7 +103,7 @@ The editor is the costliest and riskiest screen, so it comes first inside the sc
 
 ## 7. Phase M5: Story, Idea Vault and Breakdown
 
-- Story Board: acts, sequences, beats, cards, characters, timeline, episodes, Build Screenplay.
+- Beat Board: acts, sequences, beats, cards, characters, timeline, episodes, Build Screenplay.
 - Idea Vault: project and global, five item types, voice notes, drag in.
 - Breakdown: suggestions, categories, catalog, locations, cast and crew.
 - Each workspace passes its shared scenarios.

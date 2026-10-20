@@ -26,18 +26,27 @@ fn words(s: &str) -> Vec<String> {
 /// The `n` sections most relevant to `question` (keyword overlap; titles weigh more).
 pub fn relevant(question: &str, n: usize) -> Vec<(&'static str, &'static str)> {
     let q = words(question);
+    let asked = question.to_lowercase();
     let mut scored: Vec<(usize, (&str, &str))> = sections()
         .into_iter()
         .map(|(t, b)| {
             let tw = words(t);
             let bw = words(b);
-            let score: usize = q
+            // The question names a term of the section by its words ("Day Out of Days", "Parking
+            // Lot"). One-word parts such as "Screenplay" are too common to count.
+            let named = t
+                .to_lowercase()
+                .split(" and ")
+                .map(|p| p.trim().trim_start_matches("the ").to_string())
+                .any(|p| p.contains(' ') && asked.contains(&p));
+            let overlap: usize = q
                 .iter()
                 .map(|w| {
                     tw.iter().filter(|x| *x == w).count() * 3
                         + bw.iter().filter(|x| *x == w).count()
                 })
                 .sum();
+            let score = overlap + usize::from(named) * 20;
             (score, (t, b))
         })
         .filter(|(s, _)| *s > 0)
@@ -60,5 +69,22 @@ mod tests {
         assert!(r.iter().any(|(t, _)| t.contains("Call sheets")));
         let r = relevant("What is the Production Source?", 1);
         assert_eq!(r[0].0, "Production Source");
+    }
+
+    #[test]
+    fn product_terms_find_their_own_section() {
+        for (question, title) in [
+            ("What is a Change Set?", "Proposed Changes and approval"),
+            (
+                "What is the Parking Lot?",
+                "Scene Cards and the Parking Lot",
+            ),
+            ("What is the Beat Board?", "Beat Board and Screenplay"),
+            ("What are Sides?", "Sides and Day Out of Days"),
+            ("What is Day Out of Days?", "Sides and Day Out of Days"),
+            ("What does the Production Source mean?", "Production Source"),
+        ] {
+            assert_eq!(relevant(question, 1)[0].0, title, "{question}");
+        }
     }
 }

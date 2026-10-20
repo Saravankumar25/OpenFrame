@@ -117,7 +117,7 @@ export async function results(browser) {
       kind: m.getAttribute("data-kind"),
       text: m.innerText,
       sources: [...m.querySelectorAll(".ai-sources .chip, .ai-sources button")].map((c) => c.textContent?.trim() ?? ""),
-      // How sure the answer is sits behind the closed "Details" disclosure: read all of its text.
+      // How sure the answer is sits behind the closed "See sources" disclosure: read all of its text.
       exact: (m.textContent ?? "").includes("Exact · from project data"),
       inferred: (m.textContent ?? "").includes("Inferred · written by Offline AI"),
     })),

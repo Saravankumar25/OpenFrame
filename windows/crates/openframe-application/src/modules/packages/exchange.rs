@@ -416,7 +416,7 @@ pub struct PackageExchangeArgs {
     #[serde(default)]
     pub draft_id: Option<String>,
     /// Script review: "full" | "comments" (Script + comments) | "scenes";
-    /// Story Board: "full" | "act"; others: "full" | "scenes".
+    /// Beat Board: "full" | "act"; others: "full" | "scenes".
     #[serde(default)]
     pub scope: Option<String>,
     #[serde(default)]
@@ -959,7 +959,7 @@ fn build_story(c: &Connection, root: &Path, a: &PackageExchangeArgs) -> AppResul
     };
     let scope_kind = a.scope.clone().unwrap_or_else(|| "full".into());
     let scope_label = match scope_kind.as_str() {
-        "full" => "Whole Story Board".to_string(),
+        "full" => "Whole Beat Board".to_string(),
         "act" => {
             let id = a
                 .act_id
@@ -972,7 +972,7 @@ fn build_story(c: &Connection, root: &Path, a: &PackageExchangeArgs) -> AppResul
         _ => {
             return Err(AppError::validation(
                 "scope",
-                "Choose the whole Story Board or one Act.",
+                "Choose the whole Beat Board or one Act.",
             ));
         }
     };
@@ -1170,7 +1170,7 @@ fn build_story(c: &Connection, root: &Path, a: &PackageExchangeArgs) -> AppResul
         attachments: files,
         attachments_available,
         counts,
-        target: "Story Board".into(),
+        target: "Beat Board".into(),
         scope: PackageScope {
             kind: scope_kind,
             label: scope_label,
@@ -1202,7 +1202,7 @@ pub(crate) fn build(c: &Connection, root: &Path, a: &PackageExchangeArgs) -> App
         | PackageType::Shots
         | PackageType::Schedule
         | PackageType::CallReview => Err(AppError::invalid_input(
-            "This package type is no longer offered. Share the screenplay or the Story Board instead.",
+            "This package type is no longer offered. Share the screenplay or the Beat Board instead.",
         )),
         PackageType::Response => Err(AppError::invalid_input(
             "Response packages are exported from the review package viewer.",

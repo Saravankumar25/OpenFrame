@@ -86,7 +86,14 @@ fn task_schema() -> Value {
     )
 }
 fn note_schema() -> Value {
-    sc::obj(&[("title", sc::s(200)), ("body", sc::s(20_000))], &["body"])
+    sc::obj(
+        &[
+            ("title", sc::s(200)),
+            ("body", sc::s(20_000)),
+            ("pinned", sc::boolean()),
+        ],
+        &["body"],
+    )
 }
 fn folder_schema() -> Value {
     sc::obj(&[("name", sc::s(120))], &["name"])
@@ -148,7 +155,7 @@ const CORE: &[ProposalSpec] = &[
     },
     ProposalSpec {
         tool: "propose_project_note",
-        description: "Prepare a new Project Note (e.g. to save an answer).",
+        description: "Prepare a new Project Note (e.g. to save an answer), optionally pinned.",
         required_ops: &[OP_CREATE_NOTE],
         optional_ops: &[],
         cap: Capability::Edit,
@@ -504,6 +511,8 @@ struct NoteArgs {
     #[serde(default)]
     title: Option<String>,
     body: String,
+    #[serde(default)]
+    pinned: bool,
 }
 
 fn note(_ctx: &PropCtx<'_>, spec: &ProposalSpec, args: &Value) -> AppResult<ChangeSetDraft> {
@@ -531,6 +540,10 @@ fn note(_ctx: &PropCtx<'_>, spec: &ProposalSpec, args: &Value) -> AppResult<Chan
         "Note",
         queries::truncate_chars(&body, 240),
     ));
+    if a.pinned {
+        op_args["pinned"] = json!(true);
+        d.preview.push(PreviewRow::normal("Pinned", "Yes"));
+    }
     d.preview.push(PreviewRow::normal("Impact", "1 new object"));
     d.operations.push(OpCall {
         op: OP_CREATE_NOTE.into(),

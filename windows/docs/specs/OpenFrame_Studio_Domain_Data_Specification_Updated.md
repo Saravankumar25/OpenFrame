@@ -2,7 +2,7 @@
 
 > **Revision notice (2026-10-05).** LAN entities (sessions, participants, soft locks, live conflicts) are **removed** (ADR-0007).
 > [Screenplay and Production Depth Specification (Revision 1)](OpenFrame_Studio_Screenplay_and_Production_Depth_Specification.md) adds or changes: custom element, page-break directive, production number label (ADR-0015, proposed), revision records and
-> changed pages, schedule day timeline fields, DOOD (derived), budget Planned and Actual, Story Board long description and card display
+> changed pages, schedule day timeline fields, DOOD (derived), budget Planned and Actual, Beat Board long description and card display
 > configuration, and app-local appearance preferences. Engineering contracts: docs/engineering/32 and 33. Precedence: [docs/README.md](../README.md).
 
 **Document type:** Domain model, logical data specification, relationship contract, ownership/source-of-truth specification, and cross-document consistency baseline
@@ -30,7 +30,7 @@ The domain model must never introduce a new user-visible capability merely becau
 ## 0.1 Non-negotiable source rules
 
 - **Idea Vault:** Global/Project Idea Vault
-- **Story Board:** Acts/Sequences/Beats/Scene Cards
+- **Beat Board:** Acts/Sequences/Beats/Scene Cards
 - **Screenplay:** Screenplay Draft/Scene/Element
 - **Production Source:** Selected Draft
 - **Breakdown:** Breakdown Elements/Catalog references
@@ -45,7 +45,7 @@ The exact source-of-truth rules above are derived from the aligned product docum
 - It does not define database tables, indexes, ORM classes, API schemas, network protocols, or serialization technology.
 - It does not redesign screens or alter UX behavior.
 - It does not introduce studio-scale accounting, payroll, VFX, post-production, distribution, or cloud management.
-- It does not make Idea Vault or Story Board live synchronization layers for screenplay content.
+- It does not make Idea Vault or Beat Board live synchronization layers for screenplay content.
 - It does not make AI authoritative over creative or production decisions.
 # 1. Domain Model Overview
 
@@ -128,7 +128,7 @@ Fields:
 | note | Optional season note | Optional |
 
 ### Episode
-A lightweight episodic unit under a Series/Season. Each Episode can own its Story Board, Screenplay, Breakdown and production context.
+A lightweight episodic unit under a Series/Season. Each Episode can own its Beat Board, Screenplay, Breakdown and production context.
 
 Fields:
 
@@ -283,7 +283,7 @@ A miscellaneous project document/attachment kept in the project file cabinet.
 
 ## Act
 
-A high-level Story Board container.
+A high-level Beat Board container.
 
 | Field | Meaning | Rule |
 |---|---|---|
@@ -312,7 +312,7 @@ A simple named container used to group related story cards/scenes.
 **Invariants**
 
 - Primary user-facing content is the sequence name.
-- Sequence is a Story Board grouping aid, not a screenplay sequence object.
+- Sequence is a Beat Board grouping aid, not a screenplay sequence object.
 ## Beat
 
 A small story event or idea that may remain a beat or be converted into a Scene Card.
@@ -352,11 +352,11 @@ A compact outline/reference representation of a scene, independent from screenpl
 **Invariants**
 
 - Compact representation; no manual scene number.
-- No production metadata is stored as required Story Board fields.
+- No production metadata is stored as required Beat Board fields.
 - No live synchronization with Screenplay Scene.
 ## Parking Lot Entry
 
-A Beat or Scene Card temporarily removed from active Story Board order but retained.
+A Beat or Scene Card temporarily removed from active Beat Board order but retained.
 
 | Field | Meaning | Rule |
 |---|---|---|
@@ -1072,7 +1072,7 @@ A recoverable record representing an item moved to deleted state before permanen
 | Global Idea Vault Item | Project Idea Vault Item | 0:N copy | Copy is independent; edits do not sync back. |
 | Project Idea Vault Item | Vault Collection | N:M | A project Vault item may belong to collections; membership is organizational. |
 | Project | Project File | 1:N | Miscellaneous project file cabinet. |
-| Project | Act | 1:N | Story Board top-level containers. |
+| Project | Act | 1:N | Beat Board top-level containers. |
 | Act | Sequence | 1:N | Sequence is a child of an Act during active outline structure. |
 | Sequence | Beat | 1:N optional | Beats may temporarily live inside sequence. |
 | Sequence | Scene Card | 1:N optional | Normal scene grouping. |
@@ -1144,7 +1144,7 @@ Cardinality uses logical product relationships rather than database implementati
 
 Global/Project Idea Vault
 
-## Story Board
+## Beat Board
 
 Acts/Sequences/Beats/Scene Cards
 
@@ -1178,8 +1178,8 @@ Call Sheet document
 
 ## 6.1 No hidden cross-object synchronization
 
-- Idea Vault edits do not rewrite Story Board objects after copying.
-- Story Board edits do not continuously rewrite screenplay text.
+- Idea Vault edits do not rewrite Beat Board objects after copying.
+- Beat Board edits do not continuously rewrite screenplay text.
 - Production edits do not rewrite screenplay content.
 - Call Sheet edits do not automatically rewrite the schedule.
 - Shot List and Storyboard may be linked, but neither is required by the other.
@@ -1296,7 +1296,7 @@ Deletion must preserve user safety, downstream integrity and explicit user contr
 
 - Creative objects use recoverable deleted state before permanent removal.
 - Deleting a Scene Card does not automatically delete its linked Screenplay Scene.
-- Deleting a Story Board container offers safe child-handling choices.
+- Deleting a Beat Board container offers safe child-handling choices.
 - Deleting a Character used in production triggers confirmation and favors archive/remove-from-directory semantics rather than destructive removal.
 - Production catalog references must not silently become dangling references; affected breakdown entries must retain visible unavailable/removed status until user resolves them.
 - Permanent deletion must require an explicit destructive confirmation for meaningful project data.
@@ -1335,10 +1335,10 @@ Episodic support must remain lightweight while preserving the product's project/
 |---|---|
 | Series Project | A Project whose type is Episodic/Series. |
 | Season | An optional lightweight grouping of Episodes; no giant season-analytics subsystem. |
-| Episode | A container under a Series/Season with its own Story Board and Screenplay context. |
+| Episode | A container under a Series/Season with its own Beat Board and Screenplay context. |
 | Series Character | A character identity may be shared across episodes through explicit references while episode screenplay usage remains independent. |
 | Episode Screenplay | Each episode may have its own named drafts/review/lock lifecycle. |
-| Episode Story Board | Acts/Sequences/Beats/Scene Cards belong to the episode story context unless explicitly represented at season level. |
+| Episode Beat Board | Acts/Sequences/Beats/Scene Cards belong to the episode story context unless explicitly represented at season level. |
 
 No deeper episodic continuity graph is required by the current P0 scope; deeper continuity remains later/P2 behavior.
 
@@ -1393,7 +1393,7 @@ AI is an optional cross-cutting interaction layer over existing domain data. AI 
 | Current scene | Current screenplay scene and explicitly selected supporting objects. |
 | Current screenplay | Selected/current draft content and relevant script context. |
 | Specific draft | The chosen Screenplay Draft and supported linked context. |
-| Story Board | Story Board objects within the current project. |
+| Beat Board | Beat Board objects within the current project. |
 | Idea Vault selection | Only explicitly selected Vault items when requested. |
 | Production | User-authorized production records and their supported relationships. |
 | Shooting day | Selected schedule/day and supported related scene/production data. |
@@ -1497,7 +1497,7 @@ Exports must be understood as snapshots rather than live synchronized documents.
 |---|---|---|
 | Screenplay PDF | Selected draft | Snapshot; does not alter draft. |
 | FDX/Fountain/DOCX | Selected draft | Interchange snapshot generated from screenplay state. |
-| Story Board export | Current board state | Snapshot; cards retain project identity internally only. |
+| Beat Board export | Current board state | Snapshot; cards retain project identity internally only. |
 | Breakdown report | Breakdown/source state | Snapshot of current breakdown. |
 | Schedule export | Shooting Schedule state | Snapshot; later edits do not retroactively alter exported file. |
 | Call Sheet PDF | Call Sheet document | Snapshot of exact call-sheet state at export/issue. |
@@ -1517,7 +1517,7 @@ Many UX screens are projections over authoritative objects. They should not be t
 | UX surface | Primary domain sources | Nature |
 |---|---|---|
 | Project Home | Project + recent Activity + current workspace states | Derived overview. |
-| Story Board | Acts + Sequences + Beats + Scene Cards + Parking Lot | Authoritative Story structure presentation. |
+| Beat Board | Acts + Sequences + Beats + Scene Cards + Parking Lot | Authoritative Story structure presentation. |
 | Screenplay Navigator | Screenplay Draft + Scenes | Derived navigation view. |
 | Production Catalog | Catalog Items | Authoritative catalog directory. |
 | Scene Hub | One screenplay scene + its related production references | Derived cross-module view, not a replacement object. |
@@ -1535,7 +1535,7 @@ Many UX screens are projections over authoritative objects. They should not be t
 - A Storyboard Panel may exist without a Shot, and a Shot may exist without a Storyboard Panel.
 - A Shooting Day may contain no scenes while being prepared.
 - A Call Sheet may exist in Draft state before finalization.
-- A Project can contain no Story Board content and still contain an imported screenplay.
+- A Project can contain no Beat Board content and still contain an imported screenplay.
 - A Short Film project must not require unused Acts/Sequences/Production sections.
 - An archived project remains internally intact and reopenable.
 - Permanent deletion of a project requires deliberate confirmation and should not be conflated with archive.
@@ -1551,7 +1551,7 @@ The Domain/Data model was derived from the supplied PRD, FSD and UX/UI files. Th
 |---|---|---|---|---|
 | Project shell/lifecycle | PRD-CORE-001 | Application shell / project lifecycle | Application Home / Project Home / New Project | Application User, Project, Project Settings, Project Status |
 | Idea Vault | PRD-IDEA-001..005 | FSD-IDEA-001..020 | Global Idea Vault / Project Idea Vault / Item Detail | Global Idea Vault Item, Project Idea Vault Item, Vault Collection, Project File |
-| Story Board | PRD-STORY-001..007 | FSD-STORY-001..030 | Story Workspace / Acts / Sequences / Beats / Scene Cards | Act, Sequence, Beat, Scene Card, Parking Lot Entry |
+| Beat Board | PRD-STORY-001..007 | FSD-STORY-001..030 | Story Workspace / Acts / Sequences / Beats / Scene Cards | Act, Sequence, Beat, Scene Card, Parking Lot Entry |
 | Characters/timeline | PRD-STORY-* | FSD-STORY-* | Characters / Story Timeline | Character, Character Relationship, Story Timeline Entry |
 | Screenplay | PRD-SCRIPT-001..007 | FSD-SCRIPT-001..050 | Screenplay / Writing Room / Drafts / Review / Lock | Screenplay, Screenplay Draft, Screenplay Scene, Screenplay Element, Automatic History Point, Review Round, Comment, Private Note |
 | Episodic | PRD-EP-001..002 | FSD episodic requirements | Episodic/Season/Episode surfaces | Project, Season, Episode, Character |
@@ -1577,11 +1577,11 @@ The Domain/Data model was derived from the supplied PRD, FSD and UX/UI files. Th
 | PRD-IDEA-003 | Idea Vault Views and Organization | P0 | Global Idea Vault Item, Project Idea Vault Item, Vault Collection, Project File |
 | PRD-IDEA-004 | Idea Vault Search, Preview and External File Awareness | P0 | Global Idea Vault Item, Project Idea Vault Item, Vault Collection, Project File |
 | PRD-IDEA-005 | Move/Copy Idea Vault Material into Story | P0 | Global Idea Vault Item, Project Idea Vault Item, Vault Collection, Project File |
-| PRD-STORY-001 | Story Board Views, Acts and Sequences | P0 | Act, Sequence, Beat, Scene Card, Parking Lot Entry, Character, Character Relationship, Story Timeline Entry |
+| PRD-STORY-001 | Beat Board Views, Acts and Sequences | P0 | Act, Sequence, Beat, Scene Card, Parking Lot Entry, Character, Character Relationship, Story Timeline Entry |
 | PRD-STORY-002 | Beat Cards and Beat Conversion | P0 | Act, Sequence, Beat, Scene Card, Parking Lot Entry, Character, Character Relationship, Story Timeline Entry |
 | PRD-STORY-003 | Scene Cards and Scene Card Expansion | P0 | Act, Sequence, Beat, Scene Card, Parking Lot Entry, Character, Character Relationship, Story Timeline Entry |
-| PRD-STORY-004 | Story Board Drag-and-Drop, Parking Lot, Multi-Select and Experimentation | P0 | Act, Sequence, Beat, Scene Card, Parking Lot Entry, Character, Character Relationship, Story Timeline Entry |
-| PRD-STORY-005 | Story Board to Screenplay Build | P0 | Act, Sequence, Beat, Scene Card, Parking Lot Entry, Character, Character Relationship, Story Timeline Entry |
+| PRD-STORY-004 | Beat Board Drag-and-Drop, Parking Lot, Multi-Select and Experimentation | P0 | Act, Sequence, Beat, Scene Card, Parking Lot Entry, Character, Character Relationship, Story Timeline Entry |
+| PRD-STORY-005 | Beat Board to Screenplay Build | P0 | Act, Sequence, Beat, Scene Card, Parking Lot Entry, Character, Character Relationship, Story Timeline Entry |
 | PRD-STORY-006 | Characters and Character Relationship View | P0 | Act, Sequence, Beat, Scene Card, Parking Lot Entry, Character, Character Relationship, Story Timeline Entry |
 | PRD-STORY-007 | Story Timeline | P1 | Act, Sequence, Beat, Scene Card, Parking Lot Entry, Character, Character Relationship, Story Timeline Entry |
 | PRD-SCRIPT-001 | Screenplay Workspace and Writing Controls | P0 | Screenplay, Screenplay Draft, Screenplay Scene, Screenplay Element, Automatic History Point, Review Round, Comment, Private Note, Production Source |
@@ -1928,7 +1928,7 @@ The 11 auxiliary shorthand FSD IDs are treated as alias/acceptance labels outsid
 
 # 28. Final Domain/Data Boundary
 
-OpenFrame should be implemented as a connected set of domain objects with clear authority rather than as a collection of duplicated records. The most important logical separation is: Idea Vault is memory, Story Board is outline, Screenplay is written truth, Production Source selects the screenplay baseline for production planning, Breakdown/Catalog represent production requirements, Shot List/Storyboard represent visual planning, Schedule represents shooting order, and Call Sheet represents the communication document for a shooting day.
+OpenFrame should be implemented as a connected set of domain objects with clear authority rather than as a collection of duplicated records. The most important logical separation is: Idea Vault is memory, Beat Board is outline, Screenplay is written truth, Production Source selects the screenplay baseline for production planning, Breakdown/Catalog represent production requirements, Shot List/Storyboard represent visual planning, Schedule represents shooting order, and Call Sheet represents the communication document for a shooting day.
 
 That separation is what allows the product to remain simple for independent filmmakers while still supporting professional pre-production behavior. The domain model intentionally avoids creating a giant universal object that tries to synchronize every module with every other module.
 

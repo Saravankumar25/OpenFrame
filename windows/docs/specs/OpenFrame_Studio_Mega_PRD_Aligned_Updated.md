@@ -2,7 +2,7 @@
 
 > **Revision notice (2026-10-05).** PRD-COL-005 and PRD-COL-006 (LAN collaboration) are **removed** by ADR-0007.
 > Passages that assume external AI providers are superseded by ADR-0012 §5 and ADR-0013 (local AI only). [Screenplay and Production Depth Specification (Revision 1)](OpenFrame_Studio_Screenplay_and_Production_Depth_Specification.md)
-> amends the screenplay, Story Board, breakdown, schedule, DOOD, call sheet, budget, template, export-branding and appearance requirements.
+> amends the screenplay, Beat Board, breakdown, schedule, DOOD, call sheet, budget, template, export-branding and appearance requirements.
 > The product-position wording ("open-source-friendly") is pending the business-model decision (ADR-0018, proposed). Precedence: [docs/README.md](../README.md).
 ## Detailed Product Requirements Document — Desktop Edition
 
@@ -91,7 +91,7 @@ The product should feel like **one film moving forward**, not a collection of un
 
 However, this does **not** mean every module is permanently synchronized with every other module. Information should only connect where that connection creates clear practical value.
 
-The Idea Vault is intentionally loose. The Story Board is intentionally a reference/outline space. The Screenplay is the authoritative written script. Production data becomes authoritative only when the production phase starts using it.
+The Idea Vault is intentionally loose. The Beat Board is intentionally a reference/outline space. The Screenplay is the authoritative written script. Production data becomes authoritative only when the production phase starts using it.
 
 This distinction is critical.
 
@@ -499,7 +499,7 @@ Project Home should display:
 Primary buttons:
 
 - Open Idea Vault
-- Open Story Board
+- Open Beat Board
 - Write Screenplay
 - Import Screenplay
 
@@ -729,7 +729,7 @@ For example:
 
 The user can right-click:
 
-> **Send to Story Board**
+> **Send to Beat Board**
 
 The application asks:
 
@@ -749,9 +749,9 @@ The original Vault item remains.
 
 A small reference can appear:
 
-> “Used in Story Board.”
+> “Used in Beat Board.”
 
-The Vault does not then synchronize with the Story Board.
+The Vault does not then synchronize with the Beat Board.
 
 Changes made later to the scene card do not rewrite the original Vault thought.
 
@@ -800,7 +800,7 @@ Middle:
 ### Continue
 
 - Continue screenplay
-- Continue Story Board
+- Continue Beat Board
 - Continue breakdown
 - Continue schedule
 
@@ -818,7 +818,7 @@ Then:
 ### Quick Access
 
 - Idea Vault
-- Story Board
+- Beat Board
 - Screenplay
 - Breakdown
 - Production
@@ -842,9 +842,9 @@ The user should be able to understand the overall movie without reading the scre
 
 ---
 
-# 17. Story Board Views
+# 17. Beat Board Views
 
-The Story Board supports two primary views.
+The Beat Board supports two primary views.
 
 ## 17.1 Board View
 
@@ -960,7 +960,7 @@ Optional:
 
 The user can drag beats.
 
-A Beat can exist in the Story Board without becoming a screenplay scene.
+A Beat can exist in the Beat Board without becoming a screenplay scene.
 
 Later, the user can convert it into a Scene Card.
 
@@ -968,7 +968,7 @@ Later, the user can convert it into a Scene Card.
 
 # 21. Scene Cards
 
-Scene Cards are the most important Story Board object.
+Scene Cards are the most important Beat Board object.
 
 ## 21.1 Visual appearance
 
@@ -1017,7 +1017,7 @@ Those belong elsewhere or can be extracted later from the screenplay.
 
 # 22. Scene Card Numbering
 
-Scene Cards do **not** carry permanent scene numbers in Story Board view.
+Scene Cards do **not** carry permanent scene numbers in Beat Board view.
 
 This prevents meaningless numbering work during development.
 
@@ -1097,7 +1097,7 @@ After dropping:
 
 # 25. Parking Lot
 
-The Story Board needs a simple side area called:
+The Beat Board needs a simple side area called:
 
 > **Parking Lot**
 
@@ -1139,9 +1139,9 @@ The application should not attempt to automatically merge them.
 
 ---
 
-# 27. Story Board to Screenplay
+# 27. Beat Board to Screenplay
 
-The Story Board is a reference/outline tool.
+The Beat Board is a reference/outline tool.
 
 It is **not** the screenplay.
 
@@ -1158,7 +1158,7 @@ This is a deliberate simplification.
 
 ---
 
-# 28. “Build Screenplay From Story Board”
+# 28. “Build Screenplay From Beat Board”
 
 When the user clicks:
 
@@ -1178,7 +1178,7 @@ The Scene Card remains a separate reference object.
 
 ---
 
-# 29. Story Board and Screenplay Relationship
+# 29. Beat Board and Screenplay Relationship
 
 The relationship is intentionally one-way and lightweight.
 
@@ -1190,7 +1190,7 @@ optional creation of
 SCREENPLAY SCENES
 ```
 
-The Story Board can later be rearranged independently.
+The Beat Board can later be rearranged independently.
 
 If a screenplay already contains written scenes, the application should warn before changing screenplay order from a Board rearrangement.
 
@@ -1395,7 +1395,7 @@ The user selected a simple writing room where useful reference panels can sit be
 
 Optional panels:
 
-- Story Board.
+- Beat Board.
 - Scene Notes.
 - Characters.
 - Comments.
@@ -1421,7 +1421,7 @@ This follows the user's desired separation:
 
 > Idea Vault = creative dump/reference.
 
-> Story Board = outline/reference.
+> Beat Board = outline/reference.
 
 > Screenplay = actual written story.
 
@@ -1735,7 +1735,7 @@ SCREENPLAY
 Each episode can have its own:
 
 - Idea Vault subset,
-- Story Board,
+- Beat Board,
 - screenplay drafts,
 - breakdown,
 - production plan.
@@ -1746,7 +1746,7 @@ The system should not build a giant writers-room database.
 
 ---
 
-# 56. Series-Level Story Board
+# 56. Series-Level Beat Board
 
 At series level, the user can visually see:
 
@@ -2427,7 +2427,7 @@ Examples:
 
 > Screenplay Review Package.
 
-> Story Board Package.
+> Beat Board Package.
 
 > Shot List Package.
 
@@ -2558,7 +2558,7 @@ Examples:
 
 `.ofstory`
 
-Story Board exchange.
+Beat Board exchange.
 
 `.ofscriptreview`
 
@@ -2691,7 +2691,7 @@ The assistant can operate over:
 - Current Scene;
 - Current Screenplay;
 - Specific Draft;
-- Story Board;
+- Beat Board;
 - Selected Idea Vault items;
 - Production;
 - Specific Shooting Day;
@@ -2740,7 +2740,7 @@ For project-wide rename/replace, the preview must distinguish:
 - canonical object names;
 - structured references;
 - screenplay Character elements;
-- cast/Breakdown/Story Board/Shot/Storyboard references;
+- cast/Breakdown/Beat Board/Shot/Storyboard references;
 - optionally selected tasks/notes;
 - arbitrary dialogue/action text.
 
@@ -2898,7 +2898,7 @@ Desktop drag-and-drop should work for:
 
 - files into Idea Vault,
 - files into moodboards,
-- cards on Story Board,
+- cards on Beat Board,
 - scenes in schedule,
 - shots in shot lists,
 - images into storyboards.
@@ -2938,7 +2938,7 @@ and move the project to another machine.
 The archive should preserve:
 
 - project structure,
-- Story Board,
+- Beat Board,
 - screenplay drafts,
 - breakdown,
 - catalog,
@@ -2999,7 +2999,7 @@ At project creation, offer three clear options:
 
 ### I have an idea
 
-Opens Idea Vault + Story Board.
+Opens Idea Vault + Beat Board.
 
 ### I already have a screenplay
 
@@ -3112,9 +3112,9 @@ To keep the application simple:
 
 Idea Vault does not automatically synchronize with screenplay.
 
-Story Board does not automatically rewrite screenplay content.
+Beat Board does not automatically rewrite screenplay content.
 
-Editing screenplay dialogue does not rewrite Story Board descriptions.
+Editing screenplay dialogue does not rewrite Beat Board descriptions.
 
 Moodboards do not automatically alter production design data.
 
@@ -3129,7 +3129,7 @@ The user should understand which document is authoritative for each type of info
 | Information | Source of truth |
 |---|---|
 | Raw ideas | Idea Vault |
-| Story order | Active Story Board or screenplay after written |
+| Story order | Active Beat Board or screenplay after written |
 | Written dialogue/action | Screenplay draft |
 | Production elements | Breakdown / Catalog |
 | Shooting order | Stripboard |
@@ -3325,7 +3325,7 @@ Supported exports:
 
 ### Story
 
-- Story Board PDF.
+- Beat Board PDF.
 - Outline PDF.
 
 ### Production
@@ -3388,13 +3388,13 @@ Bad:
 
 Good:
 
-### Story Board empty state
+### Beat Board empty state
 
 > “Start shaping the film. Add an Act, or drag an idea from your Idea Vault.”
 
 ### Screenplay empty state
 
-> “Write from scratch or build your first screenplay scenes from the Story Board.”
+> “Write from scratch or build your first screenplay scenes from the Beat Board.”
 
 ### Breakdown empty state
 
@@ -3604,9 +3604,9 @@ No comment is silently discarded.
 
 ---
 
-# 136. Story Board Exchange
+# 136. Beat Board Exchange
 
-A Story Board can be exported for:
+A Beat Board can be exported for:
 
 - director feedback,
 - writer review,
@@ -3766,7 +3766,7 @@ This is primarily for orientation, not enterprise auditing.
 
 A filmmaker may create a screenplay without creating an Idea Vault.
 
-They may make a Story Board without detailed character records.
+They may make a Beat Board without detailed character records.
 
 They may import a finished script and immediately create a breakdown.
 
@@ -3781,7 +3781,7 @@ The product should support multiple legitimate filmmaking workflows.
 | Feature | Beginner | Experienced | Production team |
 |---|---|---|---|
 | Idea Vault | Yes | Yes | Yes |
-| Story Board | Yes | Yes | Yes |
+| Beat Board | Yes | Yes | Yes |
 | Screenplay | Yes | Yes | Yes |
 | Review | Optional | Yes | Yes |
 | Breakdown | Later | Yes | Yes |
@@ -4065,7 +4065,7 @@ Idea Vault.
 
 ## Job 2 — Shape the film
 
-Story Board.
+Beat Board.
 
 ## Job 3 — Write the film
 
@@ -4109,7 +4109,7 @@ They add:
 
 ### Step 4
 
-They begin Story Board.
+They begin Beat Board.
 
 Create:
 
@@ -4195,7 +4195,7 @@ Create Schedule
 Generate Call Sheets
 ```
 
-They can completely bypass the Idea Vault and Story Board.
+They can completely bypass the Idea Vault and Beat Board.
 
 ---
 
@@ -4222,7 +4222,7 @@ A simple short-film workflow should feel fast.
 A writer may use only:
 
 - Idea Vault,
-- Story Board,
+- Beat Board,
 - Screenplay,
 - drafts,
 - review.
@@ -4276,7 +4276,7 @@ A beat can exist without a scene.
 
 # 168. Product Behavior Around Messy Creativity
 
-The Story Board should allow rough text such as:
+The Beat Board should allow rough text such as:
 
 > “Maybe this actually happens before interval?”
 
@@ -4314,7 +4314,7 @@ Example:
 
 Scene 24:
 
-- Open in Story Board.
+- Open in Beat Board.
 - Open in Screenplay.
 - Open in Breakdown.
 - Open in Shot List.
@@ -4405,7 +4405,7 @@ For a scene card:
 
 For a screenplay scene:
 
-- Open in Story Board.
+- Open in Beat Board.
 - Break down.
 - Create Shot List.
 - Create Storyboard.
@@ -4600,7 +4600,7 @@ Monitor 1:
 
 Monitor 2:
 
-> Story Board
+> Beat Board
 
 or
 
@@ -4654,7 +4654,7 @@ Each page should have a dominant question.
 
 > “What do I have?”
 
-### Story Board
+### Beat Board
 
 > “How does my story fit together?”
 
@@ -4714,7 +4714,7 @@ A page can contain supporting information, but it needs one clear primary job.
 
 This is especially important for:
 
-- Story Board,
+- Beat Board,
 - Screenplay,
 - Breakdown,
 - Stripboard.
@@ -4779,7 +4779,7 @@ Instead of a long tutorial:
 
 > “What is a Scene Card?”
 
-The empty Story Board should simply say:
+The empty Beat Board should simply say:
 
 > “Scene Cards are short reminders of what happens in each scene. Drag them until the story works.”
 
@@ -4799,11 +4799,11 @@ PRD requirement IDs use `PRD-[MODULE]-NNN` and identify product-level capabiliti
 | PRD-IDEA-003 | Idea Vault Views and Organization | 10.4, 12, 176–178 | P0 |
 | PRD-IDEA-004 | Idea Vault Search, Preview and External File Awareness | 11, 98, 107 | P0 |
 | PRD-IDEA-005 | Move/Copy Idea Vault Material into Story | 13, 112–113 | P0 |
-| PRD-STORY-001 | Story Board Views, Acts and Sequences | 16–19, 17 | P0 |
+| PRD-STORY-001 | Beat Board Views, Acts and Sequences | 16–19, 17 | P0 |
 | PRD-STORY-002 | Beat Cards and Beat Conversion | 20, 26–27 | P0 |
 | PRD-STORY-003 | Scene Cards and Scene Card Expansion | 21–23 | P0 |
-| PRD-STORY-004 | Story Board Drag-and-Drop, Parking Lot, Multi-Select and Experimentation | 24–26, 102, 104 | P0 |
-| PRD-STORY-005 | Story Board to Screenplay Build | 27–29 | P0 |
+| PRD-STORY-004 | Beat Board Drag-and-Drop, Parking Lot, Multi-Select and Experimentation | 24–26, 102, 104 | P0 |
+| PRD-STORY-005 | Beat Board to Screenplay Build | 27–29 | P0 |
 | PRD-STORY-006 | Characters and Character Relationship View | 30–31 | P0 |
 | PRD-STORY-007 | Story Timeline | 32 | P1 |
 | PRD-SCRIPT-001 | Screenplay Workspace and Writing Controls | 33–41 | P0 |
@@ -4865,7 +4865,7 @@ PRD requirement IDs use `PRD-[MODULE]-NNN` and identify product-level capabiliti
 
 | Priority | OpenFrame features |
 |---|---|
-| **P0** | Desktop Windows/macOS, local projects, global/project Idea Vault, media capture, collections, search, Story Board, Acts, Sequences, Beats, Scene Cards, drag/drop, Parking Lot, screenplay editor, screenplay import/export, edit history, named drafts, draft comparison, comments, review packages, basic LAN collaboration, breakdown, breakdown suggestions, catalog, locations, cast/crew, shot lists, basic storyboards, moodboards, stripboard, basic schedule assistance, call sheets, project archive |
+| **P0** | Desktop Windows/macOS, local projects, global/project Idea Vault, media capture, collections, search, Beat Board, Acts, Sequences, Beats, Scene Cards, drag/drop, Parking Lot, screenplay editor, screenplay import/export, edit history, named drafts, draft comparison, comments, review packages, basic LAN collaboration, breakdown, breakdown suggestions, catalog, locations, cast/crew, shot lists, basic storyboards, moodboards, stripboard, basic schedule assistance, call sheets, project archive |
 | **P1** | Story timeline, script lock, production revision colors, Sides, better storyboard tools, advanced schedule conflicts, AI assistant, richer exchange controls, templates, lightweight tasks, Scene Hub, more export layouts, multi-monitor, Project Notes, Activity History, Daily Production View, Basic Production Reports, Lightweight Budget |
 | **P2** | More sophisticated scheduling assistance, advanced storyboard editing, richer search, more production reports, deeper episodic continuity, advanced AI assistance, additional file interchange formats |
 | **Deferred** | Accounting, payroll, full budgeting, VFX management, post-production tracking, distribution, festival management, talent marketplace, cloud media hosting, mobile app, enterprise administration |
@@ -4925,13 +4925,13 @@ The Idea Vault passes acceptance when:
 5. A user can keep an item completely unclassified.
 6. A user can copy an item to a project.
 7. The original global idea remains unchanged.
-8. Project Vault items can exist without being used in Story Board.
+8. Project Vault items can exist without being used in Beat Board.
 9. The user can store arbitrary supported attachments.
 10. Vault content is not automatically synchronized into the screenplay.
 
 ---
 
-# 201. Acceptance Criteria — Story Board
+# 201. Acceptance Criteria — Beat Board
 
 1. Acts can be created in seconds.
 2. Sequences can be created with only a title.
@@ -4953,8 +4953,8 @@ The Idea Vault passes acceptance when:
 # 202. Acceptance Criteria — Screenplay
 
 1. A user can create a screenplay from scratch.
-2. A user can build screenplay scenes from the Story Board.
-3. Scene order follows Story Board order when the screenplay is first created.
+2. A user can build screenplay scenes from the Beat Board.
+3. Scene order follows Beat Board order when the screenplay is first created.
 4. Scene numbers are generated from screenplay order.
 5. Standard screenplay elements format automatically.
 6. Search works normally.
@@ -5050,7 +5050,7 @@ The Idea Vault passes acceptance when:
 
 1. Project creation works offline.
 2. Writing works offline.
-3. Story Board works offline.
+3. Beat Board works offline.
 4. Breakdown works offline.
 5. Scheduling works offline.
 6. Call sheet generation works offline.
@@ -5091,7 +5091,7 @@ User writes in Idea Vault:
 
 Later:
 
-Right-click → Send to Story Board → Scene.
+Right-click → Send to Beat Board → Scene.
 
 A Scene Card appears:
 
@@ -5335,7 +5335,7 @@ Idea Vault:
 
 Very loose.
 
-Story Board:
+Beat Board:
 
 Moderately structured.
 
@@ -5413,7 +5413,7 @@ The competitive baseline is:
 ### OpenFrame advantage
 
 - Better Idea Vault.
-- Better simple Story Board.
+- Better simple Beat Board.
 - Better connection from outline to screenplay.
 - Local-first desktop ownership.
 - Portable collaboration packages.
@@ -5444,11 +5444,11 @@ And an experienced user can say:
 # 221. Non-Negotiable Product Rules
 
 1. **Idea Vault must remain messy by design.**
-2. **Story Board must be visual and drag-and-drop.**
+2. **Beat Board must be visual and drag-and-drop.**
 3. **Scene Cards must stay small and simple.**
 4. **Scene numbers must not be manually maintained during outlining.**
 5. **The Screenplay must be a serious professional writing environment.**
-6. **Story Board is a reference/outline surface, not a constantly synchronized duplicate of the screenplay.**
+6. **Beat Board is a reference/outline surface, not a constantly synchronized duplicate of the screenplay.**
 7. **Breakdown must flow from the screenplay without re-entry.**
 8. **Automatic breakdown suggestions must always require confirmation.**
 9. **Scheduling must be drag-and-drop first.**
@@ -5572,7 +5572,7 @@ Examples:
 
 Ideas → Idea Vault.
 
-Story → Story Board.
+Story → Beat Board.
 
 Writing → Screenplay.
 
@@ -5624,7 +5624,7 @@ Therefore the product encourages creativity without requiring the user to manual
 
 - Global Idea Vault.
 - Project Idea Vault.
-- Story Board.
+- Beat Board.
 - Acts.
 - Sequences.
 - Beats.
@@ -5742,4 +5742,4 @@ The following public product documentation was reviewed while expanding this spe
 - Filmustage Help — Script Tab: https://help.filmustage.com/en/articles/11008507-what-is-the-script-tab
 - Blackmagic Design — DaVinci Resolve Collaboration: https://www.blackmagicdesign.com/products/davinciresolve/collaboration
 
-The product decisions in this PRD intentionally go beyond those references where needed to implement the OpenFrame vision: particularly the local-first model, exchange packages, the deliberately unstructured Idea Vault, the lightweight visual Story Board, and the strict anti-feature-bloat boundary.
+The product decisions in this PRD intentionally go beyond those references where needed to implement the OpenFrame vision: particularly the local-first model, exchange packages, the deliberately unstructured Idea Vault, the lightweight visual Beat Board, and the strict anti-feature-bloat boundary.

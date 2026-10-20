@@ -12,7 +12,7 @@ Before: an empty data folder of its own. The app starts for the first time.
 
 1. Do the first launch: type 'E2E Tester' as the name, click Continue, click Create Project, type 'Paper Boats' as the title, click Create.
 2. Click Story in the Workspaces navigation.
-3. Check: the screen shows "Your Story Board is empty."
+3. Check: the screen shows "Your Beat Board is empty."
 4. Click Add Act. Type 'Act One' in the Act title field and press Enter.
 5. Check: the acts include "Act One".
 6. Click Add, then choose Sequence. Type 'Departure' in the Sequence name field and press Enter.

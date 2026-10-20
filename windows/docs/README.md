@@ -43,7 +43,7 @@ docs/
   archive/                   history; README is the archive index (do not edit the files)
   (spec-digest/ moved to archive/2026-09-spec-digest/ in phase W1)
   development-storage-policy.md
-HTML_Mockups/                design reference mock-ups (some show removed features)
+WindowsHTML/                 every Windows screen captured from the real app (see its README)
 ```
 
 ## 2. By chapter
@@ -87,7 +87,7 @@ Highest first. A lower item never silently overrides a higher one.
 6. **Execution control**: [roadmap/](roadmap), [masterplan.md](implementation/masterplan.md),
    [feature-status.md](implementation/feature-status.md), [launch readiness register](release/launch-readiness-register.md).
 7. **Evidence**: [audits/](audits) and [release/evidence/](release/evidence).
-8. **History**: [archive/](archive), [website/prompts/](website/prompts), `HTML_Mockups/`.
+8. **History**: [archive/](archive), [website/prompts/](website/prompts). The old `HTML_Mockups/` folder was removed on 2026-10-21 (git history keeps it).
 
 [README.md](../README.md) is the release-state declaration (what is usable today), written from the feature status file.
 

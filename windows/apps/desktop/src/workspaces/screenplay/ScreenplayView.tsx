@@ -359,7 +359,7 @@ export function ScreenplayView({ overview, layout, setLayout, onCompare, onImpor
     const lineage = scene?.lineageId;
     const index = outline.findIndex((x) => x.id === s.id);
     return [
-      { label: "Open in Story Board", onSelect: () => navigateTo(scene?.sourceSceneCardId ? { workspace: "story", cardId: scene.sourceSceneCardId } : { workspace: "story", screenplaySceneId: s.id }) },
+      { label: "Open in Beat Board", onSelect: () => navigateTo(scene?.sourceSceneCardId ? { workspace: "story", cardId: scene.sourceSceneCardId } : { workspace: "story", screenplaySceneId: s.id }) },
       { label: "Break down", onSelect: () => navigateTo({ workspace: "breakdown", sceneId: s.id, sceneLineageId: lineage ?? "" }) },
       { label: "Create Shot List", onSelect: () => navigateTo({ workspace: "production", sub: "shots", sceneId: s.id, sceneLineageId: lineage ?? "" }) },
       { label: "Create Storyboard", onSelect: () => navigateTo({ workspace: "production", sub: "storyboards", sceneId: s.id, sceneLineageId: lineage ?? "" }) },

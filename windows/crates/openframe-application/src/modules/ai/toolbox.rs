@@ -512,6 +512,53 @@ fn rendered_len(t: &ToolDef) -> usize {
     t.name.len() + t.description.len() + t.schema.to_string().len() + 8
 }
 
+/// Tools whose items ARE the answer, because the person asked for a list ("List the scenes",
+/// "What tasks are open?", search results). For every other tool (counts, statistics, scene and
+/// dialogue facts, written answers) the items are the evidence behind the text, so they wait
+/// under "See sources" (OpenFrameAI.docx section 4.1).
+const LIST_ANSWERS: &[&str] = &[
+    "list_drafts",
+    "list_characters",
+    "find_scenes_mentioning",
+    "locations_in_act",
+    "unscheduled_scenes",
+    "compare_drafts",
+    "search_project",
+    "open_object",
+    "private_information",
+    "project_notes",
+    "project_tasks",
+    "comments",
+    "templates",
+    "idea_vault",
+    "recent_activity",
+    "recently_deleted",
+    "project_files",
+    "package_history",
+    "story_outline",
+    "story_characters",
+    "story_series",
+    "story_timeline",
+    "screenplay_scenes",
+    "character_cues",
+    "production_catalog",
+    "production_locations",
+    "cast_and_crew",
+    "moodboards",
+    "storyboards",
+    "shot_list",
+    "schedule_day",
+    "call_sheets",
+    "sides_and_reports",
+];
+
+/// A tool's bounded output, with the list flag its kind of answer decides.
+fn finish_output(name: &str, o: ToolOutput) -> ToolOutput {
+    let mut o = clip_output(o);
+    o.items_are_answer = !o.items.is_empty() && LIST_ANSWERS.contains(&name);
+    o
+}
+
 fn clip_output(mut o: ToolOutput) -> ToolOutput {
     o.content = queries::truncate_chars(&o.content, MAX_CONTENT_CHARS);
     o.details.truncate(MAX_DETAILS);
@@ -559,12 +606,12 @@ pub fn run_tool(
         Tool::Legacy(t) => {
             schema::validate(t.name, &(t.schema)(), &args)?;
             ctx.actor.require(Capability::View, "view this project")?;
-            tools::execute(ctx, name, &args).map(|o| ToolStep::Output(clip_output(o)))
+            tools::execute(ctx, name, &args).map(|o| ToolStep::Output(finish_output(name, o)))
         }
         Tool::Read(r) => {
             schema::validate(r.name, &(r.schema)(), &args)?;
             ctx.actor.require(Capability::View, "view this project")?;
-            (r.run)(ctx, &args).map(|o| ToolStep::Output(clip_output(o)))
+            (r.run)(ctx, &args).map(|o| ToolStep::Output(finish_output(name, o)))
         }
         Tool::Retrieve => {
             schema::validate(RETRIEVE_TOOL, &retrieve_schema(), &args)?;
@@ -717,4 +764,40 @@ pub fn requires_confirmation(ops: &[OpCall]) -> bool {
     let reg = crate::registry::catalog();
     ops.iter()
         .any(|o| reg.metadata(&o.op).is_some_and(|m| m.confirmation))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn every_list_answer_tool_exists_and_counts_and_facts_are_not_lists() {
+        for name in LIST_ANSWERS {
+            assert!(lookup(name).is_some(), "{name} is not a tool");
+        }
+        for name in [
+            "count_scenes",
+            "screenplay_pages",
+            "scene_fact",
+            "dialogue_fact",
+            "character_profile",
+            "scenes_with_characters",
+            "story_statistics",
+            "production_statistics",
+            "location_statistics",
+        ] {
+            assert!(
+                !LIST_ANSWERS.contains(&name),
+                "{name} is evidence, not a list"
+            );
+        }
+        let mut o = ToolOutput::exact("2 scenes.");
+        o.items.push(crate::modules::ai::types::ResultItem {
+            label: "Scene 1".into(),
+            detail: None,
+            nav: None,
+        });
+        assert!(finish_output("find_scenes_mentioning", o.clone()).items_are_answer);
+        assert!(!finish_output("count_scenes", o).items_are_answer);
+    }
 }

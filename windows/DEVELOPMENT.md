@@ -139,7 +139,7 @@ Commit the regenerated files with the Rust change. CI fails if `cargo test` leav
 ├─ scripts/                   setup.mjs, license-inventory.mjs, release-validate.mjs
 ├─ .github/workflows/         ci.yml, release.yml
 ├─ deny.toml                  cargo-deny policy (licenses, advisories, sources, bans)
-├─ HTML_Mockups/              approved interface mock-ups (labels and CSS classes are reused)
+├─ WindowsHTML/               every Windows screen captured from the real app, Light and Dark (Chapter 2 source)
 └─ docs/specs/              authoritative product specifications (PRD, FSD, UX, Domain, AI, ...); docs/adr/README.md is the decision register
 ```
 

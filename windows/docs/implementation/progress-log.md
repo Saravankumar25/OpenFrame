@@ -58,6 +58,55 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 
 ## Entries
 
+### 2026-10-21, WindowsHTML: every Windows screen as HTML; Home list refresh fix
+- **Areas and items worked:** owner work outside the plan (Chapter 2 source material): remove `HTML_Mockups/`, build
+  `WindowsHTML/` from the running app; then, at the owner's word, the stale Application Home list it uncovered.
+- **Done:** branch `docs/windows-html`, merged locally to `main`. A capture tour (`tests/e2e/capture/`, spec
+  `zz-capture`) seeds Night Bus and an empty project and walks ten sections written in parallel by seven subagents.
+  Each state is saved twice (Light, Dark): screenshot plus the web view's own DOM, with the built app's style sheets,
+  form values, scroll offsets (no script) and original image files. `scripts/windows-html/parallel.mjs` runs eight
+  parts side by side, merges, generates and checks. Two capture defects fixed on the way (images under a dialog dimmed
+  twice; Chromium drops a var() shorthand when re-serializing a rule). Runner takes `E2E_PORT_BASE`. App fix: Pin,
+  Unpin, Archive, Restore, Duplicate, Remove from List and Delete now emit the Home list change event
+  (`project.rs`), so Application Home updates at once; the home spec lost its leave-and-return workaround.
+- **Evidence:** 809 screens, 1,618 pages, 1,618 pass the page check (largest 0.460 percent, limit 0.5 percent);
+  `WindowsHTML/README.md` has the table. Rust `platform` tests `pin_archive_duplicate_and_remove_emit_a_project_list_change_event`
+  and `rename_closed_project_emits_a_project_list_change_event` pass. E2E `10-home`: see Checks run.
+- **Docs updated:** CONTRIBUTING, DEVELOPMENT, docs README, UX laws checklist, UX specification header (mock-up rule
+  superseded), Chapter 2 plan, writing check groups, reconciliation log, WindowsHTML prompt marked done, Mac prompt
+  written (`next-session-mac-html-prompt.md`), this log, handoff.
+- **Decisions made or needed:** none.
+- **Blocked / risks:** 61 states not capturable from the web view (Windows dialogs, devices, forced failures), listed.
+- **Next:** MacHTML on the Mac; `OpenFrame-4.exe` when the owner asks.
+- **Checks run:** writing check OK; the capture page check; the two Rust tests; E2E `10-home`. Not run: the full E2E
+  suite and the full Rust suites after the `project.rs` change.
+
+### 2026-10-20 to 2026-10-21, Beat Board, Story page, owner change list, AI See sources
+- **Areas and items worked:** owner work outside the plan: rename Story Board to Beat Board, a Story writing page,
+  `new changes.docx` items 1 to 5, and the AI brief (plain answers, metadata behind See sources, better routing).
+- **Done:** branch `story/beat-board-notepad-fixes`, merged locally to `main`. Beat Board in every visible text (AI
+  routing accepts both names). Story tab: one plain writing page (migration 17, `story_page`), autosave and close
+  flush, TXT, PDF and Word export. Daily View exports its own document, `Shoot Day N - Daily View.pdf`. Beat Board
+  outline scrolls; Compare draft pickers sit on one row; Offline AI technical details span the width; Find scrolls the
+  script to the match, Replace moves past the replacement, the count follows edits. AI: answers are plain text; details,
+  confidence, sources, steps and supporting rows sit behind See sources; a list stays under the answer only when it is
+  the answer; model text is cleaned of markdown; new direct routes (product terms, notes reads, other people's private
+  notes, shots, moodboards, set dressing, draft comments, pinned notes, characters for a scene, which locations, what is
+  on the Beat Board); the locations answer names the places.
+- **Evidence:** web 640 tests, `openframe-application` lib 990, AI integration 115, production 153, writing 232, platform
+  145, clippy and fmt clean, governance 90 of 90. E2E full run then reruns of every failure on the final code: all spec
+  files pass (42, 44, 73, 80, 96, 97 and the visual group rerun after fixes; six visual baseline screens regenerated,
+  their only change the Beat Board text). Real-model evaluation, English, 430 cases (`.build-cache/ai-eval-final3`):
+  tool and arguments 98.1 percent (bar 90, was 94.4), end state 91.2 percent (bar 85, was 87.3), safety 46 of 46 (was
+  43), writing within length 100.0 percent, answer facts 99.0 percent, retrieval recall at 5 99.4 percent, median 136 ms.
+- **Docs updated:** feature status (STORY-PAGE-001, SCRIPT-004), physical database and release migration (migration
+  17), layout and scroll contract, UX change log, feature preservation matrix, AI answer paths, AI tool coverage, doc 33,
+  E2E scenarios, this log, handoff, `next-session-windows-html-prompt.md` (the owner's next task).
+- **Decisions made or needed:** none new.
+- **Blocked / risks:** writing grounding 67.1 percent; the installed `OpenFrame-3.exe` predates this work.
+- **Next:** build `OpenFrame-4.exe` when the owner asks; WindowsHTML in a new session (prompt file).
+- **Checks run:** listed under Evidence. `npm run verify` as one command: not run (its parts were run).
+
 ### 2026-10-20 (noon), licence requests refused plainly; spec 04 close helper compiled
 - **Done:** a request to change or get around the licence, payment, activation or team password gets a fixed refusal
   with no tool and no model call (`commands.rs` `not_the_assistants`; story uses such as a licence plate or a driving

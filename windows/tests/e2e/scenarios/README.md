@@ -123,6 +123,7 @@ Meera waits for the late train with a red umbrella.
 | `26-forced-kill-keeps-work.md` | `26-forced-kill-keeps-work.test.mjs` | 3 | Killing the process tree |
 | `30-story.md` | `30-story.test.mjs` | 7 | None |
 | `31-story-board-flow.md` | `31-story-board-flow.test.mjs` | 9 | None |
+| `32-story-page.md` | `32-story-page.test.mjs` | 5 | System Save dialogs skipped |
 | `40-screenplay.md` | `40-screenplay.test.mjs` | 4 | None |
 | `41-screenplay-engine.md` | `41-screenplay-engine.test.mjs` | 8 | System Save and Open dialogs skipped |
 | `42-writing-comfort.md` | `42-writing-comfort.test.mjs` | 9 | Windows spelling dictionary |
@@ -151,4 +152,4 @@ Meera waits for the late train with a red umbrella.
 | `97-performance.md` | `97-performance.test.mjs` | 4 | Windows performance counters |
 | `98-layout-geometry.md` | `98-layout-geometry.test.mjs` | 2 | Window sizes set through WebDriver; geometry read from the WebView2 page |
 
-Total: 197 scenarios in 41 files.
+Total: 202 scenarios in 42 files.

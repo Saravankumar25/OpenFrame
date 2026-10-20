@@ -100,7 +100,7 @@ describe("Offline AI assistant with the bundled model", () => {
       assert.ok(r.sources.some((s) => /BUS STOP/i.test(s)), `the bus stop scene is a source: ${r.sources.join(" | ")}`);
       // The full check of the model files ran before the first engine start; the chat engine runs now.
       assert.ok(chatEngines().length >= 1, "the chat engine runs after a question that needs the model");
-      // A source chip opens the scene it names; the chips sit under the answer's "Details".
+      // A source chip opens the scene it names; the chips sit under the answer's "See sources".
       await openWorkspace(browser, "Home");
       const details = await browser.$('(//aside[@aria-label="AI Assistant"]//details[contains(@class,"ai-details")]/summary)[last()]');
       await details.waitForClickable({ timeout: 10_000 });
@@ -172,7 +172,7 @@ describe("Offline AI assistant with the bundled model", () => {
 
   test("the docked panel remembers whether it is open when the window loads again", async () => {
     await step("panel-state", async () => {
-      // Open or closed is a layout choice kept in the window's local storage, like the Story Board
+      // Open or closed is a layout choice kept in the window's local storage, like the Beat Board
       // zoom. Each test session starts with fresh window storage, so a reload checks it here.
       const aside = () => browser.$('//aside[@aria-label="AI Assistant"]');
       const reload = async () => {

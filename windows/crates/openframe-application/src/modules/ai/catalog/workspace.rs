@@ -209,7 +209,7 @@ pub const SPECS: &[ProposalSpec] = &[
     ),
     spec!(
         "propose_comment",
-        "Prepare a comment on a screenplay scene, Scene Card, character, location or catalog item.",
+        "Prepare a comment on a screenplay scene, a draft, a Scene Card, character, location or catalog item.",
         ["comment.create"],
         [],
         Comment,
@@ -1148,6 +1148,20 @@ fn comment_target(
     if picked.len() > 1 {
         return Err(queries::ambiguous(
             "Which one item should the comment be attached to?",
+        ));
+    }
+    // A draft with no scene or card named is the target: a comment on the draft itself.
+    if picked.is_empty()
+        && let Some(reference) = a.s("draft")
+    {
+        let scope = ctx.scope.cloned().unwrap_or_else(neutral_scope);
+        let draft = rv::draft(ctx.conn, &scope, Some(&reference))?;
+        d.pin("draft", json!(draft.label()));
+        picked.push((
+            "screenplay_draft".to_string(),
+            draft.id.clone(),
+            draft.label(),
+            None,
         ));
     }
     Ok(picked.pop())

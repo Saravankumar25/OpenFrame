@@ -181,7 +181,7 @@ pub const TOOLS: &[ToolSpec] = &[
     ToolSpec {
         name: "locations_in_act",
         class: OperationClass::Compute,
-        description: "Locations used by the Scene Cards of a Story Board act.",
+        description: "Locations used by the Scene Cards of a Beat Board act.",
         schema: act_args,
     },
     ToolSpec {
@@ -205,7 +205,7 @@ pub const TOOLS: &[ToolSpec] = &[
     ToolSpec {
         name: "story_statistics",
         class: OperationClass::Compute,
-        description: "Story Board counts: acts, sequences, beats, Scene Cards, parked cards, characters.",
+        description: "Beat Board counts: acts, sequences, beats, Scene Cards, parked cards, characters.",
         schema: no_args,
     },
     ToolSpec {
@@ -470,6 +470,9 @@ pub struct ToolOutput {
     pub structured: Option<Value>,
     pub targets: Vec<ObjRef>,
     pub generation: Option<Generation>,
+    /// True when `items` ARE the answer (the person asked for a list). Otherwise they are the
+    /// evidence behind the text and the screen keeps them under "See sources".
+    pub items_are_answer: bool,
 }
 
 impl ToolOutput {
@@ -485,6 +488,7 @@ impl ToolOutput {
             structured: None,
             targets: Vec::new(),
             generation: None,
+            items_are_answer: false,
         }
     }
     pub fn of_kind(kind: AiResultKind, content: impl Into<String>) -> Self {
@@ -746,7 +750,7 @@ fn project_overview(ctx: &ToolCtx<'_>) -> AppResult<ToolOutput> {
     )?;
     o = o
         .detail(format!(
-            "Story Board: {}.",
+            "Beat Board: {}.",
             plural(cards as usize, "Scene Card", "Scene Cards")
         ))
         .detail(format!(
@@ -1616,11 +1620,21 @@ fn location_statistics(ctx: &ToolCtx<'_>, draft: Option<&str>) -> AppResult<Tool
         "SELECT count(*) FROM location WHERE deleted_at IS NULL AND archived=0",
         [],
     )?;
+    let mut sorted: Vec<(&String, &usize)> = locs.iter().collect();
+    sorted.sort_by(|a, b| b.1.cmp(a.1).then(a.0.cmp(b.0)));
+    // The answer names the places, most used first; the per-location scene counts are its sources.
+    let names: Vec<String> = sorted.iter().take(8).map(|(l, _)| title_case(l)).collect();
+    let named = match locs.len() {
+        0 => String::new(),
+        n if n <= 8 => format!(": {}", join_and(&names)),
+        _ => format!(". The most used are {}", join_and(&names[..5])),
+    };
     let mut o = ToolOutput::exact(format!(
-        "There are {} in {}, based on parsed screenplay scene headings.",
-        plural(locs.len(), "distinct location", "distinct locations"),
-        d.label()
+        "{} uses {}{named}.",
+        d.label(),
+        plural(locs.len(), "location", "locations"),
     ))
+    .detail("Counted from the scene headings.")
     .detail(format!(
         "The Production Catalog currently contains {}.",
         plural(records as usize, "Location record", "Location records")
@@ -1633,8 +1647,6 @@ fn location_statistics(ctx: &ToolCtx<'_>, draft: Option<&str>) -> AppResult<Tool
             String::new()
         }
     ));
-    let mut sorted: Vec<(&String, &usize)> = locs.iter().collect();
-    sorted.sort_by(|a, b| b.1.cmp(a.1).then(a.0.cmp(b.0)));
     o.items = sorted
         .iter()
         .map(|(l, n)| ResultItem {
@@ -1656,7 +1668,7 @@ fn find_act(c: &Connection, act: &str) -> AppResult<(String, String, usize)> {
     if acts.is_empty() {
         return Err(AppError::ai(
             "not_found",
-            "The Story Board doesn't have any acts yet.",
+            "The Beat Board doesn't have any acts yet.",
         ));
     }
     let a = act.trim().to_lowercase();
@@ -1775,7 +1787,7 @@ fn locations_in_act(ctx: &ToolCtx<'_>, act: &str) -> AppResult<ToolOutput> {
             nav: None,
         })
         .collect();
-    Ok(o.prov("Story Board", act_title).prov(
+    Ok(o.prov("Beat Board", act_title).prov(
         "Basis",
         "Scene Card headings (or the linked screenplay scene heading)",
     ))
@@ -1995,7 +2007,7 @@ fn story_statistics(ctx: &ToolCtx<'_>) -> AppResult<ToolOutput> {
     )?;
     let chars = queries::character_records(c)?.len();
     let o = ToolOutput::exact(format!(
-        "The Story Board has {}, {}, {} and {}.",
+        "The Beat Board has {}, {}, {} and {}.",
         plural(acts as usize, "act", "acts"),
         plural(seqs as usize, "sequence", "sequences"),
         plural(beats as usize, "beat", "beats"),
@@ -2009,7 +2021,7 @@ fn story_statistics(ctx: &ToolCtx<'_>) -> AppResult<ToolOutput> {
         "The Character directory contains {}.",
         plural(chars, "Character record", "Character records")
     ));
-    Ok(o.prov("Scope", "Story Board"))
+    Ok(o.prov("Scope", "Beat Board"))
 }
 
 fn production_statistics(ctx: &ToolCtx<'_>) -> AppResult<ToolOutput> {
@@ -2361,7 +2373,7 @@ fn summarize_scope(ctx: &ToolCtx<'_>) -> AppResult<ToolOutput> {
         let outline = super::scope::story_outline(ctx.conn)?;
         if !outline.trim().is_empty() {
             items.push(ContextItem {
-                source: "Story Board outline".into(),
+                source: "Beat Board outline".into(),
                 text: queries::truncate_chars(&outline, super::scope::CONTEXT_BUDGET),
             });
         }
@@ -2371,7 +2383,7 @@ fn summarize_scope(ctx: &ToolCtx<'_>) -> AppResult<ToolOutput> {
         AiScopeKind::WholeProject | AiScopeKind::CurrentScreenplay | AiScopeKind::SpecificDraft
     );
     if items.is_empty() && whole {
-        // No Story Board yet (an imported screenplay): the opening of every scene, in order.
+        // No Beat Board yet (an imported screenplay): the opening of every scene, in order.
         let draft = match &ctx.scope.draft {
             Some(d) => Some(d.clone()),
             None => queries::current_draft(ctx.conn)?,

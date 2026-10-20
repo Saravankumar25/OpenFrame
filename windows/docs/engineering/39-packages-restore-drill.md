@@ -46,7 +46,7 @@ message says how many notes are now yours.
 
 ## 3. Manual drill (two computers or two Windows accounts)
 
-1. Account A: create a project, write two scenes (one in Telugu), add a Story Board card, a comment, a private note,
+1. Account A: create a project, write two scenes (one in Telugu), add a Beat Board card, a comment, a private note,
    a stored image and a linked PDF. Create a portable backup on a USB drive.
 2. Account B (nothing of A's app data): open OpenFrame, **Restore Backup or Package…**, pick the backup. Expect
    **Restore** (no collision), then the project opens with the same text, image, PDF (now stored in the project)

@@ -1,4 +1,4 @@
-// Pure Story Board helpers (no React): locating items, computing drop targets,
+// Pure Beat Board helpers (no React): locating items, computing drop targets,
 // keyboard reordering, filtering and the heading rule used by Build Screenplay.
 // The board data always comes from Rust; these helpers only interpret it.
 

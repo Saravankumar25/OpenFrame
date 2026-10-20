@@ -1,4 +1,4 @@
-// Story Board decision dialogs (UX §3.6; mocks 061, 062): deleting containers
+// Beat Board decision dialogs (UX §3.6; mocks 061, 062): deleting containers
 // recommends moving creative material out; deleting a linked card explains
 // that the screenplay scene remains. Plus Move… and the act note editor.
 
@@ -212,7 +212,7 @@ export function DeleteLinkedDialog({ board, refs }: { board: StoryBoardState; re
     >
       <p style={{ marginTop: 0 }}>
         {single ? "Its linked screenplay scene" : "Linked screenplay scenes"}
-        {scene ? ` (Scene ${scene.number}: ${scene.heading})` : ""} will remain. Screenplay scenes are never deleted from the Story Board.
+        {scene ? ` (Scene ${scene.number}: ${scene.heading})` : ""} will remain. Screenplay scenes are never deleted from the Beat Board.
       </p>
       <p className="muted">
         {single ? "The card moves" : "They move"} to Recently Deleted. You can restore {single ? "it" : "them"} or use Undo.

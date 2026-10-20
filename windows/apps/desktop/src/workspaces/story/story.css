@@ -3,6 +3,13 @@
    zoomable, keyboard-accessible board. Zoom only changes presentation. */
 
 .story-page { position: relative; }
+
+/* Story page: one plain writing area, centred at a comfortable reading width. Colours are tokens only. */
+.story-write-col { flex: 1; min-height: 0; width: 100%; max-width: 80ch; margin: 0 auto; display: flex; flex-direction: column; gap: 6px; }
+.story-write-area { flex: 1; min-height: 0; width: 100%; resize: none; box-sizing: border-box; padding: 20px 24px; border: 1px solid var(--line2); border-radius: 10px; background: var(--panel); color: var(--ink); font: inherit; font-size: 16px; line-height: 1.75; overflow: auto; }
+.story-write-area::placeholder { color: var(--muted); }
+.story-write-area:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.story-write-foot { display: flex; justify-content: space-between; padding: 0 4px; }
 .story-canvas { flex: 1; min-height: 0; overflow: auto; position: relative; padding-bottom: 12px; }
 .story-canvas .board { height: auto; min-height: 100%; overflow: visible; align-items: flex-start; padding: 2px 2px 16px; }
 
@@ -86,7 +93,7 @@
 .rel-suggest .chip { border: 0; cursor: pointer; }
 .rel-suggest .chip:hover { background: var(--accent-soft); color: var(--accent-d); }
 
-/* Story Board layout (owner request 2026-10-20, openframe-changes.docx item 2): each act is a full-height
+/* Beat Board layout (owner request 2026-10-20, openframe-changes.docx item 2): each act is a full-height
    column that scrolls on its own, the board scrolls only sideways, and a scene card shows its whole
    text instead of cutting it after two lines. The overview zoom (70 percent and below) still shortens
    cards; the full text is always in the card drawer. */
@@ -102,3 +109,8 @@
 .story-canvas .sc-rich .sc-text, .story-canvas .sc-rich .sc-long { display: block; -webkit-line-clamp: unset; overflow: visible; }
 .story-canvas.zoom-low .sc { display: -webkit-box; -webkit-line-clamp: 3; overflow: hidden; }
 .story-canvas .story-add-act { align-self: flex-start; }
+
+/* Outline view (owner change list 2026-10-20, item 2): the Beat Board rule above holds the page still and lets each
+   column scroll, which left the outline list with no scroll owner at all. The outline area scrolls down by itself. */
+.story-canvas.story-canvas-outline { overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; padding: 4px 2px 12px; }
+.story-canvas.story-canvas-outline:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }

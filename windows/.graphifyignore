@@ -9,7 +9,7 @@ tests/e2e/artifacts/
 .ruff_cache/
 .claude/
 .impeccable/
-HTML_Mockups/
+WindowsHTML/
 *.lock
 package-lock.json
 *.docx

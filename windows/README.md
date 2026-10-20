@@ -1,7 +1,7 @@
 # OpenFrame Studio
 
 OpenFrame Studio is a **local-first desktop studio for writers, screenwriters and production teams**. It takes a film from first idea to shoot day in one
-project: Idea Vault, Story Board (acts, sequences, beats and scene cards), screenplay, breakdown and production
+project: Idea Vault, Beat Board (acts, sequences, beats and scene cards), screenplay, breakdown and production
 catalog, visual planning, shooting schedule and call sheets. It is built with Tauri v2, React and TypeScript for the
 interface, and Rust with SQLite for everything that owns data. It targets Windows 11 and Apple silicon Macs from one
 codebase and will be sold with a 7-day free trial.
@@ -39,7 +39,7 @@ machine, in a debug build. It does not mean installed and tried on a clean compu
 |---|---|
 | Projects: create, open, close, duplicate, archive, recents; autosave; crash recovery; migrations with a safety backup first; undo and redo; Recently Deleted; Activity; Files; search | Built and Reachable; undo, Recently Deleted and the 30-day purge Verified. Delete and "locate a moved project" have no tests yet |
 | Idea Vault (project and global) | Reachable, with the research flags and the purge Verified |
-| Story Board: acts, sequences, beats, scene cards, characters, timeline, episodes, Build Screenplay | Verified for boards, cards, drawers and Build Screenplay; characters and episodes Reachable |
+| Beat Board: acts, sequences, beats, scene cards, characters, timeline, episodes, Build Screenplay | Verified for boards, cards, drawers and Build Screenplay; characters and episodes Reachable |
 | Screenplay editor: elements, drafts, compare, review, lock and revisions, production numbers, pages, page setup, custom elements, suggestions, shortcuts, spell check | Mostly Verified |
 | Import and export: Final Draft, Fountain, Word, PDF, text; backup and project packages; exchange and review packages | Final Draft import, packages and backup Verified; other formats Reachable. The manual restore drill and a Final Draft reopen check are owner tasks |
 | Breakdown, production catalog, locations, cast and crew | Verified |

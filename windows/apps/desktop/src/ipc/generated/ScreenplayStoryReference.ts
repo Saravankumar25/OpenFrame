@@ -3,10 +3,10 @@ import type { ScreenplayCardRef } from "./ScreenplayCardRef";
 
 export type ScreenplayStoryReference = { 
 /**
- * The Story Board card this scene was built from / linked to, if any.
+ * The Beat Board card this scene was built from / linked to, if any.
  */
 linked: ScreenplayCardRef | null, 
 /**
- * Active Story Board cards in board order (reference only).
+ * Active Beat Board cards in board order (reference only).
  */
 cards: Array<ScreenplayCardRef>, };

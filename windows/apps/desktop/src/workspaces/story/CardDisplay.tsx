@@ -1,4 +1,4 @@
-// Story Board, Card Display Settings (Screenplay and Production Depth Specification sections
+// Beat Board, Card Display Settings (Screenplay and Production Depth Specification sections
 // 21.2, 21.3 and 52). What a minimized Scene Card shows is the user's own view setting, kept by
 // Rust in view state: choosing a preset or ticking a box never changes a card, a scene or the
 // screenplay, and never enters undo.

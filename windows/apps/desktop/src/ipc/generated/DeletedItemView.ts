@@ -9,7 +9,7 @@ export type DeletedItemView = { id: string, objectType: string, objectId: string
  */
 typeLabel: string, 
 /**
- * e.g. "Story Board · Act “Act One”", "Files".
+ * e.g. "Beat Board · Act “Act One”", "Files".
  */
 wasIn: string, 
 /**

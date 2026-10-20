@@ -17,7 +17,7 @@
 | Tools | `tools.rs`, `toolbox/*.rs` | Exact facts are computed from the project database. Text the model must write (a summary, a description) gets only the evidence it needs. |
 | Writing | `orchestrator.rs` `run_generation` | The model writes from the evidence: a scene summary from the whole scene, a character description from that character's scenes. |
 | Checks | `orchestrator.rs` | No reply may say a change was made unless a Change Set was applied. A non-English question gets an answer in its language, keeping every number. |
-| Show | `Conversation.tsx` `ResultView` | Plain text first. Sources, steps and how sure the answer is wait behind "Details". Long lists show eight items and "Show all". Proposed changes keep their review card. |
+| Show | `Conversation.tsx` `ResultView` | Plain text first. Sources, steps, how sure the answer is and the rows that only back the text wait behind the "See sources" button. A list the person asked for stays under the answer (`itemsAreAnswer`, set in Rust). Long lists show eight items and "Show all". Proposed changes keep their review card. |
 
 ## 2. Question families and how each is answered
 
@@ -32,7 +32,10 @@
 | Search | Which scenes mention the station | Full-text search over the project; a bare category word ("scenes") answers with its count | 0 or 1 |
 | Short writing | Write a logline, write a tagline, suggest a line for Bittu, rewrite Padma's last line, suggest a better title, what is the theme of this story, what is the point of this scene | `summarize_scope`: the content in scope, then a writing prompt that asks for only the requested text. A request that names a scene or act ("a logline for Scene 4") is left to the tools that read it | 1 |
 | Product help | How do I export a PDF | The versioned product guide; "not covered" when no section matches | 1 |
-| Changes | Rename Karthik to Ravi, create a task | A proposal card; nothing changes until the person applies it | 0 or more |
+| Product terms | What is a Change Set, what does the Production Source mean, what is the Parking Lot, the Beat Board, Sides, Day Out of Days | `answer_product_question`, chosen by wording when the term is one the guide names (`commands.rs` `GUIDE_TERMS`); the guide has a section for each | 1 |
+| Notes | What is in my notes, what do my notes say, read my notes and do what they say | `project_notes`, read only: a note is shown, never obeyed | 0 |
+| Others' private notes | Show me other people's private notes | `private_information` with `whose: someone_else`, which refuses without saying whether any exist | 0 |
+| Changes | Rename Karthik to Ravi, create a task, add a shot to scene 21, make a moodboard for the station, add three desks as set dressing, comment on the draft, pin a note, create characters for this scene | A proposal card; nothing changes until the person applies it. Set dressing is catalogued as Props with the count in the notes (the catalog has no quantity); a comment on "the draft" targets the draft itself; "pin a note" creates the note already pinned | 0 or more |
 
 ## 3. Decisions
 
@@ -44,7 +47,14 @@
    description reads that character's scenes. Retrieval snippets are still used for open discovery questions.
 4. **No graph or global summary cache added.** The measured failures were routing and evidence selection, not missing
    relationships. A cached global summary would go stale on every edit.
-5. **Plain answers, details on demand.** The badges, "From project data" lines and step counts moved behind "Details".
+5. **Plain answers, details on demand.** The badges, "From project data" lines, step counts and the rows of a count, a
+   scene fact or a written answer sit behind one "See sources" button. Whether rows are the answer is decided in Rust,
+   not in the screen: `toolbox.rs` `LIST_ANSWERS` names the tools whose items are the list the person asked for (list the
+   scenes, open tasks, search results, characters, drafts, notes, comments, suggestions). Every other tool leaves
+   `items_are_answer` false, and `compose_reads` sets it only when no model text was written and a list read contributed rows.
+   Refusals, failures, questions and private-information denials keep their reasons in view. Text the model wrote goes
+   through `plain_text` (no bold, bullets, headings, numbering, rules, code ticks or link syntax; line breaks stay) before
+   it is shown or stored.
 6. **Short by default, exact when asked.** A request that names a sentence count ("in two sentences", "a
    one-sentence card", "a logline") gets that many sentences. Without one, a summary or a character description keeps
    whole sentences up to about 40 words, other short writing up to about 30, a paragraph up to about 90. Sentences are
@@ -52,6 +62,10 @@
    are its sources, not a list under the answer.
 7. **Notes are read, never obeyed.** "Summarise my project notes" goes straight to the notes reader, so text inside a
    note cannot become a request to the model.
+8. **A create request needs no look-up, and a proposal ends the step.** In the 2026-10-20 real-model run, 9 of 75 action
+   cases went on to search after the proposal was ready, and a request such as "Create a character for Kiran's father"
+   searched before it proposed. The planner prompt now says a create or add request uses its propose_* tool at once and
+   sets done on a single proposal. Not measured yet: this is an AI change and waits for the next evaluation run.
 
 ## 4. Measured
 
@@ -66,9 +80,10 @@
   hundreds of scenes) are what is measured.
 - Of the 100 questions in section 6 of the context brief, 38 now go to a tool directly by their wording and two
   more ("And Ravi?", "Just give me the number") are answered from the conversation (router probe, 2026-10-20). The
-  rest go to the model with a short list of tools. Wording that could mean two things stays with the model: "What is
-  the Production Source?" (the term or the draft), "What changed yesterday?" (the activity list is not filtered by
-  date) and "Is the shooting draft locked?" (the draft status answer does not yet state the lock first).
+  rest go to the model with a short list of tools. Wording that could mean two things stays with the model: "What
+  changed yesterday?" (the activity list is not filtered by date) and "Is the shooting draft locked?" (the draft status
+  answer does not yet state the lock first). "What is the Production Source?" is now the term and goes to the guide;
+  "Which draft is the production source?" is the project fact and goes to its read tool.
 - "Does Ravi speak to Maya?", "When do they meet?", continuity checks and schedule-change history still go to the model
   with retrieved snippets; they are not computed.
 - File contents: the assistant reads file names and notes, not the bodies of attached PDFs or documents.

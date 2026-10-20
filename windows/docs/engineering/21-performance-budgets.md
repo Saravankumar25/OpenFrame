@@ -48,7 +48,7 @@ script about twice the length of a 120-page feature.
 | P6 | **RAM without AI** (app process + WebView2 processes), Feature-120 open, after 10 min of use | **< 400 MB** private working set total | Task Manager "Memory (active private working set)", summed |
 | P7 | Command latency (ordinary mutation: move card, edit field) | < 50 ms p95 op time; UI reflects the change within 100 ms | `of_invoke` timing (`slow operation` logged at > 250 ms) |
 | P8 | Undo/redo step | < 100 ms p95 | op timing |
-| P9 | Scroll / drag (Story Board 150 cards, stripboard 110 strips) | 60 fps, no frame > 50 ms | Performance trace |
+| P9 | Scroll / drag (Beat Board 150 cards, stripboard 110 strips) | 60 fps, no frame > 50 ms | Performance trace |
 | P10 | Installer size (NSIS, without AI) | < 25 MB | CI artifact size |
 | P11 | Disk overhead | DB ≤ 2× raw text size + indexes; `backups/` bounded by the retention policy (17 §6) | Fixture inspection |
 | P12 | Explicit Save (checkpoint + backup) Feature-120 | < 1 s | op timing |
@@ -67,7 +67,7 @@ evaluation gates in the Local AI Runtime spec §16.
 - Reads run on a separate read-only connection (WAL) and never wait for the writer. Every IPC call runs on a blocking
   worker, never on the UI thread.
 - Screenplay typing is persisted asynchronously with coalescing (ADR-0010). Rendering never waits for the round trip.
-- The Idea Vault grid and list use TanStack Virtual. The other long lists (Story Board with 250 cards, stripboard,
+- The Idea Vault grid and list use TanStack Virtual. The other long lists (Beat Board with 250 cards, stripboard,
   shots, scene navigator) render every row, but build each context menu lazily, only when it opens (`MenuItems` in
   the design system accepts items or a function). Scene-navigator rows are memoised.
 - Thumbnails live in `cache/` and are generated in background tasks. (Not implemented yet. The webview cannot read `cache/`; when thumbnails ship, serve them from a dedicated scoped folder such as `cache/thumbnails/` and extend lint rule C5 deliberately.)
@@ -158,7 +158,7 @@ Measured on `npm run build`, installed per user with the NSIS installer.
 | P5 | Idle, stress project open on Project Home ³ | 0.57 % of one core | < 0.5 % ⚠️ |
 | P5 | Idle, no project, 60 s measured after a 60 s settle | 0.99 % (WebView2 browser process 0.78 %) | < 0.5 % ⚠️ |
 | P6 | Private working set, app + WebView2 tree, stress project open, every workspace visited ⁴ | 313 MB | < 400 MB ✅ |
-| P9 | Workspace opened → rendered: Story Board (250 cards) | 0.45–0.52 s | none |
+| P9 | Workspace opened → rendered: Beat Board (250 cards) | 0.45–0.52 s | none |
 | P9 | Workspace opened → rendered: Idea Vault | 0.43–0.47 s | none |
 | P9 | Workspace opened → rendered: Screenplay (6,319 blocks) | 0.53–0.75 s | none |
 | P9 | Workspace opened → rendered: stripboard | 0.53–0.69 s | none |

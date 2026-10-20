@@ -37,7 +37,7 @@ impl AiScopeKind {
             AiScopeKind::CurrentScene => "Current Scene",
             AiScopeKind::CurrentScreenplay => "Current Screenplay",
             AiScopeKind::SpecificDraft => "Specific Draft",
-            AiScopeKind::StoryBoard => "Story Board",
+            AiScopeKind::StoryBoard => "Beat Board",
             AiScopeKind::IdeaVaultSelection => "Selected Idea Vault Items",
             AiScopeKind::Production => "Production",
             AiScopeKind::ShootingDay => "Shooting Day",
@@ -220,11 +220,11 @@ pub fn resolve(c: &Connection, actor: &Actor, args: &AiScopeArgs) -> AppResult<R
             out.draft = Some(draft);
         }
         AiScopeKind::StoryBoard => {
-            out.label = "Using: Story Board".into();
+            out.label = "Using: Beat Board".into();
             push(
                 &mut ctx,
                 &mut used,
-                "Story Board outline".into(),
+                "Beat Board outline".into(),
                 story_outline(c)?,
             );
         }
@@ -311,7 +311,7 @@ pub fn resolve(c: &Connection, actor: &Actor, args: &AiScopeArgs) -> AppResult<R
     Ok(out)
 }
 
-/// Titles-only outline of the Story Board (acts → sequences → cards), budgeted.
+/// Titles-only outline of the Beat Board (acts → sequences → cards), budgeted.
 pub fn story_outline(c: &Connection) -> AppResult<String> {
     let mut lines = Vec::new();
     let mut acts =
