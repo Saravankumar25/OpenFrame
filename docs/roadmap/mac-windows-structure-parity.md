@@ -70,7 +70,7 @@ the merge), **Same** (the Mac already matched), **Exception** (a deliberate plat
 
 | Item | Status on the Mac |
 |---|---|
-| Daily View export named "Shoot Day N - Daily view", with what the page shows | Done in the core (`schedule.export_daily`, PDF, CSV, XLSX) and on the Mac; Windows still opens the schedule export (Windows gap) |
+| Daily View export named "Shoot Day N - Daily view", with what the page shows | Done in the core (`schedule.export_daily`, PDF, CSV, XLSX) and on both apps (owner decision 2026-10-20: the new document only; the schedule export's day-first variant is removed) |
 | Area not scrollable (Story outline) | Mac outline scrolls; Same |
 | Compare top glitch | Mac compare is its own sheet; Same |
 | Offline AI technical details overlapping | Mac shows it as a list in the AI settings; Same |
@@ -92,7 +92,7 @@ the merge), **Same** (the Mac already matched), **Exception** (a deliberate plat
 | Exact counts from project data ("How many scenes are there?") | Core (Windows AI repair merged) |
 | Project questions never answered with product help | Core |
 | Plain answers, no Exact or Inferred badges, no step lists | Done on the Mac |
-| Sources behind a closed "See sources" | Done on the Mac (Windows names it "Details" and also puts steps and confidence there: Windows gap, owner to choose one name) |
+| Sources behind a closed "See sources" | Done on both apps (owner decision 2026-10-20: "See sources", sources only; steps and how sure stay out of the conversation; Windows keeps the confidence as `data-confidence` for its tests) |
 | Long lists: preview and Show all, never "and N more" | Done (8 and Show all) |
 | Never claim a change was applied without Apply | Core (Change Sets) and Same on the Mac (Proposed Changes card) |
 | Follow-up references | Core |

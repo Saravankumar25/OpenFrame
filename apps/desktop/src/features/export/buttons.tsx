@@ -72,6 +72,33 @@ export function StoryExportButton({ episodeId, selectedIds, ...t }: Trigger & { 
   );
 }
 
+// ------------------------------------------------------------------ Daily View
+
+/** The day shown on the Daily View, as a document of its own named after the day (owner request
+ * 2026-10-20): "Shoot Day 4 - Daily view", with what the page shows. */
+export function DailyViewExportButton({ dayId, dayLabel, ...t }: Trigger & { dayId: string; dayLabel: string }) {
+  const d = useOpen();
+  const name = `${dayLabel} - Daily view`;
+  return (
+    <>
+      <TriggerButton {...t} onClick={d.show} />
+      <ExportDialog
+        open={d.open}
+        onClose={d.hide}
+        title="Export Daily View"
+        sub="Everything this page shows for the day: scenes in order, location, cast and call times, notes, breakdown items."
+        source={<>Source: <b>{dayLabel}</b></>}
+        documentName={name}
+        plainName
+        op="schedule.export_daily"
+        baseArgs={{ dayId }}
+        formats={[TABLE_FORMATS[0], { value: "xlsx", label: "Spreadsheet (XLSX)" }, { value: "csv", label: "CSV" }]}
+        note="Private notes excluded. Export creates a snapshot and does not change the schedule."
+      />
+    </>
+  );
+}
+
 // ------------------------------------------------------------------ Story page
 
 /** The free Story page (owner request 2026-10-20): the text as written, as TXT, PDF or DOCX. */
@@ -232,9 +259,7 @@ export function ShotListExportButton({ scene, scenes, ...t }: Trigger & { scene?
 
 // ------------------------------------------------------------------ Schedule (mock 139)
 
-/** `dayFirst`: opened from the Daily View (owner change list item 12), so the shown day is the first
- * choice and unscheduled scenes are left out unless the person ticks them. */
-export function ScheduleExportButton({ days, currentDayId, sourceLabel, dayFirst = false, ...t }: Trigger & { days: Item[]; currentDayId?: string | null; sourceLabel?: string | null; dayFirst?: boolean }) {
+export function ScheduleExportButton({ days, currentDayId, sourceLabel, ...t }: Trigger & { days: Item[]; currentDayId?: string | null; sourceLabel?: string | null }) {
   const d = useOpen();
   const current = days.find((x) => x.id === currentDayId);
   const scopes: ExportScope[] = [
@@ -242,21 +267,20 @@ export function ScheduleExportButton({ days, currentDayId, sourceLabel, dayFirst
     { value: "day", label: current ? `Current day only (${current.label})` : "Current day only", args: { dayIds: current ? [current.id] : [] }, disabled: !current },
     { value: "days", label: "Selected days", picker: { argKey: "dayIds", items: days, emptyText: "Create a shooting day first." } },
   ];
-  if (dayFirst && current) scopes.unshift(scopes.splice(1, 1)[0]);
   return (
     <>
       <TriggerButton {...t} onClick={d.show} />
       <ExportDialog
         open={d.open}
         onClose={d.hide}
-        title={dayFirst ? "Export Shooting Day" : "Export Shooting Schedule"}
+        title="Export Shooting Schedule"
         source={<>Source: <b>Shooting Schedule{sourceLabel ? ` · ${sourceLabel}` : ""}</b></>}
         documentName="Shooting Schedule"
         op="schedule.export_schedule"
         formats={[TABLE_FORMATS[0], { value: "xlsx", label: "Spreadsheet (XLSX)" }, { value: "csv", label: "CSV" }]}
         scopes={scopes}
         options={[
-          { kind: "checkbox", key: "includeUnscheduled", label: "Include unscheduled scenes", default: !dayFirst },
+          { kind: "checkbox", key: "includeUnscheduled", label: "Include unscheduled scenes", default: true },
           { kind: "checkbox", key: "includeNotes", label: "Include scene notes", default: false },
         ]}
         note="Private notes excluded. Export is a snapshot of the schedule; the schedule is not changed."

@@ -19,8 +19,8 @@
      layout, Breakdown Export, Compare named Scene-only and Text-only.
    - Owner requests of the afternoon, both apps: "Story Board" is "Beat Board" everywhere; a free Story page left of
      Board (table `story_page`, migration 0017; TXT, PDF and DOCX export). Windows TypeScript was not compiled here.
-   - New in the shared core: `schedule.export_daily` ("Shoot Day N - Daily view", PDF, CSV, XLSX). Windows does not
-     call it yet.
+   - New in the shared core: `schedule.export_daily` ("Shoot Day N - Daily view", PDF, CSV, XLSX), used by the Daily
+     View on both apps. The AI disclosure is "See sources" on both apps (owner decision 2026-10-20).
    - Requirement inventory and status: [mac-windows-structure-parity.md](../roadmap/mac-windows-structure-parity.md).
 
 ## Next three items
@@ -30,8 +30,8 @@
 2. Open items of the parity page: a visible search button, the "+" create menu, Breakdown hide scenes and panel, the
    Catalog filter row at the smallest window with the AI panel open, the screenplay overlap at 900 points with the
    sidebar and AI open (known since 5355dc7).
-3. Windows: call `schedule.export_daily` from the Daily View, and choose one name for the AI disclosure ("See sources"
-   on the Mac, "Details" on Windows).
+3. Windows: run `npm run verify` and the E2E suite on the Windows machine for the Story page, Beat Board, See sources
+   and the Daily View export (not compiled on the Mac).
 
 ## Open blockers
 

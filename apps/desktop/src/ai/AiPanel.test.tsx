@@ -159,7 +159,8 @@ describe("AI Assistant panel", () => {
     ];
     renderPanel();
     expect(await screen.findByText("Draft 1 contains 3 scenes.")).toBeTruthy();
-    expect(screen.getByText("Exact · from project data")).toBeTruthy();
+    expect(screen.queryByText("Exact · from project data")).toBeNull();
+    expect(document.querySelector('.msg.a[data-confidence="Exact"]')).toBeTruthy();
     expect(screen.getByText("Draft: Draft 1")).toBeTruthy();
     // Proposed Changes: summary, affected areas, exact preview, then an explicit choice.
     const card = screen.getByRole("region", { name: "Proposed Changes" });
@@ -224,7 +225,8 @@ describe("AI Assistant panel", () => {
     expect(screen.getByText("Change 2 of 2")).toBeTruthy();
     expect(screen.getByText("Notes & Tasks, Story")).toBeTruthy();
     expect(screen.getByText(/2 changes in 2 parts, applied together as one step you can undo/)).toBeTruthy();
-    expect(screen.getByText("2 steps: Propose task · Propose scene card")).toBeTruthy();
+    // The steps behind the proposal are not listed in the conversation; the card shows the parts.
+    expect(screen.queryByText(/2 steps:/)).toBeNull();
   });
 
   it("opens a source from its provenance chip", async () => {

@@ -100,7 +100,7 @@ describe("Offline AI assistant with the bundled model", () => {
       assert.ok(r.sources.some((s) => /BUS STOP/i.test(s)), `the bus stop scene is a source: ${r.sources.join(" | ")}`);
       // The full check of the model files ran before the first engine start; the chat engine runs now.
       assert.ok(chatEngines().length >= 1, "the chat engine runs after a question that needs the model");
-      // A source chip opens the scene it names; the chips sit under the answer's "Details".
+      // A source opens the scene it names; the sources sit under the answer's closed "See sources".
       await openWorkspace(browser, "Home");
       const details = await browser.$('(//aside[@aria-label="AI Assistant"]//details[contains(@class,"ai-details")]/summary)[last()]');
       await details.waitForClickable({ timeout: 10_000 });

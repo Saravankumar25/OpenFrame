@@ -1,5 +1,5 @@
 // Answers read like a conversation (OpenFrameAI.docx sections 4.1 and 4.3): plain text first,
-// sources and steps behind "Details", and a long list is complete behind "Show all".
+// sources behind a closed "See sources", and a long list is complete behind "Show all".
 
 import { describe, expect, it } from "vitest";
 import { fireEvent, screen } from "@testing-library/react";
@@ -24,13 +24,23 @@ function result(over: Partial<AiResultDto>): AiResultDto {
 }
 
 describe("assistant answers", () => {
-  it("show the answer as plain text with the metadata behind Details", () => {
+  it("show the answer as plain text with its sources behind a closed See sources", () => {
     renderWithClient(<ResultView r={result({ details: ["From the screenplay rows."] })} onChanged={() => undefined} />);
     const text = screen.getByText("There are 130 scenes in the current screenplay.");
     expect(text.tagName).not.toBe("B");
-    const details = screen.getByText("Details").closest("details")!;
-    expect(details.open).toBe(false);
-    expect(details.textContent).toContain("Based on:");
+    const sources = screen.getByText("See sources").closest("details")!;
+    expect(sources.open).toBe(false);
+    expect(sources.textContent).toContain("Draft: ENE");
+    // How the answer was worked out stays out of the conversation.
+    expect(document.body.textContent).not.toContain("Exact · from project data");
+    expect(document.body.textContent).not.toContain("From the screenplay rows.");
+  });
+
+  it("show no See sources when the answer has only its scope", () => {
+    renderWithClient(
+      <ResultView r={result({ provenance: [{ kind: "Scope", label: "Whole Project", nav: null }] } as Partial<AiResultDto>)} onChanged={() => undefined} />,
+    );
+    expect(screen.queryByText("See sources")).toBeNull();
   });
 
   it("list every item behind Show all and never end with and N more", () => {

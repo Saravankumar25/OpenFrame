@@ -84,6 +84,11 @@
 | Private notes in a restored backup | The person restoring becomes the owner of its private notes | 2026-10-08 | ADR-0012 amendment |
 | Enter after a character name | One Enter creates the character and moves to Dialogue | 2026-10-08 | Revision 1 specification section 7 |
 | Dashes in on-screen text | No em dash, and no en dash used as a dash, in any text OpenFrame shows or writes itself | 2026-10-08 | [Writing standard](../engineering/35-writing-standard.md) |
+| Mac structure | The Mac takes the Windows structure, navigation and workflows and keeps its own Apple design | 2026-10-20 | [Parity page](../roadmap/mac-windows-structure-parity.md) |
+| AI answer sources | Plain answers on both apps; the places read from sit behind a closed "See sources"; no steps or confidence badges in the conversation | 2026-10-20 | [Parity page](../roadmap/mac-windows-structure-parity.md) |
+| Daily View export | Its own document, "Shoot Day N - Daily view", with what the page shows; the schedule export is not used there | 2026-10-20 | [Parity page](../roadmap/mac-windows-structure-parity.md) |
+| Name of the planning board | "Beat Board" (was "Story Board", confused with the production Storyboards) | 2026-10-20 | [Parity page](../roadmap/mac-windows-structure-parity.md) |
+| Story page | A free page left of Board to write the story, linked to nothing; export as TXT, PDF and DOCX | 2026-10-20 | [Parity page](../roadmap/mac-windows-structure-parity.md) |
 
 ### How the work is done
 

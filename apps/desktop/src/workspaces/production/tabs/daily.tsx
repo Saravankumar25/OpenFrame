@@ -4,7 +4,7 @@
 
 import { CalendarDays } from "lucide-react";
 import { Banner, Button, Chip, EmptyState, PageHeader, Select, Skeleton } from "../../../design-system";
-import { ScheduleExportButton } from "../../../features/export/buttons";
+import { DailyViewExportButton } from "../../../features/export/buttons";
 import { useOp } from "../../../ipc/query";
 import { useNav } from "../../../app/stores";
 import type { ScheduleDailyView } from "../../../api/schedule";
@@ -56,7 +56,7 @@ export default function DailyTab() {
               onChange={pick}
               options={v.days.map((x) => ({ value: x.id, label: x.title }))}
             />
-            <ScheduleExportButton days={v.days.map((x) => ({ id: x.id, label: x.title }))} currentDayId={d.id} dayFirst />
+            <DailyViewExportButton dayId={d.id} dayLabel={d.label} />
           </>
         }
       />
