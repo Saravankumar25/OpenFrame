@@ -1346,7 +1346,7 @@ extension Scenarios {
         switch k {
         case 1:
             try await ui.startApp(ctx)
-            try await ui.expectShows("Start your first project")
+            try await ui.expectShows("Create your first project.")
             try await ui.createProject("Night Bus")
             try await ui.waitUntil("window title") { ui.windowTitle().hasPrefix("Night Bus") }
             try await ui.expectShows("Start with your ideas, build your story, or open a screenplay.")
@@ -2104,7 +2104,12 @@ extension Scenarios {
                 try await ui.button("Stop & Save")
                 try await ui.waitVaultCard("Night bus idea")
                 try await ui.quickCapture("Police procedure: order of evidence handling at a small station.")
+                // The new card slides into the list: read its place once the list has settled, or the
+                // right click lands on the card beside it.
+                _ = try await ui.vaultCardWait("Police procedure")
+                await ui.idle(0.8)
                 try await ui.contextMenu(on: try await ui.vaultCardWait("Police procedure"), ["Research flag", "Checked"])
+                try await ui.waitUntil("the Police procedure card shows Checked") { ui.vaultCard("Police procedure")?.value.contains("Checked") == true }
                 try await ui.act(label: "Global", role: "AXRadioButton")
                 try await ui.quickCapture("A city where every letter is delivered one year late.")
                 try await ui.contextMenu(on: try await ui.vaultCardWait("A city where every letter"), ["Copy to Project"])
@@ -3000,27 +3005,20 @@ extension Scenarios {
                 try await ui.closeProject()
             }
         },
-        W("31-story-board-flow/episodes-scope-the-board") { ui, _, ctx in
+        // New projects are films (owner change list item 9, 2026-10-19, as on Windows): the Type
+        // picker offers Feature Film and Short Film only. Episodes of an older episodic project are
+        // covered by the core test episodes_scope_story_content_and_season_board_reorders.
+        W("31-story-board-flow/new-projects-are-films") { ui, _, ctx in
             try await ui.startApp(ctx)
-            try await ui.menu(["File", "New Project…"])
-            try await ui.fill(nil, "Monsoon Series", id: "new-project-title")
-            try await ui.chooseTypePicker("Episodic")
-            try await ui.act(id: "new-project-create", role: "AXButton")
-            try await ui.wait(id: "project-home", timeout: 30)
-            try await ui.goTo("Story")
-            try await ui.tab("Episodes")
-            try await ui.button("Add Episode")
-            try await ui.fill("Episode title", "Pilot", id: "story-episode-title")
-            try await ui.button("Create Episode")
-            try await ui.expectShows("Added episode")
-            try await ui.chooseMenu(label: "Options for Pilot", ["Open Beat Board"])
-            try await ui.button("Add Scene")
-            try await ui.fill("Short description", "Pilot cold open at the dam", submit: true)
-            try await ui.waitUntil("pilot card") { ui.card("Pilot cold open at the dam") != nil }
-            try await ui.chooseMenu(id: "story-episode-picker", ["Series level"])
-            try await ui.waitUntil("pilot card hidden") { ui.card("Pilot cold open at the dam") == nil }
-            try await ui.chooseMenu(id: "story-episode-picker", ["E01 Pilot"])
-            try await ui.waitUntil("pilot card back") { ui.card("Pilot cold open at the dam") != nil }
+            try await ui.menu(["File", "New Project\u{2026}"])
+            let b = try await ui.wait(id: "new-project-type", role: "AXPopUpButton", "the Type picker")
+            do {
+                try await ui.chooseMenu(b, ["Episodic"], exact: true, timeout: 2)
+                throw DriverError("the Type picker still offers Episodic")
+            } catch let e as DriverError where e.description.contains("no menu item") {}
+            try await ui.chooseTypePicker("Short Film")
+            try await ui.chooseTypePicker("Feature Film")
+            try await ui.button("Cancel")
             try await ui.quiet()
         },
     ]

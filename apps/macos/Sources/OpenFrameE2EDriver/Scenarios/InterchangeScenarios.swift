@@ -726,10 +726,9 @@ fileprivate extension UI {
 
     func center(_ e: Element) -> NSPoint { NSPoint(x: e.frame.midX, y: e.frame.midY) }
 
+    /// Moodboards and Storyboards are Production tabs (as on Windows).
     func openVisual(_ tab: String) async throws {
-        try await go("Visual Planning")
-        try await tap(label: tab, role: "AXRadioButton")
-        await idle(0.5)
+        try await goProduction(tab, id: tab.lowercased())
     }
 
     /// The storyboard panels in reading order, as "Panel N, picture" or "Panel N, empty".

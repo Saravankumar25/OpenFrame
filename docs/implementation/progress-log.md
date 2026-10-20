@@ -58,6 +58,35 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 
 ## Entries
 
+### 2026-10-20 (night), Mac page bars and Windows headers, fresh-install fixes, E2E isolation, Windows checks on the Mac
+- **Areas and items worked:** Mac and Windows structure parity (owner: "do everything before the push or the disk
+  image"), E2E reliability.
+- **Done:** the screenplay's and the Idea Vault's controls moved from the window toolbar into a bar in the page (with
+  every button named they overflowed into the macOS "more items" menu on a 1280-point screen); every page header has
+  the Windows layout and section titles are small capitals (VoiceOver reads them as written); Breakdown Hide scenes
+  and Hide panel; Settings buttons use `openSettings` (they did nothing); the project sidebar's width rule moved to the
+  column's outer view (a first launch opened it 142 points wide); a route for "Add a relationship: A is B's
+  granddaughter." E2E runner: the app under test gets its own bundle identifier and empty preferences per scenario
+  (the owner's own use leaked in and failed 22 scenarios). Stale scenarios updated to the Windows decisions: brand line
+  "Created using OpenFrame", Home "Create your first project.", Moodboards and Storyboards as Production tabs, Breakdown
+  Export, new projects are films (Episodic scenario replaced by `new-projects-are-films`), Project Home without counts.
+- **Evidence:** Windows on the Mac: `tsc --noEmit` clean, `eslint` clean, `vitest` 611 of 611. Swift 615 of 615. Mac
+  E2E full run on a 1280 by 720 screen (`release-out/e2e/20261020-124940`, before the fixes) 114 passed, 86 failed;
+  after the fixes the failing groups were rerun: Idea Vault 15 of 16, screenplay 16 of 16, window fit, Home 6 of 6,
+  Story page, exports 10 of 10, gold, journey and Episodic pass.
+- **Features moved:** none.
+- **Docs updated:** parity page, handoff.
+- **Decisions made or needed:** none.
+- **Blocked / risks:** still failing and not fixed: the AI scenarios (30, need the model download fixture), the team
+  gate (internal release build only), the keyboard walk scenarios (14, Tab stays in the sidebar; Keyboard Navigation is
+  off in System Settings on this Mac, not proven to be the cause), the moodboard and storyboard drags (3), the import
+  draft name field focus in 63-every-export (1), a recorded voice note loading with length zero after a restart (1,
+  possibly microphone permission for the new test identifier). The full suite was not rerun after the fixes.
+  `check:supply-chain` not run (`cargo-deny` and `cargo-audit` not installed).
+- **Next:** owner looks at the Mac app, then merge on the owner's word; the drags and the import field focus.
+- **Checks run:** see Evidence; `cargo test -p openframe-application` earlier this session; governance 90 of 90,
+  writing, links and feature status checks OK; rustfmt applied.
+
 ### 2026-10-20 (evening), Mac labels and Home as on Windows, room on small screens, AI routes measured
 - **Areas and items worked:** Mac and Windows structure parity, owner feedback (labels, Home, Beat Board, Story page,
   AI), AI evaluation on the Mac.

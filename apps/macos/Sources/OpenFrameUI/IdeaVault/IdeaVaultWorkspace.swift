@@ -122,7 +122,6 @@ struct IdeaVaultScreen: View {
             }
         }
         .searchable(text: $model.searchText, placement: .toolbar, prompt: "Search ideas, tags, filenames…")
-        .toolbar { toolbar }
         .fileImporter(isPresented: $importing, allowedContentTypes: importKind?.types ?? [.item], allowsMultipleSelection: true) { result in
             handleImport(result)
         }
@@ -131,6 +130,7 @@ struct IdeaVaultScreen: View {
     private var main: some View {
         VStack(alignment: .leading, spacing: 0) {
             header
+            actionBar
             if model.mode == .folder && !model.searching {
                 VaultCrumbs(path: VaultFolders.path(model.folders, to: model.folderCursor)) { model.openFolder($0) }
                     .padding(.horizontal, 24)
@@ -182,9 +182,12 @@ struct IdeaVaultScreen: View {
 
     // MARK: Toolbar
 
-    @ToolbarContentBuilder private var toolbar: some ToolbarContent {
-        if model.hasProject {
-            ToolbarItem {
+    /// The Idea Vault's own controls in a row under the page title (Windows: the vault toolbar
+    /// inside the page). With every button named they no longer fit the window toolbar, and macOS
+    /// moved the scope picker, Record Note and Quick Capture into its overflow menu.
+    private var actionBar: some View {
+        BDFlowLayout(spacing: 8) {
+            if model.hasProject {
                 Picker("Which Idea Vault", selection: Binding(get: { model.requested }, set: { model.chooseStore($0) })) {
                     Text("Global").tag(StoreSel.global)
                     Text("This Project").tag(StoreSel.project)
@@ -193,9 +196,8 @@ struct IdeaVaultScreen: View {
                 .help("Which Idea Vault")
                 .accessibilityLabel("Which Idea Vault")
                 .accessibilityIdentifier("vault-scope")
+                .fixedSize()
             }
-        }
-        ToolbarItem {
             Menu {
                 Button("Note") { Task { await model.createText(.note) } }
                 Button("Image…") { startImport(.image) }
@@ -212,19 +214,13 @@ struct IdeaVaultScreen: View {
             }
             .help("Add to the Idea Vault")
             .accessibilityIdentifier("vault-add")
-        }
-        ToolbarItem {
             Button { model.dialog = .record } label: { Label("Record Note", systemImage: "mic").labelStyle(.titleAndIcon) }
                 .help("Record a voice note")
                 .accessibilityIdentifier("vault-record")
-        }
-        ToolbarItem {
             Button { model.dialog = .quick } label: { Label("Quick Capture", systemImage: "bolt").labelStyle(.titleAndIcon) }
                 .keyboardShortcut("n", modifiers: [.command, .shift])
                 .help("Quick Capture (Shift-Command-N)")
                 .accessibilityIdentifier("vault-quick-capture")
-        }
-        ToolbarItem {
             Picker("View", selection: Binding(get: { model.mode }, set: { model.setMode($0) })) {
                 ForEach(VaultDisplayMode.allCases) { Label($0.title, systemImage: $0.symbol).labelStyle(.titleAndIcon).tag($0) }
             }
@@ -232,18 +228,21 @@ struct IdeaVaultScreen: View {
             .help("Change how items are shown")
             .accessibilityLabel("View")
             .accessibilityIdentifier("vault-view-mode")
-        }
-        ToolbarItem {
+            .fixedSize()
             Button { model.page = .deleted } label: { Label("Recently Deleted", systemImage: "trash").labelStyle(.titleAndIcon) }
                 .help("Recently Deleted")
                 .accessibilityIdentifier("vault-recently-deleted")
-        }
-        ToolbarItem {
             ControlGroup {
                 undoButton
                 redoButton
             }
+            .fixedSize()
         }
+        .controlSize(.small)
+        .padding(.horizontal, 16).padding(.bottom, 8)
+        .frame(maxWidth: .infinity)
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("vault-action-bar")
     }
 
     // With no project open the Edit menu's project undo is off, so the Global vault answers the

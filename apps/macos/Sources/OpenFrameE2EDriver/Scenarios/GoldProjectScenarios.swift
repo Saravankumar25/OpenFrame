@@ -72,7 +72,8 @@ extension Scenarios {
 
             try await ui.checkWorkspace("Project Home", ["Low Tide Radio"], f)
             let home = ui.screenText()
-            f.check(home.contains("Scene cards") || home.contains("Scene Cards"), "Project Home lists the scene cards count")
+            // Project Home as on Windows: Continue, Quick Access and Recent, no counts.
+            f.check(home.lowercased().contains("quick access"), "Project Home shows Quick Access")
 
             // Screenplay: the production draft with its first scene, a character and the 1999 radio voice.
             try await ui.go("Screenplay")

@@ -441,6 +441,11 @@ extension Scenarios {
             }
             return
         }
+        // Visual Planning's tabs are Production tabs now (as on Windows).
+        if group == "visual-tabs" {
+            try await ui.goProduction(name, id: name == "Shot Lists" ? "shotLists" : name.lowercased())
+            return
+        }
         let names = ["breakdown-tabs": "Production", "people-view": "Directory", "callsheets-tabs": "Call sheet views",
                      "project-settings-tabs": "Project settings page"]
         let g = try await ui.waitFor("the choice \(group)", timeout: 10) {
@@ -1468,7 +1473,7 @@ extension Scenarios {
 // MARK: 62-call-sheets-exports
 
 extension Scenarios {
-    static let brandLine = "Created with OpenFrame Studio"
+    static let brandLine = "Created using OpenFrame"
 
     /// "Check the PDF F": exists, starts with %PDF- and carries the brand line.
     @MainActor static func checkPdf(_ ui: UI, _ url: URL, brand: Bool = true) throws {
@@ -1701,9 +1706,13 @@ extension Scenarios {
             try await ui.waitText("Exported shots.pdf")
             try await ui.press(id: "shots-export-sheet-close")
             try checkPdf(ui, dir.appendingPathComponent("shots.pdf"))
-            // Spec step 5. Last, so the other exports are proven first. The Mac Breakdown has no export control yet.
+            // Spec step 5. Last, so the other exports are proven first: Breakdown > Export, PDF.
             try await ui.nav("Breakdown")
-            try await ui.menuButton(label: "Breakdown report", item: "PDF")
+            try await ui.press(id: "breakdown-export")
+            try await ui.pressAndSave(id: "export-run", to: dir.appendingPathComponent("breakdown.pdf"))
+            try await ui.waitText("Export complete")
+            try await ui.press(id: "export-close")
+            try checkPdf(ui, dir.appendingPathComponent("breakdown.pdf"))
             try ui.quiet("after the exports")
         },
 

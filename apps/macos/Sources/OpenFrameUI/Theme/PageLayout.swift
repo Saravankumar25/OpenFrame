@@ -117,6 +117,8 @@ public struct SectionHeader<Trailing: View>: View {
                 .font(.caption.weight(.bold))
                 .tracking(0.7)
                 .foregroundStyle(.secondary)
+                // VoiceOver reads the title as written, not letter by letter in capitals.
+                .accessibilityLabel(title)
                 .accessibilityAddTraits(.isHeader)
             Spacer(minLength: PageSpacing.small)
             trailing

@@ -2,7 +2,7 @@
 
 > Rewritten (not appended) at the end of every session. One page. It exists so the next session starts from the facts
 > instead of from a long history, which is how context rot is avoided. If this page is older than the newest progress log
-> entry, trust the log and fix this page first. Last rewritten: 2026-10-20, evening, end of the Mac labels, Home and AI routes round.
+> entry, trust the log and fix this page first. Last rewritten: 2026-10-20, night, end of the Mac page bar, headers and E2E isolation round.
 
 ## State
 
@@ -18,21 +18,25 @@
      every element, screenplay zoom, resizable AI panel, shot list Grid, whole Beat Board cards, the relationship map
      layout, Breakdown Export, Compare named Scene-only and Text-only.
    - Owner requests of the afternoon, both apps: "Story Board" is "Beat Board" everywhere; a free Story page left of
-     Board (table `story_page`, migration 0017; TXT, PDF and DOCX export). Windows TypeScript was not compiled here.
+     Board (table `story_page`, migration 0017; TXT, PDF and DOCX export). Windows TypeScript type check, lint and the
+     611 web unit tests pass on the Mac (`npm ci`, `tsc`, `eslint`, `vitest`); the Tauri E2E needs the Windows machine.
    - New in the shared core: `schedule.export_daily` ("Shoot Day N - Daily view", PDF, CSV, XLSX), used by the Daily
      View on both apps. The AI disclosure is "See sources" on both apps (owner decision 2026-10-20).
    - Requirement inventory and status: [mac-windows-structure-parity.md](../roadmap/mac-windows-structure-parity.md).
 
-   - Evening round: every Mac button named, Home as on Windows, toolbar fits a 1280 by 720 screen, narrow-page
-     fallbacks, seven deterministic AI routes (Mac evaluation 98.1 percent tool, 89.9 percent end state).
+   - Evening round: every Mac button named; Home cards and every page header as on Windows; the screenplay's controls
+     in a page bar (they no longer fit the window toolbar); Breakdown Hide scenes and Hide panel; Settings buttons
+     fixed (`openSettings`); eight deterministic AI routes (Mac evaluation 98.1 percent tool, 89.9 percent end state).
+   - The E2E runner tests a copy with its own bundle identifier and clears its preferences per scenario: the owner's
+     own use of the dev app otherwise leaks into the scenarios.
 
 ## Next three items
 
 1. Merge `mac/windows-parity` into `mac/m1-toolchain` after the owner looks at the Mac app (dev build:
    `apps/macos/scripts/bundle-dev-app.sh`). Then the internal disk image only on the owner's word.
-2. Open item of the parity page: Breakdown hide scenes and panel buttons.
-3. Windows: run `npm run verify` and the E2E suite on the Windows machine for the Story page, Beat Board, See sources
-   and the Daily View export (not compiled on the Mac).
+2. Windows machine: `npm run verify` (needs `cargo-deny` and `cargo-audit`, not installed on the Mac) and the Tauri
+   E2E suite for the Story page, Beat Board, See sources and the Daily View export.
+3. Remaining AI misses (comment on the current draft, pin a note, sequence without an act): measure, then route.
 
 ## Open blockers
 

@@ -60,7 +60,6 @@ struct ProjectView: View {
                         .accessibilityIdentifier("sidebar-\(ws.rawValue)")
                 }
             }
-            .navigationSplitViewColumnWidth(min: 190, ideal: 220, max: 300)
             .safeAreaInset(edge: .top) {
                 // The project name sits over its pages, so the toolbar can keep every button.
                 Text(current.title)
@@ -82,6 +81,9 @@ struct ProjectView: View {
             }
             // The project's own sidebar button (below) has a name screen readers and tests can use.
             .toolbar(removing: .sidebarToggle)
+            // On the column's outermost view: on the list inside the insets, a first launch (no
+            // saved width) ignored it and opened the sidebar 142 points wide.
+            .navigationSplitViewColumnWidth(min: 190, ideal: 220, max: 300)
         } detail: {
             // The panel docks after the page in a row (as on Windows), so opening it narrows the page
             // and never covers a control. A row, not an inspector: workspaces use inspectors of their own.
