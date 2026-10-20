@@ -59,7 +59,14 @@ computer without them substitutes similar fonts.
 
 ## How to make them again
 
-Build the debug app once (\`node tests/e2e/run.mjs --only=zz-capture\` builds it), then:
+Build the debug app once (\`node tests/e2e/run.mjs --only=zz-capture\` builds it), then run the sections in eight
+parallel parts, merge them and check every page in four shards (about 50 minutes):
+
+\`\`\`bash
+node scripts/windows-html/parallel.mjs
+\`\`\`
+
+The whole tour in one data root, one section after another (about 2.5 hours), gives the same pages:
 
 \`\`\`bash
 E2E_CAPTURE=1 node tests/e2e/run.mjs --only=zz-capture --no-build

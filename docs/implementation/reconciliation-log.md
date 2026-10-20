@@ -6,6 +6,13 @@
 > Renamed on 2026-10-06 from `03-reconciliation-log.md`. Extended on 2026-10-09 (chapter restructure). Checks written "(checked)" were verified in the repository on the
 > date given. Checks written "(stated)" come from a supplied document and were not verified independently.
 
+## 2026-10-21: HTML_Mockups removed, WindowsHTML added
+
+| Stale or conflicting statement | Where it was | Resolution |
+|---|---|---|
+| `HTML_Mockups/` (181 hand-drawn screens) was the presentation authority next to the UX specification, and new screens needed a mock-up before build | `CONTRIBUTING.md`, `docs/README.md`, `DEVELOPMENT.md`, UX laws checklist, UX specification header, Chapter 2 plan, writing check | Removed at the owner's request (git history keeps it). `WindowsHTML/`, captured from the running app, records the shipped Windows screens; the UX specification alone wins on labels and layout. The specification's mock-up rule is marked superseded in place |
+| The next-session prompt asked to use "the 181 ids in HTML_Mockups/" as a checklist | `next-session-windows-html-prompt.md` | The ids were read before the folder was removed; the checklist used was the UI source, feature status and the reachability routes |
+
 ## 2026-10-19: Windows final polish (owner change list, AI brief, PDF specs)
 
 | Stale or conflicting statement | Where it was | Resolution |

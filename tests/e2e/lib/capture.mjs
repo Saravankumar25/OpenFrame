@@ -158,6 +158,7 @@ export function captureSession(getBrowser) {
   for (const m of MODES) mkdirSync(join(RAW, m), { recursive: true });
   const manifest = { screens: [], links: [], unreachable: [], failed: [] };
   let section = "";
+  let muted = false;
   const names = new Set();
   let current = "light";
   let clicks = [];
@@ -193,6 +194,10 @@ export function captureSession(getBrowser) {
     unreachable(name, why) {
       manifest.unreachable.push({ name, why, section });
     },
+    /** While muted, states are reached but not recorded (the seed of a part run, see zz-capture). */
+    mute(on) {
+      muted = on;
+    },
     /** The section now running (recorded with each screen). */
     setSection(name) {
       section = name;
@@ -216,6 +221,7 @@ export function captureSession(getBrowser) {
      */
     async capture(name, { blur = true, keepToasts = false, wait = 600, home } = {}) {
       const browser = getBrowser();
+      if (muted) return null;
       if (names.has(name)) throw new Error(`capture name used twice: ${name}`);
       names.add(name);
       const id = `${String(manifest.screens.length + 1).padStart(3, "0")}-${name}`;

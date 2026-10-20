@@ -32,7 +32,12 @@ import { writeReadme } from "../../../scripts/windows-html/readme.mjs";
 const ENABLED = process.env.E2E_CAPTURE === "1";
 const ONLY = (process.env.E2E_CAPTURE_ONLY ?? "").split(",").map((s) => s.trim()).filter(Boolean);
 const FULL = ONLY.length === 0;
-const HTML_OUT = FULL ? OUT : join(RAW, "html");
+// Parallel mode (scripts/windows-html/parallel.mjs): every part but the first reaches the seed
+// screens without recording them, and the merged pages are checked again in shards.
+const NO_SEED_SHOTS = process.env.E2E_CAPTURE_NO_SEED_SHOTS === "1";
+const VERIFY_ONLY = process.env.E2E_CAPTURE_VERIFY_ONLY === "1";
+const SHARD = (process.env.E2E_VERIFY_SHARD ?? "1/1").split("/").map(Number);
+const HTML_OUT = FULL || VERIFY_ONLY ? OUT : join(RAW, "html");
 export const PIXEL_THRESHOLD = 24;
 export const MAX_DIFF_RATIO = 0.005;
 const MIN_SCREENS = 400;
@@ -40,12 +45,12 @@ const SECTIONS_DIR = join(import.meta.dirname, "..", "capture", "sections");
 const DIFF_DIR = join(RAW, "diff");
 
 let browser;
-const cap = ENABLED ? captureSession(() => browser) : null;
+const cap = ENABLED && !VERIFY_ONLY ? captureSession(() => browser) : null;
 const t = ENABLED ? makeKit(() => browser, cap) : null;
 
-async function verify() {
+async function verify(screens) {
   const results = [];
-  for (const s of cap.manifest.screens) {
+  for (const s of screens) {
     for (const mode of MODES) {
       await browser.url(pathToFileURL(join(HTML_OUT, mode, `${s.id}.html`)).href);
       await browser.waitUntil(async () => (await browser.execute(() => document.readyState)) === "complete", { timeout: 15_000 });
@@ -75,13 +80,26 @@ describe("WindowsHTML capture tour", { skip: !ENABLED && "set E2E_CAPTURE=1 to c
     await browser?.deleteSession().catch(() => undefined);
   });
 
-  test("capture, generate and verify", async () => {
+  test("check the merged pages (one shard)", { skip: !VERIFY_ONLY }, async () => {
+    const [k, n] = SHARD;
+    const screens = JSON.parse(readFileSync(join(RAW, "manifest.json"), "utf8")).screens.filter((_, i) => i % n === k - 1);
+    const results = await verify(screens);
+    writeFileSync(join(RAW, `verify-${k}-of-${n}.json`), JSON.stringify(results, null, 1));
+    const bad = results.filter((r) => !r.ok);
+    for (const r of bad) console.log(`  verify FAIL ${r.mode} ${r.id}: ${(r.ratio * 100).toFixed(3)} %`);
+    console.log(`  shard ${k} of ${n}: ${bad.length} of ${results.length} pages over the limit`);
+    assert.deepEqual(bad.map((r) => `${r.mode}/${r.id}`), [], `pages differ from their screenshots (see ${DIFF_DIR})`);
+  });
+
+  test("capture, generate and verify", { skip: VERIFY_ONLY }, async () => {
     const files = readdirSync(SECTIONS_DIR).filter((f) => f.endsWith(".mjs")).sort();
     const chosen = FULL ? files : files.filter((f) => ONLY.some((o) => f.includes(o)));
     assert.ok(chosen.length, `no section matches E2E_CAPTURE_ONLY=${ONLY.join(",")}`);
 
     cap.setSection("seed");
+    cap.mute(NO_SEED_SHOTS);
     await seed(t, { dataRoot: process.env.E2E_DATA_ROOT });
+    cap.mute(false);
     for (const f of chosen) {
       const name = f.replace(/\.mjs$/, "");
       cap.setSection(name);
@@ -98,7 +116,7 @@ describe("WindowsHTML capture tour", { skip: !ENABLED && "set E2E_CAPTURE=1 to c
 
     const commit = execFileSync("git", ["rev-parse", "--short", "HEAD"], { cwd: REPO, encoding: "utf8" }).trim();
     build({ commit, from: RAW, to: HTML_OUT });
-    const results = await verify();
+    const results = await verify(cap.manifest.screens);
     writeFileSync(join(RAW, "verify.json"), JSON.stringify(results, null, 1));
     const bad = results.filter((r) => !r.ok);
     for (const r of bad) console.log(`  verify FAIL ${r.mode} ${r.id}: ${(r.ratio * 100).toFixed(3)} %`);
