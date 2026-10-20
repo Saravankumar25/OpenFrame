@@ -3,7 +3,7 @@
 > **Revision notice (2026-10-05).** UX mock-ups 164 to 168 (LAN sessions) are **removed** (ADR-0007). The "light theme only" rule
 > (ADR-0012 §7) is pending replacement by ADR-0014. [Screenplay and Production Depth Specification (Revision 1)](OpenFrame_Studio_Screenplay_and_Production_Depth_Specification.md) adds screens and controls not mocked yet: Appearance (Mode, Theme, Import, My Themes),
 > Keyboard Shortcuts, Card Display Settings, Page Setup, Header and Footer, Custom Elements, DOOD, expanded Call Sheet sections, suggestion lists.
-> New screens need mock-ups in `HTML_Mockups/` before build. Precedence: [docs/README.md](../README.md).
+> SUPERSEDED 2026-10-21: the rule "new screens need mock-ups in `HTML_Mockups/` before build" ended when the owner removed that folder; `WindowsHTML/` now records the shipped screens. Precedence: [docs/README.md](../README.md).
 
 ## Desktop Edition — Product / Functional Alignment Baseline
 

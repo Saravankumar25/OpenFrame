@@ -44,7 +44,6 @@ const GROUPS = [
   ["crates", ["crates", "migrations"]],
   ["scripts-and-ci", ["scripts", ".github", "packaging", "tests"]],
   ["root-documents", ["README.md", "CONTRIBUTING.md", "DEVELOPMENT.md", "CLAUDE.md", "LICENSE-PENDING.md", "THIRD_PARTY_LICENSES.md"]],
-  ["mockups", ["HTML_Mockups"]],
   ["living-docs", ["docs"]],
 ];
 const SKIP_DIRS = new Set(["node_modules", "target", ".git", "graphify-out", "dist", "gen", "artifacts", "build", ".drivers", ".run"]);

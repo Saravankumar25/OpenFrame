@@ -13,7 +13,7 @@ Implementation precedence (Engineering Package Index):
 
 1. Product PRD: scope, priority, product boundaries
 2. Functional Specification (FSD): observable behavior and acceptance criteria
-3. UX/UI Specification and `HTML_Mockups/`: presentation, exact labels
+3. UX/UI Specification: presentation, exact labels (`WindowsHTML/` records the shipped Windows screens)
 4. Domain & Data Specification: identities, relationships, lifecycle, source of truth
 5. AI, Import/Export, Offline/Collaboration and Security specifications: cross-cutting contracts. The LAN
    collaboration sections are superseded by the product-owner decision in [ADR-0007](docs/adr/ADR-0007-lan-collaboration-removed.md).
