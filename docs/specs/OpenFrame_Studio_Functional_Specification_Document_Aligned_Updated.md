@@ -1,7 +1,7 @@
 # OpenFrame Studio — Functional Specification Document (FSD)
 
 > **Revision notice (2026-10-05).** FSD §48 to 49 and §119 to 120 (LAN collaboration) are **superseded** by ADR-0007; read them as removed.
-> [Screenplay and Production Depth Specification (Revision 1)](OpenFrame_Studio_Screenplay_and_Production_Depth_Specification.md) amends the screenplay engine, scene numbering (pending ADR-0015), Story Board card, breakdown efficiency, schedule timeline,
+> [Screenplay and Production Depth Specification (Revision 1)](OpenFrame_Studio_Screenplay_and_Production_Depth_Specification.md) amends the screenplay engine, scene numbering (pending ADR-0015), Beat Board card, breakdown efficiency, schedule timeline,
 > DOOD, call sheet, budget and template behaviour. Open product questions are listed in ADR-0012 and docs/implementation/02. Precedence: [docs/README.md](../README.md).
 
 **Document type:** Functional Specification Document
@@ -18,7 +18,7 @@
 
 **Purpose:** Define the exact functional behavior of OpenFrame Studio so product, UX, QA, and engineering teams can implement the product without needing to reinterpret the product vision for every feature.
 
-**Functional scope:** Project creation, Global and Project Idea Vaults, Project Home, Story Board, Acts, Sequences, Beats, Scene Cards, Characters, Story Timeline, Screenplay Workspace, screenplay import/export, draft/version history, comparison, review rounds, comments, script lock and post-lock revisions, episodic organization, script breakdown, automatic breakdown suggestions with confirmation, production catalog, locations, cast/crew, moodboards, storyboards, shot lists, stripboard/scheduling, scheduling assistance, call sheets, project files, global search, lightweight budget snapshot, AI assistant, local/offline operation, portable exchange packages, local-network collaboration, permissions, undo/redo, deletion/recovery, saving, portability, backups, activity history, reports, sides, daily production view, templates, exports, printing, empty states, errors, and end-to-end source-of-truth rules.
+**Functional scope:** Project creation, Global and Project Idea Vaults, Project Home, Beat Board, Acts, Sequences, Beats, Scene Cards, Characters, Story Timeline, Screenplay Workspace, screenplay import/export, draft/version history, comparison, review rounds, comments, script lock and post-lock revisions, episodic organization, script breakdown, automatic breakdown suggestions with confirmation, production catalog, locations, cast/crew, moodboards, storyboards, shot lists, stripboard/scheduling, scheduling assistance, call sheets, project files, global search, lightweight budget snapshot, AI assistant, local/offline operation, portable exchange packages, local-network collaboration, permissions, undo/redo, deletion/recovery, saving, portability, backups, activity history, reports, sides, daily production view, templates, exports, printing, empty states, errors, and end-to-end source-of-truth rules.
 
 **Explicit exclusions:** enterprise ERP, payroll, union accounting, full accounting, advanced studio resource planning, VFX production tracking, post-production asset management, distribution CRM, festival submission suite, legal-management suite, talent marketplace, equipment marketplace, and a mandatory cloud-sync platform.
 
@@ -60,13 +60,13 @@ This section is the contract that applies to every feature below. A feature that
 OpenFrame is one desktop application with several workspaces. A filmmaker should be able to move between Idea Vault, Story, Screenplay, Breakdown, Production and Call Sheets without creating duplicate projects or manually copying ordinary metadata between screens.
 
 ### 1.2 Progressive structure
-The least structured area is Idea Vault. The Story Board adds lightweight visual structure. The Screenplay adds strict writing structure. Breakdown and scheduling add production structure. This progression must be visible to the user.
+The least structured area is Idea Vault. The Beat Board adds lightweight visual structure. The Screenplay adds strict writing structure. Breakdown and scheduling add production structure. This progression must be visible to the user.
 
 ### 1.3 No duplicate entry unless it is a deliberate copy
 If information already exists in a source that should feed a downstream workflow, the system should reuse it or offer an import/conversion action. It must not require retyping the same scene heading or title solely to move forward.
 
 ### 1.4 No hidden synchronization
-The Idea Vault is not a live synchronized database of screenplay content. The Story Board is a reference/outline surface, not an always-synchronized copy of the script. Downstream production data is derived from a selected screenplay/source version, but production changes should not silently rewrite the screenplay.
+The Idea Vault is not a live synchronized database of screenplay content. The Beat Board is a reference/outline surface, not an always-synchronized copy of the script. Downstream production data is derived from a selected screenplay/source version, but production changes should not silently rewrite the screenplay.
 
 ### 1.5 Experimentation must be safe
 Creative users must be able to duplicate cards, create drafts, move cards to a Parking Lot, and undo actions without fear of destroying earlier work.
@@ -81,7 +81,7 @@ Core workflows work without internet. The absence of internet cannot prevent a u
 Remote collaboration defaults to portable exchange packages. Real-time collaboration is an optional local-network session. OpenFrame does not require its own cloud service for ordinary use.
 
 ### 1.9 Short films are first-class projects
-A short film can use only Story Board + Screenplay + a few production features. The software must not force empty enterprise-style sections into a short-film workflow.
+A short film can use only Beat Board + Screenplay + a few production features. The software must not force empty enterprise-style sections into a short-film workflow.
 
 ### 1.10 Professional output, simple interaction
 The app may produce professional-looking documents while keeping input forms short and approachable.
@@ -98,8 +98,8 @@ The following terms must have one consistent meaning across the product.
 |---|---|---|
 | Global Idea Vault Item | A loose creative item owned by the filmmaker and available across projects | Yes for the item itself |
 | Project Idea Vault Item | A project-scoped creative item | Yes for the item itself |
-| Act | A high-level Story Board container | Yes for Story Board structure |
-| Sequence | A named container containing a group of story scenes/cards | Yes for Story Board grouping |
+| Act | A high-level Beat Board container | Yes for Beat Board structure |
+| Sequence | A named container containing a group of story scenes/cards | Yes for Beat Board grouping |
 | Beat | A small story event/idea | Yes for the Beat object |
 | Scene Card | A compact outline/reference representation of a scene | Yes for the card, not the screenplay text |
 | Screenplay Scene | The actual scene inside the screenplay | Yes for written script content |
@@ -112,7 +112,7 @@ The following terms must have one consistent meaning across the product.
 | Call Sheet | A document prepared for a shooting day | Yes for that document; not automatically authoritative over schedule |
 | Exchange Package | Portable package for review/import/merge | Snapshot of its source at export time |
 
-**FSD Decision — internal identity vs display numbering:** scene cards and story objects must retain stable internal identities even when users do not see IDs or scene numbers. Display scene numbers are generated for the screenplay and production documents from ordered screenplay scenes; they are never manually maintained on Story Board cards.
+**FSD Decision — internal identity vs display numbering:** scene cards and story objects must retain stable internal identities even when users do not see IDs or scene numbers. Display scene numbers are generated for the screenplay and production documents from ordered screenplay scenes; they are never manually maintained on Beat Board cards.
 
 ### 2.1 Identity rule
 Moving an object must not create a new object. Duplicating an object creates a new object. Importing an exchange package creates or updates objects according to its package rules; it must never accidentally treat a copy as the same identity unless the package explicitly represents a review/change to an existing object.
@@ -177,7 +177,7 @@ Common actions use consistent labels and placement:
 Context-specific actions may appear in context menus.
 
 ### 3.6 Context menus
-Right-clicking an object should expose only actions meaningful to that object. A Story Board scene card should not display payroll or call-sheet commands.
+Right-clicking an object should expose only actions meaningful to that object. A Beat Board scene card should not display payroll or call-sheet commands.
 
 
 # 4. Project Creation and Project Lifecycle
@@ -305,7 +305,7 @@ Project Home is the operational front door and must remain visually simple.
 
 **Continue:** contextual shortcuts based on the user's latest activity.
 
-**Quick Access:** Idea Vault, Story Board, Screenplay, Breakdown, Production, Call Sheets.
+**Quick Access:** Idea Vault, Beat Board, Screenplay, Breakdown, Production, Call Sheets.
 
 **Recent:** recently changed scenes/cards/drafts/documents.
 
@@ -316,7 +316,7 @@ The application remembers the last meaningful location in the project. “Contin
 
 Examples:
 
-- Last open Scene Card → Story Board card opened.
+- Last open Scene Card → Beat Board card opened.
 - Last open screenplay scene → screenplay opens at that location.
 - Last breakdown scene → breakdown opens that scene.
 - Last open shooting day → schedule opens that day.
@@ -341,10 +341,10 @@ Once a project has production content, Project Home may additionally show:
 These are shortcuts, not a mandatory analytics dashboard.
 
 
-# 7. Story Workspace and Story Board
+# 7. Story Workspace and Beat Board
 
 ### 7.1 Purpose
-The Story Board is the filmmaker's visual reference and outlining surface. It is not a screenplay editor and not a database form.
+The Beat Board is the filmmaker's visual reference and outlining surface. It is not a screenplay editor and not a database form.
 
 ### 7.2 Primary views
 
@@ -352,7 +352,7 @@ The Story Board is the filmmaker's visual reference and outlining surface. It is
 
 **Outline View:** compact hierarchical text/list representation.
 
-Both views represent the same Story Board structure.
+Both views represent the same Beat Board structure.
 
 ### 7.3 Hierarchy
 Default hierarchy:
@@ -366,7 +366,7 @@ Act
        └── Scene Card
 ```
 
-A Scene Card may also exist directly under an Act when the user does not need sequences. A Beat may exist independently in the Story Board/Parking Lot before being promoted to a Scene Card.
+A Scene Card may also exist directly under an Act when the user does not need sequences. A Beat may exist independently in the Beat Board/Parking Lot before being promoted to a Scene Card.
 
 ### 7.4 Board layout
 Acts should be visually separated. Sequences appear as groups within Acts. Scene Cards appear as compact rectangular cards. The board should permit horizontal scrolling or zooming when a large number of cards exists.
@@ -381,13 +381,13 @@ Switching between Board and Outline views must not alter order or content.
 # 8. Acts
 
 ### 8.1 Create Act
-User selects Add Act. A new Act container appears at the end of the Story Board. User enters a title; optional note is available after creation.
+User selects Add Act. A new Act container appears at the end of the Beat Board. User enters a title; optional note is available after creation.
 
 ### 8.2 Act behavior
 An Act can contain Sequences and/or Scene Cards. An Act can be collapsed/expanded.
 
 ### 8.3 Rename Act
-Double click title or context menu → Rename. Rename updates everywhere the Act is referenced by Story Board displays or exports, but does not alter screenplay text.
+Double click title or context menu → Rename. Rename updates everywhere the Act is referenced by Beat Board displays or exports, but does not alter screenplay text.
 
 ### 8.4 Reorder Act
 Drag Act to another position. All child sequences/scenes move with it.
@@ -433,7 +433,7 @@ Dragging a sequence to another Act re-parents the sequence. Existing scene ident
 Deleting a Sequence with children presents a safe choice: delete the container only after moving children elsewhere, or delete all with explicit confirmation.
 
 ### 9.7 Sequence as reference only
-A sequence does not become a screenplay sequence automatically. Its name is a Story Board organizational aid unless the user chooses to include that hierarchy in an outline export.
+A sequence does not become a screenplay sequence automatically. Its name is a Beat Board organizational aid unless the user chooses to include that hierarchy in an outline export.
 
 
 # 10. Beat Cards
@@ -473,7 +473,7 @@ Required at creation: short description (may initially be blank while entering a
 
 Optional: scene heading such as `INT. POLICE STATION — NIGHT`.
 
-Not stored as Story Board fields:
+Not stored as Beat Board fields:
 
 - scene number;
 - characters;
@@ -511,7 +511,7 @@ Fields:
 A new card is inserted at the drop position or end of selected sequence. The description is immediately editable.
 
 ### 11.6 Reorder
-Drag and drop changes Story Board order instantly. The system records the move for undo.
+Drag and drop changes Beat Board order instantly. The system records the move for undo.
 
 ### 11.7 Duplicate
 Duplicate creates a new Scene Card with copied description, optional heading, notes and selected attachments. The duplicate is not the same object and does not inherit a screenplay scene identity.
@@ -523,13 +523,13 @@ Delete moves the card to recoverable deleted state. If the card has a screenplay
 Dragging a card into Parking Lot removes it from the active outline but keeps it recoverable.
 
 ### 11.10 No live screenplay synchronization
-Changes to a Scene Card after screenplay creation do not rewrite the screenplay scene. The Story Board may display a simple “used to create screenplay” reference without becoming a synchronization engine.
+Changes to a Scene Card after screenplay creation do not rewrite the screenplay scene. The Beat Board may display a simple “used to create screenplay” reference without becoming a synchronization engine.
 
 ### 11.11 No permanent scene number
-Scene numbers are calculated from screenplay scene order. Reordering a Story Board card does not require manual renumbering because the card has no user-maintained number.
+Scene numbers are calculated from screenplay scene order. Reordering a Beat Board card does not require manual renumbering because the card has no user-maintained number.
 
 ### 11.12 Heading required at screenplay conversion
-Because the Story Board allows an optional header, Build Screenplay must identify any included cards without a valid screenplay heading and request that the user supply the missing heading before the scene can be created as a normal screenplay scene. The user can also exclude those cards from the build.
+Because the Beat Board allows an optional header, Build Screenplay must identify any included cards without a valid screenplay heading and request that the user supply the missing heading before the scene can be created as a normal screenplay scene. The user can also exclude those cards from the build.
 
 
 # 12. Parking Lot and Creative Experimentation
@@ -591,7 +591,7 @@ Story Timeline is optional. It exists only when chronological continuity matters
 The simplest unit is Story Day, optionally supplemented by time-of-day notes.
 
 ### 14.2 Assignment
-Users can assign story days to screenplay scenes after scenes exist. Story Board cards do not require Story Day.
+Users can assign story days to screenplay scenes after scenes exist. Beat Board cards do not require Story Day.
 
 ### 14.3 Display
 Timeline shows ordered scenes by story day. If multiple scenes are unassigned, an “Unassigned” group appears.
@@ -615,15 +615,15 @@ Users can enter it by:
 - Open current screenplay
 - Open a draft
 - Import screenplay
-- Build from Story Board
+- Build from Beat Board
 
 ### 15.3 Modes
 - Focus Mode: screenplay page dominates the window.
 - Standard Mode: scene navigator and compact tools visible.
-- Writing Room Mode: screenplay plus optional Story Board / scene notes / character / comments panel.
+- Writing Room Mode: screenplay plus optional Beat Board / scene notes / character / comments panel.
 
 ### 15.4 Screenplay authority
-The screenplay owns the written scene content. Production breakdown uses a chosen screenplay/source version. Story Board remains a reference layer unless the user explicitly uses a board action to create/reorder screenplay content.
+The screenplay owns the written scene content. Production breakdown uses a chosen screenplay/source version. Beat Board remains a reference layer unless the user explicitly uses a board action to create/reorder screenplay content.
 
 ### 15.5 Basic writing controls
 Required:
@@ -682,7 +682,7 @@ Right: optional panel.
 ### 17.2 Optional right panels
 The user can open:
 
-- Story Board reference
+- Beat Board reference
 - Scene Notes
 - Characters
 - Comments
@@ -697,13 +697,13 @@ Idea Vault is accessed through the normal application navigation and search. It 
 The application remembers the last layout for the project/user. Opening a script does not reset the user's preferred panel arrangement.
 
 ### 17.5 Panel independence
-Opening a panel must never edit the underlying content merely because it is visible. For example, viewing a Story Board card does not lock or modify the screenplay.
+Opening a panel must never edit the underlying content merely because it is visible. For example, viewing a Beat Board card does not lock or modify the screenplay.
 
 
-# 18. Build Screenplay From Story Board
+# 18. Build Screenplay From Beat Board
 
 ### 18.1 Entry
-Button location: Story Board toolbar → Build Screenplay.
+Button location: Beat Board toolbar → Build Screenplay.
 
 ### 18.2 Preconditions
 The user may select all active scene cards or a subset. Scene cards without screenplay headings must be resolved before conversion unless the user chooses to exclude them.
@@ -711,7 +711,7 @@ The user may select all active scene cards or a subset. Scene cards without scre
 ### 18.3 Preview
 Before creating the screenplay, show a simple ordered preview:
 
-| Order | Story Board scene | Heading | Include |
+| Order | Beat Board scene | Heading | Include |
 |---|---|---|---|
 
 The user can deselect cards.
@@ -726,7 +726,7 @@ When confirmed:
 5. Do not copy unrelated Idea Vault metadata.
 
 ### 18.5 Repeat build
-Building again from the Story Board must not silently overwrite an existing screenplay. Options:
+Building again from the Beat Board must not silently overwrite an existing screenplay. Options:
 
 - create new screenplay draft;
 - build new screenplay document;
@@ -984,7 +984,7 @@ User can create an Episode with:
 - status.
 
 ### 25.3 Each episode
-Each episode has its own Story Board, screenplay drafts, breakdown and production planning.
+Each episode has its own Beat Board, screenplay drafts, breakdown and production planning.
 
 ### 25.4 Series-level references
 Series-level lightweight directories may contain recurring characters and locations. Episode-level records can reference them.
@@ -1599,7 +1599,7 @@ Supported scopes include:
 - Current scene
 - Current screenplay
 - Specific draft
-- Story Board
+- Beat Board
 - Selected Idea Vault items
 - Production
 - Specific shooting day
@@ -1650,7 +1650,7 @@ AI may propose Scene Cards, Beats, synopsis text or other story-development stru
 
 The proposal remains non-authoritative until the user accepts it.
 
-Story Board changes must never silently rewrite screenplay content.
+Beat Board changes must never silently rewrite screenplay content.
 
 ### 42.9 Breakdown assistance
 
@@ -1684,7 +1684,7 @@ A project-wide rename/replace command must distinguish:
 - structured references;
 - screenplay Character elements;
 - production references;
-- Story Board references;
+- Beat Board references;
 - tasks/notes when explicitly selected;
 - arbitrary dialogue/action text.
 
@@ -1758,7 +1758,7 @@ At minimum:
 
 AI conversation history may be retained according to product settings.
 
-AI responses do not silently become Project Notes, Story Board content or screenplay content.
+AI responses do not silently become Project Notes, Beat Board content or screenplay content.
 
 Accepted AI mutations become normal OpenFrame history/activity records and remain undoable where supported.
 
@@ -1795,7 +1795,7 @@ Without internet, the user can:
 
 - create/open projects;
 - edit Vault;
-- edit Story Board;
+- edit Beat Board;
 - write scripts;
 - create drafts;
 - review/comment locally;
@@ -1917,7 +1917,7 @@ Remote collaboration uses files as the transport layer, not mandatory OpenFrame 
 ### 47.2 Package categories
 Each major workspace can export a purpose-specific package:
 
-- Story Board package
+- Beat Board package
 - Screenplay review package
 - Breakdown package
 - Shot List package
@@ -1972,7 +1972,7 @@ Another OpenFrame desktop joins the session using the displayed local session in
 The host chooses what is shared:
 
 - entire project;
-- Story Board;
+- Beat Board;
 - Screenplay;
 - specific production workspace.
 
@@ -2030,7 +2030,7 @@ If a local-network collaborator has gone offline, their later local changes must
 
 # 50. Exchange Package Types and Merge Rules
 
-### 50.1 Story Board package
+### 50.1 Beat Board package
 Contains selected Acts/Sequences/Beats/Scene Cards and comments/attachments selected by the exporter.
 
 On import:
@@ -2122,7 +2122,7 @@ Deleting a source object does not automatically destroy downstream objects unles
 
 Example:
 
-Deleting a Story Board Scene Card does not delete the screenplay scene that was created from it.
+Deleting a Beat Board Scene Card does not delete the screenplay scene that was created from it.
 
 ### 52.4 Archive vs delete
 Archive is preferred for reusable catalog items, projects and people. Delete is reserved for accidental/unwanted records.
@@ -2283,7 +2283,7 @@ Templates accelerate repeated indie workflows without adding mandatory setup.
 ### 59.2 Template types
 - Project starter
 - Moodboard starter
-- Story Board starter
+- Beat Board starter
 - Call sheet template
 - Shot list template
 - Breakdown document template
@@ -2307,7 +2307,7 @@ Every major useful workspace must have an obvious Export action.
 ### 60.2 Supported output
 Screenplay: PDF/FDX/Fountain/DOCX.
 
-Outline/Story Board: PDF.
+Outline/Beat Board: PDF.
 
 Moodboard: PDF/image presentation.
 
@@ -2348,7 +2348,7 @@ Every empty workspace needs a purpose-oriented message and one or two actions.
 
 Primary: Add.
 
-### 61.2 Story Board
+### 61.2 Beat Board
 > “Start shaping the story. Add an Act, Sequence, Beat, or Scene Card.”
 
 Primary: Add Scene.
@@ -2423,7 +2423,7 @@ The following matrix is mandatory product behavior.
 |---|---|---|---|---|
 | Global Idea Vault | Project Idea Vault | Copy | No | User initiates |
 | Project Idea Vault | Story | Copy/convert | No | User initiates |
-| Story Board | Screenplay | Build/copy structure | No | User initiates |
+| Beat Board | Screenplay | Build/copy structure | No | User initiates |
 | Screenplay | Breakdown | Source snapshot/referenced source | User initiates | Yes |
 | Screenplay | Shot List | Scene-based creation | User initiates | Yes |
 | Screenplay | Storyboard | Scene-based creation | User initiates | Yes |
@@ -2437,7 +2437,7 @@ The following matrix is mandatory product behavior.
 The product does not require:
 
 - Idea Vault live sync with screenplay;
-- Story Board live sync with every screenplay edit;
+- Beat Board live sync with every screenplay edit;
 - Call Sheet edits to rewrite schedule;
 - Moodboard edits to modify scene production data;
 - shot changes to rewrite screenplay;
@@ -2521,7 +2521,7 @@ Expected: snapshots created; project remains unchanged.
 
 # 65. End-to-End Functional Walkthrough — Existing Screenplay User
 
-A user who already has a script should not be forced through Idea Vault or Story Board.
+A user who already has a script should not be forced through Idea Vault or Beat Board.
 
 1. Create/open project.
 2. Import PDF/FDX/Fountain/TXT/DOCX/paste.
@@ -2535,14 +2535,14 @@ A user who already has a script should not be forced through Idea Vault or Story
 10. Create Schedule.
 11. Generate Call Sheets.
 
-The Story Board remains optional for reference.
+The Beat Board remains optional for reference.
 
 
 # 66. End-to-End Functional Walkthrough — Short Film
 
 A short film may use only:
 
-Idea Vault → Story Board → Screenplay → Breakdown → Shot List → Schedule → Call Sheet.
+Idea Vault → Beat Board → Screenplay → Breakdown → Shot List → Schedule → Call Sheet.
 
 The application must not force the user to fill:
 
@@ -2561,7 +2561,7 @@ Unused modules remain accessible but visually quiet.
 1. Create Series.
 2. Create Season.
 3. Create episodes.
-4. Develop each episode on its own Story Board.
+4. Develop each episode on its own Beat Board.
 5. Write each episode screenplay.
 6. Maintain series-level recurring character/location references.
 7. Break down selected episode scripts.
@@ -2584,7 +2584,7 @@ Season-level navigation remains simple and episode-centric. No giant season-room
 | FSD-STORY-004 | Dragging cards changes story order and is undoable. | P0 | Drag then undo. |
 | FSD-STORY-005 | Parking Lot preserves unused creative cards. | P0 | Move card, close/reopen project, restore. |
 | FSD-SCRIPT-001 | Screenplay supports required screenplay element types. | P0 | Write sample script. |
-| FSD-SCRIPT-002 | Build Screenplay creates scenes from selected Story Board cards. | P0 | Build and verify order/headings. |
+| FSD-SCRIPT-002 | Build Screenplay creates scenes from selected Beat Board cards. | P0 | Build and verify order/headings. |
 | FSD-SCRIPT-003 | Idea Vault is not live synchronized with screenplay. | P0 | Edit source note and verify script unchanged. |
 | FSD-SCRIPT-004 | Named drafts preserve prior versions. | P0 | Create multiple drafts and compare. |
 | FSD-SCRIPT-005 | Script comments can be created and resolved. | P0 | Add comment, reply, resolve. |
@@ -2717,7 +2717,7 @@ Any exported document/package is a snapshot. Re-import behavior is explicitly de
 | Feature | Feature | Short | Episodic |
 |---|---|---|---|
 | Idea Vault | Yes | Yes | Yes |
-| Story Board | Yes | Yes | Yes |
+| Beat Board | Yes | Yes | Yes |
 | Acts | Yes | Optional | Yes |
 | Sequences | Yes | Optional | Yes |
 | Beats | Yes | Optional | Yes |
@@ -2741,7 +2741,7 @@ Every major workspace must have one obvious primary action:
 
 Idea Vault → Add
 
-Story Board → Add Scene / Add Sequence
+Beat Board → Add Scene / Add Sequence
 
 Screenplay → Write / Import
 
@@ -2760,10 +2760,10 @@ Advanced fields are hidden behind Details/Edit/More. Default forms remain small.
 The user can accomplish normal actions without understanding professional film terminology beyond what is necessary for the document being created.
 
 ### 75.4 No forced workflow
-Users can import an existing screenplay and bypass Idea Vault/Story Board. Users can also develop for months without creating a schedule.
+Users can import an existing screenplay and bypass Idea Vault/Beat Board. Users can also develop for months without creating a schedule.
 
 ### 75.5 Visual density
-The Story Board and Stripboard may be information-dense, but each card/strip remains visually scannable. Avoid spreadsheet-style walls of metadata.
+The Beat Board and Stripboard may be information-dense, but each card/strip remains visually scannable. Avoid spreadsheet-style walls of metadata.
 
 
 # 76. QA Test Design Guidance
@@ -2816,7 +2816,7 @@ The following workflows are regression-critical because downstream modules depen
 # 78. Product-Behavior Edge Cases
 
 ### 78.1 Duplicate scene card with no heading
-Allowed in Story Board. Build Screenplay later requires a valid heading.
+Allowed in Beat Board. Build Screenplay later requires a valid heading.
 
 ### 78.2 Empty sequence
 Allowed. It may remain empty.
@@ -2842,8 +2842,8 @@ Offer move children rather than automatic loss.
 ### 78.9 Screenplay scene reordered independently from board
 Supported. Board is a reference layer unless the user deliberately applies an order change.
 
-### 78.10 Script imported into a project with existing Story Board
-Import creates a screenplay/draft without modifying Story Board.
+### 78.10 Script imported into a project with existing Beat Board
+Import creates a screenplay/draft without modifying Beat Board.
 
 ### 78.11 Schedule created from screenplay with no breakdown
 Allowed. Breakdown is helpful but not required to schedule.
@@ -2875,7 +2875,7 @@ The following are not implied by this FSD and must not be implemented as hidden 
 - no automatic schedule optimizer that silently moves scenes;
 - no automatic AI rewriting of screenplay text;
 - no giant metadata form on Scene Cards;
-- no requirement to maintain scene numbers manually on the Story Board.
+- no requirement to maintain scene numbers manually on the Beat Board.
 
 
 # 80. Implementation Handoff Checklist
@@ -2941,7 +2941,7 @@ These identifiers allow the PRD/FSD, UX specification and QA test specification 
 
 # 82. Traceability to the Source PRD
 
-The FSD is derived from the source PRD and preserves the core product decisions described there: local-first desktop operation, indie target users, Idea Vault, simple Story Board, screenplay, breakdown, pre-production, schedule, call sheets, exchange packages, local-network collaboration, optional AI, progressive disclosure, no duplicate entry, and explicit scope boundaries. The source PRD establishes the high-level information hierarchy and product boundaries; this FSD expands those sections into user actions, states, mutation rules, connections and acceptance behavior. fileciteturn2file0L4-L23
+The FSD is derived from the source PRD and preserves the core product decisions described there: local-first desktop operation, indie target users, Idea Vault, simple Beat Board, screenplay, breakdown, pre-production, schedule, call sheets, exchange packages, local-network collaboration, optional AI, progressive disclosure, no duplicate entry, and explicit scope boundaries. The source PRD establishes the high-level information hierarchy and product boundaries; this FSD expands those sections into user actions, states, mutation rules, connections and acceptance behavior. fileciteturn2file0L4-L23
 
 The source PRD's core chain is:
 
@@ -2987,8 +2987,8 @@ OpenFrame Studio is functionally complete when an independent filmmaker can:
 
 1. Create or import a project.
 2. Throw any film-related material into a Global or Project Idea Vault without categorizing it.
-3. Create an Act/Sequence/Beat/Scene Card outline through an easy drag-and-drop Story Board.
-4. Keep the Story Board as a visual reference even after writing begins.
+3. Create an Act/Sequence/Beat/Scene Card outline through an easy drag-and-drop Beat Board.
+4. Keep the Beat Board as a visual reference even after writing begins.
 5. Build a screenplay from selected Scene Cards or write/import a screenplay directly.
 6. Work on multiple named drafts with automatic history.
 7. Compare drafts and conduct lightweight review rounds.
@@ -3138,7 +3138,7 @@ For consistency, the product should prefer these labels unless a UX specificatio
 - Add Image
 - Add URL
 - Add Voice Note
-- Story Board
+- Beat Board
 - Add Act
 - Add Sequence
 - Add Beat
@@ -3238,7 +3238,7 @@ This section defines the expected functional composition of each primary screen.
 
 The Add control must never be hidden behind a settings menu.
 
-## 86.4 Story Board
+## 86.4 Beat Board
 
 **Functional regions:** act/sequence hierarchy, cards, Parking Lot, view selector, undo/redo, build-screenplay action.
 
@@ -3327,10 +3327,10 @@ Copying a Global Vault item into a project creates a separate project item. The 
 The user may keep old ideas indefinitely. There is no automatic cleanup based on age or “unused” status.
 
 
-# 89. Story Board — Granular Functional Contract
+# 89. Beat Board — Granular Functional Contract
 
 ### 89.1 Canvas creation zones
-The Story Board should make it visually obvious where a new Act, Sequence, Beat or Scene can be dropped. Drop zones should be stable enough that users can predict the result before releasing the mouse.
+The Beat Board should make it visually obvious where a new Act, Sequence, Beat or Scene can be dropped. Drop zones should be stable enough that users can predict the result before releasing the mouse.
 
 ### 89.2 Card expansion
 Double-click opens the expanded card. Clicking outside saves changes and returns to board view unless the user explicitly cancels.
@@ -3386,7 +3386,7 @@ Attachments can be added to the expanded card. They are reference material and d
 
 # 91. Build Screenplay — Detailed User Flow
 
-1. User opens Story Board.
+1. User opens Beat Board.
 2. User selects Build Screenplay.
 3. Application identifies active Scene Cards in board order.
 4. Application shows a build preview.
@@ -3409,7 +3409,7 @@ A Scene Card description is planning material, not automatically screenplay pros
 If temporary action text is selected, it is clearly marked as editable draft text rather than treated as final prose.
 
 ### 91.3 Included order
-The source order is exactly the Story Board order at the moment of build. Parking Lot objects are excluded by default.
+The source order is exactly the Beat Board order at the moment of build. Parking Lot objects are excluded by default.
 
 
 # 92. Screenplay Editor — Editing Contract
@@ -3427,7 +3427,7 @@ New scene is inserted at the current position or through scene navigator. The us
 Scene navigator updates after scenes are added/removed/reordered. Clicking an item moves focus without changing document state.
 
 ### 92.5 Section navigation
-Where useful, the editor may display act/sequence outline context from Story Board, but this is reference-only unless the user explicitly edits through the Story Board.
+Where useful, the editor may display act/sequence outline context from Beat Board, but this is reference-only unless the user explicitly edits through the Beat Board.
 
 ### 92.6 Draft selector
 Selecting another named draft opens that draft. If unsaved changes exist, the application completes save or requests a decision before switching.
@@ -3476,7 +3476,7 @@ Comment stores the selected text context, owning screenplay scene and surroundin
 Scene-level comment remains attached to scene identity.
 
 ### 94.3 Card comment
-Comment remains attached to the Story Board object even after reordering or moving containers.
+Comment remains attached to the Beat Board object even after reordering or moving containers.
 
 ### 94.4 Deleted target
 If the target object is deleted, the comment remains in history and points to the deleted object until permanently purged.
@@ -3901,7 +3901,7 @@ User selects a starter template during New Project or from Templates.
 ### 113.2 Template content
 A template may include:
 
-- Story Board sample structure;
+- Beat Board sample structure;
 - call sheet layout;
 - moodboard layout;
 - basic budget categories;
@@ -3919,10 +3919,10 @@ Resetting a template affects future uses only.
 ### 114.1 Beginner path
 A new project can be used with a recommended visible progression:
 
-Idea Vault → Story Board → Screenplay → Breakdown → Production → Schedule → Call Sheet.
+Idea Vault → Beat Board → Screenplay → Breakdown → Production → Schedule → Call Sheet.
 
 ### 114.2 Experienced path
-Import Screenplay bypasses the Story Board. Breakdown can be opened immediately. Schedule can be built without Moodboard or Storyboard.
+Import Screenplay bypasses the Beat Board. Breakdown can be opened immediately. Schedule can be built without Moodboard or Storyboard.
 
 ### 114.3 No mode lock
 The user can move between workflows at any time. “Beginner” is not a permission level.
@@ -4115,8 +4115,8 @@ The application must distinguish **derived display updates** from **source-data 
 
 | Change | Allowed automatic effect | Forbidden automatic effect |
 |---|---|---|
-| Story Board card reorder | Update board order | Rewrite prose silently |
-| Story Board card edit | Update card | Rewrite screenplay |
+| Beat Board card reorder | Update board order | Rewrite prose silently |
+| Beat Board card edit | Update card | Rewrite screenplay |
 | Screenplay scene heading edit | Update screenplay | Rename location catalog silently |
 | Screenplay source update | Flag production review | Delete breakdown/shot/storyboard data |
 | Catalog status edit | Update catalog displays | Rewrite script |
@@ -4226,7 +4226,7 @@ A schedule with many shooting days remains manageable in board/list views.
 |---|---|---|---|
 |Global Idea Vault|Local project/user|Project Idea Vault copies|Project/story/script|
 |Project Idea Vault|Project|Story copies|Screenplay automatically|
-|Story Board|Project|Optional screenplay build|Existing screenplay silently|
+|Beat Board|Project|Optional screenplay build|Existing screenplay silently|
 |Characters|Project|Screenplay/Production references|Screenplay prose|
 |Screenplay|Project|Breakdown, shots, storyboard, schedule source|Idea Vault automatically|
 |Breakdown|Screenplay source|Catalog|Script text|
@@ -4258,7 +4258,7 @@ The following scenarios form a minimum end-to-end functional test suite. Each sc
 9. Duplicate Scene and edit duplicate.
 
 ### B. Screenplay
-10. Build script from Story Board.
+10. Build script from Beat Board.
 11. Build script with missing headings and resolve them.
 12. Import FDX.
 13. Import PDF with warning.
@@ -4387,7 +4387,7 @@ A team should not mark a module “done” if it only demonstrates the happy-pat
 |14|Project Idea Vault|Expanded into one or more functional contracts above; source-to-behavior mapping retained.|At least one functional scenario or acceptance test exists for each applicable area.|
 |15|Project Home|Expanded into one or more functional contracts above; source-to-behavior mapping retained.|At least one functional scenario or acceptance test exists for each applicable area.|
 |16|Story Workspace|Expanded into one or more functional contracts above; source-to-behavior mapping retained.|At least one functional scenario or acceptance test exists for each applicable area.|
-|17|Story Board Views|Expanded into one or more functional contracts above; source-to-behavior mapping retained.|At least one functional scenario or acceptance test exists for each applicable area.|
+|17|Beat Board Views|Expanded into one or more functional contracts above; source-to-behavior mapping retained.|At least one functional scenario or acceptance test exists for each applicable area.|
 |18|Acts|Expanded into one or more functional contracts above; source-to-behavior mapping retained.|At least one functional scenario or acceptance test exists for each applicable area.|
 |19|Sequences|Expanded into one or more functional contracts above; source-to-behavior mapping retained.|At least one functional scenario or acceptance test exists for each applicable area.|
 |20|Beat Cards|Expanded into one or more functional contracts above; source-to-behavior mapping retained.|At least one functional scenario or acceptance test exists for each applicable area.|
@@ -4397,9 +4397,9 @@ A team should not mark a module “done” if it only demonstrates the happy-pat
 |24|Drag-and-Drop Story Editing|Expanded into one or more functional contracts above; source-to-behavior mapping retained.|At least one functional scenario or acceptance test exists for each applicable area.|
 |25|Parking Lot|Expanded into one or more functional contracts above; source-to-behavior mapping retained.|At least one functional scenario or acceptance test exists for each applicable area.|
 |26|Duplicate and Experiment|Expanded into one or more functional contracts above; source-to-behavior mapping retained.|At least one functional scenario or acceptance test exists for each applicable area.|
-|27|Story Board to Screenplay|Expanded into one or more functional contracts above; source-to-behavior mapping retained.|At least one functional scenario or acceptance test exists for each applicable area.|
-|28|“Build Screenplay From Story Board”|Expanded into one or more functional contracts above; source-to-behavior mapping retained.|At least one functional scenario or acceptance test exists for each applicable area.|
-|29|Story Board and Screenplay Relationship|Expanded into one or more functional contracts above; source-to-behavior mapping retained.|At least one functional scenario or acceptance test exists for each applicable area.|
+|27|Beat Board to Screenplay|Expanded into one or more functional contracts above; source-to-behavior mapping retained.|At least one functional scenario or acceptance test exists for each applicable area.|
+|28|“Build Screenplay From Beat Board”|Expanded into one or more functional contracts above; source-to-behavior mapping retained.|At least one functional scenario or acceptance test exists for each applicable area.|
+|29|Beat Board and Screenplay Relationship|Expanded into one or more functional contracts above; source-to-behavior mapping retained.|At least one functional scenario or acceptance test exists for each applicable area.|
 |30|Characters|Expanded into one or more functional contracts above; source-to-behavior mapping retained.|At least one functional scenario or acceptance test exists for each applicable area.|
 |31|Character Relationship View|Expanded into one or more functional contracts above; source-to-behavior mapping retained.|At least one functional scenario or acceptance test exists for each applicable area.|
 |32|Story Timeline|Expanded into one or more functional contracts above; source-to-behavior mapping retained.|At least one functional scenario or acceptance test exists for each applicable area.|
@@ -4426,7 +4426,7 @@ A team should not mark a module “done” if it only demonstrates the happy-pat
 |53|Locked Script Behavior|Expanded into one or more functional contracts above; source-to-behavior mapping retained.|At least one functional scenario or acceptance test exists for each applicable area.|
 |54|Production Revision Colors|Expanded into one or more functional contracts above; source-to-behavior mapping retained.|At least one functional scenario or acceptance test exists for each applicable area.|
 |55|Episodic Projects|Expanded into one or more functional contracts above; source-to-behavior mapping retained.|At least one functional scenario or acceptance test exists for each applicable area.|
-|56|Series-Level Story Board|Expanded into one or more functional contracts above; source-to-behavior mapping retained.|At least one functional scenario or acceptance test exists for each applicable area.|
+|56|Series-Level Beat Board|Expanded into one or more functional contracts above; source-to-behavior mapping retained.|At least one functional scenario or acceptance test exists for each applicable area.|
 |57|Breakdown|Expanded into one or more functional contracts above; source-to-behavior mapping retained.|At least one functional scenario or acceptance test exists for each applicable area.|
 |58|Breakdown Principle|Expanded into one or more functional contracts above; source-to-behavior mapping retained.|At least one functional scenario or acceptance test exists for each applicable area.|
 |59|Automatic Breakdown Suggestions|Expanded into one or more functional contracts above; source-to-behavior mapping retained.|At least one functional scenario or acceptance test exists for each applicable area.|
@@ -4506,7 +4506,7 @@ A team should not mark a module “done” if it only demonstrates the happy-pat
 |133|Remote Collaboration Without Cloud|Expanded into one or more functional contracts above; source-to-behavior mapping retained.|At least one functional scenario or acceptance test exists for each applicable area.|
 |134|Review Package UX|Expanded into one or more functional contracts above; source-to-behavior mapping retained.|At least one functional scenario or acceptance test exists for each applicable area.|
 |135|Comment Import Mapping|Expanded into one or more functional contracts above; source-to-behavior mapping retained.|At least one functional scenario or acceptance test exists for each applicable area.|
-|136|Story Board Exchange|Expanded into one or more functional contracts above; source-to-behavior mapping retained.|At least one functional scenario or acceptance test exists for each applicable area.|
+|136|Beat Board Exchange|Expanded into one or more functional contracts above; source-to-behavior mapping retained.|At least one functional scenario or acceptance test exists for each applicable area.|
 |137|Shot List Exchange|Expanded into one or more functional contracts above; source-to-behavior mapping retained.|At least one functional scenario or acceptance test exists for each applicable area.|
 |138|Breakdown Exchange|Expanded into one or more functional contracts above; source-to-behavior mapping retained.|At least one functional scenario or acceptance test exists for each applicable area.|
 |139|Why This Matters|Expanded into one or more functional contracts above; source-to-behavior mapping retained.|At least one functional scenario or acceptance test exists for each applicable area.|
@@ -4571,7 +4571,7 @@ A team should not mark a module “done” if it only demonstrates the happy-pat
 |198|Explicitly Deferred|Expanded into one or more functional contracts above; source-to-behavior mapping retained.|At least one functional scenario or acceptance test exists for each applicable area.|
 |199|MVP Product Test|Expanded into one or more functional contracts above; source-to-behavior mapping retained.|At least one functional scenario or acceptance test exists for each applicable area.|
 |200|Acceptance Criteria — Idea Vault|Expanded into one or more functional contracts above; source-to-behavior mapping retained.|At least one functional scenario or acceptance test exists for each applicable area.|
-|201|Acceptance Criteria — Story Board|Expanded into one or more functional contracts above; source-to-behavior mapping retained.|At least one functional scenario or acceptance test exists for each applicable area.|
+|201|Acceptance Criteria — Beat Board|Expanded into one or more functional contracts above; source-to-behavior mapping retained.|At least one functional scenario or acceptance test exists for each applicable area.|
 |202|Acceptance Criteria — Screenplay|Expanded into one or more functional contracts above; source-to-behavior mapping retained.|At least one functional scenario or acceptance test exists for each applicable area.|
 |203|Acceptance Criteria — Breakdown|Expanded into one or more functional contracts above; source-to-behavior mapping retained.|At least one functional scenario or acceptance test exists for each applicable area.|
 |204|Acceptance Criteria — Shot List|Expanded into one or more functional contracts above; source-to-behavior mapping retained.|At least one functional scenario or acceptance test exists for each applicable area.|
@@ -4613,7 +4613,7 @@ This appendix does not prescribe code architecture. It defines a sensible implem
 1. Application shell.
 2. Project create/open/close.
 3. Global/Project Idea Vault.
-4. Story Board.
+4. Beat Board.
 5. Acts/Sequences/Beats/Scene Cards.
 6. Undo/redo.
 7. Autosave/recovery.
@@ -4621,7 +4621,7 @@ This appendix does not prescribe code architecture. It defines a sensible implem
 ### Wave 2 — Screenwriting
 
 8. Screenplay data/editing.
-9. Build from Story Board.
+9. Build from Beat Board.
 10. Drafts/history.
 11. Comparison.
 12. Comments/reviews.
@@ -4779,7 +4779,7 @@ Required source shooting day; generated core production data; editable call time
 |---|---|---|---|
 |Home|Open/Create Project|Archive, duplicate, rename, search|Production metadata|
 |Idea Vault|Add|Search, filter, collection, copy to project, export|Required classification|
-|Story Board|Add Scene/Add Sequence|Add Act/Beat, move, duplicate, park, build screenplay|Production fields|
+|Beat Board|Add Scene/Add Sequence|Add Act/Beat, move, duplicate, park, build screenplay|Production fields|
 |Characters|Add Character|Edit, archive, open scenes|Payroll/HR|
 |Screenplay|Write/Edit|Drafts, compare, comment, export, lock|Idea Vault live sync|
 |Breakdown|Tag/Suggest|Catalog, filter scenes, reports|Silent auto-confirm|
@@ -4794,7 +4794,7 @@ Required source shooting day; generated core production data; editable call time
 
 # 136. Screen-Level State and Action Rules
 
-### 136.1 Story Board state
+### 136.1 Beat Board state
 Possible visible states: Empty, Populated, Filtering, Card Expanded, Dragging, Building Screenplay, Saving, Save Error.
 
 When Dragging ends in a valid target, commit the move immediately. When Dragging ends outside valid targets, return the card to its original position with no data mutation.
@@ -5148,7 +5148,7 @@ If network access fails, the application reports that the AI action could not be
 
 |AI request|Preview|Apply action|
 |---|---|---|
-|Create Scene Card|Proposed card text + parent sequence|Add to Story Board|
+|Create Scene Card|Proposed card text + parent sequence|Add to Beat Board|
 |Create Breakdown Elements|Suggested list grouped by category|Accept selected/all|
 |Generate Synopsis|Proposed synopsis text|Copy into selected field|
 |Suggest Schedule Grouping|Proposed grouping explanation|User manually applies or confirms|
@@ -5301,17 +5301,17 @@ Examples:
 - Breakdown scene → Catalog Prop = Reference/association.
 - Shooting Day → Call Sheet = Source relationship + snapshot on export.
 - Screenplay → Production Source = Reference to selected version/snapshot state.
-- Story Board Scene → Screenplay Scene = Creation relationship, not permanent live synchronization.
+- Beat Board Scene → Screenplay Scene = Creation relationship, not permanent live synchronization.
 
 
 # 165. Regression Matrix for Cross-Module Changes
 
 |Change made|Verify immediately|Verify downstream|Verify must NOT change|
 |---|---|---|---|
-|Move Scene Card|Story Board order|Optional next build preview|Existing screenplay text|
+|Move Scene Card|Beat Board order|Optional next build preview|Existing screenplay text|
 |Edit Scene Card|Card content|Build preview if rebuilt|Existing screenplay automatically|
 |Build Screenplay|New draft|Draft history|Idea Vault|
-|Edit Screenplay|Current draft|Potential production stale flag|Story Board text automatically|
+|Edit Screenplay|Current draft|Potential production stale flag|Beat Board text automatically|
 |Lock Draft|Locked source state|Production can select source|Older drafts|
 |Script revision|New revision|Production update review|Locked source|
 |Add breakdown prop|Scene breakdown|Catalog usage|Screenplay prose|
@@ -5402,7 +5402,7 @@ A release that fails this walkthrough is not functionally complete regardless of
 Use plain wording where possible:
 
 - “Scene Cards” instead of “Narrative Units.”
-- “Story Board” instead of “Narrative Architecture Graph.”
+- “Beat Board” instead of “Narrative Architecture Graph.”
 - “Parking Lot” instead of “Inactive Branch Repository.”
 - “Shooting Schedule” instead of “Production Optimization Engine.”
 - “Suggest Elements” instead of “Automated Semantic Breakdown Pipeline.”
@@ -5474,7 +5474,7 @@ The engineering team should use this FSD together with the PRD, not as a replace
 |PRD-STORY-001|FSD-STORY-028|Sequence freeform name|No formal purpose/goal field is mandatory.|P0|Create sequence with name only.|
 |PRD-STORY-002|FSD-STORY-029|Beat conversion|Beat can become a new Scene Card using its text.|P0|Convert and edit.|
 |PRD-STORY-002|FSD-STORY-030|Scene-to-beat conversion|Scene card can be converted/duplicated as beat if UI supports the operation.|P0|Verify source retained.|
-|PRD-SCRIPT-001|FSD-SCRIPT-001|New screenplay|User can create an empty screenplay independently of Story Board.|P0|Create screenplay and type.|
+|PRD-SCRIPT-001|FSD-SCRIPT-001|New screenplay|User can create an empty screenplay independently of Beat Board.|P0|Create screenplay and type.|
 |PRD-SCRIPT-001|FSD-SCRIPT-002|Feature type|Feature screenplay project supports normal scene writing.|P0|Create feature and write.|
 |PRD-SCRIPT-001|FSD-SCRIPT-003|Short type|Short film project supports same editor without extra structure.|P0|Create short and write.|
 |PRD-SCRIPT-001|FSD-SCRIPT-004|Episodic type|Episode screenplay exists inside episode container.|P0|Create episode script.|
@@ -5669,10 +5669,10 @@ The engineering team should use this FSD together with the PRD, not as a replace
 |Idea|Type|Required|Supported item type|Rendering|
 |Idea|Title|Optional|May be blank|Vault display|
 |Idea|Body/Caption|Optional|Plain text|Preview/search|
-|Act|Title|Required|Non-empty|Story Board|
-|Sequence|Name|Required|Non-empty|Story Board grouping|
-|Beat|Text|Required for useful beat|Non-empty after save unless intentionally parked|Story Board|
-|Scene Card|Description|Required for active scene|Text|Story Board/screenplay build|
+|Act|Title|Required|Non-empty|Beat Board|
+|Sequence|Name|Required|Non-empty|Beat Board grouping|
+|Beat|Text|Required for useful beat|Non-empty after save unless intentionally parked|Beat Board|
+|Scene Card|Description|Required for active scene|Text|Beat Board/screenplay build|
 |Scene Card|Heading|Optional|Valid screenplay heading when used|Build Screenplay|
 |Character|Name|Required|Non-empty|Character directory|
 |Draft|Name|Required|Non-empty|Draft history|
@@ -5698,10 +5698,10 @@ The engineering team should use this FSD together with the PRD, not as a replace
 
 |ID|Event|Required result|Primary area|
 |---|---|---|---|
-|EVT-001|Scene Card moved|Story Board order/parent changes; undo entry created; screenplay unchanged automatically.|Story Board|
-|EVT-002|Scene Card duplicated|New card identity created with copied content; screenplay relationship absent.|Story Board|
-|EVT-003|Scene Card parked|Active outline excludes card; card retained in Parking Lot.|Story Board|
-|EVT-004|Scene Card restored|Card placed at user-selected insertion point; identity retained.|Story Board|
+|EVT-001|Scene Card moved|Beat Board order/parent changes; undo entry created; screenplay unchanged automatically.|Beat Board|
+|EVT-002|Scene Card duplicated|New card identity created with copied content; screenplay relationship absent.|Beat Board|
+|EVT-003|Scene Card parked|Active outline excludes card; card retained in Parking Lot.|Beat Board|
+|EVT-004|Scene Card restored|Card placed at user-selected insertion point; identity retained.|Beat Board|
 |EVT-005|Build Screenplay confirmed|New screenplay/draft created from selected cards; existing drafts untouched.|Story → Screenplay|
 |EVT-006|Existing script reorder request|Warning displayed before applying board order to written screenplay.|Story/Screenplay|
 |EVT-007|Screenplay draft created|Parent draft remains unchanged; new current/non-current state applied per selection.|Screenplay|
@@ -5727,12 +5727,12 @@ The engineering team should use this FSD together with the PRD, not as a replace
 |SC-001|New project from scratch|No project open|Create project and enter title/type|New project opens at Project Home with empty workspaces and three clear next actions.|
 |SC-002|Global idea copied to project|Global Vault contains item|Copy item to Project A|Project copy is independent and appears in Project Vault.|
 |SC-003|Messy idea collection|Project Vault has mixed files|Add 10 items without tags or titles|All items remain stored and searchable without classification.|
-|SC-004|Card outline|Empty Story Board|Create Act, Sequence and five Scene Cards|Cards are compact, ordered and editable through drag/drop.|
+|SC-004|Card outline|Empty Beat Board|Create Act, Sequence and five Scene Cards|Cards are compact, ordered and editable through drag/drop.|
 |SC-005|Short film no sequences|Short project|Create Act and direct Scene Cards|No sequence is required; screenplay build remains possible.|
 |SC-006|Parking Lot experiment|Board has scenes|Park two cards and restore one|Active story excludes parked cards; restored card returns to outline.|
 |SC-007|Build screenplay|Board has valid headings|Build screenplay|New screenplay contains scenes in card order with generated numbers.|
 |SC-008|Build with missing headings|Board has one card without heading|Build screenplay|User is prompted to supply heading or exclude the card.|
-|SC-009|Write without board|New project|Create screenplay directly|User can write normally; Story Board remains optional.|
+|SC-009|Write without board|New project|Create screenplay directly|User can write normally; Beat Board remains optional.|
 |SC-010|Import existing script|Project has no script|Import FDX|Draft appears with parsed scenes and import summary.|
 |SC-011|Draft history|Draft 1 exists|Create Draft 2, edit, compare|Draft 1 is unchanged and comparison shows differences.|
 |SC-012|Review round|Draft 3 exists|Create review and comments|Comments remain attached and resolvable.|
@@ -5766,12 +5766,12 @@ The user opens OpenFrame, creates a project, and immediately enters Project Idea
 ### 175.2 Story shaping
 The user creates Act 1, then a Sequence named `Hero Introduction`. They create six Scene Cards using only short descriptions. They drag cards until the sequence feels correct. They park two unused ideas.
 
-**Expected state:** Story Board contains a usable outline with no manual scene numbering and no character/production metadata.
+**Expected state:** Beat Board contains a usable outline with no manual scene numbering and no character/production metadata.
 
 ### 175.3 Screenplay creation
 User adds headings to the scenes selected for the screenplay and clicks Build Screenplay. OpenFrame previews the order and confirms a new draft. The screenplay opens with the scenes in order.
 
-**Expected state:** screenplay has generated scene numbers; Story Board remains an independent reference.
+**Expected state:** screenplay has generated scene numbers; Beat Board remains an independent reference.
 
 ### 175.4 Writing
 The user writes action/dialogue for several weeks, creates named drafts, and conducts a review round. Comments are attached to text and scenes. Resolved comments remain in history.

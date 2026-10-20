@@ -23,7 +23,7 @@ export const PACKAGE_INFO: Record<PackageType, { label: string; extension: strin
   backup: { label: "Backup Package", extension: "ofbackup", menuLabel: "Create Backup…" },
   project: { label: "Full Project Package", extension: "ofproject", menuLabel: "Export Full Project…" },
   scriptReview: { label: "Screenplay review package", extension: "ofscriptreview", menuLabel: "Export Review Package (script)…" },
-  story: { label: "Story Board package", extension: "ofstory", menuLabel: "Story Board Package…" },
+  story: { label: "Beat Board package", extension: "ofstory", menuLabel: "Beat Board Package…" },
   breakdown: { label: "Breakdown package", extension: "ofbreakdown", menuLabel: "Breakdown Package…" },
   shots: { label: "Shot List package", extension: "ofshots", menuLabel: "Shot List Package…" },
   schedule: { label: "Schedule package", extension: "ofschedule", menuLabel: "Schedule Package…" },
@@ -33,7 +33,7 @@ export const PACKAGE_INFO: Record<PackageType, { label: string; extension: strin
 
 /** Exchange package types that can be exported from a project (menu order, UX §3.39). */
 // The Breakdown, Shot List, Schedule and Call Sheet Review packages were removed (owner change list
-// item 9, 2026-10-19); only the script review and Story Board packages remain.
+// item 9, 2026-10-19); only the script review and Beat Board packages remain.
 export const EXCHANGE_EXPORT_TYPES: PackageType[] = ["scriptReview", "story"];
 
 export function isExchangeType(t: PackageType): boolean {

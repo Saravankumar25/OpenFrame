@@ -22,7 +22,7 @@ const item = (p: Partial<DeletedItemView> = {}): DeletedItemView => ({
   objectId: "o1",
   title: "Maybe Scene 17",
   typeLabel: "Scene Card",
-  wasIn: "Story Board · Parking Lot",
+  wasIn: "Beat Board · Parking Lot",
   parentMissing: false,
   deletedAt: Date.now(),
   deletedByName: "Nisha Verma",
@@ -41,7 +41,7 @@ describe("Recently Deleted", () => {
     callMock.mockImplementation(answerFrom({ "project.deleted_items": [item()], "trash.purge": purge }) as typeof call);
     renderWithClient(<RecentlyDeleted />);
     expect(await screen.findByText("Maybe Scene 17")).toBeInTheDocument();
-    expect(screen.getByText("Story Board · Parking Lot")).toBeInTheDocument();
+    expect(screen.getByText("Beat Board · Parking Lot")).toBeInTheDocument();
 
     // First click only opens the confirmation.
     await user.click(screen.getByRole("button", { name: "Delete Maybe Scene 17 permanently" }));
@@ -71,7 +71,7 @@ describe("Recently Deleted", () => {
     await user.click(screen.getByRole("button", { name: "Restore Maybe Scene 17" }));
     await waitFor(() => expect(restore).toHaveBeenCalledWith({ store: "project", id: "d1" }));
     expect(restoredMessage(item({ parentMissing: true }))).toMatch(/put in Unassigned/);
-    expect(restoredMessage(item())).toBe("Restored “Maybe Scene 17” to Story Board · Parking Lot");
+    expect(restoredMessage(item())).toBe("Restored “Maybe Scene 17” to Beat Board · Parking Lot");
     // The backend's relocation note wins when present.
     expect(restoredMessage(item(), { restoredNote: "Its original place no longer exists, so it was restored to Unassigned." })).toBe(
       "Restored “Maybe Scene 17”. Its original place no longer exists, so it was restored to Unassigned.",

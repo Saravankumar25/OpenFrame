@@ -39,7 +39,7 @@ describe("story", () => {
     await step("build", async () => {
       await firstLaunchProject(browser, "Paper Boats");
       await openWorkspace(browser, "Story");
-      await waitForText(browser, "Your Story Board is empty.");
+      await waitForText(browser, "Your Beat Board is empty.");
       await click(browser, "Add Act");
       await (await browser.$('//input[@aria-label="Act title"]')).setValue("Act One");
       await browser.keys("Enter");

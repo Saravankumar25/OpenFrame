@@ -91,7 +91,7 @@ fn seed_production(env: &TestEnv) {
     );
 }
 
-/// Story Board: two acts, a sequence with a card and a beat, a card directly
+/// Beat Board: two acts, a sequence with a card and a beat, a card directly
 /// in Act One, a Parking Lot card, notes, a comment and a private note.
 fn seed_story(env: &TestEnv) {
     let me = env.actor().user_id;
@@ -312,13 +312,13 @@ fn production_env() -> TestEnv {
     env
 }
 
-// ================================================================== Story Board
+// ================================================================== Beat Board
 
 #[test]
 fn story_board_outline_exports_in_board_order_with_optional_notes() {
     let env = production_env();
     seed_story(&env);
-    let pdf = dest(&env, "Black Rain - Story Board.pdf");
+    let pdf = dest(&env, "Black Rain - Beat Board.pdf");
     let r = env.ok(
         "story.export_board",
         json!({ "format": "pdf", "path": pdf }),
@@ -337,7 +337,7 @@ fn story_board_outline_exports_in_board_order_with_optional_notes() {
     );
     let text = pdf_text(&pdf);
     for want in [
-        "Story Board Outline",
+        "Beat Board Outline",
         "Act One",
         "Sequence: The Arrival",
         "Arjun steps off the night bus",
@@ -391,7 +391,7 @@ fn story_board_outline_exports_in_board_order_with_optional_notes() {
         "story.export_board",
         json!({ "format": "pdf", "path": board, "layout": "board" }),
     );
-    assert_eq!(r["document"], "Story Board");
+    assert_eq!(r["document"], "Beat Board");
     assert!(pdf_page_width(&board) > 700.0, "landscape");
     assert!(pdf_text(&board).contains("Scene Card 1"));
 
@@ -1281,7 +1281,7 @@ fn assert_telugu_and_hindi(path: &str, what: &str) {
 const TE: &str = "మీరా స్టేషన్‌లో వేచి ఉంది";
 const HI: &str = "मीरा का सपना";
 
-/// ADR-0016 in every PDF export: Telugu and Hindi text in the screenplay, sides, Story Board,
+/// ADR-0016 in every PDF export: Telugu and Hindi text in the screenplay, sides, Beat Board,
 /// breakdown report, shot list, storyboard sheet, moodboard, schedule, call sheet, production
 /// reports and budget summary is printed with embedded, shaped fonts.
 #[test]
@@ -1346,7 +1346,7 @@ fn telugu_and_hindi_print_in_every_pdf_export() {
     // Report documents (Helvetica with Noto Sans for Indian scripts).
     let p = pdf("story.pdf");
     env.ok("story.export_board", json!({ "format": "pdf", "path": p }));
-    assert_telugu_and_hindi(&p, "story board");
+    assert_telugu_and_hindi(&p, "Beat Board");
     let p = pdf("breakdown.pdf");
     env.ok(
         "breakdown.export_report",

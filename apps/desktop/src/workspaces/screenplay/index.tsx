@@ -198,14 +198,14 @@ export default function ScreenplayWorkspace() {
                       go({ workspace: "story" });
                     }}
                   >
-                    Build from Story Board
+                    Build from Beat Board
                   </Button>
                   <Button onClick={() => setImportOpen(true)}>Import Screenplay</Button>
                 </>
               ) : undefined
             }
           >
-            Write from scratch, or build your first screenplay scenes from the Story Board. Start writing or use Build Screenplay.
+            Write from scratch, or build your first screenplay scenes from the Beat Board. Start writing or use Build Screenplay.
             {!o.permissions.edit && <div className="sm" style={{ marginTop: 8 }}>Your role can view the screenplay once someone creates it.</div>}
           </EmptyState>
         </div>

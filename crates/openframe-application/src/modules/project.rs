@@ -311,7 +311,7 @@ pub struct DeletedItemView {
     pub title: Option<String>,
     /// e.g. "Scene Card", "File".
     pub type_label: String,
-    /// e.g. "Story Board · Act “Act One”", "Files".
+    /// e.g. "Beat Board · Act “Act One”", "Files".
     pub was_in: String,
     /// The original container no longer exists: restore goes to Unassigned / the top level.
     pub parent_missing: bool,
@@ -1916,7 +1916,7 @@ fn area_for_table(table: &str) -> &'static str {
     const AREAS: &[(&str, &str)] = &[
         ("vault_", "Idea Vault"),
         ("story_character", "Characters"),
-        ("story_", "Story Board"),
+        ("story_", "Beat Board"),
         ("screenplay", "Screenplay"),
         ("breakdown_", "Breakdown"),
         ("production_source", "Breakdown"),

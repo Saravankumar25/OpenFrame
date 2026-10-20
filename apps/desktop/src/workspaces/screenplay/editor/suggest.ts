@@ -1,7 +1,7 @@
 // Smart suggestions while typing (SCRIPT-018; Screenplay and Production Depth Specification §7).
 //
 // Deterministic, no AI model: the list comes from fixed screenplay terms, the live script and
-// project values (Story Board characters, cast, production locations). It only ever offers;
+// project values (Beat Board characters, cast, production locations). It only ever offers;
 // text changes only when the writer accepts an item with Enter or a click, and only the part
 // being typed is replaced. The list appears only with the caret at the end of the element.
 
@@ -11,7 +11,7 @@ import type { WritingSuggestionSources } from "../../../ipc/generated/WritingSug
 import { blockText } from "./model";
 
 export type SuggestKind = "prefix" | "location" | "time" | "character" | "extension" | "parenthetical" | "transition";
-export type SuggestSource = "Standard" | "Script" | "Story Board" | "Cast" | "Locations";
+export type SuggestSource = "Standard" | "Script" | "Beat Board" | "Cast" | "Locations";
 
 export interface SuggestContext {
   kind: SuggestKind;
@@ -223,7 +223,7 @@ export function suggestions(
       break;
     case "location":
       add(script.locations, "Script");
-      for (const l of project?.locations ?? []) pool.push({ label: l.name, source: l.source === "Story" ? "Story Board" : "Locations" });
+      for (const l of project?.locations ?? []) pool.push({ label: l.name, source: l.source === "Story" ? "Beat Board" : "Locations" });
       break;
     case "time":
       add(TIMES, "Standard");
@@ -231,7 +231,7 @@ export function suggestions(
       break;
     case "character":
       add(script.characters, "Script");
-      for (const c of project?.characters ?? []) pool.push({ label: c.name, source: c.source === "Cast" ? "Cast" : "Story Board" });
+      for (const c of project?.characters ?? []) pool.push({ label: c.name, source: c.source === "Cast" ? "Cast" : "Beat Board" });
       break;
     case "extension":
       add(EXTENSIONS, "Standard");
@@ -263,7 +263,7 @@ export function suggestions(
   const creatable = ctx.kind === "character" ? "character" : ctx.kind === "location" ? "location" : null;
   if (creatable && canCreate && q && !exact) {
     const name = ctx.query.trim().toUpperCase();
-    items.push({ label: `Create New: ${name}`, insert: ctx.query, source: creatable === "character" ? "Story Board" : "Locations", create: creatable });
+    items.push({ label: `Create New: ${name}`, insert: ctx.query, source: creatable === "character" ? "Beat Board" : "Locations", create: creatable });
   }
   return items;
 }

@@ -26,7 +26,7 @@ async function waitOption(label) {
 }
 /** An empty Dialogue line (the editor shows its "Dialogue" placeholder inside it). */
 const isEmptyDialogue = (el) => el === "dialogue: " || el === "dialogue: Dialogue";
-/** Story Board character names, read the way the Characters page reads them. */
+/** Beat Board character names, read the way the Characters page reads them. */
 const characterNames = () =>
   browser.execute(() =>
     window.__TAURI_INTERNALS__
@@ -66,7 +66,7 @@ describe("writing comfort", () => {
       await browser.keys("Enter");
       await typeKeys("Meera waits for teh last bus.");
       await browser.keys("Enter");
-      // A new character name: one Enter adds it to the Story Board characters, keeps the text as
+      // A new character name: one Enter adds it to the Beat Board characters, keeps the text as
       // typed and moves on to Dialogue (owner decision 2026-10-08, like Final Draft).
       await typeKeys("MEERA");
       await waitOption("Create New: MEERA");
@@ -126,7 +126,7 @@ describe("writing comfort", () => {
       await browser.keys("Enter");
       await waitForText(browser, "Added NISHA to Characters");
       await waitElements((els) => els.at(-2) === "character: NISHA" && isEmptyDialogue(els.at(-1)), "one Enter did not move on to Dialogue");
-      assert.ok((await characterNames()).includes("NISHA"), "NISHA is not a Story Board character");
+      assert.ok((await characterNames()).includes("NISHA"), "NISHA is not a Beat Board character");
       await waitSaved();
       // The first undo takes back only the Dialogue step; the character stays.
       await browser.keys(["Control", "z"]);

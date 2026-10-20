@@ -4,13 +4,13 @@
 //! * `board`: acts, sequences, beats, scene cards, parking lot, multi-select
 //! * `display`: Card Display Settings (per-user view setting, never content)
 //! * `links`: card to screenplay scene links that follow scene lineage
-//! * `build`: Build Screenplay from the Story Board (never overwrites)
+//! * `build`: Build Screenplay from the Beat Board (never overwrites)
 //! * `characters`: character directory, relationships, manual card links
 //! * `timeline`: Story Day assignment on screenplay scenes (never reorders)
 //! * `episodes`: seasons and episodes for Episodic and Series projects
 //! * `index`: search indexers and Recently Deleted handlers
 //!
-//! Source-of-truth rules: the Story Board is a reference layer. Nothing here
+//! Source-of-truth rules: the Beat Board is a reference layer. Nothing here
 //! rewrites screenplay text; Build Screenplay only ever creates a NEW
 //! screenplay or a NEW draft, and "Apply order" is an explicit, confirmed action.
 
@@ -44,7 +44,7 @@ pub fn register(r: &mut Registry) {
 
 pub(crate) const TITLE_MAX: usize = 200;
 pub(crate) const HEADING_MAX: usize = 200;
-// Capacity of a Scene Card (Story Board card redesign; limits are written in
+// Capacity of a Scene Card (Beat Board card redesign; limits are written in
 // docs/engineering/33-production-depth-contract.md section 1 and tested in tests/story_cards.rs).
 /// Short description: what the minimized card shows. Bytes, as before.
 pub(crate) const DESC_MAX_BYTES: usize = 20_000;

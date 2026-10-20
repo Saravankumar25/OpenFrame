@@ -88,7 +88,7 @@ Many steps here ask the core directly to set up a plan or write an export with a
 
 ## A call sheet from the Indie Call Sheet template is a copy of its own
 
-1. Through the core: list the built-in templates. Check: they include "Feature Film Screenplay", "Short Film Screenplay", "Episodic / Series", "Simple Story Board", "Indie Call Sheet", "Shot List", "Moodboard" and "Lightweight Budget".
+1. Through the core: list the built-in templates. Check: they include "Feature Film Screenplay", "Short Film Screenplay", "Episodic / Series", "Simple Beat Board", "Indie Call Sheet", "Shot List", "Moodboard" and "Lightweight Budget".
 2. Through the core: apply the Indie Call Sheet template to the shooting day that has no call sheet and is not an off day.
 3. Through the core: check the new call sheet has a Weather section and a Crew section.
 4. Check: the screen is quiet.

@@ -86,7 +86,7 @@
 .rel-suggest .chip { border: 0; cursor: pointer; }
 .rel-suggest .chip:hover { background: var(--accent-soft); color: var(--accent-d); }
 
-/* Story Board layout (owner request 2026-10-20, openframe-changes.docx item 2): each act is a full-height
+/* Beat Board layout (owner request 2026-10-20, openframe-changes.docx item 2): each act is a full-height
    column that scrolls on its own, the board scrolls only sideways, and a scene card shows its whole
    text instead of cutting it after two lines. The overview zoom (70 percent and below) still shortens
    cards; the full text is always in the card drawer. */

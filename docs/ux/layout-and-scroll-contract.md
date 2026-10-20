@@ -19,13 +19,13 @@
 |---|---|---|
 | Navigation rail | `.nav` | vertical, only when the window is shorter than the list |
 | Workspace content | the workspace's own content box (`.content`, `.spx-scroll`, `.bdw` panes) | vertical |
-| Story Board | `.story-canvas` scrolls sideways across act columns; each `.act-body` scrolls down on its own | both, split by owner |
+| Beat Board | `.story-canvas` scrolls sideways across act columns; each `.act-body` scrolls down on its own | both, split by owner |
 | Screenplay page | `.spx-wrap > .spx-scroll` | vertical, sideways only when zoomed wider than the pane |
 | Scene list | `.spx-nav-list` | vertical |
 | AI Assistant | the conversation list | vertical |
 | Dialogs | the dialog body; header and buttons stay put | vertical |
 
-Two-way scrolling is allowed only where the content is a two-dimensional surface: the Story Board, the stripboard and
+Two-way scrolling is allowed only where the content is a two-dimensional surface: the Beat Board, the stripboard and
 Day Out of Days grids, and a zoomed screenplay page.
 
 ## 3. Toolbars and tab strips wrap, they do not hide controls

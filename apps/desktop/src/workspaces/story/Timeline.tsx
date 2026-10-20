@@ -63,7 +63,7 @@ export function TimelineView({ episodeId, readOnly }: { episodeId: string | null
             ) : undefined
           }
         >
-          Story days belong to screenplay scenes. Build a screenplay from the Story Board or write one first. Story Board cards never need a story day.
+          Story days belong to screenplay scenes. Build a screenplay from the Beat Board or write one first. Beat Board cards never need a story day.
         </EmptyState>
       </div>
     );

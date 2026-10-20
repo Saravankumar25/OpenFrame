@@ -5,7 +5,7 @@
 //! path minus the WebView2 hop) by many threads at once. Four phases share the time budget:
 //!
 //! 1. **Concurrent IPC, rapid autosave, thousands of mutations**: writer threads create,
-//!    update, delete and restore Story Board cards and project notes and type into their own
+//!    update, delete and restore Beat Board cards and project notes and type into their own
 //!    screenplay element; reader threads run workspace queries and search; one thread saves
 //!    (checkpoint + verified backup) every 50–150 ms. Every writer keeps a model of what it
 //!    wrote; the final database must equal the model exactly, and search must agree.

@@ -181,7 +181,7 @@ pub const TOOLS: &[ToolSpec] = &[
     ToolSpec {
         name: "locations_in_act",
         class: OperationClass::Compute,
-        description: "Locations used by the Scene Cards of a Story Board act.",
+        description: "Locations used by the Scene Cards of a Beat Board act.",
         schema: act_args,
     },
     ToolSpec {
@@ -205,7 +205,7 @@ pub const TOOLS: &[ToolSpec] = &[
     ToolSpec {
         name: "story_statistics",
         class: OperationClass::Compute,
-        description: "Story Board counts: acts, sequences, beats, Scene Cards, parked cards, characters.",
+        description: "Beat Board counts: acts, sequences, beats, Scene Cards, parked cards, characters.",
         schema: no_args,
     },
     ToolSpec {
@@ -746,7 +746,7 @@ fn project_overview(ctx: &ToolCtx<'_>) -> AppResult<ToolOutput> {
     )?;
     o = o
         .detail(format!(
-            "Story Board: {}.",
+            "Beat Board: {}.",
             plural(cards as usize, "Scene Card", "Scene Cards")
         ))
         .detail(format!(
@@ -1656,7 +1656,7 @@ fn find_act(c: &Connection, act: &str) -> AppResult<(String, String, usize)> {
     if acts.is_empty() {
         return Err(AppError::ai(
             "not_found",
-            "The Story Board doesn't have any acts yet.",
+            "The Beat Board doesn't have any acts yet.",
         ));
     }
     let a = act.trim().to_lowercase();
@@ -1775,7 +1775,7 @@ fn locations_in_act(ctx: &ToolCtx<'_>, act: &str) -> AppResult<ToolOutput> {
             nav: None,
         })
         .collect();
-    Ok(o.prov("Story Board", act_title).prov(
+    Ok(o.prov("Beat Board", act_title).prov(
         "Basis",
         "Scene Card headings (or the linked screenplay scene heading)",
     ))
@@ -1995,7 +1995,7 @@ fn story_statistics(ctx: &ToolCtx<'_>) -> AppResult<ToolOutput> {
     )?;
     let chars = queries::character_records(c)?.len();
     let o = ToolOutput::exact(format!(
-        "The Story Board has {}, {}, {} and {}.",
+        "The Beat Board has {}, {}, {} and {}.",
         plural(acts as usize, "act", "acts"),
         plural(seqs as usize, "sequence", "sequences"),
         plural(beats as usize, "beat", "beats"),
@@ -2009,7 +2009,7 @@ fn story_statistics(ctx: &ToolCtx<'_>) -> AppResult<ToolOutput> {
         "The Character directory contains {}.",
         plural(chars, "Character record", "Character records")
     ));
-    Ok(o.prov("Scope", "Story Board"))
+    Ok(o.prov("Scope", "Beat Board"))
 }
 
 fn production_statistics(ctx: &ToolCtx<'_>) -> AppResult<ToolOutput> {
@@ -2361,7 +2361,7 @@ fn summarize_scope(ctx: &ToolCtx<'_>) -> AppResult<ToolOutput> {
         let outline = super::scope::story_outline(ctx.conn)?;
         if !outline.trim().is_empty() {
             items.push(ContextItem {
-                source: "Story Board outline".into(),
+                source: "Beat Board outline".into(),
                 text: queries::truncate_chars(&outline, super::scope::CONTEXT_BUDGET),
             });
         }
@@ -2371,7 +2371,7 @@ fn summarize_scope(ctx: &ToolCtx<'_>) -> AppResult<ToolOutput> {
         AiScopeKind::WholeProject | AiScopeKind::CurrentScreenplay | AiScopeKind::SpecificDraft
     );
     if items.is_empty() && whole {
-        // No Story Board yet (an imported screenplay): the opening of every scene, in order.
+        // No Beat Board yet (an imported screenplay): the opening of every scene, in order.
         let draft = match &ctx.scope.draft {
             Some(d) => Some(d.clone()),
             None => queries::current_draft(ctx.conn)?,

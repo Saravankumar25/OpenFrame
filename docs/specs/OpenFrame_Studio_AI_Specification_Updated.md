@@ -174,7 +174,7 @@ Full contract: runtime spec §1–§9, §14–§15.
 
 The panel's Scope selector offers the scopes that make sense where the user is: Current Selection (or Selected Idea
 Vault items) when something is selected, Current Scene when a scene is open, Current Screenplay, Specific Draft when a
-draft is open, Story Board, Production, Specific Shooting Day and Call Sheet when one is open, and Whole Project. The
+draft is open, Beat Board, Production, Specific Shooting Day and Call Sheet when one is open, and Whole Project. The
 default is inherited from the workspace (for example Current Scene in the screenplay editor when a scene is selected;
 Whole Project when nothing more specific applies). The resolved scope is shown
 as a "Using: …" line and stored with the request.

@@ -91,7 +91,7 @@ OpenFrame must feel like one fast native desktop tool even though the UI is web-
 | Local UI state | Zustand | Small view/session state only |
 | Backend/query state | TanStack Query | Async IPC cache/invalidation; not canonical data |
 | Large collections | TanStack Virtual | Virtualized cards/lists/rows |
-| Drag/drop | dnd-kit | Story Board, stripboard, schedule interactions |
+| Drag/drop | dnd-kit | Beat Board, stripboard, schedule interactions |
 | Structured editor | ProseMirror/Tiptap core | Screenplay structure, selection and transaction model |
 | Core language | Rust stable | Native performance, strong types and safe concurrency |
 | Async runtime | Tokio | File I/O, sidecars, downloads, networking |

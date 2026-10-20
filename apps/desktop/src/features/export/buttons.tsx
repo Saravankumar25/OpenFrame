@@ -35,7 +35,7 @@ type Item = { id: string; label: string };
 export function StoryExportButton({ episodeId, selectedIds, ...t }: Trigger & { episodeId: string | null; selectedIds: string[] }) {
   const d = useOpen();
   const scopes: ExportScope[] = [
-    { value: "board", label: "Current page (whole Story Board)", args: { scope: "board", episodeId } },
+    { value: "board", label: "Current page (whole Beat Board)", args: { scope: "board", episodeId } },
     {
       value: "selected",
       label: selectedIds.length ? `Selected items only (${selectedIds.length})` : "Selected items only",
@@ -55,9 +55,9 @@ export function StoryExportButton({ episodeId, selectedIds, ...t }: Trigger & { 
       <ExportDialog
         open={d.open}
         onClose={d.hide}
-        title="Export Story Board"
-        source={<>Source: <b>current Story Board</b></>}
-        documentName="Story Board"
+        title="Export Beat Board"
+        source={<>Source: <b>current Beat Board</b></>}
+        documentName="Beat Board"
         op="story.export_board"
         formats={formats}
         scopes={scopes}

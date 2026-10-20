@@ -132,7 +132,7 @@ pub const READS: &[ReadSpec] = &[
     read!(
         "story_outline",
         Read,
-        "Story Board outline: acts, sequences, beats and Scene Cards in order (optionally one act), with their screenplay scenes.",
+        "Beat Board outline: acts, sequences, beats and Scene Cards in order (optionally one act), with their screenplay scenes.",
         s_outline,
         ["story.board", "story.build_preview", "story.order_preview"],
         story_outline
@@ -1266,7 +1266,7 @@ fn story_outline(ctx: &ToolCtx<'_>, a: &Value) -> AppResult<ToolOutput> {
         [&ep],
     )?;
     o.content = format!(
-        "The Story Board has {}{}.",
+        "The Beat Board has {}{}.",
         plural(acts.len(), "act", "acts"),
         episode
             .as_ref()
@@ -1278,7 +1278,7 @@ fn story_outline(ctx: &ToolCtx<'_>, a: &Value) -> AppResult<ToolOutput> {
         plural(parked as usize, "Scene Card", "Scene Cards"),
         plural(unassigned as usize, "Scene Card", "Scene Cards")
     ));
-    Ok(o.prov("Scope", "Story Board"))
+    Ok(o.prov("Scope", "Beat Board"))
 }
 
 /// Screenplay scene id → "Scene N" in its draft (current drafts only; with

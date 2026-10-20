@@ -627,9 +627,9 @@ static PLAIN_READS: LazyLock<Vec<(Regex, &'static str)>> = LazyLock::new(|| {
         (r#"(?i)^\s*(?:which|what)\s+templates\s+(?:can\s+i\s+use|are\s+there|do\s+i\s+have)\s*[?.]*\s*$"#, "templates"),
         (r#"(?i)^\s*(?:(?:which|what)\s+drafts\s+(?:does|do)\s+(?:this|the|my)\s+(?:screenplay|script)\s+have|what\s+is\s+the\s+current\s+draft\s+called|(?:list|show)(?:\s+me)?\s+(?:the\s+)?drafts)\s*[?.]*\s*$"#, "list_drafts"),
         (r#"(?i)^\s*(?:list|show)(?:\s+me)?\s+(?:all\s+)?the\s+scenes\s+(?:of|in)\s+(?:the|this|my)\s+(?:screenplay|script)\s*[?.]*\s*$"#, "screenplay_scenes"),
-        (r#"(?i)^\s*(?:list|show)(?:\s+me)?\s+(?:all\s+)?the\s+characters\s+on\s+the\s+story\s?board\s*[?.]*\s*$"#, "story_characters"),
+        (r#"(?i)^\s*(?:list|show)(?:\s+me)?\s+(?:all\s+)?the\s+characters\s+on\s+the\s+(?:story|beat)\s?board\s*[?.]*\s*$"#, "story_characters"),
         (r#"(?i)^\s*how\s+many\s+(?:props|costumes|vehicles|items)\s+are\s+(?:there\s+)?in\s+the\s+(?:production\s+)?catalog(?:ue)?\s*[?.]*\s*$"#, "production_statistics"),
-        (r#"(?i)^\s*how\s+many\s+(?:acts|scene\s+cards|acts\s+and\s+scene\s+cards)\s+are\s+(?:there\s+)?on\s+the\s+story\s?board\s*[?.]*\s*$"#, "story_statistics"),
+        (r#"(?i)^\s*how\s+many\s+(?:acts|scene\s+cards|acts\s+and\s+scene\s+cards)\s+are\s+(?:there\s+)?on\s+the\s+(?:story|beat)\s?board\s*[?.]*\s*$"#, "story_statistics"),
         (r#"(?i)^\s*how\s+far\s+along\s+is\s+the\s+breakdown\s*[?.]*\s*$"#, "breakdown_status"),
         // Plain wording of the same questions (AI context brief, questions 3, 4 and 31).
         (r#"(?i)^\s*how\s+many\s+(?:acts|sequences|beats|scene\s+cards)(?:\s+are\s+there|\s+do\s+(?:we|i)\s+have)?(?:\s+in\s+(?:the|this|my)\s+(?:story|project))?\s*[?.]*\s*$"#, "story_statistics"),
@@ -925,7 +925,9 @@ fn workspace(name: &str) -> Option<&'static str> {
     Some(match n.as_str() {
         "home" | "home page" => "home",
         "idea vault" | "vault" => "vault",
-        "story" | "story board" | "storyboard" | "story outline" => "story",
+        "story" | "story board" | "beat board" | "beatboard" | "storyboard" | "story outline" => {
+            "story"
+        }
         "screenplay" | "script" | "screenplay editor" => "screenplay",
         "breakdown" => "breakdown",
         "production" => "production",
@@ -1509,6 +1511,7 @@ mod tests {
         for (text, w) in [
             ("Open the Idea Vault.", "vault"),
             ("Go to the story board", "story"),
+            ("Go to the Beat Board", "story"),
             ("Open Call Sheets.", "callsheets"),
             ("Show my notes and tasks.", "notes"),
             ("Open Recently Deleted.", "trash"),
@@ -1698,6 +1701,11 @@ mod tests {
                 "How many scene cards are on the story board?",
                 "story_statistics",
             ),
+            (
+                "How many scene cards are on the beat board?",
+                "story_statistics",
+            ),
+            ("Show the characters on the Beat Board.", "story_characters"),
             ("How far along is the breakdown?", "breakdown_status"),
             ("How many scenes does the screenplay have?", "count_scenes"),
             ("List the scene headings.", "screenplay_scenes"),

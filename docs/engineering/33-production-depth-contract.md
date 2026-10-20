@@ -1,10 +1,10 @@
 # 33: Production depth contract (proposed)
 
-> Status: **proposed**. Approval comes first (Project controls and baseline), then the build (Story Board and Idea Vault; Breakdown, catalog, locations, cast and crew; Shooting schedule and Day Out of Days; Call sheets, budget, templates, samples and exports). Product behaviour: Revision 1 §§21 to 35, 43, 52 to 57.
+> Status: **proposed**. Approval comes first (Project controls and baseline), then the build (Beat Board and Idea Vault; Breakdown, catalog, locations, cast and crew; Shooting schedule and Day Out of Days; Call sheets, budget, templates, samples and exports). Product behaviour: Revision 1 §§21 to 35, 43, 52 to 57.
 > Features in the feature status file: STORY-CARD-*, BRK-*, PROD-*, SCHED-*, DOOD-*, CALL-*, BUDGET-*, TEMP-*, BRAND-*.
 > Principle: **extend what exists.** Each section lists what the schema already has and the smallest additive change.
 
-## 1. Story Board card (Story Board and Idea Vault area)
+## 1. Beat Board card (Beat Board and Idea Vault area)
 
 Status: **built** (2026-10-07, branch `area/09-story-board`). Tests: `crates/openframe-application/tests/story_cards.rs`.
 
@@ -176,11 +176,11 @@ lines that have an Actual) are derived at read time (`modules/schedule/budget.rs
 ## 7. Templates and samples (Call sheets, budget, templates, samples and exports area)
 
 Has: template engine with scopes and 7 built-ins. Add per the owner decision "Template list": three screenplay templates, indie call sheet, simple
-story board, shot list, moodboard, lightweight budget. Use creates an independent copy. Samples: four
+Beat Board, shot list, moodboard, lightweight budget. Use creates an independent copy. Samples: four
 OpenFrame-authored scripts used as onboarding assets and fixtures; no third-party text.
 
 **Built (area 15, 2026-10-08).** The eight built-ins live in `modules/notes/templates.rs` (Feature Film Screenplay,
-Short Film Screenplay, Episodic / Series, Simple Story Board, Indie Call Sheet, Shot List, Moodboard, Lightweight
+Short Film Screenplay, Episodic / Series, Simple Beat Board, Indie Call Sheet, Shot List, Moodboard, Lightweight
 Budget). `templates.copy` copies a template; `templates.apply` creates the document a template describes through the
 owning module's operations, all or nothing, as one undo step. Nothing refers back to the template. The four samples
 are compiled into the app (`openframe-import-export/src/samples.rs`), listed by `screenplay.samples` and opened through

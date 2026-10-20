@@ -293,7 +293,7 @@ impl Harness {
     /// A project with baseline content, closed so the worker can take the single-writer lock.
     fn new() -> Harness {
         let env = TestEnv::with_project("Night Bus", "Feature Film");
-        // In an act, so the Story Board has content to export.
+        // In an act, so the Beat Board has content to export.
         let act = env.ok("story.create_act", json!({ "title": "Act 1" }))["id"]
             .as_str()
             .unwrap()

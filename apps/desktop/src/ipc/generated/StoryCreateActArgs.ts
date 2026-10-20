@@ -2,6 +2,6 @@
 
 export type StoryCreateActArgs = { episodeId: string | null, title: string, note: string | null, 
 /**
- * Insert before this act; None = at the end of the Story Board (FSD §8.1).
+ * Insert before this act; None = at the end of the Beat Board (FSD §8.1).
  */
 beforeId: string | null, };

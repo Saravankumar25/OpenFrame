@@ -1,5 +1,5 @@
 //! Screenplay extras: title page (FSD §16.5), remembered layout (FSD §17.4),
-//! Scene Hub (UX §3.11, mock 097), Story Board reference panel (FSD §17.2,
+//! Scene Hub (UX §3.11, mock 097), Beat Board reference panel (FSD §17.2,
 //! read-only), scene search indexing and recoverable scene deletion.
 
 use openframe_domain::enums::DraftStatus;
@@ -354,7 +354,7 @@ pub(crate) fn hub_for(c: &Connection, scene_id: &str) -> AppResult<ScreenplaySce
         .optional()?;
     rows.push(ScreenplaySceneHubRow {
         key: "story".into(),
-        label: "Story Board".into(),
+        label: "Beat Board".into(),
         count: None,
         detail: if card.is_some() {
             "Card found".into()
@@ -408,9 +408,9 @@ pub struct ScreenplayCardRef {
 #[ts(export)]
 #[serde(rename_all = "camelCase")]
 pub struct ScreenplayStoryReference {
-    /// The Story Board card this scene was built from / linked to, if any.
+    /// The Beat Board card this scene was built from / linked to, if any.
     pub linked: Option<ScreenplayCardRef>,
-    /// Active Story Board cards in board order (reference only).
+    /// Active Beat Board cards in board order (reference only).
     pub cards: Vec<ScreenplayCardRef>,
 }
 
@@ -424,13 +424,13 @@ fn card_ref(r: &rusqlite::Row<'_>) -> rusqlite::Result<ScreenplayCardRef> {
     })
 }
 
-/// Read-only Story Board reference for the Writing Room (FSD §17.5: viewing never edits or locks).
+/// Read-only Beat Board reference for the Writing Room (FSD §17.5: viewing never edits or locks).
 fn story_reference(
     core: &AppCore,
     actor: &Actor,
     a: ScreenplaySceneArgs,
 ) -> AppResult<ScreenplayStoryReference> {
-    actor.require(Capability::View, "view the Story Board")?;
+    actor.require(Capability::View, "view the Beat Board")?;
     core.project()?.store.read(|c| {
         let (source, episode): (Option<String>, Option<String>) = c
             .query_row(

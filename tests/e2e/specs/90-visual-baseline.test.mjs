@@ -270,7 +270,7 @@ describe(`visual ${MODE === "compare" ? "regression against the visual baseline 
       await hit.click();
       await browser.waitUntil(
         async () =>
-          (await browser.execute(() => document.querySelector("main")?.innerText.includes("Draft 1 from Story Board") ?? false)) &&
+          (await browser.execute(() => document.querySelector("main")?.innerText.includes("Draft 1 from Beat Board") ?? false)) &&
           (await browser.execute(() => document.querySelector(".spx-doc .sp-el.cur")?.textContent ?? "")) === "INT. POLICE STATION \u2014 NIGHT",
         { timeout: 15_000, timeoutMsg: "search did not open Draft 1 at the police station scene" },
       );

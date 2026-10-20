@@ -4,7 +4,7 @@
 //!
 //! | op                         | document                                  | formats         |
 //! |----------------------------|-------------------------------------------|-----------------|
-//! | `story.export_board`       | Story Board outline / board               | PDF · TXT · CSV |
+//! | `story.export_board`       | Beat Board outline / board               | PDF · TXT · CSV |
 //! | `breakdown.export_report`  | Breakdown by scene + Catalog with usage   | PDF · CSV · XLSX|
 //! | `moodboard.export_pdf`     | Moodboard presentation                    | PDF             |
 //! | `storyboard.export_sheet`  | Storyboard sheet (panel grid)             | PDF             |
@@ -84,7 +84,7 @@ pub fn register(r: &mut Registry) {
     r.query("story.export_board", story::export).meta(
         M::query(
             Cap::Export,
-            "Export the Story Board outline (PDF/DOCX/…) to a location the user picked.",
+            "Export the Beat Board outline (PDF/DOCX/…) to a location the user picked.",
         )
         .fs(Fs::WritesUserFile)
         .hidden(h::USER_PATH),

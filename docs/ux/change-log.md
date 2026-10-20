@@ -16,7 +16,7 @@
 | Focus mode | Hides everything except the screenplay page | Owner change list | `Shell.tsx`, `ScreenplayView.tsx` |
 | Screenplay | Tab cycles every element and wraps; scene list can be hidden; Review section removed; long names shortened with the full name in the tooltip | Owner change list | `editor/rules.ts`, `ScreenplayView.tsx` |
 | Screenplay toolbar | Grows to a second row in a narrow window | Measured: fixed 46 px height let the second row slide under the scene list at 1280 by 720 | `screenplay.css` |
-| Story Board | Act columns fill the height and scroll on their own; cards show their whole text; Parking Lot column scrolls | 2026-10-20 change document item 2 | `story.css` |
+| Beat Board | Act columns fill the height and scroll on their own; cards show their whole text; Parking Lot column scrolls | 2026-10-20 change document item 2 | `story.css` |
 | Characters | Free-text relationships with suggestions; relationship map without crossing labels | Owner change list | `Characters.tsx` |
 | Breakdown | Scene list and side panel can be hidden; page zoom; sidebar no longer overflows | Owner change list | `breakdown/*` |
 | Production tabs | Fourteen tabs wrap to a second row | Measured: with the AI panel open at 1280 by 720 the strip scrolled and hid Moodboards or Sides | `production/index.tsx`, `app.css` |

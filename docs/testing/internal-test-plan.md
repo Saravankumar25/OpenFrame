@@ -95,8 +95,8 @@ Each day takes about 90 minutes of focused testing plus normal use of the app fo
 
 ### Day 2: plan and organise
 
-1. In the Story Board make acts and scene cards. Build a screenplay from the cards. Change the order and check the warning.
-2. Use the Idea Vault: add a note, an image, a web link, a voice note. Send one item to the Story Board.
+1. In the Beat Board make acts and scene cards. Build a screenplay from the cards. Change the order and check the warning.
+2. Use the Idea Vault: add a note, an image, a web link, a voice note. Send one item to the Beat Board.
 3. Open Breakdown for a script. Tag props, wardrobe and locations in a few scenes. Accept and reject suggestions.
 4. Make a shooting schedule with two days. Move scenes between days. Add a meal break.
 5. Create a call sheet from a day. Change something in the schedule and see that the call sheet says it needs a refresh.

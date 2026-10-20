@@ -14,7 +14,7 @@ path: string,
  */
 layout?: string, 
 /**
- * "board" (current Story Board, default), "selected" or "project".
+ * "board" (current Beat Board, default), "selected" or "project".
  */
 scope?: string, 
 /**

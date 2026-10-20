@@ -30,8 +30,8 @@ On day 3, also do this:
 
 Work (30 to 60 minutes):
 - Create a project. Close it. Reopen it from Home.
-- Idea Vault: add a note, an image, a link. Send one item to the Story Board.
-- Story Board: make acts and scene cards. Reorder them.
+- Idea Vault: add a note, an image, a link. Send one item to the Beat Board.
+- Beat Board: make acts and scene cards. Reorder them.
 - Screenplay: type scenes with headings, action, dialogue, parentheticals and transitions. Use Undo and Redo.
 - Close the window right after typing. Reopen. Check every word is there.
 - Import a Final Draft (FDX) or Fountain file you already have, as a copy.

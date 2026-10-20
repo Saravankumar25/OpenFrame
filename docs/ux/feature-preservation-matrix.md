@@ -10,7 +10,7 @@
 |---|---|---|---|
 | Application Home | project list, new project, open, import, recently deleted, global settings (gear) | kept; Help and Palette buttons replaced by the gear | 10, 15, 16, 25, 60 |
 | Idea Vault | notes, folders, links, search | kept | 20, 21 |
-| Story | Story Board, acts, beats, scene cards, Parking Lot, characters, relationships, locations | kept; columns and relationship text improved | 30, 31 |
+| Story | Beat Board, acts, beats, scene cards, Parking Lot, characters, relationships, locations | kept; columns and relationship text improved | 30, 31 |
 | Screenplay | editor, elements, Tab cycle, scene list, find, notes, comments, drafts, compare, export, lock, revisions, title page, page setup, several screenplays | kept; Review section removed | 40, 41, 42, 43, 44 |
 | Breakdown | script pane, tagging, suggestions, scene list, side panel | kept; panels can be hidden | 50, 51 |
 | Production | Overview, Catalog, Locations, Cast and Crew, Moodboards, Storyboards, Shot Lists, Schedule, Day Out of Days, Daily View, Sides, Reports, Budget | kept; Shot Lists grid and Daily View export added | 61, 62, 63, 86 |

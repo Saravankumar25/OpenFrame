@@ -1,6 +1,6 @@
 // @e2e-data-root: own
 //
-// Story Board, full flow (build plan: Story Board and Idea Vault, "Story Board end-to-end test"):
+// Beat Board, full flow (build plan: Beat Board and Idea Vault, "Beat Board end-to-end test"):
 // create an act, a sequence and cards; drag a card with the mouse (undo and redo); send a card to
 // the Parking Lot and restore it; convert a beat to a Scene Card; write a long scene description
 // and switch Card Display presets (the board shows the preview, the data stays the same); build
@@ -72,7 +72,7 @@ describe("story board flow", () => {
     await step("create", async () => {
       await firstLaunchProject(browser, "Monsoon Letters");
       await openWorkspace(browser, "Story");
-      await waitForText(browser, "Your Story Board is empty.");
+      await waitForText(browser, "Your Beat Board is empty.");
       await click(browser, "Add Act");
       await (await browser.$('//input[@aria-label="Act title"]')).setValue("Act One");
       await browser.keys("Enter");
@@ -152,7 +152,7 @@ describe("story board flow", () => {
       await click(browser, "Close", { within: '//aside[@aria-label="Scene Card"]' });
       // Minimal (default): no preview on the card.
       assert.equal(await browser.$(".sc-long").isExisting(), false);
-      await click(browser, "More Story Board actions");
+      await click(browser, "More Beat Board actions");
       await menuItem(browser, "Card Display Settings");
       await (await browser.$('//*[@role="dialog"]//label[.//b[normalize-space(.)="Story"]]//input')).click();
       await browser.waitUntil(async () => (await browser.$(".sc-long").isExisting()) && (await browser.$(".sc-long").getText()).startsWith("The street is flooded"), {
@@ -176,7 +176,7 @@ describe("story board flow", () => {
   test("Build Screenplay: a card without a heading is left out, never invented", async () => {
     await step("build", async () => {
       await click(browser, "Build Screenplay");
-      await waitForText(browser, "Build Screenplay from Story Board");
+      await waitForText(browser, "Build Screenplay from Beat Board");
       await waitForText(browser, "no valid scene heading");
       await waitForText(browser, "OpenFrame never makes up a heading.");
       // Rows are in board order: C, A, B, BEAT (the beat was added after B and converted in place).
@@ -190,7 +190,7 @@ describe("story board flow", () => {
       await waitForText(browser, "3 of 4 cards will be built");
       await build.click();
       await browser.$('//main[@aria-label="Screenplay"]').waitForExist({ timeout: 15_000 });
-      await waitForText(browser, "Draft 1 from Story Board");
+      await waitForText(browser, "Draft 1 from Beat Board");
       // The toast names the draft at once; the editor shows it when it has loaded.
       const headingsNow = () =>
         browser.execute(() => [...document.querySelectorAll('.spx-doc .sp-el[data-type="scene_heading"]')].map((e) => e.textContent));
@@ -215,7 +215,7 @@ describe("story board flow", () => {
       // The cards were built into the screenplay in the step before, so the delete asks first and
       // says that their screenplay scenes stay.
       await waitForText(browser, "Delete 2 items?");
-      await waitForText(browser, "Screenplay scenes are never deleted from the Story Board.");
+      await waitForText(browser, "Screenplay scenes are never deleted from the Beat Board.");
       await inDialog(browser, "Delete");
       await browser.waitUntil(async () => !(await cards()).includes(A) && !(await cards()).includes(B), { timeout: 10_000, timeoutMsg: "cards not deleted" });
       await projectMenu(browser, "Recently Deleted");

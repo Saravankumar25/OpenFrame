@@ -742,7 +742,7 @@ fn draft_result(core: &AppCore, id: &str) -> AppResult<ScreenplayDraftDto> {
 // ----------------------------------------------------------------- commands
 
 /// "New Screenplay" (FSD §15.2, FSD-SCRIPT-001..004): an empty screenplay with
-/// Draft 1, no Story Board needed. Format follows the project type.
+/// Draft 1, no Beat Board needed. Format follows the project type.
 fn create(core: &AppCore, actor: &Actor, a: CreateScreenplayArgs) -> AppResult<CreatedScreenplay> {
     let s = core.project()?;
     let draft_name = a.draft_name.unwrap_or_else(|| "Draft 1".into());

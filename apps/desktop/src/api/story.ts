@@ -35,7 +35,7 @@ import type { StoryUpdateCharacterArgs } from "../ipc/generated/StoryUpdateChara
 import type { StoryUpdateEpisodeArgs } from "../ipc/generated/StoryUpdateEpisodeArgs";
 import type { StoryViewState } from "../ipc/generated/StoryViewState";
 
-/** Tables read by the Story Board query (drives automatic invalidation). */
+/** Tables read by the Beat Board query (drives automatic invalidation). */
 export const BOARD_TABLES = [
   "story_act",
   "story_sequence",

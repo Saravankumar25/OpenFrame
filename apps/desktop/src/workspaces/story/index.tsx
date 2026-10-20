@@ -201,7 +201,7 @@ function BoardPage({
     if (!board || !params) return;
     const s = useStoryUi.getState();
     // `sceneCardId` (older links) and `screenplaySceneId` (Screenplay "Open in
-    // Story Board" for a scene without a source card) resolve to a card too.
+    // Beat Board" for a scene without a source card) resolve to a card too.
     const linkedCard = params.screenplaySceneId
       ? containers(board)
           .flatMap((x) => x.items)
@@ -245,7 +245,7 @@ function BoardPage({
   if (loading || !board) {
     return (
       <div className="content">
-        {error ? <EmptyState title="The Story Board could not be loaded.">{error}</EmptyState> : <Skeleton h={28} w={240} />}
+        {error ? <EmptyState title="The Beat Board could not be loaded.">{error}</EmptyState> : <Skeleton h={28} w={240} />}
       </div>
     );
   }
@@ -283,7 +283,7 @@ function BoardPage({
   return (
     <div className="content fill story-page">
       <PageHeader
-        title="Story Board"
+        title="Beat Board"
         sub="How does my story fit together? · Drag cards until the story works."
         actions={
           <>
@@ -296,7 +296,7 @@ function BoardPage({
       />
       <div className="toolbar">
         <Segmented
-          ariaLabel="Story Board view"
+          ariaLabel="Beat Board view"
           value={tab}
           onChange={(v) => onTab(v)}
           options={[
@@ -362,7 +362,7 @@ function BoardPage({
             { label: "Apply Board Order to Screenplay…", disabled: readOnly, onSelect: () => ui.openDialog({ type: "applyOrder" }) },
           ]}
           trigger={
-            <button type="button" className="iconbtn" aria-label="More Story Board actions">
+            <button type="button" className="iconbtn" aria-label="More Beat Board actions">
               <MoreHorizontal size={16} />
             </button>
           }
@@ -391,7 +391,7 @@ function BoardPage({
         ) : (
           <EmptyState
             icon={<Columns3 size={30} />}
-            title="Your Story Board is empty."
+            title="Your Beat Board is empty."
             actions={
               !readOnly && (
                 <>

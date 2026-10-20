@@ -6,7 +6,7 @@ Tags: `@e2e-data-root: own`
 
 Before: an empty data folder of its own. The app starts for the first time.
 
-"The elements" means the screenplay editor elements, read as "type: text". "The last element" is the bottom one. "An empty dialogue line" is a dialogue element with no text (it may show its "Dialogue" placeholder). "Check: Saved" means the editor toolbar status reads "Saved". "Check: the list offers X" means the suggestion list under the cursor shows the option X. "The Story Board characters" is the list the Characters page shows (the spec asks the core for it).
+"The elements" means the screenplay editor elements, read as "type: text". "The last element" is the bottom one. "An empty dialogue line" is a dialogue element with no text (it may show its "Dialogue" placeholder). "Check: Saved" means the editor toolbar status reads "Saved". "Check: the list offers X" means the suggestion list under the cursor shows the option X. "The Beat Board characters" is the list the Characters page shows (the spec asks the core for it).
 
 ## Smart suggestions build a scene without retyping and never change text silently
 
@@ -51,14 +51,14 @@ Before: an empty data folder of its own. The app starts for the first time.
 2. Type 'NISHA'. Check: the list offers "Create New: NISHA". Press Enter.
 3. Check: the screen shows "Added NISHA to Characters".
 4. Check: the last two elements are "character: NISHA" and an empty dialogue line.
-5. Check: the Story Board characters include "NISHA".
+5. Check: the Beat Board characters include "NISHA".
 6. Check: Saved.
 7. Press Ctrl+Z.
 8. Check: the last element is "character: NISHA" (only the Dialogue step was taken back).
 9. Check: Saved.
-10. Check: the Story Board characters still include "NISHA".
+10. Check: the Beat Board characters still include "NISHA".
 11. Press Ctrl+Z.
-12. Check: the Story Board characters no longer include "NISHA".
+12. Check: the Beat Board characters no longer include "NISHA".
 13. Check: the last element is still "character: NISHA" (the typed name stays until its own undo).
 14. Check: the screen is quiet.
 

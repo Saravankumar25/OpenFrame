@@ -14,7 +14,7 @@ Before: an empty data folder of its own. The app carries the real bundled model 
 2. Import the Night Bus screenplay.
 3. Click Home. Reopen the assistant here. Check: the scope line reads "Using: Whole Project".
 4. Click Idea Vault. Reopen the assistant here. Check: the scope line reads "Using: Whole Project".
-5. Click Story. Reopen the assistant here. Check: the scope line reads "Using: Story Board".
+5. Click Story. Reopen the assistant here. Check: the scope line reads "Using: Beat Board".
 6. Click Breakdown. Reopen the assistant here. Check: the scope line reads "Using: Production Workspace".
 7. Click Production. Reopen the assistant here. Check: the scope line reads "Using: Production Workspace".
 8. Click Call Sheets. Reopen the assistant here. Check: the scope line reads "Using: Production Workspace".
@@ -29,12 +29,12 @@ Before: an empty data folder of its own. The app carries the real bundled model 
 4. Press Ctrl+J.
 5. Check: the AI Assistant closes.
 
-## A question asked in the Story Board uses the Story Board
+## A question asked in the Beat Board uses the Beat Board
 
 1. Click Story in the Workspaces navigation. Click Assistant.
-2. Ask 'What is on the Story Board?'
+2. Ask 'What is on the Beat Board?'
 3. Check: the question was answered.
-4. Check: the scope line reads "Using: Story Board".
+4. Check: the scope line reads "Using: Beat Board".
 
 ## A question asked in the Screenplay is about that screenplay
 
