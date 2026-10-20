@@ -58,7 +58,7 @@ pub fn run(g: &Gold, ctx: &mut Ctx) {
 
     g.phase("Exports: story");
     export(g, ctx, "story.export_board", "story/Story outline.pdf", json!({ "format": "pdf", "layout": "outline", "scope": "board", "includeParking": true, "includeNotes": true, "includeComments": true }));
-    export(g, ctx, "story.export_board", "story/Story board cards.pdf", json!({ "format": "pdf", "layout": "board", "scope": "board" }));
+    export(g, ctx, "story.export_board", "story/Beat board cards.pdf", json!({ "format": "pdf", "layout": "board", "scope": "board" }));
     export(g, ctx, "story.export_board", "story/Story outline.txt", json!({ "format": "txt", "scope": "project", "includeNotes": true }));
     export(g, ctx, "story.export_board", "story/Story outline.csv", json!({ "format": "csv", "scope": "board" }));
     export(g, ctx, "story.export_board", "story/Act Three outline.pdf", json!({ "format": "pdf", "scope": "selected", "itemIds": [ctx.id("act3")], "includeNotes": true }));

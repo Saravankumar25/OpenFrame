@@ -245,7 +245,7 @@ struct CallSheetScenarioTests {
         // A call sheet from the Indie Call Sheet template is a copy of its own.
         let listing = try await r.core.templatesList(TemplateListArgs())
         let names = listing.builtin.map(\.name)
-        for n in ["Feature Film Screenplay", "Short Film Screenplay", "Episodic / Series", "Simple Story Board", "Indie Call Sheet", "Shot List", "Moodboard", "Lightweight Budget"] {
+        for n in ["Feature Film Screenplay", "Short Film Screenplay", "Episodic / Series", "Simple Beat Board", "Indie Call Sheet", "Shot List", "Moodboard", "Lightweight Budget"] {
             #expect(names.contains(n), "built-in template \(n) is missing")
         }
         let day2 = try #require(try await r.core.scheduleGet().days.first { $0.callSheet == nil && !$0.isOffDay })

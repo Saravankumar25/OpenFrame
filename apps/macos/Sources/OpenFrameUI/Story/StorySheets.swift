@@ -1,4 +1,4 @@
-// The decision sheets of the Story Board: deleting an act or a sequence recommends moving the
+// The decision sheets of the Beat Board: deleting an act or a sequence recommends moving the
 // creative material out first; deleting a card linked to a screenplay scene explains that the
 // scene stays; Move; the act note; Card Display Settings; Apply Board Order.
 
@@ -169,7 +169,7 @@ struct DeleteLinkedSheet: View {
 
     static func message(count: Int, scene: StoryLinkedScene?) -> String {
         let single = count == 1
-        return "\(single ? "Its linked screenplay scene" : "Linked screenplay scenes")\(scene.map { " (Scene \(Int($0.number)): \($0.heading))" } ?? "") will remain. Screenplay scenes are never deleted from the Story Board."
+        return "\(single ? "Its linked screenplay scene" : "Linked screenplay scenes")\(scene.map { " (Scene \(Int($0.number)): \($0.heading))" } ?? "") will remain. Screenplay scenes are never deleted from the Beat Board."
     }
 
     var body: some View {
@@ -339,7 +339,7 @@ struct ApplyOrderSheet: View {
             VStack(alignment: .leading, spacing: 10) {
                 if let m, let p {
                     if p.draftId == nil {
-                        StoryBanner(tone: .info, text: "There is no screenplay yet. Use Build Screenplay to create one from the Story Board.")
+                        StoryBanner(tone: .info, text: "There is no screenplay yet. Use Build Screenplay to create one from the Beat Board.")
                     } else {
                         if p.screenplays.count > 1 {
                             Picker("Screenplay to reorder", selection: Binding(
@@ -352,7 +352,7 @@ struct ApplyOrderSheet: View {
                         if p.locked {
                             StoryBanner(tone: .warn, text: "\u{201C}\(p.draftName ?? "")\u{201D} is locked as the shooting draft. Start a revision in the Screenplay workspace to change scene order.")
                         } else if p.moves.isEmpty {
-                            StoryBanner(tone: .ok, text: "\u{201C}\(p.draftName ?? "")\u{201D} already follows the Story Board order\(p.linkedCount == 0 ? " (no cards are linked to its scenes)" : "").")
+                            StoryBanner(tone: .ok, text: "\u{201C}\(p.draftName ?? "")\u{201D} already follows the Beat Board order\(p.linkedCount == 0 ? " (no cards are linked to its scenes)" : "").")
                         } else {
                             Text("In \u{201C}\(p.draftName ?? "")\u{201D}\(p.screenplayTitle.map { " of \($0)" } ?? ""):")
                             ScrollView {

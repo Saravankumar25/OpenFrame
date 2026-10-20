@@ -112,7 +112,7 @@ interface Props {
   /** Non-empty text selection (for the nearby Comment affordance), or null. */
   onSelection: (s: { rect: DOMRect; anchor: SelectionAnchor } | null) => void;
   onFindResult?: (r: { index: number; count: number }) => void;
-  /** Project values for the suggestion list (Story Board characters, cast, locations). */
+  /** Project values for the suggestion list (Beat Board characters, cast, locations). */
   suggestionSources?: WritingSuggestionSources | null;
   /** "Create New" in the suggestion list. `movedOn` is true when the same Enter moved on to
    * Dialogue. The returned promise settles once the value is recorded. */

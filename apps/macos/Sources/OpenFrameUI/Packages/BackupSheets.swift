@@ -78,7 +78,7 @@ struct BackupSheet: View {
                 Toggle("Copy linked external files into the backup (portable backup)", isOn: $model.portable)
                     .toggleStyle(.checkbox).accessibilityIdentifier("backup-portable")
                 Text("What this backup contains").font(.callout.weight(.semibold))
-                Text("Idea Vault, Story Board, screenplay drafts, breakdown, catalog, production planning, comments"
+                Text("Idea Vault, Beat Board, screenplay drafts, breakdown, catalog, production planning, comments"
                      + (p.privateNoteCount > 0 ? ", your private notes" : "") + ".")
                     .font(.callout).foregroundStyle(.secondary)
                 PKFileStatusTable(rows: [

@@ -100,8 +100,8 @@ extension Scenarios {
             try await ui.choosing(pdf) { try await ui.choose(from: "story-more", ["Export Outline", "PDF"]) }
             try await ui.waitText("Exported", timeout: 30)
             let data = try Data(contentsOf: pdf)
-            try ui.expect(data.count >= 500, "the Story Board PDF holds at least 500 bytes, has \(data.count)")
-            try ui.expect(data.prefix(5) == Data("%PDF-".utf8), "the Story Board file starts with %PDF-")
+            try ui.expect(data.count >= 500, "the Beat Board PDF holds at least 500 bytes, has \(data.count)")
+            try ui.expect(data.prefix(5) == Data("%PDF-".utf8), "the Beat Board file starts with %PDF-")
         },
         Scenario("63-every-export/diagnostics-bundle-holds-no-project-text") { ui, _, ctx in
             try await ui.launch(ctx)
@@ -1336,7 +1336,7 @@ extension Scenarios {
             let f = Findings()
             try await aiStart(ui, ctx)
             let checks: [(String, [String])] = [
-                ("Project Home", ["Using: Whole Project"]), ("Idea Vault", ["Using: Whole Project"]), ("Story", ["Using: Story Board"]),
+                ("Project Home", ["Using: Whole Project"]), ("Idea Vault", ["Using: Whole Project"]), ("Story", ["Using: Beat Board"]),
                 ("Breakdown", ["Using: Production Workspace"]), ("Schedule", ["Using: Production Workspace"]),
                 ("Call Sheets", ["Using: Production Workspace"]), ("Screenplay", ["Using: Current Scene", "Using: Current Screenplay"]),
                 ("Notes and Tasks", ["Using: Whole Project"]),
@@ -1361,9 +1361,9 @@ extension Scenarios {
             try await aiStart(ui, ctx)
             try await ui.go("Story")
             try await ui.openAssistant()
-            let kind = try await ui.ask("What is on the Story Board?")
+            let kind = try await ui.ask("What is on the Beat Board?")
             f.check(isAnswered(kind), "the question was answered, result is \(kind)")
-            f.check(ui.scopeLine() == "Using: Story Board", "the scope line reads Using: Story Board, reads \"\(ui.scopeLine())\"")
+            f.check(ui.scopeLine() == "Using: Beat Board", "the scope line reads Using: Beat Board, reads \"\(ui.scopeLine())\"")
             try f.finish()
         },
         Scenario("73-ai-workspaces/screenplay-question-is-about-the-screenplay", timeout: 600) { ui, _, ctx in

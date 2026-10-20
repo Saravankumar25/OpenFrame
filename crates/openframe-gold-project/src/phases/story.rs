@@ -1,4 +1,4 @@
-//! The Story Board: three acts, seven sequences, 44 scene cards, beats, the Parking Lot,
+//! The Beat Board: three acts, seven sequences, 44 scene cards, beats, the Parking Lot,
 //! characters with relationships and pictures, card links, attachments and display settings.
 
 use serde_json::{Value, json};
@@ -11,7 +11,7 @@ fn card_ref(id: &str) -> Value {
 }
 
 pub fn board(g: &Gold, ctx: &mut Ctx) {
-    g.phase("Story Board");
+    g.phase("Beat Board");
     g.ok("story.series", json!({}));
     let story = ctx.story.clone();
 

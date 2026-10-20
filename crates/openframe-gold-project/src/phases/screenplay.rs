@@ -1,4 +1,4 @@
-//! The screenplay: built from the Story Board, written scene by scene from
+//! The screenplay: built from the Beat Board, written scene by scene from
 //! `content/screenplay.fountain` through the editor's own edit operations, then drafts, a
 //! review round, the shooting draft lock and the blue revision.
 
@@ -43,7 +43,7 @@ fn scenes_by_lineage(g: &Gold, draft: &str) -> BTreeMap<String, Value> {
 }
 
 pub fn build_and_write(g: &Gold, ctx: &mut Ctx) {
-    g.phase("Screenplay: build from the Story Board");
+    g.phase("Screenplay: build from the Beat Board");
     let preview = g.ok("story.build_preview", json!({ "episodeId": null }));
     let include: Vec<Value> = arr(&preview["rows"])
         .iter()
@@ -128,7 +128,7 @@ fn write_text(g: &Gold, ctx: &mut Ctx, draft: &str, log_id: &str) {
         }
         n += 1;
         let Some(cur) = existing.get(&n) else {
-            eprintln!("  the Fountain file has more scenes than the Story Board ({n})");
+            eprintln!("  the Fountain file has more scenes than the Beat Board ({n})");
             continue;
         };
         if s(&cur["heading"]).trim() != scene.heading.trim() {
@@ -163,7 +163,7 @@ fn write_text(g: &Gold, ctx: &mut Ctx, draft: &str, log_id: &str) {
     }
     ctx.facts.insert("fountainScenes".into(), json!(n));
     ctx.facts.insert("fountainWords".into(), json!(words));
-    // Scene synopses from the Story Board where the Fountain file has none, and scene notes for
+    // Scene synopses from the Beat Board where the Fountain file has none, and scene notes for
     // departments.
     let story = ctx.story.clone();
     for act in arr(&story["acts"]) {
@@ -452,7 +452,7 @@ fn review(g: &Gold, ctx: &mut Ctx, draft: &str) {
         json!({ "targetType": "screenplay_scene", "targetId": scene(39), "body": "dup", "anchor": null, "sceneId": null, "reviewRoundId": round_id }),
     ));
     g.ok("comment.delete", json!({ "id": typo }));
-    // A Story Board comment and a schedule-free scene note.
+    // A Beat Board comment and a schedule-free scene note.
     g.ok(
         "comment.create",
         json!({ "targetType": "story_scene_card", "targetId": ctx.cards[&24], "body": "This is the midpoint. Protect the time for it on the schedule.",

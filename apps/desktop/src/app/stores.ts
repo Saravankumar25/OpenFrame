@@ -107,7 +107,7 @@ export const useOpenDraft = create<OpenDraftState>((set) => ({
 }));
 
 /** Where the AI Assistant panel remembers whether it is open (a per-user layout preference, like
- * the Story Board zoom; never project data). */
+ * the Beat Board zoom; never project data). */
 export const AI_PANEL_KEY = "openframe.ai.panelOpen";
 
 /** The saved AI panel state. Empty, unreadable or unexpected storage means closed. */

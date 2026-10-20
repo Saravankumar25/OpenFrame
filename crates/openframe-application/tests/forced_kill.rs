@@ -198,6 +198,17 @@ fn downgrade_to_v10(project: &str) {
     let mut v: i64 = c
         .query_row("PRAGMA user_version", [], |r| r.get(0))
         .unwrap();
+    if v == 17 {
+        let tx = c.transaction().unwrap();
+        tx.execute_batch(
+            "DROP TABLE story_page;
+             DELETE FROM _schema_migrations WHERE version = 17;
+             PRAGMA user_version = 16;",
+        )
+        .unwrap();
+        tx.commit().unwrap();
+        v = 16;
+    }
     if v == 16 {
         let tx = c.transaction().unwrap();
         tx.execute_batch(
@@ -293,7 +304,7 @@ impl Harness {
     /// A project with baseline content, closed so the worker can take the single-writer lock.
     fn new() -> Harness {
         let env = TestEnv::with_project("Night Bus", "Feature Film");
-        // In an act, so the Story Board has content to export.
+        // In an act, so the Beat Board has content to export.
         let act = env.ok("story.create_act", json!({ "title": "Act 1" }))["id"]
             .as_str()
             .unwrap()

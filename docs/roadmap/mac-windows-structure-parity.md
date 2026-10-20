@@ -78,6 +78,13 @@ the merge), **Same** (the Mac already matched), **Exception** (a deliberate plat
 | Stripboard colour codes | Same (INT Day white, EXT Day yellow, INT Night blue, EXT Night green) |
 | Story Board columns and Parking Lot like the reference | Done (whole card text, columns scroll on their own) |
 
+## 3a. Owner requests of 2026-10-20, afternoon (both apps)
+
+| Item | Status |
+|---|---|
+| "Story Board" is called "Beat Board" everywhere (it was confused with the production Storyboards) | Done in the core (messages, exports, AI answers, templates), the Mac app, the Windows app and both end-to-end suites. AI questions that still say "story board" are understood. Internal names (`story.*` operations, tables) are unchanged, so projects and packages are unaffected. Specifications keep the old name as history |
+| A free "Story" page, left of the Board tab, to write the story like a notepad, with Export as TXT, PDF and DOCX, linked to nothing | Done: new table `story_page` (migration 0017, additive), queries `story.page`, `story.save_page` (refuses a save from a stale window, undoable) and `story.export_page` (TXT without a brand line, PDF, Word). Mac: Story tab first in the Story workspace, saves a second after typing stops and when left. Windows: the same tab and export dialog (TypeScript not compiled on this Mac) |
+
 ## 4. AI (OpenFrameAI.docx and the Windows AI brief)
 
 | Item | Status |

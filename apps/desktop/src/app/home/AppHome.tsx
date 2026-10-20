@@ -291,7 +291,7 @@ function ProjectsHome() {
               </>
             }
           >
-            A project holds your ideas, story board, screenplay and production plan for one film. Everything is stored on this computer.
+            A project holds your ideas, beat board, screenplay and production plan for one film. Everything is stored on this computer.
           </EmptyState>
         ) : showArchived ? (
           <>

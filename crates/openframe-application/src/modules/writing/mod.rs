@@ -1,7 +1,7 @@
 //! Writing comfort (build plan area "Writing comfort"; features SCRIPT-017 to SCRIPT-020).
 //!
-//! - `suggestions`: project values for the editor's smart suggestion list (Story Board
-//!   characters, cast, production locations, Story Board scene headings). Values typed in the
+//! - `suggestions`: project values for the editor's smart suggestion list (Beat Board
+//!   characters, cast, production locations, Beat Board scene headings). Values typed in the
 //!   script itself are read by the editor from the live document, so unsaved typing counts too.
 //! - `navigator`: optional scene navigator columns (page, notes, revision, production number).
 //! - `proofing`: project spelling languages, the on and off switch, checking text against the

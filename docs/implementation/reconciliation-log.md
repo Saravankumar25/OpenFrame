@@ -14,6 +14,7 @@
 | The Mac core copy lacked the Windows final polish (AI repair, PDF redesign, themes, removed packages) | `crates/` on the Mac branch | Windows `324cd963` merged (`af5e41f`); one core again |
 | The owner's Mac prompt asks for a "See sources" disclosure; Windows shows "Details" holding sources, steps and how sure | Owner prompt 7.3; `apps/desktop/src/ai/Conversation.tsx` | Mac uses "See sources" with sources only (the newer, more specific request). Windows gap recorded; the owner chooses one name |
 | Daily View export: the owner wants a document of its own named "Shoot Day N - Daily view"; Windows exports the schedule with the day first | `new changes.docx` item 1; `features/export/buttons.tsx` | New core query `schedule.export_daily`; the Mac uses it; Windows front end still to call it |
+| "Story Board" names the planning board in the specifications, the manual and the code; the owner renamed it "Beat Board" (2026-10-20) because it was confused with the production Storyboards | `docs/specs/`, `docs/manual/`, core and both front ends | Code, both front ends, both E2E suites and the manual say "Beat Board"; specifications and audits keep "Story Board" as history; operation and table names stay `story.*` |
 | Mac test expectations: 16 themes, the brand line "Created with OpenFrame Studio", a 198-point sidebar width kept | `apps/macos/Tests/...` | Updated to the merged core (17 themes, "Created using OpenFrame") and to the 220-point rule of 5355dc7 |
 
 ## 2026-10-19: Windows final polish (owner change list, AI brief, PDF specs)

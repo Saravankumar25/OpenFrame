@@ -22,7 +22,7 @@ extension AiScopeKind {
         case .currentScene: "Current Scene"
         case .currentScreenplay: "Current Screenplay"
         case .specificDraft: "Specific Draft"
-        case .storyBoard: "Story Board"
+        case .storyBoard: "Beat Board"
         case .ideaVaultSelection: "Idea Vault Selection"
         case .production: "Production Workspace"
         case .shootingDay: "Shooting Day"

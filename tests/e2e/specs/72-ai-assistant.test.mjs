@@ -172,7 +172,7 @@ describe("Offline AI assistant with the bundled model", () => {
 
   test("the docked panel remembers whether it is open when the window loads again", async () => {
     await step("panel-state", async () => {
-      // Open or closed is a layout choice kept in the window's local storage, like the Story Board
+      // Open or closed is a layout choice kept in the window's local storage, like the Beat Board
       // zoom. Each test session starts with fresh window storage, so a reload checks it here.
       const aside = () => browser.$('//aside[@aria-label="AI Assistant"]');
       const reload = async () => {

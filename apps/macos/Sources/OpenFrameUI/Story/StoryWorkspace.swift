@@ -90,6 +90,7 @@ struct StoryContent: View {
 
     @ViewBuilder private var content: some View {
         switch model.tab {
+        case .page: StoryPageView()
         case .board, .outline: BoardPage(model: model)
         case .characters: CharactersView(story: model)
         case .timeline: StoryTimelineView(story: model)
@@ -119,7 +120,7 @@ struct BoardPage: View {
                 }
             }
         } else if let f = model.loadFailure {
-            ContentUnavailableView("The Story Board could not be loaded.", systemImage: "exclamationmark.triangle", description: Text(f.message))
+            ContentUnavailableView("The Beat Board could not be loaded.", systemImage: "exclamationmark.triangle", description: Text(f.message))
         } else {
             ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
         }
@@ -200,7 +201,7 @@ struct BoardPage: View {
                 Image(systemName: "ellipsis.circle")
             }
             .menuStyle(.borderlessButton).menuIndicator(.hidden).fixedSize()
-            .accessibilityLabel("More Story Board actions")
+            .accessibilityLabel("More Beat Board actions")
             .accessibilityIdentifier("story-more")
         }
         .padding(.horizontal, 16).padding(.vertical, 8)
@@ -208,8 +209,8 @@ struct BoardPage: View {
 
     private func export(_ format: String) {
         let panel = NSSavePanel()
-        panel.nameFieldStringValue = "Story Board.\(format)"
-        panel.message = "Choose where to save the Story Board outline"
+        panel.nameFieldStringValue = "Beat Board.\(format)"
+        panel.message = "Choose where to save the Beat Board outline"
         if panel.runModal() == .OK, let url = panel.url {
             Task { await model.export(format: format, to: url.path) }
         }
@@ -243,7 +244,7 @@ struct BoardPage: View {
             }
         } else {
             ContentUnavailableView {
-                Label("Your Story Board is empty.", systemImage: "rectangle.3.group")
+                Label("Your Beat Board is empty.", systemImage: "rectangle.3.group")
             } description: {
                 Text("Scene Cards are short reminders of what happens in each scene. Drag them until the story works. Start shaping the story. Add an Act, Sequence, Beat, or Scene Card, or drag an idea from your Idea Vault.")
             } actions: {

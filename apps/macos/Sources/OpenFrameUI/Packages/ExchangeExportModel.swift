@@ -14,7 +14,7 @@ struct PKExchangeTitle {
     static func of(_ t: PackageType) -> PKExchangeTitle {
         switch t {
         case .scriptReview: PKExchangeTitle(title: "Script Review Package", sub: "How do I send this draft to someone for review and safely bring their notes back?")
-        case .story: PKExchangeTitle(title: "Story Board Package", sub: "Which part of the Story Board do I share, and what comes with it?")
+        case .story: PKExchangeTitle(title: "Beat Board Package", sub: "Which part of the Beat Board do I share, and what comes with it?")
         default: PKExchangeTitle(title: PKInfo.entry(t).label, sub: "")
         }
     }
@@ -55,7 +55,7 @@ final class ExchangeExportModel {
     var scopeChoices: [(value: PKScope, label: String)] {
         switch packageType {
         case .scriptReview: [(.full, "Full script"), (.comments, "Script + comments"), (.scenes, "Specific scenes only")]
-        case .story: [(.full, "Whole Story Board"), (.act, "One Act")]
+        case .story: [(.full, "Whole Beat Board"), (.act, "One Act")]
         default: []
         }
     }

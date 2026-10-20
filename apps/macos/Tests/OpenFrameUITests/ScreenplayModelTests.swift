@@ -1161,7 +1161,7 @@ struct ScreenplayModelTestsSuggest {
         let v = Suggest.scriptValues(suggestScript)
         let items = Suggest.suggestions(.init(kind: .character, from: 0, to: 0, query: ""), script: v, project: suggestProject, canCreate: true)
         #expect(items.map { [$0.label, $0.source.rawValue] } == [
-            ["MEERA", "Script"], ["RAVI", "Script"], ["ANJALI", "Story Board"], ["CONDUCTOR", "Cast"],
+            ["MEERA", "Script"], ["RAVI", "Script"], ["ANJALI", "Beat Board"], ["CONDUCTOR", "Cast"],
         ])
     }
 

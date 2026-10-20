@@ -1,5 +1,5 @@
 //! The Idea Vault: treatment, research, references, a voice memo and a sketch, organised in
-//! folders, collections and tags; some ideas are sent to the Story Board.
+//! folders, collections and tags; some ideas are sent to the Beat Board.
 
 use base64::Engine;
 use serde_json::{Value, json};
@@ -226,7 +226,7 @@ pub fn run(g: &Gold, ctx: &mut Ctx) {
     ctx.set("vaultCollectionMariamma", mariamma);
 }
 
-/// Ideas sent from the vault to the Story Board (copies; the vault keeps its own items).
+/// Ideas sent from the vault to the Beat Board (copies; the vault keeps its own items).
 pub fn send_to_story(g: &Gold, ctx: &mut Ctx) {
     g.phase("Idea Vault to Story");
     g.ok("vault.story_targets", json!({}));

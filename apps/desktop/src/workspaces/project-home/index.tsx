@@ -40,7 +40,7 @@ type Icon = ComponentType<{ size?: number; "aria-hidden"?: boolean }>;
 
 const CONTINUE_LABEL: Record<string, [string, Icon]> = {
   vault: ["Continue Idea Vault", Lightbulb],
-  story: ["Continue Story Board", Columns3],
+  story: ["Continue Beat Board", Columns3],
   screenplay: ["Continue screenplay", FileText],
   breakdown: ["Continue breakdown", ListChecks],
   production: ["Continue production", Clapperboard],
@@ -51,7 +51,7 @@ const CONTINUE_LABEL: Record<string, [string, Icon]> = {
 
 const QUICK: { label: string; workspace: WorkspaceId; icon: Icon }[] = [
   { label: "Idea Vault", workspace: "vault", icon: Lightbulb },
-  { label: "Story Board", workspace: "story", icon: Columns3 },
+  { label: "Beat Board", workspace: "story", icon: Columns3 },
   { label: "Screenplay", workspace: "screenplay", icon: FileText },
   { label: "Breakdown", workspace: "breakdown", icon: ListChecks },
   { label: "Production", workspace: "production", icon: Clapperboard },
@@ -111,7 +111,7 @@ function NewProjectHome({ home, onSettings }: { home: ProjectHome; onSettings: (
   const go = useNav((s) => s.go);
   const actions: { label: string; text: string; icon: Icon; run: () => void; primary?: boolean }[] = [
     { label: "Open Idea Vault", text: "Collect thoughts, images, links and notes about the film. Nothing needs to be organised yet.", icon: Lightbulb, run: () => go({ workspace: "vault" }), primary: true },
-    { label: "Build Story", text: "Arrange acts, beats and scene cards on the Story Board until the story works.", icon: Columns3, run: () => go({ workspace: "story" }) },
+    { label: "Build Story", text: "Arrange acts, beats and scene cards on the Beat Board until the story works.", icon: Columns3, run: () => go({ workspace: "story" }) },
     { label: "Write/Import Screenplay", text: "Start writing, or import a screenplay you already have.", icon: FileText, run: () => go({ workspace: "screenplay" }) },
   ];
   return (

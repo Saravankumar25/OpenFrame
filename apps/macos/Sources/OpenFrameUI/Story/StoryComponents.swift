@@ -350,7 +350,7 @@ struct StoryDropDelegate: DropDelegate {
 }
 
 extension View {
-    /// Makes the view a drop zone of the Story Board.
+    /// Makes the view a drop zone of the Beat Board.
     func storyDrop(_ model: StoryModel, size: CGSize, vertical: Bool = true, zone: @escaping () -> StoryDropZone) -> some View {
         onDrop(of: [StoryDragType.utType], delegate: StoryDropDelegate(model: model, zone: zone, size: size, vertical: vertical))
     }

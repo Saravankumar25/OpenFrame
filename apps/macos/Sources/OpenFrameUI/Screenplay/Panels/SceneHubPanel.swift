@@ -203,7 +203,7 @@ struct SceneHubPanel: View {
     }
 
     @ViewBuilder private var storyCard: some View {
-        sectionTitle("Story Board card")
+        sectionTitle("Beat Board card")
         if let linked = model.story?.linked {
             VStack(alignment: .leading, spacing: 4) {
                 Text(linked.sceneHeading.flatMap { $0.isEmpty ? nil : $0 } ?? "Scene card").fontWeight(.semibold)
@@ -215,7 +215,7 @@ struct SceneHubPanel: View {
             .accessibilityElement(children: .combine)
             .accessibilityIdentifier("scene-story-card")
         } else {
-            Text("No Story Board card is linked to this scene.").foregroundStyle(theme["muted"])
+            Text("No Beat Board card is linked to this scene.").foregroundStyle(theme["muted"])
         }
     }
 

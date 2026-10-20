@@ -16,7 +16,7 @@ export const SCOPE_LABELS: Record<AiScopeKind, string> = {
   CurrentScene: "Current Scene",
   CurrentScreenplay: "Current Screenplay",
   SpecificDraft: "Specific Draft",
-  StoryBoard: "Story Board",
+  StoryBoard: "Beat Board",
   IdeaVaultSelection: "Idea Vault Selection",
   Production: "Production Workspace",
   ShootingDay: "Shooting Day",

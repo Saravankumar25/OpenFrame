@@ -928,8 +928,8 @@ extension Scenarios {
             try await ui.capSeed(ctx, order: 3000)
             try await ui.capNav("Story")
             try await ui.wait(id: "story-tabs", timeout: 20)
-            await ui.capture("story-board-empty", title: "Story Board, nothing on it yet", area: "Story")
-            await ui.capMenu(id: "story-add-menu", name: "story-add-menu", title: "Story Board: Add menu", area: "Story", from: "story-board-empty")
+            await ui.capture("story-board-empty", title: "Beat Board, nothing on it yet", area: "Story")
+            await ui.capMenu(id: "story-add-menu", name: "story-add-menu", title: "Beat Board: Add menu", area: "Story", from: "story-board-empty")
             await ui.step("add act") {
                 try await ui.act(label: "Add Act", role: "AXButton")
                 await ui.capture("story-add-act-inline", title: "Adding an act on the board", area: "Story", from: "story-board-empty", via: "story-empty")
@@ -951,7 +951,7 @@ extension Scenarios {
                     await ui.idle(0.5)
                 }
             }
-            await ui.capture("story-board-filled", title: "Story Board with an act, a sequence and scene cards", area: "Story", from: "story-add-card-sheet")
+            await ui.capture("story-board-filled", title: "Beat Board with an act, a sequence and scene cards", area: "Story", from: "story-add-card-sheet")
             await ui.step("card drawer") {
                 guard let c = ui.card(cards[0]) else { throw DriverError("no card") }
                 try await ui.tap(c, count: 2)
@@ -960,7 +960,7 @@ extension Scenarios {
                 await ui.capture("story-card-drawer", title: "Scene card drawer", area: "Story", from: "story-board-filled", via: "story-card")
                 _ = await ui.tryPress(id: "story-inspector-close")
             }
-            await ui.capMenu(id: "story-more", name: "story-more-menu", title: "Story Board: More menu", area: "Story", from: "story-board-filled")
+            await ui.capMenu(id: "story-more", name: "story-more-menu", title: "Beat Board: More menu", area: "Story", from: "story-board-filled")
             await ui.step("card display") {
                 try await ui.menuButton(id: "story-more", item: "Card Display Settings")
                 await ui.capture("story-card-display-sheet", title: "Card Display Settings", area: "Story", from: "story-board-filled", via: "story-more")
@@ -972,7 +972,7 @@ extension Scenarios {
                 await ui.capRecover()
             }
             await ui.visit(press: "story-build", name: "story-build-sheet", title: "Build Screenplay from the board", area: "Story", from: "story-board-filled", close: nil)
-            await ui.visit(press: "story-parking-toggle", name: "story-parking-lot", title: "Story Board with the Parking Lot open", area: "Story", from: "story-board-filled")
+            await ui.visit(press: "story-parking-toggle", name: "story-parking-lot", title: "Beat Board with the Parking Lot open", area: "Story", from: "story-board-filled")
             _ = await ui.tryPress(id: "story-parking-toggle")
             await ui.step("outline") {
                 try await ui.tab("Outline")
@@ -1377,7 +1377,7 @@ extension Scenarios {
                 await ui.capture("ai-panel", title: "AI Assistant panel", area: "AI Assistant", from: "project-home", via: "ai-toggle")
                 await ui.capMenu(id: "ai-settings-menu", name: "ai-settings-menu", title: "AI Assistant: settings menu", area: "AI Assistant", from: "ai-panel")
                 await ui.exploreButtons([("ai-new-conversation", "New conversation"), ("ai-mode-chip", "Mode"), ("ai-open-settings", "Open settings")], area: "AI Assistant", prefix: "ai", from: "ai-panel")
-                try await ui.typeIn("What is on the Story Board?", into: "ai-input")
+                try await ui.typeIn("What is on the Beat Board?", into: "ai-input")
                 await ui.capture("ai-panel-question-typed", title: "AI Assistant, a question typed", area: "AI Assistant", from: "ai-panel", via: "ai-input")
             }
             for w in ["Story", "Breakdown", "Visual Planning"] {

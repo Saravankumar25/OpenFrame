@@ -245,7 +245,7 @@ pub(crate) fn story_targets(
     actor: &Actor,
     _: VaultStoryTargetsArgs,
 ) -> AppResult<VaultStoryTargets> {
-    actor.require(Capability::View, "view the Story Board")?;
+    actor.require(Capability::View, "view the Beat Board")?;
     let s = core.project()?;
     s.store.read(|c| {
         let mut acts: Vec<VaultStoryAct> = {
@@ -410,7 +410,7 @@ fn place_label(c: &Connection, parent_type: Option<&str>, parent_id: Option<&str
     };
     match (parent_type, parent_id) {
         (Some("parking"), _) => "in the Parking Lot".into(),
-        (Some("unassigned"), _) => "on the Story Board (not yet placed)".into(),
+        (Some("unassigned"), _) => "on the Beat Board (not yet placed)".into(),
         (Some("act"), Some(id)) => format!(
             "in {}",
             title("SELECT title FROM story_act WHERE id=?1", id)

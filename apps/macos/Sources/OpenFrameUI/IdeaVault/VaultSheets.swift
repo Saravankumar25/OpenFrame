@@ -277,7 +277,7 @@ struct SendToStorySheet: View {
     private var needsAct: Bool { target == .sequence && acts.isEmpty }
 
     var body: some View {
-        VaultSheetFrame(title: "Send to Story Board", subtitle: "What should this become? This creates a copy. The original stays in your Idea Vault.", width: 480) {
+        VaultSheetFrame(title: "Send to Beat Board", subtitle: "What should this become? This creates a copy. The original stays in your Idea Vault.", width: 480) {
             VStack(alignment: .leading, spacing: 12) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Idea").font(.caption).foregroundStyle(theme["muted"])
@@ -298,7 +298,7 @@ struct SendToStorySheet: View {
 
                 if target != .character {
                     if needsAct {
-                        Text("There are no acts yet. Add an act on the Story Board first, or choose Beat or Scene Card.")
+                        Text("There are no acts yet. Add an act on the Beat Board first, or choose Beat or Scene Card.")
                             .font(.callout).foregroundStyle(theme["muted"])
                     } else {
                         Picker("Place it in", selection: $place) {
@@ -313,7 +313,7 @@ struct SendToStorySheet: View {
             }
         } footer: {
             Button("Cancel", role: .cancel, action: close).keyboardShortcut(.cancelAction)
-            Button("Create Copy in Story Board") { Task { await submit() } }
+            Button("Create Copy in Beat Board") { Task { await submit() } }
                 .keyboardShortcut(.defaultAction)
                 .disabled(busy || needsAct)
         }

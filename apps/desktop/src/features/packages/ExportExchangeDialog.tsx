@@ -23,7 +23,7 @@ const TITLES: Partial<Record<PackageType, { title: string; sub: string }>> = {
     title: "Script Review Package",
     sub: "How do I send this draft to someone for review and safely bring their notes back?",
   },
-  story: { title: "Story Board Package", sub: "Which part of the Story Board do I share, and what comes with it?" },
+  story: { title: "Beat Board Package", sub: "Which part of the Beat Board do I share, and what comes with it?" },
 };
 
 type Scope = "full" | "comments" | "scenes" | "act";
@@ -38,7 +38,7 @@ function scopeOptions(t: PackageType): { value: Scope; label: string }[] {
       ];
     case "story":
       return [
-        { value: "full", label: "Whole Story Board" },
+        { value: "full", label: "Whole Beat Board" },
         { value: "act", label: "One Act" },
       ];
     default:

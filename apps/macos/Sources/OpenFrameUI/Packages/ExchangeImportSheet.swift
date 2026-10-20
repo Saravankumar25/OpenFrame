@@ -32,7 +32,7 @@ struct ExchangeImportSheet: View {
             VStack(spacing: 10) {
                 Image(systemName: "square.and.arrow.down").font(.system(size: 28)).foregroundStyle(.secondary).accessibilityHidden(true)
                 Text("Choose a package").font(.headline)
-                Text("Review, response, Story Board, Breakdown, Shot List, Schedule or Call Sheet review packages. The package is validated first; nothing changes until you choose what to import.")
+                Text("Review, response, Beat Board, Breakdown, Shot List, Schedule or Call Sheet review packages. The package is validated first; nothing changes until you choose what to import.")
                     .font(.callout).foregroundStyle(.secondary).multilineTextAlignment(.center)
                 if let e = model.errorText { IXBanner(.err, e).accessibilityIdentifier("exchange-import-error") }
                 Button(model.busy ? "Validating\u{2026}" : "Choose Package\u{2026}") {

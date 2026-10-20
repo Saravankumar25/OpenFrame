@@ -1,4 +1,4 @@
-// Episodes and seasons for an episodic project. Each episode has its own Story Board; opening an
+// Episodes and seasons for an episodic project. Each episode has its own Beat Board; opening an
 // episode scopes the board. Mirrors workspaces/story/Episodes.tsx.
 
 import SwiftUI
@@ -191,14 +191,14 @@ struct StoryEpisodesView: View {
             .frame(maxWidth: .infinity)
             if let s = m.series {
                 if !s.isEpisodic {
-                    Text("This project is a \(s.projectType). Episodes are optional; the Story Board works without them.")
+                    Text("This project is a \(s.projectType). Episodes are optional; the Beat Board works without them.")
                         .font(.callout).foregroundStyle(theme["muted"])
                 }
                 if m.total == 0 && s.seasons.isEmpty {
                     ContentUnavailableView {
                         Label("Create your first episode.", systemImage: "tv")
                     } description: {
-                        Text("Each episode has its own Story Board, screenplay drafts and production planning.")
+                        Text("Each episode has its own Beat Board, screenplay drafts and production planning.")
                     } actions: {
                         Button("Add Episode") { m.sheet = .new(seasonId: nil) }.buttonStyle(.borderedProminent)
                     }
@@ -344,7 +344,7 @@ private struct EpisodeMenu: View {
 
     var body: some View {
         Menu {
-            Button("Open Story Board") { Task { await story.openEpisode(e.id) } }
+            Button("Open Beat Board") { Task { await story.openEpisode(e.id) } }
             Button("Edit\u{2026}") { m.sheet = .edit(e) }
             Button("Duplicate\u{2026}") { m.sheet = .duplicate(e) }
             Button("Move Earlier") { Task { await m.step(e, direction: -1) } }.disabled(m.episodes.first?.id == e.id)
@@ -426,7 +426,7 @@ private struct DuplicateEpisodeSheet: View {
     var body: some View {
         StorySheetFrame(title: "Duplicate \u{201C}\(e.title)\u{201D}", width: 420) {
             VStack(alignment: .leading, spacing: 6) {
-                Toggle("Also copy its Story Board (new, independent cards)", isOn: $copyStory).toggleStyle(.checkbox)
+                Toggle("Also copy its Beat Board (new, independent cards)", isOn: $copyStory).toggleStyle(.checkbox)
                 Text("The copy is a new episode. Screenplay links are not copied.").font(.caption).foregroundStyle(.secondary)
             }
         } footer: {
@@ -446,7 +446,7 @@ private struct DeleteEpisodeSheet: View {
 
     var body: some View {
         StorySheetFrame(title: "Delete \u{201C}\(e.title)\u{201D}?", width: 420) {
-            Text("The episode and its Story Board move to Recently Deleted together. You can restore them or use Undo.")
+            Text("The episode and its Beat Board move to Recently Deleted together. You can restore them or use Undo.")
         } footer: {
             Button("Cancel") { m.sheet = nil }.keyboardShortcut(.cancelAction)
             Button("Delete Episode", role: .destructive) {
@@ -521,7 +521,7 @@ private struct SeasonBoardCard: View {
         }
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Episode \(Int(e.number)): \(e.title)")
-        .accessibilityAction(named: "Open Story Board") { Task { await story.openEpisode(e.id) } }
+        .accessibilityAction(named: "Open Beat Board") { Task { await story.openEpisode(e.id) } }
         .accessibilityAction(named: "Move Earlier") { Task { await m.step(e, direction: -1) } }
         .accessibilityAction(named: "Move Later") { Task { await m.step(e, direction: 1) } }
     }

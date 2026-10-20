@@ -195,7 +195,7 @@ export function CardDrawer({ id, board, readOnly }: { id: string; board: StoryBo
   if (detail.isError) {
     return (
       <Drawer open onClose={close} title="Scene Card" typeLabel="Scene Card">
-        <p className="muted">This Scene Card is no longer on the Story Board. It may have been deleted.</p>
+        <p className="muted">This Scene Card is no longer on the Beat Board. It may have been deleted.</p>
       </Drawer>
     );
   }
@@ -304,7 +304,7 @@ export function BeatDrawer({ id, board, readOnly }: { id: string; board: StoryBo
   if (!loc || loc.item.kind !== "beat") {
     return (
       <Drawer open onClose={close} title="Beat" typeLabel="Beat Card" width="n">
-        <p className="muted">This beat is no longer on the Story Board. It may have been deleted.</p>
+        <p className="muted">This beat is no longer on the Beat Board. It may have been deleted.</p>
       </Drawer>
     );
   }
@@ -393,7 +393,7 @@ export function SequenceDrawer({ id, board, readOnly }: { id: string; board: Sto
   if (!seq) {
     return (
       <Drawer open onClose={close} title="Sequence" typeLabel="Sequence" width="n">
-        <p className="muted">This sequence is no longer on the Story Board. It may have been deleted.</p>
+        <p className="muted">This sequence is no longer on the Beat Board. It may have been deleted.</p>
       </Drawer>
     );
   }

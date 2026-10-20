@@ -329,7 +329,7 @@ struct EditorScenarioTests {
         _ = try await r.saved()
         await r.settle()
         #expect(try await r.characters().contains("NISHA"))
-        // First undo takes the Dialogue step back and keeps the character in the Story Board.
+        // First undo takes the Dialogue step back and keeps the character in the Beat Board.
         await r.app.undo()
         var saved = try await r.document().scenes.flatMap(\.elements).map { "\($0.elementType.rawValue): \($0.text)" }
         #expect(saved.last == "character: NISHA")

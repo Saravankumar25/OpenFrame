@@ -15,7 +15,7 @@ enum PKInfo {
         case .backup: Entry(label: "Backup Package", fileExtension: "ofbackup", menuLabel: "Create Backup\u{2026}")
         case .project: Entry(label: "Full Project Package", fileExtension: "ofproject", menuLabel: "Export Full Project\u{2026}")
         case .scriptReview: Entry(label: "Screenplay review package", fileExtension: "ofscriptreview", menuLabel: "Export Review Package (script)\u{2026}")
-        case .story: Entry(label: "Story Board package", fileExtension: "ofstory", menuLabel: "Story Board Package\u{2026}")
+        case .story: Entry(label: "Beat Board package", fileExtension: "ofstory", menuLabel: "Beat Board Package\u{2026}")
         case .breakdown: Entry(label: "Breakdown package", fileExtension: "ofbreakdown", menuLabel: "Breakdown Package\u{2026}")
         case .shots: Entry(label: "Shot List package", fileExtension: "ofshots", menuLabel: "Shot List Package\u{2026}")
         case .schedule: Entry(label: "Schedule package", fileExtension: "ofschedule", menuLabel: "Schedule Package\u{2026}")
@@ -26,7 +26,7 @@ enum PKInfo {
 
     /// Exchange package types that can be exported from a project, in menu order. The Breakdown,
     /// Shot List, Schedule and Call Sheet Review packages were removed (owner change list item 9,
-    /// 2026-10-19, as on Windows); only the script review and Story Board packages remain.
+    /// 2026-10-19, as on Windows); only the script review and Beat Board packages remain.
     static let exchangeExportTypes: [PackageType] = [.scriptReview, .story]
     static let exchangeOpenTypes: [PackageType] = [.scriptReview, .story, .response]
     static let projectOpenTypes: [PackageType] = [.project, .backup]

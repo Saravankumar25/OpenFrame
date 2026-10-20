@@ -1,4 +1,4 @@
-// Build Screenplay from the Story Board: a preview first, then the build. A card without a valid
+// Build Screenplay from the Beat Board: a preview first, then the build. A card without a valid
 // scene heading is never built silently and no heading is invented: the preview asks for each
 // one. An existing screenplay is never overwritten (a new draft or a new screenplay is added).
 
@@ -14,7 +14,7 @@ struct BuildScreenplaySheet: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             VStack(spacing: PageSpacing.tight) {
-                Text("Build Screenplay from Story Board").font(.title3.weight(.semibold)).accessibilityAddTraits(.isHeader)
+                Text("Build Screenplay from Beat Board").font(.title3.weight(.semibold)).accessibilityAddTraits(.isHeader)
                 Text("Preview the order before anything is created.").font(.callout).foregroundStyle(.secondary)
             }
             .multilineTextAlignment(.center)
@@ -40,10 +40,10 @@ struct BuildScreenplaySheet: View {
 
     @ViewBuilder private func form(_ b: BuildScreenplayModel) -> some View {
         if b.rows.isEmpty {
-            StoryBanner(tone: .info, text: "There are no Scene Cards in the active Story Board yet\(b.preview?.parkedCount ?? 0 > 0 ? " (Parking Lot cards are excluded)" : ""). Add Scene Cards to Acts or Sequences first.")
+            StoryBanner(tone: .info, text: "There are no Scene Cards in the active Beat Board yet\(b.preview?.parkedCount ?? 0 > 0 ? " (Parking Lot cards are excluded)" : ""). Add Scene Cards to Acts or Sequences first.")
             HStack { Spacer(); Button("Close") { model.sheet = nil }.keyboardShortcut(.cancelAction) }
         } else {
-            StoryBanner(tone: .info, text: "Cards are used in Story Board order. Parking Lot cards are excluded. Nothing is created until you confirm.")
+            StoryBanner(tone: .info, text: "Cards are used in Beat Board order. Parking Lot cards are excluded. Nothing is created until you confirm.")
             if b.missing > 0 { StoryBanner(tone: .warn, text: b.missingBanner) }
             table(b)
             HStack(alignment: .top, spacing: 24) {
@@ -67,7 +67,7 @@ struct BuildScreenplaySheet: View {
         VStack(spacing: 0) {
             HStack {
                 Text("#").frame(width: 30, alignment: .leading)
-                Text("Story Board scene").frame(maxWidth: .infinity, alignment: .leading)
+                Text("Beat Board scene").frame(maxWidth: .infinity, alignment: .leading)
                 Text("Heading").frame(width: 300, alignment: .leading)
                 Text("Include").frame(width: 60, alignment: .leading)
             }

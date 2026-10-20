@@ -1,4 +1,4 @@
-// Shared Story Board item behaviour: context menus, keyboard handling, inline
+// Shared Beat Board item behaviour: context menus, keyboard handling, inline
 // text editing and colour tokens (used by Board and Outline views).
 
 import { useEffect, useRef, type KeyboardEvent, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent } from "react";

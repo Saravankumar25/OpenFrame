@@ -174,7 +174,7 @@ struct AIAssistantTests {
         let r = try await Rig.make()
         defer { r.close() }
         let expected: [(Workspace, String)] = [
-            (.home, "Using: Whole Project"), (.ideaVault, "Using: Whole Project"), (.story, "Using: Story Board"),
+            (.home, "Using: Whole Project"), (.ideaVault, "Using: Whole Project"), (.story, "Using: Beat Board"),
             (.breakdown, "Using: Production Workspace"), (.production, "Using: Production Workspace"),
             (.callSheets, "Using: Production Workspace"), (.screenplay, "Using: Current Screenplay"), (.notes, "Using: Whole Project"),
         ]
@@ -195,7 +195,7 @@ struct AIAssistantTests {
         r.model.setContext(AIScopeContext(workspace: .screenplay, sceneId: "s1"))
         #expect(r.model.usingLabel == "Using: Whole Project")
         r.model.setContext(AIScopeContext(workspace: .story))
-        #expect(r.model.usingLabel == "Using: Story Board")
+        #expect(r.model.usingLabel == "Using: Beat Board")
         // A scope the place does not offer is dropped, not used.
         r.model.chosenScope = .callSheet
         #expect(r.model.effectiveScope == .storyBoard)

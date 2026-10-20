@@ -8,7 +8,7 @@ export type PackageExchangeArgs = { packageType: PackageType,
 draftId: string | null, 
 /**
  * Script review: "full" | "comments" (Script + comments) | "scenes";
- * Story Board: "full" | "act"; others: "full" | "scenes".
+ * Beat Board: "full" | "act"; others: "full" | "scenes".
  */
 scope: string | null, sceneIds: Array<string>, actId: string | null, callSheetId: string | null, includeComments: boolean, includeAttachments: boolean, 
 /**

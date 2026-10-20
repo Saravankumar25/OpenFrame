@@ -443,7 +443,7 @@ struct IdeaVaultScreen: View {
                     .buttonStyle(.link)
                 }
                 if notice.action == .openStory {
-                    Button("Open Story Board") {
+                    Button("Open Beat Board") {
                         model.dismissNotice()
                         NotificationCenter.default.post(name: .openFrameShowWorkspace, object: Workspace.story.rawValue)
                     }

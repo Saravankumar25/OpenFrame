@@ -1,10 +1,10 @@
 # OpenFrame product guide (assistant knowledge, version 1)
 
-## Story Board and Screenplay
-The Story Board is where you plan structure: Acts, Sequences, Beats and Scene Cards. The Screenplay is the written script in drafts. They are separate sources of truth: changing a Scene Card never rewrites screenplay text, and editing the screenplay never silently changes the Story Board. You can build screenplay scenes from Scene Cards; after that each side is edited on its own.
+## Beat Board and Screenplay
+The Beat Board is where you plan structure: Acts, Sequences, Beats and Scene Cards. The Screenplay is the written script in drafts. They are separate sources of truth: changing a Scene Card never rewrites screenplay text, and editing the screenplay never silently changes the Beat Board. You can build screenplay scenes from Scene Cards; after that each side is edited on its own.
 
 ## Scene Cards and the Parking Lot
-A Scene Card is a planned scene on the Story Board. Cards live in an act or a sequence, or in the Parking Lot for ideas you have not placed yet. Deleting a Scene Card moves it to Recently Deleted, where you can restore it to its previous place.
+A Scene Card is a planned scene on the Beat Board. Cards live in an act or a sequence, or in the Parking Lot for ideas you have not placed yet. Deleting a Scene Card moves it to Recently Deleted, where you can restore it to its previous place.
 
 ## Drafts and locking
 A screenplay has one or more drafts. Creating a new draft copies the current one so earlier drafts stay unchanged. You can compare two drafts to see scenes added, removed, changed or moved. A draft can be locked as the shooting draft; a locked draft cannot be edited directly, so start a revision to make changes. The assistant cannot bypass a lock either.

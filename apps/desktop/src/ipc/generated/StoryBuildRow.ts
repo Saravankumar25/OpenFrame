@@ -2,7 +2,7 @@
 
 export type StoryBuildRow = { cardId: string, 
 /**
- * 1-based order in the Story Board at this moment.
+ * 1-based order in the Beat Board at this moment.
  */
 order: number, shortDescription: string, sceneHeading: string | null, 
 /**

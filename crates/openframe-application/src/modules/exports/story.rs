@@ -1,5 +1,5 @@
-//! Story Board export (FSD §60.2 "Outline/Story Board: PDF"; Import/Export
-//! §6 Story Board PDF / Outline PDF; UX §3.x mock 072): acts, sequences,
+//! Beat Board export (FSD §60.2 "Outline/Beat Board: PDF"; Import/Export
+//! §6 Beat Board PDF / Outline PDF; UX §3.x mock 072): acts, sequences,
 //! beats and scene cards in board order, with optional notes, comments and
 //! Parking Lot. "Outline" is a readable hierarchy; "Board" is a landscape
 //! card grid per act. TXT and CSV carry the same outline.
@@ -34,7 +34,7 @@ pub struct ExportStoryOutlineArgs {
     #[serde(default)]
     #[ts(optional)]
     pub layout: Option<String>,
-    /// "board" (current Story Board, default), "selected" or "project".
+    /// "board" (current Beat Board, default), "selected" or "project".
     #[serde(default)]
     #[ts(optional)]
     pub scope: Option<String>,
@@ -556,7 +556,7 @@ pub(super) fn export(
     let scope = a.scope.as_deref().unwrap_or("board");
     if !matches!(scope, "board" | "selected" | "project") {
         return Err(AppError::invalid_input(
-            "Choose what to export: the current Story Board, selected items or the entire project.",
+            "Choose what to export: the current Beat Board, selected items or the entire project.",
         ));
     }
     let selected: HashSet<String> = a.item_ids.clone().unwrap_or_default().into_iter().collect();
@@ -632,9 +632,9 @@ pub(super) fn export(
         return Err(AppError::export(
             "nothing_to_export",
             if scope == "selected" {
-                "None of the selected items are on the Story Board any more. Select items and try again."
+                "None of the selected items are on the Beat Board any more. Select items and try again."
             } else {
-                "The Story Board is empty, so there is nothing to export yet."
+                "The Beat Board is empty, so there is nothing to export yet."
             },
         ));
     }
@@ -647,18 +647,18 @@ pub(super) fn export(
         count(&b.parking, &mut counts);
     }
     let document = if board_layout {
-        "Story Board"
+        "Beat Board"
     } else {
-        "Story Board Outline"
+        "Beat Board Outline"
     };
     let scope_label = match scope {
         "selected" => "Selected items only".to_string(),
         "project" => "Entire project".to_string(),
-        _ => "Current Story Board".to_string(),
+        _ => "Current Beat Board".to_string(),
     };
     let source_label = match (&boards[0].episode, multi) {
-        (Some(ep), false) => format!("Story Board: {ep}"),
-        _ => "Current Story Board".to_string(),
+        (Some(ep), false) => format!("Beat Board: {ep}"),
+        _ => "Current Beat Board".to_string(),
     };
 
     // ---- PDF
@@ -668,7 +668,7 @@ pub(super) fn export(
     {
         let mut mast = Masthead::new(document).eyebrow(
             if board_layout {
-                "Story · Story board"
+                "Story · Beat board"
             } else {
                 "Story · Outline"
             },
@@ -696,7 +696,7 @@ pub(super) fn export(
                 text: b
                     .episode
                     .clone()
-                    .unwrap_or_else(|| "Film Story Board".into()),
+                    .unwrap_or_else(|| "Film Beat Board".into()),
                 level: 1,
             });
         }
@@ -748,7 +748,7 @@ pub(super) fn export(
                 "\n=== {} ===\n",
                 b.episode
                     .clone()
-                    .unwrap_or_else(|| "Film Story Board".into())
+                    .unwrap_or_else(|| "Film Beat Board".into())
             ));
         }
         text_lines(&b.acts, 0, &o, &mut text);
@@ -780,7 +780,7 @@ pub(super) fn export(
     if o.comments {
         cols.push(Column::new("Comments").weight(1.5));
     }
-    let mut table = Table::new("Story Board", cols);
+    let mut table = Table::new("Beat Board", cols);
     for b in &boards {
         let ep = b.episode.clone().unwrap_or_default();
         for (area, items) in [

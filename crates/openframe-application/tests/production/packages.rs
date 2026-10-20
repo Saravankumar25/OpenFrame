@@ -113,7 +113,7 @@ struct Seed {
     external_path: PathBuf,
 }
 
-/// A project with a screenplay (3 scenes), a Story Board act + card, a comment,
+/// A project with a screenplay (3 scenes), a Beat Board act + card, a comment,
 /// a private note, a managed file and a linked external file.
 fn seed(env: &TestEnv) -> Seed {
     let created = env.ok("screenplay.create", json!({}));
@@ -1736,7 +1736,7 @@ fn write_package_fixtures() {
 
 /// Every committed package format still opens: a backup restores on a new computer (its
 /// database migrates from the schema it was written with), and the project, review, response
-/// and Story Board packages of the same project open (packages carry the new data:
+/// and Beat Board packages of the same project open (packages carry the new data:
 /// compatibility).
 #[test]
 fn older_package_formats_still_open() {
@@ -2426,7 +2426,7 @@ fn package_roles_scope_what_each_member_can_send_and_apply() {
             assert_eq!(e.code.0, "permission.denied");
         }
     }
-    // A same-project Story Board package with a changed card: an object change, not a comment.
+    // A same-project Beat Board package with a changed card: an object change, not a comment.
     let pkg = out_path(&env, "change.ofstory");
     env.ok(
         "story.update_card",

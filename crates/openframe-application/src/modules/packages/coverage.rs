@@ -10,7 +10,7 @@
 //!   what must not reach another person (other members' private notes, undo history). Each table
 //!   says whether it is kept, reduced to the exporting user's rows, emptied, or handled by
 //!   dedicated code, always with the reason.
-//! - **Exchange packages** (review, Story Board, breakdown, shots, schedule, call sheet and
+//! - **Exchange packages** (review, Beat Board, breakdown, shots, schedule, call sheet and
 //!   response): an explicit subset. Each table says which columns the exchange writer
 //!   (`exchange.rs`) carries and why every other column is left out, or why the table is not
 //!   carried at all.
@@ -316,7 +316,7 @@ pub const COVERAGE: &[TableCoverage] = &[
             left_out: &[
                 (
                     "episode_id",
-                    "episodes are not part of a Story Board package in this format",
+                    "episodes are not part of a Beat Board package in this format",
                 ),
                 ("collapsed", "a display preference of the sender"),
             ],
@@ -331,7 +331,7 @@ pub const COVERAGE: &[TableCoverage] = &[
             left_out: &[
                 (
                     "episode_id",
-                    "episodes are not part of a Story Board package in this format",
+                    "episodes are not part of a Beat Board package in this format",
                 ),
                 ("collapsed", "a display preference of the sender"),
             ],
@@ -355,7 +355,7 @@ pub const COVERAGE: &[TableCoverage] = &[
             left_out: &[
                 (
                     "episode_id",
-                    "episodes are not part of a Story Board package in this format",
+                    "episodes are not part of a Beat Board package in this format",
                 ),
                 (
                     "state",
@@ -396,7 +396,7 @@ pub const COVERAGE: &[TableCoverage] = &[
             left_out: &[
                 (
                     "episode_id",
-                    "episodes are not part of a Story Board package in this format",
+                    "episodes are not part of a Beat Board package in this format",
                 ),
                 ("screenplay_scene_id", "a link into the sender's screenplay"),
                 ("source_beat_id", "a link inside the sender's board"),
@@ -516,7 +516,7 @@ pub const COVERAGE: &[TableCoverage] = &[
                 ),
                 (
                     "source_scene_card_id",
-                    "a link into the sender's Story Board",
+                    "a link into the sender's Beat Board",
                 ),
                 (
                     "omitted",
@@ -719,6 +719,14 @@ pub const COVERAGE: &[TableCoverage] = &[
         kept(),
         not_carried(
             "Day Out of Days corrections are the sender's own edits to a derived report; they travel in Backup and Full Project Packages",
+        ),
+    ),
+    // 0017 the Story page
+    t(
+        "story_page",
+        kept(),
+        not_carried(
+            "the Story page is the writer's own free text; it travels in Backup and Full Project Packages",
         ),
     ),
 ];

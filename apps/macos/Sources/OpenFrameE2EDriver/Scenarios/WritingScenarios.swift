@@ -576,7 +576,7 @@ fileprivate extension UI {
         switch screen {
         case "Story Outline":
             try await go("Story"); try await tab("Outline")
-        case "Story Board":
+        case "Beat Board":
             try await go("Story"); try await tab("Board")
         default:
             try await go(screen == "Notes and Tasks" ? "Notes and Tasks" : screen)
@@ -641,13 +641,13 @@ fileprivate extension UI {
         return out
     }
 
-    /// Whether the Story Board characters list holds the name (the Characters page is read, then the editor is shown again).
+    /// Whether the Beat Board characters list holds the name (the Characters page is read, then the editor is shown again).
     func storyCharactersInclude(_ name: String, _ expected: Bool) async throws {
         try await go("Story")
         try await tab("Characters")
         await idle(1.0)
         let has = all().contains { $0.text.contains(name) && $0.identifier != "screenplay-editor" }
-        try expect(has == expected, "the Story Board characters \(expected ? "include" : "no longer include") \(name)")
+        try expect(has == expected, "the Beat Board characters \(expected ? "include" : "no longer include") \(name)")
         try await tab("Board")
         try await go("Screenplay")
         _ = try await editor()
@@ -931,7 +931,7 @@ fileprivate extension UI {
         }
     }
 
-    /// Scene cards (and beats) on the Story Board in reading order: left to right by column, top to bottom.
+    /// Scene cards (and beats) on the Beat Board in reading order: left to right by column, top to bottom.
     func cardLabels() -> [String] {
         let items = all().filter { $0.identifier.hasPrefix("story-card-") && ($0.label.hasPrefix("Scene Card:") || $0.label.hasPrefix("Beat:")) }
         var seen = Set<String>()
@@ -1119,7 +1119,7 @@ extension Scenarios {
 
     @MainActor static func monsoon(_ ui: UI, _ ctx: Context) async throws {
         try await storyProject(ui, ctx, "Monsoon Letters")
-        try await ui.expectShows("Your Story Board is empty.")
+        try await ui.expectShows("Your Beat Board is empty.")
         try await addAct(ui, "Act One")
         try await addSequence(ui, "The Letters")
         for t in [cardA, cardB, cardC] { try await addCard(ui, t) }
@@ -1422,10 +1422,10 @@ extension Scenarios {
         case 7:
             try await ui.goTo("Breakdown")
             try await ui.button("Select Source")
-            try await ui.waitUntil("a draft from the Story Board") { ui.all().contains { $0.text.hasPrefix("Draft 1 from Story Board") } }
-            try await ui.act(label: nil, role: nil, pick: { $0.text.hasPrefix("Draft 1 from Story Board") })
+            try await ui.waitUntil("a draft from the Beat Board") { ui.all().contains { $0.text.hasPrefix("Draft 1 from Beat Board") } }
+            try await ui.act(label: nil, role: nil, pick: { $0.text.hasPrefix("Draft 1 from Beat Board") })
             try await ui.act(id: "set-production-source", role: "AXButton")
-            try await ui.expectShows("Production Source: Draft 1 from Story Board")
+            try await ui.expectShows("Production Source: Draft 1 from Beat Board")
             try await ui.act(id: "suggest-elements", role: "AXButton")
             try await ui.act(label: "Accept Pistol", role: "AXButton")
             try await ui.act(label: "Accept Arjun", role: "AXButton")
@@ -1456,7 +1456,7 @@ extension Scenarios {
             try await ui.chooseMenu(label: "Scene 1 actions", ["Details"])
             try await ui.act(label: "Open in Screenplay", role: "AXLink")
             let tv = try await ui.editor()
-            try await ui.waitUntil("Draft 1 from Story Board is open") { ui.currentDraftName() == "Draft 1 from Story Board" }
+            try await ui.waitUntil("Draft 1 from Beat Board is open") { ui.currentDraftName() == "Draft 1 from Beat Board" }
             try ui.expect(tv.selectedRange().location <= 1, "the cursor sits on the first scene heading")
             await ui.idle(3)
             try await ui.quiet()
@@ -1574,7 +1574,7 @@ extension Scenarios {
         ("desert-dune", "Desert Dune"), ("colorist-neutral", "Colorist Neutral"), ("silver-screen", "Silver Screen"), ("high-contrast", "High Contrast"),
     ]
 
-    static let themeScreens = ["Application Home", "Project Home", "Idea Vault", "Story Board", "Story Outline", "Screenplay", "Breakdown", "Schedule",
+    static let themeScreens = ["Application Home", "Project Home", "Idea Vault", "Beat Board", "Story Outline", "Screenplay", "Breakdown", "Schedule",
                                "Call Sheets", "Budget", "Visual Planning", "Files", "Notes and Tasks", "Recently Deleted", "Activity"]
 
     static let lighthouse = "A lighthouse keeper collects letters that never arrived."
@@ -2080,9 +2080,9 @@ extension Scenarios {
             try await vaultProject(ui, ctx, "Letter Town")
             try await ui.quickCapture("Meera finds her own handwriting on an old envelope.")
             try await ui.contextMenu(on: try await ui.vaultCardWait("Meera finds her own"), ["Send to Story"])
-            try await ui.expectShows("Send to Story Board")
-            try await ui.button("Create Copy in Story Board")
-            try await ui.waitUntil("the sheet closes") { !ui.shows("Create Copy in Story Board") }
+            try await ui.expectShows("Send to Beat Board")
+            try await ui.button("Create Copy in Beat Board")
+            try await ui.waitUntil("the sheet closes") { !ui.shows("Create Copy in Beat Board") }
             try ui.expect(ui.vaultCard("Meera finds her own") != nil, "the Vault still has the card")
             try await ui.goTo("Story")
             try await ui.wait(id: "story-tabs", timeout: 20)
@@ -2736,7 +2736,7 @@ extension Scenarios {
         },
         W("30-story/act-sequence-two-cards") { ui, _, ctx in
             try await storyProject(ui, ctx, "Paper Boats")
-            try await ui.expectShows("Your Story Board is empty.")
+            try await ui.expectShows("Your Beat Board is empty.")
             try await addAct(ui, "Act One")
             try await addSequence(ui, "Departure")
             try await addCard(ui, "Boats fold themselves at dawn")
@@ -2923,7 +2923,7 @@ extension Scenarios {
             try await ui.contextMenu(on: (try await ui.cardWait(beat)), ["Convert to Scene"])
             try await ui.waitUntil("four scene cards") { ui.sceneCards().count == 4 }
             try await ui.act(id: "story-build", role: "AXButton")
-            try await ui.expectShows("Build Screenplay from Story Board")
+            try await ui.expectShows("Build Screenplay from Beat Board")
             try await ui.expectShows("no valid scene heading")
             try await ui.expectShows("OpenFrame never makes up a heading.")
             try await ui.fill("Heading for scene 1", "EXT. POST OFFICE - NIGHT")
@@ -2934,7 +2934,7 @@ extension Scenarios {
             try await ui.waitUntil("Build Screenplay enabled") { ui.query(id: "build-confirm").first?.isEnabled ?? false }
             try await ui.expectShows("3 of 4 cards will be built")
             try await ui.act(id: "build-confirm", role: "AXButton")
-            try await ui.expectShows("Draft 1 from Story Board", timeout: 20)
+            try await ui.expectShows("Draft 1 from Beat Board", timeout: 20)
             let tv = try await ui.editor()
             let headings = tv.string.components(separatedBy: "\n").filter { $0.hasPrefix("EXT.") || $0.hasPrefix("INT.") }
             try ui.expect(headings == ["EXT. POST OFFICE - NIGHT", "EXT. FLOODED STREET - NIGHT", "INT. MEERA'S ROOM - NIGHT"], "scene headings are exactly the three typed: \(headings)")
@@ -2959,7 +2959,7 @@ extension Scenarios {
             try await ui.expectShows("2 cards selected")
             if ui.appIsActive { try await ui.deleteKey() } else { try await ui.button("Delete") }
             try await ui.expectShows("Delete 2 items?")
-            try await ui.expectShows("Screenplay scenes are never deleted from the Story Board.")
+            try await ui.expectShows("Screenplay scenes are never deleted from the Beat Board.")
             try await ui.button("Delete")
             try await ui.waitSceneCards([cardC])
             try await ui.projectMenu(["Recently Deleted"])
@@ -3012,7 +3012,7 @@ extension Scenarios {
             try await ui.fill("Episode title", "Pilot", id: "story-episode-title")
             try await ui.button("Create Episode")
             try await ui.expectShows("Added episode")
-            try await ui.chooseMenu(label: "Options for Pilot", ["Open Story Board"])
+            try await ui.chooseMenu(label: "Options for Pilot", ["Open Beat Board"])
             try await ui.button("Add Scene")
             try await ui.fill("Short description", "Pilot cold open at the dam", submit: true)
             try await ui.waitUntil("pilot card") { ui.card("Pilot cold open at the dam") != nil }

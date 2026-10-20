@@ -1,4 +1,4 @@
-# Story Board full flow
+# Beat Board full flow
 
 Spec: `tests/e2e/specs/31-story-board-flow.test.mjs`
 
@@ -19,7 +19,7 @@ The cards used below:
 
 1. Do the first launch: type 'E2E Tester' as the name, click Continue, click Create Project, type 'Monsoon Letters' as the title, click Create.
 2. Click Story in the Workspaces navigation.
-3. Check: the screen shows "Your Story Board is empty."
+3. Check: the screen shows "Your Beat Board is empty."
 4. Click Add Act. Type 'Act One' in the Act title field and press Enter.
 5. Click Add, then choose Sequence. Type 'The Letters' in the Sequence name field and press Enter.
 6. Check: the screen shows "The Letters".
@@ -69,7 +69,7 @@ The cards used below:
 3. Check: the status in the Scene Card drawer reads "Saved".
 4. Click Close in the Scene Card drawer.
 5. Check: no card shows a long description preview (the Minimal preset is the default).
-6. Click More Story Board actions, then choose Card Display Settings.
+6. Click More Beat Board actions, then choose Card Display Settings.
 7. Choose the preset Story in the dialog.
 8. Check: a card shows a long description preview starting with "The street is flooded".
 9. Tick Shot/Storyboard Status in the dialog.
@@ -81,7 +81,7 @@ The cards used below:
 ## Build Screenplay leaves out a card without a heading and never invents one
 
 1. Click Build Screenplay.
-2. Check: the screen shows "Build Screenplay from Story Board", "no valid scene heading" and "OpenFrame never makes up a heading."
+2. Check: the screen shows "Build Screenplay from Beat Board", "no valid scene heading" and "OpenFrame never makes up a heading."
 3. Type 'EXT. POST OFFICE - NIGHT' in Heading for scene 1.
 4. Type 'EXT. FLOODED STREET - NIGHT' in Heading for scene 2.
 5. Type 'INT. MEERA'S ROOM - NIGHT' in Heading for scene 3.
@@ -90,7 +90,7 @@ The cards used below:
 8. Check: Build Screenplay becomes enabled.
 9. Check: the screen shows "3 of 4 cards will be built".
 10. Click Build Screenplay in the dialog.
-11. Check: the Screenplay workspace opens and the screen shows "Draft 1 from Story Board".
+11. Check: the Screenplay workspace opens and the screen shows "Draft 1 from Beat Board".
 12. Check: the scene headings of the draft are exactly "EXT. POST OFFICE - NIGHT", "EXT. FLOODED STREET - NIGHT", "INT. MEERA'S ROOM - NIGHT", in that order.
 13. Check: the screen is quiet.
 14. Click Story in the Workspaces navigation.
@@ -100,7 +100,7 @@ The cards used below:
 1. Click card A, then hold Ctrl and click card B.
 2. Check: two cards are selected.
 3. Press Delete.
-4. Check: the screen shows "Delete 2 items?" and "Screenplay scenes are never deleted from the Story Board."
+4. Check: the screen shows "Delete 2 items?" and "Screenplay scenes are never deleted from the Beat Board."
 5. Click Delete in the dialog.
 6. Check: cards A and B are gone.
 7. Open the project menu and choose Recently Deleted.
@@ -124,7 +124,7 @@ The cards used below:
 10. Check: the screen is quiet.
 11. Open the project menu and choose Close project.
 
-## Episodes scope the Story Board in an episodic project
+## Episodes scope the Beat Board in an episodic project
 
 1. On Application Home, click New Project.
 2. Type 'Monsoon Series' in the project title field.
@@ -133,7 +133,7 @@ The cards used below:
 5. Click Story in the Workspaces navigation, then the Episodes tab.
 6. Click Add Episode. Type 'Pilot' in the episode title field. Click Create Episode in the dialog.
 7. Check: the screen shows "Added episode “Pilot”".
-8. Click Options for Pilot, then choose Open Story Board.
+8. Click Options for Pilot, then choose Open Beat Board.
 9. Click Add Scene. Type 'Pilot cold open at the dam' in the Short description field and press Enter.
 10. Check: the cards include "Pilot cold open at the dam".
 11. In the Episode list, choose "Series level (no episode)".

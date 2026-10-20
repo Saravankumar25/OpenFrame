@@ -1,4 +1,4 @@
-// The things on the Story Board: scene cards, beats, sequence blocks, their menus and the list
+// The things on the Beat Board: scene cards, beats, sequence blocks, their menus and the list
 // that holds them. Board and Outline share the menu and the keyboard handling.
 
 import AppKit

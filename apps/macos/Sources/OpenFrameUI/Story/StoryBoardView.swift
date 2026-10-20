@@ -43,7 +43,7 @@ struct StoryBoardView: View {
             if let key { focus = key; model.focusRequest = nil }
         }
         .accessibilityElement(children: .contain)
-        .accessibilityLabel("Story Board")
+        .accessibilityLabel("Beat Board")
         .accessibilityIdentifier("story-board")
     }
 }

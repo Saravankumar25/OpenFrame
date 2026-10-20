@@ -1,4 +1,4 @@
-// The exchange export sheet (mockup 159): Script Review, Story Board, Breakdown, Shot List,
+// The exchange export sheet (mockup 159): Script Review, Beat Board, Breakdown, Shot List,
 // Schedule and Call Sheet review packages.
 
 import SwiftUI

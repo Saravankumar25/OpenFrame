@@ -1,5 +1,5 @@
 //! The production of "Low Tide Radio", in the order a real team works: settings and the Idea
-//! Vault, the Story Board, the screenplay and its drafts, then production planning, the shoot
+//! Vault, the Beat Board, the screenplay and its drafts, then production planning, the shoot
 //! paperwork, the Offline AI, and the exchange of packages with collaborators.
 
 pub mod ai;

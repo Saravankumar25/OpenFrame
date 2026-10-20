@@ -43,7 +43,7 @@ struct AILogicTests {
         #expect(scope(.notes) == .wholeProject)
         #expect(scope(.files) == .wholeProject)
         #expect(AiScopeKind.wholeProject.label == "Whole Project")
-        #expect(AiScopeKind.storyBoard.label == "Story Board")
+        #expect(AiScopeKind.storyBoard.label == "Beat Board")
         #expect(AiScopeKind.production.label == "Production Workspace")
     }
 

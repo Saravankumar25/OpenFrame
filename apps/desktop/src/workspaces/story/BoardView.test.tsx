@@ -111,7 +111,7 @@ const board: StoryBoardState = {
   sequenceCount: 1,
 };
 
-describe("Story Board views", () => {
+describe("Beat Board views", () => {
   beforeEach(() => {
     useStoryUi.setState({ selected: [], drawer: null, dialog: null, editingKey: null, filter: "", parkingOpen: true, zoom: 100 });
   });

@@ -199,7 +199,7 @@ kbd{font-family:"Segoe UI",sans-serif;font-size:11px;border:1px solid var(--line
 .fic.pdf{background:var(--red-soft);color:var(--file-pdf-ink)}.fic.doc{background:var(--blue-soft);color:var(--blue-t)}.fic.aud{background:var(--purple-soft);color:var(--purple-t)}.fic.vid{background:var(--green-soft);color:var(--green-t)}.fic.url{background:var(--teal-soft);color:var(--teal-t)}
 .wave{display:flex;align-items:center;gap:2px;height:26px}
 .wave i{display:block;width:3px;background:var(--purple);border-radius:2px}
-/* story board */
+/* beat board */
 .board{display:flex;gap:14px;height:100%;align-items:flex-start;overflow:hidden}
 .actband{flex:none;background:var(--surface3);border:1px solid var(--line2);border-radius:12px;padding:8px 8px 10px;min-width:220px}
 .actband .ah{display:flex;align-items:center;gap:6px;padding:2px 4px 8px;font-weight:800;font-size:12.5px;text-transform:uppercase;letter-spacing:.4px}

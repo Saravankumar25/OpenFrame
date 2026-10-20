@@ -4,7 +4,7 @@
 //!
 //! | op                         | document                                  | formats         |
 //! |----------------------------|-------------------------------------------|-----------------|
-//! | `story.export_board`       | Story Board outline / board               | PDF · TXT · CSV |
+//! | `story.export_board`       | Beat Board outline / board               | PDF · TXT · CSV |
 //! | `breakdown.export_report`  | Breakdown by scene + Catalog with usage   | PDF · CSV · XLSX|
 //! | `moodboard.export_pdf`     | Moodboard presentation                    | PDF             |
 //! | `storyboard.export_sheet`  | Storyboard sheet (panel grid)             | PDF             |
@@ -85,7 +85,7 @@ pub fn register(r: &mut Registry) {
     r.query("story.export_board", story::export).meta(
         M::query(
             Cap::Export,
-            "Export the Story Board outline (PDF/DOCX/…) to a location the user picked.",
+            "Export the Beat Board outline (PDF/DOCX/…) to a location the user picked.",
         )
         .fs(Fs::WritesUserFile)
         .hidden(h::USER_PATH),
@@ -214,6 +214,7 @@ pub(crate) enum Fmt {
     Csv,
     Xlsx,
     Txt,
+    Docx,
 }
 
 impl Fmt {
@@ -223,6 +224,7 @@ impl Fmt {
             "csv" => Some(Fmt::Csv),
             "xlsx" | "excel" => Some(Fmt::Xlsx),
             "txt" | "text" => Some(Fmt::Txt),
+            "docx" | "word" => Some(Fmt::Docx),
             _ => None,
         };
         match f {
@@ -242,6 +244,7 @@ impl Fmt {
             Fmt::Csv => "csv",
             Fmt::Xlsx => "xlsx",
             Fmt::Txt => "txt",
+            Fmt::Docx => "docx",
         }
     }
     pub fn label(self) -> &'static str {
@@ -250,6 +253,7 @@ impl Fmt {
             Fmt::Csv => "CSV",
             Fmt::Xlsx => "Excel (XLSX)",
             Fmt::Txt => "Plain text",
+            Fmt::Docx => "Word (DOCX)",
         }
     }
 }
@@ -262,6 +266,10 @@ pub(crate) struct Output {
     pub tables: Vec<Table>,
     /// Plain-text rendering, when the export offers TXT.
     pub text: Option<String>,
+    /// Word document bytes, when the export offers DOCX.
+    pub docx: Option<Vec<u8>>,
+    /// Add the "Created using OpenFrame" line to a TXT export (not for the writer's own prose).
+    pub brand_text: bool,
     /// What to suggest when the PDF font can't print some characters.
     pub pdf_hint: &'static str,
     /// A PDF rendered by another engine (Sides use the screenplay layout):
@@ -280,6 +288,8 @@ impl Output {
             doc,
             tables: Vec::new(),
             text: None,
+            docx: None,
+            brand_text: true,
             pdf_hint,
             pdf: None,
             warnings: Vec::new(),
@@ -424,11 +434,21 @@ pub(crate) fn deliver(
             let t = out.text.as_ref().ok_or_else(|| {
                 AppError::invalid_input("This document can't be exported as plain text.")
             })?;
-            let branded = format!("{}\n\n{BRAND_LINE}\n", t.trim_end());
+            let branded = if out.brand_text {
+                format!("{}\n\n{BRAND_LINE}\n", t.trim_end())
+            } else {
+                format!("{}\n", t.trim_end())
+            };
             let mut b = Vec::with_capacity(branded.len() + 3);
             b.extend_from_slice(b"\xEF\xBB\xBF");
             b.extend_from_slice(branded.replace('\n', "\r\n").as_bytes());
             (b, None)
+        }
+        Fmt::Docx => {
+            let d = out.docx.take().ok_or_else(|| {
+                AppError::invalid_input("This document can't be exported as a Word document.")
+            })?;
+            (d, None)
         }
     };
     fault::before_write().map_err(export_error)?;

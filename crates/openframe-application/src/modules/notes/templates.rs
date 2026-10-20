@@ -10,13 +10,13 @@
 //! "Use" copies a template: the copy gets a new identity, so later edits to the
 //! template never change anything already created from it (FSD §113).
 //! `templates.apply` creates the document a template describes in the open project
-//! (a screenplay starter, Story Board acts and beats, a call sheet, a shot list, a
+//! (a screenplay starter, Beat Board acts and beats, a call sheet, a shot list, a
 //! moodboard, a budget). The template content is read once and copied into new
 //! records with the owning module's own operations; nothing refers back to the
 //! template afterwards.
 //!
 //! Built-in set (owner decision 2026-10-07, production depth spec §34): Feature Film
-//! Screenplay, Short Film Screenplay, Episodic / Series, Simple Story Board, Indie
+//! Screenplay, Short Film Screenplay, Episodic / Series, Simple Beat Board, Indie
 //! Call Sheet, Shot List, Moodboard and Lightweight Budget. The daily production
 //! report is a report type, not a template.
 
@@ -52,7 +52,7 @@ pub fn register(r: &mut Registry) {
     );
     r.command("templates.apply", apply).meta(
         M::edit(
-            "Create the document a template describes (screenplay starter, Story Board, call sheet, shot list, moodboard or budget) in this project.",
+            "Create the document a template describes (screenplay starter, Beat Board, call sheet, shot list, moodboard or budget) in this project.",
         )
         .hidden(crate::registry::hidden::DUPLICATE),
     );
@@ -73,7 +73,7 @@ pub const TEMPLATE_TYPES: &[(&str, &str)] = &[
     ("shot_list", "Shot list"),
     ("moodboard", "Moodboard"),
     ("report", "Report"),
-    ("story_board", "Story Board starter"),
+    ("story_board", "Beat Board starter"),
     ("breakdown", "Breakdown document"),
     ("budget", "Simple budget"),
     ("project_starter", "Project starter"),
@@ -246,7 +246,7 @@ fn builtins() -> Vec<TemplateDto> {
         b(
             "story_board",
             "story_board",
-            "Simple Story Board",
+            "Simple Beat Board",
             json!({ "description": "Three acts with key beats", "acts": ["Act One", "Act Two", "Act Three"],
                     "beats": ["Opening image", "Inciting incident", "Midpoint", "Crisis", "Climax", "Resolution"] }),
         ),
@@ -641,7 +641,7 @@ fn apply_steps(core: &AppCore, actor: &Actor, a: ApplyTemplateArgs) -> AppResult
             }
             Ok(done(
                 json!({ "workspace": "story" }),
-                format!("Added {n} Story Board items from “{}”", tpl.name),
+                format!("Added {n} Beat Board items from “{}”", tpl.name),
                 n,
             ))
         }

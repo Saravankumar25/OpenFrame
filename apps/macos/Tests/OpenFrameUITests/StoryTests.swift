@@ -122,6 +122,36 @@ private func drag(_ story: StoryModel, _ ref: StoryItemRef, onto zone: StoryDrop
 @Suite("StoryTests", .serialized)
 @MainActor
 struct StoryTests {
+    /// The Story page is a free page of prose left of the Beat Board (owner request 2026-10-20):
+    /// it saves what is typed, survives a reload, and refuses a save from a stale window.
+    @Test func theStoryPageSavesWhatIsTypedAndRefusesAStaleSave() async throws {
+        let r = try await Rig.make(title: "Low Tide Radio")
+        defer { r.close() }
+        #expect(StoryTab.allCases.first == .page)
+        #expect(StoryTab.page.title == "Story")
+        let m = StoryPageModel(app: r.app)
+        await m.load()
+        #expect(m.loaded && m.text.isEmpty && m.words == 0)
+        m.text = "A storm. Fishing boats in the swell."
+        m.edited()
+        #expect(m.state == .unsaved)
+        await m.save()
+        #expect(m.state == .saved)
+        #expect(m.words == 7)
+        let other = StoryPageModel(app: r.app)
+        await other.load()
+        #expect(other.text == "A storm. Fishing boats in the swell.")
+        other.text += "\n\nAnjali hears her mother."
+        await other.save()
+        // The first window is now behind: its save is refused, nothing is lost.
+        m.text += " The lights die."
+        await m.save()
+        #expect(m.conflict)
+        #expect(try await r.app.core!.storyPage().body.hasSuffix("Anjali hears her mother."))
+        await m.reloadAfterConflict()
+        #expect(!m.conflict && m.text.hasSuffix("Anjali hears her mother."))
+    }
+
     @Test func actSequenceAndTwoCards() async throws {
         let r = try await Rig.make(title: "Paper Boats")
         defer { r.close() }
@@ -528,9 +558,9 @@ struct StoryBoardFlowTests {
         #expect(b.summary == "3 of 4 cards will be built")
         // 10. to 12. Build: the draft is named, and its scene headings are exactly the three.
         let result = try #require(await b.build())
-        #expect(result.draftName == "Draft 1 from Story Board")
+        #expect(result.draftName == "Draft 1 from Beat Board")
         #expect(Int(result.sceneCount) == 3)
-        #expect(r.story.notice?.text == "Built \u{201C}Draft 1 from Story Board\u{201D} with 3 scenes")
+        #expect(r.story.notice?.text == "Built \u{201C}Draft 1 from Beat Board\u{201D} with 3 scenes")
         let doc = try await r.core.screenplayDocument(ScreenplayDraftIdArgs(draftId: result.draftId))
         #expect(doc.scenes.map(\.heading) == ["EXT. POST OFFICE - NIGHT", "EXT. FLOODED STREET - NIGHT", "INT. MEERA'S ROOM - NIGHT"])
         #expect(r.quiet)
@@ -577,7 +607,7 @@ struct StoryBoardFlowTests {
         await r.story.requestDelete(r.story.selectedRefs)
         guard case let .deleteLinked(refs)? = r.story.sheet else { Issue.record("expected the linked-delete question"); return }
         #expect(DeleteLinkedSheet.title(count: refs.count) == "Delete 2 items?")
-        #expect(DeleteLinkedSheet.message(count: refs.count, scene: nil).contains("Screenplay scenes are never deleted from the Story Board."))
+        #expect(DeleteLinkedSheet.message(count: refs.count, scene: nil).contains("Screenplay scenes are never deleted from the Beat Board."))
         // 5. and 6. Delete in the dialog.
         #expect(await r.story.deleteNow(refs))
         await r.reload()
@@ -626,7 +656,7 @@ struct StoryBoardFlowTests {
         await r.reload()
         let pilot = try #require(r.story.episodes.first)
         #expect(pilot.episode.title == "Pilot")
-        // 8. Options for Pilot > Open Story Board.
+        // 8. Options for Pilot > Open Beat Board.
         await r.story.openEpisode(pilot.id)
         #expect(r.story.tab == .board)
         #expect(r.story.episodeId == pilot.id)
@@ -919,7 +949,7 @@ struct StoryRuleTests {
         #expect(m.preview?.moves.count == 2)
         #expect(m.canApply)
         #expect(await m.apply())
-        #expect(r.story.notice?.text.hasPrefix("Applied the Story Board order to") == true)
+        #expect(r.story.notice?.text.hasPrefix("Applied the Beat Board order to") == true)
         #expect(r.quiet)
     }
 }

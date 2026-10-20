@@ -35,7 +35,7 @@ type Item = { id: string; label: string };
 export function StoryExportButton({ episodeId, selectedIds, ...t }: Trigger & { episodeId: string | null; selectedIds: string[] }) {
   const d = useOpen();
   const scopes: ExportScope[] = [
-    { value: "board", label: "Current page (whole Story Board)", args: { scope: "board", episodeId } },
+    { value: "board", label: "Current page (whole Beat Board)", args: { scope: "board", episodeId } },
     {
       value: "selected",
       label: selectedIds.length ? `Selected items only (${selectedIds.length})` : "Selected items only",
@@ -55,9 +55,9 @@ export function StoryExportButton({ episodeId, selectedIds, ...t }: Trigger & { 
       <ExportDialog
         open={d.open}
         onClose={d.hide}
-        title="Export Story Board"
-        source={<>Source: <b>current Story Board</b></>}
-        documentName="Story Board"
+        title="Export Beat Board"
+        source={<>Source: <b>current Beat Board</b></>}
+        documentName="Beat Board"
         op="story.export_board"
         formats={formats}
         scopes={scopes}
@@ -67,6 +67,32 @@ export function StoryExportButton({ episodeId, selectedIds, ...t }: Trigger & { 
           { kind: "checkbox", key: "includeNotes", label: "Include notes", default: false },
           { kind: "checkbox", key: "includeComments", label: "Include comments", default: false },
         ]}
+      />
+    </>
+  );
+}
+
+// ------------------------------------------------------------------ Story page
+
+/** The free Story page (owner request 2026-10-20): the text as written, as TXT, PDF or DOCX. */
+export function StoryPageExportButton({ onBeforeOpen, ...t }: Trigger & { onBeforeOpen?: () => Promise<unknown> | void }) {
+  const d = useOpen();
+  return (
+    <>
+      <TriggerButton {...t} onClick={() => void Promise.resolve(onBeforeOpen?.()).then(d.show)} />
+      <ExportDialog
+        open={d.open}
+        onClose={d.hide}
+        title="Export Story"
+        source={<>Source: <b>the Story page</b></>}
+        documentName="Story"
+        op="story.export_page"
+        formats={[
+          { value: "txt", label: "Plain text (TXT)" },
+          { value: "pdf", label: "PDF" },
+          { value: "docx", label: "Word (DOCX)" },
+        ]}
+        note="Export creates a copy of the page; the page does not change."
       />
     </>
   );
