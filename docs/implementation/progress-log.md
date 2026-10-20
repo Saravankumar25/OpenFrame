@@ -58,6 +58,29 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 
 ## Entries
 
+### 2026-10-21, WindowsHTML: every Windows screen as HTML; Home list refresh fix
+- **Areas and items worked:** owner work outside the plan (Chapter 2 source material): remove `HTML_Mockups/`, build
+  `WindowsHTML/` from the running app; then, at the owner's word, the stale Application Home list it uncovered.
+- **Done:** branch `docs/windows-html`, merged locally to `main`. A capture tour (`tests/e2e/capture/`, spec
+  `zz-capture`) seeds Night Bus and an empty project and walks ten sections written in parallel by seven subagents.
+  Each state is saved twice (Light, Dark): screenshot plus the web view's own DOM, with the built app's style sheets,
+  form values, scroll offsets (no script) and original image files. `scripts/windows-html/parallel.mjs` runs eight
+  parts side by side, merges, generates and checks. Two capture defects fixed on the way (images under a dialog dimmed
+  twice; Chromium drops a var() shorthand when re-serializing a rule). Runner takes `E2E_PORT_BASE`. App fix: Pin,
+  Unpin, Archive, Restore, Duplicate, Remove from List and Delete now emit the Home list change event
+  (`project.rs`), so Application Home updates at once; the home spec lost its leave-and-return workaround.
+- **Evidence:** 809 screens, 1,618 pages, 1,618 pass the page check (largest 0.460 percent, limit 0.5 percent);
+  `WindowsHTML/README.md` has the table. Rust `platform` tests `pin_archive_duplicate_and_remove_emit_a_project_list_change_event`
+  and `rename_closed_project_emits_a_project_list_change_event` pass. E2E `10-home`: see Checks run.
+- **Docs updated:** CONTRIBUTING, DEVELOPMENT, docs README, UX laws checklist, UX specification header (mock-up rule
+  superseded), Chapter 2 plan, writing check groups, reconciliation log, WindowsHTML prompt marked done, Mac prompt
+  written (`next-session-mac-html-prompt.md`), this log, handoff.
+- **Decisions made or needed:** none.
+- **Blocked / risks:** 61 states not capturable from the web view (Windows dialogs, devices, forced failures), listed.
+- **Next:** MacHTML on the Mac; `OpenFrame-4.exe` when the owner asks.
+- **Checks run:** writing check OK; the capture page check; the two Rust tests; E2E `10-home`. Not run: the full E2E
+  suite and the full Rust suites after the `project.rs` change.
+
 ### 2026-10-20 to 2026-10-21, Beat Board, Story page, owner change list, AI See sources
 - **Areas and items worked:** owner work outside the plan: rename Story Board to Beat Board, a Story writing page,
   `new changes.docx` items 1 to 5, and the AI brief (plain answers, metadata behind See sources, better routing).

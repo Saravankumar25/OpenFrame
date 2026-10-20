@@ -1271,17 +1271,20 @@ fn set_archived(core: &AppCore, actor: &Actor, args: SetArchivedArgs) -> AppResu
     if n == 0 {
         return Err(AppError::not_found("project"));
     }
+    recent_list_changed(core, actor, &args.project_id);
     Ok(())
 }
 
-fn remove_recent(core: &AppCore, _a: &Actor, args: ProjectIdArgs) -> AppResult<()> {
+fn remove_recent(core: &AppCore, actor: &Actor, args: ProjectIdArgs) -> AppResult<()> {
     core.with_app_db(|c| {
         c.execute(
             "DELETE FROM sys_recent_project WHERE project_id=?1",
             [&args.project_id],
         )?;
         Ok(())
-    })
+    })?;
+    recent_list_changed(core, actor, &args.project_id);
+    Ok(())
 }
 
 fn locate(core: &AppCore, actor: &Actor, args: LocateArgs) -> AppResult<OpenProjectResult> {
@@ -1394,8 +1397,11 @@ fn duplicate(core: &AppCore, actor: &Actor, args: ProjectIdArgs) -> AppResult<Re
         })?;
         Ok(rp)
     })();
-    if result.is_err() {
-        let _ = std::fs::remove_dir_all(&dest_root);
+    match &result {
+        Ok(rp) => recent_list_changed(core, actor, &rp.project_id),
+        Err(_) => {
+            let _ = std::fs::remove_dir_all(&dest_root);
+        }
     }
     result
 }
@@ -1463,7 +1469,9 @@ fn delete_project(core: &AppCore, actor: &Actor, args: ProjectIdArgs) -> AppResu
             [&args.project_id],
         )?;
         Ok(())
-    })
+    })?;
+    recent_list_changed(core, actor, &args.project_id);
+    Ok(())
 }
 
 /// Move a project folder to the Recycle Bin (the Trash on a Mac). A test run on its own data folder
@@ -1854,6 +1862,7 @@ fn set_pinned(core: &AppCore, actor: &Actor, args: SetPinnedArgs) -> AppResult<R
     if n == 0 {
         return Err(AppError::not_found("project"));
     }
+    recent_list_changed(core, actor, &args.project_id);
     recent_entry(core, &args.project_id)
 }
 

@@ -387,6 +387,57 @@ fn rename_closed_project_emits_a_project_list_change_event() {
     );
 }
 
+/// Pin, Unpin, Archive, Restore, Duplicate and Remove from List change the same Home list; without the
+/// event Application Home showed the old list until it was reopened (found by the WindowsHTML
+/// capture on 2026-10-21).
+#[test]
+fn pin_archive_duplicate_and_remove_emit_a_project_list_change_event() {
+    use openframe_application::events::{AppEvent, StoreKind};
+    let (env, id, _) = closed_project("Monsoon Ferry");
+    let calls = [
+        ("project.set_pinned", json!({ "projectId": id, "pinned": true })),
+        ("project.set_pinned", json!({ "projectId": id, "pinned": false })),
+        ("project.set_archived", json!({ "projectId": id, "archived": true })),
+        ("project.set_archived", json!({ "projectId": id, "archived": false })),
+    ];
+    for (op, args) in calls {
+        env.sink.events.lock().clear();
+        env.ok(op, args.clone());
+        let events = env.sink.events.lock();
+        assert!(
+            events.iter().any(|e| matches!(
+                e,
+                AppEvent::DataChanged { store: StoreKind::Project, tables, ids, origin }
+                    if tables.iter().any(|t| t == "sys_recent_project")
+                        && ids.contains(&id)
+                        && origin == "local"
+            )),
+            "{op} {args} must tell Application Home that the project list changed: {events:?}"
+        );
+    }
+    env.sink.events.lock().clear();
+    let copy = env.ok("project.duplicate", json!({ "projectId": id }));
+    let copy_id = copy["projectId"].as_str().unwrap().to_string();
+    assert!(
+        env.sink.events.lock().iter().any(|e| matches!(
+            e,
+            AppEvent::DataChanged { tables, ids, .. }
+                if tables.iter().any(|t| t == "sys_recent_project") && ids.contains(&copy_id)
+        )),
+        "a duplicate must appear on Application Home at once"
+    );
+    env.sink.events.lock().clear();
+    env.ok("project.remove_recent", json!({ "projectId": copy_id }));
+    assert!(
+        env.sink.events.lock().iter().any(|e| matches!(
+            e,
+            AppEvent::DataChanged { tables, ids, .. }
+                if tables.iter().any(|t| t == "sys_recent_project") && ids.contains(&copy_id)
+        )),
+        "Remove from List must take the card off Application Home at once"
+    );
+}
+
 #[test]
 fn rename_open_project_is_undoable_and_updates_home_list() {
     let env = TestEnv::with_project("Draft Title", "Feature Film");
