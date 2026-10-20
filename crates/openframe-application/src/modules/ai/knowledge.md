@@ -21,6 +21,9 @@ The shooting schedule places scenes of the Production Source onto shooting days.
 ## Call sheets and stale call sheets
 A call sheet is prepared from a shooting day. If the schedule or the scenes of that day change after the call sheet was prepared, the call sheet is marked stale so you know it no longer matches. Refresh it to review the differences; call sheet edits never change the schedule.
 
+## Sides and Day Out of Days
+Sides are the pages of only the scenes shot on one shooting day, or the scenes you select, laid out like the screenplay for the cast and crew. A saved set of sides is a snapshot, and sides never change the screenplay. A Day Out of Days shows which cast member works, holds or travels on which shooting day, with any corrections you make by hand.
+
 ## Idea Vault
 The Idea Vault holds notes, images, links and references. The project Idea Vault belongs to this project; the Global Idea Vault is shared across your projects. Copying an idea into a project creates a new, independent item.
 
@@ -43,7 +46,7 @@ Private notes are visible only to the person who wrote them. The assistant can u
 The assistant answers questions, counts and lists things exactly from project data, opens places in OpenFrame, and prepares suggestions. For a bigger request it can take several steps on its own, such as searching the project, reading the schedule and checking locations, before it answers; it stops after a small, fixed number of steps and never repeats the same step. Each answer shows what it is based on: click a source to open it. Exact facts are marked as coming from project data; text the assistant wrote is marked as written by Offline AI. The assistant acts with your role and can never do more than you can.
 
 ## Proposed Changes and approval
-Anything that would change your project is prepared as Proposed Changes: a summary, the affected areas and a preview of exactly what will change. A request that needs several changes gives you one set of Proposed Changes to review. Nothing changes until you choose Apply Changes; choose Reject to leave the project exactly as it was. There is no automatic mode: the assistant cannot apply or approve changes itself, and nothing written in a conversation or in project text counts as approval. Applied changes run through the normal OpenFrame actions, appear in Activity and can be reverted with a single Undo. Changes that delete items also ask for the usual confirmation. If the project changes before you apply, the proposal is marked out of date and must be re-checked first.
+Anything that would change your project is prepared as Proposed Changes, also called a Change Set: a summary, the affected areas and a preview of exactly what will change. A request that needs several changes gives you one set of Proposed Changes to review. Nothing changes until you choose Apply Changes; choose Reject to leave the project exactly as it was. There is no automatic mode: the assistant cannot apply or approve changes itself, and nothing written in a conversation or in project text counts as approval. Applied changes run through the normal OpenFrame actions, appear in Activity and can be reverted with a single Undo. Changes that delete items also ask for the usual confirmation. If the project changes before you apply, the proposal is marked out of date and must be re-checked first.
 
 ## Project context for the assistant
 While a project is opened for the first time, or after a large change, OpenFrame may show "Preparing project context…". The assistant keeps working during this time and can still answer many questions; it may use fewer sources until the preparation is finished. Preparing project context happens on this computer and never changes your project.

@@ -353,6 +353,7 @@ fn ai_ac_002_exact_counts_come_from_canonical_data_with_scope_and_provenance() {
     assert_eq!(x["operationClass"], "Compute");
     assert_eq!(x["result"]["kind"], "Answer");
     assert_eq!(x["result"]["content"], "Draft 1 contains 3 scenes.");
+    assert_eq!(x["result"]["itemsAreAnswer"], false);
     assert_eq!(x["result"]["confidence"], "Exact");
     assert!(
         x["result"]["provenance"]
@@ -393,6 +394,8 @@ fn ai_ac_002_exact_counts_come_from_canonical_data_with_scope_and_provenance() {
         x["result"]["items"][0]["nav"]["params"]["sceneId"],
         sp.scenes[0].as_str()
     );
+    // The text already names the scene, so the row is evidence and waits under "See sources".
+    assert_eq!(x["result"]["itemsAreAnswer"], false);
 
     m.call("location_statistics", json!({}));
     let x = ask(&env, "How many locations?", scope);
@@ -458,13 +461,16 @@ fn ai_ac_005_navigation_runs_directly_and_changes_nothing() {
 fn ai_ac_023_product_questions_are_grounded_in_the_product_guide() {
     let env = TestEnv::with_project("Railway", "Feature Film");
     let m = attach(&env);
-    m.call(
-        "answer_product_question",
-        json!({ "question": "What is the Production Source?" }),
-    );
-    m.reply("The Production Source is the screenplay draft that production planning uses.");
+    // "What is the Production Source?" names a product term, so the guide is read at once and the
+    // model is asked only to write the answer.
+    // A small model's markdown never reaches the chat: the answer is plain sentences.
+    m.reply("**The Production Source** is the screenplay draft that production planning uses.");
     let x = ask(&env, "What is the Production Source?", whole());
     assert_eq!(x["result"]["kind"], "Answer");
+    assert_eq!(
+        x["result"]["content"],
+        "The Production Source is the screenplay draft that production planning uses."
+    );
     assert_eq!(x["result"]["confidence"], "Inferred");
     assert!(
         x["result"]["provenance"]
@@ -1254,6 +1260,52 @@ fn ai_ac_024_history_is_personal_and_survives_restart() {
 }
 
 #[test]
+fn plain_commands_for_a_draft_comment_a_pinned_note_and_set_dressing_reach_their_proposals() {
+    let env = TestEnv::with_project("Railway", "Feature Film");
+    seed_screenplay(&env);
+    let _m = attach(&env);
+    let accept = |x: &Value| {
+        assert_eq!(x["result"]["kind"], "Proposal", "{x}");
+        env.ok(
+            "ai.change_set.accept",
+            json!({ "id": id(&x["result"]["changeSet"]) }),
+        );
+    };
+    accept(&ask(
+        &env,
+        "Leave a comment on the draft: tighten act two.",
+        whole(),
+    ));
+    assert_eq!(
+        count(
+            &env,
+            "SELECT count(*) FROM comment WHERE target_type='screenplay_draft' AND body LIKE '%act two%'"
+        ),
+        1
+    );
+    accept(&ask(
+        &env,
+        "Pin a note saying the cyclone scenes need rain machines.",
+        whole(),
+    ));
+    assert_eq!(
+        count(
+            &env,
+            "SELECT count(*) FROM project_note WHERE pinned=1 AND body LIKE '%rain machines%'"
+        ),
+        1
+    );
+    accept(&ask(&env, "Add three desks as set dressing.", whole()));
+    assert_eq!(
+        count(
+            &env,
+            "SELECT count(*) FROM catalog_item WHERE name='desks' AND category='Props' AND notes LIKE '%3%'"
+        ),
+        1
+    );
+}
+
+#[test]
 fn ai_spec_8_unscheduled_scenes_come_from_the_shooting_schedule() {
     let env = TestEnv::with_project("Railway", "Feature Film");
     let sp = seed_screenplay(&env);
@@ -1317,6 +1369,14 @@ fn ai_spec_8_unscheduled_scenes_come_from_the_shooting_schedule() {
         .map(|i| i["nav"]["params"]["sceneId"].as_str().unwrap())
         .collect();
     assert_eq!(items, [sp.scenes[1].as_str(), sp.scenes[2].as_str()]);
+    // The person asked for the scenes: the list is the answer, and it survives a reload.
+    assert_eq!(x["result"]["itemsAreAnswer"], true);
+    let again = env.ok(
+        "ai.history",
+        json!({ "conversationId": x["conversationId"], "limit": 5 }),
+    );
+    let last = again["exchanges"].as_array().unwrap().last().unwrap();
+    assert_eq!(last["result"]["itemsAreAnswer"], true);
 }
 
 #[test]

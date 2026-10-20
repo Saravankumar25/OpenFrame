@@ -29,7 +29,7 @@ function exchange(id: string, text: string, result: Partial<AiExchange["result"]
     requestId: id, conversationId: "conv1", requestText: text, scopeLabel: "Using: Whole Project", operationClass: "Read", modelReference: "p",
     createdAt: 1,
     result: {
-      id: `r${id}`, kind: "Answer", status: "Informational", content: "", details: [], confidence: null, provenance: [], items: [], nav: null,
+      id: `r${id}`, kind: "Answer", status: "Informational", content: "", details: [], confidence: null, provenance: [], items: [], itemsAreAnswer: false, nav: null,
       changeSet: null, errorCode: null, steps: [], taskId: null, createdAt: 1, ...result,
     },
   };

@@ -30,7 +30,8 @@
 | Packages | Breakdown, Shot List, Schedule and Call Sheet Review packages removed (export refused with a clear message; old files still open) | Owner change list | `features/packages/*`, `modules/packages/exchange.rs` |
 | New project | Episodic and Series removed for new projects; existing projects keep their type | Owner change list | `NewProjectDialog.tsx`, `ProjectSettingsForm.tsx` |
 | Themes | OpenFrame Default has its own dark palette; new Black and White theme (black on white in Light, white on black in Dark); dark contrast fixes | Owner change list, UX brief | `themes.json` |
-| AI panel | Resizable; plain answers first, details behind "Details"; long lists show eight items and "Show all" | AI repair brief | `ai/AiPanel.tsx`, `ai/Conversation.tsx` |
+| AI panel | Resizable; plain answers first, details behind "See sources"; long lists show eight items and "Show all" | AI repair brief | `ai/AiPanel.tsx`, `ai/Conversation.tsx` |
+| AI answers | "Details" is now a ghost button, "See sources". It holds the sources, the steps, how sure the answer is, and the rows of a count, a scene fact or a written answer. Rows stay under the answer only when the person asked for a list (the core sets `itemsAreAnswer` per tool). Model-written text loses markdown (bold, bullets, headings) before it is shown | Owner request 2026-10-20: every chat answer is plain text and all metadata sits under one button. Lists under a count repeated what the sentence already said | `ai/Conversation.tsx`, `ai/ai.css`, `modules/ai/toolbox.rs`, `modules/ai/orchestrator.rs`, `modules/ai/records.rs` |
 
 ## Regressions found and resolved during the work
 

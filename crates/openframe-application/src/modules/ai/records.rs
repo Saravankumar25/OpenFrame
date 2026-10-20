@@ -171,6 +171,7 @@ pub struct NewResult<'a> {
     pub structured: Option<&'a Value>,
     pub provenance: &'a [Provenance],
     pub items: &'a [ResultItem],
+    pub items_are_answer: bool,
     pub nav: Option<&'a NavTarget>,
     pub confidence: Option<Confidence>,
     pub change_set_id: Option<&'a str>,
@@ -181,8 +182,7 @@ pub struct NewResult<'a> {
 pub fn insert_result(tx: &Tx<'_>, r: &NewResult<'_>) -> AppResult<()> {
     let now = now_ms();
     // Items are part of the structured payload (deterministic values + navigation).
-    let structured =
-        serde_json::json!({ "data": r.structured, "items": r.items, "taskId": r.task_id });
+    let structured = serde_json::json!({ "data": r.structured, "items": r.items, "itemsAreAnswer": r.items_are_answer, "taskId": r.task_id });
     tx.conn().execute(
         "INSERT INTO ai_result(id, request_id, result_kind, content, details_json, structured_json, provenance_json, nav_json,
                                change_set_id, confidence_state, status, error_code, created_at, updated_at)
@@ -330,6 +330,10 @@ fn load_result(c: &Connection, actor: &Actor, request_id: &str) -> AppResult<Opt
         .get("items")
         .and_then(|v| serde_json::from_value(v.clone()).ok())
         .unwrap_or_default();
+    let items_are_answer = structured
+        .get("itemsAreAnswer")
+        .and_then(Value::as_bool)
+        .unwrap_or(false);
     let change_set = match cs_id {
         Some(cs) => change_set::load_dto(c, actor, &cs)?,
         None => None,
@@ -349,6 +353,7 @@ fn load_result(c: &Connection, actor: &Actor, request_id: &str) -> AppResult<Opt
         confidence: conf.and_then(|c| Confidence::parse(&c)),
         provenance: parse(Some(prov)),
         items,
+        items_are_answer,
         nav: nav.and_then(|n| serde_json::from_str(&n).ok()),
         change_set,
         error_code: err,

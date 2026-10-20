@@ -470,6 +470,9 @@ pub struct ToolOutput {
     pub structured: Option<Value>,
     pub targets: Vec<ObjRef>,
     pub generation: Option<Generation>,
+    /// True when `items` ARE the answer (the person asked for a list). Otherwise they are the
+    /// evidence behind the text and the screen keeps them under "See sources".
+    pub items_are_answer: bool,
 }
 
 impl ToolOutput {
@@ -485,6 +488,7 @@ impl ToolOutput {
             structured: None,
             targets: Vec::new(),
             generation: None,
+            items_are_answer: false,
         }
     }
     pub fn of_kind(kind: AiResultKind, content: impl Into<String>) -> Self {

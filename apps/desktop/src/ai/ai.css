@@ -40,7 +40,11 @@
 /* Plain answers (OpenFrameAI.docx section 4.1): normal weight, paragraphs kept. */
 .ai .ai-text{white-space:pre-wrap;line-height:1.5;overflow-wrap:anywhere}
 .ai .ai-details{margin-top:6px}
-.ai .ai-details summary{cursor:pointer;width:max-content}
+/* "See sources" is a small ghost button (class btn ghost xs on the summary); the native marker is hidden. */
+.ai .ai-details summary{cursor:pointer;width:max-content;list-style:none}
+.ai .ai-details summary::-webkit-details-marker{display:none}
+.ai .ai-details summary::after{content:"\25BE";font-size:10px;margin-left:2px}
+.ai .ai-details[open] summary::after{content:"\25B4"}
 .ai .ai-details[open] summary{margin-bottom:4px}
 /* Resize handle on the panel's left edge (UX brief 4.2). */
 .ai{position:relative}
