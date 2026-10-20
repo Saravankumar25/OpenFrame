@@ -125,7 +125,8 @@ describe("appearance", () => {
     });
 
     await step("Home > Appearance: deleting the active theme falls back to OpenFrame Default at once", async () => {
-      await click(browser, "Appearance");
+      // Appearance is the first tab of Settings on Home (owner change list item 6).
+      await click(browser, "Settings");
       await browser.$('//*[@role="dialog"]//*[@role="radiogroup"][@aria-label="Theme"]').waitForDisplayed({ timeout: 10_000 });
       await click(browser, "Delete Harbour Lamps");
       await inDialog(browser, "Delete Theme");

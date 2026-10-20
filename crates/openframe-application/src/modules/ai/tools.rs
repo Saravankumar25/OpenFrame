@@ -10,7 +10,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use openframe_domain::{Actor, AppError, AppResult, Capability};
-use rusqlite::{Connection, params};
+use rusqlite::{Connection, OptionalExtension, params};
 use serde::Deserialize;
 use serde::de::DeserializeOwned;
 use serde_json::{Value, json};
@@ -69,6 +69,54 @@ fn open_scene_args() -> Value {
 fn workspace_args() -> Value {
     let names: Vec<&str> = WORKSPACES.iter().map(|(id, _)| *id).collect();
     sc::obj(&[("workspace", sc::en(&names))], &["workspace"])
+}
+fn scene_fact_args() -> Value {
+    sc::obj(
+        &[
+            ("scene", sc::scene_number()),
+            (
+                "fact",
+                sc::en(&[
+                    "summary",
+                    "speakers",
+                    "speaker_count",
+                    "setting",
+                    "time",
+                    "first_line",
+                    "last_line",
+                    "first_dialogue",
+                    "mentions",
+                ]),
+            ),
+            ("text", sc::s(120)),
+            ("draft", sc::s(120)),
+        ],
+        &["scene", "fact"],
+    )
+}
+fn dialogue_fact_args() -> Value {
+    sc::obj(
+        &[
+            ("character", sc::s(80)),
+            ("scene", sc::scene_number()),
+            (
+                "fact",
+                sc::en(&[
+                    "blocks",
+                    "words",
+                    "scenes",
+                    "first_scene",
+                    "most",
+                    "first_speaker",
+                ]),
+            ),
+            ("draft", sc::s(120)),
+        ],
+        &["fact"],
+    )
+}
+fn character_args() -> Value {
+    sc::obj(&[("name", sc::s(80)), ("draft", sc::s(120))], &["name"])
 }
 fn question_args() -> Value {
     sc::obj(&[("question", sc::s(1000))], &["question"])
@@ -165,6 +213,24 @@ pub const TOOLS: &[ToolSpec] = &[
         class: OperationClass::Compute,
         description: "Production counts: catalog items by category, locations, cast, crew.",
         schema: no_args,
+    },
+    ToolSpec {
+        name: "scene_fact",
+        class: OperationClass::Compute,
+        description: "One fact about a numbered screenplay scene, read from its full text: summary, who speaks, how many speak, where, day or night, first or last line, first dialogue, or whether it mentions something.",
+        schema: scene_fact_args,
+    },
+    ToolSpec {
+        name: "dialogue_fact",
+        class: OperationClass::Compute,
+        description: "Dialogue facts from the screenplay: how many dialogue blocks or words a character has (in the script or one scene), which scenes they speak in, their first speaking scene, who has the most dialogue, who speaks first.",
+        schema: dialogue_fact_args,
+    },
+    ToolSpec {
+        name: "character_profile",
+        class: OperationClass::Compute,
+        description: "Describe one screenplay character from what they do and say across their scenes.",
+        schema: character_args,
     },
     ToolSpec {
         name: "search_project",
@@ -270,6 +336,37 @@ struct DraftArg {
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct SceneFactArgs {
+    scene: u32,
+    fact: String,
+    #[serde(default)]
+    text: Option<String>,
+    #[serde(default)]
+    draft: Option<String>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct DialogueFactArgs {
+    #[serde(default)]
+    character: Option<String>,
+    #[serde(default)]
+    scene: Option<u32>,
+    fact: String,
+    #[serde(default)]
+    draft: Option<String>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct CharacterArgs {
+    name: String,
+    #[serde(default)]
+    draft: Option<String>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 struct CharactersArgs {
     characters: Vec<String>,
     #[serde(default)]
@@ -344,6 +441,14 @@ pub enum Generation {
     },
     ProductAnswer {
         question: String,
+    },
+    /// A character described from screenplay evidence (OpenFrameAI.docx sections 3.4 and 9 C, G).
+    CharacterProfile {
+        name: String,
+        items: Vec<ContextItem>,
+        /// Scenes whose evidence the model sees, and the scenes the character is in.
+        examined: usize,
+        total: usize,
     },
     Breakdown {
         scene: Box<SceneRow>,
@@ -529,6 +634,18 @@ pub fn execute(ctx: &ToolCtx<'_>, name: &str, args: &Value) -> AppResult<ToolOut
             let _: NoArgs = parse_args(name, args)?;
             production_statistics(ctx)
         }
+        "scene_fact" => {
+            let a: SceneFactArgs = parse_args(name, args)?;
+            scene_fact(ctx, &a)
+        }
+        "dialogue_fact" => {
+            let a: DialogueFactArgs = parse_args(name, args)?;
+            dialogue_fact(ctx, &a)
+        }
+        "character_profile" => {
+            let a: CharacterArgs = parse_args(name, args)?;
+            character_profile(ctx, &a.name, a.draft.as_deref())
+        }
         "search_project" => {
             let a: TextArgs = parse_args(name, args)?;
             search_project(ctx, &a.text)
@@ -675,17 +792,22 @@ fn count_scenes(ctx: &ToolCtx<'_>, draft: Option<&str>) -> AppResult<ToolOutput>
     let d = ctx.draft(draft)?;
     let scenes = queries::scenes(ctx.conn, &d.id)?;
     let omitted = scenes.iter().filter(|s| s.omitted).count();
-    let mut o = ToolOutput::exact(format!(
-        "{} contains {}.",
-        d.label(),
-        plural(scenes.len(), "scene", "scenes")
-    ));
-    if omitted > 0 {
-        o = o.detail(format!(
-            "{} marked omitted.",
-            plural(omitted, "scene is", "scenes are")
-        ));
-    }
+    // Omitted scenes are part of the answer, not a hidden detail (AI context brief, question 2).
+    let o = ToolOutput::exact(if omitted > 0 {
+        format!(
+            "{} contains {}; {} marked omitted.",
+            d.label(),
+            plural(scenes.len(), "scene", "scenes"),
+            plural(omitted, "is", "are")
+        )
+    } else {
+        format!(
+            "{} contains {}.",
+            d.label(),
+            plural(scenes.len(), "scene", "scenes")
+        )
+    });
+    let mut o = o;
     o.structured = Some(json!({"draftId": d.id, "sceneCount": scenes.len(), "omitted": omitted}));
     Ok(o.prov("Draft", d.label())
         .prov("Basis", "screenplay scenes in the draft"))
@@ -735,6 +857,537 @@ fn list_characters(ctx: &ToolCtx<'_>, draft: Option<&str>) -> AppResult<ToolOutp
         .collect();
     Ok(o.prov("Draft", d.label())
         .prov("Basis", "screenplay Character elements"))
+}
+
+/// Evidence budget for one character description: the 1B model reads about this much.
+const PROFILE_CHARS: usize = 5_200;
+const PROFILE_SCENE_CHARS: usize = 420;
+
+/// The cue that names `wanted`: the exact name, else the one cue that starts with it ("KARTHIK"
+/// for "Karthik"), never a guess between several.
+fn match_cue<'a>(cues: &'a BTreeMap<String, Vec<String>>, wanted: &str) -> Option<&'a str> {
+    let w = queries::normalize_cue(wanted);
+    if w.is_empty() {
+        return None;
+    }
+    if let Some((k, _)) = cues.get_key_value(&w) {
+        return Some(k.as_str());
+    }
+    let starts: Vec<&String> = cues
+        .keys()
+        .filter(|k| k.split_whitespace().next() == Some(w.as_str()))
+        .collect();
+    match starts.as_slice() {
+        [one] => Some(one.as_str()),
+        _ => {
+            // "KARTHIK" over "KARTHIK'S FATHER": the shortest cue that starts with the name.
+            starts
+                .iter()
+                .min_by_key(|k| k.len())
+                .map(|k| k.as_str())
+                .filter(|k| k.starts_with(&w))
+        }
+    }
+}
+
+/// One scene's evidence for a character: what they say and the action lines that name them.
+/// A screenplay line in quotes that ends the sentence: “Here.” keeps its own full stop and gets
+/// no second one; “Wait” gets one after the closing quote.
+fn quoted_end(t: &str) -> String {
+    let t = t.trim();
+    if t.ends_with(['.', '!', '?', '\u{2026}']) {
+        format!("\u{201c}{t}\u{201d}")
+    } else {
+        format!("\u{201c}{t}\u{201d}.")
+    }
+}
+
+fn scene_evidence(c: &Connection, scene_id: &str, cue: &str) -> AppResult<String> {
+    let mut stmt = c.prepare(
+        "SELECT element_type, text FROM screenplay_element WHERE scene_id=?1 ORDER BY position, id",
+    )?;
+    let rows: Vec<(String, String)> = stmt
+        .query_map([scene_id], |r| Ok((r.get(0)?, r.get(1)?)))?
+        .collect::<Result<_, _>>()?;
+    let first = cue.split_whitespace().next().unwrap_or(cue).to_lowercase();
+    let mut out = String::new();
+    let mut speaking = false;
+    for (t, text) in rows {
+        let text = text.trim();
+        match t.as_str() {
+            "character" => speaking = queries::normalize_cue(text) == cue,
+            "dialogue" if speaking => out.push_str(&format!("{cue}: \"{text}\"\n")),
+            "parenthetical" if speaking => {
+                out.push_str(&format!("({})\n", text.trim_matches(['(', ')'])))
+            }
+            "action" if text.to_lowercase().contains(&first) => {
+                speaking = false;
+                out.push_str(text);
+                out.push('\n');
+            }
+            "action" | "transition" | "scene_heading" | "shot" => speaking = false,
+            _ => {}
+        }
+        if out.len() > PROFILE_SCENE_CHARS {
+            break;
+        }
+    }
+    Ok(queries::truncate_chars(out.trim(), PROFILE_SCENE_CHARS))
+}
+
+/// "Describe Karthik": every scene the character speaks in or is named in, read from the canonical
+/// screenplay rows, sampled evenly across the story when there are more than the budget holds. The
+/// model then writes the description from that evidence only.
+fn character_profile(ctx: &ToolCtx<'_>, name: &str, draft: Option<&str>) -> AppResult<ToolOutput> {
+    let d = ctx.draft(draft)?;
+    let cues = queries::character_cues(ctx.conn, &d.id)?;
+    let cue = match match_cue(&cues, name) {
+        Some(c) => c.to_string(),
+        None => {
+            return Err(AppError::ai(
+                "not_found",
+                format!(
+                    "I couldn't find a character called {} in {}.",
+                    name.trim(),
+                    d.label()
+                ),
+            ));
+        }
+    };
+    let scenes = queries::scenes(ctx.conn, &d.id)?;
+    let speaks: BTreeSet<&str> = cues
+        .get(&cue)
+        .map(|v| v.iter().map(String::as_str).collect())
+        .unwrap_or_default();
+    let first = cue.split_whitespace().next().unwrap_or(&cue).to_lowercase();
+    let mut relevant: Vec<(&SceneRow, String)> = Vec::new();
+    for s in &scenes {
+        let mentioned = !speaks.contains(s.id.as_str())
+            && {
+                let n: i64 = ctx.conn.query_row(
+                "SELECT count(*) FROM screenplay_element WHERE scene_id=?1 AND element_type='action' AND lower(text) LIKE ?2",
+                params![s.id, format!("%{first}%")],
+                |r| r.get(0),
+            )?;
+                n > 0
+            };
+        if speaks.contains(s.id.as_str()) || mentioned {
+            let ev = scene_evidence(ctx.conn, &s.id, &cue)?;
+            if !ev.is_empty() {
+                relevant.push((s, ev));
+            }
+        }
+    }
+    let total = relevant.len();
+    // Even sample across the story, always keeping the first and the last scene.
+    let fit = (PROFILE_CHARS / (PROFILE_SCENE_CHARS / 2)).max(4);
+    let picked: Vec<usize> = if total <= fit {
+        (0..total).collect()
+    } else {
+        (0..fit)
+            .map(|i| i * (total - 1) / (fit - 1))
+            .collect::<BTreeSet<_>>()
+            .into_iter()
+            .collect()
+    };
+    let mut items = Vec::new();
+    let mut used = 0usize;
+    for i in picked {
+        let (s, ev) = &relevant[i];
+        let text = queries::truncate_chars(
+            ev,
+            (PROFILE_CHARS - used.min(PROFILE_CHARS)).min(PROFILE_SCENE_CHARS),
+        );
+        if text.is_empty() {
+            break;
+        }
+        used += text.len();
+        items.push(ContextItem {
+            source: s.label(),
+            text,
+        });
+    }
+    // A Character record's own words come first when the writer made one.
+    if let Ok(Some((role, desc))) = ctx
+        .conn
+        .query_row(
+            "SELECT coalesce(role_label,''), coalesce(description,'') FROM story_character WHERE deleted_at IS NULL AND upper(trim(name))=?1 LIMIT 1",
+            [&cue],
+            |r| Ok((r.get::<_, String>(0)?, r.get::<_, String>(1)?)),
+        )
+        .optional()
+    {
+        let t = [role, desc].into_iter().filter(|x| !x.trim().is_empty()).collect::<Vec<_>>().join(". ");
+        if !t.is_empty() {
+            items.insert(0, ContextItem { source: format!("Character directory: {cue}"), text: queries::truncate_chars(&t, 400) });
+        }
+    }
+    if items.is_empty() {
+        return Ok(ToolOutput::exact(format!(
+            "{cue} appears in {} but has no dialogue or action there that I could read.",
+            d.label()
+        )));
+    }
+    let examined = items
+        .iter()
+        .filter(|i| i.source.starts_with("Scene"))
+        .count();
+    let mut o = ToolOutput::of_kind(AiResultKind::Answer, String::new());
+    o.confidence = Some(Confidence::Inferred);
+    o.provenance.push(Provenance::new("Draft", d.label()));
+    o.provenance.push(Provenance::new("Character", cue.clone()));
+    o.structured =
+        Some(json!({"character": cue, "scenesWithCharacter": total, "scenesExamined": examined}));
+    o.generation = Some(Generation::CharacterProfile {
+        name: cue,
+        items,
+        examined,
+        total,
+    });
+    Ok(o)
+}
+
+/// The live, ordered elements of one scene: (element type, text). Notes are the writer's own and
+/// never part of the scene's story text.
+fn scene_elements(c: &Connection, scene_id: &str) -> AppResult<Vec<(String, String)>> {
+    let mut stmt = c.prepare(
+        "SELECT element_type, text FROM screenplay_element WHERE scene_id=?1 AND element_type<>'note' ORDER BY position, id",
+    )?;
+    let rows: Vec<(String, String)> = stmt
+        .query_map([scene_id], |r| Ok((r.get(0)?, r.get(1)?)))?
+        .collect::<Result<_, _>>()?;
+    Ok(rows
+        .into_iter()
+        .filter(|(_, t)| !t.trim().is_empty())
+        .collect())
+}
+
+/// Dialogue blocks in order: (speaker cue, dialogue text). A block is one character cue followed by
+/// its dialogue; parentheticals belong to the block and are not counted as dialogue.
+fn dialogue_blocks(rows: &[(String, String)]) -> Vec<(String, String)> {
+    let mut out: Vec<(String, String)> = Vec::new();
+    let mut speaker: Option<String> = None;
+    let mut open = false;
+    for (t, text) in rows {
+        match t.as_str() {
+            "character" => {
+                speaker = Some(queries::normalize_cue(text));
+                open = false;
+            }
+            "dialogue" => {
+                if let Some(s) = &speaker {
+                    if open {
+                        if let Some(last) = out.last_mut() {
+                            last.1.push(' ');
+                            last.1.push_str(text.trim());
+                        }
+                    } else {
+                        out.push((s.clone(), text.trim().to_string()));
+                        open = true;
+                    }
+                }
+            }
+            "parenthetical" => {}
+            _ => {
+                speaker = None;
+                open = false;
+            }
+        }
+    }
+    out
+}
+
+fn scene_by_number(
+    ctx: &ToolCtx<'_>,
+    n: u32,
+    draft: Option<&str>,
+) -> AppResult<(DraftRef, SceneRow)> {
+    let d = ctx.draft(draft)?;
+    let s = queries::scenes(ctx.conn, &d.id)?
+        .into_iter()
+        .find(|s| s.number == n as usize)
+        .ok_or_else(|| AppError::ai("not_found", format!("{} has no Scene {n}.", d.label())))?;
+    Ok((d, s))
+}
+
+/// How much of a scene the summary model reads. Longer scenes keep their beginning and their end,
+/// and the answer says so, rather than summarising only the opening (AI context brief, item 11).
+const SCENE_READ_CHARS: usize = 6_000;
+
+/// One fact about a numbered scene, always read from that scene's own rows in the draft in scope.
+fn scene_fact(ctx: &ToolCtx<'_>, a: &SceneFactArgs) -> AppResult<ToolOutput> {
+    let (d, s) = scene_by_number(ctx, a.scene, a.draft.as_deref())?;
+    let rows = scene_elements(ctx.conn, &s.id)?;
+    let name = format!("Scene {}", s.number);
+    let blocks = dialogue_blocks(&rows);
+    let mut speakers: Vec<String> = Vec::new();
+    for (who, _) in &blocks {
+        if !speakers.contains(who) {
+            speakers.push(who.clone());
+        }
+    }
+    let title = |w: &str| {
+        let mut c = w.to_lowercase().chars().collect::<Vec<_>>();
+        if let Some(f) = c.first_mut() {
+            *f = f.to_ascii_uppercase();
+        }
+        c.into_iter().collect::<String>()
+    };
+    let heading = queries::parse_heading(&s.heading);
+    let content = match a.fact.as_str() {
+        "speakers" => match speakers.len() {
+            0 => format!("Nobody speaks in {name}."),
+            1 => format!("{} speaks in {name}.", title(&speakers[0])),
+            _ => format!(
+                "{} speak in {name}.",
+                join_and(&speakers.iter().map(|w| title(w)).collect::<Vec<_>>())
+            ),
+        },
+        "speaker_count" => format!(
+            "{} in {name}.",
+            match speakers.len() {
+                0 => "No characters speak".to_string(),
+                1 => "1 character speaks".to_string(),
+                n => format!("{n} characters speak"),
+            }
+        ),
+        "setting" => {
+            if heading.location.trim().is_empty() {
+                format!("{name} has no location in its heading.")
+            } else {
+                format!("{name} takes place at {}.", heading.location.trim())
+            }
+        }
+        "time" => match heading
+            .time
+            .as_deref()
+            .map(str::trim)
+            .filter(|t| !t.is_empty())
+        {
+            Some(t) => format!("{name} is set at {}.", t.to_lowercase()),
+            None => format!("{name}'s heading does not say the time of day."),
+        },
+        "first_line" | "last_line" => {
+            let body: Vec<&(String, String)> =
+                rows.iter().filter(|(t, _)| t != "scene_heading").collect();
+            let pick = if a.fact == "first_line" {
+                body.first()
+            } else {
+                body.last()
+            };
+            match pick {
+                Some((_, t)) => format!(
+                    "The {} line of {name} is {}",
+                    if a.fact == "first_line" {
+                        "first"
+                    } else {
+                        "last"
+                    },
+                    quoted_end(t)
+                ),
+                None => format!("{name} has no lines yet."),
+            }
+        }
+        "first_dialogue" => match blocks.first() {
+            Some((who, t)) => format!("{} first says {}", title(who), quoted_end(t)),
+            None => format!("Nobody speaks in {name}."),
+        },
+        "mentions" => {
+            let what = a.text.as_deref().unwrap_or("").trim();
+            if what.is_empty() {
+                return Err(queries::ambiguous("What should I look for in the scene?"));
+            }
+            let w = what.to_lowercase();
+            let hit = rows.iter().find(|(_, t)| t.to_lowercase().contains(&w));
+            match hit {
+                Some((_, t)) => format!(
+                    "Yes, {name} mentions {what}: \u{201c}{}\u{201d}",
+                    queries::truncate_chars(t.trim(), 200)
+                ),
+                None => format!("No, {name} does not mention {what}."),
+            }
+        }
+        "summary" => {
+            let mut text = String::new();
+            for (t, line) in &rows {
+                let l = match t.as_str() {
+                    "character" => format!("\n{}", line.trim().to_uppercase()),
+                    "parenthetical" => format!("({})", line.trim().trim_matches(['(', ')'])),
+                    _ => line.trim().to_string(),
+                };
+                text.push_str(&l);
+                text.push('\n');
+            }
+            let full = text.chars().count() <= SCENE_READ_CHARS;
+            let evidence = if full {
+                text
+            } else {
+                let chars: Vec<char> = text.chars().collect();
+                let head: String = chars[..SCENE_READ_CHARS * 2 / 3].iter().collect();
+                let tail: String = chars[chars.len() - SCENE_READ_CHARS / 3..].iter().collect();
+                format!("{head}\n[... middle of the scene not shown ...]\n{tail}")
+            };
+            let mut o = ToolOutput::of_kind(AiResultKind::Answer, String::new());
+            o.confidence = Some(Confidence::Inferred);
+            o.provenance.push(Provenance::new("Draft", d.label()));
+            o.provenance.push(Provenance::new("Scene", s.label()));
+            o.nav = Some(scene_nav(&d, &s));
+            if !full {
+                o.details.push(format!(
+                    "{name} is long; the summary is written from its beginning and its end."
+                ));
+            }
+            o.generation = Some(Generation::Summary {
+                items: vec![ContextItem {
+                    source: s.label(),
+                    text: evidence,
+                }],
+            });
+            return Ok(o);
+        }
+        other => {
+            return Err(AppError::ai(
+                "unknown_tool",
+                "That isn't something the assistant can do yet.",
+            )
+            .with_detail(format!("scene fact {other}")));
+        }
+    };
+    let mut o = ToolOutput::exact(content);
+    o.nav = Some(scene_nav(&d, &s));
+    Ok(o.prov("Draft", d.label()).prov("Scene", s.label()))
+}
+
+/// Dialogue facts over the whole draft or one scene, computed from the screenplay rows.
+fn dialogue_fact(ctx: &ToolCtx<'_>, a: &DialogueFactArgs) -> AppResult<ToolOutput> {
+    let d = ctx.draft(a.draft.as_deref())?;
+    let scenes = queries::scenes(ctx.conn, &d.id)?;
+    let in_scope: Vec<&SceneRow> = match a.scene {
+        Some(n) => {
+            let s = scenes
+                .iter()
+                .find(|s| s.number == n as usize)
+                .ok_or_else(|| {
+                    AppError::ai("not_found", format!("{} has no Scene {n}.", d.label()))
+                })?;
+            vec![s]
+        }
+        None => scenes.iter().filter(|s| !s.omitted).collect(),
+    };
+    let mut per_scene: Vec<(&SceneRow, Vec<(String, String)>)> = Vec::new();
+    for s in &in_scope {
+        per_scene.push((s, dialogue_blocks(&scene_elements(ctx.conn, &s.id)?)));
+    }
+    let where_ = match a.scene {
+        Some(n) => format!("Scene {n}"),
+        None => d.label(),
+    };
+    let words = |t: &str| {
+        t.split_whitespace()
+            .filter(|w| w.chars().any(char::is_alphanumeric))
+            .count()
+    };
+    let title = |w: &str| {
+        w.split_whitespace()
+            .map(|p| {
+                let mut c = p.to_lowercase().chars().collect::<Vec<_>>();
+                if let Some(f) = c.first_mut() {
+                    *f = f.to_ascii_uppercase();
+                }
+                c.into_iter().collect::<String>()
+            })
+            .collect::<Vec<_>>()
+            .join(" ")
+    };
+    let content = match a.fact.as_str() {
+        "most" => {
+            let mut tally: BTreeMap<String, usize> = BTreeMap::new();
+            for (_, b) in &per_scene {
+                for (w, _) in b {
+                    *tally.entry(w.clone()).or_default() += 1;
+                }
+            }
+            match tally.iter().max_by(|x, y| x.1.cmp(y.1).then(y.0.cmp(x.0))) {
+                Some((w, n)) => format!(
+                    "{} has the most dialogue in {where_}: {}.",
+                    title(w),
+                    plural(*n, "dialogue block", "dialogue blocks")
+                ),
+                None => format!("Nobody speaks in {where_}."),
+            }
+        }
+        "first_speaker" => match per_scene
+            .iter()
+            .find_map(|(s, b)| b.first().map(|x| (s, x)))
+        {
+            Some((s, (w, t))) => format!(
+                "{} speaks first, in Scene {}: {}",
+                title(w),
+                s.number,
+                quoted_end(&queries::truncate_chars(t, 160))
+            ),
+            None => format!("Nobody speaks in {where_}."),
+        },
+        fact => {
+            let raw = a.character.as_deref().unwrap_or("").trim();
+            if raw.is_empty() {
+                return Err(queries::ambiguous("Which character do you mean?"));
+            }
+            let cues = queries::character_cues(ctx.conn, &d.id)?;
+            let Some(cue) = match_cue(&cues, raw).map(str::to_string) else {
+                return Err(AppError::ai(
+                    "not_found",
+                    format!("I couldn't find a character called {raw} in {}.", d.label()),
+                ));
+            };
+            let mine: Vec<(u32, &String)> = per_scene
+                .iter()
+                .flat_map(|(s, b)| {
+                    b.iter()
+                        .filter(|(w, _)| *w == cue)
+                        .map(move |(_, t)| (s.number as u32, t))
+                })
+                .collect();
+            let name = title(&cue);
+            match fact {
+                "blocks" => format!(
+                    "{name} has {} in {where_}.",
+                    plural(mine.len(), "dialogue block", "dialogue blocks")
+                ),
+                "words" => format!(
+                    "{name} speaks {} in {where_}.",
+                    plural(mine.iter().map(|(_, t)| words(t)).sum(), "word", "words")
+                ),
+                "scenes" | "first_scene" => {
+                    let mut nums: Vec<u32> = mine.iter().map(|(n, _)| *n).collect();
+                    nums.dedup();
+                    if nums.is_empty() {
+                        format!("{name} has no dialogue in {where_}.")
+                    } else if fact == "first_scene" {
+                        format!("{name} first speaks in Scene {}.", nums[0])
+                    } else {
+                        let list: Vec<String> = nums.iter().map(u32::to_string).collect();
+                        format!(
+                            "{name} speaks in {} {}.",
+                            if nums.len() == 1 { "Scene" } else { "Scenes" },
+                            join_and(&list)
+                        )
+                    }
+                }
+                other => {
+                    return Err(AppError::ai(
+                        "unknown_tool",
+                        "That isn't something the assistant can do yet.",
+                    )
+                    .with_detail(format!("dialogue fact {other}")));
+                }
+            }
+        }
+    };
+    Ok(ToolOutput::exact(content).prov("Draft", d.label()).prov(
+        "Basis",
+        "screenplay dialogue blocks (a character cue and its dialogue)",
+    ))
 }
 
 fn scenes_with_characters(
@@ -1489,7 +2142,57 @@ fn search_kind(entity_type: &str) -> &'static str {
     }
 }
 
+/// What a search for a bare category word really asks. "scenes", "characters" or "locations" are
+/// never written in scene text, so a text search finds nothing and the reply used to be "Nothing in
+/// this project mentions scenes" for a 130-scene screenplay (OpenFrameAI.docx, exhibits E01 and E06).
+fn category_query(text: &str) -> Option<&'static str> {
+    let words: Vec<String> = text
+        .split(|c: char| !c.is_alphanumeric())
+        .filter(|w| !w.is_empty())
+        .map(|w| w.to_lowercase())
+        .filter(|w| {
+            !matches!(
+                w.as_str(),
+                "all" | "the" | "of" | "in" | "my" | "this" | "total" | "number" | "count"
+            )
+        })
+        .collect();
+    if words.is_empty() || words.len() > 2 {
+        return None;
+    }
+    let one = |set: &[&str]| words.iter().all(|w| set.contains(&w.as_str()));
+    if one(&["scene", "scenes", "screenplay", "script"])
+        && words.iter().any(|w| w.starts_with("scene"))
+    {
+        Some("scenes")
+    } else if one(&["character", "characters", "cast", "speaking", "people"]) {
+        Some("characters")
+    } else if one(&[
+        "location",
+        "locations",
+        "place",
+        "places",
+        "setting",
+        "settings",
+        "set",
+        "sets",
+    ]) {
+        Some("locations")
+    } else {
+        None
+    }
+}
+
 fn search_project(ctx: &ToolCtx<'_>, text: &str) -> AppResult<ToolOutput> {
+    let by_category = match category_query(text) {
+        Some("scenes") => count_scenes(ctx, None).ok(),
+        Some("characters") => count_characters(ctx, None).ok(),
+        Some("locations") => location_statistics(ctx, None).ok(),
+        _ => None,
+    };
+    if let Some(o) = by_category {
+        return Ok(o);
+    }
     let hits = search_hits(ctx.conn, ctx.actor, text, 50)?;
     if hits.is_empty() {
         return Ok(ToolOutput::exact(format!(

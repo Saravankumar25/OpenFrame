@@ -33,6 +33,7 @@ docs/
   specs/                     product and engineering specifications (+ README with the status of each)
   adr/                       decisions; README is the decision register
   engineering/               implementation documents 11 to 39, AI tool coverage (generated)
+  ux/                        Windows UX audit, layout and scroll contract, feature preservation and visual matrices
   implementation/            build plan, feature status, owner decisions, handoff, progress and reconciliation logs
   release/                   launch readiness register, evidence folders
   store/                     Microsoft Store listing and privacy policy drafts (Chapter 3)

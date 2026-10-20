@@ -1,77 +1,105 @@
 == page 1 792x612
-54,542 16.0 Shooting Schedule
-*,526 9.5 Black Rain · Revised <DATE> · Source: Shooting Schedule · Shooting Draft 6 (Locked)
-54,501 9.5 Schedule
-259,501 9.5 Shooting Schedule
-54,488 9.5 Production Source
-259,488 9.5 Shooting Draft 6 (Locked)
-54,476 9.5 Days
-259,476 9.5 2 shooting days
-54,463 9.5 Scenes
-259,463 9.5 4 scheduled · 0 unscheduled
-54,440 11.0 Shoot Day 1 · Mon 14 Jun 2027
-54,424 8.5 2 scenes · 4h 45m · wrap 23:45 · 3/8 pages · 18:00 crew call · wrap about 23:45 (target 02:00 (+1))
-58,406 8.5 Start
-99,406 8.5 Sc
-130,406 8.5 I/E
-167,406 8.5 D/N
-203,406 8.5 Heading / location
-366,406 8.5 Synopsis
-529,406 8.5 Cast
-664,406 8.5 Pages
-718,406 8.5 Est.
-58,389 8.5 19:00
-99,389 8.5 1
-130,389 8.5 INT
-167,389 8.5 Night
-203,389 8.5 INT. POLICE STATION - NIGHT
-366,389 8.5 Meera hands the file
-529,389 8.5 Arjun (Karthik Menon), Meera
-529,379 8.5 (Divya Nair)
-677,389 8.5 2/8
-706,389 8.5 1h 30m
-58,362 8.5 20:30
-203,362 8.5 MEAL BREAK (45m)
-58,345 8.5 21:15
-203,345 8.5 MOVE TO THE RAILWAY STATION
-203,335 8.5 (30m)
-58,318 8.5 21:45
-99,318 8.5 2
-130,318 8.5 EXT
-167,318 8.5 Day
-203,318 8.5 EXT. OLD RAILWAY STATION - DAY
-366,318 8.5 Arjun walks the platform
-529,318 8.5 Arjun (Karthik Menon)
-677,318 8.5 1/8
-725,318 8.5 2h
-54,288 11.0 Shoot Day 2 · Tue 15 Jun 2027
-54,272 8.5 2 scenes · 1h 45m · 2/8 pages
-58,254 8.5 Start
-99,254 8.5 Sc
-130,254 8.5 I/E
-167,254 8.5 D/N
-203,254 8.5 Heading / location
-366,254 8.5 Synopsis
-529,254 8.5 Cast
-664,254 8.5 Pages
-718,254 8.5 Est.
-99,238 8.5 3
-130,238 8.5 INT
-167,238 8.5 Day
-203,238 8.5 INT. MORGUE - DAY
-366,238 8.5 Time of death
-529,238 8.5 Meera (Divya Nair)
-677,238 8.5 1/8
-725,238 8.5 1h
-99,221 8.5 4
-130,221 8.5 EXT
-167,221 8.5 Night
-203,221 8.5 EXT. OLD RAILWAY STATION - NIGHT
-366,221 8.5 Watcher on platform
-529,221 8.5 Arjun (Karthik Menon)
-677,221 8.5 1/8
-717,221 8.5 45m
-54,191 11.0 Unscheduled (0)
-54,174 10.0 Every scene is scheduled.
-314,34 8.0 Black Rain · Shooting Schedule · Page 1 of 1
-65,18 7.0 Created with OpenFrame Studio
+46,558 7.8 PRODUCTION PLANNING / SCHEDULE
+46,527 26.0 SHOOTING SCHEDULE
+46,506 12.5 Black Rain
+46,491 8.6 Production source: Shooting Draft 6 (Locked) · Schedule: Shooting Schedule
+644,554 7.4 SCHEDULE SNAPSHOT
+*,529 11.0 Revised <DATE>
+629,515 8.6 Project schedule · PDF export
+56,440 19.0 02
+56,428 7.0 SHOOTING DAYS
+233,440 19.0 04
+233,428 7.0 SCHEDULED SCENES
+410,440 19.0 5/8
+410,428 7.0 SCRIPT PAGES
+587,440 19.0 00
+587,428 7.0 UNSCHEDULED SCENES
+60,381 8.0 SHOOT DAY 01
+145,380 14.0 Day 1
+613,381 9.0 MONDAY · 14 JUNE 2027
+60,352 8.6 2 scenes, 2 other items
+155,352 8.6  · arranged in production order
+461,352 8.6 3/8
+473,352 8.6  pages total
+517,352 8.6  · 18:00 crew call · wrap about 23:45 (target 02:00 (+1))
+53,331 7.0 SCENE
+101,331 7.0 TYPE
+165,331 7.0 START
+215,331 7.0 HEADING & SYNOPSIS
+495,331 7.0 CAST
+658,331 7.0 PAGES
+720,331 7.0 EST.
+64,304 9.0 1
+106,307 6.6 INT
+106,291 6.6 NIGHT
+165,307 9.0 19:00
+215,307 9.6 INT. POLICE STATION - NIGHT
+215,292 8.8 Meera hands the file
+495,307 8.8 Arjun (Karthik Menon)
+495,293 8.8 Meera (Divya Nair)
+672,305 11.0 2/8
+709,307 9.0 1h 30m
+106,264 7.0 MEAL
+165,265 9.0 20:30
+215,264 9.2 MEAL BREAK
+721,265 9.0 45m
+106,238 7.0 TRAVEL
+165,238 9.0 21:15
+215,238 9.2 MOVE TO THE RAILWAY STATION
+721,238 9.0 30m
+64,208 9.0 2
+106,211 6.6 EXT
+106,195 6.6 DAY
+165,211 9.0 21:45
+215,211 9.6 EXT. OLD RAILWAY STATION - DAY
+215,196 8.8 Arjun walks the platform
+495,211 8.8 Arjun (Karthik Menon)
+672,209 11.0 1/8
+729,211 9.0 2h
+69,46 11.0 Open
+96,46 11.0 Frame
+70,39 4.2 STUDIO
+146,44 8.0 Created using OpenFrame
+555,44 7.2 BLACK RAIN · SHOOTING SCHEDULE · Page 1 / 2
+== page 2 792x612
+60,541 8.0 SHOOT DAY 02
+145,540 14.0 Day 2
+610,541 9.0 TUESDAY · 15 JUNE 2027
+60,512 8.6 2 scenes
+96,512 8.6  · arranged in production order
+676,512 8.6 2/8
+688,512 8.6  pages total
+53,491 7.0 SCENE
+101,491 7.0 TYPE
+165,491 7.0 HEADING & SYNOPSIS
+495,491 7.0 CAST
+658,491 7.0 PAGES
+720,491 7.0 EST.
+64,464 9.0 3
+106,467 6.6 INT
+106,450 6.6 DAY
+165,466 9.6 INT. MORGUE - DAY
+165,452 8.8 Time of death
+495,467 8.8 Meera (Divya Nair)
+672,465 11.0 1/8
+729,467 9.0 1h
+64,421 9.0 4
+106,424 6.6 EXT
+106,408 6.6 NIGHT
+165,424 9.6 EXT. OLD RAILWAY STATION - NIGHT
+165,409 8.8 Watcher on platform
+495,424 8.8 Arjun (Karthik Menon)
+672,422 11.0 1/8
+721,424 9.0 45m
+46,378 7.0 STRIP LEGEND
+66,362 7.6 Exterior / Day
+144,362 7.6 Exterior / Night
+226,362 7.6 Interior / Day
+302,362 7.6 Interior / Night
+46,330 11.5 UNSCHEDULED · 0
+46,306 8.8 All source scenes are scheduled.
+69,46 11.0 Open
+96,46 11.0 Frame
+70,39 4.2 STUDIO
+146,44 8.0 Created using OpenFrame
+555,44 7.2 BLACK RAIN · SHOOTING SCHEDULE · Page 2 / 2

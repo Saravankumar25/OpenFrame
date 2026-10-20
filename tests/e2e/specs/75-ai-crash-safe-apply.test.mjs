@@ -74,7 +74,7 @@ describe("AI work survives a crash", () => {
       await openAssistant(browser);
       const box = await browser.$('//aside[@aria-label="AI Assistant"]//textarea[@aria-label="Ask or command"]');
       await box.waitForEnabled({ timeout: 30_000 });
-      await box.setValue("Which scene happens at the railway station?");
+      await box.setValue("What happens at the railway station?");
       await browser.keys("Enter");
       await browser.waitUntil(async () => engines().length >= 1, { timeout: 120_000, timeoutMsg: "the engine did not start" });
       killApp();

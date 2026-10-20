@@ -32,7 +32,9 @@ export const PACKAGE_INFO: Record<PackageType, { label: string; extension: strin
 };
 
 /** Exchange package types that can be exported from a project (menu order, UX §3.39). */
-export const EXCHANGE_EXPORT_TYPES: PackageType[] = ["scriptReview", "story", "breakdown", "shots", "schedule", "callReview"];
+// The Breakdown, Shot List, Schedule and Call Sheet Review packages were removed (owner change list
+// item 9, 2026-10-19); only the script review and Story Board packages remain.
+export const EXCHANGE_EXPORT_TYPES: PackageType[] = ["scriptReview", "story"];
 
 export function isExchangeType(t: PackageType): boolean {
   return t !== "backup" && t !== "project";
@@ -44,7 +46,7 @@ export function packageFilter(types: PackageType[], name: string): { name: strin
 }
 
 export const EXCHANGE_OPEN_FILTER = packageFilter(
-  ["scriptReview", "story", "breakdown", "shots", "schedule", "callReview", "response"],
+  ["scriptReview", "story", "response"],
   "OpenFrame exchange or review package",
 );
 export const PROJECT_OPEN_FILTER = packageFilter(["project", "backup"], "OpenFrame project or backup package");

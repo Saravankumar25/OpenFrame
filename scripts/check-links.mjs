@@ -13,7 +13,8 @@ import url from "node:url";
 const ROOT = process.env.OPENFRAME_CHECK_ROOT
   ? path.resolve(process.env.OPENFRAME_CHECK_ROOT)
   : path.resolve(path.dirname(url.fileURLToPath(import.meta.url)), "..");
-const SKIP_DIRS = new Set(["node_modules", "target", ".git", "graphify-out", ".claude", ".build-cache", "dist", "gen"]);
+// OpenFrameMac and changes are local, uncommitted reference folders the owner supplies (listed in .git/info/exclude).
+const SKIP_DIRS = new Set(["node_modules", "target", ".git", "graphify-out", ".claude", ".build-cache", "dist", "gen", "OpenFrameMac", "changes"]);
 const RECORD_PREFIXES = ["docs/audits/", "docs/archive/", "docs/release/evidence/"];
 // Documents whose older sections are kept as written; links after the marker line are not checked.
 const HISTORY_MARKERS = {

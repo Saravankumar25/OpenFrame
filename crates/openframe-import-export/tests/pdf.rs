@@ -69,12 +69,18 @@ fn pdf_layout_follows_screenplay_conventions() {
     );
     let script = &lay.pages[1..];
     assert!(script.len() > 3);
-    // Page 1 unnumbered, page 2 "2." top right.
+    // The first script page is "1." with the layout-only running title; page 2 is "2.", top right.
     assert!(
-        !script[0]
+        script[0]
             .lines
             .iter()
-            .any(|l| l.style == LineStyle::PageNumber)
+            .any(|l| l.style == LineStyle::PageNumber && l.text == "1.")
+    );
+    assert!(
+        script[0]
+            .lines
+            .iter()
+            .any(|l| l.style == LineStyle::PageTitle && l.text == "THE LONG NIGHT")
     );
     let pn = script[1]
         .lines

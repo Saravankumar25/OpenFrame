@@ -11,7 +11,7 @@
 //   and ./ProposedChanges: project changes are only ever proposed for the user
 //   to review and apply; stale proposals must be re-checked first.
 
-import { useEffect } from "react";
+import { useEffect, useState, type KeyboardEvent, type PointerEvent } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { MoreHorizontal, Sparkles, X } from "lucide-react";
 import { call, onAppEvent } from "../ipc/client";
@@ -26,7 +26,81 @@ import DownloadAi from "./DownloadAi";
 import Assistant from "./Conversation";
 import "./ai.css";
 
+/** The docked panel's width: dragged or set with the arrow keys, remembered per person, and always
+ * bounded so a stored width never squeezes the page on a smaller window (UX brief, section 4.2). */
+const WIDTH_KEY = "openframe.ai.width";
+const MIN_WIDTH = 300;
+export function clampAiWidth(w: number, windowWidth: number): number {
+  const max = Math.max(MIN_WIDTH, Math.min(640, Math.round(windowWidth * 0.45)));
+  return Math.round(Math.min(max, Math.max(MIN_WIDTH, Number.isFinite(w) ? w : 360)));
+}
+function readWidth(): number {
+  try {
+    return clampAiWidth(Number(window.localStorage.getItem(WIDTH_KEY) ?? 360), window.innerWidth);
+  } catch {
+    return 360;
+  }
+}
+function useAiWidth() {
+  const [width, setWidthState] = useState(readWidth);
+  const setWidth = (w: number) => {
+    const v = clampAiWidth(w, window.innerWidth);
+    setWidthState(v);
+    try {
+      window.localStorage.setItem(WIDTH_KEY, String(v));
+    } catch {
+      // Layout preference only.
+    }
+  };
+  // A smaller window brings a wide panel back within bounds.
+  useEffect(() => {
+    const onResize = () => setWidthState((w) => clampAiWidth(w, window.innerWidth));
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+  return [width, setWidth] as const;
+}
+
+function ResizeHandle({ width, setWidth }: { width: number; setWidth: (w: number) => void }) {
+  const onPointerDown = (e: PointerEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const startX = e.clientX;
+    const startW = width;
+    const target = e.currentTarget;
+    target.setPointerCapture(e.pointerId);
+    const move = (ev: globalThis.PointerEvent) => setWidth(startW + (startX - ev.clientX));
+    const up = () => {
+      target.removeEventListener("pointermove", move);
+      target.removeEventListener("pointerup", up);
+    };
+    target.addEventListener("pointermove", move);
+    target.addEventListener("pointerup", up);
+  };
+  const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === "ArrowLeft") setWidth(width + 24);
+    else if (e.key === "ArrowRight") setWidth(width - 24);
+    else return;
+    e.preventDefault();
+  };
+  return (
+    <div
+      className="ai-resize"
+      role="separator"
+      aria-orientation="vertical"
+      aria-label="Resize the AI Assistant"
+      aria-valuenow={width}
+      aria-valuemin={MIN_WIDTH}
+      tabIndex={0}
+      onPointerDown={onPointerDown}
+      onKeyDown={onKeyDown}
+      onDoubleClick={() => setWidth(360)}
+      title="Drag to resize. Double-click to reset."
+    />
+  );
+}
+
 export default function AiPanel({ onClose }: { onClose: () => void }) {
+  const [width, setWidth] = useAiWidth();
   const qc = useQueryClient();
   const project = useOp<ProjectSummary | null>("project.current", {}, ["project"]);
   const status = useOp<AiStatusDto>("ai.status", {}, [], { staleTime: 0 });
@@ -66,7 +140,8 @@ export default function AiPanel({ onClose }: { onClose: () => void }) {
   ];
 
   return (
-    <aside className="ai" aria-label="AI Assistant">
+    <aside className="ai" aria-label="AI Assistant" style={{ width }}>
+      <ResizeHandle width={width} setWidth={setWidth} />
       <div className="ahd">
         <Sparkles size={16} aria-hidden />
         AI Assistant

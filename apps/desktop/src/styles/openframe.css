@@ -268,9 +268,9 @@ kbd{font-family:"Segoe UI",sans-serif;font-size:11px;border:1px solid var(--line
 .strip .lc{font-weight:600;min-width:140px}
 .strip .syn{color:#333;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis} /* fixed colour: stripboard day and night convention */
 .strip .pg{font-size:11px;color:#333;width:34px;text-align:right} /* fixed colour: stripboard day and night convention */
-.strip.ied{background:#fff3b0}.strip.ien{background:#bfd7f5}.strip.ied2{background:#fff3b0} /* fixed colour: stripboard day and night convention */
-.strip.xd{background:#f7f0b5;border-color:#d9c85a}.strip.xn{background:#c9dcf7;border-color:#8fb0e3} /* fixed colour: stripboard day and night convention */
-.strip.id{background:#ffffff;border-color:#bbb}.strip.in{background:#dfe6ec;border-color:#9fb0c2} /* fixed colour: stripboard day and night convention */
+.strip.ied{background:#fff3b0}.strip.ien{background:#cdeec4}.strip.ied2{background:#fff3b0} /* fixed colour: stripboard day and night convention */
+.strip.xd{background:#f7f0b5;border-color:#d9c85a}.strip.xn{background:#cdeec4;border-color:#7cbf6e} /* fixed colour: stripboard day and night convention */
+.strip.id{background:#ffffff;border-color:#bbb}.strip.in{background:#cfe5f7;border-color:#86b4dc} /* fixed colour: stripboard day and night convention */
 .strip.warn{outline:2px solid var(--red);outline-offset:1px}
 .strip .cast{display:flex;gap:3px}
 .strip .cast i{font-style:normal;background:#0002;border-radius:9px;padding:0 5px;font-size:10px;font-weight:700} /* fixed colour: stripboard day and night convention */
