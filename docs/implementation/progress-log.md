@@ -69,8 +69,8 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 - **Evidence:** final run, 4 runners per mode side by side: 37 of 37 tour scenarios pass in Light and in Dark; 692
   states; check 692 of 692 pages pass in each mode, 0 HTML misses (`MacHTML/README.md`).
 - **Features moved:** none.
-- **Docs updated:** handoff, Mac release gate Q5 note, `.gitignore` (MacHTML is generated).
-- **Decisions made or needed:** owner: commit the MacHTML pictures (583 MB) or keep them generated; merge order.
+- **Docs updated:** handoff, Mac release gate Q5 note. MacHTML is committed and pushed to GitHub `mac/MacHTML/` on the owner's word.
+- **Decisions made or needed:** owner: push the current Mac app and MacHTML to GitHub `mac/` (done); merge order of the local branches.
 - **Blocked / risks:** not captured: AI answers and See sources (no engine in the dev build), images and media (system
   Open panel), drag and drop, microphone, print panel, crashes, disk failures, multi-select (live modifier keys). App
   problems the agents saw (not fixed, app code untouched): Writing Room Mode crashes on hiding the scene list at 1280

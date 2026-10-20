@@ -31,7 +31,7 @@
      own use of the dev app otherwise leaks into the scenarios.
 
 3. **MacHTML rebuilt, branch `mac/machtml-rebuild`** (from `mac/windows-parity`, not merged, not pushed): 692 states of
-   the Mac app, each in Light and Dark, as standalone HTML pages in `MacHTML/` (git-ignored, 583 MB; regenerate with
+   the Mac app, each in Light and Dark, as standalone HTML pages in `MacHTML/` (committed on the owner's word, 583 MB; regenerate with
    `apps/macos/E2E/capture.sh "apps/macos/build/OpenFrame Studio.app"`, `OPENFRAME_E2E_PARALLEL=4` for speed). Each page
    is the 2x window picture cut into its containers plus real HTML for every accessibility element. 692 of 692 pages
    pass the WebKit check (0.5 percent pixels, channel over 24) in both modes with 0 HTML misses. The old 179-screen
@@ -42,7 +42,7 @@
 
 1. Merge `mac/windows-parity` (and `mac/machtml-rebuild` on top of it) into `mac/m1-toolchain` after the owner looks at
    the Mac app (dev build: `apps/macos/scripts/bundle-dev-app.sh`). Then the internal disk image only on the owner's
-   word. Owner to decide whether MacHTML pictures are committed (583 MB) or kept generated.
+   word.
 2. Windows machine: `npm run verify` (needs `cargo-deny` and `cargo-audit`, not installed on the Mac) and the Tauri
    E2E suite for the Story page, Beat Board, See sources and the Daily View export.
 3. Remaining AI misses (comment on the current draft, pin a note, sequence without an act): measure, then route.
