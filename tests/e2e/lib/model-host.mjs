@@ -145,6 +145,11 @@ export function startModelHost(dir, ctlAt, logAt) {
     res.on("close", release);
     pump();
   });
+  // Two runs on one machine (E2E_PORT_BASE) share the first run's host: it serves the same pinned files.
+  server.on("error", (e) => {
+    if (e.code !== "EADDRINUSE" || !process.env.E2E_PORT_BASE) throw e;
+    console.warn(`model host port ${MODEL_HOST_PORT} is in use; this run shares the host already running`);
+  });
   server.listen(MODEL_HOST_PORT, "127.0.0.1");
   return { close: () => new Promise((r) => server.close(() => r())) };
 }

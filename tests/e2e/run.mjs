@@ -65,8 +65,10 @@ const DEBUG_ONLY = /^\/\/ @e2e-debug-only: (.+)$/m;
 // Specs whose header has `// @e2e-needs-test-host: <reason>` need the local model host to serve
 // downloads or need its request log; an installed build points at Hugging Face, so --app skips them.
 const NEEDS_HOST = /^\/\/ @e2e-needs-test-host: (.+)$/m;
-const PORT = 4444;
-const NATIVE_PORT = 4445;
+// E2E_PORT_BASE lets two runs share the machine (the WindowsHTML capture sections are written in
+// parallel); each run then uses its own pair of driver ports.
+const PORT = Number(process.env.E2E_PORT_BASE ?? 4444);
+const NATIVE_PORT = PORT + 1;
 // The local model host folder and the current group's control file and log.
 const HOST = { dir: "", ctl: "", log: "" };
 const OWN_ROOT = /^\/\/ @e2e-data-root: own\s*$/m;
@@ -197,7 +199,7 @@ async function main() {
   // The local model host for the whole run; each group points it at its own control file and log.
   Object.assign(HOST, testHost());
   const server = startModelHost(HOST.dir, () => HOST.ctl, () => HOST.log);
-  const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+  const stamp = `${new Date().toISOString().replace(/[:.]/g, "-")}-${process.pid}`;
   const runRoot = join(E2E_ROOT, ".run", stamp);
   mkdirSync(join(E2E_ROOT, "artifacts"), { recursive: true });
 

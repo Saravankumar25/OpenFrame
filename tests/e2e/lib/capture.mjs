@@ -14,10 +14,24 @@ import { join, resolve } from "node:path";
 import { sleep } from "./app.mjs";
 
 export const REPO = resolve(import.meta.dirname, "..", "..", "..");
-export const RAW = join(REPO, ".build-cache", "windows-html-capture");
+// E2E_CAPTURE_OUT moves the raw captures (a section run writes its own folder).
+export const RAW = process.env.E2E_CAPTURE_OUT ? resolve(REPO, process.env.E2E_CAPTURE_OUT) : join(REPO, ".build-cache", "windows-html-capture");
 export const MODES = ["light", "dark"];
 export const WIDTH = 1600;
 export const HEIGHT = 1000;
+
+/** Keep the window at WIDTHxHEIGHT CSS pixels (Windows or the app can resize it, for example when a project opens). */
+export async function ensureSize(browser) {
+  for (let i = 0; i < 5; i++) {
+    const [w, h] = await browser.execute(() => [window.innerWidth, window.innerHeight]);
+    if (w === WIDTH && h === HEIGHT) return;
+    const outer = await browser.getWindowSize();
+    await browser.setWindowSize(outer.width + WIDTH - w, outer.height + HEIGHT - h);
+    await sleep(300);
+  }
+  const [w, h] = await browser.execute(() => [window.innerWidth, window.innerHeight]);
+  throw new Error(`the window stays at ${w}x${h}, not ${WIDTH}x${HEIGHT}`);
+}
 
 /** Set Light or Dark mode of the default theme through the app's own operations. */
 export async function setMode(browser, mode) {
@@ -136,7 +150,8 @@ function serialize() {
 export function captureSession(getBrowser) {
   rmSync(RAW, { recursive: true, force: true });
   for (const m of MODES) mkdirSync(join(RAW, m), { recursive: true });
-  const manifest = { screens: [], links: [], unreachable: [] };
+  const manifest = { screens: [], links: [], unreachable: [], failed: [] };
+  let section = "";
   const names = new Set();
   let current = "light";
   let clicks = [];
@@ -170,7 +185,23 @@ export function captureSession(getBrowser) {
       clicks.push(r);
     },
     unreachable(name, why) {
-      manifest.unreachable.push({ name, why });
+      manifest.unreachable.push({ name, why, section });
+    },
+    /** The section now running (recorded with each screen). */
+    setSection(name) {
+      section = name;
+    },
+    /** A state the tour tried and could not capture: the error and a screenshot of the window. */
+    async fail(name, error) {
+      const msg = error instanceof Error ? error.message : String(error);
+      const file = join(RAW, "failed", `${name}.png`);
+      mkdirSync(join(RAW, "failed"), { recursive: true });
+      await getBrowser().saveScreenshot(file).catch(() => undefined);
+      const line = msg.split("\n")[0].slice(0, 300);
+      manifest.failed.push({ name, section, error: line, screenshot: file });
+      clicks = [];
+      console.log(`  capture FAILED ${name}: ${line}`);
+      writeFileSync(join(RAW, "manifest.json"), JSON.stringify(manifest, null, 1));
     },
     /**
      * Record the current state. Options: `blur` (default true) moves focus off fields so no caret
@@ -190,6 +221,7 @@ export function captureSession(getBrowser) {
       if (!keepToasts) {
         await browser.execute(() => document.querySelectorAll('.toast button[aria-label="Dismiss"]').forEach((b) => b.click()));
       }
+      await ensureSize(browser);
       await freeze(browser, true);
       await sleep(wait);
       await settle(browser);
@@ -201,8 +233,17 @@ export function captureSession(getBrowser) {
           current = mode;
           await sleep(350);
         }
-        const png = Buffer.from(await browser.takeScreenshot(), "base64");
-        const dom = await browser.execute(serialize);
+        let png;
+        let dom;
+        // The window can still be resized between the size check and the screenshot: take it again.
+        for (let i = 0; i < 3; i++) {
+          png = Buffer.from(await browser.takeScreenshot(), "base64");
+          dom = await browser.execute(serialize);
+          if (dom.width === WIDTH && dom.height === HEIGHT) break;
+          await ensureSize(browser);
+          await sleep(400);
+        }
+        if (dom.width !== WIDTH || dom.height !== HEIGHT) throw new Error(`captured at ${dom.width}x${dom.height}, not ${WIDTH}x${HEIGHT}`);
         writeFileSync(join(RAW, mode, `${id}.png`), png);
         writeFileSync(join(RAW, mode, `${id}.json`), JSON.stringify(dom));
         sizes[mode] = `${dom.width}x${dom.height}`;
@@ -210,7 +251,8 @@ export function captureSession(getBrowser) {
       await freeze(browser, false);
       if (clicks.length === 1 && manifest.screens.length) manifest.links.push({ from: manifest.screens.at(-1).id, to: id, ...clicks[0] });
       clicks = [];
-      manifest.screens.push({ id, name, home: home ?? null, size: sizes.light });
+      manifest.screens.push({ id, name, section, home: home ?? null, size: sizes.light });
+      console.log(`  captured ${id}`);
       writeFileSync(join(RAW, "manifest.json"), JSON.stringify(manifest, null, 1));
       return id;
     },
