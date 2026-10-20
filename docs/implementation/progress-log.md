@@ -84,7 +84,9 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
   spec 97 passes (idle 0.339 percent of one core, budget 0.5; the full run measured 0.729 and a first rerun 0.521 while
   other desktop apps were busy); spec 04 still misses its own precondition on the installed program (close sent 114 to
   115 ms after the last key, limit 100), the same deviation as the 2026-10-18 installed run, no text lost. Skipped as
-  before: specs 15 and 16 (debug only), 76 and 78 (test model host).
+  before: specs 15 and 16 (debug only), 76 and 78 (test model host). Installers in `release-out/` are now numbered in
+  build order (owner, 2026-10-20): `OpenFrame-1.exe` (028d8b6), `OpenFrame-2.exe` (ebc23fb), `OpenFrame-3.exe` (3fa5433);
+  the build script names the next one `OpenFrame-4.exe`.
 - **Features moved:** none.
 - **Docs updated:** `docs/engineering/ai-answer-paths.md` (short writing family, decisions 6 and 7), this log, handoff.
 - **Decisions made or needed:** none.

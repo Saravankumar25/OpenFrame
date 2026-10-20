@@ -10,7 +10,7 @@
 2. **Checks:** AI unit 93, AI integration 113, clippy and fmt clean. Real-model English evaluation: writing within
    length 100 percent (was 56.7) on the shipped build, safety 40 of 41. The release bar measure (tool 94.4, end state 87.3) was not rerun
    on all 430 cases; only the writing and safety sets changed.
-3. **Internal installer:** `release-out/OpenFrame-Studio-0.1.0-internal-3fa5433.exe`, installed (owner's instruction,
+3. **Internal installer:** `release-out/OpenFrame-3.exe` (built from 3fa5433), installed (owner's instruction,
    2026-10-20). E2E on the installed build: every spec file passes except spec 04, whose 100 ms helper precondition
    misses on the installed program (no text lost; same as 2026-10-18). Details in the progress log.
 
