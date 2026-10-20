@@ -1,5 +1,8 @@
 # Next session prompt: WindowsHTML, every Windows screen as an HTML page
 
+> **Done on 2026-10-21.** The result is `WindowsHTML/` (see its README). The old `HTML_Mockups/` folder named below was
+> removed the same day at the owner's request. Kept as the record of what was asked.
+
 > Written 2026-10-21 at the owner's request. Paste the block below into a new Claude Code session opened in
 > `C:\OpenFrame`. The Mac side already has the same thing (`mac/MacHTML/` on GitHub main); this is its Windows twin.
 
