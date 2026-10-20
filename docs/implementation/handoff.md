@@ -1,32 +1,29 @@
 # Handoff: where we are right now
 
-> Rewritten (not appended) at the end of every session. One page. Last rewritten: 2026-10-20, end of the overnight run.
+> Rewritten (not appended) at the end of every session. One page. Last rewritten: 2026-10-20, after the AI follow-ups.
 
 ## State
 
-1. **The Windows final polish is done and merged to `main` locally (not pushed).** Everything from `changes/`,
-   `OpenFrameAI.docx`, the AI context engineering brief, the UX audit brief and `openframe-chnages.docx` is in; the
-   plan with its status is [final-polish-plan.md](final-polish-plan.md) and the full record is the 2026-10-19 to
-   2026-10-20 entry of the [progress log](progress-log.md). The Windows UI keeps its own design (owner, 2026-10-19).
-2. **Checks at the end:** Rust workspace 2,140 tests, web 612, clippy and fmt clean, governance 90 of 90, all 42 E2E
-   specs, layout geometry 180 screen states with no finding, real-model AI evaluation above the release bar (tool 95.0,
-   end state 87.3; re-measured on the shipped code: 94.4 and 87.3).
-3. **Internal installer:** see the progress log entry (path, size, SHA-256, install and smoke result). Built from a
-   clean tree on the owner's instruction of 2026-10-20.
-4. **For the owner to look at:** `release-out/pdf-samples/` (23 PDF samples), `docs/ux/windows-ux-audit.md`, the ten
-   questions in `docs/engineering/ai-answer-paths.md` section 6.
+1. **The Windows final polish and the two AI follow-ups are merged to `main` locally (not pushed).** The AI now reads
+   project notes directly for "Summarise my project notes" and keeps short writing (loglines, lines, titles,
+   descriptions) to a word budget. Record: the top two entries of the [progress log](progress-log.md).
+2. **Checks:** AI unit 93, AI integration 113, clippy and fmt clean. Real-model English evaluation: writing within
+   length 100 percent (was 56.7) on the shipped build, safety 40 of 41. The release bar measure (tool 94.4, end state 87.3) was not rerun
+   on all 430 cases; only the writing and safety sets changed.
+3. **Internal installer:** `release-out/OpenFrame-Studio-0.1.0-internal-3fa5433.exe`, installed (owner's instruction,
+   2026-10-20). E2E on the installed build: every spec file passes except spec 04, whose 100 ms helper precondition
+   misses on the installed program (no text lost; same as 2026-10-18). Details in the progress log.
 
 ## Next items, in order
 
 1. Owner and team hand test of the installed build (Chapter 1 exit for W10).
-2. Route "Summarise my project notes." to the notes reader (safety-en-006 saw a harmless proposal), raise writing
-   length compliance further (56.7 percent), and a native speaker sample of the non-English answers.
-3. Refresh the user manual (.docx): it predates the top bar, rail, removals and AI changes of this run.
+2. Fix safety-en-023 (a licence request makes a settings proposal) and make spec 04's 100 ms helper reliable on the
+   installed program.
+3. Refresh the user manual (.docx): it predates the top bar, rail, removals and AI changes.
 
 ## Open blockers
 
-- None for the build. The 100,000-document AI benchmark of the context brief was not built (stated in
-  `docs/engineering/ai-answer-paths.md`).
+- None for the build. The 100,000-document AI benchmark of the context brief was not built.
 
 ## Do not
 
