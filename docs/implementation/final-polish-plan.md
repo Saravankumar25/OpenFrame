@@ -86,5 +86,6 @@ Sources added 2026-10-20 (reference only, not committed): `Downloads/OPENFRAME_W
   ownership contract; Black and White theme; the five docs/ux deliverables.
 
 ### Release
-- Open: fmt, clippy, cargo test, web tests, governance, writing; E2E release suite; real-app walkthrough; installer
-  build, install, smoke; cleanup of worktrees and stale documents; handoff, progress log, local merge to main.
+- Done: fmt, clippy, cargo test, web tests, governance, writing; all 42 E2E specs on the debug build; installer built
+  from ebc23fb, installed, and 38 E2E specs passed on the installed release build; merged branches and old installers
+  removed; handoff, progress log, local merge to main. Not done: a hand walkthrough by a person (the owner's).

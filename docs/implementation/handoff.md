@@ -1,31 +1,34 @@
 # Handoff: where we are right now
 
-> Rewritten (not appended) at the end of every session. One page. Last rewritten: 2026-10-20, overnight run.
+> Rewritten (not appended) at the end of every session. One page. Last rewritten: 2026-10-20, end of the overnight run.
 
 ## State
 
-1. **Branch `windows/final-polish`.** Owner (2026-10-20, going to sleep): finish everything autonomously, all
-   permissions granted, build and verify a new internal .exe, run the E2E release suite, clean up, do not miss anything
-   from `changes/`, `OpenFrameAI.docx`, `Downloads/OPENFRAME_WINDOWS_UX_AUDIT_AND_REDESIGN_CLAUDE_CODE_MASTER_PROMPT.md`,
-   `Downloads/OPENFRAME_WINDOWS_AI_CONTEXT_ENGINEERING_CLAUDE_CODE_MASTER_PROMPT.md`, `Downloads/openframe-chnages.docx`.
-   The Windows UI keeps its own design (owner, 2026-10-19). Do not edit `OpenFrameMac/`.
-2. **Checklist with status:** [final-polish-plan.md](final-polish-plan.md), section "Overnight checklist".
-3. **Done and committed:** change list items 1 to 11, 13 to 21; openframe-chnages.docx 1 (strip colours) and 2 (Story
-   Board columns, story.css); AI fixes incl. scene facts, dialogue facts, follow-ups, product-help gating (0ced174).
-   AI integration tests 110 of 110, AI unit tests 88 of 88, web tests 608 of 608 at last run.
-4. **PDF redesign:** a Sonnet subagent is finishing it (files: `crates/openframe-import-export/**`,
-   `modules/exports/**`, `tests/production/{exports,pdf_regression,pdf_samples,pdf_design,main}.rs`). Do not edit
-   those files while it runs. Review its samples in `release-out/pdf-samples/` before committing.
+1. **The Windows final polish is done and merged to `main` locally (not pushed).** Everything from `changes/`,
+   `OpenFrameAI.docx`, the AI context engineering brief, the UX audit brief and `openframe-chnages.docx` is in; the
+   plan with its status is [final-polish-plan.md](final-polish-plan.md) and the full record is the 2026-10-19 to
+   2026-10-20 entry of the [progress log](progress-log.md). The Windows UI keeps its own design (owner, 2026-10-19).
+2. **Checks at the end:** Rust workspace 2,140 tests, web 612, clippy and fmt clean, governance 90 of 90, all 42 E2E
+   specs, layout geometry 180 screen states with no finding, real-model AI evaluation above the release bar (tool 95.0,
+   end state 87.3).
+3. **Internal installer:** see the progress log entry (path, size, SHA-256, install and smoke result). Built from a
+   clean tree on the owner's instruction of 2026-10-20.
+4. **For the owner to look at:** `release-out/pdf-samples/` (23 PDF samples), `docs/ux/windows-ux-audit.md`, the ten
+   questions in `docs/engineering/ai-answer-paths.md` section 6.
 
 ## Next items, in order
 
-1. Monochrome themes (Black on White, White on Black) added to `themes.json` and theme tests; Daily View export
-   (owner item 12) after the PDF agent finishes.
-2. UX geometry pass: an E2E spec that opens every route with the AI panel and measures overlap, page-level horizontal
-   overflow and clipped controls at 1280x720 and 1920x1080; fix what it finds; `docs/ux/` audit notes.
-3. Real-model AI evaluation (`ai-eval --only en`), then fmt, clippy, cargo test, web tests, governance, E2E suite,
-   installer (`npm run installer:internal`), install and smoke, cleanup, progress log, local merge to main.
+1. Owner and team hand test of the installed build (Chapter 1 exit for W10).
+2. Real-model rerun of the AI writing cases after the last writing fix (`ai-eval --only writing-en`), and a native
+   speaker sample of the non-English answers.
+3. Refresh the user manual (.docx): it predates the top bar, rail, removals and AI changes of this run.
+
+## Open blockers
+
+- None for the build. The 100,000-document AI benchmark of the context brief was not built (stated in
+  `docs/engineering/ai-answer-paths.md`).
 
 ## Do not
 
-- Do not push. Do not restyle Windows to look like the Mac. Do not edit `OpenFrameMac/`.
+- Do not push. Do not restyle Windows to look like the Mac. Do not edit `OpenFrameMac/`. Do not commit `changes/`,
+  `OpenFrameAI.docx` or `OpenFrameMac/`.
