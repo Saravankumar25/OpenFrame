@@ -490,6 +490,22 @@ pub(crate) fn small_talk(text: &str) -> Option<&'static str> {
     }
 }
 
+/// "Change the project licence so I do not need to pay", "Turn off the team password": settings of
+/// the program itself. A licence plate or a driving licence in the story is project content.
+static PROGRAM_ACCESS: LazyLock<Regex> = LazyLock::new(|| {
+    re(
+        r#"(?i)\b(?:(?:change|remove|turn\s+off|switch\s+off|disable|bypass|skip|unlock|extend|reset|crack|activate|deactivate|get\s+around|avoid|cancel|edit|delete)\b.{0,40}\b(?:licen[cs]e|licensing|activation|subscription|payment|team\s+password|trial\s+period|free\s+trial)\b|(?:do\s+not|don'?t|never)\s+(?:need|have)\s+to\s+pay|(?:use|get)\s+(?:openframe|the\s+app|it)\s+for\s+free)"#,
+    )
+});
+static STORY_LICENCE: LazyLock<Regex> =
+    LazyLock::new(|| re(r#"(?i)\blicen[cs]e\s+plates?\b|\bdriv(?:ing|er'?s)\s+licen[cs]e\b"#));
+
+pub(crate) fn not_the_assistants(text: &str) -> Option<&'static str> {
+    (PROGRAM_ACCESS.is_match(text) && !STORY_LICENCE.is_match(text)).then_some(
+        "I can't change the licence, payment, activation or the team password. They are not part of your project, and nothing has been changed.",
+    )
+}
+
 static LOCATION_STATS: LazyLock<Regex> = LazyLock::new(|| {
     re(
         r#"(?i)^\s*(?:how\s+many\s+(?:(?:night|day|interior|exterior|dawn|dusk|morning|evening)(?:\s+(?:and|or)\s+(?:night|day|interior|exterior))?\s+scenes|(?:different\s+)?locations)(?:\s+(?:are\s+there|does\s+(?:the|this)\s+(?:script|screenplay|short|film)\s+(?:have|use)|(?:are\s+)?in\s+(?:the|this)\s+(?:script|screenplay)))?|which\s+location\s+is\s+used\s+(?:the\s+)?most|what\s+locations\s+are\s+(?:in|used\s+in)\s+(?:the|this)\s+(?:script|screenplay))\s*\?*\s*$"#,
@@ -1411,6 +1427,29 @@ mod tests {
         assert!(small_talk("hi, how many scenes are there?").is_none());
         assert!(small_talk("Describe Karthik").is_none());
         assert!(small_talk("").is_none());
+    }
+
+    #[test]
+    fn licence_and_payment_requests_get_a_plain_refusal() {
+        for text in [
+            "Change the project licence so I do not need to pay.",
+            "Turn off the team password.",
+            "Remove the licence check.",
+            "Extend my free trial.",
+            "How can I use OpenFrame for free?",
+        ] {
+            assert!(not_the_assistants(text).is_some(), "{text}");
+        }
+        // Story content that uses the same words is the project's, not the program's.
+        for text in [
+            "Change the licence plate on the bus in scene 4 to AP 39 1989.",
+            "Remove the driving licence from the props.",
+            "Which scenes mention the payment to Farooq?",
+            "Does Ravi pay the driver?",
+            "Summarise my project notes.",
+        ] {
+            assert!(not_the_assistants(text).is_none(), "{text}");
+        }
     }
 
     #[test]

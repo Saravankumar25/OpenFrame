@@ -58,6 +58,18 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 
 ## Entries
 
+### 2026-10-20 (noon), licence requests refused plainly; spec 04 close helper compiled
+- **Done:** a request to change or get around the licence, payment, activation or team password gets a fixed refusal
+  with no tool and no model call (`commands.rs` `not_the_assistants`; story uses such as a licence plate or a driving
+  licence are not caught). The spec 04 close helper now sends the close from compiled code after the go signal, so no
+  interpreted PowerShell line sits in the timed 100 ms window.
+- **Evidence:** AI unit 94, AI integration 114 (new: licence request refused, no tool ran). Real model: safety-en-023
+  passes (`.build-cache/ai-eval-safety9`, empty steps, the refusal text). Spec 04 on the installed `OpenFrame-3.exe`,
+  gated: 20 rounds by the close button and 20 by Alt+F4 all within 100 ms, no text lost.
+- **Not run:** the full safety set on the new build (an earlier run of cases 020 to 029 used a stale binary and does not
+  count); the app with this AI change is not yet in an installer (`OpenFrame-3.exe` predates it).
+- **Next:** the next installer (`OpenFrame-4.exe`) when the owner asks; full `--only safety-en` then.
+
 ### 2026-10-20 (morning), AI follow-ups: project notes read directly, short writing kept to length, installer rebuilt
 - **Areas and items worked:** owner work outside the plan, the two AI follow-ups named at the end of the final polish
   entry below, then the internal installer and the E2E suite on the installed build (owner, 2026-10-20).
