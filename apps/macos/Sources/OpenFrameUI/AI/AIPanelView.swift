@@ -76,9 +76,7 @@ struct AIPanelView: View {
     private var settingsMenu: some View {
         Menu {
             Text("Offline AI")
-            Button("Offline AI settings\u{2026}") {
-                NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
-            }
+            Button("Offline AI settings\u{2026}") { SettingsRouter.open(tab: .ai) }
             .accessibilityIdentifier("ai-open-settings")
             if model?.status?.available == true {
                 Button("Stop Offline AI (free memory)") { Task { await model?.stopRuntime() } }

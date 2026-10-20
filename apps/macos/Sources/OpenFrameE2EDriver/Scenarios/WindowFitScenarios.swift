@@ -340,8 +340,9 @@ extension UI {
     static let settingsPages = ["General", "Appearance", "Keyboard Shortcuts", "Offline AI", "Diagnostics"]
 
     func fitSettings(_ report: inout FitReport) async throws {
-        guard let appMenu = NSApp.mainMenu?.items.first?.title else { throw DriverError("no app menu") }
-        try await menu([appMenu, "Settings\u{2026}"])
+        // The Settings button on Home, as a person opens it (the menu item worked while the button
+        // did nothing: recent macOS ignores the old showSettingsWindow: message).
+        try await press(id: "home-settings")
         try await waitUntilFit("the Settings window", timeout: 10) { self.fitSettingsWindow != nil }
         await idle(0.6)
         for page in UI.settingsPages {

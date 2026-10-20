@@ -319,14 +319,25 @@ struct HomeView: View {
 
     private func section(_ title: String, _ items: [RecentProject], trailing: AnyView?) -> some View {
         VStack(alignment: .leading, spacing: PageSpacing.small) {
-            SectionHeader(title) { if let trailing { trailing } }
+            // Small capitals as on Windows ("RECENT PROJECTS"), with Open Archived at the right.
+            HStack(alignment: .firstTextBaseline, spacing: PageSpacing.small) {
+                Text(title)
+                    .textCase(.uppercase)
+                    .font(.caption.weight(.bold))
+                    .tracking(0.7)
+                    .foregroundStyle(theme["muted"])
+                    .accessibilityAddTraits(.isHeader)
+                Spacer(minLength: PageSpacing.small)
+                if let trailing { trailing }
+            }
+            .padding(.top, PageSpacing.large)
             if items.isEmpty {
                 Text(home.activeCount == 0
                      ? "All your projects are archived. Open Archived to restore one, or create a new project."
                      : "Every project here is pinned above.")
                     .font(.callout).foregroundStyle(theme["muted"])
             }
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 220, maximum: 320), spacing: PageSpacing.medium, alignment: .top)],
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 240), spacing: PageSpacing.medium, alignment: .top)],
                       alignment: .leading, spacing: PageSpacing.medium) {
                 ForEach(items, id: \.projectId) { project in
                     ProjectCard(project: project, handlers: handlers(for: project))
@@ -391,23 +402,15 @@ struct ProjectCard: View {
     @Environment(\.ofTheme) private var theme
     @State private var hovering = false
 
-    /// A colour band at the top of the card, the same for a project every time (Windows: the
-    /// card preview), from the theme's soft tones.
-    private var band: Color {
-        let tones = ["accent-soft", "blue-soft", "green-soft", "yellow-soft", "purple-soft"]
-        let h = project.projectId.unicodeScalars.reduce(UInt32(0)) { ($0 &* 31) &+ $1.value }
-        return theme[tones[Int(h % UInt32(tones.count))]]
-    }
 
     var body: some View {
         ZStack(alignment: .topTrailing) {
             Button(action: handlers.open) {
                 VStack(alignment: .leading, spacing: 0) {
-                    band.frame(height: 56)
-                        .overlay(alignment: .bottomLeading) {
-                            Image(systemName: "film").font(.title3).foregroundStyle(theme["ink2"]).padding(10)
-                                .accessibilityHidden(true)
-                        }
+                    ProjectPreview(projectId: project.projectId)
+                        .frame(height: 78)
+                        .frame(maxWidth: .infinity)
+                        .accessibilityHidden(true)
                     VStack(alignment: .leading, spacing: 8) {
                         Text(project.title)
                             .font(.headline)
@@ -450,15 +453,61 @@ struct ProjectCard: View {
             Menu {
                 ProjectCardMenu(project: project, handlers: handlers)
             } label: {
-                Text("Actions").font(.caption.weight(.medium))
+                Label("Actions", systemImage: "ellipsis").labelStyle(.titleAndIcon).font(.caption.weight(.medium))
             }
             .menuStyle(.button)
+            .buttonStyle(.borderless)
+            .menuIndicator(.hidden)
             .controlSize(.small)
             .fixedSize()
-            .padding(8)
+            .padding(.horizontal, 8).padding(.vertical, 4)
+            .background(.regularMaterial, in: Capsule())
+            .padding(6)
             .help("Rename, pin, duplicate, archive or delete \(project.title)")
             .accessibilityLabel("Actions for \(project.title)")
             .accessibilityIdentifier("project-card-actions-\(project.title)")
+        }
+    }
+}
+
+/// The picture at the top of a project card, the same for a project every time: the Windows
+/// app's five painted previews (night with a moon, bus, green, warm, cool), in the same order
+/// and chosen by the same hash of the project id. Fixed colours: placeholder imagery, not theme.
+struct ProjectPreview: View {
+    let projectId: String
+
+    private static func hex(_ v: UInt32) -> Color {
+        Color(red: Double((v >> 16) & 0xff) / 255, green: Double((v >> 8) & 0xff) / 255, blue: Double(v & 0xff) / 255)
+    }
+
+    private var kind: Int {
+        Int(projectId.unicodeScalars.reduce(UInt32(0)) { ($0 &* 31) &+ $1.value } % 5)
+    }
+
+    var body: some View {
+        GeometryReader { geo in
+            let w = geo.size.width, h = geo.size.height
+            switch kind {
+            case 0: // night
+                LinearGradient(colors: [Self.hex(0x0e1424), Self.hex(0x243250)], startPoint: .top, endPoint: .bottom)
+                    .overlay(alignment: .topLeading) {
+                        Circle().fill(Self.hex(0xf6e7a8))
+                            .frame(width: h * 0.34, height: h * 0.34)
+                            .offset(x: w * 0.78 - h * 0.17, y: h * 0.22 - h * 0.17)
+                    }
+            case 1: // bus
+                VStack(spacing: 0) {
+                    Self.hex(0x586a80).frame(height: h * 0.5)
+                    Self.hex(0xc98b2f).frame(height: h * 0.28)
+                    Self.hex(0x2a2d34)
+                }
+            case 2:
+                LinearGradient(colors: [Self.hex(0x5a8a62), Self.hex(0x1f3d2a)], startPoint: .topLeading, endPoint: .bottomTrailing)
+            case 3:
+                LinearGradient(colors: [Self.hex(0xe8a15a), Self.hex(0x8b3f22)], startPoint: .topLeading, endPoint: .bottomTrailing)
+            default:
+                LinearGradient(colors: [Self.hex(0x4d6d98), Self.hex(0x1c2b46)], startPoint: .topLeading, endPoint: .bottomTrailing)
+            }
         }
     }
 }
