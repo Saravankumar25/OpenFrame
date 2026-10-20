@@ -63,7 +63,7 @@ export function TimelineView({ episodeId, readOnly }: { episodeId: string | null
             ) : undefined
           }
         >
-          Story days belong to screenplay scenes. Build a screenplay from the Story Board or write one first. Story Board cards never need a story day.
+          Story days belong to screenplay scenes. Build a screenplay from the Beat Board or write one first. Beat Board cards never need a story day.
         </EmptyState>
       </div>
     );
@@ -131,7 +131,7 @@ function SceneRow({ s, readOnly, checked, onCheck }: { s: StoryTimelineScene; re
     <div className="row" style={{ padding: "6px 12px", borderBottom: "1px solid var(--line)", gap: 10 }}>
       {!readOnly && <Checkbox checked={checked} onChange={onCheck} label={<span className="sr-only">Select scene {s.number}</span>} />}
       <b style={{ width: 48 }}>Sc {s.number}</b>
-      <span className="grow truncate" style={{ fontFamily: "Courier New, monospace", fontSize: 12.5 }}>{s.heading || "(no heading)"}</span>
+      <span className="grow truncate" title={s.heading || undefined} style={{ fontFamily: "Courier New, monospace", fontSize: 12.5 }}>{s.heading || "(no heading)"}</span>
       <TextInput
         aria-label={`Time of day note for scene ${s.number}`}
         placeholder="time note"

@@ -36,6 +36,8 @@ final class BreakdownHub {
     let app: AppModel
     var tab: BDTab = .breakdown
     var notice: BDNotice?
+    /// The export sheet, when one is open.
+    var exportModel: CSExportModel?
     private(set) var looks = CategoryLooks()
     private(set) var styles: BreakdownCategoryStyles?
     /// A hint for the screens. The core still refuses what a role may not do.
@@ -58,6 +60,37 @@ final class BreakdownHub {
     }
 
     var core: Core? { app.core }
+
+    /// Export Breakdown (Windows: BreakdownExportButton): the breakdown by scene with the Catalog,
+    /// for every scene of the Production Source or only the scene shown.
+    func exportBreakdown(currentSceneId: String?, sceneLabel: String?) {
+        var options: [CSExportOption] = []
+        if currentSceneId != nil {
+            options.append(CSExportOption(key: "currentOnly", label: "Only the scene shown\(sceneLabel.map { " (\($0))" } ?? "")", defaultValue: false))
+        }
+        options.append(CSExportOption(key: "includeSuggested", label: "Include suggested elements (marked as suggested)", defaultValue: true))
+        options.append(CSExportOption(key: "includeNotes", label: "Include element notes", defaultValue: false))
+        let title: String? = {
+            if case let .project(p) = app.phase { return p.title }
+            return nil
+        }()
+        exportModel = CSExportModel(
+            title: "Export Breakdown",
+            sub: "The breakdown by scene and the Catalog with the scenes that use each item.",
+            source: "Source: the active Production Source",
+            documentName: "Breakdown Report",
+            note: "Private notes excluded. Export creates a snapshot and does not change the breakdown.",
+            formats: CSExportFormat.tables,
+            options: options,
+            projectTitle: title
+        ) { [weak self] format, path, values in
+            guard let core = self?.core else { throw CoreFailure(code: "no_project", message: "No project is open.") }
+            let only = values["currentOnly"] == true ? currentSceneId.map { [$0] } : nil
+            return try await core.breakdownExportReport(ExportBreakdownArgs(
+                format: format, path: path, content: format == "csv" ? "scenes" : "both", sceneIds: only,
+                includeSuggested: values["includeSuggested"] ?? true, includeNotes: values["includeNotes"] ?? false))
+        }
+    }
 
     // MARK: Shared reads
 

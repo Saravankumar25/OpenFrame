@@ -1,6 +1,6 @@
 //! Episodic / Series structure (FSD §25, UX §3.20): seasons, episodes, the
 //! Season Board order and episode duplication. Each episode scopes its own
-//! Story Board (story rows carry `episode_id`).
+//! Beat Board (story rows carry `episode_id`).
 
 use std::collections::HashMap;
 
@@ -40,7 +40,7 @@ pub fn register(r: &mut Registry) {
         .meta(M::soft_delete("Move an episode to Recently Deleted.").confirm());
     r.command("story.duplicate_episode", duplicate_episode)
         .meta(M::edit(
-            "Duplicate an episode (optionally with its Story Board).",
+            "Duplicate an episode (optionally with its Beat Board).",
         ));
 }
 
@@ -178,7 +178,7 @@ pub struct StoryMoveEpisodeArgs {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct StoryDuplicateEpisodeArgs {
     pub id: String,
-    /// Also copy the episode's Story Board (new identities; no screenplay links).
+    /// Also copy the episode's Beat Board (new identities; no screenplay links).
     #[serde(default)]
     pub copy_story: bool,
 }

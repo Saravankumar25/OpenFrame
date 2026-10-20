@@ -47,7 +47,7 @@ struct ScreenplayReplaceBar: View {
                 model.showReplace = false
                 model.textView.map { $0.window?.makeFirstResponder($0) }
             } label: {
-                Image(systemName: "xmark.circle.fill")
+                Label("Close", systemImage: "xmark.circle.fill")
             }
             .buttonStyle(.plain)
             .foregroundStyle(.secondary)

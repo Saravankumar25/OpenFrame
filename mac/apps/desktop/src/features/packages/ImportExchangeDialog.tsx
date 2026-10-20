@@ -126,7 +126,7 @@ export function ImportExchangeDialog({ sessionId, onClose }: { sessionId?: strin
           title="Choose a package"
           actions={<Button variant="primary" disabled={busy} onClick={() => void choose()}>{busy ? "Validating…" : "Choose Package…"}</Button>}
         >
-          Review, response, Story Board, Breakdown, Shot List, Schedule or Call Sheet review packages. The package is validated first; nothing changes until you choose what to import.
+          Review, response, Beat Board, Breakdown, Shot List, Schedule or Call Sheet review packages. The package is validated first; nothing changes until you choose what to import.
         </EmptyState>
       </Dialog>
     );

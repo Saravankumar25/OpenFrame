@@ -1,4 +1,4 @@
-// Drag & drop for the Story Board and Outline (FSD §11.6, §89.3–89.6, UX §3.6):
+// Drag & drop for the Beat Board and Outline (FSD §11.6, §89.3–89.6, UX §3.6):
 // @dnd-kit pointer dragging, a blue insertion marker for sibling insertion, a
 // highlighted container for re-parenting, commit only on release over a valid
 // target, and multi-select groups that keep their board order.

@@ -69,15 +69,21 @@ struct WindowFitTests {
         defaults.set(["keep"], forKey: "NSSplitView Subview Frames other")
         SidebarRestore.clearCollapsed(in: defaults)
         let frames = try #require(defaults.array(forKey: key) as? [String])
-        #expect(frames[0] == "0.000000, 0.000000, 198.000000, 632.000000, NO, NO")
+        // Not collapsed any more, and a width under the sidebar's minimum comes back as 220.
+        #expect(frames[0] == "0.000000, 0.000000, 220.000000, 632.000000, NO, NO")
         #expect(frames[1] == "0.000000, 0.000000, 1240.000000, 652.000000, NO, NO")
         #expect(defaults.array(forKey: "NSSplitView Subview Frames other") as? [String] == ["keep"])
     }
 
     @Test func theAssistantNarrowsInANarrowWindow() {
         #expect(ProjectView.assistantWidth(for: 1060) == 360)
-        #expect(ProjectView.assistantWidth(for: 680) == 272)
+        #expect(ProjectView.assistantWidth(for: 680) == 306)
         #expect(ProjectView.assistantWidth(for: 400) == 220)
+        // Dragged wider or narrower, the panel stays between 300 points and 45 percent (at most 640).
+        #expect(ProjectView.assistantWidth(for: 1600, preferred: 900) == 640)
+        #expect(ProjectView.assistantWidth(for: 1200, preferred: 900) == 540)
+        #expect(ProjectView.assistantWidth(for: 1200, preferred: 100) == 300)
+        #expect(ProjectView.assistantWidth(for: 1200, preferred: 420) == 420)
     }
 
     @Test func aPageWiderThanTheWindowKeepsItsMinimumWidth() {

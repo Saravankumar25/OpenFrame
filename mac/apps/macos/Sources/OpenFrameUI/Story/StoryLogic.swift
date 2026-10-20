@@ -1,4 +1,4 @@
-// Pure Story Board helpers: locating items, computing drop targets, keyboard moves, filtering,
+// Pure Beat Board helpers: locating items, computing drop targets, keyboard moves, filtering,
 // the heading rule used by Build Screenplay and the rows of the Outline. The board data always
 // comes from the core; these functions only read it (they decide nothing the core decides).
 // Mirrors apps/desktop/src/workspaces/story/model.ts so Mac and Windows move things the same way.

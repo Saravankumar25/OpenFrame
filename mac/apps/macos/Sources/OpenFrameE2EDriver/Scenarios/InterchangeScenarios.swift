@@ -100,8 +100,8 @@ extension Scenarios {
             try await ui.choosing(pdf) { try await ui.choose(from: "story-more", ["Export Outline", "PDF"]) }
             try await ui.waitText("Exported", timeout: 30)
             let data = try Data(contentsOf: pdf)
-            try ui.expect(data.count >= 500, "the Story Board PDF holds at least 500 bytes, has \(data.count)")
-            try ui.expect(data.prefix(5) == Data("%PDF-".utf8), "the Story Board file starts with %PDF-")
+            try ui.expect(data.count >= 500, "the Beat Board PDF holds at least 500 bytes, has \(data.count)")
+            try ui.expect(data.prefix(5) == Data("%PDF-".utf8), "the Beat Board file starts with %PDF-")
         },
         Scenario("63-every-export/diagnostics-bundle-holds-no-project-text") { ui, _, ctx in
             try await ui.launch(ctx)
@@ -381,6 +381,11 @@ fileprivate extension UI {
     }
 
     /// The text of the element with this identifier.
+    /// Opens "See sources" under the newest answer, when it has sources.
+    func openLastSources() async throws {
+        if let button = query(id: "ai-see-sources").last { try await tap(button) }
+    }
+
     func textOf(id: String) -> String { query(id: id).map(\.text).joined(separator: " ") }
 }
 
@@ -721,10 +726,9 @@ fileprivate extension UI {
 
     func center(_ e: Element) -> NSPoint { NSPoint(x: e.frame.midX, y: e.frame.midY) }
 
+    /// Moodboards and Storyboards are Production tabs (as on Windows).
     func openVisual(_ tab: String) async throws {
-        try await go("Visual Planning")
-        try await tap(label: tab, role: "AXRadioButton")
-        await idle(0.5)
+        try await goProduction(tab, id: tab.lowercased())
     }
 
     /// The storyboard panels in reading order, as "Panel N, picture" or "Panel N, empty".
@@ -1216,9 +1220,12 @@ extension Scenarios {
             try await ui.choose(from: "ai-scope", ["Current Screenplay"])
             let kind = try await ui.ask("How many scenes are in the script?")
             f.check(kind == "answer", "the result is an Answer, is \(kind)")
-            f.check(ui.textOf(id: "ai-confidence").contains("Exact"), "the answer is marked exact: \"\(ui.textOf(id: "ai-confidence"))\"")
+            // A plain answer: no "Exact" badge or step list in the conversation (OpenFrameAI.docx 4.1).
+            f.check(ui.query(id: "ai-confidence").isEmpty && ui.query(id: "ai-steps").isEmpty, "the answer carries no badge or step list")
             f.check(ui.lastAnswerText().contains("3"), "the answer contains 3: \(ui.lastAnswerText())")
-            f.check(ui.query(id: "ai-source").count >= 1, "the answer has at least one source")
+            f.check(ui.query(id: "ai-source").isEmpty, "its sources stay closed until asked for")
+            try await ui.openLastSources()
+            f.check(ui.query(id: "ai-source").count >= 1, "See sources lists at least one source")
             f.check(!ui.engines().isEmpty, "the chat engine is now running")
             try f.finish()
         },
@@ -1229,6 +1236,7 @@ extension Scenarios {
             try await ui.choose(from: "ai-scope", ["Whole Project"])
             let kind = try await ui.ask("Which scene happens at the bus stop?")
             f.check(kind == "answer" || kind == "navigate", "the result is an Answer or a Navigate, is \(kind)")
+            try await ui.openLastSources()
             let chips = ui.query(id: "ai-source").filter { $0.text.uppercased().contains("BUS STOP") }
             f.check(!chips.isEmpty, "one of its sources names BUS STOP: \(ui.query(id: "ai-source").map(\.text))")
             try await ui.go("Project Home")
@@ -1327,7 +1335,7 @@ extension Scenarios {
             let f = Findings()
             try await aiStart(ui, ctx)
             let checks: [(String, [String])] = [
-                ("Project Home", ["Using: Whole Project"]), ("Idea Vault", ["Using: Whole Project"]), ("Story", ["Using: Story Board"]),
+                ("Project Home", ["Using: Whole Project"]), ("Idea Vault", ["Using: Whole Project"]), ("Story", ["Using: Beat Board"]),
                 ("Breakdown", ["Using: Production Workspace"]), ("Schedule", ["Using: Production Workspace"]),
                 ("Call Sheets", ["Using: Production Workspace"]), ("Screenplay", ["Using: Current Scene", "Using: Current Screenplay"]),
                 ("Notes and Tasks", ["Using: Whole Project"]),
@@ -1352,9 +1360,9 @@ extension Scenarios {
             try await aiStart(ui, ctx)
             try await ui.go("Story")
             try await ui.openAssistant()
-            let kind = try await ui.ask("What is on the Story Board?")
+            let kind = try await ui.ask("What is on the Beat Board?")
             f.check(isAnswered(kind), "the question was answered, result is \(kind)")
-            f.check(ui.scopeLine() == "Using: Story Board", "the scope line reads Using: Story Board, reads \"\(ui.scopeLine())\"")
+            f.check(ui.scopeLine() == "Using: Beat Board", "the scope line reads Using: Beat Board, reads \"\(ui.scopeLine())\"")
             try f.finish()
         },
         Scenario("73-ai-workspaces/screenplay-question-is-about-the-screenplay", timeout: 600) { ui, _, ctx in
@@ -1376,6 +1384,7 @@ extension Scenarios {
             try await ui.openAssistant()
             let kind = try await ui.ask("Which locations are used in the script?")
             f.check(isAnswered(kind), "the question was answered, result is \(kind)")
+            try await ui.openLastSources()
             let a = (ui.lastAnswerText() + " " + ui.query(id: "ai-source").map(\.text).joined(separator: " ") + " " + ui.query(id: "ai-items").map(\.text).joined(separator: " ")).uppercased()
             f.check(a.contains("BUS STOP") || a.contains("RAILWAY STATION") || a.contains("POLICE STATION"), "the answer or its sources name a location: \(a)")
             try f.finish()

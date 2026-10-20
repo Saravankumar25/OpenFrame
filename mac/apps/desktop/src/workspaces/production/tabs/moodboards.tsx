@@ -588,7 +588,7 @@ function Tile({
           <>
             <div className="row gap4">
               <Link2 size={13} />
-              <b style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.linkTitle || item.url}</b>
+              <b title={item.linkTitle || item.url || undefined} style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.linkTitle || item.url}</b>
             </div>
             <div className="xs muted">link · {item.urlHost}</div>
           </>

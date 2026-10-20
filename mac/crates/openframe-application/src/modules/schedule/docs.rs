@@ -316,7 +316,10 @@ fn sides_create(core: &AppCore, actor: &Actor, a: ScheduleSidesArgs) -> AppResul
             let what = content
                 .day_label
                 .clone()
-                .unwrap_or_else(|| format!("{} scenes", content.scenes.len()));
+                .unwrap_or_else(|| match content.scenes.len() {
+                    1 => "1 scene".to_string(),
+                    n => format!("{n} scenes"),
+                });
             format!("Sides: {what}")
         });
         let id = new_id();
@@ -739,7 +742,7 @@ pub(crate) fn build_report(
                     rows.push(vec![
                         "Unscheduled".into(),
                         String::new(),
-                        format!("{un} scenes"),
+                        format!("{un} scene{}", if un == 1 { "" } else { "s" }),
                         String::new(),
                         String::new(),
                     ]);

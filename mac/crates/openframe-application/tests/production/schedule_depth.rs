@@ -918,18 +918,19 @@ fn sched_008_schedule_and_dood_exports_are_byte_reproducible() {
     }
     let t = pdf_text(&out(&env, "schedule-a.pdf"));
     for want in [
-        "Shoot Day 1 · Mon 14 Jun 2027",
+        "SHOOT DAY 01",
+        "MONDAY · 14 JUNE 2027",
         "07:00 crew call",
         "08:00",
         "Revised",
-        "Start",
+        "START",
     ] {
         assert!(t.contains(want), "schedule PDF misses {want}: {t}");
     }
     let t = pdf_text(&out(&env, "dood-a.pdf"));
     for want in [
-        "Day Out of Days",
-        "Karthik Menon (Arjun)",
+        "DAY OUT OF DAYS",
+        "KARTHIK MENON (ARJUN)",
         "SW",
         "H*",
         "Work",

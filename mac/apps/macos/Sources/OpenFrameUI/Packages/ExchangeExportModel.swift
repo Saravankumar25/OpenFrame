@@ -14,11 +14,7 @@ struct PKExchangeTitle {
     static func of(_ t: PackageType) -> PKExchangeTitle {
         switch t {
         case .scriptReview: PKExchangeTitle(title: "Script Review Package", sub: "How do I send this draft to someone for review and safely bring their notes back?")
-        case .story: PKExchangeTitle(title: "Story Board Package", sub: "Which part of the Story Board do I share, and what comes with it?")
-        case .breakdown: PKExchangeTitle(title: "Breakdown Package", sub: "Which scenes' breakdown do I share for review?")
-        case .shots: PKExchangeTitle(title: "Shot List Package", sub: "Which shots do I share for review?")
-        case .schedule: PKExchangeTitle(title: "Schedule Package", sub: "Share the shooting schedule for review. Returned changes never delete your days.")
-        case .callReview: PKExchangeTitle(title: "Call Sheet Review Package", sub: "Share a call sheet for feedback. The schedule is never changed by the reply.")
+        case .story: PKExchangeTitle(title: "Beat Board Package", sub: "Which part of the Beat Board do I share, and what comes with it?")
         default: PKExchangeTitle(title: PKInfo.entry(t).label, sub: "")
         }
     }
@@ -42,7 +38,6 @@ final class ExchangeExportModel {
     var scope: PKScope = .full
     var sceneIds: [String] = []
     var actId = ""
-    var callSheetId = ""
     var includeComments = true
     var includeAttachments = false
 
@@ -60,8 +55,7 @@ final class ExchangeExportModel {
     var scopeChoices: [(value: PKScope, label: String)] {
         switch packageType {
         case .scriptReview: [(.full, "Full script"), (.comments, "Script + comments"), (.scenes, "Specific scenes only")]
-        case .story: [(.full, "Whole Story Board"), (.act, "One Act")]
-        case .breakdown, .shots: [(.full, "All scenes"), (.scenes, "Specific scenes only")]
+        case .story: [(.full, "Whole Beat Board"), (.act, "One Act")]
         default: []
         }
     }
@@ -79,7 +73,7 @@ final class ExchangeExportModel {
             scope: scopeChoices.isEmpty ? nil : scope.rawValue,
             sceneIds: scope == .scenes ? sceneIds : [],
             actId: scope == .act ? actId.ixNonEmpty : nil,
-            callSheetId: packageType == .callReview ? callSheetId.ixNonEmpty : nil,
+            callSheetId: nil,
             includeComments: includeComments || scope == .comments,
             includeAttachments: includeAttachments,
             includePrivateNotes: false,
@@ -88,7 +82,7 @@ final class ExchangeExportModel {
 
     /// Changes whenever the package that would be written changes.
     var argsKey: String {
-        "\(draftId)|\(scope.rawValue)|\(sceneIds.joined(separator: ","))|\(actId)|\(callSheetId)|\(includeComments)|\(includeAttachments)"
+        "\(draftId)|\(scope.rawValue)|\(sceneIds.joined(separator: ","))|\(actId)|\(includeComments)|\(includeAttachments)"
     }
 
     func load() async {
@@ -99,7 +93,6 @@ final class ExchangeExportModel {
             sources = s
             if draftId.isEmpty, let d = s.drafts.first(where: \.isCurrent) ?? s.drafts.first { draftId = d.id }
             if actId.isEmpty, let a = s.acts.first { actId = a.id }
-            if callSheetId.isEmpty, let c = s.callSheets.first { callSheetId = c.id }
             await refreshPreview()
         } catch {
             loadError = CoreFailure(asCore: error).message

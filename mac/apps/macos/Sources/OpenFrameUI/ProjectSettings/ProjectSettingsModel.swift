@@ -6,23 +6,31 @@ import Observation
 import OpenFrameCore
 import SwiftUI
 
+/// The pages of Settings inside a project, in the Windows order (workspaces/settings/index.tsx,
+/// owner change list item 6): the project's own settings and the ones for this Mac together.
 enum ProjectSettingsTab: String, CaseIterable, Identifiable, Hashable {
-    case general, shortcuts, templates, advanced
+    case general, writing, shortcuts, templates, offlineAI, advanced, appearance
     var id: String { rawValue }
     var title: String {
         switch self {
         case .general: "Project settings"
+        case .writing: "Writing"
         case .shortcuts: "Keyboard shortcuts"
         case .templates: "Templates"
+        case .offlineAI: "Offline AI"
         case .advanced: "Advanced"
+        case .appearance: "Appearance"
         }
     }
     var symbol: String {
         switch self {
         case .general: "gearshape"
+        case .writing: "textformat.abc"
         case .shortcuts: "keyboard"
         case .templates: "doc.on.doc"
+        case .offlineAI: "sparkles"
         case .advanced: "slider.horizontal.3"
+        case .appearance: "paintpalette"
         }
     }
 }
@@ -51,6 +59,14 @@ struct ProjectSettingsDraft: Equatable {
     }
 
     static func isEpisodic(_ t: ProjectType) -> Bool { t == .episodic || t == .series }
+
+    /// New projects are films: Episodic and Series are no longer offered (owner change list item
+    /// 9, 2026-10-19, as on Windows). A project made with one of them earlier keeps it.
+    static let offeredTypes: [ProjectType] = [.featureFilm, .shortFilm]
+
+    static func typeChoices(current: ProjectType) -> [ProjectType] {
+        offeredTypes.contains(current) ? offeredTypes : offeredTypes + [current]
+    }
 }
 
 @MainActor

@@ -26,7 +26,8 @@ struct CSRig {
     var day2Id = ""
     var scenes: [ScheduleStripDto] = []
 
-    static let brand = "Created with OpenFrame Studio"
+    /// The footer line of every production PDF (report.rs BRAND_LINE).
+    static let brand = "Created using OpenFrame"
 
     static func make(title: String = "Lost Property Unit") async throws -> CSRig {
         let root = try Fixture.root()
@@ -244,7 +245,7 @@ struct CallSheetScenarioTests {
         // A call sheet from the Indie Call Sheet template is a copy of its own.
         let listing = try await r.core.templatesList(TemplateListArgs())
         let names = listing.builtin.map(\.name)
-        for n in ["Feature Film Screenplay", "Short Film Screenplay", "Episodic / Series", "Simple Story Board", "Indie Call Sheet", "Shot List", "Moodboard", "Lightweight Budget"] {
+        for n in ["Feature Film Screenplay", "Short Film Screenplay", "Episodic / Series", "Simple Beat Board", "Indie Call Sheet", "Shot List", "Moodboard", "Lightweight Budget"] {
             #expect(names.contains(n), "built-in template \(n) is missing")
         }
         let day2 = try #require(try await r.core.scheduleGet().days.first { $0.callSheet == nil && !$0.isOffDay })
@@ -925,6 +926,27 @@ struct SidesReportsDailyTests {
         await m.reload()
         #expect(m.day?.scenes.isEmpty == true)
         #expect(r.quiet)
+    }
+
+    /// Export on the Daily View writes that day as its own document (owner request 2026-10-20).
+    @Test func theDailyViewExportsTheShownDayAsItsOwnDocument() async throws {
+        let r = try await planned()
+        defer { r.close() }
+        let m: CSDailyModel = r.hub.daily
+        m.pick(r.dayId)
+        await m.reload()
+        let d = try #require(m.day)
+        r.hub.exportDaily(dayId: d.id, label: d.label)
+        let e = try #require(r.hub.exportModel)
+        #expect(e.title == "Export Daily View")
+        #expect(e.suggestedName == "\(d.label) - Daily view.pdf")
+        #expect(e.formats.map(\.value) == ["pdf", "csv", "xlsx"])
+        #expect(await e.export(to: r.path("daily.pdf")))
+        #expect(e.result?.document == "\(d.label) - Daily view")
+        try r.checkPDF("daily.pdf")
+        e.format = "csv"
+        #expect(await e.export(to: r.path("daily.csv")))
+        #expect(FileManager.default.fileExists(atPath: r.path("daily.csv")))
     }
 
     @Test func statusWordsFormattingAndMarkers() {

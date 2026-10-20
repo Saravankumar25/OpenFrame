@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Screenplay, AI Assistant closed with Close (light) - OpenFrame Studio for Mac</title><style>
+:root{color-scheme:light;--page:#e4e4e8;--fg:#1d1d1f;--mut:#6b6b73;--card:#f7f7f9;--line:#c8c8ce;--acc:#b85f00}
+:root.dark{color-scheme:dark;--page:#232326;--fg:#f2f2f4;--mut:#a0a0a8;--card:#1c1c1f;--line:#3c3c42;--acc:#ff9f0a}
+*{box-sizing:border-box}
+html{background:var(--page)}
+body{margin:0;background:var(--page);color:var(--fg);font:14px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif}
+a{color:var(--acc)}
+.toggle{position:absolute;opacity:0;pointer-events:none}
+header.top{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;padding:12px 20px;border-bottom:1px solid var(--line);background:var(--card)}
+header.top h1{font-size:17px;margin:0}
+header.top .meta{color:var(--mut);font-size:13px}
+header.top nav{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto}
+header.top nav a,header.top label{padding:3px 10px;border:1px solid var(--line);border-radius:6px;text-decoration:none;color:var(--fg);font-size:13px;cursor:pointer;background:var(--page)}
+#htmlonly:checked~header label[for=htmlonly]{background:var(--acc);color:#fff;border-color:var(--acc)}
+#htmlonly:focus-visible~header label[for=htmlonly]{outline:2px solid var(--acc)}
+.leads{padding:8px 20px 0;font-size:13px;color:var(--mut)}
+.leads a{margin-right:10px}
+/* The band has a fixed height and the window a fixed left edge, so the picture always lands on whole points. */
+.band{height:104px;overflow:auto;border-bottom:1px solid var(--line);background:var(--card)}
+.band header.top{border-bottom:0}
+.wrap{padding:32px 40px 64px;overflow:auto}
+.win{position:relative;margin:0;border-radius:10px;background:var(--winbg);box-shadow:0 0 0 .5px rgba(0,0,0,.35),0 10px 30px rgba(0,0,0,.28),0 24px 70px rgba(0,0,0,.22)}
+.region{position:absolute;display:block;margin:0;padding:0;border:0;background-repeat:no-repeat;color:inherit;max-width:none;max-height:none;list-style:none}
+.el{position:absolute;margin:0;padding:0;border:0;border-radius:0;background:transparent;color:transparent;-webkit-text-fill-color:transparent;font:inherit;font-size:13px;line-height:1.2;text-align:left;
+ overflow:hidden;text-decoration:none;appearance:none;-webkit-appearance:none;outline:none;box-shadow:none;list-style:none;white-space:pre;caret-color:transparent;resize:none;min-width:0;min-height:0}
+.el::selection{background:rgba(255,149,0,.35)}
+.el .v{display:block;padding:0 4px}
+.el .key{float:right;padding:0 6px;opacity:.7}
+.statictext{cursor:text;user-select:text}
+.statictext[style*="line-height:16px"]{white-space:pre-wrap}
+textarea.el{white-space:pre-wrap}
+button.el,a.el,select.el,input[type=checkbox].el,input[type=radio].el{cursor:pointer}
+a.go{z-index:1}
+button.el:focus-visible,a.el:focus-visible,select.el:focus-visible,input.el:focus-visible,textarea.el:focus-visible{outline:2px solid var(--acc);outline-offset:-2px}
+.loose{pointer-events:none}
+/* HTML only: the picture is hidden and the HTML layer draws the screen on the window colour. */
+#htmlonly:checked~.wrap .region{background-image:none!important;background-color:var(--winbg);box-shadow:inset 0 0 0 .5px rgba(128,128,128,.35)}
+#htmlonly:checked~.wrap .win{background:var(--winbg);overflow:hidden}
+#htmlonly:checked~.wrap .region.sheet,#htmlonly:checked~.wrap .region.menu{border-radius:10px;box-shadow:0 0 0 1px rgba(128,128,128,.5),0 8px 30px rgba(0,0,0,.35)}
+#htmlonly:checked~.wrap .el{color:var(--winfg);-webkit-text-fill-color:var(--winfg);overflow:visible;text-overflow:ellipsis}
+#htmlonly:checked~.wrap button.el,#htmlonly:checked~.wrap a[role=button].el,#htmlonly:checked~.wrap select.el,#htmlonly:checked~.wrap input.el,#htmlonly:checked~.wrap textarea.el,#htmlonly:checked~.wrap .menubutton{
+ overflow:hidden;border:1px solid rgba(128,128,128,.45);border-radius:5px;background:rgba(128,128,128,.12);padding:0 5px;display:flex;align-items:center;font-size:12px}
+#htmlonly:checked~.wrap textarea.el{display:block;padding:4px 6px}
+#htmlonly:checked~.wrap .el.haskids{color:transparent;-webkit-text-fill-color:transparent}
+#htmlonly:checked~.wrap input[type=checkbox].el,#htmlonly:checked~.wrap input[type=radio].el{appearance:auto;-webkit-appearance:auto;border:0;background:none;padding:0;margin:0;width:14px!important;height:14px!important}
+#htmlonly:checked~.wrap [disabled].el,#htmlonly:checked~.wrap [aria-disabled=true].el{opacity:.45}
+#htmlonly:checked~.wrap [aria-selected=true].el{background:rgba(10,132,255,.22)}
+#htmlonly:checked~.wrap .el[data-focused]{outline:2px solid rgba(10,132,255,.7);outline-offset:-2px}
+#htmlonly:checked~.wrap a.el{color:var(--acc);-webkit-text-fill-color:var(--acc)}
+#htmlonly:checked~.wrap a.go{background:rgba(255,149,0,.08)}
+#htmlonly:checked~.wrap .scrollbar,#htmlonly:checked~.wrap .valueindicator{display:none}
+</style></head>
+<body>
+<input type="checkbox" id="htmlonly" class="toggle">
+<div class="band">
+<header class="top">
+<h1>Screenplay, AI Assistant closed with Close</h1>
+<span class="meta">AI Assistant &middot; page 647 of 692 &middot; light &middot; window 1280 &times; 634 points at 2x</span>
+<nav>
+<a href="../index.html">All pages</a>
+<a href="../dark/647-ai-closed-screenplay.html">Same page in dark</a>
+<a href="641-ai-panel-screenplay.html">Back to AI Assistant open in Screenplay</a>
+<label for="htmlonly">HTML only</label>
+</nav>
+</header>
+<div class="leads">Leads to: <a href="648-ai-closed-breakdown.html">Breakdown, AI Assistant closed</a></div>
+</div>
+<div class="wrap"><div class="win" role="application" aria-label="Night Bus window" style="width:1280px;height:634px;--winbg:#fffeff;--winfg:#1d1d1f">
+<div class="el loose" data-role="AXGroup" data-id="screenplay-page-bar" style="left:240px;top:58px;width:907px;height:49px"></div>
+<main class="region content" data-region="content" aria-label="Content" style="left:0px;top:0px;width:644px;height:634px;background-image:url(assets/647-ai-closed-screenplay.png);background-size:1280px 634px;background-position:0px 0px">
+<div class="el group" data-role="AXGroup/AXHostingView" style="left:8px;top:8px;width:220px;height:618px"><span class="el statictext" data-id="sidebar-project-title" data-role="AXStaticText" style="left:16px;top:50px;width:63px;height:16px;font-size:12.16px;line-height:16px">Night Bus</span><div class="el scrollarea" data-role="AXScrollArea" style="left:0px;top:76px;width:220px;height:482px"><ul role="tree" class="el outline" data-role="AXOutline" aria-label="Sidebar" style="left:-1px;top:-1px;width:222px;height:484px"><li class="el item" role="treeitem" style="left:22.5px;top:9px;width:60.5px;height:16px"><span class="el statictext" data-id="sidebar-home" data-role="AXStaticText" style="left:0px;top:0px;width:60.5px;height:16px;font-size:12.16px;line-height:16px">Home</span><a class="el go" href="034-home-import-toast.html" aria-label="Home: Example screenplay imported, with its Undo toast" style="left:0px;top:0px;width:60.5px;height:16px"></a></li><li class="el item" role="treeitem" style="left:26px;top:41.08px;width:81px;height:16px"><span class="el statictext" data-id="sidebar-ideaVault" data-role="AXStaticText" style="left:0px;top:0px;width:81px;height:16px;font-size:12.16px;line-height:16px">Idea Vault</span><a class="el go" href="246-vault-empty.html" aria-label="Idea Vault: Idea Vault, empty" style="left:0px;top:0px;width:81px;height:16px"></a></li><li class="el item" role="treeitem" style="left:22.5px;top:73px;width:57px;height:16px"><span class="el statictext" data-id="sidebar-story" data-role="AXStaticText" style="left:0px;top:0px;width:57px;height:16px;font-size:12.16px;line-height:16px">Story</span><a class="el go" href="177-story-board-empty.html" aria-label="Story: Beat Board, nothing on it yet" style="left:0px;top:0px;width:57px;height:16px"></a></li><li class="el item" role="treeitem" style="left:24.5px;top:105.04px;width:90px;height:16px"><span class="el statictext" data-id="sidebar-screenplay" data-role="AXStaticText" style="left:0px;top:0px;width:90px;height:16px;font-size:12.16px;line-height:16px">Screenplay</span><a class="el go" href="068-screenplay-editor-typing.html" aria-label="Screenplay: Screenplay editor while typing" style="left:0px;top:0px;width:90px;height:16px"></a></li><li class="el item" role="treeitem" style="left:23px;top:137px;width:91.5px;height:16px"><span class="el statictext" data-id="sidebar-breakdown" data-role="AXStaticText" style="left:0px;top:0px;width:91.5px;height:16px;font-size:12.16px;line-height:16px">Breakdown</span><a class="el go" href="306-breakdown-no-source.html" aria-label="Breakdown: Breakdown, choose a screenplay source" style="left:0px;top:0px;width:91.5px;height:16px"></a></li><li class="el item" role="treeitem" style="left:22.5px;top:169px;width:91px;height:16px"><span class="el statictext" data-id="sidebar-production" data-role="AXStaticText" style="left:0px;top:0px;width:91px;height:16px;font-size:12.16px;line-height:16px">Production</span></li><li class="el item" role="treeitem" style="left:24.5px;top:201px;width:91px;height:16.83px"><span class="el statictext" data-id="sidebar-callSheets" data-role="AXStaticText" style="left:0px;top:0px;width:91px;height:16.83px;font-size:12.79px;line-height:16.83px">Call Sheets</span><a class="el go" href="416-callsheets-empty.html" aria-label="Call Sheets: Call Sheets, none yet" style="left:0px;top:0px;width:91px;height:16.83px"></a></li><li class="el item" role="treeitem" style="left:23px;top:233px;width:52px;height:16px"><span class="el statictext" data-id="sidebar-files" data-role="AXStaticText" style="left:0px;top:0px;width:52px;height:16px;font-size:12.16px;line-height:16px">Files</span><a class="el go" href="558-files-empty.html" aria-label="Files: Files, empty" style="left:0px;top:0px;width:52px;height:16px"></a></li></ul></div><span class="el statictext" data-role="AXStaticText" style="left:10px;top:576px;width:161px;height:13px;font-size:9.88px;line-height:13px">Project stored locally on this Mac</span><span class="el statictext" data-id="save-status" data-role="AXStaticText" aria-selected="true" style="left:11px;top:595px;width:46.5px;height:13px;font-size:9.88px;line-height:13px">Saved</span></div>
+<button type="button" class="el menubutton" data-id="screenplay-picker" data-role="AXMenuButton" aria-label="Screenplay: LOST PROPERTY. Switch screenplay" title="LOST PROPERTY" style="left:240px;top:58px;width:147.5px;height:20px" aria-haspopup="menu">Screenplay: LOST PROPERTY. Switch screenplay</button>
+<button type="button" class="el button" data-id="compare-button" data-role="AXButton" aria-label="Compare" style="left:395.5px;top:58px;width:91.5px;height:20px">Compare</button>
+<button type="button" class="el button" data-id="comments-button" data-role="AXButton" aria-label="Comments (0)" style="left:495px;top:58px;width:118.5px;height:20px">Comments (0)</button>
+<div class="el group" data-role="AXGroup" style="left:240px;top:87px;width:210px;height:20px"><button type="button" class="el button" data-id="screenplay-zoom-out" data-role="AXButton/AXSegment" aria-label="Zoom Out" style="left:0px;top:0px;width:85px;height:20px">Zoom Out</button><button type="button" class="el button" data-id="screenplay-zoom-reset" data-role="AXButton/AXSegment" aria-label="Zoom 100%, reset to 100 percent" style="left:86px;top:0px;width:47.5px;height:20px">Zoom 100%, reset to 100 percent</button><button type="button" class="el button" data-id="screenplay-zoom-in" data-role="AXButton/AXSegment" aria-label="Zoom In" style="left:134.5px;top:0px;width:75.5px;height:20px">Zoom In</button></div>
+<button type="button" class="el menubutton" data-id="screenplay-tools-menu" data-role="AXMenuButton" aria-label="Screenplay Tools" style="left:458px;top:87px;width:144px;height:20px" aria-haspopup="menu">Screenplay Tools</button>
+<span class="el statictext" data-id="editor-page-count" data-role="AXStaticText" style="left:610px;top:87px;width:39px;height:13px;font-size:9.88px;line-height:13px">4 pages</span>
+<div class="el group" data-role="AXGroup/AXHostingView" style="left:0px;top:114px;width:568px;height:520px"><h2 class="el heading" data-role="AXHeading" aria-label="Scenes (10)" style="left:244px;top:8px;width:77px;height:16px;font-size:11.52px;line-height:16px">Scenes (10)</h2><button type="button" class="el menubutton" data-id="navigator-columns" data-role="AXMenuButton" aria-label="Navigator columns" title="Columns" style="left:457px;top:8px;width:95px;height:16px" aria-haspopup="menu">Navigator columns</button><div class="el scrollarea" data-role="AXScrollArea" style="left:228px;top:32px;width:340px;height:488px"><ul role="tree" class="el outline" data-id="scene-navigator" data-role="AXOutline" aria-label="Sidebar" style="left:-1px;top:-1px;width:342px;height:490px"><li class="el item" role="treeitem" style="left:32.5px;top:19.5px;width:280px;height:15px"><button type="button" class="el button" data-id="scene-row-01a15bae-3634-7337-a3c2-763d2696d02e" data-role="AXButton" aria-label="Scene 1, INT. KESARGANJ JUNCTION - LOST PROPERTY OFFICE - NIGHT" style="left:0px;top:0px;width:280px;height:15px">Scene 1, INT. KESARGANJ JUNCTION - LOST PROPERTY OFFICE - NIGHT</button></li><li class="el item" role="treeitem" style="left:32.5px;top:51.5px;width:276px;height:15px"><button type="button" class="el button" data-id="scene-row-01a15bae-3634-7337-a3c2-7650331ba715" data-role="AXButton" aria-label="Scene 2, EXT. KESARGANJ JUNCTION - PLATFORM 3 - NIGHT" style="left:0px;top:0px;width:276px;height:15px">Scene 2, EXT. KESARGANJ JUNCTION - PLATFORM 3 - NIGHT</button></li><li class="el item" role="treeitem" style="left:32.5px;top:83.5px;width:280px;height:15px"><button type="button" class="el button" data-id="scene-row-01a15bae-3634-7337-a3c2-76535193a8c6" data-role="AXButton" aria-label="Scene 3, INT. KESARGANJ JUNCTION - LOST PROPERTY OFFICE - NIGHT" style="left:0px;top:0px;width:280px;height:15px">Scene 3, INT. KESARGANJ JUNCTION - LOST PROPERTY OFFICE - NIGHT</button></li><li class="el item" role="treeitem" style="left:32.5px;top:115.5px;width:280px;height:15px"><button type="button" class="el button" data-id="scene-row-01a15bae-3634-7337-a3c2-765aeef21c1b" data-role="AXButton" aria-label="Scene 4, INT. KESARGANJ JUNCTION - LOST PROPERTY OFFICE - NIGHT" style="left:0px;top:0px;width:280px;height:15px">Scene 4, INT. KESARGANJ JUNCTION - LOST PROPERTY OFFICE - NIGHT</button></li><li class="el item" role="treeitem" style="left:32.5px;top:147.5px;width:277.5px;height:15px"><button type="button" class="el button" data-id="scene-row-01a15bae-3635-7210-9b8e-f5583292d0cd" data-role="AXButton" aria-label="Scene 5, INT. KESARGANJ JUNCTION - STORE ROOM - NIGHT" style="left:0px;top:0px;width:277.5px;height:15px">Scene 5, INT. KESARGANJ JUNCTION - STORE ROOM - NIGHT</button></li><li class="el item" role="treeitem" style="left:32.5px;top:179.5px;width:280px;height:15px"><button type="button" class="el button" data-id="scene-row-01a15bae-3635-7210-9b8e-f561c531b348" data-role="AXButton" aria-label="Scene 6, INT. KESARGANJ JUNCTION - LOST PROPERTY OFFICE - NIGHT" style="left:0px;top:0px;width:280px;height:15px">Scene 6, INT. KESARGANJ JUNCTION - LOST PROPERTY OFFICE - NIGHT</button></li><li class="el item" role="treeitem" style="left:32.5px;top:211.5px;width:278px;height:15px"><button type="button" class="el button" data-id="scene-row-01a15bae-3635-7210-9b8e-f573bc657717" data-role="AXButton" aria-label="Scene 7, EXT. KESARGANJ JUNCTION - FOOTBRIDGE - NIGHT" style="left:0px;top:0px;width:278px;height:15px">Scene 7, EXT. KESARGANJ JUNCTION - FOOTBRIDGE - NIGHT</button></li><li class="el item" role="treeitem" style="left:32.5px;top:243.5px;width:278px;height:15px"><button type="button" class="el button" data-id="scene-row-01a15bae-3635-7210-9b8e-f57abad8e502" data-role="AXButton" aria-label="Scene 8, EXT. KESARGANJ JUNCTION - FOOTBRIDGE - CONTINUOUS" style="left:0px;top:0px;width:278px;height:15px">Scene 8, EXT. KESARGANJ JUNCTION - FOOTBRIDGE - CONTINUOUS</button></li><li class="el item" role="treeitem" style="left:32.5px;top:275.5px;width:278.5px;height:15px"><button type="button" class="el button" data-id="scene-row-01a15bae-3636-74be-882f-1d9dbed7cca3" data-role="AXButton" aria-label="Scene 9, INT. NIGHT TRAIN - SECOND CLASS COMPARTMENT - CONTINUOUS" style="left:0px;top:0px;width:278.5px;height:15px">Scene 9, INT. NIGHT TRAIN - SECOND CLASS COMPARTMENT - CONTINUOUS</button></li><li class="el item" role="treeitem" style="left:26px;top:307.5px;width:284.5px;height:15px"><button type="button" class="el button" data-id="scene-row-01a15bae-3636-74be-882f-1da1e855bd46" data-role="AXButton" aria-label="Scene 10, EXT. KESARGANJ JUNCTION - FOOTBRIDGE - DAWN" style="left:0px;top:0px;width:284.5px;height:15px">Scene 10, EXT. KESARGANJ JUNCTION - FOOTBRIDGE - DAWN</button></li></ul></div></div>
+<div role="separator" class="el splitter" data-role="AXSplitter" aria-valuenow="568" style="left:568px;top:114px;width:1px;height:520px"></div>
+<button type="button" class="el button" data-id="sidebar-toggle" data-role="AXButton" aria-label="Hide Sidebar" style="left:232px;top:0px;width:132px;height:52px">Hide Sidebar</button>
+<button type="button" class="el button" data-id="close-project" data-role="AXButton" aria-label="All Projects" style="left:364px;top:0px;width:119px;height:52px">All Projects</button>
+<div class="el group" data-role="AXGroup" style="left:483px;top:0px;width:168px;height:52px"><div class="el group" data-role="AXGroup" style="left:4.5px;top:8px;width:159.5px;height:36px"><button type="button" class="el button" data-id="nav-back" data-role="AXButton/AXSegment" aria-label="Back" style="left:0px;top:0px;width:69.5px;height:36px">Back</button><button type="button" class="el button" data-id="nav-forward" data-role="AXButton/AXSegment" aria-label="Forward" style="left:70.5px;top:0px;width:89px;height:36px" disabled>Forward</button></div></div>
+<button type="button" class="el button" data-role="AXButton/AXCloseButton" style="left:18px;top:18px;width:16px;height:16px"></button>
+<button type="button" class="el haskids button" data-role="AXButton/AXFullScreenButton" style="left:64px;top:18px;width:16px;height:16px"></button><div class="el group" data-role="AXGroup" style="left:65px;top:19px;width:14px;height:14px"></div>
+<button type="button" class="el button" data-role="AXButton/AXMinimizeButton" style="left:41px;top:18px;width:16px;height:16px"></button>
+</main>
+<aside class="region inspector" data-region="inspector" aria-label="Inspector" style="left:644px;top:0px;width:636px;height:634px;background-image:url(assets/647-ai-closed-screenplay.png);background-size:1280px 634px;background-position:-644px 0px">
+<button type="button" class="el menubutton" data-id="element-picker" data-role="AXMenuButton" aria-label="Element" style="left:-22.5px;top:58px;width:73px;height:20px" aria-haspopup="menu">Element<span class="key">Action</span></button>
+<button type="button" class="el button" data-id="scenes-toggle" data-role="AXButton" aria-label="Hide Scenes" style="left:58.5px;top:58px;width:82.5px;height:20px">Hide Scenes</button>
+<button type="button" class="el button" data-id="find-button" data-role="AXButton" aria-label="Find" style="left:149px;top:58px;width:63px;height:20px">Find</button>
+<button type="button" class="el button" data-id="replace-toggle" data-role="AXButton" aria-label="Replace" style="left:220px;top:58px;width:83.5px;height:21px">Replace</button>
+<button type="button" class="el menubutton" data-id="draft-menu" data-role="AXMenuButton" aria-label="Draft: Example-Short (imported). Switch draft" title="Example-Short (imported)" style="left:311.5px;top:58px;width:191.5px;height:20px" aria-haspopup="menu">Draft: Example-Short (imported). Switch draft</button>
+<span class="el statictext" data-id="editor-save-status" data-role="AXStaticText" style="left:13px;top:87px;width:29.5px;height:13px;font-size:9.88px;line-height:13px">Saved</span>
+<div class="el group" data-role="AXGroup/AXHostingView" style="left:-75px;top:114px;width:711px;height:520px"><div class="el scrollarea" data-role="AXScrollArea" style="left:0px;top:0px;width:711px;height:520px"><textarea class="el textarea" data-id="screenplay-editor" data-role="AXTextArea" aria-label="Screenplay" style="left:0px;top:0px;width:736px;height:1709.5px" disabled>INT. KESARGANJ JUNCTION - LOST PROPERTY OFFICE - NIGHT
+FADE IN:
+A small office behind a barred window. Shelves of forgotten things: umbrellas, a single shoe, a birdcage with no bird, a box of keys labelled by year.
+DEVI (60s, cardigan over a railway uniform, reading glasses) eats peanuts from a paper cone and fills in a REGISTER in slow, neat capitals.
+A knock on the window bars. She looks up.
+KIRAN (12, school bag, hair wet from the washroom tap) stands on tiptoe to see over the counter.
+KIRAN
+Did anyone hand in a kite?
+DEVI
+What kind of kite?
+KIRAN
+Red. A long tail made of newspaper. It says KIRAN on the back in marker.
+Devi runs a finger down the register.
+DEVI
+No kites. One goat, last Tuesday. He was collected.
+KIRAN
+I will come tomorrow.
+He is gone before she can answer.
+EXT. KESARGANJ JUNCTION - PLATFORM 3 - NIGHT
+A long platform under yellow lamps. A goods train clanks past without stopping. Kiran sits on a bench with his knees pulled up, watching the sky above the station roof.
+INT. KESARGANJ JUNCTION - LOST PROPERTY OFFICE - NIGHT
+The next night. The same knock. Devi does not look up.
+DEVI
+No kites.
+KIRAN
+I will come tomorrow.
+INT. KESARGANJ JUNCTION - LOST PROPERTY OFFICE - NIGHT
+The night after. Devi already has her finger on the register when the knock comes.
+DEVI
+(before he speaks)
+Still no kites.
+KIRAN
+How do you know I came for the kite?
+DEVI
+Nobody comes three nights in a row for a shoe.
+He almost smiles. Then he goes.
+Devi watches the empty window. She closes the register.
+INT. KESARGANJ JUNCTION - STORE ROOM - NIGHT
+A long, low room under the platforms. Cages of sacks and crates. A single TUBE LIGHT that buzzes and flickers.
+Devi walks along the shelves with a TORCH. She lifts tarpaulins, opens crates, moves a broken harmonium.
+Behind a stack of suitcases, something red. She pulls it free.
+A KITE, its frame snapped in two places, the paper torn. The newspaper tail is tangled around a suitcase handle. On the back, in marker: KIRAN.
+DEVI
+(to herself)
+You were hiding.
+INT. KESARGANJ JUNCTION - LOST PROPERTY OFFICE - NIGHT
+The kite lies on the counter. Devi sits with a pot of GLUE, a roll of TAPE and two thin BAMBOO STICKS cut from a broom.
+She splints the frame. She patches the tear with a page from the register, the blank side out. Her hands know the work.
+The knock. Kiran sees the kite. He grips the bars.
+KIRAN
+That is mine.
+DEVI
+I know. Your name is on it.
+KIRAN
+It is broken.
+DEVI
+It was broken. Now it is mended. Those are different.
+She slides it under the bars. He holds it as if it might break again.
+KIRAN
+My father made it. Before he went to work in the city.
+DEVI
+Then he will want to know it still flies.
+EXT. KESARGANJ JUNCTION - FOOTBRIDGE - NIGHT
+The footbridge over the tracks. Wind rattles the iron railings. Kiran and Devi climb the steps, Devi slower, one hand on the rail.
+DEVI
+I am not running. Do not ask me to run.
+KIRAN
+You do not have to run. You only have to hold it up.
+EXT. KESARGANJ JUNCTION - FOOTBRIDGE - CONTINUOUS
+Devi holds the kite high over her head. Kiran walks backwards, paying out the string from a SPOOL.
+KIRAN
+Let go!
+She lets go. The kite dips toward the tracks, then catches the wind and climbs.
+It rises over the station roof, the newspaper tail snapping behind it. Kiran laughs out loud.
+A night train slides beneath them, every window lit. Passengers look up.
+INT. NIGHT TRAIN - SECOND CLASS COMPARTMENT - CONTINUOUS
+A tired MAN (30s, work clothes, lunch tin on his lap) looks out of the window. He sees a red kite above the station. He sits up.
+He presses his hand flat against the glass.
+EXT. KESARGANJ JUNCTION - FOOTBRIDGE - DAWN
+Grey light. The kite still flies. Kiran sits on the bridge floor with the string tied around his wrist, asleep against the railing.
+Devi sits beside him, peanuts in her lap. She takes out the REGISTER and writes in her slow, neat capitals:
+INSERT - THE REGISTER
+&quot;ONE KITE. RED. RETURNED TO OWNER.&quot;
+BACK TO SCENE
+She closes the book and looks up at the kite.
+FADE</textarea><div role="scrollbar" class="el scrollbar" data-role="AXScrollBar" aria-valuenow="0" style="left:-1px;top:502px;width:695.5px;height:19px"><div role="slider" class="el valueindicator" data-role="AXValueIndicator" aria-valuenow="0" style="left:4px;top:4px;width:634px;height:11px"></div><button type="button" class="el button" data-role="AXButton/AXIncrementPage" style="left:638.5px;top:4px;width:53px;height:11px" disabled></button></div><div role="scrollbar" class="el scrollbar" data-role="AXScrollBar" aria-valuenow="0" style="left:693px;top:-1px;width:19px;height:504.5px"><div role="slider" class="el valueindicator" data-role="AXValueIndicator" aria-valuenow="0" style="left:4px;top:4px;width:11px;height:144.5px"></div><button type="button" class="el button" data-role="AXButton/AXIncrementPage" style="left:4px;top:149px;width:11px;height:351.5px" disabled></button></div></div></div>
+<div class="el group" data-role="AXGroup" style="left:7px;top:0px;width:104px;height:52px"><button type="button" class="el menubutton" data-id="project-menu" data-role="AXMenuButton" aria-label="Project: Night Bus. Switch or manage projects" title="Project" style="left:3.5px;top:7px;width:97.5px;height:38px" aria-haspopup="menu">Project: Night Bus. Switch or manage projects</button></div>
+<button type="button" class="el button" data-id="project-search-button" data-role="AXButton" aria-label="Search" style="left:111px;top:0px;width:96px;height:52px">Search</button>
+<div class="el group" data-role="AXGroup" style="left:207px;top:0px;width:83px;height:52px"><button type="button" class="el menubutton" data-id="project-new-menu" data-role="AXMenuButton" aria-label="New" style="left:3.5px;top:7px;width:76.5px;height:38px" aria-haspopup="menu">New</button></div>
+<button type="button" class="el button" data-id="ai-toggle" data-role="AXButton" aria-label="Assistant" style="left:290px;top:0px;width:105px;height:52px">Assistant</button>
+<button type="button" class="el button" data-id="project-settings-button" data-role="AXButton" aria-label="Settings" style="left:395px;top:0px;width:102px;height:52px">Settings</button>
+</aside>
+</div></div>
+</body></html>

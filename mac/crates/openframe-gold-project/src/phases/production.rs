@@ -28,14 +28,20 @@ pub fn people_and_places(g: &Gold, ctx: &mut Ctx) {
         }
         let id = g.id(&g.ok("cast.create", args));
         if let Some(photo) = c["photo"].as_str() {
-            g.ok("cast.set_photo", json!({ "id": id, "path": ctx.media.path(photo) }));
+            g.ok(
+                "cast.set_photo",
+                json!({ "id": id, "path": ctx.media.path(photo) }),
+            );
         }
         let windows: Vec<Value> = arr(&c["unavailable"])
             .iter()
             .map(|w| json!({ "startDate": w[0], "endDate": w[1], "kind": "Unavailable", "note": w[2] }))
             .collect();
         if !windows.is_empty() {
-            g.ok("availability.set", json!({ "ownerType": "cast_member", "ownerId": id, "windows": windows }));
+            g.ok(
+                "availability.set",
+                json!({ "ownerType": "cast_member", "ownerId": id, "windows": windows }),
+            );
         }
         ctx.cast.insert(ch, id);
     }
@@ -53,10 +59,22 @@ pub fn people_and_places(g: &Gold, ctx: &mut Ctx) {
         json!({ "personName": "Vijay Mohan", "characterName": "PORT OFFICER", "primary": false, "contact": "+91 94470 39999",
                 "notes": "Dropped out on 2026-12-15 (film clash)." }),
     ));
-    g.ok("cast.assign", json!({ "id": dropped, "characterName": "PORT OFFICER", "primary": true }));
-    g.ok("cast.assign", json!({ "id": ctx.cast["PORT OFFICER"], "characterName": "PORT OFFICER", "primary": true }));
-    g.ok("cast.set_archived", json!({ "id": dropped, "archived": true }));
-    let dup = g.id(&g.ok("cast.create", json!({ "personName": "Nimisha Raghavan", "characterName": "ANJALI", "primary": false })));
+    g.ok(
+        "cast.assign",
+        json!({ "id": dropped, "characterName": "PORT OFFICER", "primary": true }),
+    );
+    g.ok(
+        "cast.assign",
+        json!({ "id": ctx.cast["PORT OFFICER"], "characterName": "PORT OFFICER", "primary": true }),
+    );
+    g.ok(
+        "cast.set_archived",
+        json!({ "id": dropped, "archived": true }),
+    );
+    let dup = g.id(&g.ok(
+        "cast.create",
+        json!({ "personName": "Nimisha Raghavan", "characterName": "ANJALI", "primary": false }),
+    ));
     g.ok("cast.delete", json!({ "id": dup }));
     g.ok(
         "cast.update",
@@ -81,8 +99,14 @@ pub fn people_and_places(g: &Gold, ctx: &mut Ctx) {
         json!({ "personName": "Rohan Das", "role": "Second Unit Director of Photography", "department": "Camera",
                 "notes": "Left the production on 2026-12-28; plates moved to Vivek Anand." }),
     ));
-    g.ok("crew.set_archived", json!({ "id": second_unit, "archived": true }));
-    let dup = g.id(&g.ok("crew.create", json!({ "personName": "Priya Ramesh", "role": "First Assistant Director" })));
+    g.ok(
+        "crew.set_archived",
+        json!({ "id": second_unit, "archived": true }),
+    );
+    let dup = g.id(&g.ok(
+        "crew.create",
+        json!({ "personName": "Priya Ramesh", "role": "First Assistant Director" }),
+    ));
     g.ok("crew.delete", json!({ "id": dup }));
     g.ok(
         "availability.set",
@@ -104,8 +128,14 @@ pub fn people_and_places(g: &Gold, ctx: &mut Ctx) {
         let notes = json!({ "access": n["access"], "parking": n["parking"], "noise": n["noise"], "power": n["power"],
             "permission": n["permission"], "toilets": n["toilets"], "facilities": n["facilities"], "travel": n["travel"], "general": n["general"] });
         g.ok("locations.update", json!({ "id": id, "notes": notes }));
-        g.ok("locations.set_status", json!({ "id": id, "status": l["status"] }));
-        let photos: Vec<String> = arr(&l["photos"]).iter().map(|p| ctx.media.path(&s(p))).collect();
+        g.ok(
+            "locations.set_status",
+            json!({ "id": id, "status": l["status"] }),
+        );
+        let photos: Vec<String> = arr(&l["photos"])
+            .iter()
+            .map(|p| ctx.media.path(&s(p)))
+            .collect();
         if !photos.is_empty() {
             g.ok("locations.add_photos", json!({ "id": id, "paths": photos }));
         }
@@ -113,19 +143,34 @@ pub fn people_and_places(g: &Gold, ctx: &mut Ctx) {
             .iter()
             .map(|w| json!({ "startDate": w[0], "endDate": w[1], "kind": "Unavailable", "note": w[2] }))
             .collect();
-        windows.extend(arr(&l["available"]).iter().map(|w| json!({ "startDate": w[0], "endDate": w[1], "kind": "Available", "note": w[2] })));
+        windows.extend(arr(&l["available"]).iter().map(
+            |w| json!({ "startDate": w[0], "endDate": w[1], "kind": "Available", "note": w[2] }),
+        ));
         if !windows.is_empty() {
-            g.ok("availability.set", json!({ "ownerType": "location", "ownerId": id, "windows": windows }));
+            g.ok(
+                "availability.set",
+                json!({ "ownerType": "location", "ownerId": id, "windows": windows }),
+            );
         }
         ctx.locations.insert(key, id);
     }
     // Station photos: the dusk frame leads, a wrong upload (the night frame twice) is removed.
     let station = ctx.locations["station"].clone();
-    g.ok("locations.add_photos", json!({ "id": station, "paths": [ctx.media.path("station-night.png")] }));
+    g.ok(
+        "locations.add_photos",
+        json!({ "id": station, "paths": [ctx.media.path("station-night.png")] }),
+    );
     let got = g.ok("locations.get", json!({ "id": station }));
     let photos = arr(&got["photos"]);
-    if let Some(dusk) = photos.iter().find(|p| s(&p["caption"]).contains("dusk") || s(&p["fileName"]).contains("dusk")).or(photos.get(1)) {
-        g.ok("locations.move_photo", json!({ "photoId": dusk["id"], "index": 0 }));
+    if let Some(dusk) = photos
+        .iter()
+        .find(|p| s(&p["caption"]).contains("dusk") || s(&p["fileName"]).contains("dusk"))
+        .or(photos.get(1))
+    {
+        g.ok(
+            "locations.move_photo",
+            json!({ "photoId": dusk["id"], "index": 0 }),
+        );
     }
     if let Some(last) = photos.last() {
         g.ok("locations.remove_photo", json!({ "id": last["id"] }));
@@ -135,41 +180,115 @@ pub fn people_and_places(g: &Gold, ctx: &mut Ctx) {
         json!({ "id": station, "contact": "Port Trust Estate Office, Mr. Hamid Kutty, +91 484 266 6400" }),
     );
     // A beach scouted in Fort Kochi was entered by mistake (it is the Cherai beach) and removed.
-    let wrong = g.id(&g.ok("locations.create", json!({ "name": "Fort Kochi beach (scouted, not used)", "status": "Idea" })));
+    let wrong = g.id(&g.ok(
+        "locations.create",
+        json!({ "name": "Fort Kochi beach (scouted, not used)", "status": "Idea" }),
+    ));
     g.ok("locations.delete", json!({ "id": wrong }));
-    g.ok("locations.list", json!({ "status": null, "search": null, "includeArchived": true }));
-    g.ok("locations.list", json!({ "status": "Confirmed", "search": "Vypin", "includeArchived": false }));
+    g.ok(
+        "locations.list",
+        json!({ "status": null, "search": null, "includeArchived": true }),
+    );
+    g.ok(
+        "locations.list",
+        json!({ "status": "Confirmed", "search": "Vypin", "includeArchived": false }),
+    );
 }
 
 fn breakdown_scene(ctx: &Ctx, n: u32) -> Value {
-    arr(&ctx.breakdown["scenes"]).into_iter().find(|s| s["n"].as_u64() == Some(n as u64)).unwrap_or(Value::Null)
+    arr(&ctx.breakdown["scenes"])
+        .into_iter()
+        .find(|s| s["n"].as_u64() == Some(n as u64))
+        .unwrap_or(Value::Null)
 }
 
 fn location_key_for(ctx: &Ctx, n: u32) -> Option<String> {
     let map = ctx.production["sceneLocations"].as_object()?;
-    map.iter().find(|(_, v)| arr(v).iter().any(|x| x.as_u64() == Some(n as u64))).map(|(k, _)| k.clone())
+    map.iter()
+        .find(|(_, v)| arr(v).iter().any(|x| x.as_u64() == Some(n as u64)))
+        .map(|(k, _)| k.clone())
 }
 
 pub fn breakdown(g: &Gold, ctx: &mut Ctx) {
     g.phase("Breakdown and catalog");
     g.ok("breakdown.categories", json!({}));
-    g.ok("breakdown.set_category_style", json!({ "category": "VFX", "color": "violet", "icon": "sparkles" }));
-    g.ok("breakdown.set_category_style", json!({ "category": "Special Effects", "color": "orange", "icon": "flame" }));
+    g.ok(
+        "breakdown.set_category_style",
+        json!({ "category": "VFX", "color": "violet", "icon": "sparkles" }),
+    );
+    g.ok(
+        "breakdown.set_category_style",
+        json!({ "category": "Special Effects", "color": "orange", "icon": "flame" }),
+    );
     g.ok("breakdown.reset_category_styles", json!({}));
-    g.ok("breakdown.set_category_style", json!({ "category": "VFX", "color": "violet", "icon": "sparkles" }));
-    g.ok("breakdown.set_category_style", json!({ "category": "Animals", "color": "brown", "icon": "paw" }));
+    g.ok(
+        "breakdown.set_category_style",
+        json!({ "category": "VFX", "color": "violet", "icon": "sparkles" }),
+    );
+    g.ok(
+        "breakdown.set_category_style",
+        json!({ "category": "Animals", "color": "brown", "icon": "paw" }),
+    );
     g.ok("breakdown.scenes", json!({ "filter": "all" }));
 
     // Hero props and picture vehicles go into the catalog first, with status and contacts.
     let hero: Vec<(&str, &str, &str, &str, &str)> = vec![
-        ("Props", "Quarter-inch reel 14-11-1999", "Confirmed", "Hero reel plus two stunt reels. Label in Mariamma's hand drawn by Sunil Babu.", "Props master: Sunil Babu"),
-        ("Props", "Nagra IV-S reel-to-reel recorder", "Shortlisted", "Working unit with spare heads, from a Chennai rental house.", "Prakash Audio Rentals, Chennai, +91 44 2434 5566"),
-        ("Props", "Biscuit-tin transmitter", "Confirmed", "Built by the props team with Aditya Nair. Non-transmitting; LEDs only.", null_str()),
-        ("Props", "Station logbook 1999", "Confirmed", "Hero logbook with 112 written pages, aged.", null_str()),
-        ("Vehicles", "Ambassador car (Joe's)", "Confirmed", "1994 Hindustan Ambassador, white, KL-07 plates. Precision driver available.", "Classic Cars Kochi, +91 98470 61111"),
-        ("Vehicles", "Police jeep (Mahindra Bolero)", "Confirmed", "Picture vehicle with removable insignia.", "Kerala Picture Vehicles, +91 98470 62222"),
-        ("Animals", "Kannan (dog)", "Confirmed", "Two trained Indian pariah dogs, Kannan A (hero) and Kannan B (double).", "Benny Thomas, wrangler"),
-        ("Special Effects", "Rain towers and wind machines", "Confirmed", "Four towers, two Ritter fans. Fresh water tanker only.", "Dileep Raj SFX"),
+        (
+            "Props",
+            "Quarter-inch reel 14-11-1999",
+            "Confirmed",
+            "Hero reel plus two stunt reels. Label in Mariamma's hand drawn by Sunil Babu.",
+            "Props master: Sunil Babu",
+        ),
+        (
+            "Props",
+            "Nagra IV-S reel-to-reel recorder",
+            "Shortlisted",
+            "Working unit with spare heads, from a Chennai rental house.",
+            "Prakash Audio Rentals, Chennai, +91 44 2434 5566",
+        ),
+        (
+            "Props",
+            "Biscuit-tin transmitter",
+            "Confirmed",
+            "Built by the props team with Aditya Nair. Non-transmitting; LEDs only.",
+            null_str(),
+        ),
+        (
+            "Props",
+            "Station logbook 1999",
+            "Confirmed",
+            "Hero logbook with 112 written pages, aged.",
+            null_str(),
+        ),
+        (
+            "Vehicles",
+            "Ambassador car (Joe's)",
+            "Confirmed",
+            "1994 Hindustan Ambassador, white, KL-07 plates. Precision driver available.",
+            "Classic Cars Kochi, +91 98470 61111",
+        ),
+        (
+            "Vehicles",
+            "Police jeep (Mahindra Bolero)",
+            "Confirmed",
+            "Picture vehicle with removable insignia.",
+            "Kerala Picture Vehicles, +91 98470 62222",
+        ),
+        (
+            "Animals",
+            "Kannan (dog)",
+            "Confirmed",
+            "Two trained Indian pariah dogs, Kannan A (hero) and Kannan B (double).",
+            "Benny Thomas, wrangler",
+        ),
+        (
+            "Special Effects",
+            "Rain towers and wind machines",
+            "Confirmed",
+            "Four towers, two Ritter fans. Fresh water tanker only.",
+            "Dileep Raj SFX",
+        ),
     ];
     for (cat, name, status, desc, contact) in hero {
         let item = g.ok(
@@ -179,20 +298,35 @@ pub fn breakdown(g: &Gold, ctx: &mut Ctx) {
         ctx.catalog.insert(name.to_string(), g.id(&item));
     }
     let reel = ctx.catalog["Quarter-inch reel 14-11-1999"].clone();
-    g.ok("catalog.add_alias", json!({ "id": reel, "alias": "the reel" }));
+    g.ok(
+        "catalog.add_alias",
+        json!({ "id": reel, "alias": "the reel" }),
+    );
     let tmp_alias = g.ok("catalog.add_alias", json!({ "id": reel, "alias": "tape" }));
-    if let Some(a) = arr(&tmp_alias["aliases"]).iter().find(|a| s(&a["alias"]) == "tape" || s(&a["name"]) == "tape") {
+    if let Some(a) = arr(&tmp_alias["aliases"])
+        .iter()
+        .find(|a| s(&a["alias"]) == "tape" || s(&a["name"]) == "tape")
+    {
         g.ok("catalog.remove_alias", json!({ "id": a["id"] }));
     }
-    g.ok("catalog.set_image", json!({ "id": reel, "path": ctx.media.path("prop-reel.png") }));
+    g.ok(
+        "catalog.set_image",
+        json!({ "id": reel, "path": ctx.media.path("prop-reel.png") }),
+    );
     g.ok("catalog.set_image", json!({ "id": ctx.catalog["Ambassador car (Joe's)"], "path": ctx.media.path("vehicle-ambassador.png") }));
     g.ok(
         "catalog.update",
         json!({ "id": ctx.catalog["Nagra IV-S reel-to-reel recorder"], "status": "Confirmed", "notes": "Booked 2027-01-04. Insured in transit." }),
     );
-    g.ok("catalog.find_matches", json!({ "category": "Props", "name": "Quarter inch reel", "excludeId": null }));
+    g.ok(
+        "catalog.find_matches",
+        json!({ "category": "Props", "name": "Quarter inch reel", "excludeId": null }),
+    );
     // A stray duplicate created by the art department and removed.
-    let stray = g.id(&g.ok("catalog.create", json!({ "category": "Props", "name": "Reel (old label)", "status": "Not Required" })));
+    let stray = g.id(&g.ok(
+        "catalog.create",
+        json!({ "category": "Props", "name": "Reel (old label)", "status": "Not Required" }),
+    ));
     g.ok("catalog.delete", json!({ "id": stray }));
 
     // The rejected Alappuzha station was pencilled in for two scenes; replaced later.
@@ -217,8 +351,15 @@ pub fn breakdown(g: &Gold, ctx: &mut Ctx) {
                 // Set names from the headings are not taken: the practical location is added
                 // below, with the set name in its notes.
                 let wanted = cat == "Cast"
-                    || (cat != "Location / Set" && mine.iter().any(|e| s(&e["category"]) == cat && s(&e["name"]).to_lowercase() == name));
-                if wanted { accept.push(sug["id"].clone()) } else { reject.push(sug["id"].clone()) }
+                    || (cat != "Location / Set"
+                        && mine.iter().any(|e| {
+                            s(&e["category"]) == cat && s(&e["name"]).to_lowercase() == name
+                        }));
+                if wanted {
+                    accept.push(sug["id"].clone())
+                } else {
+                    reject.push(sug["id"].clone())
+                }
             }
         }
         if !accept.is_empty() {
@@ -231,11 +372,22 @@ pub fn breakdown(g: &Gold, ctx: &mut Ctx) {
         }
         // Production location for the scene (the Location / Set entry links the location).
         if let Some(key) = location_key_for(ctx, n) {
-            let loc_name = arr(&ctx.production["locations"]).iter().find(|l| s(&l["key"]) == key).map(|l| s(&l["name"])).unwrap_or_default();
-            let set_note = mine.iter().find(|e| s(&e["category"]) == "Location / Set").map(|e| s(&e["name"]));
+            let loc_name = arr(&ctx.production["locations"])
+                .iter()
+                .find(|l| s(&l["key"]) == key)
+                .map(|l| s(&l["name"]))
+                .unwrap_or_default();
+            let set_note = mine
+                .iter()
+                .find(|e| s(&e["category"]) == "Location / Set")
+                .map(|e| s(&e["name"]));
             let use_coast = (n == 2 || n == 11) && !coast.is_empty();
             let name = if use_coast {
-                arr(&ctx.production["locations"]).iter().find(|l| s(&l["key"]) == "coastguard").map(|l| s(&l["name"])).unwrap_or_default()
+                arr(&ctx.production["locations"])
+                    .iter()
+                    .find(|l| s(&l["key"]) == "coastguard")
+                    .map(|l| s(&l["name"]))
+                    .unwrap_or_default()
             } else {
                 loc_name
             };
@@ -245,7 +397,9 @@ pub fn breakdown(g: &Gold, ctx: &mut Ctx) {
                 json!({ "sceneId": scene, "category": "Location / Set", "name": name, "notes": set_note, "catalog": catalog }),
             );
             if let Some(cid) = r["catalogItemId"].as_str() {
-                ctx.catalog.entry(name.clone()).or_insert_with(|| cid.to_string());
+                ctx.catalog
+                    .entry(name.clone())
+                    .or_insert_with(|| cid.to_string());
             }
             if !r.is_null() {
                 added_total += 1;
@@ -254,7 +408,11 @@ pub fn breakdown(g: &Gold, ctx: &mut Ctx) {
         let current = g.ok("breakdown.scene", json!({ "sceneId": scene }));
         let have: Vec<(String, String)> = arr(&current["groups"])
             .iter()
-            .flat_map(|grp| arr(&grp["confirmed"]).into_iter().map(move |e| (s(&grp["category"]), s(&e["name"]).to_lowercase())))
+            .flat_map(|grp| {
+                arr(&grp["confirmed"])
+                    .into_iter()
+                    .map(move |e| (s(&grp["category"]), s(&e["name"]).to_lowercase()))
+            })
             .collect();
         for e in &mine {
             let cat = s(&e["category"]);
@@ -262,7 +420,10 @@ pub fn breakdown(g: &Gold, ctx: &mut Ctx) {
             if cat == "Location / Set" {
                 continue;
             }
-            if have.iter().any(|(c, nm)| *c == cat && *nm == name.to_lowercase()) {
+            if have
+                .iter()
+                .any(|(c, nm)| *c == cat && *nm == name.to_lowercase())
+            {
                 continue;
             }
             let catalog = catalog_choice(g, ctx, &cat, &name);
@@ -271,30 +432,39 @@ pub fn breakdown(g: &Gold, ctx: &mut Ctx) {
                 json!({ "sceneId": scene, "category": cat, "name": name, "notes": e["notes"], "catalog": catalog }),
             );
             if let Some(cid) = r["catalogItemId"].as_str() {
-                ctx.catalog.entry(name.clone()).or_insert_with(|| cid.to_string());
+                ctx.catalog
+                    .entry(name.clone())
+                    .or_insert_with(|| cid.to_string());
             }
             if !r.is_null() {
                 added_total += 1;
             }
         }
         g.ok("breakdown.mark_reviewed", json!({ "sceneId": scene }));
-        g.ok("breakdown.set_complete", json!({ "sceneId": scene, "complete": true }));
+        g.ok(
+            "breakdown.set_complete",
+            json!({ "sceneId": scene, "complete": true }),
+        );
     }
     ctx.facts.insert("breakdownTotals".into(), json!({ "acceptedSuggestions": accepted_total, "rejectedSuggestions": rejected_total, "addedByHand": added_total }));
 
     // A tagged span: the reel in the scene 11 action text.
     let doc = crate::phases::screenplay::document(g, &ctx.id("draftCurrent"));
     let s11 = ctx.scenes[&11].clone();
-    if let Some((el, start, end)) = arr(&doc["scenes"]).iter().find(|sc| s(&sc["id"]) == s11).and_then(|sc| {
-        arr(&sc["elements"]).into_iter().find_map(|e| {
-            let t = s(&e["text"]);
-            let lower = t.to_lowercase();
-            lower.find("reel").map(|i| {
-                let start = t[..i].encode_utf16().count();
-                (s(&e["id"]), start, start + 4)
+    if let Some((el, start, end)) = arr(&doc["scenes"])
+        .iter()
+        .find(|sc| s(&sc["id"]) == s11)
+        .and_then(|sc| {
+            arr(&sc["elements"]).into_iter().find_map(|e| {
+                let t = s(&e["text"]);
+                let lower = t.to_lowercase();
+                lower.find("reel").map(|i| {
+                    let start = t[..i].encode_utf16().count();
+                    (s(&e["id"]), start, start + 4)
+                })
             })
         })
-    }) {
+    {
         let tagged = g.ok(
             "breakdown.add_element",
             json!({ "sceneId": s11, "category": "Props", "name": "Biscuit box (reel case)", "notes": "The reel is found inside a Britannia-style biscuit box; props to clear the brand.",
@@ -316,48 +486,104 @@ pub fn breakdown(g: &Gold, ctx: &mut Ctx) {
         "breakdown.add_element",
         json!({ "sceneId": s4, "category": "Props", "name": "Portable CD player", "notes": "Replaced by the Walkman: the cassette is the point.", "catalog": { "mode": "new", "catalogItemId": null } }),
     );
-    g.ok("breakdown.set_archived", json!({ "id": g.id(&old), "archived": true }));
+    g.ok(
+        "breakdown.set_archived",
+        json!({ "id": g.id(&old), "archived": true }),
+    );
 
     // Reuse: rain and wind for both storm scenes, and the reel wherever it plays.
     let s23 = ctx.scenes[&23].clone();
     let s24 = ctx.scenes[&24].clone();
     g.ok("breakdown.quick_reuse", json!({ "sceneId": s24 }));
     g.ok("breakdown.reuse", json!({ "sceneIds": [s23, s24], "catalogItemIds": [ctx.catalog["Rain towers and wind machines"]] }));
-    let reel_scenes: Vec<String> = [11u32, 13, 14, 16, 33, 39, 40].iter().filter_map(|n| ctx.scenes.get(n).cloned()).collect();
-    g.ok("breakdown.reuse", json!({ "sceneIds": reel_scenes, "catalogItemIds": [reel] }));
+    let reel_scenes: Vec<String> = [11u32, 13, 14, 16, 33, 39, 40]
+        .iter()
+        .filter_map(|n| ctx.scenes.get(n).cloned())
+        .collect();
+    g.ok(
+        "breakdown.reuse",
+        json!({ "sceneIds": reel_scenes, "catalogItemIds": [reel] }),
+    );
 
     // The Walkman was generic in early scenes; the hero model replaces it in scene 4.
-    let generic = g.id(&g.ok("catalog.create", json!({ "category": "Sound", "name": "Cassette player", "status": "Required" })));
+    let generic = g.id(&g.ok(
+        "catalog.create",
+        json!({ "category": "Sound", "name": "Cassette player", "status": "Required" }),
+    ));
     g.ok("breakdown.add_element", json!({ "sceneId": s4, "category": "Sound", "name": "Cassette player", "catalog": { "mode": "existing", "catalogItemId": generic } }));
     let walkman = g.id(&g.ok(
         "catalog.create",
         json!({ "category": "Sound", "name": "Sony Walkman WM-10 with Mariamma cassette", "status": "Confirmed", "description": "Period-correct. The cassette label reads Weather, Nov 98." }),
     ));
-    g.ok("catalog.replace_in_scenes", json!({ "fromId": generic, "toId": walkman, "sceneIds": [s4] }));
-    g.ok("catalog.set_archived", json!({ "id": generic, "archived": true }));
+    g.ok(
+        "catalog.replace_in_scenes",
+        json!({ "fromId": generic, "toId": walkman, "sceneIds": [s4] }),
+    );
+    g.ok(
+        "catalog.set_archived",
+        json!({ "id": generic, "archived": true }),
+    );
 
     // The Alappuzha station is rejected; scenes 2 and 11 move to the Vypin station.
     if !coast.is_empty() {
-        let ids: Vec<String> = [2u32, 11].iter().filter_map(|n| ctx.scenes.get(n).cloned()).collect();
+        let ids: Vec<String> = [2u32, 11]
+            .iter()
+            .filter_map(|n| ctx.scenes.get(n).cloned())
+            .collect();
         g.ok("locations.replace", json!({ "locationId": coast, "replacementId": ctx.locations["station"], "sceneIds": ids }));
-        g.ok("locations.set_archived", json!({ "id": coast, "archived": true }));
+        g.ok(
+            "locations.set_archived",
+            json!({ "id": coast, "archived": true }),
+        );
     }
 
-    g.ok("catalog.list", json!({ "category": null, "search": null, "includeArchived": true }));
-    g.ok("catalog.list", json!({ "category": "Vehicles", "search": null, "includeArchived": false }));
+    g.ok(
+        "catalog.list",
+        json!({ "category": null, "search": null, "includeArchived": true }),
+    );
+    g.ok(
+        "catalog.list",
+        json!({ "category": "Vehicles", "search": null, "includeArchived": false }),
+    );
     g.ok("catalog.get", json!({ "id": reel }));
-    g.ok("production.references", json!({ "kind": "catalog_item", "id": reel }));
-    g.ok("production.references", json!({ "kind": "location", "id": ctx.locations["station"] }));
-    g.ok("production.references", json!({ "kind": "cast_member", "id": ctx.cast["ANJALI"] }));
-    g.ok("production.references", json!({ "kind": "crew_member", "id": ctx.crew["Director of Photography"] }));
-    for f in ["all", "unreviewed", "suggested", "missing", "needsReview", "complete", "incomplete"] {
+    g.ok(
+        "production.references",
+        json!({ "kind": "catalog_item", "id": reel }),
+    );
+    g.ok(
+        "production.references",
+        json!({ "kind": "location", "id": ctx.locations["station"] }),
+    );
+    g.ok(
+        "production.references",
+        json!({ "kind": "cast_member", "id": ctx.cast["ANJALI"] }),
+    );
+    g.ok(
+        "production.references",
+        json!({ "kind": "crew_member", "id": ctx.crew["Director of Photography"] }),
+    );
+    for f in [
+        "all",
+        "unreviewed",
+        "suggested",
+        "missing",
+        "needsReview",
+        "complete",
+        "incomplete",
+    ] {
         g.ok("breakdown.scenes", json!({ "filter": f }));
     }
     g.ok("breakdown.scenes", json!({ "category": "VFX" }));
     g.ok("breakdown.scenes", json!({ "catalogItemId": reel }));
-    g.ok("breakdown.scene_changes", json!({ "sceneId": ctx.scenes[&24] }));
+    g.ok(
+        "breakdown.scene_changes",
+        json!({ "sceneId": ctx.scenes[&24] }),
+    );
     g.ok("production.overview", json!({}));
-    g.ok("visual.scene_characters", json!({ "sceneId": ctx.scenes[&39] }));
+    g.ok(
+        "visual.scene_characters",
+        json!({ "sceneId": ctx.scenes[&39] }),
+    );
 }
 
 fn null_str() -> &'static str {
@@ -370,8 +596,14 @@ fn catalog_choice(g: &Gold, ctx: &Ctx, category: &str, name: &str) -> Value {
     if let Some(id) = ctx.catalog.get(name) {
         return json!({ "mode": "existing", "catalogItemId": id });
     }
-    let matches = g.ok("catalog.find_matches", json!({ "category": category, "name": name, "excludeId": null }));
-    match arr(&matches).into_iter().find(|m| m["exact"] == json!(true)) {
+    let matches = g.ok(
+        "catalog.find_matches",
+        json!({ "category": category, "name": name, "excludeId": null }),
+    );
+    match arr(&matches)
+        .into_iter()
+        .find(|m| m["exact"] == json!(true))
+    {
         Some(m) => json!({ "mode": "existing", "catalogItemId": m["id"] }),
         None => json!({ "mode": "new", "catalogItemId": null }),
     }
@@ -395,7 +627,10 @@ pub fn budget(g: &Gold, ctx: &mut Ctx) {
         json!({ "id": id, "currency": b["currency"], "plannedTotal": to_paise(&b["plannedTotal"]), "contingencyMode": b["contingencyMode"],
                 "contingencyValue": b["contingencyValue"].as_i64().unwrap_or(0) * 100, "notes": b["notes"], "expectedRev": null }),
     );
-    let v1 = g.id(&g.ok("budget.save_snapshot", json!({ "id": id, "label": "Locked budget v1, 18 December 2026" })));
+    let v1 = g.id(&g.ok(
+        "budget.save_snapshot",
+        json!({ "id": id, "label": "Locked budget v1, 18 December 2026" }),
+    ));
     ctx.set("budgetSnapshotV1", v1.clone());
     // Prep spending since the lock.
     let cam_desc = "Camera: Alexa 35 package with anamorphic lenses, 16 days";
@@ -413,7 +648,10 @@ pub fn budget(g: &Gold, ctx: &mut Ctx) {
     g.ok("budget.delete_line", json!({ "id": mistake }));
     g.ok("budget.mark_reviewed", json!({ "id": id }));
     // A rough snapshot made by mistake and deleted.
-    let rough = g.id(&g.ok("budget.save_snapshot", json!({ "id": id, "label": "rough" })));
+    let rough = g.id(&g.ok(
+        "budget.save_snapshot",
+        json!({ "id": id, "label": "rough" }),
+    ));
     g.ok("budget.delete_snapshot", json!({ "id": rough }));
     g.ok("budget.get_snapshot", json!({ "id": v1 }));
     let view = g.ok("budget.get", json!({}));
@@ -427,7 +665,10 @@ pub fn after_revision(g: &Gold, ctx: &mut Ctx) {
     g.phase("Production update to the blue pages");
     let blue = ctx.id("draftBlue");
     g.ok("production.preview_update", json!({ "draftId": blue }));
-    g.ok("production.apply_update", json!({ "draftId": blue, "reason": "Blue Revision, 5 January 2027." }));
+    g.ok(
+        "production.apply_update",
+        json!({ "draftId": blue, "reason": "Blue Revision, 5 January 2027." }),
+    );
     ctx.set("draftCurrent", blue.clone());
     let old_lineage = ctx.lineage.clone();
     crate::phases::screenplay::map_scenes(g, ctx);
@@ -464,7 +705,10 @@ pub fn after_revision(g: &Gold, ctx: &mut Ctx) {
         );
         g.ok("breakdown.add_element", json!({ "sceneId": new, "category": "Special Effects", "name": "Rain towers and wind machines", "catalog": { "mode": "existing", "catalogItemId": ctx.catalog["Rain towers and wind machines"] } }));
         g.ok("breakdown.mark_reviewed", json!({ "sceneId": new }));
-        g.ok("breakdown.set_complete", json!({ "sceneId": new, "complete": true }));
+        g.ok(
+            "breakdown.set_complete",
+            json!({ "sceneId": new, "complete": true }),
+        );
     }
     let changed = g.ok("breakdown.scenes", json!({ "filter": "needsReview" }));
     for sc in arr(&changed["scenes"]) {

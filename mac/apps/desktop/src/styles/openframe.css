@@ -199,7 +199,7 @@ kbd{font-family:"Segoe UI",sans-serif;font-size:11px;border:1px solid var(--line
 .fic.pdf{background:var(--red-soft);color:var(--file-pdf-ink)}.fic.doc{background:var(--blue-soft);color:var(--blue-t)}.fic.aud{background:var(--purple-soft);color:var(--purple-t)}.fic.vid{background:var(--green-soft);color:var(--green-t)}.fic.url{background:var(--teal-soft);color:var(--teal-t)}
 .wave{display:flex;align-items:center;gap:2px;height:26px}
 .wave i{display:block;width:3px;background:var(--purple);border-radius:2px}
-/* story board */
+/* beat board */
 .board{display:flex;gap:14px;height:100%;align-items:flex-start;overflow:hidden}
 .actband{flex:none;background:var(--surface3);border:1px solid var(--line2);border-radius:12px;padding:8px 8px 10px;min-width:220px}
 .actband .ah{display:flex;align-items:center;gap:6px;padding:2px 4px 8px;font-weight:800;font-size:12.5px;text-transform:uppercase;letter-spacing:.4px}
@@ -268,9 +268,9 @@ kbd{font-family:"Segoe UI",sans-serif;font-size:11px;border:1px solid var(--line
 .strip .lc{font-weight:600;min-width:140px}
 .strip .syn{color:#333;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis} /* fixed colour: stripboard day and night convention */
 .strip .pg{font-size:11px;color:#333;width:34px;text-align:right} /* fixed colour: stripboard day and night convention */
-.strip.ied{background:#fff3b0}.strip.ien{background:#bfd7f5}.strip.ied2{background:#fff3b0} /* fixed colour: stripboard day and night convention */
-.strip.xd{background:#f7f0b5;border-color:#d9c85a}.strip.xn{background:#c9dcf7;border-color:#8fb0e3} /* fixed colour: stripboard day and night convention */
-.strip.id{background:#ffffff;border-color:#bbb}.strip.in{background:#dfe6ec;border-color:#9fb0c2} /* fixed colour: stripboard day and night convention */
+.strip.ied{background:#fff3b0}.strip.ien{background:#cdeec4}.strip.ied2{background:#fff3b0} /* fixed colour: stripboard day and night convention */
+.strip.xd{background:#f7f0b5;border-color:#d9c85a}.strip.xn{background:#cdeec4;border-color:#7cbf6e} /* fixed colour: stripboard day and night convention */
+.strip.id{background:#ffffff;border-color:#bbb}.strip.in{background:#cfe5f7;border-color:#86b4dc} /* fixed colour: stripboard day and night convention */
 .strip.warn{outline:2px solid var(--red);outline-offset:1px}
 .strip .cast{display:flex;gap:3px}
 .strip .cast i{font-style:normal;background:#0002;border-radius:9px;padding:0 5px;font-size:10px;font-weight:700} /* fixed colour: stripboard day and night convention */

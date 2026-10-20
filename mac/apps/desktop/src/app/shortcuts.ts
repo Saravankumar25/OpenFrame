@@ -41,7 +41,7 @@ export const SHORTCUT_COMMANDS: ShortcutCommand[] = [
   { id: "app.save", label: "Save now", group: "General", scope: "project", defaults: ["Mod+S"], route: "Project menu: Save now" },
   { id: "app.undo", label: "Undo", group: "General", scope: "project", defaults: ["Mod+Z"], route: "Undo button at the top" },
   { id: "app.redo", label: "Redo", group: "General", scope: "project", defaults: ["Mod+Y", "Mod+Shift+Z"], route: "Redo button at the top" },
-  { id: "app.new_scene_card", label: "New Scene Card", group: "General", scope: "project", defaults: ["Mod+N"], route: "Story Board: Add" },
+  { id: "app.new_scene_card", label: "New Scene Card", group: "General", scope: "project", defaults: ["Mod+N"], route: "Beat Board: Add" },
   { id: "app.quick_capture", label: "Quick Capture (new idea)", group: "General", scope: "project", defaults: ["Mod+Shift+N"], route: "Idea Vault: New" },
   { id: "home.new_project", label: "New Project", group: "Project list", scope: "home", defaults: ["Mod+N"], route: "Home: New Project button" },
   { id: "home.open_project", label: "Open Project", group: "Project list", scope: "home", defaults: ["Mod+O"], route: "Home: Open button" },

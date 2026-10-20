@@ -39,7 +39,7 @@ describe("story", () => {
     await step("build", async () => {
       await firstLaunchProject(browser, "Paper Boats");
       await openWorkspace(browser, "Story");
-      await waitForText(browser, "Your Story Board is empty.");
+      await waitForText(browser, "Your Beat Board is empty.");
       await click(browser, "Add Act");
       await (await browser.$('//input[@aria-label="Act title"]')).setValue("Act One");
       await browser.keys("Enter");
@@ -58,7 +58,8 @@ describe("story", () => {
       await menuItem(browser, "Scene Card");
       await (await browser.$('//textarea[@aria-label="Short description"]')).setValue(CARD_B);
       await browser.keys("Enter");
-      await browser.waitUntil(async () => (await cards()).length === 2, { timeout: 10_000, timeoutMsg: "second card not created" });
+      // The new card renders before its description arrives (seen on the installed build), so wait for the text too.
+      await browser.waitUntil(async () => (await cards()).join("|") === [CARD_A, CARD_B].join("|"), { timeout: 10_000, timeoutMsg: "second card not created" });
       assert.deepEqual(await cards(), [CARD_A, CARD_B]);
       await assertQuiet(browser, "story build");
     });

@@ -10,7 +10,7 @@
 //!   what must not reach another person (other members' private notes, undo history). Each table
 //!   says whether it is kept, reduced to the exporting user's rows, emptied, or handled by
 //!   dedicated code, always with the reason.
-//! - **Exchange packages** (review, Story Board, breakdown, shots, schedule, call sheet and
+//! - **Exchange packages** (review, Beat Board, breakdown, shots, schedule, call sheet and
 //!   response): an explicit subset. Each table says which columns the exchange writer
 //!   (`exchange.rs`) carries and why every other column is left out, or why the table is not
 //!   carried at all.
@@ -87,25 +87,13 @@ pub const BOOKKEEPING: &[(&str, &str)] = &[
 const ALL_EXCHANGE: &[PackageType] = &[
     PackageType::ScriptReview,
     PackageType::Story,
-    PackageType::Breakdown,
-    PackageType::Shots,
-    PackageType::Schedule,
-    PackageType::CallReview,
     PackageType::Response,
 ];
 const SCRIPT: &[PackageType] = &[PackageType::ScriptReview, PackageType::Response];
-const SCENE_CONTEXT: &[PackageType] = &[
-    PackageType::ScriptReview,
-    PackageType::Response,
-    PackageType::Breakdown,
-    PackageType::Shots,
-    PackageType::Schedule,
-];
 const STORY: &[PackageType] = &[PackageType::Story];
-const BREAKDOWN: &[PackageType] = &[PackageType::Breakdown];
-const SHOTS: &[PackageType] = &[PackageType::Shots];
-const SCHEDULE: &[PackageType] = &[PackageType::Schedule];
-const CALL: &[PackageType] = &[PackageType::CallReview];
+/// Owner change list, 2026-10-19: these package types are no longer exported. Packages made earlier still import.
+const REMOVED_PACKAGES: &str =
+    "the Breakdown, Shot List, Schedule and Call Sheet Review packages are no longer exported";
 
 // Reasons shared by several tables.
 const LOCAL_HISTORY: &str = "local history of this project; a receiving project keeps its own";
@@ -114,7 +102,6 @@ const DERIVED_INDEX: &str = "derived search index; rebuilt from project content"
 const NOT_REVIEWED: &str =
     "not part of any exchange package in this format; travels in Backup and Full Project Packages";
 const AI_HISTORY: &str = "Offline AI history stays on the computer that made it";
-const TIMELINE: &str = "day times are not part of a schedule package in this format; they travel in Backup and Full Project Packages";
 const PACKAGE_STATE: &str = "records of packages this project received; meaningless elsewhere";
 
 const fn kept() -> Transfer {
@@ -329,7 +316,7 @@ pub const COVERAGE: &[TableCoverage] = &[
             left_out: &[
                 (
                     "episode_id",
-                    "episodes are not part of a Story Board package in this format",
+                    "episodes are not part of a Beat Board package in this format",
                 ),
                 ("collapsed", "a display preference of the sender"),
             ],
@@ -344,7 +331,7 @@ pub const COVERAGE: &[TableCoverage] = &[
             left_out: &[
                 (
                     "episode_id",
-                    "episodes are not part of a Story Board package in this format",
+                    "episodes are not part of a Beat Board package in this format",
                 ),
                 ("collapsed", "a display preference of the sender"),
             ],
@@ -368,7 +355,7 @@ pub const COVERAGE: &[TableCoverage] = &[
             left_out: &[
                 (
                     "episode_id",
-                    "episodes are not part of a Story Board package in this format",
+                    "episodes are not part of a Beat Board package in this format",
                 ),
                 (
                     "state",
@@ -409,7 +396,7 @@ pub const COVERAGE: &[TableCoverage] = &[
             left_out: &[
                 (
                     "episode_id",
-                    "episodes are not part of a Story Board package in this format",
+                    "episodes are not part of a Beat Board package in this format",
                 ),
                 ("screenplay_scene_id", "a link into the sender's screenplay"),
                 ("source_beat_id", "a link inside the sender's board"),
@@ -476,7 +463,7 @@ pub const COVERAGE: &[TableCoverage] = &[
         "screenplay_draft",
         kept(),
         Exchange::Carried {
-            packages: SCENE_CONTEXT,
+            packages: SCRIPT,
             columns: &["id", "screenplay_id", "name", "status", "rev"],
             left_out: &[
                 ("note", "draft notes are the author's working notes"),
@@ -506,7 +493,7 @@ pub const COVERAGE: &[TableCoverage] = &[
         "screenplay_scene",
         kept(),
         Exchange::Carried {
-            packages: SCENE_CONTEXT,
+            packages: SCRIPT,
             columns: &[
                 "id",
                 "draft_id",
@@ -529,7 +516,7 @@ pub const COVERAGE: &[TableCoverage] = &[
                 ),
                 (
                     "source_scene_card_id",
-                    "a link into the sender's Story Board",
+                    "a link into the sender's Beat Board",
                 ),
                 (
                     "omitted",
@@ -589,20 +576,7 @@ pub const COVERAGE: &[TableCoverage] = &[
     ),
     t("sys_screenplay_sync", kept(), not_carried(SYSTEM_STATE)),
     // 0005 production
-    t(
-        "production_source",
-        kept(),
-        Exchange::Carried {
-            packages: &[PackageType::Breakdown, PackageType::Shots],
-            columns: &["id", "draft_id", "active", "selected_at"],
-            left_out: &[
-                ("selection_reason", "the sender's working note"),
-                ("selected_by", "the sender's member id"),
-                ("previous_source_id", "local history"),
-                ("rev", "the draft revision identifies the source version"),
-            ],
-        },
-    ),
+    t("production_source", kept(), not_carried(REMOVED_PACKAGES)),
     t(
         "production_scene_state",
         kept(),
@@ -610,74 +584,9 @@ pub const COVERAGE: &[TableCoverage] = &[
     ),
     t("location", kept(), not_carried(NOT_REVIEWED)),
     t("location_photo", kept(), not_carried(NOT_REVIEWED)),
-    t(
-        "catalog_item",
-        kept(),
-        Exchange::Carried {
-            packages: BREAKDOWN,
-            columns: &["id", "name"],
-            left_out: &[
-                ("category", "the breakdown element carries its own category"),
-                (
-                    "description",
-                    "catalog detail is not part of a breakdown package in this format",
-                ),
-                ("image_asset_id", "catalog images are not sent"),
-                (
-                    "notes",
-                    "catalog detail is not part of a breakdown package in this format",
-                ),
-                (
-                    "contact",
-                    "contact details never leave the project in an exchange package",
-                ),
-                (
-                    "status",
-                    "catalog detail is not part of a breakdown package in this format",
-                ),
-                ("character_id", "a link inside the sender's project"),
-                ("location_id", "a link inside the sender's project"),
-                ("archived", "archived items are a local view choice"),
-                (
-                    "rev",
-                    "the element revision identifies the reviewed version",
-                ),
-            ],
-        },
-    ),
+    t("catalog_item", kept(), not_carried(REMOVED_PACKAGES)),
     t("catalog_alias", kept(), not_carried(NOT_REVIEWED)),
-    t(
-        "breakdown_element",
-        kept(),
-        Exchange::Carried {
-            packages: BREAKDOWN,
-            columns: &[
-                "id",
-                "source_id",
-                "scene_id",
-                "scene_lineage_id",
-                "category",
-                "catalog_item_id",
-                "display_name",
-                "notes",
-                "confirmation_state",
-                "rev",
-            ],
-            left_out: &[
-                ("source_evidence", "detection evidence is local"),
-                ("origin", "detection origin is local"),
-                (
-                    "span_element_id",
-                    "text spans point into the sender's draft",
-                ),
-                ("span_start", "text spans point into the sender's draft"),
-                ("span_end", "text spans point into the sender's draft"),
-                ("confidence", "detection confidence is local"),
-                ("archived", "archived elements are not sent"),
-                ("catalog_removed_at", "local catalog history"),
-            ],
-        },
-    ),
+    t("breakdown_element", kept(), not_carried(REMOVED_PACKAGES)),
     t(
         "breakdown_dismissed",
         kept(),
@@ -706,193 +615,18 @@ pub const COVERAGE: &[TableCoverage] = &[
     ),
     t("storyboard", kept(), not_carried(NOT_REVIEWED)),
     t("storyboard_panel", kept(), not_carried(NOT_REVIEWED)),
-    t(
-        "shot",
-        kept(),
-        Exchange::Carried {
-            packages: SHOTS,
-            columns: &[
-                "id",
-                "scene_id",
-                "scene_lineage_id",
-                "position",
-                "description",
-                "size",
-                "movement",
-                "angle",
-                "lens",
-                "camera_notes",
-                "characters_json",
-                "sound_note",
-                "rev",
-            ],
-            left_out: &[
-                (
-                    "scene_heading",
-                    "the scene reference in the package carries the heading",
-                ),
-                ("scene_hash", "recomputed against the receiving project"),
-                ("needs_review", "recomputed against the receiving project"),
-                (
-                    "reference_asset_id",
-                    "reference images are not part of a shot package in this format",
-                ),
-                ("storyboard_panel_id", "a link inside the sender's project"),
-            ],
-        },
-    ),
+    t("shot", kept(), not_carried(REMOVED_PACKAGES)),
     // 0007 schedule
-    t(
-        "shooting_schedule",
-        kept(),
-        Exchange::Carried {
-            packages: &[PackageType::Schedule, PackageType::CallReview],
-            columns: &["id", "name"],
-            left_out: &[
-                ("source_id", "the production source is the sender's choice"),
-                ("status", "schedule status is local"),
-                ("strict_validation", "a local validation setting"),
-                ("day_duration_minutes", "a local planning setting"),
-                (
-                    "dood_code_style",
-                    "a display choice for the Day Out of Days report of each project",
-                ),
-                (
-                    "rev",
-                    "day and strip revisions identify the reviewed version",
-                ),
-            ],
-        },
-    ),
-    t(
-        "shooting_day",
-        kept(),
-        Exchange::Carried {
-            packages: SCHEDULE,
-            columns: &[
-                "id",
-                "schedule_id",
-                "position",
-                "shoot_date",
-                "notes",
-                "planned_minutes",
-                "is_off_day",
-                "rev",
-            ],
-            left_out: &[
-                ("crew_call", TIMELINE),
-                ("shooting_start", TIMELINE),
-                ("target_wrap", TIMELINE),
-            ],
-        },
-    ),
-    t(
-        "schedule_strip",
-        kept(),
-        Exchange::Carried {
-            packages: SCHEDULE,
-            columns: &[
-                "id",
-                "schedule_id",
-                "day_id",
-                "scene_id",
-                "scene_lineage_id",
-                "position",
-                "source_heading",
-                "archived",
-                "rev",
-            ],
-            left_out: &[
-                (
-                    "start_minutes",
-                    "pinned start times are not part of a schedule package in this format",
-                ),
-                (
-                    "estimated_minutes",
-                    "timing estimates are not part of a schedule package in this format",
-                ),
-                (
-                    "page_eighths_override",
-                    "page counts are recomputed in the receiving project",
-                ),
-                (
-                    "source_text_hash",
-                    "recomputed against the receiving project",
-                ),
-                (
-                    "source_page_eighths",
-                    "page counts are recomputed in the receiving project",
-                ),
-                ("source_state", "recomputed against the receiving project"),
-                ("change_kinds", "recomputed against the receiving project"),
-                (
-                    "notes",
-                    "strip notes are not part of a schedule package in this format",
-                ),
-            ],
-        },
-    ),
-    t(
-        "schedule_marker",
-        kept(),
-        Exchange::Carried {
-            packages: SCHEDULE,
-            columns: &[
-                "id",
-                "day_id",
-                "marker_type",
-                "label",
-                "at_time",
-                "duration_minutes",
-                "notes",
-                "position",
-            ],
-            left_out: &[(
-                "rev",
-                "markers are matched by id; the day revision detects staleness",
-            )],
-        },
-    ),
+    t("shooting_schedule", kept(), not_carried(REMOVED_PACKAGES)),
+    t("shooting_day", kept(), not_carried(REMOVED_PACKAGES)),
+    t("schedule_strip", kept(), not_carried(REMOVED_PACKAGES)),
+    t("schedule_marker", kept(), not_carried(REMOVED_PACKAGES)),
     t(
         "schedule_warning_ack",
         kept(),
         not_carried("warning decisions are local"),
     ),
-    t(
-        "call_sheet",
-        kept(),
-        Exchange::Carried {
-            packages: CALL,
-            columns: &[
-                "id",
-                "schedule_id",
-                "shoot_day_id",
-                "revision",
-                "title",
-                "status",
-                "document_json",
-                "rev",
-            ],
-            left_out: &[
-                ("needs_refresh", "recomputed against the receiving project"),
-                (
-                    "source_snapshot_json",
-                    "the source snapshot is internal to the sender",
-                ),
-                (
-                    "source_fingerprint",
-                    "recomputed against the receiving project",
-                ),
-                ("source_captured_at", "internal to the sender"),
-                ("snapshot_id", "a link inside the sender's project"),
-                ("finalized_at", "issue history is local"),
-                ("finalized_by", "issue history is local"),
-                ("issued_at", "issue history is local"),
-                ("superseded_by", "issue history is local"),
-                ("previous_id", "issue history is local"),
-            ],
-        },
-    ),
+    t("call_sheet", kept(), not_carried(REMOVED_PACKAGES)),
     t("side", kept(), not_carried(NOT_REVIEWED)),
     t("production_report", kept(), not_carried(NOT_REVIEWED)),
     // 0008 AI
@@ -985,6 +719,14 @@ pub const COVERAGE: &[TableCoverage] = &[
         kept(),
         not_carried(
             "Day Out of Days corrections are the sender's own edits to a derived report; they travel in Backup and Full Project Packages",
+        ),
+    ),
+    // 0017 the Story page
+    t(
+        "story_page",
+        kept(),
+        not_carried(
+            "the Story page is the writer's own free text; it travels in Backup and Full Project Packages",
         ),
     ),
 ];

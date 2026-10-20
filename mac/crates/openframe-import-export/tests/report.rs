@@ -218,7 +218,7 @@ fn strict_pdf_names_unprintable_characters_and_suggests_an_alternative() {
     );
 }
 
-/// ADR-0016 in every report PDF (story board, call sheet, schedule, budget and other
+/// ADR-0016 in every report PDF (beat board, call sheet, schedule, budget and other
 /// document exports all render through `Document`): Telugu, Hindi, Tamil, Malayalam and
 /// Kannada text is printed with embedded, shaped fonts next to Helvetica, the exact text is
 /// recoverable from the PDF, wrapping keeps clusters whole, and the output is deterministic.

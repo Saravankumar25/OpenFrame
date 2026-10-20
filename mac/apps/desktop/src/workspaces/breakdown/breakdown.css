@@ -31,3 +31,13 @@
 .bdw .tagmenu button:hover, .bdw .tagmenu button:focus-visible { background: var(--accent-soft); }
 
 .bdw .queue { flex: 1; overflow: auto; padding: 16px 20px; background: var(--bg); }
+
+/* Owner change list item 19: the page frame never scrolls as a whole (a jump to a tagged word used to
+   scroll it, cutting off the top and leaving a blank band), and each category card keeps its full
+   height inside the right panel instead of being squeezed until its elements overlap. */
+.bdw { flex: 1; overflow: clip; }
+.bdw .sp-body { overflow: clip; }
+.bdw .sp-tools > * { flex: none; }
+.bdw .bd-el { min-height: 34px; }
+.bdw.panel-hidden .sp-page { width: 560px; }
+.bdw .sp-page { zoom: var(--bd-zoom, 1); }

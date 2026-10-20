@@ -63,7 +63,7 @@ struct AIPanelView: View {
                 .help(model?.status?.available == true ? "Runs on this computer" : "OpenFrame AI is off")
                 .accessibilityIdentifier("ai-mode-chip")
             if model?.status != nil { settingsMenu }
-            Button(action: onClose) { Image(systemName: "xmark") }
+            Button(action: onClose) { Label("Close", systemImage: "xmark") }
                 .buttonStyle(.borderless)
                 .help("Close AI Assistant")
                 .accessibilityLabel("Close AI Assistant")
@@ -76,16 +76,14 @@ struct AIPanelView: View {
     private var settingsMenu: some View {
         Menu {
             Text("Offline AI")
-            Button("Offline AI settings\u{2026}") {
-                NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
-            }
+            Button("Offline AI settings\u{2026}") { SettingsRouter.open(tab: .ai) }
             .accessibilityIdentifier("ai-open-settings")
             if model?.status?.available == true {
                 Button("Stop Offline AI (free memory)") { Task { await model?.stopRuntime() } }
                     .accessibilityIdentifier("ai-stop-runtime")
             }
         } label: {
-            Image(systemName: "ellipsis.circle")
+            Label("Settings", systemImage: "ellipsis.circle")
         }
         .menuStyle(.borderlessButton)
         .fixedSize()

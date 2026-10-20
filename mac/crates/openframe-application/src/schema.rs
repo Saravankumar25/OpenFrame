@@ -80,6 +80,11 @@ pub const PROJECT_MIGRATIONS: &[Migration] = &[
         "callsheets_budget",
         "../../../migrations/project/0016_callsheets_budget.sql"
     ),
+    m!(
+        17,
+        "story_page",
+        "../../../migrations/project/0017_story_page.sql"
+    ),
 ];
 
 pub const GLOBAL_MIGRATIONS: &[Migration] = &[

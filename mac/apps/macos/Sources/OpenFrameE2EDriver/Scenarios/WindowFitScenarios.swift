@@ -8,10 +8,17 @@
 import AppKit
 
 extension Scenarios {
+    /// Every page the window-fit checks visit: the sidebar workspaces, every Production tab and
+    /// the project pages of the project menu.
     static let windowFitWorkspaces = [
-        "Project Home", "Screenplay", "Story", "Idea Vault", "Breakdown", "Schedule", "Call Sheets", "Budget",
-        "Visual Planning", "Files", "Notes and Tasks", "Activity", "Recently Deleted",
+        "Home", "Idea Vault", "Story", "Screenplay", "Breakdown", "Production", "Call Sheets", "Files",
+        "Catalog", "Locations", "Cast & Crew", "Moodboards", "Storyboards", "Shot Lists", "Schedule",
+        "Day Out of Days", "Daily View", "Sides", "Reports", "Budget",
+        "Notes and Tasks", "Activity", "Recently Deleted",
     ]
+
+    /// The sidebar rows, in the Windows order.
+    static let windowFitSidebar = ["Home", "Idea Vault", "Story", "Screenplay", "Breakdown", "Production", "Call Sheets", "Files"]
 
     static let windowFitGroup: [Scenario] = [
         windowFit(.minimum), windowFit(.standard), windowFit(.zoomed), windowFit(.laptop),
@@ -39,7 +46,9 @@ extension Scenarios {
             // A project with the example screenplay, then its sheets and the search palette.
             try await ui.fitSeed()
             try await ui.fitSize(.minimum, &report)
-            try await ui.press(id: "project-settings-button")
+            // At 900 points the named toolbar buttons do not all fit and macOS moves the last ones
+            // into the toolbar's overflow menu: a person opens Project Settings from the app menu.
+            try await ui.menu([NSApp.mainMenu?.items.first?.title ?? "OpenFrame Studio", "Project Settings\u{2026}"])
             try await ui.wait(id: "project-settings-tab-general", timeout: 15)
             await ui.idle(0.8) // the sheet finishes sliding in
             ui.fitCheck("Project Settings sheet", &report)
@@ -331,8 +340,9 @@ extension UI {
     static let settingsPages = ["General", "Appearance", "Keyboard Shortcuts", "Offline AI", "Diagnostics"]
 
     func fitSettings(_ report: inout FitReport) async throws {
-        guard let appMenu = NSApp.mainMenu?.items.first?.title else { throw DriverError("no app menu") }
-        try await menu([appMenu, "Settings\u{2026}"])
+        // The Settings button on Home, as a person opens it (the menu item worked while the button
+        // did nothing: recent macOS ignores the old showSettingsWindow: message).
+        try await press(id: "home-settings")
         try await waitUntilFit("the Settings window", timeout: 10) { self.fitSettingsWindow != nil }
         await idle(0.6)
         for page in UI.settingsPages {
@@ -449,7 +459,7 @@ extension UI {
             let content = w.convertToScreen(w.contentLayoutRect)
             let sidebarList = query(label: "Sidebar", role: "AXOutline").first { $0.identifier.isEmpty && $0.frame.width > 1 }?.frame
             if let list = sidebarList, list.width < 180 { report.add(place, "the sidebar \(list.short) is only \(Int(list.width)) points wide") }
-            for ws in Scenarios.windowFitWorkspaces {
+            for ws in Scenarios.windowFitSidebar {
                 let key = UI.workspaceKey(ws)
                 guard let row = query(id: "sidebar-\(key)").first(where: { $0.frame.width > 1 }) else {
                     report.add(place, "the sidebar row \(ws) is missing"); continue

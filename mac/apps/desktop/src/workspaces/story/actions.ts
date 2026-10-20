@@ -1,4 +1,4 @@
-// Story Board actions shared by Board and Outline views: every one calls a
+// Beat Board actions shared by Board and Outline views: every one calls a
 // Rust command and confirms with a human toast (with Undo where it applies).
 
 import { story } from "../../api/story";

@@ -6,6 +6,28 @@
 > Renamed on 2026-10-06 from `03-reconciliation-log.md`. Extended on 2026-10-09 (chapter restructure). Checks written "(checked)" were verified in the repository on the
 > date given. Checks written "(stated)" come from a supplied document and were not verified independently.
 
+## 2026-10-20: Mac takes the Windows structure (owner prompt "macOS structural parity")
+
+| Stale or conflicting statement | Where it was | Resolution |
+|---|---|---|
+| The Mac sidebar had three headed groups and 13 items; Windows has one flat list of 8 with Production holding 13 tabs | `apps/macos/.../Project/ProjectView.swift` | Mac follows Windows (owner: Windows defines the structure); Notes, Activity and Recently Deleted move to the project menu, as on Windows. [Parity page](../roadmap/mac-windows-structure-parity.md) |
+| The Mac core copy lacked the Windows final polish (AI repair, PDF redesign, themes, removed packages) | `crates/` on the Mac branch | Windows `324cd963` merged (`af5e41f`); one core again |
+| The owner's Mac prompt asks for a "See sources" disclosure; Windows shows "Details" holding sources, steps and how sure | Owner prompt 7.3; `apps/desktop/src/ai/Conversation.tsx` | Mac uses "See sources" with sources only (the newer, more specific request). Windows gap recorded; the owner chooses one name |
+| Daily View export: the owner wants a document of its own named "Shoot Day N - Daily view"; Windows exports the schedule with the day first | `new changes.docx` item 1; `features/export/buttons.tsx` | New core query `schedule.export_daily`; the Mac uses it; Windows front end still to call it |
+| "Story Board" names the planning board in the specifications, the manual and the code; the owner renamed it "Beat Board" (2026-10-20) because it was confused with the production Storyboards | `docs/specs/`, `docs/manual/`, core and both front ends | Code, both front ends, both E2E suites and the manual say "Beat Board"; specifications and audits keep "Story Board" as history; operation and table names stay `story.*` |
+| Mac test expectations: 16 themes, the brand line "Created with OpenFrame Studio", a 198-point sidebar width kept | `apps/macos/Tests/...` | Updated to the merged core (17 themes, "Created using OpenFrame") and to the 220-point rule of 5355dc7 |
+
+## 2026-10-19: Windows final polish (owner change list, AI brief, PDF specs)
+
+| Stale or conflicting statement | Where it was | Resolution |
+|---|---|---|
+| The owner's prompt asked to make the Windows UI look like the Mac app; later the same evening the owner said the Windows UI stays its own | Owner prompt, then owner message | The later message wins: a Mac-style shell was reverted; only the change list items were made in the Windows design ([final-polish-plan.md](final-polish-plan.md)) |
+| Tab cycled only the dialogue block (Action, Character, Parenthetical, Dialogue) | `editor/rules.ts` | Owner change list item 7: Tab now goes round every built-in element in menu order; Shift+Tab goes back. No specification fixed the old cycle |
+| The screenplay Review section, four exchange package types and new Episodic or Series projects were Reachable features | feature status SCRIPT-006, packages menu, New Project | Removed at the owner's request (items 9 and 11). The core keeps the data of older projects and refuses to export the removed package types; files made earlier still import |
+| "How many scenes are there?" answered "Nothing mentions scenes"; a character question was answered with product help | AI core (`commands.rs`, `tools.rs`, `knowledge.rs`) | Root causes and fixes in the 2026-10-19 progress log entry (OpenFrameAI.docx) |
+| OpenFrame Default's Dark mode was the generated Studio Amber dark (same seeds) | `themes.json` | OpenFrame Default has its own Dark palette (owner item 16). The Mac app reads the same file from its own copy and is unchanged until the shared core is synced |
+| The Mac core copy has the Metal placement and a location-search fix that Windows lacked | `OpenFrameMac/crates` | The location-search fix is in Windows now (extended to scenes and characters). The Windows AI changes of this session are not yet in the Mac copy (ADR-0034 asks both to match; the owner said not to modify the Mac folder now) |
+
 ## 2026-10-18: Mac phases M6 to M8 session
 
 | Stale or conflicting statement | Where it was | Resolution |

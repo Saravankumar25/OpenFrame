@@ -40,7 +40,7 @@ image is therefore authorised; signing, notarisation and the stores are Chapter 
 | Q2 | End-to-end on the shipped app | Every shared scenario implemented on the Mac runs on the app from the image; failures are fixed or recorded with their class | Exception (owner instruction 2026-10-19: no further rebuild loops; failures recorded below) | 199 scenarios on the image: 160 pass, 39 fail, 0 crash reports. Classes in "Known limits" below |
 | Q3 | Clean account | The same suite subset on an empty home folder with the app's real data locations | Pass | Empty home folder, the app's real data locations: smoke, team gate (2 cases) and forced kill, 4 of 4 pass; the real home folder untouched (`release-out/e2e/clean-account-5355dc7/`) |
 | Q4 | AI bar | English: 90 percent correct tool, 85 percent correct end state, on Apple silicon with the default provider | Pass | 96.7 and 88.6 percent, [m8-ai-evaluation.md](evidence/mac/m8-ai-evaluation.md) |
-| Q5 | Every screen as HTML | Every interface in Light and Dark as an HTML replica made from the final build | Pass | `release-out/MacHTML/`: 179 screens in Light and Dark, captured from the release build of commit d1d56d8 (the later commits changed one-line scene headings, the AI Stop path and the sidebar width only) |
+| Q5 | Every screen as HTML | Every interface in Light and Dark as an HTML replica made from the final build | Pass | `release-out/MacHTML/`: 179 screens in Light and Dark, captured from the release build of commit d1d56d8 (the later commits changed one-line scene headings, the AI Stop path and the sidebar width only). Replaced on 2026-10-20 by `MacHTML/` at the repository root, rebuilt from the dev build of branch `mac/machtml-rebuild` (picture plus accessibility tree per state; counts and check results in `MacHTML/README.md`); the release image must be captured again before this row is used for a release |
 
 ## Records
 
@@ -50,6 +50,10 @@ image is therefore authorised; signing, notarisation and the stores are Chapter 
 | R2 | Documents | Parity matrix, evidence, handoff and progress log current; links and writing checks green | Pass | Handoff, progress log, parity matrix, ADR-0033 and ADR-0034 current; links and writing checks green |
 
 ## Known limits of this build
+
+A re-run of only the failed cases (owner instruction 2026-10-19), 2 runners at a time on the same app, got through 12 of
+the 21 non-environment failures before it was stopped: 4 now pass (window fit default, maximised and resize stress; the
+altered-engine check), 8 still fail (listed below); 9 were not re-run (`release-out/e2e/rerun-failed-5355dc7/`).
 
 Recorded from the final run on the 5355dc7 image (`release-out/e2e/final-5355dc7/results.tsv`), by class:
 

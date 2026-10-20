@@ -131,7 +131,7 @@ struct CSPaperSection<Content: View>: View {
                 Text(title.uppercased()).font(.system(size: 11, weight: .bold)).tracking(0.6)
                 Spacer()
                 if let onRemove, !disabled {
-                    Button(action: onRemove) { Image(systemName: "xmark").font(.system(size: 10, weight: .bold)) }
+                    Button(action: onRemove) { Label("Remove", systemImage: "xmark").font(.caption2) }
                         .buttonStyle(.plain)
                         .accessibilityLabel("Remove \(title)")
                         .accessibilityIdentifier("callsheet-remove-section-\(csSlug(title))")
@@ -152,7 +152,7 @@ struct CSRemoveRow: View {
     let label: String
     let action: () -> Void
     var body: some View {
-        Button(action: action) { Image(systemName: "xmark.circle").foregroundStyle(paperInk.opacity(0.6)) }
+        Button(action: action) { Label("Remove", systemImage: "xmark.circle").font(.caption2).foregroundStyle(paperInk.opacity(0.6)) }
             .buttonStyle(.plain)
             .accessibilityLabel(label)
             .accessibilityIdentifier("callsheet-\(csSlug(label))")

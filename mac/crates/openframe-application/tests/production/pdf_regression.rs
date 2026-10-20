@@ -22,7 +22,7 @@ use openframe_test_support::TestEnv;
 use serde_json::{Value, json};
 
 const UPDATE_ENV: &str = "OPENFRAME_UPDATE_GOLDEN";
-const BRAND: &str = "Created with OpenFrame Studio";
+const BRAND: &str = "Created using OpenFrame";
 
 fn exec(env: &TestEnv, sql: &str) {
     env.core
@@ -202,6 +202,9 @@ fn layout_of(path: &str) -> String {
         out.push_str(&format!("== page {} {w:.0}x{h:.0}\n", n + 1));
         let content = lopdf::content::Content::decode(&doc.get_page_content(page)).unwrap();
         let (mut x, mut y, mut size) = (0.0f32, 0.0f32, 0.0f32);
+        // Lines drawn with the embedded fonts (sides) carry their text in an ActualText span;
+        // the first text matrix after the span start gives the line position.
+        let mut pending: Option<String> = None;
         for op in content.operations {
             let num = |i: usize| {
                 op.operands
@@ -211,9 +214,34 @@ fn layout_of(path: &str) -> String {
             };
             match op.operator.as_str() {
                 "Tf" => size = num(1),
+                "BDC" => {
+                    if let Some(lopdf::Object::Dictionary(d)) = op.operands.get(1)
+                        && let Ok(lopdf::Object::String(b, _)) = d.get(b"ActualText")
+                    {
+                        pending = Some(match b.strip_prefix(&[0xFE, 0xFF]) {
+                            Some(rest) => String::from_utf16_lossy(
+                                &rest
+                                    .chunks(2)
+                                    .filter(|c| c.len() == 2)
+                                    .map(|c| u16::from_be_bytes([c[0], c[1]]))
+                                    .collect::<Vec<_>>(),
+                            ),
+                            None => b.iter().map(|c| *c as char).collect(),
+                        });
+                    }
+                }
                 "Tm" => {
                     x = num(4);
                     y = num(5);
+                    if let Some(text) = pending.take() {
+                        let (text, masked) = mask_dates(&text);
+                        let at = if masked {
+                            format!("*,{y:.0}")
+                        } else {
+                            format!("{x:.0},{y:.0}")
+                        };
+                        out.push_str(&format!("{at} {size:.1} {text}\n"));
+                    }
                 }
                 "Td" => {
                     x += num(0);

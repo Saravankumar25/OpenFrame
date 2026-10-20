@@ -392,9 +392,18 @@ fn write(dir: &Path, name: &str, bytes: &[u8]) {
 pub fn ensure(dir: &Path) -> Media {
     std::fs::create_dir_all(dir).expect("media dir");
     let frames: Vec<(&str, Canvas)> = vec![
-        ("station-dusk.png", station([30, 40, 80], [240, 140, 90], true)),
-        ("station-day.png", station([120, 170, 220], [220, 230, 240], false)),
-        ("station-night.png", station([4, 6, 14], [20, 26, 50], false)),
+        (
+            "station-dusk.png",
+            station([30, 40, 80], [240, 140, 90], true),
+        ),
+        (
+            "station-day.png",
+            station([120, 170, 220], [220, 230, 240], false),
+        ),
+        (
+            "station-night.png",
+            station([4, 6, 14], [20, 26, 50], false),
+        ),
         ("sea-storm-1999.png", sea_storm(1)),
         ("sea-storm-turn.png", sea_storm(3)),
         ("harbour-dawn.png", harbour_dawn()),
@@ -402,20 +411,56 @@ pub fn ensure(dir: &Path) -> Media {
         ("operations-room-1999.png", operations_room_1999()),
         (
             "palette-monsoon.png",
-            swatches("MONSOON PALETTE", &[NIGHT, SEA, [90, 120, 140], RUST, SAND, LAMP]),
+            swatches(
+                "MONSOON PALETTE",
+                &[NIGHT, SEA, [90, 120, 140], RUST, SAND, LAMP],
+            ),
         ),
         (
             "palette-1999.png",
-            swatches("1999 PALETTE", &[[110, 90, 60], [70, 60, 46], [50, 60, 50], LAMP, [200, 200, 180]]),
+            swatches(
+                "1999 PALETTE",
+                &[
+                    [110, 90, 60],
+                    [70, 60, 46],
+                    [50, 60, 50],
+                    LAMP,
+                    [200, 200, 180],
+                ],
+            ),
         ),
-        ("cast-anjali.png", headshot("ANJALI", [60, 70, 110], [176, 124, 92])),
-        ("cast-appachan.png", headshot("APPACHAN", [236, 236, 230], [150, 104, 76])),
-        ("cast-mariamma.png", headshot("MARIAMMA", [120, 40, 60], [170, 118, 88])),
-        ("cast-fathima.png", headshot("FATHIMA", [40, 100, 90], [168, 120, 90])),
-        ("cast-suresh.png", headshot("SURESH", [200, 160, 60], [140, 98, 70])),
-        ("cast-joe.png", headshot("JOE", [90, 90, 90], [160, 110, 80])),
-        ("cast-rahul.png", headshot("RAHUL", [200, 60, 50], [160, 112, 84])),
-        ("cast-latha.png", headshot("LATHA", [140, 120, 80], [166, 116, 88])),
+        (
+            "cast-anjali.png",
+            headshot("ANJALI", [60, 70, 110], [176, 124, 92]),
+        ),
+        (
+            "cast-appachan.png",
+            headshot("APPACHAN", [236, 236, 230], [150, 104, 76]),
+        ),
+        (
+            "cast-mariamma.png",
+            headshot("MARIAMMA", [120, 40, 60], [170, 118, 88]),
+        ),
+        (
+            "cast-fathima.png",
+            headshot("FATHIMA", [40, 100, 90], [168, 120, 90]),
+        ),
+        (
+            "cast-suresh.png",
+            headshot("SURESH", [200, 160, 60], [140, 98, 70]),
+        ),
+        (
+            "cast-joe.png",
+            headshot("JOE", [90, 90, 90], [160, 110, 80]),
+        ),
+        (
+            "cast-rahul.png",
+            headshot("RAHUL", [200, 60, 50], [160, 112, 84]),
+        ),
+        (
+            "cast-latha.png",
+            headshot("LATHA", [140, 120, 80], [166, 116, 88]),
+        ),
         ("prop-reel.png", prop("reel")),
         ("prop-handset.png", prop("handset")),
         ("vehicle-ambassador.png", prop("car")),
@@ -423,13 +468,39 @@ pub fn ensure(dir: &Path) -> Media {
     for (name, c) in frames {
         write(dir, name, &c.png());
     }
-    write(dir, "board-breakwater-01.png", &sketch("24 - WIDE BREAKWATER", 0));
-    write(dir, "board-breakwater-02.png", &sketch("24 - APPACHAN AT THE EDGE", 1));
-    write(dir, "board-reel-01.png", &sketch("33 - HANDS ON THE REEL", 2));
-    write(dir, "board-beach-01.png", &sketch("39 - LISTENING NIGHT", 3));
+    write(
+        dir,
+        "board-breakwater-01.png",
+        &sketch("24 - WIDE BREAKWATER", 0),
+    );
+    write(
+        dir,
+        "board-breakwater-02.png",
+        &sketch("24 - APPACHAN AT THE EDGE", 1),
+    );
+    write(
+        dir,
+        "board-reel-01.png",
+        &sketch("33 - HANDS ON THE REEL", 2),
+    );
+    write(
+        dir,
+        "board-beach-01.png",
+        &sketch("39 - LISTENING NIGHT", 3),
+    );
     // A one-page research PDF and a location release form, written by hand (valid PDF 1.4).
-    write(dir, "research-coast-radio-1999.pdf", &tiny_pdf("Coast radio procedures, Kerala 1999. Notes from the harbour office archive."));
-    write(dir, "location-release-coast-radio-station.pdf", &tiny_pdf("Location release: Coast Radio Station, Kadalkkara. Port Trust permit KP-PT-2027-118."));
+    write(
+        dir,
+        "research-coast-radio-1999.pdf",
+        &tiny_pdf("Coast radio procedures, Kerala 1999. Notes from the harbour office archive."),
+    );
+    write(
+        dir,
+        "location-release-coast-radio-station.pdf",
+        &tiny_pdf(
+            "Location release: Coast Radio Station, Kadalkkara. Port Trust permit KP-PT-2027-118.",
+        ),
+    );
     write(
         dir,
         "music-cue-sheet.csv",
@@ -449,7 +520,9 @@ pub fn ensure(dir: &Path) -> Media {
 }"##,
     );
     voice_memo(dir);
-    Media { dir: dir.to_path_buf() }
+    Media {
+        dir: dir.to_path_buf(),
+    }
 }
 
 /// The director's voice memo for the Idea Vault, spoken by the system voice.
@@ -478,7 +551,10 @@ fn voice_memo(dir: &Path) {
 }
 
 pub fn tiny_pdf(text: &str) -> Vec<u8> {
-    let content = format!("BT /F1 12 Tf 72 720 Td ({}) Tj ET", text.replace('(', "[").replace(')', "]"));
+    let content = format!(
+        "BT /F1 12 Tf 72 720 Td ({}) Tj ET",
+        text.replace('(', "[").replace(')', "]")
+    );
     let objs = [
         "<< /Type /Catalog /Pages 2 0 R >>".to_string(),
         "<< /Type /Pages /Kids [3 0 R] /Count 1 >>".to_string(),
@@ -498,7 +574,11 @@ pub fn tiny_pdf(text: &str) -> Vec<u8> {
         out.extend_from_slice(format!("{o:010} 00000 n \n").as_bytes());
     }
     out.extend_from_slice(
-        format!("trailer\n<< /Size {} /Root 1 0 R >>\nstartxref\n{xref}\n%%EOF\n", objs.len() + 1).as_bytes(),
+        format!(
+            "trailer\n<< /Size {} /Root 1 0 R >>\nstartxref\n{xref}\n%%EOF\n",
+            objs.len() + 1
+        )
+        .as_bytes(),
     );
     out
 }

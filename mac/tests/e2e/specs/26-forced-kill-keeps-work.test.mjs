@@ -1,7 +1,7 @@
 // @e2e-data-root: own
 //
 // Prove the rows writers use every day (Windows phase W4): work survives a forced kill. Add an idea
-// to the Idea Vault, an act and a Scene Card on the Story Board, a character, a project note and a
+// to the Idea Vault, an act and a Scene Card on the Beat Board, a character, a project note and a
 // screenplay line; wait until each one says it is saved; then end the app abruptly, as a crash or a
 // power cut would (the process tree is killed, nothing gets to close). Start again, open the
 // project (taking the recovery state when it is offered), and find every piece of work. Then edit

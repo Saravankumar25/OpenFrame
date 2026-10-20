@@ -20,7 +20,7 @@ struct CSSidesView: View {
                 } description: {
                     Text("Create a shooting schedule and a shooting day first. Sides contain that day's screenplay scenes.")
                 } actions: {
-                    Button("Open Schedule") { csShowWorkspace(.schedule) }
+                    Button("Open Schedule") { ProjectNav.show(.production, tab: .schedule) }
                         .accessibilityIdentifier("sides-open-schedule")
                 }
                 .accessibilityElement(children: .contain)
@@ -120,7 +120,7 @@ struct CSSidesView: View {
                             }
                             .buttonStyle(.plain)
                             .accessibilityIdentifier("sides-saved-\(s.id)")
-                            Button { Task { await model.deleteSaved(s.id) } } label: { Image(systemName: "trash") }
+                            Button { Task { await model.deleteSaved(s.id) } } label: { Label("Delete", systemImage: "trash") }
                                 .buttonStyle(.borderless)
                                 .accessibilityLabel("Delete \(s.title)")
                                 .accessibilityIdentifier("sides-delete-\(s.id)")

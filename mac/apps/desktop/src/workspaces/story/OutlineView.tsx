@@ -1,4 +1,4 @@
-// Story Board, Outline view (FSD §7.5, UX §3.7, mock 052): the same objects as
+// Beat Board, Outline view (FSD §7.5, UX §3.7, mock 052): the same objects as
 // the Board view shown as an indented hierarchy. Reorder by drag (grip) or
 // keyboard (Alt+↑/↓); nothing here adds metadata or touches the screenplay.
 

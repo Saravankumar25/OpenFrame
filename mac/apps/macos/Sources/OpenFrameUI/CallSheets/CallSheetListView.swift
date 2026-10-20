@@ -137,7 +137,7 @@ struct CallSheetListView: View {
                 Menu {
                     menuItems(r)
                 } label: {
-                    Image(systemName: "ellipsis.circle")
+                    Label("Actions", systemImage: "ellipsis.circle")
                 }
                 .menuStyle(.borderlessButton).menuIndicator(.hidden).fixedSize()
                 .accessibilityLabel("\(r.title) actions")
@@ -185,7 +185,7 @@ struct CSCreateSheet: View {
             VStack(alignment: .leading, spacing: 10) {
                 if !model.hasSchedule {
                     CSBanner(tone: .info, text: "Create a shooting schedule and a shooting day first.") {
-                        Button("Open Schedule") { onClose(); csShowWorkspace(.schedule) }
+                        Button("Open Schedule") { onClose(); ProjectNav.show(.production, tab: .schedule) }
                             .controlSize(.small)
                             .accessibilityIdentifier("callsheet-create-open-schedule")
                     }

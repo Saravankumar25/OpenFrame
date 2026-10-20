@@ -416,7 +416,7 @@ pub struct PackageExchangeArgs {
     #[serde(default)]
     pub draft_id: Option<String>,
     /// Script review: "full" | "comments" (Script + comments) | "scenes";
-    /// Story Board: "full" | "act"; others: "full" | "scenes".
+    /// Beat Board: "full" | "act"; others: "full" | "scenes".
     #[serde(default)]
     pub scope: Option<String>,
     #[serde(default)]
@@ -959,7 +959,7 @@ fn build_story(c: &Connection, root: &Path, a: &PackageExchangeArgs) -> AppResul
     };
     let scope_kind = a.scope.clone().unwrap_or_else(|| "full".into());
     let scope_label = match scope_kind.as_str() {
-        "full" => "Whole Story Board".to_string(),
+        "full" => "Whole Beat Board".to_string(),
         "act" => {
             let id = a
                 .act_id
@@ -972,7 +972,7 @@ fn build_story(c: &Connection, root: &Path, a: &PackageExchangeArgs) -> AppResul
         _ => {
             return Err(AppError::validation(
                 "scope",
-                "Choose the whole Story Board or one Act.",
+                "Choose the whole Beat Board or one Act.",
             ));
         }
     };
@@ -1170,7 +1170,7 @@ fn build_story(c: &Connection, root: &Path, a: &PackageExchangeArgs) -> AppResul
         attachments: files,
         attachments_available,
         counts,
-        target: "Story Board".into(),
+        target: "Beat Board".into(),
         scope: PackageScope {
             kind: scope_kind,
             label: scope_label,
@@ -1186,392 +1186,6 @@ fn build_story(c: &Connection, root: &Path, a: &PackageExchangeArgs) -> AppResul
     })
 }
 
-fn build_breakdown(c: &Connection, a: &PackageExchangeArgs) -> AppResult<Built> {
-    let (source_id, draft_id, draft_name) = active_source(c)?.ok_or_else(|| {
-        AppError::validation(
-            "source",
-            "Choose a Production Source before sending a Breakdown package.",
-        )
-    })?;
-    let mut scenes = scene_refs(c, &draft_id)?;
-    let scope_kind = a.scope.clone().unwrap_or_else(|| "full".into());
-    let scope_label = if scope_kind == "scenes" {
-        let all: Vec<String> = scenes.iter().map(|s| s.id.clone()).collect();
-        let keep = scope_scene_filter(&all, &a.scene_ids)?;
-        scenes.retain(|s| keep.contains(&s.id));
-        scene_numbers_label(&scenes.iter().map(|s| s.label()).collect::<Vec<_>>())
-    } else {
-        "All scenes".to_string()
-    };
-    let scene_ids: HashSet<String> = scenes.iter().map(|s| s.id.clone()).collect();
-    let mut stmt = c.prepare(
-        "SELECT b.id, b.scene_id, b.scene_lineage_id, b.category, b.display_name, b.notes, b.catalog_item_id,
-                ci.name, b.confirmation_state, b.rev
-         FROM breakdown_element b LEFT JOIN catalog_item ci ON ci.id = b.catalog_item_id
-         WHERE b.source_id=?1 AND b.deleted_at IS NULL AND b.confirmation_state IN ('Confirmed','Manual')
-         ORDER BY b.scene_id, b.category, b.display_name, b.id",
-    )?;
-    let elements: Vec<ExBreakdownElement> = stmt
-        .query_map([&source_id], |r| {
-            Ok(ExBreakdownElement {
-                id: r.get(0)?,
-                scene_id: r.get(1)?,
-                scene_lineage_id: r.get(2)?,
-                category: r.get(3)?,
-                display_name: r.get(4)?,
-                notes: r.get(5)?,
-                catalog_item_id: r.get(6)?,
-                catalog_name: r.get(7)?,
-                confirmation_state: r.get(8)?,
-                rev: r.get(9)?,
-            })
-        })?
-        .collect::<Result<Vec<_>, _>>()?
-        .into_iter()
-        .filter(|e| scene_ids.contains(&e.scene_id))
-        .collect();
-    let mut base = BTreeMap::new();
-    let mut targets = HashSet::new();
-    for e in &elements {
-        base.insert(key("breakdown_element", &e.id), e.rev);
-        targets.insert(("breakdown_element".to_string(), e.id.clone()));
-    }
-    let comments = if a.include_comments {
-        load_comments(c, &targets, &HashMap::new(), &HashMap::new())?
-    } else {
-        vec![]
-    };
-    let counts = vec![
-        count("Scenes", scenes.len()),
-        count("Breakdown elements", elements.len()),
-        count("Comments", comments.len()),
-    ];
-    let included_ids = elements.iter().map(|e| e.id.clone()).collect();
-    let content = BreakdownContent {
-        source_draft_id: draft_id.clone(),
-        source_draft_name: draft_name.clone(),
-        scenes,
-        elements,
-        comments,
-    };
-    Ok(Built {
-        content: to_value(&content)?,
-        attachments: vec![],
-        attachments_available: 0,
-        counts,
-        target: format!("Production Source: {draft_name}"),
-        scope: PackageScope {
-            kind: scope_kind,
-            label: scope_label,
-            ids: a.scene_ids.clone(),
-        },
-        source_draft: None,
-        source_versions: vec![PackageSourceVersion {
-            kind: "productionSource".into(),
-            id: draft_id,
-            label: draft_name,
-        }],
-        included_ids,
-        base,
-        comments_included: a.include_comments,
-        attachments_included: false,
-        explanation: "Confirmed breakdown elements for the chosen scenes. When they come back, you preview additions and changes before anything is applied.".into(),
-    })
-}
-
-fn build_shots(c: &Connection, a: &PackageExchangeArgs) -> AppResult<Built> {
-    let draft = match active_source(c)? {
-        Some((_, d, _)) => Some(d),
-        None => only_current_draft(c)?.map(|d| d.id),
-    }
-    .ok_or_else(|| {
-        AppError::validation(
-            "source",
-            "This project has no screenplay scenes to plan shots for yet.",
-        )
-    })?;
-    let mut scenes = scene_refs(c, &draft)?;
-    let scope_kind = a.scope.clone().unwrap_or_else(|| "full".into());
-    let scope_label = if scope_kind == "scenes" {
-        let all: Vec<String> = scenes.iter().map(|s| s.id.clone()).collect();
-        let keep = scope_scene_filter(&all, &a.scene_ids)?;
-        scenes.retain(|s| keep.contains(&s.id));
-        scene_numbers_label(&scenes.iter().map(|s| s.label()).collect::<Vec<_>>())
-    } else {
-        "All scenes".to_string()
-    };
-    let lineages: HashSet<String> = scenes.iter().map(|s| s.lineage_id.clone()).collect();
-    let mut stmt = c.prepare(
-        "SELECT id, scene_id, scene_lineage_id, position, description, size, movement, angle, lens, camera_notes,
-                characters_json, sound_note, rev
-         FROM shot WHERE deleted_at IS NULL ORDER BY scene_lineage_id, position, id",
-    )?;
-    let shots: Vec<ExShot> = stmt
-        .query_map([], |r| {
-            let chars: String = r.get(10)?;
-            Ok(ExShot {
-                id: r.get(0)?,
-                scene_id: r.get(1)?,
-                scene_lineage_id: r.get(2)?,
-                position: r.get(3)?,
-                description: r.get(4)?,
-                size: r.get(5)?,
-                movement: r.get(6)?,
-                angle: r.get(7)?,
-                lens: r.get(8)?,
-                camera_notes: r.get(9)?,
-                characters: serde_json::from_str(&chars).unwrap_or_default(),
-                sound_note: r.get(11)?,
-                rev: r.get(12)?,
-            })
-        })?
-        .collect::<Result<Vec<_>, _>>()?
-        .into_iter()
-        .filter(|s| lineages.contains(&s.scene_lineage_id))
-        .collect();
-    let mut base = BTreeMap::new();
-    let mut targets = HashSet::new();
-    for s in &shots {
-        base.insert(key("shot", &s.id), s.rev);
-        targets.insert(("shot".to_string(), s.id.clone()));
-    }
-    let comments = if a.include_comments {
-        load_comments(c, &targets, &HashMap::new(), &HashMap::new())?
-    } else {
-        vec![]
-    };
-    let counts = vec![
-        count("Scenes", scenes.len()),
-        count("Shots", shots.len()),
-        count("Comments", comments.len()),
-    ];
-    let included_ids = shots.iter().map(|s| s.id.clone()).collect();
-    let content = ShotsContent {
-        scenes,
-        shots,
-        comments,
-    };
-    Ok(Built {
-        content: to_value(&content)?,
-        attachments: vec![],
-        attachments_available: 0,
-        counts,
-        target: "Shot List".into(),
-        scope: PackageScope {
-            kind: scope_kind,
-            label: scope_label,
-            ids: a.scene_ids.clone(),
-        },
-        source_draft: None,
-        source_versions: vec![],
-        included_ids,
-        base,
-        comments_included: a.include_comments,
-        attachments_included: false,
-        explanation: "Shots and their planning fields for the chosen scenes. Returned changes are added or updated only after you confirm them.".into(),
-    })
-}
-
-fn build_schedule(c: &Connection, a: &PackageExchangeArgs) -> AppResult<Built> {
-    let (schedule_id, schedule_name) = current_schedule(c)?.ok_or_else(|| {
-        AppError::validation("schedule", "This project has no shooting schedule yet.")
-    })?;
-    let mut stmt = c.prepare(
-        "SELECT id, position, shoot_date, notes, is_off_day, planned_minutes, rev FROM shooting_day
-         WHERE schedule_id=?1 AND deleted_at IS NULL ORDER BY position, id",
-    )?;
-    let mut days: Vec<ExDay> = stmt
-        .query_map([&schedule_id], |r| {
-            Ok(ExDay {
-                id: r.get(0)?,
-                position: r.get(1)?,
-                date: r.get(2)?,
-                notes: r.get(3)?,
-                is_off_day: r.get(4)?,
-                planned_minutes: r.get(5)?,
-                rev: r.get(6)?,
-                strips: vec![],
-                markers: vec![],
-            })
-        })?
-        .collect::<Result<_, _>>()?;
-    let index: HashMap<String, usize> = days
-        .iter()
-        .enumerate()
-        .map(|(i, d)| (d.id.clone(), i))
-        .collect();
-    let mut stmt = c.prepare(
-        "SELECT st.id, st.day_id, st.scene_id, st.scene_lineage_id, COALESCE(sc.heading, st.source_heading), st.position, st.rev
-         FROM schedule_strip st LEFT JOIN screenplay_scene sc ON sc.id = st.scene_id
-         WHERE st.schedule_id=?1 AND st.deleted_at IS NULL AND st.archived = 0 AND st.day_id IS NOT NULL
-         ORDER BY st.position, st.id",
-    )?;
-    let strips: Vec<(String, ExStrip)> = stmt
-        .query_map([&schedule_id], |r| {
-            Ok((
-                r.get::<_, String>(1)?,
-                ExStrip {
-                    id: r.get(0)?,
-                    scene_id: r.get(2)?,
-                    scene_lineage_id: r.get(3)?,
-                    heading: r.get(4)?,
-                    position: r.get(5)?,
-                    rev: r.get(6)?,
-                },
-            ))
-        })?
-        .collect::<Result<_, _>>()?;
-    let mut base = BTreeMap::new();
-    for (day, s) in strips {
-        if let Some(i) = index.get(&day) {
-            base.insert(key("schedule_strip", &s.id), s.rev);
-            days[*i].strips.push(s);
-        }
-    }
-    let mut stmt = c.prepare(
-        "SELECT m.id, m.day_id, m.marker_type, m.label, m.at_time, m.duration_minutes, m.notes, m.position
-         FROM schedule_marker m JOIN shooting_day d ON d.id = m.day_id
-         WHERE d.schedule_id=?1 AND m.deleted_at IS NULL ORDER BY m.position, m.id",
-    )?;
-    let markers: Vec<(String, ExMarker)> = stmt
-        .query_map([&schedule_id], |r| {
-            Ok((
-                r.get::<_, String>(1)?,
-                ExMarker {
-                    id: r.get(0)?,
-                    marker_type: r.get(2)?,
-                    label: r.get(3)?,
-                    at_time: r.get(4)?,
-                    duration_minutes: r.get(5)?,
-                    notes: r.get(6)?,
-                    position: r.get(7)?,
-                },
-            ))
-        })?
-        .collect::<Result<_, _>>()?;
-    for (day, m) in markers {
-        if let Some(i) = index.get(&day) {
-            days[*i].markers.push(m);
-        }
-    }
-    let mut targets = HashSet::new();
-    for d in &days {
-        base.insert(key("shooting_day", &d.id), d.rev);
-        targets.insert(("shooting_day".to_string(), d.id.clone()));
-    }
-    let comments = if a.include_comments {
-        load_comments(c, &targets, &HashMap::new(), &HashMap::new())?
-    } else {
-        vec![]
-    };
-    let counts = vec![
-        count("Shooting days", days.len()),
-        count(
-            "Scheduled scenes",
-            days.iter().map(|d| d.strips.len()).sum(),
-        ),
-        count(
-            "Breaks and moves",
-            days.iter().map(|d| d.markers.len()).sum(),
-        ),
-        count("Comments", comments.len()),
-    ];
-    let included_ids = days.iter().map(|d| d.id.clone()).collect();
-    let content = ScheduleContent {
-        schedule_id: schedule_id.clone(),
-        schedule_name: schedule_name.clone(),
-        days,
-        comments,
-    };
-    Ok(Built {
-        content: to_value(&content)?,
-        attachments: vec![],
-        attachments_available: 0,
-        counts,
-        target: schedule_name.clone(),
-        scope: PackageScope {
-            kind: "schedule".into(),
-            label: "Entire schedule".into(),
-            ids: vec![],
-        },
-        source_draft: None,
-        source_versions: vec![PackageSourceVersion {
-            kind: "schedule".into(),
-            id: schedule_id,
-            label: schedule_name,
-        }],
-        included_ids,
-        base,
-        comments_included: a.include_comments,
-        attachments_included: false,
-        explanation: "Shooting days, scene assignments, breaks and day notes. Importing a returned schedule never deletes or silently reorders your days.".into(),
-    })
-}
-
-fn build_call_review(c: &Connection, a: &PackageExchangeArgs) -> AppResult<Built> {
-    let id = match &a.call_sheet_id {
-        Some(id) => id.clone(),
-        None => c
-            .query_row(
-                "SELECT id FROM call_sheet WHERE deleted_at IS NULL ORDER BY updated_at DESC LIMIT 1",
-                [],
-                |r| r.get(0),
-            )
-            .optional()?
-            .ok_or_else(|| AppError::validation("callSheetId", "This project has no call sheet yet."))?,
-    };
-    let row: (String, i64, String, String, String, String, i64) = c
-        .query_row(
-            "SELECT title, revision, status, shoot_day_id, schedule_id, document_json, rev FROM call_sheet
-             WHERE id=?1 AND deleted_at IS NULL",
-            [&id],
-            |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?, r.get(3)?, r.get(4)?, r.get(5)?, r.get(6)?)),
-        )
-        .optional()?
-        .ok_or_else(|| AppError::not_found("call sheet"))?;
-    let (title, revision, status, shoot_day_id, schedule_id, document_json, rev) = row;
-    let mut targets = HashSet::new();
-    targets.insert(("call_sheet".to_string(), id.clone()));
-    let comments = if a.include_comments {
-        load_comments(c, &targets, &HashMap::new(), &HashMap::new())?
-    } else {
-        vec![]
-    };
-    let mut base = BTreeMap::new();
-    base.insert(key("call_sheet", &id), rev);
-    let counts = vec![count("Call sheet", 1), count("Comments", comments.len())];
-    let content = CallReviewContent {
-        call_sheet_id: id.clone(),
-        title: title.clone(),
-        revision,
-        status,
-        shoot_day_id,
-        schedule_id,
-        document: serde_json::from_str(&document_json).unwrap_or(Value::Null),
-        rev,
-        comments,
-    };
-    Ok(Built {
-        content: to_value(&content)?,
-        attachments: vec![],
-        attachments_available: 0,
-        counts,
-        target: format!("{title} (revision {revision})"),
-        scope: PackageScope {
-            kind: "callSheet".into(),
-            label: title,
-            ids: vec![id.clone()],
-        },
-        source_draft: None,
-        source_versions: vec![],
-        included_ids: vec![id],
-        base,
-        comments_included: a.include_comments,
-        attachments_included: false,
-        explanation: "A snapshot of this call sheet for review. Returned feedback is added to the call sheet as comments and never changes the shooting schedule.".into(),
-    })
-}
-
 pub(crate) fn build(c: &Connection, root: &Path, a: &PackageExchangeArgs) -> AppResult<Built> {
     if a.include_private_notes {
         return Err(AppError::validation(
@@ -1582,10 +1196,14 @@ pub(crate) fn build(c: &Connection, root: &Path, a: &PackageExchangeArgs) -> App
     match a.package_type {
         PackageType::ScriptReview => build_script(c, a),
         PackageType::Story => build_story(c, root, a),
-        PackageType::Breakdown => build_breakdown(c, a),
-        PackageType::Shots => build_shots(c, a),
-        PackageType::Schedule => build_schedule(c, a),
-        PackageType::CallReview => build_call_review(c, a),
+        // Removed at the owner's request on 2026-10-19 (change list item 9). Files of these types
+        // made earlier can still be opened and imported.
+        PackageType::Breakdown
+        | PackageType::Shots
+        | PackageType::Schedule
+        | PackageType::CallReview => Err(AppError::invalid_input(
+            "This package type is no longer offered. Share the screenplay or the Beat Board instead.",
+        )),
         PackageType::Response => Err(AppError::invalid_input(
             "Response packages are exported from the review package viewer.",
         )),

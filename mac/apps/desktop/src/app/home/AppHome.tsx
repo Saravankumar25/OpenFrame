@@ -8,7 +8,7 @@
 
 import { Suspense, useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { open as openDialog } from "@tauri-apps/plugin-dialog";
-import { Archive, ArrowLeft, CircleHelp, Copy, FileArchive, FolderOpen, FolderSearch, Lightbulb, MoreHorizontal, Palette, Pencil, Pin, PinOff, Plus, RotateCcw, Search, Trash2 } from "lucide-react";
+import { Archive, ArrowLeft, Copy, FileArchive, FolderOpen, FolderSearch, Lightbulb, MoreHorizontal, Pencil, Pin, PinOff, Plus, RotateCcw, Search, Settings, Trash2 } from "lucide-react";
 import { call, revealLocation } from "../../ipc/client";
 import { reportError, useOp } from "../../ipc/query";
 import type { AppInfo } from "../../ipc/generated/AppInfo";
@@ -26,8 +26,7 @@ import { NewProjectDialog } from "./NewProjectDialog";
 import { matches as matchesShortcut, useShortcutLabel } from "../shortcuts";
 import { DisplayNameDialog } from "./DisplayNameDialog";
 import { BrandLogo } from "../../theme/BrandLogo";
-import { AppearancePanel } from "../../features/appearance/AppearancePanel";
-import { ShortcutsSettings } from "../../workspaces/settings/Shortcuts";
+import { GlobalSettingsDialog } from "./GlobalSettingsDialog";
 import { PackagesOverlay, usePackagesUi } from "../../features/packages";
 
 /** Restore a Backup Package or open a Full Project Package (mock 171): the way back in on a new computer. */
@@ -132,10 +131,8 @@ function ProjectsHome() {
   const [deleting, setDeleting] = useState<RecentProject | null>(null);
   const [renaming, setRenaming] = useState<RecentProject | null>(null);
   const [nameOpen, setNameOpen] = useState(false);
-  const [appearanceOpen, setAppearanceOpen] = useState(false);
-  const [shortcutsOpen, setShortcutsOpen] = useState(false);
-  const [recordingKeys, setRecordingKeys] = useState(false);
-  // Keys as set in Settings > Keyboard shortcuts, for tooltips and the Help summary.
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  // Keys as set in Settings > Keyboard shortcuts, for tooltips.
   const keys = {
     newProject: useShortcutLabel("home.new_project"),
     open: useShortcutLabel("home.open_project"),
@@ -143,15 +140,6 @@ function ProjectsHome() {
     capture: useShortcutLabel("home.quick_capture"),
   };
   const withKey = (label: string, key: string) => (key ? `${label} (${key})` : label);
-  const shortcutSummary = [
-    keys.newProject && `${keys.newProject} new project`,
-    keys.open && `${keys.open} open project`,
-    keys.search && `${keys.search} search projects`,
-    "F2 rename the selected project",
-    keys.capture && `${keys.capture} new idea in the Global Idea Vault`,
-  ]
-    .filter(Boolean)
-    .join(" · ");
   // Rust emits `dataChanged` for `sys_recent_project` when a Home action (Rename) changes the
   // list, so the cards refresh in place; "*" also covers status and title changes in project files.
   const recents = useOp<RecentProject[]>("project.list_recent", { includeArchived: true }, ["sys_recent_project", "*"], { refetchOnMount: "always" });
@@ -159,7 +147,7 @@ function ProjectsHome() {
   const reset = useNav((s) => s.reset);
   const searchRef = useRef<HTMLInputElement>(null);
   const packageDialog = usePackagesUi((s) => s.dialog);
-  const dialogOpen = newOpen || !!unavailable || !!deleting || !!renaming || nameOpen || appearanceOpen || shortcutsOpen || !!packageDialog;
+  const dialogOpen = newOpen || !!unavailable || !!deleting || !!renaming || nameOpen || settingsOpen || !!packageDialog;
 
   useEffect(() => {
     if (newRequested) {
@@ -272,21 +260,10 @@ function ProjectsHome() {
           <Button size="sm" variant="ghost" icon={<Lightbulb size={14} />} onClick={() => openGlobalVault()} title={keys.capture ? `Your ideas outside any project (${keys.capture} for Quick Capture)` : "Your ideas outside any project"}>
             Global Idea Vault
           </Button>
-          <button
-            className="iconbtn"
-            aria-label="Help"
-            title={`Shortcuts: ${shortcutSummary}`}
-            onClick={() =>
-              toast.info(`Shortcuts: ${shortcutSummary}`, {
-                label: "Change shortcuts",
-                run: () => setShortcutsOpen(true),
-              })
-            }
-          >
-            <CircleHelp size={16} />
-          </button>
-          <button className="iconbtn" aria-label="Appearance" title="Appearance: mode and theme" onClick={() => setAppearanceOpen(true)}>
-            <Palette size={16} />
+          {/* Settings replaces the old shortcuts and appearance buttons (owner item 6). On Home it holds
+              only the settings that belong to this computer. */}
+          <button className="iconbtn" aria-label="Settings" title="Settings: appearance, keyboard shortcuts, about" onClick={() => setSettingsOpen(true)}>
+            <Settings size={16} />
           </button>
           <button className="avatar" style={{ border: 0 }} aria-label={`Your name: ${profileName}. Change`} title={`${profileName}: change your name`} onClick={() => setNameOpen(true)}>
             {initials(profileName)}
@@ -314,7 +291,7 @@ function ProjectsHome() {
               </>
             }
           >
-            A project holds your ideas, story board, screenplay and production plan for one film. Everything is stored on this computer.
+            A project holds your ideas, beat board, screenplay and production plan for one film. Everything is stored on this computer.
           </EmptyState>
         ) : showArchived ? (
           <>
@@ -430,27 +407,7 @@ function ProjectsHome() {
       {(nameOpen || info.data?.displayNameSet === false) && info.data && (
         <DisplayNameDialog firstRun={!info.data.displayNameSet} current={info.data.profile.displayName} onClose={() => setNameOpen(false)} />
       )}
-      <Dialog
-        open={appearanceOpen}
-        onOpenChange={setAppearanceOpen}
-        title="Appearance"
-        sub="Mode and theme for OpenFrame on this computer. Your projects are not changed."
-        size="xl"
-        footer={<Button variant="primary" onClick={() => setAppearanceOpen(false)}>Done</Button>}
-      >
-        <AppearancePanel />
-      </Dialog>
-      <Dialog
-        open={shortcutsOpen}
-        onOpenChange={setShortcutsOpen}
-        title="Keyboard shortcuts"
-        sub="Change, remove or add keys. Every command also has a button or menu on screen. Your shortcuts apply in every project on this computer."
-        size="xl"
-        dismissible={!recordingKeys}
-        footer={<Button variant="primary" onClick={() => setShortcutsOpen(false)}>Done</Button>}
-      >
-        <ShortcutsSettings embedded onRecordingChange={setRecordingKeys} />
-      </Dialog>
+      <GlobalSettingsDialog open={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </div>
   );
 }
@@ -498,7 +455,7 @@ function CardGrid({ projects, menuFor, onOpen, onRename }: {
             >
               <div className={`pv photo ${previewFor(p.projectId)}`} aria-hidden />
               <div className="pb">
-                <div className="pt" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.title}</div>
+                <div className="pt" title={p.title} style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.title}</div>
                 <div className="row gap4 wrap" style={{ margin: "6px 0" }}>
                   <Chip>{p.projectType}</Chip>
                   <Chip tone="b">{p.status}</Chip>

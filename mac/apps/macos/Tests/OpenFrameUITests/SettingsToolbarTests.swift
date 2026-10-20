@@ -55,11 +55,17 @@ struct SettingsToolbarTests {
         let view = try #require(item.view)
         let frame = view.convert(view.bounds, to: nil)
         #expect(frame.maxX <= window.frame.width && frame.minX >= 0, "item frame \(frame) in window \(window.frame)")
-        let iconOnly = try #require(window.toolbar?.items.first { $0.label == "New Project" }?.view)
-        #expect(view.frame.width > iconOnly.frame.width + 20, "Settings is \(view.frame.width) wide, an icon alone is \(iconOnly.frame.width)")
+        // Every button in the Home toolbar shows its name next to its icon (an icon alone is
+        // about 30 points wide).
+        for name in ["Global Idea Vault", "Settings"] {
+            let v = try #require(window.toolbar?.items.first { $0.label == name }?.view, "\(name) in the toolbar")
+            #expect(v.frame.width > 70, "\(name) is \(v.frame.width) wide: only its icon shows")
+        }
     }
 
-    @Test func projectShowsProjectSettingsWithItsNameAtDefaultWidth() async throws {
+    /// A 1280-point window (a 1280 by 720 screen): every project button stays in the toolbar with
+    /// its name, none folded into the overflow menu.
+    @Test func projectToolbarKeepsEveryNamedButtonOnALaptopScreen() async throws {
         let root = try Fixture.root()
         defer { try? FileManager.default.removeItem(at: root) }
         let model = Fixture.model(root)
@@ -70,19 +76,18 @@ struct SettingsToolbarTests {
             return
         }
         let themes = ThemeStore()
-        let window = hostedWindow(env(ProjectView(project: project), model: model, themes: themes), width: 1360)
+        let window = hostedWindow(env(ProjectView(project: project), model: model, themes: themes), width: 1280)
         defer { window.close(); model.shutdown() }
 
         let labels = visibleToolbarLabels(window)
-        #expect(labels.contains("Project Settings"), "visible: \(labels)")
+        #expect(labels.contains("Settings"), "visible: \(labels)")
         #expect(labels.contains("Assistant"), "visible: \(labels)")
         let all = (window.toolbar?.items ?? []).map(\.label)
         #expect(Set(all).isSubset(of: Set(labels).union([""])), "folded into overflow: \(Set(all).subtracting(labels))")
-        let item = try #require(window.toolbar?.items.first { $0.label == "Project Settings" })
+        let item = try #require(window.toolbar?.items.first { $0.label == "Settings" })
         let view = try #require(item.view)
         let frame = view.convert(view.bounds, to: nil)
         #expect(frame.maxX <= window.frame.width && frame.minX >= 0, "item frame \(frame) in window \(window.frame)")
-        let iconOnly = try #require(window.toolbar?.items.first { $0.label == "Assistant" }?.view)
-        #expect(view.frame.width > iconOnly.frame.width + 40, "Project Settings is \(view.frame.width) wide, Assistant is \(iconOnly.frame.width)")
+        #expect(view.frame.width > 70, "Settings is \(view.frame.width) wide: only its icon shows")
     }
 }

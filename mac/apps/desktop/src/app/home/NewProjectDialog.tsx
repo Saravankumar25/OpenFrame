@@ -15,14 +15,9 @@ import { Banner, Button, Dialog, Field, Segmented, TextInput } from "../../desig
 import { useNav } from "../stores";
 import type { CreateProjectArgs } from "../../ipc/generated/CreateProjectArgs";
 
-/** The segmented control groups the two episodic types (mock 008: "Episodic / Series"). */
-export type TypeChoice = "Feature Film" | "Short Film" | "Episodic / Series";
-export type EpisodicKind = "Episodic" | "Series";
-
-/** Map the dialog's choices to the stored project type (FSD §4.1 has four types). */
-export function toProjectType(choice: TypeChoice, episodic: EpisodicKind): ProjectType {
-  return choice === "Episodic / Series" ? episodic : choice;
-}
+/** New projects are films (owner change list item 9, 2026-10-19: the Episodic and Series formats
+ * are no longer offered; projects made with them earlier still open). */
+export type TypeChoice = Extract<ProjectType, "Feature Film" | "Short Film">;
 
 /** Returns the message to show for the title, or null when valid. */
 export function titleError(title: string): string | null {
@@ -35,7 +30,6 @@ export function titleError(title: string): string | null {
 export function NewProjectDialog({ onClose }: { onClose: () => void }) {
   const [title, setTitle] = useState("");
   const [choice, setChoice] = useState<TypeChoice>("Feature Film");
-  const [episodic, setEpisodic] = useState<EpisodicKind>("Episodic");
   const [language, setLanguage] = useState("");
   const [genre, setGenre] = useState("");
   const [creator, setCreator] = useState("");
@@ -64,7 +58,7 @@ export function NewProjectDialog({ onClose }: { onClose: () => void }) {
     setFailed(null);
     create.mutate({
       title: title.trim(),
-      projectType: toProjectType(choice, episodic),
+      projectType: choice,
       language: language.trim() || null,
       genre: genre.trim() || null,
       creator: creator.trim() || null,
@@ -122,23 +116,9 @@ export function NewProjectDialog({ onClose }: { onClose: () => void }) {
             options={[
               { value: "Feature Film", label: "Feature Film" },
               { value: "Short Film", label: "Short Film" },
-              { value: "Episodic / Series", label: "Episodic / Series" },
             ]}
           />
         </Field>
-        {choice === "Episodic / Series" && (
-          <fieldset className="field" style={{ border: 0, padding: 0, margin: "0 0 10px" }}>
-            <legend className="sm b" style={{ color: "var(--ink2)", marginBottom: 4 }}>Structure</legend>
-            <label className="check">
-              <input type="radio" name="np-episodic" checked={episodic === "Episodic"} onChange={() => setEpisodic("Episodic")} style={{ accentColor: "var(--accent)" }} />
-              <span>Episodic <span className="muted sm">(episodes of one story)</span></span>
-            </label>
-            <label className="check">
-              <input type="radio" name="np-episodic" checked={episodic === "Series"} onChange={() => setEpisodic("Series")} style={{ accentColor: "var(--accent)" }} />
-              <span>Series <span className="muted sm">(seasons of episodes)</span></span>
-            </label>
-          </fieldset>
-        )}
         <details>
           <summary className="h4" style={{ cursor: "pointer", margin: "6px 0 10px" }}>Optional details</summary>
           <div className="grid g3" style={{ gap: 10 }}>

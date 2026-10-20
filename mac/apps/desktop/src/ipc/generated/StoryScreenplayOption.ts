@@ -6,6 +6,6 @@ export type StoryScreenplayOption = { id: string, title: string, draftCount: num
  */
 hasWrittenScenes: boolean, 
 /**
- * Name the next "from Story Board" draft would get.
+ * Name the next "from Beat Board" draft would get.
  */
 nextDraftName: string, };

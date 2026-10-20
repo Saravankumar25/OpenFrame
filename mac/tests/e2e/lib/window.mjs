@@ -15,6 +15,31 @@ Add-Type -Namespace OfE2e -Name Close -MemberDefinition @'
 [DllImport("user32.dll")] public static extern bool SetForegroundWindow(System.IntPtr hWnd);
 [DllImport("user32.dll")] public static extern System.IntPtr GetForegroundWindow();
 [DllImport("user32.dll")] public static extern void keybd_event(byte vk, byte scan, int flags, System.UIntPtr extra);
+// The close itself is compiled: after the go signal no PowerShell line is interpreted, so the
+// close goes out within milliseconds (the interpreted loop took 114 ms on the installed build).
+public static string Fire(System.IntPtr hWnd, bool altF4) {
+  if (!altF4) {
+    PostMessage(hWnd, 0x0112, (System.IntPtr)0xF060, System.IntPtr.Zero);
+    return "sent";
+  }
+  // Keys go to whatever window is in front: never press Alt+F4 unless it is the app's window.
+  // Windows may refuse a plain SetForegroundWindow (its foreground lock); a key press first is the
+  // documented way to be allowed, so try a few times with one before giving up.
+  for (int i = 0; i < 10 && GetForegroundWindow() != hWnd; i++) {
+    if (i > 0) {
+      keybd_event(0x12, 0, 0, System.UIntPtr.Zero);
+      keybd_event(0x12, 0, 2, System.UIntPtr.Zero);
+      System.Threading.Thread.Sleep(50);
+    }
+    SetForegroundWindow(hWnd);
+  }
+  if (GetForegroundWindow() != hWnd) return "not in front";
+  keybd_event(0x12, 0, 0, System.UIntPtr.Zero);
+  keybd_event(0x73, 0, 0, System.UIntPtr.Zero);
+  keybd_event(0x73, 0, 2, System.UIntPtr.Zero);
+  keybd_event(0x12, 0, 2, System.UIntPtr.Zero);
+  return "sent";
+}
 '@
 $deadline = (Get-Date).AddSeconds(20)
 $hwnd = [System.IntPtr]::Zero
@@ -23,34 +48,16 @@ while ($hwnd -eq [System.IntPtr]::Zero -and (Get-Date) -lt $deadline) {
   if ($p) { $hwnd = $p.MainWindowHandle } else { Start-Sleep -Milliseconds 200 }
 }
 if ($hwnd -eq [System.IntPtr]::Zero) { throw 'The app window was not found.' }
-if ($env:OF_CLOSE_METHOD -eq 'alt-f4') { [void][OfE2e.Close]::SetForegroundWindow($hwnd) }
+$altF4 = $env:OF_CLOSE_METHOD -eq 'alt-f4'
+if ($altF4) { [void][OfE2e.Close]::SetForegroundWindow($hwnd) }
+[void][OfE2e.Close]::GetForegroundWindow()
 [Console]::Out.WriteLine('ready')
 [Console]::Out.Flush()
 [void][Console]::In.ReadLine()
-if ($env:OF_CLOSE_METHOD -eq 'alt-f4') {
-  # Keys go to whatever window is in front: never press Alt+F4 unless it is the app's window.
-  # Windows may refuse a plain SetForegroundWindow (its foreground lock); a key press first is the
-  # documented way to be allowed, so try a few times with one before giving up.
-  for ($i = 0; $i -lt 10 -and [OfE2e.Close]::GetForegroundWindow() -ne $hwnd; $i++) {
-    if ($i -gt 0) {
-      [OfE2e.Close]::keybd_event(0x12, 0, 0, [System.UIntPtr]::Zero)
-      [OfE2e.Close]::keybd_event(0x12, 0, 2, [System.UIntPtr]::Zero)
-      Start-Sleep -Milliseconds 50
-    }
-    [void][OfE2e.Close]::SetForegroundWindow($hwnd)
-  }
-  if ([OfE2e.Close]::GetForegroundWindow() -ne $hwnd) { throw 'The app window is not in front; Alt+F4 was not sent.' }
-  $KEYUP = 2
-  [OfE2e.Close]::keybd_event(0x12, 0, 0, [System.UIntPtr]::Zero)
-  [OfE2e.Close]::keybd_event(0x73, 0, 0, [System.UIntPtr]::Zero)
-  [OfE2e.Close]::keybd_event(0x73, 0, $KEYUP, [System.UIntPtr]::Zero)
-  [OfE2e.Close]::keybd_event(0x12, 0, $KEYUP, [System.UIntPtr]::Zero)
-} else {
-  $WM_SYSCOMMAND = 0x0112
-  $SC_CLOSE = 0xF060
-  [void][OfE2e.Close]::PostMessage($hwnd, $WM_SYSCOMMAND, [System.IntPtr]$SC_CLOSE, [System.IntPtr]::Zero)
-}
+$result = [OfE2e.Close]::Fire($hwnd, $altF4)
+if ($result -ne 'sent') { throw 'The app window is not in front; Alt+F4 was not sent.' }
 [Console]::Out.WriteLine('sent')
+[Console]::Out.Flush()
 `;
 
 /**

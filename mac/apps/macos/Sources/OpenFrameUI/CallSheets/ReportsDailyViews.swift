@@ -78,7 +78,7 @@ struct CSReportsView: View {
                             }
                             .buttonStyle(.plain)
                             .accessibilityIdentifier("reports-saved-\(s.id)")
-                            Button { Task { await model.deleteSnapshot(s.id) } } label: { Image(systemName: "trash") }
+                            Button { Task { await model.deleteSnapshot(s.id) } } label: { Label("Delete", systemImage: "trash") }
                                 .buttonStyle(.borderless)
                                 .accessibilityLabel("Delete \(s.title)")
                                 .accessibilityIdentifier("reports-delete-\(s.id)")
@@ -212,7 +212,7 @@ struct CSDailyView: View {
                 } description: {
                     Text("The daily view shows everything you need to know for one shooting day, derived from the schedule.")
                 } actions: {
-                    Button("Open Schedule") { csShowWorkspace(.schedule) }
+                    Button("Open Schedule") { ProjectNav.show(.production, tab: .schedule) }
                         .accessibilityIdentifier("daily-open-schedule")
                 }
                 .accessibilityElement(children: .contain)
@@ -237,6 +237,13 @@ struct CSDailyView: View {
                     .labelsHidden().fixedSize()
                     .accessibilityLabel("Shooting day")
                     .accessibilityIdentifier("daily-day")
+                    Button {
+                        model.hub.exportDaily(dayId: d.id, label: d.label)
+                    } label: {
+                        Label("Export", systemImage: "square.and.arrow.up")
+                    }
+                    .help("Export \(d.label) as its own document")
+                    .accessibilityIdentifier("daily-export")
                 }
             }
             if !model.openIssues.isEmpty {
@@ -245,7 +252,7 @@ struct CSDailyView: View {
                     tone: .warn,
                     text: issues.count == 1 ? issues[0].message : "\(issues.count) things to check on this day: \(issues.map(\.message).joined(separator: " "))"
                 ) {
-                    Button("Open day") { csShowWorkspace(.schedule) }
+                    Button("Open day") { ProjectNav.show(.production, tab: .schedule) }
                         .controlSize(.small)
                         .accessibilityIdentifier("daily-open-day")
                 }

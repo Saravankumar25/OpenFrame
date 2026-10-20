@@ -8,11 +8,13 @@ import Observation
 import OpenFrameCore
 
 enum StoryTab: String, CaseIterable, Identifiable {
-    case board, outline, characters, timeline, episodes
+    /// The free Story page comes first, left of the Beat Board (owner request 2026-10-20).
+    case page, board, outline, characters, timeline, episodes
     var id: String { rawValue }
     var title: String {
         switch self {
-        case .board: "Board"
+        case .page: "Story"
+        case .board: "Beat Board"
         case .outline: "Outline"
         case .characters: "Characters"
         case .timeline: "Timeline"
@@ -297,7 +299,7 @@ final class StoryModel {
         } catch { fail("Could not change the episode", error) }
     }
 
-    /// "Open Story Board" in Episodes: scope the board to the episode and show it.
+    /// "Open Beat Board" in Episodes: scope the board to the episode and show it.
     func openEpisode(_ id: String) async {
         tab = .board
         await chooseEpisode(id)
@@ -829,6 +831,6 @@ extension StoryModel {
                 itemIds: scope == "selected" ? selected.compactMap { StoryItemRef(key: $0)?.id } : nil))
             say("Exported \(r.fileName)")
             return true
-        } catch { fail("Could not export the Story Board", error); return false }
+        } catch { fail("Could not export the Beat Board", error); return false }
     }
 }

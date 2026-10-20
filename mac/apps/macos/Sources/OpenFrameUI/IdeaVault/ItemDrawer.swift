@@ -109,7 +109,7 @@ private struct VaultDrawerContent: View {
                     model.closeDrawer()
                 }
             } label: {
-                Image(systemName: "xmark").frame(width: 22, height: 22)
+                Label("Close", systemImage: "xmark")
             }
             .buttonStyle(.borderless)
             .keyboardShortcut(.cancelAction)
@@ -376,7 +376,7 @@ private struct VaultDrawerContent: View {
     private func chip(_ text: String, removeLabel: String, remove: @escaping () -> Void) -> some View {
         HStack(spacing: 3) {
             Text(text).font(.caption)
-            Button(action: remove) { Image(systemName: "xmark").font(.system(size: 8, weight: .bold)) }
+            Button(action: remove) { Label("Remove", systemImage: "xmark").font(.caption2) }
                 .buttonStyle(.plain)
                 .accessibilityLabel(removeLabel)
         }
@@ -479,7 +479,7 @@ struct VaultPreview: View {
     private var audioPlayer: some View {
         HStack(spacing: 10) {
             Button { player.toggle() } label: {
-                Image(systemName: player.isPlaying ? "pause.fill" : "play.fill").frame(width: 22, height: 22)
+                Label(player.isPlaying ? "Pause" : "Play", systemImage: player.isPlaying ? "pause.fill" : "play.fill")
             }
             .buttonStyle(.borderedProminent)
             .disabled(!player.loaded || player.failed)

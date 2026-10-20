@@ -7,7 +7,7 @@
 //! exactly; `OPENFRAME_PROPERTY_CASES=<n>` runs `n` times as many seeds for a deeper local soak.
 //!
 //! Properties:
-//! 1. Story Board order after many random multi-card moves equals the model list; card
+//! 1. Beat Board order after many random multi-card moves equals the model list; card
 //!    positions are dense (1..n) and unique in every container; the order survives a restart.
 //! 2. Undo and redo identity: undoing every random edit returns the exact canonical database
 //!    content (every undo-tracked table, every column, timestamps included) of an earlier state,

@@ -43,16 +43,10 @@ pub fn relevant(question: &str, n: usize) -> Vec<(&'static str, &'static str)> {
         .filter(|(s, _)| *s > 0)
         .collect();
     scored.sort_by_key(|s| std::cmp::Reverse(s.0));
-    let mut out: Vec<(&str, &str)> = scored.into_iter().take(n).map(|(_, s)| s).collect();
-    if out.is_empty() {
-        // Always ground in the assistant-behaviour section rather than nothing.
-        out.extend(
-            sections()
-                .into_iter()
-                .filter(|(t, _)| t.starts_with("How the assistant")),
-        );
-    }
-    out
+    // Nothing matching means the guide does not cover the question. No unrelated section is
+    // offered instead: that is how a Telugu question about a character was answered with the
+    // guide's Production Source text (OpenFrameAI.docx exhibit E07).
+    scored.into_iter().take(n).map(|(_, s)| s).collect()
 }
 
 #[cfg(test)]

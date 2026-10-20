@@ -117,8 +117,9 @@ export async function results(browser) {
       kind: m.getAttribute("data-kind"),
       text: m.innerText,
       sources: [...m.querySelectorAll(".ai-sources .chip, .ai-sources button")].map((c) => c.textContent?.trim() ?? ""),
-      exact: m.innerText.includes("Exact · from project data"),
-      inferred: m.innerText.includes("Inferred · written by Offline AI"),
+      // How sure the answer is is not shown in the conversation; the answer carries it as data.
+      exact: m.getAttribute("data-confidence") === "Exact",
+      inferred: m.getAttribute("data-confidence") === "Inferred",
     })),
   );
 }

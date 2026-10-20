@@ -191,7 +191,7 @@ struct CommitField: View {
                         }
                     }
                 } label: {
-                    Image(systemName: "chevron.down.circle")
+                    Label("Suggestions", systemImage: "chevron.down.circle")
                 }
                 .menuStyle(.borderlessButton).menuIndicator(.hidden).fixedSize()
                 .accessibilityLabel("\(label) suggestions")

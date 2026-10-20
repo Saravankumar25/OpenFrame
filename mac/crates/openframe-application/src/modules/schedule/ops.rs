@@ -2513,7 +2513,11 @@ pub(crate) fn today() -> String {
 }
 
 /// FSD §57: a derived, mostly read-only view of one shooting day.
-fn daily(core: &AppCore, actor: &Actor, a: ScheduleDailyArgs) -> AppResult<ScheduleDailyView> {
+pub(crate) fn daily(
+    core: &AppCore,
+    actor: &Actor,
+    a: ScheduleDailyArgs,
+) -> AppResult<ScheduleDailyView> {
     read(core, actor, |c| {
         let Some(sched) = current_schedule(c)? else {
             return Ok(ScheduleDailyView {

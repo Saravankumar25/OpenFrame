@@ -148,7 +148,7 @@ describe("desktop journey", () => {
       await browser.keys("Enter");
       await sleep(500);
       // Ctrl+N (outside text fields) = New Scene Card.
-      await (await $('//h1[normalize-space(.)="Story Board"]')).click();
+      await (await $('//h1[normalize-space(.)="Beat Board"]')).click();
       await browser.keys(["Control", "n"]);
       const second = await $('//textarea[@aria-label="Short description"]');
       await second.waitForDisplayed({ timeout: 10_000 });
@@ -242,9 +242,9 @@ describe("desktop journey", () => {
     await step("breakdown", async () => {
       await openWorkspace(browser, "Breakdown");
       await click(browser, "Select Source");
-      await (await $('//*[@role="dialog"]//button[starts-with(normalize-space(.),"Draft 1 from Story Board")]')).click();
+      await (await $('//*[@role="dialog"]//button[starts-with(normalize-space(.),"Draft 1 from Beat Board")]')).click();
       await inDialog("Set as Production Source");
-      await waitForText(browser, "Production Source: Draft 1 from Story Board");
+      await waitForText(browser, "Production Source: Draft 1 from Beat Board");
       await click(browser, "Suggest Elements");
       await click(browser, "Accept Pistol");
       await click(browser, "Accept Arjun");
@@ -313,7 +313,7 @@ describe("desktop journey", () => {
       // The imported draft was open last; the strip's scene lives in Draft 1.
       await browser.waitUntil(
         async () =>
-          (await main()).includes("Draft 1 from Story Board") &&
+          (await main()).includes("Draft 1 from Beat Board") &&
           (await browser.execute(() => document.querySelector(".spx-doc .sp-el.cur")?.textContent ?? "")) === "INT. POLICE STATION — NIGHT",
         { timeout: 15_000, timeoutMsg: "the strip's scene was not opened in its draft" },
       );

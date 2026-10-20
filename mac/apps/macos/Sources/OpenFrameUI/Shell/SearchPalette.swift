@@ -11,6 +11,8 @@ import OpenFrameCore
 /// Where a search result leads on the Mac.
 struct SearchTarget: Equatable {
     var workspace: Workspace?
+    /// The Production tab, for a Production result.
+    var tab: ProductionTab?
     /// Set for screenplay results: screenplayId, draftId, sceneId, episodeId where the core knows them.
     var screenplay: [String: String] = [:]
     /// The result lives where the Mac has no screen yet (Settings, or a Windows-only area).
@@ -34,13 +36,8 @@ enum SearchRouting {
             }
             return SearchTarget(workspace: .screenplay, screenplay: info)
         case "production":
-            switch sub {
-            case "schedule": return SearchTarget(workspace: .schedule)
-            case "sides": return SearchTarget(workspace: .callSheets)
-            case "budget": return SearchTarget(workspace: .budget)
-            case "shots", "moodboards", "storyboards": return SearchTarget(workspace: .visual)
-            default: return SearchTarget(workspace: .breakdown)
-            }
+            // Catalog, Locations, Cast & Crew and the planning pages are Production tabs, as on Windows.
+            return SearchTarget(workspace: .production, tab: sub.flatMap(ProductionTab.init(windowsId:)) ?? .overview)
         case "callsheets": return SearchTarget(workspace: .callSheets)
         case "files": return SearchTarget(workspace: .files)
         case "notes": return SearchTarget(workspace: .notes)
@@ -61,7 +58,7 @@ enum SearchRouting {
         if ws == .screenplay {
             NotificationCenter.default.post(name: .openFrameShowScreenplayTarget, object: nil, userInfo: target.screenplay)
         }
-        NotificationCenter.default.post(name: .openFrameShowWorkspace, object: ws.rawValue)
+        ProjectNav.show(ws, tab: target.tab)
     }
 
     static let typeLabels: [String: String] = [
@@ -149,7 +146,13 @@ final class SearchPaletteModel {
             for ws in Workspace.allCases {
                 list.append(PaletteCommand(id: "go-\(ws.rawValue)", title: "Go to \(ws.title)", symbol: ws.symbol,
                                            hint: ws.shortcut.map { "\u{2303}\u{2318}\(String($0.character))" }) {
-                    NotificationCenter.default.post(name: .openFrameShowWorkspace, object: ws.rawValue)
+                    ProjectNav.show(ws)
+                })
+            }
+            for tab in ProductionTab.allCases {
+                list.append(PaletteCommand(id: "go-production-\(tab.rawValue)", title: "Go to Production \u{00B7} \(tab.title)",
+                                           symbol: Workspace.production.symbol, hint: nil) {
+                    ProjectNav.show(.production, tab: tab)
                 })
             }
         } else {

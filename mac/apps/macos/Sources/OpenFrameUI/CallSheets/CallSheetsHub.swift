@@ -182,6 +182,25 @@ final class CallSheetsHub {
         }
     }
 
+    /// The day shown on the Daily View, as a document of its own named after the day (owner
+    /// request 2026-10-20): "Shoot Day 4 - Daily view".
+    func exportDaily(dayId: String, label: String) {
+        let name = "\(label) - Daily view"
+        exportModel = CSExportModel(
+            title: "Export Daily View",
+            sub: "Everything this page shows for the day: scenes in order, location, cast and call times, notes, breakdown items.",
+            source: "Source: \(label)",
+            documentName: name,
+            note: "Private notes excluded. Export creates a snapshot and does not change the schedule.",
+            formats: CSExportFormat.tables,
+            projectTitle: projectTitle,
+            plainName: true
+        ) { [weak self] format, path, _ in
+            guard let core = self?.core else { throw CoreFailure(code: "no_project", message: "No project is open.") }
+            return try await core.scheduleExportDaily(ExportDailyArgs(format: format, path: path, dayId: dayId))
+        }
+    }
+
     func exportReport(type: String?, filter: String?, reportId: String?, title: String) {
         let filtered = (filter?.isEmpty == false) ? " \u{00B7} filtered by \u{201C}\(filter ?? "")\u{201D}" : ""
         exportModel = CSExportModel(

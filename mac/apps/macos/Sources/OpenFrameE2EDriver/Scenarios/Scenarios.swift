@@ -3,8 +3,41 @@
 
 enum Scenarios {
     static var all: [Scenario] {
-        releaseSmoke + teamGate + forcedKill + writingGroup + productionGroup + interchangeGroup + captureGroup + windowFitGroup + goldGroup
+        releaseSmoke + storyPage + teamGate + forcedKill + writingGroup + productionGroup + interchangeGroup + captureGroup + windowFitGroup + goldGroup
     }
+}
+
+// MARK: 03-story-page
+
+extension Scenarios {
+    static let storyLine = "A storm. Fishing boats in the swell, and a woman's voice on the radio."
+
+    /// The free Story page left of the Beat Board keeps what is typed across a restart, and the
+    /// planning board is called Beat Board (owner requests of 2026-10-20).
+    static let storyPage: [Scenario] = [
+        Scenario("03-story-page/type-restart-and-it-is-there", phases: 2) { ui, phase, ctx in
+            try await ui.startApp(ctx)
+            if phase == 1 {
+                try await ui.createProject("Story Night")
+                try await ui.go("Story")
+                try await Scenarios.segment(ui, group: "story-tabs", "Story")
+                try await ui.wait(id: "story-page-text", timeout: 15, "the Story page")
+                try await ui.typeHere(storyLine)
+                try await ui.waitText("Saved", timeout: 15)
+                try ui.snapshot("story-page")
+                try await Scenarios.segment(ui, group: "story-tabs", "Beat Board")
+                try await ui.waitText("Beat Board", timeout: 15)
+                try ui.expect(!ui.screenText().contains("Story Board"), "the old name is gone from the board")
+                try await ui.closeProject()
+            } else {
+                try await ui.openProject("Story Night")
+                try await ui.go("Story")
+                try await Scenarios.segment(ui, group: "story-tabs", "Story")
+                try await ui.wait(id: "story-page-text", timeout: 15, "the Story page")
+                try await ui.waitText(storyLine, timeout: 15)
+            }
+        },
+    ]
 }
 
 // MARK: 00-release-smoke

@@ -89,12 +89,12 @@ describe("the list", () => {
     expect(labels(suggestions(ctx, values(), null, true))).toEqual(["LATER", "MOMENTS LATER"]);
     expect(labels(suggestions({ kind: "time", from: 0, to: 5, query: "night" }, values(), null, true))).toEqual([]);
   });
-  it("characters come from the script, the Story Board and cast, with their source", () => {
+  it("characters come from the script, the Beat Board and cast, with their source", () => {
     const items = suggestions({ kind: "character", from: 0, to: 0, query: "" }, values(), project, true);
     expect(items.map((i) => [i.label, i.source])).toEqual([
       ["MEERA", "Script"],
       ["RAVI", "Script"],
-      ["ANJALI", "Story Board"],
+      ["ANJALI", "Beat Board"],
       ["CONDUCTOR", "Cast"],
     ]);
   });

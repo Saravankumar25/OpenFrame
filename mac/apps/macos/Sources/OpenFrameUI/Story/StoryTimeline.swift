@@ -96,7 +96,7 @@ struct StoryTimelineView: View {
                     ContentUnavailableView {
                         Label("No screenplay scenes yet.", systemImage: "calendar")
                     } description: {
-                        Text("Story days belong to screenplay scenes. Build a screenplay from the Story Board or write one first. Story Board cards never need a story day.")
+                        Text("Story days belong to screenplay scenes. Build a screenplay from the Beat Board or write one first. Beat Board cards never need a story day.")
                     } actions: {
                         Button("Build Screenplay") {
                             story.tab = .board

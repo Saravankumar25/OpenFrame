@@ -73,12 +73,15 @@ describe("Application Home", () => {
   it("shows the empty state with the two first actions when there are no projects", async () => {
     setup({ "project.list_recent": [], "app.info": info() });
     expect(await screen.findByText("Create your first project.")).toBeInTheDocument();
-    expect(screen.getByText(/A project holds your ideas, story board, screenplay and production plan/)).toBeInTheDocument();
+    expect(screen.getByText(/A project holds your ideas, beat board, screenplay and production plan/)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Create Project" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Open Existing Project" })).toBeInTheDocument();
     // No project grid, no production metadata on the empty Home.
     expect(screen.queryByText("Recent projects")).not.toBeInTheDocument();
     expect(screen.getByText("No project open")).toBeInTheDocument();
+    // One Settings button replaces the old shortcuts and appearance buttons (owner item 6).
+    expect(screen.getByRole("button", { name: "Settings" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Help" })).not.toBeInTheDocument();
   });
 
   it("offers Restore Backup or Package on an empty Home (a new computer) and on the project list", async () => {

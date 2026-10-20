@@ -94,11 +94,18 @@ fn run() -> Result<(), String> {
             bundle.display()
         ));
     }
+    // The engine starts inside its own folder, so a relative folder given here would no longer
+    // point at it (the search engine then failed to start and every retrieval case measured word
+    // matching alone).
+    let bundle = bundle.canonicalize().map_err(|e| e.to_string())?;
     // The models the compiled lock pins, installed in this run's app data as a finished download
     // leaves them (from OPENFRAME_AI_ASSETS_DIR or the checkout's .ai-assets).
     let assets = std::env::var_os("OPENFRAME_AI_ASSETS_DIR")
         .map(PathBuf::from)
         .unwrap_or_else(|| PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../.ai-assets"));
+    let assets = assets
+        .canonicalize()
+        .map_err(|e| format!("{}: {e}", assets.display()))?;
     std::fs::create_dir_all(&args.out).map_err(|e| e.to_string())?;
     let data = tempfile::tempdir().map_err(|e| e.to_string())?;
     let app_data = AppConfig::isolated(data.path()).app_data_dir;
@@ -141,6 +148,18 @@ fn run() -> Result<(), String> {
         chat_ms: Mutex::new(0),
     });
     svc.attach_model(Some(recorder.clone()));
+    // Retrieval cases measure meaning search only when the search model runs: say so at once
+    // (with the engine's reason) instead of reporting word matching as a search result.
+    if let Ok(m) = svc.manager() {
+        match m.embed(&["preflight".to_string()]) {
+            Ok(_) => eprintln!("ai-eval: search model ready"),
+            Err(e) => eprintln!(
+                "ai-eval: search model NOT ready: {} ({})",
+                e.message,
+                e.detail.as_deref().unwrap_or("no detail")
+            ),
+        }
+    }
     let mut results =
         std::fs::File::create(args.out.join("results.jsonl")).map_err(|e| e.to_string())?;
     let mut requests =
@@ -160,7 +179,10 @@ fn run() -> Result<(), String> {
             "promptMs": u.prompt_ms, "generationMs": u.generation_ms, "chatWallMs": chat_ms });
         let index = intelligence::service(&core).current().map(|ix| {
             let snap = ix.snapshot();
-            json!({ "semanticReady": snap.semantic_ready, "model": snap.embedding_model })
+            json!({ "semanticReady": snap.semantic_ready, "model": snap.embedding_model,
+                "state": format!("{:?}", snap.state), "embedded": snap.counts.embedded,
+                "pendingEmbeddings": snap.pending_embeddings, "embedderPresent": snap.embedder_present,
+                "error": snap.error })
         });
         let s = score(case, &o);
         eprintln!(
@@ -502,9 +524,15 @@ fn run_case(core: &AppCore, case: &Case) -> Observation {
         }
     }
     if case.setup.iter().any(|s| {
-        ["notes.", "vault.", "private_note.", "files.", "screenplay.import"]
-            .iter()
-            .any(|p| s.op.starts_with(p))
+        [
+            "notes.",
+            "vault.",
+            "private_note.",
+            "files.",
+            "screenplay.import",
+        ]
+        .iter()
+        .any(|p| s.op.starts_with(p))
     }) {
         intelligence::wait_idle(core, Duration::from_secs(60));
     }
@@ -514,7 +542,16 @@ fn run_case(core: &AppCore, case: &Case) -> Observation {
         // word matching alone.
         let until = Instant::now() + Duration::from_secs(600);
         while let Some(ix) = intelligence::service(core).current() {
-            if ix.snapshot().semantic_ready || Instant::now() > until {
+            let snap = ix.snapshot();
+            // A failed or unavailable index never becomes ready: measure word matching at once
+            // instead of waiting the full ten minutes on every case.
+            let given_up = !snap.embedder_present
+                || snap.error.is_some()
+                || matches!(
+                    snap.state,
+                    retrieval::IndexState::Failed | retrieval::IndexState::Unavailable
+                );
+            if snap.semantic_ready || given_up || Instant::now() > until {
                 break;
             }
             std::thread::sleep(Duration::from_millis(250));

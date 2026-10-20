@@ -108,8 +108,11 @@ pub fn reveal_location(
         "dataRoot" => {
             let dir = core.config.data_root();
             std::fs::create_dir_all(&dir).map_err(|e| {
-                AppError::new("internal.open_failed", "OpenFrame couldn't open that folder.")
-                    .with_detail(e.to_string())
+                AppError::new(
+                    "internal.open_failed",
+                    "OpenFrame couldn't open that folder.",
+                )
+                .with_detail(e.to_string())
             })?;
             dir
         }

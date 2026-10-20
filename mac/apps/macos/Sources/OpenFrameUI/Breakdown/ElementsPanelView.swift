@@ -139,7 +139,7 @@ struct ElementsPanelView: View {
             Menu {
                 elementMenu(e)
             } label: {
-                Image(systemName: "ellipsis.circle")
+                Label("Actions", systemImage: "ellipsis.circle")
             }
             .menuStyle(.borderlessButton)
             .menuIndicator(.hidden)

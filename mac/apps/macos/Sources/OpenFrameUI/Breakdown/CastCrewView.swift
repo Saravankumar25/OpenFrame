@@ -231,7 +231,7 @@ struct CastInspector: View {
                         if let p = ImagePicker.choose(multiple: false).first { Task { await model.setCastPhoto(member.id, path: p) } }
                     }.controlSize(.small)
                     if member.photo != nil {
-                        Button { Task { await model.setCastPhoto(member.id, path: nil) } } label: { Image(systemName: "xmark.circle") }
+                        Button { Task { await model.setCastPhoto(member.id, path: nil) } } label: { Label("Remove", systemImage: "xmark.circle") }
                             .buttonStyle(.borderless).accessibilityLabel("Remove photo")
                     }
                 }

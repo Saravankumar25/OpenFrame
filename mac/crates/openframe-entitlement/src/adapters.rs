@@ -57,7 +57,10 @@ pub trait ChannelAdapter: Send + Sync {
     /// change, the end of a lease). It must not do what "Restore purchase" does when that can
     /// show the user a window. The default is the restore check, for a channel without a
     /// distinction.
-    fn revalidate_channel_state(&self, _reason: crate::mac::RevalidateReason) -> Option<EntitlementState> {
+    fn revalidate_channel_state(
+        &self,
+        _reason: crate::mac::RevalidateReason,
+    ) -> Option<EntitlementState> {
         self.restore_channel_state()
     }
 

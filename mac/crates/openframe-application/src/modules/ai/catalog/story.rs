@@ -22,11 +22,11 @@ const COLORS: &[&str] = &[
 pub const SPECS: &[ProposalSpec] = &[
     spec!(
         "propose_act",
-        "Prepare a new act on the Story Board (optionally before another act).",
+        "Prepare a new act on the Beat Board (optionally before another act).",
         ["story.create_act"],
         [],
         Edit,
-        "changing the Story Board",
+        "changing the Beat Board",
         "Story",
         s_act,
         act
@@ -37,7 +37,7 @@ pub const SPECS: &[ProposalSpec] = &[
         ["story.update_act", "story.move_act"],
         [],
         Edit,
-        "changing the Story Board",
+        "changing the Beat Board",
         "Story",
         s_update_act,
         update_act
@@ -48,7 +48,7 @@ pub const SPECS: &[ProposalSpec] = &[
         ["story.delete_act"],
         [],
         SoftDelete,
-        "deleting Story Board items",
+        "deleting Beat Board items",
         "Story",
         s_delete_act,
         delete_act
@@ -59,7 +59,7 @@ pub const SPECS: &[ProposalSpec] = &[
         ["story.create_sequence"],
         [],
         Edit,
-        "changing the Story Board",
+        "changing the Beat Board",
         "Story",
         s_sequence,
         sequence
@@ -70,7 +70,7 @@ pub const SPECS: &[ProposalSpec] = &[
         ["story.update_sequence"],
         [],
         Edit,
-        "changing the Story Board",
+        "changing the Beat Board",
         "Story",
         s_update_sequence,
         update_sequence
@@ -81,7 +81,7 @@ pub const SPECS: &[ProposalSpec] = &[
         ["story.delete_sequence"],
         [],
         SoftDelete,
-        "deleting Story Board items",
+        "deleting Beat Board items",
         "Story",
         s_delete_sequence,
         delete_sequence
@@ -92,7 +92,7 @@ pub const SPECS: &[ProposalSpec] = &[
         ["story.create_beat"],
         [],
         Edit,
-        "changing the Story Board",
+        "changing the Beat Board",
         "Story",
         s_beat,
         beat
@@ -103,7 +103,7 @@ pub const SPECS: &[ProposalSpec] = &[
         ["story.update_beat"],
         [],
         Edit,
-        "changing the Story Board",
+        "changing the Beat Board",
         "Story",
         s_update_beat,
         update_beat
@@ -114,7 +114,7 @@ pub const SPECS: &[ProposalSpec] = &[
         ["story.convert_beat"],
         [],
         Edit,
-        "changing the Story Board",
+        "changing the Beat Board",
         "Story",
         s_beat_ref,
         convert_beat
@@ -125,7 +125,7 @@ pub const SPECS: &[ProposalSpec] = &[
         ["story.update_card"],
         [],
         Edit,
-        "changing the Story Board",
+        "changing the Beat Board",
         "Story",
         s_update_card,
         update_card
@@ -136,7 +136,7 @@ pub const SPECS: &[ProposalSpec] = &[
         ["story.card_to_beat"],
         [],
         Edit,
-        "changing the Story Board",
+        "changing the Beat Board",
         "Story",
         s_card_ref,
         card_to_beat
@@ -147,7 +147,7 @@ pub const SPECS: &[ProposalSpec] = &[
         ["story.move_items"],
         [],
         Edit,
-        "changing the Story Board",
+        "changing the Beat Board",
         "Story",
         s_move_items,
         move_items
@@ -158,7 +158,7 @@ pub const SPECS: &[ProposalSpec] = &[
         ["story.duplicate_items"],
         [],
         Edit,
-        "changing the Story Board",
+        "changing the Beat Board",
         "Story",
         s_items,
         duplicate_items
@@ -169,7 +169,7 @@ pub const SPECS: &[ProposalSpec] = &[
         ["story.park_items"],
         [],
         Edit,
-        "changing the Story Board",
+        "changing the Beat Board",
         "Story",
         s_items,
         park_items
@@ -180,7 +180,7 @@ pub const SPECS: &[ProposalSpec] = &[
         ["story.restore_from_parking"],
         [],
         Edit,
-        "changing the Story Board",
+        "changing the Beat Board",
         "Story",
         s_items,
         unpark_items
@@ -191,7 +191,7 @@ pub const SPECS: &[ProposalSpec] = &[
         ["story.delete_items"],
         [],
         SoftDelete,
-        "deleting Story Board items",
+        "deleting Beat Board items",
         "Story",
         s_items,
         delete_items
@@ -202,14 +202,14 @@ pub const SPECS: &[ProposalSpec] = &[
         ["story.remove_attachment"],
         [],
         Edit,
-        "changing the Story Board",
+        "changing the Beat Board",
         "Story",
         s_attachment,
         remove_attachment
     ),
     spec!(
         "propose_build_screenplay",
-        "Prepare building a NEW screenplay or a NEW draft of a named screenplay from the Scene Cards in Story Board order (never overwrites).",
+        "Prepare building a NEW screenplay or a NEW draft of a named screenplay from the Scene Cards in Beat Board order (never overwrites).",
         ["story.build_screenplay"],
         [],
         Edit,
@@ -220,7 +220,7 @@ pub const SPECS: &[ProposalSpec] = &[
     ),
     spec!(
         "propose_story_order",
-        "Prepare reordering a screenplay draft's scenes to match the Story Board order.",
+        "Prepare reordering a screenplay draft's scenes to match the Beat Board order.",
         ["story.apply_order"],
         [],
         Edit,
@@ -418,7 +418,7 @@ pub const SPECS: &[ProposalSpec] = &[
     ),
     spec!(
         "propose_duplicate_episode",
-        "Prepare duplicating an episode (optionally with its Story Board).",
+        "Prepare duplicating an episode (optionally with its Beat Board).",
         ["story.duplicate_episode"],
         [],
         Edit,
@@ -840,7 +840,7 @@ fn act(ctx: &PropCtx<'_>, spec: &ProposalSpec, args: &Value) -> AppResult<Change
             op["beforeId"] = json!(b.id);
             format!("Before “{}”", b.label)
         }
-        None => "At the end of the Story Board".into(),
+        None => "At the end of the Beat Board".into(),
     };
     d.row("Act", title.clone())
         .row("Place", place)
@@ -886,7 +886,7 @@ fn update_act(ctx: &PropCtx<'_>, spec: &ProposalSpec, args: &Value) -> AppResult
         );
         changed = true;
     } else if a.flag("moveToEnd") {
-        d.row("Move", "To the end of the Story Board");
+        d.row("Move", "To the end of the Beat Board");
         d.op(
             "story.move_act",
             json!({"id": act.id, "beforeId": null}),
@@ -1193,7 +1193,7 @@ fn card_to_beat(ctx: &PropCtx<'_>, spec: &ProposalSpec, args: &Value) -> AppResu
 
 fn move_items(ctx: &PropCtx<'_>, spec: &ProposalSpec, args: &Value) -> AppResult<ChangeSetDraft> {
     let a = A(args);
-    let mut d = Draft::new(spec, args, "Proposed Story Board move");
+    let mut d = Draft::new(spec, args, "Proposed Beat Board move");
     let (items, labels) = story_items(ctx, &a, &mut d, true)?;
     let (target, place) = match a.req("to", "destination")?.as_str() {
         "act" => {
@@ -1367,7 +1367,7 @@ fn build_screenplay(
     if include.is_empty() {
         return Err(AppError::ai(
             "not_found",
-            "No Scene Card on the Story Board has a valid scene heading yet (e.g. “INT. STATION - NIGHT”), so there is nothing to build.",
+            "No Scene Card on the Beat Board has a valid scene heading yet (e.g. “INT. STATION - NIGHT”), so there is nothing to build.",
         ));
     }
     let mut d = Draft::new(spec, args, "Proposed Build Screenplay");
@@ -1476,7 +1476,7 @@ fn build_screenplay(
     d.op(
         "story.build_screenplay",
         op,
-        "Build Screenplay from the Story Board",
+        "Build Screenplay from the Beat Board",
     );
     d.done()
 }
@@ -1503,12 +1503,12 @@ fn apply_order(ctx: &PropCtx<'_>, spec: &ProposalSpec, args: &Value) -> AppResul
         op["episodeId"] = json!(e.id);
     }
     d.row("Draft", draft.label())
-        .row("Change", "Scenes built from Scene Cards are reordered to match the Story Board; scene numbers follow the new order")
+        .row("Change", "Scenes built from Scene Cards are reordered to match the Beat Board; scene numbers follow the new order")
         .row("Text", "Scene text is not changed");
     d.op(
         "story.apply_order",
         op,
-        format!("Apply Story Board order to {}", draft.label()),
+        format!("Apply Beat Board order to {}", draft.label()),
     );
     d.done()
 }
@@ -2078,7 +2078,7 @@ fn duplicate_episode(
     let mut d = Draft::new(spec, args, "Proposed episode copy");
     d.target("episode", &e);
     d.row("Duplicate episode", e.label.clone()).row(
-        "Story Board",
+        "Beat Board",
         if copy_story {
             "Copied (new identities, no screenplay links)"
         } else {

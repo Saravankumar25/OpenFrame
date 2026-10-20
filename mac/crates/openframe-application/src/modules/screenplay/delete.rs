@@ -3,7 +3,7 @@
 //! A screenplay goes to Recently Deleted like any other item: it stays there for 30 days and
 //! the 30-day purge (`modules::retention`) then removes it. Only the `screenplay` row is marked
 //! deleted. Its drafts, locked drafts, scenes, production numbers, page setup, custom elements,
-//! character links and Story Board links are left exactly as they were, so a restore brings
+//! character links and Beat Board links are left exactly as they were, so a restore brings
 //! everything back unchanged. While it is deleted, nothing reads or edits it: draft lookups
 //! require a live screenplay (`load_draft`), pickers and lists skip it, and search drops its
 //! scenes.

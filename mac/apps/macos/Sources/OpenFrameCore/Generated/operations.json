@@ -2016,6 +2016,14 @@
     "resultType": "String"
   },
   {
+    "argType": "ExportDailyArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Exports",
+    "name": "schedule.export_daily",
+    "resultType": "ExportResult"
+  },
+  {
     "argType": "ExportDoodArgs",
     "kind": "query",
     "longRunning": false,
@@ -3120,6 +3128,14 @@
     "resultType": "ExportResult"
   },
   {
+    "argType": "ExportStoryPageArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.export_page",
+    "resultType": "ExportResult"
+  },
+  {
     "argType": "StoryCardLinkArgs",
     "kind": "command",
     "longRunning": false,
@@ -3168,6 +3184,14 @@
     "resultType": "StoryOrderPreview"
   },
   {
+    "argType": "StoryPageArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.page",
+    "resultType": "StoryPageDto"
+  },
+  {
     "argType": "StoryItemsArgs",
     "kind": "command",
     "longRunning": false,
@@ -3198,6 +3222,14 @@
     "module": "Story",
     "name": "story.restore_from_parking",
     "resultType": "Vec<StoryPlacement>"
+  },
+  {
+    "argType": "StorySavePageArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.save_page",
+    "resultType": "StoryPageDto"
   },
   {
     "argType": "StorySeriesArgs",

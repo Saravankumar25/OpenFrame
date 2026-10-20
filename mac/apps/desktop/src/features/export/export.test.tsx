@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { ExportDialog } from "./ExportDialog";
 import { ScheduleExportButton } from "./buttons";
-import { buildExportArgs, exportFileName, initialOptions, type ExportOptionField } from "./model";
+import { buildExportArgs, exportFileName, initialOptions, plainFileName, type ExportOptionField } from "./model";
 
 // Test fixtures only: the IPC boundary and the system Save dialog are replaced.
 const calls: { op: string; args: Record<string, unknown> }[] = [];
@@ -73,6 +73,9 @@ describe("export file names", () => {
   it("follows <Project> - <Document> - <date>.<ext> and is safe for Windows", () => {
     const d = new Date(2026, 8, 30);
     expect(exportFileName("Black Rain", "Shooting Schedule", "pdf", d)).toBe("Black Rain - Shooting Schedule - 2026-09-30.pdf");
+    // A document with a name of its own keeps only that name (the Daily View export).
+    expect(plainFileName("Shoot Day 4 - Daily view", "pdf")).toBe("Shoot Day 4 - Daily view.pdf");
+    expect(plainFileName("Story", "docx")).toBe("Story.docx");
     expect(exportFileName("A/B: “C”?", "Moodboard — Overall Look", "pdf", d)).toBe("A B “C” - Moodboard - Overall Look - 2026-09-30.pdf");
     expect(exportFileName(null, "Budget", "xlsx", d)).toBe("Budget - 2026-09-30.xlsx");
     expect(exportFileName("x".repeat(300), "Doc", "csv", d).length).toBeLessThanOrEqual(154);

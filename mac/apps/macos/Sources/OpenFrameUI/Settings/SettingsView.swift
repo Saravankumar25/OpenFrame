@@ -15,12 +15,32 @@ public enum SettingsTab: String, Hashable, CaseIterable {
 public enum SettingsRouter {
     /// The tab the window shows next time it appears or is already open.
     public static var requestedTab: SettingsTab?
+    /// SwiftUI's own action for the Settings window, taken from the main window (`settingsOpener`).
+    /// Recent macOS ignores the old `showSettingsWindow:` message, so the Settings buttons did
+    /// nothing while the menu item and Command+Comma still worked.
+    static var openAction: OpenSettingsAction?
 
     public static func open(tab: SettingsTab? = nil) {
         requestedTab = tab
         if let tab { NotificationCenter.default.post(name: .openFrameSettingsTab, object: tab.rawValue) }
-        NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+        if let openAction {
+            openAction()
+        } else {
+            NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
+        }
     }
+}
+
+private struct SettingsOpener: ViewModifier {
+    @Environment(\.openSettings) private var openSettings
+    func body(content: Content) -> some View {
+        content.onAppear { SettingsRouter.openAction = openSettings }
+    }
+}
+
+extension View {
+    /// Lets `SettingsRouter.open` open the Settings window from anywhere in the app.
+    func settingsOpener() -> some View { modifier(SettingsOpener()) }
 }
 
 extension Notification.Name {

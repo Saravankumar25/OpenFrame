@@ -22,7 +22,7 @@ enum TemplateKinds {
         TemplateTypeInfo(value: "shot_list", label: "Shot list", listLabel: "Shots", key: "shots"),
         TemplateTypeInfo(value: "moodboard", label: "Moodboard", listLabel: "Sections", key: "sections"),
         TemplateTypeInfo(value: "report", label: "Report", listLabel: "Sections", key: "sections"),
-        TemplateTypeInfo(value: "story_board", label: "Story Board starter", listLabel: "Acts", key: "acts"),
+        TemplateTypeInfo(value: "story_board", label: "Beat Board starter", listLabel: "Acts", key: "acts"),
         TemplateTypeInfo(value: "breakdown", label: "Breakdown document", listLabel: "Categories", key: "categories"),
         TemplateTypeInfo(value: "budget", label: "Simple budget", listLabel: "Lines (Category: item)", key: "lines"),
         TemplateTypeInfo(value: "project_starter", label: "Project starter", listLabel: "Acts", key: "acts"),
@@ -69,7 +69,7 @@ enum TemplateKinds {
         case "call_sheet": "Create a call sheet"
         case "shot_list": "Add shots to a scene"
         case "moodboard": "Create a moodboard"
-        case "story_board": "Add to the Story Board"
+        case "story_board": "Add to the Beat Board"
         case "budget": "Add budget lines"
         default: "Create from template"
         }

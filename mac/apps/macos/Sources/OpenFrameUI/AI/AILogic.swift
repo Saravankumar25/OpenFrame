@@ -11,6 +11,26 @@ enum AIText {
     static let staleHint = "AI never applies a stale proposal blindly. It must be re-checked against the current project."
     static let promise = "OpenFrame AI runs on this computer after a one-time download. Your project data is not sent to OpenFrame or to an AI cloud service."
     static let gemmaNotice = "Gemma is provided under and subject to the Gemma Terms of Use found at ai.google.dev/gemma/terms."
+    /// Questions to start with, for the page the person is on. Each is a phrasing the assistant
+    /// answers from the project's own data (the direct routes in the core's commands.rs), so a
+    /// first try never ends in "I couldn't find that".
+    static func starterQuestions(for workspace: Workspace) -> [String] {
+        switch workspace {
+        case .screenplay:
+            ["How many scenes does the screenplay have?", "List the scene headings.", "How long is the screenplay?", "Are there unresolved comments?"]
+        case .story:
+            ["How many scene cards are on the beat board?", "Show the characters on the beat board.", "How many acts are there?", "How many scenes does the screenplay have?"]
+        case .breakdown:
+            ["How far along is the breakdown?", "Which draft is the production source?", "Which locations are used in the script?", "How many scenes does the screenplay have?"]
+        case .production, .callSheets:
+            ["How many scenes are unscheduled?", "How far along is the breakdown?", "Which locations are used in the script?", "Which draft is the production source?"]
+        case .notes:
+            ["What open tasks do I have?", "Summarise my project notes", "Are there unresolved comments?"]
+        default:
+            ["How many scenes does the screenplay have?", "How many scene cards are on the beat board?", "What open tasks do I have?", "How far along is the breakdown?"]
+        }
+    }
+
     static let emptyConversation = "Ask about your project, for example \u{201C}How many scenes are in the script?\u{201D}, \u{201C}Open Scene 12.\u{201D} or \u{201C}Create a task to scout the railway station.\u{201D} The assistant can look things up in several steps; changes are only ever prepared for you to review."
     static let noProject = "The assistant answers from the project that is open, on this computer."
 }
@@ -22,7 +42,7 @@ extension AiScopeKind {
         case .currentScene: "Current Scene"
         case .currentScreenplay: "Current Screenplay"
         case .specificDraft: "Specific Draft"
-        case .storyBoard: "Story Board"
+        case .storyBoard: "Beat Board"
         case .ideaVaultSelection: "Idea Vault Selection"
         case .production: "Production Workspace"
         case .shootingDay: "Shooting Day"
@@ -60,7 +80,7 @@ final class AIScopeHints {
             draftId: workspace == .screenplay ? draftId : nil,
             sceneId: workspace == .screenplay ? sceneId : nil,
             selectionIds: selectionIds,
-            shootingDayId: workspace == .schedule || workspace == .callSheets ? shootingDayId : nil,
+            shootingDayId: workspace == .production || workspace == .callSheets ? shootingDayId : nil,
             callSheetId: workspace == .callSheets ? callSheetId : nil)
     }
 }
@@ -91,7 +111,7 @@ enum AILogic {
         switch c.workspace {
         case .screenplay: return .currentScreenplay
         case .story: return .storyBoard
-        case .breakdown, .schedule, .callSheets, .budget, .visual: return .production
+        case .breakdown, .production, .callSheets: return .production
         default: return .wholeProject
         }
     }
@@ -166,15 +186,23 @@ enum AILogic {
 
     // MARK: Answers
 
-    struct Confidence: Equatable { var text: String; var tone: String }
+    /// The answer as plain text for the clipboard: the text, then every item of its list.
+    static func copyText(_ r: AiResultDto) -> String {
+        let items = r.items.map { "- " + $0.label + ($0.detail.map { " (\($0))" } ?? "") }
+        return ([r.content] + items).joined(separator: "\n")
+    }
 
-    static func confidence(_ c: AiConfidence?) -> Confidence? {
-        switch c {
-        case .exact?: Confidence(text: "Exact \u{00B7} from project data", tone: "green")
-        case .inferred?: Confidence(text: "Inferred \u{00B7} written by Offline AI", tone: "blue")
-        case .unavailable?: Confidence(text: "Not available in project data", tone: "yellow")
-        case nil: nil
-        }
+    /// Items shown before "Show all": a long answer is a preview plus the full list, never "and N more".
+    static let previewItems = 8
+
+    static func visibleItems(_ items: [AiResultItem], all: Bool) -> [AiResultItem] {
+        all ? items : Array(items.prefix(previewItems))
+    }
+
+    /// A refusal, a failure, a private item or a question back needs its reasons next to it. For
+    /// an ordinary answer the details are how it was worked out and stay out of the conversation.
+    static func reasonsVisible(_ kind: AiResultKind) -> Bool {
+        [.denied, .failed, .unavailable, .clarify, .private].contains(kind)
     }
 
     struct SourceChip: Identifiable, Equatable {
@@ -183,17 +211,17 @@ enum AILogic {
         var route: AIRoute?
     }
 
-    static func sourceChips(_ provenance: [AiProvenance]) -> [SourceChip] {
-        provenance.enumerated().map { i, p in
-            SourceChip(
-                id: "\(i):\(p.kind):\(p.label)",
-                text: p.kind == "Scope" || p.kind == "Basis" ? p.label : "\(p.kind): \(p.label)",
-                route: AIRoute(p.nav))
+    /// The sources listed under "See sources": the places the answer was read from. The scope and
+    /// the basis ("Using: Whole Project") are settings of the question, not sources, so they are
+    /// left out; repeats are listed once.
+    static func answerSources(_ provenance: [AiProvenance]) -> [SourceChip] {
+        var seen = Set<String>()
+        return provenance.enumerated().compactMap { i, p in
+            guard p.kind != "Scope", p.kind != "Basis" else { return nil }
+            let text = "\(p.kind): \(p.label)"
+            guard seen.insert(text).inserted else { return nil }
+            return SourceChip(id: "\(i):\(text)", text: text, route: AIRoute(p.nav))
         }
-    }
-
-    static func stepsSummary(_ steps: [AiStepDto]) -> String? {
-        steps.count < 2 ? nil : "\(steps.count) steps: " + steps.map(\.label).joined(separator: " \u{00B7} ")
     }
 
     // MARK: Change Sets
@@ -291,6 +319,12 @@ struct AIRoute: Equatable {
         params = nav.params
     }
 
+    /// The Production tab named by the link ("sub"), Overview when it names none.
+    var tab: ProductionTab? {
+        guard workspace == .production else { return nil }
+        return params["sub"].flatMap(ProductionTab.init(windowsId:)) ?? .overview
+    }
+
     /// Windows workspace ids to the Mac workspaces. Unknown ids are ignored.
     static func workspace(for id: String) -> Workspace? {
         switch id {
@@ -299,7 +333,7 @@ struct AIRoute: Equatable {
         case "story": .story
         case "screenplay": .screenplay
         case "breakdown": .breakdown
-        case "production": .schedule
+        case "production": .production
         case "callsheets": .callSheets
         case "files": .files
         case "trash": .recentlyDeleted
@@ -311,7 +345,7 @@ struct AIRoute: Equatable {
 
     /// Open the place. Navigation is application control, not a project change (AI spec section 5.3).
     @MainActor func perform() {
-        NotificationCenter.default.post(name: .openFrameShowWorkspace, object: workspace.rawValue)
+        ProjectNav.show(workspace, tab: tab)
         if workspace == .screenplay, params["sceneId"] != nil || params["draftId"] != nil {
             var info: [String: Any] = [:]
             for key in ["screenplayId", "draftId", "sceneId"] { if let v = params[key] { info[key] = v } }

@@ -2,6 +2,6 @@
 
 export type StoryDuplicateEpisodeArgs = { id: string, 
 /**
- * Also copy the episode's Story Board (new identities; no screenplay links).
+ * Also copy the episode's Beat Board (new identities; no screenplay links).
  */
 copyStory: boolean, };

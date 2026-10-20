@@ -239,14 +239,14 @@ struct ProjectPagesTextTests {
 
     @Test func aRestoreSaysWhereTheItemWent() {
         let item = DeletedItemView(id: "d", objectType: "story_scene_card", objectId: "o", title: "Maybe Scene 17", typeLabel: "Scene Card",
-                                   wasIn: "Story Board", parentMissing: false, deletedAt: 0, daysLeft: 30)
-        #expect(PageText.restoredMessage(item, restored: nil) == "Restored \u{201C}Maybe Scene 17\u{201D} to Story Board")
+                                   wasIn: "Beat Board", parentMissing: false, deletedAt: 0, daysLeft: 30)
+        #expect(PageText.restoredMessage(item, restored: nil) == "Restored \u{201C}Maybe Scene 17\u{201D} to Beat Board")
         var gone = item
         gone.parentMissing = true
         #expect(PageText.restoredMessage(gone, restored: nil).hasSuffix("so it was put in Unassigned."))
         var untitled = item
         untitled.title = nil
-        #expect(PageText.restoredMessage(untitled, restored: nil) == "Restored the scene card to Story Board")
+        #expect(PageText.restoredMessage(untitled, restored: nil) == "Restored the scene card to Beat Board")
         let row = DeletedItemRow(id: "d", objectType: "x", objectId: "o", tableName: "t", deletedAt: 0, restoredNote: "It went to Unassigned.")
         #expect(PageText.restoredMessage(item, restored: row) == "Restored \u{201C}Maybe Scene 17\u{201D}. It went to Unassigned.")
     }

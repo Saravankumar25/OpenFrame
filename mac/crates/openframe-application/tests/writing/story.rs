@@ -884,7 +884,7 @@ fn fsd_story_022_heading_supplied_inline_is_saved_on_the_card() {
         "story.build_screenplay",
         json!({ "include": [{ "cardId": c, "heading": "ext. level crossing - night" }], "destination": "newScreenplay" }),
     );
-    assert_eq!(r["draftName"], "Draft 1 from Story Board");
+    assert_eq!(r["draftName"], "Draft 1 from Beat Board");
     assert_eq!(
         env.ok("story.card", json!({ "id": c }))["card"]["sceneHeading"],
         "ext. level crossing - night"
@@ -966,7 +966,7 @@ fn fsd_story_023_repeat_build_creates_a_new_draft_never_overwrites() {
     assert_eq!(p["screenplays"][0]["id"], sp.as_str());
     assert_eq!(
         p["screenplays"][0]["nextDraftName"],
-        "Draft 2 from Story Board"
+        "Draft 2 from Beat Board"
     );
     // NewDraft requires the target screenplay.
     assert_eq!(
@@ -1608,4 +1608,87 @@ fn search_indexes_story_objects_and_drops_deleted_ones() {
         env.ok("search.query", json!({ "text": "One" }))[0]["title"],
         "Act One"
     );
+}
+
+// ------------------------------------------------------------------ the Story page
+
+/// The Story page is a free page of prose: saved as typed, undoable, never linked to the Beat
+/// Board, and exported as text, PDF or a Word document (owner request 2026-10-20).
+#[test]
+fn the_story_page_saves_undoes_and_exports() {
+    let env = TestEnv::with_project("Low Tide Radio", "Feature Film");
+    let empty = env.ok("story.page", json!({}));
+    assert_eq!(empty["body"], json!(""));
+    assert_eq!(empty["rev"], json!(0));
+    let text = "A storm. Fishing boats in the swell.\n\nAnjali hears her mother on the radio.";
+    let saved = env.ok("story.save_page", json!({ "body": text, "baseRev": 0 }));
+    assert_eq!(saved["body"], json!(text));
+    assert_eq!(saved["rev"], json!(1));
+    assert_eq!(saved["words"], json!(14));
+    // Saving the same text again changes nothing; a newer text bumps the revision.
+    let again = env.ok("story.save_page", json!({ "body": text, "baseRev": 1 }));
+    assert_eq!(again["rev"], json!(1));
+    let more = format!("{text}\n\nShe goes home.");
+    assert_eq!(
+        env.ok("story.save_page", json!({ "body": more, "baseRev": 1 }))["rev"],
+        json!(2)
+    );
+    // A save from a stale window is refused and the text stays.
+    let stale = env.err("story.save_page", json!({ "body": "lost?", "baseRev": 1 }));
+    assert_eq!(stale, "conflict.stale");
+    assert_eq!(env.ok("story.page", json!({}))["body"], json!(more));
+    // Undo brings the earlier text back.
+    env.undo();
+    assert_eq!(env.ok("story.page", json!({}))["body"], json!(text));
+    // Nothing on the Beat Board.
+    assert!(
+        env.ok("story.board", json!({}))["acts"]
+            .as_array()
+            .map(|a| a.is_empty())
+            .unwrap_or(true)
+    );
+    // Exports.
+    let dir = tempfile::tempdir().unwrap();
+    for fmt in ["txt", "pdf", "docx"] {
+        let p = dir.path().join(format!("story.{fmt}"));
+        let r = env.ok(
+            "story.export_page",
+            json!({ "format": fmt, "path": p.to_string_lossy() }),
+        );
+        assert_eq!(r["format"], json!(fmt));
+        assert!(p.exists(), "{fmt} written");
+    }
+    let txt = std::fs::read_to_string(dir.path().join("story.txt")).unwrap();
+    assert!(txt.contains("Anjali hears her mother on the radio."));
+    assert!(
+        !txt.contains("Created using OpenFrame"),
+        "the writer's own text carries no brand line"
+    );
+    assert!(
+        std::fs::read(dir.path().join("story.pdf"))
+            .unwrap()
+            .starts_with(b"%PDF")
+    );
+    assert!(
+        std::fs::read(dir.path().join("story.docx"))
+            .unwrap()
+            .starts_with(b"PK")
+    );
+    // An unknown format is refused.
+    let bad = env.err(
+        "story.export_page",
+        json!({ "format": "xlsx", "path": dir.path().join("s.xlsx").to_string_lossy() }),
+    );
+    assert!(bad.contains("invalid"), "{bad}");
+}
+
+#[test]
+fn an_empty_story_page_is_not_exported() {
+    let env = TestEnv::with_project("Low Tide Radio", "Feature Film");
+    let dir = tempfile::tempdir().unwrap();
+    let e = env.err(
+        "story.export_page",
+        json!({ "format": "txt", "path": dir.path().join("s.txt").to_string_lossy() }),
+    );
+    assert_eq!(e, "export.nothing_to_export");
 }

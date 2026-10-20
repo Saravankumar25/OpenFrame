@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Settings: General, a new name ready to save (light) - OpenFrame Studio for Mac</title><style>
+:root{color-scheme:light;--page:#e4e4e8;--fg:#1d1d1f;--mut:#6b6b73;--card:#f7f7f9;--line:#c8c8ce;--acc:#b85f00}
+:root.dark{color-scheme:dark;--page:#232326;--fg:#f2f2f4;--mut:#a0a0a8;--card:#1c1c1f;--line:#3c3c42;--acc:#ff9f0a}
+*{box-sizing:border-box}
+html{background:var(--page)}
+body{margin:0;background:var(--page);color:var(--fg);font:14px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif}
+a{color:var(--acc)}
+.toggle{position:absolute;opacity:0;pointer-events:none}
+header.top{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;padding:12px 20px;border-bottom:1px solid var(--line);background:var(--card)}
+header.top h1{font-size:17px;margin:0}
+header.top .meta{color:var(--mut);font-size:13px}
+header.top nav{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto}
+header.top nav a,header.top label{padding:3px 10px;border:1px solid var(--line);border-radius:6px;text-decoration:none;color:var(--fg);font-size:13px;cursor:pointer;background:var(--page)}
+#htmlonly:checked~header label[for=htmlonly]{background:var(--acc);color:#fff;border-color:var(--acc)}
+#htmlonly:focus-visible~header label[for=htmlonly]{outline:2px solid var(--acc)}
+.leads{padding:8px 20px 0;font-size:13px;color:var(--mut)}
+.leads a{margin-right:10px}
+/* The band has a fixed height and the window a fixed left edge, so the picture always lands on whole points. */
+.band{height:104px;overflow:auto;border-bottom:1px solid var(--line);background:var(--card)}
+.band header.top{border-bottom:0}
+.wrap{padding:32px 40px 64px;overflow:auto}
+.win{position:relative;margin:0;border-radius:10px;background:var(--winbg);box-shadow:0 0 0 .5px rgba(0,0,0,.35),0 10px 30px rgba(0,0,0,.28),0 24px 70px rgba(0,0,0,.22)}
+.region{position:absolute;display:block;margin:0;padding:0;border:0;background-repeat:no-repeat;color:inherit;max-width:none;max-height:none;list-style:none}
+.el{position:absolute;margin:0;padding:0;border:0;border-radius:0;background:transparent;color:transparent;-webkit-text-fill-color:transparent;font:inherit;font-size:13px;line-height:1.2;text-align:left;
+ overflow:hidden;text-decoration:none;appearance:none;-webkit-appearance:none;outline:none;box-shadow:none;list-style:none;white-space:pre;caret-color:transparent;resize:none;min-width:0;min-height:0}
+.el::selection{background:rgba(255,149,0,.35)}
+.el .v{display:block;padding:0 4px}
+.el .key{float:right;padding:0 6px;opacity:.7}
+.statictext{cursor:text;user-select:text}
+.statictext[style*="line-height:16px"]{white-space:pre-wrap}
+textarea.el{white-space:pre-wrap}
+button.el,a.el,select.el,input[type=checkbox].el,input[type=radio].el{cursor:pointer}
+a.go{z-index:1}
+button.el:focus-visible,a.el:focus-visible,select.el:focus-visible,input.el:focus-visible,textarea.el:focus-visible{outline:2px solid var(--acc);outline-offset:-2px}
+.loose{pointer-events:none}
+/* HTML only: the picture is hidden and the HTML layer draws the screen on the window colour. */
+#htmlonly:checked~.wrap .region{background-image:none!important;background-color:var(--winbg);box-shadow:inset 0 0 0 .5px rgba(128,128,128,.35)}
+#htmlonly:checked~.wrap .win{background:var(--winbg);overflow:hidden}
+#htmlonly:checked~.wrap .region.sheet,#htmlonly:checked~.wrap .region.menu{border-radius:10px;box-shadow:0 0 0 1px rgba(128,128,128,.5),0 8px 30px rgba(0,0,0,.35)}
+#htmlonly:checked~.wrap .el{color:var(--winfg);-webkit-text-fill-color:var(--winfg);overflow:visible;text-overflow:ellipsis}
+#htmlonly:checked~.wrap button.el,#htmlonly:checked~.wrap a[role=button].el,#htmlonly:checked~.wrap select.el,#htmlonly:checked~.wrap input.el,#htmlonly:checked~.wrap textarea.el,#htmlonly:checked~.wrap .menubutton{
+ overflow:hidden;border:1px solid rgba(128,128,128,.45);border-radius:5px;background:rgba(128,128,128,.12);padding:0 5px;display:flex;align-items:center;font-size:12px}
+#htmlonly:checked~.wrap textarea.el{display:block;padding:4px 6px}
+#htmlonly:checked~.wrap .el.haskids{color:transparent;-webkit-text-fill-color:transparent}
+#htmlonly:checked~.wrap input[type=checkbox].el,#htmlonly:checked~.wrap input[type=radio].el{appearance:auto;-webkit-appearance:auto;border:0;background:none;padding:0;margin:0;width:14px!important;height:14px!important}
+#htmlonly:checked~.wrap [disabled].el,#htmlonly:checked~.wrap [aria-disabled=true].el{opacity:.45}
+#htmlonly:checked~.wrap [aria-selected=true].el{background:rgba(10,132,255,.22)}
+#htmlonly:checked~.wrap .el[data-focused]{outline:2px solid rgba(10,132,255,.7);outline-offset:-2px}
+#htmlonly:checked~.wrap a.el{color:var(--acc);-webkit-text-fill-color:var(--acc)}
+#htmlonly:checked~.wrap a.go{background:rgba(255,149,0,.08)}
+#htmlonly:checked~.wrap .scrollbar,#htmlonly:checked~.wrap .valueindicator{display:none}
+</style></head>
+<body>
+<input type="checkbox" id="htmlonly" class="toggle">
+<div class="band">
+<header class="top">
+<h1>Settings: General, a new name ready to save</h1>
+<span class="meta">Settings &middot; page 021 of 692 &middot; light &middot; window 760 &times; 548 points at 2x</span>
+<nav>
+<a href="../index.html">All pages</a>
+<a href="../dark/021-settings-general-name-edited.html">Same page in dark</a>
+<a href="020-settings-general.html">Back to Settings: General</a>
+<label for="htmlonly">HTML only</label>
+</nav>
+</header>
+
+</div>
+<div class="wrap"><div class="win" role="application" aria-label="General window" style="width:760px;height:548px;--winbg:#f9f9f9;--winfg:#1d1d1f">
+
+<header class="region toolbar" data-region="toolbar" aria-label="Toolbar" style="left:0px;top:0px;width:760px;height:88px;background-image:url(assets/021-settings-general-name-edited.png);background-size:760px 548px;background-position:0px 0px">
+<div role="toolbar" class="el toolbar" data-role="AXToolbar" style="left:0px;top:32px;width:760px;height:56px"><button type="button" class="el button" data-role="AXButton" aria-label="General" style="left:188px;top:0px;width:55px;height:56px">General</button><button type="button" class="el button" data-role="AXButton" aria-label="Appearance" style="left:244px;top:0px;width:75px;height:56px">Appearance</button><button type="button" class="el button" data-role="AXButton" aria-label="Keyboard Shortcuts" style="left:320px;top:0px;width:116px;height:56px">Keyboard Shortcuts</button><button type="button" class="el button" data-role="AXButton" aria-label="Offline AI" style="left:437px;top:0px;width:61px;height:56px">Offline AI</button><button type="button" class="el button" data-role="AXButton" aria-label="Diagnostics" style="left:499px;top:0px;width:73.5px;height:56px">Diagnostics</button></div>
+<button type="button" class="el button" data-role="AXButton/AXCloseButton" style="left:8px;top:8px;width:16px;height:16px"></button>
+<button type="button" class="el haskids button" data-role="AXButton/AXZoomButton" style="left:54px;top:8px;width:16px;height:16px" disabled></button><div class="el group" data-role="AXGroup" style="left:55px;top:9px;width:14px;height:14px"></div>
+<button type="button" class="el button" data-role="AXButton/AXMinimizeButton" style="left:31px;top:8px;width:16px;height:16px" disabled></button>
+<span class="el statictext" data-role="AXStaticText" style="left:353px;top:7px;width:55px;height:16px;font-size:12.16px;line-height:16px">General</span>
+</header>
+<main class="region content" data-region="content" aria-label="Content" style="left:0px;top:88px;width:760px;height:460px;background-image:url(assets/021-settings-general-name-edited.png);background-size:760px 548px;background-position:0px -88px">
+<div class="el group" data-role="AXGroup/AXHostingView" style="left:0px;top:-88px;width:760px;height:548px"><div class="el scrollarea" data-role="AXScrollArea" style="left:0px;top:88px;width:760px;height:460px"><h2 class="el heading" data-role="AXHeading" aria-label="You" style="left:38px;top:20px;width:23.5px;height:16px;font-size:11.52px;line-height:16px">You</h2><div class="el group" data-role="AXGroup" data-focused="true" style="left:28px;top:46px;width:704px;height:118px"><span class="el statictext" data-role="AXStaticText" style="left:10px;top:10px;width:81px;height:16px;font-size:12.16px;line-height:16px">Display name</span><input type="text" class="el textfield" data-id="settings-display-name" data-role="AXTextField" aria-label="Display name" data-focused="true" value="Asha Rao" style="left:99px;top:10px;width:595px;height:16px"><button type="button" class="el button" data-id="settings-save-name" data-role="AXButton" aria-label="Save Name" style="left:10px;top:47px;width:92px;height:24px">Save Name</button><span class="el statictext" data-role="AXStaticText" style="left:10px;top:92.5px;width:464px;height:15px;font-size:11.4px;line-height:15px">This name appears on your notes, comments and history in the projects you open.</span></div><h2 class="el heading" data-role="AXHeading" aria-label="Data folder" style="left:38px;top:194px;width:70.5px;height:16px;font-size:11.52px;line-height:16px">Data folder</h2><div class="el group" data-role="AXGroup" style="left:28px;top:220px;width:704px;height:198px"><span class="el statictext" data-role="AXStaticText" style="left:10px;top:10px;width:50px;height:16px;font-size:12.16px;line-height:16px">Projects</span><span class="el statictext" data-role="AXStaticText" style="left:68.5px;top:34px;width:625.5px;height:32px;font-size:13px;line-height:16px">/var/folders/59/zg368c6s7qq8wsd3qqfpzgh40000gn/T//openframe-e2e.ma9aoc/data-zz-capture__00-start/projects</span><span class="el statictext" data-role="AXStaticText" style="left:10px;top:87px;width:85px;height:16px;font-size:12.16px;line-height:16px">Shared library</span><span class="el statictext" data-role="AXStaticText" style="left:36.5px;top:111px;width:657.5px;height:32px;font-size:13px;line-height:16px">/var/folders/59/zg368c6s7qq8wsd3qqfpzgh40000gn/T//openframe-e2e.ma9aoc/data-zz-capture__00-start/global-vault</span><button type="button" class="el button" data-id="settings-show-data" data-role="AXButton" aria-label="Show in Finder" style="left:10px;top:164px;width:113.5px;height:24px">Show in Finder</button></div><h2 class="el heading" data-role="AXHeading" aria-label="Version" style="left:38px;top:448px;width:47.5px;height:16px;font-size:11.52px;line-height:16px">Version</h2><div role="scrollbar" class="el scrollbar" data-role="AXScrollBar" aria-valuenow="0" style="left:742px;top:-1px;width:19px;height:454.5px"><div role="slider" class="el valueindicator" data-role="AXValueIndicator" aria-valuenow="0" style="left:4px;top:4px;width:11px;height:373.5px"></div><button type="button" class="el button" data-role="AXButton/AXIncrementPage" style="left:4px;top:378px;width:11px;height:72.5px" disabled></button></div></div></div>
+</main>
+</div></div>
+</body></html>

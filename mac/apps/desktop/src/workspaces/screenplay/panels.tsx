@@ -17,7 +17,7 @@ import { formatAgo, formatDate, formatWhen, initials, type Layout, type PanelId 
 import type { SelectionAnchor } from "./editor/ScreenplayEditor";
 
 export const PANEL_LABELS: Record<PanelId, string> = {
-  story: "Story Board",
+  story: "Beat Board",
   notes: "Scene Notes",
   characters: "Characters",
   comments: "Comments",
@@ -118,7 +118,7 @@ function sceneLabel(ctx: PanelContext, sceneId: string | null): string {
   return s ? `Scene ${s.number}` : "";
 }
 
-// ------------------------------------------------------------ Story Board
+// ------------------------------------------------------------ Beat Board
 
 function StoryPanel({ ctx, onClose }: { ctx: PanelContext; onClose: () => void }) {
   const ref = useStoryReference(ctx.currentSceneId);
@@ -126,10 +126,10 @@ function StoryPanel({ ctx, onClose }: { ctx: PanelContext; onClose: () => void }
   const linked = ref.data?.linked;
   return (
     <>
-      <PanelHead title="Story Board (reference only)" onClose={onClose} />
+      <PanelHead title="Beat Board (reference only)" onClose={onClose} />
       <div className="spx-pb">
         {!ctx.currentSceneId ? (
-          <p className="muted sm">Place the cursor in a scene to see its Story Board card.</p>
+          <p className="muted sm">Place the cursor in a scene to see its Beat Board card.</p>
         ) : ref.isLoading ? (
           <Skeleton h={60} />
         ) : linked ? (
@@ -139,12 +139,12 @@ function StoryPanel({ ctx, onClose }: { ctx: PanelContext; onClose: () => void }
             {linked.notes && <div className="xs muted selectable-text" style={{ marginTop: 6, whiteSpace: "pre-wrap" }}>{linked.notes}</div>}
           </div>
         ) : (
-          <p className="muted sm">No Story Board card is linked to {sceneLabel(ctx, ctx.currentSceneId) || "this scene"}.</p>
+          <p className="muted sm">No Beat Board card is linked to {sceneLabel(ctx, ctx.currentSceneId) || "this scene"}.</p>
         )}
         {ref.data && ref.data.cards.length > 0 && (
           <div style={{ marginTop: 10 }}>
             <button type="button" className="btn ghost sm" aria-expanded={showAll} onClick={() => setShowAll(!showAll)}>
-              {showAll ? "Hide" : "Show"} all Story Board cards ({ref.data.cards.length})
+              {showAll ? "Hide" : "Show"} all Beat Board cards ({ref.data.cards.length})
             </button>
             {showAll && (
               <ol className="spx-cards">
