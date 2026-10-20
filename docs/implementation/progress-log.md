@@ -58,6 +58,30 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 
 ## Entries
 
+### 2026-10-20 (afternoon), Mac takes the Windows structure; Beat Board; the Story page
+- **Areas and items worked:** owner work outside the plan: the macOS structural parity prompt (Windows structure, Mac
+  styling, the owner change lists, the AI brief, the UX brief), then two owner requests for both apps (rename Story Board
+  to Beat Board; a free Story page).
+- **Done:** branch `mac/windows-parity`: Windows `324cd963` merged into the Mac branch (`af5e41f`); core
+  `schedule.export_daily` (`dfff7df`); Mac structure, plain AI answers, removed features (`607e0bc`); Tab cycle, Story
+  cards, relationship map, Daily View export (`bec10ad`); Settings pages, zoom, AI panel width, shot grid, Breakdown
+  export (`3d7e96b`); Beat Board and the Story page in core, Mac and Windows (`2e4536a`). Inventory and status:
+  [mac-windows-structure-parity.md](../roadmap/mac-windows-structure-parity.md).
+- **Evidence:** Rust core 984 library tests and the integration suites; Swift 613 tests in 73 suites; real app with the
+  injected driver: release smoke, Story page across a restart, category colours across a relaunch, schedule creation,
+  Day Out of Days, call sheet refresh, sidebar relaunch and window-fits-default pass; sample PDF
+  `release-out/pdf-samples/04b-shoot-day-1-daily-view.pdf`.
+- **Features moved:** none in feature-status (the Mac parity matrix rows keep their states; this work is structure).
+- **Docs updated:** handoff, this entry, reconciliation log, the parity page, docs/README map, the manual (Beat Board).
+- **Decisions made or needed:** owner: one name for the AI disclosure ("See sources" on the Mac, "Details" on Windows);
+  whether Windows should call `schedule.export_daily` from its Daily View.
+- **Blocked / risks:** window-fits-minimum still reports the screenplay overlap known since 5355dc7 and the Catalog
+  filter row with the AI panel open; the AI end-to-end scenarios need the model download fixture.
+- **Next:** owner look at the Mac dev build; merge to `mac/m1-toolchain`; the open rows of the parity page.
+- **Checks run:** cargo test (application, ffi, import-export, ai-eval), `apps/macos/scripts/test.sh`, the E2E scenarios
+  above, check-links, check-writing-standard, check-migrations. Not run: `npm run verify` and the Windows TypeScript
+  build and tests (no node_modules on this Mac), the internal disk image (not asked for).
+
 ### 2026-10-20 (noon), licence requests refused plainly; spec 04 close helper compiled
 - **Done:** a request to change or get around the licence, payment, activation or team password gets a fixed refusal
   with no tool and no model call (`commands.rs` `not_the_assistants`; story uses such as a licence plate or a driving

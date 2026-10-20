@@ -15,8 +15,10 @@
    - The Mac has the Windows structure in Mac styling: flat sidebar (Home, Idea Vault, Story, Screenplay, Breakdown,
      Production, Call Sheets, Files), Production with the 13 Windows tabs and a new Overview, Back and Forward,
      Settings with the seven Windows pages (new Writing page), plain AI answers with a closed "See sources", Tab round
-     every element, screenplay zoom, resizable AI panel, shot list Grid, whole Story Board cards, the relationship map
+     every element, screenplay zoom, resizable AI panel, shot list Grid, whole Beat Board cards, the relationship map
      layout, Breakdown Export, Compare named Scene-only and Text-only.
+   - Owner requests of the afternoon, both apps: "Story Board" is "Beat Board" everywhere; a free Story page left of
+     Board (table `story_page`, migration 0017; TXT, PDF and DOCX export). Windows TypeScript was not compiled here.
    - New in the shared core: `schedule.export_daily` ("Shoot Day N - Daily view", PDF, CSV, XLSX). Windows does not
      call it yet.
    - Requirement inventory and status: [mac-windows-structure-parity.md](../roadmap/mac-windows-structure-parity.md).
