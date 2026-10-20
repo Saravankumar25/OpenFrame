@@ -95,8 +95,9 @@ export function isoDate(d: Date): string {
 }
 
 /** Default file name: "<Project> - <Document> - <date>.<ext>", safe for Windows. */
-export function exportFileName(project: string | null | undefined, document: string, format: ExportFormatValue, date: Date = new Date()): string {
-  const parts = [clean(project ?? ""), clean(document), isoDate(date)].filter(Boolean);
+/** `date: null` leaves the date out. */
+export function exportFileName(project: string | null | undefined, document: string, format: ExportFormatValue, date: Date | null = new Date()): string {
+  const parts = [clean(project ?? ""), clean(document), date ? isoDate(date) : ""].filter(Boolean);
   let base = parts.join(" - ").replace(/[. ]+$/, "");
   if (base.length > 150) base = base.slice(0, 150).trim();
   if (!base || RESERVED.test(base)) base = `Export ${base}`.trim();

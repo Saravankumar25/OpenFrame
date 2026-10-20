@@ -85,14 +85,17 @@ export function CompareView({ drafts, initialA, initialB, onBack }: {
   return (
     <div className="spx-compare">
       <div className="sp-top">
-        <Button size="sm" variant="ghost" icon={<ArrowLeft size={14} />} onClick={onBack}>Back to script</Button>
-        <Select ariaLabel="Before" value={a} onChange={setA} options={opts} />
-        <span aria-hidden>→</span>
-        <Select ariaLabel="After" value={b} onChange={setB} options={opts} />
-        <span className="grow" />
-        <Segmented ariaLabel="Comparison view" value={mode} onChange={setMode} options={[{ value: "scene", label: "Scene-only" }, { value: "text", label: "Text-only" }]} />
-        <Button size="sm" icon={<ChevronUp size={14} />} disabled={interesting.length === 0} onClick={() => step(-1)}>Previous</Button>
-        <Button size="sm" icon={<ChevronDown size={14} />} disabled={interesting.length === 0} onClick={() => step(1)}>Next change</Button>
+        <div className="spx-cmp-group">
+          <Button size="sm" variant="ghost" icon={<ArrowLeft size={14} />} onClick={onBack}>Back to script</Button>
+          <Select ariaLabel="Before" value={a} onChange={setA} options={opts} />
+          <span aria-hidden>→</span>
+          <Select ariaLabel="After" value={b} onChange={setB} options={opts} />
+        </div>
+        <div className="spx-cmp-group">
+          <Segmented ariaLabel="Comparison view" value={mode} onChange={setMode} options={[{ value: "scene", label: "Scene-only" }, { value: "text", label: "Text-only" }]} />
+          <Button size="sm" icon={<ChevronUp size={14} />} disabled={interesting.length === 0} onClick={() => step(-1)}>Previous</Button>
+          <Button size="sm" icon={<ChevronDown size={14} />} disabled={interesting.length === 0} onClick={() => step(1)}>Next change</Button>
+        </div>
       </div>
       {a === b ? (
         <div className="content"><Banner tone="info">Choose two different drafts to compare.</Banner></div>

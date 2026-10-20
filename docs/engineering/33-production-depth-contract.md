@@ -128,6 +128,8 @@ Built (migration `0015_schedule_timeline.sql`, 2026-10-07):
 - DOOD: `shooting_schedule.dood_code_style` ('industry' or 'simple') and `dood_override(schedule_id, cast_key, day_id,
   code, note)`. Codes: SW, W, WF, SWF, H derived; T, R, F, D and "-" by hand. Operations `schedule.dood`,
   `schedule.set_dood_override`, export `schedule.export_dood`.
+- Daily View export `schedule.export_daily_view` (PDF or plain text): one shooting day, built from the same read as the
+  screen (`schedule::ops::daily_view`), named "Shoot Day N - Daily View", with the schedule's last-change date.
 - Schedule and DOOD exports carry the date of the schedule's last change (never the export clock), and the XLSX
   creation date is set from it, so the same data gives byte-identical PDF, CSV and XLSX files.
 - Filters are view state in the desktop app (`scheduleFilter.ts`); they never call an operation.

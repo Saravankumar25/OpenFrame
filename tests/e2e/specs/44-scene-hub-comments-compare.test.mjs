@@ -8,7 +8,7 @@
 
 import { after, before, describe, test } from "node:test";
 import assert from "node:assert/strict";
-import { click, launchApp, openWorkspace, pageText, stepper, waitForText } from "../lib/app.mjs";
+import { click, launchApp, openWorkspace, pageText, sleep, stepper, waitForText } from "../lib/app.mjs";
 import { closeProject, editorElements, firstLaunchProject, importFountain, inDialog, menuItem, openProject, relaunch, retype } from "../lib/flows.mjs";
 import { NIGHT_BUS } from "../lib/ai.mjs";
 
@@ -20,6 +20,37 @@ const toolbar = '//*[@role="toolbar"][@aria-label="Screenplay"]';
 const sceneRow = (text) => browser.$(`//nav[@aria-label="Scenes"]//button[contains(normalize-space(.),"${text}")]`);
 const commentsButton = () => browser.execute(() => [...document.querySelectorAll('[role="toolbar"][aria-label="Screenplay"] button')].map((b) => b.innerText.trim()).find((t) => t.startsWith("Comments")) ?? "");
 const saved = () => browser.execute(() => document.querySelector(".sp-top [aria-live=polite]")?.textContent?.trim() ?? "");
+
+/** Runs in the page on the compare view: the bar sits above the changes list and the summary, nothing in it overlaps
+ * them, and the draft pickers are not stretched over a whole row (owner change list 2026-10-20, item 3). */
+function probeCompareBar() {
+  const rect = (el) => el.getBoundingClientRect();
+  const bar = document.querySelector(".spx-compare .sp-top");
+  const body = document.querySelector(".spx-compare .sp-body");
+  if (!bar || !body) return { ok: false, why: "no compare bar" };
+  const b = rect(bar);
+  const content = rect(body);
+  const kids = [...bar.querySelectorAll("button, select, [role=radiogroup]")].map((el) => ({ el, r: rect(el) }));
+  const below = kids.filter((k) => k.r.bottom > content.top + 1).map((k) => k.el.getAttribute("aria-label") || k.el.textContent.trim());
+  const overlapping = [];
+  for (let i = 0; i < kids.length; i++) {
+    for (let j = i + 1; j < kids.length; j++) {
+      const a = kids[i].r;
+      const c = kids[j].r;
+      if (Math.min(a.right, c.right) - Math.max(a.left, c.left) > 1 && Math.min(a.bottom, c.bottom) - Math.max(a.top, c.top) > 1) overlapping.push(i + "/" + j);
+    }
+  }
+  const selects = [...bar.querySelectorAll("select")].map((el) => Math.round(rect(el).width));
+  const summary = [...document.querySelectorAll(".spx-compare .sm")].find((el) => el.textContent.includes("Summary:"));
+  const summaryClear = !summary || rect(summary).top >= b.bottom - 1;
+  const heading = [...document.querySelectorAll(".spx-compare .h4")].find((el) => el.textContent.trim() === "Changes");
+  const headingClear = !heading || rect(heading).top >= b.bottom - 1;
+  const pageOverflowX = document.scrollingElement.scrollWidth - document.scrollingElement.clientWidth;
+  return {
+    ok: below.length === 0 && overlapping.length === 0 && selects.every((w) => w <= 300) && summaryClear && headingClear && pageOverflowX <= 1,
+    below, overlapping, selects, summaryClear, headingClear, pageOverflowX,
+  };
+}
 
 describe("Scene Hub, comments, drafts and compare", () => {
   before(async () => {
@@ -85,6 +116,20 @@ describe("Scene Hub, comments, drafts and compare", () => {
       const table = await browser.$('//*[@role="table"][@aria-label="Side-by-side comparison"]');
       await table.waitForDisplayed({ timeout: 15_000 });
       await browser.waitUntil(async () => (await table.getText()).includes("Every night."), { timeout: 10_000, timeoutMsg: "the comparison does not show the changed line" });
+      // The bar above the comparison never overlaps the changes list or the summary, at the common window widths.
+      for (const [w, h] of [[1280, 720], [1600, 900], [1920, 1080]]) {
+        await browser.setWindowSize(w, h);
+        await sleep(300);
+        const m = await browser.execute(probeCompareBar);
+        assert.ok(m.ok, `compare bar at ${w}x${h}: ${JSON.stringify(m)}`);
+      }
+      // And with the AI Assistant docked beside the page, which narrows it.
+      const ai = await browser.$('//header//button[@aria-label="Assistant"]');
+      if ((await ai.getAttribute("aria-pressed")) !== "true") await ai.click();
+      await sleep(400);
+      const docked = await browser.execute(probeCompareBar);
+      assert.ok(docked.ok, `compare bar with the AI panel docked: ${JSON.stringify(docked)}`);
+      await ai.click();
     });
   });
 });

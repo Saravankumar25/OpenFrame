@@ -12,6 +12,7 @@
 //! | `shot.export_list`         | Shot List (scene / scenes / project)      | PDF · CSV · XLSX|
 //! | `schedule.export_schedule` | Shooting Schedule / stripboard            | PDF · CSV · XLSX|
 //! | `schedule.export_dood`     | Day Out of Days                           | PDF · CSV · XLSX|
+//! | `schedule.export_daily_view` | Daily View of one shooting day          | PDF · TXT       |
 //! | `callsheets.export_pdf`    | Call Sheet (paper layout)                 | PDF             |
 //! | `sides.export_pdf`         | Sides (screenplay-formatted excerpt)      | PDF             |
 //! | `reports.export_report`    | Production reports (live or saved)        | PDF · CSV · XLSX|
@@ -46,6 +47,7 @@
 mod breakdown;
 mod budget;
 mod callsheet;
+mod daily_view;
 mod dood;
 mod reports;
 mod schedule;
@@ -73,6 +75,7 @@ use crate::util::AssetInfo;
 pub use breakdown::ExportBreakdownArgs;
 pub use budget::ExportBudgetArgs;
 pub use callsheet::ExportCallSheetArgs;
+pub use daily_view::ExportDailyViewArgs;
 pub use dood::ExportDoodArgs;
 pub use reports::ExportReportArgs;
 pub use schedule::ExportScheduleArgs;
@@ -151,6 +154,15 @@ pub fn register(r: &mut Registry) {
         .fs(Fs::WritesUserFile)
         .hidden(h::USER_PATH),
     );
+    r.query("schedule.export_daily_view", daily_view::export)
+        .meta(
+            M::query(
+                Cap::Export,
+                "Export one shooting day's Daily View to a location the user picked.",
+            )
+            .fs(Fs::WritesUserFile)
+            .hidden(h::USER_PATH),
+        );
     r.query("callsheets.export_pdf", callsheet::export).meta(
         M::query(
             Cap::Export,

@@ -823,6 +823,132 @@ fn schedule_export_has_days_markers_summaries_and_unscheduled() {
     );
 }
 
+/// Daily View export: one day, the same facts the screen shows, named "Shoot Day N - Daily View".
+#[test]
+fn daily_view_export_prints_what_the_daily_view_screen_shows() {
+    let env = production_env();
+    let day = seed_schedule(&env);
+    env.ok(
+        "schedule.set_day_notes",
+        json!({ "dayId": day, "notes": "Basement water pumped from 05:00." }),
+    );
+    let screen = env.ok("schedule.daily", json!({ "dayId": day }));
+    let pdf = dest(&env, "daily.pdf");
+    let r = env.ok(
+        "schedule.export_daily_view",
+        json!({ "format": "pdf", "path": pdf, "dayId": day }),
+    );
+    assert_eq!(r["document"], "Shoot Day 1 - Daily View");
+    assert_eq!(r["format"], "pdf");
+    let text = pdf_text(&pdf);
+    for want in [
+        "Shoot Day 1",
+        "Mon 14 Jun 2027",
+        "SCENES",
+        "LOCATION",
+        "CAST",
+        "CALL SHEET",
+        "IMPORTANT NOTES",
+        "IMPORTANT BREAKDOWN ITEMS",
+        "SCENE ORDER",
+        "Basement water pumped from 05:00.",
+        "MEAL BREAK at 20:30 (45m)",
+        "Created using OpenFrame",
+    ] {
+        assert!(text.contains(want), "missing {want}: {text}");
+    }
+    // Every scene heading, location and breakdown item of the screen read is on the page.
+    let d = &screen["day"];
+    for sc in d["scenes"].as_array().unwrap() {
+        let heading = sc["heading"].as_str().unwrap();
+        assert!(text.contains(heading), "scene {heading} missing: {text}");
+    }
+    for l in d["locations"].as_array().unwrap() {
+        assert!(text.contains(l["name"].as_str().unwrap()), "{text}");
+    }
+    for it in d["breakdownItems"].as_array().unwrap() {
+        assert!(text.contains(it["name"].as_str().unwrap()), "{text}");
+    }
+    // Plain text carries the same sections, numbered scene order included.
+    let txt = dest(&env, "daily.txt");
+    env.ok(
+        "schedule.export_daily_view",
+        json!({ "format": "txt", "path": txt, "dayId": day }),
+    );
+    let body = std::fs::read_to_string(&txt).unwrap();
+    assert!(body.contains("Shoot Day 1\r\nMon 14 Jun 2027"), "{body}");
+    assert!(body.contains("1. 1: INT. POLICE STATION - NIGHT"), "{body}");
+    assert!(body.contains("2 scenes"), "{body}");
+}
+
+#[test]
+fn daily_view_export_of_an_empty_or_off_day_still_exports() {
+    let env = production_env();
+    let sched = id(&env.ok("schedule.create", json!({})));
+    let day = env
+        .ok("schedule.create_day", json!({ "scheduleId": sched }))
+        .as_str()
+        .unwrap()
+        .to_string();
+    let txt = dest(&env, "empty.txt");
+    let r = env.ok(
+        "schedule.export_daily_view",
+        json!({ "format": "txt", "path": txt, "dayId": day }),
+    );
+    assert_eq!(r["document"], "Shoot Day 1 - Daily View");
+    let body = std::fs::read_to_string(&txt).unwrap();
+    for want in [
+        "No date yet",
+        "No scenes scheduled.",
+        "Location missing.",
+        "No cast confirmed for these scenes.",
+        "No call sheet yet for this day.",
+        "No day notes.",
+        "No confirmed props, wardrobe or other items for these scenes.",
+        "Nothing scheduled yet.",
+    ] {
+        assert!(body.contains(want), "missing {want}: {body}");
+    }
+    let pdf = dest(&env, "empty.pdf");
+    env.ok(
+        "schedule.export_daily_view",
+        json!({ "format": "pdf", "path": pdf, "dayId": day }),
+    );
+    assert!(pdf_text(&pdf).contains("No day notes."));
+    // An off day names itself and has no call sheet.
+    env.ok(
+        "schedule.set_off_day",
+        json!({ "dayId": day, "offDay": true }),
+    );
+    let off = dest(&env, "off.txt");
+    let r = env.ok(
+        "schedule.export_daily_view",
+        json!({ "format": "txt", "path": off, "dayId": day }),
+    );
+    assert_eq!(r["document"], "Off Day - Daily View");
+    assert!(
+        std::fs::read_to_string(&off)
+            .unwrap()
+            .contains("Off days have no call sheet.")
+    );
+    // An unknown day is an error, never another day's document.
+    assert_eq!(
+        env.err(
+            "schedule.export_daily_view",
+            json!({ "format": "txt", "path": dest(&env, "nope.txt"), "dayId": "missing" })
+        ),
+        "not_found.shooting_day"
+    );
+    // Only PDF and plain text are offered.
+    assert!(
+        env.err(
+            "schedule.export_daily_view",
+            json!({ "format": "csv", "path": dest(&env, "x.csv"), "dayId": day })
+        )
+        .starts_with("validation")
+    );
+}
+
 #[test]
 fn exports_are_snapshots_and_never_change_the_project() {
     let env = production_env();
@@ -1177,6 +1303,7 @@ fn only_roles_with_export_capability_can_export() {
         ("story.export_board", json!({ "format": "pdf" })),
         ("breakdown.export_report", json!({ "format": "pdf" })),
         ("schedule.export_schedule", json!({ "format": "csv" })),
+        ("schedule.export_daily_view", json!({ "format": "txt" })),
         (
             "reports.export_report",
             json!({ "format": "csv", "reportType": "scene" }),
@@ -1611,6 +1738,7 @@ fn every_export_op_is_registered_as_a_read_only_query() {
         "storyboard.export_sheet",
         "shot.export_list",
         "schedule.export_schedule",
+        "schedule.export_daily_view",
         "callsheets.export_pdf",
         "sides.export_pdf",
         "reports.export_report",
@@ -1796,6 +1924,8 @@ fn every_production_export_is_branded_and_user_files_are_never_modified() {
         ("schedule.export_schedule", json!({}), "xlsx"),
         ("schedule.export_dood", json!({}), "pdf"),
         ("schedule.export_dood", json!({}), "xlsx"),
+        ("schedule.export_daily_view", json!({}), "pdf"),
+        ("schedule.export_daily_view", json!({}), "txt"),
         ("callsheets.export_pdf", json!({ "id": cs }), "pdf"),
         ("sides.export_pdf", json!({ "dayId": day }), "pdf"),
         (

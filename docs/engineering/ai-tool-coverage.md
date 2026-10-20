@@ -26,8 +26,8 @@ How the toolbox (`modules/ai/toolbox.rs`, contract C3) enforces this:
   budget, so a small local model's prompt stays short. `retrieve_context` uses the hybrid retrieval
   service when called through `run_tool_unlocked`, and keyword retrieval (FTS5, same privacy rule) otherwise.
 
-- Registered operations: **495** (155 queries, 340 commands)
-- Exposed to the assistant through tools: **305**; not AI-accessible: **190**
+- Registered operations: **496** (156 queries, 340 commands)
+- Exposed to the assistant through tools: **305**; not AI-accessible: **191**
 - Tools: **256** (63 read/compute/navigate, 193 proposal)
 
 Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation · **L** long-running (task id) · file effect: R = reads a user-picked file, W = writes to a user-picked location, P = project storage on disk.
@@ -171,6 +171,7 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 | `callsheets.export_pdf`: Export a call sheet to a location the user picked. | query | Read | Export | W | `ExportCallSheetArgs` → `ExportResult` | hidden | none |
 | `moodboard.export_pdf`: Export a moodboard to a location the user picked. | query | Read | Export | W | `ExportMoodboardArgs` → `ExportResult` | hidden | none |
 | `reports.export_report`: Export a production report to a location the user picked. | query | Read | Export | W | `ExportReportArgs` → `ExportResult` | hidden | none |
+| `schedule.export_daily_view`: Export one shooting day's Daily View to a location the user picked. | query | Read | Export | W | `ExportDailyViewArgs` → `ExportResult` | hidden | none |
 | `schedule.export_dood`: Export the Day Out of Days to a location the user picked. | query | Read | Export | W | `ExportDoodArgs` → `ExportResult` | hidden | none |
 | `schedule.export_schedule`: Export the shooting schedule to a location the user picked. | query | Read | Export | W | `ExportScheduleArgs` → `ExportResult` | hidden | none |
 | `shot.export_list`: Export a shot list to a location the user picked. | query | Read | Export | W | `ExportShotListArgs` → `ExportResult` | hidden | none |
@@ -702,7 +703,7 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 - **Production scene number overrides and renumbering stay a human decision (ADR-0015, contract doc 32 §2.5); the assistant reads the numbers.**
   `screenplay.renumber_scenes`, `screenplay.restore_omitted_scene`, `screenplay.set_scene_number`
 - **Reads or writes a file-system location the user picks in a file dialog; the assistant never chooses or touches file-system paths (spec §3).**
-  `breakdown.export_report`, `budget.export_summary`, `callsheets.attach`, `callsheets.export_pdf`, `files.add`, `files.export_copy`, `files.relink`, `moodboard.export_pdf`, `packages.create_backup`, `packages.export_exchange`, `packages.export_project`, `packages.import_project`, `packages.inspect_package`, `packages.review_export_response`, `packages.review_open`, `project.locate`, `project.location_check`, `reports.export_report`, `schedule.export_dood`, `schedule.export_schedule`, `screenplay.export`, `screenplay.import_apply`, `screenplay.import_preview`, `shot.export_list`, `sides.export_pdf`, `story.add_attachment`, `story.export_board`, `story.page.export`, `storyboard.export_sheet`, `vault.add_files`, `vault.relink`
+  `breakdown.export_report`, `budget.export_summary`, `callsheets.attach`, `callsheets.export_pdf`, `files.add`, `files.export_copy`, `files.relink`, `moodboard.export_pdf`, `packages.create_backup`, `packages.export_exchange`, `packages.export_project`, `packages.import_project`, `packages.inspect_package`, `packages.review_export_response`, `packages.review_open`, `project.locate`, `project.location_check`, `reports.export_report`, `schedule.export_daily_view`, `schedule.export_dood`, `schedule.export_schedule`, `screenplay.export`, `screenplay.import_apply`, `screenplay.import_preview`, `shot.export_list`, `sides.export_pdf`, `story.add_attachment`, `story.export_board`, `story.page.export`, `storyboard.export_sheet`, `vault.add_files`, `vault.relink`
 - **Returns local file paths of managed media; the assistant never receives file-system paths.**
   `app.info`, `files.asset`
 - **Screenplay page layout settings (paper, font, spacing, header and footer, page breaks, custom element looks) stay a human decision (screenplay engine contract doc 32 §2.5); the assistant reads the resulting page facts.**

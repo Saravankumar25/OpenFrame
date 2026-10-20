@@ -413,15 +413,14 @@ function BoardPage({
       ) : tab === "board" ? (
         <BoardView board={board} episodeId={episodeId} readOnly={readOnly} display={display} />
       ) : (
-        <div className="story-canvas" style={{ padding: "4px 2px" }}>
-          <OutlineView board={board} episodeId={episodeId} readOnly={readOnly} />
+        <OutlineView board={board} episodeId={episodeId} readOnly={readOnly}>
           {ui.addingAct && <NewActBand episodeId={episodeId} />}
           {!readOnly && !ui.addingAct && (
             <button type="button" className="story-add" style={{ marginTop: 8, width: 200 }} onClick={() => ui.setAddingAct(true)}>
               <Plus size={12} /> Add Act
             </button>
           )}
-        </div>
+        </OutlineView>
       )}
 
       {ui.drawer?.kind === "card" && <CardDrawer key={ui.drawer.id} id={ui.drawer.id} board={board} readOnly={readOnly} />}

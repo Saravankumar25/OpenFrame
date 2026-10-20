@@ -3,7 +3,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { ExportDialog } from "./ExportDialog";
-import { ScheduleExportButton } from "./buttons";
+import { DailyViewExportButton, ScheduleExportButton } from "./buttons";
 import { buildExportArgs, exportFileName, initialOptions, type ExportOptionField } from "./model";
 
 // Test fixtures only: the IPC boundary and the system Save dialog are replaced.
@@ -158,6 +158,20 @@ describe("ExportDialog", () => {
     fireEvent.click(screen.getByRole("button", { name: /Export/ }));
     fireEvent.click(screen.getByRole("button", { name: "Export…" }));
     await waitFor(() => expect(saveMock).toHaveBeenCalled());
+    expect(calls.some((c) => c.op === "schedule.export_schedule")).toBe(false);
+  });
+
+  it("exports the Daily View as its own document named \"Shoot Day N - Daily View\"", async () => {
+    wrap(<DailyViewExportButton dayId="d3" dayLabel="Shoot Day 3" />);
+    fireEvent.click(screen.getByRole("button", { name: /Export/ }));
+    expect(screen.getByText("Export Daily View")).toBeTruthy();
+    // No schedule scopes: the document is the day on the screen.
+    expect(screen.queryByText(/Entire schedule/)).toBeNull();
+    expect(await screen.findByText(/^Shoot Day 3 - Daily View\.pdf$/)).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Export…" }));
+    await waitFor(() => expect(screen.getByText("Export complete")).toBeTruthy());
+    expect(saveMock.mock.calls[0][0].defaultPath).toMatch(/^Shoot Day 3 - Daily View\.pdf$/);
+    expect(calls.find((c) => c.op === "schedule.export_daily_view")?.args).toMatchObject({ format: "pdf", dayId: "d3" });
     expect(calls.some((c) => c.op === "schedule.export_schedule")).toBe(false);
   });
 });

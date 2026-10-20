@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it, beforeEach } from "vitest";
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import type { StoryBoardState } from "../../ipc/generated/StoryBoardState";
@@ -184,5 +186,32 @@ describe("Beat Board views", () => {
     expect(idx("Hero Introduction")).toBeLessThan(idx("Arjun steps off"));
     expect(idx("Arjun steps off")).toBeLessThan(idx("Morning at the old house"));
     expect(idx("Parking Lot")).toBeLessThan(idx("Ravi's secret radio"));
+  });
+
+  it("outline is its own keyboard-focusable scroll area that also holds the Add Act button", () => {
+    render(
+      <OutlineView board={board} episodeId={null} readOnly={false}>
+        <button type="button">Add Act</button>
+      </OutlineView>,
+    );
+    const area = screen.getByRole("region", { name: /Story outline, scrollable/ });
+    expect(area.className).toContain("story-canvas-outline");
+    // Focusable so the arrow and Page keys scroll it; the tree and the Add Act button are inside it.
+    expect(area.getAttribute("tabindex")).toBe("0");
+    expect(within(area).getByRole("tree", { name: "Story outline" })).toBeInTheDocument();
+    expect(within(area).getByRole("button", { name: "Add Act" })).toBeInTheDocument();
+  });
+
+  it("the Beat Board canvas rule that stops vertical scroll does not apply to the outline", () => {
+    const css = readFileSync(join(__dirname, "story.css"), "utf8");
+    // The board holds the page still (columns scroll); the outline has no columns, so it must scroll itself.
+    expect(css).toMatch(/\.story-canvas \{ overflow-x: auto; overflow-y: hidden; \}/);
+    const at = css.indexOf(".story-canvas.story-canvas-outline {");
+    expect(at, "no rule for the outline scroll area").toBeGreaterThanOrEqual(0);
+    const rule = css.slice(at, css.indexOf("}", at));
+    expect(rule).toContain("overflow-y: auto");
+    expect(rule).toContain("overflow-x: hidden");
+    // It must come after the board rule, or the board rule would still win.
+    expect(at).toBeGreaterThan(css.indexOf(".story-canvas { overflow-x: auto; overflow-y: hidden; }"));
   });
 });

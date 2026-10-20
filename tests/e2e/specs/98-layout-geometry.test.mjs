@@ -122,6 +122,48 @@ function measure() {
   };
 }
 
+/** Runs in the page on Story > Outline: the outline list is its own scroll area and reaches its last row. */
+function probeOutlineScroll() {
+  const area = document.querySelector(".story-canvas-outline");
+  if (!area) return { ok: false, why: "no outline scroll area" };
+  const toolbar = document.querySelector("main .toolbar");
+  const top = toolbar?.getBoundingClientRect().top ?? 0;
+  const overflowY = getComputedStyle(area).overflowY;
+  const scrollable = area.scrollHeight > area.clientHeight + 1;
+  area.scrollTop = area.scrollHeight;
+  const reached = !scrollable || area.scrollTop > 0;
+  const rows = area.querySelectorAll("[role=treeitem]");
+  const last = rows[rows.length - 1]?.getBoundingClientRect();
+  const lastVisible = !last || last.bottom <= area.getBoundingClientRect().bottom + 1;
+  const toolbarStays = !toolbar || Math.abs(toolbar.getBoundingClientRect().top - top) < 1;
+  area.scrollTop = 0;
+  area.focus();
+  return { ok: /(auto|scroll)/.test(overflowY) && reached && lastVisible && toolbarStays, overflowY, scrollable, reached, lastVisible, toolbarStays };
+}
+
+/** Runs in the page on Settings > Offline AI with Technical details open: the cards keep usable widths, the component
+ * table stays inside its card and no card covers another. */
+function probeOfflineAi() {
+  const cards = [...document.querySelectorAll("main section.card")].map((el) => ({ name: el.getAttribute("aria-label") || "card", r: el.getBoundingClientRect() }));
+  const tech = cards.find((c) => c.name === "Technical details");
+  const main = document.querySelector("main.main")?.getBoundingClientRect();
+  if (!tech || !main) return { ok: false, why: "no Technical details card" };
+  const table = document.querySelector('section[aria-label="Technical details"] table');
+  const t = table?.getBoundingClientRect();
+  const overlaps = [];
+  for (let i = 0; i < cards.length; i++) {
+    for (let j = i + 1; j < cards.length; j++) {
+      const a = cards[i].r;
+      const b = cards[j].r;
+      if (Math.min(a.right, b.right) - Math.max(a.left, b.left) > 1 && Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) > 1) overlaps.push(cards[i].name + " / " + cards[j].name);
+    }
+  }
+  const narrow = cards.filter((c) => c.r.width < 300).map((c) => c.name + " " + Math.round(c.r.width));
+  const tableInside = !t || (t.right <= tech.r.right + 1 && t.left >= tech.r.left - 1);
+  const wide = tech.r.width >= Math.min(600, main.width - 60);
+  return { ok: overlaps.length === 0 && narrow.length === 0 && tableInside && wide, overlaps, narrow, tableInside, wide, techWidth: Math.round(tech.r.width) };
+}
+
 describe("layout geometry", () => {
   let browser;
   const step = stepper(() => browser);
@@ -203,13 +245,24 @@ describe("layout geometry", () => {
           for (const tab of ["Project settings", "Writing", "Keyboard shortcuts", "Templates", "Offline AI", "Advanced", "Appearance"]) {
             await click(browser, tab, { within: '//div[@aria-label="Settings"]' });
             await record(size, ai, `Settings · ${tab}`);
+            if (tab === "Offline AI") {
+              const summary = await browser.$('//section[@aria-label="Technical details"]//summary');
+              if (await summary.isExisting()) {
+                await summary.click();
+                await sleep(300);
+                report[report.length - 1].offlineAi = await browser.execute(probeOfflineAi);
+                await summary.click();
+              }
+            }
           }
         });
       }
     }
-    const failures = report.filter((r) => r.pageOverflowX > 1 || r.overlapMainAi > 0 || r.overlapNavMain > 0 || r.findings.length > 0);
+    const failures = report.filter(
+      (r) => r.pageOverflowX > 1 || r.overlapMainAi > 0 || r.overlapNavMain > 0 || r.findings.length > 0 || (r.outlineScroll && (!r.outlineScroll.ok || r.outlineScroll.keyboard === false)) || (r.offlineAi && !r.offlineAi.ok),
+    );
     assert.deepEqual(
-      failures.map((r) => `${r.size} AI ${r.ai ? "open" : "closed"} ${r.screen}: x-overflow ${r.pageOverflowX}, AI overlap ${r.overlapMainAi}, ${r.findings.map((f) => `${f.kind} ${f.control}`).join("; ")}`),
+      failures.map((r) => `${r.size} AI ${r.ai ? "open" : "closed"} ${r.screen}: x-overflow ${r.pageOverflowX}, AI overlap ${r.overlapMainAi}, ${r.findings.map((f) => `${f.kind} ${f.control}`).join("; ")}${r.outlineScroll && (!r.outlineScroll.ok || r.outlineScroll.keyboard === false) ? ` outline scroll ${JSON.stringify(r.outlineScroll)}` : ""}${r.offlineAi && !r.offlineAi.ok ? ` offline AI ${JSON.stringify(r.offlineAi)}` : ""}`),
       [],
     );
   });

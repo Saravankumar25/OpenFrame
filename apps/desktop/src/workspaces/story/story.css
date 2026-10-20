@@ -109,3 +109,8 @@
 .story-canvas .sc-rich .sc-text, .story-canvas .sc-rich .sc-long { display: block; -webkit-line-clamp: unset; overflow: visible; }
 .story-canvas.zoom-low .sc { display: -webkit-box; -webkit-line-clamp: 3; overflow: hidden; }
 .story-canvas .story-add-act { align-self: flex-start; }
+
+/* Outline view (owner change list 2026-10-20, item 2): the Beat Board rule above holds the page still and lets each
+   column scroll, which left the outline list with no scroll owner at all. The outline area scrolls down by itself. */
+.story-canvas.story-canvas-outline { overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; padding: 4px 2px 12px; }
+.story-canvas.story-canvas-outline:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
