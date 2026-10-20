@@ -508,7 +508,7 @@ pub(crate) fn not_the_assistants(text: &str) -> Option<&'static str> {
 
 static LOCATION_STATS: LazyLock<Regex> = LazyLock::new(|| {
     re(
-        r#"(?i)^\s*(?:how\s+many\s+(?:(?:night|day|interior|exterior|dawn|dusk|morning|evening)(?:\s+(?:and|or)\s+(?:night|day|interior|exterior))?\s+scenes|(?:different\s+)?locations)(?:\s+(?:are\s+there|does\s+(?:the|this)\s+(?:script|screenplay|short|film)\s+(?:have|use)|(?:are\s+)?in\s+(?:the|this)\s+(?:script|screenplay)))?|which\s+location\s+is\s+used\s+(?:the\s+)?most|what\s+locations\s+are\s+(?:in|used\s+in)\s+(?:the|this)\s+(?:script|screenplay))\s*\?*\s*$"#,
+        r#"(?i)^\s*(?:how\s+many\s+(?:(?:night|day|interior|exterior|dawn|dusk|morning|evening)(?:\s+(?:and|or)\s+(?:night|day|interior|exterior))?\s+scenes|(?:different\s+)?locations)(?:\s+(?:are\s+there|does\s+(?:the|this)\s+(?:script|screenplay|short|film)\s+(?:have|use)|(?:are\s+)?in\s+(?:the|this)\s+(?:script|screenplay)))?|which\s+location\s+is\s+used\s+(?:the\s+)?most|(?:what|which)\s+locations\s+(?:are\s+(?:in|used\s+in)|does)\s+(?:the|this)\s+(?:script|screenplay)(?:\s+use)?)\s*\?*\s*$"#,
     )
 });
 
@@ -632,6 +632,7 @@ static PLAIN_READS: LazyLock<Vec<(Regex, &'static str)>> = LazyLock::new(|| {
         (r#"(?i)^\s*(?:list|show)(?:\s+me)?\s+(?:all\s+)?the\s+characters\s+on\s+the\s+(?:story|beat)\s?board\s*[?.]*\s*$"#, "story_characters"),
         (r#"(?i)^\s*how\s+many\s+(?:props|costumes|vehicles|items)\s+are\s+(?:there\s+)?in\s+the\s+(?:production\s+)?catalog(?:ue)?\s*[?.]*\s*$"#, "production_statistics"),
         (r#"(?i)^\s*how\s+many\s+(?:acts|scene\s+cards|acts\s+and\s+scene\s+cards)\s+are\s+(?:there\s+)?on\s+the\s+(?:story|beat)\s?board\s*[?.]*\s*$"#, "story_statistics"),
+        (r#"(?i)^\s*what(?:'s|\s+is)\s+on\s+(?:the|my)\s+(?:story|beat)\s?board\s*[?.]*\s*$"#, "story_statistics"),
         (r#"(?i)^\s*how\s+far\s+along\s+is\s+the\s+breakdown\s*[?.]*\s*$"#, "breakdown_status"),
         // Plain wording of the same questions (AI context brief, questions 3, 4 and 31).
         (r#"(?i)^\s*how\s+many\s+(?:acts|sequences|beats|scene\s+cards)(?:\s+are\s+there|\s+do\s+(?:we|i)\s+have)?(?:\s+in\s+(?:the|this|my)\s+(?:story|project))?\s*[?.]*\s*$"#, "story_statistics"),
@@ -1703,6 +1704,16 @@ mod tests {
                 "location_statistics",
             ),
             ("Which location is used the most?", "location_statistics"),
+            // Real model, E2E spec 73: this wording in Production opened Home.
+            (
+                "Which locations are used in the script?",
+                "location_statistics",
+            ),
+            (
+                "Which locations does the screenplay use?",
+                "location_statistics",
+            ),
+            ("What is on the Beat Board?", "story_statistics"),
             ("Who speaks in this scene?", "list_characters"),
             ("Which characters have dialogue?", "list_characters"),
             ("How many pages is this script?", "screenplay_pages"),

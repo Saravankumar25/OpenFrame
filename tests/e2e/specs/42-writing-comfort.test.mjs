@@ -18,6 +18,8 @@ const typeKeys = (text) => browser.keys(text.split(""));
 const options = () => browser.execute(() => [...document.querySelectorAll("#sp-suggest-list [role=option]")].map((o) => o.querySelector("span")?.textContent ?? ""));
 const listOpen = () => browser.execute(() => !!document.querySelector("#sp-suggest-list"));
 const saved = () => browser.execute(() => document.querySelector(".sp-top [aria-live=polite]")?.textContent?.trim() ?? "");
+/** Find options are checkboxes with a visible label, not buttons. */
+const toggle = async (label) => (await browser.$(`//label[contains(@class,"check")][.//span[normalize-space()="${label}"]]`)).click();
 async function waitSaved() {
   await browser.waitUntil(async () => (await saved()) === "Saved", { timeout: 15_000, timeoutMsg: "the editor did not report Saved" });
 }
@@ -233,7 +235,12 @@ describe("writing comfort", () => {
       await road.click();
       await browser.keys("End");
       const lines = Array.from({ length: 60 }, (_, i) => (i === 2 || i === 57 ? `Walk ${i + 1}, a torch burns.` : `Walk ${i + 1} goes on.`));
-      await browser.keys(lines.flatMap((l) => ["Enter", ...l.split("")]));
+      // Ctrl+2 keeps every new line an Action line, so no Character line (and no new character) is made on the way.
+      for (const l of lines) {
+        await browser.keys("Enter");
+        await browser.keys(["Control", "2"]);
+        await browser.keys(l.split(""));
+      }
       await waitSaved();
       await waitElements((els) => els.includes("action: Walk 60 goes on."), "the sixty lines did not land");
       const view = () => browser.execute(currentMatchVisible);
@@ -256,15 +263,15 @@ describe("writing comfort", () => {
       v = await view();
       assert.ok(v.ok, `stepping back did not bring the first match on screen: ${JSON.stringify(v)}`);
       // Match case and Whole word narrow the matches and the count follows.
-      await click(browser, "Match case");
+      await toggle("Match case");
       await find.setValue("Torch");
       await countIs("No matches found");
-      await click(browser, "Match case");
+      await toggle("Match case");
       await countIs("1 of 2");
-      await click(browser, "Whole word");
+      await toggle("Whole word");
       await find.setValue("torc");
       await countIs("No matches found");
-      await click(browser, "Whole word");
+      await toggle("Whole word");
       await find.setValue("torch");
       await countIs("1 of 2");
       // Replace changes the current match and moves on to the next one, on screen.

@@ -401,7 +401,7 @@ fn ai_ac_002_exact_counts_come_from_canonical_data_with_scope_and_provenance() {
     let x = ask(&env, "How many locations?", scope);
     assert_eq!(
         x["result"]["content"],
-        "There are 3 distinct locations in Draft 1, based on parsed screenplay scene headings."
+        "Draft 1 uses 3 locations: Police Station, Railway Station and Ravi's House."
     );
     let _ = sp.draft;
 }

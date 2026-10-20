@@ -132,7 +132,8 @@
    list and the summary (owner change list 2026-10-20, item 3). The bar grows with its rows, the pickers keep a
    sensible width, and the two groups (drafts, view controls) wrap as whole groups. */
 .spx-compare .sp-top { flex-wrap: wrap; justify-content: space-between; row-gap: 6px; column-gap: 12px; height: auto; min-height: 46px; padding-block: 6px; overflow: visible; }
-.spx-cmp-group { display: flex; align-items: center; gap: 8px; min-width: 0; flex-wrap: wrap; }
+/* Each group stays one row; when the bar is too narrow the view controls move below as a whole. */
+.spx-cmp-group { display: flex; align-items: center; gap: 8px; min-width: 0; flex-wrap: nowrap; }
 .spx-cmp-group select.select { width: auto; flex: 0 1 220px; min-width: 140px; max-width: 260px; }
 .spx-compare .sni { width: 100%; background: none; border: 0; text-align: left; font: inherit; color: inherit; cursor: pointer; align-items: center; }
 .spx-diff { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }

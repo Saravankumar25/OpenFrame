@@ -1620,11 +1620,21 @@ fn location_statistics(ctx: &ToolCtx<'_>, draft: Option<&str>) -> AppResult<Tool
         "SELECT count(*) FROM location WHERE deleted_at IS NULL AND archived=0",
         [],
     )?;
+    let mut sorted: Vec<(&String, &usize)> = locs.iter().collect();
+    sorted.sort_by(|a, b| b.1.cmp(a.1).then(a.0.cmp(b.0)));
+    // The answer names the places, most used first; the per-location scene counts are its sources.
+    let names: Vec<String> = sorted.iter().take(8).map(|(l, _)| title_case(l)).collect();
+    let named = match locs.len() {
+        0 => String::new(),
+        n if n <= 8 => format!(": {}", join_and(&names)),
+        _ => format!(". The most used are {}", join_and(&names[..5])),
+    };
     let mut o = ToolOutput::exact(format!(
-        "There are {} in {}, based on parsed screenplay scene headings.",
-        plural(locs.len(), "distinct location", "distinct locations"),
-        d.label()
+        "{} uses {}{named}.",
+        d.label(),
+        plural(locs.len(), "location", "locations"),
     ))
+    .detail("Counted from the scene headings.")
     .detail(format!(
         "The Production Catalog currently contains {}.",
         plural(records as usize, "Location record", "Location records")
@@ -1637,8 +1647,6 @@ fn location_statistics(ctx: &ToolCtx<'_>, draft: Option<&str>) -> AppResult<Tool
             String::new()
         }
     ));
-    let mut sorted: Vec<(&String, &usize)> = locs.iter().collect();
-    sorted.sort_by(|a, b| b.1.cmp(a.1).then(a.0.cmp(b.0)));
     o.items = sorted
         .iter()
         .map(|(l, n)| ResultItem {

@@ -37,18 +37,23 @@ function probeCompareBar() {
     for (let j = i + 1; j < kids.length; j++) {
       const a = kids[i].r;
       const c = kids[j].r;
+      // A group and its own buttons (the Scene-only/Text-only switch) share space by design.
+      if (kids[i].el.contains(kids[j].el) || kids[j].el.contains(kids[i].el)) continue;
       if (Math.min(a.right, c.right) - Math.max(a.left, c.left) > 1 && Math.min(a.bottom, c.bottom) - Math.max(a.top, c.top) > 1) overlapping.push(i + "/" + j);
     }
   }
   const selects = [...bar.querySelectorAll("select")].map((el) => Math.round(rect(el).width));
+  // The two draft pickers sit on one row.
+  const pickers = [...bar.querySelectorAll("select")].map((el) => Math.round(rect(el).top));
+  const pickersInRow = pickers.length < 2 || Math.abs(pickers[0] - pickers[1]) <= 2;
   const summary = [...document.querySelectorAll(".spx-compare .sm")].find((el) => el.textContent.includes("Summary:"));
   const summaryClear = !summary || rect(summary).top >= b.bottom - 1;
   const heading = [...document.querySelectorAll(".spx-compare .h4")].find((el) => el.textContent.trim() === "Changes");
   const headingClear = !heading || rect(heading).top >= b.bottom - 1;
   const pageOverflowX = document.scrollingElement.scrollWidth - document.scrollingElement.clientWidth;
   return {
-    ok: below.length === 0 && overlapping.length === 0 && selects.every((w) => w <= 300) && summaryClear && headingClear && pageOverflowX <= 1,
-    below, overlapping, selects, summaryClear, headingClear, pageOverflowX,
+    ok: below.length === 0 && overlapping.length === 0 && pickersInRow && selects.every((w) => w <= 300) && summaryClear && headingClear && pageOverflowX <= 1,
+    below, overlapping, selects, pickersInRow, summaryClear, headingClear, pageOverflowX,
   };
 }
 
