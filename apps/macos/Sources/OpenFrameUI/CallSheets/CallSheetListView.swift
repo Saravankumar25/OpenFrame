@@ -137,7 +137,7 @@ struct CallSheetListView: View {
                 Menu {
                     menuItems(r)
                 } label: {
-                    Image(systemName: "ellipsis.circle")
+                    Label("Actions", systemImage: "ellipsis.circle")
                 }
                 .menuStyle(.borderlessButton).menuIndicator(.hidden).fixedSize()
                 .accessibilityLabel("\(r.title) actions")

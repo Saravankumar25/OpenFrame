@@ -5,6 +5,7 @@
 // planning tabs. Notes and Tasks, Activity and Recently Deleted are reached from the project menu.
 
 import Foundation
+import OpenFrameCore
 import Observation
 import SwiftUI
 
@@ -305,5 +306,73 @@ private struct HubTabFollower<Tab: Equatable>: ViewModifier {
                     set(fixed)
                 }
             }
+    }
+}
+
+// MARK: Create from anywhere
+
+/// "Create" requests from the toolbar's New menu (Windows: the top bar's + menu and useIntent):
+/// the menu names what to create and opens the page; the page that can create it takes the
+/// request and starts its own Add action, so nothing is created behind the person's back.
+@MainActor
+@Observable
+final class ProjectIntents {
+    static let shared = ProjectIntents()
+    private(set) var pending: String?
+
+    func fire(_ name: String) { pending = name }
+
+    /// True once for the page that handles `name`.
+    func consume(_ name: String) -> Bool {
+        guard pending == name else { return false }
+        pending = nil
+        return true
+    }
+}
+
+extension View {
+    /// Runs `action` when the New menu asks for `name`, now or later while this page is shown.
+    func onProjectIntent(_ name: String, perform action: @escaping () -> Void) -> some View {
+        modifier(ProjectIntentHandler(names: [name]) { _ in action() })
+    }
+
+    /// One handler for several requests (the Beat Board takes act, sequence, beat and scene card).
+    func onProjectIntents(_ names: [String], perform action: @escaping (String) -> Void) -> some View {
+        modifier(ProjectIntentHandler(names: names, action: action))
+    }
+}
+
+private struct ProjectIntentHandler: ViewModifier {
+    let names: [String]
+    let action: (String) -> Void
+
+    func body(content: Content) -> some View {
+        content
+            .onAppear { take() }
+            .onChange(of: ProjectIntents.shared.pending) { _, _ in take() }
+    }
+
+    private func take() {
+        for n in names where ProjectIntents.shared.consume(n) {
+            // After the page has appeared, so its sheets and fields exist.
+            DispatchQueue.main.async { action(n) }
+            return
+        }
+    }
+}
+
+extension ProjectNav {
+    /// Opens a place the core describes the Windows way ({"workspace", "sub", params}): Continue
+    /// cards and Recent rows on Project Home.
+    static func open(windowsLocation loc: [String: JSONValue]) {
+        guard let ws = AIRoute.workspace(for: loc["workspace"]?.stringValue ?? "") else { return }
+        let tab = ws == .production ? (loc["sub"]?.stringValue).flatMap(ProductionTab.init(windowsId:)) : nil
+        if ws == .screenplay {
+            var info: [String: Any] = [:]
+            let params: [String: JSONValue] = { if case .object(let o) = loc["params"] ?? .null { return o } else { return loc } }()
+            for key in ["screenplayId", "draftId", "sceneId"] { if let v = params[key]?.stringValue { info[key] = v } }
+            if !info.isEmpty { NotificationCenter.default.post(name: .openFrameShowScreenplayTarget, object: nil, userInfo: info) }
+        }
+        show(ws, tab: tab)
     }
 }

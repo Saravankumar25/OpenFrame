@@ -25,7 +25,7 @@ extension Scenarios {
                 try await ui.typeHere(storyLine)
                 try await ui.waitText("Saved", timeout: 15)
                 try ui.snapshot("story-page")
-                try await Scenarios.segment(ui, group: "story-tabs", "Board")
+                try await Scenarios.segment(ui, group: "story-tabs", "Beat Board")
                 try await ui.waitText("Beat Board", timeout: 15)
                 try ui.expect(!ui.screenText().contains("Story Board"), "the old name is gone from the board")
                 try await ui.closeProject()

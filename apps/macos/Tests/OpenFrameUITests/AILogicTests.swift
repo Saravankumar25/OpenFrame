@@ -261,3 +261,23 @@ struct AILogicTests {
         #expect((json?["note"] as? String)?.contains("Nothing was sent") == true)
     }
 }
+
+@MainActor
+struct AIStarterTests {
+    /// The questions offered to start with are ones the core answers from project data.
+    @Test func starterQuestionsArePlainAndPerPage() {
+        for ws in Workspace.allCases {
+            let qs = AIText.starterQuestions(for: ws)
+            #expect(!qs.isEmpty && qs.count <= 4, "\(ws)")
+            #expect(Set(qs).count == qs.count, "\(ws) repeats a question")
+        }
+        #expect(AIText.starterQuestions(for: .screenplay).first == "How many scenes does the screenplay have?")
+    }
+
+    @Test func copyTextHoldsTheAnswerAndItsList() {
+        let r = AiResultDto(id: "r", kind: .answer, status: .informational, content: "Two characters speak.", details: [],
+                            provenance: [], items: [AiResultItem(label: "ARJUN"), AiResultItem(label: "MEERA", detail: "3 scenes")],
+                            steps: [], createdAt: 0)
+        #expect(AILogic.copyText(r) == "Two characters speak.\n- ARJUN\n- MEERA (3 scenes)")
+    }
+}

@@ -216,6 +216,7 @@ struct CharactersView: View {
             case let .delete(c, usage): DeleteCharacterSheet(m: m, c: c, usage: usage)
             }
         }
+        .onProjectIntent("story.characters.new") { m.sheet = .new }
         .accessibilityIdentifier("story-characters")
     }
 
@@ -343,7 +344,7 @@ private struct CharacterDetailView: View {
                         Divider()
                         Button("Delete\u{2026}", role: .destructive) { Task { await m.askDelete(c) } }
                     } label: {
-                        Image(systemName: "ellipsis.circle")
+                        Label("More", systemImage: "ellipsis.circle")
                     }
                     .menuStyle(.borderlessButton).menuIndicator(.hidden).fixedSize()
                     .accessibilityLabel("More actions for \(c.name)")
@@ -412,7 +413,7 @@ private struct CharacterDetailView: View {
                     Text(l.shortDescription.isEmpty ? "Blank scene card" : l.shortDescription).lineLimit(1)
                     Spacer()
                     Text(l.location).font(.caption).foregroundStyle(theme["muted"]).lineLimit(1)
-                    Button { Task { await m.unlink(c.id, card: l.cardId) } } label: { Image(systemName: "xmark.circle") }
+                    Button { Task { await m.unlink(c.id, card: l.cardId) } } label: { Label("Unlink", systemImage: "xmark.circle") }
                         .buttonStyle(.borderless).accessibilityLabel("Unlink card")
                 }
             }
@@ -494,7 +495,7 @@ struct RelationshipList: View {
                     Text(r.toName).fontWeight(.semibold).textCase(.uppercase)
                     if let n = r.note, !n.isEmpty { Text("(\(n))").font(.caption).foregroundStyle(theme["muted"]) }
                     Spacer()
-                    Button { Task { await m.removeRelationship(r.id) } } label: { Image(systemName: "xmark.circle") }
+                    Button { Task { await m.removeRelationship(r.id) } } label: { Label("Remove", systemImage: "xmark.circle") }
                         .buttonStyle(.borderless)
                         .accessibilityLabel("Remove relationship \(r.fromName) \(r.relationshipType) \(r.toName)")
                 }

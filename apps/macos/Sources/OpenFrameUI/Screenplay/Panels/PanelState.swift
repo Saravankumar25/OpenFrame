@@ -247,13 +247,13 @@ struct ScreenplayPanelToolbar: ToolbarContent {
             ScreenplayPickerMenu(workspace: model, state: state)
         }
         ToolbarItem(placement: .automatic) {
-            Button { state.sheet = .compare(a: nil, b: nil) } label: { Label("Compare", systemImage: "rectangle.split.2x1") }
+            Button { state.sheet = .compare(a: nil, b: nil) } label: { Label("Compare", systemImage: "rectangle.split.2x1").labelStyle(.titleAndIcon) }
                 .help("Compare two drafts")
                 .accessibilityIdentifier("compare-button")
         }
         ToolbarItem(placement: .automatic) {
             Button { state.toggleComments() } label: {
-                Label("Comments (\(state.comments.openCount))", systemImage: "text.bubble")
+                Label("Comments (\(state.comments.openCount))", systemImage: "text.bubble").labelStyle(.titleAndIcon)
             }
             .help("Show the comments of this draft")
             .accessibilityLabel("Comments (\(state.comments.openCount))")
@@ -313,7 +313,7 @@ struct ScreenplayToolsMenu: View {
             }
             .accessibilityIdentifier("screenplay-interchange-menu")
         } label: {
-            Label("Screenplay Tools", systemImage: "ellipsis.circle")
+            Label("Screenplay Tools", systemImage: "ellipsis.circle").labelStyle(.titleAndIcon)
         }
         .help("Comments, drafts, revisions, page setup, layout, import and export")
         .accessibilityLabel("Screenplay Tools")

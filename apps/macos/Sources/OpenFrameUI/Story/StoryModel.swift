@@ -14,7 +14,7 @@ enum StoryTab: String, CaseIterable, Identifiable {
     var title: String {
         switch self {
         case .page: "Story"
-        case .board: "Board"
+        case .board: "Beat Board"
         case .outline: "Outline"
         case .characters: "Characters"
         case .timeline: "Timeline"

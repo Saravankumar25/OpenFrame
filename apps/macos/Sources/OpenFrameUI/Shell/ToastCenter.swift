@@ -117,7 +117,7 @@ struct ToastHost: View {
                             .accessibilityIdentifier("toast-action")
                     }
                     Button { center.dismiss(item.id) } label: {
-                        Image(systemName: "xmark").font(.caption.weight(.semibold))
+                        Label("Dismiss", systemImage: "xmark").font(.caption.weight(.semibold))
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel("Dismiss")

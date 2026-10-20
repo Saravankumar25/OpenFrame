@@ -120,7 +120,7 @@ struct CSSidesView: View {
                             }
                             .buttonStyle(.plain)
                             .accessibilityIdentifier("sides-saved-\(s.id)")
-                            Button { Task { await model.deleteSaved(s.id) } } label: { Image(systemName: "trash") }
+                            Button { Task { await model.deleteSaved(s.id) } } label: { Label("Delete", systemImage: "trash") }
                                 .buttonStyle(.borderless)
                                 .accessibilityLabel("Delete \(s.title)")
                                 .accessibilityIdentifier("sides-delete-\(s.id)")

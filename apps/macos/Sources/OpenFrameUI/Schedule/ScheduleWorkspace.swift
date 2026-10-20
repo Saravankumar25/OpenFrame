@@ -205,7 +205,7 @@ struct ScheduleContent: View {
             if model.schedule?.strictValidation == true {
                 SchedChip(text: "Strict validation", tone: .purple).accessibilityIdentifier("strict-chip")
             }
-            Button { model.sheet = .settings } label: { Image(systemName: "gearshape") }
+            Button { model.sheet = .settings } label: { Label("Settings", systemImage: "gearshape") }
                 .help("Schedule settings")
                 .accessibilityLabel("Schedule settings")
                 .accessibilityIdentifier("schedule-settings")

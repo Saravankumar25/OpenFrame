@@ -91,7 +91,7 @@ private struct OutlineRowView: View {
                 }
                 Spacer(minLength: 4)
                 Text(StoryLogic.actCountLabel(act)).font(.callout.weight(.semibold))
-                Menu { StoryActMenuOutline(model: model, act: act) } label: { Image(systemName: "ellipsis") }
+                Menu { StoryActMenuOutline(model: model, act: act) } label: { Label("Options", systemImage: "ellipsis") }
                     .menuStyle(.borderlessButton).menuIndicator(.hidden).fixedSize()
                     .accessibilityLabel("Act options for \(act.title)")
             }

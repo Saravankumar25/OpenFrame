@@ -111,7 +111,7 @@ struct StoryActColumn: View {
                 Menu {
                     StoryActMenu(model: model, act: act)
                 } label: {
-                    Image(systemName: "ellipsis")
+                    Label("Options", systemImage: "ellipsis")
                 }
                 .menuStyle(.borderlessButton)
                 .menuIndicator(.hidden)

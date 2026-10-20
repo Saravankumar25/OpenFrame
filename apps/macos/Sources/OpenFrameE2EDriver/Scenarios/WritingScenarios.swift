@@ -577,7 +577,7 @@ fileprivate extension UI {
         case "Story Outline":
             try await go("Story"); try await tab("Outline")
         case "Beat Board":
-            try await go("Story"); try await tab("Board")
+            try await go("Story"); try await tab("Beat Board")
         default:
             try await go(screen == "Notes and Tasks" ? "Notes and Tasks" : screen)
         }
@@ -648,7 +648,7 @@ fileprivate extension UI {
         await idle(1.0)
         let has = all().contains { $0.text.contains(name) && $0.identifier != "screenplay-editor" }
         try expect(has == expected, "the Beat Board characters \(expected ? "include" : "no longer include") \(name)")
-        try await tab("Board")
+        try await tab("Beat Board")
         try await go("Screenplay")
         _ = try await editor()
     }
@@ -1349,7 +1349,7 @@ extension Scenarios {
             try await ui.expectShows("Start your first project")
             try await ui.createProject("Night Bus")
             try await ui.waitUntil("window title") { ui.windowTitle().hasPrefix("Night Bus") }
-            try await ui.expectShows("Start here")
+            try await ui.expectShows("Start with your ideas, build your story, or open a screenplay.")
             try await ui.quiet()
         case 2:
             try await ui.goTo("Idea Vault")
@@ -2601,7 +2601,7 @@ extension Scenarios {
             try await ui.createProject("Harbour Lights")
             try await ui.waitUntil("window title names the project") { ui.windowTitle().hasPrefix("Harbour Lights") }
             try await ui.expectShows("Harbour Lights")
-            try await ui.expectShows("Start here")
+            try await ui.expectShows("Start with your ideas, build your story, or open a screenplay.")
             try await ui.quiet()
         },
         W("10-home/status-change-undo-redo") { ui, _, ctx in
@@ -2651,12 +2651,13 @@ extension Scenarios {
             try await ui.contextMenu(on: (try await ui.homeCardWait(copyTitle)), ["Archive"])
             try await ui.expectShows("was archived.")
             try await ui.waitHomeCards(1)
-            try await ui.act(label: "Show archived", role: "AXCheckBox")
-            try await ui.waitHomeCards(2)
-            try await ui.expectShows("Archived")
+            // Open Archived shows the archived projects on a page of their own (as on Windows).
+            try await ui.press(id: "home-open-archived")
+            try await ui.expectShows("Archived projects")
+            try await ui.waitHomeCards(1)
             try await ui.contextMenu(on: (try await ui.homeCardWait(copyTitle)), ["Restore from Archive"])
             try await ui.expectShows("is back in your projects.")
-            try await ui.act(label: "Show archived", role: "AXCheckBox")
+            try await ui.press(id: "home-back-to-projects")
             try await ui.waitHomeCards(2)
             try await ui.quiet()
         },
@@ -2816,7 +2817,7 @@ extension Scenarios {
                     && ui.query().contains { $0.identifier.hasPrefix("story-outline-") && $0.text.contains("The river carries the boats away") }
             }
             try await ui.quiet()
-            try await ui.tab("Board")
+            try await ui.tab("Beat Board")
         },
         W("30-story/relaunch-keeps-act-cards-character", phases: 2) { ui, phase, ctx in
             try await ui.startApp(ctx)
@@ -2837,7 +2838,7 @@ extension Scenarios {
                 try await ui.fill("Role", "Paper boat maker", id: "story-new-character-role")
                 try await ui.button("Create Character")
                 try await ui.expectShows("Added character Mira")
-                try await ui.tab("Board")
+                try await ui.tab("Beat Board")
                 try await ui.closeProject()
             } else {
                 try await ui.openProject("Paper Boats")
@@ -2848,7 +2849,7 @@ extension Scenarios {
                 try await ui.tab("Characters")
                 try await ui.expectShows("Paper boat maker")
                 try await ui.quiet()
-                try await ui.tab("Board")
+                try await ui.tab("Beat Board")
                 try await ui.closeProject()
             }
         },

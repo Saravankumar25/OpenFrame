@@ -2,7 +2,7 @@
 
 > Rewritten (not appended) at the end of every session. One page. It exists so the next session starts from the facts
 > instead of from a long history, which is how context rot is avoided. If this page is older than the newest progress log
-> entry, trust the log and fix this page first. Last rewritten: 2026-10-20, end of the Mac and Windows parity session.
+> entry, trust the log and fix this page first. Last rewritten: 2026-10-20, evening, end of the Mac labels, Home and AI routes round.
 
 ## State
 
@@ -23,13 +23,14 @@
      View on both apps. The AI disclosure is "See sources" on both apps (owner decision 2026-10-20).
    - Requirement inventory and status: [mac-windows-structure-parity.md](../roadmap/mac-windows-structure-parity.md).
 
+   - Evening round: every Mac button named, Home as on Windows, toolbar fits a 1280 by 720 screen, narrow-page
+     fallbacks, seven deterministic AI routes (Mac evaluation 98.1 percent tool, 89.9 percent end state).
+
 ## Next three items
 
 1. Merge `mac/windows-parity` into `mac/m1-toolchain` after the owner looks at the Mac app (dev build:
    `apps/macos/scripts/bundle-dev-app.sh`). Then the internal disk image only on the owner's word.
-2. Open items of the parity page: a visible search button, the "+" create menu, Breakdown hide scenes and panel, the
-   Catalog filter row at the smallest window with the AI panel open, the screenplay overlap at 900 points with the
-   sidebar and AI open (known since 5355dc7).
+2. Open item of the parity page: Breakdown hide scenes and panel buttons.
 3. Windows: run `npm run verify` and the E2E suite on the Windows machine for the Story page, Beat Board, See sources
    and the Daily View export (not compiled on the Mac).
 

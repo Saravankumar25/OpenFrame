@@ -282,7 +282,7 @@ struct ScriptPaneView: View {
                     }
                 } label: {
                     if iconOnly {
-                        Label("Tag Selection as", systemImage: "tag").labelStyle(.iconOnly)
+                        Label("Tag", systemImage: "tag")
                     } else {
                         Label("Tag Selection as", systemImage: "tag")
                     }

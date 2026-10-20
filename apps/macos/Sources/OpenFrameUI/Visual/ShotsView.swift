@@ -45,6 +45,7 @@ struct ShotsView: View {
                     .inspectorColumnWidth(min: 320, ideal: 380, max: 500)
             }
         }
+        .onProjectIntent("production.new_shot") { composerFocused = true }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("shots-tab")
     }
@@ -108,7 +109,7 @@ struct ShotsView: View {
             if model.scene != nil, !model.shots.isEmpty {
                 Menu {
                     Button("Copy Planning to Another Scene\u{2026}") { model.sheet = .copyPlanning }
-                } label: { Image(systemName: "ellipsis.circle") }
+                } label: { Label("More", systemImage: "ellipsis.circle") }
                     .menuStyle(.borderlessButton).menuIndicator(.hidden).fixedSize()
                     .accessibilityLabel("More scene actions")
                     .accessibilityIdentifier("shots-more")
@@ -431,7 +432,7 @@ private struct ShotInspector: View {
                             .font(.title3.weight(.semibold)).lineLimit(2)
                     }
                     Spacer()
-                    Button { model.selectedId = nil } label: { Image(systemName: "xmark") }
+                    Button { model.selectedId = nil } label: { Label("Close", systemImage: "xmark") }
                         .buttonStyle(.borderless).accessibilityLabel("Close").accessibilityIdentifier("shot-inspector-close")
                 }
                 if shot.needsReview, !shot.sceneRemoved {
@@ -527,7 +528,7 @@ private struct ShotInspector: View {
                     ForEach(shot.characters, id: \.self) { c in
                         HStack(spacing: 3) {
                             Text(c).font(.caption)
-                            Button { Task { await model.update(shot, characters: shot.characters.filter { $0 != c }) } } label: { Image(systemName: "xmark").font(.caption2) }
+                            Button { Task { await model.update(shot, characters: shot.characters.filter { $0 != c }) } } label: { Label("Remove", systemImage: "xmark").font(.caption2) }
                                 .buttonStyle(.plain).accessibilityLabel("Remove \(c)")
                                 .accessibilityIdentifier("shot-remove-character-\(c)")
                         }
@@ -544,7 +545,7 @@ private struct ShotInspector: View {
                 if !unused.isEmpty {
                     Menu {
                         ForEach(unused, id: \.self) { c in Button(c) { charText = c; addCharacter() } }
-                    } label: { Image(systemName: "person.crop.circle.badge.plus") }
+                    } label: { Label("Characters", systemImage: "person.crop.circle.badge.plus") }
                         .menuStyle(.borderlessButton).menuIndicator(.hidden).fixedSize()
                         .accessibilityLabel("Characters in this scene")
                         .accessibilityIdentifier("shot-character-suggestions")
@@ -592,7 +593,7 @@ private struct ShotInspector: View {
                             .buttonStyle(.plain).font(.caption)
                             .help(p.storyboardName)
                             .accessibilityIdentifier("shot-open-panel-\(p.panelId)")
-                        Button { Task { await model.detach(shot, panelId: p.panelId) } } label: { Image(systemName: "xmark").font(.caption2) }
+                        Button { Task { await model.detach(shot, panelId: p.panelId) } } label: { Label("Detach", systemImage: "xmark").font(.caption2) }
                             .buttonStyle(.plain).accessibilityLabel("Detach storyboard panel \(Int(p.number))")
                             .accessibilityIdentifier("shot-detach-panel-\(p.panelId)")
                     }

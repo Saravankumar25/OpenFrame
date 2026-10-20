@@ -97,6 +97,7 @@ struct IdeaVaultScreen: View {
         .onAppear { if let m = VaultDisplayMode(rawValue: storedMode) { model.mode = m } }
         .onChange(of: model.mode) { _, m in storedMode = m.rawValue }
         .overlay(alignment: .bottom) { noticeBar }
+        .onProjectIntent("vault.new_note") { Task { await model.createText(.note) } }
         .onReceive(NotificationCenter.default.publisher(for: .openFrameQuickCapture)) { _ in
             if model.page == .vault { model.dialog = .quick }
         }
@@ -207,25 +208,25 @@ struct IdeaVaultScreen: View {
                 Divider()
                 Button("Quick Capture") { model.dialog = .quick }
             } label: {
-                Label("Add", systemImage: "plus")
+                Label("Add", systemImage: "plus").labelStyle(.titleAndIcon)
             }
             .help("Add to the Idea Vault")
             .accessibilityIdentifier("vault-add")
         }
         ToolbarItem {
-            Button { model.dialog = .record } label: { Label("Record Note", systemImage: "mic") }
+            Button { model.dialog = .record } label: { Label("Record Note", systemImage: "mic").labelStyle(.titleAndIcon) }
                 .help("Record a voice note")
                 .accessibilityIdentifier("vault-record")
         }
         ToolbarItem {
-            Button { model.dialog = .quick } label: { Label("Quick Capture", systemImage: "bolt") }
+            Button { model.dialog = .quick } label: { Label("Quick Capture", systemImage: "bolt").labelStyle(.titleAndIcon) }
                 .keyboardShortcut("n", modifiers: [.command, .shift])
                 .help("Quick Capture (Shift-Command-N)")
                 .accessibilityIdentifier("vault-quick-capture")
         }
         ToolbarItem {
             Picker("View", selection: Binding(get: { model.mode }, set: { model.setMode($0) })) {
-                ForEach(VaultDisplayMode.allCases) { Label($0.title, systemImage: $0.symbol).tag($0) }
+                ForEach(VaultDisplayMode.allCases) { Label($0.title, systemImage: $0.symbol).labelStyle(.titleAndIcon).tag($0) }
             }
             .pickerStyle(.segmented)
             .help("Change how items are shown")
@@ -233,7 +234,7 @@ struct IdeaVaultScreen: View {
             .accessibilityIdentifier("vault-view-mode")
         }
         ToolbarItem {
-            Button { model.page = .deleted } label: { Label("Recently Deleted", systemImage: "trash") }
+            Button { model.page = .deleted } label: { Label("Recently Deleted", systemImage: "trash").labelStyle(.titleAndIcon) }
                 .help("Recently Deleted")
                 .accessibilityIdentifier("vault-recently-deleted")
         }
@@ -248,14 +249,14 @@ struct IdeaVaultScreen: View {
     // With no project open the Edit menu's project undo is off, so the Global vault answers the
     // same shortcut itself.
     @ViewBuilder private var undoButton: some View {
-        let button = Button { Task { await model.undo() } } label: { Label("Undo", systemImage: "arrow.uturn.backward") }
+        let button = Button { Task { await model.undo() } } label: { Label("Undo", systemImage: "arrow.uturn.backward").labelStyle(.titleAndIcon) }
             .help("Undo the last change in the \(VaultText.scopeLabel(model.scope))")
             .accessibilityIdentifier("vault-undo")
         if model.hasProject { button } else { button.keyboardShortcut("z", modifiers: [.command, .option]) }
     }
 
     @ViewBuilder private var redoButton: some View {
-        let button = Button { Task { await model.redo() } } label: { Label("Redo", systemImage: "arrow.uturn.forward") }
+        let button = Button { Task { await model.redo() } } label: { Label("Redo", systemImage: "arrow.uturn.forward").labelStyle(.titleAndIcon) }
             .help("Redo in the \(VaultText.scopeLabel(model.scope))")
             .accessibilityIdentifier("vault-redo")
         if model.hasProject { button } else { button.keyboardShortcut("z", modifiers: [.command, .option, .shift]) }
@@ -403,7 +404,7 @@ struct IdeaVaultScreen: View {
             Button(xs.allSatisfy(\.pinned) ? "Unpin" : "Pin") { Task { await model.setPinned(xs, !xs.allSatisfy(\.pinned)) } }
             if let label = model.copyLabel { Button(label) { model.dialog = .copy(xs) } }
             Button("Delete", role: .destructive) { Task { await model.delete(xs) } }
-            Button { model.selection = [] } label: { Image(systemName: "xmark") }
+            Button { model.selection = [] } label: { Label("Clear", systemImage: "xmark").labelStyle(.titleAndIcon) }
                 .buttonStyle(.borderless)
                 .accessibilityLabel("Clear selection")
         }
@@ -449,7 +450,7 @@ struct IdeaVaultScreen: View {
                     }
                     .buttonStyle(.link)
                 }
-                Button { model.dismissNotice() } label: { Image(systemName: "xmark") }
+                Button { model.dismissNotice() } label: { Label("Dismiss", systemImage: "xmark").labelStyle(.titleAndIcon) }
                     .buttonStyle(.borderless)
                     .accessibilityLabel("Dismiss")
             }

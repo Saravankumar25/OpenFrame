@@ -132,7 +132,7 @@ struct StoryNoticeBar: View {
                             .buttonStyle(.link)
                             .accessibilityIdentifier("story-notice-undo")
                     }
-                    Button { model.dismissNotice() } label: { Image(systemName: "xmark") }
+                    Button { model.dismissNotice() } label: { Label("Dismiss", systemImage: "xmark") }
                         .buttonStyle(.borderless)
                         .accessibilityLabel("Dismiss")
                 }
@@ -252,7 +252,7 @@ struct StoryAttachmentsField: View {
                         .buttonStyle(.borderless)
                         .disabled(!a.asset.available)
                         .help(a.asset.available ? a.asset.originalName : "The file is missing")
-                        Button { Task { await story.removeAttachment(a.id) } } label: { Image(systemName: "xmark.circle") }
+                        Button { Task { await story.removeAttachment(a.id) } } label: { Label("Remove", systemImage: "xmark.circle") }
                             .buttonStyle(.borderless)
                             .accessibilityLabel("Remove \(a.asset.originalName)")
                     }

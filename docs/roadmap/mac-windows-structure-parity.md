@@ -33,8 +33,8 @@ the merge), **Same** (the Mac already matched), **Exception** (a deliberate plat
 | Writing settings | Spell check on or off, main and second language, project dictionary | New page; the editor follows the on/off choice and language; words checked by the macOS spelling service | Done |
 | Focus mode (item 13) | Only the page | Hides the toolbar, the sidebar and the AI panel | Done |
 | Reload keeps the page (item 1) | Route kept in session storage | Window keeps the project's page (scene storage) | Same |
-| Search field | Top bar "Search this project" | Command+K palette and the Edit menu | Exception: Mac search is the palette; no visible field yet (Open: add a toolbar search button) |
-| Create menu "+" | 13 quick creates | Workspace toolbars and the File menu | Open |
+| Search field | Top bar "Search this project" | Toolbar button "Search" (opens the search palette, also Command+K and the Edit menu) | Done (Mac palette) |
+| Create menu "+" | 13 quick creates | Toolbar menu "New" with the same quick creates | Done |
 | Status bar | Save, breadcrumb, offline line | Save state in the sidebar foot; the window subtitle names the page | Exception |
 | AI panel width | Drag the edge, 300 to 640 points or 45 percent, remembered, double-click resets | Same rule, drag handle, arrow keys and VoiceOver adjust, remembered on this Mac | Done |
 
@@ -85,6 +85,18 @@ the merge), **Same** (the Mac already matched), **Exception** (a deliberate plat
 | "Story Board" is called "Beat Board" everywhere (it was confused with the production Storyboards) | Done in the core (messages, exports, AI answers, templates), the Mac app, the Windows app and both end-to-end suites. AI questions that still say "story board" are understood. Internal names (`story.*` operations, tables) are unchanged, so projects and packages are unaffected. Specifications keep the old name as history |
 | A free "Story" page, left of the Board tab, to write the story like a notepad, with Export as TXT, PDF and DOCX, linked to nothing | Done: new table `story_page` (migration 0017, additive), queries `story.page`, `story.save_page` (refuses a save from a stale window, undoable) and `story.export_page` (TXT without a brand line, PDF, Word). Mac: Story tab first in the Story workspace, saves a second after typing stops and when left. Windows: the same tab and export dialog (TypeScript not compiled on this Mac) |
 
+## 3b. Owner feedback of 2026-10-20, evening: labels, Home, room on small screens
+
+| Item | Status |
+|---|---|
+| Every button says what it does | Done: toolbar and page buttons carry their names (Close, Remove, Delete, Actions, More, Back, Forward, Search, New, Assistant, Settings, Scenes, Find, Zoom In, Zoom Out). Kept as symbols on purpose: disclosure arrows, checkboxes and the category icon picker |
+| Home page as on Windows | Done: "Your projects" with search, Open Project, Restore Backup or Package, New Project; Pinned and Recent projects; Archived as its own page; empty state "Create your first project." Project Home: status menu, Project settings, the three ways to start for a new project, then Continue, Quick Access, Recent, Production status, Project Files and Tasks |
+| Toolbar buttons hidden in the overflow menu on a 1280 by 720 screen | Fixed: the toolbar no longer draws the window title (the Window menu and VoiceOver keep it); the project name is at the top of the sidebar |
+| Beat Board tool row past the window edge | Fixed: the actions move to a second row in a narrow window |
+| Catalog and Locations filter rows past the page with the assistant open | Fixed: the row of filter buttons becomes a pop-up menu when the page is narrow |
+| Screenplay scene list over the sidebar at 900 points with the assistant open | Fixed: the scene list steps aside when the page has no room for it (the Scenes button says why) |
+| Smallest window taller than a 720-point screen | Fixed: the minimum is checked again when the toolbar changes height |
+
 ## 4. AI (OpenFrameAI.docx and the Windows AI brief)
 
 | Item | Status |
@@ -97,6 +109,11 @@ the merge), **Same** (the Mac already matched), **Exception** (a deliberate plat
 | Never claim a change was applied without Apply | Core (Change Sets) and Same on the Mac (Proposed Changes card) |
 | Follow-up references | Core |
 | Local only | Same |
+| Starting questions | Done on the Mac: an empty conversation offers "Try asking" questions for the page you are on |
+| Copy an answer | Done on the Mac: Copy under each answer (the answer text only) |
+| The Story page stays private to the writer | Done: the assistant can neither read nor change it (`story.page` and `story.save_page` hidden from the AI, reason `STANDALONE_PAGE`) |
+| Requests the model planned wrongly | Seven deterministic routes (task due date, set dressing, characters for a scene, a shot for scene N, product terms, parking lot cards). English evaluation on the Mac: tool and arguments 94.4 to 98.1 percent, end state 87.3 to 89.9, safety 46 of 46 |
+| Meaning search measured on the Mac | Fixed in the evaluation tool: a relative engine folder made the search engine fail to start, so every retrieval case measured word matching and waited ten minutes. The tool now resolves the folders, checks the search model before the first case and stops waiting when the index reports an error. The index now records why embedding failed (the snapshot's `error`) instead of only "updating" |
 
 ## 5. Verification
 

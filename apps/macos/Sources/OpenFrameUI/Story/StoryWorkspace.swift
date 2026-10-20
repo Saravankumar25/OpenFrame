@@ -51,6 +51,25 @@ struct StoryContent: View {
         .onExitCommand {
             if model.drawer != nil { model.openDrawer(nil) } else { model.clearSelection() }
         }
+        .onProjectIntents(["story.new_act", "story.new_sequence", "story.new_beat", "story.new_scene", "story.new_character"]) { intent in
+            switch intent {
+            case "story.new_character":
+                model.tab = .characters
+                ProjectIntents.shared.fire("story.characters.new")
+            case "story.new_sequence":
+                model.tab = .board
+                if let act = model.board?.acts.first { model.addingSequenceIn = act.id } else { model.addingAct = true }
+            case "story.new_beat":
+                model.tab = .board
+                Task { _ = await model.addBeatFromToolbar() }
+            case "story.new_scene":
+                model.tab = .board
+                Task { _ = await model.addSceneFromToolbar() }
+            default:
+                model.tab = .board
+                model.addingAct = true
+            }
+        }
         .accessibilityIdentifier("story-workspace")
     }
 
@@ -111,6 +130,7 @@ struct BoardPage: View {
     var body: some View {
         if let board = model.board {
             VStack(spacing: 0) {
+                pageTitle
                 toolbar(board)
                 if model.selectedRefs.count > 1 { selectionBar(board) }
                 if model.isEmpty { emptyState } else if model.tab == .board {
@@ -126,10 +146,43 @@ struct BoardPage: View {
         }
     }
 
+    /// The page's name and question (Windows: "Beat Board", How does my story fit together?).
+    private var pageTitle: some View {
+        HStack(alignment: .firstTextBaseline, spacing: PageSpacing.small) {
+            Text(model.tab == .outline ? "Beat Board \u{00B7} Outline" : "Beat Board").font(.title3.weight(.semibold))
+                .accessibilityAddTraits(.isHeader)
+            Text("How does my story fit together? Drag cards until the story works.")
+                .font(.caption).foregroundStyle(theme["muted"]).lineLimit(2)
+            Spacer(minLength: PageSpacing.small)
+            Label("No scene numbers; they come from the screenplay", systemImage: "info.circle")
+                .font(.caption).foregroundStyle(theme["muted"])
+                .lineLimit(1)
+        }
+        .padding(.horizontal, 16).padding(.top, 10)
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("beat-board-title")
+    }
+
     // MARK: Toolbar
 
+    /// One row when there is room; in a narrow window the actions go to a second row instead of
+    /// spilling past the edge (every button has its name, so the row is wider than icons alone).
     private func toolbar(_ board: StoryBoardState) -> some View {
-        HStack(spacing: 10) {
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: 10) {
+                toolsLeft(board)
+                Spacer()
+                toolsRight
+            }
+            VStack(alignment: .leading, spacing: 6) {
+                HStack(spacing: 10) { toolsLeft(board) }
+                HStack(spacing: 10) { Spacer(); toolsRight }
+            }
+        }
+        .padding(.horizontal, 16).padding(.vertical, 8)
+    }
+
+    @ViewBuilder private func toolsLeft(_ board: StoryBoardState) -> some View {
             Menu {
                 Button("Act") { model.addingAct = true }
                 Button("Sequence") {
@@ -156,7 +209,7 @@ struct BoardPage: View {
                     .textFieldStyle(.plain)
                     .accessibilityLabel("Search / filter cards")
                 if !model.filter.isEmpty {
-                    Button { model.filter = "" } label: { Image(systemName: "xmark.circle.fill") }
+                    Button { model.filter = "" } label: { Label("Clear", systemImage: "xmark.circle.fill") }
                         .buttonStyle(.borderless).accessibilityLabel("Clear filter")
                 }
             }
@@ -168,18 +221,20 @@ struct BoardPage: View {
             if model.tab == .board {
                 HStack(spacing: 2) {
                     let idx = Self.zoomLevels.firstIndex(of: zoomPercent) ?? 3
-                    Button { zoomPercent = Self.zoomLevels[max(0, idx - 1)] } label: { Image(systemName: "minus") }
+                    Button { zoomPercent = Self.zoomLevels[max(0, idx - 1)] } label: { Label("Zoom Out", systemImage: "minus") }
                         .disabled(idx <= 0).accessibilityLabel("Zoom out")
                     Text("\(zoomPercent)%").font(.callout.weight(.semibold)).monospacedDigit().frame(width: 44)
                         .accessibilityLabel("Zoom \(zoomPercent) percent")
-                    Button { zoomPercent = Self.zoomLevels[min(Self.zoomLevels.count - 1, idx + 1)] } label: { Image(systemName: "plus") }
+                    Button { zoomPercent = Self.zoomLevels[min(Self.zoomLevels.count - 1, idx + 1)] } label: { Label("Zoom In", systemImage: "plus") }
                         .disabled(idx >= Self.zoomLevels.count - 1).accessibilityLabel("Zoom in")
                 }
                 .buttonStyle(.borderless)
                 .accessibilityElement(children: .contain)
                 .accessibilityLabel("Zoom")
             }
-            Spacer()
+    }
+
+    @ViewBuilder private var toolsRight: some View {
             if model.tab == .board {
                 Toggle(isOn: $parkingOpen) { Label("Parking Lot", systemImage: "parkingsign") }
                     .toggleStyle(.button)
@@ -198,13 +253,11 @@ struct BoardPage: View {
                     Button("CSV\u{2026}") { export("csv") }
                 }
             } label: {
-                Image(systemName: "ellipsis.circle")
+                Label("More", systemImage: "ellipsis.circle")
             }
             .menuStyle(.borderlessButton).menuIndicator(.hidden).fixedSize()
             .accessibilityLabel("More Beat Board actions")
             .accessibilityIdentifier("story-more")
-        }
-        .padding(.horizontal, 16).padding(.vertical, 8)
     }
 
     private func export(_ format: String) {
@@ -225,7 +278,7 @@ struct BoardPage: View {
             Button("Duplicate") { Task { await model.duplicate(refs) } }
             Button("Park") { Task { await model.park(refs) } }
             Button("Delete", role: .destructive) { Task { await model.requestDelete(refs) } }
-            Button { model.clearSelection() } label: { Image(systemName: "xmark") }
+            Button { model.clearSelection() } label: { Label("Clear", systemImage: "xmark") }
                 .buttonStyle(.borderless).accessibilityLabel("Clear selection")
         }
         .controlSize(.small)

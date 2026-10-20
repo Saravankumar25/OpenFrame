@@ -243,7 +243,7 @@ struct StoryEpisodesView: View {
                         Button("Move left") { Task { await m.moveSeasonLeft(season) } }.disabled(m.series?.seasons.first?.id == season.id)
                         Divider()
                         Button("Delete season", role: .destructive) { Task { await m.deleteSeason(season) } }
-                    } label: { Image(systemName: "ellipsis.circle") }
+                    } label: { Label("Options", systemImage: "ellipsis.circle") }
                         .menuStyle(.borderlessButton).menuIndicator(.hidden).fixedSize()
                         .accessibilityLabel("Options for \(season.title)")
                 }
@@ -351,7 +351,7 @@ private struct EpisodeMenu: View {
             Button("Move Later") { Task { await m.step(e, direction: 1) } }.disabled(m.episodes.last?.id == e.id)
             Divider()
             Button("Delete", role: .destructive) { m.sheet = .delete(e) }
-        } label: { Image(systemName: "ellipsis") }
+        } label: { Label("Options", systemImage: "ellipsis") }
             .menuStyle(.borderlessButton).menuIndicator(.hidden).fixedSize()
             .accessibilityLabel("Options for \(e.title)")
             .accessibilityIdentifier("story-episode-options-\(e.id)")

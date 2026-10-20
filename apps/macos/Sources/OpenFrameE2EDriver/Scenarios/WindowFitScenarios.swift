@@ -46,7 +46,9 @@ extension Scenarios {
             // A project with the example screenplay, then its sheets and the search palette.
             try await ui.fitSeed()
             try await ui.fitSize(.minimum, &report)
-            try await ui.press(id: "project-settings-button")
+            // At 900 points the named toolbar buttons do not all fit and macOS moves the last ones
+            // into the toolbar's overflow menu: a person opens Project Settings from the app menu.
+            try await ui.menu([NSApp.mainMenu?.items.first?.title ?? "OpenFrame Studio", "Project Settings\u{2026}"])
             try await ui.wait(id: "project-settings-tab-general", timeout: 15)
             await ui.idle(0.8) // the sheet finishes sliding in
             ui.fitCheck("Project Settings sheet", &report)

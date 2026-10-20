@@ -176,7 +176,7 @@ struct ShortcutsSettingsView: View {
             Button {
                 Task { await model.remove(chord, from: c) }
             } label: {
-                Image(systemName: "xmark").font(.system(size: 8, weight: .bold))
+                Label("Remove", systemImage: "xmark").font(.caption2)
             }
             .buttonStyle(.plain)
             .disabled(model.busy)

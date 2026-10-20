@@ -11,6 +11,26 @@ enum AIText {
     static let staleHint = "AI never applies a stale proposal blindly. It must be re-checked against the current project."
     static let promise = "OpenFrame AI runs on this computer after a one-time download. Your project data is not sent to OpenFrame or to an AI cloud service."
     static let gemmaNotice = "Gemma is provided under and subject to the Gemma Terms of Use found at ai.google.dev/gemma/terms."
+    /// Questions to start with, for the page the person is on. Each is a phrasing the assistant
+    /// answers from the project's own data (the direct routes in the core's commands.rs), so a
+    /// first try never ends in "I couldn't find that".
+    static func starterQuestions(for workspace: Workspace) -> [String] {
+        switch workspace {
+        case .screenplay:
+            ["How many scenes does the screenplay have?", "List the scene headings.", "How long is the screenplay?", "Are there unresolved comments?"]
+        case .story:
+            ["How many scene cards are on the beat board?", "Show the characters on the beat board.", "How many acts are there?", "How many scenes does the screenplay have?"]
+        case .breakdown:
+            ["How far along is the breakdown?", "Which draft is the production source?", "Which locations are used in the script?", "How many scenes does the screenplay have?"]
+        case .production, .callSheets:
+            ["How many scenes are unscheduled?", "How far along is the breakdown?", "Which locations are used in the script?", "Which draft is the production source?"]
+        case .notes:
+            ["What open tasks do I have?", "Summarise my project notes", "Are there unresolved comments?"]
+        default:
+            ["How many scenes does the screenplay have?", "How many scene cards are on the beat board?", "What open tasks do I have?", "How far along is the breakdown?"]
+        }
+    }
+
     static let emptyConversation = "Ask about your project, for example \u{201C}How many scenes are in the script?\u{201D}, \u{201C}Open Scene 12.\u{201D} or \u{201C}Create a task to scout the railway station.\u{201D} The assistant can look things up in several steps; changes are only ever prepared for you to review."
     static let noProject = "The assistant answers from the project that is open, on this computer."
 }
@@ -165,6 +185,12 @@ enum AILogic {
     }
 
     // MARK: Answers
+
+    /// The answer as plain text for the clipboard: the text, then every item of its list.
+    static func copyText(_ r: AiResultDto) -> String {
+        let items = r.items.map { "- " + $0.label + ($0.detail.map { " (\($0))" } ?? "") }
+        return ([r.content] + items).joined(separator: "\n")
+    }
 
     /// Items shown before "Show all": a long answer is a preview plus the full list, never "and N more".
     static let previewItems = 8

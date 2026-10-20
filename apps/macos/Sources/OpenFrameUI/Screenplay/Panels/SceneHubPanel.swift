@@ -365,7 +365,7 @@ struct ScreenplayInspector: View {
                 .pickerStyle(.segmented)
                 .labelsHidden()
                 .accessibilityLabel("Inspector")
-                Button { state.inspectorShown = false } label: { Image(systemName: "xmark.circle.fill") }
+                Button { state.inspectorShown = false } label: { Label("Close", systemImage: "xmark.circle.fill") }
                     .buttonStyle(.plain)
                     .foregroundStyle(.secondary)
                     .help("Close the inspector")

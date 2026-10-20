@@ -88,6 +88,20 @@ extension EnvironmentValues {
     }
 }
 
+/// The width a project page gets: the window's detail column less the assistant panel when it
+/// is open. It comes from the window, never from the page's content, so a page may use it to
+/// leave out a side column that would not fit (never to size itself).
+private struct PageWidthKey: EnvironmentKey {
+    static let defaultValue: CGFloat = .infinity
+}
+
+extension EnvironmentValues {
+    var pageWidth: CGFloat {
+        get { self[PageWidthKey.self] }
+        set { self[PageWidthKey.self] = newValue }
+    }
+}
+
 extension View {
     /// The frame of a sheet: its usual minimum and ideal size, never more than the window it
     /// belongs to leaves room for (a sheet larger than its window runs off the screen). Below its
@@ -150,6 +164,7 @@ private struct WindowFitter: NSViewRepresentable {
     final class FitterView: NSView {
         var fit: WindowFit?
         private var observers: [NSObjectProtocol] = []
+        private var layoutWatch: NSKeyValueObservation?
         private weak var watched: NSWindow?
         private var adjusting = false
 
@@ -170,6 +185,11 @@ private struct WindowFitter: NSViewRepresentable {
             watch(NSApplication.didChangeScreenParametersNotification, nil, true)
             watch(NSWindow.didResizeNotification, window, false)
             watch(NSWindow.didEndLiveResizeNotification, window, false)
+            // A toolbar that appears or changes height (opening a project, leaving Focus) changes
+            // the room the content has without resizing the window: check the minimum again.
+            layoutWatch = window.observe(\.contentLayoutRect, options: [.new]) { [weak self] _, _ in
+                DispatchQueue.main.async { self?.refit(move: false) }
+            }
             refit(move: true)
             // macOS restores the last frame after the window first shows; check again after it.
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in self?.refit(move: true) }
@@ -179,6 +199,8 @@ private struct WindowFitter: NSViewRepresentable {
         private func stopWatching() {
             observers.forEach(NotificationCenter.default.removeObserver)
             observers = []
+            layoutWatch?.invalidate()
+            layoutWatch = nil
         }
 
         /// Updates the content minimum, then (once SwiftUI has applied it) the frame.

@@ -281,19 +281,19 @@ struct PrintPreviewSheet: View {
             .toggleStyle(.checkbox)
             Divider()
             HStack {
-                Button { model.previous() } label: { Image(systemName: "chevron.left") }
+                Button { model.previous() } label: { Label("Previous", systemImage: "chevron.left") }
                     .disabled(model.currentPage <= 0)
                     .accessibilityLabel("Previous page").accessibilityIdentifier("print-previous")
                 IXChip(text: model.pageCount > 0 ? model.pageLabel : "\u{2026}").accessibilityIdentifier("print-page-label")
-                Button { model.next() } label: { Image(systemName: "chevron.right") }
+                Button { model.next() } label: { Label("Next", systemImage: "chevron.right") }
                     .disabled(model.currentPage >= model.pageCount - 1)
                     .accessibilityLabel("Next page").accessibilityIdentifier("print-next")
             }
             HStack {
-                Button { model.zoomOut() } label: { Image(systemName: "minus") }
+                Button { model.zoomOut() } label: { Label("Zoom Out", systemImage: "minus") }
                     .disabled(!model.canZoomOut).accessibilityLabel("Zoom out").accessibilityIdentifier("print-zoom-out")
                 IXChip(text: "Zoom \(model.zoomLabel)").accessibilityIdentifier("print-zoom-label")
-                Button { model.zoomIn() } label: { Image(systemName: "plus") }
+                Button { model.zoomIn() } label: { Label("Zoom In", systemImage: "plus") }
                     .disabled(!model.canZoomIn).accessibilityLabel("Zoom in").accessibilityIdentifier("print-zoom-in")
             }
             Divider()

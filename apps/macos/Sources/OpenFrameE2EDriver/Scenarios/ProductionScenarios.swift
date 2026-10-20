@@ -351,7 +351,7 @@ extension Scenarios {
         try await ui.typeIn("Ilse", into: "story-new-character-name")
         try await ui.press(label: "Create Character", role: "AXButton")
         try await ui.waitText("Added character Ilse")
-        try await segment(ui, group: "story-tabs", "Board")
+        try await segment(ui, group: "story-tabs", "Beat Board")
         try await ui.nav("Notes and Tasks")
         try await makeNote(ui, "Ferry timetable")
         try await ui.nav("Screenplay")
@@ -368,7 +368,7 @@ extension Scenarios {
         try await ui.waitText("The ferry leaves without its captain")
         try await segment(ui, group: "story-tabs", "Characters")
         try await ui.waitText("Ilse")
-        try await segment(ui, group: "story-tabs", "Board")
+        try await segment(ui, group: "story-tabs", "Beat Board")
         try await ui.nav("Notes and Tasks")
         try await ui.waitUntil("a note starts with Ferry timetable") { noteRows(ui, "Ferry timetable").count == 1 }
         try await ui.nav("Screenplay")

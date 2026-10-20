@@ -63,7 +63,7 @@ struct AIPanelView: View {
                 .help(model?.status?.available == true ? "Runs on this computer" : "OpenFrame AI is off")
                 .accessibilityIdentifier("ai-mode-chip")
             if model?.status != nil { settingsMenu }
-            Button(action: onClose) { Image(systemName: "xmark") }
+            Button(action: onClose) { Label("Close", systemImage: "xmark") }
                 .buttonStyle(.borderless)
                 .help("Close AI Assistant")
                 .accessibilityLabel("Close AI Assistant")
@@ -85,7 +85,7 @@ struct AIPanelView: View {
                     .accessibilityIdentifier("ai-stop-runtime")
             }
         } label: {
-            Image(systemName: "ellipsis.circle")
+            Label("Settings", systemImage: "ellipsis.circle")
         }
         .menuStyle(.borderlessButton)
         .fixedSize()

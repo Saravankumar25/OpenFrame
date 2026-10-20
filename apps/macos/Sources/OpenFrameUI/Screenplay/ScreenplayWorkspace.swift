@@ -517,6 +517,12 @@ struct ScreenplayWorkspace: View {
     /// The scene list beside the page can be hidden to give the page room (Windows: Scenes).
     @AppStorage("openframe.screenplay.scenesHidden") private var scenesHidden = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.pageWidth) private var pageWidth
+
+    /// The scene list (120) and the page (340) side by side; with less room (a 900-point window
+    /// with the sidebar and the assistant open) the list steps aside and the page keeps it all.
+    private var roomForScenes: Bool { pageWidth >= 120 + 1 + 340 }
+    private var scenesShown: Bool { !scenesHidden && roomForScenes }
 
     private static let contentTables = ["screenplay", "screenplay_draft", "screenplay_scene", "screenplay_element", "screenplay_custom_element", "comment"]
     private static let sourceTables = ["story_character", "cast_member", "location", "story_scene_card"]
@@ -524,7 +530,7 @@ struct ScreenplayWorkspace: View {
     var body: some View {
         let focus = model.mode == .focus
         HSplitView {
-            if !focus && !scenesHidden {
+            if !focus && scenesShown {
                 SceneNavigator(model: model, panels: panels, currentIndex: currentIndex)
                     .frame(minWidth: 120, idealWidth: 240, maxWidth: 340)
             }
@@ -655,15 +661,17 @@ struct ScreenplayWorkspace: View {
         }
         ToolbarItem(placement: .automatic) {
             Button { scenesHidden.toggle() } label: {
-                Label("Scenes", systemImage: "list.bullet.rectangle")
+                Label("Scenes", systemImage: "list.bullet.rectangle").labelStyle(.titleAndIcon)
             }
-            .help(scenesHidden ? "Show the scene list" : "Hide the scene list to give the page more room")
-            .accessibilityLabel(scenesHidden ? "Show Scenes" : "Hide Scenes")
+            .disabled(!roomForScenes)
+            .help(!roomForScenes ? "Widen the window or close the assistant to show the scene list"
+                  : scenesHidden ? "Show the scene list" : "Hide the scene list to give the page more room")
+            .accessibilityLabel(scenesShown ? "Hide Scenes" : "Show Scenes")
             .accessibilityIdentifier("scenes-toggle")
         }
         ToolbarItem(placement: .automatic) {
             Button { model.textView?.showFind() } label: {
-                Label("Find", systemImage: "magnifyingglass")
+                Label("Find", systemImage: "magnifyingglass").labelStyle(.titleAndIcon)
             }
             .help("Find in the script (Command+F)")
             .accessibilityIdentifier("find-button")
@@ -673,7 +681,7 @@ struct ScreenplayWorkspace: View {
             // click, or an accessibility press followed by a click) must not shut it again. The
             // bar's own Close button and Escape close it.
             Button { model.openReplace() } label: {
-                Label("Replace", systemImage: "arrow.left.arrow.right")
+                Label("Replace", systemImage: "arrow.left.arrow.right").labelStyle(.titleAndIcon)
             }
             .keyboardShortcut("f", modifiers: [.command, .option])
             .disabled(!model.canEdit)
@@ -701,6 +709,7 @@ struct ScreenplayWorkspace: View {
                 } icon: {
                     Image(systemName: "square.stack")
                 }
+                .labelStyle(.titleAndIcon)
             }
             .help("Draft: \(model.draft?.name ?? "none")")
             .accessibilityLabel("Draft: \(model.draft?.name ?? "none"). Switch draft")
@@ -708,7 +717,7 @@ struct ScreenplayWorkspace: View {
         }
         ToolbarItem(placement: .automatic) {
             ControlGroup {
-                Button { zoom = ScreenplayZoom.zoomOut(zoom) } label: { Label("Zoom Out", systemImage: "minus.magnifyingglass") }
+                Button { zoom = ScreenplayZoom.zoomOut(zoom) } label: { Label("Zoom Out", systemImage: "minus.magnifyingglass").labelStyle(.titleAndIcon) }
                     .keyboardShortcut("-", modifiers: .command)
                     .disabled(zoom <= ScreenplayZoom.range.lowerBound)
                     .help("Zoom out (Command+Minus)")
@@ -718,7 +727,7 @@ struct ScreenplayWorkspace: View {
                     .help("Actual size (Command+0). Pinch on the trackpad to zoom.")
                     .accessibilityLabel("Zoom \(ScreenplayZoom.label(zoom)), reset to 100 percent")
                     .accessibilityIdentifier("screenplay-zoom-reset")
-                Button { zoom = ScreenplayZoom.zoomIn(zoom) } label: { Label("Zoom In", systemImage: "plus.magnifyingglass") }
+                Button { zoom = ScreenplayZoom.zoomIn(zoom) } label: { Label("Zoom In", systemImage: "plus.magnifyingglass").labelStyle(.titleAndIcon) }
                     .keyboardShortcut("=", modifiers: .command)
                     .disabled(zoom >= ScreenplayZoom.range.upperBound)
                     .help("Zoom in (Command+Plus)")
@@ -779,7 +788,7 @@ struct SceneNavigator: View {
                             .disabled(NavigatorColumnData.isDisabled(c, chosen: model.navColumns, data: model.navData))
                     }
                 } label: {
-                    Image(systemName: "tablecells")
+                    Label("Columns", systemImage: "tablecells").labelStyle(.titleAndIcon)
                 }
                 .menuStyle(.borderlessButton)
                 .fixedSize()

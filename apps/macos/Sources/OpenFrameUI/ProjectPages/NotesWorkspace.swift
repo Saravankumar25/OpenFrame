@@ -74,6 +74,9 @@ struct NotesScreen: View {
         }
         .onAppear { model.apply(PageNav.take()) }
         .onReceive(NotificationCenter.default.publisher(for: .openFrameShowWorkspace)) { _ in model.apply(PageNav.take()) }
+        .onProjectIntents(["notes.new_note", "notes.new_task"]) { intent in
+            if intent == "notes.new_task" { model.startNewTask() } else { Task { await model.newNote() } }
+        }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("notes-workspace")
     }
@@ -412,7 +415,6 @@ private struct NoteDrawer: View {
             }
             Spacer()
             Button { Task { await editor.close() } } label: { Label("Close", systemImage: "xmark") }
-                .labelStyle(.iconOnly)
                 .buttonStyle(.borderless)
                 .help("Close")
                 .keyboardShortcut(.cancelAction)
@@ -453,7 +455,6 @@ private struct TaskDrawer: View {
                 }
                 Spacer()
                 Button { notes.closeDrawer() } label: { Label("Close", systemImage: "xmark") }
-                    .labelStyle(.iconOnly)
                     .buttonStyle(.borderless)
                     .help("Close")
                     .accessibilityLabel("Close")

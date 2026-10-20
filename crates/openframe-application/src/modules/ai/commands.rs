@@ -27,6 +27,12 @@ static CREATE_TASK: LazyLock<Regex> = LazyLock::new(|| {
     )
 });
 
+/// A due date written into a task request ("..., due 2026-11-20"): it belongs in the task's due
+/// date, not its title (evaluation case action-en-025).
+static TASK_DUE: LazyLock<Regex> = LazyLock::new(|| {
+    re(r#"(?i)\s*,?\s*\b(?:due|by)\s+(?:on\s+)?(?P<d>\d{4}-\d{2}-\d{2})\s*$"#)
+});
+
 static TASK_SHORT: LazyLock<Regex> =
     LazyLock::new(|| re(r#"(?i)^\s*(?:remind\s+me\s+to|task\s*:)\s+(?P<what>.+?)\s*[.!]*\s*$"#));
 
@@ -538,13 +544,13 @@ static CATALOG_TO: LazyLock<Regex> = LazyLock::new(|| {
 
 static CATALOG_AS: LazyLock<Regex> = LazyLock::new(|| {
     re(
-        r#"(?i)^\s*(?:please\s+)?(?:add|catalog(?:ue)?)\s+(?P<what>.+?)\s+as\s+(?:a\s+|an\s+)?(?P<cat>prop|wardrobe|costume|vehicle|animal|special\s+effect|sound\s+effect)\s*[.!]*\s*$"#,
+        r#"(?i)^\s*(?:please\s+)?(?:add|catalog(?:ue)?)\s+(?P<what>.+?)\s+as\s+(?:a\s+|an\s+)?(?P<cat>prop|wardrobe|costume|vehicle|animal|special\s+effect|sound\s+effect|set\s+dressing)\s*[.!]*\s*$"#,
     )
 });
 
 static CHARACTER: LazyLock<Regex> = LazyLock::new(|| {
     re(
-        r#"(?i)^\s*(?:please\s+)?(?:add|create|make)\s+(?:a\s+)?(?:new\s+)?character(?:\s+(?:called|named)\s+|\s*:\s*)(?P<name>(?:(?:dr|mr|mrs|ms|prof)\.\s+)?[^,.]+?)(?:\s*,\s*(?P<desc>.+?))?\s*[.!]*\s*$"#,
+        r#"(?i)^\s*(?:please\s+)?(?:add|create|make)\s+(?:a\s+)?(?:new\s+)?(?P<many>characters?)(?:\s+for\s+(?:this|the)\s+scene)?(?:\s+(?:called|named)\s+|\s*:\s*)(?P<name>(?:(?:dr|mr|mrs|ms|prof)\.\s+)?[^,.]+?)(?:\s*,\s*(?P<desc>.+?))?\s*[.!]*\s*$"#,
     )
 });
 
@@ -659,6 +665,24 @@ static PRODUCT: LazyLock<Regex> = LazyLock::new(|| {
     )
 });
 
+/// "Add a shot to scene 21: wide shot of Lakshmi on the tower." (evaluation case action-en-068;
+/// the model opened the scene instead).
+static SHOT: LazyLock<Regex> = LazyLock::new(|| {
+    re(
+        r#"(?i)^\s*(?:please\s+)?add\s+(?:a\s+)?(?:new\s+)?shot\s+(?:to|in|for)\s+scene\s+(?P<n>\d{1,5})\s*[:,]\s*(?P<d>.+?)\s*[.!]*\s*$"#,
+    )
+});
+
+/// "What is a Change Set?": a question about one of OpenFrame's own terms, which no screenplay
+/// uses, so it is answered from the guide (cases tool-en-050 and tool-en-052 searched the
+/// project instead). Only names that are OpenFrame's alone are listed: an ordinary word such as
+/// "parking lot" or "sides" may be part of the story.
+static PRODUCT_TERM: LazyLock<Regex> = LazyLock::new(|| {
+    re(
+        r#"(?i)^\s*(?:what\s+(?:is|are|does)|what's|explain|define)\s+(?:an?\s+|the\s+)?(?:change\s+sets?|production\s+source|beat\s+board|idea\s+vault|scene\s+hub|writing\s+room|focus\s+mode|day\s+out\s+of\s+days|daily\s+view|offline\s+ai|review\s+package|recently\s+deleted|private\s+notes?)(?:\s+(?:mean|do|for))?\s*\??\s*$"#,
+    )
+});
+
 static SCENE_CARD: LazyLock<Regex> = LazyLock::new(|| {
     re(
         r#"(?i)^\s*(?:please\s+)?(?:(?:add|create|make)\s+a\s+(?:new\s+)?|new\s+)scene\s+card\s*(?::|where|in\s+which|about)\s*(?P<d>.+?)\s*[.!]*\s*$"#,
@@ -721,7 +745,7 @@ static NEW_SCENE: LazyLock<Regex> = LazyLock::new(|| {
 
 static SCENE_CARD_LOT: LazyLock<Regex> = LazyLock::new(|| {
     re(
-        r#"(?i)^\s*(?:please\s+)?add\s+a\s+scene\s+card\s+['"‘“](?P<d>[^'"’”]{1,200})['"’”]\s+to\s+the\s+parking\s+lot\s*[.!]*\s*$"#,
+        r#"(?i)^\s*(?:please\s+)?add\s+a\s+scene\s+card\s+['"‘“](?P<d>.{1,200}?)['"’”]\s+to\s+the\s+parking\s+lot\s*[.!]*\s*$"#,
     )
 });
 
@@ -778,11 +802,21 @@ fn recipe_more(text: &str) -> Option<StepCall> {
     if let Some((_, tool)) = PLAIN_READS.iter().find(|(r, _)| r.is_match(text)) {
         return Some(call(tool, json!({})));
     }
-    if cap(&PRODUCT).is_some() {
+    if cap(&PRODUCT).is_some() || cap(&PRODUCT_TERM).is_some() {
         return Some(call(
             "answer_product_question",
             json!({ "question": text.trim() }),
         ));
+    }
+    if let Some(c) = cap(&SHOT) {
+        let n: u32 = c.name("n")?.as_str().parse().ok().filter(|n| *n >= 1)?;
+        let d = c.name("d")?.as_str().trim();
+        return (!d.is_empty()).then(|| {
+            call(
+                "propose_shot",
+                json!({ "sceneNumber": n, "description": capitalise(d) }),
+            )
+        });
     }
     if let Some(c) = cap(&PROPS_FOR) {
         let n: u32 = c.name("n")?.as_str().parse().ok().filter(|n| *n >= 1)?;
@@ -945,7 +979,8 @@ fn workspace(name: &str) -> Option<&'static str> {
 fn category(word: &str) -> Option<&'static str> {
     let w = word.trim().to_lowercase();
     Some(match w.as_str() {
-        "prop" | "props" => "Props",
+        // Set dressing has no category of its own: the breakdown counts it with the props.
+        "prop" | "props" | "set dressing" => "Props",
         "wardrobe" | "costume" => "Wardrobe",
         "vehicle" | "vehicles" => "Vehicles",
         "animal" | "animals" => "Animals",
@@ -992,9 +1027,20 @@ fn recipe(text: &str) -> Option<StepCall> {
     }
     let cap = |r: &Regex| r.captures(text);
     if let Some(c) = cap(&CREATE_TASK).or_else(|| cap(&TASK_SHORT)) {
-        let what = unquote(c.name("what")?.as_str());
-        return (!what.is_empty())
-            .then(|| call("propose_task", json!({ "title": capitalise(what) })));
+        let mut what = unquote(c.name("what")?.as_str());
+        let mut due = None;
+        if let Some(d) = TASK_DUE.captures(what) {
+            due = Some(d.name("d")?.as_str().to_string());
+            what = what[..d.get(0)?.start()].trim();
+        }
+        if what.is_empty() {
+            return None;
+        }
+        let mut args = json!({ "title": capitalise(what) });
+        if let Some(d) = due {
+            args["dueDate"] = json!(d);
+        }
+        return Some(call("propose_task", args));
     }
     if let Some(c) = cap(&TASK_DONE) {
         let task = unquote(c.name("task")?.as_str());
@@ -1074,6 +1120,11 @@ fn recipe(text: &str) -> Option<StepCall> {
     if let Some(c) = cap(&CHARACTER).or_else(|| cap(&CHARACTER_AS)) {
         let name = unquote(c.name("name")?.as_str());
         if name.is_empty() || name.split_whitespace().count() > 5 {
+            return None;
+        }
+        // "Create characters: Nandini, Ravi" names several: the model proposes each one.
+        let several = c.name("many").is_some_and(|m| m.as_str().eq_ignore_ascii_case("characters"));
+        if several && (c.name("desc").is_some() || name.to_lowercase().contains(" and ")) {
             return None;
         }
         let mut args = json!({ "name": name });
@@ -1898,6 +1949,45 @@ mod tests {
             "Create a character arc for Ravi.",
         ] {
             assert_eq!(call(text), None, "{text}");
+        }
+    }
+
+    #[test]
+    fn evening_round_requests_are_direct_calls() {
+        assert_eq!(
+            call("Create a task to book the bus for the coastal highway shoot, due 2026-11-20."),
+            Some((
+                "propose_task".into(),
+                json!({ "title": "Book the bus for the coastal highway shoot", "dueDate": "2026-11-20" })
+            ))
+        );
+        assert_eq!(
+            call("Add three desks as set dressing."),
+            Some(("propose_catalog_item".into(), json!({ "name": "three desks", "category": "Props" })))
+        );
+        assert_eq!(
+            call("Create characters for this scene: Nandini."),
+            Some(("propose_character".into(), json!({ "name": "Nandini" })))
+        );
+        assert_eq!(call("Create characters: Nandini, a schoolteacher."), None);
+        assert_eq!(call("Create characters: Nandini and Ravi."), None);
+        assert_eq!(
+            call("Add a shot to scene 21: wide shot of Lakshmi on the tower."),
+            Some((
+                "propose_shot".into(),
+                json!({ "sceneNumber": 21, "description": "Wide shot of Lakshmi on the tower" })
+            ))
+        );
+        assert_eq!(
+            call("Add a scene card 'Venkat repairs Farooq's radio' to the parking lot."),
+            Some(("propose_scene_card".into(), json!({ "description": "Venkat repairs Farooq's radio" })))
+        );
+        for text in ["What is a Change Set?", "What does the Production Source mean?", "what's the beat board for?"] {
+            assert_eq!(tool(text).as_deref(), Some("answer_product_question"), "{text}");
+        }
+        // Story words stay with the project.
+        for text in ["What is the parking lot?", "What are the sides of the coin?", "What is the significance of the radio?"] {
+            assert_ne!(tool(text).as_deref(), Some("answer_product_question"), "{text}");
         }
     }
 

@@ -186,11 +186,11 @@ struct CompareView: View {
             .labelsHidden()
             .frame(width: 270)
             .accessibilityLabel("Comparison view")
-            Button { model.step(-1) } label: { Image(systemName: "chevron.up") }
+            Button { model.step(-1) } label: { Label("Previous", systemImage: "chevron.up") }
                 .disabled(model.changedIndexes.isEmpty)
                 .help("Previous change")
                 .accessibilityLabel("Previous change")
-            Button { model.step(1) } label: { Image(systemName: "chevron.down") }
+            Button { model.step(1) } label: { Label("Next", systemImage: "chevron.down") }
                 .disabled(model.changedIndexes.isEmpty)
                 .help("Next change")
                 .accessibilityLabel("Next change")

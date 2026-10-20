@@ -72,7 +72,26 @@ struct AIConversationView: View {
                 VStack(alignment: .leading, spacing: 10) {
                     if model.exchanges.isEmpty && model.pending == nil {
                         Text(AIText.emptyConversation).font(.caption).foregroundStyle(theme["muted"])
+                            .fixedSize(horizontal: false, vertical: true)
                             .accessibilityIdentifier("ai-empty")
+                        // Questions to start with, for this page: one click asks them.
+                        Text("Try asking").font(.caption.weight(.semibold)).foregroundStyle(theme["ink2"])
+                        VStack(alignment: .leading, spacing: 6) {
+                            ForEach(AIText.starterQuestions(for: model.context.workspace), id: \.self) { q in
+                                Button {
+                                    model.text = q
+                                    model.send()
+                                } label: {
+                                    Label(q, systemImage: "text.bubble")
+                                        .font(.callout)
+                                        .multilineTextAlignment(.leading)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                }
+                                .buttonStyle(.bordered)
+                                .disabled(!model.canAskNow)
+                                .accessibilityIdentifier("ai-starter")
+                            }
+                        }
                     }
                     ForEach(model.exchanges, id: \.requestId) { x in
                         AIExchangeView(model: model, exchange: x)
@@ -232,6 +251,17 @@ struct AIResultView: View {
                 seeSources(sources)
             }
             HStack {
+                Button {
+                    NSPasteboard.general.clearContents()
+                    NSPasteboard.general.setString(AILogic.copyText(r), forType: .string)
+                    ToastCenter.shared.show("Copied the answer")
+                } label: {
+                    Label("Copy", systemImage: "doc.on.doc")
+                }
+                .buttonStyle(.borderless)
+                .font(.caption)
+                .help("Copy this answer, with its list if it has one")
+                .accessibilityIdentifier("ai-copy")
                 Spacer()
                 Button("Report AI output\u{2026}") { Task { await model.reportOutput(exchange) } }
                     .buttonStyle(.borderless)

@@ -117,12 +117,12 @@ struct CatalogView: View {
             }
             .padding(.horizontal, 8).padding(.vertical, 5)
             .background(theme["surface2"], in: RoundedRectangle(cornerRadius: 7, style: .continuous))
-            Picker("Category", selection: Binding(get: { Self.mainFilters.contains { $0.0 == model.filter } ? model.filter : nil }, set: { model.filter = $0 })) {
-                ForEach(Self.mainFilters, id: \.1) { Text($0.1).tag($0.0) }
+            // The row of category buttons when the page has room for it; in a narrow page (small
+            // window with the sidebar and the assistant open) the same choice as a pop-up menu.
+            ViewThatFits(in: .horizontal) {
+                categoryPicker.pickerStyle(.segmented).labelsHidden().fixedSize()
+                categoryPicker.pickerStyle(.menu).fixedSize()
             }
-            .pickerStyle(.segmented)
-            .labelsHidden()
-            .fixedSize()
             .accessibilityLabel("Category")
             Menu(Self.more.contains { $0 == model.filter } ? "\(model.filter?.rawValue ?? "") \u{25BE}" : "More \u{25BE}") {
                 ForEach(Self.more, id: \.self) { c in Button(c.rawValue) { model.filter = c } }
@@ -134,6 +134,12 @@ struct CatalogView: View {
                 .accessibilityIdentifier("catalog-show-archived")
         }
         .frame(maxWidth: .infinity, alignment: .center)
+    }
+
+    private var categoryPicker: some View {
+        Picker("Category", selection: Binding(get: { Self.mainFilters.contains { $0.0 == model.filter } ? model.filter : nil }, set: { model.filter = $0 })) {
+            ForEach(Self.mainFilters, id: \.1) { Text($0.1).tag($0.0) }
+        }
     }
 
     @ViewBuilder private var list: some View {
@@ -246,7 +252,7 @@ struct CatalogInspector: View {
                         .frame(maxWidth: .infinity).frame(height: 160)
                         .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
                     if canEdit {
-                        Button { Task { await model.setImage(item.id, path: nil) } } label: { Image(systemName: "xmark.circle.fill") }
+                        Button { Task { await model.setImage(item.id, path: nil) } } label: { Label("Remove", systemImage: "xmark.circle.fill") }
                             .buttonStyle(.borderless).padding(6)
                             .accessibilityLabel("Remove image")
                     }
@@ -274,7 +280,7 @@ struct CatalogInspector: View {
                             HStack(spacing: 3) {
                                 BDChip(text: a.alias)
                                 if canEdit {
-                                    Button { Task { await model.removeAlias(a.id) } } label: { Image(systemName: "xmark.circle") }
+                                    Button { Task { await model.removeAlias(a.id) } } label: { Label("Remove", systemImage: "xmark.circle") }
                                         .buttonStyle(.borderless)
                                         .accessibilityLabel("Remove name \(a.alias)")
                                 }

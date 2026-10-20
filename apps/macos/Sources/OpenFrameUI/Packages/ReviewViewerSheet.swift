@@ -135,7 +135,7 @@ struct ReviewViewerSheet: View {
                     .help(model.myCount == 0 ? "Add a comment first" : "")
                     .accessibilityIdentifier("review-export-response")
                 }
-                Button { close() } label: { Image(systemName: "xmark") }
+                Button { close() } label: { Label("Close", systemImage: "xmark") }
                     .buttonStyle(.borderless).keyboardShortcut(.cancelAction)
                     .accessibilityLabel("Close review").accessibilityIdentifier("review-close")
             }
@@ -212,7 +212,7 @@ struct ReviewViewerSheet: View {
                 Spacer()
                 if c.mine { IXChip(text: "Yours", tone: .green) }
                 if c.mine && ws.canComment {
-                    Button { Task { await model.deleteComment(c.id) } } label: { Image(systemName: "trash") }
+                    Button { Task { await model.deleteComment(c.id) } } label: { Label("Delete", systemImage: "trash") }
                         .buttonStyle(.borderless)
                         .accessibilityLabel("Delete this comment").accessibilityIdentifier("review-delete-\(c.id)")
                 }
@@ -241,7 +241,7 @@ struct ReviewViewerSheet: View {
                 HStack {
                     Text("\u{201C}\(model.quote)\u{201D}").font(.caption).italic().foregroundStyle(.secondary).lineLimit(3)
                     Spacer()
-                    Button { model.removeQuote() } label: { Image(systemName: "xmark") }.buttonStyle(.borderless)
+                    Button { model.removeQuote() } label: { Label("Remove", systemImage: "xmark") }.buttonStyle(.borderless)
                         .accessibilityLabel("Remove quote").accessibilityIdentifier("review-remove-quote")
                 }
             }

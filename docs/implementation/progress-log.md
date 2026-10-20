@@ -58,6 +58,35 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 
 ## Entries
 
+### 2026-10-20 (evening), Mac labels and Home as on Windows, room on small screens, AI routes measured
+- **Areas and items worked:** Mac and Windows structure parity, owner feedback (labels, Home, Beat Board, Story page,
+  AI), AI evaluation on the Mac.
+- **Done:** every Mac button carries its name; Home and Project Home follow the Windows layout; toolbar "Search" and
+  "New"; the project toolbar no longer draws the window title (on a 1280 by 720 screen it pushed Project, Search, New,
+  Assistant and Settings into the overflow menu) and the project name heads the sidebar; Beat Board tool row wraps;
+  Catalog and Locations filters become a pop-up menu in a narrow page; the Screenplay scene list steps aside when the
+  page has no room (new `pageWidth` environment value, from the window, never from content); the window minimum is
+  checked again when the toolbar changes height. AI: "Try asking" starters and Copy; the Story page is hidden from the
+  assistant (`STANDALONE_PAGE`); seven deterministic routes in `ai/commands.rs` (task due date, set dressing, "create
+  characters for this scene", "add a shot to scene N", product terms such as "What is a Change Set?", parking lot
+  cards with apostrophes); the index snapshot reports why embedding failed; the evaluation tool resolves its folders,
+  checks the search model first and stops waiting on a failed index.
+- **Evidence:** real-model English evaluation on the Mac (M1, Metal), 430 cases: before the routes
+  (`.build-cache/ai-eval-mac-before`) tool and arguments 94.4 percent, end state 87.3; after
+  (`.build-cache/ai-eval-mac-routes`) 98.1 and 89.9, safety 46 of 46, retrieval Recall@5 99.4, MRR 0.933, bar met.
+  action-en-025 stays an end-state miss by the gold's design (the due date is stored as a timestamp, the check looks
+  for the text). E2E: 10-home 6 of 6, 03-story-page, window-fits minimum, default, maximised, 1280x800, dialogs,
+  resize-stress and sidebar-relaunch pass on a 1280 by 720 screen.
+- **Features moved:** none (parity work).
+- **Docs updated:** `docs/roadmap/mac-windows-structure-parity.md` (sections 1, 3b, 4), handoff.
+- **Decisions made or needed:** none new. At the 900-point minimum some named toolbar buttons fold into the macOS
+  overflow menu; the menu bar has each of them.
+- **Blocked / risks:** Windows TypeScript for the Story page and Beat Board not compiled here.
+- **Next:** owner looks at the Mac build; merge into `mac/m1-toolchain` on the owner's word; Windows verify run.
+- **Checks run:** `cargo test -p openframe-application` (all pass; one timing test failed once under evaluation load
+  and passed twice alone), `apps/macos/scripts/test.sh` 613 of 615 before the stale toolbar test was updated (the
+  other was the typing-latency test under load), the E2E scenarios above. `npm run verify` not run.
+
 ### 2026-10-20 (afternoon), Mac takes the Windows structure; Beat Board; the Story page
 - **Areas and items worked:** owner work outside the plan: the macOS structural parity prompt (Windows structure, Mac
   styling, the owner change lists, the AI brief, the UX brief), then two owner requests for both apps (rename Story Board

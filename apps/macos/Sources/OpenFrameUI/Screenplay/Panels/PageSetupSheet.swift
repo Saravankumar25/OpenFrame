@@ -204,7 +204,7 @@ struct PageSetupSheet: View {
                             HStack(spacing: 2) {
                                 Button(p.name) { model.apply(p) }
                                 if !p.builtIn, model.canEdit {
-                                    Button { Task { await model.deletePreset(p) } } label: { Image(systemName: "xmark.circle") }
+                                    Button { Task { await model.deletePreset(p) } } label: { Label("Delete", systemImage: "xmark.circle") }
                                         .buttonStyle(.borderless)
                                         .accessibilityLabel("Delete the preset \(p.name)")
                                 }

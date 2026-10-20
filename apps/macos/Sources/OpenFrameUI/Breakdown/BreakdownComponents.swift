@@ -158,7 +158,7 @@ struct BDNoticeBar: View {
                             .buttonStyle(.link)
                             .accessibilityIdentifier("breakdown-notice-undo")
                     }
-                    Button { hub.dismissNotice() } label: { Image(systemName: "xmark") }
+                    Button { hub.dismissNotice() } label: { Label("Dismiss", systemImage: "xmark") }
                         .buttonStyle(.borderless)
                         .accessibilityLabel("Dismiss")
                 }
@@ -432,7 +432,7 @@ struct AvailabilityEditor: View {
                         if canEdit {
                             Button {
                                 Task { busy = true; await hub.removeAvailability(owner: owner, ownerId: ownerId, existing: windows, windowId: w.id, name: name); busy = false }
-                            } label: { Image(systemName: "xmark") }
+                            } label: { Label("Remove", systemImage: "xmark") }
                                 .buttonStyle(.borderless)
                                 .disabled(busy)
                                 .accessibilityLabel("Remove \(AvailabilityDates.range(w))")

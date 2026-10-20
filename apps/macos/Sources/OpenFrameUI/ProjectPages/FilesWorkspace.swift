@@ -88,6 +88,7 @@ struct FilesScreen: View {
         .task(id: model.app.changes.key(["project_file", "project_file_folder", "asset", "deleted_item"])) { await model.reload() }
         .onAppear { model.apply(PageNav.take()) }
         .onReceive(NotificationCenter.default.publisher(for: .openFrameShowWorkspace)) { _ in model.apply(PageNav.take()) }
+        .onProjectIntent("files.add") { startAdd(copy: true) }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("files-workspace")
     }
@@ -346,7 +347,7 @@ private struct FileRow: View {
                         .disabled(unavailable)
                         .accessibilityIdentifier("file-open-\(file.id)")
                 }
-                Menu { FileMenu(model: model, file: file) } label: { Image(systemName: "ellipsis") }
+                Menu { FileMenu(model: model, file: file) } label: { Label("More", systemImage: "ellipsis") }
                     .menuStyle(.borderlessButton)
                     .menuIndicator(.hidden)
                     .frame(width: 28)
@@ -651,7 +652,6 @@ struct FileDetailsView: View {
             }
             Spacer()
             Button { Task { await details.close() } } label: { Label("Close", systemImage: "xmark") }
-                .labelStyle(.iconOnly)
                 .buttonStyle(.borderless)
                 .help("Close")
                 .keyboardShortcut(.cancelAction)

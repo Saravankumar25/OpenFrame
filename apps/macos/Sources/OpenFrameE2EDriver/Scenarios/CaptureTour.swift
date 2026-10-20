@@ -998,7 +998,7 @@ extension Scenarios {
                 await ui.capMenu(id: "story-character-more", name: "story-character-menu", title: "Character: More menu", area: "Story", from: "story-characters")
             }
             await ui.step("episodes") {
-                try await ui.tab("Board")
+                try await ui.tab("Beat Board")
                 if ui.exists(id: "story-add-episode") { await ui.visit(press: "story-add-episode", name: "story-add-episode", title: "Add an episode", area: "Story", from: "story-board-filled") }
             }
         },

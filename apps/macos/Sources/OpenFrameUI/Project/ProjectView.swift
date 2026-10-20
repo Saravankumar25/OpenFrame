@@ -61,6 +61,15 @@ struct ProjectView: View {
                 }
             }
             .navigationSplitViewColumnWidth(min: 190, ideal: 220, max: 300)
+            .safeAreaInset(edge: .top) {
+                // The project name sits over its pages, so the toolbar can keep every button.
+                Text(current.title)
+                    .font(.headline)
+                    .lineLimit(2)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 16).padding(.top, 6).padding(.bottom, 2)
+                    .accessibilityIdentifier("sidebar-project-title")
+            }
             .safeAreaInset(edge: .bottom) {
                 VStack(alignment: .leading, spacing: 6) {
                     Text("Project stored locally on this Mac")
@@ -79,10 +88,14 @@ struct ProjectView: View {
             // The reader gives the page exactly the room left: a page never reports a minimum
             // larger than the window, which would grow the window past the screen.
             GeometryReader { geo in
+                let panelShown = assistantOpen && !focus
+                let pageWidth = geo.size.width
+                    - (panelShown ? Self.assistantWidth(for: geo.size.width, preferred: assistantPreferred) + 1 : 0)
                 HStack(spacing: 0) {
                     detail(selection ?? .home)
                         .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
-                    if assistantOpen && !focus {
+                        .environment(\.pageWidth, pageWidth.rounded(.down))
+                    if panelShown {
                         Divider()
                         let width = Self.assistantWidth(for: geo.size.width, preferred: assistantPreferred)
                         AIPanelView(workspace: selection ?? .home) { assistantOpen = false }
@@ -104,7 +117,7 @@ struct ProjectView: View {
                 Button {
                     Task { await app.closeProject() }
                 } label: {
-                    Label("All Projects", systemImage: "square.grid.2x2")
+                    Label("All Projects", systemImage: "square.grid.2x2").labelStyle(.titleAndIcon)
                         .labelStyle(.titleAndIcon)
                 }
                 .help("Close this project and show all projects")
@@ -112,10 +125,13 @@ struct ProjectView: View {
             }
             ToolbarItem(placement: .navigation) { backForward }
             ToolbarItem(placement: .primaryAction) { projectMenu }
+            ToolbarItem(placement: .primaryAction) { searchButton }
+            ToolbarItem(placement: .primaryAction) { newMenu }
             ToolbarItem(placement: .primaryAction) { assistantButton }
             ToolbarItem(placement: .primaryAction) { projectSettingsButton }
         }
         .toolbar(focus ? .hidden : .automatic, for: .windowToolbar)
+        .modifier(ToolbarWithoutTitle())
     }
 
     private func withSheets(_ content: some View) -> some View {
@@ -215,7 +231,7 @@ struct ProjectView: View {
             Button {
                 goBack()
             } label: {
-                Label("Back", systemImage: "chevron.left")
+                Label("Back", systemImage: "chevron.left").labelStyle(.titleAndIcon)
             }
             .disabled(!history.canGoBack)
             .help("Back (Command+[)")
@@ -223,7 +239,7 @@ struct ProjectView: View {
             Button {
                 goForward()
             } label: {
-                Label("Forward", systemImage: "chevron.right")
+                Label("Forward", systemImage: "chevron.right").labelStyle(.titleAndIcon)
             }
             .disabled(!history.canGoForward)
             .help("Forward (Command+])")
@@ -296,7 +312,7 @@ struct ProjectView: View {
         return Button {
             setSidebar(shown: !shown)
         } label: {
-            Label(shown ? "Hide Sidebar" : "Show Sidebar", systemImage: "sidebar.left")
+            Label(shown ? "Hide Sidebar" : "Show Sidebar", systemImage: "sidebar.left").labelStyle(.titleAndIcon)
         }
         .help(shown ? "Hide Sidebar (Command+Control+S)" : "Show Sidebar (Command+Control+S)")
         .accessibilityLabel(shown ? "Hide Sidebar" : "Show Sidebar")
@@ -313,7 +329,7 @@ struct ProjectView: View {
         Button {
             settingsTab = .general
         } label: {
-            Label("Project Settings", systemImage: "gearshape")
+            Label("Settings", systemImage: "gearshape").labelStyle(.titleAndIcon)
                 .labelStyle(.titleAndIcon)
         }
         .help("Project Settings (\(ShortcutStore.shared.label("app.project_settings")))")
@@ -321,12 +337,68 @@ struct ProjectView: View {
         .accessibilityIdentifier("project-settings-button")
     }
 
+    /// Search this project and run commands (Windows: the top bar's search box; Command+K).
+    private var searchButton: some View {
+        Button {
+            NotificationCenter.default.post(name: .openFrameShowSearch, object: nil)
+        } label: {
+            Label("Search", systemImage: "magnifyingglass").labelStyle(.titleAndIcon)
+        }
+        .help("Search this project (Command+K)")
+        .accessibilityLabel("Search this project")
+        .accessibilityIdentifier("project-search-button")
+    }
+
+    /// Create something new from any page (Windows: the top bar's + menu, in the same order).
+    private var newMenu: some View {
+        Menu {
+            Section("Create") {
+                newItem("New Idea", "vault.new_note", at: ProjectPlace(.ideaVault))
+                newItem("New Act", "story.new_act", at: ProjectPlace(.story))
+                newItem("New Sequence", "story.new_sequence", at: ProjectPlace(.story))
+                newItem("New Beat", "story.new_beat", at: ProjectPlace(.story))
+                newItem("New Scene Card", "story.new_scene", at: ProjectPlace(.story))
+                newItem("New Character", "story.new_character", at: ProjectPlace(.story))
+                newItem("New Location", "production.new_location", at: ProjectPlace(.production, tab: .locations))
+                newItem("New Shot List", "production.new_shot", at: ProjectPlace(.production, tab: .shotLists))
+                newItem("New Moodboard", "production.new_moodboard", at: ProjectPlace(.production, tab: .moodboards))
+            }
+            Divider()
+            Button("Import Screenplay\u{2026}") {
+                InterchangePresenter.shared.present(.importScreenplay(openScreenplayId: nil))
+            }
+            Divider()
+            newItem("New Note", "notes.new_note", at: ProjectPlace(.notes))
+            newItem("New Task", "notes.new_task", at: ProjectPlace(.notes))
+            Divider()
+            Button("New Project\u{2026}") {
+                Task {
+                    await app.closeProject()
+                    try? await Task.sleep(for: .milliseconds(300))
+                    NotificationCenter.default.post(name: .openFrameNewProject, object: nil)
+                }
+            }
+        } label: {
+            Label("New", systemImage: "plus").labelStyle(.titleAndIcon)
+        }
+        .help("Create an idea, act, beat, scene card, character, location, shot, moodboard, note or task")
+        .accessibilityLabel("New")
+        .accessibilityIdentifier("project-new-menu")
+    }
+
+    private func newItem(_ title: String, _ intent: String, at place: ProjectPlace) -> some View {
+        Button(title) {
+            ProjectIntents.shared.fire(intent)
+            apply(place)
+        }
+    }
+
     /// Opens and closes the AI Assistant panel (Windows: the Assistant button and Ctrl+J).
     private var assistantButton: some View {
         Button {
             toggleAssistant()
         } label: {
-            Label("Assistant", systemImage: "sparkles")
+            Label("Assistant", systemImage: "sparkles").labelStyle(.titleAndIcon)
         }
         .keyboardShortcut("j", modifiers: .command)
         .help(assistantOpen ? "Close AI Assistant (Command+J)" : "Open AI Assistant (Command+J)")
@@ -374,7 +446,7 @@ struct ProjectView: View {
             Button("Search and Commands\u{2026}") { NotificationCenter.default.post(name: .openFrameShowSearch, object: nil) }
             Button("All Projects") { Task { await app.closeProject() } }
         } label: {
-            Label(current.title, systemImage: "ellipsis.circle")
+            Label("Project", systemImage: "folder").labelStyle(.titleAndIcon)
         }
         .help("Project actions")
         .accessibilityLabel("Project: \(current.title). Switch or manage projects")
@@ -448,4 +520,18 @@ final class ProjectSidebar {
     /// Whether Back and Forward have somewhere to go, so the Go menu can enable them.
     var canGoBack = false
     var canGoForward = false
+}
+
+/// The window keeps its title (Window menu, Mission Control, screen readers) but the toolbar does
+/// not draw it: on a 1280-point screen the title pushed the Project, Search, New, Assistant and
+/// Settings buttons into the overflow menu. The project name is at the top of the sidebar and the
+/// page is marked in the sidebar.
+private struct ToolbarWithoutTitle: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(macOS 15, *) {
+            content.toolbar(removing: .title)
+        } else {
+            content
+        }
+    }
 }

@@ -292,7 +292,7 @@ struct DraftsSheet: View {
                     Button("Delete\u{2026}", role: .destructive) { dialog = .delete(d) }
                 }
             } label: {
-                Image(systemName: "ellipsis.circle")
+                Label("Actions", systemImage: "ellipsis.circle")
             }
             .menuStyle(.borderlessButton)
             .fixedSize()
