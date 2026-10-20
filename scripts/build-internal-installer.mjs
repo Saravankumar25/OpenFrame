@@ -3,7 +3,8 @@
 //
 //   npm run installer:internal [-- --allow-dirty]
 //
-// Output goes to release-out/ (git-ignored): the installer, a .sha256, a .json record and two SBOMs.
+// Output goes to release-out/ (git-ignored): OpenFrame-<n>.exe (the next number; the highest is the latest), a .sha256,
+// a .json record with the version and commit, and two SBOMs.
 // The team password comes from OPENFRAME_TEAM_PASSWORD or the Windows user variable of the same name.
 // It is passed only to the child builds and scans, and is never printed or written.
 
@@ -67,8 +68,10 @@ const found = existsSync(nsisDir)
 if (found.length === 0) fail(`no installer found in ${nsisDir}.`);
 const version = JSON.parse(readFileSync(join(ROOT, "apps", "desktop", "src-tauri", "tauri.conf.json"), "utf8")).version;
 const commit = out("git", ["rev-parse", "HEAD"]);
-const name = `OpenFrame-Studio-${version}-internal-${commit.slice(0, 7)}`;
 mkdirSync(OUT_DIR, { recursive: true });
+// Installers are numbered in build order (owner, 2026-10-20): the highest number is the latest. The commit is in the record.
+const built = readdirSync(OUT_DIR).map((f) => /^OpenFrame-(\d+)\.exe$/.exec(f)?.[1]).filter(Boolean).map(Number);
+const name = `OpenFrame-${Math.max(0, ...built) + 1}`;
 const installer = join(OUT_DIR, `${name}.exe`);
 copyFileSync(found[0], installer);
 

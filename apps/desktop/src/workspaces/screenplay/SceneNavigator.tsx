@@ -87,7 +87,7 @@ const Row = memo(function Row({ s, on, canEdit, onJump, menuFor, columns, cols }
       >
         <button type="button" className="spx-sni-main" onClick={() => onJump(s.id)} aria-current={on ? "location" : undefined}>
           <b>{s.label}</b>
-          <span className={`grow${s.heading.trim() ? "" : " muted"}`}>{s.heading.trim() || "Untitled scene"}</span>
+          <span className={`grow${s.heading.trim() ? "" : " muted"}`} title={s.heading.trim() || undefined}>{s.heading.trim() || "Untitled scene"}</span>
           {columns.length > 0 && <Cells columns={columns} c={cols} />}
         </button>
         {canEdit && (

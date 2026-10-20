@@ -8,7 +8,8 @@
 ## 1. What the user gets
 
 - **Mode:** Light, Dark or System. System follows Windows live (no restart). Mode and theme are separate settings.
-- **Theme:** OpenFrame Default (today's look, unchanged) plus the fifteen themes of the reference mocks: Studio Amber,
+- **Theme:** OpenFrame Default (today's look, unchanged), Black and White (added 2026-10-20 at the owner's request: black
+  text on white in Light, white text on black in Dark), plus the fifteen themes of the reference mocks: Studio Amber,
   Slate Noir, Midnight Reel, Teal & Orange, Courier & Cream, Cutting Room, Velvet Curtain, Sunset Boulevard, Arctic
   Frame, Neon Reel, Location Scout, Desert Dune, Colorist Neutral, Silver Screen, High Contrast.
 - **Import theme:** a `.json` file or pasted text, checked and previewed in Light and Dark before anything is saved.
@@ -171,7 +172,7 @@ the transparent 1024 px render (`--ios-color "#00000000"`, `ios/AppIcon-512@2x.p
 |---|---|
 | Import safety | `tests/appearance.rs::security_hostile_theme_files_are_refused_and_change_nothing` (57 hostile inputs by text and file: unknown keys, ids, built-in and duplicate ids, oversize, invalid JSON, NaN, Infinity, overflow, out-of-range and non-numeric seeds, `url()`, `@import`, `;`, braces, `var()`, HTML, control and direction characters, contrast failures; preferences, My Themes and the open project unchanged), `security_review_findings_names_paths_actors_and_stale_previews` (invisible and built-in names, network paths, other users, bounded problem list, a file changed after its preview), `a_corrected_import_always_survives_being_read_back`, `the_ten_kilobyte_limit_is_exact`, `color.rs` parser tests, `engine.test.ts` style-layer guards |
 | Persistence | `mode_and_theme_survive_a_restart`, `import_from_text_preview_save_apply_and_restart`, `a_damaged_or_missing_saved_theme_falls_back_to_default`, `rename_export_reimport_and_delete`, `migration_fixtures.rs::every_app_database_version_upgrades_and_keeps_recents_and_settings` |
-| Contrast | `theme.rs` contrast tests; E2E `91-appearance-themes` measures rendered text in all 16 themes, both modes, 15 screens |
+| Contrast | `theme.rs` contrast tests; E2E `91-appearance-themes` measures rendered text in all 17 themes, both modes, 15 screens |
 | Paper | `exports.rs::screenplay_pdf_and_call_sheet_paper_never_change_with_the_theme` (byte-identical PDF and Fountain under four theme and mode combinations), `engine.test.ts` paper test, E2E paper check |
 | Default look | E2E `90-visual-baseline` (OpenFrame Default against the captured baseline) |
 | UI | `AppearancePanel.test.tsx` (includes keyboard use of the mode and theme groups), E2E `60-appearance` (own data root, includes a relaunch), E2E `91-appearance-themes` (relaunch) |

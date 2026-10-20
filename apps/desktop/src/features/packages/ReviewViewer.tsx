@@ -176,7 +176,7 @@ export function ReviewViewer({ source, reviewKey, onClose }: { source: "review" 
                 onClick={() => setSceneId(s.id)}
               >
                 <span className="muted xs" style={{ minWidth: 24 }}>{s.label}</span>
-                <span className="grow" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.heading || "(untitled scene)"}</span>
+                <span className="grow" title={s.heading || undefined} style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.heading || "(untitled scene)"}</span>
                 {counts.get(s.id) ? <Chip>{counts.get(s.id)}</Chip> : null}
               </button>
             ))}

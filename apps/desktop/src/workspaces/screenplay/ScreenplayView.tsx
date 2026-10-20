@@ -12,8 +12,11 @@ import {
   Lock,
   MessageSquare,
   NotebookPen,
+  PanelLeftClose,
+  PanelLeftOpen,
   Search,
-  Users,
+  ZoomIn,
+  ZoomOut,
 } from "lucide-react";
 import { Banner, Button, Chip, Menu, Skeleton, type MenuItemSpec } from "../../design-system";
 import { call, onAppEvent } from "../../ipc/client";
@@ -24,7 +27,7 @@ import type { ScreenplayEditResult } from "../../ipc/generated/ScreenplayEditRes
 import type { ScreenplaySceneHub } from "../../ipc/generated/ScreenplaySceneHub";
 import type { CommentDto } from "../../ipc/generated/CommentDto";
 import type { ElementType } from "../../ipc/generated/ElementType";
-import { useNav, useOpenDraft } from "../../app/stores";
+import { useNav, useOpenDraft, useUi } from "../../app/stores";
 import { navigateTo } from "../../app/navigate";
 import { toast } from "../../app/toast";
 import { useDocument, useDraftComments, useNavigatorColumns, usePagination, useProofing, useSuggestionSources } from "./api";
@@ -47,7 +50,6 @@ import { RightPanels, type CommentTarget, type PanelContext } from "./panels";
 import { DraftsDrawer, NewDraftDialog, statusChip, type DraftActions } from "./drafts";
 import { LockDialog, LockedEditDialog, RevisionDrawer, StartRevisionDialog, colourSwatch } from "./lock";
 import { FindBar, ReorderWarningDialog, SceneHubDrawer, TitlePageDialog, type FindState } from "./misc";
-import { NewReviewDialog } from "./ReviewView";
 import { ExportScreenplayDialog } from "../../features/interchange";
 import { toggleColumn, togglePanel, type Layout, type Mode, type PanelId } from "./util";
 import { DeleteScreenplayDialog, NewScreenplayDialog, RenameScreenplayDialog, ScreenplayPicker } from "./picker";
@@ -62,7 +64,6 @@ type DialogState =
   | { kind: "titlePage" }
   | { kind: "hub"; sceneId: string }
   | { kind: "reorder"; hub: ScreenplaySceneHub; sceneId: string; index: number }
-  | { kind: "newReview"; draftId: string }
   | { kind: "export" }
   | { kind: "pageSetup" }
   | { kind: "customElements" }
@@ -79,12 +80,35 @@ const SAVE_LABEL: Record<SyncStatus, string> = {
   error: "Not saved yet. Retrying",
 };
 
-export function ScreenplayView({ overview, layout, setLayout, onCompare, onReview, onImport, onSwitchScreenplay }: {
+const ZOOM_KEY = "openframe.screenplay.zoom";
+const ZOOM_MIN = 0.5;
+const ZOOM_MAX = 2;
+
+/** The page zoom is a per-user view preference, never project data. */
+function readZoom(): number {
+  try {
+    const z = Number(window.localStorage.getItem(ZOOM_KEY));
+    return Number.isFinite(z) && z >= ZOOM_MIN && z <= ZOOM_MAX ? z : 1;
+  } catch {
+    return 1;
+  }
+}
+
+function writeZoom(z: number): number {
+  const v = Math.round(Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, z)) * 100) / 100;
+  try {
+    window.localStorage.setItem(ZOOM_KEY, String(v));
+  } catch {
+    // View preference only.
+  }
+  return v;
+}
+
+export function ScreenplayView({ overview, layout, setLayout, onCompare, onImport, onSwitchScreenplay }: {
   overview: ScreenplayOverview;
   layout: Layout;
   setLayout: (f: (l: Layout) => Layout) => void;
   onCompare: (a: string | null, b: string | null) => void;
-  onReview: () => void;
   /** Opens the workspace's Import Screenplay dialog (a successful import opens the new draft). */
   onImport: () => void;
   /** Opens another screenplay of the project (at the given draft, else its current draft). */
@@ -375,7 +399,6 @@ export function ScreenplayView({ overview, layout, setLayout, onCompare, onRevie
         })
         .catch(reportError),
     lock: (d) => void flush().then(() => setDialog({ kind: "lock", draft: d })),
-    review: (d) => setDialog({ kind: "newReview", draftId: d.id }),
     compare: (a, b) => {
       setDialog(null);
       void flush().then(() => onCompare(a?.id ?? null, b?.id ?? null));
@@ -415,6 +438,36 @@ export function ScreenplayView({ overview, layout, setLayout, onCompare, onRevie
   const type = cursor.elementType;
   const locked = draft.status === "Locked";
   const focus = layout.mode === "focus";
+  // Focus mode hides the whole application frame, not only the screenplay panels (owner item 13).
+  const setFocusMode = useUi((s) => s.setFocusMode);
+  useEffect(() => {
+    setFocusMode(focus);
+    return () => setFocusMode(false);
+  }, [focus, setFocusMode]);
+  useEffect(() => {
+    if (!focus) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && !document.querySelector(".scrim")) setMode("standard");
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
+  // The writer's page zoom (owner items 10 and 14): Ctrl+wheel and touchpad pinch (which arrives as
+  // Ctrl+wheel) zoom the page only, not the whole window.
+  const [zoom, setZoomState] = useState(readZoom);
+  const setZoom = useCallback((z: number) => setZoomState(writeZoom(z)), []);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const onWheel = (e: WheelEvent) => {
+      if (!e.ctrlKey) return;
+      e.preventDefault();
+      setZoomState((z) => writeZoom(z * Math.exp(-e.deltaY / 400)));
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  });
 
   const elementMenu: MenuItemSpec[] = [
     { label: "Element type", header: true },
@@ -491,7 +544,7 @@ export function ScreenplayView({ overview, layout, setLayout, onCompare, onRevie
     <div className="spx-wrap"><div className="spx-page"><Skeleton h={18} w={260} /><div style={{ height: 12 }} /><Skeleton h={220} /></div></div>
   ) : (
     <div className="spx-wrap">
-      <div className="spx-scroll">
+      <div className="spx-scroll" ref={scrollRef} style={{ ["--sp-zoom" as string]: zoom }}>
         {locked && !focus && (
           <div className="spx-lockbar" role="status">
             <Lock size={13} aria-hidden /> Locked shooting draft. You can read and export it freely. Typing offers to start a revision.
@@ -590,7 +643,7 @@ export function ScreenplayView({ overview, layout, setLayout, onCompare, onRevie
           <Menu
             trigger={
               <button type="button" className="btn" style={{ padding: "5px 10px" }} aria-label={`Draft: ${draft.name}. Switch draft`}>
-                <FileText size={13} aria-hidden /> <b>{draft.name}</b> <ChevronDown size={13} aria-hidden />
+                <FileText size={13} aria-hidden /> <b className="sp-name" title={draft.name}>{draft.name}</b> <ChevronDown size={13} aria-hidden />
               </button>
             }
             items={draftMenu}
@@ -608,6 +661,21 @@ export function ScreenplayView({ overview, layout, setLayout, onCompare, onRevie
             </span>
           )}
           <span className="grow" />
+          <Button
+            size="sm"
+            variant={layout.navHidden ? "default" : "on"}
+            icon={layout.navHidden ? <PanelLeftOpen size={14} /> : <PanelLeftClose size={14} />}
+            aria-pressed={!layout.navHidden}
+            title={layout.navHidden ? "Show the scene list" : "Hide the scene list"}
+            onClick={() => setLayout((l) => ({ ...l, navHidden: !l.navHidden }))}
+          >
+            Scenes
+          </Button>
+          <div className="sp-zoom" role="group" aria-label="Page zoom">
+            <button type="button" className="iconbtn" aria-label="Zoom out" title="Zoom out (Ctrl+wheel)" disabled={zoom <= ZOOM_MIN} onClick={() => setZoom(zoom - 0.1)}><ZoomOut size={14} /></button>
+            <button type="button" className="sp-zoom-val" title="Reset the page zoom" onClick={() => setZoom(1)}>{Math.round(zoom * 100)}%</button>
+            <button type="button" className="iconbtn" aria-label="Zoom in" title="Zoom in (Ctrl+wheel)" disabled={zoom >= ZOOM_MAX} onClick={() => setZoom(zoom + 0.1)}><ZoomIn size={14} /></button>
+          </div>
           <Button size="sm" icon={<Search size={14} />} onClick={() => setFindOpen(true)} title={shortcutLabel("screenplay.find") ? `Find (${shortcutLabel("screenplay.find")})` : "Find"}>Find</Button>
           <Button size="sm" variant={layout.panels.includes("notes") ? "on" : "default"} icon={<NotebookPen size={14} />} onClick={() => setLayout((l) => togglePanel(l, "notes"))}>Notes</Button>
           <Button size="sm" variant={layout.panels.includes("comments") ? "on" : "default"} icon={<MessageSquare size={14} />} onClick={() => setLayout((l) => togglePanel(l, "comments"))}>
@@ -615,7 +683,6 @@ export function ScreenplayView({ overview, layout, setLayout, onCompare, onRevie
           </Button>
           <Button size="sm" icon={<Layers size={14} />} onClick={() => setDialog({ kind: "drafts" })}>Drafts</Button>
           <Button size="sm" icon={<GitCompare size={14} />} disabled={drafts.length < 2} onClick={() => draftActions.compare(null, null)}>Compare</Button>
-          <Button size="sm" icon={<Users size={14} />} onClick={() => void flush().then(onReview)}>Review</Button>
           <Button size="sm" icon={<Download size={14} />} onClick={() => void flush().then(() => setDialog({ kind: "export" }))}>Export</Button>
           {locked || draft.status === "Revision" ? (
             <Button size="sm" icon={<Lock size={14} />} onClick={() => setDialog({ kind: "revisions" })}>Revisions</Button>
@@ -626,7 +693,7 @@ export function ScreenplayView({ overview, layout, setLayout, onCompare, onRevie
         </div>
       )}
       <div className="sp-body">
-        {!focus && (
+        {!focus && !layout.navHidden && (
           <SceneNavigator
             scenes={outline}
             currentSceneId={cursor.sceneId}
@@ -747,17 +814,6 @@ export function ScreenplayView({ overview, layout, setLayout, onCompare, onRevie
             const { sceneId, index } = dialog;
             setDialog(null);
             void doMove(sceneId, index);
-          }}
-        />
-      )}
-      {dialog?.kind === "newReview" && (
-        <NewReviewDialog
-          drafts={drafts}
-          initialDraftId={dialog.draftId}
-          onClose={() => setDialog(null)}
-          onStarted={() => {
-            setDialog(null);
-            onReview();
           }}
         />
       )}

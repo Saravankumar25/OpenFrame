@@ -10,14 +10,18 @@ use std::collections::{HashMap, HashSet};
 
 use openframe_domain::enums::BreakdownCategory;
 use openframe_domain::{Actor, AppError, AppResult};
-use openframe_import_export::report::{Block, Column, Document, Table};
+use openframe_import_export::report::{
+    Align, Block, Card, CardHead, CardPart, Cards, Cell, CellItem, Chip, Col, Column, Document,
+    Group, GroupItem, HeaderStyle, Metric, Metrics, Rgb, Row, Section, StyledTable, Table, Tile,
+    Tone, Txt, pal,
+};
 use rusqlite::{Connection, OptionalExtension};
 use serde::Deserialize;
 use ts_rs::TS;
 
+use super::style::{nb, production_masthead};
 use super::{
     Fmt, HINT_TABLES, Job, Output, deliver, destination, footer, nonblank, plural, require_export,
-    subtitle,
 };
 use crate::core::AppCore;
 use crate::modules::production::{SourceScenes, active_source, catalog_usage};
@@ -220,77 +224,146 @@ pub(super) fn export(
     for v in by_scene.values_mut() {
         v.sort_by_key(|e| cat_order(&e.category));
     }
-    let scene_title = |num: &str, heading: &str, omitted: bool| {
-        format!("Scene {num}: {}", if omitted { "OMITTED" } else { heading })
-    };
 
     // ---- PDF
     let document = match content {
         "catalog" => "Catalog",
         _ => "Breakdown Report",
     };
-    let mut doc = Document::new(document)
-        .subtitle(subtitle(&data.project, Some(&data.source_label)))
-        .footer(footer(&data.project, document));
+    let mut doc = Document::new(document).footer(footer(&data.project, document));
     let confirmed = data
         .elements
         .iter()
         .filter(|e| e.state != "Suggested")
         .count();
     let sugg = data.elements.len() - confirmed;
-    let mut facts = vec![
-        ("Production Source".to_string(), data.source_label.clone()),
-        ("Scenes".to_string(), data.scenes.len().to_string()),
-    ];
+    let scope_text = match &a.scene_ids {
+        Some(ids) => plural(ids.len(), "selected scene", "selected scenes"),
+        None => "Entire production source".to_string(),
+    };
+    doc.push(Block::Masthead(production_masthead(
+        if with_scenes {
+            "PRODUCTION / BREAKDOWN REPORT"
+        } else {
+            "PRODUCTION / CATALOG"
+        },
+        if with_scenes {
+            "Production breakdown"
+        } else {
+            "Production inventory"
+        },
+        if with_scenes {
+            "Breakdown Report"
+        } else {
+            "Catalog"
+        },
+        &data.project,
+        &data.source_label,
+        &super::today_label(),
+        &scope_text,
+    )));
+    let mut metrics = vec![Metric::new(data.scenes.len().to_string(), "Scenes")];
     if with_scenes {
-        facts.push(("Confirmed elements".into(), confirmed.to_string()));
+        metrics.push(Metric::new(confirmed.to_string(), "Confirmed elements"));
         if suggested {
-            facts.push(("Suggested (not confirmed)".into(), sugg.to_string()));
+            metrics.push(Metric::new(sugg.to_string(), "Suggested"));
         }
     }
     if with_catalog {
-        facts.push(("Catalog items".into(), data.catalog.len().to_string()));
+        metrics.push(Metric::new(data.catalog.len().to_string(), "Catalog items"));
     }
-    doc.push(Block::KeyValues(facts));
+    doc.push(Block::Metrics(Metrics {
+        items: metrics,
+        compact: false,
+    }));
     if with_scenes {
-        doc.push(Block::Heading {
-            text: "Breakdown by scene".into(),
-            level: 1,
-        });
+        doc.push(Block::Section(Section::new(
+            "Breakdown by scene",
+            Some("Ordered by the Production Source".into()),
+        )));
         if suggested && sugg > 0 {
-            doc.push(Block::Note(
-                "Suggested elements are not confirmed yet and are marked “(suggested)”.".into(),
+            doc.push(Block::Text(
+                Txt::new(
+                    "Suggested elements are not confirmed yet and carry a SUGGESTED label. \
+                     Elements added by hand carry a MANUAL label.",
+                )
+                .size(8.4)
+                .color(pal::SLATE)
+                .after(6.0),
             ));
         }
-        for (id, num, heading, omitted) in &data.scenes {
-            doc.push(Block::Heading {
-                text: scene_title(num, heading, *omitted),
-                level: 2,
-            });
-            let els = by_scene.get(id.as_str()).cloned().unwrap_or_default();
-            if els.is_empty() {
-                doc.push(Block::Note("No breakdown elements yet.".into()));
-                continue;
-            }
-            let mut kv: Vec<(String, String)> = Vec::new();
-            for e in els {
-                let mut label = e.name.clone();
-                if e.state == "Suggested" {
-                    label.push_str(" (suggested)");
+        let cards: Vec<Card> = data
+            .scenes
+            .iter()
+            .map(|(id, num, heading, omitted)| {
+                let mut head = CardHead::new(if *omitted {
+                    "OMITTED".to_string()
+                } else {
+                    heading.to_uppercase()
+                });
+                head.eyebrow = Some("Breakdown scene".into());
+                head.tile = Some(Tile {
+                    top: Some("SCENE".into()),
+                    text: num.clone(),
+                    fill: if *omitted {
+                        pal::PANEL
+                    } else {
+                        Rgb::hex(0xfdecc8)
+                    },
+                    line: Some(if *omitted {
+                        pal::LINE
+                    } else {
+                        pal::ORANGE_LINE
+                    }),
+                    color: if *omitted {
+                        pal::SLATE
+                    } else {
+                        pal::ORANGE_DEEP
+                    },
+                    w: 38.0,
+                });
+                let els = by_scene.get(id.as_str()).cloned().unwrap_or_default();
+                let mut card = Card {
+                    head: Some(head),
+                    ..Card::new()
+                };
+                if els.is_empty() {
+                    card.parts
+                        .push(CardPart::Empty("No breakdown elements yet.".into()));
+                    return card;
                 }
-                if notes && let Some(n) = nonblank(e.notes.as_deref()) {
-                    label.push_str(&format!(" ({n})"));
-                }
-                match kv.iter_mut().find(|(k, _)| *k == e.category) {
-                    Some((_, v)) => {
-                        v.push_str(if notes { "; " } else { ", " });
-                        v.push_str(&label);
+                let mut groups: Vec<Group> = Vec::new();
+                for e in els {
+                    let mut item = GroupItem::new(if e.name.trim().is_empty() {
+                        "Unnamed element".to_string()
+                    } else {
+                        e.name.clone()
+                    });
+                    match e.state.as_str() {
+                        "Suggested" => {
+                            item.tone = Tone::Warn;
+                            item.tag = Some(Chip::label("Suggested", Tone::Warn));
+                        }
+                        "Manual" => item.tag = Some(Chip::label("Manual", Tone::Info)),
+                        _ => {}
                     }
-                    None => kv.push((e.category.clone(), label)),
+                    if notes {
+                        item.note = nonblank(e.notes.as_deref());
+                    }
+                    match groups.iter_mut().find(|g| g.label == e.category) {
+                        Some(g) => g.items.push(item),
+                        None => groups.push(Group {
+                            label: e.category.clone(),
+                            accent: pal::category(&e.category),
+                            items: vec![item],
+                        }),
+                    }
                 }
-            }
-            doc.push(Block::KeyValues(kv));
-        }
+                card.parts.push(CardPart::Groups { groups, cols: 3 });
+                card
+            })
+            .collect();
+        doc.push(Block::Cards(Cards::new(1, cards)));
     }
     let mut cat_table = Table::new(
         "Catalog",
@@ -318,19 +391,97 @@ pub(super) fn export(
         ]);
     }
     if with_catalog {
-        if with_scenes {
-            doc.push(Block::PageBreak);
-        }
-        doc.push(Block::Heading {
-            text: "Catalog".into(),
-            level: 1,
-        });
+        doc.push(Block::Section(Section::new(
+            "Catalog",
+            Some("Usage is derived from breakdown assignments".into()),
+        )));
         if data.catalog.is_empty() {
-            doc.push(Block::Note("The catalog is empty.".into()));
+            doc.push(Block::Text(
+                Txt::new("The catalog is empty.")
+                    .size(8.8)
+                    .color(pal::FAINT)
+                    .after(6.0),
+            ));
         } else {
-            let mut t = cat_table.clone();
-            t.name = String::new();
-            doc.push(Block::Table(t));
+            let mut cats: Vec<String> = Vec::new();
+            for (cat, ..) in &data.catalog {
+                if !cats.contains(cat) {
+                    cats.push(cat.clone());
+                }
+            }
+            for cat in cats {
+                let items: Vec<_> = data.catalog.iter().filter(|c| c.0 == cat).collect();
+                let mut t = StyledTable::new(vec![
+                    Col::weight("Item", 1.7),
+                    Col::pt("Status", 86.0),
+                    Col::weight("Used in scenes", 1.2),
+                    Col::pt("Uses", 52.0).align(Align::Right),
+                ]);
+                t.header = HeaderStyle::None;
+                t.boxed = true;
+                t.continued = Some(cat.clone());
+                let mut band = Row::spanning(Cell::new().item(CellItem::Heading {
+                    dot: Some(pal::category(&cat)),
+                    text: cat.clone(),
+                    right: Some(plural(items.len(), "item", "items")),
+                }));
+                band.fill = Some(pal::PANEL);
+                band.keep_next = true;
+                t.rows.push(band);
+                for (_, name, status, desc, nums) in items {
+                    let mut item = Cell::text(
+                        Txt::new(name.clone())
+                            .size(9.4)
+                            .bold()
+                            .color(pal::NAVY)
+                            .leading(1.25),
+                    );
+                    if let Some(d) = desc.as_deref().and_then(nb) {
+                        item = item.item(CellItem::Text(
+                            Txt::new(d).size(8.2).color(pal::SLATE).leading(1.3),
+                        ));
+                    }
+                    let tone = match status.as_str() {
+                        "Confirmed" | "Required" => Tone::Ok,
+                        "Searching" | "Shortlisted" => Tone::Warn,
+                        _ => Tone::Neutral,
+                    };
+                    let scenes_cell = if nums.is_empty() {
+                        Cell::text(Txt::label("Used in scenes")).item(CellItem::Text(
+                            Txt::new("Not used yet").size(8.6).color(pal::FAINT),
+                        ))
+                    } else {
+                        Cell::text(Txt::label("Used in scenes")).item(CellItem::Text(
+                            Txt::new(nums.join(", "))
+                                .size(9.0)
+                                .bold()
+                                .color(pal::INK)
+                                .leading(1.3),
+                        ))
+                    };
+                    t.rows.push(Row::new(vec![
+                        item,
+                        Cell::new()
+                            .item(CellItem::Chips(vec![Chip::label(status.clone(), tone)]))
+                            .middle(),
+                        scenes_cell,
+                        Cell::text(
+                            Txt::new(nums.len().to_string())
+                                .size(15.0)
+                                .bold()
+                                .color(pal::NAVY)
+                                .align(Align::Right),
+                        )
+                        .item(CellItem::Text(
+                            Txt::label(if nums.len() == 1 { "Use" } else { "Uses" })
+                                .size(6.0)
+                                .align(Align::Right),
+                        ))
+                        .middle(),
+                    ]));
+                }
+                doc.push(Block::Styled(t));
+            }
         }
     }
 
@@ -410,7 +561,7 @@ fn export_summary(
     use crate::modules::production::breakdown::{BreakdownSceneFilter as F, scene_statuses};
     let dest = destination(core, &a.path, fmt)?;
     let session = core.project()?;
-    struct Row {
+    struct CatRow {
         category: String,
         items: Vec<String>,
         scenes: usize,
@@ -423,7 +574,7 @@ fn export_summary(
         missing: usize,
         needs_review: usize,
         suggested: i64,
-        rows: Vec<Row>,
+        rows: Vec<CatRow>,
     }
     let data = session.store.read(|c: &Connection| {
         let src = active_source(c)?.ok_or_else(|| {
@@ -451,7 +602,7 @@ fn export_summary(
         let els: Vec<(String, String, String)> = st
             .query_map([], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)))?
             .collect::<Result<_, _>>()?;
-        let mut rows: Vec<Row> = Vec::new();
+        let mut rows: Vec<CatRow> = Vec::new();
         for cat in BreakdownCategory::ALL {
             let mine: Vec<&(String, String, String)> = els
                 .iter()
@@ -464,7 +615,7 @@ fn export_summary(
             items.sort_by_key(|n| n.to_lowercase());
             items.dedup_by(|x, y| x.eq_ignore_ascii_case(y));
             let scenes: HashSet<&str> = mine.iter().map(|e| e.0.as_str()).collect();
-            rows.push(Row {
+            rows.push(CatRow {
                 category: cat.as_str().to_string(),
                 items,
                 scenes: scenes.len(),
@@ -490,23 +641,29 @@ fn export_summary(
         ));
     }
     let document = "Breakdown Summary";
-    let mut doc = Document::new(document)
-        .subtitle(subtitle(&data.project, Some(&data.source_label)))
-        .footer(footer(&data.project, document));
-    doc.push(Block::KeyValues(vec![
-        ("Production Source".into(), data.source_label.clone()),
-        ("Scenes".into(), data.scenes.to_string()),
-        (
-            "Breakdown complete".into(),
-            format!("{} of {}", data.complete, data.scenes),
-        ),
-        ("No breakdown yet".into(), data.missing.to_string()),
-        ("Changed since review".into(), data.needs_review.to_string()),
-        (
-            "Suggestions waiting (not confirmed)".into(),
-            data.suggested.to_string(),
-        ),
-    ]));
+    let mut doc = Document::new(document).footer(footer(&data.project, document));
+    doc.push(Block::Masthead(production_masthead(
+        "PRODUCTION / BREAKDOWN REPORT",
+        "Production breakdown",
+        "Breakdown Summary",
+        &data.project,
+        &data.source_label,
+        &super::today_label(),
+        "Entire production source",
+    )));
+    doc.push(Block::Metrics(Metrics {
+        items: vec![
+            Metric::new(data.scenes.to_string(), "Scenes"),
+            Metric::new(
+                format!("{} of {}", data.complete, data.scenes),
+                "Breakdown complete",
+            ),
+            Metric::new(data.missing.to_string(), "No breakdown yet"),
+            Metric::new(data.needs_review.to_string(), "Changed since review"),
+            Metric::new(data.suggested.to_string(), "Suggestions waiting"),
+        ],
+        compact: false,
+    }));
     let mut table = Table::new(
         "Breakdown Summary",
         vec![
@@ -530,12 +687,53 @@ fn export_summary(
             },
         ]);
     }
+    doc.push(Block::Section(Section::new(
+        "Items needed by category",
+        Some("Confirmed production data only".into()),
+    )));
     if data.rows.is_empty() {
-        doc.push(Block::Note("No confirmed breakdown elements yet.".into()));
+        doc.push(Block::Text(
+            Txt::new("No confirmed breakdown elements yet.")
+                .size(8.8)
+                .color(pal::FAINT)
+                .after(6.0),
+        ));
     } else {
-        let mut t = table.clone();
-        t.name = String::new();
-        doc.push(Block::Table(t));
+        let mut t = StyledTable::new(vec![
+            Col::pt("Category", 128.0),
+            Col::pt("Items", 46.0).align(Align::Right),
+            Col::pt("Scenes", 54.0).align(Align::Right),
+            Col::weight("Items needed", 1.0),
+        ]);
+        t.boxed = true;
+        t.continued = Some("Items needed by category".into());
+        for r in &data.rows {
+            let num = |n: usize| {
+                Cell::text(
+                    Txt::new(n.to_string())
+                        .size(11.0)
+                        .bold()
+                        .color(pal::NAVY)
+                        .align(Align::Right),
+                )
+            };
+            t.rows.push(Row::new(vec![
+                Cell::new().item(CellItem::Heading {
+                    dot: Some(pal::category(&r.category)),
+                    text: r.category.clone(),
+                    right: None,
+                }),
+                num(r.items.len()),
+                num(r.scenes),
+                Cell::new().item(CellItem::Chips(
+                    r.items
+                        .iter()
+                        .map(|n| Chip::pill(n.clone(), Tone::Neutral))
+                        .collect(),
+                )),
+            ]));
+        }
+        doc.push(Block::Styled(t));
     }
     let mut out = Output::new(doc, HINT_TABLES);
     out.tables.push(table);

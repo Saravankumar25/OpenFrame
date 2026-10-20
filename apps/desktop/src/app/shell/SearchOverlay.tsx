@@ -113,7 +113,7 @@ export function SearchOverlay({ onClose }: { onClose: () => void }) {
                 <span style={{ width: 120, flex: "none" }}><Chip>{TYPE_LABELS[h.entityType] ?? h.entityType.toUpperCase()}</Chip></span>
                 <span className="grow">
                   <div className="b" style={{ fontSize: 13 }}>{h.title || "Untitled"}</div>
-                  <div className="sm muted" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}><Snippet text={h.snippet} /></div>
+                  <div className="sm muted" title={h.snippet} style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}><Snippet text={h.snippet} /></div>
                 </span>
                 <span className="xs muted" style={{ flex: "none" }}>{h.store === "global" ? "Global Idea Vault" : h.context}</span>
               </button>

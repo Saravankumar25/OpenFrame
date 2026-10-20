@@ -79,6 +79,9 @@ describe("Application Home", () => {
     // No project grid, no production metadata on the empty Home.
     expect(screen.queryByText("Recent projects")).not.toBeInTheDocument();
     expect(screen.getByText("No project open")).toBeInTheDocument();
+    // One Settings button replaces the old shortcuts and appearance buttons (owner item 6).
+    expect(screen.getByRole("button", { name: "Settings" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Help" })).not.toBeInTheDocument();
   });
 
   it("offers Restore Backup or Package on an empty Home (a new computer) and on the project list", async () => {

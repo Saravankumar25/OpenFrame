@@ -6,7 +6,9 @@
 
 mod exports;
 mod packages;
+mod pdf_design;
 mod pdf_regression;
+mod pdf_samples;
 mod production;
 mod production_depth;
 mod schedule;

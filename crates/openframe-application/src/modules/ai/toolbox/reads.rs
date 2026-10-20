@@ -873,15 +873,17 @@ fn project_tasks(ctx: &ToolCtx<'_>, a: &Value) -> AppResult<ToolOutput> {
             ))
         })?
         .collect::<Result<_, _>>()?;
-    let mut o = ToolOutput::exact(format!(
-        "{}{}.",
-        plural(rows.len(), "task", "tasks"),
-        if status == "all" {
-            String::new()
-        } else {
-            format!(" ({})", status.to_lowercase())
-        }
-    ));
+    // "No open tasks." / "2 open tasks." reads as an answer; "0 tasks (open)." did not.
+    let which = if status == "all" {
+        String::new()
+    } else {
+        format!("{} ", status.to_lowercase())
+    };
+    let mut o = ToolOutput::exact(match rows.len() {
+        0 => format!("No {which}tasks."),
+        1 => format!("1 {which}task."),
+        n => format!("{n} {which}tasks."),
+    });
     for (id, title, st, due, owner, notes, tt, tid) in rows {
         let mut d = vec![st];
         if let Some(due) = due {
@@ -948,15 +950,19 @@ fn comments(ctx: &ToolCtx<'_>, a: &Value) -> AppResult<ToolOutput> {
             },
         )?
         .collect::<Result<_, _>>()?;
-    let mut o = ToolOutput::exact(format!(
-        "{}{}{}.",
-        plural(rows.len(), "comment thread", "comment threads"),
-        if open_only { " still open" } else { "" },
-        scene
-            .as_ref()
-            .map(|s| format!(" on {}", s.label()))
-            .unwrap_or_default()
-    ));
+    let on = scene
+        .as_ref()
+        .map(|s| format!(" on {}", s.label()))
+        .unwrap_or_default();
+    let mut o = ToolOutput::exact(match (rows.len(), open_only) {
+        (0, true) => format!("No comment threads are open{on}."),
+        (0, false) => format!("No comment threads{on}."),
+        (n, open) => format!(
+            "{}{}{on}.",
+            plural(n, "comment thread", "comment threads"),
+            if open { " still open" } else { "" }
+        ),
+    });
     for (_, body, status, author, target, at, replies) in rows {
         o.items.push(item(
             clip(&body, 200),

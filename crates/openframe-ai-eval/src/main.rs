@@ -502,9 +502,15 @@ fn run_case(core: &AppCore, case: &Case) -> Observation {
         }
     }
     if case.setup.iter().any(|s| {
-        ["notes.", "vault.", "private_note.", "files.", "screenplay.import"]
-            .iter()
-            .any(|p| s.op.starts_with(p))
+        [
+            "notes.",
+            "vault.",
+            "private_note.",
+            "files.",
+            "screenplay.import",
+        ]
+        .iter()
+        .any(|p| s.op.starts_with(p))
     }) {
         intelligence::wait_idle(core, Duration::from_secs(60));
     }

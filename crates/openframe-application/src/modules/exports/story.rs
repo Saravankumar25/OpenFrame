@@ -7,14 +7,17 @@
 use std::collections::{HashMap, HashSet};
 
 use openframe_domain::{Actor, AppError, AppResult};
-use openframe_import_export::report::{Block, Column, Document, Grid, GridCell, Table};
+use openframe_import_export::report::{
+    Block, Column, Document, Grid, GridCell, Masthead, Side, Table, pal,
+};
 use rusqlite::Connection;
 use serde::Deserialize;
 use ts_rs::TS;
 
+use super::style::nb;
 use super::{
     Fmt, HINT_TEXT, Job, Output, deliver, destination, footer, nonblank, plural, require_export,
-    subtitle,
+    subtitle, today_label,
 };
 use crate::core::AppCore;
 use crate::modules::schedule::board::project_title;
@@ -660,9 +663,30 @@ pub(super) fn export(
 
     // ---- PDF
     let mut doc = Document::new(document)
-        .subtitle(subtitle(&project, Some(&source_label)))
         .footer(footer(&project, document))
         .landscape(board_layout);
+    {
+        let mut mast = Masthead::new(document).eyebrow(
+            if board_layout {
+                "Story · Story board"
+            } else {
+                "Story · Outline"
+            },
+            pal::ORANGE,
+        );
+        if let Some(p) = nb(&project) {
+            mast.subtitle = Some(p.to_string());
+        }
+        mast.lines.push(source_label.clone());
+        mast.side = Some(Side::Panel {
+            lines: vec![
+                (scope_label.clone(), true),
+                (format!("Exported {}", today_label()), false),
+            ],
+        });
+        mast.rule = true;
+        doc.push(Block::Masthead(mast));
+    }
     for (i, b) in boards.iter().enumerate() {
         if board_layout && i > 0 {
             doc.push(Block::PageBreak);

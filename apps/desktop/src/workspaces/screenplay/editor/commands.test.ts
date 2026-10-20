@@ -111,6 +111,22 @@ describe("Tab", () => {
   });
 });
 
+describe("Tab cycle", () => {
+  it("reaches every built-in element in turn and wraps around (owner item 7)", () => {
+    const seen: string[] = [];
+    let t: ReturnType<typeof tabNext> = "scene_heading";
+    for (let i = 0; i < 7; i++) {
+      seen.push(t!);
+      t = tabNext(t!);
+    }
+    expect(seen).toEqual(["scene_heading", "action", "character", "parenthetical", "dialogue", "transition", "shot"]);
+    expect(t).toBe("scene_heading");
+    expect(tabPrev("scene_heading")).toBe("shot");
+    expect(tabPrev("character")).toBe("action");
+    expect(tabNext("note")).toBe("action");
+  });
+});
+
 describe("Enter", () => {
   it("at the end of a custom element creates its own next element", () => {
     const r = run(at(1, "end"), enterCommand);

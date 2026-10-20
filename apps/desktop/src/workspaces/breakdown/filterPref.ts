@@ -30,3 +30,40 @@ export function writeFilter(v: SavedFilter) {
     // View preference only; ignore storage failures.
   }
 }
+
+const PANEL_KEY = "openframe.breakdown.panelHidden";
+/** Whether the scene breakdown panel is hidden (owner item 10); view preference only. */
+export function readPanelHidden(): boolean {
+  try {
+    return window.localStorage.getItem(PANEL_KEY) === "true";
+  } catch {
+    return false;
+  }
+}
+export function writePanelHidden(v: boolean) {
+  try {
+    window.localStorage.setItem(PANEL_KEY, v ? "true" : "false");
+  } catch {
+    // View preference only; ignore storage failures.
+  }
+}
+
+const ZOOM_KEY = "openframe.breakdown.zoom";
+/** The Breakdown script zoom (owner item 14); view preference only, 0.6 to 2. */
+export function readZoom(): number {
+  try {
+    const z = Number(window.localStorage.getItem(ZOOM_KEY));
+    return Number.isFinite(z) && z >= 0.6 && z <= 2 ? z : 1;
+  } catch {
+    return 1;
+  }
+}
+export function writeZoom(z: number): number {
+  const v = Math.round(Math.min(2, Math.max(0.6, z)) * 100) / 100;
+  try {
+    window.localStorage.setItem(ZOOM_KEY, String(v));
+  } catch {
+    // View preference only; ignore storage failures.
+  }
+  return v;
+}

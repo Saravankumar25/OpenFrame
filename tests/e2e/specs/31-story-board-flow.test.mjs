@@ -250,33 +250,6 @@ describe("story board flow", () => {
     });
   });
 
-  test("episodes scope the Story Board in an episodic project", async () => {
-    await step("episodes", async () => {
-      await createProject(browser, "Monsoon Series", { type: "Episodic / Series" });
-      await openWorkspace(browser, "Story");
-      const tab = await browser.$('//*[@role="tablist"]//*[@role="tab"][normalize-space(.)="Episodes"]');
-      await tab.waitForClickable({ timeout: 10_000 });
-      await tab.click();
-      await click(browser, "Add Episode");
-      await (await browser.$("#ep-title")).setValue("Pilot");
-      await inDialog(browser, "Create Episode");
-      await waitForText(browser, "Added episode “Pilot”");
-      await click(browser, "Options for Pilot");
-      await menuItem(browser, "Open Story Board");
-      await sleep(500);
-      await click(browser, "Add Scene");
-      const t = await browser.$('//textarea[@aria-label="Short description"]');
-      await t.waitForDisplayed({ timeout: 10_000 });
-      await t.setValue("Pilot cold open at the dam");
-      await browser.keys("Enter");
-      await browser.waitUntil(async () => (await cards()).includes("Pilot cold open at the dam"), { timeout: 10_000, timeoutMsg: "episode card not created" });
-      const ep = await browser.$('//select[@aria-label="Episode"]');
-      await ep.selectByVisibleText("Series level (no episode)");
-      await browser.waitUntil(async () => !(await cards()).includes("Pilot cold open at the dam"), { timeout: 10_000, timeoutMsg: "the episode card shows at series level" });
-      await ep.selectByIndex(0);
-      await browser.waitUntil(async () => (await cards()).includes("Pilot cold open at the dam"), { timeout: 10_000, timeoutMsg: "the episode card is gone" });
-      await assertQuiet(browser, "episodes");
-      await closeProject(browser);
-    });
-  });
+  // Episodic and Series projects can no longer be created (owner change list item 9, 2026-10-19);
+  // the episode views stay for projects made earlier and are covered by the Rust story tests.
 });

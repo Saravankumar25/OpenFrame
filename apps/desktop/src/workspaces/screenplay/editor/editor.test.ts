@@ -129,7 +129,7 @@ describe("element rules", () => {
     expect(onEnterEmpty("character")).toBe("action");
     expect(onEnterEmpty("scene_heading")).toBeNull();
     expect(tabNext("character")).toBe("parenthetical");
-    expect(tabPrev("dialogue")).toBe("character");
+    expect(tabPrev("dialogue")).toBe("parenthetical");
   });
 });
 

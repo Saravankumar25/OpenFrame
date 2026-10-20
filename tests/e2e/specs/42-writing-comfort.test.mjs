@@ -258,14 +258,15 @@ describe("writing comfort", () => {
     });
   });
 
-  test("Home reaches the same shortcut table from Help, and its tooltips name the keys", async () => {
+  test("Home reaches the same shortcut table from Settings, and its tooltips name the keys", async () => {
     await step("home-shortcuts", async () => {
       const newProject = await browser.$('//button[normalize-space()="New Project"]');
       await newProject.waitForDisplayed({ timeout: 10_000, timeoutMsg: "Home did not show New Project" });
       assert.equal(await newProject.getAttribute("title"), "New Project (Ctrl+N)");
-      await click(browser, "Help");
-      await click(browser, "Change shortcuts");
+      // The Settings gear replaced the old shortcuts button (owner change list item 6).
+      await click(browser, "Settings");
       const dialog = '//*[@role="dialog"]';
+      await click(browser, "Keyboard shortcuts", { within: dialog });
       await browser.$(`${dialog}//th[normalize-space()="Command"]`).waitForDisplayed({ timeout: 10_000, timeoutMsg: "the shortcut table did not open" });
       await click(browser, "Add a shortcut for New Project", { within: dialog });
       // Escape belongs to the key recorder while it waits: the dialog stays open.
