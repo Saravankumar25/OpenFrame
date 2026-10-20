@@ -3,7 +3,7 @@
 // THEME-001, THEME-004, THEME-007, THEME-008).
 //
 // Runs after 90-visual-baseline in the shared journey data root (the demo project "Night Bus").
-// For each of the 16 themes x 2 modes it walks the same 15 screens as the visual baseline and checks,
+// For each of the 17 themes x 2 modes it walks the same 15 screens as the visual baseline and checks,
 // in the live window:
 //   * the theme and mode are applied (data-theme / data-mode, and the window background is the
 //     theme's background, not a browser default);
@@ -185,7 +185,7 @@ describe("every built-in theme in Light and Dark", () => {
     }
   });
 
-  test("16 themes x 2 modes x 15 screens are applied and readable; paper stays white", async () => {
+  test("17 themes x 2 modes x 15 screens are applied and readable; paper stays white", async () => {
     const failures = [];
     const exceptions = new Set();
     let checked = 0;

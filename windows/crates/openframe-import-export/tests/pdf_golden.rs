@@ -375,6 +375,42 @@ fn a4_page_setup() -> Case {
     }
 }
 
+/// Latin-only script with scene numbers off: Courier Prime is still embedded, scene headings are
+/// bold, and the first script page carries the layout-only running title and the page number
+/// "1." (change spec 01).
+fn plain_headings_without_numbers() -> Case {
+    let mut doc = ScreenplayDoc::default();
+    doc.title_page.set("Title", "Monsoon Letters");
+    doc.title_page.set("Author", "Asha Rao");
+    let mut s1 = Scene::new("INT. SAVITRI'S KITCHEN - DAWN");
+    s1.elements.push(el(
+        ElementKind::Action,
+        "Savitri wraps two rotis in newspaper and tucks a bundle of letters under the rice.",
+    ));
+    speech(
+        &mut s1,
+        "SAVITRI",
+        Some("(to herself)"),
+        "It is not kind in any month.",
+    );
+    let mut s2 = Scene::new("EXT. GUDUR BUS STAND - MORNING");
+    s2.elements.push(el(
+        ElementKind::Action,
+        "A tin-roofed bus stand. Porters sleep on sacks.",
+    ));
+    s2.elements.push(el(ElementKind::Transition, "CUT TO:"));
+    doc.scenes = vec![s1, s2];
+    Case {
+        name: "plain_headings_without_numbers",
+        doc,
+        options: ExportOptions::default(),
+        paper_pt: LETTER_PT,
+        pdf_pages: 2,
+        script_pages: 1,
+        margins: TEXT_AREA,
+    }
+}
+
 /// ADR-0016: Telugu, Hindi, Tamil, Malayalam and Kannada shaped with the embedded fonts next to
 /// Courier Prime: conjuncts, reordered vowel signs, a zero-width non-joiner and joiner, and
 /// mixed English lines.
@@ -424,6 +460,33 @@ fn multilingual_scripts() -> Case {
 // ------------------------------------------------------------------ tests
 
 #[test]
+fn golden_latin_script_embeds_courier_prime_with_bold_headings_and_first_page_number() {
+    let case = plain_headings_without_numbers();
+    let lay = layout::layout(&case.doc, &case.options.layout());
+    let script = lay.pages.last().expect("a script page");
+    assert!(
+        script
+            .lines
+            .iter()
+            .any(|l| l.style == LineStyle::PageNumber && l.text == "1.")
+    );
+    assert!(
+        script
+            .lines
+            .iter()
+            .any(|l| l.style == LineStyle::PageTitle && l.text == "MONSOON LETTERS")
+    );
+    let (pdf, _) = export_pdf(&case.doc, &case.options);
+    let text = String::from_utf8_lossy(&pdf);
+    assert!(text.contains("CourierPrime-Bold") && text.contains("+CourierPrime"));
+    assert!(
+        !text.contains("/BaseFont/Courier") && !text.contains("/BaseFont /Courier"),
+        "no unembedded base-14 Courier"
+    );
+    run_case(&case);
+}
+
+#[test]
 fn golden_multilingual_scripts_shaped_with_embedded_fonts() {
     run_case(&multilingual_scripts());
 }
@@ -450,7 +513,7 @@ fn m1_16_golden_dialogue_continuation_more_contd_and_page_headers() {
         .filter(|l| l.style == LineStyle::PageNumber)
         .map(|l| l.text.as_str())
         .collect();
-    assert_eq!(numbers, vec!["2.", "3."]);
+    assert_eq!(numbers, vec!["1.", "2.", "3."]);
     run_case(&case);
 }
 

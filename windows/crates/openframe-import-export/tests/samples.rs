@@ -203,7 +203,7 @@ fn every_sample_round_trips_through_fountain_fdx_and_pdf_without_losing_a_scene(
         assert!(pages.unwrap_or(0) >= 1, "{} has pages", s.id);
         // Screenplay files carry no OpenFrame branding.
         assert!(
-            !String::from_utf8_lossy(&pdf).contains("Created with OpenFrame Studio"),
+            !String::from_utf8_lossy(&pdf).contains("Created using OpenFrame"),
             "{} screenplay PDF is unbranded",
             s.id
         );

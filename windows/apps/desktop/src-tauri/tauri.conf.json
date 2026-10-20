@@ -21,6 +21,7 @@
         "minHeight": 720,
         "center": true,
         "dragDropEnabled": true,
+        "zoomHotkeysEnabled": true,
         "additionalBrowserArgs": "--disable-features=msWebOOUI,msPdfOOUI,msSmartScreenProtection --disable-background-networking --disable-component-update --no-proxy-server"
       }
     ],

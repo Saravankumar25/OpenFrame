@@ -338,7 +338,7 @@ function FileCard({ file, selected, menu, onSelect, onKeyDown }: { file: Project
       >
         <span className={`fic ${badge.cls}`} aria-hidden>{badge.text}</span>
         <div className="grow sm" style={{ minWidth: 0 }}>
-          <b style={{ display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{file.displayName}</b>
+          <b title={file.displayName} style={{ display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{file.displayName}</b>
           <WhereCell file={file} />
         </div>
       </div>
@@ -367,7 +367,7 @@ function FolderItem({ id, label, count, active, depth, onClick, menu }: { id: st
       }}
     >
       <Folder size={14} aria-hidden />
-      <span className="grow" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{label}</span>
+      <span className="grow" title={label} style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{label}</span>
       {/* On the active folder's tinted background the muted grey is under 4.5:1. */}
       <span className={active ? "xs" : "xs muted"}>{count}</span>
     </button>

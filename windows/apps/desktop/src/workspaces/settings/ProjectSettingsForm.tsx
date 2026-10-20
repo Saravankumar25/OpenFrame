@@ -16,9 +16,12 @@ import { PROJECT_STATUSES } from "../project-home/StatusMenu";
 const TYPES: { value: ProjectType; label: string }[] = [
   { value: "Feature Film", label: "Feature Film" },
   { value: "Short Film", label: "Short Film" },
-  { value: "Episodic", label: "Episodic" },
-  { value: "Series", label: "Series" },
 ];
+
+/** Episodic and Series are no longer offered (owner item 9); a project made with one keeps it. */
+function typeOptions(current: ProjectType) {
+  return TYPES.some((t) => t.value === current) ? TYPES : [...TYPES, { value: current, label: current }];
+}
 
 interface Draft {
   title: string;
@@ -107,7 +110,7 @@ function Form({ formId, initial, onSaved, onDirtyChange }: { formId: string; ini
           <TextInput id={`${formId}-title`} value={d.title} maxLength={200} invalid={titleMissing} onChange={(e) => set("title", e.target.value)} />
         </Field>
         <Field label="Type" required htmlFor={`${formId}-type`} hint={isEpisodic(d.projectType) !== isEpisodic(initial.projectType) ? "Changing the type never deletes anything you have written." : undefined}>
-          <Select id={`${formId}-type`} value={d.projectType} onChange={(v) => set("projectType", v)} options={TYPES} />
+          <Select id={`${formId}-type`} value={d.projectType} onChange={(v) => set("projectType", v)} options={typeOptions(initial.projectType)} />
         </Field>
         <Field label="Language" htmlFor={`${formId}-lang`}>
           <TextInput id={`${formId}-lang`} value={d.language} maxLength={80} placeholder="Add later" onChange={(e) => set("language", e.target.value)} />

@@ -3,7 +3,7 @@
 // override with the element selector or Ctrl+1…7.
 
 import type { ElementType } from "../../../ipc/generated/ElementType";
-import { isElementType, ruleFor } from "./schema";
+import { SHORTCUT_ORDER, isElementType, ruleFor } from "./schema";
 
 /** Enter at the end of a non-empty element: the element that follows, from the
  * shared element rule table (custom elements name their own next element). */
@@ -28,43 +28,19 @@ export function onEnterEmpty(t: ElementType): ElementType | null {
   }
 }
 
-/** Tab cycles within the dialogue block. Page breaks and custom elements stay
- * as they are (null): the writer chose them on purpose. */
+/** Tab moves to the next built-in element in menu order and wraps around, so every element is one
+ * or more presses away (owner change list item 7, 2026-10-19): Scene Heading, Action, Character,
+ * Parenthetical, Dialogue, Transition, Shot, then Scene Heading again. A note becomes Action. Page
+ * breaks and custom elements stay as they are (null): the writer chose them on purpose. */
 export function tabNext(t: ElementType): ElementType | null {
-  switch (t) {
-    case "page_break":
-    case "custom":
-      return null;
-    case "action":
-      return "character";
-    case "character":
-      return "parenthetical";
-    case "parenthetical":
-      return "dialogue";
-    case "dialogue":
-      return "parenthetical";
-    case "scene_heading":
-      return "action";
-    default:
-      return "action";
-  }
+  if (t === "page_break" || t === "custom") return null;
+  const i = SHORTCUT_ORDER.indexOf(t);
+  return i < 0 ? "action" : SHORTCUT_ORDER[(i + 1) % SHORTCUT_ORDER.length];
 }
 
-/** Shift+Tab goes back (null for page breaks and custom elements). */
+/** Shift+Tab goes the other way round the same cycle (null for page breaks and custom elements). */
 export function tabPrev(t: ElementType): ElementType | null {
-  switch (t) {
-    case "page_break":
-    case "custom":
-      return null;
-    case "character":
-      return "action";
-    case "parenthetical":
-      return "character";
-    case "dialogue":
-      return "character";
-    case "action":
-      return "scene_heading";
-    default:
-      return "action";
-  }
+  if (t === "page_break" || t === "custom") return null;
+  const i = SHORTCUT_ORDER.indexOf(t);
+  return i < 0 ? "action" : SHORTCUT_ORDER[(i - 1 + SHORTCUT_ORDER.length) % SHORTCUT_ORDER.length];
 }

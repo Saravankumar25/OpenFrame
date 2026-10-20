@@ -66,8 +66,8 @@ export function StripRow({
     >
       <span className="no">{s.number ?? "-"}</span>
       <span className="ie">{s.ieLabel}</span>
-      <span className="lc">{s.locationName ?? <span className="need">No location</span>}</span>
-      {!compact && <span className="syn">{s.synopsis || s.heading}</span>}
+      <span className="lc" title={s.locationName ?? undefined}>{s.locationName ?? <span className="need">No location</span>}</span>
+      {!compact && <span className="syn" title={s.synopsis || s.heading || undefined}>{s.synopsis || s.heading}</span>}
       {flagged && (
         <span className={`chip ${s.sourceState === "Removed" ? "r" : s.sourceState === "New" ? "b" : "y"}`} title={s.changeKinds.join(", ")}>
           {s.sourceState === "Removed" ? "Removed from script" : s.sourceState === "New" ? "New scene" : "Script changed"}

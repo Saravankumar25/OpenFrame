@@ -42,7 +42,7 @@ export default function ProductionWorkspace() {
   const Active = active.default;
   return (
     <>
-      <nav className="subnav" aria-label="Production" style={{ overflowX: "auto" }}>
+      <nav className="subnav wrap" aria-label="Production">
         {PRODUCTION_TABS.map((t) => (
           <button
             key={t.tab.id}

@@ -242,15 +242,16 @@ pub fn load_source(c: &Connection, source_id: &str) -> AppResult<Option<SourceDa
             let (id, lineage_id, heading, synopsis, omitted) = row?;
             let els = elements.get(&id).map(|v| v.as_slice()).unwrap_or(&[]);
             let parsed = parse_heading(&heading);
+            // A synopsis the writer typed is shown whole; only the stand-in taken from the first action
+            // line is shortened (UX brief: no silent truncation of what a person wrote).
             let synopsis = synopsis
-                .map(|s| s.trim().to_string())
+                .map(|s| s.split_whitespace().collect::<Vec<_>>().join(" "))
                 .filter(|s| !s.is_empty())
                 .or_else(|| {
                     els.iter()
                         .find(|e| e.element_type == "action" && !e.text.trim().is_empty())
-                        .map(|e| e.text.clone())
+                        .map(|e| truncate(&e.text, 160))
                 })
-                .map(|s| truncate(&s, 90))
                 .unwrap_or_default();
             scenes.push(SceneInfo {
                 page_eighths: page_eighths(&heading, els),

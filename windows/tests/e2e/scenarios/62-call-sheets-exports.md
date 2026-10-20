@@ -8,7 +8,7 @@ Before: an empty data folder of its own, and an empty temporary folder for expor
 
 Many steps here ask the core directly to set up a plan or write an export with a path, the same way the screens do. They are marked "Through the core". "Production tab X" means: open Production if needed, then click X in the Production navigation. "The call sheet" is the panel named "Call sheet document".
 
-"Check the PDF F" means: check the file F exists, starts with "%PDF-", and contains the brand line "Created with OpenFrame Studio".
+"Check the PDF F" means: check the file F exists, starts with "%PDF-", and contains the brand line "Created using OpenFrame".
 
 ## Open a sample script that ships with the app
 
@@ -104,7 +104,7 @@ Many steps here ask the core directly to set up a plan or write an export with a
 7. Through the core: create a moodboard named "Look", add the note "Wet asphalt at night", and export it. Check the PDF `moodboard.pdf`.
 8. Through the core: create a storyboard named "Opening" for the first scene, add a placeholder panel "Rain on the platform roof", and export the storyboard sheet. Check the PDF `storyboard.pdf`.
 9. Through the core: export the first draft of the screenplay as PDF to `script.pdf`.
-10. Check: `script.pdf` does not contain "Created with OpenFrame Studio" (screenplay files stay clean).
+10. Check: `script.pdf` does not contain "Created using OpenFrame" (screenplay files stay clean).
 11. Check: the screen is quiet.
 
 ## Notes and tasks for the shoot

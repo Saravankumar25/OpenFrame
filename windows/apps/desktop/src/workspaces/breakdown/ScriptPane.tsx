@@ -10,6 +10,7 @@ import { CategoryMark, useCategoryLook } from "./categoryStyle";
 import { CATEGORIES } from "../../api/production";
 import { segmentText, selectionInLine, suggestName, type Mark, type TextSelection } from "./highlight";
 import type { AddInitial } from "./dialogs";
+import { readZoom, writeZoom } from "./filterPref";
 
 const LINE_CLASS: Record<string, string> = {
   scene_heading: "sp-h",
@@ -32,6 +33,19 @@ export function ScriptPane({ detail, canEdit, onTag, onSelection, jump = null }:
   jump?: BreakdownSourceAnchor | null;
 }) {
   const wrapRef = useRef<HTMLDivElement>(null);
+  // Ctrl+wheel and touchpad pinch zoom the script page only (owner item 14).
+  const [zoom, setZoom] = useState(readZoom);
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+    const onWheel = (e: WheelEvent) => {
+      if (!e.ctrlKey) return;
+      e.preventDefault();
+      setZoom((z) => writeZoom(z * Math.exp(-e.deltaY / 400)));
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, []);
   const look = useCategoryLook();
   const [menu, setMenu] = useState<{ sel: TextSelection; x: number; y: number } | null>(null);
 
@@ -100,7 +114,7 @@ export function ScriptPane({ detail, canEdit, onTag, onSelection, jump = null }:
   const lines = detail.script.filter((l, i) => !(i === 0 && l.elementType === "scene_heading" && l.text.trim() === detail.heading.trim()));
 
   return (
-    <div className="sp-wrap" ref={wrapRef} onMouseDown={(e) => menu && !(e.target as HTMLElement).closest(".tagmenu") && setMenu(null)}>
+    <div className="sp-wrap" ref={wrapRef} style={{ ["--bd-zoom" as string]: zoom } as CSSProperties} onMouseDown={(e) => menu && !(e.target as HTMLElement).closest(".tagmenu") && setMenu(null)}>
       <div className="sp-page" onMouseUp={onMouseUp} aria-label={`Script, Scene ${detail.number ?? ""}`}>
         {detail.number && <div className="pn">{detail.number}.</div>}
         <div className="sp-h">

@@ -33,7 +33,7 @@ import {
 
 const PROJECT = "Lost Property Unit";
 const OUT = mkdtempSync(join(tmpdir(), "openframe-e2e-callsheets-"));
-const BRAND = "Created with OpenFrame Studio";
+const BRAND = "Created using OpenFrame";
 
 let browser;
 const step = stepper(() => browser, "callsheets");

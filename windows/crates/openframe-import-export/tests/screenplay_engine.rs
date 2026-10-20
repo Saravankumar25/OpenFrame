@@ -187,14 +187,31 @@ fn pdf_runs(bytes: &[u8]) -> (Vec<Vec<Run>>, Vec<(f32, f32)>) {
         sizes.push((num(&mb[2]), num(&mb[3])));
         let content = doc.get_and_decode_page_content(id).unwrap();
         let mut runs = Vec::new();
-        let mut at = (0.0, 0.0);
+        // Every line is an ActualText span (the PDF embeds its fonts, so the shown strings are
+        // glyph ids); the first text matrix after the span start is the line's position.
+        let mut pending: Option<String> = None;
         for op in content.operations {
             match op.operator.as_str() {
-                "Tm" => at = (num(&op.operands[4]), num(&op.operands[5])),
-                "Tj" => {
-                    let s = op.operands[0].as_str().unwrap();
-                    let text: String = s.iter().map(|b| *b as char).collect();
-                    runs.push((at.0, at.1, text));
+                "BDC" => {
+                    if let Some(lopdf::Object::Dictionary(d)) = op.operands.get(1)
+                        && let Ok(lopdf::Object::String(b, _)) = d.get(b"ActualText")
+                    {
+                        pending = Some(match b.strip_prefix(&[0xFE, 0xFF]) {
+                            Some(rest) => String::from_utf16_lossy(
+                                &rest
+                                    .chunks(2)
+                                    .filter(|c| c.len() == 2)
+                                    .map(|c| u16::from_be_bytes([c[0], c[1]]))
+                                    .collect::<Vec<_>>(),
+                            ),
+                            None => b.iter().map(|x| *x as char).collect(),
+                        });
+                    }
+                }
+                "Tm" => {
+                    if let Some(text) = pending.take() {
+                        runs.push((num(&op.operands[4]), num(&op.operands[5]), text));
+                    }
                 }
                 _ => {}
             }
@@ -503,11 +520,18 @@ fn header_footer_placeholders_and_first_page_rule() {
     let first = &lay.pages[0];
     assert_eq!(first.number, Some(5));
     assert!(
-        !first.lines.iter().any(|l| matches!(
-            l.style,
-            LineStyle::Header | LineStyle::Footer | LineStyle::PageNumber
-        )),
-        "nothing on the first page by default"
+        !first
+            .lines
+            .iter()
+            .any(|l| matches!(l.style, LineStyle::Header | LineStyle::Footer)),
+        "no header or footer text on the first page by default"
+    );
+    assert!(
+        first
+            .lines
+            .iter()
+            .any(|l| l.style == LineStyle::PageNumber && l.text == "5."),
+        "the first script page still shows its number"
     );
     let second = &lay.pages[1];
     assert_eq!(second.number, Some(6));
