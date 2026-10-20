@@ -73,17 +73,17 @@ struct StripText {
     cast_list: Vec<String>,
 }
 
-struct StripPalette {
-    fill: Rgb,
-    stripe: Rgb,
-    text: Rgb,
-    muted: Rgb,
+pub(super) struct StripPalette {
+    pub(super) fill: Rgb,
+    pub(super) stripe: Rgb,
+    pub(super) text: Rgb,
+    pub(super) muted: Rgb,
 }
 
 /// Classic stripboard colours (owner decision 2026-10-20): EXT + Day yellow, EXT + Night green,
 /// INT + Day white, INT + Night light blue (INT/EXT counts as EXT). The ink stays dark on every
 /// fill so the print is readable; labels carry the meaning, colour reinforces it.
-fn strip_palette(class: &str) -> StripPalette {
+pub(super) fn strip_palette(class: &str) -> StripPalette {
     let (fill, stripe, text, muted) = match class {
         "xd" => (0xfbe98f, 0xd9a400, 0x1a2640, 0x5a4a1f),
         "xn" => (0xc9e7b8, 0x4c9a3a, 0x1a2640, 0x2f5a25),

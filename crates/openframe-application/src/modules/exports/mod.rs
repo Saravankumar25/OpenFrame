@@ -44,6 +44,7 @@
 mod breakdown;
 mod budget;
 mod callsheet;
+mod daily;
 mod dood;
 mod reports;
 mod schedule;
@@ -127,6 +128,14 @@ pub fn register(r: &mut Registry) {
         M::query(
             Cap::Export,
             "Export the shooting schedule to a location the user picked.",
+        )
+        .fs(Fs::WritesUserFile)
+        .hidden(h::USER_PATH),
+    );
+    r.query("schedule.export_daily", daily::export).meta(
+        M::query(
+            Cap::Export,
+            "Export one shooting day as shown on the Daily View to a location the user picked.",
         )
         .fs(Fs::WritesUserFile)
         .hidden(h::USER_PATH),
