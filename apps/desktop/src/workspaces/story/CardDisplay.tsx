@@ -98,12 +98,12 @@ export function RichCardFace({ card: c, toggles: t, indicators }: { card: StoryS
     );
   return (
     <>
-      {t.sceneHeading && c.sceneHeading && <div className="sc-head">{c.sceneHeading}</div>}
+      {t.sceneHeading && c.sceneHeading && <div className="sc-head" title={c.sceneHeading}>{c.sceneHeading}</div>}
       {t.shortDescription && (
         <div className="sc-text">{c.shortDescription.trim() ? c.shortDescription : <span className="muted"><i>Blank scene card</i></span>}</div>
       )}
       {long && <div className="sc-long">{long}</div>}
-      {note && <div className="sc-note">Note: {note}</div>}
+      {note && <div className="sc-note" title={note}>Note: {note}</div>}
       {facts.length > 0 && <div className="sc-facts">{facts.join(" · ")}</div>}
       <span className="ind">
         {indicators}

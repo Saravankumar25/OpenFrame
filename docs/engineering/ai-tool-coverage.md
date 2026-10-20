@@ -28,7 +28,7 @@ How the toolbox (`modules/ai/toolbox.rs`, contract C3) enforces this:
 
 - Registered operations: **492** (153 queries, 339 commands)
 - Exposed to the assistant through tools: **305**; not AI-accessible: **187**
-- Tools: **253** (60 read/compute/navigate, 193 proposal)
+- Tools: **256** (63 read/compute/navigate, 193 proposal)
 
 Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation · **L** long-running (task id) · file effect: R = reads a user-picked file, W = writes to a user-picked location, P = project storage on disk.
 
@@ -729,6 +729,9 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 | `breakdown_status` | read | `breakdown.scenes` |
 | `story_statistics` | read | none (deterministic computation, navigation or clarification) |
 | `production_statistics` | read | `production.overview` |
+| `scene_fact` | read | none (deterministic computation, navigation or clarification) |
+| `dialogue_fact` | read | none (deterministic computation, navigation or clarification) |
+| `character_profile` | read | none (deterministic computation, navigation or clarification) |
 | `search_project` | read | `search.query` |
 | `open_scene` | read | `screenplay.locate` |
 | `open_workspace` | read | none (deterministic computation, navigation or clarification) |

@@ -2,23 +2,23 @@
 //! screenplay's page setup. Printing and the print preview use exactly the
 //! same layout (FSD §123).
 //!
-//! Fonts (ADR-0016): a script written only in Windows-1252 characters prints
-//! with base-14 Courier, byte for byte as before embedded fonts existed. Any
-//! other character (Telugu, Hindi, Tamil, Malayalam, Kannada, Latin letters
-//! such as "ā", zero-width joiners) switches the whole document to embedded
-//! subset fonts: Courier Prime for Latin text and the Noto Sans families for
-//! Indian scripts, shaped with rustybuzz ([`crate::pdf_fonts`]).
+//! Fonts (ADR-0016): every PDF embeds subset fonts, so the page never depends on the viewer's
+//! substitute for base-14 Courier: Courier Prime (regular, bold, oblique) for Latin text,
+//! even when the whole script is plain ASCII, and the Noto Sans families for Indian scripts,
+//! all shaped with rustybuzz ([`crate::pdf_fonts`]). Text is measured with the same shaped
+//! advances it is drawn with, and Courier Prime keeps the 0.6 em advance of Courier, so the
+//! screenplay columns, wrapping and page breaks do not move.
 //!
 //! Screenplay files carry no OpenFrame branding (Screenplay and Production
 //! Depth Specification §43): the document information names only the title
-//! and the author.
+//! and the author. Sides set [`Layout::brand`], which prints a small lockup in the bottom margin.
 
 use pdf_writer::Content;
 
-use crate::layout::{self, Layout, LayoutOptions, LineStyle};
+use crate::layout::{self, Layout, LayoutOptions};
 use crate::model::ScreenplayDoc;
 use crate::pdf_fonts::{FontPack, ShapedText};
-use crate::pdfgen::{self, PdfBuilder};
+use crate::pdfgen::PdfBuilder;
 
 #[derive(Debug, Clone)]
 pub struct PdfOutput {
@@ -29,7 +29,8 @@ pub struct PdfOutput {
     pub replaced_chars: usize,
 }
 
-/// Does this layout print any character outside Windows-1252?
+/// Does this layout print any character outside Windows-1252? (Informational: every PDF now
+/// embeds its fonts, so this no longer selects a different drawing path.)
 pub fn needs_embedded_fonts(lay: &Layout) -> bool {
     lay.pages
         .iter()
@@ -37,46 +38,11 @@ pub fn needs_embedded_fonts(lay: &Layout) -> bool {
         .any(|l| crate::fonts::needs_embedding(&l.text))
 }
 
-pub fn render_layout(lay: &Layout, title: &str, author: Option<&str>) -> PdfOutput {
-    if needs_embedded_fonts(lay) {
-        return render_embedded(lay, title, author);
-    }
-    let g = &lay.geometry;
-    let mut b = PdfBuilder::new(g.page_width_in * 72.0, g.page_height_in * 72.0);
-    for page in &lay.pages {
-        let mut c = Content::new();
-        for l in &page.lines {
-            let font = if l.style.bold() {
-                pdfgen::COURIER_BOLD
-            } else if l.style.oblique() {
-                pdfgen::COURIER_OBLIQUE
-            } else {
-                pdfgen::COURIER
-            };
-            let x = l.x_in * 72.0;
-            let y = (g.page_height_in - lay.line_y_in(l)) * 72.0;
-            b.text(&mut c, font, g.font_size_pt, x, y, &l.text);
-            if l.style == LineStyle::TitleMain {
-                // Underline the title.
-                let w = l.text.chars().count() as f32 * g.char_width_in * 72.0;
-                c.set_line_width(0.6);
-                c.move_to(x, y - 2.0);
-                c.line_to(x + w, y - 2.0);
-                c.stroke();
-            }
-        }
-        b.add_page(c);
-    }
-    let replaced = b.replaced_chars;
-    PdfOutput {
-        bytes: b.finish_unbranded(title, author),
-        pages: lay.script_page_count(),
-        replaced_chars: replaced,
-    }
-}
+/// Point size of the sides attribution line.
+const BRAND_SIZE_PT: f32 = 8.0;
 
-/// Render with embedded, shaped fonts (see the module notes).
-fn render_embedded(lay: &Layout, title: &str, author: Option<&str>) -> PdfOutput {
+/// Render the laid-out pages with embedded, shaped fonts (see the module notes).
+pub fn render_layout(lay: &Layout, title: &str, author: Option<&str>) -> PdfOutput {
     let g = &lay.geometry;
     // Pass 1: shape every line so each font is subset once, in a fixed order.
     let shaped: Vec<Vec<ShapedText>> = lay
@@ -89,7 +55,9 @@ fn render_embedded(lay: &Layout, title: &str, author: Option<&str>) -> PdfOutput
                 .collect()
         })
         .collect();
-    let all: Vec<&ShapedText> = shaped.iter().flatten().collect();
+    let brand = lay.brand.as_ref().map(|t| ShapedText::new(t, false, false));
+    let mut all: Vec<&ShapedText> = shaped.iter().flatten().collect();
+    all.extend(brand.iter());
     let pack = FontPack::build(&all);
     // Pass 2: draw.
     let mut b = PdfBuilder::new(g.page_width_in * 72.0, g.page_height_in * 72.0);
@@ -102,12 +70,23 @@ fn render_embedded(lay: &Layout, title: &str, author: Option<&str>) -> PdfOutput
             let x = l.x_in * 72.0;
             let y = (g.page_height_in - lay.line_y_in(l)) * 72.0;
             let w = pack.draw(&mut c, st, x, y, g.font_size_pt);
-            if l.style == LineStyle::TitleMain {
+            if l.style.underlined() {
                 c.set_line_width(0.6);
                 c.move_to(x, y - 2.0);
                 c.line_to(x + w, y - 2.0);
                 c.stroke();
             }
+        }
+        if let Some(st) = &brand {
+            // Sides: the OpenFrame mark and attribution, small and quiet, inside the bottom
+            // margin and clear of the last script line.
+            let x = layout::LEFT_MARGIN_IN * 72.0 - 36.0;
+            let y = 26.0;
+            crate::report::draw_mark(&mut c, x, y - 2.5, 11.0, crate::report::pal::ORANGE);
+            c.set_fill_gray(0.35);
+            pack.draw(&mut c, st, x + 16.0, y, BRAND_SIZE_PT);
+            c.set_fill_gray(0.0);
+            c.set_stroke_gray(0.0);
         }
         b.add_page(c);
     }

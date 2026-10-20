@@ -213,6 +213,9 @@ pub enum LineStyle {
     Footer,
     TitleMain,
     TitleText,
+    /// The centred, underlined screenplay title on the first script page (layout only: it is
+    /// never part of the script's elements).
+    PageTitle,
 }
 
 impl LineStyle {
@@ -223,8 +226,13 @@ impl LineStyle {
             LineStyle::Lyric | LineStyle::Note | LineStyle::CustomItalic
         )
     }
+    /// Bold Courier Prime in the PDF: scene headings and the title page title.
     pub fn bold(self) -> bool {
-        matches!(self, LineStyle::TitleMain)
+        matches!(self, LineStyle::TitleMain | LineStyle::Heading)
+    }
+    /// Lines drawn with an underline.
+    pub fn underlined(self) -> bool {
+        matches!(self, LineStyle::TitleMain | LineStyle::PageTitle)
     }
     /// Stable name used by the print preview.
     pub fn as_str(self) -> &'static str {
@@ -249,6 +257,7 @@ impl LineStyle {
             LineStyle::Footer => "footer",
             LineStyle::TitleMain => "title_main",
             LineStyle::TitleText => "title_text",
+            LineStyle::PageTitle => "page_title",
         }
     }
 }
@@ -290,6 +299,10 @@ pub struct Layout {
     pub geometry: Geometry,
     /// Pages of every scene that printed at least one line, in document order.
     pub scenes: Vec<ScenePages>,
+    /// Production attribution printed in the bottom margin of every page (sides). Screenplay
+    /// files leave it empty.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub brand: Option<String>,
 }
 
 impl Layout {
@@ -947,6 +960,7 @@ pub fn layout(doc: &ScreenplayDoc, opts: &LayoutOptions) -> Layout {
         pages,
         geometry: g,
         scenes,
+        brand: None,
     }
 }
 
@@ -986,8 +1000,10 @@ fn decorate_pages(
         let n = first + i as u32;
         page.number = Some(n);
         let decorate = opts.paginate && (i >= 1 || opts.page.header_on_first_page);
+        // The first script page shows its number ("1.") like every other page.
+        let numbered = opts.paginate && opts.page_numbers;
         let mut page_label_x = right_edge;
-        if decorate && opts.page_numbers {
+        if numbered {
             let label = format!("{n}.");
             page_label_x = right_edge - g.text_width_in(&label);
             page.lines.push(PageLine {
@@ -996,6 +1012,10 @@ fn decorate_pages(
                 text: label,
                 style: LineStyle::PageNumber,
             });
+        }
+        let has_header = decorate && !opts.page.header.trim().is_empty();
+        if i == 0 && opts.paginate {
+            running_title(page, doc, g, has_header);
         }
         if decorate && !opts.page.header.trim().is_empty() {
             let text = fill_placeholders(opts.page.header.trim(), doc, n);
@@ -1027,6 +1047,47 @@ fn decorate_pages(
         }
         page.lines
             .sort_by(|a, b| a.row.cmp(&b.row).then(a.x_in.total_cmp(&b.x_in)));
+    }
+}
+
+/// Longest running title line, in characters (leaves a clear gap before the page number).
+const PAGE_TITLE_CHARS: usize = 50;
+
+/// The centred, underlined title near the top of the first script page: layout only, never an
+/// element of the script. It sits in the header band above the body, so it never takes a body
+/// row and never shifts the script. When the page also prints a header text, the title moves
+/// one row down so the two never overlap.
+fn running_title(page: &mut LaidOutPage, doc: &ScreenplayDoc, g: &Geometry, header_on_page: bool) {
+    let Some(title) = doc.title_page.title() else {
+        return;
+    };
+    let title = title.replace('\n', " ").trim().to_uppercase();
+    if title.is_empty() {
+        return;
+    }
+    let mut lines = wrap(&title, PAGE_TITLE_CHARS);
+    if lines.len() > 2 {
+        // A third line would touch the first body row: keep two and end the second with an
+        // ellipsis, cut at a fixed width so the result is always the same.
+        lines.drain(2..);
+        if let Some(last) = lines.last_mut() {
+            let mut t: String = last.chars().take(PAGE_TITLE_CHARS - 1).collect();
+            t.push('\u{2026}');
+            *last = t;
+        }
+    }
+    let action = rules::rule_for("action");
+    // Lines run downward from the page number row, so a long title never climbs into the top
+    // margin. Row -1 stays empty above the body.
+    let first_row = if header_on_page { -2 } else { -3 };
+    for (k, text) in lines.into_iter().enumerate() {
+        let x = action.left_in + ((action.width_in - g.text_width_in(&text)) / 2.0).max(0.0);
+        page.lines.push(PageLine {
+            row: first_row + k as i32,
+            x_in: x,
+            text,
+            style: LineStyle::PageTitle,
+        });
     }
 }
 
@@ -1239,11 +1300,59 @@ mod tests {
                 .iter()
                 .any(|l| l.style == LineStyle::PageNumber && l.text == "2.")
         );
+        // The first script page shows "1." like every other page.
         assert!(
-            !lay.pages[0]
+            lay.pages[0]
                 .lines
                 .iter()
-                .any(|l| l.style == LineStyle::PageNumber)
+                .any(|l| l.style == LineStyle::PageNumber && l.text == "1.")
+        );
+    }
+
+    #[test]
+    fn first_page_has_a_layout_only_title_line_and_bold_scene_headings() {
+        let mut doc = ScreenplayDoc::default();
+        doc.title_page.set("Title", "Monsoon Letters");
+        let mut s = Scene::new("INT. KITCHEN - DAWN");
+        s.elements.push(Element::new(ElementKind::Action, "Rain."));
+        doc.scenes.push(s);
+        let lay = layout(&doc, &no_title());
+        let first = &lay.pages[0];
+        let title: Vec<&PageLine> = first
+            .lines
+            .iter()
+            .filter(|l| l.style == LineStyle::PageTitle)
+            .collect();
+        assert_eq!(title.len(), 1);
+        assert_eq!(title[0].text, "MONSOON LETTERS");
+        assert!(
+            title[0].row < 0,
+            "the title sits above the body, never in it"
+        );
+        assert!(title[0].style.underlined() && !title[0].style.bold());
+        // It is not a script element: the body is exactly what the script holds.
+        let body: Vec<&str> = first
+            .lines
+            .iter()
+            .filter(|l| l.row >= 0)
+            .map(|l| l.text.as_str())
+            .collect();
+        assert_eq!(body, vec!["INT. KITCHEN - DAWN", "Rain."]);
+        assert!(LineStyle::Heading.bold() && !LineStyle::Action.bold());
+        // Later pages and unpaginated text never get it.
+        let flat = layout(
+            &doc,
+            &LayoutOptions {
+                paginate: false,
+                ..no_title()
+            },
+        );
+        assert!(
+            !flat
+                .pages
+                .iter()
+                .flat_map(|p| p.lines.iter())
+                .any(|l| l.style == LineStyle::PageTitle)
         );
     }
 

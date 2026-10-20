@@ -33,7 +33,7 @@ const SUB_LABEL = {
     reports: "Reports", budget: "Budget",
   },
   story: { board: "Board", outline: "Outline", characters: "Characters", timeline: "Timeline", episodes: "Episodes" },
-  screenplay: { compare: "Compare", review: "Review" },
+  screenplay: { compare: "Compare" },
   vault: { deleted: "Recently Deleted" },
   settings: { templates: "Templates", "offline-ai": "Offline AI", writing: "Writing", shortcuts: "Keyboard shortcuts", advanced: "Advanced", appearance: "Appearance" },
 };
@@ -154,7 +154,9 @@ describe("reachability from the feature status file", () => {
       await waitForText(browser, "Your projects");
       await quiet("app-home");
     });
-    const episodic = canonical.filter((r) => EPISODIC_ONLY.has(r));
+    // New Episodic and Series projects were removed (owner change list item 9, 2026-10-19), so these
+    // routes exist only in projects made earlier and cannot be reached from a new project.
+    const episodic = [];
     if (episodic.length) {
       await step("episodic project", async () => {
         await click(browser, "New Project");

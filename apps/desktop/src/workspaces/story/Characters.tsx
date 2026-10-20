@@ -341,7 +341,7 @@ function LinkedCards({ detail, episodeId, readOnly }: { detail: StoryCharacterDe
       <ul style={{ listStyle: "none", padding: 0, margin: "6px 0" }}>
         {detail.linkedCards.map((l) => (
           <li key={l.cardId} className="row" style={{ gap: 8, padding: "3px 0" }}>
-            <span className="grow truncate">{l.shortDescription || "Blank scene card"}</span>
+            <span className="grow truncate" title={l.shortDescription || undefined}>{l.shortDescription || "Blank scene card"}</span>
             <span className="muted" style={{ fontSize: 12 }}>{l.location}</span>
             {!readOnly && (
               <button type="button" className="iconbtn sm" aria-label="Unlink card" onClick={() => void story.unlinkCard(c.id, l.cardId).catch(reportError)}>
@@ -544,16 +544,20 @@ function AddRelationshipDialog({ from, chars, onClose }: { from: StoryCharacterD
           <Select value={fromId} onChange={setFromId} ariaLabel="From character" options={opts} />
         </Field>
         <Field label="is" htmlFor="rel-type">
-          <TextInput id="rel-type" list="rel-suggestions" value={type} onChange={(e) => setType(e.target.value)} placeholder="father of" autoFocus />
-          <datalist id="rel-suggestions">
-            {RELATION_SUGGESTIONS.map((s) => (
-              <option key={s} value={s} />
-            ))}
-          </datalist>
+          <TextInput id="rel-type" value={type} maxLength={80} onChange={(e) => setType(e.target.value)} placeholder="e.g. second cousin of" autoFocus />
         </Field>
         <Field label="Character">
           <Select value={to} onChange={setTo} ariaLabel="To character" options={opts} />
         </Field>
+      </div>
+      {/* Any wording is allowed (owner change list item 2); these only save typing. */}
+      <div className="rel-suggest" role="group" aria-label="Common relationships">
+        <span className="xs muted">Type your own, or pick one:</span>
+        {RELATION_SUGGESTIONS.map((s) => (
+          <button key={s} type="button" className={"chip" + (type === s ? " a" : "")} aria-pressed={type === s} onClick={() => setType(s)}>
+            {s}
+          </button>
+        ))}
       </div>
       <Field label="Note (optional)" htmlFor="rel-note">
         <TextInput id="rel-note" value={note} onChange={(e) => setNote(e.target.value)} />
@@ -609,16 +613,119 @@ function DeleteCharacterDialog({
   );
 }
 
+const NODE_R = 20;
+const initialOf = (name: string) => (name.trim()[0] ?? "?").toUpperCase();
+
+interface MapEdge {
+  path: string;
+  label: { x: number; y: number };
+}
+
+/**
+ * Lays out the relationship map so nothing overlaps (owner change list item 3): characters sit on a
+ * circle in the order with the fewest crossing lines, two relationships between the same pair bend
+ * apart, and each label takes the first spot along its line that is clear of other labels and of
+ * the characters.
+ */
+export function layoutRelationshipMap(ids: string[], rels: { id: string; from: string; to: string }[]) {
+  const n = ids.length;
+  const W = 720;
+  const H = Math.max(380, Math.min(560, 260 + n * 34));
+  const R = Math.min(W, H) / 2 - 62;
+  const order = n <= 8 ? fewestCrossings(ids, rels) : ids;
+  const step = (2 * Math.PI) / Math.max(n, 1);
+  const pos = new Map(order.map((id, i) => [id, { x: W / 2 + R * Math.cos(step * i - Math.PI / 2), y: H / 2 + R * Math.sin(step * i - Math.PI / 2) }]));
+  const placed: { x: number; y: number }[] = [...pos.values()].map((p) => ({ x: p.x, y: p.y + 6 }));
+  const pairCount = new Map<string, number>();
+  const edges = new Map<string, MapEdge>();
+  for (const r of rels) {
+    const a = pos.get(r.from);
+    const b = pos.get(r.to);
+    if (!a || !b) continue;
+    const key = [r.from, r.to].sort().join("|");
+    const k = pairCount.get(key) ?? 0;
+    pairCount.set(key, k + 1);
+    // Parallel relationships between one pair alternate sides with a growing bend.
+    const dir = r.from < r.to ? 1 : -1;
+    const bend = k === 0 ? 0 : Math.ceil(k / 2) * 46 * (k % 2 ? 1 : -1) * dir;
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const len = Math.hypot(dx, dy) || 1;
+    const cx = (a.x + b.x) / 2 + (-dy / len) * bend;
+    const cy = (a.y + b.y) / 2 + (dx / len) * bend;
+    const at = (t: number) => ({
+      x: (1 - t) * (1 - t) * a.x + 2 * (1 - t) * t * cx + t * t * b.x,
+      y: (1 - t) * (1 - t) * a.y + 2 * (1 - t) * t * cy + t * t * b.y,
+    });
+    let label = at(0.5);
+    for (const t of [0.5, 0.38, 0.62, 0.28, 0.72, 0.44, 0.56]) {
+      const p = at(t);
+      if (placed.every((q) => Math.abs(q.x - p.x) > 70 || Math.abs(q.y - p.y) > 18)) {
+        label = p;
+        break;
+      }
+    }
+    placed.push(label);
+    edges.set(r.id, { path: "M " + a.x + " " + a.y + " Q " + cx + " " + cy + " " + b.x + " " + b.y, label });
+  }
+  return { W, H, pos, edges };
+}
+
+/** The circle order with the fewest crossing lines (two chords cross when their ends interleave). */
+function fewestCrossings(ids: string[], rels: { from: string; to: string }[]): string[] {
+  if (ids.length < 4) return ids;
+  const pairs = rels.map((r) => [ids.indexOf(r.from), ids.indexOf(r.to)]).filter(([a, b]) => a >= 0 && b >= 0 && a !== b);
+  const perm = ids.map((_, i) => i);
+  const slot = new Array<number>(ids.length);
+  let best = perm.slice();
+  let bestScore = Infinity;
+  const crossings = () => {
+    for (let i = 0; i < perm.length; i++) slot[perm[i]] = i;
+    let c = 0;
+    for (let i = 0; i < pairs.length; i++) {
+      const lo = Math.min(slot[pairs[i][0]], slot[pairs[i][1]]);
+      const hi = Math.max(slot[pairs[i][0]], slot[pairs[i][1]]);
+      for (let j = i + 1; j < pairs.length; j++) {
+        const p = slot[pairs[j][0]];
+        const q = slot[pairs[j][1]];
+        if (p === lo || p === hi || q === lo || q === hi) continue;
+        if (p > lo && p < hi ? !(q > lo && q < hi) : q > lo && q < hi) c++;
+      }
+    }
+    return c;
+  };
+  // The first character stays in place (rotations are the same picture); every order of the rest is tried.
+  const visit = (k: number) => {
+    if (bestScore === 0) return;
+    if (k === perm.length) {
+      const c = crossings();
+      if (c < bestScore) {
+        bestScore = c;
+        best = perm.slice();
+      }
+      return;
+    }
+    for (let i = k; i < perm.length; i++) {
+      [perm[k], perm[i]] = [perm[i], perm[k]];
+      visit(k + 1);
+      [perm[k], perm[i]] = [perm[i], perm[k]];
+    }
+  };
+  visit(1);
+  return best.map((i) => ids[i]);
+}
+
 /** Relationship map (mock 069): an optional visual helper, not an analysis system. */
 function RelationshipMap({ chars, onBack, readOnly }: { chars: StoryCharacterDto[]; onBack: () => void; readOnly: boolean }) {
   const rels = useRelationships();
   const [add, setAdd] = useState(false);
   const list = rels.data ?? [];
   const nodes = chars.filter((c) => !c.archived && list.some((r) => r.fromCharacterId === c.id || r.toCharacterId === c.id));
-  const W = 640;
-  const H = 360;
-  const R = Math.min(W, H) / 2 - 50;
-  const pos = new Map(nodes.map((n, i) => [n.id, { x: W / 2 + R * Math.cos((2 * Math.PI * i) / nodes.length - Math.PI / 2), y: H / 2 + R * Math.sin((2 * Math.PI * i) / nodes.length - Math.PI / 2) }]));
+  const map = layoutRelationshipMap(
+    nodes.map((n) => n.id),
+    list.map((r) => ({ id: r.id, from: r.fromCharacterId, to: r.toCharacterId })),
+  );
+  const { W, H, pos } = map;
   return (
     <section className="card" style={{ flex: 1, padding: 16, overflow: "auto" }} aria-label="Character relationships">
       <div className="row">
@@ -638,15 +745,25 @@ function RelationshipMap({ chars, onBack, readOnly }: { chars: StoryCharacterDto
         <EmptyState title="No relationships yet.">Add a relationship such as “father of” or “colleague of”.</EmptyState>
       ) : (
         <>
-          <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{ maxHeight: 380 }} role="img" aria-label="Relationship map">
+          <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{ maxHeight: 520 }} role="img" aria-label="Relationship map">
             {list.map((r) => {
-              const a = pos.get(r.fromCharacterId);
-              const b = pos.get(r.toCharacterId);
-              if (!a || !b) return null;
+              const e = map.edges.get(r.id);
+              if (!e) return null;
               return (
                 <g key={r.id}>
-                  <line x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke="var(--line2)" strokeWidth={2} />
-                  <text x={(a.x + b.x) / 2} y={(a.y + b.y) / 2 - 4} textAnchor="middle" fontSize={11} fill="var(--ink2)">
+                  <path d={e.path} fill="none" stroke="var(--line2)" strokeWidth={2} />
+                  <text
+                    x={e.label.x}
+                    y={e.label.y}
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    fontSize={11}
+                    fill="var(--ink2)"
+                    stroke="var(--panel)"
+                    strokeWidth={5}
+                    strokeLinejoin="round"
+                    paintOrder="stroke"
+                  >
                     {r.relationshipType}
                   </text>
                 </g>
@@ -656,9 +773,12 @@ function RelationshipMap({ chars, onBack, readOnly }: { chars: StoryCharacterDto
               const p = pos.get(n.id)!;
               return (
                 <g key={n.id}>
-                  <circle cx={p.x} cy={p.y} r={26} fill="var(--accent-soft)" stroke="var(--accent)" />
-                  <text x={p.x} y={p.y + 4} textAnchor="middle" fontSize={11} fontWeight={700} fill="var(--ink)">
-                    {n.name.toUpperCase().slice(0, 10)}
+                  <circle cx={p.x} cy={p.y} r={NODE_R} fill="var(--accent-soft)" stroke="var(--accent)" strokeWidth={1.5} />
+                  <text x={p.x} y={p.y + 1} textAnchor="middle" dominantBaseline="middle" fontSize={13} fontWeight={700} fill="var(--accent-d)">
+                    {initialOf(n.name)}
+                  </text>
+                  <text x={p.x} y={p.y + NODE_R + 14} textAnchor="middle" fontSize={11.5} fontWeight={700} fill="var(--ink)" stroke="var(--panel)" strokeWidth={4} strokeLinejoin="round" paintOrder="stroke">
+                    {n.name.toUpperCase()}
                   </text>
                 </g>
               );

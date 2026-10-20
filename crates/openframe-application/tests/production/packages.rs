@@ -1524,103 +1524,27 @@ fn fsd_50_story_board_package_copy_as_new_and_same_project_changes() {
 }
 
 #[test]
-fn fsd_50_schedule_package_never_deletes_local_days() {
-    let env = TestEnv::with_project("Schedule", "Feature Film");
-    let seed = seed(&env);
-    env.ok("production.set_source", json!({ "draftId": seed.draft }));
-    let sched = env.ok("schedule.create", json!({}));
-    let schedule_id = sched["id"]
-        .as_str()
-        .map(str::to_string)
-        .unwrap_or_else(|| scalar_str(&env, "SELECT id FROM shooting_schedule LIMIT 1", &[]));
-    let day1: String = env
-        .ok(
-            "schedule.create_day",
-            json!({ "scheduleId": schedule_id, "notes": "Early call" }),
-        )
-        .as_str()
-        .unwrap()
-        .to_string();
-    let pkg = out_path(&env, "sched.ofschedule");
-    env.ok(
-        "packages.export_exchange",
-        json!({ "packageType": "schedule", "path": pkg }),
-    );
-    // Locally: a new day appears after export.
-    env.ok(
-        "schedule.create_day",
-        json!({ "scheduleId": schedule_id, "notes": "Local only" }),
-    );
-    let days_before = scalar_i64(
-        &env,
-        "SELECT count(*) FROM shooting_day WHERE deleted_at IS NULL",
-        &[],
-    );
-    let session = env.ok("packages.open_exchange", json!({ "path": pkg }));
-    assert!(
-        session["changes"]
-            .as_array()
-            .unwrap()
-            .iter()
-            .any(|c| c["group"] == "schedule.kept")
-    );
-    env.ok(
-        "packages.apply_import",
-        json!({ "sessionId": session["id"], "mode": "allSafe" }),
-    );
-    assert_eq!(
-        scalar_i64(
-            &env,
-            "SELECT count(*) FROM shooting_day WHERE deleted_at IS NULL",
-            &[]
-        ),
-        days_before
-    );
-    assert_eq!(
-        scalar_str(&env, "SELECT notes FROM shooting_day WHERE id=?1", &[&day1]),
-        "Early call"
-    );
-
-    // All-or-nothing: when one selected change fails, the ones already applied are rolled back.
-    let bad = out_path(&env, "bad-sched.ofschedule");
-    rewrite_package(&pkg, &bad, true, |name, bytes| {
-        if name == "content.json" {
-            let mut v: Value = serde_json::from_slice(&bytes).unwrap();
-            v["days"][0]["notes"] = json!("Changed by package");
-            v["days"][0]["date"] = json!("2026-02-31");
-            serde_json::to_vec(&v).unwrap()
-        } else {
-            bytes
-        }
-    });
-    let session = env.ok("packages.open_exchange", json!({ "path": bad }));
-    let ids: Vec<Value> = session["changes"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .filter(|c| c["group"] == "schedule.notes" || c["group"] == "schedule.dates")
-        .map(|c| c["id"].clone())
-        .collect();
-    assert_eq!(ids.len(), 2);
-    let r = env.ok(
-        "packages.apply_import",
-        json!({ "sessionId": session["id"], "mode": "selected", "selected": ids }),
-    );
-    assert_eq!(r["status"], "Failed");
-    assert!(
-        r["result"]["message"]
-            .as_str()
-            .unwrap()
-            .contains("your project was not changed"),
-        "{}",
-        r["result"]
-    );
-    assert_eq!(
-        scalar_str(&env, "SELECT notes FROM shooting_day WHERE id=?1", &[&day1]),
-        "Early call"
-    );
+fn removed_package_types_are_refused_on_export() {
+    // Owner change list item 9 (2026-10-19): the Breakdown, Shot List, Schedule and Call Sheet
+    // Review packages are no longer offered. Asking for one writes nothing.
+    let env = TestEnv::with_project("Removed", "Feature Film");
+    for ty in ["breakdown", "shots", "schedule", "callReview"] {
+        let path = out_path(&env, &format!("x.{ty}"));
+        let e = env
+            .call(
+                "packages.export_exchange",
+                json!({ "packageType": ty, "path": path }),
+            )
+            .expect_err("a removed package type must be refused");
+        assert_eq!(e.code.0, "validation.invalid_input", "{ty}");
+        assert!(
+            e.message.contains("no longer offered"),
+            "{ty}: {}",
+            e.message
+        );
+        assert!(!std::path::Path::new(&path).exists(), "{ty} wrote a file");
+    }
 }
-
 #[test]
 fn call_sheet_review_and_other_project_packages_are_handled_safely() {
     let env = TestEnv::with_project("Mismatch", "Feature Film");

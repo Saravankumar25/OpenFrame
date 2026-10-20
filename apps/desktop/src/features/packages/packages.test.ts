@@ -89,14 +89,10 @@ describe("import preview selection", () => {
 describe("entry points", () => {
   it("lists the Share / Exchange actions in the UX order and opens dialogs", () => {
     const labels = packageActions.map((a) => a.label);
-    expect(labels.slice(0, 6)).toEqual([
-      "Export Review Package (script)…",
-      "Story Board Package…",
-      "Breakdown Package…",
-      "Shot List Package…",
-      "Schedule Package…",
-      "Call Sheet Review Package…",
-    ]);
+    expect(labels.slice(0, 2)).toEqual(["Export Review Package (script)…", "Story Board Package…"]);
+    for (const removed of ["Breakdown Package…", "Shot List Package…", "Schedule Package…", "Call Sheet Review Package…"]) {
+      expect(labels).not.toContain(removed);
+    }
     expect(labels).toContain("Import Exchange Package…");
     expect(labels).toContain("Create Backup…");
     packageActions.find((a) => a.id === "packages.backup")!.run();

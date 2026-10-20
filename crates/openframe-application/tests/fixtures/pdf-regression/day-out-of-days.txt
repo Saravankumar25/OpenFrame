@@ -1,43 +1,95 @@
 == page 1 792x612
-54,542 16.0 Day Out of Days
-*,526 9.5 Black Rain · Revised <DATE> · Source: Shooting Schedule · Shooting Draft 6 (Locked)
-54,501 9.5 Days
-259,501 9.5 Shoot Day 1 · Mon 14 Jun 2027 to Shoot Day 2 · Tue 15 Jun 2027
-54,488 9.5 Cast
-259,488 9.5 2 cast members
-54,476 9.5 Codes
-259,476 9.5 SW start work · W work · WF work finish · SWF start, work and finish on the same day · H hold (paid, not
-259,463 9.5 working) · T travel · R rehearsal · F fitting · D drop · - not working
-54,451 9.5 Corrections
-259,451 9.5 None; every cell comes from the schedule
-58,431 8.5 #
-90,431 8.5 Cast
-306,431 8.5 Day 1
-306,420 8.5 06-14
-365,431 8.5 Day 2
-365,420 8.5 06-15
-449,431 8.5 Work
-505,431 8.5 Hold
-558,431 8.5 Travel
-591,431 8.5 Start
-667,431 8.5 Finish
-58,403 8.5 1
-90,403 8.5 Karthik Menon (Arjun)
-306,403 8.5 SW
-365,403 8.5 WF
-465,403 8.5 2
-519,403 8.5 0
-578,403 8.5 0
-591,403 8.5 Shoot Day 1
-667,403 8.5 Shoot Day 2
-58,387 8.5 2
-90,387 8.5 Divya Nair (Meera)
-306,387 8.5 SW
-365,387 8.5 WF
-465,387 8.5 2
-519,387 8.5 0
-578,387 8.5 0
-591,387 8.5 Shoot Day 1
-667,387 8.5 Shoot Day 2
-318,34 8.0 Black Rain · Day Out of Days · Page 1 of 1
-65,18 7.0 Created with OpenFrame Studio
+46,558 7.8 PRODUCTION PLANNING · CAST COMMITMENTS
+46,527 26.0 DAY OUT OF DAYS
+*,506 12.5 Black Rain · Revised <DATE>
+520,558 8.4 Schedule
+561,558 8.4 · Shooting Schedule
+520,543 8.4 Production source
+598,543 8.4 · Shooting Draft 6 (Locked)
+520,529 8.4 Displayed range
+589,529 8.4 · Shoot Day 1 · Mon 14 Jun 2027 to
+589,518 8.4 Shoot Day 2 · Tue 15 Jun 2027
+520,503 8.4 Corrections
+571,503 8.4 · None; every cell comes from the schedule
+56,468 16.0 2
+73,471 6.6 SHOOTING DAYS
+233,468 16.0 2
+250,471 6.6 CAST MEMBERS
+410,468 16.0 0
+427,471 6.6 OFF DAYS
+587,468 16.0 0
+604,471 6.6 MANUAL CORRECTIONS
+46,428 11.5 CAST COMMITMENTS BY SHOOTING DAY
+561,428 8.0 1 band · up to 7 schedule-day columns per page
+60,387 8.0 BAND 1 OF 1
+135,386 14.0 Days 01 to 02
+595,387 9.0 2 SCHEDULE-DAY COLUMNS
+46,363 7.0 CODE LEGEND · MEANINGS STAY READABLE WITHOUT COLOUR
+53,347 6.8 SW
+75,347 7.6 Start work
+130,347 6.8 W
+150,347 7.6 Work
+187,347 6.8 WF
+209,347 7.6 Work finish
+263,347 6.8 SWF
+288,347 7.6 Start, work and finish on the same day
+438,347 6.8 H
+458,347 7.6 Hold (paid, not working)
+560,347 6.8 T
+579,347 7.6 Travel
+622,347 6.8 R
+641,347 7.6 Rehearsal
+56,331 6.8 F
+75,331 7.6 Fitting
+117,331 6.8 D
+137,331 7.6 Drop
+176,331 6.8 -
+194,331 7.6 Not working
+266,331 7.6 Blank: no code for that day
+53,289 7.0 #
+79,289 7.0 CAST MEMBER
+605,305 7.0 SHOOT 01
+617,284 17.0 14
+605,274 6.6 MON · JUN
+685,305 7.0 SHOOT 02
+697,284 17.0 15
+686,274 6.6 TUE · JUN
+56,247 9.0 1
+79,248 8.8 KARTHIK MENON (ARJUN)
+617,247 11.0 SW
+697,247 11.0 WF
+56,219 9.0 2
+79,220 8.8 DIVYA NAIR (MEERA)
+617,219 11.0 SW
+697,219 11.0 WF
+46,179 11.5 CAST TOTALS ACROSS THE FULL SCHEDULE
+510,180 8.0 Totals cover the whole schedule, not only the displayed range
+53,150 7.0 #
+79,150 7.0 CAST MEMBER
+326,150 7.0 WORK
+389,150 7.0 HOLD
+441,150 7.0 TRAVEL
+506,150 7.0 OTHER
+549,150 7.0 START
+651,150 7.0 FINISH
+56,123 9.0 1
+79,126 9.0 Karthik Menon (Arjun)
+346,125 9.4 2
+407,125 9.4 0
+468,125 9.4 0
+530,125 9.4 0
+549,126 8.6 Shoot Day 1
+651,126 8.6 Shoot Day 2
+56,94 9.0 2
+79,97 9.0 Divya Nair (Meera)
+346,96 9.4 2
+407,96 9.4 0
+468,96 9.4 0
+530,96 9.4 0
+549,97 8.6 Shoot Day 1
+651,97 8.6 Shoot Day 2
+69,46 11.0 Open
+96,46 11.0 Frame
+70,39 4.2 STUDIO
+146,44 8.0 Created using OpenFrame
+569,44 7.2 BLACK RAIN · DAY OUT OF DAYS · Page 1 / 1

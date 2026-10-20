@@ -30,7 +30,6 @@ export interface DraftActions {
   makeCurrent: (d: ScreenplayDraftDto) => void;
   restore: (d: ScreenplayDraftDto) => void;
   lock: (d: ScreenplayDraftDto) => void;
-  review: (d: ScreenplayDraftDto) => void;
   compare: (a: ScreenplayDraftDto | null, b: ScreenplayDraftDto | null) => void;
   newDraft: () => void;
 }
@@ -92,7 +91,6 @@ export function DraftsDrawer({ drafts, openDraftId, permissions, actions, onClos
             ...(permissions.edit && !d.isCurrent ? [{ label: "Mark current", onSelect: () => actions.makeCurrent(d) }] : []),
             ...(permissions.edit ? [{ label: "Restore as new draft", onSelect: () => actions.restore(d) }] : []),
             ...(!d.isCurrent && current ? [{ label: "Compare with current", onSelect: () => actions.compare(d, current) }] : []),
-            ...(permissions.edit ? [{ label: "Start Review…", onSelect: () => actions.review(d) }] : []),
             ...(permissions.lock && d.status !== "Locked" ? [{ label: "Lock as Shooting Draft…", onSelect: () => actions.lock(d) }] : []),
             ...(permissions.delete ? [{ label: "Delete…", danger: true, separatorBefore: true, onSelect: () => setDeleting(d) }] : []),
           ];

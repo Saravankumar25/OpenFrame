@@ -72,7 +72,9 @@ export default function OfflineAiSettings() {
     <div className="content" style={{ overflow: "auto" }}>
       <PageHeader title="Offline AI" sub="AI runs on this computer." />
       <div className="row" style={{ alignItems: "flex-start", gap: 16, flexWrap: "wrap" }}>
-        <section className="card pad grow" style={{ maxWidth: 720 }} aria-label="Offline AI">
+        {/* Cards wrap to a new row before they get narrower than 320 px (measured: beside the AI panel the two
+            growing cards were squeezed to 200 px and cut the status chip). */}
+        <section className="card pad" style={{ flex: "1 1 320px", minWidth: 320, maxWidth: 720 }} aria-label="Offline AI">
           {!s ? (
             <Skeleton h={80} />
           ) : (
@@ -115,7 +117,7 @@ export default function OfflineAiSettings() {
           )}
         </section>
         {s && panelMode(s) === "download" && (
-          <div className="grow" style={{ maxWidth: 720 }}>
+          <div style={{ flex: "1 1 320px", minWidth: 320, maxWidth: 720 }}>
             <DownloadAi damaged={damagedModels(s)} />
           </div>
         )}
@@ -167,7 +169,7 @@ function TechnicalDetails() {
   const d = useOp<AiDiagnosticsDto>("ai.diagnostics", {}, [], { staleTime: 10_000 });
   const x = d.data;
   return (
-    <section className="card pad" style={{ width: 420, flex: "none" }} aria-label="Technical details">
+    <section className="card pad" style={{ flex: "1 1 320px", minWidth: 320, maxWidth: 420 }} aria-label="Technical details">
       <details>
         <summary className="h4" style={{ cursor: "pointer" }}>
           Technical details

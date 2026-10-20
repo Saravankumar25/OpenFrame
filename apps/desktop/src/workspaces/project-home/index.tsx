@@ -175,7 +175,7 @@ function ActiveProjectHome({ home, onSettings }: { home: ProjectHome; onSettings
                       <span className="iconbtn on" aria-hidden><LocIcon size={16} aria-hidden /></span>
                       <span className="grow">
                         <span className="b" style={{ display: "block" }}>{title}</span>
-                        <span className="xs muted" style={{ display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{String(loc.label ?? "")}</span>
+                        <span className="xs muted" title={String(loc.label ?? "")} style={{ display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{String(loc.label ?? "")}</span>
                       </span>
                       <ArrowRight size={15} aria-hidden />
                     </button>
@@ -239,7 +239,7 @@ function RecentRow({ entry }: { entry: ActivityEntry }) {
   const body = (
     <>
       <span className="grow" style={{ minWidth: 0 }}>
-        <b style={{ display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 600 }}>{entry.summary}</b>
+        <b title={entry.summary} style={{ display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 600 }}>{entry.summary}</b>
         <span className="xs muted">{meta}</span>
       </span>
       {entry.nav != null && <ArrowRight size={14} aria-hidden />}
@@ -274,7 +274,7 @@ function FilesCard() {
               <button key={f.id} className="li clickable" style={{ width: "100%", border: 0, borderBottom: "1px solid var(--line)", background: "transparent", textAlign: "left", padding: "8px 2px" }} onClick={() => go({ workspace: "files", params: { fileId: f.id } })}>
                 <span className={`fic ${badge.cls}`} aria-hidden>{badge.text}</span>
                 <span className="grow sm" style={{ minWidth: 0 }}>
-                  <b style={{ display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.displayName}</b>
+                  <b title={f.displayName} style={{ display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.displayName}</b>
                   <span className="xs muted">
                     {f.asset.available ? fileSize(f.asset.byteSize) || (f.asset.storageMode === "external" ? "Linked" : "") : "Unavailable"}
                   </span>

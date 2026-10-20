@@ -402,9 +402,11 @@ pub fn tools_for_request(
         .filter(|(s, _, _)| *s > 0)
         .collect();
     scored.sort_by(|a, b| b.0.cmp(&a.0).then(a.1.cmp(&b.1)));
+    let product = super::commands::may_be_product_question(request);
     let mut out: Vec<ToolDef> = all
         .iter()
         .filter(|t| CORE_TOOLS.contains(&t.name.as_str()))
+        .filter(|t| product || t.name != "answer_product_question")
         .cloned()
         .collect();
     let mut used: usize = out.iter().map(rendered_len).sum();

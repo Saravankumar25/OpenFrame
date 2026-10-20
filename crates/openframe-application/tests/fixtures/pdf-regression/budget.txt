@@ -1,61 +1,72 @@
 == page 1 612x792
-54,722 16.0 Budget Report
-*,706 9.5 Black Rain · Exported <DATE>
-54,682 8.5 A simple estimate for planning. Formal accounting is outside OpenFrame.
-54,666 9.5 Currency
-205,666 9.5 INR
-54,653 9.5 Planned total
-205,653 9.5 INR 12,00,000
-54,641 9.5 Contingency
-205,641 9.5 10% · INR 1,20,000
-54,628 9.5 Planned in lines
-205,628 9.5 INR 70,000
-54,616 9.5 Actual so far
-205,616 9.5 INR 61,500 (2 lines of 3)
-54,603 9.5 Over plan (lines with an actual)
-205,603 9.5 INR 3,500
-54,591 9.5 Planned total not yet in lines
-205,591 9.5 INR 11,30,000
-54,567 11.0 By category
-58,548 8.5 Category
-321,548 8.5 Lines
-358,548 8.5 Planned (INR)
-435,548 8.5 Actual (INR)
-512,548 8.5 Difference
-534,538 8.5 (INR)
-58,521 8.5 Cast
-338,521 8.5 1
-387,521 8.5 50,000
-458,521 8.5 55,000
-530,521 8.5 -5,000
-58,505 8.5 Locations
-338,505 8.5 1
-392,505 8.5 8,000
-462,505 8.5 6,500
-533,505 8.5 1,500
-58,488 8.5 Food
-338,488 8.5 1
-387,488 8.5 12,000
-54,458 11.0 Line items
-58,439 8.5 Category
-163,439 8.5 Line item
-395,439 8.5 Planned
-408,428 8.5 (INR)
-442,439 8.5 Actual (INR)
-512,439 8.5 Difference
-534,428 8.5 (INR)
-58,412 8.5 Cast
-163,412 8.5 Lead actor
-402,412 8.5 50,000
-465,412 8.5 55,000
-530,412 8.5 -5,000
-58,395 8.5 Locations
-163,395 8.5 Railway permit
-407,395 8.5 8,000
-470,395 8.5 6,500
-533,395 8.5 1,500
-58,378 8.5 Food
-163,378 8.5 Catering
-402,378 8.5 12,000
-232,34 8.0 Black Rain · Budget Report · Page 1 of 1
-65,18 7.0 Created with OpenFrame Studio
+46,738 7.8 PRODUCTION · BUDGET
+46,707 26.0 Budget Report
+46,686 12.5 Black Rain
+46,671 8.6 A simple estimate for planning. Formal accounting is outside OpenFrame.
+484,723 11.0 Currency INR
+494,710 9.0 Current budget
+*,698 9.0 Exported <DATE>
+56,622 16.0 INR 12,00,000
+56,608 7.0 PLANNED TOTAL
+188,624 11.0 10% · INR 1,20,000
+188,608 7.0 CONTINGENCY
+320,620 19.0 INR 61,500
+320,608 7.0 ACTUAL SO FAR, 2 LINES
+320,599 7.0 OF 3
+452,620 19.0 INR 3,500
+452,608 7.0 OVER PLAN, LINES WITH AN
+452,599 7.0 ACTUAL
+46,569 8.6 Planned in lines: INR 70,000. Planned total not yet in lines: INR 11,30,000.
+46,543 11.5 BY CATEGORY
+53,509 7.0 CATEGORY
+198,509 7.0 LINES
+246,509 7.0 PLANNED (INR)
+338,509 7.0 ACTUAL (INR)
+411,509 7.0 DIFFERENCE (INR)
+501,513 7.0 SHARE OF
+501,504 7.0 PLANNED
+66,478 11.0 Cast
+218,480 8.8 1
+282,480 8.8 50,000
+368,480 8.8 55,000
+462,480 8.8 -5,000
+66,450 11.0 Locations
+218,452 8.8 1
+287,452 8.8 8,000
+373,452 8.8 6,500
+465,452 8.8 1,500
+66,422 11.0 Food
+218,424 8.8 1
+282,424 8.8 12,000
+53,396 9.0 Total in lines
+218,396 8.8 3
+282,396 8.8 70,000
+368,396 8.8 61,500
+462,396 8.8 -3,500
+46,358 11.5 LINE ITEMS
+541,358 8.0 3 lines
+53,328 7.0 LINE ITEM
+310,328 7.0 PLANNED (INR)
+406,328 7.0 ACTUAL (INR)
+483,328 7.0 DIFFERENCE (INR)
+66,302 11.0 Cast
+540,303 8.0 1 line
+53,276 9.0 Lead actor
+346,276 8.8 50,000
+436,276 8.8 55,000
+534,276 8.8 -5,000
+66,251 11.0 Locations
+540,251 8.0 1 line
+53,225 9.0 Railway permit
+351,225 8.8 8,000
+441,225 8.8 6,500
+537,225 8.8 1,500
+66,199 11.0 Food
+540,200 8.0 1 line
+53,173 9.0 Catering
+346,173 8.8 12,000
+69,46 11.0 Open
+96,46 11.0 Frame
+70,39 4.2 STUDIO
+146,44 8.0 Created using OpenFrame
+394,44 7.2 BLACK RAIN · BUDGET REPORT · Page 1 / 1

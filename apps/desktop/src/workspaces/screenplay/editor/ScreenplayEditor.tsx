@@ -917,7 +917,7 @@ export const ScreenplayEditor = forwardRef<EditorHandle, Props>(function Screenp
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => accept(i)}
             >
-              <span className="grow">{it.label}</span>
+              <span className="grow" title={it.label}>{it.label}</span>
               <span className="xs muted">{it.source}</span>
             </li>
           ))}

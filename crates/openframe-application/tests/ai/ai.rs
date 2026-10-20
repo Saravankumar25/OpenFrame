@@ -221,7 +221,7 @@ fn fsd_ai_001_openframe_works_fully_without_offline_ai() {
     assert_eq!(
         env.err(
             "ai.ask",
-            json!({ "text": "How many scenes?", "scope": whole() })
+            json!({ "text": "Please look up the scenes.", "scope": whole() })
         ),
         "ai.assets_missing"
     );
@@ -333,7 +333,7 @@ fn ai_ac_020_unavailable_runtime_leaves_the_project_unchanged() {
         "AI is currently unavailable. OpenFrame's core workflows continue to work normally.",
     ));
     let before = undo_steps(&env);
-    let x = ask(&env, "How many scenes?", whole());
+    let x = ask(&env, "Please look up the scenes.", whole());
     assert_eq!(x["result"]["kind"], "Unavailable");
     assert_eq!(
         x["result"]["content"],
@@ -638,7 +638,7 @@ fn ai_ac_011_permissions_are_inherited_viewers_cannot_prepare_or_apply() {
         .call_as(
             &viewer,
             "ai.ask",
-            json!({ "text": "How many scenes?", "scope": whole() }),
+            json!({ "text": "Please look up the scenes.", "scope": whole() }),
         )
         .unwrap();
     assert_eq!(x["result"]["content"], "Draft 1 contains 3 scenes.");
@@ -1105,10 +1105,12 @@ fn prompt_injection_in_project_text_is_data_not_instructions() {
     let env = TestEnv::with_project("Railway", "Feature Film");
     let sp = seed_screenplay(&env);
     let m = attach(&env);
+    // Worded so that the model plans the step ("Summarize this scene" goes straight to the scene
+    // summary): the planner prompt is what this test inspects.
     m.call("summarize_scope", json!({}));
     m.reply("Ravi waits for a late train at the station.");
     let scope = json!({ "kind": "CurrentScene", "sceneId": sp.scenes[1] });
-    let x = ask(&env, "Summarize this scene", scope.clone());
+    let x = ask(&env, "Give me the gist of this scene", scope.clone());
     assert_eq!(
         x["scopeLabel"],
         "Using: Scene 2: EXT. RAILWAY STATION — DAY (Draft 1)"
@@ -1137,7 +1139,7 @@ fn prompt_injection_in_project_text_is_data_not_instructions() {
         );
         assert!(
             user.trim_end()
-                .ends_with("User request: Summarize this scene"),
+                .ends_with("User request: Give me the gist of this scene"),
             "the only instruction is the user's"
         );
         assert!(
@@ -1148,7 +1150,7 @@ fn prompt_injection_in_project_text_is_data_not_instructions() {
     // Even if a model obeyed injected text, it could only produce a proposal.
     let status_before = env.ok("project.current", json!({}))["status"].clone();
     m.call("propose_project_status", json!({ "status": "Shooting" }));
-    let x = ask(&env, "Summarize this scene", scope);
+    let x = ask(&env, "Give me the gist of this scene", scope);
     assert_eq!(x["result"]["kind"], "Proposal");
     assert_eq!(
         env.ok("project.current", json!({}))["status"],
@@ -1164,13 +1166,13 @@ fn malformed_model_output_is_retried_once_then_rejected() {
     let m = attach(&env);
     m.reply("I think there are about 40 scenes!");
     m.call("count_scenes", json!({}));
-    let x = ask(&env, "How many scenes?", whole());
+    let x = ask(&env, "Please look up the scenes.", whole());
     assert_eq!(x["result"]["content"], "Draft 1 contains 3 scenes.");
 
     m.reply("nope");
     m.reply(json!({ "tool": "drop_database", "arguments": {} }).to_string());
     let before = undo_steps(&env);
-    let x = ask(&env, "How many scenes?", whole());
+    let x = ask(&env, "Please look up the scenes.", whole());
     assert_eq!(x["result"]["kind"], "Failed");
     assert_eq!(x["result"]["errorCode"], "ai.malformed");
     assert_eq!(undo_steps(&env), before);
@@ -1180,7 +1182,7 @@ fn malformed_model_output_is_retried_once_then_rejected() {
         "count_scenes",
         json!({ "draft": "Draft 1", "sql": "DELETE FROM screenplay_scene" }),
     );
-    let x = ask(&env, "How many scenes?", whole());
+    let x = ask(&env, "Please look up the scenes.", whole());
     assert_eq!(x["result"]["kind"], "Failed");
     assert_eq!(count(&env, "SELECT count(*) FROM screenplay_scene"), 3);
 }
@@ -1233,7 +1235,7 @@ fn ai_ac_024_history_is_personal_and_survives_restart() {
     seed_screenplay(&env);
     let m = attach(&env);
     m.call("count_scenes", json!({}));
-    let first = ask(&env, "How many scenes?", whole());
+    let first = ask(&env, "Please look up the scenes.", whole());
     let conv = first["conversationId"].as_str().unwrap().to_string();
     // Follow-ups continue the conversation; earlier turns are passed as data.
     m.call("list_drafts", json!({}));
@@ -1339,7 +1341,7 @@ fn an_answer_in_the_wrong_language_is_rewritten_once_and_keeps_its_numbers() {
         json!({ "text": "The script has 3 scenes." }),
     );
     m.reply("स्क्रिप्ट में 3 दृश्य हैं।");
-    let x = ask(&env, "इस स्क्रिप्ट में कितने दृश्य हैं, कृपया बताइए?", whole());
+    let x = ask(&env, "इस स्क्रिप्ट के दृश्यों के बारे में बताइए।", whole());
     let content = x["result"]["content"].as_str().unwrap();
     assert!(
         content.contains("दृश्य") && content.contains('3'),
@@ -1359,7 +1361,7 @@ fn a_rewrite_that_loses_a_number_is_never_shown() {
     );
     m.reply("स्क्रिप्ट में कई दृश्य हैं।");
     m.reply("स्क्रिप्ट में तीन दृश्य हैं।");
-    let x = ask(&env, "इस स्क्रिप्ट में कितने दृश्य हैं, कृपया बताइए?", whole());
+    let x = ask(&env, "इस स्क्रिप्ट के दृश्यों के बारे में बताइए।", whole());
     assert_eq!(x["result"]["content"], "The script has 3 scenes.");
 }
 

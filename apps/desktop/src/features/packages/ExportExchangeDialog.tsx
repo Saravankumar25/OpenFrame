@@ -24,10 +24,6 @@ const TITLES: Partial<Record<PackageType, { title: string; sub: string }>> = {
     sub: "How do I send this draft to someone for review and safely bring their notes back?",
   },
   story: { title: "Story Board Package", sub: "Which part of the Story Board do I share, and what comes with it?" },
-  breakdown: { title: "Breakdown Package", sub: "Which scenes' breakdown do I share for review?" },
-  shots: { title: "Shot List Package", sub: "Which shots do I share for review?" },
-  schedule: { title: "Schedule Package", sub: "Share the shooting schedule for review. Returned changes never delete your days." },
-  callReview: { title: "Call Sheet Review Package", sub: "Share a call sheet for feedback. The schedule is never changed by the reply." },
 };
 
 type Scope = "full" | "comments" | "scenes" | "act";
@@ -45,12 +41,6 @@ function scopeOptions(t: PackageType): { value: Scope; label: string }[] {
         { value: "full", label: "Whole Story Board" },
         { value: "act", label: "One Act" },
       ];
-    case "breakdown":
-    case "shots":
-      return [
-        { value: "full", label: "All scenes" },
-        { value: "scenes", label: "Specific scenes only" },
-      ];
     default:
       return [];
   }
@@ -62,7 +52,6 @@ export function ExportExchangeDialog({ packageType, onClose }: { packageType: Pa
   const [scope, setScope] = useState<Scope>("full");
   const [sceneIds, setSceneIds] = useState<string[]>([]);
   const [actId, setActId] = useState<string>("");
-  const [callSheetId, setCallSheetId] = useState<string>("");
   const [includeComments, setIncludeComments] = useState(true);
   const [includeAttachments, setIncludeAttachments] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -74,10 +63,9 @@ export function ExportExchangeDialog({ packageType, onClose }: { packageType: Pa
     if (!src) return;
     if (!draftId && src.drafts.length) setDraftId((src.drafts.find((d) => d.isCurrent) ?? src.drafts[0]).id);
     if (!actId && src.acts.length) setActId(src.acts[0].id);
-    if (!callSheetId && src.callSheets.length) setCallSheetId(src.callSheets[0].id);
-  }, [src, draftId, actId, callSheetId]);
+  }, [src, draftId, actId]);
 
-  const sceneDraft = packageType === "scriptReview" ? draftId || null : packageType === "breakdown" ? src?.productionSource?.id ?? null : null;
+  const sceneDraft = packageType === "scriptReview" ? draftId || null : null;
   const scenes = useOp<PackageSceneOption[]>("packages.exchange_scenes", { draftId: sceneDraft }, ["screenplay_scene"], {
     enabled: scope === "scenes",
   });
@@ -89,13 +77,13 @@ export function ExportExchangeDialog({ packageType, onClose }: { packageType: Pa
       scope: scopeOptions(packageType).length ? scope : null,
       sceneIds: scope === "scenes" ? sceneIds : [],
       actId: scope === "act" ? actId || null : null,
-      callSheetId: packageType === "callReview" ? callSheetId || null : null,
+      callSheetId: null,
       includeComments: includeComments || scope === "comments",
       includeAttachments,
       includePrivateNotes: false,
       path: null,
     }),
-    [packageType, draftId, scope, sceneIds, actId, callSheetId, includeComments, includeAttachments],
+    [packageType, draftId, scope, sceneIds, actId, includeComments, includeAttachments],
   );
   const ready = !(scope === "scenes" && sceneIds.length === 0) && !(packageType === "scriptReview" && !draftId && (src?.drafts.length ?? 0) > 0);
   const preview = useOp<PackageExportSummary>("packages.exchange_preview", args, ["*"], { enabled: !!src && ready, retry: false });
@@ -160,25 +148,6 @@ export function ExportExchangeDialog({ packageType, onClose }: { packageType: Pa
                 onChange={setDraftId}
                 options={src.drafts.map((d) => ({ value: d.id, label: `${d.name}${d.isCurrent ? " (current)" : ""} · ${d.sceneCount} scenes` }))}
               />
-            </Field>
-          )}
-          {packageType === "breakdown" && (
-            <Field label="Production Source">
-              <div className="sm">{src.productionSource?.label ?? "No Production Source has been chosen yet."}</div>
-            </Field>
-          )}
-          {packageType === "schedule" && (
-            <Field label="Schedule">
-              <div className="sm">{src.schedule?.label ?? "This project has no shooting schedule yet."}</div>
-            </Field>
-          )}
-          {packageType === "callReview" && (
-            <Field label="Call sheet" htmlFor="pkg-cs">
-              {src.callSheets.length ? (
-                <Select id="pkg-cs" value={callSheetId} onChange={setCallSheetId} options={src.callSheets.map((c) => ({ value: c.id, label: c.label }))} />
-              ) : (
-                <div className="sm muted">This project has no call sheet yet.</div>
-              )}
             </Field>
           )}
           {scopeOptions(packageType).length > 0 && (

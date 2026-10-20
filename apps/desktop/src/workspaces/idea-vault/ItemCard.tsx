@@ -89,7 +89,7 @@ function CardBody({ item, full }: { item: VaultItemDto; full: boolean }) {
           <div className="filecard">
             <FileCue item={item} />
             <div style={{ minWidth: 0 }}>
-              <div className="vt vv-ellipsis">{item.title ?? hostOf(item.url)}</div>
+              <div className="vt vv-ellipsis" title={item.title ?? hostOf(item.url) ?? undefined}>{item.title ?? hostOf(item.url)}</div>
               <div className="xs muted vv-ellipsis">{hostOf(item.url)}</div>
             </div>
           </div>

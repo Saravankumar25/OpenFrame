@@ -94,13 +94,17 @@ describe("Offline AI assistant with the bundled model", () => {
   test("a meaning question is answered from retrieved project context", async () => {
     await step("retrieval", async () => {
       await setScope("Whole Project");
-      const r = await ask(browser, "Which scene happens at the bus stop?");
+      // "Which scene happens at the bus stop?" is now an exact scene search; this asks for meaning.
+      const r = await ask(browser, "What happens at the bus stop?");
       assert.ok(["Answer", "Navigate"].includes(r.kind), `${r.kind}: ${r.text}`);
       assert.ok(r.sources.some((s) => /BUS STOP/i.test(s)), `the bus stop scene is a source: ${r.sources.join(" | ")}`);
       // The full check of the model files ran before the first engine start; the chat engine runs now.
       assert.ok(chatEngines().length >= 1, "the chat engine runs after a question that needs the model");
-      // A source chip opens the scene it names.
+      // A source chip opens the scene it names; the chips sit under the answer's "Details".
       await openWorkspace(browser, "Home");
+      const details = await browser.$('(//aside[@aria-label="AI Assistant"]//details[contains(@class,"ai-details")]/summary)[last()]');
+      await details.waitForClickable({ timeout: 10_000 });
+      await details.click();
       const chip = await browser.$('(//aside[@aria-label="AI Assistant"]//*[contains(@class,"ai-sources")]//button[contains(normalize-space(.),"BUS STOP")])[last()]');
       await chip.waitForClickable({ timeout: 10_000 });
       await chip.click();
