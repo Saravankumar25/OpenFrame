@@ -26,10 +26,13 @@ import { OutlineView } from "./OutlineView";
 import { TimelineView } from "./Timeline";
 import { ZOOM_LEVELS, keyToRef, useStoryUi } from "./ui";
 import { StoryExportButton } from "../../features/export/buttons";
+import { StoryPage } from "./StoryPage";
 import "./story.css";
 
-type Tab = "board" | "outline" | "characters" | "timeline" | "episodes";
+type Tab = "page" | "board" | "outline" | "characters" | "timeline" | "episodes";
 const TABS: { id: Tab; label: string }[] = [
+  // The free Story page sits left of the Beat Board (owner request 2026-10-20).
+  { id: "page", label: "Story" },
   { id: "board", label: "Board" },
   { id: "outline", label: "Outline" },
   { id: "characters", label: "Characters" },
@@ -56,7 +59,7 @@ export default function StoryWorkspace() {
   const episodes = useMemo(() => allEpisodes(series.data), [series.data]);
   const episodic = series.data?.isEpisodic ?? false;
   const showEpisodes = episodic || episodes.length > 0;
-  const tab: Tab = (["board", "outline", "characters", "timeline", "episodes"] as Tab[]).includes(route.sub as Tab) ? (route.sub as Tab) : "board";
+  const tab: Tab = (["page", "board", "outline", "characters", "timeline", "episodes"] as Tab[]).includes(route.sub as Tab) ? (route.sub as Tab) : "board";
 
   // Episode scope: explicit route param > the user's last choice > first episode.
   const paramEpisode = route.params?.episodeId;
@@ -151,7 +154,9 @@ export default function StoryWorkspace() {
           </div>
         )}
       </div>
-      {tab === "characters" ? (
+      {tab === "page" ? (
+        <StoryPage />
+      ) : tab === "characters" ? (
         <div className="content fill">
           <PageHeader title="Characters" sub="A lightweight directory. Its most useful feature is the list of scenes each character appears in." />
           <CharactersView episodeId={episodeId} readOnly={READ_ONLY} focusId={route.params?.characterId} wantNew={wantCharacter} onNewHandled={onNewCharacterHandled} />
@@ -201,7 +206,7 @@ function BoardPage({
     if (!board || !params) return;
     const s = useStoryUi.getState();
     // `sceneCardId` (older links) and `screenplaySceneId` (Screenplay "Open in
-    // Story Board" for a scene without a source card) resolve to a card too.
+    // Beat Board" for a scene without a source card) resolve to a card too.
     const linkedCard = params.screenplaySceneId
       ? containers(board)
           .flatMap((x) => x.items)
@@ -245,7 +250,7 @@ function BoardPage({
   if (loading || !board) {
     return (
       <div className="content">
-        {error ? <EmptyState title="The Story Board could not be loaded.">{error}</EmptyState> : <Skeleton h={28} w={240} />}
+        {error ? <EmptyState title="The Beat Board could not be loaded.">{error}</EmptyState> : <Skeleton h={28} w={240} />}
       </div>
     );
   }
@@ -283,7 +288,7 @@ function BoardPage({
   return (
     <div className="content fill story-page">
       <PageHeader
-        title="Story Board"
+        title="Beat Board"
         sub="How does my story fit together? · Drag cards until the story works."
         actions={
           <>
@@ -296,7 +301,7 @@ function BoardPage({
       />
       <div className="toolbar">
         <Segmented
-          ariaLabel="Story Board view"
+          ariaLabel="Beat Board view"
           value={tab}
           onChange={(v) => onTab(v)}
           options={[
@@ -362,7 +367,7 @@ function BoardPage({
             { label: "Apply Board Order to Screenplay…", disabled: readOnly, onSelect: () => ui.openDialog({ type: "applyOrder" }) },
           ]}
           trigger={
-            <button type="button" className="iconbtn" aria-label="More Story Board actions">
+            <button type="button" className="iconbtn" aria-label="More Beat Board actions">
               <MoreHorizontal size={16} />
             </button>
           }
@@ -391,7 +396,7 @@ function BoardPage({
         ) : (
           <EmptyState
             icon={<Columns3 size={30} />}
-            title="Your Story Board is empty."
+            title="Your Beat Board is empty."
             actions={
               !readOnly && (
                 <>

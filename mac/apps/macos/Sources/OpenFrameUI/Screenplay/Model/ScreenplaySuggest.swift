@@ -1,7 +1,7 @@
 // Smart suggestions while typing, ported from the Windows editor's `suggest.ts`.
 //
 // Deterministic, no AI model: the list comes from fixed screenplay terms, the live script and
-// project values (Story Board characters, cast, production locations). It only ever offers; text
+// project values (Beat Board characters, cast, production locations). It only ever offers; text
 // changes only when the writer accepts an item with Return or a click, and only the part being
 // typed is replaced. The list appears only with the caret at the end of the element.
 //
@@ -17,7 +17,7 @@ public enum SuggestKind: String, Sendable, Hashable {
 public enum SuggestSource: String, Sendable, Hashable {
     case standard = "Standard"
     case script = "Script"
-    case storyBoard = "Story Board"
+    case storyBoard = "Beat Board"
     case cast = "Cast"
     case locations = "Locations"
 }

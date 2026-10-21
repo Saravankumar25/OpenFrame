@@ -183,7 +183,10 @@ impl Gold {
     /// Wait for a background task started by a long-running operation.
     pub fn wait_task(&self, started: &Value) -> Result<Value, AppError> {
         let Some(task_id) = started["taskId"].as_str() else {
-            return Err(AppError::new("gold.no_task", "the operation did not start a task"));
+            return Err(AppError::new(
+                "gold.no_task",
+                "the operation did not start a task",
+            ));
         };
         let start = Instant::now();
         loop {
@@ -203,7 +206,10 @@ impl Gold {
                 }
             }
             if start.elapsed() > Duration::from_secs(900) {
-                return Err(AppError::new("gold.timeout", "the task did not finish in 15 minutes"));
+                return Err(AppError::new(
+                    "gold.timeout",
+                    "the task did not finish in 15 minutes",
+                ));
             }
             std::thread::sleep(Duration::from_millis(25));
         }
@@ -226,14 +232,18 @@ impl Gold {
 
     /// Read-only SQL on the open project database (verification only).
     pub fn sql_i64(&self, sql: &str) -> i64 {
-        let Ok(p) = self.core.project() else { return -1 };
+        let Ok(p) = self.core.project() else {
+            return -1;
+        };
         p.store
             .read(|c| Ok(c.query_row(sql, [], |r| r.get::<_, i64>(0))?))
             .unwrap_or(-1)
     }
 
     pub fn sql_rows(&self, sql: &str) -> Vec<Vec<Value>> {
-        let Ok(p) = self.core.project() else { return Vec::new() };
+        let Ok(p) = self.core.project() else {
+            return Vec::new();
+        };
         p.store
             .read(|c| {
                 let mut st = c.prepare(sql)?;

@@ -29,6 +29,13 @@ struct LocationsView: View {
     @Environment(AppModel.self) private var app
     @Environment(\.ofTheme) private var theme
 
+    private var statusPicker: some View {
+        Picker("Status", selection: $model.status) {
+            Text("All").tag(ProductionLocationStatus?.none)
+            ForEach(ProductionLocationStatus.allCases, id: \.self) { Text($0.rawValue).tag(ProductionLocationStatus?.some($0)) }
+        }
+    }
+
     private var reloadKey: String {
         "\(app.changes.key(BDTables.people))|\(model.status?.rawValue ?? "")|\(model.showArchived)|\(model.search)|\(model.selectedId ?? "")"
     }
@@ -51,11 +58,12 @@ struct LocationsView: View {
                 }
                 .padding(.horizontal, 8).padding(.vertical, 5)
                 .background(theme["surface2"], in: RoundedRectangle(cornerRadius: 7, style: .continuous))
-                Picker("Status", selection: $model.status) {
-                    Text("All").tag(ProductionLocationStatus?.none)
-                    ForEach(ProductionLocationStatus.allCases, id: \.self) { Text($0.rawValue).tag(ProductionLocationStatus?.some($0)) }
+                // Segmented when the page has room; a pop-up menu in a narrow page.
+                ViewThatFits(in: .horizontal) {
+                    statusPicker.pickerStyle(.segmented).labelsHidden().fixedSize()
+                    statusPicker.pickerStyle(.menu).fixedSize()
                 }
-                .pickerStyle(.segmented).labelsHidden().fixedSize().accessibilityLabel("Status")
+                .accessibilityLabel("Status")
                 Toggle("Show archived", isOn: $model.showArchived).toggleStyle(.checkbox)
             }
             .frame(maxWidth: .infinity, alignment: .center)
@@ -75,6 +83,7 @@ struct LocationsView: View {
             }
         }
         .sheet(item: $model.sheet) { LocationSheetHost(model: model, sheet: $0) }
+        .onProjectIntent("production.new_location") { if model.canEdit { model.sheet = .add } }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("locations-tab")
     }
@@ -214,11 +223,11 @@ struct LocationInspector: View {
                             .overlay(alignment: .topTrailing) {
                                 if canEdit {
                                     HStack(spacing: 0) {
-                                        Button { Task { await model.movePhoto(p.id, to: i - 1) } } label: { Image(systemName: "arrow.left") }
+                                        Button { Task { await model.movePhoto(p.id, to: i - 1) } } label: { Label("Earlier", systemImage: "arrow.left") }
                                             .disabled(i == 0).accessibilityLabel("Move earlier")
-                                        Button { Task { await model.movePhoto(p.id, to: i + 1) } } label: { Image(systemName: "arrow.right") }
+                                        Button { Task { await model.movePhoto(p.id, to: i + 1) } } label: { Label("Later", systemImage: "arrow.right") }
                                             .disabled(i == loc.photos.count - 1).accessibilityLabel("Move later")
-                                        Button { Task { await model.removePhoto(p.id) } } label: { Image(systemName: "trash") }
+                                        Button { Task { await model.removePhoto(p.id) } } label: { Label("Remove", systemImage: "trash") }
                                             .accessibilityLabel("Remove photo")
                                     }
                                     .buttonStyle(.borderless).controlSize(.mini).font(.caption2)

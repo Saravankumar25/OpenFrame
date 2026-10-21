@@ -1,7 +1,8 @@
 // The assistant conversation (Windows: ai/Conversation.tsx). One request runs a bounded,
-// multi-step agent on this computer; the answer shows its sources as chips that open the place in
-// OpenFrame. Exact facts are marked "Exact"; text the AI wrote is marked "Inferred". Project
-// changes arrive only as a "Proposed Changes" card the person reviews.
+// multi-step agent on this computer; the answer is plain conversational text. The places it was
+// read from wait behind "See sources"; how it was worked out (steps, how sure) stays out of the
+// conversation and goes into "Report AI output" and the AI log. Long lists show a preview and
+// "Show all". Project changes arrive only as a "Proposed Changes" card the person reviews.
 
 import AppKit
 import OpenFrameCore
@@ -71,7 +72,26 @@ struct AIConversationView: View {
                 VStack(alignment: .leading, spacing: 10) {
                     if model.exchanges.isEmpty && model.pending == nil {
                         Text(AIText.emptyConversation).font(.caption).foregroundStyle(theme["muted"])
+                            .fixedSize(horizontal: false, vertical: true)
                             .accessibilityIdentifier("ai-empty")
+                        // Questions to start with, for this page: one click asks them.
+                        Text("Try asking").font(.caption.weight(.semibold)).foregroundStyle(theme["ink2"])
+                        VStack(alignment: .leading, spacing: 6) {
+                            ForEach(AIText.starterQuestions(for: model.context.workspace), id: \.self) { q in
+                                Button {
+                                    model.text = q
+                                    model.send()
+                                } label: {
+                                    Label(q, systemImage: "text.bubble")
+                                        .font(.callout)
+                                        .multilineTextAlignment(.leading)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                }
+                                .buttonStyle(.bordered)
+                                .disabled(!model.canAskNow)
+                                .accessibilityIdentifier("ai-starter")
+                            }
+                        }
                     }
                     ForEach(model.exchanges, id: \.requestId) { x in
                         AIExchangeView(model: model, exchange: x)
@@ -165,95 +185,83 @@ struct AIResultView: View {
     @Bindable var model: AIAssistantModel
     let exchange: AiExchange
     @Environment(\.ofTheme) private var theme
+    @State private var allItems = false
+    @State private var sourcesOpen = false
 
     private var r: AiResultDto { exchange.result }
 
     var body: some View {
-        let conf = AILogic.confidence(r.confidence)
         let route = AIRoute(r.nav)
-        let chips = AILogic.sourceChips(r.provenance)
+        let sources = AILogic.answerSources(r.provenance)
         let isError = r.kind == .failed || r.kind == .unavailable
+        let items = AILogic.visibleItems(r.items, all: allItems)
         VStack(alignment: .leading, spacing: 6) {
-            Group {
-                if [.denied, .answer, .proposal, .suggestion].contains(r.kind) {
-                    Text(r.content).bold()
-                } else {
-                    Text(r.content)
-                }
-            }
-            .textSelection(.enabled)
-            .foregroundStyle(isError ? theme["red-t"] : theme["ink"])
-            .accessibilityIdentifier("ai-answer-text")
-            if !r.details.isEmpty {
+            // The answer is plain text at normal weight, paragraphs kept (OpenFrameAI.docx 4.1).
+            Text(r.content)
+                .textSelection(.enabled)
+                .lineSpacing(2)
+                .fixedSize(horizontal: false, vertical: true)
+                .foregroundStyle(isError ? theme["red-t"] : theme["ink"])
+                .accessibilityIdentifier("ai-answer-text")
+            // A refusal, failure or question needs its reasons in view. For an ordinary answer the
+            // details are how it was worked out, which stays out of the conversation.
+            if AILogic.reasonsVisible(r.kind) && !r.details.isEmpty {
                 VStack(alignment: .leading, spacing: 2) {
                     ForEach(Array(r.details.enumerated()), id: \.offset) { _, d in
                         Text(r.kind == .denied && !d.hasPrefix("Nothing") ? "\u{2022} \(d)" : d)
                     }
                 }
                 .font(.caption).foregroundStyle(theme["muted"])
+                .fixedSize(horizontal: false, vertical: true)
             }
             if !r.items.isEmpty {
                 VStack(alignment: .leading, spacing: 4) {
-                    ForEach(Array(r.items.prefix(25).enumerated()), id: \.offset) { i, item in
-                        HStack(spacing: 6) {
+                    ForEach(Array(items.enumerated()), id: \.offset) { i, item in
+                        HStack(alignment: .firstTextBaseline, spacing: 6) {
                             if r.kind == .suggestion { BDChip(text: "Suggested", tone: .yellow) }
                             (Text(item.label) + Text(item.detail.map { " \u{00B7} \($0)" } ?? "").foregroundColor(theme["muted"]))
                                 .font(.callout)
+                                .fixedSize(horizontal: false, vertical: true)
                             Spacer(minLength: 4)
                             if let to = AIRoute(item.nav) {
-                                Button("Show") { to.perform() }
+                                Button("Open") { to.perform() }
                                     .controlSize(.small)
+                                    .help("Open \(item.label)")
+                                    .accessibilityLabel("Open \(item.label)")
                                     .accessibilityIdentifier("ai-item-show-\(i)")
                             }
                         }
                     }
-                    if r.items.count > 25 {
-                        Text("\u{2026}and \(r.items.count - 25) more").font(.caption).foregroundStyle(theme["muted"])
+                    if r.items.count > AILogic.previewItems {
+                        Button(allItems ? "Show fewer" : "Show all \(r.items.count)") { allItems.toggle() }
+                            .buttonStyle(.borderless)
+                            .font(.caption)
+                            .accessibilityValue(allItems ? "expanded" : "collapsed")
+                            .accessibilityIdentifier("ai-items-show-all")
                     }
                 }
                 .accessibilityIdentifier("ai-items")
             }
-            if conf != nil || route != nil {
-                HStack(spacing: 6) {
-                    if let conf {
-                        BDChip(text: conf.text, tone: conf.tone == "green" ? .green : conf.tone == "blue" ? .blue : .yellow)
-                            .accessibilityIdentifier("ai-confidence")
-                    }
-                    if let route {
-                        Button(r.kind == .navigate ? "Open again" : "Open") { route.perform() }
-                            .controlSize(.small)
-                            .accessibilityIdentifier("ai-open")
-                    }
-                }
+            if let route {
+                Button(r.kind == .navigate ? "Open again" : "Open") { route.perform() }
+                    .controlSize(.small)
+                    .accessibilityIdentifier("ai-open")
             }
-            if !chips.isEmpty {
-                HStack(alignment: .firstTextBaseline, spacing: 6) {
-                    Text("Based on:").font(.caption).foregroundStyle(theme["muted"])
-                    BDFlowLayout(spacing: 4) {
-                        ForEach(chips) { chip in
-                            if let route = chip.route {
-                                Button(chip.text) { route.perform() }
-                                    .buttonStyle(.plain)
-                                    .font(.caption.weight(.medium))
-                                    .foregroundStyle(theme["blue-t"])
-                                    .padding(.horizontal, 7).padding(.vertical, 2)
-                                    .background(theme["blue-soft"], in: Capsule())
-                                    .help("Open")
-                                    .accessibilityIdentifier("ai-source")
-                            } else {
-                                BDChip(text: chip.text).accessibilityIdentifier("ai-source")
-                            }
-                        }
-                    }
-                }
-                .accessibilityElement(children: .contain)
-                .accessibilityLabel("Sources")
-                .accessibilityIdentifier("ai-sources")
-            }
-            if let steps = AILogic.stepsSummary(r.steps) {
-                Text(steps).font(.caption).foregroundStyle(theme["muted"]).accessibilityIdentifier("ai-steps")
+            if !sources.isEmpty {
+                seeSources(sources)
             }
             HStack {
+                Button {
+                    NSPasteboard.general.clearContents()
+                    NSPasteboard.general.setString(AILogic.copyText(r), forType: .string)
+                    ToastCenter.shared.show("Copied the answer")
+                } label: {
+                    Label("Copy", systemImage: "doc.on.doc")
+                }
+                .buttonStyle(.borderless)
+                .font(.caption)
+                .help("Copy this answer, with its list if it has one")
+                .accessibilityIdentifier("ai-copy")
                 Spacer()
                 Button("Report AI output\u{2026}") { Task { await model.reportOutput(exchange) } }
                     .buttonStyle(.borderless)
@@ -267,5 +275,43 @@ struct AIResultView: View {
         .background(theme["surface2"], in: RoundedRectangle(cornerRadius: 10, style: .continuous))
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("ai-result-\(r.kind.rawValue.lowercased())")
+    }
+
+    /// The places the answer was read from, closed until asked for. Each one that has a place in
+    /// OpenFrame opens it.
+    private func seeSources(_ sources: [AILogic.SourceChip]) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Button {
+                withAnimation(.easeOut(duration: 0.15)) { sourcesOpen.toggle() }
+            } label: {
+                Label("See sources", systemImage: sourcesOpen ? "chevron.down" : "chevron.right")
+                    .font(.caption)
+                    .foregroundStyle(theme["muted"])
+            }
+            .buttonStyle(.plain)
+            .accessibilityValue(sourcesOpen ? "expanded" : "collapsed")
+            .accessibilityIdentifier("ai-see-sources")
+            if sourcesOpen {
+                VStack(alignment: .leading, spacing: 3) {
+                    ForEach(sources) { chip in
+                        if let route = chip.route {
+                            Button(chip.text) { route.perform() }
+                                .buttonStyle(.plain)
+                                .font(.caption.weight(.medium))
+                                .foregroundStyle(theme["blue-t"])
+                                .help("Open \(chip.text)")
+                                .accessibilityIdentifier("ai-source")
+                        } else {
+                            Text(chip.text).font(.caption).foregroundStyle(theme["muted"])
+                                .accessibilityIdentifier("ai-source")
+                        }
+                    }
+                }
+                .padding(.leading, 16)
+                .accessibilityElement(children: .contain)
+                .accessibilityLabel("Sources")
+                .accessibilityIdentifier("ai-sources")
+            }
+        }
     }
 }

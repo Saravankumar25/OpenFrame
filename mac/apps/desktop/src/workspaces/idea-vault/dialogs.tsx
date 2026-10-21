@@ -458,7 +458,7 @@ export function SendToStoryDialog({ scope, item, onClose }: { scope: Scope; item
     const parentType = target === "character" ? null : kind === "act" ? "act" : kind === "seq" ? "sequence" : "parking";
     try {
       const r = await vault.sendToStory({ store: scope, id: item.id, target, parentType, parentId: id ?? null });
-      toast.info(r.message, { label: "Open Story Board", run: () => go({ workspace: "story" }) });
+      toast.info(r.message, { label: "Open Beat Board", run: () => go({ workspace: "story" }) });
       onClose();
     } catch (e) {
       setError(errText(e));
@@ -472,13 +472,13 @@ export function SendToStoryDialog({ scope, item, onClose }: { scope: Scope; item
     <Dialog
       open
       onOpenChange={(v) => !v && onClose()}
-      title="Send to Story Board"
+      title="Send to Beat Board"
       sub={<>What should this become? This creates a <b>copy</b>. The original stays in your Idea Vault.</>}
       size="md"
       footer={
         <>
           <Button onClick={onClose}>Cancel</Button>
-          <Button variant="primary" disabled={busy || needsAct || targets.isLoading} onClick={() => void submit()}>Create Copy in Story Board</Button>
+          <Button variant="primary" disabled={busy || needsAct || targets.isLoading} onClick={() => void submit()}>Create Copy in Beat Board</Button>
         </>
       }
     >
@@ -498,7 +498,7 @@ export function SendToStoryDialog({ scope, item, onClose }: { scope: Scope; item
       {target !== "character" && (
         <Field label="Place it in" htmlFor="vv-story-place" hint={target === "sequence" ? "A sequence idea goes into an act." : "Or leave it in the Parking Lot."}>
           {needsAct ? (
-            <Banner tone="info">There are no acts yet. Add an act on the Story Board first, or choose Beat or Scene Card.</Banner>
+            <Banner tone="info">There are no acts yet. Add an act on the Beat Board first, or choose Beat or Scene Card.</Banner>
           ) : (
             <select id="vv-story-place" className="select" value={place} onChange={(e) => setPlace(e.target.value)}>
               {placeOptions.map((o) => (
@@ -568,7 +568,7 @@ export function CopyDialog({ from, items, projectLabel, onClose, onDone }: {
       <div className="card pad" style={{ marginBottom: 12 }}>
         {items.length === 1 ? (
           <>
-            <div className="b vv-ellipsis">{items[0].displayName}</div>
+            <div className="b vv-ellipsis" title={items[0].displayName}>{items[0].displayName}</div>
             <div className="xs muted">{from === "global" ? "Global" : "Project"} {items[0].itemType === "note" ? "note" : "item"}</div>
           </>
         ) : (
@@ -843,14 +843,14 @@ export function AddResultDialog({ result, onRetry, onClose }: { result: VaultAdd
         <tbody>
           {result.added.map((i) => (
             <tr key={i.id}>
-              <td className="vv-ellipsis">{i.displayName}</td>
+              <td className="vv-ellipsis" title={i.displayName}>{i.displayName}</td>
               <td><span className="chip g">Added</span></td>
               <td />
             </tr>
           ))}
           {result.failed.map((f) => (
             <tr key={f.path}>
-              <td className="vv-ellipsis">{f.name}</td>
+              <td className="vv-ellipsis" title={f.name}>{f.name}</td>
               <td><span className="chip r">Not added</span></td>
               <td className="sm">{f.reason}</td>
             </tr>

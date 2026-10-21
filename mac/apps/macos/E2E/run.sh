@@ -18,21 +18,25 @@ ROOT="$(cd "$MACOS/../.." && pwd)"
 APP="${1:?usage: run.sh <app or executable> [filter]}"
 FILTER="${2:-}"
 WORK="$(mktemp -d "${TMPDIR:-/tmp}/openframe-e2e.XXXXXX")"
-trap 'rm -rf "$WORK"' EXIT
+trap 'rm -rf "$WORK"; [[ -n "${TEST_ID:-}" ]] && defaults delete "$TEST_ID" >/dev/null 2>&1; true' EXIT
 if [[ -d "$APP" ]]; then
   # The release app has the hardened runtime, which refuses an injected library. Test a private
   # copy whose only difference is an ad hoc signature without it: same executable code, same
   # resources (the runner prints both hashes).
   # Read the flags first: a grep -q in a pipe would end codesign early, and pipefail would then
   # count the match as a failure.
-  SIGNING="$(codesign -dv "$APP" 2>&1 || true)"
-  if [[ "$SIGNING" == *"runtime"* ]]; then
-    ditto "$APP" "$WORK/app/$(basename "$APP")"
-    APP_UNDER_TEST="$WORK/app/$(basename "$APP")"
-    codesign --force --sign - --timestamp=none "$APP_UNDER_TEST" >/dev/null 2>&1
-  else
-    APP_UNDER_TEST="$APP"
-  fi
+  # The copy also gets its own bundle identifier ("<id>.e2e"): preferences are kept per
+  # identifier, and the person's own use of the app (a hidden scene list, a zoom, a card view)
+  # must neither reach the scenarios nor be changed by them. The test identifier's preferences
+  # are cleared before the run.
+  ditto "$APP" "$WORK/app/$(basename "$APP")"
+  APP_UNDER_TEST="$WORK/app/$(basename "$APP")"
+  PLIST="$APP_UNDER_TEST/Contents/Info.plist"
+  # OPENFRAME_E2E_ID_SUFFIX keeps runners that are started separately (not as shards of one run) apart.
+  TEST_ID="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$PLIST").e2e${OPENFRAME_E2E_ID_SUFFIX:-}$(echo "${OPENFRAME_E2E_SHARD:-1/1}" | cut -d/ -f1)"
+  /usr/libexec/PlistBuddy -c "Set :CFBundleIdentifier $TEST_ID" "$PLIST"
+  codesign --force --sign - --timestamp=none "$APP_UNDER_TEST" >/dev/null 2>&1
+  defaults delete "$TEST_ID" >/dev/null 2>&1 || true
   EXE="$APP_UNDER_TEST/Contents/MacOS/$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$APP_UNDER_TEST/Contents/Info.plist")"
 else
   EXE="$APP"
@@ -73,6 +77,8 @@ while IFS=$'\t' read -r name phases timeout ends; do
   (( (INDEX - SHARD_K) % SHARD_N == 0 )) || continue
   safe="${name//\//__}"
   OUT="$RUN/$safe"; DATA="$WORK/data-$safe"; mkdir -p "$OUT" "$DATA"
+  # Each scenario starts with no preferences (its own phases keep theirs).
+  [[ -n "${TEST_ID:-}" ]] && { defaults delete "$TEST_ID" >/dev/null 2>&1 || true; }
   status=pass; msg=""; start=$(date +%s)
   IFS=',' read -r -a endlist <<< "$ends"
   for ((p = 1; p <= phases; p++)); do

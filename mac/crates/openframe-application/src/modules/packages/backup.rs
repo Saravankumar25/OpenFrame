@@ -381,7 +381,7 @@ fn package_groups(c: &Connection) -> AppResult<Vec<PackageCount>> {
     Ok(vec![
         g("Idea Vault (project)", &["vault_item"])?,
         g(
-            "Story Board, Characters, Timeline",
+            "Beat Board, Characters, Timeline",
             &[
                 "story_act",
                 "story_sequence",

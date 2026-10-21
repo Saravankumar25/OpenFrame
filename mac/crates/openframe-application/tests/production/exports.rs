@@ -91,7 +91,7 @@ fn seed_production(env: &TestEnv) {
     );
 }
 
-/// Story Board: two acts, a sequence with a card and a beat, a card directly
+/// Beat Board: two acts, a sequence with a card and a beat, a card directly
 /// in Act One, a Parking Lot card, notes, a comment and a private note.
 fn seed_story(env: &TestEnv) {
     let me = env.actor().user_id;
@@ -137,6 +137,24 @@ fn keep(path: &str) {
 }
 
 /// All text shown on the PDF's pages (Tj strings, WinAnsi-decoded), whitespace-normalised.
+/// Text of an ActualText string: UTF-16BE with a byte order mark, or one byte per character.
+fn actual_text(b: &[u8]) -> String {
+    match b.strip_prefix(&[0xFE, 0xFF]) {
+        Some(rest) => {
+            let units: Vec<u16> = rest
+                .chunks(2)
+                .filter(|c| c.len() == 2)
+                .map(|c| u16::from_be_bytes([c[0], c[1]]))
+                .collect();
+            String::from_utf16_lossy(&units)
+        }
+        None => b
+            .iter()
+            .map(|x| openframe_import_export::winansi::decode_byte(*x))
+            .collect(),
+    }
+}
+
 fn pdf_text(path: &str) -> String {
     keep(path);
     let doc = lopdf::Document::load(path).expect("PDF parses with lopdf");
@@ -152,6 +170,15 @@ fn pdf_text(path: &str) -> String {
                     b.iter()
                         .map(|x| openframe_import_export::winansi::decode_byte(*x)),
                 );
+                out.push(' ');
+            }
+            // Lines drawn with the embedded fonts (screenplay and sides) carry their exact
+            // text in an ActualText span.
+            if op.operator == "BDC"
+                && let Some(lopdf::Object::Dictionary(d)) = op.operands.get(1)
+                && let Ok(lopdf::Object::String(b, _)) = d.get(b"ActualText")
+            {
+                out.push_str(&actual_text(b));
                 out.push(' ');
             }
         }
@@ -285,13 +312,13 @@ fn production_env() -> TestEnv {
     env
 }
 
-// ================================================================== Story Board
+// ================================================================== Beat Board
 
 #[test]
 fn story_board_outline_exports_in_board_order_with_optional_notes() {
     let env = production_env();
     seed_story(&env);
-    let pdf = dest(&env, "Black Rain - Story Board.pdf");
+    let pdf = dest(&env, "Black Rain - Beat Board.pdf");
     let r = env.ok(
         "story.export_board",
         json!({ "format": "pdf", "path": pdf }),
@@ -310,7 +337,7 @@ fn story_board_outline_exports_in_board_order_with_optional_notes() {
     );
     let text = pdf_text(&pdf);
     for want in [
-        "Story Board Outline",
+        "Beat Board Outline",
         "Act One",
         "Sequence: The Arrival",
         "Arjun steps off the night bus",
@@ -364,7 +391,7 @@ fn story_board_outline_exports_in_board_order_with_optional_notes() {
         "story.export_board",
         json!({ "format": "pdf", "path": board, "layout": "board" }),
     );
-    assert_eq!(r["document"], "Story Board");
+    assert_eq!(r["document"], "Beat Board");
     assert!(pdf_page_width(&board) > 700.0, "landscape");
     assert!(pdf_text(&board).contains("Scene Card 1"));
 
@@ -447,12 +474,12 @@ fn breakdown_report_marks_suggested_and_lists_catalog_usage() {
     let text = pdf_text(&pdf);
     for want in [
         "Breakdown Report",
-        "Scene 1: INT. POLICE STATION - NIGHT",
+        "BREAKDOWN SCENE INT. POLICE STATION - NIGHT",
         "Red Folder",
-        "Hospital Sheet (suggested)",
-        "Catalog",
-        "Used in scenes",
-        "Scene 5: OMITTED",
+        "Hospital Sheet SUGGESTED",
+        "CATALOG",
+        "USED IN SCENES",
+        "BREAKDOWN SCENE OMITTED No breakdown elements yet.",
     ] {
         assert!(text.contains(want), "missing {want}: {text}");
     }
@@ -512,8 +539,12 @@ fn breakdown_report_marks_suggested_and_lists_catalog_usage() {
     );
     assert_eq!(r["scopeLabel"], "1 selected scene");
     let t = pdf_text(&p2);
-    assert!(t.contains("Scene 2: EXT. OLD RAILWAY STATION - DAY"));
-    assert!(!t.contains("Scene 1:") && !t.contains("Hospital Sheet") && !t.contains("Red Folder"));
+    assert!(t.contains("BREAKDOWN SCENE EXT. OLD RAILWAY STATION - DAY"));
+    assert!(
+        !t.contains("INT. POLICE STATION - NIGHT")
+            && !t.contains("Hospital Sheet")
+            && !t.contains("Red Folder")
+    );
     assert_eq!(
         env.err(
             "breakdown.export_report",
@@ -561,7 +592,7 @@ fn moodboard_pdf_embeds_images_and_excludes_internal_notes_unless_selected() {
     assert_eq!(pdf_images(&pdf), 1, "the image is embedded");
     let text = pdf_text(&pdf);
     for want in [
-        "Moodboard: Overall Look",
+        "VISUAL DEVELOPMENT · MOODBOARD Overall Look",
         "Rain on glass — main tone",
         "Cold, wet, blue-grey.",
         "Memories of Murder",
@@ -637,7 +668,7 @@ fn storyboard_sheet_has_panels_shot_numbers_framing_and_optional_notes() {
     assert_eq!(pdf_images(&pdf), 1);
     let text = pdf_text(&pdf);
     for want in [
-        "Storyboard: INT. POLICE STATION - NIGHT",
+        "STORYBOARD: INT. POLICE STATION - NIGHT",
         "Scene 1: INT. POLICE STATION - NIGHT",
         "Panel 1 · Shot 1A",
         "Blank panel",
@@ -748,11 +779,11 @@ fn schedule_export_has_days_markers_summaries_and_unscheduled() {
     let text = pdf_text(&pdf);
     for want in [
         "Shooting Schedule",
-        "Shoot Day 1 · Mon 14 Jun 2027",
+        "SHOOT DAY 01 Day 1 MONDAY · 14 JUNE 2027",
         "INT. POLICE STATION - NIGHT",
         "MEAL",
         "20:30",
-        "Unscheduled",
+        "UNSCHEDULED",
         "INT. MORGUE - DAY",
         "Shooting Draft 6",
     ] {
@@ -782,7 +813,7 @@ fn schedule_export_has_days_markers_summaries_and_unscheduled() {
     );
     assert_eq!(r["scopeLabel"], "Current day only");
     let t = pdf_text(&one);
-    assert!(t.contains("Shoot Day 1") && !t.contains("Unscheduled") && !t.contains("MORGUE"));
+    assert!(t.contains("SHOOT DAY 01") && !t.contains("UNSCHEDULED ·") && !t.contains("MORGUE"));
     assert_eq!(
         env.err(
             "schedule.export_schedule",
@@ -875,11 +906,11 @@ fn call_sheet_pdf_has_paper_layout_and_final_sheet_uses_its_snapshot() {
     let text = pdf_text(&draft);
     for want in [
         "BLACK RAIN",
-        "SHOOT DAY 1",
-        "MONDAY 14 JUNE 2027",
-        "CREW CALL: 18:00",
+        "SHOOT DAY 01",
+        "Monday 14 June 2027",
+        "CREW CALL",
         "LOCATIONS",
-        "Police Station",
+        "POLICE STATION",
         "TALENT",
         "Karthik Menon",
         "SCENE SCHEDULE",
@@ -889,9 +920,9 @@ fn call_sheet_pdf_has_paper_layout_and_final_sheet_uses_its_snapshot() {
         "Behind the station",
         "WEATHER",
         "Rain expected",
-        "DRAFT, not final",
-        "Needs input",
-        "Created with OpenFrame Studio",
+        "DRAFT · NOT FINAL",
+        "NEEDS INPUT",
+        "Created using OpenFrame",
     ] {
         assert!(text.contains(want), "missing {want}: {text}");
     }
@@ -923,8 +954,8 @@ fn call_sheet_pdf_has_paper_layout_and_final_sheet_uses_its_snapshot() {
     );
     assert!(r["warnings"].as_array().unwrap().is_empty(), "{r}");
     let text = pdf_text(&issued);
-    assert!(text.contains("CREW CALL: 18:00") && !text.contains("23:59"));
-    assert!(text.contains("Final") && !text.contains("DRAFT"));
+    assert!(text.contains("CREW CALL") && !text.contains("23:59"));
+    assert!(text.contains("FINAL") && !text.contains("DRAFT"));
     assert_eq!(
         env.err(
             "callsheets.export_pdf",
@@ -1080,14 +1111,14 @@ fn budget_report_exports_planned_actual_and_difference() {
         "10% · INR 1,20,000",
         "Planned in lines",
         "INR 62,000",
-        "Actual so far INR 55,000 (1 line of 2)",
-        "Over plan (lines with an actual) INR 5,000",
+        "INR 55,000 ACTUAL SO FAR, 1 LINE OF 2",
+        "INR 5,000 OVER PLAN, LINES WITH AN ACTUAL",
         "Lead actor",
         "50,000",
         "55,000",
         "-5,000",
         "Catering",
-        "Created with OpenFrame Studio",
+        "Created using OpenFrame",
     ] {
         assert!(text.contains(want), "missing {want}: {text}");
     }
@@ -1122,7 +1153,7 @@ fn budget_report_exports_planned_actual_and_difference() {
     let (sheets, body) = xlsx(&x);
     assert_eq!(sheets, vec!["Line items", "Categories", "Summary"]);
     assert!(
-        body.contains("Created with OpenFrame Studio"),
+        body.contains("Created using OpenFrame"),
         "first sheet footer"
     );
     let none = TestEnv::with_project("No Budget", "Short Film");
@@ -1250,7 +1281,7 @@ fn assert_telugu_and_hindi(path: &str, what: &str) {
 const TE: &str = "మీరా స్టేషన్‌లో వేచి ఉంది";
 const HI: &str = "मीरा का सपना";
 
-/// ADR-0016 in every PDF export: Telugu and Hindi text in the screenplay, sides, Story Board,
+/// ADR-0016 in every PDF export: Telugu and Hindi text in the screenplay, sides, Beat Board,
 /// breakdown report, shot list, storyboard sheet, moodboard, schedule, call sheet, production
 /// reports and budget summary is printed with embedded, shaped fonts.
 #[test]
@@ -1315,7 +1346,7 @@ fn telugu_and_hindi_print_in_every_pdf_export() {
     // Report documents (Helvetica with Noto Sans for Indian scripts).
     let p = pdf("story.pdf");
     env.ok("story.export_board", json!({ "format": "pdf", "path": p }));
-    assert_telugu_and_hindi(&p, "story board");
+    assert_telugu_and_hindi(&p, "beat board");
     let p = pdf("breakdown.pdf");
     env.ok(
         "breakdown.export_report",
@@ -1697,13 +1728,13 @@ fn tree_bytes(dir: &Path) -> Vec<(String, Vec<u8>)> {
 }
 
 /// Production depth spec §43 (masterplan box "Subtle OpenFrame branding"): every non-screenplay
-/// export carries "Created with OpenFrame Studio" (PDF on every page, XLSX in the document
+/// export carries "Created using OpenFrame" (PDF on every page, XLSX in the document
 /// properties and the first sheet's footer, plain text as its last line; CSV stays pure data),
 /// screenplay files carry none, and the user's own files (the picked image, the managed assets)
 /// are only read. One assertion per export, named in the failure message.
 #[test]
 fn every_production_export_is_branded_and_user_files_are_never_modified() {
-    const BRAND: &str = "Created with OpenFrame Studio";
+    const BRAND: &str = "Created using OpenFrame";
     let env = production_env();
     seed_story(&env);
     let day = seed_schedule(&env);

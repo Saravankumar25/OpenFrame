@@ -297,7 +297,12 @@ impl CoreHandle {
 
     /// Open a project asset with its default app, or show it in Finder. The path is resolved by
     /// the core from the id; the shell never passes a path.
-    pub fn open_asset(&self, asset_id: String, global: bool, reveal: bool) -> Result<(), CoreError> {
+    pub fn open_asset(
+        &self,
+        asset_id: String,
+        global: bool,
+        reveal: bool,
+    ) -> Result<(), CoreError> {
         shell::open_asset(&self.core, &asset_id, global, reveal).map_err(Into::into)
     }
 
@@ -388,8 +393,14 @@ mod tests {
 
     #[test]
     fn the_disk_image_is_an_internal_build_and_the_store_package_is_the_store_channel() {
-        assert_eq!(channel_for(false), openframe_entitlement::Channel::DirectInstaller);
-        assert_eq!(channel_for(true), openframe_entitlement::Channel::MacAppStore);
+        assert_eq!(
+            channel_for(false),
+            openframe_entitlement::Channel::DirectInstaller
+        );
+        assert_eq!(
+            channel_for(true),
+            openframe_entitlement::Channel::MacAppStore
+        );
     }
 
     #[test]
@@ -436,8 +447,14 @@ mod tests {
         };
         assert!(test_gate(&config, true, true).is_some());
         assert!(test_gate(&config, false, true).is_none(), "release build");
-        assert!(test_gate(&config, true, false).is_none(), "the person's own data");
-        let junk = CoreConfig { test_team_password_hash: Some("plain".into()), ..config };
+        assert!(
+            test_gate(&config, true, false).is_none(),
+            "the person's own data"
+        );
+        let junk = CoreConfig {
+            test_team_password_hash: Some("plain".into()),
+            ..config
+        };
         assert!(test_gate(&junk, true, true).is_none());
     }
 
@@ -447,7 +464,10 @@ mod tests {
             assert!(TEAM_PASSWORD_HASH.is_none());
         }
         if let Some(hash) = TEAM_PASSWORD_HASH {
-            assert!(hash.starts_with("$argon2id$v=19$m=65536,t=3,p=1$"), "{hash}");
+            assert!(
+                hash.starts_with("$argon2id$v=19$m=65536,t=3,p=1$"),
+                "{hash}"
+            );
         }
     }
 }

@@ -52,6 +52,8 @@ final class AIAssistantModel {
         return AILogic.defaultScope(context)
     }
     var canSend: Bool { !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && pending == nil }
+    /// A question can be sent now (a starter question fills the box itself).
+    var canAskNow: Bool { pending == nil }
 
     /// "Using: Whole Project" (the line scenario 73 checks), or the label the last answer carried.
     var usingLabel: String {

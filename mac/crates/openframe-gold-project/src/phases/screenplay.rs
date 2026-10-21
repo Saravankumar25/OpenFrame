@@ -1,4 +1,4 @@
-//! The screenplay: built from the Story Board, written scene by scene from
+//! The screenplay: built from the Beat Board, written scene by scene from
 //! `content/screenplay.fountain` through the editor's own edit operations, then drafts, a
 //! review round, the shooting draft lock and the blue revision.
 
@@ -11,7 +11,14 @@ use crate::Ctx;
 use crate::gold::{Gold, arr, s};
 
 const SHOT_PREFIXES: &[&str] = &[
-    "CLOSE ON", "ANGLE ON", "INSERT", "WIDE ON", "POV", "UNDERWATER", "AERIAL", "BACK TO SCENE",
+    "CLOSE ON",
+    "ANGLE ON",
+    "INSERT",
+    "WIDE ON",
+    "POV",
+    "UNDERWATER",
+    "AERIAL",
+    "BACK TO SCENE",
 ];
 
 pub fn document(g: &Gold, draft: &str) -> Value {
@@ -23,12 +30,16 @@ pub fn document(g: &Gold, draft: &str) -> Value {
 pub fn map_scenes(g: &Gold, ctx: &mut Ctx) {
     let draft = ctx.id("draftCurrent");
     let doc = document(g, &draft);
-    let by_lineage: BTreeMap<String, u32> = ctx.lineage.iter().map(|(n, l)| (l.clone(), *n)).collect();
+    let by_lineage: BTreeMap<String, u32> =
+        ctx.lineage.iter().map(|(n, l)| (l.clone(), *n)).collect();
     let by_card: BTreeMap<String, u32> = ctx.cards.iter().map(|(n, c)| (c.clone(), *n)).collect();
     ctx.scenes.clear();
     for sc in arr(&doc["scenes"]) {
         let lineage = s(&sc["lineageId"]);
-        let n = by_lineage.get(&lineage).copied().or_else(|| by_card.get(&s(&sc["sourceSceneCardId"])).copied());
+        let n = by_lineage
+            .get(&lineage)
+            .copied()
+            .or_else(|| by_card.get(&s(&sc["sourceSceneCardId"])).copied());
         if let Some(n) = n {
             ctx.scenes.insert(n, s(&sc["id"]));
             ctx.lineage.insert(n, lineage);
@@ -39,11 +50,14 @@ pub fn map_scenes(g: &Gold, ctx: &mut Ctx) {
 /// Scene label ("23A") -> scene id for any draft.
 fn scenes_by_lineage(g: &Gold, draft: &str) -> BTreeMap<String, Value> {
     let doc = document(g, draft);
-    arr(&doc["scenes"]).into_iter().map(|sc| (s(&sc["lineageId"]), sc)).collect()
+    arr(&doc["scenes"])
+        .into_iter()
+        .map(|sc| (s(&sc["lineageId"]), sc))
+        .collect()
 }
 
 pub fn build_and_write(g: &Gold, ctx: &mut Ctx) {
-    g.phase("Screenplay: build from the Story Board");
+    g.phase("Screenplay: build from the Beat Board");
     let preview = g.ok("story.build_preview", json!({ "episodeId": null }));
     let include: Vec<Value> = arr(&preview["rows"])
         .iter()
@@ -65,18 +79,33 @@ pub fn build_and_write(g: &Gold, ctx: &mut Ctx) {
     let setup = json!({ "paper": "A4", "font": "Courier", "fontSize": 12, "lineSpacing": "single", "firstPageNumber": 1,
         "header": "{title} / {draft} / {revision}", "footer": "Kayal Pictures. Confidential.", "headerOnFirstPage": false,
         "includeTitlePage": true, "sceneNumbers": true, "revisionMarks": true });
-    g.ok("screenplay.update_page_setup", json!({ "screenplayId": sp, "setup": setup }));
+    g.ok(
+        "screenplay.update_page_setup",
+        json!({ "screenplayId": sp, "setup": setup }),
+    );
     let mut letter = setup.clone();
     letter["paper"] = json!("Letter");
-    let old = g.ok("screenplay.save_page_preset", json!({ "name": "US Letter for the sales agent", "setup": letter }));
-    g.ok("screenplay.save_page_preset", json!({ "name": "Kayal A4 production", "setup": setup }));
+    let old = g.ok(
+        "screenplay.save_page_preset",
+        json!({ "name": "US Letter for the sales agent", "setup": letter }),
+    );
+    g.ok(
+        "screenplay.save_page_preset",
+        json!({ "name": "Kayal A4 production", "setup": setup }),
+    );
     g.ok("screenplay.page_setup", json!({ "screenplayId": sp }));
     if !g.id(&old).is_empty() {
         g.ok("screenplay.delete_page_preset", json!({ "id": g.id(&old) }));
     }
     let tp = ctx.story["titlePage"].clone();
-    g.ok("screenplay.title_page_preview", json!({ "screenplayId": sp, "titlePage": tp, "draftId": draft }));
-    g.ok("screenplay.update_title_page", json!({ "screenplayId": sp, "titlePage": tp }));
+    g.ok(
+        "screenplay.title_page_preview",
+        json!({ "screenplayId": sp, "titlePage": tp, "draftId": draft }),
+    );
+    g.ok(
+        "screenplay.update_title_page",
+        json!({ "screenplayId": sp, "titlePage": tp }),
+    );
 
     let log = g.ok(
         "screenplay.create_custom_element",
@@ -95,7 +124,10 @@ pub fn build_and_write(g: &Gold, ctx: &mut Ctx) {
         json!({ "screenplayId": sp, "name": "Radio Transmission", "look": "dialogue", "uppercase": false, "italic": true,
                 "spaceBefore": 0, "nextElement": "dialogue", "exportName": "RADIO" }),
     );
-    g.ok("screenplay.delete_custom_element", json!({ "id": g.id(&radio) }));
+    g.ok(
+        "screenplay.delete_custom_element",
+        json!({ "id": g.id(&radio) }),
+    );
     g.ok("screenplay.custom_elements", json!({ "screenplayId": sp }));
 
     map_scenes(g, ctx);
@@ -105,12 +137,16 @@ pub fn build_and_write(g: &Gold, ctx: &mut Ctx) {
 /// Replace the build's planning notes with the full scene text from the Fountain file.
 fn write_text(g: &Gold, ctx: &mut Ctx, draft: &str, log_id: &str) {
     g.phase("Screenplay: write the scenes");
-    let src = std::fs::read_to_string(ctx.content.join("screenplay.fountain")).expect("screenplay.fountain");
+    let src = std::fs::read_to_string(ctx.content.join("screenplay.fountain"))
+        .expect("screenplay.fountain");
     let parsed = openframe_import_export::fountain::parse(&src).expect("fountain parses");
     let mut preamble: Vec<Value> = Vec::new();
     let mut n = 0u32;
     let doc = document(g, draft);
-    let by_id: BTreeMap<String, Value> = arr(&doc["scenes"]).into_iter().map(|sc| (s(&sc["id"]), sc)).collect();
+    let by_id: BTreeMap<String, Value> = arr(&doc["scenes"])
+        .into_iter()
+        .map(|sc| (s(&sc["id"]), sc))
+        .collect();
     let existing: BTreeMap<u32, Value> = ctx
         .scenes
         .iter()
@@ -128,11 +164,14 @@ fn write_text(g: &Gold, ctx: &mut Ctx, draft: &str, log_id: &str) {
         }
         n += 1;
         let Some(cur) = existing.get(&n) else {
-            eprintln!("  the Fountain file has more scenes than the Story Board ({n})");
+            eprintln!("  the Fountain file has more scenes than the Beat Board ({n})");
             continue;
         };
         if s(&cur["heading"]).trim() != scene.heading.trim() {
-            eprintln!("  scene {n}: Fountain heading {:?} differs from the card {:?}", scene.heading, cur["heading"]);
+            eprintln!(
+                "  scene {n}: Fountain heading {:?} differs from the card {:?}",
+                scene.heading, cur["heading"]
+            );
         }
         let scene_id = s(&cur["id"]);
         let mut ops: Vec<Value> = arr(&cur["elements"])
@@ -156,14 +195,20 @@ fn write_text(g: &Gold, ctx: &mut Ctx, draft: &str, log_id: &str) {
                 ops.push(op);
             }
         }
-        g.ok("screenplay.apply_edits", json!({ "draftId": draft, "ops": ops }));
+        g.ok(
+            "screenplay.apply_edits",
+            json!({ "draftId": draft, "ops": ops }),
+        );
         if let Some(sy) = synopsis {
-            g.ok("screenplay.update_scene", json!({ "sceneId": scene_id, "synopsis": sy }));
+            g.ok(
+                "screenplay.update_scene",
+                json!({ "sceneId": scene_id, "synopsis": sy }),
+            );
         }
     }
     ctx.facts.insert("fountainScenes".into(), json!(n));
     ctx.facts.insert("fountainWords".into(), json!(words));
-    // Scene synopses from the Story Board where the Fountain file has none, and scene notes for
+    // Scene synopses from the Beat Board where the Fountain file has none, and scene notes for
     // departments.
     let story = ctx.story.clone();
     for act in arr(&story["acts"]) {
@@ -171,24 +216,43 @@ fn write_text(g: &Gold, ctx: &mut Ctx, draft: &str, log_id: &str) {
             for sc in arr(&seq["scenes"]) {
                 let n = sc["n"].as_u64().unwrap_or(0) as u32;
                 if let Some(id) = ctx.scenes.get(&n) {
-                    g.ok("screenplay.update_scene", json!({ "sceneId": id, "synopsis": sc["short"] }));
+                    g.ok(
+                        "screenplay.update_scene",
+                        json!({ "sceneId": id, "synopsis": sc["short"] }),
+                    );
                 }
             }
         }
     }
     for (n, note) in [
-        (16u32, "Sound: playback from the real Nagra. Record live, no score."),
-        (24u32, "Stunt and marine safety plan applies. Harness past the yellow marker."),
-        (33u32, "Playback cue sheet from Farhan. Varghese's line is pre-recorded."),
+        (
+            16u32,
+            "Sound: playback from the real Nagra. Record live, no score.",
+        ),
+        (
+            24u32,
+            "Stunt and marine safety plan applies. Harness past the yellow marker.",
+        ),
+        (
+            33u32,
+            "Playback cue sheet from Farhan. Varghese's line is pre-recorded.",
+        ),
         (41u32, "One take for the mast fall. Three cameras."),
     ] {
         if let Some(id) = ctx.scenes.get(&n) {
-            g.ok("screenplay.update_scene", json!({ "sceneId": id, "notes": note }));
+            g.ok(
+                "screenplay.update_scene",
+                json!({ "sceneId": id, "notes": note }),
+            );
         }
     }
 }
 
-fn element_op(e: &openframe_import_export::model::Element, scene_id: &str, log_id: &str) -> Option<Value> {
+fn element_op(
+    e: &openframe_import_export::model::Element,
+    scene_id: &str,
+    log_id: &str,
+) -> Option<Value> {
     let text = e.text.trim().to_string();
     let (ty, custom) = match e.kind {
         ElementKind::Action | ElementKind::Centered => {
@@ -211,8 +275,13 @@ fn element_op(e: &openframe_import_export::model::Element, scene_id: &str, log_i
         ElementKind::Custom => ("custom", Some(log_id.to_string())),
         ElementKind::Section | ElementKind::Synopsis => return None,
     };
-    let text = if ty == "custom" { text.trim_start_matches("LOG ").to_string() } else { text };
-    let mut op = json!({ "op": "insertElement", "sceneId": scene_id, "elementType": ty, "text": text });
+    let text = if ty == "custom" {
+        text.trim_start_matches("LOG ").to_string()
+    } else {
+        text
+    };
+    let mut op =
+        json!({ "op": "insertElement", "sceneId": scene_id, "elementType": ty, "text": text });
     if let Some(c) = custom {
         op["customElementId"] = json!(c);
     }
@@ -227,13 +296,19 @@ pub fn drafts_and_review(g: &Gold, ctx: &mut Ctx) {
     let first = ctx.id("draftFirst");
     // Writing comfort: proofing languages, the project dictionary, the navigator.
     g.ok("writing.proofing", json!({}));
-    g.ok("writing.set_proofing", json!({ "enabled": true, "mainLanguage": "en-GB", "secondLanguage": "ml" }));
+    g.ok(
+        "writing.set_proofing",
+        json!({ "enabled": true, "mainLanguage": "en-GB", "secondLanguage": "ml" }),
+    );
     for w in ["Kadalkkara", "Appachan", "Mariamma", "Nagra", "Kadalkara"] {
         g.ok("writing.dictionary_add", json!({ "word": w }));
     }
     g.ok("writing.dictionary_remove", json!({ "word": "Kadalkara" }));
     g.ok("writing.dictionary", json!({}));
-    g.ok("writing.spelling_suggestions", json!({ "word": "Kadalkara" }));
+    g.ok(
+        "writing.spelling_suggestions",
+        json!({ "word": "Kadalkara" }),
+    );
     let doc = document(g, &first);
     let items: Vec<Value> = arr(&doc["scenes"])
         .iter()
@@ -244,7 +319,10 @@ pub fn drafts_and_review(g: &Gold, ctx: &mut Ctx) {
     g.ok("writing.check_spelling", json!({ "items": items }));
     g.ok("writing.navigator_columns", json!({ "draftId": first }));
     g.ok("writing.suggestion_sources", json!({}));
-    g.ok("screenplay.set_view_state", json!({ "state": { "mode": "page", "notesVisible": true, "openDraftId": first } }));
+    g.ok(
+        "screenplay.set_view_state",
+        json!({ "state": { "mode": "page", "notesVisible": true, "openDraftId": first } }),
+    );
     g.ok("screenplay.view_state", json!({}));
 
     // One-at-a-time editor operations on the first draft (scene 9: the biscuit tin).
@@ -254,9 +332,16 @@ pub fn drafts_and_review(g: &Gold, ctx: &mut Ctx) {
         json!({ "sceneId": s9, "index": 0, "elementType": "action", "text": "Rain ticks on the tin roof. Inside, six radios are tuned to six different stations." }),
     );
     let new_el = s(&ins["changedElementIds"][0]);
-    let new_el = if new_el.is_empty() { find_element(g, &first, &s9, "Rain ticks on the tin roof") } else { new_el };
+    let new_el = if new_el.is_empty() {
+        find_element(g, &first, &s9, "Rain ticks on the tin roof")
+    } else {
+        new_el
+    };
     g.ok("screenplay.update_element", json!({ "id": new_el, "text": "Rain ticks on the tin roof. Inside, six radios are tuned to six different stations at once." }));
-    g.ok("screenplay.move_element", json!({ "id": new_el, "sceneId": s9, "index": 1 }));
+    g.ok(
+        "screenplay.move_element",
+        json!({ "id": new_el, "sceneId": s9, "index": 1 }),
+    );
     let note = g.ok(
         "screenplay.insert_element",
         json!({ "sceneId": s9, "elementType": "note", "text": "Check with props: is the biscuit tin Britannia or a local brand? Clearance." }),
@@ -267,22 +352,46 @@ pub fn drafts_and_review(g: &Gold, ctx: &mut Ctx) {
 
     // Characters: cue report and links to the Story characters.
     let report = g.ok("screenplay.characters", json!({ "draftId": first }));
-    for c in arr(&report["characters"]).iter().chain(arr(&report["cues"]).iter()) {
+    for c in arr(&report["characters"])
+        .iter()
+        .chain(arr(&report["cues"]).iter())
+    {
         let cue = s(&c["name"]).to_string() + &s(&c["cue"]);
         if let Some(cid) = ctx.chars.get(&cue) {
-            g.ok("screenplay.set_character_link", json!({ "screenplayId": sp, "cueName": cue, "characterId": cid, "ignored": false }));
+            g.ok(
+                "screenplay.set_character_link",
+                json!({ "screenplayId": sp, "cueName": cue, "characterId": cid, "ignored": false }),
+            );
         }
     }
-    g.ok("screenplay.clear_character_link", json!({ "screenplayId": sp, "cueName": "RAHUL" }));
+    g.ok(
+        "screenplay.clear_character_link",
+        json!({ "screenplayId": sp, "cueName": "RAHUL" }),
+    );
     if let Some(cid) = ctx.chars.get("RAHUL") {
-        g.ok("screenplay.set_character_link", json!({ "screenplayId": sp, "cueName": "RAHUL", "characterId": cid, "ignored": false }));
+        g.ok(
+            "screenplay.set_character_link",
+            json!({ "screenplayId": sp, "cueName": "RAHUL", "characterId": cid, "ignored": false }),
+        );
     }
-    g.ok("screenplay.set_character_link", json!({ "screenplayId": sp, "cueName": "HARBOUR CLERK", "ignored": true }));
+    g.ok(
+        "screenplay.set_character_link",
+        json!({ "screenplayId": sp, "cueName": "HARBOUR CLERK", "ignored": true }),
+    );
     g.ok("screenplay.characters", json!({ "draftId": first }));
     g.ok("screenplay.pagination", json!({ "draftId": first }));
-    g.ok("screenplay.page_view", json!({ "draftId": first, "titlePage": true }));
-    g.ok("screenplay.scene_hub", json!({ "sceneId": ctx.scenes[&28] }));
-    g.ok("screenplay.story_reference", json!({ "sceneId": ctx.scenes[&28] }));
+    g.ok(
+        "screenplay.page_view",
+        json!({ "draftId": first, "titlePage": true }),
+    );
+    g.ok(
+        "screenplay.scene_hub",
+        json!({ "sceneId": ctx.scenes[&28] }),
+    );
+    g.ok(
+        "screenplay.story_reference",
+        json!({ "sceneId": ctx.scenes[&28] }),
+    );
     g.ok("screenplay.locate", json!({ "sceneId": ctx.scenes[&28] }));
     g.ok("screenplay.locate", json!({ "draftId": first }));
     g.ok("screenplay.history_points", json!({ "draftId": first }));
@@ -311,11 +420,18 @@ pub fn drafts_and_review(g: &Gold, ctx: &mut Ctx) {
     // Split the breakwater scene at its third element and merge it back.
     let s24 = ctx.scenes[&24].clone();
     let doc = document(g, &second);
-    if let Some(el) = arr(&doc["scenes"]).iter().find(|sc| s(&sc["id"]) == s24).and_then(|sc| arr(&sc["elements"]).get(3).cloned()) {
+    if let Some(el) = arr(&doc["scenes"])
+        .iter()
+        .find(|sc| s(&sc["id"]) == s24)
+        .and_then(|sc| arr(&sc["elements"]).get(3).cloned())
+    {
         let split = g.ok("screenplay.split_scene", json!({ "elementId": el["id"] }));
         let _ = split;
         let doc = document(g, &second);
-        let pos = arr(&doc["scenes"]).iter().position(|sc| s(&sc["id"]) == s24).unwrap_or(0);
+        let pos = arr(&doc["scenes"])
+            .iter()
+            .position(|sc| s(&sc["id"]) == s24)
+            .unwrap_or(0);
         if let Some(next) = arr(&doc["scenes"]).get(pos + 1) {
             g.ok("screenplay.merge_scene", json!({ "sceneId": next["id"] }));
         }
@@ -326,24 +442,53 @@ pub fn drafts_and_review(g: &Gold, ctx: &mut Ctx) {
         json!({ "draftId": second, "index": 23, "heading": "INT. SITE TRUCK - MOVING - NIGHT" }),
     );
     let truck_scene = s(&truck["sceneId"]).to_string() + &s(&truck["createdSceneId"]);
-    let truck_scene = if truck_scene.is_empty() { find_scene_by_heading(g, &second, "INT. SITE TRUCK") } else { truck_scene };
-    g.ok("screenplay.update_scene", json!({ "sceneId": truck_scene, "heading": "INT. SITE TRUCK - MOVING - NIGHT (RAIN)" }));
+    let truck_scene = if truck_scene.is_empty() {
+        find_scene_by_heading(g, &second, "INT. SITE TRUCK")
+    } else {
+        truck_scene
+    };
+    g.ok(
+        "screenplay.update_scene",
+        json!({ "sceneId": truck_scene, "heading": "INT. SITE TRUCK - MOVING - NIGHT (RAIN)" }),
+    );
     g.ok("screenplay.delete_scene", json!({ "sceneId": truck_scene }));
     // Scenes 14 and 15 swapped for a read, then put back.
-    g.ok("screenplay.move_scene", json!({ "sceneId": ctx.scenes[&15], "index": 13 }));
-    g.ok("screenplay.move_scene", json!({ "sceneId": ctx.scenes[&15], "index": 14 }));
+    g.ok(
+        "screenplay.move_scene",
+        json!({ "sceneId": ctx.scenes[&15], "index": 13 }),
+    );
+    g.ok(
+        "screenplay.move_scene",
+        json!({ "sceneId": ctx.scenes[&15], "index": 14 }),
+    );
     map_scenes(g, ctx);
-    let cmp = g.ok("screenplay.compare", json!({ "draftA": first, "draftB": second }));
-    ctx.facts.insert("compareFirstSecond".into(), json!({ "summary": cmp["summary"] }));
+    let cmp = g.ok(
+        "screenplay.compare",
+        json!({ "draftA": first, "draftB": second }),
+    );
+    ctx.facts.insert(
+        "compareFirstSecond".into(),
+        json!({ "summary": cmp["summary"] }),
+    );
 
     review(g, ctx, &second);
 
     // The writer also delivered the script as a Fountain file. It is imported as its own draft
     // and compared with the in-app draft; the import keeps dual dialogue.
     g.ok("screenplay.samples", json!({}));
-    g.ok("screenplay.import_preview", json!({ "path": null, "pastedText": null, "format": null, "sample": "example-feature" }));
-    let path = ctx.content.join("screenplay.fountain").to_string_lossy().into_owned();
-    let pv = g.ok("screenplay.import_preview", json!({ "path": path, "pastedText": null, "format": "fountain" }));
+    g.ok(
+        "screenplay.import_preview",
+        json!({ "path": null, "pastedText": null, "format": null, "sample": "example-feature" }),
+    );
+    let path = ctx
+        .content
+        .join("screenplay.fountain")
+        .to_string_lossy()
+        .into_owned();
+    let pv = g.ok(
+        "screenplay.import_preview",
+        json!({ "path": path, "pastedText": null, "format": "fountain" }),
+    );
     let imported = g.ok(
         "screenplay.import_apply",
         json!({ "previewId": pv["previewId"], "path": null, "pastedText": null, "format": null, "mode": "new_draft",
@@ -353,22 +498,42 @@ pub fn drafts_and_review(g: &Gold, ctx: &mut Ctx) {
     ctx.set("draftImported", imp_draft.clone());
     if !imp_draft.is_empty() {
         let d = document(g, &imp_draft);
-        let dual = arr(&d["scenes"]).iter().flat_map(|sc| arr(&sc["elements"])).filter(|e| e["dual"] == json!(true)).count();
+        let dual = arr(&d["scenes"])
+            .iter()
+            .flat_map(|sc| arr(&sc["elements"]))
+            .filter(|e| e["dual"] == json!(true))
+            .count();
         ctx.facts.insert("importedDualElements".into(), json!(dual));
-        ctx.facts.insert("importedScenes".into(), json!(arr(&d["scenes"]).len()));
-        let c = g.ok("screenplay.compare", json!({ "draftA": imp_draft, "draftB": second }));
-        ctx.facts.insert("compareImportedSecond".into(), json!({ "summary": c["summary"] }));
+        ctx.facts
+            .insert("importedScenes".into(), json!(arr(&d["scenes"]).len()));
+        let c = g.ok(
+            "screenplay.compare",
+            json!({ "draftA": imp_draft, "draftB": second }),
+        );
+        ctx.facts.insert(
+            "compareImportedSecond".into(),
+            json!({ "summary": c["summary"] }),
+        );
         // Deleted from the draft list by mistake and brought back from Recently Deleted.
         g.ok("screenplay.delete_draft", json!({ "draftId": imp_draft }));
         let trash = g.ok("trash.list", json!({ "store": "project" }));
-        if let Some(row) = arr(&trash).iter().find(|r| s(&r["objectId"]) == imp_draft || format!("{}", r).contains("Writer's Fountain delivery")) {
-            g.ok("trash.restore", json!({ "store": "project", "id": row["id"] }));
+        if let Some(row) = arr(&trash).iter().find(|r| {
+            s(&r["objectId"]) == imp_draft
+                || format!("{}", r).contains("Writer's Fountain delivery")
+        }) {
+            g.ok(
+                "trash.restore",
+                json!({ "store": "project", "id": row["id"] }),
+            );
         }
     }
     // The first draft's version restored as a new draft for a side-by-side read.
     let restored = g.id(&g.ok("screenplay.restore_draft", json!({ "draftId": first })));
     if !restored.is_empty() {
-        g.ok("screenplay.compare", json!({ "draftA": first, "draftB": restored }));
+        g.ok(
+            "screenplay.compare",
+            json!({ "draftA": first, "draftB": restored }),
+        );
         // A restored draft opens as the current draft; the second draft goes back to current.
         g.ok("screenplay.set_current_draft", json!({ "draftId": second }));
         g.ok("screenplay.delete_draft", json!({ "draftId": restored }));
@@ -418,7 +583,11 @@ fn review(g: &Gold, ctx: &mut Ctx, draft: &str) {
         arr(&doc["scenes"])
             .iter()
             .find(|sc| s(&sc["id"]) == scene(n))
-            .and_then(|sc| arr(&sc["elements"]).into_iter().find(|e| s(&e["elementType"]) == ty))
+            .and_then(|sc| {
+                arr(&sc["elements"])
+                    .into_iter()
+                    .find(|e| s(&e["elementType"]) == ty)
+            })
             .map(|e| (s(&e["id"]), s(&e["text"]).encode_utf16().count()))
             .unwrap_or_default()
     };
@@ -428,7 +597,10 @@ fn review(g: &Gold, ctx: &mut Ctx, draft: &str) {
                 "anchor": null, "sceneId": null, "reviewRoundId": round_id }),
     );
     let c1 = g.id(&c1);
-    g.ok("comment.reply", json!({ "parentId": c1, "body": "Yes. Lakshmi found one in Mattancherry. Keep it." }));
+    g.ok(
+        "comment.reply",
+        json!({ "parentId": c1, "body": "Yes. Lakshmi found one in Mattancherry. Keep it." }),
+    );
     g.ok("comment.resolve", json!({ "id": c1 }));
     let (d31, len31) = el(31, "dialogue");
     let c2 = g.id(&g.ok(
@@ -437,7 +609,10 @@ fn review(g: &Gold, ctx: &mut Ctx, draft: &str) {
                 "anchor": { "start": 0, "end": len31.min(40) }, "sceneId": null, "reviewRoundId": round_id }),
     ));
     g.ok("comment.update", json!({ "id": c2, "body": "Joe's confession runs long. Trim, but keep 'I went home.'", "status": "In Discussion", "expectedRev": null }));
-    g.ok("comment.reply", json!({ "parentId": c2, "body": "Trimmed in the shooting draft. 'I went home' stays." }));
+    g.ok(
+        "comment.reply",
+        json!({ "parentId": c2, "body": "Trimmed in the shooting draft. 'I went home' stays." }),
+    );
     g.ok("comment.resolve", json!({ "id": c2 }));
     g.ok("comment.reopen", json!({ "id": c2 }));
     g.ok("comment.resolve", json!({ "id": c2 }));
@@ -452,7 +627,7 @@ fn review(g: &Gold, ctx: &mut Ctx, draft: &str) {
         json!({ "targetType": "screenplay_scene", "targetId": scene(39), "body": "dup", "anchor": null, "sceneId": null, "reviewRoundId": round_id }),
     ));
     g.ok("comment.delete", json!({ "id": typo }));
-    // A Story Board comment and a schedule-free scene note.
+    // A Beat Board comment and a schedule-free scene note.
     g.ok(
         "comment.create",
         json!({ "targetType": "story_scene_card", "targetId": ctx.cards[&24], "body": "This is the midpoint. Protect the time for it on the schedule.",
@@ -460,8 +635,14 @@ fn review(g: &Gold, ctx: &mut Ctx, draft: &str) {
     );
     g.ok("comment.list", json!({ "targetType": null, "targetId": null, "draftId": draft, "sceneId": null, "reviewRoundId": round_id, "status": "all" }));
     g.ok("comment.list", json!({ "targetType": null, "targetId": null, "draftId": null, "sceneId": scene(39), "reviewRoundId": null, "status": "open" }));
-    g.ok("screenplay.complete_review", json!({ "reviewRoundId": round_id }));
-    g.ok("screenplay.review_rounds", json!({ "screenplayId": ctx.id("screenplay") }));
+    g.ok(
+        "screenplay.complete_review",
+        json!({ "reviewRoundId": round_id }),
+    );
+    g.ok(
+        "screenplay.review_rounds",
+        json!({ "screenplayId": ctx.id("screenplay") }),
+    );
 
     // Private notes: the director's own, never exported.
     let p = g.id(&g.ok(
@@ -472,7 +653,10 @@ fn review(g: &Gold, ctx: &mut Ctx, draft: &str) {
     g.ok("private_note.create", json!({ "targetType": null, "targetId": null, "body": "Ask Arun about the second co-producer before the budget lock." }));
     let gone = g.id(&g.ok("private_note.create", json!({ "targetType": "screenplay_scene", "targetId": scene(3), "body": "Bengaluru plate" })));
     g.ok("private_note.delete", json!({ "id": gone }));
-    g.ok("private_note.list", json!({ "targetType": null, "targetId": null }));
+    g.ok(
+        "private_note.list",
+        json!({ "targetType": null, "targetId": null }),
+    );
 }
 
 /// The shooting draft: copied from the second draft, locked with frozen scene numbers, and made
@@ -493,7 +677,10 @@ pub fn lock_for_production(g: &Gold, ctx: &mut Ctx) {
     g.ok("screenplay.lock_summary", json!({ "draftId": shooting }));
     map_scenes(g, ctx);
     g.ok("production.drafts", json!({}));
-    g.ok("production.set_source", json!({ "draftId": shooting, "reason": "Shooting draft locked 2 December 2026." }));
+    g.ok(
+        "production.set_source",
+        json!({ "draftId": shooting, "reason": "Shooting draft locked 2 December 2026." }),
+    );
     g.ok("production.source", json!({}));
     g.ok("production.overview", json!({}));
     crate::phases::app::safety_copy(g, ctx);
@@ -513,17 +700,28 @@ pub fn blue_revision(g: &Gold, ctx: &mut Ctx) {
     let by_lineage = scenes_by_lineage(g, &blue);
     let lineage = ctx.lineage.clone();
     let scene_in_blue = |n: u32| -> String {
-        lineage.get(&n).and_then(|l| by_lineage.get(l)).map(|sc| s(&sc["id"])).unwrap_or_default()
+        lineage
+            .get(&n)
+            .and_then(|l| by_lineage.get(l))
+            .map(|sc| s(&sc["id"]))
+            .unwrap_or_default()
     };
     // New scene 23A: the jetty where Mariamma was last seen.
-    let pos23 = arr(&document(g, &blue)["scenes"]).iter().position(|sc| s(&sc["id"]) == scene_in_blue(23)).unwrap_or(22);
+    let pos23 = arr(&document(g, &blue)["scenes"])
+        .iter()
+        .position(|sc| s(&sc["id"]) == scene_in_blue(23))
+        .unwrap_or(22);
     let made = g.ok(
         "screenplay.create_scene",
         json!({ "draftId": blue, "index": pos23 + 1, "heading": "EXT. KADALKKARA JETTY - NIGHT" }),
     );
     let new_scene = {
         let id = s(&made["sceneId"]);
-        if id.is_empty() { find_scene_by_heading(g, &blue, "EXT. KADALKKARA JETTY") } else { id }
+        if id.is_empty() {
+            find_scene_by_heading(g, &blue, "EXT. KADALKKARA JETTY")
+        } else {
+            id
+        }
     };
     g.ok(
         "screenplay.apply_edits",
@@ -535,22 +733,42 @@ pub fn blue_revision(g: &Gold, ctx: &mut Ctx) {
             { "op": "insertElement", "sceneId": new_scene, "elementType": "action", "text": "Anjali turns away from the water and runs." }
         ] }),
     );
-    let label = g.ok("screenplay.set_scene_number", json!({ "sceneId": new_scene, "number": "23A" }));
+    let label = g.ok(
+        "screenplay.set_scene_number",
+        json!({ "sceneId": new_scene, "number": "23A" }),
+    );
     if label.is_null() {
-        g.ok("screenplay.set_scene_number", json!({ "sceneId": new_scene, "number": "23A", "acknowledgeDependencies": true }));
+        g.ok(
+            "screenplay.set_scene_number",
+            json!({ "sceneId": new_scene, "number": "23A", "acknowledgeDependencies": true }),
+        );
     }
     g.ok("screenplay.update_scene", json!({ "sceneId": new_scene, "synopsis": "Anjali at the jetty where her mother was last seen.", "storyDay": "Day 6" }));
     ctx.set("scene23A", new_scene.clone());
     // Trim Joe's confession (scene 31) and adjust the beach action (scene 39).
     let doc = document(g, &blue);
     let s31 = scene_in_blue(31);
-    if let Some(e) = arr(&doc["scenes"]).iter().find(|sc| s(&sc["id"]) == s31).and_then(|sc| {
-        arr(&sc["elements"]).into_iter().filter(|e| s(&e["elementType"]) == "dialogue").max_by_key(|e| s(&e["text"]).len())
-    }) {
+    if let Some(e) = arr(&doc["scenes"])
+        .iter()
+        .find(|sc| s(&sc["id"]) == s31)
+        .and_then(|sc| {
+            arr(&sc["elements"])
+                .into_iter()
+                .filter(|e| s(&e["elementType"]) == "dialogue")
+                .max_by_key(|e| s(&e["text"]).len())
+        })
+    {
         let text = s(&e["text"]);
         let cut: String = text.split(". ").take(3).collect::<Vec<_>>().join(". ");
-        let cut = if cut.ends_with('.') { cut } else { format!("{cut}.") };
-        g.ok("screenplay.update_element", json!({ "id": e["id"], "text": cut }));
+        let cut = if cut.ends_with('.') {
+            cut
+        } else {
+            format!("{cut}.")
+        };
+        g.ok(
+            "screenplay.update_element",
+            json!({ "id": e["id"], "text": cut }),
+        );
     }
     let s39 = scene_in_blue(39);
     g.ok(
@@ -569,20 +787,38 @@ pub fn blue_revision(g: &Gold, ctx: &mut Ctx) {
     let s12 = scene_in_blue(12);
     g.ok("screenplay.delete_scene", json!({ "sceneId": s12 }));
     let doc = document(g, &blue);
-    ctx.facts.insert("blueOmitted".into(), json!(arr(&doc["omittedScenes"]).len()));
-    g.ok("screenplay.restore_omitted_scene", json!({ "sceneId": s12 }));
+    ctx.facts.insert(
+        "blueOmitted".into(),
+        json!(arr(&doc["omittedScenes"]).len()),
+    );
+    g.ok(
+        "screenplay.restore_omitted_scene",
+        json!({ "sceneId": s12 }),
+    );
     g.ok("screenplay.revision_changes", json!({ "draftId": blue }));
     g.ok("screenplay.revision_pages", json!({ "draftId": blue }));
-    g.ok("screenplay.page_view", json!({ "draftId": blue, "titlePage": true, "revisionMarks": true }));
+    g.ok(
+        "screenplay.page_view",
+        json!({ "draftId": blue, "titlePage": true, "revisionMarks": true }),
+    );
     g.ok("screenplay.history_points", json!({ "draftId": blue }));
     g.ok("screenplay.lock_draft", json!({ "draftId": blue }));
     ctx.set("draftCurrent", blue.clone());
-    let hp = g.ok("screenplay.history_points", json!({ "draftId": ctx.id("draftFirst") }));
+    let hp = g.ok(
+        "screenplay.history_points",
+        json!({ "draftId": ctx.id("draftFirst") }),
+    );
     // Restoring an earlier history point of the first draft (the writer's working copy).
     let points = arr(&hp);
     // The fullest automatic point of the first draft, opened as a draft for a read, then removed.
-    if let Some(p) = points.iter().max_by_key(|p| p["elementCount"].as_i64().unwrap_or(0)) {
-        let d = g.id(&g.ok("screenplay.restore_history_point", json!({ "historyPointId": p["id"] })));
+    if let Some(p) = points
+        .iter()
+        .max_by_key(|p| p["elementCount"].as_i64().unwrap_or(0))
+    {
+        let d = g.id(&g.ok(
+            "screenplay.restore_history_point",
+            json!({ "historyPointId": p["id"] }),
+        ));
         if !d.is_empty() {
             g.ok("screenplay.set_current_draft", json!({ "draftId": blue }));
             g.ok("screenplay.delete_draft", json!({ "draftId": d }));
@@ -595,7 +831,10 @@ pub fn blue_revision(g: &Gold, ctx: &mut Ctx) {
 /// film's own lines. An empty screenplay made by a stray click is removed.
 pub fn teaser(g: &Gold, ctx: &mut Ctx) {
     g.phase("Screenplay: teaser trailer script");
-    let made = g.ok("screenplay.create", json!({ "title": "Low Tide Radio teaser", "draftName": "Teaser v1" }));
+    let made = g.ok(
+        "screenplay.create",
+        json!({ "title": "Low Tide Radio teaser", "draftName": "Teaser v1" }),
+    );
     let sp = s(&made["screenplayId"]).to_string() + &s(&made["screenplay"]["id"]);
     let draft = s(&made["draftId"]).to_string() + &s(&made["draft"]["id"]);
     ctx.set("teaserScreenplay", sp.clone());
@@ -605,21 +844,39 @@ pub fn teaser(g: &Gold, ctx: &mut Ctx) {
         // A new screenplay may start with an empty scene; it becomes the first teaser scene.
         let first = arr(&doc["scenes"]).first().map(|sc| s(&sc["id"]));
         let scenes = [
-            ("EXT. OPEN SEA - NIGHT (1999)", vec![
-                ("action", "Black water. A lantern swings on a mast."),
-                ("character", "MARIAMMA (V.O.)"),
-                ("dialogue", "Little Flower, Little Flower, this is Kadalkkara."),
-            ]),
-            ("INT. FISHERIES SCHOOL - RADIO CLUB ROOM - NIGHT", vec![
-                ("action", "A reel turns on an old Nagra. Six kids hold their breath."),
-                ("character", "ANJALI"),
-                ("dialogue", "One play. Maybe."),
-                ("transition", "SMASH CUT TO:"),
-            ]),
-            ("EXT. KADALKKARA BEACH - NIGHT", vec![
-                ("action", "Three hundred people on the sand. Lanterns. A voice from the speakers."),
-                ("centered", "LOW TIDE RADIO"),
-            ]),
+            (
+                "EXT. OPEN SEA - NIGHT (1999)",
+                vec![
+                    ("action", "Black water. A lantern swings on a mast."),
+                    ("character", "MARIAMMA (V.O.)"),
+                    (
+                        "dialogue",
+                        "Little Flower, Little Flower, this is Kadalkkara.",
+                    ),
+                ],
+            ),
+            (
+                "INT. FISHERIES SCHOOL - RADIO CLUB ROOM - NIGHT",
+                vec![
+                    (
+                        "action",
+                        "A reel turns on an old Nagra. Six kids hold their breath.",
+                    ),
+                    ("character", "ANJALI"),
+                    ("dialogue", "One play. Maybe."),
+                    ("transition", "SMASH CUT TO:"),
+                ],
+            ),
+            (
+                "EXT. KADALKKARA BEACH - NIGHT",
+                vec![
+                    (
+                        "action",
+                        "Three hundred people on the sand. Lanterns. A voice from the speakers.",
+                    ),
+                    ("centered", "LOW TIDE RADIO"),
+                ],
+            ),
         ];
         for (i, (heading, els)) in scenes.iter().enumerate() {
             let scene_id = if i == 0 && first.is_some() {
@@ -636,14 +893,23 @@ pub fn teaser(g: &Gold, ctx: &mut Ctx) {
                 ops.push(json!({ "op": "insertElement", "sceneId": scene_id, "elementType": ty, "text": text }));
             }
         }
-        g.ok("screenplay.apply_edits", json!({ "draftId": draft, "ops": ops }));
+        g.ok(
+            "screenplay.apply_edits",
+            json!({ "draftId": draft, "ops": ops }),
+        );
         ctx.set("teaserDraft", draft.clone());
     }
-    g.ok("screenplay.rename", json!({ "screenplayId": sp, "title": "Low Tide Radio teaser trailer" }));
+    g.ok(
+        "screenplay.rename",
+        json!({ "screenplayId": sp, "title": "Low Tide Radio teaser trailer" }),
+    );
     let stray = g.ok("screenplay.create", json!({}));
     let stray_id = s(&stray["screenplayId"]).to_string() + &s(&stray["screenplay"]["id"]);
     g.ok("screenplay.delete", json!({ "screenplayId": stray_id }));
     // Back to the film in the Screenplay workspace.
-    g.ok("screenplay.overview", json!({ "screenplayId": ctx.id("screenplay") }));
+    g.ok(
+        "screenplay.overview",
+        json!({ "screenplayId": ctx.id("screenplay") }),
+    );
     g.ok("screenplay.set_view_state", json!({ "state": { "mode": "page", "notesVisible": false, "screenplayId": ctx.id("screenplay"), "openDraftId": ctx.id("draftBlue") } }));
 }

@@ -59,16 +59,18 @@ afterEach(() => vi.unstubAllGlobals());
 describe("built-in themes come from one list", () => {
   it("has OpenFrame Default first and the fifteen themes from the reference mocks", () => {
     expect(BUILT_IN_THEMES[0].id).toBe(DEFAULT_THEME_ID);
-    expect(BUILT_IN_THEMES.map((t) => t.id).slice(1)).toEqual([
+    // Black and White (UX brief 2026-10-20) sits right after the default so it is easy to find.
+    expect(BUILT_IN_THEMES[1].id).toBe("black-and-white");
+    expect(BUILT_IN_THEMES.map((t) => t.id).slice(2)).toEqual([
       "studio-amber", "slate-noir", "midnight-reel", "teal-orange", "courier-cream", "cutting-room", "velvet-curtain",
       "sunset-boulevard", "arctic-frame", "neon-reel", "location-scout", "desert-dune", "colorist-neutral", "silver-screen", "high-contrast",
     ]);
-    expect(new Set(BUILT_IN_THEMES.map((t) => t.id)).size).toBe(16);
+    expect(new Set(BUILT_IN_THEMES.map((t) => t.id)).size).toBe(17);
     for (const t of BUILT_IN_THEMES) expect(sanitize(t), t.id).not.toBeNull();
   });
 
   it("adding a theme is one list entry: the layer gets its block without any component change", () => {
-    const extra: ThemeData = { ...BUILT_IN_THEMES[2], id: "added-later", name: "Added Later", builtIn: true };
+    const extra: ThemeData = { ...BUILT_IN_THEMES.find((t) => t.id === "slate-noir")!, id: "added-later", name: "Added Later", builtIn: true };
     const css = buildStyleLayer([...BUILT_IN_THEMES, extra]);
     expect(css).toContain('[data-theme="added-later"]{--h:265;');
     for (const t of BUILT_IN_THEMES) expect(css).toContain(`[data-theme="${t.id}"]{`);
@@ -100,8 +102,8 @@ describe("OpenFrame Default stays today's look", () => {
       for (const m of readFileSync(file, "utf8").matchAll(/(?:^|[{;\s])--([a-z0-9-]+)\s*:/g)) defined.add(m[1]);
     }
     const used = new Map<string, string>();
-    // Layout variables, not colours: the Story board zoom factor.
-    const layout = new Set(["z"]);
+    // Layout variables, not colours: the Beat board zoom factor and the screenplay and Breakdown page zoom.
+    const layout = new Set(["z", "sp-zoom", "bd-zoom"]);
     for (const file of walk(SRC)) {
       if (file.endsWith(join("theme", "engine.ts"))) continue; // documents var(--token) in prose
       const text = readFileSync(file, "utf8").replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");

@@ -5,7 +5,7 @@
 .ai .msg.ai-err{background:var(--red-soft)}
 .ai .ai-items{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:3px}
 .ai .ai-items li{display:flex;align-items:center;gap:6px;font-size:12.5px}
-.ai .ai-items .grow{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.ai .ai-items .grow{flex:1;min-width:0;overflow-wrap:anywhere}
 .ai .cs .csr.ai-excluded{background:var(--surface2)}
 .ai .cs .csr.ai-locked{background:var(--red-soft)}
 .ai .cs .csr b{text-align:right;margin-left:10px}
@@ -27,3 +27,12 @@
 .ai-tech{font-size:12px}
 .ai-tech td,.ai-tech th{vertical-align:top}
 .ai-tech .hash{font-family:ui-monospace,Consolas,monospace;font-size:11px;word-break:break-all}
+/* Plain answers (OpenFrameAI.docx section 4.1): normal weight, paragraphs kept. */
+.ai .ai-text{white-space:pre-wrap;line-height:1.5;overflow-wrap:anywhere}
+.ai .ai-details{margin-top:6px}
+.ai .ai-details summary{cursor:pointer;width:max-content}
+.ai .ai-details[open] summary{margin-bottom:4px}
+/* Resize handle on the panel's left edge (UX brief 4.2). */
+.ai{position:relative}
+.ai .ai-resize{position:absolute;left:-3px;top:0;bottom:0;width:6px;cursor:col-resize;z-index:5}
+.ai .ai-resize:hover,.ai .ai-resize:focus-visible{background:var(--accent-line);outline:none}

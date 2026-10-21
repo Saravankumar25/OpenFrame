@@ -1,4 +1,4 @@
-//! Story Board card redesign and hardening (Story Board and Idea Vault area of the build plan;
+//! Beat Board card redesign and hardening (Beat Board and Idea Vault area of the build plan;
 //! Screenplay and Production Depth Specification sections 21 and 52; owner decision 2026-10-07 on
 //! Build Screenplay; docs/engineering/33-production-depth-contract.md section 1).
 //!
@@ -697,7 +697,7 @@ fn board_cards_carry_what_the_display_toggles_need() {
     );
     let got = card(&env, &c);
     let st = &got["sceneStatus"];
-    assert_eq!(st["draftName"], "Draft 1 from Story Board");
+    assert_eq!(st["draftName"], "Draft 1 from Beat Board");
     assert_eq!(st["revised"], false);
     assert_eq!(st["breakdownItems"], 0);
     assert_eq!(st["shots"], 0);
@@ -888,7 +888,7 @@ fn build_screenplay_asks_for_a_heading_or_leaving_the_card_out_and_never_invents
         json!({ "include": [{ "cardId": with }, { "cardId": without, "heading": "int. old house - morning" }],
                 "destination": "newDraft", "screenplayId": sp }),
     );
-    assert_eq!(r2["draftName"], "Draft 2 from Story Board");
+    assert_eq!(r2["draftName"], "Draft 2 from Beat Board");
     assert_eq!(
         headings(r2["draftId"].as_str().unwrap()),
         ["EXT. BUS STOP - NIGHT", "INT. OLD HOUSE - MORNING"]

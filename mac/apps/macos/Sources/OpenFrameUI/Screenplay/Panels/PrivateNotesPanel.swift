@@ -131,7 +131,7 @@ struct PrivateNotesSection: View {
                     Button("Edit") { model.startEdit(note) }
                     Button("Delete", role: .destructive) { Task { await model.delete(note) } }
                 } label: {
-                    Image(systemName: "ellipsis.circle")
+                    Label("Actions", systemImage: "ellipsis.circle")
                 }
                 .menuStyle(.borderlessButton)
                 .fixedSize()

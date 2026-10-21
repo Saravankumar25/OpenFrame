@@ -17,11 +17,11 @@ Production exports (schedule, Day Out of Days, call sheet, sides, reports, shot 
 5. Through the core: for each of the Final Draft, Fountain, DOCX and plain text files, preview the import and apply it as a new draft named 'Back from <format>'.
 6. Check: each new draft has 3 scenes, one scene heading contains "BUS STOP", and one element reads "You came back.".
 
-## The Story Board exports as PDF
+## The Beat Board exports as PDF
 
 1. Click Story. Click Add Act, type 'Act One' and press Enter.
 2. Click Add, choose Scene Card, type 'Meera waits at the bus stop' and press Enter.
-3. Through the core: export the Story Board as PDF.
+3. Through the core: export the Beat Board as PDF.
 4. Check: the file holds at least 500 bytes and starts with "%PDF-".
 
 ## The diagnostics bundle is written where the person chose, and holds no project text

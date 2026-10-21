@@ -246,5 +246,5 @@ extension Array {
 /// Posts the switch to another workspace (the same notification the sidebar uses).
 @MainActor
 func csShowWorkspace(_ ws: Workspace) {
-    NotificationCenter.default.post(name: .openFrameShowWorkspace, object: ws.rawValue)
+    ProjectNav.show(ws)
 }

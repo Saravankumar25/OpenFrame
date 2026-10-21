@@ -513,15 +513,29 @@ struct ScreenplayWorkspace: View {
     @State private var currentKind: ElementType = .action
     @State private var currentIndex = 0
     @State private var panels = ScreenplayPanelState()
+    @AppStorage(ScreenplayZoom.key) private var zoom = 1.0
+    /// The scene list beside the page can be hidden to give the page room (Windows: Scenes).
+    @AppStorage("openframe.screenplay.scenesHidden") private var scenesHidden = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.pageWidth) private var pageWidth
+
+    /// The scene list (120) and the page (340) side by side; with less room (a 900-point window
+    /// with the sidebar and the assistant open) the list steps aside and the page keeps it all.
+    private var roomForScenes: Bool { pageWidth >= 120 + 1 + 340 }
+    private var scenesShown: Bool { !scenesHidden && roomForScenes }
 
     private static let contentTables = ["screenplay", "screenplay_draft", "screenplay_scene", "screenplay_element", "screenplay_custom_element", "comment"]
     private static let sourceTables = ["story_character", "cast_member", "location", "story_scene_card"]
 
     var body: some View {
         let focus = model.mode == .focus
+        VStack(spacing: 0) {
+        if !focus {
+            pageBar
+            Divider()
+        }
         HSplitView {
-            if !focus {
+            if !focus && scenesShown {
                 SceneNavigator(model: model, panels: panels, currentIndex: currentIndex)
                     .frame(minWidth: 120, idealWidth: 240, maxWidth: 340)
             }
@@ -529,7 +543,7 @@ struct ScreenplayWorkspace: View {
                 if model.showReplace && !focus { ScreenplayReplaceBar(model: model) }
                 ZStack {
                     theme["well"]
-                    ScreenplayEditorHost(model: model, onMove: { p, i in
+                    ScreenplayEditorHost(model: model, zoom: zoom, zoomChanged: { zoom = $0 }, onMove: { p, i in
                         currentKind = p.kind
                         currentIndex = i
                         model.currentCustomId = p.kind == .custom ? p.customElementId : nil
@@ -541,8 +555,8 @@ struct ScreenplayWorkspace: View {
             .frame(minWidth: 340)
             .overlay(alignment: .topTrailing) { if focus { focusBar } }
         }
+        }
         .toolbar(focus ? .hidden : .automatic, for: .windowToolbar)
-        .toolbar { toolbar }
         .background { modeShortcuts }
         .onChange(of: model.mode) { _, mode in
             // Focus hides the side pane; Writing Room opens it.
@@ -619,9 +633,21 @@ struct ScreenplayWorkspace: View {
         .opacity(0).allowsHitTesting(false).accessibilityHidden(true)
     }
 
-    @ToolbarContentBuilder private var toolbar: some ToolbarContent {
-        ScreenplayPanelToolbar(state: panels, model: model, setMode: setMode)
-        ToolbarItem(placement: .principal) {
+    /// The screenplay's own controls in a row above the script; a narrow page wraps them.
+    private var pageBar: some View {
+        BDFlowLayout(spacing: 8) {
+            ScreenplayPanelButtons(state: panels, model: model)
+            elementPicker
+            pageBarRest
+        }
+        .controlSize(.small)
+        .padding(.horizontal, 12).padding(.vertical, 6)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("screenplay-page-bar")
+    }
+
+    private var elementPicker: some View {
             Menu {
                 ForEach(SharedScreenplayRules.shared.menuKinds, id: \.self) { k in
                     Button { model.textView?.setKind(k) } label: {
@@ -649,20 +675,33 @@ struct ScreenplayWorkspace: View {
             .accessibilityLabel("Element")
             .accessibilityValue(elementLabel)
             .accessibilityIdentifier("element-picker")
-        }
-        ToolbarItem(placement: .automatic) {
+            .fixedSize()
+    }
+
+    @ViewBuilder private var pageBarRest: some View {
+            Button { scenesHidden.toggle() } label: {
+                Label("Scenes", systemImage: "list.bullet.rectangle").labelStyle(.titleAndIcon)
+            }
+            .disabled(!roomForScenes)
+            .help(!roomForScenes ? "Widen the window or close the assistant to show the scene list"
+                  : scenesHidden ? "Show the scene list" : "Hide the scene list to give the page more room")
+            .accessibilityLabel(scenesShown ? "Hide Scenes" : "Show Scenes")
+            .accessibilityIdentifier("scenes-toggle")
+            Button { model.textView?.showFind() } label: {
+                Label("Find", systemImage: "magnifyingglass").labelStyle(.titleAndIcon)
+            }
+            .help("Find in the script (Command+F)")
+            .accessibilityIdentifier("find-button")
             // Opens the bar and never closes it: a second press of the same button (a double
             // click, or an accessibility press followed by a click) must not shut it again. The
             // bar's own Close button and Escape close it.
             Button { model.openReplace() } label: {
-                Label("Replace", systemImage: "arrow.left.arrow.right")
+                Label("Replace", systemImage: "arrow.left.arrow.right").labelStyle(.titleAndIcon)
             }
             .keyboardShortcut("f", modifiers: [.command, .option])
             .disabled(!model.canEdit)
             .help("Replace in the script (Command+Option+F). Command+F finds.")
             .accessibilityIdentifier("replace-toggle")
-        }
-        ToolbarItem(placement: .automatic) {
             Menu {
                 if let drafts = model.overview?.drafts {
                     ForEach(drafts, id: \.id) { d in
@@ -676,18 +715,39 @@ struct ScreenplayWorkspace: View {
                 Button("Manage Drafts…") { panels.sheet = .drafts }
                 Button("Renumber Scenes") { Task { await model.renumber() } }.disabled(!model.canEdit)
             } label: {
-                Label(model.draft?.name ?? "Draft", systemImage: "square.stack")
+                // A long draft name is shortened in the middle; the whole name is in the tooltip
+                // and the menu (owner change list item 18).
+                Label {
+                    Text(model.draft?.name ?? "Draft").lineLimit(1).truncationMode(.middle).frame(maxWidth: 180)
+                } icon: {
+                    Image(systemName: "square.stack")
+                }
+                .labelStyle(.titleAndIcon)
             }
-            .help("Drafts")
+            .help("Draft: \(model.draft?.name ?? "none")")
             .accessibilityLabel("Draft: \(model.draft?.name ?? "none"). Switch draft")
             .accessibilityIdentifier("draft-menu")
-        }
-        ToolbarItem(placement: .automatic) {
+            .fixedSize()
+            ControlGroup {
+                Button { zoom = ScreenplayZoom.zoomOut(zoom) } label: { Label("Zoom Out", systemImage: "minus.magnifyingglass").labelStyle(.titleAndIcon) }
+                    .keyboardShortcut("-", modifiers: .command)
+                    .disabled(zoom <= ScreenplayZoom.range.lowerBound)
+                    .help("Zoom out (Command+Minus)")
+                    .accessibilityIdentifier("screenplay-zoom-out")
+                Button { zoom = 1 } label: { Text(ScreenplayZoom.label(zoom)).monospacedDigit() }
+                    .keyboardShortcut("0", modifiers: .command)
+                    .help("Actual size (Command+0). Pinch on the trackpad to zoom.")
+                    .accessibilityLabel("Zoom \(ScreenplayZoom.label(zoom)), reset to 100 percent")
+                    .accessibilityIdentifier("screenplay-zoom-reset")
+                Button { zoom = ScreenplayZoom.zoomIn(zoom) } label: { Label("Zoom In", systemImage: "plus.magnifyingglass").labelStyle(.titleAndIcon) }
+                    .keyboardShortcut("=", modifiers: .command)
+                    .disabled(zoom >= ScreenplayZoom.range.upperBound)
+                    .help("Zoom in (Command+Plus)")
+                    .accessibilityIdentifier("screenplay-zoom-in")
+            }
+            .fixedSize()
             ScreenplayToolsMenu(state: panels, model: model, setMode: setMode)
-        }
-        ToolbarItem(placement: .automatic) {
-            // The page count and the save state share one item: the toolbar has room for little
-            // more, and both are short.
+                .fixedSize()
             HStack(spacing: 8) {
                 if let page = model.pageLabel {
                     Text(page)
@@ -703,7 +763,6 @@ struct ScreenplayWorkspace: View {
                     .accessibilityIdentifier("editor-save-status")
             }
             .fixedSize()
-        }
     }
 
     private var elementLabel: String {
@@ -736,7 +795,7 @@ struct SceneNavigator: View {
                             .disabled(NavigatorColumnData.isDisabled(c, chosen: model.navColumns, data: model.navData))
                     }
                 } label: {
-                    Image(systemName: "tablecells")
+                    Label("Columns", systemImage: "tablecells").labelStyle(.titleAndIcon)
                 }
                 .menuStyle(.borderlessButton)
                 .fixedSize()
@@ -807,9 +866,25 @@ struct SceneNavigator: View {
     }
 }
 
+/// How large the screenplay page is drawn (owner change list items 10 and 14, as on Windows):
+/// 50 to 200 percent, kept for this Mac. Only the view is scaled; the text, the caret, the undo
+/// history, the page layout and every export stay exactly as they are.
+enum ScreenplayZoom {
+    static let key = "openframe.screenplay.zoom"
+    static let range: ClosedRange<Double> = 0.5...2.0
+    static let step = 0.1
+
+    static func clamp(_ z: Double) -> Double { min(range.upperBound, max(range.lowerBound, (z * 100).rounded() / 100)) }
+    static func zoomIn(_ z: Double) -> Double { clamp(((z + step) * 10).rounded() / 10) }
+    static func zoomOut(_ z: Double) -> Double { clamp(((z - step) * 10).rounded() / 10) }
+    static func label(_ z: Double) -> String { "\(Int((z * 100).rounded()))%" }
+}
+
 /// The text view inside a scroll view, centred on a page-coloured column.
 struct ScreenplayEditorHost: NSViewRepresentable {
     let model: ScreenplayWorkspaceModel
+    var zoom: Double = 1
+    var zoomChanged: (Double) -> Void = { _ in }
     let onMove: (EditorParagraph, Int) -> Void
     @Environment(\.ofTheme) private var theme
 
@@ -829,8 +904,22 @@ struct ScreenplayEditorHost: NSViewRepresentable {
         // resizing the document never resizes the scroll view, so nothing feeds back.
         scroll.hasHorizontalScroller = true
         scroll.autohidesScrollers = true
+        // Pinch on the trackpad zooms the page; the toolbar and Command+Plus and Minus do too.
+        scroll.allowsMagnification = true
+        scroll.minMagnification = ScreenplayZoom.range.lowerBound
+        scroll.maxMagnification = ScreenplayZoom.range.upperBound
+        scroll.magnification = ScreenplayZoom.clamp(zoom)
         view.autoresizingMask = []
         scroll.documentView = view
+        context.coordinator.magnifyObserver = NotificationCenter.default.addObserver(
+            forName: NSScrollView.didEndLiveMagnifyNotification, object: scroll, queue: .main
+        ) { [weak scroll] _ in
+            MainActor.assumeIsolated {
+                guard let scroll else { return }
+                context.coordinator.zoomChanged(ScreenplayZoom.clamp(scroll.magnification))
+                Self.fitDocumentWidth(scroll)
+            }
+        }
         scroll.contentView.postsFrameChangedNotifications = true
         context.coordinator.frameObserver = NotificationCenter.default.addObserver(
             forName: NSView.frameDidChangeNotification, object: scroll.contentView, queue: .main
@@ -857,7 +946,9 @@ struct ScreenplayEditorHost: NSViewRepresentable {
 
     static func dismantleNSView(_ scroll: NSScrollView, coordinator: Coordinator) {
         if let observer = coordinator.frameObserver { NotificationCenter.default.removeObserver(observer) }
+        if let observer = coordinator.magnifyObserver { NotificationCenter.default.removeObserver(observer) }
         coordinator.frameObserver = nil
+        coordinator.magnifyObserver = nil
     }
 
     func updateNSView(_ scroll: NSScrollView, context: Context) {
@@ -865,13 +956,24 @@ struct ScreenplayEditorHost: NSViewRepresentable {
         view.backgroundColor = NSColor(theme["panel"])
         view.insertionPointColor = NSColor(theme["ink"])
         context.coordinator.onMove = onMove
+        context.coordinator.zoomChanged = zoomChanged
+        let wanted = ScreenplayZoom.clamp(zoom)
+        if abs(scroll.magnification - wanted) > 0.001 {
+            // Keep the caret's line in view while the page grows or shrinks.
+            let caret = view.firstRect(forCharacterRange: view.selectedRange(), actualRange: nil)
+            let anchor = view.window.map { view.convert($0.convertFromScreen(caret).origin, from: nil) } ?? .zero
+            scroll.setMagnification(wanted, centeredAt: anchor)
+            Self.fitDocumentWidth(scroll)
+        }
     }
 
     @MainActor
     final class Coordinator: NSObject, ScreenplayTextViewDelegate {
         let model: ScreenplayWorkspaceModel
         var onMove: (EditorParagraph, Int) -> Void
+        var zoomChanged: (Double) -> Void = { _ in }
         var frameObserver: NSObjectProtocol?
+        var magnifyObserver: NSObjectProtocol?
         init(model: ScreenplayWorkspaceModel, onMove: @escaping (EditorParagraph, Int) -> Void) {
             self.model = model
             self.onMove = onMove

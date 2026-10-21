@@ -30,8 +30,8 @@
 
 .story-inline { width: 100%; border: 1px solid var(--accent); border-radius: 6px; padding: 4px 6px; font: inherit; background: var(--panel); resize: vertical; box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 13%, transparent); outline: none; }
 .story-empty-hint { color: var(--muted); font-size: 12px; padding: 4px 2px 6px; line-height: 1.4; }
-.story-add-row { display: flex; gap: 4px; margin-top: 4px; }
-.story-add { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; color: var(--muted); background: transparent; border: 1px dashed var(--line2); border-radius: 7px; padding: 3px 7px; text-align: left; }
+.story-add-row { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; min-width: 0; } /* wraps inside a narrow act instead of spilling out (owner item 15) */
+.story-add { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; color: var(--muted); background: transparent; border: 1px dashed var(--line2); border-radius: 7px; padding: 3px 7px; text-align: left; white-space: nowrap; }
 .story-add:hover { color: var(--ink); border-color: var(--accent); background: color-mix(in oklab, var(--panel) 53%, transparent); }
 .story-add-act { flex: none; align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; padding: 10px 14px; border: 2px dashed var(--line2); border-radius: 12px; background: transparent; color: var(--muted); font-weight: 600; }
 .story-add-act:hover { border-color: var(--accent); color: var(--ink); }
@@ -46,6 +46,8 @@
 /* Outline */
 .story-outline { padding-bottom: 8px; }
 .story-outline .ol { cursor: default; }
+/* The outline is the reading view of the story: whole lines wrap instead of ending in an ellipsis (UX brief 6.1). */
+.story-outline .ol .truncate { white-space: normal; overflow: visible; overflow-wrap: anywhere; }
 .story-outline .ol.sel { background: var(--blue-soft); }
 .story-outline .grip { cursor: grab; display: inline-flex; }
 .story-outline .story-lot { margin-top: 14px; }
@@ -80,3 +82,28 @@
 .sc-rich .sc-facts { font-size: .86em; color: var(--ink2, var(--ink)); margin-top: 4px; font-weight: 600; }
 .sc-rich .ind { gap: 6px; }
 .story-canvas.zoom-low .sc.sc-rich .sc-long, .story-canvas.zoom-low .sc.sc-rich .sc-note { display: none; }
+.rel-suggest { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin: 2px 0 12px; }
+.rel-suggest .chip { border: 0; cursor: pointer; }
+.rel-suggest .chip:hover { background: var(--accent-soft); color: var(--accent-d); }
+
+/* Beat Board layout (owner request 2026-10-20, openframe-changes.docx item 2): each act is a full-height
+   column that scrolls on its own, the board scrolls only sideways, and a scene card shows its whole
+   text instead of cutting it after two lines. The overview zoom (70 percent and below) still shortens
+   cards; the full text is always in the card drawer. */
+.story-canvas { overflow-x: auto; overflow-y: hidden; }
+.story-canvas .board { height: 100%; min-height: 0; align-items: stretch; }
+.story-canvas .actband { display: flex; flex-direction: column; max-height: 100%; width: calc(256px * var(--z, 1)); }
+.story-canvas .actband > .ah { flex: none; }
+.story-canvas .act-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding-right: 3px; }
+.story-canvas .parking, .story-canvas .unassigned-col { display: flex; flex-direction: column; max-height: 100%; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+.story-canvas .sc { display: block; -webkit-line-clamp: unset; overflow: visible; white-space: normal; overflow-wrap: anywhere; }
+.story-canvas .sc .ind { position: static; margin-top: 5px; }
+.story-canvas .sc.sc-rich { padding-bottom: 7px; }
+.story-canvas .sc-rich .sc-text, .story-canvas .sc-rich .sc-long { display: block; -webkit-line-clamp: unset; overflow: visible; }
+.story-canvas.zoom-low .sc { display: -webkit-box; -webkit-line-clamp: 3; overflow: hidden; }
+.story-canvas .story-add-act { align-self: flex-start; }
+
+/* The Story page: a quiet writing column, like a notepad (owner request 2026-10-20). */
+.story-page { display: flex; flex-direction: column; min-height: 0; }
+.story-page-text { flex: 1 1 auto; min-height: 320px; width: 100%; max-width: 820px; margin: 12px auto 24px; display: block; resize: none; padding: 40px 48px; font: 16px/1.65 Georgia, "Times New Roman", serif; color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 6px; overflow-wrap: anywhere; }
+.story-page-text:focus-visible { outline: 2px solid var(--accent-ring); outline-offset: 2px; }

@@ -10,40 +10,48 @@ import SwiftUI
 import OpenFrameCore
 
 struct BreakdownWorkspace: View {
+    /// The one tab this place shows (the Breakdown workspace, or a Production tab); nil shows
+    /// the hub with its own tab bar (tests and previews).
+    var fixed: BDTab?
     @Environment(AppModel.self) private var app
-    @State private var hub: BreakdownHub?
+    @Environment(ProjectHubs.self) private var hubs: ProjectHubs?
+    @State private var own: BreakdownHub?
 
     var body: some View {
         Group {
-            if let hub {
-                BreakdownContent(hub: hub)
+            if let hub = hubs?.breakdown ?? own {
+                BreakdownContent(hub: hub, fixed: fixed)
             } else {
                 ProgressView()
             }
         }
         .fitsWindow()
-        .task { if hub == nil { hub = BreakdownHub(app: app) } }
+        .task { if hubs == nil, own == nil { own = BreakdownHub(app: app) } }
     }
 }
 
 struct BreakdownContent: View {
     @Bindable var hub: BreakdownHub
+    var fixed: BDTab?
     @Environment(AppModel.self) private var app
     @Environment(\.ofTheme) private var theme
 
     var body: some View {
         VStack(spacing: 0) {
-            tabBar
-            Divider()
+            if fixed == nil {
+                tabBar
+                Divider()
+            }
             content.frame(maxWidth: .infinity, maxHeight: .infinity)
         }
+        .followsHubTab(hub.tab, fixed: fixed, set: { hub.tab = $0 }, place: { $0.place })
         .background(theme["bg"])
         .overlay(alignment: .bottom) { BDNoticeBar(hub: hub) }
+        .sheet(item: $hub.exportModel) { m in CSExportSheet(model: m) { hub.exportModel = nil } }
         .environment(hub)
         .task(id: app.changes.key(BDTables.categoryStyle)) { await hub.reloadStyles() }
         .task(id: app.changes.key(BDTables.members)) { await hub.reloadMembers() }
-        .accessibilityElement(children: .contain)
-        .accessibilityIdentifier("breakdown-workspace")
+        .hubContainer("breakdown-workspace", standalone: fixed == nil)
     }
 
     private var tabBar: some View {
@@ -62,7 +70,7 @@ struct BreakdownContent: View {
     }
 
     @ViewBuilder private var content: some View {
-        switch hub.tab {
+        switch fixed ?? hub.tab {
         case .breakdown: BreakdownTabView(model: hub.breakdown)
         case .catalog: CatalogView(model: hub.catalog)
         case .locations: LocationsView(model: hub.locations)
@@ -79,6 +87,9 @@ struct BreakdownTabView: View {
     @Environment(AppModel.self) private var app
     @Environment(BreakdownHub.self) private var hub
     @Environment(\.ofTheme) private var theme
+    /// Hide scenes and Hide panel (Windows: the source bar's two buttons), remembered on this Mac.
+    @AppStorage("openframe.breakdown.listHidden") private var listHidden = false
+    @AppStorage("openframe.breakdown.panelHidden") private var panelHidden = false
 
     private var dataKey: String {
         "\(app.changes.key(BDTables.production))|\(model.saved.filter.rawValue)|\(model.saved.category?.rawValue ?? "")|\(model.catalogItemId ?? "")"
@@ -139,8 +150,10 @@ struct BreakdownTabView: View {
             if let f = model.view?.catalogFilter { catalogBar(f) }
             GeometryReader { geo in
                 HStack(spacing: 0) {
-                    SceneListView(model: model).frame(width: geo.size.width < 1000 ? 210 : 250)
-                    Divider()
+                    if !listHidden {
+                        SceneListView(model: model).frame(width: geo.size.width < 1000 ? 210 : 250)
+                        Divider()
+                    }
                     center
                 }
             }
@@ -162,6 +175,28 @@ struct BreakdownTabView: View {
                 Button("Change source") { model.sheet = .selectSource }.controlSize(.small)
                     .accessibilityIdentifier("change-source")
             }
+            Button {
+                hub.exportBreakdown(currentSceneId: model.detail?.sceneId, sceneLabel: model.detail?.number.map { "Scene \($0)" })
+            } label: {
+                Label("Export", systemImage: "square.and.arrow.up")
+            }
+            .controlSize(.small)
+            .help("Export the breakdown as PDF, CSV or a spreadsheet")
+            .accessibilityIdentifier("breakdown-export")
+            Button { listHidden.toggle() } label: {
+                Label(listHidden ? "Show scenes" : "Hide scenes", systemImage: "sidebar.left").labelStyle(.titleAndIcon)
+            }
+            .buttonStyle(.borderless)
+            .controlSize(.small)
+            .help(listHidden ? "Show the scene list" : "Hide the scene list")
+            .accessibilityIdentifier("breakdown-toggle-scenes")
+            Button { panelHidden.toggle() } label: {
+                Label(panelHidden ? "Show panel" : "Hide panel", systemImage: "sidebar.right").labelStyle(.titleAndIcon)
+            }
+            .buttonStyle(.borderless)
+            .controlSize(.small)
+            .help(panelHidden ? "Show the scene breakdown panel" : "Hide the scene breakdown panel to give the script more room")
+            .accessibilityIdentifier("breakdown-toggle-panel")
         }
         .font(.callout)
         .foregroundStyle(theme["blue-t"])
@@ -222,11 +257,13 @@ struct BreakdownTabView: View {
                 // The elements panel takes up to 360 points, less when the window is narrow, and the
                 // script takes the rest. Fixed widths from the room given, so no pane asks for more.
                 GeometryReader { geo in
-                    let side = min(360, max(250, geo.size.width * 0.38))
+                    let side = panelHidden ? 0 : min(360, max(250, geo.size.width * 0.38))
                     HStack(spacing: 0) {
-                        ScriptPaneView(model: model, detail: d).frame(width: max(120, geo.size.width - side - 1))
-                        Divider()
-                        ElementsPanelView(model: model, detail: d).frame(width: side)
+                        ScriptPaneView(model: model, detail: d).frame(width: max(120, geo.size.width - (panelHidden ? 0 : side + 1)))
+                        if !panelHidden {
+                            Divider()
+                            ElementsPanelView(model: model, detail: d).frame(width: side)
+                        }
                     }
                 }
             } else if let f = model.detailFailure {

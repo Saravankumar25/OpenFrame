@@ -564,8 +564,19 @@ struct ScreenplayModelTestsRules {
         #expect(ElementRules.onEnterEmpty(.action) == .sceneHeading)
         #expect(ElementRules.onEnterEmpty(.character) == .action)
         #expect(ElementRules.onEnterEmpty(.sceneHeading) == nil)
-        #expect(ElementRules.tabNext(.character) == .parenthetical)
-        #expect(ElementRules.tabPrev(.dialogue) == .character)
+        // Tab goes round every built-in element in menu order and wraps (owner item 7, as on Windows).
+        var kind = ElementType.sceneHeading
+        var seen: [ElementType] = []
+        for _ in 0..<ElementRules.shortcutOrder.count {
+            seen.append(kind)
+            kind = try! #require(ElementRules.tabNext(kind))
+        }
+        #expect(seen == ElementRules.shortcutOrder)
+        #expect(kind == .sceneHeading)
+        #expect(ElementRules.tabNext(.shot) == .sceneHeading)
+        #expect(ElementRules.tabPrev(.sceneHeading) == .shot)
+        #expect(ElementRules.tabPrev(.dialogue) == .parenthetical)
+        #expect(ElementRules.tabNext(.note) == .action)
     }
 
     @Test func pageBreaksAndCustomElementsAreLeftAlone() {
@@ -758,22 +769,23 @@ struct ScreenplayModelTestsKeyboard {
         #expect(run(kb.tab(forward: false, in: stateWith(t, "X"))).caretBlock.kind == ElementRules.tabPrev(t))
     }
 
-    @Test func dialogueBlockCycles() throws {
+    /// Tab goes round every element and wraps (owner change list item 7, as on Windows).
+    @Test func tabGoesRoundEveryElement() throws {
         let kb = try keyboard()
         var s = stateWith(.action, "")
         var seen: [ElementType] = []
-        for _ in 0..<4 {
+        for _ in 0..<7 {
             s = run(kb.tab(forward: true, in: s))
             seen.append(s.caretBlock.kind)
         }
-        #expect(seen == [.character, .parenthetical, .dialogue, .parenthetical])
+        #expect(seen == [.character, .parenthetical, .dialogue, .transition, .shot, .sceneHeading, .action])
     }
 
-    @Test func tabNeverLeavesThePageEvenWhenNothingChanges() throws {
+    @Test func tabNeverLeavesThePage() throws {
         let kb = try keyboard()
         let r = kb.tab(forward: true, in: stateWith(.transition, "CUT TO:"))
         #expect(r.handled)
-        #expect(r.state.caretBlock.kind == .action)
+        #expect(r.state.caretBlock.kind == .shot)
     }
 
     @Test(arguments: overridePairs)
@@ -1149,7 +1161,7 @@ struct ScreenplayModelTestsSuggest {
         let v = Suggest.scriptValues(suggestScript)
         let items = Suggest.suggestions(.init(kind: .character, from: 0, to: 0, query: ""), script: v, project: suggestProject, canCreate: true)
         #expect(items.map { [$0.label, $0.source.rawValue] } == [
-            ["MEERA", "Script"], ["RAVI", "Script"], ["ANJALI", "Story Board"], ["CONDUCTOR", "Cast"],
+            ["MEERA", "Script"], ["RAVI", "Script"], ["ANJALI", "Beat Board"], ["CONDUCTOR", "Cast"],
         ])
     }
 

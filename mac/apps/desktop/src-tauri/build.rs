@@ -58,9 +58,10 @@ fn main() {
         link_storekit_bridge();
     }
     // Only these commands may be invoked by the webview, each named in the capability file.
-    tauri_build::try_build(tauri_build::Attributes::new().app_manifest(
-        tauri_build::AppManifest::new().commands(APP_COMMANDS),
-    ))
+    tauri_build::try_build(
+        tauri_build::Attributes::new()
+            .app_manifest(tauri_build::AppManifest::new().commands(APP_COMMANDS)),
+    )
     .expect("the Tauri build step");
 }
 

@@ -93,17 +93,31 @@ struct AppCommands: Commands {
             .disabled(!isProject)
         }
         CommandMenu("Go") {
-            // Every workspace, so the keyboard reaches each one; the main ones have a shortcut.
+            // Back and Forward through the pages visited (Windows: the top-bar arrows).
+            Button("Back") { NotificationCenter.default.post(name: .openFrameNavigateBack, object: nil) }
+                .keyboardShortcut("[", modifiers: .command)
+                .disabled(!isProject || !ProjectSidebar.shared.canGoBack)
+            Button("Forward") { NotificationCenter.default.post(name: .openFrameNavigateForward, object: nil) }
+                .keyboardShortcut("]", modifiers: .command)
+                .disabled(!isProject || !ProjectSidebar.shared.canGoForward)
+            Divider()
+            // The sidebar workspaces with Control+Command+1 to 8, then the project pages.
             ForEach(Workspace.allCases) { ws in
                 if let key = ws.shortcut {
-                    Button(ws.title) { NotificationCenter.default.post(name: .openFrameShowWorkspace, object: ws.rawValue) }
+                    Button(ws.title) { ProjectNav.show(ws) }
                         .keyboardShortcut(key, modifiers: [.command, .control])
                         .disabled(!isProject)
                 } else {
-                    Button(ws.title) { NotificationCenter.default.post(name: .openFrameShowWorkspace, object: ws.rawValue) }
+                    Button(ws.title) { ProjectNav.show(ws) }
                         .disabled(!isProject)
                 }
             }
+            Menu("Production Tab") {
+                ForEach(ProductionTab.allCases) { tab in
+                    Button(tab.title) { ProjectNav.show(.production, tab: tab) }
+                }
+            }
+            .disabled(!isProject)
             Divider()
             Button("Project Settings") { ProjectSettingsRouter.open() }
                 .disabled(!isProject)

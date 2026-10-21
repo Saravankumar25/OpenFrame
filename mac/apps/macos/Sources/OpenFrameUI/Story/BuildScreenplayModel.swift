@@ -1,4 +1,4 @@
-// Build Screenplay from the Story Board and Apply Board Order to the written screenplay. The
+// Build Screenplay from the Beat Board and Apply Board Order to the written screenplay. The
 // preview comes first and nothing is created until the person confirms. An existing screenplay
 // is never overwritten: the build adds a new draft or a new screenplay beside the others.
 // Owner decision 2026-10-07: a card without a scene heading is never built silently and no
@@ -170,7 +170,7 @@ final class ApplyOrderModel {
         defer { busy = false }
         do {
             _ = try await core.storyApplyOrder(StoryOrderArgs(episodeId: story.episodeId, draftId: p.draftId, confirmed: true))
-            story.say("Applied the Story Board order to \u{201C}\(p.draftName ?? "the screenplay")\u{201D}", undoable: true)
+            story.say("Applied the Beat Board order to \u{201C}\(p.draftName ?? "the screenplay")\u{201D}", undoable: true)
             story.sheet = nil
             return true
         } catch {

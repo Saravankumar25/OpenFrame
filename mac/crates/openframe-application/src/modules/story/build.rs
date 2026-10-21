@@ -1,4 +1,4 @@
-//! Build Screenplay from the Story Board (FSD §18, §91; FSD-STORY-020..025).
+//! Build Screenplay from the Beat Board (FSD §18, §91; FSD-STORY-020..025).
 //!
 //! The build reads active Scene Cards in exact board order, requires a valid
 //! heading for every included card (supplied inline or excluded), and creates a
@@ -31,13 +31,13 @@ pub fn register(r: &mut Registry) {
         ));
     r.command("story.build_screenplay", build_screenplay)
         .meta(M::edit(
-            "Build a NEW screenplay or NEW draft from the Story Board (never overwrites).",
+            "Build a NEW screenplay or NEW draft from the Beat Board (never overwrites).",
         ));
     r.query("story.order_preview", order_preview)
         .meta(M::compute(
-            "Preview of applying the Story Board order to a screenplay draft.",
+            "Preview of applying the Beat Board order to a screenplay draft.",
         ));
-    r.command("story.apply_order", apply_order).meta(M::edit("Reorder a screenplay draft's scenes to match the Story Board (confirmed when it renumbers).").confirm());
+    r.command("story.apply_order", apply_order).meta(M::edit("Reorder a screenplay draft's scenes to match the Beat Board (confirmed when it renumbers).").confirm());
 }
 
 // ===================================================================== DTOs
@@ -47,7 +47,7 @@ pub fn register(r: &mut Registry) {
 #[serde(rename_all = "camelCase")]
 pub struct StoryBuildRow {
     pub card_id: String,
-    /// 1-based order in the Story Board at this moment.
+    /// 1-based order in the Beat Board at this moment.
     #[ts(type = "number")]
     pub order: i64,
     pub short_description: String,
@@ -71,7 +71,7 @@ pub struct StoryScreenplayOption {
     pub current_draft_name: Option<String>,
     /// The current draft already contains written text beyond headings.
     pub has_written_scenes: bool,
-    /// Name the next "from Story Board" draft would get.
+    /// Name the next "from Beat Board" draft would get.
     pub next_draft_name: String,
 }
 
@@ -163,7 +163,7 @@ pub struct StoryBuildResult {
 /// Marks description text inserted as action (FSD §91.2: editable draft text,
 /// not final prose). Notes never print.
 pub const TEMPORARY_ACTION_NOTE: &str =
-    "Temporary action text from the Story Board card. Rewrite it as screenplay prose.";
+    "Temporary action text from the Beat Board card. Rewrite it as screenplay prose.";
 
 fn element(element_type: ElementType, text: &str) -> NewElement {
     NewElement::new(element_type, text)
@@ -242,7 +242,7 @@ fn next_draft_name(c: &Connection, screenplay_id: &str) -> AppResult<String> {
         [screenplay_id],
         |r| r.get(0),
     )?;
-    Ok(format!("Draft {} from Story Board", n + 1))
+    Ok(format!("Draft {} from Beat Board", n + 1))
 }
 
 pub(crate) fn screenplays_in_scope(
@@ -313,7 +313,7 @@ fn build_preview(
     actor: &Actor,
     a: StoryBuildPreviewArgs,
 ) -> AppResult<StoryBuildPreview> {
-    actor.require(Capability::View, "view the Story Board")?;
+    actor.require(Capability::View, "view the Beat Board")?;
     core.project()?.store.read(|c| {
         let ep = a.episode_id.as_deref();
         tree::check_episode(c, ep)?;
@@ -376,7 +376,7 @@ fn build_screenplay(
     let draft_arg = optional_text(a.draft_name.clone(), "Draft name", 120)?;
     let s = core.project()?;
     let summary = format!(
-        "Built screenplay from Story Board ({} scene{})",
+        "Built screenplay from Beat Board ({} scene{})",
         a.include.len(),
         if a.include.len() == 1 { "" } else { "s" }
     );
@@ -390,13 +390,13 @@ fn build_screenplay(
         for inc in &a.include {
             if !rank.contains_key(inc.card_id.as_str()) {
                 return Err(AppError::invalid_input(
-                    "Only Scene Cards in the active Story Board can be built. Parking Lot and deleted cards are excluded.",
+                    "Only Scene Cards in the active Beat Board can be built. Parking Lot and deleted cards are excluded.",
                 ));
             }
             let h = optional_text(inc.heading.clone(), "Scene heading", HEADING_MAX)?;
             overrides.insert(inc.card_id.clone(), h);
         }
-        // Source order is exactly the Story Board order at the moment of build (FSD §91.3).
+        // Source order is exactly the Beat Board order at the moment of build (FSD §91.3).
         let mut chosen: Vec<&str> = overrides.keys().map(|k| k.as_str()).collect();
         chosen.sort_by_key(|id| rank[id]);
 
@@ -470,7 +470,7 @@ fn build_screenplay(
         };
         let draft_name = match draft_arg.clone() {
             Some(n) => n,
-            None if created => "Draft 1 from Story Board".to_string(),
+            None if created => "Draft 1 from Beat Board".to_string(),
             None => next_draft_name(c, &screenplay_id)?,
         };
         // Scene content (FSD §91.2): the heading lives on the scene row (the
@@ -510,7 +510,7 @@ fn build_screenplay(
             &screenplay_id,
             DraftSpec {
                 name: &draft_name,
-                note: Some("Built from the Story Board."),
+                note: Some("Built from the Beat Board."),
                 status: DraftStatus::Draft,
                 created_from: None,
                 revision: None,
@@ -718,7 +718,7 @@ fn moves_for(current: &[(String, String)], new_order: &[String]) -> Vec<StorySce
 }
 
 fn order_preview(core: &AppCore, actor: &Actor, a: StoryOrderArgs) -> AppResult<StoryOrderPreview> {
-    actor.require(Capability::View, "view the Story Board")?;
+    actor.require(Capability::View, "view the Beat Board")?;
     core.project()?.store.read(|c| {
         let ep = a.episode_id.as_deref();
         let screenplays = screenplays_in_scope(c, ep)?;
@@ -761,7 +761,7 @@ fn apply_order(core: &AppCore, actor: &Actor, a: StoryOrderArgs) -> AppResult<St
     })?;
     s.store.mutate(
         actor,
-        MutationMeta::new("story.apply_order", format!("Applied Story Board order to “{}”", short(&name)), Capability::Edit)
+        MutationMeta::new("story.apply_order", format!("Applied Beat Board order to “{}”", short(&name)), Capability::Edit)
             .target("screenplay_draft", &draft_id),
         |tx| {
             let c = tx.conn();

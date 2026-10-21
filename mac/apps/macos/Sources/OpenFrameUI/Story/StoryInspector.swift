@@ -75,7 +75,7 @@ private struct CardInspector: View {
         Group {
             if d.missing {
                 InspectorFrame(typeLabel: "Scene Card", title: "Scene Card", onClose: close) {
-                    Text("This Scene Card is no longer on the Story Board. It may have been deleted.").foregroundStyle(.secondary)
+                    Text("This Scene Card is no longer on the Beat Board. It may have been deleted.").foregroundStyle(.secondary)
                 } footer: { EmptyView() }
             } else if let detail = d.detail, let f = d.fields {
                 let c = detail.card
@@ -239,7 +239,7 @@ private struct BeatInspector: View {
                 }
             } else {
                 InspectorFrame(typeLabel: "Beat Card", title: "Beat", onClose: { model.openDrawer(nil) }) {
-                    Text("This beat is no longer on the Story Board. It may have been deleted.").foregroundStyle(.secondary)
+                    Text("This beat is no longer on the Beat Board. It may have been deleted.").foregroundStyle(.secondary)
                 } footer: { EmptyView() }
             }
         }
@@ -301,7 +301,7 @@ private struct SequenceInspector: View {
                 }
             } else {
                 InspectorFrame(typeLabel: "Sequence", title: "Sequence", onClose: { model.openDrawer(nil) }) {
-                    Text("This sequence is no longer on the Story Board. It may have been deleted.").foregroundStyle(.secondary)
+                    Text("This sequence is no longer on the Beat Board. It may have been deleted.").foregroundStyle(.secondary)
                 } footer: { EmptyView() }
             }
         }

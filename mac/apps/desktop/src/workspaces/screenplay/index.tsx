@@ -6,15 +6,13 @@ import { Banner, Button, EmptyState, Skeleton } from "../../design-system";
 import { call } from "../../ipc/client";
 import { reportError } from "../../ipc/query";
 import type { CreatedScreenplay } from "../../ipc/generated/CreatedScreenplay";
-import type { CommentDto } from "../../ipc/generated/CommentDto";
 import type { InterchangeImportReport } from "../../ipc/generated/InterchangeImportReport";
 import type { ScreenplayLocation } from "../../ipc/generated/ScreenplayLocation";
 import { useIntent, useNav } from "../../app/stores";
 import { toast } from "../../app/toast";
-import { useDocument, useOverview } from "./api";
+import { useOverview } from "./api";
 import { ScreenplayView } from "./ScreenplayView";
 import { CompareView } from "./CompareView";
-import { ReviewView } from "./ReviewView";
 import { ImportScreenplayDialog } from "../../features/interchange";
 import { useLayout } from "./util";
 import "./screenplay.css";
@@ -103,10 +101,6 @@ export default function ScreenplayWorkspace() {
 
   const o = overview.data;
   const drafts = o?.drafts ?? [];
-  const current = drafts.find((d) => d.isCurrent) ?? drafts[0];
-  const openId = layout.draftId && drafts.some((d) => d.id === layout.draftId) ? layout.draftId : current?.id ?? null;
-  // Review needs the open document for thread actions (it is cached with the editor's query).
-  const reviewDoc = useDocument(route.sub === "review" ? openId : null);
 
   // Rendered at a stable position (see the return below) so the dialog keeps
   // its report step when the page behind it changes after an import.
@@ -204,14 +198,14 @@ export default function ScreenplayWorkspace() {
                       go({ workspace: "story" });
                     }}
                   >
-                    Build from Story Board
+                    Build from Beat Board
                   </Button>
                   <Button onClick={() => setImportOpen(true)}>Import Screenplay</Button>
                 </>
               ) : undefined
             }
           >
-            Write from scratch, or build your first screenplay scenes from the Story Board. Start writing or use Build Screenplay.
+            Write from scratch, or build your first screenplay scenes from the Beat Board. Start writing or use Build Screenplay.
             {!o.permissions.edit && <div className="sm" style={{ marginTop: 8 }}>Your role can view the screenplay once someone creates it.</div>}
           </EmptyState>
         </div>
@@ -220,33 +214,9 @@ export default function ScreenplayWorkspace() {
 
     const scopeParams = { ...(o.episodeId ? { episodeId: o.episodeId } : {}), screenplayId: o.screenplay.id };
     const backToScript = () => go({ workspace: "screenplay", params: scopeParams });
-    const jumpFromReview = (c: CommentDto) =>
-      go({
-        workspace: "screenplay",
-        params: {
-          ...scopeParams,
-          ...(c.sceneId ? { sceneId: (c.contextMoved || c.targetDeleted ? c.nearestSceneId : c.sceneId) ?? c.sceneId } : {}),
-          commentId: c.id,
-        },
-      });
-
     if (route.sub === "compare") {
       return <CompareView drafts={drafts} initialA={compareIds.a} initialB={compareIds.b} onBack={backToScript} />;
     }
-    if (route.sub === "review") {
-      return (
-        <ReviewView
-          screenplayId={o.screenplay.id}
-          drafts={drafts}
-          doc={reviewDoc.data ?? null}
-          permissions={o.permissions}
-          initialRoundId={route.params?.reviewRoundId ?? null}
-          onBack={backToScript}
-          onJumpToComment={jumpFromReview}
-        />
-      );
-    }
-
     return (
         <ScreenplayView
           overview={o}
@@ -256,7 +226,6 @@ export default function ScreenplayWorkspace() {
             setCompareIds({ a, b });
             go({ workspace: "screenplay", sub: "compare", params: scopeParams });
           }}
-          onReview={() => go({ workspace: "screenplay", sub: "review", params: scopeParams })}
           onImport={() => setImportOpen(true)}
           onSwitchScreenplay={switchScreenplay}
         />

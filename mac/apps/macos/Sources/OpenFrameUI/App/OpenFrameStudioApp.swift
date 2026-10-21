@@ -112,6 +112,7 @@ public struct OpenFrameStudioApp: App {
     public var body: some Scene {
         WindowGroup("OpenFrame Studio", id: "main") {
             RootView()
+                .settingsOpener()
                 .environment(model)
                 .environment(themes)
                 .openFrameTheme(themes)

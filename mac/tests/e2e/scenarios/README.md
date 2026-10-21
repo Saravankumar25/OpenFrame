@@ -149,5 +149,6 @@ Meera waits for the late train with a red umbrella.
 | `95-reachability.md` | `95-reachability.test.mjs` | 2 | None |
 | `96-keyboard-and-screen-reader.md` | `96-keyboard-and-screen-reader.test.mjs` | 9 | Windows UI Automation (Narrator's tree) |
 | `97-performance.md` | `97-performance.test.mjs` | 4 | Windows performance counters |
+| `98-layout-geometry.md` | `98-layout-geometry.test.mjs` | 2 | Window sizes set through WebDriver; geometry read from the WebView2 page |
 
 Total: 197 scenarios in 41 files.

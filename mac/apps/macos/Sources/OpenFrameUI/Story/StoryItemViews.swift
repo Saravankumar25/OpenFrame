@@ -1,4 +1,4 @@
-// The things on the Story Board: scene cards, beats, sequence blocks, their menus and the list
+// The things on the Beat Board: scene cards, beats, sequence blocks, their menus and the list
 // that holds them. Board and Outline share the menu and the keyboard handling.
 
 import AppKit
@@ -203,7 +203,8 @@ struct StoryCardView: View {
                 Text(blank ? (isBeat ? "Blank beat" : "Blank scene card") : text)
                     .italic(blank)
                     .foregroundStyle(converted || blank ? theme["muted"] : theme["ink"])
-                    .lineLimit(4)
+                    .lineLimit(clamp)
+                    .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 indicators(converted: converted)
             }
@@ -227,6 +228,10 @@ struct StoryCardView: View {
 
     private var shape: RoundedRectangle { RoundedRectangle(cornerRadius: 8, style: .continuous) }
 
+    /// A card shows its whole text (owner request 2026-10-20, as on Windows); only the overview
+    /// zoom (70 percent and below) shortens it. The full text is always in the card drawer.
+    private var clamp: Int? { zoom <= 0.7 ? 3 : nil }
+
     private func richFacts() -> String {
         guard case let .card(c) = item else { return "" }
         // The long description and note previews are on the card face, so a screen reader reads them too.
@@ -236,22 +241,30 @@ struct StoryCardView: View {
 
     @ViewBuilder private func richFace(_ c: StorySceneCardDto, _ t: StoryCardToggles) -> some View {
         if t.sceneHeading, let h = c.sceneHeading, !h.isEmpty {
-            Text(h).font(.system(size: 12 * zoom, design: .monospaced).weight(.bold)).textCase(.uppercase).lineLimit(1).truncationMode(.tail)
+            Text(h).font(.system(size: 12 * zoom, design: .monospaced).weight(.bold)).textCase(.uppercase)
+                .lineLimit(clamp == nil ? nil : 1).truncationMode(.tail)
+                .fixedSize(horizontal: false, vertical: true)
+                .help(h)
         }
         if t.shortDescription {
             Text(c.shortDescription.trimmingCharacters(in: .whitespaces).isEmpty ? "Blank scene card" : c.shortDescription)
                 .italic(c.shortDescription.trimmingCharacters(in: .whitespaces).isEmpty)
-                .lineLimit(3)
+                .lineLimit(clamp)
+                .fixedSize(horizontal: false, vertical: true)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
         let long = StoryCardDisplayRules.longPreview(c, t)
         if !long.isEmpty {
-            Text(long).font(.system(size: 12 * zoom)).foregroundStyle(theme["muted"]).lineLimit(2)
+            Text(long).font(.system(size: 12 * zoom)).foregroundStyle(theme["muted"]).lineLimit(clamp == nil ? nil : 2)
+                .fixedSize(horizontal: false, vertical: true)
                 .accessibilityIdentifier("story-long-preview")
         }
         let note = StoryCardDisplayRules.notePreview(c, t)
         if !note.isEmpty {
-            Text("Note: \(note)").font(.system(size: 12 * zoom)).italic().foregroundStyle(theme["muted"]).lineLimit(1)
+            Text("Note: \(note)").font(.system(size: 12 * zoom)).italic().foregroundStyle(theme["muted"])
+                .lineLimit(clamp == nil ? nil : 1)
+                .fixedSize(horizontal: false, vertical: true)
+                .help(note)
         }
         let facts = StoryCardDisplayRules.facts(c, t)
         if !facts.isEmpty {

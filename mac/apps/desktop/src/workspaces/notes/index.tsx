@@ -130,9 +130,9 @@ export default function NotesAndTasks() {
                     <span className="grow" style={{ minWidth: 0 }}>
                       <b style={{ display: "flex", alignItems: "center", gap: 5 }}>
                         {n.pinned && <Pin size={12} aria-label="Pinned" />}
-                        <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{noteLabel(n)}</span>
+                        <span title={noteLabel(n)} style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{noteLabel(n)}</span>
                       </b>
-                      {preview(n) && <span className="xs muted" style={{ display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{preview(n)}</span>}
+                      {preview(n) && <span className="xs muted" title={preview(n)} style={{ display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{preview(n)}</span>}
                     </span>
                     <span className="xs muted">{dayWord(n.updatedAt)}</span>
                   </button>

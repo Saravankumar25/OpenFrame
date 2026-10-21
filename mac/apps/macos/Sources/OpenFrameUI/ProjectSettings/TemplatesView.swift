@@ -145,7 +145,7 @@ struct TemplatesView: View {
             Menu {
                 menuItems(t)
             } label: {
-                Image(systemName: "ellipsis.circle")
+                Label("Actions", systemImage: "ellipsis.circle")
             }
             .menuStyle(.borderlessButton)
             .menuIndicator(.hidden)

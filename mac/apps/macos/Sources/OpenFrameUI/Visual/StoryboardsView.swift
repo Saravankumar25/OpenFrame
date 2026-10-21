@@ -299,7 +299,7 @@ private struct BoardMenu: View {
             }
             Divider()
             Button("Delete Storyboard\u{2026}", role: .destructive) { model.sheet = .deleteBoard(board) }
-        } label: { Image(systemName: "ellipsis.circle") }
+        } label: { Label("Actions", systemImage: "ellipsis.circle") }
             .menuStyle(.borderlessButton).menuIndicator(.hidden).fixedSize()
             .accessibilityLabel("Storyboard actions")
             .accessibilityIdentifier("storyboard-actions")
@@ -327,7 +327,7 @@ private struct PanelInspector: View {
                         Text("Panel \(Int(panel.number))\(panel.shotLabel.map { ", Shot \($0)" } ?? "")").font(.title3.weight(.semibold))
                     }
                     Spacer()
-                    Button { model.selectedPanelId = nil } label: { Image(systemName: "xmark") }
+                    Button { model.selectedPanelId = nil } label: { Label("Close", systemImage: "xmark") }
                         .buttonStyle(.borderless).accessibilityLabel("Close").accessibilityIdentifier("panel-inspector-close")
                 }
                 VisualAssetImage(asset: panel.asset, fill: false, maxPixel: 720, emptyText: "Empty panel")

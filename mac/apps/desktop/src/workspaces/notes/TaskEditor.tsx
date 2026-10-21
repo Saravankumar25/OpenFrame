@@ -41,7 +41,7 @@ function RelatedPicker({ value, onChange }: { value: RelatedChoice | null; onCha
     return (
       <div className="row">
         <Chip>{value.typeLabel}</Chip>
-        <span className="grow sm b" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{value.title}</span>
+        <span className="grow sm b" title={value.title} style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{value.title}</span>
         <Button size="xs" variant="ghost" icon={<X size={12} />} onClick={() => onChange(null)} aria-label="Remove related item">Remove</Button>
       </div>
     );

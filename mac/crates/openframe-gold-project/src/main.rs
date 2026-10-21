@@ -81,7 +81,10 @@ fn read_json(p: &Path) -> Value {
 fn main() {
     let args: Vec<String> = std::env::args().collect();
     let no_ai = args.iter().any(|a| a == "--no-ai");
-    let repo = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..").canonicalize().unwrap();
+    let repo = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .canonicalize()
+        .unwrap();
     let base = repo.join("tests/gold-project");
     let content = base.join("content");
     let out = base.join("outputs");
@@ -129,7 +132,9 @@ fn main() {
     let mut report = verify::run(&g, &ctx, &work);
     g.shutdown();
     let source = report.source.clone();
-    report.copies.push(verify::reopen_original(&work, &ctx, &source));
+    report
+        .copies
+        .push(verify::reopen_original(&work, &ctx, &source));
     coverage::write(&g, &ctx, &base, build_secs);
     verify::write(&report, &ctx, &base);
     let failures = g.failures.borrow().len();
@@ -137,6 +142,10 @@ fn main() {
         "done in {}s: {} unexpected failures, verification {}",
         started.elapsed().as_secs(),
         failures,
-        if report.ok() { "passed" } else { "found differences" }
+        if report.ok() {
+            "passed"
+        } else {
+            "found differences"
+        }
     );
 }

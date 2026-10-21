@@ -1011,8 +1011,8 @@ fn plan_story(x: &Ctx<'_>, content: &Value, session_files: bool) -> AppResult<Pl
     let s: StoryContent = exchange::parse_content(content)?;
     let mut plan = Plan {
         compatibility: "Valid".into(),
-        source_version: format!("Story Board exported {}", x.m.source_project_title),
-        host_version: "Your Story Board".into(),
+        source_version: format!("Beat Board exported {}", x.m.source_project_title),
+        host_version: "Your Beat Board".into(),
         can_copy_as_new: true,
         can_create_record: true,
         ..Default::default()
@@ -1302,7 +1302,7 @@ fn plan_story(x: &Ctx<'_>, content: &Value, session_files: bool) -> AppResult<Pl
                         change(
                             format!("new:act:{}", a.id),
                             "story.new",
-                            "New Story Board items",
+                            "New Beat Board items",
                             label,
                             PackageChangeKind::Create,
                             PackageChangeState::Safe,
@@ -1374,7 +1374,7 @@ fn plan_story(x: &Ctx<'_>, content: &Value, session_files: bool) -> AppResult<Pl
                             change(
                                 format!("new:seq:{}", q.id),
                                 "story.new",
-                                "New Story Board items",
+                                "New Beat Board items",
                                 label,
                                 PackageChangeKind::Create,
                                 PackageChangeState::Safe,
@@ -1387,7 +1387,7 @@ fn plan_story(x: &Ctx<'_>, content: &Value, session_files: bool) -> AppResult<Pl
                         let mut ch = change(
                             format!("new:seq:{}", q.id),
                             "story.new",
-                            "New Story Board items",
+                            "New Beat Board items",
                             label,
                             PackageChangeKind::Info,
                             PackageChangeState::Unmapped,
@@ -1480,7 +1480,7 @@ fn plan_story(x: &Ctx<'_>, content: &Value, session_files: bool) -> AppResult<Pl
                         change(
                             format!("new:beat:{}", b.id),
                             "story.new",
-                            "New Story Board items",
+                            "New Beat Board items",
                             label,
                             PackageChangeKind::Create,
                             state,
@@ -1600,7 +1600,7 @@ fn plan_story(x: &Ctx<'_>, content: &Value, session_files: bool) -> AppResult<Pl
                         change(
                             format!("new:card:{}", cd.id),
                             "story.new",
-                            "New Story Board items",
+                            "New Beat Board items",
                             label,
                             PackageChangeKind::Create,
                             state,
@@ -1637,7 +1637,7 @@ fn plan_story(x: &Ctx<'_>, content: &Value, session_files: bool) -> AppResult<Pl
         }
     } else {
         plan.warnings.push(format!(
-            "This Story Board comes from another project (“{}”). It can be imported as a new copy with new identities.",
+            "This Beat Board comes from another project (“{}”). It can be imported as a new copy with new identities.",
             x.m.source_project_title
         ));
     }

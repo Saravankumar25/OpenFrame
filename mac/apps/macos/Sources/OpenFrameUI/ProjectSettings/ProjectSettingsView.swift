@@ -44,7 +44,7 @@ struct ProjectSettingsView: View {
                 .labelsHidden()
                 .accessibilityLabel("Project settings page")
                 .accessibilityIdentifier("project-settings-tabs")
-                .frame(maxWidth: 520)
+                .frame(maxWidth: 720)
                 Spacer()
                 Button("Done") { dismiss() }
                     .keyboardShortcut(.defaultAction)
@@ -55,15 +55,18 @@ struct ProjectSettingsView: View {
             Group {
                 switch tab {
                 case .general: ProjectGeneralSettingsView()
+                case .writing: WritingSettingsView()
                 case .shortcuts: ShortcutsSettingsTab()
                 case .templates: TemplatesView()
+                case .offlineAI: AISettingsView()
                 case .advanced: ProjectAdvancedSettingsView()
+                case .appearance: AppearanceSettingsView()
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             Divider()
             HStack {
-                Text("Writing, Appearance and Offline AI are in the app Settings.")
+                Text("Offline AI, Appearance and Keyboard shortcuts apply to every project on this Mac.")
                     .font(.caption).foregroundStyle(.secondary)
                 Spacer()
                 Button("App Settings\u{2026}") { SettingsRouter.open() }
@@ -141,7 +144,7 @@ struct ProjectGeneralForm: View {
             }
             field("Type", required: true, hint: model.typeHint) {
                 Picker("Type", selection: $model.draft.projectType) {
-                    ForEach(ProjectType.allCases, id: \.self) { Text($0.rawValue).tag($0) }
+                    ForEach(ProjectSettingsDraft.typeChoices(current: model.initial.projectType), id: \.self) { Text($0.rawValue).tag($0) }
                 }
                 .labelsHidden()
                 .accessibilityLabel("Type")

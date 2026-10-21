@@ -28,22 +28,67 @@ export interface Route {
 
 interface NavState {
   route: Route;
+  /** Pages to go back to (oldest first) and pages to go forward to (nearest last). */
   history: Route[];
+  future: Route[];
   go: (r: Route) => void;
   back: () => void;
+  forward: () => void;
   reset: () => void;
 }
 
+/** The open page survives a reload of the window (owner change list item 1). Session only: a new
+ * start of the app opens on Project Home. Opening another project calls reset(), which clears it. */
+const ROUTE_KEY = "openframe.route";
+const WORKSPACE_IDS: WorkspaceId[] = ["home", "vault", "story", "screenplay", "breakdown", "production", "callsheets", "files", "trash", "activity", "notes", "settings"];
+
+function readRoute(): Route {
+  try {
+    const r = JSON.parse(window.sessionStorage.getItem(ROUTE_KEY) ?? "null") as Route | null;
+    if (r && WORKSPACE_IDS.includes(r.workspace)) return r;
+  } catch {
+    // Unreadable view state: start on Project Home.
+  }
+  return { workspace: "home" };
+}
+
+function writeRoute(r: Route) {
+  try {
+    window.sessionStorage.setItem(ROUTE_KEY, JSON.stringify(r));
+  } catch {
+    // View state only.
+  }
+}
+
+const same = (a: Route, b: Route) => JSON.stringify(a) === JSON.stringify(b);
+
 export const useNav = create<NavState>((set) => ({
-  route: { workspace: "home" },
+  route: readRoute(),
   history: [],
-  go: (r) => set((s) => ({ route: r, history: [...s.history.slice(-30), s.route] })),
+  future: [],
+  go: (r) =>
+    set((s) => {
+      writeRoute(r);
+      return same(r, s.route) ? { route: r } : { route: r, history: [...s.history.slice(-50), s.route], future: [] };
+    }),
   back: () =>
     set((s) => {
       const prev = s.history[s.history.length - 1];
-      return prev ? { route: prev, history: s.history.slice(0, -1) } : s;
+      if (!prev) return s;
+      writeRoute(prev);
+      return { route: prev, history: s.history.slice(0, -1), future: [...s.future, s.route] };
     }),
-  reset: () => set({ route: { workspace: "home" }, history: [] }),
+  forward: () =>
+    set((s) => {
+      const next = s.future[s.future.length - 1];
+      if (!next) return s;
+      writeRoute(next);
+      return { route: next, history: [...s.history, s.route], future: s.future.slice(0, -1) };
+    }),
+  reset: () => {
+    writeRoute({ workspace: "home" });
+    set({ route: { workspace: "home" }, history: [], future: [] });
+  },
 }));
 
 /**
@@ -62,7 +107,7 @@ export const useOpenDraft = create<OpenDraftState>((set) => ({
 }));
 
 /** Where the AI Assistant panel remembers whether it is open (a per-user layout preference, like
- * the Story Board zoom; never project data). */
+ * the Beat Board zoom; never project data). */
 export const AI_PANEL_KEY = "openframe.ai.panelOpen";
 
 /** The saved AI panel state. Empty, unreadable or unexpected storage means closed. */
@@ -82,7 +127,22 @@ function writeAiPanelOpen(open: boolean) {
   }
 }
 
+const NAV_KEY = "openframe.nav.collapsed";
+function readNavCollapsed(): boolean {
+  try {
+    return window.localStorage.getItem(NAV_KEY) === "true";
+  } catch {
+    return false;
+  }
+}
+
 interface UiState {
+  /** The left navigation is collapsed to an icon rail (owner request 2026-10-19); remembered per person. */
+  navCollapsed: boolean;
+  setNavCollapsed: (v: boolean) => void;
+  /** Screenplay focus mode: everything but the page is hidden (owner change list item 13). */
+  focusMode: boolean;
+  setFocusMode: (v: boolean) => void;
   searchOpen: boolean;
   /** The AI Assistant panel is docked beside the page (owner decision 2026-10-08). */
   aiOpen: boolean;
@@ -96,6 +156,17 @@ interface UiState {
 }
 
 export const useUi = create<UiState>((set) => ({
+  navCollapsed: readNavCollapsed(),
+  setNavCollapsed: (v) => {
+    try {
+      window.localStorage.setItem(NAV_KEY, v ? "true" : "false");
+    } catch {
+      // Layout preference only.
+    }
+    set({ navCollapsed: v });
+  },
+  focusMode: false,
+  setFocusMode: (v) => set({ focusMode: v }),
   searchOpen: false,
   aiOpen: readAiPanelOpen(),
   quickOpen: false,

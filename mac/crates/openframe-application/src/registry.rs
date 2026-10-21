@@ -141,6 +141,7 @@ pub mod hidden {
     pub const DELETE_FOREVER: &str = "Permanent deletion ('Delete forever') is never offered to the assistant (spec §28); items stay in Recently Deleted.";
     pub const VIEW_STATE: &str = "Per-user view state (collapsed rows, remembered positions, current episode); not project content.";
     pub const SESSION_CONTROL: &str = "Immediate session control (undo/redo, save, cancel a running task, display name) stays a direct user action; an applied Change Set is itself one undo step.";
+    pub const STANDALONE_PAGE: &str = "The Story page is a free page kept apart from the rest of the project (owner request 2026-10-20): nothing links to it, and the assistant neither reads nor edits it.";
     pub const MAINTENANCE: &str = "Internal maintenance with no user-visible project change.";
     pub const PACKAGE_REVIEW: &str = "Exchange and review packages bring other people's changes in from package files; opening, reviewing and applying them stays a human workflow.";
     pub const CROSS_PROJECT: &str = "Crosses the project boundary (Global Idea Vault or another project); the assistant is scoped to the open project.";

@@ -24,13 +24,13 @@ use std::time::{Duration, Instant};
 use ed25519_dalek::VerifyingKey;
 use openframe_application::AppCore;
 use openframe_application::events::{AppEvent, EventSink};
+use openframe_entitlement::Channel;
 use openframe_entitlement::mac::server::NONCE_BYTES;
 use openframe_entitlement::mac::{
     AppTransactionInfo, BridgeError, InstantClock, LicenceServer, MacInputs, NonceSource,
     ProductInfo, PurchaseOutcome, RawVerification, RevalidateReason, ServerError, StoreEnvironment,
     StoreKitBridge, ValidateRequest, ValidateResponse, VerifiedTransaction, keep_verified,
 };
-use openframe_entitlement::Channel;
 use parking_lot::Mutex;
 use serde::Deserialize;
 use serde_json::Value;
@@ -561,8 +561,12 @@ mod tests {
     }
 
     fn status(core: &CoreHandle) -> Value {
-        serde_json::from_str(&core.invoke("entitlement.status".into(), "{}".into()).unwrap())
-            .unwrap()
+        serde_json::from_str(
+            &core
+                .invoke("entitlement.status".into(), "{}".into())
+                .unwrap(),
+        )
+        .unwrap()
     }
 
     /// Wait for the worker's launch check to answer.
@@ -599,7 +603,9 @@ mod tests {
         assert_eq!(s["state"]["state"], "internalBuild");
         core.request_store_check("launch".into());
         let notice: Value = serde_json::from_str(
-            &core.invoke("entitlement.notice".into(), "{}".into()).unwrap(),
+            &core
+                .invoke("entitlement.notice".into(), "{}".into())
+                .unwrap(),
         )
         .unwrap();
         assert_eq!(notice["notice"]["kind"], "none");
@@ -611,7 +617,12 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         let kit = FakeStoreKit::new("production");
         let server = FakeLicence::new(T0 + 3_600_000);
-        let core = start(dir.path(), Some(server.public_hex()), Some(kit.clone()), Some(server.clone()));
+        let core = start(
+            dir.path(),
+            Some(server.public_hex()),
+            Some(kit.clone()),
+            Some(server.clone()),
+        );
         let s = settled(&core);
         assert_eq!(s["channel"], "macAppStore");
         assert_eq!(s["state"]["state"], "trialNotStarted");
@@ -622,7 +633,9 @@ mod tests {
             "transaction": transaction(TRIAL_PRODUCT_ID, "2000000001", "production", None)
         }));
         let out: Value = serde_json::from_str(
-            &core.invoke("entitlement.start_trial".into(), "{}".into()).unwrap(),
+            &core
+                .invoke("entitlement.start_trial".into(), "{}".into())
+                .unwrap(),
         )
         .unwrap();
         assert_eq!(out["route"]["route"], "store");
@@ -631,12 +644,14 @@ mod tests {
 
         // Days go down from the server's clock, not the Mac's.
         *server.now_ms.lock() = T0 + 3 * 86_400_000;
-        core.invoke("entitlement.restore_purchase".into(), "{}".into()).unwrap();
+        core.invoke("entitlement.restore_purchase".into(), "{}".into())
+            .unwrap();
         assert_eq!(status(&core)["state"]["days_left"], 4);
 
         // The trial ends.
         *server.now_ms.lock() = T0 + 8 * 86_400_000;
-        core.invoke("entitlement.restore_purchase".into(), "{}".into()).unwrap();
+        core.invoke("entitlement.restore_purchase".into(), "{}".into())
+            .unwrap();
         assert_eq!(status(&core)["state"]["state"], "trialEnded");
 
         // Buying the lifetime unlock from StoreKit alone.
@@ -644,10 +659,9 @@ mod tests {
             "ok": true, "outcome": "success",
             "transaction": transaction(LIFETIME_PRODUCT_ID, "2000000002", "production", None)
         }));
-        let out: Value = serde_json::from_str(
-            &core.invoke("entitlement.buy".into(), "{}".into()).unwrap(),
-        )
-        .unwrap();
+        let out: Value =
+            serde_json::from_str(&core.invoke("entitlement.buy".into(), "{}".into()).unwrap())
+                .unwrap();
         assert_eq!(out["status"]["state"]["state"], "purchased", "{out}");
         core.stop();
     }
@@ -657,7 +671,12 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         let kit = FakeStoreKit::new("production");
         let server = FakeLicence::new(T0);
-        let core = start(dir.path(), Some(server.public_hex()), Some(kit.clone()), Some(server));
+        let core = start(
+            dir.path(),
+            Some(server.public_hex()),
+            Some(kit.clone()),
+            Some(server),
+        );
         settled(&core);
         // The launch check and later checks never ask Apple to sync: that can open a sign-in window.
         for reason in ["storeKitChanged", "resume", "leaseExpired"] {
@@ -666,7 +685,8 @@ mod tests {
         core.request_store_check("storeKitChanged".into());
         std::thread::sleep(Duration::from_millis(300));
         assert_eq!(kit.0.lock().syncs, 0);
-        core.invoke("entitlement.restore_purchase".into(), "{}".into()).unwrap();
+        core.invoke("entitlement.restore_purchase".into(), "{}".into())
+            .unwrap();
         assert_eq!(kit.0.lock().syncs, 1);
         core.stop();
     }
@@ -676,28 +696,45 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         let kit = FakeStoreKit::new("production");
         let server = FakeLicence::new(T0);
-        let core = start(dir.path(), Some(server.public_hex()), Some(kit.clone()), Some(server));
+        let core = start(
+            dir.path(),
+            Some(server.public_hex()),
+            Some(kit.clone()),
+            Some(server),
+        );
         settled(&core);
 
         // A purchase made on another Mac comes back with a restore.
         kit.0.lock().sync_after = Some(vec![transaction(
-            LIFETIME_PRODUCT_ID, "2000000002", "production", None,
+            LIFETIME_PRODUCT_ID,
+            "2000000002",
+            "production",
+            None,
         )]);
-        core.invoke("entitlement.restore_purchase".into(), "{}".into()).unwrap();
+        core.invoke("entitlement.restore_purchase".into(), "{}".into())
+            .unwrap();
         assert_eq!(status(&core)["state"]["state"], "purchased");
 
         // Apple refunds it.
         kit.set(vec![transaction(
-            LIFETIME_PRODUCT_ID, "2000000002", "production", Some(T0 + 1000),
+            LIFETIME_PRODUCT_ID,
+            "2000000002",
+            "production",
+            Some(T0 + 1000),
         )]);
-        core.invoke("entitlement.restore_purchase".into(), "{}".into()).unwrap();
+        core.invoke("entitlement.restore_purchase".into(), "{}".into())
+            .unwrap();
         assert_eq!(status(&core)["state"]["state"], "revoked");
 
         // A sandbox purchase never unlocks a production build.
         kit.set(vec![transaction(
-            LIFETIME_PRODUCT_ID, "2000000003", "sandbox", None,
+            LIFETIME_PRODUCT_ID,
+            "2000000003",
+            "sandbox",
+            None,
         )]);
-        core.invoke("entitlement.restore_purchase".into(), "{}".into()).unwrap();
+        core.invoke("entitlement.restore_purchase".into(), "{}".into())
+            .unwrap();
         assert_ne!(status(&core)["state"]["state"], "purchased");
         core.stop();
     }
@@ -731,13 +768,27 @@ mod tests {
     fn answers_that_are_wrong_or_too_large_become_errors() {
         struct Broken(String);
         impl StoreKitCallbacks for Broken {
-            fn current_entitlements(&self) -> String { self.0.clone() }
-            fn purchase(&self, _: String) -> String { self.0.clone() }
-            fn app_transaction(&self) -> String { self.0.clone() }
-            fn environment(&self) -> String { self.0.clone() }
-            fn product_info(&self, _: String) -> String { self.0.clone() }
-            fn sync(&self) -> String { self.0.clone() }
-            fn unverified_dropped(&self) -> u64 { 0 }
+            fn current_entitlements(&self) -> String {
+                self.0.clone()
+            }
+            fn purchase(&self, _: String) -> String {
+                self.0.clone()
+            }
+            fn app_transaction(&self) -> String {
+                self.0.clone()
+            }
+            fn environment(&self) -> String {
+                self.0.clone()
+            }
+            fn product_info(&self, _: String) -> String {
+                self.0.clone()
+            }
+            fn sync(&self) -> String {
+                self.0.clone()
+            }
+            fn unverified_dropped(&self) -> u64 {
+                0
+            }
         }
         let big = format!(r#"{{"ok":true,"pad":"{}"}}"#, "x".repeat(MAX_JSON_BYTES));
         for text in [String::new(), "nope".into(), r#"{"ok":true}"#.into(), big] {
@@ -751,8 +802,13 @@ mod tests {
         let denied = JsonStoreKit::new(Box::new(Broken(
             r#"{"ok":false,"error":"purchasesNotAllowed"}"#.into(),
         )));
-        assert_eq!(denied.purchase(TRIAL_PRODUCT_ID), Err(BridgeError::PurchasesNotAllowed));
-        let offline = JsonStoreKit::new(Box::new(Broken(r#"{"ok":false,"error":"noConnection"}"#.into())));
+        assert_eq!(
+            denied.purchase(TRIAL_PRODUCT_ID),
+            Err(BridgeError::PurchasesNotAllowed)
+        );
+        let offline = JsonStoreKit::new(Box::new(Broken(
+            r#"{"ok":false,"error":"noConnection"}"#.into(),
+        )));
         assert_eq!(offline.sync(), Err(BridgeError::NoConnection));
     }
 
@@ -764,7 +820,10 @@ mod tests {
             "transaction": transaction(LIFETIME_PRODUCT_ID, "2000000002", "production", None)
         }));
         let bridge = JsonStoreKit::new(Box::new(kit));
-        assert_eq!(bridge.purchase(TRIAL_PRODUCT_ID), Err(BridgeError::Unverified));
+        assert_eq!(
+            bridge.purchase(TRIAL_PRODUCT_ID),
+            Err(BridgeError::Unverified)
+        );
     }
 
     #[test]
@@ -778,8 +837,14 @@ mod tests {
             test_store_response_key_hex: Some("ab".repeat(32)),
         };
         assert!(crate::test_store_key(&config, true, true).is_some());
-        assert!(crate::test_store_key(&config, false, true).is_none(), "release build");
-        assert!(crate::test_store_key(&config, true, false).is_none(), "the person's own data");
+        assert!(
+            crate::test_store_key(&config, false, true).is_none(),
+            "release build"
+        );
+        assert!(
+            crate::test_store_key(&config, true, false).is_none(),
+            "the person's own data"
+        );
     }
 
     #[test]
@@ -795,9 +860,15 @@ mod tests {
     #[test]
     fn check_reasons_have_names_and_unknown_ones_are_ignored() {
         assert_eq!(reason_from_name("launch"), Some(RevalidateReason::Launch));
-        assert_eq!(reason_from_name("storeKitChanged"), Some(RevalidateReason::StoreKitChanged));
+        assert_eq!(
+            reason_from_name("storeKitChanged"),
+            Some(RevalidateReason::StoreKitChanged)
+        );
         assert_eq!(reason_from_name("resume"), Some(RevalidateReason::Resume));
-        assert_eq!(reason_from_name("leaseExpired"), Some(RevalidateReason::LeaseExpired));
+        assert_eq!(
+            reason_from_name("leaseExpired"),
+            Some(RevalidateReason::LeaseExpired)
+        );
         assert_eq!(reason_from_name("whatever"), None);
     }
 }

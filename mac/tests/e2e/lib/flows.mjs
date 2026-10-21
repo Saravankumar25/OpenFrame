@@ -70,10 +70,6 @@ export async function blur(browser) {
   });
 }
 
-/** The top-bar Undo button's accessible name ("Undo" when empty, else "Undo <label>"). */
-export async function undoLabel(browser) {
-  return browser.execute(() => document.querySelector('header button[aria-label^="Undo"], button[aria-label^="Undo"]')?.getAttribute("aria-label") ?? "");
-}
 
 /** Set a native date (or time) input the way the picker does; WebDriver cannot drive the picker. */
 export async function setNativeValue(browser, el, value) {

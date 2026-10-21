@@ -132,7 +132,7 @@ struct CallSheetEditorView: View {
                 Button(d.dayTitle) {
                     Task {
                         guard await model.flush() else { return }
-                        csShowWorkspace(.schedule)
+                        ProjectNav.show(.production, tab: .schedule)
                     }
                 }
                 .buttonStyle(.link)

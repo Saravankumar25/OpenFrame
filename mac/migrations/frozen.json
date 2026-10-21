@@ -24,6 +24,7 @@
     "project/0013_screenplay_engine.sql": "0c4954d555dfa567e043902ab1b683c46683ab7121f3c1488dcc591c4cf648f6",
     "project/0014_production_depth.sql": "7ab7d70f287ca1c8a1500f0fd0f342335e19f81475de5347a81c4524af52f176",
     "project/0015_schedule_timeline.sql": "0db7b25096d1182490edd7ed79a96ac60b1f4e128157563af251845ebc58d3ac",
-    "project/0016_callsheets_budget.sql": "0ef47380c614c5f72e7c38702487aaa0dbcd887937dc4cfae2a3c68eb9c63008"
+    "project/0016_callsheets_budget.sql": "0ef47380c614c5f72e7c38702487aaa0dbcd887937dc4cfae2a3c68eb9c63008",
+    "project/0017_story_page.sql": "a6934c728cb95b5634da87af9447ef5d6d2cd6fd9afadcfea5ccae0520e508d8"
   }
 }

@@ -115,12 +115,13 @@ final class SceneHubModel {
     }
 
     /// The workspace a hub row opens, or nil for the row that is the script itself.
-    static func workspace(forRow key: String) -> Workspace? {
+    static func place(forRow key: String) -> ProjectPlace? {
         switch key {
-        case "breakdown": .breakdown
-        case "story": .story
-        case "shots", "storyboard": .visual
-        case "schedule": .schedule
+        case "breakdown": ProjectPlace(.breakdown)
+        case "story": ProjectPlace(.story)
+        case "shots": ProjectPlace(.production, tab: .shotLists)
+        case "storyboard": ProjectPlace(.production, tab: .storyboards)
+        case "schedule": ProjectPlace(.production, tab: .schedule)
         default: nil
         }
     }
@@ -178,8 +179,8 @@ struct SceneHubPanel: View {
                 ForEach(hub.rows, id: \.key) { r in
                     Button {
                         if r.key == "comments" { state.tab = .comments }
-                        else if let ws = SceneHubModel.workspace(forRow: r.key) {
-                            NotificationCenter.default.post(name: .openFrameShowWorkspace, object: ws.rawValue)
+                        else if let place = SceneHubModel.place(forRow: r.key) {
+                            ProjectNav.show(place)
                         }
                     } label: {
                         HStack {
@@ -202,7 +203,7 @@ struct SceneHubPanel: View {
     }
 
     @ViewBuilder private var storyCard: some View {
-        sectionTitle("Story Board card")
+        sectionTitle("Beat Board card")
         if let linked = model.story?.linked {
             VStack(alignment: .leading, spacing: 4) {
                 Text(linked.sceneHeading.flatMap { $0.isEmpty ? nil : $0 } ?? "Scene card").fontWeight(.semibold)
@@ -214,7 +215,7 @@ struct SceneHubPanel: View {
             .accessibilityElement(children: .combine)
             .accessibilityIdentifier("scene-story-card")
         } else {
-            Text("No Story Board card is linked to this scene.").foregroundStyle(theme["muted"])
+            Text("No Beat Board card is linked to this scene.").foregroundStyle(theme["muted"])
         }
     }
 
@@ -364,7 +365,7 @@ struct ScreenplayInspector: View {
                 .pickerStyle(.segmented)
                 .labelsHidden()
                 .accessibilityLabel("Inspector")
-                Button { state.inspectorShown = false } label: { Image(systemName: "xmark.circle.fill") }
+                Button { state.inspectorShown = false } label: { Label("Close", systemImage: "xmark.circle.fill") }
                     .buttonStyle(.plain)
                     .foregroundStyle(.secondary)
                     .help("Close the inspector")

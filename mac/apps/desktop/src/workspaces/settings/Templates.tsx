@@ -4,7 +4,7 @@
 // Built-in (read-only), Yours (kept on this computer for every project) and
 // This project. "Use in This Project" copies a template into the project and
 // "Create from template" makes the document it describes (a screenplay starter, a
-// Story Board, a call sheet, a shot list, a moodboard or budget lines). Both are
+// Beat Board, a call sheet, a shot list, a moodboard or budget lines). Both are
 // independent copies: later template edits never change what was made from it.
 // The blank path is always available.
 
@@ -30,7 +30,7 @@ export const TEMPLATE_TYPES: { value: string; label: string; listLabel: string; 
   { value: "shot_list", label: "Shot list", listLabel: "Shots", key: "shots" },
   { value: "moodboard", label: "Moodboard", listLabel: "Sections", key: "sections" },
   { value: "report", label: "Report", listLabel: "Sections", key: "sections" },
-  { value: "story_board", label: "Story Board starter", listLabel: "Acts", key: "acts" },
+  { value: "story_board", label: "Beat Board starter", listLabel: "Acts", key: "acts" },
   { value: "breakdown", label: "Breakdown document", listLabel: "Categories", key: "categories" },
   { value: "budget", label: "Simple budget", listLabel: "Lines (Category: item)", key: "lines" },
   { value: "project_starter", label: "Project starter", listLabel: "Acts", key: "acts" },
@@ -311,7 +311,7 @@ function createLabel(type: string): string {
     case "moodboard":
       return "Create a moodboard";
     case "story_board":
-      return "Add to the Story Board";
+      return "Add to the Beat Board";
     case "budget":
       return "Add budget lines";
     default:

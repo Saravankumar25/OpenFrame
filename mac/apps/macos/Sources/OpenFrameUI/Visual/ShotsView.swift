@@ -11,6 +11,8 @@ struct ShotsView: View {
     @Bindable var model: ShotsModel
     @Environment(AppModel.self) private var app
     @Environment(VisualHub.self) private var hub
+    /// List or grid (owner change list item 21, as on Windows); a view preference of this Mac.
+    @AppStorage("openframe.shots.layout") private var layout = "list"
     @Environment(\.ofTheme) private var theme
     @State private var composer = ""
     @FocusState private var composerFocused: Bool
@@ -43,6 +45,7 @@ struct ShotsView: View {
                     .inspectorColumnWidth(min: 320, ideal: 380, max: 500)
             }
         }
+        .onProjectIntent("production.new_shot") { composerFocused = true }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("shots-tab")
     }
@@ -84,6 +87,13 @@ struct ShotsView: View {
             .labelsHidden().frame(maxWidth: 440)
             .accessibilityLabel("Scene")
             .accessibilityIdentifier("shots-scene-picker")
+            Picker("Shot list view", selection: $layout) {
+                Label("List", systemImage: "list.bullet").tag("list")
+                Label("Grid", systemImage: "square.grid.2x2").tag("grid")
+            }
+            .pickerStyle(.segmented).fixedSize()
+            .accessibilityLabel("Shot list view")
+            .accessibilityIdentifier("shots-layout")
             Text(VisualText.plural(model.shots.count, "shot"))
                 .font(.caption).padding(.horizontal, 8).padding(.vertical, 3)
                 .background(theme["surface2"], in: Capsule())
@@ -99,7 +109,7 @@ struct ShotsView: View {
             if model.scene != nil, !model.shots.isEmpty {
                 Menu {
                     Button("Copy Planning to Another Scene\u{2026}") { model.sheet = .copyPlanning }
-                } label: { Image(systemName: "ellipsis.circle") }
+                } label: { Label("More", systemImage: "ellipsis.circle") }
                     .menuStyle(.borderlessButton).menuIndicator(.hidden).fixedSize()
                     .accessibilityLabel("More scene actions")
                     .accessibilityIdentifier("shots-more")
@@ -135,7 +145,8 @@ struct ShotsView: View {
                                     Button("Open Scene") { Task { await model.chooseScene(g.lineage) } }
                                         .controlSize(.small).accessibilityIdentifier("shots-open-scene-\(g.lineage)")
                                 }
-                                ShotRows(model: model, shots: g.shots, reorderable: false)
+                                if layout == "grid" { ShotGrid(model: model, shots: g.shots) }
+                                else { ShotRows(model: model, shots: g.shots, reorderable: false) }
                             }
                             .accessibilityElement(children: .contain)
                             .accessibilityLabel(g.title)
@@ -145,14 +156,16 @@ struct ShotsView: View {
                     if model.shots.isEmpty, model.scene != nil {
                         emptyState(title: "No shots in this scene yet", text: "Add only the shots you need. Camera details are optional.", id: "shots-empty")
                     } else if !model.shots.isEmpty {
-                        ShotRows(model: model, shots: model.shown, reorderable: true)
+                        // Reordering stays in the list, where the drag handles are.
+                        if layout == "grid" { ShotGrid(model: model, shots: model.shown) }
+                        else { ShotRows(model: model, shots: model.shown, reorderable: true) }
                     }
                     if model.scene != nil { composerRow }
                 }
                 Text(VisualText.shotHint).font(.caption).foregroundStyle(theme["muted"])
                     .multilineTextAlignment(.center).frame(maxWidth: .infinity)
             }
-            .pageColumn(maxWidth: 780)
+            .pageColumn(maxWidth: layout == "grid" ? PageSpacing.wideColumn : 780)
             .padding(.bottom, PageSpacing.medium)
         }
         .frame(minHeight: 0)
@@ -188,6 +201,87 @@ struct ShotsView: View {
             if await model.addShot(description: composer) != nil { composer = "" }
             composerFocused = true
         }
+    }
+}
+
+// MARK: Grid
+
+/// The shots as cards: the reference image (or the first storyboard panel) with the shot details
+/// below, so a shot list also works as a visual reference (Windows: ShotCard in shots.tsx).
+private struct ShotGrid: View {
+    let model: ShotsModel
+    let shots: [ShotDto]
+    @Environment(\.ofTheme) private var theme
+
+    var body: some View {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 200, maximum: 280), spacing: 12, alignment: .top)], spacing: 12) {
+            ForEach(shots, id: \.id) { s in card(s) }
+        }
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Shots")
+        .accessibilityIdentifier("shots-grid")
+        .onDeleteCommand {
+            if !model.picked.isEmpty { Task { await model.delete(Array(model.picked)) } }
+        }
+    }
+
+    private func card(_ s: ShotDto) -> some View {
+        let on = s.id == model.selectedId || model.picked.contains(s.id)
+        let picture = s.referenceAsset ?? s.panels.first(where: { $0.asset != nil })?.asset
+        let meta = [s.size, s.angle, s.movement, s.lens].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " \u{00B7} ")
+        return VStack(alignment: .leading, spacing: 6) {
+            HStack(alignment: .firstTextBaseline) {
+                Text("Scene \(s.sceneNumber ?? "?")").font(.caption).foregroundStyle(theme["muted"])
+                Spacer()
+                Text("Shot \(s.label)").font(.callout.weight(.bold))
+            }
+            ZStack {
+                if picture != nil {
+                    VisualAssetImage(asset: picture, maxPixel: 560)
+                } else {
+                    VStack(spacing: 4) {
+                        Image(systemName: "photo").font(.title2)
+                        Text("No reference image").font(.caption)
+                    }
+                    .foregroundStyle(theme["muted"])
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(theme["surface2"])
+                }
+            }
+            .aspectRatio(16 / 9, contentMode: .fit)
+            .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+            if !meta.isEmpty {
+                Text(meta).font(.caption.weight(.semibold)).foregroundStyle(theme["ink2"])
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Text(s.description).font(.callout)
+                .fixedSize(horizontal: false, vertical: true)
+            if !s.characters.isEmpty {
+                Text(s.characters.joined(separator: ", ")).font(.caption).foregroundStyle(theme["muted"])
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(10)
+        .frame(maxWidth: .infinity, alignment: .topLeading)
+        .background(on ? theme["accent-soft"] : theme["panel"], in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(on ? theme["accent"] : theme["line"]))
+        .contentShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .onTapGesture {
+            let f = NSEvent.modifierFlags
+            model.click(s, command: f.contains(.command), shift: f.contains(.shift))
+        }
+        .contextMenu {
+            Button("Open") { model.selectedId = s.id }
+            Button("Duplicate") { Task { await model.duplicate(s) } }
+            Divider()
+            Button("Attach Storyboard\u{2026}") { model.sheet = .attach(s) }
+            Divider()
+            Button("Delete", role: .destructive) { Task { await model.delete([s.id]) } }
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Shot \(s.label): \(s.description)")
+        .accessibilityAddTraits(on ? [.isButton, .isSelected] : .isButton)
+        .accessibilityIdentifier("shot-card-\(s.id)")
     }
 }
 
@@ -338,7 +432,7 @@ private struct ShotInspector: View {
                             .font(.title3.weight(.semibold)).lineLimit(2)
                     }
                     Spacer()
-                    Button { model.selectedId = nil } label: { Image(systemName: "xmark") }
+                    Button { model.selectedId = nil } label: { Label("Close", systemImage: "xmark") }
                         .buttonStyle(.borderless).accessibilityLabel("Close").accessibilityIdentifier("shot-inspector-close")
                 }
                 if shot.needsReview, !shot.sceneRemoved {
@@ -434,7 +528,7 @@ private struct ShotInspector: View {
                     ForEach(shot.characters, id: \.self) { c in
                         HStack(spacing: 3) {
                             Text(c).font(.caption)
-                            Button { Task { await model.update(shot, characters: shot.characters.filter { $0 != c }) } } label: { Image(systemName: "xmark").font(.caption2) }
+                            Button { Task { await model.update(shot, characters: shot.characters.filter { $0 != c }) } } label: { Label("Remove", systemImage: "xmark").font(.caption2) }
                                 .buttonStyle(.plain).accessibilityLabel("Remove \(c)")
                                 .accessibilityIdentifier("shot-remove-character-\(c)")
                         }
@@ -451,7 +545,7 @@ private struct ShotInspector: View {
                 if !unused.isEmpty {
                     Menu {
                         ForEach(unused, id: \.self) { c in Button(c) { charText = c; addCharacter() } }
-                    } label: { Image(systemName: "person.crop.circle.badge.plus") }
+                    } label: { Label("Characters", systemImage: "person.crop.circle.badge.plus") }
                         .menuStyle(.borderlessButton).menuIndicator(.hidden).fixedSize()
                         .accessibilityLabel("Characters in this scene")
                         .accessibilityIdentifier("shot-character-suggestions")
@@ -499,7 +593,7 @@ private struct ShotInspector: View {
                             .buttonStyle(.plain).font(.caption)
                             .help(p.storyboardName)
                             .accessibilityIdentifier("shot-open-panel-\(p.panelId)")
-                        Button { Task { await model.detach(shot, panelId: p.panelId) } } label: { Image(systemName: "xmark").font(.caption2) }
+                        Button { Task { await model.detach(shot, panelId: p.panelId) } } label: { Label("Detach", systemImage: "xmark").font(.caption2) }
                             .buttonStyle(.plain).accessibilityLabel("Detach storyboard panel \(Int(p.number))")
                             .accessibilityIdentifier("shot-detach-panel-\(p.panelId)")
                     }

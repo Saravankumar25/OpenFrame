@@ -24,7 +24,7 @@ Before: `01-journey` and `02-restart` have run on the shared journey data. The a
 4. Check: the Workspaces navigation shows.
 5. If an enabled Keep Saved Version button shows within 4 seconds, click it and check it goes away.
 6. Press Ctrl+K, type 'there that night' and click the result containing "INT. POLICE STATION".
-7. Check: the workspace shows "Draft 1 from Story Board" and the cursor sits on "INT. POLICE STATION [em dash] NIGHT".
+7. Check: the workspace shows "Draft 1 from Beat Board" and the cursor sits on "INT. POLICE STATION [em dash] NIGHT".
 8. Wait about 3 seconds, then check no visible text says "Saving…" (so the remembered place is saved the same way on every run).
 9. Click Home. Capture 02-project-home.
 10. Click Idea Vault. Capture 03-idea-vault.

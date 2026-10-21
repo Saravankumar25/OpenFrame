@@ -80,7 +80,11 @@ fn a_project_a_scene_an_undo_and_the_events_cross_the_interface() {
         json!({ "title": "Mac Journey", "projectType": "Feature Film" }),
     );
     assert!(project.is_object(), "{project}");
-    assert!(rec.types().iter().any(|t| t == "projectOpened"), "{:?}", rec.types());
+    assert!(
+        rec.types().iter().any(|t| t == "projectOpened"),
+        "{:?}",
+        rec.types()
+    );
 
     let sp = call(&core, "screenplay.create", json!({}));
     let draft = sp["draft"]["id"].as_str().expect("draft id").to_string();
@@ -91,7 +95,9 @@ fn a_project_a_scene_an_undo_and_the_events_cross_the_interface() {
     );
     assert!(scene["createdIds"][0].is_string(), "{scene}");
     assert!(
-        rec.data_changed_tables().iter().any(|t| t.starts_with("screenplay")),
+        rec.data_changed_tables()
+            .iter()
+            .any(|t| t.starts_with("screenplay")),
         "{:?}",
         rec.data_changed_tables()
     );
@@ -103,14 +109,21 @@ fn a_project_a_scene_an_undo_and_the_events_cross_the_interface() {
     let label = call(&core, "history.undo", json!({}));
     assert!(!label.is_null(), "undo had nothing to undo");
     let after = call(&core, "screenplay.document", json!({ "draftId": draft })).to_string();
-    assert!(!after.contains("RAILWAY STATION"), "undo removed the scene: {after}");
+    assert!(
+        !after.contains("RAILWAY STATION"),
+        "undo removed the scene: {after}"
+    );
 
     call(&core, "history.redo", json!({}));
     let redone = call(&core, "screenplay.document", json!({ "draftId": draft })).to_string();
     assert!(redone.contains("RAILWAY STATION"));
 
     core.stop();
-    assert!(rec.types().iter().any(|t| t == "projectClosed"), "{:?}", rec.types());
+    assert!(
+        rec.types().iter().any(|t| t == "projectClosed"),
+        "{:?}",
+        rec.types()
+    );
 }
 
 #[test]
@@ -119,14 +132,20 @@ fn bad_requests_come_back_as_coded_errors_never_panics() {
     let rec = Recorder::default();
     let core = start(dir.path(), &rec);
 
-    let unknown = core.invoke("shell.run_anything".into(), "{}".into()).unwrap_err();
+    let unknown = core
+        .invoke("shell.run_anything".into(), "{}".into())
+        .unwrap_err();
     assert_eq!(code_of(unknown), "security.unknown_operation");
 
-    let not_json = core.invoke("project.list_recent".into(), "{not json".into()).unwrap_err();
+    let not_json = core
+        .invoke("project.list_recent".into(), "{not json".into())
+        .unwrap_err();
     assert_eq!(code_of(not_json), "validation.invalid_input");
 
     // An empty argument string means `{}`.
-    let recent = core.invoke("project.list_recent".into(), String::new()).unwrap();
+    let recent = core
+        .invoke("project.list_recent".into(), String::new())
+        .unwrap();
     assert!(serde_json::from_str::<Value>(&recent).is_ok());
 
     // No project is open: project operations say so with a code.
@@ -150,8 +169,10 @@ fn the_allow_list_and_the_inventory_agree() {
     assert!(names.windows(2).all(|w| w[0] < w[1]), "sorted and unique");
     let inventory: Vec<Value> =
         serde_json::from_str(&openframe_ffi::operation_inventory_json()).unwrap();
-    let inv: std::collections::BTreeSet<&str> =
-        inventory.iter().map(|o| o["name"].as_str().unwrap()).collect();
+    let inv: std::collections::BTreeSet<&str> = inventory
+        .iter()
+        .map(|o| o["name"].as_str().unwrap())
+        .collect();
     let live: std::collections::BTreeSet<&str> = names.iter().map(String::as_str).collect();
     let only_inventory: Vec<_> = inv.difference(&live).collect();
     let only_live: Vec<_> = live.difference(&inv).collect();
@@ -163,7 +184,10 @@ fn the_allow_list_and_the_inventory_agree() {
         "{only_live:?}"
     );
     for op in &inventory {
-        assert!(matches!(op["kind"].as_str(), Some("query" | "command")), "{op}");
+        assert!(
+            matches!(op["kind"].as_str(), Some("query" | "command")),
+            "{op}"
+        );
         assert!(!op["argType"].as_str().unwrap().is_empty(), "{op}");
     }
     core.stop();
@@ -174,7 +198,11 @@ fn a_project_reopens_after_the_core_restarts() {
     let dir = tempfile::tempdir().unwrap();
     let rec = Recorder::default();
     let core = start(dir.path(), &rec);
-    call(&core, "project.create", json!({ "title": "Restart", "projectType": "Feature Film" }));
+    call(
+        &core,
+        "project.create",
+        json!({ "title": "Restart", "projectType": "Feature Film" }),
+    );
     let sp = call(&core, "screenplay.create", json!({}));
     let draft = sp["draft"]["id"].as_str().unwrap().to_string();
     call(
@@ -224,12 +252,22 @@ fn the_team_password_gate_refuses_a_wrong_password_and_opens_with_the_right_one(
     assert_eq!(status["required"], true);
     assert_eq!(status["unlocked"], false);
     // Nothing else runs before the password.
-    let locked = core.invoke("project.list_recent".into(), "{}".into()).unwrap_err();
+    let locked = core
+        .invoke("project.list_recent".into(), "{}".into())
+        .unwrap_err();
     assert!(!code_of(locked).is_empty());
-    let wrong = call(&core, "team_gate.unlock", json!({ "password": "wrong-password" }));
+    let wrong = call(
+        &core,
+        "team_gate.unlock",
+        json!({ "password": "wrong-password" }),
+    );
     assert_eq!(wrong["status"]["unlocked"], false);
     assert!(wrong["message"].as_str().is_some_and(|m| !m.is_empty()));
-    let right = call(&core, "team_gate.unlock", json!({ "password": "pilot-password-1" }));
+    let right = call(
+        &core,
+        "team_gate.unlock",
+        json!({ "password": "pilot-password-1" }),
+    );
     assert_eq!(right["status"]["unlocked"], true, "{right}");
     call(&core, "project.list_recent", json!({}));
     core.stop();
@@ -239,5 +277,8 @@ fn the_team_password_gate_refuses_a_wrong_password_and_opens_with_the_right_one(
 #[ignore = "prints a fixed test hash for the Swift gate tests"]
 fn print_swift_test_hash() {
     use openframe_entitlement::team_gate::build_hash::{SALT_BYTES, hash_for_build};
-    println!("HASH={}", hash_for_build("pilot-password-1", &[7u8; SALT_BYTES]).unwrap());
+    println!(
+        "HASH={}",
+        hash_for_build("pilot-password-1", &[7u8; SALT_BYTES]).unwrap()
+    );
 }

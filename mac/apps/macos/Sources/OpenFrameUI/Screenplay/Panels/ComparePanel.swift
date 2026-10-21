@@ -5,10 +5,13 @@
 import SwiftUI
 import OpenFrameCore
 
+/// The views of a comparison, with the Windows names first (CompareView.tsx): Scene-only is the
+/// list of changed scenes, Text-only the chosen scene's text before and after side by side. Text
+/// inline (both versions in one column) is the Mac's own third view.
 enum CompareMode: String, CaseIterable, Identifiable {
-    case sideBySide = "Side by side"
-    case inline = "Inline"
-    case scenes = "Scenes"
+    case scenes = "Scene-only"
+    case sideBySide = "Text-only"
+    case inline = "Text inline"
     var id: String { rawValue }
 }
 
@@ -183,11 +186,11 @@ struct CompareView: View {
             .labelsHidden()
             .frame(width: 270)
             .accessibilityLabel("Comparison view")
-            Button { model.step(-1) } label: { Image(systemName: "chevron.up") }
+            Button { model.step(-1) } label: { Label("Previous", systemImage: "chevron.up") }
                 .disabled(model.changedIndexes.isEmpty)
                 .help("Previous change")
                 .accessibilityLabel("Previous change")
-            Button { model.step(1) } label: { Image(systemName: "chevron.down") }
+            Button { model.step(1) } label: { Label("Next", systemImage: "chevron.down") }
                 .disabled(model.changedIndexes.isEmpty)
                 .help("Next change")
                 .accessibilityLabel("Next change")

@@ -19,8 +19,12 @@ fn pct(n: usize, d: usize) -> String {
 }
 
 pub fn write(g: &Gold, ctx: &Ctx, base: &Path, build_secs: u64) {
-    let ops_path = ctx.repo.join("apps/macos/Sources/OpenFrameCore/Generated/operations.json");
-    let ops: Vec<Value> = serde_json::from_str(&std::fs::read_to_string(&ops_path).unwrap_or_default()).unwrap_or_default();
+    let ops_path = ctx
+        .repo
+        .join("apps/macos/Sources/OpenFrameCore/Generated/operations.json");
+    let ops: Vec<Value> =
+        serde_json::from_str(&std::fs::read_to_string(&ops_path).unwrap_or_default())
+            .unwrap_or_default();
     let notes: Value = std::fs::read_to_string(ctx.content.join("coverage-notes.json"))
         .ok()
         .and_then(|t| serde_json::from_str(&t).ok())
@@ -30,7 +34,11 @@ pub fn write(g: &Gold, ctx: &Ctx, base: &Path, build_secs: u64) {
     let mut failed_ops: BTreeMap<String, Vec<String>> = BTreeMap::new();
     for f in failures.iter() {
         let op = f.op.trim_end_matches(" (task)").to_string();
-        failed_ops.entry(op).or_default().push(format!("{} ({}): {} {}", f.code, f.phase, f.message, f.detail).trim().to_string());
+        failed_ops.entry(op).or_default().push(
+            format!("{} ({}): {} {}", f.code, f.phase, f.message, f.detail)
+                .trim()
+                .to_string(),
+        );
     }
 
     let total = ops.len();
@@ -62,18 +70,33 @@ pub fn write(g: &Gold, ctx: &Ctx, base: &Path, build_secs: u64) {
             used += 1;
             used_only_refused += 1;
             st.0 += 1;
-            format!("Used: refused on purpose ({}), the rule it enforces was checked", c.expected_err)
+            format!(
+                "Used: refused on purpose ({}), the rule it enforces was checked",
+                c.expected_err
+            )
         } else if c.unexpected_err > 0 {
             format!("**Failed** ({} call(s), none succeeded)", c.unexpected_err)
         } else {
             let reason = s(&notes["notUsed"][&name]);
-            let reason = if reason.is_empty() { "Not called by the gold project.".to_string() } else { reason };
+            let reason = if reason.is_empty() {
+                "Not called by the gold project.".to_string()
+            } else {
+                reason
+            };
             unused_rows.push(format!("| `{name}` | {module} | {reason} |"));
             format!("Not used: {reason}")
         };
-        by_module.entry(module).or_default().push(format!("| `{name}` | {} | {} |", s(&o["kind"]), status));
+        by_module.entry(module).or_default().push(format!(
+            "| `{name}` | {} | {} |",
+            s(&o["kind"]),
+            status
+        ));
     }
-    let unlisted: Vec<String> = counts.keys().filter(|k| !known.contains(*k)).cloned().collect();
+    let unlisted: Vec<String> = counts
+        .keys()
+        .filter(|k| !known.contains(*k))
+        .cloned()
+        .collect();
 
     let mut md = String::new();
     md.push_str("# Low Tide Radio: coverage of OpenFrame Studio\n\n");
@@ -82,17 +105,34 @@ pub fn write(g: &Gold, ctx: &Ctx, base: &Path, build_secs: u64) {
     md.push_str("Every button of both apps calls one of these operations, so they are the ground truth for \"every feature\". Percentages are rounded down.\n\n");
     md.push_str("## Summary\n\n");
     md.push_str(&format!("- Operations in the core: **{total}**\n"));
-    md.push_str(&format!("- Used: **{used} of {total} ({}%)**", pct(used, total)));
+    md.push_str(&format!(
+        "- Used: **{used} of {total} ({}%)**",
+        pct(used, total)
+    ));
     if used_only_refused > 0 {
-        md.push_str(&format!(", of which {used_only_refused} only as a deliberate refusal"));
+        md.push_str(&format!(
+            ", of which {used_only_refused} only as a deliberate refusal"
+        ));
     }
     md.push('\n');
-    md.push_str(&format!("- Not used: **{}** (each with its reason below)\n", total - used));
-    md.push_str(&format!("- Operation calls in total: {}\n", counts.values().map(|c| (c.ok + c.expected_err + c.unexpected_err) as u64).sum::<u64>()));
+    md.push_str(&format!(
+        "- Not used: **{}** (each with its reason below)\n",
+        total - used
+    ));
+    md.push_str(&format!(
+        "- Operation calls in total: {}\n",
+        counts
+            .values()
+            .map(|c| (c.ok + c.expected_err + c.unexpected_err) as u64)
+            .sum::<u64>()
+    ));
     md.push_str(&format!("- Calls that failed although they were expected to work: **{}** (listed under Broken or refused)\n", failures.len()));
     md.push_str(&format!("- Build time: {build_secs} s\n"));
     if !unlisted.is_empty() {
-        md.push_str(&format!("- Called but not in the inventory: {}\n", unlisted.join(", ")));
+        md.push_str(&format!(
+            "- Called but not in the inventory: {}\n",
+            unlisted.join(", ")
+        ));
     }
     md.push('\n');
 
@@ -102,7 +142,9 @@ pub fn write(g: &Gold, ctx: &Ctx, base: &Path, build_secs: u64) {
     for (m, (u, t)) in &module_stats {
         md.push_str(&format!("| {m} | {u} | {t} | {}% |\n", pct(*u, *t)));
     }
-    md.push_str("\n## Not used, with the reason\n\n| Operation | Module | Reason |\n|---|---|---|\n");
+    md.push_str(
+        "\n## Not used, with the reason\n\n| Operation | Module | Reason |\n|---|---|---|\n",
+    );
     for r in &unused_rows {
         md.push_str(r);
         md.push('\n');
@@ -113,7 +155,14 @@ pub fn write(g: &Gold, ctx: &Ctx, base: &Path, build_secs: u64) {
     } else {
         for (op, list) in &failed_ops {
             let note = s(&notes["failureNotes"][op]);
-            md.push_str(&format!("- `{op}`{}\n", if note.is_empty() { String::new() } else { format!(": {note}") }));
+            md.push_str(&format!(
+                "- `{op}`{}\n",
+                if note.is_empty() {
+                    String::new()
+                } else {
+                    format!(": {note}")
+                }
+            ));
             let mut seen = std::collections::BTreeSet::new();
             for l in list {
                 if seen.insert(l.clone()) {
@@ -130,7 +179,9 @@ pub fn write(g: &Gold, ctx: &Ctx, base: &Path, build_secs: u64) {
     }
     md.push_str("\n## Every operation\n\n");
     for (m, rows) in &by_module {
-        md.push_str(&format!("### {m}\n\n| Operation | Kind | Status |\n|---|---|---|\n"));
+        md.push_str(&format!(
+            "### {m}\n\n| Operation | Kind | Status |\n|---|---|---|\n"
+        ));
         for r in rows {
             md.push_str(r);
             md.push('\n');
@@ -143,7 +194,11 @@ pub fn write(g: &Gold, ctx: &Ctx, base: &Path, build_secs: u64) {
         .iter()
         .map(|(k, c)| (k.clone(), serde_json::json!({ "ok": c.ok, "refusedOnPurpose": c.expected_err, "failed": c.unexpected_err })))
         .collect();
-    std::fs::write(base.join("outputs/coverage-counts.json"), serde_json::to_string_pretty(&Value::Object(json_counts)).unwrap()).ok();
+    std::fs::write(
+        base.join("outputs/coverage-counts.json"),
+        serde_json::to_string_pretty(&Value::Object(json_counts)).unwrap(),
+    )
+    .ok();
 }
 
 /// User-facing features: the rows of docs/implementation/feature-status.md that a user reaches
@@ -158,8 +213,16 @@ fn features(md: &mut String, ctx: &Ctx, counts: &BTreeMap<String, crate::gold::C
         return;
     };
     // The documentation rows (DOC-*) describe manual and specification work, not product features.
-    let rows: Vec<&Value> = all_rows.iter().filter(|r| !s(&r["key"]).starts_with("DOC-")).collect();
-    let used = |op: &str| counts.get(op).map(|c| c.ok + c.expected_err > 0).unwrap_or(false);
+    let rows: Vec<&Value> = all_rows
+        .iter()
+        .filter(|r| !s(&r["key"]).starts_with("DOC-"))
+        .collect();
+    let used = |op: &str| {
+        counts
+            .get(op)
+            .map(|c| c.ok + c.expected_err > 0)
+            .unwrap_or(false)
+    };
     let mut full = 0;
     let mut partial = 0;
     let mut none = 0;
@@ -171,7 +234,10 @@ fn features(md: &mut String, ctx: &Ctx, counts: &BTreeMap<String, crate::gold::C
         let name = s(&r["name"]);
         if ops.is_empty() {
             out_of_scope += 1;
-            lines.push(format!("| {key} | {name} | Not exercised by operations | {} |", s(&r["note"])));
+            lines.push(format!(
+                "| {key} | {name} | Not exercised by operations | {} |",
+                s(&r["note"])
+            ));
             continue;
         }
         let hit: Vec<&String> = ops.iter().filter(|o| used(o)).collect();
@@ -186,7 +252,18 @@ fn features(md: &mut String, ctx: &Ctx, counts: &BTreeMap<String, crate::gold::C
             none += 1;
             "Not exercised".to_string()
         };
-        let note = if missing.is_empty() { s(&r["note"]) } else { format!("Not called: {}", missing.iter().map(|m| format!("`{m}`")).collect::<Vec<_>>().join(", ")) };
+        let note = if missing.is_empty() {
+            s(&r["note"])
+        } else {
+            format!(
+                "Not called: {}",
+                missing
+                    .iter()
+                    .map(|m| format!("`{m}`"))
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            )
+        };
         lines.push(format!("| {key} | {name} | {status} | {note} |"));
     }
     let total = rows.len();
@@ -194,7 +271,10 @@ fn features(md: &mut String, ctx: &Ctx, counts: &BTreeMap<String, crate::gold::C
     md.push_str(&format!(
         "The {total} product feature rows of `docs/implementation/feature-status.md` that a user reaches (the \"How a user reaches it\" cell is not `none:`; the documentation rows DOC-001 to DOC-013 are left out), each mapped to the operations its screens call (`content/feature-map.json`). A feature counts as exercised only when every mapped operation was used. Formats that share one operation are told apart only by their arguments: the gold build exported PDF, Final Draft, Fountain, Word and plain text, imported Fountain, and previewed the import of its own Final Draft, Word, PDF and plain text exports (VERIFY.md, facts).\n\n"
     ));
-    md.push_str(&format!("- Exercised: **{full} of {total} ({}%)**\n", pct(full, total)));
+    md.push_str(&format!(
+        "- Exercised: **{full} of {total} ({}%)**\n",
+        pct(full, total)
+    ));
     md.push_str(&format!("- Partly exercised: {partial}\n- Not exercised: {none}\n- Not reachable through core operations (platform, shell or packaging features): {out_of_scope}\n\n"));
     md.push_str("| Key | Feature | Status | Note |\n|---|---|---|---|\n");
     for l in lines {

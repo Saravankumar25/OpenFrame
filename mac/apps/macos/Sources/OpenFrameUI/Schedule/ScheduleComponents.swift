@@ -286,7 +286,7 @@ struct SchedStripMenu: View {
         Menu {
             SchedStripMenuItems(model: model, strip: strip)
         } label: {
-            Image(systemName: "ellipsis").frame(width: 18, height: 18)
+            Label("Actions", systemImage: "ellipsis")
         }
         .menuStyle(.borderlessButton).menuIndicator(.hidden).fixedSize()
         .accessibilityLabel("Scene \(strip.number.map { String(Int($0)) } ?? "") actions")
@@ -345,7 +345,7 @@ struct SchedMarkerRow: View {
                 Menu {
                     SchedMarkerMenuItems(model: model, marker: marker)
                 } label: {
-                    Image(systemName: "ellipsis").frame(width: 18, height: 18)
+                    Label("Actions", systemImage: "ellipsis")
                 }
                 .menuStyle(.borderlessButton).menuIndicator(.hidden).fixedSize()
                 .accessibilityLabel("Break actions")
@@ -455,7 +455,7 @@ struct SchedDayMenu: View {
         Menu {
             SchedDayMenuItems(model: model, day: day, detail: detail)
         } label: {
-            Image(systemName: "ellipsis.circle").frame(width: 20, height: 20)
+            Label("Actions", systemImage: "ellipsis.circle")
         }
         .menuStyle(.borderlessButton).menuIndicator(.hidden).fixedSize()
         .accessibilityLabel(detail ? "More day actions" : "\(day.label) actions")

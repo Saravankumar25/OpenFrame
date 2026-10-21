@@ -90,6 +90,9 @@ struct Shared {
     pending_embeddings: u64,
     embedder_present: bool,
     embed_retry_at: Option<Instant>,
+    /// Why the last embedding pass failed (cleared by the next one that works). Kept so the
+    /// snapshot says why meaning search is not ready instead of only "updating".
+    embed_error: Option<String>,
     embedding_model: Option<String>,
     progress_done: u64,
     progress_total: u64,
@@ -325,7 +328,11 @@ impl ProjectIndex {
             progress,
             cycles: s.cycles,
             last_cycle_ms: s.last_cycle_ms,
-            error: s.failed.clone().or_else(|| s.unavailable.clone()),
+            error: s
+                .failed
+                .clone()
+                .or_else(|| s.unavailable.clone())
+                .or_else(|| s.embed_error.clone()),
         }
     }
 
@@ -547,14 +554,19 @@ fn run(ix: Arc<ProjectIndex>, core: Weak<AppCore>, registry: Arc<Registry>) {
             match result {
                 Ok(Outcome {
                     key_errors: 0,
-                    embed_failed,
+                    embed_error,
                 }) => {
                     s.failed = None;
                     if !s.full && !s.clear {
                         s.rebuilding = false;
                     }
-                    if embed_failed {
+                    if embed_error.is_some() {
                         s.embed_retry_at = Some(Instant::now() + settings.embed_retry);
+                    } else if counts.embedded > 0 {
+                        s.embed_error = None;
+                    }
+                    if embed_error.is_some() {
+                        s.embed_error = embed_error;
                     }
                 }
                 Ok(Outcome { key_errors, .. }) => {
@@ -583,7 +595,8 @@ fn run(ix: Arc<ProjectIndex>, core: Weak<AppCore>, registry: Arc<Registry>) {
 
 struct Outcome {
     key_errors: usize,
-    embed_failed: bool,
+    /// The embedding runtime's error when it failed this pass.
+    embed_error: Option<String>,
 }
 
 fn process(
@@ -615,7 +628,7 @@ fn process(
             if ix.stop.load(Ordering::SeqCst) {
                 return Ok(Outcome {
                     key_errors,
-                    embed_failed: false,
+                    embed_error: None,
                 });
             }
             let now = now_ms();
@@ -650,13 +663,13 @@ fn process(
             graph::gc_nodes(db.conn()).map_err(index_error)?;
         }
     }
-    let mut embed_failed = false;
+    let mut embed_error = None;
     if let (Some(e), Some(model)) = (embedder, model.as_deref()) {
-        embed_failed = embed_pending(ix, db, settings, e, model)?;
+        embed_error = embed_pending(ix, db, settings, e, model)?;
     }
     Ok(Outcome {
         key_errors,
-        embed_failed,
+        embed_error,
     })
 }
 
@@ -729,24 +742,24 @@ fn apply_key(
 }
 
 /// Embed waiting chunks in small batches. Yields to newly due edits so fresh
-/// changes are indexed first. Returns true when the embedding runtime failed.
+/// changes are indexed first. Returns the runtime's error when it failed.
 fn embed_pending(
     ix: &ProjectIndex,
     db: &mut IntelligenceDb,
     settings: &IndexSettings,
     e: &dyn Embedder,
     model: &str,
-) -> AppResult<bool> {
+) -> AppResult<Option<String>> {
     let total = docs::pending_count(db.conn(), Some(model)).map_err(index_error)?;
     let mut done = 0u64;
     loop {
         if ix.stop.load(Ordering::SeqCst) || ix.pending_due(settings) {
-            return Ok(false);
+            return Ok(None);
         }
         let batch = docs::pending_chunks(db.conn(), model, settings.embed_batch.max(1))
             .map_err(index_error)?;
         if batch.is_empty() {
-            return Ok(false);
+            return Ok(None);
         }
         let texts: Vec<String> = batch.iter().map(|(_, t)| t.clone()).collect();
         ix.in_embed.store(true, Ordering::SeqCst);
@@ -755,13 +768,13 @@ fn embed_pending(
         if ix.is_stopped() {
             // The project closed while the runtime was busy: `shutdown` may have
             // detached this worker and a reopened index may own the file now.
-            return Ok(false);
+            return Ok(None);
         }
         let vectors = match answered.and_then(|v| embed::validate(v, texts.len(), e.dim())) {
             Ok(v) => v,
             Err(err) => {
                 tracing::warn!(error = %err, "embedding runtime failed; semantic search stays unavailable for now");
-                return Ok(true);
+                return Ok(Some(err.to_string()));
             }
         };
         let now = now_ms();

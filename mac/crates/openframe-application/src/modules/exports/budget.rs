@@ -6,14 +6,18 @@
 //! empty and never counts as "under plan".
 
 use openframe_domain::{Actor, AppError, AppResult};
-use openframe_import_export::report::{Block, Column, Document, Table};
+use openframe_import_export::report::{
+    Align, Block, Callout, CalloutCol, Cell, CellItem, Col, Column, Document, HeaderStyle,
+    Masthead, Metric, Metrics, Rgb, Row, Section, Side, StyledTable, Table, Tone, Txt, pal,
+};
 use rusqlite::{Connection, OptionalExtension};
 use serde::Deserialize;
 use ts_rs::TS;
 
+use super::style::nb;
 use super::{
     Fmt, HINT_TABLES, Job, Output, amount_text, date_from_ms, deliver, destination, footer, money,
-    nonblank, plural, require_export, subtitle,
+    nonblank, plural, require_export,
 };
 use crate::core::AppCore;
 use crate::modules::schedule::board::project_title;
@@ -155,6 +159,21 @@ pub(super) fn export(
     deliver(core, actor, &dest, fmt, job, out)
 }
 
+/// Accent colour of a budget category (dot and share bar).
+fn budget_color(name: &str) -> Rgb {
+    Rgb::hex(match name {
+        "Cast" => 0x7a4cc2,
+        "Crew" => 0x1f9a8a,
+        "Locations" => 0x1b84be,
+        "Equipment" => 0x6b7a8f,
+        "Art/Props" => 0xc0623a,
+        "Travel/Transport" => 0xd99a1a,
+        "Food" => 0x4f9a3d,
+        "Post/Other" => 0xc23a96,
+        _ => 0x8792a5,
+    })
+}
+
 fn render(project: &str, b: &Budget, notes: bool) -> (Output, Job) {
     let cur = b.currency.as_str();
     let all = sum(b.lines.iter());
@@ -178,66 +197,90 @@ fn render(project: &str, b: &Budget, notes: bool) -> (Output, Job) {
     let plain = |v: i64| amount_text(v, cur, false);
     let opt_plain = |v: Option<i64>| v.map(plain).unwrap_or_default();
 
-    let mut doc = Document::new(&document)
-        .subtitle(subtitle(project, None))
-        .footer(footer(project, &document));
-    doc.push(Block::Note(
-        "A simple estimate for planning. Formal accounting is outside OpenFrame.".into(),
-    ));
-    let mut facts = vec![
-        ("Currency".to_string(), cur.to_string()),
+    let mut doc = Document::new(&document).footer(footer(project, &document));
+    let mut mast = Masthead::new(document.clone()).eyebrow("Production · Budget", pal::ORANGE);
+    if let Some(p) = nb(project) {
+        mast.subtitle = Some(p.to_string());
+    }
+    mast.lines
+        .push("A simple estimate for planning. Formal accounting is outside OpenFrame.".into());
+    let mut side = vec![
+        (format!("Currency {cur}"), true),
         (
-            "Planned total".into(),
-            b.planned
-                .map(|p| money(p, cur))
-                .unwrap_or_else(|| "Not set".into()),
-        ),
-        (
-            "Contingency".into(),
-            if b.mode == "percent" {
-                format!(
-                    "{}% · {}",
-                    amount_text(b.value, "PCT", true),
-                    money(contingency, cur)
-                )
+            if b.is_current {
+                "Current budget".to_string()
             } else {
-                money(contingency, cur)
+                "Saved snapshot".to_string()
             },
-        ),
-        ("Planned in lines".into(), money(all.planned, cur)),
-        (
-            "Actual so far".into(),
-            format!(
-                "{} ({} of {})",
-                money(all.actual, cur),
-                plural(all.actual_count, "line", "lines"),
-                b.lines.len()
-            ),
-        ),
-        (
-            if all.difference >= 0 {
-                "Under plan (lines with an actual)".into()
-            } else {
-                "Over plan (lines with an actual)".into()
-            },
-            money(all.difference.abs(), cur),
+            false,
         ),
     ];
+    if let Some(t) = b.frozen_at.filter(|_| !b.is_current) {
+        side.push((format!("Saved {}", date_from_ms(t)), false));
+    }
+    side.push((format!("Exported {}", super::today_label()), false));
+    mast.side = Some(Side::Panel { lines: side });
+    mast.rule = true;
+    doc.push(Block::Masthead(mast));
+    let under = all.difference >= 0;
+    doc.push(Block::Metrics(Metrics {
+        items: vec![
+            Metric::new(
+                b.planned
+                    .map(|p| money(p, cur))
+                    .unwrap_or_else(|| "Not set".into()),
+                "Planned total",
+            ),
+            Metric::new(
+                if b.mode == "percent" {
+                    format!(
+                        "{}% · {}",
+                        amount_text(b.value, "PCT", true),
+                        money(contingency, cur)
+                    )
+                } else {
+                    money(contingency, cur)
+                },
+                "Contingency",
+            ),
+            Metric::new(
+                money(all.actual, cur),
+                format!(
+                    "Actual so far, {} of {}",
+                    plural(all.actual_count, "line", "lines"),
+                    b.lines.len()
+                ),
+            ),
+            Metric::new(
+                money(all.difference.abs(), cur),
+                if under {
+                    "Under plan, lines with an actual"
+                } else {
+                    "Over plan, lines with an actual"
+                },
+            )
+            .tone(if under { Tone::Ok } else { Tone::Danger }),
+        ],
+        compact: false,
+    }));
+    let mut notices: Vec<String> = vec![format!("Planned in lines: {}.", money(all.planned, cur))];
     if let Some(p) = b.planned {
         let diff = p - all.planned;
-        facts.push((
-            if diff >= 0 {
-                "Planned total not yet in lines".into()
-            } else {
-                "Lines over the planned total".into()
-            },
-            money(diff.abs(), cur),
-        ));
+        notices.push(if diff >= 0 {
+            format!(
+                "Planned total not yet in lines: {}.",
+                money(diff.abs(), cur)
+            )
+        } else {
+            format!("Lines over the planned total: {}.", money(diff.abs(), cur))
+        });
     }
-    if let Some(t) = b.frozen_at.filter(|_| !b.is_current) {
-        facts.push(("Snapshot saved".into(), date_from_ms(t)));
-    }
-    doc.push(Block::KeyValues(facts));
+    doc.push(Block::Text(
+        Txt::new(notices.join(" "))
+            .size(8.6)
+            .color(pal::SLATE)
+            .after(4.0),
+    ));
 
     let money_cols = |first: Vec<Column>| {
         let mut v = first;
@@ -307,38 +350,225 @@ fn render(project: &str, b: &Budget, notes: bool) -> (Output, Job) {
         lines.push(r);
     }
     // PDF tables show grouped amounts; spreadsheets keep plain numbers.
-    let grouped = |t: &Table, money_from: usize| {
-        let mut g = t.clone();
-        g.name = String::new();
-        for r in g.rows.iter_mut() {
-            for v in r.iter_mut().skip(money_from).take(3) {
-                if let Ok(minor) = v.replace('.', "").parse::<i64>() {
-                    *v = amount_text(minor, cur, true);
+    let grouped = |v: i64| amount_text(v, cur, true);
+    let signed = |v: i64| -> Cell {
+        let (color, bold) = if v < 0 {
+            (pal::RED_TEXT, true)
+        } else {
+            (pal::INK, false)
+        };
+        let mut t = Txt::new(grouped(v))
+            .size(8.8)
+            .color(color)
+            .align(Align::Right);
+        if bold {
+            t = t.bold();
+        }
+        Cell::text(t)
+    };
+    let amount = |v: i64, bold: bool| -> Cell {
+        let mut t = Txt::new(grouped(v))
+            .size(8.8)
+            .color(pal::INK)
+            .align(Align::Right);
+        if bold {
+            t = t.bold().color(pal::NAVY);
+        }
+        Cell::text(t)
+    };
+    doc.push(Block::Section(Section::new("By category", None)));
+    if cats.rows.is_empty() {
+        doc.push(Block::Text(
+            Txt::new("No lines yet.")
+                .size(8.8)
+                .color(pal::FAINT)
+                .after(6.0),
+        ));
+    } else {
+        let mut names: Vec<String> = BUDGET_CATEGORIES.iter().map(|c| c.to_string()).collect();
+        let other: Vec<&Line> = b
+            .lines
+            .iter()
+            .filter(|l| !BUDGET_CATEGORIES.contains(&l.category.as_str()))
+            .collect();
+        if !other.is_empty() {
+            names.push("Other".into());
+        }
+        let in_cat = |name: &str| -> Vec<&Line> {
+            if name == "Other" {
+                b.lines
+                    .iter()
+                    .filter(|l| !BUDGET_CATEGORIES.contains(&l.category.as_str()))
+                    .collect()
+            } else {
+                b.lines.iter().filter(|l| l.category == name).collect()
+            }
+        };
+        let mut t = StyledTable::new(vec![
+            Col::weight("Category", 2.0),
+            Col::pt("Lines", 40.0).align(Align::Right),
+            Col::pt(format!("Planned ({cur})"), 86.0).align(Align::Right),
+            Col::pt(format!("Actual ({cur})"), 86.0).align(Align::Right),
+            Col::pt(format!("Difference ({cur})"), 92.0).align(Align::Right),
+            Col::weight("Share of planned", 1.0),
+        ]);
+        t.boxed = true;
+        t.header = HeaderStyle::Tint;
+        t.continued = Some("By category".into());
+        let planned_total = all.planned.max(1);
+        for name in &names {
+            let ls = in_cat(name);
+            if ls.is_empty() {
+                continue;
+            }
+            let s = sum(ls.iter().copied());
+            let has_actual = s.actual_count > 0;
+            t.rows.push(Row::new(vec![
+                Cell::new().item(CellItem::Heading {
+                    dot: Some(budget_color(name)),
+                    text: name.clone(),
+                    right: None,
+                }),
+                Cell::text(
+                    Txt::new(ls.len().to_string())
+                        .size(8.8)
+                        .color(pal::SLATE)
+                        .align(Align::Right),
+                ),
+                amount(s.planned, true),
+                if has_actual {
+                    amount(s.actual, false)
+                } else {
+                    Cell::empty()
+                },
+                if has_actual {
+                    signed(s.difference)
+                } else {
+                    Cell::empty()
+                },
+                Cell::new()
+                    .item(CellItem::Bar {
+                        share: s.planned as f32 / planned_total as f32,
+                        color: budget_color(name),
+                    })
+                    .middle(),
+            ]));
+        }
+        let mut total = Row::new(vec![
+            Cell::text(
+                Txt::new("Total in lines")
+                    .size(9.0)
+                    .bold()
+                    .color(pal::WHITE),
+            ),
+            Cell::text(
+                Txt::new(b.lines.len().to_string())
+                    .size(8.8)
+                    .bold()
+                    .color(pal::WHITE)
+                    .align(Align::Right),
+            ),
+            Cell::text(
+                Txt::new(grouped(all.planned))
+                    .size(8.8)
+                    .bold()
+                    .color(pal::WHITE)
+                    .align(Align::Right),
+            ),
+            if all.actual_count > 0 {
+                Cell::text(
+                    Txt::new(grouped(all.actual))
+                        .size(8.8)
+                        .bold()
+                        .color(pal::WHITE)
+                        .align(Align::Right),
+                )
+            } else {
+                Cell::empty()
+            },
+            if all.actual_count > 0 {
+                Cell::text(
+                    Txt::new(grouped(all.difference))
+                        .size(8.8)
+                        .bold()
+                        .color(pal::WHITE)
+                        .align(Align::Right),
+                )
+            } else {
+                Cell::empty()
+            },
+            Cell::empty(),
+        ]);
+        total.fill = Some(pal::NAVY);
+        t.rows.push(total);
+        doc.push(Block::Styled(t));
+
+        doc.push(Block::Section(Section::new(
+            "Line items",
+            Some(plural(b.lines.len(), "line", "lines")),
+        )));
+        let mut li = StyledTable::new(vec![
+            Col::weight("Line item", 2.6),
+            Col::pt(format!("Planned ({cur})"), 90.0).align(Align::Right),
+            Col::pt(format!("Actual ({cur})"), 90.0).align(Align::Right),
+            Col::pt(format!("Difference ({cur})"), 96.0).align(Align::Right),
+        ]);
+        li.boxed = true;
+        li.header = HeaderStyle::Tint;
+        li.continued = Some("Line items".into());
+        for name in &names {
+            let ls = in_cat(name);
+            if ls.is_empty() {
+                continue;
+            }
+            let mut band = Row::spanning(Cell::new().item(CellItem::Heading {
+                dot: Some(budget_color(name)),
+                text: name.clone(),
+                right: Some(plural(ls.len(), "line", "lines")),
+            }));
+            band.fill = Some(pal::PANEL);
+            band.keep_next = true;
+            li.rows.push(band);
+            for l in ls {
+                let mut desc = Cell::text(
+                    Txt::new(l.description.clone())
+                        .size(9.0)
+                        .bold()
+                        .color(pal::NAVY)
+                        .leading(1.25),
+                );
+                if notes && let Some(n) = nonblank(l.notes.as_deref()) {
+                    desc = desc.item(CellItem::Text(
+                        Txt::new(n).size(8.2).color(pal::SLATE).leading(1.3),
+                    ));
                 }
+                li.rows.push(Row::new(vec![
+                    desc,
+                    amount(l.planned, false),
+                    match l.actual {
+                        Some(a) => amount(a, false),
+                        None => Cell::empty(),
+                    },
+                    match l.actual {
+                        Some(a) => signed(l.planned - a),
+                        None => Cell::empty(),
+                    },
+                ]));
             }
         }
-        g
-    };
-    doc.push(Block::Heading {
-        text: "By category".into(),
-        level: 2,
-    });
-    if cats.rows.is_empty() {
-        doc.push(Block::Paragraph("No lines yet.".into()));
-    } else {
-        doc.push(Block::Table(grouped(&cats, 2)));
-        doc.push(Block::Heading {
-            text: "Line items".into(),
-            level: 2,
-        });
-        doc.push(Block::Table(grouped(&lines, 2)));
+        doc.push(Block::Styled(li));
     }
     if let Some(n) = nonblank(b.notes.as_deref()) {
-        doc.push(Block::Heading {
-            text: "Notes".into(),
-            level: 2,
-        });
-        doc.push(Block::Paragraph(n));
+        doc.push(Block::Section(Section::new("Notes", None)));
+        doc.push(Block::Callout(Callout {
+            tone: Tone::Info,
+            cols: vec![{
+                let mut c = CalloutCol::new(1.0);
+                c.lines
+                    .push(Txt::new(n).size(9.0).color(Tone::Info.text()).leading(1.4));
+                c
+            }],
+        }));
     }
     let mut summary = Table::new(
         "Summary",

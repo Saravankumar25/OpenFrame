@@ -1,4 +1,4 @@
-// Build Screenplay from the Story Board (FSD §18, §91; UX §3.6 mocks 063 to 065).
+// Build Screenplay from the Beat Board (FSD §18, §91; UX §3.6 mocks 063 to 065).
 // Preview first; nothing is created until the user confirms. An existing
 // screenplay is never overwritten: the build adds a new draft or a new
 // screenplay beside the existing ones (a project may hold several, ADR-0012).
@@ -37,7 +37,7 @@ export function BuildDialog({ episodeId, preselect }: { episodeId: string | null
       open
       onOpenChange={(v) => !v && close()}
       size="lg"
-      title="Build Screenplay from Story Board"
+      title="Build Screenplay from Beat Board"
       sub="Preview the order before anything is created."
     >
       {preview.data ? (
@@ -111,7 +111,7 @@ function BuildForm({ data, episodeId, preselect }: { data: StoryBuildPreview; ep
     return (
       <>
         <Banner tone="info">
-          There are no Scene Cards in the active Story Board yet{data.parkedCount ? ` (Parking Lot cards are excluded)` : ""}. Add Scene Cards to
+          There are no Scene Cards in the active Beat Board yet{data.parkedCount ? ` (Parking Lot cards are excluded)` : ""}. Add Scene Cards to
           Acts or Sequences first.
         </Banner>
         <div className="df" style={{ padding: "12px 0 0", border: 0, background: "transparent" }}>
@@ -124,7 +124,7 @@ function BuildForm({ data, episodeId, preselect }: { data: StoryBuildPreview; ep
   return (
     <>
       <Banner tone="info">
-        Cards are used in Story Board order. Parking Lot cards are excluded. Nothing is created until you confirm.
+        Cards are used in Beat Board order. Parking Lot cards are excluded. Nothing is created until you confirm.
       </Banner>
       {missing > 0 && (
         <div style={{ marginTop: 8 }}>
@@ -139,7 +139,7 @@ function BuildForm({ data, episodeId, preselect }: { data: StoryBuildPreview; ep
           <thead>
             <tr>
               <th style={{ width: 36 }}>#</th>
-              <th>Story Board scene</th>
+              <th>Beat Board scene</th>
               <th style={{ width: 300 }}>Heading</th>
               <th style={{ width: 70 }}>Include</th>
             </tr>
@@ -293,7 +293,7 @@ export function ApplyOrderDialog({ episodeId }: { episodeId: string | null }) {
     try {
       await story.applyOrder(episodeId, p.draftId, true);
       close();
-      toast.undoable(`Applied the Story Board order to “${p.draftName ?? "the screenplay"}”`);
+      toast.undoable(`Applied the Beat Board order to “${p.draftName ?? "the screenplay"}”`);
     } catch (e) {
       reportError(e);
     } finally {
@@ -324,7 +324,7 @@ export function ApplyOrderDialog({ episodeId }: { episodeId: string | null }) {
       {!p ? (
         <Skeleton h={80} />
       ) : !p.draftId ? (
-        <Banner tone="info">There is no screenplay yet. Use Build Screenplay to create one from the Story Board.</Banner>
+        <Banner tone="info">There is no screenplay yet. Use Build Screenplay to create one from the Beat Board.</Banner>
       ) : (
         p.screenplays.length > 1 && (
           <div style={{ marginBottom: 10 }}>
@@ -342,7 +342,7 @@ export function ApplyOrderDialog({ episodeId }: { episodeId: string | null }) {
       {!p || !p.draftId ? null : p.locked ? (
         <Banner tone="warn">“{p.draftName}” is locked as the shooting draft. Start a revision in the Screenplay workspace to change scene order.</Banner>
       ) : moves.length === 0 ? (
-        <Banner tone="ok">“{p.draftName}” already follows the Story Board order{p.linkedCount === 0 ? " (no cards are linked to its scenes)" : ""}.</Banner>
+        <Banner tone="ok">“{p.draftName}” already follows the Beat Board order{p.linkedCount === 0 ? " (no cards are linked to its scenes)" : ""}.</Banner>
       ) : (
         <>
           <p style={{ marginTop: 0 }}>

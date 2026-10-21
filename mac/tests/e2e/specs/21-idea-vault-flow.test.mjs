@@ -1,10 +1,10 @@
 // @e2e-data-root: own
 // @e2e-fake-media
 //
-// Idea Vault, full flow (build plan: Story Board and Idea Vault, "Idea Vault end-to-end test"):
+// Idea Vault, full flow (build plan: Beat Board and Idea Vault, "Idea Vault end-to-end test"):
 // record a voice note with the microphone (WebView2's fake device, see run.mjs) and play it back
 // after a relaunch; flag research sources (FSD 107.5) and undo; use the Global Idea Vault and copy
-// an idea into the project; send an idea to the Story Board as a Scene Card and check the original
+// an idea into the project; send an idea to the Beat Board as a Scene Card and check the original
 // stays in the Vault; quit, relaunch and find all of it again.
 //
 // Drag-in (dropping files from Windows Explorer) is an operating-system drag that WebDriver cannot
@@ -110,12 +110,12 @@ describe("idea vault flow", () => {
     });
   });
 
-  test("Send to Story Board as a Scene Card; the Vault original stays", async () => {
+  test("Send to Beat Board as a Scene Card; the Vault original stays", async () => {
     await step("send", async () => {
       await quickCapture(STORY_IDEA);
       await itemMenu("Meera finds her own", "Send to Story");
-      await waitForText(browser, "Send to Story Board");
-      await inDialog(browser, "Create Copy in Story Board");
+      await waitForText(browser, "Send to Beat Board");
+      await inDialog(browser, "Create Copy in Beat Board");
       await sleep(600);
       assert.ok((await items()).some((i) => i.startsWith("Meera finds her own")), "the Vault original must stay");
       await openWorkspace(browser, "Story");

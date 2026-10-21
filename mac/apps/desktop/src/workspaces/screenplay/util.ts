@@ -70,9 +70,11 @@ export interface Layout {
   screenplayId: string | null;
   /** Scene navigator columns shown next to the number and heading. */
   navColumns: NavColumn[];
+  /** The scene list is hidden so the page gets the room (owner request 2026-10-19). */
+  navHidden: boolean;
 }
 
-export const DEFAULT_LAYOUT: Layout = { mode: "standard", panels: [], showNotes: true, draftId: null, screenplayId: null, navColumns: [] };
+export const DEFAULT_LAYOUT: Layout = { mode: "standard", panels: [], showNotes: true, draftId: null, screenplayId: null, navColumns: [], navHidden: false };
 
 const PANELS: PanelId[] = ["story", "notes", "characters", "comments", "draft"];
 
@@ -88,6 +90,7 @@ export function normalizeLayout(v: unknown): Layout {
     draftId: typeof o.draftId === "string" ? o.draftId : null,
     screenplayId: typeof o.screenplayId === "string" ? o.screenplayId : null,
     navColumns: normalizeColumns(o.navColumns),
+    navHidden: o.navHidden === true,
   };
 }
 

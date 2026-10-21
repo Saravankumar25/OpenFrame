@@ -54,10 +54,11 @@ private enum Fixtures {
 }
 
 @Suite struct ThemeEngineTests {
-    @Test func sixteenBuiltInThemes() throws {
+    @Test func seventeenBuiltInThemesWithBlackAndWhiteSecond() throws {
         let catalog = try Fixtures.catalog()
-        #expect(catalog.builtIn.count == 16)
+        #expect(catalog.builtIn.count == 17)
         #expect(catalog.builtIn.first?.id == "openframe-default")
+        #expect(catalog.builtIn.dropFirst().first?.id == "black-and-white")
     }
 
     @Test func everyThemeAndModeResolvesWithoutUnresolvedTokens() throws {
@@ -85,7 +86,7 @@ private enum Fixtures {
     @Test func matchesIndependentReference() throws {
         let catalog = try Fixtures.catalog()
         let ref = try Fixtures.reference()
-        #expect(ref.themes.count == 16)
+        #expect(ref.themes.count == 17)
         for theme in catalog.builtIn {
             for mode in ColorMode.allCases {
                 let r = ThemeEngine.resolve(themeId: theme.id, mode: mode, themes: catalog)

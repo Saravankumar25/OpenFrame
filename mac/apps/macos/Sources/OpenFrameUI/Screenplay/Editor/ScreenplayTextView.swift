@@ -155,7 +155,8 @@ public final class ScreenplayTextView: NSTextView, @preconcurrency NSTextContent
         isRichText = false
         importsGraphics = false
         allowsUndo = true
-        isContinuousSpellCheckingEnabled = true
+        isContinuousSpellCheckingEnabled = SpellingPreference.shared.enabled
+        NotificationCenter.default.addObserver(self, selector: #selector(spellingPreferenceChanged), name: .openFrameSpellingChanged, object: nil)
         isGrammarCheckingEnabled = false
         isAutomaticQuoteSubstitutionEnabled = false
         isAutomaticDashSubstitutionEnabled = false
@@ -630,6 +631,12 @@ public final class ScreenplayTextView: NSTextView, @preconcurrency NSTextContent
         setKind(.custom, customElementId: id)
     }
 
+    /// Shows the find bar over the page and gives the page the keyboard (the toolbar's Find).
+    public func showFind() {
+        window?.makeFirstResponder(self)
+        performFindPanelAction(Self.showFindInterfaceItem)
+    }
+
     private static let showFindInterfaceItem: NSMenuItem = {
         let item = NSMenuItem()
         item.tag = Int(NSTextFinder.Action.showFindInterface.rawValue)
@@ -676,8 +683,14 @@ public final class ScreenplayTextView: NSTextView, @preconcurrency NSTextContent
 
     public override func viewDidMoveToWindow() {
         super.viewDidMoveToWindow()
-        // The system restores its own spelling preference when the view joins a window.
-        isContinuousSpellCheckingEnabled = true
+        // The system restores its own spelling preference when the view joins a window; the
+        // project's choice (Settings > Writing) wins.
+        isContinuousSpellCheckingEnabled = SpellingPreference.shared.enabled
+    }
+
+    @objc private func spellingPreferenceChanged() {
+        isContinuousSpellCheckingEnabled = SpellingPreference.shared.enabled
+        needsDisplay = true
     }
 
     public override func resignFirstResponder() -> Bool {

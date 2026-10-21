@@ -37,6 +37,7 @@ struct MoodboardsView: View {
                     .inspectorColumnWidth(min: 300, ideal: 340, max: 460)
             }
         }
+        .onProjectIntent("production.new_moodboard") { model.sheet = .newBoard }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("moodboards-tab")
     }
@@ -260,13 +261,13 @@ private struct SelectionBar: View {
                 Task { await model.update(item, caption: v) }
             }
             .frame(width: 240)
-            Button { Task { await model.arrange(item.id, placement: "front") } } label: { Image(systemName: "square.3.layers.3d.top.filled") }
+            Button { Task { await model.arrange(item.id, placement: "front") } } label: { Label("To Front", systemImage: "square.3.layers.3d.top.filled") }
                 .accessibilityLabel("Bring to front").accessibilityIdentifier("moodboard-front")
-            Button { Task { await model.arrange(item.id, placement: "back") } } label: { Image(systemName: "square.3.layers.3d.bottom.filled") }
+            Button { Task { await model.arrange(item.id, placement: "back") } } label: { Label("To Back", systemImage: "square.3.layers.3d.bottom.filled") }
                 .accessibilityLabel("Send to back").accessibilityIdentifier("moodboard-back")
-            Button { model.inspectId = item.id } label: { Image(systemName: "ellipsis.circle") }
+            Button { model.inspectId = item.id } label: { Label("Edit", systemImage: "ellipsis.circle") }
                 .accessibilityLabel("Edit item").accessibilityIdentifier("moodboard-edit-item")
-            Button { Task { await model.deleteItems([item.id]) } } label: { Image(systemName: "trash") }
+            Button { Task { await model.deleteItems([item.id]) } } label: { Label("Delete", systemImage: "trash") }
                 .accessibilityLabel("Delete item").accessibilityIdentifier("moodboard-delete-item")
         }
     }
@@ -409,7 +410,7 @@ private struct MoodItemInspector: View {
                         Text(kindLabel).font(.title3.weight(.semibold))
                     }
                     Spacer()
-                    Button { model.inspectId = nil } label: { Image(systemName: "xmark") }
+                    Button { model.inspectId = nil } label: { Label("Close", systemImage: "xmark") }
                         .buttonStyle(.borderless).accessibilityLabel("Close").accessibilityIdentifier("moodboard-inspector-close")
                 }
                 if item.kind == "image", let a = item.asset { Text(a.originalName).font(.caption).foregroundStyle(theme["muted"]) }

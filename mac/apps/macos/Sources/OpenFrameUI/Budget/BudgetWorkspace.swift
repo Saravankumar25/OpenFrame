@@ -182,7 +182,7 @@ struct BudgetContent: View {
                     Text("Planned \(BudgetMoney.format(s.plannedLinesTotal, s.currency)) \u{00B7} Actual \(BudgetMoney.format(s.actualTotal, s.currency))").font(.callout)
                     Button("View") { model.sheet = .snapshot(s.id) }.controlSize(.small)
                         .accessibilityIdentifier("budget-snapshot-view-\(s.id)")
-                    Button { Task { await model.deleteSnapshot(s) } } label: { Image(systemName: "trash") }
+                    Button { Task { await model.deleteSnapshot(s) } } label: { Label("Delete", systemImage: "trash") }
                         .buttonStyle(.borderless)
                         .accessibilityLabel("Delete snapshot \(s.label ?? "")")
                         .accessibilityIdentifier("budget-snapshot-delete-\(s.id)")
@@ -291,11 +291,11 @@ struct BudgetTable: View {
                 BudgetDifference(value: l.difference, currency: budget.currency).frame(width: 150, alignment: .trailing)
                 if !readOnly {
                     HStack(spacing: 4) {
-                        Button { onEdit?(l) } label: { Image(systemName: "pencil") }
+                        Button { onEdit?(l) } label: { Label("Edit", systemImage: "pencil") }
                             .buttonStyle(.borderless)
                             .accessibilityLabel("Edit \(l.description)")
                             .accessibilityIdentifier("budget-edit-\(l.id)")
-                        Button { onDelete?(l) } label: { Image(systemName: "trash") }
+                        Button { onDelete?(l) } label: { Label("Delete", systemImage: "trash") }
                             .buttonStyle(.borderless)
                             .accessibilityLabel("Delete \(l.description)")
                             .accessibilityIdentifier("budget-delete-\(l.id)")

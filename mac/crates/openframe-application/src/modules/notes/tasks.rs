@@ -46,7 +46,7 @@ pub fn register(r: &mut Registry) {
 }
 
 /// Objects a task may relate to (FSD §106: Scene, Location, Character, Breakdown
-/// Item, Shooting Day, Call Sheet — plus the Story Board card and people).
+/// Item, Shooting Day, Call Sheet — plus the Beat Board card and people).
 /// Keys are table names (= search entity types).
 pub const RELATABLE: &[(&str, &str)] = &[
     ("screenplay_scene", "Scene"),

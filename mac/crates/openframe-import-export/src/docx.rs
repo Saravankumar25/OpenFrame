@@ -853,8 +853,88 @@ pub fn package_parts(doc: &ScreenplayDoc, opts: &DocxOptions) -> Vec<(String, Ve
 /// Entry names here are fixed constants (never user input), so the zip-slip
 /// concern that validation guards against does not arise.
 pub fn to_bytes(doc: &ScreenplayDoc, opts: &DocxOptions) -> AppResult<Vec<u8>> {
+    zip_parts(&package_parts(doc, opts))
+}
+
+/// A plain prose document (a story written on the Story page): the title, then one Word
+/// paragraph per paragraph of the text, in a readable serif at 12 points on Letter paper. Blank
+/// lines between paragraphs become paragraph spacing; line breaks inside a paragraph are kept.
+pub fn prose_to_bytes(title: &str, text: &str) -> AppResult<Vec<u8>> {
+    let mut body = String::new();
+    if !title.trim().is_empty() {
+        body.push_str(&format!(
+            "<w:p><w:pPr><w:pStyle w:val=\"Title\"/></w:pPr><w:r><w:t xml:space=\"preserve\">{}</w:t></w:r></w:p>",
+            xml::escape(title.trim())
+        ));
+    }
+    for para in prose_paragraphs(text) {
+        body.push_str("<w:p>");
+        for (i, line) in para.split('\n').enumerate() {
+            if i > 0 {
+                body.push_str("<w:r><w:br/></w:r>");
+            }
+            body.push_str(&format!(
+                "<w:r><w:t xml:space=\"preserve\">{}</w:t></w:r>",
+                xml::escape(line)
+            ));
+        }
+        body.push_str("</w:p>");
+    }
+    let document = format!(
+        "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<w:document xmlns:w=\"{W_NS}\" xmlns:r=\"{R_NS}\"><w:body>{body}<w:sectPr><w:pgSz w:w=\"12240\" w:h=\"15840\"/><w:pgMar w:top=\"1440\" w:right=\"1440\" w:bottom=\"1440\" w:left=\"1440\" w:header=\"720\" w:footer=\"720\" w:gutter=\"0\"/></w:sectPr></w:body></w:document>"
+    );
+    let styles = format!(
+        "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<w:styles xmlns:w=\"{W_NS}\"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii=\"Georgia\" w:hAnsi=\"Georgia\" w:cs=\"Georgia\" w:eastAsia=\"Georgia\"/><w:sz w:val=\"24\"/><w:szCs w:val=\"24\"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:before=\"0\" w:after=\"200\" w:line=\"300\" w:lineRule=\"auto\"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type=\"paragraph\" w:default=\"1\" w:styleId=\"Normal\"><w:name w:val=\"Normal\"/><w:qFormat/></w:style><w:style w:type=\"paragraph\" w:styleId=\"Title\"><w:name w:val=\"Title\"/><w:basedOn w:val=\"Normal\"/><w:qFormat/><w:pPr><w:spacing w:after=\"360\"/></w:pPr><w:rPr><w:b/><w:sz w:val=\"36\"/><w:szCs w:val=\"36\"/></w:rPr></w:style></w:styles>"
+    );
+    zip_parts(&[
+        (
+            "[Content_Types].xml".to_string(),
+            CONTENT_TYPES.as_bytes().to_vec(),
+        ),
+        ("_rels/.rels".to_string(), ROOT_RELS.as_bytes().to_vec()),
+        (
+            "word/_rels/document.xml.rels".to_string(),
+            DOC_RELS.as_bytes().to_vec(),
+        ),
+        ("word/document.xml".to_string(), document.into_bytes()),
+        ("word/styles.xml".to_string(), styles.into_bytes()),
+        ("word/header1.xml".to_string(), header_xml().into_bytes()),
+        (
+            "docProps/core.xml".to_string(),
+            core_xml(if title.trim().is_empty() {
+                "Story"
+            } else {
+                title.trim()
+            })
+            .into_bytes(),
+        ),
+    ])
+}
+
+/// Paragraphs of plain text: blocks separated by one or more blank lines, each block's own line
+/// breaks kept. Line endings are normalised first; nothing else of the text is changed.
+pub fn prose_paragraphs(text: &str) -> Vec<String> {
+    let text = text.replace("\r\n", "\n").replace('\r', "\n");
+    let mut out = Vec::new();
+    let mut cur: Vec<&str> = Vec::new();
+    for line in text.split('\n') {
+        if line.trim().is_empty() {
+            if !cur.is_empty() {
+                out.push(cur.join("\n"));
+                cur.clear();
+            }
+        } else {
+            cur.push(line);
+        }
+    }
+    if !cur.is_empty() {
+        out.push(cur.join("\n"));
+    }
+    out
+}
+
+fn zip_parts(parts: &[(String, Vec<u8>)]) -> AppResult<Vec<u8>> {
     use std::io::Write;
-    let parts = package_parts(doc, opts);
     let mut zip = zip::ZipWriter::new(std::io::Cursor::new(Vec::new()));
     let o = zip::write::SimpleFileOptions::default()
         .compression_method(zip::CompressionMethod::Deflated);
@@ -862,7 +942,7 @@ pub fn to_bytes(doc: &ScreenplayDoc, opts: &DocxOptions) -> AppResult<Vec<u8>> {
         AppError::export("docx_failed", "The Word document could not be created.")
             .with_detail(e.to_string())
     };
-    for (name, bytes) in &parts {
+    for (name, bytes) in parts {
         zip.start_file(name.as_str(), o).map_err(err)?;
         zip.write_all(bytes)?;
     }
@@ -879,6 +959,32 @@ pub fn write(doc: &ScreenplayDoc, opts: &DocxOptions, dest: &Path) -> AppResult<
 mod tests {
     use super::*;
     use crate::model::Scene;
+
+    #[test]
+    fn prose_keeps_paragraphs_and_line_breaks() {
+        assert_eq!(
+            prose_paragraphs("One.\r\nStill one.\n\n\nTwo.\n  \nThree"),
+            vec![
+                "One.\nStill one.".to_string(),
+                "Two.".into(),
+                "Three".into()
+            ]
+        );
+        assert!(prose_paragraphs("  \n\n").is_empty());
+        let bytes = prose_to_bytes("Low Tide <Radio>", "A & B\n\nNext").unwrap();
+        assert_eq!(&bytes[..2], b"PK");
+        let mut zip = zip::ZipArchive::new(std::io::Cursor::new(bytes)).unwrap();
+        let mut xml_text = String::new();
+        std::io::Read::read_to_string(
+            &mut zip.by_name("word/document.xml").unwrap(),
+            &mut xml_text,
+        )
+        .unwrap();
+        assert!(xml_text.contains("Low Tide &lt;Radio&gt;"));
+        assert!(xml_text.contains("A &amp; B"));
+        // The title and the two paragraphs.
+        assert_eq!(xml_text.matches("<w:p>").count(), 3);
+    }
 
     #[test]
     fn style_names_map_to_elements() {

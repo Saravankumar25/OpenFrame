@@ -1,7 +1,7 @@
 // Pure helpers for the document Export dialog (FSD §20.7, §60, §122;
 // Import/Export §3). No project truth lives here.
 
-export type ExportFormatValue = "pdf" | "csv" | "xlsx" | "txt";
+export type ExportFormatValue = "pdf" | "csv" | "xlsx" | "txt" | "docx";
 
 export interface ExportFormatOption {
   value: ExportFormatValue;
@@ -14,6 +14,7 @@ export const FORMAT_LABELS: Record<ExportFormatValue, string> = {
   csv: "CSV",
   xlsx: "Excel (XLSX)",
   txt: "Plain text",
+  docx: "Word (DOCX)",
 };
 
 /** Commonly offered format sets. */
@@ -97,6 +98,14 @@ export function isoDate(d: Date): string {
 export function exportFileName(project: string | null | undefined, document: string, format: ExportFormatValue, date: Date = new Date()): string {
   const parts = [clean(project ?? ""), clean(document), isoDate(date)].filter(Boolean);
   let base = parts.join(" - ").replace(/[. ]+$/, "");
+  if (base.length > 150) base = base.slice(0, 150).trim();
+  if (!base || RESERVED.test(base)) base = `Export ${base}`.trim();
+  return `${base}.${format}`;
+}
+
+/** A document with a name of its own ("Shoot Day 4 - Daily view") is saved under that name only. */
+export function plainFileName(name: string, format: ExportFormatValue): string {
+  let base = clean(name).replace(/[. ]+$/, "");
   if (base.length > 150) base = base.slice(0, 150).trim();
   if (!base || RESERVED.test(base)) base = `Export ${base}`.trim();
   return `${base}.${format}`;

@@ -1,4 +1,5 @@
 === page 1
+ -3  730 PageNumber     1.
   0   90 SceneNumber    1
   0  150 Heading        INT. CLINIC - DAY
   0  760 SceneNumber    1
@@ -26,4 +27,4 @@
  28  250 Dialogue       Say it again.
  29  310 Parenthetical  (a long pause)
  30  250 Dialogue       Please.
-pdf-sha256 18518efb54e675cc803bd5e55c3b7ea46a79b8beac48c666220ccf3f24c269fa
+pdf-sha256 680f94959008126515ca9c7137063dc2b1efd5b3a784bb95eb46c3f0f50164f2

@@ -1,4 +1,7 @@
-// Application Home: recent projects, New Project, Open, samples, and the data-location note.
+// Application Home (Windows: app/home/AppHome.tsx), in Mac styling: "Your projects" with Open
+// Project, Restore Backup or Package and New Project; Pinned and Recent projects as cards with
+// their type and status; Open Archived for a page of archived projects with Restore and Open;
+// the Global Idea Vault, Settings and your name in the toolbar; a status line at the bottom.
 // The project list always comes from the core (project.list_recent).
 
 import AppKit
@@ -9,6 +12,7 @@ import OpenFrameCore
 @Observable
 final class HomeModel {
     var recents: [RecentProject] = []
+    /// The Archived projects page is shown (Windows: Open Archived).
     var showArchived = false
     /// Search projects: title, type and status.
     var query = ""
@@ -21,7 +25,8 @@ final class HomeModel {
         // so Home never shows an empty list that is only a failed read.
         for attempt in 0..<4 {
             do {
-                recents = try await core.projectListRecent(ListRecentArgs(includeArchived: showArchived))
+                // Archived projects are always read, so Open Archived can say how many there are.
+                recents = try await core.projectListRecent(ListRecentArgs(includeArchived: true))
                 failure = nil
                 break
             } catch {
@@ -41,7 +46,11 @@ final class HomeModel {
     }
     var pinned: [RecentProject] { shown.filter { $0.pinned && !$0.archived } }
     var others: [RecentProject] { shown.filter { !$0.pinned && !$0.archived } }
-    var archived: [RecentProject] { shown.filter(\.archived) }
+    /// Archived projects matching the search, on the Archived page only.
+    var archived: [RecentProject] { showArchived ? shown.filter(\.archived) : [] }
+    /// How many projects are archived (the Open Archived button says it).
+    var archivedCount: Int { recents.filter(\.archived).count }
+    var activeCount: Int { recents.filter { !$0.archived }.count }
     var hasMatches: Bool { !pinned.isEmpty || !others.isEmpty || (showArchived && !archived.isEmpty) }
 }
 
@@ -73,60 +82,57 @@ struct HomeView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: PageSpacing.large) {
-                    header
                     if home.loading {
-                        ProgressView().frame(maxWidth: .infinity)
+                        ProgressView().frame(maxWidth: .infinity).padding(.top, PageSpacing.page)
                     } else if let failure = home.failure, home.recents.isEmpty {
                         VStack(spacing: PageSpacing.small) {
-                            Text("Your projects could not be read.").font(.headline)
-                            Text(failure.message).foregroundStyle(.secondary).multilineTextAlignment(.center)
+                            Text("Your project list couldn't be loaded.").font(.headline)
+                            Text("Your projects are safe on this computer. \(failure.message)").foregroundStyle(.secondary).multilineTextAlignment(.center)
                             Button("Try Again") { reload() }
                         }
                         .frame(maxWidth: .infinity)
                         .accessibilityIdentifier("home-load-error")
                     } else if home.recents.isEmpty {
                         emptyState
-                    } else if !home.hasMatches {
-                        noMatches
+                    } else if home.showArchived {
+                        archivedPage
                     } else {
-                        projectSections
+                        projectsPage
                     }
                     DataLocationNote()
                 }
                 .padding(.vertical, PageSpacing.page)
-                .pageColumn()
+                .pageColumn(maxWidth: PageSpacing.wideColumn)
             }
             .background(theme["bg"])
+            .safeAreaInset(edge: .bottom, spacing: 0) { statusLine }
             .toolbar {
-                ToolbarItemGroup(placement: .primaryAction) {
-                    Button { showVault = true } label: { Label("Global Idea Vault", systemImage: "lightbulb") }
-                        .help("Your own Idea Vault, outside any project")
-                        .accessibilityIdentifier("home-global-vault")
-                    Button { openExisting() } label: { Label("Open", systemImage: "folder") }
-                        .help("Open a project folder")
-                    Button { InterchangePresenter.shared.present(.openProject) } label: { Label("Restore Backup or Package\u{2026}", systemImage: "archivebox") }
-                        .help("Open a Full Project Package or restore a backup")
-                        .accessibilityIdentifier("home-restore-package")
-                    Button { showNewProject = true } label: { Label("New Project", systemImage: "plus") }
-                        .help(ShortcutStore.shared.tooltipWords("New Project", "home.new_project"))
-                        .accessibilityIdentifier("home-new-project")
-                }
-                // Settings with its name, so it is found at a glance (Command+Comma does the same).
-                ToolbarItem(placement: .primaryAction) {
-                    Button { SettingsRouter.open() } label: {
-                        Label("Settings", systemImage: "gearshape").labelStyle(.titleAndIcon)
+                ToolbarItem(placement: .navigation) {
+                    HStack(spacing: 6) {
+                        BrandMark(size: 20)
+                        Text("OpenFrame").font(.headline)
                     }
-                    .help("Settings (Command+Comma)")
-                    .accessibilityLabel("Settings")
-                    .accessibilityIdentifier("home-settings")
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel("OpenFrame Studio")
                 }
-                ToolbarItem(placement: .automatic) {
-                    Toggle("Show archived", isOn: $home.showArchived)
-                        .toggleStyle(.checkbox)
+                ToolbarItemGroup(placement: .primaryAction) {
+                    Button { showVault = true } label: { Label("Global Idea Vault", systemImage: "lightbulb").labelStyle(.titleAndIcon) }
+                        .help("Your ideas outside any project")
+                        .accessibilityIdentifier("home-global-vault")
+                    // Settings with its name (owner change list item 6). On Home it holds the settings
+                    // of this Mac; Command+Comma does the same.
+                    Button { SettingsRouter.open() } label: { Label("Settings", systemImage: "gearshape").labelStyle(.titleAndIcon) }
+                        .help("Settings: appearance, keyboard shortcuts, Offline AI, about (Command+Comma)")
+                        .accessibilityIdentifier("home-settings")
+                    Button { SettingsRouter.open(tab: .general) } label: {
+                        Label(profileName.isEmpty ? "Your Name" : profileName, systemImage: "person.crop.circle").labelStyle(.titleAndIcon)
+                    }
+                    .help("Your name, shown on comments and in the history. Click to change it.")
+                    .accessibilityLabel("Your name: \(profileName). Change")
+                    .accessibilityIdentifier("home-your-name")
                 }
             }
-            .navigationTitle("Projects")
-            .searchable(text: $home.query, placement: .toolbar, prompt: "Search projects")
+            .navigationTitle("")
         }
         .interchangeAnchor()
         .sheet(isPresented: $showNewProject) { NewProjectSheet() }
@@ -151,52 +157,155 @@ struct HomeView: View {
         .onReceive(NotificationCenter.default.publisher(for: .openFrameOpenProject)) { _ in openExisting() }
     }
 
-    private struct TaskKey: Hashable { let running: Bool; let archived: Bool; let changes: Int }
+    private var profileName: String { app.info?.profile.displayName ?? "" }
 
-    private var header: some View {
-        VStack(spacing: PageSpacing.small) {
-            BrandMark(size: 48)
-            Text("OpenFrame Studio")
-                .font(.system(size: 26, weight: .semibold))
-                .tracking(-0.3)
-                .multilineTextAlignment(.center)
-            if let name = app.info?.profile.displayName {
-                Text("Signed in on this Mac as \(name)")
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
+    /// The line at the bottom of the window (Windows: the status bar on Home).
+    private var statusLine: some View {
+        HStack(spacing: 6) {
+            Circle().fill(theme["muted"]).frame(width: 7, height: 7).accessibilityHidden(true)
+            Text("No project open")
+            Spacer()
+            Label("Offline \u{00B7} Your projects stay on this computer", systemImage: "internaldrive")
+        }
+        .font(.caption)
+        .foregroundStyle(theme["muted"])
+        .padding(.horizontal, PageSpacing.medium).padding(.vertical, 6)
+        .background(theme["panel"])
+        .overlay(alignment: .top) { Divider() }
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("home-status")
+    }
+
+    /// The three ways in, with their names (Windows: Open Project, Restore Backup or Package, New
+    /// Project), after the project search (Windows keeps it in the page header too).
+    @ViewBuilder private var pageActions: some View {
+        ProjectSearchField(text: $home.query)
+            .frame(width: 220)
+        Button { openExisting() } label: { Label("Open Project", systemImage: "folder").labelStyle(.titleAndIcon) }
+            .buttonStyle(.bordered)
+            .help(ShortcutStore.shared.tooltipWords("Open Project", "home.open_project"))
+            .accessibilityIdentifier("home-open-project")
+        Button { InterchangePresenter.shared.present(.openProject) } label: { Label("Restore Backup or Package\u{2026}", systemImage: "archivebox").labelStyle(.titleAndIcon) }
+            .buttonStyle(.borderless)
+            .foregroundStyle(.primary)
+            .help("Restore a backup or open a project package")
+            .accessibilityIdentifier("home-restore-package")
+        Button { showNewProject = true } label: { Label("New Project", systemImage: "plus").labelStyle(.titleAndIcon) }
+            .buttonStyle(.borderedProminent)
+            .keyboardShortcut("n", modifiers: .command)
+            .help(ShortcutStore.shared.tooltipWords("New Project", "home.new_project"))
+            .accessibilityIdentifier("home-new-project")
+    }
+
+    private var projectsPage: some View {
+        VStack(alignment: .leading, spacing: PageSpacing.medium) {
+            PageHeader("Your projects", subtitle: "Pick up where you left off, or start something new.") { pageActions }
+            if !home.hasMatches {
+                noMatches
+            } else {
+                if !home.pinned.isEmpty {
+                    section("Pinned", home.pinned, trailing: nil)
+                }
+                if home.query.trimmingCharacters(in: .whitespaces).isEmpty || !home.others.isEmpty {
+                    section(home.query.isEmpty ? "Recent projects" : "Search results", home.others, trailing: home.query.isEmpty ? openArchivedButton : nil)
+                }
             }
         }
-        .frame(maxWidth: .infinity)
     }
+
+    private var openArchivedButton: AnyView {
+        AnyView(
+            Button { home.showArchived = true } label: {
+                Label("Open Archived\(home.archivedCount > 0 ? " (\(home.archivedCount))" : "")", systemImage: "archivebox").labelStyle(.titleAndIcon)
+            }
+            .buttonStyle(.borderless)
+            .help("Archived projects are not deleted. Open them here to restore one.")
+            .accessibilityIdentifier("home-open-archived")
+        )
+    }
+
+    /// Archived projects (Windows: the Archived page): each with Restore and Open.
+    private var archivedPage: some View {
+        VStack(alignment: .leading, spacing: PageSpacing.medium) {
+            PageHeader("Archived projects", subtitle: "Archived projects are not deleted. They stay on your computer and can be restored at any time.") {
+                ProjectSearchField(text: $home.query)
+                    .frame(width: 220)
+                Button { home.showArchived = false } label: { Label("Back to projects", systemImage: "chevron.left").labelStyle(.titleAndIcon) }
+                    .accessibilityIdentifier("home-back-to-projects")
+            }
+            VStack(spacing: 0) {
+                if home.archived.isEmpty {
+                    Text(home.archivedCount == 0
+                         ? "No archived projects. Archive a project from its menu to tidy your list without deleting anything."
+                         : "No archived projects match \u{201C}\(home.query)\u{201D}.")
+                        .foregroundStyle(theme["muted"])
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: .infinity)
+                        .padding(PageSpacing.large)
+                }
+                ForEach(home.archived, id: \.projectId) { p in
+                    archivedRow(p)
+                    if p.projectId != home.archived.last?.projectId { Divider() }
+                }
+            }
+            .background(theme["panel"], in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(theme["line"]))
+        }
+    }
+
+    private func archivedRow(_ p: RecentProject) -> some View {
+        let h = handlers(for: p)
+        return HStack(spacing: PageSpacing.small) {
+            Button(action: h.open) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(p.title).fontWeight(.semibold).foregroundStyle(theme["ink"])
+                    Text("\(p.projectType) \u{00B7} Last modified \(Formatting.relative(ms: p.modifiedAt ?? p.lastOpenedAt))")
+                        .font(.caption).foregroundStyle(theme["muted"])
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Open \(p.title), \(p.projectType), \(p.status), archived\(p.available ? "" : ", unavailable")")
+            .accessibilityIdentifier("project-card-\(p.title)")
+            .contextMenu { ProjectCardMenu(project: p, handlers: h) }
+            Spacer()
+            BDChip(text: "Archived")
+            if !p.available { BDChip(text: "Unavailable", tone: .red) }
+            Button("Restore") { h.setArchived(false) }
+                .accessibilityLabel("Restore \(p.title)")
+            Button("Open") { h.open() }
+                .accessibilityLabel("Open \(p.title)")
+        }
+        .padding(.horizontal, PageSpacing.medium).padding(.vertical, 10)
+    }
+
+    private struct TaskKey: Hashable { let running: Bool; let archived: Bool; let changes: Int }
 
     private var emptyState: some View {
         VStack(spacing: PageSpacing.medium) {
-            Text("Start your first project")
+            Text("Create your first project.")
                 .font(.title3.weight(.semibold))
-            Text("A project holds one film or series: its screenplay, story, breakdown and production plans, in one folder on this Mac.")
+            Text("A project holds your ideas, beat board, screenplay and production plan for one film. Everything is stored on this computer.")
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
             HStack(spacing: 12) {
-                Button("New Project") { showNewProject = true }
+                Button { showNewProject = true } label: { Label("Create Project", systemImage: "plus").labelStyle(.titleAndIcon) }
                     .keyboardShortcut("n", modifiers: .command)
                     .controlSize(.large)
                     .buttonStyle(.borderedProminent)
-                Button("Open a Project Folder") { openExisting() }
+                    .accessibilityIdentifier("home-new-project")
+                Button { openExisting() } label: { Label("Open Existing Project", systemImage: "folder").labelStyle(.titleAndIcon) }
+                    .controlSize(.large)
+                Button { InterchangePresenter.shared.present(.openProject) } label: { Label("Restore Backup or Package\u{2026}", systemImage: "archivebox").labelStyle(.titleAndIcon) }
                     .controlSize(.large)
             }
         }
         .padding(PageSpacing.large)
         .frame(maxWidth: .infinity)
         .background(theme["panel"], in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("home-empty")
-    }
-
-    @ViewBuilder private var projectSections: some View {
-        if !home.pinned.isEmpty { section("Pinned", home.pinned) }
-        if !home.others.isEmpty { section(home.pinned.isEmpty ? "Recent" : "Other projects", home.others) }
-        if home.showArchived && !home.archived.isEmpty { section("Archived", home.archived) }
     }
 
     private var noMatches: some View {
@@ -211,16 +320,17 @@ struct HomeView: View {
 
     private func reload() { Task { await home.load(app.core) } }
 
-    private func section(_ title: String, _ items: [RecentProject]) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
-            // The cards are centred as a group, so their caption is centred over them.
-            Text(title)
-                .font(.headline)
-                .accessibilityAddTraits(.isHeader)
-                .frame(maxWidth: .infinity)
-                .padding(.top, PageSpacing.large)
-                .padding(.bottom, PageSpacing.small)
-            CenteredCards(cardWidth: 240) {
+    private func section(_ title: String, _ items: [RecentProject], trailing: AnyView?) -> some View {
+        VStack(alignment: .leading, spacing: PageSpacing.small) {
+            SectionHeader(title) { if let trailing { trailing } }
+            if items.isEmpty {
+                Text(home.activeCount == 0
+                     ? "All your projects are archived. Open Archived to restore one, or create a new project."
+                     : "Every project here is pinned above.")
+                    .font(.callout).foregroundStyle(theme["muted"])
+            }
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 240), spacing: PageSpacing.medium, alignment: .top)],
+                      alignment: .leading, spacing: PageSpacing.medium) {
                 ForEach(items, id: \.projectId) { project in
                     ProjectCard(project: project, handlers: handlers(for: project))
                 }
@@ -284,61 +394,137 @@ struct ProjectCard: View {
     @Environment(\.ofTheme) private var theme
     @State private var hovering = false
 
+
     var body: some View {
-        Button(action: handlers.open) {
-            VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    Text(project.title)
-                        .font(.headline)
-                        .lineLimit(2)
-                    Spacer(minLength: 4)
-                    if project.pinned {
-                        Image(systemName: "pin.fill").foregroundStyle(.secondary).accessibilityHidden(true)
+        ZStack(alignment: .topTrailing) {
+            Button(action: handlers.open) {
+                VStack(alignment: .leading, spacing: 0) {
+                    ProjectPreview(projectId: project.projectId)
+                        .frame(height: 78)
+                        .frame(maxWidth: .infinity)
+                        .accessibilityHidden(true)
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(project.title)
+                            .font(.headline)
+                            .lineLimit(1)
+                            .truncationMode(.tail)
+                            .help(project.title)
+                        BDFlowLayout(spacing: 4) {
+                            BDChip(text: project.projectType)
+                            BDChip(text: project.status, tone: .blue)
+                            if project.pinned { BDChip(text: "Pinned", tone: .yellow, symbol: "pin.fill") }
+                            if !project.available { BDChip(text: "Unavailable", tone: .red) }
+                        }
+                        if project.available {
+                            Text("Last modified \(Formatting.relative(ms: project.modifiedAt ?? project.lastOpenedAt))")
+                                .font(.caption)
+                                .foregroundStyle(.tertiary)
+                        } else {
+                            Text("Folder not found. Reconnect the drive or locate the project.")
+                                .font(.caption)
+                                .foregroundStyle(theme["yellow-t"])
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
                     }
+                    .padding(12)
                 }
-                Text("\(project.projectType) \u{00B7} \(project.status)")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                Spacer(minLength: 0)
-                if project.available {
-                    Text("Opened \(Formatting.relative(ms: project.lastOpenedAt))")
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
-                } else {
-                    Label("Folder not found. Reconnect the drive or locate the project.", systemImage: "exclamationmark.triangle")
-                        .font(.caption)
-                        .foregroundStyle(theme["yellow-t"])
+                .frame(maxWidth: .infinity, alignment: .topLeading)
+                .background(theme[hovering ? "hover" : "panel"], in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(theme["line"]))
+                .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            }
+            .buttonStyle(PressableCardStyle())
+            .onHover { hovering = $0 }
+            .contextMenu { ProjectCardMenu(project: project, handlers: handlers) }
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("Open \(project.title), \(project.projectType), \(project.status)\(project.pinned ? ", pinned" : "")\(project.archived ? ", archived" : "")\(project.available ? "" : ", unavailable")")
+            .accessibilityHint("Opens the project")
+            .accessibilityIdentifier("project-card-\(project.title)")
+            // The card's actions, named (Windows: the card's More actions menu).
+            Menu {
+                ProjectCardMenu(project: project, handlers: handlers)
+            } label: {
+                Label("Actions", systemImage: "ellipsis").labelStyle(.titleAndIcon).font(.caption.weight(.medium))
+            }
+            .menuStyle(.button)
+            .buttonStyle(.borderless)
+            .menuIndicator(.hidden)
+            .controlSize(.small)
+            .fixedSize()
+            .padding(.horizontal, 8).padding(.vertical, 4)
+            .background(.regularMaterial, in: Capsule())
+            .padding(6)
+            .help("Rename, pin, duplicate, archive or delete \(project.title)")
+            .accessibilityLabel("Actions for \(project.title)")
+            .accessibilityIdentifier("project-card-actions-\(project.title)")
+        }
+    }
+}
+
+/// The picture at the top of a project card, the same for a project every time: the Windows
+/// app's five painted previews (night with a moon, bus, green, warm, cool), in the same order
+/// and chosen by the same hash of the project id. Fixed colours: placeholder imagery, not theme.
+struct ProjectPreview: View {
+    let projectId: String
+
+    private static func hex(_ v: UInt32) -> Color {
+        Color(red: Double((v >> 16) & 0xff) / 255, green: Double((v >> 8) & 0xff) / 255, blue: Double(v & 0xff) / 255)
+    }
+
+    private var kind: Int {
+        Int(projectId.unicodeScalars.reduce(UInt32(0)) { ($0 &* 31) &+ $1.value } % 5)
+    }
+
+    var body: some View {
+        GeometryReader { geo in
+            let w = geo.size.width, h = geo.size.height
+            switch kind {
+            case 0: // night
+                LinearGradient(colors: [Self.hex(0x0e1424), Self.hex(0x243250)], startPoint: .top, endPoint: .bottom)
+                    .overlay(alignment: .topLeading) {
+                        Circle().fill(Self.hex(0xf6e7a8))
+                            .frame(width: h * 0.34, height: h * 0.34)
+                            .offset(x: w * 0.78 - h * 0.17, y: h * 0.22 - h * 0.17)
+                    }
+            case 1: // bus
+                VStack(spacing: 0) {
+                    Self.hex(0x586a80).frame(height: h * 0.5)
+                    Self.hex(0xc98b2f).frame(height: h * 0.28)
+                    Self.hex(0x2a2d34)
                 }
+            case 2:
+                LinearGradient(colors: [Self.hex(0x5a8a62), Self.hex(0x1f3d2a)], startPoint: .topLeading, endPoint: .bottomTrailing)
+            case 3:
+                LinearGradient(colors: [Self.hex(0xe8a15a), Self.hex(0x8b3f22)], startPoint: .topLeading, endPoint: .bottomTrailing)
+            default:
+                LinearGradient(colors: [Self.hex(0x4d6d98), Self.hex(0x1c2b46)], startPoint: .topLeading, endPoint: .bottomTrailing)
             }
-            .padding(16)
-            .frame(maxWidth: .infinity, minHeight: 112, alignment: .topLeading)
-            .background(theme[hovering ? "hover" : "panel"], in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(theme["line"]))
-            .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         }
-        .buttonStyle(PressableCardStyle())
-        .onHover { hovering = $0 }
-        .contextMenu {
-            Button("Open") { handlers.open() }
-            Button("Rename\u{2026}") { handlers.rename() }.disabled(!project.available)
-            Button("Duplicate Project") { handlers.duplicate() }.disabled(!project.available)
-            Button(project.pinned ? "Unpin" : "Pin") { handlers.pin(!project.pinned) }
-            Button("Show in Finder") { handlers.reveal() }.disabled(!project.available)
-            if !project.available { Button("Locate Project\u{2026}") { handlers.locate() } }
-            Divider()
-            if project.archived {
-                Button("Restore from Archive") { handlers.setArchived(false) }
-            } else {
-                Button("Archive") { handlers.setArchived(true) }
-            }
-            Button("Remove from Recent") { handlers.remove() }
-            Divider()
-            Button("Delete Project\u{2026}", role: .destructive) { handlers.delete() }
+    }
+}
+
+/// The actions of a project, in the card's menu and its context menu.
+struct ProjectCardMenu: View {
+    let project: RecentProject
+    let handlers: ProjectCard.Handlers
+
+    var body: some View {
+        Button("Open") { handlers.open() }
+        Button("Rename\u{2026}") { handlers.rename() }.disabled(!project.available)
+        Button("Duplicate Project") { handlers.duplicate() }.disabled(!project.available)
+        Button(project.pinned ? "Unpin" : "Pin") { handlers.pin(!project.pinned) }
+        Button("Show in Finder") { handlers.reveal() }.disabled(!project.available)
+        if !project.available { Button("Locate Project\u{2026}") { handlers.locate() } }
+        Divider()
+        if project.archived {
+            Button("Restore from Archive") { handlers.setArchived(false) }
+        } else {
+            Button("Archive") { handlers.setArchived(true) }
         }
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("Open \(project.title), \(project.projectType), \(project.status)\(project.pinned ? ", pinned" : "")\(project.archived ? ", archived" : "")\(project.available ? "" : ", unavailable")")
-        .accessibilityHint("Opens the project")
-        .accessibilityIdentifier("project-card-\(project.title)")
+        Button("Remove from Recent") { handlers.remove() }
+        Divider()
+        Button("Delete Project\u{2026}", role: .destructive) { handlers.delete() }
     }
 }
 
@@ -374,7 +560,37 @@ struct DataLocationNote: View {
                 .buttonStyle(.link)
             }
             .frame(maxWidth: .infinity)
+            .accessibilityElement(children: .contain)
             .accessibilityIdentifier("data-location-note")
+        }
+    }
+}
+
+/// "Search projects": a real search field in the page (Escape clears it).
+struct ProjectSearchField: NSViewRepresentable {
+    @Binding var text: String
+
+    func makeNSView(context: Context) -> NSSearchField {
+        let f = NSSearchField()
+        f.placeholderString = "Search projects"
+        f.setAccessibilityLabel("Search projects")
+        f.setAccessibilityIdentifier("home-search")
+        f.delegate = context.coordinator
+        f.sendsSearchStringImmediately = true
+        return f
+    }
+
+    func updateNSView(_ f: NSSearchField, context: Context) {
+        if f.stringValue != text { f.stringValue = text }
+    }
+
+    func makeCoordinator() -> Coordinator { Coordinator(text: $text) }
+
+    final class Coordinator: NSObject, NSSearchFieldDelegate {
+        var text: Binding<String>
+        init(text: Binding<String>) { self.text = text }
+        func controlTextDidChange(_ note: Notification) {
+            if let f = note.object as? NSSearchField { text.wrappedValue = f.stringValue }
         }
     }
 }

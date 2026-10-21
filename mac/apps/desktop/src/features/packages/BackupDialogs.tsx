@@ -106,7 +106,7 @@ export function BackupDialog({ onClose }: { onClose: () => void }) {
           <Checkbox checked={portable} onChange={setPortable} label="Copy linked external files into the backup (portable backup)" />
           <div className="h4" style={{ marginTop: 12 }}>What this backup contains</div>
           <div className="sm muted" style={{ marginBottom: 6 }}>
-            Idea Vault, Story Board, screenplay drafts, breakdown, catalog, production planning, comments
+            Idea Vault, Beat Board, screenplay drafts, breakdown, catalog, production planning, comments
             {p.privateNoteCount > 0 ? ", your private notes" : ""}.
           </div>
           <FileStatusTable

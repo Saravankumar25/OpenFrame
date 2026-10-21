@@ -1,4 +1,4 @@
-// Story Board, Board view (FSD §7.4, §89; UX §3.6; mocks 049 to 058, 066):
+// Beat Board, Board view (FSD §7.4, §89; UX §3.6; mocks 049 to 058, 066):
 // act bands side by side (horizontal scroll), sequence groups, compact scene
 // cards, dashed beats, the hatched Parking Lot and an Unassigned area.
 
@@ -74,7 +74,7 @@ export function BoardView({
         style={style}
         onClick={() => useStoryUi.getState().clearSelection()}
         role="region"
-        aria-label="Story Board"
+        aria-label="Beat Board"
       >
         <div className="board">
           {board.acts.map((a) => (
@@ -185,7 +185,7 @@ function ActBand({ act, ctx }: { act: StoryActDto; ctx: Ctx }) {
             }}
           />
         ) : (
-          <span className="grow truncate" onDoubleClick={() => !ctx.readOnly && ui.setRenaming(act.id)}>
+          <span className="grow truncate" title={act.title} onDoubleClick={() => !ctx.readOnly && ui.setRenaming(act.id)}>
             {act.title}
           </span>
         )}
@@ -321,7 +321,7 @@ function SequenceBlock({ seq, ctx }: { seq: Extract<StoryItem, { kind: "sequence
               }}
             />
           ) : (
-            <span className="grow truncate" onDoubleClick={(e) => { e.stopPropagation(); if (!ctx.readOnly) ui.setRenaming(seq.id); }}>
+            <span className="grow truncate" title={seq.title} onDoubleClick={(e) => { e.stopPropagation(); if (!ctx.readOnly) ui.setRenaming(seq.id); }}>
               {seq.title}
             </span>
           )}

@@ -90,30 +90,22 @@ public struct ElementRules: Sendable {
         }
     }
 
-    /// Tab cycles within the dialogue block. Page breaks and custom elements stay as they are (nil):
-    /// the writer chose them on purpose.
+    /// Tab moves to the next built-in element in menu order and wraps around, so every element is
+    /// one or more presses away (owner change list item 7, as on Windows): Scene Heading, Action,
+    /// Character, Parenthetical, Dialogue, Transition, Shot, then Scene Heading again. A note
+    /// becomes Action. Page breaks and custom elements stay as they are (nil): the writer chose
+    /// them on purpose.
     public static func tabNext(_ type: ElementType) -> ElementType? {
-        switch type {
-        case .pageBreak, .custom: return nil
-        case .action: return .character
-        case .character: return .parenthetical
-        case .parenthetical: return .dialogue
-        case .dialogue: return .parenthetical
-        case .sceneHeading: return .action
-        default: return .action
-        }
+        if type == .pageBreak || type == .custom { return nil }
+        guard let i = shortcutOrder.firstIndex(of: type) else { return .action }
+        return shortcutOrder[(i + 1) % shortcutOrder.count]
     }
 
-    /// Shift+Tab goes back (nil for page breaks and custom elements).
+    /// Shift+Tab goes the other way round the same cycle (nil for page breaks and custom elements).
     public static func tabPrev(_ type: ElementType) -> ElementType? {
-        switch type {
-        case .pageBreak, .custom: return nil
-        case .character: return .action
-        case .parenthetical: return .character
-        case .dialogue: return .character
-        case .action: return .sceneHeading
-        default: return .action
-        }
+        if type == .pageBreak || type == .custom { return nil }
+        guard let i = shortcutOrder.firstIndex(of: type) else { return .action }
+        return shortcutOrder[(i - 1 + shortcutOrder.count) % shortcutOrder.count]
     }
 
     /// The built-in elements in menu order, which is also the order of their shortcuts.

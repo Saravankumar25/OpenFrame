@@ -282,7 +282,7 @@ struct ThreadCard: View {
                         Divider()
                         Button("Delete", role: .destructive) { Task { await comments.delete(c) } }
                     }
-                } label: { Image(systemName: "ellipsis") }
+                } label: { Label("Actions", systemImage: "ellipsis") }
                 .menuStyle(.borderlessButton)
                 .fixedSize()
                 .accessibilityLabel("Comment actions")
@@ -316,7 +316,7 @@ struct ThreadCard: View {
                         Text(PanelText.ago(r.createdAt)).font(.caption).foregroundStyle(theme["muted"])
                         Spacer()
                         if r.isMine || permissions?.delete == true {
-                            Button { Task { await comments.delete(r) } } label: { Image(systemName: "xmark") }
+                            Button { Task { await comments.delete(r) } } label: { Label("Delete", systemImage: "xmark") }
                                 .buttonStyle(.borderless)
                                 .help("Delete reply")
                                 .accessibilityLabel("Delete reply")
