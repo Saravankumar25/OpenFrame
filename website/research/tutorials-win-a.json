@@ -1,0 +1,244 @@
+[
+ {
+  "id": "first-launch",
+  "available": true,
+  "reason": "",
+  "steps": [
+   {"screen": "001-app-first-launch-welcome.html", "action": "key", "target": "#dn-name", "label": "OpenFrame asks what to call you. Clear the suggested name", "text": null, "key": "Backspace"},
+   {"screen": "002-app-first-launch-name-required.html", "action": "type", "target": "#dn-name", "label": "Type your name, then click Continue", "text": "Maya Iyer", "key": null},
+   {"screen": "003-app-home-empty.html", "action": "view", "target": null, "label": "Application Home opens, ready for your first project", "text": null, "key": null}
+  ],
+  "notes": "Dialog title \"Welcome to OpenFrame Studio\", subtitle \"What should we call you?\", field \"Your name *\", button \"Continue\". Help text: \"Your name appears on notes, tasks and project activity. There is no account. It stays on this computer and you can change it any time from the avatar on the Home screen.\" An empty name shows \"Enter your name.\" and keeps Continue disabled. The box is prefilled with a suggested name. PRIVACY: in 001 and 002 the suggested name and the avatar show the owner's real Windows user name (\"Saravan Kumar\", initials SK); replace it with Maya Iyer or blur it before the site uses these two screens. The typed name is not shown in a field in 003; it appears as the avatar (\"Your name: Maya Iyer. Change\", initials MI). Application Home empty state buttons: \"Create Project\", \"Open Existing Project\", \"Restore Backup or Package…\". Top bar: \"Global Idea Vault\", Settings, avatar."
+ },
+ {
+  "id": "create-project",
+  "available": true,
+  "reason": "",
+  "steps": [
+   {"screen": "003-app-home-empty.html", "action": "click", "target": "role=button[name=\"Create Project\"]", "label": "Click Create Project", "text": null, "key": null},
+   {"screen": "004-app-new-project-dialog.html", "action": "type", "target": "#np-title", "label": "Type a title and choose Feature Film or Short Film", "text": "Empty Short", "key": null},
+   {"screen": "006-app-new-project-filled.html", "action": "click", "target": "role=dialog >> summary", "label": "Optional details are there if you want them", "text": null, "key": null},
+   {"screen": "007-app-new-project-optional-details.html", "action": "click", "target": "role=dialog >> role=button[name=\"Create\"s]", "label": "Click Create", "text": null, "key": null},
+   {"screen": "008-home-new-project.html", "action": "view", "target": null, "label": "The new project opens on its Home page", "text": null, "key": null}
+  ],
+  "notes": "Windows uses a modal dialog \"New Project\" with subtitle \"What is this project called and what type is it?\". Fields: \"Title *\" (placeholder \"e.g. BLACK RAIN\"; empty shows \"A title is required.\"), \"Type *\" with \"Feature Film\" (default) and \"Short Film\". \"OPTIONAL DETAILS\" expands to \"Language\", \"Genre\", \"Creator\" (placeholder \"Add later\") and \"Saved in <folder>\" with \"Change…\" (opens the native Windows folder picker, not captured). Footer: \"Cancel\", \"Create\". Step 2 types the title and picks Short Film in one step (006 shows both). 007 shows the capture run's test folder path (C:\\OpenFrame\\tests\\e2e\\.run\\...); mask it on the site. The new project Home (008) says \"Start with your ideas, build your story, or open a screenplay.\" with cards \"Open Idea Vault\", \"Build Story\", \"Write/Import Screenplay\". From Application Home with projects the button is \"New Project (Ctrl+N)\" (screens 087 to 090)."
+ },
+ {
+  "id": "project-tour",
+  "available": true,
+  "reason": "",
+  "steps": [
+   {"screen": "013-shell-project-home.html", "action": "click", "target": "button[aria-label=\"Project: Night Bus. Switch or manage projects\"]", "label": "The project name at the top opens the project menu", "text": null, "key": null},
+   {"screen": "014-shell-project-menu.html", "action": "click", "target": "button[aria-label=\"Create\"]", "label": "The + button creates anything: ideas, acts, scene cards, characters and more", "text": null, "key": null},
+   {"screen": "015-shell-create-menu.html", "action": "click", "target": "button[aria-label=\"Search this project\"]", "label": "Search the whole project from the top bar (Ctrl+K)", "text": null, "key": null},
+   {"screen": "018-shell-search-empty.html", "action": "type", "target": "input[aria-label=\"Search\"]", "label": "Type a name or word", "text": "Lakshmi", "key": null},
+   {"screen": "019-shell-search-results.html", "action": "view", "target": null, "label": "Results from every section, each labelled with its type", "text": null, "key": null}
+  ],
+  "notes": "Left sidebar sections (exact): \"Home\", \"Idea Vault\", \"Story\", \"Screenplay\", \"Breakdown\", \"Production\", \"Call Sheets\", \"Files\", and \"Collapse\" at the bottom (\"Collapse the navigation\"; collapsed state in 016). Top bar: \"All projects\" (logo), project switcher \"Night Bus / Feature Film\", search box \"Search this project…\" with Ctrl+K, then Create (+), Back, Forward, Assistant, Settings, avatar. Project menu (014) groups: \"RECENT PROJECTS\", \"EDIT\" (Undo Ctrl+Z, Redo Ctrl+Y), \"Project settings\", \"Notes & Tasks\", \"Activity\", \"Recently Deleted\", \"Templates\", \"Appearance\", \"SHARE / EXCHANGE\" and more. Create menu (015) heading \"CREATE\": \"New Idea\" Ctrl+Shift+N, \"New Act\", \"New Sequence\", \"New Beat\", \"New Scene Card\" Ctrl+N, \"New Character\", \"New Location\", \"New Shot List\", \"New Moodboard\", \"Import Screenplay…\", \"New Note\", \"New Task\", \"New Project…\". Search dialog \"Search\" (Esc closes), placeholder \"Search scenes, ideas, characters, locations, files…\", scope \"This project\" or \"+ Global Idea Vault\"; 019 shows \"35 results\". No separate command palette exists; Ctrl+K search is the closest. Project Home quick access buttons: \"Continue screenplay\", \"Idea Vault\", \"Beat Board\", \"Screenplay\", \"Breakdown\", \"Production\", \"Call Sheets\", \"Notes & Tasks\", \"Activity\", \"Recently Deleted\", \"Templates\"."
+ },
+ {
+  "id": "manage-projects",
+  "available": true,
+  "reason": "Partial: Duplicate Project has no captured result, and a step that pins a project from an unpinned menu could not be chained, so the flow starts with Empty Short already pinned.",
+  "steps": [
+   {"screen": "060-apphome-pinned-section.html", "action": "click", "target": "button[aria-label=\"More actions for Empty Short\"]", "label": "Pinned projects sit at the top. Click the ... button on a card", "text": null, "key": null},
+   {"screen": "061-apphome-card-menu-pinned.html", "action": "click", "target": "role=menuitem[name=\"Archive\"]", "label": "The menu has Rename, Duplicate Project, Pin or Unpin, Archive. Click Archive", "text": null, "key": null},
+   {"screen": "065-apphome-toast-archived.html", "action": "click", "target": "role=button[name=\"Open Archived\"]", "label": "Archived, not deleted. Click Open Archived", "text": null, "key": null},
+   {"screen": "067-apphome-archived-view.html", "action": "click", "target": "role=button[name=\"Restore\"]", "label": "Click Restore to bring it back", "text": null, "key": null},
+   {"screen": "073-apphome-toast-restored.html", "action": "view", "target": null, "label": "The project is back in your projects", "text": null, "key": null}
+  ],
+  "notes": "Application Home title \"Your projects\" (\"Pick up where you left off, or start something new.\"), sections \"PINNED\" and \"RECENT PROJECTS\", buttons \"Search projects\", \"Open Project\" (Ctrl+O), \"Restore Backup or Package…\", \"New Project\" (Ctrl+N), \"Open Archived\". Card menu (the ... button, aria \"More actions for <title>\", or right-click the card, 053): \"Open\", \"Rename\" F2, \"Duplicate Project\", \"Pin\" or \"Unpin\", \"Reveal in File Manager\", \"Archive\", \"Delete Project…\". Toasts: \"\"Empty Short\" was archived. It is not deleted; find it under Open Archived.\" and \"\"Empty Short\" is back in your projects.\" Archived view \"Archived projects\" (\"Archived projects are not deleted. They stay on your computer and can be restored at any time.\") with \"Back to projects\", row buttons \"Restore\" and \"Open\"; its row menu says \"Restore from Archive\". Both pinned (062) shows \"Every project here is pinned above.\" STALE CAPTURES: 065 and 071 were captured before commit 12aecea (Home refreshes at once after Pin, Archive, Restore, Duplicate); in 065 the archived Empty Short card is still drawn in the grid and the button reads \"Open Archived\" without a count. The current app removes the card at once and shows \"Open Archived (1)\". 073 also still shows the restored row under the toast. Recreate those screens without the stale card or row. Delete asks to type the project title (058, 059)."
+ },
+ {
+  "id": "idea-vault",
+  "available": true,
+  "reason": "",
+  "steps": [
+   {"screen": "091-vault-grid-all-items.html", "action": "click", "target": "main >> role=button[name=\"Add\"s]", "label": "Click Add to choose what to collect", "text": null, "key": null},
+   {"screen": "102-vault-add-menu.html", "action": "click", "target": "role=menuitem[name=\"Quick Capture\"]", "label": "Pick Quick Capture for a fast idea", "text": null, "key": null},
+   {"screen": "129-vault-quick-capture-dialog.html", "action": "type", "target": "textarea[aria-label=\"Idea\"]", "label": "Type the idea", "text": "A bus that only runs when someone is waiting for it.", "key": null},
+   {"screen": "130-vault-quick-capture-filled.html", "action": "click", "target": "role=dialog >> role=button[name=\"Save\"]", "label": "Click Save (or press Enter)", "text": null, "key": null},
+   {"screen": "131-vault-quick-capture-saved-toast.html", "action": "click", "target": "role=button[name=\"New Collection\"]", "label": "Organise: click New Collection in the side panel", "text": null, "key": null},
+   {"screen": "138-vault-new-collection-dialog.html", "action": "type", "target": "#vv-name", "label": "Name the collection and click Create", "text": "Scratch collection", "key": null},
+   {"screen": "140-vault-collection-empty.html", "action": "view", "target": null, "label": "The collection is ready in the side panel", "text": null, "key": null}
+  ],
+  "notes": "Page \"Idea Vault\" (\"Everything collected for this film. Nothing here is classified or synced to the screenplay.\"), header buttons \"Quick Capture\" and \"Recently Deleted\", scope \"Global\" or \"This Project\", \"Add\", \"Record Note\", search \"Search ideas, tags, filenames…\", views \"Grid\", \"Card\", \"List\", \"Folder\". Side panel: \"All items\", \"Pinned\", \"Recently added\", \"Recently modified\", \"COLLECTIONS\" with \"New Collection\", \"FOLDERS\" with \"New Folder\", \"TAGS\". Add menu: \"Note\", \"Image\", \"URL\", \"File\", \"Audio / Voice Note\", \"Audio file…\", \"Video\", \"Quote\", \"Sketch\", \"Quick Capture\" Ctrl+Shift+N. Note opens a drawer \"Untitled note\" that saves automatically (115); URL opens \"Add URL\" (127: \"Paste a link...\", \"Link\", \"Your note\", \"Add URL\"). Image, File, Audio file and Video use the Windows file picker (not captured). Quick Capture dialog: \"Saving to Night Bus · Project Idea Vault\", placeholder \"Type the idea before it's gone…\", hint \"Enter or Ctrl+Enter to save · Shift+Enter for a new line · Esc to cancel\"; toast \"Saved to the Project Idea Vault\" with \"Undo\". New Collection dialog: \"Name *\" with examples, \"Create\" (empty name: \"Name is required.\"). Other organising: right-click an item for Open, Rename, Move…, Pin, Copy to Global Vault, Send to Story, Research flag, Delete (117); select several for \"Move to Folder\", \"Add to Collection\", \"Tag\", \"Pin\", \"Copy to Global Vault\", \"Delete\" (119). CAPTURE SEAMS: 091 and 102 are in Grid view while 129 onward are in List view (seen behind the dialog dimming); the captured idea from 131 is gone again in 138 and 140 because the tour removed it. Step 6 types the name and clicks Create in one step."
+ },
+ {
+  "id": "story-board",
+  "available": true,
+  "reason": "",
+  "steps": [
+   {"screen": "169-story-page-filled.html", "action": "click", "target": "role=tab[name=\"Board\"]", "label": "In Story, open the Board tab", "text": null, "key": null},
+   {"screen": "171-story-board-filled.html", "action": "click", "target": "main >> role=button[name=\"Add\"s]", "label": "Acts are columns, sequences group scene cards, beats mark turns. Add creates any of them", "text": null, "key": null},
+   {"screen": "172-story-board-add-menu.html", "action": "key", "target": null, "label": "Press Esc to close the menu", "text": null, "key": "Esc"},
+   {"screen": "171-story-board-filled.html", "action": "rightclick", "target": "button[aria-label=\"Scene Card: Lakshmi steps off the night bus\"]", "label": "Right-click a scene card", "text": null, "key": null},
+   {"screen": "183-story-board-card-context-menu.html", "action": "click", "target": "role=menuitem[name=\"Open\"]", "label": "Click Open", "text": null, "key": null},
+   {"screen": "190-story-card-drawer.html", "action": "view", "target": null, "label": "The card opens: scene heading, short and long description, notes", "text": null, "key": null}
+  ],
+  "notes": "Story tabs: \"Story\", \"Board\", \"Outline\", \"Characters\", \"Timeline\". The board page title is \"Beat Board\" with \"Board\"/\"Outline\" switch, \"Add\", \"Search / filter cards\", Zoom out / Zoom in, \"Parking Lot\", \"Build Screenplay\", \"More Beat Board actions\", \"Export\". Seed acts: \"Act 1: The Return\", \"Act 2: The Tower\", \"Act 3: The Signal\", sequences \"Arrival in Rayapuram\", \"Climbing the tower\", buttons \"Add scene\", \"Scene\", \"Sequence\", \"Beat\" under each act, and \"Add Act\". Add menu: \"Act\", \"Sequence\", \"Beat\", \"Scene Card\" Ctrl+N, \"From Idea Vault…\". Card right-click menu: \"Open\" Enter, \"Duplicate\" Ctrl+D, \"Move…\", \"Send to Parking Lot\", \"Convert to Screenplay Scene\", \"Copy as Beat\", \"Delete\" Del. Card drawer fields: \"Scene heading\" (placeholder \"EXT. OLD RAILWAY STATION - NIGHT\", required before it becomes a screenplay scene), \"Short description\", \"Long description\", \"Notes\". The product calls it the Beat Board; there is no separate \"story board\" in the Story area (storyboards with panels are in Production). Build Screenplay previews the card order before creating anything (203). Dragging cards is not captured (README: drag states)."
+ },
+ {
+  "id": "characters",
+  "available": true,
+  "reason": "Partial: the result of creating a brand new character was not captured; the tour typed an existing name to show the duplicate warning, then opened Edit on an existing character.",
+  "steps": [
+   {"screen": "169-story-page-filled.html", "action": "click", "target": "role=tab[name=\"Characters\"]", "label": "In Story, open the Characters tab", "text": null, "key": null},
+   {"screen": "216-story-characters-list.html", "action": "click", "target": "role=button[name=\"Add Character\"]", "label": "Click Add Character", "text": null, "key": null},
+   {"screen": "219-story-new-character-dialog.html", "action": "type", "target": "#nc-name", "label": "Type a name", "text": "Lakshmi", "key": null},
+   {"screen": "220-story-new-character-duplicate-warning.html", "action": "click", "target": "role=dialog >> role=button[name=\"Cancel\"]", "label": "OpenFrame warns about a possible match. Cancel and use the existing character", "text": null, "key": null},
+   {"screen": "216-story-characters-list.html", "action": "click", "target": "role=button[name=\"Edit\"s]", "label": "Click Edit to fill in the details", "text": null, "key": null},
+   {"screen": "221-story-edit-character-dialog.html", "action": "view", "target": null, "label": "Name, role and short description, saved with Save", "text": null, "key": null}
+  ],
+  "notes": "Characters list rows show initials, name, role (\"Lead\", \"Supporting\", \"Minor\") and scene count (LAKSHMI 22 scenes). Detail panel: \"Edit\", \"Open Relationship Map\", \"More actions for <NAME>\", scene chips, \"Add Relationship\", \"Scene Card to link\" with \"Link\", notes box. New Character dialog: \"Name *\", \"Role / title\" (placeholder \"Protagonist\"), \"Image\" \"Choose image…\" (native picker), \"Short description\" (placeholder \"Add later\"), buttons \"Cancel\", \"Create Character\". Duplicate warning text: \"Possible match: a character named LAKSHMI (...) already exists.\" with \"Create Another Character Anyway\" and \"Use Existing\". Edit dialog title \"Edit LAKSHMI\": \"Name *\", note \"Renaming doesn't change screenplay text; use Find & Replace in the screenplay for that.\", \"Role / title\", \"Short description\", \"Save\". Relationships: 222, 223, map 224. Characters also appear in the Create menu as \"New Character\"."
+ },
+ {
+  "id": "write-screenplay",
+  "available": true,
+  "reason": "Partial: typing a new scene heading, action and dialogue from an empty page was not captured. The flow shows the element type menu and the character name suggestions in the seeded script.",
+  "steps": [
+   {"screen": "013-shell-project-home.html", "action": "click", "target": "role=button[name=\"Continue screenplay\"]", "label": "Click Continue screenplay", "text": null, "key": null},
+   {"screen": "244-sp-editor-standard.html", "action": "click", "target": "button[aria-label=\"Element type: Scene Heading. Change element type\"]", "label": "The bar at the bottom shows the element type of the line you are in. Click it", "text": null, "key": null},
+   {"screen": "257-sp-element-type-menu.html", "action": "key", "target": null, "label": "Pick a type or use Ctrl+1 to Ctrl+7. Press Esc to close", "text": null, "key": "Esc"},
+   {"screen": "244-sp-editor-standard.html", "action": "type", "target": "[data-id=\"01a15b74-802c-7786-9f65-18081a818e07\"]", "label": "On a character line, start typing a name", "text": "LA", "key": null},
+   {"screen": "258-sp-suggestion-list.html", "action": "view", "target": null, "label": "OpenFrame suggests characters already in the script. Enter accepts", "text": null, "key": null}
+  ],
+  "notes": "Element type menu heading \"ELEMENT TYPE\": \"Scene Heading\" Ctrl+1, \"Action\" Ctrl+2, \"Character\" Ctrl+3, \"Parenthetical\" Ctrl+4, \"Dialogue\" Ctrl+5, \"Transition\" Ctrl+6, \"Shot\" Ctrl+7, \"General note (not printed)\", \"Insert page break\" Ctrl+Enter. The bottom-left pill reads e.g. \"Scene Heading · Enter → Action\", \"Action · Enter → Character\", \"Character · Enter → Dialogue\", so Enter moves to the usual next element. Suggestion list: \"LAKSHMI\" (Script) and \"Create New: LA\" (Beat Board), hint \"Enter accepts, Esc keeps your text\". In 258 the typed LA replaced the selected name FAROOQ on the first character line (the tour selected the name, then typed). Toolbar: screenplay picker \"THE TOWER AT PEDDA REVU\", draft picker \"Second Draft\", \"Scenes\", zoom, \"Find\" (Ctrl+F), \"Notes\", \"Comments (2)\", \"Drafts\", \"Compare\", \"Export\", \"Lock\", \"View and more\". Scene list on the left with \"New scene\". In 257 the caret had moved to the action line, so the menu opens from the Action pill. Empty project: \"Write your screenplay or import one you already have.\" with \"New Screenplay\", \"Build from Beat Board\", \"Import Screenplay\" (338)."
+ },
+ {
+  "id": "screenplay-notes",
+  "available": true,
+  "reason": "Partial: posting the comment was not captured (the tour typed it and cancelled). Private and scene notes are in the extra tutorial scene-private-notes because the two panels cannot be chained.",
+  "steps": [
+   {"screen": "013-shell-project-home.html", "action": "click", "target": "role=button[name=\"Continue screenplay\"]", "label": "Open the screenplay", "text": null, "key": null},
+   {"screen": "244-sp-editor-standard.html", "action": "drag", "target": "[data-id=\"01a15b74-8187-75c2-a21e-f48d9f1e3718\"]", "label": "Select some words in the script", "text": null, "key": null},
+   {"screen": "260-sp-comment-float-button.html", "action": "click", "target": ".spx-cmt-btn", "label": "Click the Comment button that appears", "text": null, "key": null},
+   {"screen": "261-sp-comment-composer-text.html", "action": "view", "target": null, "label": "Write the comment in the Comments panel and click Comment", "text": null, "key": null}
+  ],
+  "notes": "Selecting text shows a floating \"Comment\" button. The \"Comments\" panel has \"Open (2)\" and \"Resolved (1)\" filters; the composer is labelled \"Scene 1 · text comment\" and quotes the selected words (\"stray dog\"), placeholder \"Write a comment…\", buttons \"Cancel\" and \"Comment\". Each comment has \"Reply\" and \"Resolve\" and a \"Comment actions\" menu (287). Toolbar \"Comments (2)\" opens the panel (262), which also offers \"Comment on Scene 1\" and \"Comment on draft\". The typed text in 261 is \"Is this the same dog we see at the bus stand later?\". Comments are shared review notes; private notes (\"Only you\") live in Scene Notes, see scene-private-notes."
+ },
+ {
+  "id": "scene-private-notes",
+  "available": true,
+  "reason": "Partial: saving the private note was not captured (the tour typed it and cancelled).",
+  "steps": [
+   {"screen": "244-sp-editor-standard.html", "action": "click", "target": "button[aria-label=\"View and more\"]", "label": "Open View and more", "text": null, "key": null},
+   {"screen": "268-sp-view-menu.html", "action": "click", "target": "role=menuitem[name=\"Writing Room Mode\"]", "label": "Choose Writing Room Mode", "text": null, "key": null},
+   {"screen": "277-sp-writing-room-beat-board.html", "action": "click", "target": "role=button[name=\"Beat Board\"s]", "label": "Panels open as tabs on the right. Close Beat Board", "text": null, "key": null},
+   {"screen": "279-sp-writing-room-no-panel.html", "action": "click", "target": "role=button[name=\"Scene Notes\"]", "label": "Open Scene Notes", "text": null, "key": null},
+   {"screen": "280-sp-panel-scene-notes.html", "action": "click", "target": "role=button[name=\"Add private note\"]", "label": "Click Add private note and type", "text": null, "key": null},
+   {"screen": "282-sp-panel-private-note-composer.html", "action": "view", "target": null, "label": "Only you see private notes. Click Save", "text": null, "key": null}
+  ],
+  "notes": "View and more menu: \"LAYOUT\" \"Standard Mode\", \"Writing Room Mode\", \"Focus Mode\", \"Hide notes in the script\", \"Page view\", spelling items, \"Title page…\", \"ADVANCED\" \"Page setup…\", \"Custom elements…\", \"SCENES\" \"Scene Hub…\", \"Characters\", \"Draft information\", \"Import screenplay…\". Writing Room panel tabs: \"Beat Board\", \"Scene Notes\", \"Characters\", \"Comments\", \"Draft information\" (tabs toggle, two can be open at once, 293). With none open: \"Choose a panel above. With no panel open, the page stays centred.\" Scene Notes panel title \"Scene notes: Scene 1\": \"Private note\" marked \"Only you\", \"Scene note\" with \"Add\", \"IN-SCRIPT NOTES\", buttons \"Add note\" and \"Add private note\", checkbox \"Show notes in the script\", footer \"Notes are not printed and are excluded from PDF/FDX/Fountain/DOCX exports and review packages by default.\" Private note composer has \"Cancel\" and \"Save\"; 282 shows the typed text \"Keep the horn on the sound track only until the picture cuts in.\" Scene note editing: 283. The toolbar \"Notes\" button also toggles the notes panel in Standard Mode."
+ },
+ {
+  "id": "drafts-revisions",
+  "available": true,
+  "reason": "",
+  "steps": [
+   {"screen": "244-sp-editor-standard.html", "action": "click", "target": "role=button[name=\"Compare\"s]", "label": "Click Compare to see what changed between two drafts", "text": null, "key": null},
+   {"screen": "308-sp-compare-text-only.html", "action": "click", "target": "role=button[name=\"Back to script\"]", "label": "Changes are listed and marked side by side. Back to script", "text": null, "key": null},
+   {"screen": "244-sp-editor-standard.html", "action": "click", "target": "role=button[name=\"Lock\"s]", "label": "When the script is ready to shoot, click Lock", "text": null, "key": null},
+   {"screen": "312-sp-lock-dialog.html", "action": "click", "target": "role=button[name=\"Lock as Shooting Draft\"]", "label": "Check the details and click Lock as Shooting Draft", "text": null, "key": null},
+   {"screen": "313-sp-locked-draft.html", "action": "key", "target": "[data-id=\"01a15b74-8187-75c2-a21e-f48d9f1e3718\"]", "label": "Start typing in the locked draft", "text": null, "key": "X"},
+   {"screen": "314-sp-locked-edit-dialog.html", "action": "click", "target": "role=button[name=\"Start Revision\"]", "label": "OpenFrame offers a revision instead. Click Start Revision", "text": null, "key": null},
+   {"screen": "315-sp-start-revision-dialog.html", "action": "click", "target": "role=radio[name=\"Pink\"]", "label": "Pick a colour and add a reason if you like", "text": null, "key": null},
+   {"screen": "316-sp-start-revision-filled.html", "action": "click", "target": "role=dialog >> role=button[name=\"Start Revision\"]", "label": "Click Start Revision", "text": null, "key": null},
+   {"screen": "319-sp-revision-draft-editor.html", "action": "view", "target": null, "label": "You now write in Revision A; the locked draft never changes", "text": null, "key": null}
+  ],
+  "notes": "Compare view: \"Back to script\", \"Before\" and \"After\" draft lists (Example-Feature (imported) and Second Draft), \"Scene-only\" / \"Text-only\", \"Previous\", \"Next change\", list \"CHANGES\" (\"Changed: 1 line changed in Scene 1\"), summary \"0 scenes added · 0 removed · 2 changed · 0 moved · 34 unchanged\". Lock dialog: \"Lock this draft as the Shooting Draft?\" listing draft name, current version, \"Unresolved review notes\", number of scenes; buttons \"Cancel\", \"Lock as Shooting Draft\". Locked banner: \"Locked shooting draft. You can read and export it freely. Typing offers to start a revision.\"; the toolbar \"Lock\" becomes \"Revisions\". Typing shows \"This is your locked shooting draft. Create a revision?\" (\"Nothing has been changed yet.\"). Start Revision dialog: \"Based on the locked Second Draft. The locked draft never changes.\", \"Label *\" (Revision A), \"Colour\" \"Blue\", \"Pink\", \"Yellow\", \"Green\", \"Custom…\", \"Revision date\", \"Reason (optional)\". Step 7 picks Pink; 316 also shows the reason \"Dog added to the opening, rooftop radio line.\" typed. 319 shows the draft pill \"Revision A - Pink\". Drafts: toolbar \"Drafts\" opens a drawer listing drafts (\"Current\" badge), \"RECOVERY HISTORY\" with \"Restore\", and buttons \"Compare…\" and \"New Draft\" (299). New Draft dialog: \"Create from\" \"Current draft (Second Draft)\" or \"Previous named draft…\", \"Draft name *\" (Draft 3), \"Note (optional)\", \"Create Draft\" (305); creating it was not captured. Revisions drawer: 318, 321; revision marks in page view: 322."
+ },
+ {
+  "id": "import-script",
+  "available": true,
+  "reason": "Partial: choosing a file with Browse… opens the Windows Open dialog, which was not captured, so the flow imports a bundled sample script. The expanded warnings list was not captured.",
+  "steps": [
+   {"screen": "013-shell-project-home.html", "action": "click", "target": "button[aria-label=\"Create\"]", "label": "Click + (Create)", "text": null, "key": null},
+   {"screen": "015-shell-create-menu.html", "action": "click", "target": "role=menuitem[name=\"Import Screenplay…\"]", "label": "Choose Import Screenplay…", "text": null, "key": null},
+   {"screen": "009-sp-import-source.html", "action": "click", "target": "role=radio[name^=\"A feature film in three acts\"]", "label": "Choose a file with Browse…, paste text, or open a sample script", "text": null, "key": null},
+   {"screen": "010-sp-import-sample-chosen.html", "action": "click", "target": "role=dialog >> role=button[name=\"Preview\"]", "label": "Click Preview", "text": null, "key": null},
+   {"screen": "011-sp-import-preview.html", "action": "click", "target": "role=dialog >> role=button[name=\"Import\"s]", "label": "Check scenes, characters and warnings, then click Import", "text": null, "key": null},
+   {"screen": "012-sp-import-complete.html", "action": "view", "target": null, "label": "Import complete. Nothing else in your project was changed", "text": null, "key": null}
+  ],
+  "notes": "Dialog \"Import Screenplay\" (\"What existing script do you want to bring into OpenFrame?\") with steps \"1 Select source\", \"2 Preview interpretation\", \"3 Import\". \"Choose a file\" accepts \"PDF · Final Draft (.fdx) · Fountain · TXT · DOCX\" via \"Browse…\"; \"…OR PASTE SCREENPLAY TEXT\"; \"OR OPEN A SAMPLE SCRIPT\" with \"Example Feature\", \"Example Short\", \"Example Scene\", \"FDX Interchange Test\". Info line: \"Importing never replaces your current screenplay. If one exists, the script arrives as a new screenplay or a new draft.\" Preview (\"Import Screenplay · Preview\", \"Check how the script was interpreted before anything is created.\"): Source Example-Feature.fountain, Scenes 36, Characters 10, Pages ~15, \"High confidence\", a warnings bar \"2 warnings. The screenplay structure was recognised. Some details were adjusted on the way in.\" with \"Show warnings\", a table \"DETECTED SCENE HEADING\" / \"STATUS\" (OK), \"IMPORT AS\" \"New Screenplay\", \"Draft name\", checkbox \"Keep the original file in Project Files\", buttons \"Back\", \"Cancel\", \"Import\". Result \"Import complete\" with rows Source file, Imported scenes, Detected characters, Pages / length, Warnings needing attention, Original file \"Kept in Project Files\", buttons \"Review Warnings\" and \"Open Screenplay\". The 009 background is the new empty Night Bus project, while 013 and 015 show the finished demo project behind the menu (capture seam). Text that is not a screenplay fails with \"Import failed. Your current project was not changed.\" (331, 332). Import also sits in View and more as \"Import screenplay…\" and on the empty Screenplay page."
+ },
+ {
+  "id": "export-script",
+  "available": true,
+  "reason": "Partial: Export… and Export PDF open the Windows Save dialog and the Export complete screen follows it; neither was captured, so the flow ends in Print Preview.",
+  "steps": [
+   {"screen": "244-sp-editor-standard.html", "action": "click", "target": "role=button[name=\"Export\"s]", "label": "Click Export in the screenplay toolbar", "text": null, "key": null},
+   {"screen": "324-sp-export-dialog.html", "action": "click", "target": "role=button[name=\"Additional formats…\"]", "label": "Pick a format: PDF, Final Draft (.fdx), Fountain, DOCX. Additional formats… shows more", "text": null, "key": null},
+   {"screen": "325-sp-export-more-formats.html", "action": "click", "target": "role=dialog >> text=Selected scenes", "label": "Choose Entire draft or Selected scenes", "text": null, "key": null},
+   {"screen": "326-sp-export-selected-none.html", "action": "click", "target": "role=group[name=\"Scenes to export\"] >> label >> nth=0", "label": "Tick the scenes you want", "text": null, "key": null},
+   {"screen": "327-sp-export-selected-scenes.html", "action": "click", "target": "role=dialog >> role=button[name=\"Preview…\"]", "label": "Click Preview… to check the pages", "text": null, "key": null},
+   {"screen": "328-sp-print-preview.html", "action": "view", "target": null, "label": "Print or Export PDF from the preview; Export… saves the chosen format", "text": null, "key": null}
+  ],
+  "notes": "Dialog \"Export Screenplay\" (\"What am I exporting, which version, in which format, and where will it be saved?\"): \"SOURCE\" draft list (Second Draft (current)), \"FORMAT\" \"PDF\" (professional, printable), \"Final Draft (.fdx)\", \"Fountain\", \"DOCX\" (editable), after \"Additional formats…\" also \"Plain text (.txt)\"; \"SCOPE\" \"Entire draft\" / \"Selected scenes\"; \"Clean script\" / \"Revision-marked version\"; option checkboxes (title page and others); footer note \"Private notes excluded. Export creates a snapshot; your project does not change.\"; buttons \"Cancel\", \"Preview…\", \"Export…\". 327 has scenes 1 to 3 ticked (step 4 is three ticks shown as one). Print Preview: page navigation, zoom, \"Print\", \"Export PDF\", \"Back to Export Options\", \"Close\". Print opens the Windows print dialog (not captured). Step 4 target uses nth=0 because the scene rows have no names of their own."
+ },
+ {
+  "id": "pages-templates",
+  "available": true,
+  "reason": "",
+  "steps": [
+   {"screen": "013-shell-project-home.html", "action": "click", "target": "button[aria-label=\"Project: Night Bus. Switch or manage projects\"]", "label": "Open the project menu", "text": null, "key": null},
+   {"screen": "014-shell-project-menu.html", "action": "click", "target": "role=menuitem[name=\"Notes & Tasks\"]", "label": "Choose Notes & Tasks", "text": null, "key": null},
+   {"screen": "717-notes-filled.html", "action": "click", "target": "role=button[name=\"New Note\"]", "label": "Click New Note", "text": null, "key": null},
+   {"screen": "722-notes-new-note-editor.html", "action": "type", "target": "#ne-title", "label": "Give it a title and write the note", "text": "Tour note on the radio tower", "key": null},
+   {"screen": "723-notes-new-note-filled.html", "action": "view", "target": null, "label": "The note saves as you type and joins the list", "text": null, "key": null}
+  ],
+  "notes": "The app has no separate \"Pages\" documents; project notes live in \"Notes & Tasks\" (project menu, Project Home quick access, or \"New Note\" in the Create menu). Page \"Notes & Tasks\": \"New Note\", \"New Task\", \"Search notes\", notes list on the left, \"Tasks\" on the right with \"Owner\" filter and \"Open\" / \"Done\" / \"All\". Note drawer: title placeholder \"Untitled note\", body placeholder \"Write anything that doesn't belong in the Idea Vault or another workspace.\", buttons \"Delete\" and \"Pin\". 723 also shows the body typed: \"Sound check at the harbour first, tower climb after the safety briefing.\" Deleting moves the note to Recently Deleted (724). Templates are a separate tutorial (templates)."
+ },
+ {
+  "id": "templates",
+  "available": true,
+  "reason": "",
+  "steps": [
+   {"screen": "013-shell-project-home.html", "action": "click", "target": "button[aria-label=\"Project: Night Bus. Switch or manage projects\"]", "label": "Open the project menu", "text": null, "key": null},
+   {"screen": "014-shell-project-menu.html", "action": "click", "target": "role=menuitem[name=\"Templates\"]", "label": "Choose Templates", "text": null, "key": null},
+   {"screen": "749-templates-page.html", "action": "click", "target": "role=button[name=\"Create Template\"]", "label": "Built-in templates are listed. Click Create Template", "text": null, "key": null},
+   {"screen": "752-templates-create-dialog.html", "action": "type", "target": "#tp-name", "label": "Name it, pick a type and where to keep it", "text": "Tour global call sheet", "key": null},
+   {"screen": "754-templates-create-filled.html", "action": "click", "target": "role=dialog >> role=button[name=\"Create\"s]", "label": "Click Create", "text": null, "key": null},
+   {"screen": "755-templates-created-toast.html", "action": "view", "target": null, "label": "Your template joins the list", "text": null, "key": null}
+  ],
+  "notes": "Templates is a tab of the project settings page (tabs \"Project settings\", \"Writing\", \"Keyboard shortcuts\", \"Templates\", \"Offline AI\", \"Advanced\", \"Appearance\"). Built-in cards: \"Feature Film Screenplay\", \"Short Film Screenplay\", \"Episodic / Series\" (Screenplay starter), \"Simple Beat Board\" (Beat Board starter), \"Indie Call Sheet\" (Call sheet), \"Shot List\", \"Moodboard\", \"Lightweight Budget\" (Simple budget). Each card has \"Preview\" and \"Actions for <name>\" (Preview, and for your own: Edit, Create a call sheet, Delete). Create Template dialog: \"A saved starting point for new documents.\", \"Name *\" (placeholder \"e.g. My short-film call sheet\"; empty: \"Give the template a name.\"), \"Type *\" (Screenplay starter, Call sheet, Shot list, Moodboard, Report, Beat Board starter, Breakdown document, Simple budget, Project starter), \"Keep in\" \"This project\" / \"Every project\", \"Description\", \"Added sections\" one per line, \"Cancel\", \"Create\". 754 also has Every project, the description and sections typed. Extra tutorial added because pages-templates covers notes."
+ },
+ {
+  "id": "ai-assistant-setup",
+  "available": true,
+  "reason": "Partial: the download of OpenFrame AI (not downloaded, downloading, paused, failed, not enough space, damaged) was not captured because the tour ran with the models installed. The flow shows where the setting lives and the ready state.",
+  "steps": [
+   {"screen": "013-shell-project-home.html", "action": "click", "target": "button[aria-label=\"Assistant\"]", "label": "Click the Assistant button in the top bar", "text": null, "key": null},
+   {"screen": "374-ai-panel-ready.html", "action": "click", "target": "button[aria-label=\"Offline AI settings\"]", "label": "Open the ... menu of the AI Assistant", "text": null, "key": null},
+   {"screen": "375-ai-settings-menu.html", "action": "click", "target": "role=menuitem[name=\"Offline AI settings…\"]", "label": "Choose Offline AI settings…", "text": null, "key": null},
+   {"screen": "378-ai-offline-settings.html", "action": "click", "target": "main >> summary", "label": "AI Ready. Technical details lists the engine and models", "text": null, "key": null},
+   {"screen": "379-ai-offline-technical-details.html", "action": "view", "target": null, "label": "Everything runs on this computer", "text": null, "key": null}
+  ],
+  "notes": "Settings tab \"Offline AI\" (\"AI runs on this computer.\"): status \"AI Ready\", text \"OpenFrame AI runs on this computer after a one-time download. Your project data is not sent to OpenFrame or to an AI cloud service.\", buttons \"Stop Offline AI (free memory)\" and \"Remove OpenFrame AI…\", \"Graphics card\" \"Automatic\" / \"Off\" (\"Automatic uses a graphics card only after it passes a short check; the processor is always the fallback.\"), \"OpenFrame works normally without OpenFrame AI.\", \"AI HEALTH\" with \"Export AI report\", \"TECHNICAL DETAILS\". The panel menu (375) heading \"OFFLINE AI\": \"Offline AI settings…\", \"Stop Offline AI (free memory)\". Technical details list the llama.cpp server, \"Gemma 3 1B Instruct (Q8_0)\" 1020 MB and two search models, plus \"Everything runs on this computer. Prompts, project text and answers are never sent anywhere. The only network use is the model download you start.\" PRIVACY: 379 shows local paths of the capture machine (C:\\OpenFrame\\.build-cache\\..., test run log path) and its CPU and memory; mask them on the site. The same tab is reachable from Settings (789). Do not claim a download button on the site from these screens; the not-downloaded state was not captured."
+ },
+ {
+  "id": "ai-assistant-ask",
+  "available": true,
+  "reason": "Partial: proposed changes are in the extra tutorial ai-proposed-changes, because those answers were captured over the Screenplay and cannot follow these Home screens.",
+  "steps": [
+   {"screen": "013-shell-project-home.html", "action": "click", "target": "button[aria-label=\"Assistant\"]", "label": "Click the Assistant button", "text": null, "key": null},
+   {"screen": "374-ai-panel-ready.html", "action": "type", "target": "textarea[aria-label=\"Ask or command\"]", "label": "Type a question", "text": "List the characters.", "key": null},
+   {"screen": "381-ai-question-typed.html", "action": "click", "target": "role=button[name=\"Send\"s]", "label": "Click Send", "text": null, "key": null},
+   {"screen": "383-ai-answer-characters.html", "action": "click", "target": "text=See sources", "label": "The answer comes from your project. See sources shows what it used", "text": null, "key": null},
+   {"screen": "384-ai-answer-characters-sources.html", "action": "view", "target": null, "label": "Sources list the scenes and steps behind the answer", "text": null, "key": null}
+  ],
+  "notes": "Panel \"AI Assistant\" with status \"AI Ready\", \"Scope\" (\"Current Screenplay\", \"Beat Board\", \"Production Workspace\", \"Whole Project\"; the list is a Windows drop-down not captured open), \"New\" (Start a new conversation), \"Using: Whole Project\", input \"Ask or command… e.g. \"Open Scene 42.\"\" and \"Send\". Intro text: \"Ask about your project, for example \"How many scenes are in the script?\", \"Open Scene 12.\" or \"Create a task to scout the railway station.\" The assistant can look things up in several steps; changes are only ever prepared for you to review.\" While answering: \"Working on it on this computer…\" (382, skipped between Send and the answer). Answer: \"The characters who speak in the Second Draft are: LAKSHMI, VENKAT RAO, ...\". Sources: \"Inferred · written by Offline AI\", per-character scene counts, \"Show all 10\", \"Based on: Draft: Second Draft, screenplay Character elements\", \"2 steps: Retrieve context · List characters\"."
+ },
+ {
+  "id": "ai-proposed-changes",
+  "available": true,
+  "reason": "",
+  "steps": [
+   {"screen": "244-sp-editor-standard.html", "action": "click", "target": "button[aria-label=\"Assistant\"]", "label": "In the Screenplay, click the Assistant button", "text": null, "key": null},
+   {"screen": "385-ai-panel-screenplay.html", "action": "type", "target": "textarea[aria-label=\"Ask or command\"]", "label": "Ask for a change and click Send", "text": "Create a task to book the bus for the night shoot.", "key": null},
+   {"screen": "391-ai-proposed-changes-second.html", "action": "click", "target": "role=button[name=\"Apply Changes\"]", "label": "Review the Proposed Changes. Nothing is added until you apply", "text": null, "key": null},
+   {"screen": "392-ai-proposal-applied.html", "action": "view", "target": null, "label": "Applied as one step you can undo", "text": null, "key": null}
+  ],
+  "notes": "Answer: \"I prepared a task. Nothing has been added yet.\" Card \"Proposed Changes\": \"Proposed task\", \"Affected areas\" Notes & Tasks, \"Task\" \"Book the bus for the night shoot\", \"Impact\" \"1 new object\", \"1 change, applied together as one step you can undo. If any part fails, nothing is changed.\", buttons \"Reject\" and \"Apply Changes\". After applying: \"Applied 1 change. Use Undo to reverse it.\" and a toast \"Applied: Proposed task\" with \"Undo\". Reject shows \"Rejected. Nothing was changed.\" (389, 390). In 385 the panel shows a fresh conversation (the tour pressed New); a panel opened again keeps the last conversation. Step 2 types and sends in one step. A delete request is captured as 393."
+ }
+]

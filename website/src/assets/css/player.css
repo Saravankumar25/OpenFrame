@@ -1,0 +1,223 @@
+/* Tutorial demonstration player. Markup: src/pages/tutorials.mjs. Behaviour: src/assets/js/player.js. */
+.player {
+  --pl-ink: var(--ink, #1d1a2e);
+  --pl-accent: var(--accent, #d2441c);
+  --pl-line: var(--line, #e7e2da);
+  position: relative;
+  margin: 28px 0 12px;
+  border: 1px solid var(--pl-line);
+  border-radius: var(--r, 14px);
+  background: #fff;
+  box-shadow: var(--shadow, 0 1px 2px rgba(29, 26, 46, .06), 0 12px 32px rgba(29, 26, 46, .08));
+  overflow: hidden;
+  max-width: 100%;
+}
+.player:focus-visible { outline: 3px solid var(--pl-accent); outline-offset: 3px; }
+
+.pl-stage {
+  position: relative;
+  overflow: hidden;
+  background: #f4f1ec;
+  border-bottom: 1px solid var(--pl-line);
+}
+/* The first frame stays in the flow and sets the stage size; the others lie on top of it. */
+.pl-frame {
+  display: none;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0;
+  transition: opacity .3s ease;
+}
+.pl-frame[data-frame="0"] { display: block; position: relative; height: auto; }
+.pl-frame.is-next { display: block; }
+.pl-frame.is-active { display: block; opacity: 1; }
+.pl-frame.is-scroll { animation: pl-scroll .7s cubic-bezier(.2, .8, .2, 1); }
+@keyframes pl-scroll { from { transform: translateY(6%); } to { transform: none; } }
+
+.pl-overlay { position: absolute; inset: 0; pointer-events: none; }
+.pl-overlay > * { position: absolute; opacity: 0; transition: opacity .2s ease; }
+.pl-overlay > .is-on { opacity: 1; }
+
+.pl-cursor {
+  left: 0; top: 0;
+  width: 24px; height: 24px;
+  margin: -3px 0 0 -5px;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, .25));
+  will-change: transform;
+  z-index: 3;
+}
+.pl-ring {
+  border: 2px solid var(--pl-accent);
+  border-radius: 8px;
+  box-shadow: 0 0 0 4px rgba(210, 68, 28, .18);
+}
+.pl-ring.is-on { animation: pl-pulse 1.4s ease-out infinite; }
+@keyframes pl-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(210, 68, 28, .35); }
+  100% { box-shadow: 0 0 0 12px rgba(210, 68, 28, 0); }
+}
+.pl-ripple {
+  width: 44px; height: 44px;
+  margin: -22px 0 0 -22px;
+  border-radius: 50%;
+  background: rgba(210, 68, 28, .28);
+  transform: scale(.2);
+  z-index: 2;
+}
+.pl-ripple.is-on { animation: pl-ripple .6s ease-out forwards; }
+.pl-ripple.is-on.is-double { animation: pl-ripple .45s ease-out 2; }
+@keyframes pl-ripple {
+  0% { transform: scale(.2); opacity: 1; }
+  100% { transform: scale(1.4); opacity: 0; }
+}
+.pl-type {
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  overflow: hidden;
+  background: #fff;
+  border-radius: 6px;
+  font: 500 clamp(11px, 1.4vw, 15px) / 1.2 var(--font, Inter, system-ui, sans-serif);
+  color: var(--pl-ink);
+  white-space: nowrap;
+}
+.pl-caret { width: 2px; height: 1.1em; margin-left: 1px; background: var(--pl-accent); animation: pl-blink 1s steps(1) infinite; }
+@keyframes pl-blink { 50% { opacity: 0; } }
+.pl-key {
+  transform: translateX(-50%);
+  padding: 5px 10px;
+  border: 1px solid #cfc8bd;
+  border-bottom-width: 3px;
+  border-radius: 7px;
+  background: #fff;
+  color: var(--pl-ink);
+  font: 600 13px / 1.2 var(--font, Inter, system-ui, sans-serif);
+  white-space: nowrap;
+  z-index: 2;
+}
+.pl-key.is-free { left: 50%; top: auto; bottom: 14px; }
+.pl-badge {
+  top: 12px; right: 12px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: var(--pl-ink);
+  color: #fff;
+  font: 600 12px / 1.2 var(--font, Inter, system-ui, sans-serif);
+  letter-spacing: .02em;
+}
+.pl-tag {
+  position: absolute;
+  left: 12px; bottom: 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(29, 26, 46, .72);
+  color: #fff;
+  font: 500 11px / 1.3 var(--font, Inter, system-ui, sans-serif);
+  pointer-events: none;
+}
+
+.pl-bar {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas: "cap ctl" "prog prog";
+  gap: 10px 16px;
+  align-items: center;
+  padding: 12px 14px 14px;
+}
+.pl-caption { grid-area: cap; margin: 0; min-width: 0; font-size: 15px; line-height: 1.35; color: var(--pl-ink); }
+.pl-count { display: block; font-size: 12px; font-weight: 600; color: var(--muted, #6b6577); }
+.pl-label { font-weight: 600; }
+.pl-controls { grid-area: ctl; display: flex; gap: 2px; }
+.pl-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 44px; height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--pl-ink);
+  cursor: pointer;
+}
+.pl-btn:hover { background: var(--tint, #f4f1ec); }
+.pl-btn:focus-visible { outline: 3px solid var(--pl-accent); outline-offset: -3px; }
+.pl-btn .i { width: 22px; height: 22px; }
+.pl-play .i:last-child, .is-playing .pl-play .i:first-child { display: none; }
+.is-playing .pl-play .i:last-child { display: block; }
+.pl-fs .i:last-child, .is-full .pl-fs .i:first-child { display: none; }
+.is-full .pl-fs .i:last-child { display: block; }
+.pl-play { background: var(--pl-ink); color: #fff; border-radius: 50%; }
+.pl-play:hover { background: var(--dark2, #2c2842); }
+
+.pl-progress { grid-area: prog; display: flex; gap: 4px; }
+.pl-seg {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 24px;
+  padding: 10px 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.pl-seg span { display: block; height: 4px; border-radius: 2px; background: var(--pl-line); transition: background .2s ease; }
+.pl-seg.is-done span { background: rgba(210, 68, 28, .45); }
+.pl-seg.is-active span { background: var(--pl-accent); }
+.pl-seg:hover span { background: rgba(210, 68, 28, .7); }
+.pl-seg:focus-visible { outline: 2px solid var(--pl-accent); outline-offset: 1px; }
+
+.pl-status {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Full screen: the Fullscreen API, or the fixed fallback class. */
+.player:fullscreen, .player.is-fs {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: #14121f;
+}
+.player.is-fs { position: fixed; inset: 0; z-index: 1000; }
+.player:fullscreen .pl-stage, .player.is-fs .pl-stage {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #14121f;
+  border: 0;
+}
+.player:fullscreen .pl-frame[data-frame="0"], .player.is-fs .pl-frame[data-frame="0"] { position: absolute; height: 100%; }
+.player:fullscreen .pl-bar, .player.is-fs .pl-bar { background: #fff; }
+html.pl-fs-lock { overflow: hidden; }
+
+@media (max-width: 560px) {
+  .pl-bar { grid-template-columns: 1fr; grid-template-areas: "cap" "prog" "ctl"; }
+  .pl-controls { justify-content: space-between; }
+  .pl-tag { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pl-frame, .pl-overlay > * { transition: none; }
+  .pl-ring.is-on, .pl-caret, .pl-frame.is-scroll { animation: none; }
+}
+
+/* Without scripting the player is a static filmstrip: every frame in a row that scrolls inside the player. */
+@media (scripting: none) {
+  .pl-stage { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; }
+  .pl-frame, .pl-frame[data-frame="0"] {
+    display: block; position: relative; flex: 0 0 100%;
+    height: auto; opacity: 1; scroll-snap-align: start;
+  }
+  .pl-overlay, .pl-controls, .pl-progress, .pl-tag { display: none; }
+  .pl-bar { display: block; }
+}

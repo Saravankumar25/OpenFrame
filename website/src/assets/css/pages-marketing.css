@@ -1,0 +1,165 @@
+/* Home and feature pages. Prefix: mk-. Tokens and components come from site.css. */
+
+/* ---------- home hero ---------- */
+.mk-hero{padding:clamp(56px,8vw,104px) 0 clamp(48px,6vw,80px);background:radial-gradient(1100px 520px at 50% -12%,var(--cream),var(--bg) 70%);text-align:center}
+.mk-hero-title{font-size:clamp(44px,7.4vw,96px);letter-spacing:-.04em;line-height:1}
+.mk-hero-title span{display:inline-block}
+.mk-hero-title span:last-child{color:var(--accent)}
+.mk-hero-lead{font-size:clamp(18px,1.9vw,22px);color:var(--ink2);line-height:1.5;max-width:44ch;margin:24px auto 0;text-wrap:pretty}
+.mk-hero-actions{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin:32px 0 0}
+.mk-hero-meta{display:flex;flex-wrap:wrap;gap:8px 10px;justify-content:center;align-items:center;margin:20px 0 0;font-size:14px;color:var(--muted)}
+.mk-hero-meta .i{width:15px;height:15px}
+.mk-hero-shot{margin:clamp(40px,6vw,64px) auto 0;max-width:1120px;text-align:left}
+
+/* ---------- who it is for ---------- */
+.mk-who{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(24px,4vw,48px);border-top:1px solid var(--line);padding-top:32px}
+.mk-who p{color:var(--ink2);margin:10px 0 14px}
+.mk-who a,.mk-stage-text a,.mk-privacy a:not(.btn),.mk-row-text>a{display:inline-flex;align-items:center;gap:6px;color:var(--accent-ink);font-weight:600;text-decoration:none}
+.mk-who a:hover,.mk-stage-text a:hover,.mk-privacy a:not(.btn):hover,.mk-row-text>a:hover{text-decoration:underline}
+
+/* ---------- stage tabs (radio inputs, no script) ---------- */
+.mk-stages{position:relative}
+.mk-stage-in{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}
+.mk-stage-tabs{display:flex;justify-content:center;gap:4px;width:max-content;max-width:100%;margin:0 auto 32px;padding:4px;border-radius:999px;background:#fff;border:1px solid var(--line)}
+.mk-stage-tabs label{padding:10px clamp(14px,2.4vw,24px);border-radius:999px;font-weight:600;font-size:16px;color:var(--ink2);cursor:pointer;transition:background-color .15s,color .15s;user-select:none}
+.mk-stage-tabs label:hover{color:var(--ink)}
+.mk-stage-tabs label:active{transform:scale(.97)}
+.mk-stage-panel{display:none;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:clamp(24px,4vw,56px);align-items:center}
+#mk-st-ideate:checked~.mk-stage-tabs label[for=mk-st-ideate],
+#mk-st-write:checked~.mk-stage-tabs label[for=mk-st-write],
+#mk-st-plan:checked~.mk-stage-tabs label[for=mk-st-plan],
+#mk-st-shoot:checked~.mk-stage-tabs label[for=mk-st-shoot]{background:var(--ink);color:#fff}
+#mk-st-ideate:focus-visible~.mk-stage-tabs label[for=mk-st-ideate],
+#mk-st-write:focus-visible~.mk-stage-tabs label[for=mk-st-write],
+#mk-st-plan:focus-visible~.mk-stage-tabs label[for=mk-st-plan],
+#mk-st-shoot:focus-visible~.mk-stage-tabs label[for=mk-st-shoot]{outline:2px solid var(--accent);outline-offset:2px}
+#mk-st-ideate:checked~.mk-stage-panels .mk-p-ideate,
+#mk-st-write:checked~.mk-stage-panels .mk-p-write,
+#mk-st-plan:checked~.mk-stage-panels .mk-p-plan,
+#mk-st-shoot:checked~.mk-stage-panels .mk-p-shoot{display:grid}
+.mk-stage-word{color:var(--accent-ink)}
+.mk-stage-text h3{font-size:clamp(22px,2.2vw,28px)}
+.mk-stage-text p{color:var(--ink2);margin:12px 0 16px}
+
+/* ---------- five tools into one ---------- */
+.mk-five{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:clamp(32px,5vw,72px);align-items:center}
+.mk-five-text .lead{margin-top:16px}
+.mk-five-text p:not(.lead){color:var(--muted);font-size:15px;margin-top:16px}
+.mk-five-diagram{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:center}
+.mk-five-before{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.mk-five-before li{padding:12px 14px;border:1px dashed var(--line2);border-radius:10px;color:var(--muted);font-size:15px;background:var(--bg)}
+.mk-five-arrow{color:var(--accent);display:grid;place-items:center}
+.mk-five-arrow .i{width:28px;height:28px}
+.mk-five-after{display:grid;gap:8px;padding:20px;border-radius:16px;background:#fff;border:1px solid var(--line);box-shadow:var(--shadow)}
+.mk-five-after strong{display:flex;align-items:center;gap:8px;font-size:17px;margin-bottom:4px}
+.mk-five-after strong .mk{width:22px;height:22px}
+.mk-five-after span{padding:9px 12px;border-radius:8px;background:var(--cream);font-size:15px;font-weight:500}
+
+/* ---------- manifesto (dark) ---------- */
+.mk-manifesto{text-align:center}
+.mk-manifesto p{font-size:clamp(18px,1.9vw,21px);line-height:1.55;margin:20px auto 0;max-width:58ch}
+.mk-manifesto-list{list-style:none;padding:0;margin:32px 0 0;display:flex;flex-wrap:wrap;justify-content:center;gap:12px 28px;font-weight:600;color:#fff}
+
+/* ---------- privacy ---------- */
+.mk-privacy{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(32px,5vw,72px);align-items:center}
+.mk-privacy .lead{margin:16px 0 24px}
+.mk-privacy .ticks{margin-bottom:24px}
+.mk-privacy-diagram{display:grid;gap:16px;justify-items:stretch}
+.mk-pd-local,.mk-pd-remote{display:grid;gap:8px;justify-items:start;padding:24px;border-radius:16px}
+.mk-pd-local{background:#fff;border:1px solid var(--line);box-shadow:var(--shadow)}
+.mk-pd-local>.i{width:32px;height:32px;color:var(--accent)}
+.mk-pd-local strong,.mk-pd-remote strong{font-size:19px}
+.mk-pd-local span,.mk-pd-remote span{color:var(--ink2);font-size:15px}
+.mk-pd-folder{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;background:var(--cream);font-weight:600;color:var(--ink)!important}
+.mk-pd-gap{display:flex;align-items:center;justify-content:center;gap:8px;color:var(--muted);font-size:14px;font-weight:600}
+.mk-pd-remote{border:1px dashed var(--line2);background:transparent}
+.mk-pd-remote strong{color:var(--muted);text-decoration:line-through;text-decoration-thickness:1px}
+
+/* ---------- promises ---------- */
+.mk-promises{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(24px,4vw,48px) clamp(32px,5vw,72px);max-width:980px;margin:0 auto}
+.mk-promises div{border-top:2px solid var(--ink);padding-top:20px}
+.mk-promises p{color:var(--ink2);margin-top:10px}
+.mk-promises a{color:var(--accent-ink);font-weight:600}
+
+/* ---------- text + shot rows (home and feature pages) ---------- */
+.mk-row{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:clamp(32px,5vw,72px);align-items:center}
+.mk-row-flip .mk-row-text{order:2}
+.mk-row-flip{grid-template-columns:minmax(0,7fr) minmax(0,5fr)}
+.mk-row-text>p{color:var(--ink2);margin:16px 0 0}
+.mk-row-text .ticks{margin-top:20px}
+.mk-row-text>a{margin-top:20px}
+.mk-formats{display:flex;flex-wrap:wrap;gap:8px}
+.mk-small{font-size:15px;color:var(--muted)!important}
+
+/* ---------- at a glance and start ---------- */
+.mk-glance{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,4fr);gap:clamp(32px,5vw,72px);align-items:start}
+.mk-glance h2{margin-bottom:24px}
+.mk-glance .kv{font-size:16px}
+.mk-start{padding:28px;border-radius:18px;background:#fff;border:1px solid var(--line)}
+.mk-start h2{font-size:clamp(24px,2.4vw,30px);margin-bottom:12px}
+.mk-start>p{color:var(--ink2);margin:0 0 16px}
+.mk-learn{list-style:none;margin:0 0 20px;padding:0;border-top:1px solid var(--line)}
+.mk-learn li{border-bottom:1px solid var(--line)}
+.mk-learn a{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 0;font-weight:600;text-decoration:none;color:var(--ink)}
+.mk-learn a .i{color:var(--accent);transition:transform .15s var(--ease)}
+.mk-learn a:hover .i{transform:translateX(3px)}
+
+/* ---------- feature pages ---------- */
+.mk-fhero{padding:clamp(32px,5vw,56px) 0 clamp(56px,7vw,96px);background:radial-gradient(1100px 520px at 50% -12%,var(--cream),var(--bg) 70%)}
+.mk-fhero-text{text-align:center;max-width:820px;margin:0 auto}
+.mk-fhero-text .lead{margin:20px auto 0}
+.mk-fhero-shot{margin:clamp(40px,5vw,56px) auto 0;max-width:1120px}
+.mk-index-hero{text-align:center}
+.mk-index-hero .lead{margin:20px auto 0}
+.mk-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(32px,5vw,72px);align-items:start}
+.mk-facts h2{font-size:clamp(26px,2.8vw,34px);margin-bottom:16px}
+.mk-facts h3{margin:28px 0 12px;font-size:18px}
+.mk-facts>div>p{color:var(--ink2);margin:0 0 16px}
+.mk-know{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.mk-know li{display:flex;gap:12px;align-items:flex-start;color:var(--ink2)}
+.mk-know .i{margin-top:.2em;color:var(--muted)}
+.mk-stage-nav{display:flex;flex-wrap:wrap;gap:12px}
+.mk-stage-nav a{display:grid;gap:2px;padding:12px 16px;border:1px solid var(--line);border-radius:12px;background:#fff;text-decoration:none;font-weight:600;min-width:180px}
+.mk-stage-nav a span{font-size:13px;font-weight:500;color:var(--muted)}
+.mk-stage-nav a:hover{border-color:var(--line2)}
+.mk-related{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.mk-related a{display:grid;gap:4px;padding:16px 18px;border:1px solid var(--line);border-radius:14px;background:#fff;text-decoration:none}
+.mk-related a:hover{border-color:var(--line2)}
+.mk-related span{color:var(--ink2);font-size:15px}
+.mk-stage-nav a:active,.mk-related a:active,.mk-card:active{transform:scale(.97)}
+
+/* features index */
+.mk-group h2{margin-bottom:32px}
+.mk-cards{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:clamp(20px,3vw,32px)}
+.mk-card{display:grid;gap:6px;text-decoration:none;color:var(--ink);transition:transform .1s var(--ease)}
+.mk-card-shot{display:block;margin-bottom:12px}
+.mk-card-shot .shot{transition:box-shadow .3s var(--ease)}
+.mk-card:hover .mk-card-shot .shot{box-shadow:0 34px 64px -26px rgba(29,26,46,.4),0 0 0 1px rgba(29,26,46,.1)}
+.mk-card strong{font-size:19px;letter-spacing:-.01em}
+.mk-card>span:last-child{color:var(--ink2);font-size:15px}
+.mk-card .shot figcaption{display:none}
+
+/* ---------- responsive ---------- */
+@media (max-width:960px){
+  .mk-five,.mk-privacy,.mk-glance,.mk-row,.mk-row-flip,.mk-facts{grid-template-columns:minmax(0,1fr)}
+  .mk-row-flip .mk-row-text{order:0}
+  .mk-stage-panel{grid-template-columns:minmax(0,1fr)}
+  #mk-st-ideate:checked~.mk-stage-panels .mk-p-ideate,
+  #mk-st-write:checked~.mk-stage-panels .mk-p-write,
+  #mk-st-plan:checked~.mk-stage-panels .mk-p-plan,
+  #mk-st-shoot:checked~.mk-stage-panels .mk-p-shoot{display:grid}
+}
+@media (max-width:720px){
+  .mk-who,.mk-promises{grid-template-columns:minmax(0,1fr)}
+  .mk-five-diagram{grid-template-columns:minmax(0,1fr)}
+  .mk-five-arrow{transform:rotate(90deg)}
+  .mk-stage-tabs{width:100%;justify-content:space-between}
+  .mk-stage-tabs label{padding:10px 12px;font-size:15px;flex:1;text-align:center}
+  .mk-cards{grid-template-columns:minmax(0,1fr)}
+  .mk-stage-nav a{min-width:0;flex:1}
+}
+@media (prefers-reduced-motion:reduce){
+  .mk-stage-tabs label,.mk-learn a .i,.mk-card,.mk-card-shot .shot{transition:none}
+  .mk-stage-tabs label:active,.mk-stage-nav a:active,.mk-related a:active,.mk-card:active{transform:none}
+}
+.mk-index-hero+.mk-group{padding-top:clamp(24px,4vw,48px)}

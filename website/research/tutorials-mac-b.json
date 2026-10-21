@@ -1,0 +1,858 @@
+[
+ {
+  "id": "moodboard",
+  "available": true,
+  "reason": "Partial. The Add Image references (From File and From Idea Vault) open a system panel or an empty sheet that was not followed. Between the Add Note sheet and the filled internal note the tour also added one plain note and a link, so the board on the later screens shows three items.",
+  "steps": [
+   {
+    "screen": "517-plan-moodboard-new-sheet.html",
+    "action": "click",
+    "target": "[data-id=\"moodboard-suggestion-Overall Look\"]",
+    "label": "In Production, Moodboards, click New Moodboard. In the sheet, click the suggestion Overall Look",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "519-plan-moodboard-new-suggestion.html",
+    "action": "click",
+    "target": "[data-id=\"moodboard-new-sheet-primary\"]",
+    "label": "Click Create Moodboard",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "520-plan-moodboard-canvas-empty.html",
+    "action": "click",
+    "target": "[data-id=\"moodboard-add-note\"]",
+    "label": "The empty board opens. Click Add Note",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "523-plan-moodboard-note-sheet.html",
+    "action": "type",
+    "target": "[data-id=\"new-note\"]",
+    "label": "Type the note",
+    "text": "Faces lit only by phone screens",
+    "key": null
+   },
+   {
+    "screen": "525-plan-moodboard-note-private.html",
+    "action": "click",
+    "target": "[data-id=\"moodboard-note-sheet-primary\"]",
+    "label": "Click Add Note",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "526-plan-moodboard-canvas-items.html",
+    "action": "click",
+    "target": "[data-id=\"moodboard-tile-01a15bae-5857-779e-81b6-74d49a50902f\"]",
+    "label": "Notes and links sit on the canvas. Select a tile to edit it",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "527-plan-moodboard-inspector.html",
+    "action": "view",
+    "target": null,
+    "label": "The item opens in the inspector, with its note, the internal note switch and a caption",
+    "text": null,
+    "key": null
+   }
+  ],
+  "notes": "Mac. Sidebar Production, then the section pop-up at the top of the Production view (Overview, Catalog, Locations, Cast & Crew, Moodboards, Storyboards, Shot Lists, Schedule, Day Out of Days, Daily View, Sides, Reports, Budget); Go > Production Tab reaches each one too. Moodboards heading \"Moodboards\", subtitle \"What should this film feel like?\". Button \"New Moodboard\" opens the \"New Moodboard\" sheet: field \"Board name\", \"Suggestions. Use any name you like\" (Overall Look, Cinematography, Production Design, Costume, Lighting, Character, Location), pop-up \"Reference for a scene\" (optional, default \"No particular scene\"), buttons Cancel and \"Create Moodboard\". Toast \"Created moodboard “Overall Look”\" with Undo. Board toolbar: \"Add Image\" menu (From File…, From Idea Vault…), \"Add Note\", \"Add Link\", \"Export\". Canvas hint: \"Drag to move. Shift-click to select several. Arrow keys nudge.\" Add note sheet: \"Add note\", field \"Note\", check box \"Internal note, left out of exports unless selected\", button \"Add Note\". Add link sheet: \"Web address\", \"Title\". Inspector \"MOODBOARD ITEM\" with Note, the internal note check box and \"Caption\". The list row reads \"Moodboard Overall Look, 3 items\". Sheets drop down from the window title bar, as Mac sheets do. Seeded project: Night Bus."
+ },
+ {
+  "id": "shot-list",
+  "available": true,
+  "reason": "Partial. The Technical details section (shot size and the other camera fields) could not be opened in the capture (tour step \"shot open: not found shot-size\"), so shot size and type are not shown on screen. The tour typed three descriptions in a row; the list screen shows all three.",
+  "steps": [
+   {
+    "screen": "545-plan-shots-all-empty.html",
+    "action": "click",
+    "target": "[data-id=\"shots-scene-picker\"]",
+    "label": "In Production, Shot Lists, open the Scene pop-up",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "546-plan-shots-scene-menu.html",
+    "action": "click",
+    "target": "[data-id=\"menu-item-3\"]",
+    "label": "Choose Scene 1",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "547-plan-shots-scene-empty.html",
+    "action": "type",
+    "target": "[data-id=\"shots-composer\"]",
+    "label": "Type a short shot description, then click Add Shot. Repeat for each shot",
+    "text": "Wide: the bus pulls into the empty stop",
+    "key": null
+   },
+   {
+    "screen": "549-plan-shots-list.html",
+    "action": "rightclick",
+    "target": "[data-id=\"shot-01a15bae-3342-71ba-8202-b920a6d6617d\"]",
+    "label": "Shots get letters 1A, 1B, 1C. Control-click (right-click) a shot",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "553-plan-shot-row-menu.html",
+    "action": "click",
+    "target": "[data-id=\"menu-item-0\"]",
+    "label": "Choose Open",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "556-plan-shot-open.html",
+    "action": "view",
+    "target": null,
+    "label": "The shot opens in the inspector with its description, optional technical details, a reference image and storyboard links",
+    "text": null,
+    "key": null
+   }
+  ],
+  "notes": "Mac. Production > Shot Lists. Heading \"Shot Lists\", subtitle \"How will I capture this scene?\". Pop-up \"Scene\" (All scenes, then \"Scene 1: INT. KESARGANJ JUNCTION - LOST PROPERTY OFFICE - NIGHT\" and so on, from \"Current draft: Example-Short (imported)\"). Composer field with button \"Add Shot\"; an empty description shows \"Describe the shot to add it.\" Hint: \"Add only the shots you need. Camera details are optional.\" View switch \"List\" / \"Grid\". Rows read \"Shot 1A: Wide: the bus pulls into the empty stop\". Shot context menu: Open, Duplicate, Move to Scene…, Move Up, Move Down, Attach Storyboard…, Create Storyboard Panel, Delete. Inspector \"SHOT\": Description, \"Technical details, optional, hidden until you need them\" (shot size, movement, lens and angle live here, collapsed), \"Reference image\" with \"Add reference image…\", \"Storyboard\" with \"Attach…\" and \"Create panel\", Delete, Duplicate. Also a \"More scene actions\" menu and \"Export\". In the captured flow the shot size is written at the start of the description (\"Wide:\", \"Medium:\", \"Close:\"). Seeded project: Night Bus."
+ },
+ {
+  "id": "storyboard",
+  "available": true,
+  "reason": "Partial. A panel open in the inspector was captured in Light mode only, so it is not a page. The tour added three panels before the panels screen.",
+  "steps": [
+   {
+    "screen": "534-plan-storyboard-scene-empty.html",
+    "action": "click",
+    "target": "[data-id=\"storyboard-add-panel\"]",
+    "label": "In Production, Storyboards, with a scene chosen, click Add Panel",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "536-plan-storyboard-add-menu.html",
+    "action": "click",
+    "target": "[data-id=\"menu-item-2\"]",
+    "label": "Choose Empty Panel. Repeat to add more panels",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "538-plan-storyboard-panels.html",
+    "action": "rightclick",
+    "target": "[data-id=\"panel-01a15bac-3c03-722b-8d36-ba12f0b56f23\"]",
+    "label": "Control-click (right-click) a panel",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "539-plan-storyboard-panel-menu.html",
+    "action": "view",
+    "target": null,
+    "label": "The panel menu offers Open, Move Earlier, Move Later, Move to Storyboard…, Link Shot… and Delete",
+    "text": null,
+    "key": null
+   }
+  ],
+  "notes": "Mac. Production > Storyboards. Heading \"Storyboards\", subtitle \"What will the audience see?\". Pop-up \"Scene or storyboard\". Empty state \"Create panels for this scene.\" with buttons \"Import Image\", \"Draw / Sketch\", \"Empty Panel\". The \"Add Panel\" menu holds Import Image, Draw / Sketch, Empty Panel. Draw / Sketch opens the sheet \"Draw / Sketch panel\" with Pen, Eraser, black, red and blue ink, Undo, Clear, \"Save Panel\" (\"Basic sketching only. For polished art, import an image made elsewhere\"; screen 537). Panels read \"Panel 1, empty\"; hint \"Drag panels to change the order.\" Count \"3 panels\". Also \"Storyboard actions\" menu, \"New Storyboard\", \"Export\". Link a panel to a shot with \"Link Shot…\" here, or from Shot Lists with \"Create Storyboard Panel\" or \"Attach Storyboard…\". Seeded project: Night Bus."
+ },
+ {
+  "id": "breakdown",
+  "available": true,
+  "reason": "",
+  "steps": [
+   {
+    "screen": "309-breakdown-scenes.html",
+    "action": "doubleclick",
+    "target": "[data-id=\"script-text\"]",
+    "label": "In Breakdown, scene 1 is open. Select the words to tag in the script (here REGISTER)",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "322-breakdown-script-selection.html",
+    "action": "click",
+    "target": "[data-id=\"tag-selection\"]",
+    "label": "Click Tag Selection",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "325-breakdown-tag-sheet.html",
+    "action": "click",
+    "target": "[data-id=\"add-to-scene\"]",
+    "label": "Check the Category (Props) and the Name, then click Add to Scene 1",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "326-breakdown-tagged.html",
+    "action": "view",
+    "target": null,
+    "label": "Register appears under Props in the Scene 1 breakdown and is added to the production catalog",
+    "text": null,
+    "key": null
+   }
+  ],
+  "notes": "Mac. Sidebar Breakdown. The first time, the sheet \"Choose the production source\" sets the draft (\"Production Source: Example-Short (imported) of “LOST PROPERTY” · Draft\"). Left: \"Scenes\" list with the \"Filter scenes\" menu and \"0 of 10 complete\". Middle: \"Script\" with \"Change source\", \"Export\", \"Hide scenes\", \"Hide panel\" and the menu \"Tag Selection as\" (Cast, Extras / Background, Location / Set, Props, Wardrobe, Vehicles, Hair / Makeup, Special Effects, VFX, Sound, Animals). Control-click on selected words also offers \"Tag “REGISTER” as…\". Right: \"Scene 1 breakdown\" with \"Mark Complete\", \"Add Element\", \"Suggest Elements\", \"Tag Selection\". Tag sheet \"Tag “Register”\": \"What does Scene 1 need? Pick an existing catalog item or create a new one\", pop-up \"Category\", field \"Name\", \"Create new item “Register”, Added to the production catalog\", \"Notes (optional)\", \"The screenplay text is not changed\", Cancel, \"Add to Scene 1\". Notice \"Added “Register” to Scene 1\" with Undo. The catalog is Production > Catalog (\"What things does this film need?\") with filters All, Props, Wardrobe, Vehicles, Cast, Locations, \"More categories\", \"Show archived\" and \"Add Item\" (screen 470). Seeded project: Night Bus."
+ },
+ {
+  "id": "cast-crew",
+  "available": true,
+  "reason": "Covers the cast side. The crew side is the extra tutorial add-crew-member, because the switch from the Cast list to the empty Crew list was not captured in the Night Bus project.",
+  "steps": [
+   {
+    "screen": "500-plan-cast-needs-casting.html",
+    "action": "click",
+    "target": "button[aria-label=\"Assign KIRAN\"]",
+    "label": "In Production, Cast & Crew, Cast, click Assign next to KIRAN",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "501-plan-cast-assign-sheet.html",
+    "action": "type",
+    "target": "[data-id=\"as-person\"]",
+    "label": "Type the actor name",
+    "text": "Meera Iyer",
+    "key": null
+   },
+   {
+    "screen": "502-plan-cast-assign-filled.html",
+    "action": "click",
+    "target": "[data-id=\"assign-submit\"]",
+    "label": "Keep Primary actor and click Assign",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "503-plan-cast-linked-one.html",
+    "action": "view",
+    "target": null,
+    "label": "Meera Iyer now plays KIRAN. DEVI still needs casting",
+    "text": null,
+    "key": null
+   }
+  ],
+  "notes": "Mac. Production > Cast & Crew. Heading \"Cast & Crew\", subtitle \"Who is involved and what role do they have?\". Switch \"Cast\" / \"Crew\", \"Add Person\", \"Search\", \"Show archived\". Characters from the script appear under \"Needs casting\", each with an \"Assign\" button. Sheet \"Add Person\": \"Link the real person to the character they play.\", field \"Person\", \"Choose a character\", \"Create a new character\" (\"For a character that isn't in the script yet.\"), \"Casting\": \"Primary actor\" or \"Alternate / double\", Cancel, \"Assign\". Notice \"Meera Iyer plays KIRAN\" with Undo. Selecting a cast row opens the inspector \"CAST MEMBER\" with \"Add Photo\", \"Assign Character…\", \"Person name\", \"Contact\" (private: visible to Owners and Editors only), \"Availability notes\", availability dates and \"Add Dates\", Delete, Archive (screen 509). Seeded project: Night Bus."
+ },
+ {
+  "id": "locations",
+  "available": true,
+  "reason": "Partial. Adding photos (Add Photos opens the macOS Open panel) and the location notes fields were not captured (tour step \"location notes\" skipped).",
+  "steps": [
+   {
+    "screen": "487-plan-location-add-empty.html",
+    "action": "type",
+    "target": "[data-id=\"nl-name\"]",
+    "label": "In Production, Locations, click Add Location. Type the name, and the address and nearest hospital if you know them",
+    "text": "Old Railway Station",
+    "key": null
+   },
+   {
+    "screen": "488-plan-location-add-filled.html",
+    "action": "click",
+    "target": "[data-id=\"nl-submit\"]",
+    "label": "Click Add Location",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "489-plan-location-open.html",
+    "action": "click",
+    "target": "[data-id=\"loc-status\"] [aria-label=\"Confirmed\"]",
+    "label": "The location opens in the inspector. Set its status to Confirmed",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "490-plan-location-confirmed.html",
+    "action": "view",
+    "target": null,
+    "label": "The card now reads Confirmed. Photos, contact and safety details live in the same inspector",
+    "text": null,
+    "key": null
+   }
+  ],
+  "notes": "Mac. Production > Locations. Heading \"Locations\", subtitle \"Which places can we use? A practical scouting notebook.\" Status filter All, Idea, Shortlisted, Confirmed, Rejected; \"Search locations\"; \"Show archived\". Sheet \"Add Location\": \"Only the name is required.\" Fields Name, \"Address / area\", Contact, \"Nearest hospital\", pop-up Status; Cancel and \"Add Location\". Inspector \"LOCATION\": status Idea / Shortlisted / Confirmed / Rejected (\"A status change never alters the screenplay.\"), \"Photos\" with \"Add Photos\" (\"The first photo is the thumbnail. Photos are stored in the project\"), Name, \"Address / area\", Contact (private), \"Safety\": \"Nearest hospital\", \"Emergency contact\"; Delete, Archive, \"Open Scenes\". Notice \"Added location “Old Railway Station”\". Seeded project: Night Bus."
+ },
+ {
+  "id": "schedule",
+  "available": true,
+  "reason": "Partial. Real drag and drop was not captured, so the move uses the strip menu item Move to (its submenu was not captured). The tour also added an off day and a meal break between screens, so later boards show them.",
+  "steps": [
+   {
+    "screen": "357-schedule-empty.html",
+    "action": "click",
+    "target": "[data-id=\"create-shooting-schedule\"]",
+    "label": "In Production, Schedule, click Create Shooting Schedule",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "358-schedule-create-sheet.html",
+    "action": "click",
+    "target": "[data-id=\"create-schedule-confirm\"]",
+    "label": "Check the screenplay source and click Create Schedule",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "359-schedule-board-unscheduled.html",
+    "action": "click",
+    "target": "[data-id=\"create-shooting-day\"]",
+    "label": "All 10 scenes start in Unscheduled. Click Create Shooting Day",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "360-schedule-add-day-sheet.html",
+    "action": "click",
+    "target": "[data-id=\"day-sheet-confirm\"]",
+    "label": "Enter a shooting date (YYYY-MM-DD, optional) and click Create Day. Repeat for each day",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "362-schedule-board-three-days.html",
+    "action": "click",
+    "target": "[data-id=\"strip-actions-1\"]",
+    "label": "Three days are on the board. Open the actions of the Scene 1 strip",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "365-schedule-strip-menu.html",
+    "action": "click",
+    "target": "[data-id=\"menu-item-2\"]",
+    "label": "Choose Move to and pick a shooting day, or drag the strip onto a day",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "366-schedule-board.html",
+    "action": "click",
+    "target": "[data-id=\"warnings-button\"]",
+    "label": "The scenes sit in their days. Click the warnings button",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "389-schedule-warnings.html",
+    "action": "view",
+    "target": null,
+    "label": "Schedule assistance lists practical warnings, such as an actor needed at two locations, with Open affected item, Move scene and Keep anyway",
+    "text": null,
+    "key": null
+   }
+  ],
+  "notes": "Mac. Production > Schedule. Empty: \"Create a shooting schedule from your screenplay.\" Sheet \"Create Shooting Schedule\": \"Screenplay source\", \"All 10 scenes will start in the Unscheduled pool.\", Cancel, \"Create Schedule\". Board toolbar: view \"Board\" / \"List\" / \"Calendar\", \"Create Shooting Day\", \"Off Day\", \"Suggest Grouping\", the warnings button (\"0 warnings\", later \"3 warnings\"), \"Schedule settings\", \"Export\", and filters (location, cast, day or night, scene length, scheduled state, breakdown state, shooting day, script revision). Strips read \"Scene 1, INT·N, Kesarganj Junction - Lost Property Office\" with the length in eighths (6/8). Day columns \"Shoot Day 1 · Mon 14 Jun 2027\" with \"No scenes scheduled. Drag scenes here.\" Sheet \"Create Shooting Day\": \"Shooting date\" (\"Optional. A day can exist without a date. Write it as YYYY-MM-DD.\"), \"Day notes\", \"Create Day\". Strip menu: \"Details…\", \"Move to\". Toast \"Moved Scene 2 to Shoot Day 1\". Drawer \"Schedule assistance\", \"Practical observations\"; footer \"Warnings never block you and nothing is fixed automatically.\" Seeded project: Night Bus."
+ },
+ {
+  "id": "call-sheet",
+  "available": true,
+  "reason": "Partial. Typing into the call sheet fields was not captured, Finalize did not complete in the capture (tour step \"open and finalize\" skipped), and Export… opens the macOS Save panel, which is not captured.",
+  "steps": [
+   {
+    "screen": "416-callsheets-empty.html",
+    "action": "click",
+    "target": "[data-id=\"callsheet-create\"]",
+    "label": "In Call Sheets, click Create Call Sheet",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "417-callsheet-create-sheet.html",
+    "action": "click",
+    "target": "[data-id=\"callsheet-create-confirm\"]",
+    "label": "Pick the shooting day and template, then click Create Call Sheet",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "420-callsheet-editor.html",
+    "action": "click",
+    "target": "[data-id=\"callsheet-add-section\"]",
+    "label": "The call sheet fills in from the schedule. Type call times and contacts in the fields, then click Add Section",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "421-callsheet-section-menu.html",
+    "action": "click",
+    "target": "[data-id=\"menu-item-0\"]",
+    "label": "Choose Weather",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "422-callsheet-section-weather.html",
+    "action": "click",
+    "target": "[data-id=\"callsheet-export\"]",
+    "label": "Click Export PDF",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "428-callsheet-export.html",
+    "action": "view",
+    "target": null,
+    "label": "The Export Call Sheet sheet creates the PDF snapshot to send. Click Export… and choose where to save",
+    "text": null,
+    "key": null
+   }
+  ],
+  "notes": "Mac. Sidebar Call Sheets. Heading \"Call Sheets\", subtitle \"Which shooting day document do I need?\". Empty: \"Create a call sheet from a shooting day.\" Sheet \"Create Call Sheet\": pop-up \"Source shooting day\" (\"Shoot Day 1 · Mon 14 Jun 2027\"), pop-up \"Template\" (\"None\"), \"Will be filled in automatically\" list, \"You add call times, weather and day-specific notes.\", Cancel, \"Create Call Sheet\". Editor \"Call Sheet: Day 1\", status \"Draft\", \"v1\", \"10 values read Needs input.\", sections PRODUCTION HEADER, DAY AND TIMES (Crew call, General call, Shooting call, Breakfast, Lunch, Estimated wrap), LOCATIONS (Address, Parking, Nearest hospital, Meeting point, Access, Location contact). Buttons \"Call Sheets\" (back), \"Add Section\" (Weather, Extras, Department notes, Advance schedule, Crew, Walkie channels and contacts, Reference images, Attachments, Special notes, Custom field), \"Refresh from schedule\", \"Finalize…\", \"Export PDF\", \"Delete call sheet\". \"Finalize…\" opens the sheet \"Finalize call sheet\" (\"Is this the version you are sending?\", \"Final freezes this document as a snapshot.\", Cancel and \"Finalize\"; screen 440). Export sheet \"Export Call Sheet\": \"Creates the PDF snapshot to send.\", check box \"Include the added sections\", Cancel, \"Export…\". Seeded project: Night Bus."
+ },
+ {
+  "id": "sides",
+  "available": true,
+  "reason": "",
+  "steps": [
+   {
+    "screen": "401-schedule-sides.html",
+    "action": "click",
+    "target": "[data-id=\"sides-cover\"]",
+    "label": "In Production, Sides, Shoot Day 1 is chosen with its scenes. Tick Include call-sheet cover page",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "404-schedule-sides-cover.html",
+    "action": "click",
+    "target": "[data-id=\"sides-save\"]",
+    "label": "The preview adds the cover page. Click Save Sides",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "406-schedule-sides-saved.html",
+    "action": "click",
+    "target": "[data-id=\"sides-saved-01a15ba9-b96f-70f8-b295-d391343ab26a\"]",
+    "label": "The sides are saved as a snapshot. Click the saved entry to open it",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "407-schedule-sides-snapshot.html",
+    "action": "view",
+    "target": null,
+    "label": "The saved sides open. Export PDF makes the file for the team",
+    "text": null,
+    "key": null
+   }
+  ],
+  "notes": "Mac. Production > Sides. Heading \"Sides\", subtitle \"What script pages does this team need for this shooting day?\". \"Setup\": pop-up \"Shooting day\", \"Scenes\" check boxes, \"For\": \"All cast\" / \"Selected cast\" (then Kiran, Devi), check boxes \"Include call-sheet cover page\" and \"Show draft / revision name\", buttons \"Preview\", \"Save Sides\", \"Export PDF\". \"Saved sides are snapshots. Later script edits don't change them.\" Saved list \"Saved sides\" with \"Sides: Shoot Day 1, 2 scenes\"; the snapshot view has \"Export PDF\" and \"Back to live preview\". Export sheet \"Export Sides\" with \"Export…\" (screen 405). The Daily View (Production > Daily View, screen 396) is the per-day overview with a \"Shooting day\" pop-up. Seeded project: Night Bus."
+ },
+ {
+  "id": "reports",
+  "available": true,
+  "reason": "",
+  "steps": [
+   {
+    "screen": "408-schedule-reports-scene.html",
+    "action": "click",
+    "target": "[data-id=\"reports-type-location\"]",
+    "label": "In Production, Reports, the Scene Report shows. Click Location Report",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "409-schedule-reports-location.html",
+    "action": "click",
+    "target": "[data-id=\"reports-type-cast-scene\"]",
+    "label": "Click Cast Scene Report",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "410-schedule-reports-cast-scene.html",
+    "action": "click",
+    "target": "[data-id=\"reports-type-prop\"]",
+    "label": "Click Prop Report",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "411-schedule-reports-prop.html",
+    "action": "view",
+    "target": null,
+    "label": "Each report is built live from the breakdown and the schedule. Use the filter, Save snapshot or Export",
+    "text": null,
+    "key": null
+   }
+  ],
+  "notes": "Mac. Production > Reports. Heading \"Reports\". Report list: \"Scene Report\", \"Location Report\", \"Cast Scene Report\", \"Prop Report\", \"Schedule Report\", \"Breakdown Completeness\". Field \"Filter report rows\", line \"Source: LOST PROPERTY: Example-Short (imported) · Generated ...\", buttons \"Save snapshot\" and \"Export\" (export sheet on screen 415). Seeded project: Night Bus."
+ },
+ {
+  "id": "budget",
+  "available": true,
+  "reason": "Partial. The tour added a first line (Lead actors) before the filled sheet, and more lines before the final table.",
+  "steps": [
+   {
+    "screen": "441-budget-start.html",
+    "action": "click",
+    "target": "button[data-id=\"budget-empty\"]",
+    "label": "In Production, Budget, pick a currency and click Start Budget",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "443-budget-empty-table.html",
+    "action": "click",
+    "target": "[data-id=\"budget-add-line\"]",
+    "label": "Click Add Line",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "444-budget-add-line-sheet.html",
+    "action": "type",
+    "target": "[data-id=\"of-bl-desc\"]",
+    "label": "Choose a category, type the line item, the planned amount and, once spent, the actual amount",
+    "text": "Camera team",
+    "key": null
+   },
+   {
+    "screen": "448-budget-add-line-filled.html",
+    "action": "click",
+    "target": "[data-id=\"budget-line-sheet-primary\"]",
+    "label": "Click Add Line",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "449-budget-table.html",
+    "action": "view",
+    "target": null,
+    "label": "Lines group by category with totals, and Planned, Actual and Difference sit at the top",
+    "text": null,
+    "key": null
+   }
+  ],
+  "notes": "Mac. Production > Budget. Heading \"Budget\", subtitle \"What did we plan to spend, and what have we spent?\", note \"Use a simple estimate for planning. Formal accounting is outside OpenFrame\". Start: \"Start a budget\", pop-up \"Currency\", \"Start Budget\" (\"Optional. You can ignore the budget entirely.\"). Toolbar \"Export\", \"Save Snapshot\", \"Add Line\"; cards PLANNED, ACTUAL, DIFFERENCE; \"Edit Plan\" (overall plan, contingency, notes). Sheet \"Add Line\": pop-up \"Category\", \"Line item\", \"Planned (INR)\", \"Actual (INR)\" (\"Leave empty until the money is spent.\"), \"Notes\", Cancel, \"Add Line\". Example: Camera team, 25000 planned, 21000 actual. An overspend shows as \"₹2,500 over plan\". \"Budget values never change automatically.\" Seeded project: Night Bus, in rupees."
+ },
+ {
+  "id": "tasks",
+  "available": true,
+  "reason": "Partial. The Owner menu was opened in the capture (screen 592) but no owner was chosen, so assigning is described, not shown.",
+  "steps": [
+   {
+    "screen": "588-pages-notes-two.html",
+    "action": "click",
+    "target": "[data-id=\"new-task\"]",
+    "label": "In Notes & Tasks, click New Task",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "589-tasks-new-task.html",
+    "action": "type",
+    "target": "[data-id=\"task-title\"]",
+    "label": "Type the task",
+    "text": "Book the lamp rig",
+    "key": null
+   },
+   {
+    "screen": "590-pages-tasks-titled.html",
+    "action": "click",
+    "target": "[data-id=\"task-has-due\"]",
+    "label": "Tick Set a due date and pick the date",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "591-pages-tasks-due.html",
+    "action": "click",
+    "target": "[data-id=\"task-save\"]",
+    "label": "Choose an owner from Owner if needed, then click Add Task",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "594-notes-and-tasks.html",
+    "action": "view",
+    "target": null,
+    "label": "The task is in the Tasks list with its due date. Tick its box to mark it done",
+    "text": null,
+    "key": null
+   }
+  ],
+  "notes": "Mac. Notes & Tasks opens from the Project Home button \"Notes & Tasks\", the project menu item \"Notes and Tasks\", or Go > Notes and Tasks. Heading \"Notes & Tasks\", subtitle \"Small things that do not belong anywhere else.\" Buttons \"New Note\" and \"New Task\". Tasks panel: \"0 open\", pop-up \"Owner\", filter \"Open\" / \"Done\" / \"All\". Task drawer \"New Task\": \"Task\", check box \"Set a due date\" with a date picker, pop-up \"Owner\" (No owner, or a person such as \"E2E Tester (you)\"), \"Related to\" search (\"Find a scene, location, character, shooting day or call sheet\"; \"Optional. Completing the task never changes the related item.\"), \"Notes\", Cancel, \"Add Task\". Toast \"Added task “Book the lamp rig”\". Rows: check box \"Mark “Book the lamp rig” done\" and \"due 20 Oct\". An open task shows Delete, \"Mark Done\", Save. Seeded project: Night Bus."
+ },
+ {
+  "id": "files",
+  "available": true,
+  "reason": "Partial. Copy into project… opens the macOS Open panel, which is not captured; the result screen also shows the References folder made earlier in the tour.",
+  "steps": [
+   {
+    "screen": "558-files-empty.html",
+    "action": "click",
+    "target": "[data-id=\"add-file\"]",
+    "label": "In Files, click Add File",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "559-pages-files-add-menu.html",
+    "action": "click",
+    "target": "[data-id=\"menu-item-0\"]",
+    "label": "Choose Copy into project… and pick the file in the Open panel",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "563-pages-files-one-file.html",
+    "action": "view",
+    "target": null,
+    "label": "The file is listed as stored in the project, with Open and a More actions menu",
+    "text": null,
+    "key": null
+   }
+  ],
+  "notes": "Mac. Sidebar Files. Heading \"Project Files\", subtitle \"What files belong with this film?\". Buttons \"New Folder\" and \"Add File\" (menu \"Copy into project…\" or \"Link to file…\"); \"Drag files here from Finder to add them.\"; view \"List\" / \"Grid\"; \"Search files\". Folders: \"All files\", \"Top level\", then your folders (\"References, 0 files\") with \"Rename\" and \"Delete\". New Folder sheet: \"Folder name\", Cancel, \"Create\" (screens 560 to 562). File rows: \"Depot permit letter.txt, Text, stored in project\" or \"Linked (external)\"; each has \"Open\" and \"More actions for ...\". Selecting a file shows its details with Notes and a Folder pop-up (screens 568 to 570). Toast \"Added “Depot permit letter.txt”\" with Undo. Seeded project: Night Bus."
+ },
+ {
+  "id": "backup-restore",
+  "available": true,
+  "reason": "Covers backing up. Restoring is the extra tutorial restore-backup. Browse… opens the macOS folder panel, which is not captured, so the chosen place appears already filled in.",
+  "steps": [
+   {
+    "screen": "652-menu-file-with-project.html",
+    "action": "click",
+    "target": "[data-id=\"menu-item-13\"]",
+    "label": "With the project open, choose File > Back Up Project…",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "658-package-back-up-project.html",
+    "action": "type",
+    "target": "[data-id=\"backup-label\"]",
+    "label": "Type an optional label. Use Browse… to choose where to save, ideally another disk",
+    "text": "before-rewrite",
+    "key": null
+   },
+   {
+    "screen": "659-package-backup-ready.html",
+    "action": "click",
+    "target": "[data-id=\"backup-create\"]",
+    "label": "Click Create Backup",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "661-package-backup-created.html",
+    "action": "view",
+    "target": null,
+    "label": "Backup created. Show in folder reveals the .ofbackup file",
+    "text": null,
+    "key": null
+   }
+  ],
+  "notes": "Mac. Menu bar File menu with a project open: New Project…, Open Project…, Close Project, Import Screenplay…, Export Screenplay…, Export PDF…, \"Back Up Project…\", \"Export Full Project…\", \"Share for Review\", \"Import Exchange Package…\", \"Open Review Package…\", \"Review Queue…\", \"Import & Export History…\", \"Restore Backup or Package…\", Print…. Sheet \"Create Backup\": \"A recoverable copy of supported project state.\", \"Backup name\" (for example \"Night Bus 2026-10-20 1642 before-rewrite.ofbackup\"), \"Label (optional)\", \"Save to\" with \"Browse…\" (\"Choose another disk if you can.\"), check box \"Copy linked external files into the backup (portable backup)\", \"What this backup contains\", Cancel, \"Create Backup\". Done: \"Backup created.\", \"Show in folder\", \"Close\". \"Export Full Project…\" makes a .ofproject package (screens 662 to 664); exchange and review packages are under Share for Review and Import Exchange Package…. Seeded project: Night Bus."
+ },
+ {
+  "id": "recently-deleted",
+  "available": true,
+  "reason": "",
+  "steps": [
+   {
+    "screen": "035-project-home.html",
+    "action": "click",
+    "target": "button[aria-label=\"Recently Deleted\"]",
+    "label": "On Project Home, click Recently Deleted",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "613-pages-deleted-items.html",
+    "action": "click",
+    "target": "[data-id=\"restore-Old catering list\"]",
+    "label": "Deleted items wait here for 30 days. Click Restore next to Old catering list",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "617-pages-deleted-restored.html",
+    "action": "view",
+    "target": null,
+    "label": "The note goes back to Notes & Tasks. The message offers Undo",
+    "text": null,
+    "key": null
+   }
+  ],
+  "notes": "Mac. Recently Deleted opens from the Project Home button \"Recently Deleted\", the project menu item \"Recently Deleted\" or Go > Recently Deleted. Heading \"Recently Deleted\", subtitle \"Deleted items stay here for 30 days, then they are removed for good.\" Switch \"This project\" / \"Global Idea Vault\", \"Search deleted items\", count \"2 items\", columns Item, Type, Deleted, Removed in, Was in (\"Notes & Tasks\"). Each row has \"Restore ...\" and \"Delete ... permanently\"; deleting permanently asks a second time (screen 616, \"Keep in Recently Deleted\"). Toast \"Restored “Old catering list” to Notes & Tasks\" with Undo; screen 618 shows the note back in Notes & Tasks. Right after a delete, Edit > Undo (Cmd+Z) or the toast Undo button reverses it. The items were deleted in Notes & Tasks after Project Home was captured. Seeded project: Night Bus."
+ },
+ {
+  "id": "themes-appearance",
+  "available": true,
+  "reason": "Partial. Switching Mode to Dark or System was not captured as a step (the Dark pages come from a separate capture run); the Mode control is shown.",
+  "steps": [
+   {
+    "screen": "003-home-empty.html",
+    "action": "click",
+    "target": "[data-id=\"home-settings\"]",
+    "label": "Click Settings (or choose OpenFrame Studio > Settings…, Cmd+,)",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "020-settings-general.html",
+    "action": "click",
+    "target": "button[aria-label=\"Appearance\"]",
+    "label": "In the Settings window, click Appearance",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "022-settings-appearance.html",
+    "action": "click",
+    "target": "[data-id=\"theme-card-black-and-white\"]",
+    "label": "Mode offers System, Light and Dark. Click a theme, here Black and White",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "024-settings-appearance-theme-chosen.html",
+    "action": "view",
+    "target": null,
+    "label": "The theme applies at once across the app",
+    "text": null,
+    "key": null
+   }
+  ],
+  "notes": "Mac. Settings is its own Settings window (OpenFrame Studio menu > Settings…, the standard Cmd+,) with the pages General, Appearance, Keyboard Shortcuts, Offline AI, Diagnostics. Appearance: \"Mode\" control \"System\" / \"Light\" / \"Dark\" (\"System follows your Mac. Light and Dark stay as you set them.\"). \"Theme\" cards: OpenFrame Default, Black and White, Studio Amber, Slate Noir, Midnight Reel, Teal & Orange, Courier & Cream, Cutting Room, Velvet Curtain. Scrolling down shows \"My Themes\" and a Paste Theme sheet (screens 023, 025, 026). Project Settings also has an Appearance page (screen 629). The Home screen here is the empty Application Home, before any project exists."
+ },
+ {
+  "id": "settings",
+  "available": true,
+  "reason": "",
+  "steps": [
+   {
+    "screen": "003-home-empty.html",
+    "action": "click",
+    "target": "[data-id=\"home-settings\"]",
+    "label": "Click Settings (or choose OpenFrame Studio > Settings…, Cmd+,)",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "020-settings-general.html",
+    "action": "click",
+    "target": "button[aria-label=\"Appearance\"]",
+    "label": "General holds your display name and the data folder. Click Appearance",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "022-settings-appearance.html",
+    "action": "click",
+    "target": "button[aria-label=\"Keyboard Shortcuts\"]",
+    "label": "Appearance holds Mode and Theme. Click Keyboard Shortcuts",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "027-settings-keyboard-shortcuts.html",
+    "action": "click",
+    "target": "button[aria-label=\"Offline AI\"]",
+    "label": "Change, remove or add keys for 23 commands. Click Offline AI",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "032-settings-offline-ai.html",
+    "action": "click",
+    "target": "button[aria-label=\"Diagnostics\"]",
+    "label": "Offline AI manages the on-device model. Click Diagnostics",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "033-settings-diagnostics.html",
+    "action": "view",
+    "target": null,
+    "label": "Diagnostics helps when something needs support",
+    "text": null,
+    "key": null
+   }
+  ],
+  "notes": "Mac. Settings window (OpenFrame Studio menu > Settings…, Cmd+,) with the pages \"General\", \"Appearance\", \"Keyboard Shortcuts\", \"Offline AI\", \"Diagnostics\". General: heading \"You\", \"Display name\" with \"Save Name\" (\"This name appears on your notes, comments and history\"), \"Data folder\" with \"Projects\", \"Shared library\" and \"Show in Finder\", \"Version\". Keyboard Shortcuts: \"Filter commands\", \"23 commands\", \"Restore all defaults\", rows such as Search (Cmd+K), \"Open or close the assistant\" (Cmd+J), \"Open Project Settings\" (Shift+Cmd+,), New Scene Card (Cmd+N), \"Quick Capture (new idea)\" (Shift+Cmd+N), screenplay elements from Cmd+1; each row can add, remove or restore keys. Settings for one project are separate: Project Settings (toolbar Settings button in a project, or Shift+Cmd+,) with General, Writing, Keyboard shortcuts, Offline AI, Advanced, Appearance (screens 619 to 631)."
+ },
+ {
+  "id": "add-crew-member",
+  "available": true,
+  "reason": "",
+  "steps": [
+   {
+    "screen": "510-plan-crew-add-empty.html",
+    "action": "type",
+    "target": "[data-id=\"nc-name\"]",
+    "label": "In Production, Cast & Crew, switch to Crew and click Add Person. Type the name and the role",
+    "text": "Imran Sheikh",
+    "key": null
+   },
+   {
+    "screen": "511-plan-crew-add-filled.html",
+    "action": "click",
+    "target": "[data-id=\"nc-submit\"]",
+    "label": "Pick a Department and add contact details if you like, then click Add to Crew",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "512-plan-crew-open.html",
+    "action": "view",
+    "target": null,
+    "label": "The crew member opens in the inspector with Role, Department, Contact and availability",
+    "text": null,
+    "key": null
+   }
+  ],
+  "notes": "Mac. Production > Cast & Crew, switch \"Crew\". Empty: \"No crew yet.\" Sheet \"Add Person\": \"A crew member with their role. No payroll, no contracts.\", fields \"Person name\", \"Role\" (here \"Cinematographer\"), pop-up \"Department\", \"Contact\", \"Notes\", Cancel, \"Add to Crew\". Inspector \"CREW MEMBER\": Person name, Role, Department, Contact (\"Private: visible to Owners and Editors only.\"), \"Availability notes\", availability dates with \"Add Dates\", Delete, Archive. Notice \"Added Imran Sheikh to the crew\". The list reads \"Imran Sheikh, Cinematographer\" with the departments (Direction, Camera, Sound, Art, Costume, Makeup, ...). Seeded project: Night Bus."
+ },
+ {
+  "id": "restore-backup",
+  "available": true,
+  "reason": "Partial. Choose Package… opens the macOS Open panel, which is not captured.",
+  "steps": [
+   {
+    "screen": "652-menu-file-with-project.html",
+    "action": "click",
+    "target": "[data-id=\"menu-item-21\"]",
+    "label": "Choose File > Restore Backup or Package…",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "684-package-restore.html",
+    "action": "click",
+    "target": "[data-id=\"open-project-choose\"]",
+    "label": "Click Choose Package… and pick the .ofbackup or .ofproject file",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "686-package-restore-collision.html",
+    "action": "click",
+    "target": "[data-id=\"open-project-confirm\"]",
+    "label": "The project already exists here, so keep Open as Copy and click Open as Copy",
+    "text": null,
+    "key": null
+   },
+   {
+    "screen": "687-package-restore-opened-copy.html",
+    "action": "view",
+    "target": null,
+    "label": "The backup opens as Night Bus (copy). The original project is untouched",
+    "text": null,
+    "key": null
+   }
+  ],
+  "notes": "Mac. File > \"Restore Backup or Package…\" (the empty Application Home also has \"Restore Backup or Package…\"). Sheet \"Open Project Package\": \"Open a Full Project Package or restore a Backup Package\", \"Choose a package\" (\".ofproject (Full Project Package) or .ofbackup (Backup Package)\"), \"Choose Package…\", Cancel. A damaged file is refused (screen 685). When the project exists: \"This project already exists on this computer\" with Package, Project, Created and Size, choices \"Open as Copy\" (default, creates “Night Bus (copy)” with a new identity) and \"Replace Existing After Backup\" (high impact), \"Importing never silently replaces the current project.\", Cancel, \"Open as Copy\". Result sheet \"Restore Backup\": \"Opened as a copy.\" with Close."
+ }
+]

@@ -1,0 +1,3943 @@
+{
+ "tutorials": [
+  {
+   "id": "ai-assistant-ask",
+   "platform": "win",
+   "available": true,
+   "feature": "ai-assistant",
+   "path": "ai",
+   "title": "Ask the assistant and review changes",
+   "url": "/windows/tutorials/ai-assistant-ask/",
+   "screens": [
+    "013-shell-project-home",
+    "374-ai-panel-ready",
+    "381-ai-question-typed",
+    "383-ai-answer-characters",
+    "384-ai-answer-characters-sources",
+    "244-sp-editor-standard",
+    "385-ai-panel-screenplay",
+    "391-ai-proposed-changes-second",
+    "392-ai-proposal-applied"
+   ],
+   "steps": [
+    {
+     "screen": "013-shell-project-home",
+     "action": "click",
+     "target": "button[aria-label=\"Assistant\"]",
+     "label": "Click the Assistant button"
+    },
+    {
+     "screen": "374-ai-panel-ready",
+     "action": "type",
+     "target": "textarea[aria-label=\"Ask or command\"]",
+     "label": "Type a question"
+    },
+    {
+     "screen": "381-ai-question-typed",
+     "action": "click",
+     "target": "role=button[name=\"Send\"s]",
+     "label": "Click Send"
+    },
+    {
+     "screen": "383-ai-answer-characters",
+     "action": "click",
+     "target": "text=See sources",
+     "label": "The answer comes from your project. See sources shows what it used"
+    },
+    {
+     "screen": "384-ai-answer-characters-sources",
+     "action": "view",
+     "target": null,
+     "label": "Sources list the scenes and steps behind the answer"
+    },
+    {
+     "screen": "244-sp-editor-standard",
+     "action": "click",
+     "target": "button[aria-label=\"Assistant\"]",
+     "label": "In the Screenplay, click the Assistant button"
+    },
+    {
+     "screen": "385-ai-panel-screenplay",
+     "action": "type",
+     "target": "textarea[aria-label=\"Ask or command\"]",
+     "label": "Ask for a change and click Send"
+    },
+    {
+     "screen": "391-ai-proposed-changes-second",
+     "action": "click",
+     "target": "role=button[name=\"Apply Changes\"]",
+     "label": "Review the Proposed Changes. Nothing is added until you apply"
+    },
+    {
+     "screen": "392-ai-proposal-applied",
+     "action": "view",
+     "target": null,
+     "label": "Applied as one step you can undo"
+    }
+   ]
+  },
+  {
+   "id": "ai-assistant-setup",
+   "platform": "win",
+   "available": true,
+   "feature": "ai-assistant",
+   "path": "ai",
+   "title": "Set up the offline AI assistant",
+   "url": "/windows/tutorials/ai-assistant-setup/",
+   "screens": [
+    "013-shell-project-home",
+    "374-ai-panel-ready",
+    "375-ai-settings-menu",
+    "378-ai-offline-settings",
+    "379-ai-offline-technical-details"
+   ],
+   "steps": [
+    {
+     "screen": "013-shell-project-home",
+     "action": "click",
+     "target": "button[aria-label=\"Assistant\"]",
+     "label": "Click the Assistant button in the top bar"
+    },
+    {
+     "screen": "374-ai-panel-ready",
+     "action": "click",
+     "target": "button[aria-label=\"Offline AI settings\"]",
+     "label": "Open the ... menu of the AI Assistant"
+    },
+    {
+     "screen": "375-ai-settings-menu",
+     "action": "click",
+     "target": "role=menuitem[name=\"Offline AI settings…\"]",
+     "label": "Choose Offline AI settings…"
+    },
+    {
+     "screen": "378-ai-offline-settings",
+     "action": "click",
+     "target": "main >> summary",
+     "label": "AI Ready. Technical details lists the engine and models"
+    },
+    {
+     "screen": "379-ai-offline-technical-details",
+     "action": "view",
+     "target": null,
+     "label": "Everything runs on this computer"
+    }
+   ]
+  },
+  {
+   "id": "backup-restore",
+   "platform": "win",
+   "available": true,
+   "feature": "backups-recovery",
+   "path": "data",
+   "title": "Restore a backup or project package",
+   "url": "/windows/tutorials/backup-restore/",
+   "screens": [
+    "074-apphome-archived-empty",
+    "051-apphome-projects",
+    "075-apphome-restore-package-dialog"
+   ],
+   "steps": [
+    {
+     "screen": "074-apphome-archived-empty",
+     "action": "click",
+     "target": "role=button[name=\"Back to projects\"]",
+     "label": "On the projects screen"
+    },
+    {
+     "screen": "051-apphome-projects",
+     "action": "click",
+     "target": "[title=\"Restore a backup or open a project package\"]",
+     "label": "Click Restore Backup or Package…"
+    },
+    {
+     "screen": "075-apphome-restore-package-dialog",
+     "action": "view",
+     "target": null,
+     "label": "Click Choose Package… and pick the .ofbackup or .ofproject file"
+    }
+   ]
+  },
+  {
+   "id": "breakdown",
+   "platform": "win",
+   "available": true,
+   "feature": "breakdown",
+   "path": "prep",
+   "title": "Tag a prop in a scene breakdown",
+   "url": "/windows/tutorials/breakdown/",
+   "screens": [
+    "355-bd-scene-quick-reuse",
+    "356-bd-scene-nothing-yet",
+    "357-bd-tag-menu",
+    "358-bd-tag-element-dialog",
+    "359-bd-add-element-existing-match",
+    "360-bd-element-tagged"
+   ],
+   "steps": [
+    {
+     "screen": "355-bd-scene-quick-reuse",
+     "action": "click",
+     "target": "role=option[name*=\"CORRIDOR\"]",
+     "label": "In the scene list, click Scene 5"
+    },
+    {
+     "screen": "356-bd-scene-nothing-yet",
+     "action": "drag",
+     "target": "text=A long corridor with green walls",
+     "label": "Select the words to tag in the script"
+    },
+    {
+     "screen": "357-bd-tag-menu",
+     "action": "click",
+     "target": "role=menuitem[name=\"Props\"]",
+     "label": "Choose a category, here Props"
+    },
+    {
+     "screen": "358-bd-tag-element-dialog",
+     "action": "type",
+     "target": "#add-name",
+     "label": "Type the item name; an existing catalog item is offered"
+    },
+    {
+     "screen": "359-bd-add-element-existing-match",
+     "action": "click",
+     "target": "role=button[name=\"Add to Scene 5\"]",
+     "label": "Click Add to Scene 5"
+    },
+    {
+     "screen": "360-bd-element-tagged",
+     "action": "view",
+     "target": null,
+     "label": "The prop is tagged in Scene 5 and linked to the catalog"
+    }
+   ]
+  },
+  {
+   "id": "budget",
+   "platform": "win",
+   "available": true,
+   "feature": "reports-budget",
+   "path": "shoot",
+   "title": "Add a line to the budget",
+   "url": "/windows/tutorials/budget/",
+   "screens": [
+    "623-prod-budget-filled",
+    "624-prod-budget-add-line-dialog",
+    "627-prod-budget-add-line-filled",
+    "628-prod-budget-line-added"
+   ],
+   "steps": [
+    {
+     "screen": "623-prod-budget-filled",
+     "action": "click",
+     "target": "role=button[name=\"Add Line\"]",
+     "label": "Click Add Line"
+    },
+    {
+     "screen": "624-prod-budget-add-line-dialog",
+     "action": "type",
+     "target": "#of-bl-desc",
+     "label": "Type the line item, choose a category and enter the planned amount"
+    },
+    {
+     "screen": "627-prod-budget-add-line-filled",
+     "action": "click",
+     "target": "role=button[name=\"Add Line\"]",
+     "label": "Click Add Line"
+    },
+    {
+     "screen": "628-prod-budget-line-added",
+     "action": "view",
+     "target": null,
+     "label": "The line is added and the planned total updates"
+    }
+   ]
+  },
+  {
+   "id": "call-sheet",
+   "platform": "win",
+   "available": true,
+   "feature": "call-sheets",
+   "path": "shoot",
+   "title": "Create a call sheet from a shooting day",
+   "url": "/windows/tutorials/call-sheet/",
+   "screens": [
+    "636-cs-list",
+    "643-cs-create-dialog",
+    "644-cs-create-dialog-day-chosen",
+    "645-cs-editor-draft",
+    "647-cs-add-section-menu"
+   ],
+   "steps": [
+    {
+     "screen": "636-cs-list",
+     "action": "click",
+     "target": "role=button[name=\"Create Call Sheet\"]",
+     "label": "Click Create Call Sheet"
+    },
+    {
+     "screen": "643-cs-create-dialog",
+     "action": "click",
+     "target": "select[aria-label=\"Source shooting day\"]",
+     "label": "Choose the shooting day, here Shoot Day 4"
+    },
+    {
+     "screen": "644-cs-create-dialog-day-chosen",
+     "action": "click",
+     "target": "role=button[name=\"Create Call Sheet\"]",
+     "label": "Click Create Call Sheet"
+    },
+    {
+     "screen": "645-cs-editor-draft",
+     "action": "click",
+     "target": "role=button[name=\"Add Section\"]",
+     "label": "The draft opens filled from the schedule; click Add Section"
+    },
+    {
+     "screen": "647-cs-add-section-menu",
+     "action": "view",
+     "target": null,
+     "label": "Add weather, crew, walkie channels, notes and more, then Finalize and Export PDF"
+    }
+   ]
+  },
+  {
+   "id": "cast-crew",
+   "platform": "win",
+   "available": true,
+   "feature": "cast-crew-locations",
+   "path": "prep",
+   "title": "Assign an actor to a character",
+   "url": "/windows/tutorials/cast-crew/",
+   "screens": [
+    "469-prod-cast",
+    "470-prod-cast-assign-dialog",
+    "471-prod-cast-assign-alternate-banner"
+   ],
+   "steps": [
+    {
+     "screen": "469-prod-cast",
+     "action": "click",
+     "target": "tr:has-text(\"NEWSREADER\") >> role=button[name=\"Assign\"]",
+     "label": "Click Assign next to a character that needs casting"
+    },
+    {
+     "screen": "470-prod-cast-assign-dialog",
+     "action": "type",
+     "target": "#as-person",
+     "label": "Type the actor's name and choose the character they play"
+    },
+    {
+     "screen": "471-prod-cast-assign-alternate-banner",
+     "action": "view",
+     "target": null,
+     "label": "Pick Primary actor or Alternate / double, then click Assign"
+    }
+   ]
+  },
+  {
+   "id": "characters",
+   "platform": "win",
+   "available": true,
+   "feature": "story-board",
+   "path": "writing",
+   "title": "Add and edit characters",
+   "url": "/windows/tutorials/characters/",
+   "screens": [
+    "169-story-page-filled",
+    "216-story-characters-list",
+    "219-story-new-character-dialog",
+    "220-story-new-character-duplicate-warning",
+    "216-story-characters-list",
+    "221-story-edit-character-dialog"
+   ],
+   "steps": [
+    {
+     "screen": "169-story-page-filled",
+     "action": "click",
+     "target": "role=tab[name=\"Characters\"]",
+     "label": "In Story, open the Characters tab"
+    },
+    {
+     "screen": "216-story-characters-list",
+     "action": "click",
+     "target": "role=button[name=\"Add Character\"]",
+     "label": "Click Add Character"
+    },
+    {
+     "screen": "219-story-new-character-dialog",
+     "action": "type",
+     "target": "#nc-name",
+     "label": "Type a name"
+    },
+    {
+     "screen": "220-story-new-character-duplicate-warning",
+     "action": "click",
+     "target": "role=dialog >> role=button[name=\"Cancel\"]",
+     "label": "OpenFrame warns about a possible match. Cancel and use the existing character"
+    },
+    {
+     "screen": "216-story-characters-list",
+     "action": "click",
+     "target": "role=button[name=\"Edit\"s]",
+     "label": "Click Edit to fill in the details"
+    },
+    {
+     "screen": "221-story-edit-character-dialog",
+     "action": "view",
+     "target": null,
+     "label": "Name, role and short description, saved with Save"
+    }
+   ]
+  },
+  {
+   "id": "create-project",
+   "platform": "win",
+   "available": true,
+   "feature": null,
+   "path": "getting-started",
+   "title": "Create your first project",
+   "url": "/windows/tutorials/create-project/",
+   "screens": [
+    "003-app-home-empty",
+    "004-app-new-project-dialog",
+    "006-app-new-project-filled",
+    "007-app-new-project-optional-details",
+    "008-home-new-project"
+   ],
+   "steps": [
+    {
+     "screen": "003-app-home-empty",
+     "action": "click",
+     "target": "role=button[name=\"Create Project\"]",
+     "label": "Click Create Project"
+    },
+    {
+     "screen": "004-app-new-project-dialog",
+     "action": "type",
+     "target": "#np-title",
+     "label": "Type a title and choose Feature Film or Short Film"
+    },
+    {
+     "screen": "006-app-new-project-filled",
+     "action": "click",
+     "target": "role=dialog >> summary",
+     "label": "Optional details are there if you want them"
+    },
+    {
+     "screen": "007-app-new-project-optional-details",
+     "action": "click",
+     "target": "role=dialog >> role=button[name=\"Create\"s]",
+     "label": "Click Create"
+    },
+    {
+     "screen": "008-home-new-project",
+     "action": "view",
+     "target": null,
+     "label": "The new project opens on its Home page"
+    }
+   ]
+  },
+  {
+   "id": "drafts-revisions",
+   "platform": "win",
+   "available": true,
+   "feature": "drafts-revisions",
+   "path": "writing",
+   "title": "Compare drafts, lock and revise",
+   "url": "/windows/tutorials/drafts-revisions/",
+   "screens": [
+    "244-sp-editor-standard",
+    "308-sp-compare-text-only",
+    "244-sp-editor-standard",
+    "312-sp-lock-dialog",
+    "313-sp-locked-draft",
+    "314-sp-locked-edit-dialog",
+    "315-sp-start-revision-dialog",
+    "316-sp-start-revision-filled",
+    "319-sp-revision-draft-editor"
+   ],
+   "steps": [
+    {
+     "screen": "244-sp-editor-standard",
+     "action": "click",
+     "target": "role=button[name=\"Compare\"s]",
+     "label": "Click Compare to see what changed between two drafts"
+    },
+    {
+     "screen": "308-sp-compare-text-only",
+     "action": "click",
+     "target": "role=button[name=\"Back to script\"]",
+     "label": "Changes are listed and marked side by side. Back to script"
+    },
+    {
+     "screen": "244-sp-editor-standard",
+     "action": "click",
+     "target": "role=button[name=\"Lock\"s]",
+     "label": "When the script is ready to shoot, click Lock"
+    },
+    {
+     "screen": "312-sp-lock-dialog",
+     "action": "click",
+     "target": "role=button[name=\"Lock as Shooting Draft\"]",
+     "label": "Check the details and click Lock as Shooting Draft"
+    },
+    {
+     "screen": "313-sp-locked-draft",
+     "action": "key",
+     "target": "[data-id=\"01a15b74-8187-75c2-a21e-f48d9f1e3718\"]",
+     "label": "Start typing in the locked draft"
+    },
+    {
+     "screen": "314-sp-locked-edit-dialog",
+     "action": "click",
+     "target": "role=button[name=\"Start Revision\"]",
+     "label": "OpenFrame offers a revision instead. Click Start Revision"
+    },
+    {
+     "screen": "315-sp-start-revision-dialog",
+     "action": "click",
+     "target": "role=radio[name=\"Pink\"]",
+     "label": "Pick a colour and add a reason if you like"
+    },
+    {
+     "screen": "316-sp-start-revision-filled",
+     "action": "click",
+     "target": "role=dialog >> role=button[name=\"Start Revision\"]",
+     "label": "Click Start Revision"
+    },
+    {
+     "screen": "319-sp-revision-draft-editor",
+     "action": "view",
+     "target": null,
+     "label": "You now write in Revision A; the locked draft never changes"
+    }
+   ]
+  },
+  {
+   "id": "export-script",
+   "platform": "win",
+   "available": true,
+   "feature": "import-export",
+   "path": "writing",
+   "title": "Export a script and preview the pages",
+   "url": "/windows/tutorials/export-script/",
+   "screens": [
+    "244-sp-editor-standard",
+    "324-sp-export-dialog",
+    "325-sp-export-more-formats",
+    "326-sp-export-selected-none",
+    "327-sp-export-selected-scenes",
+    "328-sp-print-preview"
+   ],
+   "steps": [
+    {
+     "screen": "244-sp-editor-standard",
+     "action": "click",
+     "target": "role=button[name=\"Export\"s]",
+     "label": "Click Export in the screenplay toolbar"
+    },
+    {
+     "screen": "324-sp-export-dialog",
+     "action": "click",
+     "target": "role=button[name=\"Additional formats…\"]",
+     "label": "Pick a format: PDF, Final Draft (.fdx), Fountain, DOCX. Additional formats… shows more"
+    },
+    {
+     "screen": "325-sp-export-more-formats",
+     "action": "click",
+     "target": "role=dialog >> text=Selected scenes",
+     "label": "Choose Entire draft or Selected scenes"
+    },
+    {
+     "screen": "326-sp-export-selected-none",
+     "action": "click",
+     "target": "role=group[name=\"Scenes to export\"] >> label >> nth=0",
+     "label": "Tick the scenes you want"
+    },
+    {
+     "screen": "327-sp-export-selected-scenes",
+     "action": "click",
+     "target": "role=dialog >> role=button[name=\"Preview…\"]",
+     "label": "Click Preview… to check the pages"
+    },
+    {
+     "screen": "328-sp-print-preview",
+     "action": "view",
+     "target": null,
+     "label": "Print or Export PDF from the preview; Export… saves the chosen format"
+    }
+   ]
+  },
+  {
+   "id": "files",
+   "platform": "win",
+   "available": true,
+   "feature": null,
+   "path": "data",
+   "title": "Organise project files in a folder",
+   "url": "/windows/tutorials/files/",
+   "screens": [
+    "013-shell-project-home",
+    "690-files-list",
+    "707-files-new-folder-dialog",
+    "708-files-new-folder-filled",
+    "709-files-folder-created"
+   ],
+   "steps": [
+    {
+     "screen": "013-shell-project-home",
+     "action": "click",
+     "target": "role=button[name=\"Files\"]",
+     "label": "In the left rail, open Files"
+    },
+    {
+     "screen": "690-files-list",
+     "action": "click",
+     "target": "role=button[name=\"New Folder\"]",
+     "label": "Click New Folder"
+    },
+    {
+     "screen": "707-files-new-folder-dialog",
+     "action": "type",
+     "target": "#fo-name",
+     "label": "Type a folder name"
+    },
+    {
+     "screen": "708-files-new-folder-filled",
+     "action": "click",
+     "target": "role=button[name=\"Create\"]",
+     "label": "Click Create"
+    },
+    {
+     "screen": "709-files-folder-created",
+     "action": "view",
+     "target": null,
+     "label": "The new folder opens, ready for files"
+    }
+   ]
+  },
+  {
+   "id": "first-launch",
+   "platform": "win",
+   "available": true,
+   "feature": null,
+   "path": "getting-started",
+   "title": "Start OpenFrame Studio for the first time",
+   "url": "/windows/tutorials/first-launch/",
+   "screens": [
+    "001-app-first-launch-welcome",
+    "002-app-first-launch-name-required",
+    "003-app-home-empty"
+   ],
+   "steps": [
+    {
+     "screen": "001-app-first-launch-welcome",
+     "action": "key",
+     "target": "#dn-name",
+     "label": "OpenFrame asks what to call you. Clear the suggested name"
+    },
+    {
+     "screen": "002-app-first-launch-name-required",
+     "action": "type",
+     "target": "#dn-name",
+     "label": "Type your name, then click Continue"
+    },
+    {
+     "screen": "003-app-home-empty",
+     "action": "view",
+     "target": null,
+     "label": "Application Home opens, ready for your first project"
+    }
+   ]
+  },
+  {
+   "id": "idea-vault",
+   "platform": "win",
+   "available": true,
+   "feature": "idea-vault",
+   "path": "writing",
+   "title": "Collect ideas in the Idea Vault",
+   "url": "/windows/tutorials/idea-vault/",
+   "screens": [
+    "091-vault-grid-all-items",
+    "102-vault-add-menu",
+    "129-vault-quick-capture-dialog",
+    "130-vault-quick-capture-filled",
+    "131-vault-quick-capture-saved-toast",
+    "138-vault-new-collection-dialog",
+    "140-vault-collection-empty"
+   ],
+   "steps": [
+    {
+     "screen": "091-vault-grid-all-items",
+     "action": "click",
+     "target": "main >> role=button[name=\"Add\"s]",
+     "label": "Click Add to choose what to collect"
+    },
+    {
+     "screen": "102-vault-add-menu",
+     "action": "click",
+     "target": "role=menuitem[name^=\"Quick Capture\"]",
+     "label": "Pick Quick Capture for a fast idea"
+    },
+    {
+     "screen": "129-vault-quick-capture-dialog",
+     "action": "type",
+     "target": "textarea[aria-label=\"Idea\"]",
+     "label": "Type the idea"
+    },
+    {
+     "screen": "130-vault-quick-capture-filled",
+     "action": "click",
+     "target": "role=dialog >> role=button[name=\"Save\"]",
+     "label": "Click Save (or press Enter)"
+    },
+    {
+     "screen": "131-vault-quick-capture-saved-toast",
+     "action": "click",
+     "target": "role=button[name=\"New Collection\"]",
+     "label": "Organise: click New Collection in the side panel"
+    },
+    {
+     "screen": "138-vault-new-collection-dialog",
+     "action": "type",
+     "target": "#vv-name",
+     "label": "Name the collection and click Create"
+    },
+    {
+     "screen": "140-vault-collection-empty",
+     "action": "view",
+     "target": null,
+     "label": "The collection is ready in the side panel"
+    }
+   ]
+  },
+  {
+   "id": "import-script",
+   "platform": "win",
+   "available": true,
+   "feature": "import-export",
+   "path": "writing",
+   "title": "Import an existing script",
+   "url": "/windows/tutorials/import-script/",
+   "screens": [
+    "013-shell-project-home",
+    "015-shell-create-menu",
+    "009-sp-import-source",
+    "010-sp-import-sample-chosen",
+    "011-sp-import-preview",
+    "012-sp-import-complete"
+   ],
+   "steps": [
+    {
+     "screen": "013-shell-project-home",
+     "action": "click",
+     "target": "button[aria-label=\"Create\"]",
+     "label": "Click + (Create)"
+    },
+    {
+     "screen": "015-shell-create-menu",
+     "action": "click",
+     "target": "role=menuitem[name=\"Import Screenplay…\"]",
+     "label": "Choose Import Screenplay…"
+    },
+    {
+     "screen": "009-sp-import-source",
+     "action": "click",
+     "target": "role=radio[name=\"Example Feature\"]",
+     "label": "Choose a file with Browse…, paste text, or open a sample script"
+    },
+    {
+     "screen": "010-sp-import-sample-chosen",
+     "action": "click",
+     "target": "role=dialog >> role=button[name=\"Preview\"]",
+     "label": "Click Preview"
+    },
+    {
+     "screen": "011-sp-import-preview",
+     "action": "click",
+     "target": "role=dialog >> role=button[name=\"Import\"s]",
+     "label": "Check scenes, characters and warnings, then click Import"
+    },
+    {
+     "screen": "012-sp-import-complete",
+     "action": "view",
+     "target": null,
+     "label": "Import complete. Nothing else in your project was changed"
+    }
+   ]
+  },
+  {
+   "id": "locations",
+   "platform": "win",
+   "available": true,
+   "feature": "cast-crew-locations",
+   "path": "prep",
+   "title": "Keep scouting notes on a location",
+   "url": "/windows/tutorials/locations/",
+   "screens": [
+    "458-prod-locations",
+    "461-prod-location-row-menu",
+    "462-prod-location-drawer",
+    "463-prod-location-drawer-notes"
+   ],
+   "steps": [
+    {
+     "screen": "458-prod-locations",
+     "action": "rightclick",
+     "target": "role=button[name^=\"Rayapuram bus stand\"]",
+     "label": "Right-click a location card"
+    },
+    {
+     "screen": "461-prod-location-row-menu",
+     "action": "click",
+     "target": "role=menuitem[name=\"Open\"]",
+     "label": "Choose Open"
+    },
+    {
+     "screen": "462-prod-location-drawer",
+     "action": "scroll",
+     "target": "aside.drawer .db",
+     "label": "Scroll down to the practical notes"
+    },
+    {
+     "screen": "463-prod-location-drawer-notes",
+     "action": "view",
+     "target": null,
+     "label": "Fill in parking, noise, permission, access, power and other notes"
+    }
+   ]
+  },
+  {
+   "id": "manage-projects",
+   "platform": "win",
+   "available": true,
+   "feature": null,
+   "path": "getting-started",
+   "title": "Pin, archive and restore projects",
+   "url": "/windows/tutorials/manage-projects/",
+   "screens": [
+    "060-apphome-pinned-section",
+    "061-apphome-card-menu-pinned",
+    "065-apphome-toast-archived",
+    "067-apphome-archived-view",
+    "073-apphome-toast-restored"
+   ],
+   "steps": [
+    {
+     "screen": "060-apphome-pinned-section",
+     "action": "click",
+     "target": "button[aria-label=\"More actions for Empty Short\"]",
+     "label": "Pinned projects sit at the top. Click the ... button on a card"
+    },
+    {
+     "screen": "061-apphome-card-menu-pinned",
+     "action": "click",
+     "target": "role=menuitem[name=\"Archive\"]",
+     "label": "The menu has Rename, Duplicate Project, Pin or Unpin, Archive. Click Archive"
+    },
+    {
+     "screen": "065-apphome-toast-archived",
+     "action": "click",
+     "target": "role=button[name=\"Open Archived\"]",
+     "label": "Archived, not deleted. Click Open Archived"
+    },
+    {
+     "screen": "067-apphome-archived-view",
+     "action": "click",
+     "target": "role=button[name=\"Restore\"]",
+     "label": "Click Restore to bring it back"
+    },
+    {
+     "screen": "073-apphome-toast-restored",
+     "action": "view",
+     "target": null,
+     "label": "The project is back in your projects"
+    }
+   ]
+  },
+  {
+   "id": "moodboard",
+   "platform": "win",
+   "available": true,
+   "feature": "moodboards",
+   "path": "visual",
+   "title": "Make a moodboard for your film",
+   "url": "/windows/tutorials/moodboard/",
+   "screens": [
+    "434-prod-overview",
+    "480-prod-moodboard",
+    "499-prod-moodboard-new-dialog",
+    "501-prod-moodboard-new-filled",
+    "502-prod-moodboard-empty-canvas"
+   ],
+   "steps": [
+    {
+     "screen": "434-prod-overview",
+     "action": "click",
+     "target": "role=button[name=\"Moodboards\"]",
+     "label": "In Production, open the Moodboards tab"
+    },
+    {
+     "screen": "480-prod-moodboard",
+     "action": "click",
+     "target": "role=button[name=\"New Moodboard\"]",
+     "label": "Click New Moodboard"
+    },
+    {
+     "screen": "499-prod-moodboard-new-dialog",
+     "action": "click",
+     "target": "role=button[name=\"Overall Look\"]",
+     "label": "Pick a suggested name, or type your own board name"
+    },
+    {
+     "screen": "501-prod-moodboard-new-filled",
+     "action": "click",
+     "target": "role=button[name=\"Create Moodboard\"]",
+     "label": "Click Create Moodboard"
+    },
+    {
+     "screen": "502-prod-moodboard-empty-canvas",
+     "action": "view",
+     "target": null,
+     "label": "The new board opens, empty, ready for images, notes and links"
+    }
+   ]
+  },
+  {
+   "id": "pages-templates",
+   "platform": "win",
+   "available": true,
+   "feature": null,
+   "path": "writing",
+   "title": "Project notes and templates",
+   "url": "/windows/tutorials/pages-templates/",
+   "screens": [
+    "013-shell-project-home",
+    "014-shell-project-menu",
+    "717-notes-filled",
+    "722-notes-new-note-editor",
+    "723-notes-new-note-filled",
+    "749-templates-page",
+    "752-templates-create-dialog",
+    "754-templates-create-filled",
+    "755-templates-created-toast"
+   ],
+   "steps": [
+    {
+     "screen": "013-shell-project-home",
+     "action": "click",
+     "target": "button[aria-label=\"Project: Night Bus. Switch or manage projects\"]",
+     "label": "Open the project menu"
+    },
+    {
+     "screen": "014-shell-project-menu",
+     "action": "click",
+     "target": "role=menuitem[name=\"Notes & Tasks\"]",
+     "label": "Choose Notes & Tasks"
+    },
+    {
+     "screen": "717-notes-filled",
+     "action": "click",
+     "target": "role=button[name=\"New Note\"]",
+     "label": "Click New Note"
+    },
+    {
+     "screen": "722-notes-new-note-editor",
+     "action": "type",
+     "target": "#ne-title",
+     "label": "Give it a title and write the note"
+    },
+    {
+     "screen": "723-notes-new-note-filled",
+     "action": "view",
+     "target": null,
+     "label": "The note saves as you type and joins the list"
+    },
+    {
+     "screen": "749-templates-page",
+     "action": "click",
+     "target": "role=button[name=\"Create Template\"]",
+     "label": "Built-in templates are listed. Click Create Template"
+    },
+    {
+     "screen": "752-templates-create-dialog",
+     "action": "type",
+     "target": "#tp-name",
+     "label": "Name it, pick a type and where to keep it"
+    },
+    {
+     "screen": "754-templates-create-filled",
+     "action": "click",
+     "target": "role=dialog >> role=button[name=\"Create\"s]",
+     "label": "Click Create"
+    },
+    {
+     "screen": "755-templates-created-toast",
+     "action": "view",
+     "target": null,
+     "label": "Your template joins the list"
+    }
+   ]
+  },
+  {
+   "id": "project-tour",
+   "platform": "win",
+   "available": true,
+   "feature": null,
+   "path": "getting-started",
+   "title": "Find your way around a project",
+   "url": "/windows/tutorials/project-tour/",
+   "screens": [
+    "013-shell-project-home",
+    "014-shell-project-menu",
+    "015-shell-create-menu",
+    "018-shell-search-empty",
+    "019-shell-search-results"
+   ],
+   "steps": [
+    {
+     "screen": "013-shell-project-home",
+     "action": "click",
+     "target": "button[aria-label=\"Project: Night Bus. Switch or manage projects\"]",
+     "label": "The project name at the top opens the project menu"
+    },
+    {
+     "screen": "014-shell-project-menu",
+     "action": "click",
+     "target": "button[aria-label=\"Create\"]",
+     "label": "The + button creates anything: ideas, acts, scene cards, characters and more"
+    },
+    {
+     "screen": "015-shell-create-menu",
+     "action": "click",
+     "target": "button[aria-label=\"Search this project\"]",
+     "label": "Search the whole project from the top bar (Ctrl+K)"
+    },
+    {
+     "screen": "018-shell-search-empty",
+     "action": "type",
+     "target": "input[aria-label=\"Search\"]",
+     "label": "Type a name or word"
+    },
+    {
+     "screen": "019-shell-search-results",
+     "action": "view",
+     "target": null,
+     "label": "Results from every section, each labelled with its type"
+    }
+   ]
+  },
+  {
+   "id": "recently-deleted",
+   "platform": "win",
+   "available": true,
+   "feature": "backups-recovery",
+   "path": "data",
+   "title": "Undo a delete and use Recently Deleted",
+   "url": "/windows/tutorials/recently-deleted/",
+   "screens": [
+    "722-notes-new-note-editor",
+    "723-notes-new-note-filled",
+    "724-notes-note-deleted-toast"
+   ],
+   "steps": [
+    {
+     "screen": "722-notes-new-note-editor",
+     "action": "type",
+     "target": "#ne-title",
+     "label": "Here a short note is written first"
+    },
+    {
+     "screen": "723-notes-new-note-filled",
+     "action": "click",
+     "target": "role=button[name=\"Delete\"]",
+     "label": "Click Delete"
+    },
+    {
+     "screen": "724-notes-note-deleted-toast",
+     "action": "view",
+     "target": null,
+     "label": "It moves to Recently Deleted; click Undo in the message to bring it back"
+    }
+   ]
+  },
+  {
+   "id": "reports",
+   "platform": "win",
+   "available": true,
+   "feature": "reports-budget",
+   "path": "shoot",
+   "title": "Save a report snapshot and export it",
+   "url": "/windows/tutorials/reports/",
+   "screens": [
+    "612-prod-reports-scene",
+    "620-prod-reports-saved-snapshot",
+    "621-prod-reports-live-with-snapshots",
+    "622-prod-reports-export-dialog"
+   ],
+   "steps": [
+    {
+     "screen": "612-prod-reports-scene",
+     "action": "click",
+     "target": "role=button[name=\"Save snapshot\"]",
+     "label": "On a report, click Save snapshot"
+    },
+    {
+     "screen": "620-prod-reports-saved-snapshot",
+     "action": "click",
+     "target": "role=button[name=\"Back to live reports\"]",
+     "label": "Click Back to live reports"
+    },
+    {
+     "screen": "621-prod-reports-live-with-snapshots",
+     "action": "click",
+     "target": "role=button[name=\"Export\"]",
+     "label": "Click Export"
+    },
+    {
+     "screen": "622-prod-reports-export-dialog",
+     "action": "view",
+     "target": null,
+     "label": "Pick PDF, CSV or Excel (XLSX) and click Export…"
+    }
+   ]
+  },
+  {
+   "id": "schedule",
+   "platform": "win",
+   "available": true,
+   "feature": "scheduling",
+   "path": "prep",
+   "title": "Create a shooting day",
+   "url": "/windows/tutorials/schedule/",
+   "screens": [
+    "434-prod-overview",
+    "533-prod-schedule-board",
+    "540-prod-schedule-create-day-dialog",
+    "541-prod-schedule-create-day-filled",
+    "542-prod-schedule-day-created",
+    "543-prod-schedule-day-detail-empty"
+   ],
+   "steps": [
+    {
+     "screen": "434-prod-overview",
+     "action": "click",
+     "target": "role=button[name=\"Schedule\"]",
+     "label": "In Production, open the Schedule tab"
+    },
+    {
+     "screen": "533-prod-schedule-board",
+     "action": "click",
+     "target": "role=button[name=\"Create Shooting Day\"]",
+     "label": "Click Create Shooting Day"
+    },
+    {
+     "screen": "540-prod-schedule-create-day-dialog",
+     "action": "type",
+     "target": "#of-day-notes",
+     "label": "Pick the shooting date and type day notes"
+    },
+    {
+     "screen": "541-prod-schedule-create-day-filled",
+     "action": "click",
+     "target": "role=button[name=\"Create Day\"]",
+     "label": "Click Create Day"
+    },
+    {
+     "screen": "542-prod-schedule-day-created",
+     "action": "click",
+     "target": "role=button[name=\"Shoot Day 4 · Thu 12 Nov 2026\"]",
+     "label": "Shoot Day 4 is added to the stripboard; click it"
+    },
+    {
+     "screen": "543-prod-schedule-day-detail-empty",
+     "action": "view",
+     "target": null,
+     "label": "The day opens, ready for scenes, breaks and times"
+    }
+   ]
+  },
+  {
+   "id": "screenplay-notes",
+   "platform": "win",
+   "available": true,
+   "feature": "screenplay",
+   "path": "writing",
+   "title": "Comments and private scene notes",
+   "url": "/windows/tutorials/screenplay-notes/",
+   "screens": [
+    "244-sp-editor-standard",
+    "260-sp-comment-float-button",
+    "261-sp-comment-composer-text",
+    "244-sp-editor-standard",
+    "268-sp-view-menu",
+    "277-sp-writing-room-beat-board",
+    "279-sp-writing-room-no-panel",
+    "280-sp-panel-scene-notes",
+    "282-sp-panel-private-note-composer"
+   ],
+   "steps": [
+    {
+     "screen": "244-sp-editor-standard",
+     "action": "drag",
+     "target": "[data-id=\"01a15b74-8187-75c2-a21e-f48d9f1e3718\"]",
+     "label": "Select some words in the script"
+    },
+    {
+     "screen": "260-sp-comment-float-button",
+     "action": "click",
+     "target": ".spx-cmt-btn",
+     "label": "Click the Comment button that appears"
+    },
+    {
+     "screen": "261-sp-comment-composer-text",
+     "action": "view",
+     "target": null,
+     "label": "Write the comment in the Comments panel and click Comment"
+    },
+    {
+     "screen": "244-sp-editor-standard",
+     "action": "click",
+     "target": "button[aria-label=\"View and more\"]",
+     "label": "Open View and more"
+    },
+    {
+     "screen": "268-sp-view-menu",
+     "action": "click",
+     "target": "role=menuitem[name=\"Writing Room Mode\"]",
+     "label": "Choose Writing Room Mode"
+    },
+    {
+     "screen": "277-sp-writing-room-beat-board",
+     "action": "click",
+     "target": "role=button[name=\"Beat Board\"s]",
+     "label": "Panels open as tabs on the right. Close Beat Board"
+    },
+    {
+     "screen": "279-sp-writing-room-no-panel",
+     "action": "click",
+     "target": "role=button[name=\"Scene Notes\"]",
+     "label": "Open Scene Notes"
+    },
+    {
+     "screen": "280-sp-panel-scene-notes",
+     "action": "click",
+     "target": "role=button[name=\"Add private note\"]",
+     "label": "Click Add private note and type"
+    },
+    {
+     "screen": "282-sp-panel-private-note-composer",
+     "action": "view",
+     "target": null,
+     "label": "Only you see private notes. Click Save"
+    }
+   ]
+  },
+  {
+   "id": "settings",
+   "platform": "win",
+   "available": true,
+   "feature": null,
+   "path": "data",
+   "title": "Tour the project settings",
+   "url": "/windows/tutorials/settings/",
+   "screens": [
+    "013-shell-project-home",
+    "762-settings-general",
+    "768-settings-writing",
+    "775-settings-shortcuts",
+    "789-settings-offline-ai-ready",
+    "794-settings-advanced",
+    "797-settings-appearance"
+   ],
+   "steps": [
+    {
+     "screen": "013-shell-project-home",
+     "action": "click",
+     "target": "button[aria-label=\"Settings\"]",
+     "label": "Click Settings (the gear at the top right)"
+    },
+    {
+     "screen": "762-settings-general",
+     "action": "click",
+     "target": "role=tab[name=\"Writing\"]",
+     "label": "Project settings hold the title, type and status; open Writing"
+    },
+    {
+     "screen": "768-settings-writing",
+     "action": "click",
+     "target": "role=tab[name=\"Keyboard shortcuts\"]",
+     "label": "Spelling and your dictionary are here; open Keyboard shortcuts"
+    },
+    {
+     "screen": "775-settings-shortcuts",
+     "action": "click",
+     "target": "role=tab[name=\"Offline AI\"]",
+     "label": "Change any shortcut; open Offline AI"
+    },
+    {
+     "screen": "789-settings-offline-ai-ready",
+     "action": "click",
+     "target": "role=tab[name=\"Advanced\"]",
+     "label": "Check the offline AI; open Advanced"
+    },
+    {
+     "screen": "794-settings-advanced",
+     "action": "click",
+     "target": "role=tab[name=\"Appearance\"]",
+     "label": "Breakdown category colours are here; open Appearance"
+    },
+    {
+     "screen": "797-settings-appearance",
+     "action": "view",
+     "target": null,
+     "label": "Choose the mode and theme"
+    }
+   ]
+  },
+  {
+   "id": "shot-list",
+   "platform": "win",
+   "available": true,
+   "feature": "shot-lists-storyboards",
+   "path": "visual",
+   "title": "Open a shot and set its details",
+   "url": "/windows/tutorials/shot-list/",
+   "screens": [
+    "520-prod-storyboard-scene-no-board",
+    "521-prod-shots-list",
+    "526-prod-shot-menu",
+    "527-prod-shot-drawer"
+   ],
+   "steps": [
+    {
+     "screen": "520-prod-storyboard-scene-no-board",
+     "action": "click",
+     "target": "role=button[name=\"Shot Lists\"]",
+     "label": "In Production, open the Shot Lists tab"
+    },
+    {
+     "screen": "521-prod-shots-list",
+     "action": "rightclick",
+     "target": "button[aria-label=\"Open shot 1A: Wide: the bus arrives at the empty stand\"]",
+     "label": "Right-click shot 1A"
+    },
+    {
+     "screen": "526-prod-shot-menu",
+     "action": "click",
+     "target": "role=menuitem[name=\"Open\"]",
+     "label": "Choose Open"
+    },
+    {
+     "screen": "527-prod-shot-drawer",
+     "action": "view",
+     "target": null,
+     "label": "Set the shot size, movement, angle and lens in the shot details"
+    }
+   ]
+  },
+  {
+   "id": "sides",
+   "platform": "win",
+   "available": true,
+   "feature": "sides-daily-view",
+   "path": "shoot",
+   "title": "Prepare sides for one actor",
+   "url": "/windows/tutorials/sides/",
+   "screens": [
+    "597-prod-daily-day-1",
+    "602-prod-sides-setup",
+    "603-prod-sides-day-4",
+    "604-prod-sides-selected-cast-none",
+    "605-prod-sides-selected-cast"
+   ],
+   "steps": [
+    {
+     "screen": "597-prod-daily-day-1",
+     "action": "click",
+     "target": "role=button[name=\"Sides\"]",
+     "label": "From the Daily View, open the Sides tab"
+    },
+    {
+     "screen": "602-prod-sides-setup",
+     "action": "click",
+     "target": "select[aria-label=\"Shooting day\"]",
+     "label": "Choose the shooting day, here Shoot Day 4"
+    },
+    {
+     "screen": "603-prod-sides-day-4",
+     "action": "click",
+     "target": "role=radio[name=\"Selected cast\"]",
+     "label": "Under For, choose Selected cast"
+    },
+    {
+     "screen": "604-prod-sides-selected-cast-none",
+     "action": "click",
+     "target": "label:has-text(\"Ananya Rao (LAKSHMI)\") input",
+     "label": "Tick the actor who needs sides"
+    },
+    {
+     "screen": "605-prod-sides-selected-cast",
+     "action": "view",
+     "target": null,
+     "label": "The preview shows that actor's pages; Save Sides or Export PDF"
+    }
+   ]
+  },
+  {
+   "id": "story-board",
+   "platform": "win",
+   "available": true,
+   "feature": "story-board",
+   "path": "writing",
+   "title": "Plan your story on the Beat Board",
+   "url": "/windows/tutorials/story-board/",
+   "screens": [
+    "169-story-page-filled",
+    "171-story-board-filled",
+    "172-story-board-add-menu",
+    "171-story-board-filled",
+    "183-story-board-card-context-menu",
+    "190-story-card-drawer"
+   ],
+   "steps": [
+    {
+     "screen": "169-story-page-filled",
+     "action": "click",
+     "target": "role=tab[name=\"Board\"]",
+     "label": "In Story, open the Board tab"
+    },
+    {
+     "screen": "171-story-board-filled",
+     "action": "click",
+     "target": "main >> role=button[name=\"Add\"s]",
+     "label": "Acts are columns, sequences group scene cards, beats mark turns. Add creates any of them"
+    },
+    {
+     "screen": "172-story-board-add-menu",
+     "action": "key",
+     "target": null,
+     "label": "Press Esc to close the menu"
+    },
+    {
+     "screen": "171-story-board-filled",
+     "action": "rightclick",
+     "target": "div[aria-label=\"Scene Card: Lakshmi steps off the night bus\"]",
+     "label": "Right-click a scene card"
+    },
+    {
+     "screen": "183-story-board-card-context-menu",
+     "action": "click",
+     "target": "role=menuitem[name^=\"Open\"][name$=\"Enter\"]",
+     "label": "Click Open"
+    },
+    {
+     "screen": "190-story-card-drawer",
+     "action": "view",
+     "target": null,
+     "label": "The card opens: scene heading, short and long description, notes"
+    }
+   ]
+  },
+  {
+   "id": "storyboard",
+   "platform": "win",
+   "available": true,
+   "feature": "shot-lists-storyboards",
+   "path": "visual",
+   "title": "Draw a storyboard panel",
+   "url": "/windows/tutorials/storyboard/",
+   "screens": [
+    "502-prod-moodboard-empty-canvas",
+    "503-prod-storyboard-panels",
+    "511-prod-storyboard-add-panel-menu",
+    "512-prod-storyboard-sketch-dialog",
+    "513-prod-storyboard-sketch-drawn"
+   ],
+   "steps": [
+    {
+     "screen": "502-prod-moodboard-empty-canvas",
+     "action": "click",
+     "target": "role=button[name=\"Storyboards\"]",
+     "label": "In Production, open the Storyboards tab"
+    },
+    {
+     "screen": "503-prod-storyboard-panels",
+     "action": "click",
+     "target": "#radix-_r_f_",
+     "label": "Click Add Panel"
+    },
+    {
+     "screen": "511-prod-storyboard-add-panel-menu",
+     "action": "click",
+     "target": "role=menuitem[name=\"Draw / Sketch\"]",
+     "label": "Choose Draw / Sketch"
+    },
+    {
+     "screen": "512-prod-storyboard-sketch-dialog",
+     "action": "drag",
+     "target": "img[aria-label=\"Sketch area\"]",
+     "label": "Sketch the frame with the pen"
+    },
+    {
+     "screen": "513-prod-storyboard-sketch-drawn",
+     "action": "view",
+     "target": null,
+     "label": "Click Save Panel to add the sketch as a new panel"
+    }
+   ]
+  },
+  {
+   "id": "tasks",
+   "platform": "win",
+   "available": true,
+   "feature": null,
+   "path": "shoot",
+   "title": "Add a task linked to a scene or item",
+   "url": "/windows/tutorials/tasks/",
+   "screens": [
+    "014-shell-project-menu",
+    "717-notes-filled",
+    "725-notes-task-editor-new",
+    "727-notes-task-editor-filled",
+    "728-notes-task-editor-related-results",
+    "729-notes-task-editor-related-chosen",
+    "730-notes-task-added-toast"
+   ],
+   "steps": [
+    {
+     "screen": "014-shell-project-menu",
+     "action": "click",
+     "target": "role=menuitem[name=\"Notes & Tasks\"]",
+     "label": "In the project menu, choose Notes & Tasks"
+    },
+    {
+     "screen": "717-notes-filled",
+     "action": "click",
+     "target": "role=button[name=\"New Task\"]",
+     "label": "Click New Task"
+    },
+    {
+     "screen": "725-notes-task-editor-new",
+     "action": "type",
+     "target": "#te-title",
+     "label": "Type the task, set a due date and add notes"
+    },
+    {
+     "screen": "727-notes-task-editor-filled",
+     "action": "type",
+     "target": "input[aria-label=\"Find a scene, location, character, shooting day or call sheet\"]",
+     "label": "Under Related to, search for what the task is about"
+    },
+    {
+     "screen": "728-notes-task-editor-related-results",
+     "action": "click",
+     "target": "role=option[name^=\"Catalog Item\"]",
+     "label": "Pick the related item"
+    },
+    {
+     "screen": "729-notes-task-editor-related-chosen",
+     "action": "click",
+     "target": "role=button[name=\"Add Task\"]",
+     "label": "Click Add Task"
+    },
+    {
+     "screen": "730-notes-task-added-toast",
+     "action": "view",
+     "target": null,
+     "label": "The task joins the open tasks with its link and due date"
+    }
+   ]
+  },
+  {
+   "id": "themes-appearance",
+   "platform": "win",
+   "available": true,
+   "feature": null,
+   "path": "data",
+   "title": "Choose Light, Dark and a theme",
+   "url": "/windows/tutorials/themes-appearance/",
+   "screens": [
+    "013-shell-project-home",
+    "014-shell-project-menu",
+    "797-settings-appearance"
+   ],
+   "steps": [
+    {
+     "screen": "013-shell-project-home",
+     "action": "click",
+     "target": "button[aria-label=\"Project: Night Bus. Switch or manage projects\"]",
+     "label": "Open the project menu"
+    },
+    {
+     "screen": "014-shell-project-menu",
+     "action": "click",
+     "target": "role=menuitem[name=\"Appearance\"]",
+     "label": "Choose Appearance"
+    },
+    {
+     "screen": "797-settings-appearance",
+     "action": "view",
+     "target": null,
+     "label": "Under Mode choose Light, Dark or System, then pick a theme"
+    }
+   ]
+  },
+  {
+   "id": "write-screenplay",
+   "platform": "win",
+   "available": true,
+   "feature": "screenplay",
+   "path": "writing",
+   "title": "Write in the screenplay editor",
+   "url": "/windows/tutorials/write-screenplay/",
+   "screens": [
+    "013-shell-project-home",
+    "244-sp-editor-standard",
+    "257-sp-element-type-menu",
+    "244-sp-editor-standard",
+    "258-sp-suggestion-list"
+   ],
+   "steps": [
+    {
+     "screen": "013-shell-project-home",
+     "action": "click",
+     "target": "role=button[name=\"Continue screenplay\"]",
+     "label": "Click Continue screenplay"
+    },
+    {
+     "screen": "244-sp-editor-standard",
+     "action": "click",
+     "target": "button[aria-label=\"Element type: Scene Heading. Change element type\"]",
+     "label": "The bar at the bottom shows the element type of the line you are in. Click it"
+    },
+    {
+     "screen": "257-sp-element-type-menu",
+     "action": "key",
+     "target": null,
+     "label": "Pick a type or use Ctrl+1 to Ctrl+7. Press Esc to close"
+    },
+    {
+     "screen": "244-sp-editor-standard",
+     "action": "type",
+     "target": "[data-id=\"01a15b74-802c-7786-9f65-18081a818e07\"]",
+     "label": "On a character line, start typing a name"
+    },
+    {
+     "screen": "258-sp-suggestion-list",
+     "action": "view",
+     "target": null,
+     "label": "OpenFrame suggests characters already in the script. Enter accepts"
+    }
+   ]
+  },
+  {
+   "id": "ai-assistant-ask",
+   "platform": "mac",
+   "available": false,
+   "reason": "The assistant is part of the Mac app, but this Mac walkthrough is not ready yet. The steps match the Windows tutorial."
+  },
+  {
+   "id": "ai-assistant-setup",
+   "platform": "mac",
+   "available": false,
+   "reason": "The assistant is part of the Mac app, but this Mac walkthrough is not ready yet. The steps match the Windows tutorial."
+  },
+  {
+   "id": "backup-restore",
+   "platform": "mac",
+   "available": true,
+   "feature": "backups-recovery",
+   "path": "data",
+   "title": "Back up a project and restore it",
+   "url": "/mac/tutorials/backup-restore/",
+   "screens": [
+    "652-menu-file-with-project",
+    "658-package-back-up-project",
+    "659-package-backup-ready",
+    "661-package-backup-created",
+    "652-menu-file-with-project",
+    "684-package-restore",
+    "686-package-restore-collision",
+    "687-package-restore-opened-copy"
+   ],
+   "steps": [
+    {
+     "screen": "652-menu-file-with-project",
+     "action": "click",
+     "target": "[data-id=\"menu-item-13\"]",
+     "label": "With the project open, choose File > Back Up Project…"
+    },
+    {
+     "screen": "658-package-back-up-project",
+     "action": "type",
+     "target": "[data-id=\"backup-label\"]",
+     "label": "Type an optional label. Use Browse… to choose where to save, ideally another disk"
+    },
+    {
+     "screen": "659-package-backup-ready",
+     "action": "click",
+     "target": "[data-id=\"backup-create\"]",
+     "label": "Click Create Backup"
+    },
+    {
+     "screen": "661-package-backup-created",
+     "action": "view",
+     "target": null,
+     "label": "Backup created. Show in folder reveals the .ofbackup file"
+    },
+    {
+     "screen": "652-menu-file-with-project",
+     "action": "click",
+     "target": "[data-id=\"menu-item-21\"]",
+     "label": "Choose File > Restore Backup or Package…"
+    },
+    {
+     "screen": "684-package-restore",
+     "action": "click",
+     "target": "[data-id=\"open-project-choose\"]",
+     "label": "Click Choose Package… and pick the .ofbackup or .ofproject file"
+    },
+    {
+     "screen": "686-package-restore-collision",
+     "action": "click",
+     "target": "[data-id=\"open-project-confirm\"]",
+     "label": "The project already exists here, so keep Open as Copy and click Open as Copy"
+    },
+    {
+     "screen": "687-package-restore-opened-copy",
+     "action": "view",
+     "target": null,
+     "label": "The backup opens as Night Bus (copy). The original project is untouched"
+    }
+   ]
+  },
+  {
+   "id": "breakdown",
+   "platform": "mac",
+   "available": true,
+   "feature": "breakdown",
+   "path": "prep",
+   "title": "Tag a script element in the breakdown",
+   "url": "/mac/tutorials/breakdown/",
+   "screens": [
+    "309-breakdown-scenes",
+    "322-breakdown-script-selection",
+    "325-breakdown-tag-sheet",
+    "326-breakdown-tagged"
+   ],
+   "steps": [
+    {
+     "screen": "309-breakdown-scenes",
+     "action": "doubleclick",
+     "target": "[data-id=\"script-text\"]",
+     "label": "In Breakdown, scene 1 is open. Select the words to tag in the script (here REGISTER)"
+    },
+    {
+     "screen": "322-breakdown-script-selection",
+     "action": "click",
+     "target": "[data-id=\"tag-selection\"]",
+     "label": "Click Tag Selection"
+    },
+    {
+     "screen": "325-breakdown-tag-sheet",
+     "action": "click",
+     "target": "[data-id=\"add-to-scene\"]",
+     "label": "Check the Category (Props) and the Name, then click Add to Scene 1"
+    },
+    {
+     "screen": "326-breakdown-tagged",
+     "action": "view",
+     "target": null,
+     "label": "Register appears under Props in the Scene 1 breakdown and is added to the production catalog"
+    }
+   ]
+  },
+  {
+   "id": "budget",
+   "platform": "mac",
+   "available": true,
+   "feature": "reports-budget",
+   "path": "shoot",
+   "title": "Start a simple budget",
+   "url": "/mac/tutorials/budget/",
+   "screens": [
+    "441-budget-start",
+    "443-budget-empty-table",
+    "444-budget-add-line-sheet",
+    "448-budget-add-line-filled",
+    "449-budget-table"
+   ],
+   "steps": [
+    {
+     "screen": "441-budget-start",
+     "action": "click",
+     "target": "[data-id=\"budget-empty\"] >> text=Start Budget",
+     "label": "In Production, Budget, pick a currency and click Start Budget"
+    },
+    {
+     "screen": "443-budget-empty-table",
+     "action": "click",
+     "target": "[data-id=\"budget-add-line\"]",
+     "label": "Click Add Line"
+    },
+    {
+     "screen": "444-budget-add-line-sheet",
+     "action": "type",
+     "target": "[data-id=\"of-bl-desc\"]",
+     "label": "Choose a category, type the line item, the planned amount and, once spent, the actual amount"
+    },
+    {
+     "screen": "448-budget-add-line-filled",
+     "action": "click",
+     "target": "[data-id=\"budget-line-sheet-primary\"]",
+     "label": "Click Add Line"
+    },
+    {
+     "screen": "449-budget-table",
+     "action": "view",
+     "target": null,
+     "label": "Lines group by category with totals, and Planned, Actual and Difference sit at the top"
+    }
+   ]
+  },
+  {
+   "id": "call-sheet",
+   "platform": "mac",
+   "available": true,
+   "feature": "call-sheets",
+   "path": "shoot",
+   "title": "Make a call sheet for a shooting day",
+   "url": "/mac/tutorials/call-sheet/",
+   "screens": [
+    "416-callsheets-empty",
+    "417-callsheet-create-sheet",
+    "420-callsheet-editor",
+    "421-callsheet-section-menu",
+    "422-callsheet-section-weather",
+    "428-callsheet-export"
+   ],
+   "steps": [
+    {
+     "screen": "416-callsheets-empty",
+     "action": "click",
+     "target": "[data-id=\"callsheet-create\"]",
+     "label": "In Call Sheets, click Create Call Sheet"
+    },
+    {
+     "screen": "417-callsheet-create-sheet",
+     "action": "click",
+     "target": "[data-id=\"callsheet-create-confirm\"]",
+     "label": "Pick the shooting day and template, then click Create Call Sheet"
+    },
+    {
+     "screen": "420-callsheet-editor",
+     "action": "click",
+     "target": "[data-id=\"callsheet-add-section\"]",
+     "label": "The call sheet fills in from the schedule. Type call times and contacts in the fields, then click Add Section"
+    },
+    {
+     "screen": "421-callsheet-section-menu",
+     "action": "click",
+     "target": "[data-id=\"menu-item-0\"]",
+     "label": "Choose Weather"
+    },
+    {
+     "screen": "422-callsheet-section-weather",
+     "action": "click",
+     "target": "[data-id=\"callsheet-export\"]",
+     "label": "Click Export PDF"
+    },
+    {
+     "screen": "428-callsheet-export",
+     "action": "view",
+     "target": null,
+     "label": "The Export Call Sheet sheet creates the PDF snapshot to send. Click Export… and choose where to save"
+    }
+   ]
+  },
+  {
+   "id": "cast-crew",
+   "platform": "mac",
+   "available": true,
+   "feature": "cast-crew-locations",
+   "path": "prep",
+   "title": "Cast actors and add crew",
+   "url": "/mac/tutorials/cast-crew/",
+   "screens": [
+    "500-plan-cast-needs-casting",
+    "501-plan-cast-assign-sheet",
+    "502-plan-cast-assign-filled",
+    "503-plan-cast-linked-one",
+    "510-plan-crew-add-empty",
+    "511-plan-crew-add-filled",
+    "512-plan-crew-open"
+   ],
+   "steps": [
+    {
+     "screen": "500-plan-cast-needs-casting",
+     "action": "click",
+     "target": "a[aria-label=\"Assign KIRAN\"]",
+     "label": "In Production, Cast & Crew, Cast, click Assign next to KIRAN"
+    },
+    {
+     "screen": "501-plan-cast-assign-sheet",
+     "action": "type",
+     "target": "[data-id=\"as-person\"]",
+     "label": "Type the actor name"
+    },
+    {
+     "screen": "502-plan-cast-assign-filled",
+     "action": "click",
+     "target": "[data-id=\"assign-submit\"]",
+     "label": "Keep Primary actor and click Assign"
+    },
+    {
+     "screen": "503-plan-cast-linked-one",
+     "action": "view",
+     "target": null,
+     "label": "Meera Iyer now plays KIRAN. DEVI still needs casting"
+    },
+    {
+     "screen": "510-plan-crew-add-empty",
+     "action": "type",
+     "target": "[data-id=\"nc-name\"]",
+     "label": "In Production, Cast & Crew, switch to Crew and click Add Person. Type the name and the role"
+    },
+    {
+     "screen": "511-plan-crew-add-filled",
+     "action": "click",
+     "target": "[data-id=\"nc-submit\"]",
+     "label": "Pick a Department and add contact details if you like, then click Add to Crew"
+    },
+    {
+     "screen": "512-plan-crew-open",
+     "action": "view",
+     "target": null,
+     "label": "The crew member opens in the inspector with Role, Department, Contact and availability"
+    }
+   ]
+  },
+  {
+   "id": "characters",
+   "platform": "mac",
+   "available": true,
+   "feature": "story-board",
+   "path": "writing",
+   "title": "Add a character",
+   "url": "/mac/tutorials/characters/",
+   "screens": [
+    "177-story-board-empty",
+    "230-story-characters-empty",
+    "231-story-add-character-sheet",
+    "232-story-add-character-filled",
+    "233-story-character-one"
+   ],
+   "steps": [
+    {
+     "screen": "177-story-board-empty",
+     "action": "click",
+     "target": "input[aria-label=\"Characters\"]",
+     "label": "In Story, click Characters"
+    },
+    {
+     "screen": "230-story-characters-empty",
+     "action": "click",
+     "target": "button[aria-label=\"Add Character\"]",
+     "label": "Click Add Character"
+    },
+    {
+     "screen": "231-story-add-character-sheet",
+     "action": "type",
+     "target": "[data-id=\"story-new-character-name\"]",
+     "label": "Type a name, and if you like a role and a short description"
+    },
+    {
+     "screen": "232-story-add-character-filled",
+     "action": "click",
+     "target": "[data-id=\"story-create-character\"]",
+     "label": "Click Create Character"
+    },
+    {
+     "screen": "233-story-character-one",
+     "action": "view",
+     "target": null,
+     "label": "The character page lists every scene the character appears in"
+    }
+   ]
+  },
+  {
+   "id": "create-project",
+   "platform": "mac",
+   "available": true,
+   "feature": null,
+   "path": "getting-started",
+   "title": "Create your first project",
+   "url": "/mac/tutorials/create-project/",
+   "screens": [
+    "003-home-empty",
+    "011-new-project-sheet",
+    "012-new-project-filled",
+    "060-project-home-empty"
+   ],
+   "steps": [
+    {
+     "screen": "003-home-empty",
+     "action": "click",
+     "target": "[data-id=\"home-new-project\"]",
+     "label": "Click Create Project"
+    },
+    {
+     "screen": "011-new-project-sheet",
+     "action": "type",
+     "target": "[data-id=\"new-project-title\"]",
+     "label": "Type a title for the film"
+    },
+    {
+     "screen": "012-new-project-filled",
+     "action": "click",
+     "target": "[data-id=\"new-project-create\"]",
+     "label": "Click Create"
+    },
+    {
+     "screen": "060-project-home-empty",
+     "action": "view",
+     "target": null,
+     "label": "The new project opens on its Project Home"
+    }
+   ]
+  },
+  {
+   "id": "drafts-revisions",
+   "platform": "mac",
+   "available": true,
+   "feature": "drafts-revisions",
+   "path": "writing",
+   "title": "Start a new draft and compare it",
+   "url": "/mac/tutorials/drafts-revisions/",
+   "screens": [
+    "034-home-import-toast",
+    "080-screenplay-draft-menu",
+    "081-screenplay-draft-new-draft",
+    "135-screenplay-new-draft-named",
+    "136-screenplay-second-draft-created",
+    "137-screenplay-second-draft-edited",
+    "145-screenplay-compare-text-only"
+   ],
+   "steps": [
+    {
+     "screen": "034-home-import-toast",
+     "action": "click",
+     "target": "[data-id=\"draft-menu\"]",
+     "label": "Click the Draft menu at the bottom of the page"
+    },
+    {
+     "screen": "080-screenplay-draft-menu",
+     "action": "click",
+     "target": "[data-id=\"menu-item-2\"]",
+     "label": "Choose New Draft…"
+    },
+    {
+     "screen": "081-screenplay-draft-new-draft",
+     "action": "type",
+     "target": "[data-id=\"new-draft-name\"]",
+     "label": "Name the draft"
+    },
+    {
+     "screen": "135-screenplay-new-draft-named",
+     "action": "click",
+     "target": "role=button[name=\"Create Draft\"]",
+     "label": "Click Create Draft"
+    },
+    {
+     "screen": "136-screenplay-second-draft-created",
+     "action": "type",
+     "target": "[data-id=\"screenplay-editor\"]",
+     "label": "Rewrite a few lines in the new draft"
+    },
+    {
+     "screen": "137-screenplay-second-draft-edited",
+     "action": "click",
+     "target": "[data-id=\"compare-button\"]",
+     "label": "Click Compare"
+    },
+    {
+     "screen": "145-screenplay-compare-text-only",
+     "action": "view",
+     "target": null,
+     "label": "Both drafts side by side, with every change listed"
+    }
+   ]
+  },
+  {
+   "id": "export-script",
+   "platform": "mac",
+   "available": true,
+   "feature": "import-export",
+   "path": "writing",
+   "title": "Export your screenplay",
+   "url": "/mac/tutorials/export-script/",
+   "screens": [
+    "068-screenplay-editor-typing",
+    "069-screenplay-tools-menu",
+    "079-screenplay-tools-export-screenplay",
+    "166-screenplay-export-fdx"
+   ],
+   "steps": [
+    {
+     "screen": "068-screenplay-editor-typing",
+     "action": "click",
+     "target": "[data-id=\"screenplay-tools-menu\"]",
+     "label": "Click Screenplay Tools"
+    },
+    {
+     "screen": "069-screenplay-tools-menu",
+     "action": "click",
+     "target": "[data-id=\"menu-item-13\"]",
+     "label": "Choose Import and Export, then Export Screenplay…"
+    },
+    {
+     "screen": "079-screenplay-tools-export-screenplay",
+     "action": "click",
+     "target": "[data-id=\"export-format-fdx\"]",
+     "label": "Choose a format, here Final Draft (.fdx)"
+    },
+    {
+     "screen": "166-screenplay-export-fdx",
+     "action": "view",
+     "target": null,
+     "label": "Check the options, then click Export… and choose where to save"
+    }
+   ]
+  },
+  {
+   "id": "files",
+   "platform": "mac",
+   "available": true,
+   "feature": null,
+   "path": "data",
+   "title": "Add a file to the project",
+   "url": "/mac/tutorials/files/",
+   "screens": [
+    "558-files-empty",
+    "559-pages-files-add-menu",
+    "563-pages-files-one-file"
+   ],
+   "steps": [
+    {
+     "screen": "558-files-empty",
+     "action": "click",
+     "target": "[data-id=\"add-file\"]",
+     "label": "In Files, click Add File"
+    },
+    {
+     "screen": "559-pages-files-add-menu",
+     "action": "click",
+     "target": "[data-id=\"menu-item-0\"]",
+     "label": "Choose Copy into project… and pick the file in the Open panel"
+    },
+    {
+     "screen": "563-pages-files-one-file",
+     "action": "view",
+     "target": null,
+     "label": "The file is listed as stored in the project, with Open and a More actions menu"
+    }
+   ]
+  },
+  {
+   "id": "first-launch",
+   "platform": "mac",
+   "available": true,
+   "feature": null,
+   "path": "getting-started",
+   "title": "Start OpenFrame Studio for the first time",
+   "url": "/mac/tutorials/first-launch/",
+   "screens": [
+    "001-home-welcome",
+    "002-home-welcome-filled",
+    "003-home-empty"
+   ],
+   "steps": [
+    {
+     "screen": "001-home-welcome",
+     "action": "type",
+     "target": "a[aria-label=\"Your name: Welcome, a name typed\"]",
+     "label": "Type the name you want on your notes and tasks"
+    },
+    {
+     "screen": "002-home-welcome-filled",
+     "action": "click",
+     "target": "[data-id=\"welcome-continue\"]",
+     "label": "Click Continue"
+    },
+    {
+     "screen": "003-home-empty",
+     "action": "view",
+     "target": null,
+     "label": "Application Home opens, ready for your first project"
+    }
+   ]
+  },
+  {
+   "id": "idea-vault",
+   "platform": "mac",
+   "available": true,
+   "feature": "idea-vault",
+   "path": "writing",
+   "title": "Capture an idea in the Idea Vault",
+   "url": "/mac/tutorials/idea-vault/",
+   "screens": [
+    "252-vault-add-quote",
+    "253-vault-add-quick-capture",
+    "254-vault-quick-capture-typed",
+    "255-vault-saved-notice"
+   ],
+   "steps": [
+    {
+     "screen": "252-vault-add-quote",
+     "action": "click",
+     "target": "[data-id=\"vault-quick-capture\"]",
+     "label": "Click Quick Capture, or press Shift+Cmd+N"
+    },
+    {
+     "screen": "253-vault-add-quick-capture",
+     "action": "type",
+     "target": "[data-id=\"quick-capture-idea\"]",
+     "label": "Type the idea"
+    },
+    {
+     "screen": "254-vault-quick-capture-typed",
+     "action": "click",
+     "target": "role=button[name=\"Save\"]",
+     "label": "Click Save, or press Return"
+    },
+    {
+     "screen": "255-vault-saved-notice",
+     "action": "view",
+     "target": null,
+     "label": "The idea is saved as a card in the Project Idea Vault"
+    }
+   ]
+  },
+  {
+   "id": "import-script",
+   "platform": "mac",
+   "available": true,
+   "feature": "import-export",
+   "path": "writing",
+   "title": "Bring in an existing screenplay",
+   "url": "/mac/tutorials/import-script/",
+   "screens": [
+    "068-screenplay-editor-typing",
+    "069-screenplay-tools-menu",
+    "078-screenplay-tools-import-screenplay"
+   ],
+   "steps": [
+    {
+     "screen": "068-screenplay-editor-typing",
+     "action": "click",
+     "target": "[data-id=\"screenplay-tools-menu\"]",
+     "label": "Click Screenplay Tools"
+    },
+    {
+     "screen": "069-screenplay-tools-menu",
+     "action": "click",
+     "target": "[data-id=\"menu-item-13\"]",
+     "label": "Choose Import and Export, then Import Screenplay…"
+    },
+    {
+     "screen": "078-screenplay-tools-import-screenplay",
+     "action": "view",
+     "target": null,
+     "label": "Choose a file with Browse…, paste text, or open a sample, then click Preview"
+    }
+   ]
+  },
+  {
+   "id": "locations",
+   "platform": "mac",
+   "available": true,
+   "feature": "cast-crew-locations",
+   "path": "prep",
+   "title": "Add a location and set its status",
+   "url": "/mac/tutorials/locations/",
+   "screens": [
+    "487-plan-location-add-empty",
+    "488-plan-location-add-filled",
+    "489-plan-location-open",
+    "490-plan-location-confirmed"
+   ],
+   "steps": [
+    {
+     "screen": "487-plan-location-add-empty",
+     "action": "type",
+     "target": "[data-id=\"nl-name\"]",
+     "label": "In Production, Locations, click Add Location. Type the name, and the address and nearest hospital if you know them"
+    },
+    {
+     "screen": "488-plan-location-add-filled",
+     "action": "click",
+     "target": "[data-id=\"nl-submit\"]",
+     "label": "Click Add Location"
+    },
+    {
+     "screen": "489-plan-location-open",
+     "action": "click",
+     "target": "[data-id=\"loc-status\"] [aria-label=\"Confirmed\"]",
+     "label": "The location opens in the inspector. Set its status to Confirmed"
+    },
+    {
+     "screen": "490-plan-location-confirmed",
+     "action": "view",
+     "target": null,
+     "label": "The card now reads Confirmed. Photos, contact and safety details live in the same inspector"
+    }
+   ]
+  },
+  {
+   "id": "manage-projects",
+   "platform": "mac",
+   "available": true,
+   "feature": null,
+   "path": "getting-started",
+   "title": "Pin, archive and restore projects",
+   "url": "/mac/tutorials/manage-projects/",
+   "screens": [
+    "061-home-two-projects",
+    "064-home-pinned",
+    "065-home-one-archived",
+    "066-home-archived-page",
+    "067-home-archived-empty"
+   ],
+   "steps": [
+    {
+     "screen": "061-home-two-projects",
+     "action": "click",
+     "target": "[data-id=\"project-card-actions-Night Bus\"]",
+     "label": "Open Actions for Night Bus and choose Pin"
+    },
+    {
+     "screen": "064-home-pinned",
+     "action": "click",
+     "target": "[data-id=\"project-card-actions-Empty Short\"]",
+     "label": "Open Actions for Empty Short and choose Archive"
+    },
+    {
+     "screen": "065-home-one-archived",
+     "action": "click",
+     "target": "[data-id=\"home-open-archived\"]",
+     "label": "Click Open Archived"
+    },
+    {
+     "screen": "066-home-archived-page",
+     "action": "click",
+     "target": "button[aria-label=\"Restore Empty Short\"]",
+     "label": "Click Restore"
+    },
+    {
+     "screen": "067-home-archived-empty",
+     "action": "view",
+     "target": null,
+     "label": "The project is back in your projects"
+    }
+   ]
+  },
+  {
+   "id": "moodboard",
+   "platform": "mac",
+   "available": true,
+   "feature": "moodboards",
+   "path": "visual",
+   "title": "Build a moodboard for the film",
+   "url": "/mac/tutorials/moodboard/",
+   "screens": [
+    "517-plan-moodboard-new-sheet",
+    "519-plan-moodboard-new-suggestion",
+    "520-plan-moodboard-canvas-empty",
+    "523-plan-moodboard-note-sheet",
+    "525-plan-moodboard-note-private",
+    "526-plan-moodboard-canvas-items",
+    "527-plan-moodboard-inspector"
+   ],
+   "steps": [
+    {
+     "screen": "517-plan-moodboard-new-sheet",
+     "action": "click",
+     "target": "[data-id=\"moodboard-suggestion-Overall Look\"]",
+     "label": "In Production, Moodboards, click New Moodboard. In the sheet, click the suggestion Overall Look"
+    },
+    {
+     "screen": "519-plan-moodboard-new-suggestion",
+     "action": "click",
+     "target": "[data-id=\"moodboard-new-sheet-primary\"]",
+     "label": "Click Create Moodboard"
+    },
+    {
+     "screen": "520-plan-moodboard-canvas-empty",
+     "action": "click",
+     "target": "[data-id=\"moodboard-add-note\"]",
+     "label": "The empty board opens. Click Add Note"
+    },
+    {
+     "screen": "523-plan-moodboard-note-sheet",
+     "action": "type",
+     "target": "[data-id=\"new-note\"]",
+     "label": "Type the note"
+    },
+    {
+     "screen": "525-plan-moodboard-note-private",
+     "action": "click",
+     "target": "[data-id=\"moodboard-note-sheet-primary\"]",
+     "label": "Click Add Note"
+    },
+    {
+     "screen": "526-plan-moodboard-canvas-items",
+     "action": "click",
+     "target": "[data-id=\"moodboard-tile-01a15bae-5857-779e-81b6-74d49a50902f\"]",
+     "label": "Notes and links sit on the canvas. Select a tile to edit it"
+    },
+    {
+     "screen": "527-plan-moodboard-inspector",
+     "action": "view",
+     "target": null,
+     "label": "The item opens in the inspector, with its note, the internal note switch and a caption"
+    }
+   ]
+  },
+  {
+   "id": "pages-templates",
+   "platform": "mac",
+   "available": true,
+   "feature": null,
+   "path": "writing",
+   "title": "Preview a built-in template",
+   "url": "/mac/tutorials/pages-templates/",
+   "screens": [
+    "619-pages-settings-general",
+    "632-pages-templates",
+    "634-pages-templates-actions-menu",
+    "633-pages-templates-preview"
+   ],
+   "steps": [
+    {
+     "screen": "619-pages-settings-general",
+     "action": "click",
+     "target": "[data-id=\"project-settings-tab-templates\"]",
+     "label": "In Project Settings, click Templates"
+    },
+    {
+     "screen": "632-pages-templates",
+     "action": "click",
+     "target": "[data-id=\"template-actions-builtin-builtin:feature_screenplay\"]",
+     "label": "Open Actions for Feature Film Screenplay"
+    },
+    {
+     "screen": "634-pages-templates-actions-menu",
+     "action": "click",
+     "target": "[data-id=\"menu-item-0\"]",
+     "label": "Choose Preview"
+    },
+    {
+     "screen": "633-pages-templates-preview",
+     "action": "view",
+     "target": null,
+     "label": "Preview the template, then use it in this project"
+    }
+   ]
+  },
+  {
+   "id": "project-tour",
+   "platform": "mac",
+   "available": true,
+   "feature": null,
+   "path": "getting-started",
+   "title": "Find your way around a project",
+   "url": "/mac/tutorials/project-tour/",
+   "screens": [
+    "034-home-import-toast",
+    "035-project-home",
+    "051-search-palette-project",
+    "052-search-palette-results"
+   ],
+   "steps": [
+    {
+     "screen": "034-home-import-toast",
+     "action": "click",
+     "target": "[data-id=\"sidebar-home\"]",
+     "label": "Click Home in the sidebar"
+    },
+    {
+     "screen": "035-project-home",
+     "action": "click",
+     "target": "[data-id=\"project-search-button\"]",
+     "label": "Click Search, or press Cmd+K"
+    },
+    {
+     "screen": "051-search-palette-project",
+     "action": "type",
+     "target": "[data-id=\"palette-field\"]",
+     "label": "Type a name or a word from the script"
+    },
+    {
+     "screen": "052-search-palette-results",
+     "action": "view",
+     "target": null,
+     "label": "Matching scenes and commands appear; pick one to jump there"
+    }
+   ]
+  },
+  {
+   "id": "recently-deleted",
+   "platform": "mac",
+   "available": true,
+   "feature": "backups-recovery",
+   "path": "data",
+   "title": "Restore a deleted item",
+   "url": "/mac/tutorials/recently-deleted/",
+   "screens": [
+    "035-project-home",
+    "613-pages-deleted-items",
+    "617-pages-deleted-restored"
+   ],
+   "steps": [
+    {
+     "screen": "035-project-home",
+     "action": "click",
+     "target": "button[aria-label=\"Recently Deleted\"]",
+     "label": "On Project Home, click Recently Deleted"
+    },
+    {
+     "screen": "613-pages-deleted-items",
+     "action": "click",
+     "target": "[data-id=\"restore-Old catering list\"]",
+     "label": "Deleted items wait here for 30 days. Click Restore next to Old catering list"
+    },
+    {
+     "screen": "617-pages-deleted-restored",
+     "action": "view",
+     "target": null,
+     "label": "The note goes back to Notes & Tasks. The message offers Undo"
+    }
+   ]
+  },
+  {
+   "id": "reports",
+   "platform": "mac",
+   "available": true,
+   "feature": "reports-budget",
+   "path": "shoot",
+   "title": "Read production reports",
+   "url": "/mac/tutorials/reports/",
+   "screens": [
+    "408-schedule-reports-scene",
+    "409-schedule-reports-location",
+    "410-schedule-reports-cast-scene",
+    "411-schedule-reports-prop"
+   ],
+   "steps": [
+    {
+     "screen": "408-schedule-reports-scene",
+     "action": "click",
+     "target": "[data-id=\"reports-type-location\"]",
+     "label": "In Production, Reports, the Scene Report shows. Click Location Report"
+    },
+    {
+     "screen": "409-schedule-reports-location",
+     "action": "click",
+     "target": "[data-id=\"reports-type-cast-scene\"]",
+     "label": "Click Cast Scene Report"
+    },
+    {
+     "screen": "410-schedule-reports-cast-scene",
+     "action": "click",
+     "target": "[data-id=\"reports-type-prop\"]",
+     "label": "Click Prop Report"
+    },
+    {
+     "screen": "411-schedule-reports-prop",
+     "action": "view",
+     "target": null,
+     "label": "Each report is built live from the breakdown and the schedule. Use the filter, Save snapshot or Export"
+    }
+   ]
+  },
+  {
+   "id": "schedule",
+   "platform": "mac",
+   "available": true,
+   "feature": "scheduling",
+   "path": "prep",
+   "title": "Build a shooting schedule",
+   "url": "/mac/tutorials/schedule/",
+   "screens": [
+    "357-schedule-empty",
+    "358-schedule-create-sheet",
+    "359-schedule-board-unscheduled",
+    "360-schedule-add-day-sheet",
+    "362-schedule-board-three-days",
+    "365-schedule-strip-menu",
+    "366-schedule-board",
+    "389-schedule-warnings"
+   ],
+   "steps": [
+    {
+     "screen": "357-schedule-empty",
+     "action": "click",
+     "target": "[data-id=\"create-shooting-schedule\"]",
+     "label": "In Production, Schedule, click Create Shooting Schedule"
+    },
+    {
+     "screen": "358-schedule-create-sheet",
+     "action": "click",
+     "target": "[data-id=\"create-schedule-confirm\"]",
+     "label": "Check the screenplay source and click Create Schedule"
+    },
+    {
+     "screen": "359-schedule-board-unscheduled",
+     "action": "click",
+     "target": "[data-id=\"create-shooting-day\"]",
+     "label": "All 10 scenes start in Unscheduled. Click Create Shooting Day"
+    },
+    {
+     "screen": "360-schedule-add-day-sheet",
+     "action": "click",
+     "target": "[data-id=\"day-sheet-confirm\"]",
+     "label": "Enter a shooting date (YYYY-MM-DD, optional) and click Create Day. Repeat for each day"
+    },
+    {
+     "screen": "362-schedule-board-three-days",
+     "action": "click",
+     "target": "[data-id=\"strip-actions-1\"]",
+     "label": "Three days are on the board. Open the actions of the Scene 1 strip"
+    },
+    {
+     "screen": "365-schedule-strip-menu",
+     "action": "click",
+     "target": "[data-id=\"menu-item-2\"]",
+     "label": "Choose Move to and pick a shooting day, or drag the strip onto a day"
+    },
+    {
+     "screen": "366-schedule-board",
+     "action": "click",
+     "target": "[data-id=\"warnings-button\"]",
+     "label": "The scenes sit in their days. Click the warnings button"
+    },
+    {
+     "screen": "389-schedule-warnings",
+     "action": "view",
+     "target": null,
+     "label": "Schedule assistance lists practical warnings, such as an actor needed at two locations, with Open affected item, Move scene and Keep anyway"
+    }
+   ]
+  },
+  {
+   "id": "screenplay-notes",
+   "platform": "mac",
+   "available": true,
+   "feature": "screenplay",
+   "path": "writing",
+   "title": "Comment on the script and reply",
+   "url": "/mac/tutorials/screenplay-notes/",
+   "screens": [
+    "124-screenplay-comment-composer-quote",
+    "125-screenplay-comment-posted",
+    "126-screenplay-comment-reply-composer",
+    "127-screenplay-comment-with-reply"
+   ],
+   "steps": [
+    {
+     "screen": "124-screenplay-comment-composer-quote",
+     "action": "type",
+     "target": "[data-id=\"comment-field\"]",
+     "label": "Type your comment on the selected words, then click Comment"
+    },
+    {
+     "screen": "125-screenplay-comment-posted",
+     "action": "click",
+     "target": "a[aria-label=\"Reply\"]",
+     "label": "Click Reply under the comment"
+    },
+    {
+     "screen": "126-screenplay-comment-reply-composer",
+     "action": "type",
+     "target": "textarea[aria-label=\"Reply\"]",
+     "label": "Type a reply and click Reply"
+    },
+    {
+     "screen": "127-screenplay-comment-with-reply",
+     "action": "view",
+     "target": null,
+     "label": "The comment and its reply stay beside the script"
+    }
+   ]
+  },
+  {
+   "id": "settings",
+   "platform": "mac",
+   "available": true,
+   "feature": null,
+   "path": "data",
+   "title": "Tour the Settings window",
+   "url": "/mac/tutorials/settings/",
+   "screens": [
+    "003-home-empty",
+    "020-settings-general",
+    "022-settings-appearance",
+    "027-settings-keyboard-shortcuts",
+    "032-settings-offline-ai",
+    "033-settings-diagnostics"
+   ],
+   "steps": [
+    {
+     "screen": "003-home-empty",
+     "action": "click",
+     "target": "[data-id=\"home-settings\"]",
+     "label": "Click Settings (or choose OpenFrame Studio > Settings…, Cmd+,)"
+    },
+    {
+     "screen": "020-settings-general",
+     "action": "click",
+     "target": "a[aria-label=\"Appearance\"]",
+     "label": "General holds your display name and the data folder. Click Appearance"
+    },
+    {
+     "screen": "022-settings-appearance",
+     "action": "click",
+     "target": "a[aria-label=\"Keyboard Shortcuts\"]",
+     "label": "Appearance holds Mode and Theme. Click Keyboard Shortcuts"
+    },
+    {
+     "screen": "027-settings-keyboard-shortcuts",
+     "action": "click",
+     "target": "a[aria-label=\"Offline AI\"]",
+     "label": "Change, remove or add keys for 23 commands. Click Offline AI"
+    },
+    {
+     "screen": "032-settings-offline-ai",
+     "action": "click",
+     "target": "a[aria-label=\"Diagnostics\"]",
+     "label": "Offline AI manages the on-device model. Click Diagnostics"
+    },
+    {
+     "screen": "033-settings-diagnostics",
+     "action": "view",
+     "target": null,
+     "label": "Diagnostics helps when something needs support"
+    }
+   ]
+  },
+  {
+   "id": "shot-list",
+   "platform": "mac",
+   "available": true,
+   "feature": "shot-lists-storyboards",
+   "path": "visual",
+   "title": "Plan shots in a shot list",
+   "url": "/mac/tutorials/shot-list/",
+   "screens": [
+    "545-plan-shots-all-empty",
+    "546-plan-shots-scene-menu",
+    "547-plan-shots-scene-empty",
+    "549-plan-shots-list",
+    "553-plan-shot-row-menu",
+    "556-plan-shot-open"
+   ],
+   "steps": [
+    {
+     "screen": "545-plan-shots-all-empty",
+     "action": "click",
+     "target": "[data-id=\"shots-scene-picker\"]",
+     "label": "In Production, Shot Lists, open the Scene pop-up"
+    },
+    {
+     "screen": "546-plan-shots-scene-menu",
+     "action": "click",
+     "target": "[data-id=\"menu-item-3\"]",
+     "label": "Choose Scene 1"
+    },
+    {
+     "screen": "547-plan-shots-scene-empty",
+     "action": "type",
+     "target": "[data-id=\"shots-composer\"]",
+     "label": "Type a short shot description, then click Add Shot. Repeat for each shot"
+    },
+    {
+     "screen": "549-plan-shots-list",
+     "action": "rightclick",
+     "target": "[data-id=\"shot-01a15bae-3342-71ba-8202-b920a6d6617d\"]",
+     "label": "Shots get letters 1A, 1B, 1C. Control-click (right-click) a shot"
+    },
+    {
+     "screen": "553-plan-shot-row-menu",
+     "action": "click",
+     "target": "[data-id=\"menu-item-0\"]",
+     "label": "Choose Open"
+    },
+    {
+     "screen": "556-plan-shot-open",
+     "action": "view",
+     "target": null,
+     "label": "The shot opens in the inspector with its description, optional technical details, a reference image and storyboard links"
+    }
+   ]
+  },
+  {
+   "id": "sides",
+   "platform": "mac",
+   "available": true,
+   "feature": "sides-daily-view",
+   "path": "shoot",
+   "title": "Save and export sides for a day",
+   "url": "/mac/tutorials/sides/",
+   "screens": [
+    "401-schedule-sides",
+    "404-schedule-sides-cover",
+    "406-schedule-sides-saved",
+    "407-schedule-sides-snapshot"
+   ],
+   "steps": [
+    {
+     "screen": "401-schedule-sides",
+     "action": "click",
+     "target": "[data-id=\"sides-cover\"]",
+     "label": "In Production, Sides, Shoot Day 1 is chosen with its scenes. Tick Include call-sheet cover page"
+    },
+    {
+     "screen": "404-schedule-sides-cover",
+     "action": "click",
+     "target": "[data-id=\"sides-save\"]",
+     "label": "The preview adds the cover page. Click Save Sides"
+    },
+    {
+     "screen": "406-schedule-sides-saved",
+     "action": "click",
+     "target": "[data-id=\"sides-saved-01a15ba9-b96f-70f8-b295-d391343ab26a\"]",
+     "label": "The sides are saved as a snapshot. Click the saved entry to open it"
+    },
+    {
+     "screen": "407-schedule-sides-snapshot",
+     "action": "view",
+     "target": null,
+     "label": "The saved sides open. Export PDF makes the file for the team"
+    }
+   ]
+  },
+  {
+   "id": "story-board",
+   "platform": "mac",
+   "available": true,
+   "feature": "story-board",
+   "path": "writing",
+   "title": "Build a Beat Board",
+   "url": "/mac/tutorials/story-board/",
+   "screens": [
+    "177-story-board-empty",
+    "178-story-add-menu",
+    "184-story-add-act-inline",
+    "185-story-board-one-act",
+    "186-story-add-sequence-inline",
+    "187-story-sequence-empty",
+    "188-story-add-card-inline"
+   ],
+   "steps": [
+    {
+     "screen": "177-story-board-empty",
+     "action": "click",
+     "target": "[data-id=\"story-add-menu\"]",
+     "label": "Click Add"
+    },
+    {
+     "screen": "178-story-add-menu",
+     "action": "click",
+     "target": "[data-id=\"menu-item-0\"]",
+     "label": "Choose Act"
+    },
+    {
+     "screen": "184-story-add-act-inline",
+     "action": "type",
+     "target": "[data-id=\"inline-Act title\"]",
+     "label": "Name the act and press Return"
+    },
+    {
+     "screen": "185-story-board-one-act",
+     "action": "click",
+     "target": "a[aria-label=\"Add Sequence\"]",
+     "label": "Click Add Sequence in the act"
+    },
+    {
+     "screen": "186-story-add-sequence-inline",
+     "action": "type",
+     "target": "[data-id=\"inline-Sequence name\"]",
+     "label": "Name the sequence and press Return"
+    },
+    {
+     "screen": "187-story-sequence-empty",
+     "action": "click",
+     "target": "a[aria-label=\"Add scene\"]",
+     "label": "Click Add scene in the sequence"
+    },
+    {
+     "screen": "188-story-add-card-inline",
+     "action": "view",
+     "target": null,
+     "label": "A new scene card waits for a short description"
+    }
+   ]
+  },
+  {
+   "id": "storyboard",
+   "platform": "mac",
+   "available": true,
+   "feature": "shot-lists-storyboards",
+   "path": "visual",
+   "title": "Add storyboard panels to a scene",
+   "url": "/mac/tutorials/storyboard/",
+   "screens": [
+    "534-plan-storyboard-scene-empty",
+    "536-plan-storyboard-add-menu",
+    "538-plan-storyboard-panels",
+    "539-plan-storyboard-panel-menu"
+   ],
+   "steps": [
+    {
+     "screen": "534-plan-storyboard-scene-empty",
+     "action": "click",
+     "target": "[data-id=\"storyboard-add-panel\"]",
+     "label": "In Production, Storyboards, with a scene chosen, click Add Panel"
+    },
+    {
+     "screen": "536-plan-storyboard-add-menu",
+     "action": "click",
+     "target": "[data-id=\"menu-item-2\"]",
+     "label": "Choose Empty Panel. Repeat to add more panels"
+    },
+    {
+     "screen": "538-plan-storyboard-panels",
+     "action": "rightclick",
+     "target": "[data-id=\"panel-01a15bac-3c03-722b-8d36-ba12f0b56f23\"]",
+     "label": "Control-click (right-click) a panel"
+    },
+    {
+     "screen": "539-plan-storyboard-panel-menu",
+     "action": "view",
+     "target": null,
+     "label": "The panel menu offers Open, Move Earlier, Move Later, Move to Storyboard…, Link Shot… and Delete"
+    }
+   ]
+  },
+  {
+   "id": "tasks",
+   "platform": "mac",
+   "available": true,
+   "feature": null,
+   "path": "shoot",
+   "title": "Add a task with a due date",
+   "url": "/mac/tutorials/tasks/",
+   "screens": [
+    "588-pages-notes-two",
+    "589-tasks-new-task",
+    "590-pages-tasks-titled",
+    "591-pages-tasks-due",
+    "594-notes-and-tasks"
+   ],
+   "steps": [
+    {
+     "screen": "588-pages-notes-two",
+     "action": "click",
+     "target": "[data-id=\"new-task\"]",
+     "label": "In Notes & Tasks, click New Task"
+    },
+    {
+     "screen": "589-tasks-new-task",
+     "action": "type",
+     "target": "[data-id=\"task-title\"]",
+     "label": "Type the task"
+    },
+    {
+     "screen": "590-pages-tasks-titled",
+     "action": "click",
+     "target": "[data-id=\"task-has-due\"]",
+     "label": "Tick Set a due date and pick the date"
+    },
+    {
+     "screen": "591-pages-tasks-due",
+     "action": "click",
+     "target": "[data-id=\"task-save\"]",
+     "label": "Choose an owner from Owner if needed, then click Add Task"
+    },
+    {
+     "screen": "594-notes-and-tasks",
+     "action": "view",
+     "target": null,
+     "label": "The task is in the Tasks list with its due date. Tick its box to mark it done"
+    }
+   ]
+  },
+  {
+   "id": "themes-appearance",
+   "platform": "mac",
+   "available": true,
+   "feature": null,
+   "path": "data",
+   "title": "Change the theme",
+   "url": "/mac/tutorials/themes-appearance/",
+   "screens": [
+    "003-home-empty",
+    "020-settings-general",
+    "022-settings-appearance",
+    "024-settings-appearance-theme-chosen"
+   ],
+   "steps": [
+    {
+     "screen": "003-home-empty",
+     "action": "click",
+     "target": "[data-id=\"home-settings\"]",
+     "label": "Click Settings (or choose OpenFrame Studio > Settings…, Cmd+,)"
+    },
+    {
+     "screen": "020-settings-general",
+     "action": "click",
+     "target": "a[aria-label=\"Appearance\"]",
+     "label": "In the Settings window, click Appearance"
+    },
+    {
+     "screen": "022-settings-appearance",
+     "action": "click",
+     "target": "[data-id=\"theme-card-black-and-white\"]",
+     "label": "Mode offers System, Light and Dark. Click a theme, here Black and White"
+    },
+    {
+     "screen": "024-settings-appearance-theme-chosen",
+     "action": "view",
+     "target": null,
+     "label": "The theme applies at once across the app"
+    }
+   ]
+  },
+  {
+   "id": "write-screenplay",
+   "platform": "mac",
+   "available": true,
+   "feature": "screenplay",
+   "path": "writing",
+   "title": "Write your first scene",
+   "url": "/mac/tutorials/write-screenplay/",
+   "screens": [
+    "105-screenplay-empty-editor",
+    "106-screenplay-empty-element-picker",
+    "105-screenplay-empty-editor",
+    "114-screenplay-empty-suggestions",
+    "115-screenplay-empty-first-scene"
+   ],
+   "steps": [
+    {
+     "screen": "105-screenplay-empty-editor",
+     "action": "click",
+     "target": "[data-id=\"element-picker\"]",
+     "label": "Click Element to see the element types"
+    },
+    {
+     "screen": "106-screenplay-empty-element-picker",
+     "action": "key",
+     "target": null,
+     "label": "Press Esc to close the menu"
+    },
+    {
+     "screen": "105-screenplay-empty-editor",
+     "action": "type",
+     "target": "[data-id=\"screenplay-editor\"]",
+     "label": "Start a scene heading"
+    },
+    {
+     "screen": "114-screenplay-empty-suggestions",
+     "action": "type",
+     "target": "[data-id=\"screenplay-editor\"]",
+     "label": "Finish the heading, press Return and write the action"
+    },
+    {
+     "screen": "115-screenplay-empty-first-scene",
+     "action": "view",
+     "target": null,
+     "label": "Your first scene is on the page and in the scene list"
+    }
+   ]
+  }
+ ],
+ "screens": {
+  "win/013-shell-project-home": [
+   "win:ai-assistant-ask",
+   "win:ai-assistant-setup",
+   "win:files",
+   "win:import-script",
+   "win:pages-templates",
+   "win:project-tour",
+   "win:settings",
+   "win:themes-appearance",
+   "win:write-screenplay"
+  ],
+  "win/374-ai-panel-ready": [
+   "win:ai-assistant-ask",
+   "win:ai-assistant-setup"
+  ],
+  "win/381-ai-question-typed": [
+   "win:ai-assistant-ask"
+  ],
+  "win/383-ai-answer-characters": [
+   "win:ai-assistant-ask"
+  ],
+  "win/384-ai-answer-characters-sources": [
+   "win:ai-assistant-ask"
+  ],
+  "win/244-sp-editor-standard": [
+   "win:ai-assistant-ask",
+   "win:drafts-revisions",
+   "win:export-script",
+   "win:screenplay-notes",
+   "win:write-screenplay"
+  ],
+  "win/385-ai-panel-screenplay": [
+   "win:ai-assistant-ask"
+  ],
+  "win/391-ai-proposed-changes-second": [
+   "win:ai-assistant-ask"
+  ],
+  "win/392-ai-proposal-applied": [
+   "win:ai-assistant-ask"
+  ],
+  "win/375-ai-settings-menu": [
+   "win:ai-assistant-setup"
+  ],
+  "win/378-ai-offline-settings": [
+   "win:ai-assistant-setup"
+  ],
+  "win/379-ai-offline-technical-details": [
+   "win:ai-assistant-setup"
+  ],
+  "win/074-apphome-archived-empty": [
+   "win:backup-restore"
+  ],
+  "win/051-apphome-projects": [
+   "win:backup-restore"
+  ],
+  "win/075-apphome-restore-package-dialog": [
+   "win:backup-restore"
+  ],
+  "win/355-bd-scene-quick-reuse": [
+   "win:breakdown"
+  ],
+  "win/356-bd-scene-nothing-yet": [
+   "win:breakdown"
+  ],
+  "win/357-bd-tag-menu": [
+   "win:breakdown"
+  ],
+  "win/358-bd-tag-element-dialog": [
+   "win:breakdown"
+  ],
+  "win/359-bd-add-element-existing-match": [
+   "win:breakdown"
+  ],
+  "win/360-bd-element-tagged": [
+   "win:breakdown"
+  ],
+  "win/623-prod-budget-filled": [
+   "win:budget"
+  ],
+  "win/624-prod-budget-add-line-dialog": [
+   "win:budget"
+  ],
+  "win/627-prod-budget-add-line-filled": [
+   "win:budget"
+  ],
+  "win/628-prod-budget-line-added": [
+   "win:budget"
+  ],
+  "win/636-cs-list": [
+   "win:call-sheet"
+  ],
+  "win/643-cs-create-dialog": [
+   "win:call-sheet"
+  ],
+  "win/644-cs-create-dialog-day-chosen": [
+   "win:call-sheet"
+  ],
+  "win/645-cs-editor-draft": [
+   "win:call-sheet"
+  ],
+  "win/647-cs-add-section-menu": [
+   "win:call-sheet"
+  ],
+  "win/469-prod-cast": [
+   "win:cast-crew"
+  ],
+  "win/470-prod-cast-assign-dialog": [
+   "win:cast-crew"
+  ],
+  "win/471-prod-cast-assign-alternate-banner": [
+   "win:cast-crew"
+  ],
+  "win/169-story-page-filled": [
+   "win:characters",
+   "win:story-board"
+  ],
+  "win/216-story-characters-list": [
+   "win:characters"
+  ],
+  "win/219-story-new-character-dialog": [
+   "win:characters"
+  ],
+  "win/220-story-new-character-duplicate-warning": [
+   "win:characters"
+  ],
+  "win/221-story-edit-character-dialog": [
+   "win:characters"
+  ],
+  "win/003-app-home-empty": [
+   "win:create-project",
+   "win:first-launch"
+  ],
+  "win/004-app-new-project-dialog": [
+   "win:create-project"
+  ],
+  "win/006-app-new-project-filled": [
+   "win:create-project"
+  ],
+  "win/007-app-new-project-optional-details": [
+   "win:create-project"
+  ],
+  "win/008-home-new-project": [
+   "win:create-project"
+  ],
+  "win/308-sp-compare-text-only": [
+   "win:drafts-revisions"
+  ],
+  "win/312-sp-lock-dialog": [
+   "win:drafts-revisions"
+  ],
+  "win/313-sp-locked-draft": [
+   "win:drafts-revisions"
+  ],
+  "win/314-sp-locked-edit-dialog": [
+   "win:drafts-revisions"
+  ],
+  "win/315-sp-start-revision-dialog": [
+   "win:drafts-revisions"
+  ],
+  "win/316-sp-start-revision-filled": [
+   "win:drafts-revisions"
+  ],
+  "win/319-sp-revision-draft-editor": [
+   "win:drafts-revisions"
+  ],
+  "win/324-sp-export-dialog": [
+   "win:export-script"
+  ],
+  "win/325-sp-export-more-formats": [
+   "win:export-script"
+  ],
+  "win/326-sp-export-selected-none": [
+   "win:export-script"
+  ],
+  "win/327-sp-export-selected-scenes": [
+   "win:export-script"
+  ],
+  "win/328-sp-print-preview": [
+   "win:export-script"
+  ],
+  "win/690-files-list": [
+   "win:files"
+  ],
+  "win/707-files-new-folder-dialog": [
+   "win:files"
+  ],
+  "win/708-files-new-folder-filled": [
+   "win:files"
+  ],
+  "win/709-files-folder-created": [
+   "win:files"
+  ],
+  "win/001-app-first-launch-welcome": [
+   "win:first-launch"
+  ],
+  "win/002-app-first-launch-name-required": [
+   "win:first-launch"
+  ],
+  "win/091-vault-grid-all-items": [
+   "win:idea-vault"
+  ],
+  "win/102-vault-add-menu": [
+   "win:idea-vault"
+  ],
+  "win/129-vault-quick-capture-dialog": [
+   "win:idea-vault"
+  ],
+  "win/130-vault-quick-capture-filled": [
+   "win:idea-vault"
+  ],
+  "win/131-vault-quick-capture-saved-toast": [
+   "win:idea-vault"
+  ],
+  "win/138-vault-new-collection-dialog": [
+   "win:idea-vault"
+  ],
+  "win/140-vault-collection-empty": [
+   "win:idea-vault"
+  ],
+  "win/015-shell-create-menu": [
+   "win:import-script",
+   "win:project-tour"
+  ],
+  "win/009-sp-import-source": [
+   "win:import-script"
+  ],
+  "win/010-sp-import-sample-chosen": [
+   "win:import-script"
+  ],
+  "win/011-sp-import-preview": [
+   "win:import-script"
+  ],
+  "win/012-sp-import-complete": [
+   "win:import-script"
+  ],
+  "win/458-prod-locations": [
+   "win:locations"
+  ],
+  "win/461-prod-location-row-menu": [
+   "win:locations"
+  ],
+  "win/462-prod-location-drawer": [
+   "win:locations"
+  ],
+  "win/463-prod-location-drawer-notes": [
+   "win:locations"
+  ],
+  "win/060-apphome-pinned-section": [
+   "win:manage-projects"
+  ],
+  "win/061-apphome-card-menu-pinned": [
+   "win:manage-projects"
+  ],
+  "win/065-apphome-toast-archived": [
+   "win:manage-projects"
+  ],
+  "win/067-apphome-archived-view": [
+   "win:manage-projects"
+  ],
+  "win/073-apphome-toast-restored": [
+   "win:manage-projects"
+  ],
+  "win/434-prod-overview": [
+   "win:moodboard",
+   "win:schedule"
+  ],
+  "win/480-prod-moodboard": [
+   "win:moodboard"
+  ],
+  "win/499-prod-moodboard-new-dialog": [
+   "win:moodboard"
+  ],
+  "win/501-prod-moodboard-new-filled": [
+   "win:moodboard"
+  ],
+  "win/502-prod-moodboard-empty-canvas": [
+   "win:moodboard",
+   "win:storyboard"
+  ],
+  "win/014-shell-project-menu": [
+   "win:pages-templates",
+   "win:project-tour",
+   "win:tasks",
+   "win:themes-appearance"
+  ],
+  "win/717-notes-filled": [
+   "win:pages-templates",
+   "win:tasks"
+  ],
+  "win/722-notes-new-note-editor": [
+   "win:pages-templates",
+   "win:recently-deleted"
+  ],
+  "win/723-notes-new-note-filled": [
+   "win:pages-templates",
+   "win:recently-deleted"
+  ],
+  "win/749-templates-page": [
+   "win:pages-templates"
+  ],
+  "win/752-templates-create-dialog": [
+   "win:pages-templates"
+  ],
+  "win/754-templates-create-filled": [
+   "win:pages-templates"
+  ],
+  "win/755-templates-created-toast": [
+   "win:pages-templates"
+  ],
+  "win/018-shell-search-empty": [
+   "win:project-tour"
+  ],
+  "win/019-shell-search-results": [
+   "win:project-tour"
+  ],
+  "win/724-notes-note-deleted-toast": [
+   "win:recently-deleted"
+  ],
+  "win/612-prod-reports-scene": [
+   "win:reports"
+  ],
+  "win/620-prod-reports-saved-snapshot": [
+   "win:reports"
+  ],
+  "win/621-prod-reports-live-with-snapshots": [
+   "win:reports"
+  ],
+  "win/622-prod-reports-export-dialog": [
+   "win:reports"
+  ],
+  "win/533-prod-schedule-board": [
+   "win:schedule"
+  ],
+  "win/540-prod-schedule-create-day-dialog": [
+   "win:schedule"
+  ],
+  "win/541-prod-schedule-create-day-filled": [
+   "win:schedule"
+  ],
+  "win/542-prod-schedule-day-created": [
+   "win:schedule"
+  ],
+  "win/543-prod-schedule-day-detail-empty": [
+   "win:schedule"
+  ],
+  "win/260-sp-comment-float-button": [
+   "win:screenplay-notes"
+  ],
+  "win/261-sp-comment-composer-text": [
+   "win:screenplay-notes"
+  ],
+  "win/268-sp-view-menu": [
+   "win:screenplay-notes"
+  ],
+  "win/277-sp-writing-room-beat-board": [
+   "win:screenplay-notes"
+  ],
+  "win/279-sp-writing-room-no-panel": [
+   "win:screenplay-notes"
+  ],
+  "win/280-sp-panel-scene-notes": [
+   "win:screenplay-notes"
+  ],
+  "win/282-sp-panel-private-note-composer": [
+   "win:screenplay-notes"
+  ],
+  "win/762-settings-general": [
+   "win:settings"
+  ],
+  "win/768-settings-writing": [
+   "win:settings"
+  ],
+  "win/775-settings-shortcuts": [
+   "win:settings"
+  ],
+  "win/789-settings-offline-ai-ready": [
+   "win:settings"
+  ],
+  "win/794-settings-advanced": [
+   "win:settings"
+  ],
+  "win/797-settings-appearance": [
+   "win:settings",
+   "win:themes-appearance"
+  ],
+  "win/520-prod-storyboard-scene-no-board": [
+   "win:shot-list"
+  ],
+  "win/521-prod-shots-list": [
+   "win:shot-list"
+  ],
+  "win/526-prod-shot-menu": [
+   "win:shot-list"
+  ],
+  "win/527-prod-shot-drawer": [
+   "win:shot-list"
+  ],
+  "win/597-prod-daily-day-1": [
+   "win:sides"
+  ],
+  "win/602-prod-sides-setup": [
+   "win:sides"
+  ],
+  "win/603-prod-sides-day-4": [
+   "win:sides"
+  ],
+  "win/604-prod-sides-selected-cast-none": [
+   "win:sides"
+  ],
+  "win/605-prod-sides-selected-cast": [
+   "win:sides"
+  ],
+  "win/171-story-board-filled": [
+   "win:story-board"
+  ],
+  "win/172-story-board-add-menu": [
+   "win:story-board"
+  ],
+  "win/183-story-board-card-context-menu": [
+   "win:story-board"
+  ],
+  "win/190-story-card-drawer": [
+   "win:story-board"
+  ],
+  "win/503-prod-storyboard-panels": [
+   "win:storyboard"
+  ],
+  "win/511-prod-storyboard-add-panel-menu": [
+   "win:storyboard"
+  ],
+  "win/512-prod-storyboard-sketch-dialog": [
+   "win:storyboard"
+  ],
+  "win/513-prod-storyboard-sketch-drawn": [
+   "win:storyboard"
+  ],
+  "win/725-notes-task-editor-new": [
+   "win:tasks"
+  ],
+  "win/727-notes-task-editor-filled": [
+   "win:tasks"
+  ],
+  "win/728-notes-task-editor-related-results": [
+   "win:tasks"
+  ],
+  "win/729-notes-task-editor-related-chosen": [
+   "win:tasks"
+  ],
+  "win/730-notes-task-added-toast": [
+   "win:tasks"
+  ],
+  "win/257-sp-element-type-menu": [
+   "win:write-screenplay"
+  ],
+  "win/258-sp-suggestion-list": [
+   "win:write-screenplay"
+  ],
+  "mac/652-menu-file-with-project": [
+   "mac:backup-restore"
+  ],
+  "mac/658-package-back-up-project": [
+   "mac:backup-restore"
+  ],
+  "mac/659-package-backup-ready": [
+   "mac:backup-restore"
+  ],
+  "mac/661-package-backup-created": [
+   "mac:backup-restore"
+  ],
+  "mac/684-package-restore": [
+   "mac:backup-restore"
+  ],
+  "mac/686-package-restore-collision": [
+   "mac:backup-restore"
+  ],
+  "mac/687-package-restore-opened-copy": [
+   "mac:backup-restore"
+  ],
+  "mac/309-breakdown-scenes": [
+   "mac:breakdown"
+  ],
+  "mac/322-breakdown-script-selection": [
+   "mac:breakdown"
+  ],
+  "mac/325-breakdown-tag-sheet": [
+   "mac:breakdown"
+  ],
+  "mac/326-breakdown-tagged": [
+   "mac:breakdown"
+  ],
+  "mac/441-budget-start": [
+   "mac:budget"
+  ],
+  "mac/443-budget-empty-table": [
+   "mac:budget"
+  ],
+  "mac/444-budget-add-line-sheet": [
+   "mac:budget"
+  ],
+  "mac/448-budget-add-line-filled": [
+   "mac:budget"
+  ],
+  "mac/449-budget-table": [
+   "mac:budget"
+  ],
+  "mac/416-callsheets-empty": [
+   "mac:call-sheet"
+  ],
+  "mac/417-callsheet-create-sheet": [
+   "mac:call-sheet"
+  ],
+  "mac/420-callsheet-editor": [
+   "mac:call-sheet"
+  ],
+  "mac/421-callsheet-section-menu": [
+   "mac:call-sheet"
+  ],
+  "mac/422-callsheet-section-weather": [
+   "mac:call-sheet"
+  ],
+  "mac/428-callsheet-export": [
+   "mac:call-sheet"
+  ],
+  "mac/500-plan-cast-needs-casting": [
+   "mac:cast-crew"
+  ],
+  "mac/501-plan-cast-assign-sheet": [
+   "mac:cast-crew"
+  ],
+  "mac/502-plan-cast-assign-filled": [
+   "mac:cast-crew"
+  ],
+  "mac/503-plan-cast-linked-one": [
+   "mac:cast-crew"
+  ],
+  "mac/510-plan-crew-add-empty": [
+   "mac:cast-crew"
+  ],
+  "mac/511-plan-crew-add-filled": [
+   "mac:cast-crew"
+  ],
+  "mac/512-plan-crew-open": [
+   "mac:cast-crew"
+  ],
+  "mac/177-story-board-empty": [
+   "mac:characters",
+   "mac:story-board"
+  ],
+  "mac/230-story-characters-empty": [
+   "mac:characters"
+  ],
+  "mac/231-story-add-character-sheet": [
+   "mac:characters"
+  ],
+  "mac/232-story-add-character-filled": [
+   "mac:characters"
+  ],
+  "mac/233-story-character-one": [
+   "mac:characters"
+  ],
+  "mac/003-home-empty": [
+   "mac:create-project",
+   "mac:first-launch",
+   "mac:settings",
+   "mac:themes-appearance"
+  ],
+  "mac/011-new-project-sheet": [
+   "mac:create-project"
+  ],
+  "mac/012-new-project-filled": [
+   "mac:create-project"
+  ],
+  "mac/060-project-home-empty": [
+   "mac:create-project"
+  ],
+  "mac/034-home-import-toast": [
+   "mac:drafts-revisions",
+   "mac:project-tour"
+  ],
+  "mac/080-screenplay-draft-menu": [
+   "mac:drafts-revisions"
+  ],
+  "mac/081-screenplay-draft-new-draft": [
+   "mac:drafts-revisions"
+  ],
+  "mac/135-screenplay-new-draft-named": [
+   "mac:drafts-revisions"
+  ],
+  "mac/136-screenplay-second-draft-created": [
+   "mac:drafts-revisions"
+  ],
+  "mac/137-screenplay-second-draft-edited": [
+   "mac:drafts-revisions"
+  ],
+  "mac/145-screenplay-compare-text-only": [
+   "mac:drafts-revisions"
+  ],
+  "mac/068-screenplay-editor-typing": [
+   "mac:export-script",
+   "mac:import-script"
+  ],
+  "mac/069-screenplay-tools-menu": [
+   "mac:export-script",
+   "mac:import-script"
+  ],
+  "mac/079-screenplay-tools-export-screenplay": [
+   "mac:export-script"
+  ],
+  "mac/166-screenplay-export-fdx": [
+   "mac:export-script"
+  ],
+  "mac/558-files-empty": [
+   "mac:files"
+  ],
+  "mac/559-pages-files-add-menu": [
+   "mac:files"
+  ],
+  "mac/563-pages-files-one-file": [
+   "mac:files"
+  ],
+  "mac/001-home-welcome": [
+   "mac:first-launch"
+  ],
+  "mac/002-home-welcome-filled": [
+   "mac:first-launch"
+  ],
+  "mac/252-vault-add-quote": [
+   "mac:idea-vault"
+  ],
+  "mac/253-vault-add-quick-capture": [
+   "mac:idea-vault"
+  ],
+  "mac/254-vault-quick-capture-typed": [
+   "mac:idea-vault"
+  ],
+  "mac/255-vault-saved-notice": [
+   "mac:idea-vault"
+  ],
+  "mac/078-screenplay-tools-import-screenplay": [
+   "mac:import-script"
+  ],
+  "mac/487-plan-location-add-empty": [
+   "mac:locations"
+  ],
+  "mac/488-plan-location-add-filled": [
+   "mac:locations"
+  ],
+  "mac/489-plan-location-open": [
+   "mac:locations"
+  ],
+  "mac/490-plan-location-confirmed": [
+   "mac:locations"
+  ],
+  "mac/061-home-two-projects": [
+   "mac:manage-projects"
+  ],
+  "mac/064-home-pinned": [
+   "mac:manage-projects"
+  ],
+  "mac/065-home-one-archived": [
+   "mac:manage-projects"
+  ],
+  "mac/066-home-archived-page": [
+   "mac:manage-projects"
+  ],
+  "mac/067-home-archived-empty": [
+   "mac:manage-projects"
+  ],
+  "mac/517-plan-moodboard-new-sheet": [
+   "mac:moodboard"
+  ],
+  "mac/519-plan-moodboard-new-suggestion": [
+   "mac:moodboard"
+  ],
+  "mac/520-plan-moodboard-canvas-empty": [
+   "mac:moodboard"
+  ],
+  "mac/523-plan-moodboard-note-sheet": [
+   "mac:moodboard"
+  ],
+  "mac/525-plan-moodboard-note-private": [
+   "mac:moodboard"
+  ],
+  "mac/526-plan-moodboard-canvas-items": [
+   "mac:moodboard"
+  ],
+  "mac/527-plan-moodboard-inspector": [
+   "mac:moodboard"
+  ],
+  "mac/619-pages-settings-general": [
+   "mac:pages-templates"
+  ],
+  "mac/632-pages-templates": [
+   "mac:pages-templates"
+  ],
+  "mac/634-pages-templates-actions-menu": [
+   "mac:pages-templates"
+  ],
+  "mac/633-pages-templates-preview": [
+   "mac:pages-templates"
+  ],
+  "mac/035-project-home": [
+   "mac:project-tour",
+   "mac:recently-deleted"
+  ],
+  "mac/051-search-palette-project": [
+   "mac:project-tour"
+  ],
+  "mac/052-search-palette-results": [
+   "mac:project-tour"
+  ],
+  "mac/613-pages-deleted-items": [
+   "mac:recently-deleted"
+  ],
+  "mac/617-pages-deleted-restored": [
+   "mac:recently-deleted"
+  ],
+  "mac/408-schedule-reports-scene": [
+   "mac:reports"
+  ],
+  "mac/409-schedule-reports-location": [
+   "mac:reports"
+  ],
+  "mac/410-schedule-reports-cast-scene": [
+   "mac:reports"
+  ],
+  "mac/411-schedule-reports-prop": [
+   "mac:reports"
+  ],
+  "mac/357-schedule-empty": [
+   "mac:schedule"
+  ],
+  "mac/358-schedule-create-sheet": [
+   "mac:schedule"
+  ],
+  "mac/359-schedule-board-unscheduled": [
+   "mac:schedule"
+  ],
+  "mac/360-schedule-add-day-sheet": [
+   "mac:schedule"
+  ],
+  "mac/362-schedule-board-three-days": [
+   "mac:schedule"
+  ],
+  "mac/365-schedule-strip-menu": [
+   "mac:schedule"
+  ],
+  "mac/366-schedule-board": [
+   "mac:schedule"
+  ],
+  "mac/389-schedule-warnings": [
+   "mac:schedule"
+  ],
+  "mac/124-screenplay-comment-composer-quote": [
+   "mac:screenplay-notes"
+  ],
+  "mac/125-screenplay-comment-posted": [
+   "mac:screenplay-notes"
+  ],
+  "mac/126-screenplay-comment-reply-composer": [
+   "mac:screenplay-notes"
+  ],
+  "mac/127-screenplay-comment-with-reply": [
+   "mac:screenplay-notes"
+  ],
+  "mac/020-settings-general": [
+   "mac:settings",
+   "mac:themes-appearance"
+  ],
+  "mac/022-settings-appearance": [
+   "mac:settings",
+   "mac:themes-appearance"
+  ],
+  "mac/027-settings-keyboard-shortcuts": [
+   "mac:settings"
+  ],
+  "mac/032-settings-offline-ai": [
+   "mac:settings"
+  ],
+  "mac/033-settings-diagnostics": [
+   "mac:settings"
+  ],
+  "mac/545-plan-shots-all-empty": [
+   "mac:shot-list"
+  ],
+  "mac/546-plan-shots-scene-menu": [
+   "mac:shot-list"
+  ],
+  "mac/547-plan-shots-scene-empty": [
+   "mac:shot-list"
+  ],
+  "mac/549-plan-shots-list": [
+   "mac:shot-list"
+  ],
+  "mac/553-plan-shot-row-menu": [
+   "mac:shot-list"
+  ],
+  "mac/556-plan-shot-open": [
+   "mac:shot-list"
+  ],
+  "mac/401-schedule-sides": [
+   "mac:sides"
+  ],
+  "mac/404-schedule-sides-cover": [
+   "mac:sides"
+  ],
+  "mac/406-schedule-sides-saved": [
+   "mac:sides"
+  ],
+  "mac/407-schedule-sides-snapshot": [
+   "mac:sides"
+  ],
+  "mac/178-story-add-menu": [
+   "mac:story-board"
+  ],
+  "mac/184-story-add-act-inline": [
+   "mac:story-board"
+  ],
+  "mac/185-story-board-one-act": [
+   "mac:story-board"
+  ],
+  "mac/186-story-add-sequence-inline": [
+   "mac:story-board"
+  ],
+  "mac/187-story-sequence-empty": [
+   "mac:story-board"
+  ],
+  "mac/188-story-add-card-inline": [
+   "mac:story-board"
+  ],
+  "mac/534-plan-storyboard-scene-empty": [
+   "mac:storyboard"
+  ],
+  "mac/536-plan-storyboard-add-menu": [
+   "mac:storyboard"
+  ],
+  "mac/538-plan-storyboard-panels": [
+   "mac:storyboard"
+  ],
+  "mac/539-plan-storyboard-panel-menu": [
+   "mac:storyboard"
+  ],
+  "mac/588-pages-notes-two": [
+   "mac:tasks"
+  ],
+  "mac/589-tasks-new-task": [
+   "mac:tasks"
+  ],
+  "mac/590-pages-tasks-titled": [
+   "mac:tasks"
+  ],
+  "mac/591-pages-tasks-due": [
+   "mac:tasks"
+  ],
+  "mac/594-notes-and-tasks": [
+   "mac:tasks"
+  ],
+  "mac/024-settings-appearance-theme-chosen": [
+   "mac:themes-appearance"
+  ],
+  "mac/105-screenplay-empty-editor": [
+   "mac:write-screenplay"
+  ],
+  "mac/106-screenplay-empty-element-picker": [
+   "mac:write-screenplay"
+  ],
+  "mac/114-screenplay-empty-suggestions": [
+   "mac:write-screenplay"
+  ],
+  "mac/115-screenplay-empty-first-scene": [
+   "mac:write-screenplay"
+  ]
+ }
+}
