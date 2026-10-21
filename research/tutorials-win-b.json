@@ -1,0 +1,250 @@
+[
+ {
+  "id": "moodboard",
+  "available": true,
+  "reason": "Partial: creating a board is captured end to end, but adding a reference to the new board is not. The Add image, Add note and Add link dialogs were captured only over the Coastal light board, and the board after Add Link or Add Note was not captured. See the moodboard-add-reference tutorial for the reference dialogs.",
+  "steps": [
+   {"screen": "434-prod-overview.html", "action": "click", "target": "role=button[name=\"Moodboards\"]", "label": "In Production, open the Moodboards tab", "text": null, "key": null},
+   {"screen": "480-prod-moodboard.html", "action": "click", "target": "role=button[name=\"New Moodboard\"]", "label": "Click New Moodboard", "text": null, "key": null},
+   {"screen": "499-prod-moodboard-new-dialog.html", "action": "click", "target": "role=button[name=\"Overall Look\"]", "label": "Pick a suggested name, or type your own board name", "text": null, "key": null},
+   {"screen": "501-prod-moodboard-new-filled.html", "action": "click", "target": "role=button[name=\"Create Moodboard\"]", "label": "Click Create Moodboard", "text": null, "key": null},
+   {"screen": "502-prod-moodboard-empty-canvas.html", "action": "view", "target": null, "label": "The new board opens, empty, ready for images, notes and links", "text": null, "key": null}
+  ],
+  "notes": "Production > Moodboards. Header: 'Moodboards', subtitle 'What should this film feel like?', buttons 'Export' and 'New Moodboard'. The 'New Moodboard' dialog has 'Board name *' with suggestion chips (Overall Look, Cinematography, Production Design, Costume, Lighting, Character, Location) and 'Reference for a scene' (default 'No particular scene'), buttons 'Cancel' and 'Create Moodboard'. Clicking 'Create Moodboard' with no name shows 'Give the board a name.' The board list sits on the left (Coastal light 3, Overall Look 0). The board toolbar has 'Add image' (a menu: 'From file…' and 'From Idea Vault…'), 'Add note' and 'Add link'. 'From file…' opens the Windows file picker (not captured). Right-click a board in the list for 'Rename…', 'Board notes…', 'Move up', 'Move down', 'Delete'. On Windows these are dialogs."
+ },
+ {
+  "id": "moodboard-add-reference",
+  "available": true,
+  "reason": "Partial: the board after clicking Add Link was not captured, so the tutorial ends on the filled Add link dialog.",
+  "steps": [
+   {"screen": "480-prod-moodboard.html", "action": "click", "target": "role=button[name=\"Add link\"]", "label": "On a board, click Add link", "text": null, "key": null},
+   {"screen": "492-prod-moodboard-add-link-dialog.html", "action": "type", "target": "#new-link", "label": "Paste the web address and give it a title", "text": "https://example.com/blue-hour", "key": null},
+   {"screen": "493-prod-moodboard-add-link-filled.html", "action": "view", "target": null, "label": "Click Add Link to place the reference on the board", "text": null, "key": null}
+  ],
+  "notes": "The 'Add link' dialog has 'Web address *' and 'Title' ('Optional, for example Reference: Memories of Murder'), buttons 'Cancel' and 'Add Link'. In the capture both fields are filled between the two screens: Web address 'https://example.com/blue-hour', Title 'Blue hour reference'. 'Add note' opens an 'Add note' dialog with 'Note *' and a checkbox 'Internal note, left out of exports unless selected', buttons 'Cancel' and 'Add Note' (empty note shows 'Write the note first.'). 'Add image' > 'From Idea Vault…' opens 'Add image from the Idea Vault' with Project Idea Vault and Global Idea Vault tabs ('The image is copied onto the board; the vault item is not changed.'). Items on the board are tiles; right-click a tile for 'Edit', which opens a side drawer."
+ },
+ {
+  "id": "shot-list",
+  "available": true,
+  "reason": "Partial: typing a new shot and the list after Add Shot were not captured (only the empty-description error 'Describe the shot to add it.'). The tutorial shows the shot list and a shot's details, where shot size and movement are set.",
+  "steps": [
+   {"screen": "520-prod-storyboard-scene-no-board.html", "action": "click", "target": "role=button[name=\"Shot Lists\"]", "label": "In Production, open the Shot Lists tab", "text": null, "key": null},
+   {"screen": "521-prod-shots-list.html", "action": "rightclick", "target": "button[aria-label=\"Open shot 1A: Wide: the bus arrives at the empty stand\"]", "label": "Right-click shot 1A", "text": null, "key": null},
+   {"screen": "526-prod-shot-menu.html", "action": "click", "target": "role=menuitem[name=\"Open\"]", "label": "Choose Open", "text": null, "key": null},
+   {"screen": "527-prod-shot-drawer.html", "action": "view", "target": null, "label": "Set the shot size, movement, angle and lens in the shot details", "text": null, "key": null}
+  ],
+  "notes": "Production > Shot Lists. Subtitle 'How will I capture this scene?', buttons 'Export' and 'Add Shot'. A 'Scene' list picks the scene ('All scenes' or one scene, from the Production Source), a 'List' / 'Grid' switch and a 'More scene actions' menu. Under the shots there is a 'New shot description' box and an 'Add Shot' button, with the hint 'Add only the shots you need. Camera details are optional. Shot letters are generated from order, so you never renumber by hand.' Scene 1 shows 1A Wide, 1B Medium, 1C Close-up. The shot menu has 'Open', 'Duplicate', 'Move to scene…', 'Attach Storyboard…', 'Create storyboard panel', 'Delete'. The drawer (SHOT 1A) has 'Description *' and technical details: 'Shot size' (Wide), 'Movement' (Static), 'Angle', 'Lens', 'Camera notes', 'Characters', 'Sound note', 'Reference image' ('Add reference image…', opens the Windows file picker, not captured), Storyboard 'Attach…' and 'Create panel', and 'Delete' / 'Duplicate'. Shot size and movement are typed fields, not fixed lists. With no screenplay the tab shows 'No screenplay scenes yet' and 'Open Screenplay'."
+ },
+ {
+  "id": "storyboard",
+  "available": true,
+  "reason": "Partial: the board after Save Panel was not captured, so the tutorial ends on the drawn sketch. Import Image opens the Windows file picker and was not captured.",
+  "steps": [
+   {"screen": "502-prod-moodboard-empty-canvas.html", "action": "click", "target": "role=button[name=\"Storyboards\"]", "label": "In Production, open the Storyboards tab", "text": null, "key": null},
+   {"screen": "503-prod-storyboard-panels.html", "action": "click", "target": "#radix-_r_f_", "label": "Click Add Panel", "text": null, "key": null},
+   {"screen": "511-prod-storyboard-add-panel-menu.html", "action": "click", "target": "role=menuitem[name=\"Draw / Sketch\"]", "label": "Choose Draw / Sketch", "text": null, "key": null},
+   {"screen": "512-prod-storyboard-sketch-dialog.html", "action": "drag", "target": "img[aria-label=\"Sketch area\"]", "label": "Sketch the frame with the pen", "text": null, "key": null},
+   {"screen": "513-prod-storyboard-sketch-drawn.html", "action": "view", "target": null, "label": "Click Save Panel to add the sketch as a new panel", "text": null, "key": null}
+  ],
+  "notes": "Production > Storyboards. Subtitle 'What will the audience see?', buttons 'Export', 'New Storyboard' and 'Add Panel' (a menu: 'Import Image', 'Draw / Sketch', 'Empty Panel'). A 'Scene or storyboard' list chooses the board; Scene 1 has 3 panels (1 Headlights sweep the stand, 2 Lakshmi on the step, 3 Insert: route board). The 'Draw / Sketch panel' dialog has Pen and Eraser, colours Black, Red, Blue, 'Undo', 'Clear', the note 'Basic sketching only. For polished art, import an image made elsewhere.', and 'Cancel' / 'Save Panel'. Click a panel to open its drawer (STORYBOARD PANEL: Description, Visual 'Import Image…' / 'Draw / Sketch…' / 'Clear', Framing, Camera movement, Angle, Duration (seconds), Dialogue / sound note, Storyboard note, Shot 'Link Shot…' / 'Create Shot'). Drag panels to reorder; 'Paste an image (Ctrl+V) to add it as a panel.' 'New Storyboard' asks for a Scene and an optional Name ('Defaults to the scene heading.')."
+ },
+ {
+  "id": "breakdown",
+  "available": true,
+  "reason": "",
+  "steps": [
+   {"screen": "355-bd-scene-quick-reuse.html", "action": "click", "target": "role=option[name=\"5INT. DISTRICT OFFICE - CORRIDOR - DAY\"]", "label": "In the scene list, click Scene 5", "text": null, "key": null},
+   {"screen": "356-bd-scene-nothing-yet.html", "action": "drag", "target": "text=A long corridor with green walls", "label": "Select the words to tag in the script", "text": null, "key": null},
+   {"screen": "357-bd-tag-menu.html", "action": "click", "target": "role=menuitem[name=\"Props\"]", "label": "Choose a category, here Props", "text": null, "key": null},
+   {"screen": "358-bd-tag-element-dialog.html", "action": "type", "target": "#add-name", "label": "Type the item name; an existing catalog item is offered", "text": "Soldering iron", "key": null},
+   {"screen": "359-bd-add-element-existing-match.html", "action": "click", "target": "role=button[name=\"Add to Scene 5\"]", "label": "Click Add to Scene 5", "text": null, "key": null},
+   {"screen": "360-bd-element-tagged.html", "action": "view", "target": null, "label": "The prop is tagged in Scene 5 and linked to the catalog", "text": null, "key": null}
+  ],
+  "notes": "Breakdown workspace (left rail 'Breakdown'). Top line 'Production Source: Second Draft of “THE TOWER AT PEDDA REVU”', buttons 'Change source', 'Export', 'Hide scenes', 'Hide panel'. Left: scene list with a filter ('All scenes'). Right: 'Scene 5 breakdown' panel with 'Mark Complete', INT / DAY and location, 'Nothing broken down yet. Select words in the script to tag them, add an element, or ask for suggestions.', 'Quick reuse from nearby scenes' chips, 'Add Element' and 'Suggest Elements'. Selecting script words opens a menu 'TAG “LONG CORRIDOR” AS…' with Cast, Extras / Background, Location / Set, Props, Wardrobe, Vehicles, Hair / Makeup, Special Effects, VFX, Sound, Animals. The dialog 'Tag “Long Corridor”' ('What does Scene 5 need? Pick an existing catalog item or create a new one.') has 'Category *', 'Name *', 'Notes (optional)' and offers 'Use existing: Soldering iron' or 'Create new item'; 'The screenplay text is not changed; the tag marks the selected words in this scene.' Buttons 'Cancel' / 'Add to Scene 5'. Each tagged item has an 'Actions for …' menu ('Edit notes…' and more). Every tag also lives in Production > Catalog (screen 445-prod-catalog.html: categories, 'Add Item', right-click a row and 'Open' for its drawer with 'Open Scenes')."
+ },
+ {
+  "id": "cast-crew",
+  "available": true,
+  "reason": "Partial: the cast list after clicking Assign was not captured. Between the two dialog screens the capture also picks LAKSHMI and Primary actor. Adding a crew member is covered by the crew-member tutorial.",
+  "steps": [
+   {"screen": "469-prod-cast.html", "action": "click", "target": "tr:has-text(\"NEWSREADER\") >> role=button[name=\"Assign\"]", "label": "Click Assign next to a character that needs casting", "text": null, "key": null},
+   {"screen": "470-prod-cast-assign-dialog.html", "action": "type", "target": "#as-person", "label": "Type the actor's name and choose the character they play", "text": "Lata Nair", "key": null},
+   {"screen": "471-prod-cast-assign-alternate-banner.html", "action": "view", "target": null, "label": "Pick Primary actor or Alternate / double, then click Assign", "text": null, "key": null}
+  ],
+  "notes": "Production > Cast & Crew. Subtitle 'Who is involved and what role do they have? A small-team directory with no payroll and no contracts.' Buttons 'Add Person', a 'Cast' / 'Crew' switch, 'Search', 'Show archived'. Cast columns: PERSON, CHARACTER, CONTACT, AVAILABILITY, NOTE, SCENES; unassigned characters read 'Needs casting' with an 'Assign' button. The 'Add Person' dialog ('Link the real person to the character they play.') has 'Person *', 'Choose a character' (each with its scene count and current actor), 'Create a new character' ('For a character that isn't in the script yet.'), Casting 'Primary actor' / 'Alternate / double', buttons 'Cancel' / 'Assign'. Choosing a character that already has a primary actor shows 'Ananya Rao becomes an alternate for LAKSHMI.' Right-click a cast row for 'Open', 'Assign Character…', 'Archive', 'Delete…'. The cast drawer (CAST MEMBER) has 'Add Photo' (Windows file picker, not captured), Character, 'Person name *', 'Contact' ('Private: visible to Owners and Editors only. Never shared with the assistant or put in exports.'), 'Availability notes', Availability dates ('Add Dates'), 'Notes' and the scene list."
+ },
+ {
+  "id": "crew-member",
+  "available": true,
+  "reason": "Partial: the Add Person dialog for crew was captured only empty (479-prod-crew-add-dialog.html), so the tutorial opens an existing crew member to show role, department and contact.",
+  "steps": [
+   {"screen": "469-prod-cast.html", "action": "click", "target": "role=radio[name=\"Crew\"]", "label": "Switch to Crew", "text": null, "key": null},
+   {"screen": "476-prod-crew.html", "action": "click", "target": "tr:has-text(\"Divya Menon\")", "label": "Click a crew member", "text": null, "key": null},
+   {"screen": "477-prod-crew-drawer.html", "action": "view", "target": null, "label": "Edit the person's role, department, contact and availability", "text": null, "key": null}
+  ],
+  "notes": "Production > Cast & Crew > Crew. Columns PERSON, ROLE, DEPARTMENT, CONTACT; footer 'Departments: Direction · Camera · Sound · Art · Costume · Makeup · Production · Editing. This is a production directory, not HR software.' The drawer (CREW MEMBER) has 'Person name *', 'Role *' (Director of Photography), 'Department' (Camera), 'Contact' (private to Owners and Editors), 'Availability notes', Availability with 'Add Dates' ('Dates are advisory: the schedule warns about them and never moves a scene by itself.'), 'Notes', and 'Delete' / 'Archive'. 'Add Person' on the Crew view opens 'Add Person' ('A crew member with their role. No payroll, no contracts.') with 'Person name *', 'Role *', 'Department' (default 'No department'), 'Contact', 'Notes', buttons 'Cancel' / 'Add to Crew'."
+ },
+ {
+  "id": "locations",
+  "available": true,
+  "reason": "Partial: the Add Location dialog was captured only empty (468-prod-location-add-dialog.html) and Add Photos opens the Windows file picker (not captured). The tutorial opens an existing location to show its notes.",
+  "steps": [
+   {"screen": "458-prod-locations.html", "action": "rightclick", "target": "role=button[name=\"Rayapuram bus standConfirmed1 scene\"]", "label": "Right-click a location card", "text": null, "key": null},
+   {"screen": "461-prod-location-row-menu.html", "action": "click", "target": "role=menuitem[name=\"Open\"]", "label": "Choose Open", "text": null, "key": null},
+   {"screen": "462-prod-location-drawer.html", "action": "scroll", "target": "aside.drawer .db", "label": "Scroll down to the practical notes", "text": null, "key": null},
+   {"screen": "463-prod-location-drawer-notes.html", "action": "view", "target": null, "label": "Fill in parking, noise, permission, access, power and other notes", "text": null, "key": null}
+  ],
+  "notes": "Production > Locations. Subtitle 'Which places can we use? A practical scouting notebook.' Button 'Add Location', 'Search locations', status filter All / Idea / Shortlisted / Confirmed / Rejected, 'Show archived'. Cards show name, status and scene count. Right-click menu: 'Open', 'Archive', 'Delete…'. The drawer (LOCATION) has the status switch ('A status change never alters the screenplay.'), Photos 'Add Photos' ('The first photo is the thumbnail. Photos are stored in the project and work offline.'), 'Name *', 'Address / area', 'Contact', SAFETY 'Nearest hospital' and 'Emergency contact', Availability ('Add Dates'), PRACTICAL NOTES 'Parking:', 'Noise:', 'Permission:', 'Access:', 'Power:', 'Toilets:', 'Nearby facilities:', 'Travel:', 'Other notes:', the scenes that use it, and 'Delete' / 'Archive' / 'Open Scenes'. 'Add Location' dialog: 'Only the name is required. Confirming a location does not assign it to scenes.' with 'Name *', 'Address / area', 'Contact', 'Nearest hospital', 'Status', buttons 'Cancel' / 'Add Location'."
+ },
+ {
+  "id": "schedule",
+  "available": true,
+  "reason": "Partial for moving strips and warnings: moving a scene to a day was captured (552 to 553) but not continuous with this flow, and dragging strips needs a real mouse drag (not captured). Warnings have their own schedule-warnings tutorial.",
+  "steps": [
+   {"screen": "434-prod-overview.html", "action": "click", "target": "role=button[name=\"Schedule\"]", "label": "In Production, open the Schedule tab", "text": null, "key": null},
+   {"screen": "533-prod-schedule-board.html", "action": "click", "target": "role=button[name=\"Create Shooting Day\"]", "label": "Click Create Shooting Day", "text": null, "key": null},
+   {"screen": "540-prod-schedule-create-day-dialog.html", "action": "type", "target": "#of-day-notes", "label": "Pick the shooting date and type day notes", "text": "Tower climb and rooftop, night shoot", "key": null},
+   {"screen": "541-prod-schedule-create-day-filled.html", "action": "click", "target": "role=button[name=\"Create Day\"]", "label": "Click Create Day", "text": null, "key": null},
+   {"screen": "542-prod-schedule-day-created.html", "action": "click", "target": "role=button[name=\"Shoot Day 4 · Thu 12 Nov 2026\"]", "label": "Shoot Day 4 is added to the stripboard; click it", "text": null, "key": null},
+   {"screen": "543-prod-schedule-day-detail-empty.html", "action": "view", "target": null, "label": "The day opens, ready for scenes, breaks and times", "text": null, "key": null}
+  ],
+  "notes": "Production > Schedule. View switch 'Board' / 'List' / 'Calendar', buttons 'Create Shooting Day', 'Off Day', 'Suggest Grouping', a warnings chip ('0 warnings', '2 warnings'), 'Schedule settings' and 'Export'. Filters: location, cast, day or night, scene length, scheduled state, breakdown state, shooting day, script revision. The 'Create Shooting Day' dialog has 'Shooting date' ('Optional. A day can exist without a date.') and 'Day notes', buttons 'Cancel' / 'Create Day'; the capture uses 12 Nov 2026. To move a scene, open a strip's 'Scene N actions' menu ('Details…', MOVE TO Shoot Day 1 to 4) and pick a day (screens 552-prod-schedule-strip-menu-unscheduled.html then 553-prod-schedule-strip-moved.html, toast 'Moved Scene'); strips can also be dragged. Each day has a 'Shoot Day N actions' menu (Edit date, Meal Break, Custom Note, Delete day and more). 'Schedule settings' holds the target day length, status Draft or Finalized, and 'Strict validation'."
+ },
+ {
+  "id": "schedule-warnings",
+  "available": true,
+  "reason": "",
+  "steps": [
+   {"screen": "566-prod-schedule-warnings-drawer.html", "action": "click", "target": ".of-warn-card:has-text(\"Shoot Day 1 was prepared\") >> role=button[name=\"Keep anyway\"]", "label": "Click Keep anyway on a warning you accept", "text": null, "key": null},
+   {"screen": "567-prod-schedule-warnings-kept.html", "action": "click", "target": ".of-warn-card:has-text(\"Shoot Day 2 was prepared\") >> role=button[name=\"Dismiss\"]", "label": "Click Dismiss on a warning that no longer matters", "text": null, "key": null},
+   {"screen": "568-prod-schedule-warnings-dismissed.html", "action": "view", "target": null, "label": "Kept and dismissed warnings move to the bottom, with Show again", "text": null, "key": null}
+  ],
+  "notes": "Open the drawer from the warnings chip on the Schedule board (here '5 warnings'). Drawer title 'Schedule assistance' (PRACTICAL OBSERVATIONS). Each card has 'Open affected item', sometimes 'Move scene (you decide)', 'Keep anyway' and 'Dismiss'. Examples: 'The call sheet for Shoot Day 1 was prepared before this day changed. Refresh it to review the update.', 'Potential actor conflict: Ananya Rao (LAKSHMI) is needed at 4 locations on Shoot Day 4.', '… are missing location information. Confirm a location with an address in Breakdown or Locations. Missing values are never invented.' Handled warnings appear under KEPT OR DISMISSED with 'Show again'. The chip count drops (5, then 4). The app never moves a scene by itself."
+ },
+ {
+  "id": "call-sheet",
+  "available": true,
+  "reason": "Partial: creating a call sheet and adding sections is continuous. Finalize (666-cs-finalize-dialog.html to 667-cs-final.html) and Export PDF (665-cs-editor-export-dialog.html) were captured later in a different state, and saving the PDF uses the Windows Save dialog (not captured).",
+  "steps": [
+   {"screen": "636-cs-list.html", "action": "click", "target": "role=button[name=\"Create Call Sheet\"]", "label": "Click Create Call Sheet", "text": null, "key": null},
+   {"screen": "643-cs-create-dialog.html", "action": "click", "target": "select[aria-label=\"Source shooting day\"]", "label": "Choose the shooting day, here Shoot Day 4", "text": null, "key": null},
+   {"screen": "644-cs-create-dialog-day-chosen.html", "action": "click", "target": "role=button[name=\"Create Call Sheet\"]", "label": "Click Create Call Sheet", "text": null, "key": null},
+   {"screen": "645-cs-editor-draft.html", "action": "click", "target": "role=button[name=\"Add Section\"]", "label": "The draft opens filled from the schedule; click Add Section", "text": null, "key": null},
+   {"screen": "647-cs-add-section-menu.html", "action": "view", "target": null, "label": "Add weather, crew, walkie channels, notes and more, then Finalize and Export PDF", "text": null, "key": null}
+  ],
+  "notes": "Left rail 'Call Sheets'. List with search, filter All / Draft / Final / Needs refresh, and 'Create Call Sheet'. The 'Create Call Sheet' dialog has 'Source shooting day *' and WILL BE FILLED IN AUTOMATICALLY: 'Title, date, day number and day times from the schedule', 'Scene schedule with start times, meals and travel rows', 'Talent with cast ID numbers', 'Locations with address, parking and access', extras, department notes, advance schedule and crew; 'You add call times, weather and day-specific notes. Anything nobody has entered reads Needs input.' Buttons 'Cancel' / 'Create Call Sheet'. 'Add Section' menu: Weather, Extras, Department notes, Advance schedule, Crew, Walkie channels and contacts, Reference images, Attachments, Special notes, Custom field. 'Finalize…' opens 'Finalize call sheet' and needs a crew call. When the schedule changes the sheet shows 'Needs refresh.' with 'Review Update' and 'Refresh from schedule'; after finalizing, 'Start New Revision'. 'Export PDF' opens 'Export Call Sheet'."
+ },
+ {
+  "id": "sides",
+  "available": true,
+  "reason": "",
+  "steps": [
+   {"screen": "597-prod-daily-day-1.html", "action": "click", "target": "role=button[name=\"Sides\"]", "label": "From the Daily View, open the Sides tab", "text": null, "key": null},
+   {"screen": "602-prod-sides-setup.html", "action": "click", "target": "select[aria-label=\"Shooting day\"]", "label": "Choose the shooting day, here Shoot Day 4", "text": null, "key": null},
+   {"screen": "603-prod-sides-day-4.html", "action": "click", "target": "role=radio[name=\"Selected cast\"]", "label": "Under For, choose Selected cast", "text": null, "key": null},
+   {"screen": "604-prod-sides-selected-cast-none.html", "action": "click", "target": "input[aria-label=\"Ananya Rao (LAKSHMI)\"]", "label": "Tick the actor who needs sides", "text": null, "key": null},
+   {"screen": "605-prod-sides-selected-cast.html", "action": "view", "target": null, "label": "The preview shows that actor's pages; Save Sides or Export PDF", "text": null, "key": null}
+  ],
+  "notes": "Production > Daily View: 'What do I need to know for this day?' with a 'Shooting day' list, things to check, SCENES, LOCATION, CAST, CALL SHEET ('Open Call Sheet'), IMPORTANT NOTES and 'Export'. Production > Sides: 'What script pages does this team need for this shooting day?' SETUP: 'Shooting day', 'Scenes' (each a tick box), 'For' 'All cast' / 'Selected cast', 'Include call-sheet cover page', 'Show draft / revision name', then 'Preview', 'Save Sides', 'Export PDF'. 'Saved sides are snapshots. Later script edits don't change them.' With no cast ticked: 'Choose a shooting day and at least one scene and cast member to preview the sides.' 'Save Sides' adds a SAVED SIDES entry ('Back to live preview'). Export PDF uses the Windows Save dialog (not captured)."
+ },
+ {
+  "id": "reports",
+  "available": true,
+  "reason": "",
+  "steps": [
+   {"screen": "612-prod-reports-scene.html", "action": "click", "target": "role=button[name=\"Save snapshot\"]", "label": "On a report, click Save snapshot", "text": null, "key": null},
+   {"screen": "620-prod-reports-saved-snapshot.html", "action": "click", "target": "role=button[name=\"Back to live reports\"]", "label": "Click Back to live reports", "text": null, "key": null},
+   {"screen": "621-prod-reports-live-with-snapshots.html", "action": "click", "target": "role=button[name=\"Export\"]", "label": "Click Export", "text": null, "key": null},
+   {"screen": "622-prod-reports-export-dialog.html", "action": "view", "target": null, "label": "Pick PDF, CSV or Excel (XLSX) and click Export…", "text": null, "key": null}
+  ],
+  "notes": "Production > Reports. Subtitle 'What concise production information do I need to see or send?' Report buttons: 'Scene Report', 'Location Report', 'Cast Scene Report', 'Prop Report', 'Schedule Report', 'Breakdown Completeness'. A 'Filter report rows' box filters rows (screen 618-prod-reports-filtered.html). 'Save snapshot' keeps a copy: 'It does not change when production data changes.' Saved ones are listed under SAVED SNAPSHOTS. The 'Export Scene Report' dialog: FORMAT 'PDF printable', 'CSV spreadsheet-friendly text', 'Excel (XLSX) one sheet per table', a suggested file name, 'Private notes excluded. Export creates a snapshot and does not change your project.', buttons 'Cancel' / 'Export…' (then the Windows Save dialog, not captured)."
+ },
+ {
+  "id": "budget",
+  "available": true,
+  "reason": "",
+  "steps": [
+   {"screen": "623-prod-budget-filled.html", "action": "click", "target": "role=button[name=\"Add Line\"]", "label": "Click Add Line", "text": null, "key": null},
+   {"screen": "624-prod-budget-add-line-dialog.html", "action": "type", "target": "#of-bl-desc", "label": "Type the line item, choose a category and enter the planned amount", "text": "Colour grade and sound mix", "key": null},
+   {"screen": "627-prod-budget-add-line-filled.html", "action": "click", "target": "role=button[name=\"Add Line\"]", "label": "Click Add Line", "text": null, "key": null},
+   {"screen": "628-prod-budget-line-added.html", "action": "view", "target": null, "label": "The line is added and the planned total updates", "text": null, "key": null}
+  ],
+  "notes": "Production > Budget. Subtitle 'What did we plan to spend, and what have we spent?', buttons 'Export', 'Save snapshot', 'Add Line'; 'Use a simple estimate for planning. Formal accounting is outside OpenFrame.' Totals PLANNED, ACTUAL, DIFFERENCE with 'Edit plan' (contingency). Lines are grouped by CATEGORY with PLANNED, ACTUAL, DIFFERENCE. The 'Add Line' dialog: 'Category' (Cast, Crew, Locations, Equipment, Art/Props, Travel/Transport, Food, Post/Other, Contingency), 'Line item *', 'Planned (INR) *', 'Actual (INR)' ('Leave empty until the money is spent.'), 'Notes', buttons 'Cancel' / 'Add Line'. Between the two dialog screens the capture fills Category 'Post/Other', Planned '180000' and Notes 'Two weeks at an outside studio'. Planned total goes from ₹12,59,000 to ₹14,39,000. Empty project shows 'Start a budget'."
+ },
+ {
+  "id": "tasks",
+  "available": true,
+  "reason": "",
+  "steps": [
+   {"screen": "014-shell-project-menu.html", "action": "click", "target": "role=menuitem[name=\"Notes & Tasks\"]", "label": "In the project menu, choose Notes & Tasks", "text": null, "key": null},
+   {"screen": "717-notes-filled.html", "action": "click", "target": "role=button[name=\"New Task\"]", "label": "Click New Task", "text": null, "key": null},
+   {"screen": "725-notes-task-editor-new.html", "action": "type", "target": "#te-title", "label": "Type the task, set a due date and add notes", "text": "Tour task call the depot", "key": null},
+   {"screen": "727-notes-task-editor-filled.html", "action": "type", "target": "input[aria-label=\"Find a scene, location, character, shooting day or call sheet\"]", "label": "Under Related to, search for what the task is about", "text": "bus", "key": null},
+   {"screen": "728-notes-task-editor-related-results.html", "action": "click", "target": "role=option[name=\"Catalog ItemNight busProduction\"]", "label": "Pick the related item", "text": null, "key": null},
+   {"screen": "729-notes-task-editor-related-chosen.html", "action": "click", "target": "role=button[name=\"Add Task\"]", "label": "Click Add Task", "text": null, "key": null},
+   {"screen": "730-notes-task-added-toast.html", "action": "view", "target": null, "label": "The task joins the open tasks with its link and due date", "text": null, "key": null}
+  ],
+  "notes": "Notes & Tasks page ('Small things that do not belong anywhere else.'), buttons 'New Note' and 'New Task'. Tasks section with an 'Owner' filter ('Anyone'), 'Open' / 'Done' / 'All', and a tick box per task ('Mark “…” done'). The task drawer (TASK, 'New Task') has 'Task *', 'Due date', 'Owner' ('No owner' or 'Maya Iyer (you)'; assigning is done here, not captured as changed), 'Related to' ('Optional. Completing the task never changes the related item.') with a search 'Find a scene, location, character, shooting day or call sheet', 'Notes', buttons 'Cancel' / 'Add Task'. Empty title shows 'Give the task a short title.' The toast reads 'Added task “Tour task call the depot”' with 'Undo'. In the capture the due date is 20 Nov 2026 and the notes 'Ask about the spare bus for the night shoot.' are filled with the title. The page is also reachable from Project Home quick access 'Notes & Tasks'."
+ },
+ {
+  "id": "files",
+  "available": true,
+  "reason": "Partial: Add File ('Copy into project…' and 'Link to file…') opens the Windows file picker, and dragging files from Explorer needs a real drag; neither was captured. The tutorial makes a folder.",
+  "steps": [
+   {"screen": "013-shell-project-home.html", "action": "click", "target": "role=button[name=\"Files\"]", "label": "In the left rail, open Files", "text": null, "key": null},
+   {"screen": "690-files-list.html", "action": "click", "target": "role=button[name=\"New Folder\"]", "label": "Click New Folder", "text": null, "key": null},
+   {"screen": "707-files-new-folder-dialog.html", "action": "type", "target": "#fo-name", "label": "Type a folder name", "text": "Tour Folder", "key": null},
+   {"screen": "708-files-new-folder-filled.html", "action": "click", "target": "role=button[name=\"Create\"]", "label": "Click Create", "text": null, "key": null},
+   {"screen": "709-files-folder-created.html", "action": "view", "target": null, "label": "The new folder opens, ready for files", "text": null, "key": null}
+  ],
+  "notes": "Project Files ('What files belong with this film?'), buttons 'New Folder' and 'Add File' (menu 'Copy into project…' and 'Link to file…'), 'List' / 'Grid', 'Search files', and 'Drag files here from Explorer to add them.' Columns NAME, TYPE, WHERE, MODIFIED, ACTIONS ('Open'). Click a row for the details drawer (FILE): 'Name' ('The name shown in OpenFrame. The file itself is not renamed.'), 'Folder', Where 'Stored in project' ('A copy is stored inside the project folder and travels with the project.'), 'Notes', 'Reveal in File Manager', 'Export Copy…', 'Delete', 'Open'. Folders list on the left with 'Rename' and 'Delete'. A new empty folder says 'This folder is empty. Drag files onto it, or use Move to… on a file.' and the toast 'Created folder “Tour Folder”' has 'Undo'. Deleted files go to Recently Deleted."
+ },
+ {
+  "id": "backup-restore",
+  "available": true,
+  "reason": "Partial: making a backup is shown only as the Create Backup dialog (401-pkg-backup-dialog.html, opened from the project menu 400-pkg-project-menu.html), which is not continuous with this flow. Browse… and Choose Package… open Windows Save and Open dialogs, so the progress, done and package review states were not captured. Step 1 lands on 051-apphome-projects.html, which matches the list at that moment except relative times ('2 minutes ago').",
+  "steps": [
+   {"screen": "074-apphome-archived-empty.html", "action": "click", "target": "role=button[name=\"Back to projects\"]", "label": "On the projects screen", "text": null, "key": null},
+   {"screen": "051-apphome-projects.html", "action": "click", "target": "role=button[name=\"Restore a backup or open a project package\"]", "label": "Click Restore Backup or Package…", "text": null, "key": null},
+   {"screen": "075-apphome-restore-package-dialog.html", "action": "view", "target": null, "label": "Click Choose Package… and pick the .ofbackup or .ofproject file", "text": null, "key": null}
+  ],
+  "notes": "Back up: open the project menu (project name at the top left) and under BACKUP & PORTABILITY choose 'Create Backup…'. The 'Create Backup' dialog ('A recoverable copy of supported project state.') has 'Backup name' (for example 'Night Bus 2026-10-21 0412.ofbackup'; 'Project name, date and time, and an optional label.'), 'Label (optional)', 'Save to' with 'Browse…' ('Choose another disk if you can. Project backups are separate from your active project.'), 'Copy linked external files into the backup (portable backup)', a WHAT THIS BACKUP CONTAINS list, buttons 'Cancel' / 'Create Backup'. The same menu has 'Export Full Project…', 'Open Project Package…', and under SHARE / EXCHANGE 'Export Review Package (script)…', 'Beat Board Package…', 'Import Exchange Package…', 'Open Review Package…', 'Review Queue', 'Import & Export History'. Restore: on the projects screen the button 'Restore Backup or Package…' opens 'Open Project Package' ('Open a Full Project Package or restore a Backup Package from another disk or PC.'; '.ofproject (Full Project Package) or .ofbackup (Backup Package). The package is validated before anything is created.'), buttons 'Choose Package…' / 'Cancel'."
+ },
+ {
+  "id": "recently-deleted",
+  "available": true,
+  "reason": "Partial: clicking Undo in the toast and Restore on the Recently Deleted page were not captured. The Recently Deleted page itself is 741-trash-filled.html.",
+  "steps": [
+   {"screen": "722-notes-new-note-editor.html", "action": "type", "target": "#ne-title", "label": "Here a short note is written first", "text": "Tour note on the radio tower", "key": null},
+   {"screen": "723-notes-new-note-filled.html", "action": "click", "target": "role=button[name=\"Delete\"]", "label": "Click Delete", "text": null, "key": null},
+   {"screen": "724-notes-note-deleted-toast.html", "action": "view", "target": null, "label": "It moves to Recently Deleted; click Undo in the message to bring it back", "text": null, "key": null}
+  ],
+  "notes": "Deleting never removes data at once: the toast says 'Moved note “Tour note on the radio tower” to Recently Deleted' with 'Undo'. Ctrl+Z also undoes, and the project menu shows 'Undo …' and 'Redo' with the action name (screens 026-shell-toast-undoable.html, 027-shell-project-menu-undo-enabled.html, 028-shell-toast-undid.html). The Recently Deleted page (project menu 'Recently Deleted', or Project Home quick access): 'Deleted items stay here for 30 days, then they are removed for good. Restore them before then, or delete them sooner.' Switch 'This project' / 'Global Idea Vault', 'Search deleted items', columns ITEM, TYPE, DELETED, REMOVED IN, WAS IN, ACTIONS with 'Restore' and 'Delete Permanently'. 'Delete Permanently asks for a second, deliberate confirmation' (dialog with 'Keep in Recently Deleted' and 'Delete Permanently'). The Idea Vault has its own 'Recently Deleted' view."
+ },
+ {
+  "id": "themes-appearance",
+  "available": true,
+  "reason": "The switch to Dark is not a separate capture; every screen exists in a dark/ version with the same name (for example dark/797-settings-appearance.html), which shows the result.",
+  "steps": [
+   {"screen": "013-shell-project-home.html", "action": "click", "target": "button[aria-label=\"Project: Night Bus. Switch or manage projects\"]", "label": "Open the project menu", "text": null, "key": null},
+   {"screen": "014-shell-project-menu.html", "action": "click", "target": "role=menuitem[name=\"Appearance\"]", "label": "Choose Appearance", "text": null, "key": null},
+   {"screen": "797-settings-appearance.html", "action": "view", "target": null, "label": "Under Mode choose Light, Dark or System, then pick a theme", "text": null, "key": null}
+  ],
+  "notes": "Settings > Appearance: 'Mode and theme for OpenFrame on this computer. Your projects are not changed.' MODE 'Light' / 'Dark' / 'System' ('Light and Dark work with every theme.'). THEME cards: OpenFrame Default, Black and White, Studio Amber, Slate Noir, Midnight Reel, Teal & Orange, Courier & Cream, Cutting Room, Velvet Curtain, Sunset Boulevard, Arctic Frame, Neon Reel, Location Scout, Desert Dune, Colorist Neutral, Silver Screen, High Contrast. 'Themes change colours only. Your screenplay pages, PDFs and printed call sheets always stay black on white.' My Themes: 'Import Theme File…' (Windows file picker, not captured) and 'Paste Theme…' (checks readability in Light and Dark before 'Save to My Themes'). Without a project open, the Settings button on the projects screen opens a 'Settings' dialog with the same Mode and Theme (079-apphome-settings-appearance.html)."
+ },
+ {
+  "id": "settings",
+  "available": true,
+  "reason": "",
+  "steps": [
+   {"screen": "013-shell-project-home.html", "action": "click", "target": "button[aria-label=\"Settings\"]", "label": "Click Settings (the gear at the top right)", "text": null, "key": null},
+   {"screen": "762-settings-general.html", "action": "click", "target": "role=tab[name=\"Writing\"]", "label": "Project settings hold the title, type and status; open Writing", "text": null, "key": null},
+   {"screen": "768-settings-writing.html", "action": "click", "target": "role=tab[name=\"Keyboard shortcuts\"]", "label": "Spelling and your dictionary are here; open Keyboard shortcuts", "text": null, "key": null},
+   {"screen": "775-settings-shortcuts.html", "action": "click", "target": "role=tab[name=\"Offline AI\"]", "label": "Change any shortcut; open Offline AI", "text": null, "key": null},
+   {"screen": "789-settings-offline-ai-ready.html", "action": "click", "target": "role=tab[name=\"Advanced\"]", "label": "Check the offline AI; open Advanced", "text": null, "key": null},
+   {"screen": "794-settings-advanced.html", "action": "click", "target": "role=tab[name=\"Appearance\"]", "label": "Breakdown category colours are here; open Appearance", "text": null, "key": null},
+   {"screen": "797-settings-appearance.html", "action": "view", "target": null, "label": "Choose the mode and theme", "text": null, "key": null}
+  ],
+  "notes": "In a project the gear opens the settings page with tabs 'Project settings', 'Writing', 'Keyboard shortcuts', 'Templates', 'Offline AI', 'Advanced', 'Appearance'. Project settings: 'Title *', 'Type *', 'Language', 'Genre', 'Creator', 'Status', 'Logline', 'Project notes', 'Save'; STORED ON THIS COMPUTER with 'Open project location'; LICENCE; ABOUT OPENFRAME STUDIO; SUPPORT 'Export Diagnostics…' ('Nothing is sent automatically.'). Writing: spelling check, proofing languages, 'Personal dictionary' with 'New word' and 'Add'. Keyboard shortcuts: 'Filter commands', 'Add a shortcut for …', 'Restore all defaults'. Offline AI: AI health, 'Stop Offline AI (free memory)', 'Graphics card' Automatic / Off, 'Remove OpenFrame AI…', 'Technical details'. Advanced: 'Breakdown category colours and icons', 'Restore Defaults'. Without a project, the projects screen gear opens a 'Settings' dialog ('These settings apply to OpenFrame on this computer. Open a project to change its own settings.') with Appearance, Keyboard shortcuts, About and support."
+ }
+]

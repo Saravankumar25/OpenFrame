@@ -1,0 +1,3704 @@
+{
+ "mac/001-home-welcome": {
+  "w": 1280,
+  "h": 628,
+  "src": "/screens/mac/001-home-welcome",
+  "targets": {
+   "a[aria-label=\"Your name: Welcome, a name typed\"]": [
+    454,
+    306,
+    372,
+    24
+   ]
+  }
+ },
+ "mac/002-home-welcome-filled": {
+  "w": 1280,
+  "h": 630,
+  "src": "/screens/mac/002-home-welcome-filled",
+  "targets": {
+   "[data-id=\"welcome-continue\"]": [
+    601,
+    398,
+    79,
+    24
+   ]
+  }
+ },
+ "mac/003-home-empty": {
+  "w": 1280,
+  "h": 633,
+  "src": "/screens/mac/003-home-empty",
+  "targets": {
+   "[data-id=\"home-new-project\"]": [
+    354,
+    175,
+    137,
+    28
+   ],
+   "[data-id=\"home-settings\"]": [
+    1063,
+    0,
+    98,
+    52
+   ]
+  }
+ },
+ "mac/011-new-project-sheet": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/011-new-project-sheet",
+  "targets": {
+   "[data-id=\"new-project-title\"]": [
+    479,
+    217,
+    358,
+    16
+   ]
+  }
+ },
+ "mac/012-new-project-filled": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/012-new-project-filled",
+  "targets": {
+   "[data-id=\"new-project-create\"]": [
+    802,
+    460,
+    65,
+    24
+   ]
+  }
+ },
+ "mac/020-settings-general": {
+  "w": 760,
+  "h": 548,
+  "src": "/screens/mac/020-settings-general",
+  "targets": {
+   "a[aria-label=\"Appearance\"]": [
+    244,
+    32,
+    75,
+    56
+   ]
+  }
+ },
+ "mac/022-settings-appearance": {
+  "w": 760,
+  "h": 548,
+  "src": "/screens/mac/022-settings-appearance",
+  "targets": {
+   "a[aria-label=\"Keyboard Shortcuts\"]": [
+    320,
+    32,
+    116,
+    56
+   ],
+   "[data-id=\"theme-card-black-and-white\"]": [
+    277,
+    215,
+    190,
+    141
+   ]
+  }
+ },
+ "mac/024-settings-appearance-theme-chosen": {
+  "w": 760,
+  "h": 548,
+  "src": "/screens/mac/024-settings-appearance-theme-chosen",
+  "targets": {}
+ },
+ "mac/027-settings-keyboard-shortcuts": {
+  "w": 760,
+  "h": 548,
+  "src": "/screens/mac/027-settings-keyboard-shortcuts",
+  "targets": {
+   "a[aria-label=\"Offline AI\"]": [
+    437,
+    32,
+    61,
+    56
+   ]
+  }
+ },
+ "mac/032-settings-offline-ai": {
+  "w": 760,
+  "h": 548,
+  "src": "/screens/mac/032-settings-offline-ai",
+  "targets": {
+   "a[aria-label=\"Diagnostics\"]": [
+    499,
+    32,
+    74,
+    56
+   ]
+  }
+ },
+ "mac/033-settings-diagnostics": {
+  "w": 760,
+  "h": 548,
+  "src": "/screens/mac/033-settings-diagnostics",
+  "targets": {}
+ },
+ "mac/034-home-import-toast": {
+  "w": 1280,
+  "h": 632,
+  "src": "/screens/mac/034-home-import-toast",
+  "targets": {
+   "[data-id=\"draft-menu\"]": [
+    956,
+    58,
+    192,
+    20
+   ],
+   "[data-id=\"sidebar-home\"]": [
+    30,
+    92,
+    61,
+    16
+   ]
+  }
+ },
+ "mac/035-project-home": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/035-project-home",
+  "targets": {
+   "[data-id=\"project-search-button\"]": [
+    755,
+    0,
+    96,
+    52
+   ],
+   "button[aria-label=\"Recently Deleted\"]": [
+    440,
+    306,
+    117,
+    15
+   ]
+  }
+ },
+ "mac/051-search-palette-project": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/051-search-palette-project",
+  "targets": {
+   "[data-id=\"palette-field\"]": [
+    340,
+    136,
+    600,
+    18
+   ]
+  }
+ },
+ "mac/052-search-palette-results": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/052-search-palette-results",
+  "targets": {}
+ },
+ "mac/060-project-home-empty": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/060-project-home-empty",
+  "targets": {}
+ },
+ "mac/061-home-two-projects": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/061-home-two-projects",
+  "targets": {
+   "[data-id=\"project-card-actions-Night Bus\"]": [
+    548,
+    255,
+    79,
+    22
+   ]
+  }
+ },
+ "mac/064-home-pinned": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/064-home-pinned",
+  "targets": {
+   "[data-id=\"project-card-actions-Empty Short\"]": [
+    255,
+    488,
+    79,
+    22
+   ]
+  }
+ },
+ "mac/065-home-one-archived": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/065-home-one-archived",
+  "targets": {
+   "[data-id=\"home-open-archived\"]": [
+    1069,
+    450,
+    132,
+    16
+   ]
+  }
+ },
+ "mac/066-home-archived-page": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/066-home-archived-page",
+  "targets": {
+   "button[aria-label=\"Restore Empty Short\"]": [
+    1049,
+    207,
+    71,
+    24
+   ]
+  }
+ },
+ "mac/067-home-archived-empty": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/067-home-archived-empty",
+  "targets": {}
+ },
+ "mac/068-screenplay-editor-typing": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/068-screenplay-editor-typing",
+  "targets": {
+   "[data-id=\"screenplay-tools-menu\"]": [
+    458,
+    87,
+    144,
+    20
+   ]
+  }
+ },
+ "mac/069-screenplay-tools-menu": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/069-screenplay-tools-menu",
+  "targets": {
+   "[data-id=\"menu-item-13\"]": [
+    458,
+    364,
+    237,
+    22
+   ]
+  }
+ },
+ "mac/078-screenplay-tools-import-screenplay": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/078-screenplay-tools-import-screenplay",
+  "targets": {}
+ },
+ "mac/079-screenplay-tools-export-screenplay": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/079-screenplay-tools-export-screenplay",
+  "targets": {
+   "[data-id=\"export-format-fdx\"]": [
+    325,
+    280,
+    124,
+    16
+   ]
+  }
+ },
+ "mac/080-screenplay-draft-menu": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/080-screenplay-draft-menu",
+  "targets": {
+   "[data-id=\"menu-item-2\"]": [
+    956,
+    119,
+    211,
+    22
+   ]
+  }
+ },
+ "mac/081-screenplay-draft-new-draft": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/081-screenplay-draft-new-draft",
+  "targets": {
+   "[data-id=\"new-draft-name\"]": [
+    424,
+    245,
+    432,
+    24
+   ]
+  }
+ },
+ "mac/105-screenplay-empty-editor": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/105-screenplay-empty-editor",
+  "targets": {
+   "[data-id=\"element-picker\"]": [
+    597,
+    58,
+    73,
+    20
+   ],
+   "[data-id=\"screenplay-editor\"]": [
+    569,
+    114,
+    736,
+    503
+   ]
+  }
+ },
+ "mac/106-screenplay-empty-element-picker": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/106-screenplay-empty-element-picker",
+  "targets": {}
+ },
+ "mac/114-screenplay-empty-suggestions": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/114-screenplay-empty-suggestions",
+  "targets": {
+   "[data-id=\"screenplay-editor\"]": [
+    528,
+    114,
+    736,
+    503
+   ]
+  }
+ },
+ "mac/115-screenplay-empty-first-scene": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/115-screenplay-empty-first-scene",
+  "targets": {}
+ },
+ "mac/124-screenplay-comment-composer-quote": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/124-screenplay-comment-composer-quote",
+  "targets": {
+   "[data-id=\"comment-field\"]": [
+    962,
+    194,
+    297,
+    126
+   ]
+  }
+ },
+ "mac/125-screenplay-comment-posted": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/125-screenplay-comment-posted",
+  "targets": {
+   "a[aria-label=\"Reply\"]": [
+    962,
+    296,
+    50,
+    20
+   ]
+  }
+ },
+ "mac/126-screenplay-comment-reply-composer": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/126-screenplay-comment-reply-composer",
+  "targets": {
+   "textarea[aria-label=\"Reply\"]": [
+    962,
+    295,
+    297,
+    55
+   ]
+  }
+ },
+ "mac/127-screenplay-comment-with-reply": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/127-screenplay-comment-with-reply",
+  "targets": {}
+ },
+ "mac/129-screenplay-comments-two-open": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/129-screenplay-comments-two-open",
+  "targets": {}
+ },
+ "mac/135-screenplay-new-draft-named": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/135-screenplay-new-draft-named",
+  "targets": {
+   "role=button[name=\"Create Draft\"]": [
+    758,
+    416,
+    99,
+    24
+   ]
+  }
+ },
+ "mac/136-screenplay-second-draft-created": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/136-screenplay-second-draft-created",
+  "targets": {
+   "[data-id=\"screenplay-editor\"]": [
+    569,
+    114,
+    736,
+    1710
+   ]
+  }
+ },
+ "mac/137-screenplay-second-draft-edited": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/137-screenplay-second-draft-edited",
+  "targets": {
+   "[data-id=\"compare-button\"]": [
+    396,
+    58,
+    92,
+    20
+   ]
+  }
+ },
+ "mac/139-screenplay-drafts-two": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/139-screenplay-drafts-two",
+  "targets": {}
+ },
+ "mac/145-screenplay-compare-text-only": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/145-screenplay-compare-text-only",
+  "targets": {}
+ },
+ "mac/158-screenplay-page-view-revision": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/158-screenplay-page-view-revision",
+  "targets": {}
+ },
+ "mac/163-screenplay-title-page-filled": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/163-screenplay-title-page-filled",
+  "targets": {}
+ },
+ "mac/166-screenplay-export-fdx": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/166-screenplay-export-fdx",
+  "targets": {}
+ },
+ "mac/177-story-board-empty": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/177-story-board-empty",
+  "targets": {
+   "input[aria-label=\"Characters\"]": [
+    799,
+    60,
+    87,
+    24
+   ],
+   "[data-id=\"story-add-menu\"]": [
+    244,
+    131,
+    88,
+    24
+   ]
+  }
+ },
+ "mac/178-story-add-menu": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/178-story-add-menu",
+  "targets": {
+   "[data-id=\"menu-item-0\"]": [
+    244,
+    165,
+    179,
+    22
+   ]
+  }
+ },
+ "mac/184-story-add-act-inline": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/184-story-add-act-inline",
+  "targets": {
+   "[data-id=\"inline-Act title\"]": [
+    256,
+    192,
+    246,
+    17
+   ]
+  }
+ },
+ "mac/185-story-board-one-act": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/185-story-board-one-act",
+  "targets": {
+   "a[aria-label=\"Add Sequence\"]": [
+    310,
+    257,
+    66,
+    13
+   ]
+  }
+ },
+ "mac/186-story-add-sequence-inline": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/186-story-add-sequence-inline",
+  "targets": {
+   "[data-id=\"inline-Sequence name\"]": [
+    262,
+    236,
+    234,
+    16
+   ]
+  }
+ },
+ "mac/187-story-sequence-empty": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/187-story-sequence-empty",
+  "targets": {
+   "a[aria-label=\"Add scene\"]": [
+    263,
+    281,
+    69,
+    13
+   ]
+  }
+ },
+ "mac/188-story-add-card-inline": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/188-story-add-card-inline",
+  "targets": {}
+ },
+ "mac/218-story-board-production-cards": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/218-story-board-production-cards",
+  "targets": {}
+ },
+ "mac/220-story-build-sheet": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/220-story-build-sheet",
+  "targets": {}
+ },
+ "mac/221-story-outline": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/221-story-outline",
+  "targets": {}
+ },
+ "mac/230-story-characters-empty": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/230-story-characters-empty",
+  "targets": {
+   "button[aria-label=\"Add Character\"]": [
+    478,
+    240,
+    116,
+    20
+   ]
+  }
+ },
+ "mac/231-story-add-character-sheet": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/231-story-add-character-sheet",
+  "targets": {
+   "[data-id=\"story-new-character-name\"]": [
+    422,
+    235,
+    436,
+    24
+   ]
+  }
+ },
+ "mac/232-story-add-character-filled": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/232-story-add-character-filled",
+  "targets": {
+   "[data-id=\"story-create-character\"]": [
+    730,
+    425,
+    128,
+    24
+   ]
+  }
+ },
+ "mac/233-story-character-one": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/233-story-character-one",
+  "targets": {}
+ },
+ "mac/243-story-relationship-map": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/243-story-relationship-map",
+  "targets": {}
+ },
+ "mac/252-vault-add-quote": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/252-vault-add-quote",
+  "targets": {
+   "[data-id=\"vault-quick-capture\"]": [
+    572,
+    178,
+    115,
+    21
+   ]
+  }
+ },
+ "mac/253-vault-add-quick-capture": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/253-vault-add-quick-capture",
+  "targets": {
+   "[data-id=\"quick-capture-idea\"]": [
+    430,
+    254,
+    420,
+    120
+   ]
+  }
+ },
+ "mac/254-vault-quick-capture-typed": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/254-vault-quick-capture-typed",
+  "targets": {
+   "role=button[name=\"Save\"]": [
+    797,
+    407,
+    54,
+    24
+   ]
+  }
+ },
+ "mac/255-vault-saved-notice": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/255-vault-saved-notice",
+  "targets": {}
+ },
+ "mac/259-vault-filled": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/259-vault-filled",
+  "targets": {}
+ },
+ "mac/265-vault-drawer-flag-and-tag": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/265-vault-drawer-flag-and-tag",
+  "targets": {}
+ },
+ "mac/268-vault-send-to-story-sheet": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/268-vault-send-to-story-sheet",
+  "targets": {}
+ },
+ "mac/303-vault-global-with-copy": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/303-vault-global-with-copy",
+  "targets": {}
+ },
+ "mac/309-breakdown-scenes": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/309-breakdown-scenes",
+  "targets": {
+   "[data-id=\"script-text\"]": [
+    479,
+    122,
+    479,
+    630
+   ]
+  }
+ },
+ "mac/322-breakdown-script-selection": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/322-breakdown-script-selection",
+  "targets": {
+   "[data-id=\"tag-selection\"]": [
+    1180,
+    236,
+    87,
+    21
+   ]
+  }
+ },
+ "mac/325-breakdown-tag-sheet": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/325-breakdown-tag-sheet",
+  "targets": {
+   "[data-id=\"add-to-scene\"]": [
+    781,
+    458,
+    115,
+    24
+   ]
+  }
+ },
+ "mac/326-breakdown-tagged": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/326-breakdown-tagged",
+  "targets": {}
+ },
+ "mac/328-breakdown-review-sheet": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/328-breakdown-review-sheet",
+  "targets": {}
+ },
+ "mac/357-schedule-empty": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/357-schedule-empty",
+  "targets": {
+   "[data-id=\"create-shooting-schedule\"]": [
+    663,
+    446,
+    182,
+    24
+   ]
+  }
+ },
+ "mac/358-schedule-create-sheet": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/358-schedule-create-sheet",
+  "targets": {
+   "[data-id=\"create-schedule-confirm\"]": [
+    732,
+    384,
+    125,
+    24
+   ]
+  }
+ },
+ "mac/359-schedule-board-unscheduled": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/359-schedule-board-unscheduled",
+  "targets": {
+   "[data-id=\"create-shooting-day\"]": [
+    486,
+    138,
+    171,
+    24
+   ]
+  }
+ },
+ "mac/360-schedule-add-day-sheet": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/360-schedule-add-day-sheet",
+  "targets": {
+   "[data-id=\"day-sheet-confirm\"]": [
+    735,
+    404,
+    92,
+    24
+   ]
+  }
+ },
+ "mac/362-schedule-board-three-days": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/362-schedule-board-three-days",
+  "targets": {
+   "[data-id=\"strip-actions-1\"]": [
+    476,
+    267,
+    70,
+    16
+   ]
+  }
+ },
+ "mac/365-schedule-strip-menu": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/365-schedule-strip-menu",
+  "targets": {
+   "[data-id=\"menu-item-2\"]": [
+    476,
+    324,
+    118,
+    22
+   ]
+  }
+ },
+ "mac/366-schedule-board": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/366-schedule-board",
+  "targets": {
+   "[data-id=\"warnings-button\"]": [
+    936,
+    138,
+    115,
+    24
+   ]
+  }
+ },
+ "mac/376-schedule-day-detail-times": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/376-schedule-day-detail-times",
+  "targets": {}
+ },
+ "mac/389-schedule-warnings": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/389-schedule-warnings",
+  "targets": {}
+ },
+ "mac/393-schedule-dood": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/393-schedule-dood",
+  "targets": {}
+ },
+ "mac/396-schedule-daily": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/396-schedule-daily",
+  "targets": {}
+ },
+ "mac/401-schedule-sides": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/401-schedule-sides",
+  "targets": {
+   "[data-id=\"sides-cover\"]": [
+    268,
+    443,
+    200,
+    17
+   ]
+  }
+ },
+ "mac/404-schedule-sides-cover": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/404-schedule-sides-cover",
+  "targets": {
+   "[data-id=\"sides-save\"]": [
+    348,
+    493,
+    91,
+    24
+   ]
+  }
+ },
+ "mac/406-schedule-sides-saved": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/406-schedule-sides-saved",
+  "targets": {
+   "[data-id=\"sides-saved-01a15ba9-b96f-70f8-b295-d391343ab26a\"]": [
+    272,
+    595,
+    210,
+    30
+   ]
+  }
+ },
+ "mac/407-schedule-sides-snapshot": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/407-schedule-sides-snapshot",
+  "targets": {}
+ },
+ "mac/408-schedule-reports-scene": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/408-schedule-reports-scene",
+  "targets": {
+   "[data-id=\"reports-type-location\"]": [
+    260,
+    232,
+    988,
+    26
+   ]
+  }
+ },
+ "mac/409-schedule-reports-location": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/409-schedule-reports-location",
+  "targets": {
+   "[data-id=\"reports-type-cast-scene\"]": [
+    260,
+    260,
+    988,
+    26
+   ]
+  }
+ },
+ "mac/410-schedule-reports-cast-scene": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/410-schedule-reports-cast-scene",
+  "targets": {
+   "[data-id=\"reports-type-prop\"]": [
+    260,
+    288,
+    214,
+    26
+   ]
+  }
+ },
+ "mac/411-schedule-reports-prop": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/411-schedule-reports-prop",
+  "targets": {}
+ },
+ "mac/413-schedule-reports-breakdown-completeness": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/413-schedule-reports-breakdown-completeness",
+  "targets": {}
+ },
+ "mac/416-callsheets-empty": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/416-callsheets-empty",
+  "targets": {
+   "[data-id=\"callsheet-create\"]": [
+    1105,
+    84,
+    151,
+    24
+   ]
+  }
+ },
+ "mac/417-callsheet-create-sheet": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/417-callsheet-create-sheet",
+  "targets": {
+   "[data-id=\"callsheet-create-confirm\"]": [
+    747,
+    446,
+    130,
+    24
+   ]
+  }
+ },
+ "mac/420-callsheet-editor": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/420-callsheet-editor",
+  "targets": {
+   "[data-id=\"callsheet-add-section\"]": [
+    990,
+    295,
+    121,
+    24
+   ]
+  }
+ },
+ "mac/421-callsheet-section-menu": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/421-callsheet-section-menu",
+  "targets": {
+   "[data-id=\"menu-item-0\"]": [
+    990,
+    329,
+    232,
+    22
+   ]
+  }
+ },
+ "mac/422-callsheet-section-weather": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/422-callsheet-section-weather",
+  "targets": {
+   "[data-id=\"callsheet-export\"]": [
+    990,
+    391,
+    115,
+    25
+   ]
+  }
+ },
+ "mac/428-callsheet-export": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/428-callsheet-export",
+  "targets": {}
+ },
+ "mac/429-callsheet-refresh-from-schedule": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/429-callsheet-refresh-from-schedule",
+  "targets": {}
+ },
+ "mac/441-budget-start": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/441-budget-start",
+  "targets": {
+   "[data-id=\"budget-empty\"] >> text=Start Budget": [
+    704,
+    340,
+    101,
+    24
+   ]
+  }
+ },
+ "mac/443-budget-empty-table": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/443-budget-empty-table",
+  "targets": {
+   "[data-id=\"budget-add-line\"]": [
+    1157,
+    120,
+    99,
+    24
+   ]
+  }
+ },
+ "mac/444-budget-add-line-sheet": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/444-budget-add-line-sheet",
+  "targets": {
+   "[data-id=\"of-bl-desc\"]": [
+    454,
+    227,
+    372,
+    24
+   ]
+  }
+ },
+ "mac/448-budget-add-line-filled": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/448-budget-add-line-filled",
+  "targets": {
+   "[data-id=\"budget-line-sheet-primary\"]": [
+    749,
+    491,
+    78,
+    24
+   ]
+  }
+ },
+ "mac/449-budget-table": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/449-budget-table",
+  "targets": {}
+ },
+ "mac/470-plan-catalog-items": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/470-plan-catalog-items",
+  "targets": {}
+ },
+ "mac/487-plan-location-add-empty": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/487-plan-location-add-empty",
+  "targets": {
+   "[data-id=\"nl-name\"]": [
+    404,
+    218,
+    472,
+    24
+   ]
+  }
+ },
+ "mac/488-plan-location-add-filled": {
+  "w": 1280,
+  "h": 633,
+  "src": "/screens/mac/488-plan-location-add-filled",
+  "targets": {
+   "[data-id=\"nl-submit\"]": [
+    773,
+    462,
+    104,
+    24
+   ]
+  }
+ },
+ "mac/489-plan-location-open": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/489-plan-location-open",
+  "targets": {
+   "[data-id=\"loc-status\"] [aria-label=\"Confirmed\"]": [
+    1049,
+    168,
+    86,
+    24
+   ]
+  }
+ },
+ "mac/490-plan-location-confirmed": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/490-plan-location-confirmed",
+  "targets": {}
+ },
+ "mac/491-plan-locations-four": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/491-plan-locations-four",
+  "targets": {}
+ },
+ "mac/500-plan-cast-needs-casting": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/500-plan-cast-needs-casting",
+  "targets": {
+   "a[aria-label=\"Assign KIRAN\"]": [
+    1111,
+    333,
+    55,
+    20
+   ]
+  }
+ },
+ "mac/501-plan-cast-assign-sheet": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/501-plan-cast-assign-sheet",
+  "targets": {
+   "[data-id=\"as-person\"]": [
+    394,
+    196,
+    492,
+    24
+   ]
+  }
+ },
+ "mac/502-plan-cast-assign-filled": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/502-plan-cast-assign-filled",
+  "targets": {
+   "[data-id=\"assign-submit\"]": [
+    822,
+    484,
+    65,
+    24
+   ]
+  }
+ },
+ "mac/503-plan-cast-linked-one": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/503-plan-cast-linked-one",
+  "targets": {}
+ },
+ "mac/507-plan-cast-linked": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/507-plan-cast-linked",
+  "targets": {}
+ },
+ "mac/510-plan-crew-add-empty": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/510-plan-crew-add-empty",
+  "targets": {
+   "[data-id=\"nc-name\"]": [
+    404,
+    210,
+    472,
+    24
+   ]
+  }
+ },
+ "mac/511-plan-crew-add-filled": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/511-plan-crew-add-filled",
+  "targets": {
+   "[data-id=\"nc-submit\"]": [
+    777,
+    470,
+    99,
+    24
+   ]
+  }
+ },
+ "mac/512-plan-crew-open": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/512-plan-crew-open",
+  "targets": {}
+ },
+ "mac/513-plan-crew-list": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/513-plan-crew-list",
+  "targets": {}
+ },
+ "mac/517-plan-moodboard-new-sheet": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/517-plan-moodboard-new-sheet",
+  "targets": {
+   "[data-id=\"moodboard-suggestion-Overall Look\"]": [
+    444,
+    291,
+    86,
+    20
+   ]
+  }
+ },
+ "mac/519-plan-moodboard-new-suggestion": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/519-plan-moodboard-new-suggestion",
+  "targets": {
+   "[data-id=\"moodboard-new-sheet-primary\"]": [
+    699,
+    427,
+    138,
+    24
+   ]
+  }
+ },
+ "mac/520-plan-moodboard-canvas-empty": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/520-plan-moodboard-canvas-empty",
+  "targets": {
+   "[data-id=\"moodboard-add-note\"]": [
+    569,
+    181,
+    92,
+    20
+   ]
+  }
+ },
+ "mac/522-plan-moodboard-vault-sheet": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/522-plan-moodboard-vault-sheet",
+  "targets": {}
+ },
+ "mac/523-plan-moodboard-note-sheet": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/523-plan-moodboard-note-sheet",
+  "targets": {
+   "[data-id=\"new-note\"]": [
+    444,
+    257,
+    392,
+    98
+   ]
+  }
+ },
+ "mac/525-plan-moodboard-note-private": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/525-plan-moodboard-note-private",
+  "targets": {
+   "[data-id=\"moodboard-note-sheet-primary\"]": [
+    755,
+    403,
+    81,
+    24
+   ]
+  }
+ },
+ "mac/526-plan-moodboard-canvas-items": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/526-plan-moodboard-canvas-items",
+  "targets": {
+   "[data-id=\"moodboard-tile-01a15bae-5857-779e-81b6-74d49a50902f\"]": [
+    528,
+    269,
+    180,
+    110
+   ]
+  }
+ },
+ "mac/527-plan-moodboard-inspector": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/527-plan-moodboard-inspector",
+  "targets": {}
+ },
+ "mac/533-plan-moodboard-export-sheet": {
+  "w": 1280,
+  "h": 633,
+  "src": "/screens/mac/533-plan-moodboard-export-sheet",
+  "targets": {}
+ },
+ "mac/534-plan-storyboard-scene-empty": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/534-plan-storyboard-scene-empty",
+  "targets": {
+   "[data-id=\"storyboard-add-panel\"]": [
+    1140,
+    120,
+    124,
+    24
+   ]
+  }
+ },
+ "mac/536-plan-storyboard-add-menu": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/536-plan-storyboard-add-menu",
+  "targets": {
+   "[data-id=\"menu-item-2\"]": [
+    1020,
+    198,
+    136,
+    22
+   ]
+  }
+ },
+ "mac/537-plan-storyboard-sketch-sheet": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/537-plan-storyboard-sketch-sheet",
+  "targets": {}
+ },
+ "mac/538-plan-storyboard-panels": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/538-plan-storyboard-panels",
+  "targets": {
+   "[data-id=\"panel-01a15bac-3c03-722b-8d36-ba12f0b56f23\"]": [
+    252,
+    212,
+    327,
+    163
+   ]
+  }
+ },
+ "mac/539-plan-storyboard-panel-menu": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/539-plan-storyboard-panel-menu",
+  "targets": {}
+ },
+ "mac/545-plan-shots-all-empty": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/545-plan-shots-all-empty",
+  "targets": {
+   "[data-id=\"shots-scene-picker\"]": [
+    407,
+    197,
+    440,
+    24
+   ]
+  }
+ },
+ "mac/546-plan-shots-scene-menu": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/546-plan-shots-scene-menu",
+  "targets": {
+   "[data-id=\"menu-item-3\"]": [
+    407,
+    284,
+    535,
+    22
+   ]
+  }
+ },
+ "mac/547-plan-shots-scene-empty": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/547-plan-shots-scene-empty",
+  "targets": {
+   "[data-id=\"shots-composer\"]": [
+    364,
+    423,
+    671,
+    24
+   ]
+  }
+ },
+ "mac/549-plan-shots-list": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/549-plan-shots-list",
+  "targets": {
+   "[data-id=\"shot-01a15bae-3342-71ba-8202-b920a6d6617d\"]": [
+    364,
+    229,
+    780,
+    32
+   ]
+  }
+ },
+ "mac/550-plan-shots-grid": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/550-plan-shots-grid",
+  "targets": {}
+ },
+ "mac/553-plan-shot-row-menu": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/553-plan-shot-row-menu",
+  "targets": {
+   "[data-id=\"menu-item-0\"]": [
+    754,
+    251,
+    201,
+    22
+   ]
+  }
+ },
+ "mac/556-plan-shot-open": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/556-plan-shot-open",
+  "targets": {}
+ },
+ "mac/558-files-empty": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/558-files-empty",
+  "targets": {
+   "[data-id=\"add-file\"]": [
+    762,
+    150,
+    112,
+    24
+   ]
+  }
+ },
+ "mac/559-pages-files-add-menu": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/559-pages-files-add-menu",
+  "targets": {
+   "[data-id=\"menu-item-0\"]": [
+    762,
+    184,
+    167,
+    22
+   ]
+  }
+ },
+ "mac/563-pages-files-one-file": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/563-pages-files-one-file",
+  "targets": {}
+ },
+ "mac/588-pages-notes-two": {
+  "w": 1280,
+  "h": 630,
+  "src": "/screens/mac/588-pages-notes-two",
+  "targets": {
+   "[data-id=\"new-task\"]": [
+    759,
+    150,
+    104,
+    24
+   ]
+  }
+ },
+ "mac/589-tasks-new-task": {
+  "w": 1280,
+  "h": 630,
+  "src": "/screens/mac/589-tasks-new-task",
+  "targets": {
+   "[data-id=\"task-title\"]": [
+    896,
+    145,
+    368,
+    24
+   ]
+  }
+ },
+ "mac/590-pages-tasks-titled": {
+  "w": 1280,
+  "h": 630,
+  "src": "/screens/mac/590-pages-tasks-titled",
+  "targets": {
+   "[data-id=\"task-has-due\"]": [
+    896,
+    198,
+    109,
+    17
+   ]
+  }
+ },
+ "mac/591-pages-tasks-due": {
+  "w": 1280,
+  "h": 630,
+  "src": "/screens/mac/591-pages-tasks-due",
+  "targets": {
+   "[data-id=\"task-save\"]": [
+    1189,
+    594,
+    80,
+    24
+   ]
+  }
+ },
+ "mac/594-notes-and-tasks": {
+  "w": 1280,
+  "h": 628,
+  "src": "/screens/mac/594-notes-and-tasks",
+  "targets": {}
+ },
+ "mac/613-pages-deleted-items": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/613-pages-deleted-items",
+  "targets": {
+   "[data-id=\"restore-Old catering list\"]": [
+    935,
+    559,
+    82,
+    20
+   ]
+  }
+ },
+ "mac/617-pages-deleted-restored": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/617-pages-deleted-restored",
+  "targets": {}
+ },
+ "mac/619-pages-settings-general": {
+  "w": 1280,
+  "h": 634,
+  "src": "/screens/mac/619-pages-settings-general",
+  "targets": {
+   "[data-id=\"project-settings-tab-templates\"]": [
+    575,
+    62,
+    92,
+    24
+   ]
+  }
+ },
+ "mac/632-pages-templates": {
+  "w": 1280,
+  "h": 630,
+  "src": "/screens/mac/632-pages-templates",
+  "targets": {
+   "[data-id=\"template-actions-builtin-builtin:feature_screenplay\"]": [
+    464,
+    292,
+    28,
+    16
+   ]
+  }
+ },
+ "mac/633-pages-templates-preview": {
+  "w": 1280,
+  "h": 630,
+  "src": "/screens/mac/633-pages-templates-preview",
+  "targets": {}
+ },
+ "mac/634-pages-templates-actions-menu": {
+  "w": 1280,
+  "h": 630,
+  "src": "/screens/mac/634-pages-templates-actions-menu",
+  "targets": {
+   "[data-id=\"menu-item-0\"]": [
+    464,
+    318,
+    187,
+    22
+   ]
+  }
+ },
+ "mac/652-menu-file-with-project": {
+  "w": 1280,
+  "h": 627,
+  "src": "/screens/mac/652-menu-file-with-project",
+  "targets": {
+   "[data-id=\"menu-item-13\"]": [
+    20,
+    257,
+    274,
+    22
+   ],
+   "[data-id=\"menu-item-21\"]": [
+    20,
+    420,
+    274,
+    22
+   ]
+  }
+ },
+ "mac/658-package-back-up-project": {
+  "w": 1280,
+  "h": 627,
+  "src": "/screens/mac/658-package-back-up-project",
+  "targets": {
+   "[data-id=\"backup-label\"]": [
+    384,
+    222,
+    495,
+    24
+   ]
+  }
+ },
+ "mac/659-package-backup-ready": {
+  "w": 1280,
+  "h": 627,
+  "src": "/screens/mac/659-package-backup-ready",
+  "targets": {
+   "[data-id=\"backup-create\"]": [
+    783,
+    520,
+    113,
+    24
+   ]
+  }
+ },
+ "mac/661-package-backup-created": {
+  "w": 1280,
+  "h": 627,
+  "src": "/screens/mac/661-package-backup-created",
+  "targets": {}
+ },
+ "mac/684-package-restore": {
+  "w": 1280,
+  "h": 627,
+  "src": "/screens/mac/684-package-restore",
+  "targets": {
+   "[data-id=\"open-project-choose\"]": [
+    573,
+    362,
+    136,
+    24
+   ]
+  }
+ },
+ "mac/686-package-restore-collision": {
+  "w": 1280,
+  "h": 627,
+  "src": "/screens/mac/686-package-restore-collision",
+  "targets": {
+   "[data-id=\"open-project-confirm\"]": [
+    797,
+    498,
+    110,
+    24
+   ]
+  }
+ },
+ "mac/687-package-restore-opened-copy": {
+  "w": 1280,
+  "h": 627,
+  "src": "/screens/mac/687-package-restore-opened-copy",
+  "targets": {}
+ },
+ "mac/689-recovery-alert": {
+  "w": 1280,
+  "h": 633,
+  "src": "/screens/mac/689-recovery-alert",
+  "targets": {}
+ },
+ "win/001-app-first-launch-welcome": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/001-app-first-launch-welcome",
+  "targets": {
+   "#dn-name": [
+    619,
+    462,
+    362,
+    36
+   ]
+  }
+ },
+ "win/002-app-first-launch-name-required": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/002-app-first-launch-name-required",
+  "targets": {
+   "#dn-name": [
+    619,
+    451,
+    362,
+    36
+   ]
+  }
+ },
+ "win/003-app-home-empty": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/003-app-home-empty",
+  "targets": {
+   "role=button[name=\"Create Project\"]": [
+    529,
+    540,
+    132,
+    32
+   ]
+  }
+ },
+ "win/004-app-new-project-dialog": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/004-app-new-project-dialog",
+  "targets": {
+   "#np-title": [
+    549,
+    423,
+    502,
+    36
+   ]
+  }
+ },
+ "win/006-app-new-project-filled": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/006-app-new-project-filled",
+  "targets": {
+   "role=dialog >> summary": [
+    549,
+    543,
+    502,
+    17
+   ]
+  }
+ },
+ "win/007-app-new-project-optional-details": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/007-app-new-project-optional-details",
+  "targets": {
+   "role=dialog >> role=button[name=\"Create\"s]": [
+    985,
+    674,
+    66,
+    32
+   ]
+  }
+ },
+ "win/008-home-new-project": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/008-home-new-project",
+  "targets": {}
+ },
+ "win/009-sp-import-source": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/009-sp-import-source",
+  "targets": {
+   "role=radio[name=\"Example Feature\"]": [
+    429,
+    594,
+    110,
+    24
+   ]
+  }
+ },
+ "win/010-sp-import-sample-chosen": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/010-sp-import-sample-chosen",
+  "targets": {
+   "role=dialog >> role=button[name=\"Preview\"]": [
+    1097,
+    691,
+    74,
+    32
+   ]
+  }
+ },
+ "win/011-sp-import-preview": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/011-sp-import-preview",
+  "targets": {
+   "role=dialog >> role=button[name=\"Import\"s]": [
+    1102,
+    790,
+    69,
+    32
+   ]
+  }
+ },
+ "win/012-sp-import-complete": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/012-sp-import-complete",
+  "targets": {}
+ },
+ "win/013-shell-project-home": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/013-shell-project-home",
+  "targets": {
+   "button[aria-label=\"Assistant\"]": [
+    1486,
+    8,
+    30,
+    30
+   ],
+   "role=button[name=\"Files\"]": [
+    8,
+    331,
+    156,
+    37
+   ],
+   "button[aria-label=\"Create\"]": [
+    1372,
+    8,
+    30,
+    30
+   ],
+   "button[aria-label=\"Project: Night Bus. Switch or manage projects\"]": [
+    188,
+    0,
+    196,
+    46
+   ],
+   "button[aria-label=\"Settings\"]": [
+    1524,
+    8,
+    30,
+    30
+   ],
+   "role=button[name=\"Continue screenplay\"]": [
+    192,
+    141,
+    375,
+    56
+   ]
+  }
+ },
+ "win/014-shell-project-menu": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/014-shell-project-menu",
+  "targets": {
+   "role=menuitem[name=\"Notes & Tasks\"]": [
+    194,
+    260,
+    203,
+    29
+   ],
+   "button[aria-label=\"Create\"]": [
+    1372,
+    8,
+    30,
+    30
+   ],
+   "role=menuitem[name=\"Appearance\"]": [
+    194,
+    376,
+    203,
+    29
+   ]
+  }
+ },
+ "win/015-shell-create-menu": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/015-shell-create-menu",
+  "targets": {
+   "role=menuitem[name=\"Import Screenplay…\"]": [
+    1208,
+    339,
+    188,
+    29
+   ],
+   "button[aria-label=\"Search this project\"]": [
+    584,
+    6,
+    400,
+    33
+   ]
+  }
+ },
+ "win/018-shell-search-empty": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/018-shell-search-empty",
+  "targets": {
+   "input[aria-label=\"Search\"]": [
+    496,
+    96,
+    599,
+    23
+   ]
+  }
+ },
+ "win/019-shell-search-results": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/019-shell-search-results",
+  "targets": {}
+ },
+ "win/033-shell-open-recovery-with-checkpoint": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/033-shell-open-recovery-with-checkpoint",
+  "targets": {}
+ },
+ "win/051-apphome-projects": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/051-apphome-projects",
+  "targets": {
+   "[title=\"Restore a backup or open a project package\"]": [
+    1221,
+    70,
+    219,
+    32
+   ]
+  }
+ },
+ "win/060-apphome-pinned-section": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/060-apphome-pinned-section",
+  "targets": {
+   "button[aria-label=\"More actions for Empty Short\"]": [
+    370,
+    156,
+    30,
+    30
+   ]
+  }
+ },
+ "win/061-apphome-card-menu-pinned": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/061-apphome-card-menu-pinned",
+  "targets": {
+   "role=menuitem[name=\"Archive\"]": [
+    207,
+    349,
+    188,
+    29
+   ]
+  }
+ },
+ "win/065-apphome-toast-archived": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/065-apphome-toast-archived",
+  "targets": {
+   "role=button[name=\"Open Archived\"]": [
+    1447,
+    128,
+    121,
+    24
+   ]
+  }
+ },
+ "win/067-apphome-archived-view": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/067-apphome-archived-view",
+  "targets": {
+   "role=button[name=\"Restore\"]": [
+    1443,
+    210,
+    61,
+    24
+   ]
+  }
+ },
+ "win/073-apphome-toast-restored": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/073-apphome-toast-restored",
+  "targets": {}
+ },
+ "win/074-apphome-archived-empty": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/074-apphome-archived-empty",
+  "targets": {
+   "role=button[name=\"Back to projects\"]": [
+    1446,
+    70,
+    122,
+    32
+   ]
+  }
+ },
+ "win/075-apphome-restore-package-dialog": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/075-apphome-restore-package-dialog",
+  "targets": {}
+ },
+ "win/077-apphome-global-vault": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/077-apphome-global-vault",
+  "targets": {}
+ },
+ "win/079-apphome-settings-appearance": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/079-apphome-settings-appearance",
+  "targets": {}
+ },
+ "win/091-vault-grid-all-items": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/091-vault-grid-all-items",
+  "targets": {
+   "main >> role=button[name=\"Add\"s]": [
+    349,
+    120,
+    72,
+    32
+   ]
+  }
+ },
+ "win/102-vault-add-menu": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/102-vault-add-menu",
+  "targets": {
+   "role=menuitem[name^=\"Quick Capture\"]": [
+    355,
+    431,
+    188,
+    29
+   ]
+  }
+ },
+ "win/129-vault-quick-capture-dialog": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/129-vault-quick-capture-dialog",
+  "targets": {
+   "textarea[aria-label=\"Idea\"]": [
+    619,
+    433,
+    362,
+    110
+   ]
+  }
+ },
+ "win/130-vault-quick-capture-filled": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/130-vault-quick-capture-filled",
+  "targets": {
+   "role=dialog >> role=button[name=\"Save\"]": [
+    926,
+    591,
+    55,
+    32
+   ]
+  }
+ },
+ "win/131-vault-quick-capture-saved-toast": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/131-vault-quick-capture-saved-toast",
+  "targets": {
+   "role=button[name=\"New Collection\"]": [
+    192,
+    340,
+    165,
+    29
+   ]
+  }
+ },
+ "win/135-vault-send-to-beat-board-dialog": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/135-vault-send-to-beat-board-dialog",
+  "targets": {}
+ },
+ "win/138-vault-new-collection-dialog": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/138-vault-new-collection-dialog",
+  "targets": {
+   "#vv-name": [
+    619,
+    455,
+    362,
+    36
+   ]
+  }
+ },
+ "win/140-vault-collection-empty": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/140-vault-collection-empty",
+  "targets": {}
+ },
+ "win/151-vault-grid-all-types": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/151-vault-grid-all-types",
+  "targets": {}
+ },
+ "win/155-vault-drawer-voice": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/155-vault-drawer-voice",
+  "targets": {}
+ },
+ "win/169-story-page-filled": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/169-story-page-filled",
+  "targets": {
+   "role=tab[name=\"Characters\"]": [
+    369,
+    46,
+    84,
+    37
+   ],
+   "role=tab[name=\"Board\"]": [
+    243,
+    46,
+    57,
+    37
+   ]
+  }
+ },
+ "win/171-story-board-filled": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/171-story-board-filled",
+  "targets": {
+   "main >> role=button[name=\"Add\"s]": [
+    360,
+    160,
+    72,
+    32
+   ],
+   "div[aria-label=\"Scene Card: Lakshmi steps off the night bus\"]": [
+    211,
+    285,
+    219,
+    51
+   ]
+  }
+ },
+ "win/172-story-board-add-menu": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/172-story-board-add-menu",
+  "targets": {}
+ },
+ "win/183-story-board-card-context-menu": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/183-story-board-card-context-menu",
+  "targets": {
+   "role=menuitem[name^=\"Open\"][name$=\"Enter\"]": [
+    328,
+    315,
+    188,
+    29
+   ]
+  }
+ },
+ "win/190-story-card-drawer": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/190-story-card-drawer",
+  "targets": {}
+ },
+ "win/202-story-board-rich-cards": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/202-story-board-rich-cards",
+  "targets": {}
+ },
+ "win/203-story-build-dialog": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/203-story-build-dialog",
+  "targets": {}
+ },
+ "win/211-story-outline-view": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/211-story-outline-view",
+  "targets": {}
+ },
+ "win/216-story-characters-list": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/216-story-characters-list",
+  "targets": {
+   "role=button[name=\"Add Character\"]": [
+    441,
+    169,
+    118,
+    24
+   ],
+   "role=button[name=\"Edit\"s]": [
+    1300,
+    175,
+    41,
+    24
+   ]
+  }
+ },
+ "win/219-story-new-character-dialog": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/219-story-new-character-dialog",
+  "targets": {
+   "#nc-name": [
+    549,
+    387,
+    502,
+    36
+   ]
+  }
+ },
+ "win/220-story-new-character-duplicate-warning": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/220-story-new-character-duplicate-warning",
+  "targets": {
+   "role=dialog >> role=button[name=\"Cancel\"]": [
+    642,
+    677,
+    67,
+    32
+   ]
+  }
+ },
+ "win/221-story-edit-character-dialog": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/221-story-edit-character-dialog",
+  "targets": {}
+ },
+ "win/224-story-relationship-map": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/224-story-relationship-map",
+  "targets": {}
+ },
+ "win/244-sp-editor-standard": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/244-sp-editor-standard",
+  "targets": {
+   "button[aria-label=\"Assistant\"]": [
+    1486,
+    8,
+    30,
+    30
+   ],
+   "role=button[name=\"Compare\"s]": [
+    1302,
+    56,
+    89,
+    24
+   ],
+   "role=button[name=\"Lock\"s]": [
+    1483,
+    56,
+    65,
+    24
+   ],
+   "role=button[name=\"Export\"s]": [
+    1399,
+    56,
+    76,
+    24
+   ],
+   "[data-id=\"01a15b74-8187-75c2-a21e-f48d9f1e3718\"]": [
+    727,
+    278,
+    576,
+    37
+   ],
+   "button[aria-label=\"View and more\"]": [
+    1556,
+    54,
+    30,
+    30
+   ],
+   "button[aria-label=\"Element type: Scene Heading. Change element type\"]": [
+    394,
+    939,
+    222,
+    23
+   ],
+   "[data-id=\"01a15b74-802c-7786-9f65-18081a818e07\"]": [
+    938,
+    561,
+    365,
+    18
+   ]
+  }
+ },
+ "win/257-sp-element-type-menu": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/257-sp-element-type-menu",
+  "targets": {}
+ },
+ "win/258-sp-suggestion-list": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/258-sp-suggestion-list",
+  "targets": {}
+ },
+ "win/260-sp-comment-float-button": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/260-sp-comment-float-button",
+  "targets": {
+   ".spx-cmt-btn": [
+    833,
+    302,
+    93,
+    24
+   ]
+  }
+ },
+ "win/261-sp-comment-composer-text": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/261-sp-comment-composer-text",
+  "targets": {}
+ },
+ "win/268-sp-view-menu": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/268-sp-view-menu",
+  "targets": {
+   "role=menuitem[name=\"Writing Room Mode\"]": [
+    1392,
+    144,
+    188,
+    29
+   ]
+  }
+ },
+ "win/269-sp-title-page-dialog": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/269-sp-title-page-dialog",
+  "targets": {}
+ },
+ "win/277-sp-writing-room-beat-board": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/277-sp-writing-room-beat-board",
+  "targets": {
+   "role=button[name=\"Beat Board\"s]": [
+    1309,
+    100,
+    78,
+    26
+   ]
+  }
+ },
+ "win/279-sp-writing-room-no-panel": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/279-sp-writing-room-no-panel",
+  "targets": {
+   "role=button[name=\"Scene Notes\"]": [
+    1389,
+    100,
+    84,
+    26
+   ]
+  }
+ },
+ "win/280-sp-panel-scene-notes": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/280-sp-panel-scene-notes",
+  "targets": {
+   "role=button[name=\"Add private note\"]": [
+    1392,
+    435,
+    112,
+    24
+   ]
+  }
+ },
+ "win/282-sp-panel-private-note-composer": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/282-sp-panel-private-note-composer",
+  "targets": {}
+ },
+ "win/293-sp-writing-room-two-panels": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/293-sp-writing-room-two-panels",
+  "targets": {}
+ },
+ "win/299-sp-drafts-drawer": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/299-sp-drafts-drawer",
+  "targets": {}
+ },
+ "win/308-sp-compare-text-only": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/308-sp-compare-text-only",
+  "targets": {
+   "role=button[name=\"Back to script\"]": [
+    186,
+    57,
+    113,
+    24
+   ]
+  }
+ },
+ "win/312-sp-lock-dialog": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/312-sp-lock-dialog",
+  "targets": {
+   "role=button[name=\"Lock as Shooting Draft\"]": [
+    869,
+    669,
+    182,
+    32
+   ]
+  }
+ },
+ "win/313-sp-locked-draft": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/313-sp-locked-draft",
+  "targets": {
+   "[data-id=\"01a15b74-8187-75c2-a21e-f48d9f1e3718\"]": [
+    727,
+    347,
+    576,
+    37
+   ]
+  }
+ },
+ "win/314-sp-locked-edit-dialog": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/314-sp-locked-edit-dialog",
+  "targets": {
+   "role=button[name=\"Start Revision\"]": [
+    872,
+    583,
+    109,
+    32
+   ]
+  }
+ },
+ "win/315-sp-start-revision-dialog": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/315-sp-start-revision-dialog",
+  "targets": {
+   "role=radio[name=\"Pink\"]": [
+    617,
+    416,
+    59,
+    24
+   ]
+  }
+ },
+ "win/316-sp-start-revision-filled": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/316-sp-start-revision-filled",
+  "targets": {
+   "role=dialog >> role=button[name=\"Start Revision\"]": [
+    942,
+    697,
+    109,
+    32
+   ]
+  }
+ },
+ "win/319-sp-revision-draft-editor": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/319-sp-revision-draft-editor",
+  "targets": {}
+ },
+ "win/322-sp-page-view-revision-marks": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/322-sp-page-view-revision-marks",
+  "targets": {}
+ },
+ "win/324-sp-export-dialog": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/324-sp-export-dialog",
+  "targets": {
+   "role=button[name=\"Additional formats…\"]": [
+    429,
+    652,
+    98,
+    17
+   ]
+  }
+ },
+ "win/325-sp-export-more-formats": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/325-sp-export-more-formats",
+  "targets": {
+   "role=dialog >> text=Selected scenes": [
+    830,
+    478,
+    90,
+    20
+   ]
+  }
+ },
+ "win/326-sp-export-selected-none": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/326-sp-export-selected-none",
+  "targets": {
+   "role=group[name=\"Scenes to export\"] >> label >> nth=0": [
+    817,
+    432,
+    343,
+    22
+   ]
+  }
+ },
+ "win/327-sp-export-selected-scenes": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/327-sp-export-selected-scenes",
+  "targets": {
+   "role=dialog >> role=button[name=\"Preview…\"]": [
+    1002,
+    771,
+    84,
+    32
+   ]
+  }
+ },
+ "win/328-sp-print-preview": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/328-sp-print-preview",
+  "targets": {}
+ },
+ "win/341-bd-main": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/341-bd-main",
+  "targets": {}
+ },
+ "win/351-bd-suggestion-review-dialog": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/351-bd-suggestion-review-dialog",
+  "targets": {}
+ },
+ "win/355-bd-scene-quick-reuse": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/355-bd-scene-quick-reuse",
+  "targets": {
+   "role=option[name*=\"CORRIDOR\"]": [
+    180,
+    460,
+    197,
+    44
+   ]
+  }
+ },
+ "win/356-bd-scene-nothing-yet": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/356-bd-scene-nothing-yet",
+  "targets": {
+   "text=A long corridor with green walls": [
+    667,
+    169,
+    290,
+    46
+   ]
+  }
+ },
+ "win/357-bd-tag-menu": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/357-bd-tag-menu",
+  "targets": {
+   "role=menuitem[name=\"Props\"]": [
+    687,
+    297,
+    198,
+    27
+   ]
+  }
+ },
+ "win/358-bd-tag-element-dialog": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/358-bd-tag-element-dialog",
+  "targets": {
+   "#add-name": [
+    549,
+    435,
+    502,
+    36
+   ]
+  }
+ },
+ "win/359-bd-add-element-existing-match": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/359-bd-add-element-existing-match",
+  "targets": {
+   "role=button[name=\"Add to Scene 5\"]": [
+    934,
+    704,
+    117,
+    32
+   ]
+  }
+ },
+ "win/360-bd-element-tagged": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/360-bd-element-tagged",
+  "targets": {}
+ },
+ "win/370-bd-scene-changes-dialog": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/370-bd-scene-changes-dialog",
+  "targets": {}
+ },
+ "win/374-ai-panel-ready": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/374-ai-panel-ready",
+  "targets": {
+   "textarea[aria-label=\"Ask or command\"]": [
+    1255,
+    910,
+    276,
+    54
+   ],
+   "button[aria-label=\"Offline AI settings\"]": [
+    1518,
+    56,
+    30,
+    30
+   ]
+  }
+ },
+ "win/375-ai-settings-menu": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/375-ai-settings-menu",
+  "targets": {
+   "role=menuitem[name=\"Offline AI settings…\"]": [
+    1354,
+    117,
+    188,
+    29
+   ]
+  }
+ },
+ "win/378-ai-offline-settings": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/378-ai-offline-settings",
+  "targets": {
+   "main >> summary": [
+    207,
+    434,
+    998,
+    15
+   ]
+  }
+ },
+ "win/379-ai-offline-technical-details": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/379-ai-offline-technical-details",
+  "targets": {}
+ },
+ "win/381-ai-question-typed": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/381-ai-question-typed",
+  "targets": {
+   "role=button[name=\"Send\"s]": [
+    1539,
+    940,
+    47,
+    24
+   ]
+  }
+ },
+ "win/383-ai-answer-characters": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/383-ai-answer-characters",
+  "targets": {
+   "text=See sources": [
+    1266,
+    316,
+    91,
+    19
+   ]
+  }
+ },
+ "win/384-ai-answer-characters-sources": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/384-ai-answer-characters-sources",
+  "targets": {}
+ },
+ "win/385-ai-panel-screenplay": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/385-ai-panel-screenplay",
+  "targets": {
+   "textarea[aria-label=\"Ask or command\"]": [
+    1255,
+    910,
+    276,
+    54
+   ]
+  }
+ },
+ "win/387-ai-answer-locations-sources-open": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/387-ai-answer-locations-sources-open",
+  "targets": {}
+ },
+ "win/389-ai-proposed-changes": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/389-ai-proposed-changes",
+  "targets": {}
+ },
+ "win/391-ai-proposed-changes-second": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/391-ai-proposed-changes-second",
+  "targets": {
+   "role=button[name=\"Apply Changes\"]": [
+    1316,
+    522,
+    102,
+    24
+   ]
+  }
+ },
+ "win/392-ai-proposal-applied": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/392-ai-proposal-applied",
+  "targets": {}
+ },
+ "win/401-pkg-backup-dialog": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/401-pkg-backup-dialog",
+  "targets": {}
+ },
+ "win/434-prod-overview": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/434-prod-overview",
+  "targets": {
+   "role=button[name=\"Moodboards\"]": [
+    512,
+    46,
+    98,
+    37
+   ],
+   "role=button[name=\"Schedule\"]": [
+    787,
+    46,
+    75,
+    37
+   ]
+  }
+ },
+ "win/445-prod-catalog": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/445-prod-catalog",
+  "targets": {}
+ },
+ "win/458-prod-locations": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/458-prod-locations",
+  "targets": {
+   "role=button[name^=\"Rayapuram bus stand\"]": [
+    892,
+    203,
+    338,
+    131
+   ]
+  }
+ },
+ "win/461-prod-location-row-menu": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/461-prod-location-row-menu",
+  "targets": {
+   "role=menuitem[name=\"Open\"]": [
+    1069,
+    273,
+    188,
+    29
+   ]
+  }
+ },
+ "win/462-prod-location-drawer": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/462-prod-location-drawer",
+  "targets": {
+   "aside.drawer .db": [
+    1151,
+    144,
+    449,
+    777
+   ]
+  }
+ },
+ "win/463-prod-location-drawer-notes": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/463-prod-location-drawer-notes",
+  "targets": {}
+ },
+ "win/465-prod-location-drawer-hospital": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/465-prod-location-drawer-hospital",
+  "targets": {}
+ },
+ "win/469-prod-cast": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/469-prod-cast",
+  "targets": {
+   "tr:has-text(\"NEWSREADER\") >> role=button[name=\"Assign\"]": [
+    1185,
+    381,
+    49,
+    19
+   ]
+  }
+ },
+ "win/470-prod-cast-assign-dialog": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/470-prod-cast-assign-dialog",
+  "targets": {
+   "#as-person": [
+    549,
+    268,
+    502,
+    36
+   ]
+  }
+ },
+ "win/471-prod-cast-assign-alternate-banner": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/471-prod-cast-assign-alternate-banner",
+  "targets": {}
+ },
+ "win/476-prod-crew": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/476-prod-crew",
+  "targets": {}
+ },
+ "win/480-prod-moodboard": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/480-prod-moodboard",
+  "targets": {
+   "role=button[name=\"New Moodboard\"]": [
+    1431,
+    100,
+    149,
+    32
+   ]
+  }
+ },
+ "win/489-prod-moodboard-vault-dialog": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/489-prod-moodboard-vault-dialog",
+  "targets": {}
+ },
+ "win/498-prod-moodboard-export-dialog": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/498-prod-moodboard-export-dialog",
+  "targets": {}
+ },
+ "win/499-prod-moodboard-new-dialog": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/499-prod-moodboard-new-dialog",
+  "targets": {
+   "role=button[name=\"Overall Look\"]": [
+    549,
+    465,
+    81,
+    23
+   ]
+  }
+ },
+ "win/501-prod-moodboard-new-filled": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/501-prod-moodboard-new-filled",
+  "targets": {
+   "role=button[name=\"Create Moodboard\"]": [
+    911,
+    649,
+    140,
+    32
+   ]
+  }
+ },
+ "win/502-prod-moodboard-empty-canvas": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/502-prod-moodboard-empty-canvas",
+  "targets": {
+   "role=button[name=\"Storyboards\"]": [
+    612,
+    46,
+    93,
+    37
+   ]
+  }
+ },
+ "win/503-prod-storyboard-panels": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/503-prod-storyboard-panels",
+  "targets": {
+   "#radix-_r_f_": [
+    1471,
+    100,
+    109,
+    32
+   ]
+  }
+ },
+ "win/511-prod-storyboard-add-panel-menu": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/511-prod-storyboard-add-panel-menu",
+  "targets": {
+   "role=menuitem[name=\"Draw / Sketch\"]": [
+    1386,
+    170,
+    188,
+    29
+   ]
+  }
+ },
+ "win/512-prod-storyboard-sketch-dialog": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/512-prod-storyboard-sketch-dialog",
+  "targets": {
+   "img[aria-label=\"Sketch area\"]": [
+    549,
+    362,
+    503,
+    283
+   ]
+  }
+ },
+ "win/513-prod-storyboard-sketch-drawn": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/513-prod-storyboard-sketch-drawn",
+  "targets": {}
+ },
+ "win/520-prod-storyboard-scene-no-board": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/520-prod-storyboard-scene-no-board",
+  "targets": {
+   "role=button[name=\"Shot Lists\"]": [
+    707,
+    46,
+    78,
+    37
+   ]
+  }
+ },
+ "win/521-prod-shots-list": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/521-prod-shots-list",
+  "targets": {
+   "button[aria-label=\"Open shot 1A: Wide: the bus arrives at the empty stand\"]": [
+    331,
+    233,
+    575,
+    17
+   ]
+  }
+ },
+ "win/522-prod-shots-grid": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/522-prod-shots-grid",
+  "targets": {}
+ },
+ "win/526-prod-shot-menu": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/526-prod-shot-menu",
+  "targets": {
+   "role=menuitem[name=\"Open\"]": [
+    590,
+    246,
+    188,
+    29
+   ]
+  }
+ },
+ "win/527-prod-shot-drawer": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/527-prod-shot-drawer",
+  "targets": {}
+ },
+ "win/533-prod-schedule-board": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/533-prod-schedule-board",
+  "targets": {
+   "role=button[name=\"Create Shooting Day\"]": [
+    430,
+    142,
+    171,
+    32
+   ]
+  }
+ },
+ "win/540-prod-schedule-create-day-dialog": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/540-prod-schedule-create-day-dialog",
+  "targets": {
+   "#of-day-notes": [
+    619,
+    510,
+    362,
+    73
+   ]
+  }
+ },
+ "win/541-prod-schedule-create-day-filled": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/541-prod-schedule-create-day-filled",
+  "targets": {
+   "role=button[name=\"Create Day\"]": [
+    889,
+    617,
+    92,
+    32
+   ]
+  }
+ },
+ "win/542-prod-schedule-day-created": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/542-prod-schedule-day-created",
+  "targets": {
+   "role=button[name=\"Shoot Day 4 · Thu 12 Nov 2026\"]": [
+    536,
+    831,
+    188,
+    16
+   ]
+  }
+ },
+ "win/543-prod-schedule-day-detail-empty": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/543-prod-schedule-day-detail-empty",
+  "targets": {}
+ },
+ "win/566-prod-schedule-warnings-drawer": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/566-prod-schedule-warnings-drawer",
+  "targets": {}
+ },
+ "win/584-prod-schedule-day-detail-timeline": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/584-prod-schedule-day-detail-timeline",
+  "targets": {}
+ },
+ "win/589-prod-dood-table": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/589-prod-dood-table",
+  "targets": {}
+ },
+ "win/597-prod-daily-day-1": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/597-prod-daily-day-1",
+  "targets": {
+   "role=button[name=\"Sides\"]": [
+    1070,
+    46,
+    53,
+    37
+   ]
+  }
+ },
+ "win/602-prod-sides-setup": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/602-prod-sides-setup",
+  "targets": {
+   "select[aria-label=\"Shooting day\"]": [
+    207,
+    212,
+    290,
+    35
+   ]
+  }
+ },
+ "win/603-prod-sides-day-4": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/603-prod-sides-day-4",
+  "targets": {
+   "role=radio[name=\"Selected cast\"]": [
+    272,
+    408,
+    96,
+    28
+   ]
+  }
+ },
+ "win/604-prod-sides-selected-cast-none": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/604-prod-sides-selected-cast-none",
+  "targets": {
+   "label:has-text(\"Ananya Rao (LAKSHMI)\") input": [
+    211,
+    446,
+    16,
+    16
+   ]
+  }
+ },
+ "win/605-prod-sides-selected-cast": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/605-prod-sides-selected-cast",
+  "targets": {}
+ },
+ "win/606-prod-sides-cover-page": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/606-prod-sides-cover-page",
+  "targets": {}
+ },
+ "win/612-prod-reports-scene": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/612-prod-reports-scene",
+  "targets": {
+   "role=button[name=\"Save snapshot\"]": [
+    1352,
+    100,
+    133,
+    32
+   ]
+  }
+ },
+ "win/617-prod-reports-breakdown-completeness": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/617-prod-reports-breakdown-completeness",
+  "targets": {}
+ },
+ "win/620-prod-reports-saved-snapshot": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/620-prod-reports-saved-snapshot",
+  "targets": {
+   "role=button[name=\"Back to live reports\"]": [
+    1455,
+    167,
+    112,
+    19
+   ]
+  }
+ },
+ "win/621-prod-reports-live-with-snapshots": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/621-prod-reports-live-with-snapshots",
+  "targets": {
+   "role=button[name=\"Export\"]": [
+    1493,
+    100,
+    87,
+    32
+   ]
+  }
+ },
+ "win/622-prod-reports-export-dialog": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/622-prod-reports-export-dialog",
+  "targets": {}
+ },
+ "win/623-prod-budget-filled": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/623-prod-budget-filled",
+  "targets": {
+   "role=button[name=\"Add Line\"]": [
+    1479,
+    100,
+    101,
+    32
+   ]
+  }
+ },
+ "win/624-prod-budget-add-line-dialog": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/624-prod-budget-add-line-dialog",
+  "targets": {
+   "#of-bl-desc": [
+    619,
+    387,
+    362,
+    36
+   ]
+  }
+ },
+ "win/627-prod-budget-add-line-filled": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/627-prod-budget-add-line-filled",
+  "targets": {
+   "role=button[name=\"Add Line\"]": [
+    901,
+    725,
+    80,
+    32
+   ]
+  }
+ },
+ "win/628-prod-budget-line-added": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/628-prod-budget-line-added",
+  "targets": {}
+ },
+ "win/636-cs-list": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/636-cs-list",
+  "targets": {
+   "role=button[name=\"Create Call Sheet\"]": [
+    1431,
+    62,
+    149,
+    32
+   ]
+  }
+ },
+ "win/643-cs-create-dialog": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/643-cs-create-dialog",
+  "targets": {
+   "select[aria-label=\"Source shooting day\"]": [
+    549,
+    400,
+    502,
+    35
+   ]
+  }
+ },
+ "win/644-cs-create-dialog-day-chosen": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/644-cs-create-dialog-day-chosen",
+  "targets": {
+   "role=button[name=\"Create Call Sheet\"]": [
+    923,
+    637,
+    128,
+    32
+   ]
+  }
+ },
+ "win/645-cs-editor-draft": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/645-cs-editor-draft",
+  "targets": {
+   "role=button[name=\"Add Section\"]": [
+    1305,
+    303,
+    260,
+    24
+   ]
+  }
+ },
+ "win/647-cs-add-section-menu": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/647-cs-add-section-menu",
+  "targets": {}
+ },
+ "win/662-cs-refresh-dialog": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/662-cs-refresh-dialog",
+  "targets": {}
+ },
+ "win/690-files-list": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/690-files-list",
+  "targets": {
+   "role=button[name=\"New Folder\"]": [
+    1339,
+    62,
+    117,
+    32
+   ]
+  }
+ },
+ "win/707-files-new-folder-dialog": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/707-files-new-folder-dialog",
+  "targets": {
+   "#fo-name": [
+    619,
+    483,
+    362,
+    36
+   ]
+  }
+ },
+ "win/708-files-new-folder-filled": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/708-files-new-folder-filled",
+  "targets": {
+   "role=button[name=\"Create\"]": [
+    915,
+    553,
+    66,
+    32
+   ]
+  }
+ },
+ "win/709-files-folder-created": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/709-files-folder-created",
+  "targets": {}
+ },
+ "win/717-notes-filled": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/717-notes-filled",
+  "targets": {
+   "role=button[name=\"New Note\"]": [
+    1386,
+    62,
+    95,
+    24
+   ],
+   "role=button[name=\"New Task\"]": [
+    1489,
+    62,
+    91,
+    24
+   ]
+  }
+ },
+ "win/722-notes-new-note-editor": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/722-notes-new-note-editor",
+  "targets": {
+   "#ne-title": [
+    1227,
+    138,
+    357,
+    33
+   ]
+  }
+ },
+ "win/723-notes-new-note-filled": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/723-notes-new-note-filled",
+  "targets": {
+   "role=button[name=\"Delete\"]": [
+    1227,
+    932,
+    86,
+    32
+   ]
+  }
+ },
+ "win/724-notes-note-deleted-toast": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/724-notes-note-deleted-toast",
+  "targets": {}
+ },
+ "win/725-notes-task-editor-new": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/725-notes-task-editor-new",
+  "targets": {
+   "#te-title": [
+    1227,
+    138,
+    357,
+    33
+   ]
+  }
+ },
+ "win/727-notes-task-editor-filled": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/727-notes-task-editor-filled",
+  "targets": {
+   "input[aria-label=\"Find a scene, location, character, shooting day or call sheet\"]": [
+    1258,
+    267,
+    315,
+    30
+   ]
+  }
+ },
+ "win/728-notes-task-editor-related-results": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/728-notes-task-editor-related-results",
+  "targets": {
+   "role=option[name^=\"Catalog Item\"]": [
+    1228,
+    303,
+    355,
+    36
+   ]
+  }
+ },
+ "win/729-notes-task-editor-related-chosen": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/729-notes-task-editor-related-chosen",
+  "targets": {
+   "role=button[name=\"Add Task\"]": [
+    1503,
+    932,
+    81,
+    32
+   ]
+  }
+ },
+ "win/730-notes-task-added-toast": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/730-notes-task-added-toast",
+  "targets": {}
+ },
+ "win/741-trash-filled": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/741-trash-filled",
+  "targets": {}
+ },
+ "win/749-templates-page": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/749-templates-page",
+  "targets": {
+   "role=button[name=\"Create Template\"]": [
+    1452,
+    100,
+    128,
+    24
+   ]
+  }
+ },
+ "win/752-templates-create-dialog": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/752-templates-create-dialog",
+  "targets": {
+   "#tp-name": [
+    549,
+    311,
+    502,
+    36
+   ]
+  }
+ },
+ "win/754-templates-create-filled": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/754-templates-create-filled",
+  "targets": {
+   "role=dialog >> role=button[name=\"Create\"s]": [
+    985,
+    734,
+    66,
+    32
+   ]
+  }
+ },
+ "win/755-templates-created-toast": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/755-templates-created-toast",
+  "targets": {}
+ },
+ "win/762-settings-general": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/762-settings-general",
+  "targets": {
+   "role=tab[name=\"Writing\"]": [
+    303,
+    46,
+    66,
+    37
+   ]
+  }
+ },
+ "win/768-settings-writing": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/768-settings-writing",
+  "targets": {
+   "role=tab[name=\"Keyboard shortcuts\"]": [
+    371,
+    46,
+    136,
+    37
+   ]
+  }
+ },
+ "win/775-settings-shortcuts": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/775-settings-shortcuts",
+  "targets": {
+   "role=tab[name=\"Offline AI\"]": [
+    593,
+    46,
+    78,
+    37
+   ]
+  }
+ },
+ "win/789-settings-offline-ai-ready": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/789-settings-offline-ai-ready",
+  "targets": {
+   "role=tab[name=\"Advanced\"]": [
+    673,
+    46,
+    80,
+    37
+   ]
+  }
+ },
+ "win/794-settings-advanced": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/794-settings-advanced",
+  "targets": {
+   "role=tab[name=\"Appearance\"]": [
+    756,
+    46,
+    92,
+    37
+   ]
+  }
+ },
+ "win/797-settings-appearance": {
+  "w": 1600,
+  "h": 1000,
+  "src": "/screens/win/797-settings-appearance",
+  "targets": {}
+ },
+ "_sanitize": 1,
+ "_generated": "2026-10-21T02:33:47.607Z"
+}

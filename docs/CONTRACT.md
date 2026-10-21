@@ -70,3 +70,36 @@ Components: .wrap (1180px) .narrow (760px) .section .section.tint .section.dark 
 Windows: research/WindowsHTML-src/light/NNN-name.html (1600x1000). Mac: research/MacHTML-src/light/NNN-name.html
 (window picture; pages.json has titles). Use the newest captures only; never the package's old app/ or HTML_Mockups/.
 Windows screens show the Windows app, Mac screens the Mac app. Never swap.
+
+## Tutorial modules (one file per tutorial per platform)
+`src/content/tutorials/win/<id>.mjs` and `src/content/tutorials/mac/<id>.mjs`, each `export default {...}`:
+```js
+export default {
+  id: 'create-project',           // same id on both platforms when it is the same workflow
+  available: true,                // false: only id, title, reason are needed (no page is built; the switch explains)
+  reason: '',                     // why it is not available on this platform (plain words)
+  path: 'getting-started',        // one of TUTORIAL_PATHS keys in src/content/nav.mjs
+  order: 2,                       // order inside the path
+  feature: 'screenplay',          // a FEATURES slug from nav.mjs, or null
+  title: 'Create your first project',          // task-shaped, <= 60 chars
+  purpose: 'One sentence: what you will be able to do.',
+  difficulty: 'Beginner',         // Beginner | Intermediate | Advanced
+  minutes: 3,
+  prerequisites: ['OpenFrame Studio is installed and open.'],
+  objectives: ['Create a project', 'Choose its type'],
+  steps: [                        // from research/tutorials-<plat>-*.json, verified screens and targets
+    { screen: '003-app-home-empty', action: 'click', target: 'role=button[name="Create Project"]',
+      label: 'Click Create Project', text: null, key: null,
+      body: 'One or two plain sentences telling the reader what to do and what they will see.' },
+    { screen: '...', action: 'view', target: null, label: 'Your project opens', text: null, key: null, body: '...' },
+  ],
+  result: 'What the reader has at the end.',
+  mistakes: ['Common mistake and how to avoid it.'],
+  troubleshooting: [['Problem the reader may hit', 'What to do']],
+  related: ['write-screenplay', 'idea-vault'],  // ids
+  next: 'project-tour',                           // id of the recommended next tutorial
+};
+```
+Rules: `screen` has no `.html`. Platform words: Windows says Ctrl, dialog, right-click; Mac says Cmd, sheet,
+Control-click. Text must match the screens (exact UI names). No em dashes. 3 to 9 steps. Only claim what the screens
+and the capability matrix show. URLs: /windows/tutorials/<id>/ and /mac/tutorials/<id>/.

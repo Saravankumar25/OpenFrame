@@ -1,0 +1,56 @@
+/* Information pages (src/pages/info.mjs). Page classes use the i- prefix. Tokens come from site.css. */
+
+.i-hero { display: grid; gap: 32px; align-items: center; }
+@media (min-width: 900px) { .i-hero { grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 48px; } }
+.i-hero-text > p:last-child { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 12px; }
+
+.i-kv { margin: 0; display: grid; gap: 16px; }
+.i-kv > div { padding: 16px 0; border-top: 1px solid var(--line); }
+.i-kv dt { font-weight: 600; color: var(--ink); margin-bottom: 4px; }
+.i-kv dd { margin: 0; color: var(--ink2); }
+@media (min-width: 760px) {
+  .i-kv > div { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 24px; }
+  .i-kv dt { margin-bottom: 0; }
+}
+
+.i-scroll { overflow-x: auto; margin: 16px 0; }
+.i-table { width: 100%; border-collapse: collapse; }
+.i-table th, .i-table td { text-align: left; vertical-align: top; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+.i-table thead th { font-weight: 600; color: var(--ink); background: var(--tint); }
+.i-table tbody th { font-weight: 500; color: var(--ink); }
+.i-table td { color: var(--ink2); }
+.i-compare th:first-child { white-space: nowrap; }
+.i-small { color: var(--muted); font-size: .9em; }
+
+.i-steps { margin: 16px 0 24px; padding-left: 1.4em; display: grid; gap: 12px; }
+.i-steps li { padding-left: 4px; color: var(--ink2); }
+.i-steps li::marker { color: var(--accent-ink); font-weight: 700; }
+.i-steps strong { color: var(--ink); }
+
+.i-jump { display: flex; flex-wrap: wrap; gap: 8px; margin: 24px 0 8px; }
+.i-jump a { padding: 6px 14px; border: 1px solid var(--line2); border-radius: 999px; color: var(--ink2); text-decoration: none; }
+.i-jump a:hover, .i-jump a:focus-visible { border-color: var(--accent); color: var(--accent-ink); }
+
+.i-faq-group { margin-top: 40px; scroll-margin-top: 96px; }
+.i-q { border-top: 1px solid var(--line); }
+.i-q:last-of-type { border-bottom: 1px solid var(--line); }
+.i-q summary { cursor: pointer; padding: 16px 32px 16px 0; font-weight: 600; color: var(--ink); list-style: none; position: relative; }
+.i-q summary::-webkit-details-marker { display: none; }
+.i-q summary::after { content: "+"; position: absolute; right: 4px; top: 14px; font-size: 1.3em; color: var(--accent-ink); }
+.i-q[open] summary::after { content: "\2212"; }
+.i-q summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+.i-a { padding: 0 0 16px; color: var(--ink2); }
+.i-a p { margin: 0; }
+
+.i-chips { list-style: none; margin: 16px 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.i-chips li { padding: 6px 14px; border: 1px solid var(--line2); border-radius: 999px; background: var(--cream); color: var(--ink2); }
+.i-chips-wide li { padding: 8px 16px; }
+
+.i-os-grid { display: grid; gap: 24px; margin: 32px auto; }
+@media (min-width: 760px) { .i-os-grid { grid-template-columns: 1fr 1fr; } }
+.i-os-card { display: flex; flex-direction: column; gap: 4px; }
+.i-os-card h2 { margin-top: 0; font-size: 1.35rem; }
+.i-os-card p:last-child { margin-top: auto; padding-top: 12px; }
+.i-you { margin-top: 24px; }
+
+.i-shots { display: grid; gap: 24px; margin: 24px auto; }
