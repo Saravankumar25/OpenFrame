@@ -30,7 +30,8 @@
    - The E2E runner tests a copy with its own bundle identifier and clears its preferences per scenario: the owner's
      own use of the dev app otherwise leaks into the scenarios.
 
-3. **MacHTML rebuilt, branch `mac/machtml-rebuild`** (from `mac/windows-parity`, not merged, not pushed): 692 states of
+3. **MacHTML rebuilt, branch `mac/machtml-rebuild`** (from `mac/windows-parity`; not merged locally). On the owner's word
+   it is on GitHub `main` in `mac/` with MacHTML in `mac/MacHTML/` (pull request 2, merge `63482e2`, subtree merge): 692 states of
    the Mac app, each in Light and Dark, as standalone HTML pages in `MacHTML/` (committed on the owner's word, 583 MB; regenerate with
    `apps/macos/E2E/capture.sh "apps/macos/build/OpenFrame Studio.app"`, `OPENFRAME_E2E_PARALLEL=4` for speed). Each page
    is the 2x window picture cut into its containers plus real HTML for every accessibility element. 692 of 692 pages

@@ -79,6 +79,8 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
   Back and sidebar toolbar buttons do nothing when pressed through accessibility; "Opened as a copy" shown twice in
   Recent; container identifiers hide inner identifiers in several sheets and pages; the call sheet Finalize state did
   not appear within 12 seconds.
+- **Pushed (owner instruction):** GitHub `main` `mac/` now holds this branch (subtree merge, old `mac/MacHTML` removed
+  first, `windows/` untouched, `mac/release/` unchanged), pull request 2 merged as `63482e2` after GitGuardian passed.
 - **Next:** owner review of MacHTML and the parity branch; fix the crash and the 1280-point layout problems above.
 - **Checks run:** tour and page check as above. Swift unit tests, `npm run verify` and the full E2E suite not run (the
   app code did not change).
