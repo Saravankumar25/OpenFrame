@@ -1,0 +1,213 @@
+[
+ {
+  "id": "first-launch",
+  "available": true,
+  "reason": "",
+  "steps": [
+   {"screen": "001-home-welcome.html", "action": "type", "target": "a[aria-label=\"Your name: Welcome, a name typed\"]", "label": "Type the name you want on your notes and tasks", "text": "E2E Tester", "key": null},
+   {"screen": "002-home-welcome-filled.html", "action": "click", "target": "[data-id=\"welcome-continue\"]", "label": "Click Continue", "text": null, "key": null},
+   {"screen": "003-home-empty.html", "action": "view", "target": null, "label": "Application Home opens, ready for your first project", "text": null, "key": null}
+  ],
+  "notes": "Mac first launch is a welcome sheet titled \"Welcome to OpenFrame Studio\" with the question \"What should we call you?\" and one field \"Your name (required)\". Leaving it empty shows \"Enter your name.\" The sheet says: \"Your name appears on notes, tasks and project activity. There is no account. It stays on this computer and you can change it any time in Settings.\" The button is Continue. The captured name is the test name E2E Tester; a public tutorial may show it or blur it. Application Home with no projects says \"Create your first project.\" with the buttons Create Project, Open Existing Project and Restore Backup or Package…, a note \"Your work is stored on this Mac\" with a Show in Finder link, and the toolbar buttons Global Idea Vault, Settings and the user name. The status line reads \"No project open, Offline · Your projects stay on this computer\". The team password gate of the internal build was not captured."
+ },
+ {
+  "id": "create-project",
+  "available": true,
+  "reason": "Partial: the result screen is the Project Home of the tour's second new project, titled Empty Short, because the tour imported an example script into Night Bus straight after creating it. The step from the New Project sheet to an empty Project Home is real; only the title differs.",
+  "steps": [
+   {"screen": "003-home-empty.html", "action": "click", "target": "[data-id=\"home-new-project\"]", "label": "Click Create Project", "text": null, "key": null},
+   {"screen": "011-new-project-sheet.html", "action": "type", "target": "[data-id=\"new-project-title\"]", "label": "Type a title for the film", "text": "Night Bus", "key": null},
+   {"screen": "012-new-project-filled.html", "action": "click", "target": "[data-id=\"new-project-create\"]", "label": "Click Create", "text": null, "key": null},
+   {"screen": "060-project-home-empty.html", "action": "view", "target": null, "label": "The new project opens on its Project Home", "text": null, "key": null}
+  ],
+  "notes": "On the Mac the New Project form is a sheet that slides down over Application Home (on Windows it is a dialog). Fields: Title, Type (pop-up with Feature Film and Short Film, screens 013 and 014), Genre, Written by, Location with a Choose… button. Buttons: Cancel and Create; Create stays off until there is a title. With projects already on Application Home the button is called New Project (toolbar), and File > New Project… (Cmd+N on Application Home) also opens the sheet. A new project opens on Project Home with three starting cards: Open Idea Vault, Build Story and Write/Import Screenplay, plus the header line \"Feature Film · Created 1 second ago\" and the sidebar note \"Project stored locally on this Mac\". Avoid showing the Empty Short title in the voice-over; say \"your new project\"."
+ },
+ {
+  "id": "project-tour",
+  "available": true,
+  "reason": "",
+  "steps": [
+   {"screen": "034-home-import-toast.html", "action": "click", "target": "[data-id=\"sidebar-home\"]", "label": "Click Home in the sidebar", "text": null, "key": null},
+   {"screen": "035-project-home.html", "action": "click", "target": "[data-id=\"project-search-button\"]", "label": "Click Search, or press Cmd+K", "text": null, "key": null},
+   {"screen": "051-search-palette-project.html", "action": "type", "target": "[data-id=\"palette-field\"]", "label": "Type a name or a word from the script", "text": "kiran", "key": null},
+   {"screen": "052-search-palette-results.html", "action": "view", "target": null, "label": "Matching scenes and commands appear; pick one to jump there", "text": null, "key": null}
+  ],
+  "notes": "The project window has a sidebar with the sections Home, Idea Vault, Story, Screenplay, Breakdown, Production, Call Sheets and Files, the project title at the top and \"Project stored locally on this Mac\" with the save state (Saved) at the bottom. The toolbar holds Hide Sidebar, All Projects, Back and Forward, the Project menu (\"Project: Night Bus. Switch or manage projects\"), Search, New, Assistant and Settings. Project Home shows QUICK ACCESS (Idea Vault, Beat Board, Screenplay, Production, Call Sheets, Breakdown, Notes & Tasks, Activity, Recently Deleted, Templates), Project Files and RECENT. Search opens the \"Search and commands\" palette (Cmd+K; esc closes it); empty, it lists commands such as \"Go to Story\"; typing kiran lists the scenes that mention Kiran. The Mac menu bar also has a Go menu (screen 043: Back, Forward, Home, Idea Vault, Story, Screenplay, Breakdown, Production, Call Sheets, Files, Notes and Tasks, Activity, Recently Deleted, Production Tab, Project Settings, Keyboard Shortcuts) and a File menu (screen 040); menu bar titles are not part of the captured window, so they are not a clickable step here. Help > Keyboard Shortcuts lists every shortcut (screen 053)."
+ },
+ {
+  "id": "manage-projects",
+  "available": true,
+  "reason": "Partial: the Actions menu with two projects was not captured, so steps 1 and 2 each show the click on Actions and the result after choosing the menu item. Duplicate Project is in the menu (screen 055) but its result was not captured.",
+  "steps": [
+   {"screen": "061-home-two-projects.html", "action": "click", "target": "[data-id=\"project-card-actions-Night Bus\"]", "label": "Open Actions for Night Bus and choose Pin", "text": null, "key": null},
+   {"screen": "064-home-pinned.html", "action": "click", "target": "[data-id=\"project-card-actions-Empty Short\"]", "label": "Open Actions for Empty Short and choose Archive", "text": null, "key": null},
+   {"screen": "065-home-one-archived.html", "action": "click", "target": "[data-id=\"home-open-archived\"]", "label": "Click Open Archived", "text": null, "key": null},
+   {"screen": "066-home-archived-page.html", "action": "click", "target": "button[aria-label=\"Restore Empty Short\"]", "label": "Click Restore", "text": null, "key": null},
+   {"screen": "067-home-archived-empty.html", "action": "view", "target": null, "label": "The project is back in your projects", "text": null, "key": null}
+  ],
+  "notes": "Each project card on Application Home has an Actions button (\"Actions for Night Bus\") and the same items on right-click (screen 055): Open, Rename…, Duplicate Project, Pin, Archive, Remove from Recent, Delete Project…. A pinned project moves to a PINNED group above RECENT PROJECTS. Archiving shows the toast \"“Empty Short” was archived. It is not deleted; find it with Show archived.\" and the button becomes Open Archived (1). The Archived projects page says archived projects are not deleted, with Restore and Open on each card and Back to projects at the top. After Restore the toast reads \"“Empty Short” is back in your projects.\" Delete Project… asks you to type the project name first (screens 058 and 059). Rename… opens the Rename Project sheet (screen 057)."
+ },
+ {
+  "id": "idea-vault",
+  "available": true,
+  "reason": "",
+  "steps": [
+   {"screen": "252-vault-add-quote.html", "action": "click", "target": "[data-id=\"vault-quick-capture\"]", "label": "Click Quick Capture, or press Shift+Cmd+N", "text": null, "key": null},
+   {"screen": "253-vault-add-quick-capture.html", "action": "type", "target": "[data-id=\"quick-capture-idea\"]", "label": "Type the idea", "text": "A bus that never reaches its stop", "key": null},
+   {"screen": "254-vault-quick-capture-typed.html", "action": "click", "target": "role=button[name=\"Save\"]", "label": "Click Save, or press Return", "text": null, "key": null},
+   {"screen": "255-vault-saved-notice.html", "action": "view", "target": null, "label": "The idea is saved as a card in the Project Idea Vault", "text": null, "key": null}
+  ],
+  "notes": "The Idea Vault page is headed \"Project Idea Vault\" with the line \"Everything collected for this film. Nothing here is classified or sync…\". Toolbar: Add (menu), Record Note, Quick Capture, Recently Deleted, Undo, Redo, a Which Idea Vault switch (This Project, Global), a View switch (Grid, Card, List, Folder) and Search. The Add menu (screen 248) has Note, Image…, URL…, File…, Audio / Voice Note…, Audio File…, Video…, Quote and Quick Capture. Choosing Note opens an \"Untitled note\" in the inspector with Title (optional), Note, Research flag, Collections, Pin, Move, Copy to Global Vault, Send to Story and Delete (screen 249). URL… opens Add URL with a link and an optional note (screens 250, 257). The Quick Capture sheet says \"Saving to Night Bus · Project Idea Vault\" and \"Return to save · Shift+Return for a new line · Esc to cancel\". After saving a notice reads \"Saved to the Project Idea Vault\" with Undo. The start screen 252 still shows a quote open in the inspector from the previous action; that is the real state. Image… and File… open the macOS Open panel, which was not captured."
+ },
+ {
+  "id": "idea-vault-organise",
+  "available": true,
+  "reason": "Partial: the tutorial starts with the right-click menu already open; the right-click itself was captured only from an earlier vault state.",
+  "steps": [
+   {"screen": "272-vault-card-context-menu.html", "action": "click", "target": "[data-id=\"menu-item-3\"]", "label": "In the right-click menu of an idea, click Pin", "text": null, "key": null},
+   {"screen": "275-vault-pinned-notice.html", "action": "click", "target": "a[aria-label=\"Pinned: Pinned items\"]", "label": "Click Pinned in the Idea Vault sidebar", "text": null, "key": null},
+   {"screen": "276-vault-pinned.html", "action": "view", "target": null, "label": "Pinned ideas stay at the top, ready to use", "text": null, "key": null}
+  ],
+  "notes": "Right-clicking an idea card gives Open, Rename, Move…, Pin, Add to Collection…, Tag…, Copy to Global Vault, Send to Story, Research flag (Unchecked, Checked, Needs Expert Check, No flag) and Delete. The pinned idea here is \"Rain on the depot roof, a single lamp\". The Idea Vault sidebar lists Pinned, Recently added, Collections (New Collection) and Folders (New Folder), and Tags once a tag exists. Selecting a card shows a selection bar \"1 selected\" with Move to Folder, Add to Collection, Tag, Pin, Copy to Global Vault, Delete and Clear selection (screen 270). Tag opens a sheet \"Add tags to …\" where tags are separated with commas (screens 271, 277); Move to Folder opens \"Move to Folder\" (screens 266, 282). Delete moves the idea to Recently Deleted with Undo (screen 298)."
+ },
+ {
+  "id": "story-board",
+  "available": true,
+  "reason": "Partial: the board after the first scene card was saved was not captured (the next capture already has four cards and a beat), so the tutorial ends on the blank scene card ready for text. Screen 190 shows the finished board.",
+  "steps": [
+   {"screen": "177-story-board-empty.html", "action": "click", "target": "[data-id=\"story-add-menu\"]", "label": "Click Add", "text": null, "key": null},
+   {"screen": "178-story-add-menu.html", "action": "click", "target": "[data-id=\"menu-item-0\"]", "label": "Choose Act", "text": null, "key": null},
+   {"screen": "184-story-add-act-inline.html", "action": "type", "target": "[data-id=\"inline-Act title\"]", "label": "Name the act and press Return", "text": "Act One: The last bus", "key": null},
+   {"screen": "185-story-board-one-act.html", "action": "click", "target": "a[aria-label=\"Add Sequence\"]", "label": "Click Add Sequence in the act", "text": null, "key": null},
+   {"screen": "186-story-add-sequence-inline.html", "action": "type", "target": "[data-id=\"inline-Sequence name\"]", "label": "Name the sequence and press Return", "text": "Missing the bus", "key": null},
+   {"screen": "187-story-sequence-empty.html", "action": "click", "target": "a[aria-label=\"Add scene\"]", "label": "Click Add scene in the sequence", "text": null, "key": null},
+   {"screen": "188-story-add-card-inline.html", "action": "view", "target": null, "label": "A new scene card waits for a short description", "text": null, "key": null}
+  ],
+  "notes": "Story has four views in a segmented control: Beat Board, Outline, Characters and Timeline. The empty Beat Board reads \"Your Beat Board is empty.\" and \"How does my story fit together? Drag cards until the story works.\", with Add Scene and Add Act. The toolbar Add menu has Act, Sequence, Beat, Scene Card and From Idea Vault…; other toolbar items: Search / filter cards, Zoom out, Zoom in, Parking Lot (switch), Build Screenplay and More Beat Board actions. Inside an act: Add Scene, Add Sequence, Add Beat; inside a sequence: Add scene. New acts, sequences and cards are named inline in the board, not in a sheet. The Parking Lot at the side holds cards kept out of the story (\"Add Beat to the Parking Lot\", \"Add Scene to the Parking Lot\"). Cmd+N makes a new scene card. The board shows no scene numbers (\"No scene numbers; they come from the screenplay\"). Build Screenplay turns cards into screenplay scenes (screen 220)."
+ },
+ {
+  "id": "characters",
+  "available": true,
+  "reason": "",
+  "steps": [
+   {"screen": "177-story-board-empty.html", "action": "click", "target": "input[aria-label=\"Characters\"]", "label": "In Story, click Characters", "text": null, "key": null},
+   {"screen": "230-story-characters-empty.html", "action": "click", "target": "button[aria-label=\"Add Character\"]", "label": "Click Add Character", "text": null, "key": null},
+   {"screen": "231-story-add-character-sheet.html", "action": "type", "target": "[data-id=\"story-new-character-name\"]", "label": "Type a name, and if you like a role and a short description", "text": "Kiran", "key": null},
+   {"screen": "232-story-add-character-filled.html", "action": "click", "target": "[data-id=\"story-create-character\"]", "label": "Click Create Character", "text": null, "key": null},
+   {"screen": "233-story-character-one.html", "action": "view", "target": null, "label": "The character page lists every scene the character appears in", "text": null, "key": null}
+  ],
+  "notes": "Characters is a view of Story. Empty it says \"No characters yet.\" and \"Create your first character. Name is all you need. Role, image and notes are optional.\" The New Character sheet has Name, Role / title, Image (Choose image…), Short description, Cancel and Create Character. In the capture the role \"A ticket inspector on the night route\" and the description \"Knows every regular by name\" were typed too, so screen 232 shows all three fields filled. After creating, a notice \"Added character Kiran\" offers Undo, and the character page (KIRAN) shows Edit, Open Relationship Map, More actions, \"Scenes this character appears in\" (found from the screenplay), Relationships (Add Relationship), \"Linked Scene Cards (reference only)\" with a Link button, and Notes. Typing a name close to an existing one warns about a possible match (screen 234)."
+ },
+ {
+  "id": "write-screenplay",
+  "available": true,
+  "reason": "Partial: character and dialogue lines were not typed in the captured new project; the element menu shows them and screen 084 shows the Element menu on a line of dialogue in the Night Bus script.",
+  "steps": [
+   {"screen": "105-screenplay-empty-editor.html", "action": "click", "target": "[data-id=\"element-picker\"]", "label": "Click Element to see the element types", "text": null, "key": null},
+   {"screen": "106-screenplay-empty-element-picker.html", "action": "key", "target": null, "label": "Press Esc to close the menu", "text": null, "key": "Esc"},
+   {"screen": "105-screenplay-empty-editor.html", "action": "type", "target": "[data-id=\"screenplay-editor\"]", "label": "Start a scene heading", "text": "IN", "key": null},
+   {"screen": "114-screenplay-empty-suggestions.html", "action": "type", "target": "[data-id=\"screenplay-editor\"]", "label": "Finish the heading, press Return and write the action", "text": "INT. BUS DEPOT - NIGHT\nMeera waits under the only working lamp.", "key": null},
+   {"screen": "115-screenplay-empty-first-scene.html", "action": "view", "target": null, "label": "Your first scene is on the page and in the scene list", "text": null, "key": null}
+  ],
+  "notes": "The screenplay page has a bottom bar with the Element menu, Hide Scenes, Find and Replace, the Draft menu (\"Draft: Draft 1. Switch draft\"), Zoom Out, Zoom 100% and Zoom In; the top bar has the Screenplay menu (\"Screenplay: Empty Short. Switch screenplay\"), Compare, Comments (0) and Screenplay Tools. The Element menu lists Scene Heading, Action, Character, Parenthetical, Dialogue, Transition, Shot, General note (not printed) and Insert Page Break. Mac shortcuts from the app: Cmd+1 Scene Heading, Cmd+2 Action, Cmd+3 Character, Cmd+4 Parenthetical, Cmd+5 Dialogue, Cmd+6 Transition, Cmd+7 Shot, Cmd+Return page break. Tab moves to the next element type and Shift+Tab back; Return at the end of a line starts the element that normally follows (after a character name, dialogue); Return on an empty action line turns it into a scene heading. While typing a heading the editor suggests INT., EXT., INT./EXT. and I/E. The scene list on the left is headed \"Scenes (1)\". Step 4's text is the whole field after the step; \"IN\" was already typed in step 3."
+ },
+ {
+  "id": "screenplay-notes",
+  "available": true,
+  "reason": "Partial: comments only. Private notes on the script were not captured (the tour could not open the private note actions menu). The step that selects words and chooses Add Comment is shown already done on the first screen, with the Screenplay Tools menu still visible.",
+  "steps": [
+   {"screen": "124-screenplay-comment-composer-quote.html", "action": "type", "target": "[data-id=\"comment-field\"]", "label": "Type your comment on the selected words, then click Comment", "text": "Should Kiran say which kite? The office has many.", "key": null},
+   {"screen": "125-screenplay-comment-posted.html", "action": "click", "target": "a[aria-label=\"Reply\"]", "label": "Click Reply under the comment", "text": null, "key": null},
+   {"screen": "126-screenplay-comment-reply-composer.html", "action": "type", "target": "textarea[aria-label=\"Reply\"]", "label": "Type a reply and click Reply", "text": "Yes, the red one with the newspaper tail.", "key": null},
+   {"screen": "127-screenplay-comment-with-reply.html", "action": "view", "target": null, "label": "The comment and its reply stay beside the script", "text": null, "key": null}
+  ],
+  "notes": "Select words in the script, then choose Screenplay Tools > Add Comment (Option-Cmd-M). The inspector opens on the Comments tab with the quote (here \"hand in a kite\", labelled \"Scene 1 · text comment\"), a Comment field, Cancel and Comment. With nothing selected Add Comment makes a scene comment (\"Scene 10 · scene comment\", screens 070 and 085). The Comments panel has Open and Resolved tabs, Add Comment and Comment on Draft; each comment shows the author, the quote, a link back to the script, Comment actions, Reply and Resolve. The toolbar button counts comments: Comments (1). Comments can be marked In Discussion (screen 133) and resolved (screens 130, 131). Export says \"Private notes excluded.\""
+ },
+ {
+  "id": "drafts-revisions",
+  "available": true,
+  "reason": "Partial: covers a new draft and Compare. Lock as Shooting Draft is the separate tutorial lock-shooting-draft; revisions (screens 153 to 160) start from a locked draft. In step 5 the capture changed two lines; the second change, \"Let go! Now!\", is in Scene 8.",
+  "steps": [
+   {"screen": "034-home-import-toast.html", "action": "click", "target": "[data-id=\"draft-menu\"]", "label": "Click the Draft menu at the bottom of the page", "text": null, "key": null},
+   {"screen": "080-screenplay-draft-menu.html", "action": "click", "target": "[data-id=\"menu-item-2\"]", "label": "Choose New Draft…", "text": null, "key": null},
+   {"screen": "081-screenplay-draft-new-draft.html", "action": "type", "target": "[data-id=\"new-draft-name\"]", "label": "Name the draft", "text": "Rewrite A", "key": null},
+   {"screen": "135-screenplay-new-draft-named.html", "action": "click", "target": "role=button[name=\"Create Draft\"]", "label": "Click Create Draft", "text": null, "key": null},
+   {"screen": "136-screenplay-second-draft-created.html", "action": "type", "target": "[data-id=\"screenplay-editor\"]", "label": "Rewrite a few lines in the new draft", "text": "A red one.", "key": null},
+   {"screen": "137-screenplay-second-draft-edited.html", "action": "click", "target": "[data-id=\"compare-button\"]", "label": "Click Compare", "text": null, "key": null},
+   {"screen": "145-screenplay-compare-text-only.html", "action": "view", "target": null, "label": "Both drafts side by side, with every change listed", "text": null, "key": null}
+  ],
+  "notes": "The Draft menu (\"Draft: Example-Short (imported). Switch draft\") lists the drafts, New Draft…, Manage Drafts… and Renumber Scenes. The New Draft sheet has Draft name, Note (optional), Cancel and Create Draft, and says the source draft stays exactly as it is. After creating, the line \"Created draft “Rewrite A”\" appears and the Draft menu shows Rewrite A. Compare shows Before and After pop-ups, a Comparison view switch (Text-only, Scene-only, Text inline), Previous change, Next change and Done, a Changes list (\"1 line changed in Scene 1\", \"1 line changed in Scene 8\", \"8 scenes unchanged\") and a summary line. Screenplay Tools > Drafts… opens the Drafts sheet with each draft's Actions (screens 139 to 144). Revisions: after locking, Screenplay Tools > Revisions… opens Revisions with Start Revision; a revision has a Label, a Colour (Blue, Pink, Yellow, Green), a Revision date and an optional Reason (screens 153 to 155), and Page View can show revision marks (screens 158, 159)."
+ },
+ {
+  "id": "lock-shooting-draft",
+  "available": true,
+  "reason": "",
+  "steps": [
+   {"screen": "068-screenplay-editor-typing.html", "action": "click", "target": "[data-id=\"screenplay-tools-menu\"]", "label": "Click Screenplay Tools", "text": null, "key": null},
+   {"screen": "069-screenplay-tools-menu.html", "action": "click", "target": "[data-id=\"menu-item-5\"]", "label": "Choose Lock as Shooting Draft…", "text": null, "key": null},
+   {"screen": "073-screenplay-tools-lock-as-shooting-draft.html", "action": "click", "target": "role=button[name=\"Lock as Shooting Draft\"]", "label": "Check the details and click Lock as Shooting Draft", "text": null, "key": null},
+   {"screen": "151-screenplay-locked.html", "action": "view", "target": null, "label": "The draft is locked as the Shooting Draft", "text": null, "key": null}
+  ],
+  "notes": "The confirmation sheet asks \"Lock this draft as the Shooting Draft?\" and lists Draft name, Current version, Unresolved review notes, Number of scenes and Last modified, with Cancel and Lock as Shooting Draft. It says locking is a safety state, not a destructive action. The result line reads \"Locked “Example-Short (imported)” as the Shooting Draft\". From then on Screenplay Tools offers Revisions… instead of Lock as Shooting Draft… (app source; the captured menu on screen 152 still shows the old label, so do not use that screen). Revisions explains that only the project owner can unlock a shooting draft and offers Start Revision (screens 153 to 155)."
+ },
+ {
+  "id": "start-revision",
+  "available": true,
+  "reason": "Partial: the capture chose the Pink colour on screen 154 before clicking Start Revision; that click was not captured on its own.",
+  "steps": [
+   {"screen": "153-screenplay-revisions-locked.html", "action": "click", "target": "[data-id=\"revisions-start\"]", "label": "In Revisions, click Start Revision", "text": null, "key": null},
+   {"screen": "154-screenplay-start-revision.html", "action": "click", "target": "a[aria-label=\"Start Revision\"][role=\"button\"]:not([data-id]) >> nth=0", "label": "Pick a colour, check the label and date, then click Start Revision", "text": null, "key": null},
+   {"screen": "155-screenplay-revision-started.html", "action": "view", "target": null, "label": "Revision A starts; the locked draft stays as it is", "text": null, "key": null}
+  ],
+  "notes": "Revisions opens from Screenplay Tools > Revisions… on a locked draft. It shows Revision history (\"No revisions yet.\"), the locked draft (\"Locked 20 Oct 2026 · baseline\"), Start Revision, Unlock draft (\"Only the project owner can unlock a shooting draft.\") and Close. The Start Revision sheet has Label (Revision A), Colour (Blue, Pink, Yellow, Green revision colour), Revision date (\"Printed where the title page and header ask for the date.\"), Reason (optional), Cancel and Start Revision. After it: \"Started Revision A. Example-Short (imported) stays locked.\", the Draft menu shows Revision A, and Revisions lists \"Revision A · Pink\" with \"Changed scenes in Revision A\" and changed pages."
+ },
+ {
+  "id": "import-script",
+  "available": true,
+  "reason": "Partial: only the first step of the import sheet was captured. The Preview interpretation step, any warnings, the Import step and the macOS Open panel behind Browse… were not captured. Step 2 combines choosing Import and Export and then Import Screenplay… in its submenu (the submenu was not captured).",
+  "steps": [
+   {"screen": "068-screenplay-editor-typing.html", "action": "click", "target": "[data-id=\"screenplay-tools-menu\"]", "label": "Click Screenplay Tools", "text": null, "key": null},
+   {"screen": "069-screenplay-tools-menu.html", "action": "click", "target": "[data-id=\"menu-item-13\"]", "label": "Choose Import and Export, then Import Screenplay…", "text": null, "key": null},
+   {"screen": "078-screenplay-tools-import-screenplay.html", "action": "view", "target": null, "label": "Choose a file with Browse…, paste text, or open a sample, then click Preview", "text": null, "key": null}
+  ],
+  "notes": "The Import Screenplay sheet asks \"What existing script do you want to bring into OpenFrame?\" and shows three steps: \"1 Select source\", \"2 Preview interpretation\", \"3 Import\". The file card lists the formats \"PDF · Final Draft (.fdx) · Fountain · TXT · DOCX\" with Browse… (opens the macOS Open panel), a box \"…or paste screenplay text\", and sample scripts (Example Feature, Example Short, Example Scene, FDX Interchange Test). It says importing never replaces your current screenplay. Buttons: Cancel and Preview. Import Screenplay… is also in the File menu (screen 040), the toolbar New menu (screen 037) and on a new project's Write/Import Screenplay card. After an import the screenplay opens with a toast \"Imported screenplay “LOST PROPERTY”\" and Undo (screen 034)."
+ },
+ {
+  "id": "export-script",
+  "available": true,
+  "reason": "Partial: Export… opens the macOS Save panel, which was not captured. Step 2 combines choosing Import and Export and then Export Screenplay… in its submenu (the submenu was not captured).",
+  "steps": [
+   {"screen": "068-screenplay-editor-typing.html", "action": "click", "target": "[data-id=\"screenplay-tools-menu\"]", "label": "Click Screenplay Tools", "text": null, "key": null},
+   {"screen": "069-screenplay-tools-menu.html", "action": "click", "target": "[data-id=\"menu-item-13\"]", "label": "Choose Import and Export, then Export Screenplay…", "text": null, "key": null},
+   {"screen": "079-screenplay-tools-export-screenplay.html", "action": "click", "target": "[data-id=\"export-format-fdx\"]", "label": "Choose a format, here Final Draft (.fdx)", "text": null, "key": null},
+   {"screen": "166-screenplay-export-fdx.html", "action": "view", "target": null, "label": "Check the options, then click Export… and choose where to save", "text": null, "key": null}
+  ],
+  "notes": "The Export Screenplay sheet asks \"What am I exporting, which version, in which format, and where will it be saved?\" Source shows the draft (\"Example-Short (imported) (current)\", 10 scenes). Format: \"PDF, professional, printable\", \"Final Draft (.fdx)\", Fountain, \"DOCX, editable\", and the link Additional formats… (plain text, screen 169). Scope: Entire draft or Selected scenes (screen 170); Clean script or Revision-marked version; check boxes Title page, Scene numbers, Revision info and Include notes. The sheet says \"Private notes excluded. Export creates a snapshot; your project does not change.\" Buttons: Cancel, Preview… (opens Print Preview, screen 172) and Export…. The File menu also has Export Screenplay… and Export PDF… (screen 040)."
+ },
+ {
+  "id": "pages-templates",
+  "available": true,
+  "reason": "Partial: templates only. Applying a template (Use in This Project, Start the screenplay) and saving your own template were not captured. Notes and Tasks are separate screens (584 to 605).",
+  "steps": [
+   {"screen": "619-pages-settings-general.html", "action": "click", "target": "[data-id=\"project-settings-tab-templates\"]", "label": "In Project Settings, click Templates", "text": null, "key": null},
+   {"screen": "632-pages-templates.html", "action": "click", "target": "[data-id=\"template-actions-builtin-builtin:feature_screenplay\"]", "label": "Open Actions for Feature Film Screenplay", "text": null, "key": null},
+   {"screen": "634-pages-templates-actions-menu.html", "action": "click", "target": "[data-id=\"menu-item-0\"]", "label": "Choose Preview", "text": null, "key": null},
+   {"screen": "633-pages-templates-preview.html", "action": "view", "target": null, "label": "Preview the template, then use it in this project", "text": null, "key": null}
+  ],
+  "notes": "On the Mac, templates live in the Project Settings sheet (toolbar Settings, or Shift+Cmd+,), whose pages are Project settings, Writing, Keyboard shortcuts, Templates, Offline AI, Advanced and Appearance, with Done. Templates asks \"Would a saved starting point help me begin faster?\" and has Create Template plus BUILT-IN starters: Feature Film Screenplay, Short Film Screenplay, Episodic / Series, Simple Beat Board, Indie Call Sheet, Shot List, Moodboard and Lightweight Budget. Each has Actions: Preview, Start the screenplay, Use in This Project, Copy to My Templates. The preview sheet shows the scenes (\"1. EXT. OPENING LOCATION - DAY\" and so on) with Close, Start the screenplay and Use in This Project. Create Template (screen 635) has Name, Type, Keep in, Description and Added sections, with Cancel and Create. For writing pages: Story has a Story page with text and export (screens 180 to 183), and Notes and Tasks holds notes and tasks (screens 584 to 605)."
+ },
+ {
+  "id": "ai-assistant-setup",
+  "available": false,
+  "reason": "The Mac capture build did not include the offline AI runtime. Every AI screen says \"Offline AI is missing from this installation, so it can't start. Reinstall OpenFrame Studio to repair it.\" and Settings > Offline AI shows \"Needs a reinstall\". Switching the assistant on and downloading the model were never shown, so a tutorial would show a broken state.",
+  "steps": [],
+  "notes": "Captured path for reference only: Project Home (636) > Assistant in the toolbar (Cmd+J) opens the AI Assistant panel (637) with an Off chip, Offline AI settings and Close AI Assistant; Offline AI settings menu (638) has Offline AI and Offline AI settings…; the app Settings window has a page Offline AI (032), also reachable from Project Settings > Offline AI (627). The Offline AI page says \"OpenFrame AI runs on this computer after a one-time download. Your project data is not sent to OpenFrame or to an AI cloud service.\" and has AI health, Export AI report… and Learned memory. Recapture with a build that has the runtime and the model download step."
+ },
+ {
+  "id": "ai-assistant-ask",
+  "available": false,
+  "reason": "No question, answer or proposed change was captured on the Mac: the capture build had no offline AI runtime, so the panel only shows \"AI is not available right now\".",
+  "steps": [],
+  "notes": "The AI Assistant panel opens beside any section (screens 639 to 646: Idea Vault, Story, Screenplay, Breakdown, Production, Schedule, Call Sheets, Files) from the Assistant toolbar button or Cmd+J, and closes with Close AI Assistant; it can be resized. It says \"Everything else in OpenFrame works normally.\" when the AI is missing. Recapture with a working model to show asking, the answer and reviewing proposed changes."
+ }
+]
