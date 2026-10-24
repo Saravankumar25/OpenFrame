@@ -342,9 +342,9 @@ fn story_board_outline_exports_in_board_order_with_optional_notes() {
     for want in [
         "Beat Board Outline",
         "Act One",
-        "Sequence: The Arrival",
+        "The Arrival",
         "Arjun steps off the night bus",
-        "Beat: Meera sees him",
+        "Meera sees him",
         "Act Two",
         "BLACK RAIN",
     ] {
@@ -378,7 +378,7 @@ fn story_board_outline_exports_in_board_order_with_optional_notes() {
     );
     let text = pdf_text(&pdf2);
     for want in [
-        "Parking Lot",
+        "PARKING LOT",
         "Unused dream sequence",
         "CARD-NOTE-VISIBLE-WHEN-ASKED",
         "ACT-NOTE-ONE",
@@ -388,15 +388,15 @@ fn story_board_outline_exports_in_board_order_with_optional_notes() {
     }
     assert!(!text.contains("PRIVATE-SECRET"));
 
-    // Board layout is a landscape card grid.
+    // Board layout is a portrait card board (PDF design package v2).
     let board = dest(&env, "board.pdf");
     let r = env.ok(
         "story.export_board",
         json!({ "format": "pdf", "path": board, "layout": "board" }),
     );
     assert_eq!(r["document"], "Beat Board");
-    assert!(pdf_page_width(&board) > 700.0, "landscape");
-    assert!(pdf_text(&board).contains("Scene Card 1"));
+    assert!(pdf_page_width(&board) < 700.0, "portrait");
+    assert!(pdf_text(&board).contains("SCENE CARD"));
 
     // TXT and CSV carry the same outline.
     let txt = dest(&env, "outline.txt");
