@@ -17,13 +17,16 @@
 mod briefing;
 pub mod catalog;
 pub mod change_set;
+mod chat;
 mod commands;
 mod conversation_export;
 pub mod intelligence;
 pub mod knowledge;
+mod lanes;
 pub mod offline;
 pub mod orchestrator;
 pub mod queries;
+mod recipe;
 pub mod records;
 pub mod retrieval;
 pub mod scope;
@@ -35,6 +38,7 @@ pub mod tools;
 pub mod trace;
 pub mod types;
 mod understand;
+mod verify;
 
 use openframe_domain::{Actor, AppResult, Capability};
 use serde::{Deserialize, Serialize};

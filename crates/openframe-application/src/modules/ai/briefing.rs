@@ -20,7 +20,6 @@
 //!
 //! Scene numbers are those of `queries::scenes`. Omitted scenes keep their number and are left
 //! out of every briefing, and so is a scene with no heading and no text.
-#![allow(dead_code)] // Called by the Chat lane slice; until then only the tests use it.
 
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::ops::RangeInclusive;
@@ -230,7 +229,6 @@ struct Place {
 
 struct Beat {
     act: Option<usize>,
-    sequence: Option<usize>,
     text: String,
     scene: Option<usize>,
 }
@@ -441,10 +439,9 @@ impl Script {
         let beats: Vec<Beat> = beat_rows
             .iter()
             .map(|(_, kind, parent, text, converted)| {
-                let (act, sequence) = container(kind, parent.as_deref());
+                let (act, _) = container(kind, parent.as_deref());
                 Beat {
                     act,
-                    sequence,
                     text: flat(text),
                     scene: converted
                         .as_deref()
@@ -704,12 +701,46 @@ fn digest_of(s: &Script, draft: &DraftRef, n: usize) -> AppResult<SceneDigest> {
     })
 }
 
+#[cfg(test)]
 pub(crate) fn scene_digest(
     c: &Connection,
     draft: &DraftRef,
     ordinal: usize,
 ) -> AppResult<SceneDigest> {
     digest_of(&Script::load(c, draft)?, draft, ordinal)
+}
+
+/// The digest of every scene that counts, in order. The script is read once.
+pub(crate) fn digests(c: &Connection, draft: &DraftRef) -> AppResult<Vec<SceneDigest>> {
+    let s = Script::load(c, draft)?;
+    s.live().map(|x| digest_of(&s, draft, x.n)).collect()
+}
+
+/// The scenes of each act in order, as ("Act 2: Title", scene numbers). Empty when the draft has no
+/// acts. Scenes no Scene Card places in an act come last.
+pub(crate) fn act_groups(c: &Connection, draft: &DraftRef) -> AppResult<Vec<(String, Vec<usize>)>> {
+    let s = Script::load(c, draft)?;
+    let mut groups: Vec<(String, Vec<usize>)> = s
+        .acts
+        .iter()
+        .enumerate()
+        .map(|(i, (_, title))| (format!("Act {}: {title}", i + 1), Vec::new()))
+        .collect();
+    if groups.is_empty() {
+        return Ok(groups);
+    }
+    let mut unplaced = Vec::new();
+    for x in s.live() {
+        match s.act_of(x) {
+            Some(a) => groups[a].1.push(x.n),
+            None => unplaced.push(x.n),
+        }
+    }
+    groups.retain(|g| !g.1.is_empty());
+    if !unplaced.is_empty() {
+        groups.push(("Scenes not placed in an act".to_string(), unplaced));
+    }
+    Ok(groups)
 }
 
 /// The digest, then the scene's own lines in order until the budget is full.
@@ -803,6 +834,7 @@ pub(crate) fn scene_briefing(
 
 // ------------------------------------------------------------------ interactions
 
+#[cfg(test)]
 pub(crate) fn interactions(
     c: &Connection,
     draft: &DraftRef,

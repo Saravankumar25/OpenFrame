@@ -13,10 +13,13 @@
 | Small talk | `commands.rs` `small_talk` | "Hi" or "Thanks" get a friendly reply at once. No tool, no model. |
 | Follow-up | `commands.rs` `follow_up`, `just_the_number` | "What about Scene 4?" or "And Ravi?" becomes the previous question about the new subject. "Just the number" returns the number of the previous answer. |
 | Direct route | `commands.rs` `direct_call` | A question whose meaning is clear is sent straight to one tool: counts, scene facts, dialogue facts, a character description, navigation, simple proposals. |
-| Tool choice | `toolbox.rs` `tools_for_request`, `orchestrator.rs` `run_agent` | Anything else goes to the local model with a short list of tools picked for the question. The product guide is offered only for questions about using OpenFrame. |
+| Lane router | `lanes.rs`, `understand.rs`, `orchestrator.rs` `run_agent` | Code decides who answers (harness plan 5.2, `docs/specs/ai-harness-rebuild.md`). Direct and Action run the tool loop. A question about named people, scenes or acts, ideas, themes or critique, or about a scene or name the project does not have, goes to the Chat lane. "Explain the whole screenplay" and similar go to the Recipe lane. Lists, finds, counts, production records and anything unclear go to the Agent lane (4 steps by default, 12 at most). The lane, the next best lane and the strength of the rule (0 to 1) are written to the trace. |
+| Chat lane | `chat.rs`, `briefing.rs`, `verify.rs` | Code builds the evidence: the project map, a briefing for each person, scene or act named, and the best retrieval passages, sized by the measured prompt speed. A scene the draft lacks or a name the project does not know is answered without the model. Otherwise the model writes (quick, explain, deep or ideas settings) and the verifiers check the text. |
+| Recipe lane | `recipe.rs` | Whole-screenplay and act questions: scenes grouped by act (or about eight), one short note per group, one composed answer, a coverage count (scenes used out of scenes planned), and progress lines between the calls. |
+| Tool choice | `toolbox.rs` `tools_for_request`, `orchestrator.rs` `run_agent` | The Agent lane: the local model with a short list of tools picked for the question. The product guide is offered only for questions about using OpenFrame. |
 | Tools | `tools.rs`, `toolbox/*.rs` | Exact facts are computed from the project database. Text the model must write (a summary, a description) gets only the evidence it needs. |
 | Writing | `orchestrator.rs` `run_generation` | The model writes from the evidence: a scene summary from the whole scene, a character description from that character's scenes. |
-| Checks | `orchestrator.rs` | No reply may say a change was made unless a Change Set was applied. A non-English question gets an answer in its language, keeping every number. |
+| Checks | `orchestrator.rs`, `verify.rs` | No reply may say a change was made unless a Change Set was applied. A non-English question gets an answer in its language, keeping every number. Chat and Recipe answers also pass the verifiers v2: names, scene numbers, quotations, numbers, relationship words, language, length, repetition and empty text. A failed check sends the model the exact offenders; at most three passes inside 60 seconds; an answer that passes on the first pass is shown at once. If every pass fails, the best attempt is shown without its offending sentences and marked "not sure". |
 | Show | `Conversation.tsx` `ResultView` | Plain text first. Sources, steps, how sure the answer is and the rows that only back the text wait behind the "See sources" button. A list the person asked for stays under the answer (`itemsAreAnswer`, set in Rust). Long lists show eight items and "Show all". Proposed changes keep their review card. |
 
 ## 2. Question families and how each is answered
@@ -47,6 +50,9 @@
    description reads that character's scenes. Retrieval snippets are still used for open discovery questions.
 4. **No graph or global summary cache added.** The measured failures were routing and evidence selection, not missing
    relationships. A cached global summary would go stale on every edit.
+   **SUPERSEDED in part (2026-10-24)** by `docs/specs/ai-harness-rebuild.md` section 5.5: code-built digests, briefings
+   and a project map are allowed because they are built from the draft on each request and so cannot go stale. As built
+   in the lanes slice nothing is cached yet; the Chat and Recipe lanes read them fresh.
 5. **Plain answers, details on demand.** The badges, "From project data" lines, step counts and the rows of a count, a
    scene fact or a written answer sit behind one "See sources" button. Whether rows are the answer is decided in Rust,
    not in the screen: `toolbox.rs` `LIST_ANSWERS` names the tools whose items are the list the person asked for (list the
@@ -55,11 +61,20 @@
    Refusals, failures, questions and private-information denials keep their reasons in view. Text the model wrote goes
    through `plain_text` (no bold, bullets, headings, numbering, rules, code ticks or link syntax; line breaks stay) before
    it is shown or stored.
+   **SUPERSEDED in part (2026-10-24)** by `docs/specs/ai-harness-rebuild.md` section 5.8 and the owner decision of
+   2026-10-24: explain, deep and ideas answers of the Chat and Recipe lanes keep line breaks, "- " bullets and "1. "
+   numbers (`orchestrator.rs` `plain_text_with`, style Rich); a heading hash goes and the heading stays as a plain line.
+   Quick answers and the Agent lane keep the flat style described here.
 6. **Short by default, exact when asked.** A request that names a sentence count ("in two sentences", "a
    one-sentence card", "a logline") gets that many sentences. Without one, a summary or a character description keeps
    whole sentences up to about 40 words, other short writing up to about 30, a paragraph up to about 90. Sentences are
    dropped from the end, never cut in the middle. When the model writes an answer from retrieved passages, the passages
    are its sources, not a list under the answer.
+   **SUPERSEDED in part (2026-10-24)** by `docs/specs/ai-harness-rebuild.md` sections 5.8 and 5.9 for the Chat and
+   Recipe lanes: length follows the depth the question asks for (quick: 1 to 3 sentences, 120 tokens; explain: 1 to 2
+   paragraphs, 350 tokens; deep: up to 700 tokens; ideas: 400 tokens), a named sentence count still wins, and an answer
+   is trimmed to whole sentences before the length check can fail. The 40, 30 and 90 word defaults above still hold for
+   the Direct and Agent lanes' generation tools.
 7. **Notes are read, never obeyed.** "Summarise my project notes" goes straight to the notes reader, so text inside a
    note cannot become a request to the model.
 8. **A create request needs no look-up, and a proposal ends the step.** In the 2026-10-20 real-model run, 9 of 75 action

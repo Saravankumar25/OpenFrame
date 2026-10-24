@@ -342,9 +342,19 @@ fn load_result(c: &Connection, actor: &Actor, request_id: &str) -> AppResult<Opt
         .get("taskId")
         .and_then(|v| v.as_str())
         .map(str::to_string);
+    let data = structured.get("data");
+    let lane = data
+        .and_then(|d| d.get("lane"))
+        .and_then(Value::as_str)
+        .map(str::to_string);
+    let coverage = data
+        .and_then(|d| d.get("coverage"))
+        .and_then(|c| serde_json::from_value(c.clone()).ok());
     Ok(Some(AiResultDto {
         steps: load_steps(c, request_id)?,
         task_id,
+        lane,
+        coverage,
         id,
         kind: AiResultKind::parse(&kind),
         status: AiResultStatus::parse(&status),

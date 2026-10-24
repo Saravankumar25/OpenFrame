@@ -7,7 +7,6 @@
 //!
 //! Scene numbers are the display numbers of `queries::scenes`: position order, omitted scenes
 //! keep their number. An omitted or missing scene is reported in `missing_scenes`.
-#![allow(dead_code)] // Called by the Chat lane slice; until then only the tests use it.
 
 use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 
@@ -21,7 +20,6 @@ use super::scope::ResolvedScope;
 pub(crate) enum EntityKind {
     Character,
     Location,
-    Scene,
     Act,
 }
 

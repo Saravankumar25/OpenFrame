@@ -562,7 +562,7 @@ fn navigation_after_reads_is_terminal_and_keeps_sources() {
 }
 
 #[test]
-fn default_step_limit_is_eight_and_the_hard_limit_twelve() {
+fn default_step_limit_is_four_and_the_hard_limit_twelve() {
     let env = TestEnv::with_project("Railway", "Feature Film");
     seed_screenplay(&env);
     let m = attach(&env);
@@ -574,12 +574,12 @@ fn default_step_limit_is_eight_and_the_hard_limit_twelve() {
         );
     }
     let r = ask(&env, "Search everything")["result"].clone();
-    assert_eq!(m.calls(), 8);
-    assert_eq!(r["steps"].as_array().unwrap().len(), 8);
+    assert_eq!(m.calls(), 4);
+    assert_eq!(r["steps"].as_array().unwrap().len(), 4);
     assert!(
         texts(&r["details"])
             .iter()
-            .any(|d| d.starts_with("I stopped after 8 steps")),
+            .any(|d| d.starts_with("I stopped after 4 steps")),
         "{r}"
     );
 

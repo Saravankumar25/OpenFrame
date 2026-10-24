@@ -94,7 +94,6 @@ fn who(u: &Understood) -> Vec<(&str, &str)> {
             let k = match e.kind {
                 EntityKind::Character => "character",
                 EntityKind::Location => "location",
-                EntityKind::Scene => "scene",
                 EntityKind::Act => "act",
             };
             (k, e.label.as_str())
