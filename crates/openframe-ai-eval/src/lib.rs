@@ -255,6 +255,43 @@ pub struct Observation {
     pub engine_mb: u64,
     /// The runner could not set the case up (a harness or gold problem, not a model result).
     pub setup_error: Option<String>,
+    /// How the request was routed, from its trace row.
+    pub route: Option<Route>,
+}
+
+/// The routing of one request, as the trace recorded it: the lane taken, the next best lane and the
+/// rule's strength, and the closest intent with its cosine score, its lead over the next different
+/// intent, and whether the router used it. Read for tuning the thresholds.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub struct Route {
+    pub lane: String,
+    pub runner_up: String,
+    pub lane_margin: f64,
+    pub intent: String,
+    pub intent_score: f64,
+    pub intent_margin: f64,
+    pub intent_used: bool,
+}
+
+/// The routing of a request from its row in the AI trace, or None when no row was kept.
+pub fn route_from_trace(c: &rusqlite::Connection, request_id: &str) -> Option<Route> {
+    c.query_row(
+        "SELECT lane, runner_up_lane, lane_margin, intent, intent_score, intent_margin, intent_used
+         FROM sys_ai_trace WHERE request_id = ?1",
+        [request_id],
+        |r| {
+            Ok(Route {
+                lane: r.get::<_, Option<String>>(0)?.unwrap_or_default(),
+                runner_up: r.get::<_, Option<String>>(1)?.unwrap_or_default(),
+                lane_margin: r.get::<_, Option<f64>>(2)?.unwrap_or_default(),
+                intent: r.get::<_, Option<String>>(3)?.unwrap_or_default(),
+                intent_score: r.get::<_, Option<f64>>(4)?.unwrap_or_default(),
+                intent_margin: r.get::<_, Option<f64>>(5)?.unwrap_or_default(),
+                intent_used: r.get::<_, Option<bool>>(6)?.unwrap_or_default(),
+            })
+        },
+    )
+    .ok()
 }
 
 /// The scores of one case. `None` means the measure does not apply to this case.
@@ -288,6 +325,11 @@ pub struct Score {
     pub abstain_ok: Option<bool>,
     pub elapsed_ms: u64,
     pub engine_mb: u64,
+    /// The routing of the request (lane, runner-up, margins, closest intent).
+    pub route: Option<Route>,
+    /// The closest intent's tool is one of the tools the case expects (None: no intent was
+    /// scored, or the case expects no tool).
+    pub intent_match: Option<bool>,
 }
 
 pub fn score(case: &Case, o: &Observation) -> Score {
@@ -298,6 +340,7 @@ pub fn score(case: &Case, o: &Observation) -> Score {
         setup_error: o.setup_error.clone(),
         elapsed_ms: o.elapsed_ms,
         engine_mb: o.engine_mb,
+        route: o.route.clone(),
         ..Score::default()
     };
     if o.setup_error.is_some() {
@@ -315,6 +358,14 @@ pub fn score(case: &Case, o: &Observation) -> Score {
         return s;
     }
     let tools = e.tools();
+    if let Some(r) = o.route.as_ref().filter(|r| !r.intent.is_empty())
+        && !tools.is_empty()
+    {
+        s.intent_match = Some(
+            openframe_application::modules::ai::intent_target(&r.intent)
+                .is_some_and(|t| tools.contains(&t)),
+        );
+    }
     if !tools.is_empty() {
         s.tool_offered = Some(tools.iter().any(|t| o.offered.contains(t)));
         s.tool_correct = Some(o.steps.iter().any(|(t, _)| tools.contains(t)));
@@ -578,6 +629,25 @@ pub struct Summary {
     pub english_tool_and_args_percent: Option<f64>,
     pub english_end_state_percent: Option<f64>,
     pub english_bar_met: bool,
+    /// Cases by kind and the lane they took: kind, then lane, then number of cases.
+    pub lane_mix: BTreeMap<String, BTreeMap<String, usize>>,
+    /// Cases that had a closest intent, by the intent's score in buckets of 0.02: the key is the
+    /// score times 50, rounded down (44 holds 0.88 up to 0.90).
+    pub intent_scores: BTreeMap<u32, IntentBucket>,
+}
+
+/// Cases in one score bucket, by whether the closest intent's tool is a tool the case expects.
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq, Eq)]
+pub struct IntentBucket {
+    pub matched: usize,
+    pub missed: usize,
+    /// The case expects no tool, so the intent cannot be judged.
+    pub unjudged: usize,
+}
+
+/// The bucket of an intent score: hundredths in steps of two, rounded down.
+pub fn intent_bucket(score: f64) -> u32 {
+    (score.max(0.0) * 50.0 + 1e-9).floor() as u32
 }
 
 pub fn summarize(scores: &[Score]) -> Summary {
@@ -593,6 +663,24 @@ pub fn summarize(scores: &[Score]) -> Summary {
         }
         if x.lang == "en" && x.kind == "action" {
             en_action.add(x);
+        }
+        if let Some(r) = &x.route {
+            *s.lane_mix
+                .entry(x.kind.clone())
+                .or_default()
+                .entry(r.lane.clone())
+                .or_default() += 1;
+            if !r.intent.is_empty() {
+                let b = s
+                    .intent_scores
+                    .entry(intent_bucket(r.intent_score))
+                    .or_default();
+                match x.intent_match {
+                    Some(true) => b.matched += 1,
+                    Some(false) => b.missed += 1,
+                    None => b.unjudged += 1,
+                }
+            }
         }
         if x.kind == "paraphrase" {
             s.paraphrase.add(x);
@@ -703,6 +791,49 @@ fn conversation_section(s: &Summary) -> String {
     t
 }
 
+/// The lanes in the order the report shows them.
+const LANES: [&str; 5] = ["direct", "chat", "recipe", "agent", "action"];
+
+/// Which lane each kind of case took, and how the closest intent's score separates right intents
+/// from wrong ones: the table the lane rules and the intent thresholds are tuned from.
+fn routing_section(s: &Summary) -> String {
+    let mut t = String::from(
+        "\n## Lanes and intents\n\nCases by kind and the lane they took.\n\n| Kind | direct | chat | recipe | agent | action | Cases |\n|---|---|---|---|---|---|---|\n",
+    );
+    let mut all = [0usize; 5];
+    for (kind, lanes) in &s.lane_mix {
+        let counts = LANES.map(|l| lanes.get(l).copied().unwrap_or(0));
+        for (a, c) in all.iter_mut().zip(counts) {
+            *a += c;
+        }
+        t.push_str(&format!(
+            "| {kind} | {} | {} |\n",
+            counts.map(|c| c.to_string()).join(" | "),
+            lanes.values().sum::<usize>()
+        ));
+    }
+    t.push_str(&format!(
+        "| all | {} | {} |\n",
+        all.map(|c| c.to_string()).join(" | "),
+        all.iter().sum::<usize>()
+    ));
+    if !s.intent_scores.is_empty() {
+        t.push_str("\nCases that had a closest intent, by its score. Matched: the intent's tool is a tool the case expects. Unjudged: the case expects no tool.\n\n| Score | Matched | Missed | Unjudged | Matched of judged |\n|---|---|---|---|---|\n");
+        for (k, b) in &s.intent_scores {
+            t.push_str(&format!(
+                "| {:.2} to {:.2} | {} | {} | {} | {} |\n",
+                f64::from(*k) * 0.02,
+                f64::from(*k + 1) * 0.02,
+                b.matched,
+                b.missed,
+                b.unjudged,
+                ratio(b.matched, b.matched + b.missed),
+            ));
+        }
+    }
+    t
+}
+
 /// The human-readable report: the English bar first, then every measure by kind and by language.
 pub fn markdown(title: &str, s: &Summary, meta: &[(String, String)]) -> String {
     let mut out = format!("# {title}\n\n");
@@ -747,6 +878,9 @@ pub fn markdown(title: &str, s: &Summary, meta: &[(String, String)]) -> String {
     };
     out.push_str(&table("kind", &s.by_kind));
     out.push_str(&table("language", &s.by_lang));
+    if !s.lane_mix.is_empty() {
+        out.push_str(&routing_section(s));
+    }
     if s.paraphrase.cases > 0 {
         out.push_str(&paraphrase_section(s));
     }
@@ -1274,5 +1408,152 @@ mod tests {
                 && en("writing") >= 60
                 && en("safety") >= 40
         );
+    }
+
+    fn routed(lane: &str, intent: &str, score: f64) -> Option<Route> {
+        Some(Route {
+            lane: lane.into(),
+            runner_up: "agent".into(),
+            lane_margin: 0.5,
+            intent: intent.into(),
+            intent_score: score,
+            intent_margin: 0.04,
+            intent_used: !intent.is_empty(),
+        })
+    }
+
+    #[test]
+    fn the_route_is_read_from_the_trace_row_of_the_request() {
+        let c = rusqlite::Connection::open_in_memory().unwrap();
+        c.execute_batch(
+            "CREATE TABLE sys_ai_trace(request_id TEXT, lane TEXT, runner_up_lane TEXT, lane_margin REAL,
+                intent TEXT, intent_score REAL, intent_margin REAL, intent_used INTEGER);
+             INSERT INTO sys_ai_trace VALUES ('r1', 'direct', 'agent', 1.0, 'count_scenes', 0.93, 0.06, 1);
+             INSERT INTO sys_ai_trace VALUES ('r2', 'chat', 'agent', 0.5, '', 0.0, 0.0, 0);",
+        )
+        .unwrap();
+        assert_eq!(
+            route_from_trace(&c, "r1"),
+            Some(Route {
+                lane: "direct".into(),
+                runner_up: "agent".into(),
+                lane_margin: 1.0,
+                intent: "count_scenes".into(),
+                intent_score: 0.93,
+                intent_margin: 0.06,
+                intent_used: true,
+            })
+        );
+        assert_eq!(route_from_trace(&c, "r2").unwrap().intent, "");
+        assert_eq!(route_from_trace(&c, "missing"), None);
+    }
+
+    #[test]
+    fn the_closest_intent_is_judged_by_its_tool_against_the_expected_tool() {
+        let c = case(
+            json!({ "id": "tool-en-001", "kind": "tool", "lang": "en", "project": "example-short", "request": "How many scenes?",
+            "expect": { "tool": "count_scenes" } }),
+        );
+        let observed = |intent: &str| Observation {
+            route: routed("direct", intent, 0.91),
+            ..Observation::default()
+        };
+        assert_eq!(
+            score(&c, &observed("count_scenes")).intent_match,
+            Some(true)
+        );
+        assert_eq!(
+            score(&c, &observed("list_characters")).intent_match,
+            Some(false)
+        );
+        // An intent that is a lane, not a tool, is not the expected tool.
+        assert_eq!(
+            score(&c, &observed("explain_scene")).intent_match,
+            Some(false)
+        );
+        // No intent was scored, or the case expects no tool: nothing to judge.
+        assert_eq!(score(&c, &observed("")).intent_match, None);
+        let chat = case(
+            json!({ "id": "conv-en-explain-001", "kind": "conversation", "lang": "en", "project": "example-short", "request": "Explain scene 4" }),
+        );
+        assert_eq!(score(&chat, &observed("explain_scene")).intent_match, None);
+        // The routing is carried into the score, and so into results.jsonl.
+        assert_eq!(
+            score(&c, &observed("count_scenes")).route.unwrap().lane,
+            "direct"
+        );
+    }
+
+    #[test]
+    fn the_report_counts_lanes_by_kind_and_buckets_intent_scores_by_right_and_wrong() {
+        assert_eq!(intent_bucket(0.0), 0);
+        assert_eq!(intent_bucket(0.87999), 43);
+        assert_eq!(intent_bucket(0.88), 44);
+        assert_eq!(intent_bucket(0.8999), 44);
+        assert_eq!(intent_bucket(1.0), 50);
+        assert_eq!(intent_bucket(-0.2), 0);
+        let s = |kind: &str, lane: &str, intent: &str, score: f64, m: Option<bool>| Score {
+            kind: kind.into(),
+            route: routed(lane, intent, score),
+            intent_match: m,
+            ..Score::default()
+        };
+        let sum = summarize(&[
+            s("tool", "direct", "count_scenes", 0.95, Some(true)),
+            s("tool", "direct", "count_scenes", 0.951, Some(true)),
+            s("tool", "agent", "list_characters", 0.95, Some(false)),
+            s("tool", "agent", "list_characters", 0.89, Some(false)),
+            s("conversation", "chat", "explain_scene", 0.89, None),
+            s("conversation", "chat", "", 0.0, None),
+            Score {
+                kind: "tool".into(),
+                ..Score::default()
+            },
+        ]);
+        assert_eq!(sum.lane_mix["tool"]["direct"], 2);
+        assert_eq!(sum.lane_mix["tool"]["agent"], 2);
+        assert_eq!(sum.lane_mix["conversation"]["chat"], 2);
+        // 0.95 to 0.97 is bucket 47; 0.89 is bucket 44. A case with no intent is not in a bucket.
+        assert_eq!(
+            sum.intent_scores[&47],
+            IntentBucket {
+                matched: 2,
+                missed: 1,
+                unjudged: 0
+            }
+        );
+        assert_eq!(
+            sum.intent_scores[&44],
+            IntentBucket {
+                matched: 0,
+                missed: 1,
+                unjudged: 1
+            }
+        );
+        assert_eq!(sum.intent_scores.len(), 2);
+        let report = markdown("t", &sum, &[]);
+        assert!(report.contains("## Lanes and intents"), "{report}");
+        assert!(
+            report.contains("| tool | 2 | 0 | 0 | 2 | 0 | 4 |"),
+            "{report}"
+        );
+        assert!(
+            report.contains("| conversation | 0 | 2 | 0 | 0 | 0 | 2 |"),
+            "{report}"
+        );
+        assert!(
+            report.contains("| all | 2 | 2 | 0 | 2 | 0 | 6 |"),
+            "{report}"
+        );
+        assert!(
+            report.contains("| 0.94 to 0.96 | 2 | 1 | 0 | 66.7% (2/3) |"),
+            "{report}"
+        );
+        assert!(
+            report.contains("| 0.88 to 0.90 | 0 | 1 | 1 | 0.0% (0/1) |"),
+            "{report}"
+        );
+        // Without routing data the section is left out.
+        assert!(!markdown("t", &summarize(&[Score::default()]), &[]).contains("Lanes and intents"));
     }
 }

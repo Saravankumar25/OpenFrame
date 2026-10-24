@@ -39,6 +39,17 @@ const BRIEFING_SHARE: usize = 45;
 const PASSAGE_SHARE: usize = 40;
 const STATE_SHARE: usize = 10;
 const MAX_SCENE_BRIEFINGS: usize = 4;
+/// The scene briefing of an explanation of that scene may be longer: its own lines come first.
+const SCENE_FOCUS_BUDGET: usize = 3_900;
+/// Share of the evidence budget for the briefing when the question explains named scenes; the
+/// passages get what is left, up to the rest of the budget.
+const SCENE_FOCUS_SHARE: usize = 70;
+/// An explanation of one scene shorter than this many words is asked for again, when the scene
+/// has more than this many evidence lines.
+const MIN_SCENE_WORDS: usize = 40;
+const THIN_EVIDENCE_LINES: usize = 8;
+/// Fewest characters of room worth a retrieval passage.
+const MIN_PASSAGE_ROOM: usize = 300;
 const MAX_CHARACTER_BRIEFINGS: usize = 3;
 /// Retrieval items asked for, and when widened.
 const PASSAGES: usize = 8;
@@ -139,8 +150,14 @@ impl Mode {
 }
 
 /// Sampling, layout and length for one answer. Starting values from the plan (5.8); the bench
-/// sets the final ones. A named sentence count overrides the length.
-fn settings(mode: Mode, intent: Intent, asked: Option<usize>) -> (Sampling, Style, Limits) {
+/// sets the final ones. A named sentence count overrides the length. A quick or explain answer
+/// about named scenes is written cold (0.3): the script is the whole story, ideas stay warm.
+fn settings(
+    mode: Mode,
+    intent: Intent,
+    asked: Option<usize>,
+    about_scenes: bool,
+) -> (Sampling, Style, Limits) {
     let top = |s: Sampling| Sampling {
         top_p: Some(0.95),
         top_k: Some(64),
@@ -208,6 +225,9 @@ fn settings(mode: Mode, intent: Intent, asked: Option<usize>) -> (Sampling, Styl
             },
         ),
     };
+    if about_scenes && matches!(mode, Mode::Quick | Mode::Explain) {
+        sampling.temperature = 0.3;
+    }
     if let Some(n) = asked {
         sampling.max_tokens = sampling.max_tokens.min(n as u32 * 70 + 30);
         limits.max_sentences = Some(n);
@@ -228,7 +248,9 @@ Rules you must always follow:
 3. For critique and ideas you may use general screenwriting craft knowledge, but label it as a suggestion. Ideas must be grounded in the project's own characters and events, and each idea starts with \"Idea:\" on its own line.
 4. Never mention tools, steps, scopes, briefings or data sources. Never say anything was changed: nothing has been changed.
 5. Reply in the language of the request.
-Style by answer mode. quick: one to three sentences, no headings or lists. explain: one or two short paragraphs, natural, warm and specific, no headings. deep: up to about 450 words; short headings on their own line and simple \"- \" lists are fine. ideas: two to four ideas, each starting with \"Idea:\".";
+6. Start with the answer itself. Never open with \"Okay\", \"Sure\" or \"Let's dive in\".
+7. When you say what happens, describe only what the script shows: who does what and says what, in order. Do not add light, mood, weather or feelings the script does not state. You may say what a moment suggests only with words like \"suggests\" or \"seems\", tied to a quoted or described line.
+Style by answer mode. quick: one to three sentences, no headings or lists. explain: one or two short paragraphs, natural and specific, no headings. deep: up to about 450 words; short headings on their own line and simple \"- \" lists are fine. ideas: two to four ideas, each starting with \"Idea:\".";
 
 // ------------------------------------------------------------------ words
 
@@ -631,6 +653,157 @@ pub(super) fn unknown_names(
     Ok(out)
 }
 
+// ------------------------------------------------------------------ a scene that is not there
+
+static SCENE_WHERE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"(?i)\bscene\s+(?:where|in\s+which|when)\s+(.+?)[\s?.!]*$").expect("valid pattern")
+});
+
+/// Words that open a noun phrase: the noun of "argue about money" or "gives Kiran the red kite" is
+/// what follows them.
+const NOUN_MARKERS: &[&str] = &[
+    "about",
+    "over",
+    "for",
+    "with",
+    "regarding",
+    "the",
+    "a",
+    "an",
+    "his",
+    "her",
+    "their",
+    "its",
+    "some",
+    "any",
+];
+
+/// Words that end a noun phrase.
+const PHRASE_ENDS: &[&str] = &[
+    "and", "or", "but", "then", "while", "because", "when", "until", "after", "before", "where",
+    "who", "that", "which", "as", "so",
+];
+
+/// Groups of words that stand for each other. A noun counts as present when any word of its group
+/// is in the draft. Short on purpose.
+const SYNONYMS: &[&[&str]] = &[
+    &[
+        "money", "cash", "rupee", "rupees", "pay", "paid", "owe", "owed", "debt", "price", "cost",
+        "coin", "coins", "salary", "fee", "loan",
+    ],
+    &["wedding", "marriage", "married", "bride", "groom"],
+    &["gun", "pistol", "weapon", "knife"],
+];
+
+/// The noun phrases a clause names, each as its words with meaning (four letters or more, not a
+/// word of asking, not part of a name the question resolved). A phrase starts after a marker
+/// ("about", "the", "his") and ends at the next marker or connector, so "argue about money" gives
+/// [["money"]] and "gives Kiran the red kite and leaves" gives [["kite"]].
+fn key_nouns(clause: &str, skip: &BTreeSet<String>) -> Vec<Vec<String>> {
+    let toks: Vec<String> = clause
+        .split(|c: char| !c.is_alphabetic())
+        .filter(|w| !w.is_empty())
+        .map(str::to_lowercase)
+        .collect();
+    let mut out: Vec<Vec<String>> = Vec::new();
+    for (i, t) in toks.iter().enumerate() {
+        if !NOUN_MARKERS.contains(&t.as_str()) {
+            continue;
+        }
+        let run: Vec<String> = toks[i + 1..]
+            .iter()
+            .take_while(|w| {
+                !NOUN_MARKERS.contains(&w.as_str()) && !PHRASE_ENDS.contains(&w.as_str())
+            })
+            .filter(|w| {
+                w.chars().count() >= 4 && !STOP.contains(&w.as_str()) && !skip.contains(w.as_str())
+            })
+            .cloned()
+            .collect();
+        if !run.is_empty() && !out.contains(&run) {
+            out.push(run);
+        }
+    }
+    out
+}
+
+/// The stems of every word the draft's script, headings, synopses, notes and title hold.
+fn draft_stems(c: &Connection, draft: &DraftRef) -> AppResult<BTreeSet<String>> {
+    let mut text = draft.screenplay_title.clone();
+    let mut st = c.prepare(
+        "SELECT coalesce(e.text, '') FROM screenplay_element e JOIN screenplay_scene s ON s.id = e.scene_id
+          WHERE s.draft_id = ?1 AND s.deleted_at IS NULL
+         UNION ALL
+         SELECT heading || ' ' || coalesce(synopsis, '') || ' ' || coalesce(notes, '')
+           FROM screenplay_scene WHERE draft_id = ?1 AND deleted_at IS NULL",
+    )?;
+    let rows = st.query_map([&draft.id], |r| r.get::<_, String>(0))?;
+    for r in rows {
+        text.push(' ');
+        text.push_str(&r?);
+    }
+    Ok(text
+        .split(|c: char| !c.is_alphabetic())
+        .filter(|w| !w.is_empty())
+        .map(|w| stem(&w.to_lowercase()).to_string())
+        .collect())
+}
+
+/// "Tell me about the scene where Devi and Kiran argue about money": when the question describes a
+/// scene by a thing (money) that the whole draft never mentions, in that word or a synonym, say so
+/// in code and offer the scene with the most of the named people. Conservative: only a noun that
+/// is absent from the draft can make the premise false; a clause with no such noun gets the model.
+fn missing_premise(
+    c: &Connection,
+    draft: &DraftRef,
+    text: &str,
+    u: &Understood,
+) -> AppResult<Option<String>> {
+    let Some(clause) = SCENE_WHERE.captures(text).map(|m| m[1].trim().to_string()) else {
+        return Ok(None);
+    };
+    let phrases = key_nouns(&clause, &label_words(u));
+    if phrases.is_empty() {
+        return Ok(None);
+    }
+    let stems = draft_stems(c, draft)?;
+    let present = |w: &str| -> bool {
+        let group = SYNONYMS.iter().find(|g| g.contains(&w));
+        let words = group.map_or(vec![w], |g| g.to_vec());
+        words.iter().any(|x| stems.contains(stem(x)))
+    };
+    // The premise fails only when a whole phrase is absent: "an angry argument" is not refused
+    // for "angry" when the script has an argument.
+    if !phrases.iter().any(|p| p.iter().all(|n| !present(n))) {
+        return Ok(None);
+    }
+    let mut answer = format!("I couldn't find a scene where {clause}.");
+    let people: Vec<String> = u
+        .entities
+        .iter()
+        .filter(|e| e.kind == EntityKind::Character)
+        .map(|e| e.label.to_uppercase())
+        .collect();
+    let closest = briefing::digests(c, draft)?
+        .into_iter()
+        .map(|d| {
+            let n = people.iter().filter(|p| d.present.contains(p)).count();
+            (n, d)
+        })
+        .filter(|(n, _)| *n > 0)
+        .max_by_key(|(n, d)| (*n, std::cmp::Reverse(d.ordinal)));
+    if let Some((_, d)) = closest {
+        let line = d.one_liner();
+        let stop = if line.ends_with(['.', '!', '?', '\u{2026}']) {
+            ""
+        } else {
+            "."
+        };
+        answer.push_str(&format!(" The closest is {line}{stop}"));
+    }
+    Ok(Some(answer))
+}
+
 // ------------------------------------------------------------------ evidence
 
 struct Evidence {
@@ -738,12 +911,15 @@ fn briefings(
             ),
         );
     }
+    // A quick or explain answer about a scene reads the scene's own lines first.
+    let lines_first = matches!(Mode::of(u), Mode::Quick | Mode::Explain);
     for n in &scenes {
-        add(
-            &mut out,
-            format!("Briefing: Scene {n}"),
-            briefing::scene_briefing(c, draft, *n, share(1, briefing::SCENE_BUDGET)),
-        );
+        let built = if lines_first {
+            briefing::scene_story(c, draft, *n, share(1, SCENE_FOCUS_BUDGET))
+        } else {
+            briefing::scene_briefing(c, draft, *n, share(1, briefing::SCENE_BUDGET))
+        };
+        add(&mut out, format!("Briefing: Scene {n}"), built);
     }
     if range {
         let (first, last) = (u.scenes[0], u.scenes[u.scenes.len() - 1]);
@@ -846,20 +1022,36 @@ fn passages(cx: &Cx, limit: usize, budget: usize) -> (Vec<ContextItem>, Vec<Prov
     kept.into_iter().unzip()
 }
 
+/// The question is about named scenes, or about the scene in view when nothing else is named. For a
+/// quick or explain answer the scene's own lines are then the evidence.
+fn about_scenes(u: &Understood, scene_in_view: Option<usize>) -> bool {
+    !u.scenes.is_empty() || (scene_in_view.is_some() && u.entities.is_empty() && u.acts.is_empty())
+}
+
 fn gather(cx: &Cx, u: &Understood, total: usize, widen: bool) -> AppResult<Evidence> {
     let s = cx.core.project()?;
-    let mut items = s.store.read(|c| {
-        briefings(
-            c,
-            cx.draft,
-            cx.scope.scene.as_ref().map(|s| s.number),
-            u,
-            total * BRIEFING_SHARE / 100,
-            widen,
-        )
-    })?;
+    let in_view = cx.scope.scene.as_ref().map(|s| s.number);
+    let focus = about_scenes(u, in_view) && matches!(Mode::of(u), Mode::Quick | Mode::Explain);
+    let share = if focus {
+        SCENE_FOCUS_SHARE
+    } else {
+        BRIEFING_SHARE
+    };
+    let mut items = s
+        .store
+        .read(|c| briefings(c, cx.draft, in_view, u, total * share / 100, widen))?;
     let limit = if widen { WIDE_PASSAGES } else { PASSAGES };
-    let (found, provenance) = passages(cx, limit, total * PASSAGE_SHARE / 100);
+    let mut room = total * PASSAGE_SHARE / 100;
+    if focus {
+        // Passages only fill what the scene left of the budget.
+        let used: usize = items.iter().map(|i| i.text.len()).sum();
+        room = total.saturating_sub(used).min(room);
+    }
+    let (found, provenance) = if room >= MIN_PASSAGE_ROOM {
+        passages(cx, limit, room)
+    } else {
+        (Vec::new(), Vec::new())
+    };
     // Material the person selected themselves (Selection scopes) comes before the passages.
     if matches!(
         cx.scope.kind,
@@ -1029,6 +1221,13 @@ pub(super) fn answer(cx: &Cx, u: &Understood, unknown: &[String]) -> AppResult<C
             )));
         }
     }
+    // "The scene where X" for an X the draft never mentions: said in code, never invented.
+    if u.scenes.is_empty()
+        && u.missing_scenes.is_empty()
+        && let Some(said) = s.store.read(|c| missing_premise(c, cx.draft, cx.text, u))?
+    {
+        return Ok(done(plain_answer(said, Some(Confidence::Inferred))));
+    }
 
     if (cx.cancelled)() {
         return Ok(done(stopped_answer()));
@@ -1067,7 +1266,9 @@ pub(super) fn answer(cx: &Cx, u: &Understood, unknown: &[String]) -> AppResult<C
     // The prompt: stable start (policy and project map), then what changes.
     let mode = Mode::of(u);
     let asked = super::commands::asked_sentences(cx.text);
-    let (sampling, style, limits) = settings(mode, u.intent, asked);
+    let (sampling, style, limits) = settings(mode, u.intent, asked, about_scenes(u, scope_scene));
+    // One scene explained: one or two paragraphs, and a one-line answer is asked to grow once.
+    let one_scene = mode == Mode::Explain && asked.is_none() && u.scenes.len() == 1;
     let system = format!(
         "{POLICY}\n\n{}",
         data_block(&[ContextItem {
@@ -1083,6 +1284,9 @@ pub(super) fn answer(cx: &Cx, u: &Understood, unknown: &[String]) -> AppResult<C
             "Write exactly {n} sentence{}.\n",
             if n == 1 { "" } else { "s" }
         ));
+    }
+    if one_scene {
+        user.push_str("Write one or two short paragraphs covering the scene in order.\n");
     }
     if !unknown.is_empty() {
         user.push_str(&format!(
@@ -1106,8 +1310,10 @@ pub(super) fn answer(cx: &Cx, u: &Understood, unknown: &[String]) -> AppResult<C
     );
     let names = named.join(" ");
     let mut evidence = ev.texts();
+    let evidence_lines: usize = evidence.iter().map(|t| t.lines().count()).sum();
     evidence.push(map.clone());
     let facts = Facts {
+        min_words: (one_scene && evidence_lines > THIN_EVIDENCE_LINES).then_some(MIN_SCENE_WORDS),
         request: remove_names(cx.text, unknown),
         evidence,
         names,

@@ -22,17 +22,29 @@ struct Run {
 
 fn run_with(replies: &[&str], cap: Duration, cancelled: &dyn Fn() -> bool) -> Run {
     let (c, d) = short();
-    let material = gather(&c, &d).unwrap();
+    run_on(&c, &d, replies, cap, cancelled, Duration::ZERO)
+}
+
+/// The request began `age` ago.
+fn run_on(
+    c: &Connection,
+    d: &DraftRef,
+    replies: &[&str],
+    cap: Duration,
+    cancelled: &dyn Fn() -> bool,
+    age: Duration,
+) -> Run {
+    let material = gather(c, d).unwrap();
     let model = Scripted::with(replies);
     let seen = RefCell::new(Vec::new());
     let progress = |step: u32, total: u32, label: &str| {
         seen.borrow_mut().push((step, total, label.to_string()))
     };
     let cx = Cx {
-        draft: &d,
+        draft: d,
         model: &model,
         text: "Explain the whole screenplay",
-        started: Instant::now(),
+        started: Instant::now() - age,
         cap,
         progress: &progress,
         cancelled,
@@ -211,4 +223,90 @@ fn the_answer_goes_through_the_verifiers_like_a_chat_answer() {
         .collect();
     assert!(chips.iter().any(|l| l.starts_with("Scene 1:")), "{chips:?}");
     assert!(r.answer.output.provenance.iter().all(|p| p.nav.is_some()));
+}
+
+#[test]
+fn the_compose_call_is_told_how_many_scenes_the_draft_has() {
+    let r = run_with(&[NOTE_ONE, NOTE_TWO, ANSWER], RECIPE_CAP, &|| false);
+    let compose = &r.model.request(2).messages;
+    assert!(compose[1].content.contains("The draft has 10 scenes."));
+    assert!(
+        compose[0].content.contains("The draft has 10 scenes"),
+        "the project map says it too"
+    );
+    assert!(compose[0].content.contains("Start with the answer itself."));
+}
+
+/// Three scenes, two people who each appear in one: "2" is a scene number here, never a count.
+fn tower() -> (Connection, DraftRef) {
+    use super::super::test_script::{add, project, scene, talk};
+    let c = project();
+    let d = add(
+        &c,
+        "THE TOWER AT PEDDA REVU",
+        &[
+            scene(
+                "EXT. FIELD - DAY",
+                &[("action", "The bus rattles through paddy fields.")],
+            ),
+            talk(
+                "INT. BUS - DAY",
+                &[("PEDDA REVU", "We are late."), ("LAKSHMI", "I know.")],
+            ),
+            scene("EXT. ROAD - NIGHT", &[("action", "The road is empty.")]),
+        ],
+    );
+    (c, d)
+}
+
+const TOWER_NOTE: &str =
+    "Pedda Revu and Lakshmi ride the bus through the fields (Scenes 1, 2 and 3).";
+
+#[test]
+fn a_wrong_scene_count_is_fed_back_and_a_scene_number_does_not_excuse_it() {
+    let (c, d) = tower();
+    let wrong = "The story unfolds across 2 scenes (Scene 2).";
+    let right = "The story has 3 scenes. Pedda Revu and Lakshmi ride the bus (Scene 2).";
+    let run = |replies: &[&str]| run_on(&c, &d, replies, RECIPE_CAP, &|| false, Duration::ZERO);
+    let r = run(&[TOWER_NOTE, wrong, right]);
+    assert_eq!(r.answer.failed, ["scene_counts"]);
+    assert_eq!(r.answer.output.content, right);
+    let again = r.model.request(2).messages;
+    assert!(
+        again[again.len() - 1]
+            .content
+            .contains("These scene counts are not in the data: 2 scenes. The draft has 3 scenes")
+    );
+    // The right count passes at once.
+    let r = run(&[TOWER_NOTE, right]);
+    assert_eq!(
+        (r.answer.passes, r.answer.output.content.as_str()),
+        (1, right)
+    );
+}
+
+#[test]
+fn a_name_made_of_two_known_words_is_caught_and_a_slow_read_still_gets_its_retry() {
+    let (c, d) = tower();
+    let wrong = "Paddy Revu and Lakshmi ride the bus (Scene 2).";
+    let right = "Pedda Revu and Lakshmi ride the bus (Scene 2).";
+    // The request is already 100 seconds old when the answer is composed: the 60 seconds of
+    // passes count from the compose call, so the check still sends the model a second try.
+    let r = run_on(
+        &c,
+        &d,
+        &[TOWER_NOTE, wrong, right],
+        Duration::from_secs(1_000),
+        &|| false,
+        Duration::from_secs(100),
+    );
+    assert_eq!(r.answer.passes, 2);
+    assert_eq!(r.answer.failed, ["names"]);
+    assert_eq!(r.answer.output.content, right);
+    let retry = r.model.request(2).messages;
+    assert!(
+        retry[retry.len() - 1]
+            .content
+            .contains("These names are not in the project: Paddy Revu.")
+    );
 }

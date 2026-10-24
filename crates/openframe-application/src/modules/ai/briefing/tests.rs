@@ -536,7 +536,7 @@ fn the_project_map_lists_what_the_script_has() {
     claim_lines_carry_a_scene(&m);
     assert!(m.starts_with("## Project map (Draft 1)"), "{m}");
     assert!(m.contains("Record: title: Example Short"), "{m}");
-    assert!(m.contains("Record: 10 Scenes in this draft"), "{m}");
+    assert!(m.contains("Record: The draft has 10 scenes"), "{m}");
     assert!(m.contains("Record: No acts set."), "{m}");
     // Equal dialogue (10 blocks each), so the one in more scenes comes first.
     assert!(
@@ -598,7 +598,7 @@ fn a_line_that_looks_like_an_instruction_is_plain_script_data() {
     // It changes nothing else: the same counts, the same shape.
     assert_eq!(b.lines().filter(|l| l.starts_with("## ")).count(), 1);
     let m = project_map(&c, &d, MAP_BUDGET).unwrap();
-    assert!(m.contains("Record: 2 Scenes"), "{m}");
+    assert!(m.contains("Record: The draft has 2 scenes"), "{m}");
     let digest = scene_digest(&c, &d, 2).unwrap();
     assert_eq!(
         digest.first_action,
@@ -635,7 +635,7 @@ fn omitted_and_empty_scenes_are_left_out_of_every_briefing() {
         ],
     );
     let m = project_map(&c, &d, MAP_BUDGET).unwrap();
-    assert!(m.contains("Record: 2 Scenes in this draft"), "{m}");
+    assert!(m.contains("Record: The draft has 2 scenes"), "{m}");
     assert!(
         !m.contains("CELLAR") && !m.contains("Scene 2") && !m.contains("Scene 3"),
         "{m}"
@@ -764,7 +764,7 @@ fn a_200_scene_draft_builds_every_briefing_quickly() {
         text
     };
     let map = time("project_map", &|| project_map(&c, &d, MAP_BUDGET).unwrap());
-    assert!(map.contains("Record: 200 Scenes"), "{map}");
+    assert!(map.contains("Record: The draft has 200 scenes"), "{map}");
     time("character_briefing", &|| {
         character_briefing(&c, &d, "Asha", CHARACTER_BUDGET).unwrap()
     });
@@ -785,4 +785,31 @@ fn a_200_scene_draft_builds_every_briefing_quickly() {
         all.len()
     );
     assert!(t.elapsed().as_millis() < 500 && !all.is_empty());
+}
+
+#[test]
+fn the_scene_story_gives_the_scenes_own_lines_first_and_the_digest_after() {
+    let (c, d) = short();
+    let story = scene_story(&c, &d, 6, SCENE_BUDGET).unwrap();
+    claim_lines_carry_a_scene(&story);
+    assert!(story.starts_with("## Scene 6 (Draft 1)"), "{story}");
+    let at = |needle: &str| {
+        story
+            .find(needle)
+            .unwrap_or_else(|| panic!("{needle}\n{story}"))
+    };
+    let (own, digest) = (
+        at("Scene 6: KIRAN: \"That is mine.\""),
+        at("Scene 6: heading:"),
+    );
+    assert!(own < digest, "own lines before the digest\n{story}");
+    assert!(
+        at("Scene 6: DEVI: \"Then he will want to know it still flies.\"") < digest,
+        "{story}"
+    );
+    assert!(story.chars().count() <= SCENE_BUDGET, "{}", story.len());
+    // The lines get two thirds of a small budget; the digest still has its share.
+    let small = scene_story(&c, &d, 6, 900).unwrap();
+    assert!(small.chars().count() <= 900, "{small}");
+    assert!(small.contains("Scene 6: heading:"), "{small}");
 }

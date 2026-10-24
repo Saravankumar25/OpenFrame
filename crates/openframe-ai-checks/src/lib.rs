@@ -742,17 +742,40 @@ fn word_set(text: &str) -> std::collections::HashSet<String> {
     set
 }
 
+/// The lower-case words of a text that it writes with a capital letter (a name, or all capitals).
+fn capitalised_set(text: &str) -> std::collections::HashSet<String> {
+    word_tokens(text)
+        .into_iter()
+        .map(|t| without_possessive(t.text))
+        .filter(|w| is_name_word(w))
+        .map(|w| straight(&w.to_lowercase()))
+        .collect()
+}
+
 /// The name candidates of the answer that the evidence does not support. A candidate is grounded
 /// when each of its words occurs as a whole word, ignoring case, in at least one evidence text.
+/// A name of two words or more needs more: either every word is written with a capital somewhere in
+/// the evidence, or the evidence has the words together. The script's "paddy fields" and its
+/// "Pedda Revu" do not make "Paddy Revu" a name of the project.
 pub fn ungrounded_names(answer: &str, evidence: &[&str]) -> Vec<String> {
     let sets: Vec<_> = evidence.iter().map(|e| word_set(e)).collect();
+    let capitals: std::collections::HashSet<String> =
+        evidence.iter().flat_map(|e| capitalised_set(e)).collect();
+    let plains: Vec<String> = evidence.iter().map(|e| format!(" {} ", plain(e))).collect();
     candidate_names(answer)
         .into_iter()
         .filter(|n| {
-            !n.split_whitespace().all(|w| {
-                let w = straight(&w.to_lowercase());
-                sets.iter().any(|s| s.contains(&w))
-            })
+            let words: Vec<String> = n
+                .split_whitespace()
+                .map(|w| straight(&w.to_lowercase()))
+                .collect();
+            if !words.iter().all(|w| sets.iter().any(|s| s.contains(w))) {
+                return true;
+            }
+            let together = format!(" {} ", plain(n));
+            words.len() > 1
+                && !words.iter().all(|w| capitals.contains(w))
+                && !plains.iter().any(|p| p.contains(&together))
         })
         .collect()
 }
@@ -841,6 +864,69 @@ pub fn missing_quotes(answer: &str, evidence: &[&str]) -> Vec<String> {
                     !hay.iter().any(|h| h.contains(&needle))
                 })
         })
+        .collect()
+}
+
+static COUNT_OF_SCENES: LazyLock<Regex> = LazyLock::new(|| re(r"(?i)\b(\d+)[\s-]+scenes?\b"));
+static COUNT_AFTER_SCENES: LazyLock<Regex> =
+    LazyLock::new(|| re(r"(?i)\bscenes?\b[^()\n]{0,80}\((\d+)\)"));
+
+/// Counts of scenes the answer states ("36 scenes", "a 16-scene script") that no evidence text
+/// states as a count and that are not `actual`, the number of scenes the draft has. A scene
+/// NUMBER in the evidence ("Scene 16") does not make "16 scenes" true. The count 1 is never
+/// reported. Without repeats, in order, as the answer wrote them ("16 scenes").
+pub fn unsupported_scene_counts(answer: &str, evidence: &[&str], actual: usize) -> Vec<String> {
+    let known: std::collections::HashSet<usize> = evidence
+        .iter()
+        .flat_map(|e| {
+            COUNT_OF_SCENES
+                .captures_iter(e)
+                .chain(COUNT_AFTER_SCENES.captures_iter(e))
+                .filter_map(|c| c[1].parse::<usize>().ok())
+                .collect::<Vec<_>>()
+        })
+        .chain([actual])
+        .collect();
+    let mut out: Vec<String> = Vec::new();
+    for c in COUNT_OF_SCENES.captures_iter(answer) {
+        let said = c[0].split_whitespace().collect::<Vec<_>>().join(" ");
+        let n = c[1].parse::<usize>().unwrap_or(usize::MAX);
+        if n != 1 && !known.contains(&n) && !out.contains(&said) {
+            out.push(said);
+        }
+    }
+    out
+}
+
+/// Phrases of mood and weather that a small model adds to a scene. Each is checked against the
+/// evidence; the list is short on purpose, so an honest answer is rarely touched.
+const ATMOSPHERE: &[&str] = &[
+    "bathed in",
+    "palpable",
+    "soft morning light",
+    "dimly lit",
+    "eerie",
+    "tension hangs",
+    "sense of impending",
+    "ominous",
+    "haunting",
+];
+
+/// Atmosphere phrases (see [`ATMOSPHERE`]) that the answer uses and the evidence does not hold:
+/// a phrase is supported only when every one of its content words occurs in the evidence as a
+/// whole word, ignoring case. In list order, as the list writes them.
+pub fn unsupported_atmosphere(answer: &str, evidence: &[&str]) -> Vec<String> {
+    let said = format!(" {} ", plain(answer));
+    let sets: Vec<_> = evidence.iter().map(|e| word_set(e)).collect();
+    ATMOSPHERE
+        .iter()
+        .filter(|p| said.contains(&format!(" {p} ")))
+        .filter(|p| {
+            !p.split_whitespace()
+                .filter(|w| !matches!(*w, "in" | "of"))
+                .all(|w| sets.iter().any(|s| s.contains(w)))
+        })
+        .map(|p| (*p).to_string())
         .collect()
 }
 
@@ -1106,6 +1192,90 @@ mod tests {
             ["Venkat Reddy"]
         );
         assert_eq!(ungrounded_names("Lakshmi waits.", &[]), ["Lakshmi"]);
+    }
+
+    #[test]
+    fn two_known_words_do_not_make_a_known_name() {
+        // "paddy" is an ordinary word of the script and "Revu" is part of a name: "Paddy Revu"
+        // is neither a name the script has nor a phrase it contains.
+        let ev = [
+            "The bus rattles through paddy fields.",
+            "RAYAPURAM TO PEDDA REVU, ALL STOPS.",
+        ];
+        assert_eq!(
+            ungrounded_names("Paddy Revu leads the village.", &ev),
+            ["Paddy Revu"]
+        );
+        assert_eq!(
+            ungrounded_names("The elder is Paddy Revu's friend.", &ev),
+            ["Paddy Revu"]
+        );
+        // The real name, in any case and with a possessive, is fine.
+        assert!(ungrounded_names("Pedda Revu's bus waits. PEDDA REVU.", &ev).is_empty());
+        // Words that are capitalised in different places still count as names; so do words the
+        // evidence has side by side in lower case.
+        assert!(
+            ungrounded_names(
+                "Farooq Senior waits.",
+                &["Farooq drives.", "FAROOQ SENIOR: Hello."]
+            )
+            .is_empty()
+        );
+        assert!(ungrounded_names("Venkat Rao waits.", &["venkat rao is here"]).is_empty());
+    }
+
+    #[test]
+    fn a_scene_number_does_not_justify_a_scene_count() {
+        let ev = [
+            "Scene 16: Devi waits.",
+            "Record: The draft has 36 scenes (omitted not counted).",
+        ];
+        assert_eq!(
+            unsupported_scene_counts("The story unfolds across 16 scenes.", &ev, 36),
+            ["16 scenes"]
+        );
+        assert!(unsupported_scene_counts("The draft has 36 scenes.", &ev, 36).is_empty());
+        // The draft's own count is always allowed, and so is a count the evidence states.
+        assert!(unsupported_scene_counts("A 10-scene script.", &[], 10).is_empty());
+        let ev = ["Act 1 \"Setup\": Scenes 1 to 4 (4).", "Devi: in 3 Scenes."];
+        assert!(
+            unsupported_scene_counts("Act 1 has 4 scenes; Devi is in 3 scenes.", &ev, 36)
+                .is_empty()
+        );
+        // "Scenes 5 and 6" and "1 scene" are not counts.
+        assert!(
+            unsupported_scene_counts("Scenes 5 and 6 matter. One scene, 1 scene.", &[], 36)
+                .is_empty()
+        );
+    }
+
+    #[test]
+    fn mood_phrases_need_the_evidence_to_hold_them() {
+        let said =
+            "The tower is bathed in soft morning light, a palpable sense of impending change.";
+        assert_eq!(
+            unsupported_atmosphere(said, &["Lakshmi climbs the tower at dawn."]),
+            [
+                "bathed in",
+                "palpable",
+                "soft morning light",
+                "sense of impending"
+            ]
+        );
+        // A phrase the evidence has is fine.
+        assert_eq!(
+            unsupported_atmosphere(
+                said,
+                &["Soft morning light. The tower is bathed in gold. An impending storm. Sense."]
+            ),
+            ["palpable"]
+        );
+        assert!(
+            unsupported_atmosphere("The corridor is dimly lit.", &["INT. CORRIDOR: dimly lit."])
+                .is_empty()
+        );
+        // Plain wording is never touched.
+        assert!(unsupported_atmosphere("Lakshmi climbs the tower at dawn.", &[]).is_empty());
     }
 
     #[test]

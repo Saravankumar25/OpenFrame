@@ -19,6 +19,7 @@ fn facts(style: Style) -> Facts {
             max_words: 200,
         },
         style,
+        min_words: None,
     }
 }
 
@@ -366,4 +367,148 @@ fn explain_and_deep_answers_keep_line_breaks_and_simple_lists_but_quick_ones_are
     let prose = "Scene 3 has 2*3 beats in act_one. 1984 was long ago.";
     assert_eq!(plain_text_with(prose, Style::Rich), prose);
     assert_eq!(plain_text_with(prose, Style::Flat), prose);
+}
+
+#[test]
+fn a_first_sentence_that_only_announces_the_answer_is_dropped() {
+    let q = "Explain scene 4";
+    assert_eq!(
+        without_preamble(
+            "Okay, let's delve into scene 4 of the project. Devi gives Kiran the kite.",
+            q
+        ),
+        "Devi gives Kiran the kite."
+    );
+    assert_eq!(
+        without_preamble(
+            "Okay, filmmaker, let's dive into this screenplay.\nThe story follows Devi.",
+            "Explain the whole screenplay"
+        ),
+        "The story follows Devi."
+    );
+    assert_eq!(
+        without_preamble(
+            "Okay, let's break down what's happening in Scene 33. Kiran waits.",
+            "What happens in scene 33?"
+        ),
+        "Kiran waits."
+    );
+    assert_eq!(
+        without_preamble("Let us take a look at scene 4! Devi waits.", q),
+        "Devi waits."
+    );
+}
+
+#[test]
+fn a_sentence_that_carries_a_fact_is_never_dropped() {
+    let q = "Explain scene 4";
+    for kept in [
+        // A name, an event, a scene the request did not ask for.
+        "Okay, Devi gives Kiran the kite. He leaves.",
+        "Sure, Scene 7 is where Devi hides the register. Then she waits.",
+        "Okay, let's look at scene 9. It is quiet.",
+        "Great question, the kite is red. It has a long tail.",
+        // Not an opening.
+        "Devi gives Kiran the kite. He leaves.",
+        "The kite is red. Okay, he leaves.",
+    ] {
+        assert_eq!(without_preamble(kept, q), kept);
+    }
+    // Nothing is left to say: the answer stays whole.
+    assert_eq!(
+        without_preamble("Okay, let's dive in.", q),
+        "Okay, let's dive in."
+    );
+}
+
+#[test]
+fn the_passes_return_the_answer_without_its_preamble() {
+    let m = Scripted::with(&[
+        "Okay, let's dive into scene 4. Devi gives Kiran the red kite (Scene 4).",
+    ]);
+    let r = generate_checked(
+        &m,
+        &base(),
+        &sampling(),
+        &facts(Style::Flat),
+        Instant::now(),
+        &|_| {},
+    )
+    .unwrap();
+    assert_eq!(r.text, "Devi gives Kiran the red kite (Scene 4).");
+    assert!(r.clean && r.passes == 1);
+}
+
+#[test]
+fn mood_the_script_does_not_state_is_fed_back_and_removed_when_it_stays() {
+    let f = facts(Style::Flat);
+    let said = "Devi gives Kiran the red kite (Scene 4), bathed in soft morning light.";
+    let o = check(said, &f);
+    assert_eq!(codes(&o), ["atmosphere_unsupported"]);
+    assert_eq!(o[0].items, ["bathed in", "soft morning light"]);
+    assert!(feedback(&o, &f).contains(
+        "The script does not state: bathed in, soft morning light. Describe only what the script shows"
+    ));
+    let two = "Devi gives Kiran the red kite (Scene 4). The office is bathed in soft morning light (Scene 4).";
+    assert_eq!(
+        without_offenders(two, &check(two, &f)).as_deref(),
+        Some("Devi gives Kiran the red kite (Scene 4).")
+    );
+    // The same phrase is fine when the script has it, or when the request used it.
+    let mut g = facts(Style::Flat);
+    g.evidence
+        .push("Scene 5: the platform is dimly lit.".into());
+    assert!(check("Kiran waits on a dimly lit platform (Scene 5).", &g).is_empty());
+    g.request = "Is the platform eerie?".into();
+    assert!(check("Kiran waits on an eerie platform (Scene 5).", &g).is_empty());
+}
+
+#[test]
+fn a_scene_number_is_not_a_count_of_scenes() {
+    let mut f = facts(Style::Flat);
+    f.evidence.push("Record: The draft has 2 scenes.".into());
+    f.live_scenes = [4, 5, 16].into_iter().collect();
+    f.evidence.push("Scene 16: Kiran waits.".into());
+    // "Scene 16" exists; "16 scenes" is not what the draft has (it has 3).
+    let o = check("The story unfolds across 16 scenes (Scene 4).", &f);
+    assert_eq!(codes(&o), ["scene_counts"]);
+    assert_eq!(o[0].items, ["16 scenes"]);
+    assert!(feedback(&o, &f).contains("The draft has 3 scenes"));
+    // The count the data states is fine; so is a scene reference.
+    f.live_scenes = [4, 5].into_iter().collect();
+    assert!(check("The draft has 2 scenes. Kiran waits (Scene 5).", &f).is_empty());
+    // A count that is nowhere is one offence, not two.
+    let o = check("The story has 9 scenes (Scene 4).", &f);
+    assert_eq!(codes(&o), ["numbers"]);
+}
+
+#[test]
+fn a_thin_answer_is_asked_to_grow_once() {
+    let mut f = facts(Style::Rich);
+    f.min_words = Some(10);
+    let short = "Devi gives Kiran the kite (Scene 4).";
+    let full = "Devi gives Kiran the red kite (Scene 4). He says \"I will come tomorrow.\"\n\nThen Kiran waits on the platform (Scene 5).";
+    let m = Scripted::with(&[short, full]);
+    let r = generate_checked(&m, &base(), &sampling(), &f, Instant::now(), &|_| {}).unwrap();
+    assert_eq!(
+        (r.passes, r.clean, r.failed.as_slice()),
+        (2, true, ["too_short".to_string()].as_slice())
+    );
+    assert_eq!(r.text, full);
+    let ask = m.request(1).messages;
+    assert!(
+        ask[ask.len() - 1]
+            .content
+            .contains("Write two short paragraphs covering the scene in order.")
+    );
+    // Asked once: a second short answer is taken, with no third call.
+    let m = Scripted::with(&[short, short, "never used"]);
+    let r = generate_checked(&m, &base(), &sampling(), &f, Instant::now(), &|_| {}).unwrap();
+    assert_eq!((r.passes, m.calls(), r.clean), (2, 2, true));
+    assert_eq!(r.text, short);
+    // The longer try fails (no more replies): the short answer stands, and it is not "not sure".
+    let m = Scripted::with(&[short]);
+    let r = generate_checked(&m, &base(), &sampling(), &f, Instant::now(), &|_| {}).unwrap();
+    assert!(r.clean);
+    assert_eq!((r.text.as_str(), m.calls()), (short, 2));
 }

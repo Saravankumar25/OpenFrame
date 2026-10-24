@@ -50,6 +50,7 @@ use ts_rs::TS;
 use crate::core::AppCore;
 use crate::registry::Registry;
 pub use commands::set_direct_routes;
+pub use intent::intent_target;
 pub use offline::{
     AiComponentDto, AiDiagnosticsDto, AiDownloadDto, AiImportArgs, AiImportResult, AiStatusDto,
 };

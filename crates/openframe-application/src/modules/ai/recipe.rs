@@ -141,6 +141,9 @@ Write one connected answer from the notes. Rules you must always follow:
 2. Cite scenes in brackets like \"(Scene 5)\" or \"(Scenes 5 and 6)\".
 3. Never mention notes, tools, steps or data sources. Never say anything was changed: nothing has been changed.
 4. Reply in the language of the request.
+5. Start with the answer itself. Never open with \"Okay\", \"Sure\" or \"Let's dive in\".
+6. Describe only what the data shows: who does what, in order. Do not add light, mood, weather or feelings the data does not state.
+7. The number of scenes is stated in the data (\"The draft has N scenes\"). Use that number for every count of scenes; a scene number such as \"Scene 16\" is not a count.
 Style: natural, specific, organised. Up to about 450 words. Short headings on their own line and simple \"- \" lists are fine.";
 
 /// Remove the sentences of a note that name someone the scene list does not.
@@ -315,8 +318,9 @@ pub(super) fn write(cx: &Cx, m: &Material) -> AppResult<LaneAnswer> {
         }])
     );
     let user = format!(
-        "{}Answer mode: deep\nUser request: {}",
+        "{}The draft has {} scenes.\nAnswer mode: deep\nUser request: {}",
         data_block(&notes_items),
+        live.len(),
         cx.text.trim()
     );
     let base = [ChatMessage::system(system), ChatMessage::user(user)];
@@ -339,6 +343,7 @@ pub(super) fn write(cx: &Cx, m: &Material) -> AppResult<LaneAnswer> {
             max_words: 520,
         },
         style: Style::Rich,
+        min_words: None,
     };
     let sampling = Sampling {
         max_tokens: 700,
@@ -360,7 +365,9 @@ pub(super) fn write(cx: &Cx, m: &Material) -> AppResult<LaneAnswer> {
         &base,
         &sampling,
         &facts,
-        cx.started,
+        // The 60 seconds of passes start here: reading a long script takes longer than that, and
+        // an answer must still get its checks and a second try.
+        Instant::now(),
         &notify,
         cx.cancelled,
     )?;

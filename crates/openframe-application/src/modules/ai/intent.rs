@@ -162,6 +162,19 @@ pub(super) fn intents() -> &'static [Intent] {
     &INTENTS
 }
 
+/// What an intent name stands for: the tool it calls, or "chat" or "recipe". For the evaluation
+/// report, which asks whether the closest intent was the right one.
+pub fn intent_target(name: &str) -> Option<String> {
+    intents()
+        .iter()
+        .find(|i| i.name == name)
+        .map(|i| match &i.target {
+            Target::Tool(t) => t.clone(),
+            Target::Chat => "chat".to_string(),
+            Target::Recipe => "recipe".to_string(),
+        })
+}
+
 // ------------------------------------------------------------------ prototypes
 
 /// (intent index, unit vector) for each example of one language.

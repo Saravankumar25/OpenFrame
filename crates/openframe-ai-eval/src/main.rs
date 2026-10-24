@@ -186,7 +186,7 @@ fn run() -> Result<(), String> {
                 .map(|e| format!(" SETUP ERROR: {e}"))
                 .unwrap_or_default()
         );
-        let line = json!({ "case": case.id, "kind": case.kind, "lang": case.lang, "score": s, "observation": {
+        let line = json!({ "case": case.id, "kind": case.kind, "lang": case.lang, "score": s, "route": o.route, "observation": {
             "offered": o.offered.len(), "steps": o.steps, "errorCode": o.error_code, "answer": o.answer,
             "proposed": o.proposed, "applied": o.applied, "endState": o.end_state, "rankedScenes": o.ranked_scenes, "sceneCount": o.scene_count,
             "elapsedMs": o.elapsed_ms, "engineMb": o.engine_mb, "setupError": o.setup_error },
@@ -629,6 +629,13 @@ fn run_case(core: &AppCore, case: &Case) -> Observation {
         answer.push_str(it["label"].as_str().unwrap_or_default());
     }
     o.answer = answer;
+    // The lane and intent numbers of this request, from its trace row.
+    if let Some(request_id) = x["requestId"].as_str() {
+        o.route = core
+            .with_app_db(|c| Ok(openframe_ai_eval::route_from_trace(c, request_id)))
+            .ok()
+            .flatten();
+    }
     // The tools the assistant ran and their arguments, as recorded for this request.
     if let (Ok(session), Some(request_id)) = (core.project(), x["requestId"].as_str()) {
         o.steps = session

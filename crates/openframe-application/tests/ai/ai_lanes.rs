@@ -16,6 +16,10 @@ use serde_json::{Value, json};
 
 const SHORT: &[u8] = include_bytes!("../../../../templates/samples/Example-Short.fountain");
 
+/// An explanation of one scene is asked to grow when it is under 40 words, so the replies that
+/// should pass at once are this long.
+const SCENE_4: &str = "Devi studies the register while Kiran waits on the other side of the bars (Scene 4). She says there are still no kites, and he asks how she knew he came for the kite (Scene 4).\n\nShe says no one comes three nights in a row for a shoe. He almost smiles and goes, and Devi watches the empty window (Scene 4).";
+
 #[derive(Default)]
 struct ScriptedModel {
     replies: Mutex<VecDeque<String>>,
@@ -176,14 +180,11 @@ fn an_ambiguous_pronoun_asks_which_character() {
 fn an_invented_name_is_fed_back_and_the_clean_second_pass_is_shown() {
     let (env, m) = project();
     m.reply("Marcus gives Kiran the kite (Scene 4).");
-    m.reply("Devi studies the register while Kiran waits (Scene 4).");
+    m.reply(SCENE_4);
     let x = ask(&env, "Explain what happens in scene 4");
     assert_eq!(m.calls(), 2);
     let r = &x["result"];
-    assert_eq!(
-        r["content"],
-        "Devi studies the register while Kiran waits (Scene 4)."
-    );
+    assert_eq!(r["content"], SCENE_4);
     assert!(details(r).is_empty(), "{r}");
     let t = trace(&env, &x);
     assert_eq!((t.0.as_str(), t.3), ("chat", 2));
@@ -200,7 +201,7 @@ fn an_invented_name_is_fed_back_and_the_clean_second_pass_is_shown() {
 #[test]
 fn an_answer_that_passes_at_once_is_shown_at_once_and_cites_its_scene() {
     let (env, m) = project();
-    m.reply("Devi studies the register while Kiran waits on the other side of the bars (Scene 4).");
+    m.reply(SCENE_4);
     let x = ask(&env, "Explain what happens in scene 4");
     assert_eq!(m.calls(), 1);
     let r = &x["result"];
@@ -272,7 +273,7 @@ fn a_deep_answer_keeps_its_bullets_and_a_quick_answer_is_flattened() {
     let req = m.request(1);
     assert_eq!(
         (req.max_tokens, req.temperature, req.top_p),
-        (120, 0.4, None)
+        (120, 0.3, None)
     );
 }
 
@@ -299,7 +300,7 @@ fn ideas_are_written_warm_and_start_with_idea() {
 #[test]
 fn the_prompt_has_the_map_in_the_system_message_and_the_data_marked_untrusted() {
     let (env, m) = project();
-    m.reply("Devi studies the register while Kiran waits (Scene 4).");
+    m.reply(SCENE_4);
     ask(&env, "Explain what happens in scene 4");
     let req = m.request(0);
     let (system, user) = (&req.messages[0].content, &req.messages[1].content);
@@ -313,7 +314,7 @@ fn the_prompt_has_the_map_in_the_system_message_and_the_data_marked_untrusted() 
             .ends_with("User request: Explain what happens in scene 4")
     );
     // The stable start comes first: the same system message for another question.
-    m.reply("Kiran waits on a bench under the lamps (Scene 2).");
+    m.reply("Kiran waits on a bench under the yellow lamps while a goods train clanks past (Scene 2). He watches the sky above the station roof and does not move, with his knees pulled up and his school bag beside him (Scene 2).");
     ask(&env, "Explain what happens in scene 2");
     assert_eq!(m.request(1).messages[0].content, *system);
 }

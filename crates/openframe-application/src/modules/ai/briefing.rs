@@ -621,6 +621,11 @@ fn scene_count(n: usize) -> String {
     format!("{n} Scene{}", if n == 1 { "" } else { "s" })
 }
 
+/// "1 scene", "36 scenes": the count as a plain sentence has it.
+fn scene_word(n: usize) -> String {
+    format!("{n} scene{}", if n == 1 { "" } else { "s" })
+}
+
 fn dialogue(who: &str, text: &str) -> String {
     format!("{who}: {}", quote(text))
 }
@@ -743,19 +748,10 @@ pub(crate) fn act_groups(c: &Connection, draft: &DraftRef) -> AppResult<Vec<(Str
     Ok(groups)
 }
 
-/// The digest, then the scene's own lines in order until the budget is full.
-pub(crate) fn scene_briefing(
-    c: &Connection,
-    draft: &DraftRef,
-    ordinal: usize,
-    budget: usize,
-) -> AppResult<String> {
-    let s = Script::load(c, draft)?;
-    let d = digest_of(&s, draft, ordinal)?;
-    let sc = s.scene(draft, ordinal)?;
+/// The digest lines of a scene briefing: heading, placement, synopsis, notes, who is present and
+/// speaks, the first and last lines, the first and last action, the scenes around.
+fn digest_lines(o: &mut Out, d: &SceneDigest) {
     let n = d.ordinal;
-    let mut o = Out::new(budget);
-    o.line(format!("## Scene {n} ({})", s.draft_label));
     if !d.heading.is_empty() {
         o.line(format!("Scene {n}: heading: {}", d.heading));
     }
@@ -805,6 +801,10 @@ pub(crate) fn scene_briefing(
     if !d.next.is_empty() {
         o.line(format!("Scene {n}: the scene after is {}", d.next));
     }
+}
+
+/// The scene's own action and dialogue, in the order the script has them.
+fn own_lines(o: &mut Out, sc: &SceneData, n: usize) {
     let mut speaker: Option<String> = None;
     let mut paren = String::new();
     for (t, text) in &sc.elements {
@@ -829,7 +829,43 @@ pub(crate) fn scene_briefing(
             }
         }
     }
+}
+
+/// The digest, then the scene's own lines in order until the budget is full.
+pub(crate) fn scene_briefing(
+    c: &Connection,
+    draft: &DraftRef,
+    ordinal: usize,
+    budget: usize,
+) -> AppResult<String> {
+    let s = Script::load(c, draft)?;
+    let d = digest_of(&s, draft, ordinal)?;
+    let sc = s.scene(draft, ordinal)?;
+    let mut o = Out::new(budget);
+    o.line(format!("## Scene {} ({})", d.ordinal, s.draft_label));
+    digest_lines(&mut o, &d);
+    own_lines(&mut o, sc, d.ordinal);
     Ok(o.finish())
+}
+
+/// For a question that explains one scene: the scene's own lines FIRST, with about two thirds of
+/// the budget, then the digest with the rest. What the model reads first is what the script shows.
+pub(crate) fn scene_story(
+    c: &Connection,
+    draft: &DraftRef,
+    ordinal: usize,
+    budget: usize,
+) -> AppResult<String> {
+    let s = Script::load(c, draft)?;
+    let d = digest_of(&s, draft, ordinal)?;
+    let sc = s.scene(draft, ordinal)?;
+    let lines_budget = budget * 2 / 3;
+    let mut lines = Out::new(lines_budget);
+    lines.line(format!("## Scene {} ({})", d.ordinal, s.draft_label));
+    own_lines(&mut lines, sc, d.ordinal);
+    let mut digest = Out::new(budget - lines_budget);
+    digest_lines(&mut digest, &d);
+    Ok(format!("{}\n{}", lines.finish(), digest.finish()))
 }
 
 // ------------------------------------------------------------------ interactions
@@ -1344,8 +1380,8 @@ pub(crate) fn project_map(c: &Connection, draft: &DraftRef, budget: usize) -> Ap
     o.line(format!("Record: title: {}", flat(&s.title)));
     o.line(format!("Record: draft: {}", s.draft_label));
     o.line(format!(
-        "Record: {} in this draft (omitted Scenes are not counted).",
-        scene_count(live.len())
+        "Record: The draft has {} (omitted Scenes are not counted).",
+        scene_word(live.len())
     ));
     if s.acts.is_empty() {
         o.line("Record: No acts set.");

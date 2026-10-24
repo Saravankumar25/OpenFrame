@@ -1,8 +1,9 @@
 //! Verifiers v2 (AI harness rebuild plan, section 5.9; ADR-0028 decisions 5 and 6).
 //!
 //! Only deterministic code judges an answer, never a model. After the model writes, these checks
-//! run on the finished text: names, scene numbers, quotations, numbers, relationship words,
-//! language, length, repetition, empty text and false change claims. An answer that passes every
+//! run on the finished text (after a first sentence that only announces the answer is dropped):
+//! names, scene numbers, quotations, numbers, counts of scenes, relationship words, mood the script
+//! does not state, language, length, repetition, empty text and false change claims. An answer that passes every
 //! check on the first pass is returned at once. Otherwise the model gets ONE short message that
 //! names the exact offenders and writes again; at most three passes in all, inside the 60 second
 //! budget the request already has. If every pass fails, the attempt with the fewest offenders is
@@ -30,9 +31,12 @@ pub(crate) enum Check {
     SceneNumbers,
     Quotes,
     Numbers,
+    SceneCounts,
     RelationshipWords,
+    Atmosphere,
     Language,
     Length,
+    TooShort,
     Repetition,
     ChangeClaim,
 }
@@ -45,9 +49,12 @@ impl Check {
             Check::SceneNumbers => "scene_numbers",
             Check::Quotes => "quotes",
             Check::Numbers => "numbers",
+            Check::SceneCounts => "scene_counts",
             Check::RelationshipWords => "relationship_words",
+            Check::Atmosphere => "atmosphere_unsupported",
             Check::Language => "language",
             Check::Length => "length",
+            Check::TooShort => "too_short",
             Check::Repetition => "repetition",
             Check::ChangeClaim => "change_claim",
         }
@@ -82,6 +89,9 @@ pub(crate) struct Facts {
     pub language: Option<&'static str>,
     pub limits: Limits,
     pub style: Style,
+    /// An answer with fewer words than this is asked for once more, longer (an explanation of one
+    /// scene that stops after a sentence).
+    pub min_words: Option<usize>,
 }
 
 /// Words a written answer uses as labels and openings. They are not names of the project.
@@ -169,17 +179,27 @@ pub(crate) fn check(answer: &str, f: &Facts) -> Vec<Offence> {
 
     let mut num_ev = ev.clone();
     num_ev.push(f.request.as_str());
-    add(
-        Check::Numbers,
-        checks::unsupported_numbers(&strip_list_numbers(answer), &num_ev)
+    let numbers: Vec<String> = checks::unsupported_numbers(&strip_list_numbers(answer), &num_ev)
+        .into_iter()
+        .filter(|n| n.parse::<u32>().map_or(true, |n| !cited.contains(&n)))
+        .collect();
+    // A count of scenes is a different claim from a scene number: "Scene 16" exists, "16 scenes" is
+    // true only when the draft says so. A number already named above is not named twice.
+    let counts: Vec<String> =
+        checks::unsupported_scene_counts(answer, &num_ev, f.live_scenes.len())
             .into_iter()
-            .filter(|n| n.parse::<u32>().map_or(true, |n| !cited.contains(&n)))
-            .collect(),
-    );
+            .filter(|c| !numbers.iter().any(|n| c.starts_with(n.as_str())))
+            .collect();
+    add(Check::Numbers, numbers);
+    add(Check::SceneCounts, counts);
 
     add(
         Check::RelationshipWords,
         checks::unsupported_relationship_words(answer, &ev),
+    );
+    add(
+        Check::Atmosphere,
+        checks::unsupported_atmosphere(answer, &num_ev),
     );
 
     if let Some(want) = f.language
@@ -225,14 +245,25 @@ pub(crate) fn feedback(offences: &[Offence], f: &Facts) -> String {
             Check::Numbers => {
                 format!("These numbers are not in the data: {list}. Remove them.")
             }
+            Check::SceneCounts => format!(
+                "These scene counts are not in the data: {list}. The draft has {} scenes; use only counts the data states.",
+                f.live_scenes.len()
+            ),
             Check::RelationshipWords => format!(
                 "These relationships are not recorded in the data: {list}. Remove them; say no relationship is recorded."
+            ),
+            Check::Atmosphere => format!(
+                "The script does not state: {list}. Describe only what the script shows: who does what and says what, in order. Do not add light, mood or feelings."
             ),
             Check::Language => format!(
                 "Write the whole answer in {}.",
                 f.language.and_then(language_name).unwrap_or("the language of the request")
             ),
             Check::Length => "The answer is too long. Make it shorter.".into(),
+            Check::TooShort => {
+                "The answer is too short. Write two short paragraphs covering the scene in order."
+                    .into()
+            }
             Check::Repetition => {
                 format!("The answer repeats itself (\"{list}\"). Say each thing once.")
             }
@@ -260,6 +291,169 @@ pub(crate) fn fit(text: String, l: &Limits) -> String {
         t = fit_words(t, l.max_words);
     }
     t
+}
+
+/// Words of an opening that says nothing: the filler of "Okay, let's dive into this screenplay."
+const FILLER: &[&str] = &[
+    "okay",
+    "ok",
+    "sure",
+    "alright",
+    "all",
+    "right",
+    "certainly",
+    "absolutely",
+    "of",
+    "course",
+    "great",
+    "question",
+    "lets",
+    "let",
+    "us",
+    "delve",
+    "dive",
+    "deep",
+    "deeper",
+    "break",
+    "down",
+    "look",
+    "looking",
+    "at",
+    "into",
+    "in",
+    "on",
+    "explore",
+    "take",
+    "a",
+    "walk",
+    "through",
+    "the",
+    "this",
+    "that",
+    "these",
+    "those",
+    "project",
+    "screenplay",
+    "script",
+    "scene",
+    "scenes",
+    "draft",
+    "story",
+    "film",
+    "filmmaker",
+    "writer",
+    "friend",
+    "and",
+    "to",
+    "what",
+    "whats",
+    "happening",
+    "happens",
+    "happen",
+    "going",
+    "here",
+    "heres",
+    "is",
+    "it",
+    "its",
+    "now",
+    "first",
+    "start",
+    "begin",
+    "by",
+    "with",
+    "some",
+    "detail",
+    "details",
+    "closer",
+    "closely",
+    "together",
+    "we",
+    "you",
+    "your",
+    "my",
+    "our",
+    "i",
+    "ill",
+    "will",
+    "can",
+    "then",
+    "so",
+    "well",
+    "for",
+    "about",
+];
+
+/// Openings that announce an answer instead of giving it.
+const OPENINGS: &[&str] = &[
+    "okay",
+    "ok",
+    "sure",
+    "alright",
+    "all right",
+    "certainly",
+    "absolutely",
+    "of course",
+    "great question",
+    "lets delve",
+    "lets dive",
+    "lets break down",
+    "lets look",
+    "lets explore",
+    "lets take a look",
+    "lets walk through",
+    "let us delve",
+    "let us dive",
+    "let us break down",
+    "let us look",
+    "let us explore",
+    "let us take a look",
+    "let us walk through",
+];
+
+/// Lower-case words of a text, apostrophes dropped: "Let's" gives "lets".
+fn plain_words(text: &str) -> Vec<String> {
+    text.to_lowercase()
+        .replace(['\'', '\u{2019}'], "")
+        .split(|c: char| !c.is_alphanumeric())
+        .filter(|w| !w.is_empty())
+        .map(str::to_string)
+        .collect()
+}
+
+/// A first sentence that only announces the answer: it opens with okay, sure, alright, certainly,
+/// of course or great question, or with "let's" and delve, dive, break down, look, explore, take a
+/// look or walk through; and every word is filler or a word of the request. A sentence that holds
+/// any other word (a name, an event, a number the request did not have) carries a fact and stays.
+fn is_preamble(sentence: &str, request: &str) -> bool {
+    let words = plain_words(sentence);
+    let joined = words.join(" ");
+    let opens = OPENINGS
+        .iter()
+        .any(|s| joined == *s || joined.starts_with(&format!("{s} ")));
+    let asked = plain_words(request);
+    opens
+        && words
+            .iter()
+            .all(|w| FILLER.contains(&w.as_str()) || asked.contains(w))
+}
+
+/// The answer without a first sentence that is pure preamble. Never empties an answer.
+pub(crate) fn without_preamble(text: &str, request: &str) -> String {
+    let t = text.trim_start();
+    let end = t.char_indices().find_map(|(i, c)| match c {
+        '\n' => Some(i),
+        '.' | '!' | '?' if t[i + 1..].chars().next().is_none_or(char::is_whitespace) => Some(i + 1),
+        _ => None,
+    });
+    let Some(end) = end else {
+        return text.to_string();
+    };
+    let rest = t[end..].trim_start();
+    if rest.is_empty() || !is_preamble(&t[..end], request) {
+        return text.to_string();
+    }
+    rest.to_string()
 }
 
 /// A reply cut off by the token limit ends mid-sentence. Cut the last line back to its last full
@@ -320,7 +514,9 @@ fn units(text: &str) -> Vec<(String, bool)> {
 fn mentions(unit: &str, o: &Offence) -> bool {
     let lower = unit.to_lowercase();
     match o.check {
-        Check::Names | Check::Quotes => o.items.iter().any(|i| lower.contains(&i.to_lowercase())),
+        Check::Names | Check::Quotes | Check::SceneCounts | Check::Atmosphere => {
+            o.items.iter().any(|i| lower.contains(&i.to_lowercase()))
+        }
         Check::SceneNumbers => {
             let refs = checks::scene_refs(unit);
             o.items.iter().any(|i| {
@@ -429,6 +625,7 @@ pub(crate) fn generate_checked_until(
     stopped: &dyn Fn() -> bool,
 ) -> AppResult<Checked> {
     let mut attempts: Vec<(String, Vec<Offence>)> = Vec::new();
+    let mut asked_longer = false;
     let mut failed: Vec<String> = Vec::new();
     let mut messages = base.to_vec();
     let mut passes = 0;
@@ -446,8 +643,17 @@ pub(crate) fn generate_checked_until(
             }
         };
         notify(Phase::Checking);
-        let text = fit(drop_unfinished(plain_text_with(&raw, f.style)), &f.limits);
-        let offences = check(&text, f);
+        let plain = without_preamble(&plain_text_with(&raw, f.style), &f.request);
+        let text = fit(drop_unfinished(plain), &f.limits);
+        let mut offences = check(&text, f);
+        // A thin answer is asked to grow once; the second answer is taken as it comes.
+        if offences.is_empty() && !asked_longer && f.min_words.is_some_and(|m| words(&text) < m) {
+            asked_longer = true;
+            offences.push(Offence {
+                check: Check::TooShort,
+                items: vec![format!("{} words", words(&text))],
+            });
+        }
         if offences.is_empty() {
             return Ok(Checked {
                 text,
@@ -483,6 +689,15 @@ pub(crate) fn generate_checked_until(
         .expect("the first pass made an attempt");
     if text.trim().is_empty() {
         return Err(malformed("empty answer"));
+    }
+    // A short answer that failed nothing else is a good answer.
+    if offences.iter().all(|o| o.check == Check::TooShort) {
+        return Ok(Checked {
+            text,
+            passes,
+            failed,
+            clean: true,
+        });
     }
     let text = if offences.iter().any(|o| o.check == Check::ChangeClaim) {
         without_false_change_claim(&text)

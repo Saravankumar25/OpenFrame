@@ -44,14 +44,14 @@ fn scenes_are_listed_the_way_a_person_says_them() {
 
 #[test]
 fn depth_and_intent_set_the_length_and_the_sampling() {
-    let (s, style, l) = settings(Mode::Quick, Intent::Other, None);
+    let (s, style, l) = settings(Mode::Quick, Intent::Other, None, false);
     assert_eq!(
         (s.max_tokens, s.temperature, style),
         (120, 0.4, Style::Flat)
     );
     assert_eq!(l.max_sentences, Some(3));
 
-    let (s, style, l) = settings(Mode::Explain, Intent::Explain, None);
+    let (s, style, l) = settings(Mode::Explain, Intent::Explain, None, false);
     assert_eq!((s.max_tokens, s.temperature), (350, 0.6));
     assert_eq!(
         (s.top_p, s.top_k, style),
@@ -60,23 +60,23 @@ fn depth_and_intent_set_the_length_and_the_sampling() {
     assert_eq!(l.max_paragraphs, Some(2));
     // A factual question about a person is written colder.
     assert_eq!(
-        settings(Mode::Explain, Intent::Character, None)
+        settings(Mode::Explain, Intent::Character, None, false)
             .0
             .temperature,
         0.4
     );
 
-    let (s, style, _) = settings(Mode::Deep, Intent::Compare, None);
+    let (s, style, _) = settings(Mode::Deep, Intent::Compare, None, false);
     assert_eq!(
         (s.max_tokens, s.temperature, style),
         (700, 0.6, Style::Rich)
     );
 
-    let (s, _, _) = settings(Mode::Ideas, Intent::Ideas, None);
+    let (s, _, _) = settings(Mode::Ideas, Intent::Ideas, None, false);
     assert_eq!((s.max_tokens, s.temperature, s.top_k), (400, 0.9, Some(64)));
 
     // A named sentence count wins over the depth.
-    let (s, style, l) = settings(Mode::Deep, Intent::Explain, Some(2));
+    let (s, style, l) = settings(Mode::Deep, Intent::Explain, Some(2), false);
     assert_eq!(l.max_sentences, Some(2));
     assert_eq!((l.max_paragraphs, style), (None, Style::Flat));
     assert!(s.max_tokens <= 170);
@@ -239,4 +239,97 @@ fn history_is_two_short_exchanges_inside_the_data_boundary() {
     assert!(b.starts_with("<conversation_history>"));
     assert_eq!(b.matches("</conversation_history>").count(), 1, "{b}");
     assert!(history_block(&[], 500).is_empty());
+}
+
+#[test]
+fn a_scene_explained_is_written_cold_and_ideas_stay_warm() {
+    let temp = |m, i, scenes| settings(m, i, None, scenes).0.temperature;
+    assert_eq!(temp(Mode::Explain, Intent::Explain, true), 0.3);
+    assert_eq!(temp(Mode::Quick, Intent::Other, true), 0.3);
+    assert_eq!(temp(Mode::Ideas, Intent::Ideas, true), 0.9);
+    assert_eq!(temp(Mode::Deep, Intent::Explain, true), 0.6);
+    assert_eq!(temp(Mode::Explain, Intent::Explain, false), 0.6);
+}
+
+#[test]
+fn an_explanation_of_a_scene_reads_the_scenes_own_lines_first() {
+    let (c, d) = short();
+    let text = |q: &str| {
+        let u = understood(&c, &d, q);
+        let items = briefings(&c, &d, None, &u, 2_000, false).unwrap();
+        assert_eq!(items.len(), 1, "{items:?}");
+        items[0].text.clone()
+    };
+    let at = |t: &str, needle: &str| t.find(needle).unwrap_or_else(|| panic!("{needle}\n{t}"));
+    let own = "Scene 6: KIRAN: \"That is mine.\"";
+    let digest = "Scene 6: heading:";
+    let explain = text("Explain scene 6");
+    assert!(at(&explain, own) < at(&explain, digest), "{explain}");
+    // A deep answer keeps the digest first, as before.
+    let deep = text("Explain scene 6 in detail");
+    assert!(at(&deep, digest) < at(&deep, own), "{deep}");
+    // Ideas are about the digest, not a retelling.
+    let ideas = text("Any ideas for scene 6?");
+    assert!(at(&ideas, digest) < at(&ideas, own), "{ideas}");
+}
+
+#[test]
+fn the_nouns_of_a_clause_are_the_last_words_of_its_noun_phrases() {
+    let skip = BTreeSet::from(["devi".to_string(), "kiran".to_string()]);
+    assert_eq!(
+        key_nouns("Devi and Kiran argue about money", &skip),
+        [["money"]]
+    );
+    assert_eq!(
+        key_nouns("Devi gives Kiran the red kite and leaves", &skip),
+        [["kite"]]
+    );
+    assert!(key_nouns("Devi cries", &skip).is_empty());
+    assert!(key_nouns("Devi talks about the cat", &skip).is_empty());
+}
+
+#[test]
+fn a_scene_the_question_invents_is_said_in_code_with_the_closest_scene() {
+    let (c, d) = short();
+    let said = |t: &str| {
+        let u = understood(&c, &d, t);
+        missing_premise(&c, &d, t, &u).unwrap()
+    };
+    let m = said("Tell me about the scene where Devi and Kiran argue about money.").unwrap();
+    assert!(
+        m.starts_with(
+            "I couldn't find a scene where Devi and Kiran argue about money. The closest is Scene 1:"
+        ),
+        "{m}"
+    );
+    assert!(m.ends_with(['.', '\u{2026}']), "{m}");
+    // The script has a register and a kite: those premises are not refused.
+    assert!(said("Tell me about the scene where Devi checks the register").is_none());
+    assert!(said("Tell me about the scene where Kiran asks for the kite?").is_none());
+    // No concrete noun, or not a question about a scene: the model answers.
+    assert!(said("Tell me about the scene where Devi cries").is_none());
+    assert!(said("Explain the whole screenplay").is_none());
+    // Without a named person there is no closest scene to offer, only the plain statement.
+    let m = said("Tell me about the scene in which a wedding happens").unwrap();
+    assert_eq!(m, "I couldn't find a scene where a wedding happens.");
+}
+
+#[test]
+fn a_synonym_in_the_script_keeps_the_premise_open() {
+    use super::super::test_script::{add, scene, talk};
+    let c = project();
+    let d = add(
+        &c,
+        "Debts",
+        &[
+            scene("INT. SHOP - DAY", &[("action", "Devi counts the till.")]),
+            talk(
+                "INT. SHOP - NIGHT",
+                &[("DEVI", "You owe me forty rupees."), ("KIRAN", "Tomorrow.")],
+            ),
+        ],
+    );
+    let t = "Tell me about the scene where Devi and Kiran argue about money.";
+    let u = understood(&c, &d, t);
+    assert!(missing_premise(&c, &d, t, &u).unwrap().is_none());
 }

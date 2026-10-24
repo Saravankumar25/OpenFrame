@@ -403,13 +403,17 @@ Starting values only. The Gemma team's reported family default is temperature 1.
 
 | Check | Rule |
 |---|---|
-| Names | Every capitalised or all-caps name in the answer is in the briefing, the evidence, the project's names, or the question. A small list handles sentence-start words |
+| Names | Every capitalised or all-caps name in the answer is in the briefing, the evidence, the project's names, or the question. A small list handles sentence-start words. A name of two words or more also needs every word written with a capital somewhere in the evidence, or the words together ("paddy fields" and "Pedda Revu" do not make "Paddy Revu") |
 | Scene numbers | Every "Scene N" exists in the draft and appears in the briefing or evidence |
 | Quotes | Text in quotation marks appears in the evidence after normalising spaces and case |
 | Numbers | Numbers in the answer appear in the evidence or tool results (extends `numbers_kept`) |
+| Scene counts | "N scenes" in the answer is a count the evidence states ("The draft has 36 scenes") or the draft's real count. A scene number ("Scene 16") never justifies "16 scenes" |
+| Atmosphere | A short list of mood phrases (bathed in, palpable, soft morning light, dimly lit, eerie, tension hangs, sense of impending, ominous, haunting) is allowed only when every content word of the phrase is in the evidence or the question |
 | Relationship words | "sister", "husband", "rival" and similar appear in a typed relationship or in quoted evidence |
 | Language | Existing language check |
 | Length | Within the depth range and within an asked sentence count |
+| Too short | An explanation of one scene under 40 words, with more than 8 evidence lines, is asked once for two short paragraphs covering the scene in order |
+| Preamble | A first sentence that only announces the answer ("Okay, let's dive into scene 4.") is dropped in code when it carries no fact; the policy also says to start with the answer itself |
 | Repetition | No repeated 4-gram runs |
 | Change claims | Existing guard: never say a change was made |
 | Empty | Not empty |
