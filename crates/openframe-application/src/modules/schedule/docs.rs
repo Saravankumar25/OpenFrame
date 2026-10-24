@@ -69,6 +69,9 @@ pub fn register(r: &mut Registry) {
 pub struct ScheduleSidesElement {
     pub element_type: String,
     pub text: String,
+    /// Part of a dual-dialogue block. Sides saved before this existed read as false.
+    #[serde(default)]
+    pub dual: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
@@ -208,6 +211,7 @@ fn build_sides(
                 .map(|e| ScheduleSidesElement {
                     element_type: e.element_type,
                     text: e.text,
+                    dual: e.dual,
                 })
                 .collect(),
         });

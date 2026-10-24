@@ -8,7 +8,7 @@
 
 import { Suspense, useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { open as openDialog } from "@tauri-apps/plugin-dialog";
-import { Archive, ArrowLeft, Copy, FileArchive, FolderOpen, FolderSearch, Lightbulb, MoreHorizontal, Pencil, Pin, PinOff, Plus, RotateCcw, Search, Settings, Trash2 } from "lucide-react";
+import { Archive, ArrowLeft, Copy, FileArchive, FolderOpen, FolderSearch, ImageOff, ImagePlus, Lightbulb, MoreHorizontal, Pencil, Pin, PinOff, Plus, RotateCcw, Search, Settings, Trash2 } from "lucide-react";
 import { call, revealLocation } from "../../ipc/client";
 import { reportError, useOp } from "../../ipc/query";
 import type { AppInfo } from "../../ipc/generated/AppInfo";
@@ -20,6 +20,7 @@ import { workspaceDef } from "../routes";
 import { ErrorBoundary } from "../shell/ErrorBoundary";
 import { runUndo } from "../shell/Shell";
 import { toast } from "../toast";
+import { fileSrc } from "../../ipc/assetSrc";
 import { ago, shortDate } from "./format";
 import { useHomeView } from "./homeState";
 import { NewProjectDialog } from "./NewProjectDialog";
@@ -222,6 +223,22 @@ function ProjectsHome() {
     }
   };
 
+  const chooseCover = async (p: RecentProject) => {
+    try {
+      const picked = await openDialog({
+        multiple: false,
+        directory: false,
+        title: "Choose a cover photo",
+        filters: [{ name: "Pictures", extensions: ["png", "jpg", "jpeg", "webp"] }],
+      });
+      if (typeof picked !== "string") return;
+      await call("project.set_cover", { projectId: p.projectId, path: picked });
+      toast.success("Cover photo changed");
+    } catch (e) {
+      reportError(e);
+    }
+  };
+
   const menuFor = (p: RecentProject): MenuItemSpec[] => [
     { label: "Open", icon: <FolderOpen size={14} />, onSelect: () => void openProject(p) },
     { label: "Rename", shortcut: "F2", icon: <Pencil size={14} />, disabled: !p.available, onSelect: () => setRenaming(p) },
@@ -239,6 +256,19 @@ function ProjectsHome() {
       icon: p.pinned ? <PinOff size={14} /> : <Pin size={14} />,
       onSelect: () => void call("project.set_pinned", { projectId: p.projectId, pinned: !p.pinned }).catch(reportError),
     },
+    { label: "Change cover photo…", icon: <ImagePlus size={14} />, onSelect: () => void chooseCover(p) },
+    ...(p.cover
+      ? [
+          {
+            label: "Remove cover photo",
+            icon: <ImageOff size={14} />,
+            onSelect: () =>
+              void call("project.clear_cover", { projectId: p.projectId })
+                .then(() => toast.success("Cover photo removed"))
+                .catch(reportError),
+          },
+        ]
+      : []),
     { label: "Reveal in File Manager", icon: <FolderSearch size={14} />, disabled: !p.available, onSelect: () => void revealLocation("project", p.projectId).catch(reportError) },
     p.archived
       ? { label: "Restore from Archive", icon: <RotateCcw size={14} />, separatorBefore: true, onSelect: () => void setArchived(p, false) }
@@ -430,6 +460,17 @@ function ProjectSearch({ value, onChange, inputRef, inline }: { value: string; o
   );
 }
 
+/** The chosen cover photo, or the generated cover when there is none. The title sits beside it, so the picture is decorative. */
+function CardCover({ project }: { project: RecentProject }) {
+  const src = fileSrc(project.cover?.path);
+  if (!src) return <div className={`pv photo ${previewFor(project.projectId)}`} aria-hidden />;
+  return (
+    <div className="pv" aria-hidden style={{ background: "var(--panel)" }}>
+      <img src={src} alt="" loading="lazy" style={{ display: "block", width: "100%", height: "100%", objectFit: "cover" }} />
+    </div>
+  );
+}
+
 function CardGrid({ projects, menuFor, onOpen, onRename }: {
   projects: RecentProject[];
   menuFor: (p: RecentProject) => MenuItemSpec[];
@@ -453,7 +494,7 @@ function CardGrid({ projects, menuFor, onOpen, onRename }: {
                 }
               }}
             >
-              <div className={`pv photo ${previewFor(p.projectId)}`} aria-hidden />
+              <CardCover project={p} />
               <div className="pb">
                 <div className="pt" title={p.title} style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.title}</div>
                 <div className="row gap4 wrap" style={{ margin: "6px 0" }}>

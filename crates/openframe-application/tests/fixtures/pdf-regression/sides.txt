@@ -7,9 +7,15 @@
 94,555 12.0 Police Station, District Rd, Gudur
 94,543 12.0 Old Railway Station, Station Rd, Gudur
 72,519 12.0 CAST
-94,507 12.0 CHARACTER               ACTOR                   CALL
-94,495 12.0 Arjun                   Karthik Menon           Needs input
-94,483 12.0 Meera                   Divya Nair              Needs input
+94,507 12.0 CHARACTER
+266,507 12.0 ACTOR
+439,507 12.0 CALL
+94,495 12.0 Arjun
+266,495 12.0 Karthik Menon
+439,495 12.0 Needs input
+94,483 12.0 Meera
+266,483 12.0 Divya Nair
+439,483 12.0 Needs input
 88,26 8.0 Created using OpenFrame
 == page 2 612x792
 72,747 12.0 Shooting Draft 6 (Locked)
@@ -23,8 +29,8 @@
 266,651 12.0 MEERA
 180,639 12.0 You will want to see this before
 180,627 12.0 anyone else does.
-65,603 12.0 2
-108,603 12.0 EXT. OLD RAILWAY STATION - DAY
-547,603 12.0 2
-108,579 12.0 ARJUN walks the empty platform, photograph in hand.
+65,591 12.0 2
+108,591 12.0 EXT. OLD RAILWAY STATION - DAY
+547,591 12.0 2
+108,567 12.0 ARJUN walks the empty platform, photograph in hand.
 88,26 8.0 Created using OpenFrame

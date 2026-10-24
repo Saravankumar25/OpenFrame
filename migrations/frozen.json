@@ -8,6 +8,7 @@
     "app/0004_ai_trace_cache.sql": "650a2b772baca3612b56c333fe49ae4f8eb0270f8c6c362e4ebb04f5df07d463",
     "app/0005_ai_trace_lane.sql": "9a0388700bb5f0edec262da8c90bcbe1be3214ce391baf81d4440b706a35e5d5",
     "app/0006_ai_trace_intent.sql": "9c50580c8b1197f7565435ebc6b636e8c125ff7229e4b91986f1aba52303ae38",
+    "app/0007_project_cover.sql": "35a3ffa6b888618516d06219f0d2599a1fc743abdf3795c13f50b5834ec9b2a5",
     "global/0001_core.sql": "709e840386976c263df6cbe73f63b000ed7b689f38f3e0c5e1c23f7706e81b7a",
     "global/0002_idea_vault.sql": "a112a6a1607084a24e61d0cb8aff0e58f672cb5e11376fcd52c5f6c74b88d7be",
     "global/0003_performance.sql": "20991335c0382f385a6cb227709826c0d4bc4379503929dd3bbd96adaa226caf",

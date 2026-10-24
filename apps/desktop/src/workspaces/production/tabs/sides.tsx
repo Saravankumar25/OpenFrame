@@ -16,6 +16,8 @@ import { SidesExportButton } from "../../../features/export/buttons";
 
 export const tab = { id: "sides", label: "Sides", order: 90 };
 
+const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
+
 const ELEMENT_CLASS: Record<string, string> = {
   action: "sp-a",
   character: "sp-c",
@@ -95,14 +97,22 @@ export default function SidesTab() {
   const day = days.find((d) => d.id === dayId);
   const strips = useMemo(() => (day ? day.items.flatMap((i) => (i.strip ? [i.strip] : [])) : []), [day]);
   const chosen = selected ?? strips.map((s) => s.id);
+  // "Selected cast": the same rule the backend applies (a scene counts when one of its confirmed
+  // breakdown cast keys is picked), worked out here so the checklist, the preview and the export agree.
+  const filtering = forMode === "selected" && castKeys.length > 0;
+  const hasCast = (s: (typeof strips)[number]) => s.cast.some((c) => castKeys.includes(c.key));
+  const included = (s: (typeof strips)[number]) => !filtering || hasCast(s);
+  const sceneCount = strips.filter(included).length;
+  // Ticks the user made are kept for scenes left out, so "All cast" brings them back unchanged.
+  const effective = strips.filter((s) => included(s) && chosen.includes(s.id)).map((s) => s.id);
   const args = {
     dayId: dayId || null,
-    stripIds: chosen,
+    stripIds: effective,
     castKeys: forMode === "selected" ? castKeys : null,
     includeCover: cover,
     showDraftName: draftName,
   };
-  const ready = !!day && chosen.length > 0 && (forMode === "all" || castKeys.length > 0);
+  const ready = !!day && effective.length > 0 && (forMode === "all" || castKeys.length > 0);
   const preview = useOp<ScheduleSidesContent>("sides.preview", args, SIDES_TABLES, { enabled: ready && !openId });
   const openSaved = useOp<ScheduleSideDetail>("sides.get", { id: openId ?? "" }, ["side"], { enabled: !!openId });
 
@@ -151,14 +161,30 @@ export default function SidesTab() {
               </label>
               <div className="sm b" style={{ marginBottom: 4 }}>Scenes</div>
               {strips.length === 0 && <div className="sm muted">No scenes scheduled on this day.</div>}
-              {strips.map((s) => (
-                <Checkbox
-                  key={s.id}
-                  checked={chosen.includes(s.id)}
-                  onChange={(v) => setSelected(v ? [...chosen, s.id] : chosen.filter((x) => x !== s.id))}
-                  label={`${s.number ?? "Not numbered"}: ${s.heading}`}
-                />
-              ))}
+              {strips.map((s) => {
+                const left = !included(s);
+                return (
+                  <Checkbox
+                    key={s.id}
+                    checked={!left && chosen.includes(s.id)}
+                    disabled={left}
+                    onChange={(v) => setSelected(v ? [...chosen, s.id] : chosen.filter((x) => x !== s.id))}
+                    label={
+                      <>
+                        {s.number ?? "Not numbered"}: {s.heading}
+                        {left && <span className="xs muted"> · Left out: no selected cast in this scene</span>}
+                      </>
+                    }
+                  />
+                );
+              })}
+              {filtering && (
+                <div className="hint" role="status" style={{ marginTop: 4 }}>
+                  {sceneCount === 0
+                    ? "No scene on this day has the selected cast. Choose other cast, or switch to All cast."
+                    : `${sceneCount} of ${plural(strips.length, "scene")} have the selected cast. Only those are in the sides.`}
+                </div>
+              )}
               <div className="sm b" style={{ margin: "10px 0 4px" }}>For</div>
               <Segmented
                 ariaLabel="Sides for"
@@ -177,7 +203,7 @@ export default function SidesTab() {
                       key={c.key}
                       checked={castKeys.includes(c.key)}
                       onChange={(v) => setCastKeys(v ? [...castKeys, c.key] : castKeys.filter((k) => k !== c.key))}
-                      label={c.actor ? `${c.actor} (${c.character})` : c.character}
+                      label={`${c.actor ? `${c.actor} (${c.character})` : c.character} · ${plural(strips.filter((s) => s.cast.some((x) => x.key === c.key)).length, "scene")}`}
                     />
                   ))}
                 </div>
@@ -257,7 +283,11 @@ export default function SidesTab() {
             )
           ) : !ready ? (
             <div className="sm muted" style={{ padding: 20 }}>
-              Choose a shooting day and at least one scene{forMode === "selected" ? " and cast member" : ""} to preview the sides.
+              {filtering && sceneCount === 0
+                ? "No scene on this day has the selected cast, so there are no sides to show. Choose other cast, or switch to All cast. Cast comes from each scene’s confirmed breakdown."
+                : filtering && effective.length === 0
+                  ? "All the scenes with the selected cast are unticked. Tick at least one scene to preview the sides."
+                  : `Choose a shooting day and at least one scene${forMode === "selected" ? " and cast member" : ""} to preview the sides.`}
             </div>
           ) : preview.error ? (
             <Banner tone="warn">{preview.error.message}</Banner>
