@@ -959,12 +959,15 @@ struct Routed {
     score: f32,
     margin: f32,
     used: bool,
+    /// The gate that applied when the intent was used (none otherwise).
+    gate: intent::Gate,
 }
 
 /// What the intent step changed: whether the router used the intent, and the only tools the first
 /// agent step may choose from when code could not fill the arguments itself.
 struct Applied {
     used: bool,
+    gate: intent::Gate,
     first_tools: Option<Vec<ToolDef>>,
 }
 
@@ -1018,10 +1021,13 @@ fn apply_intent(
 ) -> Applied {
     let not_used = Applied {
         used: false,
+        gate: intent::Gate::None,
         first_tools: None,
     };
-    if !m.accepted() {
-        return not_used;
+    match m.gate() {
+        intent::Gate::None => return not_used,
+        intent::Gate::TopTwo => return top_two(m, known, tools, decision),
+        intent::Gate::Direct => {}
     }
     let margin = f64::from(m.margin);
     let i = m.intent();
@@ -1081,7 +1087,57 @@ fn apply_intent(
     }
     Applied {
         used: true,
+        gate: intent::Gate::Direct,
         first_tools,
+    }
+}
+
+/// The middle band: the intent is close but not clear. The first agent step may choose only
+/// between the tools of the two closest intents (and `clarify`; `final_answer` is always in the
+/// grammar), so a small model picks between two plausible tools, never `retrieve_context`. It
+/// needs two tool intents; a chat or recipe intent among the two leaves the rules to decide.
+fn top_two(
+    m: &intent::Scored,
+    known: &BTreeSet<String>,
+    tools: &[&ToolDef],
+    decision: &mut Decision,
+) -> Applied {
+    let not_used = Applied {
+        used: false,
+        gate: intent::Gate::None,
+        first_tools: None,
+    };
+    let mut names: Vec<&str> = Vec::new();
+    for index in [Some(m.index), m.second] {
+        let Some(index) = index else {
+            return not_used;
+        };
+        match &intent::intents()[index].target {
+            intent::Target::Tool(t) if known.contains(t) && t != "retrieve_context" => {
+                if !names.contains(&t.as_str()) {
+                    names.push(t);
+                }
+            }
+            _ => return not_used,
+        }
+    }
+    names.push("clarify");
+    let only: Vec<ToolDef> = names
+        .iter()
+        .filter_map(|n| tools.iter().find(|d| d.name == *n))
+        .map(|d| (*d).clone())
+        .collect();
+    if decision.lane == Lane::Chat {
+        *decision = Decision {
+            lane: Lane::Agent,
+            runner_up: Lane::Chat,
+            margin: f64::from(m.margin),
+        };
+    }
+    Applied {
+        used: true,
+        gate: intent::Gate::TopTwo,
+        first_tools: Some(only),
     }
 }
 
@@ -1331,6 +1387,7 @@ fn run_agent(
             score: m.score,
             margin: m.margin,
             used: applied.used,
+            gate: applied.gate,
         });
     }
     if let (Some(d), Some((u, previous, unknown))) = (&draft, &understood) {
@@ -1628,7 +1685,13 @@ pub(super) enum Style {
     Rich,
 }
 
+/// The model's text as plain sentences, then washed of our own markup (`sanitize::clean`).
 pub(super) fn plain_text_with(text: &str, style: Style) -> String {
+    super::sanitize::clean(&unwashed_text(text, style))
+}
+
+/// `plain_text_with` before the wash: only the markdown is gone.
+pub(super) fn unwashed_text(text: &str, style: Style) -> String {
     use regex::Regex;
     use std::sync::LazyLock;
     static RULE: LazyLock<Regex> = LazyLock::new(|| {
@@ -1654,7 +1717,8 @@ pub(super) fn plain_text_with(text: &str, style: Style) -> String {
     });
     static CODE: LazyLock<Regex> =
         LazyLock::new(|| Regex::new(r"`+([^`\n]+)`+").expect("valid pattern"));
-    let t = RULE.replace_all(text, "");
+    let text = super::sanitize::without_briefing_headings(text);
+    let t = RULE.replace_all(&text, "");
     let t = match style {
         Style::Flat => MARKER.replace_all(&t, "").into_owned(),
         Style::Rich => {
@@ -2210,7 +2274,9 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
             lane: decision.lane.code(),
             runner_up_lane: decision.runner_up.code(),
             lane_margin: decision.margin,
-            intent: routed.as_ref().map_or("", |r| r.name.as_str()),
+            intent: &routed
+                .as_ref()
+                .map_or(String::new(), |r| format!("{}{}", r.name, r.gate.suffix())),
             intent_score: routed.as_ref().map_or(0.0, |r| f64::from(r.score)),
             intent_margin: routed.as_ref().map_or(0.0, |r| f64::from(r.margin)),
             intent_used: routed.as_ref().is_some_and(|r| r.used),
@@ -2869,6 +2935,7 @@ mod tests {
             index,
             score: 0.95,
             margin: 0.1,
+            second: None,
         }
     }
 
@@ -2912,5 +2979,109 @@ mod tests {
             assert!(!applied.used, "{name}: a hard rule keeps its lane");
             assert_eq!(d.lane, Lane::Agent);
         }
+    }
+
+    fn scored_with(name: &str, second: &str, score: f32, margin: f32) -> intent::Scored {
+        let at = |n: &str| {
+            intent::intents()
+                .iter()
+                .position(|i| i.name == n)
+                .expect("intent exists")
+        };
+        intent::Scored {
+            index: at(name),
+            score,
+            margin,
+            second: Some(at(second)),
+        }
+    }
+
+    #[test]
+    fn a_close_but_unclear_match_offers_only_the_two_closest_tools() {
+        let u = nothing_found();
+        let known = known(&["count_scenes", "location_statistics", "retrieve_context"]);
+        let defs: Vec<ToolDef> = [
+            "count_scenes",
+            "location_statistics",
+            "retrieve_context",
+            "clarify",
+        ]
+        .iter()
+        .map(|n| def(n))
+        .collect();
+        let tools: Vec<&ToolDef> = defs.iter().collect();
+        let names = |a: &Applied| -> Vec<String> {
+            a.first_tools
+                .as_ref()
+                .map(|t| t.iter().map(|d| d.name.clone()).collect())
+                .unwrap_or_default()
+        };
+        // Both a middling score and a small lead land in the band.
+        for (score, margin) in [(0.89, 0.2), (0.93, 0.01)] {
+            let mut d = Decision {
+                lane: Lane::Chat,
+                runner_up: Lane::Agent,
+                margin: 0.5,
+            };
+            let mut direct = None;
+            let m = scored_with("count_scenes", "location_statistics", score, margin);
+            assert_eq!(m.gate(), intent::Gate::TopTwo);
+            let a = apply_intent(&m, Some(&u), "x", &known, &tools, &mut d, &mut direct);
+            assert!(a.used);
+            assert_eq!(a.gate, intent::Gate::TopTwo);
+            assert_eq!(
+                names(&a),
+                ["count_scenes", "location_statistics", "clarify"]
+            );
+            assert!(direct.is_none(), "the band never calls a tool itself");
+            assert_eq!(d.lane, Lane::Agent);
+        }
+        // A clear match is a direct gate; an unclear one below the band is not used at all.
+        assert_eq!(
+            scored_with("count_scenes", "location_statistics", 0.92, 0.1).gate(),
+            intent::Gate::Direct
+        );
+        let low = scored_with("count_scenes", "location_statistics", 0.87, 0.2);
+        let mut d = Decision {
+            lane: Lane::Agent,
+            runner_up: Lane::Chat,
+            margin: 0.5,
+        };
+        let a = apply_intent(&low, Some(&u), "x", &known, &tools, &mut d, &mut None);
+        assert!(!a.used && a.gate == intent::Gate::None && a.first_tools.is_none());
+        // A chat intent among the two, or no runner-up, leaves the decision to the rules.
+        for m in [
+            scored_with("count_scenes", "ideas", 0.89, 0.01),
+            intent::Scored {
+                second: None,
+                ..scored_with("count_scenes", "ideas", 0.89, 0.01)
+            },
+        ] {
+            let a = apply_intent(&m, Some(&u), "x", &known, &tools, &mut d, &mut None);
+            assert!(!a.used, "{m:?}");
+        }
+        // retrieve_context is never offered, even if an intent named it.
+        assert!(
+            !names(&apply_intent(
+                &scored_with("count_scenes", "location_statistics", 0.89, 0.01),
+                Some(&u),
+                "x",
+                &known,
+                &tools,
+                &mut d,
+                &mut None
+            ))
+            .contains(&"retrieve_context".to_string())
+        );
+    }
+
+    #[test]
+    fn the_trace_names_the_top_two_gate_after_the_intent() {
+        assert_eq!(intent::Gate::TopTwo.suffix(), "|top-two");
+        assert_eq!(intent::Gate::Direct.suffix(), "");
+        assert_eq!(
+            intent::intent_target("count_scenes|top-two").as_deref(),
+            Some("count_scenes")
+        );
     }
 }

@@ -131,7 +131,10 @@
       "Which locations are used and how often?",
       "Count of indoor and outdoor scenes",
       "Tally of daytime and nighttime scenes",
-      "What is the number of distinct settings in the screenplay?"
+      "What is the number of distinct settings in the screenplay?",
+      "How many night scenes?",
+      "Count the exterior scenes",
+      "Number of scenes set at night"
     ],
     "other": {
       "hi": ["कहानी में कितनी अलग-अलग जगहें इस्तेमाल हुई हैं?", "दिन और रात के दृश्यों की गिनती बताओ"],
@@ -152,7 +155,11 @@
       "Who is speaking during scene 7?",
       "List the speakers of the second scene",
       "Who says something in scene 9?",
-      "Who gets a line in scene 14?"
+      "Who gets a line in scene 14?",
+      "Which characters speak in scene 4?",
+      "Who speaks in scene 9?",
+      "Which characters have lines in scene 6?",
+      "Who talks in scene 2?"
     ],
     "other": {
       "hi": ["दृश्य 3 में कौन बोलता है?", "सीन 8 के संवाद किस-किस के हैं?"],

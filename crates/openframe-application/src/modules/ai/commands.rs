@@ -344,7 +344,14 @@ fn scene_intent(text: &str) -> Option<StepCall> {
         "summary"
     } else if has(&["how many"]) && has(&["character", "people", "speaker", "speak", "talk"]) {
         "speaker_count"
-    } else if has(&["who"]) && has(&["speak", "talk", "dialogue", "in scene", "in it"]) {
+    } else if (has(&["who"]) && has(&["speak", "talk", "dialogue", "in scene", "in it"]))
+        || (has(&[
+            "which character",
+            "what character",
+            "which people",
+            "which person",
+        ]) && has(&["speak", "talk", "dialogue", "lines", "say"]))
+    {
         "speakers"
     } else if has(&["last line", "final line", "ends with", "last thing"]) {
         "last_line"

@@ -232,3 +232,21 @@ fn a_search_or_a_production_suggestion_is_never_a_story_question() {
         Lane::Agent
     );
 }
+
+#[test]
+fn which_characters_speak_in_a_scene_is_a_fact_question_never_chat() {
+    for q in [
+        "Which characters speak in scene 4?",
+        "which characters have lines in scene 4",
+        "Who talks in scene 4?",
+        "How many characters speak in scene 4?",
+    ] {
+        let d = lane_of(q);
+        assert_eq!((d.lane, d.margin), (Lane::Direct, 1.0), "{q}");
+    }
+    // With the scene in view the same words are still a fact question.
+    assert_eq!(
+        lane_in("Which characters speak in scene 4?", Some(4)).lane,
+        Lane::Direct
+    );
+}

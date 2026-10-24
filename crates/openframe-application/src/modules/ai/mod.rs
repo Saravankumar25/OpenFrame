@@ -31,6 +31,7 @@ pub mod queries;
 mod recipe;
 pub mod records;
 pub mod retrieval;
+mod sanitize;
 pub mod scope;
 pub mod service;
 #[cfg(test)]

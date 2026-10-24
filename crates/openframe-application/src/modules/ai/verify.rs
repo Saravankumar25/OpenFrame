@@ -18,7 +18,7 @@ use openframe_ai_checks as checks;
 use openframe_domain::AppResult;
 
 use super::orchestrator::{
-    MAX_PASSES, Style, VERIFY_BUDGET, fit_words, keep_sentences, language_name, plain_text_with,
+    MAX_PASSES, Style, VERIFY_BUDGET, fit_words, keep_sentences, language_name, unwashed_text,
     without_false_change_claim,
 };
 use super::queries;
@@ -39,6 +39,8 @@ pub(crate) enum Check {
     TooShort,
     Repetition,
     ChangeClaim,
+    /// The answer copies the notes the model was given instead of answering in its own words.
+    EvidenceEcho,
 }
 
 impl Check {
@@ -57,6 +59,7 @@ impl Check {
             Check::TooShort => "too_short",
             Check::Repetition => "repetition",
             Check::ChangeClaim => "change_claim",
+            Check::EvidenceEcho => "evidence_echo",
         }
     }
 }
@@ -270,10 +273,60 @@ pub(crate) fn feedback(offences: &[Offence], f: &Facts) -> String {
             Check::ChangeClaim => {
                 "Do not say anything was changed. Nothing has been changed.".into()
             }
+            Check::EvidenceEcho => "Answer in your own sentences; do not copy the notes.".into(),
         });
     }
-    lines.push("Write the answer again.".into());
+    // The last line asks for the answer alone, so the model does not talk about the rewrite.
+    lines.push("Reply with the corrected answer only.".into());
     lines.join("\n")
+}
+
+// ------------------------------------------------------------------ copying the notes
+
+/// An answer this short, after the markup of the notes was washed out of it, only echoed labels.
+const ECHO_MIN_WORDS: usize = 25;
+/// Words in one shingle: eight words in a row, the same, are a copy and not a coincidence.
+const SHINGLE: usize = 8;
+
+fn shingles(words: &[String]) -> impl Iterator<Item = String> + '_ {
+    words.windows(SHINGLE).map(|w| w.join(" "))
+}
+
+/// The check `evidence_echo` (section 5.9): the answer is the notes, not the model's words. It
+/// fails when the wash removed markup from this very answer and under 25 words of prose are left,
+/// or when more than 40 percent of the sentences are near copies of a line of the notes (half of
+/// a sentence's eight-word shingles are the notes' shingles). The offenders are the copied
+/// sentences, so the last pass can drop them.
+pub(crate) fn evidence_echo(answer: &str, f: &Facts, washed: bool) -> Option<Offence> {
+    let known: BTreeSet<String> = f
+        .evidence
+        .iter()
+        .flat_map(|e| shingles(&plain_words(e)).collect::<Vec<_>>())
+        .collect();
+    let mut seen = 0usize;
+    let mut copies: Vec<String> = Vec::new();
+    for (unit, _) in units(answer) {
+        let w = plain_words(&unit);
+        if w.len() < 3 {
+            continue;
+        }
+        seen += 1;
+        let total = w.len().saturating_sub(SHINGLE - 1);
+        let hits = shingles(&w).filter(|s| known.contains(s)).count();
+        if total > 0 && hits * 2 >= total {
+            copies.push(unit);
+        }
+    }
+    if washed && words(answer) < ECHO_MIN_WORDS {
+        return Some(Offence {
+            check: Check::EvidenceEcho,
+            items: vec![format!("{} words", words(answer))],
+        });
+    }
+    (copies.len() * 100 > seen * 40).then_some(Offence {
+        check: Check::EvidenceEcho,
+        items: copies,
+    })
 }
 
 // ------------------------------------------------------------------ fitting
@@ -529,6 +582,7 @@ fn mentions(unit: &str, o: &Offence) -> bool {
             unit.split(|c: char| !c.is_ascii_digit())
                 .any(|d| d == n.as_str())
         }),
+        Check::EvidenceEcho => o.items.iter().any(|i| i == unit),
         Check::RelationshipWords => o.items.iter().any(|w| {
             lower
                 .split(|c: char| !c.is_alphabetic())
@@ -643,9 +697,17 @@ pub(crate) fn generate_checked_until(
             }
         };
         notify(Phase::Checking);
-        let plain = without_preamble(&plain_text_with(&raw, f.style), &f.request);
+        let unwashed = unwashed_text(&raw, f.style);
+        let washed = super::sanitize::clean(&unwashed);
+        let was_washed = super::sanitize::copies_markup(&raw, &unwashed);
+        let plain = without_preamble(&washed, &f.request);
         let text = fit(drop_unfinished(plain), &f.limits);
         let mut offences = check(&text, f);
+        if let Some(echo) = evidence_echo(&text, f, was_washed) {
+            // An answer that was only labels is an echo, not an empty answer.
+            offences.retain(|o| o.check != Check::Empty);
+            offences.push(echo);
+        }
         // A thin answer is asked to grow once; the second answer is taken as it comes.
         if offences.is_empty() && !asked_longer && f.min_words.is_some_and(|m| words(&text) < m) {
             asked_longer = true;

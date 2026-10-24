@@ -337,11 +337,13 @@ fn a_recipe_needs_a_clearer_match_than_a_tool() {
         index: at("whole_screenplay"),
         score: just_enough,
         margin: 0.2,
+        second: None,
     };
     let tool = Scored {
         index: at("count_scenes"),
         score: just_enough,
         margin: 0.2,
+        second: None,
     };
     assert!(tool.accepted());
     assert!(!recipe.accepted());
@@ -352,6 +354,90 @@ fn a_recipe_needs_a_clearer_match_than_a_tool() {
         }
         .accepted()
     );
+}
+
+#[test]
+fn the_gates_are_direct_top_two_or_none() {
+    let list = intents();
+    let at = |name: &str| list.iter().position(|i| i.name == name).unwrap();
+    let with = |name: &str, score: f32, margin: f32| Scored {
+        index: at(name),
+        score,
+        margin,
+        second: None,
+    };
+    assert_eq!(SCORE_MIN, 0.90);
+    assert_eq!(MARGIN_MIN, 0.03);
+    assert_eq!(with("count_scenes", 0.90, 0.03).gate(), Gate::Direct);
+    // Below the direct score, from 0.88 up: the two closest tools.
+    assert_eq!(with("count_scenes", 0.899, 0.2).gate(), Gate::TopTwo);
+    assert_eq!(with("count_scenes", 0.88, 0.2).gate(), Gate::TopTwo);
+    // A strong score without a lead is the same band.
+    assert_eq!(with("count_scenes", 0.95, 0.029).gate(), Gate::TopTwo);
+    assert_eq!(with("count_scenes", 0.879, 0.5).gate(), Gate::None);
+    // A recipe keeps its extra margin on the direct gate.
+    assert_eq!(
+        with("whole_screenplay", SCORE_MIN + 0.01, 0.2).gate(),
+        Gate::TopTwo
+    );
+    assert_eq!(
+        with("whole_screenplay", SCORE_MIN + RECIPE_EXTRA, 0.2).gate(),
+        Gate::Direct
+    );
+}
+
+#[test]
+fn rank_keeps_the_runner_up_that_asks_for_another_action() {
+    let list = intents();
+    let at = |name: &str| list.iter().position(|i| i.name == name).unwrap();
+    let (a, b, c) = (
+        at("scene_speakers"),
+        at("scene_setting"),
+        at("count_scenes"),
+    );
+    // scene_speakers and scene_setting share the tool but not the fact: they are different actions.
+    let protos = vec![
+        (a, unit(vec![1.0, 0.0, 0.0])),
+        (b, unit(vec![1.0, 0.3, 0.0])),
+        (c, unit(vec![0.0, 0.0, 1.0])),
+    ];
+    let m = rank(&unit(vec![1.0, 0.0, 0.0]), &protos, ANY).unwrap();
+    assert_eq!((m.index, m.second), (a, Some(b)));
+}
+
+/// Night, day, interior and exterior counts are about locations and time, not the scene total, and
+/// "who speaks in scene N" is the speakers fact, in whatever words.
+#[test]
+fn location_counts_and_scene_speakers_are_not_taken_for_their_neighbours() {
+    let e = BandEmbedder::new("neighbours");
+    let scene = Have {
+        scenes: 1,
+        characters: 0,
+    };
+    for text in [
+        "How many scenes happen at night?",
+        "How many night scenes are there?",
+        "Count the interior scenes",
+        "What number of scenes take place at night?",
+    ] {
+        let m = classify(&e, text, ANY).unwrap();
+        assert_ne!(
+            (m.gate(), name_of(&m)),
+            (Gate::Direct, "count_scenes"),
+            "{text:?} must not be a direct scene total"
+        );
+        assert_eq!(name_of(&m), "location_statistics", "{text:?}");
+    }
+    for text in [
+        "Which characters speak in scene 5?",
+        "Which characters speak in scene 11?",
+        "Who has lines in scene 8?",
+    ] {
+        let m = classify(&e, text, scene).unwrap();
+        assert_eq!(name_of(&m), "scene_speakers", "{text:?}");
+        assert_eq!(m.intent().target, Target::Tool("scene_fact".into()));
+        assert_eq!(m.intent().fact.as_deref(), Some("speakers"));
+    }
 }
 
 // ----------------------------------------------------------------- cache and waits

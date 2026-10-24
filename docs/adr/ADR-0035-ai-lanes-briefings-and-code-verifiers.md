@@ -40,10 +40,14 @@ first, only deterministic code judges answers while people use the app, three pa
 3. **Intent prototypes with the search model.** Where the rules are not sure (the Agent lane, or Chat on a weak rule),
    `intent.rs` compares the routing copy with about thirty intents, each with short example questions in English,
    Hindi, Spanish, French, German and Japanese (`intents.json`). The embedder is the app's search model (E5 takes the
-   "query: " prefix), so no new model is added. The match counts when the best example scores at least 0.88 and leads the
-   best intent that asks for a different action by at least 0.03 (0.03 more for a whole-screenplay recipe). A request waits
+   "query: " prefix), so no new model is added. The match is trusted (direct gate) when the best example scores at least 0.90 and leads the
+   best intent that asks for a different action by at least 0.03 (0.03 more for a whole-screenplay recipe). From 0.88
+   up, or with a smaller lead, the middle band (2026-10-25) offers the first agent step only the tools of the two
+   closest intents, `clarify` and `final_answer`, never `retrieve_context`, so the model chooses between two plausible
+   tools under the grammar. A request waits
    at most 1.5 s for this step; when the search model is missing, slow or fails, the rule router decides as before. The
-   closest intent, its score, its margin and whether it was used go to the trace (migration `0006_ai_trace_intent.sql`).
+   closest intent, its score, its margin and whether it was used go to the trace (migration `0006_ai_trace_intent.sql`); the middle band writes `|top-two` after the
+   intent name, so the gate (direct, top-two, none) can be read from the same columns.
    The thresholds are starting values chosen with a stand-in embedder; they are to be tuned on the bench from the trace.
 4. **The Chat lane: code researches, the model writes.** `understand.rs` finds the people, places, scenes and acts a
    question names and how deep the answer should go. `briefing.rs` builds labelled plain-text briefings from the draft on

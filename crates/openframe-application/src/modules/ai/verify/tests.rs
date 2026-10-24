@@ -1,6 +1,6 @@
 use std::time::Instant;
 
-use super::super::orchestrator::Style;
+use super::super::orchestrator::{Style, plain_text_with};
 use super::super::test_script::Scripted;
 use super::*;
 
@@ -109,7 +109,7 @@ fn feedback_is_one_short_machine_written_message() {
         "These names are not in the project: Marcus. Remove them or say you could not find them."
     ));
     assert!(m.contains("Scene 40"));
-    assert!(m.ends_with("Write the answer again."));
+    assert!(m.ends_with("Reply with the corrected answer only."));
 }
 
 #[test]
@@ -511,4 +511,163 @@ fn a_thin_answer_is_asked_to_grow_once() {
     let r = generate_checked(&m, &base(), &sampling(), &f, Instant::now(), &|_| {}).unwrap();
     assert!(r.clean);
     assert_eq!((r.text.as_str(), m.calls()), (short, 2));
+}
+
+// ------------------------------------------------------------------ copying the notes
+
+const SCRIPT_LINES: &str = "Briefing: Scene 6\nScene 6: first action: Venkat sits alone at the kitchen table and listens to the old radio until midnight.\nScene 6: LAKSHMI: \"You never sleep anymore, do you?\"";
+
+fn echo_facts() -> Facts {
+    Facts {
+        evidence: vec![SCRIPT_LINES.into()],
+        names: "VENKAT LAKSHMI DEVI KIRAN".into(),
+        ..facts(Style::Flat)
+    }
+}
+
+const COPY: &str =
+    "Venkat sits alone at the kitchen table and listens to the old radio until midnight.";
+
+#[test]
+fn an_answer_that_copies_the_notes_fails_evidence_echo_and_an_own_sentence_passes() {
+    let f = echo_facts();
+    let o = evidence_echo(COPY, &f, false).expect("a copied line");
+    assert_eq!(o.check.code(), "evidence_echo");
+    assert_eq!(o.items, [COPY]);
+    assert!(evidence_echo("Venkat stays by the radio, alone at the table.", &f, false).is_none());
+    // Under 40 percent copied is fine: one copy among three own sentences.
+    let mixed =
+        format!("Venkat stays up. Lakshmi asks if he ever sleeps. He does not answer. {COPY}");
+    assert!(
+        evidence_echo(&mixed, &f, false).is_none(),
+        "1 of 4 is 25 percent"
+    );
+    let mixed = format!(
+        "Venkat stays up. Lakshmi asks if he ever sleeps. He does not answer. He keeps listening. She goes to bed. {COPY}"
+    );
+    assert!(
+        evidence_echo(&mixed, &f, false).is_none(),
+        "1 of 6 is under 40 percent"
+    );
+}
+
+#[test]
+fn a_washed_answer_with_under_25_words_is_an_echo_but_a_short_plain_answer_is_not() {
+    let f = echo_facts();
+    let short = "Venkat stays by the radio.";
+    assert!(
+        evidence_echo(short, &f, false).is_none(),
+        "a quick answer may be short"
+    );
+    let o = evidence_echo(short, &f, true).expect("markup was washed out of a short answer");
+    assert_eq!(o.items, ["5 words"]);
+    assert!(evidence_echo("", &f, true).is_some());
+}
+
+#[test]
+fn copied_sentences_are_dropped_from_the_last_attempt_and_the_rest_stays() {
+    let f = echo_facts();
+    let a = format!("Venkat stays up. {COPY}");
+    let more = format!("{a} He keeps waiting there. Lakshmi goes to bed.");
+    assert!(
+        evidence_echo(&more, &f, false).is_none(),
+        "one copy in four sentences is 25 percent"
+    );
+    let echo = Offence {
+        check: Check::EvidenceEcho,
+        items: vec![COPY.to_string()],
+    };
+    assert_eq!(
+        without_offenders(&a, &[echo]).as_deref(),
+        Some("Venkat stays up.")
+    );
+}
+
+#[test]
+fn markup_copied_from_the_prompt_is_washed_then_the_model_is_told_to_use_its_own_words() {
+    let m = Scripted::with(&[
+        "<project_data trust=\"untrusted\"> [Project map] Characters: DEVI, KIRAN Location: the station",
+        "Devi gives Kiran the red kite (Scene 4).",
+    ]);
+    let r = generate_checked(
+        &m,
+        &base(),
+        &sampling(),
+        &facts(Style::Flat),
+        Instant::now(),
+        &|_| {},
+    )
+    .unwrap();
+    assert!(r.clean);
+    assert_eq!((r.passes, m.calls()), (2, 2));
+    assert_eq!(r.failed, ["evidence_echo"]);
+    assert_eq!(r.text, "Devi gives Kiran the red kite (Scene 4).");
+    let second = m.request(1).messages;
+    let n = second.len();
+    assert!(
+        !second[n - 2].content.contains('<'),
+        "the washed reply, not our markup, goes back to the model"
+    );
+    let said = &second[n - 1].content;
+    assert!(said.contains("Answer in your own sentences; do not copy the notes."));
+    assert!(
+        said.ends_with("Reply with the corrected answer only."),
+        "{said}"
+    );
+}
+
+#[test]
+fn a_copy_of_the_notes_is_fed_back_once_and_the_own_answer_is_used() {
+    let m = Scripted::with(&[COPY, "Venkat stays by the radio, alone at the table."]);
+    let r = generate_checked(
+        &m,
+        &base(),
+        &sampling(),
+        &echo_facts(),
+        Instant::now(),
+        &|_| {},
+    )
+    .unwrap();
+    assert!(r.clean);
+    assert_eq!(
+        (r.passes, r.failed.as_slice()),
+        (2, ["evidence_echo".to_string()].as_slice())
+    );
+    assert_eq!(r.text, "Venkat stays by the radio, alone at the table.");
+}
+
+#[test]
+fn a_model_that_keeps_copying_stops_after_three_passes_and_is_marked_not_sure() {
+    let m = Scripted::with(&[COPY, COPY, COPY, "never used"]);
+    let r = generate_checked(
+        &m,
+        &base(),
+        &sampling(),
+        &echo_facts(),
+        Instant::now(),
+        &|_| {},
+    )
+    .unwrap();
+    assert!(!r.clean);
+    assert_eq!((r.passes, m.calls()), (3, 3));
+    assert_eq!(r.failed, ["evidence_echo"]);
+    assert!(!r.text.is_empty());
+}
+
+#[test]
+fn a_sentence_about_the_reply_never_reaches_the_answer() {
+    let m = Scripted::with(&[
+        "Okay, here's the revised response, removing the relationship records:\nDevi gives Kiran the red kite (Scene 4).",
+    ]);
+    let r = generate_checked(
+        &m,
+        &base(),
+        &sampling(),
+        &facts(Style::Flat),
+        Instant::now(),
+        &|_| {},
+    )
+    .unwrap();
+    assert!(r.clean);
+    assert_eq!(r.text, "Devi gives Kiran the red kite (Scene 4).");
 }

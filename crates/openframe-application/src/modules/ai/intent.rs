@@ -13,6 +13,9 @@
 //!   `understand` found; otherwise the first agent step is offered only that tool (plus `clarify`
 //!   and `final_answer`) and the model fills the arguments under the usual grammar.
 //!
+//! - In the middle band (score from 0.88 without the direct gate) the first agent step is offered only the
+//!   tools of the two closest intents, `clarify` and `final_answer`; the trace keeps the gate.
+//!
 //! When the search model is missing, slow or fails, `classify_within` returns None and the rule
 //! router decides, as before. A request never waits more than [`WAIT`] for this step.
 
@@ -38,7 +41,12 @@ use super::understand::{EntityKind, Understood};
 /// answer, while a skipped intent only costs what the rule router and the model cost today.
 /// Chosen with the stand-in embedder of `tests`, which maps word overlap into that band, and meant
 /// to be tuned on the bench: the score, margin and choice of every request are in the trace.
-pub(super) const SCORE_MIN: f32 = 0.88;
+pub(super) const SCORE_MIN: f32 = 0.90;
+/// The least score for the middle band. On the bench the closest intent was right about 84 percent
+/// of the time from 0.90 up and under half the time below 0.88, so a score in between, or one
+/// without the lead a direct call needs, is not trusted with a call; the first agent step is only
+/// offered the tools of the two closest intents and the model chooses between them.
+pub(super) const BAND_MIN: f32 = 0.88;
 /// The least lead over the best intent that asks for a DIFFERENT action (another tool, fact or
 /// lane). Two intents that mean the same call never block each other. A close second place means
 /// the question is between two readings, and the rule router decides instead. Three hundredths is
@@ -165,6 +173,8 @@ pub(super) fn intents() -> &'static [Intent] {
 /// What an intent name stands for: the tool it calls, or "chat" or "recipe". For the evaluation
 /// report, which asks whether the closest intent was the right one.
 pub fn intent_target(name: &str) -> Option<String> {
+    // The trace may carry a gate after the name ("scene_speakers|top-two").
+    let name = name.split('|').next().unwrap_or(name);
     intents()
         .iter()
         .find(|i| i.name == name)
@@ -244,6 +254,30 @@ pub(super) struct Scored {
     pub index: usize,
     pub score: f32,
     pub margin: f32,
+    /// The closest intent that asks for another action, when there is one.
+    pub second: Option<usize>,
+}
+
+/// How far a score may be trusted. The trace keeps the gate that applied.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(super) enum Gate {
+    /// Strong and clear: a chat or recipe lane, or a direct call.
+    Direct,
+    /// Close but not clear: the first agent step chooses between the two closest tools.
+    TopTwo,
+    /// Not trusted: the rules and the model decide, as if the step had not run.
+    None,
+}
+
+impl Gate {
+    /// The suffix written after the intent name in the trace; a direct call and no gate have none
+    /// (they differ by `intent_used`).
+    pub fn suffix(self) -> &'static str {
+        match self {
+            Gate::TopTwo => "|top-two",
+            Gate::Direct | Gate::None => "",
+        }
+    }
 }
 
 impl Scored {
@@ -259,6 +293,16 @@ impl Scored {
             0.0
         };
         self.score >= SCORE_MIN + extra && self.margin >= MARGIN_MIN
+    }
+
+    pub fn gate(&self) -> Gate {
+        if self.accepted() {
+            Gate::Direct
+        } else if self.score >= BAND_MIN {
+            Gate::TopTwo
+        } else {
+            Gate::None
+        }
     }
 }
 
@@ -280,18 +324,18 @@ pub(super) fn rank(query: &[f32], protos: &[(usize, Vec<f32>)], have: Have) -> O
         .filter(|(_, s)| s.is_finite())
         .max_by(|a, b| a.1.total_cmp(&b.1))?;
     let key = list[top].key();
-    let second = best
+    let (second, second_score) = best
         .iter()
         .copied()
         .enumerate()
         .filter(|(i, s)| s.is_finite() && list[*i].key() != key)
-        .map(|(_, s)| s)
-        .max_by(f32::total_cmp)
-        .unwrap_or(0.0);
+        .max_by(|a, b| a.1.total_cmp(&b.1))
+        .map_or((None, 0.0), |(i, s)| (Some(i), s));
     Some(Scored {
         index: top,
         score,
-        margin: score - second,
+        margin: score - second_score,
+        second,
     })
 }
 

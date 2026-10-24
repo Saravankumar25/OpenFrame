@@ -318,7 +318,8 @@ pub(super) fn write(cx: &Cx, m: &Material) -> AppResult<LaneAnswer> {
         }])
     );
     let user = format!(
-        "{}The draft has {} scenes.\nAnswer mode: deep\nUser request: {}",
+        "{}{}The draft has {} scenes.\nAnswer mode: deep\nUser request: {}",
+        super::chat::NOTES_INTRO,
         data_block(&notes_items),
         live.len(),
         cx.text.trim()
