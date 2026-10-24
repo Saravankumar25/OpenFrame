@@ -170,6 +170,15 @@ async function shot(name) {
     await browser.execute(() => document.querySelectorAll('.toast button[aria-label="Dismiss"]').forEach((b) => b.click()));
     await sleep(400);
   }
+  if (name === "15-project-settings" && MODE === "compare") {
+    // The run folder name grows with the run stamp (it now ends in the process id), which re-wraps the path
+    // and moves everything below it. Show the folder name the baseline was captured with so the wrap is fixed.
+    await browser.execute(() => {
+      const el = document.querySelector('aside[aria-label="Where this project is stored"] .selectable-text');
+      if (el) el.textContent = (el.textContent ?? "").replace(/\.run\\[^\\]+\\/, ".run\\2026-10-19T23-39-49-455Z\\");
+    });
+    await sleep(200);
+  }
   if (MODE !== "compare" || UPDATE_ONLY.has(name)) {
     await browser.saveScreenshot(join(outDir, `${name}.png`));
     if (MODE === "compare") updated.push(name);
