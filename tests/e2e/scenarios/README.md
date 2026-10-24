@@ -151,5 +151,6 @@ Meera waits for the late train with a red umbrella.
 | `96-keyboard-and-screen-reader.md` | `96-keyboard-and-screen-reader.test.mjs` | 9 | Windows UI Automation (Narrator's tree) |
 | `97-performance.md` | `97-performance.test.mjs` | 4 | Windows performance counters |
 | `98-layout-geometry.md` | `98-layout-geometry.test.mjs` | 2 | Window sizes set through WebDriver; geometry read from the WebView2 page |
+| `zz-capture.md` | `zz-capture.test.mjs` | 1 | Development tool, skipped unless E2E_CAPTURE=1; Windows WebView2 screenshots |
 
-Total: 202 scenarios in 42 files.
+Total: 205 scenarios in 44 files.
