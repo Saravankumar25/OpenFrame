@@ -5,7 +5,8 @@
 //! ```
 //!
 //! `--only` keeps the cases whose id contains the text (or whose kind or language equals it), so
-//! `--only poison-` runs just `gold/poisoned.jsonl`.
+//! `--only poison-` runs just `gold/poisoned.jsonl`. `--routes off` turns the regex direct routes
+//! off so the model path alone is measured (default `on`, the app as people meet it).
 //!
 //! Needs the Offline AI engine staged by `node scripts/prepare-ai-assets.mjs` (OPENFRAME_AI_BUNDLE_DIR,
 //! default `.build-cache/ai-bundle`) and the pinned models in the build inputs (OPENFRAME_AI_ASSETS_DIR,
@@ -39,12 +40,15 @@ struct Args {
     /// `auto`: the app's own engine placement (the graphics card when its check passes); default
     /// `off`: always the processor, so timings compare between runs.
     graphics: Option<String>,
+    /// `on` (default) or `off`: `off` turns the regex direct routes off, so the model path is
+    /// measured (harness plan 9.1).
+    routes: Option<String>,
 }
 
 fn parse_args() -> Result<Args, String> {
     let mut a = std::env::args().skip(1);
-    let (mut gold, mut out, mut only, mut limit, mut search, mut graphics) =
-        (None, None, None, None, None, None);
+    let (mut gold, mut out, mut only, mut limit, mut search, mut graphics, mut routes) =
+        (None, None, None, None, None, None, None);
     while let Some(k) = a.next() {
         let mut v = || a.next().ok_or_else(|| format!("{k} needs a value"));
         match k.as_str() {
@@ -54,6 +58,7 @@ fn parse_args() -> Result<Args, String> {
             "--limit" => limit = Some(v()?.parse().map_err(|_| "--limit takes a number")?),
             "--search" => search = Some(v()?),
             "--graphics" => graphics = Some(v()?),
+            "--routes" => routes = Some(v()?),
             _ => return Err(format!("unknown argument {k}")),
         }
     }
@@ -64,6 +69,7 @@ fn parse_args() -> Result<Args, String> {
         limit,
         search,
         graphics,
+        routes,
     })
 }
 
@@ -131,6 +137,12 @@ fn run() -> Result<(), String> {
         }
     };
     intelligence::service(&core).set_search_choice(choice);
+    let routes_on = match args.routes.as_deref() {
+        None | Some("on") => true,
+        Some("off") => false,
+        Some(other) => return Err(format!("--routes takes on or off, not {other}")),
+    };
+    openframe_application::modules::ai::set_direct_routes(routes_on);
     let svc = openframe_application::modules::ai::service(&core);
     let recorder = Arc::new(Recorder {
         inner: svc
@@ -176,7 +188,7 @@ fn run() -> Result<(), String> {
         );
         let line = json!({ "case": case.id, "kind": case.kind, "lang": case.lang, "score": s, "observation": {
             "offered": o.offered.len(), "steps": o.steps, "errorCode": o.error_code, "answer": o.answer,
-            "proposed": o.proposed, "applied": o.applied, "endState": o.end_state, "rankedScenes": o.ranked_scenes,
+            "proposed": o.proposed, "applied": o.applied, "endState": o.end_state, "rankedScenes": o.ranked_scenes, "sceneCount": o.scene_count,
             "elapsedMs": o.elapsed_ms, "engineMb": o.engine_mb, "setupError": o.setup_error },
             "engine": engine, "index": index });
         writeln!(results, "{line}").map_err(|e| e.to_string())?;
@@ -210,6 +222,14 @@ fn run() -> Result<(), String> {
             },
         ),
         ("Search model".to_string(), format!("{choice:?}")),
+        (
+            "Routes".to_string(),
+            if routes_on {
+                "on (regex direct routes active)".into()
+            } else {
+                "off (model path only)".into()
+            },
+        ),
         (
             "Engine place".to_string(),
             args.graphics
@@ -472,6 +492,7 @@ fn run_case(core: &AppCore, case: &Case) -> Observation {
         }
     };
     o.source_text = p.text.clone();
+    o.scene_count = p.scene_ids.len();
     // Files a case writes with `harness.write_file` live in this folder until the case ends.
     let folder = match tempfile::tempdir() {
         Ok(d) => d,
@@ -571,12 +592,22 @@ fn run_case(core: &AppCore, case: &Case) -> Observation {
             .collect();
         }
     }
+    // Earlier requests of a conversation case go first in the same conversation; their answers
+    // are ignored, they only become the history the real request is asked against.
+    let conversation = (!case.before.is_empty()).then(|| format!("eval-{}", case.id));
+    for earlier in &case.before {
+        let _ = op(
+            core,
+            "ai.ask",
+            json!({ "text": earlier, "scope": scope_json, "conversationId": conversation }),
+        );
+    }
     let t = Instant::now();
-    let asked = op(
-        core,
-        "ai.ask",
-        json!({ "text": case.request, "scope": scope_json }),
-    );
+    let mut ask = json!({ "text": case.request, "scope": scope_json });
+    if let Some(id) = &conversation {
+        ask["conversationId"] = json!(id);
+    }
+    let asked = op(core, "ai.ask", ask);
     o.elapsed_ms = t.elapsed().as_millis() as u64;
     o.engine_mb = engine_mb();
     let x = match asked {

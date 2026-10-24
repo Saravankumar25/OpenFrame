@@ -23,6 +23,10 @@ pub struct Case {
     #[serde(default)]
     pub scope: Option<Value>,
     pub request: String,
+    /// Conversation cases: earlier requests, sent first in the same conversation; their answers
+    /// are ignored.
+    #[serde(default)]
+    pub before: Vec<String>,
     #[serde(default)]
     pub review: Option<String>,
     #[serde(default)]
@@ -69,7 +73,26 @@ pub struct Expect {
     pub rubric: Vec<String>,
     #[serde(default)]
     pub max_words: Option<usize>,
+    /// A lower length limit in words (conversation cases).
+    #[serde(default)]
+    pub min_words: Option<usize>,
+    /// Conversation: the answer must say it could not find the thing asked about.
+    #[serde(default)]
+    pub abstain: bool,
 }
+
+/// What an answer says when it cannot find the thing asked about (conversation `abstain` cases).
+pub const ABSTAIN_PHRASES: &[&str] = &[
+    "couldn't find",
+    "could not find",
+    "not in the project",
+    "no information",
+    "don't know",
+    "doesn't say",
+    "isn't mentioned",
+    "not mentioned",
+    "not sure",
+];
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct StateCheck {
@@ -226,6 +249,8 @@ pub struct Observation {
     pub ranked_scenes: Vec<usize>,
     /// The project's text, for the grounding check.
     pub source_text: String,
+    /// Scenes in the current draft of the case's project (for the scene-citation check).
+    pub scene_count: usize,
     pub elapsed_ms: u64,
     pub engine_mb: u64,
     /// The runner could not set the case up (a harness or gold problem, not a model result).
@@ -251,6 +276,16 @@ pub struct Score {
     pub not_empty: Option<bool>,
     pub grounding: Option<(usize, usize)>,
     pub rank: Option<usize>,
+    /// Conversation: (names the evidence lacks, name candidates in the answer).
+    pub invented_names: Option<(usize, usize)>,
+    /// Conversation: (scene numbers outside the draft, scene numbers cited).
+    pub wrong_scenes: Option<(usize, usize)>,
+    /// Conversation: (quotes found nowhere in the evidence, quotes in the answer).
+    pub quotes_missing: Option<(usize, usize)>,
+    /// Conversation: the answer repeats a four-word phrase three times or more.
+    pub repetition: Option<bool>,
+    /// Conversation `abstain` cases: the answer says it could not find it.
+    pub abstain_ok: Option<bool>,
     pub elapsed_ms: u64,
     pub engine_mb: u64,
 }
@@ -319,8 +354,9 @@ pub fn score(case: &Case, o: &Observation) -> Score {
     if !o.answer.trim().is_empty() && checks::detect_language(&o.answer).is_some() {
         s.language = Some(checks::language_matches(&o.answer, &case.lang));
     }
-    if let Some(max) = e.max_words {
-        s.length = Some(checks::word_count(&o.answer) <= max);
+    if e.max_words.is_some() || e.min_words.is_some() {
+        let n = checks::word_count(&o.answer);
+        s.length = Some(e.max_words.is_none_or(|m| n <= m) && e.min_words.is_none_or(|m| n >= m));
     }
     if case.kind == "safety" {
         s.safety = Some(
@@ -336,7 +372,41 @@ pub fn score(case: &Case, o: &Observation) -> Score {
     if g.1 > 0 {
         s.grounding = Some(g);
     }
+    if case.kind == "conversation" {
+        conversation_scores(case, o, &mut s);
+    }
     s
+}
+
+/// The conversation-bench checks (harness plan 9.3): names, scene numbers and quotes against the
+/// project's text and the request, repetition, and correct abstention.
+fn conversation_scores(case: &Case, o: &Observation, s: &mut Score) {
+    let evidence = [o.source_text.as_str(), case.request.as_str()];
+    let names = checks::candidate_names(&o.answer);
+    s.invented_names = Some((
+        checks::ungrounded_names(&o.answer, &evidence).len(),
+        names.len(),
+    ));
+    let refs = checks::scene_refs(&o.answer);
+    if o.scene_count > 0 {
+        let wrong = refs
+            .iter()
+            .filter(|n| **n < 1 || **n as usize > o.scene_count)
+            .count();
+        s.wrong_scenes = Some((wrong, refs.len()));
+    }
+    s.quotes_missing = Some((
+        checks::missing_quotes(&o.answer, &evidence).len(),
+        checks::quoted_spans(&o.answer).len(),
+    ));
+    s.repetition = Some(checks::repeated_ngram(&o.answer, 4).is_some());
+    if case.expect.abstain {
+        s.abstain_ok = Some(
+            ABSTAIN_PHRASES
+                .iter()
+                .any(|p| checks::contains_ci(&o.answer.replace('’', "'"), p)),
+        );
+    }
 }
 
 // ------------------------------------------------------------------ report
@@ -392,7 +462,7 @@ impl Group {
         }
         self.tool_offered.add(s.tool_offered);
         self.tool_correct.add(s.tool_correct);
-        if s.kind == "tool" || s.kind == "action" {
+        if s.kind == "tool" || s.kind == "action" || s.kind == "paraphrase" {
             self.tool_and_args.add(s.args_correct);
         }
         self.schema_valid.add(s.schema_valid);
@@ -434,11 +504,76 @@ fn percentile(xs: &[u64], q: f64) -> Option<u64> {
     (!v.is_empty()).then(|| v[((v.len() - 1) as f64 * q).round() as usize])
 }
 
+/// The conversation bench (harness plan 9.3) for all conversation cases or one question type.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct ConversationGroup {
+    pub cases: usize,
+    pub setup_errors: usize,
+    /// The answer holds the gold facts.
+    pub answer_has: Rate,
+    /// The answer is within its word limits.
+    pub within_length: Rate,
+    /// Abstain cases only: the answer says it could not find it.
+    pub abstained: Rate,
+    /// `passed` counts answers that repeat a four-word phrase three times or more.
+    pub repetition: Rate,
+    pub invented_names: usize,
+    pub name_candidates: usize,
+    pub wrong_scenes: usize,
+    pub scene_citations: usize,
+    pub quotes_missing: usize,
+    pub quotes: usize,
+    pub elapsed_ms: Vec<u64>,
+}
+
+impl ConversationGroup {
+    fn add(&mut self, s: &Score) {
+        self.cases += 1;
+        if s.setup_error.is_some() {
+            self.setup_errors += 1;
+            return;
+        }
+        self.answer_has.add(s.answer);
+        self.within_length.add(s.length);
+        self.abstained.add(s.abstain_ok);
+        self.repetition.add(s.repetition);
+        for (field, wrong, total) in [
+            (
+                s.invented_names,
+                &mut self.invented_names,
+                &mut self.name_candidates,
+            ),
+            (
+                s.wrong_scenes,
+                &mut self.wrong_scenes,
+                &mut self.scene_citations,
+            ),
+            (s.quotes_missing, &mut self.quotes_missing, &mut self.quotes),
+        ] {
+            if let Some((w, t)) = field {
+                *wrong += w;
+                *total += t;
+            }
+        }
+        self.elapsed_ms.push(s.elapsed_ms);
+    }
+
+    pub fn median_ms(&self) -> Option<u64> {
+        percentile(&self.elapsed_ms, 0.5)
+    }
+}
+
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Summary {
     pub overall: Group,
     pub by_kind: BTreeMap<String, Group>,
     pub by_lang: BTreeMap<String, Group>,
+    /// Held-out paraphrases (kind `paraphrase`), scored like tool cases but kept out of the English bar.
+    pub paraphrase: Group,
+    pub paraphrase_by_lang: BTreeMap<String, Group>,
+    pub conversation: ConversationGroup,
+    /// By question type, the part of the id after `conv-<lang>-`.
+    pub conversation_by_type: BTreeMap<String, ConversationGroup>,
     /// The English release bar of ADR-0028 decision 2.
     pub english_tool_and_args_percent: Option<f64>,
     pub english_end_state_percent: Option<f64>,
@@ -459,6 +594,20 @@ pub fn summarize(scores: &[Score]) -> Summary {
         if x.lang == "en" && x.kind == "action" {
             en_action.add(x);
         }
+        if x.kind == "paraphrase" {
+            s.paraphrase.add(x);
+            s.paraphrase_by_lang
+                .entry(x.lang.clone())
+                .or_default()
+                .add(x);
+        }
+        if x.kind == "conversation" {
+            s.conversation.add(x);
+            s.conversation_by_type
+                .entry(conversation_type(&x.id))
+                .or_default()
+                .add(x);
+        }
     }
     s.english_tool_and_args_percent = en_tool.tool_and_args.percent();
     s.english_end_state_percent = en_action.end_state.percent();
@@ -473,6 +622,11 @@ pub fn summarize(scores: &[Score]) -> Summary {
     s
 }
 
+/// The question type of a conversation case id: `conv-en-explain-003` gives `explain`.
+pub fn conversation_type(id: &str) -> String {
+    id.split('-').nth(2).unwrap_or("unknown").to_string()
+}
+
 /// The fewest scored English cases each bar number needs before it can count.
 pub const MIN_COUNTED: usize = 30;
 
@@ -480,6 +634,73 @@ fn pct(r: &Rate) -> String {
     r.percent()
         .map(|p| format!("{p:.1}% ({}/{})", r.passed, r.counted))
         .unwrap_or_else(|| "none".into())
+}
+
+fn ratio(part: usize, whole: usize) -> String {
+    if whole == 0 {
+        "none".into()
+    } else {
+        format!(
+            "{:.1}% ({part}/{whole})",
+            100.0 * part as f64 / whole as f64
+        )
+    }
+}
+
+fn ms(v: Option<u64>) -> String {
+    v.map(|m| m.to_string()).unwrap_or_else(|| "none".into())
+}
+
+/// Held-out paraphrases: tool accuracy on wordings the route authors never saw (harness plan 9.2).
+fn paraphrase_section(s: &Summary) -> String {
+    let mut t = String::from(
+        "\n## Held-out paraphrases\n\nScored like tool cases and not part of the English bar. This is the honest estimate of accuracy on real wording.\n\n| Language | Cases | Setup errors | Right tool offered | Tool chosen | Tool and arguments | Schema valid | Answer facts | Median ms |\n|---|---|---|---|---|---|---|---|---|\n",
+    );
+    let row = |name: &str, g: &Group| {
+        format!(
+            "| {name} | {} | {} | {} | {} | {} | {} | {} | {} |\n",
+            g.cases,
+            g.setup_errors,
+            pct(&g.tool_offered),
+            pct(&g.tool_correct),
+            pct(&g.tool_and_args),
+            pct(&g.schema_valid),
+            pct(&g.answer),
+            ms(g.median_ms()),
+        )
+    };
+    t.push_str(&row("all", &s.paraphrase));
+    for (lang, g) in &s.paraphrase_by_lang {
+        t.push_str(&row(lang, g));
+    }
+    t
+}
+
+/// The conversation bench: the deterministic checks of harness plan 9.3, overall and by question type.
+fn conversation_section(s: &Summary) -> String {
+    let mut t = String::from(
+        "\n## Conversation bench\n\nDeterministic checks only; the rubric and human labels come at development time. Invented names, wrong scenes and missing quotes are rates over all names, scene citations and quotes in the answers.\n\n| Question type | Cases | Setup errors | Answer facts | Invented names | Wrong scene citations | Missing quotes | Within length | Correct abstention | Repetition | Median ms |\n|---|---|---|---|---|---|---|---|---|---|---|\n",
+    );
+    let row = |name: &str, g: &ConversationGroup| {
+        format!(
+            "| {name} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} |\n",
+            g.cases,
+            g.setup_errors,
+            pct(&g.answer_has),
+            ratio(g.invented_names, g.name_candidates),
+            ratio(g.wrong_scenes, g.scene_citations),
+            ratio(g.quotes_missing, g.quotes),
+            pct(&g.within_length),
+            pct(&g.abstained),
+            pct(&g.repetition),
+            ms(g.median_ms()),
+        )
+    };
+    t.push_str(&row("all", &s.conversation));
+    for (kind, g) in &s.conversation_by_type {
+        t.push_str(&row(kind, g));
+    }
+    t
 }
 
 /// The human-readable report: the English bar first, then every measure by kind and by language.
@@ -526,6 +747,12 @@ pub fn markdown(title: &str, s: &Summary, meta: &[(String, String)]) -> String {
     };
     out.push_str(&table("kind", &s.by_kind));
     out.push_str(&table("language", &s.by_lang));
+    if s.paraphrase.cases > 0 {
+        out.push_str(&paraphrase_section(s));
+    }
+    if s.conversation.cases > 0 {
+        out.push_str(&conversation_section(s));
+    }
     out.push_str("\nWriting quality is scored separately against each case's rubric at development time (ADR-0028 decision 9); this table covers only the deterministic measures.\n");
     out
 }
@@ -793,11 +1020,172 @@ mod tests {
     }
 
     #[test]
+    fn a_paraphrase_scores_like_a_tool_case_but_stays_out_of_the_english_bar() {
+        let c = case(
+            json!({ "id": "para-en-001", "kind": "paraphrase", "lang": "en", "project": "example-feature", "request": "hw many scenes r there",
+            "expect": { "tool": "count_scenes", "answer_has": ["36"] } }),
+        );
+        let good = Observation {
+            offered: vec!["count_scenes".into()],
+            steps: vec![("count_scenes".into(), json!({}))],
+            answer: "There are 36 scenes.".into(),
+            ..Observation::default()
+        };
+        let s = score(&c, &good);
+        assert_eq!(
+            (s.tool_offered, s.tool_correct, s.args_correct, s.answer),
+            (Some(true), Some(true), Some(true), Some(true))
+        );
+        let miss = Observation {
+            steps: vec![("retrieve".into(), json!({}))],
+            ..good
+        };
+        let wrong = score(&c, &miss);
+        let sum = summarize(&[s, wrong]);
+        assert_eq!(sum.paraphrase.cases, 2);
+        assert_eq!(sum.paraphrase.tool_and_args.percent(), Some(50.0));
+        assert_eq!(sum.paraphrase_by_lang["en"].tool_correct.counted, 2);
+        assert_eq!(sum.english_tool_and_args_percent, None, "not in the bar");
+        let report = markdown("t", &sum, &[]);
+        assert!(report.contains("## Held-out paraphrases"));
+        assert!(!report.contains("## Conversation bench"));
+    }
+
+    fn conversation_case(extra: Value) -> Case {
+        let mut v = json!({ "id": "conv-en-explain-001", "kind": "conversation", "lang": "en", "project": "example-feature",
+            "request": "Explain what happens in scene 3.", "before": ["Who is Lakshmi?"],
+            "expect": { "answer_has": ["tower"], "min_words": 5, "max_words": 40 } });
+        v["expect"]
+            .as_object_mut()
+            .unwrap()
+            .extend(extra.as_object().cloned().unwrap_or_default());
+        case(v)
+    }
+
+    #[test]
+    fn a_conversation_answer_is_checked_for_names_scenes_quotes_length_and_repetition() {
+        let c = conversation_case(json!({}));
+        assert_eq!(c.before, ["Who is Lakshmi?"]);
+        let obs = |answer: &str| Observation {
+            answer: answer.into(),
+            source_text: "LAKSHMI\nI can't leave the tower.\nSURESH\nGo home.".into(),
+            scene_count: 5,
+            ..Observation::default()
+        };
+        let good = score(
+            &c,
+            &obs("In scene 3 Lakshmi says \"I can't leave the tower\" and Suresh answers."),
+        );
+        assert_eq!(good.answer, Some(true));
+        assert_eq!(good.length, Some(true));
+        assert_eq!(good.invented_names, Some((0, 2)));
+        assert_eq!(good.wrong_scenes, Some((0, 1)));
+        assert_eq!(good.quotes_missing, Some((0, 1)));
+        assert_eq!(good.repetition, Some(false));
+        assert_eq!(good.abstain_ok, None);
+
+        let bad = score(
+            &c,
+            &obs(
+                "In scene 9 Priya shouts \"we will never surrender\" about the tower tower tower tower tower tower.",
+            ),
+        );
+        assert_eq!(bad.invented_names, Some((1, 1)));
+        assert_eq!(bad.wrong_scenes, Some((1, 1)));
+        assert_eq!(bad.quotes_missing, Some((1, 1)));
+        assert_eq!(bad.repetition, Some(true));
+
+        let short = score(&c, &obs("Tower."));
+        assert_eq!(short.length, Some(false));
+        let long = score(&c, &obs(&"tower and sea ".repeat(20)));
+        assert_eq!(long.length, Some(false));
+
+        // Without a scene count the citation check does not apply.
+        let none = score(
+            &c,
+            &Observation {
+                scene_count: 0,
+                ..obs("Scene 3.")
+            },
+        );
+        assert_eq!(none.wrong_scenes, None);
+        // Other kinds never get the conversation checks.
+        let w = case(
+            json!({ "id": "writing-en-001", "kind": "writing", "lang": "en", "project": "example-feature", "request": "q" }),
+        );
+        assert_eq!(score(&w, &obs("Scene 99 Priya")).invented_names, None);
+    }
+
+    #[test]
+    fn an_abstain_case_needs_a_could_not_find_answer() {
+        let c = conversation_case(json!({ "abstain": true }));
+        let say = |answer: &str| {
+            score(
+                &c,
+                &Observation {
+                    answer: answer.into(),
+                    ..Observation::default()
+                },
+            )
+            .abstain_ok
+        };
+        assert_eq!(say("I couldn’t find a Marcus in the project."), Some(true));
+        assert_eq!(say("That is not mentioned in the script."), Some(true));
+        assert_eq!(say("Marcus is the villain."), Some(false));
+    }
+
+    #[test]
+    fn the_conversation_summary_splits_by_question_type() {
+        assert_eq!(conversation_type("conv-en-explain-003"), "explain");
+        assert_eq!(conversation_type("odd"), "unknown");
+        let mk = |id: &str, names: (usize, usize), abstain: Option<bool>| Score {
+            id: id.into(),
+            kind: "conversation".into(),
+            lang: "en".into(),
+            invented_names: Some(names),
+            wrong_scenes: Some((1, 4)),
+            quotes_missing: Some((0, 2)),
+            repetition: Some(false),
+            abstain_ok: abstain,
+            length: Some(true),
+            answer: Some(true),
+            elapsed_ms: 100,
+            ..Score::default()
+        };
+        let sum = summarize(&[
+            mk("conv-en-explain-001", (1, 4), None),
+            mk("conv-en-explain-002", (0, 6), None),
+            mk("conv-en-abstain-001", (0, 1), Some(true)),
+        ]);
+        let all = &sum.conversation;
+        assert_eq!(
+            (all.cases, all.invented_names, all.name_candidates),
+            (3, 1, 11)
+        );
+        assert_eq!((all.wrong_scenes, all.scene_citations), (3, 12));
+        assert_eq!(all.abstained.percent(), Some(100.0));
+        assert_eq!(sum.conversation_by_type["explain"].cases, 2);
+        assert_eq!(sum.conversation_by_type["abstain"].abstained.counted, 1);
+        let report = markdown("t", &sum, &[]);
+        assert!(report.contains("## Conversation bench"));
+        assert!(report.contains("| explain | 2 |"));
+        assert!(report.contains("9.1% (1/11)"));
+    }
+
+    #[test]
     fn the_gold_sets_load_and_name_only_known_kinds_and_languages() {
         let dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("gold");
         let cases = load_cases(&dir).unwrap();
         assert!(cases.len() >= 400, "{} cases", cases.len());
-        let kinds = ["retrieval", "tool", "action", "writing", "safety"];
+        let kinds = [
+            "retrieval",
+            "tool",
+            "action",
+            "writing",
+            "safety",
+            "paraphrase",
+            "conversation",
+        ];
         let langs = [
             "en", "hi", "te", "ta", "kn", "ml", "es", "fr", "de", "zh", "ja", "ko",
         ];
@@ -829,6 +1217,57 @@ mod tests {
                 .filter(|c| c.lang == "en" && c.kind == k)
                 .count()
         };
+        // Held-out paraphrases: 80 English and 10 in five other languages, all with a tool.
+        assert_eq!(en("paraphrase"), 80);
+        assert_eq!(cases.iter().filter(|c| c.kind == "paraphrase").count(), 90);
+        for c in cases.iter().filter(|c| c.kind == "paraphrase") {
+            assert!(c.id.starts_with(&format!("para-{}-", c.lang)), "{}", c.id);
+            assert!(!c.expect.tools().is_empty(), "{}: no tool", c.id);
+            assert!(
+                c.expect.end_state.is_empty(),
+                "{}: a paraphrase is never applied",
+                c.id
+            );
+        }
+        // Conversation bench v0: 60 English cases by question type.
+        let mut by_type = BTreeMap::new();
+        for c in cases.iter().filter(|c| c.kind == "conversation") {
+            assert_eq!(c.lang, "en", "{}", c.id);
+            assert!(c.id.starts_with("conv-en-"), "{}", c.id);
+            *by_type.entry(conversation_type(&c.id)).or_insert(0) += 1;
+            let e = &c.expect;
+            assert_eq!(
+                e.abstain,
+                e.answer_has.is_empty(),
+                "{}: facts or abstain",
+                c.id
+            );
+            assert!(e.max_words.is_some(), "{}: no word limit", c.id);
+            assert_eq!(
+                !c.before.is_empty(),
+                c.id.contains("-followup-"),
+                "{}",
+                c.id
+            );
+        }
+        let want = [
+            ("explain", 10),
+            ("character", 10),
+            ("relationship", 8),
+            ("compare", 5),
+            ("theme", 5),
+            ("critique", 4),
+            ("ideas", 5),
+            ("whole", 5),
+            ("followup", 4),
+            ("abstain", 4),
+        ];
+        assert_eq!(
+            by_type,
+            want.iter()
+                .map(|(k, n)| (k.to_string(), *n))
+                .collect::<BTreeMap<_, _>>()
+        );
         assert!(
             en("retrieval") >= 150
                 && en("tool") + en("action") >= 150

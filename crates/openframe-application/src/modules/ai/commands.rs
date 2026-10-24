@@ -11,11 +11,48 @@
 //! applied. Each shape is narrow on purpose; anything else goes to the model as before.
 
 use std::sync::LazyLock;
+use std::sync::atomic::{AtomicBool, Ordering};
 
 use regex::Regex;
 use serde_json::{Value, json};
 
 use super::orchestrator::StepCall;
+
+static DIRECT_ROUTES: AtomicBool = AtomicBool::new(true);
+
+/// Evaluation only (ADR-0028 decision 1, harness plan 9.1): turns off the regex direct routes so the
+/// model path can be measured. The app never calls it.
+pub fn set_direct_routes(on: bool) {
+    DIRECT_ROUTES.store(on, Ordering::Relaxed);
+}
+
+fn direct_routes_on() -> bool {
+    DIRECT_ROUTES.load(Ordering::Relaxed)
+}
+
+/// The tool call a request names outright (the scene summary or a recipe), or None when the routes
+/// are off or no shape matches. Greetings, refusals, follow-ups and "just the number" are not routes.
+pub(crate) fn direct_route(
+    text: &str,
+    scene_number: Option<usize>,
+    known: impl Fn(&str) -> bool,
+) -> Option<StepCall> {
+    direct_route_with(direct_routes_on(), text, scene_number, known)
+}
+
+fn direct_route_with(
+    on: bool,
+    text: &str,
+    scene_number: Option<usize>,
+    known: impl Fn(&str) -> bool,
+) -> Option<StepCall> {
+    if !on {
+        return None;
+    }
+    scoped_call(text, scene_number)
+        .filter(|c| known(&c.tool))
+        .or_else(|| direct_call(text, &known))
+}
 
 fn re(pattern: &str) -> Regex {
     Regex::new(pattern).expect("valid pattern")
@@ -2234,5 +2271,14 @@ mod tests {
     fn a_tool_the_person_may_not_use_is_left_to_the_usual_path() {
         assert!(direct_call("Create a task to scout the station.", |_| false).is_none());
         assert!(direct_call("Go to scene 4.", |t| t != "open_scene").is_none());
+    }
+
+    #[test]
+    fn routes_off_skips_the_direct_lookup_and_on_finds_it() {
+        let any = |_: &str| true;
+        assert!(direct_route_with(true, "Go to scene 4.", None, any).is_some());
+        assert!(direct_route_with(false, "Go to scene 4.", None, any).is_none());
+        assert!(direct_route_with(false, "Summarise this scene.", Some(3), any).is_none());
+        assert!(direct_routes_on(), "on unless an evaluation turns it off");
     }
 }

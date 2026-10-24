@@ -4,6 +4,9 @@
 //! cases with these functions, and the runtime verifier (Windows phase W6) uses the same ones, so the
 //! development scores and the checks people meet in the app always agree.
 
+use std::sync::LazyLock;
+
+use regex::Regex;
 use serde_json::Value;
 
 /// The language of a text, as a two-letter code (`en`, `hi`, `te`, `ta`, `kn`, `ml`, `es`, `fr`,
@@ -267,6 +270,693 @@ pub fn empty_or_repeated(text: &str) -> bool {
         .any(|s| sentences.iter().filter(|o| *o == s).count() >= 3)
 }
 
+// ------------------------------------------------------------------ answer-versus-evidence checks
+//
+// Ordinary code that compares what an answer claims with the texts it may rest on (the project,
+// the request, tool results). The evaluation harness and the runtime verifier call the same
+// functions (harness plan 5.9). They report offenders; deciding what to do is the caller's job.
+
+fn re(pattern: &str) -> Regex {
+    Regex::new(pattern).expect("valid pattern")
+}
+
+/// A word of a text: letters, with an apostrophe allowed between letters. Digits and punctuation
+/// end a word, so "V.O." gives "V" and "O".
+struct Tok<'a> {
+    start: usize,
+    end: usize,
+    text: &'a str,
+}
+
+fn word_tokens(text: &str) -> Vec<Tok<'_>> {
+    let chars: Vec<(usize, char)> = text.char_indices().collect();
+    let mut out = Vec::new();
+    let mut start: Option<usize> = None;
+    for (i, &(b, c)) in chars.iter().enumerate() {
+        let inner_apostrophe = matches!(c, '\'' | '’')
+            && start.is_some()
+            && chars.get(i + 1).is_some_and(|(_, n)| n.is_alphabetic());
+        if c.is_alphabetic() || inner_apostrophe {
+            start.get_or_insert(b);
+        } else if let Some(s) = start.take() {
+            out.push(Tok {
+                start: s,
+                end: b,
+                text: &text[s..b],
+            });
+        }
+    }
+    if let Some(s) = start {
+        out.push(Tok {
+            start: s,
+            end: text.len(),
+            text: &text[s..],
+        });
+    }
+    out
+}
+
+fn straight(s: &str) -> String {
+    s.replace(['’', '‘'], "'")
+}
+
+/// The word without a trailing possessive ("Lakshmi's" gives "Lakshmi").
+fn without_possessive(w: &str) -> &str {
+    ["'s", "’s", "'", "’"]
+        .iter()
+        .find_map(|suf| w.strip_suffix(suf).filter(|s| !s.is_empty()))
+        .unwrap_or(w)
+}
+
+/// Words that are never names wherever they stand: screenplay labels, months, weekdays and the
+/// spelled numbers of "Act Two". Compared in lower case.
+const ALLOWED: &[&str] = &[
+    "i",
+    "ok",
+    "int",
+    "ext",
+    "day",
+    "night",
+    "continuous",
+    "scene",
+    "scenes",
+    "act",
+    "acts",
+    "openframe",
+    "vo",
+    "os",
+    "cont'd",
+    "contd",
+    "more",
+    "ai",
+    "one",
+    "two",
+    "three",
+    "four",
+    "five",
+    "six",
+    "seven",
+    "eight",
+    "nine",
+    "ten",
+    "january",
+    "february",
+    "march",
+    "april",
+    "may",
+    "june",
+    "july",
+    "august",
+    "september",
+    "october",
+    "november",
+    "december",
+    "jan",
+    "feb",
+    "mar",
+    "apr",
+    "jun",
+    "jul",
+    "aug",
+    "sep",
+    "sept",
+    "oct",
+    "nov",
+    "dec",
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+    "saturday",
+    "sunday",
+];
+
+/// Common English words that start a sentence and are not names. Compared in lower case, and only
+/// for the first word of a sentence.
+const SENTENCE_STARTERS: &[&str] = &[
+    "the",
+    "a",
+    "an",
+    "she",
+    "he",
+    "they",
+    "it",
+    "we",
+    "you",
+    "in",
+    "on",
+    "at",
+    "when",
+    "then",
+    "this",
+    "that",
+    "these",
+    "those",
+    "what",
+    "who",
+    "why",
+    "how",
+    "where",
+    "which",
+    "after",
+    "before",
+    "but",
+    "and",
+    "or",
+    "so",
+    "yes",
+    "no",
+    "here",
+    "there",
+    "later",
+    "meanwhile",
+    "scene",
+    "act",
+    "as",
+    "if",
+    "while",
+    "during",
+    "once",
+    "soon",
+    "now",
+    "next",
+    "first",
+    "second",
+    "third",
+    "finally",
+    "also",
+    "however",
+    "still",
+    "instead",
+    "because",
+    "although",
+    "though",
+    "since",
+    "until",
+    "with",
+    "without",
+    "from",
+    "to",
+    "of",
+    "for",
+    "by",
+    "into",
+    "onto",
+    "over",
+    "under",
+    "through",
+    "between",
+    "among",
+    "about",
+    "around",
+    "across",
+    "behind",
+    "beyond",
+    "inside",
+    "outside",
+    "near",
+    "despite",
+    "both",
+    "each",
+    "every",
+    "some",
+    "any",
+    "all",
+    "many",
+    "most",
+    "more",
+    "several",
+    "other",
+    "another",
+    "such",
+    "only",
+    "just",
+    "even",
+    "perhaps",
+    "maybe",
+    "probably",
+    "possibly",
+    "likely",
+    "overall",
+    "ultimately",
+    "essentially",
+    "basically",
+    "actually",
+    "honestly",
+    "sure",
+    "certainly",
+    "please",
+    "thanks",
+    "hello",
+    "hi",
+    "hey",
+    "okay",
+    "ok",
+    "well",
+    "oh",
+    "ah",
+    "note",
+    "notes",
+    "let",
+    "her",
+    "his",
+    "their",
+    "its",
+    "our",
+    "my",
+    "your",
+    "one",
+    "two",
+    "three",
+    "everything",
+    "everyone",
+    "someone",
+    "nothing",
+    "nobody",
+    "something",
+    "anyone",
+    "few",
+    "little",
+    "much",
+    "whether",
+    "whereas",
+    "unlike",
+    "like",
+    "given",
+    "based",
+    "according",
+    "looking",
+    "considering",
+    "throughout",
+    "early",
+    "late",
+    "eventually",
+    "initially",
+    "originally",
+    "immediately",
+    "suddenly",
+    "slowly",
+    "quickly",
+    "clearly",
+    "unfortunately",
+    "fortunately",
+    "sadly",
+    "interestingly",
+    "importantly",
+    "notably",
+    "specifically",
+    "generally",
+    "typically",
+    "usually",
+    "often",
+    "sometimes",
+    "always",
+    "never",
+    "again",
+    "yet",
+    "thus",
+    "therefore",
+    "hence",
+    "otherwise",
+    "afterward",
+    "afterwards",
+    "together",
+    "alone",
+    "opening",
+    "ending",
+    "closing",
+    "strengths",
+    "weaknesses",
+    "theme",
+    "themes",
+    "summary",
+    "answer",
+    "idea",
+    "ideas",
+    "suggestion",
+    "suggestions",
+    "option",
+    "options",
+    "critique",
+    "overview",
+    "character",
+    "characters",
+    "plot",
+    "story",
+    "script",
+    "screenplay",
+    "draft",
+    "dialogue",
+    "action",
+    "tone",
+    "mood",
+    "conflict",
+    "stakes",
+    "strong",
+    "consider",
+    "try",
+    "add",
+    "make",
+    "use",
+    "keep",
+    "show",
+    "give",
+    "cut",
+    "trim",
+    "move",
+    "replace",
+    "start",
+    "end",
+    "open",
+    "close",
+    "think",
+    "look",
+    "ask",
+    "tell",
+    "remember",
+    "imagine",
+    "don't",
+    "can't",
+    "couldn't",
+    "didn't",
+    "doesn't",
+    "isn't",
+    "wasn't",
+    "i'm",
+    "i've",
+    "i'd",
+    "i'll",
+];
+
+fn is_name_word(w: &str) -> bool {
+    let mut letters = w.chars().filter(|c| c.is_alphabetic());
+    letters.next().is_some_and(char::is_uppercase) && letters.next().is_some()
+}
+
+/// Whether the text before byte `at` ends a sentence: the start of the text, a new line, or one of
+/// `. ! ? :`, ignoring spaces and opening quotes, brackets and list marks.
+fn at_sentence_start(text: &str, at: usize) -> bool {
+    let mut newline = false;
+    for c in text[..at].chars().rev() {
+        match c {
+            '\n' | '\r' => newline = true,
+            c if c.is_whitespace() => {}
+            '"' | '\'' | '“' | '‘' | '(' | '[' | '*' | '_' | '#' | '>' | '-' | '•' | '–'
+            | '\u{2014}' => {}
+            '.' | '!' | '?' | ':' | '。' | '！' | '？' => return true,
+            _ => return newline,
+        }
+    }
+    true
+}
+
+/// Proper-name candidates in an answer: runs of capitalised words ("Lakshmi", "Venkat Rao",
+/// "Farooq Senior") and all-caps words of two or more letters ("DEVI"), in order, without repeats.
+/// A common English word that opens a sentence is not a name ("She", "Meanwhile", the "The" of
+/// "The Tower"). Screenplay labels, months and weekdays are never names. Text in scripts without
+/// capitals (Indic, Han, kana, Hangul) gives none; Latin names inside it are still found. German
+/// nouns are capitalised, so this check is meant for English answers.
+pub fn candidate_names(answer: &str) -> Vec<String> {
+    fn flush(
+        answer: &str,
+        run: &mut Option<(usize, Vec<String>)>,
+        seen: &mut std::collections::HashSet<String>,
+        out: &mut Vec<String>,
+    ) {
+        let Some((start, mut words)) = run.take() else {
+            return;
+        };
+        if at_sentence_start(answer, start)
+            && words
+                .first()
+                .is_some_and(|w| SENTENCE_STARTERS.contains(&straight(&w.to_lowercase()).as_str()))
+        {
+            words.remove(0);
+        }
+        if words.is_empty() {
+            return;
+        }
+        let name = words.join(" ");
+        if seen.insert(name.to_lowercase()) {
+            out.push(name);
+        }
+    }
+    let toks = word_tokens(answer);
+    let mut out = Vec::new();
+    let mut seen = std::collections::HashSet::new();
+    let mut run: Option<(usize, Vec<String>)> = None;
+    let mut prev_end = 0;
+    for t in &toks {
+        let w = without_possessive(t.text);
+        let allowed = ALLOWED.contains(&straight(&w.to_lowercase()).as_str());
+        if !is_name_word(w) || allowed {
+            flush(answer, &mut run, &mut seen, &mut out);
+            continue;
+        }
+        let gap = &answer[prev_end..t.start];
+        let joins = !gap.is_empty() && gap.chars().all(|c| matches!(c, ' ' | '\t' | '\u{a0}'));
+        if !joins {
+            flush(answer, &mut run, &mut seen, &mut out);
+        }
+        run.get_or_insert_with(|| (t.start, Vec::new()))
+            .1
+            .push(w.to_string());
+        prev_end = t.end;
+        if w.len() != t.text.len() {
+            // A possessive ends a name: "Lakshmi's Tower" is two things.
+            flush(answer, &mut run, &mut seen, &mut out);
+        }
+    }
+    flush(answer, &mut run, &mut seen, &mut out);
+    out
+}
+
+/// The lower-case words of a text, each also without a trailing possessive.
+fn word_set(text: &str) -> std::collections::HashSet<String> {
+    let mut set = std::collections::HashSet::new();
+    for t in word_tokens(text) {
+        set.insert(straight(&t.text.to_lowercase()));
+        set.insert(straight(&without_possessive(t.text).to_lowercase()));
+    }
+    set
+}
+
+/// The name candidates of the answer that the evidence does not support. A candidate is grounded
+/// when each of its words occurs as a whole word, ignoring case, in at least one evidence text.
+pub fn ungrounded_names(answer: &str, evidence: &[&str]) -> Vec<String> {
+    let sets: Vec<_> = evidence.iter().map(|e| word_set(e)).collect();
+    candidate_names(answer)
+        .into_iter()
+        .filter(|n| {
+            !n.split_whitespace().all(|w| {
+                let w = straight(&w.to_lowercase());
+                sets.iter().any(|s| s.contains(&w))
+            })
+        })
+        .collect()
+}
+
+static SCENE_REF: LazyLock<Regex> = LazyLock::new(|| {
+    re(r"(?i)\b(scenes?|sc\.?)\s*(\d+(?:\s*(?:,|and|&|-|–|\x{2014}|to|through)\s*\d+)*)")
+});
+static SCENE_PART: LazyLock<Regex> =
+    LazyLock::new(|| re(r"(?i)(\d+)|(,|and|&|-|–|\x{2014}|to|through)"));
+
+/// Scene numbers an answer cites, sorted without repeats: "Scene 12", "scene 5", "Sc. 7",
+/// "Scenes 5 and 6", "scenes 3-4", "scenes 3 to 4" (a range is expanded when it is at most 50
+/// long). A comma list counts only after the plural "scenes".
+// shortcut: "Scene 5 and 2 men" reads 2 as a scene; upgrade if the bench shows it.
+pub fn scene_refs(answer: &str) -> Vec<u32> {
+    let mut out = std::collections::BTreeSet::new();
+    for cap in SCENE_REF.captures_iter(answer) {
+        let plural = cap[1].to_lowercase() == "scenes";
+        let mut last: Option<u32> = None;
+        let mut range = false;
+        for p in SCENE_PART.captures_iter(&cap[2]) {
+            if let Some(n) = p.get(1) {
+                let Ok(n) = n.as_str().parse::<u32>() else {
+                    break;
+                };
+                if range && let Some(a) = last.filter(|a| *a <= n && n - *a <= 50) {
+                    out.extend(a..=n);
+                }
+                out.insert(n);
+                last = Some(n);
+                range = false;
+            } else {
+                let sep = p[2].to_lowercase();
+                if sep == "," && !plural {
+                    break;
+                }
+                range = matches!(sep.as_str(), "-" | "–" | "\u{2014}" | "to" | "through");
+            }
+        }
+    }
+    out.into_iter().collect()
+}
+
+static STRAIGHT_QUOTED: LazyLock<Regex> = LazyLock::new(|| re(r#""([^"]+)""#));
+static CURLY_QUOTED: LazyLock<Regex> = LazyLock::new(|| re(r"“([^”]+)”"));
+
+/// Text inside double quotes (straight or curly) of at least three words, in order.
+pub fn quoted_spans(answer: &str) -> Vec<String> {
+    let mut found: Vec<(usize, String)> = [&*STRAIGHT_QUOTED, &*CURLY_QUOTED]
+        .iter()
+        .flat_map(|r| r.captures_iter(answer))
+        .filter_map(|c| {
+            let m = c.get(1)?;
+            let t = m.as_str().trim();
+            (t.split_whitespace().count() >= 3).then(|| (m.start(), t.to_string()))
+        })
+        .collect();
+    found.sort_by_key(|(at, _)| *at);
+    found.into_iter().map(|(_, t)| t).collect()
+}
+
+/// Lower case, curly apostrophes straight, everything but letters, digits and apostrophes turned
+/// into single spaces, so a quote matches whatever its punctuation and spacing.
+fn plain(text: &str) -> String {
+    straight(&text.to_lowercase())
+        .split(|c: char| !(c.is_alphanumeric() || c == '\''))
+        .filter(|w| !w.is_empty())
+        .collect::<Vec<_>>()
+        .join(" ")
+}
+
+/// Quoted spans (see [`quoted_spans`]) that no evidence text contains, ignoring case, spacing,
+/// punctuation and curly apostrophes. An ellipsis inside a quote splits it into parts, and each
+/// part must be found.
+pub fn missing_quotes(answer: &str, evidence: &[&str]) -> Vec<String> {
+    let hay: Vec<String> = evidence.iter().map(|e| format!(" {} ", plain(e))).collect();
+    quoted_spans(answer)
+        .into_iter()
+        .filter(|span| {
+            span.split("...")
+                .flat_map(|p| p.split('…'))
+                .map(plain)
+                .filter(|p| !p.is_empty())
+                .any(|part| {
+                    let needle = format!(" {part} ");
+                    !hay.iter().any(|h| h.contains(&needle))
+                })
+        })
+        .collect()
+}
+
+static DIGITS: LazyLock<Regex> = LazyLock::new(|| re(r"\d+"));
+
+/// Digit runs in the answer that appear in no evidence text as a digit run. The number 1 is never
+/// reported (it is "a" in many sentences). Without repeats, in order.
+pub fn unsupported_numbers(answer: &str, evidence: &[&str]) -> Vec<String> {
+    let known: std::collections::HashSet<&str> = evidence
+        .iter()
+        .flat_map(|e| DIGITS.find_iter(e).map(|m| m.as_str()))
+        .collect();
+    let mut out: Vec<String> = Vec::new();
+    for m in DIGITS.find_iter(answer) {
+        let n = m.as_str();
+        if n != "1" && !known.contains(n) && !out.iter().any(|o| o == n) {
+            out.push(n.to_string());
+        }
+    }
+    out
+}
+
+const RELATIONSHIPS: &[&str] = &[
+    "mother",
+    "father",
+    "sister",
+    "brother",
+    "wife",
+    "husband",
+    "son",
+    "daughter",
+    "uncle",
+    "aunt",
+    "cousin",
+    "grandmother",
+    "grandfather",
+    "niece",
+    "nephew",
+    "girlfriend",
+    "boyfriend",
+    "fiance",
+    "fiancee",
+    "lover",
+    "rival",
+    "enemy",
+    "boss",
+    "employee",
+    "partner",
+    "best friend",
+    "friend",
+    "colleague",
+    "neighbour",
+    "neighbor",
+    "landlord",
+    "tenant",
+    "teacher",
+    "student",
+];
+
+static RELATIONSHIP: LazyLock<Regex> =
+    LazyLock::new(|| re(&format!(r"(?i)\b({})s?\b", RELATIONSHIPS.join("|"))));
+
+/// The relationship words of a text, in lower case, singular. "best friend" also gives "friend".
+fn relationship_words(text: &str) -> Vec<String> {
+    let mut out = Vec::new();
+    for m in RELATIONSHIP.captures_iter(text) {
+        let w = m[1].to_lowercase();
+        if w == "best friend" {
+            out.push("friend".to_string());
+        }
+        out.push(w);
+    }
+    out
+}
+
+/// Relationship words ("sister", "husband", "rival", "boss" and others) that the answer uses and
+/// no evidence text does (whole word, ignoring case, plural allowed). Without repeats, in order.
+pub fn unsupported_relationship_words(answer: &str, evidence: &[&str]) -> Vec<String> {
+    let known: std::collections::HashSet<String> = evidence
+        .iter()
+        .flat_map(|e| relationship_words(e))
+        .collect();
+    let mut out: Vec<String> = Vec::new();
+    for w in relationship_words(answer) {
+        if !known.contains(&w) && !out.contains(&w) {
+            out.push(w);
+        }
+    }
+    out
+}
+
+/// The first word n-gram (lower case, punctuation stripped) that occurs three or more times, or
+/// None. `n` of 0 gives None.
+pub fn repeated_ngram(answer: &str, n: usize) -> Option<String> {
+    let words: Vec<String> = answer
+        .split_whitespace()
+        .map(|w| {
+            straight(&w.to_lowercase())
+                .trim_matches(|c: char| !c.is_alphanumeric())
+                .to_string()
+        })
+        .filter(|w| !w.is_empty())
+        .collect();
+    if n == 0 || words.len() < n {
+        return None;
+    }
+    let mut counts: std::collections::HashMap<&[String], usize> = std::collections::HashMap::new();
+    for w in words.windows(n) {
+        *counts.entry(w).or_default() += 1;
+    }
+    words
+        .windows(n)
+        .find(|w| counts[w] >= 3)
+        .map(|w| w.join(" "))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -358,5 +1048,153 @@ mod tests {
             "The tower stands. The tower stands. The tower stands."
         ));
         assert!(!empty_or_repeated("The tower stands. Lakshmi climbs it."));
+    }
+
+    #[test]
+    fn names_are_found_and_sentence_start_words_are_not_names() {
+        assert_eq!(
+            candidate_names("Lakshmi meets Venkat Rao and DEVI at the tower."),
+            ["Lakshmi", "Venkat Rao", "DEVI"]
+        );
+        // Sentence-start words, the "The" of a title, and repeats.
+        assert_eq!(
+            candidate_names(
+                "She climbs. Then Farooq Senior arrives. The Tower hums. Meanwhile Lakshmi waits. Lakshmi sings."
+            ),
+            ["Farooq Senior", "Tower", "Lakshmi"]
+        );
+        assert_eq!(
+            candidate_names("Yes: Lakshmi.\nMeanwhile Ravi."),
+            ["Lakshmi", "Ravi"]
+        );
+        // Mid-sentence capitals count, even common ones.
+        assert_eq!(candidate_names("He asked When she left."), ["When"]);
+        // Labels, months and weekdays never count; possessives end a name.
+        assert_eq!(candidate_names("INT. TOWER - DAY"), ["TOWER"]);
+        assert_eq!(
+            candidate_names(
+                "In March on Monday, Scene 4 and ACT TWO. I said OK to the AI (V.O., O.S., CONT'D, MORE)."
+            ),
+            Vec::<String>::new()
+        );
+        assert_eq!(
+            candidate_names("Lakshmi's Tower stands."),
+            ["Lakshmi", "Tower"]
+        );
+        // Scripts without capitals give no names; Latin names inside them still do.
+        assert!(candidate_names("लक्ष्मी टावर पर चढ़ती है। 塔に登る。 탑에 올라간다.").is_empty());
+        assert_eq!(
+            candidate_names("लक्ष्मी टावर पर चढ़ती है और Farooq बस लाता है।"),
+            ["Farooq"]
+        );
+        assert!(candidate_names("").is_empty());
+    }
+
+    #[test]
+    fn invented_names_are_the_ones_the_evidence_lacks() {
+        let source = "Lakshmi climbs the tower. VENKAT RAO watches. Farooq's bus.";
+        let request = "Who is Devi?";
+        let ev = [source, request];
+        assert!(ungrounded_names("Lakshmi and Venkat Rao see Farooq near Devi.", &ev).is_empty());
+        assert_eq!(
+            ungrounded_names("Lakshmi meets Priya Nair at the tower.", &ev),
+            ["Priya Nair"]
+        );
+        // Every word of a name must be there: Venkat is, Reddy is not.
+        assert_eq!(
+            ungrounded_names("Venkat Reddy waits.", &ev),
+            ["Venkat Reddy"]
+        );
+        assert_eq!(ungrounded_names("Lakshmi waits.", &[]), ["Lakshmi"]);
+    }
+
+    #[test]
+    fn scene_numbers_are_read_in_every_common_form() {
+        assert_eq!(scene_refs("Scene 12 and scene 5, then Sc. 7."), [5, 7, 12]);
+        assert_eq!(scene_refs("Scenes 5 and 6 matter."), [5, 6]);
+        assert_eq!(
+            scene_refs("In scenes 3-4 and scenes 8 to 10."),
+            [3, 4, 8, 9, 10]
+        );
+        assert_eq!(scene_refs("Scenes 2, 4 and 9."), [2, 4, 9]);
+        // A comma after the singular is not a list.
+        assert_eq!(scene_refs("In scene 5, 2 men talk."), [5]);
+        // A range longer than 50 is only its two ends.
+        assert_eq!(scene_refs("Scenes 1 to 90"), [1, 90]);
+        assert!(scene_refs("The scenery is nice. Scene one.").is_empty());
+        assert!(scene_refs("").is_empty());
+    }
+
+    #[test]
+    fn quotes_must_be_in_the_evidence() {
+        let ans = "She says \"I can't leave the tower\" and later “the radio is dead again”. He says \"No\" and \"two words\".";
+        assert_eq!(
+            quoted_spans(ans),
+            ["I can't leave the tower", "the radio is dead again"]
+        );
+        let ev = ["LAKSHMI\nI can’t leave   the Tower, not tonight.\nThe radio is dead again!"];
+        assert!(missing_quotes(ans, &ev).is_empty());
+        assert_eq!(
+            missing_quotes("He shouts \"we will never surrender\" loudly.", &ev),
+            ["we will never surrender"]
+        );
+        // An ellipsis splits a quote; each part is checked.
+        assert!(missing_quotes("\"I can't leave ... not tonight\"", &ev).is_empty());
+        assert_eq!(
+            missing_quotes("\"I can't leave ... not ever\"", &ev),
+            ["I can't leave ... not ever"]
+        );
+        assert_eq!(missing_quotes("\"one two three\"", &[]), ["one two three"]);
+    }
+
+    #[test]
+    fn numbers_without_support_are_reported_once() {
+        let ev = ["Scene 4 has 12 people and 3 dogs."];
+        assert!(unsupported_numbers("There are 12 people, 3 dogs and 1 cat.", &ev).is_empty());
+        assert_eq!(
+            unsupported_numbers("About 40 people, 40 dogs, 12 cats, 2012.", &ev),
+            ["40", "2012"]
+        );
+        assert!(unsupported_numbers("No digits here.", &ev).is_empty());
+    }
+
+    #[test]
+    fn relationship_words_need_a_source() {
+        let ev = ["Suresh is Lakshmi's brother. Padma, the neighbours, wait."];
+        assert!(
+            unsupported_relationship_words("Her Brother Suresh and the neighbour Padma.", &ev)
+                .is_empty()
+        );
+        assert_eq!(
+            unsupported_relationship_words(
+                "Her sister and her husband, and a rival. The sisters argue.",
+                &ev
+            ),
+            ["sister", "husband", "rival"]
+        );
+        // "best friend" needs the phrase; "friend" alone in the evidence is not enough.
+        assert_eq!(
+            unsupported_relationship_words("her best friend", &["a friend of hers"]),
+            ["best friend"]
+        );
+        assert!(unsupported_relationship_words("her best friend", &["her best friend"]).is_empty());
+        // Whole words only.
+        assert!(unsupported_relationship_words("The sonnet and the bossa nova.", &[]).is_empty());
+    }
+
+    #[test]
+    fn repeated_ngrams_are_found() {
+        let loop_text = "The tower hums. The tower hums! the Tower hums, and Lakshmi climbs.";
+        assert_eq!(repeated_ngram(loop_text, 3), Some("the tower hums".into()));
+        assert_eq!(
+            repeated_ngram("one two one two one two", 2),
+            Some("one two".into())
+        );
+        assert_eq!(
+            repeated_ngram("The tower hums twice. The tower hums.", 3),
+            None
+        );
+        assert_eq!(repeated_ngram("short", 4), None);
+        assert_eq!(repeated_ngram("a a a a", 0), None);
     }
 }

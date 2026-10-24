@@ -931,9 +931,10 @@ fn run_agent(
         o.confidence = None;
         return Ok(run.outcome(o, AiResultStatus::Informational));
     }
-    let mut direct = super::commands::scoped_call(text, scope.scene.as_ref().map(|s| s.number))
-        .filter(|c| known.contains(&c.tool))
-        .or_else(|| super::commands::direct_call(text, |name| known.contains(name)));
+    let mut direct =
+        super::commands::direct_route(text, scope.scene.as_ref().map(|s| s.number), |name| {
+            known.contains(name)
+        });
     for index in 0..max_steps {
         let step = index as u32 + 1;
         let call = match direct.take() {
