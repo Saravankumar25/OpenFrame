@@ -5,7 +5,7 @@
 > **W9 refresh 2026-10-18.** Each entry point below names its proving test. Changes: T2 is proved (access list and unknown operation test), T17 adds the 60-case poisoned-retrieval set (60 of 60 safe), T26 adds the 558-refusal role test, T38 cites the card-probe tests. Evidence: [release/evidence/w9](../release/evidence/w9/README.md).
 
 > **Status legend:** ✅ implemented (with test) · 🟡 implemented, test missing · 🚧 in development · 📋 planned.
-> Authority: Security, Privacy & Data Ownership spec (digest `docs/archive/2026-09-spec-digest/security.md`); ESD §13.
+> Authority: Security, Privacy & Data Ownership spec (digest `docs/history/2026-09-spec-digest/security.md`); ESD §13.
 > Decisions: ADR-0003, ADR-0004, ADR-0006, ADR-0007, ADR-0009.
 
 ## 1. Scope and assets
@@ -150,7 +150,7 @@ Reviewed in Windows phase W3 (2026-10-16). Every item has a decision; none is op
 
 ## 5. Internal review 2026-09-30: findings
 
-This review covered the code on `master` at `a31ee7f`. The summary is in [`SECURITY_REVIEW_2026-09-30.md`](../archive/2026-09-30-security-review.md).
+This review covered the code on `master` at `a31ee7f`. The summary is in [`SECURITY_REVIEW_2026-09-30.md`](../history/2026-09-30-security-review.md).
 Severity combines impact and reachability. OpenFrame is a single-user desktop app, so the review treats its webview as
 untrusted and assumes that imported files and packages come from other people. Regression tests are in
 `crates/*/tests/security_*.rs` and `apps/desktop/src/**/*.security.test.ts`.

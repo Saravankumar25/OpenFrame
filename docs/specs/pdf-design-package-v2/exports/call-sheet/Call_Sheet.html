@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LOW TIDE RADIO — Call Sheet · Shoot Day 01 · Revision 2</title>
+<meta name="of-doc" content="Call Sheet (callsheets.export_pdf)">
+<link rel="stylesheet" href="../../00_SYSTEM/assets/openframe-print.css">
+<style>
+  /* Call Sheet — page setup. Portrait US Letter. The ONLY running header in the whole
+     package that is mandated by the brief: one compact contextual line, top-right corner,
+     no rule, no logo, no second masthead. */
+  @page {
+    size: 8.5in 11in;
+    @top-right { content: "LOW TIDE RADIO · SHOOT DAY 01 · REVISION 2"; }
+  }
+
+  /* ---- call-sheet specific components ---- */
+  .times.callout > .crew { flex: 1.5; }
+  .times { grid-template-columns: 1.5fr repeat(5, 1fr); grid-auto-flow: row; }
+  .times .big.hero { font-size: 27pt; line-height: 1.05; margin-top: 3pt; }
+  .times .big.text { font-size: 10.5pt; line-height: 1.25; }
+  .loc .tile { flex: none; }
+  .loc .head span.name { flex: 1; min-width: 0; }
+  .sc-heading { font-size: 8.8pt; font-weight: 700; color: var(--of-navy); text-transform: uppercase; line-height: 1.25; }
+  .sc-desc { color: var(--of-slate); font-size: 8.4pt; margin-top: 2pt; line-height: 1.3; }
+  .est-lbl { display: block; font-size: 6.4pt; letter-spacing: .06em; font-weight: 700; color: var(--of-muted); margin-top: 1pt; }
+  .tbl td.cast .chips { gap: 2pt; }
+  .tbl.talent td.name { font-weight: 700; }
+  .tbl.talent td.id { font-weight: 700; color: var(--of-teal); }
+  .kv-one { grid-template-columns: 1fr; }
+  .safety-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-4); }
+  .safety-grid .card .lbl { font-size: var(--fs-label); font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--of-slate); }
+  .safety-grid .card .val { font-size: 9.4pt; font-weight: 700; margin-top: 2pt; }
+  .dept-grid { align-items: start; }
+  .attach { font-size: var(--fs-body); }
+  .ref-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-4); }
+  .ref-grid .card .body { padding: 6pt; }
+  .needs { white-space: nowrap; }
+  .sec { margin-top: 12pt; }
+  section > .tbl { margin-top: 12pt; }
+  .masthead { margin-bottom: 8pt; }
+  .callout { margin: 4pt 0; }
+  .fields .row { padding: 2.2pt 0; }
+  .card .lead { margin-bottom: 2pt; }
+  .daybox { padding: 7pt 13pt 8pt; } .daybox .big { font-size: 26pt; }
+  .times .big.hero { font-size: 24pt; }
+  .callout > * { padding: 6pt 9pt; }
+  /* ---- group title blocks (v2): the three groups of the call sheet; groups 2 and 3 are kept together ---- */
+  .group { break-inside: avoid; margin-top: 20pt; }   /* margin is dropped automatically at the top of a page */   /* keep a group in one piece: it moves to a new page only when it does not fit in the space left */
+  .group-head { break-after: avoid; margin: 0 0 2pt; }
+  .group-head .eyebrow { font-size: 7.2pt; }
+  .group-head h2 { font-size: 17pt; line-height: 1.1; font-weight: 700; color: var(--of-navy); margin-top: 2pt; letter-spacing: -.005em; }
+  .group-head + section .sec, .group-head + section > .tbl { margin-top: 10pt; }
+  .illustrative { font-size: 6.6pt; color: var(--of-muted); font-style: italic; }
+</style>
+</head>
+<body>
+<div class="doc">
+
+  <!-- ============ MASTHEAD (content area; title + production details live here) ============ -->
+  <header class="masthead">
+    <div>
+      <div class="eyebrow">Call sheet · Revision 2</div>
+      <h1>LOW TIDE RADIO</h1>
+      <div class="badges">
+        <span class="chip ok" id="badge-final">Final · 19 Oct 2026</span>
+        <span class="chip warn" id="badge-draft" hidden>Draft · Not final</span>
+        <span class="chip danger" id="badge-replaced" hidden>Replaced by a newer revision</span>
+        <span class="slate" style="font-size:8pt">Script: Blue Revision (Locked)</span>
+      </div>
+      <div class="meta-line">2 scenes · 4 cast members · 1 location</div>
+    </div>
+    <div class="daybox" aria-label="Shoot day">
+      <div class="lbl">Shoot day</div>
+      <div class="big">01</div>
+      <div class="l1">Monday</div>
+      <div class="l2">11 January 2027</div>
+      <div class="foot">Day 1 of 14</div>
+    </div>
+  </header>
+
+  <!-- ============ CREW CALL + DAY TIMES ============ -->
+  <div class="callout accent times" role="group" aria-label="Crew call and day times">
+    <div><div class="lbl" style="color:var(--of-orange-deep)">Crew call</div><div class="big hero">07:00</div></div>
+    <div><div class="lbl">General call</div><div class="big">07:00</div></div>
+    <div><div class="lbl">Shooting call</div><div class="big">08:00</div></div>
+    <div><div class="lbl">Breakfast</div><div class="big text">On arrival, unit base</div></div>
+    <div><div class="lbl">Lunch</div><div class="big">13:00</div></div>
+    <div><div class="lbl">Est. wrap</div><div class="big">18:00</div></div>
+  </div>
+  <!-- Draft with no crew call: replaces the crew-call column (shown with the "Draft" toggle) -->
+
+  <!-- ============ PRODUCTION ============ -->
+  <section>
+    <div class="sec"><h2>Production</h2></div>
+    <div class="cards c2">
+      <div class="card"><div class="body"><dl class="fields">
+        <div class="row"><dt>Production company</dt><dd>Kayal Pictures</dd></div>
+        <div class="row long"><dt>Production address</dt><dd>14/220 Bazaar Road, Fort Kochi, Kerala 682001</dd></div>
+        <div class="row"><dt>Producer</dt><dd>Arun Joseph</dd></div>
+      </dl></div></div>
+      <div class="card"><div class="body"><dl class="fields">
+        <div class="row"><dt>Director</dt><dd>Meenakshi Varma</dd></div>
+        <div class="row"><dt>1st AD</dt><dd>Priya Ramesh</dd></div>
+        <div class="row long"><dt>Production contact</dt><dd>Gopan Nair, Unit Production Manager, +91 98470 20114</dd></div>
+      </dl></div></div>
+    </div>
+  </section>
+
+  <!-- ============ LOCATIONS ============ -->
+  <section>
+    <div class="sec"><h2>Locations</h2><span class="hint">1 location</span></div>
+    <div class="cards c1">
+      <article class="card loc">
+        <div class="head"><span class="tile teal">01</span><span class="name">Coast Radio Station (Old Signal Station, Vypin)</span></div>
+        <div class="body">
+          <p class="lead">Beach Road, Vypin, Kochi, Kerala 682508</p>
+          <dl class="fields">
+            <div class="row"><dt>Meeting point</dt><dd>Unit base; follow the yellow OPENFRAME LTR signs</dd></div>
+            <div class="row long"><dt>Access</dt><dd>Single lane from Beach Road. Trucks over 7 tonnes must unload at the church ground and shuttle.</dd></div>
+            <div class="row long"><dt>Parking</dt><dd>Unit base on the church ground, 600 m south. Twelve cars at the gate only.</dd></div>
+            <div class="row missing"><dt>Nearest hospital</dt><dd><span class="needs">Needs input</span></dd></div>
+            <div class="row"><dt>Emergency contact</dt><dd>Port Trust Estate Office, Mr. Hamid Kutty, +91 484 266 6400</dd></div>
+          </dl>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ============ SCENE SCHEDULE ============ -->
+  <section>
+    <table class="tbl zebra boxed" aria-label="Scene schedule">
+      <colgroup><col style="width:52pt"><col style="width:34pt"><col><col style="width:62pt"><col style="width:44pt"><col style="width:46pt"></colgroup>
+      <thead>
+        <tr class="title"><th colspan="6"><span class="hint">2 scheduled scenes · Start times from the schedule</span>Scene schedule</th></tr>
+        <tr class="gap"><th colspan="6"></th></tr>
+        <tr><th>Start</th><th>Sc.</th><th>Heading / description</th><th>Cast</th><th>Pages</th><th class="r">Est.</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="strong">08:00</td>
+          <td><span class="tile">28</span></td>
+          <td>
+            <div class="sc-heading">INT. COAST RADIO STATION - TAPE ROOM - DAY (COAST RADIO STATION (OLD SIGNAL STATION, VYPIN))</div>
+            <div class="sc-desc">In the flooded basement they find the station logbook in a sealed ammunition box.</div>
+            <div class="chips" style="margin-top:3pt"><span class="chip">INT</span><span class="chip">D</span></div>
+          </td>
+          <td class="cast"><div class="chips"><span class="chip pill info">11</span><span class="chip pill info">14</span><span class="chip pill info">7</span></div></td>
+          <td>1 2/8</td>
+          <td class="r slate">4h</td>
+        </tr>
+        <tr>
+          <td class="strong">12:00</td>
+          <td><span class="tile">29</span></td>
+          <td>
+            <div class="sc-heading">INT. COAST RADIO STATION - OPERATIONS ROOM - DAY (COAST RADIO STATION (OLD SIGNAL STATION, VYPIN))</div>
+            <div class="sc-desc">The logbook: entries stop at 23:40. 'Main power cut by order. J. D'Cruz.'</div>
+            <div class="chips" style="margin-top:3pt"><span class="chip">INT</span><span class="chip">D</span></div>
+          </td>
+          <td class="cast"><div class="chips"><span class="chip pill info">11</span><span class="chip pill info">14</span><span class="chip pill info">4</span><span class="chip pill info">7</span></div></td>
+          <td>1 4/8</td>
+          <td class="r slate">2h 30m</td>
+        </tr>
+        <tr class="tint-meal stripe-orange">
+          <td class="strong">13:00</td>
+          <td></td>
+          <td><span class="chip">Meal</span><div class="sc-heading" style="text-transform:none;margin-top:2pt">Lunch</div></td>
+          <td></td><td></td>
+          <td class="r slate">1h</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ============ TALENT / CAST ============ -->
+  <div class="group">
+  <!-- ============ GROUP 2: PEOPLE ON THE DAY (kept together; moves to a new page only if it does not fit the space left) ============ -->
+  <div class="group-head"><div class="eyebrow">People on the day</div><h2>Cast &amp; Crew</h2></div>
+  <section>
+    <table class="tbl zebra boxed talent" aria-label="Talent and cast">
+      <colgroup><col style="width:28pt"><col style="width:100pt"><col style="width:72pt"><col><col style="width:100pt"><col style="width:78pt"></colgroup>
+      <thead>
+        <tr class="title"><th colspan="6"><span class="hint">4 cast members</span>Talent / Cast</th></tr>
+        <tr class="gap"><th colspan="6"></th></tr>
+        <tr><th>ID</th><th>Actor</th><th>Character</th><th>Pickup</th><th>Hair / MU</th><th>Call</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="id">11</td><td class="name">Sajan Kuriakose</td><td class="strong">SURESH</td><td>Unit hotel, 60 minutes before call</td><td>30 minutes before call</td><td><span class="needs">Needs input</span></td></tr>
+        <tr><td class="id">14</td><td class="name">Aditya Nair</td><td class="strong">RAHUL</td><td>Unit hotel, 60 minutes before call</td><td>30 minutes before call</td><td><span class="needs">Needs input</span></td></tr>
+        <tr><td class="id">7</td><td class="name">Nimisha Raghavan</td><td class="strong">ANJALI</td><td>Unit hotel, 60 minutes before call</td><td>30 minutes before call</td><td><span class="needs">Needs input</span></td></tr>
+        <tr><td class="id">4</td><td class="name">Lal Fernandez</td><td class="strong">JOE</td><td>Unit hotel, 60 minutes before call</td><td>30 minutes before call</td><td><span class="needs">Needs input</span></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section data-toggle="Extras" hidden>
+    <table class="tbl zebra boxed" aria-label="Extras">
+      <colgroup><col><col style="width:36pt"><col style="width:62pt"><col style="width:62pt"><col style="width:130pt"></colgroup>
+      <thead>
+        <tr class="title"><th colspan="5"><span class="hint">Illustrative rows (fictional) — not in the supplied PDF</span>Extras</th></tr>
+        <tr class="gap"><th colspan="5"></th></tr>
+        <tr><th>Group</th><th class="r">Qty</th><th>Call</th><th>On set</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="strong">Fishermen, working</td><td class="r">6</td><td>06:30</td><td>07:30</td><td>Own clothing; no logos.</td></tr>
+        <tr><td class="strong">Station staff, 1999</td><td class="r">3</td><td><span class="needs">Needs input</span></td><td></td><td>Wardrobe fitting the day before.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section data-toggle="Crew">
+    <table class="tbl boxed" aria-label="Crew">
+      <colgroup><col style="width:88pt"><col style="width:118pt"><col><col style="width:48pt"><col style="width:90pt"></colgroup>
+      <thead>
+        <tr class="title"><th colspan="5"><span class="hint">3 crew members listed</span>Crew</th></tr>
+        <tr class="gap"><th colspan="5"></th></tr>
+        <tr><th>Department</th><th>Role</th><th>Name</th><th>Call</th><th>Contact</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="strong">Camera</td><td>Director of Photography</td><td>Vivek Anand</td><td>07:00</td><td>+91 98470 40008</td></tr>
+        <tr style="--x:0"><td class="strong">Direction</td><td>First Assistant Director</td><td>Priya Ramesh</td><td>07:00</td><td>+91 98470 40005</td></tr>
+        <tr><td class="strong">Sound</td><td>Production Sound Mixer</td><td>Farhan Ali</td><td>07:00</td><td>+91 98470 40016</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section data-toggle="Department notes">
+    <div class="sec"><h2>Department notes</h2><span class="hint">From current production data</span></div>
+    <div class="cards c2 dept-grid">
+      <div class="card"><div class="head dark">Props</div><div class="body"><ul class="bullets">
+        <li>Sc 28: Army surplus ammunition box</li><li>Sc 28: Station logbook 1999</li><li>Sc 28: Floating tape boxes</li>
+        <li>Sc 28: Coir string of station keys</li><li>Sc 28: Torches and head torch</li><li>Sc 28: Hard hats</li>
+        <li>Sc 29: Station logbook 1999</li><li>Sc 29: Hard hats</li></ul></div></div>
+      <div class="card"><div class="head dark">Costumes</div><div class="body"><ul class="bullets">
+        <li>Sc 28: Rahul's shorts</li><li>Sc 28: Anjali's rubber boots</li><li>Sc 28: Suresh's hard hat and site boots</li>
+        <li>Sc 29: Suresh's hard hat and site boots</li><li>Sc 29: Rahul's school clothes</li><li>Sc 29: Anjali's everyday clothes</li></ul></div></div>
+      <div class="card"><div class="head dark">Sound</div><div class="body"><ul class="bullets">
+        <li>Playback cues from Farhan. Nagra on set for scenes 13, 16 and 33.</li></ul></div></div>
+      <div class="card"><div class="head dark">Special effects</div><div class="body"><ul class="bullets">
+        <li>Sc 28: Water tank and dirty water dressing</li></ul></div></div>
+      <div class="card"><div class="head dark">Art</div><div class="body"><ul class="bullets">
+        <li>Station logbook and hero reel with the props master.</li></ul></div></div>
+    </div>
+  </section>
+
+  </div>
+  <div class="group">
+  <!-- ============ GROUP 3: PRODUCTION NOTES (kept together; moves to a new page only if it does not fit the space left) ============ -->
+  <div class="group-head"><div class="eyebrow">Day-of logistics</div><h2>Production Notes</h2></div>
+  <section>
+    <div class="sec"><h2>Practical / Safety information</h2><span class="hint" id="safety-hint">Quick reference</span></div>
+    <div class="safety-grid">
+      <div class="card keep"><div class="body"><div class="lbl">Production emergency contact</div><div class="val">Gopan Nair (UPM) +91 98470 20114</div></div></div>
+      <div class="card keep"><div class="body"><div class="lbl">Coast Radio Station (Old Signal Station, Vypin) · Nearest hospital</div><div class="val"><span class="needs">Needs input</span></div></div></div>
+    </div>
+    <div class="callout info block" id="draft-callout" hidden>
+      <p><b>Before issuing:</b> confirm the crew call, all cast call times, the nearest hospital for each location and the production emergency contact. This is a draft reference, not a final call sheet.</p>
+    </div>
+    <div style="margin-top:8pt">
+    <div class="card"><div class="body"><dl class="fields">
+      <div class="row"><dt>Transport</dt><dd>Unit buses leave the Fort Kochi hotel 45 minutes before crew call.</dd></div>
+      <div class="row"><dt>Meals</dt><dd>Hot meals at unit base. Vegetarian and non-vegetarian.</dd></div>
+      <div class="row long"><dt>Safety</dt><dd>Report any accident or near miss to the 1st AD straight away. Life jackets near water. Set medic: Dr. Asha Kurian, +91 98470 40024.</dd></div>
+      <div class="row"><dt>Special instructions</dt><dd>Phones on silent on set.</dd></div>
+      <div class="row long"><dt>Day notes</dt><dd>Coast Radio Station interiors, day. Basement water pumped from 05:00.</dd></div>
+      <div class="row"><dt>Production number</dt><dd>KP-2027-04</dd></div>
+    </dl></div></div>
+    </div>
+  </section>
+
+  <section data-toggle="Weather">
+    <div class="sec"><h2>Weather</h2></div>
+    <div class="card"><div class="body"><dl class="fields">
+      <div class="row"><dt>Forecast</dt><dd>Dry, 24 to 31 C, humidity 70 percent.</dd></div>
+      <div class="row"><dt>Sunrise</dt><dd>06:42</dd></div>
+      <div class="row"><dt>Sunset</dt><dd>18:21</dd></div>
+    </dl></div></div>
+  </section>
+
+  <section data-toggle="Advance schedule">
+    <div class="sec"><h2>Advance schedule</h2></div>
+    <div class="card"><div class="body"><dl class="fields">
+      <div class="row"><dt>Day</dt><dd>Next: 2027-01-12</dd></div>
+      <div class="row long"><dt>Location</dt><dd>1999 operations room. Child performer works 15:00 to 19:30 only (scenes 2 and 32 first).</dd></div>
+    </dl></div></div>
+  </section>
+
+  <section data-toggle="Walkie channels and contacts">
+    <div class="sec"><h2>Walkie channels and contacts</h2></div>
+    <div class="card"><div class="body"><dl class="fields">
+      <div class="row"><dt>Walkie channels</dt><dd>1 production, 2 camera, 3 grip and electric, 5 marine</dd></div>
+      <div class="row"><dt>Emergency contact</dt><dd>Dr. Asha Kurian +91 98470 40024</dd></div>
+      <div class="row"><dt>Production contact</dt><dd>Gopan Nair +91 98470 20114</dd></div>
+    </dl></div></div>
+  </section>
+
+  <section data-toggle="Special notes">
+    <div class="sec"><h2>Special notes</h2></div>
+    <div class="callout warn block"><p style="font-size:9pt;line-height:1.4">No visitors on set without the producer's approval.</p></div>
+  </section>
+
+  <section data-toggle="Attachments &amp; reference images" class="keep">
+    <div class="sec"><h2>Attachments &amp; reference images</h2><span class="hint">Attachments sent separately</span></div>
+    <div data-toggle="Attachments">
+      <p class="attach">location-release-coast-radio-station.pdf</p>
+    </div>
+    <div data-toggle="Reference images" style="margin-top:8pt">
+    <div class="ref-grid">
+      <figure class="card keep"><div class="body">
+        <div class="frame r66"><img src="../../00_SYSTEM/sample-assets/call-sample-01.png" alt="station-day.png"></div>
+        <figcaption class="caption" style="text-align:center">station-day.png</figcaption>
+      </div></figure>
+      <figure class="card keep" hidden data-toggle="Missing-image placeholder"><div class="body">
+        <div class="frame r66 missing">Image unavailable</div>
+        <figcaption class="caption" style="text-align:center">harbour-night.png</figcaption>
+      </div></figure>
+    </div>
+    </div>
+  </section>
+
+
+  </div>
+</div>
+
+<script src="../../00_SYSTEM/assets/of-preview.js"></script>
+<script>
+  /* Preview-only: switch the sample between Final and Draft treatments. */
+  (function () {
+    var bar = document.querySelector('.preview-bar'); if (!bar) return;
+    var l = document.createElement('label'); var cb = document.createElement('input'); cb.type = 'checkbox';
+    cb.addEventListener('change', function () {
+      var d = cb.checked;
+      document.getElementById('badge-final').hidden = d; document.getElementById('badge-draft').hidden = !d;
+      document.getElementById('draft-callout').hidden = !d;
+      document.getElementById('safety-hint').textContent = d ? 'Review before issuing' : 'Quick reference';
+    });
+    l.appendChild(cb); l.appendChild(document.createTextNode('Show Draft state')); bar.insertBefore(l, bar.querySelector('button'));
+  })();
+</script>
+</body>
+</html>

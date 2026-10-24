@@ -26,30 +26,50 @@
 //! dark section bars (paper call sheet), centered lines and spacers, and can
 //! be laid out landscape with a centered header and a custom footer.
 //!
-//! Branding (production depth spec §43; doc 33 section 8): a document with
-//! [`Document::brand`] prints the small OpenFrame mark and the brand line at the
-//! bottom left of every page, and a workbook made with [`tables_to_xlsx_branded`]
+//! Branding (production depth spec §43; doc 33 section 8; PDF design system section 2): a
+//! document with [`Document::brand`] prints the official OpenFrame logo (embedded once, lossless),
+//! the brand line under it and "Page X of Y" at the lower right of every page, and a workbook made
+//! with [`tables_to_xlsx_branded`]
 //! names OpenFrame Studio in its document properties and the first sheet's
 //! footer. Screenplay documents never use this module.
 
 use std::borrow::Cow;
 use std::collections::HashMap;
-use std::io::Cursor;
+use std::io::{Cursor, Write};
+use std::sync::OnceLock;
 
 use openframe_domain::{AppError, AppResult};
 use pdf_writer::Content;
 use unicode_segmentation::UnicodeSegmentation;
 
+#[cfg(test)]
+mod band_matrix_tests;
+#[cfg(test)]
+mod board_tests;
 mod design;
+#[cfg(test)]
+mod furniture_tests;
+#[cfg(test)]
+mod report_shell_tests;
+#[cfg(test)]
+mod visual_tests;
 pub use design::{
-    Banner, Callout, CalloutCol, Card, CardHead, CardPart, Cards, Cell, CellItem, Chip, Col, Field,
-    Group, GroupItem, HeaderStyle, Legend, LegendItem, Masthead, Metric, Metrics, Rgb, Row,
-    Section, Side, StyledTable, Tile, Tone, Txt, Width, pal,
+    Banner, Callout, CalloutCol, Card, CardHead, CardPart, Cards, Cell, CellItem, Chip, Col,
+    CompactHeader, Field, Group, GroupBand, GroupItem, HeaderStyle, Legend, LegendItem, Mark,
+    Masthead, Metric, MetricStrip, Metrics, NoteBand, Panel, ReportHead, Rgb, Rich, Row, Run,
+    SceneBanner, Section, Side, StyledTable, Tile, Tone, Txt, Width, pal,
+};
+pub use design::{
+    Board, BoardComment, BoardCount, BoardExtra, BoardItem, BoardItems, BoardKey, BoardLayout,
+};
+pub use design::{
+    Entry, FactLine, FactRun, Matrix, MatrixCode, MatrixCount, MatrixDay, MatrixKey, MatrixRow,
+    MatrixTotals, TableBand, TableHead,
 };
 
 use crate::fonts;
 use crate::pdf_fonts::{FontPack, ShapedText};
-use crate::pdfgen::{self, PdfBuilder, PdfImage};
+use crate::pdfgen::{self, LosslessImage, PdfBuilder, PdfImage};
 use crate::winansi::{encode_char, text_width_pt};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -192,6 +212,28 @@ pub enum Block {
     Styled(StyledTable),
     Legend(Legend),
     Text(Txt),
+    /// Blocks laid out as one unit: they stay on one page when they fit the space left, else the
+    /// group starts a new page; a group taller than a page starts fresh and then splits only
+    /// where its own blocks split (between rows and cards).
+    Together(Vec<Block>),
+    /// From here on, every page (this one included) carries this line at the top right in place of
+    /// the document's running header, until the next `PageHeader`. One line per document part,
+    /// for example one per storyboard. Not for use inside `Together`.
+    PageHeader(String),
+    /// The navy band that opens a storyboard (see `report/design/panel.rs`).
+    SceneBanner(SceneBanner),
+    /// The compact one-block header of a storyboard sheet.
+    CompactHeader(CompactHeader),
+    /// The Day Out of Days matrix (frozen columns, day groups, code cells).
+    Matrix(Matrix),
+    /// The compact head of a production report with its side panel.
+    ReportHead(ReportHead),
+    /// A band of context under the head of a production report (snapshot, filter, open scenes).
+    NoteBand(NoteBand),
+    /// The counts of a production report in one strip as wide as its content.
+    MetricStrip(MetricStrip),
+    /// A piece of the Beat Board export (bars, bands, items, key), see `report/design/board.rs`.
+    Board(Board),
 }
 
 // ------------------------------------------------------------------ images
@@ -316,11 +358,14 @@ pub struct Document {
     pub landscape: bool,
     /// Title and subtitle centered (paper documents such as call sheets).
     pub centered_header: bool,
-    /// Footer text before "Page n of m" (defaults to the title).
+    /// Footer text before "Page n of m" on unbranded documents (defaults to the title). Branded
+    /// documents print the logo, the brand line and "Page X of Y" only.
     pub footer: Option<String>,
     pub author: Option<String>,
-    /// Brand line printed with the OpenFrame mark at the bottom of every page.
+    /// Brand line printed under the OpenFrame logo at the bottom of every page.
     pub brand: Option<String>,
+    /// One line at the top right of every page (6.8 pt slate); wraps inside the top margin.
+    pub running_header: Option<String>,
     pub blocks: Vec<Block>,
 }
 
@@ -344,10 +389,16 @@ impl Document {
             footer: None,
             author: None,
             brand: None,
+            running_header: None,
             blocks: Vec::new(),
         }
     }
-    /// Print the OpenFrame mark and `line` at the bottom of every page.
+    /// A small identifying line at the top right of every page, or none.
+    pub fn running_header(mut self, line: Option<String>) -> Self {
+        self.running_header = line;
+        self
+    }
+    /// Print the OpenFrame logo and `line` at the bottom of every page.
     pub fn brand(mut self, line: impl Into<String>) -> Self {
         self.brand = Some(line.into());
         self
@@ -380,13 +431,18 @@ impl Document {
         self.blocks.push(b);
     }
     pub fn tables(&self) -> Vec<&Table> {
-        self.blocks
-            .iter()
-            .filter_map(|b| match b {
-                Block::Table(t) => Some(t),
-                _ => None,
-            })
-            .collect()
+        fn collect<'a>(blocks: &'a [Block], out: &mut Vec<&'a Table>) {
+            for b in blocks {
+                match b {
+                    Block::Table(t) => out.push(t),
+                    Block::Together(inner) => collect(inner, out),
+                    _ => {}
+                }
+            }
+        }
+        let mut out = Vec::new();
+        collect(&self.blocks, &mut out);
+        out
     }
 
     /// XLSX workbook with one sheet per table.
@@ -462,8 +518,19 @@ impl Document {
         if let Some(s) = &self.brand {
             scan(s);
         }
-        for b in &self.blocks {
+        if let Some(s) = &self.running_header {
+            scan(s);
+        }
+        scan_blocks(&self.blocks, &mut scan);
+        out
+    }
+}
+
+fn scan_blocks(blocks: &[Block], scan: &mut dyn FnMut(&str)) {
+    {
+        for b in blocks {
             match b {
+                Block::Together(inner) => scan_blocks(inner, scan),
                 Block::Heading { text, .. }
                 | Block::Paragraph(text)
                 | Block::SectionBar(text)
@@ -498,6 +565,12 @@ impl Document {
                     }
                 }
                 Block::PageBreak | Block::Spacer(_) => {}
+                Block::PageHeader(text) => scan(text),
+                Block::SceneBanner(b) => design::scene_banner_scan(b, scan),
+                Block::CompactHeader(h) => design::compact_header_scan(h, scan),
+                Block::ReportHead(h) => design::report_head_scan(h, scan),
+                Block::NoteBand(b) => design::note_band_scan(b, scan),
+                Block::MetricStrip(m) => design::metric_strip_scan(m, scan),
                 Block::Masthead(_)
                 | Block::Metrics(_)
                 | Block::Section(_)
@@ -506,10 +579,11 @@ impl Document {
                 | Block::Cards(_)
                 | Block::Styled(_)
                 | Block::Legend(_)
-                | Block::Text(_) => design::scan_block(b, &mut scan),
+                | Block::Matrix(_)
+                | Block::Board(_)
+                | Block::Text(_) => design::scan_block(b, scan),
             }
         }
-        out
     }
 }
 
@@ -733,7 +807,27 @@ fn xlsx(tables: &[&Table], brand: Option<&str>, created: Option<i64>) -> AppResu
 // --------------------------------------------------------------------- PDF
 
 pub(crate) const MARGIN: f32 = 46.0;
-pub(crate) const FOOTER_SPACE: f32 = 34.0;
+/// Content stops this far above the page bottom (PDF design system section 4). The footer sits in
+/// the space below: logo, brand line and page number, all measured from the page bottom.
+pub(crate) const BOTTOM_MARGIN: f32 = 66.0;
+/// Unbranded documents (the Story page manuscript) keep the page body they always had.
+const PLAIN_BOTTOM_MARGIN: f32 = 80.0;
+
+/// The official logo (699 x 163 px artwork bounds), embedded losslessly.
+const LOGO_PNG: &[u8] = include_bytes!("../assets/openframe-logo.png");
+const LOGO_H: f32 = 17.0;
+/// Bottom edge of the logo above the page bottom.
+const LOGO_BOTTOM: f32 = 33.0;
+/// Baseline of the brand line and of "Page X of Y" above the page bottom. The design system text
+/// says about 22 pt (the CSS padding); the supplied reference PDF measures 24 pt, which is used.
+const FOOTER_BASE: f32 = 24.0;
+const BRAND_SIZE: f32 = 6.8;
+const PAGE_SIZE: f32 = 7.4;
+/// Running header: first baseline below the page top, line step, size and tracking (0.04 em).
+const HEADER_BASE: f32 = 24.0;
+const HEADER_LEADING: f32 = 8.2;
+const HEADER_SIZE: f32 = 6.8;
+const HEADER_TRACK: f32 = HEADER_SIZE * 0.04;
 
 #[derive(Clone)]
 enum Op {
@@ -808,13 +902,19 @@ enum Op {
         fill: Option<Rgb>,
         stroke: Option<(Rgb, f32)>,
     },
-    /// The OpenFrame film-frame mark, lower left corner at (x, y).
-    Mark {
-        x: f32,
-        y: f32,
-        size: f32,
-        color: Rgb,
-    },
+}
+
+/// An over-long word broken by characters: full lines go to `out`, the last piece is returned.
+fn break_word(word: &str, width: f32, size: f32, bold: bool, out: &mut Vec<String>) -> String {
+    let mut chunk = String::new();
+    for ch in word.chars() {
+        let next = format!("{chunk}{ch}");
+        if text_width_pt(&next, size, bold) > width && !chunk.is_empty() {
+            out.push(std::mem::take(&mut chunk));
+        }
+        chunk.push(ch);
+    }
+    chunk
 }
 
 /// Wrap text to a width in points.
@@ -833,22 +933,18 @@ pub fn wrap_pt(text: &str, width: f32, size: f32, bold: bool) -> Vec<String> {
             };
             if text_width_pt(&candidate, size, bold) <= width || line.is_empty() {
                 if line.is_empty() && text_width_pt(word, size, bold) > width {
-                    // Break an over-long word by characters.
-                    let mut chunk = String::new();
-                    for ch in word.chars() {
-                        let next = format!("{chunk}{ch}");
-                        if text_width_pt(&next, size, bold) > width && !chunk.is_empty() {
-                            out.push(std::mem::take(&mut chunk));
-                        }
-                        chunk.push(ch);
-                    }
-                    line = chunk;
+                    line = break_word(word, width, size, bold, &mut out);
                 } else {
                     line = candidate;
                 }
             } else {
                 out.push(std::mem::take(&mut line));
-                line = word.to_string();
+                // An over-long word that follows other words is broken the same way.
+                line = if text_width_pt(word, size, bold) > width {
+                    break_word(word, width, size, bold, &mut out)
+                } else {
+                    word.to_string()
+                };
             }
         }
         out.push(line);
@@ -859,12 +955,99 @@ pub fn wrap_pt(text: &str, width: f32, size: f32, bold: bool) -> Vec<String> {
 struct Pager<'a> {
     w: f32,
     h: f32,
+    /// Distance from the page top to the first line of content (the top margin, or more when a
+    /// long running header needs it).
+    inset: f32,
+    /// Content stops this far above the page bottom.
+    bottom: f32,
     pages: Vec<Vec<Op>>,
     y: f32,
     images: Vec<&'a ReportImage>,
+    /// A heading (or other lead-in) just placed that must not end a page alone.
+    hold: Option<Hold>,
+    /// The line [`Block::PageHeader`] set; printed at the top of every page from then on.
+    page_header: Option<String>,
+    /// Page and position in that page's ops of the header line already drawn, so a new
+    /// `PageHeader` on the same page replaces it instead of printing over it.
+    header_at: Option<(usize, usize)>,
+}
+
+/// The ops of a lead-in on the current page: `start..end` in the page's ops, spanning `top` down
+/// to `bottom` on the page.
+struct Hold {
+    page: usize,
+    start: usize,
+    end: usize,
+    top: f32,
+    bottom: f32,
 }
 
 impl<'a> Pager<'a> {
+    fn new(w: f32, h: f32, inset: f32, bottom: f32) -> Pager<'a> {
+        Pager {
+            w,
+            h,
+            inset,
+            bottom,
+            pages: vec![Vec::new()],
+            y: h - inset,
+            images: Vec::new(),
+            hold: None,
+            page_header: None,
+            header_at: None,
+        }
+    }
+    /// The page header line on the current page: one slate line at the top right (a longer one
+    /// is shortened to the width of the page rather than wrapped, it is page furniture).
+    fn draw_page_header(&mut self) {
+        let Some(text) = self.page_header.clone() else {
+            return;
+        };
+        let track = if needs_fonts(&text) {
+            0.0
+        } else {
+            HEADER_TRACK
+        };
+        let max = self.w - 2.0 * MARGIN;
+        let line = wrap_pt(text.trim(), max * 0.94, HEADER_SIZE, false)
+            .into_iter()
+            .next()
+            .unwrap_or_default();
+        let lw = text_width(&line, HEADER_SIZE, false) + track * line.chars().count() as f32;
+        let (x, y) = (self.w - MARGIN - lw, self.h - HEADER_BASE);
+        let op = Op::TextC {
+            bold: false,
+            size: HEADER_SIZE,
+            x,
+            y,
+            text: line,
+            color: pal::SLATE,
+            track,
+        };
+        let page = self.pages.len() - 1;
+        match self.header_at {
+            Some((pg, i)) if pg == page => self.pages[pg][i] = op,
+            _ => {
+                self.ops().push(op);
+                self.header_at = Some((page, self.pages[page].len() - 1));
+            }
+        }
+    }
+    /// Nothing has been placed on this page yet.
+    fn fresh(&self) -> bool {
+        self.y >= self.h - self.inset - 0.5
+    }
+    /// Mark what was just placed (ops from `start`, from `top` down to the current position) as a
+    /// lead-in: if the next thing does not fit and a new page starts, it moves along.
+    fn keep_with_next(&mut self, start: usize, top: f32) {
+        self.hold = Some(Hold {
+            page: self.pages.len() - 1,
+            start,
+            end: self.pages.last().map_or(0, |o| o.len()),
+            top,
+            bottom: self.y,
+        });
+    }
     /// Index of a picture in the document, registered once however often it is drawn.
     fn image_index(&mut self, img: &'a ReportImage) -> usize {
         if let Some(i) = self.images.iter().position(|x| std::ptr::eq(*x, img)) {
@@ -874,14 +1057,35 @@ impl<'a> Pager<'a> {
         self.images.len() - 1
     }
     fn new_page(&mut self) {
+        // A heading left alone at the foot of the page goes to the new page with its content.
+        let carried = self.hold.take().and_then(|hold| {
+            let last = self.pages.len() - 1;
+            let alone = hold.page == last && hold.start > 0 && self.pages[last].len() == hold.end;
+            alone.then(|| {
+                (
+                    self.pages[last].split_off(hold.start),
+                    hold.top,
+                    hold.bottom,
+                )
+            })
+        });
         self.pages.push(Vec::new());
-        self.y = self.h - MARGIN;
+        self.y = self.h - self.inset;
+        self.draw_page_header();
+        if let Some((ops, top, bottom)) = carried {
+            let dy = self.y - top;
+            for mut op in ops {
+                design::shift(&mut op, 0.0, dy);
+                self.ops().push(op);
+            }
+            self.y -= top - bottom;
+        }
     }
     fn ops(&mut self) -> &mut Vec<Op> {
         self.pages.last_mut().unwrap()
     }
     fn room(&self) -> f32 {
-        self.y - (MARGIN + FOOTER_SPACE)
+        self.y - self.bottom
     }
     fn ensure(&mut self, needed: f32) {
         if self.room() < needed {
@@ -1065,7 +1269,7 @@ fn render_grid<'a>(p: &mut Pager<'a>, g: &'a Grid) {
     let cols = g.columns.clamp(1, 8);
     let width = p.w - 2.0 * MARGIN;
     let cell_w = (width - GRID_GAP * (cols as f32 - 1.0)) / cols as f32;
-    let max_h = p.h - 2.0 * MARGIN - FOOTER_SPACE;
+    let max_h = p.body_h();
     let frame_h = (cell_w * g.frame_ratio.clamp(0.2, 2.0)).min(max_h - 60.0);
     for row in g.cells.chunks(cols) {
         // Caption lines per cell: (text, bold, gray).
@@ -1176,21 +1380,209 @@ fn render_grid<'a>(p: &mut Pager<'a>, g: &'a Grid) {
     }
 }
 
+/// Lay one block on the pager.
+fn render_block<'a>(p: &mut Pager<'a>, b: &'a Block) {
+    let w = p.w;
+    match b {
+        Block::Masthead(m) => design::masthead(p, m),
+        Block::Metrics(m) => design::metrics(p, m),
+        Block::Section(s) => design::section(p, s),
+        Block::Banner(b) => design::banner(p, b),
+        Block::Callout(c) => design::callout(p, c),
+        Block::Cards(c) => design::cards(p, c),
+        Block::Styled(t) => design::styled_table(p, t),
+        Block::Legend(l) => design::legend(p, l),
+        Block::Text(t) => design::text(p, t),
+        Block::Together(blocks) => together(p, blocks),
+        Block::SceneBanner(b) => design::scene_banner(p, b),
+        Block::CompactHeader(h) => design::compact_header(p, h),
+        Block::PageHeader(text) => {
+            p.page_header = Some(text.clone());
+            p.draw_page_header();
+        }
+        Block::Matrix(m) => design::matrix(p, m),
+        Block::ReportHead(h) => design::report_head(p, h),
+        Block::NoteBand(b) => design::note_band(p, b),
+        Block::MetricStrip(m) => design::metric_strip(p, m),
+        Block::Board(b) => design::board(p, b),
+        Block::Heading { text, level } => {
+            let size = if *level <= 1 { 13.0 } else { 11.0 };
+            // Keep headings with what follows them.
+            p.ensure(size * 1.3 + 40.0);
+            p.y -= 4.0;
+            let (start, top) = (p.ops().len(), p.y);
+            p.text_block(text, size, true, 0.0, 4.0);
+            p.keep_with_next(start, top);
+        }
+        Block::Paragraph(t) => p.text_block(t, 10.0, false, 0.0, 6.0),
+        Block::KeyValues(kv) => {
+            let key_w = (w - 2.0 * MARGIN) * 0.3;
+            for (k, v) in kv {
+                let vals = wrap_pt(v, w - 2.0 * MARGIN - key_w, 9.5, false);
+                let h = vals.len().max(1) as f32 * 12.5;
+                p.ensure(h);
+                let top = p.y;
+                p.ops().push(Op::Text {
+                    bold: true,
+                    size: 9.5,
+                    x: MARGIN,
+                    y: top - 10.0,
+                    text: k.clone(),
+                    gray: 0.25,
+                });
+                for (i, line) in vals.iter().enumerate() {
+                    p.ops().push(Op::Text {
+                        bold: false,
+                        size: 9.5,
+                        x: MARGIN + key_w,
+                        y: top - 10.0 - i as f32 * 12.5,
+                        text: line.clone(),
+                        gray: 0.0,
+                    });
+                }
+                p.y -= h;
+            }
+            p.y -= 6.0;
+        }
+        Block::Table(t) => render_table(p, t),
+        Block::PageBreak => {
+            p.hold = None;
+            p.new_page();
+        }
+        Block::Grid(g) => render_grid(p, g),
+        Block::SectionBar(text) => {
+            let bar = 17.0;
+            p.ensure(bar + 40.0);
+            p.y -= 6.0;
+            let (start, top) = (p.ops().len(), p.y);
+            p.ops().push(Op::Shape {
+                x: MARGIN,
+                y: top - bar,
+                w: w - 2.0 * MARGIN,
+                h: bar,
+                r: 3.0,
+                round_top: true,
+                round_bottom: true,
+                fill: Some(pal::NAVY),
+                stroke: None,
+            });
+            p.ops().push(Op::Text {
+                bold: true,
+                size: 9.5,
+                x: MARGIN + 6.0,
+                y: top - bar + 5.0,
+                text: text.to_uppercase(),
+                gray: 1.0,
+            });
+            p.y -= bar + 6.0;
+            p.keep_with_next(start, top);
+        }
+        Block::Centered { text, size, bold } => p.centered(text, *size, *bold, 0.0),
+        Block::Note(text) => p.text_block(text, 8.5, false, 0.4, 4.0),
+        Block::Indented { text, level, muted } => {
+            let indent = (*level as f32 * 18.0).min(w / 3.0);
+            if *muted {
+                p.text_block_at(indent, text, 8.5, false, 0.4, 3.0);
+            } else {
+                p.text_block_at(indent, text, 10.0, false, 0.0, 4.0);
+            }
+        }
+        Block::Spacer(pt) => {
+            if p.room() > *pt {
+                p.y -= pt;
+            }
+        }
+    }
+}
+
+/// A group of blocks laid out as one unit (see [`Block::Together`]): measured on a scratch page
+/// first, then placed where the whole group fits, or on a fresh page when it does not. A group
+/// taller than a page also starts fresh and then splits only where its own blocks split.
+fn together<'a>(p: &mut Pager<'a>, blocks: &'a [Block]) {
+    let mut trial = Pager::new(p.w, p.h, p.inset, p.bottom);
+    for b in blocks {
+        render_block(&mut trial, b);
+    }
+    let one_page = trial.pages.len() == 1;
+    let used = trial.h - trial.inset - trial.y;
+    if !p.fresh() && (!one_page || p.room() < used) {
+        p.new_page();
+    }
+    for b in blocks {
+        render_block(p, b);
+    }
+}
+
+/// The running header split into lines that fit the page width (tracking included).
+fn header_lines(doc: &Document, page_w: f32) -> Vec<String> {
+    match doc.running_header.as_deref().map(str::trim) {
+        Some(t) if !t.is_empty() => wrap_pt(t, (page_w - 2.0 * MARGIN) * 0.94, HEADER_SIZE, false),
+        _ => Vec::new(),
+    }
+}
+
+/// Distance from the page top to the first line of content: the top margin, or more when a long
+/// running header needs extra lines.
+fn top_inset(header_line_count: usize) -> f32 {
+    if header_line_count == 0 {
+        return MARGIN;
+    }
+    let last_base = HEADER_BASE + (header_line_count - 1) as f32 * HEADER_LEADING;
+    MARGIN.max(last_base + 9.0)
+}
+
+/// The official logo, decoded once and compressed once. `None` only if the bundled PNG were
+/// unreadable, which the tests rule out.
+fn logo() -> Option<&'static LosslessImage> {
+    static LOGO: OnceLock<Option<LosslessImage>> = OnceLock::new();
+    LOGO.get_or_init(|| {
+        let decoded = image::load_from_memory(LOGO_PNG).ok()?;
+        let has_alpha = decoded.color().has_alpha();
+        let img = decoded.to_rgba8();
+        let (w, h) = img.dimensions();
+        let mut rgb = Vec::with_capacity((w * h * 3) as usize);
+        let mut alpha = Vec::with_capacity((w * h) as usize);
+        for px in img.pixels() {
+            rgb.extend_from_slice(&px.0[..3]);
+            alpha.push(px.0[3]);
+        }
+        let deflate = |data: &[u8]| -> Option<Vec<u8>> {
+            let mut z = flate2::write::ZlibEncoder::new(Vec::new(), flate2::Compression::best());
+            z.write_all(data).ok()?;
+            z.finish().ok()
+        };
+        Some(LosslessImage {
+            width: w,
+            height: h,
+            rgb_flate: deflate(&rgb)?,
+            // The artwork's alpha channel is kept as a soft mask, whatever it holds.
+            alpha_flate: if has_alpha {
+                Some(deflate(&alpha)?)
+            } else {
+                None
+            },
+        })
+    })
+    .as_ref()
+}
+
 fn render_pdf(doc: &Document) -> ReportPdf {
     let (w, h) = if doc.landscape {
         (792.0, 612.0)
     } else {
         (612.0, 792.0)
     };
-    let mut p = Pager {
-        w,
-        h,
-        pages: Vec::new(),
-        y: 0.0,
-        images: Vec::new(),
+    let head = header_lines(doc, w);
+    let bottom = if doc.brand.is_some() {
+        BOTTOM_MARGIN
+    } else {
+        PLAIN_BOTTOM_MARGIN
     };
-    p.new_page();
-    let masthead_first = matches!(doc.blocks.first(), Some(Block::Masthead(_)));
+    let mut p = Pager::new(w, h, top_inset(head.len()), bottom);
+    let masthead_first = matches!(
+        doc.blocks.first(),
+        Some(Block::Masthead(_) | Block::CompactHeader(_) | Block::ReportHead(_))
+    );
     if masthead_first {
         // The design system masthead replaces the plain title lines.
     } else if doc.centered_header {
@@ -1210,106 +1602,15 @@ fn render_pdf(doc: &Document) -> ReportPdf {
         p.y -= 6.0;
     }
     for b in &doc.blocks {
-        match b {
-            Block::Masthead(m) => design::masthead(&mut p, m),
-            Block::Metrics(m) => design::metrics(&mut p, m),
-            Block::Section(s) => design::section(&mut p, s),
-            Block::Banner(b) => design::banner(&mut p, b),
-            Block::Callout(c) => design::callout(&mut p, c),
-            Block::Cards(c) => design::cards(&mut p, c),
-            Block::Styled(t) => design::styled_table(&mut p, t),
-            Block::Legend(l) => design::legend(&mut p, l),
-            Block::Text(t) => design::text(&mut p, t),
-            Block::Heading { text, level } => {
-                let size = if *level <= 1 { 13.0 } else { 11.0 };
-                // Keep headings with what follows them.
-                p.ensure(size * 1.3 + 40.0);
-                p.y -= 4.0;
-                p.text_block(text, size, true, 0.0, 4.0);
-            }
-            Block::Paragraph(t) => p.text_block(t, 10.0, false, 0.0, 6.0),
-            Block::KeyValues(kv) => {
-                let key_w = (w - 2.0 * MARGIN) * 0.3;
-                for (k, v) in kv {
-                    let vals = wrap_pt(v, w - 2.0 * MARGIN - key_w, 9.5, false);
-                    let h = vals.len().max(1) as f32 * 12.5;
-                    p.ensure(h);
-                    let top = p.y;
-                    p.ops().push(Op::Text {
-                        bold: true,
-                        size: 9.5,
-                        x: MARGIN,
-                        y: top - 10.0,
-                        text: k.clone(),
-                        gray: 0.25,
-                    });
-                    for (i, line) in vals.iter().enumerate() {
-                        p.ops().push(Op::Text {
-                            bold: false,
-                            size: 9.5,
-                            x: MARGIN + key_w,
-                            y: top - 10.0 - i as f32 * 12.5,
-                            text: line.clone(),
-                            gray: 0.0,
-                        });
-                    }
-                    p.y -= h;
-                }
-                p.y -= 6.0;
-            }
-            Block::Table(t) => render_table(&mut p, t),
-            Block::PageBreak => p.new_page(),
-            Block::Grid(g) => render_grid(&mut p, g),
-            Block::SectionBar(text) => {
-                let bar = 17.0;
-                p.ensure(bar + 40.0);
-                p.y -= 6.0;
-                let top = p.y;
-                p.ops().push(Op::Shape {
-                    x: MARGIN,
-                    y: top - bar,
-                    w: w - 2.0 * MARGIN,
-                    h: bar,
-                    r: 3.0,
-                    round_top: true,
-                    round_bottom: true,
-                    fill: Some(pal::NAVY),
-                    stroke: None,
-                });
-                p.ops().push(Op::Text {
-                    bold: true,
-                    size: 9.5,
-                    x: MARGIN + 6.0,
-                    y: top - bar + 5.0,
-                    text: text.to_uppercase(),
-                    gray: 1.0,
-                });
-                p.y -= bar + 6.0;
-            }
-            Block::Centered { text, size, bold } => p.centered(text, *size, *bold, 0.0),
-            Block::Note(text) => p.text_block(text, 8.5, false, 0.4, 4.0),
-            Block::Indented { text, level, muted } => {
-                let indent = (*level as f32 * 18.0).min(w / 3.0);
-                if *muted {
-                    p.text_block_at(indent, text, 8.5, false, 0.4, 3.0);
-                } else {
-                    p.text_block_at(indent, text, 10.0, false, 0.0, 4.0);
-                }
-            }
-            Block::Spacer(pt) => {
-                if p.room() > *pt {
-                    p.y -= pt;
-                }
-            }
-        }
+        render_block(&mut p, b);
     }
     let total = p.pages.len();
     let footers: Vec<String> = (0..total)
         .map(|i| {
-            let name = doc.footer.as_deref().unwrap_or(&doc.title);
             if doc.brand.is_some() {
-                format!("{} · Page {} / {}", name.to_uppercase(), i + 1, total)
+                format!("Page {} of {total}", i + 1)
             } else {
+                let name = doc.footer.as_deref().unwrap_or(&doc.title);
                 format!("{name} · Page {} of {total}", i + 1)
             }
         })
@@ -1322,12 +1623,22 @@ fn render_pdf(doc: &Document) -> ReportPdf {
                 shaped.collect(text, *bold);
             }
         }
-        // The branded footer is drawn bold, the plain one regular: shape what will be drawn.
-        shaped.collect(footer, doc.brand.is_some());
+        shaped.collect(footer, false);
+    }
+    if let Some(line) = &doc.brand {
+        shaped.collect(line, false);
+    }
+    for line in &head {
+        shaped.collect(line, false);
     }
     let pack = shaped.pack();
     let mut b = PdfBuilder::new(w, h);
     let images: Vec<usize> = p.images.iter().map(|img| b.add_image(img.pdf())).collect();
+    // The logo is one image object shared by every page.
+    let logo_ref = match (&doc.brand, logo()) {
+        (Some(_), Some(l)) => Some((b.add_lossless_image(l.clone()), l.width, l.height)),
+        _ => None,
+    };
     for (i, ops) in p.pages.into_iter().enumerate() {
         let mut c = Content::new();
         let mut used: Vec<usize> = Vec::new();
@@ -1411,10 +1722,6 @@ fn render_pdf(doc: &Document) -> ReportPdf {
                     fill,
                     stroke,
                 } => design::draw_circle(&mut c, x, y, r, fill, stroke),
-                Op::Mark { x, y, size, color } => {
-                    draw_mark(&mut c, x, y, size, color);
-                    c.set_stroke_gray(0.0);
-                }
                 Op::Text {
                     bold,
                     size,
@@ -1431,16 +1738,57 @@ fn render_pdf(doc: &Document) -> ReportPdf {
                 }
             }
         }
-        let footer = &footers[i];
-        if doc.brand.is_some() {
-            design::draw_footer(
+        for (k, line) in head.iter().enumerate() {
+            let track = if needs_fonts(line) { 0.0 } else { HEADER_TRACK };
+            let lw = text_width(line, HEADER_SIZE, false) + track * line.chars().count() as f32;
+            c.set_fill_rgb(pal::SLATE.0, pal::SLATE.1, pal::SLATE.2);
+            c.set_stroke_rgb(pal::SLATE.0, pal::SLATE.1, pal::SLATE.2);
+            design::draw_text_tracked(
                 &mut b,
                 &mut c,
                 &shaped,
                 &pack,
-                w,
+                false,
+                HEADER_SIZE,
+                w - MARGIN - lw,
+                h - HEADER_BASE - k as f32 * HEADER_LEADING,
+                line,
+                track,
+            );
+        }
+        let footer = &footers[i];
+        if let Some(line) = &doc.brand {
+            if let Some((id, lw, lh)) = logo_ref {
+                if !used.contains(&id) {
+                    used.push(id);
+                }
+                let logo_w = LOGO_H * lw as f32 / lh as f32;
+                PdfBuilder::draw_image(&mut c, id, MARGIN, LOGO_BOTTOM, logo_w, LOGO_H);
+            }
+            c.set_fill_rgb(pal::SLATE.0, pal::SLATE.1, pal::SLATE.2);
+            draw_text(
+                &mut b,
+                &mut c,
+                &shaped,
+                &pack,
+                false,
+                BRAND_SIZE,
+                MARGIN,
+                FOOTER_BASE,
+                line,
+            );
+            let fw = text_width(footer, PAGE_SIZE, false);
+            c.set_fill_rgb(pal::INK.0, pal::INK.1, pal::INK.2);
+            draw_text(
+                &mut b,
+                &mut c,
+                &shaped,
+                &pack,
+                false,
+                PAGE_SIZE,
+                w - MARGIN - fw,
+                FOOTER_BASE,
                 footer,
-                doc.brand.as_deref(),
             );
         } else {
             let fw = text_width(footer, 8.0, false);
@@ -1696,9 +2044,9 @@ mod tests {
         // Wrapped, never cut: the end of the long text is printed for every row.
         assert!(text.contains("short."), "wrapped text keeps its tail");
         assert!(!text.contains('\u{2026}'), "no ellipsis in design output");
-        // The lockup text and the page count are on every page.
+        // The brand line and the page count are on every page.
         assert_eq!(text.matches(BRAND_LINE).count(), a.pages);
-        assert!(page_strings(&a.bytes).contains(&format!("Page {} / {}", a.pages, a.pages)));
+        assert!(page_strings(&a.bytes).contains(&format!("Page {} of {}", a.pages, a.pages)));
     }
 
     #[test]

@@ -4,8 +4,10 @@
 > Windows track finished and froze ([ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md)). It starts only when Windows
 > phase W10 has closed ([chapter-1a-windows-phases.md](chapter-1a-windows-phases.md), [ADR-0030](../adr/ADR-0030-verification-ladder-and-release-flow.md)).
 > It replaces stream 5 of the earlier Chapter 1 plan, which assumed a Tauri Mac app (see the
-> [archive](../archive/2026-10-15-chapter-1-plan-before-restructure.md)). Release target: Apple silicon Macs only. Sizes as
+> [history](../history/2026-10-15-chapter-1-plan-before-restructure.md)). Release target: Apple silicon Macs only. Sizes as
 > in the Windows plan.
+>
+> **Port list of 2026-10-24.** What this track must take over from the Windows harness, export and screenplay upgrade, file by file: [mac-port-list-2026-10-24.md](mac-port-list-2026-10-24.md).
 
 ## 1. What can be proved where
 
@@ -52,7 +54,7 @@ the AI harness is already finished and measured on Windows.
   Note for `DEVELOPMENT.md`: `.cargo/config.toml` forces `sccache`; a Mac without it must set `RUSTC_WRAPPER` to an empty
   value, as CI does.
 - **Retire the Tauri Mac shell** ([ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md) decision 3): remove the macOS
-  compile-only CI job that builds it, and move its notes into the archive. Keep the Swift StoreKit bridge source; it moves to
+  compile-only CI job that builds it, and move its notes into docs/history. Keep the Swift StoreKit bridge source; it moves to
   the SwiftUI app in Chapter 3 and is not used by the internal build.
 - Create the Mac parity matrix: every Windows Must-ship row and every Windows end-to-end scenario, with a column for the Mac
   status. This file is the Mac track's checklist.

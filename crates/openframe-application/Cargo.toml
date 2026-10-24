@@ -30,6 +30,8 @@ regex.workspace = true
 similar.workspace = true
 unicode-segmentation.workspace = true
 base64.workspace = true
+# Project cover photos: decode, crop and re-encode a chosen picture.
+image.workspace = true
 # OS name and version for the support diagnostics bundle (M1.19); already in the tree via openframe-ai.
 sysinfo.workspace = true
 trash = "5"

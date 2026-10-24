@@ -114,6 +114,26 @@ pub const APP_MIGRATIONS: &[Migration] = &[
         "../../../migrations/app/0002_appearance.sql"
     ),
     m!(3, "ai_trace", "../../../migrations/app/0003_ai_trace.sql"),
+    m!(
+        4,
+        "ai_trace_cache",
+        "../../../migrations/app/0004_ai_trace_cache.sql"
+    ),
+    m!(
+        5,
+        "ai_trace_lane",
+        "../../../migrations/app/0005_ai_trace_lane.sql"
+    ),
+    m!(
+        6,
+        "ai_trace_intent",
+        "../../../migrations/app/0006_ai_trace_intent.sql"
+    ),
+    m!(
+        7,
+        "project_cover",
+        "../../../migrations/app/0007_project_cover.sql"
+    ),
 ];
 
 pub fn project_schema_version() -> u32 {

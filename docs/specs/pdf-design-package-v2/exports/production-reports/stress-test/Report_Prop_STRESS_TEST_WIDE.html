@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prop Report — Production Report (stress test: wide column set)</title>
+<meta name="of-doc" content="Prop Report (reports.export_report)">
+<meta name="of-logo" content="../../../00_SYSTEM/assets/openframe-logo.png">
+<link rel="stylesheet" href="../../../00_SYSTEM/assets/openframe-print.css">
+<style>
+  /* Prop Report — page setup. Landscape US Letter (7 columns: reports.rs sets landscape when columns > 5).
+     Running header: one compact line (project + report), top-right, because the report runs over several pages and the footer no longer carries the document name. */
+  @page { size: 11in 8.5in; @top-right { content: "LOW TIDE RADIO · PROP REPORT"; } }
+
+  /* ============ PRODUCTION REPORT SHELL (shared by all six reports; defined in Report_Scene.md) ============ */
+  .rpt-mast { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 14pt; align-items: start; margin-bottom: 7pt; break-inside: avoid; break-after: avoid; }
+  .rpt-mast .eyebrow { display: flex; align-items: center; gap: 5pt; font-size: 7pt; }
+  .rpt-mast .eyebrow i { display: inline-block; width: 14pt; height: 2pt; background: var(--of-orange); }
+  .rpt-mast h1 { font-size: 20pt; line-height: 1.1; font-weight: 700; color: var(--of-navy); letter-spacing: -0.01em; margin: 3pt 0 3.5pt; }
+  .rpt-mast .meta-line { font-size: 8pt; color: var(--of-slate); margin: 0; line-height: 1.3; }
+  .rpt-side { border: var(--hair) solid var(--of-line); border-radius: var(--radius-lg); background: var(--of-panel); padding: 6pt 11pt 7pt; text-align: right; min-width: 104pt; max-width: 150pt; }
+  .rpt-side .lbl { font-size: var(--fs-label); font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--of-slate); }
+  .rpt-side .date { font-size: 10.5pt; font-weight: 700; color: var(--of-navy); margin-top: 1.5pt; line-height: 1.15; }
+  .rpt-side .scope { font-size: 8pt; color: var(--of-slate); margin-top: 1.5pt; line-height: 1.25; }
+  .rpt-metrics { display: flex; width: fit-content; max-width: 100%; border: var(--hair) solid var(--of-line); border-radius: var(--radius); background: var(--of-panel); margin: 0 0 9pt; break-inside: avoid; break-after: avoid; }
+  .rpt-metrics .m { flex: 0 1 auto; min-width: 0; padding: 5.5pt 10pt 6pt; display: flex; align-items: baseline; gap: 6pt; border-left: var(--hair) solid var(--of-line); }
+  .rpt-metrics .m:first-child { border-left: 0; }
+  .rpt-metrics .v { font-size: 13pt; font-weight: 700; color: var(--of-navy); line-height: 1; font-variant-numeric: tabular-nums; }
+  .rpt-metrics .l { font-size: var(--fs-label); font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--of-slate); line-height: 1.25; }
+  .rpt-metrics .m.warn .v { color: var(--of-amber-text); }
+  .rpt-metrics .m.danger .v { color: var(--of-red-text); }
+  .rpt-ctx { margin: 0 0 6pt; }
+  .rpt-att { margin: -3pt 0 8pt; }
+  .rpt-ctx .banner { margin: 0 0 4pt; }
+  .rpt-ctx .banner .q { font-weight: 700; color: var(--of-navy); }
+  .rpt-ctx .banner .rest { color: var(--of-slate); }
+  .banner.info b { color: var(--of-blue-text); }
+  .rpt-ctx .banner b, .rpt-att .banner b { flex: none; white-space: nowrap; }
+  /* table */
+  table.rpt { table-layout: fixed; font-size: var(--fs-cell); }
+  table.rpt thead th { padding: 5pt 6pt; }
+  table.rpt tbody td { padding: 3.6pt 6pt; }
+  table.rpt.dense tbody td { padding: 2.5pt 6pt; }
+  table.rpt .tile { min-width: 18pt; font-size: 8.2pt; padding: 1.6pt 3.6pt; }
+  table.rpt tbody tr.alt td { background: var(--of-panel); }
+  table.rpt tbody tr.attn td:first-child { box-shadow: inset 3pt 0 0 var(--of-orange); }
+  table.rpt tbody tr.attn-red td:first-child { box-shadow: inset 3pt 0 0 var(--of-red-text); }
+  table.rpt tbody tr.quiet td { background: var(--of-panel); color: var(--of-slate); }
+  table.rpt .hd { font-weight: 700; color: var(--of-navy); }
+  table.rpt .nm { font-weight: 700; color: var(--of-navy); text-align: right; }
+  table.rpt .nm.sug { color: var(--of-amber-text); }
+  table.rpt .nm.zero { font-weight: 400; color: var(--of-muted); }
+  table.rpt th.r, table.rpt td.r { text-align: right; }
+  table.rpt .d1 { display: block; font-weight: 700; color: var(--of-navy); white-space: nowrap; }
+  table.rpt .d2 { display: block; color: var(--of-slate); white-space: nowrap; }
+  table.rpt .days > div { margin: 0 0 1.4pt; line-height: 1.25; }
+  table.rpt .days > div:last-child { margin-bottom: 0; }
+  table.rpt .days b { color: var(--of-navy); font-weight: 700; }
+  table.rpt .none { color: var(--of-muted); }
+  table.rpt tr.group td { padding: 2pt 6pt 2.2pt; font-size: 6.8pt; letter-spacing: .12em; }
+  table.rpt td .chips { gap: 2pt; }
+  .rpt-note { font-size: 8.4pt; color: var(--of-slate); margin-top: 5pt; line-height: 1.35; }
+  .rpt-empty { margin: 4pt 0; }
+  .rpt-empty p { font-size: 9pt; line-height: 1.4; }
+  /* status chip: tone + SHAPE + WORD so it survives grayscale (ok = solid disc, info = ring + dot,
+     warn = hollow ring, danger = solid square, neutral = no mark) */
+  .st { display: inline-flex; align-items: center; gap: 3.2pt; font-size: var(--fs-chip); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; line-height: 1; padding: 2.4pt 4.6pt 2.6pt 3.8pt; border-radius: 3pt; border: var(--hair) solid var(--of-line); background: var(--of-panel); color: var(--of-neutral-text); white-space: nowrap; vertical-align: middle; }
+  .st i { flex: none; width: 5pt; height: 5pt; box-sizing: border-box; border: 1pt solid currentColor; border-radius: 50%; }
+  .st.none-mark i { display: none; }
+  .st.ok { background: var(--of-green-fill); border-color: var(--of-green-line); color: var(--of-green-text); }
+  .st.ok i { background: currentColor; }
+  .st.info { background: var(--of-blue-fill); border-color: var(--of-blue-line); color: var(--of-blue-text); }
+  .st.info i { background: currentColor; box-shadow: inset 0 0 0 .9pt #fff; }
+  .st.warn { background: var(--of-amber-fill); border-color: var(--of-amber-line); color: var(--of-amber-text); }
+  .st.warn i { background: transparent; }
+  .st.danger { background: var(--of-red-fill); border-color: var(--of-red-line); color: var(--of-red-text); }
+  .st.danger i { background: currentColor; border-radius: 0.6pt; }
+  .illustrative { font-size: 6.6pt; color: var(--of-muted); font-style: italic; }
+
+</style>
+</head>
+<body>
+<div class="doc landscape">
+
+  <header class="masthead rpt-mast">
+    <div>
+      <div class="eyebrow"><i></i>Production report</div>
+      <h1>Prop Report</h1>
+      <p class="meta-line">Project: Low Tide Radio · Source: LOW TIDE RADIO: Blue Revision (Locked)</p>
+    </div>
+    <div class="rpt-side" aria-label="Report details">
+      <div class="lbl">Generated</div>
+      <div class="date">22 Oct 2026</div>
+      <div class="scope">All rows</div>
+    </div>
+  </header>
+  
+  <div class="rpt-metrics" role="group" aria-label="Report totals"><div class="m "><span class="v" data-m="t">14</span><span class="l">Props</span></div></div>
+  
+  <table class="tbl boxed rpt dense" aria-label="Prop Report"><colgroup><col style="width:181.1pt"><col style="width:144.9pt"><col style="width:70.0pt"><col style="width:76.0pt"><col style="width:76.0pt"><col style="width:76.0pt"><col style="width:76.0pt"></colgroup><thead><tr><th class="" scope="col">Prop</th><th class="" scope="col">Scenes</th><th class="r" scope="col">Scene count</th><th class="" scope="col">Department</th><th class="" scope="col">Source</th><th class="" scope="col">Status</th><th class="" scope="col">Notes</th></tr></thead><tbody><tr class="group" data-toggle="Letter dividers"><td colspan="7">A</td></tr>
+<tr class="" data-cells="[&quot;Ambassador car keys&quot;, &quot;31&quot;, &quot;1&quot;, &quot;Art&quot;, &quot;Hire: Kochi Props Ltd&quot;, &quot;In stock&quot;, &quot;Confirm tide table before 06:00 call&quot;]" data-k=""><td class=""><span class="hd">Ambassador car keys</span></td><td class="">31</td><td class="r"><span class="nm">1</span></td><td class="">Art</td><td class="">Hire: Kochi Props Ltd</td><td class=""><span class="st none-mark"><i></i>In stock</span></td><td class="">Confirm tide table before 06:00 call</td></tr>
+<tr class="alt" data-cells="[&quot;Anglepoise lamp&quot;, &quot;13&quot;, &quot;1&quot;, &quot;Props&quot;, &quot;Buy&quot;, &quot;To hire&quot;, &quot;Second unit may pick up inserts; keep the practical lamps on a dimmer&quot;]" data-k=""><td class=""><span class="hd">Anglepoise lamp</span></td><td class="">13</td><td class="r"><span class="nm">1</span></td><td class="">Props</td><td class="">Buy</td><td class=""><span class="st none-mark"><i></i>To hire</span></td><td class="">Second unit may pick up inserts; keep the practical lamps on a dimmer</td></tr>
+<tr class="" data-cells="[&quot;Appachan&#x27;s torch&quot;, &quot;25&quot;, &quot;1&quot;, &quot;Set dressing&quot;, &quot;Unit stock&quot;, &quot;To buy&quot;, &quot;&quot;]" data-k=""><td class=""><span class="hd">Appachan&#x27;s torch</span></td><td class="">25</td><td class="r"><span class="nm">1</span></td><td class="">Set dressing</td><td class="">Unit stock</td><td class=""><span class="st none-mark"><i></i>To buy</span></td><td class=""></td></tr>
+<tr class="alt" data-cells="[&quot;Army surplus ammunition box&quot;, &quot;28&quot;, &quot;1&quot;, &quot;Art&quot;, &quot;Hire&quot;, &quot;In stock&quot;, &quot;Weather cover: Thomas House kitchen&quot;]" data-k=""><td class=""><span class="hd">Army surplus ammunition box</span></td><td class="">28</td><td class="r"><span class="nm">1</span></td><td class="">Art</td><td class="">Hire</td><td class=""><span class="st none-mark"><i></i>In stock</span></td><td class="">Weather cover: Thomas House kitchen</td></tr>
+<tr class="group" data-toggle="Letter dividers"><td colspan="7">B</td></tr>
+<tr class="" data-cells="[&quot;Bamboo ladders&quot;, &quot;38&quot;, &quot;1&quot;, &quot;Art&quot;, &quot;Hire: Kochi Props Ltd&quot;, &quot;In stock&quot;, &quot;Confirm tide table before 06:00 call&quot;]" data-k=""><td class=""><span class="hd">Bamboo ladders</span></td><td class="">38</td><td class="r"><span class="nm">1</span></td><td class="">Art</td><td class="">Hire: Kochi Props Ltd</td><td class=""><span class="st none-mark"><i></i>In stock</span></td><td class="">Confirm tide table before 06:00 call</td></tr>
+<tr class="alt" data-cells="[&quot;Banana chips plate&quot;, &quot;20&quot;, &quot;1&quot;, &quot;Props&quot;, &quot;Buy&quot;, &quot;To hire&quot;, &quot;Second unit may pick up inserts; keep the practical lamps on a dimmer&quot;]" data-k=""><td class=""><span class="hd">Banana chips plate</span></td><td class="">20</td><td class="r"><span class="nm">1</span></td><td class="">Props</td><td class="">Buy</td><td class=""><span class="st none-mark"><i></i>To hire</span></td><td class="">Second unit may pick up inserts; keep the practical lamps on a dimmer</td></tr>
+<tr class="" data-cells="[&quot;Banana fritter display case&quot;, &quot;9&quot;, &quot;1&quot;, &quot;Set dressing&quot;, &quot;Unit stock&quot;, &quot;To buy&quot;, &quot;&quot;]" data-k=""><td class=""><span class="hd">Banana fritter display case</span></td><td class="">9</td><td class="r"><span class="nm">1</span></td><td class="">Set dressing</td><td class="">Unit stock</td><td class=""><span class="st none-mark"><i></i>To buy</span></td><td class=""></td></tr>
+<tr class="alt" data-cells="[&quot;Beach umbrella&quot;, &quot;21&quot;, &quot;1&quot;, &quot;Art&quot;, &quot;Hire&quot;, &quot;In stock&quot;, &quot;Weather cover: Thomas House kitchen&quot;]" data-k=""><td class=""><span class="hd">Beach umbrella</span></td><td class="">21</td><td class="r"><span class="nm">1</span></td><td class="">Art</td><td class="">Hire</td><td class=""><span class="st none-mark"><i></i>In stock</span></td><td class="">Weather cover: Thomas House kitchen</td></tr>
+<tr class="" data-cells="[&quot;Biscuit box (reel case)&quot;, &quot;11&quot;, &quot;1&quot;, &quot;Art&quot;, &quot;Hire: Kochi Props Ltd&quot;, &quot;In stock&quot;, &quot;Confirm tide table before 06:00 call&quot;]" data-k=""><td class=""><span class="hd">Biscuit box (reel case)</span></td><td class="">11</td><td class="r"><span class="nm">1</span></td><td class="">Art</td><td class="">Hire: Kochi Props Ltd</td><td class=""><span class="st none-mark"><i></i>In stock</span></td><td class="">Confirm tide table before 06:00 call</td></tr>
+<tr class="alt" data-cells="[&quot;Biscuit box (reel container)&quot;, &quot;11, 12&quot;, &quot;2&quot;, &quot;Props&quot;, &quot;Buy&quot;, &quot;To hire&quot;, &quot;Second unit may pick up inserts; keep the practical lamps on a dimmer&quot;]" data-k=""><td class=""><span class="hd">Biscuit box (reel container)</span></td><td class="">11, 12</td><td class="r"><span class="nm">2</span></td><td class="">Props</td><td class="">Buy</td><td class=""><span class="st none-mark"><i></i>To hire</span></td><td class="">Second unit may pick up inserts; keep the practical lamps on a dimmer</td></tr>
+<tr class="" data-cells="[&quot;Biscuit-tin transmitter&quot;, &quot;9, 41, 43&quot;, &quot;3&quot;, &quot;Set dressing&quot;, &quot;Unit stock&quot;, &quot;To buy&quot;, &quot;&quot;]" data-k=""><td class=""><span class="hd">Biscuit-tin transmitter</span></td><td class="">9, 41, 43</td><td class="r"><span class="nm">3</span></td><td class="">Set dressing</td><td class="">Unit stock</td><td class=""><span class="st none-mark"><i></i>To buy</span></td><td class=""></td></tr>
+<tr class="alt" data-cells="[&quot;Book&quot;, &quot;10&quot;, &quot;1&quot;, &quot;Art&quot;, &quot;Hire&quot;, &quot;In stock&quot;, &quot;Weather cover: Thomas House kitchen&quot;]" data-k=""><td class=""><span class="hd">Book</span></td><td class="">10</td><td class="r"><span class="nm">1</span></td><td class="">Art</td><td class="">Hire</td><td class=""><span class="st none-mark"><i></i>In stock</span></td><td class="">Weather cover: Thomas House kitchen</td></tr>
+<tr class="group" data-toggle="Letter dividers"><td colspan="7">C</td></tr>
+<tr class="" data-cells="[&quot;Cable drum&quot;, &quot;21&quot;, &quot;1&quot;, &quot;Art&quot;, &quot;Hire: Kochi Props Ltd&quot;, &quot;In stock&quot;, &quot;Confirm tide table before 06:00 call&quot;]" data-k=""><td class=""><span class="hd">Cable drum</span></td><td class="">21</td><td class="r"><span class="nm">1</span></td><td class="">Art</td><td class="">Hire: Kochi Props Ltd</td><td class=""><span class="st none-mark"><i></i>In stock</span></td><td class="">Confirm tide table before 06:00 call</td></tr>
+<tr class="alt" data-cells="[&quot;Candle on saucer&quot;, &quot;33&quot;, &quot;1&quot;, &quot;Props&quot;, &quot;Buy&quot;, &quot;To hire&quot;, &quot;Second unit may pick up inserts; keep the practical lamps on a dimmer&quot;]" data-k=""><td class=""><span class="hd">Candle on saucer</span></td><td class="">33</td><td class="r"><span class="nm">1</span></td><td class="">Props</td><td class="">Buy</td><td class=""><span class="st none-mark"><i></i>To hire</span></td><td class="">Second unit may pick up inserts; keep the practical lamps on a dimmer</td></tr></tbody></table>
+  <p class="rpt-note">Illustrative (fictional): the current Prop Report builder emits only its 3 columns (Prop, Scenes, Scene count). The extra columns Department, Source, Status, Notes are invented to show what the renderer does when a live report or an older saved snapshot carries more than 5 columns: the whole document turns landscape.</p>
+  
+</div>
+
+<script src="../../../00_SYSTEM/assets/of-preview.js"></script>
+</body>
+</html>

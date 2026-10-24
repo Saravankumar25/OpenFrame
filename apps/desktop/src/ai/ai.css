@@ -38,7 +38,15 @@
 .ai-tech td:nth-child(3){white-space:nowrap}
 .ai-tech td{overflow-wrap:anywhere}
 /* Plain answers (OpenFrameAI.docx section 4.1): normal weight, paragraphs kept. */
-.ai .ai-text{white-space:pre-wrap;line-height:1.5;overflow-wrap:anywhere}
+.ai .ai-text{line-height:1.5;overflow-wrap:anywhere}
+.ai .ai-p{margin:0 0 6px}
+.ai .ai-list{margin:0 0 6px;padding-left:20px}
+.ai .ai-list li{margin:0 0 2px}
+.ai .ai-text>:last-child{margin-bottom:0}
+.ai .ai-coverage{margin-top:4px}
+/* The line shown while a request runs, with its Cancel button. */
+.ai .ai-progress{display:flex;align-items:center;gap:8px}
+.ai .ai-progress .grow{flex:1;min-width:0;overflow-wrap:anywhere}
 .ai .ai-details{margin-top:6px}
 /* "See sources" is a small ghost button (class btn ghost xs on the summary); the native marker is hidden. */
 .ai .ai-details summary{cursor:pointer;width:max-content;list-style:none}

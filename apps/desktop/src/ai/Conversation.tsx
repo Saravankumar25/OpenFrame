@@ -12,10 +12,15 @@
 
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { call, onAppEvent } from "../ipc/client";
+import { save as saveDialog } from "@tauri-apps/plugin-dialog";
+import { Download } from "lucide-react";
+import { OpError, call, onAppEvent } from "../ipc/client";
 import { reportError, useOp } from "../ipc/query";
-import { Banner, Button, Chip, Select, TextArea } from "../design-system";
+import { Banner, Button, Chip, IconButton, Select, TextArea } from "../design-system";
 import { useNav } from "../app/stores";
+import { toast } from "../app/toast";
+import type { AiCancelDto } from "../ipc/generated/AiCancelDto";
+import type { AiReportResult } from "../ipc/generated/AiReportResult";
 import type { AiStatusDto } from "../ipc/generated/AiStatusDto";
 import type { AiHistoryDto } from "../ipc/generated/AiHistoryDto";
 import type { AiExchange } from "../ipc/generated/AiExchange";
@@ -36,8 +41,43 @@ import {
   toRoute,
 } from "./model";
 import { ProposedChanges } from "./ProposedChanges";
+import { AnswerText } from "./answerText";
 
 const HISTORY_TABLES = ["ai_request", "ai_result", "change_set"];
+
+/** The line shown while a request runs: what the assistant is doing now. */
+export interface Progress {
+  label: string;
+  step: number;
+  total: number;
+}
+
+/** A new conversation id made here, so a running request can be stopped before its answer exists.
+ * The core accepts letters, digits and hyphens (up to 64). */
+export function newConversationId(): string {
+  const c = globalThis.crypto as Crypto | undefined;
+  if (c && typeof c.randomUUID === "function") return c.randomUUID();
+  return Array.from({ length: 4 }, () => Math.random().toString(16).slice(2, 10).padEnd(8, "0")).join("-");
+}
+
+/** The latest progress line of the request running in `conversation` (null when none arrived yet). */
+export function useProgress(conversation: string | null): Progress | null {
+  const [progress, setProgress] = useState<Progress | null>(null);
+  useEffect(() => {
+    setProgress(null);
+    if (!conversation) return;
+    const un = onAppEvent((ev) => {
+      if (ev.type !== "module" || ev.module !== "ai" || ev.name !== "progress") return;
+      const p = ev.payload as { conversationId?: unknown; label?: unknown; step?: unknown; total?: unknown } | null;
+      if (!p || p.conversationId !== conversation || typeof p.label !== "string" || p.label === "") return;
+      setProgress({ label: p.label, step: Number(p.step) || 0, total: Number(p.total) || 0 });
+    });
+    return () => {
+      void un.then((f) => f());
+    };
+  }, [conversation]);
+  return progress;
+}
 
 /** Project-context state; quiet (no notice) when the index isn't available in this build. */
 function useIndexNotice() {
@@ -67,6 +107,10 @@ export default function Assistant({ status, hasProject }: { status: AiStatusDto;
   const [conversation, setConversation] = useState<string | null | undefined>(undefined);
   const [text, setText] = useState("");
   const [pending, setPending] = useState<string | null>(null);
+  // The conversation the running request belongs to, and whether Cancel was pressed for it.
+  const [running, setRunning] = useState<string | null>(null);
+  const [stopping, setStopping] = useState(false);
+  const progress = useProgress(running);
   const endRef = useRef<HTMLDivElement>(null);
   const effectiveScope = options.includes(scope) ? scope : defaultScope(route);
   const notice = useIndexNotice();
@@ -83,15 +127,60 @@ export default function Assistant({ status, hasProject }: { status: AiStatusDto;
 
   const refresh = () => qc.invalidateQueries({ queryKey: ["ai.history"] });
 
+  // Only the person's own click writes anything: the file goes where the Save dialog says and nowhere else.
+  const conversationId = exchanges[0]?.conversationId ?? null;
+  const saveForReview = async () => {
+    if (!conversationId) return;
+    let path: string | null;
+    try {
+      path = await saveDialog({
+        title: "Save conversation for review",
+        defaultPath: "openframe-ai-conversation.json",
+        filters: [{ name: "JSON file", extensions: ["json"] }],
+      });
+    } catch (e) {
+      reportError(e);
+      return;
+    }
+    if (!path) return;
+    try {
+      const r = await call<AiReportResult>("ai.export_conversation", { conversationId, path });
+      toast.success(`Saved ${r.fileName} (${r.rows} ${r.rows === 1 ? "question" : "questions"}).`);
+    } catch (e) {
+      if (e instanceof OpError) toast.error(e.message);
+      else reportError(e);
+    }
+  };
+
+  // Stop the running request. Nothing was changed by it; the answer says so.
+  const cancel = () => {
+    if (!running || stopping) return;
+    setStopping(true);
+    call<AiCancelDto>("ai.cancel", { conversationId: running })
+      // Nothing was running to stop (the request was not registered yet, or just ended): try again.
+      .then((r) => {
+        if (!r.stopping) setStopping(false);
+      })
+      .catch((e) => {
+        setStopping(false);
+        reportError(e);
+      });
+  };
+
   const send = () => {
     const q = text.trim();
     if (!q || pending) return;
+    // A new conversation gets its id here, so Cancel can name it while the first answer is awaited.
+    const conversationForAsk =
+      (conversation === null ? null : (conversation ?? history.data?.conversationId ?? null)) ?? newConversationId();
     setPending(q);
+    setRunning(conversationForAsk);
+    setStopping(false);
     setText("");
     call<AiExchange>("ai.ask", {
       text: q,
       scope: scopeArgs(effectiveScope, route),
-      conversationId: conversation === null ? null : (conversation ?? history.data?.conversationId ?? null),
+      conversationId: conversationForAsk,
     })
       .then((x) => {
         setConversation(x.conversationId);
@@ -106,7 +195,11 @@ export default function Assistant({ status, hasProject }: { status: AiStatusDto;
         setText(q);
         reportError(e);
       })
-      .finally(() => setPending(null));
+      .finally(() => {
+        setPending(null);
+        setRunning(null);
+        setStopping(false);
+      });
   };
 
   const onKey = (e: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -145,6 +238,9 @@ export default function Assistant({ status, hasProject }: { status: AiStatusDto;
               options={options.map((k) => ({ value: k, label: SCOPE_LABELS[k] }))}
             />
           </div>
+          <IconButton label="Save conversation for review" disabled={!conversationId} onClick={() => void saveForReview()}>
+            <Download size={14} />
+          </IconButton>
           <Button size="xs" variant="ghost" onClick={() => setConversation(null)} title="Start a new conversation">
             New
           </Button>
@@ -172,8 +268,13 @@ export default function Assistant({ status, hasProject }: { status: AiStatusDto;
           {pending && (
             <>
               <div className="msg u">{pending}</div>
-              <div className="msg a muted" role="status">
-                Working on it on this computer…
+              <div className="msg a muted" role="status" aria-live="polite">
+                <div className="ai-progress">
+                  <span className="grow">{stopping ? "Stopping…" : (progress?.label ?? "Working on it on this computer…")}</span>
+                  <Button size="xs" variant="ghost" onClick={cancel} disabled={stopping}>
+                    Cancel
+                  </Button>
+                </div>
               </div>
             </>
           )}
@@ -271,7 +372,12 @@ export function ResultView({ r, onChanged }: { r: AiResultDto; onChanged: () => 
   return (
     <>
       <div className={`msg a${r.kind === "Failed" || r.kind === "Unavailable" ? " ai-err" : ""}`} data-kind={r.kind}>
-        <div className="ai-text">{r.content}</div>
+        <AnswerText text={r.content} />
+        {r.coverage && (
+          <div className="xs muted ai-coverage">
+            Used {r.coverage.used} of {r.coverage.total} {r.coverage.total === 1 ? "scene" : "scenes"}
+          </div>
+        )}
         {reasonsVisible && r.details.length > 0 && (
           <div className="xs muted" style={{ marginTop: 4 }}>
             {r.details.map((d, i) => (

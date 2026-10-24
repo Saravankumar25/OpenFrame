@@ -1260,6 +1260,83 @@ fn ai_ac_024_history_is_personal_and_survives_restart() {
 }
 
 #[test]
+fn a_conversation_is_saved_for_review_only_on_the_persons_call_and_only_their_own() {
+    let env = TestEnv::with_project("Railway", "Feature Film");
+    seed_screenplay(&env);
+    let m = attach(&env);
+    m.call("count_scenes", json!({}));
+    let first = ask(&env, "Please look up the scenes.", whole());
+    let conv = first["conversationId"].as_str().unwrap().to_string();
+    m.call("list_drafts", json!({}));
+    env.ok(
+        "ai.ask",
+        json!({ "text": "And the drafts?", "scope": whole(), "conversationId": conv }),
+    );
+    // A third exchange in another conversation must not travel with the first two.
+    m.call("count_scenes", json!({}));
+    ask(&env, "A different conversation.", whole());
+
+    // Asking writes nothing to disk.
+    let dest = env.dir.path().join("review.json");
+    assert!(!dest.exists());
+    let args =
+        |path: &std::path::Path| json!({ "conversationId": conv, "path": path.to_string_lossy() });
+    let r = env.ok("ai.export_conversation", args(&dest));
+    assert_eq!(
+        (r["fileName"].as_str(), r["rows"].as_u64()),
+        (Some("review.json"), Some(2))
+    );
+
+    let doc: Value = serde_json::from_str(&std::fs::read_to_string(&dest).unwrap()).unwrap();
+    assert_eq!(doc["format"], "openframe-ai-conversation");
+    assert_eq!(doc["version"], 1);
+    assert_eq!(doc["conversationId"], conv.as_str());
+    assert!(doc["exportedAt"].as_i64().unwrap() > 1_700_000_000);
+    let ex = doc["exchanges"].as_array().unwrap();
+    assert_eq!(ex.len(), 2);
+    assert_eq!(ex[0]["request"], "Please look up the scenes.");
+    assert_eq!(ex[1]["request"], "And the drafts?");
+    let hist = env.ok("ai.history", json!({ "conversationId": conv }));
+    assert_eq!(ex[0]["answer"], hist["exchanges"][0]["result"]["content"]);
+    assert_eq!(ex[0]["steps"], json!(["count_scenes"]));
+    assert_eq!(ex[1]["steps"], json!(["list_drafts"]));
+    assert_eq!(ex[0]["kind"], "Answer");
+    assert!(
+        ex[0]["scope"].is_string() && ex[0]["details"].is_array() && ex[0]["sources"].is_array()
+    );
+    assert!(
+        ex[0]["trace"]["tokens_in"].is_number(),
+        "the numbers of the request travel with it"
+    );
+    assert!(
+        !std::fs::read_to_string(&dest)
+            .unwrap()
+            .contains("different conversation")
+    );
+
+    // Another person cannot save this conversation: nothing of it is theirs.
+    let other = env.other_user(Role::Editor);
+    let theirs = env.dir.path().join("theirs.json");
+    assert!(
+        env.call_as(&other, "ai.export_conversation", args(&theirs))
+            .is_err()
+    );
+    assert!(!theirs.exists());
+
+    // Unknown or malformed conversations and bad paths are refused before anything is written.
+    let nowhere = env.dir.path().join("nowhere.json");
+    for id in ["", "no-such-conversation", "../x"] {
+        let bad = json!({ "conversationId": id, "path": nowhere.to_string_lossy() });
+        assert!(env.call("ai.export_conversation", bad).is_err(), "{id}");
+    }
+    assert!(!nowhere.exists());
+    for path in ["", "relative/review.json", "C:\\bad<name>.json"] {
+        let bad = json!({ "conversationId": conv, "path": path });
+        assert!(env.call("ai.export_conversation", bad).is_err(), "{path}");
+    }
+}
+
+#[test]
 fn plain_commands_for_a_draft_comment_a_pinned_note_and_set_dressing_reach_their_proposals() {
     let env = TestEnv::with_project("Railway", "Feature Film");
     seed_screenplay(&env);

@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenFrame PDF Design System — Brand, Footer and Component Reference</title>
+<meta name="of-doc" content="Brand and Footer Reference">
+<meta name="of-logo" content="assets/openframe-logo.png">
+<link rel="stylesheet" href="assets/openframe-print.css">
+<style>
+  @page { size: 8.5in 11in; }
+  h1.t { font-size: 22pt; color: var(--of-navy); margin: 4pt 0 6pt; line-height: 1.1; }
+  .lede { font-size: 9.4pt; color: var(--of-slate); max-width: 440pt; line-height: 1.4; }
+  .logo-row { display: grid; grid-template-columns: 1.15fr 1fr; gap: 16pt; align-items: start; }
+  .logo-stage { border: .5pt solid var(--of-line-strong); border-radius: 6pt; padding: 14pt; position: relative; background: #fff; }
+  .logo-stage img { width: 200pt; height: auto; }
+  .clear { outline: .75pt dashed var(--of-teal); outline-offset: 8.5pt; display: inline-block; }
+  .anno { font-size: 7.4pt; color: var(--of-teal); font-weight: 700; }
+  .sizes { display: flex; align-items: flex-end; gap: 16pt; margin-top: 12pt; }
+  .sizes figure { text-align: left; } .sizes figcaption { font-size: 7.4pt; color: var(--of-slate); margin-top: 3pt; }
+  .dont { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8pt; margin-top: 8pt; }
+  .dont figure { border: .5pt solid var(--of-red-line); background: var(--of-red-fill); border-radius: 4pt; padding: 8pt 6pt 5pt; text-align: center; break-inside: avoid; }
+  .dont img { height: 20pt; width: auto; margin: 0 auto 4pt; }
+  .dont figcaption { font-size: 7pt; color: var(--of-red-text); font-weight: 700; }
+  .x { position: relative; display: inline-block; }
+  .x::after { content: ""; position: absolute; left: -4pt; right: -4pt; top: 50%; border-top: 1.4pt solid var(--of-red-text); transform: rotate(-9deg); }
+  .page-mock { position: relative; width: 255pt; height: 330pt; break-inside: avoid; border: .75pt solid var(--of-slate); background: #fff; margin: 6pt auto 0; }
+  .page-mock .m { position: absolute; border: .6pt dashed var(--of-teal); background: rgba(42,106,140,.05); }
+  .page-mock .lbl { position: absolute; font-size: 6pt; color: var(--of-teal); font-weight: 700; }
+  .page-mock .logo { position: absolute; left: 22pt; bottom: 17.5pt; height: 9pt; }
+  .page-mock .brand { position: absolute; left: 22pt; bottom: 11pt; font-size: 4pt; color: var(--of-slate); }
+  .page-mock .pg { position: absolute; right: 22pt; bottom: 11pt; font-size: 4.4pt; }
+  .page-mock .hdr { position: absolute; right: 22pt; top: 12pt; font-size: 4pt; color: var(--of-slate); letter-spacing: .04em; }
+  .sw { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6pt; }
+  .sw div { border: .5pt solid var(--of-line); border-radius: 4pt; overflow: hidden; font-size: 6.8pt; break-inside: avoid; }
+  .sw i { display: block; height: 26pt; } .sw b { display: block; padding: 3pt 4pt 0; font-size: 7.2pt; } .sw span { display: block; padding: 0 4pt 3pt; color: var(--of-slate); }
+  .spec { width: 100%; font-size: 8pt; } .spec th:first-child, .spec td:first-child { width: 62pt; font-weight: 700; color: var(--of-navy); }
+  .spec th { text-align: left; font-size: 6.9pt; letter-spacing: .08em; text-transform: uppercase; color: var(--of-slate); padding: 3pt 6pt 3pt 0; border-bottom: .75pt solid var(--of-navy); }
+  .spec td { padding: 4pt 6pt 4pt 0; border-bottom: .5pt solid var(--of-line); vertical-align: baseline; }
+  .ts-8-8 { font-size: 8.8pt; } .gray { filter: grayscale(1); }
+</style>
+</head>
+<body>
+<div class="doc">
+
+<header class="masthead compact">
+  <div>
+    <div class="eyebrow">OpenFrame Studio · PDF design system v1.0</div>
+    <h1 class="t">Brand, footer and component reference</h1>
+    <p class="lede">The shared rules behind every production PDF in this package. The official logo is used as supplied, in the footer only, with the brand line below it and <b>Page X of Y</b> at the lower right. This sheet is itself rendered with that footer.</p>
+  </div>
+</header>
+
+<section>
+  <div class="sec"><h2>1 · Official logo</h2><span class="hint">asset: assets/openframe-logo.png</span></div>
+  <div class="logo-row">
+    <div>
+      <div class="logo-stage">
+        <span class="clear"><img src="assets/openframe-logo.png" alt="OpenFrame Studio logo lockup"></span>
+        <p class="anno" style="margin-top:16pt">Clear space ≈ ½ the lockup height on all four sides (dashed). Aspect ratio 699 : 163 = 4.289 : 1.</p>
+      </div>
+      <div class="sizes">
+        <figure><img src="assets/openframe-logo.png" style="height:17pt;width:auto" alt=""><figcaption>Footer size · 17 pt high (72.9 pt wide)</figcaption></figure>
+        <figure><img src="assets/openframe-logo.png" style="height:14pt;width:auto" alt=""><figcaption>Minimum · 14 pt high</figcaption></figure>
+        <figure><img src="assets/openframe-logo.png" style="height:26pt;width:auto" alt=""><figcaption>Cover / title use · 26 pt</figcaption></figure>
+      </div>
+    </div>
+    <div>
+      <table class="spec">
+        <thead><tr><th>Rule</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td>Artwork</td><td>The supplied raster logo (812 × 347 px, RGBA, opaque). <b>Cropped only to its artwork bounds</b> (x 69–768, y 96–259) to remove empty margin; pixels untouched. Original kept in <code>openframe-logo-original.png</code>.</td></tr>
+          <tr><td>Never</td><td>retype, redraw, recolour, outline, stretch, crop into the artwork, put on a coloured fill, add effects, or substitute a font.</td></tr>
+          <tr><td>Embedding</td><td>Embed once as a lossless image (Flate RGB) and reuse on all pages — do not JPEG-recompress.</td></tr>
+          <tr><td>Where</td><td>Footer, bottom-left, every page. Not in headers. Optional larger use on a title/cover only where a document spec says so (none in this package).</td></tr>
+          <tr><td>Source for the app</td><td>Mark gradient (#FF5D6C → #FF9A3D → #FFC23D) and "STUDIO" in orange live inside the artwork; they are <b>not</b> PDF palette colours.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="dont" aria-label="Incorrect uses">
+    <figure><span class="x"><img src="assets/openframe-logo.png" style="width:90pt;height:10pt" alt=""></span><figcaption>Stretched</figcaption></figure>
+    <figure><span class="x"><img src="assets/openframe-logo.png" class="gray" alt=""></span><figcaption>Recoloured</figcaption></figure>
+    <figure><span class="x"><span style="font:700 12pt Helvetica,Arial;color:#1a2438"><span style="font-weight:300">Open</span>Frame</span></span><figcaption>Typed wordmark</figcaption></figure>
+    <figure><span class="x"><span style="display:inline-block;width:46pt;height:20pt;overflow:hidden;vertical-align:top"><img src="assets/openframe-logo.png" style="height:20pt;width:auto;max-width:none" alt=""></span></span><figcaption>Cropped</figcaption></figure>
+  </div>
+</section>
+
+
+
+<section>
+  <div class="sec first"><h2>2 · Colour</h2><span class="hint">tokens in openframe-print.css</span></div>
+  <div class="sw">
+    <div><i style="background:#1a2640"></i><b>Navy #1A2640</b><span>structure, headers · 15.1:1 w/ white</span></div>
+    <div><i style="background:#1a2438"></i><b>Ink #1A2438</b><span>body text</span></div>
+    <div><i style="background:#566277"></i><b>Slate #566277</b><span>secondary text · 6.2:1</span></div>
+    <div><i style="background:#66728a"></i><b>Muted #66728A</b><span>smallest metadata · 4.8:1</span></div>
+    <div><i style="background:#8792a5"></i><b>Faint #8792A5</b><span>decor only · 3.1:1 ✕ text</span></div>
+    <div><i style="background:#d8dee8"></i><b>Line #D8DEE8</b><span>hairlines</span></div>
+    <div><i style="background:#e07b1f"></i><b>Orange #E07B1F</b><span>accent fill/stripe · 3.0:1 ✕ text</span></div>
+    <div><i style="background:#8a4f00"></i><b>Orange deep #8A4F00</b><span>orange text · 5.9:1 on soft</span></div>
+    <div><i style="background:#fff1e0"></i><b>Orange soft #FFF1E0</b><span>accent band</span></div>
+    <div><i style="background:#f5f7fa"></i><b>Panel #F5F7FA</b><span>zebra, surfaces</span></div>
+    <div><i style="background:#e9eff5"></i><b>Tint #E9EFF5</b><span>card heads</span></div>
+    <div><i style="background:#2a6a8c"></i><b>Teal #2A6A8C</b><span>secondary accent · 5.9:1</span></div>
+  </div>
+  <p class="note mt-4"><b>Semantic status</b> — always printed as a <b>text label + tint</b>, never colour alone (grayscale-safe):</p>
+  <div class="chips mb-4" style="gap:5pt;margin-top:4pt">
+    <span class="chip ok">Final</span><span class="chip warn">Draft · Not final</span><span class="chip danger">Needs input</span><span class="chip info">Info</span><span class="chip accent">Accent</span><span class="chip navy">Navy</span><span class="chip">Neutral</span><span class="chip pill info">12</span><span class="tile">28</span><span class="tile teal">01</span>
+  </div>
+  <div class="chips" style="gap:5pt"><span class="muted" style="font-size:7.4pt">Breakdown category accents:</span>
+    <span class="chip pill" style="border-color:var(--cat-cast);color:var(--cat-cast)">● Cast</span><span class="chip pill" style="border-color:var(--cat-props);color:var(--cat-props)">● Props</span><span class="chip pill" style="border-color:var(--cat-wardrobe);color:var(--cat-wardrobe)">● Wardrobe</span><span class="chip pill" style="border-color:var(--cat-location);color:var(--cat-location)">● Location</span><span class="chip pill" style="border-color:var(--cat-vehicles);color:var(--cat-vehicles)">● Vehicles</span><span class="chip pill" style="border-color:var(--cat-sfx);color:var(--cat-sfx)">● SFX</span>
+    <span class="muted" style="font-size:7.4pt">(always paired with the category name)</span></div>
+</section>
+
+<section>
+  <div class="sec"><h2>3 · Typography and spacing</h2><span class="hint">Helvetica / Helvetica-Bold only (PDF base-14)</span></div>
+  <table class="spec">
+    <thead><tr><th style="width:110pt">Role</th><th style="width:80pt">Size · weight</th><th>Sample</th></tr></thead>
+    <tbody>
+      <tr><td>Document title</td><td>28 pt · bold</td><td style="font-size:28pt;font-weight:700;color:var(--of-navy);line-height:1.05">LOW TIDE RADIO</td></tr>
+      <tr><td>Compact title (landscape)</td><td>20 pt · bold</td><td style="font-size:20pt;font-weight:700;color:var(--of-navy)">Shooting Schedule</td></tr>
+      <tr><td>Section heading</td><td>10 pt · bold caps · +0.1 em</td><td style="font-size:10pt;font-weight:700;letter-spacing:.1em;color:var(--of-navy)">SCENE SCHEDULE</td></tr>
+      <tr><td>Body</td><td>8.8 pt · regular</td><td class="ts-8-8">In the flooded basement they find the station logbook in a sealed ammunition box.</td></tr>
+      <tr><td>Table cell</td><td>8.4 pt</td><td style="font-size:8.4pt">INT. COAST RADIO STATION - TAPE ROOM - DAY</td></tr>
+      <tr><td>Label (caps)</td><td>6.8 pt · bold · +0.1 em</td><td style="font-size:6.8pt;font-weight:700;letter-spacing:.1em;color:var(--of-slate)">GENERAL CALL</td></tr>
+      <tr><td>Chip (floor)</td><td>6.6 pt · bold caps</td><td><span class="chip">Meal</span> <span class="needs">Needs input</span></td></tr>
+      <tr><td>Footer</td><td>6.8 / 7.4 pt</td><td style="font-size:6.8pt;color:var(--of-slate)">Created using OpenFrame</td></tr>
+    </tbody>
+  </table>
+  <p class="note mt-4"><b>Minimum print sizes:</b> nothing under 6.4 pt; running text ≥ 8.4 pt; muted text ≥ 4.5 : 1. <b>Spacing scale (pt):</b> 2 · 4 · 6 · 8 · 12 · 16 · 24 (section gap 12–16; card padding 6/9; table cell padding 4.2/6; grid gap 8). <b>Radii:</b> 3 chips, 4 metrics, 6 cards/callouts. <b>Rules:</b> 1.2 pt navy under section headings, 0.5 pt hairlines elsewhere. No shadows, gradients or opacity (not available in the Rust renderer).</p>
+</section>
+<section>
+  <div class="sec"><h2>4 · Component sampler</h2><span class="hint">class names in openframe-print.css</span></div>
+  <div class="metrics">
+    <div class="metric navy"><div class="lbl">Planned total</div><div class="val">INR 12,00,000</div><div class="sub">metric.navy</div></div>
+    <div class="metric accent"><div class="lbl">Contingency</div><div class="val">10 %</div><div class="sub">metric.accent</div></div>
+    <div class="metric"><div class="lbl">Scenes</div><div class="val">42</div><div class="sub">metric</div></div>
+  </div>
+  <div class="cards c2">
+    <div class="card"><div class="head">Card · tint head</div><div class="body"><dl class="fields"><div class="row"><dt>Label</dt><dd>Value, right-aligned</dd></div><div class="row long"><dt>Long value</dt><dd>Switches to label-above, left-aligned when the text is long enough to wrap onto a second line.</dd></div><div class="row missing"><dt>Missing</dt><dd><span class="needs">Needs input</span></dd></div></dl></div></div>
+    <div class="card"><div class="head dark">Card · dark head</div><div class="body"><ul class="bullets"><li>Bullet with orange dot</li><li>Second bullet that is long enough to wrap onto a second line inside the card</li></ul></div></div>
+  </div>
+  <div class="banner warn mt-4"><b>Changed</b> Banner: stripe + text label stays legible in grayscale.</div>
+  <div class="callout accent"><div><div class="lbl">Crew call</div><div class="big">07:00</div></div><div><div class="lbl">Lunch</div><div class="big">13:00</div></div><div><div class="lbl">Est. wrap</div><div class="big">18:00</div></div></div>
+  <table class="tbl zebra boxed" style="margin-top:8pt">
+    <thead><tr class="title"><th colspan="4"><span class="hint">table title row repeats with the header on every page</span>Table</th></tr><tr class="gap"><th colspan="4"></th></tr><tr><th>Start</th><th>Sc.</th><th>Heading</th><th class="r">Est.</th></tr></thead>
+    <tbody><tr><td class="strong">08:00</td><td><span class="tile">28</span></td><td>INT. TAPE ROOM - DAY<span class="sub">Row grows with wrapped text; never ellipsised.</span></td><td class="r">4h</td></tr>
+    <tr class="tint-meal stripe-orange"><td class="strong">13:00</td><td></td><td><span class="chip">Meal</span> Lunch</td><td class="r">1h</td></tr>
+    <tr class="subtotal"><td colspan="3">Subtotal row</td><td class="r">5h</td></tr><tr class="total"><td colspan="3">Total row</td><td class="r">5h</td></tr></tbody>
+  </table>
+  <div class="two-col mt-4">
+    <div><div class="frame r169"><img src="sample-assets/moodboard-sample-01.png" alt="16:9 sample"></div><p class="caption"><b>Image</b> · 16:9 frame, <i>contain</i> (never cropped)</p></div>
+    <div><div class="frame r169 missing">Image unavailable</div><p class="caption"><b>Missing image</b> · flat placeholder + source wording</p></div>
+  </div>
+</section>
+
+<section>
+  <div class="sec"><h2>5 · Page geometry and footer</h2><span class="hint">US Letter · all values in points</span></div>
+  <div class="logo-row">
+    <div>
+      <table class="spec">
+        <thead><tr><th>Item</th><th>Spec</th></tr></thead>
+        <tbody>
+          <tr><td>Paper</td><td>US Letter — portrait 612 × 792, landscape 792 × 612 (the paper the current exports use)</td></tr>
+          <tr><td>Margins</td><td>46 left / right / top · <b>66 bottom</b> (footer zone)</td></tr>
+          <tr><td>Footer — left</td><td>Logo 17 high, bottom edge 33 above page bottom; below it <b>Created using OpenFrame</b> 6.8 regular, slate (#566277), baseline ≈ 22 above page bottom, left-aligned to the logo</td></tr>
+          <tr><td>Footer — right</td><td><b>Page X of Y</b> 7.4 regular, ink, right-aligned to the margin, same baseline as the brand line; X and Y are the real page number / total</td></tr>
+          <tr><td>No</td><td>footer rule, repeated logo header, project/document string in the footer, hard-coded page numbers</td></tr>
+          <tr><td>Running header</td><td>Optional single line, top-right, 6.8 regular slate, no rule/logo. <b>Required only on the Call Sheet</b> (<code>PRODUCTION · SHOOT DAY NN · REVISION n</code>); used elsewhere only where a page-identifying line helps a long printed document (decided per export).</td></tr>
+          <tr><td>Print-safe</td><td>Nothing printed within 18 pt of a page edge; content never enters the 66 pt footer zone</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="break-inside:avoid">
+      <div class="page-mock" aria-label="Page geometry diagram">
+        <div class="m" style="left:0;top:0;width:255pt;height:19pt"></div><div class="lbl" style="left:84pt;top:6pt">top 46</div>
+        <div class="m" style="left:0;bottom:0;width:255pt;height:27.5pt"></div><div class="lbl" style="left:100pt;bottom:2pt">bottom 66 (footer zone)</div>
+        <div class="m" style="left:0;top:19pt;width:19pt;bottom:27.5pt"></div>
+        <div class="m" style="right:0;top:19pt;width:19pt;bottom:27.5pt"></div>
+        <div class="lbl" style="left:3pt;top:150pt">46</div><div class="lbl" style="right:3pt;top:150pt">46</div>
+        <div style="position:absolute;left:19pt;right:19pt;top:19pt;bottom:27.5pt;display:flex;align-items:center;justify-content:center;font-size:7pt;color:var(--of-muted)">content area 520 × 680</div>
+        <div class="hdr">PRODUCTION · SHOOT DAY 01 · REVISION 2</div>
+        <img class="logo" src="assets/openframe-logo.png" alt=""><div class="brand">Created using OpenFrame</div><div class="pg">Page 1 of 4</div>
+      </div>
+      <p class="note" style="text-align:center;margin-top:4pt">Diagram scaled 0.42; logo/brand/page positions to scale of the real footer.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="sec"><h2>6 · Pagination rules (all exports)</h2></div>
+  <ul class="bullets" style="font-size:8.4pt">
+    <li>Content flows by measured height; no absolute positioning for flowing content; sections expand; optional sections leave no gap.</li>
+    <li>Section headings stay with their first content; headings are never the last element of a page.</li>
+    <li>Table headers (and the table title) repeat on every page; rows, cards, callouts and figures never split; long tables continue at row boundaries.</li>
+    <li>Long text wraps; rows grow; nothing is clipped, truncated or ellipsised; images keep aspect ratio.</li>
+    <li>Avoid stray single rows, orphan headings, pages with only a stray item; the renderer moves the last two rows together when one row would be stranded.</li>
+    <li>Footer and page counter are page furniture drawn in the margin and are identical on every page.</li>
+  </ul>
+</section>
+
+</div>
+<script src="assets/of-preview.js"></script>
+</body>
+</html>

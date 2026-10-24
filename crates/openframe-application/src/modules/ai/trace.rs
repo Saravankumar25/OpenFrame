@@ -34,6 +34,18 @@ pub struct TraceRow<'a> {
     pub result_kind: &'a str,
     pub error_code: Option<&'a str>,
     pub proposed: bool,
+    /// The lane the request took, the next best lane and the rule's strength (0 to 1).
+    pub lane: &'a str,
+    pub runner_up_lane: &'a str,
+    pub lane_margin: f64,
+    /// The closest built-in intent (empty when the step did not run), its cosine score, the lead over
+    /// the next different intent, and whether the router used it.
+    pub intent: &'a str,
+    pub intent_score: f64,
+    pub intent_margin: f64,
+    pub intent_used: bool,
+    /// The person pressed Stop and the request ended early.
+    pub cancelled: bool,
 }
 
 pub fn record(core: &AppCore, r: &TraceRow<'_>) {
@@ -49,8 +61,10 @@ pub fn record(core: &AppCore, r: &TraceRow<'_>) {
             "INSERT INTO sys_ai_trace(id, request_id, project_id, created_at, scope_kind, model_reference, context_tokens,
                                       tools_offered, tools_chosen, steps, sources, model_calls, tokens_in, tokens_out,
                                       context_fill_pct, prompt_ms, generation_ms, total_ms, passes, checks_failed,
-                                      result_kind, error_code, proposed)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20, ?21, ?22, ?23)",
+                                      result_kind, error_code, proposed, cached_tokens, lane, runner_up_lane, lane_margin,
+                                      intent, intent_score, intent_margin, intent_used, cancelled)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20, ?21, ?22, ?23, ?24, ?25, ?26, ?27,
+                     ?28, ?29, ?30, ?31, ?32)",
             params![
                 new_id(),
                 r.request_id,
@@ -75,6 +89,15 @@ pub fn record(core: &AppCore, r: &TraceRow<'_>) {
                 r.result_kind,
                 r.error_code,
                 r.proposed,
+                u.cached_tokens,
+                r.lane,
+                r.runner_up_lane,
+                r.lane_margin,
+                r.intent,
+                r.intent_score,
+                r.intent_margin,
+                r.intent_used,
+                r.cancelled,
             ],
         )?;
         Ok(())
@@ -135,6 +158,8 @@ pub struct AiHealthDto {
     pub requests: u32,
     pub median_total_ms: Option<u32>,
     pub median_tokens_in: Option<u32>,
+    /// Share of all prompt tokens the engine served from stored work, in percent.
+    pub cache_hit_pct: Option<u32>,
     pub median_context_fill_pct: Option<u32>,
     pub proposals: u32,
     pub applied: u32,
@@ -166,6 +191,7 @@ const WEAK_TOOL_MIN_USES: u32 = 3;
 struct Row {
     total_ms: i64,
     tokens_in: i64,
+    cached_tokens: i64,
     fill: i64,
     passes: i64,
     tools: String,
@@ -176,7 +202,8 @@ struct Row {
 
 fn rows(c: &Connection, limit: u32) -> AppResult<Vec<Row>> {
     let mut st = c.prepare(
-        "SELECT total_ms, tokens_in, context_fill_pct, passes, tools_chosen, error_code IS NOT NULL, proposed, outcome
+        "SELECT total_ms, tokens_in, context_fill_pct, passes, tools_chosen, error_code IS NOT NULL, proposed, outcome,
+                cached_tokens
          FROM sys_ai_trace ORDER BY created_at DESC LIMIT ?1",
     )?;
     let it = st.query_map([limit], |r| {
@@ -189,6 +216,7 @@ fn rows(c: &Connection, limit: u32) -> AppResult<Vec<Row>> {
             error: r.get(5)?,
             proposed: r.get(6)?,
             outcome: r.get(7)?,
+            cached_tokens: r.get(8)?,
         })
     })?;
     Ok(it.collect::<Result<Vec<_>, _>>()?)
@@ -197,6 +225,12 @@ fn rows(c: &Connection, limit: u32) -> AppResult<Vec<Row>> {
 fn median(mut v: Vec<i64>) -> Option<u32> {
     v.sort_unstable();
     (!v.is_empty()).then(|| v[v.len() / 2].clamp(0, u32::MAX as i64) as u32)
+}
+
+fn cache_hit_pct(rows: &[Row]) -> Option<u32> {
+    let prompt: i64 = rows.iter().map(|r| r.tokens_in).sum();
+    let cached: i64 = rows.iter().map(|r| r.cached_tokens).sum();
+    (prompt > 0).then(|| (cached * 100 / prompt).clamp(0, 100) as u32)
 }
 
 fn health_from(rows: &[Row]) -> AiHealthDto {
@@ -210,6 +244,7 @@ fn health_from(rows: &[Row]) -> AiHealthDto {
                 .collect(),
         ),
         median_context_fill_pct: median(rows.iter().map(|r| r.fill).filter(|f| *f > 0).collect()),
+        cache_hit_pct: cache_hit_pct(rows),
         ..AiHealthDto::default()
     };
     let mut by_tool: std::collections::BTreeMap<&str, (u32, u32)> = Default::default();
@@ -282,34 +317,8 @@ pub struct AiReportResult {
 /// Every trace row (numbers and ids only) and the health figures, to a file the person chose.
 pub fn export_report(core: &AppCore, _actor: &Actor, a: AiReportArgs) -> AppResult<AiReportResult> {
     let dest = destination(&a.path)?;
-    let (rows, health) = core.with_app_db(|c| {
-        let mut st = c.prepare(
-            "SELECT request_id, project_id, created_at, scope_kind, model_reference, context_tokens, tools_offered,
-                    tools_chosen, steps, sources, model_calls, tokens_in, tokens_out, context_fill_pct, prompt_ms,
-                    generation_ms, total_ms, passes, checks_failed, result_kind, error_code, proposed, outcome
-             FROM sys_ai_trace ORDER BY created_at",
-        )?;
-        let names: Vec<String> = st.column_names().iter().map(|s| s.to_string()).collect();
-        let it = st.query_map([], |r| {
-            let mut m = serde_json::Map::new();
-            for (i, n) in names.iter().enumerate() {
-                let v: rusqlite::types::Value = r.get(i)?;
-                m.insert(
-                    n.clone(),
-                    match v {
-                        rusqlite::types::Value::Null => Value::Null,
-                        rusqlite::types::Value::Integer(x) => json!(x),
-                        rusqlite::types::Value::Real(x) => json!(x),
-                        rusqlite::types::Value::Text(x) => json!(x),
-                        rusqlite::types::Value::Blob(_) => Value::Null,
-                    },
-                );
-            }
-            Ok(Value::Object(m))
-        })?;
-        let all = it.collect::<Result<Vec<_>, _>>()?;
-        Ok((all, health_from(&rows(c, HEALTH_WINDOW)?)))
-    })?;
+    let (rows, health) =
+        core.with_app_db(|c| Ok((trace_json(c, None)?, health_from(&rows(c, HEALTH_WINDOW)?))))?;
     let doc = json!({
         "kind": "openframe-ai-report",
         "version": 1,
@@ -332,12 +341,56 @@ pub fn export_report(core: &AppCore, _actor: &Actor, a: AiReportArgs) -> AppResu
     })
 }
 
-fn destination(raw: &str) -> AppResult<PathBuf> {
+/// The trace rows as JSON objects (numbers and ids only), oldest first; one request's when given.
+fn trace_json(c: &Connection, request_id: Option<&str>) -> AppResult<Vec<Value>> {
+    let mut st = c.prepare(
+        "SELECT request_id, project_id, created_at, scope_kind, model_reference, context_tokens, tools_offered,
+                tools_chosen, steps, sources, model_calls, tokens_in, tokens_out, cached_tokens, context_fill_pct,
+                prompt_ms, generation_ms, total_ms, passes, checks_failed, result_kind, error_code, proposed, outcome,
+                lane, runner_up_lane, lane_margin, intent, intent_score, intent_margin, intent_used, cancelled
+         FROM sys_ai_trace WHERE (?1 IS NULL OR request_id = ?1) ORDER BY created_at",
+    )?;
+    let names: Vec<String> = st.column_names().iter().map(|s| s.to_string()).collect();
+    let it = st.query_map([request_id], |r| {
+        let mut m = serde_json::Map::new();
+        for (i, n) in names.iter().enumerate() {
+            let v: rusqlite::types::Value = r.get(i)?;
+            m.insert(
+                n.clone(),
+                match v {
+                    rusqlite::types::Value::Null => Value::Null,
+                    rusqlite::types::Value::Integer(x) => json!(x),
+                    rusqlite::types::Value::Real(x) => json!(x),
+                    rusqlite::types::Value::Text(x) => json!(x),
+                    rusqlite::types::Value::Blob(_) => Value::Null,
+                },
+            );
+        }
+        Ok(Value::Object(m))
+    })?;
+    Ok(it.collect::<Result<Vec<_>, _>>()?)
+}
+
+/// The numbers of one request for a saved conversation, without the ids; null when none were kept.
+pub(super) fn request_numbers(c: &Connection, request_id: &str) -> AppResult<Value> {
+    Ok(trace_json(c, Some(request_id))?
+        .into_iter()
+        .next()
+        .map_or(Value::Null, |mut row| {
+            if let Value::Object(m) = &mut row {
+                m.remove("request_id");
+                m.remove("project_id");
+            }
+            row
+        }))
+}
+
+pub(super) fn destination(raw: &str) -> AppResult<PathBuf> {
     let raw = raw.trim();
     let mut p = PathBuf::from(raw);
     if raw.is_empty() || !p.is_absolute() {
         return Err(AppError::invalid_input(
-            "Choose where to save the AI report with the Save dialog.",
+            "Choose where to save the file with the Save dialog.",
         ));
     }
     if !p
@@ -367,6 +420,7 @@ mod tests {
         Row {
             total_ms: ms,
             tokens_in: 900,
+            cached_tokens: 450,
             fill: 20,
             passes: 1,
             tools: tools.into(),
@@ -396,12 +450,34 @@ mod tests {
         );
         assert_eq!(h.apply_rate_pct, Some(60));
         assert_eq!(h.average_passes, Some(1.0));
+        assert_eq!(h.cache_hit_pct, Some(50));
+        assert_eq!(health_from(&[]).cache_hit_pct, None);
         let w = h.weakest_tool.unwrap();
         assert_eq!(
             (w.name.as_str(), w.uses, w.failure_pct),
             ("propose_task", 3, 66)
         );
         assert!(health_from(&[]).weakest_tool.is_none());
+    }
+
+    #[test]
+    fn rows_written_before_the_cache_column_read_as_zero() {
+        let mut c = openframe_persistence::open_in_memory().unwrap();
+        let apply = openframe_persistence::migrate::apply;
+        apply(&mut c, &crate::schema::APP_MIGRATIONS[..3]).unwrap();
+        c.execute(
+            "INSERT INTO sys_ai_trace(id, request_id, created_at, scope_kind, result_kind)
+             VALUES ('a', 'r1', 1, 'WholeProject', 'Answer')",
+            [],
+        )
+        .unwrap();
+        apply(&mut c, crate::schema::APP_MIGRATIONS).unwrap();
+        assert_eq!(rows(&c, 10).unwrap()[0].cached_tokens, 0);
+        let numbers = request_numbers(&c, "r1").unwrap();
+        assert_eq!(numbers["cached_tokens"], 0);
+        assert!(numbers.get("request_id").is_none() && numbers.get("project_id").is_none());
+        assert!(request_numbers(&c, "missing").unwrap().is_null());
+        assert_eq!(trace_json(&c, None).unwrap().len(), 1);
     }
 
     #[test]

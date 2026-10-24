@@ -308,7 +308,7 @@ cleanup, and a WACK run (§8).
 
 ## 12. Certification pre-flight and known blockers (added 2026-10-05)
 
-Source: the 2026-10-02 Store readiness audit (`docs/audits/`) and the owner's certification notes (`docs/archive/notes/`). Tracked in the
+Source: the 2026-10-02 Store readiness audit (`docs/audits/`) and the owner's certification notes (`docs/history/notes/`). Tracked in the
 build plan (areas: Project controls and baseline, AI assistant quality and hardening, Microsoft Store package, Final review and submission) and register Appendix F. Re-check Microsoft Store Policies and Partner Center requirements on the submission date.
 
 **Common first-submission failures, and the answer for OpenFrame**

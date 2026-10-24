@@ -11,11 +11,48 @@
 //! applied. Each shape is narrow on purpose; anything else goes to the model as before.
 
 use std::sync::LazyLock;
+use std::sync::atomic::{AtomicBool, Ordering};
 
 use regex::Regex;
 use serde_json::{Value, json};
 
 use super::orchestrator::StepCall;
+
+static DIRECT_ROUTES: AtomicBool = AtomicBool::new(true);
+
+/// Evaluation only (ADR-0028 decision 1, harness plan 9.1): turns off the regex direct routes so the
+/// model path can be measured. The app never calls it.
+pub fn set_direct_routes(on: bool) {
+    DIRECT_ROUTES.store(on, Ordering::Relaxed);
+}
+
+fn direct_routes_on() -> bool {
+    DIRECT_ROUTES.load(Ordering::Relaxed)
+}
+
+/// The tool call a request names outright (the scene summary or a recipe), or None when the routes
+/// are off or no shape matches. Greetings, refusals, follow-ups and "just the number" are not routes.
+pub(crate) fn direct_route(
+    text: &str,
+    scene_number: Option<usize>,
+    known: impl Fn(&str) -> bool,
+) -> Option<StepCall> {
+    direct_route_with(direct_routes_on(), text, scene_number, known)
+}
+
+fn direct_route_with(
+    on: bool,
+    text: &str,
+    scene_number: Option<usize>,
+    known: impl Fn(&str) -> bool,
+) -> Option<StepCall> {
+    if !on {
+        return None;
+    }
+    scoped_call(text, scene_number)
+        .filter(|c| known(&c.tool))
+        .or_else(|| direct_call(text, &known))
+}
 
 fn re(pattern: &str) -> Regex {
     Regex::new(pattern).expect("valid pattern")
@@ -307,7 +344,14 @@ fn scene_intent(text: &str) -> Option<StepCall> {
         "summary"
     } else if has(&["how many"]) && has(&["character", "people", "speaker", "speak", "talk"]) {
         "speaker_count"
-    } else if has(&["who"]) && has(&["speak", "talk", "dialogue", "in scene", "in it"]) {
+    } else if (has(&["who"]) && has(&["speak", "talk", "dialogue", "in scene", "in it"]))
+        || (has(&[
+            "which character",
+            "what character",
+            "which people",
+            "which person",
+        ]) && has(&["speak", "talk", "dialogue", "lines", "say"]))
+    {
         "speakers"
     } else if has(&["last line", "final line", "ends with", "last thing"]) {
         "last_line"
@@ -609,6 +653,14 @@ static MENTIONS: LazyLock<Regex> = LazyLock::new(|| {
     )
 });
 
+/// "Find every scene that mentions the battery." (the open gold tool set): the same read as MENTIONS,
+/// asked as a command. Wide words such as "every scene" do not make it a question about the story.
+static FIND_MENTIONS: LazyLock<Regex> = LazyLock::new(|| {
+    re(
+        r#"(?i)^\s*(?:please\s+)?(?:find|show|list|get)(?:\s+me)?\s+(?:every|all(?:\s+the)?|the)\s+scenes?\s+(?:that|which|where)\s+(?:mentions?|mentioning|includes?|features?|refers?\s+to|contains?)\s+(?:the\s+)?(?P<x>[^?.!]{1,120}?)\s*[?.!]*\s*$"#,
+    )
+});
+
 /// Plain questions that one read tool answers as a whole.
 /// "Which scene comes first?", "What is the opening scene?" (AI context brief question 9).
 static FIRST_SCENE: LazyLock<Regex> = LazyLock::new(|| {
@@ -634,6 +686,8 @@ static PLAIN_READS: LazyLock<Vec<(Regex, &'static str)>> = LazyLock::new(|| {
         (r#"(?i)^\s*how\s+many\s+(?:acts|scene\s+cards|acts\s+and\s+scene\s+cards)\s+are\s+(?:there\s+)?on\s+the\s+(?:story|beat)\s?board\s*[?.]*\s*$"#, "story_statistics"),
         (r#"(?i)^\s*what(?:'s|\s+is)\s+on\s+(?:the|my)\s+(?:story|beat)\s?board\s*[?.]*\s*$"#, "story_statistics"),
         (r#"(?i)^\s*how\s+far\s+along\s+is\s+the\s+breakdown\s*[?.]*\s*$"#, "breakdown_status"),
+        // "Give me an overview of the project." is the project facts, not a place to open.
+        (r#"(?i)^\s*(?:(?:give|show|get)(?:\s+me)?\s+(?:an?\s+)?(?:quick\s+)?(?:overview|summary)\s+of\s+(?:the|this|my)\s+project|(?:what(?:'s|\s+is)\s+)?(?:the\s+)?project\s+overview|how\s+is\s+(?:the|this|my)\s+project\s+doing)\s*[?.!]*\s*$"#, "project_overview"),
         // Plain wording of the same questions (AI context brief, questions 3, 4 and 31).
         (r#"(?i)^\s*how\s+many\s+(?:acts|sequences|beats|scene\s+cards)(?:\s+are\s+there|\s+do\s+(?:we|i)\s+have)?(?:\s+in\s+(?:the|this|my)\s+(?:story|project))?\s*[?.]*\s*$"#, "story_statistics"),
         (r#"(?i)^\s*how\s+many\s+drafts(?:\s+are\s+there|\s+do\s+(?:we|i)\s+have|\s+does\s+(?:the|this|my)\s+(?:screenplay|script)\s+have)?\s*[?.]*\s*$"#, "list_drafts"),
@@ -758,6 +812,13 @@ static TIME_NOTE: LazyLock<Regex> = LazyLock::new(|| {
     )
 });
 
+/// "Suggest breakdown elements for scene 22." (the open gold tool set) asks for the same tool.
+static SUGGEST_BREAKDOWN: LazyLock<Regex> = LazyLock::new(|| {
+    re(
+        r#"(?i)^\s*(?:please\s+)?suggest\s+(?:the\s+|some\s+)?(?:breakdown\s+elements|elements|props|breakdown)\s+for\s+scene\s+(?P<n>\d{1,5})\s*[.!?]*\s*$"#,
+    )
+});
+
 static PROPS_FOR: LazyLock<Regex> = LazyLock::new(|| {
     re(
         r#"(?i)^\s*what\s+(?:props|elements|breakdown\s+elements)\s+(?:might|does|would|will)\s+scene\s+(?P<n>\d{1,5})\s+need\s*\?*\s*$"#,
@@ -825,7 +886,7 @@ fn project_status(phrase: &str) -> Option<&'static str> {
 /// Round 2 (W6): the shapes the first harness rerun still found going to a general search.
 fn recipe_more(text: &str) -> Option<StepCall> {
     let cap = |r: &Regex| r.captures(text);
-    if let Some(c) = cap(&MENTIONS) {
+    if let Some(c) = cap(&MENTIONS).or_else(|| cap(&FIND_MENTIONS)) {
         let x = unquote(c.name("x")?.as_str());
         return (!x.is_empty()).then(|| call("find_scenes_mentioning", json!({ "text": x })));
     }
@@ -841,7 +902,7 @@ fn recipe_more(text: &str) -> Option<StepCall> {
             json!({ "question": text.trim() }),
         ));
     }
-    if let Some(c) = cap(&PROPS_FOR) {
+    if let Some(c) = cap(&PROPS_FOR).or_else(|| cap(&SUGGEST_BREAKDOWN)) {
         let n: u32 = c.name("n")?.as_str().parse().ok().filter(|n| *n >= 1)?;
         return Some(call("suggest_breakdown", json!({ "sceneNumber": n })));
     }
@@ -2234,5 +2295,14 @@ mod tests {
     fn a_tool_the_person_may_not_use_is_left_to_the_usual_path() {
         assert!(direct_call("Create a task to scout the station.", |_| false).is_none());
         assert!(direct_call("Go to scene 4.", |t| t != "open_scene").is_none());
+    }
+
+    #[test]
+    fn routes_off_skips_the_direct_lookup_and_on_finds_it() {
+        let any = |_: &str| true;
+        assert!(direct_route_with(true, "Go to scene 4.", None, any).is_some());
+        assert!(direct_route_with(false, "Go to scene 4.", None, any).is_none());
+        assert!(direct_route_with(false, "Summarise this scene.", Some(3), any).is_none());
+        assert!(direct_routes_on(), "on unless an evaluation turns it off");
     }
 }

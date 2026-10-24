@@ -26,8 +26,8 @@ How the toolbox (`modules/ai/toolbox.rs`, contract C3) enforces this:
   budget, so a small local model's prompt stays short. `retrieve_context` uses the hybrid retrieval
   service when called through `run_tool_unlocked`, and keyword retrieval (FTS5, same privacy rule) otherwise.
 
-- Registered operations: **496** (156 queries, 340 commands)
-- Exposed to the assistant through tools: **305**; not AI-accessible: **191**
+- Registered operations: **500** (156 queries, 344 commands)
+- Exposed to the assistant through tools: **305**; not AI-accessible: **195**
 - Tools: **256** (63 read/compute/navigate, 193 proposal)
 
 Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation · **L** long-running (task id) · file effect: R = reads a user-picked file, W = writes to a user-picked location, P = project storage on disk.
@@ -272,6 +272,7 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 | Operation | Kind | Class | Capability | Flags | Args → Result | AI | Covered by |
 |---|---|---|---|---|---|---|---|
 | `ai.ask`: Ask the assistant (one request, one AI Result). | command | Mutate | UseAi |  | `AskArgs` → `AiExchange` | hidden | none |
+| `ai.cancel`: Stop the assistant request that is running in a conversation (nothing is changed). | command | Mutate | UseAi |  | `AiCancelArgs` → `AiCancelDto` | hidden | none |
 | `ai.change_set.accept`: Apply a proposal after explicit human approval. | command | Mutate | ApplyChangeSet |  | `AcceptArgs` → `ChangeSetDto` | hidden | none |
 | `ai.change_set.get`: One prepared Change Set (proposal) of the requesting user. | query | Read | View |  | `AiChangeSetArgs` → `ChangeSetDto` | hidden | none |
 | `ai.change_set.recheck`: Re-check a stale proposal against the current project. | command | Mutate | UseAi |  | `AiChangeSetArgs` → `ChangeSetDto` | hidden | none |
@@ -282,6 +283,7 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 | `ai.download.remove`: Remove the downloaded OpenFrame AI models; projects are not touched. | command | Mutate | app level |  | `AiEmptyArgs` → `()` | hidden | none |
 | `ai.download.start`: Start or resume the OpenFrame AI download (the person's click; the app's only network use). | command | Mutate | app level |  | `AiEmptyArgs` → `()` | hidden | none |
 | `ai.download.status`: The Download OpenFrame AI screen: size, free space, progress. | query | Read | app level |  | `AiEmptyArgs` → `AiDownloadDto` | hidden | none |
+| `ai.export_conversation`: Write one of the person's own conversations (their questions, the answers and the sources) to a file they chose. | command | Mutate | UseAi |  | `AiConversationExportArgs` → `AiReportResult` | hidden | none |
 | `ai.export_report`: Write the local AI trace (numbers and ids only) and the health figures to a file the person chose. | command | Mutate | app level |  | `AiReportArgs` → `AiReportResult` | hidden | none |
 | `ai.graphics.set`: Settings, Offline AI, Graphics card: Automatic or Off. | command | Mutate | app level |  | `AiGraphicsArgs` → `()` | hidden | none |
 | `ai.health`: The AI health card: medians, apply rate, passes and the weakest tool, from the local numbers-only trace. | query | Read | app level |  | `AiHealthArgs` → `AiHealthDto` | hidden | none |
@@ -367,6 +369,7 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 | `app.info`: Application version, folders and the local profile. | query | Read | app level |  | `Empty` → `AppInfo` | hidden | none |
 | `app.save_state`: Save indicator state for the status bar. | query | Read | app level |  | `Empty` → `SaveState` | hidden | none |
 | `app.set_display_name`: Change the local user's display name. | command | Mutate | app level |  | `DisplayNameArgs` → `LocalProfile` | hidden | none |
+| `project.clear_cover`: Remove a project's cover photo so Home shows the generated cover. | command | Mutate | app level |  | `ClearCoverArgs` → `RecentProject` | hidden | none |
 | `project.close`: Close the open project. | command | Mutate | app level |  | `Empty` → `()` | hidden | none |
 | `project.create`: Create a new project folder and open it. | command | Mutate | app level | P | `CreateProjectArgs` → `OpenProjectResult` | hidden | none |
 | `project.current`: Summary of the open project, if any. | query | Read | app level |  | `Empty` → `Option<ProjectSummary>` | hidden | none |
@@ -386,6 +389,7 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 | `project.resolve_recovery`: Keep or discard recovered changes after a crash. | command | Mutate | Edit | DC P | `RecoveryArgs` → `OpenProjectResult` | hidden | none |
 | `project.save`: Save a checkpoint of the open project now. | command | Mutate | Edit |  | `Empty` → `i64` | hidden | none |
 | `project.set_archived`: Archive or unarchive a project in the project list. | command | Mutate | ManageProject |  | `SetArchivedArgs` → `()` | hidden | none |
+| `project.set_cover`: Choose a cover photo for a project card on Home. | command | Mutate | app level | R | `SetCoverArgs` → `RecentProject` | hidden | none |
 | `project.set_last_location`: Remember where the user was (Continue). | command | Mutate | View |  | `SetLocationArgs` → `()` | hidden | none |
 | `project.set_pinned`: Pin a project in the recent-projects list. | command | Mutate | app level |  | `SetPinnedArgs` → `RecentProject` | hidden | none |
 | `project.set_status`: Change the project status (Idea, Development, …). | command | Mutate | ManageProject |  | `SetStatusArgs` → `ProjectSummary` | tool | `propose_project_status` |
@@ -663,7 +667,7 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 - **Appearance (mode, theme and My Themes) is a personal preference of the person at this computer, not project content; the assistant never reads or changes how the app looks.**
   `appearance.check_theme`, `appearance.delete_theme`, `appearance.export_theme`, `appearance.get`, `appearance.import_theme`, `appearance.rename_theme`, `appearance.set_mode`, `appearance.set_theme`
 - **Application-level project lifecycle (create, open, close, locate, duplicate, archive or delete projects on disk, recent-project list); the assistant works inside the one open project.**
-  `project.close`, `project.create`, `project.current`, `project.duplicate`, `project.list_recent`, `project.open`, `project.recovery_state`, `project.remove_recent`, `project.rename`, `project.resolve_recovery`, `project.set_archived`, `project.set_pinned`
+  `project.clear_cover`, `project.close`, `project.create`, `project.current`, `project.duplicate`, `project.list_recent`, `project.open`, `project.recovery_state`, `project.remove_recent`, `project.rename`, `project.resolve_recovery`, `project.set_archived`, `project.set_pinned`
 - **Crosses the project boundary (Global Idea Vault or another project); the assistant is scoped to the open project.**
   `templates.copy`, `vault.copy_to_store`
 - **Data for an interactive dialog or editor preview; the assistant reads the same facts through its own bounded tools.**
@@ -703,7 +707,7 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 - **Production scene number overrides and renumbering stay a human decision (ADR-0015, contract doc 32 §2.5); the assistant reads the numbers.**
   `screenplay.renumber_scenes`, `screenplay.restore_omitted_scene`, `screenplay.set_scene_number`
 - **Reads or writes a file-system location the user picks in a file dialog; the assistant never chooses or touches file-system paths (spec §3).**
-  `breakdown.export_report`, `budget.export_summary`, `callsheets.attach`, `callsheets.export_pdf`, `files.add`, `files.export_copy`, `files.relink`, `moodboard.export_pdf`, `packages.create_backup`, `packages.export_exchange`, `packages.export_project`, `packages.import_project`, `packages.inspect_package`, `packages.review_export_response`, `packages.review_open`, `project.locate`, `project.location_check`, `reports.export_report`, `schedule.export_daily_view`, `schedule.export_dood`, `schedule.export_schedule`, `screenplay.export`, `screenplay.import_apply`, `screenplay.import_preview`, `shot.export_list`, `sides.export_pdf`, `story.add_attachment`, `story.export_board`, `story.page.export`, `storyboard.export_sheet`, `vault.add_files`, `vault.relink`
+  `ai.export_conversation`, `breakdown.export_report`, `budget.export_summary`, `callsheets.attach`, `callsheets.export_pdf`, `files.add`, `files.export_copy`, `files.relink`, `moodboard.export_pdf`, `packages.create_backup`, `packages.export_exchange`, `packages.export_project`, `packages.import_project`, `packages.inspect_package`, `packages.review_export_response`, `packages.review_open`, `project.locate`, `project.location_check`, `project.set_cover`, `reports.export_report`, `schedule.export_daily_view`, `schedule.export_dood`, `schedule.export_schedule`, `screenplay.export`, `screenplay.import_apply`, `screenplay.import_preview`, `shot.export_list`, `sides.export_pdf`, `story.add_attachment`, `story.export_board`, `story.page.export`, `storyboard.export_sheet`, `vault.add_files`, `vault.relink`
 - **Returns local file paths of managed media; the assistant never receives file-system paths.**
   `app.info`, `files.asset`
 - **Screenplay page layout settings (paper, font, spacing, header and footer, page breaks, custom element looks) stay a human decision (screenplay engine contract doc 32 §2.5); the assistant reads the resulting page facts.**
@@ -711,7 +715,7 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 - **Support diagnostics are user-initiated only (ADR-0021): the user reviews the bundle and saves it to a location they pick; the assistant never gathers, exports or sends diagnostics.**
   `diagnostics.export_bundle`, `diagnostics.preview`
 - **The assistant's own entry point and conversation history; a tool calling it would recurse.**
-  `ai.ask`, `ai.history`
+  `ai.ask`, `ai.cancel`, `ai.history`
 - **The team password of an internal build belongs to the person at this computer; the assistant never reads or types it.**
   `team_gate.status`, `team_gate.unlock`
 - **The writer's own free-writing Story page; it is kept apart from every other page and tool on purpose (owner request 2026-10-20), so the assistant neither reads nor changes it.**

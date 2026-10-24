@@ -1,0 +1,686 @@
+[
+  {
+    "intent": "count_scenes",
+    "tool": "count_scenes",
+    "examples": [
+      "What is the total number of scenes?",
+      "Tell me how many scenes the screenplay contains",
+      "How long is the script in scenes?",
+      "Give me the scene tally",
+      "Number of scenes in the current draft, please",
+      "How many scenes did I write so far?",
+      "Total scene count?",
+      "How many separate scenes make up this film?"
+    ],
+    "other": {
+      "hi": ["इस स्क्रिप्ट में कुल कितने दृश्य हैं?", "मुझे दृश्यों की कुल संख्या बताओ"],
+      "es": ["¿Cuántas escenas tiene el guion?", "Dime el número total de escenas"],
+      "fr": ["Combien de scènes comporte le scénario ?", "Donne-moi le nombre total de scènes"],
+      "de": ["Wie viele Szenen hat das Drehbuch?", "Nenne mir die Gesamtzahl der Szenen"],
+      "ja": ["脚本には全部で何シーンありますか？", "シーンの総数を教えてください"]
+    }
+  },
+  {
+    "intent": "count_characters",
+    "tool": "count_characters",
+    "examples": [
+      "How many people speak in this story?",
+      "What is the size of the speaking cast?",
+      "Total number of characters with dialogue?",
+      "How many different roles have lines?",
+      "Count the characters in the script",
+      "How big is the cast of characters?",
+      "Number of named characters, please"
+    ],
+    "other": {
+      "hi": ["इस फिल्म में कितने किरदार हैं?", "संवाद वाले पात्रों की संख्या बताओ"],
+      "es": ["¿Cuántos personajes hay en total?", "Dime cuántos personajes hablan"],
+      "fr": ["Combien de personnages y a-t-il ?", "Quel est le nombre de personnages qui parlent ?"],
+      "de": ["Wie viele Figuren gibt es insgesamt?", "Wie viele Rollen haben Text?"],
+      "ja": ["登場人物は全部で何人ですか？", "セリフのあるキャラクターの数を教えて"]
+    }
+  },
+  {
+    "intent": "list_characters",
+    "tool": "list_characters",
+    "examples": [
+      "Name everyone who has dialogue",
+      "Give me the roster of speaking parts",
+      "Show me the speaking roles with their scene counts",
+      "Who appears and talks in this screenplay?",
+      "Write out the list of characters",
+      "What are the names of the people who talk?",
+      "List all the cast members who speak"
+    ],
+    "other": {
+      "hi": ["बोलने वाले सभी किरदारों के नाम बताओ", "स्क्रिप्ट के पात्रों की सूची दिखाओ"],
+      "es": ["Dame la lista de personajes que hablan", "¿Cómo se llaman los personajes del guion?"],
+      "fr": ["Donne la liste des personnages qui parlent", "Quels sont les noms des personnages du scénario ?"],
+      "de": ["Liste alle sprechenden Figuren auf", "Wie heißen die Figuren im Drehbuch?"],
+      "ja": ["セリフのある登場人物の一覧を見せて", "脚本のキャラクター名を全部教えて"]
+    }
+  },
+  {
+    "intent": "scenes_with_characters",
+    "needs": "characters",
+    "tool": "scenes_with_characters",
+    "examples": [
+      "Where do Ravi and Meena speak together?",
+      "Show scenes with both Ravi and Meena in the dialogue",
+      "Which scenes have Ravi and Meena talking to one another?",
+      "List the scenes where Ravi and Meena appear together",
+      "Scenes in which Ravi shares dialogue with Meena",
+      "When do Ravi and Meena exchange lines?",
+      "Every scene featuring both Ravi and Meena speaking"
+    ],
+    "other": {
+      "hi": ["रवि और मीना किन दृश्यों में साथ बोलते हैं?", "उन दृश्यों को खोजो जिनमें रवि और मीना दोनों हैं"],
+      "es": ["¿En qué escenas hablan Ravi y Meena juntos?", "Busca las escenas donde aparecen Ravi y Meena"],
+      "fr": ["Dans quelles scènes Ravi et Meena parlent-ils ensemble ?", "Trouve les scènes avec Ravi et Meena"],
+      "de": ["In welchen Szenen sprechen Ravi und Meena miteinander?", "Finde die Szenen mit Ravi und Meena"],
+      "ja": ["ラビとミーナが一緒に話すシーンはどこですか？", "ラビとミーナの両方が登場するシーンを探して"]
+    }
+  },
+  {
+    "intent": "find_scenes_mentioning",
+    "tool": "find_scenes_mentioning",
+    "examples": [
+      "Find every scene that talks about the umbrella",
+      "Which scenes involve a red bicycle?",
+      "Show me scenes referring to the old well",
+      "Point me to the scenes where a letter is mentioned",
+      "Scenes that contain the word storm",
+      "Which scenes happen near the harbour?",
+      "In which scenes does the radio appear?"
+    ],
+    "other": {
+      "hi": ["किन दृश्यों में छाते का ज़िक्र है?", "जिन दृश्यों में पुराना कुआँ आता है उन्हें खोजो"],
+      "es": ["¿En qué escenas se menciona el paraguas?", "Busca las escenas donde aparece la radio"],
+      "fr": ["Dans quelles scènes parle-t-on du parapluie ?", "Trouve les scènes où la radio apparaît"],
+      "de": ["In welchen Szenen wird der Regenschirm erwähnt?", "Finde die Szenen, in denen das Radio vorkommt"],
+      "ja": ["傘が出てくるシーンはどれですか？", "ラジオに触れているシーンを探して"]
+    }
+  },
+  {
+    "intent": "search_project",
+    "tool": "search_project",
+    "examples": [
+      "Look through the whole project for the phrase hidden key",
+      "Search everything for lantern oil",
+      "Find any note or scene that says broken window",
+      "Where in the project is the name Harbour Road written?",
+      "Full text search for monsoon",
+      "Dig up everything that mentions the customs officer",
+      "Check the entire project for the word sunrise"
+    ],
+    "other": {
+      "hi": ["पूरे प्रोजेक्ट में 'खोई चाबी' खोजो", "जहाँ भी बारिश का ज़िक्र हो वह सब ढूँढो"],
+      "es": ["Busca en todo el proyecto la frase llave escondida", "Encuentra todo lo que mencione la lluvia"],
+      "fr": ["Cherche dans tout le projet l'expression clé cachée", "Trouve tout ce qui mentionne la pluie"],
+      "de": ["Durchsuche das ganze Projekt nach dem Begriff versteckter Schlüssel", "Finde alles, was Regen erwähnt"],
+      "ja": ["プロジェクト全体で「隠れた鍵」を検索して", "雨に関する記述をすべて探して"]
+    }
+  },
+  {
+    "intent": "location_statistics",
+    "tool": "location_statistics",
+    "examples": [
+      "How many different places does the story use?",
+      "Give me the split between interior and exterior scenes",
+      "How many scenes are set at night versus day?",
+      "Which locations are used and how often?",
+      "Count of indoor and outdoor scenes",
+      "Tally of daytime and nighttime scenes",
+      "What is the number of distinct settings in the screenplay?",
+      "How many night scenes?",
+      "Count the exterior scenes",
+      "Number of scenes set at night"
+    ],
+    "other": {
+      "hi": ["कहानी में कितनी अलग-अलग जगहें इस्तेमाल हुई हैं?", "दिन और रात के दृश्यों की गिनती बताओ"],
+      "es": ["¿Cuántas localizaciones distintas usa el guion?", "¿Cuántas escenas son de noche y cuántas de día?"],
+      "fr": ["Combien de lieux différents le scénario utilise-t-il ?", "Combien de scènes se passent la nuit et combien le jour ?"],
+      "de": ["Wie viele verschiedene Schauplätze gibt es?", "Wie viele Nachtszenen und wie viele Tagszenen gibt es?"],
+      "ja": ["脚本には何か所のロケ地がありますか？", "昼のシーンと夜のシーンはそれぞれいくつですか？"]
+    }
+  },
+  {
+    "intent": "scene_speakers",
+    "needs": "scene",
+    "tool": "scene_fact",
+    "fact": "speakers",
+    "examples": [
+      "Which characters talk in scene 3?",
+      "Tell me who has dialogue in scene 12",
+      "Who is speaking during scene 7?",
+      "List the speakers of the second scene",
+      "Who says something in scene 9?",
+      "Who gets a line in scene 14?",
+      "Which characters speak in scene 4?",
+      "Who speaks in scene 9?",
+      "Which characters have lines in scene 6?",
+      "Who talks in scene 2?"
+    ],
+    "other": {
+      "hi": ["दृश्य 3 में कौन बोलता है?", "सीन 8 के संवाद किस-किस के हैं?"],
+      "es": ["¿Quién habla en la escena 3?", "Dime qué personajes tienen diálogo en la escena 8"],
+      "fr": ["Qui parle dans la scène 3 ?", "Quels personnages ont du dialogue dans la scène 8 ?"],
+      "de": ["Wer spricht in Szene 3?", "Welche Figuren haben in Szene 8 Text?"],
+      "ja": ["シーン3で話しているのは誰ですか？", "シーン8でセリフがあるのは誰？"]
+    }
+  },
+  {
+    "intent": "scene_setting",
+    "needs": "scene",
+    "tool": "scene_fact",
+    "fact": "setting",
+    "examples": [
+      "What location is scene 4 set in?",
+      "Is scene 6 inside or outside, and where?",
+      "Where is scene 11 happening?",
+      "Tell me the setting of scene 2",
+      "In which place does scene 15 unfold?",
+      "What is the heading location of scene 9?"
+    ],
+    "other": {
+      "hi": ["दृश्य 4 कहाँ होता है?", "सीन 6 की लोकेशन क्या है?"],
+      "es": ["¿Dónde transcurre la escena 4?", "¿Cuál es el escenario de la escena 6?"],
+      "fr": ["Où se passe la scène 4 ?", "Quel est le lieu de la scène 6 ?"],
+      "de": ["Wo spielt Szene 4?", "Was ist der Schauplatz von Szene 6?"],
+      "ja": ["シーン4はどこが舞台ですか？", "シーン6の場所はどこ？"]
+    }
+  },
+  {
+    "intent": "scene_time",
+    "needs": "scene",
+    "tool": "scene_fact",
+    "fact": "time",
+    "examples": [
+      "Is scene 5 set during the day or at night?",
+      "What time of day is scene 8?",
+      "Does scene 3 happen in the morning or evening?",
+      "Tell me whether scene 10 is a night scene",
+      "Day or night in scene 2?",
+      "When does scene 12 take place, daytime or after dark?"
+    ],
+    "other": {
+      "hi": ["दृश्य 5 दिन का है या रात का?", "सीन 8 किस समय का है?"],
+      "es": ["¿La escena 5 es de día o de noche?", "¿A qué hora del día ocurre la escena 8?"],
+      "fr": ["La scène 5 se passe-t-elle de jour ou de nuit ?", "À quel moment de la journée a lieu la scène 8 ?"],
+      "de": ["Spielt Szene 5 tagsüber oder nachts?", "Zu welcher Tageszeit spielt Szene 8?"],
+      "ja": ["シーン5は昼ですか夜ですか？", "シーン8は何時ごろの設定？"]
+    }
+  },
+  {
+    "intent": "dialogue_most",
+    "tool": "dialogue_fact",
+    "fact": "most",
+    "examples": [
+      "Which character talks the most?",
+      "Who gets the biggest share of dialogue?",
+      "Name the most talkative person in the script",
+      "Who has the greatest number of lines overall?",
+      "Whose speaking parts are the longest overall?",
+      "Who dominates the dialogue?"
+    ],
+    "other": {
+      "hi": ["सबसे ज़्यादा संवाद किसके हैं?", "कौन सा किरदार सबसे ज़्यादा बोलता है?"],
+      "es": ["¿Qué personaje habla más?", "¿Quién tiene más diálogo en el guion?"],
+      "fr": ["Quel personnage parle le plus ?", "Qui a le plus de dialogues ?"],
+      "de": ["Welche Figur spricht am meisten?", "Wer hat den meisten Text?"],
+      "ja": ["一番セリフが多いのは誰ですか？", "最もよく話すキャラクターは？"]
+    }
+  },
+  {
+    "intent": "dialogue_scenes",
+    "needs": "character",
+    "tool": "dialogue_fact",
+    "fact": "scenes",
+    "examples": [
+      "In which scenes does Ravi have dialogue?",
+      "List every scene where Ravi says something",
+      "Which scenes does Ravi speak in?",
+      "Where does Ravi talk throughout the film?",
+      "Show the scenes with lines for Ravi",
+      "Give me the scene numbers in which Ravi is heard"
+    ],
+    "other": {
+      "hi": ["रवि किन दृश्यों में बोलता है?", "रवि के संवाद वाले दृश्य बताओ"],
+      "es": ["¿En qué escenas habla Ravi?", "Lista las escenas donde Ravi tiene diálogo"],
+      "fr": ["Dans quelles scènes Ravi parle-t-il ?", "Liste les scènes où Ravi a du dialogue"],
+      "de": ["In welchen Szenen spricht Ravi?", "Liste die Szenen auf, in denen Ravi Text hat"],
+      "ja": ["ラビがセリフを話すシーンはどれですか？", "ラビが話すシーンを一覧にして"]
+    }
+  },
+  {
+    "intent": "open_scene",
+    "needs": "scene",
+    "tool": "open_scene",
+    "examples": [
+      "Bring up scene 18",
+      "I want to look at scene 7",
+      "Jump into scene 30",
+      "Show scene 12 in the editor",
+      "Navigate me to scene 3",
+      "Pull up scene 22 please"
+    ],
+    "other": {
+      "hi": ["सीन 18 खोलो", "मुझे दृश्य 7 पर ले चलो"],
+      "es": ["Abre la escena 18", "Llévame a la escena 7"],
+      "fr": ["Ouvre la scène 18", "Emmène-moi à la scène 7"],
+      "de": ["Öffne Szene 18", "Bring mich zu Szene 7"],
+      "ja": ["シーン18を開いて", "シーン7に移動して"]
+    }
+  },
+  {
+    "intent": "open_workspace",
+    "tool": "open_workspace",
+    "examples": [
+      "Switch to the production area",
+      "Take me to the call sheets page",
+      "Open the idea vault section",
+      "Go to the story board view",
+      "Bring up the breakdown workspace",
+      "I want to see the files area"
+    ],
+    "other": {
+      "hi": ["प्रोडक्शन वाला हिस्सा खोलो", "मुझे कॉल शीट पेज पर ले चलो"],
+      "es": ["Abre el área de producción", "Llévame a las hojas de llamada"],
+      "fr": ["Ouvre l'espace de production", "Emmène-moi aux feuilles de service"],
+      "de": ["Öffne den Produktionsbereich", "Bring mich zu den Drehplänen"],
+      "ja": ["制作ワークスペースを開いて", "コールシートの画面に移動して"]
+    }
+  },
+  {
+    "intent": "project_overview",
+    "tool": "project_overview",
+    "examples": [
+      "Give me a quick summary of where the project stands",
+      "What does my project look like at a glance?",
+      "Show the headline numbers for this project",
+      "How is the project doing overall?",
+      "Brief status report on everything",
+      "What are the key facts about this project?"
+    ],
+    "other": {
+      "hi": ["प्रोजेक्ट की मौजूदा स्थिति का सार बताओ", "इस प्रोजेक्ट के मुख्य आँकड़े दिखाओ"],
+      "es": ["Dame un resumen del estado del proyecto", "Muéstrame las cifras principales del proyecto"],
+      "fr": ["Donne-moi un aperçu de l'état du projet", "Montre les chiffres clés du projet"],
+      "de": ["Gib mir einen Überblick über den Stand des Projekts", "Zeige die wichtigsten Zahlen des Projekts"],
+      "ja": ["プロジェクトの現状を簡単にまとめて", "このプロジェクトの主な数字を見せて"]
+    }
+  },
+  {
+    "intent": "list_drafts",
+    "tool": "list_drafts",
+    "examples": [
+      "What versions of the screenplay exist?",
+      "Show me all the drafts I have saved",
+      "Which draft is the active one?",
+      "How many revisions of the script are there?",
+      "Name each draft of this screenplay",
+      "Which draft am I working in right now?"
+    ],
+    "other": {
+      "hi": ["स्क्रीनप्ले के कौन-कौन से ड्राफ़्ट हैं?", "अभी कौन सा ड्राफ़्ट चालू है?"],
+      "es": ["¿Qué borradores tiene el guion?", "¿Cuál es el borrador actual?"],
+      "fr": ["Quelles versions du scénario existent ?", "Quelle est la version en cours ?"],
+      "de": ["Welche Fassungen des Drehbuchs gibt es?", "Welche Fassung ist gerade aktiv?"],
+      "ja": ["脚本の稿は何種類ありますか？", "現在の稿はどれですか？"]
+    }
+  },
+  {
+    "intent": "breakdown_status",
+    "tool": "breakdown_status",
+    "examples": [
+      "Have all scenes been broken down yet?",
+      "How complete is the scene breakdown?",
+      "Which scenes still lack breakdown elements?",
+      "Report on the progress of tagging props and wardrobe",
+      "How many breakdown items are confirmed?",
+      "What is left to break down?"
+    ],
+    "other": {
+      "hi": ["ब्रेकडाउन का काम कितना हो चुका है?", "किन दृश्यों का ब्रेकडाउन बाकी है?"],
+      "es": ["¿Cuánto avance lleva el desglose?", "¿Qué escenas faltan por desglosar?"],
+      "fr": ["Où en est le dépouillement ?", "Quelles scènes n'ont pas encore été dépouillées ?"],
+      "de": ["Wie weit ist die Auswertung der Szenen?", "Welche Szenen sind noch nicht aufgeschlüsselt?"],
+      "ja": ["ブレイクダウンの進み具合はどうですか？", "ブレイクダウンが未完了のシーンはどれ？"]
+    }
+  },
+  {
+    "intent": "production_statistics",
+    "tool": "production_statistics",
+    "examples": [
+      "How many locations, cast and crew do we have on record?",
+      "Give me the production totals",
+      "What does the props catalog hold, by category?",
+      "Count the production records we have",
+      "How many catalog items per category?",
+      "Summarise the production numbers"
+    ],
+    "other": {
+      "hi": ["प्रोडक्शन में कितने कलाकार और क्रू सदस्य दर्ज हैं?", "प्रोडक्शन के कुल आँकड़े बताओ"],
+      "es": ["¿Cuántos miembros de reparto y equipo hay registrados?", "Dame los totales de producción"],
+      "fr": ["Combien de membres de distribution et d'équipe sont enregistrés ?", "Donne les totaux de la production"],
+      "de": ["Wie viele Darsteller und Crew-Mitglieder sind erfasst?", "Nenne die Produktionszahlen"],
+      "ja": ["キャストとスタッフは何人登録されていますか？", "制作の集計を教えて"]
+    }
+  },
+  {
+    "intent": "story_statistics",
+    "tool": "story_statistics",
+    "examples": [
+      "How is the beat board laid out in numbers?",
+      "How many sequences and beats are on the board?",
+      "Count the story cards that are parked",
+      "Tell me the number of beats on the board",
+      "How many cards sit on the beat board?",
+      "Numbers for the story structure, please"
+    ],
+    "other": {
+      "hi": ["बीट बोर्ड पर कितने एक्ट और कार्ड हैं?", "कहानी की संरचना के आँकड़े बताओ"],
+      "es": ["¿Cuántos actos y tarjetas hay en el tablero de beats?", "Dame las cifras de la estructura de la historia"],
+      "fr": ["Combien d'actes et de cartes y a-t-il sur le tableau ?", "Donne les chiffres de la structure de l'histoire"],
+      "de": ["Wie viele Akte und Karten hat das Beat-Board?", "Nenne die Zahlen der Story-Struktur"],
+      "ja": ["ビートボードにアクトとカードはいくつありますか？", "ストーリー構成の数を教えて"]
+    }
+  },
+  {
+    "intent": "project_tasks",
+    "tool": "project_tasks",
+    "examples": [
+      "What do I still have to do?",
+      "Show my open to-dos",
+      "Any unfinished tasks on the list?",
+      "Which jobs are pending for the team?",
+      "Read me the task list",
+      "What is outstanding on the to-do list?"
+    ],
+    "other": {
+      "hi": ["मेरे कौन से काम बाकी हैं?", "खुले हुए टास्क दिखाओ"],
+      "es": ["¿Qué tareas tengo pendientes?", "Muéstrame la lista de tareas abiertas"],
+      "fr": ["Quelles tâches me restent-il ?", "Montre-moi les tâches ouvertes"],
+      "de": ["Welche Aufgaben sind noch offen?", "Zeige meine offenen Aufgaben"],
+      "ja": ["まだ終わっていないタスクは何ですか？", "未完了のタスク一覧を見せて"]
+    }
+  },
+  {
+    "intent": "project_notes",
+    "tool": "project_notes",
+    "examples": [
+      "What notes have been written for this project?",
+      "Read me the pinned notes",
+      "Show the notes I saved",
+      "Any project notes about the ending?",
+      "List all the memos on this project",
+      "What did the team jot down in notes?"
+    ],
+    "other": {
+      "hi": ["इस प्रोजेक्ट के नोट्स दिखाओ", "पिन किए गए नोट्स पढ़ो"],
+      "es": ["Muéstrame las notas del proyecto", "Lee las notas fijadas"],
+      "fr": ["Montre-moi les notes du projet", "Lis les notes épinglées"],
+      "de": ["Zeige die Notizen des Projekts", "Lies die angehefteten Notizen vor"],
+      "ja": ["プロジェクトのメモを見せて", "ピン留めしたメモを読んで"]
+    }
+  },
+  {
+    "intent": "idea_vault",
+    "tool": "idea_vault",
+    "examples": [
+      "What ideas have I stored away?",
+      "Show the saved quotes and ideas",
+      "Pull up what is in my vault",
+      "Any ideas in the vault about the opening?",
+      "List the items in the idea collection",
+      "What have I put aside for later in the vault?"
+    ],
+    "other": {
+      "hi": ["मेरे आइडिया वॉल्ट में क्या है?", "सहेजे हुए आइडिया दिखाओ"],
+      "es": ["¿Qué ideas tengo guardadas en la bóveda?", "Muéstrame las citas guardadas"],
+      "fr": ["Quelles idées ai-je gardées dans le coffre ?", "Montre les citations enregistrées"],
+      "de": ["Welche Ideen liegen in meinem Ideentresor?", "Zeige die gespeicherten Zitate"],
+      "ja": ["アイデア保管庫には何が入っていますか？", "保存した引用とアイデアを見せて"]
+    }
+  },
+  {
+    "intent": "schedule_overview",
+    "tool": "schedule_overview",
+    "examples": [
+      "When are we shooting?",
+      "Give me the shooting plan across the days",
+      "How many shoot days are scheduled?",
+      "What is on the calendar for the shoot?",
+      "Outline the shooting schedule",
+      "Which days are booked for filming?"
+    ],
+    "other": {
+      "hi": ["शूटिंग का शेड्यूल क्या है?", "कितने शूटिंग दिन तय हैं?"],
+      "es": ["¿Cuál es el plan de rodaje?", "¿Cuántos días de rodaje hay programados?"],
+      "fr": ["Quel est le planning de tournage ?", "Combien de jours de tournage sont prévus ?"],
+      "de": ["Wie sieht der Drehplan aus?", "Wie viele Drehtage sind eingeplant?"],
+      "ja": ["撮影スケジュールはどうなっていますか？", "撮影日は何日確保されていますか？"]
+    }
+  },
+  {
+    "intent": "cast_and_crew",
+    "tool": "cast_and_crew",
+    "examples": [
+      "Who is part of the crew?",
+      "Which actors have been cast?",
+      "Show me everyone on the team with their roles",
+      "Who plays which part?",
+      "List the crew members and their jobs",
+      "Who is the director of photography?"
+    ],
+    "other": {
+      "hi": ["क्रू में कौन-कौन है?", "किस किरदार को कौन निभा रहा है?"],
+      "es": ["¿Quién forma parte del equipo técnico?", "¿Qué actor interpreta a cada personaje?"],
+      "fr": ["Qui fait partie de l'équipe technique ?", "Quel acteur joue quel rôle ?"],
+      "de": ["Wer gehört zur Crew?", "Wer spielt welche Rolle?"],
+      "ja": ["スタッフには誰がいますか？", "誰がどの役を演じますか？"]
+    }
+  },
+  {
+    "intent": "product_help",
+    "tool": "answer_product_question",
+    "examples": [
+      "How can I export my screenplay as a PDF?",
+      "Where do I change the page settings in this app?",
+      "What is the purpose of the call sheet feature?",
+      "How do I start a new project?",
+      "How can I back up my project?",
+      "Where are the keyboard shortcuts listed?",
+      "What happens when I accept a proposed change?"
+    ],
+    "other": {
+      "hi": ["मैं अपनी स्क्रिप्ट को PDF में कैसे निर्यात करूँ?", "OpenFrame में बैकअप कैसे बनाते हैं?"],
+      "es": ["¿Cómo exporto mi guion a PDF?", "¿Cómo hago una copia de seguridad del proyecto?"],
+      "fr": ["Comment exporter mon scénario en PDF ?", "Comment sauvegarder mon projet ?"],
+      "de": ["Wie exportiere ich mein Drehbuch als PDF?", "Wie sichere ich mein Projekt?"],
+      "ja": ["脚本をPDFに書き出すにはどうすればいいですか？", "プロジェクトのバックアップの取り方は？"]
+    }
+  },
+  {
+    "intent": "suggest_breakdown",
+    "needs": "scene",
+    "tool": "suggest_breakdown",
+    "examples": [
+      "Which props and wardrobe might scene 8 need?",
+      "Propose the production elements for scene 14",
+      "What should the crew prepare for scene 3?",
+      "Recommend breakdown items for scene 20",
+      "List the likely props, vehicles and costumes in scene 11",
+      "Which elements should I tag for scene 6?"
+    ],
+    "other": {
+      "hi": ["दृश्य 8 के लिए कौन से प्रॉप्स और कपड़े चाहिए होंगे?", "सीन 14 के लिए ब्रेकडाउन तत्व सुझाओ"],
+      "es": ["¿Qué utilería y vestuario necesita la escena 8?", "Sugiere elementos de desglose para la escena 14"],
+      "fr": ["De quels accessoires et costumes la scène 8 a-t-elle besoin ?", "Propose des éléments de dépouillement pour la scène 14"],
+      "de": ["Welche Requisiten und Kostüme braucht Szene 8?", "Schlage Aufschlüsselungselemente für Szene 14 vor"],
+      "ja": ["シーン8にはどんな小道具と衣装が必要ですか？", "シーン14のブレイクダウン要素を提案して"]
+    }
+  },
+  {
+    "intent": "explain_scene",
+    "lane": "chat",
+    "examples": [
+      "What actually happens in scene 6?",
+      "Walk me through the events of the second act",
+      "Explain what is going on in this scene",
+      "Can you retell what takes place in scene 14?",
+      "Help me understand the opening scene",
+      "What is the point of scene 9?",
+      "Describe the action of the finale"
+    ],
+    "other": {
+      "hi": ["दृश्य 6 में असल में क्या होता है?", "इस सीन को मुझे समझाओ"],
+      "es": ["¿Qué pasa realmente en la escena 6?", "Explícame lo que ocurre en esta escena"],
+      "fr": ["Que se passe-t-il vraiment dans la scène 6 ?", "Explique-moi ce qui se passe dans cette scène"],
+      "de": ["Was passiert eigentlich in Szene 6?", "Erkläre mir, was in dieser Szene vorgeht"],
+      "ja": ["シーン6では実際に何が起きていますか？", "このシーンで何が起こっているのか説明して"]
+    }
+  },
+  {
+    "intent": "describe_character",
+    "needs": "character",
+    "lane": "chat",
+    "examples": [
+      "What kind of person is Ravi?",
+      "Give me a portrait of Meena as a character",
+      "How would you characterise Ravi?",
+      "Tell me about Meena's personality and arc",
+      "What drives Ravi through the story?",
+      "Describe who Meena is and what she wants",
+      "Sketch the character of Ravi for me"
+    ],
+    "other": {
+      "hi": ["रवि किस तरह का इंसान है?", "मीना के किरदार के बारे में बताओ"],
+      "es": ["¿Qué tipo de persona es Ravi?", "Háblame de la personalidad de Meena"],
+      "fr": ["Quel genre de personne est Ravi ?", "Parle-moi de la personnalité de Meena"],
+      "de": ["Was für ein Mensch ist Ravi?", "Erzähl mir etwas über Meenas Persönlichkeit"],
+      "ja": ["ラビはどんな人物ですか？", "ミーナの性格について教えて"]
+    }
+  },
+  {
+    "intent": "relationship",
+    "needs": "characters",
+    "lane": "chat",
+    "examples": [
+      "How do Ravi and Meena relate to each other?",
+      "What is the dynamic between Ravi and Meena?",
+      "Are Ravi and Meena friends or rivals?",
+      "Explain the bond between these two characters",
+      "How does Ravi feel about Meena?",
+      "Describe the tension between Ravi and Meena",
+      "What connects Ravi and Meena in the story?"
+    ],
+    "other": {
+      "hi": ["रवि और मीना के बीच क्या रिश्ता है?", "इन दोनों किरदारों का आपसी तालमेल समझाओ"],
+      "es": ["¿Cuál es la relación entre Ravi y Meena?", "Explica la dinámica entre estos dos personajes"],
+      "fr": ["Quelle est la relation entre Ravi et Meena ?", "Explique la dynamique entre ces deux personnages"],
+      "de": ["Wie ist die Beziehung zwischen Ravi und Meena?", "Erkläre die Dynamik zwischen diesen beiden Figuren"],
+      "ja": ["ラビとミーナはどんな関係ですか？", "この二人の関係性を説明して"]
+    }
+  },
+  {
+    "intent": "ideas",
+    "lane": "chat",
+    "examples": [
+      "Brainstorm some ways this scene could end",
+      "Give me ideas to make the second act more surprising",
+      "What if the lead character made a different choice here?",
+      "Suggest a twist for the finale",
+      "Can you pitch alternatives for this dialogue?",
+      "Help me come up with a stronger opening image",
+      "I need some creative options for the middle of the story"
+    ],
+    "other": {
+      "hi": ["इस दृश्य के अंत के लिए कुछ आइडिया सुझाओ", "दूसरे एक्ट को और रोचक बनाने के सुझाव दो"],
+      "es": ["Dame ideas para el final de esta escena", "Sugiere un giro para el desenlace"],
+      "fr": ["Propose des idées pour terminer cette scène", "Suggère un rebondissement pour la fin"],
+      "de": ["Gib mir Ideen für das Ende dieser Szene", "Schlage eine Wendung für das Finale vor"],
+      "ja": ["このシーンの終わり方のアイデアを出して", "クライマックスのどんでん返しを提案して"]
+    }
+  },
+  {
+    "intent": "critique",
+    "lane": "chat",
+    "examples": [
+      "What works and what doesn't in scene 5?",
+      "Give me honest feedback on the second act",
+      "Where is the pacing weak in this screenplay?",
+      "Critique my opening scene",
+      "Which parts of the dialogue need improving?",
+      "Point out the weakest scenes and say why",
+      "Be critical: how can this scene be stronger?"
+    ],
+    "other": {
+      "hi": ["इस दृश्य में क्या अच्छा है और क्या कमज़ोर?", "मेरे पहले एक्ट पर ईमानदार राय दो"],
+      "es": ["¿Qué funciona y qué no en esta escena?", "Dame una crítica sincera del segundo acto"],
+      "fr": ["Qu'est-ce qui fonctionne ou pas dans cette scène ?", "Donne-moi un avis honnête sur le deuxième acte"],
+      "de": ["Was funktioniert in dieser Szene und was nicht?", "Gib mir ehrliches Feedback zum zweiten Akt"],
+      "ja": ["このシーンの良い点と弱い点は何ですか？", "第二幕について率直な感想をください"]
+    }
+  },
+  {
+    "intent": "theme",
+    "lane": "chat",
+    "examples": [
+      "What is this film really about?",
+      "Which themes run through the story?",
+      "What does the lantern symbolise?",
+      "Explain the underlying message of the script",
+      "Identify the recurring motifs",
+      "What is the meaning behind the ending?",
+      "What is the central idea of the screenplay?"
+    ],
+    "other": {
+      "hi": ["यह फ़िल्म असल में किस बारे में है?", "कहानी में कौन-से विषय बार-बार आते हैं?"],
+      "es": ["¿De qué trata realmente esta película?", "¿Qué temas recorren la historia?"],
+      "fr": ["De quoi parle vraiment ce film ?", "Quels thèmes traversent l'histoire ?"],
+      "de": ["Worum geht es in diesem Film wirklich?", "Welche Themen ziehen sich durch die Geschichte?"],
+      "ja": ["この映画は本当は何についての話ですか？", "物語に通じるテーマは何ですか？"]
+    }
+  },
+  {
+    "intent": "compare",
+    "lane": "chat",
+    "examples": [
+      "How does the first scene differ from the last one?",
+      "Compare Ravi's role in act one with act three",
+      "Contrast the opening with the ending",
+      "How is scene 3 different from scene 8?",
+      "Compare how Ravi and Meena speak",
+      "Which of the two characters changes more?",
+      "Put the first act side by side with the last act"
+    ],
+    "other": {
+      "hi": ["पहले और आखिरी दृश्य की तुलना करो", "रवि और मीना की तुलना करो"],
+      "es": ["Compara la primera escena con la última", "Compara a Ravi con Meena"],
+      "fr": ["Compare la première scène avec la dernière", "Compare Ravi et Meena"],
+      "de": ["Vergleiche die erste Szene mit der letzten", "Vergleiche Ravi mit Meena"],
+      "ja": ["最初のシーンと最後のシーンを比べて", "ラビとミーナを比較して"]
+    }
+  },
+  {
+    "intent": "whole_screenplay",
+    "lane": "recipe",
+    "examples": [
+      "Tell me the whole story from beginning to end",
+      "Walk through the entire screenplay act by act",
+      "Summarise the film as a whole",
+      "Give an overview of the full plot",
+      "What is the overall storyline of the script?",
+      "Recap everything that happens in the movie",
+      "Describe the complete arc of the screenplay"
+    ],
+    "other": {
+      "hi": ["पूरी कहानी शुरू से अंत तक बताओ", "पूरी स्क्रिप्ट का सार दो"],
+      "es": ["Cuéntame la historia completa de principio a fin", "Resume todo el guion"],
+      "fr": ["Raconte toute l'histoire du début à la fin", "Résume l'ensemble du scénario"],
+      "de": ["Erzähl mir die ganze Geschichte von Anfang bis Ende", "Fasse das gesamte Drehbuch zusammen"],
+      "ja": ["物語を最初から最後まで通して教えて", "脚本全体を要約して"]
+    }
+  }
+]

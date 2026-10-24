@@ -171,7 +171,7 @@ fn mask_dates(text: &str) -> (String, bool) {
         if i + 2 < words.len()
             && words[i].len() <= 2
             && words[i].chars().all(|c| c.is_ascii_digit())
-            && MONTHS.contains(&words[i + 1])
+            && MONTHS.iter().any(|m| m.eq_ignore_ascii_case(words[i + 1]))
             && words[i + 2]
                 .trim_end_matches(|c: char| !c.is_ascii_digit())
                 .len()

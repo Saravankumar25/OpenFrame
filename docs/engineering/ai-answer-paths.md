@@ -2,7 +2,9 @@
 
 > Written 2026-10-20 for the owner's AI briefs (`OpenFrameAI.docx`, 19 October, and the context engineering brief,
 > 20 October). It records the request path as built, the decisions taken, what is measured and what is not. Code is the
-> source of truth; this page names the files.
+> source of truth; this page names the files. Updated 2026-10-24 for the lanes, briefings, code verifiers, progress and
+> Cancel: the decisions are [ADR-0035](../adr/ADR-0035-ai-lanes-briefings-and-code-verifiers.md), the plan and its
+> baseline are [ai-harness-rebuild.md](../specs/ai-harness-rebuild.md).
 
 ## 1. The path of one request
 
@@ -12,12 +14,18 @@
 | Scope | `modules/ai/scope.rs` | The project, screenplay, draft and selection the question is about are resolved. |
 | Small talk | `commands.rs` `small_talk` | "Hi" or "Thanks" get a friendly reply at once. No tool, no model. |
 | Follow-up | `commands.rs` `follow_up`, `just_the_number` | "What about Scene 4?" or "And Ravi?" becomes the previous question about the new subject. "Just the number" returns the number of the previous answer. |
+| Spelling | `typo.rs` `correct`, `orchestrator.rs` `run_agent` | A routing copy of the question is made before any route runs. A word that is a near miss of exactly one route keyword or project name (a character or place) is corrected: 4 to 7 letters within one edit, 8 or more within two, a swap of neighbours counts as one, same first letter, and a fixed list for the common misspellings of "scenes" and "many". A keyword, a common English word, an inflection of a keyword, a number, quoted text or another script is never changed, and a capitalised word near a name is left for the name check. The routes, the tool picker, the lane rules and the intent step read the copy. The model reads, and the record keeps, the person's own words. A route found only through the copy may read; it never builds a proposal. |
 | Direct route | `commands.rs` `direct_call` | A question whose meaning is clear is sent straight to one tool: counts, scene facts, dialogue facts, a character description, navigation, simple proposals. |
-| Tool choice | `toolbox.rs` `tools_for_request`, `orchestrator.rs` `run_agent` | Anything else goes to the local model with a short list of tools picked for the question. The product guide is offered only for questions about using OpenFrame. |
+| Lane router | `lanes.rs`, `understand.rs`, `orchestrator.rs` `run_agent` | Code decides who answers (harness plan 5.2, `docs/specs/ai-harness-rebuild.md`). Direct and Action run the tool loop. A question about named people, scenes or acts, ideas, themes or critique, or about a scene or name the project does not have, goes to the Chat lane. "Explain the whole screenplay" and similar go to the Recipe lane. Lists, finds, counts, production records and anything unclear go to the Agent lane (4 steps by default, 12 at most). The lane, the next best lane and the strength of the rule (0 to 1) are written to the trace. |
+| Intent prototypes | `intent.rs`, `intents.json`, `orchestrator.rs` `apply_intent` | Plan 5.2 step 5. Only where the rules were not sure: the Agent lane, or the Chat lane on a weak rule; a plain command, an action verb, a hard rule and a question about a missing name keep their route. About thirty intents, each with short example questions in English and two each in Hindi, Spanish, French, German and Japanese, are embedded once per search model (the "query: " form for E5) and kept in memory. The routing copy is embedded; an intent's score is its best example, and the margin is the lead over the best intent that asks for a different action. A score of 0.90 and a margin of 0.03 are needed for the direct gate (a whole-screenplay recipe 0.03 more). From 0.88 up, or with a smaller margin, the middle band offers the first agent step only the tools of the two closest intents, `clarify` and `final_answer` (never `retrieve_context`). A chat or recipe intent feeds the lane router. A tool intent becomes a direct call when code can fill every argument from what `understand` found (scene number, character names, a quoted or noun-phrase search term, the question for the product guide); otherwise the first agent step is offered only that tool, `clarify` and `final_answer`. The step waits at most 1.5 seconds; with no search model, a failed or slow one, it is skipped and the rules decide as before. The intent, its score, its margin and whether it was used are written to the trace (migration 0006); the middle band adds `|top-two` to the intent name. |
+| Chat lane | `chat.rs`, `briefing.rs`, `verify.rs` | Code builds the evidence: the project map, a briefing for each person, scene or act named, and the best retrieval passages, sized by the measured prompt speed. A scene the draft lacks or a name the project does not know is answered without the model. Otherwise the model writes (quick, explain, deep or ideas settings) and the verifiers check the text. |
+| Recipe lane | `recipe.rs` | Whole-screenplay and act questions: scenes grouped by act (or about eight), one short note per group, one composed answer, a coverage count (scenes used out of scenes planned), and progress lines between the calls. |
+| Tool choice | `toolbox.rs` `tools_for_request`, `orchestrator.rs` `run_agent` | The Agent lane: the local model with a short list of tools picked for the question. The product guide is offered only for questions about using OpenFrame. |
 | Tools | `tools.rs`, `toolbox/*.rs` | Exact facts are computed from the project database. Text the model must write (a summary, a description) gets only the evidence it needs. |
 | Writing | `orchestrator.rs` `run_generation` | The model writes from the evidence: a scene summary from the whole scene, a character description from that character's scenes. |
-| Checks | `orchestrator.rs` | No reply may say a change was made unless a Change Set was applied. A non-English question gets an answer in its language, keeping every number. |
-| Show | `Conversation.tsx` `ResultView` | Plain text first. Sources, steps, how sure the answer is and the rows that only back the text wait behind the "See sources" button. A list the person asked for stays under the answer (`itemsAreAnswer`, set in Rust). Long lists show eight items and "Show all". Proposed changes keep their review card. |
+| Checks | `orchestrator.rs`, `verify.rs` | No reply may say a change was made unless a Change Set was applied. A non-English question gets an answer in its language, keeping every number. Chat and Recipe answers also pass the verifiers v2: names, scene numbers, quotations, numbers, relationship words, language, length, repetition, empty text and `evidence_echo` (note markup was washed out of the answer and under 25 words remain; restating the script's own lines is fact and is not an offence), and an answer that only hands the request back counts as empty. Every model-written text is first washed by `sanitize.rs`: our delimiter tags, evidence labels (`Characters:`, `Location:`, `[Project map]`, `[... · ...]`, briefing headings), a heading repeated twice and sentences about the reply itself ("here is the revised answer") are removed, so the person never sees prompt markup. A failed check sends the model the exact offenders; at most three passes inside 60 seconds; an answer that passes on the first pass is shown at once. If every pass fails, the best attempt is shown without its offending sentences and marked "not sure". |
+| Progress and Cancel | `orchestrator.rs` `progress`, `cancel.rs`, `Conversation.tsx` `useProgress` | While a request runs the panel shows the latest progress line of its conversation ("Reading Scenes 5 and 6", from `ai.progress` module events) in a polite live region, with a Cancel button that calls `ai.cancel`. No text is streamed. `ai.ask` registers a stop flag for its conversation (the panel names the conversation before the first answer exists); `ai.cancel` sets it and takes no lock the request holds. The request looks at the flag before each step, between verifier passes and before every Recipe call; a model call already running finishes or times out, then the request stops. The result is "Stopped. Nothing was changed." with whatever the steps had found, the request is stored as Canceled, the trace outcome is "cancelled", and no request stays Running. |
+| Show | `Conversation.tsx` `ResultView`, `answerText.tsx` | Plain text first, drawn with paragraphs on blank lines, "- " bullets, "1. " numbers and the "Idea:" label in bold, all as React elements (no HTML). A whole-screenplay answer shows "Used 36 of 36 scenes" under the text. Sources, steps, how sure the answer is and the rows that only back the text wait behind the "See sources" button. A list the person asked for stays under the answer (`itemsAreAnswer`, set in Rust). Long lists show eight items and "Show all". Proposed changes keep their review card. |
 
 ## 2. Question families and how each is answered
 
@@ -47,6 +55,9 @@
    description reads that character's scenes. Retrieval snippets are still used for open discovery questions.
 4. **No graph or global summary cache added.** The measured failures were routing and evidence selection, not missing
    relationships. A cached global summary would go stale on every edit.
+   **SUPERSEDED in part (2026-10-24)** by `docs/specs/ai-harness-rebuild.md` section 5.5: code-built digests, briefings
+   and a project map are allowed because they are built from the draft on each request and so cannot go stale. As built
+   in the lanes slice nothing is cached yet; the Chat and Recipe lanes read them fresh.
 5. **Plain answers, details on demand.** The badges, "From project data" lines, step counts and the rows of a count, a
    scene fact or a written answer sit behind one "See sources" button. Whether rows are the answer is decided in Rust,
    not in the screen: `toolbox.rs` `LIST_ANSWERS` names the tools whose items are the list the person asked for (list the
@@ -55,11 +66,20 @@
    Refusals, failures, questions and private-information denials keep their reasons in view. Text the model wrote goes
    through `plain_text` (no bold, bullets, headings, numbering, rules, code ticks or link syntax; line breaks stay) before
    it is shown or stored.
+   **SUPERSEDED in part (2026-10-24)** by `docs/specs/ai-harness-rebuild.md` section 5.8 and the owner decision of
+   2026-10-24: explain, deep and ideas answers of the Chat and Recipe lanes keep line breaks, "- " bullets and "1. "
+   numbers (`orchestrator.rs` `plain_text_with`, style Rich); a heading hash goes and the heading stays as a plain line.
+   Quick answers and the Agent lane keep the flat style described here.
 6. **Short by default, exact when asked.** A request that names a sentence count ("in two sentences", "a
    one-sentence card", "a logline") gets that many sentences. Without one, a summary or a character description keeps
    whole sentences up to about 40 words, other short writing up to about 30, a paragraph up to about 90. Sentences are
    dropped from the end, never cut in the middle. When the model writes an answer from retrieved passages, the passages
    are its sources, not a list under the answer.
+   **SUPERSEDED in part (2026-10-24)** by `docs/specs/ai-harness-rebuild.md` sections 5.8 and 5.9 for the Chat and
+   Recipe lanes: length follows the depth the question asks for (quick: 1 to 3 sentences, 120 tokens; explain: 1 to 2
+   paragraphs, 350 tokens; deep: up to 700 tokens; ideas: 400 tokens), a named sentence count still wins, and an answer
+   is trimmed to whole sentences before the length check can fail. The 40, 30 and 90 word defaults above still hold for
+   the Direct and Agent lanes' generation tools.
 7. **Notes are read, never obeyed.** "Summarise my project notes" goes straight to the notes reader, so text inside a
    note cannot become a request to the model.
 8. **A create request needs no look-up, and a proposal ends the step.** In the 2026-10-20 real-model run, 9 of 75 action
@@ -87,6 +107,11 @@
 - "Does Ravi speak to Maya?", "When do they meet?", continuity checks and schedule-change history still go to the model
   with retrieved snippets; they are not computed.
 - File contents: the assistant reads file names and notes, not the bodies of attached PDFs or documents.
+
+- Planned in the harness plan and not built (ADR-0035, "Not adopted"): a reranker, AI digest lines, a stored digest
+  table, token streaming, speculative decoding and the engine benchmarks. The first full run of the held-out and
+  conversation benches on the new lanes is not saved yet, so no gain is claimed here.
+- The intent thresholds (direct gate: score 0.90, margin 0.03; middle band from 0.88) were chosen with a stand-in embedder and are to be tuned from the trace.
 
 ## 6. Owner walkthrough: try these ten questions
 

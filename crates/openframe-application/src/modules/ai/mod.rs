@@ -14,22 +14,35 @@
 //! OpenFrame stays fully usable when the AI is not downloaded, missing or damaged: nothing else
 //! depends on this module.
 
+mod briefing;
+mod cancel;
 pub mod catalog;
 pub mod change_set;
+mod chat;
 mod commands;
+mod conversation_export;
 pub mod intelligence;
+mod intent;
 pub mod knowledge;
+mod lanes;
 pub mod offline;
 pub mod orchestrator;
 pub mod queries;
+mod recipe;
 pub mod records;
 pub mod retrieval;
+mod sanitize;
 pub mod scope;
 pub mod service;
+#[cfg(test)]
+mod test_script;
 pub mod toolbox;
 pub mod tools;
 pub mod trace;
 pub mod types;
+mod typo;
+mod understand;
+mod verify;
 
 use openframe_domain::{Actor, AppResult, Capability};
 use serde::{Deserialize, Serialize};
@@ -37,6 +50,8 @@ use ts_rs::TS;
 
 use crate::core::AppCore;
 use crate::registry::Registry;
+pub use commands::set_direct_routes;
+pub use intent::intent_target;
 pub use offline::{
     AiComponentDto, AiDiagnosticsDto, AiDownloadDto, AiImportArgs, AiImportResult, AiStatusDto,
 };
@@ -89,6 +104,14 @@ pub fn register(r: &mut Registry) {
         M::app_command("Write the local AI trace (numbers and ids only) and the health figures to a file the person chose.")
             .hidden(h::AI_RUNTIME),
     );
+    r.command("ai.export_conversation", conversation_export::export_conversation)
+        .meta(
+            M::command(
+                Capability::UseAi,
+                "Write one of the person's own conversations (their questions, the answers and the sources) to a file they chose.",
+            )
+            .hidden(h::USER_PATH),
+        );
     r.query("ai.diagnostics", diagnostics).meta(
         M::app_query(
             "Offline AI technical details for Settings (versions, licences, hashes, paths).",
@@ -99,6 +122,13 @@ pub fn register(r: &mut Registry) {
         M::command(
             Capability::UseAi,
             "Ask the assistant (one request, one AI Result).",
+        )
+        .hidden(h::AI_SELF),
+    );
+    r.command("ai.cancel", cancel_request).meta(
+        M::command(
+            Capability::UseAi,
+            "Stop the assistant request that is running in a conversation (nothing is changed).",
         )
         .hidden(h::AI_SELF),
     );
@@ -159,6 +189,21 @@ pub struct AiChangeSetArgs {
     pub id: String,
 }
 
+#[derive(Debug, Deserialize, TS)]
+#[ts(export)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct AiCancelArgs {
+    pub conversation_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, TS)]
+#[ts(export)]
+#[serde(rename_all = "camelCase")]
+pub struct AiCancelDto {
+    /// A request of this conversation was running and has been asked to stop.
+    pub stopping: bool,
+}
+
 #[derive(Debug, Clone, Serialize, TS)]
 #[ts(export)]
 #[serde(rename_all = "camelCase")]
@@ -171,6 +216,13 @@ pub struct AiHistoryDto {
 
 fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange> {
     orchestrator::ask(core, actor, args)
+}
+
+fn cancel_request(_core: &AppCore, actor: &Actor, args: AiCancelArgs) -> AppResult<AiCancelDto> {
+    actor.require(Capability::UseAi, "use the assistant")?;
+    Ok(AiCancelDto {
+        stopping: cancel::stop(&actor.user_id, &args.conversation_id),
+    })
 }
 
 fn history(core: &AppCore, actor: &Actor, args: AiHistoryArgs) -> AppResult<AiHistoryDto> {

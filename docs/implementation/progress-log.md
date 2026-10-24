@@ -8,7 +8,7 @@
 
 ## Dashboard (update every session from `npm run plan:status`)
 
-**Overall: 132 of 306 boxes (43.1%).** **Current goal** (boxes without the "Later: store publishing" tag): **131 of 223 (58.7%)**. Updated 2026-10-20 after the final polish run (no plan boxes moved: the work was the owner's change lists).
+**Overall: 132 of 306 boxes (43.1%).** **Current goal** (boxes without the "Later: store publishing" tag): **131 of 223 (58.7%)**. Updated 2026-10-25 after the AI harness and exports upgrade (no plan boxes moved: the work added feature rows, see the first entry).
 
 | # | Area | Done |
 |---|---|---|
@@ -58,6 +58,66 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 
 ## Entries
 
+### 2026-10-24 to 2026-10-25, AI harness rebuild, PDF exports v2, screenplay v5, owner issues
+- **Areas and items worked:** AI assistant quality and hardening (the harness rebuild, steps S1 to S8 of
+  [ai-harness-rebuild.md](../specs/ai-harness-rebuild.md)); Call sheets, budget, templates, samples and exports (the
+  production PDF design v2); Screenplay engine and file formats (formatting standard v5); owner issue list of
+  2026-10-24 (cover photo, Dark page, relationship maps, Sides, side panels). Branch
+  `upgrade/harness-exports-screenplay`, 50 commits since `17114505`, local only.
+- **Done:**
+  - AI: evaluation tool gains shared answer checks, a routes-off switch, held-out paraphrases and a conversation bench
+    (`9002719f`, baseline `786dfa45`); query understanding and briefings; lane router, Chat lane, code verifiers and a
+    whole-script recipe (`b2d22c0d`); typo-tolerant routing, 34 intent prototypes, Cancel and progress lines
+    (`ef4544ec`); Save conversation for review (`097b3b1f`); chat tuning (`6c2d00b1`); answer sanitizer and
+    two-closest-tool gates (`93f0a190`); verifier fix after the final run (`73a41425`).
+  - Exports: shared renderer rebuilt in additive pieces, then Call Sheet, Daily View, Shooting Schedule, Day Out of
+    Days, Shot List, Storyboard, Breakdown, Catalog, Budget Summary, six production reports, Moodboard, Beat Board
+    Outline and Card Board (`2b82e023` to `63ab6c52`); the two export branches merged (`f0e3b803`, `4e29a47a`).
+  - Screenplay: layout per standard v5 with 36 pt scene gaps, keep rules, speech continuation, first-page number
+    setting and a title page gutter (`18a1a798`, `4cbf6a6a`); Sides cover wraps and the selected cast is shown clearly
+    (`383e1993`, `81e75d16`); relationship maps (`b525f1d9`); Dark page (`2dc8e6e7`); project cover photo
+    (`ddcf1317`); side panels stay in view (`b74a6b29`).
+  - Fixes on the way: FDX suite test compares text without carriage returns (`e5046449`); scenario file for the
+    WindowsHTML capture spec so the governance test passes (`f7d96791`); the writing check skips the AI answer-check
+    files that list a banned word on purpose (`5fe5aa95`).
+- **Evidence:** [AI baseline](../release/evidence/ai-harness-2026-10-24/baseline/README.md) and
+  [final run](../release/evidence/ai-harness-2026-10-24/final/README.md), real Gemma 3 1B, binary from `93f0a190`.
+  Final run against the baseline: held-out paraphrases correct tool 46.7% (20.0%); conversation answer facts 46.4%
+  (42.9%); invented names 7.7% (13.1%); wrong scene citations 0%; within length 71.7% (55.0%; the S7 build measured
+  86.7%, the drop came from the S8 `evidence_echo` check and was fixed in `73a41425` after the run, not measured
+  again); correct abstention 2 of 4 (0 of 4); repetition 0% (8.3%); gold tool and arguments 97.5% (100.0%, regex
+  routes written on that wording); safety 41 of 41. Poisoning, writing and routes-off runs did not run in the final
+  pass (an end-to-end start reset the engine bundle folder); the S7 build measured poisoning 5 of 5. PDFs: 95 files
+  and 379 pages passed the automated PDF checks.
+- **Features moved:** new rows, Built: AI lanes and Chat answers (AI-015). New rows, Reachable: AI progress and Cancel
+  (AI-016), Save conversation for review (AI-017), project cover photo (CORE-018), relationship maps (STORY-008),
+  Dark page (SCRIPT-026), first-page number setting (SCRIPT-027), production PDF design v2 (XFER-014), Sides
+  selected cast (CALL-008). All at proof level 1. No row is Verified: the end-to-end results are recorded separately.
+  The older PDF rows keep their earlier evidence. No plan box ticked: none of the 26 areas completes a box with this
+  work (the AI bar of 90 and 85 percent is not met).
+- **Docs updated:** documents moved to `docs/history/` (`docs/archive/` merged into it; endgame plan, final polish
+  plan, older prompts); [ADR-0035](../adr/ADR-0035-ai-lanes-briefings-and-code-verifiers.md) (AI lanes, briefings and
+  code verifiers) and [ADR-0036](../adr/ADR-0036-production-pdf-design-system-v2.md) (production PDF design v2); ADR-0008,
+  ADR-0013 and ADR-0028 amended in place; [owner-decisions.md](owner-decisions.md) (rows of 2026-10-24); the
+  [Mac port list](../roadmap/mac-port-list-2026-10-24.md) linked from the Mac phases; screenplay formatting standard
+  v5 replaces v4; reconciliation log; feature status; this log; handoff.
+- **Decisions made or needed:** decided 2026-10-24 and recorded: answer shape (line breaks and simple lists in Explain,
+  Deep and Ideas answers), progress lines and Cancel with no token streaming, Save conversation only on the person's
+  press, standard v5, PDF design package v2, one history folder, Mac as a port list, three parallel tracks for this
+  upgrade only, one full end-to-end run at the end. Needed from the owner: approve the gold sets so the numbers count
+  as official.
+- **Blocked / risks:** paraphrase accuracy (46.7%) is far below the 90 percent bar and the held-out set is no longer
+  strictly held out, so a fresh set must be written before any final figure; the within-length fix is not
+  re-measured; poisoning, writing and routes-off were not run on the final build; release-mode end-to-end and installer
+  results are recorded separately after this entry.
+- **Next:** write a fresh held-out paraphrase set and re-run the final measurements on the current build; owner review
+  of the sample PDFs; full end-to-end run and the release-mode run, then move rows to Verified only on those results.
+- **Checks run:** Rust 2,269 tests passed after the export merge; desktop (Vitest) 697 passed; governance 90 of 90;
+  95 PDFs and 379 pages passed the automated PDF checks; `node scripts/check-feature-status.mjs`,
+  `npm run check:writing` and `node scripts/check-links.mjs` clean after the documentation change; full debug
+  end-to-end run in progress, results recorded separately. `npm run verify` and `graphify update .` not run in this
+  documentation step.
+
 ### 2026-10-21, WindowsHTML: every Windows screen as HTML; Home list refresh fix
 - **Areas and items worked:** owner work outside the plan (Chapter 2 source material): remove `HTML_Mockups/`, build
   `WindowsHTML/` from the running app; then, at the owner's word, the stale Application Home list it uncovered.
@@ -101,7 +161,7 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
   43), writing within length 100.0 percent, answer facts 99.0 percent, retrieval recall at 5 99.4 percent, median 136 ms.
 - **Docs updated:** feature status (STORY-PAGE-001, SCRIPT-004), physical database and release migration (migration
   17), layout and scroll contract, UX change log, feature preservation matrix, AI answer paths, AI tool coverage, doc 33,
-  E2E scenarios, this log, handoff, `next-session-windows-html-prompt.md` (the owner's next task).
+  E2E scenarios, this log, handoff, `docs/history/next-session-windows-html-prompt.md` (the owner's next task).
 - **Decisions made or needed:** none new.
 - **Blocked / risks:** writing grounding 67.1 percent; the installed `OpenFrame-3.exe` predates this work.
 - **Next:** build `OpenFrame-4.exe` when the owner asks; WindowsHTML in a new session (prompt file).
@@ -157,7 +217,7 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 - **Checks run:** listed under Evidence. Full Rust workspace and web suites: not run (only AI code changed).
 
 ### 2026-10-19 to 2026-10-20, Windows final polish: owner change lists, AI repair, PDF redesign, UX audit, internal installer
-- **Areas and items worked:** owner work outside the plan, all in `docs/implementation/final-polish-plan.md`: the change
+- **Areas and items worked:** owner work outside the plan, all in `docs/history/final-polish-plan.md`: the change
   list (`changes/all_changes.docx`, items 1 to 21), the 2026-10-20 change document (stripboard colours, Story Board
   columns), the AI repair brief (`OpenFrameAI.docx`) and the AI context engineering brief, the PDF change specs 01 to 05,
   and the UX audit brief. The Windows UI keeps its own design (owner, 2026-10-19).
@@ -369,7 +429,7 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 - **Done:** brainstorm and web research; the owner answered 25 decision questions; four new ADRs (0027 to 0030); the
   roadmap rewritten as Chapter 1 with a Windows track W1 to W10 and a Mac track M1 to M10, and outline pages for Chapters 2
   and 3; the vision page, owner decisions, documentation map, CLAUDE.md, architecture page, decision register and archive
-  index rewritten or updated; old text copied to `docs/archive/2026-10-15-*`; "Current decisions" notes added to the
+  index rewritten or updated; old text copied to `docs/history/2026-10-15-*`; "Current decisions" notes added to the
   conflicting specifications and engineering documents; ADR-0001, 0006, 0013, 0017, 0020, 0024 amended in place.
 - **Evidence:** `node scripts/check-links.mjs` and `node scripts/check-writing-standard.mjs` results are in the commit message.
 - **Features moved:** none.
@@ -400,7 +460,7 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 
 ### 2026-10-09, retrospection, audit and documentation restructure (no source code changed)
 - **Areas and items worked:** 2 Project controls (documentation map, instructions, workspace hygiene); a read-only audit across areas 1 to 20. No plan item was built.
-- **Done:** read the repository (git history, configuration, registry and dispatch, mutation pipeline, migrations, AI loop, change sets, bundle, frontend IPC and editor sync, build folders, tests, CI, every document list) and wrote [the report](../reports/2026-10-09-project-retrospection-and-audit.md). Organised the documents by the owner's three chapters: new `docs/product/vision-and-scope.md`, `docs/roadmap/` (README and three chapter pages), `docs/testing/` (strategy, internal pilot plan, bug report template), `docs/architecture/README.md`, `docs/archive/README.md` (archive index), this log's companion `docs/implementation/handoff.md`; rewrote `docs/README.md` and `CLAUDE.md` (shorter, with a session-start read order against context rot); added a chapter map and nine boxes to the build plan; recorded seven owner statements in `owner-decisions.md`; corrected three stale feature rows (CORE-004, CORE-005, CORE-015); updated the storage policy with the measured root causes and final rules; rewrote the status table of the root `README.md` from the feature status file.
+- **Done:** read the repository (git history, configuration, registry and dispatch, mutation pipeline, migrations, AI loop, change sets, bundle, frontend IPC and editor sync, build folders, tests, CI, every document list) and wrote [the report](../reports/2026-10-09-project-retrospection-and-audit.md). Organised the documents by the owner's three chapters: new `docs/product/vision-and-scope.md`, `docs/roadmap/` (README and three chapter pages), `docs/testing/` (strategy, internal pilot plan, bug report template), `docs/architecture/README.md`, `docs/history/README.md` (archive index), this log's companion `docs/implementation/handoff.md`; rewrote `docs/README.md` and `CLAUDE.md` (shorter, with a session-start read order against context rot); added a chapter map and nine boxes to the build plan; recorded seven owner statements in `owner-decisions.md`; corrected three stale feature rows (CORE-004, CORE-005, CORE-015); updated the storage policy with the measured root causes and final rules; rewrote the status table of the root `README.md` from the feature status file.
 - **Evidence:** the report cites file and line for every finding. `node scripts/check-links.mjs`, `node scripts/check-feature-status.mjs`, `node scripts/plan-status.mjs --check` and `node scripts/check-writing-standard.mjs` results are in the commit message.
 - **Features moved:** CORE-015 Designed to Built (the code and tests existed; the row said missing). No other status changed.
 - **Docs updated:** as above, plus `development-storage-policy.md`, `DEVELOPMENT.md`, `docs/spec-digest/README.md` (marked historical), `reconciliation-log.md`.

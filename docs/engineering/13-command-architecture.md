@@ -2,7 +2,7 @@
 
 > **Status legend:** ✅ implemented · 🚧 in development · 📋 planned.
 > Source: `crates/openframe-domain`, `crates/openframe-application/src/{core,registry,store,util,events}.rs`,
-> `modules/*`. Module conventions for implementers: `docs/archive/2026-09-30-agent-brief.md`.
+> `modules/*`. Module conventions for implementers: `docs/history/2026-09-30-agent-brief.md`.
 
 ## 1. Layers ✅
 
