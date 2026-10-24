@@ -989,3 +989,24 @@ fn awkward_text_is_kept_whole_and_in_order() {
     assert_eq!(a, b);
     check_invariants(&lay, "awkward");
 }
+
+/// An imported file with a very long run of shots and transitions (each keeps with the next)
+/// lays out without deep recursion, keeps every line, and still fills pages instead of putting
+/// one block on each page.
+#[test]
+fn a_long_run_of_keep_with_next_blocks_lays_out_densely() {
+    let mut els = Vec::new();
+    for i in 0..20_000 {
+        els.push(el(if i % 2 == 0 { K::Shot } else { K::Transition }, &format!("BLOCK {i}")));
+    }
+    let lay = layout::layout(&doc(vec![scene("INT. A - DAY", els)]), &opts());
+    let printed = lay
+        .pages
+        .iter()
+        .flat_map(|p| p.lines.iter())
+        .filter(|l| l.text.starts_with("BLOCK "))
+        .count();
+    assert_eq!(printed, 20_000);
+    // Each block takes one row plus one blank row, so a page holds about 27 of them.
+    assert!(lay.pages.len() < 20_000 / 10, "{} pages", lay.pages.len());
+}

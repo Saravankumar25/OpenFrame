@@ -1045,21 +1045,30 @@ fn running_title(page: &mut LaidOutPage, doc: &ScreenplayDoc, g: &Geometry, head
 
 /// Rows after block `bi` that must share its page: what a keep-with-next block stays with (a
 /// scene heading with the start of its scene, a transition with the next scene heading, a shot
-/// with its description). A heading is not chained to another heading.
+/// with its description). A heading is not chained to another heading. The chain looks at most
+/// two blocks ahead (a transition, its heading, the start of that scene), so a long run of shots or
+/// transitions in an imported file neither recurses deeply nor pushes every block to a new page.
 fn follow_rows(blocks: &[Block], bi: usize) -> usize {
-    let b = &blocks[bi];
-    if !b.keep_next {
-        return 0;
-    }
-    match blocks.get(bi + 1) {
-        Some(n)
-            if n.kind != BlockKind::PageBreak
-                && (n.kind != BlockKind::Heading || b.kind == BlockKind::Transition) =>
-        {
-            n.space_before + n.keep_rows() + follow_rows(blocks, bi + 1)
+    const MAX_CHAIN: usize = 2;
+    let mut rows = 0;
+    let mut at = bi;
+    for _ in 0..MAX_CHAIN {
+        let b = &blocks[at];
+        if !b.keep_next {
+            break;
         }
-        _ => 0,
+        match blocks.get(at + 1) {
+            Some(n)
+                if n.kind != BlockKind::PageBreak
+                    && (n.kind != BlockKind::Heading || b.kind == BlockKind::Transition) =>
+            {
+                rows += n.space_before + n.keep_rows();
+                at += 1;
+            }
+            _ => break,
+        }
     }
+    rows
 }
 
 /// Where a speech can break so that `available` rows are not exceeded: the number of rows kept
