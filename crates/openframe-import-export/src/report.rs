@@ -44,6 +44,8 @@ use unicode_segmentation::UnicodeSegmentation;
 
 #[cfg(test)]
 mod band_matrix_tests;
+#[cfg(test)]
+mod board_tests;
 mod design;
 #[cfg(test)]
 mod furniture_tests;
@@ -58,8 +60,11 @@ pub use design::{
     SceneBanner, Section, Side, StyledTable, Tile, Tone, Txt, Width, pal,
 };
 pub use design::{
-    FactLine, FactRun, Matrix, MatrixCode, MatrixCount, MatrixDay, MatrixKey, MatrixRow,
-    MatrixTotals, TableBand,
+    Board, BoardComment, BoardCount, BoardExtra, BoardItem, BoardItems, BoardKey, BoardLayout,
+};
+pub use design::{
+    Entry, FactLine, FactRun, Matrix, MatrixCode, MatrixCount, MatrixDay, MatrixKey, MatrixRow,
+    MatrixTotals, TableBand, TableHead,
 };
 
 use crate::fonts;
@@ -227,6 +232,8 @@ pub enum Block {
     NoteBand(NoteBand),
     /// The counts of a production report in one strip as wide as its content.
     MetricStrip(MetricStrip),
+    /// A piece of the Beat Board export (bars, bands, items, key), see `report/design/board.rs`.
+    Board(Board),
 }
 
 // ------------------------------------------------------------------ images
@@ -573,6 +580,7 @@ fn scan_blocks(blocks: &[Block], scan: &mut dyn FnMut(&str)) {
                 | Block::Styled(_)
                 | Block::Legend(_)
                 | Block::Matrix(_)
+                | Block::Board(_)
                 | Block::Text(_) => design::scan_block(b, scan),
             }
         }
@@ -1396,6 +1404,7 @@ fn render_block<'a>(p: &mut Pager<'a>, b: &'a Block) {
         Block::ReportHead(h) => design::report_head(p, h),
         Block::NoteBand(b) => design::note_band(p, b),
         Block::MetricStrip(m) => design::metric_strip(p, m),
+        Block::Board(b) => design::board(p, b),
         Block::Heading { text, level } => {
             let size = if *level <= 1 { 13.0 } else { 11.0 };
             // Keep headings with what follows them.

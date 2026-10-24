@@ -15,8 +15,8 @@ use ts_rs::TS;
 
 use super::style::nb;
 use super::{
-    Fmt, HINT_EDIT, HINT_TABLES, Job, Output, deliver, destination, footer, image_warnings,
-    load_image, nonblank, plural, require_export,
+    Fmt, HINT_EDIT, HINT_TABLES, Job, Output, deliver, destination, image_warnings, load_image,
+    nonblank, plural, require_export,
 };
 use crate::core::AppCore;
 use crate::modules::schedule::board::project_title;
@@ -24,6 +24,15 @@ use crate::modules::visual::moodboard::{self, MoodboardIdArgs};
 use crate::modules::visual::shots::{self, ShotDto, ShotListArgs};
 use crate::modules::visual::storyboard::{self, StoryboardIdArgs, StoryboardListArgs};
 use crate::util::AssetInfo;
+
+/// "LOW TIDE RADIO · MOODBOARD", or "MOODBOARD" alone without the project (and without the board
+/// name, which is in the masthead) when the title option is off.
+fn moodboard_header(project: &str, with_title: bool) -> String {
+    match nb(project).filter(|_| with_title) {
+        Some(p) => format!("{} · MOODBOARD", p.to_uppercase()),
+        None => "MOODBOARD".to_string(),
+    }
+}
 
 fn project(core: &AppCore) -> AppResult<String> {
     core.project()?.store.read(project_title)
@@ -118,17 +127,17 @@ pub(super) fn export_moodboard(
     } else {
         "Moodboard".to_string()
     };
-    let mut doc = Document::new(&title).landscape(true);
-    doc = doc.footer(if with_title {
-        footer(&project, &document)
-    } else {
-        "Moodboard".to_string()
-    });
+    // The running header names the production on every page; the board name is in the masthead.
+    let mut doc = Document::new(&title)
+        .landscape(true)
+        .running_header(Some(moodboard_header(&project, with_title)));
 
     let mut pics = Pics::default();
     let mut cards: Vec<Card> = Vec::new();
     let mut texts: Vec<(Option<String>, String, bool, &'static str)> = Vec::new();
+    // Pictures that are printed: the Images option off prints none, a missing file prints its frame.
     let mut image_count = 0;
+    let line_strong = openframe_import_export::report::Rgb::hex(0xb9c2d1);
     for it in &items {
         let caption = if with_captions {
             nonblank(it.caption.as_deref())
@@ -137,7 +146,6 @@ pub(super) fn export_moodboard(
         };
         match it.kind.as_str() {
             "image" => {
-                image_count += 1;
                 let (mut img, mut placeholder) = (None, None);
                 if with_images {
                     match it.asset.as_ref() {
@@ -145,9 +153,13 @@ pub(super) fn export_moodboard(
                         None => placeholder = Some("Image unavailable".to_string()),
                     }
                 }
-                let mut card = Card::new();
+                let mut card = Card {
+                    border: line_strong,
+                    ..Card::new()
+                };
                 if img.is_some() || placeholder.is_some() {
-                    card.parts.push(CardPart::Image {
+                    image_count += 1;
+                    card.parts.push(CardPart::Picture {
                         img,
                         placeholder,
                         ratio: 0.72,
@@ -163,16 +175,12 @@ pub(super) fn export_moodboard(
                             .leading(1.3),
                     );
                 }
-                if it.is_private {
-                    lines.push(
-                        Txt::label("Internal")
-                            .size(6.4)
-                            .color(Tone::Warn.text())
-                            .align(Align::Center),
-                    );
-                }
                 if !lines.is_empty() {
                     card.parts.push(CardPart::Centered(lines));
+                }
+                if it.is_private {
+                    card.parts
+                        .push(CardPart::CenteredChip(Chip::label("Internal", Tone::Warn)));
                 }
                 if !card.parts.is_empty() {
                     cards.push(card);
@@ -205,7 +213,7 @@ pub(super) fn export_moodboard(
     }
     let mut mast = if with_title {
         let mut m = Masthead::new(board.board.name.clone())
-            .eyebrow("Visual development · Moodboard", pal::ORANGE);
+            .eyebrow("Visual development · Moodboard", pal::SLATE);
         if let Some(p) = nb(&project) {
             m.subtitle = Some(p.to_string());
         }
@@ -224,10 +232,13 @@ pub(super) fn export_moodboard(
     } else {
         Masthead::new("Moodboard")
     };
+    mast.title_size = 20.0;
     mast.rule = true;
     doc.push(Block::Masthead(mast));
     if !cards.is_empty() {
-        doc.push(Block::Cards(Cards::new(3, cards)));
+        // One or two pictures are the hero of the page: two wide columns, never thumbnails.
+        let columns = if cards.len() <= 2 { 2 } else { 3 };
+        doc.push(Block::Cards(Cards::new(columns, cards)));
     }
     if !texts.is_empty() {
         doc.push(Block::Section(Section::new("Notes and links", None)));
@@ -244,6 +255,7 @@ pub(super) fn export_moodboard(
                     head.eyebrow = Some(kind.to_string());
                 }
                 Card {
+                    border: line_strong,
                     head: Some(head),
                     parts: if body.is_empty() {
                         Vec::new()

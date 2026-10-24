@@ -4,10 +4,13 @@
 //! crate, so fewer binaries build faster and use less disk (Windows phase W1, storage hygiene).
 //! Run one file with `cargo test -p openframe-application --test production <file>::`.
 
+mod breakdown_design;
+mod budget_design;
 mod call_sheet_design;
 mod daily_view_design;
 mod dood_design;
 mod exports;
+mod moodboard_design;
 mod packages;
 mod pdf_design;
 mod pdf_regression;
@@ -18,4 +21,5 @@ mod report_design;
 mod schedule;
 mod schedule_depth;
 mod schedule_design;
+mod story_design;
 mod visual_pdf;

@@ -15,8 +15,11 @@ use super::*;
 
 mod band;
 mod blocks;
+mod board;
 mod cards;
+mod entries;
 mod group_band;
+mod head;
 mod matrix;
 mod panel;
 mod rich;
@@ -27,8 +30,13 @@ pub use band::{FactLine, FactRun, TableBand};
 pub use blocks::{
     Banner, Callout, CalloutCol, Legend, LegendItem, Masthead, Metric, Metrics, Section, Side,
 };
+pub use board::{
+    Board, BoardComment, BoardCount, BoardExtra, BoardItem, BoardItems, BoardKey, BoardLayout,
+};
 pub use cards::{Card, CardHead, CardPart, Cards, Field, Group, GroupItem, Tile};
+pub use entries::Entry;
 pub use group_band::GroupBand;
+pub use head::TableHead;
 pub use matrix::{Matrix, MatrixCode, MatrixCount, MatrixDay, MatrixKey, MatrixRow, MatrixTotals};
 pub use panel::{CompactHeader, Panel, SceneBanner};
 pub use rich::{Rich, Run};
@@ -36,7 +44,9 @@ pub use shell::{MetricStrip, NoteBand, ReportHead};
 pub use table::{Cell, CellItem, Col, HeaderStyle, Row, StyledTable, Width};
 
 use band::{band_frag, band_scan};
+use entries::{entries_frag, entries_scan, put_meter, put_name};
 use group_band::{group_frag, group_scan};
+use head::{head_frag, head_scan};
 pub(super) use matrix::{matrix, matrix_scan};
 pub(super) use panel::{compact_header, compact_header_scan, scene_banner, scene_banner_scan};
 use panel::{panel_frag, panel_scan};
@@ -46,6 +56,7 @@ pub(super) use shell::{
 };
 
 pub(super) use blocks::{banner, callout, legend, masthead, metrics, scan_block, section, text};
+pub(super) use board::{board, board_scan};
 pub(super) use cards::cards;
 use cards::cards_scan;
 pub(super) use table::styled_table;
