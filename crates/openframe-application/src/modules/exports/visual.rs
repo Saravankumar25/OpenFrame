@@ -6,9 +6,9 @@
 use openframe_domain::{Actor, AppError, AppResult};
 use openframe_import_export::report::{
     Align, BRAND_LINE, Block, Callout, CalloutCol, Card, CardHead, CardPart, Cards, Cell, CellItem,
-    Chip, Col, Column, CompactHeader, Document, HeaderStyle, Masthead, Panel, ReportImage, Rgb,
-    Rich, Row, Run, SceneBanner, Section, Side, StyledTable, Table, TableBand, Tone, Txt, pal,
-    text_width,
+    Chip, Col, Column, CompactHeader, Document, GroupBand, HeaderStyle, Masthead, Panel,
+    ReportImage, Rgb, Rich, Row, Run, SceneBanner, Section, Side, StyledTable, Table, Tone, Txt,
+    pal, text_width,
 };
 use serde::Deserialize;
 use ts_rs::TS;
@@ -651,7 +651,7 @@ fn distinct<'a>(values: impl Iterator<Item = &'a str>) -> Vec<&'a str> {
 /// shot rows, under the shared column grid.
 fn scene_table(list: &[&ShotDto], grid: &ShotGrid, single: bool, pics: &mut Pics) -> StyledTable {
     let first = list[0];
-    let mut band = TableBand::new(first.scene_heading.clone());
+    let mut band = GroupBand::new(first.scene_heading.clone());
     band.eyebrow = first.scene_number.as_ref().map(|n| format!("Scene {n}"));
     band.right = plural(list.len(), "shot", "shots");
     if first.scene_removed {
@@ -708,7 +708,7 @@ fn scene_table(list: &[&ShotDto], grid: &ShotGrid, single: bool, pics: &mut Pics
         .map(|(i, c)| head(&c.header, c.align, i >= first_camera))
         .collect();
     let mut t = StyledTable::new(cols);
-    t.band = Some(band);
+    t.group = Some(band);
     t.boxed = true;
     t.header = HeaderStyle::Tint;
     t.header_cells = Some(header);

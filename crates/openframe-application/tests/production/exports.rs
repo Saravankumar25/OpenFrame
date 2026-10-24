@@ -777,11 +777,11 @@ fn schedule_export_has_days_markers_summaries_and_unscheduled() {
         json!({ "format": "pdf", "path": pdf }),
     );
     assert_eq!(r["scopeLabel"], "Entire schedule");
-    assert!(pdf_page_width(&pdf) > 700.0, "stripboard is landscape");
+    assert!(pdf_page_width(&pdf) < 700.0, "stripboard is portrait");
     let text = pdf_text(&pdf);
     for want in [
         "Shooting Schedule",
-        "SHOOT DAY 01 Day 1 MONDAY · 14 JUNE 2027",
+        "Shoot Day 1 MONDAY · 14 JUNE 2027",
         "INT. POLICE STATION - NIGHT",
         "MEAL",
         "20:30",
@@ -815,7 +815,7 @@ fn schedule_export_has_days_markers_summaries_and_unscheduled() {
     );
     assert_eq!(r["scopeLabel"], "Current day only");
     let t = pdf_text(&one);
-    assert!(t.contains("SHOOT DAY 01") && !t.contains("UNSCHEDULED ·") && !t.contains("MORGUE"));
+    assert!(t.contains("Shoot Day 1") && !t.contains("UNSCHEDULED ·") && !t.contains("MORGUE"));
     assert_eq!(
         env.err(
             "schedule.export_schedule",
@@ -1044,7 +1044,7 @@ fn call_sheet_pdf_has_paper_layout_and_final_sheet_uses_its_snapshot() {
         "SCENE SCHEDULE",
         "INT. POLICE STATION - NIGHT",
         "MEAL",
-        "PRACTICAL NOTES",
+        "PRACTICAL / SAFETY INFORMATION",
         "Behind the station",
         "WEATHER",
         "Rain expected",
@@ -1054,6 +1054,8 @@ fn call_sheet_pdf_has_paper_layout_and_final_sheet_uses_its_snapshot() {
     ] {
         assert!(text.contains(want), "missing {want}: {text}");
     }
+    // The practical notes card sits inside the safety section; it has no heading of its own.
+    assert!(!text.contains("PRACTICAL NOTES"), "{text}");
     let no_optional = dest(&env, "call-plain.pdf");
     env.ok(
         "callsheets.export_pdf",

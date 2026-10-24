@@ -3,7 +3,7 @@
 46,700 7.8 PRODUCTION BREAKDOWN
 46,665 30.0 Breakdown Report
 46,648 8.6 Project: Black Rain · Source: Black Rain: Shooting Draft 6
-488,685 11.0 24 OCT 2026
+*,685 11.0 <DATE>
 487,672 9.0 Export reference
 456,660 9.0 Entire production source
 56,607 19.0 4

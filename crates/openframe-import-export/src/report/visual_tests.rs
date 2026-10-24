@@ -52,15 +52,15 @@ fn doc_with(blocks: Vec<Block>) -> Document {
     d
 }
 
-fn band(title: &str, right: &str) -> TableBand {
-    let mut b = TableBand::new(title);
+fn band(title: &str, right: &str) -> GroupBand {
+    let mut b = GroupBand::new(title);
     b.right = right.into();
     b
 }
 
-fn shot_table(rows: usize, band: TableBand) -> StyledTable {
+fn shot_table(rows: usize, band: GroupBand) -> StyledTable {
     let mut t = StyledTable::new(vec![Col::pt("Shot", 40.0), Col::weight("Description", 1.0)]);
-    t.band = Some(band);
+    t.group = Some(band);
     t.pad_x = 4.0;
     t.pad_y = 5.0;
     for i in 0..rows {
@@ -74,7 +74,7 @@ fn shot_table(rows: usize, band: TableBand) -> StyledTable {
 
 #[test]
 fn a_band_repeats_with_continued_and_keeps_its_status() {
-    let mut band = TableBand::new("EXT. HARBOUR - DAWN");
+    let mut band = GroupBand::new("EXT. HARBOUR - DAWN");
     band.eyebrow = Some("Scene 7".into());
     band.right = "30 shots".into();
     band.status = Some(("Scene changed since planning".into(), Tone::Warn));

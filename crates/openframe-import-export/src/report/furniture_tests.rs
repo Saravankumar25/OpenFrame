@@ -504,3 +504,29 @@ fn nothing_is_printed_below_6_4_points() {
     }
     assert!(seen > 10);
 }
+
+#[test]
+fn tracked_labels_never_run_past_their_card() {
+    // A long location name makes the label of a hospital card wrap; with the tracking the lines
+    // must still fit the card's text width (255 pt wide card, 10 pt padding each side).
+    let label = "Pozhikkara lighthouse and keeper's cottage, upper gallery and lamp room interiors \u{b7} Nearest hospital";
+    let card = |l: &str| Card {
+        parts: vec![CardPart::Labeled {
+            label: l.into(),
+            value: "District Hospital".into(),
+            missing: false,
+        }],
+        ..Card::new()
+    };
+    let doc = branded(vec![Block::Cards(Cards::new(
+        2,
+        vec![card(label), card("Short")],
+    ))]);
+    let page = &dump(&doc.to_pdf().bytes)[0];
+    let lines: Vec<&Run> = page.runs.iter().filter(|r| r.size == 7.0).collect();
+    assert!(lines.len() >= 2, "{lines:?}");
+    for r in lines {
+        let w = text_width(&r.text, 7.0, true) + 0.7 * r.text.chars().count() as f32;
+        assert!(w <= 235.0 + 0.1, "{:?} is {w} pt wide", r.text);
+    }
+}

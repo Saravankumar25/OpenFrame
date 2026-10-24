@@ -16,20 +16,26 @@ use super::*;
 mod band;
 mod blocks;
 mod cards;
+mod group_band;
+mod matrix;
 mod panel;
 mod rich;
 mod table;
 
-pub use band::TableBand;
+pub use band::{FactLine, FactRun, TableBand};
 pub use blocks::{
     Banner, Callout, CalloutCol, Legend, LegendItem, Masthead, Metric, Metrics, Section, Side,
 };
 pub use cards::{Card, CardHead, CardPart, Cards, Field, Group, GroupItem, Tile};
+pub use group_band::GroupBand;
+pub use matrix::{Matrix, MatrixCode, MatrixCount, MatrixDay, MatrixKey, MatrixRow, MatrixTotals};
 pub use panel::{CompactHeader, Panel, SceneBanner};
 pub use rich::{Rich, Run};
 pub use table::{Cell, CellItem, Col, HeaderStyle, Row, StyledTable, Width};
 
 use band::{band_frag, band_scan};
+use group_band::{group_frag, group_scan};
+pub(super) use matrix::{matrix, matrix_scan};
 pub(super) use panel::{compact_header, compact_header_scan, scene_banner, scene_banner_scan};
 use panel::{panel_frag, panel_scan};
 use rich::{put_rich, rich_scan};
@@ -231,6 +237,22 @@ fn tw(text: &str, size: f32, bold: bool, track: f32) -> f32 {
 fn txt_lines(t: &Txt, width: f32) -> Vec<String> {
     let w = if t.track > 0.0 { width * 0.94 } else { width };
     wrap_pt(&t.text, w.max(8.0), t.size, t.bold)
+}
+
+/// Lines of tracked capitals that fit `width` with their tracking counted (the 94 percent rule of
+/// [`txt_lines`] is only an estimate, and a long name can run past a card's edge by it).
+fn tracked_lines(t: &Txt, width: f32) -> Vec<String> {
+    let mut share = 0.94_f32;
+    loop {
+        let lines = wrap_pt(&t.text, (width * share).max(8.0), t.size, t.bold);
+        let fits = lines
+            .iter()
+            .all(|l| tw(l, t.size, t.bold, t.track) <= width + 0.01);
+        if fits || share <= 0.5 {
+            return lines;
+        }
+        share -= 0.02;
+    }
 }
 
 /// A pill: a short label or value with a tone.

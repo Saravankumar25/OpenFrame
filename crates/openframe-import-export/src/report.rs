@@ -42,6 +42,8 @@ use openframe_domain::{AppError, AppResult};
 use pdf_writer::Content;
 use unicode_segmentation::UnicodeSegmentation;
 
+#[cfg(test)]
+mod band_matrix_tests;
 mod design;
 #[cfg(test)]
 mod furniture_tests;
@@ -49,9 +51,13 @@ mod furniture_tests;
 mod visual_tests;
 pub use design::{
     Banner, Callout, CalloutCol, Card, CardHead, CardPart, Cards, Cell, CellItem, Chip, Col,
-    CompactHeader, Field, Group, GroupItem, HeaderStyle, Legend, LegendItem, Masthead, Metric,
-    Metrics, Panel, Rgb, Rich, Row, Run, SceneBanner, Section, Side, StyledTable, TableBand, Tile,
+    CompactHeader, Field, Group, GroupBand, GroupItem, HeaderStyle, Legend, LegendItem, Masthead,
+    Metric, Metrics, Panel, Rgb, Rich, Row, Run, SceneBanner, Section, Side, StyledTable, Tile,
     Tone, Txt, Width, pal,
+};
+pub use design::{
+    FactLine, FactRun, Matrix, MatrixCode, MatrixCount, MatrixDay, MatrixKey, MatrixRow,
+    MatrixTotals, TableBand,
 };
 
 use crate::fonts;
@@ -211,6 +217,8 @@ pub enum Block {
     SceneBanner(SceneBanner),
     /// The compact one-block header of a storyboard sheet.
     CompactHeader(CompactHeader),
+    /// The Day Out of Days matrix (frozen columns, day groups, code cells).
+    Matrix(Matrix),
 }
 
 // ------------------------------------------------------------------ images
@@ -553,6 +561,7 @@ fn scan_blocks(blocks: &[Block], scan: &mut dyn FnMut(&str)) {
                 | Block::Cards(_)
                 | Block::Styled(_)
                 | Block::Legend(_)
+                | Block::Matrix(_)
                 | Block::Text(_) => design::scan_block(b, scan),
             }
         }
@@ -1372,6 +1381,7 @@ fn render_block<'a>(p: &mut Pager<'a>, b: &'a Block) {
             p.page_header = Some(text.clone());
             p.draw_page_header();
         }
+        Block::Matrix(m) => design::matrix(p, m),
         Block::Heading { text, level } => {
             let size = if *level <= 1 { 13.0 } else { 11.0 };
             // Keep headings with what follows them.
