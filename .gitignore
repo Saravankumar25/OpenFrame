@@ -27,6 +27,7 @@ Thumbs.db
 /tests/e2e/.drivers/
 /tests/e2e/.run/
 /tests/e2e/artifacts/
+/tests/e2e/.build-cache/
 
 # Local design-hook cache
 /.impeccable/

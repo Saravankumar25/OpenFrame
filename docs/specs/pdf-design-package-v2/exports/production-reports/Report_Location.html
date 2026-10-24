@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Location Report — Production Report</title>
+<meta name="of-doc" content="Location Report (reports.export_report)">
+<link rel="stylesheet" href="../../00_SYSTEM/assets/openframe-print.css">
+<style>
+  /* Location Report — page setup. Portrait US Letter (5 columns: reports.rs sets landscape when columns > 5).
+     Running header: none (a one-page report needs no page identification). */
+  @page { size: 8.5in 11in; }
+
+  /* ============ PRODUCTION REPORT SHELL (shared by all six reports; defined in Report_Scene.md) ============ */
+  .rpt-mast { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 14pt; align-items: start; margin-bottom: 7pt; break-inside: avoid; break-after: avoid; }
+  .rpt-mast .eyebrow { display: flex; align-items: center; gap: 5pt; font-size: 7pt; }
+  .rpt-mast .eyebrow i { display: inline-block; width: 14pt; height: 2pt; background: var(--of-orange); }
+  .rpt-mast h1 { font-size: 20pt; line-height: 1.1; font-weight: 700; color: var(--of-navy); letter-spacing: -0.01em; margin: 3pt 0 3.5pt; }
+  .rpt-mast .meta-line { font-size: 8pt; color: var(--of-slate); margin: 0; line-height: 1.3; }
+  .rpt-side { border: var(--hair) solid var(--of-line); border-radius: var(--radius-lg); background: var(--of-panel); padding: 6pt 11pt 7pt; text-align: right; min-width: 104pt; max-width: 150pt; }
+  .rpt-side .lbl { font-size: var(--fs-label); font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--of-slate); }
+  .rpt-side .date { font-size: 10.5pt; font-weight: 700; color: var(--of-navy); margin-top: 1.5pt; line-height: 1.15; }
+  .rpt-side .scope { font-size: 8pt; color: var(--of-slate); margin-top: 1.5pt; line-height: 1.25; }
+  .rpt-metrics { display: flex; width: fit-content; max-width: 100%; border: var(--hair) solid var(--of-line); border-radius: var(--radius); background: var(--of-panel); margin: 0 0 9pt; break-inside: avoid; break-after: avoid; }
+  .rpt-metrics .m { flex: 0 1 auto; min-width: 0; padding: 5.5pt 10pt 6pt; display: flex; align-items: baseline; gap: 6pt; border-left: var(--hair) solid var(--of-line); }
+  .rpt-metrics .m:first-child { border-left: 0; }
+  .rpt-metrics .v { font-size: 13pt; font-weight: 700; color: var(--of-navy); line-height: 1; font-variant-numeric: tabular-nums; }
+  .rpt-metrics .l { font-size: var(--fs-label); font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--of-slate); line-height: 1.25; }
+  .rpt-metrics .m.warn .v { color: var(--of-amber-text); }
+  .rpt-metrics .m.danger .v { color: var(--of-red-text); }
+  .rpt-ctx { margin: 0 0 6pt; }
+  .rpt-att { margin: -3pt 0 8pt; }
+  .rpt-ctx .banner { margin: 0 0 4pt; }
+  .rpt-ctx .banner .q { font-weight: 700; color: var(--of-navy); }
+  .rpt-ctx .banner .rest { color: var(--of-slate); }
+  .banner.info b { color: var(--of-blue-text); }
+  .rpt-ctx .banner b, .rpt-att .banner b { flex: none; white-space: nowrap; }
+  /* table */
+  table.rpt { table-layout: fixed; font-size: var(--fs-cell); }
+  table.rpt thead th { padding: 5pt 6pt; }
+  table.rpt tbody td { padding: 3.6pt 6pt; }
+  table.rpt.dense tbody td { padding: 2.5pt 6pt; }
+  table.rpt .tile { min-width: 18pt; font-size: 8.2pt; padding: 1.6pt 3.6pt; }
+  table.rpt tbody tr.alt td { background: var(--of-panel); }
+  table.rpt tbody tr.attn td:first-child { box-shadow: inset 3pt 0 0 var(--of-orange); }
+  table.rpt tbody tr.attn-red td:first-child { box-shadow: inset 3pt 0 0 var(--of-red-text); }
+  table.rpt tbody tr.quiet td { background: var(--of-panel); color: var(--of-slate); }
+  table.rpt .hd { font-weight: 700; color: var(--of-navy); }
+  table.rpt .nm { font-weight: 700; color: var(--of-navy); text-align: right; }
+  table.rpt .nm.sug { color: var(--of-amber-text); }
+  table.rpt .nm.zero { font-weight: 400; color: var(--of-muted); }
+  table.rpt th.r, table.rpt td.r { text-align: right; }
+  table.rpt .d1 { display: block; font-weight: 700; color: var(--of-navy); white-space: nowrap; }
+  table.rpt .d2 { display: block; color: var(--of-slate); white-space: nowrap; }
+  table.rpt .days > div { margin: 0 0 1.4pt; line-height: 1.25; }
+  table.rpt .days > div:last-child { margin-bottom: 0; }
+  table.rpt .days b { color: var(--of-navy); font-weight: 700; }
+  table.rpt .none { color: var(--of-muted); }
+  table.rpt tr.group td { padding: 2pt 6pt 2.2pt; font-size: 6.8pt; letter-spacing: .12em; }
+  table.rpt td .chips { gap: 2pt; }
+  .rpt-note { font-size: 8.4pt; color: var(--of-slate); margin-top: 5pt; line-height: 1.35; }
+  .rpt-empty { margin: 4pt 0; }
+  .rpt-empty p { font-size: 9pt; line-height: 1.4; }
+  /* status chip: tone + SHAPE + WORD so it survives grayscale (ok = solid disc, info = ring + dot,
+     warn = hollow ring, danger = solid square, neutral = no mark) */
+  .st { display: inline-flex; align-items: center; gap: 3.2pt; font-size: var(--fs-chip); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; line-height: 1; padding: 2.4pt 4.6pt 2.6pt 3.8pt; border-radius: 3pt; border: var(--hair) solid var(--of-line); background: var(--of-panel); color: var(--of-neutral-text); white-space: nowrap; vertical-align: middle; }
+  .st i { flex: none; width: 5pt; height: 5pt; box-sizing: border-box; border: 1pt solid currentColor; border-radius: 50%; }
+  .st.none-mark i { display: none; }
+  .st.ok { background: var(--of-green-fill); border-color: var(--of-green-line); color: var(--of-green-text); }
+  .st.ok i { background: currentColor; }
+  .st.info { background: var(--of-blue-fill); border-color: var(--of-blue-line); color: var(--of-blue-text); }
+  .st.info i { background: currentColor; box-shadow: inset 0 0 0 .9pt #fff; }
+  .st.warn { background: var(--of-amber-fill); border-color: var(--of-amber-line); color: var(--of-amber-text); }
+  .st.warn i { background: transparent; }
+  .st.danger { background: var(--of-red-fill); border-color: var(--of-red-line); color: var(--of-red-text); }
+  .st.danger i { background: currentColor; border-radius: 0.6pt; }
+  .illustrative { font-size: 6.6pt; color: var(--of-muted); font-style: italic; }
+
+</style>
+</head>
+<body>
+<div class="doc" data-filter="vypin">
+
+  <header class="masthead rpt-mast">
+    <div>
+      <div class="eyebrow"><i></i>Production report</div>
+      <h1 data-live="Location Report" data-snap="Location Report: LOW TIDE RADIO: Blue Revision (Locked)">Location Report</h1>
+      <p class="meta-line">Project: Low Tide Radio · Source: LOW TIDE RADIO: Blue Revision (Locked)</p>
+    </div>
+    <div class="rpt-side" aria-label="Report details">
+      <div class="lbl">Generated</div>
+      <div class="date">22 Oct 2026</div>
+      <div class="scope" data-live="All rows" data-filtered="Filtered rows" data-snap="Saved snapshot">All rows</div>
+    </div>
+  </header>
+  <div class="rpt-ctx"><div class="banner info" data-toggle="Saved snapshot (illustrative)" hidden><b>Saved snapshot</b><span><span class="q">Location Report</span> <span class="rest">· generated 20 Oct 2026. It does not change when production data changes.</span></span></div><div class="banner info" data-toggle="Filter active" hidden><b>Filter</b><span><span class="q">“vypin”</span> <span class="rest">· rows with this text in any cell (not case-sensitive)</span></span></div></div>
+  <div class="rpt-metrics" role="group" aria-label="Report totals"><div class="m "><span class="v" data-m="t">16</span><span class="l">Locations</span></div></div>
+  
+  <table class="tbl boxed rpt" aria-label="Location Report"><colgroup><col style="width:120.0pt"><col style="width:84.0pt"><col style="width:108.0pt"><col style="width:58.0pt"><col style="width:150.0pt"></colgroup><thead><tr><th class="" scope="col">Location</th><th class="" scope="col">Status</th><th class="" scope="col">Address</th><th class="" scope="col">Scenes</th><th class="" scope="col">Shooting days</th></tr></thead><tbody><tr class="" data-cells="[&quot;Cherai Beach (north end)&quot;, &quot;Confirmed&quot;, &quot;Cherai, Vypin, Kerala 683514&quot;, &quot;21, 38, 40, 45&quot;, &quot;Shoot Day 7 · Mon 18 Jan 2027; Shoot Day 9 · Wed 20 Jan 2027&quot;]" data-k=""><td class=""><span class="hd">Cherai Beach (north end)</span></td><td class=""><span class="st ok"><i></i>Confirmed</span></td><td class="">Cherai, Vypin, Kerala 683514</td><td class="">21, 38, 40, 45</td><td class=""><div class="days"><div><b>Shoot Day 7</b> · Mon 18 Jan 2027</div><div><b>Shoot Day 9</b> · Wed 20 Jan 2027</div></div></td></tr>
+<tr class="alt" data-cells="[&quot;Coast Radio Station (Old Signal Station, Vypin)&quot;, &quot;Confirmed&quot;, &quot;Beach Road, Vypin, Kochi, Kerala 682508&quot;, &quot;2, 5, 11, 12, 28, 29, 33, 41, 42&quot;, &quot;Shoot Day 1 · Mon 11 Jan 2027; Shoot Day 2 · Tue 12 Jan 2027; Shoot Day 3 · Wed 13 Jan 2027; Shoot Day 14 · Tue 26 Jan 2027&quot;]" data-k=""><td class=""><span class="hd">Coast Radio Station (Old Signal Station, Vypin)</span></td><td class=""><span class="st ok"><i></i>Confirmed</span></td><td class="">Beach Road, Vypin, Kochi, Kerala 682508</td><td class="">2, 5, 11, 12, 28, 29, 33, 41, 42</td><td class=""><div class="days"><div><b>Shoot Day 1</b> · Mon 11 Jan 2027</div><div><b>Shoot Day 2</b> · Tue 12 Jan 2027</div><div><b>Shoot Day 3</b> · Wed 13 Jan 2027</div><div><b>Shoot Day 14</b> · Tue 26 Jan 2027</div></div></td></tr>
+<tr class="" data-cells="[&quot;Government Fisheries School Laboratory (Kalamassery)&quot;, &quot;Confirmed&quot;, &quot;Fisheries School Road, Kalamassery, Kochi 683104&quot;, &quot;13, 16, 34&quot;, &quot;Shoot Day 6 · Sat 16 Jan 2027&quot;]" data-k=""><td class=""><span class="hd">Government Fisheries School Laboratory (Kalamassery)</span></td><td class=""><span class="st ok"><i></i>Confirmed</span></td><td class="">Fisheries School Road, Kalamassery, Kochi 683104</td><td class="">13, 16, 34</td><td class=""><div class="days"><div><b>Shoot Day 6</b> · Sat 16 Jan 2027</div></div></td></tr>
+<tr class="alt" data-cells="[&quot;KSRTC Bus (process trailer, NH 66)&quot;, &quot;Confirmed&quot;, &quot;Unit base: Aroor bypass lay-by, NH 66&quot;, &quot;4&quot;, &quot;Shoot Day 12 · Sat 23 Jan 2027&quot;]" data-k=""><td class=""><span class="hd">KSRTC Bus (process trailer, NH 66)</span></td><td class=""><span class="st ok"><i></i>Confirmed</span></td><td class="">Unit base: Aroor bypass lay-by, NH 66</td><td class="">4</td><td class=""><div class="days"><div><b>Shoot Day 12</b> · Sat 23 Jan 2027</div></div></td></tr>
+<tr class="" data-cells="[&quot;Lighthouse Road (Puthuvype coast road)&quot;, &quot;Confirmed&quot;, &quot;Puthuvype, Vypin, Kochi 682508&quot;, &quot;31&quot;, &quot;Shoot Day 11 · Fri 22 Jan 2027&quot;]" data-k=""><td class=""><span class="hd">Lighthouse Road (Puthuvype coast road)</span></td><td class=""><span class="st ok"><i></i>Confirmed</span></td><td class="">Puthuvype, Vypin, Kochi 682508</td><td class="">31</td><td class=""><div class="days"><div><b>Shoot Day 11</b> · Fri 22 Jan 2027</div></div></td></tr>
+<tr class="alt" data-cells="[&quot;Munambam Breakwater (stunt section)&quot;, &quot;Confirmed&quot;, &quot;North breakwater, Munambam Harbour&quot;, &quot;25&quot;, &quot;Shoot Day 8 · Tue 19 Jan 2027&quot;]" data-k=""><td class=""><span class="hd">Munambam Breakwater (stunt section)</span></td><td class=""><span class="st ok"><i></i>Confirmed</span></td><td class="">North breakwater, Munambam Harbour</td><td class="">25</td><td class=""><div class="days"><div><b>Shoot Day 8</b> · Tue 19 Jan 2027</div></div></td></tr>
+<tr class="" data-cells="[&quot;Munambam Fishing Harbour&quot;, &quot;Confirmed&quot;, &quot;Munambam, Ernakulam district, Kerala 683515&quot;, &quot;7, 23, 24, 44&quot;, &quot;Shoot Day 7 · Mon 18 Jan 2027; Shoot Day 8 · Tue 19 Jan 2027&quot;]" data-k=""><td class=""><span class="hd">Munambam Fishing Harbour</span></td><td class=""><span class="st ok"><i></i>Confirmed</span></td><td class="">Munambam, Ernakulam district, Kerala 683515</td><td class="">7, 23, 24, 44</td><td class=""><div class="days"><div><b>Shoot Day 7</b> · Mon 18 Jan 2027</div><div><b>Shoot Day 8</b> · Tue 19 Jan 2027</div></div></td></tr>
+<tr class="alt" data-cells="[&quot;Open Sea off Vypin (2 nautical miles out)&quot;, &quot;Confirmed&quot;, &quot;Departure: Kalamukku fishing jetty, Vypin&quot;, &quot;1, 35&quot;, &quot;Shoot Day 13 · Mon 25 Jan 2027&quot;]" data-k=""><td class=""><span class="hd">Open Sea off Vypin (2 nautical miles out)</span></td><td class=""><span class="st ok"><i></i>Confirmed</span></td><td class="">Departure: Kalamukku fishing jetty, Vypin</td><td class="">1, 35</td><td class=""><div class="days"><div><b>Shoot Day 13</b> · Mon 25 Jan 2027</div></div></td></tr>
+<tr class="" data-cells="[&quot;Police Outpost (set, Navodaya Studio Floor 2)&quot;, &quot;Confirmed&quot;, &quot;Navodaya Studio, Kakkanad, Kochi 682030&quot;, &quot;19, 32&quot;, &quot;Shoot Day 11 · Fri 22 Jan 2027&quot;]" data-k=""><td class=""><span class="hd">Police Outpost (set, Navodaya Studio Floor 2)</span></td><td class=""><span class="st ok"><i></i>Confirmed</span></td><td class="">Navodaya Studio, Kakkanad, Kochi 682030</td><td class="">19, 32</td><td class=""><div class="days"><div><b>Shoot Day 11</b> · Fri 22 Jan 2027</div></div></td></tr>
+<tr class="alt" data-cells="[&quot;Port Trust Office (heritage building, Willingdon Island)&quot;, &quot;Confirmed&quot;, &quot;Willingdon Island, Kochi 682003&quot;, &quot;8, 37&quot;, &quot;Shoot Day 10 · Thu 21 Jan 2027&quot;]" data-k=""><td class=""><span class="hd">Port Trust Office (heritage building, Willingdon Island)</span></td><td class=""><span class="st ok"><i></i>Confirmed</span></td><td class="">Willingdon Island, Kochi 682003</td><td class="">8, 37</td><td class=""><div class="days"><div><b>Shoot Day 10</b> · Thu 21 Jan 2027</div></div></td></tr>
+<tr class="" data-cells="[&quot;Soundwave Studio (Kochi stand-in for Bengaluru)&quot;, &quot;Confirmed&quot;, &quot;Panampilly Nagar, Kochi 682036&quot;, &quot;3&quot;, &quot;Shoot Day 12 · Sat 23 Jan 2027&quot;]" data-k=""><td class=""><span class="hd">Soundwave Studio (Kochi stand-in for Bengaluru)</span></td><td class=""><span class="st ok"><i></i>Confirmed</span></td><td class="">Panampilly Nagar, Kochi 682036</td><td class="">3</td><td class=""><div class="days"><div><b>Shoot Day 12</b> · Sat 23 Jan 2027</div></div></td></tr>
+<tr class="alt" data-cells="[&quot;St. Antony&#x27;s Church (Kadalkkara set dressing)&quot;, &quot;Confirmed&quot;, &quot;Chellanam, Kochi 682008&quot;, &quot;18&quot;, &quot;Shoot Day 10 · Thu 21 Jan 2027&quot;]" data-k=""><td class=""><span class="hd">St. Antony&#x27;s Church (Kadalkkara set dressing)</span></td><td class=""><span class="st ok"><i></i>Confirmed</span></td><td class="">Chellanam, Kochi 682008</td><td class="">18</td><td class=""><div class="days"><div><b>Shoot Day 10</b> · Thu 21 Jan 2027</div></div></td></tr>
+<tr class="" data-cells="[&quot;Suresh&#x27;s House (Vypin)&quot;, &quot;Confirmed&quot;, &quot;Elankunnapuzha, Vypin 682503&quot;, &quot;36&quot;, &quot;Shoot Day 10 · Thu 21 Jan 2027&quot;]" data-k=""><td class=""><span class="hd">Suresh&#x27;s House (Vypin)</span></td><td class=""><span class="st ok"><i></i>Confirmed</span></td><td class="">Elankunnapuzha, Vypin 682503</td><td class="">36</td><td class=""><div class="days"><div><b>Shoot Day 10</b> · Thu 21 Jan 2027</div></div></td></tr>
+<tr class="alt" data-cells="[&quot;Taluk Hospital Ward (closed wing, Njarakkal)&quot;, &quot;Confirmed&quot;, &quot;Njarakkal, Vypin, Kochi 682505&quot;, &quot;26, 27&quot;, &quot;Shoot Day 12 · Sat 23 Jan 2027&quot;]" data-k=""><td class=""><span class="hd">Taluk Hospital Ward (closed wing, Njarakkal)</span></td><td class=""><span class="st ok"><i></i>Confirmed</span></td><td class="">Njarakkal, Vypin, Kochi 682505</td><td class="">26, 27</td><td class=""><div class="days"><div><b>Shoot Day 12</b> · Sat 23 Jan 2027</div></div></td></tr>
+<tr class="" data-cells="[&quot;Tea Shop and Toddy Shop Row (Mattancherry)&quot;, &quot;Confirmed&quot;, &quot;Bazaar Road, Mattancherry, Kochi 682002&quot;, &quot;9, 14, 17, 30, 43&quot;, &quot;Shoot Day 5 · Fri 15 Jan 2027; Shoot Day 14 · Tue 26 Jan 2027&quot;]" data-k=""><td class=""><span class="hd">Tea Shop and Toddy Shop Row (Mattancherry)</span></td><td class=""><span class="st ok"><i></i>Confirmed</span></td><td class="">Bazaar Road, Mattancherry, Kochi 682002</td><td class="">9, 14, 17, 30, 43</td><td class=""><div class="days"><div><b>Shoot Day 5</b> · Fri 15 Jan 2027</div><div><b>Shoot Day 14</b> · Tue 26 Jan 2027</div></div></td></tr>
+<tr class="alt" data-cells="[&quot;Thomas House (private home, Chellanam)&quot;, &quot;Confirmed&quot;, &quot;Kandakkadavu, Chellanam, Kochi, Kerala 682008&quot;, &quot;6, 10, 15, 20, 39&quot;, &quot;Shoot Day 4 · Thu 14 Jan 2027&quot;]" data-k=""><td class=""><span class="hd">Thomas House (private home, Chellanam)</span></td><td class=""><span class="st ok"><i></i>Confirmed</span></td><td class="">Kandakkadavu, Chellanam, Kochi, Kerala 682008</td><td class="">6, 10, 15, 20, 39</td><td class=""><div class="days"><div><b>Shoot Day 4</b> · Thu 14 Jan 2027</div></div></td></tr></tbody></table>
+  
+  <div class="callout info block rpt-empty" data-empty hidden><p>No matching data.</p></div>
+</div>
+
+<script src="../../00_SYSTEM/assets/of-preview.js"></script>
+
+<script>
+  /* Preview-only: the filter / snapshot / divider toggles re-create the report states the app can print.
+     Nothing here affects the printed PDF (the PDF captures the default state). */
+  (function () {
+    var bar = document.querySelector('.preview-bar'); if (!bar) return;
+    var doc = document.querySelector('.doc');
+    function box(prefix) { var L = bar.querySelectorAll('label'); for (var i = 0; i < L.length; i++) { if (L[i].textContent.indexOf(prefix) === 0) return L[i].querySelector('input'); } return null; }
+    var fb = box('Filter active'), sb = box('Saved snapshot');
+    var rows = [].slice.call(doc.querySelectorAll('tbody tr[data-cells]'));
+    var groups = [].slice.call(doc.querySelectorAll('tbody tr.group'));
+    var table = doc.querySelector('table.rpt'), empty = doc.querySelector('[data-empty]'), note = doc.querySelector('.rpt-note');
+    function apply() {
+      var f = (fb && fb.checked) ? (doc.getAttribute('data-filter') || '').toLowerCase() : '';
+      var vis = 0, alt = false, counts = {t: 0};
+      rows.forEach(function (tr) {
+        var cells = JSON.parse(tr.getAttribute('data-cells'));
+        var ok = !f || cells.some(function (c) { return c.toLowerCase().indexOf(f) > -1; });
+        tr.hidden = !ok;
+        tr.classList.remove('alt');
+        if (ok) { vis++; counts.t++; if (alt) tr.classList.add('alt'); alt = !alt;
+          (tr.getAttribute('data-k') || '').split(' ').forEach(function (k) { if (k) counts[k] = (counts[k] || 0) + 1; }); }
+      });
+      var last = null, seen = false;
+      var all = [].slice.call(doc.querySelectorAll('tbody tr'));
+      all.forEach(function (tr, i) { if (tr.classList.contains('group')) { var nxt = null; for (var j = i + 1; j < all.length; j++) { if (all[j].classList.contains('group')) break; if (!all[j].hidden) { nxt = all[j]; break; } } tr.dataset.need = nxt ? '1' : '0'; } });
+      groups.forEach(function (g) { g.style.display = g.dataset.need === '0' ? 'none' : ''; });
+      [].slice.call(doc.querySelectorAll('[data-m]')).forEach(function (m) { m.textContent = counts[m.getAttribute('data-m')] || 0; });
+      if (table) table.hidden = rows.length > 0 && vis === 0;
+      if (empty) empty.hidden = !(rows.length > 0 && vis === 0);
+      if (note) note.hidden = rows.length > 0 && vis === 0;
+      var op = doc.querySelector('[data-open]');
+      if (op) { var p = [], n = []; rows.forEach(function (tr) { if (tr.hidden) return; var k = tr.getAttribute('data-k') || '', sc = JSON.parse(tr.getAttribute('data-cells'))[0]; if (k.indexOf('p') > -1) p.push(sc); if (k.indexOf('n') > -1) n.push(sc); });
+        var t = ''; if (p.length) t += 'In progress or needs review: <b>' + p.join(', ') + '</b>'; if (n.length) t += (t ? ' · ' : '') + 'Not started: <b>' + n.join(', ') + '</b>';
+        op.innerHTML = t; var box2 = op.closest('.rpt-att'); if (box2) box2.style.display = t ? '' : 'none'; }
+      var snap = sb && sb.checked;
+      [].slice.call(doc.querySelectorAll('[data-live]')).forEach(function (el) {
+        el.textContent = snap && el.hasAttribute('data-snap') ? el.getAttribute('data-snap') : ((fb && fb.checked && el.hasAttribute('data-filtered')) ? el.getAttribute('data-filtered') : el.getAttribute('data-live'));
+      });
+    }
+    if (fb) fb.addEventListener('change', apply);
+    if (sb) sb.addEventListener('change', apply);
+    apply();
+  })();
+</script>
+</body>
+</html>

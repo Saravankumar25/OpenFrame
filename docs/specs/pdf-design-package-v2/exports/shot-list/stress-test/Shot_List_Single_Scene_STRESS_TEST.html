@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shot List: Scene 118 (STRESS TEST)</title>
+<meta name="of-doc" content="Shot List — Single Scene (shot.export_list, scope Current scene) — STRESS TEST">
+<meta name="of-logo" content="../../../00_SYSTEM/assets/openframe-logo.png">
+<link rel="stylesheet" href="../../../00_SYSTEM/assets/openframe-print.css">
+<style>
+  @page { size: 8.5in 11in; @top-right { content: "LOW TIDE RADIO · SHOT LIST · SCENE 118"; } }
+
+  /* Shot List — PORTRAIT US Letter (v2). Content box 520 x 680 pt (margins 46/46/46/66). */
+  .sh-mast { align-items: center; margin-bottom: 12pt; }
+  .sh-mast h1 { margin: 3pt 0 2pt; }
+  .sh-mast .proj { font-size: 11pt; color: var(--of-slate); }
+  .sh-mast { column-gap: 12pt; }
+  .sh-panel { border: var(--hair) solid var(--of-line); background: var(--of-panel); border-radius: 6pt;
+              padding: 7pt 13pt 8pt; text-align: right; min-width: 140pt; }
+  .sh-panel .l1 { font-size: 10pt; font-weight: 700; color: var(--of-navy); }
+  .sh-panel .l2 { font-size: 8.4pt; color: var(--of-slate); margin-top: 2pt; }
+  .sh-rule { border: 0; border-top: var(--rule) solid var(--of-navy); margin: 0 0 12pt; }
+
+  /* scene group = one table, attached card: navy band + (status) + tint column header + rows */
+  .scene { margin: 0 0 10pt; }
+  table.shots { table-layout: fixed; font-size: var(--fs-cell); }
+  /* Description = the one <col> without a width: it takes what the fixed columns leave. Notes live inside it (v2). */
+  table.shots th, table.shots td { padding: 5pt 5pt; vertical-align: top; }
+  table.shots thead th { background: var(--of-tint); color: var(--of-slate); font-size: 6.9pt; letter-spacing: .09em;
+                         padding: 5pt 5pt; vertical-align: middle; border-bottom: var(--hair) solid var(--of-line-strong); }
+  table.shots thead tr.cols th { border-left: 0; }
+  table.shots thead tr.cols th:first-child { border-left: var(--hair) solid var(--of-line-strong); }
+  table.shots thead tr.cols th:last-child { border-right: var(--hair) solid var(--of-line-strong); }
+  table.shots thead .c, table.shots tbody .c { text-align: center; }
+  table.shots thead tr.band th { background: var(--of-navy); padding: 0; border: 0; border-radius: 6pt 6pt 0 0; letter-spacing: 0; text-align: left; }
+  table.shots thead tr.band.removed th { background: var(--of-slate); }
+  .bandin { display: flex; align-items: center; gap: 10pt; min-height: 34pt; padding: 6pt 14pt; color: #fff; }
+  .bandin .ey { flex: none; font-size: 8pt; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: #f5c27a; }
+  .bandin .ttl { flex: 1; min-width: 0; font-size: 14pt; line-height: 1.15; font-weight: 700; color: #fff; letter-spacing: 0; text-transform: none; }
+  .bandin .cnt { flex: none; font-size: 9pt; font-weight: 400; letter-spacing: .06em; color: #fff; text-transform: uppercase; }
+  table.shots thead tr.status th { padding: 5pt 14pt 5pt 11pt; font-size: 8.6pt; letter-spacing: 0; text-transform: none; text-align: left;
+                                    border-bottom: var(--hair) solid var(--of-line-strong); border-left: 3pt solid; }
+  table.shots thead tr.status.changed th { background: var(--of-amber-fill); color: var(--of-amber-text); border-left-color: var(--of-orange); }
+  table.shots thead tr.status.removed th { background: var(--of-red-fill); color: var(--of-red-text); border-left-color: var(--of-red-text); }
+  table.shots thead tr.status b { font-weight: 700; }
+
+  table.shots tbody td { border-bottom: var(--hair) solid var(--of-line); }
+  table.shots tbody tr:last-child td { border-bottom: var(--hair) solid var(--of-line-strong); }
+  table.shots tbody td:first-child { border-left: var(--hair) solid var(--of-line-strong); }
+  table.shots tbody td:last-child { border-right: var(--hair) solid var(--of-line-strong); }
+  /* the group header always keeps >= 1 row; never leave a lone last row on a page (>= 2 rows on the final fragment) */
+  .scene.keep { break-inside: avoid; }          /* a scene of 3 or fewer shots is never split */
+  table.shots tbody tr:last-child { break-before: avoid; }
+  table.shots tbody tr { break-inside: avoid; }
+  .chk { display: block; width: 12pt; height: 12pt; border: .9pt solid var(--of-slate); border-radius: 50%; margin: 1pt auto 0; }
+  .thumb { width: 80pt; height: 45pt; border: var(--hair) solid var(--of-line); border-radius: 2pt; background: #eef1f5; overflow: hidden; }
+  .thumb img { width: 100%; height: 100%; object-fit: contain; display: block; background: #eef1f5; }
+  .thumb.missing { display: flex; align-items: center; justify-content: center; background: #f1f3f6; color: var(--of-muted);
+                   font-size: 7pt; text-align: center; padding: 3pt; line-height: 1.2; }
+  .thumb.missing.tall { height: auto; min-height: 45pt; }
+  td.img { padding-left: 4pt; padding-right: 4pt; }
+  table.shots td.c, table.shots th.c { padding-left: 3pt; padding-right: 3pt; }
+  table.shots td.cam, table.shots th.cam { padding-left: 4.5pt; padding-right: 4.5pt; }
+  .tag { display: inline-block; min-width: 26pt; text-align: center; font-size: 10pt; font-weight: 700; color: var(--of-navy);
+         background: var(--of-tint); border: var(--hair) solid var(--of-line-strong); border-radius: 3.5pt; padding: 2pt 3pt; line-height: 1.15; }
+  td.desc { font-size: 8.8pt; line-height: 1.35; color: var(--of-ink); }
+  td.cam { font-size: 8.2pt; background: var(--of-panel); color: var(--of-ink); line-height: 1.3; }
+  td.cam.sz { font-weight: 700; color: var(--of-navy); }
+  th.cam { background: #e2e9f1 !important; }
+  .dash { color: var(--of-muted); font-weight: 400; }
+  td.desc .notes { margin-top: 3.5pt; font-size: 8pt; color: var(--of-slate); line-height: 1.3; }
+  td.desc .notes p + p { margin-top: 2pt; }
+  td.desc .notes b { color: var(--of-navy); font-weight: 700; }
+  tr.zero td { font-size: 8.8pt; color: var(--of-muted); padding: 9pt 14pt; }
+
+  /* single-scene context card (band + coverage strip), attached to the table below */
+  .scenecard { margin: 0; }
+  .scenecard .bandtop { background: var(--of-navy); border-radius: 6pt 6pt 0 0; }
+  .scenecard .bandtop .bandin { min-height: 36pt; }
+  .scenecard .st { padding: 5pt 14pt 5pt 11pt; font-size: 8.6pt; border-left: 3pt solid; border-bottom: var(--hair) solid var(--of-line-strong); }
+  .scenecard .st.changed { background: var(--of-amber-fill); color: var(--of-amber-text); border-left-color: var(--of-orange); }
+  .scenecard .st.removed { background: var(--of-red-fill); color: var(--of-red-text); border-left-color: var(--of-red-text); }
+  .scenecard.removed .bandtop { background: var(--of-slate); }
+  .ctx { display: grid; grid-template-columns: 1fr 1fr 1fr; background: var(--of-panel); border: var(--hair) solid var(--of-line-strong); border-top: 0; }
+  .ctx > div { padding: 6pt 10pt 7pt; }
+  .ctx > div + div { border-left: var(--hair) solid var(--of-line); }
+  .ctx .lbl { font-size: var(--fs-label); font-weight: 700; letter-spacing: .11em; text-transform: uppercase; color: var(--of-slate); }
+  .ctx .val { font-size: 8.6pt; font-weight: 700; color: var(--of-navy); margin-top: 2pt; line-height: 1.3; }
+  table.shots.attached { margin-top: 0; }
+  table.shots.attached thead tr.cols th { border-top: 0; }
+  .illus { font-size: 6.6pt; color: var(--of-muted); font-style: italic; margin: 0 0 3pt; }
+  .stress-note { border-left: 2pt solid var(--of-orange); padding: 3pt 0 3pt 8pt; margin: 0 0 10pt; font-size: 7.8pt; color: var(--of-slate); }
+</style>
+</head>
+<body>
+<div class="doc">
+
+  <header class="masthead compact sh-mast">
+    <div>
+      <div class="eyebrow">Production &middot; Shot list</div>
+      <h1>Shot List</h1>
+      <div class="proj">Low Tide Radio</div>
+    </div>
+    <div class="sh-panel" aria-label="Export summary">
+      <div class="l1">14 shots in 1 scene</div>
+      <div class="l2">Exported 22 Oct 2026</div>
+    </div>
+  </header>
+  <hr class="sh-rule">
+<section class="scenecard" aria-label="Scene 118"><div class="bandtop"><div class="bandin"><span class="ey">Scene 118</span><span class="ttl">INT. COAST RADIO STATION - LIGHTHOUSE KEEPER&#x27;S ROOM, SECOND FLOOR LANDING, STAIRWELL AND ROOF HATCH - LATE AFTERNOON, GOLDEN HOUR (1999 FLASHBACK, MIRRORED FROM SCENE 41)</span><span class="cnt">14 SHOTS</span></div></div><div class="st changed"><b>Scene changed since planning</b></div><div class="ctx" data-toggle="Scene coverage strip" aria-label="Scene coverage (derived from the listed shots)"><div><div class="lbl">Lenses</div><div class="val">24mm &middot; 21mm (Steadicam) / 35mm anamorphic (B camera) &middot; 40mm &middot; 85mm &middot; 18mm &middot; 50mm &middot; 28mm &middot; 75mm</div></div><div><div class="lbl">Movement</div><div class="val">Static &middot; Steadicam: lamp, pull back, track left, settle on hatch</div></div><div><div class="lbl">Characters in these shots</div><div class="val">MARIAMMA, YOUNG ANJALI, VARGHESE, APPACHAN, KANNAN, LATHA, FATHIMA, MARIAMMA-FERNANDEZ-D&#x27;CRUZ-OF-MUNAMBAM, RAHUL</div></div></div></section><table class="tbl shots boxed attached" aria-label="Shots, scene 118"><colgroup><col style="width:32pt"><col style="width:88pt"><col style="width:39pt"><col><col style="width:56pt"><col style="width:56pt"><col style="width:40pt"><col style="width:56pt"></colgroup><thead><tr class="cols"><th class="c">Done</th><th>Image</th><th class="c">Shot</th><th>Description</th><th class="cam">Size</th><th class="cam">Movement</th><th class="cam">Angle</th><th class="cam">Lens</th></tr></thead><tbody><tr><td class="c"><span class="chk" aria-label="Done"></span></td><td class="img"><div class="thumb"><img src="../../../00_SYSTEM/sample-assets/shot-sample-02.png" alt=""></div></td><td class="c"><span class="tag">118A</span></td><td class="desc"><div class="d">Establishing wide of the keeper&#x27;s room from the door</div><div class="notes"><p><b>Characters:</b> MARIAMMA</p><p><b>Storyboard:</b> INT. LIGHTHOUSE KEEPER&#x27;S ROOM #1</p><p><b>Sound:</b> Room tone</p><p><b>Camera:</b> Warm key from the window.</p></div></td><td class="cam sz">Wide</td><td class="cam">Static</td><td class="cam">Eye level</td><td class="cam">24mm</td></tr><tr><td class="c"><span class="chk" aria-label="Done"></span></td><td class="img"><div class="thumb"><img src="../../../00_SYSTEM/sample-assets/shot-sample-03.png" alt=""></div></td><td class="c"><span class="tag">118B</span></td><td class="desc"><div class="d">Slow, continuous Steadicam move that starts on the cracked lens of the lighthouse lamp, pulls back through the broken glass to reveal the keeper&#x27;s room, tracks past the overturned table, the unlit stove and the hand-drawn tide chart pinned to the wall, and settles on Mariamma kneeling at the open hatch with the radio against her ear, all without a cut. Cover the same move twice: once with the practical lantern only and once with the bounce board on the left so the production can choose in the grade. Child performer may be present in the background of take three.</div><div class="notes"><p><b>Characters:</b> MARIAMMA, YOUNG ANJALI, VARGHESE, APPACHAN, KANNAN, LATHA, FATHIMA</p><p><b>Storyboard:</b> INT. LIGHTHOUSE KEEPER&#x27;S ROOM #2, INT. LIGHTHOUSE KEEPER&#x27;S ROOM #3</p><p><b>Sound:</b> Record a clean 60-second room tone before the first take, then wild lines from each position; sound department to confirm playback levels with the 1st AD before the unit moves, and again after lunch.</p><p><b>Camera:</b> two bodies, A on the Steadicam, B on sticks at the hatch as a safety. Focus puller marks at 4 ft, 7 ft and 12 ft. Gaffer needs 10 minutes to flag the skylight after the first take. Stunt coordinator to confirm the hatch is secured before the actor kneels. DIT to review the first take on set before the unit moves on.</p></div></td><td class="cam sz">Extreme wide to medium close-up, continuous</td><td class="cam">Steadicam: lamp, pull back, track left, settle on hatch</td><td class="cam">Low, rising to eye level</td><td class="cam">21mm (Steadicam) / 35mm anamorphic (B camera)</td></tr><tr><td class="c"><span class="chk" aria-label="Done"></span></td><td class="img"><div class="thumb missing tall">Image unavailable: tide-chart-reference-v3-final-scan.png</div></td><td class="c"><span class="tag">118C</span></td><td class="desc"><div class="d">Insert: the tide chart</div></td><td class="cam sz">Insert</td><td class="cam"><span class="dash">&ndash;</span></td><td class="cam"><span class="dash">&ndash;</span></td><td class="cam"><span class="dash">&ndash;</span></td></tr><tr><td class="c"><span class="chk" aria-label="Done"></span></td><td class="img"><div class="thumb missing">No image</div></td><td class="c"><span class="tag">118D</span></td><td class="desc"><div class="d">Close-up on Mariamma, no camera movement</div></td><td class="cam sz">Close-up</td><td class="cam"><span class="dash">&ndash;</span></td><td class="cam"><span class="dash">&ndash;</span></td><td class="cam"><span class="dash">&ndash;</span></td></tr><tr><td class="c"><span class="chk" aria-label="Done"></span></td><td class="img"><div class="thumb missing tall">Image can&#x27;t be printed</div></td><td class="c"><span class="tag">118E</span></td><td class="desc"><div class="d">Reverse on the hatch</div></td><td class="cam sz">Medium</td><td class="cam">Static</td><td class="cam">High</td><td class="cam">40mm</td></tr><tr><td class="c"><span class="chk" aria-label="Done"></span></td><td class="img"><div class="thumb"><img src="assets/odd-portrait-3x4.png" alt=""></div></td><td class="c"><span class="tag">118F</span></td><td class="desc"><div class="d">Portrait reference image (3:4)</div></td><td class="cam sz">Close-up</td><td class="cam">Static</td><td class="cam">Eye level</td><td class="cam">85mm</td></tr><tr><td class="c"><span class="chk" aria-label="Done"></span></td><td class="img"><div class="thumb"><img src="assets/odd-wide-2.39.png" alt=""></div></td><td class="c"><span class="tag">118G</span></td><td class="desc"><div class="d">Ultra-wide reference image (2.39:1)</div></td><td class="cam sz">Wide</td><td class="cam">Static</td><td class="cam">Low</td><td class="cam">18mm</td></tr><tr><td class="c"><span class="chk" aria-label="Done"></span></td><td class="img"><div class="thumb"><img src="assets/odd-square.png" alt=""></div></td><td class="c"><span class="tag">118H</span></td><td class="desc"><div class="d">Square reference image (1:1)</div></td><td class="cam sz">Medium</td><td class="cam">Static</td><td class="cam">Eye level</td><td class="cam">50mm</td></tr><tr><td class="c"><span class="chk" aria-label="Done"></span></td><td class="img"><div class="thumb missing">No image</div></td><td class="c"><span class="tag">118I</span></td><td class="desc"><div class="d">Description only: every camera field and every note left empty.</div></td><td class="cam sz"><span class="dash">&ndash;</span></td><td class="cam"><span class="dash">&ndash;</span></td><td class="cam"><span class="dash">&ndash;</span></td><td class="cam"><span class="dash">&ndash;</span></td></tr><tr><td class="c"><span class="chk" aria-label="Done"></span></td><td class="img"><div class="thumb missing">No image</div></td><td class="c"><span class="tag">118J</span></td><td class="desc"><div class="d">Notes only, no camera fields</div><div class="notes"><p><b>Camera:</b> Hand-held B camera pickup if the move in 118B is rejected.</p></div></td><td class="cam sz"><span class="dash">&ndash;</span></td><td class="cam"><span class="dash">&ndash;</span></td><td class="cam"><span class="dash">&ndash;</span></td><td class="cam"><span class="dash">&ndash;</span></td></tr><tr><td class="c"><span class="chk" aria-label="Done"></span></td><td class="img"><div class="thumb missing">No image</div></td><td class="c"><span class="tag">118K</span></td><td class="desc"><div class="d">Only a lens is set</div></td><td class="cam sz"><span class="dash">&ndash;</span></td><td class="cam"><span class="dash">&ndash;</span></td><td class="cam"><span class="dash">&ndash;</span></td><td class="cam">50mm</td></tr><tr><td class="c"><span class="chk" aria-label="Done"></span></td><td class="img"><div class="thumb missing">No image</div></td><td class="c"><span class="tag">118L</span></td><td class="desc"><div class="d">Two characters share one long hyphenated name</div><div class="notes"><p><b>Characters:</b> MARIAMMA-FERNANDEZ-D&#x27;CRUZ-OF-MUNAMBAM, YOUNG ANJALI</p><p><b>Sound:</b> Pickup lines</p></div></td><td class="cam sz">Two-shot</td><td class="cam">Static</td><td class="cam">Eye level</td><td class="cam">50mm</td></tr><tr><td class="c"><span class="chk" aria-label="Done"></span></td><td class="img"><div class="thumb missing">No image</div></td><td class="c"><span class="tag">118M</span></td><td class="desc"><div class="d">Shot 13 in the scene: label has three characters</div></td><td class="cam sz">Wide</td><td class="cam">Static</td><td class="cam">Eye level</td><td class="cam">28mm</td></tr><tr><td class="c"><span class="chk" aria-label="Done"></span></td><td class="img"><div class="thumb missing">No image</div></td><td class="c"><span class="tag">118N</span></td><td class="desc"><div class="d">Shot 14: last shot, must not be alone on the last page</div><div class="notes"><p><b>Characters:</b> RAHUL</p></div></td><td class="cam sz">Close-up</td><td class="cam">Static</td><td class="cam">Eye level</td><td class="cam">75mm</td></tr></tbody></table>
+</div>
+<script src="../../../00_SYSTEM/assets/of-preview.js"></script>
+</body>
+</html>
