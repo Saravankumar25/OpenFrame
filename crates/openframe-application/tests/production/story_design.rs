@@ -1152,3 +1152,43 @@ fn the_export_is_deterministic_and_the_nothing_to_export_errors_are_kept() {
         "export.nothing_to_export"
     );
 }
+
+#[test]
+fn a_2000_character_container_name_and_a_huge_card_end_in_a_bounded_number_of_pages() {
+    let env = TestEnv::with_project("Plain", "Short Film");
+    let mut s = Seed::new(None);
+    s.act("a", &words(2000, "ACT NAME"), None);
+    s.seq("q", Some("a"), &words(2000, "Sequence name"), None);
+    let huge: String = (1..=4000).map(|i| format!("w{i} ")).collect();
+    s.card(
+        "c1",
+        ("sequence", Some("q")),
+        Some("INT. ONE"),
+        huge.trim(),
+        Some(huge.trim()),
+    );
+    s.card(
+        "c2",
+        ("sequence", Some("q")),
+        Some("INT. TWO"),
+        "Short",
+        None,
+    );
+    exec(&env, &s.sql);
+    for layout in ["outline", "board"] {
+        let (path, runs, pages) = export(
+            &env,
+            with(layout, json!({ "includeNotes": true })),
+            "big.pdf",
+        );
+        assert!(pages > 2 && pages < 50, "{layout}: {pages} pages");
+        let n = runs
+            .iter()
+            .flat_map(|r| r.text.split_whitespace())
+            .filter(|w| w.starts_with('w') && w[1..].chars().all(|c| c.is_ascii_digit()))
+            .count();
+        assert_eq!(n, 8000, "{layout}: the description and the note are whole");
+        assert!(has(&runs, "INT. TWO"));
+        inside_margins(&path);
+    }
+}

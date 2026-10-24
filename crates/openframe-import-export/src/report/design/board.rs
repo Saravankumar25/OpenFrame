@@ -21,6 +21,8 @@ const BEAT_HEAD: Rgb = Rgb::hex(0xffe3c2);
 const CARD_GAP: f32 = 8.0;
 const CARD_PAD: f32 = 6.4;
 const HINT_SHARE: f32 = 0.4;
+/// Most lines of a continued strip.
+const STRIP_LINES: usize = 2;
 const SUFFIX: &str = " \u{b7} continued";
 
 // ------------------------------------------------------------------ data
@@ -639,6 +641,17 @@ fn strip_frag(text: &str, cw: f32) -> Frag {
         .track(0.54);
     let mut lines = tracked_lines(&t, cw);
     let sw = tw(SUFFIX, 6.8, false, 0.2);
+    // The strip is page furniture that names the container, never content: a very long name is
+    // shortened after two lines so the strip can never take a page from its content.
+    if lines.len() > STRIP_LINES {
+        lines.truncate(STRIP_LINES);
+        let room = cw - sw - tw("...", 6.8, true, 0.54);
+        let last = lines.last_mut().unwrap();
+        while !last.is_empty() && tw(last, 6.8, true, 0.54) > room {
+            last.pop();
+        }
+        *last = format!("{}...", last.trim_end());
+    }
     let last_w = lines.last().map_or(0.0, |l| tw(l, 6.8, true, 0.54));
     let mut f = Frag::new();
     let lh = 6.8 * 1.3;
@@ -783,6 +796,17 @@ fn place_row(p: &mut Pager, strip: Option<&str>, cells: Vec<Cell>, w: f32, gap_y
                 seg_h = seg_h.max(sum);
                 taken.push((i, got, first[i], q.is_empty()));
                 first[i] = false;
+            }
+        }
+        if taken.is_empty() {
+            // Nothing fits the room of an empty page: put the first unit of every column that
+            // has one on the page anyway, so each pass takes at least one unit and ends.
+            for (i, q) in left.iter_mut().enumerate() {
+                if let Some(u) = q.pop_front() {
+                    seg_h = seg_h.max(u.h);
+                    taken.push((i, vec![u], first[i], q.is_empty()));
+                    first[i] = false;
+                }
             }
         }
         let top = p.y;

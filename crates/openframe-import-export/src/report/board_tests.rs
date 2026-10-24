@@ -254,3 +254,51 @@ fn the_picture_card_part_fits_the_picture_in_the_frame_and_the_chip_is_centred()
     assert!(r.iter().any(|x| x.text == "INTERNAL"));
     assert!(r.iter().any(|x| x.text == "Image unavailable: a.png"));
 }
+
+#[test]
+fn a_huge_strip_and_a_huge_card_still_end_in_a_bounded_number_of_pages_with_all_text() {
+    // A 2,000 character container name makes a strip of many lines unless it is bounded.
+    let name = "THE LONG NAME ".repeat(145);
+    let big = words(3000);
+    let items = vec![
+        item(
+            Some(1),
+            "INT. ONE - DAY",
+            &big,
+            vec![BoardExtra::Note(big.clone())],
+        ),
+        item(Some(2), "INT. TWO - DAY", "short", vec![]),
+        item(Some(3), "INT. THREE - DAY", "short", vec![]),
+        item(Some(4), "INT. FOUR - DAY", &big, vec![]),
+    ];
+    for layout in [
+        BoardLayout::Cards { columns: 3 },
+        BoardLayout::List { nested: true },
+    ] {
+        let pdf = doc_of(vec![
+            Block::Masthead(Masthead::new("Board")),
+            Block::Board(Board::Items(BoardItems {
+                items: items.clone(),
+                layout,
+                parked: false,
+                strip: Some(name.clone()),
+            })),
+        ])
+        .to_pdf();
+        assert!(pdf.pages > 2 && pdf.pages < 50, "{} pages", pdf.pages);
+        let r = runs(&pdf.bytes);
+        let got = r
+            .iter()
+            .flat_map(|x| x.text.split_whitespace())
+            .filter(|w| w.starts_with('w') && w[1..].chars().all(|c| c.is_ascii_digit()))
+            .count();
+        // Card one prints its description and note, card four its description.
+        assert_eq!(got, 3 * 3000);
+        // The strip is two lines at most.
+        let top: Vec<&Run> = r
+            .iter()
+            .filter(|x| x.page == 2 && x.size < 7.0 && x.y > 700.0)
+            .collect();
+        assert!(top.len() <= 3, "{} strip runs", top.len());
+    }
+}
