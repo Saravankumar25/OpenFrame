@@ -74,9 +74,9 @@ fn correct(film: &Film, row: usize, day: usize, code: &str, note: &str) {
 }
 
 /// `n` more cast members, each confirmed in one scene, so the matrix has many rows.
-fn add_cast(film: &Film, n: usize) {
+fn add_cast(film: &Film, first: usize, n: usize) {
     let mut sql = String::new();
-    for i in 0..n {
+    for i in first..first + n {
         let k = i % 14 + 1;
         sql.push_str(&format!(
             "INSERT INTO story_character(id,name,position,created_at,updated_at) VALUES ('xc{i}','Crowd {i:02}',{},1,1);\
@@ -424,7 +424,7 @@ fn corrections_are_marked_in_the_cell_and_listed_with_the_code_of_the_schedule()
 #[test]
 fn many_days_and_a_large_cast_paginate_with_repeated_headers_and_no_orphans() {
     let film = long_film();
-    add_cast(&film, 40);
+    add_cast(&film, 0, 40);
     // 45 more days push the matrix over several column groups.
     for i in 0..30 {
         film.env.ok(
@@ -538,7 +538,11 @@ fn write_dood_design_samples() {
     correct(&film, 3, 4, "T", "Travels from the coast");
     let (_, _, p) = dood(&film, json!({}), "a.pdf");
     keep_sample(&p, "c4-dood-long.pdf");
-    add_cast(&film, 40);
+    // The size of the reference sample: 17 cast members over 15 day columns.
+    add_cast(&film, 0, 11);
+    let (_, _, p) = dood(&film, json!({}), "c.pdf");
+    keep_sample(&p, "c4-dood-17-cast.pdf");
+    add_cast(&film, 11, 29);
     for i in 0..30 {
         film.env.ok(
             "schedule.create_day",
