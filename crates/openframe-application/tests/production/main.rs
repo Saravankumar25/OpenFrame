@@ -5,6 +5,7 @@
 //! Run one file with `cargo test -p openframe-application --test production <file>::`.
 
 mod breakdown_design;
+mod budget_design;
 mod call_sheet_design;
 mod daily_view_design;
 mod dood_design;

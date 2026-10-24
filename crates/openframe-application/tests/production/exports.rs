@@ -1239,7 +1239,7 @@ fn budget_report_exports_planned_actual_and_difference() {
     for want in [
         "Budget Report",
         "INR 12,00,000",
-        "10% · INR 1,20,000",
+        "INR 1,20,000 CONTINGENCY, 10%",
         "Planned in lines",
         "INR 62,000",
         "INR 55,000 ACTUAL SO FAR, 1 LINE OF 2",
