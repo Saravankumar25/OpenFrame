@@ -65,8 +65,5 @@
 540,200 8.0 1 line
 53,173 9.0 Catering
 346,173 8.8 12,000
-69,46 11.0 Open
-96,46 11.0 Frame
-70,39 4.2 STUDIO
-146,44 8.0 Created using OpenFrame
-394,44 7.2 BLACK RAIN · BUDGET REPORT · Page 1 / 1
+46,24 6.8 Created using OpenFrame
+528,24 7.4 Page 1 of 1

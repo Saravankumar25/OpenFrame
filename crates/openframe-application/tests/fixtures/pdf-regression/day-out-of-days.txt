@@ -88,8 +88,5 @@
 530,96 9.4 0
 549,97 8.6 Shoot Day 1
 651,97 8.6 Shoot Day 2
-69,46 11.0 Open
-96,46 11.0 Frame
-70,39 4.2 STUDIO
-146,44 8.0 Created using OpenFrame
-569,44 7.2 BLACK RAIN · DAY OUT OF DAYS · Page 1 / 1
+46,24 6.8 Created using OpenFrame
+708,24 7.4 Page 1 of 1

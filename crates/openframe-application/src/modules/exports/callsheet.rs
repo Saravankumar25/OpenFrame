@@ -425,7 +425,7 @@ pub(super) fn export(
                 Cell::text(Txt::new(estimated.clone()).size(8.6).color(pal::SLATE)).item(
                     CellItem::Text(
                         Txt::new("ESTIMATED")
-                            .size(5.8)
+                            .size(6.4)
                             .bold()
                             .track(0.5)
                             .color(pal::FAINT),

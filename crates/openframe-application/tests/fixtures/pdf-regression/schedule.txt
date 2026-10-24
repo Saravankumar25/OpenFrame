@@ -56,11 +56,8 @@
 495,211 8.8 Arjun (Karthik Menon)
 672,209 11.0 1/8
 729,211 9.0 2h
-69,46 11.0 Open
-96,46 11.0 Frame
-70,39 4.2 STUDIO
-146,44 8.0 Created using OpenFrame
-555,44 7.2 BLACK RAIN · SHOOTING SCHEDULE · Page 1 / 2
+46,24 6.8 Created using OpenFrame
+708,24 7.4 Page 1 of 2
 == page 2 792x612
 60,541 8.0 SHOOT DAY 02
 145,540 14.0 Day 2
@@ -98,8 +95,5 @@
 302,362 7.6 Interior / Night
 46,330 11.5 UNSCHEDULED · 0
 46,306 8.8 All source scenes are scheduled.
-69,46 11.0 Open
-96,46 11.0 Frame
-70,39 4.2 STUDIO
-146,44 8.0 Created using OpenFrame
-555,44 7.2 BLACK RAIN · SHOOTING SCHEDULE · Page 2 / 2
+46,24 6.8 Created using OpenFrame
+708,24 7.4 Page 2 of 2

@@ -7,8 +7,7 @@ use super::*;
 /// The block at the top of a production document.
 #[derive(Debug, Clone)]
 pub struct Masthead {
-    /// Print the lockup at the top left and this label at the top right, above a hairline
-    /// (breakdown and catalog style).
+    /// Print this label at the top right, above a hairline (breakdown and catalog style).
     pub top_bar: Option<String>,
     pub eyebrow: Option<Txt>,
     pub title: String,
@@ -77,18 +76,7 @@ pub(in crate::report) fn masthead(p: &mut Pager, m: &Masthead) {
     let mut f = Frag::new();
     let mut y = 0.0f32;
     if let Some(bar) = &m.top_bar {
-        let mut lock = Frag::new();
-        lock.ops.push(Op::Mark {
-            x: 0.0,
-            y: -19.0,
-            size: 19.0,
-            color: pal::ORANGE,
-        });
-        lock.text(23.0, 9.0, "Open", 11.0, false, pal::NAVY, 0.0);
-        let ow = text_width_pt("Open", 11.0, false);
-        lock.text(23.0 + ow, 9.0, "Frame", 11.0, true, pal::NAVY, 0.0);
-        lock.text(23.5, 18.0, "STUDIO", 4.2, true, pal::ORANGE, 2.6);
-        f.put(lock, 0.0, 0.0);
+        // The logo is page furniture in the footer only; the top bar keeps just its label.
         let label = bar.to_uppercase();
         let lw = tw(&label, 8.0, true, 1.4);
         f.text(cw - lw, 12.0, &label, 8.0, true, pal::SLATE, 1.4);
@@ -476,9 +464,10 @@ pub(in crate::report) fn section(p: &mut Pager, s: &Section) {
     // Keep a heading with what follows it.
     p.ensure(total + 70.0);
     p.y -= 8.0;
-    let top = p.y;
+    let (start, top) = (p.ops().len(), p.y);
     p.emit(f, MARGIN, top);
     p.y -= total;
+    p.keep_with_next(start, top);
 }
 
 // ------------------------------------------------------------------ banner
@@ -620,8 +609,10 @@ pub(in crate::report) fn banner(p: &mut Pager, b: &Banner) {
     }
     p.ensure(total + b.keep_next + 4.0);
     let top = p.y - 4.0;
+    let start = p.ops().len();
     p.emit(f, MARGIN, top);
     p.y -= total + 4.0;
+    p.keep_with_next(start, top);
 }
 
 // ------------------------------------------------------------------ callout

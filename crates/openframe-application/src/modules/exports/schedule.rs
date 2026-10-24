@@ -421,7 +421,7 @@ pub(super) fn export(
         if t.overridden {
             pg = pg.item(CellItem::Text(
                 Txt::new("MANUAL")
-                    .size(5.8)
+                    .size(6.4)
                     .bold()
                     .track(0.5)
                     .color(pal_.muted)

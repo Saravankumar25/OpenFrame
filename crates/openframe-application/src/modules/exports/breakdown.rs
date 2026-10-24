@@ -474,7 +474,7 @@ pub(super) fn export(
                         )
                         .item(CellItem::Text(
                             Txt::label(if nums.len() == 1 { "Use" } else { "Uses" })
-                                .size(6.0)
+                                .size(6.4)
                                 .align(Align::Right),
                         ))
                         .middle(),

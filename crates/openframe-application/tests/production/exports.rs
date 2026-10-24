@@ -198,14 +198,17 @@ fn pdf_page_width(path: &str) -> f32 {
     mb[2].as_float().unwrap()
 }
 
+/// Pictures in the PDF (JPEG). The footer logo is a lossless Flate image with its mask, so it is
+/// not counted.
 fn pdf_images(path: &str) -> usize {
     let doc = lopdf::Document::load(path).unwrap();
     doc.objects
         .values()
         .filter(|o| match o {
             lopdf::Object::Stream(s) => {
-                s.dict.get(b"Subtype").ok().and_then(|v| v.as_name().ok())
-                    == Some(b"Image".as_slice())
+                let name = |key: &[u8]| s.dict.get(key).ok().and_then(|v| v.as_name().ok());
+                name(b"Subtype") == Some(b"Image".as_slice())
+                    && name(b"Filter") == Some(b"DCTDecode".as_slice())
             }
             _ => false,
         })
@@ -668,7 +671,7 @@ fn storyboard_sheet_has_panels_shot_numbers_framing_and_optional_notes() {
     assert_eq!(pdf_images(&pdf), 1);
     let text = pdf_text(&pdf);
     for want in [
-        "STORYBOARD: INT. POLICE STATION - NIGHT",
+        "STORYBOARD INT. POLICE STATION - NIGHT",
         "Scene 1: INT. POLICE STATION - NIGHT",
         "Panel 1 · Shot 1A",
         "Blank panel",

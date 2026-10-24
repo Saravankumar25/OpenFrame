@@ -240,12 +240,12 @@ fn card_head(h: &CardHead, w: f32) -> Frag {
         );
         match &t.top {
             Some(top) => {
-                let tw1 = tw(top, 5.4, true, 0.3);
+                let tw1 = tw(top, 6.4, true, 0.3);
                 f.text(
                     PAD + (t.w - tw1) / 2.0,
                     ty + 9.0,
                     top,
-                    5.4,
+                    6.4,
                     true,
                     t.color,
                     0.3,
@@ -363,7 +363,7 @@ fn group_frag(g: &Group, gw: f32) -> Frag {
         pending.push(Chip::pill(it.text.clone(), it.tone));
         if let Some(t) = &it.tag {
             let mut t = t.clone();
-            t.size = 5.8;
+            t.size = 6.4;
             pending.push(t);
         }
         if let Some(n) = &it.note {

@@ -126,8 +126,11 @@ pub struct Row {
     pub stripe: Option<Rgb>,
     /// The first cell spans every column.
     pub span: bool,
-    /// Keep this row on the same page as the row after it (band headings).
+    /// Keep this row on the same page as the row after it (band headings, group header rows).
     pub keep_next: bool,
+    /// Keep this row on the same page as the `n` rows before it (subtotals and totals travel with
+    /// the last rows they sum up).
+    pub keep_prev: u8,
 }
 
 impl Row {
@@ -156,6 +159,11 @@ pub enum HeaderStyle {
 
 #[derive(Debug, Clone)]
 pub struct StyledTable {
+    /// The table's name, printed inside its repeating header so a page never shows the column
+    /// labels without it; continuation pages add " · continued".
+    pub title: Option<String>,
+    /// Small text at the right end of the title row.
+    pub title_hint: Option<String>,
     pub columns: Vec<Col>,
     pub header: HeaderStyle,
     /// Header cells with their own content (multi-line day headers); default is the column
@@ -168,7 +176,8 @@ pub struct StyledTable {
     /// A rounded outline around the table (per page).
     pub boxed: bool,
     pub empty: Option<String>,
-    /// Printed in a small bar when the table continues on a new page.
+    /// Printed in a small bar when an untitled table continues on a new page (a titled table
+    /// repeats its title with " · continued" instead).
     pub continued: Option<String>,
     pub pad_x: f32,
     pub pad_y: f32,
@@ -177,6 +186,8 @@ pub struct StyledTable {
 impl StyledTable {
     pub fn new(columns: Vec<Col>) -> StyledTable {
         StyledTable {
+            title: None,
+            title_hint: None,
             columns,
             header: HeaderStyle::Tint,
             header_cells: None,
@@ -559,6 +570,126 @@ fn header_cell_content(cell: &Cell, w: f32, default_align: Align) -> Frag {
     f
 }
 
+/// The title row of a table's repeating header: its name in section style, a navy rule under it,
+/// and " · continued" after the name on continuation pages. `None` for an untitled table.
+fn title_frag(t: &StyledTable, total_w: f32, continued: bool) -> Option<Frag> {
+    const SIZE: f32 = 10.0;
+    const TRACK: f32 = 1.0;
+    const LEAD: f32 = SIZE * 1.2;
+    const SUFFIX: &str = " · continued";
+    let title = t.title.as_ref()?;
+    let hint_w = t
+        .title_hint
+        .as_ref()
+        .map(|h| tw(h, 7.4, false, 0.0).min(total_w * 0.4))
+        .unwrap_or(0.0);
+    let avail = (total_w - hint_w - 12.0).max(60.0);
+    let name = Txt::new(title.to_uppercase())
+        .size(SIZE)
+        .bold()
+        .track(TRACK);
+    let lines = txt_lines(&name, avail);
+    let mut f = Frag::new();
+    for (k, l) in lines.iter().enumerate() {
+        f.text(0.0, SIZE + k as f32 * LEAD, l, SIZE, true, pal::NAVY, TRACK);
+    }
+    let mut h = lines.len() as f32 * LEAD;
+    if continued {
+        let last = lines.last().map(String::as_str).unwrap_or("");
+        let lw = tw(last, SIZE, true, TRACK);
+        let sw = tw(SUFFIX, 7.4, false, 0.0);
+        let base = (lines.len() as f32 - 1.0) * LEAD + SIZE;
+        if lw + sw <= avail {
+            f.text(lw, base, SUFFIX, 7.4, false, pal::SLATE, 0.0);
+        } else {
+            f.text(0.0, base + 9.5, "· continued", 7.4, false, pal::SLATE, 0.0);
+            h += 9.5;
+        }
+    }
+    if let Some(hint) = &t.title_hint {
+        let w = tw(hint, 7.4, false, 0.0).min(total_w * 0.4);
+        f.text(total_w - w, SIZE, hint, 7.4, false, pal::SLATE, 0.0);
+    }
+    f.line(0.0, h + 3.0, total_w, h + 3.0, pal::NAVY, 1.2);
+    f.h = h + 3.0 + 1.2 + 4.0;
+    Some(f)
+}
+
+/// Where the rows of a table start new pages.
+///
+/// `heights` are the row heights; `forbid[i]` means a page may not start at row `i` (the row
+/// belongs with the one before it). `first_room` is the space for rows on the table's first page,
+/// `full_room` on every later page; `fresh` says the table starts at the top of a page. The result
+/// lists the rows that start a page. It holds 0 when the table must start on a new page because
+/// its first rows (title, header and at least two rows) do not fit the space left, and it never
+/// leaves a single row alone on the last page when moving the row before it avoids that.
+fn plan_breaks(
+    heights: &[f32],
+    forbid: &[bool],
+    first_room: f32,
+    full_room: f32,
+    fresh: bool,
+) -> Vec<usize> {
+    let n = heights.len();
+    let mut breaks: Vec<usize> = Vec::new();
+    let (mut start, mut room, mut used, mut i) = (0usize, first_room, 0.0f32, 0usize);
+    let mut on_first = true;
+    while i < n {
+        if used + heights[i] <= room + 0.01 {
+            used += heights[i];
+            i += 1;
+            continue;
+        }
+        // The row at `i` does not fit: break at the nearest earlier place that keeps groups whole.
+        let mut b = i;
+        while b > start && forbid[b] {
+            b -= 1;
+        }
+        if b == start {
+            if on_first && !fresh && start == 0 {
+                // Title, header and the rows that must travel together do not fit: new page.
+                breaks.push(0);
+                on_first = false;
+                (room, used, i) = (full_room, 0.0, 0);
+                continue;
+            }
+            if i == start {
+                // A row taller than a page: nothing better to do than place it.
+                used += heights[i];
+                i += 1;
+                continue;
+            }
+            b = i;
+        }
+        breaks.push(b);
+        (start, on_first, room, used, i) = (b, false, full_room, 0.0, b);
+    }
+    // No lone last row: let the row before it move along when the rules and the page allow.
+    if let Some(&last) = breaks.last()
+        && last > 0
+        && n - last == 1
+    {
+        let starts = if breaks.first() == Some(&0) {
+            breaks.len()
+        } else {
+            breaks.len() + 1
+        };
+        let prev = if breaks.len() >= 2 {
+            breaks[breaks.len() - 2]
+        } else {
+            0
+        };
+        // The table's first page keeps at least two rows with the title; later pages one.
+        let keep = if starts == 2 { 2 } else { 1 };
+        if last > prev + keep && !forbid[last - 1] && heights[last - 1] + heights[last] <= full_room
+        {
+            let at = breaks.len() - 1;
+            breaks[at] = last - 1;
+        }
+    }
+    breaks
+}
+
 pub(in crate::report) fn styled_table<'a>(p: &mut Pager<'a>, t: &'a StyledTable) {
     let total_w = p.content_w();
     let ws = widths(t, total_w);
@@ -571,6 +702,13 @@ pub(in crate::report) fn styled_table<'a>(p: &mut Pager<'a>, t: &'a StyledTable)
     let header = header_frag(p, t, &ws, &xs, total_w);
     let header_h = header.as_ref().map(|h| h.h).unwrap_or(0.0);
     if t.rows.is_empty() {
+        if let Some(tf) = title_frag(t, total_w, false) {
+            p.ensure(tf.h + 20.0);
+            let top = p.y;
+            let h = tf.h;
+            p.emit(tf, MARGIN, top);
+            p.y -= h;
+        }
         if let Some(e) = &t.empty {
             text(
                 p,
@@ -579,9 +717,6 @@ pub(in crate::report) fn styled_table<'a>(p: &mut Pager<'a>, t: &'a StyledTable)
         }
         return;
     }
-    // Rows are built once, in order, as the pages need them.
-    let mut seg_top: Option<f32> = None;
-    let mut first_on_page = true;
     let draw_box = |p: &mut Pager, seg_top: f32| {
         if t.boxed {
             let h = seg_top - p.y;
@@ -590,30 +725,57 @@ pub(in crate::report) fn styled_table<'a>(p: &mut Pager<'a>, t: &'a StyledTable)
             p.emit(f, MARGIN, seg_top);
         }
     };
-    let mut frags: Vec<Option<RowFrag>> = t
+    // Rows are built once, in order; their heights decide where the pages break.
+    let frags: Vec<RowFrag> = t
         .rows
         .iter()
         .enumerate()
-        .map(|(i, row)| Some(row_frag(p, t, row, &ws, &xs, total_w, i, 0.0)))
+        .map(|(i, row)| row_frag(p, t, row, &ws, &xs, total_w, i, 0.0))
         .collect();
-    for (i, row) in t.rows.iter().enumerate() {
-        let next_h = frags
-            .get(i + 1)
-            .and_then(|f| f.as_ref())
-            .map(|f| f.h)
-            .unwrap_or(0.0);
-        let rf = frags[i].take().expect("row laid out once");
-        let need = rf.h
-            + if first_on_page { header_h } else { 0.0 }
-            + if row.keep_next { next_h } else { 0.0 };
-        // The very first row keeps company with the header and one more row where it can.
-        if p.room() < need + if i == 0 { 8.0 } else { 0.0 } {
+    let n = frags.len();
+    let heights: Vec<f32> = frags.iter().map(|f| f.h).collect();
+    let mut forbid = vec![false; n + 1];
+    if n >= 2 {
+        // A title or heading always travels with at least two rows.
+        forbid[1] = true;
+    }
+    for (j, row) in t.rows.iter().enumerate() {
+        if row.keep_next && j + 1 < n {
+            forbid[j + 1] = true;
+        }
+        if row.keep_prev > 0 {
+            // A subtotal travels with the rows it sums up.
+            let lo = (j + 1).saturating_sub(row.keep_prev as usize).max(1);
+            forbid[lo..=j].fill(true);
+        }
+    }
+    let title_h = |continued: bool| title_frag(t, total_w, continued).map_or(0.0, |f| f.h);
+    let legacy_band = t.title.is_none() && t.continued.is_some();
+    let first_head = title_h(false) + header_h;
+    let cont_head = title_h(true) + header_h + if legacy_band { 21.0 } else { 0.0 };
+    let page_rows = p.body_h();
+    let breaks = plan_breaks(
+        &heights,
+        &forbid,
+        p.room() - first_head,
+        page_rows - cont_head,
+        p.fresh(),
+    );
+    let mut seg_top: Option<f32> = None;
+    for (i, rf) in frags.into_iter().enumerate() {
+        let new_page = breaks.contains(&i);
+        if i == 0 || new_page {
             if let Some(st) = seg_top.take() {
                 draw_box(p, st);
             }
-            p.new_page();
-            first_on_page = true;
-            if let Some(label) = &t.continued {
+            if new_page {
+                p.new_page();
+            }
+            let continued = i > 0;
+            if continued
+                && legacy_band
+                && let Some(label) = &t.continued
+            {
                 let mut f = Frag::new();
                 f.shape(
                     0.0,
@@ -630,8 +792,12 @@ pub(in crate::report) fn styled_table<'a>(p: &mut Pager<'a>, t: &'a StyledTable)
                 p.emit(f, MARGIN, top);
                 p.y -= 21.0;
             }
-        }
-        if first_on_page {
+            if let Some(tf) = title_frag(t, total_w, continued) {
+                let top = p.y;
+                let h = tf.h;
+                p.emit(tf, MARGIN, top);
+                p.y -= h;
+            }
             seg_top = Some(p.y);
             if let Some(h) = &header {
                 let top = p.y;
@@ -642,7 +808,6 @@ pub(in crate::report) fn styled_table<'a>(p: &mut Pager<'a>, t: &'a StyledTable)
                 p.emit(hf, MARGIN, top);
                 p.y -= h.h;
             }
-            first_on_page = false;
         }
         let top = p.y;
         p.emit(rf.f, MARGIN, top);
@@ -655,6 +820,9 @@ pub(in crate::report) fn styled_table<'a>(p: &mut Pager<'a>, t: &'a StyledTable)
 }
 
 pub(in crate::report) fn table_scan(t: &StyledTable, scan: &mut dyn FnMut(&str)) {
+    for s in t.title.iter().chain(&t.title_hint) {
+        scan(s);
+    }
     for c in &t.columns {
         scan(&c.header);
     }
@@ -685,5 +853,33 @@ pub(in crate::report) fn table_scan(t: &StyledTable, scan: &mut dyn FnMut(&str))
     }
     for r in &t.rows {
         r.cells.iter().for_each(|c| cell_scan(c, scan));
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::plan_breaks;
+
+    #[test]
+    fn plan_breaks_follows_the_rules() {
+        let h = vec![10.0; 10];
+        let mut forbid = vec![false; 11];
+        forbid[1] = true;
+        // Everything fits: no breaks.
+        assert!(plan_breaks(&h, &forbid, 100.0, 100.0, false).is_empty());
+        // Not even two rows fit the first page: the table starts on a new page.
+        assert_eq!(plan_breaks(&h, &forbid, 15.0, 100.0, false), vec![0]);
+        // On a fresh page the same input just breaks where it must.
+        assert_eq!(plan_breaks(&h, &forbid, 55.0, 55.0, true), vec![5]);
+        // Rows 4..=5 are tied: the break backs up to row 4 (and the last page is not a lone row).
+        forbid[5] = true;
+        assert_eq!(plan_breaks(&h, &forbid, 55.0, 55.0, true), vec![4, 8]);
+        // 11 rows of 10 on pages of 50: the last page would hold one row, so the row before joins it.
+        let h = vec![10.0; 11];
+        let forbid = vec![false; 12];
+        assert_eq!(plan_breaks(&h, &forbid, 50.0, 50.0, true), vec![5, 9]);
+        // A row taller than the page is placed, not looped on.
+        let h = vec![10.0, 900.0, 10.0];
+        assert_eq!(plan_breaks(&h, &[false; 4], 50.0, 50.0, true), vec![1, 2]);
     }
 }

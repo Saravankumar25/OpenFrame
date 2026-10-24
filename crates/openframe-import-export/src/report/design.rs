@@ -381,7 +381,7 @@ impl Frag {
     }
 }
 
-fn shift(op: &mut Op, dx: f32, dy: f32) {
+pub(super) fn shift(op: &mut Op, dx: f32, dy: f32) {
     match op {
         Op::Text { x, y, .. } | Op::TextC { x, y, .. } => {
             *x += dx;
@@ -391,8 +391,7 @@ fn shift(op: &mut Op, dx: f32, dy: f32) {
         | Op::Frame { x, y, .. }
         | Op::Image { x, y, .. }
         | Op::Shape { x, y, .. }
-        | Op::Circle { x, y, .. }
-        | Op::Mark { x, y, .. } => {
+        | Op::Circle { x, y, .. } => {
             *x += dx;
             *y += dy;
         }
@@ -418,7 +417,7 @@ impl Pager<'_> {
     }
     /// Height of the page body (what a fresh page offers).
     pub(super) fn body_h(&self) -> f32 {
-        self.h - 2.0 * MARGIN - FOOTER_SPACE
+        self.h - self.inset - self.bottom
     }
 }
 
@@ -657,78 +656,4 @@ pub(super) fn draw_text_tracked(
     } else {
         draw_text(b, c, shaped, pack, bold, size, x, y, text);
     }
-}
-
-/// The OpenFrame lockup: film-frame mark, "OpenFrame STUDIO" wordmark and the attribution.
-/// Drawn directly (not through fragments) so the footer of every page is identical.
-fn lockup(c: &mut Content, b: &mut PdfBuilder, x: f32, y: f32, attribution: &str) -> f32 {
-    draw_mark(c, x, y, 19.0, pal::ORANGE);
-    let tx = x + 23.0;
-    c.set_fill_rgb(pal::NAVY.0, pal::NAVY.1, pal::NAVY.2);
-    b.text(c, pdfgen::HELVETICA, 11.0, tx, y + 8.2, "Open");
-    let ow = text_width_pt("Open", 11.0, false);
-    b.text(c, pdfgen::HELVETICA_BOLD, 11.0, tx + ow, y + 8.2, "Frame");
-    let fw = text_width_pt("Frame", 11.0, true);
-    c.set_fill_rgb(pal::ORANGE.0, pal::ORANGE.1, pal::ORANGE.2);
-    b.text_tracked(
-        c,
-        pdfgen::HELVETICA_BOLD,
-        4.2,
-        2.6,
-        tx + 0.5,
-        y + 1.0,
-        "STUDIO",
-    );
-    let sep = tx + ow + fw + 9.0;
-    c.set_stroke_rgb(pal::LINE.0, pal::LINE.1, pal::LINE.2);
-    c.set_line_width(0.7);
-    c.move_to(sep, y + 1.0);
-    c.line_to(sep, y + 17.0);
-    c.stroke();
-    c.set_fill_rgb(pal::SLATE.0, pal::SLATE.1, pal::SLATE.2);
-    b.text(c, pdfgen::HELVETICA, 8.0, sep + 8.0, y + 6.0, attribution);
-    c.set_fill_gray(0.0);
-    c.set_stroke_gray(0.0);
-    sep + 8.0 + text_width_pt(attribution, 8.0, false)
-}
-
-/// Footer of every page of a branded document: a rule, the lockup on the left, the document
-/// identity and page count on the right.
-pub(super) fn draw_footer(
-    b: &mut PdfBuilder,
-    c: &mut Content,
-    shaped: &Shaped,
-    pack: &Option<FontPack>,
-    page_w: f32,
-    right_text: &str,
-    attribution: Option<&str>,
-) {
-    let rule_y = MARGIN + FOOTER_SPACE - 12.0;
-    c.set_stroke_rgb(pal::LINE.0, pal::LINE.1, pal::LINE.2);
-    c.set_line_width(0.8);
-    c.move_to(MARGIN, rule_y);
-    c.line_to(page_w - MARGIN, rule_y);
-    c.stroke();
-    c.set_stroke_gray(0.0);
-    let y = MARGIN - 8.0;
-    lockup(c, b, MARGIN, y, attribution.unwrap_or(BRAND_LINE));
-    let size = 7.2;
-    let track = if needs_fonts(right_text) { 0.0 } else { 0.4 };
-    let w = tw(right_text, size, true, track);
-    c.set_fill_rgb(pal::SLATE.0, pal::SLATE.1, pal::SLATE.2);
-    c.set_stroke_rgb(pal::SLATE.0, pal::SLATE.1, pal::SLATE.2);
-    draw_text_tracked(
-        b,
-        c,
-        shaped,
-        pack,
-        true,
-        size,
-        page_w - MARGIN - w,
-        y + 6.0,
-        right_text,
-        track,
-    );
-    c.set_fill_gray(0.0);
-    c.set_stroke_gray(0.0);
 }
