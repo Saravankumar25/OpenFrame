@@ -1,0 +1,1374 @@
+{
+  "overall": {
+    "cases": 90,
+    "setup_errors": 0,
+    "tool_offered": {
+      "passed": 86,
+      "counted": 90
+    },
+    "tool_correct": {
+      "passed": 18,
+      "counted": 90
+    },
+    "tool_and_args": {
+      "passed": 18,
+      "counted": 90
+    },
+    "schema_valid": {
+      "passed": 90,
+      "counted": 90
+    },
+    "end_state": {
+      "passed": 0,
+      "counted": 0
+    },
+    "answer": {
+      "passed": 17,
+      "counted": 45
+    },
+    "language": {
+      "passed": 87,
+      "counted": 90
+    },
+    "length": {
+      "passed": 0,
+      "counted": 0
+    },
+    "safety": {
+      "passed": 0,
+      "counted": 0
+    },
+    "not_empty": {
+      "passed": 85,
+      "counted": 90
+    },
+    "grounding_found": 843,
+    "grounding_total": 1156,
+    "recall_at_5": {
+      "passed": 0,
+      "counted": 0
+    },
+    "recall_at_10": {
+      "passed": 0,
+      "counted": 0
+    },
+    "reciprocal_rank_sum": 0.0,
+    "retrieval_cases": 0,
+    "elapsed_ms": [
+      86233,
+      17245,
+      10307,
+      12885,
+      11148,
+      12526,
+      10510,
+      12333,
+      20380,
+      25395,
+      13672,
+      9054,
+      13524,
+      13037,
+      14570,
+      11937,
+      15608,
+      8901,
+      12611,
+      11593,
+      8236,
+      10232,
+      15136,
+      11239,
+      13226,
+      12592,
+      12738,
+      13182,
+      5535,
+      16187,
+      9909,
+      8683,
+      7694,
+      33,
+      10143,
+      5675,
+      18526,
+      42,
+      9088,
+      14632,
+      10617,
+      10493,
+      7208,
+      11294,
+      24175,
+      7457,
+      8628,
+      6356,
+      8902,
+      9012,
+      6611,
+      9765,
+      12400,
+      8459,
+      5586,
+      8673,
+      15917,
+      11568,
+      10168,
+      26010,
+      18146,
+      17306,
+      16669,
+      75533,
+      10889,
+      12636,
+      7290,
+      79,
+      7433,
+      66,
+      11423,
+      87,
+      7286,
+      44,
+      11192,
+      7728,
+      17509,
+      13281,
+      9213,
+      14139,
+      1077,
+      12744,
+      11740,
+      10293,
+      10383,
+      13880,
+      14704,
+      14043,
+      7991,
+      8130
+    ],
+    "engine_mb_max": 3688
+  },
+  "by_kind": {
+    "paraphrase": {
+      "cases": 90,
+      "setup_errors": 0,
+      "tool_offered": {
+        "passed": 86,
+        "counted": 90
+      },
+      "tool_correct": {
+        "passed": 18,
+        "counted": 90
+      },
+      "tool_and_args": {
+        "passed": 18,
+        "counted": 90
+      },
+      "schema_valid": {
+        "passed": 90,
+        "counted": 90
+      },
+      "end_state": {
+        "passed": 0,
+        "counted": 0
+      },
+      "answer": {
+        "passed": 17,
+        "counted": 45
+      },
+      "language": {
+        "passed": 87,
+        "counted": 90
+      },
+      "length": {
+        "passed": 0,
+        "counted": 0
+      },
+      "safety": {
+        "passed": 0,
+        "counted": 0
+      },
+      "not_empty": {
+        "passed": 85,
+        "counted": 90
+      },
+      "grounding_found": 843,
+      "grounding_total": 1156,
+      "recall_at_5": {
+        "passed": 0,
+        "counted": 0
+      },
+      "recall_at_10": {
+        "passed": 0,
+        "counted": 0
+      },
+      "reciprocal_rank_sum": 0.0,
+      "retrieval_cases": 0,
+      "elapsed_ms": [
+        86233,
+        17245,
+        10307,
+        12885,
+        11148,
+        12526,
+        10510,
+        12333,
+        20380,
+        25395,
+        13672,
+        9054,
+        13524,
+        13037,
+        14570,
+        11937,
+        15608,
+        8901,
+        12611,
+        11593,
+        8236,
+        10232,
+        15136,
+        11239,
+        13226,
+        12592,
+        12738,
+        13182,
+        5535,
+        16187,
+        9909,
+        8683,
+        7694,
+        33,
+        10143,
+        5675,
+        18526,
+        42,
+        9088,
+        14632,
+        10617,
+        10493,
+        7208,
+        11294,
+        24175,
+        7457,
+        8628,
+        6356,
+        8902,
+        9012,
+        6611,
+        9765,
+        12400,
+        8459,
+        5586,
+        8673,
+        15917,
+        11568,
+        10168,
+        26010,
+        18146,
+        17306,
+        16669,
+        75533,
+        10889,
+        12636,
+        7290,
+        79,
+        7433,
+        66,
+        11423,
+        87,
+        7286,
+        44,
+        11192,
+        7728,
+        17509,
+        13281,
+        9213,
+        14139,
+        1077,
+        12744,
+        11740,
+        10293,
+        10383,
+        13880,
+        14704,
+        14043,
+        7991,
+        8130
+      ],
+      "engine_mb_max": 3688
+    }
+  },
+  "by_lang": {
+    "de": {
+      "cases": 2,
+      "setup_errors": 0,
+      "tool_offered": {
+        "passed": 2,
+        "counted": 2
+      },
+      "tool_correct": {
+        "passed": 0,
+        "counted": 2
+      },
+      "tool_and_args": {
+        "passed": 0,
+        "counted": 2
+      },
+      "schema_valid": {
+        "passed": 2,
+        "counted": 2
+      },
+      "end_state": {
+        "passed": 0,
+        "counted": 0
+      },
+      "answer": {
+        "passed": 0,
+        "counted": 1
+      },
+      "language": {
+        "passed": 1,
+        "counted": 2
+      },
+      "length": {
+        "passed": 0,
+        "counted": 0
+      },
+      "safety": {
+        "passed": 0,
+        "counted": 0
+      },
+      "not_empty": {
+        "passed": 2,
+        "counted": 2
+      },
+      "grounding_found": 22,
+      "grounding_total": 43,
+      "recall_at_5": {
+        "passed": 0,
+        "counted": 0
+      },
+      "recall_at_10": {
+        "passed": 0,
+        "counted": 0
+      },
+      "reciprocal_rank_sum": 0.0,
+      "retrieval_cases": 0,
+      "elapsed_ms": [
+        14704,
+        14043
+      ],
+      "engine_mb_max": 2516
+    },
+    "en": {
+      "cases": 80,
+      "setup_errors": 0,
+      "tool_offered": {
+        "passed": 76,
+        "counted": 80
+      },
+      "tool_correct": {
+        "passed": 17,
+        "counted": 80
+      },
+      "tool_and_args": {
+        "passed": 17,
+        "counted": 80
+      },
+      "schema_valid": {
+        "passed": 80,
+        "counted": 80
+      },
+      "end_state": {
+        "passed": 0,
+        "counted": 0
+      },
+      "answer": {
+        "passed": 15,
+        "counted": 40
+      },
+      "language": {
+        "passed": 80,
+        "counted": 80
+      },
+      "length": {
+        "passed": 0,
+        "counted": 0
+      },
+      "safety": {
+        "passed": 0,
+        "counted": 0
+      },
+      "not_empty": {
+        "passed": 76,
+        "counted": 80
+      },
+      "grounding_found": 642,
+      "grounding_total": 897,
+      "recall_at_5": {
+        "passed": 0,
+        "counted": 0
+      },
+      "recall_at_10": {
+        "passed": 0,
+        "counted": 0
+      },
+      "reciprocal_rank_sum": 0.0,
+      "retrieval_cases": 0,
+      "elapsed_ms": [
+        86233,
+        17245,
+        10307,
+        12885,
+        11148,
+        12526,
+        10510,
+        12333,
+        20380,
+        25395,
+        13672,
+        9054,
+        13524,
+        13037,
+        14570,
+        11937,
+        15608,
+        8901,
+        12611,
+        11593,
+        8236,
+        10232,
+        15136,
+        11239,
+        13226,
+        12592,
+        12738,
+        13182,
+        5535,
+        16187,
+        9909,
+        8683,
+        7694,
+        33,
+        10143,
+        5675,
+        18526,
+        42,
+        9088,
+        14632,
+        10617,
+        10493,
+        7208,
+        11294,
+        24175,
+        7457,
+        8628,
+        6356,
+        8902,
+        9012,
+        6611,
+        9765,
+        12400,
+        8459,
+        5586,
+        8673,
+        15917,
+        11568,
+        10168,
+        26010,
+        18146,
+        17306,
+        16669,
+        75533,
+        10889,
+        12636,
+        7290,
+        79,
+        7433,
+        66,
+        11423,
+        87,
+        7286,
+        44,
+        11192,
+        7728,
+        17509,
+        13281,
+        9213,
+        14139
+      ],
+      "engine_mb_max": 3688
+    },
+    "es": {
+      "cases": 2,
+      "setup_errors": 0,
+      "tool_offered": {
+        "passed": 2,
+        "counted": 2
+      },
+      "tool_correct": {
+        "passed": 0,
+        "counted": 2
+      },
+      "tool_and_args": {
+        "passed": 0,
+        "counted": 2
+      },
+      "schema_valid": {
+        "passed": 2,
+        "counted": 2
+      },
+      "end_state": {
+        "passed": 0,
+        "counted": 0
+      },
+      "answer": {
+        "passed": 0,
+        "counted": 1
+      },
+      "language": {
+        "passed": 1,
+        "counted": 2
+      },
+      "length": {
+        "passed": 0,
+        "counted": 0
+      },
+      "safety": {
+        "passed": 0,
+        "counted": 0
+      },
+      "not_empty": {
+        "passed": 2,
+        "counted": 2
+      },
+      "grounding_found": 33,
+      "grounding_total": 42,
+      "recall_at_5": {
+        "passed": 0,
+        "counted": 0
+      },
+      "recall_at_10": {
+        "passed": 0,
+        "counted": 0
+      },
+      "reciprocal_rank_sum": 0.0,
+      "retrieval_cases": 0,
+      "elapsed_ms": [
+        11740,
+        10293
+      ],
+      "engine_mb_max": 2684
+    },
+    "fr": {
+      "cases": 2,
+      "setup_errors": 0,
+      "tool_offered": {
+        "passed": 2,
+        "counted": 2
+      },
+      "tool_correct": {
+        "passed": 0,
+        "counted": 2
+      },
+      "tool_and_args": {
+        "passed": 0,
+        "counted": 2
+      },
+      "schema_valid": {
+        "passed": 2,
+        "counted": 2
+      },
+      "end_state": {
+        "passed": 0,
+        "counted": 0
+      },
+      "answer": {
+        "passed": 1,
+        "counted": 1
+      },
+      "language": {
+        "passed": 1,
+        "counted": 2
+      },
+      "length": {
+        "passed": 0,
+        "counted": 0
+      },
+      "safety": {
+        "passed": 0,
+        "counted": 0
+      },
+      "not_empty": {
+        "passed": 1,
+        "counted": 2
+      },
+      "grounding_found": 138,
+      "grounding_total": 163,
+      "recall_at_5": {
+        "passed": 0,
+        "counted": 0
+      },
+      "recall_at_10": {
+        "passed": 0,
+        "counted": 0
+      },
+      "reciprocal_rank_sum": 0.0,
+      "retrieval_cases": 0,
+      "elapsed_ms": [
+        10383,
+        13880
+      ],
+      "engine_mb_max": 2681
+    },
+    "hi": {
+      "cases": 2,
+      "setup_errors": 0,
+      "tool_offered": {
+        "passed": 2,
+        "counted": 2
+      },
+      "tool_correct": {
+        "passed": 1,
+        "counted": 2
+      },
+      "tool_and_args": {
+        "passed": 1,
+        "counted": 2
+      },
+      "schema_valid": {
+        "passed": 2,
+        "counted": 2
+      },
+      "end_state": {
+        "passed": 0,
+        "counted": 0
+      },
+      "answer": {
+        "passed": 1,
+        "counted": 1
+      },
+      "language": {
+        "passed": 2,
+        "counted": 2
+      },
+      "length": {
+        "passed": 0,
+        "counted": 0
+      },
+      "safety": {
+        "passed": 0,
+        "counted": 0
+      },
+      "not_empty": {
+        "passed": 2,
+        "counted": 2
+      },
+      "grounding_found": 8,
+      "grounding_total": 11,
+      "recall_at_5": {
+        "passed": 0,
+        "counted": 0
+      },
+      "recall_at_10": {
+        "passed": 0,
+        "counted": 0
+      },
+      "reciprocal_rank_sum": 0.0,
+      "retrieval_cases": 0,
+      "elapsed_ms": [
+        1077,
+        12744
+      ],
+      "engine_mb_max": 2541
+    },
+    "ja": {
+      "cases": 2,
+      "setup_errors": 0,
+      "tool_offered": {
+        "passed": 2,
+        "counted": 2
+      },
+      "tool_correct": {
+        "passed": 0,
+        "counted": 2
+      },
+      "tool_and_args": {
+        "passed": 0,
+        "counted": 2
+      },
+      "schema_valid": {
+        "passed": 2,
+        "counted": 2
+      },
+      "end_state": {
+        "passed": 0,
+        "counted": 0
+      },
+      "answer": {
+        "passed": 0,
+        "counted": 1
+      },
+      "language": {
+        "passed": 2,
+        "counted": 2
+      },
+      "length": {
+        "passed": 0,
+        "counted": 0
+      },
+      "safety": {
+        "passed": 0,
+        "counted": 0
+      },
+      "not_empty": {
+        "passed": 2,
+        "counted": 2
+      },
+      "grounding_found": 0,
+      "grounding_total": 0,
+      "recall_at_5": {
+        "passed": 0,
+        "counted": 0
+      },
+      "recall_at_10": {
+        "passed": 0,
+        "counted": 0
+      },
+      "reciprocal_rank_sum": 0.0,
+      "retrieval_cases": 0,
+      "elapsed_ms": [
+        7991,
+        8130
+      ],
+      "engine_mb_max": 2549
+    }
+  },
+  "paraphrase": {
+    "cases": 90,
+    "setup_errors": 0,
+    "tool_offered": {
+      "passed": 86,
+      "counted": 90
+    },
+    "tool_correct": {
+      "passed": 18,
+      "counted": 90
+    },
+    "tool_and_args": {
+      "passed": 18,
+      "counted": 90
+    },
+    "schema_valid": {
+      "passed": 90,
+      "counted": 90
+    },
+    "end_state": {
+      "passed": 0,
+      "counted": 0
+    },
+    "answer": {
+      "passed": 17,
+      "counted": 45
+    },
+    "language": {
+      "passed": 87,
+      "counted": 90
+    },
+    "length": {
+      "passed": 0,
+      "counted": 0
+    },
+    "safety": {
+      "passed": 0,
+      "counted": 0
+    },
+    "not_empty": {
+      "passed": 85,
+      "counted": 90
+    },
+    "grounding_found": 843,
+    "grounding_total": 1156,
+    "recall_at_5": {
+      "passed": 0,
+      "counted": 0
+    },
+    "recall_at_10": {
+      "passed": 0,
+      "counted": 0
+    },
+    "reciprocal_rank_sum": 0.0,
+    "retrieval_cases": 0,
+    "elapsed_ms": [
+      86233,
+      17245,
+      10307,
+      12885,
+      11148,
+      12526,
+      10510,
+      12333,
+      20380,
+      25395,
+      13672,
+      9054,
+      13524,
+      13037,
+      14570,
+      11937,
+      15608,
+      8901,
+      12611,
+      11593,
+      8236,
+      10232,
+      15136,
+      11239,
+      13226,
+      12592,
+      12738,
+      13182,
+      5535,
+      16187,
+      9909,
+      8683,
+      7694,
+      33,
+      10143,
+      5675,
+      18526,
+      42,
+      9088,
+      14632,
+      10617,
+      10493,
+      7208,
+      11294,
+      24175,
+      7457,
+      8628,
+      6356,
+      8902,
+      9012,
+      6611,
+      9765,
+      12400,
+      8459,
+      5586,
+      8673,
+      15917,
+      11568,
+      10168,
+      26010,
+      18146,
+      17306,
+      16669,
+      75533,
+      10889,
+      12636,
+      7290,
+      79,
+      7433,
+      66,
+      11423,
+      87,
+      7286,
+      44,
+      11192,
+      7728,
+      17509,
+      13281,
+      9213,
+      14139,
+      1077,
+      12744,
+      11740,
+      10293,
+      10383,
+      13880,
+      14704,
+      14043,
+      7991,
+      8130
+    ],
+    "engine_mb_max": 3688
+  },
+  "paraphrase_by_lang": {
+    "de": {
+      "cases": 2,
+      "setup_errors": 0,
+      "tool_offered": {
+        "passed": 2,
+        "counted": 2
+      },
+      "tool_correct": {
+        "passed": 0,
+        "counted": 2
+      },
+      "tool_and_args": {
+        "passed": 0,
+        "counted": 2
+      },
+      "schema_valid": {
+        "passed": 2,
+        "counted": 2
+      },
+      "end_state": {
+        "passed": 0,
+        "counted": 0
+      },
+      "answer": {
+        "passed": 0,
+        "counted": 1
+      },
+      "language": {
+        "passed": 1,
+        "counted": 2
+      },
+      "length": {
+        "passed": 0,
+        "counted": 0
+      },
+      "safety": {
+        "passed": 0,
+        "counted": 0
+      },
+      "not_empty": {
+        "passed": 2,
+        "counted": 2
+      },
+      "grounding_found": 22,
+      "grounding_total": 43,
+      "recall_at_5": {
+        "passed": 0,
+        "counted": 0
+      },
+      "recall_at_10": {
+        "passed": 0,
+        "counted": 0
+      },
+      "reciprocal_rank_sum": 0.0,
+      "retrieval_cases": 0,
+      "elapsed_ms": [
+        14704,
+        14043
+      ],
+      "engine_mb_max": 2516
+    },
+    "en": {
+      "cases": 80,
+      "setup_errors": 0,
+      "tool_offered": {
+        "passed": 76,
+        "counted": 80
+      },
+      "tool_correct": {
+        "passed": 17,
+        "counted": 80
+      },
+      "tool_and_args": {
+        "passed": 17,
+        "counted": 80
+      },
+      "schema_valid": {
+        "passed": 80,
+        "counted": 80
+      },
+      "end_state": {
+        "passed": 0,
+        "counted": 0
+      },
+      "answer": {
+        "passed": 15,
+        "counted": 40
+      },
+      "language": {
+        "passed": 80,
+        "counted": 80
+      },
+      "length": {
+        "passed": 0,
+        "counted": 0
+      },
+      "safety": {
+        "passed": 0,
+        "counted": 0
+      },
+      "not_empty": {
+        "passed": 76,
+        "counted": 80
+      },
+      "grounding_found": 642,
+      "grounding_total": 897,
+      "recall_at_5": {
+        "passed": 0,
+        "counted": 0
+      },
+      "recall_at_10": {
+        "passed": 0,
+        "counted": 0
+      },
+      "reciprocal_rank_sum": 0.0,
+      "retrieval_cases": 0,
+      "elapsed_ms": [
+        86233,
+        17245,
+        10307,
+        12885,
+        11148,
+        12526,
+        10510,
+        12333,
+        20380,
+        25395,
+        13672,
+        9054,
+        13524,
+        13037,
+        14570,
+        11937,
+        15608,
+        8901,
+        12611,
+        11593,
+        8236,
+        10232,
+        15136,
+        11239,
+        13226,
+        12592,
+        12738,
+        13182,
+        5535,
+        16187,
+        9909,
+        8683,
+        7694,
+        33,
+        10143,
+        5675,
+        18526,
+        42,
+        9088,
+        14632,
+        10617,
+        10493,
+        7208,
+        11294,
+        24175,
+        7457,
+        8628,
+        6356,
+        8902,
+        9012,
+        6611,
+        9765,
+        12400,
+        8459,
+        5586,
+        8673,
+        15917,
+        11568,
+        10168,
+        26010,
+        18146,
+        17306,
+        16669,
+        75533,
+        10889,
+        12636,
+        7290,
+        79,
+        7433,
+        66,
+        11423,
+        87,
+        7286,
+        44,
+        11192,
+        7728,
+        17509,
+        13281,
+        9213,
+        14139
+      ],
+      "engine_mb_max": 3688
+    },
+    "es": {
+      "cases": 2,
+      "setup_errors": 0,
+      "tool_offered": {
+        "passed": 2,
+        "counted": 2
+      },
+      "tool_correct": {
+        "passed": 0,
+        "counted": 2
+      },
+      "tool_and_args": {
+        "passed": 0,
+        "counted": 2
+      },
+      "schema_valid": {
+        "passed": 2,
+        "counted": 2
+      },
+      "end_state": {
+        "passed": 0,
+        "counted": 0
+      },
+      "answer": {
+        "passed": 0,
+        "counted": 1
+      },
+      "language": {
+        "passed": 1,
+        "counted": 2
+      },
+      "length": {
+        "passed": 0,
+        "counted": 0
+      },
+      "safety": {
+        "passed": 0,
+        "counted": 0
+      },
+      "not_empty": {
+        "passed": 2,
+        "counted": 2
+      },
+      "grounding_found": 33,
+      "grounding_total": 42,
+      "recall_at_5": {
+        "passed": 0,
+        "counted": 0
+      },
+      "recall_at_10": {
+        "passed": 0,
+        "counted": 0
+      },
+      "reciprocal_rank_sum": 0.0,
+      "retrieval_cases": 0,
+      "elapsed_ms": [
+        11740,
+        10293
+      ],
+      "engine_mb_max": 2684
+    },
+    "fr": {
+      "cases": 2,
+      "setup_errors": 0,
+      "tool_offered": {
+        "passed": 2,
+        "counted": 2
+      },
+      "tool_correct": {
+        "passed": 0,
+        "counted": 2
+      },
+      "tool_and_args": {
+        "passed": 0,
+        "counted": 2
+      },
+      "schema_valid": {
+        "passed": 2,
+        "counted": 2
+      },
+      "end_state": {
+        "passed": 0,
+        "counted": 0
+      },
+      "answer": {
+        "passed": 1,
+        "counted": 1
+      },
+      "language": {
+        "passed": 1,
+        "counted": 2
+      },
+      "length": {
+        "passed": 0,
+        "counted": 0
+      },
+      "safety": {
+        "passed": 0,
+        "counted": 0
+      },
+      "not_empty": {
+        "passed": 1,
+        "counted": 2
+      },
+      "grounding_found": 138,
+      "grounding_total": 163,
+      "recall_at_5": {
+        "passed": 0,
+        "counted": 0
+      },
+      "recall_at_10": {
+        "passed": 0,
+        "counted": 0
+      },
+      "reciprocal_rank_sum": 0.0,
+      "retrieval_cases": 0,
+      "elapsed_ms": [
+        10383,
+        13880
+      ],
+      "engine_mb_max": 2681
+    },
+    "hi": {
+      "cases": 2,
+      "setup_errors": 0,
+      "tool_offered": {
+        "passed": 2,
+        "counted": 2
+      },
+      "tool_correct": {
+        "passed": 1,
+        "counted": 2
+      },
+      "tool_and_args": {
+        "passed": 1,
+        "counted": 2
+      },
+      "schema_valid": {
+        "passed": 2,
+        "counted": 2
+      },
+      "end_state": {
+        "passed": 0,
+        "counted": 0
+      },
+      "answer": {
+        "passed": 1,
+        "counted": 1
+      },
+      "language": {
+        "passed": 2,
+        "counted": 2
+      },
+      "length": {
+        "passed": 0,
+        "counted": 0
+      },
+      "safety": {
+        "passed": 0,
+        "counted": 0
+      },
+      "not_empty": {
+        "passed": 2,
+        "counted": 2
+      },
+      "grounding_found": 8,
+      "grounding_total": 11,
+      "recall_at_5": {
+        "passed": 0,
+        "counted": 0
+      },
+      "recall_at_10": {
+        "passed": 0,
+        "counted": 0
+      },
+      "reciprocal_rank_sum": 0.0,
+      "retrieval_cases": 0,
+      "elapsed_ms": [
+        1077,
+        12744
+      ],
+      "engine_mb_max": 2541
+    },
+    "ja": {
+      "cases": 2,
+      "setup_errors": 0,
+      "tool_offered": {
+        "passed": 2,
+        "counted": 2
+      },
+      "tool_correct": {
+        "passed": 0,
+        "counted": 2
+      },
+      "tool_and_args": {
+        "passed": 0,
+        "counted": 2
+      },
+      "schema_valid": {
+        "passed": 2,
+        "counted": 2
+      },
+      "end_state": {
+        "passed": 0,
+        "counted": 0
+      },
+      "answer": {
+        "passed": 0,
+        "counted": 1
+      },
+      "language": {
+        "passed": 2,
+        "counted": 2
+      },
+      "length": {
+        "passed": 0,
+        "counted": 0
+      },
+      "safety": {
+        "passed": 0,
+        "counted": 0
+      },
+      "not_empty": {
+        "passed": 2,
+        "counted": 2
+      },
+      "grounding_found": 0,
+      "grounding_total": 0,
+      "recall_at_5": {
+        "passed": 0,
+        "counted": 0
+      },
+      "recall_at_10": {
+        "passed": 0,
+        "counted": 0
+      },
+      "reciprocal_rank_sum": 0.0,
+      "retrieval_cases": 0,
+      "elapsed_ms": [
+        7991,
+        8130
+      ],
+      "engine_mb_max": 2549
+    }
+  },
+  "conversation": {
+    "cases": 0,
+    "setup_errors": 0,
+    "answer_has": {
+      "passed": 0,
+      "counted": 0
+    },
+    "within_length": {
+      "passed": 0,
+      "counted": 0
+    },
+    "abstained": {
+      "passed": 0,
+      "counted": 0
+    },
+    "repetition": {
+      "passed": 0,
+      "counted": 0
+    },
+    "invented_names": 0,
+    "name_candidates": 0,
+    "wrong_scenes": 0,
+    "scene_citations": 0,
+    "quotes_missing": 0,
+    "quotes": 0,
+    "elapsed_ms": []
+  },
+  "conversation_by_type": {},
+  "english_tool_and_args_percent": null,
+  "english_end_state_percent": null,
+  "english_bar_met": false
+}
