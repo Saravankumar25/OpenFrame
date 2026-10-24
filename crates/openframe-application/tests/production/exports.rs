@@ -1045,7 +1045,7 @@ fn call_sheet_pdf_has_paper_layout_and_final_sheet_uses_its_snapshot() {
         "SCENE SCHEDULE",
         "INT. POLICE STATION - NIGHT",
         "MEAL",
-        "PRACTICAL NOTES",
+        "PRACTICAL / SAFETY INFORMATION",
         "Behind the station",
         "WEATHER",
         "Rain expected",
@@ -1055,6 +1055,8 @@ fn call_sheet_pdf_has_paper_layout_and_final_sheet_uses_its_snapshot() {
     ] {
         assert!(text.contains(want), "missing {want}: {text}");
     }
+    // The practical notes card sits inside the safety section; it has no heading of its own.
+    assert!(!text.contains("PRACTICAL NOTES"), "{text}");
     let no_optional = dest(&env, "call-plain.pdf");
     env.ok(
         "callsheets.export_pdf",

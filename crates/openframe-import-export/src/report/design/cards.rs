@@ -474,7 +474,22 @@ fn units<'a>(p: &mut Pager<'a>, card: &'a Card, w: f32) -> Vec<Frag> {
             } => {
                 let iw = w - 2.0 * PAD;
                 let mut y = 9.0;
-                y += put_txt(&mut f, PAD, y, iw, &Txt::label(label.clone()).after(5.0));
+                // A long location name makes a long label: it wraps inside the card.
+                let tag = Txt::label(label.clone());
+                let lh = tag.size * tag.leading;
+                let lines = tracked_lines(&tag, iw);
+                for (k, l) in lines.iter().enumerate() {
+                    f.text(
+                        PAD,
+                        y + tag.size + k as f32 * lh,
+                        l,
+                        tag.size,
+                        tag.bold,
+                        tag.color,
+                        tag.track,
+                    );
+                }
+                y += lines.len() as f32 * lh + 5.0;
                 if *missing {
                     let mut chip = Chip::label(value.clone(), Tone::Danger);
                     chip.size = 6.8;

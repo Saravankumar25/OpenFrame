@@ -13,7 +13,7 @@ use openframe_domain::{Actor, AppError, AppResult};
 use openframe_import_export::report::{
     Align, Block, Callout, CalloutCol, Card, CardHead, CardPart, Cards, Cell, CellItem, Chip, Col,
     Document, Field, HeaderStyle, Masthead, Rgb, Row, Section, Side, StyledTable, Tile, Tone, Txt,
-    pal,
+    pal, text_width, wrap_pt,
 };
 use rusqlite::OptionalExtension;
 use serde::Deserialize;
@@ -24,13 +24,14 @@ use super::style::{
     cell, cell_bold, cell_or_missing, day_number, long_date, nb, number_pills, split_list,
 };
 use super::{
-    Fmt, HINT_EDIT, Job, Output, date_from_ms, deliver, destination, footer, image_warnings,
-    load_image, nonblank, plural, require_export,
+    Fmt, HINT_EDIT, Job, Output, date_from_ms, deliver, destination, image_warnings, load_image,
+    nonblank, plural, require_export,
 };
 use crate::core::AppCore;
 use crate::modules::schedule::board::project_title;
 use crate::modules::schedule::callsheet::{
-    CallSheetDocument, NEEDS_INPUT, estimated_starts, is_final,
+    CallSheetCrewMember, CallSheetDocCast, CallSheetDocument, NEEDS_INPUT, estimated_starts,
+    is_final,
 };
 use crate::modules::schedule::fmt::minutes;
 
@@ -50,9 +51,220 @@ pub struct ExportCallSheetArgs {
     pub include_optional: Option<bool>,
 }
 
+/// Secondary text that still passes 4.5:1 on white (the palette's FAINT is decoration only).
+const MUTED: Rgb = Rgb::hex(0x66728a);
+
+/// Width of a section's content on the page, and the room kept for the Actor and Character
+/// columns of the talent table.
+const CONTENT_W: f32 = 520.0;
+const NAME_COLS_MIN: f32 = 190.0;
+
 /// The value, or "Needs input" when a value the call sheet needs is empty.
 fn need(v: &str) -> String {
     nonblank(Some(v)).unwrap_or_else(|| NEEDS_INPUT.into())
+}
+
+/// The line printed top right on every page: `<PRODUCTION> · SHOOT DAY NN · REVISION n`. A day label
+/// without digits is printed in capitals, a blank one leaves its segment out (spec F.8).
+fn running_header(title: &str, day_label: &str, revision: i64) -> String {
+    let day = match day_number(day_label) {
+        Some(n) => Some(format!("SHOOT DAY {n}")),
+        None => nb(day_label).map(str::to_uppercase),
+    };
+    [
+        Some(title.to_string()),
+        day,
+        Some(format!("REVISION {revision}")),
+    ]
+    .into_iter()
+    .flatten()
+    .collect::<Vec<_>>()
+    .join(" · ")
+}
+
+/// The title is 28 pt; a long working title shrinks until it fits four lines, never clipped.
+fn title_size(title: &str) -> f32 {
+    // The masthead's left column beside the 150 pt day block and its 18 pt gutter.
+    const LEFT_W: f32 = CONTENT_W - 150.0 - 18.0;
+    [28.0, 26.0, 24.0, 22.0]
+        .into_iter()
+        .find(|s| wrap_pt(title, LEFT_W, *s, true).len() <= 4)
+        .unwrap_or(20.0)
+}
+
+/// Space between a group and the content above it (dropped by the pager at the top of a page).
+const GROUP_GAP: f32 = 20.0;
+
+/// The compact title of a group: a small tracked line and the group's name (about 36 pt).
+fn group_title(eyebrow: &str, title: &str) -> Vec<Block> {
+    vec![
+        Block::Text(
+            Txt::new(eyebrow.to_uppercase())
+                .size(7.2)
+                .bold()
+                .track(1.1)
+                .color(pal::SLATE)
+                .after(1.0),
+        ),
+        Block::Text(
+            Txt::new(title)
+                .size(17.0)
+                .bold()
+                .color(pal::NAVY)
+                .leading(1.15)
+                .after(8.0),
+        ),
+    ]
+}
+
+/// A column for free text sized to its longest value: wide enough for two lines of it, within
+/// `lo..=hi`, so a 40 character value never needs more than three lines.
+fn fitted(values: impl Iterator<Item = String>, lo: f32, hi: f32) -> f32 {
+    let widest = values
+        .map(|v| text_width(v.trim(), 8.6, false))
+        .fold(0.0_f32, f32::max);
+    (widest / 2.0 + 14.0).clamp(lo, hi)
+}
+
+/// The talent table. Contact sits under the actor's name and notes under the character, so the
+/// table keeps its width for the columns that carry times.
+fn talent_table(d: &CallSheetDocument) -> StyledTable {
+    let has = |f: fn(&CallSheetDocCast) -> &String| d.cast.iter().any(|c| !f(c).trim().is_empty());
+    let (has_status, has_pickup, has_makeup) =
+        (has(|c| &c.status), has(|c| &c.pickup), has(|c| &c.makeup));
+    let status_w = if has_status { 50.0 } else { 0.0 };
+    let (id_w, call_w) = (28.0, 72.0);
+    // What the optional time columns may take, so Actor and Character keep room.
+    let room = (CONTENT_W - id_w - call_w - status_w - NAME_COLS_MIN).max(0.0);
+    let mut pickup_w = if has_pickup {
+        fitted(d.cast.iter().map(|c| c.pickup.clone()), 96.0, 112.0)
+    } else {
+        0.0
+    };
+    let mut makeup_w = if has_makeup {
+        fitted(d.cast.iter().map(|c| c.makeup.clone()), 62.0, 104.0)
+    } else {
+        0.0
+    };
+    if pickup_w + makeup_w > room {
+        let k = room / (pickup_w + makeup_w);
+        (pickup_w, makeup_w) = (pickup_w * k, makeup_w * k);
+    }
+    let mut cols = vec![
+        Col::pt("ID", id_w),
+        Col::weight("Actor", 1.15),
+        Col::weight("Character", 1.0),
+    ];
+    if has_status {
+        cols.push(Col::pt("Status", status_w));
+    }
+    if has_pickup {
+        cols.push(Col::pt("Pickup", pickup_w));
+    }
+    if has_makeup {
+        cols.push(Col::pt("Hair / MU", makeup_w));
+    }
+    cols.push(Col::pt("Call", call_w));
+    let mut tbl = StyledTable::new(cols);
+    tbl.header = HeaderStyle::Navy;
+    tbl.boxed = true;
+    tbl.zebra = true;
+    tbl.title = Some("Talent / Cast".into());
+    tbl.title_hint = Some(plural(d.cast.len(), "cast member", "cast members"));
+    tbl.pad_x = 6.0;
+    for c in &d.cast {
+        let mut actor = cell_or_missing(&c.actor, true);
+        if let Some(contact) = nb(&c.contact) {
+            actor = actor.item(CellItem::Text(Txt::new(contact).size(8.0).color(MUTED)));
+        }
+        let mut character = cell_bold(c.character.clone());
+        if let Some(n) = nb(&c.notes) {
+            character = character.item(CellItem::Text(
+                Txt::new(n).size(8.0).color(MUTED).leading(1.3),
+            ));
+        }
+        let mut cells = vec![
+            Cell::text(
+                Txt::new(c.cast_id.clone())
+                    .size(8.8)
+                    .bold()
+                    .color(pal::TEAL),
+            ),
+            actor,
+            character,
+        ];
+        if has_status {
+            cells.push(cell(c.status.clone()));
+        }
+        if has_pickup {
+            cells.push(cell(c.pickup.clone()));
+        }
+        if has_makeup {
+            cells.push(cell(c.makeup.clone()));
+        }
+        cells.push(cell_or_missing(&c.call_time, true));
+        tbl.rows.push(Row::new(cells));
+    }
+    tbl
+}
+
+/// The crew table, grouped by department (named on the first row of each group).
+fn crew_table(d: &CallSheetDocument, list: &[CallSheetCrewMember]) -> StyledTable {
+    let has_contact = list.iter().any(|c| !c.contact.trim().is_empty());
+    let mut cols = vec![
+        Col::weight("Department", 1.0),
+        Col::weight("Role", 1.1),
+        Col::weight("Name", 1.3),
+        Col::weight("Call", 0.8),
+    ];
+    if has_contact {
+        cols.push(Col::weight("Contact", 1.1));
+    }
+    let mut tbl = StyledTable::new(cols);
+    tbl.header = HeaderStyle::Navy;
+    tbl.boxed = true;
+    tbl.title = Some("Crew".into());
+    tbl.title_hint = Some(plural(
+        list.len(),
+        "crew member listed",
+        "crew members listed",
+    ));
+    let mut sorted: Vec<_> = list.iter().collect();
+    sorted.sort_by(|a, b| {
+        a.department
+            .to_lowercase()
+            .cmp(&b.department.to_lowercase())
+    });
+    let mut last = String::new();
+    let mut group = 0usize;
+    for c in sorted {
+        let dep = c.department.trim().to_lowercase();
+        let new_group = dep != last;
+        if new_group {
+            group += 1;
+            last = dep;
+        }
+        let call = nonblank(Some(&c.call_time)).unwrap_or_else(|| need(&d.crew_call));
+        let mut cells = vec![
+            if new_group {
+                cell_bold(c.department.clone())
+            } else {
+                Cell::empty()
+            },
+            cell(c.role.clone()),
+            cell(c.name.clone()),
+            cell_or_missing(if call == NEEDS_INPUT { "" } else { &call }, false),
+        ];
+        if has_contact {
+            cells.push(cell(c.contact.clone()));
+        }
+        let mut row = Row::new(cells);
+        if group.is_multiple_of(2) {
+            row.fill = Some(pal::PANEL);
+        }
+        tbl.rows.push(row);
+    }
+    tbl
 }
 
 pub(super) fn export(
@@ -162,7 +374,11 @@ pub(super) fn export(
     } else {
         production.clone()
     };
-    let mut doc = Document::new(&doc_title).footer(footer(&sheet.project, &sheet.title));
+    let mut doc = Document::new(&doc_title).running_header(Some(running_header(
+        &doc_title,
+        &d.day_label,
+        sheet.revision,
+    )));
 
     // ---- masthead: production first, the shoot day in its own block
     let mut mast = Masthead::new(doc_title.clone()).eyebrow(
@@ -197,6 +413,7 @@ pub(super) fn export(
         plural(d.cast.len(), "cast member", "cast members"),
         plural(d.locations.len(), "location", "locations")
     ));
+    mast.title_size = title_size(&doc_title);
     let mut side_lines: Vec<(String, bool)> = Vec::new();
     match d.date.as_deref().filter(|s| !s.trim().is_empty()) {
         Some(date) => match long_date(date) {
@@ -331,7 +548,7 @@ pub(super) fn export(
         doc.push(Block::Text(
             Txt::new("No location for this day.")
                 .size(8.8)
-                .color(pal::FAINT)
+                .color(MUTED)
                 .after(6.0),
         ));
     } else {
@@ -378,45 +595,47 @@ pub(super) fn export(
                 card
             })
             .collect::<Vec<_>>();
-        let columns = if d.locations.len() == 1 { 1 } else { 2 };
-        doc.push(Block::Cards(Cards::new(columns, cards)));
+        // One card per row: a tall pair that cannot split would leave a gap on the page.
+        doc.push(Block::Cards(Cards::new(1, cards)));
     }
 
     // ---- scene schedule
     let any_entered_start = d.scenes.iter().any(|s| !s.start.trim().is_empty());
-    doc.push(Block::Section(Section::new(
-        "Scene schedule",
-        Some(format!(
-            "{}{}",
-            plural(scene_count, "scheduled scene", "scheduled scenes"),
-            if any_entered_start {
-                " · Start times from the schedule"
-            } else {
-                " · Start times not entered"
-            }
-        )),
-    )));
+    let schedule_hint = format!(
+        "{}{}",
+        plural(scene_count, "scheduled scene", "scheduled scenes"),
+        if any_entered_start {
+            " · Start times from the schedule"
+        } else {
+            " · Start times not entered"
+        }
+    );
     if d.scenes.is_empty() {
+        doc.push(Block::Section(Section::new(
+            "Scene schedule",
+            Some(schedule_hint.clone()),
+        )));
         doc.push(Block::Text(
             Txt::new("No scenes on this day.")
                 .size(8.8)
-                .color(pal::FAINT)
+                .color(MUTED)
                 .after(6.0),
         ));
     } else {
         let starts = estimated_starts(d);
         let mut tbl = StyledTable::new(vec![
-            Col::pt("Start", 50.0),
-            Col::pt("Sc.", 36.0),
+            Col::pt("Start", 58.0),
+            Col::pt("Sc.", 34.0),
             Col::weight("Heading / description", 1.0),
-            Col::pt("Cast", 64.0),
-            Col::pt("Pages", 48.0),
-            Col::pt("Est.", 48.0).align(Align::Right),
+            Col::pt("Cast", 68.0),
+            Col::pt("Pages", 44.0),
+            Col::pt("Est.", 46.0).align(Align::Right),
         ]);
         tbl.header = HeaderStyle::Navy;
         tbl.boxed = true;
         tbl.zebra = true;
-        tbl.continued = Some("Scene schedule".into());
+        tbl.title = Some("Scene schedule".into());
+        tbl.title_hint = Some(schedule_hint);
         for (i, s) in d.scenes.iter().enumerate() {
             let estimated = starts.get(i).cloned().unwrap_or_default();
             let start_cell = if let Some(v) = nb(&s.start) {
@@ -425,14 +644,14 @@ pub(super) fn export(
                 Cell::text(Txt::new(estimated.clone()).size(8.6).color(pal::SLATE)).item(
                     CellItem::Text(
                         Txt::new("ESTIMATED")
-                            .size(6.4)
+                            .size(6.5)
                             .bold()
                             .track(0.5)
-                            .color(pal::FAINT),
+                            .color(MUTED),
                     ),
                 )
             } else {
-                Cell::text(Txt::new("Not set").size(8.4).bold().color(pal::FAINT))
+                Cell::text(Txt::new("Not set").size(8.4).bold().color(MUTED))
             };
             let est = s.minutes.map(minutes).unwrap_or_default();
             let est_cell = Cell::text(
@@ -495,7 +714,7 @@ pub(super) fn export(
                 let (fill, stripe) = match s.kind.as_str() {
                     "Meal" => (Rgb::hex(0xfff6e3), pal::ORANGE),
                     "Travel" | "Company Move" => (Rgb::hex(0xeaf3fa), pal::TEAL),
-                    _ => (pal::PANEL, pal::FAINT),
+                    _ => (pal::PANEL, pal::SLATE),
                 };
                 let mut body = Cell::new().item(CellItem::Chips(vec![
                     Chip::label(s.kind.clone(), Tone::Neutral).small(),
@@ -524,87 +743,91 @@ pub(super) fn export(
         doc.push(Block::Styled(tbl));
     }
 
-    // ---- talent
-    doc.push(Block::Section(Section::new(
-        "Talent / Cast",
-        Some(plural(d.cast.len(), "cast member", "cast members")),
-    )));
+    // ---- group 2: the people on the day (talent, extras, crew, department notes), kept together
+    let mut people = group_title("People on the day", "Cast & Crew");
     if d.cast.is_empty() {
-        doc.push(Block::Text(
+        people.push(Block::Section(Section::new(
+            "Talent / Cast",
+            Some(plural(0, "cast member", "cast members")),
+        )));
+        people.push(Block::Text(
             Txt::new("No cast called.")
                 .size(8.8)
-                .color(pal::FAINT)
-                .after(6.0),
+                .color(MUTED)
+                .after(10.0),
         ));
     } else {
-        let any = |f: fn(&crate::modules::schedule::callsheet::CallSheetDocCast) -> &String| {
-            d.cast.iter().any(|c| !f(c).trim().is_empty())
-        };
-        let (has_status, has_pickup, has_makeup, has_contact, has_notes) = (
-            any(|c| &c.status),
-            any(|c| &c.pickup),
-            any(|c| &c.makeup),
-            any(|c| &c.contact),
-            any(|c| &c.notes),
-        );
-        let mut cols = vec![
-            Col::pt("ID", 32.0),
-            Col::weight("Actor", 1.3),
-            Col::weight("Character", 1.2),
-        ];
-        if has_status {
-            cols.push(Col::pt("Status", 44.0));
-        }
-        if has_pickup {
-            cols.push(Col::pt("Pickup", 52.0));
-        }
-        if has_makeup {
-            cols.push(Col::pt("Hair / MU", 56.0));
-        }
-        cols.push(Col::weight("Call", 0.8));
-        if has_contact {
-            cols.push(Col::weight("Contact", 1.0));
-        }
-        if has_notes {
-            cols.push(Col::weight("Notes", 1.3));
-        }
-        let mut tbl = StyledTable::new(cols);
-        tbl.continued = Some("Talent / Cast".into());
-        for c in &d.cast {
-            let mut cells = vec![
-                Cell::text(
-                    Txt::new(c.cast_id.clone())
-                        .size(8.8)
-                        .bold()
-                        .color(pal::TEAL),
-                ),
-                cell_or_missing(&c.actor, true),
-                cell_bold(c.character.clone()),
-            ];
-            if has_status {
-                cells.push(cell(c.status.clone()));
-            }
-            if has_pickup {
-                cells.push(cell(c.pickup.clone()));
-            }
-            if has_makeup {
-                cells.push(cell(c.makeup.clone()));
-            }
-            cells.push(cell_or_missing(&c.call_time, true));
-            if has_contact {
-                cells.push(cell(c.contact.clone()));
-            }
-            if has_notes {
-                cells.push(cell(c.notes.clone()));
-            }
-            tbl.rows.push(Row::new(cells));
-        }
-        doc.push(Block::Styled(tbl));
+        people.push(Block::Styled(talent_table(d)));
     }
+    if optional {
+        let o = &d.optional;
+        if let Some(list) = o.extras.as_ref().filter(|l| {
+            l.iter()
+                .any(|e| !e.description.trim().is_empty() || !e.quantity.trim().is_empty())
+        }) {
+            let mut tbl = StyledTable::new(vec![
+                Col::weight("Group", 1.6),
+                Col::pt("Qty", 40.0).align(Align::Right),
+                Col::weight("Call", 0.7),
+                Col::weight("On set", 0.7),
+                Col::weight("Notes", 1.5),
+            ]);
+            tbl.header = HeaderStyle::Navy;
+            tbl.boxed = true;
+            tbl.zebra = true;
+            tbl.title = Some("Extras".into());
+            for e in list {
+                tbl.rows.push(Row::new(vec![
+                    cell_bold(e.description.clone()),
+                    cell(e.quantity.clone()).align(Align::Right),
+                    cell_or_missing(&e.call_time, false),
+                    cell(e.on_set.clone()),
+                    cell(e.notes.clone()),
+                ]));
+            }
+            people.push(Block::Styled(tbl));
+        }
+        if let Some(list) = o.crew.as_ref().filter(|l| !l.is_empty()) {
+            people.push(Block::Styled(crew_table(d, list)));
+        }
+        if let Some(list) = o.departments.as_ref() {
+            let cards: Vec<Card> = list
+                .iter()
+                .filter_map(|x| {
+                    nb(&x.notes).map(|n| {
+                        let lines: Vec<String> = n
+                            .split('\n')
+                            .flat_map(|l| l.split("; "))
+                            .map(str::trim)
+                            .filter(|l| !l.is_empty())
+                            .map(str::to_string)
+                            .collect();
+                        Card {
+                            head: Some(CardHead::dark(
+                                nb(&x.department).unwrap_or("Other").to_uppercase(),
+                            )),
+                            parts: vec![CardPart::Lines(lines)],
+                            ..Card::new()
+                        }
+                    })
+                })
+                .collect();
+            if !cards.is_empty() {
+                people.push(Block::Section(Section::new(
+                    "Department notes",
+                    Some("From current production data".into()),
+                )));
+                people.push(Block::Cards(Cards::new(2, cards)));
+            }
+        }
+    }
+    doc.push(Block::Spacer(GROUP_GAP));
+    doc.push(Block::Together(people));
 
-    // ---- practical / safety
+    // ---- group 3: day-of logistics (practical and safety, then the optional notes), kept together
+    let mut notes = group_title("Day-of logistics", "Production notes");
     let p = &d.practical;
-    doc.push(Block::Section(Section::new(
+    notes.push(Block::Section(Section::new(
         "Practical / Safety information",
         Some(if final_sheet {
             "Quick reference".to_string()
@@ -630,10 +853,9 @@ pub(super) fn export(
             &l.hospital,
         ));
     }
-    let safety_cols = safety.len().clamp(1, 3);
-    doc.push(Block::Cards(Cards::new(safety_cols, safety)));
+    notes.push(Block::Cards(Cards::new(2, safety)));
     if !final_sheet {
-        doc.push(Block::Callout(Callout {
+        notes.push(Block::Callout(Callout {
             tone: Tone::Info,
             cols: vec![{
                 let mut c = CalloutCol::new(1.0);
@@ -671,9 +893,9 @@ pub(super) fn export(
             practical.push(Field::new(k, v));
         }
     }
+    // The practical notes card belongs to the safety section: it has no heading of its own.
     if !practical.is_empty() {
-        doc.push(Block::Section(Section::new("Practical notes", None)));
-        doc.push(Block::Cards(Cards::new(
+        notes.push(Block::Cards(Cards::new(
             1,
             vec![Card {
                 parts: vec![CardPart::Fields(practical)],
@@ -709,62 +931,8 @@ pub(super) fn export(
                 ("Sunset", o.sunset.as_str()),
             ]);
             if !f.is_empty() {
-                doc.push(Block::Section(Section::new("Weather", None)));
-                doc.push(one_card(f));
-            }
-        }
-        if let Some(list) = o.extras.as_ref().filter(|l| {
-            l.iter()
-                .any(|e| !e.description.trim().is_empty() || !e.quantity.trim().is_empty())
-        }) {
-            doc.push(Block::Section(Section::new("Extras", None)));
-            let mut tbl = StyledTable::new(vec![
-                Col::weight("Group", 1.6),
-                Col::pt("Qty", 40.0).align(Align::Right),
-                Col::weight("Call", 0.7),
-                Col::weight("On set", 0.7),
-                Col::weight("Notes", 1.5),
-            ]);
-            tbl.continued = Some("Extras".into());
-            for e in list {
-                tbl.rows.push(Row::new(vec![
-                    cell_bold(e.description.clone()),
-                    cell(e.quantity.clone()).align(Align::Right),
-                    cell_or_missing(&e.call_time, false),
-                    cell(e.on_set.clone()),
-                    cell(e.notes.clone()),
-                ]));
-            }
-            doc.push(Block::Styled(tbl));
-        }
-        if let Some(list) = o.departments.as_ref() {
-            let cards: Vec<Card> = list
-                .iter()
-                .filter_map(|x| {
-                    nb(&x.notes).map(|n| {
-                        let lines: Vec<String> = n
-                            .split('\n')
-                            .flat_map(|l| l.split("; "))
-                            .map(str::trim)
-                            .filter(|l| !l.is_empty())
-                            .map(str::to_string)
-                            .collect();
-                        Card {
-                            head: Some(CardHead::dark(
-                                nb(&x.department).unwrap_or("Other").to_uppercase(),
-                            )),
-                            parts: vec![CardPart::Lines(lines)],
-                            ..Card::new()
-                        }
-                    })
-                })
-                .collect();
-            if !cards.is_empty() {
-                doc.push(Block::Section(Section::new(
-                    "Department notes",
-                    Some("From current production data".into()),
-                )));
-                doc.push(Block::Cards(Cards::new(2, cards)));
+                notes.push(Block::Section(Section::new("Weather", None)));
+                notes.push(one_card(f));
             }
         }
         if let Some(adv) = &o.advance {
@@ -777,67 +945,9 @@ pub(super) fn export(
                 ("Preparation", &adv.preparation),
             ]);
             if !f.is_empty() {
-                doc.push(Block::Section(Section::new("Advance schedule", None)));
-                doc.push(one_card(f));
+                notes.push(Block::Section(Section::new("Advance schedule", None)));
+                notes.push(one_card(f));
             }
-        }
-        if let Some(list) = o.crew.as_ref().filter(|l| !l.is_empty()) {
-            doc.push(Block::Section(Section::new(
-                "Crew",
-                Some(plural(
-                    list.len(),
-                    "crew member listed",
-                    "crew members listed",
-                )),
-            )));
-            let has_contact = list.iter().any(|c| !c.contact.trim().is_empty());
-            let mut cols = vec![
-                Col::weight("Department", 1.0),
-                Col::weight("Role", 1.1),
-                Col::weight("Name", 1.3),
-                Col::weight("Call", 0.8),
-            ];
-            if has_contact {
-                cols.push(Col::weight("Contact", 1.1));
-            }
-            let mut tbl = StyledTable::new(cols);
-            tbl.continued = Some("Crew".into());
-            let mut sorted: Vec<_> = list.iter().collect();
-            sorted.sort_by(|a, b| {
-                a.department
-                    .to_lowercase()
-                    .cmp(&b.department.to_lowercase())
-            });
-            let mut last = String::new();
-            let mut group = 0usize;
-            for c in sorted {
-                let dep = c.department.trim().to_lowercase();
-                let new_group = dep != last;
-                if new_group {
-                    group += 1;
-                    last = dep;
-                }
-                let call = nonblank(Some(&c.call_time)).unwrap_or_else(|| need(&d.crew_call));
-                let mut cells = vec![
-                    if new_group {
-                        cell_bold(c.department.clone())
-                    } else {
-                        Cell::empty()
-                    },
-                    cell(c.role.clone()),
-                    cell(c.name.clone()),
-                    cell_or_missing(if call == NEEDS_INPUT { "" } else { &call }, false),
-                ];
-                if has_contact {
-                    cells.push(cell(c.contact.clone()));
-                }
-                let mut row = Row::new(cells);
-                if group.is_multiple_of(2) {
-                    row.fill = Some(pal::PANEL);
-                }
-                tbl.rows.push(row);
-            }
-            doc.push(Block::Styled(tbl));
         }
         if let Some(cm) = &o.communication {
             let f = fields_of(&[
@@ -847,16 +957,16 @@ pub(super) fn export(
                 ("Note", &cm.note),
             ]);
             if !f.is_empty() {
-                doc.push(Block::Section(Section::new(
+                notes.push(Block::Section(Section::new(
                     "Walkie channels and contacts",
                     None,
                 )));
-                doc.push(one_card(f));
+                notes.push(one_card(f));
             }
         }
         if let Some(s) = nonblank(o.special_notes.as_deref()) {
-            doc.push(Block::Section(Section::new("Special notes", None)));
-            doc.push(Block::Callout(Callout {
+            notes.push(Block::Section(Section::new("Special notes", None)));
+            notes.push(Block::Callout(Callout {
                 tone: Tone::Warn,
                 cols: vec![{
                     let mut c = CalloutCol::new(1.0);
@@ -866,61 +976,68 @@ pub(super) fn export(
                 }],
             }));
         }
-        if let Some(list) = o.attachments.as_ref().filter(|l| !l.is_empty()) {
-            doc.push(Block::Section(Section::new(
-                "Attachments",
-                Some("Sent separately".into()),
-            )));
-            doc.push(Block::Text(
-                Txt::new(
-                    list.iter()
-                        .map(|x| x.name.clone())
-                        .collect::<Vec<_>>()
-                        .join(", "),
-                )
-                .size(8.8)
-                .color(pal::INK)
-                .after(6.0),
-            ));
-        }
-        if !sheet.images.is_empty() {
-            doc.push(Block::Section(Section::new("Reference images", None)));
-            let cards = sheet
-                .images
-                .iter()
-                .map(|(name, info)| {
-                    let (img, placeholder) = match info.as_ref().map(load_image) {
-                        Some(Ok(img)) => (Some(img), None),
-                        Some(Err("unreadable")) | Some(Err("too large")) => {
-                            unreadable += 1;
-                            (None, Some("Image can't be printed".to_string()))
+        // One section for the attachment names and the pictures, kept whole: a picture never
+        // sits on a page without its heading.
+        let attachments = o.attachments.as_ref().filter(|l| !l.is_empty());
+        if attachments.is_some() || !sheet.images.is_empty() {
+            let mut part = vec![Block::Section(Section::new(
+                "Attachments & reference images",
+                attachments.map(|_| "Attachments sent separately".to_string()),
+            ))];
+            if let Some(list) = attachments {
+                part.push(Block::Text(
+                    Txt::new(
+                        list.iter()
+                            .map(|x| x.name.clone())
+                            .collect::<Vec<_>>()
+                            .join(", "),
+                    )
+                    .size(8.8)
+                    .color(pal::INK)
+                    .after(6.0),
+                ));
+            }
+            if !sheet.images.is_empty() {
+                let cards = sheet
+                    .images
+                    .iter()
+                    .map(|(name, info)| {
+                        let (img, placeholder) = match info.as_ref().map(load_image) {
+                            Some(Ok(img)) => (Some(img), None),
+                            Some(Err("unreadable")) | Some(Err("too large")) => {
+                                unreadable += 1;
+                                (None, Some("Image can't be printed".to_string()))
+                            }
+                            _ => {
+                                missing += 1;
+                                (None, Some("Image unavailable".to_string()))
+                            }
+                        };
+                        Card {
+                            parts: vec![
+                                CardPart::Image {
+                                    img,
+                                    placeholder,
+                                    ratio: 0.66,
+                                },
+                                CardPart::Centered(vec![
+                                    Txt::new(name.clone())
+                                        .size(8.2)
+                                        .color(pal::SLATE)
+                                        .align(Align::Center),
+                                ]),
+                            ],
+                            ..Card::new()
                         }
-                        _ => {
-                            missing += 1;
-                            (None, Some("Image unavailable".to_string()))
-                        }
-                    };
-                    Card {
-                        parts: vec![
-                            CardPart::Image {
-                                img,
-                                placeholder,
-                                ratio: 0.66,
-                            },
-                            CardPart::Centered(vec![
-                                Txt::new(name.clone())
-                                    .size(8.2)
-                                    .color(pal::SLATE)
-                                    .align(Align::Center),
-                            ]),
-                        ],
-                        ..Card::new()
-                    }
-                })
-                .collect::<Vec<_>>();
-            doc.push(Block::Cards(Cards::new(3, cards)));
+                    })
+                    .collect::<Vec<_>>();
+                part.push(Block::Cards(Cards::new(3, cards)));
+            }
+            notes.push(Block::Together(part));
         }
     }
+    doc.push(Block::Spacer(GROUP_GAP));
+    doc.push(Block::Together(notes));
 
     let mut out = Output::new(doc, HINT_EDIT);
     out.warnings = image_warnings(missing, unreadable, "reference image");
@@ -959,4 +1076,85 @@ pub(super) fn export(
         target: Some(("call_sheet", a.id.clone())),
     };
     deliver(core, actor, &dest, fmt, job, out)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use openframe_import_export::report::Width;
+
+    #[test]
+    fn running_header_follows_the_derivation_rules() {
+        assert_eq!(
+            running_header("LOW TIDE RADIO", "SHOOT DAY 1", 2),
+            "LOW TIDE RADIO \u{b7} SHOOT DAY 01 \u{b7} REVISION 2"
+        );
+        assert_eq!(
+            running_header("LOW TIDE RADIO", "Shoot day 12", 1),
+            "LOW TIDE RADIO \u{b7} SHOOT DAY 12 \u{b7} REVISION 1"
+        );
+        // No digits: the label in capitals. No label: the segment and its separator go.
+        assert_eq!(
+            running_header("CALL SHEET", "Pickup day", 3),
+            "CALL SHEET \u{b7} PICKUP DAY \u{b7} REVISION 3"
+        );
+        assert_eq!(
+            running_header("CALL SHEET", "  ", 1),
+            "CALL SHEET \u{b7} REVISION 1"
+        );
+    }
+
+    #[test]
+    fn a_long_title_shrinks_to_four_lines_and_a_short_one_keeps_28_pt() {
+        assert_eq!(title_size("LOW TIDE RADIO"), 28.0);
+        let long = "THE LONG NIGHT OF THE LIGHTHOUSE KEEPER'S DAUGHTER (WORKING TITLE: A SECOND SEASON OF TIDES)";
+        let size = title_size(long);
+        assert!((20.0..28.0).contains(&size), "{size}");
+        assert!(wrap_pt(long, CONTENT_W - 168.0, size, true).len() <= 4);
+    }
+
+    #[test]
+    fn pickup_and_hair_columns_hold_forty_characters_in_three_lines() {
+        let mut d = CallSheetDocument::default();
+        for i in 0..14 {
+            d.cast.push(CallSheetDocCast {
+                cast_id: i.to_string(),
+                actor: format!("Actor {i}"),
+                character: format!("CHARACTER {i}"),
+                status: "SW".into(),
+                pickup: "Unit hotel lobby, 45 minutes before call".into(),
+                makeup: "60 minutes before call, trailer 2".into(),
+                call_time: "06:30".into(),
+                ..CallSheetDocCast::default()
+            });
+        }
+        let t = talent_table(&d);
+        let total: f32 = t
+            .columns
+            .iter()
+            .map(|c| match c.width {
+                Width::Pt(w) => w,
+                Width::Weight(_) => 0.0,
+            })
+            .sum();
+        assert!(CONTENT_W - total >= NAME_COLS_MIN - 0.5, "{total}");
+        for (header, value) in [
+            ("Pickup", d.cast[0].pickup.as_str()),
+            ("Hair / MU", d.cast[0].makeup.as_str()),
+        ] {
+            let col = t.columns.iter().find(|c| c.header == header).unwrap();
+            let Width::Pt(w) = col.width else { panic!() };
+            let lines = wrap_pt(value, w - 2.0 * t.pad_x, 8.6, false);
+            assert!(lines.len() <= 3, "{header} wraps to {} lines", lines.len());
+            // No header word is wider than its column, so none breaks mid-word.
+            let head = text_width(&header.to_uppercase(), 6.9, true);
+            assert!(head < w - 2.0 * t.pad_x, "{header} header");
+        }
+        // Contact and notes are folded into Actor and Character: no columns of their own.
+        assert!(
+            t.columns
+                .iter()
+                .all(|c| c.header != "Contact" && c.header != "Notes")
+        );
+    }
 }

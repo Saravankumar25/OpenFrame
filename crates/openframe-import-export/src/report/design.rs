@@ -222,6 +222,22 @@ fn txt_lines(t: &Txt, width: f32) -> Vec<String> {
     wrap_pt(&t.text, w.max(8.0), t.size, t.bold)
 }
 
+/// Lines of tracked capitals that fit `width` with their tracking counted (the 94 percent rule of
+/// [`txt_lines`] is only an estimate, and a long name can run past a card's edge by it).
+fn tracked_lines(t: &Txt, width: f32) -> Vec<String> {
+    let mut share = 0.94_f32;
+    loop {
+        let lines = wrap_pt(&t.text, (width * share).max(8.0), t.size, t.bold);
+        let fits = lines
+            .iter()
+            .all(|l| tw(l, t.size, t.bold, t.track) <= width + 0.01);
+        if fits || share <= 0.5 {
+            return lines;
+        }
+        share -= 0.02;
+    }
+}
+
 /// A pill: a short label or value with a tone.
 #[derive(Debug, Clone)]
 pub struct Chip {
