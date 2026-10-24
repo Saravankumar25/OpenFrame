@@ -14,6 +14,7 @@ mod pdf_regression;
 mod pdf_samples;
 mod production;
 mod production_depth;
+mod report_design;
 mod schedule;
 mod schedule_depth;
 mod schedule_design;

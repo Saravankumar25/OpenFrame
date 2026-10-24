@@ -20,6 +20,7 @@ mod group_band;
 mod matrix;
 mod panel;
 mod rich;
+mod shell;
 mod table;
 
 pub use band::{FactLine, FactRun, TableBand};
@@ -31,6 +32,7 @@ pub use group_band::GroupBand;
 pub use matrix::{Matrix, MatrixCode, MatrixCount, MatrixDay, MatrixKey, MatrixRow, MatrixTotals};
 pub use panel::{CompactHeader, Panel, SceneBanner};
 pub use rich::{Rich, Run};
+pub use shell::{MetricStrip, NoteBand, ReportHead};
 pub use table::{Cell, CellItem, Col, HeaderStyle, Row, StyledTable, Width};
 
 use band::{band_frag, band_scan};
@@ -39,6 +41,9 @@ pub(super) use matrix::{matrix, matrix_scan};
 pub(super) use panel::{compact_header, compact_header_scan, scene_banner, scene_banner_scan};
 use panel::{panel_frag, panel_scan};
 use rich::{put_rich, rich_scan};
+pub(super) use shell::{
+    metric_strip, metric_strip_scan, note_band, note_band_scan, report_head, report_head_scan,
+};
 
 pub(super) use blocks::{banner, callout, legend, masthead, metrics, scan_block, section, text};
 pub(super) use cards::cards;
@@ -255,6 +260,20 @@ fn tracked_lines(t: &Txt, width: f32) -> Vec<String> {
     }
 }
 
+/// The shape before a status word. With the word it carries the state without colour: a solid
+/// disc, a ring with a centre dot, a hollow ring or a solid square.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Mark {
+    Disc,
+    RingDot,
+    Ring,
+    Square,
+}
+
+/// Width of a mark and the gap after it, in points.
+const MARK_W: f32 = 5.0;
+const MARK_GAP: f32 = 3.8;
+
 /// A pill: a short label or value with a tone.
 #[derive(Debug, Clone)]
 pub struct Chip {
@@ -263,6 +282,8 @@ pub struct Chip {
     pub size: f32,
     pub bold: bool,
     pub track: f32,
+    /// A shape printed before the word (status chips); none by default.
+    pub mark: Option<Mark>,
 }
 
 impl Chip {
@@ -274,6 +295,7 @@ impl Chip {
             size: 6.6,
             bold: true,
             track: 0.5,
+            mark: None,
         }
     }
     /// Regular pill that keeps its case (cast ids, element names, scene numbers).
@@ -284,6 +306,7 @@ impl Chip {
             size: 8.0,
             bold: false,
             track: 0.0,
+            mark: None,
         }
     }
     pub fn small(mut self) -> Chip {
@@ -294,11 +317,24 @@ impl Chip {
         self.bold = true;
         self
     }
+    /// Print this shape before the word.
+    pub fn mark(mut self, m: Mark) -> Chip {
+        self.mark = Some(m);
+        self
+    }
+    /// Room the mark takes inside the pill.
+    fn mark_room(&self) -> f32 {
+        if self.mark.is_some() {
+            MARK_W + MARK_GAP
+        } else {
+            0.0
+        }
+    }
     fn height(&self) -> f32 {
         self.size * 1.45 + 3.5
     }
     fn width(&self) -> f32 {
-        tw(&self.text, self.size, self.bold, self.track) + 10.0
+        tw(&self.text, self.size, self.bold, self.track) + 10.0 + self.mark_room()
     }
 }
 
@@ -484,10 +520,16 @@ fn txt_height(t: &Txt, width: f32) -> f32 {
 
 /// Lines, width and height of a chip no wider than `maxw`: long text wraps inside the pill.
 fn chip_dims(c: &Chip, maxw: f32) -> (Vec<String>, f32, f32) {
-    if c.width() <= maxw {
+    // A status chip with a shape is one line: its word is never broken to fit a narrow cell.
+    if c.width() <= maxw || c.mark.is_some() {
         return (vec![c.text.clone()], c.width(), c.height());
     }
-    let lines = wrap_pt(&c.text, (maxw - 10.0).max(20.0), c.size, c.bold);
+    let lines = wrap_pt(
+        &c.text,
+        (maxw - 10.0 - c.mark_room()).max(20.0),
+        c.size,
+        c.bold,
+    );
     let h = lines.len() as f32 * c.size * 1.25 + 7.0;
     (lines, maxw, h)
 }
@@ -504,21 +546,22 @@ fn put_chip_max(f: &mut Frag, x: f32, dy: f32, maxw: f32, c: &Chip) -> f32 {
         Some(c.tone.fill()),
         Some((c.tone.line(), 0.6)),
     );
+    if let Some(m) = c.mark {
+        let cy = if lines.len() == 1 {
+            dy + h / 2.0
+        } else {
+            dy + 3.5 + c.size * 0.5
+        };
+        put_mark(f, x + 4.6, cy, m, c.tone.text());
+    }
+    let tx = x + 5.0 + c.mark_room();
     if lines.len() == 1 {
         let base = dy + (h + 0.72 * c.size) / 2.0;
-        f.text(
-            x + 5.0,
-            base,
-            &lines[0],
-            c.size,
-            c.bold,
-            c.tone.text(),
-            c.track,
-        );
+        f.text(tx, base, &lines[0], c.size, c.bold, c.tone.text(), c.track);
     } else {
         for (k, l) in lines.iter().enumerate() {
             f.text(
-                x + 5.0,
+                tx,
                 dy + 3.5 + c.size + k as f32 * c.size * 1.25,
                 l,
                 c.size,
@@ -529,6 +572,29 @@ fn put_chip_max(f: &mut Frag, x: f32, dy: f32, maxw: f32, c: &Chip) -> f32 {
         }
     }
     w
+}
+
+/// The shape of a status mark with its left edge at `x` and centre line at `cy`.
+fn put_mark(f: &mut Frag, x: f32, cy: f32, m: Mark, color: Rgb) {
+    let r = MARK_W / 2.0;
+    let cx = x + r;
+    match m {
+        Mark::Disc => f.circle(cx, cy, r, Some(color), None),
+        Mark::Ring => f.circle(cx, cy, r - 0.45, None, Some((color, 0.9))),
+        Mark::RingDot => {
+            f.circle(cx, cy, r - 0.45, None, Some((color, 0.9)));
+            f.circle(cx, cy, 0.95, Some(color), None);
+        }
+        Mark::Square => f.shape(
+            x + 0.2,
+            cy - r + 0.2,
+            MARK_W - 0.4,
+            MARK_W - 0.4,
+            0.0,
+            Some(color),
+            None,
+        ),
+    }
 }
 
 /// A chip drawn at (x, dy); returns its width.

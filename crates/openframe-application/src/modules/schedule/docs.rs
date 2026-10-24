@@ -535,6 +535,19 @@ fn report_title(t: &str) -> AppResult<&'static str> {
         .ok_or_else(|| AppError::invalid_input("Choose one of the available reports."))
 }
 
+/// Sort key of a shoot day in a report: its number, then its date; undated days last.
+type DayKey = (i64, bool, String);
+/// Location, status, address, scene numbers and shoot days of a Location Report row.
+type LocationRow = (String, String, String, Vec<String>, Vec<(DayKey, String)>);
+/// Actor, character, scene numbers and shoot days of a Cast Scene Report row.
+type CastRow = (String, String, Vec<String>, Vec<(DayKey, String)>);
+
+/// Shooting days in shoot-day order (stable), joined with "; ".
+fn joined_days(mut days: Vec<(DayKey, String)>) -> String {
+    days.sort_by(|a, b| a.0.cmp(&b.0));
+    days.into_iter().map(|d| d.1).collect::<Vec<_>>().join("; ")
+}
+
 pub(crate) fn build_report(
     c: &Connection,
     report_type: &str,
@@ -570,11 +583,21 @@ pub(crate) fn build_report(
             filter,
         });
     };
-    let day_of = |scene_id: &str| -> Option<String> {
+    // A scene's shoot day: the sort key (day number, then date, undated last) and its title.
+    let day_key = |scene_id: &str| -> Option<(DayKey, String)> {
         let b = board.as_ref()?;
         let s = b.strips.iter().find(|s| s.scene_id == scene_id)?;
-        b.strip_day(s).and_then(|d| b.day(d)).map(|d| d.title())
+        let d = b.strip_day(s).and_then(|d| b.day(d))?;
+        Some((
+            (
+                d.number.unwrap_or(i64::MAX),
+                d.date.is_none(),
+                d.date.clone().unwrap_or_default(),
+            ),
+            d.title(),
+        ))
     };
+    let day_of = |scene_id: &str| day_key(scene_id).map(|(_, t)| t);
     let scenes: Vec<_> = src.scenes.iter().filter(|s| !s.omitted).collect();
     let (columns, rows): (Vec<&str>, Vec<Vec<String>>) = match report_type {
         "scene" => (
@@ -623,8 +646,7 @@ pub(crate) fn build_report(
                 .collect(),
         ),
         "location" => {
-            let mut by: BTreeMap<String, (String, String, String, Vec<String>, Vec<String>)> =
-                BTreeMap::new();
+            let mut by: BTreeMap<String, LocationRow> = BTreeMap::new();
             for sc in &scenes {
                 for l in src.locations(sc) {
                     let e = by.entry(l.name.to_lowercase()).or_insert_with(|| {
@@ -637,8 +659,8 @@ pub(crate) fn build_report(
                         )
                     });
                     e.3.push(sc.number.to_string());
-                    if let Some(d) = day_of(&sc.id)
-                        && !e.4.contains(&d)
+                    if let Some(d) = day_key(&sc.id)
+                        && !e.4.iter().any(|x| x.1 == d.1)
                     {
                         e.4.push(d);
                     }
@@ -647,13 +669,12 @@ pub(crate) fn build_report(
             (
                 vec!["Location", "Status", "Address", "Scenes", "Shooting days"],
                 by.into_values()
-                    .map(|(n, st, ad, sc, days)| vec![n, st, ad, sc.join(", "), days.join("; ")])
+                    .map(|(n, st, ad, sc, days)| vec![n, st, ad, sc.join(", "), joined_days(days)])
                     .collect(),
             )
         }
         "cast_scene" => {
-            let mut by: BTreeMap<String, (String, String, Vec<String>, Vec<String>)> =
-                BTreeMap::new();
+            let mut by: BTreeMap<String, CastRow> = BTreeMap::new();
             for sc in &scenes {
                 for c in src.cast(&sc.id) {
                     let e = by.entry(c.key.clone()).or_insert_with(|| {
@@ -665,8 +686,8 @@ pub(crate) fn build_report(
                         )
                     });
                     e.2.push(sc.number.to_string());
-                    if let Some(d) = day_of(&sc.id)
-                        && !e.3.contains(&d)
+                    if let Some(d) = day_key(&sc.id)
+                        && !e.3.iter().any(|x| x.1 == d.1)
                     {
                         e.3.push(d);
                     }
@@ -675,7 +696,13 @@ pub(crate) fn build_report(
             let mut rows: Vec<Vec<String>> = by
                 .into_values()
                 .map(|(a, ch, sc, days)| {
-                    vec![a, ch, sc.join(", "), sc.len().to_string(), days.join("; ")]
+                    vec![
+                        a,
+                        ch,
+                        sc.join(", "),
+                        sc.len().to_string(),
+                        joined_days(days),
+                    ]
                 })
                 .collect();
             rows.sort_by(|a, b| a[1].cmp(&b[1]));

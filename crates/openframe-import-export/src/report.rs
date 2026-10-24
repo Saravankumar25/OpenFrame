@@ -48,12 +48,14 @@ mod design;
 #[cfg(test)]
 mod furniture_tests;
 #[cfg(test)]
+mod report_shell_tests;
+#[cfg(test)]
 mod visual_tests;
 pub use design::{
     Banner, Callout, CalloutCol, Card, CardHead, CardPart, Cards, Cell, CellItem, Chip, Col,
-    CompactHeader, Field, Group, GroupBand, GroupItem, HeaderStyle, Legend, LegendItem, Masthead,
-    Metric, Metrics, Panel, Rgb, Rich, Row, Run, SceneBanner, Section, Side, StyledTable, Tile,
-    Tone, Txt, Width, pal,
+    CompactHeader, Field, Group, GroupBand, GroupItem, HeaderStyle, Legend, LegendItem, Mark,
+    Masthead, Metric, MetricStrip, Metrics, NoteBand, Panel, ReportHead, Rgb, Rich, Row, Run,
+    SceneBanner, Section, Side, StyledTable, Tile, Tone, Txt, Width, pal,
 };
 pub use design::{
     FactLine, FactRun, Matrix, MatrixCode, MatrixCount, MatrixDay, MatrixKey, MatrixRow,
@@ -219,6 +221,12 @@ pub enum Block {
     CompactHeader(CompactHeader),
     /// The Day Out of Days matrix (frozen columns, day groups, code cells).
     Matrix(Matrix),
+    /// The compact head of a production report with its side panel.
+    ReportHead(ReportHead),
+    /// A band of context under the head of a production report (snapshot, filter, open scenes).
+    NoteBand(NoteBand),
+    /// The counts of a production report in one strip as wide as its content.
+    MetricStrip(MetricStrip),
 }
 
 // ------------------------------------------------------------------ images
@@ -553,6 +561,9 @@ fn scan_blocks(blocks: &[Block], scan: &mut dyn FnMut(&str)) {
                 Block::PageHeader(text) => scan(text),
                 Block::SceneBanner(b) => design::scene_banner_scan(b, scan),
                 Block::CompactHeader(h) => design::compact_header_scan(h, scan),
+                Block::ReportHead(h) => design::report_head_scan(h, scan),
+                Block::NoteBand(b) => design::note_band_scan(b, scan),
+                Block::MetricStrip(m) => design::metric_strip_scan(m, scan),
                 Block::Masthead(_)
                 | Block::Metrics(_)
                 | Block::Section(_)
@@ -1382,6 +1393,9 @@ fn render_block<'a>(p: &mut Pager<'a>, b: &'a Block) {
             p.draw_page_header();
         }
         Block::Matrix(m) => design::matrix(p, m),
+        Block::ReportHead(h) => design::report_head(p, h),
+        Block::NoteBand(b) => design::note_band(p, b),
+        Block::MetricStrip(m) => design::metric_strip(p, m),
         Block::Heading { text, level } => {
             let size = if *level <= 1 { 13.0 } else { 11.0 };
             // Keep headings with what follows them.
@@ -1558,7 +1572,7 @@ fn render_pdf(doc: &Document) -> ReportPdf {
     let mut p = Pager::new(w, h, top_inset(head.len()), bottom);
     let masthead_first = matches!(
         doc.blocks.first(),
-        Some(Block::Masthead(_) | Block::CompactHeader(_))
+        Some(Block::Masthead(_) | Block::CompactHeader(_) | Block::ReportHead(_))
     );
     if masthead_first {
         // The design system masthead replaces the plain title lines.
