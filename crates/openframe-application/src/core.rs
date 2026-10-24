@@ -347,6 +347,8 @@ impl AppCore {
         let mut conn =
             openframe_persistence::open_connection(&config.app_data_dir.join("app.sqlite"), true)?;
         openframe_persistence::migrate::apply(&mut conn, crate::schema::APP_MIGRATIONS)?;
+        // Cover photos no project row names (a crash between the file and the row) are removed.
+        crate::modules::project_cover::sweep(&conn, &config.app_data_dir);
         let profile = ensure_profile(&conn)?;
         // Never fails and never blocks startup: problems are logged and the state is Unknown.
         let mac_inputs = config.mac_inputs.take();

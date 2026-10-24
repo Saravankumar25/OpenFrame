@@ -227,3 +227,153 @@ fn the_app_refuses_to_start_without_a_documents_folder() {
     .unwrap();
     assert_eq!(ok.projects_dir, PathBuf::from(r"C:\Docs\P"));
 }
+
+// ------------------------------------------------------------ project cover photos
+
+fn covers_dir(env: &TestEnv) -> PathBuf {
+    env.core.config.app_data_dir.join("covers").join("assets")
+}
+
+fn cover_files(env: &TestEnv) -> Vec<String> {
+    let mut names: Vec<String> = std::fs::read_dir(covers_dir(env))
+        .map(|d| {
+            d.flatten()
+                .map(|e| e.file_name().to_string_lossy().into_owned())
+                .collect()
+        })
+        .unwrap_or_default();
+    names.sort();
+    names
+}
+
+fn picture(env: &TestEnv, name: &str, w: u32, h: u32) -> String {
+    let path = env.dir.path().join(name);
+    image::RgbImage::from_fn(w, h, |x, y| {
+        image::Rgb([(x % 251) as u8, (y % 241) as u8, 40])
+    })
+    .save(&path)
+    .unwrap();
+    path.to_string_lossy().into_owned()
+}
+
+#[test]
+fn a_cover_photo_is_listed_replaced_cleared_and_removed_with_the_project() {
+    let env = TestEnv::new();
+    let (id, _) = closed_project(&env, "Cover Me");
+    assert!(
+        recent(&env)[0]["cover"].is_null(),
+        "no cover until one is chosen"
+    );
+
+    for (ext, w, h) in [("png", 1200, 400), ("jpg", 300, 900), ("webp", 640, 360)] {
+        let src = picture(&env, &format!("pic.{ext}"), w, h);
+        let r = env.ok("project.set_cover", json!({ "projectId": id, "path": src }));
+        assert_eq!(r["projectId"], id);
+        let cover = &r["cover"];
+        let stored = PathBuf::from(cover["path"].as_str().unwrap());
+        assert!(stored.starts_with(covers_dir(&env)), "{stored:?}");
+        let img = image::open(&stored).unwrap();
+        assert_eq!((img.width(), img.height()), (960, 540), "{ext}");
+        // Replacing leaves exactly one file: the old one is deleted.
+        assert_eq!(
+            cover_files(&env),
+            vec![stored.file_name().unwrap().to_string_lossy()]
+        );
+        assert_eq!(
+            recent(&env)[0]["cover"]["path"],
+            cover["path"],
+            "list_recent returns the cover"
+        );
+    }
+    assert_eq!(recent(&env)[0]["cover"]["rev"], 3);
+
+    let r = env.ok("project.clear_cover", json!({ "projectId": id }));
+    assert!(r["cover"].is_null());
+    assert!(cover_files(&env).is_empty(), "clearing deletes the file");
+
+    let src = picture(&env, "again.png", 800, 800);
+    env.ok("project.set_cover", json!({ "projectId": id, "path": src }));
+    assert_eq!(cover_files(&env).len(), 1);
+    env.ok("project.remove_recent", json!({ "projectId": id }));
+    assert!(
+        cover_files(&env).is_empty(),
+        "removing from the list deletes the file"
+    );
+}
+
+#[test]
+fn deleting_a_project_deletes_its_cover_photo() {
+    let _trash = test_trash();
+    let env = TestEnv::new();
+    let (id, _) = closed_project(&env, "Delete With Cover");
+    let src = picture(&env, "pic.png", 800, 450);
+    env.ok("project.set_cover", json!({ "projectId": id, "path": src }));
+    assert_eq!(cover_files(&env).len(), 1);
+    env.ok("project.delete", json!({ "projectId": id }));
+    assert!(cover_files(&env).is_empty());
+}
+
+#[test]
+fn a_bad_cover_changes_nothing_and_says_why_in_plain_words() {
+    let env = TestEnv::new();
+    let (id, _) = closed_project(&env, "Keep Cover");
+    let good = picture(&env, "good.png", 800, 450);
+    env.ok(
+        "project.set_cover",
+        json!({ "projectId": id, "path": good }),
+    );
+    let before = cover_files(&env);
+
+    let svg = env.write_file("logo.svg", b"<svg xmlns='http://www.w3.org/2000/svg'/>");
+    let corrupt = env.write_file("broken.png", b"\x89PNG\r\n\x1a\nnot really");
+    let tiny = picture(&env, "tiny.png", 32, 32);
+    for bad in [svg, corrupt, tiny, "relative.png".to_string()] {
+        let call = env.call("project.set_cover", json!({ "projectId": id, "path": bad }));
+        let e = call.expect_err(&bad);
+        assert!(
+            !e.message.is_empty() && !e.message.contains("panicked"),
+            "{}",
+            e.message
+        );
+    }
+    assert_eq!(cover_files(&env), before, "the chosen cover stays");
+    assert_eq!(
+        env.err(
+            "project.set_cover",
+            json!({ "projectId": "not-a-project", "path": good })
+        ),
+        "not_found.project"
+    );
+    // Only the person at this computer changes the list.
+    let helper = env.other_user(openframe_domain::auth::Role::Editor);
+    let denied = env
+        .call_as(&helper, "project.clear_cover", json!({ "projectId": id }))
+        .unwrap_err();
+    assert_eq!(denied.code.0, "permission.denied");
+    assert_eq!(cover_files(&env), before);
+}
+
+#[test]
+fn start_up_removes_cover_files_no_project_names_and_nothing_else() {
+    let env = TestEnv::new();
+    let (id, _) = closed_project(&env, "Sweep");
+    let src = picture(&env, "pic.png", 800, 450);
+    env.ok("project.set_cover", json!({ "projectId": id, "path": src }));
+    let dir = covers_dir(&env);
+    let kept = cover_files(&env);
+    let orphan = format!("{}-1.jpg", openframe_domain::new_id());
+    std::fs::write(dir.join(&orphan), b"x").unwrap();
+    std::fs::write(dir.join("readme.txt"), b"x").unwrap();
+    let env = env.restart();
+    let after = cover_files(&env);
+    assert!(!after.contains(&orphan), "the orphan was swept");
+    assert!(
+        after.contains(&"readme.txt".to_string()),
+        "a foreign file is left alone"
+    );
+    assert!(
+        kept.iter().all(|k| after.contains(k)),
+        "the named cover stays"
+    );
+    assert!(!recent(&env)[0]["cover"].is_null());
+}

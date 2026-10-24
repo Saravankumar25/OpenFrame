@@ -41,7 +41,8 @@ struct PowerState(
 );
 
 /// The folders the `ofasset` protocol may read: only managed media, the open project's
-/// `assets/` folder and the Global Idea Vault's `assets/` (images, audio and video previews).
+/// `assets/` folder, the Global Idea Vault's `assets/` (images, audio and video previews) and the
+/// `assets/` folder of project cover photos on Home (`<app data>/covers/assets`).
 /// The databases (`project.sqlite` and `vault.sqlite`, which hold every user's private notes),
 /// `cache/` (the intelligence index of every member's notes and package staging copies of the
 /// database), recovery data and safety backups are never readable by the webview, even if it
@@ -50,6 +51,8 @@ struct PowerState(
 fn asset_roots(core: &AppCore) -> asset_scope::AssetRoots {
     let mut scope = asset_scope::AssetRoots::default();
     scope.allow_directory(core.config.global_vault_dir.join("assets"), true);
+    let covers = core.config.app_data_dir.join("covers");
+    scope.allow_directory(covers.join("assets"), true);
     if let Some(p) = core.project_opt() {
         scope.allow_directory(p.layout.assets(), true);
     }
@@ -783,7 +786,7 @@ mod tests {
             "switched-away project refused"
         );
         assert!(scope.resolve(&url(&still_b)).is_some());
-        // Closing revokes the open one; only the Global Idea Vault stays.
+        // Closing revokes the open one; only the Global Idea Vault and the Home covers stay.
         core.dispatch(&actor, "project.close", json!({})).unwrap();
         sync_asset_scope(&scope, &core);
         assert!(
@@ -792,7 +795,10 @@ mod tests {
         );
         assert_eq!(
             scope.roots().dirs(),
-            [core.config.global_vault_dir.join("assets")]
+            [
+                core.config.global_vault_dir.join("assets"),
+                core.config.app_data_dir.join("covers").join("assets")
+            ]
         );
         // Reopening the first project makes it readable again.
         core.dispatch(

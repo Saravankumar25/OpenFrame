@@ -16,6 +16,7 @@ pub mod notes;
 pub mod packages;
 pub mod production;
 pub mod project;
+pub(crate) mod project_cover;
 pub mod retention;
 pub mod schedule;
 pub mod screenplay;
@@ -26,6 +27,7 @@ pub mod writing;
 
 pub fn register_all(r: &mut Registry) {
     project::register(r);
+    project_cover::register(r);
     history::register(r);
     search::register(r);
     files::register(r);
