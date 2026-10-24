@@ -997,7 +997,10 @@ fn awkward_text_is_kept_whole_and_in_order() {
 fn a_long_run_of_keep_with_next_blocks_lays_out_densely() {
     let mut els = Vec::new();
     for i in 0..20_000 {
-        els.push(el(if i % 2 == 0 { K::Shot } else { K::Transition }, &format!("BLOCK {i}")));
+        els.push(el(
+            if i % 2 == 0 { K::Shot } else { K::Transition },
+            &format!("BLOCK {i}"),
+        ));
     }
     let lay = layout::layout(&doc(vec![scene("INT. A - DAY", els)]), &opts());
     let printed = lay
