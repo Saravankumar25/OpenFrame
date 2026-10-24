@@ -173,3 +173,62 @@ fn a_project_without_a_screenplay_goes_to_the_agent() {
         (Lane::Agent, Lane::Chat, 0.5)
     );
 }
+
+/// The three open-gold requests the S5 router sent to Chat or to a wrong tool (real-model run of
+/// commit b2d22c0d): each is a plain read and stays with its tool.
+#[test]
+fn a_find_a_production_suggestion_and_an_overview_keep_their_tools() {
+    for (text, tool) in [
+        (
+            "Find every scene that mentions the battery.",
+            "find_scenes_mentioning",
+        ),
+        (
+            "Suggest breakdown elements for scene 22.",
+            "suggest_breakdown",
+        ),
+        ("Give me an overview of the project.", "project_overview"),
+    ] {
+        let call = commands::direct_route(text, None, |_| true)
+            .unwrap_or_else(|| panic!("no direct route for {text}"));
+        assert_eq!(call.tool, tool, "{text}");
+        assert_eq!(lane_of(text).lane, Lane::Direct, "{text}");
+    }
+    let find = commands::direct_route("Find every scene that mentions the battery.", None, |_| {
+        true
+    })
+    .unwrap();
+    assert_eq!(find.arguments, serde_json::json!({"text": "battery"}));
+    let breakdown =
+        commands::direct_route("Suggest breakdown elements for scene 22.", None, |_| true).unwrap();
+    assert_eq!(breakdown.arguments, serde_json::json!({"sceneNumber": 22}));
+}
+
+/// Wordings the routes do not name still go to the Agent lane, never to Chat.
+#[test]
+fn a_search_or_a_production_suggestion_is_never_a_story_question() {
+    for text in [
+        "Locate every scene mentioning the lantern",
+        "Could you find all scenes that contain the kite?",
+        "Search for the scenes that reference the tower",
+    ] {
+        let d = lane_of(text);
+        assert_eq!((d.lane, d.margin), (Lane::Agent, 1.0), "{text}");
+    }
+    for text in [
+        "Suggest props and wardrobe for this scene",
+        "Suggest the crew and equipment we need here",
+    ] {
+        let d = lane_in(text, Some(3));
+        assert_eq!((d.lane, d.margin), (Lane::Agent, 1.0), "{text}");
+    }
+    // Ideas and explanations stay in Chat.
+    assert_eq!(
+        lane_in("Suggest some ideas to improve this scene", Some(3)).lane,
+        Lane::Chat
+    );
+    assert_ne!(
+        lane_of("Find every scene and explain what happens in each").lane,
+        Lane::Agent
+    );
+}

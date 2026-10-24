@@ -38,6 +38,14 @@ pub struct TraceRow<'a> {
     pub lane: &'a str,
     pub runner_up_lane: &'a str,
     pub lane_margin: f64,
+    /// The closest built-in intent (empty when the step did not run), its cosine score, the lead over
+    /// the next different intent, and whether the router used it.
+    pub intent: &'a str,
+    pub intent_score: f64,
+    pub intent_margin: f64,
+    pub intent_used: bool,
+    /// The person pressed Stop and the request ended early.
+    pub cancelled: bool,
 }
 
 pub fn record(core: &AppCore, r: &TraceRow<'_>) {
@@ -53,8 +61,10 @@ pub fn record(core: &AppCore, r: &TraceRow<'_>) {
             "INSERT INTO sys_ai_trace(id, request_id, project_id, created_at, scope_kind, model_reference, context_tokens,
                                       tools_offered, tools_chosen, steps, sources, model_calls, tokens_in, tokens_out,
                                       context_fill_pct, prompt_ms, generation_ms, total_ms, passes, checks_failed,
-                                      result_kind, error_code, proposed, cached_tokens, lane, runner_up_lane, lane_margin)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20, ?21, ?22, ?23, ?24, ?25, ?26, ?27)",
+                                      result_kind, error_code, proposed, cached_tokens, lane, runner_up_lane, lane_margin,
+                                      intent, intent_score, intent_margin, intent_used, cancelled)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20, ?21, ?22, ?23, ?24, ?25, ?26, ?27,
+                     ?28, ?29, ?30, ?31, ?32)",
             params![
                 new_id(),
                 r.request_id,
@@ -83,6 +93,11 @@ pub fn record(core: &AppCore, r: &TraceRow<'_>) {
                 r.lane,
                 r.runner_up_lane,
                 r.lane_margin,
+                r.intent,
+                r.intent_score,
+                r.intent_margin,
+                r.intent_used,
+                r.cancelled,
             ],
         )?;
         Ok(())
@@ -332,7 +347,7 @@ fn trace_json(c: &Connection, request_id: Option<&str>) -> AppResult<Vec<Value>>
         "SELECT request_id, project_id, created_at, scope_kind, model_reference, context_tokens, tools_offered,
                 tools_chosen, steps, sources, model_calls, tokens_in, tokens_out, cached_tokens, context_fill_pct,
                 prompt_ms, generation_ms, total_ms, passes, checks_failed, result_kind, error_code, proposed, outcome,
-                lane, runner_up_lane, lane_margin
+                lane, runner_up_lane, lane_margin, intent, intent_score, intent_margin, intent_used, cancelled
          FROM sys_ai_trace WHERE (?1 IS NULL OR request_id = ?1) ORDER BY created_at",
     )?;
     let names: Vec<String> = st.column_names().iter().map(|s| s.to_string()).collect();

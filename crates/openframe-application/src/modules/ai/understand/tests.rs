@@ -347,3 +347,26 @@ fn omitted_scenes_are_reported_as_missing() {
     let u = ask(&c, &d, "Scenes 1 to 3, and the last scene", &[]);
     assert_eq!((u.scenes, u.missing_scenes), (vec![1, 3], vec![2]));
 }
+
+#[test]
+fn name_words_lists_the_words_of_characters_and_places_in_lower_case() {
+    let c = project();
+    let d = add(
+        &c,
+        "T",
+        &[
+            talk(
+                "INT. LOST PROPERTY OFFICE - DAY",
+                &[("DEVI", "Name?"), ("KIRAN KUMAR", "Kite.")],
+            ),
+            scene("EXT. RAILWAY STATION - NIGHT", &[]),
+        ],
+    );
+    let names = name_words(&c, &d).unwrap();
+    for w in [
+        "devi", "kiran", "kumar", "lost", "property", "office", "railway", "station",
+    ] {
+        assert!(names.contains(&w.to_string()), "{w} in {names:?}");
+    }
+    assert!(names.iter().all(|n| *n == n.to_lowercase()));
+}

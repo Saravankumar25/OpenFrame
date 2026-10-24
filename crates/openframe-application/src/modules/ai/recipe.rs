@@ -51,7 +51,7 @@ pub(super) struct Cx<'a> {
     pub started: Instant,
     pub cap: Duration,
     pub progress: &'a dyn Fn(u32, u32, &str),
-    /// True when the person stopped the request. The next slice connects the button.
+    /// True when the person pressed Stop; checked before every call.
     pub cancelled: &'a dyn Fn() -> bool,
 }
 
@@ -288,6 +288,7 @@ pub(super) fn write(cx: &Cx, m: &Material) -> AppResult<LaneAnswer> {
             ),
         );
         o.structured = Some(coverage);
+        super::orchestrator::mark_stopped(&mut o);
         return Ok(LaneAnswer {
             output: o,
             status: AiResultStatus::Informational,
@@ -354,7 +355,15 @@ pub(super) fn write(cx: &Cx, m: &Material) -> AppResult<LaneAnswer> {
         passes,
         failed,
         clean,
-    } = verify::generate_checked(cx.model, &base, &sampling, &facts, cx.started, &notify)?;
+    } = verify::generate_checked_until(
+        cx.model,
+        &base,
+        &sampling,
+        &facts,
+        cx.started,
+        &notify,
+        cx.cancelled,
+    )?;
 
     let mut out = ToolOutput::of_kind(AiResultKind::Answer, text);
     out.confidence = Some(Confidence::Inferred);

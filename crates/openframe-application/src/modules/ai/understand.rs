@@ -239,6 +239,22 @@ fn location_names(c: &Connection, scenes: &[queries::SceneRow]) -> AppResult<Vec
     Ok(out)
 }
 
+/// The words of the project's own names (characters and places), lower case, that the spelling
+/// tolerant routing copy of a request may correct toward.
+pub(super) fn name_words(c: &Connection, draft: &DraftRef) -> AppResult<Vec<String>> {
+    let rows = queries::scenes(c, &draft.id)?;
+    let mut out: BTreeSet<String> = BTreeSet::new();
+    for n in character_names(c, &draft.id)? {
+        out.extend(n.words.iter().map(|w| w.to_lowercase()));
+    }
+    for l in location_names(c, &rows)? {
+        for p in &l.phrases {
+            out.extend(p.iter().map(|w| w.to_lowercase()));
+        }
+    }
+    Ok(out.into_iter().collect())
+}
+
 // ------------------------------------------------------------------- acts
 
 fn number_word(w: &str) -> Option<usize> {

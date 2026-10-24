@@ -15,12 +15,14 @@
 //! depends on this module.
 
 mod briefing;
+mod cancel;
 pub mod catalog;
 pub mod change_set;
 mod chat;
 mod commands;
 mod conversation_export;
 pub mod intelligence;
+mod intent;
 pub mod knowledge;
 mod lanes;
 pub mod offline;
@@ -37,6 +39,7 @@ pub mod toolbox;
 pub mod tools;
 pub mod trace;
 pub mod types;
+mod typo;
 mod understand;
 mod verify;
 
@@ -120,6 +123,13 @@ pub fn register(r: &mut Registry) {
         )
         .hidden(h::AI_SELF),
     );
+    r.command("ai.cancel", cancel_request).meta(
+        M::command(
+            Capability::UseAi,
+            "Stop the assistant request that is running in a conversation (nothing is changed).",
+        )
+        .hidden(h::AI_SELF),
+    );
     r.query("ai.history", history).meta(
         M::query(
             Capability::UseAi,
@@ -177,6 +187,21 @@ pub struct AiChangeSetArgs {
     pub id: String,
 }
 
+#[derive(Debug, Deserialize, TS)]
+#[ts(export)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct AiCancelArgs {
+    pub conversation_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, TS)]
+#[ts(export)]
+#[serde(rename_all = "camelCase")]
+pub struct AiCancelDto {
+    /// A request of this conversation was running and has been asked to stop.
+    pub stopping: bool,
+}
+
 #[derive(Debug, Clone, Serialize, TS)]
 #[ts(export)]
 #[serde(rename_all = "camelCase")]
@@ -189,6 +214,13 @@ pub struct AiHistoryDto {
 
 fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange> {
     orchestrator::ask(core, actor, args)
+}
+
+fn cancel_request(_core: &AppCore, actor: &Actor, args: AiCancelArgs) -> AppResult<AiCancelDto> {
+    actor.require(Capability::UseAi, "use the assistant")?;
+    Ok(AiCancelDto {
+        stopping: cancel::stop(&actor.user_id, &args.conversation_id),
+    })
 }
 
 fn history(core: &AppCore, actor: &Actor, args: AiHistoryArgs) -> AppResult<AiHistoryDto> {

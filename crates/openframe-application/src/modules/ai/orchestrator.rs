@@ -47,7 +47,9 @@ use super::service::service;
 use super::toolbox::{self, ToolDef, ToolStep};
 use super::tools::{Generation, ToolOutput};
 use super::types::*;
-use super::{change_set, chat, knowledge, queries, recipe, trace, understand};
+use super::{
+    cancel, change_set, chat, intent, knowledge, queries, recipe, trace, typo, understand,
+};
 use crate::core::AppCore;
 use crate::events::AppEvent;
 
@@ -905,6 +907,26 @@ impl Run {
         o
     }
 
+    /// The person pressed Stop: what the steps found so far, and no half-built proposal.
+    fn stopped(mut self) -> Outcome {
+        self.drafts.clear();
+        let mut out = match compose_reads(&self.reads, None, None) {
+            Some(mut found) => {
+                found.kind = AiResultKind::Answer;
+                found.content = format!(
+                    "{STOPPED}
+
+{}",
+                    found.content
+                );
+                found
+            }
+            None => stopped_output(),
+        };
+        mark_stopped(&mut out);
+        self.outcome(out, AiResultStatus::Informational)
+    }
+
     /// The model failed (unavailable, malformed twice): keep what earlier steps found.
     fn stopped_by_model(self, scope: &ResolvedScope, e: &AppError) -> Outcome {
         if self.reads.is_empty() && self.drafts.is_empty() {
@@ -921,10 +943,185 @@ impl Run {
     }
 }
 
-/// The conversation and request a progress line belongs to.
+/// The conversation and request a progress line belongs to, the stop flag of the request, and what
+/// the intent step found (written by `run_agent`, read for the trace).
 struct Ids<'a> {
     conversation: &'a str,
     request: &'a str,
+    running: &'a cancel::Running,
+    routed: std::cell::RefCell<Option<Routed>>,
+}
+
+/// The intent the question was closest to, in numbers, and whether the router used it.
+#[derive(Debug, Clone)]
+struct Routed {
+    name: String,
+    score: f32,
+    margin: f32,
+    used: bool,
+}
+
+/// What the intent step changed: whether the router used the intent, and the only tools the first
+/// agent step may choose from when code could not fill the arguments itself.
+struct Applied {
+    used: bool,
+    first_tools: Option<Vec<ToolDef>>,
+}
+
+/// The reply to a request the person stopped.
+pub(super) const STOPPED: &str = "Stopped. Nothing was changed.";
+
+pub(super) fn mark_stopped(o: &mut ToolOutput) {
+    let mut data = o.structured.take().unwrap_or_else(|| json!({}));
+    if let Value::Object(m) = &mut data {
+        m.insert("stopped".into(), json!(true));
+    }
+    o.structured = Some(data);
+}
+
+pub(super) fn stopped_output() -> ToolOutput {
+    let mut o = ToolOutput::of_kind(AiResultKind::Answer, STOPPED);
+    o.confidence = None;
+    mark_stopped(&mut o);
+    o
+}
+
+fn is_stopped(o: &ToolOutput) -> bool {
+    o.structured
+        .as_ref()
+        .and_then(|s| s.get("stopped"))
+        .and_then(Value::as_bool)
+        == Some(true)
+}
+
+fn required_args(schema: &Value) -> Vec<String> {
+    schema["required"]
+        .as_array()
+        .map(|a| {
+            a.iter()
+                .filter_map(|v| v.as_str().map(str::to_string))
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
+/// Use an accepted intent: a chat or recipe intent feeds the lane router; a tool intent becomes a
+/// direct call when code fills every argument, else the first agent step is offered only that tool.
+fn apply_intent(
+    m: &intent::Scored,
+    understood: Option<&understand::Understood>,
+    routing: &str,
+    known: &BTreeSet<String>,
+    tools: &[&ToolDef],
+    decision: &mut Decision,
+    direct: &mut Option<StepCall>,
+) -> Applied {
+    let not_used = Applied {
+        used: false,
+        first_tools: None,
+    };
+    if !m.accepted() {
+        return not_used;
+    }
+    let margin = f64::from(m.margin);
+    let i = m.intent();
+    let mut first_tools = None;
+    match &i.target {
+        // A hard rule (strength 1) keeps its lane; the intent only settles what the rules left open.
+        intent::Target::Chat if understood.is_some() && decision.margin < 1.0 => {
+            *decision = Decision {
+                lane: Lane::Chat,
+                runner_up: Lane::Agent,
+                margin,
+            };
+        }
+        intent::Target::Recipe if understood.is_some() && decision.margin < 1.0 => {
+            *decision = Decision {
+                lane: Lane::Recipe,
+                runner_up: Lane::Chat,
+                margin,
+            };
+        }
+        intent::Target::Tool(t) if known.contains(t) => {
+            let required = tools
+                .iter()
+                .find(|d| d.name == *t)
+                .map(|d| required_args(&d.schema))
+                .unwrap_or_default();
+            match intent::direct_call(i, understood, routing, &required) {
+                Some(call) => {
+                    *direct = Some(call);
+                    *decision = Decision {
+                        lane: Lane::Direct,
+                        runner_up: Lane::Agent,
+                        margin,
+                    };
+                }
+                None => {
+                    let mut only: Vec<ToolDef> = Vec::new();
+                    for name in [t.as_str(), "clarify"] {
+                        if let Some(d) = tools.iter().find(|d| d.name == name)
+                            && !only.iter().any(|o| o.name == name)
+                        {
+                            only.push((*d).clone());
+                        }
+                    }
+                    first_tools = Some(only);
+                    if decision.lane == Lane::Chat {
+                        *decision = Decision {
+                            lane: Lane::Agent,
+                            runner_up: Lane::Chat,
+                            margin,
+                        };
+                    }
+                }
+            }
+        }
+        _ => return not_used,
+    }
+    Applied {
+        used: true,
+        first_tools,
+    }
+}
+
+/// A request row that was opened and not closed. If the request ends by any road but `persist`
+/// (an error, a panic), the row is closed as Failed so none stays Running.
+struct Unfinished<'a> {
+    core: &'a AppCore,
+    actor: &'a Actor,
+    id: &'a str,
+    open: bool,
+}
+
+impl Unfinished<'_> {
+    fn close(&mut self) {
+        self.open = false;
+    }
+}
+
+impl Drop for Unfinished<'_> {
+    fn drop(&mut self) {
+        if !self.open {
+            return;
+        }
+        if let Ok(s) = self.core.project() {
+            let _ = s.store.mutate(self.actor, ai_meta("ai.ask"), |tx| {
+                records::finish_request(
+                    tx,
+                    self.id,
+                    &RequestOutcome {
+                        intent: None,
+                        class: None,
+                        targets: &[],
+                        authorization: "Allowed",
+                        status: "Failed",
+                        processing: "Not Sent",
+                    },
+                )
+            });
+        }
+    }
 }
 
 /// The outcome of a lane that wrote its own answer (Chat, Recipe).
@@ -986,6 +1183,7 @@ fn run_agent(
             }),
         });
     };
+    let stopped = || ids.running.stopped();
     // A short follow-up ("What about Scene 4?", "And Ravi?") is the previous question about a new
     // subject; "Just the number" is the previous answer's number (AI context brief, 91 to 94).
     let previous = history.last();
@@ -1013,10 +1211,26 @@ fn run_agent(
         });
         return Ok(out);
     }
+    if stopped() {
+        return Ok(Run::default().stopped());
+    }
+    let draft = match scope.draft.clone() {
+        Some(d) => Some(d),
+        None => session.store.read(queries::current_draft)?,
+    };
+    // The routing copy of the request: misspellings corrected against the route keywords and the
+    // project's own names. The routes, the picker, the lane rules and the intent step read this
+    // copy; the model reads, and the record keeps, the person's own words.
+    let names = draft
+        .as_ref()
+        .and_then(|d| session.store.read(|c| understand::name_words(c, d)).ok())
+        .unwrap_or_default();
+    let route = typo::correct(text, &names);
+    let routing: &str = &route;
     // Only the core tools plus the ones relevant to this request, within a prompt budget, so
     // the small local model's context stays short (the full permitted set is ~250 tools).
     let offered: Vec<ToolDef> =
-        toolbox::tools_for_request(core, actor, scope, text, TOOL_CATALOG_CHARS)
+        toolbox::tools_for_request(core, actor, scope, routing, TOOL_CATALOG_CHARS)
             .into_iter()
             .filter(|t| t.name != FINAL_TOOL)
             .collect();
@@ -1037,24 +1251,28 @@ fn run_agent(
     // A plain command ("Create a task to ...") is its tool call; the model is not asked.
     // Any tool this scope has (the picker may not have offered it); the call still runs as the
     // person, so one without the permission gets the usual clear refusal.
-    let mut direct =
-        super::commands::direct_route(text, scope.scene.as_ref().map(|s| s.number), |name| {
-            known.contains(name)
+    // A route found only in the corrected copy may read, never propose: a proposal is built from the
+    // person's words, which stay as they typed them.
+    let scene_now = scope.scene.as_ref().map(|s| s.number);
+    let mut direct = super::commands::direct_route(text, scene_now, |name| known.contains(name))
+        .or_else(|| {
+            (routing != text)
+                .then(|| {
+                    super::commands::direct_route(routing, scene_now, |name| known.contains(name))
+                })
+                .flatten()
+                .filter(|c| !c.tool.starts_with("propose_"))
         });
 
     // The lane router (harness plan 5.2): code decides who answers.
-    let draft = match scope.draft.clone() {
-        Some(d) => Some(d),
-        None => session.store.read(queries::current_draft)?,
-    };
     let chat_history = &history[history.len().saturating_sub(2)..];
     let mut understood: Option<(understand::Understood, Vec<understand::Entity>, Vec<String>)> =
         None;
     if let Some(d) = &draft {
         let found = session.store.read(|c| {
             let previous = previous_entities(c, d, scope, history);
-            let u = understand::understand(c, d, scope, text, &previous)?;
-            let unknown = chat::unknown_names(c, d, text, &u)?;
+            let u = understand::understand(c, d, scope, routing, &previous)?;
+            let unknown = chat::unknown_names(c, d, routing, &u)?;
             Ok((u, previous, unknown))
         });
         match found {
@@ -1066,7 +1284,7 @@ fn run_agent(
         !u.entities.is_empty() || !u.scenes.is_empty() || !u.acts.is_empty()
     });
     let mut decision = lanes::decide(&lanes::Inputs {
-        text,
+        text: routing,
         direct: direct.as_ref(),
         understood: understood.as_ref().map(|(u, _, _)| u),
         scene_scope: scope.scene.is_some(),
@@ -1081,6 +1299,40 @@ fn run_agent(
             .filter(|_| !resolved)
             .and_then(|(_, _, unknown)| unknown.first().map(String::as_str)),
     });
+    // Intent prototypes (plan 5.2 step 5): only where the rules were not sure. A hard rule, a plain
+    // command and a question about a missing name keep their route.
+    let mut first_tools: Option<Vec<ToolDef>> = None;
+    let undecided =
+        decision.lane == Lane::Agent || (decision.lane == Lane::Chat && decision.margin < 1.0);
+    if direct.is_none()
+        && undecided
+        && !stopped()
+        && let Some(embedder) = super::intelligence::service(core).embedder(core)
+        && let Some(m) = intent::classify_within(
+            embedder,
+            routing,
+            intent::Have::of(understood.as_ref().map(|(u, _, _)| u)),
+            intent::WAIT,
+        )
+    {
+        let tools: Vec<&ToolDef> = offered.iter().chain(universe.iter()).collect();
+        let applied = apply_intent(
+            &m,
+            understood.as_ref().map(|(u, _, _)| u),
+            routing,
+            &known,
+            &tools,
+            &mut decision,
+            &mut direct,
+        );
+        first_tools = applied.first_tools;
+        *ids.routed.borrow_mut() = Some(Routed {
+            name: m.intent().name.clone(),
+            score: m.score,
+            margin: m.margin,
+            used: applied.used,
+        });
+    }
     if let (Some(d), Some((u, previous, unknown))) = (&draft, &understood) {
         match decision.lane {
             Lane::Recipe => {
@@ -1091,7 +1343,7 @@ fn run_agent(
                     started,
                     cap: recipe::RECIPE_CAP,
                     progress: &progress,
-                    cancelled: &|| false,
+                    cancelled: &stopped,
                 };
                 return Ok(match recipe::run(core, &cx) {
                     Ok(a) => from_lane(a, decision),
@@ -1115,6 +1367,7 @@ fn run_agent(
                     started,
                     progress: &progress,
                     can_escalate: true,
+                    cancelled: &stopped,
                 };
                 match chat::answer(&cx, u, unknown) {
                     Ok(chat::Chat::Done(a)) => return Ok(from_lane(*a, decision)),
@@ -1137,6 +1390,13 @@ fn run_agent(
         }
     }
 
+    if stopped() {
+        return Ok(Run {
+            lane: Some(decision),
+            ..Run::default()
+        }
+        .stopped());
+    }
     // Retrieval never blocks the request: any failure leaves the explicit scope only.
     let retrieved = super::retrieval::retrieve(
         core,
@@ -1166,7 +1426,17 @@ fn run_agent(
         ..Run::default()
     };
     let mut seen_calls: BTreeSet<String> = BTreeSet::new();
+    // The first step of a request the intent step recognised offers only its tool.
+    let first = first_tools.as_ref().map(|only| {
+        (
+            build_messages(scope, &context, history, text, only),
+            step_schema(only),
+        )
+    });
     for index in 0..max_steps {
+        if stopped() {
+            return Ok(run.stopped());
+        }
         let step = index as u32 + 1;
         let call = match direct.take() {
             Some(c) => c,
@@ -1176,7 +1446,11 @@ fn run_agent(
                     max_steps as u32,
                     &format!("Step {step} of {max_steps}"),
                 );
-                match next_step(model, transcript.messages(), &schema, &known) {
+                let (messages, schema) = match (&first, index) {
+                    (Some((m, sch)), 0) => (m.clone(), sch),
+                    _ => (transcript.messages(), &schema),
+                };
+                match next_step(model, messages, schema, &known) {
                     Ok(c) => {
                         run.model_ran = true;
                         c
@@ -1790,6 +2064,8 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
         .conversation_id
         .filter(|c| valid_conversation_id(c))
         .unwrap_or_else(new_id);
+    // From here until the answer is stored, `ai.cancel` can reach this request.
+    let running = cancel::begin(&actor.user_id, &conversation);
     let started = std::time::Instant::now();
     let request_id = new_id();
     let model_ref = model.model_reference();
@@ -1810,6 +2086,12 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
             },
         )
     })?;
+    let mut unfinished = Unfinished {
+        core,
+        actor,
+        id: &request_id,
+        open: true,
+    };
 
     // Bounded recent history (agentic spec §30): as data, never as permission.
     let history: Vec<(String, String)> = s.store.read(|c| {
@@ -1838,6 +2120,8 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
     let ids = Ids {
         conversation: &conversation,
         request: &request_id,
+        running: &running,
+        routed: std::cell::RefCell::new(None),
     };
     let mut outcome = match run_agent(
         core, actor, &scope, &*model, &text, &history, max_steps, &ids, started,
@@ -1879,10 +2163,15 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
     }
     // The runtime verifier (ADR-0028 decisions 5 and 6): deterministic checks, at most three
     // passes, an answer that passes on the first is shown at once. Chat and Recipe ran the whole
-    // set (language included) while they wrote; the other lanes check the language here.
+    // set (language included) while they wrote; the other lanes check the language here. A request
+    // the person stopped is not checked further.
+    let stopped = is_stopped(&outcome.output);
     let (passes, checks_failed) = match outcome.verified.take() {
         Some(done) => done,
-        None => verify_language(&*model, &text, &mut outcome.output, started),
+        None if stopped => (1, Vec::new()),
+        None => verify_language(&*model, &text, &mut outcome.output, started, &|| {
+            running.stopped()
+        }),
     };
     let trace_row = (
         outcome
@@ -1896,7 +2185,9 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
         outcome.proposal.is_some(),
     );
     persist(core, actor, &request_id, outcome)?;
+    unfinished.close();
     let (tools_chosen, sources, result_kind, error_code, proposed) = trace_row;
+    let routed = ids.routed.take();
     trace::record(
         core,
         &trace::TraceRow {
@@ -1919,6 +2210,11 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
             lane: decision.lane.code(),
             runner_up_lane: decision.runner_up.code(),
             lane_margin: decision.margin,
+            intent: routed.as_ref().map_or("", |r| r.name.as_str()),
+            intent_score: routed.as_ref().map_or(0.0, |r| f64::from(r.score)),
+            intent_margin: routed.as_ref().map_or(0.0, |r| f64::from(r.margin)),
+            intent_used: routed.as_ref().is_some_and(|r| r.used),
+            cancelled: stopped,
         },
     );
     s.store
@@ -1978,6 +2274,7 @@ fn verify_language(
     request: &str,
     out: &mut ToolOutput,
     started: std::time::Instant,
+    stopped: &dyn Fn() -> bool,
 ) -> (u32, Vec<String>) {
     let content = out.content.trim().to_string();
     let Some(want) = openframe_ai_checks::detect_language(request).filter(|l| *l != "en") else {
@@ -1990,7 +2287,7 @@ fn verify_language(
         return (1, Vec::new());
     }
     let mut passes = 1;
-    while passes < MAX_PASSES && started.elapsed() < VERIFY_BUDGET {
+    while passes < MAX_PASSES && started.elapsed() < VERIFY_BUDGET && !stopped() {
         passes += 1;
         let system = format!(
             "Rewrite the text in {name}. Keep every name and every number exactly as written, with the numbers in digits. Reply with the rewritten text only."
@@ -2017,6 +2314,8 @@ fn persist(core: &AppCore, actor: &Actor, request_id: &str, o: Outcome) -> AppRe
     let result_id = new_id();
     let request_status = if o.status == AiResultStatus::Failed {
         "Failed"
+    } else if is_stopped(&o.output) {
+        "Canceled"
     } else {
         "Completed"
     };
@@ -2545,5 +2844,73 @@ mod tests {
         assert_eq!(task_of(&o).as_deref(), Some("01J0TASK"));
         o.structured = Some(json!({"taskId": "x".repeat(200)}));
         assert_eq!(task_of(&o), None, "implausible task ids are ignored");
+    }
+
+    fn nothing_found() -> understand::Understood {
+        understand::Understood {
+            entities: Vec::new(),
+            scenes: Vec::new(),
+            missing_scenes: Vec::new(),
+            acts: Vec::new(),
+            depth: understand::Depth::Explain,
+            intent: understand::Intent::Other,
+            fuzzy: Vec::new(),
+            pronoun_unresolved: false,
+            whole_range: false,
+        }
+    }
+
+    fn scored(name: &str) -> intent::Scored {
+        let index = intent::intents()
+            .iter()
+            .position(|i| i.name == name)
+            .expect("intent exists");
+        intent::Scored {
+            index,
+            score: 0.95,
+            margin: 0.1,
+        }
+    }
+
+    #[test]
+    fn an_intent_settles_what_the_rules_left_open_but_never_overrides_a_hard_rule() {
+        let u = nothing_found();
+        let known: BTreeSet<String> = BTreeSet::new();
+        let open = Decision {
+            lane: Lane::Agent,
+            runner_up: Lane::Chat,
+            margin: 0.5,
+        };
+        let hard = Decision {
+            margin: 1.0,
+            ..open
+        };
+        for (name, lane) in [("ideas", Lane::Chat), ("whole_screenplay", Lane::Recipe)] {
+            let mut d = open;
+            let mut direct = None;
+            let applied = apply_intent(
+                &scored(name),
+                Some(&u),
+                "x",
+                &known,
+                &[],
+                &mut d,
+                &mut direct,
+            );
+            assert!(applied.used, "{name}");
+            assert_eq!(d.lane, lane, "{name}");
+            let mut d = hard;
+            let applied = apply_intent(
+                &scored(name),
+                Some(&u),
+                "x",
+                &known,
+                &[],
+                &mut d,
+                &mut direct,
+            );
+            assert!(!applied.used, "{name}: a hard rule keeps its lane");
+            assert_eq!(d.lane, Lane::Agent);
+        }
     }
 }

@@ -406,6 +406,7 @@ pub(crate) struct Checked {
 /// Write the answer and check it, up to three passes inside the verifier budget (measured from
 /// `started`). A failure of the first model call is the caller's to report; a failure of a later
 /// call ends the passes and the best attempt so far is used.
+#[cfg(test)]
 pub(crate) fn generate_checked(
     model: &dyn InferenceProvider,
     base: &[ChatMessage],
@@ -413,6 +414,19 @@ pub(crate) fn generate_checked(
     f: &Facts,
     started: Instant,
     notify: &dyn Fn(Phase),
+) -> AppResult<Checked> {
+    generate_checked_until(model, base, sampling, f, started, notify, &|| false)
+}
+
+/// Like [`generate_checked`], and the passes end early when `stopped` says the person pressed Stop.
+pub(crate) fn generate_checked_until(
+    model: &dyn InferenceProvider,
+    base: &[ChatMessage],
+    sampling: &Sampling,
+    f: &Facts,
+    started: Instant,
+    notify: &dyn Fn(Phase),
+    stopped: &dyn Fn() -> bool,
 ) -> AppResult<Checked> {
     let mut attempts: Vec<(String, Vec<Offence>)> = Vec::new();
     let mut failed: Vec<String> = Vec::new();
@@ -453,7 +467,7 @@ pub(crate) fn generate_checked(
         )));
         messages.push(ChatMessage::user(feedback(&offences, f)));
         attempts.push((text, offences));
-        if passes >= MAX_PASSES || started.elapsed() >= VERIFY_BUDGET {
+        if passes >= MAX_PASSES || started.elapsed() >= VERIFY_BUDGET || stopped() {
             break;
         }
     }

@@ -16,6 +16,10 @@
 //!    critique. Also a question about a scene the draft does not have or a name the project does not
 //!    know, because Chat answers those without a model call.
 //! 6. Agent: lists, counts, finds, status, product questions and anything unclear.
+//!
+//! The text read here is the routing copy of the request, with misspellings corrected (`typo`). Where
+//! these rules were not sure (the Agent lane, or Chat on a weak rule) the orchestrator lets intent
+//! prototypes (`intent`) decide between Chat, Recipe and one tool before the lane runs.
 
 use std::sync::LazyLock;
 
@@ -116,6 +120,36 @@ static PRODUCTION: LazyLock<Regex> = LazyLock::new(|| {
     )
 });
 
+/// A request to find something: "Find every scene that mentions the battery", "Locate the scenes
+/// containing the kite". It is a search however wide its words sound ("every scene").
+static FIND_REQUEST: LazyLock<Regex> = LazyLock::new(|| {
+    re(
+        r#"(?i)^\s*(?:please\s+)?(?:(?:can|could|would)\s+you\s+)?(?:find|locate|search|look\s+for)\b|\bscenes?\s+(?:(?:that|which|where)\s+)?(?:mentions?|mentioning|contains?|containing|references?)\b"#,
+    )
+});
+
+/// "Suggest breakdown elements for scene 22": a request for the production tools, not for story ideas.
+static SUGGEST_PRODUCTION: LazyLock<Regex> = LazyLock::new(|| {
+    re(
+        r#"(?i)\bsuggest\b.*\b(?:breakdown|elements?|props?|wardrobe|costumes?|vehicles?|shots?|shot\s+list|schedule|cast|crew|equipment)\b"#,
+    )
+});
+
+/// The person asked to understand or explain, not only to find.
+fn asks_to_explain(text: &str) -> bool {
+    let l = text.to_lowercase();
+    [
+        "explain",
+        "walk me through",
+        "analy",
+        "summari",
+        "describe",
+        "why ",
+    ]
+    .iter()
+    .any(|w| l.contains(w))
+}
+
 /// The direct routes that only write a short description from the story.
 fn writes_a_description(call: &StepCall) -> bool {
     call.tool == "character_profile"
@@ -155,9 +189,17 @@ pub(crate) fn decide(i: &Inputs) -> Decision {
     if is_action(i.text) {
         return Decision::new(Lane::Action, Lane::Agent, 1.0);
     }
+    // A search stays a search (the S5 router sent "Find every scene that mentions the battery" to
+    // Chat because "every scene" reads as a whole-story question).
+    if FIND_REQUEST.is_match(i.text) && !asks_to_explain(i.text) {
+        return Decision::new(Lane::Agent, Lane::Chat, 1.0);
+    }
     let Some(u) = i.understood else {
         return Decision::new(Lane::Agent, Lane::Chat, 0.5);
     };
+    if u.intent == Intent::Ideas && SUGGEST_PRODUCTION.is_match(i.text) {
+        return Decision::new(Lane::Agent, Lane::Chat, 1.0);
+    }
     let explains = matches!(u.intent, Intent::Explain | Intent::Whole | Intent::Theme);
     if u.whole_range && explains {
         return Decision::new(Lane::Recipe, Lane::Chat, 1.0);

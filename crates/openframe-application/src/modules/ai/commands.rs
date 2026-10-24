@@ -646,6 +646,14 @@ static MENTIONS: LazyLock<Regex> = LazyLock::new(|| {
     )
 });
 
+/// "Find every scene that mentions the battery." (the open gold tool set): the same read as MENTIONS,
+/// asked as a command. Wide words such as "every scene" do not make it a question about the story.
+static FIND_MENTIONS: LazyLock<Regex> = LazyLock::new(|| {
+    re(
+        r#"(?i)^\s*(?:please\s+)?(?:find|show|list|get)(?:\s+me)?\s+(?:every|all(?:\s+the)?|the)\s+scenes?\s+(?:that|which|where)\s+(?:mentions?|mentioning|includes?|features?|refers?\s+to|contains?)\s+(?:the\s+)?(?P<x>[^?.!]{1,120}?)\s*[?.!]*\s*$"#,
+    )
+});
+
 /// Plain questions that one read tool answers as a whole.
 /// "Which scene comes first?", "What is the opening scene?" (AI context brief question 9).
 static FIRST_SCENE: LazyLock<Regex> = LazyLock::new(|| {
@@ -671,6 +679,8 @@ static PLAIN_READS: LazyLock<Vec<(Regex, &'static str)>> = LazyLock::new(|| {
         (r#"(?i)^\s*how\s+many\s+(?:acts|scene\s+cards|acts\s+and\s+scene\s+cards)\s+are\s+(?:there\s+)?on\s+the\s+(?:story|beat)\s?board\s*[?.]*\s*$"#, "story_statistics"),
         (r#"(?i)^\s*what(?:'s|\s+is)\s+on\s+(?:the|my)\s+(?:story|beat)\s?board\s*[?.]*\s*$"#, "story_statistics"),
         (r#"(?i)^\s*how\s+far\s+along\s+is\s+the\s+breakdown\s*[?.]*\s*$"#, "breakdown_status"),
+        // "Give me an overview of the project." is the project facts, not a place to open.
+        (r#"(?i)^\s*(?:(?:give|show|get)(?:\s+me)?\s+(?:an?\s+)?(?:quick\s+)?(?:overview|summary)\s+of\s+(?:the|this|my)\s+project|(?:what(?:'s|\s+is)\s+)?(?:the\s+)?project\s+overview|how\s+is\s+(?:the|this|my)\s+project\s+doing)\s*[?.!]*\s*$"#, "project_overview"),
         // Plain wording of the same questions (AI context brief, questions 3, 4 and 31).
         (r#"(?i)^\s*how\s+many\s+(?:acts|sequences|beats|scene\s+cards)(?:\s+are\s+there|\s+do\s+(?:we|i)\s+have)?(?:\s+in\s+(?:the|this|my)\s+(?:story|project))?\s*[?.]*\s*$"#, "story_statistics"),
         (r#"(?i)^\s*how\s+many\s+drafts(?:\s+are\s+there|\s+do\s+(?:we|i)\s+have|\s+does\s+(?:the|this|my)\s+(?:screenplay|script)\s+have)?\s*[?.]*\s*$"#, "list_drafts"),
@@ -795,6 +805,13 @@ static TIME_NOTE: LazyLock<Regex> = LazyLock::new(|| {
     )
 });
 
+/// "Suggest breakdown elements for scene 22." (the open gold tool set) asks for the same tool.
+static SUGGEST_BREAKDOWN: LazyLock<Regex> = LazyLock::new(|| {
+    re(
+        r#"(?i)^\s*(?:please\s+)?suggest\s+(?:the\s+|some\s+)?(?:breakdown\s+elements|elements|props|breakdown)\s+for\s+scene\s+(?P<n>\d{1,5})\s*[.!?]*\s*$"#,
+    )
+});
+
 static PROPS_FOR: LazyLock<Regex> = LazyLock::new(|| {
     re(
         r#"(?i)^\s*what\s+(?:props|elements|breakdown\s+elements)\s+(?:might|does|would|will)\s+scene\s+(?P<n>\d{1,5})\s+need\s*\?*\s*$"#,
@@ -862,7 +879,7 @@ fn project_status(phrase: &str) -> Option<&'static str> {
 /// Round 2 (W6): the shapes the first harness rerun still found going to a general search.
 fn recipe_more(text: &str) -> Option<StepCall> {
     let cap = |r: &Regex| r.captures(text);
-    if let Some(c) = cap(&MENTIONS) {
+    if let Some(c) = cap(&MENTIONS).or_else(|| cap(&FIND_MENTIONS)) {
         let x = unquote(c.name("x")?.as_str());
         return (!x.is_empty()).then(|| call("find_scenes_mentioning", json!({ "text": x })));
     }
@@ -878,7 +895,7 @@ fn recipe_more(text: &str) -> Option<StepCall> {
             json!({ "question": text.trim() }),
         ));
     }
-    if let Some(c) = cap(&PROPS_FOR) {
+    if let Some(c) = cap(&PROPS_FOR).or_else(|| cap(&SUGGEST_BREAKDOWN)) {
         let n: u32 = c.name("n")?.as_str().parse().ok().filter(|n| *n >= 1)?;
         return Some(call("suggest_breakdown", json!({ "sceneNumber": n })));
     }

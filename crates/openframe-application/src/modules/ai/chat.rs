@@ -63,6 +63,8 @@ pub(super) struct Cx<'a> {
     pub progress: &'a dyn Fn(u32, u32, &str),
     /// The Agent lane may take over once when the evidence is empty.
     pub can_escalate: bool,
+    /// True when the person pressed Stop.
+    pub cancelled: &'a dyn Fn() -> bool,
 }
 
 pub(super) enum Chat {
@@ -908,6 +910,17 @@ fn done(a: LaneAnswer) -> Chat {
     Chat::Done(Box::new(a))
 }
 
+/// The answer to a request the person stopped before it was written.
+fn stopped_answer() -> LaneAnswer {
+    LaneAnswer {
+        output: super::orchestrator::stopped_output(),
+        status: AiResultStatus::Informational,
+        model_ran: false,
+        passes: 1,
+        failed: Vec::new(),
+    }
+}
+
 fn plain_answer(text: String, confidence: Option<Confidence>) -> LaneAnswer {
     let mut output = ToolOutput::of_kind(AiResultKind::Answer, text);
     output.confidence = confidence;
@@ -1017,6 +1030,9 @@ pub(super) fn answer(cx: &Cx, u: &Understood, unknown: &[String]) -> AppResult<C
         }
     }
 
+    if (cx.cancelled)() {
+        return Ok(done(stopped_answer()));
+    }
     let scope_scene = cx.scope.scene.as_ref().map(|r| r.number);
     (cx.progress)(1, 3, &reading_label(u, scope_scene));
     let total = evidence_chars(prompt_speed(cx.core));
@@ -1100,6 +1116,9 @@ pub(super) fn answer(cx: &Cx, u: &Understood, unknown: &[String]) -> AppResult<C
         limits,
         style,
     };
+    if (cx.cancelled)() {
+        return Ok(done(stopped_answer()));
+    }
     (cx.progress)(2, 3, "Writing the answer");
     let notify = |p: Phase| match p {
         Phase::Checking => (cx.progress)(3, 3, "Checking the answer"),
@@ -1110,7 +1129,18 @@ pub(super) fn answer(cx: &Cx, u: &Understood, unknown: &[String]) -> AppResult<C
         passes,
         failed,
         clean,
-    } = verify::generate_checked(cx.model, &base, &sampling, &facts, cx.started, &notify)?;
+    } = verify::generate_checked_until(
+        cx.model,
+        &base,
+        &sampling,
+        &facts,
+        cx.started,
+        &notify,
+        cx.cancelled,
+    )?;
+    if (cx.cancelled)() {
+        return Ok(done(stopped_answer()));
+    }
 
     let mut out = ToolOutput::of_kind(AiResultKind::Answer, text);
     out.confidence = Some(Confidence::Inferred);
