@@ -285,48 +285,31 @@ pub(crate) fn feedback(offences: &[Offence], f: &Facts) -> String {
 
 /// An answer this short, after the markup of the notes was washed out of it, only echoed labels.
 const ECHO_MIN_WORDS: usize = 25;
-/// Words in one shingle: eight words in a row, the same, are a copy and not a coincidence.
-const SHINGLE: usize = 8;
 
-fn shingles(words: &[String]) -> impl Iterator<Item = String> + '_ {
-    words.windows(SHINGLE).map(|w| w.join(" "))
+/// The check `evidence_echo` (section 5.9): it fails only when the wash removed note markup or
+/// labels from this very answer and under 25 words of prose are left. Restating the script's own
+/// lines is not an offence: the scene evidence holds those lines, so a correct explanation repeats
+/// them, and cutting such sentences left real answers a fraction of their length. The offence has
+/// a word count and no sentences, so the last pass never drops sentences for it.
+pub(crate) fn evidence_echo(answer: &str, washed: bool) -> Option<Offence> {
+    (washed && words(answer) < ECHO_MIN_WORDS).then(|| Offence {
+        check: Check::EvidenceEcho,
+        items: vec![format!("{} words", words(answer))],
+    })
 }
 
-/// The check `evidence_echo` (section 5.9): the answer is the notes, not the model's words. It
-/// fails when the wash removed markup from this very answer and under 25 words of prose are left,
-/// or when more than 40 percent of the sentences are near copies of a line of the notes (half of
-/// a sentence's eight-word shingles are the notes' shingles). The offenders are the copied
-/// sentences, so the last pass can drop them.
-pub(crate) fn evidence_echo(answer: &str, f: &Facts, washed: bool) -> Option<Offence> {
-    let known: BTreeSet<String> = f
-        .evidence
-        .iter()
-        .flat_map(|e| shingles(&plain_words(e)).collect::<Vec<_>>())
-        .collect();
-    let mut seen = 0usize;
-    let mut copies: Vec<String> = Vec::new();
-    for (unit, _) in units(answer) {
-        let w = plain_words(&unit);
-        if w.len() < 3 {
-            continue;
-        }
-        seen += 1;
-        let total = w.len().saturating_sub(SHINGLE - 1);
-        let hits = shingles(&w).filter(|s| known.contains(s)).count();
-        if total > 0 && hits * 2 >= total {
-            copies.push(unit);
-        }
+/// The answer is the request handed back: the same words, or one question that repeats most of
+/// them. It says nothing, so it counts as an empty answer.
+fn echoes_request(answer: &str, request: &str) -> bool {
+    let (a, r) = (plain_words(answer), plain_words(request));
+    if a.is_empty() || r.is_empty() {
+        return false;
     }
-    if washed && words(answer) < ECHO_MIN_WORDS {
-        return Some(Offence {
-            check: Check::EvidenceEcho,
-            items: vec![format!("{} words", words(answer))],
-        });
+    if a == r {
+        return true;
     }
-    (copies.len() * 100 > seen * 40).then_some(Offence {
-        check: Check::EvidenceEcho,
-        items: copies,
-    })
+    let hits = r.iter().filter(|w| a.contains(w)).count();
+    answer.trim_end().ends_with('?') && units(answer).len() == 1 && hits * 2 > r.len()
 }
 
 // ------------------------------------------------------------------ fitting
@@ -582,7 +565,6 @@ fn mentions(unit: &str, o: &Offence) -> bool {
             unit.split(|c: char| !c.is_ascii_digit())
                 .any(|d| d == n.as_str())
         }),
-        Check::EvidenceEcho => o.items.iter().any(|i| i == unit),
         Check::RelationshipWords => o.items.iter().any(|w| {
             lower
                 .split(|c: char| !c.is_alphabetic())
@@ -702,8 +684,13 @@ pub(crate) fn generate_checked_until(
         let was_washed = super::sanitize::copies_markup(&raw, &unwashed);
         let plain = without_preamble(&washed, &f.request);
         let text = fit(drop_unfinished(plain), &f.limits);
+        let text = if echoes_request(&text, &f.request) {
+            String::new()
+        } else {
+            text
+        };
         let mut offences = check(&text, f);
-        if let Some(echo) = evidence_echo(&text, f, was_washed) {
+        if let Some(echo) = evidence_echo(&text, was_washed) {
             // An answer that was only labels is an echo, not an empty answer.
             offences.retain(|o| o.check != Check::Empty);
             offences.push(echo);

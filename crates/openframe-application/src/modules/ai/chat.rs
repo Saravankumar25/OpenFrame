@@ -1248,6 +1248,29 @@ pub(super) fn answer(cx: &Cx, u: &Understood, unknown: &[String]) -> AppResult<C
         ev = gather(cx, u, total * 3 / 2, true)?;
         enough = sufficient(u, &ev, &map, cx.text);
     }
+    // "What are the themes of this story?" names nothing to look up: the project map and the scene
+    // one-liners are the evidence, as in the recipe, and the question is not abstained.
+    let wide_theme = !target
+        && u.intent == Intent::Theme
+        && matches!(
+            cx.scope.kind,
+            super::scope::AiScopeKind::WholeProject
+                | super::scope::AiScopeKind::CurrentScreenplay
+                | super::scope::AiScopeKind::SpecificDraft
+        );
+    if wide_theme {
+        let liners = s
+            .store
+            .read(|c| briefing::digests(c, cx.draft))?
+            .iter()
+            .map(briefing::SceneDigest::one_liner)
+            .collect::<Vec<_>>()
+            .join("\n");
+        if let Some(item) = piece("Scene list", queries::truncate_chars(&liners, total)) {
+            ev.items.insert(0, item);
+            enough = true;
+        }
+    }
     if !target {
         if ev.items.is_empty() {
             if cx.can_escalate {

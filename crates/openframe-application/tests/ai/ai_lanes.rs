@@ -411,3 +411,19 @@ fn chat_with_nothing_to_read_and_nothing_named_hands_over_to_the_agent_once() {
         assert_eq!(r["lane"], "chat");
     }
 }
+
+#[test]
+fn a_theme_question_over_the_whole_project_reads_the_scene_list_instead_of_giving_up() {
+    let (env, m) = project();
+    m.reply("The story is about small kindnesses and the things people leave behind, like the red kite (Scene 4).");
+    let x = ask(&env, "What are the themes of this story?");
+    let r = &x["result"];
+    assert_eq!(r["lane"], "chat");
+    assert_eq!(m.calls(), 1, "the model reads the scene list and answers");
+    assert!(
+        m.request(0).messages[1].content.contains("Scene list"),
+        "{}",
+        m.request(0).messages[1].content
+    );
+    assert!(!r["content"].as_str().unwrap().contains("couldn't find"));
+}
