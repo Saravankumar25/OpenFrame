@@ -114,3 +114,6 @@
    column scroll, which left the outline list with no scroll owner at all. The outline area scrolls down by itself. */
 .story-canvas.story-canvas-outline { overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; padding: 4px 2px 12px; }
 .story-canvas.story-canvas-outline:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.rel-node-link { cursor: pointer; }
+.rel-node-link:focus { outline: none; }
+.rel-node-link:focus-visible rect, .rel-node-link:hover rect { stroke-width: 3; }
