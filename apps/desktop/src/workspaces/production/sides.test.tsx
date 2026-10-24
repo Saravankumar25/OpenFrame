@@ -14,7 +14,7 @@ const arjun = { key: "char:arjun", character: "ARJUN", actor: "Ravi", initials: 
 const meera = { key: "char:meera", character: "MEERA", actor: "Anu", initials: "M" };
 const strip = (id: string, number: number, heading: string, cast: unknown[]) => ({ id, sceneId: "sc" + id, number, heading, cast, locations: [] });
 const strips = [strip("s1", 1, "INT. KITCHEN - DAY", [arjun, meera]), strip("s2", 2, "EXT. ROAD - NIGHT", [meera]), strip("s3", 3, "INT. HALL - DAY", [arjun])];
-const day = {
+const day: { id: string; title: string; isOffDay: boolean; items: unknown[]; summary: { cast: unknown[]; locations: unknown[] } } = {
   id: "d1", title: "Shoot Day 1", isOffDay: false,
   items: strips.map((s) => ({ kind: "strip", strip: s, marker: null })),
   summary: { cast: [arjun, meera], locations: [] },
