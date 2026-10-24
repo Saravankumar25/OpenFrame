@@ -667,17 +667,16 @@ fn storyboard_sheet_has_panels_shot_numbers_framing_and_optional_notes() {
         json!({ "storyboardIds": [bid], "format": "pdf", "path": pdf }),
     );
     assert_eq!(r["contentsLabel"], "2 panels");
-    assert!(pdf_page_width(&pdf) > 700.0, "landscape sheet");
+    assert!(pdf_page_width(&pdf) < 700.0, "portrait sheet");
     assert_eq!(pdf_images(&pdf), 1);
     let text = pdf_text(&pdf);
     for want in [
-        "STORYBOARD INT. POLICE STATION - NIGHT",
+        "PRE-PRODUCTION · STORYBOARD",
         "Scene 1: INT. POLICE STATION - NIGHT",
-        "Panel 1 · Shot 1A",
+        "Panel · Shot 1A",
         "Blank panel",
         "Wide — Arjun enters",
-        "Panel 2",
-        "Medium · Static · Low",
+        "Medium Static Low",
         "Sound: Phone rings",
         "Duration: 3.5s",
     ] {
@@ -732,7 +731,7 @@ fn shot_list_exports_by_scene_selection_or_whole_project() {
     let text = pdf_text(&pdf);
     for want in [
         "Shot List",
-        "Scene 1: INT. POLICE STATION - NIGHT",
+        "SCENE 1 INT. POLICE STATION - NIGHT",
         "1A",
         "1B",
         "2A",

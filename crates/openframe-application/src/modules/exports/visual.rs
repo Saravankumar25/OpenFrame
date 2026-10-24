@@ -5,9 +5,10 @@
 
 use openframe_domain::{Actor, AppError, AppResult};
 use openframe_import_export::report::{
-    Align, Banner, Block, Callout, CalloutCol, Card, CardHead, CardPart, Cards, Cell, CellItem,
-    Chip, Col, Column, Document, HeaderStyle, Masthead, ReportImage, Row, Section, Side,
-    StyledTable, Table, Tone, Txt, pal,
+    Align, BRAND_LINE, Block, Callout, CalloutCol, Card, CardHead, CardPart, Cards, Cell, CellItem,
+    Chip, Col, Column, CompactHeader, Document, HeaderStyle, Masthead, Panel, ReportImage, Rgb,
+    Rich, Row, Run, SceneBanner, Section, Side, StyledTable, Table, TableBand, Tone, Txt, pal,
+    text_width,
 };
 use serde::Deserialize;
 use ts_rs::TS;
@@ -302,10 +303,21 @@ pub struct ExportStoryboardSheetArgs {
     #[serde(default)]
     #[ts(optional)]
     pub include_notes: Option<bool>,
-    /// Panels per row (2 to 4, default 3).
+    /// Panels per row: 2 (default) or 3 in the dialog; 4 is still accepted from older callers.
     #[serde(default)]
     #[ts(optional)]
     pub columns: Option<u8>,
+}
+
+const MUTED: Rgb = Rgb::hex(0x66728a);
+
+/// Page furniture only: a long name is shortened with an ellipsis, never wrapped.
+fn shortened(s: &str, max: usize) -> String {
+    if s.chars().count() <= max {
+        return s.to_string();
+    }
+    let cut: String = s.chars().take(max - 1).collect();
+    format!("{}…", cut.trim_end())
 }
 
 fn duration_label(ms: i64) -> String {
@@ -325,7 +337,7 @@ pub(super) fn export_storyboards(
     require_export(actor)?;
     let fmt = Fmt::parse(&a.format, &[Fmt::Pdf])?;
     let notes = a.include_notes.unwrap_or(false);
-    let columns = a.columns.unwrap_or(3).clamp(2, 4) as usize;
+    let columns = a.columns.unwrap_or(2).clamp(2, 4) as usize;
     if a.storyboard_ids.as_ref().is_some_and(|v| v.is_empty()) {
         return Err(AppError::validation(
             "storyboardIds",
@@ -356,9 +368,7 @@ pub(super) fn export_storyboards(
     } else {
         "Storyboards".to_string()
     };
-    let mut doc = Document::new(&document)
-        .landscape(true)
-        .footer(footer(&project, &document));
+    let mut doc = Document::new(&document);
     let mut pics = Pics::default();
     let mut panels = 0;
     let scene_line = |b: &crate::modules::visual::storyboard::StoryboardDto| -> String {
@@ -369,62 +379,58 @@ pub(super) fn export_storyboards(
         }
     };
     let total_panels: usize = boards.iter().map(|b| b.panels.len()).sum();
-    let mut mast = Masthead::new(if boards.len() == 1 {
-        boards[0].board.name.clone()
-    } else {
-        "Storyboards".to_string()
-    })
-    .eyebrow("Pre-production · Storyboard", pal::ORANGE);
-    if let Some(p) = nb(&project) {
-        mast.subtitle = Some(p.to_string());
-    }
-    if boards.len() == 1 {
-        mast.lines.push(scene_line(&boards[0]));
-    }
-    mast.side = Some(Side::Panel {
-        lines: vec![
-            (plural(total_panels, "panel", "panels"), true),
-            (format!("Exported {}", super::today_label()), false),
-        ],
-    });
-    mast.rule = true;
-    doc.push(Block::Masthead(mast));
+    doc.push(Block::CompactHeader(CompactHeader {
+        eyebrow: "Pre-production · Storyboard".into(),
+        title: if boards.len() == 1 {
+            boards[0].board.name.clone()
+        } else {
+            "Storyboards".to_string()
+        },
+        project: nb(&project).map(str::to_string),
+        scene_line: (boards.len() == 1).then(|| scene_line(&boards[0])),
+        strong: plural(total_panels, "panel", "panels"),
+        quiet: format!("· Exported {}", super::today_label()),
+    }));
     for (i, b) in boards.iter().enumerate() {
         if i > 0 {
             doc.push(Block::PageBreak);
         }
-        let mut facts = vec![plural(b.panels.len(), "panel", "panels")];
-        if b.board.scene_removed {
-            facts.push("Scene removed from the script (kept for reference)".into());
-        } else if b.board.needs_review {
-            facts.push("Scene changed since planning".into());
-        }
+        // Every page of a storyboard names it, so a loose page is never anonymous.
+        let mut head: Vec<String> = nb(&project).map(str::to_uppercase).into_iter().collect();
         if boards.len() > 1 {
-            let mut banner = Banner::new(b.board.name.clone());
-            banner.eyebrow = Some("Storyboard".into());
-            banner.right = Some(plural(b.panels.len(), "panel", "panels"));
-            banner.sub_left = vec![(scene_line(b), true)];
-            if facts.len() > 1 {
-                banner.sub_right = vec![(facts[1..].join(" · "), false)];
-            }
-            banner.keep_next = 150.0;
-            doc.push(Block::Banner(banner));
+            head.push("STORYBOARDS".into());
+            head.push(shortened(&b.board.name.to_uppercase(), 44));
         } else {
-            if facts.len() > 1 {
-                doc.push(Block::Text(
-                    Txt::new(facts[1..].join(" · "))
-                        .size(8.8)
-                        .color(pal::SLATE)
-                        .after(8.0),
-                ));
-            }
+            head.push("STORYBOARD".into());
+        }
+        doc.push(Block::PageHeader(head.join(" · ")));
+        // The banner stays with the first row; every storyboard starts on a page of its own.
+        let status = if b.board.scene_removed {
+            Some((
+                "Scene removed from the script (kept for reference)",
+                Tone::Danger,
+            ))
+        } else if b.board.needs_review {
+            Some(("Scene changed since planning", Tone::Warn))
+        } else {
+            None
+        };
+        if boards.len() > 1 {
+            doc.push(Block::SceneBanner(SceneBanner {
+                eyebrow: "Storyboard".into(),
+                title: b.board.name.clone(),
+                scene_line: scene_line(b),
+                count: plural(b.panels.len(), "panel", "panels"),
+                status: status.map(|(t, tone)| (t.to_string(), tone)),
+            }));
+        } else if let Some((text, _)) = status {
+            doc.push(Block::Text(
+                Txt::new(text).size(8.8).color(pal::SLATE).after(8.0),
+            ));
         }
         if b.panels.is_empty() {
             doc.push(Block::Text(
-                Txt::new("No panels yet.")
-                    .size(8.8)
-                    .color(pal::FAINT)
-                    .after(6.0),
+                Txt::new("No panels yet.").size(8.8).color(MUTED).after(6.0),
             ));
             continue;
         }
@@ -440,77 +446,35 @@ pub(super) fn export_storyboards(
                         None => (None, Some("Image unavailable".to_string())),
                     },
                 };
-                let mut title = format!("Panel {}", p.number);
-                if let Some(l) = &p.shot_label {
-                    title.push_str(&format!(" · Shot {l}"));
-                }
-                let mut head = CardHead::new(title);
-                head.fill = pal::WHITE;
-                let mut card = Card {
-                    head: Some(head),
-                    ..Card::new()
-                };
-                card.parts.push(CardPart::Image {
-                    img,
-                    placeholder,
-                    ratio: 9.0 / 16.0,
-                });
-                let mut lines: Vec<Txt> = Vec::new();
-                let framing: Vec<String> = [&p.framing, &p.movement, &p.angle]
+                let mut panel = Panel::new(p.number.to_string());
+                panel.shot = p.shot_label.as_ref().map(|l| format!("Shot {l}"));
+                panel.img = img;
+                panel.placeholder = placeholder;
+                panel.chips = [&p.framing, &p.movement, &p.angle]
                     .into_iter()
                     .filter_map(|x| nonblank(x.as_deref()))
                     .collect();
-                if !framing.is_empty() {
-                    lines.push(
-                        Txt::new(framing.join(" · "))
-                            .size(8.0)
-                            .bold()
-                            .color(pal::SLATE)
-                            .align(Align::Center)
-                            .after(3.0),
-                    );
-                }
-                if let Some(d) = nonblank(Some(&p.description)) {
-                    lines.push(
-                        Txt::new(d)
-                            .size(8.8)
-                            .color(pal::INK)
-                            .align(Align::Center)
-                            .leading(1.3)
-                            .after(2.0),
-                    );
-                }
+                panel.action = nonblank(Some(&p.description));
                 if let Some(s) = nonblank(p.sound_note.as_deref()) {
-                    lines.push(
-                        Txt::new(format!("Sound: {s}"))
-                            .size(8.0)
-                            .color(pal::SLATE)
-                            .align(Align::Center),
-                    );
+                    panel.lines.push(("Sound:".into(), s));
                 }
                 if let Some(ms) = p.duration_ms.filter(|m| *m > 0) {
-                    lines.push(
-                        Txt::new(format!("Duration: {}", duration_label(ms)))
-                            .size(8.0)
-                            .color(pal::SLATE)
-                            .align(Align::Center),
-                    );
+                    panel.lines.push(("Duration:".into(), duration_label(ms)));
                 }
                 if notes && let Some(n) = nonblank(p.note.as_deref()) {
-                    lines.push(
-                        Txt::new(format!("Note: {n}"))
-                            .size(8.0)
-                            .color(pal::FAINT)
-                            .align(Align::Center),
-                    );
+                    panel.note = Some(("Note:".into(), n));
                 }
-                if !lines.is_empty() {
-                    card.parts.push(CardPart::Centered(lines));
+                Card {
+                    parts: vec![CardPart::Panel(Box::new(panel))],
+                    border: Rgb::hex(0xb9c2d1),
+                    ..Card::new()
                 }
-                card
             })
             .collect();
-        doc.push(Block::Cards(Cards::new(columns, cards)));
+        let mut grid = Cards::new(columns, cards);
+        grid.gap = if columns >= 3 { 8.0 } else { 10.0 };
+        grid.widow_repair = true;
+        doc.push(Block::Cards(grid));
     }
     let mut out = Output::new(doc, HINT_EDIT);
     out.warnings = image_warnings(pics.missing, pics.unreadable, "panel image");
@@ -578,6 +542,238 @@ fn panel_refs(s: &ShotDto) -> String {
         .join(", ")
 }
 
+// ---- shot list layout
+
+const CAMERA_PT: f32 = 8.2;
+/// Side padding of every shot list cell; the column widths are measured with it.
+const SHOT_PAD: f32 = 4.0;
+const CAMERA_HEAD: Rgb = Rgb::hex(0xe2e9f1);
+const CAMERA_NAMES: [(&str, f32); 4] = [
+    ("Size", 40.0),
+    ("Movement", 44.0),
+    ("Angle", 40.0),
+    ("Lens", 40.0),
+];
+
+/// A camera field of a shot (0 size, 1 movement, 2 angle, 3 lens); blank counts as none.
+fn cam(s: &ShotDto, k: usize) -> Option<&str> {
+    let v = match k {
+        0 => &s.size,
+        1 => &s.movement,
+        2 => &s.angle,
+        _ => &s.lens,
+    };
+    v.as_deref().map(str::trim).filter(|v| !v.is_empty())
+}
+
+/// Which columns exist and how wide they are, decided once for the whole export.
+struct ShotGrid {
+    image: bool,
+    shot_w: f32,
+    /// Camera columns that have data: index into [`CAMERA_NAMES`] and width.
+    camera: Vec<(usize, f32)>,
+}
+
+impl ShotGrid {
+    fn measure(shots: &[ShotDto]) -> ShotGrid {
+        let image = shots.iter().any(|s| asset_of(s).is_some());
+        // The shot tile is as wide as its longest label needs (the tile primitive's own size).
+        let tile = shots
+            .iter()
+            .map(|s| text_width(&s.label, 9.0, true) + 14.0)
+            .fold(28.0, f32::max);
+        let shot_w = (tile + 2.0 * SHOT_PAD).max(38.0);
+        let mut camera = Vec::new();
+        for (k, (name, min)) in CAMERA_NAMES.iter().enumerate() {
+            if !shots.iter().any(|s| cam(s, k).is_some()) {
+                continue;
+            }
+            // The longest word sets the width, so no word breaks mid-word and no header wraps.
+            let word = shots
+                .iter()
+                .filter_map(|s| cam(s, k))
+                .flat_map(str::split_whitespace)
+                .map(|w| text_width(w, CAMERA_PT, k == 0))
+                .fold(0.0, f32::max);
+            let head = text_width(&name.to_uppercase(), 7.0, true) + 0.8 * name.len() as f32;
+            let w = ((word + 2.0).max(head + 1.5) + 2.0 * SHOT_PAD).clamp(*min, 84.0);
+            camera.push((k, w));
+        }
+        ShotGrid {
+            image,
+            shot_w,
+            camera,
+        }
+    }
+}
+
+/// The notes under a shot's description, in the builder's fixed order and wording.
+fn shot_notes(s: &ShotDto) -> Option<Rich> {
+    let mut paras: Vec<Vec<Run>> = Vec::new();
+    let mut line = |label: &str, text: String| {
+        paras.push(vec![
+            Run::new(label, true, pal::NAVY),
+            Run::new(text, false, pal::SLATE),
+        ]);
+    };
+    if !s.characters.is_empty() {
+        line("Characters:", s.characters.join(", "));
+    }
+    if !s.panels.is_empty() {
+        line("Storyboard:", panel_refs(s));
+    }
+    if let Some(n) = nonblank(s.sound_note.as_deref()) {
+        line("Sound:", n);
+    }
+    if let Some(n) = nonblank(s.camera_notes.as_deref()) {
+        line("Camera:", n);
+    }
+    (!paras.is_empty()).then_some(Rich {
+        paras,
+        size: 8.0,
+        leading: 1.3,
+        gap: 2.0,
+    })
+}
+
+/// Distinct values in order of first appearance.
+fn distinct<'a>(values: impl Iterator<Item = &'a str>) -> Vec<&'a str> {
+    let mut out: Vec<&str> = Vec::new();
+    for v in values {
+        if !out.contains(&v) {
+            out.push(v);
+        }
+    }
+    out
+}
+
+/// One scene: its band (with status and, for a one-scene document, the coverage strip) and the
+/// shot rows, under the shared column grid.
+fn scene_table(list: &[&ShotDto], grid: &ShotGrid, single: bool, pics: &mut Pics) -> StyledTable {
+    let first = list[0];
+    let mut band = TableBand::new(first.scene_heading.clone());
+    band.eyebrow = first.scene_number.as_ref().map(|n| format!("Scene {n}"));
+    band.right = plural(list.len(), "shot", "shots");
+    if first.scene_removed {
+        band.fill = pal::SLATE;
+        band.status = Some((
+            "Scene removed from the script (kept for reference)".into(),
+            Tone::Danger,
+        ));
+    } else if list.iter().any(|s| s.needs_review) {
+        band.status = Some(("Scene changed since planning".into(), Tone::Warn));
+    }
+    if single {
+        let lenses = distinct(list.iter().filter_map(|s| cam(s, 3)));
+        let moves = distinct(list.iter().filter_map(|s| cam(s, 1)));
+        let people = distinct(
+            list.iter()
+                .flat_map(|s| s.characters.iter().map(String::as_str)),
+        );
+        for (label, v) in [
+            ("Lenses", lenses),
+            ("Movement", moves),
+            ("Characters in these shots", people),
+        ] {
+            if !v.is_empty() {
+                band.strip.push((label.into(), v.join(" · ")));
+            }
+        }
+    }
+
+    let mut cols = vec![Col::pt("Done", 32.0).align(Align::Center)];
+    if grid.image {
+        cols.push(Col::pt("Image", 88.0));
+    }
+    cols.push(Col::pt("Shot", grid.shot_w).align(Align::Center));
+    cols.push(Col::weight("Description", 1.0));
+    for (k, w) in &grid.camera {
+        cols.push(Col::pt(CAMERA_NAMES[*k].0, *w));
+    }
+    let head = |label: &str, align: Align, camera: bool| {
+        let c = Cell::text(
+            Txt::new(label.to_uppercase())
+                .size(7.0)
+                .bold()
+                .track(0.8)
+                .color(pal::SLATE),
+        )
+        .align(align);
+        if camera { c.fill(CAMERA_HEAD) } else { c }
+    };
+    let first_camera = cols.len() - grid.camera.len();
+    let header: Vec<Cell> = cols
+        .iter()
+        .enumerate()
+        .map(|(i, c)| head(&c.header, c.align, i >= first_camera))
+        .collect();
+    let mut t = StyledTable::new(cols);
+    t.band = Some(band);
+    t.boxed = true;
+    t.header = HeaderStyle::Tint;
+    t.header_cells = Some(header);
+    t.pad_x = SHOT_PAD;
+    t.pad_y = 5.0;
+    for s in list {
+        let mut cells = vec![Cell::new().align(Align::Center).item(CellItem::Check)];
+        if grid.image {
+            let item = match asset_of(s).map(|a| pics.load(a)) {
+                Some((Some(img), _)) => CellItem::Image {
+                    img,
+                    w: 80.0,
+                    h: 45.0,
+                },
+                Some((None, note)) => CellItem::Placeholder {
+                    w: 80.0,
+                    h: 45.0,
+                    label: note.unwrap_or_else(|| "No image".into()),
+                },
+                None => CellItem::Placeholder {
+                    w: 80.0,
+                    h: 45.0,
+                    label: "No image".into(),
+                },
+            };
+            cells.push(Cell::new().item(item));
+        }
+        cells.push(
+            Cell::new()
+                .align(Align::Center)
+                .item(CellItem::Tile(s.label.clone())),
+        );
+        let mut desc = Cell::text(
+            Txt::new(s.description.clone())
+                .size(8.8)
+                .color(pal::INK)
+                .leading(1.35),
+        );
+        if let Some(n) = shot_notes(s) {
+            desc = desc.item(CellItem::Rich(n));
+        }
+        cells.push(desc);
+        for (k, _) in &grid.camera {
+            let text = match cam(s, *k) {
+                Some(v) if *k == 0 => Txt::new(v).size(CAMERA_PT).bold().color(pal::NAVY),
+                Some(v) => Txt::new(v).size(CAMERA_PT).color(pal::INK),
+                None => Txt::new("–").size(CAMERA_PT).color(MUTED),
+            };
+            cells.push(Cell::text(text.leading(1.3)).fill(pal::PANEL));
+        }
+        t.rows.push(Row::new(cells));
+    }
+    t
+}
+
+/// The document with a one-line running header when it runs to more than one page. The probe
+/// render is branded like the real one, so both have the same page body.
+fn running_header_when_paged(mut doc: Document, line: String) -> Document {
+    let mut probe = doc.clone();
+    probe.brand = Some(BRAND_LINE.to_string());
+    if probe.to_pdf().pages > 1 {
+        doc.running_header = Some(line);
+    }
+    doc
+}
 pub(super) fn export_shots(
     core: &AppCore,
     actor: &Actor,
@@ -647,16 +843,12 @@ pub(super) fn export_shots(
     } else {
         "Shot List".to_string()
     };
-    let mut doc = Document::new(&document)
-        .landscape(true)
-        .footer(footer(&project, "Shot List"));
+    let mut doc = Document::new(&document);
     let mut pics = Pics::default();
-    let mut mast = Masthead::new("Shot List").eyebrow("Production · Shot list", pal::ORANGE);
+    let mut mast = Masthead::new("Shot List").eyebrow("Production · Shot list", pal::SLATE);
+    mast.title_size = 20.0;
     if let Some(p) = nb(&project) {
         mast.subtitle = Some(p.to_string());
-    }
-    if single {
-        mast.lines.push(scene_title(groups[0].1[0]));
     }
     mast.side = Some(Side::Panel {
         lines: vec![
@@ -674,142 +866,24 @@ pub(super) fn export_shots(
     mast.rule = true;
     doc.push(Block::Masthead(mast));
 
-    // A picture per shot: its own reference image, else the first attached storyboard panel.
-    let any_image = shots.iter().any(|s| asset_of(s).is_some());
-    let has = |f: fn(&ShotDto) -> bool| shots.iter().any(f);
-    let (has_size, has_move, has_angle, has_lens) = (
-        has(|s| s.size.is_some()),
-        has(|s| s.movement.is_some()),
-        has(|s| s.angle.is_some()),
-        has(|s| s.lens.is_some()),
-    );
-    // Characters, sound, camera notes and storyboard references share one Notes column.
-    let has_notes = has(|s| {
-        s.sound_note.is_some()
-            || s.camera_notes.is_some()
-            || !s.characters.is_empty()
-            || !s.panels.is_empty()
-    });
+    // One column grid for the whole document, so scenes line up from table to table.
+    let grid = ShotGrid::measure(&shots);
     for (_, list) in &groups {
-        let first = list[0];
-        let mut banner = Banner::new(scene_title(first));
-        banner.right = Some(plural(list.len(), "shot", "shots"));
-        if first.scene_removed {
-            banner.sub_left = vec![(
-                "Scene removed from the script (kept for reference)".into(),
-                true,
-            )];
-        } else if list.iter().any(|s| s.needs_review) {
-            banner.sub_left = vec![("Scene changed since planning".into(), true)];
-        }
-        banner.keep_next = if any_image { 90.0 } else { 60.0 };
-        doc.push(Block::Banner(banner));
-        let mut cols = vec![Col::pt("Done", 40.0).align(Align::Center)];
-        if any_image {
-            cols.push(Col::pt("Image", 96.0));
-        }
-        cols.push(Col::pt("Shot", 36.0).align(Align::Center));
-        cols.push(Col::weight("Description", 2.4));
-        if has_size {
-            cols.push(Col::pt("Size", 48.0));
-        }
-        if has_move {
-            cols.push(Col::pt("Movement", 60.0));
-        }
-        if has_angle {
-            cols.push(Col::pt("Angle", 50.0));
-        }
-        if has_lens {
-            cols.push(Col::pt("Lens", 44.0));
-        }
-        if has_notes {
-            cols.push(Col::weight("Notes", 1.5));
-        }
-        let mut t = StyledTable::new(cols);
-        t.boxed = true;
-        t.header = HeaderStyle::Tint;
-        t.continued = Some(scene_title(first));
-        let small = |s: String| Cell::text(Txt::new(s).size(8.2).color(pal::INK).leading(1.3));
-        for s in list {
-            let mut cells = vec![Cell::new().align(Align::Center).item(CellItem::Check)];
-            if any_image {
-                let cell = match asset_of(s).map(|a| pics.load(a)) {
-                    Some((Some(img), _)) => Cell::new().item(CellItem::Image {
-                        img,
-                        w: 88.0,
-                        h: 50.0,
-                    }),
-                    Some((None, note)) => Cell::new().item(CellItem::Placeholder {
-                        w: 88.0,
-                        h: 50.0,
-                        label: note.unwrap_or_else(|| "No image".into()),
-                    }),
-                    None => Cell::new().item(CellItem::Placeholder {
-                        w: 88.0,
-                        h: 50.0,
-                        label: "No image".into(),
-                    }),
-                };
-                cells.push(cell);
-            }
-            cells.push(Cell::text(
-                Txt::new(s.label.clone())
-                    .size(10.0)
-                    .bold()
-                    .color(pal::NAVY)
-                    .align(Align::Center),
-            ));
-            cells.push(Cell::text(
-                Txt::new(s.description.clone())
-                    .size(8.8)
-                    .color(pal::INK)
-                    .leading(1.35),
-            ));
-            if has_size {
-                cells.push(small(opt(&s.size)));
-            }
-            if has_move {
-                cells.push(small(opt(&s.movement)));
-            }
-            if has_angle {
-                cells.push(small(opt(&s.angle)));
-            }
-            if has_lens {
-                cells.push(small(opt(&s.lens)));
-            }
-            if has_notes {
-                let mut c = Cell::new();
-                let line = |t: String| {
-                    CellItem::Text(Txt::new(t).size(8.0).color(pal::SLATE).leading(1.3))
-                };
-                if !s.characters.is_empty() {
-                    c = c.item(line(format!("Characters: {}", s.characters.join(", "))));
-                }
-                if !s.panels.is_empty() {
-                    c = c.item(line(format!("Storyboard: {}", panel_refs(s))));
-                }
-                if let Some(n) = nonblank(s.sound_note.as_deref()) {
-                    c = c.item(CellItem::Text(
-                        Txt::new(format!("Sound: {n}"))
-                            .size(8.0)
-                            .color(pal::SLATE)
-                            .leading(1.3),
-                    ));
-                }
-                if let Some(n) = nonblank(s.camera_notes.as_deref()) {
-                    c = c.item(CellItem::Text(
-                        Txt::new(format!("Camera: {n}"))
-                            .size(8.0)
-                            .color(pal::SLATE)
-                            .leading(1.3),
-                    ));
-                }
-                cells.push(c);
-            }
-            t.rows.push(Row::new(cells));
-        }
-        doc.push(Block::Styled(t));
+        let table = scene_table(list, &grid, single, &mut pics);
+        // A short scene is never split; a longer one breaks between rows.
+        doc.push(if list.len() <= 3 {
+            Block::Together(vec![Block::Styled(table)])
+        } else {
+            Block::Styled(table)
+        });
     }
+    let mut header = vec![nb(&project).map_or_else(String::new, str::to_uppercase)];
+    header.push("SHOT LIST".into());
+    if single && let Some(n) = &groups[0].1[0].scene_number {
+        header.push(format!("SCENE {}", n.to_uppercase()));
+    }
+    header.retain(|h| !h.is_empty());
+    let doc = running_header_when_paged(doc, header.join(" · "));
     let mut flat = Table::new(
         "Shot List",
         vec![

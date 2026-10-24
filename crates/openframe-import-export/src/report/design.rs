@@ -13,15 +13,26 @@
 
 use super::*;
 
+mod band;
 mod blocks;
 mod cards;
+mod panel;
+mod rich;
 mod table;
 
+pub use band::TableBand;
 pub use blocks::{
     Banner, Callout, CalloutCol, Legend, LegendItem, Masthead, Metric, Metrics, Section, Side,
 };
 pub use cards::{Card, CardHead, CardPart, Cards, Field, Group, GroupItem, Tile};
+pub use panel::{CompactHeader, Panel, SceneBanner};
+pub use rich::{Rich, Run};
 pub use table::{Cell, CellItem, Col, HeaderStyle, Row, StyledTable, Width};
+
+use band::{band_frag, band_scan};
+pub(super) use panel::{compact_header, compact_header_scan, scene_banner, scene_banner_scan};
+use panel::{panel_frag, panel_scan};
+use rich::{put_rich, rich_scan};
 
 pub(super) use blocks::{banner, callout, legend, masthead, metrics, scan_block, section, text};
 pub(super) use cards::cards;

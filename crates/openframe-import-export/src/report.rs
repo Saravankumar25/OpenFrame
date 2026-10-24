@@ -45,10 +45,13 @@ use unicode_segmentation::UnicodeSegmentation;
 mod design;
 #[cfg(test)]
 mod furniture_tests;
+#[cfg(test)]
+mod visual_tests;
 pub use design::{
-    Banner, Callout, CalloutCol, Card, CardHead, CardPart, Cards, Cell, CellItem, Chip, Col, Field,
-    Group, GroupItem, HeaderStyle, Legend, LegendItem, Masthead, Metric, Metrics, Rgb, Row,
-    Section, Side, StyledTable, Tile, Tone, Txt, Width, pal,
+    Banner, Callout, CalloutCol, Card, CardHead, CardPart, Cards, Cell, CellItem, Chip, Col,
+    CompactHeader, Field, Group, GroupItem, HeaderStyle, Legend, LegendItem, Masthead, Metric,
+    Metrics, Panel, Rgb, Rich, Row, Run, SceneBanner, Section, Side, StyledTable, TableBand, Tile,
+    Tone, Txt, Width, pal,
 };
 
 use crate::fonts;
@@ -200,6 +203,14 @@ pub enum Block {
     /// group starts a new page; a group taller than a page starts fresh and then splits only
     /// where its own blocks split (between rows and cards).
     Together(Vec<Block>),
+    /// From here on, every page (this one included) carries this line at the top right in place of
+    /// the document's running header, until the next `PageHeader`. One line per document part,
+    /// for example one per storyboard. Not for use inside `Together`.
+    PageHeader(String),
+    /// The navy band that opens a storyboard (see `report/design/panel.rs`).
+    SceneBanner(SceneBanner),
+    /// The compact one-block header of a storyboard sheet.
+    CompactHeader(CompactHeader),
 }
 
 // ------------------------------------------------------------------ images
@@ -531,6 +542,9 @@ fn scan_blocks(blocks: &[Block], scan: &mut dyn FnMut(&str)) {
                     }
                 }
                 Block::PageBreak | Block::Spacer(_) => {}
+                Block::PageHeader(text) => scan(text),
+                Block::SceneBanner(b) => design::scene_banner_scan(b, scan),
+                Block::CompactHeader(h) => design::compact_header_scan(h, scan),
                 Block::Masthead(_)
                 | Block::Metrics(_)
                 | Block::Section(_)
@@ -862,6 +876,19 @@ enum Op {
     },
 }
 
+/// An over-long word broken by characters: full lines go to `out`, the last piece is returned.
+fn break_word(word: &str, width: f32, size: f32, bold: bool, out: &mut Vec<String>) -> String {
+    let mut chunk = String::new();
+    for ch in word.chars() {
+        let next = format!("{chunk}{ch}");
+        if text_width_pt(&next, size, bold) > width && !chunk.is_empty() {
+            out.push(std::mem::take(&mut chunk));
+        }
+        chunk.push(ch);
+    }
+    chunk
+}
+
 /// Wrap text to a width in points.
 pub fn wrap_pt(text: &str, width: f32, size: f32, bold: bool) -> Vec<String> {
     if needs_fonts(text) {
@@ -878,22 +905,18 @@ pub fn wrap_pt(text: &str, width: f32, size: f32, bold: bool) -> Vec<String> {
             };
             if text_width_pt(&candidate, size, bold) <= width || line.is_empty() {
                 if line.is_empty() && text_width_pt(word, size, bold) > width {
-                    // Break an over-long word by characters.
-                    let mut chunk = String::new();
-                    for ch in word.chars() {
-                        let next = format!("{chunk}{ch}");
-                        if text_width_pt(&next, size, bold) > width && !chunk.is_empty() {
-                            out.push(std::mem::take(&mut chunk));
-                        }
-                        chunk.push(ch);
-                    }
-                    line = chunk;
+                    line = break_word(word, width, size, bold, &mut out);
                 } else {
                     line = candidate;
                 }
             } else {
                 out.push(std::mem::take(&mut line));
-                line = word.to_string();
+                // An over-long word that follows other words is broken the same way.
+                line = if text_width_pt(word, size, bold) > width {
+                    break_word(word, width, size, bold, &mut out)
+                } else {
+                    word.to_string()
+                };
             }
         }
         out.push(line);
@@ -914,6 +937,11 @@ struct Pager<'a> {
     images: Vec<&'a ReportImage>,
     /// A heading (or other lead-in) just placed that must not end a page alone.
     hold: Option<Hold>,
+    /// The line [`Block::PageHeader`] set; printed at the top of every page from then on.
+    page_header: Option<String>,
+    /// Page and position in that page's ops of the header line already drawn, so a new
+    /// `PageHeader` on the same page replaces it instead of printing over it.
+    header_at: Option<(usize, usize)>,
 }
 
 /// The ops of a lead-in on the current page: `start..end` in the page's ops, spanning `top` down
@@ -937,6 +965,44 @@ impl<'a> Pager<'a> {
             y: h - inset,
             images: Vec::new(),
             hold: None,
+            page_header: None,
+            header_at: None,
+        }
+    }
+    /// The page header line on the current page: one slate line at the top right (a longer one
+    /// is shortened to the width of the page rather than wrapped, it is page furniture).
+    fn draw_page_header(&mut self) {
+        let Some(text) = self.page_header.clone() else {
+            return;
+        };
+        let track = if needs_fonts(&text) {
+            0.0
+        } else {
+            HEADER_TRACK
+        };
+        let max = self.w - 2.0 * MARGIN;
+        let line = wrap_pt(text.trim(), max * 0.94, HEADER_SIZE, false)
+            .into_iter()
+            .next()
+            .unwrap_or_default();
+        let lw = text_width(&line, HEADER_SIZE, false) + track * line.chars().count() as f32;
+        let (x, y) = (self.w - MARGIN - lw, self.h - HEADER_BASE);
+        let op = Op::TextC {
+            bold: false,
+            size: HEADER_SIZE,
+            x,
+            y,
+            text: line,
+            color: pal::SLATE,
+            track,
+        };
+        let page = self.pages.len() - 1;
+        match self.header_at {
+            Some((pg, i)) if pg == page => self.pages[pg][i] = op,
+            _ => {
+                self.ops().push(op);
+                self.header_at = Some((page, self.pages[page].len() - 1));
+            }
         }
     }
     /// Nothing has been placed on this page yet.
@@ -977,6 +1043,7 @@ impl<'a> Pager<'a> {
         });
         self.pages.push(Vec::new());
         self.y = self.h - self.inset;
+        self.draw_page_header();
         if let Some((ops, top, bottom)) = carried {
             let dy = self.y - top;
             for mut op in ops {
@@ -1299,6 +1366,12 @@ fn render_block<'a>(p: &mut Pager<'a>, b: &'a Block) {
         Block::Legend(l) => design::legend(p, l),
         Block::Text(t) => design::text(p, t),
         Block::Together(blocks) => together(p, blocks),
+        Block::SceneBanner(b) => design::scene_banner(p, b),
+        Block::CompactHeader(h) => design::compact_header(p, h),
+        Block::PageHeader(text) => {
+            p.page_header = Some(text.clone());
+            p.draw_page_header();
+        }
         Block::Heading { text, level } => {
             let size = if *level <= 1 { 13.0 } else { 11.0 };
             // Keep headings with what follows them.
@@ -1473,7 +1546,10 @@ fn render_pdf(doc: &Document) -> ReportPdf {
         PLAIN_BOTTOM_MARGIN
     };
     let mut p = Pager::new(w, h, top_inset(head.len()), bottom);
-    let masthead_first = matches!(doc.blocks.first(), Some(Block::Masthead(_)));
+    let masthead_first = matches!(
+        doc.blocks.first(),
+        Some(Block::Masthead(_) | Block::CompactHeader(_))
+    );
     if masthead_first {
         // The design system masthead replaces the plain title lines.
     } else if doc.centered_header {

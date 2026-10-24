@@ -70,6 +70,8 @@ pub enum CellItem {
         color: Rgb,
     },
     Gap(f32),
+    /// Paragraphs of mixed bold and regular runs ("Sound: wind"), each wrapped as one paragraph.
+    Rich(Rich),
     /// A band heading: coloured dot, bold text, optional right text.
     Heading {
         dot: Option<Rgb>,
@@ -164,6 +166,9 @@ pub struct StyledTable {
     pub title: Option<String>,
     /// Small text at the right end of the title row.
     pub title_hint: Option<String>,
+    /// A group band printed in place of the title (its count on the first page, "Continued" on
+    /// later ones). It repeats with the column header.
+    pub band: Option<TableBand>,
     pub columns: Vec<Col>,
     pub header: HeaderStyle,
     /// Header cells with their own content (multi-line day headers); default is the column
@@ -188,6 +193,7 @@ impl StyledTable {
         StyledTable {
             title: None,
             title_hint: None,
+            band: None,
             columns,
             header: HeaderStyle::Tint,
             header_cells: None,
@@ -351,25 +357,32 @@ fn cell_content<'a>(p: &mut Pager<'a>, cell: &'a Cell, w: f32, default_align: Al
                     Align::Center => (w - fw) / 2.0,
                     Align::Right => w - fw,
                 };
+                // The label wraps inside the frame; the frame grows in height, never in width.
+                let lines = wrap_pt(label, (fw - 8.0).max(8.0), 7.0, false);
+                let lh = 7.0 * 1.25;
+                let ph = ph.max(lines.len() as f32 * lh + 10.0);
                 f.shape(
                     x,
                     y,
                     fw,
-                    *ph,
+                    ph,
                     2.0,
                     Some(Rgb::hex(0xf1f3f6)),
                     Some((pal::LINE, 0.6)),
                 );
-                let lw = tw(label, 7.0, false, 0.0);
-                f.text(
-                    x + (fw - lw) / 2.0,
-                    y + ph / 2.0 + 2.5,
-                    label,
-                    7.0,
-                    false,
-                    pal::FAINT,
-                    0.0,
-                );
+                let top = y + (ph - lines.len() as f32 * lh) / 2.0;
+                for (k, l) in lines.iter().enumerate() {
+                    let lw = tw(l, 7.0, false, 0.0);
+                    f.text(
+                        x + (fw - lw) / 2.0,
+                        top + 7.0 + k as f32 * lh - 0.8,
+                        l,
+                        7.0,
+                        false,
+                        Rgb::hex(0x66728a),
+                        0.0,
+                    );
+                }
                 y += ph;
             }
             CellItem::Bar { share, color } => {
@@ -381,6 +394,7 @@ fn cell_content<'a>(p: &mut Pager<'a>, cell: &'a Cell, w: f32, default_align: Al
                 y += 6.0;
             }
             CellItem::Gap(g) => y += g,
+            CellItem::Rich(r) => y += put_rich(&mut f, 0.0, y, w, r),
             CellItem::Heading { dot, text, right } => {
                 let mut tx = 0.0;
                 if let Some(d) = dot {
@@ -615,6 +629,14 @@ fn title_frag(t: &StyledTable, total_w: f32, continued: bool) -> Option<Frag> {
     Some(f)
 }
 
+/// What leads the repeating header: the group band when there is one, else the title row.
+fn lead_frag(t: &StyledTable, total_w: f32, continued: bool) -> Option<Frag> {
+    match &t.band {
+        Some(b) => Some(band_frag(b, total_w, continued)),
+        None => title_frag(t, total_w, continued),
+    }
+}
+
 /// Where the rows of a table start new pages.
 ///
 /// `heights` are the row heights; `forbid[i]` means a page may not start at row `i` (the row
@@ -702,7 +724,7 @@ pub(in crate::report) fn styled_table<'a>(p: &mut Pager<'a>, t: &'a StyledTable)
     let header = header_frag(p, t, &ws, &xs, total_w);
     let header_h = header.as_ref().map(|h| h.h).unwrap_or(0.0);
     if t.rows.is_empty() {
-        if let Some(tf) = title_frag(t, total_w, false) {
+        if let Some(tf) = lead_frag(t, total_w, false) {
             p.ensure(tf.h + 20.0);
             let top = p.y;
             let h = tf.h;
@@ -749,7 +771,7 @@ pub(in crate::report) fn styled_table<'a>(p: &mut Pager<'a>, t: &'a StyledTable)
             forbid[lo..=j].fill(true);
         }
     }
-    let title_h = |continued: bool| title_frag(t, total_w, continued).map_or(0.0, |f| f.h);
+    let title_h = |continued: bool| lead_frag(t, total_w, continued).map_or(0.0, |f| f.h);
     let legacy_band = t.title.is_none() && t.continued.is_some();
     let first_head = title_h(false) + header_h;
     let cont_head = title_h(true) + header_h + if legacy_band { 21.0 } else { 0.0 };
@@ -792,7 +814,7 @@ pub(in crate::report) fn styled_table<'a>(p: &mut Pager<'a>, t: &'a StyledTable)
                 p.emit(f, MARGIN, top);
                 p.y -= 21.0;
             }
-            if let Some(tf) = title_frag(t, total_w, continued) {
+            if let Some(tf) = lead_frag(t, total_w, continued) {
                 let top = p.y;
                 let h = tf.h;
                 p.emit(tf, MARGIN, top);
@@ -823,6 +845,9 @@ pub(in crate::report) fn table_scan(t: &StyledTable, scan: &mut dyn FnMut(&str))
     for s in t.title.iter().chain(&t.title_hint) {
         scan(s);
     }
+    if let Some(b) = &t.band {
+        band_scan(b, scan);
+    }
     for c in &t.columns {
         scan(&c.header);
     }
@@ -838,6 +863,7 @@ pub(in crate::report) fn table_scan(t: &StyledTable, scan: &mut dyn FnMut(&str))
                 CellItem::Text(x) => scan(&x.text),
                 CellItem::Chips(cs) => cs.iter().for_each(|c| scan(&c.text)),
                 CellItem::Tile(s) | CellItem::Missing(s) => scan(s),
+                CellItem::Rich(r) => rich_scan(r, scan),
                 CellItem::Heading { text, right, .. } => {
                     scan(text);
                     if let Some(r) = right {

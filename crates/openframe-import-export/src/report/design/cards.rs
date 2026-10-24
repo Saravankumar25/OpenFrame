@@ -146,6 +146,9 @@ pub enum CardPart {
     },
     /// Lines of text, each with a small accent bullet and a hairline between them.
     Lines(Vec<String>),
+    /// A storyboard panel: number tile, picture frame, chips and caption band. The card has no
+    /// head of its own and its band grows to the tallest card of the row.
+    Panel(Box<Panel>),
 }
 
 #[derive(Debug, Clone)]
@@ -179,6 +182,9 @@ pub struct Cards {
     pub columns: usize,
     pub gap: f32,
     pub cards: Vec<Card>,
+    /// Never end on a page that holds a single row of cards when the row before it can move to
+    /// that page (storyboard sheets). Off by default: rows simply fill pages.
+    pub widow_repair: bool,
 }
 
 impl Cards {
@@ -187,6 +193,7 @@ impl Cards {
             columns: columns.max(1),
             gap: 10.0,
             cards,
+            widow_repair: false,
         }
     }
 }
@@ -443,7 +450,8 @@ fn rows_frag(rows: &[(String, Vec<String>)], w: f32) -> Frag {
     f
 }
 
-fn units<'a>(p: &mut Pager<'a>, card: &'a Card, w: f32) -> Vec<Frag> {
+/// The card as stacked units. `fill_to` is the row height a panel card stretches its caption to.
+fn units<'a>(p: &mut Pager<'a>, card: &'a Card, w: f32, fill_to: Option<f32>) -> Vec<Frag> {
     let mut out = Vec::new();
     if let Some(h) = &card.head {
         out.push(card_head(h, w));
@@ -536,6 +544,7 @@ fn units<'a>(p: &mut Pager<'a>, card: &'a Card, w: f32) -> Vec<Frag> {
                 }
                 f.h = y + 7.0;
             }
+            CardPart::Panel(panel) => f = panel_frag(p, panel, w, fill_to),
             CardPart::Image {
                 img,
                 placeholder,
@@ -588,10 +597,43 @@ pub(in crate::report) fn cards<'a>(p: &mut Pager<'a>, c: &'a Cards) {
     let cw = p.content_w();
     let cols = c.columns.max(1);
     let w = (cw - c.gap * (cols as f32 - 1.0)) / cols as f32;
-    for chunk in c.cards.chunks(cols) {
-        let all: Vec<Vec<Frag>> = chunk.iter().map(|card| units(p, card, w)).collect();
+    let breaks = if c.widow_repair {
+        let heights: Vec<f32> = c
+            .cards
+            .chunks(cols)
+            .map(|chunk| {
+                chunk
+                    .iter()
+                    .map(|card| units(p, card, w, None).iter().map(|f| f.h).sum::<f32>())
+                    .fold(0.0, f32::max)
+            })
+            .collect();
+        let carried = p
+            .hold
+            .as_ref()
+            .filter(|h| h.page == p.pages.len() - 1)
+            .map_or(0.0, |h| h.top - h.bottom);
+        plan_rows(&heights, c.gap, p.room(), p.body_h() - carried, p.body_h())
+    } else {
+        Vec::new()
+    };
+    for (r, chunk) in c.cards.chunks(cols).enumerate() {
+        if breaks.contains(&r) {
+            p.new_page();
+        }
+        let mut all: Vec<Vec<Frag>> = chunk.iter().map(|card| units(p, card, w, None)).collect();
         let heights: Vec<f32> = all.iter().map(|u| u.iter().map(|f| f.h).sum()).collect();
         let row_h = heights.iter().cloned().fold(0.0, f32::max);
+        if chunk
+            .iter()
+            .any(|c| c.parts.iter().any(|x| matches!(x, CardPart::Panel(_))))
+        {
+            // Panels in a row line their caption bands up: lay them out again to the row height.
+            all = chunk
+                .iter()
+                .map(|card| units(p, card, w, Some(row_h)))
+                .collect();
+        }
         if row_h > p.body_h() {
             for (card, us) in chunk.iter().zip(all) {
                 split_card(p, card, us, w);
@@ -615,6 +657,42 @@ pub(in crate::report) fn cards<'a>(p: &mut Pager<'a>, c: &'a Cards) {
         }
         p.y -= row_h + c.gap;
     }
+}
+
+/// Where rows of cards of the given heights start new pages: the rows that do not fit the room
+/// left start a page, and a last page that would hold a single row takes the row before it too
+/// when the page has room for both and the page before keeps at least one row. `after_carry` is
+/// the room on the page that follows a break at the very first row (a lead-in moves along).
+fn plan_rows(heights: &[f32], gap: f32, room: f32, after_carry: f32, body: f32) -> Vec<usize> {
+    let n = heights.len();
+    if heights.iter().any(|h| *h + 2.0 > body) {
+        return Vec::new();
+    }
+    let mut breaks = Vec::new();
+    let mut left = room;
+    for (i, h) in heights.iter().enumerate() {
+        if left < h + 2.0 {
+            left = if i == 0 { after_carry } else { body };
+            breaks.push(i);
+        }
+        left -= h + gap;
+    }
+    if let Some(&last) = breaks.last()
+        && last == n - 1
+        && last > 0
+    {
+        let prev = if breaks.len() >= 2 {
+            breaks[breaks.len() - 2]
+        } else {
+            0
+        };
+        let fits = heights[n - 2] + gap + heights[n - 1] + 2.0 <= body;
+        if n - 1 - prev >= 2 && fits {
+            let at = breaks.len() - 1;
+            breaks[at] = n - 2;
+        }
+    }
+    breaks
 }
 
 /// A card taller than a page: units flow onto the next pages, each page with its own border.
@@ -696,6 +774,7 @@ pub(in crate::report) fn cards_scan(c: &Cards, scan: &mut dyn FnMut(&str)) {
                     scan(value);
                 }
                 CardPart::Lines(ls) => ls.iter().for_each(|x| scan(x)),
+                CardPart::Panel(panel) => panel_scan(panel, scan),
                 CardPart::Image { placeholder, .. } => {
                     if let Some(t) = placeholder {
                         scan(t);
