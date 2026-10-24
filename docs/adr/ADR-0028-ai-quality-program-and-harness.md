@@ -61,7 +61,10 @@ done by code, not by the small model.
    tokens in and out, context fill, time split, passes used, verifier results, memory used, whether the person applied,
    rejected, edited or undid the result). No text is stored by default. The owner can press **Export AI report**, which
    writes a numbers file by hand. Nothing leaves the computer automatically ([ADR-0021](ADR-0021-diagnostics-telemetry-analytics-policy.md)).
-   An "AI health" card in Settings shows the figures.
+   An "AI health" card in Settings shows the figures. The numbers include the prompt tokens the engine served from its stored
+   work. Amendment 2026-10-24 (owner decision): a tester may press **Save conversation for review** in the AI panel, which
+   writes the requests, answers, sources and trace numbers of that one conversation to a file the person chooses. It runs only
+   on that press, saves nothing automatically and sends nothing; the file holds the requesting user's own exchanges only.
 9. **Judging.** Open-ended writing in the offline tests is judged at development time by Claude, with a human spot check
    of about one case in ten. This runs only on the developer's computer and never ships. The runtime evaluator is permanent code in one crate shared with the offline harness, so development scoring and runtime checks agree. Claude's findings become code changes, new verifiers, new gold cases and tuned priors made by the developer; they never become a model call inside the application. The Hindi, Telugu and other
    non-English gold sets are reviewed by Claude only, by the owner's choice. Consequence: any claim about those languages

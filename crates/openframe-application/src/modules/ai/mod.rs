@@ -17,6 +17,7 @@
 pub mod catalog;
 pub mod change_set;
 mod commands;
+mod conversation_export;
 pub mod intelligence;
 pub mod knowledge;
 pub mod offline;
@@ -90,6 +91,14 @@ pub fn register(r: &mut Registry) {
         M::app_command("Write the local AI trace (numbers and ids only) and the health figures to a file the person chose.")
             .hidden(h::AI_RUNTIME),
     );
+    r.command("ai.export_conversation", conversation_export::export_conversation)
+        .meta(
+            M::command(
+                Capability::UseAi,
+                "Write one of the person's own conversations (their questions, the answers and the sources) to a file they chose.",
+            )
+            .hidden(h::USER_PATH),
+        );
     r.query("ai.diagnostics", diagnostics).meta(
         M::app_query(
             "Offline AI technical details for Settings (versions, licences, hashes, paths).",

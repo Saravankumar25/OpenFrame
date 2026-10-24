@@ -349,6 +349,16 @@ const CORE_TOOLS: &[&str] = &[
     "private_information",
 ];
 
+/// Where a tool sits in the set offered to every request, in the order its prompt line is written;
+/// `None` for a tool that is offered only when the request calls for it. `answer_product_question`
+/// is in `CORE_TOOLS` but is offered to product questions only, so it is not part of the fixed set.
+pub fn always_offered_rank(name: &str) -> Option<usize> {
+    CORE_TOOLS
+        .iter()
+        .position(|n| *n == name)
+        .filter(|_| name != "answer_product_question")
+}
+
 /// A deterministic, request-relevant subset of `tools_for` that fits a small
 /// model's prompt: the core tools plus the domain tools whose names and
 /// descriptions share the most words with the request (proposal tools only when
@@ -508,6 +518,8 @@ fn semantic_ranks(
     out
 }
 
+/// The size budget counts the full schema even though the prompt shows a short signature, so the
+/// same tools are offered as before the compact catalogue.
 fn rendered_len(t: &ToolDef) -> usize {
     t.name.len() + t.description.len() + t.schema.to_string().len() + 8
 }
@@ -764,6 +776,16 @@ pub fn requires_confirmation(ops: &[OpCall]) -> bool {
     let reg = crate::registry::catalog();
     ops.iter()
         .any(|o| reg.metadata(&o.op).is_some_and(|m| m.confirmation))
+}
+
+/// Every tool definition without the permission and registry checks, for prompt-size tests.
+#[cfg(test)]
+pub(crate) fn all_defs_unchecked() -> Vec<ToolDef> {
+    let mut out: Vec<ToolDef> = tools::TOOLS.iter().map(def_legacy).collect();
+    out.push(def_retrieve());
+    out.extend(reads::READS.iter().map(def_read));
+    out.extend(catalog::PROPOSALS.iter().map(|p| def_proposal(p)));
+    out
 }
 
 #[cfg(test)]

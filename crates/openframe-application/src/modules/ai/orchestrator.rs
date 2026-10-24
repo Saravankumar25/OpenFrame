@@ -205,17 +205,81 @@ pub fn assemble_context(
     out
 }
 
+/// The arguments of a tool as one readable list: `query: string, limit?: integer, kind: "a"|"b"`.
+/// Required arguments come first, then the optional ones by name (`?` marks them). The step grammar
+/// already forces the exact shape, so the prompt only shows names and kinds, not bounds.
+pub fn signature(schema: &Value) -> String {
+    let props = schema.get("properties").and_then(Value::as_object);
+    let Some(props) = props else {
+        return String::new();
+    };
+    let required: Vec<&str> = schema
+        .get("required")
+        .and_then(Value::as_array)
+        .into_iter()
+        .flatten()
+        .filter_map(Value::as_str)
+        .filter(|k| props.contains_key(*k))
+        .collect();
+    let optional = props
+        .keys()
+        .map(String::as_str)
+        .filter(|k| !required.contains(k));
+    required
+        .iter()
+        .map(|k| format!("{k}: {}", kind_label(&props[*k])))
+        .chain(optional.map(|k| format!("{k}?: {}", kind_label(&props[k]))))
+        .collect::<Vec<_>>()
+        .join(", ")
+}
+
+fn kind_label(schema: &Value) -> String {
+    if let Some(values) = schema.get("enum").and_then(Value::as_array) {
+        return values
+            .iter()
+            .map(Value::to_string)
+            .collect::<Vec<_>>()
+            .join("|");
+    }
+    match schema.get("type").and_then(Value::as_str) {
+        Some("array") => {
+            let item = kind_label(schema.get("items").unwrap_or(&Value::Null));
+            if item.contains('|') {
+                format!("({item})[]")
+            } else {
+                format!("{item}[]")
+            }
+        }
+        Some(t) => t.to_string(),
+        None => "any".to_string(),
+    }
+}
+
+/// The tool list of the system message, built for the engine's stored prompt work: the tools
+/// offered to every request come first in a fixed order, the others follow sorted by name, so two
+/// different questions share the policy and the fixed tools as an identical start.
 fn tool_catalog_text(tools: &[ToolDef]) -> String {
-    let mut s = String::from("Tools:\n");
-    for t in tools {
+    let mut ordered: Vec<&ToolDef> = tools.iter().collect();
+    ordered.sort_by(|a, b| {
+        let key = |t: &ToolDef| match toolbox::always_offered_rank(&t.name) {
+            Some(rank) => (0, rank, String::new()),
+            None => (1, 0, t.name.clone()),
+        };
+        key(a).cmp(&key(b))
+    });
+    let mut s =
+        String::from("Tools, written name(argument: kind). An argument marked ? is optional:\n");
+    for t in ordered {
         s.push_str(&format!(
-            "- {}: {} Arguments: {}\n",
-            t.name, t.description, t.schema
+            "- {}({}): {}\n",
+            t.name,
+            signature(&t.schema),
+            t.description
         ));
     }
     s.push_str(&format!(
-        "- {FINAL_TOOL}: Finish with a short answer written only from the tool results above. Arguments: {}\n",
-        final_schema()
+        "- {FINAL_TOOL}({}): Finish with a short answer written only from the tool results above.\n",
+        signature(&final_schema())
     ));
     s
 }
@@ -1430,7 +1494,7 @@ fn run_generation(
     Ok(())
 }
 
-fn valid_conversation_id(id: &str) -> bool {
+pub(super) fn valid_conversation_id(id: &str) -> bool {
     !id.is_empty() && id.len() <= 64 && id.chars().all(|c| c.is_ascii_alphanumeric() || c == '-')
 }
 
@@ -1804,6 +1868,177 @@ mod tests {
         let plain = "Scene 3 has 2*3 beats in act_one. 1984 was long ago.";
         assert_eq!(plain_text(plain), plain);
         assert_eq!(plain_text("  \n"), "");
+    }
+
+    /// The rendering used before the compact catalogue: the full JSON schema of every tool.
+    fn old_catalog_text(tools: &[ToolDef]) -> String {
+        let mut s = String::from("Tools:\n");
+        for t in tools {
+            s.push_str(&format!(
+                "- {}: {} Arguments: {}\n",
+                t.name, t.description, t.schema
+            ));
+        }
+        s.push_str(&format!(
+            "- {FINAL_TOOL}: Finish with a short answer written only from the tool results above. Arguments: {}\n",
+            final_schema()
+        ));
+        s
+    }
+
+    fn real(names: &[&str]) -> Vec<ToolDef> {
+        let all = toolbox::all_defs_unchecked();
+        names
+            .iter()
+            .map(|n| {
+                all.iter()
+                    .find(|t| t.name == *n)
+                    .unwrap_or_else(|| panic!("{n} is not a tool"))
+                    .clone()
+            })
+            .collect()
+    }
+
+    #[test]
+    fn a_signature_lists_required_arguments_first_then_optional_ones() {
+        let tools = real(&["retrieve_context", "count_scenes"]);
+        assert_eq!(
+            signature(&tools[0].schema),
+            "query: string, limit?: integer"
+        );
+        assert_eq!(signature(&json!({"type": "object", "properties": {}})), "");
+        assert_eq!(signature(&final_schema()), "text: string");
+        let s = json!({"type": "object", "additionalProperties": false,
+            "properties": {
+                "tags": {"type": "array", "items": {"type": "string", "maxLength": 4}, "maxItems": 2},
+                "kind": {"type": "string", "enum": ["a", "b"]},
+                "kinds": {"type": "array", "items": {"type": "string", "enum": ["a", "b"]}, "maxItems": 2},
+                "where": {"type": "object", "properties": {}},
+                "n": {"type": "integer", "minimum": 1, "maximum": 5},
+                "on": {"type": "boolean"}},
+            "required": ["on", "kind"]});
+        assert_eq!(
+            signature(&s),
+            r#"on: boolean, kind: "a"|"b", kinds?: ("a"|"b")[], n?: integer, tags?: string[], where?: object"#
+        );
+        // Every real tool renders without panicking and never prints a raw schema keyword.
+        for t in toolbox::all_defs_unchecked() {
+            let sig = signature(&t.schema);
+            assert!(
+                !sig.contains("maxLength") && !sig.contains("additionalProperties"),
+                "{}: {sig}",
+                t.name
+            );
+            assert_eq!(
+                t.schema["properties"].as_object().map_or(0, |p| p.len()),
+                if sig.is_empty() {
+                    0
+                } else {
+                    sig.matches(": ").count()
+                },
+                "{}: {sig}",
+                t.name
+            );
+        }
+    }
+
+    #[test]
+    fn the_catalogue_puts_the_fixed_tools_first_and_keeps_final_answer() {
+        let a = tool_catalog_text(&real(&[
+            "count_scenes",
+            "retrieve_context",
+            "search_project",
+            "clarify",
+        ]));
+        let b = tool_catalog_text(&real(&[
+            "list_characters",
+            "clarify",
+            "search_project",
+            "retrieve_context",
+        ]));
+        let names = |s: &str| {
+            s.lines()
+                .skip(1)
+                .map(|l| l[2..l.find('(').unwrap()].to_string())
+                .collect::<Vec<_>>()
+        };
+        assert_eq!(
+            names(&a),
+            [
+                "retrieve_context",
+                "search_project",
+                "clarify",
+                "count_scenes",
+                FINAL_TOOL
+            ]
+        );
+        assert_eq!(
+            names(&b),
+            [
+                "retrieve_context",
+                "search_project",
+                "clarify",
+                "list_characters",
+                FINAL_TOOL
+            ]
+        );
+        // The fixed tools are an identical start, so the engine can reuse its work for them.
+        let start = |s: &str| s.lines().take(4).collect::<Vec<_>>().join("\n");
+        assert_eq!(start(&a), start(&b));
+        assert!(a.contains("- final_answer(text: string): Finish"));
+        // The product tool is not in the fixed start: it is offered only to product questions.
+        let c = tool_catalog_text(&real(&[
+            "answer_product_question",
+            "retrieve_context",
+            "clarify",
+        ]));
+        assert_eq!(
+            names(&c),
+            [
+                "retrieve_context",
+                "clarify",
+                "answer_product_question",
+                FINAL_TOOL
+            ]
+        );
+    }
+
+    #[test]
+    fn the_compact_catalogue_is_at_most_60_percent_of_the_old_one() {
+        // A typical request: the fixed tools plus the few that match a question about scenes.
+        let tools = real(&[
+            "retrieve_context",
+            "search_project",
+            "project_overview",
+            "open_object",
+            "open_workspace",
+            "open_scene",
+            "clarify",
+            "private_information",
+            "count_scenes",
+            "scene_fact",
+            "list_characters",
+            "character_profile",
+            "find_scenes_mentioning",
+            "propose_task",
+        ]);
+        let (old, new) = (
+            old_catalog_text(&tools).len(),
+            tool_catalog_text(&tools).len(),
+        );
+        println!(
+            "catalogue length: old {old} chars, new {new} chars ({}%)",
+            new * 100 / old
+        );
+        assert!(new * 100 <= old * 60, "old {old}, new {new}");
+        // Per tool as well, over every tool the toolbox has.
+        let all = toolbox::all_defs_unchecked();
+        let (old_all, new_all) = (old_catalog_text(&all).len(), tool_catalog_text(&all).len());
+        println!(
+            "all tools: old {old_all} chars, new {new_all} chars ({}%)",
+            new_all * 100 / old_all
+        );
+        assert!(new_all < old_all);
     }
 
     #[test]

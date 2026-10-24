@@ -12,10 +12,14 @@
 
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { call, onAppEvent } from "../ipc/client";
+import { save as saveDialog } from "@tauri-apps/plugin-dialog";
+import { Download } from "lucide-react";
+import { OpError, call, onAppEvent } from "../ipc/client";
 import { reportError, useOp } from "../ipc/query";
-import { Banner, Button, Chip, Select, TextArea } from "../design-system";
+import { Banner, Button, Chip, IconButton, Select, TextArea } from "../design-system";
 import { useNav } from "../app/stores";
+import { toast } from "../app/toast";
+import type { AiReportResult } from "../ipc/generated/AiReportResult";
 import type { AiStatusDto } from "../ipc/generated/AiStatusDto";
 import type { AiHistoryDto } from "../ipc/generated/AiHistoryDto";
 import type { AiExchange } from "../ipc/generated/AiExchange";
@@ -83,6 +87,31 @@ export default function Assistant({ status, hasProject }: { status: AiStatusDto;
 
   const refresh = () => qc.invalidateQueries({ queryKey: ["ai.history"] });
 
+  // Only the person's own click writes anything: the file goes where the Save dialog says and nowhere else.
+  const conversationId = exchanges[0]?.conversationId ?? null;
+  const saveForReview = async () => {
+    if (!conversationId) return;
+    let path: string | null;
+    try {
+      path = await saveDialog({
+        title: "Save conversation for review",
+        defaultPath: "openframe-ai-conversation.json",
+        filters: [{ name: "JSON file", extensions: ["json"] }],
+      });
+    } catch (e) {
+      reportError(e);
+      return;
+    }
+    if (!path) return;
+    try {
+      const r = await call<AiReportResult>("ai.export_conversation", { conversationId, path });
+      toast.success(`Saved ${r.fileName} (${r.rows} ${r.rows === 1 ? "question" : "questions"}).`);
+    } catch (e) {
+      if (e instanceof OpError) toast.error(e.message);
+      else reportError(e);
+    }
+  };
+
   const send = () => {
     const q = text.trim();
     if (!q || pending) return;
@@ -145,6 +174,9 @@ export default function Assistant({ status, hasProject }: { status: AiStatusDto;
               options={options.map((k) => ({ value: k, label: SCOPE_LABELS[k] }))}
             />
           </div>
+          <IconButton label="Save conversation for review" disabled={!conversationId} onClick={() => void saveForReview()}>
+            <Download size={14} />
+          </IconButton>
           <Button size="xs" variant="ghost" onClick={() => setConversation(null)} title="Start a new conversation">
             New
           </Button>

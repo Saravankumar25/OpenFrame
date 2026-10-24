@@ -26,8 +26,8 @@ How the toolbox (`modules/ai/toolbox.rs`, contract C3) enforces this:
   budget, so a small local model's prompt stays short. `retrieve_context` uses the hybrid retrieval
   service when called through `run_tool_unlocked`, and keyword retrieval (FTS5, same privacy rule) otherwise.
 
-- Registered operations: **496** (156 queries, 340 commands)
-- Exposed to the assistant through tools: **305**; not AI-accessible: **191**
+- Registered operations: **497** (156 queries, 341 commands)
+- Exposed to the assistant through tools: **305**; not AI-accessible: **192**
 - Tools: **256** (63 read/compute/navigate, 193 proposal)
 
 Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation · **L** long-running (task id) · file effect: R = reads a user-picked file, W = writes to a user-picked location, P = project storage on disk.
@@ -282,6 +282,7 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 | `ai.download.remove`: Remove the downloaded OpenFrame AI models; projects are not touched. | command | Mutate | app level |  | `AiEmptyArgs` → `()` | hidden | none |
 | `ai.download.start`: Start or resume the OpenFrame AI download (the person's click; the app's only network use). | command | Mutate | app level |  | `AiEmptyArgs` → `()` | hidden | none |
 | `ai.download.status`: The Download OpenFrame AI screen: size, free space, progress. | query | Read | app level |  | `AiEmptyArgs` → `AiDownloadDto` | hidden | none |
+| `ai.export_conversation`: Write one of the person's own conversations (their questions, the answers and the sources) to a file they chose. | command | Mutate | UseAi |  | `AiConversationExportArgs` → `AiReportResult` | hidden | none |
 | `ai.export_report`: Write the local AI trace (numbers and ids only) and the health figures to a file the person chose. | command | Mutate | app level |  | `AiReportArgs` → `AiReportResult` | hidden | none |
 | `ai.graphics.set`: Settings, Offline AI, Graphics card: Automatic or Off. | command | Mutate | app level |  | `AiGraphicsArgs` → `()` | hidden | none |
 | `ai.health`: The AI health card: medians, apply rate, passes and the weakest tool, from the local numbers-only trace. | query | Read | app level |  | `AiHealthArgs` → `AiHealthDto` | hidden | none |
@@ -703,7 +704,7 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 - **Production scene number overrides and renumbering stay a human decision (ADR-0015, contract doc 32 §2.5); the assistant reads the numbers.**
   `screenplay.renumber_scenes`, `screenplay.restore_omitted_scene`, `screenplay.set_scene_number`
 - **Reads or writes a file-system location the user picks in a file dialog; the assistant never chooses or touches file-system paths (spec §3).**
-  `breakdown.export_report`, `budget.export_summary`, `callsheets.attach`, `callsheets.export_pdf`, `files.add`, `files.export_copy`, `files.relink`, `moodboard.export_pdf`, `packages.create_backup`, `packages.export_exchange`, `packages.export_project`, `packages.import_project`, `packages.inspect_package`, `packages.review_export_response`, `packages.review_open`, `project.locate`, `project.location_check`, `reports.export_report`, `schedule.export_daily_view`, `schedule.export_dood`, `schedule.export_schedule`, `screenplay.export`, `screenplay.import_apply`, `screenplay.import_preview`, `shot.export_list`, `sides.export_pdf`, `story.add_attachment`, `story.export_board`, `story.page.export`, `storyboard.export_sheet`, `vault.add_files`, `vault.relink`
+  `ai.export_conversation`, `breakdown.export_report`, `budget.export_summary`, `callsheets.attach`, `callsheets.export_pdf`, `files.add`, `files.export_copy`, `files.relink`, `moodboard.export_pdf`, `packages.create_backup`, `packages.export_exchange`, `packages.export_project`, `packages.import_project`, `packages.inspect_package`, `packages.review_export_response`, `packages.review_open`, `project.locate`, `project.location_check`, `reports.export_report`, `schedule.export_daily_view`, `schedule.export_dood`, `schedule.export_schedule`, `screenplay.export`, `screenplay.import_apply`, `screenplay.import_preview`, `shot.export_list`, `sides.export_pdf`, `story.add_attachment`, `story.export_board`, `story.page.export`, `storyboard.export_sheet`, `vault.add_files`, `vault.relink`
 - **Returns local file paths of managed media; the assistant never receives file-system paths.**
   `app.info`, `files.asset`
 - **Screenplay page layout settings (paper, font, spacing, header and footer, page breaks, custom element looks) stay a human decision (screenplay engine contract doc 32 §2.5); the assistant reads the resulting page facts.**

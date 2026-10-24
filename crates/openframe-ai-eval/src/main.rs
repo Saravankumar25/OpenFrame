@@ -169,7 +169,7 @@ fn run() -> Result<(), String> {
         }
         let engine = json!({ "calls": u.calls, "promptTokens": u.prompt_tokens,
             "completionTokens": u.completion_tokens, "maxPromptTokens": u.max_prompt_tokens,
-            "promptMs": u.prompt_ms, "generationMs": u.generation_ms, "chatWallMs": chat_ms });
+            "cachedTokens": u.cached_tokens, "promptMs": u.prompt_ms, "generationMs": u.generation_ms, "chatWallMs": chat_ms });
         let index = intelligence::service(&core).current().map(|ix| {
             let snap = ix.snapshot();
             json!({ "semanticReady": snap.semantic_ready, "model": snap.embedding_model })
