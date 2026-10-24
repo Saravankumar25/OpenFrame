@@ -6,6 +6,7 @@
 
 mod call_sheet_design;
 mod daily_view_design;
+mod dood_design;
 mod exports;
 mod packages;
 mod pdf_design;
