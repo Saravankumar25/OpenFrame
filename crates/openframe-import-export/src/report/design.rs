@@ -15,6 +15,7 @@ use super::*;
 
 mod band;
 mod blocks;
+mod board;
 mod cards;
 mod entries;
 mod head;
@@ -24,6 +25,9 @@ mod table;
 pub use band::{FactLine, FactRun, TableBand};
 pub use blocks::{
     Banner, Callout, CalloutCol, Legend, LegendItem, Masthead, Metric, Metrics, Section, Side,
+};
+pub use board::{
+    Board, BoardComment, BoardCount, BoardExtra, BoardItem, BoardItems, BoardKey, BoardLayout,
 };
 pub use cards::{Card, CardHead, CardPart, Cards, Field, Group, GroupItem, Tile};
 pub use entries::Entry;
@@ -37,6 +41,7 @@ use head::{head_frag, head_scan};
 pub(super) use matrix::{matrix, matrix_scan};
 
 pub(super) use blocks::{banner, callout, legend, masthead, metrics, scan_block, section, text};
+pub(super) use board::{board, board_scan};
 pub(super) use cards::cards;
 use cards::cards_scan;
 pub(super) use table::styled_table;

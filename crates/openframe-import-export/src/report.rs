@@ -44,6 +44,8 @@ use unicode_segmentation::UnicodeSegmentation;
 
 #[cfg(test)]
 mod band_matrix_tests;
+#[cfg(test)]
+mod board_tests;
 mod design;
 #[cfg(test)]
 mod furniture_tests;
@@ -51,6 +53,9 @@ pub use design::{
     Banner, Callout, CalloutCol, Card, CardHead, CardPart, Cards, Cell, CellItem, Chip, Col, Field,
     Group, GroupItem, HeaderStyle, Legend, LegendItem, Masthead, Metric, Metrics, Rgb, Row,
     Section, Side, StyledTable, Tile, Tone, Txt, Width, pal,
+};
+pub use design::{
+    Board, BoardComment, BoardCount, BoardExtra, BoardItem, BoardItems, BoardKey, BoardLayout,
 };
 pub use design::{
     Entry, FactLine, FactRun, Matrix, MatrixCode, MatrixCount, MatrixDay, MatrixKey, MatrixRow,
@@ -208,6 +213,8 @@ pub enum Block {
     Together(Vec<Block>),
     /// The Day Out of Days matrix (frozen columns, day groups, code cells).
     Matrix(Matrix),
+    /// A piece of the Beat Board export (bars, bands, items, key), see `report/design/board.rs`.
+    Board(Board),
 }
 
 // ------------------------------------------------------------------ images
@@ -548,6 +555,7 @@ fn scan_blocks(blocks: &[Block], scan: &mut dyn FnMut(&str)) {
                 | Block::Styled(_)
                 | Block::Legend(_)
                 | Block::Matrix(_)
+                | Block::Board(_)
                 | Block::Text(_) => design::scan_block(b, scan),
             }
         }
@@ -871,6 +879,19 @@ enum Op {
     },
 }
 
+/// An over-long word broken by characters: full lines go to `out`, the last piece is returned.
+fn break_word(word: &str, width: f32, size: f32, bold: bool, out: &mut Vec<String>) -> String {
+    let mut chunk = String::new();
+    for ch in word.chars() {
+        let next = format!("{chunk}{ch}");
+        if text_width_pt(&next, size, bold) > width && !chunk.is_empty() {
+            out.push(std::mem::take(&mut chunk));
+        }
+        chunk.push(ch);
+    }
+    chunk
+}
+
 /// Wrap text to a width in points.
 pub fn wrap_pt(text: &str, width: f32, size: f32, bold: bool) -> Vec<String> {
     if needs_fonts(text) {
@@ -887,22 +908,18 @@ pub fn wrap_pt(text: &str, width: f32, size: f32, bold: bool) -> Vec<String> {
             };
             if text_width_pt(&candidate, size, bold) <= width || line.is_empty() {
                 if line.is_empty() && text_width_pt(word, size, bold) > width {
-                    // Break an over-long word by characters.
-                    let mut chunk = String::new();
-                    for ch in word.chars() {
-                        let next = format!("{chunk}{ch}");
-                        if text_width_pt(&next, size, bold) > width && !chunk.is_empty() {
-                            out.push(std::mem::take(&mut chunk));
-                        }
-                        chunk.push(ch);
-                    }
-                    line = chunk;
+                    line = break_word(word, width, size, bold, &mut out);
                 } else {
                     line = candidate;
                 }
             } else {
                 out.push(std::mem::take(&mut line));
-                line = word.to_string();
+                // An over-long word that follows other words is broken the same way.
+                line = if text_width_pt(word, size, bold) > width {
+                    break_word(word, width, size, bold, &mut out)
+                } else {
+                    word.to_string()
+                };
             }
         }
         out.push(line);
@@ -1309,6 +1326,7 @@ fn render_block<'a>(p: &mut Pager<'a>, b: &'a Block) {
         Block::Text(t) => design::text(p, t),
         Block::Together(blocks) => together(p, blocks),
         Block::Matrix(m) => design::matrix(p, m),
+        Block::Board(b) => design::board(p, b),
         Block::Heading { text, level } => {
             let size = if *level <= 1 { 13.0 } else { 11.0 };
             // Keep headings with what follows them.
