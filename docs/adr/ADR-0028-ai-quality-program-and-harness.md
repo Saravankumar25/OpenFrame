@@ -5,6 +5,7 @@
 - **Amends:** [ADR-0013](ADR-0013-single-local-model-hybrid-rag-agent.md) decision 1 (one model for everyone becomes two
   tiers, and the model family is chosen by measurement) and its retrieval and tool-choice design where a decision below
   differs. ADR-0013's human-only Change Sets, ADR-0019 and ADR-0021 are unchanged.
+- **Extended 2026-10-24 by [ADR-0035](ADR-0035-ai-lanes-briefings-and-code-verifiers.md):** decisions 1 and 5 keep their rules (measure first; deterministic verifiers, three passes, 60 seconds). The verifier list grows, and the held-out paraphrase and conversation benches join the baseline. Decision 8 carries its amendment of the same day.
 - **Related:** [ADR-0026](ADR-0026-offline-ai-download-after-install.md) (download after install),
   [ADR-0027](ADR-0027-rust-core-two-ui-shells.md) (provider interface),
   [ADR-0029](ADR-0029-gpu-acceleration.md), [ADR-0021](ADR-0021-diagnostics-telemetry-analytics-policy.md),

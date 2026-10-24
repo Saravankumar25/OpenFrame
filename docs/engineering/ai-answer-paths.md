@@ -2,7 +2,9 @@
 
 > Written 2026-10-20 for the owner's AI briefs (`OpenFrameAI.docx`, 19 October, and the context engineering brief,
 > 20 October). It records the request path as built, the decisions taken, what is measured and what is not. Code is the
-> source of truth; this page names the files.
+> source of truth; this page names the files. Updated 2026-10-24 for the lanes, briefings, code verifiers, progress and
+> Cancel: the decisions are [ADR-0035](../adr/ADR-0035-ai-lanes-briefings-and-code-verifiers.md), the plan and its
+> baseline are [ai-harness-rebuild.md](../specs/ai-harness-rebuild.md).
 
 ## 1. The path of one request
 
@@ -105,6 +107,11 @@
 - "Does Ravi speak to Maya?", "When do they meet?", continuity checks and schedule-change history still go to the model
   with retrieved snippets; they are not computed.
 - File contents: the assistant reads file names and notes, not the bodies of attached PDFs or documents.
+
+- Planned in the harness plan and not built (ADR-0035, "Not adopted"): a reranker, AI digest lines, a stored digest
+  table, token streaming, speculative decoding and the engine benchmarks. The first full run of the held-out and
+  conversation benches on the new lanes is not saved yet, so no gain is claimed here.
+- The intent thresholds (score 0.88, margin 0.03) were chosen with a stand-in embedder and are to be tuned from the trace.
 
 ## 6. Owner walkthrough: try these ten questions
 

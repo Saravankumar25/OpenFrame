@@ -5,6 +5,7 @@
 - **Date:** 2026-09-30
 - **Related:** Import/Export spec; FSD exports and printing; invariant 8 (issued exports are immutable snapshots);
   PRD C-24 (paper sizes), C-25 (regional scripts)
+- **Amended 2026-10-24:** the design of production documents (footer, margins, running header, tables, keep rules, orientation) is [ADR-0036](ADR-0036-production-pdf-design-system-v2.md). The screenplay layout profile is now version 5 of the formatting standard ([screenplay-formatting-standard-v5.md](../specs/screenplay-formatting-standard-v5.md); version 4 is in `docs/history/specs/`): 36 pt before scene headings, transitions and shots kept with what follows, `(MORE)` and `CUE (CONT'D)` at every split of one speech, the `number_first_page` page setting (default on) and a gutter between the title page blocks. Determinism (decision 3) is unchanged.
 - **Amendment pending:** [ADR-0016](ADR-0016-pdf-embedded-fonts-and-shaping.md) (Proposed) replaces decision 2 and the
   Latin-1 limitation to meet the P0 Indic-script requirement of the Revision 1 specification. Until it is accepted, this ADR governs the code.
 
