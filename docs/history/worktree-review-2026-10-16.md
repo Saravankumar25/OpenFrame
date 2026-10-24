@@ -1,3 +1,5 @@
+> Superseded by [the development storage policy](../development-storage-policy.md) on 2026-10-24: the owner decided on 2026-10-16 and the clean-up is done; the rules now live in the policy. Moved to history unchanged.
+
 # Worktree review (Windows phase W1)
 
 > Written 2026-10-16 for the owner's decision. Nothing has been deleted. Read-only review produced by a script that never

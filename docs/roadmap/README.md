@@ -4,7 +4,7 @@
 > [ADR-0030](../adr/ADR-0030-verification-ladder-and-release-flow.md)). The roadmap has three chapters. Chapter 1 has two
 > tracks, one for Windows and one for the Mac, of ten phases each. The 26-area [build plan](../implementation/masterplan.md)
 > keeps every checklist box and its evidence; this page maps its areas onto the chapters. The earlier roadmap map is in
-> [the archive](../history/2026-10-15-roadmap-map-before-restructure.md).
+> [history](../history/2026-10-15-roadmap-map-before-restructure.md).
 
 ## 1. The chapters
 

@@ -11,7 +11,7 @@
 | What OpenFrame is, who it is for, the chapters | [product/vision-and-scope.md](product/vision-and-scope.md) |
 | What to do next | [implementation/handoff.md](implementation/handoff.md), then [roadmap/README.md](roadmap/README.md) |
 | The Windows plan, ten phases | [roadmap/chapter-1a-windows-phases.md](roadmap/chapter-1a-windows-phases.md) |
-| The Mac plan, ten phases | [roadmap/chapter-1b-mac-phases.md](roadmap/chapter-1b-mac-phases.md) |
+| The Mac plan, ten phases | [roadmap/chapter-1b-mac-phases.md](roadmap/chapter-1b-mac-phases.md); what to port from the 2026-10-24 upgrade: [roadmap/mac-port-list-2026-10-24.md](roadmap/mac-port-list-2026-10-24.md) |
 | How it is built, in simple words | [architecture/README.md](architecture/README.md), then the [report](reports/2026-10-09-project-retrospection-and-audit.md) (a snapshot) |
 | What works and how well it is proved | [implementation/feature-status.md](implementation/feature-status.md) |
 | How we test and how the pilot runs | [testing/README.md](testing/README.md), [testing/internal-test-plan.md](testing/internal-test-plan.md) |
@@ -40,7 +40,7 @@ docs/
   website/                   website source notes and supplied prompts (Chapter 2)
   manual/                    user manual (.docx, .pdf), manual testing guide (.docx, .csv), test-data/ sample files
   audits/                    dated evidence snapshots (do not edit)
-  history/                   history; README is the history index (do not edit the files; the old archive/ folder was merged here on 2026-10-24)
+  history/                   history; README is the history index (do not edit the files; the old archive/ folder was merged here on 2026-10-24, and completed plans, replaced standards and superseded session prompts are moved here with a one-line note)
   (spec-digest/ moved to history/2026-09-spec-digest/ in phase W1)
   development-storage-policy.md
 WindowsHTML/                 every Windows screen captured from the real app (see its README)
@@ -102,10 +102,11 @@ Full table with replaced decisions: [adr/README.md](adr/README.md). Owner answer
   ([ADR-0027](adr/ADR-0027-rust-core-two-ui-shells.md)); SQLite per project, UUIDv7 identities, one mutation pipeline, undo,
   recovery (ADR-0001 to 0005, 0011).
 - **AI:** local only; measured first, two model tiers, verifier-guided loop, memory, English release bar, eleven further
-  languages ([ADR-0028](adr/ADR-0028-ai-quality-program-and-harness.md)); Vulkan graphics-card path with a first-run probe
+  languages ([ADR-0028](adr/ADR-0028-ai-quality-program-and-harness.md)); lanes decided by code, code-built briefings, code verifiers and the shorter agent loop ([ADR-0035](adr/ADR-0035-ai-lanes-briefings-and-code-verifiers.md)); Vulkan graphics-card path with a first-run probe
   ([ADR-0029](adr/ADR-0029-gpu-acceleration.md)); the runtime ships in the package and the models download after install
   ([ADR-0026](adr/ADR-0026-offline-ai-download-after-install.md)); human-only Change Sets, crash-safe apply (ADR-0013 as
   amended, ADR-0019).
+- **Exports and layout:** production PDFs follow the design package v2 ([ADR-0036](adr/ADR-0036-production-pdf-design-system-v2.md)); the screenplay follows formatting standard v5 ([specs/screenplay-formatting-standard-v5.md](specs/screenplay-formatting-standard-v5.md), ADR-0008 note).
 - **Collaboration:** file-based Exchange, Review and Response packages only (ADR-0007).
 - **Platforms:** Windows 11 and Apple silicon only (ADR-0017). The Intel MacBook is for development.
 - **Business model (target, not final):** paid with a 7-day free trial; stores run the trial; internal builds have no trial,

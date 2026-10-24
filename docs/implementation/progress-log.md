@@ -101,7 +101,7 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
   43), writing within length 100.0 percent, answer facts 99.0 percent, retrieval recall at 5 99.4 percent, median 136 ms.
 - **Docs updated:** feature status (STORY-PAGE-001, SCRIPT-004), physical database and release migration (migration
   17), layout and scroll contract, UX change log, feature preservation matrix, AI answer paths, AI tool coverage, doc 33,
-  E2E scenarios, this log, handoff, `next-session-windows-html-prompt.md` (the owner's next task).
+  E2E scenarios, this log, handoff, `docs/history/next-session-windows-html-prompt.md` (the owner's next task).
 - **Decisions made or needed:** none new.
 - **Blocked / risks:** writing grounding 67.1 percent; the installed `OpenFrame-3.exe` predates this work.
 - **Next:** build `OpenFrame-4.exe` when the owner asks; WindowsHTML in a new session (prompt file).
@@ -157,7 +157,7 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 - **Checks run:** listed under Evidence. Full Rust workspace and web suites: not run (only AI code changed).
 
 ### 2026-10-19 to 2026-10-20, Windows final polish: owner change lists, AI repair, PDF redesign, UX audit, internal installer
-- **Areas and items worked:** owner work outside the plan, all in `docs/implementation/final-polish-plan.md`: the change
+- **Areas and items worked:** owner work outside the plan, all in `docs/history/final-polish-plan.md`: the change
   list (`changes/all_changes.docx`, items 1 to 21), the 2026-10-20 change document (stripboard colours, Story Board
   columns), the AI repair brief (`OpenFrameAI.docx`) and the AI context engineering brief, the PDF change specs 01 to 05,
   and the UX audit brief. The Windows UI keeps its own design (owner, 2026-10-19).

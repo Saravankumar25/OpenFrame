@@ -1,3 +1,5 @@
+> Superseded by [the Windows internal release gate](../release/windows-internal-release-gate.md) and the progress log on 2026-10-24: W9 closed on 2026-10-18 and this session plan is finished. Moved to history unchanged.
+
 # Endgame plan: finish the Windows track (W9 and W10 preparation)
 
 > Written 2026-10-17 at the start of the endgame session, on branch `windows/w9-endgame` from `main` at 53b504d. One

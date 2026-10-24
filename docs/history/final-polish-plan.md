@@ -1,3 +1,5 @@
+> Superseded by [the Windows UX change log](../ux/change-log.md) and the progress log on 2026-10-24: the final polish work finished on 2026-10-20 and this plan is finished. Moved to history unchanged.
+
 # Windows final polish: work plan
 
 Written 2026-10-19 at the owner's request ("OpenFrame Windows: final refinement, UI unification and release build").

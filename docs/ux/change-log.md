@@ -3,7 +3,7 @@
 > Sources: the owner's change list (`changes/all_changes.docx`), the 2026-10-20 change document
 > (`openframe-chnages.docx`), the AI repair brief (`OpenFrameAI.docx`) and the UX audit brief. None of these source
 > files are committed. Owner decision 2026-10-19: the Windows app keeps its own design and is not unified with the Mac
-> app; only the listed changes are made, in the Windows style. Detailed plan: `docs/implementation/final-polish-plan.md`.
+> app; only the listed changes are made, in the Windows style. Detailed plan: `docs/history/final-polish-plan.md`.
 
 | Area | Change | Root cause or reason | Where |
 |---|---|---|---|

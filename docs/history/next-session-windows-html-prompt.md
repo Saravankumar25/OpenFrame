@@ -1,3 +1,5 @@
+> Superseded by [WindowsHTML/README.md](../../WindowsHTML/README.md) on 2026-10-24: the task was done on 2026-10-21 and the prompt is a record of what was asked. Moved to history unchanged.
+
 # Next session prompt: WindowsHTML, every Windows screen as an HTML page
 
 > **Done on 2026-10-21.** The result is `WindowsHTML/` (see its README). The old `HTML_Mockups/` folder named below was

@@ -1,6 +1,6 @@
 # Windows internal release gate
 
-> Written 2026-10-17 (endgame session, [plan](../implementation/endgame-plan.md)). The owner receives the internal
+> Written 2026-10-17 (endgame session, [plan](../history/endgame-plan.md)). The owner receives the internal
 > installer only when every check below says **Pass** with saved evidence, or **Exception** with the owner's approval and
 > date. Nothing else counts: "should work", "passed on debug" and "passed on an earlier build" are not passes. Evidence
 > lives in `evidence/w9/`. A code change after the final build re-opens the build checks (G1 to G4).

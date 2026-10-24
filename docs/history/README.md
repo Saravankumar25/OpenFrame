@@ -4,6 +4,7 @@
 > historical, and why. Nothing in this folder is a requirement. Where an archived text and a living document disagree,
 > the living document wins ([documentation map](../README.md)). The files in this folder are not edited; mistakes in them
 > are recorded in the [reconciliation log](../implementation/reconciliation-log.md).
+> Files moved here on 2026-10-24 carry one added line at the top ("Superseded by ..."); nothing else in them changed.
 
 ## 1. In this folder
 
@@ -30,6 +31,11 @@
 | `2026-10-05-ai-assisted-development-controls.md` | Engineering document 31, AI-assisted development controls. Moved in W1 | Its risk levels and feature contract were copied into CONTRIBUTING.md section 8 | [CONTRIBUTING.md](../../CONTRIBUTING.md) section 8 |
 | `notes/documentation-stack-guidance.md` | Raw intake notes on which documents a project needs | Shaped the documentation map | [../README.md](../README.md) |
 | `notes/store-certification-and-launch-gap-notes.md` | Raw intake notes on store certification gaps | Source for the launch register | launch register, [Chapter 3](../roadmap/chapter-3-commercial-distribution.md) |
+| `endgame-plan.md` | The W9 endgame session plan of 2026-10-17 (items E1 to E17). Moved 2026-10-24 | W9 closed on 2026-10-18; the progress log and the release gate cite it | [windows-internal-release-gate.md](../release/windows-internal-release-gate.md) |
+| `final-polish-plan.md` | The Windows final polish plan of 2026-10-19. Moved 2026-10-24 | The change log and the progress log cite it | [ux/change-log.md](../ux/change-log.md) |
+| `next-session-windows-html-prompt.md` | The prompt that asked for WindowsHTML (done 2026-10-21). Moved 2026-10-24 | Record of what was asked | [WindowsHTML/README.md](../../WindowsHTML/README.md) |
+| `worktree-review-2026-10-16.md` | The read-only worktree review of Windows phase W1. Moved 2026-10-24 | Record of the clean-up the owner approved | [development-storage-policy.md](../development-storage-policy.md) |
+| `specs/screenplay-formatting-standard-v4.md` | The screenplay formatting standard, version 4. Replaced 2026-10-24 | The layout rules of the code before the v5 work | [screenplay-formatting-standard-v5.md](../specs/screenplay-formatting-standard-v5.md) |
 
 ## 2. Kept in place, but historical
 

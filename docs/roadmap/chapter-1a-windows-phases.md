@@ -1,7 +1,7 @@
 # Chapter 1, Windows track: ten phases
 
 > Written 2026-10-15. This is the current plan for finishing the Windows application. It replaces the seven "streams" of the
-> earlier Chapter 1 plan (kept in [the archive](../history/2026-10-15-chapter-1-plan-before-restructure.md)). The Mac track
+> earlier Chapter 1 plan (kept in [history](../history/2026-10-15-chapter-1-plan-before-restructure.md)). The Mac track
 > ([chapter-1b-mac-phases.md](chapter-1b-mac-phases.md)) starts only when phase 10 here has closed
 > ([ADR-0030](../adr/ADR-0030-verification-ladder-and-release-flow.md)). Decisions behind the phases:
 > [ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md), [ADR-0028](../adr/ADR-0028-ai-quality-program-and-harness.md),
