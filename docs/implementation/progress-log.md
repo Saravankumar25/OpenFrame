@@ -8,7 +8,7 @@
 
 ## Dashboard (update every session from `npm run plan:status`)
 
-**Overall: 132 of 306 boxes (43.1%).** **Current goal** (boxes without the "Later: store publishing" tag): **131 of 223 (58.7%)**. Updated 2026-10-20 after the final polish run (no plan boxes moved: the work was the owner's change lists).
+**Overall: 132 of 306 boxes (43.1%).** **Current goal** (boxes without the "Later: store publishing" tag): **131 of 223 (58.7%)**. Updated 2026-10-25 after the AI harness and exports upgrade (no plan boxes moved: the work added feature rows, see the first entry).
 
 | # | Area | Done |
 |---|---|---|
@@ -57,6 +57,66 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 ```
 
 ## Entries
+
+### 2026-10-24 to 2026-10-25, AI harness rebuild, PDF exports v2, screenplay v5, owner issues
+- **Areas and items worked:** AI assistant quality and hardening (the harness rebuild, steps S1 to S8 of
+  [ai-harness-rebuild.md](../specs/ai-harness-rebuild.md)); Call sheets, budget, templates, samples and exports (the
+  production PDF design v2); Screenplay engine and file formats (formatting standard v5); owner issue list of
+  2026-10-24 (cover photo, Dark page, relationship maps, Sides, side panels). Branch
+  `upgrade/harness-exports-screenplay`, 50 commits since `17114505`, local only.
+- **Done:**
+  - AI: evaluation tool gains shared answer checks, a routes-off switch, held-out paraphrases and a conversation bench
+    (`9002719f`, baseline `786dfa45`); query understanding and briefings; lane router, Chat lane, code verifiers and a
+    whole-script recipe (`b2d22c0d`); typo-tolerant routing, 34 intent prototypes, Cancel and progress lines
+    (`ef4544ec`); Save conversation for review (`097b3b1f`); chat tuning (`6c2d00b1`); answer sanitizer and
+    two-closest-tool gates (`93f0a190`); verifier fix after the final run (`73a41425`).
+  - Exports: shared renderer rebuilt in additive pieces, then Call Sheet, Daily View, Shooting Schedule, Day Out of
+    Days, Shot List, Storyboard, Breakdown, Catalog, Budget Summary, six production reports, Moodboard, Beat Board
+    Outline and Card Board (`2b82e023` to `63ab6c52`); the two export branches merged (`f0e3b803`, `4e29a47a`).
+  - Screenplay: layout per standard v5 with 36 pt scene gaps, keep rules, speech continuation, first-page number
+    setting and a title page gutter (`18a1a798`, `4cbf6a6a`); Sides cover wraps and the selected cast is shown clearly
+    (`383e1993`, `81e75d16`); relationship maps (`b525f1d9`); Dark page (`2dc8e6e7`); project cover photo
+    (`ddcf1317`); side panels stay in view (`b74a6b29`).
+  - Fixes on the way: FDX suite test compares text without carriage returns (`e5046449`); scenario file for the
+    WindowsHTML capture spec so the governance test passes (`f7d96791`); the writing check skips the AI answer-check
+    files that list a banned word on purpose (`5fe5aa95`).
+- **Evidence:** [AI baseline](../release/evidence/ai-harness-2026-10-24/baseline/README.md) and
+  [final run](../release/evidence/ai-harness-2026-10-24/final/README.md), real Gemma 3 1B, binary from `93f0a190`.
+  Final run against the baseline: held-out paraphrases correct tool 46.7% (20.0%); conversation answer facts 46.4%
+  (42.9%); invented names 7.7% (13.1%); wrong scene citations 0%; within length 71.7% (55.0%; the S7 build measured
+  86.7%, the drop came from the S8 `evidence_echo` check and was fixed in `73a41425` after the run, not measured
+  again); correct abstention 2 of 4 (0 of 4); repetition 0% (8.3%); gold tool and arguments 97.5% (100.0%, regex
+  routes written on that wording); safety 41 of 41. Poisoning, writing and routes-off runs did not run in the final
+  pass (an end-to-end start reset the engine bundle folder); the S7 build measured poisoning 5 of 5. PDFs: 95 files
+  and 379 pages passed the automated PDF checks.
+- **Features moved:** new rows, Built: AI lanes and Chat answers (AI-015). New rows, Reachable: AI progress and Cancel
+  (AI-016), Save conversation for review (AI-017), project cover photo (CORE-018), relationship maps (STORY-008),
+  Dark page (SCRIPT-026), first-page number setting (SCRIPT-027), production PDF design v2 (XFER-014), Sides
+  selected cast (CALL-008). All at proof level 1. No row is Verified: the end-to-end results are recorded separately.
+  The older PDF rows keep their earlier evidence. No plan box ticked: none of the 26 areas completes a box with this
+  work (the AI bar of 90 and 85 percent is not met).
+- **Docs updated:** documents moved to `docs/history/` (`docs/archive/` merged into it; endgame plan, final polish
+  plan, older prompts); [ADR-0035](../adr/ADR-0035-ai-lanes-briefings-and-code-verifiers.md) (AI lanes, briefings and
+  code verifiers) and [ADR-0036](../adr/ADR-0036-production-pdf-design-system-v2.md) (production PDF design v2); ADR-0008,
+  ADR-0013 and ADR-0028 amended in place; [owner-decisions.md](owner-decisions.md) (rows of 2026-10-24); the
+  [Mac port list](../roadmap/mac-port-list-2026-10-24.md) linked from the Mac phases; screenplay formatting standard
+  v5 replaces v4; reconciliation log; feature status; this log; handoff.
+- **Decisions made or needed:** decided 2026-10-24 and recorded: answer shape (line breaks and simple lists in Explain,
+  Deep and Ideas answers), progress lines and Cancel with no token streaming, Save conversation only on the person's
+  press, standard v5, PDF design package v2, one history folder, Mac as a port list, three parallel tracks for this
+  upgrade only, one full end-to-end run at the end. Needed from the owner: approve the gold sets so the numbers count
+  as official.
+- **Blocked / risks:** paraphrase accuracy (46.7%) is far below the 90 percent bar and the held-out set is no longer
+  strictly held out, so a fresh set must be written before any final figure; the within-length fix is not
+  re-measured; poisoning, writing and routes-off were not run on the final build; release-mode end-to-end and installer
+  results are recorded separately after this entry.
+- **Next:** write a fresh held-out paraphrase set and re-run the final measurements on the current build; owner review
+  of the sample PDFs; full end-to-end run and the release-mode run, then move rows to Verified only on those results.
+- **Checks run:** Rust 2,269 tests passed after the export merge; desktop (Vitest) 697 passed; governance 90 of 90;
+  95 PDFs and 379 pages passed the automated PDF checks; `node scripts/check-feature-status.mjs`,
+  `npm run check:writing` and `node scripts/check-links.mjs` clean after the documentation change; full debug
+  end-to-end run in progress, results recorded separately. `npm run verify` and `graphify update .` not run in this
+  documentation step.
 
 ### 2026-10-21, WindowsHTML: every Windows screen as HTML; Home list refresh fix
 - **Areas and items worked:** owner work outside the plan (Chapter 2 source material): remove `HTML_Mockups/`, build
