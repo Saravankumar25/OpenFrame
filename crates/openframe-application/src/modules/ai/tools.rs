@@ -1068,7 +1068,7 @@ fn scene_elements(c: &Connection, scene_id: &str) -> AppResult<Vec<(String, Stri
 
 /// Dialogue blocks in order: (speaker cue, dialogue text). A block is one character cue followed by
 /// its dialogue; parentheticals belong to the block and are not counted as dialogue.
-fn dialogue_blocks(rows: &[(String, String)]) -> Vec<(String, String)> {
+pub(super) fn dialogue_blocks(rows: &[(String, String)]) -> Vec<(String, String)> {
     let mut out: Vec<(String, String)> = Vec::new();
     let mut speaker: Option<String> = None;
     let mut open = false;

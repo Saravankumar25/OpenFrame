@@ -14,6 +14,7 @@
 //! OpenFrame stays fully usable when the AI is not downloaded, missing or damaged: nothing else
 //! depends on this module.
 
+mod briefing;
 pub mod catalog;
 pub mod change_set;
 mod commands;
@@ -27,10 +28,13 @@ pub mod records;
 pub mod retrieval;
 pub mod scope;
 pub mod service;
+#[cfg(test)]
+mod test_script;
 pub mod toolbox;
 pub mod tools;
 pub mod trace;
 pub mod types;
+mod understand;
 
 use openframe_domain::{Actor, AppResult, Capability};
 use serde::{Deserialize, Serialize};
