@@ -76,6 +76,11 @@ pub enum CellItem {
         text: String,
         right: Option<String>,
     },
+    /// A small label with a text that wraps beside it under a hanging indent ("DAY NOTES  ...").
+    Labelled {
+        label: Txt,
+        text: Txt,
+    },
 }
 
 #[derive(Debug, Clone, Default)]
@@ -131,6 +136,9 @@ pub struct Row {
     /// Keep this row on the same page as the `n` rows before it (subtotals and totals travel with
     /// the last rows they sum up).
     pub keep_prev: u8,
+    /// The first cell spans this many columns (2 or more; 0 and 1 mean one column). The other
+    /// cells then belong to the columns after the span.
+    pub lead_span: u8,
 }
 
 impl Row {
@@ -181,6 +189,11 @@ pub struct StyledTable {
     pub continued: Option<String>,
     pub pad_x: f32,
     pub pad_y: f32,
+    /// A band (day title and facts) printed on top of the header on every page, in place of the
+    /// plain title.
+    pub band: Option<TableBand>,
+    /// Start on a new page when the whole table fits one page but not the space left.
+    pub keep_whole: bool,
 }
 
 impl StyledTable {
@@ -199,6 +212,8 @@ impl StyledTable {
             continued: None,
             pad_x: 7.0,
             pad_y: 6.0,
+            band: None,
+            keep_whole: false,
         }
     }
 }
@@ -381,6 +396,22 @@ fn cell_content<'a>(p: &mut Pager<'a>, cell: &'a Cell, w: f32, default_align: Al
                 y += 6.0;
             }
             CellItem::Gap(g) => y += g,
+            CellItem::Labelled { label, text } => {
+                let lw = tw(&label.text, label.size, label.bold, label.track) + 8.0;
+                let mut tmp = Frag::new();
+                let th = put_txt(&mut tmp, 0.0, 0.0, (w - lw).max(20.0), text);
+                f.text(
+                    0.0,
+                    y + text.size,
+                    &label.text,
+                    label.size,
+                    label.bold,
+                    label.color,
+                    label.track,
+                );
+                f.put(tmp, lw, y);
+                y += th;
+            }
             CellItem::Heading { dot, text, right } => {
                 let mut tx = 0.0;
                 if let Some(d) = dot {
@@ -428,6 +459,21 @@ fn row_frag<'a>(
             h = h.max(c.h + 2.0 * t.pad_y);
             contents.push((0.0, total_w, c, cell));
         }
+    } else if row.lead_span > 1 {
+        // The first cell spans several columns; the rest follow the span one to one.
+        let span = (row.lead_span as usize).min(widths.len());
+        let mut col = 0usize;
+        for (k, cell) in row.cells.iter().enumerate() {
+            let n = if k == 0 { span } else { 1 };
+            if col + n > widths.len() {
+                break;
+            }
+            let w: f32 = widths[col..col + n].iter().sum();
+            let c = cell_content(p, cell, w - 2.0 * t.pad_x, t.columns[col].align);
+            h = h.max(c.h + 2.0 * t.pad_y);
+            contents.push((xs[col], w, c, cell));
+            col += n;
+        }
     } else {
         for (i, w) in widths.iter().enumerate() {
             let Some(cell) = row.cells.get(i) else {
@@ -465,8 +511,11 @@ fn row_frag<'a>(
         let _ = w;
     }
     if t.grid && !row.span {
-        for x in xs.iter().skip(1) {
-            f.line(*x, 0.0, *x, h, pal::LINE, 0.6);
+        let inside = |i: usize| row.lead_span > 1 && i < row.lead_span as usize;
+        for (i, x) in xs.iter().enumerate().skip(1) {
+            if !inside(i) {
+                f.line(*x, 0.0, *x, h, pal::LINE, 0.6);
+            }
         }
     }
     f.line(0.0, h, total_w, h, pal::LINE, 0.6);
@@ -573,14 +622,24 @@ fn header_cell_content(cell: &Cell, w: f32, default_align: Align) -> Frag {
 /// The title row of a table's repeating header: its name in section style, a navy rule under it,
 /// and " · continued" after the name on continuation pages. `None` for an untitled table.
 fn title_frag(t: &StyledTable, total_w: f32, continued: bool) -> Option<Frag> {
+    if let Some(b) = &t.band {
+        return Some(band_frag(b, total_w, continued));
+    }
+    title_block(t.title.as_ref()?, t.title_hint.as_ref(), total_w, continued)
+}
+
+/// A title in section style with its hint at the right, over a navy rule.
+pub(super) fn title_block(
+    title: &str,
+    hint: Option<&String>,
+    total_w: f32,
+    continued: bool,
+) -> Option<Frag> {
     const SIZE: f32 = 10.0;
     const TRACK: f32 = 1.0;
     const LEAD: f32 = SIZE * 1.2;
     const SUFFIX: &str = " · continued";
-    let title = t.title.as_ref()?;
-    let hint_w = t
-        .title_hint
-        .as_ref()
+    let hint_w = hint
         .map(|h| tw(h, 7.4, false, 0.0).min(total_w * 0.4))
         .unwrap_or(0.0);
     let avail = (total_w - hint_w - 12.0).max(60.0);
@@ -606,7 +665,7 @@ fn title_frag(t: &StyledTable, total_w: f32, continued: bool) -> Option<Frag> {
             h += 9.5;
         }
     }
-    if let Some(hint) = &t.title_hint {
+    if let Some(hint) = hint {
         let w = tw(hint, 7.4, false, 0.0).min(total_w * 0.4);
         f.text(total_w - w, SIZE, hint, 7.4, false, pal::SLATE, 0.0);
     }
@@ -623,7 +682,7 @@ fn title_frag(t: &StyledTable, total_w: f32, continued: bool) -> Option<Frag> {
 /// lists the rows that start a page. It holds 0 when the table must start on a new page because
 /// its first rows (title, header and at least two rows) do not fit the space left, and it never
 /// leaves a single row alone on the last page when moving the row before it avoids that.
-fn plan_breaks(
+pub(super) fn plan_breaks(
     heights: &[f32],
     forbid: &[bool],
     first_room: f32,
@@ -715,6 +774,9 @@ pub(in crate::report) fn styled_table<'a>(p: &mut Pager<'a>, t: &'a StyledTable)
                 &Txt::new(e.clone()).size(8.6).color(pal::FAINT).after(6.0),
             );
         }
+        if t.band.is_some() {
+            p.y -= 10.0;
+        }
         return;
     }
     let draw_box = |p: &mut Pager, seg_top: f32| {
@@ -750,10 +812,16 @@ pub(in crate::report) fn styled_table<'a>(p: &mut Pager<'a>, t: &'a StyledTable)
         }
     }
     let title_h = |continued: bool| title_frag(t, total_w, continued).map_or(0.0, |f| f.h);
-    let legacy_band = t.title.is_none() && t.continued.is_some();
+    let legacy_band = t.title.is_none() && t.continued.is_some() && t.band.is_none();
     let first_head = title_h(false) + header_h;
     let cont_head = title_h(true) + header_h + if legacy_band { 21.0 } else { 0.0 };
     let page_rows = p.body_h();
+    if t.keep_whole && !p.fresh() {
+        let whole = first_head + heights.iter().sum::<f32>();
+        if whole > p.room() && whole <= page_rows {
+            p.new_page();
+        }
+    }
     let breaks = plan_breaks(
         &heights,
         &forbid,
@@ -823,6 +891,9 @@ pub(in crate::report) fn table_scan(t: &StyledTable, scan: &mut dyn FnMut(&str))
     for s in t.title.iter().chain(&t.title_hint) {
         scan(s);
     }
+    if let Some(b) = &t.band {
+        band_scan(b, scan);
+    }
     for c in &t.columns {
         scan(&c.header);
     }
@@ -843,6 +914,10 @@ pub(in crate::report) fn table_scan(t: &StyledTable, scan: &mut dyn FnMut(&str))
                     if let Some(r) = right {
                         scan(r);
                     }
+                }
+                CellItem::Labelled { label, text } => {
+                    scan(&label.text);
+                    scan(&text.text);
                 }
                 _ => {}
             }

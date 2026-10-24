@@ -42,6 +42,8 @@ use openframe_domain::{AppError, AppResult};
 use pdf_writer::Content;
 use unicode_segmentation::UnicodeSegmentation;
 
+#[cfg(test)]
+mod band_matrix_tests;
 mod design;
 #[cfg(test)]
 mod furniture_tests;
@@ -49,6 +51,10 @@ pub use design::{
     Banner, Callout, CalloutCol, Card, CardHead, CardPart, Cards, Cell, CellItem, Chip, Col, Field,
     Group, GroupItem, HeaderStyle, Legend, LegendItem, Masthead, Metric, Metrics, Rgb, Row,
     Section, Side, StyledTable, Tile, Tone, Txt, Width, pal,
+};
+pub use design::{
+    FactLine, FactRun, Matrix, MatrixCode, MatrixCount, MatrixDay, MatrixKey, MatrixRow,
+    MatrixTotals, TableBand,
 };
 
 use crate::fonts;
@@ -200,6 +206,8 @@ pub enum Block {
     /// group starts a new page; a group taller than a page starts fresh and then splits only
     /// where its own blocks split (between rows and cards).
     Together(Vec<Block>),
+    /// The Day Out of Days matrix (frozen columns, day groups, code cells).
+    Matrix(Matrix),
 }
 
 // ------------------------------------------------------------------ images
@@ -539,6 +547,7 @@ fn scan_blocks(blocks: &[Block], scan: &mut dyn FnMut(&str)) {
                 | Block::Cards(_)
                 | Block::Styled(_)
                 | Block::Legend(_)
+                | Block::Matrix(_)
                 | Block::Text(_) => design::scan_block(b, scan),
             }
         }
@@ -1299,6 +1308,7 @@ fn render_block<'a>(p: &mut Pager<'a>, b: &'a Block) {
         Block::Legend(l) => design::legend(p, l),
         Block::Text(t) => design::text(p, t),
         Block::Together(blocks) => together(p, blocks),
+        Block::Matrix(m) => design::matrix(p, m),
         Block::Heading { text, level } => {
             let size = if *level <= 1 { 13.0 } else { 11.0 };
             // Keep headings with what follows them.

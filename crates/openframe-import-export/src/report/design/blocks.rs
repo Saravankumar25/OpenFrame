@@ -961,6 +961,7 @@ pub(in crate::report) fn scan_block(b: &Block, scan: &mut dyn FnMut(&str)) {
         Block::Text(t) => scan(&t.text),
         Block::Cards(c) => cards_scan(c, scan),
         Block::Styled(t) => table_scan(t, scan),
+        Block::Matrix(m) => matrix_scan(m, scan),
         _ => {}
     }
 }
