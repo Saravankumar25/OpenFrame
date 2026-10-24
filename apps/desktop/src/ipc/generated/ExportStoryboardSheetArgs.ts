@@ -14,6 +14,6 @@ format: string, path: string,
  */
 includeNotes?: boolean, 
 /**
- * Panels per row (2 to 4, default 3).
+ * Panels per row: 2 (default) or 3 in the dialog; 4 is still accepted from older callers.
  */
 columns?: number, };

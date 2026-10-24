@@ -1,5 +1,5 @@
 //! Behaviour tests for the redesigned production PDFs: layout rules that must hold for any data
-//! (bands of at most seven day columns, order kept, full text kept, missing states shown,
+//! (every day column printed once, order kept, full text kept, missing states shown,
 //! counts that agree with what is listed). Visual quality is judged on the rendered pages (see
 //! `pdf_samples.rs`); the byte-level layout goldens are in `pdf_regression.rs`.
 
@@ -60,7 +60,10 @@ fn export(film: &Film, op: &str, mut args: Value, file: &str) -> String {
 }
 
 #[test]
-fn day_out_of_days_bands_hold_seven_columns_and_every_day_once() {
+fn day_out_of_days_groups_hold_every_day_once() {
+    // The v2 design replaced the fixed bands of seven day columns: the days are split into the
+    // fewest column groups that keep one column width (see `dood_design.rs`). What the bands
+    // guaranteed still holds: every day appears once, whatever the grouping.
     let film = build_film();
     let env = &film.env;
     // 9 more shooting days and a second off day: 13 shooting days and 2 off days in all.
@@ -78,36 +81,22 @@ fn day_out_of_days_bands_hold_seven_columns_and_every_day_once() {
     let path = export(&film, "schedule.export_dood", json!({}), "dood.pdf");
     let t = runs(&path);
     let count = |needle: &str| t.iter().filter(|r| r.as_str() == needle).count();
-    // 15 day columns in bands of seven: 3 bands.
+    // 15 day columns fit one group: one title, no group numbering.
     assert_eq!(count("CAST COMMITMENTS BY SHOOTING DAY"), 1);
-    for k in 1..=3 {
-        assert_eq!(count(&format!("BAND {k} OF 3")), 1, "band {k}");
-    }
-    assert_eq!(count("BAND 4 OF 3") + count("BAND 4 OF 4"), 0);
-    for n in 1..=13 {
-        assert_eq!(
-            count(&format!("SHOOT {n:02}")),
-            1,
-            "shoot day {n} appears once"
-        );
-    }
-    assert_eq!(count("OFF DAY"), 2);
-    // Totals sit in their own table after the matrix, once.
-    assert_eq!(
-        count(
-            "Cast totals across the full schedule"
-                .to_uppercase()
-                .as_str()
-        ),
-        1
-    );
-    assert!(pages(&path) >= 4, "bands start on fresh pages");
+    assert!(!t.iter().any(|r| r.contains("Columns group")));
+    // Each day column prints once (checked by size and position in `dood_design.rs`); here the two
+    // off days and the legend's off swatch are the three "OFF" texts.
+    assert_eq!(count("OFF"), 3);
+    // The totals sit inside the matrix, once; there is no second table repeating the names.
+    assert_eq!(count("TOTALS"), 1);
+    assert_eq!(count("CAST TOTALS ACROSS THE FULL SCHEDULE"), 0);
     // Identical data gives identical bytes.
     let again = export(&film, "schedule.export_dood", json!({}), "dood2.pdf");
     assert_eq!(
         std::fs::read(&path).unwrap(),
         std::fs::read(&again).unwrap()
     );
+    assert!(pages(&path) >= 1);
 }
 
 #[test]

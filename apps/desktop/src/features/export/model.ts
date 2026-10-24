@@ -28,11 +28,11 @@ export const TABLE_FORMATS: ExportFormatOption[] = [
 /**
  * Extra option shown in the dialog; its value is sent as `args[arg ?? key]`.
  * `formats` limits the option to some formats (two fields may share an `arg`
- * when their formats differ, e.g. a CSV-only choice).
+ * when their formats differ, e.g. a CSV-only choice). `numeric` sends a choice's value as a number.
  */
 export type ExportOptionField =
   | { kind: "checkbox"; key: string; arg?: string; label: string; default: boolean; formats?: ExportFormatValue[] }
-  | { kind: "choice"; key: string; arg?: string; label: string; default: string; options: { value: string; label: string }[]; formats?: ExportFormatValue[] };
+  | { kind: "choice"; key: string; arg?: string; label: string; default: string; options: { value: string; label: string }[]; formats?: ExportFormatValue[]; numeric?: boolean };
 
 /** A scope choice ("Entire schedule", "Current day only", "Selected days"…). */
 export interface ExportScope {
@@ -69,7 +69,9 @@ export function buildExportArgs(
   const args: Record<string, unknown> = { ...(base ?? {}), ...(scope?.args ?? {}), format };
   if (scope?.picker) args[scope.picker.argKey] = [...picked];
   for (const f of fields) {
-    if (fieldApplies(f, format) && values[f.key] !== undefined) args[f.arg ?? f.key] = values[f.key];
+    if (!fieldApplies(f, format) || values[f.key] === undefined) continue;
+    // A numeric choice (panels per row) reaches the operation as a number.
+    args[f.arg ?? f.key] = f.kind === "choice" && f.numeric ? Number(values[f.key]) : values[f.key];
   }
   return args;
 }
