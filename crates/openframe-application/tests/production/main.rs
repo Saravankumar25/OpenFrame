@@ -10,6 +10,7 @@ mod call_sheet_design;
 mod daily_view_design;
 mod dood_design;
 mod exports;
+mod moodboard_design;
 mod packages;
 mod pdf_design;
 mod pdf_regression;
