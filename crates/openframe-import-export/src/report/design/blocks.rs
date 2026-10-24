@@ -425,6 +425,8 @@ pub(in crate::report) fn metrics(p: &mut Pager, m: &Metrics) {
 pub struct Section {
     pub title: String,
     pub hint: Option<String>,
+    /// A small orange label before the title ("PART 2").
+    pub kicker: Option<String>,
 }
 
 impl Section {
@@ -432,7 +434,12 @@ impl Section {
         Section {
             title: title.into(),
             hint,
+            kicker: None,
         }
+    }
+    pub fn kicker(mut self, k: impl Into<String>) -> Section {
+        self.kicker = Some(k.into());
+        self
     }
 }
 
@@ -449,7 +456,13 @@ pub(in crate::report) fn section(p: &mut Pager, s: &Section) {
         .map(|h| tw(h, 8.0, true, 0.0).min(cw * 0.5))
         .unwrap_or(0.0);
     let mut f = Frag::new();
-    let th = put_txt(&mut f, 0.0, 0.0, (cw - hint_w - 12.0).max(60.0), &title);
+    let mut kx = 0.0f32;
+    if let Some(k) = &s.kicker {
+        let k = k.to_uppercase();
+        f.text(0.0, 11.5, &k, 6.8, true, pal::ORANGE_DEEP, 1.1);
+        kx = tw(&k, 6.8, true, 1.1) + 9.0;
+    }
+    let th = put_txt(&mut f, kx, 0.0, (cw - hint_w - kx - 12.0).max(60.0), &title);
     if let Some(h) = &s.hint {
         let t = Txt::new(h.clone())
             .size(8.0)

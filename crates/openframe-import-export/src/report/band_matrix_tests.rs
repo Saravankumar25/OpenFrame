@@ -409,3 +409,303 @@ fn a_long_cast_name_wraps_and_the_row_grows_without_touching_the_next_row() {
     // The last line of the long name sits above the next row's baseline by more than a line.
     assert!(name.last().unwrap().y - next.y > 9.0, "no overlap");
 }
+
+// ------------------------------------------------------------------ breakdown and budget items
+
+fn plain_entry(name: &str) -> Entry {
+    Entry {
+        name: Txt::new(name).size(8.2).bold(),
+        note: None,
+        tag: None,
+        tint: None,
+    }
+}
+
+fn entry_table(cols: u8, entries: Vec<Entry>) -> StyledTable {
+    let mut t = StyledTable::new(vec![Col::pt("Label", 92.0), Col::weight("Entries", 1.0)]);
+    t.header = HeaderStyle::None;
+    t.pad_x = 9.0;
+    t.rows.push(Row::new(vec![
+        Cell::text(Txt::new("PROPS")),
+        Cell::new().item(CellItem::Entries {
+            cols,
+            gap: 14.0,
+            entries,
+        }),
+    ]));
+    t
+}
+
+#[test]
+fn entries_flow_top_to_bottom_in_even_columns_without_splitting_an_entry() {
+    let names: Vec<String> = (1..=7).map(|i| format!("Element {i}")).collect();
+    let t = entry_table(2, names.iter().map(|n| plain_entry(n)).collect());
+    let pdf = branded(false, vec![Block::Styled(t)]).to_pdf();
+    let rs = runs(&pdf.bytes);
+    let at = |t: &str| rs.iter().find(|r| r.text == t).unwrap().clone();
+    // Seven equal entries make 4 + 3: the first column holds 1 to 4, the second 5 to 7.
+    let x1 = at("Element 1").x;
+    let x5 = at("Element 5").x;
+    assert!(x5 > x1 + 100.0, "second column starts at {x5}");
+    for n in [2, 3, 4] {
+        assert!((at(&format!("Element {n}")).x - x1).abs() < 0.01);
+    }
+    for n in [6, 7] {
+        assert!((at(&format!("Element {n}")).x - x5).abs() < 0.01);
+    }
+    assert!(at("Element 2").y < at("Element 1").y);
+    assert!((at("Element 5").y - at("Element 1").y).abs() < 0.01);
+}
+
+#[test]
+fn a_tall_entry_sets_the_split_so_the_columns_stay_as_even_as_the_order_allows() {
+    let mut es = vec![plain_entry("One")];
+    es.push(Entry {
+        note: Some(Txt::new("a note ".repeat(30)).size(7.6)),
+        ..plain_entry("Two")
+    });
+    es.push(plain_entry("Three"));
+    es.push(plain_entry("Four"));
+    let pdf = branded(false, vec![Block::Styled(entry_table(2, es))]).to_pdf();
+    let rs = runs(&pdf.bytes);
+    let x = |t: &str| rs.iter().find(|r| r.text == t).unwrap().x;
+    // The tall entry shares its column with "One"; "Three" and "Four" go to the other column.
+    assert!((x("One") - x("Two")).abs() < 0.01);
+    assert!((x("Three") - x("Four")).abs() < 0.01);
+    assert!(x("Three") > x("One") + 100.0);
+}
+
+#[test]
+fn a_tag_sits_in_a_fixed_gutter_at_the_column_edge_and_names_wrap_before_it() {
+    let tagged = |name: &str, tag: &str| Entry {
+        tag: Some(Chip::label(tag, Tone::Info)),
+        ..plain_entry(name)
+    };
+    let long = "Long name of an element that has to wrap before the tag. ".repeat(3);
+    let t = entry_table(
+        1,
+        vec![tagged("Short", "Manual"), tagged(&long, "Suggested")],
+    );
+    let pdf = branded(false, vec![Block::Styled(t)]).to_pdf();
+    let rs = runs(&pdf.bytes);
+    let tag = |t: &str| {
+        rs.iter()
+            .find(|r| r.size == 6.6 && r.text == t)
+            .unwrap_or_else(|| panic!("{t}"))
+            .clone()
+    };
+    let (suggested, manual) = (tag("SUGGESTED"), tag("MANUAL"));
+    // Both tags end at the column's right edge (the chip text has 5 pt of padding to its edge).
+    let end = |r: &Run| r.x + text_width(&r.text, r.size, true) + 0.5 * r.text.len() as f32 + 5.0;
+    assert!((end(&suggested) - end(&manual)).abs() < 0.1);
+    assert!(
+        (end(&suggested) - (46.0 + 520.0 - 9.0)).abs() < 0.2,
+        "{}",
+        end(&suggested)
+    );
+    // Names end before the widest tag starts.
+    let gutter_left = suggested.x - 5.0;
+    for r in rs.iter().filter(|r| r.size == 8.2) {
+        assert!(
+            r.x + text_width(&r.text, 8.2, true) <= gutter_left + 0.5,
+            "{} runs into the gutter",
+            r.text
+        );
+    }
+    assert!(
+        rs.iter().filter(|r| r.size == 8.2).count() >= 3,
+        "the long name wraps"
+    );
+}
+
+#[test]
+fn a_tinted_entry_draws_its_tint_and_bar() {
+    let mut e = plain_entry("Suggested one");
+    e.tint = Some((pal::AMBER_FILL, pal::ORANGE));
+    let flat = branded(
+        false,
+        vec![Block::Styled(entry_table(
+            1,
+            vec![plain_entry("Suggested one")],
+        ))],
+    )
+    .to_pdf();
+    let tinted = branded(false, vec![Block::Styled(entry_table(1, vec![e]))]).to_pdf();
+    assert_ne!(tinted.bytes, flat.bytes);
+}
+
+fn head_table(rows: usize, row_h: f32) -> StyledTable {
+    let mut t = StyledTable::new(vec![Col::pt("Aa", 60.0), Col::weight("Bb", 1.0)]);
+    t.header = HeaderStyle::Panel;
+    t.boxed = true;
+    let mut h = TableHead::new("INT. A LONG ROOM - NIGHT");
+    h.eyebrow = Some("Breakdown scene".into());
+    h.tile = Some(Tile {
+        top: Some("SCENE".into()),
+        text: "7".into(),
+        fill: pal::NAVY,
+        line: None,
+        color: pal::WHITE,
+        w: 38.0,
+    });
+    h.right = Some(Txt::new("12 elements").size(9.0).bold());
+    h.chip = Some(Chip::label("3 suggested", Tone::Warn));
+    t.head = Some(Box::new(h));
+    for i in 0..rows {
+        t.rows.push(Row::new(vec![
+            Cell::text(Txt::new(format!("r{i}"))),
+            Cell::text(Txt::new(format!("row {i:02}"))).item(CellItem::Gap(row_h)),
+        ]));
+    }
+    t
+}
+
+#[test]
+fn a_table_head_repeats_on_every_page_with_continued_after_the_first() {
+    let pdf = branded(false, vec![Block::Styled(head_table(40, 30.0))]).to_pdf();
+    let rs = runs(&pdf.bytes);
+    assert!(pdf.pages >= 3);
+    assert_eq!(pages_with(&rs, "INT. A LONG ROOM - NIGHT").len(), pdf.pages);
+    for page in 1..=pdf.pages {
+        let on = |t: &str| rs.iter().any(|r| r.page == page && r.text == t);
+        assert!(on("SCENE") && on("7"), "tile on page {page}");
+        assert!(
+            on("12 elements") && on("3 SUGGESTED"),
+            "counts on page {page}"
+        );
+        assert!(on("AA") && on("BB"), "column labels on page {page}");
+        assert_eq!(
+            on(" · continued"),
+            page > 1,
+            "continued mark on page {page}"
+        );
+    }
+}
+
+#[test]
+fn a_head_table_keeps_its_head_with_at_least_two_rows() {
+    // The filler leaves too little room for the head and two rows: the table moves whole.
+    let mut filler = StyledTable::new(vec![Col::weight("A", 1.0)]);
+    filler.header = HeaderStyle::None;
+    filler.rows.push(Row::new(vec![
+        Cell::text(Txt::new("filler")).item(CellItem::Gap(600.0)),
+    ]));
+    let pdf = branded(
+        false,
+        vec![Block::Styled(filler), Block::Styled(head_table(3, 20.0))],
+    )
+    .to_pdf();
+    let rs = runs(&pdf.bytes);
+    assert_eq!(pages_with(&rs, "INT. A LONG ROOM - NIGHT"), vec![2]);
+}
+
+#[test]
+fn a_name_wraps_under_a_hanging_indent_with_a_small_text_after_the_last_line() {
+    let mut t = StyledTable::new(vec![Col::pt("A", 92.0), Col::weight("B", 1.0)]);
+    t.header = HeaderStyle::None;
+    t.rows.push(Row::new(vec![
+        Cell::new().item(CellItem::Name {
+            dot: Some(pal::category("Props")),
+            text: Txt::new("EXTRAS / BACKGROUND").size(6.9).bold().track(0.5),
+            small: Some(Txt::new("cont.").size(6.9)),
+        }),
+        Cell::text(Txt::new("x")),
+    ]));
+    let pdf = branded(false, vec![Block::Styled(t)]).to_pdf();
+    let rs = runs(&pdf.bytes);
+    let lines: Vec<&Run> = rs
+        .iter()
+        .filter(|r| r.size == 6.9 && r.text != "cont.")
+        .collect();
+    assert_eq!(lines.len(), 2, "two lines: {lines:?}");
+    assert!((lines[0].x - lines[1].x).abs() < 0.01, "hanging indent");
+    // The second line leaves no room beside it: the small text goes under it.
+    let cont = rs.iter().find(|r| r.text == "cont.").unwrap();
+    assert!(cont.y < lines[1].y - 5.0, "under the last line");
+    assert!((cont.x - lines[1].x).abs() < 0.01);
+}
+
+#[test]
+fn a_meter_puts_the_number_at_the_right_edge_and_inset_right_keeps_room() {
+    let mut t = StyledTable::new(vec![
+        Col::weight("A", 1.0),
+        Col::pt("B", 100.0).align(Align::Right),
+    ]);
+    t.header = HeaderStyle::None;
+    t.rows.push(Row::new(vec![
+        Cell::text(Txt::new("a")),
+        Cell::new().item(CellItem::Meter {
+            share: 0.5,
+            bar_w: 30.0,
+            color: pal::NAVY,
+            value: Txt::new("12").size(9.6).bold(),
+        }),
+    ]));
+    t.rows.push(Row::new(vec![
+        Cell::text(Txt::new("b")),
+        Cell::text(Txt::new("1,500").size(8.4).align(Align::Right)).inset_right(10.0),
+    ]));
+    t.rows.push(Row::new(vec![
+        Cell::text(Txt::new("c")),
+        Cell::text(Txt::new("1,500").size(8.4).align(Align::Right)),
+    ]));
+    let pdf = branded(false, vec![Block::Styled(t)]).to_pdf();
+    let rs = runs(&pdf.bytes);
+    let col_right = 46.0 + 520.0 - 7.0;
+    let twelve = rs.iter().find(|r| r.text == "12").unwrap();
+    assert!((twelve.x + text_width("12", 9.6, true) - col_right).abs() < 0.1);
+    let amounts: Vec<&Run> = rs.iter().filter(|r| r.text == "1,500").collect();
+    assert_eq!(amounts.len(), 2);
+    assert!(
+        (amounts[1].x - amounts[0].x - 10.0).abs() < 0.1,
+        "the inset moves it left"
+    );
+}
+
+#[test]
+fn a_continued_header_replaces_the_header_cells_after_the_first_page() {
+    let mut t = StyledTable::new(vec![
+        Col::weight("A", 1.0),
+        Col::pt("B", 80.0).align(Align::Right),
+    ]);
+    t.header = HeaderStyle::Tint;
+    let band = |suffix: &str| {
+        vec![
+            Cell::new().item(CellItem::Name {
+                dot: Some(pal::category("Cast")),
+                text: Txt::new("Cast").size(10.0).bold(),
+                small: Some(Txt::new(format!("40 lines{suffix}")).size(7.4)),
+            }),
+            Cell::text(Txt::new("PLANNED").size(7.0).bold()),
+        ]
+    };
+    t.header_cells = Some(band(""));
+    t.header_continued = Some(band(" · continued"));
+    for i in 0..40 {
+        t.rows.push(Row::new(vec![
+            Cell::text(Txt::new(format!("line {i}"))).item(CellItem::Gap(30.0)),
+            Cell::text(Txt::new("1")),
+        ]));
+    }
+    let pdf = branded(false, vec![Block::Styled(t)]).to_pdf();
+    let rs = runs(&pdf.bytes);
+    assert!(pdf.pages >= 3);
+    assert_eq!(pages_with(&rs, "40 lines"), vec![1]);
+    assert_eq!(pages_with(&rs, "40 lines · continued").len(), pdf.pages - 1);
+    assert_eq!(pages_with(&rs, "PLANNED").len(), pdf.pages);
+}
+
+#[test]
+fn a_section_kicker_prints_before_the_heading() {
+    let doc = branded(
+        false,
+        vec![Block::Section(
+            Section::new("Catalog", Some("hint".into())).kicker("Part 2"),
+        )],
+    );
+    let pdf = doc.to_pdf();
+    let rs = runs(&pdf.bytes);
+    let k = rs.iter().find(|r| r.text == "PART 2").unwrap();
+    let h = rs.iter().find(|r| r.text == "CATALOG").unwrap();
+    assert!(k.x < h.x && (k.y - h.y).abs() < 0.5);
+}

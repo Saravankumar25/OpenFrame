@@ -16,6 +16,8 @@ use super::*;
 mod band;
 mod blocks;
 mod cards;
+mod entries;
+mod head;
 mod matrix;
 mod table;
 
@@ -24,10 +26,14 @@ pub use blocks::{
     Banner, Callout, CalloutCol, Legend, LegendItem, Masthead, Metric, Metrics, Section, Side,
 };
 pub use cards::{Card, CardHead, CardPart, Cards, Field, Group, GroupItem, Tile};
+pub use entries::Entry;
+pub use head::TableHead;
 pub use matrix::{Matrix, MatrixCode, MatrixCount, MatrixDay, MatrixKey, MatrixRow, MatrixTotals};
 pub use table::{Cell, CellItem, Col, HeaderStyle, Row, StyledTable, Width};
 
 use band::{band_frag, band_scan};
+use entries::{entries_frag, entries_scan, put_meter, put_name};
+use head::{head_frag, head_scan};
 pub(super) use matrix::{matrix, matrix_scan};
 
 pub(super) use blocks::{banner, callout, legend, masthead, metrics, scan_block, section, text};

@@ -53,8 +53,8 @@ pub use design::{
     Section, Side, StyledTable, Tile, Tone, Txt, Width, pal,
 };
 pub use design::{
-    FactLine, FactRun, Matrix, MatrixCode, MatrixCount, MatrixDay, MatrixKey, MatrixRow,
-    MatrixTotals, TableBand,
+    Entry, FactLine, FactRun, Matrix, MatrixCode, MatrixCount, MatrixDay, MatrixKey, MatrixRow,
+    MatrixTotals, TableBand, TableHead,
 };
 
 use crate::fonts;
