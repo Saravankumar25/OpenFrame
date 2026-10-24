@@ -49,7 +49,6 @@ const GROUPS = [
 const SKIP_DIRS = new Set(["node_modules", "target", ".git", "graphify-out", "dist", "gen", "artifacts", "build", ".drivers", ".run"]);
 const SKIP_PREFIXES = [
   "docs/audits/",
-  "docs/archive/",
   "docs/history/",
   "docs/release/evidence/",
   "docs/specs/",

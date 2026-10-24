@@ -42,7 +42,7 @@ Context rot is the slow loss of accuracy in long sessions and the quiet build-up
 5. The source code is the ground truth. A document that disagrees with the code is wrong: fix the document in the same
    change. Status text lags code (three feature rows were stale on 2026-10-09); read the code before trusting a row.
 6. Keep this file short (about 150 lines). Anything long belongs in `docs/` with a link here. Anything about the past
-   belongs in `docs/archive/` or the progress log, never here.
+   belongs in `docs/history/` or the progress log, never here.
 7. Memory (`~/.claude/projects/C--OpenFrame/memory/`) holds only facts the repository cannot show: owner preferences,
    decisions not yet written down, hardware facts. Delete a memory when the repository records it or it is wrong.
 
@@ -65,7 +65,7 @@ Progress numbers come from `npm run plan:status` and `node scripts/check-feature
   (plus code and tool folders). Specifications live in `docs/specs/`, decisions in `docs/adr/`, the manual in `docs/manual/`.
 - Newer decisions win and older ones are deprecated, not deleted: mark the old text superseded in place, add the new ADR,
   add a row to `docs/adr/README.md`. Sections marked SUPERSEDED are history; never implement them.
-- Moving or renaming a document means updating links (run `node scripts/check-links.mjs`), `docs/README.md`, the archive
+- Moving or renaming a document means updating links (run `node scripts/check-links.mjs`), `docs/README.md`, the history
   index if it is history, and `docs/implementation/reconciliation-log.md`.
 
 ### Security standard (permanent, Windows and Mac)
@@ -108,7 +108,7 @@ The repository stays private. **Never build an installer or a release executable
   built, reachable, verified and release-ready are different states.
 - If code behaviour, a decision, a schema, an operation or a release setting changes, update the documents listed in
   `docs/README.md` section 8 in the same change.
-- Do not edit `docs/audits/` or the files in `docs/archive/` (evidence and history). Record corrections in the
+- Do not edit `docs/audits/` or the files in `docs/history/` (evidence and history). Record corrections in the
   reconciliation log.
 - Check edge cases, crash cases and failure cases for every feature, including the AI path: the user must never lose data
   and the app must never hang.

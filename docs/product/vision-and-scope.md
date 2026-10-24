@@ -5,7 +5,7 @@
 > specifications ([specs/](../specs)); decisions stay in the [decision register](../adr/README.md); open owner questions
 > stay in [owner-decisions.md](../implementation/owner-decisions.md). Where this page and an older document disagree on
 > audience, chapters or order of work, this page wins and the older text is history. The earlier version is in
-> [the archive](../archive/2026-10-15-vision-and-scope-before-restructure.md).
+> [the archive](../history/2026-10-15-vision-and-scope-before-restructure.md).
 
 ## 1. What OpenFrame is
 

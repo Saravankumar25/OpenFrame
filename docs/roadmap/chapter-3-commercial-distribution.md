@@ -3,7 +3,7 @@
 > Rewritten 2026-10-15. Chapter 3 starts after Chapter 2. This page keeps what is decided, what is built and unverified, and
 > what must be checked against the stores' current rules. The implementation plan with phases is written when Chapter 2
 > closes. No Chapter 3 code is written before then. The earlier version is in
-> [the archive](../archive/2026-10-15-chapter-3-plan-before-restructure.md). Nothing here is legal advice.
+> [the archive](../history/2026-10-15-chapter-3-plan-before-restructure.md). Nothing here is legal advice.
 
 ## 1. Goal
 

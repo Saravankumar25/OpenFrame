@@ -2,7 +2,7 @@
 
 > Rewritten 2026-10-15 after the owner's 25 decisions ([ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md) to
 > [ADR-0030](../adr/ADR-0030-verification-ladder-and-release-flow.md)). The earlier Chapter 1 plan (seven streams) is kept in
-> [the archive](../archive/2026-10-15-chapter-1-plan-before-restructure.md) and is history. This page holds the exit
+> [the archive](../history/2026-10-15-chapter-1-plan-before-restructure.md) and is history. This page holds the exit
 > criteria and the rules that hold across both tracks. The work itself is in the two phase plans.
 
 ## 1. The two tracks

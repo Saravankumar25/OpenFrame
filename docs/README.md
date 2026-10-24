@@ -2,7 +2,7 @@
 
 > Rewritten 2026-10-15 around the three chapters and the owner's 25 decisions. Start here. It says where every document
 > lives, which one wins when two disagree, what is current and what is history, and what must be updated when the code
-> changes. The earlier map is in [the archive](archive/2026-10-15-documentation-map-before-restructure.md).
+> changes. The earlier map is in [history](history/2026-10-15-documentation-map-before-restructure.md).
 
 ## 0. Start here
 
@@ -40,8 +40,8 @@ docs/
   website/                   website source notes and supplied prompts (Chapter 2)
   manual/                    user manual (.docx, .pdf), manual testing guide (.docx, .csv), test-data/ sample files
   audits/                    dated evidence snapshots (do not edit)
-  archive/                   history; README is the archive index (do not edit the files)
-  (spec-digest/ moved to archive/2026-09-spec-digest/ in phase W1)
+  history/                   history; README is the history index (do not edit the files; the old archive/ folder was merged here on 2026-10-24)
+  (spec-digest/ moved to history/2026-09-spec-digest/ in phase W1)
   development-storage-policy.md
 WindowsHTML/                 every Windows screen captured from the real app (see its README)
 ```
@@ -68,7 +68,7 @@ Chapters 2 and 3 have no implementation plan yet by decision; each is written wh
 | Implementation status | [feature-status.md](implementation/feature-status.md), [progress-log.md](implementation/progress-log.md) | A status moves up only with evidence at a named proof level |
 | Test evidence | [release/evidence/](release/evidence), [audits/](audits) | What was true on a date, not what must be |
 | Operating procedures | [development-storage-policy.md](development-storage-policy.md), [testing/](testing), [engineering/39-packages-restore-drill.md](engineering/39-packages-restore-drill.md) | Rules for people and agents |
-| History | [archive/](archive) (index in [archive/README.md](archive/README.md)), [implementation/reconciliation-log.md](implementation/reconciliation-log.md) | Never implement from history |
+| History | [history/](history) (index in [history/README.md](history/README.md)), [implementation/reconciliation-log.md](implementation/reconciliation-log.md) | Never implement from history |
 
 ## 4. Which document wins
 
@@ -87,7 +87,7 @@ Highest first. A lower item never silently overrides a higher one.
 6. **Execution control**: [roadmap/](roadmap), [masterplan.md](implementation/masterplan.md),
    [feature-status.md](implementation/feature-status.md), [launch readiness register](release/launch-readiness-register.md).
 7. **Evidence**: [audits/](audits) and [release/evidence/](release/evidence).
-8. **History**: [archive/](archive), [website/prompts/](website/prompts). The old `HTML_Mockups/` folder was removed on 2026-10-21 (git history keeps it).
+8. **History**: [history/](history), [website/prompts/](website/prompts). The old `HTML_Mockups/` folder was removed on 2026-10-21 (git history keeps it).
 
 [README.md](../README.md) is the release-state declaration (what is usable today), written from the feature status file.
 
@@ -136,7 +136,7 @@ Full table with replaced decisions: [adr/README.md](adr/README.md). Owner answer
 | 11 to 14, 16, 17, 20 to 26 | Database, file format, command architecture, IPC, search, autosave and recovery, security threat model, performance budgets, QA strategy, release and migration, Windows packaging, CI/CD, observability |
 | 18 | Retrieval intelligence index (AI) |
 | 27 | Microsoft Store distribution (Chapter 3) |
-| 28, 29, 31 | Archived in phase W1 (`archive/2026-10-05-*`); their risk levels and feature contract now live in CONTRIBUTING.md section 8 |
+| 28, 29, 31 | Archived in phase W1 (`history/2026-10-05-*`); their risk levels and feature contract now live in CONTRIBUTING.md section 8 |
 | 30 | Appearance and themes |
 | 32, 33 | Screenplay engine contract, production depth contract |
 | 34 | UX laws checklist |
@@ -146,7 +146,7 @@ Full table with replaced decisions: [adr/README.md](adr/README.md). Owner answer
 | 38 | [Mac App Store trial](engineering/38-mac-app-store-trial.md) (Chapter 3) |
 | 39 | [Packages restore drill](engineering/39-packages-restore-drill.md) |
 | ai-tool-coverage | Generated inventory of operations and AI tools (never edit by hand) |
-| AGENT_BRIEF, SECURITY_REVIEW_2026-09-30 | Archived in phase W1 (`archive/2026-09-30-agent-brief.md`, `archive/2026-09-30-security-review.md`) |
+| AGENT_BRIEF, SECURITY_REVIEW_2026-09-30 | Archived in phase W1 (`history/2026-09-30-agent-brief.md`, `history/2026-09-30-security-review.md`) |
 
 ## 8. Keeping documents in step (mandatory)
 
@@ -165,7 +165,7 @@ When a change alters behaviour it must also update, in the same change:
 | README status claims | The feature status file first; README follows it |
 | A feature's screen or tests | The "How a user reaches it" and "Tests" columns of the feature status file (checked by `scripts/check-feature-status.mjs`) |
 | An architecture exception (raw SQLite write, `unsafe`, listener, process, IPC command, asset scope) | The reviewed allow-list and reason in `scripts/architecture-lint.mjs`; a security review |
-| A moved or renamed document | Links (run the link check), this map, [archive/README.md](archive/README.md) if it is history, [implementation/reconciliation-log.md](implementation/reconciliation-log.md) |
+| A moved or renamed document | Links (run the link check), this map, [history/README.md](history/README.md) if it is history, [implementation/reconciliation-log.md](implementation/reconciliation-log.md) |
 | User-visible text or a new document | [engineering/35-writing-standard.md](engineering/35-writing-standard.md); `npm run check:writing` |
 | A finished feature | Delete the dead code and mark replaced documents superseded in the same change |
 

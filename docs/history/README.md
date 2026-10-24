@@ -1,7 +1,7 @@
-# Archive index
+# History index
 
-> Written 2026-10-09. History is kept, not erased. This page lists what is in the archive, what is kept elsewhere but is
-> historical, and why. Nothing in the archive is a requirement. Where an archived text and a living document disagree,
+> Written 2026-10-09. History is kept, not erased. This page lists what is in this folder, what is kept elsewhere but is
+> historical, and why. Nothing in this folder is a requirement. Where an archived text and a living document disagree,
 > the living document wins ([documentation map](../README.md)). The files in this folder are not edited; mistakes in them
 > are recorded in the [reconciliation log](../implementation/reconciliation-log.md).
 
@@ -48,7 +48,7 @@ These files could not be moved without changing source code, scripts or test com
 ## 3. If a file here is needed again
 
 Copy it to a living location, update it, and add a row to the [decision register](../adr/README.md) or the reconciliation
-log saying what changed and why. Do not edit the archived copy.
+log saying what changed and why. Do not edit the copy here.
 
 ## 4. The clean-up that needed code changes
 

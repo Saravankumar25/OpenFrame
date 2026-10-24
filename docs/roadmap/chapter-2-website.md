@@ -2,7 +2,7 @@
 
 > Rewritten 2026-10-15. Chapter 2 starts when Chapter 1 has closed (both the Windows and the Mac track). This page records
 > what is decided and what the plan must cover. The implementation plan with phases is written when Chapter 1 closes; no
-> website work is started before then. The earlier plan is in [the archive](../archive/2026-10-15-chapter-2-plan-before-restructure.md).
+> website work is started before then. The earlier plan is in [the archive](../history/2026-10-15-chapter-2-plan-before-restructure.md).
 
 ## 1. What the owner has said
 

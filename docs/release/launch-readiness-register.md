@@ -16,7 +16,7 @@
 > intake notes are at the end of this document.
 >
 > The version of this register from before the restructure is kept at
-> [launch-register-before-restructure](../archive/2026-10-06-launch-register-before-restructure.md).
+> [launch-register-before-restructure](../history/2026-10-06-launch-register-before-restructure.md).
 
 **Purpose:** the single execution control document for taking OpenFrame Studio from codebase to a commercially launchable, secure, supportable and maintainable desktop product under the umbrella company.
 
@@ -1407,7 +1407,7 @@ The goal is not zero bugs forever. The goal is that known data, security, compat
 
 # Earlier version of this register
 
-The version of this register from before the restructure, including the old traceability appendix that repeated the execution requirements, is kept at [launch-register-before-restructure](../archive/2026-10-06-launch-register-before-restructure.md).
+The version of this register from before the restructure, including the old traceability appendix that repeated the execution requirements, is kept at [launch-register-before-restructure](../history/2026-10-06-launch-register-before-restructure.md).
 
 # Dependency-aware implementation order
 
@@ -1498,7 +1498,7 @@ The supplied execution plan uses this dependency-aware philosophy and explicitly
 
 # Additions from the intake notes (2026-10-05)
 
-Requirements present in the owner's notes (`docs/archive/notes/store-certification-and-launch-gap-notes.md`) or in the Store audit and not in the register above. Keys are new and stable. Status starts at Specified. Must ship blocks Store submission. Should ship blocks launch quality.
+Requirements present in the owner's notes (`docs/history/notes/store-certification-and-launch-gap-notes.md`) or in the Store audit and not in the register above. Keys are new and stable. Status starts at Specified. Must ship blocks Store submission. Should ship blocks launch quality.
 
 | Key | Requirement | Importance | Where it is built |
 |---|---|---|---|
