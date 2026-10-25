@@ -1,38 +1,35 @@
 # Handoff: where we are right now
 
 > Rewritten (not appended) at the end of every session. One page. Last rewritten: 2026-10-25 (upgrade session: AI
-> harness, PDF exports v2, screenplay v5, owner issues). The session stopped at the usage limit.
+> harness, PDF exports v2, screenplay v5, owner issues, OpenFrame-4.exe).
 
 ## State
 
-1. **Branch `upgrade/harness-exports-screenplay`** (local, not pushed, not merged to `main`) holds the AI harness
-   rebuild S1 to S8, the merged screenplay v5 and owner-issue work (`09265cbe`), the FDX suite CRLF fix, and docs
-   (history moved to `docs/history/`, ADR-0035, ADR-0036, owner decisions of 2026-10-24, Mac port list).
-2. **Exports are on two other branches**, not yet merged into the upgrade branch:
-   - `exports/pdf-design-v2` (worktree `C:\OpenFrame-wt\exports`): shared renderer, Call Sheet, Daily View,
-     Schedule, DOOD, Breakdown/Catalog, Budget. Agent C7 (Moodboard, Beat Board Outline and Card Board) was still
-     running there when the session stopped: check its commits and `git status` first.
-   - `exports/pdf-design-v2-b` (worktree `C:\OpenFrame-wt\screenplay`): Shot List, Storyboard, six production
-     reports, plus a merge of the first branch at `fbe615dd`.
-3. **AI measurements** (real model; baseline committed in `docs/release/evidence/ai-harness-2026-10-24/baseline/`):
-   held-out paraphrases 20% to 35.6%; gold tools 100% to 98.8%; conversation within-length 55% to 87%, abstention
-   0/4 to 3/4, answer facts 43% to about 48%; safety and poisoning 100%. A final run of the S8 binary was started in
-   `.build-cache/ai-final/` (`all.log`, one `report.md` per run): read it and commit its reports as evidence.
+1. **`main` holds the whole upgrade** (merge 94b1942b, local, not pushed): AI harness rebuild (lanes, Chat answers
+   from code-built briefings, code verifiers and sanitizer, typo-tolerant and intent routing, whole-script recipe,
+   Cancel and progress lines, Save conversation for review), production PDF design v2 (20 designs, logo footer),
+   screenplay v5 (36 pt scene gaps, keep rules, continuation markers, first-page number setting, title-page gutter),
+   Sides fixes, and the owner's five issues (relationship maps, side panels, Dark page, Sides selected cast, cover
+   photos). Docs: `docs/history/` is the single history folder; ADR-0035 and ADR-0036; owner decisions of 2026-10-24.
+2. **Installer:** `release-out/OpenFrame-4.exe` (SHA-256 de953fd9...e5a27b), installed on this PC; gated end-to-end on
+   the installed build passed 40 spec files. Details and every number in the top entry of `progress-log.md`.
+3. **AI quality** (real model; evidence in `docs/release/evidence/ai-harness-2026-10-24/`): held-out paraphrases
+   20% to 46.7% correct tool, conversation invented names 13.1% to 7.7%, answer facts 42.9% to 46.4%, safety 100%.
+   Still far below the 90% tool bar on reworded requests.
 
 ## Next items, in order
 
-1. Check C7 in `C:\OpenFrame-wt\exports`; merge `exports/pdf-design-v2` into `exports/pdf-design-v2-b`, run the
-   import-export and production tests, then merge that branch into `upgrade/harness-exports-screenplay`.
-2. Full verify on the upgrade branch (`npm run verify`; `scripts/tests/governance.test.mjs` fails on a missing
-   `zz-capture` scenario file under `tests/e2e`, not yet investigated), then the one full E2E at the end.
-3. Commit the final AI reports, update `feature-status.md` and the progress log, run `graphify update .`, remove
-   both worktrees safely (unlink the `node_modules` junctions first) and delete their `target-*` build folders.
+1. Owner hand test of `OpenFrame-4.exe` (AI panel answers and Cancel, relationship maps, Dark page, Sides selected cast,
+   cover photo, a few PDF exports).
+2. Write a fresh held-out paraphrase set (the current one was used for threshold calibration), then re-measure on the
+   current build, including poisoning, writing and routes-off, which the final pass did not run.
+3. Push to GitHub `windows/` by the subtree method only on the owner's word; then the Mac port list
+   (`docs/roadmap/mac-port-list-2026-10-24.md`).
 
 ## Open blockers
 
-- None. Paraphrase accuracy (35.6%) is far below the 90% bar; the gold sets need owner approval to count.
+- None. The gold sets need the owner's approval before the AI numbers count as official.
 
 ## Do not
 
-- Do not push or build installers. Do not `rm -rf` a worktree folder. The held-out sets were used once for intent
-  threshold calibration (S8): write a fresh held-out set before quoting a final honest number.
+- Do not push without the owner's word. Do not `git pull` origin/main here. Do not edit `OpenFrameMac/`.
