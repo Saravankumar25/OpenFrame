@@ -114,9 +114,21 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
   of the sample PDFs; full end-to-end run and the release-mode run, then move rows to Verified only on those results.
 - **Checks run:** Rust 2,269 tests passed after the export merge; desktop (Vitest) 697 passed; governance 90 of 90;
   95 PDFs and 379 pages passed the automated PDF checks; `node scripts/check-feature-status.mjs`,
-  `npm run check:writing` and `node scripts/check-links.mjs` clean after the documentation change; full debug
-  end-to-end run in progress, results recorded separately. `npm run verify` and `graphify update .` not run in this
-  documentation step.
+  `npm run check:writing` and `node scripts/check-links.mjs` clean after the documentation change.
+- **Release (2026-10-25, owner's word "final output tested and release ready OpenFrame-4.exe"):** full debug
+  end-to-end run: every spec passed except 90 and 97; 90 was harness drift (the run folder name wrapped a path line on
+  Project settings; spec fixed in 53e5af01), 97 P5 idle CPU on the debug build measured 0.573 then 0.469 and 0.417 on
+  reruns (budget 0.5, documented noise; spec unchanged); `--only=01-journey,02-restart,90,91,95,97` then passed.
+  `npm run verify`: everything passed except the supply-chain gate, which failed on four new RustSec advisories
+  (RUSTSEC-2026-0381, 0382, 0385, 0386); patch updates of webpki-roots, rustls-webpki, ctutils and tokio fixed it
+  (48248904). Full workspace tests through the build queue: 2,595 passed, 0 failed; web 697 passed. Known flake: the
+  unthrottled `npm test` run twice failed `ai_index_stress` (2 s reopen bound) under 18-core contention; it passed 5 of
+  5 alone and in the throttled workspace run. Merged to `main` locally (94b1942b, not pushed). Internal installer
+  `release-out/OpenFrame-4.exe` (27,830,582 bytes, SHA-256
+  de953fd97486a03dc4e9627f83e89d5a1738f1237bffb619e99b949e91a5e27b, clean tree, installer scan OK), installed with
+  `/S` (exit 0). End-to-end on the installed build, gated (`run.mjs --release=gated --app=...`): **40 spec files passed**;
+  skipped as before: 15 and 16 (debug only), 76 and 78 (test model host). Worktrees removed and their build folders
+  deleted; `.build-cache` 43 GB.
 
 ### 2026-10-21, WindowsHTML: every Windows screen as HTML; Home list refresh fix
 - **Areas and items worked:** owner work outside the plan (Chapter 2 source material): remove `HTML_Mockups/`, build
