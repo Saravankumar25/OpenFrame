@@ -50,7 +50,7 @@ struct PowerState(
 /// `scripts/architecture-lint.mjs` rule C5 keeps it that way.
 fn asset_roots(core: &AppCore) -> asset_scope::AssetRoots {
     let mut scope = asset_scope::AssetRoots::default();
-    scope.allow_directory(core.config.global_vault_dir.join("assets"), true);
+    scope.allow_directory(core.vault_dir().join("assets"), true);
     let covers = core.config.app_data_dir.join("covers");
     scope.allow_directory(covers.join("assets"), true);
     if let Some(p) = core.project_opt() {
@@ -154,11 +154,11 @@ async fn of_reveal_path(
             })?,
             None => core.project()?.layout.root().to_path_buf(),
         },
-        "globalVault" => core.config.global_vault_dir.clone(),
+        "globalVault" => core.vault_dir(),
         // The one folder to back up (the data note and the file safety tutorial show it).
         // Created when it does not exist yet, so there is something to show.
         "dataRoot" => {
-            let dir = core.config.data_root();
+            let dir = core.data_root();
             std::fs::create_dir_all(&dir).map_err(|e| {
                 AppError::new(
                     "internal.open_failed",
@@ -796,7 +796,7 @@ mod tests {
         assert_eq!(
             scope.roots().dirs(),
             [
-                core.config.global_vault_dir.join("assets"),
+                core.vault_dir().join("assets"),
                 core.config.app_data_dir.join("covers").join("assets")
             ]
         );

@@ -146,6 +146,7 @@ Full table with replaced decisions: [adr/README.md](adr/README.md). Owner answer
 | 37 | [Platform boundary](engineering/37-platform-boundary.md): what differs between Windows and macOS |
 | 38 | [Mac App Store trial](engineering/38-mac-app-store-trial.md) (Chapter 3) |
 | 39 | [Packages restore drill](engineering/39-packages-restore-drill.md) |
+| 40 | [Storage locations, relocation, backup and identity recovery](engineering/40-storage-locations-and-recovery.md) |
 | ai-tool-coverage | Generated inventory of operations and AI tools (never edit by hand) |
 | AGENT_BRIEF, SECURITY_REVIEW_2026-09-30 | Archived in phase W1 (`history/2026-09-30-agent-brief.md`, `history/2026-09-30-security-review.md`) |
 

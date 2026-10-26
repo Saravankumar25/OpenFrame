@@ -20,6 +20,7 @@ use ts_rs::TS;
 
 use crate::events::{AppEvent, EventSink, StoreKind, TaskProgress};
 use crate::modules::entitlement::EntitlementService;
+use crate::modules::storage::{self, library, library::Library};
 use crate::registry::Registry;
 use crate::store::{SaveTracker, Store};
 
@@ -43,6 +44,11 @@ pub struct AppConfig {
     pub projects_dir: PathBuf,
     /// Global Idea Vault folder (user content).
     pub global_vault_dir: PathBuf,
+    /// The library file (`library.json`): the person's identity and chosen folders, kept in the
+    /// library folder so it outlives the app data (doc 40, ADR-0038). `None` keeps neither.
+    /// `projects_dir` and `global_vault_dir` above are only the defaults; the places the person
+    /// chose are read through [`AppCore::projects_dir`] and [`AppCore::vault_dir`].
+    pub library_file: Option<PathBuf>,
     pub app_version: String,
     /// Release channel for the licence and trial check. The desktop shell sets it; anything that
     /// is not a store package is an internal team build (ADR-0023, ADR-0024).
@@ -77,6 +83,7 @@ impl std::fmt::Debug for AppConfig {
             .field("ai_deterministic", &self.ai_deterministic)
             .field("projects_dir", &self.projects_dir)
             .field("global_vault_dir", &self.global_vault_dir)
+            .field("library_file", &self.library_file)
             .field("app_version", &self.app_version)
             .field("channel", &self.channel)
             .field("mac_inputs", &self.mac_inputs.is_some())
@@ -124,6 +131,10 @@ impl AppConfig {
                  Restart the computer, then start OpenFrame Studio again.",
             ));
         };
+        // The library folder is the one that holds the default projects folder.
+        let library_file = projects_dir
+            .parent()
+            .map(|d| d.join(crate::modules::storage::library::LIBRARY_FILE_NAME));
         Ok(Self {
             app_data_dir,
             ai_bundle_dir: Self::installed_ai_bundle_dir(),
@@ -131,6 +142,7 @@ impl AppConfig {
             ai_deterministic: false,
             projects_dir,
             global_vault_dir,
+            library_file,
             app_version: app_version.to_string(),
             channel: Channel::DirectInstaller,
             mac_inputs: None,
@@ -147,16 +159,6 @@ impl AppConfig {
         openframe_platform::dirs::app_resources_dir().map(|d| d.join(openframe_ai::RESOURCE_FOLDER))
     }
 
-    /// The one folder to back up, shown on the data note and in the file safety tutorial: the
-    /// folder that holds both the projects folder and the Global Idea Vault
-    /// (`Documents/OpenFrame` by default), or the projects folder when they live apart.
-    pub fn data_root(&self) -> PathBuf {
-        match (self.projects_dir.parent(), self.global_vault_dir.parent()) {
-            (Some(a), Some(b)) if a == b && !a.as_os_str().is_empty() => a.to_path_buf(),
-            _ => self.projects_dir.clone(),
-        }
-    }
-
     /// Fully isolated configuration rooted in `root` (tests, fixtures).
     pub fn isolated(root: &std::path::Path) -> Self {
         Self {
@@ -166,6 +168,7 @@ impl AppConfig {
             ai_deterministic: false,
             projects_dir: root.join("projects"),
             global_vault_dir: root.join("global-vault"),
+            library_file: Some(root.join(crate::modules::storage::library::LIBRARY_FILE_NAME)),
             app_version: "0.1.0-test".to_string(),
             channel: Channel::DirectInstaller,
             mac_inputs: None,
@@ -314,8 +317,16 @@ impl TaskManager {
     }
 }
 
+/// The places the person chose, on top of the defaults in [`AppConfig`]. `None` is the default.
+#[derive(Debug, Clone, Default)]
+pub(crate) struct Locations {
+    pub(crate) projects_dir: Option<PathBuf>,
+    pub(crate) vault_dir: Option<PathBuf>,
+}
+
 pub struct AppCore {
     pub config: AppConfig,
+    locations: RwLock<Locations>,
     app_db: Mutex<Connection>,
     project: RwLock<Option<Arc<ProjectSession>>>,
     global: Mutex<Option<Arc<Store>>>,
@@ -352,7 +363,16 @@ impl AppCore {
         openframe_persistence::migrate::apply(&mut conn, crate::schema::APP_MIGRATIONS)?;
         // Cover photos no project row names (a crash between the file and the row) are removed.
         crate::modules::project_cover::sweep(&conn, &config.app_data_dir);
-        let profile = ensure_profile(&conn)?;
+        // A person who comes back after an app data reset keeps their identity and chosen folders.
+        let library = config
+            .library_file
+            .as_deref()
+            .and_then(|file| library::read(file, &config.app_data_dir));
+        let profile = ensure_profile(&conn, library.as_ref())?;
+        let locations = Locations {
+            projects_dir: library.as_ref().and_then(|l| l.projects_dir.clone()),
+            vault_dir: library.and_then(|l| l.vault_dir),
+        };
         // Never fails and never blocks startup: problems are logged and the state is Unknown.
         let mac_inputs = config.mac_inputs.take();
         let microsoft_store = config.microsoft_store.take();
@@ -366,6 +386,7 @@ impl AppCore {
             save: Arc::new(SaveTracker::new(events.clone())),
             global_save: Arc::new(SaveTracker::new(Arc::new(crate::events::NullSink))),
             config,
+            locations: RwLock::new(locations),
             app_db: Mutex::new(conn),
             project: RwLock::new(None),
             global: Mutex::new(None),
@@ -379,7 +400,68 @@ impl AppCore {
             closing: Mutex::new(()),
         });
         let _ = core.me.set(Arc::downgrade(&core));
+        core.write_library_best_effort();
         Ok(core)
+    }
+
+    // ----------------------------------------------------------- places and identity
+
+    /// Where new projects go: the folder the person chose, else the default.
+    pub fn projects_dir(&self) -> PathBuf {
+        let chosen = self.locations.read().projects_dir.clone();
+        chosen.unwrap_or_else(|| self.config.projects_dir.clone())
+    }
+
+    /// The Global Idea Vault folder: the one the person chose or moved to, else the default.
+    pub fn vault_dir(&self) -> PathBuf {
+        let chosen = self.locations.read().vault_dir.clone();
+        chosen.unwrap_or_else(|| self.config.global_vault_dir.clone())
+    }
+
+    /// The one folder to back up, shown on the data note and in the file safety tutorial: the
+    /// folder that holds both the projects folder and the Global Idea Vault
+    /// (`Documents/OpenFrame` by default), or the projects folder when they live apart.
+    pub fn data_root(&self) -> PathBuf {
+        let (projects, vault) = (self.projects_dir(), self.vault_dir());
+        match (projects.parent(), vault.parent()) {
+            (Some(a), Some(b)) if a == b && !a.as_os_str().is_empty() => a.to_path_buf(),
+            _ => projects,
+        }
+    }
+
+    /// Change the chosen places and record them in the library file. The running values change
+    /// only after the file is written, so a failed write leaves everything as it was and the
+    /// person hears about it. `change` may set a place to `None` to go back to its default.
+    pub(crate) fn change_locations(&self, change: impl FnOnce(&mut Locations)) -> AppResult<()> {
+        let mut locations = self.locations.write();
+        let mut next = locations.clone();
+        change(&mut next);
+        self.write_library(&next)?;
+        *locations = next;
+        Ok(())
+    }
+
+    fn write_library(&self, locations: &Locations) -> AppResult<()> {
+        let Some(file) = &self.config.library_file else {
+            return Ok(());
+        };
+        let p = self.profile();
+        library::write(
+            file,
+            &p.user_id,
+            &p.display_name,
+            locations.projects_dir.as_deref(),
+            locations.vault_dir.as_deref(),
+        )
+    }
+
+    /// Keep the library file current (start, name change). A failure is logged and never stops
+    /// the app: the file is a safety net, not the source of truth while `app.sqlite` is there.
+    fn write_library_best_effort(&self) {
+        let locations = self.locations.read().clone();
+        if let Err(e) = self.write_library(&locations) {
+            tracing::warn!(code = e.code_str(), "the library file could not be written");
+        }
     }
 
     /// Owned handle for background threads.
@@ -408,7 +490,10 @@ impl AppCore {
             Ok(())
         })?;
         p.display_name = name.to_string();
-        Ok(p.clone())
+        let updated = p.clone();
+        drop(p);
+        self.write_library_best_effort();
+        Ok(updated)
     }
 
     /// The local user. Ordinary local use needs no account (Security §5.3);
@@ -469,12 +554,24 @@ impl AppCore {
         if let Some(s) = g.as_ref() {
             return Ok(s.clone());
         }
-        let dir = &self.config.global_vault_dir;
-        std::fs::create_dir_all(dir.join("assets"))?;
+        let dir = self.vault_dir();
         let db = dir.join("vault.sqlite");
+        // Only the default folder is created on first use. A folder the person chose that has no
+        // vault in it is a drive that is not connected or a folder that was moved: it is never
+        // replaced by a new empty vault (doc 40 section 3).
+        if !db.is_file() && !library::same_place(&dir, &self.config.global_vault_dir) {
+            return Err(AppError::new(
+                "storage.vault_missing",
+                "Your Global Idea Vault can't be found where it was last used. If it is on an \
+                 external drive, reconnect the drive. Otherwise go to Settings > Storage and choose \
+                 the vault folder.",
+            )
+            .with_detail(dir.to_string_lossy().into_owned()));
+        }
+        std::fs::create_dir_all(dir.join("assets"))?;
         let (store, _) = Store::open(
             StoreKind::Global,
-            dir,
+            &dir,
             &db,
             crate::schema::GLOBAL_MIGRATIONS,
             true,
@@ -493,13 +590,38 @@ impl AppCore {
         Ok(store)
     }
 
-    /// App start: open the Global Idea Vault so its Recently Deleted drops items older than 30
-    /// days. The desktop shell calls this once after setup, off the main thread. Never fails:
-    /// a vault that cannot open now is opened (and cleaned) on first use instead.
+    /// Let go of the cached Global Idea Vault store (moving, restoring or reconnecting the vault),
+    /// after folding its write-ahead log into the database file. The next use opens whatever is
+    /// at `vault_dir()` then. Holders of an earlier handle keep working on the old files until
+    /// they drop it.
+    pub fn close_global_store(&self) {
+        if let Some(store) = self.global.lock().take()
+            && let Err(e) = store.with_writer(openframe_persistence::checkpoint)
+        {
+            tracing::warn!(
+                code = e.code_str(),
+                "checkpoint of the vault before closing failed"
+            );
+        }
+    }
+
+    /// App start: remove what an interrupted move or restore left behind, then open the Global
+    /// Idea Vault so its Recently Deleted drops items older than 30 days. A vault that does not
+    /// exist yet is not created here (doc 40 section 3). The desktop shell calls this once after
+    /// setup, off the main thread. Never fails: a vault that cannot open now is opened (and
+    /// cleaned) on first use instead.
     pub fn startup_maintenance(&self) {
         // Internal builds: nothing opens before the team password is right. The unlock runs this
         // again once the gate opens.
         if self.entitlement.team_gate_locked() {
+            return;
+        }
+        let vault = self.vault_dir();
+        storage::remove_staging_leftovers(&[
+            &self.projects_dir(),
+            vault.parent().unwrap_or(&vault),
+        ]);
+        if !vault.join("vault.sqlite").is_file() {
             return;
         }
         if let Err(e) = self.global_store() {
@@ -658,7 +780,10 @@ impl AppCore {
     }
 }
 
-fn ensure_profile(conn: &Connection) -> AppResult<LocalProfile> {
+/// The local profile. `app.sqlite` wins when it has one; without one (first start, or the app
+/// data was deleted) the identity in a valid library file is taken over, so private notes that
+/// belong to it stay theirs. Only a person with neither gets a new id.
+fn ensure_profile(conn: &Connection, library: Option<&Library>) -> AppResult<LocalProfile> {
     let existing: Option<(String, String)> = conn
         .query_row(
             "SELECT user_id, display_name FROM sys_local_profile LIMIT 1",
@@ -672,12 +797,17 @@ fn ensure_profile(conn: &Connection) -> AppResult<LocalProfile> {
             display_name,
         });
     }
-    let name = std::env::var("USERNAME")
-        .or_else(|_| std::env::var("USER"))
-        .unwrap_or_else(|_| "You".to_string());
-    let profile = LocalProfile {
-        user_id: new_id(),
-        display_name: name,
+    let profile = match library {
+        Some(l) => LocalProfile {
+            user_id: l.user_id.clone(),
+            display_name: l.display_name.clone(),
+        },
+        None => LocalProfile {
+            user_id: new_id(),
+            display_name: std::env::var("USERNAME")
+                .or_else(|_| std::env::var("USER"))
+                .unwrap_or_else(|_| "You".to_string()),
+        },
     };
     let now = now_ms();
     conn.execute(

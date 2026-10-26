@@ -21,6 +21,7 @@ pub mod retention;
 pub mod schedule;
 pub mod screenplay;
 pub mod search;
+pub mod storage;
 pub mod story;
 pub mod visual;
 pub mod writing;
@@ -47,4 +48,5 @@ pub fn register_all(r: &mut Registry) {
     entitlement::register(r);
     writing::register(r);
     appearance::register(r);
+    storage::register(r);
 }

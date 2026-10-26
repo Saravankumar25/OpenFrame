@@ -1017,8 +1017,8 @@ fn log_tail(scan: &LogScan) -> String {
 fn sensitive_paths(core: &AppCore) -> Vec<String> {
     let mut v: Vec<PathBuf> = vec![
         core.config.app_data_dir.clone(),
-        core.config.projects_dir.clone(),
-        core.config.global_vault_dir.clone(),
+        core.projects_dir(),
+        core.vault_dir(),
     ];
     if let Some(s) = core.project_opt() {
         v.push(s.layout.root().to_path_buf());

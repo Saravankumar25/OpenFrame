@@ -26,8 +26,8 @@ How the toolbox (`modules/ai/toolbox.rs`, contract C3) enforces this:
   budget, so a small local model's prompt stays short. `retrieve_context` uses the hybrid retrieval
   service when called through `run_tool_unlocked`, and keyword retrieval (FTS5, same privacy rule) otherwise.
 
-- Registered operations: **502** (157 queries, 345 commands)
-- Exposed to the assistant through tools: **308**; not AI-accessible: **194**
+- Registered operations: **507** (160 queries, 347 commands)
+- Exposed to the assistant through tools: **308**; not AI-accessible: **199**
 - Tools: **254** (61 read/compute/navigate, 193 proposal)
 
 Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation · **L** long-running (task id) · file effect: R = reads a user-picked file, W = writes to a user-picked location, P = project storage on disk.
@@ -519,6 +519,16 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 | `sides.list`: Saved sides. | query | Read | View |  | `ScheduleDocListArgs` → `Vec<ScheduleSideRow>` | tool | `sides_and_reports` |
 | `sides.preview`: Preview sides (script pages) for a shooting day. | query | Compute | View |  | `ScheduleSidesArgs` → `ScheduleSidesContent` | tool | `schedule_day` |
 
+### Storage
+
+| Operation | Kind | Class | Capability | Flags | Args → Result | AI | Covered by |
+|---|---|---|---|---|---|---|---|
+| `project.adopt_orphan_notes`: The Owner takes over the private notes of one person who is no longer on the project. | command | Mutate | ManageProject |  | `AdoptOrphanNotesArgs` → `AdoptedNotes` | hidden | none |
+| `project.discover`: Projects in the projects folder that Recent Projects does not list. | query | Read | app level | P | `Empty` → `Vec<DiscoveredProject>` | hidden | none |
+| `project.orphan_notes`: People who left private notes in this project and are no longer on it. | query | Read | ManageProject |  | `Empty` → `Vec<OrphanNoteOwner>` | hidden | none |
+| `storage.info`: Where the library, the projects folder, the vault and the app data are. | query | Read | app level | P | `Empty` → `StorageInfo` | hidden | none |
+| `storage.set_projects_dir`: Choose the default folder for new projects. Existing projects stay where they are. | command | Mutate | app level | P | `SetProjectsDirArgs` → `StorageInfo` | hidden | none |
+
 ### Story
 
 | Operation | Kind | Class | Capability | Flags | Args → Result | AI | Covered by |
@@ -667,7 +677,7 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 - **Alternative UI entry point for a change the assistant already prepares through an equivalent operation.**
   `breakdown.accept`, `breakdown.reuse`, `shot.attach_panel`, `shot.detach_panel`, `templates.apply`, `vault.restore`, `vault.trash_list`
 - **Application-level project lifecycle (create, open, close, locate, duplicate, archive or delete projects on disk, recent-project list); the assistant works inside the one open project.**
-  `project.clear_cover`, `project.close`, `project.create`, `project.current`, `project.duplicate`, `project.list_recent`, `project.open`, `project.recovery_state`, `project.remove_recent`, `project.rename`, `project.resolve_recovery`, `project.set_archived`, `project.set_pinned`
+  `project.clear_cover`, `project.close`, `project.create`, `project.current`, `project.discover`, `project.duplicate`, `project.list_recent`, `project.open`, `project.recovery_state`, `project.remove_recent`, `project.rename`, `project.resolve_recovery`, `project.set_archived`, `project.set_pinned`
 - **Changing appearance (mode, theme and My Themes) is a personal preference of the person at this computer, not project content; the assistant reads how the app looks but never changes it.**
   `appearance.check_theme`, `appearance.delete_theme`, `appearance.export_theme`, `appearance.import_theme`, `appearance.rename_theme`, `appearance.set_mode`, `appearance.set_theme`
 - **Crosses the project boundary (Global Idea Vault or another project); the assistant is scoped to the open project.**
@@ -709,9 +719,9 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 - **Production scene number overrides and renumbering stay a human decision (ADR-0015, contract doc 32 §2.5); the assistant reads the numbers.**
   `screenplay.renumber_scenes`, `screenplay.restore_omitted_scene`, `screenplay.set_scene_number`
 - **Reads or writes a file-system location the user picks in a file dialog; the assistant never chooses or touches file-system paths (spec §3).**
-  `ai.export_conversation`, `breakdown.export_report`, `budget.export_summary`, `callsheets.attach`, `callsheets.export_pdf`, `files.add`, `files.export_copy`, `files.relink`, `moodboard.export_pdf`, `packages.create_backup`, `packages.export_exchange`, `packages.export_project`, `packages.import_project`, `packages.inspect_package`, `packages.review_export_response`, `packages.review_open`, `project.locate`, `project.location_check`, `project.set_cover`, `reports.export_report`, `schedule.export_daily_view`, `schedule.export_dood`, `schedule.export_schedule`, `screenplay.export`, `screenplay.import_apply`, `screenplay.import_preview`, `shot.export_list`, `sides.export_pdf`, `story.add_attachment`, `story.export_board`, `story.page.export`, `storyboard.export_sheet`, `vault.add_files`, `vault.relink`
+  `ai.export_conversation`, `breakdown.export_report`, `budget.export_summary`, `callsheets.attach`, `callsheets.export_pdf`, `files.add`, `files.export_copy`, `files.relink`, `moodboard.export_pdf`, `packages.create_backup`, `packages.export_exchange`, `packages.export_project`, `packages.import_project`, `packages.inspect_package`, `packages.review_export_response`, `packages.review_open`, `project.locate`, `project.location_check`, `project.set_cover`, `reports.export_report`, `schedule.export_daily_view`, `schedule.export_dood`, `schedule.export_schedule`, `screenplay.export`, `screenplay.import_apply`, `screenplay.import_preview`, `shot.export_list`, `sides.export_pdf`, `storage.set_projects_dir`, `story.add_attachment`, `story.export_board`, `story.page.export`, `storyboard.export_sheet`, `vault.add_files`, `vault.relink`
 - **Returns local file paths of managed media; the assistant never receives file-system paths.**
-  `app.info`, `files.asset`
+  `app.info`, `files.asset`, `storage.info`
 - **Screenplay page layout settings (paper, font, spacing, header and footer, page breaks, custom element looks) stay a human decision (screenplay engine contract doc 32 §2.5); the assistant reads the resulting page facts.**
   `screenplay.create_custom_element`, `screenplay.delete_custom_element`, `screenplay.delete_page_preset`, `screenplay.save_page_preset`, `screenplay.update_custom_element`, `screenplay.update_page_setup`
 - **Support diagnostics are user-initiated only (ADR-0021): the user reviews the bundle and saves it to a location they pick; the assistant never gathers, exports or sends diagnostics.**
@@ -722,6 +732,8 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
   `team_gate.status`, `team_gate.unlock`
 - **The writer's own free-writing Story page; it is kept apart from every other page and tool on purpose (owner request 2026-10-20), so the assistant neither reads nor changes it.**
   `story.page.get`, `story.page.save`
+- **Would move content across the private/shared boundary; the assistant only reads private notes of their owner.**
+  `project.adopt_orphan_notes`, `project.orphan_notes`
 
 ## Tools
 

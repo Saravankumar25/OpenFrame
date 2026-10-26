@@ -523,8 +523,8 @@ fn app_info(core: &AppCore, _a: &Actor, _: Empty) -> AppResult<AppInfo> {
     })?;
     Ok(AppInfo {
         app_version: core.config.app_version.clone(),
-        projects_dir: core.config.projects_dir.to_string_lossy().into_owned(),
-        global_vault_dir: core.config.global_vault_dir.to_string_lossy().into_owned(),
+        projects_dir: core.projects_dir().to_string_lossy().into_owned(),
+        global_vault_dir: core.vault_dir().to_string_lossy().into_owned(),
         profile: core.profile(),
         platform: openframe_platform::current_os().name().to_string(),
         schema_version: crate::schema::project_schema_version(),
@@ -617,7 +617,7 @@ fn file_mtime_ms(path: &Path) -> Option<i64> {
 }
 
 /// Last time the project's database changed on disk (database file or its write-ahead log).
-fn data_modified_at(layout: &ProjectLayout) -> Option<i64> {
+pub(crate) fn data_modified_at(layout: &ProjectLayout) -> Option<i64> {
     let db = layout.database();
     let wal = PathBuf::from(format!("{}-wal", db.display()));
     [file_mtime_ms(&db), file_mtime_ms(&wal)]
@@ -725,7 +725,7 @@ fn create(core: &AppCore, actor: &Actor, args: CreateProjectArgs) -> AppResult<O
     let creator = optional_text(args.creator, "Creator", 200)?;
     let parent = match args.parent_dir {
         Some(p) => PathBuf::from(p.trim()),
-        None => core.config.projects_dir.clone(),
+        None => core.projects_dir(),
     };
     if pf::is_network_path(&parent) {
         return Err(network_location_error());
@@ -785,7 +785,7 @@ fn open(core: &AppCore, actor: &Actor, args: OpenProjectArgs) -> AppResult<OpenP
 }
 
 /// Keep the project-specific wording for network locations.
-fn network_or(e: AppError) -> AppError {
+pub(crate) fn network_or(e: AppError) -> AppError {
     if e.is("project_format.network_location") {
         network_location_error()
     } else {
@@ -1332,7 +1332,7 @@ fn duplicate(core: &AppCore, actor: &Actor, args: ProjectIdArgs) -> AppResult<Re
     let parent = src_root
         .parent()
         .map(Path::to_path_buf)
-        .unwrap_or_else(|| core.config.projects_dir.clone());
+        .unwrap_or_else(|| core.projects_dir());
     let dest_root = pf::unique_project_dir(&parent, &title);
     let dest = ProjectLayout::new(&dest_root);
     let result = (|| -> AppResult<RecentProject> {

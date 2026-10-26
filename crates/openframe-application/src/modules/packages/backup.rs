@@ -438,8 +438,7 @@ pub(crate) fn backup_preview(core: &AppCore, actor: &Actor) -> AppResult<BackupP
             )),
             project_title: title.clone(),
             default_dir: core
-                .config
-                .projects_dir
+                .projects_dir()
                 .join("Backups")
                 .to_string_lossy()
                 .into_owned(),
@@ -826,24 +825,34 @@ pub(crate) fn inspect(
 /// holds the file already holds the notes, so leaving them with an owner who is not here
 /// protected nothing. The notes stay private: only the new owner sees them, in lists, search
 /// and the assistant alike. Returns how many notes changed owner.
-fn adopt_private_notes(c: &Connection, user_id: &str) -> AppResult<u32> {
+///
+/// `from_owner` limits it to the notes of one owner (the Owner taking over what a former member
+/// left, `project.adopt_orphan_notes`); `None` takes every note, as a restore does.
+pub(crate) fn adopt_private_notes(
+    c: &Connection,
+    user_id: &str,
+    from_owner: Option<&str>,
+) -> AppResult<u32> {
     // Undo entries hold full row images with the old owner; undoing one of them would take
     // the note away from its new owner again. Same text match as the purge scrub (PN-02).
     c.execute(
         "DELETE FROM sys_undo WHERE EXISTS (
              SELECT 1 FROM private_note p
-             WHERE p.owner_user_id <> ?1 AND instr(sys_undo.changes_json, p.id) > 0)",
-        [user_id],
+             WHERE p.owner_user_id <> ?1 AND (?2 IS NULL OR p.owner_user_id = ?2)
+               AND instr(sys_undo.changes_json, p.id) > 0)",
+        params![user_id, from_owner],
     )?;
     // The search index carries the owner too (Global Search shows own private notes only).
     c.execute(
         "UPDATE search_doc SET owner_user_id=?1
-         WHERE source_table='private_note' AND owner_user_id IS NOT ?1",
-        [user_id],
+         WHERE source_table='private_note' AND owner_user_id IS NOT ?1
+           AND (?2 IS NULL OR owner_user_id = ?2)",
+        params![user_id, from_owner],
     )?;
     let moved = c.execute(
-        "UPDATE private_note SET owner_user_id=?1 WHERE owner_user_id <> ?1",
-        [user_id],
+        "UPDATE private_note SET owner_user_id=?1
+         WHERE owner_user_id <> ?1 AND (?2 IS NULL OR owner_user_id = ?2)",
+        params![user_id, from_owner],
     )?;
     Ok(u32::try_from(moved).unwrap_or(u32::MAX))
 }
@@ -929,8 +938,8 @@ pub fn import_project_package(
         (Some(c), PackageOpenMode::Replace) => Path::new(&c.path)
             .parent()
             .map(Path::to_path_buf)
-            .unwrap_or_else(|| core.config.projects_dir.clone()),
-        _ => parent.unwrap_or_else(|| core.config.projects_dir.clone()),
+            .unwrap_or_else(|| core.projects_dir()),
+        _ => parent.unwrap_or_else(|| core.projects_dir()),
     };
     if pf::is_network_path(&parent) {
         return Err(AppError::new(
@@ -1062,7 +1071,7 @@ pub fn import_project_package(
     }
     // Same transaction as the rest of the restore, on the staged copy: a crash before the
     // commit leaves no project at all, never one with half its notes moved.
-    let adopted_notes = adopt_private_notes(&tx, &actor.user_id)?;
+    let adopted_notes = adopt_private_notes(&tx, &actor.user_id, None)?;
     let now = now_ms();
     let file_name = opened.file_name.clone();
     let (project_id, title) = if mode == PackageOpenMode::Copy {
@@ -1110,7 +1119,7 @@ pub fn import_project_package(
             let existing_layout = ProjectLayout::new(&existing_root);
             let backup_path = {
                 let lock = ProjectLock::acquire(&existing_layout)?;
-                let backups = core.config.projects_dir.join("Backups");
+                let backups = core.projects_dir().join("Backups");
                 fs::create_dir_all(&backups)?;
                 let name = openframe_security::sanitize_file_name(&format!(
                     "{} before replace {}",

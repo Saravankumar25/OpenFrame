@@ -16,6 +16,7 @@ mod project_lifecycle;
 mod property_invariants;
 mod recently_deleted_purge;
 mod security_review;
+mod storage;
 mod soak;
 mod team_gate;
 mod trial_first_run;

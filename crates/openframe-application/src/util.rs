@@ -192,7 +192,7 @@ pub fn load_assets_bulk<'a>(
 pub fn protected_roots(core: &AppCore) -> Vec<PathBuf> {
     let mut v = vec![
         core.config.app_data_dir.clone(),
-        core.config.global_vault_dir.clone(),
+        core.vault_dir(),
     ];
     if let Some(p) = core.project_opt() {
         v.push(p.layout.root().to_path_buf());

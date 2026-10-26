@@ -44,6 +44,7 @@
 | [0035](ADR-0035-ai-lanes-briefings-and-code-verifiers.md) | AI lanes (Direct, Action, Recipe, Chat, Agent) decided by code, typo-tolerant routing, intent prototypes with the search model, code-built briefings sized by measured prompt speed, deterministic verifiers with up to three passes in 60 seconds, a 4-step agent with compact tool signatures and a stable prompt start, progress lines and Cancel, no token streaming | **Accepted 2026-10-24** | Amends ADR-0013 decision 6 and ADR-0028 decision 8; extends ADR-0028 decisions 1 and 5 |
 | [0036](ADR-0036-production-pdf-design-system-v2.md) | Production PDF design system v2: lossless logo footer, 66 pt bottom margin, running header on the Call Sheet, titles inside repeating table headers, keep rules, orientation per export as in the design package | **Accepted 2026-10-24** (design; renderer slice follows) | Amends ADR-0008 for production documents |
 | [0037](ADR-0037-conversational-assistant-focus-and-dossiers.md) | Conversational assistant: one answer path for questions, a project index over every object type, focus, short-term and long-term memory, per-turn dossiers with progressive fetch, intent-based answer length, sources behind a button; model unchanged (Gemma 3 1B) | **Accepted 2026-10-26** (design; build follows in slices S0 to S9) | Amends ADR-0035 decision 1, ADR-0013 decision 6, ADR-0028 decision 8 |
+| [0038](ADR-0038-library-file-and-durable-identity.md) | Library file in the user's folder keeps the local user id and the chosen projects and vault folders; lazy vault; explicit re-owning of former owners' private notes | **Accepted 2026-10-27** | Amends ADR-0011 (where the id lives) and ADR-0003 (projects can be moved by the app) |
 
 ## 2. Older decisions that are no longer in force (surface the newer one)
 
@@ -90,4 +91,4 @@
 - A superseded decision is **never deleted**. It keeps its text, gets a pointer to its replacement, and appears in §2.
 - A new ADR names what it supersedes or amends and adds a row to both tables here.
 - A Proposed ADR is not a decision. Code must not assume it.
-- Numbering is permanent; the next free number is 0037. 0033 and 0034 are used in the Mac tree (the Metal engine helper process; the two-folder GitHub layout) and are not reused here, so a number means one decision in both trees.
+- Numbering is permanent; the next free number is 0039. 0033 and 0034 are used in the Mac tree (the Metal engine helper process; the two-folder GitHub layout) and are not reused here, so a number means one decision in both trees.
