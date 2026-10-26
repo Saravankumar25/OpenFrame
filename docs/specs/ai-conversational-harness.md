@@ -462,3 +462,66 @@ crude first pass, and the failures trace to fixable format and policy faults). P
 they are the main risk. S1b repeats the spike on the revised design with at least 60 cases and three runs each, and must meet
 the section 7.5 bars on the cases it covers before S3 starts. Limits of this run: synthetic data, one run per case, one
 temperature, my own checks, a processor build of the engine, and a prompt written once without tuning.
+
+## 13. Spike S1b (2026-10-26): the revised turn, 70 cases, three runs
+
+**Setup.** Same engine and model as section 12 (processor build, 8192 context). Fictional Low Tide Radio records in the
+facts-first format of section 5.4, the three policies of section 5.5 (facts, brainstorm, chat), the checker of section 5.6
+with at most three passes and the last-resort fact sentence, and the answer type read of section 5.3 (code rules first,
+then one model call with a closed list). 70 cases (lookup 18, count 5, compare 5, explain 10, relation 7, brainstorm 5,
+missing data 6, help 2, chat 6, injection 2, navigate and change 4) run three times with different seeds (198 written
+turns). Answer type is also read on the owner's 40 export messages and, from round 3, on 30 held-out messages written after
+the rules. Writing is scored with the expected type, so writing and type reading are measured apart. Script and raw results:
+`docs/release/evidence/ai-conversational-spike-s1b-2026-10-26/` (v1, v2 and v3 kept side by side). A Rust build ran at the
+same time, so times are pessimistic.
+
+**Round 1 to round 2.** Most round 1 failures were checker faults, not model faults: a curly apostrophe in "Mariamma’s" made
+a real name look invented, "November 5th" and "three" did not match "Nov 5" and "3", and digits dropped from the word list
+made normal answers look repeated. Round 2 normalises text before every check (month names, ordinals, number words, digit
+grouping, quotes), adds two policy lines (state the relationship line first and word for word; keep titles and names), and
+makes brainstorm answers start with "One option is". **The shipped checker needs the same normalisation.**
+
+**Writing, round 2 (198 turns), against the section 7.5 bars.**
+
+| Metric | Result | Bar | Met |
+|---|---|---|---|
+| Required facts, lookup, count, compare | 100% (111 of 111) | 95% | yes |
+| Required facts, explain, relation, brainstorm | 94.9% (111 of 117) | 80% | yes |
+| Last-resort fact sentence on lookups | 4.6% (4 of 87) | under 5% | yes |
+| Invented names shown | 0% | 2% | yes |
+| Repetition shown | 0% | 0% | yes |
+| Correct abstention | 94.4% (17 of 18) | 90% | yes |
+| Internal words shown | 0% | 0% | yes |
+| Injection obeyed | 0 of 6 | 0 | yes |
+| Length class respected (fallbacks count as misses) | 88.4% | 95% | no |
+| Median time, p95 | 3.9 s, 16.7 s | 15 s, 30 s | yes |
+
+The 23 turns that ended on a fallback come from six cases: act titles dropped ("The Search"), a long story paragraph that
+invented a place ("Silvanus"; the checker caught it and showed the fallback), "the Parking Lot is a scene" (wrong, not
+caught by a name or number check, only by the required fact), and three false alarms where the number-word normalisation
+turned "one option" or "two" into a stray number. The model passes pass 1 on 81.8% of turns; the rewrite loop lifts that
+to 88.4%.
+
+**Answer type.** Round 2 rules reached 93.2% on the cases and 87.5% on the export, but only 53.3% on the 30 held-out
+messages: the rule "no known word, so chat" fails as soon as a name or topic is not in a fixed word list. Round 3 decides
+chat only from social or angry words with no request in the message and sends every other unclear message to the model:
+
+| Set | Exact label | Coarse group (facts, narrative, brainstorm, navigate, change, help, chat) |
+|---|---|---|
+| Spike cases (70) | 92.7% | not computed |
+| Owner export (40) | 87.5% | 90% |
+| Held-out (30) | 70.0% | 86.7% |
+| Anger or small talk misread | 1 of 11 ("Bro what the fuck bro, I literally told you it's LOW TIDE RADIO" read as chat; it repeats a navigation request) | 0% bar |
+
+The 1B model confuses close labels (lookup, count, compare, list) and narrative ones (explain against relation, "what is
+Lissy like" as lookup). The rules were tuned on the export, so its number is optimistic; the held-out number is the honest
+one.
+
+**Verdict.** Writing from a clean, facts-first record is a go: every factual bar is met on synthetic data; length is the gap,
+and its causes are known. The answer type read is **not** at the bar and must not ship as designed in section 5.3. S4 changes
+it: (1) the decision that matters is the coarse group, because it picks the fetch plan and the length class; (2) entities
+come from the project index (S3), not a word list; (3) a correction or complaint takes the type of the last request when it
+names no new one; (4) try a nearest-neighbour read over labelled examples with the bundled embedding model
+(`multilingual-e5-small`, already shipped for search) before or instead of the model call: deterministic, multilingual and
+cheap; (5) S4 is measured on held-out wording only. Limits: synthetic data, my own labels and checks, one engine build,
+labels for the export are mine.
