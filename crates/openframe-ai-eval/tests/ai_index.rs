@@ -181,8 +181,9 @@ fn scene_46_does_not_exist_and_the_answer_says_so() {
 
 /// "How many characters in this story" with no focus. The Story characters belong to the project,
 /// not to a screenplay, so the message needs no screenplay: the resolver picks none and asks
-/// nothing. "How many scenes are there" does need one, and with no focus and a current draft in
-/// both screenplays (rule d finds two) it asks, with both titles.
+/// nothing. Counting scenes reads every screenplay (fix round after the Low Tide run), so it asks
+/// nothing either. "Describe the scenes" does need one screenplay, and with no focus and a current
+/// draft in both screenplays (rule d finds two) it asks, with both titles.
 #[test]
 fn a_project_wide_question_needs_no_screenplay_and_a_scene_question_asks_which() {
     let (_dir, _core, ix) = low_tide();
@@ -190,6 +191,9 @@ fn a_project_wide_question_needs_no_screenplay_and_a_scene_question_asks_which()
     assert!(r.screenplays.is_empty() && r.ambiguous.is_none());
 
     let r = say(&ix, &Focus::default(), "how many scenes are there");
+    assert!(r.ambiguous.is_none(), "a count across screenplays asks nothing");
+
+    let r = say(&ix, &Focus::default(), "describe the scenes");
     let q = r.ambiguous.expect("a question");
     assert!(
         q.options.len() == 2 && q.text.starts_with("Which screenplay do you mean:"),
