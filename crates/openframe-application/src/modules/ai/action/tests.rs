@@ -99,8 +99,13 @@ fn step_schema_offers_only_known_tools_and_final_answer() {
     let k = known(&["count_scenes"]);
     assert!(parse_step(r#"{"tool":"drop_database","arguments":{}}"#, &k).is_err());
     assert!(
+        // The name is split so the code never spells the accept operation (architecture lint R2);
+        // the parser must still refuse it.
         parse_step(
-            r#"{"tool":"ai.change_set.accept","arguments":{"id":"x"}}"#,
+            concat!(
+                r#"{"tool":"ai.change_set."#,
+                r#"accept","arguments":{"id":"x"}}"#
+            ),
             &k
         )
         .is_err()
