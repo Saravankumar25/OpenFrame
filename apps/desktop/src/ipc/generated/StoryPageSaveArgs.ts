@@ -2,6 +2,10 @@
 
 export type StoryPageSaveArgs = { text: string, 
 /**
+ * The formatting as JSON (see [`StoryPageDto::format`]); null or absent for plain text.
+ */
+format?: string, 
+/**
  * The `rev` the writer's screen was based on (0 before the first save).
  */
 expectedRev: number, };

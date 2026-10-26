@@ -47,6 +47,7 @@ mod band_matrix_tests;
 #[cfg(test)]
 mod board_tests;
 mod design;
+mod prose;
 #[cfg(test)]
 mod furniture_tests;
 #[cfg(test)]
@@ -220,6 +221,8 @@ pub enum Block {
     /// the document's running header, until the next `PageHeader`. One line per document part,
     /// for example one per storyboard. Not for use inside `Together`.
     PageHeader(String),
+    /// Formatted prose, one entry per line of text (the Story page, see `crate::prose`).
+    Prose(Vec<crate::prose::ProseLine>),
     /// The navy band that opens a storyboard (see `report/design/panel.rs`).
     SceneBanner(SceneBanner),
     /// The compact one-block header of a storyboard sheet.
@@ -356,6 +359,8 @@ pub struct Document {
     pub title: String,
     pub subtitle: Option<String>,
     pub landscape: bool,
+    /// A4 paper (595 x 842 pt) instead of US Letter (the Story page, written on an A4 sheet).
+    pub a4: bool,
     /// Title and subtitle centered (paper documents such as call sheets).
     pub centered_header: bool,
     /// Footer text before "Page n of m" on unbranded documents (defaults to the title). Branded
@@ -385,6 +390,7 @@ impl Document {
             title: title.into(),
             subtitle: None,
             landscape: false,
+            a4: false,
             centered_header: false,
             footer: None,
             author: None,
@@ -421,6 +427,10 @@ impl Document {
     }
     pub fn landscape(mut self, l: bool) -> Self {
         self.landscape = l;
+        self
+    }
+    pub fn a4(mut self) -> Self {
+        self.a4 = true;
         self
     }
     pub fn with(mut self, b: Block) -> Self {
@@ -566,6 +576,7 @@ fn scan_blocks(blocks: &[Block], scan: &mut dyn FnMut(&str)) {
                 }
                 Block::PageBreak | Block::Spacer(_) => {}
                 Block::PageHeader(text) => scan(text),
+                Block::Prose(lines) => prose::scan(lines, scan),
                 Block::SceneBanner(b) => design::scene_banner_scan(b, scan),
                 Block::CompactHeader(h) => design::compact_header_scan(h, scan),
                 Block::ReportHead(h) => design::report_head_scan(h, scan),
@@ -874,6 +885,15 @@ enum Op {
         text: String,
         color: Rgb,
         track: f32,
+    },
+    /// Black text that may be italic (formatted prose, `report/prose.rs`).
+    Styled {
+        bold: bool,
+        italic: bool,
+        size: f32,
+        x: f32,
+        y: f32,
+        text: String,
     },
     /// Filled and/or outlined rectangle, optionally with rounded corners.
     Shape {
@@ -1401,6 +1421,7 @@ fn render_block<'a>(p: &mut Pager<'a>, b: &'a Block) {
             p.draw_page_header();
         }
         Block::Matrix(m) => design::matrix(p, m),
+        Block::Prose(lines) => prose::render(p, lines),
         Block::ReportHead(h) => design::report_head(p, h),
         Block::NoteBand(b) => design::note_band(p, b),
         Block::MetricStrip(m) => design::metric_strip(p, m),
@@ -1567,10 +1588,11 @@ fn logo() -> Option<&'static LosslessImage> {
 }
 
 fn render_pdf(doc: &Document) -> ReportPdf {
-    let (w, h) = if doc.landscape {
-        (792.0, 612.0)
-    } else {
-        (612.0, 792.0)
+    let (w, h) = match (doc.a4, doc.landscape) {
+        (true, false) => (595.28, 841.89),
+        (true, true) => (841.89, 595.28),
+        (false, true) => (792.0, 612.0),
+        (false, false) => (612.0, 792.0),
     };
     let head = header_lines(doc, w);
     let bottom = if doc.brand.is_some() {
@@ -1619,7 +1641,10 @@ fn render_pdf(doc: &Document) -> ReportPdf {
     let mut shaped = Shaped::default();
     for (ops, footer) in p.pages.iter().zip(&footers) {
         for op in ops {
-            if let Op::Text { bold, text, .. } | Op::TextC { bold, text, .. } = op {
+            if let Op::Text { bold, text, .. }
+            | Op::TextC { bold, text, .. }
+            | Op::Styled { bold, text, .. } = op
+            {
                 shaped.collect(text, *bold);
             }
         }
@@ -1722,6 +1747,14 @@ fn render_pdf(doc: &Document) -> ReportPdf {
                     fill,
                     stroke,
                 } => design::draw_circle(&mut c, x, y, r, fill, stroke),
+                Op::Styled {
+                    bold,
+                    italic,
+                    size,
+                    x,
+                    y,
+                    text,
+                } => draw_text_styled(&mut b, &mut c, &shaped, &pack, bold, italic, size, x, y, &text),
                 Op::Text {
                     bold,
                     size,
@@ -1822,34 +1855,6 @@ fn render_pdf(doc: &Document) -> ReportPdf {
     }
 }
 
-/// The OpenFrame mark (the film frame of the app icon: a rounded square with two
-/// sprocket rails and a centre line), drawn in grey with its lower left corner at
-/// `(x, y)` and `size` points wide.
-pub(crate) fn draw_mark(c: &mut Content, x: f32, y: f32, size: f32, color: Rgb) {
-    let u = size / 24.0;
-    let p = |vx: f32, vy: f32| (x + vx * u, y + (24.0 - vy) * u);
-    c.set_stroke_rgb(color.0, color.1, color.2);
-    c.set_line_width((size * 0.075).max(0.6));
-    let (x0, y0) = p(2.0, 22.0);
-    c.rect(x0, y0, 20.0 * u, 20.0 * u);
-    c.stroke();
-    for (x1, y1, x2, y2) in [
-        (7.0, 2.0, 7.0, 22.0),
-        (17.0, 2.0, 17.0, 22.0),
-        (7.0, 12.0, 17.0, 12.0),
-        (2.0, 7.0, 7.0, 7.0),
-        (2.0, 17.0, 7.0, 17.0),
-        (17.0, 7.0, 22.0, 7.0),
-        (17.0, 17.0, 22.0, 17.0),
-    ] {
-        let (ax, ay) = p(x1, y1);
-        let (bx, by) = p(x2, y2);
-        c.move_to(ax, ay);
-        c.line_to(bx, by);
-        c.stroke();
-    }
-}
-
 /// The runs of a report that need the embedded fonts, shaped once each.
 #[derive(Default)]
 struct Shaped {
@@ -1917,6 +1922,43 @@ fn draw_text(
         b.text(c, font, size, x, y, text);
         return;
     }
+    let mut pen = x;
+    for (embedded, seg) in segments(text) {
+        match (embedded, pack, shaped.get(seg, bold)) {
+            (true, Some(pack), Some(line)) => pen += pack.draw(c, line, pen, y, size),
+            _ => {
+                b.text(c, font, size, pen, y, seg);
+                pen += text_width_pt(seg, size, bold);
+            }
+        }
+    }
+}
+
+/// Draw black report text that may be italic: Helvetica Oblique for Windows-1252 runs. Runs drawn
+/// with the embedded fonts print upright (shortcut: no oblique face is bundled for them; add a
+/// slanted text matrix if writers ask for italic Indian scripts).
+#[allow(clippy::too_many_arguments)]
+fn draw_text_styled(
+    b: &mut PdfBuilder,
+    c: &mut Content,
+    shaped: &Shaped,
+    pack: &Option<FontPack>,
+    bold: bool,
+    italic: bool,
+    size: f32,
+    x: f32,
+    y: f32,
+    text: &str,
+) {
+    if !italic {
+        draw_text(b, c, shaped, pack, bold, size, x, y, text);
+        return;
+    }
+    let font = if bold {
+        pdfgen::HELVETICA_BOLD_OBLIQUE
+    } else {
+        pdfgen::HELVETICA_OBLIQUE
+    };
     let mut pen = x;
     for (embedded, seg) in segments(text) {
         match (embedded, pack, shaped.get(seg, bold)) {

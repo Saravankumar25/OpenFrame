@@ -283,6 +283,8 @@ kbd{font-family:"Segoe UI",sans-serif;font-size:11px;border:1px solid var(--line
 /* call sheet doc */
 .paper{background:#fff;border:1px solid var(--line2);box-shadow:0 2px 12px #0002;padding:20px 26px;font-size:12px;line-height:1.4;color:#111} /* document colour: printed call-sheet paper */
 .paper h1{margin:0;font-size:22px;letter-spacing:1px;text-align:center}
+.paper .cs-group{margin:20px 0 2px;font-weight:700;font-size:15px;color:#1e2330} /* document colour: printed call-sheet paper */
+.paper .cs-group span{display:block;font-size:9px;letter-spacing:1.1px;text-transform:uppercase;color:#5b6475} /* document colour */
 .paper .st{background:#1e2330;color:#fff;padding:3px 8px;font-weight:700;font-size:11px;letter-spacing:.6px;text-transform:uppercase;margin:10px 0 4px} /* document colour: printed call-sheet paper */
 .paper table{width:100%;border-collapse:collapse}
 .paper td,.paper th{border:1px solid #bbb;padding:3px 7px;font-size:11.5px;text-align:left} /* document colour: printed call-sheet paper */

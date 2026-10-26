@@ -48,6 +48,15 @@ function allEpisodes(s: StorySeriesDto | undefined) {
   return [...s.seasons.flatMap((x) => x.episodes.map((e) => ({ ...e, seasonTitle: x.title }))), ...s.unseasoned.map((e) => ({ ...e, seasonTitle: "" }))];
 }
 
+// Story opens on the Story page (owner, 2026-10-27). A link to a board item (search, Continue, the
+// assistant) opens the Board and a link to a character opens Characters.
+const BOARD_PARAMS = ["cardId", "sceneCardId", "screenplaySceneId", "beatId", "sequenceId", "actId"];
+function defaultTab(params: Record<string, string> | undefined): Tab {
+  if (params?.characterId) return "characters";
+  if (params && BOARD_PARAMS.some((k) => params[k])) return "board";
+  return "page";
+}
+
 const isEditable = (t: EventTarget | null) =>
   t instanceof HTMLElement && (t.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(t.tagName));
 
@@ -59,7 +68,7 @@ export default function StoryWorkspace() {
   const episodes = useMemo(() => allEpisodes(series.data), [series.data]);
   const episodic = series.data?.isEpisodic ?? false;
   const showEpisodes = episodic || episodes.length > 0;
-  const tab: Tab = (["page", "board", "outline", "characters", "timeline", "episodes"] as Tab[]).includes(route.sub as Tab) ? (route.sub as Tab) : "board";
+  const tab: Tab = (["page", "board", "outline", "characters", "timeline", "episodes"] as Tab[]).includes(route.sub as Tab) ? (route.sub as Tab) : defaultTab(route.params);
 
   // Episode scope: explicit route param > the user's last choice > first episode.
   const paramEpisode = route.params?.episodeId;
@@ -78,7 +87,7 @@ export default function StoryWorkspace() {
     ui.openDrawer(null);
   }, [episodeId]);
 
-  const setTab = (t: Tab) => go({ workspace: "story", sub: t === "board" ? undefined : t, params: episodeId ? { episodeId } : undefined });
+  const setTab = (t: Tab) => go({ workspace: "story", sub: t === "page" ? undefined : t, params: episodeId ? { episodeId } : undefined });
   const chooseEpisode = (id: string | null) => {
     void story.setCurrentEpisode(id).catch(reportError);
     go({ workspace: "story", sub: route.sub, params: id ? { episodeId: id } : undefined });

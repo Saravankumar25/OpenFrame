@@ -10,7 +10,7 @@
 
 import { after, before, describe, test } from "node:test";
 import assert from "node:assert/strict";
-import { click, launchApp, openWorkspace, sleep, stepper, waitForText } from "../lib/app.mjs";
+import { click, launchApp, openBeatBoard, sleep, stepper, waitForText } from "../lib/app.mjs";
 import { assertQuiet, closeProject, createProject, firstLaunchProject, inDialog, menuItem, openProject, projectMenu, redo, relaunch, undo } from "../lib/flows.mjs";
 
 const A = "Rain finds the letter box";
@@ -71,7 +71,7 @@ describe("story board flow", () => {
   test("create an act, a sequence and three cards", async () => {
     await step("create", async () => {
       await firstLaunchProject(browser, "Monsoon Letters");
-      await openWorkspace(browser, "Story");
+      await openBeatBoard(browser);
       await waitForText(browser, "Your Beat Board is empty.");
       await click(browser, "Add Act");
       await (await browser.$('//input[@aria-label="Act title"]')).setValue("Act One");
@@ -198,7 +198,7 @@ describe("story board flow", () => {
       const headings = await headingsNow();
       assert.deepEqual(headings, ["EXT. POST OFFICE - NIGHT", "EXT. FLOODED STREET - NIGHT", "INT. MEERA'S ROOM - NIGHT"], "exactly the three headed cards, in board order");
       await assertQuiet(browser, "build");
-      await openWorkspace(browser, "Story");
+      await openBeatBoard(browser);
     });
   });
 
@@ -223,7 +223,7 @@ describe("story board flow", () => {
       await waitForText(browser, `Restored “${B}”`);
       await click(browser, `Restore ${A}`);
       await waitForText(browser, `Restored “${A}”`);
-      await openWorkspace(browser, "Story");
+      await openBeatBoard(browser);
       await browser.waitUntil(async () => (await cardsIn("Act Act One")).join() === [C, A, B, BEAT].join(), {
         timeout: 10_000,
         timeoutMsg: `restored cards are out of order: ${(await cardsIn("Act Act One")).join(" | ")}`,
@@ -237,7 +237,7 @@ describe("story board flow", () => {
       await closeProject(browser);
       browser = await relaunch(browser);
       await openProject(browser, "Monsoon Letters");
-      await openWorkspace(browser, "Story");
+      await openBeatBoard(browser);
       await browser.waitUntil(async () => (await cardsIn("Act Act One")).join() === [C, A, B, BEAT].join(), { timeout: 15_000, timeoutMsg: "order lost after relaunch" });
       assert.ok((await browser.$(".sc-long").getText()).startsWith("The street is flooded"), "Card Display setting or long description lost after relaunch");
       await (await card(A)).doubleClick();

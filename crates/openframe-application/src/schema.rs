@@ -90,6 +90,11 @@ pub const PROJECT_MIGRATIONS: &[Migration] = &[
         "ai_memory",
         "../../../migrations/project/0018_ai_memory.sql"
     ),
+    m!(
+        19,
+        "story_page_format",
+        "../../../migrations/project/0019_story_page_format.sql"
+    ),
 ];
 
 pub const GLOBAL_MIGRATIONS: &[Migration] = &[

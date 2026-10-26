@@ -196,10 +196,10 @@ use workbook metadata or first-sheet footer. User-owned source files are never m
 and backups carry a branded manifest or README, not edited user files.
 
 **Built (area 15, 2026-10-08).** `modules/exports/mod.rs::deliver` brands every production export in one place: PDFs
-print the OpenFrame mark and the brand line at the bottom of each page (Sides print the line in each page's bottom
-margin), workbooks name OpenFrame Studio in their document properties and the first sheet's footer, plain text ends
+print the OpenFrame mark and the brand line at the bottom of each page, workbooks name OpenFrame Studio in their document properties and the first sheet's footer, plain text ends
 with the line. CSV stays pure data (no added row) so it imports cleanly elsewhere. Screenplay exports
-(`screenplay.export`) never pass through `deliver` and stay unbranded. Package and backup manifests belong to the
+(`screenplay.export`) never pass through `deliver` and stay unbranded. Sides are pages of the script and carry no
+mark and no line either (owner, 2026-10-27). Package and backup manifests belong to the
 packages area.
 
 ## 9. Cross-cutting rules for every item above

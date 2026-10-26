@@ -134,10 +134,10 @@ export const story = {
     );
   },
 
-  // the Story page (plain free writing, not linked to anything). Read once when the tab opens: the
-  // page is the only writer of its text, so there is no live query to refresh it under the cursor.
+  // the Story page (free writing with its formatting, not linked to anything). Read once when the tab
+  // opens: the page is the only writer of its text, so there is no live query to refresh it under the cursor.
   pageGet: () => call<StoryPageDto>("story.page.get", {}),
-  pageSave: (text: string, expectedRev: number) => call<StoryPageSaved>("story.page.save", { text, expectedRev }),
+  pageSave: (text: string, format: string | null, expectedRev: number) => call<StoryPageSaved>("story.page.save", { text, format, expectedRev }),
 
   // acts
   createAct: (a: Scope & { title: string; beforeId?: string | null }) => call<StoryCreated>("story.create_act", a),

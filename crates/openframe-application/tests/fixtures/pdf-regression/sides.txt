@@ -16,7 +16,6 @@
 94,483 12.0 Meera
 266,483 12.0 Divya Nair
 439,483 12.0 Needs input
-88,26 8.0 Created using OpenFrame
 == page 2 612x792
 72,747 12.0 Shooting Draft 6 (Locked)
 72,759 12.0 BLACK RAIN · SIDES · SHOOT DAY 1
@@ -33,4 +32,3 @@
 108,591 12.0 EXT. OLD RAILWAY STATION - DAY
 547,591 12.0 2
 108,567 12.0 ARJUN walks the empty platform, photograph in hand.
-88,26 8.0 Created using OpenFrame

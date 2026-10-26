@@ -1223,6 +1223,12 @@ Support:
 
 Do not show every empty section.
 
+> **Order and names updated 2026-10-27 (owner):** the on-screen sheet follows the exported PDF: masthead, Day and
+> times, Production, Locations, Scene schedule, then "People on the day" (Talent / Cast, Extras, Crew, Department
+> notes) and "Day-of logistics" (Practical / Safety information with the day notes and custom fields, Weather, Advance
+> schedule, Walkie channels and contacts, Special notes, Attachments, Reference images). The list below is the
+> original order and is superseded.
+
 Default:
 
 1. Production header

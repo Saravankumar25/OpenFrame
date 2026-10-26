@@ -311,10 +311,6 @@ pub struct Layout {
     pub geometry: Geometry,
     /// Pages of every scene that printed at least one line, in document order.
     pub scenes: Vec<ScenePages>,
-    /// Production attribution printed in the bottom margin of every page (sides). Screenplay
-    /// files leave it empty.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub brand: Option<String>,
 }
 
 impl Layout {
@@ -911,7 +907,6 @@ pub fn layout(doc: &ScreenplayDoc, opts: &LayoutOptions) -> Layout {
         pages,
         geometry: g,
         scenes,
-        brand: None,
     }
 }
 

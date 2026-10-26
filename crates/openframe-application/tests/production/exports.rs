@@ -1862,7 +1862,7 @@ fn tree_bytes(dir: &Path) -> Vec<(String, Vec<u8>)> {
 /// Production depth spec §43 (masterplan box "Subtle OpenFrame branding"): every non-screenplay
 /// export carries "Created using OpenFrame" (PDF on every page, XLSX in the document
 /// properties and the first sheet's footer, plain text as its last line; CSV stays pure data),
-/// screenplay files carry none, and the user's own files (the picked image, the managed assets)
+/// screenplay files and sides (pages of the script, owner 2026-10-27) carry none, and the user's own files (the picked image, the managed assets)
 /// are only read. One assertion per export, named in the failure message.
 #[test]
 fn every_production_export_is_branded_and_user_files_are_never_modified() {
@@ -1931,7 +1931,6 @@ fn every_production_export_is_branded_and_user_files_are_never_modified() {
         ("schedule.export_daily_view", json!({}), "pdf"),
         ("schedule.export_daily_view", json!({}), "txt"),
         ("callsheets.export_pdf", json!({ "id": cs }), "pdf"),
-        ("sides.export_pdf", json!({ "dayId": day }), "pdf"),
         (
             "reports.export_report",
             json!({ "reportType": "scene" }),
@@ -1987,6 +1986,14 @@ fn every_production_export_is_branded_and_user_files_are_never_modified() {
             _ => unreachable!(),
         }
     }
+    // Sides are pages of the writer's script: no brand line and no mark on any page.
+    let sides = dest(&env, "brand-sides.pdf");
+    env.ok(
+        "sides.export_pdf",
+        json!({ "dayId": day, "format": "pdf", "path": sides }),
+    );
+    let text = pdf_text(&sides);
+    assert!(!text.contains(BRAND), "sides PDF carries the brand line: {text}");
     // CSV stays pure data.
     let csv = dest(&env, "brand.csv");
     env.ok(

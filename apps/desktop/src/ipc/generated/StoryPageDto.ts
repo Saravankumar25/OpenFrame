@@ -2,6 +2,11 @@
 
 export type StoryPageDto = { text: string, 
 /**
+ * The formatting as JSON (one list of runs per line of `text`), or null for plain text.
+ * Always matches `text` when present.
+ */
+format: string | null, 
+/**
  * 0 until the first save.
  */
 rev: number, 

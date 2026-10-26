@@ -1,0 +1,52 @@
+// The Story page document mapping: plain text plus formatting in, the same out; a formatting that
+// does not match its text is ignored, never applied.
+
+import { describe, expect, it } from "vitest";
+import { BODY_SIZE, contentOf, docFrom, parseFormat, storySchema, wordCount } from "./storyDoc";
+
+const FORMAT = JSON.stringify([
+  [{ t: "Hero", b: true, s: 20 }, { t: " walks ", i: true }, { t: "away", u: true, h: true }],
+  [],
+  [{ t: "The end" }],
+]);
+const TEXT = "Hero walks away\n\nThe end";
+
+describe("Story page document", () => {
+  it("round-trips the text and its formatting", () => {
+    const doc = docFrom(TEXT, FORMAT);
+    expect(doc.childCount).toBe(3);
+    expect(() => doc.check()).not.toThrow();
+    const back = contentOf(doc);
+    expect(back.text).toBe(TEXT);
+    expect(JSON.parse(back.format!)).toEqual(JSON.parse(FORMAT));
+  });
+
+  it("stores plain text with no formatting at all", () => {
+    expect(contentOf(docFrom("One\n\nTwo", null))).toEqual({ text: "One\n\nTwo", format: null });
+    expect(contentOf(docFrom("", null))).toEqual({ text: "", format: null });
+  });
+
+  it("ignores a formatting that does not match the text", () => {
+    expect(parseFormat("Other words", FORMAT)).toBeNull();
+    expect(parseFormat(TEXT, "not json")).toBeNull();
+    expect(parseFormat(TEXT, JSON.stringify([[{ t: "Hero walks away" }]]))).toBeNull();
+    const doc = docFrom("Other words", FORMAT);
+    expect(contentOf(doc)).toEqual({ text: "Other words", format: null });
+  });
+
+  it("joins neighbouring text of the same style into one run and drops the body size", () => {
+    const s = storySchema;
+    const para = s.nodes.paragraph.create(null, [
+      s.text("Ab", [s.marks.bold.create()]),
+      s.text("cd", [s.marks.bold.create(), s.marks.size.create({ pt: BODY_SIZE })]),
+      s.text("ef", [s.marks.size.create({ pt: 18 })]),
+    ]);
+    const { format } = contentOf(s.nodes.doc.create(null, [para]));
+    expect(JSON.parse(format!)).toEqual([[{ t: "Abcd", b: true }, { t: "ef", s: 18 }]]);
+  });
+
+  it("counts words", () => {
+    expect(wordCount("  one two\n\nthree ")).toBe(3);
+    expect(wordCount("")).toBe(0);
+  });
+});

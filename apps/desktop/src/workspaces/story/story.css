@@ -4,12 +4,33 @@
 
 .story-page { position: relative; }
 
-/* Story page: one plain writing area, centred at a comfortable reading width. Colours are tokens only. */
-.story-write-col { flex: 1; min-height: 0; width: 100%; max-width: 80ch; margin: 0 auto; display: flex; flex-direction: column; gap: 6px; }
-.story-write-area { flex: 1; min-height: 0; width: 100%; resize: none; box-sizing: border-box; padding: 20px 24px; border: 1px solid var(--line2); border-radius: 10px; background: var(--panel); color: var(--ink); font: inherit; font-size: 16px; line-height: 1.75; overflow: auto; }
-.story-write-area::placeholder { color: var(--muted); }
-.story-write-area:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
-.story-write-foot { display: flex; justify-content: space-between; padding: 0 4px; }
+/* Story page: an A4 sheet on the desk, like the screenplay page, with a formatting toolbar above it.
+   The sheet matches the exported PDF: A4, 46 pt margins, 12 pt text, line height 1.35. A faint rule
+   marks where each A4 page ends. */
+.story-tools { display: flex; align-items: center; gap: 4px; padding: 4px 6px; margin-bottom: 8px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); flex-wrap: wrap; }
+.story-size { height: 28px; border: 1px solid var(--line2); border-radius: 6px; background: var(--panel); color: var(--ink); font: inherit; font-size: 12px; padding: 0 6px; min-width: 64px; }
+.story-tools-sep { width: 1px; height: 18px; background: var(--line); margin: 0 4px; }
+.story-tool[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent-d); }
+.story-desk { flex: 1; min-height: 0; overflow: auto; background: var(--well); border-radius: 10px; padding: 18px 16px 60px; container-type: inline-size; }
+.story-a4 {
+  --page-h: 297mm;
+  width: 210mm; min-height: var(--page-h); margin: 0 auto; box-sizing: border-box; padding: 46pt;
+  background: var(--paper) repeating-linear-gradient(to bottom, transparent 0, transparent calc(var(--page-h) - 1px), var(--page-rule) calc(var(--page-h) - 1px), var(--page-rule) var(--page-h));
+  --page-rule: #d6d2ca; /* document colour: A4 page end */
+  color: var(--paper-ink); box-shadow: 0 2px 12px #0003;
+  font-family: Arial, Helvetica, sans-serif; font-size: 12pt; line-height: 1.35;
+  zoom: calc(var(--fit, 1) * var(--story-zoom, 1));
+}
+@container (max-width: 880px) { .story-a4 { --fit: .9; } }
+@container (max-width: 790px) { .story-a4 { --fit: .8; } }
+@container (max-width: 700px) { .story-a4 { --fit: .7; } }
+@container (max-width: 610px) { .story-a4 { --fit: .6; } }
+@container (max-width: 520px) { .story-a4 { --fit: .5; } }
+.story-a4-text { position: relative; outline: none; min-height: calc(var(--page-h) - 92pt); white-space: pre-wrap; overflow-wrap: break-word; caret-color: var(--paper-ink); }
+.story-a4-text p { margin: 0; min-height: 1.35em; }
+.story-a4-text mark { background: #ffe27a; color: inherit; } /* document colour: the PDF highlight */
+.story-a4-text[data-empty="true"]::before { content: attr(data-placeholder); position: absolute; color: #8a867c; pointer-events: none; } /* document colour */
+.story-write-foot { display: flex; justify-content: space-between; padding: 6px 4px 0; }
 .story-canvas { flex: 1; min-height: 0; overflow: auto; position: relative; padding-bottom: 12px; }
 .story-canvas .board { height: auto; min-height: 100%; overflow: visible; align-items: flex-start; padding: 2px 2px 16px; }
 

@@ -872,57 +872,48 @@ fn zip_package(parts: &[(String, Vec<u8>)]) -> AppResult<Vec<u8>> {
     Ok(zip.finish().map_err(err)?.into_inner())
 }
 
-// ------------------------------------------------------------------ plain prose
+// ------------------------------------------------------------------ formatted prose
 
-/// The paragraphs of a plain text. A run of non-blank lines is one paragraph (its line breaks are
-/// kept as `\n`); one blank line separates paragraphs; every further blank line is an empty
-/// paragraph, so the page the writer sees is the page that is exported. Trailing blanks are dropped.
-pub fn prose_paragraphs(text: &str) -> Vec<String> {
-    let mut out: Vec<String> = Vec::new();
-    let mut cur: Vec<&str> = Vec::new();
-    let normalised = text.replace("\r\n", "\n").replace('\r', "\n");
-    for line in normalised.split('\n') {
-        if line.trim().is_empty() {
-            if !cur.is_empty() {
-                out.push(cur.join("\n"));
-                cur.clear();
-            } else {
-                out.push(String::new());
-            }
-        } else {
-            cur.push(line);
-        }
-    }
-    if !cur.is_empty() {
-        out.push(cur.join("\n"));
-    }
-    while out.last().is_some_and(String::is_empty) {
-        out.pop();
-    }
-    out
-}
-
-fn prose_paragraph(w: &mut XmlWriter, style: &str, text: &str) {
-    if text.is_empty() {
-        w.raw("<w:p/>");
-        return;
-    }
+/// One Word paragraph per line of the text, so the page the writer sees is the page that is
+/// exported: an empty line is an empty paragraph and paragraphs have no space between them.
+/// Runs keep their bold, italic, underline, highlight and size ([`crate::prose`]).
+fn prose_line(w: &mut XmlWriter, style: &str, line: &[crate::prose::ProseRun]) {
     w.open("w:p", &[]);
     w.open("w:pPr", &[]);
     w.empty("w:pStyle", &[("w:val", style)]);
     w.close("w:pPr");
-    for (i, line) in text.split('\n').enumerate() {
+    for run in line.iter().filter(|r| !r.t.is_empty()) {
         w.open("w:r", &[]);
-        if let Some(script) = crate::fonts::first_indic_script(line) {
+        let script = crate::fonts::first_indic_script(&run.t);
+        if run.styled() || script.is_some() {
             w.open("w:rPr", &[]);
-            w.empty("w:rFonts", &[("w:cs", INDIC_DOCX_FONT)]);
-            w.empty("w:lang", &[("w:bidi", script.language_tag())]);
+            if let Some(script) = script {
+                w.empty("w:rFonts", &[("w:cs", INDIC_DOCX_FONT)]);
+                w.empty("w:lang", &[("w:bidi", script.language_tag())]);
+            }
+            if run.b {
+                w.empty("w:b", &[]);
+                w.empty("w:bCs", &[]);
+            }
+            if run.i {
+                w.empty("w:i", &[]);
+                w.empty("w:iCs", &[]);
+            }
+            if run.u {
+                w.empty("w:u", &[("w:val", "single")]);
+            }
+            if run.h {
+                w.empty("w:highlight", &[("w:val", "yellow")]);
+            }
+            if let Some(size) = run.s {
+                // Word sizes are half points.
+                let half = format!("{}", (size * 2.0).round() as u32);
+                w.empty("w:sz", &[("w:val", &half)]);
+                w.empty("w:szCs", &[("w:val", &half)]);
+            }
             w.close("w:rPr");
         }
-        if i > 0 {
-            w.empty("w:br", &[]);
-        }
-        for (j, part) in line.split('\t').enumerate() {
+        for (j, part) in run.t.split('\t').enumerate() {
             if j > 0 {
                 w.empty("w:tab", &[]);
             }
@@ -943,21 +934,27 @@ const PROSE_DOC_RELS: &str = r#"<?xml version="1.0" encoding="UTF-8" standalone=
 
 fn prose_styles_xml() -> String {
     format!(
-        "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<w:styles xmlns:w=\"{W_NS}\"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii=\"Calibri\" w:hAnsi=\"Calibri\" w:cs=\"{INDIC_DOCX_FONT}\"/><w:sz w:val=\"22\"/><w:szCs w:val=\"22\"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after=\"160\" w:line=\"300\" w:lineRule=\"auto\"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type=\"paragraph\" w:default=\"1\" w:styleId=\"Normal\"><w:name w:val=\"Normal\"/><w:qFormat/></w:style><w:style w:type=\"paragraph\" w:styleId=\"Title\"><w:name w:val=\"Title\"/><w:basedOn w:val=\"Normal\"/><w:next w:val=\"Normal\"/><w:qFormat/><w:pPr><w:spacing w:after=\"360\"/></w:pPr><w:rPr><w:b/><w:bCs/><w:sz w:val=\"40\"/><w:szCs w:val=\"40\"/></w:rPr></w:style></w:styles>"
+        "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<w:styles xmlns:w=\"{W_NS}\"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii=\"Calibri\" w:hAnsi=\"Calibri\" w:cs=\"{INDIC_DOCX_FONT}\"/><w:sz w:val=\"24\"/><w:szCs w:val=\"24\"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after=\"0\" w:line=\"324\" w:lineRule=\"auto\"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type=\"paragraph\" w:default=\"1\" w:styleId=\"Normal\"><w:name w:val=\"Normal\"/><w:qFormat/></w:style><w:style w:type=\"paragraph\" w:styleId=\"Title\"><w:name w:val=\"Title\"/><w:basedOn w:val=\"Normal\"/><w:next w:val=\"Normal\"/><w:qFormat/><w:pPr><w:spacing w:after=\"360\"/></w:pPr><w:rPr><w:b/><w:bCs/><w:sz w:val=\"40\"/><w:szCs w:val=\"40\"/></w:rPr></w:style></w:styles>"
     )
 }
 
-/// A plain Word document: `title` as the heading, then the paragraphs of `text`. US Letter with one
-/// inch margins. An empty text gives a valid document that holds only the title.
-pub fn prose_to_bytes(title: &str, text: &str) -> AppResult<Vec<u8>> {
+/// A Word document of formatted prose: `title` as the heading, then one paragraph per line (12 pt
+/// Calibri unless a run sets its own size). A4 with the margins of the PDF (46 pt). Trailing empty lines
+/// are dropped; an empty page gives a valid document that holds only the title.
+pub fn prose_lines_to_bytes(title: &str, lines: &[crate::prose::ProseLine]) -> AppResult<Vec<u8>> {
     let mut w = XmlWriter::new();
     w.open("w:document", &[("xmlns:w", W_NS), ("xmlns:r", R_NS)]);
     w.open("w:body", &[]);
-    prose_paragraph(&mut w, "Title", title);
-    for p in prose_paragraphs(text) {
-        prose_paragraph(&mut w, "Normal", &p);
+    prose_line(&mut w, "Title", &[crate::prose::ProseRun::plain(title)]);
+    let used = lines
+        .iter()
+        .rposition(|l| l.iter().any(|r| !r.t.is_empty()))
+        .map_or(0, |i| i + 1);
+    for line in &lines[..used] {
+        prose_line(&mut w, "Normal", line);
     }
-    w.raw("<w:sectPr><w:pgSz w:w=\"12240\" w:h=\"15840\"/><w:pgMar w:top=\"1440\" w:right=\"1440\" w:bottom=\"1440\" w:left=\"1440\" w:header=\"720\" w:footer=\"720\" w:gutter=\"0\"/></w:sectPr>");
+    // A4; 46 pt = 920 twips.
+    w.raw("<w:sectPr><w:pgSz w:w=\"11906\" w:h=\"16838\"/><w:pgMar w:top=\"920\" w:right=\"920\" w:bottom=\"1440\" w:left=\"920\" w:header=\"720\" w:footer=\"720\" w:gutter=\"0\"/></w:sectPr>");
     w.close("w:body");
     w.close("w:document");
     zip_package(&[
@@ -1004,20 +1001,40 @@ mod tests {
     }
 
     #[test]
-    fn prose_paragraphs_keep_line_breaks_and_extra_blank_lines() {
-        assert!(prose_paragraphs("").is_empty());
-        assert!(prose_paragraphs("\n\n  \n").is_empty());
-        assert_eq!(
-            prose_paragraphs("One\r\ntwo\n\nThree"),
-            vec!["One\ntwo", "Three"]
-        );
-        assert_eq!(prose_paragraphs("A\n\n\n\nB\n\n"), vec!["A", "", "", "B"]);
-        assert_eq!(prose_paragraphs("\n\nA"), vec!["", "", "A"]);
+    fn prose_docx_keeps_bold_italic_underline_highlight_and_size() {
+        use crate::prose::ProseRun;
+        let lines = vec![vec![
+            ProseRun {
+                t: "Hero".into(),
+                b: true,
+                i: true,
+                u: true,
+                h: true,
+                s: Some(18.0),
+            },
+            ProseRun::plain(" walks"),
+        ]];
+        let bytes = prose_lines_to_bytes("Story", &lines).unwrap();
+        let mut zip = zip::ZipArchive::new(std::io::Cursor::new(bytes)).unwrap();
+        let mut doc = String::new();
+        std::io::Read::read_to_string(&mut zip.by_name("word/document.xml").unwrap(), &mut doc)
+            .unwrap();
+        for tag in [
+            "<w:b/>",
+            "<w:i/>",
+            "<w:u w:val=\"single\"/>",
+            "<w:highlight w:val=\"yellow\"/>",
+            "<w:sz w:val=\"36\"/>",
+        ] {
+            assert!(doc.contains(tag), "{tag} missing: {doc}");
+        }
+        assert!(doc.contains(">Hero<") && doc.contains("> walks<"), "{doc}");
     }
 
     #[test]
     fn prose_docx_is_a_valid_package_with_escaped_text() {
-        let bytes = prose_to_bytes("Story", "Tom & <Jerry>\nsecond\tline\n\nनमस्ते").unwrap();
+        let lines = crate::prose::plain_lines("Tom & <Jerry>\nsecond\tline\n\nनमस्ते\n\n");
+        let bytes = prose_lines_to_bytes("Story", &lines).unwrap();
         let mut zip = zip::ZipArchive::new(std::io::Cursor::new(bytes)).unwrap();
         let mut names: Vec<String> = (0..zip.len())
             .map(|i| zip.by_index(i).unwrap().name().unwrap().into_owned())
@@ -1040,13 +1057,16 @@ mod tests {
         let root = xml::parse(doc.as_bytes()).expect("well-formed document.xml");
         assert_eq!(root.name, "document");
         assert!(doc.contains("Tom &amp; &lt;Jerry&gt;"), "{doc}");
-        assert!(doc.contains("<w:br/>") && doc.contains("<w:tab/>"), "{doc}");
+        assert!(doc.contains("<w:tab/>"), "{doc}");
         assert!(
             doc.contains("नमस्ते") && doc.contains("w:cs=\"Nirmala UI\""),
             "{doc}"
         );
+        // One paragraph per line: title, three lines, the blank line between them; trailing
+        // blank lines are dropped.
+        assert_eq!(doc.matches("<w:p>").count(), 5, "{doc}");
         // An empty page is a valid document with only the title.
-        let empty = prose_to_bytes("Story", "").unwrap();
+        let empty = prose_lines_to_bytes("Story", &crate::prose::plain_lines("")).unwrap();
         assert!(zip::ZipArchive::new(std::io::Cursor::new(empty)).is_ok());
     }
 

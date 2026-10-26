@@ -463,7 +463,7 @@ impl Frag {
 
 pub(super) fn shift(op: &mut Op, dx: f32, dy: f32) {
     match op {
-        Op::Text { x, y, .. } | Op::TextC { x, y, .. } => {
+        Op::Text { x, y, .. } | Op::TextC { x, y, .. } | Op::Styled { x, y, .. } => {
             *x += dx;
             *y += dy;
         }

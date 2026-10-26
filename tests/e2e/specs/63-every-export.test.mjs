@@ -12,7 +12,7 @@ import { after, before, describe, test } from "node:test";
 import assert from "node:assert/strict";
 import { existsSync, mkdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { click, launchApp, openWorkspace, stepper } from "../lib/app.mjs";
+import { click, launchApp, openBeatBoard, stepper } from "../lib/app.mjs";
 import { firstLaunchProject, importFountain, menuItem } from "../lib/flows.mjs";
 import { NIGHT_BUS } from "../lib/ai.mjs";
 
@@ -70,7 +70,7 @@ describe("every export format", () => {
 
   test("the Beat Board exports as PDF", async () => {
     await step("story", async () => {
-      await openWorkspace(browser, "Story");
+      await openBeatBoard(browser);
       await click(browser, "Add Act");
       await (await browser.$('//input[@aria-label="Act title"]')).setValue("Act One");
       await browser.keys("Enter");

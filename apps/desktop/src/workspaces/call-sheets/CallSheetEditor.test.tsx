@@ -80,7 +80,7 @@ function fixture(over: Partial<CallSheetDetail> = {}): CallSheetDetail {
     },
     missing: ["crewCall", "locations.0.address"],
     estimatedStarts: ["19:00", "20:30"],
-    defaultSections: ["Production header", "Day and times", "Locations", "Scene schedule", "Talent", "Practical notes"],
+    defaultSections: ["Day and times", "Production", "Locations", "Scene schedule", "Talent / Cast", "Practical / Safety information"],
     optionalSections: [
       { key: "weather", label: "Weather" },
       { key: "extras", label: "Extras" },
@@ -104,9 +104,13 @@ describe("call sheet editor", () => {
 
   it("shows the six default sections and hides optional ones that were not added", () => {
     render(<CallSheetEditor id="cs1" />);
-    for (const name of ["Production header", "Day and times", "Locations", "Scene schedule", "Talent", "Practical notes"]) {
+    for (const name of ["Masthead", "Day and times", "Production", "Locations", "Scene schedule", "Talent / Cast", "Practical / Safety information"]) {
       expect(screen.getByRole("region", { name })).toBeInTheDocument();
     }
+    // Same order as the exported PDF, with its two group titles.
+    const order = screen.getAllByRole("region").map((r) => r.getAttribute("aria-label"));
+    expect(order.slice(0, 7)).toEqual(["Masthead", "Day and times", "Production", "Locations", "Scene schedule", "Talent / Cast", "Practical / Safety information"]);
+    expect(screen.getAllByRole("heading", { level: 2 }).map((h) => h.textContent)).toEqual(["People on the dayCast & Crew", "Day-of logisticsProduction notes"]);
     expect(screen.queryByRole("region", { name: "Weather" })).toBeNull();
     expect(screen.getByRole("button", { name: "Add Section" })).toBeInTheDocument();
     expect(screen.getByText(/2 values read Needs input/)).toBeInTheDocument();

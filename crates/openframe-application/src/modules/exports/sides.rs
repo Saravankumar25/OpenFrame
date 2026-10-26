@@ -13,7 +13,7 @@ use openframe_import_export::layout::{
     self, CHAR_WIDTH_IN, LEFT_MARGIN_IN, LINES_PER_PAGE, LaidOutPage, LayoutOptions, LineStyle,
     PAGE_WIDTH_IN, PageLine, RIGHT_EDGE_IN,
 };
-use openframe_import_export::report::{BRAND_LINE, Document};
+use openframe_import_export::report::Document;
 use openframe_import_export::{Element, ElementKind, Scene, ScreenplayDoc, pdf_export};
 use rusqlite::OptionalExtension;
 use serde::Deserialize;
@@ -315,9 +315,8 @@ fn build_layout(content: &ScheduleSidesContent) -> layout::Layout {
         }
     }
     lay.pages.splice(0..0, cover_pages(content));
-    // Sides are a production document, so every page carries the OpenFrame attribution in its
-    // bottom margin (production depth spec §43). Screenplay exports never do.
-    lay.brand = Some(BRAND_LINE.to_string());
+    // Sides are pages of the writer's script: like screenplay files they carry no OpenFrame mark
+    // and no brand line (owner decision 2026-10-27).
     lay
 }
 
@@ -399,6 +398,7 @@ pub(super) fn export(
         None,
     );
     let mut out = Output::new(Document::new(&document), HINT_EDIT);
+    out.unbranded = true;
     out.pdf = Some((pdf.bytes, lay.pages.len() as u32));
     if a.include_cover.unwrap_or(false) && content.cover.is_none() && a.side_id.is_none() {
         out.warnings

@@ -287,8 +287,10 @@ fn check(env: &TestEnv, name: &str, op: &str, args: Value) {
         "{name}: the same data must give a byte-identical PDF"
     );
     let actual = layout_of(&first);
-    assert!(
+    // Sides are pages of the writer's script and carry no brand (owner, 2026-10-27).
+    assert_eq!(
         actual.contains(BRAND),
+        name != "sides",
         "{name}: production PDFs carry \"{BRAND}\"\n{actual}"
     );
     let golden = golden_dir().join(format!("{name}.txt"));

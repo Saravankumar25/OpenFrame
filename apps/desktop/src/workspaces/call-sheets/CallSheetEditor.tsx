@@ -287,7 +287,36 @@ function FinalizeDialog({ detail, onClose, onMissingCrewCall }: { detail: CallSh
 
 type Edit = (fn: (d: Doc) => void) => void;
 
-function HeaderSection({ doc, d, edit, ro }: { doc: Doc; d: CallSheetDetail; edit: Edit; ro: boolean }) {
+// The sheet reads in the order of the exported PDF (owner, 2026-10-27): masthead, day and times,
+// production, locations, scene schedule, then the "People on the day" group (talent, extras, crew,
+// department notes) and the "Day-of logistics" group (practical and safety notes, weather, advance
+// schedule, walkie channels, special notes, attachments, reference images).
+
+function Masthead({ doc, d, edit, ro }: { doc: Doc; d: CallSheetDetail; edit: Edit; ro: boolean }) {
+  return (
+    <section aria-label="Masthead">
+      <h1>
+        <Edt value={doc.title} onChange={(v) => edit((x) => void (x.title = v))} label="Production title" need disabled={ro} />
+      </h1>
+      <div style={{ textAlign: "center", fontWeight: 700, margin: "4px 0" }}>
+        {doc.dayLabel}
+        {doc.dayOf && <> ({doc.dayOf})</>} · {d.dateLong ?? <span className="need">{NEEDS_INPUT}: set the date in the schedule</span>}
+      </div>
+    </section>
+  );
+}
+
+/** The title of a group of sections, as in the PDF: a small tracked line above the group's name. */
+function GroupTitle({ eyebrow, title }: { eyebrow: string; title: string }) {
+  return (
+    <div className="cs-group" role="heading" aria-level={2}>
+      <span>{eyebrow}</span>
+      {title}
+    </div>
+  );
+}
+
+function ProductionSection({ doc, edit, ro }: { doc: Doc; edit: Edit; ro: boolean }) {
   const h = doc.header;
   const fields: [keyof Doc["header"], string][] = [
     ["company", "Production company"],
@@ -298,14 +327,7 @@ function HeaderSection({ doc, d, edit, ro }: { doc: Doc; d: CallSheetDetail; edi
     ["contact", "Production contact"],
   ];
   return (
-    <Section title="Production header">
-      <h1>
-        <Edt value={doc.title} onChange={(v) => edit((x) => void (x.title = v))} label="Production title" need disabled={ro} />
-      </h1>
-      <div style={{ textAlign: "center", fontWeight: 700, margin: "4px 0" }}>
-        {doc.dayLabel}
-        {doc.dayOf && <> ({doc.dayOf})</>} · {d.dateLong ?? <span className="need">{NEEDS_INPUT}: set the date in the schedule</span>}
-      </div>
+    <Section title="Production">
       <div className="grid g2" style={{ gap: "0 16px" }}>
         {fields.map(([k, label]) => (
           <Fld key={k} label={label} value={h[k]} onChange={(v) => edit((x) => void (x.header[k] = v))} disabled={ro} />
@@ -345,10 +367,6 @@ function TimesSection({ doc, edit, ro, crewRef, crewInvalid, onCrew }: { doc: Do
         {times.map(([k, label]) => (
           <Fld key={k} label={label} value={t[k]} onChange={(v) => edit((x) => void (x.times[k] = v))} disabled={ro} />
         ))}
-      </div>
-      <div className="of-field" style={{ alignItems: "flex-start" }}>
-        <span>Notes from the day</span>
-        <EdtArea value={doc.dayNotes} onChange={(v) => edit((x) => void (x.dayNotes = v))} label="Notes from the day" disabled={ro} />
       </div>
     </Section>
   );
@@ -444,7 +462,7 @@ function SceneSection({ doc, d, edit, ro }: { doc: Doc; d: CallSheetDetail; edit
 
 function TalentSection({ doc, edit, ro }: { doc: Doc; edit: Edit; ro: boolean }) {
   return (
-    <Section title="Talent">
+    <Section title="Talent / Cast">
       {doc.cast.length === 0 ? (
         <div className="muted">No cast in these scenes.</div>
       ) : (
@@ -494,6 +512,7 @@ function TalentSection({ doc, edit, ro }: { doc: Doc; edit: Edit; ro: boolean })
   );
 }
 
+// The PDF prints the day notes and the custom fields in the practical card, so they live here too.
 function PracticalSection({ doc, edit, ro }: { doc: Doc; edit: Edit; ro: boolean }) {
   const p = doc.practical;
   const fields: [keyof Doc["practical"], string, boolean][] = [
@@ -507,7 +526,7 @@ function PracticalSection({ doc, edit, ro }: { doc: Doc; edit: Edit; ro: boolean
     ["emergencyContact", "Emergency contact", true],
   ];
   return (
-    <Section title="Practical notes">
+    <Section title="Practical / Safety information">
       {fields.map(([k, label, need]) => (
         <Fld key={k} label={label} value={p[k]} onChange={(v) => edit((x) => void (x.practical[k] = v))} need={need} disabled={ro} />
       ))}
@@ -519,15 +538,41 @@ function PracticalSection({ doc, edit, ro }: { doc: Doc; edit: Edit; ro: boolean
         <span>Production notes</span>
         <EdtArea value={p.productionNotes} onChange={(v) => edit((x) => void (x.practical.productionNotes = v))} label="Production notes" disabled={ro} />
       </div>
+      <div className="of-field" style={{ alignItems: "flex-start" }}>
+        <span>Notes from the day</span>
+        <EdtArea value={doc.dayNotes} onChange={(v) => edit((x) => void (x.dayNotes = v))} label="Notes from the day" disabled={ro} />
+      </div>
+      {doc.extraFields.map((f, i) => (
+        <div key={i} className="of-field">
+          <Edt value={f.label} onChange={(v) => edit((x) => void (x.extraFields[i].label = v))} label={`Field ${i + 1} name`} placeholder="Field name" disabled={ro} />
+          <Edt wide value={f.value} onChange={(v) => edit((x) => void (x.extraFields[i].value = v))} label={`Field ${i + 1} value`} disabled={ro} />
+          <RemoveRow label={`Remove field ${f.label || i + 1}`} onClick={() => edit((x) => void x.extraFields.splice(i, 1))} disabled={ro} />
+        </div>
+      ))}
     </Section>
   );
 }
 
-function OptionalSections({ doc, edit, ro, attach }: { doc: Doc; edit: Edit; ro: boolean; attach: (s: "attachments" | "referenceImages") => void }) {
+/** The optional sections of one group, in the order of the PDF. */
+function OptionalSections({
+  doc,
+  edit,
+  ro,
+  attach,
+  group,
+}: {
+  doc: Doc;
+  edit: Edit;
+  ro: boolean;
+  attach: (s: "attachments" | "referenceImages") => void;
+  group: "people" | "logistics";
+}) {
   const o = doc.optional;
+  const people = group === "people";
+  const logistics = !people;
   return (
     <>
-      {o.weather !== null && (
+      {logistics && o.weather !== null && (
         <Section title="Weather" disabled={ro} onRemove={() => edit((x) => void (x.optional.weather = null))}>
           <div className="hint xs">Type the forecast, sunrise and sunset. OpenFrame never looks them up online.</div>
           <Fld label="Forecast" value={o.weather} onChange={(v) => edit((x) => void (x.optional.weather = v))} need disabled={ro} />
@@ -537,7 +582,7 @@ function OptionalSections({ doc, edit, ro, attach }: { doc: Doc; edit: Edit; ro:
           </div>
         </Section>
       )}
-      {o.extras !== null && (
+      {people && o.extras !== null && (
         <Section title="Extras" disabled={ro} onRemove={() => edit((x) => void (x.optional.extras = null))}>
           <table>
             <thead>
@@ -574,7 +619,7 @@ function OptionalSections({ doc, edit, ro, attach }: { doc: Doc; edit: Edit; ro:
           )}
         </Section>
       )}
-      {o.departments !== null && (
+      {people && o.departments !== null && (
         <Section title="Department notes" disabled={ro} onRemove={() => edit((x) => void (x.optional.departments = null))}>
           {o.departments.map((dep, i) => (
             <div key={i} className="of-field" style={{ alignItems: "flex-start" }}>
@@ -590,7 +635,7 @@ function OptionalSections({ doc, edit, ro, attach }: { doc: Doc; edit: Edit; ro:
           )}
         </Section>
       )}
-      {o.advance !== null && (
+      {logistics && o.advance !== null && (
         <Section title="Advance schedule" disabled={ro} onRemove={() => edit((x) => void (x.optional.advance = null))}>
           {(
             [
@@ -606,7 +651,7 @@ function OptionalSections({ doc, edit, ro, attach }: { doc: Doc; edit: Edit; ro:
           ))}
         </Section>
       )}
-      {o.crew !== null && (
+      {people && o.crew !== null && (
         <Section title="Crew" disabled={ro} onRemove={() => edit((x) => void (x.optional.crew = null))}>
           <table>
             <thead>
@@ -643,7 +688,7 @@ function OptionalSections({ doc, edit, ro, attach }: { doc: Doc; edit: Edit; ro:
           )}
         </Section>
       )}
-      {o.communication !== null && (
+      {logistics && o.communication !== null && (
         <Section title="Walkie channels and contacts" disabled={ro} onRemove={() => edit((x) => void (x.optional.communication = null))}>
           {(
             [
@@ -657,12 +702,12 @@ function OptionalSections({ doc, edit, ro, attach }: { doc: Doc; edit: Edit; ro:
           ))}
         </Section>
       )}
-      {o.specialNotes !== null && (
+      {logistics && o.specialNotes !== null && (
         <Section title="Special notes" disabled={ro} onRemove={() => edit((x) => void (x.optional.specialNotes = null))}>
           <EdtArea value={o.specialNotes} onChange={(v) => edit((x) => void (x.optional.specialNotes = v))} label="Special notes" disabled={ro} />
         </Section>
       )}
-      {o.attachments !== null && (
+      {logistics && o.attachments !== null && (
         <Section title="Attachments" disabled={ro} onRemove={() => edit((x) => void (x.optional.attachments = null))}>
           <div className="of-attach">
             {o.attachments.map((a, i) => (
@@ -684,7 +729,7 @@ function OptionalSections({ doc, edit, ro, attach }: { doc: Doc; edit: Edit; ro:
           </div>
         </Section>
       )}
-      {o.referenceImages !== null && (
+      {logistics && o.referenceImages !== null && (
         <Section title="Reference images" disabled={ro} onRemove={() => edit((x) => void (x.optional.referenceImages = null))}>
           <div className="of-attach">
             {o.referenceImages.map((a, i) => (
@@ -700,17 +745,6 @@ function OptionalSections({ doc, edit, ro, attach }: { doc: Doc; edit: Edit; ro:
               </Button>
             )}
           </div>
-        </Section>
-      )}
-      {doc.extraFields.length > 0 && (
-        <Section title="Additional information">
-          {doc.extraFields.map((f, i) => (
-            <div key={i} className="of-field">
-              <Edt value={f.label} onChange={(v) => edit((x) => void (x.extraFields[i].label = v))} label={`Field ${i + 1} name`} placeholder="Field name" disabled={ro} />
-              <Edt wide value={f.value} onChange={(v) => edit((x) => void (x.extraFields[i].value = v))} label={`Field ${i + 1} value`} disabled={ro} />
-              <RemoveRow label={`Remove field ${f.label || i + 1}`} onClick={() => edit((x) => void x.extraFields.splice(i, 1))} disabled={ro} />
-            </div>
-          ))}
         </Section>
       )}
     </>
@@ -905,13 +939,17 @@ export function CallSheetEditor({ id }: { id: string }) {
       <div className="row" style={{ alignItems: "stretch", gap: 14, flex: 1, minHeight: 0 }}>
         <div className="of-paper-wrap">
           <div className="paper" aria-label="Call sheet document">
-            <HeaderSection doc={doc} d={d} edit={edit} ro={ro} />
+            <Masthead doc={doc} d={d} edit={edit} ro={ro} />
             <TimesSection doc={doc} edit={edit} ro={ro} crewRef={crewRef} crewInvalid={crewInvalid} onCrew={() => setCrewInvalid(false)} />
+            <ProductionSection doc={doc} edit={edit} ro={ro} />
             <LocationsSection doc={doc} edit={edit} ro={ro} />
             <SceneSection doc={doc} d={d} edit={edit} ro={ro} />
+            <GroupTitle eyebrow="People on the day" title="Cast & Crew" />
             <TalentSection doc={doc} edit={edit} ro={ro} />
+            <OptionalSections doc={doc} edit={edit} ro={ro} attach={attach} group="people" />
+            <GroupTitle eyebrow="Day-of logistics" title="Production notes" />
             <PracticalSection doc={doc} edit={edit} ro={ro} />
-            <OptionalSections doc={doc} edit={edit} ro={ro} attach={attach} />
+            <OptionalSections doc={doc} edit={edit} ro={ro} attach={attach} group="logistics" />
           </div>
         </div>
 

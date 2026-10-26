@@ -5,8 +5,8 @@
 // shooting day, create a call sheet with its six default sections, add a section, see "Needs
 // input", change the schedule and review the update, finalize (a frozen snapshot), start a new
 // revision; budget Planned and Actual; a call sheet made from the Indie Call Sheet template;
-// sides, a production report, the moodboard, storyboard sheet and shot list exports with the
-// OpenFrame brand line; notes and tasks; then quit, relaunch and find everything again.
+// sides (pages of the script, no brand), a production report, the moodboard, storyboard sheet and
+// shot list exports with the OpenFrame brand line; notes and tasks; then quit, relaunch and find everything again.
 
 import { after, before, describe, test } from "node:test";
 import assert from "node:assert/strict";
@@ -60,13 +60,13 @@ function pdfText(path) {
   return readFileSync(path).toString("latin1");
 }
 
-async function exportAndCheck(name, args, file) {
+async function exportAndCheck(name, args, file, branded = true) {
   const path = join(OUT, file);
   await op(name, { ...args, path });
   assert.ok(existsSync(path), `${name} wrote no file`);
   const head = readFileSync(path).subarray(0, 5).toString("latin1");
   assert.equal(head, "%PDF-", `${name} did not write a PDF`);
-  assert.ok(pdfText(path).includes(BRAND), `${name} PDF has no OpenFrame brand line`);
+  assert.equal(pdfText(path).includes(BRAND), branded, `${name} PDF: brand line expected ${branded}`);
   return path;
 }
 
@@ -234,9 +234,10 @@ describe("call sheets, budget, templates, samples and exports", () => {
     });
   });
 
-  test("sides, a report and the visual planning exports carry the brand line", async () => {
+  test("a report and the visual planning exports carry the brand line, sides do not", async () => {
     await step("exports", async () => {
-      await exportAndCheck("sides.export_pdf", { format: "pdf", dayId, includeCover: true }, "sides.pdf");
+      // Sides are pages of the writer's script: no mark and no brand line (owner, 2026-10-27).
+      await exportAndCheck("sides.export_pdf", { format: "pdf", dayId, includeCover: true }, "sides.pdf", false);
       await exportAndCheck("reports.export_report", { format: "pdf", reportType: "scene" }, "scene-report.pdf");
       await exportAndCheck("schedule.export_schedule", { format: "pdf" }, "schedule.pdf");
       await exportAndCheck("schedule.export_dood", { format: "pdf" }, "dood.pdf");

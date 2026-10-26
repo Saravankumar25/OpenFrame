@@ -14,13 +14,17 @@ pub const COURIER_OBLIQUE: &[u8] = b"F2";
 pub const COURIER_BOLD: &[u8] = b"F3";
 pub const HELVETICA: &[u8] = b"F4";
 pub const HELVETICA_BOLD: &[u8] = b"F5";
+pub const HELVETICA_OBLIQUE: &[u8] = b"F6";
+pub const HELVETICA_BOLD_OBLIQUE: &[u8] = b"F7";
 
-const FONTS: [(&[u8], &[u8]); 5] = [
+const FONTS: [(&[u8], &[u8]); 7] = [
     (COURIER, b"Courier"),
     (COURIER_OBLIQUE, b"Courier-Oblique"),
     (COURIER_BOLD, b"Courier-Bold"),
     (HELVETICA, b"Helvetica"),
     (HELVETICA_BOLD, b"Helvetica-Bold"),
+    (HELVETICA_OBLIQUE, b"Helvetica-Oblique"),
+    (HELVETICA_BOLD_OBLIQUE, b"Helvetica-BoldOblique"),
 ];
 
 /// A JPEG picture ready to embed (see [`crate::report::ReportImage`]).

@@ -271,7 +271,8 @@ fn story_page_exports_word_with_escaped_text_and_the_required_parts() {
         xml.contains("starts here &amp; ends &lt;there&gt;."),
         "{xml}"
     );
-    assert!(xml.contains("Chapter one") && xml.contains("<w:br/>"));
+    // One Word paragraph per line of the page.
+    assert!(xml.contains(">Chapter one<") && xml.contains(">starts here &amp;"));
     assert!(xml.contains("Second paragraph.") && xml.contains("After a gap."));
     assert!(docx_part(&path, "[Content_Types].xml").contains("/word/document.xml"));
 }
@@ -318,4 +319,100 @@ fn story_page_export_checks_format_destination_and_permission() {
     // The export is a snapshot: the page is unchanged.
     export(&env, "txt", "snap.txt");
     assert_eq!(page(&env)["rev"], 1);
+}
+
+// ------------------------------------------------------------------ formatting
+
+const FORMATTED: &str = "Hero walks away\n\nThe end";
+
+fn formatting() -> String {
+    json!([
+        [
+            { "t": "Hero", "b": true, "s": 20 },
+            { "t": " walks ", "i": true },
+            { "t": "away", "u": true, "h": true }
+        ],
+        [],
+        [{ "t": "The end" }]
+    ])
+    .to_string()
+}
+
+fn save_formatted(env: &TestEnv, text: &str, format: &str, rev: i64) -> Value {
+    env.ok(
+        "story.page.save",
+        json!({ "text": text, "format": format, "expectedRev": rev }),
+    )
+}
+
+#[test]
+fn story_page_keeps_its_formatting_and_plain_text_side_by_side() {
+    let env = TestEnv::with_project("Night Bus", "Feature Film");
+    save_formatted(&env, FORMATTED, &formatting(), 0);
+    let p = page(&env);
+    assert_eq!(p["text"], FORMATTED, "the plain text is unchanged");
+    let stored: Value = serde_json::from_str(p["format"].as_str().unwrap()).unwrap();
+    assert_eq!(stored[0][0]["b"], true);
+    assert_eq!(stored[0][0]["s"], 20.0);
+    assert_eq!(stored[0][2]["h"], true);
+    // A save without formatting clears it; unformatted runs are stored as plain text.
+    save(&env, FORMATTED, 1);
+    assert!(page(&env)["format"].is_null());
+    let plain = json!([[{ "t": "Hero walks away" }], [], [{ "t": "The end" }]]).to_string();
+    save_formatted(&env, FORMATTED, &formatting(), 2);
+    assert!(!page(&env)["format"].is_null());
+    save_formatted(&env, FORMATTED, &plain, 3);
+    assert!(page(&env)["format"].is_null());
+    assert_eq!(page(&env)["rev"], 4);
+}
+
+#[test]
+fn story_page_refuses_formatting_that_does_not_match_its_text() {
+    let env = TestEnv::with_project("Night Bus", "Feature Film");
+    save(&env, "kept", 0);
+    for bad in [
+        // Different words.
+        json!([[{ "t": "Other text", "b": true }]]).to_string(),
+        // Wrong number of lines.
+        json!([[{ "t": "Hero walks away", "b": true }]]).to_string(),
+        // A size out of range.
+        json!([[{ "t": "Hero walks away", "s": 500 }], [], [{ "t": "The end" }]]).to_string(),
+        // Not formatting at all.
+        "not json".to_string(),
+    ] {
+        let e = env
+            .call(
+                "story.page.save",
+                json!({ "text": FORMATTED, "format": bad, "expectedRev": 1 }),
+            )
+            .unwrap_err();
+        assert!(e.code.0.starts_with("validation"), "{}", e.code.0);
+    }
+    assert_eq!(page(&env)["text"], "kept", "nothing was overwritten");
+}
+
+#[test]
+fn story_page_exports_its_formatting_to_word_and_pdf() {
+    let env = TestEnv::with_project("Night Bus", "Feature Film");
+    save_formatted(&env, FORMATTED, &formatting(), 0);
+    let (_, docx) = export(&env, "docx", "rich.docx");
+    let xml = docx_part(&docx, "word/document.xml");
+    for tag in [
+        "<w:b/>",
+        "<w:i/>",
+        "<w:u w:val=\"single\"/>",
+        "<w:highlight w:val=\"yellow\"/>",
+        "<w:sz w:val=\"40\"/>",
+    ] {
+        assert!(xml.contains(tag), "{tag} missing: {xml}");
+    }
+    let (r, pdf) = export(&env, "pdf", "rich.pdf");
+    assert_eq!(r["pages"], 1);
+    let bytes = std::fs::read(&pdf).unwrap();
+    assert!(String::from_utf8_lossy(&bytes).contains("Helvetica-Oblique"));
+    lopdf::Document::load(&pdf).expect("PDF parses");
+    // Plain text carries the words only.
+    let (_, txt) = export(&env, "txt", "rich.txt");
+    let got = String::from_utf8(std::fs::read(&txt).unwrap()).unwrap();
+    assert_eq!(got.trim_start_matches(BOM), FORMATTED.replace('\n', "\r\n"));
 }
