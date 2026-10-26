@@ -560,13 +560,7 @@ impl AppCore {
         // vault in it is a drive that is not connected or a folder that was moved: it is never
         // replaced by a new empty vault (doc 40 section 3).
         if !db.is_file() && !library::same_place(&dir, &self.config.global_vault_dir) {
-            return Err(AppError::new(
-                "storage.vault_missing",
-                "Your Global Idea Vault can't be found where it was last used. If it is on an \
-                 external drive, reconnect the drive. Otherwise go to Settings > Storage and choose \
-                 the vault folder.",
-            )
-            .with_detail(dir.to_string_lossy().into_owned()));
+            return Err(vault_missing_error(&dir));
         }
         std::fs::create_dir_all(dir.join("assets"))?;
         let (store, _) = Store::open(
@@ -603,6 +597,37 @@ impl AppCore {
                 "checkpoint of the vault before closing failed"
             );
         }
+    }
+
+    /// Close the Global Idea Vault and keep it closed while `f` runs. Whatever needs the vault
+    /// meanwhile waits for `f` to finish, so a move or a restore never loses a change made during
+    /// the copy. `f` must not use the vault store; open it again after this returns. Fails with
+    /// `storage.busy` (vault left open) when something still holds the store after a few seconds.
+    pub(crate) fn with_vault_closed<R>(&self, f: impl FnOnce() -> AppResult<R>) -> AppResult<R> {
+        let mut g = self.global.lock();
+        if let Some(store) = g.take() {
+            if let Err(e) = store.with_writer(openframe_persistence::checkpoint) {
+                tracing::warn!(
+                    code = e.code_str(),
+                    "checkpoint of the vault before closing failed"
+                );
+            }
+            // An operation that started before we took the lock may still hold the store. The
+            // files are complete only when the last holder lets go (that closes the connections).
+            let give_up = std::time::Instant::now() + std::time::Duration::from_secs(10);
+            while Arc::strong_count(&store) > 1 {
+                if std::time::Instant::now() >= give_up {
+                    *g = Some(store);
+                    return Err(AppError::new(
+                        "storage.busy",
+                        "Your Global Idea Vault is in use right now. Wait a moment and try again. Nothing was changed.",
+                    )
+                    .retryable());
+                }
+                std::thread::sleep(std::time::Duration::from_millis(50));
+            }
+        }
+        f()
     }
 
     /// App start: remove what an interrupted move or restore left behind, then open the Global
@@ -778,6 +803,18 @@ impl AppCore {
             flag.store(true, Ordering::SeqCst);
         }
     }
+}
+
+/// The vault folder the library file names has no vault in it: a drive that is not connected or
+/// a folder that was moved. Settings > Storage offers Locate and Change.
+pub(crate) fn vault_missing_error(dir: &std::path::Path) -> AppError {
+    AppError::new(
+        "storage.vault_missing",
+        "Your Global Idea Vault can't be found where it was last used. If it is on an \
+         external drive, reconnect the drive. Otherwise go to Settings > Storage and choose \
+         the vault folder.",
+    )
+    .with_detail(dir.to_string_lossy().into_owned())
 }
 
 /// The local profile. `app.sqlite` wins when it has one; without one (first start, or the app

@@ -27,6 +27,24 @@ struct TauriSink {
 
 impl EventSink for TauriSink {
     fn emit(&self, event: &AppEvent) {
+        // The folders the web view may read follow the open project and the vault. A project or
+        // vault move changes them from a background task, so the scope is brought up to date
+        // before the page hears that the project opened or the task ended.
+        let places_changed = match event {
+            AppEvent::ProjectOpened { .. } | AppEvent::ProjectClosed { .. } => true,
+            AppEvent::Task(t) => {
+                t.kind.starts_with("storage.") && !matches!(t.state.as_str(), "queued" | "running")
+            }
+            _ => false,
+        };
+        if places_changed
+            && let (Some(scope), Some(core)) = (
+                self.app.try_state::<Arc<asset_scope::AssetScope>>(),
+                self.app.try_state::<CoreState>(),
+            )
+        {
+            sync_asset_scope(&scope, &core.0);
+        }
         if let Err(e) = self.app.emit(EVENT_CHANNEL, event) {
             tracing::warn!(error = %e, "failed to deliver event to UI");
         }
@@ -50,7 +68,8 @@ struct PowerState(
 /// `scripts/architecture-lint.mjs` rule C5 keeps it that way.
 fn asset_roots(core: &AppCore) -> asset_scope::AssetRoots {
     let mut scope = asset_scope::AssetRoots::default();
-    scope.allow_directory(core.vault_dir().join("assets"), true);
+    let vault = core.vault_dir();
+    scope.allow_directory(vault.join("assets"), true);
     let covers = core.config.app_data_dir.join("covers");
     scope.allow_directory(covers.join("assets"), true);
     if let Some(p) = core.project_opt() {
@@ -79,7 +98,7 @@ async fn of_invoke(
     let result = tauri::async_runtime::spawn_blocking(move || {
         let actor = core.local_actor();
         let r = core.dispatch(&actor, &op, args);
-        if op.starts_with("project.") {
+        if op.starts_with("project.") || op == "vault.locate" {
             sync_asset_scope(&app.state::<Arc<asset_scope::AssetScope>>(), &core);
         }
         r
@@ -140,7 +159,9 @@ async fn of_reveal_path(
     // The store lock (ADR-0022, ADR-0023): only the data folder and the logs, which the lock
     // screen and support need, stay reachable; project locations are refused like operations.
     // Before the team password of an internal build (ADR-0024) nothing is reachable at all.
-    if core.entitlement.team_gate_locked() || !matches!(kind.as_str(), "dataRoot" | "logs") {
+    if core.entitlement.team_gate_locked()
+        || !matches!(kind.as_str(), "dataRoot" | "appData" | "logs")
+    {
         core.entitlement.check_operation("shell.reveal_path")?;
     }
     let target: PathBuf = match kind.as_str() {
@@ -168,6 +189,8 @@ async fn of_reveal_path(
             })?;
             dir
         }
+        // Settings, recents, AI records and models: what the uninstall box removes.
+        "appData" => core.config.app_data_dir.clone(),
         // The folder that should contain a linked file (shown when the file itself is
         // missing). Resolved from the asset id on the Rust side; local drives only.
         "assetFolder" | "globalAssetFolder" => {

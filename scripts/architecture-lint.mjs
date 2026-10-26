@@ -68,6 +68,10 @@ const SQL_WRITE_ALLOW = {
     "The Full Project Package scrub, on the private staging copy of the database only (scrub_for_transfer).",
   "crates/openframe-application/src/core.rs":
     "Opens app.sqlite (recent projects, local profile; no project content) and migrates it with the shared runner.",
+  "crates/openframe-application/src/modules/storage/vault_archive.rs":
+    "Vault file: scrubs a private staging copy of the vault database for a package, and read-only integrity checks of a vault before it is restored or connected.",
+  "crates/openframe-application/src/modules/storage/relocate.rs":
+    "Read-only integrity and identity check of the copy of a project made by Move Project, before it replaces the original.",
 };
 
 const AI_BOUNDARY_EXEMPT = new Set([

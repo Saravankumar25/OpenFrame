@@ -6,6 +6,9 @@
 //! offered to the assistant, which never chooses or touches file system locations.
 
 pub mod library;
+pub mod relocate;
+mod tree;
+pub mod vault_archive;
 
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};
@@ -20,6 +23,8 @@ use super::project::{Empty, data_modified_at};
 use crate::core::AppCore;
 use crate::registry::Registry;
 use crate::store::MutationMeta;
+use relocate::{LocateVaultArgs, MoveToFolderArgs};
+use vault_archive::{VaultArchiveKind, VaultFileArgs};
 
 /// A staging folder is `<target>.openframe-staging-<millis>` (doc 40 section 5).
 const STAGING_MARKER: &str = ".openframe-staging-";
@@ -47,6 +52,61 @@ pub fn register(r: &mut Registry) {
         M::app_query("Projects in the projects folder that Recent Projects does not list.")
             .fs(Fs::ProjectStorage)
             .hidden(h::APP_LIFECYCLE),
+    );
+    r.command("project.move", project_move).meta(
+        M::command(
+            Capability::ManageProject,
+            "Move the open project to another folder, keeping everything in it.",
+        )
+        .fs(Fs::ProjectStorage)
+        .long_running()
+        .destructive()
+        .confirm()
+        .hidden(h::APP_LIFECYCLE),
+    );
+    r.command("vault.backup", vault_backup).meta(
+        M::app_command("Save a backup of the Global Idea Vault to a file the user picked.")
+            .fs(Fs::WritesUserFile)
+            .long_running()
+            .hidden(h::USER_PATH),
+    );
+    r.command("vault.export_package", vault_export_package)
+        .meta(
+            M::app_command(
+                "Save the Global Idea Vault for another computer, without Recently Deleted items.",
+            )
+            .fs(Fs::WritesUserFile)
+            .long_running()
+            .hidden(h::USER_PATH),
+        );
+    r.query("vault.inspect", vault_inspect).meta(
+        M::app_query("What a vault backup file holds, before it is restored.")
+            .fs(Fs::ReadsUserFile)
+            .hidden(h::USER_PATH),
+    );
+    // `vault.restore` already brings an item back from Recently Deleted.
+    r.command("vault.restore_backup", vault_restore).meta(
+        M::app_command(
+            "Replace the Global Idea Vault with a backup file; the current vault is kept beside it.",
+        )
+        .fs(Fs::ProjectStorage)
+        .long_running()
+        .destructive()
+        .confirm()
+        .hidden(h::USER_PATH),
+    );
+    r.command("vault.move", vault_move).meta(
+        M::app_command("Move the Global Idea Vault to another folder.")
+            .fs(Fs::ProjectStorage)
+            .long_running()
+            .destructive()
+            .confirm()
+            .hidden(h::USER_PATH),
+    );
+    r.command("vault.locate", vault_locate).meta(
+        M::app_command("Connect a folder that already holds a Global Idea Vault.")
+            .fs(Fs::ProjectStorage)
+            .hidden(h::USER_PATH),
     );
     r.query("project.orphan_notes", orphan_notes).meta(
         M::query(
@@ -130,6 +190,15 @@ pub struct AdoptedNotes {
     pub adopted: u32,
 }
 
+/// A long operation was started; its progress and result arrive as task events (the result is
+/// the report of that operation).
+#[derive(Debug, Clone, Serialize, TS)]
+#[ts(export)]
+#[serde(rename_all = "camelCase")]
+pub struct StorageTaskStarted {
+    pub task_id: String,
+}
+
 // -------------------------------------------------------------------- info
 
 fn info(core: &AppCore, _a: &Actor, _: Empty) -> AppResult<StorageInfo> {
@@ -165,7 +234,15 @@ fn set_projects_dir(
     _a: &Actor,
     args: SetProjectsDirArgs,
 ) -> AppResult<StorageInfo> {
-    let dir = PathBuf::from(args.path.trim());
+    let dir = checked_folder(core, &args.path)?;
+    let default = library::same_place(&dir, &core.config.projects_dir);
+    core.change_locations(|l| l.projects_dir = (!default).then_some(dir))?;
+    Ok(storage_info(core))
+}
+
+/// A folder the person chose to receive something (new projects, a moved vault or project).
+fn checked_folder(core: &AppCore, raw: &str) -> AppResult<PathBuf> {
+    let dir = PathBuf::from(raw.trim());
     // Absolute, well formed and local first, so a relative or hostile path never reaches the disk.
     openframe_security::check_user_path(&dir, openframe_security::NetworkPaths::Refuse)
         .map_err(crate::modules::project::network_or)?;
@@ -175,13 +252,34 @@ fn set_projects_dir(
             "That folder can't be found. If it's on an external drive, reconnect it and try again.",
         ));
     }
-    // Not inside app data, the vault or the open project (the same rule as a project's parent).
-    crate::util::check_project_parent(core, &dir).map_err(crate::modules::project::network_or)?;
-    refuse_inside_project(&dir)?;
+    refuse_unsuitable_folder(core, &dir)?;
     probe_writable(&dir)?;
-    let default = library::same_place(&dir, &core.config.projects_dir);
-    core.change_locations(|l| l.projects_dir = (!default).then_some(dir))?;
-    Ok(storage_info(core))
+    Ok(dir)
+}
+
+/// Not inside app data, the vault or the open project (the same rule as a project's parent), and
+/// not inside a project folder.
+fn refuse_unsuitable_folder(core: &AppCore, dir: &Path) -> AppResult<()> {
+    crate::util::check_project_parent(core, dir).map_err(crate::modules::project::network_or)?;
+    refuse_inside_project(dir)
+}
+
+/// The vault folder, when a vault is there. Otherwise the plain reason: not created yet, or the
+/// chosen folder is missing (a drive that is not connected).
+fn existing_vault(core: &AppCore, what: &str) -> AppResult<PathBuf> {
+    let dir = core.vault_dir();
+    if dir.join("vault.sqlite").is_file() {
+        return Ok(dir);
+    }
+    if library::same_place(&dir, &core.config.global_vault_dir) {
+        return Err(AppError::new(
+            "not_found.vault",
+            format!(
+                "Your Global Idea Vault doesn't exist yet, so there is nothing to {what}. It is created when you add your first idea."
+            ),
+        ));
+    }
+    Err(crate::core::vault_missing_error(&dir))
 }
 
 /// A project folder holds one project; a folder for new projects must not be inside one.
@@ -281,6 +379,48 @@ fn discover(core: &AppCore, _a: &Actor, _: Empty) -> AppResult<Vec<DiscoveredPro
     });
     found.truncate(DISCOVER_MAX_RESULTS);
     Ok(found)
+}
+
+// ------------------------------------------------- vault and project files
+
+fn vault_backup(core: &AppCore, _a: &Actor, args: VaultFileArgs) -> AppResult<StorageTaskStarted> {
+    vault_archive::start_archive(core, args, VaultArchiveKind::Backup)
+}
+
+fn vault_export_package(
+    core: &AppCore,
+    _a: &Actor,
+    args: VaultFileArgs,
+) -> AppResult<StorageTaskStarted> {
+    vault_archive::start_archive(core, args, VaultArchiveKind::Package)
+}
+
+fn vault_inspect(
+    core: &AppCore,
+    actor: &Actor,
+    args: VaultFileArgs,
+) -> AppResult<vault_archive::VaultInspection> {
+    vault_archive::inspect(core, actor, args)
+}
+
+fn vault_restore(core: &AppCore, _a: &Actor, args: VaultFileArgs) -> AppResult<StorageTaskStarted> {
+    vault_archive::start_restore(core, args)
+}
+
+fn vault_move(core: &AppCore, _a: &Actor, args: MoveToFolderArgs) -> AppResult<StorageTaskStarted> {
+    relocate::start_move_vault(core, args)
+}
+
+fn vault_locate(core: &AppCore, _a: &Actor, args: LocateVaultArgs) -> AppResult<StorageInfo> {
+    relocate::locate_vault(core, args)
+}
+
+fn project_move(
+    core: &AppCore,
+    actor: &Actor,
+    args: MoveToFolderArgs,
+) -> AppResult<StorageTaskStarted> {
+    relocate::start_move_project(core, actor, args)
 }
 
 // ---------------------------------------------------------- orphan notes

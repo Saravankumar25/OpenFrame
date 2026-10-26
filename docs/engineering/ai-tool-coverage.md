@@ -26,8 +26,8 @@ How the toolbox (`modules/ai/toolbox.rs`, contract C3) enforces this:
   budget, so a small local model's prompt stays short. `retrieve_context` uses the hybrid retrieval
   service when called through `run_tool_unlocked`, and keyword retrieval (FTS5, same privacy rule) otherwise.
 
-- Registered operations: **507** (160 queries, 347 commands)
-- Exposed to the assistant through tools: **308**; not AI-accessible: **199**
+- Registered operations: **514** (161 queries, 353 commands)
+- Exposed to the assistant through tools: **308**; not AI-accessible: **206**
 - Tools: **254** (61 read/compute/navigate, 193 proposal)
 
 Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation · **L** long-running (task id) · file effect: R = reads a user-picked file, W = writes to a user-picked location, P = project storage on disk.
@@ -525,9 +525,16 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 |---|---|---|---|---|---|---|---|
 | `project.adopt_orphan_notes`: The Owner takes over the private notes of one person who is no longer on the project. | command | Mutate | ManageProject |  | `AdoptOrphanNotesArgs` → `AdoptedNotes` | hidden | none |
 | `project.discover`: Projects in the projects folder that Recent Projects does not list. | query | Read | app level | P | `Empty` → `Vec<DiscoveredProject>` | hidden | none |
+| `project.move`: Move the open project to another folder, keeping everything in it. | command | Mutate | ManageProject | DCL P | `MoveToFolderArgs` → `StorageTaskStarted` | hidden | none |
 | `project.orphan_notes`: People who left private notes in this project and are no longer on it. | query | Read | ManageProject |  | `Empty` → `Vec<OrphanNoteOwner>` | hidden | none |
 | `storage.info`: Where the library, the projects folder, the vault and the app data are. | query | Read | app level | P | `Empty` → `StorageInfo` | hidden | none |
 | `storage.set_projects_dir`: Choose the default folder for new projects. Existing projects stay where they are. | command | Mutate | app level | P | `SetProjectsDirArgs` → `StorageInfo` | hidden | none |
+| `vault.backup`: Save a backup of the Global Idea Vault to a file the user picked. | command | Mutate | app level | L W | `VaultFileArgs` → `StorageTaskStarted` | hidden | none |
+| `vault.export_package`: Save the Global Idea Vault for another computer, without Recently Deleted items. | command | Mutate | app level | L W | `VaultFileArgs` → `StorageTaskStarted` | hidden | none |
+| `vault.inspect`: What a vault backup file holds, before it is restored. | query | Read | app level | R | `VaultFileArgs` → `VaultInspection` | hidden | none |
+| `vault.locate`: Connect a folder that already holds a Global Idea Vault. | command | Mutate | app level | P | `LocateVaultArgs` → `StorageInfo` | hidden | none |
+| `vault.move`: Move the Global Idea Vault to another folder. | command | Mutate | app level | DCL P | `MoveToFolderArgs` → `StorageTaskStarted` | hidden | none |
+| `vault.restore_backup`: Replace the Global Idea Vault with a backup file; the current vault is kept beside it. | command | Mutate | app level | DCL P | `VaultFileArgs` → `StorageTaskStarted` | hidden | none |
 
 ### Story
 
@@ -677,7 +684,7 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 - **Alternative UI entry point for a change the assistant already prepares through an equivalent operation.**
   `breakdown.accept`, `breakdown.reuse`, `shot.attach_panel`, `shot.detach_panel`, `templates.apply`, `vault.restore`, `vault.trash_list`
 - **Application-level project lifecycle (create, open, close, locate, duplicate, archive or delete projects on disk, recent-project list); the assistant works inside the one open project.**
-  `project.clear_cover`, `project.close`, `project.create`, `project.current`, `project.discover`, `project.duplicate`, `project.list_recent`, `project.open`, `project.recovery_state`, `project.remove_recent`, `project.rename`, `project.resolve_recovery`, `project.set_archived`, `project.set_pinned`
+  `project.clear_cover`, `project.close`, `project.create`, `project.current`, `project.discover`, `project.duplicate`, `project.list_recent`, `project.move`, `project.open`, `project.recovery_state`, `project.remove_recent`, `project.rename`, `project.resolve_recovery`, `project.set_archived`, `project.set_pinned`
 - **Changing appearance (mode, theme and My Themes) is a personal preference of the person at this computer, not project content; the assistant reads how the app looks but never changes it.**
   `appearance.check_theme`, `appearance.delete_theme`, `appearance.export_theme`, `appearance.import_theme`, `appearance.rename_theme`, `appearance.set_mode`, `appearance.set_theme`
 - **Crosses the project boundary (Global Idea Vault or another project); the assistant is scoped to the open project.**
@@ -719,7 +726,7 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 - **Production scene number overrides and renumbering stay a human decision (ADR-0015, contract doc 32 §2.5); the assistant reads the numbers.**
   `screenplay.renumber_scenes`, `screenplay.restore_omitted_scene`, `screenplay.set_scene_number`
 - **Reads or writes a file-system location the user picks in a file dialog; the assistant never chooses or touches file-system paths (spec §3).**
-  `ai.export_conversation`, `breakdown.export_report`, `budget.export_summary`, `callsheets.attach`, `callsheets.export_pdf`, `files.add`, `files.export_copy`, `files.relink`, `moodboard.export_pdf`, `packages.create_backup`, `packages.export_exchange`, `packages.export_project`, `packages.import_project`, `packages.inspect_package`, `packages.review_export_response`, `packages.review_open`, `project.locate`, `project.location_check`, `project.set_cover`, `reports.export_report`, `schedule.export_daily_view`, `schedule.export_dood`, `schedule.export_schedule`, `screenplay.export`, `screenplay.import_apply`, `screenplay.import_preview`, `shot.export_list`, `sides.export_pdf`, `storage.set_projects_dir`, `story.add_attachment`, `story.export_board`, `story.page.export`, `storyboard.export_sheet`, `vault.add_files`, `vault.relink`
+  `ai.export_conversation`, `breakdown.export_report`, `budget.export_summary`, `callsheets.attach`, `callsheets.export_pdf`, `files.add`, `files.export_copy`, `files.relink`, `moodboard.export_pdf`, `packages.create_backup`, `packages.export_exchange`, `packages.export_project`, `packages.import_project`, `packages.inspect_package`, `packages.review_export_response`, `packages.review_open`, `project.locate`, `project.location_check`, `project.set_cover`, `reports.export_report`, `schedule.export_daily_view`, `schedule.export_dood`, `schedule.export_schedule`, `screenplay.export`, `screenplay.import_apply`, `screenplay.import_preview`, `shot.export_list`, `sides.export_pdf`, `storage.set_projects_dir`, `story.add_attachment`, `story.export_board`, `story.page.export`, `storyboard.export_sheet`, `vault.add_files`, `vault.backup`, `vault.export_package`, `vault.inspect`, `vault.locate`, `vault.move`, `vault.relink`, `vault.restore_backup`
 - **Returns local file paths of managed media; the assistant never receives file-system paths.**
   `app.info`, `files.asset`, `storage.info`
 - **Screenplay page layout settings (paper, font, spacing, header and footer, page breaks, custom element looks) stay a human decision (screenplay engine contract doc 32 §2.5); the assistant reads the resulting page facts.**

@@ -30,7 +30,8 @@ const ROLES: [Role; 5] = [
 /// `ai.download.status` the download state and free space, never the open project; the reviewer workspace (`packages.review_*`) reads packages kept in the app
 /// data folder, and `packages.inspect_package` reads a file the user picked, not the open project.
 /// Reviewed 2026-10-27: `storage.info` and `project.discover` read the places OpenFrame keeps things and the
-/// project folders found there, never project content.
+/// project folders found there, never project content. `vault.inspect` reads a vault file the
+/// user picked, not the open project.
 const APPLICATION_READS: &[&str] = &[
     "ai.diagnostics",
     "ai.download.status",
@@ -52,6 +53,7 @@ const APPLICATION_READS: &[&str] = &[
     "project.location_check",
     "storage.info",
     "team_gate.status",
+    "vault.inspect",
     "writing.dictionary",
 ];
 
