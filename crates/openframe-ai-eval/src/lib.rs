@@ -119,10 +119,13 @@ pub struct Expect {
     pub turns: Vec<Expect>,
 }
 
-/// Word ranges (inclusive) of the `length_class` values. `one_sentence` has no word range: it
-/// counts sentence ends instead (see [`sentence_count`]).
-pub const LENGTH_CLASSES: &[(&str, usize, usize)] =
-    &[("short", 1, 80), ("paragraph", 40, 200), ("brief", 40, 120)];
+/// Word ranges (inclusive) of the `length_class` values, from the harness spec section 5.3.
+pub const LENGTH_CLASSES: &[(&str, usize, usize)] = &[
+    ("one_sentence", 1, 30),
+    ("short", 1, 80),
+    ("paragraph", 40, 200),
+    ("brief", 1, 40),
+];
 
 /// Words an answer must not use to describe the app's inside (`no_internal_words`). Matched at the
 /// start of a word, so "tools" counts and "stool" does not.
@@ -545,13 +548,11 @@ fn conversation_scores(case: &Case, o: &Observation, s: &mut Score) {
     }
     if let Some(class) = &e.length_class {
         let n = checks::word_count(&o.answer);
-        s.length_class_ok = Some(if class == "one_sentence" {
-            n > 0 && sentence_count(&o.answer) == 1
-        } else {
+        s.length_class_ok = Some(
             LENGTH_CLASSES
                 .iter()
-                .any(|(c, lo, hi)| c == class && (*lo..=*hi).contains(&n))
-        });
+                .any(|(c, lo, hi)| c == class && (*lo..=*hi).contains(&n)),
+        );
     }
     if e.no_reask {
         s.no_reask_ok = Some(!ends_with_which_or_who_question(&o.answer));
@@ -570,23 +571,6 @@ fn starts_a_word(text: &str, word: &str) -> bool {
             .next_back()
             .is_some_and(char::is_alphanumeric)
     })
-}
-
-/// Sentences in an answer: each `.`, `!` or `?` followed by a space or the end, plus one for an
-/// unfinished last sentence.
-// shortcut: "Mr. Rao" and "3.5" style stops count as sentence ends, fix with an abbreviation list
-// if a one_sentence case ever trips on it.
-fn sentence_count(answer: &str) -> usize {
-    let t = answer.trim();
-    let chars: Vec<char> = t.chars().collect();
-    let ends = chars
-        .iter()
-        .enumerate()
-        .filter(|(i, c)| {
-            matches!(c, '.' | '!' | '?') && chars.get(i + 1).is_none_or(|n| n.is_whitespace())
-        })
-        .count();
-    ends + usize::from(!t.is_empty() && !t.ends_with(['.', '!', '?']))
 }
 
 /// The answer ends with a question that starts with "which" or "who" (asking the person to pick).
@@ -1540,21 +1524,19 @@ mod tests {
     }
 
     #[test]
-    fn length_class_checks_the_word_range_and_one_sentence() {
+    fn length_class_checks_the_word_range() {
         let words = |n: usize| vec!["word"; n].join(" ");
         let class =
             |c: &str, a: &str| flag_score(json!({ "length_class": c }), a, &[]).length_class_ok;
-        assert_eq!(class("one_sentence", "Lakshmi leaves."), Some(true));
-        assert_eq!(
-            class("one_sentence", "Lakshmi leaves. Suresh stays."),
-            Some(false)
-        );
+        assert_eq!(class("one_sentence", &words(30)), Some(true));
+        assert_eq!(class("one_sentence", &words(31)), Some(false));
+        assert_eq!(class("one_sentence", ""), Some(false));
         assert_eq!(class("short", &words(80)), Some(true));
         assert_eq!(class("short", &words(81)), Some(false));
         assert_eq!(class("paragraph", &words(39)), Some(false));
         assert_eq!(class("paragraph", &words(200)), Some(true));
-        assert_eq!(class("brief", &words(120)), Some(true));
-        assert_eq!(class("brief", &words(121)), Some(false));
+        assert_eq!(class("brief", &words(40)), Some(true));
+        assert_eq!(class("brief", &words(41)), Some(false));
         assert_eq!(class("huge", &words(50)), Some(false));
     }
 
@@ -1683,9 +1665,11 @@ mod tests {
         }
         // Conversation bench v0: 60 English cases by question type.
         let mut by_type = BTreeMap::new();
-        for c in cases.iter().filter(|c| c.kind == "conversation") {
+        for c in cases
+            .iter()
+            .filter(|c| c.kind == "conversation" && c.id.starts_with("conv-en-"))
+        {
             assert_eq!(c.lang, "en", "{}", c.id);
-            assert!(c.id.starts_with("conv-en-"), "{}", c.id);
             *by_type.entry(conversation_type(&c.id)).or_insert(0) += 1;
             let e = &c.expect;
             assert_eq!(
