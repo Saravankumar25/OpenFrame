@@ -196,6 +196,8 @@ pub struct ProjectSession {
     pub manifest: Mutex<ProjectManifest>,
     pub recovery: Mutex<Option<RecoveryOffer>>,
     pub opened_at: i64,
+    /// The assistant's list of things a user can name, built on first use (AI harness S3).
+    pub ai_index: crate::modules::ai::index::IndexCache,
     _lock: ProjectLock,
 }
 
@@ -213,6 +215,7 @@ impl ProjectSession {
             manifest: Mutex::new(manifest),
             recovery: Mutex::new(recovery),
             opened_at: now_ms(),
+            ai_index: Default::default(),
             _lock: lock,
         }
     }

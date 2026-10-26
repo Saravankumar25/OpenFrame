@@ -229,9 +229,10 @@ button.
 
 ## 6. The project index and what the assistant can reach today
 
-The index is the single list of things a user can name. It builds on the existing `search_doc` table (one row per
-searchable record: `source_table`, `entity_id`, `entity_type`, `title`, `body`, `context`, `nav_json`, `owner_user_id`,
-with an FTS5 index), and adds an alias table and a relation table. Counts below come from the generated
+The index is the single list of things a user can name. Full-text search keeps using the existing `search_doc` table (one
+row per searchable record: `source_table`, `entity_id`, `entity_type`, `title`, `body`, `context`, `nav_json`,
+`owner_user_id`, with an FTS5 index); the entity index with its aliases and relations is separate and lives in memory (see
+the S3 decision below the table). Counts below come from the generated
 [ai-tool-coverage.md](../engineering/ai-tool-coverage.md) (500 registered operations, 156 queries; 258 tools of which 65
 read, compute or navigate and 193 proposals, after S2 added `app_appearance` and `app_settings`).
 
@@ -252,6 +253,15 @@ read, compute or navigate and 193 proposals, after S2 added `app_appearance` and
 | App settings | app-level | `project_settings`, `app_settings` (spell checking, changed shortcuts; added in S2) | none |
 | Product help | `knowledge.md` and the product guide | `answer_product_question` | the corpus must cover the whole app, not 4 sections |
 | Packages, backup | `sys_package_log`, review queue (0009) | `package_history` | none expected |
+
+**S3 decision (2026-10-26): the index is in memory, not in tables.** The planned alias and relation tables are not built.
+`modules/ai/index/` reads the real tables (`screenplay`, `screenplay_scene`, `story_character`,
+`screenplay_character_link`, `story_character_relationship`, `cast_member`, `crew_member`, `location`, `story_act`,
+`story_scene_card`, `vault_item`, `project_file`, `budget_line`, `shooting_day`, `call_sheet`) into a few hundred
+strings held in memory, one index per open project. A write makes it stale (the store counts content commits) and the next
+message rebuilds it. A rebuild takes about 3 ms in a debug build for the 500-scene `big-project` fixture, so an incremental
+update would add code and a second copy that can disagree with the rows, for no gain. The conversation focus is kept in the
+`focus` key of `ai_request.scope_json`, so no migration was needed. Notes stay in full-text search and are not entities.
 
 Hidden reads (27 modules have at least one query the assistant cannot call; the largest groups are packages 10, ai 7,
 writing 6, screenplay 6, story 5) were reviewed one by one in S2 (section "S2 hidden reads review" at the end: 72 reviewed,
@@ -361,6 +371,8 @@ Each slice ends with the eval run and a saved result. A slice does not start bef
 | S7 | Writer and checker on every answer; last-resort sentence; sources; remove retired paths (section 4.3) | `orchestrator.rs`, `verify.rs`, `lanes.rs` | Full bench at the bars |
 | S8 | Speed: stable prompt prefix, token caps, index warm-up; decide on token streaming | `orchestrator.rs`, engine settings | Latency bars |
 | S9 | Documents: update `ai-answer-paths.md`, `ai-harness-rebuild.md`, manual, feature status; `graphify update .` | `docs/` | Docs match code |
+
+S3 status (2026-10-26): built and tested. The resolver follows section 5.2 and settles the screenplay by title or alias, the conversation focus, the scene number, or the only current draft; the one change in behaviour is that `ai.ask` fills a missing draft from it instead of letting each tool ask "which screenplay". Unit tests in `index/tests.rs`; the fixture tests in `crates/openframe-ai-eval/tests/ai_index.rs`; the wiring in `tests/ai/ai_focus.rs`. Not yet done: unknown-name reporting ("not in the project") and use of the resolved entities by the dossier builders (S5).
 
 ## 9. Things an expert would add (included in the slices above)
 

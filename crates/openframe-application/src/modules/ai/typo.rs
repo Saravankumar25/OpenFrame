@@ -105,7 +105,7 @@ const MISSPELT: &[(&str, &str)] = &[
 
 /// Ordinary English words of 4 to 7 letters that sit one letter from a keyword. They are never
 /// "corrected" ("witch" is not "which", "shoot" is not "shot").
-const COMMON: &[&str] = &[
+pub(super) const COMMON: &[&str] = &[
     "about", "after", "again", "being", "below", "bring", "built", "called", "chart", "child",
     "clear", "close", "could", "crowd", "dance", "decide", "every", "first", "found", "from",
     "gist", "give", "given", "grant", "great", "group", "happen", "have", "heart", "horse",
@@ -134,7 +134,7 @@ fn plain_word(w: &str) -> Option<String> {
 }
 
 /// Edit distance with a swap of two neighbours counted as one edit; stops past `max`.
-fn distance(a: &str, b: &str, max: usize) -> Option<usize> {
+pub(super) fn distance(a: &str, b: &str, max: usize) -> Option<usize> {
     let (a, b): (Vec<u8>, Vec<u8>) = (a.bytes().collect(), b.bytes().collect());
     if a.len().abs_diff(b.len()) > max {
         return None;

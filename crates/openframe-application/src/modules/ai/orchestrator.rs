@@ -40,6 +40,7 @@ use serde::Deserialize;
 use serde_json::{Value, json};
 use ts_rs::TS;
 
+use super::index;
 use super::lanes::{self, Decision, Lane, LaneAnswer};
 use super::records::{self, NewRequest, NewResult, NewStep, RequestOutcome, ai_meta};
 use super::scope::{self, AiScopeArgs, ContextItem, ResolvedScope};
@@ -2123,18 +2124,37 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
     let s = core.project()?;
     let svc = service(core);
     let model = svc.model().ok_or_else(|| svc.unavailable_reason())?;
-    let scope = s.store.read(|c| scope::resolve(c, actor, &args.scope))?;
+    let mut scope = s.store.read(|c| scope::resolve(c, actor, &args.scope))?;
     let conversation = args
         .conversation_id
         .filter(|c| valid_conversation_id(c))
         .unwrap_or_else(new_id);
+    // Which screenplay, scene and people does the message name (index S3)? With several screenplays
+    // the scope has no draft, and every tool would ask "which one do you mean". The resolver settles
+    // it from the title, the conversation focus, the scene number or the current draft, and asks
+    // only when none of them can. What the message named becomes the focus for the next one.
+    let reading = index::read_message(&s, &actor.user_id, &conversation, &text);
+    if scope.draft.is_none()
+        && let Some(id) = reading.as_ref().and_then(|r| r.resolved.screenplay_id())
+        && let Some(draft) = s.store.read(|c| index::draft_for_screenplay(c, id))?
+    {
+        scope.draft = Some(draft);
+    }
+    // The screenplay the request will read is the one the conversation is about from now on.
+    let focus_after = match (reading.map(|r| r.focus_after), &scope.draft) {
+        (Some(f), Some(d)) => Some(f.on_screenplay(&d.screenplay_id)),
+        (f, _) => f,
+    };
     // From here until the answer is stored, `ai.cancel` can reach this request.
     let running = cancel::begin(&actor.user_id, &conversation);
     let started = std::time::Instant::now();
     let request_id = new_id();
     let model_ref = model.model_reference();
     let project_id = s.project_id();
-    let scope_json = scope.refs_json();
+    let scope_json = match &focus_after {
+        Some(f) => index::focus_in(scope.refs_json(), f),
+        None => scope.refs_json(),
+    };
     s.store.mutate(actor, ai_meta("ai.ask"), |tx| {
         records::insert_request(
             tx,

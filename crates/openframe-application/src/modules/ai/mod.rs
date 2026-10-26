@@ -21,6 +21,7 @@ pub mod change_set;
 mod chat;
 mod commands;
 mod conversation_export;
+pub mod index;
 pub mod intelligence;
 mod intent;
 pub mod knowledge;

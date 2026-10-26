@@ -7,6 +7,7 @@
 mod ai;
 mod ai_agent;
 mod ai_apply_recovery;
+mod ai_focus;
 mod ai_index_stress;
 mod ai_lanes;
 mod ai_real_model;

@@ -10,6 +10,7 @@ use std::cell::RefCell;
 use std::collections::BTreeSet;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicU64, Ordering};
 
 use openframe_domain::{Actor, AppError, AppResult, Capability, new_id, now_ms};
 use openframe_persistence::migrate::{self, Migration, MigrationPlan};
@@ -296,6 +297,9 @@ pub struct Store {
     events: Arc<dyn EventSink>,
     save: Arc<SaveTracker>,
     observer: RwLock<Option<Arc<dyn CommitObserver>>>,
+    /// Counts commits that changed project content, so a cache built from the database can tell it
+    /// is stale (the AI entity index). AI history and system tables do not count.
+    generation: AtomicU64,
 }
 
 impl Store {
@@ -390,6 +394,7 @@ impl Store {
                 events,
                 save,
                 observer: RwLock::new(None),
+                generation: AtomicU64::new(0),
             },
             report,
         ))
@@ -409,6 +414,12 @@ impl Store {
     }
     pub fn registry(&self) -> &Registry {
         &self.registry
+    }
+
+    /// Changes whenever a commit touched project content (see the field). Read before a build of a
+    /// derived cache and compare after, to know whether the cache is still current.
+    pub fn generation(&self) -> u64 {
+        self.generation.load(Ordering::Acquire)
     }
 
     /// Install (or remove) the post-commit observer.
@@ -518,6 +529,13 @@ impl Store {
     }
 
     fn emit_changed(&self, changes: &[RowChange], extra: &[(String, String)], origin: &str) {
+        if !extra.is_empty()
+            || changes
+                .iter()
+                .any(|c| !c.tbl.starts_with("ai_") && !c.tbl.starts_with("sys_"))
+        {
+            self.generation.fetch_add(1, Ordering::Release);
+        }
         let observer = self.observer.read().clone();
         if let Some(o) = observer
             && (!changes.is_empty() || !extra.is_empty())
