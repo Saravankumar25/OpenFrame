@@ -72,6 +72,10 @@
 | Assistant progress and Cancel | While the assistant works the panel shows progress lines only (no token streaming, no text that is later replaced) and a Cancel button | 2026-10-24 | ADR-0035 |
 | Saving a conversation for review | A tester may save a conversation to a file for review, only by pressing Save in the AI panel; nothing is saved or sent on its own | 2026-10-24 | [ADR-0028](../adr/ADR-0028-ai-quality-program-and-harness.md) decision 8, amended |
 | Where the AI harness plan lives | `docs/specs/ai-harness-rebuild.md` stays the plan and the evidence; the decisions it led to are in ADR-0035 (owner decision 10 of that plan) | 2026-10-24 | [ai-harness-rebuild.md](../specs/ai-harness-rebuild.md), ADR-0035 |
+| Assistant is a conversational chat assistant | One conversational path for questions on the whole platform: a project index over every object type, focus, short-term and long-term memory, per-turn context fetched from the project, and answers shaped by the question (one sentence for a fact, a paragraph for an explanation or a relationship), with sources behind the sources button. The model stays Gemma 3 1B, offline. This replaces the five answer lanes for questions; exact commands and proposals keep their code routes | 2026-10-26 | Owner, in chat; [ADR-0037](../adr/ADR-0037-conversational-assistant-focus-and-dossiers.md), [ai-conversational-harness.md](../specs/ai-conversational-harness.md) |
+| Deterministic answers are cut to the few that need exactness or safety | Code fetches, counts, checks and refuses; the model writes the answers. The deterministic pieces are listed with their reasons in section 4 of the spec; a new one needs an entry there | 2026-10-26 | Owner, in chat; spec section 4 |
+| Laya model not used | The Laya classifier was considered and dropped; no new classifier model | 2026-10-26 | Owner, in chat; ADR-0037 decision 5 |
+| Order of work for the conversational assistant | Document everything first, then build in a new session, slice by slice, each slice measured on the eval before the next | 2026-10-26 | Owner, in chat; spec section 8 |
 
 ### Product behaviour
 
