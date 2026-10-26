@@ -27,8 +27,8 @@ How the toolbox (`modules/ai/toolbox.rs`, contract C3) enforces this:
   service when called through `run_tool_unlocked`, and keyword retrieval (FTS5, same privacy rule) otherwise.
 
 - Registered operations: **500** (156 queries, 344 commands)
-- Exposed to the assistant through tools: **305**; not AI-accessible: **195**
-- Tools: **256** (63 read/compute/navigate, 193 proposal)
+- Exposed to the assistant through tools: **308**; not AI-accessible: **192**
+- Tools: **258** (65 read/compute/navigate, 193 proposal)
 
 Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation · **L** long-running (task id) · file effect: R = reads a user-picked file, W = writes to a user-picked location, P = project storage on disk.
 
@@ -41,7 +41,7 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 | `appearance.check_theme`: Read and check a theme file or pasted theme text and show its preview, without saving anything. | query | Compute | app level | R | `ThemeSourceArgs` → `ThemeCheck` | hidden | none |
 | `appearance.delete_theme`: Delete a theme from My Themes. If it is active, OpenFrame Default is applied. | command | Mutate | app level | DIC | `DeleteThemeArgs` → `AppearanceState` | hidden | none |
 | `appearance.export_theme`: Save a theme from My Themes as a theme file at a location the user picked. | command | Mutate | app level | W | `ExportThemeArgs` → `ExportThemeResult` | hidden | none |
-| `appearance.get`: The appearance mode, the active theme and the themes the user can choose. | query | Read | app level |  | `AppearanceGetArgs` → `AppearanceState` | hidden | none |
+| `appearance.get`: The appearance mode, the active theme and the themes the user can choose. | query | Read | app level |  | `AppearanceGetArgs` → `AppearanceState` | tool | `app_appearance` |
 | `appearance.import_theme`: Save a checked theme file or pasted theme text to My Themes, and apply it if asked. | command | Mutate | app level | R | `ImportThemeArgs` → `AppearanceState` | hidden | none |
 | `appearance.rename_theme`: Rename a theme in My Themes. | command | Mutate | app level |  | `RenameThemeArgs` → `AppearanceState` | hidden | none |
 | `appearance.set_mode`: Switch between Light, Dark and System appearance. | command | Mutate | app level |  | `SetModeArgs` → `AppearanceState` | hidden | none |
@@ -643,13 +643,13 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 |---|---|---|---|---|---|---|---|
 | `app.reset_shortcuts`: Restore every keyboard shortcut to its default. | command | Mutate | app level | DIC | `ShortcutsArgs` → `ShortcutOverrides` | hidden | none |
 | `app.set_shortcuts`: Change, remove or restore keyboard shortcuts. | command | Mutate | app level |  | `SetShortcutsArgs` → `ShortcutOverrides` | hidden | none |
-| `app.shortcuts`: Keyboard shortcuts the person at this computer has changed. | query | Read | app level |  | `ShortcutsArgs` → `ShortcutOverrides` | hidden | none |
+| `app.shortcuts`: Keyboard shortcuts the person at this computer has changed. | query | Read | app level |  | `ShortcutsArgs` → `ShortcutOverrides` | tool | `app_settings` |
 | `writing.check_spelling`: Words the spelling dictionaries do not know in the given editor text. | query | Compute | View |  | `WritingCheckSpellingArgs` → `WritingSpellingCheck` | hidden | none |
 | `writing.dictionary`: Words in the personal dictionary of the person at this computer. | query | Read | app level |  | `WritingDictionaryArgs` → `WritingDictionary` | hidden | none |
 | `writing.dictionary_add`: Add a word to the personal dictionary. | command | Mutate | app level |  | `WritingWordArgs` → `WritingDictionary` | hidden | none |
 | `writing.dictionary_remove`: Remove a word from the personal dictionary. | command | Mutate | app level |  | `WritingWordArgs` → `WritingDictionary` | hidden | none |
 | `writing.navigator_columns`: Scene navigator columns: start page, notes, revision status and production number per scene. | query | Read | View |  | `WritingNavigatorArgs` → `WritingNavigatorColumns` | hidden | none |
-| `writing.proofing`: Proofing settings of the project and the spelling languages installed on this computer. | query | Read | View |  | `WritingProofingArgs` → `WritingProofingState` | hidden | none |
+| `writing.proofing`: Proofing settings of the project and the spelling languages installed on this computer. | query | Read | View |  | `WritingProofingArgs` → `WritingProofingState` | tool | `app_settings` |
 | `writing.set_proofing`: Turn spell checking on or off and choose the project's main and second spelling language. | command | Mutate | Edit |  | `WritingSetProofingArgs` → `ProofingSettings` | hidden | none |
 | `writing.spelling_suggestions`: Spelling suggestions for one word. | query | Compute | View |  | `WritingWordArgs` → `WritingSpellingSuggestions` | hidden | none |
 | `writing.suggestion_sources`: Character names and locations from the Beat Board, cast and production locations, for the editor's suggestion list. | query | Read | View |  | `WritingSuggestionSourcesArgs` → `WritingSuggestionSources` | hidden | none |
@@ -664,14 +664,14 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
   `cast.set_photo`, `catalog.set_image`, `locations.add_photos`, `moodboard.add_image_data`, `moodboard.add_images`, `shot.set_reference_image`, `story.set_character_image`, `storyboard.set_panel_visual`, `vault.ingest_bytes`
 - **Alternative UI entry point for a change the assistant already prepares through an equivalent operation.**
   `breakdown.accept`, `breakdown.reuse`, `shot.attach_panel`, `shot.detach_panel`, `templates.apply`, `vault.restore`, `vault.trash_list`
-- **Appearance (mode, theme and My Themes) is a personal preference of the person at this computer, not project content; the assistant never reads or changes how the app looks.**
-  `appearance.check_theme`, `appearance.delete_theme`, `appearance.export_theme`, `appearance.get`, `appearance.import_theme`, `appearance.rename_theme`, `appearance.set_mode`, `appearance.set_theme`
 - **Application-level project lifecycle (create, open, close, locate, duplicate, archive or delete projects on disk, recent-project list); the assistant works inside the one open project.**
   `project.clear_cover`, `project.close`, `project.create`, `project.current`, `project.duplicate`, `project.list_recent`, `project.open`, `project.recovery_state`, `project.remove_recent`, `project.rename`, `project.resolve_recovery`, `project.set_archived`, `project.set_pinned`
+- **Changing appearance (mode, theme and My Themes) is a personal preference of the person at this computer, not project content; the assistant reads how the app looks but never changes it.**
+  `appearance.check_theme`, `appearance.delete_theme`, `appearance.export_theme`, `appearance.import_theme`, `appearance.rename_theme`, `appearance.set_mode`, `appearance.set_theme`
 - **Crosses the project boundary (Global Idea Vault or another project); the assistant is scoped to the open project.**
   `templates.copy`, `vault.copy_to_store`
 - **Data for an interactive dialog or editor preview; the assistant reads the same facts through its own bounded tools.**
-  `app.save_state`, `breakdown.quick_reuse`, `breakdown.source_anchor`, `history.info`, `interchange.draft_scenes`, `interchange.export_preview`, `interchange.sources`, `moodboard.suggestions`, `packages.backup_preview`, `packages.exchange_preview`, `packages.exchange_scenes`, `packages.exchange_sources`, `production.references`, `screenplay.page_view`, `screenplay.samples`, `screenplay.title_page_preview`, `tasks.relatable_types`, `vault.story_targets`, `visual.vault_images`, `writing.check_spelling`, `writing.navigator_columns`, `writing.proofing`, `writing.spelling_suggestions`, `writing.suggestion_sources`
+  `app.save_state`, `breakdown.quick_reuse`, `breakdown.source_anchor`, `history.info`, `interchange.draft_scenes`, `interchange.export_preview`, `interchange.sources`, `moodboard.suggestions`, `packages.backup_preview`, `packages.exchange_preview`, `packages.exchange_scenes`, `packages.exchange_sources`, `production.references`, `screenplay.page_view`, `screenplay.samples`, `screenplay.title_page_preview`, `tasks.relatable_types`, `vault.story_targets`, `visual.vault_images`, `writing.check_spelling`, `writing.navigator_columns`, `writing.spelling_suggestions`, `writing.suggestion_sources`
 - **Deleting a whole screenplay (every draft, locked draft and production number in it) stays a deliberate human action (owner decision 2026-10-08); the assistant can propose deleting one draft or restoring a screenplay from Recently Deleted.**
   `screenplay.delete`
 - **Display appearance (category colours and icons) with no content meaning; the user customises it in Settings.**
@@ -703,7 +703,7 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 - **Permanent deletion ('Delete forever') is never offered to the assistant (spec §28); items stay in Recently Deleted.**
   `packages.record_delete`, `project.delete`, `trash.purge`, `vault.purge`
 - **Personal writing preference (keyboard shortcuts, personal dictionary, spell checking switch and languages); a direct user choice in Settings or the editor, not project content the assistant changes.**
-  `app.reset_shortcuts`, `app.set_shortcuts`, `app.shortcuts`, `writing.dictionary`, `writing.dictionary_add`, `writing.dictionary_remove`, `writing.set_proofing`
+  `app.reset_shortcuts`, `app.set_shortcuts`, `writing.dictionary`, `writing.dictionary_add`, `writing.dictionary_remove`, `writing.set_proofing`
 - **Production scene number overrides and renumbering stay a human decision (ADR-0015, contract doc 32 §2.5); the assistant reads the numbers.**
   `screenplay.renumber_scenes`, `screenplay.restore_omitted_scene`, `screenplay.set_scene_number`
 - **Reads or writes a file-system location the user picks in a file dialog; the assistant never chooses or touches file-system paths (spec §3).**
@@ -752,6 +752,8 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 | `private_information` | read | `private_note.list` |
 | `clarify` | read | none (deterministic computation, navigation or clarification) |
 | `project_settings` | read | `project.get_settings`, `project.members` |
+| `app_appearance` | read | `appearance.get` |
+| `app_settings` | read | `writing.proofing`, `app.shortcuts` |
 | `recently_deleted` | read | `project.deleted_items`, `trash.list` |
 | `recent_activity` | read | `history.activity` |
 | `project_files` | read | `files.list` |

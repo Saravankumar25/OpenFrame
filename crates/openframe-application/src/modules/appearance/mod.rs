@@ -4,8 +4,8 @@
 //!
 //! Preferences and imported themes live in the application database (`sys_appearance_pref`,
 //! `sys_user_theme`, app migration 0002), never in a project. The operations are application
-//! level, hidden from the assistant and need no undo step: they are personal preferences, not
-//! project content. Theme files are untrusted and go through [`theme::parse_theme`] and the
+//! level and need no undo step: they are personal preferences, not project content. The assistant
+//! may read the mode and theme (`appearance.get`), never change them. Theme files are untrusted and go through [`theme::parse_theme`] and the
 //! contrast check before anything is stored; stored rows are validated again on every read, so a
 //! damaged or edited row can never be applied and the active theme falls back to OpenFrame
 //! Default.
@@ -30,8 +30,8 @@ use crate::registry::Registry;
 
 use theme::{ContrastRow, DEFAULT_THEME_ID, MAX_NAME_CHARS, MAX_THEME_BYTES, Origin, Seeds, Theme};
 
-/// Why the assistant never sees these operations (published in the AI tool coverage matrix).
-pub const HIDDEN_REASON: &str = "Appearance (mode, theme and My Themes) is a personal preference of the person at this computer, not project content; the assistant never reads or changes how the app looks.";
+/// Why the assistant cannot call the other appearance operations (published in the AI tool coverage matrix).
+pub const HIDDEN_REASON: &str = "Changing appearance (mode, theme and My Themes) is a personal preference of the person at this computer, not project content; the assistant reads how the app looks but never changes it.";
 
 /// The table name the UI listens to for appearance changes.
 pub const TABLE: &str = "sys_appearance";
@@ -42,10 +42,9 @@ pub const MAX_USER_THEMES: usize = 100;
 pub fn register(r: &mut Registry) {
     use crate::registry::{FsEffect as Fs, OpClass, OperationMetadata as M};
     r.module("Appearance");
-    r.query("appearance.get", get).meta(
-        M::app_query("The appearance mode, the active theme and the themes the user can choose.")
-            .hidden(HIDDEN_REASON),
-    );
+    r.query("appearance.get", get).meta(M::app_query(
+        "The appearance mode, the active theme and the themes the user can choose.",
+    ));
     r.command("appearance.set_mode", set_mode).meta(
         M::app_command("Switch between Light, Dark and System appearance.").hidden(HIDDEN_REASON),
     );
@@ -403,7 +402,7 @@ fn my_themes(c: &Connection) -> AppResult<Vec<(MyTheme, Option<Theme>)>> {
         .collect())
 }
 
-fn state(core: &AppCore) -> AppResult<AppearanceState> {
+pub(crate) fn state(core: &AppCore) -> AppResult<AppearanceState> {
     core.with_app_db(|c| {
         let mode = read_pref(c, KEY_MODE)?
             .and_then(|m| AppearanceMode::parse(&m))

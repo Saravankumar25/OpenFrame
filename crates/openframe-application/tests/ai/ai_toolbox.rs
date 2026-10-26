@@ -1912,3 +1912,61 @@ fn filled(schema: &Value) -> Value {
     }
     Value::Object(out)
 }
+
+#[test]
+fn budget_summary_groups_money_and_states_planned_actual_and_difference() {
+    let env = TestEnv::with_project("Railway", "Feature Film");
+    let created = env.ok("budget.create", json!({ "currency": "INR" }));
+    let id = created["id"]
+        .as_str()
+        .or_else(|| created.as_str())
+        .unwrap()
+        .to_string();
+    env.ok(
+        "budget.update",
+        json!({ "id": id, "currency": "INR", "plannedTotal": 400_000_000, "contingencyMode": "percent", "contingencyValue": 0 }),
+    );
+    // Minor units: 20,00,000 planned and 18,00,000 actual; 20,00,000 planned and no actual yet.
+    for (planned, actual) in [(200_000_000, Some(180_000_000)), (200_000_000, None)] {
+        env.ok(
+            "budget.add_line",
+            json!({ "budgetId": id, "category": "Cast", "description": "Lead", "planned": planned, "actual": actual }),
+        );
+    }
+    let out = read(&env, "budget_summary", json!({}));
+    assert!(out.contains("Planned total: INR 40,00,000"), "{out}");
+    assert!(
+        out.contains("Actual total: INR 18,00,000 (1 of 2 lines have an actual amount)"),
+        "{out}"
+    );
+    assert!(
+        out.contains("Difference (planned minus actual, lines with an actual only): INR 2,00,000 (under plan)"),
+        "{out}"
+    );
+    assert!(out.contains("Cast: planned INR 40,00,000, actual INR 18,00,000, difference INR 2,00,000 (under plan)"), "{out}");
+    assert!(!out.contains("000.00"), "{out}");
+}
+
+#[test]
+fn app_appearance_and_app_settings_answer_from_app_level_data() {
+    let env = TestEnv::with_project("Railway", "Feature Film");
+    let out = read(&env, "app_appearance", json!({}));
+    assert!(out.contains("Appearance mode: System"), "{out}");
+    assert!(out.contains("Theme: OpenFrame Default"), "{out}");
+    assert!(out.contains("Built-in themes: OpenFrame Default"), "{out}");
+    env.ok("appearance.set_mode", json!({ "mode": "dark" }));
+    assert!(read(&env, "app_appearance", json!({})).contains("Appearance mode: Dark"));
+
+    let out = read(&env, "app_settings", json!({}));
+    assert!(out.contains("Spell checking is on"), "{out}");
+    assert!(out.contains("none changed"), "{out}");
+    env.ok(
+        "app.set_shortcuts",
+        json!({ "changes": [{ "commandId": "app.quick_capture", "keys": ["Mod+Shift+K"] }] }),
+    );
+    let out = read(&env, "app_settings", json!({}));
+    assert!(
+        out.contains("app.quick_capture") && out.contains("Mod+Shift+K"),
+        "{out}"
+    );
+}

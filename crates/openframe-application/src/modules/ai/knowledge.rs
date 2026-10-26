@@ -83,6 +83,27 @@ mod tests {
             ("What are Sides?", "Sides and Day Out of Days"),
             ("What is Day Out of Days?", "Sides and Day Out of Days"),
             ("What does the Production Source mean?", "Production Source"),
+            ("What is Quick Capture?", "Quick Capture"),
+            (
+                "How do I change the theme?",
+                "Change the theme and dark mode",
+            ),
+            (
+                "How do I switch to dark mode?",
+                "Change the theme and dark mode",
+            ),
+            ("What is a Beat?", "Story Board, Outline and Beats"),
+            (
+                "What does the Story Timeline show?",
+                "Characters and Story Timeline",
+            ),
+            ("What does Difference mean in the Budget?", "Budget"),
+            ("How are shot letters like 12A made?", "Shot lists"),
+            (
+                "How do I link a file instead of copying it?",
+                "Project Files",
+            ),
+            ("Which tabs does Settings have?", "Settings"),
         ] {
             assert_eq!(relevant(question, 1)[0].0, title, "{question}");
         }

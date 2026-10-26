@@ -87,8 +87,9 @@ Built (same area and migration):
   Available window). Windows are removed with their owner when it is purged from Recently Deleted.
 - Contact privacy rule (`modules/production/privacy.rs`): `catalog_item.contact`, `location.contact`,
   `location.emergency_contact`, `cast_member.contact` and `crew_member.contact` are shown only to Owner and Editor
-  (other roles get `contactHidden: true` and no value). The assistant never receives them: AI-origin requests are
-  treated as not allowed, the AI read tools leave them out and AI documents never include them. They are not put
+  (other roles get `contactHidden: true` and no value). The assistant's catalog and location reads leave them out and AI documents never
+  include them. Its cast and crew read (`cast_and_crew`, slice S2) prints a cast or crew contact only to an actor who
+  may see it in the app (Owner and Editor), and AI-origin requests are treated as not allowed. They are not put
   in the project search index, and production exports never contain them. A Full Project Package or backup still
   carries them because it is a copy of the whole project for its owner.
 - Stable identity: renames keep links (catalog rename keeps the old name as an alias; a Location / Set item and its

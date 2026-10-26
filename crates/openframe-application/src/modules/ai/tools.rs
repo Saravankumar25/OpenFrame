@@ -508,6 +508,8 @@ impl ToolOutput {
 }
 
 pub struct ToolCtx<'a> {
+    /// The application core, for the few reads that answer from app-level data (appearance, shortcuts).
+    pub core: &'a crate::core::AppCore,
     pub conn: &'a Connection,
     pub actor: &'a Actor,
     pub scope: &'a ResolvedScope,

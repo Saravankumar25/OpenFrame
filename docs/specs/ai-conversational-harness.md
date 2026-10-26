@@ -232,8 +232,8 @@ button.
 The index is the single list of things a user can name. It builds on the existing `search_doc` table (one row per
 searchable record: `source_table`, `entity_id`, `entity_type`, `title`, `body`, `context`, `nav_json`, `owner_user_id`,
 with an FTS5 index), and adds an alias table and a relation table. Counts below come from the generated
-[ai-tool-coverage.md](../engineering/ai-tool-coverage.md) (500 registered operations, 156 queries; 256 tools of which 63
-read, compute or navigate and 193 proposals; about 45 distinct read tools).
+[ai-tool-coverage.md](../engineering/ai-tool-coverage.md) (500 registered operations, 156 queries; 258 tools of which 65
+read, compute or navigate and 193 proposals, after S2 added `app_appearance` and `app_settings`).
 
 | Area | Tables (migration) | Read tools today | Gap to confirm in S2 |
 |---|---|---|---|
@@ -248,14 +248,14 @@ read, compute or navigate and 193 proposals; about 45 distinct read tools).
 | Call sheets, sides, reports | `call_sheet`, `side`, `production_report` (0007) | `call_sheets`, `sides_and_reports`, `production_report` | status and metadata fields |
 | Budget | `budget_snapshot`, `budget_line` (0007) | `budget_summary` | budget by category and line; the 2026-10-25 export showed "Budget Summary not found" |
 | Files, notes, tasks, comments | `project_file`, `project_note`, `task`, `comment`, `private_note` (0001) | `project_files`, `project_notes`, `project_tasks`, `comments`, `private_information` | none expected |
-| Themes and appearance | app-level, not in the project database | none (`appearance.get` is hidden from the assistant) | add a read tool |
-| App settings | app-level | `project_settings` (project only); app queries are hidden | add a read tool |
+| Themes and appearance | app-level, not in the project database | `app_appearance` (added in S2) | none |
+| App settings | app-level | `project_settings`, `app_settings` (spell checking, changed shortcuts; added in S2) | none |
 | Product help | `knowledge.md` and the product guide | `answer_product_question` | the corpus must cover the whole app, not 4 sections |
 | Packages, backup | `sys_package_log`, review queue (0009) | `package_history` | none expected |
 
 Hidden reads (27 modules have at least one query the assistant cannot call; the largest groups are packages 10, ai 7,
-writing 6, screenplay 6, story 5) are reviewed one by one in S2. The rule for the build: a query is hidden only for a
-stated reason (security, or no value to a user).
+writing 6, screenplay 6, story 5) were reviewed one by one in S2 (section "S2 hidden reads review" at the end: 72 reviewed,
+3 exposed, 69 kept). The rule for the build: a query is hidden only for a stated reason (security, or no value to a user).
 
 ## 7. Evaluation
 
@@ -395,8 +395,8 @@ Each slice ends with the eval run and a saved result. A slice does not start bef
 
 ## 11. Known unknowns
 
-- What "C3" means in the owner's wording (scene 3, cast member 3, or a label). Confirm in S2.
-- Whether Parking Lot and Quick Capture are tables or views.
+- What "C3" means in the owner's wording: answered in S2 (see "S2 hidden reads review"); the app has no such label, treat it as scene 3 and ask the owner to confirm.
+- Parking Lot and Quick Capture: answered in S2 (a parent type of the Story tables and an Idea Vault note).
 - Whether the Mac shell (SwiftUI over UniFFI) needs a different surface for sources and memory settings. Port list for 1b.
 - Whether 1B paragraphs reach 80% required facts. Unproven; S1b answers it.
 
@@ -525,3 +525,127 @@ names no new one; (4) try a nearest-neighbour read over labelled examples with t
 (`multilingual-e5-small`, already shipped for search) before or instead of the model call: deterministic, multilingual and
 cheap; (5) S4 is measured on held-out wording only. Limits: synthetic data, my own labels and checks, one engine build,
 labels for the export are mine.
+
+## S2 hidden reads review
+
+Result of slice S2 (2026-10-26). The registry holds 156 queries. Before S2, 72 were hidden from the assistant. This review
+looked at each one. **3 are now exposed, 69 stay hidden.** A query stays hidden only for a stated reason: security (S), a
+file path or a user-picked location (P), a dialog or editor helper whose facts the assistant already gets through a named
+tool (U), an exact duplicate of a tool the assistant already has (D), or no value to a user (N). Nothing marked for
+security, licence, team gate, private notes of other users or file paths was unhidden. The reasons in the registry
+(`registry::hidden`) are the ones shown in the generated [ai-tool-coverage.md](../engineering/ai-tool-coverage.md).
+
+What else S2 changed:
+
+- Exposed queries and the two new read tools: `app_appearance` (mode, active theme, built-in themes, My Themes) and
+  `app_settings` (spell checking on or off with its languages, and the keyboard shortcuts the person changed). Both read
+  app-level data through the new `ToolCtx.core` field. Neither returns a licence, a trial state, a team password, a token
+  or a file path. The commands that change appearance and shortcuts stay hidden.
+- `cast_and_crew` now prints each person's contact as `contact: value`, only for an actor who may see it in the app
+  (Owner and Editor, `production::privacy::may_see_contacts`). Other roles get `contact: hidden for your role`. Catalog
+  items and locations still never give a contact to the assistant. This changes the older rule "the assistant never sees
+  contacts" for cast and crew only; the owner should confirm it.
+- Money in assistant reads uses the grouping of the Budget view and the budget PDF (`exports::money`: Indian grouping for
+  INR, no `.00` on whole amounts). `budget_summary` states planned total, actual total and difference (planned minus
+  actual over the lines that have an actual) as separate `field: value` lines, and the same three per category.
+- The product guide grew from 18 to 30 sections; see `knowledge.md`.
+
+**The label "C3".** The desktop app never prints "C3". Scenes show as "Scene 3" (Story Timeline and schedule: "Sc 3"),
+production numbers as 12A or A1, episodes as E01, shots as 12A. "C3" is the owner's own shorthand, most likely a Scene
+Card or scene number 3. The app does not change for it. S3 should treat "C" or "SC" plus a number as a mention of scene
+number N, and ask when the project has no such scene.
+
+| Query | Decision | Reason |
+|---|---|---|
+| `appearance.get` | exposed (`app_appearance`) | Writers ask which theme or mode they use; the data is a personal preference, no secret |
+| `app.shortcuts` | exposed (`app_settings`) | Asked as "what shortcuts did I change"; command ids and keys only |
+| `writing.proofing` | exposed (`app_settings`) | Asked as "is spell check on, which language"; only the project's own setting is printed, not the installed list |
+| `ai.change_set.get` | kept (S) | Human approval boundary: the review card is the only place a change set is read |
+| `ai.diagnostics` | kept (N) | Engine diagnostics for the user in Settings |
+| `ai.download.status` | kept (N) | Model download progress, a Settings screen |
+| `ai.health` | kept (N) | Local timing numbers of the assistant itself |
+| `ai.history` | kept (D) | The assistant's own conversation; the harness supplies it as memory, a tool would recurse |
+| `ai.index_status` | kept (N) | Internal index maintenance |
+| `ai.status` | kept (N) | Engine state for the Settings screen |
+| `appearance.check_theme` | kept (P) | Reads a theme file the user picked |
+| `diagnostics.preview` | kept (S) | Support diagnostics are user-started only (ADR-0021) |
+| `entitlement.notice` | kept (S) | Licence and trial notices |
+| `entitlement.status` | kept (S) | Licence and trial status |
+| `team_gate.status` | kept (S) | Team password gate of an internal build |
+| `app.info` | kept (P) | Returns local folders and file paths |
+| `app.save_state` | kept (N) | Save indicator of the status bar |
+| `files.asset` | kept (P) | Returns the path of a managed media file |
+| `history.info` | kept (N) | Labels of the next undo and redo steps |
+| `breakdown.categories` | kept (N) | Category colours and icons; the category names already appear in `breakdown_scene` |
+| `breakdown.quick_reuse` | kept (U) | Reuse suggestions for a dialog; `production_catalog` searches the same items |
+| `breakdown.source_anchor` | kept (U) | Position of a phrase for the editor jump |
+| `production.references` | kept (U) | Delete-impact check shown in a dialog |
+| `breakdown.export_report` | kept (P) | Export to a user-picked location |
+| `budget.export_summary` | kept (P) | Export to a user-picked location |
+| `callsheets.export_pdf` | kept (P) | Export to a user-picked location |
+| `moodboard.export_pdf` | kept (P) | Export to a user-picked location |
+| `reports.export_report` | kept (P) | Export to a user-picked location |
+| `schedule.export_daily_view` | kept (P) | Export to a user-picked location |
+| `schedule.export_dood` | kept (P) | Export to a user-picked location |
+| `schedule.export_schedule` | kept (P) | Export to a user-picked location |
+| `shot.export_list` | kept (P) | Export to a user-picked location |
+| `sides.export_pdf` | kept (P) | Export to a user-picked location |
+| `story.export_board` | kept (P) | Export to a user-picked location |
+| `story.page.export` | kept (P) | Export of the free-writing page to a user-picked location |
+| `storyboard.export_sheet` | kept (P) | Export to a user-picked location |
+| `screenplay.export` | kept (P) | Export to a user-picked location |
+| `screenplay.import_preview` | kept (P) | Reads a screenplay file the user picked |
+| `interchange.draft_scenes` | kept (U) | Scene list of the export dialog; `screenplay_scenes` has it |
+| `interchange.export_preview` | kept (U) | Preview inside the export dialog |
+| `interchange.sources` | kept (U) | Source list inside the export dialog |
+| `screenplay.samples` | kept (N) | Sample scripts offered to a new user |
+| `screenplay.page_view` | kept (D) | Printed pages; `screenplay_pages` gives the page facts |
+| `screenplay.title_page_preview` | kept (U) | Preview while a title page is edited |
+| `screenplay.view_state` | kept (N) | Per-user view state |
+| `story.view_state` | kept (N) | Per-user view state |
+| `story.card_display` | kept (N) | Per-user view of card text |
+| `story.page.get` | kept (S) | The writer's free-writing Story page, kept apart on purpose (owner request 2026-10-20) |
+| `vault.story_targets` | kept (U) | Dialog helper for Send to Story |
+| `vault.trash_list` | kept (D) | `recently_deleted` already lists these |
+| `tasks.relatable_types` | kept (U) | Dialog helper |
+| `moodboard.suggestions` | kept (U) | Dialog helper |
+| `visual.vault_images` | kept (U) | Picker of Idea Vault images for a moodboard |
+| `writing.navigator_columns` | kept (D) | Start page, notes, revision status and number per scene; `screenplay_pages` and `screenplay_scenes` give them |
+| `writing.check_spelling` | kept (N) | Spell check of editor text |
+| `writing.spelling_suggestions` | kept (N) | Suggestions for one word |
+| `writing.suggestion_sources` | kept (D) | Names and places for the editor list; `story_characters` and `production_locations` have them |
+| `writing.dictionary` | kept (N) | Personal dictionary words of the person; no question depends on them |
+| `packages.backup_preview` | kept (U) | Preview inside the backup dialog |
+| `packages.exchange_preview` | kept (U) | Preview inside the exchange dialog |
+| `packages.exchange_scenes` | kept (U) | Scene list inside the exchange dialog |
+| `packages.exchange_sources` | kept (U) | Source list inside the exchange dialog |
+| `packages.inspect_package` | kept (P) | Reads a package file the user picked |
+| `packages.record_view` | kept (S) | Review workflow of other people's packages |
+| `packages.review_get` | kept (S) | Review workflow of other people's packages |
+| `packages.review_list` | kept (S) | Review workflow of other people's packages |
+| `packages.session` | kept (S) | Package session state |
+| `packages.session_view` | kept (S) | Package session state |
+| `project.current` | kept (N) | Summary of the open project; `project_settings` answers it |
+| `project.list_recent` | kept (P) | Recent projects with their folders |
+| `project.location_check` | kept (P) | Checks a project folder path |
+| `project.recovery_state` | kept (N) | Crash recovery prompt state |
+
+Parking Lot and Quick Capture, from the open question in section 11: the Parking Lot is not a table. Story beats and Scene
+Cards set aside have the parent type `parking` in `story_beat` and `story_scene_card`, and `story_outline` already prints
+the Parking Lot. Quick Capture (Ctrl+Shift+N) creates an ordinary text note in the Idea Vault, so `idea_vault` covers it.
+
+## 14. Ideas taken from DeepSeek Harness (owner decision 2026-10-26)
+
+DeepSeek Harness (`github.com/deepseek-ai/deepseek-harness`, MIT, read on 2026-10-26) is a coding-agent app: Node and
+TypeScript, a local web UI, an agent that edits files and runs commands, built for large hosted models. It is not installed
+or shipped (owner decision). Four of its design ideas fit the turn of section 5 and go into the slices:
+
+| Idea in DeepSeek Harness | What OpenFrame does with it | Slice |
+|---|---|---|
+| A tool call passes fixed stages (`pre-execute` policy and permission, guards, `execute` with timeout and metrics, `post-execute` that may block, replace or add context, a frozen result) | The turn of section 5 is a fixed list of stages (prepare, resolve, read answer type, fetch, write, check, store), each a function with typed input and output, so a stage can be tested and replaced alone and the eval can report which stage failed | S4 to S7 |
+| Monotonic guards: a deny cannot be undone by a later stage | Role and privacy guards (private notes of others, contact data for roles that may not see it, planted instructions) run before fetch and again on the facts; no later stage, model pass or rewrite can add a fact a guard removed | S5, S7 |
+| Every call is logged before it runs and its result after, as session events | Each turn writes one trace row per stage (input size, output, time, check offenders) next to the existing AI trace; the eval reads it to say where a wrong answer came from | S4, S7 |
+| Everything is a plugin: features register into one registry | Domain fetchers (story, screenplay, breakdown, people, schedule, budget, visual, files, settings, product help) register into one table with the domains they answer and their token cap, like `READS` today, so adding an area is one entry plus its test | S5 |
+
+Not taken: the agent loop that lets the model pick and chain tools (the 1B model failed tool choice in both spikes), file and
+command tools, the Node runtime and web server, and the plugin loading at run time (the app ships a fixed, reviewed set).

@@ -654,6 +654,7 @@ pub fn run_tool_unlocked(
     let s = core.project()?;
     s.store.read(|c| {
         let ctx = ToolCtx {
+            core,
             conn: c,
             actor,
             scope,
