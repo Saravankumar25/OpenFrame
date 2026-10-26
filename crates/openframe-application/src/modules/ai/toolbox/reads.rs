@@ -558,7 +558,7 @@ pub fn retrieve_lexical(ctx: &ToolCtx<'_>, args: &Value) -> AppResult<ToolOutput
 }
 
 /// (entity type, title, context, body, nav) of the best keyword matches visible to `actor`.
-fn lexical_hits(
+pub(crate) fn lexical_hits(
     c: &Connection,
     actor: &Actor,
     text: &str,

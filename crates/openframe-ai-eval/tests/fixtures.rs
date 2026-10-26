@@ -181,19 +181,20 @@ fn low_tide_two_screenplays_holds_the_stated_counts() {
     let crew4 = sheet["document"]["optional"]["crew"].to_string();
     assert!(crew4.contains("Remya Sukumaran") && crew4.contains("Makeup Artist"));
 
-    // Budget: planned 16,460,000, actual 13,887,000 over eight lines, difference 223,000.
+    // Budget in minor units (paise): planned INR 1,64,60,000, actual INR 1,38,87,000 over eight lines,
+    // difference INR 2,23,000.
     let budget = &q(&core, "budget.get", json!({}))["current"];
-    assert_eq!(budget["plannedLinesTotal"], 16_460_000);
-    assert_eq!(budget["actualTotal"], 13_887_000);
+    assert_eq!(budget["plannedLinesTotal"], 1_646_000_000);
+    assert_eq!(budget["actualTotal"], 1_388_700_000);
     assert_eq!(budget["actualCount"], 8);
-    assert_eq!(budget["difference"], 223_000);
+    assert_eq!(budget["difference"], 22_300_000);
     let lines = budget["lines"].as_array().unwrap();
     assert_eq!(lines.len(), 11);
     let line = |d: &str| lines.iter().find(|l| l["description"] == d).unwrap();
-    assert_eq!(line("Lead cast")["planned"], 4_000_000);
-    assert_eq!(line("Lead cast")["actual"], 3_850_000);
-    assert_eq!(line("Camera")["planned"], 1_800_000);
-    assert_eq!(line("Camera")["actual"], 1_925_000);
+    assert_eq!(line("Lead cast")["planned"], 400_000_000);
+    assert_eq!(line("Lead cast")["actual"], 385_000_000);
+    assert_eq!(line("Camera")["planned"], 180_000_000);
+    assert_eq!(line("Camera")["actual"], 192_500_000);
 
     // Visual, vault, notes, tasks, files.
     assert_eq!(len(&q(&core, "shot.list", json!({}))), 11);

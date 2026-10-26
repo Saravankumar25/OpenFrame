@@ -781,7 +781,7 @@ fn history_is_bounded_to_recent_turns() {
         .as_str()
         .unwrap()
         .to_string();
-    for i in 1..7 {
+    for i in 1..11 {
         m.step("count_scenes", json!({}), true);
         env.ok(
             "ai.ask",
@@ -791,9 +791,9 @@ fn history_is_bounded_to_recent_turns() {
     let first = m.request(m.calls() - 1).messages[1].content.clone();
     assert_eq!(
         first.matches("User asked:").count(),
-        ai::orchestrator::HISTORY_TURNS
+        ai::memory::RECENT_TURNS
     );
-    assert!(first.contains("Question 5") && !first.contains("Question 1\n"));
+    assert!(first.contains("Question 9") && !first.contains("Question 1\n"));
 }
 
 // ------------------------------------------------------- composite Change Sets

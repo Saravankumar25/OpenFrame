@@ -304,6 +304,8 @@ Days 7 to 14 have no call sheet. The call sheet for Shoot Day 4 (title "Call She
 
 ## Budget (INR, whole rupees)
 
+The app stores amounts in paise (minor units). `setup.jsonl` passes the rupee figures of the table times 100, so the Budget view and the assistant show them as listed (fixed in slice S5: the file had passed rupees as paise, so the app showed 100 times too little).
+
 | Category | Line | Planned | Actual |
 |---|---|---|---|
 | Cast | Lead cast | 4000000 | 3850000 |

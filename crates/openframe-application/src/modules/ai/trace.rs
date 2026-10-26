@@ -14,6 +14,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use ts_rs::TS;
 
+use super::dossier;
 use super::turn::TurnRead;
 use crate::core::AppCore;
 
@@ -50,6 +51,9 @@ pub struct TraceRow<'a> {
     /// What the answer-type stage read from the message, and how long it took.
     pub turn: Option<&'a TurnRead>,
     pub turn_ms: u64,
+    /// What the fetch stage gathered (counts only), and how long it took.
+    pub dossier: Option<dossier::Summary>,
+    pub dossier_ms: u64,
 }
 
 pub fn record(core: &AppCore, r: &TraceRow<'_>) {

@@ -26,8 +26,8 @@ How the toolbox (`modules/ai/toolbox.rs`, contract C3) enforces this:
   budget, so a small local model's prompt stays short. `retrieve_context` uses the hybrid retrieval
   service when called through `run_tool_unlocked`, and keyword retrieval (FTS5, same privacy rule) otherwise.
 
-- Registered operations: **500** (156 queries, 344 commands)
-- Exposed to the assistant through tools: **308**; not AI-accessible: **192**
+- Registered operations: **502** (157 queries, 345 commands)
+- Exposed to the assistant through tools: **308**; not AI-accessible: **194**
 - Tools: **258** (65 read/compute/navigate, 193 proposal)
 
 Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation · **L** long-running (task id) · file effect: R = reads a user-picked file, W = writes to a user-picked location, P = project storage on disk.
@@ -290,6 +290,8 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 | `ai.history`: The user's own assistant conversation history. | query | Read | UseAi |  | `AiHistoryArgs` → `AiHistoryDto` | hidden | none |
 | `ai.index_rebuild`: Rebuild the derived project-context index in the background. | command | Mutate | UseAi | L | `AiIndexArgs` → `IndexRebuildStarted` | hidden | none |
 | `ai.index_status`: State of the derived project-context index (current, updating, rebuilding…). | query | Read | View |  | `AiIndexArgs` → `IndexStatusDto` | hidden | none |
+| `ai.memory_delete`: Make the assistant forget one of the user's remembered entries; the words are erased. | command | Mutate | UseAi | DI | `AiMemoryDeleteArgs` → `AiMemoryDeleteDto` | hidden | none |
+| `ai.memory_list`: What the assistant remembers about the user in this project (their own entries only). | query | Read | UseAi |  | `AiEmptyArgs` → `AiMemoryListDto` | hidden | none |
 | `ai.status`: Offline AI status: available, downloaded models check, engine state. | query | Read | app level |  | `AiEmptyArgs` → `AiStatusDto` | hidden | none |
 | `ai.stop_runtime`: Stop the local AI engine. | command | Mutate | app level |  | `AiEmptyArgs` → `()` | hidden | none |
 
@@ -715,7 +717,7 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 - **Support diagnostics are user-initiated only (ADR-0021): the user reviews the bundle and saves it to a location they pick; the assistant never gathers, exports or sends diagnostics.**
   `diagnostics.export_bundle`, `diagnostics.preview`
 - **The assistant's own entry point and conversation history; a tool calling it would recurse.**
-  `ai.ask`, `ai.cancel`, `ai.history`
+  `ai.ask`, `ai.cancel`, `ai.history`, `ai.memory_delete`, `ai.memory_list`
 - **The team password of an internal build belongs to the person at this computer; the assistant never reads or types it.**
   `team_gate.status`, `team_gate.unlock`
 - **The writer's own free-writing Story page; it is kept apart from every other page and tool on purpose (owner request 2026-10-20), so the assistant neither reads nor changes it.**

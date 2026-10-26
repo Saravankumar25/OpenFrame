@@ -40,8 +40,10 @@ use serde::Deserialize;
 use serde_json::{Value, json};
 use ts_rs::TS;
 
+use super::dossier;
 use super::index;
 use super::lanes::{self, Decision, Lane, LaneAnswer};
+use super::memory;
 use super::records::{self, NewRequest, NewResult, NewStep, RequestOutcome, ai_meta};
 use super::scope::{self, AiScopeArgs, ContextItem, ResolvedScope};
 use super::service::service;
@@ -96,9 +98,6 @@ pub const TOOL_CATALOG_CHARS: usize = 7_000;
 const OBSERVATION_ITEMS: usize = 15;
 const OBSERVATION_SHORT_CHARS: usize = 200;
 pub const FINAL_TEXT_CHARS: usize = 1_200;
-/// Bounded recent conversation history (agentic spec §30).
-pub const HISTORY_TURNS: usize = 4;
-const HISTORY_ANSWER_CHARS: usize = 400;
 const MAX_RESULT_ITEMS: usize = 50;
 const MAX_LINKED_SOURCES: usize = 6;
 
@@ -2164,8 +2163,34 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
         },
     );
     let turn_ms = started.elapsed().as_millis() as u64;
+    // The facts this answer could be written from (slice S5). Counted and timed in the trace; the
+    // writer does not read them yet.
+    let dossier_started = std::time::Instant::now();
+    let dossier_summary = reading.as_ref().and_then(|r| {
+        let ix = index::project_index(&s).ok()?;
+        s.store
+            .read(|c| {
+                Ok(dossier::try_build(&dossier::Input {
+                    conn: c,
+                    actor,
+                    index: &ix,
+                    core: Some(core),
+                    message: &text,
+                    read: &turn_read,
+                    resolved: &r.resolved,
+                    selected_scene: scope.scene.as_ref().map(|s| s.id.as_str()),
+                    focus: Some(&r.focus_after),
+                    previous_message: r.previous_message.as_deref(),
+                })
+                .map(|d| d.summary()))
+            })
+            .ok()
+            .flatten()
+    });
+    let dossier_ms = dossier_started.elapsed().as_millis() as u64;
     // The screenplay the request will read is the one the conversation is about from now on, and
     // the type just read is the answer type the next message may be a correction of.
+    let mentioned = memory::mentioned_ids(reading.as_ref().map(|r| &r.resolved));
     let mut focus_after = match (reading.map(|r| r.focus_after), &scope.draft) {
         (Some(f), Some(d)) => f.on_screenplay(&d.screenplay_id),
         (Some(f), None) => f,
@@ -2175,7 +2200,27 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
     let request_id = new_id();
     let model_ref = model.model_reference();
     let project_id = s.project_id();
-    let scope_json = index::focus_in(scope.refs_json(), &focus_after);
+    // The conversation's memory (slice S6, spec 5.1): the recent turns, the summary of older ones and
+    // the long-term entries that match. Read before this request is stored, so it holds earlier turns only.
+    let memory_ids = memory::ids_for(&mentioned, &focus_after);
+    let turn_memory = {
+        let names = index::project_index(&s).ok();
+        s.store.read(|c| {
+            memory::prepare(&memory::Input {
+                conn: c,
+                actor,
+                conversation: &conversation,
+                message: &text,
+                focus: &focus_after,
+                entity_ids: &memory_ids,
+                names: names.as_deref(),
+            })
+        })?
+    };
+    let scope_json = memory::counts_in(
+        index::focus_in(scope.refs_json(), &focus_after),
+        &turn_memory,
+    );
     s.store.mutate(actor, ai_meta("ai.ask"), |tx| {
         records::insert_request(
             tx,
@@ -2198,26 +2243,8 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
         open: true,
     };
 
-    // Bounded recent history (agentic spec §30): as data, never as permission.
-    let history: Vec<(String, String)> = s.store.read(|c| {
-        Ok(
-            records::history(c, actor, Some(&conversation), HISTORY_TURNS + 1)?
-                .into_iter()
-                .filter(|x| x.request_id != request_id)
-                .map(|x| {
-                    (
-                        queries::truncate_chars(&x.request_text, HISTORY_ANSWER_CHARS),
-                        queries::truncate_chars(&x.result.content, HISTORY_ANSWER_CHARS),
-                    )
-                })
-                .collect::<Vec<_>>()
-                .into_iter()
-                .rev()
-                .take(HISTORY_TURNS)
-                .rev()
-                .collect(),
-        )
-    })?;
+    // Recent turns word for word (spec 5.1), as data, never as permission.
+    let history = turn_memory.history();
     // Numbers for the local AI trace (ADR-0028 decision 8): what was offered, and the engine figures
     // of this request only.
     let _ = model.take_usage();
@@ -2291,6 +2318,8 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
     );
     persist(core, actor, &request_id, outcome)?;
     unfinished.close();
+    // What the person stated outright or confirmed is remembered (spec 5.7).
+    memory::remember(&s, actor, &request_id, &text, &turn_memory, &memory_ids);
     let (tools_chosen, sources, result_kind, error_code, proposed) = trace_row;
     let routed = ids.routed.take();
     trace::record(
@@ -2324,6 +2353,8 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
             cancelled: stopped,
             turn: Some(&turn_read),
             turn_ms,
+            dossier: dossier_summary,
+            dossier_ms,
         },
     );
     s.store

@@ -85,6 +85,11 @@ pub const PROJECT_MIGRATIONS: &[Migration] = &[
         "story_page",
         "../../../migrations/project/0017_story_page.sql"
     ),
+    m!(
+        18,
+        "ai_memory",
+        "../../../migrations/project/0018_ai_memory.sql"
+    ),
 ];
 
 pub const GLOBAL_MIGRATIONS: &[Migration] = &[
@@ -138,6 +143,11 @@ pub const APP_MIGRATIONS: &[Migration] = &[
         8,
         "ai_trace_turn",
         "../../../migrations/app/0008_ai_trace_turn.sql"
+    ),
+    m!(
+        9,
+        "ai_trace_dossier",
+        "../../../migrations/app/0009_ai_trace_dossier.sql"
     ),
 ];
 

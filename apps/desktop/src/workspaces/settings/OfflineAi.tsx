@@ -16,6 +16,7 @@ import { damagedModels, formatBytes, offReason, panelMode, runtimeLabel } from "
 import DownloadAi from "../../ai/DownloadAi";
 import "../../ai/ai.css";
 import { AiHealthCard } from "./AiHealth";
+import { AssistantMemoryCard } from "./AssistantMemory";
 
 /** The privacy promise shown wherever Offline AI is described (spec §1). */
 export const OFFLINE_AI_PROMISE =
@@ -122,6 +123,7 @@ export default function OfflineAiSettings() {
           </div>
         )}
         <AiHealthCard />
+        <AssistantMemoryCard />
         {/* Last and on a row of its own: the component table needs the full width (measured: in a 420 px card the
             table ran under the AI health card and the hashes broke the layout). */}
         <TechnicalDetails />

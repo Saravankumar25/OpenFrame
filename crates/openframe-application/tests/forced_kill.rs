@@ -199,6 +199,18 @@ fn downgrade_to_v10(project: &str) {
     let mut v: i64 = c
         .query_row("PRAGMA user_version", [], |r| r.get(0))
         .unwrap();
+    if v == 18 {
+        let tx = c.transaction().unwrap();
+        tx.execute_batch(
+            "DROP INDEX idx_ai_memory_user;
+             DROP TABLE ai_memory;
+             DELETE FROM _schema_migrations WHERE version = 18;
+             PRAGMA user_version = 17;",
+        )
+        .unwrap();
+        tx.commit().unwrap();
+        v = 17;
+    }
     if v == 17 {
         let tx = c.transaction().unwrap();
         tx.execute_batch(
@@ -529,7 +541,7 @@ fn m1_03_forced_kill_during_migration_leaves_a_consistent_database() {
                 "the migration worker completed no cycle before the kill"
             );
         }
-        // Before the app touches it: a complete schema 10 to 17 (each migration commits whole).
+        // Before the app touches it: a complete schema 10 to 18 (each migration commits whole).
         let raw = rusqlite::Connection::open(Path::new(&h.project).join("project.sqlite")).unwrap();
         let version: i64 = raw
             .query_row("PRAGMA user_version", [], |r| r.get(0))
@@ -542,7 +554,7 @@ fn m1_03_forced_kill_during_migration_leaves_a_consistent_database() {
             )
             .unwrap();
         assert!(
-            matches!((version, journal), (10, false) | (11..=17, true)),
+            matches!((version, journal), (10, false) | (11..=18, true)),
             "half-migrated: v{version}, journal {journal}"
         );
         drop(raw);
@@ -554,7 +566,7 @@ fn m1_03_forced_kill_during_migration_leaves_a_consistent_database() {
             .store
             .read(|c| Ok(c.query_row("PRAGMA user_version", [], |r| r.get(0))?))
             .unwrap();
-        assert_eq!(schema, 17, "{opened}");
+        assert_eq!(schema, 18, "{opened}");
         let cards = card_texts(&core);
         assert!(
             cards.contains(&"Baseline one".to_string())

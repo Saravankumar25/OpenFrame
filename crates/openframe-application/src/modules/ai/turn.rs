@@ -39,6 +39,11 @@ use serde::{Deserialize, Serialize};
 use super::index::Resolved;
 
 pub use domains::Domain;
+
+/// The domains a message touches once its names are known: what the dossier fetches from.
+pub fn domains_for(message: &str, resolved: &Resolved, answer_type: AnswerType) -> Vec<Domain> {
+    domains::find(message, resolved, answer_type)
+}
 pub use neighbour::{LooRead, leave_one_out};
 
 /// How long a request waits for the embedding step. The first message after the app starts embeds

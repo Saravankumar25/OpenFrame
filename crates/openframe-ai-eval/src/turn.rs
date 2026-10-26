@@ -175,6 +175,19 @@ pub fn index_of(core: &AppCore, project: &str) -> Result<Arc<EntityIndex>, Strin
 
 /// Read every turn of one conversation in order.
 pub fn read_conv(ix: &EntityIndex, conv: &Conv, aids: &turn::Aids<'_>) -> Vec<turn::TurnRead> {
+    read_conv_resolved(ix, conv, aids)
+        .into_iter()
+        .map(|(_, r, _)| r)
+        .collect()
+}
+
+/// Every turn of one conversation in order, with the names each message resolved to and the focus
+/// once the message is part of the conversation.
+pub fn read_conv_resolved(
+    ix: &EntityIndex,
+    conv: &Conv,
+    aids: &turn::Aids<'_>,
+) -> Vec<(index::Resolved, turn::TurnRead, Focus)> {
     let mut focus = Focus::default();
     let mut previous: Option<(&str, turn::AnswerType)> = None;
     let mut reads = Vec::new();
@@ -191,7 +204,7 @@ pub fn read_conv(ix: &EntityIndex, conv: &Conv, aids: &turn::Aids<'_>) -> Vec<tu
         );
         focus = focus.after(&resolved);
         previous = Some((msg, r.answer_type));
-        reads.push(r);
+        reads.push((resolved, r, focus.clone()));
     }
     reads
 }

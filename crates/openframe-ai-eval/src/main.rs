@@ -12,6 +12,11 @@
 //! the sets of `turn-sets/` (`--turn-sets <folder>` to change it), with no model writing: see
 //! `turn_only.rs`. It still needs the models, for the embeddings and the short model call.
 //!
+//! `--dossier-only` runs the stage after it, the fetch of the facts an answer is written from (slice
+//! S5), on every Low Tide conversation case and scores the dossier against what the case expects:
+//! see `dossier_only.rs`. It reads the answer type the way `--turn-only` does, so it needs the same
+//! models.
+//!
 //! Needs the Offline AI engine staged by `node scripts/prepare-ai-assets.mjs` (OPENFRAME_AI_BUNDLE_DIR,
 //! default `.build-cache/ai-bundle`) and the pinned models in the build inputs (OPENFRAME_AI_ASSETS_DIR,
 //! default `.ai-assets`), which it installs in its own app data as a finished download would
@@ -20,6 +25,7 @@
 //! script, so no case sees another's changes. Writes `results.jsonl` (one line per case, numbers,
 //! tools and answers), `summary.json` and `report.md` into the output folder. Development only.
 
+mod dossier_only;
 mod turn_only;
 
 use std::io::Write as _;
@@ -51,6 +57,8 @@ struct Args {
     routes: Option<String>,
     /// Run only the answer-type stage.
     turn_only: bool,
+    /// Run the answer-type stage and the fetch stage, and score the fetched facts.
+    dossier_only: bool,
     turn_sets: PathBuf,
 }
 
@@ -59,6 +67,7 @@ fn parse_args() -> Result<Args, String> {
     let (mut gold, mut out, mut only, mut limit, mut search, mut graphics, mut routes) =
         (None, None, None, None, None, None, None);
     let mut turn_only = false;
+    let mut dossier_only = false;
     let mut turn_sets = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("turn-sets");
     while let Some(k) = a.next() {
         let mut v = || a.next().ok_or_else(|| format!("{k} needs a value"));
@@ -71,6 +80,7 @@ fn parse_args() -> Result<Args, String> {
             "--graphics" => graphics = Some(v()?),
             "--routes" => routes = Some(v()?),
             "--turn-only" => turn_only = true,
+            "--dossier-only" => dossier_only = true,
             "--turn-sets" => turn_sets = PathBuf::from(v()?),
             _ => return Err(format!("unknown argument {k}")),
         }
@@ -84,6 +94,7 @@ fn parse_args() -> Result<Args, String> {
         graphics,
         routes,
         turn_only,
+        dossier_only,
         turn_sets,
     })
 }
@@ -161,6 +172,11 @@ fn run() -> Result<(), String> {
     let svc = openframe_application::modules::ai::service(&core);
     if args.turn_only {
         turn_only::run(&core, &cases, &args.turn_sets, &args.out, svc.model())?;
+        core.shutdown();
+        return Ok(());
+    }
+    if args.dossier_only {
+        dossier_only::run(&core, &cases, &args.out, svc.model())?;
         core.shutdown();
         return Ok(());
     }

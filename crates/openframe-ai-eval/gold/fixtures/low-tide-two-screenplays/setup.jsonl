@@ -598,17 +598,17 @@
 {"op":"callsheets.finalize","args":{"id":"$ref:cs2.id","acknowledgeStale":true}}
 {"op":"callsheets.finalize","args":{"id":"$ref:cs3.id","acknowledgeStale":true}}
 {"op":"budget.create","args":{"currency":"INR"},"name":"budget"}
-{"op":"budget.add_line","args":{"budgetId":"$ref:budget.id","category":"Cast","description":"Lead cast","planned":4000000,"actual":3850000}}
-{"op":"budget.add_line","args":{"budgetId":"$ref:budget.id","category":"Cast","description":"Supporting cast","planned":2200000,"actual":2310000}}
-{"op":"budget.add_line","args":{"budgetId":"$ref:budget.id","category":"Crew","description":"Direction and production crew","planned":3500000,"actual":3380000}}
-{"op":"budget.add_line","args":{"budgetId":"$ref:budget.id","category":"Locations","description":"Location fees and permits","planned":900000,"actual":765000}}
-{"op":"budget.add_line","args":{"budgetId":"$ref:budget.id","category":"Equipment","description":"Camera","planned":1800000,"actual":1925000}}
-{"op":"budget.add_line","args":{"budgetId":"$ref:budget.id","category":"Equipment","description":"Lighting and grip","planned":650000}}
-{"op":"budget.add_line","args":{"budgetId":"$ref:budget.id","category":"Art/Props","description":"Art department and props","planned":700000,"actual":640000}}
-{"op":"budget.add_line","args":{"budgetId":"$ref:budget.id","category":"Travel/Transport","description":"Boat hire and sea safety","planned":450000,"actual":520000}}
-{"op":"budget.add_line","args":{"budgetId":"$ref:budget.id","category":"Food","description":"Unit catering","planned":560000,"actual":497000}}
-{"op":"budget.add_line","args":{"budgetId":"$ref:budget.id","category":"Post/Other","description":"Edit and sound mix","planned":1200000}}
-{"op":"budget.add_line","args":{"budgetId":"$ref:budget.id","category":"Contingency","description":"Contingency","planned":500000}}
+{"op":"budget.add_line","args":{"budgetId":"$ref:budget.id","category":"Cast","description":"Lead cast","planned":400000000,"actual":385000000}}
+{"op":"budget.add_line","args":{"budgetId":"$ref:budget.id","category":"Cast","description":"Supporting cast","planned":220000000,"actual":231000000}}
+{"op":"budget.add_line","args":{"budgetId":"$ref:budget.id","category":"Crew","description":"Direction and production crew","planned":350000000,"actual":338000000}}
+{"op":"budget.add_line","args":{"budgetId":"$ref:budget.id","category":"Locations","description":"Location fees and permits","planned":90000000,"actual":76500000}}
+{"op":"budget.add_line","args":{"budgetId":"$ref:budget.id","category":"Equipment","description":"Camera","planned":180000000,"actual":192500000}}
+{"op":"budget.add_line","args":{"budgetId":"$ref:budget.id","category":"Equipment","description":"Lighting and grip","planned":65000000}}
+{"op":"budget.add_line","args":{"budgetId":"$ref:budget.id","category":"Art/Props","description":"Art department and props","planned":70000000,"actual":64000000}}
+{"op":"budget.add_line","args":{"budgetId":"$ref:budget.id","category":"Travel/Transport","description":"Boat hire and sea safety","planned":45000000,"actual":52000000}}
+{"op":"budget.add_line","args":{"budgetId":"$ref:budget.id","category":"Food","description":"Unit catering","planned":56000000,"actual":49700000}}
+{"op":"budget.add_line","args":{"budgetId":"$ref:budget.id","category":"Post/Other","description":"Edit and sound mix","planned":120000000}}
+{"op":"budget.add_line","args":{"budgetId":"$ref:budget.id","category":"Contingency","description":"Contingency","planned":50000000}}
 {"op":"shot.create","args":{"sceneId":"$scene:1","description":"Wide of the landing at low tide with the mast base in the foreground","size":"Wide","movement":"Static","angle":"Eye level","lens":"24mm","characters":["Mariamma"]}}
 {"op":"shot.create","args":{"sceneId":"$scene:1","description":"Close on Mariamma's hands sorting sardines","size":"Close-up","movement":"Static","angle":"Eye level","lens":"50mm","characters":["Mariamma"]}}
 {"op":"shot.create","args":{"sceneId":"$scene:6","description":"Low angle of the padlocked gate with the mast above","size":"Wide","movement":"Tilt up","angle":"Low angle","lens":"24mm","characters":["Anjali","Nandan"]}}

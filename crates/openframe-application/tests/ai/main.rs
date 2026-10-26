@@ -7,9 +7,11 @@
 mod ai;
 mod ai_agent;
 mod ai_apply_recovery;
+mod ai_dossier;
 mod ai_focus;
 mod ai_index_stress;
 mod ai_lanes;
+mod ai_memory;
 mod ai_real_model;
 mod ai_retrieval;
 mod ai_retrieval_perf;

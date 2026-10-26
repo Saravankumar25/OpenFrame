@@ -9,7 +9,8 @@
 //!   (answer / navigation / suggestion / one composite proposal / denial /
 //!   clarification), persisted with per-step audit records and provenance;
 //! - `ai.change_set.get|accept|reject|recheck`: explicit, human-only review of proposals;
-//! - `ai.history`: the user's own conversation history.
+//! - `ai.history`: the user's own conversation history;
+//! - `ai.memory_list`, `ai.memory_delete`: what the assistant remembers about the user (see `memory`).
 //!
 //! OpenFrame stays fully usable when the AI is not downloaded, missing or damaged: nothing else
 //! depends on this module.
@@ -21,11 +22,13 @@ pub mod change_set;
 mod chat;
 mod commands;
 mod conversation_export;
+pub mod dossier;
 pub mod index;
 pub mod intelligence;
 mod intent;
 pub mod knowledge;
 mod lanes;
+pub mod memory;
 pub mod offline;
 pub mod orchestrator;
 pub mod queries;
@@ -163,6 +166,7 @@ pub fn register(r: &mut Registry) {
         )
         .hidden(h::HUMAN_APPROVAL),
     );
+    memory::register(r);
     retrieval::register(r);
 }
 

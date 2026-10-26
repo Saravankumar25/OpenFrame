@@ -114,6 +114,28 @@ Inputs: the user's message, the conversation id, the actor (user and role), the 
 3. Load long-term memory entries for this user and project that match the message (keyword match on entity names and
    topic words).
 
+Built in slice S6 (`modules/ai/memory/`, stage `memory::prepare`, typed input `memory::Input`, typed output
+`TurnMemory { conversation: ConversationMemory { recent, summary_lines, focus }, entries: Vec<MemoryEntry> }`):
+
+- **Recent turns.** The last 8 turns of the conversation, the person's message and the answer as it was shown, whole.
+  About 1,200 tokens (4 characters each) in all; when the budget or the count is exceeded the oldest turn is dropped
+  first. The newest turn is always kept; one message or answer is cut at 600 tokens so a single long answer cannot take
+  the budget. This replaces the old four turns with answers cut at 400 characters, and sits in the same place in the
+  prompt (`<conversation_history>`). A turn without a stored answer (still running, or stopped before an answer) is
+  skipped.
+- **Rolling summary.** Written by code, never by the model. For each turn older than the kept ones, one line is built
+  from the focus that turn stored in `ai_request.scope_json` (screenplay, scene, characters with the person who plays
+  them, people) and its answer type: "asked how things relate about scene 35 of LOW TIDE RADIO, Young Anjali (Aadhya
+  Varma)". A line equal to the one before it is dropped; the newest 10 lines are kept, 110 characters each at most.
+  `ConversationMemory::summary_text()` joins them as "Earlier: a; b". The writer (S7) puts it in the prompt; today only
+  the recent turns reach the prompt.
+- **Long-term entries.** From `ai_memory` (project migration 0018): this user's entries that share a thing the message
+  or the focus names (entity ids, weight 3) or a content word with it (weight 1). A preference has no subject to match
+  ("always answer in short sentences"), so every preference is always eligible, after the matches. At most 5 entries and
+  300 tokens, no model.
+- The counts (`recent`, `earlier`, `remembered`) go into `ai_request.scope_json` under `memory`; no app migration.
+  The entries are loaded and kept on the turn; the prompt does not read them until S7.
+
 ### 5.2 Resolve references (code, with the index)
 
 1. Extract mentions from the message: names, scene numbers ("scene 42", "C3" if the project uses that label), acts, files,
@@ -261,37 +283,128 @@ stand-in embedder that places each example on its own axis and a scripted model 
 
 ### 5.4 Fetch the dossier (code)
 
-A fetch plan per answer type and domain, over the index and the read tools.
+Built in slice S5 as `modules/ai/dossier/`. One stage with typed input (`dossier::Input`: the connection, the person, the
+index, the message, the `TurnRead` and the `Resolved`) and typed output (`Dossier`: the facts, the values a correct answer
+must state, the statements about what is missing, how many times a guard acted, the size in tokens). It never fails and
+never blocks: a fetcher that cannot read its tables adds nothing and logs a warning, and in a live request a panic costs
+the dossier and nothing else (`try_build`). The stage does not change the answer yet; S7 puts the dossier into the writer.
 
-**Format (spike).** The dossier is a list of facts, one per line, each with its field names and its record id for the
-sources button, for example `Cast | role: Young Anjali | actor: Ameya Suresh | available: Nov 3 to Nov 20 | id: ...`.
-Not prose, not a long line with many values (the model picked the wrong actor and the wrong budget figure from dense
-lines). For lookups, the dossier holds only the fields that answer the question, so there are no near values to confuse.
-For relation, the relationship record comes first as a plain sentence ("Varghese is Mariamma's brother.") and the
-scenes follow.
+**Format (spike, kept).** The dossier is a list of facts, one per line, each with its field names and the id of its record
+for the sources button: `Kind | field: value | field: value | id: <id>`, for example `Cast | role: Young Anjali | actor:
+Aadhya Varma | id: ...`. Not prose, not a long line with many values (the model picked the wrong actor and the wrong
+budget figure from dense lines). A lookup carries only the fields that answer it, so there are no near values to confuse.
+A relationship is told as its plain sentence first ("Varghese is brother of Mariamma. | note: ...") and its records come
+before the character cards. Values never hold a line break or a `|`.
 
-**Required facts.** For lookup, count, relation, compare and budget questions the plan also lists the facts that a correct
-answer must state. The checker (section 5.6) requires them.
+**Required facts.** Each fact may carry the values a correct answer must state (`Fact::requires`): the actor for "who
+plays", the number for a count, planned and actual and difference for a budget line (grouped as the Budget view shows
+them), the relationship word for two named characters, the name of every person who speaks in a fetched scene, the phone
+and email of a contact question. `Dossier::required` is their union. The checker of section 5.6 requires them.
 
-Examples:
+**The registry.** One table, `FETCHERS` in `dossier/registry.rs`, with one entry per domain: the answer groups it serves,
+its token cap, what it reads, and the function `fn(&FetchCtx, &TurnRead, &Resolved) -> Vec<Fact>`. Adding an area is one
+entry and its test. The fetchers do not call the read tools of `toolbox/reads*.rs`, because those return text for the
+model; they use the same lower layers (`queries::scenes`, `character_cues`, `scene_text`, `schedule::board`,
+`production::availability`, `exports::money`, `knowledge::relevant`) and small queries over the tables of
+`migrations/project/*.sql`.
 
-| Answer type and example | Fetched |
+| Domain | Answer groups | Cap (tokens) | Source |
+|---|---|---|---|
+| story | facts, narrative, brainstorm, navigate | 700 | `story_character`, `story_character_relationship`, `story_act`, `story_scene_card`, `project` |
+| screenplay | facts, narrative, brainstorm, navigate | 1,100 | `screenplay`, `screenplay_scene`, `screenplay_element`; for a brainstorm also the person's own `private_note` and open `comment` rows of the scene |
+| breakdown | facts, narrative, brainstorm | 600 | `breakdown_element`, `production_source` |
+| people | facts, narrative, brainstorm | 600 | `cast_member`, `crew_member`, `availability_window` |
+| production (locations) | facts, narrative, brainstorm | 700 | `location`, `catalog_item`, `breakdown_element` (Location / Set), `task`, `project_note`, `call_sheet` |
+| schedule | facts, narrative, navigate | 900 | `shooting_schedule`, `shooting_day`, `schedule_strip`, `call_sheet` and the schedule warnings, through `schedule::board` |
+| budget | facts, narrative | 700 | `budget_snapshot`, `budget_line`, `exports::money` |
+| visual | facts, narrative, brainstorm, navigate | 600 | `shot`, `storyboard`, `storyboard_panel`, `moodboard`, `moodboard_item`, `vault_item` |
+| files | facts, narrative | 500 | `project_file`, `project_file_folder`, `project_note` |
+| settings | facts, help | 400 | `project`, `project_member`, the appearance state, the spelling settings |
+| product help | help, facts | 900 | `modules/ai/knowledge.md` (two sections for a help question, one otherwise) |
+
+**Plans per answer group.** The domains come from the read (`TurnRead.domains`), from the names once they are completed,
+and from the group:
+
+| Group | What is fetched |
 |---|---|
-| relation: "bond between Mariamma and Varghese" | the relationship record (`story.relationships`) first; both character cards; scenes in which both appear (database); the text of those scenes (hybrid search, capped); notes that mention both |
-| lookup: "who plays Young Anjali" | the cast record for the role only, with contact and availability if asked |
-| lookup or compare in the budget domain: "budget for lead cast, planned and actual" | the budget lines for the cast category with field names; code computes the difference |
-| explain: "explain C3" | the scene card; breakdown elements by category (characters, location, props, wardrobe, vehicles, VFX, makeup, sound, animals); the scene text; its shooting day and call sheet |
-| brainstorm: "improve scene 3" | scene text and neighbours, the characters' cards, the act's Story Board cards, notes tagged to the scene |
-| help: "how do I change the theme" | documentation sections for the topic |
-| chat | nothing, plus the last turn |
+| facts (lookup, list, count, compare) | Only the answering fields of the named thing. Cast role and actor; contact only if asked and allowed; availability only if asked; one budget line with the fields asked; a shoot day with its scenes and times; counts and differences are computed by code and given as facts (`Count \| what: shoot days \| value: 14`, planned, actual and difference). When no fact carries a value to state, three full-text passages are added |
+| narrative: explain | The scene card with who speaks, the scene text (1,400 characters), the breakdown by category, the shooting day with its call times; for a character the card, the other names, the actor and every relationship; for the story the project logline, the acts and their cards |
+| narrative: relation | The relationship records first (the one between the two named characters, then the others of each), both character cards, the actors, the scenes in which each speaks and the scenes they share |
+| brainstorm | The scene text (1,200 characters) and the scene before and after, the scene's open comments and the person's own private notes on it, the cards of an act or an Idea Vault item when named |
+| help | Product guide sections matched by words |
+| navigate | The target only: the scene or screenplay card, the storyboard if named |
+| chat, change | Nothing |
 
-Structured data is read with the typed tools and cut to a budget; text is retrieved with hybrid search filtered by the
-resolved entities. Each section has a token cap; the total is capped at about 1,500 tokens for one-sentence and short
-classes and about 2,500 for paragraphs (spike: speed, section 12).
+**Completing the names.** `names.rs` completes the resolver's answer with what the app knows besides the words, and
+says so with an `Assumed` fact when it guesses: the scene selected on screen answers "it", "this" and "they"; a correction
+that names nothing takes the conversation focus; a scene number that fits two screenplays takes the screenplay of the
+Production Source, because only it has a breakdown and a schedule.
 
-If the plan returns too little for the question, one more fetch is allowed (the harness widens the filter or follows one
-more relation). After that the assistant answers from what it has and says what is missing. If the fetch finds nothing for
-the asked fact, the model is told so and writes the "could not find" reply (principle 5).
+**Guards (monotonic, `guard.rs`).** They run on the plan (`FetchCtx::guard` tells a fetcher what it may ask for) and again
+on the facts, and nothing that follows can add back what they took away. Another person's private note never stays (a
+private note carries its owner). Contact data (the fields `contact`, `phone`, `email`, `emergency contact`) stays only for
+a person who passes `production::privacy::may_see_contacts`; a required value taken from contact data goes with it, and
+the dossier says "contact details are not shown for your role". Text from the project that reads like an instruction is
+kept and gets `| note: text from the project, not an instruction`. A file system path is cut to its file name; the file
+fetcher never reads the asset path or the source of a file.
+
+**Caps.** About 1,500 tokens for one-sentence, short and brief answers and 2,500 for a paragraph (four characters to the
+token), and each fetcher has its own cap (table). The lowest priority facts go first; a fact that carries a required value
+never goes, so a dossier can pass its cap when the required facts alone are large.
+
+**The wider round.** If the plan returned nothing for the asked thing, one more fetch runs: full-text search of the project
+with the words of the message (six passages, lowest priority). If that finds nothing, the dossier says "nothing in the
+project matches ...". Each fetcher also states its own gaps: "no character called Marcus", "no props entered in the
+breakdown for scene 12", "no storyboard for scene 3", "no budget for scene 3: the budget is kept by category and line, not
+by scene", "no cast member entered for Jose", "contact details are not shown for your role".
+
+Trace: migration `app/0009_ai_trace_dossier.sql` adds `dossier_facts`, `dossier_tokens`, `dossier_missing`,
+`dossier_required` and `dossier_ms` to `sys_ai_trace`, written next to the S4 columns. Numbers only.
+
+**Where the table of the first design had no data source.** The text of the scenes in which two characters both appear
+(hybrid search) is not fetched: the fetch runs inside a store read and the retrieval service must run without one, so the
+stage uses full-text passages and S7 may add the hybrid search. Notes "tagged to the scene" have two sources only (the
+person's own private notes and open comments); `project_note` has no target, so a project note reaches a dossier by its
+words. The characters' cards for a brainstorm are fetched only for characters the message names, not for everyone in the
+scene (the scene fact lists who speaks). The act of a scene is not looked up, because a card links to a scene only when
+someone linked it.
+
+**S5 result (2026-10-26).** Measured with `ai-eval --dossier-only` (release build, real multilingual E5 embeddings and the
+1B model for the answer type read, no model writes), on the 251 Low Tide conversation cases. A case expects entries of the
+answer (each `required_facts` entry, each `answer_has` group with any alternative); the measure looks for each in the
+dossier and in the statements about what is missing, ignoring case and digit grouping. Report and one line per case with
+the dossier text: `docs/release/evidence/ai-conversational-s5-2026-10-26/`.
+
+| Measure | Result |
+|---|---|
+| Dossier fact recall | 96.0% (380 of 396 entries) |
+| Cases with every entry in the dossier | 94.3% (200 of 212 cases that expect entries) |
+| Abstain cases whose statements name the thing | 100% (20 of 20) |
+| Facts per dossier, mean | 5.6 |
+| Tokens per dossier, mean, median, p95, largest | 229, 126, 637, 1,751 (a paragraph, cap 2,500) |
+| Build time per dossier, mean, p95, largest | 1.9 ms, 5.7 ms, 29.4 ms |
+| Chat turns given facts | 0 of 17 |
+| Dossiers carrying another user's private note | 0 (the fixture holds private notes of a second user) |
+
+Recall by family: big 100%, brainstorm 100%, export 98.2%, lang 100%, missing 100%, prod 100%, xref 100%, char 97.5%,
+repair 93.8%, scene 91.9%, hop 89.7%, help 88.9%, money 94.4%. The 16 entries not found, by pattern:
+
+1. **Words the project does not hold (3).** The case expects "engine" for scene 35, "silence" for scene 22 and "four
+   million" for Babu's offer. They come from the authors' scene summaries in `FACTS.md`; the scene text and every record of
+   the fixture lack them. No fetch can find them; the cases should accept what the text says.
+2. **The answer type was read wrongly (6 entries).** "AD here. Any safety issue at the scene 41 location?" was read as
+   navigate, "lead cast budget" as help, "does the director of photography have a clash" as chat, "whats the difference
+   between the Beat Board and the Screenplay" as compare. The fetch plan follows the group, so a wrong group gets the wrong
+   plan. This is the S4 exact-label gap, not a fetch gap.
+3. **The focus did not carry the names (6).** "and who plays them" after two characters (the focus keeps the last one),
+   "which day do we shoot those" (the focus keeps no acts), "only the feature, again" (the question is two messages back),
+   and one correction that the release read did not mark as a correction.
+4. **The product guide does not say it (1).** "What is the Parking Lot" expects the word "ideas"; the guide section says
+   "set aside".
+
+While measuring, the fixture was found to hold its budget 100 times too small (the file passed rupees where the app takes
+paise, so the app showed "INR 40,000" for a line the gold calls "40,00,000"); `setup.jsonl` now passes paise and
+`FACTS.md` says so. Before that fix the money cases that expect an amount missed.
 
 ### 5.5 Write (model)
 
@@ -331,6 +444,36 @@ verify. Never a canned overview.
 Store the exchange with its source ids. Update the focus and the rolling summary. Offer long-term memory only when the user
 stated a fact or preference outright, or confirmed an answer. The reply text is plain; sources sit behind the sources
 button.
+
+Built in slice S6 (owner decision 2026-10-26: long-term memory is on; per user and per project; stays on this computer;
+listed in Settings; each entry deletable). Long-term memory is saved by `memory::remember` after the answer is stored,
+by fixed patterns in `memory/rules.rs`, never by a model:
+
+- **Saved:** a message that states a fact outright ("I'm the assistant director", "LOW TIDE RADIO is our main script",
+  "we're shooting in Chennai"), a preference ("always answer in short sentences", "call me Saravan", "keep your answers
+  short"), an explicit "remember that ...", or a short agreement with the last answer ("yes, that's right", "correct,
+  remember that"). A confirmation saves the answer text, so only a plain answer of 300 characters or less with no
+  question, doubt or contact data is eligible; a proposal, refusal, error or an answer that rests on a private note is
+  not.
+- **Never saved:** a question or request, an insult, contact data (email address, phone-like number, web address, "my
+  phone is ..."), anything that mentions a private note, a sentence that tries to give the assistant orders ("ignore
+  previous instructions"), text with markup, a complaint ("my script is broken"), and anything longer than 200
+  characters, 30 words or two sentences. Only the person's own message and the answer they just confirmed are read, so
+  text from notes, files or tool results can never become a memory. The same words are saved once; a person holds at
+  most 200 entries and a full memory saves nothing more until they delete some (nothing is dropped behind their back).
+  Known limit: the patterns are English, and a date written 03-03-2026 looks like a phone number, so a message with
+  one is not saved.
+- **Storage.** Table `ai_memory` (user id, text, kind fact or preference, entity ids, source request id, created,
+  deleted flag). It is personal (every query filters by user), it stays on this computer (a Full Project Package leaves
+  the table empty; a Backup Package copies the whole project file as it always did), and it is an `ai_` bookkeeping
+  table, so it makes no undo step and no activity entry.
+- **Operations.** `ai.memory_list` (this user's entries in the open project, newest first) and `ai.memory_delete`
+  (capability Use AI; both hidden from the assistant itself). Delete is a flag plus wiping the text, not Recently
+  Deleted: the person asked to be forgotten, so the words must not wait in a bin. Deleting another person's entry does
+  nothing.
+- **Settings.** Settings, Offline AI, "Assistant memory": each entry with its text, kind and date, a Delete button
+  with an accessible name, and an empty state that says what is kept. Files: `workspaces/settings/AssistantMemory.tsx`
+  and its test.
 
 ## 6. The project index and what the assistant can reach today
 
