@@ -287,13 +287,16 @@ fn people_returns_the_actor_and_the_crew_job() {
     );
     let d = dossier(&env, "who is the stunt coordinator");
     assert!(
-        d.missing.iter().any(|m| m == "I could not find a stunt coordinator for this project. I looked in Cast and Crew."),
+        d.missing.iter().any(|m| m
+            == "I could not find a stunt coordinator for this project. I looked in Cast and Crew."),
         "{:?}",
         d.missing
     );
     let d = dossier(&env, "who plays Ben");
     assert!(
-        d.missing.iter().any(|m| m == "I could not find a cast member for Ben. I looked in Cast and Crew."),
+        d.missing
+            .iter()
+            .any(|m| m == "I could not find a cast member for Ben. I looked in Cast and Crew."),
         "{:?}",
         d.missing
     );

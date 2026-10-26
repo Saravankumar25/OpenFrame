@@ -47,9 +47,9 @@ mod band_matrix_tests;
 #[cfg(test)]
 mod board_tests;
 mod design;
-mod prose;
 #[cfg(test)]
 mod furniture_tests;
+mod prose;
 #[cfg(test)]
 mod report_shell_tests;
 #[cfg(test)]
@@ -1754,7 +1754,9 @@ fn render_pdf(doc: &Document) -> ReportPdf {
                     x,
                     y,
                     text,
-                } => draw_text_styled(&mut b, &mut c, &shaped, &pack, bold, italic, size, x, y, &text),
+                } => draw_text_styled(
+                    &mut b, &mut c, &shaped, &pack, bold, italic, size, x, y, &text,
+                ),
                 Op::Text {
                     bold,
                     size,

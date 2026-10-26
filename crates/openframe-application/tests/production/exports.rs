@@ -1993,7 +1993,10 @@ fn every_production_export_is_branded_and_user_files_are_never_modified() {
         json!({ "dayId": day, "format": "pdf", "path": sides }),
     );
     let text = pdf_text(&sides);
-    assert!(!text.contains(BRAND), "sides PDF carries the brand line: {text}");
+    assert!(
+        !text.contains(BRAND),
+        "sides PDF carries the brand line: {text}"
+    );
     // CSV stays pure data.
     let csv = dest(&env, "brand.csv");
     env.ok(

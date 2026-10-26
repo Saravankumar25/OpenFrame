@@ -190,10 +190,7 @@ pub fn load_assets_bulk<'a>(
 /// Folders OpenFrame owns. User-chosen outputs are never written inside them
 /// (Security review 2026-09-30, PATH-02/PATH-04).
 pub fn protected_roots(core: &AppCore) -> Vec<PathBuf> {
-    let mut v = vec![
-        core.config.app_data_dir.clone(),
-        core.vault_dir(),
-    ];
+    let mut v = vec![core.config.app_data_dir.clone(), core.vault_dir()];
     if let Some(p) = core.project_opt() {
         v.push(p.layout.root().to_path_buf());
     }
