@@ -76,6 +76,7 @@
 | Deterministic answers are cut to the few that need exactness or safety | Code fetches, counts, checks and refuses; the model writes the answers. The deterministic pieces are listed with their reasons in section 4 of the spec; a new one needs an entry there | 2026-10-26 | Owner, in chat; spec section 4 |
 | Laya model not used | The Laya classifier was considered and dropped; no new classifier model | 2026-10-26 | Owner, in chat; ADR-0037 decision 5 |
 | Order of work for the conversational assistant | Document everything first, then build in a new session, slice by slice, each slice measured on the eval before the next | 2026-10-26 | Owner, in chat; spec section 8 |
+| Long-term memory of the assistant | On. An entry is saved only when the person states a fact or a preference outright or confirms an answer; entries are per user and per project, stay on this computer, are listed in Settings and each can be deleted | 2026-10-26 | Owner, in chat; spec section 5.7, slice S6 |
 | DeepSeek Harness | Not installed and not shipped. It is an MIT-licensed coding-agent app (Node, local web UI, file and command access, built for large models); OpenFrame keeps its Rust harness of ADR-0037 and borrows its design ideas (a staged turn pipeline with hooks, guards that cannot be undone by a later stage, an event log per turn, domain fetchers registered like plugins) | 2026-10-26 | Owner, in chat; spec section 14 |
 
 ### Product behaviour
