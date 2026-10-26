@@ -58,6 +58,37 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 
 ## Entries
 
+### 2026-10-26, conversational assistant: diagnosis, ADR-0037, spec, first spike (documents only)
+- **Areas and items worked:** AI assistant quality and hardening (design only; no code changed, nothing built).
+- **Done:**
+  - Diagnosed a 40-exchange export of a real conversation (project with two screenplays). Causes: with several
+    screenplays there is no current draft, so the understanding step is skipped and every question falls to the Agent lane;
+    no conversation state (only four turns of text, answers cut to 400 characters); keyword lane routing; a 1B model
+    choosing among 14 to 28 tools; only Chat and Recipe answers pass the content checks; no benchmark has a project with
+    more than one screenplay.
+  - Re-read the saved 2026-10-25 runs: the tool bench's 98.8% is mostly the regex routes (76 of 81 cases took the Direct
+    lane); the conversation bench had 48.2% of required facts, 13.8% invented names, 10% repetition, median 34.5 s.
+  - Wrote [ADR-0037](../adr/ADR-0037-conversational-assistant-focus-and-dossiers.md) (Accepted by the owner in chat) and
+    [ai-conversational-harness.md](../specs/ai-conversational-harness.md): deterministic policy, one turn step by step,
+    project index and coverage inventory, evaluation plan (fixtures, question families, new flags, proposed bars) and slices
+    S0 to S9. ADR-0035 decision 1 marked superseded in part; the register and owner decisions updated.
+  - Ran spike S1 on the real model (Gemma 3 1B, processor engine): of 15 questions answered from a hand-built dossier 7 were
+    good, 2 passed the script but were wrong, 6 failed; answer type read 20 of 28. Findings changed the design (facts-first
+    dossier, required facts, answer type plus domain, code decides whether data exists, last-resort fact sentence).
+- **Evidence:** `docs/release/evidence/ai-conversational-spike-2026-10-26/` (script and raw results; synthetic data, one
+  run per case, my own checks, so a capability probe and not a benchmark).
+- **Features moved:** none.
+- **Docs updated:** ADR-0037 (new), ADR-0035 (note), `docs/adr/README.md`, `docs/README.md`, `owner-decisions.md`, the
+  spec (new), `handoff.md`.
+- **Decisions made or needed:** made (owner, chat): conversational path, deterministic answers cut, Laya dropped, document
+  first then build in a new session. Needed: bars of spec section 7.5; token streaming (ADR-0037 open question 5);
+  confirm defaults for long-term memory and one extra fetch round.
+- **Blocked / risks:** 1B paragraphs and brainstorming are unproven (S1b); latency (about 14 tokens per second; a 150-token
+  paragraph needs about 10 s); coverage gaps in the assistant's read tools (themes, app settings, budget lines).
+- **Next:** S0 (fixtures, flags, 200 conversations, baseline on the current build), then S1b, then S2.
+- **Checks run:** documents only. Link check and writing check: see the handoff. Not run: any code test, any eval (the
+  baseline numbers are the saved runs of 2026-10-25).
+
 ### 2026-10-24 to 2026-10-25, AI harness rebuild, PDF exports v2, screenplay v5, owner issues
 - **Areas and items worked:** AI assistant quality and hardening (the harness rebuild, steps S1 to S8 of
   [ai-harness-rebuild.md](../specs/ai-harness-rebuild.md)); Call sheets, budget, templates, samples and exports (the

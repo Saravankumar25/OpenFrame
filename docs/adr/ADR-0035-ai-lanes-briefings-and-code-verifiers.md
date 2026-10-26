@@ -5,6 +5,9 @@
   Measured results are not in yet: the held-out and conversation benches exist (`crates/openframe-ai-eval`), the first
   full run on the new lanes is still to be made. Nothing below is claimed as faster or more accurate until that run is saved.
 - **Date:** 2026-10-24
+- **Superseded in part 2026-10-26:** decision 1 (code picks one of five answer lanes for every question) by
+  [ADR-0037](ADR-0037-conversational-assistant-focus-and-dossiers.md). The design is accepted and the build follows, so the
+  lanes still run until it lands. Decisions 2 and 3 stay for exact commands and as hints for the answer type.
 - **Amends:** [ADR-0013](ADR-0013-single-local-model-hybrid-rag-agent.md) decision 6 (the agent loop, its step count and
   its place among other paths) and [ADR-0028](ADR-0028-ai-quality-program-and-harness.md) decision 8 (the one place
   conversation text may be saved). Decisions 1 and 5 of ADR-0028 keep their rules and are extended here.
