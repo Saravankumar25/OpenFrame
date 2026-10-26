@@ -12,7 +12,7 @@ import { after, before, describe, test } from "node:test";
 import assert from "node:assert/strict";
 import { existsSync, mkdirSync, readFileSync } from "node:fs";
 import { basename, join } from "node:path";
-import { click, launchApp, sleep, stepper, waitForText } from "../lib/app.mjs";
+import { click, launchApp, sleep, stepper } from "../lib/app.mjs";
 import { assertQuiet, closeProject, firstLaunchProject, openProject, projectMenu, waitForHome } from "../lib/flows.mjs";
 
 const TITLE = "Harbour Ledger";
@@ -44,35 +44,16 @@ async function op(name, args) {
     });
 }
 
-/** Listen to the application's task events the way the UI does (ipc/client.ts `onAppEvent`). */
-async function listenForTasks() {
-  const ok = await browser.executeAsync((done) => {
-    window.__e2eTasks = {};
-    const t = window.__TAURI_INTERNALS__;
-    const handler = t.transformCallback((e) => {
-      const p = e.payload;
-      if (p && p.type === "task") window.__e2eTasks[p.taskId] = p;
-    });
-    t.invoke("plugin:event|listen", { event: "of://event", target: { kind: "Any" }, handler }).then(
-      () => done(true),
-      (err) => done(String(err)),
-    );
-  });
-  assert.equal(ok, true, `listening for task events failed: ${ok}`);
-}
-
-/** Wait for a started task to end; returns its result, and fails when the task did not complete. */
-async function waitTask(started, timeout = 60_000) {
-  const id = started.taskId;
-  assert.ok(id, `the operation returned no task: ${JSON.stringify(started)}`);
-  const ended = ["completed", "failed", "cancelled"];
-  await browser.waitUntil(async () => ended.includes(await browser.execute((i) => window.__e2eTasks?.[i]?.state ?? "", id)), {
-    timeout,
-    timeoutMsg: `the task ${id} did not end`,
-  });
-  const task = await browser.execute((i) => window.__e2eTasks[i], id);
-  assert.equal(task.state, "completed", `the task ended as ${task.state}: ${JSON.stringify(task.error)}`);
-  return task.result;
+/** Wait until `check` returns true: storage tasks run in the background and the spec watches their
+ *  results (a file written, a place changed) instead of listening to task events itself. */
+async function until(check, what, timeout = 60_000) {
+  await browser.waitUntil(async () => {
+    try {
+      return await check();
+    } catch {
+      return false;
+    }
+  }, { timeout, interval: 500, timeoutMsg: what });
 }
 
 /** The same place, whatever the slashes, the case or a Windows long path prefix. */
@@ -124,14 +105,13 @@ describe("storage", () => {
 
   test("an idea in the Global Idea Vault is backed up, and the backup is inspected", async () => {
     await step("backup", async () => {
-      await listenForTasks();
       await op("vault.create", { store: "global", itemType: "note", title: IDEA, body: "High water is at 06:40 on the harbour wall." });
       assert.equal((await op("storage.info", {})).vaultExists, true, "the Global Idea Vault was not created");
 
       const started = await op("vault.backup", { path: BACKUP });
-      const report = await waitTask(started);
-      assert.ok(report.ideaCount >= 1, `the backup report counts ${report.ideaCount} ideas`);
-      assert.ok(existsSync(BACKUP), "the backup file was not written");
+      assert.ok(started.taskId, `the backup returned no task: ${JSON.stringify(started)}`);
+      // The file appears in one step (atomic write) and can then be read back.
+      await until(async () => existsSync(BACKUP) && (await op("vault.inspect", { path: BACKUP })).ideaCount >= 1, "the backup file was not written");
       assert.equal(readFileSync(BACKUP).subarray(0, 2).toString("latin1"), "PK", "the backup is not a zip package");
 
       const seen = await op("vault.inspect", { path: BACKUP });
@@ -157,8 +137,12 @@ describe("storage", () => {
       const target = join(MOVED_TO, basename(before));
 
       const started = await op("project.move", { destParent: MOVED_TO });
-      const report = await waitTask(started);
-      assert.equal(place(report.path), place(target), "the report names another folder");
+      assert.ok(started.taskId, `the move returned no task: ${JSON.stringify(started)}`);
+      // Done when the open project is the copy in the new place and the old folder is gone.
+      await until(
+        async () => !existsSync(before) && place((await op("storage.info", {})).projectDir ?? "") === place(target),
+        "the project did not finish moving",
+      );
       assert.ok(existsSync(target), "the project folder is not in the new place");
       assert.ok(!existsSync(before), "the old project folder is still there");
 
@@ -174,7 +158,7 @@ describe("storage", () => {
   test("Home lists the moved project under Recent projects, and it opens again", async () => {
     await step("home", async () => {
       await closeProject(browser);
-      await waitForText(browser, "Recent projects");
+      await (await browser.$(section("Recent projects"))).waitForExist({ timeout: 15_000, timeoutMsg: "Home shows no Recent projects" });
       assert.ok((await homeTitles()).some((t) => t.startsWith(`Open ${TITLE}`)), `Home lists ${(await homeTitles()).join(", ")}`);
       // "Found on this PC" is only for projects in the projects folder that Recent projects does not list.
       await sleep(1000);
