@@ -1380,9 +1380,10 @@ fn an_answer_that_never_gets_the_language_right_is_replaced_by_a_true_sentence()
     }
     let x = ask(&env, "इस स्क्रिप्ट में कितने दृश्य हैं?", whole());
     let content = x["result"]["content"].as_str().unwrap();
-    assert!(
-        content.starts_with("I could not find that in the project"),
-        "{content}"
+    assert_eq!(
+        content,
+        "I could not find anything that matches \u{201C}इस स्क्रिप्ट में कितने दृश्य हैं?\u{201D}. \
+         I looked in the screenplays, the Story, Production, the Schedule, the Budget, notes and files."
     );
     assert_eq!(m.calls(), 3);
     assert_eq!(x["result"]["confidence"], "Unavailable");

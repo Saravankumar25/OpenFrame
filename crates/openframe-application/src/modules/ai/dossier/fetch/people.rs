@@ -23,6 +23,7 @@ static PHONE: LazyLock<Regex> =
 /// Nouns that name a crew job.
 const JOBS: &[&str] = &[
     "makeup artist",
+    "stunt coordinator",
     "gaffer",
     "grip",
     "director",

@@ -230,8 +230,9 @@ fn several_screenplays_are_answered_without_asking_which_one() {
     let again = ask_in(&env, "And how many scenes are there?", "c-two");
     assert_eq!(again["result"]["kind"], "Answer", "{again}");
     assert_eq!(m.calls(), 2);
-    // Another conversation has no focus and is asked one specific question, once, by code.
-    let other = ask_in(&env, "How many scenes are there?", "c-other");
+    // Another conversation has no focus and is asked one specific question, once, by code. (A plain
+    // count of scenes reads every screenplay and is not asked about, so this needs exactly one.)
+    let other = ask_in(&env, "Describe the scenes.", "c-other");
     assert_eq!(other["result"]["kind"], "Clarify", "{other}");
     assert!(content(&other).contains("Which screenplay"), "{other}");
     assert_eq!(
@@ -283,7 +284,7 @@ fn a_missing_wardrobe_says_none_is_recorded_and_a_made_up_one_is_never_shown() {
     let prompt = m.request(0).messages[1].content.clone();
     assert!(
         prompt.contains(
-            "The project does not hold:\n- no wardrobe entered in the breakdown for scene 3"
+            "Not found:\n- I could not find any wardrobe for scene 3. I looked in the Breakdown."
         ),
         "code decided it is missing and said so: {prompt}"
     );
@@ -293,7 +294,7 @@ fn a_missing_wardrobe_says_none_is_recorded_and_a_made_up_one_is_never_shown() {
     let x = ask(&env, "What is the wardrobe for scene 3 of Lost Property?");
     assert_eq!(
         content(&x),
-        "I could not find that in the project: no wardrobe entered in the breakdown for scene 3."
+        "I could not find any wardrobe for scene 3. I looked in the Breakdown."
     );
     let (path, fallback, passes, failed) = trace(&env, &x);
     assert_eq!((path.as_str(), passes), ("write", 3));
@@ -438,7 +439,7 @@ fn a_viewer_gets_no_contact_in_the_prompt_or_the_answer_and_an_owner_does() {
     assert!(
         m.request(0).messages[1]
             .content
-            .contains("contact details are not shown for your role")
+            .contains("Contact details are not shown for your role.")
     );
 
     // The owner sees the contact, so the same sentence is true and is shown.

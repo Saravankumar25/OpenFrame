@@ -198,7 +198,7 @@ fn a_name_the_project_does_not_hold_is_stated_as_missing() {
     assert!(
         d.missing
             .iter()
-            .any(|m| m.contains("no character called Marcus")),
+            .any(|m| m == "I could not find a character called Marcus. I looked in the screenplays, the Story characters and Cast and Crew."),
         "{:?}",
         d.missing
     );
@@ -287,13 +287,13 @@ fn people_returns_the_actor_and_the_crew_job() {
     );
     let d = dossier(&env, "who is the stunt coordinator");
     assert!(
-        d.missing.iter().any(|m| m.contains("crew")),
+        d.missing.iter().any(|m| m == "I could not find a stunt coordinator for this project. I looked in Cast and Crew."),
         "{:?}",
         d.missing
     );
     let d = dossier(&env, "who plays Ben");
     assert!(
-        d.missing.iter().any(|m| m.contains("Ben")),
+        d.missing.iter().any(|m| m == "I could not find a cast member for Ben. I looked in Cast and Crew."),
         "{:?}",
         d.missing
     );
@@ -398,7 +398,7 @@ fn budget_states_planned_actual_and_difference_computed_by_code() {
     assert!(
         d.missing
             .iter()
-            .any(|m| m.contains("Lighting and grip") && m.contains("no actual")),
+            .any(|m| m == "I could not find an actual amount for the budget line Lighting and grip. I looked in the Budget."),
         "{:?}",
         d.missing
     );

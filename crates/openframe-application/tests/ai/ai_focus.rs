@@ -140,7 +140,9 @@ fn a_title_in_the_message_becomes_the_focus_of_the_conversation() {
 #[test]
 fn the_answer_to_the_question_is_kept_and_not_asked_again() {
     let env = two_screenplays();
-    let first = ask_in(&env, "How many scenes are there?", "c-ask");
+    // A count of scenes reads every screenplay and is not asked about (S3 fix round), so this uses a
+    // question that needs exactly one screenplay.
+    let first = ask_in(&env, "Describe the scenes.", "c-ask");
     assert!(
         content(&first).contains("several screenplays") || content(&first).contains("Which"),
         "nothing settles the first question, so it is asked: {}",
@@ -154,16 +156,17 @@ fn the_answer_to_the_question_is_kept_and_not_asked_again() {
     assert!(focus["screenplay"].is_string(), "{focus}");
 
     // The same question now has its answer, in the same conversation.
-    let again = ask_in(&env, "How many scenes are there?", "c-ask");
+    let again = ask_in(&env, "Describe the scenes.", "c-ask");
     assert!(
         !content(&again).contains("several screenplays"),
         "asked again: {}",
         content(&again)
     );
-    assert!(content(&again).contains("10"), "{}", content(&again));
+    assert_ne!(again["result"]["kind"], "Clarify", "{again}");
+    assert_eq!(focus_of(&env, &again)["screenplay"], focus["screenplay"]);
 
     // Another conversation starts with no focus.
-    let other = ask_in(&env, "How many scenes are there?", "c-other");
+    let other = ask_in(&env, "Describe the scenes.", "c-other");
     assert!(content(&other).contains("several screenplays") || content(&other).contains("Which"));
 }
 
