@@ -5,8 +5,7 @@
 //! ```
 //!
 //! `--only` keeps the cases whose id contains the text (or whose kind or language equals it), so
-//! `--only poison-` runs just `gold/poisoned.jsonl`. `--routes off` turns the regex direct routes
-//! off so the model path alone is measured (default `on`, the app as people meet it).
+//! `--only poison-` runs just `gold/poisoned.jsonl`.
 //!
 //! `--turn-only` runs just the answer-type stage (spec slice S4) on every non-retrieval case and on
 //! the sets of `turn-sets/` (`--turn-sets <folder>` to change it), with no model writing: see
@@ -54,9 +53,6 @@ struct Args {
     /// `auto`: the app's own engine placement (the graphics card when its check passes); default
     /// `off`: always the processor, so timings compare between runs.
     graphics: Option<String>,
-    /// `on` (default) or `off`: `off` turns the regex direct routes off, so the model path is
-    /// measured (harness plan 9.1).
-    routes: Option<String>,
     /// `on` (default) or `off`: the warm-up the app does when a project opens (index, example
     /// vectors, the engine and the start of each fixed prompt). `off` shows what it saves.
     warmup: Option<String>,
@@ -71,8 +67,8 @@ struct Args {
 
 fn parse_args() -> Result<Args, String> {
     let mut a = std::env::args().skip(1);
-    let (mut gold, mut out, mut only, mut limit, mut search, mut graphics, mut routes) =
-        (None, None, None, None, None, None, None);
+    let (mut gold, mut out, mut only, mut limit, mut search, mut graphics) =
+        (None, None, None, None, None, None);
     let (mut warmup, mut latency_from) = (None, None);
     let mut turn_only = false;
     let mut dossier_only = false;
@@ -86,7 +82,6 @@ fn parse_args() -> Result<Args, String> {
             "--limit" => limit = Some(v()?.parse().map_err(|_| "--limit takes a number")?),
             "--search" => search = Some(v()?),
             "--graphics" => graphics = Some(v()?),
-            "--routes" => routes = Some(v()?),
             "--warmup" => warmup = Some(v()?),
             "--latency-from" => latency_from = Some(PathBuf::from(v()?)),
             "--turn-only" => turn_only = true,
@@ -103,7 +98,6 @@ fn parse_args() -> Result<Args, String> {
             limit: None,
             search: None,
             graphics: None,
-            routes: None,
             warmup: None,
             latency_from: Some(dir),
             turn_only: false,
@@ -120,7 +114,6 @@ fn parse_args() -> Result<Args, String> {
         limit,
         search,
         graphics,
-        routes,
         turn_only,
         dossier_only,
         turn_sets,
@@ -197,12 +190,6 @@ fn run() -> Result<(), String> {
         }
     };
     intelligence::service(&core).set_search_choice(choice);
-    let routes_on = match args.routes.as_deref() {
-        None | Some("on") => true,
-        Some("off") => false,
-        Some(other) => return Err(format!("--routes takes on or off, not {other}")),
-    };
-    openframe_application::modules::ai::set_direct_routes(routes_on);
     let svc = openframe_application::modules::ai::service(&core);
     if args.turn_only {
         turn_only::run(&core, &cases, &args.turn_sets, &args.out, svc.model())?;
@@ -312,14 +299,6 @@ fn run() -> Result<(), String> {
             },
         ),
         ("Search model".to_string(), format!("{choice:?}")),
-        (
-            "Routes".to_string(),
-            if routes_on {
-                "on (regex direct routes active)".into()
-            } else {
-                "off (model path only)".into()
-            },
-        ),
         (
             "Engine place".to_string(),
             args.graphics

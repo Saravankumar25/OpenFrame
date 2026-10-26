@@ -127,8 +127,9 @@ writes, code checks); the old question paths are gone, with their tests and stri
 - **Kept**: the read tools and the toolbox (tests and the evaluation use them; the assistant's menu no longer does), the
   Change Set proposals and their review card, exact commands, cancel and progress lines, the conversation export, the
   keyword picker `tools_for_request` as the menu of a change request only (proposal tools and two lookups).
-- **Two shims for the evaluation crate**: `ai::intent_target` and `ai::set_direct_routes` remain as empty functions so
-  `openframe-ai-eval` still compiles. Delete both together with their two calls in that crate.
+- **Evaluation crate**: the two placeholder functions that kept it compiling are deleted, with the routes switch,
+  the intent scoring and the old lane report section. The report now has "Answer path and
+  fallback", read from the trace's `lane` and `runner_up_lane`.
 
 ## 5. One turn, step by step
 

@@ -63,7 +63,7 @@ Run only this file on the real model: `--only poison-` (the harness matches case
 
 Kind `paraphrase`, ids `para-<lang>-NNN`, 90 cases (harness plan 9.2). Twenty intents taken from `tools.en.jsonl` (counts, characters, scene and dialogue facts, navigation, search, locations, drafts, production lookups and task creation), each reworded four ways in English: one with typos, one in lower case with no punctuation, one as a fragment or in a different word order, and one in a producer's or assistant director's register (80 cases). Ten more are in hi, es, fr, de and ja, two each, with `"review": "automated review only"`. The wording does not copy the source cases, because the people who wrote the regex direct routes must not have seen it. `project`, `scope`, `setup` and `expect` come from the source case, without its `end_state` (a paraphrase is never applied).
 
-A paraphrase is scored exactly like a `tool` case (tool offered, tool chosen, arguments, answer facts) but has its own section in the report, "Held-out paraphrases", and does not count towards the English release bar. Routes-on accuracy here is the honest estimate of accuracy on real wording.
+A paraphrase is scored exactly like a `tool` case (tool offered, tool chosen, arguments, answer facts) but has its own section in the report, "Held-out paraphrases", and does not count towards the English release bar. Accuracy here is the honest estimate of accuracy on real wording.
 
 ## Conversation bench (`conversation.en.jsonl`)
 
@@ -77,7 +77,7 @@ Scored by code only: facts, invented names, scene numbers outside the draft, quo
 
 ## Running
 
-`ai-eval --routes on|off` (default `on`) turns the regex direct routes off so the model path alone is measured (harness plan 9.1). Run the same cases both ways and report both. `--only para-` and `--only conv-` run just the new sets.
+`--only para-` and `--only conv-` run just the new sets. The regex direct routes are retired, so there is no routes switch.
 
 **Both new sets were drafted by Claude and need the owner's approval before their numbers count.**
 

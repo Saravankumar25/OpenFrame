@@ -62,16 +62,6 @@ pub use orchestrator::AskArgs;
 pub use service::{AiService, service};
 pub use types::*;
 
-/// Kept only so `openframe-ai-eval` still compiles: the intent router and the direct question routes
-/// are retired (spec ai-conversational-harness, 4.2 and 4.3), so there is nothing to look up or switch.
-/// Delete both together with their two calls in the eval crate.
-pub fn intent_target(_name: &str) -> Option<String> {
-    None
-}
-
-/// See [`intent_target`].
-pub fn set_direct_routes(_on: bool) {}
-
 pub fn register(r: &mut Registry) {
     use crate::registry::{OperationMetadata as M, hidden as h};
     r.module("Offline AI");
