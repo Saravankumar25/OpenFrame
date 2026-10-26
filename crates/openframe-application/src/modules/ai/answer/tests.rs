@@ -560,7 +560,7 @@ fn three_failed_explanations_give_the_abstention_and_the_facts_never_an_overview
 #[test]
 fn nothing_found_and_three_failures_still_names_what_is_missing() {
     let d = Dossier {
-        missing: vec!["no wardrobe is entered for scene 3".into()],
+        missing: vec!["I could not find a wardrobe for scene 3. I looked in Production.".into()],
         ..Dossier::default()
     };
     let r = Run::new(&["It is blue.", "It is red.", "It is green."]);
@@ -570,7 +570,7 @@ fn nothing_found_and_three_failures_still_names_what_is_missing() {
     assert_eq!(a.shown, Shown::Abstained);
     assert_eq!(
         a.text,
-        "I could not find that in the project: no wardrobe is entered for scene 3."
+        "I could not find a wardrobe for scene 3. I looked in Production."
     );
 }
 
@@ -738,7 +738,7 @@ fn the_last_resort_sentence_also_says_what_the_project_does_not_hold() {
     let d = Dossier {
         required: f.requires.clone(),
         facts: vec![f],
-        missing: vec!["contact details are not shown for your role".into()],
+        missing: vec!["Contact details are not shown for your role.".into()],
         ..Dossier::default()
     };
     let (text, used) = fallback::last_resort(&d).unwrap();
@@ -750,14 +750,20 @@ fn the_last_resort_sentence_also_says_what_the_project_does_not_hold() {
     // A fact that carries no value to state is not an answer.
     let none = Dossier {
         facts: vec![fact("Scene", "s").f("scene", "3")],
-        missing: vec!["no wardrobe is entered".into()],
+        missing: vec!["I could not find a wardrobe. I looked in Production.".into()],
         ..Dossier::default()
     };
     assert!(fallback::last_resort(&none).is_none());
     let (text, _) = fallback::abstention(&none, true);
+    assert_eq!(text, "I could not find a wardrobe. I looked in Production.");
+    // A bare statement is still capitalised and ended with a full stop.
+    let bare = Dossier {
+        missing: vec!["no wardrobe is entered".into()],
+        ..Dossier::default()
+    };
     assert_eq!(
-        text,
-        "I could not find that in the project: no wardrobe is entered."
+        fallback::abstention(&bare, true).0,
+        "No wardrobe is entered."
     );
 }
 
@@ -834,7 +840,7 @@ fn the_user_message_follows_the_layout_of_the_spec() {
                 .f("role", "Mariamma"),
         ],
         required: vec!["Rekha Thomas".into()],
-        missing: vec!["no crew is entered".into()],
+        missing: vec!["I could not find a crew list. I looked in Cast and Crew.".into()],
         ..Dossier::default()
     };
     let focus = Focus::default();
@@ -866,8 +872,12 @@ fn the_user_message_follows_the_layout_of_the_spec() {
     };
     assert!(at("<memory>") < at("<conversation>"));
     assert!(at("<conversation>") < at("<facts>"));
-    assert!(at("<facts>") < at("The project does not hold:"));
-    assert!(at("The project does not hold:") < at("Request: and who plays her"));
+    assert!(
+        at("</facts>")
+            < at("Not found:\n- I could not find a crew list. I looked in Cast and Crew.")
+    );
+    assert!(at("Not found:") < at("Request: and who plays her"));
+    assert!(!user.contains("The project does not hold"));
     assert!(at("Request: and who plays her") < at("Answer in one sentence"));
     assert!(user.contains("- I am the assistant director"));
     assert!(user.contains("Earlier: asked for a count about LOW TIDE RADIO"));

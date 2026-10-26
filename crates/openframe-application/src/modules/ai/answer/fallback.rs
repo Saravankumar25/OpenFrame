@@ -10,9 +10,41 @@
 //! Never a canned overview of the project. The trace counts how often each is used, so the rate can
 //! be driven down.
 
+use std::sync::LazyLock;
+
+use regex::Regex;
+
 use super::super::dossier::{Dossier, Fact};
 use super::super::queries::truncate_chars;
 use super::check::norm;
+
+/// Internal codes the person never sees, in the words a person uses.
+const CODE_WORDS: &[(&str, &str)] = &[
+    ("actor_conflict", "actor clash"),
+    ("cast_unavailable", "actor unavailable"),
+    ("location_conflict", "location clash"),
+    ("location_unavailable", "location unavailable"),
+    ("missing_location", "missing location"),
+    ("duration_overflow", "long day"),
+    ("travel_overflow", "long travel"),
+    ("call_sheet_stale", "out of date call sheet"),
+    ("script_removed", "removed scene"),
+];
+
+static CODE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"\b[a-z]+(?:_[a-z0-9]+)+\b").expect("valid pattern"));
+
+/// No snake_case code reaches the person: a known code is its plain words, any other is spaced.
+fn plain(s: &str) -> String {
+    CODE.replace_all(s, |c: &regex::Captures<'_>| {
+        let code = &c[0];
+        CODE_WORDS
+            .iter()
+            .find(|(k, _)| *k == code)
+            .map_or_else(|| code.replace('_', " "), |(_, w)| (*w).to_string())
+    })
+    .into_owned()
+}
 
 /// The facts a fallback may quote: real records, not notes about what is missing or assumed.
 fn real(d: &Dossier) -> impl Iterator<Item = &Fact> {
@@ -33,6 +65,10 @@ fn end_with_stop(mut s: String) -> String {
 /// field: "scene 2") and the fields that hold a required value follow (the first three when none
 /// does): "Lead cast, planned: 40,00,000."
 pub(super) fn fact_sentence(f: &Fact) -> String {
+    plain(&raw_sentence(f))
+}
+
+fn raw_sentence(f: &Fact) -> String {
     if let Some(s) = &f.sentence {
         return end_with_stop(s.clone());
     }
@@ -67,7 +103,8 @@ pub(super) fn fact_sentence(f: &Fact) -> String {
     end_with_stop(format!("{subject}, {}", list.join(", ")))
 }
 
-/// A statement about what the project does not hold, as a sentence: "No wardrobe entered ...".
+/// A statement about what could not be found, as a sentence ("I could not find a makeup artist for
+/// this project. I looked in Cast and Crew."), capitalised and ended in case a caller gave less.
 fn missing_sentence(s: &str) -> String {
     let mut c = s.trim().chars();
     let first = c.next().map(|f| f.to_uppercase().collect::<String>());
@@ -100,12 +137,13 @@ pub(super) fn abstention(d: &Dossier, value_asked: bool) -> (String, Vec<Fact>) 
     };
     if used.is_empty() {
         let text = if d.missing.is_empty() {
-            "I could not find that in the project.".to_string()
+            super::super::queries::could_not_find("that", super::super::queries::EVERYWHERE)
         } else {
-            format!(
-                "I could not find that in the project: {}.",
-                d.missing.join("; ")
-            )
+            d.missing
+                .iter()
+                .map(|m| missing_sentence(m))
+                .collect::<Vec<_>>()
+                .join(" ")
         };
         return (text, used);
     }

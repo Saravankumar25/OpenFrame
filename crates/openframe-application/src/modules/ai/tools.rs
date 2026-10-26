@@ -68,7 +68,13 @@ fn open_scene_args() -> Value {
 }
 fn workspace_args() -> Value {
     let names: Vec<&str> = WORKSPACES.iter().map(|(id, _)| *id).collect();
-    sc::obj(&[("workspace", sc::en(&names))], &["workspace"])
+    sc::obj(
+        &[
+            ("workspace", sc::en(&names)),
+            ("sub", sc::en(PRODUCTION_TABS)),
+        ],
+        &["workspace"],
+    )
 }
 fn scene_fact_args() -> Value {
     sc::obj(
@@ -272,6 +278,21 @@ pub const WORKSPACES: &[(&str, &str)] = &[
     ("settings", "Project settings"),
 ];
 
+/// The tabs of the Production workspace `open_workspace` may open (the ids the screen uses).
+pub const PRODUCTION_TABS: &[&str] = &[
+    "catalog",
+    "locations",
+    "cast-crew",
+    "moodboards",
+    "storyboards",
+    "shots",
+    "schedule",
+    "dood",
+    "sides",
+    "budget",
+    "reports",
+];
+
 pub fn spec(name: &str) -> Option<&'static ToolSpec> {
     TOOLS.iter().find(|t| t.name == name)
 }
@@ -373,6 +394,8 @@ struct OpenSceneArgs {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 struct WorkspaceArgs {
     workspace: String,
+    /// A tab of Production ("budget", "schedule").
+    sub: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -600,7 +623,7 @@ pub fn execute(ctx: &ToolCtx<'_>, name: &str, args: &Value) -> AppResult<ToolOut
         }
         "open_workspace" => {
             let a: WorkspaceArgs = parse_args(name, args)?;
-            open_workspace(&a.workspace)
+            open_workspace(&a.workspace, a.sub.as_deref())
         }
         "open_object" => {
             let a: TextArgs = parse_args(name, args)?;
@@ -2037,15 +2060,31 @@ fn open_scene(ctx: &ToolCtx<'_>, number: u32, draft: Option<&str>) -> AppResult<
     Ok(o.prov("Draft", d.label()))
 }
 
-fn open_workspace(ws: &str) -> AppResult<ToolOutput> {
+fn open_workspace(ws: &str, sub: Option<&str>) -> AppResult<ToolOutput> {
     let (id, label) = WORKSPACES
         .iter()
         .find(|(id, label)| *id == ws || label.eq_ignore_ascii_case(ws))
         .ok_or_else(|| AppError::ai("not_found", "I don't know that part of OpenFrame."))?;
-    let mut o = ToolOutput::of_kind(AiResultKind::Navigate, format!("Opening {label}."));
+    let mut nav = NavTarget::to(id);
+    let mut said = format!("Opening {label}.");
+    if let Some(sub) = sub {
+        if *id != "production" || !PRODUCTION_TABS.contains(&sub) {
+            return Err(AppError::ai(
+                "not_found",
+                "I don't know that part of OpenFrame.",
+            ));
+        }
+        nav = nav.with_sub(sub);
+        let tab = match sub {
+            "dood" => "day out of days".to_string(),
+            other => other.replace('-', " and "),
+        };
+        said = format!("Opening the {tab} tab of {label}.");
+    }
+    let mut o = ToolOutput::of_kind(AiResultKind::Navigate, said);
     o.details
         .push("Navigation commands run directly; nothing is changed.".into());
-    o.nav = Some(NavTarget::to(id));
+    o.nav = Some(nav);
     Ok(o)
 }
 

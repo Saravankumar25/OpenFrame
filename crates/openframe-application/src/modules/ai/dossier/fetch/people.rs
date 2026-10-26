@@ -192,7 +192,9 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
     let crew = crew_rows(ctx)?;
 
     if asks_contact && !ctx.guard.contacts {
-        out.push(Fact::missing("contact details are not shown for your role"));
+        out.push(Fact::missing(
+            "Contact details are not shown for your role.",
+        ));
     }
 
     // ---- cast
@@ -210,10 +212,10 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
                 .filter(|c| c.character_id.as_deref() == Some(h.id.as_str()))
                 .collect();
             if rows.is_empty() && (asks_cast || asks_avail || asks_contact || implicit_cast) {
-                out.push(Fact::missing(format!(
-                    "no cast member entered for {}",
-                    h.name
-                )));
+                out.push(Fact::absent(
+                    format!("a cast member for {}", h.name),
+                    "Cast and Crew",
+                ));
             }
             for c in rows {
                 if !shown.iter().any(|s| s.id == c.id) {
@@ -272,7 +274,7 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
         )
     {
         if cast.is_empty() {
-            out.push(Fact::missing("no cast entered in Cast and Crew"));
+            out.push(Fact::absent("any cast", "Cast and Crew"));
         } else if t == AnswerType::Count {
             out.push(
                 Fact::new("Count", "")
@@ -330,7 +332,7 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
         && r.persons.is_empty()
     {
         if crew.is_empty() {
-            out.push(Fact::missing("no crew entered in Cast and Crew"));
+            out.push(Fact::absent("any crew", "Cast and Crew"));
         } else if m.stem("crew") && !job_asked {
             for c in crew.iter().take(40) {
                 out.push(
@@ -342,9 +344,14 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
                 );
             }
         } else if r.characters.is_empty() && !asks_cast {
-            out.push(Fact::missing(
-                "no crew member with that job is entered in Cast and Crew",
-            ));
+            let job = JOBS
+                .iter()
+                .filter(|j| m.has(j))
+                .max_by_key(|j| j.len())
+                .map_or("a crew member with that job".to_string(), |j| {
+                    format!("a {j} for this project")
+                });
+            out.push(Fact::absent(job, "Cast and Crew"));
         }
     }
     for c in crew_shown {

@@ -1,46 +1,40 @@
 # Handoff: where we are right now
 
 > Rewritten (not appended) at the end of every session. One page. Last rewritten: 2026-10-26 (conversational assistant:
-> diagnosis, ADR-0037, spec, first spike; documents only, no code changed).
+> slices S0 to S8 built and measured on branch `ai/conversational-s0`, local, not merged, not pushed).
 
 ## State
 
-1. **`main` holds the whole 2026-10-24 upgrade** (merge 94b1942b, local, not pushed) and `release-out/OpenFrame-4.exe`
-   (installed on this PC, 40 end-to-end specs passed). Details in the 2026-10-24 entry of `progress-log.md`.
-2. **The AI was found to be unusable in real use** (owner export of 40 exchanges on a project with two screenplays).
-   Causes and numbers: `progress-log.md` entry of 2026-10-26 and section 2 of the spec. Short version: several
-   screenplays means no current draft, so the understanding step is skipped and every question falls to the weakest
-   path; no conversation state; the benches never contained a multi-screenplay project; the tool bench's 98.8% mostly
-   measures regex routes.
-3. **Decided by the owner (2026-10-26, chat):** the assistant becomes a conversational chat assistant with focus, memory
-   and per-turn fetched context; deterministic answers are cut to the few that need exactness or safety; model stays
-   Gemma 3 1B; Laya is not used; build starts in a new session. Records: [ADR-0037](../adr/ADR-0037-conversational-assistant-focus-and-dossiers.md),
-   [ai-conversational-harness.md](../specs/ai-conversational-harness.md), `owner-decisions.md`.
-4. **Spike S1 done** (`docs/release/evidence/ai-conversational-spike-2026-10-26/`): conditional go. 7 of 15 answers good,
-   2 passed the script but were wrong, 6 failed; answer type read 20 of 28. Short facts from an isolated record work;
-   paragraphs embellish; brainstorming echoes the request. The findings are already in the spec.
-5. Checks run today: `node scripts/check-links.mjs` OK, `npm run check:writing` OK. Not run: any code test, any eval.
+1. **Branch `ai/conversational-s0`** holds the whole conversational assistant of
+   [ADR-0037](../adr/ADR-0037-conversational-assistant-focus-and-dossiers.md): eval fixtures and 274 gold cases (S0), coverage
+   (S2), project index, resolver and focus (S3), answer type read (S4), facts with guards (S5), memory and the Settings list
+   (S6), one write and check path with the five lanes removed (S7), prompt caching and warm-up (S8). How a message runs now:
+   [ai-answer-paths.md](../engineering/ai-answer-paths.md). Design and every measurement: [ai-conversational-harness.md](../specs/ai-conversational-harness.md)
+   sections 5, 12, 13 and 14. `main` does not have it yet.
+2. **Measured on the Low Tide fixtures** (release, processor, 274 cases;
+   `docs/release/evidence/ai-conversational-after-s8-2026-10-26/` against `...-baseline-2026-10-26/`): answer facts 17.6% to
+   64.0%, required facts 25.9% to 68.3%, length class 65.7% to 93.2%, no re-ask 83.1% to 97.2%, repetition 6.0% to 0.4%,
+   median 16.7 s to 4.4 s, p95 30.8 s to 22.9 s. Answer type on 40 unseen messages: 87.5% exact, 92.5% by group.
+3. **A fix round** after that run (screen navigation, "open" read as a verb, searches that asked which screenplay, the
+   missing-data sentence, raw field names in fallbacks) and its re-run: see the first entry of the progress log for the
+   result.
+4. Owner decisions today: long-term memory on, visible and deletable; DeepSeek Harness not installed, ideas borrowed (spec
+   section 14). Recorded in `owner-decisions.md`.
 
-## Next items, in order (each its own work item; measure before the next)
+## Next items, in order
 
-1. **S0.** Fixture `low-tide-two-screenplays` (and `thin-project`, `big-project`), the new `Expect` flags (spec 7.4), the
-   200 conversations (spec 7.3, including the 40 exchanges of the export as behaviour cases), then a **baseline run of the
-   current build**. Eval command: `node scripts/cargo-queued.mjs run --release -p openframe-ai-eval --bin ai-eval -- --gold
-   crates/openframe-ai-eval/gold --out <folder>`. It needs the engine in `.build-cache/ai-bundle` (present) and the pinned
-   models in `.ai-assets` (not checked; the installed models are in `%LOCALAPPDATA%\OpenFrame\models\m-6fec34abd495\`).
-   The conversation bench took 44 minutes for 60 cases on 2026-10-25.
-2. **S1b.** Second spike on the revised design (spec 5.3 to 5.6): facts-first dossiers, required facts, answer type plus
-   domain, chat and brainstorm policies; at least 60 cases, three runs each. The spike script is in the evidence folder;
-   start the engine with `.build-cache/ai-bundle/runtimes/llama-cpp-b11259-win-x64-cpu/llama-server.exe -m <gguf> -c 8192
-   --port 8099 --host 127.0.0.1`. Do not start S3 before S1b meets the bars.
-3. **S2.** Close the coverage inventory (spec 6): read tools for themes, app settings, budget lines, product help; review
-   hidden queries; confirm what "C3" means and where Parking Lot and Quick Capture live.
+1. **Close the bars that are still open** (spec 7.5): required facts on explain and relation turns, correct abstention,
+   the exact answer type (87.5% against 90%), tool and arguments on the navigation and change cases. Start from the
+   weakest families in the latest report (character web, story hop, money).
+2. **Human reading of 50 answers** (spec 7.6) on the Low Tide run, marked good or bad, before the numbers count as a release
+   candidate. The gold sets of 2026-10-24 and today's still need the owner's approval.
+3. **Merge `ai/conversational-s0` into `main` locally** once the owner agrees, then the 40 end-to-end specs with the real
+   model and a new internal `.exe` only on the owner's word.
 
 ## Open blockers
 
-- Owner to approve: the bars in spec 7.5; token streaming (ADR-0037 open question 5); the defaults for long-term memory
-  (visible and deletable in Settings) and one extra fetch round.
-- The gold sets of 2026-10-24 still need the owner's approval before their numbers count as official.
+- Owner: approve the bars of spec 7.5 and the gold sets; say whether to merge the branch.
+- Not run: the 40 end-to-end UI specs on the new path; the Mac port of these slices (Mac track 1b).
 
 ## Do not
 
@@ -48,5 +42,5 @@
   installer.
 - Do not add a deterministic answer without an entry in spec section 4.1.
 - Do not claim a result that was not measured. State what was run, on what data, how many times.
-- Do not start S3 (the build of the index and focus) before S0 and S1b are saved.
+- Do not tune the answer type rules on `turn-sets/fresh-40.jsonl`; it is the held-out set. Write a new one if it is needed.
 - Tool gates in this workspace ask for a short statement of facts before the first write or edit of a file; give it, then retry.

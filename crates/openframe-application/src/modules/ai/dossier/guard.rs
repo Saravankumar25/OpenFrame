@@ -139,7 +139,7 @@ pub fn apply(g: &Guard, facts: &mut Vec<Fact>, missing: &mut Vec<String>) -> usi
         }
     }
     if hid_contact {
-        let s = "contact details are not shown for your role".to_string();
+        let s = "Contact details are not shown for your role.".to_string();
         if !missing.contains(&s) {
             missing.push(s);
         }

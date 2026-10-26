@@ -45,7 +45,7 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
             |r| r.get(0),
         )?;
         if n == 0 {
-            out.push(Fact::missing("no project notes in this project"));
+            out.push(Fact::absent("any project notes", "Notes and Tasks"));
         } else {
             let mut f = Fact::new("Count", "")
                 .f("what", "project notes")
@@ -78,7 +78,7 @@ fn files(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
         .query_map([], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?, r.get(3)?)))?
         .collect::<Result<_, _>>()?;
     if rows.is_empty() {
-        return Ok(vec![Fact::missing("no files in Project Files")]);
+        return Ok(vec![Fact::absent("any files", "Project Files")]);
     }
     let mut out = Vec::new();
     let folder_named = rows

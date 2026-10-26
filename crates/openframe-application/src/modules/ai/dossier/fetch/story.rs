@@ -207,9 +207,10 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
     if let Some(who) = unknown_name(&ctx.message, r)
         && named.is_empty()
     {
-        out.push(Fact::missing(format!(
-            "no character called {who} in the screenplays, the Story characters or Cast and Crew"
-        )));
+        out.push(Fact::absent(
+            format!("a character called {who}"),
+            "the screenplays, the Story characters and Cast and Crew",
+        ));
     }
 
     // ---- acts and cards
@@ -406,9 +407,7 @@ fn acts_and_cards(
         return Ok(out);
     }
     if acts.is_empty() {
-        out.push(Fact::missing(
-            "no acts on the Story Board: no act has been entered in this project",
-        ));
+        out.push(Fact::absent("any acts", "the Story Board"));
         return Ok(out);
     }
     let want: Vec<&str> = r.acts.iter().map(|h| h.id.as_str()).collect();

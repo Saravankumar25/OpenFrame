@@ -265,6 +265,16 @@ pub(super) fn strong(m: &str, men: Mentions) -> Option<AnswerType> {
     {
         return Some(Compare);
     }
+    // "open" as a state, not a request: "what tasks are open", "still open", "open tasks".
+    let open_state = re!(
+        r"\b(?:is|are|was|were|be|still|remain|remains|stay|stays)\s+(?:still\s+)?open(?:ed)?\b"
+    )
+    .is_match(m)
+        || re!(concat!(
+            pre!(),
+            r"open\s+(?:tasks|items|issues|warnings|questions|problems|points|threads|comments|todos?)\b"
+        ))
+        .is_match(m);
     let screen = re!(
         r"\b(?:screen|page|tab|board|vault|settings|workspace|view|section|panel|dashboard|calendar)\b"
     )
@@ -281,19 +291,23 @@ pub(super) fn strong(m: &str, men: Mentions) -> Option<AnswerType> {
             r"\b(?:scene \d+|budget|schedule|settings|call ?sheets?|cast|crew|production|story ?board|beat ?board|idea vault|vault|characters?|locations?|files?|notes?|drafts?|screen|page|tab|board|map|list|tasks?|dashboard|calendar|breakdown|screenplay|script|story|scenes?|acts?|day \d+|exports?)\b"
         )
         .is_match(m);
-    if (nav_verb && target) || (show_screen && screen) || show_item {
+    if (nav_verb && !open_state && target) || (show_screen && screen) || show_item {
         return Some(Navigate);
     }
-    if re!(
-        r"\bopen(?:ed|ing)?\b[^.?!]*\b(?:scene\s*\d+|\S+\.(?:png|jpe?g|gif|pdf|docx?|txt|mp[34]|fdx|fountain))"
-    )
-    .is_match(m)
-        // "scene 42 of the teaser, open it": open as the verb of a clause beside a name.
-        || (men.any()
-            && re!(r"(?:^|[,;.:]\s*|\b(?:please|pls|then|and|now|can you|could you|just|also)\s+)open\b")
-                .is_match(m))
+    if !open_state
+        && (re!(
+            r"\bopen(?:ed|ing)?\b[^.?!]*\b(?:scene\s*\d+|\S+\.(?:png|jpe?g|gif|pdf|docx?|txt|mp[34]|fdx|fountain))"
+        )
+        .is_match(m)
+            // "scene 42 of the teaser, open it": open as the verb of a clause beside a name.
+            || (men.any()
+                && re!(r"(?:^|[,;.:]\s*|\b(?:please|pls|then|and|now|can you|could you|just|also)\s+)open\b")
+                    .is_match(m)))
     {
         return Some(Navigate);
+    }
+    if open_state && re!(r"\b(?:what|which|who|show|list|any|are there|give)\b").is_match(m) {
+        return Some(List);
     }
     if re!(
         r"\bhow (?:do|can|could|should|would) (?:i|we) (?:export|import|print|save|share|invite|change|set|add|create|delete|undo|redo|find|open|use|turn|switch|install|update|back ?up|restore|rename|move|duplicate|sign|log|reset|download|connect|start|stop|attach|upload|enable|disable|get)\b|\bhow to\b|\bwhere (?:do|can|could|would) (?:i|we) (?:find|see|get|change|set|go|look)\b|\bwhere (?:is|are) the [\w ]{0,30}(?:button|menu|setting|settings|option|backups?)\b|\bwhere (?:are|is) (?:my|the) [\w ]{0,20}(?:kept|stored|saved)\b|\bcan (?:i|we) (?:use|import|export|work|share|print|change|set|invite|undo|turn|switch|download|install)\b|\bis there a way\b|\bwhat does the [\w ]{0,25} (?:button|screen|board|tab) do\b|\bwhat (?:is|are|does) the (?:beat board|story board|idea vault|parking lot|quick capture|production source|project roles)\b|\b(?:the ai|the assistant|openframe|this app|the app)\b[^.?!]*\b(?:internet|offline|privacy|private|upload\w*|sent|cloud|online)\b|\b(?:is|are) my (?:project|data|files|script)\b[^.?!]*\b(?:sent|uploaded|shared|private|safe)\b|\bdoes (?:the ai|the assistant|openframe|the app) need\b"
@@ -340,7 +354,7 @@ pub(super) fn strong(m: &str, men: Mentions) -> Option<AnswerType> {
         return Some(Change);
     }
     if re!(
-        r"\bwho (?:plays|is playing|played|will play|is cast as|is the|is our|are the|was the)\b|\bwho's (?:playing|the)\b|\b(?:phone|contact|email|e-mail|mobile|whatsapp)\b|\bwhen (?:is|are|do|does|did|will|can)\b|\bwhat time\b|\bwhich (?:shoot )?day\b|\bhow much\b|\btotal (?:planned|actual|spent|spend|budget|cost|amount|so far)\b|\bwhat (?:does|do|will|would) (?:it|that|this|they|he|she) cost\b|\bwhat(?:'s| is) the (?:status|location|phone|email|address|age|name|title|date|cost|price|fee|rate|time|duration|runtime|budget|total|spend|call time)\b|\bwhere (?:is|are|do we|will we) (?:the |we )?(?:shoot|shooting)\b"
+        r"\bwho (?:plays|is playing|played|will play|is cast as|is the|is our|are the|was the)\b|\bwho's (?:playing|the)\b|\b(?:phone|contact|email|e-mail|mobile|whatsapp)\b|\b(?:have|has|is there|are there) (?:a|any) (?:clash|clashes|conflicts?)\b|\bwhen (?:is|are|do|does|did|will|can)\b|\bwhat time\b|\bwhich (?:shoot )?day\b|\bhow much\b|\btotal (?:planned|actual|spent|spend|budget|cost|amount|so far)\b|\bwhat (?:does|do|will|would) (?:it|that|this|they|he|she) cost\b|\bwhat(?:'s| is) the (?:status|location|phone|email|address|age|name|title|date|cost|price|fee|rate|time|duration|runtime|budget|total|spend|call time)\b|\bwhere (?:is|are|do we|will we) (?:the |we )?(?:shoot|shooting)\b"
     )
     .is_match(m)
     {

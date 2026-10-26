@@ -56,7 +56,7 @@ fn shot_total(ctx: &FetchCtx<'_>, t: AnswerType) -> AppResult<Vec<Fact>> {
         |r| r.get(0),
     )?;
     if n == 0 {
-        return Ok(vec![Fact::missing("no shots entered in the shot list")]);
+        return Ok(vec![Fact::absent("any shots", "the shot lists")]);
     }
     let mut f = Fact::new("Count", "")
         .f("what", "shots in the project")
@@ -86,10 +86,10 @@ fn shots(ctx: &FetchCtx<'_>, t: AnswerType, s: &SceneRef) -> AppResult<Vec<Fact>
         })?
         .collect::<Result<_, _>>()?;
     if rows.is_empty() {
-        return Ok(vec![Fact::missing(format!(
-            "no shots listed for scene {}",
-            s.number
-        ))]);
+        return Ok(vec![Fact::absent(
+            format!("any shots for scene {}", s.number),
+            "the shot lists",
+        )]);
     }
     let mut out = Vec::new();
     let mut c = Fact::new("Count", &s.id)
@@ -130,7 +130,7 @@ fn storyboards(ctx: &FetchCtx<'_>, scenes: &[SceneRef]) -> AppResult<Vec<Fact>> 
     let mut out = Vec::new();
     if scenes.is_empty() {
         if rows.is_empty() {
-            return Ok(vec![Fact::missing("no storyboards in this project")]);
+            return Ok(vec![Fact::absent("any storyboards", "Storyboards")]);
         }
         for (id, name, _, _, n) in rows.iter().take(20) {
             out.push(
@@ -151,10 +151,10 @@ fn storyboards(ctx: &FetchCtx<'_>, scenes: &[SceneRef]) -> AppResult<Vec<Fact>> 
             })
             .collect();
         if mine.is_empty() {
-            out.push(Fact::missing(format!(
-                "no storyboard for scene {}",
-                s.number
-            )));
+            out.push(Fact::absent(
+                format!("a storyboard for scene {}", s.number),
+                "Storyboards",
+            ));
         }
         for (id, name, _, _, n) in mine {
             let mut st = ctx.conn.prepare(
@@ -193,7 +193,7 @@ fn moodboards(ctx: &FetchCtx<'_>) -> AppResult<Vec<Fact>> {
         .query_map([], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)))?
         .collect::<Result<_, _>>()?;
     if boards.is_empty() {
-        return Ok(vec![Fact::missing("no mood boards in this project")]);
+        return Ok(vec![Fact::absent("any moodboards", "Moodboards")]);
     }
     let named: Vec<_> = boards
         .iter()
@@ -242,7 +242,7 @@ fn vault(ctx: &FetchCtx<'_>, read: &TurnRead, named: &[String]) -> AppResult<Vec
         })?
         .collect::<Result<_, _>>()?;
     if rows.is_empty() {
-        return Ok(vec![Fact::missing("the Idea Vault is empty")]);
+        return Ok(vec![Fact::absent("any items", "the Idea Vault")]);
     }
     let narrative = matches!(read.group, Group::Narrative | Group::Brainstorm);
     let list = read.answer_type == AnswerType::List;

@@ -5,12 +5,13 @@
 //! phrase first, exact before typo-tolerant), then pronouns from the focus. When a message needs a
 //! screenplay and does not name one, the screenplay rules run in this order: (a) named in the
 //! message, (b) the screenplay of the conversation focus, (c) the only screenplay with that many
-//! scenes, (d) the only screenplay with a current draft, (e) one specific question.
+//! scenes, (d) the only screenplay with a current draft, (e) one specific question, asked only when
+//! the answer needs exactly one screenplay: a search, a list or a count across scenes reads them all.
 
 use std::collections::BTreeMap;
 
 use super::{EntityIndex, Focus, Kind, Rank, ScreenplayInfo};
-use crate::modules::ai::queries::{join_and, join_or};
+use crate::modules::ai::queries::{could_not_find, join_and, join_or};
 use crate::modules::ai::typo::{COMMON, distance};
 
 /// How a mention was matched.
@@ -490,8 +491,44 @@ fn hit(sp: &ScreenplayInfo, how: How) -> Hit {
     }
 }
 
-/// The screenplay rules (b) to (e), for a message that needs a screenplay and names none.
-fn choose_screenplay(ix: &EntityIndex, focus: &Focus, most: u32, out: &mut Resolved) {
+/// A search, a list or a count across scenes: it reads every screenplay and says which screenplay
+/// each hit is in, so it never needs the one question of rule (e).
+fn across_screenplays(w: &[String]) -> bool {
+    let has = |any: &[&str]| w.iter().any(|t| any.contains(&t.as_str()));
+    !has(&[
+        "open",
+        "explain",
+        "describe",
+        "summarise",
+        "summarize",
+        "recap",
+        "read",
+    ]) && (has(&[
+        "mention",
+        "mentions",
+        "mentioning",
+        "mentioned",
+        "contain",
+        "contains",
+        "containing",
+        "search",
+        "find",
+        "list",
+        "count",
+    ]) || (has(&["which", "many", "all", "every", "each", "total"])
+        && has(&[
+            "scenes",
+            "drafts",
+            "screenplays",
+            "scripts",
+            "dialogue",
+            "headings",
+        ])))
+}
+
+/// The screenplay rules (b) to (e), for a message that needs a screenplay and names none. `across`
+/// is a message that reads every screenplay: rule (e) does not ask.
+fn choose_screenplay(ix: &EntityIndex, focus: &Focus, most: u32, across: bool, out: &mut Resolved) {
     let all = &ix.screenplays;
     match all.as_slice() {
         [] => return,
@@ -520,11 +557,17 @@ fn choose_screenplay(ix: &EntityIndex, focus: &Focus, most: u32, out: &mut Resol
             [] => {
                 let have = join_and(
                     &all.iter()
-                        .map(|s| format!("\u{201C}{}\u{201D} has {}", s.title, s.scene_count))
+                        .map(|s| {
+                            format!(
+                                "\u{201C}{}\u{201D} ({})",
+                                s.title,
+                                scenes_word(s.scene_count)
+                            )
+                        })
                         .collect::<Vec<_>>(),
                 );
                 out.not_found
-                    .push(format!("No screenplay has a scene {most}: {have}."));
+                    .push(could_not_find(&format!("scene {most}"), &have));
                 return;
             }
             _ => {}
@@ -542,12 +585,26 @@ fn choose_screenplay(ix: &EntityIndex, focus: &Focus, most: u32, out: &mut Resol
         out.screenplays.push(hit(one, How::CurrentDraft));
         return;
     }
-    // (e) Ask.
+    // (e) Ask, unless the message reads every screenplay.
+    if across {
+        return;
+    }
     let options = quoted(candidates.iter().map(|s| s.title.clone()));
     out.ambiguous = Some(Question {
         text: format!("Which screenplay do you mean: {}?", join_or(&options)),
         options,
     });
+}
+
+/// "I could not find scene 46. I looked in “T”, which has 45 scenes."
+pub fn scene_not_found(n: u32, title: &str, scene_count: u32) -> String {
+    could_not_find(
+        &format!("scene {n}"),
+        &format!(
+            "\u{201C}{title}\u{201D}, which has {}",
+            scenes_word(scene_count)
+        ),
+    )
 }
 
 fn scenes_word(n: u32) -> String {
@@ -606,7 +663,8 @@ pub fn resolve(ix: &EntityIndex, focus: &Focus, message: &str) -> Resolved {
                 .filter_map(|r| r.number)
                 .max()
                 .unwrap_or(0);
-            choose_screenplay(ix, focus, most, &mut out);
+            let across = scene_refs.is_empty() && !scene_pronoun && across_screenplays(&w);
+            choose_screenplay(ix, focus, most, across, &mut out);
         }
     }
 
@@ -619,13 +677,7 @@ pub fn resolve(ix: &EntityIndex, focus: &Focus, message: &str) -> Resolved {
             Some(n) if (1..=sp.scene_count).contains(&n) => {
                 (ix.scene(&sp.id, n).map(|e| (n, e)), String::new())
             }
-            Some(n) => (
-                None,
-                format!(
-                    "{title} has {}, so there is no scene {n}.",
-                    scenes_word(sp.scene_count)
-                ),
-            ),
+            Some(n) => (None, scene_not_found(n, &sp.title, sp.scene_count)),
             None => {
                 let by_number = ix.entities.iter().find(|e| {
                     e.kind == Kind::Scene
@@ -634,7 +686,7 @@ pub fn resolve(ix: &EntityIndex, focus: &Focus, message: &str) -> Resolved {
                 });
                 (
                     by_number.and_then(|e| e.ordinal.map(|n| (n, e))),
-                    format!("{title} has no scene numbered {}.", r.raw),
+                    could_not_find(&format!("scene {}", r.raw), &title),
                 )
             }
         };

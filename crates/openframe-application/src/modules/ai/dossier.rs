@@ -41,6 +41,7 @@ use rusqlite::Connection;
 use serde::{Deserialize, Serialize};
 
 use super::index::{EntityIndex, Focus, Resolved};
+use super::queries;
 use super::turn::{self, Group, LengthClass, TurnRead};
 use crate::core::AppCore;
 
@@ -124,6 +125,11 @@ impl Fact {
     pub fn private_to(mut self, user_id: &str) -> Self {
         self.private_to = Some(user_id.to_string());
         self
+    }
+
+    /// The project does not hold `what` (a noun phrase): "I could not find X. I looked in A and B."
+    pub fn absent(what: impl AsRef<str>, looked_in: impl AsRef<str>) -> Self {
+        Self::missing(queries::could_not_find(what.as_ref(), looked_in.as_ref()))
     }
 
     /// A statement about something the project does not hold.
@@ -324,9 +330,12 @@ fn finish(
         && missing.is_empty()
         && registry::wants_facts(input.read.group)
     {
-        missing.push(format!(
-            "nothing in the project matches \u{201C}{}\u{201D}",
-            words::clip(ctx.message.trim(), 80)
+        missing.push(queries::could_not_find(
+            &format!(
+                "anything that matches \u{201C}{}\u{201D}",
+                words::clip(ctx.message.trim(), 80)
+            ),
+            queries::EVERYWHERE,
         ));
     }
     trim(&mut facts, cap_tokens(input.read.length_class));

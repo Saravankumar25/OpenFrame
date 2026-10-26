@@ -22,7 +22,7 @@ pub fn run(ctx: &FetchCtx<'_>, read: &TurnRead, _r: &Resolved) -> Vec<Fact> {
     };
     let found = knowledge::relevant(&ctx.message, n);
     if found.is_empty() && read.group == Group::Help {
-        return vec![Fact::missing("the product guide has no section on that")];
+        return vec![Fact::absent("a section on that", "the product guide")];
     }
     found
         .into_iter()

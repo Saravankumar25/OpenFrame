@@ -26,7 +26,7 @@ use openframe_domain::AppResult;
 use parking_lot::Mutex;
 
 pub use focus::{Focus, with_focus as focus_in};
-pub use resolve::{Hit, How, Question, Resolved, SceneHit, normalize, resolve};
+pub use resolve::{Hit, How, Question, Resolved, SceneHit, normalize, resolve, scene_not_found};
 
 use crate::core::ProjectSession;
 

@@ -170,7 +170,10 @@ fn contact_data_is_taken_out_for_a_role_that_may_not_see_it() {
         vec!["Nizar Hameed"],
         "a required value from contact data goes with it"
     );
-    assert_eq!(missing, vec!["contact details are not shown for your role"]);
+    assert_eq!(
+        missing,
+        vec!["Contact details are not shown for your role."]
+    );
 }
 
 #[test]

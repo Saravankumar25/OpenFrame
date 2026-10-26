@@ -126,10 +126,10 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
                 }
             }
             if rows.is_empty() && t != AnswerType::Explain {
-                out.push(Fact::missing(format!(
-                    "nothing entered in the breakdown for scene {}",
-                    s.number
-                )));
+                out.push(Fact::absent(
+                    format!("any breakdown elements for scene {}", s.number),
+                    "the Breakdown",
+                ));
             }
         } else {
             let mut any = false;
@@ -140,15 +140,18 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
                 }
             }
             if !any {
-                out.push(Fact::missing(format!(
-                    "no {} entered in the breakdown for scene {}",
-                    asked
-                        .iter()
-                        .map(|c| c.to_lowercase())
-                        .collect::<Vec<_>>()
-                        .join(" or "),
-                    s.number
-                )));
+                out.push(Fact::absent(
+                    format!(
+                        "any {} for scene {}",
+                        asked
+                            .iter()
+                            .map(|c| c.to_lowercase())
+                            .collect::<Vec<_>>()
+                            .join(" or "),
+                        s.number
+                    ),
+                    "the Breakdown",
+                ));
             }
         }
     }
@@ -175,10 +178,10 @@ fn project_counts(ctx: &FetchCtx<'_>, t: AnswerType, asked: &[&str]) -> AppResul
             |r| Ok((r.get(0)?, r.get(1)?)),
         )?;
         if elements == 0 {
-            out.push(Fact::missing(format!(
-                "no {} entered in the breakdown of this project",
-                cat.to_lowercase()
-            )));
+            out.push(Fact::absent(
+                format!("any {} in this project", cat.to_lowercase()),
+                "the Breakdown",
+            ));
             continue;
         }
         let mut f = Fact::new("Count", "")

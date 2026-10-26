@@ -110,13 +110,15 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
         }
     }
     if asks_contact && !ctx.guard.contacts && (!r.locations.is_empty() || m.stem("location")) {
-        out.push(Fact::missing("contact details are not shown for your role"));
+        out.push(Fact::missing(
+            "Contact details are not shown for your role.",
+        ));
     }
 
     // ---- the locations as a whole
     if r.locations.is_empty() && scenes.is_empty() && m.stem("location") {
         if all.is_empty() {
-            out.push(Fact::missing("no locations entered in Production"));
+            out.push(Fact::absent("any locations", "Production"));
         } else {
             out.push(
                 Fact::new("Count", "")
@@ -310,7 +312,7 @@ fn tasks(
         .collect::<Result<_, _>>()?;
     let mut out = Vec::new();
     if rows.is_empty() {
-        out.push(Fact::missing("no tasks in this project"));
+        out.push(Fact::absent("any tasks", "Notes and Tasks"));
         return Ok(out);
     }
     let rows: Vec<_> = match only {

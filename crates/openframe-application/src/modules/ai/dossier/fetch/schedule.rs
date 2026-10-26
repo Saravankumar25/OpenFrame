@@ -98,8 +98,9 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
     let scenes = ctx.focus_scenes(r);
     if days.is_empty() {
         if worth_a_gap || !scenes.is_empty() {
-            out.push(Fact::missing(
-                "no shooting schedule or shoot days entered, so no scene has a shooting day",
+            out.push(Fact::absent(
+                "a shooting schedule or any shoot days",
+                "the Schedule",
             ));
         }
         if m.any(&["call sheet", "call sheets", "sides"]) {
@@ -192,10 +193,10 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
                     }),
             );
         } else if asks_when {
-            out.push(Fact::missing(format!(
-                "scene {} is not on the shooting schedule",
-                s.number
-            )));
+            out.push(Fact::absent(
+                format!("a shooting day for scene {}", s.number),
+                "the Schedule",
+            ));
         }
     }
     // A character's scenes on the days: "which day do we shoot Young Anjali's scenes".
@@ -272,10 +273,14 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
 
     for n in &target {
         let Some(d) = days.iter().find(|d| d.number == Some(*n as i64)) else {
-            out.push(Fact::missing(format!(
-                "no shooting day {n}: the schedule has {} shoot days",
-                shoot_days.len()
-            )));
+            out.push(Fact::absent(
+                format!("shooting day {n}"),
+                format!(
+                    "the Schedule, which has {} shoot {}",
+                    shoot_days.len(),
+                    if shoot_days.len() == 1 { "day" } else { "days" }
+                ),
+            ));
             continue;
         };
         let ids = strips.get(&d.id).cloned().unwrap_or_default();
@@ -417,16 +422,17 @@ fn warnings(ctx: &FetchCtx<'_>, read: &TurnRead, days: &BTreeSet<u32>) -> AppRes
             }),
     ];
     let actors = ctx.m.any(&["actor", "actors", "cast", "who"]);
+    // One fact per clash, a sentence with the person or place and the day, never the warning code.
     for w in open.iter().take(24) {
+        let actor = w.kind.contains("actor") || w.kind.starts_with("cast");
         let mut f = Fact::new("Schedule warning", &w.key)
-            .f("kind", &w.kind)
-            .f("day", w.day_label.clone().unwrap_or_default())
-            .f("message", &w.message)
+            .said(&w.message)
             .f("detail", w.detail.clone().unwrap_or_default())
             .f("scenes", numbers(w.scene_numbers.iter().map(|n| *n as u32)))
-            .prio(P_MID);
+            .prio(if actors && actor { P_HIGH } else { P_MID });
+        // The actor who cannot work the day the schedule needs them is the one who clashes.
         if actors
-            && w.kind.contains("actor")
+            && w.kind == "cast_unavailable"
             && let Some((name, _)) = w.message.split_once(" (")
         {
             f = f.require(name);
@@ -502,17 +508,20 @@ pub fn call_sheets(
             )
             .unwrap_or(0);
         if n == 0 && asked {
-            out.push(Fact::missing(format!(
-                "no sides entered{}",
-                want.first()
-                    .map(|d| format!(" for Day {d}"))
-                    .unwrap_or_default()
-            )));
+            out.push(Fact::absent(
+                format!(
+                    "any sides{}",
+                    want.first()
+                        .map(|d| format!(" for Day {d}"))
+                        .unwrap_or_default()
+                ),
+                "Call Sheets",
+            ));
         }
     }
     if rows.is_empty() {
         if asked {
-            out.push(Fact::missing("no call sheets in this project"));
+            out.push(Fact::absent("any call sheets", "Call Sheets"));
         }
         return Ok(out);
     }
@@ -548,13 +557,16 @@ pub fn call_sheets(
         }
     }
     if shown == 0 && !want.is_empty() && asked {
-        out.push(Fact::missing(format!(
-            "no call sheet for Day {}",
-            want.iter()
-                .map(u32::to_string)
-                .collect::<Vec<_>>()
-                .join(" or Day ")
-        )));
+        out.push(Fact::absent(
+            format!(
+                "a call sheet for Day {}",
+                want.iter()
+                    .map(u32::to_string)
+                    .collect::<Vec<_>>()
+                    .join(" or Day ")
+            ),
+            "Call Sheets",
+        ));
     }
     Ok(out)
 }

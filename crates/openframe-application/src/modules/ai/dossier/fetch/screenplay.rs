@@ -139,9 +139,10 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
         let n: u32 = cap[1].parse().unwrap_or(0);
         for sp in &sps {
             if (n == 0 || n > sp.scene_count) && !scenes.iter().any(|s| s.number == n) {
-                out.push(Fact::missing(format!(
-                    "no scene {n}: the screenplay {} has {} scenes",
-                    sp.title, sp.scene_count
+                out.push(Fact::missing(crate::modules::ai::index::scene_not_found(
+                    n,
+                    &sp.title,
+                    sp.scene_count,
                 )));
             }
         }
@@ -192,7 +193,86 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
             }
         }
     }
+    // Scenes that mention a word, in every screenplay the message does not narrow: "which scenes
+    // mention the cassette". Each screenplay is one fact, so the hits say where they are.
+    if scenes.is_empty()
+        && r.characters.is_empty()
+        && let Some(term) = mention_term(&ctx.message)
+    {
+        let list: Vec<&ScreenplayInfo> = if r.screenplays.is_empty() {
+            ctx.index.screenplays.iter().collect()
+        } else {
+            sps.clone()
+        };
+        let mut any = false;
+        for sp in &list {
+            let Some(d) = ctx.draft(&sp.id) else { continue };
+            let hits = scenes_mentioning(ctx, &d.id, &term)?;
+            if hits.is_empty() {
+                continue;
+            }
+            any = true;
+            let mut f = Fact::new("Scenes", &sp.id)
+                .f("mention", &term)
+                .f("screenplay", &sp.title)
+                .f("scenes", numbers(hits.iter().copied()))
+                .f("count", hits.len().to_string())
+                .prio(P_HIGH);
+            for n in &hits {
+                f = f.require(n.to_string());
+            }
+            out.push(f);
+        }
+        if !any && !list.is_empty() {
+            let places: Vec<String> = list
+                .iter()
+                .map(|s| format!("\u{201C}{}\u{201D}", s.title))
+                .collect();
+            out.push(Fact::absent(
+                format!("a scene that mentions \u{201C}{term}\u{201D}"),
+                queries::join_and(&places),
+            ));
+        }
+    }
     Ok(out)
+}
+
+/// The word or phrase of "which scenes mention the cassette": what follows mention, contain or say.
+fn mention_term(message: &str) -> Option<String> {
+    static MENTION: LazyLock<Regex> = LazyLock::new(|| {
+        Regex::new(
+            r#"(?i)\b(?:mention(?:s|ed|ing)?|contain(?:s|ed|ing)?|includ(?:e|es|ing)|say(?:s|ing)?)\s+(?:the\s+|a\s+|an\s+|word\s+|words\s+)*["\u{201C}'\u{2018}]?([^"\u{201D}'\u{2019}?.!,;]+?)["\u{201D}'\u{2019}]?\s*(?:[?.!,;]|\b(?:in|across|of|anywhere)\b|$)"#,
+        )
+        .expect("valid pattern")
+    });
+    let term = MENTION
+        .captures(message)?
+        .get(1)?
+        .as_str()
+        .trim()
+        .to_string();
+    (term.chars().count() >= 2 && term.chars().count() <= 40).then_some(term)
+}
+
+/// The scene numbers of a draft whose heading or text (not its notes) holds `term`.
+fn scenes_mentioning(ctx: &FetchCtx<'_>, draft_id: &str, term: &str) -> AppResult<Vec<u32>> {
+    let scenes = queries::scenes(ctx.conn, draft_id)?;
+    let lower = term.to_lowercase();
+    let mut stmt = ctx.conn.prepare(
+        "SELECT DISTINCT e.scene_id FROM screenplay_element e JOIN screenplay_scene s ON s.id=e.scene_id
+         WHERE s.draft_id=?1 AND s.deleted_at IS NULL AND e.element_type <> 'note' AND e.text LIKE ?2 ESCAPE '\\'",
+    )?;
+    let in_text: std::collections::BTreeSet<String> = stmt
+        .query_map(
+            rusqlite::params![draft_id, crate::modules::ai::tools::like_pattern(term)],
+            |r| r.get::<_, String>(0),
+        )?
+        .collect::<Result<_, _>>()?;
+    Ok(scenes
+        .iter()
+        .filter(|s| in_text.contains(&s.id) || s.heading.to_lowercase().contains(&lower))
+        .map(|s| s.number as u32)
+        .collect())
 }
 
 fn scene_notes(ctx: &FetchCtx<'_>, scene_id: &str) -> AppResult<(String, String)> {

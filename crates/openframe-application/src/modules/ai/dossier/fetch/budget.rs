@@ -112,7 +112,10 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
         )
         .ok();
     let Some((budget_id, currency, planned_total, mode, value)) = budget else {
-        return Ok(vec![Fact::missing("no budget entered in this project")]);
+        return Ok(vec![Fact::absent(
+            "a budget for this project",
+            "the Budget",
+        )]);
     };
     let mut st = ctx.conn.prepare(
         "SELECT id, category, description, amount, actual FROM budget_line
@@ -130,9 +133,7 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
         })?
         .collect::<Result<_, _>>()?;
     if lines.is_empty() {
-        return Ok(vec![Fact::missing(
-            "no budget lines entered in this project",
-        )]);
+        return Ok(vec![Fact::absent("any budget lines", "the Budget")]);
     }
     let mny = |v: i64| money(v, &currency);
     let plain = |v: i64| amount_text(v, &currency, true);
@@ -198,9 +199,10 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
         && m.any(&["cost", "costs", "budget", "spend", "price", "expensive"])
     {
         let n = s.ordinal;
-        return Ok(vec![Fact::missing(format!(
-            "no budget for scene {n}: the budget is kept by category and line, not by scene"
-        ))]);
+        return Ok(vec![Fact::absent(
+            format!("a budget for scene {n}"),
+            "the Budget, which is kept by category and line, not by scene",
+        )]);
     }
 
     // ---- lines with no actual yet
@@ -272,10 +274,10 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
             None => {
                 f = f.f("actual", "none entered");
                 if asks_actual {
-                    out.push(Fact::missing(format!(
-                        "budget line {}: no actual amount entered",
-                        l.description
-                    )));
+                    out.push(Fact::absent(
+                        format!("an actual amount for the budget line {}", l.description),
+                        "the Budget",
+                    ));
                 }
             }
         }

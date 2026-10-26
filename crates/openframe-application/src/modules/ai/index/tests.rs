@@ -212,7 +212,7 @@ fn a_production_scene_number_with_a_letter_is_found() {
     let r = resolve(&ix, &on(FEATURE), "read scene 13b");
     assert!(r.scenes.is_empty());
     assert!(
-        r.not_found[0].contains("no scene numbered 13B"),
+        r.not_found[0].contains("I could not find scene 13B"),
         "{:?}",
         r.not_found
     );
@@ -225,14 +225,15 @@ fn scene_46_of_45_is_not_a_scene_and_says_so() {
     assert!(r.scenes.is_empty());
     assert_eq!(r.not_found.len(), 1);
     assert!(
-        r.not_found[0].contains("has 45 scenes") && r.not_found[0].contains("no scene 46"),
+        r.not_found[0].contains("which has 45 scenes")
+            && r.not_found[0].starts_with("I could not find scene 46."),
         "{:?}",
         r.not_found
     );
     // No focus and no screenplay reaches it: nothing to ask, the answer is the same for both.
     let r = resolve(&ix, &Focus::default(), "what happens in scene 46");
     assert!(r.scenes.is_empty() && r.ambiguous.is_none());
-    assert!(r.not_found[0].contains("has 45") && r.not_found[0].contains("has 3"));
+    assert!(r.not_found[0].contains("(45 scenes)") && r.not_found[0].contains("(3 scenes)"));
 }
 
 // ---- rules (d) and (e)
@@ -248,7 +249,7 @@ fn the_only_screenplay_with_a_current_draft_is_the_one() {
 #[test]
 fn otherwise_one_specific_question_with_both_titles() {
     let ix = build(true);
-    let r = resolve(&ix, &Focus::default(), "how many scenes are there");
+    let r = resolve(&ix, &Focus::default(), "summarise the script");
     assert!(r.screenplays.is_empty());
     let q = r.ambiguous.expect("a question");
     assert_eq!(
@@ -259,6 +260,32 @@ fn otherwise_one_specific_question_with_both_titles() {
     // Scene 2 exists in both, so the scene number does not decide either.
     let r = resolve(&ix, &Focus::default(), "open scene 2");
     assert!(r.ambiguous.is_some() && r.scenes.is_empty());
+}
+
+#[test]
+fn a_search_a_list_or_a_count_across_scenes_reads_every_screenplay_and_asks_nothing() {
+    let ix = build(true);
+    for m in [
+        "which scenes mention the cassette",
+        "how many scenes are there",
+        "list the scenes",
+        "find every scene with the lantern",
+    ] {
+        let r = resolve(&ix, &Focus::default(), m);
+        assert!(
+            r.screenplays.is_empty() && r.ambiguous.is_none() && r.not_found.is_empty(),
+            "{m}"
+        );
+    }
+    // One screenplay is needed for a scene number, to open or to explain.
+    for m in [
+        "open scene 2",
+        "explain the script",
+        "describe the first draft",
+    ] {
+        let r = resolve(&ix, &Focus::default(), m);
+        assert!(r.ambiguous.is_some(), "{m}");
+    }
 }
 
 #[test]
@@ -443,13 +470,13 @@ fn the_focus_follows_the_message_and_keeps_what_it_did_not_name() {
 #[test]
 fn the_answer_to_the_question_settles_the_next_message() {
     let ix = build(true);
-    let ask = resolve(&ix, &Focus::default(), "how many scenes are there");
+    let ask = resolve(&ix, &Focus::default(), "summarise the script");
     assert!(ask.ambiguous.is_some());
     let asked = Focus::default().after(&ask);
     assert!(asked.is_empty());
     let answered = asked.after(&resolve(&ix, &asked, "LOW TIDE RADIO"));
     assert_eq!(answered.screenplay.as_deref(), Some(FEATURE));
-    let again = resolve(&ix, &answered, "how many scenes are there");
+    let again = resolve(&ix, &answered, "summarise the script");
     assert_eq!(again.screenplay_id(), Some(FEATURE));
     assert!(again.ambiguous.is_none());
 }

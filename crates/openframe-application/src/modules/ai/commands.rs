@@ -417,26 +417,53 @@ fn recipe_more(text: &str) -> Option<StepCall> {
     None
 }
 
-/// The workspace a plain name means (`open_workspace`'s values).
-fn workspace(name: &str) -> Option<&'static str> {
-    let n = name.trim().to_lowercase();
-    Some(match n.as_str() {
-        "home" | "home page" => "home",
-        "idea vault" | "vault" => "vault",
+/// The screen a plain name means: `open_workspace`'s workspace and, for a Production tab, its tab.
+/// "the project files page", "Budget" and "shooting schedule" all name one.
+fn screen(name: &str) -> Option<(&'static str, Option<&'static str>)> {
+    let mut n = name.trim().to_lowercase().replace('&', "and");
+    for lead in ["project ", "the ", "my "] {
+        n = n.strip_prefix(lead).unwrap_or(&n).to_string();
+    }
+    for tail in [
+        " page",
+        " screen",
+        " tab",
+        " workspace",
+        " view",
+        " section",
+        " panel",
+    ] {
+        n = n.strip_suffix(tail).unwrap_or(&n).to_string();
+    }
+    let (ws, sub) = match n.trim() {
+        "home" | "home page" => ("home", None),
+        "idea vault" | "vault" => ("vault", None),
         "story" | "story board" | "beat board" | "beatboard" | "storyboard" | "story outline" => {
-            "story"
+            ("story", None)
         }
-        "screenplay" | "script" | "screenplay editor" => "screenplay",
-        "breakdown" => "breakdown",
-        "production" => "production",
-        "call sheets" | "callsheets" | "call sheet" => "callsheets",
-        "files" => "files",
-        "notes" | "notes and tasks" | "tasks" => "notes",
-        "activity" | "recent activity" => "activity",
-        "recently deleted" | "trash" | "bin" => "trash",
-        "settings" | "project settings" => "settings",
+        "screenplay" | "script" | "screenplay editor" => ("screenplay", None),
+        "breakdown" => ("breakdown", None),
+        "production" => ("production", None),
+        "call sheets" | "callsheets" | "call sheet" => ("callsheets", None),
+        "files" | "file" | "project files" => ("files", None),
+        "notes" | "notes and tasks" | "tasks" => ("notes", None),
+        "activity" | "recent activity" => ("activity", None),
+        "recently deleted" | "trash" | "bin" => ("trash", None),
+        "settings" | "project settings" => ("settings", None),
+        "budget" => ("production", Some("budget")),
+        "schedule" | "shooting schedule" | "shoot schedule" => ("production", Some("schedule")),
+        "cast" | "crew" | "cast and crew" => ("production", Some("cast-crew")),
+        "locations" => ("production", Some("locations")),
+        "catalog" | "production catalog" => ("production", Some("catalog")),
+        "shots" | "shot list" | "shot lists" => ("production", Some("shots")),
+        "moodboards" | "moodboard" => ("production", Some("moodboards")),
+        "storyboards" => ("production", Some("storyboards")),
+        "day out of days" | "dood" => ("production", Some("dood")),
+        "sides" => ("production", Some("sides")),
+        "reports" => ("production", Some("reports")),
         _ => return None,
-    })
+    };
+    Some((ws, sub))
 }
 
 /// The Production Catalog category a plain word means.
@@ -492,9 +519,13 @@ pub(crate) fn navigation_call(text: &str, offered: impl Fn(&str) -> bool) -> Opt
         call("open_scene", json!({ "sceneNumber": n }))
     } else {
         let c = OPEN_WORKSPACE.captures(text)?;
+        let (workspace, sub) = screen(c.name("w")?.as_str())?;
         call(
             "open_workspace",
-            json!({ "workspace": workspace(c.name("w")?.as_str())? }),
+            match sub {
+                Some(sub) => json!({ "workspace": workspace, "sub": sub }),
+                None => json!({ "workspace": workspace }),
+            },
         )
     };
     offered(&c.tool).then_some(c)
