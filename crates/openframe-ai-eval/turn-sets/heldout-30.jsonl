@@ -1,0 +1,30 @@
+{"id":"heldout-01","msg":"tell me about the scene where the boat goes down","prev":"","want":"explain"}
+{"id":"heldout-02","msg":"give me the gist of act two","prev":"","want":"explain"}
+{"id":"heldout-03","msg":"what is Lissy like","prev":"","want":"explain"}
+{"id":"heldout-04","msg":"are appachan and varghese family","prev":"","want":"relation"}
+{"id":"heldout-05","msg":"what ties Anjali to the radio station","prev":"","want":"relation"}
+{"id":"heldout-06","msg":"the sound recordist, who is that","prev":"","want":"lookup"}
+{"id":"heldout-07","msg":"Meera email pls","prev":"","want":"lookup"}
+{"id":"heldout-08","msg":"what date is day 6","prev":"","want":"lookup"}
+{"id":"heldout-09","msg":"where are we shooting scene 12","prev":"","want":"lookup"}
+{"id":"heldout-10","msg":"total spend so far","prev":"","want":"lookup"}
+{"id":"heldout-11","msg":"are we under or over on locations","prev":"","want":"compare"}
+{"id":"heldout-12","msg":"did catering cost more than we thought","prev":"","want":"compare"}
+{"id":"heldout-13","msg":"count the night scenes","prev":"","want":"count"}
+{"id":"heldout-14","msg":"number of locations still not confirmed","prev":"","want":"count"}
+{"id":"heldout-15","msg":"list every prop in scene 3","prev":"","want":"list"}
+{"id":"heldout-16","msg":"which scenes have Varghese","prev":"","want":"list"}
+{"id":"heldout-17","msg":"jump to the call sheets","prev":"","want":"navigate"}
+{"id":"heldout-18","msg":"take me to scene 7","prev":"","want":"navigate"}
+{"id":"heldout-19","msg":"put scene 9 in the parking lot","prev":"","want":"change"}
+{"id":"heldout-20","msg":"rename the teaser to Low Tide Teaser","prev":"","want":"change"}
+{"id":"heldout-21","msg":"any thoughts on making the ending land harder","prev":"","want":"brainstorm"}
+{"id":"heldout-22","msg":"what if Lissy betrays Anjali, would that work","prev":"","want":"brainstorm"}
+{"id":"heldout-23","msg":"where do I find the export button","prev":"","want":"help"}
+{"id":"heldout-24","msg":"can I use this offline","prev":"","want":"help"}
+{"id":"heldout-25","msg":"ok cool","prev":"","want":"chat"}
+{"id":"heldout-26","msg":"you are the worst","prev":"","want":"chat"}
+{"id":"heldout-27","msg":"hello there","prev":"","want":"chat"}
+{"id":"heldout-28","msg":"no not that one, the feature","prev":"how many scenes are there","want":"count"}
+{"id":"heldout-29","msg":"I wanted the explanation, not a list","prev":"list the scenes in act one","want":"explain"}
+{"id":"heldout-30","msg":"still wrong, the location","prev":"what is the location of scene 35","want":"lookup"}

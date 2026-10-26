@@ -164,3 +164,77 @@ fn the_answer_to_the_question_is_kept_and_not_asked_again() {
     let other = ask_in(&env, "How many scenes are there?", "c-other");
     assert!(content(&other).contains("several screenplays") || content(&other).contains("Which"));
 }
+
+/// Ask, and when the model-less test run fails the request, still return its recorded id.
+fn ask_lenient(env: &TestEnv, text: &str, conversation: &str) -> Value {
+    let asked = env.core.dispatch(
+        &env.core.local_actor(),
+        "ai.ask",
+        json!({ "text": text, "scope": { "kind": "WholeProject" }, "conversationId": conversation }),
+    );
+    if let Ok(x) = asked {
+        return x;
+    }
+    let id: String = env
+        .core
+        .project()
+        .unwrap()
+        .store
+        .read(|c| {
+            Ok(c.query_row(
+                "SELECT id FROM ai_request WHERE session_id = ?1 AND request_text = ?2",
+                [conversation, text],
+                |r| r.get(0),
+            )?)
+        })
+        .unwrap();
+    json!({ "requestId": id })
+}
+
+/// The numbers the AI trace kept for a request about the answer-type stage (slice S4).
+fn trace_turn(env: &TestEnv, x: &Value) -> (String, String, String, String, String) {
+    let id = x["requestId"].as_str().unwrap().to_string();
+    env.core
+        .with_app_db(|c| {
+            Ok(c.query_row(
+                "SELECT answer_type, answer_group, turn_domains, length_class, turn_how
+                 FROM sys_ai_trace WHERE request_id = ?1",
+                [&id],
+                |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?, r.get(3)?, r.get(4)?)),
+            )?)
+        })
+        .unwrap()
+}
+
+#[test]
+fn the_answer_type_is_read_stored_in_the_focus_and_kept_in_the_trace() {
+    let env = two_screenplays();
+    let first = ask_lenient(&env, "How many scenes are there?", "c-turn");
+    assert_eq!(focus_of(&env, &first)["answerType"], "count");
+    let (t, g, domains, class, how) = trace_turn(&env, &first);
+    assert_eq!(
+        (t.as_str(), g.as_str(), class.as_str(), how.as_str()),
+        ("count", "facts", "one_sentence", "rule")
+    );
+    assert!(domains.contains("screenplay"), "{domains}");
+
+    // A correction that asks for nothing new takes the type of the message before it.
+    let again = ask_lenient(&env, "I said Night Shift, not the other one", "c-turn");
+    assert_eq!(focus_of(&env, &again)["answerType"], "count");
+    let (t, _, _, _, how) = trace_turn(&env, &again);
+    assert_eq!((t.as_str(), how.as_str()), ("count", "repair"));
+
+    // The length class moves with the words, and another conversation starts with no type.
+    let brief = ask_lenient(&env, "Explain the first act briefly", "c-turn-2");
+    let (t, g, _, class, _) = trace_turn(&env, &brief);
+    assert_eq!(
+        (t.as_str(), g.as_str(), class.as_str()),
+        ("explain", "narrative", "short")
+    );
+    let hello = ask_lenient(&env, "thanks, that is all", "c-turn-3");
+    let (t, g, domains, class, _) = trace_turn(&env, &hello);
+    assert_eq!(
+        (t.as_str(), g.as_str(), domains.as_str(), class.as_str()),
+        ("chat", "chat", "", "brief")
+    );
+}

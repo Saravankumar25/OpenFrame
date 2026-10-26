@@ -1,0 +1,40 @@
+{"id":"export-01","msg":"How many characters are there in this story","prev":"","want":"count"}
+{"id":"export-02","msg":"LOW TIDE RADIO","prev":"How many characters are there in this story","want":"count"}
+{"id":"export-03","msg":"I asked you How many characters are there in LOW TIDE RADIO","prev":"LOW TIDE RADIO","want":"count"}
+{"id":"export-04","msg":"can you explain the relationship between Mariamma and Varghese and explain their bond","prev":"I asked you How many characters are there in LOW TIDE RADIO","want":"relation"}
+{"id":"export-05","msg":"That is the question I am asking you bro","prev":"can you explain the relationship between Mariamma and Varghese and explain their bond","want":"relation"}
+{"id":"export-06","msg":"Broooo I fucking asked you that can you explain the relationship between Mariamma and Varghese and explain their bond","prev":"That is the question I am asking you bro","want":"relation"}
+{"id":"export-07","msg":"Explain the story of LOW TIDE RADIO in brief","prev":"Broooo I fucking asked you that can you explain the relationship between Mariamma and Varghese and explain their bond","want":"explain"}
+{"id":"export-08","msg":"I mean bro, explain at least one long paragraph","prev":"Explain the story of LOW TIDE RADIO in brief","want":"explain"}
+{"id":"export-09","msg":"Open Scene 42","prev":"I mean bro, explain at least one long paragraph","want":"navigate"}
+{"id":"export-10","msg":"scene 42 of LOW TIDE RADIO","prev":"Open Scene 42","want":"navigate"}
+{"id":"export-11","msg":"You have incorrectly opened Scene 41, I asked for Scene 42","prev":"scene 42 of LOW TIDE RADIO","want":"navigate"}
+{"id":"export-12","msg":"Bro how many times I said I asked for LOW TIDE RADIO not Low Tide Radio teaser trailer","prev":"You have incorrectly opened Scene 41, I asked for Scene 42","want":"navigate"}
+{"id":"export-13","msg":"Okay bro , who asked for this information, I asked you to open scene 42 of LOW TIDE RADIO, why can't you do that simple thing","prev":"Bro how many times I said I asked for LOW TIDE RADIO not Low Tide Radio teaser trailer","want":"navigate"}
+{"id":"export-14","msg":"Bro what the fuck bro, I literally told you it's LOW TIDE RADIO.","prev":"Okay bro , who asked for this information, I asked you to open scene 42 of LOW TIDE RADIO, why can't you do that simple thing","want":"navigate"}
+{"id":"export-15","msg":"LOW TIDE RADIO  has 44 scenes. I asked you to open scene 42, why the hell you can't do that simple thing","prev":"Bro what the fuck bro, I literally told you it's LOW TIDE RADIO.","want":"navigate"}
+{"id":"export-16","msg":"Again bro, you opened scene 41","prev":"LOW TIDE RADIO  has 44 scenes. I asked you to open scene 42, why the hell you can't do that simple thing","want":"navigate"}
+{"id":"export-17","msg":"in LOW TIDE RADIO what is the location in scene 35","prev":"Again bro, you opened scene 41","want":"lookup"}
+{"id":"export-18","msg":"Bro I literally said above that in LOW TIDE RADIO","prev":"in LOW TIDE RADIO what is the location in scene 35","want":"lookup"}
+{"id":"export-19","msg":"Fuck you bro","prev":"Bro I literally said above that in LOW TIDE RADIO","want":"chat"}
+{"id":"export-20","msg":"I asked for scene 35 explanation and you gave one with based on scenes 11,45,38,14,6","prev":"Fuck you bro","want":"explain"}
+{"id":"export-21","msg":"I didn't ask for opening the scene, but explaining scene 35","prev":"I asked for scene 35 explanation and you gave one with based on scenes 11,45,38,14,6","want":"explain"}
+{"id":"export-22","msg":"wow bro you ask again and again you dont open correct scenes you dont explain what I ask you dont give proper answers for any of the questions","prev":"I didn't ask for opening the scene, but explaining scene 35","want":"chat"}
+{"id":"export-23","msg":"what the hell who asked for that information","prev":"wow bro you ask again and again you dont open correct scenes you dont explain what I ask you dont give proper answers for any of the questions","want":"chat"}
+{"id":"export-24","msg":"you are irrepairable AI. anyways atleast tell me how many shoot days are planned","prev":"what the hell who asked for that information","want":"count"}
+{"id":"export-25","msg":"bro there are only 14 shoot days but you gave wrong answer that there are 14 shoot days given in schedule and call sheets.","prev":"you are irrepairable AI. anyways atleast tell me how many shoot days are planned","want":"count"}
+{"id":"export-26","msg":"what is the budget planned , actual and difference","prev":"bro there are only 14 shoot days but you gave wrong answer that there are 14 shoot days given in schedule and call sheets.","want":"compare"}
+{"id":"export-27","msg":"how much is our investment on Camera","prev":"what is the budget planned , actual and difference","want":"lookup"}
+{"id":"export-28","msg":"who is playing Young Anjali character","prev":"how much is our investment on Camera","want":"lookup"}
+{"id":"export-29","msg":"I wanna contact Anoop Paul who is playing Harbour Clerk, please give me his contact details","prev":"who is playing Young Anjali character","want":"lookup"}
+{"id":"export-30","msg":"why the fuck are you visiting private notes bro, you can get the contact details from cast & crew section in production right ?","prev":"I wanna contact Anoop Paul who is playing Harbour Clerk, please give me his contact details","want":"lookup"}
+{"id":"export-31","msg":"how many props are there overall","prev":"why the fuck are you visiting private notes bro, you can get the contact details from cast & crew section in production right ?","want":"count"}
+{"id":"export-32","msg":"how much budget is allocated to lead cast payment bro","prev":"how many props are there overall","want":"lookup"}
+{"id":"export-33","msg":"broooo in budget section there is planned budget of 40,00,000 for lead cast, why can't you say that","prev":"how much budget is allocated to lead cast payment bro","want":"lookup"}
+{"id":"export-34","msg":"open palette-monsoon.png in idea vault","prev":"broooo in budget section there is planned budget of 40,00,000 for lead cast, why can't you say that","want":"navigate"}
+{"id":"export-35","msg":"explain all three acts in beat board briefly","prev":"open palette-monsoon.png in idea vault","want":"explain"}
+{"id":"export-36","msg":"I said over 100 times that I am talking about LOW TIDE RADIO","prev":"explain all three acts in beat board briefly","want":"explain"}
+{"id":"export-37","msg":"Explain all the character relationships briefly","prev":"I said over 100 times that I am talking about LOW TIDE RADIO","want":"relation"}
+{"id":"export-38","msg":"I asked for briefing of all character relationships while they were clearly given in Story >> Characters >> Whole Film Map","prev":"Explain all the character relationships briefly","want":"relation"}
+{"id":"export-39","msg":"WOW BRO FUCK YOU, I AM UNINSTALLING OPENFRAME NEVER OPENING THIS APP AGAIN","prev":"I asked for briefing of all character relationships while they were clearly given in Story >> Characters >> Whole Film Map","want":"chat"}
+{"id":"export-40","msg":"GO TO HELL","prev":"WOW BRO FUCK YOU, I AM UNINSTALLING OPENFRAME NEVER OPENING THIS APP AGAIN","want":"chat"}

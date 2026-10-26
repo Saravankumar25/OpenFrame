@@ -124,23 +124,64 @@ Inputs: the user's message, the conversation id, the actor (user and role), the 
 4. A name with no match: search by alias and fuzzy match. Above the threshold, use it and say so in the answer. Below,
    say it is not in the project.
 
-### 5.3 Read the answer type (model-assisted, constrained)
+### 5.3 Read the answer type (rules, nearest neighbours, one short model call)
 
 Spike: with one list of 12 intents, the model got 20 of 28 right, and half of its misses were overlap between the
-*topic* (budget, schedule) and the *kind of answer* (a count, a lookup). So the turn reads two separate things:
+*topic* (budget, schedule) and the *kind of answer* (a count, a lookup). Spike S1b then showed that rules tuned on a
+word list fail on new wording (53% on held-out messages) and that a 1B model confuses close labels. So the turn reads two
+separate things, and reads the first with code before it asks any model:
 
 - **Answer type** (what shape of answer is wanted): lookup, list, count, explain, relation, compare, brainstorm, navigate,
-  change, help, chat. One short model call with a closed list of labels and examples returns it. Rules give a hint
-  (a verb at the start, "how many", "open") and the model decides when the hint is weak.
+  change, help, chat. Its coarse **group** is facts (lookup, list, count, compare), narrative (explain, relation),
+  brainstorm, navigate, change, help or chat; the group picks the fetch plan and the length class.
 - **Domain** (where the facts live): found by code from the resolved entities and the topic words: story, screenplay,
   breakdown, people, production, schedule, budget, visual, files, settings, product. One turn can touch several.
 
-Rules that guard the model's read (spike):
+**As built (S4, `modules/ai/turn.rs` and `turn/`).** One stage with typed input (`TurnInput`: the message, the person's
+previous message, the previous answer type from the focus, the resolver output of section 5.2) and typed output
+(`TurnRead`: answer type, group, domains, length class, how it was decided, and the share of the nearest examples that
+agreed). The order of reading, cheapest first, each step only when the one before is not sure:
 
-- A message with no resolved entity, no topic word and no question form (anger, thanks, "GO TO HELL") is `chat`. The model
-  misread two such messages as `change` and `count`.
+1. **Strong rules** (`turn/rules.rs`, English only): "how many" and "number of"; relation words; compare words (versus,
+   planned and actual, over or under budget); "open" or "go to" with a scene, a file or a screen; explain verbs; "how do
+   I" and "where do I find" followed by an app action; a change verb at the start; brainstorm words; "what is in", a plural
+   noun after "which" and "who are the" (list); "who plays", "when do we", "how much", "total spent" (lookup); two scenes
+   named in one question (compare). A name is never matched against a word list: whether a message names a scene, a
+   person, a file or a screenplay comes from the resolver.
+2. **Complaints that ask for nothing are cut out first.** "you dont open the right scenes" and "why cant you do that" are
+   things the person says were not done, so they are not requests. A correction states what was wanted ("I asked for X",
+   "I wanted X", "but explaining scene 35"): the text after it is read by the same rules.
+3. **Chat** only from social or angry words in a message with no request and no resolved name ("GO TO HELL", "thanks",
+   "ok cool"). Anger beside a request or a name is not chat.
+4. **A correction or complaint that names no new request** ("I said the feature", "again, you opened scene 41") and **a
+   bare title that answers the last question** ("LOW TIDE RADIO") take the previous answer type (never the type `chat`).
+5. **Nearest neighbours** (`turn/neighbour.rs`). The message is embedded with the search model the app already ships
+   (multilingual E5 when downloaded, the same embedder and query prefix as search and the intent step). 275 labelled
+   example messages (`modules/ai/turn_examples.jsonl`, compiled in; about 25 per type: 14 English and one each in hi, te,
+   ta, kn, ml, es, fr, de, zh, ja, ko; none taken from a gold set or from the spike) are embedded once per search model.
+   The five nearest vote. Three votes with a lead of two is a clear vote and decides. The embedding step waits at most 1.5
+   seconds; a late result still fills the example cache for the next message.
+6. **Weak vote: one short model call** (`turn/model.rs`) with the closed list and a few examples, six tokens, temperature
+   0, a 20 second cut-off, and not started when the person pressed Stop. A reply off the list is ignored and the vote
+   stands.
+
+With no embedder or no engine (tests, AI not installed, the wait passed) the stage ends with the rules and the previous
+type, then a default (a question is a lookup, anything else chat), marked `fallback`. It never blocks a request and never
+panics. A rule decision costs about a millisecond and embeds nothing.
+
+Rules that guard the read:
+
+- A message with no resolved name and no request, with social or angry words ("anger, thanks, GO TO HELL"), is `chat`.
+  Anger is never read as `change` or `count` by the neighbours or the model.
 - `change` never executes anything. It only starts a proposal the user reviews, so a misread cannot damage data.
 - A correction ("I didn't ask for opening the scene, I asked you to explain") is read as the answer type it states.
+- In a correction, two scenes named together ("you opened 41, I asked for 42") are not a comparison.
+
+**What is stored.** The answer type goes into the conversation focus (`focus.answerType` in `ai_request.scope_json`),
+so the next message can be a correction of it. The whole read goes into the AI trace (`sys_ai_trace`, app migration 0008:
+`answer_type`, `answer_group`, `turn_domains`, `length_class`, `turn_how`, `turn_vote`, `turn_ms`; codes and numbers only,
+never the message). S4 changes no lane, prompt, writing or check: what the assistant answers is as before. The model call
+of step 6 runs before the request and is not counted in the request's engine numbers.
 
 Each answer type has a length class:
 
@@ -152,7 +193,60 @@ Each answer type has a length class:
 | Brief | chat | at most about 40 words |
 
 The user can override the shape in words ("briefly", "in detail", "one line", "a long paragraph"). The override moves the
-length class; code enforces the limit.
+length class; code enforces the limit. Built: "one line" and "one sentence" give the one-sentence class; "briefly",
+"in brief" and "concise" move one class shorter (paragraph to short, short to one sentence); "in detail", "long
+paragraph" and "step by step" move one class longer, up to a paragraph; a message with both words moves nothing and chat
+stays brief. The names and word ranges are the ones of `LENGTH_CLASSES` in the evaluation crate (a test keeps them equal).
+
+**S4 result (2026-10-26).** Measured with `ai-eval --turn-only` (no model writes; the stage alone on the Low Tide
+fixture), real multilingual E5 embeddings and the 1B model of the bundle, on CPU. Labelled messages: the 251 Low Tide
+conversation cases, 20 Low Tide tool cases (type implied by the expected tool: a proposal tool is `change`, `open_*` is
+`navigate`, `count_*` is `count`), the 40 export messages read in order as one conversation, and the 30 held-out messages
+of the spike (`crates/openframe-ai-eval/turn-sets/`, copied from the spike with its labels).
+
+| Set (messages) | Rules only | Plus embeddings | Plus model for weak votes |
+|---|---|---|---|
+| Low Tide conversation (251), exact | 72.1% | 74.1% | 82.1% |
+| Low Tide conversation (251), group | 77.7% | 86.5% | 90.4% |
+| Low Tide tools (20), exact and group | 85.0% | 95.0% | 90.0% |
+| Export 40, exact and group | 100.0% | 97.5% and 100.0% | 97.5% and 100.0% |
+| Held-out 30, exact and group | 90.0% | 93.3% | 100.0% |
+| All 341, exact | 77.7% | 79.8% | 85.9% |
+| All 341, group | 81.8% | 89.1% | 92.4% |
+
+The bar of section 7.5 (answer type 90% or higher) is **not met on the exact label** (85.9% over all, 82.1% on the Low
+Tide conversations) and is met on the coarse group over all sets (92.4%; 90.4% on the Low Tide conversations). The first
+run, before any rule was changed after seeing a misread, gave 71.7% exact and 84.5% group on the Low Tide conversations,
+95.0% and 97.5% on the export, 96.7% and 100% on the held-out 30. Two rounds of generic rule changes (complaints cut out,
+the wish before "but", plural nouns after "which", "what is in", two scenes named, product and privacy questions) then
+lifted the Low Tide numbers to those in the table; **from that point the Low Tide cases are no longer held-out wording**,
+and the 70 spike messages never were (the author had read them before writing the rules and the examples; no example is
+copied from them or from a gold set, and a test checks that). The first-run numbers are the honest estimate for new wording: about 72% exact and
+85% group on hard conversation wording, about 95% on the spike's own messages.
+
+Anger and small talk (27 labelled `chat` messages): read as `chat` 24, read as `change`, `count` or a fact fetch **0**
+(bar met; with the rules alone one message fell to the default lookup, which the stage with an embedder does not do), read as
+something else 3. The three are `conv-lt-export-012`, `-014` and `-036`: complaints that repeat a request ("I literally told
+you it's LOW TIDE RADIO"). Rule 4 above gives them the type of the message before (navigate or explain); the gold labels them
+`chat`, and the spike labelled them with the type of the request. This is a conflict between two label sets and the spec
+rule, left for the owner.
+
+Time per read on this machine (debug build, CPU engine): 1 ms for the rules, 51 ms on average when the embedder ran,
+245 ms on average when the model was also allowed (the model decided 56 of the 251 Low Tide final messages, 22%).
+Leave-one-out on the 275 examples: 73.1% right, 54.2% clear votes of which 91.9% right (English 61.7%;
+every other language 82 to 100% except fr 64% and zh 45%, because each has one example and the English ones carry the
+vote).
+
+What still fails, by pattern (48 of 341 in the last pass): list read as lookup when the question has no plural cue
+("props for that scene?", "and who plays them", "call sheet status", 8); lookup read as compare, relation or navigate
+for money and family questions ("how much under budget are we on ...", "who is Anjali's father", 9); `who is X` as a
+character (labelled explain) read as lookup (4); a repeated request in a transliterated language ("lead cast ka
+budget kitna hai", 3); the three label conflicts above; brainstorm questions worded as how-questions (2). Most of the
+facts-group errors stay inside the group, which is why the group number is the one that picks the fetch plan.
+
+Usable in tests: the rules run everywhere. Nearest neighbours and the model need the bundled models, so unit tests use a
+stand-in embedder that places each example on its own axis and a scripted model (`turn/tests.rs`); the real run is
+`ai-eval --turn-only`.
 
 ### 5.4 Fetch the dossier (code)
 
@@ -315,7 +409,7 @@ two-screenplay fixture (section 7.4), because their data answers depend on the o
 |---|---|
 | `no_reask` | After the screenplay, person or scene was named earlier in the conversation, the answer does not ask which one |
 | `no_navigate` | The reply did not run a navigation tool (for explain and brief answer types) |
-| `answer_type` | The turn's answer type must equal the expected one |
+| `answer_type` | The turn's answer type must equal the expected one (scored exactly and by group, from the AI trace) |
 | `length_class` | One of one_sentence, short, paragraph, brief; code checks the word range |
 | `facts_from` | The listed record ids must appear among the answer's sources |
 | `required_facts` | Each listed value or phrase appears in the answer (for example the planned figure, "brother") |
@@ -373,6 +467,8 @@ Each slice ends with the eval run and a saved result. A slice does not start bef
 | S9 | Documents: update `ai-answer-paths.md`, `ai-harness-rebuild.md`, manual, feature status; `graphify update .` | `docs/` | Docs match code |
 
 S3 status (2026-10-26): built and tested. The resolver follows section 5.2 and settles the screenplay by title or alias, the conversation focus, the scene number, or the only current draft; the one change in behaviour is that `ai.ask` fills a missing draft from it instead of letting each tool ask "which screenplay". Unit tests in `index/tests.rs`; the fixture tests in `crates/openframe-ai-eval/tests/ai_index.rs`; the wiring in `tests/ai/ai_focus.rs`. Not yet done: unknown-name reporting ("not in the project") and use of the resolved entities by the dossier builders (S5).
+
+S4 status (2026-10-26): built and measured, **exit not met on the exact label** (85.9% over all, 82.1% on the Low Tide conversations against 90%), met on the coarse group (92.4% and 90.4%) and on anger (0 misreads as change, count or a fetch). The numbers and the failure patterns are in section 5.3. The stage runs on every request and is recorded (focus and AI trace) but decides nothing yet; S5 uses the group. Unit tests in `turn/tests.rs`; the wiring in `tests/ai/ai_focus.rs`; the rules-only gates in `crates/openframe-ai-eval/tests/turn_gold.rs`; the measured run is `ai-eval --turn-only`. The `answer_type` flag of the gold cases is now scored.
 
 ## 9. Things an expert would add (included in the slices above)
 

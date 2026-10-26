@@ -49,7 +49,7 @@ use super::toolbox::{self, ToolDef, ToolStep};
 use super::tools::{Generation, ToolOutput};
 use super::types::*;
 use super::{
-    cancel, change_set, chat, intent, knowledge, queries, recipe, trace, typo, understand,
+    cancel, change_set, chat, intent, knowledge, queries, recipe, trace, turn, typo, understand,
 };
 use crate::core::AppCore;
 use crate::events::AppEvent;
@@ -2140,21 +2140,42 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
     {
         scope.draft = Some(draft);
     }
-    // The screenplay the request will read is the one the conversation is about from now on.
-    let focus_after = match (reading.map(|r| r.focus_after), &scope.draft) {
-        (Some(f), Some(d)) => Some(f.on_screenplay(&d.screenplay_id)),
-        (f, _) => f,
-    };
     // From here until the answer is stored, `ai.cancel` can reach this request.
     let running = cancel::begin(&actor.user_id, &conversation);
     let started = std::time::Instant::now();
+    // The kind of answer the message wants (slice S4). It is recorded and measured; it does not yet
+    // change what the assistant answers.
+    let no_names = index::Resolved::default();
+    let turn_read = turn::read(
+        &turn::TurnInput {
+            message: &text,
+            previous_message: reading.as_ref().and_then(|r| r.previous_message.as_deref()),
+            previous_type: reading
+                .as_ref()
+                .and_then(|r| r.focus_after.answer_type.as_deref())
+                .and_then(turn::AnswerType::parse),
+            resolved: reading.as_ref().map_or(&no_names, |r| &r.resolved),
+        },
+        &turn::Aids {
+            embedder: super::intelligence::service(core).embedder(core),
+            model: Some(&*model),
+            stopped: &|| running.stopped(),
+            wait: turn::WAIT,
+        },
+    );
+    let turn_ms = started.elapsed().as_millis() as u64;
+    // The screenplay the request will read is the one the conversation is about from now on, and
+    // the type just read is the answer type the next message may be a correction of.
+    let mut focus_after = match (reading.map(|r| r.focus_after), &scope.draft) {
+        (Some(f), Some(d)) => f.on_screenplay(&d.screenplay_id),
+        (Some(f), None) => f,
+        (None, _) => index::Focus::default(),
+    };
+    focus_after.answer_type = Some(turn_read.answer_type.code().to_string());
     let request_id = new_id();
     let model_ref = model.model_reference();
     let project_id = s.project_id();
-    let scope_json = match &focus_after {
-        Some(f) => index::focus_in(scope.refs_json(), f),
-        None => scope.refs_json(),
-    };
+    let scope_json = index::focus_in(scope.refs_json(), &focus_after);
     s.store.mutate(actor, ai_meta("ai.ask"), |tx| {
         records::insert_request(
             tx,
@@ -2301,6 +2322,8 @@ pub fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange
             intent_margin: routed.as_ref().map_or(0.0, |r| f64::from(r.margin)),
             intent_used: routed.as_ref().is_some_and(|r| r.used),
             cancelled: stopped,
+            turn: Some(&turn_read),
+            turn_ms,
         },
     );
     s.store

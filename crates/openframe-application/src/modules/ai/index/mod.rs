@@ -312,8 +312,11 @@ pub fn project_index(s: &ProjectSession) -> AppResult<Arc<EntityIndex>> {
 /// What the assistant knows about a message before it runs.
 pub struct Reading {
     pub resolved: Resolved,
-    /// The conversation focus once this message is part of it.
+    /// The conversation focus once this message is part of it. Its `answer_type` is still the one
+    /// read for the previous message.
     pub focus_after: Focus,
+    /// The person's previous message in this conversation.
+    pub previous_message: Option<String>,
 }
 
 /// Resolve `message` against the project index and the focus of `conversation`. `None` when the
@@ -326,15 +329,19 @@ pub fn read_message(
 ) -> Option<Reading> {
     let built = project_index(s).and_then(|ix| {
         let focus = s.store.read(|c| focus::load(c, user_id, conversation))?;
-        Ok((ix, focus))
+        let previous = s
+            .store
+            .read(|c| focus::last_message(c, user_id, conversation))?;
+        Ok((ix, focus, previous))
     });
     match built {
-        Ok((ix, focus)) => {
+        Ok((ix, focus, previous_message)) => {
             let resolved = resolve(&ix, &focus, message);
             let focus_after = focus.after(&resolved);
             Some(Reading {
                 resolved,
                 focus_after,
+                previous_message,
             })
         }
         Err(e) => {

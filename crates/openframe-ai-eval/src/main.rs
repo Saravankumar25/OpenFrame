@@ -8,6 +8,10 @@
 //! `--only poison-` runs just `gold/poisoned.jsonl`. `--routes off` turns the regex direct routes
 //! off so the model path alone is measured (default `on`, the app as people meet it).
 //!
+//! `--turn-only` runs just the answer-type stage (spec slice S4) on every non-retrieval case and on
+//! the sets of `turn-sets/` (`--turn-sets <folder>` to change it), with no model writing: see
+//! `turn_only.rs`. It still needs the models, for the embeddings and the short model call.
+//!
 //! Needs the Offline AI engine staged by `node scripts/prepare-ai-assets.mjs` (OPENFRAME_AI_BUNDLE_DIR,
 //! default `.build-cache/ai-bundle`) and the pinned models in the build inputs (OPENFRAME_AI_ASSETS_DIR,
 //! default `.ai-assets`), which it installs in its own app data as a finished download would
@@ -15,6 +19,8 @@
 //! core and one warm engine for the whole run; every case gets a fresh project with its sample
 //! script, so no case sees another's changes. Writes `results.jsonl` (one line per case, numbers,
 //! tools and answers), `summary.json` and `report.md` into the output folder. Development only.
+
+mod turn_only;
 
 use std::io::Write as _;
 use std::path::PathBuf;
@@ -43,12 +49,17 @@ struct Args {
     /// `on` (default) or `off`: `off` turns the regex direct routes off, so the model path is
     /// measured (harness plan 9.1).
     routes: Option<String>,
+    /// Run only the answer-type stage.
+    turn_only: bool,
+    turn_sets: PathBuf,
 }
 
 fn parse_args() -> Result<Args, String> {
     let mut a = std::env::args().skip(1);
     let (mut gold, mut out, mut only, mut limit, mut search, mut graphics, mut routes) =
         (None, None, None, None, None, None, None);
+    let mut turn_only = false;
+    let mut turn_sets = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("turn-sets");
     while let Some(k) = a.next() {
         let mut v = || a.next().ok_or_else(|| format!("{k} needs a value"));
         match k.as_str() {
@@ -59,6 +70,8 @@ fn parse_args() -> Result<Args, String> {
             "--search" => search = Some(v()?),
             "--graphics" => graphics = Some(v()?),
             "--routes" => routes = Some(v()?),
+            "--turn-only" => turn_only = true,
+            "--turn-sets" => turn_sets = PathBuf::from(v()?),
             _ => return Err(format!("unknown argument {k}")),
         }
     }
@@ -70,6 +83,8 @@ fn parse_args() -> Result<Args, String> {
         search,
         graphics,
         routes,
+        turn_only,
+        turn_sets,
     })
 }
 
@@ -144,6 +159,11 @@ fn run() -> Result<(), String> {
     };
     openframe_application::modules::ai::set_direct_routes(routes_on);
     let svc = openframe_application::modules::ai::service(&core);
+    if args.turn_only {
+        turn_only::run(&core, &cases, &args.turn_sets, &args.out, svc.model())?;
+        core.shutdown();
+        return Ok(());
+    }
     let recorder = Arc::new(Recorder {
         inner: svc
             .model()
@@ -640,6 +660,13 @@ fn run_case(core: &AppCore, case: &Case) -> Observation {
     if let Some(request_id) = x["requestId"].as_str() {
         o.route = core
             .with_app_db(|c| Ok(openframe_ai_eval::route_from_trace(c, request_id)))
+            .ok()
+            .flatten();
+    }
+    // What the answer-type stage read for this request, from its trace row.
+    if let Some(request_id) = x["requestId"].as_str() {
+        o.turn = core
+            .with_app_db(|c| Ok(openframe_ai_eval::turn_from_trace(c, request_id)))
             .ok()
             .flatten();
     }

@@ -14,6 +14,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use ts_rs::TS;
 
+use super::turn::TurnRead;
 use crate::core::AppCore;
 
 /// What one request did, in numbers.
@@ -46,6 +47,9 @@ pub struct TraceRow<'a> {
     pub intent_used: bool,
     /// The person pressed Stop and the request ended early.
     pub cancelled: bool,
+    /// What the answer-type stage read from the message, and how long it took.
+    pub turn: Option<&'a TurnRead>,
+    pub turn_ms: u64,
 }
 
 pub fn record(core: &AppCore, r: &TraceRow<'_>) {
@@ -62,9 +66,10 @@ pub fn record(core: &AppCore, r: &TraceRow<'_>) {
                                       tools_offered, tools_chosen, steps, sources, model_calls, tokens_in, tokens_out,
                                       context_fill_pct, prompt_ms, generation_ms, total_ms, passes, checks_failed,
                                       result_kind, error_code, proposed, cached_tokens, lane, runner_up_lane, lane_margin,
-                                      intent, intent_score, intent_margin, intent_used, cancelled)
+                                      intent, intent_score, intent_margin, intent_used, cancelled,
+                                      answer_type, answer_group, turn_domains, length_class, turn_how, turn_vote, turn_ms)
              VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20, ?21, ?22, ?23, ?24, ?25, ?26, ?27,
-                     ?28, ?29, ?30, ?31, ?32)",
+                     ?28, ?29, ?30, ?31, ?32, ?33, ?34, ?35, ?36, ?37, ?38, ?39)",
             params![
                 new_id(),
                 r.request_id,
@@ -98,6 +103,13 @@ pub fn record(core: &AppCore, r: &TraceRow<'_>) {
                 r.intent_margin,
                 r.intent_used,
                 r.cancelled,
+                r.turn.map_or("", |t| t.answer_type.code()),
+                r.turn.map_or("", |t| t.group.code()),
+                r.turn.map(TurnRead::domain_codes).unwrap_or_default(),
+                r.turn.map_or("", |t| t.length_class.code()),
+                r.turn.map_or("", |t| t.how.code()),
+                r.turn.map_or(0.0, |t| f64::from(t.vote)),
+                r.turn_ms.min(i64::MAX as u64) as i64,
             ],
         )?;
         Ok(())
@@ -347,7 +359,8 @@ fn trace_json(c: &Connection, request_id: Option<&str>) -> AppResult<Vec<Value>>
         "SELECT request_id, project_id, created_at, scope_kind, model_reference, context_tokens, tools_offered,
                 tools_chosen, steps, sources, model_calls, tokens_in, tokens_out, cached_tokens, context_fill_pct,
                 prompt_ms, generation_ms, total_ms, passes, checks_failed, result_kind, error_code, proposed, outcome,
-                lane, runner_up_lane, lane_margin, intent, intent_score, intent_margin, intent_used, cancelled
+                lane, runner_up_lane, lane_margin, intent, intent_score, intent_margin, intent_used, cancelled,
+                answer_type, answer_group, turn_domains, length_class, turn_how, turn_vote, turn_ms
          FROM sys_ai_trace WHERE (?1 IS NULL OR request_id = ?1) ORDER BY created_at",
     )?;
     let names: Vec<String> = st.column_names().iter().map(|s| s.to_string()).collect();

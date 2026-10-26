@@ -4,6 +4,7 @@
 //! The gold format is described in `gold/README.md`.
 
 pub mod fixture;
+pub mod turn;
 
 use std::collections::BTreeMap;
 use std::path::Path;
@@ -103,10 +104,10 @@ pub struct Expect {
     /// The answer holds none of [`INTERNAL_WORDS`].
     #[serde(default)]
     pub no_internal_words: bool,
-    // Parsed and reported as not counted: the build cannot measure them yet.
-    // shortcut: needs the turn's answer type in the Observation, added by spec slice S4.
+    /// The answer type the turn must read (spec 5.3), scored exactly and by group from the trace.
     #[serde(default)]
     pub answer_type: Option<String>,
+    // Parsed and reported as not counted: the build cannot measure them yet.
     // shortcut: needs the answer's source record ids in the Observation, added by spec slice S3.
     #[serde(default)]
     pub facts_from: Vec<String>,
@@ -307,6 +308,50 @@ pub struct Observation {
     pub setup_error: Option<String>,
     /// How the request was routed, from its trace row.
     pub route: Option<Route>,
+    /// What the answer-type stage read, from its trace row.
+    #[serde(default)]
+    pub turn: Option<TurnObs>,
+}
+
+/// What the answer-type stage (spec slice S4) recorded for one request: codes and a number only.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub struct TurnObs {
+    pub answer_type: String,
+    pub group: String,
+    /// Comma separated domain codes.
+    pub domains: String,
+    pub length_class: String,
+    /// `rule`, `repair`, `neighbour`, `model` or `fallback`.
+    pub how: String,
+    pub vote: f64,
+}
+
+/// The turn read of a request from its row in the AI trace. None when no row was kept, or when the
+/// row comes from a database made before the turn columns existed.
+pub fn turn_from_trace(c: &rusqlite::Connection, request_id: &str) -> Option<TurnObs> {
+    c.query_row(
+        "SELECT answer_type, answer_group, turn_domains, length_class, turn_how, turn_vote
+         FROM sys_ai_trace WHERE request_id = ?1",
+        [request_id],
+        |r| {
+            Ok(TurnObs {
+                answer_type: r.get(0)?,
+                group: r.get(1)?,
+                domains: r.get(2)?,
+                length_class: r.get(3)?,
+                how: r.get(4)?,
+                vote: r.get(5)?,
+            })
+        },
+    )
+    .ok()
+    .filter(|t| !t.answer_type.is_empty())
+}
+
+/// The group of an answer type code, or None for a code that is not a type.
+pub fn group_of(answer_type: &str) -> Option<&'static str> {
+    openframe_application::modules::ai::turn::AnswerType::parse(answer_type)
+        .map(|t| t.group().code())
 }
 
 /// The routing of one request, as the trace recorded it: the lane taken, the next best lane and the
@@ -382,6 +427,12 @@ pub struct Score {
     pub no_internal_words_ok: Option<bool>,
     pub length_class_ok: Option<bool>,
     pub no_reask_ok: Option<bool>,
+    /// Conversation `answer_type`: the turn read exactly the expected type, or the expected group.
+    pub answer_type_ok: Option<bool>,
+    pub answer_group_ok: Option<bool>,
+    /// The turn read recorded for the request.
+    #[serde(default)]
+    pub turn: Option<TurnObs>,
     /// Flags the case sets that the build cannot measure yet (never counted as pass or fail).
     pub not_counted: usize,
     pub elapsed_ms: u64,
@@ -402,6 +453,7 @@ pub fn score(case: &Case, o: &Observation) -> Score {
         elapsed_ms: o.elapsed_ms,
         engine_mb: o.engine_mb,
         route: o.route.clone(),
+        turn: o.turn.clone(),
         ..Score::default()
     };
     if o.setup_error.is_some() {
@@ -557,10 +609,21 @@ fn conversation_scores(case: &Case, o: &Observation, s: &mut Score) {
     if e.no_reask {
         s.no_reask_ok = Some(!ends_with_which_or_who_question(&o.answer));
     }
-    s.not_counted = usize::from(e.answer_type.is_some())
-        + usize::from(!e.facts_from.is_empty())
-        + usize::from(e.focus.is_some())
-        + e.turns.len();
+    if let Some(want) = &e.answer_type {
+        match &o.turn {
+            Some(t) => {
+                s.answer_type_ok = Some(t.answer_type == *want);
+                s.answer_group_ok = Some(match (group_of(&t.answer_type), group_of(want)) {
+                    (Some(got), Some(exp)) => got == exp,
+                    _ => t.answer_type == *want,
+                });
+            }
+            // No trace row to read: the case cannot be measured, which is not a pass or a fail.
+            None => s.not_counted += 1,
+        }
+    }
+    s.not_counted +=
+        usize::from(!e.facts_from.is_empty()) + usize::from(e.focus.is_some()) + e.turns.len();
 }
 
 /// True when `word` (lower case) occurs in `text` (lower case) at the start of a word.
@@ -709,7 +772,13 @@ pub struct ConversationGroup {
     pub no_internal_words: Rate,
     pub length_class: Rate,
     pub no_reask: Rate,
-    /// Flags set by cases that the build cannot measure yet (answer type, facts from, focus, turns).
+    /// The turn read the expected answer type exactly, and the expected group.
+    #[serde(default)]
+    pub answer_type: Rate,
+    #[serde(default)]
+    pub answer_group: Rate,
+    /// Flags set by cases that the build cannot measure yet (facts from, focus, turns, and an answer
+    /// type when the trace has no row).
     pub not_counted: usize,
     pub invented_names: usize,
     pub name_candidates: usize,
@@ -741,6 +810,8 @@ impl ConversationGroup {
         self.no_internal_words.add(s.no_internal_words_ok);
         self.length_class.add(s.length_class_ok);
         self.no_reask.add(s.no_reask_ok);
+        self.answer_type.add(s.answer_type_ok);
+        self.answer_group.add(s.answer_group_ok);
         self.not_counted += s.not_counted;
         for (field, wrong, total) in [
             (
@@ -943,11 +1014,11 @@ fn conversation_section(s: &Summary) -> String {
         t.push_str(&row(kind, g));
     }
     t.push_str(
-        "\nExpectation flags (harness spec 7.4). Cases that set none of them show none. Flags the build cannot measure yet are listed as not counted, never as passed or failed.\n\n| Question type | Required facts | Abstain names | No navigation | No data dump | No internal words | Length class | No re-ask | Not counted |\n|---|---|---|---|---|---|---|---|---|\n",
+        "\nExpectation flags (harness spec 7.4). Cases that set none of them show none. Flags the build cannot measure yet are listed as not counted, never as passed or failed.\n\n| Question type | Required facts | Abstain names | No navigation | No data dump | No internal words | Length class | No re-ask | Answer type | Answer group | Not counted |\n|---|---|---|---|---|---|---|---|---|---|---|\n",
     );
     let flags = |name: &str, g: &ConversationGroup| {
         format!(
-            "| {name} | {} | {} | {} | {} | {} | {} | {} | {} |\n",
+            "| {name} | {} | {} | {} | {} | {} | {} | {} | {} | {} | {} |\n",
             ratio(g.required_facts_found, g.required_facts_total),
             pct(&g.abstain_names),
             pct(&g.no_navigate),
@@ -955,6 +1026,8 @@ fn conversation_section(s: &Summary) -> String {
             pct(&g.no_internal_words),
             pct(&g.length_class),
             pct(&g.no_reask),
+            pct(&g.answer_type),
+            pct(&g.answer_group),
             g.not_counted,
         )
     };
@@ -1548,6 +1621,107 @@ mod tests {
         assert_eq!(ok("Lakshmi is the lead."), Some(true));
         assert_eq!(ok("I can help. Which screenplay do you mean?"), Some(false));
         assert_eq!(ok("Who do you mean?"), Some(false));
+    }
+
+    fn turn(answer_type: &str) -> TurnObs {
+        TurnObs {
+            answer_type: answer_type.into(),
+            group: group_of(answer_type).unwrap_or_default().into(),
+            how: "rule".into(),
+            ..TurnObs::default()
+        }
+    }
+
+    fn typed_score(want: &str, read: Option<TurnObs>) -> Score {
+        score(
+            &conversation_case(json!({ "answer_type": want })),
+            &Observation {
+                answer: "Anything.".into(),
+                turn: read,
+                ..Observation::default()
+            },
+        )
+    }
+
+    #[test]
+    fn the_answer_type_is_scored_exactly_and_by_group() {
+        let s = typed_score("count", Some(turn("count")));
+        assert_eq!(
+            (s.answer_type_ok, s.answer_group_ok),
+            (Some(true), Some(true))
+        );
+        // Another type of the same group: wrong exactly, right by group.
+        let s = typed_score("lookup", Some(turn("count")));
+        assert_eq!(
+            (s.answer_type_ok, s.answer_group_ok),
+            (Some(false), Some(true))
+        );
+        let s = typed_score("explain", Some(turn("count")));
+        assert_eq!(
+            (s.answer_type_ok, s.answer_group_ok),
+            (Some(false), Some(false))
+        );
+        // No trace row: not measured, never a pass or a fail.
+        let s = typed_score("count", None);
+        assert_eq!(
+            (s.answer_type_ok, s.answer_group_ok, s.not_counted),
+            (None, None, 1)
+        );
+        let sum = summarize(&[
+            typed_score("count", Some(turn("count"))),
+            typed_score("lookup", Some(turn("count"))),
+        ]);
+        assert_eq!(sum.conversation.answer_type.percent(), Some(50.0));
+        assert_eq!(sum.conversation.answer_group.percent(), Some(100.0));
+        assert_eq!(sum.conversation.not_counted, 0);
+        assert!(markdown("t", &sum, &[]).contains("| Answer type | Answer group |"));
+    }
+
+    #[test]
+    fn the_turn_read_comes_from_the_trace_and_old_databases_read_as_none() {
+        let c = rusqlite::Connection::open_in_memory().unwrap();
+        // A trace table from before the turn columns existed.
+        c.execute_batch(
+            "CREATE TABLE sys_ai_trace(request_id TEXT, lane TEXT);
+             INSERT INTO sys_ai_trace VALUES ('r0', 'direct');",
+        )
+        .unwrap();
+        assert_eq!(turn_from_trace(&c, "r0"), None);
+        c.execute_batch(
+            "ALTER TABLE sys_ai_trace ADD COLUMN answer_type TEXT NOT NULL DEFAULT '';
+             ALTER TABLE sys_ai_trace ADD COLUMN answer_group TEXT NOT NULL DEFAULT '';
+             ALTER TABLE sys_ai_trace ADD COLUMN turn_domains TEXT NOT NULL DEFAULT '';
+             ALTER TABLE sys_ai_trace ADD COLUMN length_class TEXT NOT NULL DEFAULT '';
+             ALTER TABLE sys_ai_trace ADD COLUMN turn_how TEXT NOT NULL DEFAULT '';
+             ALTER TABLE sys_ai_trace ADD COLUMN turn_vote REAL NOT NULL DEFAULT 0;
+             INSERT INTO sys_ai_trace VALUES ('r1', 'chat', 'count', 'facts', 'budget,schedule', 'one_sentence', 'neighbour', 0.6);",
+        )
+        .unwrap();
+        assert_eq!(turn_from_trace(&c, "r0"), None, "a row without a read");
+        let t = turn_from_trace(&c, "r1").unwrap();
+        assert_eq!(
+            (
+                t.answer_type.as_str(),
+                t.group.as_str(),
+                t.domains.as_str(),
+                t.how.as_str()
+            ),
+            ("count", "facts", "budget,schedule", "neighbour")
+        );
+        assert!((t.vote - 0.6).abs() < 1e-9);
+        assert_eq!(turn_from_trace(&c, "missing"), None);
+    }
+
+    #[test]
+    fn the_length_classes_are_the_ones_the_turn_stage_uses() {
+        use openframe_application::modules::ai::turn::LengthClass::*;
+        for (name, lo, hi) in LENGTH_CLASSES {
+            let class = [OneSentence, Short, Paragraph, Brief]
+                .into_iter()
+                .find(|c| c.code() == *name)
+                .unwrap_or_else(|| panic!("{name} is not a class of the turn stage"));
+            assert_eq!(class.words(), (*lo, *hi), "{name}");
+        }
     }
 
     #[test]

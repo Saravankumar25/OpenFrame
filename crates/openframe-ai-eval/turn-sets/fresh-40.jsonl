@@ -1,0 +1,40 @@
+{"id":"fresh-01","msg":"so what actually goes on in the harbour office scene with the clerk and babu","prev":"","want":"explain"}
+{"id":"fresh-02","msg":"sum up act 3 for me real quick","prev":"","want":"explain"}
+{"id":"fresh-03","msg":"why does Jose cut the net","prev":"","want":"explain"}
+{"id":"fresh-04","msg":"describe Rosily","prev":"","want":"explain"}
+{"id":"fresh-05","msg":"is babu related to anyone in the family","prev":"","want":"relation"}
+{"id":"fresh-06","msg":"how do sudheesh and anjali know each other","prev":"","want":"relation"}
+{"id":"fresh-07","msg":"whats between jose and varghese","prev":"","want":"relation"}
+{"id":"fresh-08","msg":"Prasad's number?","prev":"","want":"lookup"}
+{"id":"fresh-09","msg":"who's doing camera on this","prev":"","want":"lookup"}
+{"id":"fresh-10","msg":"when is aadhya not available","prev":"","want":"lookup"}
+{"id":"fresh-11","msg":"what time is call on day 4","prev":"","want":"lookup"}
+{"id":"fresh-12","msg":"the location for sc 17","prev":"","want":"lookup"}
+{"id":"fresh-13","msg":"what did we set aside for boat hire","prev":"","want":"lookup"}
+{"id":"fresh-14","msg":"catering, planned vs spent","prev":"","want":"compare"}
+{"id":"fresh-15","msg":"which costs more, camera or lighting","prev":"","want":"compare"}
+{"id":"fresh-16","msg":"are we over anywhere in the budget","prev":"","want":"compare"}
+{"id":"fresh-17","msg":"total number of shoot days?","prev":"","want":"count"}
+{"id":"fresh-18","msg":"count how many scenes Mariamma is in","prev":"","want":"count"}
+{"id":"fresh-19","msg":"how many call sheets are still drafts","prev":"","want":"count"}
+{"id":"fresh-20","msg":"give me all the locations we use","prev":"","want":"list"}
+{"id":"fresh-21","msg":"every scene set at night please","prev":"","want":"list"}
+{"id":"fresh-22","msg":"show me the cast list","prev":"","want":"list"}
+{"id":"fresh-23","msg":"bring up scene 24","prev":"","want":"navigate"}
+{"id":"fresh-24","msg":"go to the budget page","prev":"","want":"navigate"}
+{"id":"fresh-25","msg":"open the teaser","prev":"","want":"navigate"}
+{"id":"fresh-26","msg":"add Sudheesh to the day 6 call sheet","prev":"","want":"change"}
+{"id":"fresh-27","msg":"make a note that the jetty permit is pending","prev":"","want":"change"}
+{"id":"fresh-28","msg":"delete the task about the generator","prev":"","want":"change"}
+{"id":"fresh-29","msg":"how could the confession scene hit harder","prev":"","want":"brainstorm"}
+{"id":"fresh-30","msg":"pitch me a better title for the teaser","prev":"","want":"brainstorm"}
+{"id":"fresh-31","msg":"what if we cut scene 29 entirely, would it still work","prev":"","want":"brainstorm"}
+{"id":"fresh-32","msg":"how do I make a new draft","prev":"","want":"help"}
+{"id":"fresh-33","msg":"what does the lock draft button do","prev":"","want":"help"}
+{"id":"fresh-34","msg":"is there a way to print sides","prev":"","want":"help"}
+{"id":"fresh-35","msg":"nice one","prev":"","want":"chat"}
+{"id":"fresh-36","msg":"ugh this is so bad","prev":"","want":"chat"}
+{"id":"fresh-37","msg":"morning all, slept like a log","prev":"","want":"chat"}
+{"id":"fresh-38","msg":"no I meant the teaser, not the feature","prev":"how many scenes are in the screenplay","want":"count"}
+{"id":"fresh-39","msg":"bro I said explain it, not open it","prev":"open scene 12","want":"explain"}
+{"id":"fresh-40","msg":"wrong person again, the clerk","prev":"who plays Babu","want":"lookup"}

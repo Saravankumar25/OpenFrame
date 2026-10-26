@@ -7,7 +7,7 @@
 //! of the conversation holds the current focus. References only (ids), never text.
 
 use openframe_domain::AppResult;
-use rusqlite::{Connection, params};
+use rusqlite::{Connection, OptionalExtension, params};
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 
@@ -24,7 +24,7 @@ pub struct Focus {
     pub scene: Option<u32>,
     pub characters: Vec<String>,
     pub persons: Vec<String>,
-    /// Set by the answer-type step (slice S4); empty until then.
+    /// The answer type read for the newest message (`turn::AnswerType::code`); empty before the first.
     pub answer_type: Option<String>,
 }
 
@@ -93,6 +93,23 @@ pub fn load(c: &Connection, user_id: &str, conversation: &str) -> AppResult<Focu
             serde_json::from_value(v.get("focus")?.clone()).ok()
         })
         .unwrap_or_default())
+}
+
+/// The newest message the person sent in the conversation before the one being read (slice S4: a
+/// correction such as "I asked you" is read against it).
+pub fn last_message(
+    c: &Connection,
+    user_id: &str,
+    conversation: &str,
+) -> AppResult<Option<String>> {
+    Ok(c.query_row(
+        "SELECT request_text FROM ai_request
+         WHERE user_id = ?1 AND session_id = ?2 AND deleted_at IS NULL
+         ORDER BY created_at DESC, rowid DESC LIMIT 1",
+        params![user_id, conversation],
+        |r| r.get::<_, String>(0),
+    )
+    .optional()?)
 }
 
 /// `scope_json` with the focus added.
