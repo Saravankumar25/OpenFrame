@@ -167,27 +167,28 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
     }
 
     // Scenes by a word of their heading: "scenes set in 1999".
-    if scenes.is_empty() && matches!(t, AnswerType::List | AnswerType::Count) {
-        if let Some(y) = YEAR.captures(&ctx.message) {
-            for sp in &sps {
-                let Some(d) = ctx.draft(&sp.id) else { continue };
-                let hits: Vec<u32> = queries::scenes(ctx.conn, &d.id)?
-                    .into_iter()
-                    .filter(|s| s.heading.contains(&y[1]))
-                    .map(|s| s.number as u32)
-                    .collect();
-                if !hits.is_empty() {
-                    let mut f = Fact::new("Scenes", &sp.id)
-                        .f("heading has", &y[1])
-                        .f("screenplay", &sp.title)
-                        .f("scenes", numbers(hits.iter().copied()))
-                        .f("count", hits.len().to_string())
-                        .prio(P_HIGH);
-                    for n in &hits {
-                        f = f.require(n.to_string());
-                    }
-                    out.push(f);
+    if scenes.is_empty()
+        && matches!(t, AnswerType::List | AnswerType::Count)
+        && let Some(y) = YEAR.captures(&ctx.message)
+    {
+        for sp in &sps {
+            let Some(d) = ctx.draft(&sp.id) else { continue };
+            let hits: Vec<u32> = queries::scenes(ctx.conn, &d.id)?
+                .into_iter()
+                .filter(|s| s.heading.contains(&y[1]))
+                .map(|s| s.number as u32)
+                .collect();
+            if !hits.is_empty() {
+                let mut f = Fact::new("Scenes", &sp.id)
+                    .f("heading has", &y[1])
+                    .f("screenplay", &sp.title)
+                    .f("scenes", numbers(hits.iter().copied()))
+                    .f("count", hits.len().to_string())
+                    .prio(P_HIGH);
+                for n in &hits {
+                    f = f.require(n.to_string());
                 }
+                out.push(f);
             }
         }
     }

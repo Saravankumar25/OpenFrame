@@ -28,6 +28,7 @@ mod neighbour;
 mod rules;
 #[cfg(test)]
 mod tests;
+pub mod warm;
 
 use std::sync::Arc;
 use std::time::Duration;

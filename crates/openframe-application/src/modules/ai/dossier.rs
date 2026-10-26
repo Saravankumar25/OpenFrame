@@ -22,7 +22,8 @@
 //!    paragraph. The lowest priority facts go first; a fact that carries a required value never
 //!    goes.
 //!
-//! Nothing here writes, prompts or checks: S7 puts the dossier into the writer, S6 checks against it.
+//! Nothing here writes, prompts or checks: the answer stage (`answer`) puts the dossier into the
+//! writer and checks the written answer against it.
 
 mod ctx;
 mod fetch;
@@ -143,15 +144,22 @@ impl Fact {
 
     /// `Kind | field: value | field: value | id: <id>`. A sentence comes first and stands for the kind.
     pub fn render(&self) -> String {
+        let mut line = self.render_plain();
+        if !self.record_id.is_empty() {
+            let _ = write!(line, " | id: {}", self.record_id);
+        }
+        line
+    }
+
+    /// The same line without the record id: what the writer is shown. An id costs about fifteen
+    /// tokens and invites the model to echo it; the sources are found by code from the facts.
+    pub fn render_plain(&self) -> String {
         let mut line = match &self.sentence {
             Some(s) => s.clone(),
             None => self.kind.to_string(),
         };
         for (n, v) in &self.fields {
             let _ = write!(line, " | {n}: {v}");
-        }
-        if !self.record_id.is_empty() {
-            let _ = write!(line, " | id: {}", self.record_id);
         }
         line
     }
@@ -173,6 +181,9 @@ pub struct Dossier {
     /// How many times a guard removed, hid or marked something.
     pub notes_on_guard: usize,
     pub tokens_estimate: usize,
+    /// What the message names once the scene on screen, the focus and the default screenplay are
+    /// counted in. `resolved.ambiguous` is the one question left when nothing settles it.
+    pub resolved: Resolved,
 }
 
 /// What the trace keeps: numbers only, never the text.
@@ -190,6 +201,16 @@ impl Dossier {
         let mut out = String::new();
         for f in &self.facts {
             out.push_str(&f.render());
+            out.push('\n');
+        }
+        out
+    }
+
+    /// The facts as the writer reads them: one per line, no record ids.
+    pub fn render_plain(&self) -> String {
+        let mut out = String::new();
+        for f in &self.facts {
+            out.push_str(&f.render_plain());
             out.push('\n');
         }
         out
@@ -324,6 +345,7 @@ fn finish(
         missing,
         notes_on_guard,
         tokens_estimate,
+        resolved: resolved.clone(),
     }
 }
 

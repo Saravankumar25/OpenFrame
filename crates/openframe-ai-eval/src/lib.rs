@@ -4,6 +4,7 @@
 //! The gold format is described in `gold/README.md`.
 
 pub mod fixture;
+pub mod latency;
 pub mod turn;
 
 use std::collections::BTreeMap;
@@ -311,6 +312,10 @@ pub struct Observation {
     /// What the answer-type stage read, from its trace row.
     #[serde(default)]
     pub turn: Option<TurnObs>,
+    /// The stage times of this request (trace row and what the request recorded), for the latency
+    /// report. The engine figures are added by the runner.
+    #[serde(default)]
+    pub timing: Option<latency::CaseTiming>,
 }
 
 /// What the answer-type stage (spec slice S4) recorded for one request: codes and a number only.

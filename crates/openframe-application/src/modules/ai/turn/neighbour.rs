@@ -65,7 +65,7 @@ fn unit(mut v: Vec<f32>) -> Vec<f32> {
 
 /// The examples, embedded once per search model. None while another thread is still embedding them
 /// or when the model fails: the caller skips this step.
-fn prototypes(e: &dyn Embedder) -> Option<Prototypes> {
+pub(super) fn prototypes(e: &dyn Embedder) -> Option<Prototypes> {
     let key = e.model_id();
     if let Some(p) = CACHE.lock().get(&key) {
         return Some(p.clone());

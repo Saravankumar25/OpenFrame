@@ -64,7 +64,14 @@ pub struct ChatRequest {
     pub top_p: Option<f32>,
     pub top_k: Option<u32>,
     pub timeout: Duration,
+    /// The engine slot the call runs in. The engine runs one slot (measured for slice S8: with two
+    /// slots it stored no prompt start at all), so this is always `SLOT_ANSWER` or unset; it is sent
+    /// as `id_slot` and changes nothing today.
+    pub slot: Option<u32>,
 }
+
+/// The only engine slot.
+pub const SLOT_ANSWER: u32 = 0;
 
 impl ChatRequest {
     pub fn new(messages: Vec<ChatMessage>) -> Self {
@@ -76,7 +83,12 @@ impl ChatRequest {
             top_p: None,
             top_k: None,
             timeout: Duration::from_secs(180),
+            slot: None,
         }
+    }
+    pub fn slot(mut self, slot: u32) -> Self {
+        self.slot = Some(slot);
+        self
     }
     pub fn with_schema(mut self, schema: Value) -> Self {
         self.json_schema = Some(schema);
@@ -107,7 +119,13 @@ pub fn build_body(req: &ChatRequest) -> Value {
         "temperature": req.temperature,
         "max_tokens": req.max_tokens,
         "stream": false,
+        // The engine keeps the work done on the start of earlier prompts and reads only what
+        // differs. It is the engine default; it is written out so a changed default cannot turn it off.
+        "cache_prompt": true,
     });
+    if let Some(slot) = req.slot {
+        body["id_slot"] = json!(slot);
+    }
     if let Some(p) = req.top_p {
         body["top_p"] = json!(p);
     }
@@ -403,7 +421,7 @@ mod tests {
     #[test]
     fn sampling_fields_are_written_only_when_set() {
         let req = ChatRequest::new(vec![ChatMessage::user("hi")]);
-        // The body of a request that sets nothing is the one sent before these fields existed.
+        // The body of a request that sets nothing: no sampling limits, prompt reuse on.
         assert_eq!(
             build_body(&req),
             json!({
@@ -412,12 +430,33 @@ mod tests {
                 "temperature": 0.2f32,
                 "max_tokens": 512,
                 "stream": false,
+                "cache_prompt": true,
             })
         );
         let body = build_body(&req.temperature(0.7).top_p(0.5).top_k(40));
         assert_eq!(body["top_p"], 0.5);
         assert_eq!(body["top_k"], 40);
         assert_eq!(body["temperature"], json!(0.7f32));
+    }
+
+    #[test]
+    fn prompt_reuse_is_on_for_every_request_whatever_else_it_sets() {
+        let req = ChatRequest::new(vec![ChatMessage::user("hi")]);
+        assert_eq!(build_body(&req)["cache_prompt"], true);
+        let short = build_body(
+            &req.clone()
+                .max_tokens(6)
+                .with_schema(json!({"type":"object"})),
+        );
+        assert_eq!(
+            (
+                short["cache_prompt"].as_bool(),
+                short["max_tokens"].as_u64()
+            ),
+            (Some(true), Some(6))
+        );
+        assert!(build_body(&req).get("id_slot").is_none());
+        assert_eq!(build_body(&req.slot(SLOT_ANSWER))["id_slot"], 0);
     }
 
     #[test]

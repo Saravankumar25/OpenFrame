@@ -1,5 +1,10 @@
 # AI answer paths: how a question becomes an answer (Windows, October 2026)
 
+> **Superseded for the answer path on 2026-10-26 (slice S7).** The five lanes below no longer run. Every message takes one
+> conversational path: code resolves and fetches, the model writes, code checks. The current description is section 5 and
+> section 4.5 of [ai-conversational-harness.md](../specs/ai-conversational-harness.md). This page stays for the history of
+> the decisions and for the parts that did not change (the tool catalogue, Change Sets, Cancel, the trace).
+
 > Written 2026-10-20 for the owner's AI briefs (`OpenFrameAI.docx`, 19 October, and the context engineering brief,
 > 20 October). It records the request path as built, the decisions taken, what is measured and what is not. Code is the
 > source of truth; this page names the files. Updated 2026-10-24 for the lanes, briefings, code verifiers, progress and

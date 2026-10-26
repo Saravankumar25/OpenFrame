@@ -259,7 +259,8 @@ export default function Assistant({ status, hasProject }: { status: AiStatusDto;
           {exchanges.length === 0 && !pending && (
             <div className="xs muted" style={{ padding: "8px 0" }}>
               Ask about your project, for example “How many scenes are in the script?”, “Open Scene 12.” or “Create a task to scout the
-              railway station.” The assistant can look things up in several steps; changes are only ever prepared for you to review.
+              railway station.” Answers come from your project and say what they are based on; changes are only ever prepared for you
+              to review.
             </div>
           )}
           {exchanges.map((x) => (
@@ -373,11 +374,7 @@ export function ResultView({ r, onChanged }: { r: AiResultDto; onChanged: () => 
     <>
       <div className={`msg a${r.kind === "Failed" || r.kind === "Unavailable" ? " ai-err" : ""}`} data-kind={r.kind}>
         <AnswerText text={r.content} />
-        {r.coverage && (
-          <div className="xs muted ai-coverage">
-            Used {r.coverage.used} of {r.coverage.total} {r.coverage.total === 1 ? "scene" : "scenes"}
-          </div>
-        )}
+
         {reasonsVisible && r.details.length > 0 && (
           <div className="xs muted" style={{ marginTop: 4 }}>
             {r.details.map((d, i) => (

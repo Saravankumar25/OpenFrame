@@ -135,13 +135,26 @@ describe("progress while a request runs", () => {
 });
 
 describe("answers", () => {
-  it("show how much of the screenplay a whole-story answer used", () => {
-    renderWithClient(<ResultView r={result({ content: "The story opens in a kitchen.", coverage: { used: 36, total: 36 } })} onChanged={() => undefined} />);
-    expect(screen.getByText("Used 36 of 36 scenes")).toBeTruthy();
+  it("draw a written answer as one plain paragraph with its sources behind the button", () => {
+    renderWithClient(
+      <ResultView
+        r={result({
+          content: "Maya Rao plays Anna.",
+          confidence: "Inferred",
+          lane: "write",
+          provenance: [{ kind: "Cast", label: "Maya Rao", nav: { workspace: "production", sub: "cast", params: {} } }],
+        })}
+        onChanged={() => undefined}
+      />,
+    );
+    expect(screen.getByText("Maya Rao plays Anna.")).toBeTruthy();
+    expect(screen.getByText("See sources")).toBeTruthy();
+    expect(screen.getByText("Cast: Maya Rao")).toBeTruthy();
   });
 
-  it("say nothing about coverage when the answer has none", () => {
-    renderWithClient(<ResultView r={result({ content: "There are 10 scenes." })} onChanged={() => undefined} />);
+  it("show a sentence the project could not support as an ordinary answer with no coverage line", () => {
+    renderWithClient(<ResultView r={result({ content: "Lead cast, planned: 40,00,000.", confidence: "Exact" })} onChanged={() => undefined} />);
+    expect(screen.getByText("Lead cast, planned: 40,00,000.")).toBeTruthy();
     expect(screen.queryByText(/Used \d+ of/)).toBeNull();
   });
 

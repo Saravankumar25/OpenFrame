@@ -288,7 +288,7 @@ fn the_big_project_index_builds_within_the_budget() {
     let mut ix = None;
     for _ in 0..5 {
         let t = Instant::now();
-        let built = s.store.read(|c| EntityIndex::from_database(c)).unwrap();
+        let built = s.store.read(EntityIndex::from_database).unwrap();
         best = best.min(t.elapsed());
         ix = Some(built);
     }

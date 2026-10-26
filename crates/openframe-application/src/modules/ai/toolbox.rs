@@ -65,15 +65,9 @@ pub enum ToolStep {
 /// The retrieval tool (contract C2 consumer).
 pub const RETRIEVE_TOOL: &str = "retrieve_context";
 
-/// Tools that finish the request: a focused question, private-note handling and
-/// model-written text over bounded context. Navigation tools are terminal too.
-const TERMINAL_READS: &[&str] = &[
-    "clarify",
-    "private_information",
-    "answer_product_question",
-    "summarize_scope",
-    "suggest_breakdown",
-];
+/// Tools that finish the request: private-note handling and the breakdown suggestion. Navigation
+/// tools are terminal too.
+const TERMINAL_READS: &[&str] = &["private_information", "suggest_breakdown"];
 
 /// Registry queries whose facts the original deterministic tools expose.
 const LEGACY_COVERS: &[(&str, &[&str])] = &[
@@ -336,7 +330,7 @@ fn words(text: &str) -> Vec<String> {
         .collect()
 }
 
-/// Always offered (small, general): retrieval, search, navigation, clarification.
+/// Always offered (small, general): retrieval, search, navigation.
 const CORE_TOOLS: &[&str] = &[
     RETRIEVE_TOOL,
     "search_project",
@@ -344,19 +338,13 @@ const CORE_TOOLS: &[&str] = &[
     "open_object",
     "open_workspace",
     "open_scene",
-    "clarify",
-    "answer_product_question",
     "private_information",
 ];
 
 /// Where a tool sits in the set offered to every request, in the order its prompt line is written;
-/// `None` for a tool that is offered only when the request calls for it. `answer_product_question`
-/// is in `CORE_TOOLS` but is offered to product questions only, so it is not part of the fixed set.
+/// `None` for a tool that is offered only when the request calls for it.
 pub fn always_offered_rank(name: &str) -> Option<usize> {
-    CORE_TOOLS
-        .iter()
-        .position(|n| *n == name)
-        .filter(|_| name != "answer_product_question")
+    CORE_TOOLS.iter().position(|n| *n == name)
 }
 
 /// A deterministic, request-relevant subset of `tools_for` that fits a small
@@ -412,11 +400,9 @@ pub fn tools_for_request(
         .filter(|(s, _, _)| *s > 0)
         .collect();
     scored.sort_by(|a, b| b.0.cmp(&a.0).then(a.1.cmp(&b.1)));
-    let product = super::commands::may_be_product_question(request);
     let mut out: Vec<ToolDef> = all
         .iter()
         .filter(|t| CORE_TOOLS.contains(&t.name.as_str()))
-        .filter(|t| product || t.name != "answer_product_question")
         .cloned()
         .collect();
     let mut used: usize = out.iter().map(rendered_len).sum();

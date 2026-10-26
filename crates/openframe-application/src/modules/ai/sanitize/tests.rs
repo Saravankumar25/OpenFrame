@@ -2,50 +2,11 @@ use super::*;
 
 #[test]
 fn delimiter_tags_never_reach_the_person() {
-    let a = "<project_data trust=\"untrusted\"> [Project map] Venkat repairs radios.</project_data>\n<OBSERVATION step=\"1\" tool=\"x\">Lakshmi waits.</observation> <conversation_history> <product_guide> </product_guide";
+    let a = "<project_data trust=\"untrusted\"> Venkat repairs radios.</project_data>\n<OBSERVATION step=\"1\" tool=\"x\">Lakshmi waits.</observation> <conversation_history> <product_guide> </product_guide <facts> </facts> <memory> <focus>";
     let c = clean(a);
     assert!(!c.contains('<'), "{c}");
-    assert!(!c.contains("Project map"), "{c}");
     assert!(c.contains("Venkat repairs radios."), "{c}");
     assert!(c.contains("Lakshmi waits."), "{c}");
-}
-
-#[test]
-fn briefing_metadata_labels_go_with_their_values() {
-    let a = "Scene 4: INT. VENKAT RAO'S HOUSE - KITCHEN - NIGHT Scene 4: INT. VENKAT RAO'S HOUSE - KITCHEN - NIGHT Characters: NEWSREADER, LAKSHMI, VENKAT RAO Location: VENKAT RAO'S HOUSE Time: NIGHT";
-    let c = clean(a);
-    assert_eq!(c, "Scene 4: INT. VENKAT RAO'S HOUSE - KITCHEN - NIGHT");
-}
-
-#[test]
-fn source_labels_and_draft_prefixes_go() {
-    let a = "[Screenplay \u{b7} Scene 2: INT. VENKAT RADIO WORKS - DAY]\nScene: Scene 2: ...\nCharacters: VENKAT RAO, LAKSHMI Location: the shop\nScene 5 \u{b7} Example-Short (imported) Characters: DEVI, KIRAN Time: DAY\n[Briefing: Scene 4] [Act 2 of 3: The Chase]\nLakshmi hands Venkat the radio.";
-    let c = clean(a);
-    assert_eq!(c, "Lakshmi hands Venkat the radio.");
-}
-
-#[test]
-fn record_and_note_lines_go() {
-    let a = "Record: relationship A -> B: \"friend\"\nNote: 3 more lines not shown.\nDevi gives Kiran the kite.";
-    assert_eq!(clean(a), "Devi gives Kiran the kite.");
-}
-
-#[test]
-fn briefing_labels_in_front_of_a_value_are_dropped_and_the_value_kept() {
-    let a = "Scene 4: synopsis: Devi gives Kiran the kite.\nScene 4: first action: Kiran waits.\nScene 4: the scene before is Scene 3: the market.";
-    let c = clean(a);
-    assert!(c.starts_with("Devi gives Kiran the kite."), "{c}");
-    assert!(!c.contains("synopsis"), "{c}");
-    assert!(!c.contains("first action"), "{c}");
-    assert!(c.contains("Kiran waits."), "{c}");
-}
-
-#[test]
-fn briefing_headings_are_dropped_before_hashes_are_stripped() {
-    let t = super::super::orchestrator::plain_text(
-        "## Scene 4 (Example-Short (imported))\n## Project map (Draft 1)\nDevi gives Kiran the kite.",
-    );
-    assert_eq!(t, "Devi gives Kiran the kite.");
 }
 
 #[test]
@@ -85,7 +46,7 @@ fn a_clean_answer_is_unchanged_and_layout_stays() {
 }
 
 #[test]
-fn a_label_inside_a_word_is_not_a_label() {
-    let a = "Meantime: Devi waits. Footnote: none.";
+fn a_label_that_is_part_of_the_story_is_not_removed() {
+    let a = "Location: the harbour at night. Characters: none are named. Note: the radio is off.";
     assert_eq!(clean(a), a);
 }

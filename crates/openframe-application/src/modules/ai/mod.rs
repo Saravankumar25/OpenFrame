@@ -15,24 +15,21 @@
 //! OpenFrame stays fully usable when the AI is not downloaded, missing or damaged: nothing else
 //! depends on this module.
 
-mod briefing;
+mod action;
+mod answer;
 mod cancel;
 pub mod catalog;
 pub mod change_set;
-mod chat;
 mod commands;
 mod conversation_export;
 pub mod dossier;
 pub mod index;
 pub mod intelligence;
-mod intent;
 pub mod knowledge;
-mod lanes;
 pub mod memory;
 pub mod offline;
 pub mod orchestrator;
 pub mod queries;
-mod recipe;
 pub mod records;
 pub mod retrieval;
 mod sanitize;
@@ -40,14 +37,13 @@ pub mod scope;
 pub mod service;
 #[cfg(test)]
 mod test_script;
+mod text;
 pub mod toolbox;
 pub mod tools;
 pub mod trace;
 pub mod turn;
 pub mod types;
 mod typo;
-mod understand;
-mod verify;
 
 use openframe_domain::{Actor, AppResult, Capability};
 use serde::{Deserialize, Serialize};
@@ -55,8 +51,6 @@ use ts_rs::TS;
 
 use crate::core::AppCore;
 use crate::registry::Registry;
-pub use commands::set_direct_routes;
-pub use intent::intent_target;
 pub use offline::{
     AiComponentDto, AiDiagnosticsDto, AiDownloadDto, AiImportArgs, AiImportResult, AiStatusDto,
 };
@@ -67,6 +61,16 @@ use offline::{
 pub use orchestrator::AskArgs;
 pub use service::{AiService, service};
 pub use types::*;
+
+/// Kept only so `openframe-ai-eval` still compiles: the intent router and the direct question routes
+/// are retired (spec ai-conversational-harness, 4.2 and 4.3), so there is nothing to look up or switch.
+/// Delete both together with their two calls in the eval crate.
+pub fn intent_target(_name: &str) -> Option<String> {
+    None
+}
+
+/// See [`intent_target`].
+pub fn set_direct_routes(_on: bool) {}
 
 pub fn register(r: &mut Registry) {
     use crate::registry::{OperationMetadata as M, hidden as h};

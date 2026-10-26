@@ -36,11 +36,9 @@ Examples:
 \"where do I turn on dark mode\" -> help
 \"this is useless\" -> chat";
 
-pub(super) fn ask(
-    model: &dyn InferenceProvider,
-    message: &str,
-    previous: Option<&str>,
-) -> Option<AnswerType> {
+/// The request that reads one message. It starts with the same fixed text every time, so the engine
+/// keeps its work on that start and reads only the message.
+pub(super) fn request(message: &str, previous: Option<&str>) -> ChatRequest {
     let context = previous
         .map(|p| {
             format!(
@@ -55,7 +53,15 @@ pub(super) fn ask(
     .max_tokens(6);
     req.temperature = 0.0;
     req.timeout = TIMEOUT;
-    parse(&model.chat(&req).ok()?)
+    req
+}
+
+pub(super) fn ask(
+    model: &dyn InferenceProvider,
+    message: &str,
+    previous: Option<&str>,
+) -> Option<AnswerType> {
+    parse(&model.chat(&request(message, previous)).ok()?)
 }
 
 /// The first word of the reply, when it is on the list.

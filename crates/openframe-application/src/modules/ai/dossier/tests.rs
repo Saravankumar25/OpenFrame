@@ -321,6 +321,7 @@ fn the_summary_holds_counts_only() {
         missing: vec!["no character called Marcus".into()],
         notes_on_guard: 0,
         tokens_estimate: 42,
+        resolved: Default::default(),
     };
     assert_eq!(
         d.summary(),

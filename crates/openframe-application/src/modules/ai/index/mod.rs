@@ -304,7 +304,7 @@ pub fn project_index(s: &ProjectSession) -> AppResult<Arc<EntityIndex>> {
     {
         return Ok(ix.clone());
     }
-    let ix = Arc::new(s.store.read(|c| EntityIndex::from_database(c))?);
+    let ix = Arc::new(s.store.read(EntityIndex::from_database)?);
     *slot = Some((generation, ix.clone()));
     Ok(ix)
 }

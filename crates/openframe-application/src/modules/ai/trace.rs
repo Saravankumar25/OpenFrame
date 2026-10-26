@@ -36,16 +36,12 @@ pub struct TraceRow<'a> {
     pub result_kind: &'a str,
     pub error_code: Option<&'a str>,
     pub proposed: bool,
-    /// The lane the request took, the next best lane and the rule's strength (0 to 1).
-    pub lane: &'a str,
-    pub runner_up_lane: &'a str,
-    pub lane_margin: f64,
-    /// The closest built-in intent (empty when the step did not run), its cosine score, the lead over
-    /// the next different intent, and whether the router used it.
-    pub intent: &'a str,
-    pub intent_score: f64,
-    pub intent_margin: f64,
-    pub intent_used: bool,
+    /// The path the turn took (write, navigate, change or fixed). Stored in the `lane` column, which
+    /// predates the conversational path and keeps its name because the trace table has no migration.
+    pub path: &'a str,
+    /// The fallback the answer stage used (last_resort or abstained), empty when the model's answer
+    /// was shown. Stored in the `runner_up_lane` column.
+    pub fallback: &'a str,
     /// The person pressed Stop and the request ended early.
     pub cancelled: bool,
     /// What the answer-type stage read from the message, and how long it took.
@@ -69,9 +65,9 @@ pub fn record(core: &AppCore, r: &TraceRow<'_>) {
             "INSERT INTO sys_ai_trace(id, request_id, project_id, created_at, scope_kind, model_reference, context_tokens,
                                       tools_offered, tools_chosen, steps, sources, model_calls, tokens_in, tokens_out,
                                       context_fill_pct, prompt_ms, generation_ms, total_ms, passes, checks_failed,
-                                      result_kind, error_code, proposed, cached_tokens, lane, runner_up_lane, lane_margin,
-                                      intent, intent_score, intent_margin, intent_used, cancelled,
-                                      answer_type, answer_group, turn_domains, length_class, turn_how, turn_vote, turn_ms)
+                                      result_kind, error_code, proposed, cached_tokens, lane, runner_up_lane, cancelled,
+                                      answer_type, answer_group, turn_domains, length_class, turn_how, turn_vote, turn_ms,
+                                      dossier_facts, dossier_tokens, dossier_missing, dossier_required, dossier_ms)
              VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20, ?21, ?22, ?23, ?24, ?25, ?26, ?27,
                      ?28, ?29, ?30, ?31, ?32, ?33, ?34, ?35, ?36, ?37, ?38, ?39)",
             params![
@@ -99,13 +95,8 @@ pub fn record(core: &AppCore, r: &TraceRow<'_>) {
                 r.error_code,
                 r.proposed,
                 u.cached_tokens,
-                r.lane,
-                r.runner_up_lane,
-                r.lane_margin,
-                r.intent,
-                r.intent_score,
-                r.intent_margin,
-                r.intent_used,
+                r.path,
+                r.fallback,
                 r.cancelled,
                 r.turn.map_or("", |t| t.answer_type.code()),
                 r.turn.map_or("", |t| t.group.code()),
@@ -114,6 +105,11 @@ pub fn record(core: &AppCore, r: &TraceRow<'_>) {
                 r.turn.map_or("", |t| t.how.code()),
                 r.turn.map_or(0.0, |t| f64::from(t.vote)),
                 r.turn_ms.min(i64::MAX as u64) as i64,
+                r.dossier.map_or(0, |d| d.facts as i64),
+                r.dossier.map_or(0, |d| d.tokens as i64),
+                r.dossier.map_or(0, |d| d.missing as i64),
+                r.dossier.map_or(0, |d| d.required as i64),
+                r.dossier_ms.min(i64::MAX as u64) as i64,
             ],
         )?;
         Ok(())
@@ -363,8 +359,9 @@ fn trace_json(c: &Connection, request_id: Option<&str>) -> AppResult<Vec<Value>>
         "SELECT request_id, project_id, created_at, scope_kind, model_reference, context_tokens, tools_offered,
                 tools_chosen, steps, sources, model_calls, tokens_in, tokens_out, cached_tokens, context_fill_pct,
                 prompt_ms, generation_ms, total_ms, passes, checks_failed, result_kind, error_code, proposed, outcome,
-                lane, runner_up_lane, lane_margin, intent, intent_score, intent_margin, intent_used, cancelled,
-                answer_type, answer_group, turn_domains, length_class, turn_how, turn_vote, turn_ms
+                lane, runner_up_lane, cancelled,
+                answer_type, answer_group, turn_domains, length_class, turn_how, turn_vote, turn_ms,
+                dossier_facts, dossier_tokens, dossier_missing, dossier_required, dossier_ms
          FROM sys_ai_trace WHERE (?1 IS NULL OR request_id = ?1) ORDER BY created_at",
     )?;
     let names: Vec<String> = st.column_names().iter().map(|s| s.to_string()).collect();

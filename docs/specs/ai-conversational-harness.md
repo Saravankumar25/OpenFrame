@@ -77,8 +77,11 @@ cost the user data or privacy?* If neither, the model writes it.
 | **Last-resort fact sentence** (spike): when an answer to a lookup or count still fails the checks after three passes, show the verified fact in one plain sentence built from the record ("Lead cast, planned: 40,00,000.") | The user gets a correct answer instead of a wrong one. Used only after the model failed; it is counted in the trace so the rate can be driven down |
 | Errors and "the model is not ready" messages | Fixed text |
 | Cancel and progress lines | UI behaviour |
+| The one question the names leave open ("Which screenplay do you mean: A or B?") | The resolver (S3) knows what it could not settle; a question by code is exact and costs no model call. The turn ends there and the answer is stored as a clarification |
+| Navigation: the target and the confirming sentence ("Opening Scene 42 ...") | The target is named by the message and found by the resolver; the sentence is built from the target. Runs only when the answer type is navigate |
+| Exact commands ("Create a task to scout the station", "Open scene 42") | The message names its tool and arguments outright. They are hints to the answer type read, then run as the person, through the same toolbox and permission checks |
 
-### 4.2 Moves to the model (today these are code-written or code-routed)
+### 4.2 Moves to the model (these were code-written or code-routed; done in slice S7, see 4.5)
 
 | Today | Becomes |
 |---|---|
@@ -90,7 +93,7 @@ cost the user data or privacy?* If neither, the model writes it.
 | Project overview as the fallback when the loop stops | Removed. The fallback is the abstention sentence, the last-resort fact sentence, or one targeted clarification |
 | Keyword tool picker with a 7,000-character catalogue as the model's menu | Removed from the core path. The harness fetches by answer type and domain. Tools remain as the fetch layer |
 
-### 4.3 Removed or demoted
+### 4.3 Removed or demoted (done in slice S7, see 4.5)
 
 | Piece | Fate |
 |---|---|
@@ -102,6 +105,30 @@ cost the user data or privacy?* If neither, the model writes it.
 ### 4.4 Rule for later changes
 
 Adding a new deterministic answer needs an entry in section 4.1 with its reason. "It is faster" is not a reason.
+
+### 4.5 What slice S7 retired (2026-10-26, commit-ready list)
+
+Every row of 4.2 and 4.3 is done. One conversational path runs for every message (code reads and fetches, the model
+writes, code checks); the old question paths are gone, with their tests and strings:
+
+- **Deleted modules** (all in `crates/openframe-application/src/modules/ai/`): `lanes.rs` (the lane router and the five
+  lanes as the answer path), `chat.rs` and `recipe.rs` (the Chat and Recipe lanes), `briefing.rs` and `understand.rs`
+  (the evidence they built), `intent.rs` with `intents.json` (the intent prototypes that fed the router), `verify.rs`
+  (the old rewrite loop and the language-only verifier of the Agent lane), and each one's `tests.rs`.
+- **Trimmed**: `typo.rs` keeps only the edit distance and the list of ordinary words that entity resolution uses; the
+  routing copy (`correct`) is gone. `commands.rs` keeps only the exact commands that start a change or open something
+  ("Create a task to ...", "Open scene 42") and the refusal for the licence, payment and team password; every route that
+  answered a question (counts, facts, descriptions, product help), `follow_up`, `just_the_number` and the greeting
+  replies are gone. `sanitize.rs` keeps only the wash of our own tags and of sentences about the reply. `tools.rs` loses
+  the tools `clarify`, `summarize_scope`, `character_profile` and `answer_product_question`, and `Generation` keeps only
+  the breakdown suggestion. `toolbox.rs` no longer offers a product tool by keyword.
+- **Gone from the result**: `coverage` ("Used 36 of 36 scenes"), the project-overview fallback of the loop, the intent
+  columns of the trace (the columns stay in the table; nothing writes them).
+- **Kept**: the read tools and the toolbox (tests and the evaluation use them; the assistant's menu no longer does), the
+  Change Set proposals and their review card, exact commands, cancel and progress lines, the conversation export, the
+  keyword picker `tools_for_request` as the menu of a change request only (proposal tools and two lookups).
+- **Two shims for the evaluation crate**: `ai::intent_target` and `ai::set_direct_routes` remain as empty functions so
+  `openframe-ai-eval` still compiles. Delete both together with their two calls in that crate.
 
 ## 5. One turn, step by step
 
@@ -422,6 +449,34 @@ The chat answer type uses a different, shorter policy with no facts block. Brain
 two concrete options, each tied to a listed fact (spike: a plain "suggest" prompt made the model repeat the request).
 Sampling is moderate; the Chat lane values of today are a starting point and are tuned in the eval.
 
+Built in slice S7 (`modules/ai/answer/prompt.rs`; stage `answer::run`, typed input `answer::Input`, typed output
+`answer::Answered`):
+
+- **Policies.** The three texts are the ones spike S1b measured in round 2, word for word: seven rules for facts,
+  narrative and help (rule 6 states a relationship line first, rule 7 keeps every title and name), the brainstorm policy
+  ("One option is ..."), and the chat policy. The group of the answer type picks one: facts, narrative and help share the
+  first.
+- **Two messages.** The system message holds parts 1 and 2 and nothing else: the policy and one orientation line, "For
+  orientation only, not a source for your answer: the project holds "A" (10 scenes), "B" (3 scenes).", titles sorted, no
+  timestamp, id or counter. The same project and the same group give the same bytes on every turn (a test compares two
+  turns), so the engine's stored work for it is reused. A chat prompt is the chat policy alone and carries no map.
+- **The user message, in order:** `<memory>` (long-term entries as lines, then "Earlier: a; b" from the rolling summary),
+  `<conversation>` (the last eight turns, "Person: ..." and "Assistant: ..."), `<focus>` ("scene 35 of LOW TIDE RADIO, Young
+  Anjali (played by Aadhya Varma)"), `<facts>` (one fact per line, **without record ids**: an id costs about fifteen tokens
+  and invites an echo; the sources are found by code), "The project does not hold:" with the statements of `missing`,
+  `Request: ...`, a note for each name the message spelled with a typo ("say once that you took it to mean X"), "Write the
+  whole answer in Hindi." when the message is not English, and the length sentence of the class. Every block except the
+  request is escaped (`orchestrator::escape_untrusted`): project text, memory and earlier turns cannot close or open a tag.
+- **Length.** The sentence is the spike's: one sentence of at most 30 words, at most 80 words, one paragraph of 4 to 7
+  sentences at most 200 words, at most 40 words; the token limits are 90, 170, 340 and 80. Temperature 0.3, the engine's
+  answer slot (`SLOT_ANSWER`), so the stored start of the prompt survives the short label calls.
+- **Navigate and change are not written by the model.** Navigate runs the navigation tool on the target the resolver
+  found (a scene of the named screenplay, or the first other thing named), and the sentence that confirms is built by code
+  from the target ("Opening Scene 42 ..."). Change keeps its path: an exact command is its tool call, anything else runs
+  the bounded step loop with the proposal tools and two lookups on offer, and the result is a Change Set the person
+  reviews. An exact command is a hint to the answer type read: "Leave a comment on the draft: tighten act two." is a change
+  and "Jump to the call sheets." is navigation, whatever verb they start with; anger is never promoted.
+
 ### 5.6 Check (code, at most three passes)
 
 1. Every name, number and scene reference in the answer appears in the facts.
@@ -435,9 +490,48 @@ A claim that is not a name or number (an invented reason or event in a paragraph
 such invention in a relation paragraph. Two measures: the facts-first format and required facts keep the paragraph close to
 the record, and the human reading in section 7.6 measures what code cannot.
 
-On failure, one rewrite pass with the exact offenders named, as `verify.rs` does today. After three passes: a lookup or
+On failure, one rewrite pass with the exact offenders named, as `verify.rs` did. After three passes: a lookup or
 count shows the last-resort fact sentence (section 4.1); any other type shows the abstention sentence plus the facts that did
 verify. Never a canned overview.
+
+Built in slice S7 (`answer/check.rs`, `answer.rs`, `answer/fallback.rs`). Code only, on every answer including chat:
+
+| Rule (trace code) | What it checks | Notes from the spike, built in |
+|---|---|---|
+| names (`names`) | every name exists in the facts, the request, the memory, the focus or a screenplay title | A curly apostrophe and a possessive do not make a real name look invented; a capital letter after a full stop, colon, semicolon or dash is a sentence start; the shared `ungrounded_names` decides the rest |
+| numbers (`numbers`) | every digit number exists in the facts, the request or the context | Indian and western grouping are the same number (`40,00,000` and `4,000,000`), ordinals and month names are normalised, and a number **word** in the answer ("one option", "two") is never checked |
+| required (`required`) | every value of `Dossier::required` is in the answer | The same normal form on both sides, so "three" meets 3 and "November 5th" meets "Nov 5" |
+| length (`length`, `too_short`) | the word count is inside the class range of `LENGTH_CLASSES` | Both are soft: see below |
+| repetition (`repetition`) | no run of six words twice | Digits are words, so "scene 3 ... scene 4" is not a repeat |
+| language (`language`) | the answer is in the language of a non-English request | |
+| ids (`ids`) | no record id, web address, file path or email address that the facts or the request did not hold | Record ids are never in the prompt, so any id in an answer is wrong |
+| internal (`internal`) | none of dossier, tool, facts, record id, JSON | |
+| abstain (`abstain`) | when the project holds no value for the question and says what is missing, the answer says it could not find it or that none is recorded (or names the missing thing) | Skipped for non-English answers |
+| echo (`echo`), change claim (`change_claim`) | the lines of the data are not copied (no pipe marks); no answer says something was renamed, added or removed | |
+
+Text that is only too long or too thin is **soft**: after the last pass it is still shown (cut to the limit at a sentence
+end when too long), because the fallback sentence would tell the person less. Every other rule is hard. A pass that
+passes every rule is shown at once and no second call is made.
+
+Fallbacks, written by code from the facts (`answer/fallback.rs`): the **last-resort fact sentence** is built from the first
+fact that carries a required value ("Lead cast, planned: 40,00,000."; a count reads "10 scenes in LOST PROPERTY."), followed
+by what the project does not hold ("Anna, actor: Maya Rao. Contact details are not shown for your role."); with no such fact
+it is the **abstention** ("I could not find that in the project: no wardrobe entered in the breakdown for scene 3."). Any
+other type gets "I could not write a reliable answer to that. This is what the project records: ..." with the first two
+facts. A chat reply that fails three times is one fixed calm sentence. No fallback is ever an overview of the project.
+
+**The sources** of an answer are the records of the facts it states: a fact is used when the answer holds one of its
+required values, a short field value or its sentence. They are listed behind the sources button (`AiResultDto.provenance`),
+openable when Global Search knows the record (the same privacy rule as search). The answer text carries no id.
+
+**The stage log** (section 14, "one trace row per stage"). The AI trace (`sys_ai_trace`, numbers and codes only) keeps:
+`lane` = the path of the turn (`write`, `navigate`, `change`, `fixed`), `runner_up_lane` = the fallback used (`last_resort`,
+`abstained`, or empty), `passes` = the model calls of the write stage, `checks_failed` = the rule codes that failed on any
+pass, `cached_tokens` = prompt tokens the engine reused, and the dossier columns that slice S5 added. The columns keep their
+names because the table has no migration. The request record (`ai_request.scope_json`, key `stages`) keeps, per stage, the
+answer type and how it was read, the dossier counts, and for the write stage the exact offenders of every pass
+("names: Silvanus"), the words of each pass, what was shown (`written`, `written_soft`, `last_resort`, `abstained`), the
+final length in words, the number of sources and the cached tokens. It never holds the answer or the facts.
 
 ### 5.7 Store and show
 
@@ -474,6 +568,46 @@ by fixed patterns in `memory/rules.rs`, never by a model:
 - **Settings.** Settings, Offline AI, "Assistant memory": each entry with its text, kind and date, a Delete button
   with an accessible name, and an empty state that says what is kept. Files: `workspaces/settings/AssistantMemory.tsx`
   and its test.
+
+### S8 result (2026-10-26): speed
+
+**Machine and method.** This PC (Core Ultra, 14 cores, 16 GB), processor engine, Gemma 3 1B q8_0, llama.cpp b11259. Other agents compiled and ran tests on the same processor during most runs, so absolute times are pessimistic and a run differs from the next by up to a quarter. Reading a prompt ran at about 80 to 160 tokens a second and writing at 22 to 33 tokens a second here. The eval subset is the 30 `conv-lt-scene` cases of the Low Tide fixture (`ai-eval --only conv-lt-scene`); the full 274-case run was not made. Raw files are in `.build-cache/ai-s8-latency/` (not in the repository).
+
+**What the engine does with a repeated start of a prompt.** The measurements are a nine-call sequence (an answer prompt, a 330-token label call, the same answer prompt grown by one step, and so on) and the replay of the 77 recorded calls of the baseline run.
+
+| Engine setting | Second answer prompt (1,531 tokens): reused | Result |
+|---|---|---|
+| Default (one slot, in-memory prompt store of 8,192 MiB) | 1,322 | A label call between two answers does not push the answer's start out. Kept, with a smaller store. |
+| `--cache-ram 0` (no store) | 1 | This engine build keeps the work on a prompt only in the store; without it nothing is reused. |
+| `--parallel 2 --kv-unified` (two slots) | 0 | Worse than one slot, so a slot per call kind is not needed. Rejected. |
+| `--swa-full` | 1,327 | Loses the reuse of the shared start across different questions (810 tokens reused by default, 0 here). Rejected. |
+| `--cache-ram 64` | 1 on the third call | Holds about two prompts. Too small. |
+| `--cache-ram 256` and `512` | 1,322 | Same reuse as the default. |
+
+Replay of the 77 calls (139,393 prompt tokens): 53.4% reused with the default store and with 512 MiB, the same tokens. The engine's memory at the end was 1,738 MB with the default store and 1,585 MB with the cap. The default store can grow to 8 GiB in a long session, so the app now starts the engine with `--cache-ram 512` (`PROMPT_STORE_MB` in `supervisor.rs`): about a dozen stored prompts, the oldest dropped first. Every request also carries `cache_prompt: true` (the engine default, written out so a changed default cannot turn it off). The cached-token count comes from the engine's own `timings.cache_n`, which `Usage` already read into the trace column `cached_tokens`; nothing new was needed.
+
+Tried and not adopted, on the same recorded prompts: `-ub` 256 and 1024, `-tb` 18, `-t` 8 and `--poll 100` (equal to the default or worse, within the noise), flash attention off (writing speed halves), and speculative decoding without a draft model (`--spec-type ngram-simple` gave the same answers in 8 of 8 cases and 15% faster writing in one trial; `ngram-mod` changed 2 of 8 answers; an experimental option for about 5% of the total time).
+
+**Warm-up when a project opens.** Where the indexer already runs (AI available and in use this session), `intelligence/warm.rs` runs one background thread that builds the project index and embeds the labelled example messages (kept per search model), so the first answer-type read has its vectors instead of waiting for them. It stops when the project closes, does nothing when AI is off, sends nothing a person wrote, and a deterministic run (tests, the end-to-end suite) does not warm up unless the evaluation turns it on. The app has no battery or power-saver check, so none is made.
+
+**Starting the chat engine early was measured and is off.** The code exists and is tested (`AiManager::prime`, `turn::warm::prompts`, step 3 of `warm.rs`, behind `START_ENGINE = false`): it starts the engine if free memory covers the model, its cache and 1.5 GB of headroom, and reads the fixed start of the answer-type prompt once. On the engine alone it moves about 3.3 s out of the first question (launch to ready takes 3.1 to 3.6 s; the first request after that has no extra cost, 0.05 to 0.14 s), and primed or not the first writes took the same time (1.6 to 3.2 s for 60 tokens). In the evaluation it did not help: in all 13 paired runs of the first question (the project opened, the eval waited for the warm-up, then asked) the question was never shorter with the engine started early, and in the 5 pairs on a quiet machine it took 0.04 to 5.2 s longer (mean 12.0 s against 10.4 s), with both prompt reading and writing slower. The cause was not found (starting the engine under load, an idle engine and the priming request were each tried alone and showed nothing). It stays off until the writer's own fixed start (about 700 tokens, about 5 s on the first question) is primed too, and is then measured again on a machine nobody else is using.
+
+**Latency, 30 cases (median, 95th percentile, first question, share of prompt tokens reused).**
+
+| Run | Median | 95th percentile | First question | Reused |
+|---|---|---|---|---|
+| Before: previous answer path, default engine settings | 23.3 s | 40.0 s | 31.5 s | 53.4% |
+| After, current tree (writer of S7), engine started on the first question | 6.5 s | 25.5 s | 12.7 s | 61.9% |
+| After, current tree, warm-up and engine started early (raced the first question) | 7.9 s | 28.7 s | 13.2 s | 61.5% |
+| After, current tree, warm-up and engine started early (eval waited for it) | 5.3 s | 25.6 s | 13.9 s | 59.6% |
+
+The bars of section 7.5 (median 15 s, 95th percentile 30 s) are met in all three runs of the current tree and were not met before. The gain comes from the writer of slice S7 reading prompts of 700 to 800 tokens instead of 2,300 to 4,000, not from the engine settings, which keep the reuse the engine already had and bound its memory. The differences between the three current-tree runs are mostly run-to-run noise and, in the last two rows, the early engine start that is now off. The slowest questions are the paragraph and short answers that took three writing passes (28 to 49 s): the 95th percentile of 30 questions is the 29th value, so one such answer sets it. By length class (second row): one sentence 5.7 s median (18 questions), short 6.4 s (5), paragraph 11.0 s (7). The first question reads a 726-token prompt (4 to 7 s) and writes about 100 tokens (4 to 5 s).
+
+**Caps.** The dossier is cut to 1,500 tokens (2,500 for a paragraph) except for facts that carry a required value, which are never cut, so a dossier can exceed its cap. Memory adds at most 1,200 tokens of recent turns, 10 summary lines of 110 characters and 300 tokens of long-term entries, about 1,800 tokens in all. With the policy and the question a worst-case prompt is 4,000 to 5,000 tokens, which reads in 30 to 40 s uncached on this PC, so it is only fast when its start is reused. The token caps per length class (90, 170, 340 and 80) are set on the writer call in `answer/prompt.rs`.
+
+**Streaming.** Not built. At the measured 22 to 33 tokens a second a 100-token answer needs 3 to 5 s of writing, the medians of the current tree are far under the bar, and the checker needs the whole text before anything is shown (section 5.6). The decision of 2026-10-24 stands (ADR-0037, open question 5).
+
+**Limits.** One fixture, 30 cases, one machine that was shared with other builds and tests, one run of each; the full 274-case run was not made; no battery check exists; the early engine start is off for a reason that was measured but not explained.
 
 ## 6. The project index and what the assistant can reach today
 
@@ -617,17 +751,22 @@ Each slice ends with the eval run and a saved result. A slice does not start bef
 | S5 | Dossier builders per answer type and domain, with required facts | new `modules/ai/dossier/` | Fetch plans return the expected records on the fixture |
 | S6 | Memory: rolling summary, long-term table, Settings screen | migration, `records.rs`, `apps/desktop/src/ai/` | Memory tests; user can list and delete entries |
 | S7 | Writer and checker on every answer; last-resort sentence; sources; remove retired paths (section 4.3) | `orchestrator.rs`, `verify.rs`, `lanes.rs` | Full bench at the bars |
-| S8 | Speed: stable prompt prefix, token caps, index warm-up; decide on token streaming | `orchestrator.rs`, engine settings | Latency bars |
+| S8 | Speed: stable prompt prefix, token caps, index warm-up; decide on token streaming | `crates/openframe-ai` (engine settings, prompt reuse, early start), `intelligence/warm.rs`, `turn/warm.rs`, the latency section of `ai-eval` | Latency bars (section 7.5) measured on the reference machine; result at the end of section 5 |
 | S9 | Documents: update `ai-answer-paths.md`, `ai-harness-rebuild.md`, manual, feature status; `graphify update .` | `docs/` | Docs match code |
 
 S3 status (2026-10-26): built and tested. The resolver follows section 5.2 and settles the screenplay by title or alias, the conversation focus, the scene number, or the only current draft; the one change in behaviour is that `ai.ask` fills a missing draft from it instead of letting each tool ask "which screenplay". Unit tests in `index/tests.rs`; the fixture tests in `crates/openframe-ai-eval/tests/ai_index.rs`; the wiring in `tests/ai/ai_focus.rs`. Not yet done: unknown-name reporting ("not in the project") and use of the resolved entities by the dossier builders (S5).
 
 S4 status (2026-10-26): built and measured, **exit not met on the exact label** (85.9% over all, 82.1% on the Low Tide conversations against 90%), met on the coarse group (92.4% and 90.4%) and on anger (0 misreads as change, count or a fetch). The numbers and the failure patterns are in section 5.3. The stage runs on every request and is recorded (focus and AI trace) but decides nothing yet; S5 uses the group. Unit tests in `turn/tests.rs`; the wiring in `tests/ai/ai_focus.rs`; the rules-only gates in `crates/openframe-ai-eval/tests/turn_gold.rs`; the measured run is `ai-eval --turn-only`. The `answer_type` flag of the gold cases is now scored.
 
+S8 status (2026-10-26): built and measured. The latency bars are met on the 30-case Low Tide scene subset, with the limits listed in the "S8 result" paragraph at the end of section 5. Streaming stays off (owner decision 2026-10-24, restated in ADR-0037 open question 5). The engine now stores prompt work in a 512 MiB store instead of the engine default of 8 GiB; the warm-up builds the index and the example vectors when a project opens; **starting the chat engine early was built and measured to make the first question slower, so it is off**. Unit tests: `client.rs`, `tests/supervisor.rs`, `tests/bundled.rs` (early start), `turn/tests.rs` (warm-up prompt and example vectors), `intelligence/warm.rs`, `latency.rs`. The measured run is `ai-eval` with its latency section (`--warmup on|off`, `--latency-from <run folder>`).
+
 ## 9. Things an expert would add (included in the slices above)
 
 1. **A prefix-stable prompt.** The engine already reports cached tokens (`cached_tokens` in the trace). Putting policy, map and
-   memory first lets most of the prompt be reused between turns. The spike measured it (section 12, finding 9).
+   memory first lets most of the prompt be reused between turns. The spike measured it (section 12, finding 9). S8 measured
+   what the engine needs for this to work and what it costs (end of section 5): the reuse happens only through the engine's
+   in-memory prompt store, now capped at 512 MiB, and it needs the same first tokens, so anything that changes from turn to
+   turn (the facts, the question) goes after the fixed text.
 2. **Fuse, do not rerank, at first.** Reciprocal rank fusion of keyword and vector results costs no model call. Add a
    reranker only if recall is the measured weakness.
 3. **Contextual headers on chunks**, as ADR-0037 decision 7.
@@ -716,6 +855,7 @@ read as `change` ("WOW BRO ... UNINSTALLING") and `count` ("GO TO HELL").
    uncached call took 5.8 s. Generation ran at roughly 14 tokens per second, so a 150-token paragraph needs about 10 s on
    this machine before any prompt reading. The 34.5 s median of the conversation bench came from prompts of 3,000 to 5,000
    tokens. Caps of 1,500 to 2,500 tokens and a stable prompt start are required; streaming should be decided (section 9).
+   S8 (2026-10-26) measured the engine side; see "S8 result" at the end of section 5.
 10. The answer type call took about 2.3 s with a 450-token few-shot prompt. It must share a cached prefix or be skipped when a
     rule is sure.
 

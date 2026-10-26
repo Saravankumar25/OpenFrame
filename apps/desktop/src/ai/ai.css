@@ -43,7 +43,6 @@
 .ai .ai-list{margin:0 0 6px;padding-left:20px}
 .ai .ai-list li{margin:0 0 2px}
 .ai .ai-text>:last-child{margin-bottom:0}
-.ai .ai-coverage{margin-top:4px}
 /* The line shown while a request runs, with its Cancel button. */
 .ai .ai-progress{display:flex;align-items:center;gap:8px}
 .ai .ai-progress .grow{flex:1;min-width:0;overflow-wrap:anywhere}

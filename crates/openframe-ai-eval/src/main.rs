@@ -35,7 +35,9 @@ use std::time::{Duration, Instant};
 
 use openframe_ai::client::build_body;
 use openframe_ai::{ChatRequest, InferenceProvider, ProviderCapabilities, Usage};
-use openframe_ai_eval::{Case, Observation, StateCheck, load_cases, markdown, score, summarize};
+use openframe_ai_eval::{
+    Case, Observation, StateCheck, latency, load_cases, markdown, score, summarize,
+};
 use openframe_application::core::{AppConfig, AppCore};
 use openframe_application::events::RecordingSink;
 use openframe_application::modules::ai::{intelligence, orchestrator, retrieval, scope, toolbox};
@@ -55,6 +57,11 @@ struct Args {
     /// `on` (default) or `off`: `off` turns the regex direct routes off, so the model path is
     /// measured (harness plan 9.1).
     routes: Option<String>,
+    /// `on` (default) or `off`: the warm-up the app does when a project opens (index, example
+    /// vectors, the engine and the start of each fixed prompt). `off` shows what it saves.
+    warmup: Option<String>,
+    /// Rebuild the latency report of a finished run folder and print it; runs nothing.
+    latency_from: Option<PathBuf>,
     /// Run only the answer-type stage.
     turn_only: bool,
     /// Run the answer-type stage and the fetch stage, and score the fetched facts.
@@ -66,6 +73,7 @@ fn parse_args() -> Result<Args, String> {
     let mut a = std::env::args().skip(1);
     let (mut gold, mut out, mut only, mut limit, mut search, mut graphics, mut routes) =
         (None, None, None, None, None, None, None);
+    let (mut warmup, mut latency_from) = (None, None);
     let mut turn_only = false;
     let mut dossier_only = false;
     let mut turn_sets = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("turn-sets");
@@ -79,15 +87,35 @@ fn parse_args() -> Result<Args, String> {
             "--search" => search = Some(v()?),
             "--graphics" => graphics = Some(v()?),
             "--routes" => routes = Some(v()?),
+            "--warmup" => warmup = Some(v()?),
+            "--latency-from" => latency_from = Some(PathBuf::from(v()?)),
             "--turn-only" => turn_only = true,
             "--dossier-only" => dossier_only = true,
             "--turn-sets" => turn_sets = PathBuf::from(v()?),
             _ => return Err(format!("unknown argument {k}")),
         }
     }
+    if let Some(dir) = latency_from {
+        return Ok(Args {
+            gold: PathBuf::new(),
+            out: PathBuf::new(),
+            only: None,
+            limit: None,
+            search: None,
+            graphics: None,
+            routes: None,
+            warmup: None,
+            latency_from: Some(dir),
+            turn_only: false,
+            dossier_only: false,
+            turn_sets,
+        });
+    }
     Ok(Args {
         gold: gold.ok_or("--gold <folder> is required")?,
         out: out.ok_or("--out <folder> is required")?,
+        warmup,
+        latency_from: None,
         only,
         limit,
         search,
@@ -108,6 +136,12 @@ fn main() {
 
 fn run() -> Result<(), String> {
     let args = parse_args()?;
+    if let Some(dir) = &args.latency_from {
+        let text = std::fs::read_to_string(dir.join("results.jsonl")).map_err(|e| e.to_string())?;
+        let report = latency::report(&latency::rows_from_results(&text));
+        print!("{}", latency::markdown(&report));
+        return Ok(());
+    }
     let mut cases = load_cases(&args.gold)?;
     if let Some(only) = &args.only {
         cases.retain(|c| c.id.contains(only.as_str()) || c.kind == *only || c.lang == *only);
@@ -189,16 +223,35 @@ fn run() -> Result<(), String> {
         chat_ms: Mutex::new(0),
     });
     svc.attach_model(Some(recorder.clone()));
+    let warmup_on = match args.warmup.as_deref() {
+        None | Some("on") => true,
+        Some("off") => false,
+        Some(other) => return Err(format!("--warmup takes on or off, not {other}")),
+    };
+    // A deterministic run does not warm up unless told to; the evaluation measures what people meet.
+    intelligence::warm::set_forced(warmup_on);
     let mut results =
         std::fs::File::create(args.out.join("results.jsonl")).map_err(|e| e.to_string())?;
     let mut requests =
         std::fs::File::create(args.out.join("requests.jsonl")).map_err(|e| e.to_string())?;
     let started = Instant::now();
     let mut scores = Vec::new();
+    let mut timings = Vec::new();
     for (i, case) in cases.iter().enumerate() {
         recorder.take();
-        let o = run_case(&core, case);
+        let mut o = run_case(&core, case);
         let (bodies, u, chat_ms) = recorder.take();
+        // The stage times of the request plus the engine figures of the case, for the latency report.
+        let mut t = o.timing.take().unwrap_or_default();
+        t.id = case.id.clone();
+        t.elapsed_ms = o.elapsed_ms;
+        (t.calls, t.prompt_tokens, t.cached_tokens) = (u.calls, u.prompt_tokens, u.cached_tokens);
+        (t.completion_tokens, t.prompt_ms, t.generation_ms) =
+            (u.completion_tokens, u.prompt_ms, u.generation_ms);
+        if case.kind != "retrieval" {
+            timings.push(t.clone());
+        }
+        o.timing = Some(t);
         for (step, body) in bodies.iter().enumerate() {
             let line = json!({ "case": case.id, "kind": case.kind, "lang": case.lang, "step": step, "body": body });
             writeln!(requests, "{line}").map_err(|e| e.to_string())?;
@@ -225,7 +278,8 @@ fn run() -> Result<(), String> {
         let line = json!({ "case": case.id, "kind": case.kind, "lang": case.lang, "score": s, "route": o.route, "observation": {
             "offered": o.offered.len(), "steps": o.steps, "errorCode": o.error_code, "answer": o.answer,
             "proposed": o.proposed, "applied": o.applied, "endState": o.end_state, "rankedScenes": o.ranked_scenes, "sceneCount": o.scene_count,
-            "elapsedMs": o.elapsed_ms, "engineMb": o.engine_mb, "setupError": o.setup_error },
+            "elapsedMs": o.elapsed_ms, "engineMb": o.engine_mb, "setupError": o.setup_error,
+            "timing": o.timing.as_ref().map(latency::timing_json) },
             "engine": engine, "index": index });
         writeln!(results, "{line}").map_err(|e| e.to_string())?;
         scores.push(s);
@@ -281,11 +335,15 @@ fn run() -> Result<(), String> {
             format!("{:.1} min", started.elapsed().as_secs_f64() / 60.0),
         ),
     ];
+    let latency_report = latency::report(&timings);
     std::fs::write(
-        args.out.join("report.md"),
-        markdown("AI evaluation report", &summary, &meta),
+        args.out.join("latency.json"),
+        serde_json::to_string_pretty(&latency_report).unwrap(),
     )
     .map_err(|e| e.to_string())?;
+    let mut report = markdown("AI evaluation report", &summary, &meta);
+    report.push_str(&latency::markdown(&latency_report));
+    std::fs::write(args.out.join("report.md"), report).map_err(|e| e.to_string())?;
     core.shutdown();
     eprintln!(
         "ai-eval: {} cases, report in {}",
@@ -421,6 +479,21 @@ fn open_project(core: &AppCore, case: &Case) -> Result<Project, String> {
     }
     intelligence::activate(core);
     intelligence::wait_idle(core, Duration::from_secs(180));
+    // A person opens the project and then types; the warm-up has that time. Without it the first
+    // question would race the warm-up that the eval's own setup leaves no pause for.
+    let waited = Instant::now();
+    if !intelligence::warm::wait_idle(Duration::from_secs(180)) {
+        eprintln!("ai-eval: the warm-up was still running after 180 s");
+    } else if waited.elapsed() > Duration::from_millis(50) {
+        let state = openframe_application::modules::ai::service(core)
+            .manager()
+            .map(|m| format!("{:?}", m.diagnostics().chat_runtime.state))
+            .unwrap_or_default();
+        eprintln!(
+            "ai-eval: warm-up finished {} ms after the index (engine {state})",
+            waited.elapsed().as_millis()
+        );
+    }
     Ok(Project {
         draft_id,
         scene_ids,
@@ -685,6 +758,39 @@ fn run_case(core: &AppCore, case: &Case) -> Observation {
             .with_app_db(|c| Ok(openframe_ai_eval::turn_from_trace(c, request_id)))
             .ok()
             .flatten();
+        // Stage times: the trace row, and the `<stage>_ms` numbers the request recorded.
+        let times = core
+            .with_app_db(|c| Ok(latency::times_from_trace(c, request_id)))
+            .ok()
+            .flatten()
+            .unwrap_or_default();
+        let stages = core
+            .project()
+            .ok()
+            .and_then(|s| {
+                s.store
+                    .read(|c| {
+                        Ok(c.query_row(
+                            "SELECT scope_json FROM ai_request WHERE id = ?1",
+                            [request_id],
+                            |r| r.get::<_, String>(0),
+                        )
+                        .ok())
+                    })
+                    .ok()
+                    .flatten()
+            })
+            .and_then(|j| serde_json::from_str::<Value>(&j).ok())
+            .map(|v| latency::stages_from_scope(&v))
+            .unwrap_or_default();
+        o.timing = Some(latency::CaseTiming {
+            length_class: times.length_class,
+            turn_ms: times.turn_ms,
+            dossier_ms: times.dossier_ms,
+            passes: times.passes,
+            stages,
+            ..latency::CaseTiming::default()
+        });
     }
     // The tools the assistant ran and their arguments, as recorded for this request.
     if let (Ok(session), Some(request_id)) = (core.project(), x["requestId"].as_str()) {

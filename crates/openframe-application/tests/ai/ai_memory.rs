@@ -8,17 +8,19 @@ use std::sync::Arc;
 
 use openframe_ai::{ChatRequest, InferenceProvider};
 use openframe_application::modules::ai;
-use openframe_domain::{AppError, AppResult};
+use openframe_domain::AppResult;
 use openframe_test_support::TestEnv;
 use serde_json::{Value, json};
 
 const SHORT: &[u8] = include_bytes!("../../../../templates/samples/Example-Short.fountain");
 
-struct NoModel;
+/// A model that always writes the same sentence: the number is the project's own, so it passes the
+/// checks for a count, and for every other message it is a reply the checks refuse.
+struct Fixed;
 
-impl InferenceProvider for NoModel {
+impl InferenceProvider for Fixed {
     fn chat(&self, _: &ChatRequest) -> AppResult<String> {
-        Err(AppError::ai("unavailable", "no model in this test"))
+        Ok("There are 10 scenes.".into())
     }
     fn model_reference(&self) -> String {
         "test-local-profile".into()
@@ -40,7 +42,7 @@ fn project() -> TestEnv {
         "screenplay.import_apply",
         json!({ "previewId": p["previewId"], "mode": "new_screenplay" }),
     );
-    ai::service(&env.core).attach_model(Some(Arc::new(NoModel) as Arc<dyn InferenceProvider>));
+    ai::service(&env.core).attach_model(Some(Arc::new(Fixed) as Arc<dyn InferenceProvider>));
     env
 }
 

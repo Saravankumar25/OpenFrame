@@ -389,25 +389,12 @@ pub struct AiResultDto {
     pub steps: Vec<AiStepDto>,
     /// Background task started for this request (long-running tools, agentic spec §29).
     pub task_id: Option<String>,
-    /// The lane that answered: direct, chat, agent, recipe or action (harness plan 5.2).
+    /// The path that answered: write, navigate, change or fixed (harness spec, section 5).
     #[serde(skip_serializing_if = "Option::is_none")]
     #[ts(optional)]
     pub lane: Option<String>,
-    /// For a whole-screenplay answer: the scenes the answer was written from.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[ts(optional)]
-    pub coverage: Option<AiCoverage>,
     #[ts(type = "number")]
     pub created_at: i64,
-}
-
-/// How many scenes a whole-screenplay answer was written from, out of how many it planned to read.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, TS)]
-#[ts(export)]
-#[serde(rename_all = "camelCase")]
-pub struct AiCoverage {
-    pub used: u32,
-    pub total: u32,
 }
 
 /// One audited tool step of an agent run (agentic spec §5).

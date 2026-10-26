@@ -182,6 +182,17 @@ These are harness faults. A larger model on the same harness would still fail th
    tokens per second, so a 150-token paragraph needs about 10 s. Keep progress lines only, or stream the answer as it is
    written? Decide before S8.
 
+   **Answered by the S8 measurement (2026-10-26): the owner's decision of 2026-10-24 stands. Progress lines only, no token
+   streaming.** On this PC (processor engine, Gemma 3 1B, other builds running at the same time) the engine wrote 22 to 33
+   tokens per second and read a prompt at 80 to 160 tokens per second. The 30 Low Tide scene conversations answered with a
+   median of 5.3 to 7.9 s and a 95th percentile of 25.5 to 28.7 s in three runs, against 23.3 s and 40.0 s before the
+   writer of S7 (bars: 15 s and 30 s). A one-sentence answer took a median of 5.7 s, a short answer 6.4 s and a paragraph
+   11.0 s. The slowest answers (28 to 49 s) are the ones that took three writing passes, and the checker needs the whole
+   text before it shows anything, so streaming would show text the checker may still reject. The numbers and the method
+   are in the "S8 result" paragraph at the end of section 5 of
+   [ai-conversational-harness.md](../specs/ai-conversational-harness.md). The owner may reopen this if the full 274-case run
+   or a slower computer misses the bars.
+
 ## Sources consulted
 
 - Anthropic, "Effective context engineering for AI agents": just-in-time retrieval over pre-loaded context, and "context

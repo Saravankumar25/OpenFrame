@@ -28,7 +28,7 @@ How the toolbox (`modules/ai/toolbox.rs`, contract C3) enforces this:
 
 - Registered operations: **502** (157 queries, 345 commands)
 - Exposed to the assistant through tools: **308**; not AI-accessible: **194**
-- Tools: **258** (65 read/compute/navigate, 193 proposal)
+- Tools: **254** (61 read/compute/navigate, 193 proposal)
 
 Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation · **L** long-running (task id) · file effect: R = reads a user-picked file, W = writes to a user-picked location, P = project storage on disk.
 
@@ -743,16 +743,12 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 | `production_statistics` | read | `production.overview` |
 | `scene_fact` | read | none (deterministic computation, navigation or clarification) |
 | `dialogue_fact` | read | none (deterministic computation, navigation or clarification) |
-| `character_profile` | read | none (deterministic computation, navigation or clarification) |
 | `search_project` | read | `search.query` |
 | `open_scene` | read | `screenplay.locate` |
 | `open_workspace` | read | none (deterministic computation, navigation or clarification) |
 | `open_object` | read | none (deterministic computation, navigation or clarification) |
-| `summarize_scope` | read | none (deterministic computation, navigation or clarification) |
 | `suggest_breakdown` | read | none (deterministic computation, navigation or clarification) |
-| `answer_product_question` | read | none (deterministic computation, navigation or clarification) |
 | `private_information` | read | `private_note.list` |
-| `clarify` | read | none (deterministic computation, navigation or clarification) |
 | `project_settings` | read | `project.get_settings`, `project.members` |
 | `app_appearance` | read | `appearance.get` |
 | `app_settings` | read | `writing.proofing`, `app.shortcuts` |

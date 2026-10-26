@@ -425,10 +425,11 @@ fn warnings(ctx: &FetchCtx<'_>, read: &TurnRead, days: &BTreeSet<u32>) -> AppRes
             .f("detail", w.detail.clone().unwrap_or_default())
             .f("scenes", numbers(w.scene_numbers.iter().map(|n| *n as u32)))
             .prio(P_MID);
-        if actors && w.kind.contains("actor") {
-            if let Some((name, _)) = w.message.split_once(" (") {
-                f = f.require(name);
-            }
+        if actors
+            && w.kind.contains("actor")
+            && let Some((name, _)) = w.message.split_once(" (")
+        {
+            f = f.require(name);
         }
         out.push(f);
     }

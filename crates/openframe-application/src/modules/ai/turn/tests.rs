@@ -692,3 +692,28 @@ fn the_example_file_covers_every_type_in_all_twelve_languages() {
         assert!(x.text.chars().count() <= 80, "too long: {}", x.text);
     }
 }
+
+// ------------------------------------------------------------------ warm-up (slice S8)
+
+#[test]
+fn the_warm_up_prompt_is_the_label_prompt_with_one_token_asked() {
+    let prompts = warm::prompts();
+    assert_eq!(prompts.len(), 1);
+    let p = &prompts[0];
+    assert_eq!(p.max_tokens, 1);
+    // Its start is the text every real read starts with, so the engine's stored work serves both.
+    let real = model::request("how many scenes", Some("an earlier message"));
+    let (a, b) = (&p.messages[0].content, &real.messages[0].content);
+    let start = a.find("\n\nMessage:").unwrap();
+    assert!(b.starts_with(&a[..start]));
+    assert_eq!(real.max_tokens, 6);
+}
+
+#[test]
+fn the_warm_up_embeds_the_examples_once_and_a_failing_embedder_leaves_nothing_behind() {
+    let ok = ExampleEmbedder::new(false);
+    assert!(warm::examples(&ok));
+    // The second call finds the vectors of this embedder in the cache: a failing one is not asked.
+    assert!(warm::examples(&ok));
+    assert!(!warm::examples(&ExampleEmbedder::new(true)));
+}
