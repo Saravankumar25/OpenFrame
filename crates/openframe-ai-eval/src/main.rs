@@ -340,7 +340,7 @@ fn shared_project(core: &AppCore, case: &Case) -> Result<Project, String> {
     Ok(p)
 }
 
-/// A fresh project holding the case's sample script, with its index caught up.
+/// A fresh project holding the case's sample script or fixture, with its index caught up.
 fn open_project(core: &AppCore, case: &Case) -> Result<Project, String> {
     SHARED.with(|s| *s.borrow_mut() = None);
     if core.project_opt().is_some() {
@@ -351,18 +351,23 @@ fn open_project(core: &AppCore, case: &Case) -> Result<Project, String> {
         "project.create",
         json!({ "title": case.id, "projectType": "Feature Film" }),
     )?;
-    op(
-        core,
-        "screenplay.import_apply",
-        json!({ "sample": case.project, "mode": "new_screenplay" }),
-    )?;
-    let ov = op(core, "screenplay.overview", json!({}))?;
-    let draft_id = ov["drafts"]
-        .as_array()
-        .and_then(|d| d.iter().find(|d| d["isCurrent"] == true))
-        .and_then(|d| d["id"].as_str())
-        .ok_or("the imported screenplay has no current draft")?
-        .to_string();
+    let draft_id = if openframe_ai_eval::fixture::is_fixture(&case.project) {
+        // A fixture project (gold/fixtures): its screenplay and production data are built here.
+        openframe_ai_eval::fixture::build(core, &case.project)?.draft_id
+    } else {
+        op(
+            core,
+            "screenplay.import_apply",
+            json!({ "sample": case.project, "mode": "new_screenplay" }),
+        )?;
+        let ov = op(core, "screenplay.overview", json!({}))?;
+        ov["drafts"]
+            .as_array()
+            .and_then(|d| d.iter().find(|d| d["isCurrent"] == true))
+            .and_then(|d| d["id"].as_str())
+            .ok_or("the imported screenplay has no current draft")?
+            .to_string()
+    };
     let doc = op(core, "screenplay.document", json!({ "draftId": draft_id }))?;
     let mut scene_ids = Vec::new();
     let mut element_scene = std::collections::HashMap::new();

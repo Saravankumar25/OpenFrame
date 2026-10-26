@@ -3,6 +3,8 @@
 //! [`Observation`] per case; everything here is plain code, so a score never depends on a model.
 //! The gold format is described in `gold/README.md`.
 
+pub mod fixture;
+
 use std::collections::BTreeMap;
 use std::path::Path;
 
