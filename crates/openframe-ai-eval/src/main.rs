@@ -323,8 +323,8 @@ thread_local! {
     static SHARED: std::cell::RefCell<Option<(String, Project)>> = const { std::cell::RefCell::new(None) };
 }
 
-/// Retrieval cases without setup steps never change the project, so they share one indexed copy
-/// of their sample script instead of indexing it again for every case.
+/// Retrieval and conversation cases without setup steps never change the project, so they share
+/// one indexed copy of their sample or fixture instead of indexing it again for every case.
 fn shared_project(core: &AppCore, case: &Case) -> Result<Project, String> {
     let cached = SHARED.with(|s| {
         s.borrow()
@@ -484,11 +484,13 @@ fn engine_mb() -> u64 {
 
 fn run_case(core: &AppCore, case: &Case) -> Observation {
     let mut o = Observation::default();
-    let opened = if case.kind == "retrieval" && case.setup.is_empty() {
-        shared_project(core, case)
-    } else {
-        open_project(core, case)
-    };
+    // Conversation cases only read too, so a 676-step fixture is built and indexed once per run.
+    let opened =
+        if matches!(case.kind.as_str(), "retrieval" | "conversation") && case.setup.is_empty() {
+            shared_project(core, case)
+        } else {
+            open_project(core, case)
+        };
     let p = match opened {
         Ok(p) => p,
         Err(e) => {
