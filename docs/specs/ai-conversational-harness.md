@@ -224,6 +224,17 @@ and the 70 spike messages never were (the author had read them before writing th
 copied from them or from a gold set, and a test checks that). The first-run numbers are the honest estimate for new wording: about 72% exact and
 85% group on hard conversation wording, about 95% on the spike's own messages.
 
+**Fresh 40 (written after the S4 tuning, release build, 2026-10-26).** 40 new messages in
+`crates/openframe-ai-eval/turn-sets/fresh-40.jsonl` (all eleven types, Low Tide names, corrections with a previous
+message), labelled without reading the rules; one message that equalled an example was reworded and the run repeated with
+the same result: rules only 70.0% exact and 72.5% group; plus embeddings 75.0% and 85.0%; plus the model for weak votes
+**87.5% exact and 92.5% group**. Misses: "why does Jose cut the net" read as brainstorm, "whats between jose and varghese"
+as lookup, "what did we set aside for boat hire" as compare, "which costs more, camera or lighting" as list, "show me the
+cast list" as navigate. Verdict: the group bar (90%) is met on wording the reader never saw, the exact bar is not. The group
+picks the fetch plan and the length class, so S5 builds on it; lookup, list, count and compare share the facts plan and the
+exact label only shapes the answer. A read takes about 23 ms with embeddings and about 0.5 s on average when the model is
+asked. Report: `docs/release/evidence/ai-conversational-s4-2026-10-26/`.
+
 Anger and small talk (27 labelled `chat` messages): read as `chat` 24, read as `change`, `count` or a fact fetch **0**
 (bar met; with the rules alone one message fell to the default lookup, which the stage with an embedder does not do), read as
 something else 3. The three are `conv-lt-export-012`, `-014` and `-036`: complaints that repeat a request ("I literally told
