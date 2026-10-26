@@ -21,3 +21,9 @@ conversation and 23 tool cases on `low-tide-two-screenplays`, `thin-project` and
 The invented-name rate of the old bench (47.4%) is not comparable: it checks names against the screenplay text only, and
 these fixtures hold names in cast, crew and budget data. Files: `report.md`, `summary.json`, `results.jsonl` (the
 11 MB request log stays in `.build-cache`).
+
+**Correction (found in slice S5, same day).** The fixture's budget setup passed whole rupees where the app stores paise,
+so every amount in this run was 100 times too small and every money case was unanswerable from the data. The fixture is
+fixed (`setup.jsonl`, `FACTS.md`); the money family numbers of this baseline (and the parts of other families that ask
+about money) are therefore not a fair measure of the old build. The next full run reports the money family on both builds
+with the fixed fixture.
