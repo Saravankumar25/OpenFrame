@@ -79,7 +79,52 @@ pub struct Expect {
     /// Conversation: the answer must say it could not find the thing asked about.
     #[serde(default)]
     pub abstain: bool,
+    // Conversation flags of the harness spec section 7.4. The first group is scored today.
+    /// The answer does not end by asking which or who.
+    #[serde(default)]
+    pub no_reask: bool,
+    /// No navigation tool ran.
+    #[serde(default)]
+    pub no_navigate: bool,
+    /// One of `one_sentence`, `short`, `paragraph`, `brief` (word ranges in [`LENGTH_CLASSES`]).
+    #[serde(default)]
+    pub length_class: Option<String>,
+    /// Each entry appears in the answer, case-insensitive.
+    #[serde(default)]
+    pub required_facts: Vec<String>,
+    /// The answer says it could not find the thing and names one of these places.
+    #[serde(default)]
+    pub abstain_names: Vec<String>,
+    /// None of these strings appears in the answer.
+    #[serde(default)]
+    pub no_dump: Vec<String>,
+    /// The answer holds none of [`INTERNAL_WORDS`].
+    #[serde(default)]
+    pub no_internal_words: bool,
+    // Parsed and reported as not counted: the build cannot measure them yet.
+    // shortcut: needs the turn's answer type in the Observation, added by spec slice S4.
+    #[serde(default)]
+    pub answer_type: Option<String>,
+    // shortcut: needs the answer's source record ids in the Observation, added by spec slice S3.
+    #[serde(default)]
+    pub facts_from: Vec<String>,
+    // shortcut: needs the focus state after the turn in the Observation, added by spec slice S3.
+    #[serde(default)]
+    pub focus: Option<Value>,
+    // shortcut: parsed only, the multi-turn runner (spec slice S8) is not built; each turn is
+    // reported as not counted.
+    #[serde(default)]
+    pub turns: Vec<Expect>,
 }
+
+/// Word ranges (inclusive) of the `length_class` values. `one_sentence` has no word range: it
+/// counts sentence ends instead (see [`sentence_count`]).
+pub const LENGTH_CLASSES: &[(&str, usize, usize)] =
+    &[("short", 1, 80), ("paragraph", 40, 200), ("brief", 40, 120)];
+
+/// Words an answer must not use to describe the app's inside (`no_internal_words`). Matched at the
+/// start of a word, so "tools" counts and "stool" does not.
+pub const INTERNAL_WORDS: &[&str] = &["dossier", "tool", "record id", "json"];
 
 /// What an answer says when it cannot find the thing asked about (conversation `abstain` cases).
 pub const ABSTAIN_PHRASES: &[&str] = &[
@@ -323,6 +368,17 @@ pub struct Score {
     pub repetition: Option<bool>,
     /// Conversation `abstain` cases: the answer says it could not find it.
     pub abstain_ok: Option<bool>,
+    /// Conversation `required_facts`: (entries found in the answer, entries listed).
+    pub required_facts: Option<(usize, usize)>,
+    /// Conversation `abstain_names`: could-not-find wording plus a listed place named.
+    pub abstain_names_ok: Option<bool>,
+    pub no_navigate_ok: Option<bool>,
+    pub no_dump_ok: Option<bool>,
+    pub no_internal_words_ok: Option<bool>,
+    pub length_class_ok: Option<bool>,
+    pub no_reask_ok: Option<bool>,
+    /// Flags the case sets that the build cannot measure yet (never counted as pass or fail).
+    pub not_counted: usize,
     pub elapsed_ms: u64,
     pub engine_mb: u64,
     /// The routing of the request (lane, runner-up, margins, closest intent).
@@ -451,13 +507,103 @@ fn conversation_scores(case: &Case, o: &Observation, s: &mut Score) {
         checks::quoted_spans(&o.answer).len(),
     ));
     s.repetition = Some(checks::repeated_ngram(&o.answer, 4).is_some());
-    if case.expect.abstain {
-        s.abstain_ok = Some(
-            ABSTAIN_PHRASES
-                .iter()
-                .any(|p| checks::contains_ci(&o.answer.replace('’', "'"), p)),
+    let e = &case.expect;
+    let abstains = ABSTAIN_PHRASES
+        .iter()
+        .any(|p| checks::contains_ci(&o.answer.replace('’', "'"), p));
+    if e.abstain {
+        s.abstain_ok = Some(abstains);
+    }
+    if !e.abstain_names.is_empty() {
+        s.abstain_names_ok = Some(
+            abstains
+                && e.abstain_names
+                    .iter()
+                    .any(|n| checks::contains_ci(&o.answer, n)),
         );
     }
+    if !e.required_facts.is_empty() {
+        let found = e
+            .required_facts
+            .iter()
+            .filter(|f| checks::contains_ci(&o.answer, f))
+            .count();
+        s.required_facts = Some((found, e.required_facts.len()));
+    }
+    if e.no_navigate {
+        // The navigation tools of the catalogue are open_scene, open_workspace and open_object.
+        s.no_navigate_ok = Some(!o.steps.iter().any(|(t, _)| t.starts_with("open_")));
+    }
+    if !e.no_dump.is_empty() {
+        s.no_dump_ok = Some(e.no_dump.iter().all(|d| !checks::contains_ci(&o.answer, d)));
+    }
+    if e.no_internal_words {
+        let a = o.answer.to_lowercase();
+        s.no_internal_words_ok = Some(INTERNAL_WORDS.iter().all(|w| !starts_a_word(&a, w)));
+    }
+    if let Some(class) = &e.length_class {
+        let n = checks::word_count(&o.answer);
+        s.length_class_ok = Some(if class == "one_sentence" {
+            n > 0 && sentence_count(&o.answer) == 1
+        } else {
+            LENGTH_CLASSES
+                .iter()
+                .any(|(c, lo, hi)| c == class && (*lo..=*hi).contains(&n))
+        });
+    }
+    if e.no_reask {
+        s.no_reask_ok = Some(!ends_with_which_or_who_question(&o.answer));
+    }
+    s.not_counted = usize::from(e.answer_type.is_some())
+        + usize::from(!e.facts_from.is_empty())
+        + usize::from(e.focus.is_some())
+        + e.turns.len();
+}
+
+/// True when `word` (lower case) occurs in `text` (lower case) at the start of a word.
+fn starts_a_word(text: &str, word: &str) -> bool {
+    text.match_indices(word).any(|(i, _)| {
+        !text[..i]
+            .chars()
+            .next_back()
+            .is_some_and(char::is_alphanumeric)
+    })
+}
+
+/// Sentences in an answer: each `.`, `!` or `?` followed by a space or the end, plus one for an
+/// unfinished last sentence.
+// shortcut: "Mr. Rao" and "3.5" style stops count as sentence ends, fix with an abbreviation list
+// if a one_sentence case ever trips on it.
+fn sentence_count(answer: &str) -> usize {
+    let t = answer.trim();
+    let chars: Vec<char> = t.chars().collect();
+    let ends = chars
+        .iter()
+        .enumerate()
+        .filter(|(i, c)| {
+            matches!(c, '.' | '!' | '?') && chars.get(i + 1).is_none_or(|n| n.is_whitespace())
+        })
+        .count();
+    ends + usize::from(!t.is_empty() && !t.ends_with(['.', '!', '?']))
+}
+
+/// The answer ends with a question that starts with "which" or "who" (asking the person to pick).
+// shortcut: judges only the last sentence and only the English words which and who, so a mid-answer
+// question or another language passes; replace with the slice S3 focus check.
+fn ends_with_which_or_who_question(answer: &str) -> bool {
+    let t = answer.trim_end();
+    let Some(body) = t.strip_suffix('?') else {
+        return false;
+    };
+    let body = body.trim_end_matches('?');
+    let last = body
+        .rsplit(['.', '!', '?', '\n'])
+        .next()
+        .unwrap_or_default()
+        .to_lowercase();
+    last.split(|c: char| !c.is_alphabetic())
+        .find(|w| !w.is_empty())
+        .is_some_and(|w| w == "which" || w == "who")
 }
 
 // ------------------------------------------------------------------ report
@@ -568,6 +714,17 @@ pub struct ConversationGroup {
     pub abstained: Rate,
     /// `passed` counts answers that repeat a four-word phrase three times or more.
     pub repetition: Rate,
+    /// `required_facts` entries found in the answers, and entries listed.
+    pub required_facts_found: usize,
+    pub required_facts_total: usize,
+    pub abstain_names: Rate,
+    pub no_navigate: Rate,
+    pub no_dump: Rate,
+    pub no_internal_words: Rate,
+    pub length_class: Rate,
+    pub no_reask: Rate,
+    /// Flags set by cases that the build cannot measure yet (answer type, facts from, focus, turns).
+    pub not_counted: usize,
     pub invented_names: usize,
     pub name_candidates: usize,
     pub wrong_scenes: usize,
@@ -588,6 +745,17 @@ impl ConversationGroup {
         self.within_length.add(s.length);
         self.abstained.add(s.abstain_ok);
         self.repetition.add(s.repetition);
+        if let Some((found, total)) = s.required_facts {
+            self.required_facts_found += found;
+            self.required_facts_total += total;
+        }
+        self.abstain_names.add(s.abstain_names_ok);
+        self.no_navigate.add(s.no_navigate_ok);
+        self.no_dump.add(s.no_dump_ok);
+        self.no_internal_words.add(s.no_internal_words_ok);
+        self.length_class.add(s.length_class_ok);
+        self.no_reask.add(s.no_reask_ok);
+        self.not_counted += s.not_counted;
         for (field, wrong, total) in [
             (
                 s.invented_names,
@@ -787,6 +955,26 @@ fn conversation_section(s: &Summary) -> String {
     t.push_str(&row("all", &s.conversation));
     for (kind, g) in &s.conversation_by_type {
         t.push_str(&row(kind, g));
+    }
+    t.push_str(
+        "\nExpectation flags (harness spec 7.4). Cases that set none of them show none. Flags the build cannot measure yet are listed as not counted, never as passed or failed.\n\n| Question type | Required facts | Abstain names | No navigation | No data dump | No internal words | Length class | No re-ask | Not counted |\n|---|---|---|---|---|---|---|---|---|\n",
+    );
+    let flags = |name: &str, g: &ConversationGroup| {
+        format!(
+            "| {name} | {} | {} | {} | {} | {} | {} | {} | {} |\n",
+            ratio(g.required_facts_found, g.required_facts_total),
+            pct(&g.abstain_names),
+            pct(&g.no_navigate),
+            pct(&g.no_dump),
+            pct(&g.no_internal_words),
+            pct(&g.length_class),
+            pct(&g.no_reask),
+            g.not_counted,
+        )
+    };
+    t.push_str(&flags("all", &s.conversation));
+    for (kind, g) in &s.conversation_by_type {
+        t.push_str(&flags(kind, g));
     }
     t
 }
@@ -1266,6 +1454,134 @@ mod tests {
         assert_eq!(say("I couldn’t find a Marcus in the project."), Some(true));
         assert_eq!(say("That is not mentioned in the script."), Some(true));
         assert_eq!(say("Marcus is the villain."), Some(false));
+    }
+
+    /// Score one answer (and steps) against a conversation case with the given extra flags.
+    fn flag_score(extra: Value, answer: &str, steps: &[&str]) -> Score {
+        score(
+            &conversation_case(extra),
+            &Observation {
+                answer: answer.into(),
+                steps: steps.iter().map(|t| (t.to_string(), json!({}))).collect(),
+                ..Observation::default()
+            },
+        )
+    }
+
+    #[test]
+    fn required_facts_count_found_against_listed() {
+        let s = flag_score(
+            json!({ "required_facts": ["brother", "Tower"] }),
+            "Suresh is her brother.",
+            &[],
+        );
+        assert_eq!(s.required_facts, Some((1, 2)));
+        let s = flag_score(
+            json!({ "required_facts": ["brother", "suresh"] }),
+            "Suresh is her brother.",
+            &[],
+        );
+        assert_eq!(s.required_facts, Some((2, 2)));
+    }
+
+    #[test]
+    fn abstain_names_need_the_wording_and_a_place() {
+        let c = json!({ "abstain_names": ["scenes", "characters"] });
+        assert_eq!(
+            flag_score(c.clone(), "I couldn't find Marcus in the scenes.", &[]).abstain_names_ok,
+            Some(true)
+        );
+        assert_eq!(
+            flag_score(c.clone(), "I couldn't find Marcus.", &[]).abstain_names_ok,
+            Some(false)
+        );
+        assert_eq!(
+            flag_score(c, "Marcus is in the scenes.", &[]).abstain_names_ok,
+            Some(false)
+        );
+    }
+
+    #[test]
+    fn no_navigate_fails_on_an_open_tool() {
+        let c = json!({ "no_navigate": true });
+        assert_eq!(
+            flag_score(c.clone(), "Done.", &["scene_fact"]).no_navigate_ok,
+            Some(true)
+        );
+        assert_eq!(
+            flag_score(c, "Done.", &["scene_fact", "open_scene"]).no_navigate_ok,
+            Some(false)
+        );
+    }
+
+    #[test]
+    fn no_dump_fails_when_a_listed_string_appears() {
+        let c = json!({ "no_dump": ["INT. TOWER"] });
+        assert_eq!(
+            flag_score(c.clone(), "Sorry about that.", &[]).no_dump_ok,
+            Some(true)
+        );
+        assert_eq!(
+            flag_score(c, "Here is int. tower in full.", &[]).no_dump_ok,
+            Some(false)
+        );
+    }
+
+    #[test]
+    fn no_internal_words_matches_word_starts_only() {
+        let c = json!({ "no_internal_words": true });
+        let ok = |a: &str| flag_score(c.clone(), a, &[]).no_internal_words_ok;
+        assert_eq!(ok("She sat on a stool by the sea."), Some(true));
+        assert_eq!(ok("I used a tool to look it up."), Some(false));
+        assert_eq!(ok("The Record ID is 12."), Some(false));
+        assert_eq!(ok("It returned JSON."), Some(false));
+    }
+
+    #[test]
+    fn length_class_checks_the_word_range_and_one_sentence() {
+        let words = |n: usize| vec!["word"; n].join(" ");
+        let class =
+            |c: &str, a: &str| flag_score(json!({ "length_class": c }), a, &[]).length_class_ok;
+        assert_eq!(class("one_sentence", "Lakshmi leaves."), Some(true));
+        assert_eq!(
+            class("one_sentence", "Lakshmi leaves. Suresh stays."),
+            Some(false)
+        );
+        assert_eq!(class("short", &words(80)), Some(true));
+        assert_eq!(class("short", &words(81)), Some(false));
+        assert_eq!(class("paragraph", &words(39)), Some(false));
+        assert_eq!(class("paragraph", &words(200)), Some(true));
+        assert_eq!(class("brief", &words(120)), Some(true));
+        assert_eq!(class("brief", &words(121)), Some(false));
+        assert_eq!(class("huge", &words(50)), Some(false));
+    }
+
+    #[test]
+    fn no_reask_fails_on_a_closing_which_or_who_question() {
+        let c = json!({ "no_reask": true });
+        let ok = |a: &str| flag_score(c.clone(), a, &[]).no_reask_ok;
+        assert_eq!(ok("Lakshmi is the lead. Anything else?"), Some(true));
+        assert_eq!(ok("Lakshmi is the lead."), Some(true));
+        assert_eq!(ok("I can help. Which screenplay do you mean?"), Some(false));
+        assert_eq!(ok("Who do you mean?"), Some(false));
+    }
+
+    #[test]
+    fn flags_the_build_cannot_measure_are_parsed_and_not_counted() {
+        let s = flag_score(
+            json!({ "answer_type": "explain", "facts_from": ["r1"], "focus": { "person": "Lakshmi" },
+                "turns": [{ "answer_has": ["x"] }, {}] }),
+            "Anything.",
+            &[],
+        );
+        assert_eq!(s.not_counted, 5);
+        let sum = summarize(&[s]);
+        assert_eq!(sum.conversation.not_counted, 5);
+        assert!(markdown("t", &sum, &[]).contains("| all | none | none |"));
+        // Gold without the new flags still parses and counts nothing.
+        let plain = flag_score(json!({}), "Anything.", &[]);
+        assert_eq!(plain.not_counted, 0);
+        assert_eq!(plain.required_facts, None);
     }
 
     #[test]
