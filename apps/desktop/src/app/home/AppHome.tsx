@@ -24,6 +24,7 @@ import { fileSrc } from "../../ipc/assetSrc";
 import { ago, shortDate } from "./format";
 import { useHomeView } from "./homeState";
 import { NewProjectDialog } from "./NewProjectDialog";
+import { FoundProjects } from "./FoundProjects";
 import { matches as matchesShortcut, useShortcutLabel } from "../shortcuts";
 import { DisplayNameDialog } from "./DisplayNameDialog";
 import { BrandLogo } from "../../theme/BrandLogo";
@@ -415,6 +416,7 @@ function ProjectsHome() {
             )}
           </>
         )}
+        {!recents.isLoading && !recents.isError && !showArchived && <FoundProjects onOpened={reset} />}
       </main>
       <footer className="status">
         <span className="it"><span className="dot gray" aria-hidden /> No project open</span>

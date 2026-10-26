@@ -295,6 +295,10 @@ fn drop_recently_deleted(conn: &rusqlite::Connection) -> AppResult<()> {
          DELETE FROM vault_folder WHERE deleted_at IS NOT NULL;
          DELETE FROM vault_collection WHERE deleted_at IS NOT NULL;
          DELETE FROM asset WHERE id NOT IN (SELECT asset_id FROM vault_item WHERE asset_id IS NOT NULL);
+         -- A linked file's full path names folders on this computer (often the person's account
+         -- name) and means nothing on another one. Keep only the file name, so the item shows as
+         -- a missing link the person can point at the file again.
+         UPDATE asset SET external_path = original_name WHERE storage_mode = 'external';
          DELETE FROM search_doc WHERE source_table = 'vault_item' AND entity_id NOT IN (SELECT id FROM vault_item);
          INSERT INTO search_fts(search_fts) VALUES('rebuild');
          DELETE FROM deleted_item;

@@ -895,6 +895,51 @@ fn a_package_leaves_out_recently_deleted_items_and_their_files() {
 }
 
 #[test]
+fn a_package_does_not_carry_the_local_path_of_a_linked_file() {
+    let env = TestEnv::new();
+    let linked = env.write_file(
+        "private-folder-name/linked-photo.png",
+        &[0x89, b'P', b'N', b'G'],
+    );
+    env.ok(
+        "vault.add_files",
+        json!({ "store": "global", "paths": [linked.clone()], "mode": "link" }),
+    );
+    let started = env.ok(
+        "vault.export_package",
+        json!({ "path": text(&out_dir(&env).join("portable")) }),
+    );
+    let package = finish(&env, &started).unwrap()["path"]
+        .as_str()
+        .unwrap()
+        .to_string();
+    let other = TestEnv::new();
+    finish(
+        &other,
+        &other.ok("vault.restore_backup", json!({ "path": package })),
+    )
+    .unwrap();
+    other.core.close_global_store();
+    let db = fs::read(other.core.vault_dir().join("vault.sqlite")).unwrap();
+    let needle = b"private-folder-name";
+    assert!(
+        !db.windows(needle.len()).any(|w| w == needle),
+        "the package database still names the folder of the linked file"
+    );
+    // A backup stays on this computer and keeps the link as it was.
+    let (backup, _) = back_up(&env, "with links");
+    let third = TestEnv::new();
+    finish(
+        &third,
+        &third.ok("vault.restore_backup", json!({ "path": backup })),
+    )
+    .unwrap();
+    third.core.close_global_store();
+    let db = fs::read(third.core.vault_dir().join("vault.sqlite")).unwrap();
+    assert!(db.windows(needle.len()).any(|w| w == needle));
+}
+
+#[test]
 fn restore_refuses_a_damaged_or_unsafe_file_and_leaves_the_vault_alone() {
     let env = TestEnv::new();
     add_note(&env, "ALPHA");

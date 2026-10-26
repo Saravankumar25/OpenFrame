@@ -1,6 +1,6 @@
 // Project settings workspace (UX §3.4 "Project settings", mock 022; §3.37 Templates,
 // mock 153). Sub-pages: Project settings | Writing | Keyboard shortcuts | Templates | Offline AI |
-// Advanced (breakdown categories) | Appearance.
+// Advanced (breakdown categories) | Appearance | Storage.
 
 import { useState } from "react";
 import { FolderOpen } from "lucide-react";
@@ -20,6 +20,7 @@ import { BreakdownCategorySettings } from "./BreakdownCategories";
 import { WritingSettings } from "./Writing";
 import { ShortcutsSettings } from "./Shortcuts";
 import { AppearancePanel } from "../../features/appearance/AppearancePanel";
+import { StoragePanel } from "../../features/storage/StoragePanel";
 
 /** Settings > Appearance (also opened from Home as a dialog). */
 function AppearancePage() {
@@ -41,6 +42,7 @@ const TABS = [
   { id: "offline-ai", label: "Offline AI" },
   { id: "advanced", label: "Advanced" },
   { id: "appearance", label: "Appearance" },
+  { id: "storage", label: "Storage" },
 ] as const;
 
 export default function SettingsWorkspace() {
@@ -52,6 +54,7 @@ export default function SettingsWorkspace() {
     route.sub === "writing" ||
     route.sub === "shortcuts" ||
     route.sub === "appearance" ||
+    route.sub === "storage" ||
     route.sub === "advanced"
       ? route.sub
       : "general";
@@ -70,7 +73,12 @@ export default function SettingsWorkspace() {
           </button>
         ))}
       </div>
-      {tab === "templates" ? (
+      {tab === "storage" ? (
+        <div className="content" style={{ overflow: "auto" }}>
+          <PageHeader title="Storage" sub="Where your work is kept on this computer, and how to move, back up or reconnect it." />
+          <StoragePanel />
+        </div>
+      ) : tab === "templates" ? (
         <Templates />
       ) : tab === "offline-ai" ? (
         <OfflineAiSettings />
@@ -90,6 +98,7 @@ export default function SettingsWorkspace() {
 }
 
 function General() {
+  const go = useNav((s) => s.go);
   const project = useOp<ProjectSummary | null>("project.current", {}, ["project"]);
   const [dirty, setDirty] = useState(false);
   const p = project.data;
@@ -109,6 +118,7 @@ function General() {
             <div className="h4">Stored on this computer</div>
             <div className="sm selectable-text" style={{ wordBreak: "break-all", marginBottom: 8 }}>{p.path}</div>
             <Button size="sm" icon={<FolderOpen size={14} />} onClick={() => void revealLocation("project").catch(reportError)}>Open project location</Button>
+            <Button size="sm" variant="ghost" style={{ marginTop: 6 }} onClick={() => go({ workspace: "settings", sub: "storage" })}>Move or back up…</Button>
             <div className="hr" />
             <div className="xs muted">Created {dayAndTime(p.createdAt)}</div>
             <div className="xs muted">Last changed {dayAndTime(p.updatedAt)}</div>
