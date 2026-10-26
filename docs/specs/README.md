@@ -22,7 +22,6 @@
 | `OpenFrame_ESD_Technical_Architecture.md` | Engineering system design | Active, with a status note; target additions in `docs/engineering/29` |
 | `OpenFrame_Studio_Engineering_Package_Index.md` | Locked engineering decisions, phases, invariants | Active; some locked decisions marked under amendment (see the register) |
 | `screenplay-formatting-standard-v5.md` | Screenplay page layout: spacing, keep rules, continuation, title page, numbering (added 2026-10-24) | Active. Replaces version 4 (in [../history/specs/](../history/specs/)); amends ADR-0008 for the screenplay profile |
-| `ai-harness-rebuild.md` | The plan and baseline behind the AI lanes (added 2026-10-24) | Plan, kept as evidence. Decisions are [ADR-0035](../adr/ADR-0035-ai-lanes-briefings-and-code-verifiers.md); not everything in it is built |
 | `pdf-design-package-v2/` | Design package for every production PDF: system rules, one specification per export, reference HTML and PDFs (added 2026-10-24) | Active design source, [ADR-0036](../adr/ADR-0036-production-pdf-design-system-v2.md); the renderer slice follows |
 | `owner-issues-2026-10-24/` | The owner's issue list of 2026-10-24 (Word document) | Source material, not a specification |
 

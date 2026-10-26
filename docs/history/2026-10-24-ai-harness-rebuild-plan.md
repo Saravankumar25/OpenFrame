@@ -1,3 +1,5 @@
+> Superseded by [ai-conversational-harness.md](../specs/ai-conversational-harness.md) and [ADR-0037](../adr/ADR-0037-conversational-assistant-focus-and-dossiers.md) on 2026-10-26.
+
 # AI harness rebuild
 
 A plan to make the OpenFrame assistant answer like a strong conversational AI and work like a careful agent, with the same local Gemma 3 1B model.

@@ -752,7 +752,7 @@ Each slice ends with the eval run and a saved result. A slice does not start bef
 | S6 | Memory: rolling summary, long-term table, Settings screen | migration, `records.rs`, `apps/desktop/src/ai/` | Memory tests; user can list and delete entries |
 | S7 | Writer and checker on every answer; last-resort sentence; sources; remove retired paths (section 4.3) | `orchestrator.rs`, `verify.rs`, `lanes.rs` | Full bench at the bars |
 | S8 | Speed: stable prompt prefix, token caps, index warm-up; decide on token streaming | `crates/openframe-ai` (engine settings, prompt reuse, early start), `intelligence/warm.rs`, `turn/warm.rs`, the latency section of `ai-eval` | Latency bars (section 7.5) measured on the reference machine; result at the end of section 5 |
-| S9 | Documents: update `ai-answer-paths.md`, `ai-harness-rebuild.md`, manual, feature status; `graphify update .` | `docs/` | Docs match code |
+| S9 | Documents: rewrite `ai-answer-paths.md`, move the five-lane page and the rebuild plan to `docs/history/`, manual, feature status; `graphify update .` | `docs/` | Docs match code |
 
 S3 status (2026-10-26): built and tested. The resolver follows section 5.2 and settles the screenplay by title or alias, the conversation focus, the scene number, or the only current draft; the one change in behaviour is that `ai.ask` fills a missing draft from it instead of letting each tool ask "which screenplay". Unit tests in `index/tests.rs`; the fixture tests in `crates/openframe-ai-eval/tests/ai_index.rs`; the wiring in `tests/ai/ai_focus.rs`. Not yet done: unknown-name reporting ("not in the project") and use of the resolved entities by the dossier builders (S5).
 

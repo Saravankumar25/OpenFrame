@@ -13,7 +13,7 @@
 - **Amends:** [ADR-0013](ADR-0013-single-local-model-hybrid-rag-agent.md) decision 6 (the agent loop, its step count and
   its place among other paths) and [ADR-0028](ADR-0028-ai-quality-program-and-harness.md) decision 8 (the one place
   conversation text may be saved). Decisions 1 and 5 of ADR-0028 keep their rules and are extended here.
-- **Plan and evidence:** [ai-harness-rebuild.md](../specs/ai-harness-rebuild.md) (sections 5 and 11). How a request runs
+- **Plan and evidence:** [ai-harness-rebuild.md](../history/2026-10-24-ai-harness-rebuild-plan.md) (sections 5 and 11). How a request runs
   today: [ai-answer-paths.md](../engineering/ai-answer-paths.md). Number note: 0033 and 0034 are taken in the Mac tree
   ([register note](README.md)), so this ADR uses 0035.
 

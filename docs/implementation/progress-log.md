@@ -91,7 +91,7 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 
 ### 2026-10-24 to 2026-10-25, AI harness rebuild, PDF exports v2, screenplay v5, owner issues
 - **Areas and items worked:** AI assistant quality and hardening (the harness rebuild, steps S1 to S8 of
-  [ai-harness-rebuild.md](../specs/ai-harness-rebuild.md)); Call sheets, budget, templates, samples and exports (the
+  [ai-harness-rebuild.md](../history/2026-10-24-ai-harness-rebuild-plan.md)); Call sheets, budget, templates, samples and exports (the
   production PDF design v2); Screenplay engine and file formats (formatting standard v5); owner issue list of
   2026-10-24 (cover photo, Dark page, relationship maps, Sides, side panels). Branch
   `upgrade/harness-exports-screenplay`, 50 commits since `17114505`, local only.

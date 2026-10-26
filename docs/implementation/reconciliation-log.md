@@ -6,6 +6,18 @@
 > Renamed on 2026-10-06 from `03-reconciliation-log.md`. Extended on 2026-10-09 (chapter restructure). Checks written "(checked)" were verified in the repository on the
 > date given. Checks written "(stated)" come from a supplied document and were not verified independently.
 
+## 2026-10-26: five-lane AI documents moved to history
+
+Owner instruction (chat): dead documentation is shifted to history as part of the S9 close-out.
+
+- `docs/engineering/ai-answer-paths.md` (the five lanes) moved to `docs/history/2026-10-26-ai-answer-paths-five-lanes.md`,
+  with one added "Superseded by" line. A new `docs/engineering/ai-answer-paths.md` describes the one conversational path
+  built in slices S3 to S8.
+- `docs/specs/ai-harness-rebuild.md` moved to `docs/history/2026-10-24-ai-harness-rebuild-plan.md`, with one added line.
+  The 2026-10-24 owner decision to keep it in `docs/specs/` is replaced by this instruction.
+- Links in ADR-0035, ADR-0037, the ADR register, owner decisions, the progress log, this log and the spec now point to the
+  history copies; the specs index row is removed; the history index has two new rows. `node scripts/check-links.mjs` OK.
+
 ## 2026-10-24: one history folder, harness and layout upgrade recorded
 
 Owner instruction: "Update the documentation properly. Move older decisions, deprecated documentation, and material no longer applicable to the current application version into `docs/history/`."
