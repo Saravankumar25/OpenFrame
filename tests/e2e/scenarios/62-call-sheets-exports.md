@@ -8,7 +8,7 @@ Before: an empty data folder of its own, and an empty temporary folder for expor
 
 Many steps here ask the core directly to set up a plan or write an export with a path, the same way the screens do. They are marked "Through the core". "Production tab X" means: open Production if needed, then click X in the Production navigation. "The call sheet" is the panel named "Call sheet document".
 
-"Check the PDF F" means: check the file F exists, starts with "%PDF-", and contains the brand line "Created using OpenFrame".
+"Check the PDF F" means: check the file F exists, starts with "%PDF-", and contains the brand line "Created using OpenFrame". "Check the PDF F has no brand line" means the same, except that the file must not contain the brand line.
 
 ## Open a sample script that ships with the app
 
@@ -40,7 +40,7 @@ Many steps here ask the core directly to set up a plan or write an export with a
 1. Click Call Sheets in the Workspaces navigation.
 2. Click Create Call Sheet, then click Create Call Sheet in the dialog.
 3. Check: the call sheet shows.
-4. Check: the call sheet has the sections "PRODUCTION HEADER", "DAY AND TIMES", "LOCATIONS", "SCENE SCHEDULE", "TALENT" and "PRACTICAL NOTES".
+4. Check: the call sheet has the sections "DAY AND TIMES", "PRODUCTION", "LOCATIONS", "SCENE SCHEDULE", "TALENT / CAST" and "PRACTICAL / SAFETY INFORMATION".
 5. Check: the call sheet has no "WEATHER" section yet.
 6. Check: at least one empty value in the call sheet shows "Needs input".
 7. Check: the Crew call field reads "07:00" (it comes from the day).
@@ -93,9 +93,9 @@ Many steps here ask the core directly to set up a plan or write an export with a
 3. Through the core: check the new call sheet has a Weather section and a Crew section.
 4. Check: the screen is quiet.
 
-## Sides, a report and the visual planning exports carry the brand line
+## A report and the visual planning exports carry the brand line, sides do not
 
-1. Through the core: export the sides for Day 1 with a cover. Check the PDF `sides.pdf`.
+1. Through the core: export the sides for Day 1 with a cover. Check the PDF `sides.pdf` has no brand line (sides are pages of the script).
 2. Through the core: export the scene report. Check the PDF `scene-report.pdf`.
 3. Through the core: export the shooting schedule. Check the PDF `schedule.pdf`.
 4. Through the core: export the Day Out of Days. Check the PDF `dood.pdf`.

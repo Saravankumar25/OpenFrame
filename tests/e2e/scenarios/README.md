@@ -122,8 +122,8 @@ Meera waits for the late train with a red umbrella.
 | `25-recently-deleted-purge.md` | `25-recently-deleted-purge.test.mjs` | 4 | None |
 | `26-forced-kill-keeps-work.md` | `26-forced-kill-keeps-work.test.mjs` | 3 | Killing the process tree |
 | `30-story.md` | `30-story.test.mjs` | 7 | None |
-| `31-story-board-flow.md` | `31-story-board-flow.test.mjs` | 9 | None |
-| `32-story-page.md` | `32-story-page.test.mjs` | 5 | System Save dialogs skipped |
+| `31-story-board-flow.md` | `31-story-board-flow.test.mjs` | 8 | None |
+| `32-story-page.md` | `32-story-page.test.mjs` | 6 | System Save dialogs skipped |
 | `40-screenplay.md` | `40-screenplay.test.mjs` | 4 | None |
 | `41-screenplay-engine.md` | `41-screenplay-engine.test.mjs` | 8 | System Save and Open dialogs skipped |
 | `42-writing-comfort.md` | `42-writing-comfort.test.mjs` | 9 | Windows spelling dictionary |
@@ -136,6 +136,7 @@ Meera waits for the late train with a red umbrella.
 | `62-call-sheets-exports.md` | `62-call-sheets-exports.test.mjs` | 10 | None |
 | `63-every-export.md` | `63-every-export.test.mjs` | 3 | System Save dialogs skipped |
 | `70-packages.md` | `70-packages.test.mjs` | 6 | Windows file dialogs through UI Automation |
+| `71-storage.md` | `71-storage.test.mjs` | 4 | System folder dialogs skipped |
 | `72-ai-assistant.md` | `72-ai-assistant.test.mjs` | 9 | `llama-server.exe` processes and sockets |
 | `73-ai-workspaces.md` | `73-ai-workspaces.test.mjs` | 5 | None |
 | `74-ai-change-sets.md` | `74-ai-change-sets.test.mjs` | 4 | None |
@@ -153,4 +154,4 @@ Meera waits for the late train with a red umbrella.
 | `98-layout-geometry.md` | `98-layout-geometry.test.mjs` | 2 | Window sizes set through WebDriver; geometry read from the WebView2 page |
 | `zz-capture.md` | `zz-capture.test.mjs` | 1 | Development tool, skipped unless E2E_CAPTURE=1; Windows WebView2 screenshots |
 
-Total: 205 scenarios in 44 files.
+Total: 209 scenarios in 45 files.

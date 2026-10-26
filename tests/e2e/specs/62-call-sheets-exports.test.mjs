@@ -139,7 +139,7 @@ describe("call sheets, budget, templates, samples and exports", () => {
       await browser.$('//*[@aria-label="Call sheet document"]').waitForDisplayed({ timeout: 15_000 });
       const paper = async () => browser.execute(() => document.querySelector('[aria-label="Call sheet document"]')?.innerText ?? "");
       const text = await paper();
-      for (const s of ["PRODUCTION HEADER", "DAY AND TIMES", "LOCATIONS", "SCENE SCHEDULE", "TALENT", "PRACTICAL NOTES"]) {
+      for (const s of ["DAY AND TIMES", "PRODUCTION", "LOCATIONS", "SCENE SCHEDULE", "TALENT / CAST", "PRACTICAL / SAFETY INFORMATION"]) {
         assert.ok(text.toUpperCase().includes(s), `default section ${s} is missing`);
       }
       assert.ok(!text.toUpperCase().includes("WEATHER"), "an optional section shows before it is added");
