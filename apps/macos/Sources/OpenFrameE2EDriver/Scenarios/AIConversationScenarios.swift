@@ -45,8 +45,13 @@ fileprivate extension UI {
         while exists(id: "ai-index-notice"), Date() < idx { await idle(0.5) }
         try await convFocus(input)
         try await type(q, into: "ai-input")
+        let before = query(id: "ai-question").count
         try await enter()
-        _ = try await wait(id: "ai-pending-question", timeout: 10, "the question waiting for its answer")
+        // An answer the core gives without the model (a navigation) can replace the waiting
+        // question before the next look: either one shows that the question was taken.
+        try await convUntil("the question waiting for its answer", timeout: 10) {
+            exists(id: "ai-pending-question") || query(id: "ai-question").count > before
+        }
     }
 
     /// "Ask Q": send it and wait until its result shows and nothing is running.
@@ -73,7 +78,21 @@ fileprivate extension UI {
 
     func convLastAnswer() -> String { query(id: "ai-answer-text").last?.text ?? "" }
 
-    func convText(_ id: String) -> String { query(id: id).map(\.text).joined(separator: " ") }
+    /// Everything a person reads in the element with this id, its children included.
+    func convText(_ id: String) -> String {
+        var out: [String] = []
+        func walk(_ e: Element, _ depth: Int) {
+            if !e.text.isEmpty { out.append(e.text) }
+            if depth < 12 { for c in e.children { walk(c, depth + 1) } }
+        }
+        for e in query(id: id) { walk(e, 0) }
+        return out.joined(separator: " ")
+    }
+
+    /// The Delete button of a remembered entry whose text has these words.
+    func convMemoryDelete(_ words: String) -> Element? {
+        all().first { $0.role == "AXButton" && $0.label.hasPrefix("Delete: ") && $0.label.lowercased().contains(words) }
+    }
 
     func convUntil(_ what: String, timeout: Double = 30, _ ok: () -> Bool) async throws {
         let deadline = Date().addingTimeInterval(timeout)
@@ -177,7 +196,7 @@ extension Scenarios {
             try await ui.go("Home")
             var kind = try await ui.convAsk("Open Scene 2.")
             try ui.expect(kind == "navigate", "Open Scene 2 is a navigation: \(kind)")
-            _ = try await ui.wait(id: "screenplay-workspace", timeout: 20, "the Screenplay workspace")
+            _ = try await ui.wait(id: "screenplay-editor", timeout: 20, "the Screenplay workspace")
             kind = try await ui.convAsk("Go to the budget.")
             try ui.expect(kind == "navigate", "Go to the budget is a navigation: \(kind)")
             _ = try await ui.wait(id: "budget-workspace", timeout: 20, "Production, Budget (the link's tab, not Overview)")
@@ -197,9 +216,14 @@ extension Scenarios {
             try ui.expect(kind == "proposal", "the second request is a proposal: \(kind)")
             try await ui.press(try await ui.wait(id: "ai-reject", timeout: 20, "Reject"))
             try await ui.convUntil("the card says nothing was changed") { ui.query(id: "ai-change-state").last?.text == "Rejected. Nothing was changed." }
+            // The Tasks list holds the applied task and not the rejected one (the questions and the
+            // cards in the panel name both, so only the task rows count).
             try await ui.go("Notes and Tasks")
-            try await ui.waitText("scout the railway station", timeout: 20)
-            try ui.expect(!ui.screenText().contains("book the bus depot"), "the rejected task was not created")
+            _ = try await ui.wait(id: "tasks-list", timeout: 20, "the Tasks list")
+            @MainActor func rows() -> [String] { ui.all().filter { $0.identifier.hasPrefix("task-row-") }.map { $0.label.lowercased() } }
+            try await ui.convUntil("the applied task is in the Tasks list", timeout: 20) { rows().contains { $0.contains("railway station") } }
+            try ui.expect(!rows().contains { $0.contains("bus depot") }, "the rejected task was not created: \(rows())")
+            try ui.expect(rows().count == 1, "only the applied task was created: \(rows())")
         },
 
         // A fact the person states is remembered; Settings > Offline AI lists it and Delete forgets it.
@@ -208,12 +232,14 @@ extension Scenarios {
             try await ui.convAsk("I'm the assistant director.")
             try await ui.openProjectSettings(page: "Offline AI")
             _ = try await ui.wait(id: "ai-memory-card", timeout: 20, "the Assistant memory card")
-            let delete = try await ui.wait(label: "Delete: I'm the assistant director", timeout: 30, "the remembered fact with its Delete button")
+            // The entry keeps the person's words; its Delete button names it.
+            try await ui.convUntil("the remembered fact with its Delete button") { ui.convMemoryDelete("assistant director") != nil }
             try ui.expect(ui.convText("ai-memory-card").contains("Fact, saved"), "the entry says it is a fact and when it was saved")
-            try await ui.press(delete)
+            try await ui.press(ui.convMemoryDelete("assistant director")!)
             try await ui.waitText("Forgotten.", timeout: 15)
-            try await ui.waitGone(label: "Delete: I'm the assistant director", timeout: 15)
+            try await ui.convUntil("the entry is gone", timeout: 15) { ui.convMemoryDelete("assistant director") == nil }
             try await ui.waitText("Nothing is remembered yet.", timeout: 15)
+            try await closeSettings(ui)
         },
     ]
 }

@@ -14,7 +14,10 @@ struct ProjectView: View {
     /// project; another project (a new one, or one opened from Home) starts on Project Home.
     @SceneStorage("workspace") private var stored: String = ""
     /// The AI Assistant panel docks beside the page; it stays as the person left it.
-    @SceneStorage("assistantOpen") private var assistantOpen = false
+    /// Open or closed is remembered for the person across quits (Windows spec 72: the docked panel
+    /// remembers whether it was open when the window loads again); scene storage came back only
+    /// when macOS restored the window.
+    @AppStorage("openframe.ai.open") private var assistantOpen = false
     /// The width the person dragged the AI panel to (kept for this Mac).
     @AppStorage("openframe.ai.width") private var assistantPreferred: Double = Double(ProjectView.assistantDefaultWidth)
     /// The width at the start of a drag.

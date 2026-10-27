@@ -1026,7 +1026,14 @@ fileprivate extension UI {
         // The assistant says "Preparing project context" while it indexes the project; a person waits for it.
         let idx = Date().addingTimeInterval(90)
         while exists(id: "ai-index-notice"), Date() < idx { await idle(0.5) }
-        try await focusByClick(input)
+        // The box was disabled while the last question ran and gave up the keyboard focus; right
+        // after the answer a click can land before the field takes clicks again, so a person
+        // clicks once more.
+        for _ in 0..<4 {
+            try await focusByClick(try await wait(id: "ai-input", timeout: 10))
+            if NSApp.keyWindow?.firstResponder is NSTextView { break }
+            await idle(0.5)
+        }
         try await type(q, into: "ai-input")
         try await enter()
         let deadline = Date().addingTimeInterval(timeout)
