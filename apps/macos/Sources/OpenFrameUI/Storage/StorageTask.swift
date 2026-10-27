@@ -15,6 +15,8 @@ final class StorageTaskModel: Identifiable {
         case completed(String)
         case failed(String)
         case cancelled
+        /// The end was never heard: the core stopped, or nothing came for a long time.
+        case lost
     }
 
     let id = UUID()
@@ -28,7 +30,15 @@ final class StorageTaskModel: Identifiable {
     private(set) var startError: String?
     /// Set once the end was handled (places read again, the window shows the project again).
     private(set) var settled = false
+    /// The end was not heard (see `Stage.lost`).
+    private(set) var lost = false
 
+    /// How long the task may stay silent before the window stops waiting for its end. Progress
+    /// comes often during a move, so only a task whose end was missed stays silent this long.
+    @ObservationIgnored let silence: Duration
+    @ObservationIgnored private var lastHeard = ContinuousClock.now
+    @ObservationIgnored private var streamEnded = false
+    @ObservationIgnored private var released = false
     @ObservationIgnored private weak var app: AppModel?
     @ObservationIgnored private let startOp: (Core) async throws -> String
     @ObservationIgnored private let doneText: (PackageTaskFollower) -> String
@@ -36,8 +46,9 @@ final class StorageTaskModel: Identifiable {
 
     init(app: AppModel, title: String, confirm: [String], confirmLabel: String, relocates: Bool = false,
          start: @escaping (Core) async throws -> String, done: @escaping (PackageTaskFollower) -> String,
-         onFinished: (@MainActor () async -> Void)? = nil) {
+         onFinished: (@MainActor () async -> Void)? = nil, silence: Duration = .seconds(600)) {
         self.app = app
+        self.silence = silence
         self.title = title
         self.confirm = confirm
         self.confirmLabel = confirmLabel
@@ -53,36 +64,70 @@ final class StorageTaskModel: Identifiable {
         case "completed": return .completed(doneText(task))
         case "failed": return .failed(task.errorMessage ?? "This did not finish. Nothing was changed.")
         case "cancelled": return .cancelled
-        default: return .running
+        default: return lost ? .lost : .running
         }
     }
 
-    var running: Bool { task.running }
-    var finished: Bool { task.finished }
+    var running: Bool { task.running && !lost }
+    var finished: Bool { task.finished || lost }
 
     func start() async {
         guard let app, let core = app.core, task.taskId == nil, !task.starting else { return }
         startError = nil
         settled = false
-        if relocates { app.beginRelocation() }
+        lost = false
+        released = false
+        streamEnded = false
+        lastHeard = .now
+        if relocates {
+            // The move closes the project: what the writer typed is stored first.
+            await ScreenplayWorkspaceModel.flushAll()
+            app.beginRelocation()
+        }
+        // Its own view of the events: the stream ends when the core stops.
+        let events = core.events()
+        let watch = Task { [weak self] in
+            for await event in events {
+                if case let .task(t) = event, t.taskId == self?.task.taskId { self?.lastHeard = .now }
+            }
+            self?.streamEnded = true
+        }
         do {
             try await task.begin(core: core) { try await self.startOp(core) }
         } catch {
+            watch.cancel()
             startError = CoreFailure(asCore: error).message
-            if relocates { await app.endRelocation() }
+            await release()
             settled = true
             return
         }
-        Task { await self.settle() }
+        lastHeard = .now
+        Task { await self.settle(watch) }
     }
 
-    /// Waits for the end, then reads the places again. A move can take a long time: no deadline
-    /// short enough to cut it off, and nothing here blocks the main thread.
-    private func settle() async {
-        while !task.finished { try? await Task.sleep(for: .milliseconds(100)) }
-        if relocates, let app { await app.endRelocation() }
+    /// Waits for the end, then reads the places again. A move can take a long time and sends
+    /// progress while it runs. The core has no call that reports a task's state, so a missed end
+    /// (the core stopped, or its last event was dropped) is noticed by the stream ending or by a
+    /// long silence. The move counter is always given back, so a later close goes Home.
+    private func settle(_ watch: Task<Void, Never>) async {
+        while !task.finished {
+            if streamEnded || ContinuousClock.now - lastHeard > silence {
+                lost = true
+                break
+            }
+            try? await Task.sleep(for: .milliseconds(100))
+        }
+        watch.cancel()
+        await release()
         await onFinished?()
         settled = true
+    }
+
+    /// Gives back the move counter once.
+    private func release() async {
+        guard !released else { return }
+        released = true
+        if relocates, let app { await app.endRelocation() }
     }
 
     func cancel() { task.cancel(core: app?.core) }
@@ -116,6 +161,9 @@ struct StorageTaskSheet: View {
                     IXBanner(.err, text).textSelection(.enabled).accessibilityIdentifier("storage-task-failed")
                 case .cancelled:
                     IXBanner(.info, "Cancelled. Nothing was changed.").accessibilityIdentifier("storage-task-cancelled")
+                case .lost:
+                    IXBanner(.info, "OpenFrame did not hear how this ended. Check the places in Storage before you try again.")
+                        .accessibilityIdentifier("storage-task-lost")
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)

@@ -7,8 +7,10 @@
 //
 // Nothing typed is lost: the page is saved 400 ms after the last change, on leaving the editor,
 // when the tab or workspace changes, when the project closes and when the app quits
-// (`StoryPageModel.flushAll`, called with the screenplay's). Another window that saved first is
-// not an error: the save is sent again on the newest revision with what the writer typed.
+// (`StoryPageModel.flushAll`, called with the screenplay's, also before a storage move). Another
+// window that saved first is not an error: a page on screen sends its save again on the newest
+// revision with what the writer typed. A page that left the screen never writes over a newer
+// revision, and an older change never replaces a newer one.
 
 import AppKit
 import Observation
@@ -31,6 +33,8 @@ final class StoryPageModel {
     private(set) var loaded: Loaded?
     private(set) var loadError: String?
     private(set) var status: Status = .saved
+    /// Why the core refused the last save (too long, formatting it cannot read), in its words.
+    private(set) var saveError: String?
     private(set) var words = 0
     /// What the toolbar shows for the selection.
     var tools = StoryPageTools()
@@ -39,17 +43,27 @@ final class StoryPageModel {
     static let saveDelay: Duration = .milliseconds(400)
 
     @ObservationIgnored private(set) var rev: Double = 0
-    /// The newest content not yet stored, and how many changes have been made.
+    /// The newest content not yet stored, and the change it came from. Every change counts up, so
+    /// an older text never replaces a newer one.
     @ObservationIgnored private var pending: Loaded?
+    @ObservationIgnored private var pendingVersion = 0
     @ObservationIgnored private var version = 0
+    /// The newest change handed to the save queue, and the newest one stored.
+    @ObservationIgnored private var queuedVersion = 0
+    @ObservationIgnored private var savedVersion = 0
+    /// Content the core refused: it is not sent again until the writer changes it.
+    @ObservationIgnored private var refused: Loaded?
+    /// False once the page left the screen: its late saves never overwrite a newer revision.
+    @ObservationIgnored private var onScreen = true
     @ObservationIgnored private var timer: Task<Void, Never>?
     /// The editor of this page, for the toolbar.
     @ObservationIgnored weak var editor: StoryPageTextView?
-    /// The project the page was read from: its text is never stored in another project.
-    @ObservationIgnored private var projectPath: String?
+    /// The project the page was read from: its text is never stored in another project. The id,
+    /// not the folder: a project or library move keeps the id and changes the folder.
+    @ObservationIgnored private var projectId: String?
 
-    private var openProjectPath: String? {
-        if case let .project(p) = app.phase { return p.path }
+    private var openProjectId: String? {
+        if case let .project(p) = app.phase { return p.id }
         return nil
     }
 
@@ -72,7 +86,7 @@ final class StoryPageModel {
 
     private static var lastSave: Task<Void, Never>?
 
-    private static func queue(_ job: @escaping @MainActor () async -> Void) -> Task<Void, Never> {
+    static func queue(_ job: @escaping @MainActor () async -> Void) -> Task<Void, Never> {
         let before = lastSave
         let run = Task { @MainActor in
             await before?.value
@@ -101,7 +115,8 @@ final class StoryPageModel {
         live.append(Weak(model))
     }
 
-    /// Stores what every open Story page holds. Called before the project closes and the app quits.
+    /// Stores what every open Story page holds. Called before the project closes, before a
+    /// project or library move and when the app quits.
     static func flushAll() async {
         for entry in live { await entry.model?.flush() }
         await settledSaves()
@@ -117,7 +132,7 @@ final class StoryPageModel {
         }
         do {
             let p = try await core.storyPageGet()
-            projectPath = openProjectPath
+            projectId = openProjectId
             rev = p.rev
             words = StoryPageDocument.wordCount(p.text)
             loaded = Loaded(text: p.text, format: p.format)
@@ -127,10 +142,15 @@ final class StoryPageModel {
         }
     }
 
+    /// The page is on screen (again).
+    func appear() { onScreen = true }
+
     /// Called by the editor after every change: stored 400 ms after the last one.
     func changed(text: String, format: String?) {
-        pending = Loaded(text: text, format: format)
         version += 1
+        pending = Loaded(text: text, format: format)
+        pendingVersion = version
+        onScreen = true
         status = .saving
         timer?.cancel()
         timer = Task { [weak self] in
@@ -145,36 +165,41 @@ final class StoryPageModel {
         changed(text: c.text, format: c.format)
     }
 
+    /// Hands what is waiting to the save queue. Nil when nothing is waiting, or when it is what
+    /// the core refused (sent again only once the writer changed it).
+    private func take() -> Task<Void, Never>? {
+        timer?.cancel()
+        timer = nil
+        guard let content = pending, content != refused else { return nil }
+        let v = pendingVersion
+        pending = nil
+        queuedVersion = max(queuedVersion, v)
+        return Self.queue { await self.persist(content, version: v) }
+    }
+
     /// Stores what is waiting now. True when the page is stored.
     @discardableResult
     func flush() async -> Bool {
-        timer?.cancel()
-        timer = nil
-        if let content = pending {
-            pending = nil
-            let v = version
-            await Self.queue { await self.persist(content, version: v) }.value
-        } else {
-            await Self.settledSaves()
-        }
+        if let save = take() { await save.value } else { await Self.settledSaves() }
         return status != .failed && pending == nil
     }
 
-    /// Leaving the editor or the page: the save starts now (in the save queue), so a page that
-    /// opens again waits for it. The queue holds the model until its save has run.
-    func leave() {
-        timer?.cancel()
-        timer = nil
-        guard let content = pending else { return }
-        pending = nil
-        let v = version
-        _ = Self.queue { await self.persist(content, version: v) }
+    /// Leaving the editor: the save starts now (in the save queue), so a page that opens again
+    /// waits for it. The queue holds the model until its save has run.
+    func leave() { _ = take() }
+
+    /// The page left the screen. A page that opens again reads the stored text; this one still
+    /// stores what it holds, but never over a newer revision.
+    func close() {
+        onScreen = false
+        leave()
     }
 
     private func persist(_ c: Loaded, version v: Int) async {
+        guard v > savedVersion else { return }
         if v == version { words = StoryPageDocument.wordCount(c.text) }
-        guard let core = app.core, projectPath == nil || projectPath == openProjectPath else {
-            keep(c)
+        guard let core = app.core, projectId == nil || projectId == openProjectId else {
+            keep(c, version: v, error: nil)
             return
         }
         do {
@@ -182,21 +207,45 @@ final class StoryPageModel {
             do {
                 saved = try await core.storyPageSave(StoryPageSaveArgs(text: c.text, format: c.format, expectedRev: rev))
             } catch {
-                // Another window saved first. Take its revision and keep what the writer typed.
-                guard CoreFailure(asCore: error).code.hasPrefix("conflict") else { throw error }
+                // Another window saved first. A page on screen takes its revision and keeps what
+                // the writer typed. A page that left the screen does not: the newer revision
+                // came from a page opened after it, and its newer text wins.
+                guard CoreFailure(asCore: error).code.hasPrefix("conflict"), onScreen else { throw error }
                 rev = try await core.storyPageGet().rev
                 saved = try await core.storyPageSave(StoryPageSaveArgs(text: c.text, format: c.format, expectedRev: rev))
             }
             rev = saved.rev
-            if v == version { status = .saved }
+            savedVersion = max(savedVersion, v)
+            if pending != nil, pendingVersion <= v { pending = nil }
+            if refused != nil, v >= pendingVersion { refused = nil }
+            if v == version {
+                status = .saved
+                saveError = nil
+            }
         } catch {
-            keep(c)
+            let failure = CoreFailure(asCore: error)
+            if failure.code.hasPrefix("conflict"), !onScreen {
+                // A newer revision is stored: this older text is dropped, never written over it.
+                if v >= queuedVersion, pending == nil { status = .saved }
+                return
+            }
+            keep(c, version: v, error: failure.code.hasPrefix("validation") ? failure : nil)
         }
     }
 
-    /// A save that failed keeps its text for the next try (the next change, leaving, closing).
-    private func keep(_ c: Loaded) {
-        if pending == nil { pending = c }
+    /// A save that failed keeps its text for the next try (the next change, leaving, closing),
+    /// unless a newer change was queued or stored since. A refused save keeps the core's reason
+    /// and is not sent again until the text changes.
+    private func keep(_ c: Loaded, version v: Int, error refusal: CoreFailure?) {
+        guard v >= queuedVersion, v > savedVersion else { return }
+        if pending == nil {
+            pending = c
+            pendingVersion = v
+        }
+        if let refusal, pendingVersion == v {
+            refused = c
+            saveError = refusal.message
+        }
         status = .failed
     }
 
@@ -285,7 +334,8 @@ struct StoryPageView: View {
             if model == nil { model = StoryPageModel(app: app) }
             if model?.loaded == nil { await model?.load() }
         }
-        .onDisappear { model?.leave() }
+        .onAppear { model?.appear() }
+        .onDisappear { model?.close() }
         .themedSheet(item: Binding(get: { model?.exportModel }, set: { model?.exportModel = $0 })) { e in
             CSExportSheet(model: e) { model?.exportModel = nil }
         }
@@ -319,12 +369,23 @@ struct StoryPageView: View {
             StoryPageEditor(model: m, initial: loaded, dark: darkPage, zoom: zoom, setZoom: { storedZoom = StoryPagePrefs.clamp($0) })
                 .background(theme["well"], in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                 .padding(.horizontal, PageSpacing.large)
-            HStack {
-                Text(m.wordsLabel)
-                Spacer()
-                Text(m.statusLabel)
-                    .accessibilityIdentifier("story-page-status")
-                    .accessibilityAddTraits(.updatesFrequently)
+            VStack(alignment: .trailing, spacing: 2) {
+                HStack {
+                    Text(m.wordsLabel)
+                    Spacer()
+                    Text(m.statusLabel)
+                        .accessibilityIdentifier("story-page-status")
+                        .accessibilityAddTraits(.updatesFrequently)
+                }
+                // A save the core refused: its reason, until the writer changes the text.
+                if let e = m.saveError, m.status == .failed {
+                    Text(e)
+                        .foregroundStyle(theme["red"])
+                        .multilineTextAlignment(.trailing)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .textSelection(.enabled)
+                        .accessibilityIdentifier("story-page-save-error")
+                }
             }
             .font(.caption).foregroundStyle(theme["muted"])
             .padding(.horizontal, PageSpacing.large + 4).padding(.bottom, 6)
