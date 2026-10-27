@@ -2,73 +2,56 @@
 
 > Rewritten (not appended) at the end of every session. One page. It exists so the next session starts from the facts
 > instead of from a long history, which is how context rot is avoided. If this page is older than the newest progress log
-> entry, trust the log and fix this page first. Last rewritten: 2026-10-27, Mac default theme (Screening Room).
+> entry, trust the log and fix this page first. Last rewritten: 2026-10-27, Mac sync with Windows main `114dff50`.
 
 ## State
 
-1. **Windows track:** closed at W9; the final polish, the AI repair and the PDF redesign are on GitHub `windows/`
-   (commit `324cd963`). W10 is the team hand test of `OpenFrame-3.exe`.
-2. **Mac track, branch `mac/windows-parity`** (from `mac/m1-toolchain`, not merged, not pushed):
-   - The Windows code is merged in (`af5e41f`), so the shared Rust core is one core again: the AI repair (exact counts,
-     project questions never answered with product help), the PDF redesign, the 17 themes with Black and White and
-     OpenFrame Default's own dark palette, and the removed exchange packages.
-   - The Mac has the Windows structure in Mac styling: flat sidebar (Home, Idea Vault, Story, Screenplay, Breakdown,
-     Production, Call Sheets, Files), Production with the 13 Windows tabs and a new Overview, Back and Forward,
-     Settings with the seven Windows pages (new Writing page), plain AI answers with a closed "See sources", Tab round
-     every element, screenplay zoom, resizable AI panel, shot list Grid, whole Beat Board cards, the relationship map
-     layout, Breakdown Export, Compare named Scene-only and Text-only.
-   - Owner requests of the afternoon, both apps: "Story Board" is "Beat Board" everywhere; a free Story page left of
-     Board (table `story_page`, migration 0017; TXT, PDF and DOCX export). Windows TypeScript type check, lint and the
-     611 web unit tests pass on the Mac (`npm ci`, `tsc`, `eslint`, `vitest`); the Tauri E2E needs the Windows machine.
-   - New in the shared core: `schedule.export_daily` ("Shoot Day N - Daily view", PDF, CSV, XLSX), used by the Daily
-     View on both apps. The AI disclosure is "See sources" on both apps (owner decision 2026-10-20).
-   - Requirement inventory and status: [mac-windows-structure-parity.md](../roadmap/mac-windows-structure-parity.md).
-
-   - Evening round: every Mac button named; Home cards and every page header as on Windows; the screenplay's controls
-     in a page bar (they no longer fit the window toolbar); Breakdown Hide scenes and Hide panel; Settings buttons
-     fixed (`openSettings`); eight deterministic AI routes (Mac evaluation 98.1 percent tool, 89.9 percent end state).
-   - The E2E runner tests a copy with its own bundle identifier and clears its preferences per scenario: the owner's
-     own use of the dev app otherwise leaks into the scenarios.
-
-3. **MacHTML rebuilt, branch `mac/machtml-rebuild`** (from `mac/windows-parity`; not merged locally). On the owner's word
-   it is on GitHub `main` in `mac/` with MacHTML in `mac/MacHTML/` (pull request 2, merge `63482e2`, subtree merge): 692 states of
-   the Mac app, each in Light and Dark, as standalone HTML pages in `MacHTML/` (committed on the owner's word, 583 MB; regenerate with
-   `apps/macos/E2E/capture.sh "apps/macos/build/OpenFrame Studio.app"`, `OPENFRAME_E2E_PARALLEL=4` for speed). Each page
-   is the 2x window picture cut into its containers plus real HTML for every accessibility element. 692 of 692 pages
-   pass the WebKit check (0.5 percent pixels, channel over 24) in both modes with 0 HTML misses. The old 179-screen
-   `release-out/MacHTML/` is deleted. Limits are in `MacHTML/README.md` (window heights vary by a few points, some
-   windows drawn inactive, no AI answers, no images).
-
-4. **Mac default theme, branch `mac/screening-room-theme`** (from `mac/machtml-rebuild`, local only): the owner chose
-   Screening Room (options in `docs/design/theme-options/default-theme-options.html`), Mac only. Palette in
-   `apps/macos/Sources/OpenFrameUI/Resources/macDefaultTheme.json`, laid over OpenFrame Default at load; neutral push
-   buttons (`.ofStandard`, `themedSheet`), amber prominent button with dark text (`.ofProminent`), `control-tint` for
-   white-text controls; Dark find bar fixed (own `NSTextFinder`, no dimming). 616 Mac unit tests pass. MacHTML still
-   shows the old look.
-5. **Cleanup waiting for the owner's yes:** dead code list and a `docs/history/` folder for evidence, audits, reports,
-   ADR-0025 and the old log sections (listed in the chat of 2026-10-27; nothing moved yet).
+1. **Windows track:** source of truth on GitHub `main` `windows/` (local Windows `114dff50`): conversational assistant
+   (ADR-0037), production PDF v2 (ADR-0036), screenplay v5, storage and library setup (ADR-0038), owner fixes.
+2. **Mac track, branch `mac/windows-sync`** (from `mac/screening-room-theme`, local only, not pushed, not merged; 20
+   commits). The Mac is level with Windows `114dff50`:
+   - Shared Rust core merged three ways (change list and reasons:
+     `docs/release/evidence/mac/windows-sync-2026-10-27/mac-only-changes.md`). Migrations byte for byte as Windows,
+     0017 replaced by the Windows file (owner decision 2026-10-27). Mac keeps Metal placement, FFI, gold project.
+   - Mac storage specifics: library suggested at `~/OpenFrame`; pointer at
+     `~/Library/Application Support/OpenFrame Library/library-pointer.json`; Finder files skipped in moves; App Store
+     build hides every Move, Locate and Change Folder (bookmarks not built).
+   - Swift screens ported: assistant panel (progress, Cancel, Save, memory, See sources, navigation), Story page (A4,
+     formatting, colours, zoom, Dark page, rich paste), Beat Board Vertical/Horizontal, screenplay Dark page, relationship
+     maps, page setup first-page number, call sheet in PDF order, Sides selected cast, Daily View export, Home cover and
+     Found on this Mac, first-start library setup, Settings > Storage, Make Them Mine, Add Them Back, Command+Q with a
+     sheet open.
+   - Bugs found and fixed beyond Windows: read-only `-wal`/`-shm` blocked a writable project on macOS (core,
+     regression test); Story page saves refused after a move; older text could overwrite newer; a late AI answer broke
+     the next question's Cancel; Project Settings hid its buttons' ids; quit ignored with a sheet open.
+3. **Measured:** see the progress log entry of 2026-10-27 (sync) and
+   `docs/release/evidence/mac/windows-sync-2026-10-27/` (baseline, after-port runs, PDF check, screens).
 
 ## Next three items
 
-1. Merge `mac/windows-parity` (and `mac/machtml-rebuild` on top of it) into `mac/m1-toolchain` after the owner looks at
-   the Mac app (dev build: `apps/macos/scripts/bundle-dev-app.sh`). Then the internal disk image only on the owner's
-   word.
-2. Windows machine: `npm run verify` (needs `cargo-deny` and `cargo-audit`, not installed on the Mac) and the Tauri
-   E2E suite for the Story page, Beat Board, See sources and the Daily View export.
-3. Remaining AI misses (comment on the current draft, pin a note, sequence without an act): measure, then route.
+1. Owner at the Mac with the screen unlocked: rerun `72-ai-assistant/conversation-is-still-there-after-a-relaunch`
+   and `72-ai-assistant/stop-offline-ai-frees-the-engines` (`.build-cache/run-ai-e2e-aifix.sh 72-ai-assistant`), the
+   full Swift suite on a quiet machine, and look at the new screens in the dev app
+   (`apps/macos/scripts/bundle-dev-app.sh`).
+2. Owner decision: the AI tool bar (90%) is not met after the conversational rebuild on either platform (Windows
+   69.6%, Mac 73.9% on Low Tide; read questions are answered from facts, not read tools). Keep, change or split the bar.
+3. Repeat on Windows the Mac fixes listed under "Made during the merge" in the change list (ADR-0034), then merge
+   `mac/windows-sync` into `mac/m1-toolchain` on the owner's word.
+
+4. The early engine start test fails on the Mac: the free memory reading leaves out reclaimable memory. Fix the
+   reading in the shared core (both platforms), then measure the early start (port orders phase 6).
 
 ## Open blockers
 
-- Owner: install full Xcode for XCUITest and StoreKit testing; licence server address and response key (Chapter 3).
-- The AI end-to-end scenarios need the model download fixture; they were not run this session.
+- Owner: full Xcode for XCUITest and StoreKit testing; security-scoped bookmarks for the store build (Chapter 3).
+- Not tested here: App Store sandbox, bookmarks, a real reinstall, the store build.
 
 ## Do not
 
-- Do not run the capture tour with more runners than the display can show frontmost if inactive-looking windows matter;
-  app bugs the tour found are listed in the progress log entry of 2026-10-20 (late night).
-
-- Do not push or merge without the owner's word. A core change goes into both `windows/` and `mac/` on GitHub
-  (ADR-0034); the Daily View export is such a change.
+- Do not push, merge or build a `.dmg` or release app without the owner's word.
+- Do not run E2E with the screen locked: keys and screenshots go nowhere (the 2026-10-27 screenshots of some states
+  show inactive drawing or the opening screen; they prove the flow ran, not the look).
+- Do not run two E2E runners at once: use the lock in `.build-cache/lanes/e2e-rules.md`.
 - Do not let a SwiftUI view feed a measured size back into its own layout (the Scene Hub crash of 2026-10-19).
-- Do not put a hub page inside another accessibility container when it is shown as one place: SwiftUI folds the page's
-  own identifier away (`hubContainer` in ProjectNavigation.swift).
+- Do not run the eval with relative engine or model folders on Windows: it measured "AI unavailable" on the Mac until
+  fixed (`c54ecedd`).

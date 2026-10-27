@@ -7,7 +7,7 @@
 
 ## Dashboard (update every session from `npm run plan:status`)
 
-**Overall: 132 of 306 boxes (43.1%).** **Current goal** (boxes without the "Later: store publishing" tag): **131 of 223 (58.7%)**. Updated 2026-10-20 after the final polish run (no plan boxes moved: the work was the owner's change lists).
+**Overall: 133 of 307 boxes (43.3%).** **Current goal** (boxes without the "Later: store publishing" tag): **132 of 224 (58.9%)**. Updated 2026-10-27 after the Mac sync with Windows (the box and area changes came with the Windows documents; no Mac box ticked).
 
 | # | Area | Done |
 |---|---|---|
@@ -18,15 +18,15 @@
 | 5 | Test infrastructure and quality gates | 4 of 13 |
 | 6 | Security hardening from the baseline audit | 3 of 9 |
 | 7 | Platform adapter layer for Windows and Mac | 1 of 10 |
-| 8 | AI assistant quality and hardening | 3 of 24 |
-| 9 | Story Board and Idea Vault | 8 of 9 |
+| 8 | AI assistant quality and hardening | 4 of 24 |
+| 9 | Beat Board and Idea Vault | 8 of 9 |
 | 10 | Writing comfort | 6 of 6 |
 | 11 | Screenplay engine and file formats | 21 of 24 |
 | 12 | Appearance and themes | 10 of 10 |
 | 13 | Breakdown, catalog, locations, cast and crew | 7 of 9 |
 | 14 | Shooting schedule and Day Out of Days | 9 of 9 |
 | 15 | Call sheets, budget, templates, samples and exports | 11 of 11 |
-| 16 | Packages and backup | 3 of 5 |
+| 16 | Packages and backup | 3 of 6 |
 | 17 | Product-wide quality, accessibility and beta | 0 of 15 |
 | 18 | Payment and free trial in all three channels | 3 of 10 |
 | 19 | Microsoft Store package | 0 of 15 |
@@ -56,6 +56,46 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 ```
 
 ## Entries
+
+### 2026-10-27, Mac sync with Windows main 114dff50 (core, screens, AI, storage)
+
+- **Areas and items worked:** owner request: port every Windows change since GitHub `324cd963` to the Mac (the
+  2026-10-24 upgrade, the conversational assistant of ADR-0037, storage of ADR-0038, owner fixes). Areas 8, 9, 11, 15,
+  16 and the Mac track (Chapter 1b).
+- **Done:** 20 local commits on `mac/windows-sync`. Shared core merged three ways (431 files from Windows, 18 merged, 17
+  conflicts resolved; reasons in `docs/release/evidence/mac/windows-sync-2026-10-27/mac-only-changes.md`); migrations
+  byte for byte as Windows, 0017 replaced on the owner's word. Swift screens ported by four parallel lanes with a file
+  ownership map: assistant panel, Story page with formatting and rich paste, Beat Board layouts, screenplay Dark page,
+  relationship maps, first-page number, call sheet in PDF order, Sides selected cast, Daily View export, Home cover,
+  Found on this Mac, first-start library setup, Settings > Storage, Make Them Mine, Add Them Back. An independent review
+  found 7 defects (2 could lose Story page text), all fixed with regression tests. Also fixed: read-only `-wal`/`-shm`
+  blocking a writable project (core), Project Settings hiding its buttons' ids, the AI panel forgetting open or closed
+  after Quit, Command+Q ignored with a sheet open. Mac storage: library `~/OpenFrame`, pointer outside the app data,
+  Finder files skipped in moves, store build hides relocation. Docs level with Windows (ADR-0035 to 0038, doc 40 with a
+  Mac section, specs v5 and PDF v2).
+- **Evidence:** `docs/release/evidence/mac/windows-sync-2026-10-27/` (AI baseline before the sync, four after-port
+  runs with a README table against Windows, PDF check with rendered pages, E2E screenshots). Rust: 2663 tests pass, 1 fails:
+  `bundled::the_engine_is_prepared_early_without_counting_and_obeys_stop`, also on a quiet machine. On macOS the free
+  memory reading (`sysinfo` available memory) leaves out memory macOS can hand back at once (about 0.9 GB free against
+  4 GB inactive here), so the early engine start declines. The early start is off in the product (`START_ENGINE =
+  false`), so nothing a person sees changes; measuring it on the Mac (orders phase 6) needs this reading fixed first.
+  Swift: 770 tests in 98 suites pass on a quiet machine (two timing tests failed while the CPU eval ran).
+  E2E (dev build, real model for AI): new scenarios 71-storage 4/4, 77-ai-conversation 5/5, production and Home 5/5,
+  writing 3/3, quit 3/3; 72-ai-assistant 7/9 (two to rerun with the screen unlocked). Gold project: 0 unexpected
+  failures; PDFs checked by eye against v5 and package v2.
+- **Features moved:** none. The rows are shared by both platforms and carry the Windows levels; the Mac evidence is in
+  the folder above.
+- **Docs updated:** handoff, this entry, the change list, the eval READMEs, doc 40 section 7, AI answer paths "On the
+  Mac", reconciliation log (doc sync), ADR register.
+- **Decisions made or needed:** made on the owner's word: 0017 from Windows, `~/OpenFrame`, pointer folder, store
+  build hides relocation. Needed: the AI tool bar (90%) is missed on both platforms after the conversational rebuild
+  (Windows 69.6%, Mac 73.9% on Low Tide); the other spec 7.5 bars missed on both are listed in the eval README.
+- **Blocked / risks:** App Store sandbox, security-scoped bookmarks and a real reinstall not tested; some E2E
+  screenshots were taken with the screen locked (they prove the flow, not the look).
+- **Next:** owner hand check of the dev app; the two AI E2E reruns; repeat the Mac core fixes on Windows (ADR-0034).
+- **Checks run:** cargo fmt, clippy -D warnings (all targets), cargo test, Swift tests, check-migrations,
+  check:writing, check-links, check-feature-status, plan:status; `npm run verify` not run (needs cargo-deny and
+  cargo-audit on the Windows machine).
 
 ### 2026-10-27, Mac default theme: Screening Room chosen and applied (Mac only)
 - **Areas and items worked:** owner request outside the plan: "the default theme is very bad", options as HTML
