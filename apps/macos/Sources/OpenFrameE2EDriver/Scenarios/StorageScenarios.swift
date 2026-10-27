@@ -65,6 +65,7 @@ extension Scenarios {
             }
             try await ui.waitText("Changing it does not move the projects you already have.")
             try ui.snapshot("settings-storage")
+            try await ui.closeStorageSettings()
         },
 
         Scenario("71-storage/move-project-shows-it-again", phases: 2) { ui, phase, ctx in
@@ -86,7 +87,7 @@ extension Scenarios {
                 try ui.expect(ui.exists(id: "project-settings-sheet"), "the project stays open while it moves")
                 let path = try await ui.wait(id: "storage-project-path", timeout: 15, "the project folder")
                 try ui.expect(path.value.hasPrefix(dest.path), "Settings shows the new folder: \(path.value)")
-                try await ui.press(id: "project-settings-done", role: "AXButton")
+                try await ui.closeStorageSettings()
                 try await ui.wait(id: "project-home", timeout: 15, "Project Home after the move")
                 try await ui.closeProject()
             } else {
@@ -95,12 +96,20 @@ extension Scenarios {
                 try await ui.openProjectSettings(page: "Storage")
                 let path = try await ui.wait(id: "storage-project-path", timeout: 15, "the project folder")
                 try ui.expect(path.value.hasPrefix(dest.path), "the project opened from its new folder: \(path.value)")
+                try await ui.closeStorageSettings()
             }
         },
     ]
 }
 
 extension UI {
+    /// Done on Project Settings. macOS does not quit while a sheet is attached to the window, so a
+    /// scenario closes the sheet as a person would before the app quits.
+    func closeStorageSettings() async throws {
+        try await press(id: "project-settings-done", role: "AXButton")
+        try await waitGone(id: "project-settings-sheet", timeout: 10)
+    }
+
     /// The team password of an internal build, without waiting for Home (the library setup
     /// screen comes after it).
     func passTeamGate(_ ctx: Context) async throws {

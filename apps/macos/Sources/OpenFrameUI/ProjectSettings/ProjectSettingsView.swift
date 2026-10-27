@@ -77,6 +77,8 @@ struct ProjectSettingsView: View {
         }
         .sheetFrame(minWidth: 860, idealWidth: 920, minHeight: 600, idealHeight: 680)
         .background(theme["bg"])
+        // A container, so the sheet's id does not replace the ids of Done and the rest inside it.
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("project-settings-sheet")
         .onReceive(NotificationCenter.default.publisher(for: .openFrameCloseProjectSettings)) { _ in dismiss() }
         // Asked again while open (Move or back up in the General tab): show that page.
@@ -91,6 +93,7 @@ struct ProjectSettingsView: View {
                 .padding(.horizontal, 20).padding(.top, 16)
             StoragePanel()
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("project-settings-storage")
     }
 }
