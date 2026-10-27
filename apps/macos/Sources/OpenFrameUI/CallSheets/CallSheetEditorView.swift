@@ -47,8 +47,10 @@ struct CallSheetEditorView: View {
             editorHeader(d)
             banners(d)
             HStack(alignment: .top, spacing: PageSpacing.medium) {
-                ScrollView([.vertical, .horizontal]) {
+                // Vertical only: the paper wraps on a narrow window instead of scrolling sideways.
+                ScrollView(.vertical) {
                     CallSheetPaper(model: model).padding(.bottom, PageSpacing.large)
+                        .frame(maxWidth: .infinity)
                 }
                 .frame(minWidth: 0, maxWidth: .infinity)
                 sourcePanel(d)

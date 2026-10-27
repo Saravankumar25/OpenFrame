@@ -123,7 +123,7 @@ fileprivate extension UI {
 }
 
 extension Scenarios {
-    static let productionGroup: [Scenario] = recentlyDeletedPurge + forcedKillFull + notesTasks + breakdownBasics + breakdownDepth + scheduleScenarios + projectPages + callSheetScenarios + keyboardScenarios
+    static let productionGroup: [Scenario] = recentlyDeletedPurge + forcedKillFull + notesTasks + breakdownBasics + breakdownDepth + scheduleScenarios + projectPages + callSheetScenarios + keyboardScenarios + productionPortScenarios
 }
 
 // MARK: 25-recently-deleted-purge
@@ -1581,7 +1581,7 @@ extension Scenarios {
             try await createCallSheet(ui)
             let doc = try await ui.wait(id: "callsheet-document", timeout: 15, "the call sheet")
             let text = descendants(doc).map(\.text).joined(separator: "\n") + doc.text
-            for section in ["PRODUCTION HEADER", "DAY AND TIMES", "LOCATIONS", "SCENE SCHEDULE", "TALENT", "PRACTICAL NOTES"] {
+            for section in ["PRODUCTION", "LOCATIONS", "SCENE SCHEDULE", "TALENT / CAST", "PRACTICAL / SAFETY INFORMATION"] {
                 try ui.expect(text.contains(section), "the call sheet has the section \(section)")
             }
             try ui.expect(!text.contains("WEATHER"), "the call sheet has no WEATHER section yet")
@@ -1682,7 +1682,7 @@ extension Scenarios {
             try await ui.pressAndSave(id: "export-run", to: dir.appendingPathComponent("sides.pdf"))
             try await ui.waitText("Export complete")
             try await ui.press(id: "export-close")
-            try checkPdf(ui, dir.appendingPathComponent("sides.pdf"))
+            try checkPdf(ui, dir.appendingPathComponent("sides.pdf"), brand: false)
             try await segment(ui, group: "callsheets-tabs", "Reports")
             try await ui.press(id: "reports-type-scene")
             try await ui.press(id: "reports-export")

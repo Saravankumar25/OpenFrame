@@ -51,14 +51,57 @@ final class CSSidesModel {
         return strips.map(\.id).filter { selected.contains($0) }
     }
     var dayCast: [ScheduleCastRef] { day?.summary.cast ?? [] }
+
+    // "Selected cast": the same rule the core applies (a scene counts when one of its confirmed
+    // breakdown cast keys is picked), worked out here so the checklist, the preview and the export
+    // agree (Windows 81e75d16).
+    var filtering: Bool { forMode == .selected && !castKeys.isEmpty }
+    private func hasCast(_ s: ScheduleStripDto) -> Bool { s.cast.contains { castKeys.contains($0.key) } }
+    /// Whether the scene stays in the sides under the cast filter.
+    func included(_ s: ScheduleStripDto) -> Bool { !filtering || hasCast(s) }
+    /// The tick shown on a scene: off for a scene the cast filter leaves out.
+    func ticked(_ s: ScheduleStripDto) -> Bool { included(s) && chosen.contains(s.id) }
+    var sceneCount: Int { strips.filter(included).count }
+    /// The scenes sent to the core: ticked and kept by the cast filter. The user's own ticks on
+    /// left-out scenes are kept, so All cast brings them back unchanged.
+    var effective: [String] { strips.filter { ticked($0) }.map(\.id) }
+
+    /// How many of the day's scenes this cast member is in.
+    func sceneCount(castKey: String) -> Int { strips.filter { $0.cast.contains { $0.key == castKey } }.count }
+
+    func castLabel(_ c: ScheduleCastRef) -> String {
+        let name = c.actor.map { "\($0) (\(c.character))" } ?? c.character
+        return "\(name) \u{00B7} \(Self.plural(sceneCount(castKey: c.key), "scene"))"
+    }
+
+    static func plural(_ n: Int, _ word: String) -> String { "\(n) \(word)\(n == 1 ? "" : "s")" }
+
+    /// The line under the scene checklist while the cast filter is on.
+    var filterLine: String? {
+        guard filtering else { return nil }
+        if sceneCount == 0 { return "No scene on this day has the selected cast. Choose other cast, or switch to All cast." }
+        return "\(sceneCount) of \(Self.plural(strips.count, "scene")) have the selected cast. Only those are in the sides."
+    }
+
+    /// What the preview area says while there is nothing to preview.
+    var notReadyMessage: String {
+        if filtering, sceneCount == 0 {
+            return "No scene on this day has the selected cast, so there are no sides to show. Choose other cast, or switch to All cast. Cast comes from each scene\u{2019}s confirmed breakdown."
+        }
+        if filtering, effective.isEmpty {
+            return "All the scenes with the selected cast are unticked. Tick at least one scene to preview the sides."
+        }
+        return "Choose a shooting day and at least one scene\(forMode == .selected ? " and cast member" : "") to preview the sides."
+    }
+
     var ready: Bool {
-        day != nil && !chosen.isEmpty && (forMode == .all || !castKeys.isEmpty)
+        day != nil && !effective.isEmpty && (forMode == .all || !castKeys.isEmpty)
     }
 
     var args: ScheduleSidesArgs {
         ScheduleSidesArgs(
             dayId: dayId.isEmpty ? nil : dayId,
-            stripIds: chosen,
+            stripIds: effective,
             castKeys: forMode == .selected ? Array(castKeys).sorted() : nil,
             includeCover: cover,
             showDraftName: draftName)
@@ -66,7 +109,7 @@ final class CSSidesModel {
 
     /// Changes whenever the preview must be fetched again.
     var previewKey: String {
-        "\(dayId)|\(chosen.joined(separator: ","))|\(forMode.rawValue)|\(castKeys.sorted().joined(separator: ","))|\(cover)|\(draftName)|\(openId ?? "")"
+        "\(dayId)|\(effective.joined(separator: ","))|\(forMode.rawValue)|\(castKeys.sorted().joined(separator: ","))|\(cover)|\(draftName)|\(openId ?? "")"
     }
 
     // MARK: Choices
@@ -98,12 +141,19 @@ final class CSSidesModel {
     func reload() async {
         guard let core = hub.core else { return }
         do {
-            schedule = try await core.scheduleGet()
+            let view = try await core.scheduleGet()
             failure = nil
+            saved = (try? await core.sidesList()) ?? saved
+            show(view)
         } catch {
             failure = CoreFailure(asCore: error)
+            loaded = true
         }
-        saved = (try? await core.sidesList()) ?? saved
+    }
+
+    /// Shows a schedule read from the core and keeps the chosen day when it is still there.
+    func show(_ view: ScheduleView) {
+        schedule = view
         if let p = pendingDay, days.contains(where: { $0.id == p }) {
             pickDay(p)
             pendingDay = nil
