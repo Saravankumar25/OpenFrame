@@ -170,8 +170,11 @@ describe("call sheets, budget, templates, samples and exports", () => {
       await browser.waitUntil(async () => (await mainText(browser)).includes("Needs refresh"), { timeout: 15_000, timeoutMsg: "the sheet was not flagged" });
       await click(browser, "Review Update");
       await waitForText(browser, "Update call sheet: review changes");
-      const dialog = await browser.execute(() => document.querySelector('[role="dialog"]')?.innerText ?? "");
-      assert.ok(/scene/i.test(dialog), "the preview does not list the changed scenes");
+      // The preview is computed after the dialog opens: wait for it instead of reading at once.
+      await browser.waitUntil(
+        async () => /scene/i.test(await browser.execute(() => document.querySelector('[role="dialog"]')?.innerText ?? "")),
+        { timeout: 10_000, timeoutMsg: "the preview does not list the changed scenes" },
+      );
       await inDialog(browser, "Apply Update");
       await browser.waitUntil(async () => !(await mainText(browser)).includes("Needs refresh."), { timeout: 10_000, timeoutMsg: "refresh did not clear the flag" });
       const forecast = await browser.$('//input[@aria-label="Forecast"]');

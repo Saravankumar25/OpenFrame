@@ -39,7 +39,7 @@ import { after, before, describe, test } from "node:test";
 import assert from "node:assert/strict";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { isAbsolute, join, resolve } from "node:path";
-import { click, launchApp, openWorkspace, sleep, stepper, waitForText } from "../lib/app.mjs";
+import { click, launchApp, openBeatBoard, openWorkspace, sleep, stepper, waitForText } from "../lib/app.mjs";
 import { comparePixels, decodePng, encodePng } from "../lib/png.mjs";
 
 const REPO = resolve(import.meta.dirname, "..", "..", "..");
@@ -298,7 +298,9 @@ describe(`visual ${MODE === "compare" ? "regression against the visual baseline 
         ["12-files", "Files"],
       ];
       for (const [name, ws] of screens) {
-        await openWorkspace(browser, ws);
+        // Story opens on the Story page since 2026-10-27; this screen is the Beat Board.
+        if (ws === "Story") await openBeatBoard(browser);
+        else await openWorkspace(browser, ws);
         await shot(name);
         if (ws === "Story") {
           await (await browser.$('//*[@role="tablist"]//*[@role="tab"][normalize-space(.)="Outline"]')).click();

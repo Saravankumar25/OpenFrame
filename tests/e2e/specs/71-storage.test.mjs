@@ -12,7 +12,7 @@ import { after, before, describe, test } from "node:test";
 import assert from "node:assert/strict";
 import { existsSync, mkdirSync, readFileSync } from "node:fs";
 import { basename, join } from "node:path";
-import { click, launchApp, sleep, stepper } from "../lib/app.mjs";
+import { click, launchApp, sleep, stepper, takeConsoleProblems } from "../lib/app.mjs";
 import { assertQuiet, closeProject, firstLaunchProject, openProject, projectMenu, waitForHome } from "../lib/flows.mjs";
 
 const TITLE = "Harbour Ledger";
@@ -151,6 +151,11 @@ describe("storage", () => {
       await browser.$('//nav[@aria-label="Workspaces"]').waitForExist({ timeout: 20_000, timeoutMsg: "the project did not stay open" });
       assert.equal((await op("project.current", {})).title, TITLE);
       assert.ok((await projectIdeas()).includes(PROJECT_NOTE), "the project lost its note in the move");
+      // The move closes and reopens the project: the screen drops its event listeners while the
+      // move's progress events still arrive, and Tauri warns about those callbacks. That warning is
+      // expected here; any other console message still fails the step.
+      const problems = (await takeConsoleProblems(browser)).filter((p) => !p.includes("Couldn't find callback id"));
+      assert.deepEqual(problems, [], "console problems in project move");
       await assertQuiet(browser, "project move");
     });
   });
