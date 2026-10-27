@@ -8,16 +8,47 @@ import Foundation
 // MARK: helpers (only for this file)
 
 fileprivate extension UI {
-    /// Chooses an item of a menu button by the start of its title, without the mouse.
+    /// Chooses an item of a menu button by the start of its title. A SwiftUI menu fills its
+    /// items only while it is open, so the menu is opened first (the shared production helper).
     func chooseMenuItem(id: String, item: String) async throws {
-        let e = try await wait(id: id, timeout: 15, "the menu button \(id)")
-        guard let cell = e.obj as? NSPopUpButtonCell, let menu = cell.menu else { throw DriverError("not a menu button: \(e)") }
-        menu.update()
-        guard let i = menu.items.firstIndex(where: { !$0.isSeparatorItem && $0.title.hasPrefix(item) }) else {
-            throw DriverError("no item \(item) in \(id): \(menu.items.map(\.title))")
-        }
-        menu.performActionForItem(at: i)
+        try await Scenarios.chooseMenuItem(self, button: id, item: item)
         await idle(0.5)
+    }
+
+    /// The titles a menu button shows when it opens; the menu is closed again, nothing chosen.
+    func menuTitles(id: String) async throws -> [String] {
+        let e = try await wait(id: id, timeout: 15, "the menu button \(id)")
+        guard let cell = e.obj as? NSPopUpButtonCell else { throw DriverError("not a menu button: \(e)") }
+        func open() -> [String] {
+            for ch in e.children where ch.role == "AXMenu" {
+                let items = ch.children.filter { $0.role == "AXMenuItem" }.map { $0.title.isEmpty ? $0.label : $0.title }
+                if !items.isEmpty { return items }
+            }
+            return []
+        }
+        var titles: [String] = []
+        for _ in 1...3 where titles.isEmpty {
+            DispatchQueue.main.async { _ = e.performPress() }
+            let deadline = Date().addingTimeInterval(4)
+            while Date() < deadline { titles = open(); if !titles.isEmpty { break }; await idle(0.1) }
+            cell.menu?.cancelTracking()
+            await idle(0.3)
+        }
+        guard !titles.isEmpty else { throw DriverError("the menu \(id) did not open") }
+        log("menu \(id) shows \(titles)")
+        let gone = Date().addingTimeInterval(3)
+        while Date() < gone, !open().isEmpty { cell.menu?.cancelTracking(); await idle(0.1) }
+        return titles
+    }
+
+    /// Waits until the app has written a file.
+    func waitForFile(_ url: URL, timeout: Double = 20) async throws {
+        let deadline = Date().addingTimeInterval(timeout)
+        while Date() < deadline {
+            if FileManager.default.fileExists(atPath: url.path) { return }
+            await idle(0.2)
+        }
+        throw DriverError("\(url.lastPathComponent) was not written within \(Int(timeout)) s")
     }
 
     /// Waits until an element is found.
@@ -54,7 +85,8 @@ extension Scenarios {
             }
             try ui.expect(!text.contains("PRODUCTION HEADER") && !text.contains("PRACTICAL NOTES"), "an old section name still shows")
             try ui.expect(ui.exists(id: "callsheet-section-masthead") && ui.exists(id: "callsheet-section-day-and-times"), "the masthead and the crew call box show")
-            try ui.expect(text.contains("Est. wrap") && text.contains("Production emergency contact"), "the PDF's field names show")
+            // The eyebrows show in capitals, as the section titles above.
+            try ui.expect(text.contains("EST. WRAP") && text.contains("PRODUCTION EMERGENCY CONTACT"), "the PDF's field names show")
             // A narrow window: the paper fits its width (no sideways scrolling).
             let window = try ui.mainWindow.orThrow("no main window")
             let before = window.frame
@@ -106,6 +138,13 @@ extension Scenarios {
             try await ui.waitText("Export Daily View")
             try await ui.waitText("Shoot Day 1 - Daily View.pdf")
             try ui.expect(!ui.all().contains { $0.text == "CSV" || $0.text.contains("XLSX") }, "the Daily View offers CSV or XLSX")
+            // The Save panel suggests the same name and the file is written.
+            let pdf = ctx.work.appendingPathComponent("daily-view.pdf")
+            try? FileManager.default.removeItem(at: pdf)
+            let run = try await ui.wait(id: "export-run", timeout: 15, "the Export button")
+            let panel = try await ui.choosing(pdf) { if !run.performPress() { try await ui.click(run) } }
+            try ui.expect(panel.suggestedName == "Shoot Day 1 - Daily View.pdf", "the Save panel suggests \(panel.suggestedName)")
+            try await ui.waitForFile(pdf)
             try await ui.press(id: "export-close")
         },
 
@@ -117,8 +156,7 @@ extension Scenarios {
             try await ui.closeProject()
             try await ui.waitHome()
             // The card menu offers a cover photo; Remove shows only once one is set.
-            let menu = try await ui.wait(id: "project-card-actions-Kept Project", timeout: 15, "the card menu")
-            guard let cell = menu.obj as? NSPopUpButtonCell, let items = cell.menu?.items.map(\.title) else { throw DriverError("not a menu button") }
+            let items = try await ui.menuTitles(id: "project-card-actions-Kept Project")
             try ui.expect(items.contains("Change Cover Photo\u{2026}"), "the card menu has Change Cover Photo: \(items)")
             try ui.expect(!items.contains("Remove Cover Photo"), "Remove Cover Photo shows with no cover set")
             // Remove from Recent: the project shows under Found on this Mac, and Open adds it back.
