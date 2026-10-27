@@ -1,3 +1,5 @@
+> Moved here on 2026-10-27 as history: a one-off session prompt. The Mac screens work is tracked in [chapter-1b-mac-phases.md](../roadmap/chapter-1b-mac-phases.md) and [mac-port-list-2026-10-24.md](../roadmap/mac-port-list-2026-10-24.md).
+
 # Next session prompt: MacHTML, every Mac screen as an HTML page
 
 > Written 2026-10-21 at the owner's request, after WindowsHTML was built on Windows. Paste the block below into a new

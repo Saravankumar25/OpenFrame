@@ -43,7 +43,7 @@ Tamil, Kannada, Malayalam, Spanish, French, German, Chinese, Japanese and Korean
 application screens are English only.
 
 How these fit together is explained in [architecture/README.md](../architecture/README.md) and, in full detail, in the
-[retrospection and audit report](../reports/2026-10-09-project-retrospection-and-audit.md) (a snapshot of 2026-10-09).
+[retrospection and audit report](../history/2026-10-09-project-retrospection-and-audit.md) (history, a snapshot of 2026-10-09).
 
 ## 3. The chapters
 

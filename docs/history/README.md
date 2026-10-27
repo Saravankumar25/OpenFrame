@@ -4,7 +4,7 @@
 > historical, and why. Nothing in this folder is a requirement. Where an archived text and a living document disagree,
 > the living document wins ([documentation map](../README.md)). The files in this folder are not edited; mistakes in them
 > are recorded in the [reconciliation log](../implementation/reconciliation-log.md).
-> Files moved here on 2026-10-24 carry one added line at the top ("Superseded by ..."); nothing else in them changed.
+> Files moved here on 2026-10-24, 2026-10-26 and 2026-10-27 carry one added line at the top ("Superseded by ..."); nothing else in them changed.
 
 ## 1. In this folder
 
@@ -25,6 +25,8 @@
 | `2026-10-15-documentation-map-before-restructure.md` | The documentation map of 2026-10-09 | Earlier layout and precedence | [../README.md](../README.md) |
 | `2026-10-24-ai-harness-rebuild-plan.md` | The AI harness rebuild plan and baseline of 2026-10-24 (was `docs/specs/ai-harness-rebuild.md`): five lanes, briefings, code verifiers. Moved 2026-10-26 | ADR-0035 and the 2026-10-24 progress log cite it; its baseline numbers are the before of the lanes | [ai-conversational-harness.md](../specs/ai-conversational-harness.md), [ADR-0037](../adr/ADR-0037-conversational-assistant-focus-and-dossiers.md) |
 | `2026-10-26-ai-answer-paths-five-lanes.md` | How a question ran through the five lanes, 2026-10-20 to 2026-10-26 (was `docs/engineering/ai-answer-paths.md`). Moved when slice S7 retired the lanes | The ADR register cites its decisions 4 and 5 | [ai-answer-paths.md](../engineering/ai-answer-paths.md) |
+| `2026-10-09-project-retrospection-and-audit.md` | The retrospection and audit report of 2026-10-09 (was `docs/reports/`): how the project was built and worked, in plain words, as one day's snapshot. Moved 2026-10-27 | The architecture page, the vision page and the build plan cite it; its AI figures (8 steps, 7,000-character catalogue) are the state of that day | [architecture/README.md](../architecture/README.md), [feature-status.md](../implementation/feature-status.md), [adr/README.md](../adr/README.md) |
+| `2026-10-21-next-session-mac-html-prompt.md` | The one-off prompt that asked for MacHTML, every Mac screen as an HTML page (was `docs/implementation/`). Moved 2026-10-27 | Record of what was asked; the progress log of 2026-10-21 cites it | [chapter-1b-mac-phases.md](../roadmap/chapter-1b-mac-phases.md), [mac-port-list-2026-10-24.md](../roadmap/mac-port-list-2026-10-24.md) |
 | `2026-09-spec-digest/` | Eight digests of the product specifications and their README (about 7,300 lines), written before ADR-0007, ADR-0013 and Revision 1. Moved here in Windows phase W1 | ADR-0009 and ADR-0012 cite them for the contradictions they listed | The full specifications in [../specs/](../specs) |
 | `2026-09-30-agent-brief.md` | The module brief of 2026-09-30 (was `docs/engineering/AGENT_BRIEF.md`). Moved in W1 | ADR-0005 cites its section 4 | [CONTRIBUTING.md](../../CONTRIBUTING.md), [architecture/README.md](../architecture/README.md) |
 | `2026-09-30-security-review.md` | The first security review (was `docs/engineering/SECURITY_REVIEW_2026-09-30.md`). Moved in W1 | `security_review.rs` and `security_paths.rs` name its finding IDs | [20-security-threat-model.md](../engineering/20-security-threat-model.md) |

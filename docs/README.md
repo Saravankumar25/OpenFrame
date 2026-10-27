@@ -12,7 +12,7 @@
 | What to do next | [implementation/handoff.md](implementation/handoff.md), then [roadmap/README.md](roadmap/README.md) |
 | The Windows plan, ten phases | [roadmap/chapter-1a-windows-phases.md](roadmap/chapter-1a-windows-phases.md) |
 | The Mac plan, ten phases | [roadmap/chapter-1b-mac-phases.md](roadmap/chapter-1b-mac-phases.md); what to port from the 2026-10-24 upgrade: [roadmap/mac-port-list-2026-10-24.md](roadmap/mac-port-list-2026-10-24.md) |
-| How it is built, in simple words | [architecture/README.md](architecture/README.md), then the [report](reports/2026-10-09-project-retrospection-and-audit.md) (a snapshot) |
+| How it is built, in simple words | [architecture/README.md](architecture/README.md), then, for the long plain-words explanation as it stood on 2026-10-09, the [report](history/2026-10-09-project-retrospection-and-audit.md) (history) |
 | What works and how well it is proved | [implementation/feature-status.md](implementation/feature-status.md) |
 | How we test and how the pilot runs | [testing/README.md](testing/README.md), [testing/internal-test-plan.md](testing/internal-test-plan.md) |
 | How to keep the machine and the repository tidy | [development-storage-policy.md](development-storage-policy.md) |
@@ -29,7 +29,6 @@ docs/
   roadmap/                   chapter plans: overview, Windows phases, Mac phases, website, stores; area-to-phase map
   architecture/              architecture in one page
   testing/                   strategy, internal pilot plan, bug report template
-  reports/                   dated reports (the 2026-10-09 retrospection and audit)
   specs/                     product and engineering specifications (+ README with the status of each)
   adr/                       decisions; README is the decision register
   engineering/               implementation documents 11 to 39, AI tool coverage (generated)
@@ -40,7 +39,7 @@ docs/
   website/                   website source notes and supplied prompts (Chapter 2)
   manual/                    user manual (.docx, .pdf), manual testing guide (.docx, .csv), test-data/ sample files
   audits/                    dated evidence snapshots (do not edit)
-  history/                   history; README is the history index (do not edit the files; the old archive/ folder was merged here on 2026-10-24, and completed plans, replaced standards and superseded session prompts are moved here with a one-line note)
+  history/                   history; README is the history index (do not edit the files; the old archive/ folder was merged here on 2026-10-24, and completed plans, replaced standards, old reports and superseded session prompts are moved here with a one-line note)
   (spec-digest/ moved to history/2026-09-spec-digest/ in phase W1)
   development-storage-policy.md
 WindowsHTML/                 every Windows screen captured from the real app (see its README)

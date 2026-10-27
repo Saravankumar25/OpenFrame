@@ -6,6 +6,16 @@
 > Renamed on 2026-10-06 from `03-reconciliation-log.md`. Extended on 2026-10-09 (chapter restructure). Checks written "(checked)" were verified in the repository on the
 > date given. Checks written "(stated)" come from a supplied document and were not verified independently.
 
+## 2026-10-27: old report and session prompt moved to history
+
+Owner rule (chat): only the current application's documentation stays in `docs`; older material goes to `docs/history/`.
+
+- `docs/reports/2026-10-09-project-retrospection-and-audit.md` moved to `docs/history/2026-10-09-project-retrospection-and-audit.md`
+  with one added note. It is a snapshot of one day and its AI figures are stale; this replaces the 2026-10-24 decision to leave it in place. The `docs/reports/` folder is gone.
+- `docs/implementation/next-session-mac-html-prompt.md` moved to `docs/history/2026-10-21-next-session-mac-html-prompt.md` with one added note: a one-off session prompt, not current documentation.
+- Links changed in `docs/README.md` (map, layout block, history line), the architecture page, the vision page, the build plan and one line of the progress log. Two history index rows added.
+- Considered and kept: the specifications that are only partly superseded (AI specification, agentic RAG spec, Offline Collaboration, Security, PRD, FSD, UX, Domain), engineering document 18, the UX audit pages, `docs/specs/owner-issues-2026-10-24/`, `docs/website/prompts/`, the release evidence folders.
+
 ## 2026-10-26: five-lane AI documents moved to history
 
 Owner instruction (chat): dead documentation is shifted to history as part of the S9 close-out.

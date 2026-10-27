@@ -1,3 +1,5 @@
+> Moved here on 2026-10-27 as history. A snapshot of 2026-10-09; the code has moved on (ADR-0027 to ADR-0038). Current: [architecture/README.md](../architecture/README.md), [feature-status.md](../implementation/feature-status.md), [adr/README.md](../adr/README.md).
+
 # OpenFrame Studio: retrospection and audit
 
 > Written on 2026-10-09 for the founder, Saravan Kumar M K. This report explains, from scratch and in simple words, what
