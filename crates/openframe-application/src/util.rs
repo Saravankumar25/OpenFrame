@@ -467,6 +467,31 @@ pub fn ingest_file(tx: &Tx<'_>, source: &Path) -> AppResult<AssetInfo> {
     load_asset(tx.conn(), tx.root(), &id)
 }
 
+/// Record a file that is already in the store's managed assets folder but has no asset row (a
+/// copy left behind by an add that failed). The file stays where it is and is not tracked for
+/// removal: if this change rolls back, the file is still there to recover later.
+pub fn adopt_managed_file(tx: &Tx<'_>, rel: &str, original_name: &str) -> AppResult<AssetInfo> {
+    let path = openframe_security::confine(tx.root(), rel)?;
+    let size = openframe_security::validate_input_file(&path, MAX_MANAGED_FILE_BYTES)?;
+    let media_type = media_type_for(original_name);
+    let sha = openframe_security::sha256_file(&path)?;
+    let dims = image_dimensions(&path, media_type);
+    let id = new_id();
+    insert_asset(
+        tx,
+        &id,
+        "managed",
+        Some(rel),
+        None,
+        original_name,
+        media_type,
+        Some(size as i64),
+        Some(&sha),
+        dims,
+    )?;
+    load_asset(tx.conn(), tx.root(), &id)
+}
+
 /// Store raw bytes (voice note recording, sketch, pasted image) as a managed asset.
 pub fn ingest_bytes(
     tx: &Tx<'_>,

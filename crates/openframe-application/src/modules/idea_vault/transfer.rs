@@ -172,8 +172,7 @@ pub(crate) fn copy_to_store(
                     let mut copied = Vec::new();
                     let mut failed = Vec::new();
                     for item in &sources {
-                        tx.conn().execute_batch("SAVEPOINT vault_copy_one")?;
-                        let one = (|| -> AppResult<String> {
+                        let one = tx.savepoint(|| -> AppResult<String> {
                             let asset_id = match &item.asset {
                                 Some(a) => {
                                     Some(copy_asset_between(src_conn, &src_root, &a.id, tx)?.id)
@@ -204,12 +203,9 @@ pub(crate) fn copy_to_store(
                                 research_flag: item.research_flag,
                             };
                             insert_item(tx, &new, args.collection_id.as_deref(), &item.tags)
-                        })();
+                        });
                         match one {
-                            Ok(id) => {
-                                tx.conn().execute_batch("RELEASE vault_copy_one")?;
-                                copied.push(id);
-                            }
+                            Ok(id) => copied.push(id),
                             Err(e)
                                 if matches!(
                                     e.code_str(),
@@ -219,9 +215,6 @@ pub(crate) fn copy_to_store(
                                 return Err(e);
                             }
                             Err(e) => {
-                                tx.conn().execute_batch(
-                                    "ROLLBACK TO vault_copy_one; RELEASE vault_copy_one",
-                                )?;
                                 failed.push(VaultFailedFile {
                                     path: item.id.clone(),
                                     name: item.display_name.clone(),

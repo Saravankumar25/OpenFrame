@@ -1,5 +1,6 @@
 // Global Idea Vault actions in Settings > Storage: open, back up, export a package, restore,
-// move and locate. Backup keeps everything for recovery on this computer; an exported package is
+// move, locate, and add back files that are in the vault folder but in no item. Locate reads the
+// chosen folder first and says what it found before anything changes. Backup keeps everything for recovery on this computer; an exported package is
 // for another computer and leaves out Recently Deleted items and history. Both are .ofvault files
 // (docs/engineering/40-storage-locations-and-recovery.md).
 
@@ -7,15 +8,18 @@ import { useState } from "react";
 import { open as openDialog, save as saveDialog } from "@tauri-apps/plugin-dialog";
 import { FolderOpen } from "lucide-react";
 import { call, revealLocation } from "../../ipc/client";
-import { reportError } from "../../ipc/query";
+import { queryClient, reportError, useOp } from "../../ipc/query";
 import type { JsonValue } from "../../ipc/generated/serde_json/JsonValue";
 import type { StorageInfo } from "../../ipc/generated/StorageInfo";
 import type { StorageTaskStarted } from "../../ipc/generated/StorageTaskStarted";
 import type { VaultArchiveReport } from "../../ipc/generated/VaultArchiveReport";
+import type { VaultFolderInspection } from "../../ipc/generated/VaultFolderInspection";
+import type { VaultOrphanFiles } from "../../ipc/generated/VaultOrphanFiles";
+import type { VaultRecoverResult } from "../../ipc/generated/VaultRecoverResult";
 import type { VaultInspection } from "../../ipc/generated/VaultInspection";
 import type { VaultMoveReport } from "../../ipc/generated/VaultMoveReport";
 import type { VaultRestoreReport } from "../../ipc/generated/VaultRestoreReport";
-import { Button } from "../../design-system";
+import { Banner, Button, Dialog } from "../../design-system";
 import { toast } from "../../app/toast";
 import { formatBytes, joinPath } from "../packages/api";
 import { StorageTaskDialog, type StorageAction } from "./StorageTask";
@@ -29,6 +33,27 @@ const plural = (n: number, one: string, many: string) => `${n.toLocaleString()} 
 
 export function VaultActions({ info }: { info: StorageInfo }) {
   const [action, setAction] = useState<StorageAction | null>(null);
+  const [found, setFound] = useState<VaultFolderInspection | null>(null);
+  const [recovering, setRecovering] = useState(false);
+  const orphans = useOp<VaultOrphanFiles>("vault.orphan_files", { store: "global" }, ["vault_item", "asset"], {
+    store: "global",
+    enabled: info.vaultExists,
+  });
+  const orphanCount = orphans.data?.count ?? 0;
+
+  const recover = async () => {
+    setRecovering(true);
+    try {
+      const r = await call<VaultRecoverResult>("vault.recover_files", { store: "global" });
+      if (r.added > 0) toast.success(`Added ${plural(r.added, "file", "files")} back to the Global Idea Vault.`);
+      if (r.failed > 0) toast.error(`${plural(r.failed, "file", "files")} could not be read. They may be in use by another program. Try again later.`);
+      void orphans.refetch();
+    } catch (e) {
+      reportError(e);
+    } finally {
+      setRecovering(false);
+    }
+  };
 
   const archive = async (kind: "backup" | "package") => {
     const name = kind === "backup" ? `Global Idea Vault backup ${today()}.ofvault` : `Global Idea Vault ${today()}.ofvault`;
@@ -124,9 +149,29 @@ export function VaultActions({ info }: { info: StorageInfo }) {
   const locate = async () => {
     const dir = await openDialog({ directory: true, title: "Choose the folder of an existing Global Idea Vault" });
     if (typeof dir !== "string") return;
+    let v: VaultFolderInspection;
     try {
-      await call<StorageInfo>("vault.locate", { dir });
+      v = await call<VaultFolderInspection>("vault.inspect_folder", { dir });
+    } catch (e) {
+      return reportError(e);
+    }
+    if (v.kind === "project") {
+      toast.error("That folder is a project, not a vault. Choose the folder that holds your Global Idea Vault.");
+    } else if (v.kind === "nothing" || !v.vaultDir) {
+      toast.error("There is no Global Idea Vault in that folder. Choose the vault folder, or the OpenFrame folder that holds it.");
+    } else if (v.active) {
+      toast.info("This vault is already the one in use. Nothing was changed.");
+    } else {
+      setFound(v);
+    }
+  };
+
+  const connect = async (v: VaultFolderInspection) => {
+    try {
+      await call<StorageInfo>("vault.locate", { dir: v.vaultDir });
+      setFound(null);
       refreshStorage();
+      void queryClient.invalidateQueries({ predicate: (q) => String(q.queryKey[0]).startsWith("vault.") });
       toast.success("The Global Idea Vault is connected. Nothing was moved or copied.");
     } catch (e) {
       reportError(e);
@@ -143,7 +188,68 @@ export function VaultActions({ info }: { info: StorageInfo }) {
       <Button size="sm" onClick={() => void restore()}>Restore…</Button>
       <Button size="sm" disabled={!info.vaultExists} onClick={() => void move()}>Move…</Button>
       <Button size="sm" onClick={() => void locate()}>Locate Existing Vault…</Button>
+      {orphanCount > 0 && (
+        <div className="row sm" style={{ flexBasis: "100%", gap: 8, marginTop: 4 }}>
+          <span>
+            {plural(orphanCount, "file", "files")} in the vault folder {orphanCount === 1 ? "is" : "are"} not in the vault (
+            {formatBytes(orphans.data?.bytes ?? 0)}).
+          </span>
+          <Button size="sm" variant="primary" disabled={recovering} onClick={() => void recover()}>
+            Add Them Back
+          </Button>
+        </div>
+      )}
       {action && <StorageTaskDialog action={action} onClose={() => setAction(null)} />}
+      {found && <LocateDialog found={found} onConnect={() => connect(found)} onClose={() => setFound(null)} />}
     </>
+  );
+}
+
+/** What Locate found, confirmed before the vault is connected. An empty vault needs a second yes. */
+function LocateDialog({ found, onConnect, onClose }: { found: VaultFolderInspection; onConnect: () => Promise<void>; onClose: () => void }) {
+  const [sureEmpty, setSureEmpty] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const empty = found.ideas === 0;
+  const files = found.filesPresent + found.filesMissing;
+  return (
+    <Dialog
+      open
+      onOpenChange={(v) => !v && !busy && onClose()}
+      title="Connect This Vault?"
+      size="md"
+      footer={
+        <>
+          <Button onClick={onClose} disabled={busy}>Cancel</Button>
+          <Button
+            variant="primary"
+            disabled={busy || (empty && !sureEmpty)}
+            onClick={() => {
+              setBusy(true);
+              void onConnect().finally(() => setBusy(false));
+            }}
+          >
+            {empty ? "Connect Empty Vault" : "Connect Vault"}
+          </Button>
+        </>
+      }
+    >
+      <div className="sm">
+        <p style={{ marginTop: 0 }}>
+          Found a vault at {found.vaultDir} with {plural(found.ideas, "idea", "ideas")} and {plural(files, "file", "files")}.
+          {found.filesMissing > 0 && ` ${plural(found.filesMissing, "file is", "files are")} missing from its folder.`}
+        </p>
+        <p style={{ marginBottom: empty ? undefined : 0 }}>
+          OpenFrame will use this vault from now on. Your current vault is not moved or deleted, and you can connect it again later.
+        </p>
+        {empty && (
+          <Banner tone="warn">
+            <label className="row" style={{ gap: 8 }}>
+              <input type="checkbox" checked={sureEmpty} onChange={(e) => setSureEmpty(e.target.checked)} />
+              This vault has no ideas. Connect it anyway.
+            </label>
+          </Banner>
+        )}
+      </div>
+    </Dialog>
   );
 }
