@@ -1,92 +1,12 @@
 {
-  "ai.ask": {
-    "failed": 0,
-    "ok": 10,
-    "refusedOnPurpose": 0
-  },
-  "ai.change_set.accept": {
-    "failed": 0,
-    "ok": 2,
-    "refusedOnPurpose": 0
-  },
-  "ai.change_set.get": {
-    "failed": 0,
-    "ok": 1,
-    "refusedOnPurpose": 0
-  },
-  "ai.change_set.recheck": {
-    "failed": 0,
-    "ok": 1,
-    "refusedOnPurpose": 0
-  },
-  "ai.change_set.reject": {
-    "failed": 0,
-    "ok": 1,
-    "refusedOnPurpose": 0
-  },
-  "ai.diagnostics": {
-    "failed": 0,
-    "ok": 1,
-    "refusedOnPurpose": 0
-  },
-  "ai.download.import": {
-    "failed": 0,
-    "ok": 3,
-    "refusedOnPurpose": 0
-  },
-  "ai.download.pause": {
-    "failed": 0,
-    "ok": 1,
-    "refusedOnPurpose": 0
-  },
-  "ai.download.remove": {
-    "failed": 0,
-    "ok": 1,
-    "refusedOnPurpose": 0
-  },
   "ai.download.status": {
     "failed": 0,
     "ok": 2,
     "refusedOnPurpose": 0
   },
-  "ai.export_report": {
-    "failed": 0,
-    "ok": 1,
-    "refusedOnPurpose": 0
-  },
-  "ai.graphics.set": {
-    "failed": 0,
-    "ok": 1,
-    "refusedOnPurpose": 0
-  },
-  "ai.health": {
-    "failed": 0,
-    "ok": 1,
-    "refusedOnPurpose": 0
-  },
-  "ai.history": {
-    "failed": 0,
-    "ok": 1,
-    "refusedOnPurpose": 0
-  },
-  "ai.index_rebuild": {
-    "failed": 0,
-    "ok": 1,
-    "refusedOnPurpose": 0
-  },
-  "ai.index_status": {
-    "failed": 0,
-    "ok": 1,
-    "refusedOnPurpose": 0
-  },
   "ai.status": {
     "failed": 0,
-    "ok": 5,
-    "refusedOnPurpose": 0
-  },
-  "ai.stop_runtime": {
-    "failed": 0,
-    "ok": 1,
+    "ok": 2,
     "refusedOnPurpose": 0
   },
   "app.cancel_task": {
@@ -656,7 +576,7 @@
   },
   "history.undo": {
     "failed": 0,
-    "ok": 4,
+    "ok": 3,
     "refusedOnPurpose": 0
   },
   "interchange.draft_scenes": {
@@ -876,8 +796,8 @@
   },
   "packages.exchange_preview": {
     "failed": 0,
-    "ok": 8,
-    "refusedOnPurpose": 1
+    "ok": 4,
+    "refusedOnPurpose": 5
   },
   "packages.exchange_scenes": {
     "failed": 0,
@@ -891,7 +811,7 @@
   },
   "packages.export_exchange": {
     "failed": 0,
-    "ok": 8,
+    "ok": 4,
     "refusedOnPurpose": 0
   },
   "packages.export_project": {

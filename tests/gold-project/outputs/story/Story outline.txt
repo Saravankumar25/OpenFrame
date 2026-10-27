@@ -1,5 +1,5 @@
-﻿STORY BOARD OUTLINE
-Low Tide Radio · Exported 19 Oct 2026 · Source: Current Story Board
+﻿BEAT BOARD OUTLINE
+Low Tide Radio · Exported 27 Oct 2026 · Source: Current Beat Board
 
 ACT ONE: THE CALL
   Note: Setup. Ends when Anjali finds the reel. 12 scenes.
@@ -172,4 +172,4 @@ ACT THREE: THE BROADCAST
 
 Private notes excluded.
 
-Created with OpenFrame Studio
+Created using OpenFrame
