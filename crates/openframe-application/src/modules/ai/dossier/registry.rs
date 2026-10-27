@@ -150,7 +150,7 @@ pub fn plan(read: &TurnRead, r: &Resolved, message: &str) -> Vec<&'static Fetche
     if fetch::people::asks_crew_job(&m) {
         add(Domain::People);
     }
-    if m.stem("character") && m.any(&["speaking", "speak", "speaks", "dialogue", "lines"]) {
+    if fetch::screenplay::asks_speakers(&m) {
         add(Domain::Screenplay);
     }
     // A name the project does not hold: the Story says so.

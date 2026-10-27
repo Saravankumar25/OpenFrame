@@ -8,7 +8,7 @@ use openframe_domain::AppResult;
 use regex::Regex;
 
 use crate::modules::ai::dossier::ctx::{FetchCtx, SceneRef, safe};
-use crate::modules::ai::dossier::words::{clip, numbers};
+use crate::modules::ai::dossier::words::{Msg, clip, numbers};
 use crate::modules::ai::dossier::{Fact, P_HIGH, P_LOW, P_MID};
 use crate::modules::ai::index::{Resolved, ScreenplayInfo};
 use crate::modules::ai::queries;
@@ -26,6 +26,13 @@ static BETWEEN: LazyLock<Regex> = LazyLock::new(|| {
 });
 static YEAR: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"\b(1[5-9]\d\d|20\d\d)\b").expect("valid pattern"));
+
+/// "Which characters have dialogue", "who speaks in this screenplay": the speaking people of a
+/// screenplay are asked for.
+pub fn asks_speakers(m: &Msg) -> bool {
+    (m.stem("character") || m.has("who"))
+        && m.any(&["speaking", "speak", "speaks", "dialogue", "lines"])
+}
 
 pub fn run(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> Vec<Fact> {
     safe("screenplay", || fetch(ctx, read, r))
@@ -87,11 +94,7 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
     }
 
     // The people who speak in a screenplay, when no one is named.
-    if scenes.is_empty()
-        && r.characters.is_empty()
-        && m.stem("character")
-        && m.any(&["speaking", "speak", "speaks", "dialogue", "lines"])
-    {
+    if scenes.is_empty() && r.characters.is_empty() && asks_speakers(m) {
         for sp in &sps {
             let Some(d) = ctx.draft(&sp.id) else { continue };
             let names: Vec<String> = ctx.presence(&d.id).by_name.keys().cloned().collect();
@@ -106,6 +109,38 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
             if names.len() <= 12 {
                 for n in &names {
                     f = f.require(n);
+                }
+            }
+            out.push(f);
+        }
+    }
+
+    // The places the scene headings name: "which locations are used in the script". Production's
+    // own location list is the Production fetcher's.
+    if scenes.is_empty() && r.locations.is_empty() && m.stem("location") {
+        for sp in &sps {
+            let Some(d) = ctx.draft(&sp.id) else { continue };
+            let mut places: Vec<String> = Vec::new();
+            for s in queries::scenes(ctx.conn, &d.id)?
+                .into_iter()
+                .filter(|s| !s.omitted)
+            {
+                let place = queries::parse_heading(&s.heading).location;
+                if !place.is_empty() && !places.contains(&place) {
+                    places.push(place);
+                }
+            }
+            if places.is_empty() {
+                continue;
+            }
+            let mut f = Fact::new("Scene locations", &sp.id)
+                .f("screenplay", &sp.title)
+                .f("count", places.len().to_string())
+                .f("locations", clip(&places.join(", "), 600))
+                .prio(P_HIGH);
+            if places.len() <= 12 {
+                for p in &places {
+                    f = f.require(p);
                 }
             }
             out.push(f);

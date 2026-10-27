@@ -118,7 +118,11 @@ fn fetch(ctx: &FetchCtx<'_>, read: &TurnRead, r: &Resolved) -> AppResult<Vec<Fac
     // ---- the locations as a whole
     if r.locations.is_empty() && scenes.is_empty() && m.stem("location") {
         if all.is_empty() {
-            out.push(Fact::absent("any locations", "Production"));
+            // "Locations used in the script" are the scene headings' places (the Screenplay
+            // fetcher); an empty Production list says nothing about them.
+            if !(m.stem("script") || m.stem("screenplay")) {
+                out.push(Fact::absent("any locations", "Production"));
+            }
         } else {
             out.push(
                 Fact::new("Count", "")

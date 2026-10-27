@@ -917,3 +917,21 @@ fn the_request_language_is_asked_for_in_the_prompt() {
     let _ = r.ask(hindi, AnswerType::Lookup, &lead_cast());
     assert!(user_text(&r.model, 0).contains("Write the whole answer in Hindi."));
 }
+
+#[test]
+fn a_passage_the_answer_retells_is_a_source_and_one_it_does_not_is_not() {
+    let d = Dossier {
+        facts: vec![
+            fact("Found", "scene-2")
+                .f("title", "Scene 2: EXT. BUS STOP - NIGHT")
+                .f("text", "Arjun meets Meera again at a rainy bus stop. MEERA You came back after all these years."),
+            fact("Found", "file-1")
+                .f("title", "Pasted screenplay.txt")
+                .f("text", "Inspector Rao closes the station ledger and switches off the lamp before leaving."),
+        ],
+        ..Dossier::default()
+    };
+    let used = sources_of(&d, "At the bus stop, Arjun meets Meera again in the rain.");
+    let ids: Vec<&str> = used.iter().map(|f| f.record_id.as_str()).collect();
+    assert_eq!(ids, vec!["scene-2"]);
+}

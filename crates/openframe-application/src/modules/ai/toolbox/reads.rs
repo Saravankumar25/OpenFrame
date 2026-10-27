@@ -530,7 +530,7 @@ pub fn retrieve_lexical(ctx: &ToolCtx<'_>, args: &Value) -> AppResult<ToolOutput
             clip(&q, 80)
         )
     });
-    for (etype, title, context, body, nav) in &hits {
+    for (etype, title, context, body, nav, _) in &hits {
         o.items.push(item(
             if title.is_empty() {
                 etype.clone()
@@ -557,13 +557,13 @@ pub fn retrieve_lexical(ctx: &ToolCtx<'_>, args: &Value) -> AppResult<ToolOutput
     Ok(o.detail("Keyword retrieval (project context is still being prepared)."))
 }
 
-/// (entity type, title, context, body, nav) of the best keyword matches visible to `actor`.
+/// (entity type, title, context, body, nav, entity id) of the best keyword matches visible to `actor`.
 pub(crate) fn lexical_hits(
     c: &Connection,
     actor: &Actor,
     text: &str,
     limit: usize,
-) -> AppResult<Vec<(String, String, String, String, Value)>> {
+) -> AppResult<Vec<(String, String, String, String, Value, String)>> {
     let terms: Vec<String> = text
         .split(|ch: char| !ch.is_alphanumeric())
         .filter(|t| t.chars().count() >= 3)
@@ -576,7 +576,7 @@ pub(crate) fn lexical_hits(
     // OR-matching ranked by BM25: a question's words rarely all appear together.
     let q = terms.join(" OR ");
     let mut stmt = c.prepare(
-        "SELECT d.entity_type, d.title, d.context, d.body, d.nav_json FROM search_fts f JOIN search_doc d ON d.rowid=f.rowid
+        "SELECT d.entity_type, d.title, d.context, d.body, d.nav_json, d.entity_id FROM search_fts f JOIN search_doc d ON d.rowid=f.rowid
          WHERE search_fts MATCH ?1 AND (d.owner_user_id IS NULL OR d.owner_user_id=?2)
          ORDER BY bm25(search_fts) LIMIT ?3",
     )?;
@@ -589,6 +589,7 @@ pub(crate) fn lexical_hits(
                 r.get(2)?,
                 r.get(3)?,
                 serde_json::from_str(&nav).unwrap_or(Value::Null),
+                r.get(5)?,
             ))
         })?
         .collect::<Result<_, _>>()?;

@@ -540,3 +540,80 @@ fn chat_and_change_get_no_facts_and_the_dossier_stays_inside_its_cap() {
     let d = dossier(&env, "explain scene 2");
     assert!(d.tokens_estimate <= 2_500, "{}", d.tokens_estimate);
 }
+
+/// The screenplay of the AI end-to-end specs (tests/e2e/lib/ai.mjs, NIGHT_BUS), pasted as a person
+/// pastes it: the source text is kept as a project file too.
+fn night_bus() -> TestEnv {
+    let env = TestEnv::with_project("Night Bus", "Short Film");
+    let text = [
+        "Title: Night Bus",
+        "",
+        "INT. POLICE STATION - NIGHT",
+        "",
+        "Arjun confesses to Inspector Rao.",
+        "",
+        "ARJUN",
+        "I was there that night.",
+        "",
+        "EXT. BUS STOP - NIGHT",
+        "",
+        "Arjun meets Meera again at a rainy bus stop.",
+        "",
+        "MEERA",
+        "You came back.",
+        "",
+        "EXT. RAILWAY STATION - DAY",
+        "",
+        "Meera waits for the late train with a red umbrella.",
+        "",
+    ]
+    .join("\n");
+    let p = env.ok("screenplay.import_preview", json!({ "pastedText": text }));
+    env.ok(
+        "screenplay.import_apply",
+        json!({ "previewId": p["previewId"], "mode": "new_screenplay", "keepSourceFile": true }),
+    );
+    env
+}
+
+#[test]
+fn who_speaks_and_which_places_come_from_the_script() {
+    let env = night_bus();
+    let d = dossier(&env, "Who speaks in this screenplay?");
+    assert!(
+        d.render().contains(
+            "Speaking characters | screenplay: Night Bus | count: 2 | names: Arjun, Meera"
+        ),
+        "{}",
+        d.render()
+    );
+    assert_eq!(d.required, vec!["Arjun", "Meera"]);
+    // An empty Production list says nothing about the places the scene headings name.
+    let d = dossier(&env, "Which locations are used in the script?");
+    assert!(
+        d.render().contains("Scene locations | screenplay: Night Bus | count: 3 | locations: POLICE STATION, BUS STOP, RAILWAY STATION"),
+        "{}",
+        d.render()
+    );
+    assert!(d.missing.is_empty(), "{:?}", d.missing);
+    // Asked about the project's own locations, the empty list is still stated.
+    let d = dossier(&env, "how many locations do we have");
+    assert!(
+        d.missing.iter().any(|m| m.contains("any locations")),
+        "{:?}",
+        d.missing
+    );
+}
+
+#[test]
+fn a_meaning_question_that_names_nothing_reads_the_matching_scene_with_its_record() {
+    let env = night_bus();
+    let d = dossier(&env, "What happens at the bus stop?");
+    let found = d
+        .facts
+        .iter()
+        .find(|f| f.kind == "Found" && f.field("title").is_some_and(|t| t.contains("BUS STOP")));
+    let found = found.unwrap_or_else(|| panic!("no bus stop passage: {}", d.render()));
+    // The record id is what lets the answer name the scene as its source.
+    assert!(!found.record_id.is_empty());
+}

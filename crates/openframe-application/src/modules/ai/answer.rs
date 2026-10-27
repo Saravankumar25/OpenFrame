@@ -369,9 +369,13 @@ pub(super) fn sources_of(d: &Dossier, answer: &str) -> Vec<Fact> {
             continue;
         }
         let hit = f.requires.iter().any(|r| mentions(&seen, r))
-            || f.fields
-                .iter()
-                .any(|(_, v)| v.chars().count() <= 60 && mentions(&seen, v))
+            || f.fields.iter().any(|(_, v)| {
+                if v.chars().count() <= 60 {
+                    mentions(&seen, v)
+                } else {
+                    retells(&seen, v)
+                }
+            })
             || f.sentence.as_deref().is_some_and(|s| mentions(&seen, s));
         if hit && !out.iter().any(|x| x.record_id == f.record_id) {
             out.push(f.clone());
@@ -381,6 +385,25 @@ pub(super) fn sources_of(d: &Dossier, answer: &str) -> Vec<Fact> {
         }
     }
     out
+}
+
+/// A long text (a passage, a scene's text) is used when the answer retells it: at least three of
+/// its words of five letters or more are in the answer. A passage is never quoted whole.
+fn retells(seen_norm: &str, text: &str) -> bool {
+    let words = |s: &str| -> Vec<String> {
+        s.split(|c: char| !c.is_alphanumeric())
+            .filter(|w| w.chars().count() >= 5)
+            .map(str::to_string)
+            .collect()
+    };
+    let seen: std::collections::HashSet<String> = words(seen_norm).into_iter().collect();
+    let mut shared: Vec<String> = words(&check::norm(text))
+        .into_iter()
+        .filter(|w| seen.contains(w))
+        .collect();
+    shared.sort_unstable();
+    shared.dedup();
+    shared.len() >= 3
 }
 
 /// The value is in the answer. A value shorter than three characters that holds no digit ("Sc",

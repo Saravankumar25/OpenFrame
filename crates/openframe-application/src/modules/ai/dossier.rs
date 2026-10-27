@@ -286,7 +286,11 @@ pub fn build(input: &Input<'_>) -> Dossier {
             trim(&mut got, f.cap_tokens);
             facts.extend(got);
         }
-        let nothing = !facts.iter().any(|f| !f.is_missing() && f.kind != "Assumed")
+        // The project's bare title is orientation, not an answer: "what happens at the bus stop"
+        // with nothing else found still searches the text.
+        let orientation =
+            |f: &Fact| f.kind == "Assumed" || (f.kind == "Project" && f.field("logline").is_none());
+        let nothing = !facts.iter().any(|f| !f.is_missing() && !orientation(f))
             && !facts.iter().any(Fact::is_missing);
         // One wider round when the plan found nothing for the asked thing: full-text search of the
         // project. After that the gap is stated, not guessed.

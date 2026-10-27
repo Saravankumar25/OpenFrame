@@ -31,8 +31,9 @@ pub fn passages(ctx: &FetchCtx<'_>, limit: usize) -> Vec<Fact> {
         let hits = lexical_hits(ctx.conn, ctx.actor, &words.join(" "), limit)?;
         Ok(hits
             .into_iter()
-            .map(|(etype, title, context, body, _)| {
-                Fact::new("Found", "")
+            .map(|(etype, title, context, body, _, id)| {
+                // The record id makes a passage the answer used one of its sources.
+                Fact::new("Found", id)
                     .f("type", etype)
                     .f("title", title)
                     .f("where", context)
