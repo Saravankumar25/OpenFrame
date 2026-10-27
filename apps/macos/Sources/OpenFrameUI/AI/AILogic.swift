@@ -11,9 +11,8 @@ enum AIText {
     static let staleHint = "AI never applies a stale proposal blindly. It must be re-checked against the current project."
     static let promise = "OpenFrame AI runs on this computer after a one-time download. Your project data is not sent to OpenFrame or to an AI cloud service."
     static let gemmaNotice = "Gemma is provided under and subject to the Gemma Terms of Use found at ai.google.dev/gemma/terms."
-    /// Questions to start with, for the page the person is on. Each is a phrasing the assistant
-    /// answers from the project's own data (the direct routes in the core's commands.rs), so a
-    /// first try never ends in "I couldn't find that".
+    /// Questions to start with, for the page the person is on: plain questions about the
+    /// project's own data, so a first try has something to read.
     static func starterQuestions(for workspace: Workspace) -> [String] {
         switch workspace {
         case .screenplay:
@@ -31,7 +30,10 @@ enum AIText {
         }
     }
 
-    static let emptyConversation = "Ask about your project, for example \u{201C}How many scenes are in the script?\u{201D}, \u{201C}Open Scene 12.\u{201D} or \u{201C}Create a task to scout the railway station.\u{201D} The assistant can look things up in several steps; changes are only ever prepared for you to review."
+    static let emptyConversation = "Ask about your project, for example \u{201C}How many scenes are in the script?\u{201D}, \u{201C}Open Scene 12.\u{201D} or \u{201C}Create a task to scout the railway station.\u{201D} Answers come from your project and say what they are based on; changes are only ever prepared for you to review."
+    static let working = "Working on it on this computer\u{2026}"
+    static let stopping = "Stopping\u{2026}"
+    static let saveConversation = "Save conversation for review"
 }
 
 extension AiScopeKind {
@@ -199,9 +201,42 @@ enum AILogic {
     }
 
     /// A refusal, a failure, a private item or a question back needs its reasons next to it. For
-    /// an ordinary answer the details are how it was worked out and stay out of the conversation.
+    /// an ordinary answer the details are how it was worked out and wait behind "See sources".
     static func reasonsVisible(_ kind: AiResultKind) -> Bool {
         [.denied, .failed, .unavailable, .clarify, .private].contains(kind)
+    }
+
+    /// Where the parts of a result go (Windows: ResultView). Rows the person asked for stay under
+    /// the answer (the core says so with `itemsAreAnswer`); rows that only back the text, the
+    /// sources, how sure the answer is and its steps wait behind a closed "See sources".
+    struct ResultLayout: Equatable {
+        var reasonsVisible: Bool
+        var itemsInline: Bool
+        var itemsAsSources: Bool
+        var hasSources: Bool
+    }
+
+    static func layout(_ r: AiResultDto) -> ResultLayout {
+        let reasons = reasonsVisible(r.kind)
+        let hasItems = !r.items.isEmpty
+        let asSources = hasItems && !r.itemsAreAnswer
+        let hasSources = (!reasons && !r.details.isEmpty) || confidenceLabel(r.confidence) != nil
+            || !r.provenance.isEmpty || stepsSummary(r.steps) != nil || asSources
+        return ResultLayout(reasonsVisible: reasons, itemsInline: hasItems && r.itemsAreAnswer, itemsAsSources: asSources, hasSources: hasSources)
+    }
+
+    static func confidenceLabel(_ c: AiConfidence?) -> String? {
+        switch c {
+        case .exact: "Exact \u{00B7} from project data"
+        case .inferred: "Inferred \u{00B7} written by Offline AI"
+        case .unavailable: "Not available in project data"
+        case nil: nil
+        }
+    }
+
+    /// Short line naming the tool steps behind an answer (nil for a single step).
+    static func stepsSummary(_ steps: [AiStepDto]) -> String? {
+        steps.count < 2 ? nil : "\(steps.count) steps: " + steps.map(\.label).joined(separator: " \u{00B7} ")
     }
 
     struct SourceChip: Identifiable, Equatable {
@@ -210,17 +245,35 @@ enum AILogic {
         var route: AIRoute?
     }
 
-    /// The sources listed under "See sources": the places the answer was read from. The scope and
-    /// the basis ("Using: Whole Project") are settings of the question, not sources, so they are
-    /// left out; repeats are listed once.
-    static func answerSources(_ provenance: [AiProvenance]) -> [SourceChip] {
-        var seen = Set<String>()
-        return provenance.enumerated().compactMap { i, p in
-            guard p.kind != "Scope", p.kind != "Basis" else { return nil }
-            let text = "\(p.kind): \(p.label)"
-            guard seen.insert(text).inserted else { return nil }
-            return SourceChip(id: "\(i):\(text)", text: text, route: AIRoute(p.nav))
+    /// Provenance as chips under "Based on:"; a chip opens its source when it has a place.
+    static func sourceChips(_ provenance: [AiProvenance]) -> [SourceChip] {
+        provenance.enumerated().map { i, p in
+            SourceChip(
+                id: "\(i):\(p.kind):\(p.label)",
+                text: p.kind == "Scope" || p.kind == "Basis" ? p.label : "\(p.kind): \(p.label)",
+                route: AIRoute(p.nav))
         }
+    }
+
+    // MARK: Conversation
+
+    /// A new conversation id made here, so a running request can be stopped before its answer
+    /// exists. The core accepts letters, digits and hyphens (up to 64).
+    static func newConversationId() -> String { UUID().uuidString.lowercased() }
+
+    /// The latest progress line of the request running in `conversation`, from one app event.
+    /// Lines of another conversation and other events are ignored.
+    static func progress(_ event: AppEvent, conversation: String?) -> AIProgress? {
+        guard let conversation, case let .module(module, name, payload) = event, module == "ai", name == "progress",
+              payload["conversationId"]?.stringValue == conversation,
+              let label = payload["label"]?.stringValue, !label.isEmpty
+        else { return nil }
+        return AIProgress(label: label, step: payload["step"]?.intValue ?? 0, total: payload["total"]?.intValue ?? 0)
+    }
+
+    /// The toast after "Save conversation for review".
+    static func savedMessage(_ r: AiReportResult) -> String {
+        "Saved \(r.fileName) (\(Int(r.rows)) \(Int(r.rows) == 1 ? "question" : "questions"))."
     }
 
     // MARK: Change Sets
@@ -307,21 +360,64 @@ enum AILogic {
 
 // MARK: - Navigation
 
-/// A place the assistant points at: a workspace, and for the screenplay a scene or draft.
+/// What a request is doing now, from the core's `ai.progress` event.
+struct AIProgress: Equatable {
+    var label: String
+    var step: Int
+    var total: Int
+}
+
+/// A place the assistant points at (Windows: model.ts toRoute). The core sends the Windows route:
+/// a workspace id, an optional `sub` (a Production, Story or Settings tab) and parameters.
 struct AIRoute: Equatable {
-    var workspace: Workspace
+    enum Target: Equatable {
+        /// A workspace, and for Production its tab.
+        case place(ProjectPlace)
+        /// The Story workspace on one of its tabs.
+        case story(StoryTab)
+        /// Project Settings on a page ("settings" with "templates", "offline-ai").
+        case projectSettings(ProjectSettingsTab)
+    }
+
+    var target: Target
     var params: [String: String]
 
     init?(_ nav: AiNavTarget?) {
-        guard let nav, let ws = Self.workspace(for: nav.workspace) else { return nil }
-        workspace = ws
+        guard let nav, let target = Self.target(workspace: nav.workspace, sub: nav.sub) else { return nil }
+        self.target = target
         params = nav.params
     }
 
-    /// The Production tab named by the link ("sub"), Overview when it names none.
+    /// The Mac workspace, when the target is one.
+    var workspace: Workspace? {
+        switch target {
+        case .place(let p): p.workspace
+        case .story: .story
+        case .projectSettings: nil
+        }
+    }
+
+    /// The Production tab named by the link, Overview when it names none.
     var tab: ProductionTab? {
-        guard workspace == .production else { return nil }
-        return params["sub"].flatMap(ProductionTab.init(windowsId:)) ?? .overview
+        if case .place(let p) = target { return p.tab }
+        return nil
+    }
+
+    /// The Windows route to the Mac place. Unknown workspaces are ignored, never guessed.
+    static func target(workspace id: String, sub: String?) -> Target? {
+        if id == "settings" {
+            switch sub {
+            case "offline-ai": return .projectSettings(.offlineAI)
+            case let sub?: return .projectSettings(ProjectSettingsTab(rawValue: sub) ?? .general)
+            case nil: return .projectSettings(.general)
+            }
+        }
+        guard let ws = workspace(for: id) else { return nil }
+        switch ws {
+        case .production: return .place(ProjectPlace(.production, tab: sub.flatMap(ProductionTab.init(windowsId:)) ?? .overview))
+        case .story: return sub.flatMap(StoryTab.init(rawValue:)).map(Target.story) ?? .place(ProjectPlace(.story))
+        default: return .place(ProjectPlace(ws))
+        }
     }
 
     /// Windows workspace ids to the Mac workspaces. Unknown ids are ignored.
@@ -342,13 +438,24 @@ struct AIRoute: Equatable {
         }
     }
 
+    /// The request the Story workspace takes to show a tab (`onProjectIntents`).
+    static func storyIntent(_ tab: StoryTab) -> String { "story.show_\(tab.rawValue)" }
+
     /// Open the place. Navigation is application control, not a project change (AI spec section 5.3).
     @MainActor func perform() {
-        ProjectNav.show(workspace, tab: tab)
-        if workspace == .screenplay, params["sceneId"] != nil || params["draftId"] != nil {
-            var info: [String: Any] = [:]
-            for key in ["screenplayId", "draftId", "sceneId"] { if let v = params[key] { info[key] = v } }
-            NotificationCenter.default.post(name: .openFrameShowScreenplayTarget, object: nil, userInfo: info)
+        switch target {
+        case .place(let place):
+            ProjectNav.show(place)
+            if place.workspace == .screenplay, params["sceneId"] != nil || params["draftId"] != nil {
+                var info: [String: Any] = [:]
+                for key in ["screenplayId", "draftId", "sceneId"] { if let v = params[key] { info[key] = v } }
+                NotificationCenter.default.post(name: .openFrameShowScreenplayTarget, object: nil, userInfo: info)
+            }
+        case .story(let tab):
+            ProjectNav.show(.story)
+            ProjectIntents.shared.fire(Self.storyIntent(tab))
+        case .projectSettings(let tab):
+            ProjectSettingsRouter.open(tab: tab)
         }
     }
 }
@@ -356,29 +463,4 @@ struct AIRoute: Equatable {
 extension Notification.Name {
     /// Opens or closes the assistant panel (Command+J).
     static let openFrameToggleAssistant = Notification.Name("studio.openframe.toggleAssistant")
-}
-
-// MARK: - Report AI output
-
-/// The file "Report AI output" writes: the question, what kind of answer it was, the answer the
-/// person saw and the names of its sources and steps. It stays on this computer.
-enum AIOutputReport {
-    static func make(_ x: AiExchange) throws -> Data {
-        let r = x.result
-        let body: [String: Any] = [
-            "note": "Saved by the person from OpenFrame Studio. Nothing was sent anywhere.",
-            "question": x.requestText,
-            "scope": x.scopeLabel,
-            "resultKind": r.kind.rawValue,
-            "status": r.status.rawValue,
-            "answer": r.content,
-            "details": r.details,
-            "confidence": r.confidence?.rawValue ?? "",
-            "sources": r.provenance.map { "\($0.kind): \($0.label)" },
-            "steps": r.steps.map(\.label),
-            "proposal": r.changeSet.map { ["title": $0.title, "state": $0.state, "changes": Int($0.operationCount)] as [String: Any] } ?? [:],
-            "createdAt": ISO8601DateFormatter().string(from: Date(timeIntervalSince1970: r.createdAt / (r.createdAt > 10_000_000_000 ? 1000 : 1))),
-        ]
-        return try JSONSerialization.data(withJSONObject: body, options: [.prettyPrinted, .sortedKeys])
-    }
 }
