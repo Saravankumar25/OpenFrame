@@ -18,7 +18,14 @@ extension UI {
             }
             if exists(id: "home-new-project") || exists(id: "home-empty") || exists(id: "project-home") || exists(id: "welcome-name") { break }
             if exists(id: "startup-failure") { throw DriverError("the app could not start: \(screenText())") }
+            if exists(id: "library-setup") { break }
             await idle(0.2)
+        }
+        // A brand-new home folder (OPENFRAME_E2E_FRESH_HOME=1) asks where the library goes first:
+        // take the suggested place, as a new person would.
+        if exists(id: "library-setup") {
+            try await press(id: "library-setup-create-default", role: "AXButton")
+            try await waitGone(id: "library-setup", timeout: 30)
         }
         try await answerWelcome()
         try await waitHome()

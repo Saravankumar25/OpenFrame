@@ -345,6 +345,34 @@ struct IdeaVaultTests {
         #expect(s.quiet)
     }
 
+    @Test func addThemBackOffersFilesThatAreInNoItem() async throws {
+        let root = try Fixture.root()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let app = Fixture.model(root)
+        await app.start()
+        defer { app.shutdown() }
+        _ = await app.createProject(CreateProjectArgs(title: "Orphan Town", projectType: .featureFilm))
+        let vault = IdeaVaultModel(app: app, store: .project)
+        await vault.reload()
+        #expect(vault.orphans?.count == 0, "no banner when every file is in the vault")
+
+        let still = root.appendingPathComponent("still.txt")
+        try "the harbour at dawn".write(to: still, atomically: true, encoding: .utf8)
+        await vault.addFiles([still.path])
+        let project = try #require({ if case let .project(p) = app.phase { p } else { nil } }())
+        try plantOrphan(vaultDir: project.path)
+        await vault.reload()
+        #expect(vault.orphans?.count == 1)
+        #expect(StorageRules.orphanBanner(vault.orphans!.count) == "1 file in the vault folder is not in the vault.")
+
+        await vault.recoverFiles()
+        #expect(vault.notice?.text == "Added 1 file back to the vault")
+        #expect(vault.notice?.undoStore == .project)
+        #expect(vault.orphans?.count == 0)
+        #expect(vault.items.count == 2)
+        #expect(app.alert == nil)
+    }
+
     @Test func theGlobalVaultIsTheOnlyOneWhenNoProjectIsOpen() async throws {
         let root = try Fixture.root()
         defer { try? FileManager.default.removeItem(at: root) }

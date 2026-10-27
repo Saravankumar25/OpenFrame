@@ -131,6 +131,7 @@ struct IdeaVaultScreen: View {
         VStack(alignment: .leading, spacing: 0) {
             header
             actionBar
+            orphanBanner
             if model.mode == .folder && !model.searching {
                 VaultCrumbs(path: VaultFolders.path(model.folders, to: model.folderCursor)) { model.openFolder($0) }
                     .padding(.horizontal, 24)
@@ -178,6 +179,21 @@ struct IdeaVaultScreen: View {
         .padding(.horizontal, 24)
         .padding(.top, 20)
         .padding(.bottom, 12)
+    }
+
+    /// Files in the vault folder that are in no item: offer to add them back.
+    @ViewBuilder private var orphanBanner: some View {
+        if let o = model.orphans, o.count > 0 {
+            IXBanner(tone: .info, text: Text(StorageRules.orphanBanner(o.count))) {
+                Button("Add Them Back") { Task { await model.recoverFiles() } }
+                    .buttonStyle(.ofProminent)
+                    .disabled(model.recovering)
+                    .accessibilityIdentifier("vault-add-back")
+            }
+            .padding(.horizontal, 24)
+            .padding(.bottom, 8)
+            .accessibilityIdentifier("vault-orphans")
+        }
     }
 
     // MARK: Toolbar

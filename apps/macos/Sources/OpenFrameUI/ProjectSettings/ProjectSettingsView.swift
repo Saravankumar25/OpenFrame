@@ -1,5 +1,5 @@
 // Project Settings: a sheet over the project window with Project settings, Keyboard shortcuts,
-// Templates and Advanced (Windows: workspaces/settings/index.tsx). The app-wide pages (Writing,
+// Templates, Advanced and Storage (Windows: workspaces/settings/index.tsx). The app-wide pages (Writing,
 // Appearance, Offline AI) are in the Settings window (Command+Comma); the button at the bottom
 // opens it.
 
@@ -61,6 +61,7 @@ struct ProjectSettingsView: View {
                 case .offlineAI: AISettingsView()
                 case .advanced: ProjectAdvancedSettingsView()
                 case .appearance: AppearanceSettingsView()
+                case .storage: storagePage
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -78,6 +79,19 @@ struct ProjectSettingsView: View {
         .background(theme["bg"])
         .accessibilityIdentifier("project-settings-sheet")
         .onReceive(NotificationCenter.default.publisher(for: .openFrameCloseProjectSettings)) { _ in dismiss() }
+        // Asked again while open (Move or back up in the General tab): show that page.
+        .onReceive(NotificationCenter.default.publisher(for: .openFrameShowProjectSettings)) { note in
+            if let asked = (note.object as? String).flatMap(ProjectSettingsTab.init(rawValue:)) { tab = asked }
+        }
+    }
+
+    private var storagePage: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            PageHeader("Storage", subtitle: "Where your work is kept on this computer, and how to move, back up or reconnect it.") { EmptyView() }
+                .padding(.horizontal, 20).padding(.top, 16)
+            StoragePanel()
+        }
+        .accessibilityIdentifier("project-settings-storage")
     }
 }
 
@@ -212,6 +226,10 @@ struct ProjectGeneralForm: View {
                 }
                 .controlSize(.small)
                 .accessibilityIdentifier("project-settings-open-location")
+                Button("Move or back up\u{2026}") { ProjectSettingsRouter.open(tab: .storage) }
+                    .buttonStyle(.link)
+                    .controlSize(.small)
+                    .accessibilityIdentifier("project-settings-move-or-back-up")
                 Divider()
                 Text("Created \(Formatting.dateTime(ms: p.createdAt))").font(.caption).foregroundStyle(.secondary)
                 Text("Last changed \(Formatting.dateTime(ms: p.updatedAt))").font(.caption).foregroundStyle(.secondary)

@@ -12,6 +12,9 @@ public enum AppPhase: Equatable {
     case failed(CoreFailure)
     /// An internal build before the team password (ADR-0024).
     case teamGate(TeamGateStatus)
+    /// "Set up your OpenFrame library": a new Mac, or a remembered library that is missing. The
+    /// core refuses everything else until a choice worked (doc 40 section 1).
+    case librarySetup(LibraryStatus)
     case home
     case project(ProjectSummary)
 }
@@ -48,6 +51,12 @@ public final class AppModel {
     public var storeRuntime: StoreRuntime?
     private var eventTask: Task<Void, Never>?
     private let options: CoreStartOptions
+    /// Project and library moves that are running. The core closes the open project and opens it
+    /// again from its new folder; meanwhile the window keeps showing it.
+    public private(set) var relocations = 0
+    /// Moves on with every phase the person asked for, so a late answer about the current project
+    /// never overrides a newer open or close.
+    @ObservationIgnored private var phaseGeneration = 0
 
     public init(options: CoreStartOptions) {
         self.options = options
@@ -89,6 +98,11 @@ public final class AppModel {
 
     private func enterApp() async throws {
         guard let core else { return }
+        let library = try await core.libraryStatus()
+        guard library.state == .ready else {
+            phase = .librarySetup(library)
+            return
+        }
         info = try await core.appInfo()
         await licence.attach(core: core, runtime: storeRuntime)
         if let current = try await core.projectCurrent() {
@@ -96,6 +110,24 @@ public final class AppModel {
         } else {
             phase = .home
         }
+    }
+
+    /// The setup screen's choice worked: go on into the app. Any other answer keeps the screen.
+    public func libraryReady(_ status: LibraryStatus) async {
+        guard status.state == .ready else {
+            phase = .librarySetup(status)
+            return
+        }
+        do {
+            try await enterApp()
+        } catch {
+            phase = .failed(CoreFailure(asCore: error))
+        }
+    }
+
+    /// True in the Mac App Store build (see `StorageRules.isStoreBuild`).
+    public var isStoreBuild: Bool {
+        StorageRules.isStoreBuild(environment: ProcessInfo.processInfo.environment, channel: licence.channel)
     }
 
     /// Reads the app information again (after the person's name was stored on first launch).
@@ -141,6 +173,7 @@ public final class AppModel {
         do {
             let result = try await core.projectCreate(args)
             migratedFrom = nil
+            phaseGeneration += 1
             phase = .project(result.project)
             return true
         } catch {
@@ -154,6 +187,7 @@ public final class AppModel {
         do {
             let result = try await core.projectOpen(OpenProjectArgs(path: path))
             migratedFrom = result.migratedFrom.map { Int($0) }
+            phaseGeneration += 1
             phase = .project(result.project)
             if let offer = result.recovery {
                 alert = .recovery(project: result.project, offer: offer)
@@ -173,6 +207,7 @@ public final class AppModel {
             show("Could not close the project", error)
             return
         }
+        phaseGeneration += 1
         phase = .home
     }
 
@@ -184,6 +219,44 @@ public final class AppModel {
             show("Could not finish the recovery", error)
         }
         alert = nil
+    }
+
+    // MARK: Moves
+
+    /// A project or library move started: its close and reopen do not send the window Home.
+    public func beginRelocation() { relocations += 1 }
+
+    /// The move ended (done, failed or cancelled): show what the core has open now, and have
+    /// every screen read again from the new place.
+    public func endRelocation() async {
+        relocations = max(0, relocations - 1)
+        await showCurrentProject()
+        changes.bumpAll()
+    }
+
+    /// Shows the project the core has open: after a move it is the same project in a new folder.
+    /// Only on Home or in a project; never over the team gate or the setup screen.
+    func showCurrentProject() async {
+        guard let core else { return }
+        switch phase {
+        case .home, .project: break
+        default: return
+        }
+        let mine = phaseGeneration
+        guard let current = try? await core.projectCurrent() else {
+            // Nothing open: a move that could not reopen the project ends on Home.
+            if mine == phaseGeneration, relocations == 0, case .project = phase {
+                phase = .home
+            }
+            return
+        }
+        guard mine == phaseGeneration else { return }
+        switch phase {
+        case .home, .project:
+            if phase != .project(current) { phase = .project(current) }
+        default:
+            break
+        }
     }
 
     // MARK: Errors
@@ -217,9 +290,13 @@ public final class AppModel {
         case .projectOpened:
             // Home lists the recent projects: a project that was just made or opened belongs in it.
             changes.bump(store: .global, tables: ["sys_recent_project"])
+            // A project the core opened by itself (a move reopens it from its new folder) shows
+            // again instead of leaving the window on Home.
+            Task { await showCurrentProject() }
         case .projectClosed:
             changes.bump(store: .global, tables: ["sys_recent_project"])
-            if case .project = phase { phase = .home }
+            // During a move the core closes the project and opens it again from the new place.
+            if relocations == 0, case .project = phase { phase = .home }
         default:
             break
         }

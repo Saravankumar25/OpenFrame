@@ -88,8 +88,10 @@ while IFS=$'\t' read -r name phases timeout ends; do
       HOME="$DATA/home" CFFIXED_USER_HOME="$DATA/home" OPENFRAME_E2E_WORK="$WORK" OPENFRAME_E2E_SCENARIO="$name" \
         OPENFRAME_E2E_PHASE="$p" OPENFRAME_E2E_OUT="$OUT" DYLD_INSERT_LIBRARIES="$DRIVER" "$EXE" >"$OUT/app-$p.log" 2>&1 &
     else
-      OPENFRAME_DATA_ROOT="$DATA" OPENFRAME_E2E_WORK="$WORK" OPENFRAME_E2E_SCENARIO="$name" OPENFRAME_E2E_PHASE="$p" \
-        OPENFRAME_E2E_OUT="$OUT" DYLD_INSERT_LIBRARIES="$DRIVER" "$EXE" >"$OUT/app-$p.log" 2>&1 &
+      # The first-start scenarios begin like a new computer whose library is not chosen yet.
+      LIB=""; [[ "$name" == 71-storage/first-start* ]] && LIB=1
+      OPENFRAME_DATA_ROOT="$DATA" OPENFRAME_LIBRARY_SETUP="$LIB" OPENFRAME_E2E_WORK="$WORK" OPENFRAME_E2E_SCENARIO="$name" \
+        OPENFRAME_E2E_PHASE="$p" OPENFRAME_E2E_OUT="$OUT" DYLD_INSERT_LIBRARIES="$DRIVER" "$EXE" >"$OUT/app-$p.log" 2>&1 &
     fi
     pid=$!
     limit=$(( ${timeout%.*} + 60 )); t=0

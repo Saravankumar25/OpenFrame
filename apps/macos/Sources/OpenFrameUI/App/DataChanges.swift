@@ -24,16 +24,25 @@ public final class DataChanges {
         any += 1
     }
 
+    /// Moves on when every screen must read again; part of every key.
+    private var epoch = 0
+
+    /// Every screen reads again (a project or the vault moved to another folder).
+    func bumpAll() {
+        epoch += 1
+        any += 1
+    }
+
     /// A key that changes whenever any of these project tables change. Use it as a `.task(id:)`.
     public func key(_ tables: [String], store: StoreKind = .project) -> Int {
         let prefix = store == .global ? "global:" : "project:"
-        return tables.reduce(0) { $0 &+ (versions[prefix + $1] ?? 0) }
+        return tables.reduce(epoch) { $0 &+ (versions[prefix + $1] ?? 0) }
     }
 
     /// A key for tables whose names start with any of these prefixes (for example "story_").
     public func key(prefixes: [String], store: StoreKind = .project) -> Int {
         let prefix = store == .global ? "global:" : "project:"
-        return versions.reduce(0) { sum, entry in
+        return versions.reduce(epoch) { sum, entry in
             let name = entry.key.dropFirst(prefix.count)
             guard entry.key.hasPrefix(prefix), prefixes.contains(where: { name.hasPrefix($0) }) else { return sum }
             return sum &+ entry.value

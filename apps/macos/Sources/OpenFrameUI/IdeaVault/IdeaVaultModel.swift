@@ -76,6 +76,9 @@ final class IdeaVaultModel {
     private(set) var trash: [VaultTrashRow] = []
     private(set) var trashLoaded = false
     private(set) var storyTargets: VaultStoryTargets?
+    /// Files in the vault folder that no item uses (copies left by an add that failed).
+    private(set) var orphans: VaultOrphanFiles?
+    private(set) var recovering = false
 
     var selection: Set<String> = []
     var anchor: String?
@@ -222,10 +225,41 @@ final class IdeaVaultModel {
             loadFailure = nil
             let visible = Set(l.map(\.id))
             if !selection.isSubset(of: visible) { selection = selection.intersection(visible) }
+            await loadOrphans()
         } catch {
             guard mine == generation else { return }
             loadFailure = CoreFailure(asCore: error)
             loaded = true
+        }
+    }
+
+    /// The Add Them Back banner. A failure leaves the banner away; the vault itself still shows.
+    func loadOrphans() async {
+        guard let core = app.core else { return }
+        let store = scope
+        let found = try? await core.vaultOrphanFiles(VaultOverviewArgs(store: store))
+        guard store == scope else { return }
+        orphans = found
+    }
+
+    /// Add Them Back: the files become items again, with Undo; files that cannot be read stay.
+    func recoverFiles() async {
+        guard let core = app.core, !recovering else { return }
+        recovering = true
+        defer { recovering = false }
+        let store = scope
+        do {
+            let r = try await core.vaultRecoverFiles(VaultOverviewArgs(store: store))
+            let added = StorageRules.recoverAdded(r, global: false)
+            let failed = StorageRules.recoverFailed(r)
+            if let failed {
+                say([added, failed].compactMap { $0 }.joined(separator: ". "), undo: added != nil ? store : nil)
+            } else if let added {
+                say(added, undo: store)
+            }
+            await reload()
+        } catch {
+            app.show("Could not add the files back", error)
         }
     }
 

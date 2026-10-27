@@ -106,6 +106,7 @@ public struct RootView: View {
         case .starting: "starting"
         case .failed: "failed"
         case .teamGate: "gate"
+        case .librarySetup: "library"
         case .home: "home"
         case let .project(p): "project-\(p.id)"
         }
@@ -122,6 +123,8 @@ public struct RootView: View {
             StartupFailureView(failure: failure)
         case let .teamGate(status):
             TeamGateView(status: status)
+        case let .librarySetup(status):
+            LibrarySetupView(model: LibrarySetupModel(app: model, status: status, storeBuild: model.isStoreBuild))
         case .home:
             // The first-launch welcome fills the window, like the team gate, instead of being a
             // sheet: a sheet that needs a name before it closes would keep macOS from quitting.
