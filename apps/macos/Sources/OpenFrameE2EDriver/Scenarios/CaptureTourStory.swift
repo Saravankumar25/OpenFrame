@@ -180,6 +180,7 @@ extension Scenarios {
             try await ui.capSeed(ctx, order: 3000, importSample: false)
             try await ui.capNav("Story")
             try await ui.wait(id: "story-tabs", timeout: 20)
+            try await ui.capTab("Beat Board")
             await ui.storySetZoom(100)
             await ui.capture("story-board-empty", title: "Beat Board, nothing on it yet", area: A)
             await ui.capMenu(id: "story-add-menu", name: "story-add-menu", title: "Beat Board, the Add menu", area: A, from: "story-board-empty")
@@ -480,6 +481,7 @@ extension Scenarios {
             try await ui.capSeed(ctx, order: 3500)
             try await ui.capNav("Story")
             try await ui.wait(id: "story-tabs", timeout: 20)
+            try await ui.capTab("Beat Board")
 
             // A card on the board with no act, to link to a character later.
             await ui.step("unassigned card") {
@@ -536,9 +538,9 @@ extension Scenarios {
 
             // Relationships.
             await ui.step("map empty") {
-                try await ui.capAct(label: "Open Relationship Map", role: "AXButton")
+                try await ui.capAct(label: "Relationship Map", role: "AXButton")
                 await ui.idle(1.0)
-                await ui.capture("story-relationship-map-empty", title: "Relationship map, no relationships yet", area: A, from: "story-character-detail", via: "Open Relationship Map")
+                await ui.capture("story-relationship-map-empty", title: "Relationship map, no relationships yet", area: A, from: "story-character-detail", via: "Relationship Map")
                 try await ui.storyMapBack()
             }
             await ui.step("add relationship") {
@@ -557,7 +559,7 @@ extension Scenarios {
                 await ui.capture("story-character-relationships", title: "A character with a relationship", area: A, from: "story-add-relationship-filled")
             }
             await ui.step("more relationships") {
-                try await ui.capAct(label: "Open Relationship Map", role: "AXButton")
+                try await ui.capAct(label: "Relationship Map", role: "AXButton")
                 await ui.idle(0.6)
                 for (f, t, r) in [("Meera", "Kiran", "friend of"), ("Tomas", "Meera", "rival of"), ("Devi", "Tomas", "colleague of")] {
                     guard let add = ui.storyMapButtons().last else { throw DriverError("no Add Relationship on the map") }
@@ -567,7 +569,7 @@ extension Scenarios {
                     await ui.capRecover()
                 }
                 await ui.idle(0.8)
-                await ui.capture("story-relationship-map", title: "Relationship map with four characters", area: A, from: "story-character-relationships", via: "Open Relationship Map")
+                await ui.capture("story-relationship-map", title: "Relationship map with four characters", area: A, from: "story-character-relationships", via: "Relationship Map")
                 try await ui.storyMapBack()
             }
 

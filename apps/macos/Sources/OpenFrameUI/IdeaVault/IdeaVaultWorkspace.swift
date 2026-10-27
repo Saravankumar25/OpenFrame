@@ -461,6 +461,7 @@ struct IdeaVaultScreen: View {
                 if notice.action == .openStory {
                     Button("Open Beat Board") {
                         model.dismissNotice()
+                        ProjectIntents.shared.fire(StoryTab.board.showIntent)
                         NotificationCenter.default.post(name: .openFrameShowWorkspace, object: Workspace.story.rawValue)
                     }
                     .buttonStyle(.link)

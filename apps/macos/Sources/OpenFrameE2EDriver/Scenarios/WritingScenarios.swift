@@ -1029,6 +1029,7 @@ extension Scenarios {
         try await ui.createProject(title)
         try await ui.goTo("Story")
         try await ui.wait(id: "story-tabs", timeout: 20)
+        try await Scenarios.segment(ui, group: "story-tabs", "Beat Board")
     }
 
     @MainActor static func addAct(_ ui: UI, _ title: String) async throws {
@@ -1334,6 +1335,7 @@ extension Scenarios {
         case 3:
             try await ui.goTo("Story")
             try await ui.wait(id: "story-tabs", timeout: 20)
+            try await Scenarios.segment(ui, group: "story-tabs", "Beat Board")
             try await addAct(ui, "Act 1")
             try await addSequence(ui, "The return")
             try await addCard(ui, "Bus stop reunion in the rain")
@@ -1446,12 +1448,14 @@ extension Scenarios {
             try await ui.quiet()
         case 12:
             try await ui.goTo("Story")
+            try await Scenarios.segment(ui, group: "story-tabs", "Beat Board")
             try await ui.deleteCard("Bus stop reunion in the rain")
             if ui.shows("Delete this Scene Card?") { try await ui.button("Delete Card") }
             try await ui.waitUntil("the card is gone") { ui.card("Bus stop reunion in the rain") == nil }
             try await ui.projectMenu(["Recently Deleted"])
             try await ui.restore("Bus stop reunion in the rain")
             try await ui.goTo("Story")
+            try await Scenarios.segment(ui, group: "story-tabs", "Beat Board")
             try await ui.waitUntil("the card is back") { ui.card("Bus stop reunion in the rain") != nil }
             try await ui.quiet()
         case 13:
@@ -2061,6 +2065,7 @@ extension Scenarios {
             try ui.expect(ui.vaultCard("Meera finds her own") != nil, "the Vault still has the card")
             try await ui.goTo("Story")
             try await ui.wait(id: "story-tabs", timeout: 20)
+            try await Scenarios.segment(ui, group: "story-tabs", "Beat Board")
             if let t = ui.query(id: "story-parking-toggle").first, t.value == "0" { try await ui.act(t) }
             try await ui.waitUntil("scene card from the idea") { ui.cardLabels().contains("Scene Card: Meera finds her own handwriting on an old envelope.") }
             try await ui.quiet()
@@ -2339,6 +2344,7 @@ extension Scenarios {
             try await ui.startApp(ctx)
             try await ui.createProject("Quiet Keys")
             try await ui.goTo("Story")
+            try await Scenarios.segment(ui, group: "story-tabs", "Beat Board")
             await ui.idle(1.0)
             try await keyboardWalk(ui, "Story")
         },
@@ -2438,6 +2444,7 @@ extension Scenarios {
                 _ = try await ui.editor()
                 try await ui.waitUntil("the screenplay contains the line") { ui.editorText().contains("I was there that night.") }
                 try await ui.goTo("Story")
+                try await Scenarios.segment(ui, group: "story-tabs", "Beat Board")
                 try await ui.waitUntil("the board shows exactly two scene cards") { ui.sceneCards().count == 2 }
                 try await ui.goTo("Call Sheets")
                 try await ui.expectShows("Day 1")
@@ -2764,6 +2771,7 @@ extension Scenarios {
             try await ui.restore("The river carries the boats away")
             try await ui.expectShows("Restored")
             try await ui.goTo("Story")
+            try await Scenarios.segment(ui, group: "story-tabs", "Beat Board")
             try await ui.waitCards(["Boats fold themselves at dawn", "The river carries the boats away"])
             try await ui.quiet()
         },
@@ -2805,6 +2813,7 @@ extension Scenarios {
                 try await ui.createProject("Paper Boats")
                 try await ui.goTo("Story")
                 try await ui.wait(id: "story-tabs", timeout: 20)
+                try await Scenarios.segment(ui, group: "story-tabs", "Beat Board")
                 try await addAct(ui, "Act One")
                 try await addSequence(ui, "Departure")
                 try await addCard(ui, "Boats fold themselves at first light")
@@ -2824,6 +2833,7 @@ extension Scenarios {
                 try await ui.openProject("Paper Boats")
                 try ui.expect(!(await ui.recoveryOffered(within: 1.5)), "no recovery question after a clean close")
                 try await ui.goTo("Story")
+                try await Scenarios.segment(ui, group: "story-tabs", "Beat Board")
                 try await ui.waitCards(["Boats fold themselves at first light", "The river carries the boats away"])
                 try await ui.expectShows("Act Act One \(emDash) Launch")
                 try await ui.tab("Characters")
@@ -2932,6 +2942,7 @@ extension Scenarios {
             try await ui.act(id: "build-confirm", role: "AXButton")
             _ = try await ui.editor()
             try await ui.goTo("Story")
+            try await Scenarios.segment(ui, group: "story-tabs", "Beat Board")
             try await ui.waitSceneCards([cardA, cardB, cardC])
             try await ui.pressCard(cardA)
             ui.holdModifiers([.command])
@@ -2949,6 +2960,7 @@ extension Scenarios {
             try await ui.restore(cardA)
             try await ui.expectShows("Restored")
             try await ui.goTo("Story")
+            try await Scenarios.segment(ui, group: "story-tabs", "Beat Board")
             try await ui.waitSceneCards([cardA, cardB, cardC])
             try await ui.quiet()
         },
@@ -2970,6 +2982,7 @@ extension Scenarios {
                 try await ui.openProject("Monsoon Letters")
                 try ui.expect(!(await ui.recoveryOffered(within: 1.5)), "no recovery question after a clean close")
                 try await ui.goTo("Story")
+                try await Scenarios.segment(ui, group: "story-tabs", "Beat Board")
                 try await ui.waitSceneCards([cardC, cardA, cardB])
                 try await ui.waitUntil("long preview shows") { ui.card(cardA)?.value.contains("The street is flooded") == true }
                 try await ui.pressCard(cardA, count: 2)
@@ -2996,5 +3009,5 @@ extension Scenarios {
             try await ui.button("Cancel")
             try await ui.quiet()
         },
-    ]
+    ] + writingPortScenarios
 }
