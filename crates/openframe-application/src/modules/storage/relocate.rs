@@ -19,15 +19,19 @@ use ts_rs::TS;
 
 use super::vault_archive::check_vault_database;
 use super::{
-    STAGING_MARKER, StorageInfo, StorageTaskStarted, checked_folder, existing_vault, library, tree,
+    ROLLBACK_FAILED, STAGING_MARKER, StagingNote, StorageInfo, StorageTaskStarted, checked_folder,
+    existing_vault, library, tree,
 };
-use crate::core::{AppCore, ProjectSession, TaskHandle};
+use crate::core::{AppCore, ProjectSession, StorageOp, TaskHandle, storage_busy};
 use crate::modules::packages::format::Staging;
 use crate::modules::project;
 
 /// Folders of a project that a move leaves behind: the lock belongs to this location and the
 /// cache is rebuilt on demand.
 const PROJECT_SKIP: &[&str] = &["cache", ".lock"];
+
+/// The vault's safety copies (made before an upgrade) are not copied and not removed by a move.
+const VAULT_SKIP: &[&str] = &["backups"];
 
 #[derive(Debug, Deserialize, TS)]
 #[ts(export)]
@@ -50,7 +54,8 @@ pub struct LocateVaultArgs {
 #[serde(rename_all = "camelCase")]
 pub struct VaultMoveReport {
     pub path: String,
-    /// Set when the old folder could not be removed completely; it is safe to delete by hand.
+    /// Set when the old folder still holds something: the vault's safety backups (never copied,
+    /// never deleted by a move) or a file that could not be removed.
     pub source_left_at: Option<String>,
 }
 
@@ -89,12 +94,12 @@ fn check_destination_free(dest: &Path, allow_empty_folder: bool) -> AppResult<()
     ))
 }
 
-fn staging_for(parent: &Path, name: &OsString) -> Staging {
-    Staging::at(parent.join(format!(
+fn staging_path(parent: &Path, name: &OsString) -> PathBuf {
+    parent.join(format!(
         "{}{STAGING_MARKER}{}",
         name.to_string_lossy(),
         now_ms()
-    )))
+    ))
 }
 
 // ------------------------------------------------------------------ vault.move
@@ -103,6 +108,7 @@ pub(crate) fn start_move_vault(
     core: &AppCore,
     args: MoveToFolderArgs,
 ) -> AppResult<StorageTaskStarted> {
+    let guard = core.begin_storage_op(StorageOp::Vault)?;
     let parent = checked_folder(core, &args.dest_parent)?;
     let vault = existing_vault(core, "move")?;
     let Some(name) = vault.file_name().map(OsString::from) else {
@@ -121,12 +127,18 @@ pub(crate) fn start_move_vault(
     }
     check_destination_free(&dest, true)?;
     // The backups folder (safety copies made before an upgrade) stays behind.
-    tree::ensure_space(&parent, tree::walk(&vault, &["backups"])?.bytes)?;
+    tree::ensure_space(&parent, tree::walk(&vault, VAULT_SKIP)?.bytes)?;
     let task_id = core.spawn_task("storage.vault_move", "Moving the vault", move |core, h| {
+        let _guard = guard;
         let report = move_vault(&core, &vault, &parent, &dest, &name, &h)?;
         serde_json::to_value(&report).map_err(|e| AppError::internal(e.to_string()))
     });
     Ok(StorageTaskStarted { task_id })
+}
+
+/// The undo of a move or a connect did not work. Says where the data is.
+fn rollback_failed(message: String, detail: impl Into<String>) -> AppError {
+    AppError::new(ROLLBACK_FAILED, message).with_detail(detail)
 }
 
 fn move_vault(
@@ -139,13 +151,22 @@ fn move_vault(
 ) -> AppResult<VaultMoveReport> {
     let progress = |f: f64, m: &str| h.progress(f, m);
     let cancelled = || h.is_cancelled();
-    let staging = staging_for(parent, name);
+    let staging_path = staging_path(parent, name);
+    // Declared before the staging folder, so it is dropped after it.
+    let _note = StagingNote::record(core, &staging_path);
+    let staging = Staging::at(staging_path);
     let mut previous: Option<PathBuf> = None;
     progress(0.02, "Closing the vault");
     // Closed and kept closed for the whole copy, so nothing is written to the old files after
     // they were copied.
     let source = core.with_vault_closed(|| {
-        let source = tree::walk(vault, &["backups"])?;
+        // Read again now that nothing can change it: the vault is still where this move planned.
+        if !library::same_place(&core.vault_dir(), vault) {
+            return Err(storage_busy(
+                "Your Global Idea Vault was moved or reconnected while this move was starting. Nothing was changed. Try the move again.",
+            ));
+        }
+        let source = tree::walk(vault, VAULT_SKIP)?;
         fs::create_dir_all(staging.path())?;
         let copied = tree::copy(&source, staging.path(), &progress, &cancelled)?;
         tree::verify(staging.path(), &copied, &progress, &cancelled)?;
@@ -164,31 +185,59 @@ fn move_vault(
             l.vault_dir = (!default).then(|| dest.to_path_buf());
         });
         if let Err(e) = changed {
-            let _ = fs::remove_dir_all(dest);
+            // The places did not change (a failed write leaves them as they were), the old vault
+            // is still live and complete, so the verified copy is not needed.
+            tree::discard(dest);
             return Err(e);
         }
         Ok(source)
     })?;
     progress(0.9, "Opening the vault in its new place");
     if let Err(e) = core.global_store() {
-        let _ = core.with_vault_closed(|| {
-            let _ = core.change_locations(|l| l.vault_dir = previous.clone());
-            let _ = fs::remove_dir_all(dest);
+        // The places go back first; the copy is deleted only after that worked, so the places
+        // never name a folder that is gone.
+        let undone = core.with_vault_closed(|| {
+            core.change_locations(|l| l.vault_dir = previous.clone())
+                .map_err(|r| both_places_error(vault, dest, r.message))?;
+            tree::discard(dest);
             Ok(())
         });
+        if let Err(r) = undone {
+            return Err(if r.code_str() == ROLLBACK_FAILED {
+                r
+            } else {
+                both_places_error(vault, dest, r.message)
+            });
+        }
         return Err(e);
     }
     progress(0.95, "Removing the old folder");
-    let left = !tree::remove_source(vault, &source, &["backups"]);
+    // The safety backups were not copied, so they stay where they are and the folder is reported.
+    let left = !tree::remove_source(vault, &source, &[], VAULT_SKIP);
     Ok(VaultMoveReport {
         path: dest.to_string_lossy().into_owned(),
         source_left_at: left.then(|| vault.to_string_lossy().into_owned()),
     })
 }
 
+/// A moved vault would not open and the places could not be switched back: both folders hold the
+/// vault, and neither is deleted.
+fn both_places_error(old: &Path, new: &Path, detail: String) -> AppError {
+    rollback_failed(
+        format!(
+            "Your Global Idea Vault was copied to “{}” but would not open there, and OpenFrame could not switch back. Your vault is safe in both “{}” and “{}”. Go to Settings > Storage and choose the folder you want.",
+            new.display(),
+            old.display(),
+            new.display()
+        ),
+        detail,
+    )
+}
+
 // ----------------------------------------------------------------- vault.locate
 
 pub(crate) fn locate_vault(core: &AppCore, args: LocateVaultArgs) -> AppResult<StorageInfo> {
+    let _guard = core.begin_storage_op(StorageOp::Vault)?;
     let dir = PathBuf::from(args.dir.trim());
     openframe_security::check_user_path(&dir, openframe_security::NetworkPaths::Refuse)
         .map_err(project::network_or)?;
@@ -226,7 +275,19 @@ pub(crate) fn locate_vault(core: &AppCore, args: LocateVaultArgs) -> AppResult<S
         })?;
         // Opened for real before the change counts; otherwise the old place comes back.
         if let Err(e) = core.global_store() {
-            let _ = core.with_vault_closed(|| core.change_locations(|l| l.vault_dir = previous));
+            // Nothing was copied or deleted; only the place changes back. When even that fails
+            // the person is told where the vault is.
+            let back = core.with_vault_closed(|| core.change_locations(|l| l.vault_dir = previous));
+            if let Err(r) = back {
+                return Err(rollback_failed(
+                    format!(
+                        "OpenFrame could not open the vault in “{}” and could not switch back to your earlier vault folder “{}”. Go to Settings > Storage and choose the vault folder.",
+                        dir.display(),
+                        current.display()
+                    ),
+                    r.message,
+                ));
+            }
             return Err(e);
         }
     }
@@ -241,6 +302,8 @@ pub(crate) fn start_move_project(
     args: MoveToFolderArgs,
 ) -> AppResult<StorageTaskStarted> {
     actor.require(Capability::ManageProject, "move this project")?;
+    // From here until the task ends no project can be opened, created or closed (doc 40 section 5).
+    let guard = core.begin_storage_op(StorageOp::ProjectMove)?;
     let session = core.project()?;
     let root = session.layout.root().to_path_buf();
     let Some(name) = root.file_name().map(OsString::from) else {
@@ -269,6 +332,7 @@ pub(crate) fn start_move_project(
         "storage.project_move",
         "Moving the project",
         move |core, h| {
+            let _guard = guard;
             let report = move_project(&core, &actor, session, &parent, &dest, &name, linked, &h)?;
             serde_json::to_value(&report).map_err(|e| AppError::internal(e.to_string()))
         },
@@ -292,9 +356,9 @@ fn move_project(
     let root = session.layout.root().to_path_buf();
     let id = session.project_id();
     // Back to where it was, whatever went wrong. A failure here is logged: the original error
-    // is the one the person needs to see.
+    // is the one the person needs to see. (Not the guarded open: this task holds the guard.)
     let reopen_old = || {
-        if let Err(e) = project::open_at(core, actor, &root) {
+        if let Err(e) = project::open_at_unguarded(core, actor, &root) {
             tracing::error!(
                 code = e.code_str(),
                 "the project could not be reopened after a failed move"
@@ -315,17 +379,18 @@ fn move_project(
         if std::time::Instant::now() >= give_up {
             drop(session);
             reopen_old();
-            return Err(AppError::new(
-                "storage.busy",
+            return Err(storage_busy(
                 "The project is in use right now. Wait a moment and try again. Nothing was moved.",
-            )
-            .retryable());
+            ));
         }
         std::thread::sleep(std::time::Duration::from_millis(50));
     }
     drop(session);
 
-    let staging = staging_for(parent, name);
+    let staging_path = staging_path(parent, name);
+    // Declared before the staging folder, so it is dropped after it.
+    let _note = StagingNote::record(core, &staging_path);
+    let staging = Staging::at(staging_path);
     let copied = (|| -> AppResult<tree::Tree> {
         let source = tree::walk(&root, PROJECT_SKIP)?;
         fs::create_dir_all(staging.path())?;
@@ -338,7 +403,8 @@ fn move_project(
         check_destination_free(dest, false)?;
         fs::rename(staging.path(), dest)?;
         if let Err(e) = set_recent_path(core, &id, dest) {
-            let _ = fs::remove_dir_all(dest);
+            // Recent Projects still names the old folder, which is complete.
+            tree::discard(dest);
             return Err(e);
         }
         Ok(source)
@@ -352,19 +418,57 @@ fn move_project(
         }
     };
     progress(0.92, "Opening the project in its new place");
-    if let Err(e) = project::open_at(core, actor, dest) {
-        let _ = set_recent_path(core, &id, &root);
-        let _ = fs::remove_dir_all(dest);
+    // The old folder is deleted only after the session is proven to be on the new one.
+    let opened =
+        project::open_at_unguarded(core, actor, dest).and_then(|_| confirm_open_at(core, dest));
+    if let Err(e) = opened {
+        // Whatever opened at the new place is closed first, so nothing is deleted under it.
+        if core
+            .project_opt()
+            .is_some_and(|s| library::same_place(s.layout.root(), dest))
+            && let Err(c) = project::close_current(core)
+        {
+            tracing::warn!(code = c.code_str(), "the project did not close cleanly");
+        }
+        let recent_back = set_recent_path(core, &id, &root);
         reopen_old();
-        return Err(e);
+        let on_old = core
+            .project_opt()
+            .is_some_and(|s| library::same_place(s.layout.root(), &root));
+        // The copy goes only when Recent Projects name the old folder again (set back, or set by
+        // opening it): otherwise the copy is the one thing the list points at.
+        if recent_back.is_ok() || on_old {
+            tree::discard(dest);
+            return Err(e);
+        }
+        return Err(rollback_failed(
+            format!(
+                "Your project was copied to “{}” but would not open there, and OpenFrame could not switch back. Your project is safe in both “{}” and “{}”. Use Open Project to choose the one you want.",
+                dest.display(),
+                root.display(),
+                dest.display()
+            ),
+            e.message,
+        ));
     }
     progress(0.96, "Removing the old folder");
-    let left = !tree::remove_source(&root, &source, PROJECT_SKIP);
+    let left = !tree::remove_source(&root, &source, PROJECT_SKIP, &[]);
     Ok(ProjectMoveReport {
         path: dest.to_string_lossy().into_owned(),
         linked_files,
         source_left_at: left.then(|| root.to_string_lossy().into_owned()),
     })
+}
+
+/// The open project is the one at the new place. Opening a project whose id is already open does
+/// nothing, so a session that stayed on the old folder would look like a success.
+fn confirm_open_at(core: &AppCore, dest: &Path) -> AppResult<()> {
+    match core.project_opt() {
+        Some(s) if library::same_place(s.layout.root(), dest) => Ok(()),
+        _ => Err(storage_busy(
+            "The project did not open in its new place, so the old folder was kept. Nothing was lost. Try the move again.",
+        )),
+    }
 }
 
 /// The copy is a project: its manifest and its database both carry the same identity, and the
@@ -400,4 +504,39 @@ fn set_recent_path(core: &AppCore, project_id: &str, path: &Path) -> AppResult<(
         )?;
         Ok(())
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use std::sync::Arc;
+
+    use serde_json::json;
+
+    use super::*;
+    use crate::core::AppConfig;
+
+    #[test]
+    fn a_session_that_stayed_on_the_old_folder_is_not_a_finished_move() {
+        let dir = tempfile::tempdir().unwrap();
+        let core = AppCore::new(
+            AppConfig::isolated(dir.path()),
+            Arc::new(crate::events::NullSink),
+        )
+        .unwrap();
+        let actor = core.local_actor();
+        let name =
+            confirm_open_at(&core, &dir.path().join("elsewhere")).expect_err("no project is open");
+        assert_eq!(name.code_str(), "storage.busy");
+        core.dispatch(
+            &actor,
+            "project.create",
+            json!({ "title": "Salt Road", "projectType": "Feature Film" }),
+        )
+        .unwrap();
+        let root = core.project().unwrap().layout.root().to_path_buf();
+        // Opening the same project at another path is a no-op: the session is still on `root`.
+        let elsewhere = dir.path().join("elsewhere").join("Salt Road.openframe");
+        assert!(confirm_open_at(&core, &elsewhere).is_err());
+        confirm_open_at(&core, &root).expect("the session is on the folder it was asked about");
+    }
 }

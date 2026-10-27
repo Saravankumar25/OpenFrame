@@ -324,9 +324,37 @@ pub(crate) struct Locations {
     pub(crate) vault_dir: Option<PathBuf>,
 }
 
+/// What the one running storage task is doing (doc 40 section 5).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum StorageOp {
+    /// A task on the Global Idea Vault: backup, package, restore, move, or connecting a folder.
+    Vault,
+    /// Moving the open project. While it runs, no project can be opened, created or closed.
+    ProjectMove,
+}
+
+/// Holds the storage-task slot until dropped, on success, error or panic alike.
+pub(crate) struct StorageGuard {
+    slot: Arc<Mutex<Option<StorageOp>>>,
+}
+
+impl Drop for StorageGuard {
+    fn drop(&mut self) {
+        *self.slot.lock() = None;
+    }
+}
+
+/// How long a call that needs the vault waits while it is closed for a move or a restore.
+const VAULT_WAIT: std::time::Duration = std::time::Duration::from_secs(2);
+
 pub struct AppCore {
     pub config: AppConfig,
     locations: RwLock<Locations>,
+    /// The library file was there at start but could not be trusted. It is not rewritten until
+    /// the person changes a place on purpose (doc 40 section 2).
+    library_unusable: AtomicBool,
+    /// The one storage task that runs at a time (a second one is refused with `storage.busy`).
+    storage_op: Arc<Mutex<Option<StorageOp>>>,
     app_db: Mutex<Connection>,
     project: RwLock<Option<Arc<ProjectSession>>>,
     global: Mutex<Option<Arc<Store>>>,
@@ -364,10 +392,21 @@ impl AppCore {
         // Cover photos no project row names (a crash between the file and the row) are removed.
         crate::modules::project_cover::sweep(&conn, &config.app_data_dir);
         // A person who comes back after an app data reset keeps their identity and chosen folders.
-        let library = config
+        let (library, library_unusable) = match config
             .library_file
             .as_deref()
-            .and_then(|file| library::read(file, &config.app_data_dir));
+            .map(|file| (file, library::read(file, &config.app_data_dir)))
+        {
+            Some((_, library::Read::Valid(l))) => (Some(l), false),
+            Some((file, library::Read::Unusable)) => {
+                // Never trusted and never overwritten: keep a copy, start with the defaults.
+                if library::preserve_unusable(file).is_some() {
+                    tracing::warn!("the unusable library file was copied aside");
+                }
+                (None, true)
+            }
+            _ => (None, false),
+        };
         let profile = ensure_profile(&conn, library.as_ref())?;
         let locations = Locations {
             projects_dir: library.as_ref().and_then(|l| l.projects_dir.clone()),
@@ -387,6 +426,8 @@ impl AppCore {
             global_save: Arc::new(SaveTracker::new(Arc::new(crate::events::NullSink))),
             config,
             locations: RwLock::new(locations),
+            library_unusable: AtomicBool::new(library_unusable),
+            storage_op: Arc::new(Mutex::new(None)),
             app_db: Mutex::new(conn),
             project: RwLock::new(None),
             global: Mutex::new(None),
@@ -436,7 +477,15 @@ impl AppCore {
         let mut locations = self.locations.write();
         let mut next = locations.clone();
         change(&mut next);
+        let unusable = self.library_unusable.load(Ordering::SeqCst);
+        if unusable && let Some(file) = &self.config.library_file {
+            // A copy was made at start; make sure one exists before the file is replaced.
+            let _ = library::preserve_unusable(file);
+        }
         self.write_library(&next)?;
+        if unusable {
+            self.library_unusable.store(false, Ordering::SeqCst);
+        }
         *locations = next;
         Ok(())
     }
@@ -458,6 +507,9 @@ impl AppCore {
     /// Keep the library file current (start, name change). A failure is logged and never stops
     /// the app: the file is a safety net, not the source of truth while `app.sqlite` is there.
     fn write_library_best_effort(&self) {
+        if self.library_unusable.load(Ordering::SeqCst) {
+            return;
+        }
         let locations = self.locations.read().clone();
         if let Err(e) = self.write_library(&locations) {
             tracing::warn!(code = e.code_str(), "the library file could not be written");
@@ -550,7 +602,11 @@ impl AppCore {
 
     /// The Global Idea Vault store, opened lazily.
     pub fn global_store(&self) -> AppResult<Arc<Store>> {
-        let mut g = self.global.lock();
+        // A move or a restore keeps the vault closed (and this lock held) for the whole copy. A
+        // query that arrives then gets a plain answer after a moment, instead of a frozen screen.
+        let mut g = self.global.try_lock_for(VAULT_WAIT).ok_or_else(|| {
+            storage_busy("The Global Idea Vault is being moved or restored. Try again in a moment.")
+        })?;
         if let Some(s) = g.as_ref() {
             return Ok(s.clone());
         }
@@ -599,6 +655,34 @@ impl AppCore {
         }
     }
 
+    /// Take the slot for a storage task (vault backup, restore, move, locate, or a project move).
+    /// Only one runs at a time: a second start is refused with `storage.busy` and nothing changes.
+    /// The slot is freed when the guard drops, so an error or a panic in the task frees it too.
+    pub(crate) fn begin_storage_op(&self, op: StorageOp) -> AppResult<StorageGuard> {
+        let mut slot = self.storage_op.lock();
+        if slot.is_some() {
+            return Err(storage_busy(
+                "Another storage task is still running. Wait for it to finish, then try again. Nothing was changed.",
+            ));
+        }
+        *slot = Some(op);
+        Ok(StorageGuard {
+            slot: self.storage_op.clone(),
+        })
+    }
+
+    /// Opening, creating or closing a project is refused while the open project is being moved:
+    /// the move closes it, copies it and reopens it, and another open in between could leave the
+    /// session on the old folder just before it is deleted.
+    pub(crate) fn refuse_during_project_move(&self) -> AppResult<()> {
+        if *self.storage_op.lock() == Some(StorageOp::ProjectMove) {
+            return Err(storage_busy(
+                "The project is being moved. Wait for the move to finish, then try again.",
+            ));
+        }
+        Ok(())
+    }
+
     /// Close the Global Idea Vault and keep it closed while `f` runs. Whatever needs the vault
     /// meanwhile waits for `f` to finish, so a move or a restore never loses a change made during
     /// the copy. `f` must not use the vault store; open it again after this returns. Fails with
@@ -642,6 +726,7 @@ impl AppCore {
             return;
         }
         let vault = self.vault_dir();
+        storage::remove_noted_staging(&self.config.app_data_dir);
         storage::remove_staging_leftovers(&[
             &self.projects_dir(),
             vault.parent().unwrap_or(&vault),
@@ -803,6 +888,11 @@ impl AppCore {
             flag.store(true, Ordering::SeqCst);
         }
     }
+}
+
+/// A storage task cannot start or a call cannot be served right now. Retryable; nothing changed.
+pub(crate) fn storage_busy(message: &str) -> AppError {
+    AppError::new("storage.busy", message).retryable()
 }
 
 /// The vault folder the library file names has no vault in it: a drive that is not connected or

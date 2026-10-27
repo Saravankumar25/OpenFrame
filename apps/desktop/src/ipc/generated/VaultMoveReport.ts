@@ -2,6 +2,7 @@
 
 export type VaultMoveReport = { path: string, 
 /**
- * Set when the old folder could not be removed completely; it is safe to delete by hand.
+ * Set when the old folder still holds something: the vault's safety backups (never copied,
+ * never deleted by a move) or a file that could not be removed.
  */
 sourceLeftAt: string | null, };

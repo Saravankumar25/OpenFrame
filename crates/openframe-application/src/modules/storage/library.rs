@@ -2,8 +2,9 @@
 //! places they chose, kept next to their projects so an app data reset or a reinstall does not
 //! make them a stranger to their own private notes.
 //!
-//! Reading never fails the app: a file that is missing, damaged or wrong is ignored (logged) and
-//! the app starts as it would without one.
+//! Reading never fails the app: a file that is missing, damaged or wrong is not trusted (logged)
+//! and the app starts as it would without one. A file that is there but unusable is never
+//! overwritten at start (see [`Read`]).
 
 use std::path::{Path, PathBuf};
 
@@ -15,6 +16,8 @@ const FORMAT: u32 = 1;
 /// The file holds a few hundred bytes; anything bigger is not ours.
 const MAX_BYTES: u64 = 64 * 1024;
 const MAX_NAME_CHARS: usize = 200;
+/// An unusable file is kept beside the original as `library.json.unreadable-<ms>`.
+const UNREADABLE_MARKER: &str = ".unreadable-";
 
 /// What the file holds on disk, in the order and spelling of the contract.
 #[derive(Debug, Serialize, Deserialize)]
@@ -41,35 +44,81 @@ pub struct Library {
     pub vault_dir: Option<PathBuf>,
 }
 
-/// Read and validate the file at `path`. `None` when there is no usable file. A folder that is
-/// invalid is dropped on its own (the identity stays); an invalid identity drops the whole file.
-pub fn read(path: &Path, app_data_dir: &Path) -> Option<Library> {
+/// What reading the library file found. `Unusable` is not the same as `Absent`: a file that is
+/// there but cannot be trusted (a read error that may pass, a half-written file, a newer format)
+/// may still hold the person's chosen folders, so it must never be overwritten with defaults.
+#[derive(Debug, PartialEq, Eq)]
+pub enum Read {
+    Absent,
+    Valid(Library),
+    Unusable,
+}
+
+/// Read and validate the file at `path`. A folder that is invalid is dropped on its own (the
+/// identity stays); an invalid identity makes the whole file `Unusable`.
+pub fn read(path: &Path, app_data_dir: &Path) -> Read {
     let meta = match std::fs::metadata(path) {
         Ok(m) => m,
-        Err(e) if e.kind() == std::io::ErrorKind::NotFound => return None,
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Read::Absent,
         Err(e) => {
-            tracing::warn!(error = %e, "the library file could not be read and is ignored");
-            return None;
+            tracing::warn!(error = %e, "the library file could not be read and is left as it is");
+            return Read::Unusable;
         }
     };
     if meta.len() > MAX_BYTES {
-        tracing::warn!("the library file is too large and is ignored");
-        return None;
+        tracing::warn!("the library file is too large and is left as it is");
+        return Read::Unusable;
     }
     let text = match std::fs::read_to_string(path) {
         Ok(t) => t,
         Err(e) => {
-            tracing::warn!(error = %e, "the library file could not be read and is ignored");
-            return None;
+            tracing::warn!(error = %e, "the library file could not be read and is left as it is");
+            return Read::Unusable;
         }
     };
     match parse(&text, app_data_dir) {
-        Ok(library) => Some(library),
+        Ok(library) => Read::Valid(library),
         Err(why) => {
-            tracing::warn!(reason = why, "the library file is not valid and is ignored");
-            None
+            tracing::warn!(
+                reason = why,
+                "the library file is not valid and is left as it is"
+            );
+            Read::Unusable
         }
     }
+}
+
+/// Copy an unusable library file to `library.json.unreadable-<ms>` beside it, so whatever it
+/// held can be recovered by hand. Best effort. A file over 1 MB is not ours and is not copied. A
+/// copy that already holds the same bytes is reused, so a file that stays unusable does not add
+/// a copy at every start.
+pub fn preserve_unusable(path: &Path) -> Option<PathBuf> {
+    let bytes = match std::fs::metadata(path) {
+        Ok(m) if m.len() <= 1 << 20 => std::fs::read(path).ok()?,
+        _ => return None,
+    };
+    let dir = path.parent()?;
+    let prefix = format!("{}{UNREADABLE_MARKER}", path.file_name()?.to_string_lossy());
+    for entry in std::fs::read_dir(dir).ok()?.flatten() {
+        if entry.file_name().to_string_lossy().starts_with(&prefix)
+            && std::fs::read(entry.path()).is_ok_and(|b| b == bytes)
+        {
+            return Some(entry.path());
+        }
+    }
+    let stamp = openframe_domain::now_ms();
+    for n in 0..100 {
+        let copy = dir.join(format!("{prefix}{}", stamp + n));
+        let created = std::fs::OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .open(&copy);
+        if let Ok(mut f) = created {
+            use std::io::Write;
+            return f.write_all(&bytes).ok().map(|()| copy);
+        }
+    }
+    None
 }
 
 /// Parse and validate the text of a library file. The error is a short reason for the log.
@@ -250,10 +299,51 @@ mod tests {
         let file = dir.path().join("sub").join(LIBRARY_FILE_NAME);
         let films = dir.path().join("Films");
         write(&file, ID, "Meera", Some(&films), None).unwrap();
-        let lib = read(&file, &app_data()).unwrap();
+        let Read::Valid(lib) = read(&file, &app_data()) else {
+            panic!("the file reads back");
+        };
         assert_eq!(lib.user_id, ID);
         assert_eq!(lib.projects_dir, Some(films));
         assert_eq!(lib.vault_dir, None);
-        assert!(read(&dir.path().join("none.json"), &app_data()).is_none());
+        assert_eq!(
+            read(&dir.path().join("none.json"), &app_data()),
+            Read::Absent
+        );
+    }
+
+    #[test]
+    fn a_file_that_is_there_but_cannot_be_trusted_is_unusable_not_absent() {
+        let dir = tempfile::tempdir().unwrap();
+        let file = dir.path().join(LIBRARY_FILE_NAME);
+        for bad in [
+            text("").replace("\"format\": 1", "\"format\": 2"),
+            text("")[..30].to_string(),
+            "x".repeat(70_000),
+        ] {
+            std::fs::write(&file, &bad).unwrap();
+            assert_eq!(read(&file, &app_data()), Read::Unusable);
+        }
+        // A folder where the file should be is a read error, not a missing file.
+        let as_folder = dir.path().join("folder");
+        std::fs::create_dir(&as_folder).unwrap();
+        assert_eq!(read(&as_folder, &app_data()), Read::Unusable);
+    }
+
+    #[test]
+    fn an_unusable_file_is_copied_aside_once_per_content() {
+        let dir = tempfile::tempdir().unwrap();
+        let file = dir.path().join(LIBRARY_FILE_NAME);
+        std::fs::write(&file, b"{ half a file").unwrap();
+        let first = preserve_unusable(&file).expect("copied");
+        assert_eq!(std::fs::read(&first).unwrap(), b"{ half a file");
+        assert_eq!(
+            preserve_unusable(&file),
+            Some(first.clone()),
+            "no second copy"
+        );
+        std::fs::write(&file, b"{ another").unwrap();
+        let second = preserve_unusable(&file).expect("a different content is kept too");
+        assert_ne!(second, first);
+        assert_eq!(std::fs::read(&first).unwrap(), b"{ half a file");
     }
 }

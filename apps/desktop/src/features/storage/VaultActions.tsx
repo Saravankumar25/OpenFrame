@@ -113,7 +113,7 @@ export function VaultActions({ info }: { info: StorageInfo }) {
         return (
           <>
             The vault is now at {rep?.path ?? target}.
-            {rep?.sourceLeftAt && ` Some files could not be removed from ${rep.sourceLeftAt}; you can delete that folder yourself.`}
+            {rep?.sourceLeftAt && ` The old folder ${rep.sourceLeftAt} was kept: it holds your safety backups, or files that could not be removed. Delete it yourself when you no longer need them.`}
           </>
         );
       },

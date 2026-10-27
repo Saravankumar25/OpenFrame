@@ -719,6 +719,8 @@ fn summary_from(c: &Connection, path: &str) -> AppResult<ProjectSummary> {
 }
 
 fn create(core: &AppCore, actor: &Actor, args: CreateProjectArgs) -> AppResult<OpenProjectResult> {
+    // Before a folder is made that could not be opened.
+    core.refuse_during_project_move()?;
     let title = required_text(&args.title, "Title", 200)?;
     let language = optional_text(args.language, "Language", 80)?;
     let genre = optional_text(args.genre, "Genre", 80)?;
@@ -800,8 +802,19 @@ fn network_location_error() -> AppError {
     )
 }
 
-/// Open a project folder (FSD §4, Release/Migration: safety backup before migration).
-pub fn open_at(core: &AppCore, _actor: &Actor, root: &Path) -> AppResult<OpenProjectResult> {
+/// Open a project folder (FSD §4, Release/Migration: safety backup before migration). Refused
+/// while the open project is being moved.
+pub fn open_at(core: &AppCore, actor: &Actor, root: &Path) -> AppResult<OpenProjectResult> {
+    core.refuse_during_project_move()?;
+    open_at_unguarded(core, actor, root)
+}
+
+/// `open_at` for the project move itself, which holds the storage guard it would otherwise meet.
+pub(crate) fn open_at_unguarded(
+    core: &AppCore,
+    _actor: &Actor,
+    root: &Path,
+) -> AppResult<OpenProjectResult> {
     // Syntax first: never probe a device, share or reserved name (PATH-03).
     if pf::is_network_path(root) {
         return Err(network_location_error());
@@ -989,6 +1002,7 @@ pub fn close_current(core: &AppCore) -> AppResult<()> {
 }
 
 fn close(core: &AppCore, _a: &Actor, _: Empty) -> AppResult<()> {
+    core.refuse_during_project_move()?;
     close_current(core)
 }
 

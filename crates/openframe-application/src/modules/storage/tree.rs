@@ -6,8 +6,10 @@ use std::fs;
 use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
 
-use openframe_domain::{AppError, AppResult};
+use openframe_domain::{AppError, AppResult, now_ms};
 use openframe_security::sha256_file;
+
+use super::STAGING_MARKER;
 
 /// More files than this in one move is not a vault or a project; stop instead of running for hours.
 const MAX_FILES: usize = 500_000;
@@ -153,21 +155,27 @@ pub(super) fn verify(
     Ok(())
 }
 
-/// Remove the source after a verified move: the files that were copied, the named top-level
-/// leftovers (`extra`, such as rebuildable caches), then every folder that is empty by now. A
-/// folder that still holds something OpenFrame did not copy is left as it is. Returns true when
-/// the whole source folder is gone.
-pub(super) fn remove_source(root: &Path, tree: &Tree, extra: &[&str]) -> bool {
+/// Remove the source after a verified move: the files that were copied, the top-level names in
+/// `discard` (rebuildable leftovers such as a cache, deleted whole), then every folder that is
+/// empty by now. Anything else stays: the top-level names in `kept` were deliberately not copied
+/// (a vault's safety backups) and are only removed when they are already empty. A folder that
+/// still holds something OpenFrame did not copy is left as it is. Returns true when the whole
+/// source folder is gone.
+pub(super) fn remove_source(root: &Path, tree: &Tree, discard: &[&str], kept: &[&str]) -> bool {
     for file in &tree.files {
         let _ = fs::remove_file(&file.path);
     }
-    for name in extra {
+    for name in discard {
         let path = root.join(name);
         if fs::symlink_metadata(&path).is_ok_and(|m| m.is_dir()) {
             let _ = fs::remove_dir_all(&path);
         } else {
             let _ = fs::remove_file(&path);
         }
+    }
+    for name in kept {
+        // `remove_dir` only succeeds on an empty folder, so a safety backup is never deleted.
+        let _ = fs::remove_dir(root.join(name));
     }
     // Deepest first; `remove_dir` only succeeds on an empty folder.
     let mut dirs: Vec<&String> = tree.dirs.iter().collect();
@@ -176,6 +184,34 @@ pub(super) fn remove_source(root: &Path, tree: &Tree, extra: &[&str]) -> bool {
         let _ = fs::remove_dir(root.join(dir));
     }
     fs::remove_dir(root).is_ok()
+}
+
+/// `<folder name>.openframe-staging-<ms>` beside `dir`, a name that does not exist yet. Start
+/// removes folders with this name (doc 40 section 5).
+pub(super) fn aside_name(dir: &Path) -> PathBuf {
+    let name = dir.file_name().unwrap_or_default().to_string_lossy();
+    let parent = dir.parent().unwrap_or(Path::new(""));
+    let mut stamp = now_ms();
+    loop {
+        let candidate = parent.join(format!("{name}{STAGING_MARKER}{stamp}"));
+        if !candidate.exists() {
+            return candidate;
+        }
+        stamp += 1;
+    }
+}
+
+/// Delete a folder that is not wanted any more (a verified copy whose switch was undone). It is
+/// renamed to a staging name first, so a delete that stops half way never leaves a half folder
+/// under the real name. Best effort: start removes what is left.
+pub(super) fn discard(dir: &Path) {
+    let aside = aside_name(dir);
+    let target = if fs::rename(dir, &aside).is_ok() {
+        aside
+    } else {
+        dir.to_path_buf()
+    };
+    let _ = fs::remove_dir_all(target);
 }
 
 /// Refuse a move that would run the destination drive out of space half way.

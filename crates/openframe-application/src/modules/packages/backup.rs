@@ -862,6 +862,8 @@ pub(crate) fn start_import_project(
     actor: &Actor,
     args: PackageImportProjectArgs,
 ) -> AppResult<PackageTaskStarted> {
+    // The import opens the project it brings in, which a project move does not allow meanwhile.
+    core.refuse_during_project_move()?;
     let path = PathBuf::from(args.path.trim());
     // Validate structure, version and metadata synchronously so the user gets
     // an immediate, precise answer; the heavy extraction runs in the task.

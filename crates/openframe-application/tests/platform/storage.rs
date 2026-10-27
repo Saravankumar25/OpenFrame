@@ -127,9 +127,69 @@ fn an_invalid_library_file_is_ignored_never_fatal() {
         let user = env.core.profile().user_id;
         assert_ne!(user, OTHER_ID);
         assert!(uuid_like(&user), "a fresh, valid id: {user}");
-        // The damaged file was replaced by a good one.
-        let text = library_text(env.dir.path());
-        assert!(text.contains(&user), "{text}");
+        // The file is not trusted, and not overwritten either: it is kept as it was, with a copy
+        // beside it.
+        assert_eq!(library_text(env.dir.path()), bad);
+        let asides = unreadable_copies(env.dir.path());
+        assert_eq!(asides.len(), 1, "{asides:?}");
+        assert_eq!(fs::read_to_string(&asides[0]).unwrap(), bad);
+    }
+}
+
+fn unreadable_copies(root: &Path) -> Vec<PathBuf> {
+    fs::read_dir(root)
+        .unwrap()
+        .flatten()
+        .map(|e| e.path())
+        .filter(|p| {
+            p.file_name()
+                .is_some_and(|n| n.to_string_lossy().starts_with("library.json.unreadable-"))
+        })
+        .collect()
+}
+
+/// A file that is there but cannot be read as ours (a newer format, a half-written file) may
+/// still hold the person's chosen folders. Start never replaces it with defaults.
+#[test]
+fn a_library_file_that_cannot_be_trusted_is_not_overwritten_at_start() {
+    let drive = tempfile::tempdir().unwrap();
+    let chosen = drive.path().join("Vault");
+    let newer = format!(
+        r#"{{ "format": 2, "userId": "{OTHER_ID}", "displayName": "Meera", "vaultDir": {}, "updatedAt": 1 }}"#,
+        serde_json::to_string(&chosen.to_string_lossy()).unwrap()
+    );
+    let truncated = newer[..newer.len() - 25].to_string();
+    for bad in [newer, truncated] {
+        let dir = tempfile::tempdir().unwrap();
+        let file = dir.path().join("library.json");
+        fs::write(&file, &bad).unwrap();
+        let env = start_again(dir);
+        env.core.startup_maintenance();
+        env.ok("app.set_display_name", json!({ "displayName": "Asha" }));
+        assert_eq!(library_text(env.dir.path()), bad, "left exactly as it was");
+        let asides = unreadable_copies(env.dir.path());
+        assert_eq!(asides.len(), 1, "{asides:?}");
+        assert_eq!(fs::read_to_string(&asides[0]).unwrap(), bad);
+        // The untrusted folder is not used.
+        assert!(!paths_equal(
+            env.core.vault_dir().to_str().unwrap(),
+            &chosen
+        ));
+
+        // A place the person changes on purpose is written, and the copy stays.
+        let films = env.dir.path().join("Films");
+        fs::create_dir_all(&films).unwrap();
+        env.ok("storage.set_projects_dir", json!({ "path": text(&films) }));
+        let written = library_text(env.dir.path());
+        assert!(
+            written.contains("\"format\": 1") && written.contains("Films"),
+            "{written}"
+        );
+        assert_eq!(unreadable_copies(env.dir.path()), asides);
+        assert_eq!(fs::read_to_string(&asides[0]).unwrap(), bad);
+        // And it is the normal file from now on: a name change is written too.
+        env.ok("app.set_display_name", json!({ "displayName": "Asha" }));
+        assert!(library_text(env.dir.path()).contains("Asha"));
     }
 }
 
@@ -577,6 +637,44 @@ fn staging_folders_from_an_interrupted_move_are_removed_at_start() {
     assert!(!stale_project.exists());
     assert!(not_ours.exists(), "only names ending in digits are ours");
     assert!(ordinary.exists());
+}
+
+const STAGING_NOTE: &str = "storage-staging.txt";
+
+/// A move to a folder that start does not search leaves its half copy findable: the running task
+/// notes its staging folder in the app data, and start removes what the note names.
+#[test]
+fn the_staging_folder_of_a_crashed_move_is_found_through_its_note() {
+    let env = TestEnv::new();
+    let note = env.core.config.app_data_dir.join(STAGING_NOTE);
+    let drive = root(&env).join("drive-d");
+    let half = drive.join("global-vault.openframe-staging-1793000000000");
+    let theirs = drive.join("Mine");
+    for d in [&half, &theirs] {
+        fs::create_dir_all(d.join("assets")).unwrap();
+        fs::write(d.join("assets").join("x.bin"), b"x").unwrap();
+    }
+    fs::write(&note, half.to_string_lossy().as_bytes()).unwrap();
+    env.core.startup_maintenance();
+    assert!(!half.exists(), "the half copy is removed");
+    assert!(!note.exists());
+    assert!(theirs.exists());
+
+    // A note that names a folder that is not a staging folder deletes nothing.
+    fs::write(&note, theirs.to_string_lossy().as_bytes()).unwrap();
+    env.core.startup_maintenance();
+    assert!(theirs.join("assets").join("x.bin").is_file());
+    assert!(!note.exists());
+
+    // A finished operation leaves no note: moves, a restore, a failed restore.
+    add_note(&env, "ALPHA");
+    let started = env.ok("vault.move", json!({ "destParent": text(&drive) }));
+    finish(&env, &started).unwrap();
+    assert!(!note.exists(), "no note after a move");
+    let (path, _) = back_up(&env, "first");
+    let started = env.ok("vault.restore_backup", json!({ "path": path }));
+    finish(&env, &started).unwrap();
+    assert!(!note.exists(), "no note after a restore");
 }
 
 // ====================================================== vault files and moves
@@ -1106,6 +1204,40 @@ fn moving_the_vault_switches_the_app_and_removes_the_old_folder() {
     assert_eq!(bodies(&again), vec!["ALPHA".to_string()]);
 }
 
+/// The safety copies made before an upgrade are not copied, and a move never deletes them.
+#[test]
+fn a_vault_move_leaves_the_safety_backups_where_they_are_and_says_so() {
+    let env = TestEnv::new();
+    add_note(&env, "ALPHA");
+    let old = env.core.vault_dir();
+    fs::create_dir_all(old.join("backups").join("before-upgrade")).unwrap();
+    let backup = old
+        .join("backups")
+        .join("before-upgrade")
+        .join("vault-v1.sqlite");
+    fs::write(&backup, b"safety copy").unwrap();
+    let drive = root(&env).join("drive-d");
+    fs::create_dir_all(&drive).unwrap();
+
+    let started = env.ok("vault.move", json!({ "destParent": text(&drive) }));
+    let done = finish(&env, &started).expect("the move finishes");
+
+    assert_eq!(
+        fs::read(&backup).unwrap(),
+        b"safety copy",
+        "the backup is still there"
+    );
+    assert!(paths_equal(
+        done["sourceLeftAt"].as_str().expect("reported"),
+        &old
+    ));
+    let new = drive.join("global-vault");
+    assert!(!new.join("backups").exists(), "the backups were not copied");
+    assert!(!old.join("vault.sqlite").exists(), "the vault itself moved");
+    assert!(paths_equal(env.core.vault_dir().to_str().unwrap(), &new));
+    assert_eq!(bodies(&env), vec!["ALPHA".to_string()]);
+}
+
 #[test]
 fn a_vault_move_refuses_places_that_would_lose_or_mix_data() {
     let env = TestEnv::new();
@@ -1376,6 +1508,11 @@ fn moving_the_open_project_keeps_everything_and_follows_it() {
     assert_eq!(fs::read(&linked).unwrap(), b"stays where it is");
     assert_no_leftovers(&elsewhere);
     assert_no_leftovers(&env.core.projects_dir());
+    assert!(!env.core.config.app_data_dir.join(STAGING_NOTE).exists());
+    // The move is over, so projects close and open again.
+    env.ok("project.close", json!({}));
+    env.reopen_project(&text(&new));
+    assert_eq!(env.ok("project.current", json!({}))["id"], id);
 
     // After a restart it opens from where it now is.
     let again = start_again(quit(env));

@@ -28,6 +28,10 @@ use vault_archive::{VaultArchiveKind, VaultFileArgs};
 
 /// A staging folder is `<target>.openframe-staging-<millis>` (doc 40 section 5).
 const STAGING_MARKER: &str = ".openframe-staging-";
+/// App data file that names the staging folder of the running move or restore.
+const STAGING_NOTE_FILE: &str = "storage-staging.txt";
+/// Error code for an undo that did not work; its message says where the data is.
+pub(crate) const ROLLBACK_FAILED: &str = "storage.rollback_failed";
 /// Project folders are looked for two levels down; this bounds the work on a huge folder.
 const DISCOVER_MAX_FOLDERS: usize = 5_000;
 const DISCOVER_MAX_RESULTS: usize = 200;
@@ -494,6 +498,65 @@ fn adopt_orphan_notes(
 
 // ----------------------------------------------------- interrupted work
 
+/// `<name>.openframe-staging-<digits>`: the only folders start removes.
+fn is_staging_name(name: &str) -> bool {
+    name.rsplit_once(STAGING_MARKER)
+        .is_some_and(|(_, millis)| !millis.is_empty() && millis.bytes().all(|b| b.is_ascii_digit()))
+}
+
+/// The staging folder of the move or restore that is running, written to the app data folder
+/// before the first byte is copied and removed when the task ends (doc 40 section 5). A move to a
+/// folder that start does not otherwise search leaves its half copy findable this way. Declare it
+/// before the staging folder, so it is removed after the staging folder is.
+pub(crate) struct StagingNote {
+    file: PathBuf,
+}
+
+impl StagingNote {
+    pub(crate) fn record(core: &AppCore, staging: &Path) -> StagingNote {
+        let file = core.config.app_data_dir.join(STAGING_NOTE_FILE);
+        if let Err(e) = std::fs::write(&file, staging.to_string_lossy().as_bytes()) {
+            tracing::warn!(error = %e, "the staging folder could not be noted");
+        }
+        StagingNote { file }
+    }
+}
+
+impl Drop for StagingNote {
+    fn drop(&mut self) {
+        let _ = std::fs::remove_file(&self.file);
+    }
+}
+
+/// Remove the staging folder a crashed move or restore noted in the app data folder, wherever it
+/// is. Only a real folder (never a link) with a staging name is removed, so a changed note can
+/// not point this at anything else. The note stays when the folder cannot be removed yet.
+pub(crate) fn remove_noted_staging(app_data_dir: &Path) {
+    let note = app_data_dir.join(STAGING_NOTE_FILE);
+    let Ok(meta) = std::fs::metadata(&note) else {
+        return;
+    };
+    if meta.len() <= 4096
+        && let Ok(text) = std::fs::read_to_string(&note)
+    {
+        let path = PathBuf::from(text.trim());
+        let named = path
+            .file_name()
+            .is_some_and(|n| is_staging_name(&n.to_string_lossy()));
+        if path.is_absolute() && named && std::fs::symlink_metadata(&path).is_ok_and(|m| m.is_dir())
+        {
+            if std::fs::remove_dir_all(&path).is_err() {
+                tracing::warn!(
+                    "the staging folder of an interrupted move could not be removed yet"
+                );
+                return;
+            }
+            tracing::info!("removed the staging folder of an interrupted move");
+        }
+    }
+    let _ = std::fs::remove_file(&note);
+}
+
 /// Remove staging folders an interrupted move or restore left in these folders (doc 40 section
 /// 5). Only folders named `<name>.openframe-staging-<digits>` are touched, and links are never
 /// followed. Best effort: what cannot be removed now is tried again at the next start.
@@ -509,10 +572,7 @@ pub(crate) fn remove_staging_leftovers(dirs: &[&Path]) {
         };
         for entry in entries.flatten() {
             let name = entry.file_name().to_string_lossy().into_owned();
-            let is_staging = name.rsplit_once(STAGING_MARKER).is_some_and(|(_, millis)| {
-                !millis.is_empty() && millis.bytes().all(|b| b.is_ascii_digit())
-            });
-            if !is_staging || !entry.file_type().is_ok_and(|t| t.is_dir()) {
+            if !is_staging_name(&name) || !entry.file_type().is_ok_and(|t| t.is_dir()) {
                 continue;
             }
             match std::fs::remove_dir_all(entry.path()) {
@@ -527,5 +587,172 @@ pub(crate) fn remove_staging_leftovers(dirs: &[&Path]) {
             failed,
             "removed staging folders left by an interrupted move or restore"
         );
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::sync::Arc;
+
+    use serde_json::json;
+
+    use super::*;
+    use crate::core::{AppConfig, StorageOp};
+
+    fn core() -> (tempfile::TempDir, Arc<AppCore>) {
+        let dir = tempfile::tempdir().unwrap();
+        let core = AppCore::new(
+            AppConfig::isolated(dir.path()),
+            Arc::new(crate::events::NullSink),
+        )
+        .unwrap();
+        (dir, core)
+    }
+
+    fn refused(core: &AppCore, op: &str, args: serde_json::Value) -> AppError {
+        core.dispatch(&core.local_actor(), op, args).expect_err(op)
+    }
+
+    #[test]
+    fn one_storage_task_runs_at_a_time_and_the_slot_is_freed_on_every_exit() {
+        let (_dir, core) = core();
+        let first = core.begin_storage_op(StorageOp::Vault).unwrap();
+        let busy = core
+            .begin_storage_op(StorageOp::Vault)
+            .err()
+            .expect("a second task is refused");
+        assert_eq!(busy.code_str(), "storage.busy");
+        assert!(busy.retryable);
+        drop(first);
+
+        // A task that panics frees the slot too.
+        let guard = core.begin_storage_op(StorageOp::ProjectMove).unwrap();
+        let crashed = std::panic::catch_unwind(std::panic::AssertUnwindSafe(move || {
+            let _guard = guard;
+            panic!("the task crashed");
+        }));
+        assert!(crashed.is_err());
+        core.begin_storage_op(StorageOp::Vault)
+            .expect("free again after a panic");
+    }
+
+    #[test]
+    fn every_storage_task_starts_through_the_slot() {
+        let (dir, core) = core();
+        let _held = core.begin_storage_op(StorageOp::Vault).unwrap();
+        let there = dir.path().join("x.ofvault").to_string_lossy().into_owned();
+        let folder = dir.path().to_string_lossy().into_owned();
+        for (op, args) in [
+            ("vault.backup", json!({ "path": there })),
+            ("vault.export_package", json!({ "path": there })),
+            ("vault.restore_backup", json!({ "path": there })),
+            ("vault.move", json!({ "destParent": folder })),
+            ("vault.locate", json!({ "dir": folder })),
+            ("project.move", json!({ "destParent": folder })),
+        ] {
+            let e = refused(&core, op, args);
+            assert_eq!(e.code_str(), "storage.busy", "{op}");
+            assert!(!e.message.is_empty());
+        }
+    }
+
+    #[test]
+    fn no_project_opens_creates_or_closes_while_the_project_moves() {
+        let (dir, core) = core();
+        let actor = core.local_actor();
+        core.dispatch(
+            &actor,
+            "project.create",
+            json!({ "title": "Salt Road", "projectType": "Feature Film" }),
+        )
+        .unwrap();
+        let root = core.project().unwrap().layout.root().to_path_buf();
+        {
+            let _move = core.begin_storage_op(StorageOp::ProjectMove).unwrap();
+            for (op, args) in [
+                ("project.close", json!({})),
+                ("project.open", json!({ "path": root.to_string_lossy() })),
+                (
+                    "project.create",
+                    json!({ "title": "Other", "projectType": "Feature Film" }),
+                ),
+            ] {
+                assert_eq!(refused(&core, op, args).code_str(), "storage.busy", "{op}");
+            }
+            assert!(core.project_opt().is_some(), "refusing changed nothing");
+            assert_eq!(
+                std::fs::read_dir(dir.path().join("projects"))
+                    .unwrap()
+                    .count(),
+                1,
+                "no second project folder was made"
+            );
+        }
+        // A vault task does not block projects: only a project move does.
+        {
+            let _vault = core.begin_storage_op(StorageOp::Vault).unwrap();
+            core.dispatch(&actor, "project.close", json!({})).unwrap();
+        }
+        core.dispatch(
+            &actor,
+            "project.open",
+            json!({ "path": root.to_string_lossy() }),
+        )
+        .expect("opens once the move is over");
+    }
+
+    #[test]
+    fn a_caller_waits_a_moment_for_a_vault_that_is_closed_for_a_move_then_gets_an_answer() {
+        let (_dir, core) = core();
+        core.global_store().expect("the default vault");
+        let began = std::time::Instant::now();
+        let answer = core
+            .with_vault_closed(|| {
+                Ok(std::thread::scope(|s| {
+                    s.spawn(|| core.global_store().err().map(|e| (e.code.0, e.retryable)))
+                        .join()
+                        .unwrap()
+                }))
+            })
+            .unwrap();
+        let (code, retryable) = answer.expect("the vault is not reopened while it is closed");
+        assert_eq!(code, "storage.busy");
+        assert!(retryable);
+        assert!(
+            began.elapsed() < std::time::Duration::from_secs(8),
+            "a plain answer, not a frozen screen"
+        );
+        core.global_store().expect("usable again afterwards");
+    }
+
+    #[test]
+    fn a_noted_staging_folder_in_any_parent_is_removed_and_nothing_else() {
+        let (dir, core) = core();
+        let app = &core.config.app_data_dir;
+        let elsewhere = dir.path().join("drive-d");
+        let stale = elsewhere.join("Film.openframe.openframe-staging-123");
+        let ordinary = elsewhere.join("Film.openframe");
+        for d in [&stale, &ordinary] {
+            std::fs::create_dir_all(d.join("assets")).unwrap();
+        }
+        std::fs::write(
+            app.join(STAGING_NOTE_FILE),
+            stale.to_string_lossy().as_bytes(),
+        )
+        .unwrap();
+        remove_noted_staging(app);
+        assert!(!stale.exists());
+        assert!(ordinary.exists());
+        assert!(!app.join(STAGING_NOTE_FILE).exists());
+
+        // A note that names something that is not a staging folder never deletes it.
+        std::fs::write(
+            app.join(STAGING_NOTE_FILE),
+            ordinary.to_string_lossy().as_bytes(),
+        )
+        .unwrap();
+        remove_noted_staging(app);
+        assert!(ordinary.exists());
+        assert!(!app.join(STAGING_NOTE_FILE).exists());
     }
 }

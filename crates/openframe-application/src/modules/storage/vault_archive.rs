@@ -16,8 +16,10 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use ts_rs::TS;
 
-use super::{STAGING_MARKER, StorageTaskStarted, existing_vault, library, tree};
-use crate::core::AppCore;
+use super::{
+    ROLLBACK_FAILED, STAGING_MARKER, StagingNote, StorageTaskStarted, existing_vault, library, tree,
+};
+use crate::core::{AppCore, StorageOp, storage_busy};
 use crate::modules::packages::format::{
     self, CHECKSUMS_ENTRY, Checksums, EntryData, MANIFEST_ENTRY, Staging, WriteOutcome,
 };
@@ -260,6 +262,7 @@ pub(crate) fn start_archive(
     args: VaultFileArgs,
     kind: VaultArchiveKind,
 ) -> AppResult<StorageTaskStarted> {
+    let guard = core.begin_storage_op(StorageOp::Vault)?;
     let dest = format::output_destination(&args.path, EXTENSION)?;
     crate::util::check_output_file(core, &dest)?;
     existing_vault(core, "back up")?;
@@ -268,6 +271,7 @@ pub(crate) fn start_archive(
         VaultArchiveKind::Package => "Exporting the vault package",
     };
     let task_id = core.spawn_task("storage.vault_archive", label, move |core, h| {
+        let _guard = guard;
         let report = write_archive(&core, &dest, kind, &|f, m| h.progress(f, m), &|| {
             h.is_cancelled()
         })?
@@ -426,6 +430,7 @@ fn write_archive(
 // ------------------------------------------------------------------ restore
 
 pub(crate) fn start_restore(core: &AppCore, args: VaultFileArgs) -> AppResult<StorageTaskStarted> {
+    let guard = core.begin_storage_op(StorageOp::Vault)?;
     let path = PathBuf::from(args.path.trim());
     // The structure is checked here so the person gets the answer at once; unpacking and the
     // rest run in the task.
@@ -434,6 +439,7 @@ pub(crate) fn start_restore(core: &AppCore, args: VaultFileArgs) -> AppResult<St
         "storage.vault_restore",
         "Restoring the vault",
         move |core, h| {
+            let _guard = guard;
             let report = restore(&core, &path, &|f, m| h.progress(f, m), &|| h.is_cancelled())?
                 .ok_or_else(AppError::cancelled)?;
             serde_json::to_value(&report).map_err(|e| AppError::internal(e.to_string()))
@@ -468,11 +474,14 @@ fn restore(
             ));
         }
     }
-    let staging = Staging::at(parent.join(format!(
+    let staging_path = parent.join(format!(
         "{}{STAGING_MARKER}{}",
         name.to_string_lossy(),
         now_ms()
-    )));
+    ));
+    // Declared before the staging folder, so it is dropped after it.
+    let _note = StagingNote::record(core, &staging_path);
+    let staging = Staging::at(staging_path);
     progress(0.05, "Unpacking the file");
     archive::extract_all(path, staging.path(), ArchiveLimits::PACKAGE)?;
     if cancelled() {
@@ -486,17 +495,27 @@ fn restore(
         return Ok(None);
     }
     progress(0.9, "Switching to the restored vault");
-    let kept = core.with_vault_closed(|| swap_in(&live, staging.path()))?;
+    let kept = core.with_vault_closed(|| {
+        // Read again now that nothing can change it: the place this restore planned for is
+        // still the vault's place.
+        if !library::same_place(&core.vault_dir(), &live) {
+            return Err(storage_busy(
+                "Your Global Idea Vault was moved or reconnected while this restore was running. Nothing was changed. Try the restore again.",
+            ));
+        }
+        swap_in(&live, staging.path())
+    })?;
     // The vault is opened for real (and upgraded when it is older) before the restore counts as
     // done; if that fails, the vault it replaced goes back.
     if let Err(e) = core.global_store() {
-        let _ = core.with_vault_closed(|| {
-            let _ = fs::remove_dir_all(&live);
-            if let Some(k) = &kept {
-                let _ = fs::rename(k, &live);
-            }
-            Ok(())
-        });
+        core.with_vault_closed(|| put_back(&live, kept.as_deref()))
+            .map_err(|r| {
+                if r.code_str() == ROLLBACK_FAILED {
+                    r
+                } else {
+                    rollback_failed(kept.as_deref(), r.message)
+                }
+            })?;
         return Err(e);
     }
     Ok(Some(VaultRestoreReport {
@@ -518,6 +537,21 @@ fn verify_hashes(root: &Path) -> AppResult<()> {
         if !openframe_security::sha256_file(&p)?.eq_ignore_ascii_case(expected) {
             return Err(changed(format!("entry changed: {name}")));
         }
+    }
+    // Nothing else may be there: a file the list does not name (a `vault.sqlite-wal` that SQLite
+    // would replay) never reaches the vault.
+    let listed: HashSet<&str> = sums
+        .files
+        .keys()
+        .map(String::as_str)
+        .chain([MANIFEST_ENTRY, CHECKSUMS_ENTRY])
+        .collect();
+    if let Some(stray) = tree::walk(root, &[])?
+        .files
+        .iter()
+        .find(|f| !listed.contains(f.rel.as_str()))
+    {
+        return Err(damaged(format!("unlisted file: {}", stray.rel)));
     }
     Ok(())
 }
@@ -604,8 +638,43 @@ pub(super) fn check_vault_database(db: &Path) -> AppResult<()> {
     Ok(())
 }
 
+/// The undo of a swap did not work. Says where the earlier vault is, so it is never lost.
+fn rollback_failed(kept: Option<&Path>, detail: impl Into<String>) -> AppError {
+    let message = match kept {
+        Some(k) => format!(
+            "OpenFrame could not put your earlier Global Idea Vault back in place. It is safe in the folder “{}”. Close OpenFrame, then rename that folder to the vault folder name, or choose it in Settings > Storage.",
+            k.display()
+        ),
+        None => "OpenFrame could not remove the restored vault that would not open. Close OpenFrame and delete the vault folder by hand.".to_string(),
+    };
+    AppError::new(ROLLBACK_FAILED, message).with_detail(detail)
+}
+
+/// Undo a swap whose new vault is not wanted: the folder at `live` is renamed aside, the folder
+/// that was kept goes back to `live`, and only then is the unwanted one deleted. A step that
+/// fails stops here and nothing is deleted; the error names where the earlier vault is.
+fn put_back(live: &Path, kept: Option<&Path>) -> AppResult<()> {
+    let aside = tree::aside_name(live);
+    if live.exists() {
+        fs::rename(live, &aside).map_err(|e| rollback_failed(kept, e.to_string()))?;
+    }
+    if let Some(k) = kept
+        && let Err(e) = fs::rename(k, live)
+    {
+        // The unwanted folder goes back to the vault's place, so that place is never empty.
+        if aside.exists() {
+            let _ = fs::rename(&aside, live);
+        }
+        return Err(rollback_failed(Some(k), e.to_string()));
+    }
+    // Best effort: a folder left here has a staging name, which start removes.
+    let _ = fs::remove_dir_all(&aside);
+    Ok(())
+}
+
 /// Put the staged vault in the live place. The vault that was there is renamed beside it, never
-/// deleted. Returns where it was kept. On a failed second step the first is undone.
+/// deleted. Returns where it was kept. On a failed second step the first is undone, and when that
+/// fails too the error says where the earlier vault is.
 fn swap_in(live: &Path, staged: &Path) -> AppResult<Option<PathBuf>> {
     let kept = if live.exists() {
         let to = before_restore_path(live);
@@ -618,7 +687,9 @@ fn swap_in(live: &Path, staged: &Path) -> AppResult<Option<PathBuf>> {
     };
     if let Err(e) = fs::rename(staged, live) {
         if let Some(k) = &kept {
-            let _ = fs::rename(k, live);
+            fs::rename(k, live).map_err(|undo| {
+                rollback_failed(Some(k), format!("{e}; putting it back: {undo}"))
+            })?;
         }
         return Err(AppError::from(e).with_detail("the restored vault could not be put in place"));
     }
@@ -643,4 +714,142 @@ fn before_restore_path(live: &Path) -> PathBuf {
         n += 1;
     }
     candidate
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    fn listing(dir: &Path) -> Vec<String> {
+        let mut names: Vec<String> = fs::read_dir(dir)
+            .unwrap()
+            .flatten()
+            .map(|e| e.file_name().to_string_lossy().into_owned())
+            .collect();
+        names.sort();
+        names
+    }
+
+    /// An unpacked vault file whose checksums match what is in it.
+    fn staged() -> tempfile::TempDir {
+        let dir = tempfile::tempdir().unwrap();
+        fs::write(dir.path().join(MANIFEST_ENTRY), b"{}").unwrap();
+        fs::write(dir.path().join(VAULT_DB), b"database").unwrap();
+        fs::create_dir(dir.path().join("assets")).unwrap();
+        fs::write(dir.path().join("assets").join("a.bin"), b"asset").unwrap();
+        let hash = |rel: &str| openframe_security::sha256_file(&dir.path().join(rel)).unwrap();
+        let sums = json!({
+            "algorithm": "sha256",
+            "files": {
+                MANIFEST_ENTRY: hash(MANIFEST_ENTRY),
+                VAULT_DB: hash(VAULT_DB),
+                "assets/a.bin": hash("assets/a.bin"),
+            }
+        });
+        fs::write(dir.path().join(CHECKSUMS_ENTRY), sums.to_string()).unwrap();
+        dir
+    }
+
+    #[test]
+    fn an_unpacked_file_the_checksums_do_not_list_is_refused_before_the_vault_opens() {
+        let dir = staged();
+        verify_hashes(dir.path()).expect("exactly what the list names");
+        for stray in ["vault.sqlite-wal", "assets/extra.bin", "program.exe"] {
+            fs::write(dir.path().join(stray), b"x").unwrap();
+            let e = verify_hashes(dir.path()).expect_err(stray);
+            assert_eq!(e.code_str(), "import.vault_incomplete", "{stray}");
+            assert!(e.detail.unwrap_or_default().contains(stray), "{stray}");
+            fs::remove_file(dir.path().join(stray)).unwrap();
+        }
+        verify_hashes(dir.path()).expect("clean again");
+    }
+
+    fn folder_with(dir: &Path, name: &str, file: &str) -> PathBuf {
+        let p = dir.join(name);
+        fs::create_dir_all(&p).unwrap();
+        fs::write(p.join(file), name).unwrap();
+        p
+    }
+
+    #[test]
+    fn put_back_returns_the_kept_vault_and_deletes_the_unwanted_one_last() {
+        let dir = tempfile::tempdir().unwrap();
+        let live = folder_with(dir.path(), "vault", "new.txt");
+        let kept = folder_with(dir.path(), "vault (before restore)", "old.txt");
+        put_back(&live, Some(&kept)).unwrap();
+        assert!(
+            live.join("old.txt").is_file(),
+            "the earlier vault is live again"
+        );
+        assert!(!live.join("new.txt").exists());
+        assert_eq!(
+            listing(dir.path()),
+            vec!["vault".to_string()],
+            "nothing left over"
+        );
+
+        // With no earlier vault the unwanted one is simply removed.
+        put_back(&live, None).unwrap();
+        assert!(listing(dir.path()).is_empty());
+    }
+
+    /// Hold a folder open the way another program would, so it cannot be renamed.
+    #[cfg(windows)]
+    fn hold(dir: &Path) -> fs::File {
+        use std::os::windows::fs::OpenOptionsExt;
+        const BACKUP_SEMANTICS: u32 = 0x0200_0000;
+        fs::OpenOptions::new()
+            .read(true)
+            .share_mode(0)
+            .custom_flags(BACKUP_SEMANTICS)
+            .open(dir)
+            .expect("a folder can be held open")
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn put_back_that_cannot_move_the_new_vault_aside_deletes_nothing_and_says_where_the_old_one_is()
+    {
+        let dir = tempfile::tempdir().unwrap();
+        let live = folder_with(dir.path(), "vault", "new.txt");
+        let kept = folder_with(dir.path(), "vault (before restore)", "old.txt");
+        let held = hold(&live);
+        let e = put_back(&live, Some(&kept)).expect_err("the folder is in use");
+        drop(held);
+        assert_eq!(e.code_str(), ROLLBACK_FAILED);
+        assert!(
+            e.message.contains("vault (before restore)"),
+            "{}",
+            e.message
+        );
+        assert!(live.join("new.txt").is_file(), "nothing was deleted");
+        assert!(
+            kept.join("old.txt").is_file(),
+            "the earlier vault is untouched"
+        );
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn a_swap_that_fails_puts_the_earlier_vault_back() {
+        let dir = tempfile::tempdir().unwrap();
+        let live = folder_with(dir.path(), "vault", "old.txt");
+        let staged = folder_with(dir.path(), "vault.openframe-staging-1", "new.txt");
+        let held = hold(&staged);
+        let e = swap_in(&live, &staged).expect_err("the staged folder is in use");
+        drop(held);
+        assert_ne!(e.code_str(), ROLLBACK_FAILED, "the undo worked");
+        assert!(
+            live.join("old.txt").is_file(),
+            "the earlier vault is live again"
+        );
+        assert!(staged.join("new.txt").is_file());
+        assert_eq!(
+            listing(dir.path()).len(),
+            2,
+            "no renamed copy left: {:?}",
+            listing(dir.path())
+        );
+    }
 }
