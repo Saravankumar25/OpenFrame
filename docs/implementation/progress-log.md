@@ -86,7 +86,9 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
   (`.build-cache/e2e-overnight-full.log`) 38 of 45 files green, the seven others fixed and green in reruns
   (`e2e-overnight-2.log`: 01, 02, 62, 71, 90, 95; `e2e-72-73-fix.log`: 72, 73). Installer
   `release-out/OpenFrame-5.exe`: commit b0b57081, clean tree, 28,052,265 bytes, SHA-256
-  `fd0968293227b20e0364b00e2933d3751bb6feab1a5ab639373ebe179442c90a`, binary check and installer scan OK.
+  `fd0968293227b20e0364b00e2933d3751bb6feab1a5ab639373ebe179442c90a`, binary check and installer scan OK. Release
+  build (gated, throwaway password) end-to-end: 00, 17, 32, 62, 71 green (`.build-cache/e2e-release-5.log`). The
+  installer itself was not installed on this PC.
 - **Features moved:** Story page row rewritten (formatting, A4, zoom; still Built). New row "Storage locations, moving
   and recovery": Reachable, proof 1.
 - **Docs updated:** ADR-0038 (new) and the register, engineering 40 (new), 33 (sides), 11 and 23 (migrations 0018 and
