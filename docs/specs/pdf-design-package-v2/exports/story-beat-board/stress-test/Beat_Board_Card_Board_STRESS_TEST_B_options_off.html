@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Beat Board (stress test)</title>
+<meta name="of-doc" content="Beat Board — board layout — STRESS TEST (B)">
+<meta name="of-logo" content="../../../00_SYSTEM/assets/openframe-logo.png">
+<link rel="stylesheet" href="../../../00_SYSTEM/assets/openframe-print.css">
+<style>
+  /* Running header: one compact line, top-right (project · document). Identifies loose printed pages of a long board. */
+  @page { size: 8.5in 11in; @top-right { content: "HARBOUR LIGHTS · BEAT BOARD"; } }
+
+  /* ===== Beat Board — document-specific CSS (shared tokens/components come from openframe-print.css) ===== */
+  .masthead .proj { font-size: 13pt; color: var(--of-slate); margin-top: 1pt; }
+  .masthead .meta-line { font-size: 8.4pt; }
+  .scope-panel { background: var(--of-panel); border: var(--hair) solid var(--of-line); border-radius: var(--radius-lg);
+    padding: 8pt 12pt 9pt; min-width: 132pt; max-width: 176pt; text-align: right; }
+  .scope-panel b { display: block; font-size: 9.6pt; color: var(--of-navy); }
+  .scope-panel span { display: block; font-size: 8.2pt; color: var(--of-slate); margin-top: 2pt; }
+  .masthead + .metrics { margin-top: 6pt; }
+  .metrics { margin: 6pt 0 5pt; }
+  .metric { padding: 4pt 8pt 5pt; }
+  .metric .val { font-size: 13pt; margin-top: 1pt; }
+  .metric .sub { font-size: 7pt; }
+
+  /* key + includes */
+  .keybox { border: var(--hair) solid var(--of-line); border-radius: var(--radius); padding: 5pt 8pt; margin: 0 0 4pt;
+    font-size: 7.6pt; color: var(--of-slate); break-inside: avoid; }
+  .kb-row { display: flex; flex-wrap: wrap; align-items: center; gap: 3pt 12pt; padding: 2pt 0; }
+  .kb-row + .kb-row { border-top: var(--hair) solid var(--of-line); }
+  .kb-h { font-size: 6.6pt; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--of-navy); min-width: 44pt; flex: none; }
+  .kb-row .it { display: inline-flex; align-items: center; gap: 4pt; }
+  .kb-row .lbl { font-size: 6.6pt; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: var(--of-slate); }
+  .kb-items { display: flex; flex-wrap: wrap; gap: 3pt 14pt; flex: 1; min-width: 0; }
+  .kb-chips { display: flex; flex-wrap: wrap; gap: 3pt 4pt; flex: 1; min-width: 0; align-items: center; }
+  .kb-row .priv { margin-left: auto; }
+
+  /* tiles */
+  .t-card { display: inline-block; min-width: 26pt; text-align: center; background: var(--of-navy); color: #fff; border-radius: 3pt;
+    font-weight: 700; font-size: 8.4pt; line-height: 1; padding: 3.6pt 3pt 3.8pt; font-variant-numeric: tabular-nums; }
+  .t-card.sm { min-width: 20pt; font-size: 7.6pt; padding: 2.8pt 3pt 3pt; }
+  .t-ghost, .t-beat { display: inline-block; min-width: 26pt; text-align: center; border-radius: 3pt; font-weight: 700; font-size: 6.6pt;
+    letter-spacing: .08em; text-transform: uppercase; line-height: 1; padding: 4.2pt 2pt 4.4pt; }
+  .t-ghost { background: #fff; color: var(--of-navy); border: var(--hair) solid var(--of-navy); }
+  .t-beat { background: #fff; color: var(--of-orange-deep); border: var(--hair) solid var(--of-orange-line); }
+  .t-beat.sm { min-width: 20pt; }
+
+  /* notes + comments: a NOTE is plain (the item's own field); a COMMENT is a boxed thread with status + author */
+  .xnote { display: grid; grid-template-columns: 24pt minmax(0, 1fr); column-gap: 5pt; margin-top: 2.6pt; font-size: 8pt; line-height: 1.3;
+    color: var(--of-slate); border-left: 1.5pt solid var(--of-line-strong); padding-left: 5pt; }
+  .xnote .lbl, .xc-head .lbl { font-size: 6.6pt; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: var(--of-slate); padding-top: 1.2pt; }
+  .xnote .txt, .xc-body { white-space: pre-line; }
+  .xcomment { margin-top: 3.2pt; background: #fff; border: var(--hair) solid var(--of-line-strong); border-left: 2.5pt solid var(--of-teal);
+    border-radius: 3pt; padding: 3.6pt 6pt 4.2pt; break-inside: avoid; }
+  .xc-head { display: flex; flex-wrap: wrap; align-items: center; gap: 2pt 5pt; margin-bottom: 1.6pt; }
+  .xc-head .who { font-size: 7.8pt; color: var(--of-navy); }
+  .xc-body { font-size: 8pt; line-height: 1.3; color: var(--of-ink); }
+  .xreply { margin-top: 3.4pt; padding-left: 7pt; border-left: var(--hair) solid var(--of-line-strong); }
+  .ihead { font-size: 8.8pt; font-weight: 700; color: var(--of-navy); line-height: 1.25; }
+  .idesc { font-size: 8.8pt; line-height: 1.3; color: var(--of-ink); }
+  .ihead + .idesc { margin-top: 1pt; }
+  .idesc.muted { color: var(--of-muted); }
+  .ibeat { font-size: 9pt; font-weight: 700; color: var(--of-navy); line-height: 1.28; }
+
+  /* act / sequence / area headings (identical in both layouts) */
+  .act-bar { display: flex; justify-content: space-between; align-items: baseline; gap: 12pt; background: var(--of-navy); color: #fff;
+    border-radius: 3pt; padding: 5.5pt 9pt 6pt; margin: 14pt 0 4pt; font-size: 10.5pt; font-weight: 700; letter-spacing: .06em;
+    text-transform: uppercase; line-height: 1.2; break-after: avoid; break-inside: avoid; }
+  .content > .act:first-child .act-bar { margin-top: 8pt; }
+  .act-bar .t { min-width: 0; }
+  .act-bar .hint, .seq-row .hint, .area-bar .hint { flex: none; text-align: right; }
+  .act-bar .hint { font-size: 7.4pt; font-weight: 400; letter-spacing: 0; text-transform: none; color: var(--of-dark-muted); max-width: 40%; }
+  .act-extra { break-after: avoid; margin: 0 0 3pt; }
+  .act-extra .xnote:first-child, .act-extra .xcomment:first-child { margin-top: 1pt; }
+  .seq-head { background: var(--of-tint); border-left: 3pt solid var(--of-orange); border-radius: 0 3pt 3pt 0; padding: 4.6pt 8pt 5pt;
+    margin: 9pt 0 3pt; break-after: avoid; break-inside: avoid; }
+  .seq-row { display: flex; justify-content: space-between; align-items: baseline; gap: 12pt; }
+  .seq-row h3 { margin: 0; min-width: 0; font-size: 9.8pt; line-height: 1.22; }
+  .seq-row .k { font-size: 6.6pt; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--of-slate); margin-right: 7pt; }
+  .seq-row .t { font-weight: 700; color: var(--of-navy); }
+  .seq-row .hint { font-size: 7.4pt; color: var(--of-slate); max-width: 40%; }
+  .seq-head .xcomment { margin-top: 3pt; }
+  .loose-label { display: flex; align-items: center; gap: 7pt; margin: 9pt 0 2pt; font-size: 6.6pt; font-weight: 700; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--of-slate); break-after: avoid; }
+  .loose-label::after { content: ""; flex: 1; border-top: var(--hair) solid var(--of-line-strong); }
+  .empty-state { padding: 6pt 0 6pt 3pt; font-size: 8.4pt; }
+  .empty-state.seq-empty { margin-left: 10pt; }
+  .area-bar { display: flex; justify-content: space-between; align-items: baseline; gap: 12pt; border-radius: 3pt; padding: 6pt 9pt 6.4pt;
+    margin: 22pt 0 5pt; font-size: 10.5pt; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; line-height: 1.2;
+    break-after: avoid; break-inside: avoid; }
+  .area-bar .hint { font-size: 7.4pt; font-weight: 400; letter-spacing: 0; text-transform: none; }
+  .area-bar.parking { background: var(--of-orange-soft); border: 1pt solid var(--of-orange-line); border-left: 5pt solid var(--of-orange); color: var(--of-orange-deep); }
+  .area-bar.unassigned { background: #fff; border: 1.2pt solid var(--of-navy); color: var(--of-navy); }
+  .area-bar.unassigned .hint { color: var(--of-slate); }
+  .ep-bar { margin: 20pt 0 6pt; padding: 7pt 0 6pt; border-top: 3pt solid var(--of-orange); border-bottom: var(--rule) solid var(--of-navy);
+    font-size: 15pt; line-height: 1.15; color: var(--of-navy); break-after: avoid; break-inside: avoid; }
+  .ep-bar .eb { display: block; font-size: 6.8pt; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--of-slate); margin-bottom: 2pt; }
+  .ep-bar.page-break-before { margin-top: 0; }
+  .content > .lead:first-child .ep-bar, .content > .act:first-child .ep-bar { margin-top: 10pt; }
+  .lead > .ep-bar:first-child { margin-top: 18pt; }
+  .content > .act:first-child .lead > .ep-bar:first-child { margin-top: 10pt; }
+  .cont { font-size: 6.8pt; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--of-slate); border-bottom: var(--hair) solid var(--of-line-strong);
+    padding: 0 0 3pt; margin: 0 0 6pt; break-after: avoid; break-inside: avoid; list-style: none; }
+  .cont i { font-style: normal; font-weight: 400; letter-spacing: .03em; text-transform: none; }
+  .sx { position: absolute; left: 0; top: 0; font-size: 2pt; line-height: 1; color: #fff; font-style: normal; letter-spacing: 0; text-transform: none; font-weight: 400; }
+  .act-bar, .seq-head, .area-bar, .item, .crow, .loose-label, .ep-bar { position: relative; }
+  .act, .area { break-inside: auto; }
+  .pb:not(.pb-off) { break-before: page !important; }   /* pagination pin: page start of the captured state (see MD, section I) */
+
+  /* variants / preview only */
+  @media print { [data-body][hidden], [data-scope-panel][hidden] { display: none !important; } }
+  .illus { display: inline-block; margin-left: 6pt; font-size: 6.6pt; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--of-amber-text);
+    background: var(--of-amber-fill); border: var(--hair) solid var(--of-amber-line); border-radius: 3pt; padding: 2pt 4pt; vertical-align: middle; }
+
+  /* ===== CARD BOARD layout ===== */
+  .crow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8pt; margin: 0 0 8pt; align-items: stretch; break-inside: avoid; }
+  .lead { break-inside: avoid; }
+  .seq-head + .crow, .loose-label + .crow { margin-top: 6pt; }
+  .bcard { display: flex; flex-direction: column; border: var(--hair) solid var(--of-line-strong); border-radius: 6pt; background: #fff; overflow: hidden; min-width: 0; }
+  .bh { display: flex; align-items: center; gap: 5pt; background: var(--of-tint); border-bottom: var(--hair) solid var(--of-line-strong);
+    padding: 3.2pt 6pt; font-size: 6.8pt; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--of-navy); }
+  .bb { padding: 4.6pt 6.4pt 5.4pt; flex: 1; }
+  .bcard .ihead, .bcard .idesc { font-size: 8.4pt; }
+  .bcard .ibeat { font-size: 8.6pt; }
+  .bcard .xnote { display: block; font-size: 7.6pt; margin-top: 3.4pt; }
+  .bcard .xnote .lbl { margin-right: 4pt; }
+  .bcard .xcomment { margin-top: 3.6pt; }
+  .bcard .xc-body { font-size: 7.6pt; }
+  .bcard.beat { background: var(--of-orange-soft); border-color: var(--of-orange-line); }
+  .bcard.beat .bh { background: #ffe3c2; border-bottom-color: var(--of-orange-line); color: var(--of-orange-deep); }
+  .bcard.beat .xnote { border-left-color: var(--of-orange-line); }
+  .area.parking .bcard:not(.beat) { border-color: var(--of-orange-line); }
+  .area.parking .bcard:not(.beat) .bh { background: var(--of-orange-soft); border-bottom-color: var(--of-orange-line); }
+
+</style>
+</head>
+<body>
+<div class="doc">
+<header class="masthead"><div><div class="eyebrow">Story · Beat Board</div><h1>Beat Board</h1><div class="proj">Harbour Lights</div><div class="meta-line"><span class="illus">Illustrative (fictional)</span> Current Beat Board</div></div><aside class="scope-panel" data-scope-panel="main"><b>Current Beat Board</b><span>Exported 22 Oct 2026</span></aside></header><div class="metrics"><div class="metric"><div class="lbl">Acts</div><div class="val">2</div></div><div class="metric"><div class="lbl">Sequences</div><div class="val">2</div></div><div class="metric"><div class="lbl">Scene cards</div><div class="val">6</div><div class="sub" data-toggle="Parking Lot" hidden>+ 2 in Parking Lot</div></div><div class="metric"><div class="lbl">Beats</div><div class="val">1</div><div class="sub" data-toggle="Parking Lot" hidden>+ 1 in Parking Lot</div></div></div><aside class="keybox"><div class="kb-row"><span class="kb-h">Key</span><div class="kb-items"><span class="it"><span class="t-card sm">12</span> Scene Card, in board order (not the screenplay scene number)</span><span class="it"><span class="t-beat sm">Beat</span> Story beat</span><span class="it" data-toggle="Notes" hidden><b class="lbl">Note</b> the item's own note</span><span class="it" data-toggle="Comments" hidden><span class="chip warn">Open</span> comment thread (status, author, replies)</span></div></div><div class="kb-row"><span class="kb-h">Board only</span><div class="kb-chips"><span class="chip" data-toggle="Notes" hidden>Notes</span><span class="chip" data-toggle="Comments" hidden>Comments</span><span class="chip" data-toggle="Parking Lot" hidden>Parking Lot</span></div><span class="priv">Private notes excluded.</span></div></aside><main class="content"><section class="act"><div class="lead"><h2 class="act-bar"><span class="t">Act Two: The Overlong Title That a Writer Pasted From a Logline Because the Title Field Allows Two Hundred Characters and Nobody Stopped Typing It All Out Before Saving the Act</span><span class="hint">2 sequences · 6 scene cards · 1 beat</span></h2><div class="act-extra"><p class="xnote" data-toggle="Notes" hidden><b class="lbl">Note</b><span class="txt">Shoot this with the practical lantern only. No overhead lights, no bounce.
+Marine unit confirms the shed is tidal: the floor is under water from 16:10, so the usable window is about forty minutes. Rehearse dry, then shoot both takes wet.
+Open question for the director: do we cut to the exterior before or after the brother's line? The pickup in Act Two depends on the answer, and the sound team needs it before the recce on Thursday.</span></p><div class="xcomment" data-toggle="Comments" hidden><div class="xc-head"><b class="lbl">Comment</b><span class="chip ok">Resolved</span><b class="who">Daniel Costa</b></div><p class="xc-body">Title agreed with the writer; will shorten in the next pass.</p></div></div><div class="lead"><header class="seq-head"><div class="seq-row"><h3><span class="k">Sequence</span><span class="t">Establishing the world, the people, the weather, the debt, the rumour and the one thing nobody in the village will say out loud</span></h3><span class="hint">6 scene cards · 1 beat</span></div><p class="xnote" data-toggle="Notes" hidden><b class="lbl">Note</b><span class="txt">Shoot this with the practical lantern only. No overhead lights, no bounce.
+Marine unit confirms the shed is tidal: the floor is under water from 16:10, so the usable window is about forty minutes. Rehearse dry, then shoot both takes wet.
+Open question for the director: do we cut to the exterior before or after the brother's line? The pickup in Act Two depends on the answer, and the sound team needs it before the recce on Thursday.</span></p><div class="xcomment" data-toggle="Comments" hidden><div class="xc-head"><b class="lbl">Comment</b><span class="chip warn">Open</span><b class="who">Priya Menon</b></div><p class="xc-body">This sequence is too long. Split it into two before the next draft.</p></div></header><div class="crow"><article class="bcard"><header class="bh"><span class="t-card sm">1</span><span>Scene Card</span></header><div class="bb"><p class="ihead">INT./EXT. HARBOURMASTER'S OFFICE - THE OLD SIGNAL TOWER STAIRWELL LEADING DOWN TO THE FLOODED BOAT SHED BELOW THE SEA WALL - CONTINUOUS - LATE AFTERNOON (THREE YEARS BEFORE THE STORM)</p><p class="idesc">Ines carries the ledger down three flights while the tide chases her up the other way. She argues with her brother through the floor, and every word is a different version of the same apology. Neither of them says the name of the boat. The shed doors begin to move on their own.</p><p class="xnote" data-toggle="Notes" hidden><b class="lbl">Note</b><span class="txt">Keep the pacing slow. The scene works only if the audience believes nobody is in a hurry. The previous draft rushed it and lost the point.</span></p></div></article><article class="bcard"><header class="bh"><span class="t-card sm">2</span><span>Scene Card</span></header><div class="bb"><p class="idesc">Ines carries the ledger down three flights while the tide chases her up the other way. She argues with her brother through the floor, and every word is a different version of the same apology. Neither of them says the name of the boat. The shed doors begin to move on their own.</p></div></article><article class="bcard"><header class="bh"><span class="t-card sm">3</span><span>Scene Card</span></header><div class="bb"><p class="ihead">EXT. SEA WALL - DAWN</p><p class="xnote" data-toggle="Notes" hidden><b class="lbl">Note</b><span class="txt">Keep the pacing slow. The scene works only if the audience believes nobody is in a hurry. The previous draft rushed it and lost the point.</span></p></div></article></div></div></div><div class="crow"><article class="bcard"><header class="bh"><span class="t-card sm">4</span><span>Scene Card</span></header><div class="bb"><p class="idesc muted">No heading or description</p></div></article><article class="bcard"><header class="bh"><span class="t-card sm">5</span><span>Scene Card</span></header><div class="bb"><p class="ihead">INT. SIGNAL TOWER - STAIRWELL - LATE AFTERNOON</p><p class="idesc">Ines carries the ledger down three flights while the tide chases her up the other way. She argues with her brother through the floor, and every word is a different version of the same apology. Neither of them says the name of the boat. The shed doors begin to move on their own.</p><p class="xnote" data-toggle="Notes" hidden><b class="lbl">Note</b><span class="txt">Shoot this with the practical lantern only. No overhead lights, no bounce.
+Marine unit confirms the shed is tidal: the floor is under water from 16:10, so the usable window is about forty minutes. Rehearse dry, then shoot both takes wet.
+Open question for the director: do we cut to the exterior before or after the brother's line? The pickup in Act Two depends on the answer, and the sound team needs it before the recce on Thursday.</span></p><div class="xcomment" data-toggle="Comments" hidden><div class="xc-head"><b class="lbl">Comment</b><span class="chip warn">Open</span><b class="who">Meenakshi Varma</b></div><p class="xc-body">Marine safety needs the tide table for the shoot week before this can be scheduled. Please attach it to the card.
+Also confirm whether the shed counts as a confined space for insurance.</p><div class="xreply"><div class="xc-head"><b class="lbl">Reply</b><b class="who">Daniel Costa</b></div><p class="xc-body">Tide table attached to the Production folder on Monday.</p></div><div class="xreply"><div class="xc-head"><b class="lbl">Reply</b><b class="who">Priya Menon</b></div><p class="xc-body">Thanks. Insurance confirmed the shed is covered as long as the marine unit is present for every take.</p></div></div><div class="xcomment" data-toggle="Comments" hidden><div class="xc-head"><b class="lbl">Comment</b><span class="chip ok">Resolved</span><b class="who">Daniel Costa</b></div><p class="xc-body">Lantern-only lighting approved by the DP.</p></div></div></article><article class="bcard"><header class="bh"><span class="t-card sm">6</span><span>Scene Card</span></header><div class="bb"><p class="ihead">INT. NET LOFT - NIGHT</p><p class="idesc">Reference: https://example.invalid/harbour-lights/continuity/ledger-scene-reference-sheet-version-7-final-FINAL SUPERCALIFRAGILISTICEXPIALIDOCIOUS_HARBOUR_SIGNAL_TOWER_LEDGER_SCENE_CONTINUITY_REFERENCE_0042</p></div></article></div><div class="cont pb" data-cont aria-hidden="true">Act Two: The Overlong Title That a Writer Pasted From a Logline Because the Title Field Allows Two Hundred Characters and Nobody Stopped Typing It All Out Before Saving the Act › Sequence: Establishing the world, the people, the weather, the debt, the rumour and the one thing nobody in the village will say out loud <i>· continued</i></div><div class="crow"><article class="bcard beat"><header class="bh"><span>Beat</span></header><div class="bb"><p class="ibeat">Midpoint reversal: the ledger is not what Ines thought it was, and the person she trusted most has been reading it for years without telling her, which changes what every earlier scene means.</p><p class="xnote" data-toggle="Notes" hidden><b class="lbl">Note</b><span class="txt">Shoot this with the practical lantern only. No overhead lights, no bounce.
+Marine unit confirms the shed is tidal: the floor is under water from 16:10, so the usable window is about forty minutes. Rehearse dry, then shoot both takes wet.
+Open question for the director: do we cut to the exterior before or after the brother's line? The pickup in Act Two depends on the answer, and the sound team needs it before the recce on Thursday.</span></p><div class="xcomment" data-toggle="Comments" hidden><div class="xc-head"><b class="lbl">Comment</b><span class="chip warn">Open</span><b class="who">Meenakshi Varma</b></div><p class="xc-body">Is this the midpoint or the second turn? The Act Two outline calls it the second turn.</p></div></div></article></div><div class="lead"><header class="seq-head"><div class="seq-row"><h3><span class="k">Sequence</span><span class="t">Reserve sequence (nothing placed yet)</span></h3></div></header><p class="empty-state seq-empty">No beats or scene cards yet.</p></div></section><section class="act"><div class="lead"><h2 class="act-bar"><span class="t">Act Three: Nothing Here Yet</span></h2><p class="empty-state">No sequences, beats or scene cards yet.</p></div></section><section class="area parking" data-toggle="Parking Lot" hidden><div class="lead"><h2 class="area-bar parking"><span>Parking Lot</span><span class="hint">Held outside the board order · not numbered</span></h2><div class="lead"><div class="crow"><article class="bcard"><header class="bh"><span>Scene Card</span></header><div class="bb"><p class="idesc">Dream sequence in the signal tower</p><p class="xnote" data-toggle="Notes" hidden><b class="lbl">Note</b><span class="txt">Cut for budget. Revisit if a second unit day appears.</span></p><div class="xcomment" data-toggle="Comments" hidden><div class="xc-head"><b class="lbl">Comment</b><span class="chip warn">Open</span><b class="who">Priya Menon</b></div><p class="xc-body">Park it, do not delete. Daniel wants it for the trailer.</p></div></div></article><article class="bcard"><header class="bh"><span>Scene Card</span></header><div class="bb"><p class="ihead">EXT. LIGHTHOUSE GALLERY - DAWN</p><p class="idesc">Alternate ending: Ines reads the ledger aloud to the empty sea.</p></div></article><article class="bcard beat"><header class="bh"><span>Beat</span></header><div class="bb"><p class="ibeat">Alternative opening: start on the ferry rather than the sea wall.</p></div></article></div></div></div></section></main>
+</div>
+<script src="../../../00_SYSTEM/assets/of-preview.js"></script>
+<script>
+(function () {
+  var bar = document.querySelector(".preview-bar");
+  if (!bar) return;
+  var boxes = [].slice.call(bar.querySelectorAll("input[type=checkbox]"));
+  var init = boxes.map(function (b) { return b.checked; });
+  var conts = [].slice.call(document.querySelectorAll("[data-cont]"));
+  function sync() { // pagination-dependent "continued" strips are only valid for the captured state
+    var same = boxes.every(function (b, i) { return b.checked === init[i]; });
+    conts.forEach(function (c) { c.hidden = !same; });
+    [].forEach.call(document.querySelectorAll(".pb"), function (e) { e.classList.toggle("pb-off", !same); });
+  }
+  var VAR = { "Scope: Selected items only (example)": "selected", "Scope: Entire project, several boards (fictional example)": "project" };
+  var vboxes = {};
+  [].forEach.call(bar.querySelectorAll("label"), function (l) {
+    var k = VAR[l.textContent.trim()];
+    if (k) vboxes[k] = l.querySelector("input");
+  });
+  function show(which) {
+    [].forEach.call(document.querySelectorAll("[data-body]"), function (b) { b.hidden = b.getAttribute("data-body") !== which; });
+    [].forEach.call(document.querySelectorAll("[data-scope-panel]"), function (p) { p.hidden = p.getAttribute("data-scope-panel") !== which; });
+  }
+  Object.keys(vboxes).forEach(function (k) {
+    vboxes[k].addEventListener("change", function () {
+      if (vboxes[k].checked) {
+        Object.keys(vboxes).forEach(function (o) { if (o !== k) vboxes[o].checked = false; });
+        show(k);
+      } else { show("main"); }
+      sync();
+    });
+  });
+  boxes.forEach(function (b) { b.addEventListener("change", sync); });
+})();
+</script>
+</body>
+</html>

@@ -62,7 +62,7 @@ First Microsoft Store release.
 
 1. Local-first: no account, no telemetry, and your projects stay on your PC
 2. Idea Vault per project, plus a Global Idea Vault for ideas you reuse
-3. Story board with acts, sequences, beats and scene cards, plus an outline view
+3. Beat Board with acts, sequences, beats and scene cards, plus an outline view
 4. Screenplay editor with standard formatting, drafts, locking and revisions
 5. Import and export Final Draft (FDX), Fountain, PDF and DOCX screenplays
 6. Script breakdown, catalog, locations, cast and crew
@@ -97,7 +97,7 @@ and don't add extra logos or marketing text.
 
 | # | Screen | Caption |
 |---|---|---|
-| 1 | Story board with acts, beats and scene cards | Shape your story on a board of acts, sequences, beats and scene cards. |
+| 1 | Beat Board with acts, beats and scene cards | Shape your story on a board of acts, sequences, beats and scene cards. |
 | 2 | Screenplay editor | Write in industry-standard screenplay format, with drafts and revisions. |
 | 3 | Idea Vault | Keep every idea, image and reference together, per project or across projects. |
 | 4 | Breakdown | Break scenes down into cast, props, wardrobe, locations and more. |

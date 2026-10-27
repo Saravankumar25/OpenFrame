@@ -1498,7 +1498,7 @@ The supplied execution plan uses this dependency-aware philosophy and explicitly
 
 # Additions from the intake notes (2026-10-05)
 
-Requirements present in the owner's notes (`docs/archive/notes/store-certification-and-launch-gap-notes.md`) or in the Store audit and not in the register above. Keys are new and stable. Status starts at Specified. Must ship blocks Store submission. Should ship blocks launch quality.
+Requirements present in the owner's notes (`docs/history/notes/store-certification-and-launch-gap-notes.md`) or in the Store audit and not in the register above. Keys are new and stable. Status starts at Specified. Must ship blocks Store submission. Should ship blocks launch quality.
 
 | Key | Requirement | Importance | Where it is built |
 |---|---|---|---|

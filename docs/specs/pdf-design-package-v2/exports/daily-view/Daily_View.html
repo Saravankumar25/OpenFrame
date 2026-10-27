@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shoot Day 1 - Daily View</title>
+<meta name="of-doc" content="Daily View (schedule.export_daily_view) - ILLUSTRATIVE, no baseline PDF">
+<meta name="of-logo" content="../../00_SYSTEM/assets/openframe-logo.png">
+<link rel="stylesheet" href="../../00_SYSTEM/assets/openframe-print.css">
+<style>
+  /* Portrait US Letter. Single page: no running header. */
+  @page { size: 8.5in 11in; }
+
+  /* ===== Daily View: portrait, one shooting day. NOT validated against a real export (no baseline PDF supplied). ===== */
+  .masthead.dv { margin-bottom: 6pt; padding-bottom: 8pt; border-bottom: var(--rule) solid var(--of-navy); }
+  .masthead.dv h1 { font-size: 26pt; margin: 3pt 0 2pt; }
+  .masthead.dv .sub { font-size: 11pt; color: var(--of-slate); font-weight: 700; }
+  .masthead.dv .meta-line { margin-top: 3pt; }
+  .masthead .side { text-align: right; }
+  .masthead .side .rev { font-size: 9.4pt; font-weight: 700; color: var(--of-navy); margin-top: 4pt; }
+  .masthead .side .s2 { font-size: 7.8pt; color: var(--of-slate); margin-top: 1pt; }
+  .metrics.slim { margin: 6pt 0 2pt; gap: 6pt; grid-auto-columns: minmax(0, 150pt); }
+  .metrics.slim .metric { padding: 4pt 9pt 5pt; display: flex; align-items: baseline; gap: 7pt; }
+  .metrics.slim .metric .val { font-size: 14pt; margin: 0; }
+  .metrics.slim .metric .lbl { font-size: 6.6pt; }
+  .sample-note { margin: 0 0 6pt; }
+  .sample-note b { white-space: nowrap; }
+  .dv .sec { margin: 11pt 0 5pt; }
+  .dv .two-col { gap: 0 14pt; align-items: start; }
+  .tiles { display: flex; flex-wrap: wrap; gap: 3pt; }
+  .tiles .tile { font-size: 9pt; padding: 3pt 6pt; }
+  .total { font-size: var(--fs-small); color: var(--of-slate); margin-top: 5pt; }
+  .loc-item { padding: 3pt 0 4pt; border-top: var(--hair) solid var(--of-line); }
+  .loc-item:first-child { border-top: 0; padding-top: 0; }
+  .loc-item .nm { font-size: 9.6pt; font-weight: 700; color: var(--of-navy); line-height: 1.25; }
+  .loc-item .det { font-size: var(--fs-small); color: var(--of-slate); margin-top: 1pt; }
+  .dv p.line { font-size: var(--fs-body); line-height: 1.35; margin-bottom: 2pt; }
+  .dv p.empty { font-size: var(--fs-body); color: var(--of-muted); }
+  .dv .tbl { font-size: var(--fs-cell); }
+  .dv .tbl td, .dv .tbl th { padding: 3.6pt 6pt; vertical-align: middle; }
+  .dv .tbl thead th { padding: 4.4pt 6pt; }
+  .dv .tbl td.id { font-weight: 700; color: var(--of-navy); }
+  .dv .tbl td.nm { font-weight: 700; color: var(--of-navy); }
+  .dv .tbl .tile { font-size: 8.4pt; white-space: nowrap; }
+  .dv .hint-line { font-size: var(--fs-small); color: var(--of-slate); margin-top: 5pt; }
+  .dv .hint-line b { color: var(--of-ink); }
+  .status { display: flex; align-items: center; gap: 8pt; }
+  .status .chip { font-size: 7.4pt; padding: 3pt 6pt; }
+  .markers { display: flex; flex-wrap: wrap; gap: 3pt; margin-top: 4pt; }
+  .markers .chip { text-transform: none; letter-spacing: 0; font-size: 8pt; font-weight: 700; padding: 2.4pt 6pt; }
+  .items { display: flex; flex-wrap: wrap; gap: 3pt; }
+  .items .chip { text-transform: none; letter-spacing: 0; font-size: 8pt; font-weight: 400; padding: 2.2pt 6pt; white-space: normal; }
+  .dv .tbl td.est { text-align: right; white-space: nowrap; color: var(--of-slate); }
+  .dv .tbl td.ord { text-align: right; color: var(--of-muted); font-weight: 700; }
+  .variant-break { break-before: page; }
+  .ill { font-size: 6.6pt; letter-spacing: .06em; text-transform: uppercase; font-weight: 700; color: var(--of-orange-deep);
+         background: var(--of-orange-soft); border: var(--hair) solid var(--of-orange-line); border-radius: 3pt; padding: 1pt 4pt; margin-left: 6pt; vertical-align: middle; white-space: nowrap; }
+</style>
+</head>
+<body>
+<div class="doc dv">
+<header class="masthead dv">
+    <div>
+      <div class="eyebrow">Production planning / Daily View</div>
+      <h1>Shoot Day 1</h1>
+      <div class="sub">Mon 11 Jan 2027</div>
+      <div class="meta-line">Project: Low Tide Radio</div>
+      
+    </div>
+    <div class="side"><span class="chip accent">Daily View snapshot</span>
+      <div class="rev">Revised 19 Oct 2026</div><div class="s2">Shooting schedule · PDF export</div></div>
+  </header>
+<div class="banner info sample-note" data-toggle="Illustrative-sample notice"><b>Illustrative sample</b><span>No baseline Daily View PDF was available. Fictional data modelled on the Low Tide Radio project; location status, call times and the Final call sheet are invented. Design not validated against a real export.</span></div>
+<div class="metrics slim"><div class="metric"><div class="val">2</div><div class="lbl">Scenes</div></div><div class="metric"><div class="val">7h 30m</div><div class="lbl">Estimated</div></div></div>
+<div class="two-col"><section><div class="sec"><h2>Scenes</h2></div><div class="tiles"><span class="tile">28</span><span class="tile">29</span></div><div class="total"><b>Total</b> · 2 scenes · 7h 30m estimated</div></section><section><div class="sec"><h2>Location</h2></div><div class="loc-item"><div class="nm">Coast Radio Station (Old Signal Station, Vypin)</div><div class="det">Confirmed · Beach Road, Vypin, Kochi, Kerala 682508</div></div></section></div>
+<section><div class="sec"><h2>Cast</h2></div><table class="tbl zebra boxed compact"><colgroup><col><col style="width:200pt"><col style="width:64pt"></colgroup><thead><tr><th>Cast</th><th>Character</th><th class="r">Call</th></tr></thead><tbody><tr><td class="nm">Sajan Kuriakose</td><td>SURESH</td><td class="r">06:30</td></tr><tr><td class="nm">Aditya Nair</td><td>RAHUL</td><td class="r">07:00</td></tr><tr><td class="nm">Nimisha Raghavan</td><td>ANJALI</td><td class="r">07:00</td></tr><tr><td class="nm">Lal Fernandez</td><td>JOE</td><td class="r">07:30</td></tr></tbody></table><div class="hint-line"><b>Crew call:</b> 07:00</div></section>
+<div class="two-col"><section><div class="sec"><h2>Call Sheet</h2></div><div class="status"><span class="chip ok">Final</span><span style="font-size:8.8pt">Finalized and matches the schedule.</span></div></section><section><div class="sec"><h2>Important Notes</h2></div><p class="line">Coast Radio Station interiors, day. Basement water pumped from 05:00.</p><div class="markers"><span class="chip">LUNCH at 13:00 (1h)</span></div></section></div>
+<section><div class="sec"><h2>Important Breakdown Items</h2></div><div class="items"><span class="chip pill">Army surplus ammunition box</span><span class="chip pill">Station logbook 1999</span><span class="chip pill">Floating tape boxes</span><span class="chip pill">Coir string of station keys</span><span class="chip pill">Torches and head torch</span><span class="chip pill">Hard hats</span><span class="chip pill">Rahul's shorts</span><span class="chip pill">Anjali's rubber boots</span><span class="chip pill">Suresh's hard hat and site boots</span><span class="chip pill">Rahul's school clothes</span><span class="chip pill">Anjali's everyday clothes</span><span class="chip pill">Water tank and dirty water dressing</span></div></section>
+<section style="margin-top:11pt"><table class="tbl zebra boxed compact"><colgroup><col style="width:30pt"><col style="width:84pt"><col><col style="width:56pt"></colgroup><thead><tr class="title"><th colspan="4"><span class="hint">Production order · numbers are scene numbers</span>Scene Order</th></tr><tr class="gap"><th colspan="4"></th></tr><tr><th class="r">#</th><th>Scene</th><th>Heading</th><th class="r">Est.</th></tr></thead><tbody><tr><td class="ord">1</td><td><span class="tile">28</span></td><td class="strong">INT. COAST RADIO STATION - TAPE ROOM - DAY</td><td class="est">4h</td></tr><tr><td class="ord">2</td><td><span class="tile">29</span></td><td class="strong">INT. COAST RADIO STATION - OPERATIONS ROOM - DAY</td><td class="est">2h 30m</td></tr></tbody></table></section>
+</div>
+<script src="../../00_SYSTEM/assets/of-preview.js"></script>
+</body>
+</html>

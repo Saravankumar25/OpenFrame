@@ -11,9 +11,9 @@
 | What OpenFrame is, who it is for, the chapters | [product/vision-and-scope.md](product/vision-and-scope.md) |
 | What to do next | [implementation/handoff.md](implementation/handoff.md), then [roadmap/README.md](roadmap/README.md) |
 | The Windows plan, ten phases | [roadmap/chapter-1a-windows-phases.md](roadmap/chapter-1a-windows-phases.md) |
-| The Mac plan, ten phases | [roadmap/chapter-1b-mac-phases.md](roadmap/chapter-1b-mac-phases.md) |
+| The Mac plan, ten phases | [roadmap/chapter-1b-mac-phases.md](roadmap/chapter-1b-mac-phases.md); what to port from the 2026-10-24 upgrade: [roadmap/mac-port-list-2026-10-24.md](roadmap/mac-port-list-2026-10-24.md) and, for the AI, [roadmap/mac-ai-harness-port-orders.md](roadmap/mac-ai-harness-port-orders.md) |
 | Mac and Windows structure parity, owner change lists on the Mac | [roadmap/mac-windows-structure-parity.md](roadmap/mac-windows-structure-parity.md) |
-| How it is built, in simple words | [architecture/README.md](architecture/README.md), then the [report](history/reports/2026-10-09-project-retrospection-and-audit.md) (a snapshot) |
+| How it is built, in simple words | [architecture/README.md](architecture/README.md), then, for the long plain-words explanation as it stood on 2026-10-09, the [report](history/reports/2026-10-09-project-retrospection-and-audit.md) (history) |
 | What works and how well it is proved | [implementation/feature-status.md](implementation/feature-status.md) |
 | How we test and how the pilot runs | [testing/README.md](testing/README.md), [testing/internal-test-plan.md](testing/internal-test-plan.md) |
 | How to keep the machine and the repository tidy | [development-storage-policy.md](development-storage-policy.md) |
@@ -32,7 +32,7 @@ docs/
   testing/                   strategy, internal pilot plan, bug report template
   specs/                     product and engineering specifications (+ README with the status of each)
   adr/                       decisions; README is the decision register
-  engineering/               implementation documents 11 to 39, AI tool coverage (generated)
+  engineering/               implementation documents 11 to 40, AI answer paths, AI tool coverage (generated)
   ux/                        Windows UX audit, layout and scroll contract, feature preservation and visual matrices
   implementation/            build plan, feature status, owner decisions, handoff, progress and reconciliation logs
   release/                   launch readiness register, evidence folders
@@ -41,7 +41,8 @@ docs/
   manual/                    user manual (.docx, .pdf), manual testing guide (.docx, .csv), test-data/ sample files
   history/                   records of the past: old evidence, audits, reports, superseded ADRs, old log sections (do not edit)
   development-storage-policy.md
-HTML_Mockups/                design reference mock-ups (some show removed features)
+HTML_Mockups/                design reference mock-ups (some show removed features); removed from the Windows tree on 2026-10-21
+MacHTML/                     every Mac screen as an HTML page (see its README); the Windows tree has WindowsHTML/ instead
 ```
 
 ## 2. By chapter
@@ -100,10 +101,11 @@ Full table with replaced decisions: [adr/README.md](adr/README.md). Owner answer
   ([ADR-0027](adr/ADR-0027-rust-core-two-ui-shells.md)); SQLite per project, UUIDv7 identities, one mutation pipeline, undo,
   recovery (ADR-0001 to 0005, 0011).
 - **AI:** local only; measured first, two model tiers, verifier-guided loop, memory, English release bar, eleven further
-  languages ([ADR-0028](adr/ADR-0028-ai-quality-program-and-harness.md)); Vulkan graphics-card path with a first-run probe
+  languages ([ADR-0028](adr/ADR-0028-ai-quality-program-and-harness.md)); lanes decided by code, code-built briefings, code verifiers and the shorter agent loop ([ADR-0035](adr/ADR-0035-ai-lanes-briefings-and-code-verifiers.md), lane choice superseded in part); one conversational path with focus, memory and per-turn context, deterministic answers cut to the few that need exactness or safety ([ADR-0037](adr/ADR-0037-conversational-assistant-focus-and-dossiers.md), detail in [specs/ai-conversational-harness.md](specs/ai-conversational-harness.md)); Vulkan graphics-card path with a first-run probe
   ([ADR-0029](adr/ADR-0029-gpu-acceleration.md)); the runtime ships in the package and the models download after install
   ([ADR-0026](adr/ADR-0026-offline-ai-download-after-install.md)); human-only Change Sets, crash-safe apply (ADR-0013 as
   amended, ADR-0019).
+- **Exports and layout:** production PDFs follow the design package v2 ([ADR-0036](adr/ADR-0036-production-pdf-design-system-v2.md)); the screenplay follows formatting standard v5 ([specs/screenplay-formatting-standard-v5.md](specs/screenplay-formatting-standard-v5.md), ADR-0008 note).
 - **Collaboration:** file-based Exchange, Review and Response packages only (ADR-0007).
 - **Platforms:** Windows 11 and Apple silicon only (ADR-0017). The Intel MacBook is for development.
 - **Business model (target, not final):** paid with a 7-day free trial; stores run the trial; internal builds have no trial,
@@ -123,7 +125,7 @@ Full table with replaced decisions: [adr/README.md](adr/README.md). Owner answer
 | Screenplay depth, production depth, themes (newest) | [Revision 1](specs/OpenFrame_Studio_Screenplay_and_Production_Depth_Specification.md) |
 | Offline and packages (LAN removed) | [Offline and Collaboration](specs/OpenFrame_Studio_Offline_Collaboration_Specification.md) |
 | Formats | [Import and Export](specs/OpenFrame_Studio_Import_Export_Specification.md) |
-| What AI may do | [AI spec](specs/OpenFrame_Studio_AI_Specification_Updated.md), [agent behaviour](specs/openframe_ai_agentic_rag_spec_prompt.md), [runtime](specs/OpenFrame_Local_AI_Runtime_Model_Management_Specification.md) |
+| What AI may do | [Conversational assistant](specs/ai-conversational-harness.md) (newest, with [ADR-0037](adr/ADR-0037-conversational-assistant-focus-and-dossiers.md)), [AI spec](specs/OpenFrame_Studio_AI_Specification_Updated.md), [agent behaviour](specs/openframe_ai_agentic_rag_spec_prompt.md), [runtime](specs/OpenFrame_Local_AI_Runtime_Model_Management_Specification.md) |
 | What leaves the computer | [Security, Privacy, Data Ownership](specs/OpenFrame_Studio_Security_Privacy_Data_Ownership_Specification.md) |
 | How engineering builds it | [ESD](specs/OpenFrame_ESD_Technical_Architecture.md), [Engineering Package Index](specs/OpenFrame_Studio_Engineering_Package_Index.md), [engineering/](engineering) |
 
@@ -134,7 +136,7 @@ Full table with replaced decisions: [adr/README.md](adr/README.md). Owner answer
 | 11 to 14, 16, 17, 20 to 26 | Database, file format, command architecture, IPC, search, autosave and recovery, security threat model, performance budgets, QA strategy, release and migration, Windows packaging, CI/CD, observability |
 | 18 | Retrieval intelligence index (AI) |
 | 27 | Microsoft Store distribution (Chapter 3) |
-| 28, 29, 31 | Archived in phase W1 (`archive/2026-10-05-*`); their risk levels and feature contract now live in CONTRIBUTING.md section 8 |
+| 28, 29, 31 | Archived in phase W1; the Mac removed its archive folder on 2026-10-19 (git history keeps them; Windows has them as `docs/history/2026-10-05-*`); their risk levels and feature contract now live in CONTRIBUTING.md section 8 |
 | 30 | Appearance and themes |
 | 32, 33 | Screenplay engine contract, production depth contract |
 | 34 | UX laws checklist |
@@ -143,8 +145,10 @@ Full table with replaced decisions: [adr/README.md](adr/README.md). Owner answer
 | 37 | [Platform boundary](engineering/37-platform-boundary.md): what differs between Windows and macOS |
 | 38 | [Mac App Store trial](engineering/38-mac-app-store-trial.md) (Chapter 3) |
 | 39 | [Packages restore drill](engineering/39-packages-restore-drill.md) |
+| 40 | [Storage locations, relocation, backup and identity recovery](engineering/40-storage-locations-and-recovery.md) |
+| ai-answer-paths | [How a question becomes an answer](engineering/ai-answer-paths.md): the one conversational path of ADR-0037, with a section on the Mac |
 | ai-tool-coverage | Generated inventory of operations and AI tools (never edit by hand) |
-| AGENT_BRIEF, SECURITY_REVIEW_2026-09-30 | Archived in phase W1 (`archive/2026-09-30-agent-brief.md`, `archive/2026-09-30-security-review.md`) |
+| AGENT_BRIEF, SECURITY_REVIEW_2026-09-30 | Archived in phase W1; on the Mac removed with the archive folder on 2026-10-19 (Windows: `docs/history/2026-09-30-agent-brief.md`, `docs/history/2026-09-30-security-review.md`) |
 
 ## 8. Keeping documents in step (mandatory)
 
@@ -163,7 +167,7 @@ When a change alters behaviour it must also update, in the same change:
 | README status claims | The feature status file first; README follows it |
 | A feature's screen or tests | The "How a user reaches it" and "Tests" columns of the feature status file (checked by `scripts/check-feature-status.mjs`) |
 | An architecture exception (raw SQLite write, `unsafe`, listener, process, IPC command, asset scope) | The reviewed allow-list and reason in `scripts/architecture-lint.mjs`; a security review |
-| A moved or renamed document | Links (run the link check), this map, history/README.md if it is history, [implementation/reconciliation-log.md](implementation/reconciliation-log.md) |
+| A moved or renamed document | Links (run the link check), this map, [history/README.md](history/README.md) if it is history, [implementation/reconciliation-log.md](implementation/reconciliation-log.md) |
 | User-visible text or a new document | [engineering/35-writing-standard.md](engineering/35-writing-standard.md); `npm run check:writing` |
 | A finished feature | Delete the dead code and mark replaced documents superseded in the same change |
 

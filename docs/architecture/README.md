@@ -1,6 +1,6 @@
 # Architecture in one page
 
-> Written 2026-10-09 from reading the code; updated 2026-10-15 for the two-shell decision ([ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md)). For the full explanation in simple language, with examples, see Part D of the
+> Written 2026-10-09 from reading the code; updated 2026-10-15 for the two-shell decision ([ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md)). The long explanation in simple language, as it stood on 2026-10-09 (history, not kept current), is Part D of the
 > [retrospection and audit report](../history/reports/2026-10-09-project-retrospection-and-audit.md). The detailed contracts are the
 > engineering documents listed at the bottom. This page is the short map to keep current when the structure changes.
 

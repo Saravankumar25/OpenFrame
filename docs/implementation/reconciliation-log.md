@@ -6,6 +6,33 @@
 > Renamed on 2026-10-06 from `03-reconciliation-log.md`. Extended on 2026-10-09 (chapter restructure). Checks written "(checked)" were verified in the repository on the
 > date given. Checks written "(stated)" come from a supplied document and were not verified independently.
 
+## 2026-10-27: Mac documents brought level with Windows `114dff50` (core sync)
+
+Compared: the Windows `docs/` at the last Mac sync (tree `11081707`) with Windows `114dff50`, file by file against the
+Mac copy. Rule: shared facts follow Windows; Mac-only documents and Mac sections stay.
+
+| What | How | Files |
+|---|---|---|
+| Unchanged on the Mac since the last sync | Windows copy taken as is | ADR-0005, 0008, 0009, 0012, 0017, 0028; engineering 11, 13, 21, 23, 32, 33, 34, 39 and `ai-answer-paths.md`; the eleven product specifications; `store/listing.md`; `testing/`; `ux/`; the manual files; `release/windows-internal-release-gate.md` (only a link to the moved endgame plan changed) |
+| Changed on both | Three-way merge; Windows wins on shared facts, Mac paths and Mac rows kept | `docs/README.md`, ADR-0013, the ADR register, the architecture page, engineering 20, 27, 35, 37, feature status, the build plan, owner decisions, this log, the vision page, the launch register, the roadmap pages, the ESD, the specifications index |
+| New shared documents | Copied | ADR-0035 to ADR-0038, engineering 40, `specs/ai-conversational-harness.md`, `specs/screenplay-formatting-standard-v5.md`, `specs/pdf-design-package-v2/`, `specs/owner-issues-2026-10-24/`, `roadmap/mac-port-list-2026-10-24.md`, `roadmap/mac-ai-harness-port-orders.md`, and the AI evidence of the shared core (`release/evidence/ai-harness-2026-10-24/`, `ai-conversational-*-2026-10-26/`, measured on Windows; the feature status file and the harness spec cite them) |
+| Moved to `docs/history/` with the Windows "Superseded by" line | As Windows did | `implementation/endgame-plan.md`, `implementation/final-polish-plan.md`, the five-lane `engineering/ai-answer-paths.md` (now `history/2026-10-26-ai-answer-paths-five-lanes.md`); added because current documents cite them: `history/2026-10-24-ai-harness-rebuild-plan.md`, `history/specs/screenplay-formatting-standard-v4.md`. History index rows added |
+| Mac sections added | Written from the code and the Mac-only change list | Engineering 40 section 7 (Mac library place, pointer folder, Finder files, store build without bookmarks); `ai-answer-paths.md` section 4 (FFI path, Metal helper process, timings to come) |
+
+| Stale or conflicting statement | Where | Resolution |
+|---|---|---|
+| ADR-0035 shown as Accepted with no supersession in the register, while the ADR itself says decision 1 was superseded on 2026-10-26 | `adr/README.md` | Register row says so and a section 2 row names ADR-0037. Windows register still to do |
+| The harness spec had no row in the specifications index | `specs/README.md` | Row added. Windows index still to do |
+| Seven deterministic AI routes listed as current on the Mac; Story page operations named `story.page` and `story.save_page` | `roadmap/mac-windows-structure-parity.md` | Routes marked superseded (the sync took the Windows conversational path); operation names now the Windows ones |
+| Links into `docs/archive/` and its Windows `docs/history/` copies (digests, agent brief, first security review, documents 28, 29, 31, the before-restructure pages) | Roadmap pages, vision page, owner decisions, launch register, architecture page, engineering 20, 27, 37, ESD, specifications index, `docs/README.md` | The Mac removed that folder on 2026-10-19, so the Mac wording stays as plain text and is not linked |
+| `HTML_Mockups/` removed and `WindowsHTML/` the screen record | `docs/README.md`, UX specification header, engineering 34 | True on Windows only: the Mac tree keeps `HTML_Mockups/` as history and records its screens in `MacHTML/`; both are named |
+| Feature status: the merge brought 14 new or renamed rows from Windows | `implementation/feature-status.md` | Shared descriptions taken; no existing row changed level. The new rows carry the Windows levels (the table records the Windows app; the Mac track is measured in `roadmap/mac-parity-matrix.md`) |
+| Em dashes in two files touched by the sync | ADR-0009, engineering 13 | Removed; the living-docs writing count fell from 27 to 13 |
+
+**Skipped (Windows only):** the Windows evidence screenshots in `release/evidence/M0/M0.20-visual-baseline/` (the Mac
+keeps that folder in `history/evidence/`); the Windows copies of the old `docs/archive/` files; the Windows session
+prompts never present in the Mac tree. Checks: `node scripts/check-links.mjs` and `npm run check:writing` pass.
+
 ## 2026-10-27: old documentation moved to docs/history (owner request "restructure old documentation into history")
 
 | Moved | From | To | Note |
@@ -20,6 +47,70 @@
 Rule change (owner, 2026-10-27, `CLAUDE.md`): a document or ADR superseded as a whole moves to `docs/history/`; a part
 superseded keeps its place, marked SUPERSEDED. References in 23 files were rewritten; `check-links` and
 `check-feature-status` pass.
+
+## 2026-10-27: old report and session prompt moved to history (Windows tree)
+
+Owner rule (chat): only the current application's documentation stays in `docs`; older material goes to `docs/history/`.
+
+- `docs/reports/2026-10-09-project-retrospection-and-audit.md` moved to `docs/history/2026-10-09-project-retrospection-and-audit.md`
+  with one added note. It is a snapshot of one day and its AI figures are stale; this replaces the 2026-10-24 decision to leave it in place. The `docs/reports/` folder is gone.
+- `docs/implementation/next-session-mac-html-prompt.md` moved to `docs/history/2026-10-21-next-session-mac-html-prompt.md` with one added note: a one-off session prompt, not current documentation.
+- Links changed in `docs/README.md` (map, layout block, history line), the architecture page, the vision page, the build plan and one line of the progress log. Two history index rows added.
+- Considered and kept: the specifications that are only partly superseded (AI specification, agentic RAG spec, Offline Collaboration, Security, PRD, FSD, UX, Domain), engineering document 18, the UX audit pages, `docs/specs/owner-issues-2026-10-24/`, `docs/website/prompts/`, the release evidence folders.
+
+## 2026-10-26: five-lane AI documents moved to history (Windows tree)
+
+Owner instruction (chat): dead documentation is shifted to history as part of the S9 close-out.
+
+- `docs/engineering/ai-answer-paths.md` (the five lanes) moved to `docs/history/2026-10-26-ai-answer-paths-five-lanes.md`,
+  with one added "Superseded by" line. A new `docs/engineering/ai-answer-paths.md` describes the one conversational path
+  built in slices S3 to S8.
+- `docs/specs/ai-harness-rebuild.md` moved to `docs/history/2026-10-24-ai-harness-rebuild-plan.md`, with one added line.
+  The 2026-10-24 owner decision to keep it in `docs/specs/` is replaced by this instruction.
+- Links in ADR-0035, ADR-0037, the ADR register, owner decisions, the progress log, this log and the spec now point to the
+  history copies; the specs index row is removed; the history index has two new rows. `node scripts/check-links.mjs` OK.
+
+## 2026-10-24: one history folder, harness and layout upgrade recorded (Windows tree)
+
+Owner instruction: "Update the documentation properly. Move older decisions, deprecated documentation, and material no longer applicable to the current application version into `docs/history/`."
+
+**Moves (git history keeps every file; contents unchanged except a one-line "Superseded by" note at the top of the four files marked *)**
+
+| From | To | Why |
+|---|---|---|
+| `docs/archive/` (all 21 entries: 18 plan and record files, `2026-09-spec-digest/`, `notes/`, README) | `docs/history/` | One history folder. The README is now the history index. `docs/history/specs/` (the v4 screenplay standard, moved earlier) was already there |
+| `docs/implementation/endgame-plan.md` * | `docs/history/endgame-plan.md` | W9 closed on 2026-10-18; the release gate and progress log carry the record |
+| `docs/implementation/final-polish-plan.md` * | `docs/history/final-polish-plan.md` | Final polish finished 2026-10-20; the change log carries the record |
+| `docs/implementation/next-session-windows-html-prompt.md` * | `docs/history/next-session-windows-html-prompt.md` | Done 2026-10-21; the prompt was already marked done |
+| `docs/implementation/worktree-review-2026-10-16.md` * | `docs/history/worktree-review-2026-10-16.md` | The owner decided and the clean-up is done; the storage policy holds the rules |
+
+Links, rules and scripts changed together: `CLAUDE.md` (three rules), `DEVELOPMENT.md` (tree), `docs/README.md` (layout, precedence, map rows), the history index, the writing check skip list (`docs/archive/` entry removed; `docs/history/` was already skipped), the link check (`docs/history/` is a record folder), and every link to `docs/archive/` in ADR-0005, 0009, 0012, 0017, the architecture page, engineering 13, 20, 27, 35 and 37, the roadmap pages, the vision page, owner decisions, the launch register, the Windows release gate, the UX change log and the specifications README. Entries in the progress log and in this log that named `docs/archive/` or the moved plans now name the new path.
+
+**Left where they are, on purpose:** `docs/reports/2026-10-09-project-retrospection-and-audit.md` (a dated snapshot, still the long explanation that the architecture page points to; its AI figures of 8 steps and a 7,000-character catalogue are the state of 2026-10-09), `docs/audits/` and `docs/release/evidence/` (evidence folders), `docs/specs/openframe_ai_agentic_rag_spec_prompt.md` (code and docs cite its section numbers), `docs/implementation/next-session-mac-html-prompt.md` (still the open Mac task in the handoff), `docs/website/prompts/`.
+
+**Stale statements marked superseded in place (no living document was moved)**
+
+| Statement | Where | Resolution |
+|---|---|---|
+| One agent, default 8 steps, 7,000-character catalogue | ADR-0013 decision 6; AI Specification section 8; feature status row for the assistant (its test name `default_step_limit_is_eight_and_the_hard_limit_twelve` is now `default_step_limit_is_four_and_the_hard_limit_twelve`) | Marked superseded in part with a pointer to [ADR-0035](../adr/ADR-0035-ai-lanes-briefings-and-code-verifiers.md). The 7,000 characters remain the tool selection budget, counted on the full schema; only the prompt rendering is compact |
+| No summary cache; plain flat text; short by default | `engineering/ai-answer-paths.md` decisions 4 to 6 | Already marked superseded in part on 2026-10-24 by the lane work; its header and its "not done" list now point to ADR-0035 |
+| "Nothing in this document is built" | `specs/ai-harness-rebuild.md` status line | Rewritten: built in part, decisions in ADR-0035, what was not built |
+| Numbers never include text | ADR-0028 decision 8 | Amendment of 2026-10-24 (Save conversation for review) confirmed present; register row added |
+| Screenplay standard v4; 80 pt footer clearance, hairline rule and vector lockup in production PDFs | v4 file (already in history); the report renderer | v5 and ADR-0036 recorded in the register, section 2 |
+| `(MORE)` and `CUE (CONT'D)` only for one speech split by a page boundary | `engineering/32-screenplay-engine-contract.md` | Now every page split of one speech (v5) |
+
+**Not found:** no live document states "plain text only" for AI answers except the one marked above, and no live document describes landscape Storyboard, Shot List, Schedule or Card Board outside `specs/pdf-design-package-v2/` (where v1 orientation appears only as "changes from v1").
+
+**Noted, not changed (outside documentation):** two Rust test comments still name `docs/archive/2026-09-30-security-review.md` (`crates/openframe-application/tests/platform/security_review.rs`, `crates/openframe-security/tests/security_paths.rs`). The file is now `docs/history/2026-09-30-security-review.md`. They are comments only; fix them in the next code change. A copy of the v5 screenplay standard sits untracked at the repository root (`OpenFrame_Screenplay_Formatting_Standard_v5_Combined.md`, byte-identical to `docs/specs/screenplay-formatting-standard-v5.md`); the layout rule keeps the root clear, so it can be deleted by whoever owns it.
+
+**Decisions recorded:** owner-decisions rows dated 2026-10-24 (answer shape, progress and Cancel, Save conversation, harness plan location, screenplay v5, PDF design v2, history folder, Mac port list, parallel tracks, end-to-end once). New: [ADR-0035](../adr/ADR-0035-ai-lanes-briefings-and-code-verifiers.md), [ADR-0036](../adr/ADR-0036-production-pdf-design-system-v2.md), [mac-port-list-2026-10-24.md](../roadmap/mac-port-list-2026-10-24.md). Numbers 0033 and 0034 belong to the Mac tree, so the register jumps to 0035.
+
+## 2026-10-21: HTML_Mockups removed, WindowsHTML added (Windows tree)
+
+| Stale or conflicting statement | Where it was | Resolution |
+|---|---|---|
+| `HTML_Mockups/` (181 hand-drawn screens) was the presentation authority next to the UX specification, and new screens needed a mock-up before build | `CONTRIBUTING.md`, `docs/README.md`, `DEVELOPMENT.md`, UX laws checklist, UX specification header, Chapter 2 plan, writing check | Removed at the owner's request (git history keeps it). `WindowsHTML/`, captured from the running app, records the shipped Windows screens; the UX specification alone wins on labels and layout. The specification's mock-up rule is marked superseded in place |
+| The next-session prompt asked to use "the 181 ids in HTML_Mockups/" as a checklist | `docs/history/next-session-windows-html-prompt.md` | The ids were read before the folder was removed; the checklist used was the UI source, feature status and the reachability routes |
 
 ## 2026-10-20: Mac takes the Windows structure (owner prompt "macOS structural parity")
 
@@ -36,7 +127,7 @@ superseded keeps its place, marked SUPERSEDED. References in 23 files were rewri
 
 | Stale or conflicting statement | Where it was | Resolution |
 |---|---|---|
-| The owner's prompt asked to make the Windows UI look like the Mac app; later the same evening the owner said the Windows UI stays its own | Owner prompt, then owner message | The later message wins: a Mac-style shell was reverted; only the change list items were made in the Windows design ([final-polish-plan.md](final-polish-plan.md)) |
+| The owner's prompt asked to make the Windows UI look like the Mac app; later the same evening the owner said the Windows UI stays its own | Owner prompt, then owner message | The later message wins: a Mac-style shell was reverted; only the change list items were made in the Windows design ([final-polish-plan.md](../history/final-polish-plan.md)) |
 | Tab cycled only the dialogue block (Action, Character, Parenthetical, Dialogue) | `editor/rules.ts` | Owner change list item 7: Tab now goes round every built-in element in menu order; Shift+Tab goes back. No specification fixed the old cycle |
 | The screenplay Review section, four exchange package types and new Episodic or Series projects were Reachable features | feature status SCRIPT-006, packages menu, New Project | Removed at the owner's request (items 9 and 11). The core keeps the data of older projects and refuses to export the removed package types; files made earlier still import |
 | "How many scenes are there?" answered "Nothing mentions scenes"; a character question was answered with product help | AI core (`commands.rs`, `tools.rs`, `knowledge.rs`) | Root causes and fixes in the 2026-10-19 progress log entry (OpenFrameAI.docx) |
@@ -122,7 +213,7 @@ The approved requests and expected results are unchanged; `gold/REVIEW.md` still
 
 ## 2026-10-16: Windows phase W1, archive moves and conflict sweep
 
-- Moved into `docs/archive/` (one commit, links rewritten, `check-links` clean): `docs/spec-digest/` to
+- Moved into `docs/history/` (one commit, links rewritten, `check-links` clean): `docs/spec-digest/` to
   `2026-09-spec-digest/`; `AGENT_BRIEF.md` to `2026-09-30-agent-brief.md`; `SECURITY_REVIEW_2026-09-30.md` to
   `2026-09-30-security-review.md`; engineering 28, 29 and 31 to `2026-10-05-*`. The risk levels and the feature contract
   of engineering 31 now live in CONTRIBUTING.md section 8, so no current rule depends on an archived file. The writing-check
@@ -144,7 +235,7 @@ The approved requests and expected results are unchanged; `gold/REVIEW.md` still
 ## 2026-10-15 (later): documentation restructure after the owner's 25 decisions, conflicts and where each went
 
 - New records: ADR-0027 (one Rust core, two shells), ADR-0028 (AI quality program), ADR-0029 (GPU), ADR-0030 (proof levels,
-  release flow, team gate minimum 8). Rewritten in place after archiving the old text under `docs/archive/2026-10-15-*`:
+  release flow, team gate minimum 8). Rewritten in place after archiving the old text under `docs/history/2026-10-15-*`:
   `docs/README.md`, `docs/product/vision-and-scope.md`, `docs/roadmap/README.md` and the three chapter pages,
   `docs/implementation/owner-decisions.md`. New: `docs/roadmap/chapter-1a-windows-phases.md`, `chapter-1b-mac-phases.md`.
 - Conflicts resolved (decision, old statement, where marked): one model for everyone and the processor-only engine (ADR-0013,

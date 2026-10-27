@@ -33,7 +33,7 @@ This document owns the detailed behavior of:
 
 - importing supported screenplay sources;
 - exporting screenplay documents;
-- exporting Story Board and production documents;
+- exporting Beat Board and production documents;
 - full project package export/import;
 - backup-package semantics;
 - portable review/exchange packages;
@@ -110,7 +110,7 @@ Examples:
 - FDX
 - Fountain
 - DOCX
-- Story Board PDF
+- Beat Board PDF
 - Outline PDF
 - Breakdown PDF/report
 - Catalog CSV/XLSX-style export
@@ -130,7 +130,7 @@ An Exchange Package is a portable project-specific subset intended for review or
 
 Examples:
 
-- Story Board package
+- Beat Board package
 - Screenplay review package
 - Breakdown package
 - Shot List package
@@ -173,8 +173,8 @@ Exports must begin from the correct authoritative source.
 | FDX | Selected Screenplay Draft |
 | Fountain | Selected Screenplay Draft |
 | DOCX screenplay | Selected Screenplay Draft |
-| Story Board PDF | Current Story Board state |
-| Outline PDF | Current Story Board outline projection |
+| Beat Board PDF | Current Beat Board state |
+| Outline PDF | Current Beat Board outline projection |
 | Breakdown PDF | Breakdown + selected Production Source context |
 | Catalog export | Production Catalog |
 | Shot List PDF | Shot List |
@@ -218,7 +218,7 @@ Export must not:
 - edit the source;
 - renumber stored identities;
 - create a new canonical draft;
-- modify the Story Board;
+- modify the Beat Board;
 - update production data;
 - update schedule;
 - update call sheets;
@@ -422,9 +422,9 @@ Export must not write those display numbers back into Scene Card identities or m
 
 # 6. Other Document Exports
 
-## 6.1 Story Board
+## 6.1 Beat Board
 
-Story Board PDF is a snapshot of:
+Beat Board PDF is a snapshot of:
 
 - Acts;
 - Sequences;
@@ -432,7 +432,7 @@ Story Board PDF is a snapshot of:
 - Scene Cards;
 - selected notes/references where supported.
 
-It does not create a new Story Board.
+It does not create a new Beat Board.
 
 ## 6.2 Breakdown
 
@@ -483,7 +483,7 @@ The package should contain, to the extent supported:
 - project identity;
 - project settings;
 - Idea Vault content within project scope;
-- Story Board;
+- Beat Board;
 - Characters and relationships;
 - Timeline;
 - Screenplay drafts;
@@ -668,7 +668,7 @@ It does not automatically overwrite the author's project.
 
 # 11. Exchange Package Types
 
-## 11.1 Story Board package
+## 11.1 Beat Board package
 
 Can contain:
 
@@ -1292,7 +1292,7 @@ The import/export model relies on:
 - Project;
 - Project File;
 - Screenplay/Draft/Scene/Element;
-- Story Board objects;
+- Beat Board objects;
 - Production objects;
 - Call Sheet;
 - Shooting Schedule.
@@ -1357,7 +1357,7 @@ Exported documents are snapshots and do not live-sync with the project.
 
 ## IEX-009
 
-User can export a Story Board PDF.
+User can export a Beat Board PDF.
 
 ## IEX-010
 
@@ -1468,4 +1468,4 @@ The common rule is:
 
 > **Get the project safely into or out of OpenFrame without making the user's existing work ambiguous, silently overwritten, historically rewritten, or dependent on a cloud service.**
 
-The import/export system is successful when a user can move a screenplay, review a Story Board, exchange a breakdown, transfer an entire project, or recover from a backup while always knowing what is being exported, what is being imported, what will change, and what will remain untouched.
+The import/export system is successful when a user can move a screenplay, review a Beat Board, exchange a breakdown, transfer an entire project, or recover from a backup while always knowing what is being exported, what is being imported, what will change, and what will remain untouched.

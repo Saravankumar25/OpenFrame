@@ -33,8 +33,8 @@ help, and what the legal terms are.
 ## 4. Rules that already hold
 
 - **Faithful screens.** Recreations come from the running application with the invented demo project, one fixed window size
-  per platform, and are checked against a screenshot of the same state. The 181 screens of `HTML_Mockups/` are design history
-  and some show removed features (mock-ups 164 to 168 and 155); they are not used.
+  per platform, and are checked against a screenshot of the same state. The source is `WindowsHTML/` (captured from the real app);
+  the old `HTML_Mockups/` folder was removed on 2026-10-21.
 - **The claims rule.** Nothing is advertised unless it is Verified on the exact build people download. GPU wording follows
   [ADR-0029](../adr/ADR-0029-gpu-acceleration.md) decision 8; language wording follows [ADR-0028](../adr/ADR-0028-ai-quality-program-and-harness.md) decision 9.
 - **No analytics unless disclosed**, per [ADR-0021](../adr/ADR-0021-diagnostics-telemetry-analytics-policy.md).

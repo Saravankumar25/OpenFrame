@@ -15,7 +15,7 @@ application. There are no separate editions for different kinds of user.
 A person can go from a first idea to a shoot day inside one project folder on their own computer:
 
 - Idea Vault: notes, images, links, files and voice notes.
-- Story Board: acts, sequences, beats and scene cards.
+- Beat Board: acts, sequences, beats and scene cards.
 - Screenplay: a professional screenplay editor with drafts, comparison, review rounds, locking and revisions.
 - Breakdown: tagging the elements of every scene, plus the catalog, locations, cast and crew.
 - Visual planning: moodboards, storyboards and shot lists.
@@ -43,7 +43,7 @@ Tamil, Kannada, Malayalam, Spanish, French, German, Chinese, Japanese and Korean
 application screens are English only.
 
 How these fit together is explained in [architecture/README.md](../architecture/README.md) and, in full detail, in the
-[retrospection and audit report](../history/reports/2026-10-09-project-retrospection-and-audit.md) (a snapshot of 2026-10-09).
+[retrospection and audit report](../history/reports/2026-10-09-project-retrospection-and-audit.md) (history, a snapshot of 2026-10-09).
 
 ## 3. The chapters
 

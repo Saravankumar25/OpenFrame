@@ -21,9 +21,13 @@
 | `openframe_ai_agentic_rag_spec_prompt.md` | Agentic AI and hybrid RAG behaviour (originally written as an implementation prompt) | Active, implemented; code and docs cite its section numbers |
 | `OpenFrame_ESD_Technical_Architecture.md` | Engineering system design | Active, with a status note; target additions in `docs/engineering/29` |
 | `OpenFrame_Studio_Engineering_Package_Index.md` | Locked engineering decisions, phases, invariants | Active; some locked decisions marked under amendment (see the register) |
+| `screenplay-formatting-standard-v5.md` | Screenplay page layout: spacing, keep rules, continuation, title page, numbering (added 2026-10-24) | Active. Replaces version 4 (in [../history/specs/](../history/specs/)); amends ADR-0008 for the screenplay profile |
+| `pdf-design-package-v2/` | Design package for every production PDF: system rules, one specification per export, reference HTML and PDFs (added 2026-10-24) | Active design source, [ADR-0036](../adr/ADR-0036-production-pdf-design-system-v2.md); the renderer slice follows |
+| `ai-conversational-harness.md` | Conversational assistant: design, the deterministic policy, coverage, evaluation and the build slices S0 to S9 (added 2026-10-26) | Active, companion to [ADR-0037](../adr/ADR-0037-conversational-assistant-focus-and-dossiers.md); replaces the AI harness rebuild plan (in [../history/](../history/2026-10-24-ai-harness-rebuild-plan.md)) |
+| `owner-issues-2026-10-24/` | The owner's issue list of 2026-10-24 (Word document) | Source material, not a specification |
 
 The user manual is in [../manual/](../manual) (`.docx` and `.pdf`); it still contains the removed LAN figures 164 to 168
-(regeneration is feature DOC-007; build plan item: User Manual regenerated against the shipped UI). Historical derived digests are archived in ../archive/2026-09-spec-digest/.
+(regeneration is feature DOC-007; build plan item: User Manual regenerated against the shipped UI). The historical derived digests left the Mac tree with the archive folder on 2026-10-19 (git history keeps them; the Windows tree has them in `docs/history/2026-09-spec-digest/`).
 
 **Reading rule:** a section carrying "SUPERSEDED by ADR-0007" is history. Do not implement or test it. Where the same
 topic appears elsewhere, the register in [../adr/README.md](../adr/README.md) names the current rule.

@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Breakdown Completeness — Production Report</title>
+<meta name="of-doc" content="Breakdown Completeness (reports.export_report)">
+<link rel="stylesheet" href="../../00_SYSTEM/assets/openframe-print.css">
+<style>
+  /* Breakdown Completeness — page setup. Portrait US Letter (5 columns: reports.rs sets landscape when columns > 5).
+     Running header: one compact line (project + report), top-right, because the report runs over several pages and the footer no longer carries the document name. */
+  @page { size: 8.5in 11in; @top-right { content: "LOW TIDE RADIO · BREAKDOWN COMPLETENESS"; } }
+
+  /* ============ PRODUCTION REPORT SHELL (shared by all six reports; defined in Report_Scene.md) ============ */
+  .rpt-mast { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 14pt; align-items: start; margin-bottom: 7pt; break-inside: avoid; break-after: avoid; }
+  .rpt-mast .eyebrow { display: flex; align-items: center; gap: 5pt; font-size: 7pt; }
+  .rpt-mast .eyebrow i { display: inline-block; width: 14pt; height: 2pt; background: var(--of-orange); }
+  .rpt-mast h1 { font-size: 20pt; line-height: 1.1; font-weight: 700; color: var(--of-navy); letter-spacing: -0.01em; margin: 3pt 0 3.5pt; }
+  .rpt-mast .meta-line { font-size: 8pt; color: var(--of-slate); margin: 0; line-height: 1.3; }
+  .rpt-side { border: var(--hair) solid var(--of-line); border-radius: var(--radius-lg); background: var(--of-panel); padding: 6pt 11pt 7pt; text-align: right; min-width: 104pt; max-width: 150pt; }
+  .rpt-side .lbl { font-size: var(--fs-label); font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--of-slate); }
+  .rpt-side .date { font-size: 10.5pt; font-weight: 700; color: var(--of-navy); margin-top: 1.5pt; line-height: 1.15; }
+  .rpt-side .scope { font-size: 8pt; color: var(--of-slate); margin-top: 1.5pt; line-height: 1.25; }
+  .rpt-metrics { display: flex; width: fit-content; max-width: 100%; border: var(--hair) solid var(--of-line); border-radius: var(--radius); background: var(--of-panel); margin: 0 0 9pt; break-inside: avoid; break-after: avoid; }
+  .rpt-metrics .m { flex: 0 1 auto; min-width: 0; padding: 5.5pt 10pt 6pt; display: flex; align-items: baseline; gap: 6pt; border-left: var(--hair) solid var(--of-line); }
+  .rpt-metrics .m:first-child { border-left: 0; }
+  .rpt-metrics .v { font-size: 13pt; font-weight: 700; color: var(--of-navy); line-height: 1; font-variant-numeric: tabular-nums; }
+  .rpt-metrics .l { font-size: var(--fs-label); font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--of-slate); line-height: 1.25; }
+  .rpt-metrics .m.warn .v { color: var(--of-amber-text); }
+  .rpt-metrics .m.danger .v { color: var(--of-red-text); }
+  .rpt-ctx { margin: 0 0 6pt; }
+  .rpt-att { margin: -3pt 0 8pt; }
+  .rpt-ctx .banner { margin: 0 0 4pt; }
+  .rpt-ctx .banner .q { font-weight: 700; color: var(--of-navy); }
+  .rpt-ctx .banner .rest { color: var(--of-slate); }
+  .banner.info b { color: var(--of-blue-text); }
+  .rpt-ctx .banner b, .rpt-att .banner b { flex: none; white-space: nowrap; }
+  /* table */
+  table.rpt { table-layout: fixed; font-size: var(--fs-cell); }
+  table.rpt thead th { padding: 5pt 6pt; }
+  table.rpt tbody td { padding: 3.6pt 6pt; }
+  table.rpt.dense tbody td { padding: 2.5pt 6pt; }
+  table.rpt .tile { min-width: 18pt; font-size: 8.2pt; padding: 1.6pt 3.6pt; }
+  table.rpt tbody tr.alt td { background: var(--of-panel); }
+  table.rpt tbody tr.attn td:first-child { box-shadow: inset 3pt 0 0 var(--of-orange); }
+  table.rpt tbody tr.attn-red td:first-child { box-shadow: inset 3pt 0 0 var(--of-red-text); }
+  table.rpt tbody tr.quiet td { background: var(--of-panel); color: var(--of-slate); }
+  table.rpt .hd { font-weight: 700; color: var(--of-navy); }
+  table.rpt .nm { font-weight: 700; color: var(--of-navy); text-align: right; }
+  table.rpt .nm.sug { color: var(--of-amber-text); }
+  table.rpt .nm.zero { font-weight: 400; color: var(--of-muted); }
+  table.rpt th.r, table.rpt td.r { text-align: right; }
+  table.rpt .d1 { display: block; font-weight: 700; color: var(--of-navy); white-space: nowrap; }
+  table.rpt .d2 { display: block; color: var(--of-slate); white-space: nowrap; }
+  table.rpt .days > div { margin: 0 0 1.4pt; line-height: 1.25; }
+  table.rpt .days > div:last-child { margin-bottom: 0; }
+  table.rpt .days b { color: var(--of-navy); font-weight: 700; }
+  table.rpt .none { color: var(--of-muted); }
+  table.rpt tr.group td { padding: 2pt 6pt 2.2pt; font-size: 6.8pt; letter-spacing: .12em; }
+  table.rpt td .chips { gap: 2pt; }
+  .rpt-note { font-size: 8.4pt; color: var(--of-slate); margin-top: 5pt; line-height: 1.35; }
+  .rpt-empty { margin: 4pt 0; }
+  .rpt-empty p { font-size: 9pt; line-height: 1.4; }
+  /* status chip: tone + SHAPE + WORD so it survives grayscale (ok = solid disc, info = ring + dot,
+     warn = hollow ring, danger = solid square, neutral = no mark) */
+  .st { display: inline-flex; align-items: center; gap: 3.2pt; font-size: var(--fs-chip); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; line-height: 1; padding: 2.4pt 4.6pt 2.6pt 3.8pt; border-radius: 3pt; border: var(--hair) solid var(--of-line); background: var(--of-panel); color: var(--of-neutral-text); white-space: nowrap; vertical-align: middle; }
+  .st i { flex: none; width: 5pt; height: 5pt; box-sizing: border-box; border: 1pt solid currentColor; border-radius: 50%; }
+  .st.none-mark i { display: none; }
+  .st.ok { background: var(--of-green-fill); border-color: var(--of-green-line); color: var(--of-green-text); }
+  .st.ok i { background: currentColor; }
+  .st.info { background: var(--of-blue-fill); border-color: var(--of-blue-line); color: var(--of-blue-text); }
+  .st.info i { background: currentColor; box-shadow: inset 0 0 0 .9pt #fff; }
+  .st.warn { background: var(--of-amber-fill); border-color: var(--of-amber-line); color: var(--of-amber-text); }
+  .st.warn i { background: transparent; }
+  .st.danger { background: var(--of-red-fill); border-color: var(--of-red-line); color: var(--of-red-text); }
+  .st.danger i { background: currentColor; border-radius: 0.6pt; }
+  .illustrative { font-size: 6.6pt; color: var(--of-muted); font-style: italic; }
+
+</style>
+</head>
+<body>
+<div class="doc" data-filter="coast">
+
+  <header class="masthead rpt-mast">
+    <div>
+      <div class="eyebrow"><i></i>Production report</div>
+      <h1 data-live="Breakdown Completeness" data-snap="Breakdown Completeness: LOW TIDE RADIO: Blue Revision (Locked)">Breakdown Completeness</h1>
+      <p class="meta-line">Project: Low Tide Radio · Source: LOW TIDE RADIO: Blue Revision (Locked)</p>
+    </div>
+    <div class="rpt-side" aria-label="Report details">
+      <div class="lbl">Generated</div>
+      <div class="date">22 Oct 2026</div>
+      <div class="scope" data-live="All rows" data-filtered="Filtered rows" data-snap="Saved snapshot">All rows</div>
+    </div>
+  </header>
+  <div class="rpt-ctx"><div class="banner info" data-toggle="Saved snapshot (illustrative)" hidden><b>Saved snapshot</b><span><span class="q">Breakdown Completeness</span> <span class="rest">· generated 20 Oct 2026. It does not change when production data changes.</span></span></div><div class="banner info" data-toggle="Filter active" hidden><b>Filter</b><span><span class="q">“coast”</span> <span class="rest">· rows with this text in any cell (not case-sensitive)</span></span></div></div>
+  <div class="rpt-metrics" role="group" aria-label="Report totals"><div class="m "><span class="v" data-m="t">44</span><span class="l">Scenes</span></div><div class="m "><span class="v" data-m="r">40</span><span class="l">Reviewed</span></div><div class="m warn"><span class="v" data-m="p">4</span><span class="l">In progress or needs review</span></div><div class="m "><span class="v" data-m="n">0</span><span class="l">Not started</span></div></div>
+  <div class="rpt-att"><div class="banner warn" data-toggle="Open-scenes list"><b>Scenes still open</b><span data-open>In progress or needs review: <b>23, 24, 37, 40</b></span></div></div>
+  <table class="tbl boxed rpt" aria-label="Breakdown Completeness"><colgroup><col style="width:36.0pt"><col style="width:222.0pt"><col style="width:60.0pt"><col style="width:90.0pt"><col style="width:112.0pt"></colgroup><thead><tr><th class="" scope="col">Sc</th><th class="" scope="col">Heading</th><th class="r" scope="col">Confirmed</th><th class="r" scope="col">Suggested (unreviewed)</th><th class="" scope="col">Status</th></tr></thead><tbody><tr class="" data-cells="[&quot;1&quot;, &quot;EXT. OPEN SEA - NIGHT (1999)&quot;, &quot;21&quot;, &quot;0&quot;, &quot;Reviewed&quot;]" data-k="r"><td class=""><span class="tile">1</span></td><td class=""><span class="hd">EXT. OPEN SEA - NIGHT (1999)</span></td><td class="r"><span class="nm">21</span></td><td class="r"><span class="nm zero">0</span></td><td class=""><span class="st ok"><i></i>Reviewed</span></td></tr>
+<tr class="alt" data-cells="[&quot;2&quot;, &quot;INT. COAST RADIO STATION - OPERATIONS ROOM - NIGHT (1999)&quot;, &quot;24&quot;, &quot;0&quot;, &quot;Reviewed&quot;]" data-k="r"><td class=""><span class="tile">2</span></td><td class=""><span class="hd">INT. COAST RADIO STATION - OPERATIONS ROOM - NIGHT (1999)</span></td><td class="r"><span class="nm">24</span></td><td class="r"><span class="nm zero">0</span></td><td class=""><span class="st ok"><i></i>Reviewed</span></td></tr>
+<tr class="" data-cells="[&quot;3&quot;, &quot;INT. SOUNDWAVE STUDIO - BENGALURU - DAY&quot;, &quot;15&quot;, &quot;0&quot;, &quot;Reviewed&quot;]" data-k="r"><td class=""><span class="tile">3</span></td><td class=""><span class="hd">INT. SOUNDWAVE STUDIO - BENGALURU - DAY</span></td><td class="r"><span class="nm">15</span></td><td class="r"><span class="nm zero">0</span></td><td class=""><span class="st ok"><i></i>Reviewed</span></td></tr>
+<tr class="alt" data-cells="[&quot;4&quot;, &quot;INT. KSRTC BUS - MOVING - NIGHT&quot;, &quot;16&quot;, &quot;0&quot;, &quot;Reviewed&quot;]" data-k="r"><td class=""><span class="tile">4</span></td><td class=""><span class="hd">INT. KSRTC BUS - MOVING - NIGHT</span></td><td class="r"><span class="nm">16</span></td><td class="r"><span class="nm zero">0</span></td><td class=""><span class="st ok"><i></i>Reviewed</span></td></tr>
+<tr class="" data-cells="[&quot;5&quot;, &quot;EXT. COAST RADIO STATION - DAWN&quot;, &quot;20&quot;, &quot;0&quot;, &quot;Reviewed&quot;]" data-k="r"><td class=""><span class="tile">5</span></td><td class=""><span class="hd">EXT. COAST RADIO STATION - DAWN</span></td><td class="r"><span class="nm">20</span></td><td class="r"><span class="nm zero">0</span></td><td class=""><span class="st ok"><i></i>Reviewed</span></td></tr>
+<tr class="alt" data-cells="[&quot;6&quot;, &quot;INT. THOMAS HOUSE - KITCHEN - DAY&quot;, &quot;14&quot;, &quot;0&quot;, &quot;Reviewed&quot;]" data-k="r"><td class=""><span class="tile">6</span></td><td class=""><span class="hd">INT. THOMAS HOUSE - KITCHEN - DAY</span></td><td class="r"><span class="nm">14</span></td><td class="r"><span class="nm zero">0</span></td><td class=""><span class="st ok"><i></i>Reviewed</span></td></tr>
+<tr class="" data-cells="[&quot;7&quot;, &quot;EXT. KADALKKARA HARBOUR - DAY&quot;, &quot;22&quot;, &quot;0&quot;, &quot;Reviewed&quot;]" data-k="r"><td class=""><span class="tile">7</span></td><td class=""><span class="hd">EXT. KADALKKARA HARBOUR - DAY</span></td><td class="r"><span class="nm">22</span></td><td class="r"><span class="nm zero">0</span></td><td class=""><span class="st ok"><i></i>Reviewed</span></td></tr>
+<tr class="alt" data-cells="[&quot;8&quot;, &quot;INT. PORT TRUST OFFICE - DAY&quot;, &quot;14&quot;, &quot;0&quot;, &quot;Reviewed&quot;]" data-k="r"><td class=""><span class="tile">8</span></td><td class=""><span class="hd">INT. PORT TRUST OFFICE - DAY</span></td><td class="r"><span class="nm">14</span></td><td class="r"><span class="nm zero">0</span></td><td class=""><span class="st ok"><i></i>Reviewed</span></td></tr>
+<tr class="" data-cells="[&quot;9&quot;, &quot;INT. FATHIMA&#x27;S TEA SHOP - NIGHT&quot;, &quot;21&quot;, &quot;0&quot;, &quot;Reviewed&quot;]" data-k="r"><td class=""><span class="tile">9</span></td><td class=""><span class="hd">INT. FATHIMA&#x27;S TEA SHOP - NIGHT</span></td><td class="r"><span class="nm">21</span></td><td class="r"><span class="nm zero">0</span></td><td class=""><span class="st ok"><i></i>Reviewed</span></td></tr>
+<tr class="alt" data-cells="[&quot;10&quot;, &quot;INT. THOMAS HOUSE - APPACHAN&#x27;S ROOM - NIGHT&quot;, &quot;14&quot;, &quot;0&quot;, &quot;Reviewed&quot;]" data-k="r"><td class=""><span class="tile">10</span></td><td class=""><span class="hd">INT. THOMAS HOUSE - APPACHAN&#x27;S ROOM - NIGHT</span></td><td class="r"><span class="nm">14</span></td><td class="r"><span class="nm zero">0</span></td><td class=""><span class="st ok"><i></i>Reviewed</span></td></tr>
+<tr class="" data-cells="[&quot;11&quot;, &quot;INT. COAST RADIO STATION - OPERATIONS ROOM - NIGHT&quot;, &quot;17&quot;, &quot;0&quot;, &quot;Reviewed&quot;]" data-k="r"><td class=""><span class="tile">11</span></td><td class=""><span class="hd">INT. COAST RADIO STATION - OPERATIONS ROOM - NIGHT</span></td><td class="r"><span class="nm">17</span></td><td class="r"><span class="nm zero">0</span></td><td class=""><span class="st ok"><i></i>Reviewed</span></td></tr>
+<tr class="alt" data-cells="[&quot;12&quot;, &quot;EXT. COAST RADIO STATION - NIGHT&quot;, &quot;13&quot;, &quot;0&quot;, &quot;Reviewed&quot;]" data-k="r"><td class=""><span class="tile">12</span></td><td class=""><span class="hd">EXT. COAST RADIO STATION - NIGHT</span></td><td class="r"><span class="nm">13</span></td><td class="r"><span class="nm zero">0</span></td><td class=""><span class="st ok"><i></i>Reviewed</span></td></tr>
+<tr class="" data-cells="[&quot;13&quot;, &quot;INT. FISHERIES SCHOOL - RADIO CLUB ROOM - DAY&quot;, &quot;16&quot;, &quot;0&quot;, &quot;Reviewed&quot;]" data-k="r"><td class=""><span class="tile">13</span></td><td class=""><span class="hd">INT. FISHERIES SCHOOL - RADIO CLUB ROOM - DAY</span></td><td class="r"><span class="nm">16</span></td><td class="r"><span class="nm zero">0</span></td><td class=""><span class="st ok"><i></i>Reviewed</span></td></tr>
+<tr class="alt" data-cells="[&quot;14&quot;, &quot;INT. FATHIMA&#x27;S TEA SHOP - KITCHEN - DAY&quot;, &quot;16&quot;, &quot;0&quot;, &quot;Reviewed&quot;]" data-k="r"><td class=""><span class="tile">14</span></td><td class=""><span class="hd">INT. FATHIMA&#x27;S TEA SHOP - KITCHEN - DAY</span></td><td class="r"><span class="nm">16</span></td><td class="r"><span class="nm zero">0</span></td><td class=""><span class="st ok"><i></i>Reviewed</span></td></tr>
+<tr class="" data-cells="[&quot;15&quot;, &quot;INT. THOMAS HOUSE - VERANDA - DAY&quot;, &quot;11&quot;, &quot;0&quot;, &quot;Reviewed&quot;]" data-k="r"><td class=""><span class="tile">15</span></td><td class=""><span class="hd">INT. THOMAS HOUSE - VERANDA - DAY</span></td><td class="r"><span class="nm">11</span></td><td class="r"><span class="nm zero">0</span></td><td class=""><span class="st ok"><i></i>Reviewed</span></td></tr>
+<tr class="alt" data-cells="[&quot;16&quot;, &quot;INT. FISHERIES SCHOOL - RADIO CLUB ROOM - NIGHT&quot;, &quot;17&quot;, &quot;0&quot;, &quot;Reviewed&quot;]" data-k="r"><td class=""><span class="tile">16</span></td><td class=""><span class="hd">INT. FISHERIES SCHOOL - RADIO CLUB ROOM - NIGHT</span></td><td class="r"><span class="nm">17</span></td><td class="r"><span class="nm zero">0</span></td><td class=""><span class="st ok"><i></i>Reviewed</span></td></tr>
+<tr class="" data-cells="[&quot;17&quot;, &quot;INT. JOE&#x27;S ROOM ABOVE THE TODDY SHOP - DAY&quot;, &quot;11&quot;, &quot;0&quot;, &quot;Reviewed&quot;]" data-k="r"><td class=""><span class="tile">17</span></td><td class=""><span class="hd">INT. JOE&#x27;S ROOM ABOVE THE TODDY SHOP - DAY</span></td><td class="r"><span class="nm">11</span></td><td class="r"><span class="nm zero">0</span></td><td class=""><span class="st ok"><i></i>Reviewed</span></td></tr>
+<tr class="alt" data-cells="[&quot;18&quot;, &quot;EXT. ST. ANTONY&#x27;S CHURCH - DAY&quot;, &quot;15&quot;, &quot;0&quot;, &quot;Reviewed&quot;]" data-k="r"><td class=""><span class="tile">18</span></td><td class=""><span class="hd">EXT. ST. ANTONY&#x27;S CHURCH - DAY</span></td><td class="r"><span class="nm">15</span></td><td class="r"><span class="nm zero">0</span></td><td class=""><span class="st ok"><i></i>Reviewed</span></td></tr>
+<tr class="" data-cells="[&quot;19&quot;, &quot;INT. POLICE OUTPOST - DAY&quot;, &quot;13&quot;, &quot;0&quot;, &quot;Reviewed&quot;]" data-k="r"><td class=""><span class="tile">19</span></td><td class=""><span class="hd">INT. POLICE OUTPOST - DAY</span></td><td class="r"><span class="nm">13</span></td><td class="r"><span class="nm zero">0</span></td><td class=""><span class="st ok"><i></i>Reviewed</span></td></tr>
+<tr class="alt" data-cells="[&quot;20&quot;, &quot;INT. THOMAS HOUSE - KITCHEN - NIGHT&quot;, &quot;8&quot;, &quot;0&quot;, &quot;Reviewed&quot;]" data-k="r"><td class=""><span class="tile">20</span></td><td class=""><span class="hd">INT. THOMAS HOUSE - KITCHEN - NIGHT</span></td><td class="r"><span class="nm">8</span></td><td class="r"><span class="nm zero">0</span></td><td class=""><span class="st ok"><i></i>Reviewed</span></td></tr>
+<tr class="" data-cells="[&quot;21&quot;, &quot;EXT. KADALKKARA BEACH - DAY&quot;, &quot;20&quot;, &quot;0&quot;, &quot;Reviewed&quot;]" data-k="r"><td class=""><span class="tile">21</span></td><td class=""><span class="hd">EXT. KADALKKARA BEACH - DAY</span></td><td class="r"><span class="nm">20</span></td><td class="r"><span class="nm zero">0</span></td><td class=""><span class="st ok"><i></i>Reviewed</span></td></tr>
+<tr class="attn alt" data-cells="[&quot;23&quot;, &quot;EXT. KADALKKARA HARBOUR - NIGHT&quot;, &quot;22&quot;, &quot;1&quot;, &quot;In progress&quot;]" data-k="p"><td class=""><span class="tile">23</span></td><td class=""><span class="hd">EXT. KADALKKARA HARBOUR - NIGHT</span></td><td class="r"><span class="nm">22</span></td><td class="r"><span class="nm sug">1</span></td><td class=""><span class="st info"><i></i>In progress</span></td></tr>
+<tr class="attn" data-cells="[&quot;24&quot;, &quot;EXT. KADALKKARA JETTY - NIGHT&quot;, &quot;3&quot;, &quot;4&quot;, &quot;In progress&quot;]" data-k="p"><td class=""><span class="tile">24</span></td><td class=""><span class="hd">EXT. KADALKKARA JETTY - NIGHT</span></td><td class="r"><span class="nm">3</span></td><td class="r"><span class="nm sug">4</span></td><td class=""><span class="st info"><i></i>In progress</span></td></tr>
+<tr class="alt" data-cells="[&quot;25&quot;, &quot;EXT. HARBOUR BREAKWATER - NIGHT&quot;, &quot;16&quot;, &quot;0&quot;, &quot;Reviewed&quot;]" data-k="r"><td class=""><span class="tile">25</span></td><td class=""><span class="hd">EXT. HARBOUR BREAKWATER - NIGHT</span></td><td class="r"><span class="nm">16</span></td><td class="r"><span class="nm zero">0</span></td><td class=""><span class="st ok"><i></i>Reviewed</span></td></tr>
+<tr class="" data-cells="[&quot;26&quot;, &quot;INT. TALUK HOSPITAL - WARD - NIGHT&quot;, &quot;20&quot;, &quot;0&quot;, &quot;Reviewed&quot;]" data-k="r"><td class=""><span class="tile">26</span></td><td class=""><span class="hd">INT. TALUK HOSPITAL - WARD - NIGHT</span></td><td class="r"><span class="nm">20</span></td><td class="r"><span class="nm zero">0</span></td><td class=""><span class="st ok"><i></i>Reviewed</span></td></tr>
+<tr class="alt" data-cells="[&quot;27&quot;, &quot;INT. TALUK HOSPITAL - CORRIDOR - DAWN&quot;, &quot;8&quot;, &quot;0&quot;, &quot;Reviewed&quot;]" data-k="r"><td class=""><span class="tile">27</span></td><td class=""><span class="hd">INT. TALUK HOSPITAL - CORRIDOR - DAWN</span></td><td class="r"><span class="nm">8</span></td><td class="r"><span class="nm zero">0</span></td><td class=""><span class="st ok"><i></i>Reviewed</span></td></tr>
+<tr class="" data-cells="[&quot;28&quot;, &quot;INT. COAST RADIO STATION - TAPE ROOM - DAY&quot;, &quot;15&quot;, &quot;0&quot;, &quot;Reviewed&quot;]" data-k="r"><td class=""><span class="tile">28</span></td><td class=""><span class="hd">INT. COAST RADIO STATION - TAPE ROOM - DAY</span></td><td class="r"><span class="nm">15</span></td><td class="r"><span class="nm zero">0</span></td><td class=""><span class="st ok"><i></i>Reviewed</span></td></tr>
+<tr class="alt" data-cells="[&quot;29&quot;, &quot;INT. COAST RADIO STATION - OPERATIONS ROOM - DAY&quot;, &quot;10&quot;, &quot;0&quot;, &quot;Reviewed&quot;]" data-k="r"><td class=""><span class="tile">29</span></td><td class=""><span class="hd">INT. COAST RADIO STATION - OPERATIONS ROOM - DAY</span></td><td class="r"><span class="nm">10</span></td><td class="r"><span class="nm zero">0</span></td><td class=""><span class="st ok"><i></i>Reviewed</span></td></tr>
+<tr class="" data-cells="[&quot;30&quot;, &quot;EXT. TODDY SHOP - NIGHT&quot;, &quot;17&quot;, &quot;0&quot;, &quot;Reviewed&quot;]" data-k="r"><td class=""><span class="tile">30</span></td><td class=""><span class="hd">EXT. TODDY SHOP - NIGHT</span></td><td class="r"><span class="nm">17</span></td><td class="r"><span class="nm zero">0</span></td><td class=""><span class="st ok"><i></i>Reviewed</span></td></tr>
+<tr class="alt" data-cells="[&quot;31&quot;, &quot;EXT. LIGHTHOUSE ROAD - NIGHT&quot;, &quot;12&quot;, &quot;0&quot;, &quot;Reviewed&quot;]" data-k="r"><td class=""><span class="tile">31</span></td><td class=""><span class="hd">EXT. LIGHTHOUSE ROAD - NIGHT</span></td><td class="r"><span class="nm">12</span></td><td class="r"><span class="nm zero">0</span></td><td class=""><span class="st ok"><i></i>Reviewed</span></td></tr>
+<tr class="" data-cells="[&quot;32&quot;, &quot;INT. POLICE OUTPOST - CELL - NIGHT&quot;, &quot;12&quot;, &quot;0&quot;, &quot;Reviewed&quot;]" data-k="r"><td class=""><span class="tile">32</span></td><td class=""><span class="hd">INT. POLICE OUTPOST - CELL - NIGHT</span></td><td class="r"><span class="nm">12</span></td><td class="r"><span class="nm zero">0</span></td><td class=""><span class="st ok"><i></i>Reviewed</span></td></tr>
+<tr class="alt" data-cells="[&quot;33&quot;, &quot;INT. COAST RADIO STATION - OPERATIONS ROOM - NIGHT (1999)&quot;, &quot;20&quot;, &quot;0&quot;, &quot;Reviewed&quot;]" data-k="r"><td class=""><span class="tile">33</span></td><td class=""><span class="hd">INT. COAST RADIO STATION - OPERATIONS ROOM - NIGHT (1999)</span></td><td class="r"><span class="nm">20</span></td><td class="r"><span class="nm zero">0</span></td><td class=""><span class="st ok"><i></i>Reviewed</span></td></tr>
+<tr class="" data-cells="[&quot;34&quot;, &quot;INT. FISHERIES SCHOOL - RADIO CLUB ROOM - NIGHT&quot;, &quot;19&quot;, &quot;0&quot;, &quot;Reviewed&quot;]" data-k="r"><td class=""><span class="tile">34</span></td><td class=""><span class="hd">INT. FISHERIES SCHOOL - RADIO CLUB ROOM - NIGHT</span></td><td class="r"><span class="nm">19</span></td><td class="r"><span class="nm zero">0</span></td><td class=""><span class="st ok"><i></i>Reviewed</span></td></tr>
+<tr class="alt" data-cells="[&quot;35&quot;, &quot;EXT. OPEN SEA - LITTLE FLOWER - NIGHT (1999)&quot;, &quot;20&quot;, &quot;0&quot;, &quot;Reviewed&quot;]" data-k="r"><td class=""><span class="tile">35</span></td><td class=""><span class="hd">EXT. OPEN SEA - LITTLE FLOWER - NIGHT (1999)</span></td><td class="r"><span class="nm">20</span></td><td class="r"><span class="nm zero">0</span></td><td class=""><span class="st ok"><i></i>Reviewed</span></td></tr>
+<tr class="" data-cells="[&quot;36&quot;, &quot;INT. SURESH&#x27;S HOUSE - DAY&quot;, &quot;11&quot;, &quot;0&quot;, &quot;Reviewed&quot;]" data-k="r"><td class=""><span class="tile">36</span></td><td class=""><span class="hd">INT. SURESH&#x27;S HOUSE - DAY</span></td><td class="r"><span class="nm">11</span></td><td class="r"><span class="nm zero">0</span></td><td class=""><span class="st ok"><i></i>Reviewed</span></td></tr>
+<tr class="attn alt" data-cells="[&quot;37&quot;, &quot;INT. PORT TRUST OFFICE - DAY&quot;, &quot;8&quot;, &quot;1&quot;, &quot;In progress&quot;]" data-k="p"><td class=""><span class="tile">37</span></td><td class=""><span class="hd">INT. PORT TRUST OFFICE - DAY</span></td><td class="r"><span class="nm">8</span></td><td class="r"><span class="nm sug">1</span></td><td class=""><span class="st info"><i></i>In progress</span></td></tr>
+<tr class="" data-cells="[&quot;38&quot;, &quot;EXT. KADALKKARA BEACH - DUSK&quot;, &quot;22&quot;, &quot;0&quot;, &quot;Reviewed&quot;]" data-k="r"><td class=""><span class="tile">38</span></td><td class=""><span class="hd">EXT. KADALKKARA BEACH - DUSK</span></td><td class="r"><span class="nm">22</span></td><td class="r"><span class="nm zero">0</span></td><td class=""><span class="st ok"><i></i>Reviewed</span></td></tr>
+<tr class="alt" data-cells="[&quot;39&quot;, &quot;INT. THOMAS HOUSE - APPACHAN&#x27;S ROOM - DUSK&quot;, &quot;9&quot;, &quot;0&quot;, &quot;Reviewed&quot;]" data-k="r"><td class=""><span class="tile">39</span></td><td class=""><span class="hd">INT. THOMAS HOUSE - APPACHAN&#x27;S ROOM - DUSK</span></td><td class="r"><span class="nm">9</span></td><td class="r"><span class="nm zero">0</span></td><td class=""><span class="st ok"><i></i>Reviewed</span></td></tr>
+<tr class="attn" data-cells="[&quot;40&quot;, &quot;EXT. KADALKKARA BEACH - NIGHT&quot;, &quot;35&quot;, &quot;1&quot;, &quot;In progress&quot;]" data-k="p"><td class=""><span class="tile">40</span></td><td class=""><span class="hd">EXT. KADALKKARA BEACH - NIGHT</span></td><td class="r"><span class="nm">35</span></td><td class="r"><span class="nm sug">1</span></td><td class=""><span class="st info"><i></i>In progress</span></td></tr>
+<tr class="alt" data-cells="[&quot;41&quot;, &quot;EXT. COAST RADIO STATION - ROOF - NIGHT&quot;, &quot;15&quot;, &quot;0&quot;, &quot;Reviewed&quot;]" data-k="r"><td class=""><span class="tile">41</span></td><td class=""><span class="hd">EXT. COAST RADIO STATION - ROOF - NIGHT</span></td><td class="r"><span class="nm">15</span></td><td class="r"><span class="nm zero">0</span></td><td class=""><span class="st ok"><i></i>Reviewed</span></td></tr>
+<tr class="" data-cells="[&quot;42&quot;, &quot;EXT. COAST RADIO STATION - DAY&quot;, &quot;29&quot;, &quot;0&quot;, &quot;Reviewed&quot;]" data-k="r"><td class=""><span class="tile">42</span></td><td class=""><span class="hd">EXT. COAST RADIO STATION - DAY</span></td><td class="r"><span class="nm">29</span></td><td class="r"><span class="nm zero">0</span></td><td class=""><span class="st ok"><i></i>Reviewed</span></td></tr>
+<tr class="alt" data-cells="[&quot;43&quot;, &quot;INT. FATHIMA&#x27;S TEA SHOP - DAY&quot;, &quot;17&quot;, &quot;0&quot;, &quot;Reviewed&quot;]" data-k="r"><td class=""><span class="tile">43</span></td><td class=""><span class="hd">INT. FATHIMA&#x27;S TEA SHOP - DAY</span></td><td class="r"><span class="nm">17</span></td><td class="r"><span class="nm zero">0</span></td><td class=""><span class="st ok"><i></i>Reviewed</span></td></tr>
+<tr class="" data-cells="[&quot;44&quot;, &quot;EXT. KADALKKARA HARBOUR - DAWN&quot;, &quot;11&quot;, &quot;0&quot;, &quot;Reviewed&quot;]" data-k="r"><td class=""><span class="tile">44</span></td><td class=""><span class="hd">EXT. KADALKKARA HARBOUR - DAWN</span></td><td class="r"><span class="nm">11</span></td><td class="r"><span class="nm zero">0</span></td><td class=""><span class="st ok"><i></i>Reviewed</span></td></tr>
+<tr class="alt" data-cells="[&quot;45&quot;, &quot;EXT. KADALKKARA BEACH - DAY&quot;, &quot;10&quot;, &quot;0&quot;, &quot;Reviewed&quot;]" data-k="r"><td class=""><span class="tile">45</span></td><td class=""><span class="hd">EXT. KADALKKARA BEACH - DAY</span></td><td class="r"><span class="nm">10</span></td><td class="r"><span class="nm zero">0</span></td><td class=""><span class="st ok"><i></i>Reviewed</span></td></tr></tbody></table>
+  
+  <div class="callout info block rpt-empty" data-empty hidden><p>No matching data.</p></div>
+</div>
+
+<script src="../../00_SYSTEM/assets/of-preview.js"></script>
+
+<script>
+  /* Preview-only: the filter / snapshot / divider toggles re-create the report states the app can print.
+     Nothing here affects the printed PDF (the PDF captures the default state). */
+  (function () {
+    var bar = document.querySelector('.preview-bar'); if (!bar) return;
+    var doc = document.querySelector('.doc');
+    function box(prefix) { var L = bar.querySelectorAll('label'); for (var i = 0; i < L.length; i++) { if (L[i].textContent.indexOf(prefix) === 0) return L[i].querySelector('input'); } return null; }
+    var fb = box('Filter active'), sb = box('Saved snapshot');
+    var rows = [].slice.call(doc.querySelectorAll('tbody tr[data-cells]'));
+    var groups = [].slice.call(doc.querySelectorAll('tbody tr.group'));
+    var table = doc.querySelector('table.rpt'), empty = doc.querySelector('[data-empty]'), note = doc.querySelector('.rpt-note');
+    function apply() {
+      var f = (fb && fb.checked) ? (doc.getAttribute('data-filter') || '').toLowerCase() : '';
+      var vis = 0, alt = false, counts = {t: 0};
+      rows.forEach(function (tr) {
+        var cells = JSON.parse(tr.getAttribute('data-cells'));
+        var ok = !f || cells.some(function (c) { return c.toLowerCase().indexOf(f) > -1; });
+        tr.hidden = !ok;
+        tr.classList.remove('alt');
+        if (ok) { vis++; counts.t++; if (alt) tr.classList.add('alt'); alt = !alt;
+          (tr.getAttribute('data-k') || '').split(' ').forEach(function (k) { if (k) counts[k] = (counts[k] || 0) + 1; }); }
+      });
+      var last = null, seen = false;
+      var all = [].slice.call(doc.querySelectorAll('tbody tr'));
+      all.forEach(function (tr, i) { if (tr.classList.contains('group')) { var nxt = null; for (var j = i + 1; j < all.length; j++) { if (all[j].classList.contains('group')) break; if (!all[j].hidden) { nxt = all[j]; break; } } tr.dataset.need = nxt ? '1' : '0'; } });
+      groups.forEach(function (g) { g.style.display = g.dataset.need === '0' ? 'none' : ''; });
+      [].slice.call(doc.querySelectorAll('[data-m]')).forEach(function (m) { m.textContent = counts[m.getAttribute('data-m')] || 0; });
+      if (table) table.hidden = rows.length > 0 && vis === 0;
+      if (empty) empty.hidden = !(rows.length > 0 && vis === 0);
+      if (note) note.hidden = rows.length > 0 && vis === 0;
+      var op = doc.querySelector('[data-open]');
+      if (op) { var p = [], n = []; rows.forEach(function (tr) { if (tr.hidden) return; var k = tr.getAttribute('data-k') || '', sc = JSON.parse(tr.getAttribute('data-cells'))[0]; if (k.indexOf('p') > -1) p.push(sc); if (k.indexOf('n') > -1) n.push(sc); });
+        var t = ''; if (p.length) t += 'In progress or needs review: <b>' + p.join(', ') + '</b>'; if (n.length) t += (t ? ' · ' : '') + 'Not started: <b>' + n.join(', ') + '</b>';
+        op.innerHTML = t; var box2 = op.closest('.rpt-att'); if (box2) box2.style.display = t ? '' : 'none'; }
+      var snap = sb && sb.checked;
+      [].slice.call(doc.querySelectorAll('[data-live]')).forEach(function (el) {
+        el.textContent = snap && el.hasAttribute('data-snap') ? el.getAttribute('data-snap') : ((fb && fb.checked && el.hasAttribute('data-filtered')) ? el.getAttribute('data-filtered') : el.getAttribute('data-live'));
+      });
+    }
+    if (fb) fb.addEventListener('change', apply);
+    if (sb) sb.addEventListener('change', apply);
+    apply();
+  })();
+</script>
+</body>
+</html>

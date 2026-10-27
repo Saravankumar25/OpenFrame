@@ -122,7 +122,7 @@ only the existing AI code. W7 and W8 may run side by side after W6.
 - **Shared scenario list.** Every end-to-end scenario is written as a numbered, plain list of steps in
   `tests/e2e/scenarios/`, the file the Mac track implements again ([ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md)).
 - **Prove the rows writers use every day** (Large): project create, open, close, duplicate, archive; autosave and recovery;
-  Idea Vault; Story Board characters and episodes; Scene hub; comments; drafts and compare; every export format. Each row
+  Idea Vault; Beat Board characters and episodes; Scene hub; comments; drafts and compare; every export format. Each row
   saves, undoes, survives restart and a forced kill, exports and imports where it applies, enforces permissions, and has an
   end-to-end step.
 - **Visual planning** gets end-to-end steps for the canvas, the sketch dialog and drag reorder (Medium).

@@ -26,7 +26,7 @@ This specification compares the supplied OpenFrame product manual, the supplied 
 ### Supplied sources
 
 1. **OpenFrame Complete Product Feature Manual**
-   - Defines OpenFrame as a local-first filmmaking workspace progressing from Idea Vault → Story Board → Screenplay → Breakdown → Production → Schedule → Call Sheets.
+   - Defines OpenFrame as a local-first filmmaking workspace progressing from Idea Vault → Beat Board → Screenplay → Breakdown → Production → Schedule → Call Sheets.
    - Defines the Screenplay workspace as the professionally strict writing environment and specifies automatic screenplay formatting, drafts, review, locking/revisions, import/export, title page and printing.
    - Its current-status table marks Screenplay, Breakdown, Production, Schedule, Call Sheets, templates and related creative modules as **In development**, so this file is a requirements/upgrade plan rather than a claim that every feature is already shipped.
 
@@ -88,7 +88,7 @@ Advanced capability belongs in the **engine**, but should appear through progres
 | Custom keyboard shortcuts | P1 | Add |
 | Basic proofing + language dictionaries | P1 | Add |
 | Multilingual screenplay text/Unicode | P0 | Add/verify at engine level |
-| Story Board card display customization | P1 | Add |
+| Beat Board card display customization | P1 | Add |
 | Breakdown category/tag colors | P1 | Add |
 | Breakdown bulk/quick operations | P1 | Add |
 | Schedule timing/travel/availability | P1 | Add |
@@ -276,7 +276,7 @@ This is one of the highest-value Final Draft-inspired features because it remove
 Build suggestions from:
 
 - screenplay character cues
-- Story Board character directory
+- Beat Board character directory
 - cast-linked characters
 
 ### Locations
@@ -769,9 +769,9 @@ Every command must also retain an on-screen route.
 
 ---
 
-# 21. Story Board Scene Card redesign requested by product owner
+# 21. Beat Board Scene Card redesign requested by product owner
 
-The existing Story Board is intentionally lightweight. Keep that philosophy while increasing information capacity.
+The existing Beat Board is intentionally lightweight. Keep that philosophy while increasing information capacity.
 
 ## 21.1 Larger scene description
 
@@ -789,7 +789,7 @@ The long description should be large enough to hold meaningful scene-development
 
 Add:
 
-**Story Board → Card Display Settings**
+**Beat Board → Card Display Settings**
 
 Checkboxes:
 
@@ -1223,6 +1223,12 @@ Support:
 
 Do not show every empty section.
 
+> **Order and names updated 2026-10-27 (owner):** the on-screen sheet follows the exported PDF: masthead, Day and
+> times, Production, Locations, Scene schedule, then "People on the day" (Talent / Cast, Extras, Crew, Department
+> notes) and "Day-of logistics" (Practical / Safety information with the day notes and custom fields, Weather, Advance
+> schedule, Walkie channels and contacts, Special notes, Attachments, Reference images). The list below is the
+> original order and is superseded.
+
 Default:
 
 1. Production header
@@ -1356,7 +1362,7 @@ Do not add:
 The manual defines a Template Browser and says it contains:
 
 - project starters
-- Story Board starters
+- Beat Board starters
 - call-sheet layouts
 - shot-list layouts
 - moodboards
@@ -1376,7 +1382,7 @@ Therefore the project must not claim an existing exact template count until one 
 1. Feature Film Screenplay
 2. Short Film Screenplay
 3. Episodic / Series
-4. Simple Story Board
+4. Simple Beat Board
 5. Indie Call Sheet
 6. Shot List
 7. Moodboard
@@ -1757,8 +1763,8 @@ Not the goal.
 
 | Final Draft concept | OpenFrame approach |
 |---|---|
-| Beat Board | Story Board |
-| Outline Editor | Story Board + Outline |
+| Beat Board | Beat Board |
+| Outline Editor | Beat Board + Outline |
 | Structure Lines | Story relationships; do not create a second duplicate system unless needed |
 | Script Navigator | Scene Navigator + configurable columns |
 | ScriptNotes | OpenFrame Notes + Comments |
@@ -1881,7 +1887,7 @@ Do not call the screenplay engine production-ready until:
 
 ---
 
-# 52. Acceptance criteria — Story Board
+# 52. Acceptance criteria — Beat Board
 
 - scene descriptions hold substantially more information
 - attachments remain linked
@@ -2026,7 +2032,7 @@ Every screenplay export remains clean/unbranded.
 
 ## Phase 3 — Indie production depth
 
-20. Story Board card customization
+20. Beat Board card customization
 21. breakdown category colors
 22. breakdown quick/bulk actions
 23. schedule timing/travel/availability
@@ -2138,7 +2144,7 @@ Add conflict checking and restore-default controls.
 
 The current specification includes title, author/creator, contact details and optional draft/revision information.
 
-## Story Board card descriptions
+## Beat Board card descriptions
 
 Increase capacity and make minimized-card fields user-selectable.
 

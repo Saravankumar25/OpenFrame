@@ -96,7 +96,7 @@ Available operations include:
 - project creation;
 - project open/close;
 - Idea Vault;
-- Story Board;
+- Beat Board;
 - Screenplay;
 - drafts;
 - comments/review locally;
@@ -183,7 +183,7 @@ The following remain available without internet:
 | Create project | Yes |
 | Open project | Yes |
 | Edit Idea Vault | Yes |
-| Edit Story Board | Yes |
+| Edit Beat Board | Yes |
 | Write screenplay | Yes |
 | Create drafts | Yes |
 | Review/comments locally | Yes |
@@ -574,7 +574,7 @@ A participant:
 The host may select:
 
 - entire project;
-- Story Board;
+- Beat Board;
 - Screenplay;
 - specific Production workspace.
 
@@ -847,7 +847,7 @@ No silent data loss.
 
 If the host shares Story only:
 
-- Story Board content is available;
+- Beat Board content is available;
 - unrelated private screenplay/production areas remain unavailable;
 - AI can only retrieve data available within the participant's permitted scope.
 

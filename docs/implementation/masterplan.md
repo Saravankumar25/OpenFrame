@@ -118,7 +118,7 @@ Work down this table. An area starts when the areas it needs are far enough alon
 | 6 | Security hardening from the baseline audit | Project controls | none |
 | 7 | Platform adapter layer for Windows and Mac | Test infrastructure | none (Mac hardware needed for tests) |
 | 8 | AI assistant quality and hardening | Test infrastructure | support address, AI test hardware |
-| 9 | Story Board and Idea Vault | Test infrastructure | one product question |
+| 9 | Beat Board and Idea Vault | Test infrastructure | one product question |
 | 10 | Writing comfort | Test infrastructure | none |
 | 11 | Screenplay engine and file formats | Data safety, Test infrastructure | production numbers, PDF fonts |
 | 12 | Appearance and themes | Test infrastructure | themes decision |
@@ -317,7 +317,7 @@ Goal: one product, two thin adapters. Feature code never learns which operating 
 
 **Done when:** retrieval quality meets the approved thresholds, hardware results are archived, the AI never writes on its own, and no private note or other user's data reaches the AI.
 
-## 9. Story Board and Idea Vault
+## 9. Beat Board and Idea Vault
 
 - [x] **Long scene description** as a real field, searchable and readable by the AI. Uses the next free migration. (ev: story_cards.rs::long_scene_description_is_a_real_field_saved_undone_and_kept_after_restart, ::long_scene_description_is_searchable_and_leaves_search_when_cleared_or_deleted, ::long_scene_description_is_readable_by_the_assistant_and_editable_only_by_proposal; migration_fixtures.rs::v11_to_v12_adds_long_description_and_research_flag_without_touching_content (project migration 0012); E2E 31-story-board-flow.test.mjs "long scene description and Card Display presets", green in docs/history/evidence/2026-10-08-session-2/e2e-session-2.md section 8)
 - [x] **Card display settings** (12 toggles) stored as view settings, never as content; changing the layout never changes scene or screenplay text. (ev: story_cards.rs::changing_card_display_never_changes_scene_or_screenplay_data, ::card_display_is_per_user_and_viewers_may_choose_their_own, ::board_cards_carry_what_the_display_toggles_need; BoardView.test.tsx; E2E 31-story-board-flow.test.mjs, green in docs/history/evidence/2026-10-08-session-2/e2e-session-2.md section 8)
@@ -434,7 +434,7 @@ Contract: `docs/engineering/33-production-depth-contract.md`. Extend the existin
 - [x] **Update preview** lists changed scenes, cast calls and locations; finalized sheets stay unchanged snapshots; status words follow your answer. (ev: schedule.rs::fsd_call_009_schedule_change_marks_call_sheet_needs_refresh, ::fsd_call_011_finalized_call_sheet_is_immutable_and_revised; migration_fixtures.rs::v15_to_v16_keeps_amounts_as_planned_and_maps_call_sheet_status_words; E2E 62-call-sheets-exports.test.mjs "a schedule change marks the sheet Needs refresh" and "finalize freezes a snapshot", green in docs/history/evidence/2026-10-08-session-2/e2e-session-2.md section 8)
 - [x] **Editing a call sheet never changes** the screenplay, breakdown or schedule (test). (ev: schedule.rs::call_sheet_operations_never_change_screenplay_breakdown_or_schedule, ::fsd_call_002_call_sheet_edits_never_change_the_schedule)
 - [x] **Lightweight budget** with Planned and Actual, category totals, difference and report; existing amounts become Planned. (ev: exports.rs::budget_report_exports_planned_actual_and_difference; pdf_regression.rs::budget_pdf_matches_its_golden; budget.test.tsx; migration_fixtures.rs::v15_to_v16_keeps_amounts_as_planned_and_maps_call_sheet_status_words; E2E 62-call-sheets-exports.test.mjs "budget keeps Planned and Actual with the difference", green in docs/history/evidence/2026-10-08-session-2/e2e-session-2.md section 8)
-- [x] **Sides, six production reports, moodboard, storyboard sheet and shot list exports.** (ev: exports.rs::sides_pdf_contains_only_the_days_scenes_in_screenplay_format, ::reports_export_live_and_saved_in_every_format, ::moodboard_pdf_embeds_images_and_excludes_internal_notes_unless_selected, ::storyboard_sheet_has_panels_shot_numbers_framing_and_optional_notes, ::shot_list_exports_by_scene_selection_or_whole_project; E2E 62-call-sheets-exports.test.mjs "sides, a report and the visual planning exports carry the brand line", green in docs/history/evidence/2026-10-08-session-2/e2e-session-2.md section 8)
+- [x] **Sides, six production reports, moodboard, storyboard sheet and shot list exports.** (ev: exports.rs::sides_pdf_contains_only_the_days_scenes_in_screenplay_format, ::reports_export_live_and_saved_in_every_format, ::moodboard_pdf_embeds_images_and_excludes_internal_notes_unless_selected, ::storyboard_sheet_has_panels_shot_numbers_framing_and_optional_notes, ::shot_list_exports_by_scene_selection_or_whole_project; E2E 62-call-sheets-exports.test.mjs "sides, a report and the visual planning exports carry the brand line" (renamed 2026-10-27: sides no longer carry it, owner decision), green in docs/history/evidence/2026-10-08-session-2/e2e-session-2.md section 8)
 - [x] **Subtle OpenFrame branding** on every non-screenplay export; spreadsheets use metadata or a footer; user files are never modified (test per export). (ev: exports.rs::every_production_export_is_branded_and_user_files_are_never_modified (18 export and format cases); report.rs::branded_pdfs_and_workbooks_name_openframe_and_plain_ones_do_not; E2E 62-call-sheets-exports.test.mjs, green in docs/history/evidence/2026-10-08-session-2/e2e-session-2.md section 8)
 - [x] **PDF regression tests** for call sheet, schedule, Day Out of Days, breakdown, budget and sides. (ev: pdf_regression.rs (7 tests, goldens in tests/fixtures/pdf-regression/ for call sheet, schedule, Day Out of Days, breakdown, budget and sides; compares page sizes and every text run with its position, not pixels))
 - [x] **Built-in templates** per your answer; using a template makes an independent copy and later template edits never change existing documents (test). (ev: notes.rs::the_eight_built_in_templates_follow_the_owner_decision, ::using_a_template_makes_independent_documents_in_one_undo_step, ::a_template_use_that_fails_leaves_nothing_behind; E2E 62-call-sheets-exports.test.mjs "a call sheet from the Indie Call Sheet template is an independent copy", green in docs/history/evidence/2026-10-08-session-2/e2e-session-2.md section 8)
@@ -450,6 +450,7 @@ Contract: `docs/engineering/33-production-depth-contract.md`. Extend the existin
 - [ ] **Packages carry the new data** (production numbers, custom elements, schedule timeline, budget Planned and Actual) with a format version bump and compatibility tests. (2026-10-09: production numbers and custom elements travel with format 2 and compatibility fixtures; the schedule timeline and budget Planned and Actual are listed in package coverage but no test proves they travel)
 - [x] **No network listener anywhere** (test), consistent with ADR-0007; LAN removed from user-facing text. (ev: packages.rs::the_core_workflow_opens_no_network_listener, ::the_desktop_app_depends_on_no_network_server_crate, ::no_lan_collaboration_wording_in_user_facing_text, ::the_lan_wording_check_catches_offers)
 - [ ] **Packages end-to-end test and restore drill.** (2026-10-09: 70-packages.test.mjs passes; the manual restore drill on a second Windows account is not done)
+- [ ] **Storage locations, moving and recovery** (owner request 2026-10-27, ADR-0038). Library file with the durable identity; folder for new projects; Global Idea Vault backup, package, restore, move and locate; project move; projects found on this PC; private notes of a former owner; lazy vault; Settings > Storage. (2026-10-27: built, 27 integration tests in storage.rs and StoragePanel.test.tsx pass; end-to-end spec 71-storage.test.mjs written; still to do: the reinstall drill with the delete-app-data box on the packaged app, and the Mac half with security-scoped bookmarks)
 
 **Done when:** both workflows are Release-ready.
 
@@ -622,7 +623,7 @@ Any one of these blocks submission.
 | Security hardening from the baseline audit | | | | no |
 | Platform adapter layer for Windows and Mac | | | | no |
 | AI assistant quality and hardening | | | | no |
-| Story Board and Idea Vault | | | | no |
+| Beat Board and Idea Vault | | | | no |
 | Writing comfort | | | | no |
 | Screenplay engine and file formats | | | | no |
 | Appearance and themes | | | | no |

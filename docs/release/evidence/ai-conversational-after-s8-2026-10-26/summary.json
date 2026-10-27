@@ -1,0 +1,2650 @@
+{
+  "overall": {
+    "cases": 274,
+    "setup_errors": 0,
+    "tool_offered": {
+      "passed": 23,
+      "counted": 23
+    },
+    "tool_correct": {
+      "passed": 17,
+      "counted": 23
+    },
+    "tool_and_args": {
+      "passed": 16,
+      "counted": 23
+    },
+    "schema_valid": {
+      "passed": 274,
+      "counted": 274
+    },
+    "end_state": {
+      "passed": 6,
+      "counted": 7
+    },
+    "answer": {
+      "passed": 90,
+      "counted": 140
+    },
+    "language": {
+      "passed": 274,
+      "counted": 274
+    },
+    "length": {
+      "passed": 0,
+      "counted": 0
+    },
+    "safety": {
+      "passed": 0,
+      "counted": 0
+    },
+    "not_empty": {
+      "passed": 274,
+      "counted": 274
+    },
+    "grounding_found": 1097,
+    "grounding_total": 1703,
+    "recall_at_5": {
+      "passed": 0,
+      "counted": 0
+    },
+    "recall_at_10": {
+      "passed": 0,
+      "counted": 0
+    },
+    "reciprocal_rank_sum": 0.0,
+    "retrieval_cases": 0,
+    "elapsed_ms": [
+      14260,
+      2646,
+      15557,
+      11973,
+      11,
+      5581,
+      3327,
+      9002,
+      24582,
+      4395,
+      9632,
+      2832,
+      5974,
+      3249,
+      8549,
+      3980,
+      5559,
+      8847,
+      9,
+      15787,
+      11605,
+      4315,
+      2101,
+      6539,
+      9890,
+      11859,
+      3136,
+      4783,
+      6218,
+      6420,
+      6145,
+      4519,
+      7052,
+      3341,
+      3077,
+      28073,
+      15359,
+      5529,
+      4377,
+      4625,
+      21619,
+      9576,
+      22932,
+      4732,
+      10043,
+      4541,
+      912,
+      1220,
+      7566,
+      25792,
+      18064,
+      5839,
+      9387,
+      5653,
+      5398,
+      8288,
+      10516,
+      8266,
+      27283,
+      7932,
+      14045,
+      7455,
+      15006,
+      7048,
+      2824,
+      6583,
+      3737,
+      9688,
+      7649,
+      11,
+      5417,
+      23893,
+      4742,
+      5198,
+      9801,
+      2655,
+      11979,
+      4944,
+      2829,
+      2385,
+      15156,
+      9728,
+      11,
+      2429,
+      9,
+      9,
+      2385,
+      7,
+      12996,
+      9216,
+      3590,
+      10743,
+      12988,
+      8281,
+      14802,
+      10950,
+      7,
+      2696,
+      3327,
+      15046,
+      19511,
+      9,
+      18,
+      7678,
+      1434,
+      4634,
+      752,
+      1684,
+      5005,
+      3997,
+      1199,
+      22866,
+      1578,
+      5180,
+      3262,
+      16657,
+      5894,
+      1222,
+      3309,
+      8754,
+      5904,
+      15820,
+      31515,
+      11438,
+      10377,
+      6606,
+      788,
+      3787,
+      2746,
+      6757,
+      3853,
+      9,
+      3370,
+      2448,
+      20631,
+      28937,
+      7831,
+      17098,
+      15727,
+      19401,
+      6206,
+      27,
+      2020,
+      9696,
+      19693,
+      8385,
+      4696,
+      5071,
+      6564,
+      6023,
+      5260,
+      6974,
+      6274,
+      9,
+      10,
+      17543,
+      10,
+      28855,
+      1173,
+      8,
+      3187,
+      3941,
+      3108,
+      9575,
+      23794,
+      3439,
+      7463,
+      1302,
+      1395,
+      1804,
+      1151,
+      4073,
+      57,
+      8278,
+      1096,
+      1940,
+      3474,
+      3456,
+      3272,
+      2370,
+      5082,
+      4533,
+      16,
+      1428,
+      1842,
+      3360,
+      4378,
+      1641,
+      1648,
+      1699,
+      1888,
+      4545,
+      4864,
+      2736,
+      4375,
+      1499,
+      2187,
+      6657,
+      11883,
+      6607,
+      2620,
+      11246,
+      4390,
+      3921,
+      2179,
+      22068,
+      1069,
+      1484,
+      975,
+      51,
+      4295,
+      1249,
+      1436,
+      1530,
+      22669,
+      9849,
+      8120,
+      19297,
+      23572,
+      10,
+      9,
+      8,
+      9,
+      10,
+      17,
+      9,
+      7,
+      4443,
+      3135,
+      3107,
+      30339,
+      9915,
+      4637,
+      4234,
+      7299,
+      6808,
+      3574,
+      4312,
+      1948,
+      10,
+      8402,
+      2222,
+      2638,
+      10326,
+      10,
+      14170,
+      11137,
+      18083,
+      27802,
+      4655,
+      4209,
+      15,
+      13,
+      28,
+      83,
+      47,
+      18,
+      24,
+      24,
+      55,
+      84,
+      12,
+      2286,
+      6666,
+      2130,
+      12,
+      62,
+      41,
+      58,
+      2095,
+      52,
+      138,
+      54,
+      47
+    ],
+    "engine_mb_max": 2068
+  },
+  "by_kind": {
+    "action": {
+      "cases": 7,
+      "setup_errors": 0,
+      "tool_offered": {
+        "passed": 7,
+        "counted": 7
+      },
+      "tool_correct": {
+        "passed": 7,
+        "counted": 7
+      },
+      "tool_and_args": {
+        "passed": 6,
+        "counted": 7
+      },
+      "schema_valid": {
+        "passed": 7,
+        "counted": 7
+      },
+      "end_state": {
+        "passed": 6,
+        "counted": 7
+      },
+      "answer": {
+        "passed": 0,
+        "counted": 0
+      },
+      "language": {
+        "passed": 7,
+        "counted": 7
+      },
+      "length": {
+        "passed": 0,
+        "counted": 0
+      },
+      "safety": {
+        "passed": 0,
+        "counted": 0
+      },
+      "not_empty": {
+        "passed": 7,
+        "counted": 7
+      },
+      "grounding_found": 13,
+      "grounding_total": 14,
+      "recall_at_5": {
+        "passed": 0,
+        "counted": 0
+      },
+      "recall_at_10": {
+        "passed": 0,
+        "counted": 0
+      },
+      "reciprocal_rank_sum": 0.0,
+      "retrieval_cases": 0,
+      "elapsed_ms": [
+        41,
+        58,
+        2095,
+        52,
+        138,
+        54,
+        47
+      ],
+      "engine_mb_max": 1704
+    },
+    "conversation": {
+      "cases": 251,
+      "setup_errors": 0,
+      "tool_offered": {
+        "passed": 0,
+        "counted": 0
+      },
+      "tool_correct": {
+        "passed": 0,
+        "counted": 0
+      },
+      "tool_and_args": {
+        "passed": 0,
+        "counted": 0
+      },
+      "schema_valid": {
+        "passed": 251,
+        "counted": 251
+      },
+      "end_state": {
+        "passed": 0,
+        "counted": 0
+      },
+      "answer": {
+        "passed": 87,
+        "counted": 136
+      },
+      "language": {
+        "passed": 251,
+        "counted": 251
+      },
+      "length": {
+        "passed": 0,
+        "counted": 0
+      },
+      "safety": {
+        "passed": 0,
+        "counted": 0
+      },
+      "not_empty": {
+        "passed": 251,
+        "counted": 251
+      },
+      "grounding_found": 1039,
+      "grounding_total": 1618,
+      "recall_at_5": {
+        "passed": 0,
+        "counted": 0
+      },
+      "recall_at_10": {
+        "passed": 0,
+        "counted": 0
+      },
+      "reciprocal_rank_sum": 0.0,
+      "retrieval_cases": 0,
+      "elapsed_ms": [
+        14260,
+        2646,
+        15557,
+        11973,
+        11,
+        5581,
+        3327,
+        9002,
+        24582,
+        4395,
+        9632,
+        2832,
+        5974,
+        3249,
+        8549,
+        3980,
+        5559,
+        8847,
+        9,
+        15787,
+        11605,
+        4315,
+        2101,
+        6539,
+        9890,
+        11859,
+        3136,
+        4783,
+        6218,
+        6420,
+        6145,
+        4519,
+        7052,
+        3341,
+        3077,
+        28073,
+        15359,
+        5529,
+        4377,
+        4625,
+        21619,
+        9576,
+        22932,
+        4732,
+        10043,
+        4541,
+        912,
+        1220,
+        7566,
+        25792,
+        18064,
+        5839,
+        9387,
+        5653,
+        5398,
+        8288,
+        10516,
+        8266,
+        27283,
+        7932,
+        14045,
+        7455,
+        15006,
+        7048,
+        2824,
+        6583,
+        3737,
+        9688,
+        7649,
+        11,
+        5417,
+        23893,
+        4742,
+        5198,
+        9801,
+        2655,
+        11979,
+        4944,
+        2829,
+        2385,
+        15156,
+        9728,
+        11,
+        2429,
+        9,
+        9,
+        2385,
+        7,
+        12996,
+        9216,
+        3590,
+        10743,
+        12988,
+        8281,
+        14802,
+        10950,
+        7,
+        2696,
+        3327,
+        15046,
+        19511,
+        9,
+        18,
+        7678,
+        1434,
+        4634,
+        752,
+        1684,
+        5005,
+        3997,
+        1199,
+        22866,
+        1578,
+        5180,
+        3262,
+        16657,
+        5894,
+        1222,
+        3309,
+        8754,
+        5904,
+        15820,
+        31515,
+        11438,
+        10377,
+        6606,
+        788,
+        3787,
+        2746,
+        6757,
+        3853,
+        9,
+        3370,
+        2448,
+        20631,
+        28937,
+        7831,
+        17098,
+        15727,
+        19401,
+        6206,
+        27,
+        2020,
+        9696,
+        19693,
+        8385,
+        4696,
+        5071,
+        6564,
+        6023,
+        5260,
+        6974,
+        6274,
+        9,
+        10,
+        17543,
+        10,
+        28855,
+        1173,
+        8,
+        3187,
+        3941,
+        3108,
+        9575,
+        23794,
+        3439,
+        7463,
+        1302,
+        1395,
+        1804,
+        1151,
+        4073,
+        57,
+        8278,
+        1096,
+        1940,
+        3474,
+        3456,
+        3272,
+        2370,
+        5082,
+        4533,
+        16,
+        1428,
+        1842,
+        3360,
+        4378,
+        1641,
+        1648,
+        1699,
+        1888,
+        4545,
+        4864,
+        2736,
+        4375,
+        1499,
+        2187,
+        6657,
+        11883,
+        6607,
+        2620,
+        11246,
+        4390,
+        3921,
+        2179,
+        22068,
+        1069,
+        1484,
+        975,
+        51,
+        4295,
+        1249,
+        1436,
+        1530,
+        22669,
+        9849,
+        8120,
+        19297,
+        23572,
+        10,
+        9,
+        8,
+        9,
+        10,
+        17,
+        9,
+        7,
+        4443,
+        3135,
+        3107,
+        30339,
+        9915,
+        4637,
+        4234,
+        7299,
+        6808,
+        3574,
+        4312,
+        1948,
+        10,
+        8402,
+        2222,
+        2638,
+        10326,
+        10,
+        14170,
+        11137,
+        18083,
+        27802,
+        4655,
+        4209
+      ],
+      "engine_mb_max": 2068
+    },
+    "tool": {
+      "cases": 16,
+      "setup_errors": 0,
+      "tool_offered": {
+        "passed": 16,
+        "counted": 16
+      },
+      "tool_correct": {
+        "passed": 10,
+        "counted": 16
+      },
+      "tool_and_args": {
+        "passed": 10,
+        "counted": 16
+      },
+      "schema_valid": {
+        "passed": 16,
+        "counted": 16
+      },
+      "end_state": {
+        "passed": 0,
+        "counted": 0
+      },
+      "answer": {
+        "passed": 3,
+        "counted": 4
+      },
+      "language": {
+        "passed": 16,
+        "counted": 16
+      },
+      "length": {
+        "passed": 0,
+        "counted": 0
+      },
+      "safety": {
+        "passed": 0,
+        "counted": 0
+      },
+      "not_empty": {
+        "passed": 16,
+        "counted": 16
+      },
+      "grounding_found": 45,
+      "grounding_total": 71,
+      "recall_at_5": {
+        "passed": 0,
+        "counted": 0
+      },
+      "recall_at_10": {
+        "passed": 0,
+        "counted": 0
+      },
+      "reciprocal_rank_sum": 0.0,
+      "retrieval_cases": 0,
+      "elapsed_ms": [
+        15,
+        13,
+        28,
+        83,
+        47,
+        18,
+        24,
+        24,
+        55,
+        84,
+        12,
+        2286,
+        6666,
+        2130,
+        12,
+        62
+      ],
+      "engine_mb_max": 1812
+    }
+  },
+  "by_lang": {
+    "en": {
+      "cases": 274,
+      "setup_errors": 0,
+      "tool_offered": {
+        "passed": 23,
+        "counted": 23
+      },
+      "tool_correct": {
+        "passed": 17,
+        "counted": 23
+      },
+      "tool_and_args": {
+        "passed": 16,
+        "counted": 23
+      },
+      "schema_valid": {
+        "passed": 274,
+        "counted": 274
+      },
+      "end_state": {
+        "passed": 6,
+        "counted": 7
+      },
+      "answer": {
+        "passed": 90,
+        "counted": 140
+      },
+      "language": {
+        "passed": 274,
+        "counted": 274
+      },
+      "length": {
+        "passed": 0,
+        "counted": 0
+      },
+      "safety": {
+        "passed": 0,
+        "counted": 0
+      },
+      "not_empty": {
+        "passed": 274,
+        "counted": 274
+      },
+      "grounding_found": 1097,
+      "grounding_total": 1703,
+      "recall_at_5": {
+        "passed": 0,
+        "counted": 0
+      },
+      "recall_at_10": {
+        "passed": 0,
+        "counted": 0
+      },
+      "reciprocal_rank_sum": 0.0,
+      "retrieval_cases": 0,
+      "elapsed_ms": [
+        14260,
+        2646,
+        15557,
+        11973,
+        11,
+        5581,
+        3327,
+        9002,
+        24582,
+        4395,
+        9632,
+        2832,
+        5974,
+        3249,
+        8549,
+        3980,
+        5559,
+        8847,
+        9,
+        15787,
+        11605,
+        4315,
+        2101,
+        6539,
+        9890,
+        11859,
+        3136,
+        4783,
+        6218,
+        6420,
+        6145,
+        4519,
+        7052,
+        3341,
+        3077,
+        28073,
+        15359,
+        5529,
+        4377,
+        4625,
+        21619,
+        9576,
+        22932,
+        4732,
+        10043,
+        4541,
+        912,
+        1220,
+        7566,
+        25792,
+        18064,
+        5839,
+        9387,
+        5653,
+        5398,
+        8288,
+        10516,
+        8266,
+        27283,
+        7932,
+        14045,
+        7455,
+        15006,
+        7048,
+        2824,
+        6583,
+        3737,
+        9688,
+        7649,
+        11,
+        5417,
+        23893,
+        4742,
+        5198,
+        9801,
+        2655,
+        11979,
+        4944,
+        2829,
+        2385,
+        15156,
+        9728,
+        11,
+        2429,
+        9,
+        9,
+        2385,
+        7,
+        12996,
+        9216,
+        3590,
+        10743,
+        12988,
+        8281,
+        14802,
+        10950,
+        7,
+        2696,
+        3327,
+        15046,
+        19511,
+        9,
+        18,
+        7678,
+        1434,
+        4634,
+        752,
+        1684,
+        5005,
+        3997,
+        1199,
+        22866,
+        1578,
+        5180,
+        3262,
+        16657,
+        5894,
+        1222,
+        3309,
+        8754,
+        5904,
+        15820,
+        31515,
+        11438,
+        10377,
+        6606,
+        788,
+        3787,
+        2746,
+        6757,
+        3853,
+        9,
+        3370,
+        2448,
+        20631,
+        28937,
+        7831,
+        17098,
+        15727,
+        19401,
+        6206,
+        27,
+        2020,
+        9696,
+        19693,
+        8385,
+        4696,
+        5071,
+        6564,
+        6023,
+        5260,
+        6974,
+        6274,
+        9,
+        10,
+        17543,
+        10,
+        28855,
+        1173,
+        8,
+        3187,
+        3941,
+        3108,
+        9575,
+        23794,
+        3439,
+        7463,
+        1302,
+        1395,
+        1804,
+        1151,
+        4073,
+        57,
+        8278,
+        1096,
+        1940,
+        3474,
+        3456,
+        3272,
+        2370,
+        5082,
+        4533,
+        16,
+        1428,
+        1842,
+        3360,
+        4378,
+        1641,
+        1648,
+        1699,
+        1888,
+        4545,
+        4864,
+        2736,
+        4375,
+        1499,
+        2187,
+        6657,
+        11883,
+        6607,
+        2620,
+        11246,
+        4390,
+        3921,
+        2179,
+        22068,
+        1069,
+        1484,
+        975,
+        51,
+        4295,
+        1249,
+        1436,
+        1530,
+        22669,
+        9849,
+        8120,
+        19297,
+        23572,
+        10,
+        9,
+        8,
+        9,
+        10,
+        17,
+        9,
+        7,
+        4443,
+        3135,
+        3107,
+        30339,
+        9915,
+        4637,
+        4234,
+        7299,
+        6808,
+        3574,
+        4312,
+        1948,
+        10,
+        8402,
+        2222,
+        2638,
+        10326,
+        10,
+        14170,
+        11137,
+        18083,
+        27802,
+        4655,
+        4209,
+        15,
+        13,
+        28,
+        83,
+        47,
+        18,
+        24,
+        24,
+        55,
+        84,
+        12,
+        2286,
+        6666,
+        2130,
+        12,
+        62,
+        41,
+        58,
+        2095,
+        52,
+        138,
+        54,
+        47
+      ],
+      "engine_mb_max": 2068
+    }
+  },
+  "paraphrase": {
+    "cases": 0,
+    "setup_errors": 0,
+    "tool_offered": {
+      "passed": 0,
+      "counted": 0
+    },
+    "tool_correct": {
+      "passed": 0,
+      "counted": 0
+    },
+    "tool_and_args": {
+      "passed": 0,
+      "counted": 0
+    },
+    "schema_valid": {
+      "passed": 0,
+      "counted": 0
+    },
+    "end_state": {
+      "passed": 0,
+      "counted": 0
+    },
+    "answer": {
+      "passed": 0,
+      "counted": 0
+    },
+    "language": {
+      "passed": 0,
+      "counted": 0
+    },
+    "length": {
+      "passed": 0,
+      "counted": 0
+    },
+    "safety": {
+      "passed": 0,
+      "counted": 0
+    },
+    "not_empty": {
+      "passed": 0,
+      "counted": 0
+    },
+    "grounding_found": 0,
+    "grounding_total": 0,
+    "recall_at_5": {
+      "passed": 0,
+      "counted": 0
+    },
+    "recall_at_10": {
+      "passed": 0,
+      "counted": 0
+    },
+    "reciprocal_rank_sum": 0.0,
+    "retrieval_cases": 0,
+    "elapsed_ms": [],
+    "engine_mb_max": 0
+  },
+  "paraphrase_by_lang": {},
+  "conversation": {
+    "cases": 251,
+    "setup_errors": 0,
+    "answer_has": {
+      "passed": 87,
+      "counted": 136
+    },
+    "within_length": {
+      "passed": 0,
+      "counted": 0
+    },
+    "abstained": {
+      "passed": 3,
+      "counted": 20
+    },
+    "repetition": {
+      "passed": 1,
+      "counted": 251
+    },
+    "required_facts_found": 129,
+    "required_facts_total": 189,
+    "abstain_names": {
+      "passed": 3,
+      "counted": 20
+    },
+    "no_navigate": {
+      "passed": 65,
+      "counted": 67
+    },
+    "no_dump": {
+      "passed": 20,
+      "counted": 21
+    },
+    "no_internal_words": {
+      "passed": 251,
+      "counted": 251
+    },
+    "length_class": {
+      "passed": 234,
+      "counted": 251
+    },
+    "no_reask": {
+      "passed": 69,
+      "counted": 71
+    },
+    "answer_type": {
+      "passed": 206,
+      "counted": 251
+    },
+    "answer_group": {
+      "passed": 227,
+      "counted": 251
+    },
+    "not_counted": 0,
+    "invented_names": 215,
+    "name_candidates": 600,
+    "wrong_scenes": 1,
+    "scene_citations": 55,
+    "quotes_missing": 30,
+    "quotes": 66,
+    "elapsed_ms": [
+      14260,
+      2646,
+      15557,
+      11973,
+      11,
+      5581,
+      3327,
+      9002,
+      24582,
+      4395,
+      9632,
+      2832,
+      5974,
+      3249,
+      8549,
+      3980,
+      5559,
+      8847,
+      9,
+      15787,
+      11605,
+      4315,
+      2101,
+      6539,
+      9890,
+      11859,
+      3136,
+      4783,
+      6218,
+      6420,
+      6145,
+      4519,
+      7052,
+      3341,
+      3077,
+      28073,
+      15359,
+      5529,
+      4377,
+      4625,
+      21619,
+      9576,
+      22932,
+      4732,
+      10043,
+      4541,
+      912,
+      1220,
+      7566,
+      25792,
+      18064,
+      5839,
+      9387,
+      5653,
+      5398,
+      8288,
+      10516,
+      8266,
+      27283,
+      7932,
+      14045,
+      7455,
+      15006,
+      7048,
+      2824,
+      6583,
+      3737,
+      9688,
+      7649,
+      11,
+      5417,
+      23893,
+      4742,
+      5198,
+      9801,
+      2655,
+      11979,
+      4944,
+      2829,
+      2385,
+      15156,
+      9728,
+      11,
+      2429,
+      9,
+      9,
+      2385,
+      7,
+      12996,
+      9216,
+      3590,
+      10743,
+      12988,
+      8281,
+      14802,
+      10950,
+      7,
+      2696,
+      3327,
+      15046,
+      19511,
+      9,
+      18,
+      7678,
+      1434,
+      4634,
+      752,
+      1684,
+      5005,
+      3997,
+      1199,
+      22866,
+      1578,
+      5180,
+      3262,
+      16657,
+      5894,
+      1222,
+      3309,
+      8754,
+      5904,
+      15820,
+      31515,
+      11438,
+      10377,
+      6606,
+      788,
+      3787,
+      2746,
+      6757,
+      3853,
+      9,
+      3370,
+      2448,
+      20631,
+      28937,
+      7831,
+      17098,
+      15727,
+      19401,
+      6206,
+      27,
+      2020,
+      9696,
+      19693,
+      8385,
+      4696,
+      5071,
+      6564,
+      6023,
+      5260,
+      6974,
+      6274,
+      9,
+      10,
+      17543,
+      10,
+      28855,
+      1173,
+      8,
+      3187,
+      3941,
+      3108,
+      9575,
+      23794,
+      3439,
+      7463,
+      1302,
+      1395,
+      1804,
+      1151,
+      4073,
+      57,
+      8278,
+      1096,
+      1940,
+      3474,
+      3456,
+      3272,
+      2370,
+      5082,
+      4533,
+      16,
+      1428,
+      1842,
+      3360,
+      4378,
+      1641,
+      1648,
+      1699,
+      1888,
+      4545,
+      4864,
+      2736,
+      4375,
+      1499,
+      2187,
+      6657,
+      11883,
+      6607,
+      2620,
+      11246,
+      4390,
+      3921,
+      2179,
+      22068,
+      1069,
+      1484,
+      975,
+      51,
+      4295,
+      1249,
+      1436,
+      1530,
+      22669,
+      9849,
+      8120,
+      19297,
+      23572,
+      10,
+      9,
+      8,
+      9,
+      10,
+      17,
+      9,
+      7,
+      4443,
+      3135,
+      3107,
+      30339,
+      9915,
+      4637,
+      4234,
+      7299,
+      6808,
+      3574,
+      4312,
+      1948,
+      10,
+      8402,
+      2222,
+      2638,
+      10326,
+      10,
+      14170,
+      11137,
+      18083,
+      27802,
+      4655,
+      4209
+    ]
+  },
+  "conversation_by_type": {
+    "big": {
+      "cases": 5,
+      "setup_errors": 0,
+      "answer_has": {
+        "passed": 3,
+        "counted": 3
+      },
+      "within_length": {
+        "passed": 0,
+        "counted": 0
+      },
+      "abstained": {
+        "passed": 0,
+        "counted": 0
+      },
+      "repetition": {
+        "passed": 0,
+        "counted": 5
+      },
+      "required_facts_found": 5,
+      "required_facts_total": 5,
+      "abstain_names": {
+        "passed": 0,
+        "counted": 0
+      },
+      "no_navigate": {
+        "passed": 0,
+        "counted": 0
+      },
+      "no_dump": {
+        "passed": 0,
+        "counted": 0
+      },
+      "no_internal_words": {
+        "passed": 5,
+        "counted": 5
+      },
+      "length_class": {
+        "passed": 5,
+        "counted": 5
+      },
+      "no_reask": {
+        "passed": 0,
+        "counted": 0
+      },
+      "answer_type": {
+        "passed": 5,
+        "counted": 5
+      },
+      "answer_group": {
+        "passed": 5,
+        "counted": 5
+      },
+      "not_counted": 0,
+      "invented_names": 4,
+      "name_candidates": 9,
+      "wrong_scenes": 0,
+      "scene_citations": 1,
+      "quotes_missing": 1,
+      "quotes": 1,
+      "elapsed_ms": [
+        1069,
+        1484,
+        975,
+        51,
+        4295
+      ]
+    },
+    "brain": {
+      "cases": 11,
+      "setup_errors": 0,
+      "answer_has": {
+        "passed": 0,
+        "counted": 0
+      },
+      "within_length": {
+        "passed": 0,
+        "counted": 0
+      },
+      "abstained": {
+        "passed": 0,
+        "counted": 0
+      },
+      "repetition": {
+        "passed": 0,
+        "counted": 11
+      },
+      "required_facts_found": 9,
+      "required_facts_total": 12,
+      "abstain_names": {
+        "passed": 0,
+        "counted": 0
+      },
+      "no_navigate": {
+        "passed": 10,
+        "counted": 11
+      },
+      "no_dump": {
+        "passed": 0,
+        "counted": 0
+      },
+      "no_internal_words": {
+        "passed": 11,
+        "counted": 11
+      },
+      "length_class": {
+        "passed": 9,
+        "counted": 11
+      },
+      "no_reask": {
+        "passed": 0,
+        "counted": 0
+      },
+      "answer_type": {
+        "passed": 8,
+        "counted": 11
+      },
+      "answer_group": {
+        "passed": 8,
+        "counted": 11
+      },
+      "not_counted": 0,
+      "invented_names": 5,
+      "name_candidates": 39,
+      "wrong_scenes": 0,
+      "scene_citations": 2,
+      "quotes_missing": 2,
+      "quotes": 3,
+      "elapsed_ms": [
+        20631,
+        28937,
+        7831,
+        17098,
+        15727,
+        19401,
+        6206,
+        27,
+        2020,
+        9696,
+        19693
+      ]
+    },
+    "char": {
+      "cases": 22,
+      "setup_errors": 0,
+      "answer_has": {
+        "passed": 4,
+        "counted": 4
+      },
+      "within_length": {
+        "passed": 0,
+        "counted": 0
+      },
+      "abstained": {
+        "passed": 0,
+        "counted": 0
+      },
+      "repetition": {
+        "passed": 0,
+        "counted": 22
+      },
+      "required_facts_found": 23,
+      "required_facts_total": 35,
+      "abstain_names": {
+        "passed": 0,
+        "counted": 0
+      },
+      "no_navigate": {
+        "passed": 11,
+        "counted": 11
+      },
+      "no_dump": {
+        "passed": 0,
+        "counted": 0
+      },
+      "no_internal_words": {
+        "passed": 22,
+        "counted": 22
+      },
+      "length_class": {
+        "passed": 16,
+        "counted": 22
+      },
+      "no_reask": {
+        "passed": 3,
+        "counted": 3
+      },
+      "answer_type": {
+        "passed": 14,
+        "counted": 22
+      },
+      "answer_group": {
+        "passed": 15,
+        "counted": 22
+      },
+      "not_counted": 0,
+      "invented_names": 8,
+      "name_candidates": 91,
+      "wrong_scenes": 0,
+      "scene_citations": 0,
+      "quotes_missing": 0,
+      "quotes": 4,
+      "elapsed_ms": [
+        6145,
+        4519,
+        7052,
+        3341,
+        3077,
+        28073,
+        15359,
+        5529,
+        4377,
+        4625,
+        21619,
+        9576,
+        22932,
+        4732,
+        10043,
+        4541,
+        912,
+        1220,
+        7566,
+        25792,
+        18064,
+        5839
+      ]
+    },
+    "export": {
+      "cases": 40,
+      "setup_errors": 0,
+      "answer_has": {
+        "passed": 17,
+        "counted": 23
+      },
+      "within_length": {
+        "passed": 0,
+        "counted": 0
+      },
+      "abstained": {
+        "passed": 0,
+        "counted": 0
+      },
+      "repetition": {
+        "passed": 0,
+        "counted": 40
+      },
+      "required_facts_found": 24,
+      "required_facts_total": 28,
+      "abstain_names": {
+        "passed": 0,
+        "counted": 0
+      },
+      "no_navigate": {
+        "passed": 13,
+        "counted": 13
+      },
+      "no_dump": {
+        "passed": 9,
+        "counted": 10
+      },
+      "no_internal_words": {
+        "passed": 40,
+        "counted": 40
+      },
+      "length_class": {
+        "passed": 39,
+        "counted": 40
+      },
+      "no_reask": {
+        "passed": 38,
+        "counted": 39
+      },
+      "answer_type": {
+        "passed": 36,
+        "counted": 40
+      },
+      "answer_group": {
+        "passed": 37,
+        "counted": 40
+      },
+      "not_counted": 0,
+      "invented_names": 43,
+      "name_candidates": 112,
+      "wrong_scenes": 0,
+      "scene_citations": 13,
+      "quotes_missing": 4,
+      "quotes": 9,
+      "elapsed_ms": [
+        1249,
+        1436,
+        1530,
+        22669,
+        9849,
+        8120,
+        19297,
+        23572,
+        10,
+        9,
+        8,
+        9,
+        10,
+        17,
+        9,
+        7,
+        4443,
+        3135,
+        3107,
+        30339,
+        9915,
+        4637,
+        4234,
+        7299,
+        6808,
+        3574,
+        4312,
+        1948,
+        10,
+        8402,
+        2222,
+        2638,
+        10326,
+        10,
+        14170,
+        11137,
+        18083,
+        27802,
+        4655,
+        4209
+      ]
+    },
+    "help": {
+      "cases": 11,
+      "setup_errors": 0,
+      "answer_has": {
+        "passed": 6,
+        "counted": 11
+      },
+      "within_length": {
+        "passed": 0,
+        "counted": 0
+      },
+      "abstained": {
+        "passed": 0,
+        "counted": 0
+      },
+      "repetition": {
+        "passed": 0,
+        "counted": 11
+      },
+      "required_facts_found": 0,
+      "required_facts_total": 0,
+      "abstain_names": {
+        "passed": 0,
+        "counted": 0
+      },
+      "no_navigate": {
+        "passed": 0,
+        "counted": 0
+      },
+      "no_dump": {
+        "passed": 0,
+        "counted": 0
+      },
+      "no_internal_words": {
+        "passed": 11,
+        "counted": 11
+      },
+      "length_class": {
+        "passed": 9,
+        "counted": 11
+      },
+      "no_reask": {
+        "passed": 0,
+        "counted": 0
+      },
+      "answer_type": {
+        "passed": 10,
+        "counted": 11
+      },
+      "answer_group": {
+        "passed": 10,
+        "counted": 11
+      },
+      "not_counted": 0,
+      "invented_names": 33,
+      "name_candidates": 41,
+      "wrong_scenes": 0,
+      "scene_citations": 0,
+      "quotes_missing": 4,
+      "quotes": 6,
+      "elapsed_ms": [
+        8385,
+        4696,
+        5071,
+        6564,
+        6023,
+        5260,
+        6974,
+        6274,
+        9,
+        10,
+        17543
+      ]
+    },
+    "hop": {
+      "cases": 13,
+      "setup_errors": 0,
+      "answer_has": {
+        "passed": 5,
+        "counted": 9
+      },
+      "within_length": {
+        "passed": 0,
+        "counted": 0
+      },
+      "abstained": {
+        "passed": 0,
+        "counted": 0
+      },
+      "repetition": {
+        "passed": 0,
+        "counted": 13
+      },
+      "required_facts_found": 4,
+      "required_facts_total": 12,
+      "abstain_names": {
+        "passed": 0,
+        "counted": 0
+      },
+      "no_navigate": {
+        "passed": 2,
+        "counted": 2
+      },
+      "no_dump": {
+        "passed": 0,
+        "counted": 0
+      },
+      "no_internal_words": {
+        "passed": 13,
+        "counted": 13
+      },
+      "length_class": {
+        "passed": 12,
+        "counted": 13
+      },
+      "no_reask": {
+        "passed": 6,
+        "counted": 6
+      },
+      "answer_type": {
+        "passed": 11,
+        "counted": 13
+      },
+      "answer_group": {
+        "passed": 13,
+        "counted": 13
+      },
+      "not_counted": 0,
+      "invented_names": 9,
+      "name_candidates": 25,
+      "wrong_scenes": 0,
+      "scene_citations": 6,
+      "quotes_missing": 2,
+      "quotes": 5,
+      "elapsed_ms": [
+        15820,
+        31515,
+        11438,
+        10377,
+        6606,
+        788,
+        3787,
+        2746,
+        6757,
+        3853,
+        9,
+        3370,
+        2448
+      ]
+    },
+    "hostile": {
+      "cases": 11,
+      "setup_errors": 0,
+      "answer_has": {
+        "passed": 0,
+        "counted": 0
+      },
+      "within_length": {
+        "passed": 0,
+        "counted": 0
+      },
+      "abstained": {
+        "passed": 0,
+        "counted": 0
+      },
+      "repetition": {
+        "passed": 0,
+        "counted": 11
+      },
+      "required_facts_found": 0,
+      "required_facts_total": 0,
+      "abstain_names": {
+        "passed": 0,
+        "counted": 0
+      },
+      "no_navigate": {
+        "passed": 0,
+        "counted": 0
+      },
+      "no_dump": {
+        "passed": 11,
+        "counted": 11
+      },
+      "no_internal_words": {
+        "passed": 11,
+        "counted": 11
+      },
+      "length_class": {
+        "passed": 11,
+        "counted": 11
+      },
+      "no_reask": {
+        "passed": 1,
+        "counted": 1
+      },
+      "answer_type": {
+        "passed": 11,
+        "counted": 11
+      },
+      "answer_group": {
+        "passed": 11,
+        "counted": 11
+      },
+      "not_counted": 0,
+      "invented_names": 3,
+      "name_candidates": 3,
+      "wrong_scenes": 0,
+      "scene_citations": 0,
+      "quotes_missing": 0,
+      "quotes": 0,
+      "elapsed_ms": [
+        4378,
+        1641,
+        1648,
+        1699,
+        1888,
+        4545,
+        4864,
+        2736,
+        4375,
+        1499,
+        2187
+      ]
+    },
+    "lang": {
+      "cases": 9,
+      "setup_errors": 0,
+      "answer_has": {
+        "passed": 1,
+        "counted": 4
+      },
+      "within_length": {
+        "passed": 0,
+        "counted": 0
+      },
+      "abstained": {
+        "passed": 0,
+        "counted": 1
+      },
+      "repetition": {
+        "passed": 0,
+        "counted": 9
+      },
+      "required_facts_found": 5,
+      "required_facts_total": 6,
+      "abstain_names": {
+        "passed": 0,
+        "counted": 1
+      },
+      "no_navigate": {
+        "passed": 3,
+        "counted": 3
+      },
+      "no_dump": {
+        "passed": 0,
+        "counted": 0
+      },
+      "no_internal_words": {
+        "passed": 9,
+        "counted": 9
+      },
+      "length_class": {
+        "passed": 9,
+        "counted": 9
+      },
+      "no_reask": {
+        "passed": 0,
+        "counted": 0
+      },
+      "answer_type": {
+        "passed": 6,
+        "counted": 9
+      },
+      "answer_group": {
+        "passed": 9,
+        "counted": 9
+      },
+      "not_counted": 0,
+      "invented_names": 1,
+      "name_candidates": 23,
+      "wrong_scenes": 0,
+      "scene_citations": 1,
+      "quotes_missing": 1,
+      "quotes": 4,
+      "elapsed_ms": [
+        6657,
+        11883,
+        6607,
+        2620,
+        11246,
+        4390,
+        3921,
+        2179,
+        22068
+      ]
+    },
+    "missing": {
+      "cases": 19,
+      "setup_errors": 0,
+      "answer_has": {
+        "passed": 1,
+        "counted": 1
+      },
+      "within_length": {
+        "passed": 0,
+        "counted": 0
+      },
+      "abstained": {
+        "passed": 3,
+        "counted": 17
+      },
+      "repetition": {
+        "passed": 0,
+        "counted": 19
+      },
+      "required_facts_found": 2,
+      "required_facts_total": 2,
+      "abstain_names": {
+        "passed": 3,
+        "counted": 17
+      },
+      "no_navigate": {
+        "passed": 0,
+        "counted": 1
+      },
+      "no_dump": {
+        "passed": 0,
+        "counted": 0
+      },
+      "no_internal_words": {
+        "passed": 19,
+        "counted": 19
+      },
+      "length_class": {
+        "passed": 19,
+        "counted": 19
+      },
+      "no_reask": {
+        "passed": 0,
+        "counted": 0
+      },
+      "answer_type": {
+        "passed": 16,
+        "counted": 19
+      },
+      "answer_group": {
+        "passed": 17,
+        "counted": 19
+      },
+      "not_counted": 0,
+      "invented_names": 10,
+      "name_candidates": 22,
+      "wrong_scenes": 0,
+      "scene_citations": 4,
+      "quotes_missing": 2,
+      "quotes": 4,
+      "elapsed_ms": [
+        1302,
+        1395,
+        1804,
+        1151,
+        4073,
+        57,
+        8278,
+        1096,
+        1940,
+        3474,
+        3456,
+        3272,
+        2370,
+        5082,
+        4533,
+        16,
+        1428,
+        1842,
+        3360
+      ]
+    },
+    "money": {
+      "cases": 27,
+      "setup_errors": 0,
+      "answer_has": {
+        "passed": 17,
+        "counted": 24
+      },
+      "within_length": {
+        "passed": 0,
+        "counted": 0
+      },
+      "abstained": {
+        "passed": 0,
+        "counted": 0
+      },
+      "repetition": {
+        "passed": 0,
+        "counted": 27
+      },
+      "required_facts_found": 7,
+      "required_facts_total": 15,
+      "abstain_names": {
+        "passed": 0,
+        "counted": 0
+      },
+      "no_navigate": {
+        "passed": 8,
+        "counted": 8
+      },
+      "no_dump": {
+        "passed": 0,
+        "counted": 0
+      },
+      "no_internal_words": {
+        "passed": 27,
+        "counted": 27
+      },
+      "length_class": {
+        "passed": 27,
+        "counted": 27
+      },
+      "no_reask": {
+        "passed": 1,
+        "counted": 1
+      },
+      "answer_type": {
+        "passed": 20,
+        "counted": 27
+      },
+      "answer_group": {
+        "passed": 25,
+        "counted": 27
+      },
+      "not_counted": 0,
+      "invented_names": 43,
+      "name_candidates": 56,
+      "wrong_scenes": 0,
+      "scene_citations": 0,
+      "quotes_missing": 2,
+      "quotes": 4,
+      "elapsed_ms": [
+        9387,
+        5653,
+        5398,
+        8288,
+        10516,
+        8266,
+        27283,
+        7932,
+        14045,
+        7455,
+        15006,
+        7048,
+        2824,
+        6583,
+        3737,
+        9688,
+        7649,
+        11,
+        5417,
+        23893,
+        4742,
+        5198,
+        9801,
+        2655,
+        11979,
+        4944,
+        2829
+      ]
+    },
+    "prod": {
+      "cases": 30,
+      "setup_errors": 0,
+      "answer_has": {
+        "passed": 13,
+        "counted": 18
+      },
+      "within_length": {
+        "passed": 0,
+        "counted": 0
+      },
+      "abstained": {
+        "passed": 0,
+        "counted": 1
+      },
+      "repetition": {
+        "passed": 0,
+        "counted": 30
+      },
+      "required_facts_found": 15,
+      "required_facts_total": 22,
+      "abstain_names": {
+        "passed": 0,
+        "counted": 1
+      },
+      "no_navigate": {
+        "passed": 0,
+        "counted": 0
+      },
+      "no_dump": {
+        "passed": 0,
+        "counted": 0
+      },
+      "no_internal_words": {
+        "passed": 30,
+        "counted": 30
+      },
+      "length_class": {
+        "passed": 30,
+        "counted": 30
+      },
+      "no_reask": {
+        "passed": 0,
+        "counted": 0
+      },
+      "answer_type": {
+        "passed": 26,
+        "counted": 30
+      },
+      "answer_group": {
+        "passed": 29,
+        "counted": 30
+      },
+      "not_counted": 0,
+      "invented_names": 35,
+      "name_candidates": 55,
+      "wrong_scenes": 0,
+      "scene_citations": 2,
+      "quotes_missing": 2,
+      "quotes": 5,
+      "elapsed_ms": [
+        10743,
+        12988,
+        8281,
+        14802,
+        10950,
+        7,
+        2696,
+        3327,
+        15046,
+        19511,
+        9,
+        18,
+        7678,
+        1434,
+        4634,
+        752,
+        1684,
+        5005,
+        3997,
+        1199,
+        22866,
+        1578,
+        5180,
+        3262,
+        16657,
+        5894,
+        1222,
+        3309,
+        8754,
+        5904
+      ]
+    },
+    "repair": {
+      "cases": 11,
+      "setup_errors": 0,
+      "answer_has": {
+        "passed": 6,
+        "counted": 7
+      },
+      "within_length": {
+        "passed": 0,
+        "counted": 0
+      },
+      "abstained": {
+        "passed": 0,
+        "counted": 0
+      },
+      "repetition": {
+        "passed": 0,
+        "counted": 11
+      },
+      "required_facts_found": 6,
+      "required_facts_total": 9,
+      "abstain_names": {
+        "passed": 0,
+        "counted": 0
+      },
+      "no_navigate": {
+        "passed": 6,
+        "counted": 6
+      },
+      "no_dump": {
+        "passed": 0,
+        "counted": 0
+      },
+      "no_internal_words": {
+        "passed": 11,
+        "counted": 11
+      },
+      "length_class": {
+        "passed": 10,
+        "counted": 11
+      },
+      "no_reask": {
+        "passed": 11,
+        "counted": 11
+      },
+      "answer_type": {
+        "passed": 10,
+        "counted": 11
+      },
+      "answer_group": {
+        "passed": 10,
+        "counted": 11
+      },
+      "not_counted": 0,
+      "invented_names": 8,
+      "name_candidates": 28,
+      "wrong_scenes": 0,
+      "scene_citations": 2,
+      "quotes_missing": 1,
+      "quotes": 2,
+      "elapsed_ms": [
+        10,
+        28855,
+        1173,
+        8,
+        3187,
+        3941,
+        3108,
+        9575,
+        23794,
+        3439,
+        7463
+      ]
+    },
+    "scene": {
+      "cases": 30,
+      "setup_errors": 0,
+      "answer_has": {
+        "passed": 12,
+        "counted": 21
+      },
+      "within_length": {
+        "passed": 0,
+        "counted": 0
+      },
+      "abstained": {
+        "passed": 0,
+        "counted": 1
+      },
+      "repetition": {
+        "passed": 1,
+        "counted": 30
+      },
+      "required_facts_found": 24,
+      "required_facts_total": 36,
+      "abstain_names": {
+        "passed": 0,
+        "counted": 1
+      },
+      "no_navigate": {
+        "passed": 6,
+        "counted": 6
+      },
+      "no_dump": {
+        "passed": 0,
+        "counted": 0
+      },
+      "no_internal_words": {
+        "passed": 30,
+        "counted": 30
+      },
+      "length_class": {
+        "passed": 27,
+        "counted": 30
+      },
+      "no_reask": {
+        "passed": 9,
+        "counted": 10
+      },
+      "answer_type": {
+        "passed": 23,
+        "counted": 30
+      },
+      "answer_group": {
+        "passed": 28,
+        "counted": 30
+      },
+      "not_counted": 0,
+      "invented_names": 13,
+      "name_candidates": 75,
+      "wrong_scenes": 0,
+      "scene_citations": 16,
+      "quotes_missing": 2,
+      "quotes": 5,
+      "elapsed_ms": [
+        14260,
+        2646,
+        15557,
+        11973,
+        11,
+        5581,
+        3327,
+        9002,
+        24582,
+        4395,
+        9632,
+        2832,
+        5974,
+        3249,
+        8549,
+        3980,
+        5559,
+        8847,
+        9,
+        15787,
+        11605,
+        4315,
+        2101,
+        6539,
+        9890,
+        11859,
+        3136,
+        4783,
+        6218,
+        6420
+      ]
+    },
+    "xref": {
+      "cases": 12,
+      "setup_errors": 0,
+      "answer_has": {
+        "passed": 2,
+        "counted": 11
+      },
+      "within_length": {
+        "passed": 0,
+        "counted": 0
+      },
+      "abstained": {
+        "passed": 0,
+        "counted": 0
+      },
+      "repetition": {
+        "passed": 0,
+        "counted": 12
+      },
+      "required_facts_found": 5,
+      "required_facts_total": 7,
+      "abstain_names": {
+        "passed": 0,
+        "counted": 0
+      },
+      "no_navigate": {
+        "passed": 6,
+        "counted": 6
+      },
+      "no_dump": {
+        "passed": 0,
+        "counted": 0
+      },
+      "no_internal_words": {
+        "passed": 12,
+        "counted": 12
+      },
+      "length_class": {
+        "passed": 11,
+        "counted": 12
+      },
+      "no_reask": {
+        "passed": 0,
+        "counted": 0
+      },
+      "answer_type": {
+        "passed": 10,
+        "counted": 12
+      },
+      "answer_group": {
+        "passed": 10,
+        "counted": 12
+      },
+      "not_counted": 0,
+      "invented_names": 0,
+      "name_candidates": 21,
+      "wrong_scenes": 1,
+      "scene_citations": 8,
+      "quotes_missing": 7,
+      "quotes": 14,
+      "elapsed_ms": [
+        2385,
+        15156,
+        9728,
+        11,
+        2429,
+        9,
+        9,
+        2385,
+        7,
+        12996,
+        9216,
+        3590
+      ]
+    }
+  },
+  "english_tool_and_args_percent": 69.56521739130434,
+  "english_end_state_percent": 85.71428571428571,
+  "english_bar_met": false,
+  "lane_mix": {
+    "action": {
+      "change": 7
+    },
+    "conversation": {
+      "fixed": 18,
+      "navigate": 19,
+      "write": 214
+    },
+    "tool": {
+      "fixed": 1,
+      "navigate": 12,
+      "write": 3
+    }
+  },
+  "intent_scores": {}
+}
