@@ -139,7 +139,7 @@ struct AIConversationView: View {
                     .accessibilityLabel("Ask or command")
                     .accessibilityIdentifier("ai-input")
                 Button("Send") { model.send() }
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(.ofProminent)
                     .disabled(!model.canSend)
                     .accessibilityIdentifier("ai-send")
             }

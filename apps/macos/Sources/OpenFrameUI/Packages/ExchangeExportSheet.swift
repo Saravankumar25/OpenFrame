@@ -29,7 +29,7 @@ struct ExchangeExportSheet: View {
             }
         } footer: {
             if model.done != nil {
-                Button("Close", action: close).keyboardShortcut(.defaultAction).buttonStyle(.borderedProminent)
+                Button("Close", action: close).keyboardShortcut(.defaultAction).buttonStyle(.ofProminent)
                     .accessibilityIdentifier("exchange-export-close")
             } else {
                 Button("Cancel", action: close).keyboardShortcut(.cancelAction).accessibilityIdentifier("exchange-export-cancel")
@@ -39,7 +39,7 @@ struct ExchangeExportSheet: View {
                     else { return }
                     Task { await model.export(to: url) }
                 }
-                .keyboardShortcut(.defaultAction).buttonStyle(.borderedProminent)
+                .keyboardShortcut(.defaultAction).buttonStyle(.ofProminent)
                 .disabled(model.summary == nil || model.busy || !model.ready)
                 .accessibilityIdentifier("exchange-export-confirm")
             }

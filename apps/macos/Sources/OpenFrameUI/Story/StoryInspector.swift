@@ -224,7 +224,7 @@ private struct BeatInspector: View {
                         StorySavedStatus(status: d.status)
                         FlowLayout(spacing: 6) {
                             Button("Convert to Scene") { Task { await model.convertBeat(b.id) } }
-                                .buttonStyle(.borderedProminent).disabled(converted)
+                                .buttonStyle(.ofProminent).disabled(converted)
                             Button("Duplicate") { Task { await model.duplicate([ref]) } }
                             if parked {
                                 Button("Restore") { Task { await model.restoreToStory([ref]) } }

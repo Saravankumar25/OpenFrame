@@ -163,8 +163,8 @@ public final class ScreenplayTextView: NSTextView, @preconcurrency NSTextContent
         isAutomaticTextReplacementEnabled = false
         isAutomaticSpellingCorrectionEnabled = false
         smartInsertDeleteEnabled = false
-        usesFindBar = true
-        isIncrementalSearchingEnabled = true
+        // The page has its own finder (`finder` below) instead of the text view's built-in one.
+        usesFindBar = false
         textContainerInset = NSSize(width: 0, height: 48)
         textContainer?.lineFragmentPadding = 0
         textContainer?.widthTracksTextView = false
@@ -274,6 +274,7 @@ public final class ScreenplayTextView: NSTextView, @preconcurrency NSTextContent
 
     /// Replace the content with paragraphs from the core. Keeps the caret near where it was.
     public func load(_ paragraphs: [EditorParagraph]) {
+        finder.noteClientStringWillChange()
         isLoading = true
         defer { isLoading = false }
         let caret = selectedRange()
@@ -710,7 +711,33 @@ public final class ScreenplayTextView: NSTextView, @preconcurrency NSTextContent
         return menu
     }
 
+    /// The find bar of the page. It finds as you type but does not dim the page: the built-in
+    /// finder's dimming layer covered the custom-drawn page in Dark, leaving only white boxes
+    /// where the matches were.
+    private lazy var finder: NSTextFinder = {
+        let f = NSTextFinder()
+        f.client = self
+        f.isIncrementalSearchingEnabled = true
+        f.incrementalSearchingShouldDimContentView = false
+        return f
+    }()
+
+    public override func performFindPanelAction(_ sender: Any?) {
+        guard let action = (sender as? NSValidatedUserInterfaceItem).flatMap({ NSTextFinder.Action(rawValue: $0.tag) }) else { return }
+        if finder.findBarContainer == nil { finder.findBarContainer = enclosingScrollView }
+        finder.performAction(action)
+    }
+
+    public override func validateUserInterfaceItem(_ item: NSValidatedUserInterfaceItem) -> Bool {
+        if item.action == #selector(performFindPanelAction(_:)), let action = NSTextFinder.Action(rawValue: item.tag) {
+            if finder.findBarContainer == nil { finder.findBarContainer = enclosingScrollView }
+            return finder.validateAction(action)
+        }
+        return super.validateUserInterfaceItem(item)
+    }
+
     public override func didChangeText() {
+        finder.noteClientStringWillChange()
         super.didChangeText()
         needsDisplay = true
         if !isLoading {
@@ -849,3 +876,7 @@ public final class ScreenplayTextView: NSTextView, @preconcurrency NSTextContent
         scrollRangeToVisible(NSRange(location: min(location, ns.length), length: 0))
     }
 }
+
+/// NSTextView already answers every NSTextFinderClient question (string, selection, scrolling,
+/// match rectangles); Swift only needs the conformance spelled out for the page's own finder.
+extension ScreenplayTextView: @preconcurrency NSTextFinderClient {}

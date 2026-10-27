@@ -58,6 +58,29 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 
 ## Entries
 
+### 2026-10-27, Mac default theme: Screening Room chosen and applied (Mac only)
+- **Areas and items worked:** owner request outside the plan: "the default theme is very bad", options as HTML
+  previews, then the chosen one in the Mac app (area 12, Appearance and themes).
+- **Done:** four options (Native, Paper, Screening Room, Ink) in `docs/design/theme-options/default-theme-options.html`;
+  owner chose Screening Room for the Mac only. `macDefaultTheme.json` is laid over OpenFrame Default by
+  `ThemeCatalog.withMacDefault`; Windows and the other 16 themes are unchanged. The window-wide accent tint painted every
+  push button label orange: ordinary buttons are now neutral (`.ofStandard`, also inside every sheet through
+  `themedSheet`), the prominent button is amber with dark text (`.ofProminent`, 89 uses), and controls macOS draws with
+  white text use the Mac-only `control-tint`. The scene list is a plain list on the theme surface with the current scene
+  marked (was the grey sidebar material). Bug fixed: in Dark the find bar's dimming layer covered the page and left white
+  boxes; the page now has its own `NSTextFinder` without dimming.
+- **Evidence:** `ThemeEngineTests.macPaletteChangesOnlyOpenFrameDefaultAndStaysReadable` (contrast pairs in both modes);
+  capture tour scenarios `zz-capture/01-home`, `02-screenplay-find`, `10-settings` pass in Light and Dark on the dev
+  build, pictures checked by eye.
+- **Features moved:** none.
+- **Docs updated:** `docs/engineering/30-appearance-themes.md` section 6, this entry, handoff.
+- **Decisions made or needed:** owner chose Screening Room, Mac only (2026-10-27). MacHTML still shows the old look;
+  regenerate it only on the owner's word.
+- **Blocked / risks:** the other matches of a search are counted but not painted on the page (only the current one is
+  shown); the rest of the capture tour was not rerun with the new look.
+- **Next:** the cleanup the owner asked for (dead code and history folder), listed for approval first.
+- **Checks run:** Mac unit tests (`apps/macos/scripts/test.sh`), `npm run check:writing`; `npm run verify` not run.
+
 ### 2026-10-20 (late night), MacHTML rebuilt: 692 Mac states in Light and Dark from picture and accessibility tree
 - **Areas and items worked:** owner request "rebuild MacHTML" (time box 90 minutes, parallel agents allowed).
 - **Done:** the capture tour is split into one file per area (`CaptureTour*.swift`) and extended by ten parallel agents

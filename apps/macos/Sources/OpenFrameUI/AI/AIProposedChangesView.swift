@@ -120,7 +120,7 @@ struct AIProposedChangesView: View {
                 }
                 if actions.recheck {
                     Button("Re-check & Review") { Task { await model.recheck(cs) } }
-                        .buttonStyle(.borderedProminent)
+                        .buttonStyle(.ofProminent)
                         .disabled(busy)
                         .accessibilityIdentifier("ai-recheck")
                 }
@@ -128,7 +128,7 @@ struct AIProposedChangesView: View {
                     Button("Apply Changes") {
                         if cs.requiresConfirmation { confirming = true } else { Task { await model.apply(cs) } }
                     }
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(.ofProminent)
                     .disabled(busy)
                     .accessibilityIdentifier("ai-apply")
                 }

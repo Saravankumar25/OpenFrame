@@ -23,7 +23,7 @@ struct StoryboardsView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .task(id: "\(dataKey)|\(hub.scenesLoaded)") { await model.reload() }
-        .sheet(item: $model.sheet) { StoryboardSheetHost(model: model, sheet: $0) }
+        .themedSheet(item: $model.sheet) { StoryboardSheetHost(model: model, sheet: $0) }
         .inspector(isPresented: Binding(get: { model.panel != nil }, set: { if !$0 { model.selectedPanelId = nil } })) {
             if let p = model.panel, let b = model.board {
                 PanelInspector(model: model, panel: p, board: b.board).id(p.id)
@@ -128,7 +128,7 @@ struct StoryboardsView: View {
                 Text("Storyboards usually belong to a screenplay scene, so its heading comes from the script. You can also start a standalone storyboard now. The screenplay never needs shot directions.")
             } actions: {
                 Button("New Storyboard") { model.sheet = .newBoard }
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(.ofProminent)
                     .accessibilityIdentifier("storyboard-empty-new")
             }
             .accessibilityElement(children: .contain)

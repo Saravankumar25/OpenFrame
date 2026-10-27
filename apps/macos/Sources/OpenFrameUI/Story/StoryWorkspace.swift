@@ -41,7 +41,7 @@ struct StoryContent: View {
         .background(theme["bg"])
         .overlay(alignment: .bottom) { StoryNoticeBar(model: model) }
         .task(id: reloadKey) { await model.reload() }
-        .sheet(item: $model.sheet) { StorySheetHost(model: model, sheet: $0) }
+        .themedSheet(item: $model.sheet) { StorySheetHost(model: model, sheet: $0) }
         .inspector(isPresented: Binding(get: { model.drawer != nil }, set: { if !$0 { model.openDrawer(nil) } })) {
             if let ref = model.drawer {
                 StoryInspector(model: model, ref: ref).inspectorColumnWidth(min: 320, ideal: 400, max: 560)
@@ -241,7 +241,7 @@ struct BoardPage: View {
                     .accessibilityIdentifier("story-parking-toggle")
             }
             Button { model.sheet = .build(preselect: []) } label: { Label("Build Screenplay", systemImage: "doc.text") }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(.ofProminent)
                 .accessibilityIdentifier("story-build")
             Menu {
                 Button("Card Display Settings\u{2026}") { model.sheet = .cardDisplay }
@@ -303,7 +303,7 @@ struct BoardPage: View {
             } actions: {
                 HStack {
                     Button { Task { await model.newCard(in: nil) } } label: { Label("Add Scene", systemImage: "plus") }
-                        .buttonStyle(.borderedProminent)
+                        .buttonStyle(.ofProminent)
                         .accessibilityIdentifier("story-empty-add-scene")
                     Button { model.addingAct = true } label: { Label("Add Act", systemImage: "plus") }
                         .accessibilityIdentifier("story-add-act")

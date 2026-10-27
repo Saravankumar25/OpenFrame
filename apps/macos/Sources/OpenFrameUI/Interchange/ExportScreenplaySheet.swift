@@ -95,7 +95,7 @@ struct ExportScreenplaySheet: View {
                 .accessibilityIdentifier("export-preview")
             Button(model.busy ? "Exporting\u{2026}" : "Export\u{2026}") { runExport() }
                 .keyboardShortcut(.defaultAction)
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(.ofProminent)
                 .disabled(model.busy || !model.scopeOk)
                 .accessibilityIdentifier("export-confirm")
         }
@@ -220,7 +220,7 @@ struct ExportScreenplaySheet: View {
             }
         } footer: {
             Button("Show in Folder") { Task { await model.reveal() } }.accessibilityIdentifier("export-show-in-folder")
-            Button("Close", action: close).keyboardShortcut(.defaultAction).buttonStyle(.borderedProminent)
+            Button("Close", action: close).keyboardShortcut(.defaultAction).buttonStyle(.ofProminent)
                 .accessibilityIdentifier("export-close")
         }
     }
@@ -308,7 +308,7 @@ struct PrintPreviewSheet: View {
                 .disabled(model.document == nil)
                 .accessibilityIdentifier("print-print")
             Button(model.exporting ? "Exporting\u{2026}" : "Export PDF") { exportPDF() }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(.ofProminent)
                 .keyboardShortcut(.defaultAction)
                 .disabled(model.document == nil || model.exporting || model.blocking)
                 .accessibilityIdentifier("print-export-pdf")

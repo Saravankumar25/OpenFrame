@@ -45,7 +45,7 @@ struct WelcomeNameView: View {
                 Spacer()
                 Button("Continue") { Task { await model.continueTapped() } }
                     .keyboardShortcut(.defaultAction)
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(.ofProminent)
                     .disabled(model.invalid || model.busy)
                     .accessibilityIdentifier("welcome-continue")
                 Spacer()

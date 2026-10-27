@@ -124,7 +124,7 @@ struct ScheduleDayView: View {
                     .accessibilityIdentifier("day-export")
                 if !day.isOffDay {
                     Button(day.callSheet != nil ? "Open Call Sheet" : "Create Call Sheet") { Task { await model.openCallSheet(day) } }
-                        .buttonStyle(.borderedProminent)
+                        .buttonStyle(.ofProminent)
                         .accessibilityIdentifier("day-call-sheet")
                 }
             }

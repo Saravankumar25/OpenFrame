@@ -47,7 +47,7 @@ struct BreakdownContent: View {
         .followsHubTab(hub.tab, fixed: fixed, set: { hub.tab = $0 }, place: { $0.place })
         .background(theme["bg"])
         .overlay(alignment: .bottom) { BDNoticeBar(hub: hub) }
-        .sheet(item: $hub.exportModel) { m in CSExportSheet(model: m) { hub.exportModel = nil } }
+        .themedSheet(item: $hub.exportModel) { m in CSExportSheet(model: m) { hub.exportModel = nil } }
         .environment(hub)
         .task(id: app.changes.key(BDTables.categoryStyle)) { await hub.reloadStyles() }
         .task(id: app.changes.key(BDTables.members)) { await hub.reloadMembers() }
@@ -116,7 +116,7 @@ struct BreakdownTabView: View {
         }
         .task(id: dataKey) { await model.reload() }
         .task(id: pickKey) { await model.reloadScene() }
-        .sheet(item: $model.sheet) { SheetHost(model: model, sheet: $0) }
+        .themedSheet(item: $model.sheet) { SheetHost(model: model, sheet: $0) }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("breakdown-tab")
     }
@@ -129,7 +129,7 @@ struct BreakdownTabView: View {
         } actions: {
             HStack {
                 Button("Select Source") { model.sheet = .selectSource }
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(.ofProminent)
                     .disabled(!model.canEdit)
                     .accessibilityIdentifier("select-source")
                 Button { NotificationCenter.default.post(name: .openFrameShowWorkspace, object: Workspace.screenplay.rawValue) } label: {

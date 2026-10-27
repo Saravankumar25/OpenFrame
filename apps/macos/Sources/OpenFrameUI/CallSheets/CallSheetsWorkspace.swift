@@ -45,7 +45,7 @@ struct CallSheetsContent: View {
         .followsHubTab(hub.tab, fixed: fixed, set: { hub.tab = $0 }, place: { $0.place })
         .background(theme["bg"])
         .environment(hub)
-        .sheet(item: $hub.exportModel) { m in
+        .themedSheet(item: $hub.exportModel) { m in
             CSExportSheet(model: m) { hub.exportModel = nil }
         }
         .task(id: app.changes.key(CSTables.members)) { await hub.reloadMembers() }

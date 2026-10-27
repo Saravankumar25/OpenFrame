@@ -184,7 +184,7 @@ struct StoryEpisodesView: View {
                 HStack(spacing: PageSpacing.small) {
                 Button { Task { await m.addSeason() } } label: { Label("Add Season", systemImage: "plus") }
                 Button { m.sheet = .new(seasonId: m.seasonId) } label: { Label("Add Episode", systemImage: "plus") }
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(.ofProminent)
                     .accessibilityIdentifier("story-add-episode")
                 }
             }
@@ -200,7 +200,7 @@ struct StoryEpisodesView: View {
                     } description: {
                         Text("Each episode has its own Beat Board, screenplay drafts and production planning.")
                     } actions: {
-                        Button("Add Episode") { m.sheet = .new(seasonId: nil) }.buttonStyle(.borderedProminent)
+                        Button("Add Episode") { m.sheet = .new(seasonId: nil) }.buttonStyle(.ofProminent)
                     }
                 } else {
                     HStack(alignment: .top, spacing: 16) {
@@ -215,7 +215,7 @@ struct StoryEpisodesView: View {
         .padding(16)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .task(id: app.changes.key(StoryTables.series + ["story_character"])) { await m.loadReferences() }
-        .sheet(item: $m.sheet) { sheet in
+        .themedSheet(item: $m.sheet) { sheet in
             switch sheet {
             case let .new(seasonId): EpisodeFormSheet(m: m, editing: nil, seasonId: seasonId)
             case let .edit(e): EpisodeFormSheet(m: m, editing: e, seasonId: e.seasonId)

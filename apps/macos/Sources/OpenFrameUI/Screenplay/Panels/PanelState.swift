@@ -135,7 +135,7 @@ struct ScreenplayPanelsHost: ViewModifier {
                 ScreenplayInspector(model: model, state: state, caretIndex: caretIndex)
                     .inspectorColumnWidth(min: 280, ideal: 340, max: 480)
             }
-            .sheet(item: $state.sheet) { sheet in
+            .themedSheet(item: $state.sheet) { sheet in
                 switch sheet {
                 case .drafts: DraftsSheet(workspace: model, state: state)
                 case .newDraft: NewDraftHost(workspace: model, state: state)

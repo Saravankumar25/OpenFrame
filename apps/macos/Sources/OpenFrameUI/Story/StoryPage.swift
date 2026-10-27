@@ -207,7 +207,7 @@ struct StoryPageView: View {
                 }
             }
         }
-        .sheet(item: Binding(get: { m.exportModel }, set: { m.exportModel = $0 })) { e in
+        .themedSheet(item: Binding(get: { m.exportModel }, set: { m.exportModel = $0 })) { e in
             CSExportSheet(model: e) { m.exportModel = nil }
         }
         .onAppear { focused = true }

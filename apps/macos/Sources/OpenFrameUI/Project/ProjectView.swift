@@ -141,10 +141,10 @@ struct ProjectView: View {
         .task(id: app.changes.any) {
             if let now = try? await app.core?.projectCurrent(), now.id == project.id { live = now }
         }
-        .sheet(isPresented: Binding(get: { renaming != nil }, set: { if !$0 { renaming = nil } })) {
+        .themedSheet(isPresented: Binding(get: { renaming != nil }, set: { if !$0 { renaming = nil } })) {
             if let recent = renaming { RenameProjectSheet(project: recent, actions: ProjectActions(app: app)) {} }
         }
-        .sheet(item: Binding(get: { settingsTab.map(SettingsSheetTarget.init) }, set: { settingsTab = $0?.tab })) { target in
+        .themedSheet(item: Binding(get: { settingsTab.map(SettingsSheetTarget.init) }, set: { settingsTab = $0?.tab })) { target in
             ProjectSettingsView(initialTab: target.tab)
         }
         .onReceive(NotificationCenter.default.publisher(for: .openFrameShowProjectSettings)) { note in

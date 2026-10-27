@@ -88,7 +88,7 @@ struct IdeaVaultScreen: View {
             }
         }
         .background(theme["bg"])
-        .sheet(item: $model.dialog) { dialogView($0) }
+        .themedSheet(item: $model.dialog) { dialogView($0) }
         .task(id: reloadKey) { await model.reload() }
         .task(id: model.searchText) {
             try? await Task.sleep(for: .milliseconds(200))

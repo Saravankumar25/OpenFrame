@@ -22,7 +22,7 @@ struct TemplatesView: View {
             VStack(alignment: .leading, spacing: PageSpacing.medium) {
                 PageHeader("Templates", subtitle: "Would a saved starting point help me begin faster?") {
                     Button { editing = EditTarget(template: nil) } label: { Label("Create Template", systemImage: "plus") }
-                        .buttonStyle(.borderedProminent)
+                        .buttonStyle(.ofProminent)
                         .accessibilityIdentifier("template-create")
                 }
                 content
@@ -38,10 +38,10 @@ struct TemplatesView: View {
             await model?.load()
         }
         .task(id: app.changes.key(["template"])) { await model?.load() }
-        .sheet(item: $editing) { target in
+        .themedSheet(item: $editing) { target in
             if let model { TemplateEditSheet(model: model, template: target.template) }
         }
-        .sheet(item: Binding(get: { preview.map(IdentifiedTemplate.init) }, set: { preview = $0?.template })) { item in
+        .themedSheet(item: Binding(get: { preview.map(IdentifiedTemplate.init) }, set: { preview = $0?.template })) { item in
             if let model {
                 TemplatePreviewSheet(model: model, template: item.template) { action in
                     switch action {
@@ -51,7 +51,7 @@ struct TemplatesView: View {
                 }
             }
         }
-        .sheet(item: Binding(get: { applying.map(IdentifiedTemplate.init) }, set: { applying = $0?.template })) { item in
+        .themedSheet(item: Binding(get: { applying.map(IdentifiedTemplate.init) }, set: { applying = $0?.template })) { item in
             if let model { TemplateApplySheet(model: model, template: item.template) }
         }
         .confirmationDialog(

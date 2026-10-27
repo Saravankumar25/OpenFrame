@@ -82,8 +82,12 @@ private struct OpenFrameThemeModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         // Light and Dark force the scheme; System leaves it alone so `systemScheme` stays live.
+        let theme = store.resolvedFor(colorScheme: systemScheme)
         content
-            .environment(\.ofTheme, store.resolvedFor(colorScheme: systemScheme))
+            .buttonStyle(.ofStandard)
+            // Controls macOS draws with white text need a deeper amber than the accent fill.
+            .tint(theme.has("control-tint") ? theme["control-tint"] : theme["accent"])
+            .environment(\.ofTheme, theme)
             .preferredColorScheme(store.preferredColorScheme)
     }
 }

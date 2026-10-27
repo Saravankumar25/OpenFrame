@@ -2,7 +2,7 @@
 
 > Rewritten (not appended) at the end of every session. One page. It exists so the next session starts from the facts
 > instead of from a long history, which is how context rot is avoided. If this page is older than the newest progress log
-> entry, trust the log and fix this page first. Last rewritten: 2026-10-20, late night, end of the MacHTML rebuild.
+> entry, trust the log and fix this page first. Last rewritten: 2026-10-27, Mac default theme (Screening Room).
 
 ## State
 
@@ -38,6 +38,15 @@
    pass the WebKit check (0.5 percent pixels, channel over 24) in both modes with 0 HTML misses. The old 179-screen
    `release-out/MacHTML/` is deleted. Limits are in `MacHTML/README.md` (window heights vary by a few points, some
    windows drawn inactive, no AI answers, no images).
+
+4. **Mac default theme, branch `mac/screening-room-theme`** (from `mac/machtml-rebuild`, local only): the owner chose
+   Screening Room (options in `docs/design/theme-options/default-theme-options.html`), Mac only. Palette in
+   `apps/macos/Sources/OpenFrameUI/Resources/macDefaultTheme.json`, laid over OpenFrame Default at load; neutral push
+   buttons (`.ofStandard`, `themedSheet`), amber prominent button with dark text (`.ofProminent`), `control-tint` for
+   white-text controls; Dark find bar fixed (own `NSTextFinder`, no dimming). 616 Mac unit tests pass. MacHTML still
+   shows the old look.
+5. **Cleanup waiting for the owner's yes:** dead code list and a `docs/history/` folder for evidence, audits, reports,
+   ADR-0025 and the old log sections (listed in the chat of 2026-10-27; nothing moved yet).
 
 ## Next three items
 

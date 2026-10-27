@@ -94,7 +94,7 @@ struct CSSidesView: View {
                         .disabled(!model.ready)
                         .accessibilityIdentifier("sides-preview")
                         Button("Save Sides") { Task { await model.save() } }
-                            .buttonStyle(.borderedProminent)
+                            .buttonStyle(.ofProminent)
                             .disabled(!model.ready || !hub.canEdit)
                             .accessibilityIdentifier("sides-save")
                         Button { model.exportPDF() } label: { Label("Export PDF", systemImage: "square.and.arrow.down") }

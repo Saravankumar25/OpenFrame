@@ -135,15 +135,15 @@ struct HomeView: View {
             .navigationTitle("")
         }
         .interchangeAnchor()
-        .sheet(isPresented: $showNewProject) { NewProjectSheet() }
-        .sheet(item: $sheet) { sheet in
+        .themedSheet(isPresented: $showNewProject) { NewProjectSheet() }
+        .themedSheet(item: $sheet) { sheet in
             switch sheet {
             case let .rename(p): RenameProjectSheet(project: p, actions: actions) { reload() }
             case let .delete(p): DeleteProjectSheet(project: p, actions: actions) { reload() }
             case let .unavailable(p): UnavailableProjectSheet(project: p, actions: actions) { reload() }
             }
         }
-        .sheet(isPresented: $showVault) {
+        .themedSheet(isPresented: $showVault) {
             NavigationStack {
                 GlobalIdeaVaultView()
                     .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Done") { showVault = false } } }
@@ -191,7 +191,7 @@ struct HomeView: View {
             .help("Restore a backup or open a project package")
             .accessibilityIdentifier("home-restore-package")
         Button { showNewProject = true } label: { Label("New Project", systemImage: "plus").labelStyle(.titleAndIcon) }
-            .buttonStyle(.borderedProminent)
+            .buttonStyle(.ofProminent)
             .keyboardShortcut("n", modifiers: .command)
             .help(ShortcutStore.shared.tooltipWords("New Project", "home.new_project"))
             .accessibilityIdentifier("home-new-project")
@@ -293,7 +293,7 @@ struct HomeView: View {
                 Button { showNewProject = true } label: { Label("Create Project", systemImage: "plus").labelStyle(.titleAndIcon) }
                     .keyboardShortcut("n", modifiers: .command)
                     .controlSize(.large)
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(.ofProminent)
                     .accessibilityIdentifier("home-new-project")
                 Button { openExisting() } label: { Label("Open Existing Project", systemImage: "folder").labelStyle(.titleAndIcon) }
                     .controlSize(.large)

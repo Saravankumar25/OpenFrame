@@ -481,7 +481,7 @@ struct VaultPreview: View {
             Button { player.toggle() } label: {
                 Label(player.isPlaying ? "Pause" : "Play", systemImage: player.isPlaying ? "pause.fill" : "play.fill")
             }
-            .buttonStyle(.borderedProminent)
+            .buttonStyle(.ofProminent)
             .disabled(!player.loaded || player.failed)
             .accessibilityLabel(player.isPlaying ? "Pause \(item.displayName)" : "Play \(item.displayName)")
             .accessibilityIdentifier("audio-play")

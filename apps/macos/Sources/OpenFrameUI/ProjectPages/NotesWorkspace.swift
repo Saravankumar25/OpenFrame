@@ -38,7 +38,7 @@ struct NotesScreen: View {
                     Button { Task { await model.newNote() } } label: { Label("New Note", systemImage: "plus") }
                         .accessibilityIdentifier("new-note")
                     Button { model.startNewTask() } label: { Label("New Task", systemImage: "plus") }
-                        .buttonStyle(.borderedProminent)
+                        .buttonStyle(.ofProminent)
                         .accessibilityIdentifier("new-task")
                 }
             }
@@ -549,7 +549,7 @@ private struct TaskDrawer: View {
                 .keyboardShortcut(.cancelAction)
                 .accessibilityIdentifier("task-cancel")
             Button(editor.saveLabel) { Task { await editor.save() } }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(.ofProminent)
                 .keyboardShortcut(.defaultAction)
                 .disabled(!editor.canSave)
                 .accessibilityIdentifier("task-save")

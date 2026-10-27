@@ -28,9 +28,8 @@ public struct RootView: View {
                 if showsHomeOrProject { showShortcuts = true }
             }
             .task(id: model.isRunning) { await ShortcutStore.shared.reload(core: model.core) }
-            .sheet(isPresented: $showShortcuts) { ShortcutsSheet(app: model) }
+            .themedSheet(isPresented: $showShortcuts) { ShortcutsSheet(app: model) }
             .task(id: welcomeKey) { updateWelcome() }
-            .tint(theme["accent"])
             .animation(reduceMotion ? .easeInOut(duration: 0.15) : .spring(response: 0.35, dampingFraction: 1), value: phaseKey)
             .alert(item: $model.alert) { alert in
                 switch alert {

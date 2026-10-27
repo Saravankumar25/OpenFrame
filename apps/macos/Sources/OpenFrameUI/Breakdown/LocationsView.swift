@@ -46,7 +46,7 @@ struct LocationsView: View {
             BDPageHeader(title: "Locations", sub: "Which places can we use? A practical scouting notebook.") {
                 if model.canEdit {
                     Button { model.sheet = .add } label: { Label("Add Location", systemImage: "plus") }
-                        .buttonStyle(.borderedProminent)
+                        .buttonStyle(.ofProminent)
                         .accessibilityIdentifier("add-location")
                 }
             }
@@ -82,7 +82,7 @@ struct LocationsView: View {
                 LocationInspector(model: model, loc: loc).inspectorColumnWidth(min: 340, ideal: 420, max: 560)
             }
         }
-        .sheet(item: $model.sheet) { LocationSheetHost(model: model, sheet: $0) }
+        .themedSheet(item: $model.sheet) { LocationSheetHost(model: model, sheet: $0) }
         .onProjectIntent("production.new_location") { if model.canEdit { model.sheet = .add } }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("locations-tab")

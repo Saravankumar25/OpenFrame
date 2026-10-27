@@ -113,7 +113,7 @@ struct ProjectGeneralForm: View {
                             .disabled(!model.dirty || model.saving)
                             .accessibilityIdentifier("project-settings-revert")
                         Button("Save") { Task { await model.save() } }
-                            .buttonStyle(.borderedProminent)
+                            .buttonStyle(.ofProminent)
                             .disabled(!model.canSave)
                             .accessibilityIdentifier("project-settings-save")
                     }

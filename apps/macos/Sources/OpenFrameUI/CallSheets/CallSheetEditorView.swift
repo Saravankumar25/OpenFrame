@@ -32,10 +32,10 @@ struct CallSheetEditorView: View {
             }
         }
         .task(id: app.changes.key(CSTables.callSheet)) { await model.reload() }
-        .sheet(isPresented: Binding(get: { model.dialog == .refresh }, set: { if !$0 { model.dialog = nil } })) {
+        .themedSheet(isPresented: Binding(get: { model.dialog == .refresh }, set: { if !$0 { model.dialog = nil } })) {
             CSRefreshSheet(model: model)
         }
-        .sheet(isPresented: Binding(get: { model.dialog == .finalize }, set: { if !$0 { model.dialog = nil } })) {
+        .themedSheet(isPresented: Binding(get: { model.dialog == .finalize }, set: { if !$0 { model.dialog = nil } })) {
             if let d = model.detail { CSFinalizeSheet(model: model, detail: d) }
         }
         .accessibilityElement(children: .contain)
@@ -105,7 +105,7 @@ struct CallSheetEditorView: View {
                     text: "Needs refresh. The schedule changed after this call sheet was prepared (\(CSFormat.dateTime(stale.preparedAt))). Changed: \(stale.areas.isEmpty ? "day details" : stale.areas.joined(separator: ", ")). Nothing changes until you review the update."
                 ) {
                     Button("Review Update") { Task { await model.showRefresh() } }
-                        .buttonStyle(.borderedProminent).controlSize(.small)
+                        .buttonStyle(.ofProminent).controlSize(.small)
                         .accessibilityIdentifier("callsheet-review-update")
                 }
                 .accessibilityIdentifier("callsheet-stale-banner")
@@ -160,7 +160,7 @@ struct CallSheetEditorView: View {
                 }
                 if d.editable {
                     Button("Finalize\u{2026}") { Task { await model.showFinalize() } }
-                        .buttonStyle(.borderedProminent)
+                        .buttonStyle(.ofProminent)
                         .disabled(!hub.canEdit)
                         .accessibilityIdentifier("callsheet-finalize")
                 }

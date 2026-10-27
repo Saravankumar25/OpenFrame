@@ -133,6 +133,18 @@ with this reason in the final E2E run.
 OpenFrame Default in Dark mode uses the Studio Amber seeds and passes every pair. High Contrast keeps 7 to 1 or more for
 main and muted text in both modes.
 
+**Mac palette of OpenFrame Default: Screening Room** (owner choice 2026-10-27, Mac only; the options are in
+`docs/design/theme-options/default-theme-options.html`). The Mac lays
+`apps/macos/Sources/OpenFrameUI/Resources/macDefaultTheme.json` over the shared OpenFrame Default entry when it loads
+`themes.json` (`ThemeCatalog.withMacDefault`); Windows and every other theme are unchanged. Cool slate neutrals (Light
+window `#f4f6f9`, panels white; Dark window `#12151b`, panels `#191d25`) and the OpenFrame amber accent (`#e08a1e`
+Light, `#f0a040` Dark) used only for selection, focus, links and the one prominent button per screen. The prominent
+button (`.ofProminent`) is amber with dark text `#1a1206`. Controls macOS draws with white text (selected segment,
+default button, switch) take the Mac-only token `control-tint`, a deeper amber (`#a65b0a` Light, `#b8650f` Dark), so
+white text keeps about 4.3 to 5.1 to 1. Ordinary push buttons are neutral (`.ofStandard`, set for every window by
+`openFrameTheme`); before this a window-wide accent tint drew every button label in orange. Test:
+`ThemeEngineTests.macPaletteChangesOnlyOpenFrameDefaultAndStaysReadable`.
+
 ## 7. Fixed and document colours
 
 A colour literal in the React app must be a token, or be marked on its line or the line above as

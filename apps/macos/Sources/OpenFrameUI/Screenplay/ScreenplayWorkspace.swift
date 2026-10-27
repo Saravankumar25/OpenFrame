@@ -783,6 +783,7 @@ struct SceneNavigator: View {
     var body: some View {
         let scenes = model.document?.scenes ?? []
         let shown = NavigatorColumnData.shown(model.navColumns, model.navData)
+        let current = Self.sceneIndex(containing: currentIndex, in: scenes)
         VStack(spacing: 0) {
             HStack {
                 Text("Scenes (\(scenes.count))").font(.headline).accessibilityAddTraits(.isHeader)
@@ -849,12 +850,35 @@ struct SceneNavigator: View {
                         Button("Scene Hub") { panels.showSceneHub(sceneId: scene.id) }
                         Button("Add Comment") { panels.addComment(sceneId: scene.id) }
                     }
+                    .fontWeight(i == current ? .semibold : nil)
+                    .listRowBackground(i == current ? currentRow : nil)
                 }
             }
         }
-        .listStyle(.sidebar)
+        // A plain list on the theme surface: the sidebar material made the middle pane read as a
+        // grey, disabled block.
+        .listStyle(.plain)
+        .scrollContentBackground(.hidden)
         .accessibilityIdentifier("scene-navigator")
         }
+        .background(theme["surface2"])
+    }
+
+    /// The scene the caret is in: accent wash with an accent bar on the leading edge.
+    private var currentRow: some View {
+        theme["accent-soft"].overlay(alignment: .leading) { theme["accent"].frame(width: 2) }
+    }
+
+    /// Index of the scene whose paragraphs hold `paragraph` (a heading plus its elements each).
+    static func sceneIndex(containing paragraph: Int, in scenes: [ScreenplaySceneDto]) -> Int? {
+        var start = 0
+        var found: Int?
+        for (i, scene) in scenes.enumerated() {
+            if start > paragraph { break }
+            found = i
+            start += 1 + scene.elements.count
+        }
+        return found
     }
 
     private func columnWidth(_ c: NavigatorColumn) -> CGFloat {

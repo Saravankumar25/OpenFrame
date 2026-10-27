@@ -177,7 +177,7 @@ struct RevisionsSheet: View {
             drafts.attach(app, workspace, say: { state.say($0) })
             await model.load()
         }
-        .sheet(isPresented: Binding(get: { startFrom != nil }, set: { if !$0 { startFrom = nil } })) {
+        .themedSheet(isPresented: Binding(get: { startFrom != nil }, set: { if !$0 { startFrom = nil } })) {
             if let source = startFrom { StartRevisionSheet(model: drafts, source: source) }
         }
         .accessibilityIdentifier("revisions-sheet")

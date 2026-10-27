@@ -42,7 +42,10 @@ let package = Package(
         .target(
             name: "OpenFrameUI",
             dependencies: ["OpenFrameCore"],
-            resources: [.copy("Resources/themes.json"), .copy("Resources/elementRules.json")]
+            resources: [
+                .copy("Resources/themes.json"), .copy("Resources/macDefaultTheme.json"),
+                .copy("Resources/elementRules.json"),
+            ]
         ),
         .executableTarget(name: "OpenFrameStudio", dependencies: ["OpenFrameUI"]),
         .target(name: "OpenFrameE2EShim"),

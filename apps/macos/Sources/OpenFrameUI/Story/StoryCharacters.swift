@@ -208,7 +208,7 @@ struct CharactersView: View {
         .task(id: app.changes.key(StoryTables.characters) &+ story.viewRevision &+ (m.showArchived ? 1 : 0) &+ (story.episodeId?.hashValue ?? 0) &+ (m.selectedId?.hashValue ?? 0)) {
             await m.reload()
         }
-        .sheet(item: $m.sheet) { sheet in
+        .themedSheet(item: $m.sheet) { sheet in
             switch sheet {
             case .new: NewCharacterSheet(m: m)
             case let .edit(c): EditCharacterSheet(m: m, c: c)
@@ -227,7 +227,7 @@ struct CharactersView: View {
                 Text("\(m.activeCount)").font(.caption).padding(.horizontal, 6).background(.quaternary, in: Capsule())
                 Spacer()
                 Button { m.sheet = .new } label: { Label("Add Character", systemImage: "plus") }
-                    .buttonStyle(.borderedProminent).controlSize(.small)
+                    .buttonStyle(.ofProminent).controlSize(.small)
                     .accessibilityIdentifier("story-add-character")
             }
             .padding(10)
@@ -723,7 +723,7 @@ struct RelationshipMapView: View {
                 Spacer()
                 if chars.count >= 2 {
                     Button { m.sheet = .addRelationship(from: chars[0].id) } label: { Label("Add Relationship", systemImage: "plus") }
-                        .buttonStyle(.borderedProminent).controlSize(.small)
+                        .buttonStyle(.ofProminent).controlSize(.small)
                 }
             }
             Text("Optional visual helper, not a character-analysis system.").font(.caption).foregroundStyle(theme["muted"])
