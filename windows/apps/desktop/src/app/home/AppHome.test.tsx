@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { act } from "react";
+import { open as openDialog } from "@tauri-apps/plugin-dialog";
 import { call, onAppEvent } from "../../ipc/client";
 import { installInvalidation } from "../../ipc/query";
 import type { AppEvent } from "../../ipc/generated/AppEvent";
@@ -9,6 +10,7 @@ import { AppHome } from "./AppHome";
 import { answerFrom, renderWithClient, type OpTable } from "./testUtils";
 import type { RecentProject } from "../../ipc/generated/RecentProject";
 import { useIntent, useNav, useUi } from "../stores";
+import { toast } from "../toast";
 import { useHomeView } from "./homeState";
 import { usePackagesUi } from "../../features/packages";
 
@@ -16,6 +18,13 @@ vi.mock("../../ipc/client", async (importOriginal) => ({
   ...(await importOriginal<typeof import("../../ipc/client")>()),
   call: vi.fn(),
   onAppEvent: vi.fn(() => Promise.resolve(() => undefined)),
+}));
+
+vi.mock("@tauri-apps/plugin-dialog", () => ({ open: vi.fn() }));
+// Outside the desktop shell no picture URL can be built; the test builds one from the path.
+vi.mock("../../ipc/assetSrc", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../../ipc/assetSrc")>()),
+  fileSrc: (p: string | null | undefined) => (p ? `ofasset://localhost/${p}` : null),
 }));
 
 // The real Idea Vault workspace is tested on its own; here a stub stands in for it.
@@ -51,6 +60,7 @@ function project(p: Partial<RecentProject>): RecentProject {
     lastOpenedAt: Date.now() - 3_600_000,
     modifiedAt: Date.now() - 7_200_000,
     available: true,
+    cover: null,
     ...p,
   };
 }
@@ -181,6 +191,78 @@ describe("Application Home", () => {
     act(() => emit({ type: "dataChanged", store: "project", tables: ["sys_recent_project"], ids: ["p1"], origin: "local" }));
     expect(await screen.findByRole("button", { name: "Open Harbour Lights Redux, Feature Film, Writing" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /^Open Harbour Lights, / })).not.toBeInTheDocument();
+  });
+
+  it("shows the chosen cover photo on the card and the generated cover when there is none", async () => {
+    setup({
+      "project.list_recent": [
+        project({ projectId: "a", title: "With Photo", cover: { path: "C:/data/covers/assets/a-1.jpg", rev: 1 } }),
+        project({ projectId: "b", title: "No Photo" }),
+      ],
+      "app.info": info(),
+    });
+    const withPhoto = await screen.findByRole("button", { name: /^Open With Photo, / });
+    const img = withPhoto.querySelector("img");
+    expect(img).not.toBeNull();
+    expect(img).toHaveAttribute("alt", "");
+    expect(img?.getAttribute("src")).toContain("a-1.jpg");
+    expect(screen.getByRole("button", { name: /^Open No Photo, / }).querySelector("img")).toBeNull();
+    expect(withPhoto).toHaveAccessibleName("Open With Photo, Feature Film, Writing");
+  });
+
+  it("offers Change cover photo, and Remove cover photo only when one is set", async () => {
+    const user = userEvent.setup();
+    setup({
+      "project.list_recent": [
+        project({ projectId: "a", title: "With Photo", cover: { path: "C:/c/a-1.jpg", rev: 1 } }),
+        project({ projectId: "b", title: "No Photo" }),
+      ],
+      "app.info": info(),
+    });
+    await user.click(await screen.findByRole("button", { name: "More actions for With Photo" }));
+    expect(await screen.findByRole("menuitem", { name: /Change cover photo/ })).toBeInTheDocument();
+    expect(screen.getByRole("menuitem", { name: /Remove cover photo/ })).toBeInTheDocument();
+    await user.keyboard("{Escape}");
+    await user.click(screen.getByRole("button", { name: "More actions for No Photo" }));
+    expect(await screen.findByRole("menuitem", { name: /Change cover photo/ })).toBeInTheDocument();
+    expect(screen.queryByRole("menuitem", { name: /Remove cover photo/ })).not.toBeInTheDocument();
+  });
+
+  it("sets the picked file as the cover, and does nothing when the dialog is cancelled", async () => {
+    const user = userEvent.setup();
+    const success = vi.spyOn(toast, "success").mockImplementation(() => undefined);
+    const setCover = vi.fn((a: Record<string, unknown>) => project({ projectId: String(a.projectId) }));
+    const dialog = vi.mocked(openDialog);
+    dialog.mockReset();
+    setup({ "project.list_recent": [project({ projectId: "a", title: "No Photo" })], "project.set_cover": setCover, "app.info": info() });
+    const choose = async () => {
+      await user.click(await screen.findByRole("button", { name: "More actions for No Photo" }));
+      await user.click(await screen.findByRole("menuitem", { name: /Change cover photo/ }));
+    };
+    dialog.mockResolvedValueOnce(null);
+    await choose();
+    await waitFor(() => expect(dialog).toHaveBeenCalledTimes(1));
+    expect(dialog.mock.calls[0][0]).toMatchObject({ multiple: false, directory: false, filters: [{ extensions: ["png", "jpg", "jpeg", "webp"] }] });
+    expect(setCover).not.toHaveBeenCalled();
+    dialog.mockResolvedValueOnce("C:/Pictures/poster.webp");
+    await choose();
+    await waitFor(() => expect(setCover).toHaveBeenCalledWith({ projectId: "a", path: "C:/Pictures/poster.webp" }));
+    await waitFor(() => expect(success).toHaveBeenCalledWith("Cover photo changed"));
+  });
+
+  it("removes the cover photo from the menu", async () => {
+    const user = userEvent.setup();
+    const success = vi.spyOn(toast, "success").mockImplementation(() => undefined);
+    const clear = vi.fn((a: Record<string, unknown>) => project({ projectId: String(a.projectId) }));
+    setup({
+      "project.list_recent": [project({ projectId: "a", title: "With Photo", cover: { path: "C:/c/a-1.jpg", rev: 1 } })],
+      "project.clear_cover": clear,
+      "app.info": info(),
+    });
+    await user.click(await screen.findByRole("button", { name: "More actions for With Photo" }));
+    await user.click(await screen.findByRole("menuitem", { name: /Remove cover photo/ }));
+    await waitFor(() => expect(clear).toHaveBeenCalledWith({ projectId: "a" }));
+    await waitFor(() => expect(success).toHaveBeenCalledWith("Cover photo removed"));
   });
 
   it("starts a Quick Capture in the Global Idea Vault with Ctrl+Shift+N", async () => {

@@ -83,21 +83,30 @@ function Fld({ label, value, onChange, disabled, need }: { label: string; value:
   );
 }
 
-function Section({ title, children, onRemove, disabled }: { title: string; children: ReactNode; onRemove?: () => void; disabled?: boolean }) {
+function RemoveSection({ title, onRemove, disabled }: { title: string; onRemove?: () => void; disabled?: boolean }) {
+  if (!onRemove || disabled) return null;
+  return (
+    <button type="button" className="cs-remove" aria-label={`Remove ${title}`} onClick={onRemove}>
+      <X size={12} />
+    </button>
+  );
+}
+
+/** A section with the PDF's heading: its name on the left, an optional note on the right. */
+function Section({ title, note, children, onRemove, disabled }: { title: string; note?: string; children: ReactNode; onRemove?: () => void; disabled?: boolean }) {
   return (
     <section aria-label={title}>
-      <div className="st" style={{ display: "flex", alignItems: "center" }}>
+      <div className="st">
         <span style={{ flex: 1 }}>{title}</span>
-        {onRemove && !disabled && (
-          <button type="button" aria-label={`Remove ${title}`} onClick={onRemove} style={{ background: "none", border: 0, color: "#fff" /* document colour: white icon on the call-sheet section header */, cursor: "pointer" }}>
-            <X size={12} />
-          </button>
-        )}
+        {note && <span className="cs-note">{note}</span>}
+        <RemoveSection title={title} onRemove={onRemove} disabled={disabled} />
       </div>
       {children}
     </section>
   );
 }
+
+const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 
 function RemoveRow({ label, onClick, disabled }: { label: string; onClick: () => void; disabled?: boolean }) {
   if (disabled) return null;
@@ -287,28 +296,70 @@ function FinalizeDialog({ detail, onClose, onMissingCrewCall }: { detail: CallSh
 
 type Edit = (fn: (d: Doc) => void) => void;
 
-function HeaderSection({ doc, d, edit, ro }: { doc: Doc; d: CallSheetDetail; edit: Edit; ro: boolean }) {
+// The sheet follows the exported PDF heading by heading (crates/openframe-application/src/modules/
+// exports/callsheet.rs; owner, 2026-10-27): masthead, the time callout, Production, Locations,
+// Scene schedule, then the "People on the day" group (Talent / Cast, Extras, Crew, Department
+// notes) and the "Day-of logistics" group (Practical / Safety information, Weather, Advance
+// schedule, Walkie channels and contacts, Special notes, Attachments & reference images).
+
+function Masthead({ doc, d, edit, ro }: { doc: Doc; d: CallSheetDetail; edit: Edit; ro: boolean }) {
+  const scenes = doc.scenes.filter((s) => !s.kind).length;
+  // As the PDF: "Shoot day" over the day's number when the label ends in one, else the label itself.
+  const num = /(\d+)\s*$/.exec(doc.dayLabel.trim())?.[1];
+  return (
+    <section aria-label="Masthead" className="cs-mast">
+      <div className="cs-mast-main">
+        <div className="cs-eyebrow">Call sheet · Revision {d.revision}</div>
+        <h1>
+          <Edt wide value={doc.title} onChange={(v) => edit((x) => void (x.title = v))} label="Production title" need disabled={ro} />
+        </h1>
+        <div className="cs-counts">
+          {plural(scenes, "scene", "scenes")} · {plural(doc.cast.length, "cast member", "cast members")} · {plural(doc.locations.length, "location", "locations")}
+        </div>
+      </div>
+      <div className="cs-day">
+        <div className="cs-eyebrow">{num ? "Shoot day" : doc.dayLabel.trim() || "Shoot day"}</div>
+        {num && <div className="cs-day-big">{num.padStart(2, "0")}</div>}
+        <div className="cs-day-date">{d.dateLong ?? <span className="need">{NEEDS_INPUT}: set the date in the schedule</span>}</div>
+        {doc.dayOf && <div className="cs-day-of">{doc.dayOf}</div>}
+      </div>
+    </section>
+  );
+}
+
+/** The title of a group of sections, as in the PDF: a small tracked line above the group's name. */
+function GroupTitle({ eyebrow, title }: { eyebrow: string; title: string }) {
+  return (
+    <div className="cs-group" role="heading" aria-level={2}>
+      <span>{eyebrow}</span>
+      {title}
+    </div>
+  );
+}
+
+function ProductionSection({ doc, edit, ro }: { doc: Doc; edit: Edit; ro: boolean }) {
   const h = doc.header;
-  const fields: [keyof Doc["header"], string][] = [
-    ["company", "Production company"],
-    ["address", "Production office address"],
-    ["producer", "Producer"],
-    ["director", "Director"],
-    ["firstAd", "1st AD"],
-    ["contact", "Production contact"],
+  const columns: [keyof Doc["header"], string][][] = [
+    [
+      ["company", "Production company"],
+      ["address", "Production address"],
+      ["producer", "Producer"],
+    ],
+    [
+      ["director", "Director"],
+      ["firstAd", "1st AD"],
+      ["contact", "Production contact"],
+    ],
   ];
   return (
-    <Section title="Production header">
-      <h1>
-        <Edt value={doc.title} onChange={(v) => edit((x) => void (x.title = v))} label="Production title" need disabled={ro} />
-      </h1>
-      <div style={{ textAlign: "center", fontWeight: 700, margin: "4px 0" }}>
-        {doc.dayLabel}
-        {doc.dayOf && <> ({doc.dayOf})</>} · {d.dateLong ?? <span className="need">{NEEDS_INPUT}: set the date in the schedule</span>}
-      </div>
-      <div className="grid g2" style={{ gap: "0 16px" }}>
-        {fields.map(([k, label]) => (
-          <Fld key={k} label={label} value={h[k]} onChange={(v) => edit((x) => void (x.header[k] = v))} disabled={ro} />
+    <Section title="Production">
+      <div className="cs-cards">
+        {columns.map((fields, c) => (
+          <div key={c} className="cs-card">
+            {fields.map(([k, label]) => (
+              <Fld key={k} label={label} value={h[k]} onChange={(v) => edit((x) => void (x.header[k] = v))} disabled={ro} />
+            ))}
+          </div>
         ))}
       </div>
     </Section>
@@ -322,13 +373,15 @@ function TimesSection({ doc, edit, ro, crewRef, crewInvalid, onCrew }: { doc: Do
     ["shootingCall", "Shooting call"],
     ["breakfast", "Breakfast"],
     ["lunch", "Lunch"],
-    ["estimatedWrap", "Estimated wrap"],
+    ["estimatedWrap", "Est. wrap"],
   ];
+  // The PDF's time callout: no section heading, the crew call large, then the other times.
   return (
-    <Section title="Day and times">
-      <div style={{ textAlign: "center", fontSize: 13, marginBottom: 4 }}>
-        CREW CALL:{" "}
+    <section aria-label="Day and times" className="cs-callout">
+      <div className="cs-crew">
+        <div className="cs-eyebrow">Crew call</div>
         <Edt
+          wide
           inputRef={crewRef}
           value={doc.crewCall}
           onChange={(v) => {
@@ -341,16 +394,13 @@ function TimesSection({ doc, edit, ro, crewRef, crewInvalid, onCrew }: { doc: Do
           invalid={crewInvalid}
         />
       </div>
-      <div className="grid g3" style={{ gap: "0 16px" }}>
-        {times.map(([k, label]) => (
-          <Fld key={k} label={label} value={t[k]} onChange={(v) => edit((x) => void (x.times[k] = v))} disabled={ro} />
-        ))}
-      </div>
-      <div className="of-field" style={{ alignItems: "flex-start" }}>
-        <span>Notes from the day</span>
-        <EdtArea value={doc.dayNotes} onChange={(v) => edit((x) => void (x.dayNotes = v))} label="Notes from the day" disabled={ro} />
-      </div>
-    </Section>
+      {times.map(([k, label]) => (
+        <div key={k}>
+          <div className="cs-eyebrow">{label}</div>
+          <Edt wide value={t[k]} onChange={(v) => edit((x) => void (x.times[k] = v))} label={k === "estimatedWrap" ? "Estimated wrap" : label} disabled={ro} />
+        </div>
+      ))}
+    </section>
   );
 }
 
@@ -358,23 +408,24 @@ function LocationsSection({ doc, edit, ro }: { doc: Doc; edit: Edit; ro: boolean
   const fields: [keyof Doc["locations"][number], string, boolean][] = [
     ["address", "Address", true],
     ["meetingPoint", "Meeting point", false],
-    ["parking", "Parking", false],
     ["access", "Access", false],
+    ["parking", "Parking", false],
     ["hospital", "Nearest hospital", true],
-    ["emergencyContact", "Location contact", false],
+    ["emergencyContact", "Emergency contact", true],
     ["notes", "Notes", false],
   ];
   return (
-    <Section title="Locations">
+    <Section title="Locations" note={plural(doc.locations.length, "location", "locations")}>
       {doc.locations.length === 0 && <span className="need">{NEEDS_INPUT}: no location for these scenes</span>}
       {doc.locations.map((l, i) => (
-        <div key={l.key || i} style={{ marginBottom: 6 }}>
-          <b>{l.name}</b>
-          <div className="grid g2" style={{ gap: "0 16px" }}>
-            {fields.map(([k, label, need]) => (
-              <Fld key={k} label={label} value={l[k]} onChange={(v) => edit((x) => void (x.locations[i][k] = v))} need={need} disabled={ro} />
-            ))}
+        <div key={l.key || i} className="cs-card">
+          <div className="cs-card-head">
+            <span className="cs-tile">{String(i + 1).padStart(2, "0")}</span>
+            {l.name}
           </div>
+          {fields.map(([k, label, need]) => (
+            <Fld key={k} label={label} value={l[k]} onChange={(v) => edit((x) => void (x.locations[i][k] = v))} need={need} disabled={ro} />
+          ))}
         </div>
       ))}
     </Section>
@@ -383,7 +434,7 @@ function LocationsSection({ doc, edit, ro }: { doc: Doc; edit: Edit; ro: boolean
 
 function SceneSection({ doc, d, edit, ro }: { doc: Doc; d: CallSheetDetail; edit: Edit; ro: boolean }) {
   return (
-    <Section title="Scene schedule">
+    <Section title="Scene schedule" note={plural(doc.scenes.filter((s) => !s.kind).length, "scheduled scene", "scheduled scenes")}>
       {doc.scenes.length === 0 ? (
         <div className="muted">No scenes on this day.</div>
       ) : (
@@ -392,7 +443,7 @@ function SceneSection({ doc, d, edit, ro }: { doc: Doc; d: CallSheetDetail; edit
             <tr>
               <th scope="col">Start</th>
               <th scope="col">Sc</th>
-              <th scope="col">Set and description</th>
+              <th scope="col">Heading / description</th>
               <th scope="col">I/E</th>
               <th scope="col">D/N</th>
               <th scope="col">Pages</th>
@@ -444,7 +495,7 @@ function SceneSection({ doc, d, edit, ro }: { doc: Doc; d: CallSheetDetail; edit
 
 function TalentSection({ doc, edit, ro }: { doc: Doc; edit: Edit; ro: boolean }) {
   return (
-    <Section title="Talent">
+    <Section title="Talent / Cast" note={plural(doc.cast.length, "cast member", "cast members")}>
       {doc.cast.length === 0 ? (
         <div className="muted">No cast in these scenes.</div>
       ) : (
@@ -494,40 +545,78 @@ function TalentSection({ doc, edit, ro }: { doc: Doc; edit: Edit; ro: boolean })
   );
 }
 
+// As the PDF: the production emergency contact and each location's nearest hospital come first as
+// cards, then one card with the practical notes, the day notes and the custom fields.
 function PracticalSection({ doc, edit, ro }: { doc: Doc; edit: Edit; ro: boolean }) {
   const p = doc.practical;
-  const fields: [keyof Doc["practical"], string, boolean][] = [
-    ["parking", "Parking", false],
-    ["meetingPoint", "Meeting point", false],
-    ["travelNotes", "Transport", false],
-    ["mealBreak", "Meals", false],
-    ["toilets", "Toilets", false],
-    ["access", "Access", false],
-    ["safety", "Safety", false],
-    ["emergencyContact", "Emergency contact", true],
+  const fields: [keyof Doc["practical"], string][] = [
+    ["parking", "Parking"],
+    ["meetingPoint", "Meeting point"],
+    ["travelNotes", "Transport"],
+    ["mealBreak", "Meals"],
+    ["toilets", "Toilets"],
+    ["access", "Access"],
+    ["safety", "Safety"],
   ];
+  const area = (label: string, value: string, onChange: (v: string) => void) => (
+    <div className="of-field" style={{ alignItems: "flex-start" }}>
+      <span>{label}</span>
+      <EdtArea value={value} onChange={onChange} label={label} disabled={ro} />
+    </div>
+  );
   return (
-    <Section title="Practical notes">
-      {fields.map(([k, label, need]) => (
-        <Fld key={k} label={label} value={p[k]} onChange={(v) => edit((x) => void (x.practical[k] = v))} need={need} disabled={ro} />
-      ))}
-      <div className="of-field" style={{ alignItems: "flex-start" }}>
-        <span>Special instructions</span>
-        <EdtArea value={p.specialInstructions} onChange={(v) => edit((x) => void (x.practical.specialInstructions = v))} label="Special instructions" disabled={ro} />
+    <Section title="Practical / Safety information" note={ro ? "Quick reference" : "Review before issuing"}>
+      <div className="cs-cards">
+        <div className="cs-card">
+          <div className="cs-eyebrow">Production emergency contact</div>
+          <Edt wide value={p.emergencyContact} onChange={(v) => edit((x) => void (x.practical.emergencyContact = v))} label="Production emergency contact" need disabled={ro} />
+        </div>
+        {doc.locations.map((l, i) => (
+          <div key={l.key || i} className="cs-card">
+            <div className="cs-eyebrow">{l.name} · Nearest hospital</div>
+            <Edt wide value={l.hospital} onChange={(v) => edit((x) => void (x.locations[i].hospital = v))} label={`${l.name} · Nearest hospital`} need disabled={ro} />
+          </div>
+        ))}
       </div>
-      <div className="of-field" style={{ alignItems: "flex-start" }}>
-        <span>Production notes</span>
-        <EdtArea value={p.productionNotes} onChange={(v) => edit((x) => void (x.practical.productionNotes = v))} label="Production notes" disabled={ro} />
+      <div className="cs-card">
+        {fields.map(([k, label]) => (
+          <Fld key={k} label={label} value={p[k]} onChange={(v) => edit((x) => void (x.practical[k] = v))} disabled={ro} />
+        ))}
+        {area("Special instructions", p.specialInstructions, (v) => edit((x) => void (x.practical.specialInstructions = v)))}
+        {area("Production notes", p.productionNotes, (v) => edit((x) => void (x.practical.productionNotes = v)))}
+        {area("Day notes", doc.dayNotes, (v) => edit((x) => void (x.dayNotes = v)))}
+        {doc.extraFields.map((f, i) => (
+          <div key={i} className="of-field">
+            <Edt value={f.label} onChange={(v) => edit((x) => void (x.extraFields[i].label = v))} label={`Field ${i + 1} name`} placeholder="Field name" disabled={ro} />
+            <Edt wide value={f.value} onChange={(v) => edit((x) => void (x.extraFields[i].value = v))} label={`Field ${i + 1} value`} disabled={ro} />
+            <RemoveRow label={`Remove field ${f.label || i + 1}`} onClick={() => edit((x) => void x.extraFields.splice(i, 1))} disabled={ro} />
+          </div>
+        ))}
       </div>
     </Section>
   );
 }
 
-function OptionalSections({ doc, edit, ro, attach }: { doc: Doc; edit: Edit; ro: boolean; attach: (s: "attachments" | "referenceImages") => void }) {
+/** The optional sections of one group, in the order of the PDF. */
+function OptionalSections({
+  doc,
+  edit,
+  ro,
+  attach,
+  group,
+}: {
+  doc: Doc;
+  edit: Edit;
+  ro: boolean;
+  attach: (s: "attachments" | "referenceImages") => void;
+  group: "people" | "logistics";
+}) {
   const o = doc.optional;
+  const people = group === "people";
+  const logistics = !people;
   return (
     <>
-      {o.weather !== null && (
+      {logistics && o.weather !== null && (
         <Section title="Weather" disabled={ro} onRemove={() => edit((x) => void (x.optional.weather = null))}>
           <div className="hint xs">Type the forecast, sunrise and sunset. OpenFrame never looks them up online.</div>
           <Fld label="Forecast" value={o.weather} onChange={(v) => edit((x) => void (x.optional.weather = v))} need disabled={ro} />
@@ -537,7 +626,7 @@ function OptionalSections({ doc, edit, ro, attach }: { doc: Doc; edit: Edit; ro:
           </div>
         </Section>
       )}
-      {o.extras !== null && (
+      {people && o.extras !== null && (
         <Section title="Extras" disabled={ro} onRemove={() => edit((x) => void (x.optional.extras = null))}>
           <table>
             <thead>
@@ -574,40 +663,8 @@ function OptionalSections({ doc, edit, ro, attach }: { doc: Doc; edit: Edit; ro:
           )}
         </Section>
       )}
-      {o.departments !== null && (
-        <Section title="Department notes" disabled={ro} onRemove={() => edit((x) => void (x.optional.departments = null))}>
-          {o.departments.map((dep, i) => (
-            <div key={i} className="of-field" style={{ alignItems: "flex-start" }}>
-              <Edt value={dep.department} placeholder="Department" onChange={(v) => edit((x) => void (x.optional.departments![i].department = v))} label={`Department ${i + 1}`} disabled={ro} />
-              <EdtArea value={dep.notes} onChange={(v) => edit((x) => void (x.optional.departments![i].notes = v))} label={`Notes for ${dep.department || `department ${i + 1}`}`} disabled={ro} />
-              <RemoveRow label={`Remove ${dep.department || `department ${i + 1}`}`} onClick={() => edit((x) => void x.optional.departments!.splice(i, 1))} disabled={ro} />
-            </div>
-          ))}
-          {!ro && (
-            <Button size="xs" icon={<Plus size={12} />} onClick={() => edit((x) => void x.optional.departments!.push({ department: "", notes: "" }))}>
-              Add department
-            </Button>
-          )}
-        </Section>
-      )}
-      {o.advance !== null && (
-        <Section title="Advance schedule" disabled={ro} onRemove={() => edit((x) => void (x.optional.advance = null))}>
-          {(
-            [
-              ["day", "Next day"],
-              ["location", "Location"],
-              ["cast", "Cast"],
-              ["props", "Props"],
-              ["wardrobe", "Wardrobe"],
-              ["preparation", "Preparation"],
-            ] as const
-          ).map(([k, label]) => (
-            <Fld key={k} label={label} value={o.advance![k]} onChange={(v) => edit((x) => void (x.optional.advance![k] = v))} need={k === "day"} disabled={ro} />
-          ))}
-        </Section>
-      )}
-      {o.crew !== null && (
-        <Section title="Crew" disabled={ro} onRemove={() => edit((x) => void (x.optional.crew = null))}>
+      {people && o.crew !== null && (
+        <Section title="Crew" note={plural(o.crew.length, "crew member listed", "crew members listed")} disabled={ro} onRemove={() => edit((x) => void (x.optional.crew = null))}>
           <table>
             <thead>
               <tr>
@@ -643,13 +700,45 @@ function OptionalSections({ doc, edit, ro, attach }: { doc: Doc; edit: Edit; ro:
           )}
         </Section>
       )}
-      {o.communication !== null && (
+      {people && o.departments !== null && (
+        <Section title="Department notes" disabled={ro} onRemove={() => edit((x) => void (x.optional.departments = null))}>
+          {o.departments.map((dep, i) => (
+            <div key={i} className="of-field" style={{ alignItems: "flex-start" }}>
+              <Edt value={dep.department} placeholder="Department" onChange={(v) => edit((x) => void (x.optional.departments![i].department = v))} label={`Department ${i + 1}`} disabled={ro} />
+              <EdtArea value={dep.notes} onChange={(v) => edit((x) => void (x.optional.departments![i].notes = v))} label={`Notes for ${dep.department || `department ${i + 1}`}`} disabled={ro} />
+              <RemoveRow label={`Remove ${dep.department || `department ${i + 1}`}`} onClick={() => edit((x) => void x.optional.departments!.splice(i, 1))} disabled={ro} />
+            </div>
+          ))}
+          {!ro && (
+            <Button size="xs" icon={<Plus size={12} />} onClick={() => edit((x) => void x.optional.departments!.push({ department: "", notes: "" }))}>
+              Add department
+            </Button>
+          )}
+        </Section>
+      )}
+      {logistics && o.advance !== null && (
+        <Section title="Advance schedule" disabled={ro} onRemove={() => edit((x) => void (x.optional.advance = null))}>
+          {(
+            [
+              ["day", "Day"],
+              ["location", "Location"],
+              ["cast", "Cast"],
+              ["props", "Props"],
+              ["wardrobe", "Wardrobe"],
+              ["preparation", "Preparation"],
+            ] as const
+          ).map(([k, label]) => (
+            <Fld key={k} label={label} value={o.advance![k]} onChange={(v) => edit((x) => void (x.optional.advance![k] = v))} need={k === "day"} disabled={ro} />
+          ))}
+        </Section>
+      )}
+      {logistics && o.communication !== null && (
         <Section title="Walkie channels and contacts" disabled={ro} onRemove={() => edit((x) => void (x.optional.communication = null))}>
           {(
             [
               ["walkieChannels", "Walkie channels"],
-              ["productionContact", "Production contact"],
               ["emergencyContact", "Emergency contact"],
+              ["productionContact", "Production contact"],
               ["note", "Note"],
             ] as const
           ).map(([k, label]) => (
@@ -657,60 +746,62 @@ function OptionalSections({ doc, edit, ro, attach }: { doc: Doc; edit: Edit; ro:
           ))}
         </Section>
       )}
-      {o.specialNotes !== null && (
+      {logistics && o.specialNotes !== null && (
         <Section title="Special notes" disabled={ro} onRemove={() => edit((x) => void (x.optional.specialNotes = null))}>
           <EdtArea value={o.specialNotes} onChange={(v) => edit((x) => void (x.optional.specialNotes = v))} label="Special notes" disabled={ro} />
         </Section>
       )}
-      {o.attachments !== null && (
-        <Section title="Attachments" disabled={ro} onRemove={() => edit((x) => void (x.optional.attachments = null))}>
-          <div className="of-attach">
-            {o.attachments.map((a, i) => (
-              <span key={a.assetId + i} className="chip">
-                <Paperclip size={11} aria-hidden /> {a.name}
-                {!ro && (
-                  <button type="button" aria-label={`Remove ${a.name}`} style={{ background: "none", border: 0, cursor: "pointer" }} onClick={() => edit((x) => void x.optional.attachments!.splice(i, 1))}>
-                    <X size={11} />
-                  </button>
+      {/* The PDF prints the attachment names and the pictures under one heading; each block keeps its own controls. */}
+      {logistics && (o.attachments !== null || o.referenceImages !== null) && (
+        <Section title="Attachments & reference images">
+          {o.attachments !== null && (
+            <section aria-label="Attachments" className="cs-sub">
+              <div className="cs-sub-head">
+                <span style={{ flex: 1 }}>Attachments</span>
+                <RemoveSection title="Attachments" disabled={ro} onRemove={() => edit((x) => void (x.optional.attachments = null))} />
+              </div>
+              <div className="of-attach">
+                {o.attachments.map((a, i) => (
+                  <span key={a.assetId + i} className="chip">
+                    <Paperclip size={11} aria-hidden /> {a.name}
+                    {!ro && (
+                      <button type="button" aria-label={`Remove ${a.name}`} style={{ background: "none", border: 0, cursor: "pointer" }} onClick={() => edit((x) => void x.optional.attachments!.splice(i, 1))}>
+                        <X size={11} />
+                      </button>
+                    )}
+                  </span>
+                ))}
+                {o.attachments.length === 0 && <span className="muted">No attachments yet.</span>}
+                {!ro && inTauri() && (
+                  <Button size="xs" icon={<Plus size={12} />} onClick={() => attach("attachments")}>
+                    Add file…
+                  </Button>
                 )}
-              </span>
-            ))}
-            {o.attachments.length === 0 && <span className="muted">No attachments yet.</span>}
-            {!ro && inTauri() && (
-              <Button size="xs" icon={<Plus size={12} />} onClick={() => attach("attachments")}>
-                Add file…
-              </Button>
-            )}
-          </div>
-        </Section>
-      )}
-      {o.referenceImages !== null && (
-        <Section title="Reference images" disabled={ro} onRemove={() => edit((x) => void (x.optional.referenceImages = null))}>
-          <div className="of-attach">
-            {o.referenceImages.map((a, i) => (
-              <span key={a.assetId + i} style={{ position: "relative" }}>
-                <Thumb att={a} />
-                <RemoveRow label={`Remove ${a.name}`} onClick={() => edit((x) => void x.optional.referenceImages!.splice(i, 1))} disabled={ro} />
-              </span>
-            ))}
-            {o.referenceImages.length === 0 && <span className="muted">No images yet.</span>}
-            {!ro && inTauri() && (
-              <Button size="xs" icon={<Plus size={12} />} onClick={() => attach("referenceImages")}>
-                Add image…
-              </Button>
-            )}
-          </div>
-        </Section>
-      )}
-      {doc.extraFields.length > 0 && (
-        <Section title="Additional information">
-          {doc.extraFields.map((f, i) => (
-            <div key={i} className="of-field">
-              <Edt value={f.label} onChange={(v) => edit((x) => void (x.extraFields[i].label = v))} label={`Field ${i + 1} name`} placeholder="Field name" disabled={ro} />
-              <Edt wide value={f.value} onChange={(v) => edit((x) => void (x.extraFields[i].value = v))} label={`Field ${i + 1} value`} disabled={ro} />
-              <RemoveRow label={`Remove field ${f.label || i + 1}`} onClick={() => edit((x) => void x.extraFields.splice(i, 1))} disabled={ro} />
-            </div>
-          ))}
+              </div>
+            </section>
+          )}
+          {o.referenceImages !== null && (
+            <section aria-label="Reference images" className="cs-sub">
+              <div className="cs-sub-head">
+                <span style={{ flex: 1 }}>Reference images</span>
+                <RemoveSection title="Reference images" disabled={ro} onRemove={() => edit((x) => void (x.optional.referenceImages = null))} />
+              </div>
+              <div className="of-attach">
+                {o.referenceImages.map((a, i) => (
+                  <span key={a.assetId + i} style={{ position: "relative" }}>
+                    <Thumb att={a} />
+                    <RemoveRow label={`Remove ${a.name}`} onClick={() => edit((x) => void x.optional.referenceImages!.splice(i, 1))} disabled={ro} />
+                  </span>
+                ))}
+                {o.referenceImages.length === 0 && <span className="muted">No images yet.</span>}
+                {!ro && inTauri() && (
+                  <Button size="xs" icon={<Plus size={12} />} onClick={() => attach("referenceImages")}>
+                    Add image…
+                  </Button>
+                )}
+              </div>
+            </section>
+          )}
         </Section>
       )}
     </>
@@ -905,13 +996,17 @@ export function CallSheetEditor({ id }: { id: string }) {
       <div className="row" style={{ alignItems: "stretch", gap: 14, flex: 1, minHeight: 0 }}>
         <div className="of-paper-wrap">
           <div className="paper" aria-label="Call sheet document">
-            <HeaderSection doc={doc} d={d} edit={edit} ro={ro} />
+            <Masthead doc={doc} d={d} edit={edit} ro={ro} />
             <TimesSection doc={doc} edit={edit} ro={ro} crewRef={crewRef} crewInvalid={crewInvalid} onCrew={() => setCrewInvalid(false)} />
+            <ProductionSection doc={doc} edit={edit} ro={ro} />
             <LocationsSection doc={doc} edit={edit} ro={ro} />
             <SceneSection doc={doc} d={d} edit={edit} ro={ro} />
+            <GroupTitle eyebrow="People on the day" title="Cast & Crew" />
             <TalentSection doc={doc} edit={edit} ro={ro} />
+            <OptionalSections doc={doc} edit={edit} ro={ro} attach={attach} group="people" />
+            <GroupTitle eyebrow="Day-of logistics" title="Production notes" />
             <PracticalSection doc={doc} edit={edit} ro={ro} />
-            <OptionalSections doc={doc} edit={edit} ro={ro} attach={attach} />
+            <OptionalSections doc={doc} edit={edit} ro={ro} attach={attach} group="logistics" />
           </div>
         </div>
 

@@ -16,6 +16,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use ts_rs::TS;
 
+use super::project_cover::{self, ProjectCover};
 use crate::core::{AppCore, LocalProfile, ProjectSession, RecoveryOffer};
 use crate::events::{AppEvent, StoreKind};
 use crate::registry::Registry;
@@ -212,6 +213,8 @@ pub struct RecentProject {
     pub modified_at: Option<i64>,
     /// False when the folder (e.g. on an external drive) can't be found right now.
     pub available: bool,
+    /// The chosen cover photo; when empty, Home shows the generated cover.
+    pub cover: Option<ProjectCover>,
 }
 
 #[derive(Debug, Clone, Serialize, TS)]
@@ -520,8 +523,8 @@ fn app_info(core: &AppCore, _a: &Actor, _: Empty) -> AppResult<AppInfo> {
     })?;
     Ok(AppInfo {
         app_version: core.config.app_version.clone(),
-        projects_dir: core.config.projects_dir.to_string_lossy().into_owned(),
-        global_vault_dir: core.config.global_vault_dir.to_string_lossy().into_owned(),
+        projects_dir: core.projects_dir().to_string_lossy().into_owned(),
+        global_vault_dir: core.vault_dir().to_string_lossy().into_owned(),
         profile: core.profile(),
         platform: openframe_platform::current_os().name().to_string(),
         schema_version: crate::schema::project_schema_version(),
@@ -576,7 +579,8 @@ fn cancel_task(core: &AppCore, _a: &Actor, args: TaskIdArgs) -> AppResult<bool> 
 fn list_recent(core: &AppCore, _a: &Actor, args: ListRecentArgs) -> AppResult<Vec<RecentProject>> {
     core.with_app_db(|c| {
         let mut stmt = c.prepare(
-            "SELECT project_id, path, title, project_type, status, archived, pinned, last_opened_at
+            "SELECT project_id, path, title, project_type, status, archived, pinned, last_opened_at,
+                    cover_file, cover_rev
              FROM sys_recent_project WHERE (?1 OR archived = 0) ORDER BY pinned DESC, last_opened_at DESC",
         )?;
         let rows = stmt
@@ -596,6 +600,7 @@ fn list_recent(core: &AppCore, _a: &Actor, args: ListRecentArgs) -> AppResult<Ve
                     pinned: r.get::<_, i64>(6)? != 0,
                     last_opened_at: r.get(7)?,
                     available,
+                    cover: project_cover::cover_for(core, r.get(8)?, r.get(9)?),
                 })
             })?
             .collect::<Result<Vec<_>, _>>()?;
@@ -612,7 +617,7 @@ fn file_mtime_ms(path: &Path) -> Option<i64> {
 }
 
 /// Last time the project's database changed on disk (database file or its write-ahead log).
-fn data_modified_at(layout: &ProjectLayout) -> Option<i64> {
+pub(crate) fn data_modified_at(layout: &ProjectLayout) -> Option<i64> {
     let db = layout.database();
     let wal = PathBuf::from(format!("{}-wal", db.display()));
     [file_mtime_ms(&db), file_mtime_ms(&wal)]
@@ -714,13 +719,15 @@ fn summary_from(c: &Connection, path: &str) -> AppResult<ProjectSummary> {
 }
 
 fn create(core: &AppCore, actor: &Actor, args: CreateProjectArgs) -> AppResult<OpenProjectResult> {
+    // Before a folder is made that could not be opened.
+    core.refuse_during_project_move()?;
     let title = required_text(&args.title, "Title", 200)?;
     let language = optional_text(args.language, "Language", 80)?;
     let genre = optional_text(args.genre, "Genre", 80)?;
     let creator = optional_text(args.creator, "Creator", 200)?;
     let parent = match args.parent_dir {
         Some(p) => PathBuf::from(p.trim()),
-        None => core.config.projects_dir.clone(),
+        None => core.projects_dir(),
     };
     if pf::is_network_path(&parent) {
         return Err(network_location_error());
@@ -780,7 +787,7 @@ fn open(core: &AppCore, actor: &Actor, args: OpenProjectArgs) -> AppResult<OpenP
 }
 
 /// Keep the project-specific wording for network locations.
-fn network_or(e: AppError) -> AppError {
+pub(crate) fn network_or(e: AppError) -> AppError {
     if e.is("project_format.network_location") {
         network_location_error()
     } else {
@@ -795,8 +802,19 @@ fn network_location_error() -> AppError {
     )
 }
 
-/// Open a project folder (FSD §4, Release/Migration: safety backup before migration).
-pub fn open_at(core: &AppCore, _actor: &Actor, root: &Path) -> AppResult<OpenProjectResult> {
+/// Open a project folder (FSD §4, Release/Migration: safety backup before migration). Refused
+/// while the open project is being moved.
+pub fn open_at(core: &AppCore, actor: &Actor, root: &Path) -> AppResult<OpenProjectResult> {
+    core.refuse_during_project_move()?;
+    open_at_unguarded(core, actor, root)
+}
+
+/// `open_at` for the project move itself, which holds the storage guard it would otherwise meet.
+pub(crate) fn open_at_unguarded(
+    core: &AppCore,
+    _actor: &Actor,
+    root: &Path,
+) -> AppResult<OpenProjectResult> {
     // Syntax first: never probe a device, share or reserved name (PATH-03).
     if pf::is_network_path(root) {
         return Err(network_location_error());
@@ -984,6 +1002,7 @@ pub fn close_current(core: &AppCore) -> AppResult<()> {
 }
 
 fn close(core: &AppCore, _a: &Actor, _: Empty) -> AppResult<()> {
+    core.refuse_during_project_move()?;
     close_current(core)
 }
 
@@ -1276,6 +1295,7 @@ fn set_archived(core: &AppCore, actor: &Actor, args: SetArchivedArgs) -> AppResu
 }
 
 fn remove_recent(core: &AppCore, actor: &Actor, args: ProjectIdArgs) -> AppResult<()> {
+    let cover = project_cover::file_of(core, &args.project_id);
     core.with_app_db(|c| {
         c.execute(
             "DELETE FROM sys_recent_project WHERE project_id=?1",
@@ -1283,6 +1303,7 @@ fn remove_recent(core: &AppCore, actor: &Actor, args: ProjectIdArgs) -> AppResul
         )?;
         Ok(())
     })?;
+    project_cover::discard(core, cover);
     recent_list_changed(core, actor, &args.project_id);
     Ok(())
 }
@@ -1325,7 +1346,7 @@ fn duplicate(core: &AppCore, actor: &Actor, args: ProjectIdArgs) -> AppResult<Re
     let parent = src_root
         .parent()
         .map(Path::to_path_buf)
-        .unwrap_or_else(|| core.config.projects_dir.clone());
+        .unwrap_or_else(|| core.projects_dir());
     let dest_root = pf::unique_project_dir(&parent, &title);
     let dest = ProjectLayout::new(&dest_root);
     let result = (|| -> AppResult<RecentProject> {
@@ -1386,6 +1407,7 @@ fn duplicate(core: &AppCore, actor: &Actor, args: ProjectIdArgs) -> AppResult<Re
             last_opened_at: now,
             modified_at: data_modified_at(&dest),
             available: true,
+            cover: None,
         };
         core.with_app_db(|c| {
             c.execute(
@@ -1463,6 +1485,7 @@ fn delete_project(core: &AppCore, actor: &Actor, args: ProjectIdArgs) -> AppResu
             .with_detail(e)
         })?;
     }
+    let cover = project_cover::file_of(core, &args.project_id);
     core.with_app_db(|c| {
         c.execute(
             "DELETE FROM sys_recent_project WHERE project_id=?1",
@@ -1470,6 +1493,7 @@ fn delete_project(core: &AppCore, actor: &Actor, args: ProjectIdArgs) -> AppResu
         )?;
         Ok(())
     })?;
+    project_cover::discard(core, cover);
     recent_list_changed(core, actor, &args.project_id);
     Ok(())
 }
@@ -1818,7 +1842,7 @@ fn rename(core: &AppCore, actor: &Actor, args: RenameProjectArgs) -> AppResult<R
 /// Tell the UI that the Home project list (`sys_recent_project` in the app
 /// database) changed for one project, so Application Home refetches it without
 /// being reopened. A closed project has no store pipeline to emit this for it.
-fn recent_list_changed(core: &AppCore, actor: &Actor, project_id: &str) {
+pub(super) fn recent_list_changed(core: &AppCore, actor: &Actor, project_id: &str) {
     let origin = match &actor.origin {
         openframe_domain::auth::ActorOrigin::Local => "local",
         openframe_domain::auth::ActorOrigin::Exchange { .. } => "exchange",
@@ -1832,7 +1856,7 @@ fn recent_list_changed(core: &AppCore, actor: &Actor, project_id: &str) {
     });
 }
 
-fn recent_entry(core: &AppCore, project_id: &str) -> AppResult<RecentProject> {
+pub(super) fn recent_entry(core: &AppCore, project_id: &str) -> AppResult<RecentProject> {
     list_recent(
         core,
         &core.local_actor(),
@@ -1845,14 +1869,21 @@ fn recent_entry(core: &AppCore, project_id: &str) -> AppResult<RecentProject> {
     .ok_or_else(|| AppError::not_found("project"))
 }
 
-/// Pin / Unpin on the Home screen (a view preference; the project is not changed).
-fn set_pinned(core: &AppCore, actor: &Actor, args: SetPinnedArgs) -> AppResult<RecentProject> {
-    if !matches!(actor.origin, openframe_domain::auth::ActorOrigin::Local) {
-        return Err(AppError::new(
+/// The Home project list is a preference of the person at this computer: no one else changes it.
+pub(super) fn require_local(actor: &Actor) -> AppResult<()> {
+    if matches!(actor.origin, openframe_domain::auth::ActorOrigin::Local) {
+        Ok(())
+    } else {
+        Err(AppError::new(
             "permission.denied",
             "Only the person using this computer can change its project list.",
-        ));
+        ))
     }
+}
+
+/// Pin / Unpin on the Home screen (a view preference; the project is not changed).
+fn set_pinned(core: &AppCore, actor: &Actor, args: SetPinnedArgs) -> AppResult<RecentProject> {
+    require_local(actor)?;
     let n = core.with_app_db(|c| {
         Ok(c.execute(
             "UPDATE sys_recent_project SET pinned=?1, updated_at=?2 WHERE project_id=?3",

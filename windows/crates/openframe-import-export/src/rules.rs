@@ -36,7 +36,8 @@ pub struct ElementRule {
     pub align: Align,
     pub uppercase: bool,
     pub italic: bool,
-    /// Blank lines before the element.
+    /// Blank lines before the element (the element owns the gap above it; one blank line is
+    /// 24 pt between baselines at 12 pt Courier, two are 36 pt).
     pub space_before: u8,
     /// Accepts line breaks inside the element.
     pub multiline: bool,
@@ -86,6 +87,8 @@ pub const RULES: &[ElementRule] = &[
     ElementRule {
         shortcut: Some("Ctrl+1"),
         uppercase: true,
+        // Two blank lines (36 pt between baselines) before every scene, after a transition or not.
+        space_before: 2,
         next_on_enter: "action",
         keep_with_next: true,
         fdx_type: "Scene Heading",
@@ -145,6 +148,8 @@ pub const RULES: &[ElementRule] = &[
         align: Align::Right,
         uppercase: true,
         next_on_enter: "scene_heading",
+        // Kept with the next scene heading so it is never stranded at the foot of a page.
+        keep_with_next: true,
         fdx_type: "Transition",
         fountain: "upper-case line ending in TO: (forced with '>')",
         custom_look: true,
@@ -154,6 +159,7 @@ pub const RULES: &[ElementRule] = &[
         shortcut: Some("Ctrl+7"),
         uppercase: true,
         next_on_enter: "action",
+        keep_with_next: true,
         fdx_type: "Shot",
         fountain: "upper-case line (forced with '!')",
         custom_look: true,

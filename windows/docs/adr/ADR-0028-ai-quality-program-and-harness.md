@@ -5,6 +5,7 @@
 - **Amends:** [ADR-0013](ADR-0013-single-local-model-hybrid-rag-agent.md) decision 1 (one model for everyone becomes two
   tiers, and the model family is chosen by measurement) and its retrieval and tool-choice design where a decision below
   differs. ADR-0013's human-only Change Sets, ADR-0019 and ADR-0021 are unchanged.
+- **Extended 2026-10-24 by [ADR-0035](ADR-0035-ai-lanes-briefings-and-code-verifiers.md):** decisions 1 and 5 keep their rules (measure first; deterministic verifiers, three passes, 60 seconds). The verifier list grows, and the held-out paraphrase and conversation benches join the baseline. Decision 8 carries its amendment of the same day.
 - **Related:** [ADR-0026](ADR-0026-offline-ai-download-after-install.md) (download after install),
   [ADR-0027](ADR-0027-rust-core-two-ui-shells.md) (provider interface),
   [ADR-0029](ADR-0029-gpu-acceleration.md), [ADR-0021](ADR-0021-diagnostics-telemetry-analytics-policy.md),
@@ -61,7 +62,10 @@ done by code, not by the small model.
    tokens in and out, context fill, time split, passes used, verifier results, memory used, whether the person applied,
    rejected, edited or undid the result). No text is stored by default. The owner can press **Export AI report**, which
    writes a numbers file by hand. Nothing leaves the computer automatically ([ADR-0021](ADR-0021-diagnostics-telemetry-analytics-policy.md)).
-   An "AI health" card in Settings shows the figures.
+   An "AI health" card in Settings shows the figures. The numbers include the prompt tokens the engine served from its stored
+   work. Amendment 2026-10-24 (owner decision): a tester may press **Save conversation for review** in the AI panel, which
+   writes the requests, answers, sources and trace numbers of that one conversation to a file the person chooses. It runs only
+   on that press, saves nothing automatically and sends nothing; the file holds the requesting user's own exchanges only.
 9. **Judging.** Open-ended writing in the offline tests is judged at development time by Claude, with a human spot check
    of about one case in ten. This runs only on the developer's computer and never ships. The runtime evaluator is permanent code in one crate shared with the offline harness, so development scoring and runtime checks agree. Claude's findings become code changes, new verifiers, new gold cases and tuned priors made by the developer; they never become a model call inside the application. The Hindi, Telugu and other
    non-English gold sets are reviewed by Claude only, by the owner's choice. Consequence: any claim about those languages

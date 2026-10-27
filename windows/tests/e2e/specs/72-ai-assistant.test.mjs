@@ -84,10 +84,12 @@ describe("Offline AI assistant with the bundled model", () => {
       await setScope("Current Screenplay");
       const r = await ask(browser, "How many scenes are in the script?");
       assert.equal(r.kind, "Answer", r.text);
-      assert.ok(r.exact, `the count is marked exact: ${r.text}`);
-      assert.match(r.text, /\b3\b/, r.text);
-      assert.ok(r.sources.length > 0, "the answer names its sources");
-      // A plain count is a W6 recipe: answered exactly from project data, without the model.
+      // Since ADR-0037 code counts the scenes and the model writes the sentence, and code checks that
+      // it states the counted number (as a digit or a word). "Exact · from project data" marks only
+      // the fact sentence code shows after three failed passes, so the guarantee is the number and
+      // the counted record behind "See sources", not the mark.
+      assert.match(r.text, /\b(3|three)\b/i, r.text);
+      assert.ok(r.sources.length > 0, `the answer names its sources: ${r.text}`);
     });
   });
 

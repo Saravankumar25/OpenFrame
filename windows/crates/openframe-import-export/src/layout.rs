@@ -20,16 +20,24 @@
 //! (55 lines on Letter, 59 on A4). A4 keeps the same columns, so a script
 //! wraps identically and only gains lines per page.
 //!
-//! Page numbers ("2.") sit top right from the second script page unless the
-//! first-page rule asks for them on page one; an optional header (left) and
+//! Page numbers ("1.", "2.") sit top right on every script page; the page
+//! setup can leave the first script page unnumbered (`number_first_page`),
+//! and the title page never has one. An optional header (left) and
 //! footer (centred) carry placeholders `{title}`, `{draft}`, `{revision}`,
 //! `{date}` and `{page}`. Keep-together rules: a scene heading stays with the
-//! start of what follows, a character cue with at least two lines of its
+//! start of what follows, a transition with the next scene heading, a shot
+//! with its description, a character cue with at least two lines of its
 //! speech, a parenthetical with the dialogue after it, and an action
 //! paragraph or dialogue split leaves at least two lines on each page.
-//! Dialogue split by a page boundary gets `(MORE)` at the foot and
-//! `NAME (CONT'D)` at the top of the next page; two separate speeches by the
-//! same character never do. An explicit page break starts a new page.
+//! Every page split of one speech, however tall the speech, gets `(MORE)` at
+//! the foot (after a dialogue line) and `NAME (CONT'D)` at the top of the
+//! next page; two separate speeches by the same character never do, and an
+//! imported `(CONT'D)` is never doubled. The markers exist only in the layout.
+//! An explicit page break starts a new page.
+//!
+//! Vertical gaps have one owner: the `space_before` of the next element (rule
+//! table). One blank line is 24 pt between baselines, two are 36 pt; a scene
+//! heading carries two (after a transition and after ordinary content alike).
 
 use serde::{Deserialize, Serialize};
 
@@ -116,11 +124,14 @@ pub struct PageSetup {
     pub line_spacing: LineSpacing,
     /// Number printed on the first script page.
     pub first_page_number: u32,
+    /// Print the page number on the first script page. Off is the common spec-script
+    /// convention (the first page unnumbered, the next one "2."). The title page never has one.
+    pub number_first_page: bool,
     /// Header text (left), with placeholders.
     pub header: String,
     /// Footer text (centred), with placeholders.
     pub footer: String,
-    /// Print the page number, header and footer on the first script page too.
+    /// Print the header and footer on the first script page too.
     pub header_on_first_page: bool,
 }
 
@@ -132,6 +143,7 @@ impl Default for PageSetup {
             font_size: 12,
             line_spacing: LineSpacing::Single,
             first_page_number: 1,
+            number_first_page: true,
             header: String::new(),
             footer: String::new(),
             header_on_first_page: false,
@@ -299,10 +311,6 @@ pub struct Layout {
     pub geometry: Geometry,
     /// Pages of every scene that printed at least one line, in document order.
     pub scenes: Vec<ScenePages>,
-    /// Production attribution printed in the bottom margin of every page (sides). Screenplay
-    /// files leave it empty.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub brand: Option<String>,
 }
 
 impl Layout {
@@ -424,6 +432,8 @@ struct Block {
     scene_number: Option<String>,
     /// Index of the scene the block belongs to.
     scene: usize,
+    /// Never left alone at the foot of a page: stays with the start of the next block.
+    keep_next: bool,
 }
 
 impl Block {
@@ -438,12 +448,13 @@ impl Block {
             speaker: None,
             scene_number: None,
             scene,
+            keep_next: false,
         }
     }
     /// Rows of this block that must stay on the page with a preceding keep-with-next block.
     fn keep_rows(&self) -> usize {
         match self.kind {
-            BlockKind::Speech => self.rows.min(3),
+            BlockKind::Speech => speech_keep_rows(&self.lines, self.rows),
             BlockKind::Paragraph if self.splittable => self.rows.min(2),
             _ => self.rows,
         }
@@ -561,6 +572,7 @@ fn custom_block(g: &Geometry, e: &Element, style: &CustomStyle, scene: usize) ->
         scene,
     );
     b.splittable = look.splittable;
+    b.keep_next = look.keep_with_next;
     b
 }
 
@@ -585,6 +597,7 @@ fn build_blocks(doc: &ScreenplayDoc, opts: &LayoutOptions, g: &Geometry) -> Vec<
                 si,
             );
             b.scene_number = Some(scene.number.clone().unwrap_or_else(|| number.to_string()));
+            b.keep_next = heading_rule.keep_with_next;
             blocks.push(b);
         }
         let els = &scene.elements;
@@ -651,7 +664,7 @@ fn build_blocks(doc: &ScreenplayDoc, opts: &LayoutOptions, g: &Geometry) -> Vec<
                 }
                 ElementKind::Transition => {
                     let r = rules::rule_for("transition");
-                    blocks.push(Block::new(
+                    let mut b = Block::new(
                         BlockKind::Transition,
                         rule_lines(
                             g,
@@ -663,7 +676,9 @@ fn build_blocks(doc: &ScreenplayDoc, opts: &LayoutOptions, g: &Geometry) -> Vec<
                         ),
                         r.space_before as usize,
                         si,
-                    ));
+                    );
+                    b.keep_next = r.keep_with_next;
+                    blocks.push(b);
                 }
                 ElementKind::Centered | ElementKind::Action | ElementKind::Shot => {
                     let (r, style) = match e.kind {
@@ -685,6 +700,7 @@ fn build_blocks(doc: &ScreenplayDoc, opts: &LayoutOptions, g: &Geometry) -> Vec<
                         si,
                     );
                     b.splittable = r.splittable;
+                    b.keep_next = r.keep_with_next;
                     blocks.push(b);
                 }
                 ElementKind::Custom => {
@@ -832,17 +848,13 @@ pub fn layout(doc: &ScreenplayDoc, opts: &LayoutOptions) -> Layout {
             }
             continue;
         }
-        let space = if p.row == 0 { 0 } else { block.space_before };
-        let mut needed = space + block.rows;
-        if block.kind == BlockKind::Heading {
-            // Keep the heading with the start of what follows.
-            if let Some(next) = blocks
-                .get(bi + 1)
-                .filter(|n| n.kind != BlockKind::PageBreak && n.kind != BlockKind::Heading)
-            {
-                needed += next.space_before + next.keep_rows();
-            }
+        if block.kind == BlockKind::Speech {
+            place_speech(&mut p, block);
+            continue;
         }
+        let space = if p.row == 0 { 0 } else { block.space_before };
+        // A keep-with-next block needs the start of what follows on its page.
+        let needed = space + block.rows + follow_rows(&blocks, bi);
         if needed <= p.remaining() {
             p.row += space;
             p.place(&block.lines, block.scene_number.as_deref(), block.scene);
@@ -851,78 +863,13 @@ pub fn layout(doc: &ScreenplayDoc, opts: &LayoutOptions) -> Layout {
         // Does not fit: try to split, otherwise move to the next page.
         let available = p.remaining().saturating_sub(space);
         match block.kind {
-            BlockKind::Paragraph
-                if block.splittable
-                    && block.rows >= 4
-                    && available >= 2
-                    && block.rows - available >= 2 =>
-            {
+            // At least two lines stay on each side of the split.
+            BlockKind::Paragraph if block.splittable && block.rows >= 4 && available >= 2 => {
                 p.row += space;
-                let (a, b) = split_rows(&block.lines, available);
+                let (a, b) = split_rows(&block.lines, available.min(block.rows - 2));
                 p.place(&a, None, block.scene);
                 p.new_page();
                 place_overflowing(&mut p, &b, None, block.scene);
-            }
-            BlockKind::Speech if available >= 4 && block.rows >= 5 => {
-                // Keep the cue with at least two lines, reserve one row for (MORE),
-                // leave at least two lines for the next page, and split only after a
-                // dialogue line (a parenthetical stays with the dialogue it introduces).
-                let max_first = (available - 1).min(block.rows - 2);
-                let mut split = None;
-                for k in (3..=max_first).rev() {
-                    let last = block.lines.iter().rfind(|l| l.row == k - 1);
-                    let next = block.lines.iter().find(|l| l.row == k);
-                    let last_is_dialogue = last
-                        .map(|l| l.style == LineStyle::Dialogue || l.style == LineStyle::Lyric)
-                        .unwrap_or(false);
-                    let next_is_speech = next
-                        .map(|l| l.style != LineStyle::Character)
-                        .unwrap_or(false);
-                    if last_is_dialogue && next_is_speech {
-                        split = Some(k);
-                        break;
-                    }
-                }
-                let cue = rules::rule_for("character");
-                if let Some(k) = split {
-                    p.row += space;
-                    let (a, b) = split_rows(&block.lines, k);
-                    p.place(&a, None, block.scene);
-                    let more_row = p.row as i32;
-                    p.current.push(PageLine {
-                        row: more_row,
-                        x_in: cue.left_in,
-                        text: "(MORE)".into(),
-                        style: LineStyle::More,
-                    });
-                    p.new_page();
-                    let speaker = block.speaker.clone().unwrap_or_default();
-                    let cont_text = if speaker.ends_with("(CONT'D)") {
-                        speaker
-                    } else {
-                        format!("{speaker} (CONT'D)")
-                    };
-                    let mut cont = vec![BlockLine {
-                        x: cue.left_in,
-                        text: cont_text,
-                        style: LineStyle::Character,
-                        revised: false,
-                        row: 0,
-                    }];
-                    cont.extend(b.into_iter().map(|mut l| {
-                        l.row += 1;
-                        l
-                    }));
-                    place_overflowing(&mut p, &cont, None, block.scene);
-                } else {
-                    p.new_page();
-                    place_overflowing(
-                        &mut p,
-                        &block.lines,
-                        block.scene_number.as_deref(),
-                        block.scene,
-                    );
-                }
             }
             _ => {
                 if p.row > 0 {
@@ -954,13 +901,12 @@ pub fn layout(doc: &ScreenplayDoc, opts: &LayoutOptions) -> Layout {
     let mut pages = p.pages;
     decorate_pages(&mut pages, doc, opts, &g, first);
     if opts.title_page && !doc.title_page.is_empty() {
-        pages.insert(0, title_page(doc, opts, &g));
+        pages.splice(0..0, title_pages(doc, opts, &g));
     }
     Layout {
         pages,
         geometry: g,
         scenes,
-        brand: None,
     }
 }
 
@@ -1000,8 +946,9 @@ fn decorate_pages(
         let n = first + i as u32;
         page.number = Some(n);
         let decorate = opts.paginate && (i >= 1 || opts.page.header_on_first_page);
-        // The first script page shows its number ("1.") like every other page.
-        let numbered = opts.paginate && opts.page_numbers;
+        // Every script page shows its number, except the first when the setup leaves it off.
+        let numbered =
+            opts.paginate && opts.page_numbers && (i >= 1 || opts.page.number_first_page);
         let mut page_label_x = right_edge;
         if numbered {
             let label = format!("{n}.");
@@ -1091,6 +1038,146 @@ fn running_title(page: &mut LaidOutPage, doc: &ScreenplayDoc, g: &Geometry, head
     }
 }
 
+/// Rows after block `bi` that must share its page: what a keep-with-next block stays with (a
+/// scene heading with the start of its scene, a transition with the next scene heading, a shot
+/// with its description). A heading is not chained to another heading. The chain looks at most
+/// two blocks ahead (a transition, its heading, the start of that scene), so a long run of shots or
+/// transitions in an imported file neither recurses deeply nor pushes every block to a new page.
+fn follow_rows(blocks: &[Block], bi: usize) -> usize {
+    const MAX_CHAIN: usize = 2;
+    let mut rows = 0;
+    let mut at = bi;
+    for _ in 0..MAX_CHAIN {
+        let b = &blocks[at];
+        if !b.keep_next {
+            break;
+        }
+        match blocks.get(at + 1) {
+            Some(n)
+                if n.kind != BlockKind::PageBreak
+                    && (n.kind != BlockKind::Heading || b.kind == BlockKind::Transition) =>
+            {
+                rows += n.space_before + n.keep_rows();
+                at += 1;
+            }
+            _ => break,
+        }
+    }
+    rows
+}
+
+/// Where a speech can break so that `available` rows are not exceeded: the number of rows kept
+/// on this page. The cue keeps at least two lines of speech with it, one row is left for
+/// `(MORE)`, at least two rows go to the next page and the break follows a dialogue line.
+/// `relaxed` accepts any line but a cue (a speech with no dialogue lines to break after).
+fn speech_split(lines: &[BlockLine], available: usize, relaxed: bool) -> Option<usize> {
+    let rows = lines.iter().map(|l| l.row + 1).max().unwrap_or(0);
+    let (min_rows, min_first) = if relaxed { (3, 2) } else { (5, 3) };
+    if available < min_first + 1 || rows < min_rows {
+        return None;
+    }
+    let max_first = (available - 1).min(rows - 2);
+    (min_first..=max_first)
+        .rev()
+        .find(|&k| split_ok(lines, k, relaxed))
+}
+
+/// May a speech break after `k` rows: after a dialogue line (any line but a cue when relaxed),
+/// and not in the middle of a wrapped cue.
+fn split_ok(lines: &[BlockLine], k: usize, relaxed: bool) -> bool {
+    let last = lines.iter().rfind(|l| l.row == k - 1);
+    let next = lines.iter().find(|l| l.row == k);
+    let last_ok = last.is_some_and(|l| {
+        if relaxed {
+            l.style != LineStyle::Character
+        } else {
+            l.style == LineStyle::Dialogue || l.style == LineStyle::Lyric
+        }
+    });
+    last_ok && next.is_some_and(|l| l.style != LineStyle::Character)
+}
+
+/// Rows of a speech that must share a page with whatever it follows: the whole speech when it is
+/// too short to break, otherwise the rows before its first break point and the `(MORE)` row.
+fn speech_keep_rows(lines: &[BlockLine], rows: usize) -> usize {
+    if rows < 5 {
+        return rows;
+    }
+    (3..=rows - 2)
+        .find(|&k| split_ok(lines, k, false))
+        .map_or(rows, |k| k + 1)
+}
+
+/// Place one speech block. Every page break inside it puts `(MORE)` at the foot and the
+/// cue with `(CONT'D)` at the top of the next page, however tall the speech is. Short speeches
+/// that do not fit move to the next page whole.
+fn place_speech(p: &mut Paginator<'_>, block: &Block) {
+    let cue = *rules::rule_for("character");
+    let mut lines = block.lines.clone();
+    let mut space = block.space_before;
+    loop {
+        let space_now = if p.row == 0 { 0 } else { space };
+        let rows = lines.iter().map(|l| l.row + 1).max().unwrap_or(0);
+        if space_now + rows <= p.remaining() {
+            p.row += space_now;
+            p.place(&lines, None, block.scene);
+            return;
+        }
+        let available = p.remaining().saturating_sub(space_now);
+        let split = speech_split(&lines, available, false)
+            .or_else(|| speech_split(&lines, available, true).filter(|_| p.row == 0));
+        match split {
+            Some(k) => {
+                p.row += space_now;
+                let (a, b) = split_rows(&lines, k);
+                p.place(&a, None, block.scene);
+                let more_row = p.row as i32;
+                p.current.push(PageLine {
+                    row: more_row,
+                    x_in: cue.left_in,
+                    text: "(MORE)".into(),
+                    style: LineStyle::More,
+                });
+                p.new_page();
+                lines = continued_speech(&p.g, &cue, block.speaker.as_deref(), b);
+                space = 0;
+            }
+            // Try again on a fresh page.
+            None if p.row > 0 => p.new_page(),
+            // Nothing can break (not reachable for a speech with two or more lines).
+            None => {
+                place_overflowing(p, &lines, None, block.scene);
+                return;
+            }
+        }
+    }
+}
+
+/// The rest of a speech under its cue with `(CONT'D)`: an imported marker is kept, never doubled.
+/// A long cue wraps inside its column.
+fn continued_speech(
+    g: &Geometry,
+    cue: &ElementRule,
+    speaker: Option<&str>,
+    rest: Vec<BlockLine>,
+) -> Vec<BlockLine> {
+    let name = speaker.unwrap_or_default().trim();
+    let text = if name.contains("(CONT'D)") {
+        name.to_string()
+    } else if name.is_empty() {
+        "(CONT'D)".to_string()
+    } else {
+        format!("{name} (CONT'D)")
+    };
+    let mut out = rule_lines(g, cue, &text, LineStyle::Character, false, 0);
+    let shift = out.len();
+    out.extend(rest.into_iter().map(|mut l| {
+        l.row += shift;
+        l
+    }));
+    out
+}
+
 /// Place lines that may be longer than a page, breaking at page boundaries.
 fn place_overflowing(
     p: &mut Paginator<'_>,
@@ -1106,7 +1193,12 @@ fn place_overflowing(
     let mut rest: Vec<BlockLine> = lines.to_vec();
     let mut first = true;
     while !rest.is_empty() {
-        let avail = p.remaining().max(1);
+        let left = rest.iter().map(|l| l.row + 1).max().unwrap_or(0);
+        let mut avail = p.remaining().max(1);
+        // Never strand a single line at the top of the next page.
+        if left > avail && left - avail == 1 && avail > 2 {
+            avail -= 1;
+        }
         let (a, b) = split_rows(&rest, avail);
         p.place(&a, if first { scene_number } else { None }, scene);
         first = false;
@@ -1145,6 +1237,12 @@ fn centered(g: &Geometry, text: &str, row: i32, style: LineStyle) -> PageLine {
 const TITLE_LEFT_CHARS: usize = 34;
 const TITLE_RIGHT_CHARS: usize = 26;
 const TITLE_CENTER_CHARS: usize = 50;
+/// Clear space kept between the two lower blocks, in inches. The left block gives up columns
+/// to the right block's real width, so the two never touch (a 34 + 26 character pair filled the
+/// whole 60 character text area and ran together).
+const TITLE_GUTTER_IN: f32 = 0.4;
+/// Empty rows between the centred block and the lower blocks.
+const TITLE_BLOCK_GAP_ROWS: i32 = 2;
 
 fn wrapped_lines(value: &str, width: usize) -> Vec<String> {
     value
@@ -1155,12 +1253,12 @@ fn wrapped_lines(value: &str, width: usize) -> Vec<String> {
         .collect()
 }
 
-fn title_page(doc: &ScreenplayDoc, opts: &LayoutOptions, g: &Geometry) -> LaidOutPage {
+/// The centred title, credit, author and source block starting at row `start`: its lines and the
+/// first free row below it.
+fn title_centre(doc: &ScreenplayDoc, g: &Geometry, start: i32) -> (Vec<PageLine>, i32) {
     let tp = &doc.title_page;
-    let lpp = g.lines_per_page as i32;
     let mut lines = Vec::new();
-    // The title starts about 3" below the top margin.
-    let mut row = (3.0 / g.line_height_in).round() as i32;
+    let mut row = start;
     if let Some(title) = tp.title() {
         for w in wrapped_lines(&title.to_uppercase(), TITLE_CENTER_CHARS) {
             lines.push(centered(g, &w, row, LineStyle::TitleMain));
@@ -1184,18 +1282,21 @@ fn title_page(doc: &ScreenplayDoc, opts: &LayoutOptions, g: &Geometry) -> LaidOu
             row += 1;
         }
     }
-    // Bottom left: notes then contact. Bottom right: draft, date, revision, representation.
-    let mut left: Vec<String> = Vec::new();
-    if let Some(n) = tp.get("Notes") {
-        left.extend(wrapped_lines(n, TITLE_LEFT_CHARS));
-        left.push(String::new());
-    }
-    if let Some(c) = tp.get("Contact") {
-        left.extend(wrapped_lines(c, TITLE_LEFT_CHARS));
-    }
-    if let Some(c) = tp.get("Copyright") {
-        left.extend(wrapped_lines(c, TITLE_LEFT_CHARS));
-    }
+    (lines, row)
+}
+
+/// The title page: a centred block about 3" down and two bottom blocks, contact and legal text on
+/// the left, draft details and representation on the right. Each lower block wraps inside its
+/// own width and the two keep a gutter. They grow upward from the last body row; when they are
+/// too tall for the space under the centred block, the centred block moves up (to the top of the
+/// body at most), and a surplus beyond that continues on further title pages, so nothing is cut.
+fn title_pages(doc: &ScreenplayDoc, opts: &LayoutOptions, g: &Geometry) -> Vec<LaidOutPage> {
+    let tp = &doc.title_page;
+    let lpp = g.lines_per_page as i32;
+    let action = rules::rule_for("action");
+    let right_edge = action.left_in + action.width_in;
+
+    // Bottom right: draft, date, revision, representation.
     let mut right: Vec<String> = Vec::new();
     for key in ["Draft", "Draft date", "Date"] {
         if let Some(d) = tp.get(key) {
@@ -1209,36 +1310,83 @@ fn title_page(doc: &ScreenplayDoc, opts: &LayoutOptions, g: &Geometry) -> LaidOu
         right.push(String::new());
         right.extend(wrapped_lines(r, TITLE_RIGHT_CHARS));
     }
-    let action = rules::rule_for("action");
-    let right_edge = action.left_in + action.width_in;
-    let left_start = (lpp - left.len() as i32).max(row + 2);
-    for (i, l) in left.iter().enumerate() {
-        if !l.is_empty() {
-            lines.push(PageLine {
-                row: left_start + i as i32,
-                x_in: action.left_in,
-                text: l.clone(),
-                style: LineStyle::TitleText,
-            });
+    // Bottom left: notes, contact, copyright, in the room the right block leaves.
+    let right_width = right
+        .iter()
+        .map(|r| g.text_width_in(r))
+        .fold(0.0f32, f32::max);
+    let left_chars = g
+        .chars(right_edge - right_width - TITLE_GUTTER_IN - action.left_in)
+        .min(TITLE_LEFT_CHARS);
+    let mut left: Vec<String> = Vec::new();
+    if let Some(n) = tp.get("Notes") {
+        left.extend(wrapped_lines(n, left_chars));
+        left.push(String::new());
+    }
+    for key in ["Contact", "Copyright"] {
+        if let Some(c) = tp.get(key) {
+            left.extend(wrapped_lines(c, left_chars));
         }
     }
-    let right_start = (lpp - right.len() as i32).max(row + 2);
-    for (i, r) in right.iter().enumerate() {
-        if !r.is_empty() {
-            lines.push(PageLine {
-                row: right_start + i as i32,
-                x_in: right_edge - g.text_width_in(r),
-                text: r.clone(),
-                style: LineStyle::TitleText,
-            });
+    for block in [&mut left, &mut right] {
+        while block.last().is_some_and(String::is_empty) {
+            block.pop();
         }
     }
-    lines.sort_by(|a, b| a.row.cmp(&b.row).then(a.x_in.total_cmp(&b.x_in)));
-    LaidOutPage {
-        title_page: true,
-        number: None,
-        lines,
+
+    let default_start = (3.0 / g.line_height_in).round() as i32;
+    let need = left.len().max(right.len()) as i32;
+    let (mut lines, mut end) = title_centre(doc, g, default_start);
+    let room = lpp - (end + TITLE_BLOCK_GAP_ROWS);
+    if need > room {
+        // The block has the same height wherever it starts, so this moves it exactly far enough.
+        (lines, end) = title_centre(doc, g, (default_start - (need - room)).max(0));
     }
+
+    let mut pages = Vec::new();
+    let mut top = end + TITLE_BLOCK_GAP_ROWS;
+    let mut first = true;
+    loop {
+        let room = (lpp - top).max(1) as usize;
+        for (block, is_left) in [(&mut left, true), (&mut right, false)] {
+            let n = block.len().min(room);
+            // A block that finishes on its first page is anchored to the bottom; any other
+            // page fills from the top.
+            let anchor = if first && n == block.len() {
+                lpp - n as i32
+            } else {
+                top
+            };
+            for (i, text) in block.drain(..n).enumerate() {
+                if text.is_empty() {
+                    continue;
+                }
+                let x_in = if is_left {
+                    action.left_in
+                } else {
+                    right_edge - g.text_width_in(&text)
+                };
+                lines.push(PageLine {
+                    row: anchor + i as i32,
+                    x_in,
+                    text,
+                    style: LineStyle::TitleText,
+                });
+            }
+        }
+        lines.sort_by(|a, b| a.row.cmp(&b.row).then(a.x_in.total_cmp(&b.x_in)));
+        pages.push(LaidOutPage {
+            title_page: true,
+            number: None,
+            lines: std::mem::take(&mut lines),
+        });
+        if left.is_empty() && right.is_empty() {
+            break;
+        }
+        first = false;
+        top = 0;
+    }
+    pages
 }
 
 #[cfg(test)]

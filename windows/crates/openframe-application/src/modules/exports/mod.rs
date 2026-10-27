@@ -724,6 +724,9 @@ mod tests {
         assert_eq!(money(120_000_000, "INR"), "INR 12,00,000");
         assert_eq!(money(150_050, "USD"), "USD 1,500.50");
         assert_eq!(money(1500, "JPY"), "JPY 1,500");
+        assert_eq!(money(400_000_000, "INR"), "INR 40,00,000");
+        assert_eq!(money(1_646_000_000, "INR"), "INR 1,64,60,000");
+        assert_eq!(money(123_456_700, "USD"), "USD 1,234,567");
         assert_eq!(amount_text(150_050, "USD", false), "1500.50");
         assert_eq!(amount_text(-5, "EUR", true), "-0.05");
     }

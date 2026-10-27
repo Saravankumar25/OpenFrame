@@ -30,7 +30,7 @@ Before: the shared journey data folder is empty. The app starts for the first ti
 
 ## Story: an act, a sequence, two cards, keyboard reorder, undo and redo
 
-1. Click Story in the Workspaces navigation.
+1. Click Story in the Workspaces navigation, then click the Board tab.
 2. Click Add Act.
 3. Type 'Act 1' in the Act title field and press Enter.
 4. Check: the screen shows "ACT 1".
@@ -166,14 +166,14 @@ Before: the shared journey data folder is empty. The app starts for the first ti
 
 ## Recently Deleted: delete a scene card and restore it
 
-1. Click Story in the Workspaces navigation.
+1. Click Story in the Workspaces navigation, then click the Board tab.
 2. Click the card "Bus stop reunion in the rain".
 3. Press Delete.
 4. If a dialog asks to confirm (the card already built a screenplay scene), click its Delete or Move button.
 5. Check: the card "Bus stop reunion in the rain" is gone.
 6. Click the project button "Project: Night Bus. Switch or manage projects", then choose Recently Deleted.
 7. Click Restore Bus stop reunion in the rain.
-8. Click Story in the Workspaces navigation.
+8. Click Story in the Workspaces navigation, then click the Board tab.
 9. Check: the card "Bus stop reunion in the rain" is back.
 10. Check: the screen is quiet.
 
@@ -193,7 +193,7 @@ Before: the shared journey data folder is empty. The app starts for the first ti
    1. Check: the screen is quiet.
    2. Check: the AI Assistant docks cleanly.
 4. Click Production. Visit every tab in the Production navigation in turn. In each tab, do the same two checks.
-5. Click Story, then the Outline tab. Do the same two checks. Repeat for the Characters tab and the Timeline tab.
+5. Click Story in the Workspaces navigation, click the Board tab, then click the Outline tab. Do the same two checks. Repeat for the Characters tab and the Timeline tab, each time clicking Story and the Board tab first.
 6. Open the project menu and choose Notes & Tasks. Do the same two checks. Repeat for Activity, Recently Deleted and Project settings.
 7. Note the width of the page and of the panel.
 8. Press Ctrl+J.

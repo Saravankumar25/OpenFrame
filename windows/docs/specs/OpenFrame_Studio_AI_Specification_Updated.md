@@ -1,5 +1,7 @@
 # OpenFrame Studio — AI Specification
 
+> **Current decisions (2026-10-24).** [ADR-0035](../adr/ADR-0035-ai-lanes-briefings-and-code-verifiers.md) overrides this text where it differs: five lanes decided by code (Direct, Action, Recipe, Chat, Agent), code-built briefings, deterministic verifiers, an agent loop of 4 steps by default (12 at most), progress lines and Cancel instead of streaming, and a user-initiated Save conversation for review ([ADR-0028](../adr/ADR-0028-ai-quality-program-and-harness.md) decision 8, amended).
+
 > **Current decisions (2026-10-15).** [ADR-0028](../adr/ADR-0028-ai-quality-program-and-harness.md) overrides this text where it differs: measurement first and a release bar of 90 percent correct tool and 85 percent correct end state; English first plus eleven further languages; two model tiers instead of one model; tool offering by embedding similarity instead of word overlap; a verifier-guided loop of at most three passes and 60 seconds; four kinds of memory with a visible learned-memory screen; a local numbers-only log with a manual Export AI report. Delivery is per [ADR-0026](../adr/ADR-0026-offline-ai-download-after-install.md), graphics cards per [ADR-0029](../adr/ADR-0029-gpu-acceleration.md).
 
 > **Current decision: [ADR-0026](../adr/ADR-0026-offline-ai-download-after-install.md) (2026-10-15).** The app and the AI
@@ -350,7 +352,7 @@ when the actor holds the proposal's capability **and** `ApplyChangeSet`, and eve
 ```text
 ai.ask ─► UseAi required ─► request ≤ 2,000 chars ─► scope + retrieval + context (§5)
   ─► tools offered = core tools + request-relevant tools (≤ 7,000-char catalogue)
-  loop (default 8 steps; request may set 1..12; hard cap 12):
+  loop (default 8 steps; request may set 1..12; hard cap 12):   [SUPERSEDED in part 2026-10-24 by ADR-0035: default 4 steps, hard cap 12, compact tool signatures, other lanes decided by code]
      ONE grammar-constrained model call → {"action": tool, "arguments": {...}, "done": bool}
         malformed / unknown tool → one corrected retry, then stop
      same tool + same arguments seen before → stop ("the same step was requested twice")

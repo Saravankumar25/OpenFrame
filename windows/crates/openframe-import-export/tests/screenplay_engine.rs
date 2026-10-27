@@ -159,6 +159,7 @@ fn defaults_reproduce_the_standard_layout() {
         font_size: 12,
         line_spacing: LineSpacing::Single,
         first_page_number: 1,
+        number_first_page: true,
         header: String::new(),
         footer: String::new(),
         header_on_first_page: false,

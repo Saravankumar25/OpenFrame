@@ -116,10 +116,8 @@ export async function results(browser) {
     [...document.querySelectorAll('aside[aria-label="AI Assistant"] .msg.a[data-kind]')].map((m) => ({
       kind: m.getAttribute("data-kind"),
       text: m.innerText,
+      // The chips sit behind the closed "See sources" disclosure; they are in the page all the same.
       sources: [...m.querySelectorAll(".ai-sources .chip, .ai-sources button")].map((c) => c.textContent?.trim() ?? ""),
-      // How sure the answer is sits behind the closed "See sources" disclosure: read all of its text.
-      exact: (m.textContent ?? "").includes("Exact · from project data"),
-      inferred: (m.textContent ?? "").includes("Inferred · written by Offline AI"),
     })),
   );
 }
@@ -136,7 +134,7 @@ export async function send(browser, text) {
 
 /**
  * Ask the assistant through the panel (type, Enter) and wait for the new result. Returns it as
- * { kind, text, sources, exact, inferred }.
+ * { kind, text, sources }.
  */
 export async function ask(browser, text, { timeout = ANSWER_TIMEOUT } = {}) {
   await openAssistant(browser);

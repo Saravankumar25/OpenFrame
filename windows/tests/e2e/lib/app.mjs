@@ -212,6 +212,15 @@ export async function openWorkspace(browser, label) {
   await browser.$(`//main[@aria-label=${xq(label)}]`).waitForExist({ timeout: 10_000 });
 }
 
+/** Open the Story workspace on its Board tab (Story opens on the Story page since 2026-10-27). */
+export async function openBeatBoard(browser) {
+  await openWorkspace(browser, "Story");
+  const tab = await browser.$('//*[@role="tablist"][@aria-label="Story views"]//*[@role="tab"][normalize-space(.)="Board"]');
+  await tab.waitForClickable({ timeout: 10_000 });
+  await tab.click();
+  await browser.$('//*[@role="tab"][@aria-selected="true"][normalize-space(.)="Board"]').waitForExist({ timeout: 10_000 });
+}
+
 export async function sleep(ms) {
   await new Promise((r) => setTimeout(r, ms));
 }

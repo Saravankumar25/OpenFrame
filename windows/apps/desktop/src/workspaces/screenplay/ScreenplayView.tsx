@@ -494,6 +494,7 @@ export function ScreenplayView({ overview, layout, setLayout, onCompare, onImpor
     { label: `${layout.mode === "writingRoom" ? "✓ " : ""}Writing Room Mode`, onSelect: () => setMode("writingRoom") },
     { label: "Focus Mode", onSelect: () => setMode("focus") },
     { label: `${layout.showNotes ? "Hide" : "Show"} notes in the script`, separatorBefore: true, onSelect: () => setLayout((l) => ({ ...l, showNotes: !l.showNotes })) },
+    { label: layout.darkPaper ? "Light page" : "Dark page", onSelect: () => setLayout((l) => ({ ...l, darkPaper: !l.darkPaper })) },
     { label: "Page view", onSelect: () => void flush().then(() => setDialog({ kind: "pageView" })) },
     {
       label: `${proofing.mode === "off" ? "" : "\u2713 "}Check spelling`,
@@ -541,7 +542,7 @@ export function ScreenplayView({ overview, layout, setLayout, onCompare, onImpor
   const page = doc.error ? (
     <div className="content"><Banner tone="err">{doc.error.message}</Banner></div>
   ) : !doc.data ? (
-    <div className="spx-wrap"><div className="spx-page"><Skeleton h={18} w={260} /><div style={{ height: 12 }} /><Skeleton h={220} /></div></div>
+    <div className="spx-wrap"><div className="spx-page" data-paper={layout.darkPaper ? "dark" : undefined}><Skeleton h={18} w={260} /><div style={{ height: 12 }} /><Skeleton h={220} /></div></div>
   ) : (
     <div className="spx-wrap">
       <div className="spx-scroll" ref={scrollRef} style={{ ["--sp-zoom" as string]: zoom }}>
@@ -550,7 +551,7 @@ export function ScreenplayView({ overview, layout, setLayout, onCompare, onImpor
             <Lock size={13} aria-hidden /> Locked shooting draft. You can read and export it freely. Typing offers to start a revision.
           </div>
         )}
-        <div className="spx-page" style={draft.revisionColor ? { borderTop: `4px solid ${colourSwatch(draft.revisionColor) ?? "transparent"}` } : undefined}>
+        <div className="spx-page" data-paper={layout.darkPaper ? "dark" : undefined} style={draft.revisionColor ? { borderTop: `4px solid ${colourSwatch(draft.revisionColor) ?? "transparent"}` } : undefined}>
           <ScreenplayEditor
             key={openId}
             ref={editorRef}

@@ -144,8 +144,20 @@ pub enum CardPart {
         value: String,
         missing: bool,
     },
+    /// A picture frame like `Image`, with a muted placeholder text (4.5 to 1 on the frame) and an
+    /// 8 pt inset: the moodboard.
+    Picture {
+        img: Option<ReportImage>,
+        placeholder: Option<String>,
+        ratio: f32,
+    },
+    /// One chip centred in the card (the "Internal" label under a picture).
+    CenteredChip(Chip),
     /// Lines of text, each with a small accent bullet and a hairline between them.
     Lines(Vec<String>),
+    /// A storyboard panel: number tile, picture frame, chips and caption band. The card has no
+    /// head of its own and its band grows to the tallest card of the row.
+    Panel(Box<Panel>),
 }
 
 #[derive(Debug, Clone)]
@@ -179,6 +191,9 @@ pub struct Cards {
     pub columns: usize,
     pub gap: f32,
     pub cards: Vec<Card>,
+    /// Never end on a page that holds a single row of cards when the row before it can move to
+    /// that page (storyboard sheets). Off by default: rows simply fill pages.
+    pub widow_repair: bool,
 }
 
 impl Cards {
@@ -187,6 +202,7 @@ impl Cards {
             columns: columns.max(1),
             gap: 10.0,
             cards,
+            widow_repair: false,
         }
     }
 }
@@ -240,12 +256,12 @@ fn card_head(h: &CardHead, w: f32) -> Frag {
         );
         match &t.top {
             Some(top) => {
-                let tw1 = tw(top, 5.4, true, 0.3);
+                let tw1 = tw(top, 6.4, true, 0.3);
                 f.text(
                     PAD + (t.w - tw1) / 2.0,
                     ty + 9.0,
                     top,
-                    5.4,
+                    6.4,
                     true,
                     t.color,
                     0.3,
@@ -363,7 +379,7 @@ fn group_frag(g: &Group, gw: f32) -> Frag {
         pending.push(Chip::pill(it.text.clone(), it.tone));
         if let Some(t) = &it.tag {
             let mut t = t.clone();
-            t.size = 5.8;
+            t.size = 6.4;
             pending.push(t);
         }
         if let Some(n) = &it.note {
@@ -443,7 +459,58 @@ fn rows_frag(rows: &[(String, Vec<String>)], w: f32) -> Frag {
     f
 }
 
-fn units<'a>(p: &mut Pager<'a>, card: &'a Card, w: f32) -> Vec<Frag> {
+/// A picture frame with the picture fitted inside (never cropped), or a placeholder note.
+fn picture_frag<'a>(
+    p: &mut Pager<'a>,
+    img: &'a Option<ReportImage>,
+    placeholder: &Option<String>,
+    ratio: f32,
+    w: f32,
+    pad: f32,
+    text: Rgb,
+) -> Frag {
+    let mut f = Frag::new();
+    let fw = w - 2.0 * pad;
+    let fh = fw * ratio.clamp(0.2, 2.0);
+    f.shape(
+        pad,
+        8.0,
+        fw,
+        fh,
+        2.0,
+        Some(Rgb::hex(0xeef1f5)),
+        Some((pal::LINE, 0.6)),
+    );
+    match img {
+        Some(img) => {
+            let scale = (fw / img.width as f32).min(fh / img.height as f32);
+            let (iw, ih) = (img.width as f32 * scale, img.height as f32 * scale);
+            let index = p.image_index(img);
+            f.ops.push(Op::Image {
+                index,
+                x: pad + (fw - iw) / 2.0,
+                y: -(8.0 + (fh + ih) / 2.0),
+                w: iw,
+                h: ih,
+            });
+        }
+        None => {
+            if let Some(label) = placeholder {
+                let t = Txt::new(label.clone())
+                    .size(8.5)
+                    .color(text)
+                    .align(Align::Center);
+                let th = txt_height(&t, fw - 16.0);
+                put_txt(&mut f, pad + 8.0, 8.0 + (fh - th) / 2.0, fw - 16.0, &t);
+            }
+        }
+    }
+    f.h = fh + 14.0;
+    f
+}
+
+/// The card as stacked units. `fill_to` is the row height a panel card stretches its caption to.
+fn units<'a>(p: &mut Pager<'a>, card: &'a Card, w: f32, fill_to: Option<f32>) -> Vec<Frag> {
     let mut out = Vec::new();
     if let Some(h) = &card.head {
         out.push(card_head(h, w));
@@ -474,7 +541,22 @@ fn units<'a>(p: &mut Pager<'a>, card: &'a Card, w: f32) -> Vec<Frag> {
             } => {
                 let iw = w - 2.0 * PAD;
                 let mut y = 9.0;
-                y += put_txt(&mut f, PAD, y, iw, &Txt::label(label.clone()).after(5.0));
+                // A long location name makes a long label: it wraps inside the card.
+                let tag = Txt::label(label.clone());
+                let lh = tag.size * tag.leading;
+                let lines = tracked_lines(&tag, iw);
+                for (k, l) in lines.iter().enumerate() {
+                    f.text(
+                        PAD,
+                        y + tag.size + k as f32 * lh,
+                        l,
+                        tag.size,
+                        tag.bold,
+                        tag.color,
+                        tag.track,
+                    );
+                }
+                y += lines.len() as f32 * lh + 5.0;
                 if *missing {
                     let mut chip = Chip::label(value.clone(), Tone::Danger);
                     chip.size = 6.8;
@@ -536,47 +618,20 @@ fn units<'a>(p: &mut Pager<'a>, card: &'a Card, w: f32) -> Vec<Frag> {
                 }
                 f.h = y + 7.0;
             }
+            CardPart::Panel(panel) => f = panel_frag(p, panel, w, fill_to),
             CardPart::Image {
                 img,
                 placeholder,
                 ratio,
-            } => {
-                let fw = w - 2.0 * PAD;
-                let fh = fw * ratio.clamp(0.2, 2.0);
-                f.shape(
-                    PAD,
-                    8.0,
-                    fw,
-                    fh,
-                    2.0,
-                    Some(Rgb::hex(0xeef1f5)),
-                    Some((pal::LINE, 0.6)),
-                );
-                match img {
-                    Some(img) => {
-                        let scale = (fw / img.width as f32).min(fh / img.height as f32);
-                        let (iw, ih) = (img.width as f32 * scale, img.height as f32 * scale);
-                        let index = p.image_index(img);
-                        f.ops.push(Op::Image {
-                            index,
-                            x: PAD + (fw - iw) / 2.0,
-                            y: -(8.0 + (fh + ih) / 2.0),
-                            w: iw,
-                            h: ih,
-                        });
-                    }
-                    None => {
-                        if let Some(label) = placeholder {
-                            let t = Txt::new(label.clone())
-                                .size(8.5)
-                                .color(pal::FAINT)
-                                .align(Align::Center);
-                            let th = txt_height(&t, fw - 16.0);
-                            put_txt(&mut f, PAD + 8.0, 8.0 + (fh - th) / 2.0, fw - 16.0, &t);
-                        }
-                    }
-                }
-                f.h = fh + 14.0;
+            } => f = picture_frag(p, img, placeholder, *ratio, w, PAD, pal::FAINT),
+            CardPart::Picture {
+                img,
+                placeholder,
+                ratio,
+            } => f = picture_frag(p, img, placeholder, *ratio, w, 8.0, Rgb::hex(0x66728a)),
+            CardPart::CenteredChip(chip) => {
+                put_chip(&mut f, (w - chip.width()) / 2.0, 3.0, chip);
+                f.h = chip.height() + 11.0;
             }
         }
         out.push(f);
@@ -588,10 +643,43 @@ pub(in crate::report) fn cards<'a>(p: &mut Pager<'a>, c: &'a Cards) {
     let cw = p.content_w();
     let cols = c.columns.max(1);
     let w = (cw - c.gap * (cols as f32 - 1.0)) / cols as f32;
-    for chunk in c.cards.chunks(cols) {
-        let all: Vec<Vec<Frag>> = chunk.iter().map(|card| units(p, card, w)).collect();
+    let breaks = if c.widow_repair {
+        let heights: Vec<f32> = c
+            .cards
+            .chunks(cols)
+            .map(|chunk| {
+                chunk
+                    .iter()
+                    .map(|card| units(p, card, w, None).iter().map(|f| f.h).sum::<f32>())
+                    .fold(0.0, f32::max)
+            })
+            .collect();
+        let carried = p
+            .hold
+            .as_ref()
+            .filter(|h| h.page == p.pages.len() - 1)
+            .map_or(0.0, |h| h.top - h.bottom);
+        plan_rows(&heights, c.gap, p.room(), p.body_h() - carried, p.body_h())
+    } else {
+        Vec::new()
+    };
+    for (r, chunk) in c.cards.chunks(cols).enumerate() {
+        if breaks.contains(&r) {
+            p.new_page();
+        }
+        let mut all: Vec<Vec<Frag>> = chunk.iter().map(|card| units(p, card, w, None)).collect();
         let heights: Vec<f32> = all.iter().map(|u| u.iter().map(|f| f.h).sum()).collect();
         let row_h = heights.iter().cloned().fold(0.0, f32::max);
+        if chunk
+            .iter()
+            .any(|c| c.parts.iter().any(|x| matches!(x, CardPart::Panel(_))))
+        {
+            // Panels in a row line their caption bands up: lay them out again to the row height.
+            all = chunk
+                .iter()
+                .map(|card| units(p, card, w, Some(row_h)))
+                .collect();
+        }
         if row_h > p.body_h() {
             for (card, us) in chunk.iter().zip(all) {
                 split_card(p, card, us, w);
@@ -615,6 +703,42 @@ pub(in crate::report) fn cards<'a>(p: &mut Pager<'a>, c: &'a Cards) {
         }
         p.y -= row_h + c.gap;
     }
+}
+
+/// Where rows of cards of the given heights start new pages: the rows that do not fit the room
+/// left start a page, and a last page that would hold a single row takes the row before it too
+/// when the page has room for both and the page before keeps at least one row. `after_carry` is
+/// the room on the page that follows a break at the very first row (a lead-in moves along).
+fn plan_rows(heights: &[f32], gap: f32, room: f32, after_carry: f32, body: f32) -> Vec<usize> {
+    let n = heights.len();
+    if heights.iter().any(|h| *h + 2.0 > body) {
+        return Vec::new();
+    }
+    let mut breaks = Vec::new();
+    let mut left = room;
+    for (i, h) in heights.iter().enumerate() {
+        if left < h + 2.0 {
+            left = if i == 0 { after_carry } else { body };
+            breaks.push(i);
+        }
+        left -= h + gap;
+    }
+    if let Some(&last) = breaks.last()
+        && last == n - 1
+        && last > 0
+    {
+        let prev = if breaks.len() >= 2 {
+            breaks[breaks.len() - 2]
+        } else {
+            0
+        };
+        let fits = heights[n - 2] + gap + heights[n - 1] + 2.0 <= body;
+        if n - 1 - prev >= 2 && fits {
+            let at = breaks.len() - 1;
+            breaks[at] = n - 2;
+        }
+    }
+    breaks
 }
 
 /// A card taller than a page: units flow onto the next pages, each page with its own border.
@@ -691,12 +815,14 @@ pub(in crate::report) fn cards_scan(c: &Cards, scan: &mut dyn FnMut(&str)) {
                 }),
                 CardPart::Centered(ls) => ls.iter().for_each(|t| scan(&t.text)),
                 CardPart::Empty(t) => scan(t),
+                CardPart::CenteredChip(c) => scan(&c.text),
                 CardPart::Labeled { label, value, .. } => {
                     scan(label);
                     scan(value);
                 }
                 CardPart::Lines(ls) => ls.iter().for_each(|x| scan(x)),
-                CardPart::Image { placeholder, .. } => {
+                CardPart::Panel(panel) => panel_scan(panel, scan),
+                CardPart::Image { placeholder, .. } | CardPart::Picture { placeholder, .. } => {
                     if let Some(t) = placeholder {
                         scan(t);
                     }

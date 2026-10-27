@@ -45,6 +45,9 @@ use crate::supervisor::{
 /// window is 512). Retrieval chunks should be shorter; longer inputs are cut, and an input the
 /// runtime still refuses (dense text) is retried shorter.
 pub const MAX_EMBED_INPUT_CHARS: usize = 1_500;
+/// Memory left free, beyond the chat model and its cache, for the engine to be started before the
+/// first question (the app, the embedding engine and the person's other programs).
+const EARLY_START_HEADROOM_MB: u64 = 1536;
 /// Per-request timeout for one embedding batch.
 const EMBED_TIMEOUT: Duration = Duration::from_secs(120);
 /// Sampling seed of deterministic runs (the end-to-end suite).
@@ -511,7 +514,7 @@ impl AiManager {
     pub(crate) fn chat(&self, req: &client::ChatRequest) -> AppResult<String> {
         self.ensure_verified()?;
         self.ensure_placement();
-        match self.chat_once(req) {
+        match self.chat_once(req, true) {
             // The engine on the graphics card stopped: remember it and go on on the processor
             // (ADR-0029 decision 5).
             Err(e) if self.on_card() && e.is("ai.unavailable") => {
@@ -520,13 +523,48 @@ impl AiManager {
                     "the AI engine on the graphics card stopped; going on on the processor"
                 );
                 self.card_failed();
-                self.chat_once(req)
+                self.chat_once(req, true)
             }
             r => r,
         }
     }
 
-    fn chat_once(&self, req: &client::ChatRequest) -> AppResult<String> {
+    /// Get the chat engine ready before the first question: start it if memory allows, then read
+    /// each fixed prompt start once, so the engine keeps its work and the first question reads
+    /// only what differs. Blocking: call from a background thread. Answers are thrown away and the
+    /// calls are not counted in the trace numbers. Does nothing when AI is off, when starting the
+    /// engine would leave too little memory, once `stop` says so, or once a real request is in
+    /// flight (it then finds the engine as the warm-up left it).
+    pub fn prime(&self, prompts: &[client::ChatRequest], stop: &dyn Fn() -> bool) -> AppResult<()> {
+        if !self.available() || stop() {
+            return Ok(());
+        }
+        self.ensure_verified()?;
+        self.ensure_placement();
+        if !self.supervisor.is_running() && !self.room_to_start() {
+            tracing::info!("the AI engine was not started early: little memory is free");
+            return Ok(());
+        }
+        for req in prompts {
+            if stop() || self.supervisor.in_flight() > 0 {
+                break;
+            }
+            self.chat_once(req, false)?;
+        }
+        Ok(())
+    }
+
+    /// Free memory covers the chat model, its cache and the headroom the rest of the app needs.
+    fn room_to_start(&self) -> bool {
+        let need = self.loaded.read().bundle.as_ref().and_then(|b| {
+            b.models()
+                .map(|m| placement::model_mb(m.chat.bytes, self.chat_context_tokens()))
+        });
+        let free = hardware::inspect().available_ram_bytes / (1024 * 1024);
+        need.is_some_and(|n| free >= n + EARLY_START_HEADROOM_MB)
+    }
+
+    fn chat_once(&self, req: &client::ChatRequest, count: bool) -> AppResult<String> {
         let ep = self.guard(self.supervisor.ensure_ready(self.cfg.ready_timeout))?;
         let _busy = self.supervisor.begin_request();
         let http = self.supervisor.http().clone();
@@ -537,7 +575,9 @@ impl AiManager {
         let (text, usage) = self
             .rt
             .run(async move { client::chat(&http, &ep, &req).await })?;
-        self.usage.lock().add(usage);
+        if count {
+            self.usage.lock().add(usage);
+        }
         Ok(text)
     }
 

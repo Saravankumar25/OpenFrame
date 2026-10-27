@@ -5,7 +5,7 @@
 // never changes data.
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Columns3, FileText, Info, LayoutList, Minus, MoreHorizontal, ParkingSquare, Plus, Search, X } from "lucide-react";
+import { Columns3, FileText, Info, LayoutList, Minus, MoreHorizontal, ParkingSquare, Plus, Rows3, Search, X } from "lucide-react";
 import { Button, Chip, EmptyState, Menu, PageHeader, Segmented, Select, Skeleton, cx } from "../../design-system";
 import { useIntent, useNav, type Route } from "../../app/stores";
 import { useShortcutLabel } from "../../app/shortcuts";
@@ -48,6 +48,15 @@ function allEpisodes(s: StorySeriesDto | undefined) {
   return [...s.seasons.flatMap((x) => x.episodes.map((e) => ({ ...e, seasonTitle: x.title }))), ...s.unseasoned.map((e) => ({ ...e, seasonTitle: "" }))];
 }
 
+// Story opens on the Story page (owner, 2026-10-27). A link to a board item (search, Continue, the
+// assistant) opens the Board and a link to a character opens Characters.
+const BOARD_PARAMS = ["cardId", "sceneCardId", "screenplaySceneId", "beatId", "sequenceId", "actId"];
+function defaultTab(params: Record<string, string> | undefined): Tab {
+  if (params?.characterId) return "characters";
+  if (params && BOARD_PARAMS.some((k) => params[k])) return "board";
+  return "page";
+}
+
 const isEditable = (t: EventTarget | null) =>
   t instanceof HTMLElement && (t.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(t.tagName));
 
@@ -59,7 +68,7 @@ export default function StoryWorkspace() {
   const episodes = useMemo(() => allEpisodes(series.data), [series.data]);
   const episodic = series.data?.isEpisodic ?? false;
   const showEpisodes = episodic || episodes.length > 0;
-  const tab: Tab = (["page", "board", "outline", "characters", "timeline", "episodes"] as Tab[]).includes(route.sub as Tab) ? (route.sub as Tab) : "board";
+  const tab: Tab = (["page", "board", "outline", "characters", "timeline", "episodes"] as Tab[]).includes(route.sub as Tab) ? (route.sub as Tab) : defaultTab(route.params);
 
   // Episode scope: explicit route param > the user's last choice > first episode.
   const paramEpisode = route.params?.episodeId;
@@ -78,7 +87,7 @@ export default function StoryWorkspace() {
     ui.openDrawer(null);
   }, [episodeId]);
 
-  const setTab = (t: Tab) => go({ workspace: "story", sub: t === "board" ? undefined : t, params: episodeId ? { episodeId } : undefined });
+  const setTab = (t: Tab) => go({ workspace: "story", sub: t === "page" ? undefined : t, params: episodeId ? { episodeId } : undefined });
   const chooseEpisode = (id: string | null) => {
     void story.setCurrentEpisode(id).catch(reportError);
     go({ workspace: "story", sub: route.sub, params: id ? { episodeId: id } : undefined });
@@ -350,6 +359,17 @@ function BoardPage({
               <Plus size={14} />
             </button>
           </div>
+        )}
+        {tab === "board" && (
+          <Segmented
+            ariaLabel="Beat Board layout"
+            value={ui.boardLayout}
+            onChange={(v) => ui.setBoardLayout(v)}
+            options={[
+              { value: "vertical", label: <><Columns3 size={13} aria-hidden /> Vertical</> },
+              { value: "horizontal", label: <><Rows3 size={13} aria-hidden /> Horizontal</> },
+            ]}
+          />
         )}
         <div className="sp" />
         <Button variant={ui.parkingOpen ? "on" : "default"} icon={<ParkingSquare size={14} />} aria-pressed={ui.parkingOpen} onClick={() => ui.setParkingOpen(!ui.parkingOpen)}>

@@ -21,4 +21,8 @@ steps: Array<AiStepDto>,
 /**
  * Background task started for this request (long-running tools, agentic spec §29).
  */
-taskId: string | null, createdAt: number, };
+taskId: string | null, 
+/**
+ * The path that answered: write, navigate, change or fixed (harness spec, section 5).
+ */
+lane?: string, createdAt: number, };

@@ -49,7 +49,7 @@ const GROUPS = [
 const SKIP_DIRS = new Set(["node_modules", "target", ".git", "graphify-out", "dist", "gen", "artifacts", "build", ".drivers", ".run"]);
 const SKIP_PREFIXES = [
   "docs/audits/",
-  "docs/archive/",
+  "docs/history/",
   "docs/release/evidence/",
   "docs/specs/",
 
@@ -61,6 +61,8 @@ const SKIP_PREFIXES = [
   "docs/website/prompts/premium-website-design-motion-prompt.md",
   "docs/website/prompts/production-readiness-anti-ai-slop-prompt.md",
   "THIRD_PARTY_LICENSES.md",
+  // The AI answer washing lists "delve" so it can remove it from model-written answers.
+  "crates/openframe-application/src/modules/ai/text.rs",
 ];
 const TEXT_EXT = new Set([".md", ".ts", ".tsx", ".js", ".mjs", ".rs", ".html", ".css", ".json", ".yml", ".yaml", ".toml", ".sql", ".txt", ".xml"]);
 

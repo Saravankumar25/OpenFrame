@@ -6,18 +6,75 @@
 > Renamed on 2026-10-06 from `03-reconciliation-log.md`. Extended on 2026-10-09 (chapter restructure). Checks written "(checked)" were verified in the repository on the
 > date given. Checks written "(stated)" come from a supplied document and were not verified independently.
 
+## 2026-10-27: old report and session prompt moved to history
+
+Owner rule (chat): only the current application's documentation stays in `docs`; older material goes to `docs/history/`.
+
+- `docs/reports/2026-10-09-project-retrospection-and-audit.md` moved to `docs/history/2026-10-09-project-retrospection-and-audit.md`
+  with one added note. It is a snapshot of one day and its AI figures are stale; this replaces the 2026-10-24 decision to leave it in place. The `docs/reports/` folder is gone.
+- `docs/implementation/next-session-mac-html-prompt.md` moved to `docs/history/2026-10-21-next-session-mac-html-prompt.md` with one added note: a one-off session prompt, not current documentation.
+- Links changed in `docs/README.md` (map, layout block, history line), the architecture page, the vision page, the build plan and one line of the progress log. Two history index rows added.
+- Considered and kept: the specifications that are only partly superseded (AI specification, agentic RAG spec, Offline Collaboration, Security, PRD, FSD, UX, Domain), engineering document 18, the UX audit pages, `docs/specs/owner-issues-2026-10-24/`, `docs/website/prompts/`, the release evidence folders.
+
+## 2026-10-26: five-lane AI documents moved to history
+
+Owner instruction (chat): dead documentation is shifted to history as part of the S9 close-out.
+
+- `docs/engineering/ai-answer-paths.md` (the five lanes) moved to `docs/history/2026-10-26-ai-answer-paths-five-lanes.md`,
+  with one added "Superseded by" line. A new `docs/engineering/ai-answer-paths.md` describes the one conversational path
+  built in slices S3 to S8.
+- `docs/specs/ai-harness-rebuild.md` moved to `docs/history/2026-10-24-ai-harness-rebuild-plan.md`, with one added line.
+  The 2026-10-24 owner decision to keep it in `docs/specs/` is replaced by this instruction.
+- Links in ADR-0035, ADR-0037, the ADR register, owner decisions, the progress log, this log and the spec now point to the
+  history copies; the specs index row is removed; the history index has two new rows. `node scripts/check-links.mjs` OK.
+
+## 2026-10-24: one history folder, harness and layout upgrade recorded
+
+Owner instruction: "Update the documentation properly. Move older decisions, deprecated documentation, and material no longer applicable to the current application version into `docs/history/`."
+
+**Moves (git history keeps every file; contents unchanged except a one-line "Superseded by" note at the top of the four files marked *)**
+
+| From | To | Why |
+|---|---|---|
+| `docs/archive/` (all 21 entries: 18 plan and record files, `2026-09-spec-digest/`, `notes/`, README) | `docs/history/` | One history folder. The README is now the history index. `docs/history/specs/` (the v4 screenplay standard, moved earlier) was already there |
+| `docs/implementation/endgame-plan.md` * | `docs/history/endgame-plan.md` | W9 closed on 2026-10-18; the release gate and progress log carry the record |
+| `docs/implementation/final-polish-plan.md` * | `docs/history/final-polish-plan.md` | Final polish finished 2026-10-20; the change log carries the record |
+| `docs/implementation/next-session-windows-html-prompt.md` * | `docs/history/next-session-windows-html-prompt.md` | Done 2026-10-21; the prompt was already marked done |
+| `docs/implementation/worktree-review-2026-10-16.md` * | `docs/history/worktree-review-2026-10-16.md` | The owner decided and the clean-up is done; the storage policy holds the rules |
+
+Links, rules and scripts changed together: `CLAUDE.md` (three rules), `DEVELOPMENT.md` (tree), `docs/README.md` (layout, precedence, map rows), the history index, the writing check skip list (`docs/archive/` entry removed; `docs/history/` was already skipped), the link check (`docs/history/` is a record folder), and every link to `docs/archive/` in ADR-0005, 0009, 0012, 0017, the architecture page, engineering 13, 20, 27, 35 and 37, the roadmap pages, the vision page, owner decisions, the launch register, the Windows release gate, the UX change log and the specifications README. Entries in the progress log and in this log that named `docs/archive/` or the moved plans now name the new path.
+
+**Left where they are, on purpose:** `docs/reports/2026-10-09-project-retrospection-and-audit.md` (a dated snapshot, still the long explanation that the architecture page points to; its AI figures of 8 steps and a 7,000-character catalogue are the state of 2026-10-09), `docs/audits/` and `docs/release/evidence/` (evidence folders), `docs/specs/openframe_ai_agentic_rag_spec_prompt.md` (code and docs cite its section numbers), `docs/implementation/next-session-mac-html-prompt.md` (still the open Mac task in the handoff), `docs/website/prompts/`.
+
+**Stale statements marked superseded in place (no living document was moved)**
+
+| Statement | Where | Resolution |
+|---|---|---|
+| One agent, default 8 steps, 7,000-character catalogue | ADR-0013 decision 6; AI Specification section 8; feature status row for the assistant (its test name `default_step_limit_is_eight_and_the_hard_limit_twelve` is now `default_step_limit_is_four_and_the_hard_limit_twelve`) | Marked superseded in part with a pointer to [ADR-0035](../adr/ADR-0035-ai-lanes-briefings-and-code-verifiers.md). The 7,000 characters remain the tool selection budget, counted on the full schema; only the prompt rendering is compact |
+| No summary cache; plain flat text; short by default | `engineering/ai-answer-paths.md` decisions 4 to 6 | Already marked superseded in part on 2026-10-24 by the lane work; its header and its "not done" list now point to ADR-0035 |
+| "Nothing in this document is built" | `specs/ai-harness-rebuild.md` status line | Rewritten: built in part, decisions in ADR-0035, what was not built |
+| Numbers never include text | ADR-0028 decision 8 | Amendment of 2026-10-24 (Save conversation for review) confirmed present; register row added |
+| Screenplay standard v4; 80 pt footer clearance, hairline rule and vector lockup in production PDFs | v4 file (already in history); the report renderer | v5 and ADR-0036 recorded in the register, section 2 |
+| `(MORE)` and `CUE (CONT'D)` only for one speech split by a page boundary | `engineering/32-screenplay-engine-contract.md` | Now every page split of one speech (v5) |
+
+**Not found:** no live document states "plain text only" for AI answers except the one marked above, and no live document describes landscape Storyboard, Shot List, Schedule or Card Board outside `specs/pdf-design-package-v2/` (where v1 orientation appears only as "changes from v1").
+
+**Noted, not changed (outside documentation):** two Rust test comments still name `docs/archive/2026-09-30-security-review.md` (`crates/openframe-application/tests/platform/security_review.rs`, `crates/openframe-security/tests/security_paths.rs`). The file is now `docs/history/2026-09-30-security-review.md`. They are comments only; fix them in the next code change. A copy of the v5 screenplay standard sits untracked at the repository root (`OpenFrame_Screenplay_Formatting_Standard_v5_Combined.md`, byte-identical to `docs/specs/screenplay-formatting-standard-v5.md`); the layout rule keeps the root clear, so it can be deleted by whoever owns it.
+
+**Decisions recorded:** owner-decisions rows dated 2026-10-24 (answer shape, progress and Cancel, Save conversation, harness plan location, screenplay v5, PDF design v2, history folder, Mac port list, parallel tracks, end-to-end once). New: [ADR-0035](../adr/ADR-0035-ai-lanes-briefings-and-code-verifiers.md), [ADR-0036](../adr/ADR-0036-production-pdf-design-system-v2.md), [mac-port-list-2026-10-24.md](../roadmap/mac-port-list-2026-10-24.md). Numbers 0033 and 0034 belong to the Mac tree, so the register jumps to 0035.
+
 ## 2026-10-21: HTML_Mockups removed, WindowsHTML added
 
 | Stale or conflicting statement | Where it was | Resolution |
 |---|---|---|
 | `HTML_Mockups/` (181 hand-drawn screens) was the presentation authority next to the UX specification, and new screens needed a mock-up before build | `CONTRIBUTING.md`, `docs/README.md`, `DEVELOPMENT.md`, UX laws checklist, UX specification header, Chapter 2 plan, writing check | Removed at the owner's request (git history keeps it). `WindowsHTML/`, captured from the running app, records the shipped Windows screens; the UX specification alone wins on labels and layout. The specification's mock-up rule is marked superseded in place |
-| The next-session prompt asked to use "the 181 ids in HTML_Mockups/" as a checklist | `next-session-windows-html-prompt.md` | The ids were read before the folder was removed; the checklist used was the UI source, feature status and the reachability routes |
+| The next-session prompt asked to use "the 181 ids in HTML_Mockups/" as a checklist | `docs/history/next-session-windows-html-prompt.md` | The ids were read before the folder was removed; the checklist used was the UI source, feature status and the reachability routes |
 
 ## 2026-10-19: Windows final polish (owner change list, AI brief, PDF specs)
 
 | Stale or conflicting statement | Where it was | Resolution |
 |---|---|---|
-| The owner's prompt asked to make the Windows UI look like the Mac app; later the same evening the owner said the Windows UI stays its own | Owner prompt, then owner message | The later message wins: a Mac-style shell was reverted; only the change list items were made in the Windows design ([final-polish-plan.md](final-polish-plan.md)) |
+| The owner's prompt asked to make the Windows UI look like the Mac app; later the same evening the owner said the Windows UI stays its own | Owner prompt, then owner message | The later message wins: a Mac-style shell was reverted; only the change list items were made in the Windows design ([final-polish-plan.md](../history/final-polish-plan.md)) |
 | Tab cycled only the dialogue block (Action, Character, Parenthetical, Dialogue) | `editor/rules.ts` | Owner change list item 7: Tab now goes round every built-in element in menu order; Shift+Tab goes back. No specification fixed the old cycle |
 | The screenplay Review section, four exchange package types and new Episodic or Series projects were Reachable features | feature status SCRIPT-006, packages menu, New Project | Removed at the owner's request (items 9 and 11). The core keeps the data of older projects and refuses to export the removed package types; files made earlier still import |
 | "How many scenes are there?" answered "Nothing mentions scenes"; a character question was answered with product help | AI core (`commands.rs`, `tools.rs`, `knowledge.rs`) | Root causes and fixes in the 2026-10-19 progress log entry (OpenFrameAI.docx) |
@@ -90,7 +147,7 @@ The approved requests and expected results are unchanged; `gold/REVIEW.md` still
 
 ## 2026-10-16: Windows phase W1, archive moves and conflict sweep
 
-- Moved into `docs/archive/` (one commit, links rewritten, `check-links` clean): `docs/spec-digest/` to
+- Moved into `docs/history/` (one commit, links rewritten, `check-links` clean): `docs/spec-digest/` to
   `2026-09-spec-digest/`; `AGENT_BRIEF.md` to `2026-09-30-agent-brief.md`; `SECURITY_REVIEW_2026-09-30.md` to
   `2026-09-30-security-review.md`; engineering 28, 29 and 31 to `2026-10-05-*`. The risk levels and the feature contract
   of engineering 31 now live in CONTRIBUTING.md section 8, so no current rule depends on an archived file. The writing-check
@@ -112,7 +169,7 @@ The approved requests and expected results are unchanged; `gold/REVIEW.md` still
 ## 2026-10-15 (later): documentation restructure after the owner's 25 decisions, conflicts and where each went
 
 - New records: ADR-0027 (one Rust core, two shells), ADR-0028 (AI quality program), ADR-0029 (GPU), ADR-0030 (proof levels,
-  release flow, team gate minimum 8). Rewritten in place after archiving the old text under `docs/archive/2026-10-15-*`:
+  release flow, team gate minimum 8). Rewritten in place after archiving the old text under `docs/history/2026-10-15-*`:
   `docs/README.md`, `docs/product/vision-and-scope.md`, `docs/roadmap/README.md` and the three chapter pages,
   `docs/implementation/owner-decisions.md`. New: `docs/roadmap/chapter-1a-windows-phases.md`, `chapter-1b-mac-phases.md`.
 - Conflicts resolved (decision, old statement, where marked): one model for everyone and the processor-only engine (ADR-0013,
@@ -129,7 +186,7 @@ The approved requests and expected results are unchanged; `gold/REVIEW.md` still
   column in the feature status file; the password minimum in `build_hash.rs` (code). Not read line by line: the build plan
   (658 lines), the launch register (1,528 lines) and the long specifications; their old statements are covered by the
   "Current decisions" notes and by the register, and a full line-level sweep is a W1 item.
-- Not changed: `docs/archive/`, `docs/audits/`, `docs/release/evidence/` and the dated report keep their old wording.
+- Not changed: `docs/history/`, `docs/audits/`, `docs/release/evidence/` and the dated report keep their old wording.
 
 ## 2026-10-15: download after install reinstated (ADR-0026), conflicts and where each went
 
@@ -144,7 +201,7 @@ The approved requests and expected results are unchanged; `gold/REVIEW.md` still
 - Owner tasks reopened: model host, production Ed25519 manifest key, Gemma redistribution check for hosting the weights.
 - Checked: `packaging/ai/ai-assets.lock.json` still lists the bundled files, and the code still bundles them. The docs now
   say so instead of claiming a download exists.
-- Not changed: `docs/archive/`, `docs/audits/`, `docs/release/evidence/` and the dated report
+- Not changed: `docs/history/`, `docs/audits/`, `docs/release/evidence/` and the dated report
   `docs/reports/2026-10-09-project-retrospection-and-audit.md` keep the 2026-10-08 wording as history.
 
 ## 2026-10-09: chapter restructure, contradictions found and where each went
@@ -169,12 +226,12 @@ Found while reading the repository for the audit report (checked 2026-10-09):
 | `.claude/worktrees` "cleaned" | Progress log 2026-10-07 | 39 folders (4.2 GB) still exist; recorded in the storage policy |
 
 Documents added: `docs/product/vision-and-scope.md`, `docs/roadmap/` (4 files), `docs/testing/` (3 files),
-`docs/architecture/README.md`, `docs/archive/README.md`, `docs/implementation/handoff.md`, `docs/reports/2026-10-09-project-retrospection-and-audit.md`.
+`docs/architecture/README.md`, `docs/history/README.md`, `docs/implementation/handoff.md`, `docs/reports/2026-10-09-project-retrospection-and-audit.md`.
 Documents rewritten: `docs/README.md`, `CLAUDE.md`. Documents amended: build plan (chapter map, nine boxes), owner decisions
 (seven decided rows, eight open rows), feature status (three rows), storage policy (sections 7 and 8), `README.md`
 (audience and status table), `DEVELOPMENT.md` (tree line), `docs/spec-digest/README.md` (marked historical).
 Nothing was moved or deleted. Files that scripts, tests or ADRs cite by path stay where they are and are listed as
-historical in `docs/archive/README.md`.
+historical in `docs/history/README.md`.
 
 ## 2026-10-09: stale feature status statements corrected after the session 2 verification
 
@@ -316,14 +373,14 @@ The message of commit `fbed4bc` says 64 feature rows moved to Verified. The corr
 ## 0. Restructure on 2026-10-06: descriptive names replace codes
 
 The owner found the milestone, wave, gate, priority and decision labels (M1.01, W2, G7, P0, D5 and similar) impossible to read.
-All plan documents now use plain headings. Nothing was deleted: the coded originals are kept unchanged in `docs/archive/`.
+All plan documents now use plain headings. Nothing was deleted: the coded originals are kept unchanged in `docs/history/`.
 
 | New document | Replaces | Archived original |
 |---|---|---|
-| [masterplan.md](masterplan.md): 26 numbered areas with checklists | `00-masterplan.md` (milestones M0 to M16, waves W1 to W5, gates G0 to G14) | [2026-10-06-masterplan-with-item-codes.md](../archive/2026-10-06-masterplan-with-item-codes.md) |
-| [feature-status.md](feature-status.md): one row per feature, plain status words | `01-feature-ledger.md` (priorities P0 to P2, states S0 to S5, milestone column) | [2026-10-06-feature-ledger-with-item-codes.md](../archive/2026-10-06-feature-ledger-with-item-codes.md) |
-| [owner-decisions.md](owner-decisions.md): decisions and manual work by name | `02-owner-decisions-and-manual-work.md` (D1 to D18, X1 to X21) | [2026-10-06-owner-decisions-with-item-codes.md](../archive/2026-10-06-owner-decisions-with-item-codes.md) |
-| this file | `03-reconciliation-log.md` | [2026-10-06-reconciliation-log-with-item-codes.md](../archive/2026-10-06-reconciliation-log-with-item-codes.md) (content also carried over below) |
+| [masterplan.md](masterplan.md): 26 numbered areas with checklists | `00-masterplan.md` (milestones M0 to M16, waves W1 to W5, gates G0 to G14) | [2026-10-06-masterplan-with-item-codes.md](../history/2026-10-06-masterplan-with-item-codes.md) |
+| [feature-status.md](feature-status.md): one row per feature, plain status words | `01-feature-ledger.md` (priorities P0 to P2, states S0 to S5, milestone column) | [2026-10-06-feature-ledger-with-item-codes.md](../history/2026-10-06-feature-ledger-with-item-codes.md) |
+| [owner-decisions.md](owner-decisions.md): decisions and manual work by name | `02-owner-decisions-and-manual-work.md` (D1 to D18, X1 to X21) | [2026-10-06-owner-decisions-with-item-codes.md](../history/2026-10-06-owner-decisions-with-item-codes.md) |
+| this file | `03-reconciliation-log.md` | [2026-10-06-reconciliation-log-with-item-codes.md](../history/2026-10-06-reconciliation-log-with-item-codes.md) (content also carried over below) |
 | [progress-log.md](progress-log.md) | `04-progress-log.md` | none (entries carried over under "Earlier entries"; file created 2026-10-06 in the first build session, the restructure had left only the old file) |
 
 Scripts renamed with them: `scripts/check-ledger.mjs` is now `scripts/check-feature-status.mjs`, and `scripts/lib/ledger.mjs` is now
@@ -476,7 +533,7 @@ The sections below are the original log. They keep the codes they were written w
 | Supplied document | Now | Treatment |
 |---|---|---|
 | `OpenFrame_New_Spec_Revised.md` | `OpenFrame_Studio_Screenplay_and_Production_Depth_Specification.md` (repo root) | Promoted to a normative specification (Revision 1), header added, content unchanged. §47A kept with its numbering. |
-| `OpenFrame_End_to_End_Completion_Implementation_Plan_2026-10-03.md` | `docs/archive/2026-10-03-end-to-end-completion-plan-source.md` | Archived with a banner. Its strategy, laws, completion states, AI integration pipeline, PR checklist and agent protocol are absorbed into `00-masterplan.md`, `CONTRIBUTING.md` and doc 31. |
+| `OpenFrame_End_to_End_Completion_Implementation_Plan_2026-10-03.md` | `docs/history/2026-10-03-end-to-end-completion-plan-source.md` | Archived with a banner. Its strategy, laws, completion states, AI integration pipeline, PR checklist and agent protocol are absorbed into `00-masterplan.md`, `CONTRIBUTING.md` and doc 31. |
 | `OpenFrame_Manual_vs_GitHub_Audit_Updated_2026-10-03.md` | `docs/audits/2026-10-03-manual-vs-repository-audit.md` | Evidence snapshot. 181-figure table stays here; the ledger references figure ranges. |
 | `OpenFrame_Production_Microsoft_Store_Readiness_Audit_2026-10-02.md` | `docs/audits/2026-10-02-production-and-store-readiness-audit.md` | Evidence snapshot. Every P0/P1/P2 item became a masterplan or ledger row (see §4). |
 | `OpenFrame_Master_Product_Launch_Operations_Readiness_Checklist_REVISED.md` | `docs/release/launch-readiness-register.md` | Promoted as the canonical operations register; additions from the intake notes appended (Appendix F). |
@@ -485,8 +542,8 @@ The sections below are the original log. They keep the codes they were written w
 | `OpenFrame_Vibe_Coding_Gaps_and_Coverage_2026-10-03.md` | `docs/engineering/31-ai-assisted-development-controls.md` | Promoted; CONTRIBUTING points to it. |
 | `claude_premium_website_design_motion_prompt.md` | `docs/website/prompts/premium-website-design-motion-prompt.md` | Kept as a prompt. Used by `docs/website/README.md`. Tool names in it are unverified. |
 | `claude_production_readiness_anti_ai_slop_prompt.md` | `docs/website/prompts/production-readiness-anti-ai-slop-prompt.md` | Same. |
-| `info.txt` (Store certification tips, brand checklist, 40 extra items) | `docs/archive/notes/store-certification-and-launch-gap-notes.md` | Content absorbed into `27-microsoft-store.md` §12 and register Appendix F. |
-| `All required docs.txt` (documentation stack guidance) | `docs/archive/notes/documentation-stack-guidance.md` | Absorbed into `docs/README.md` documentation map. |
+| `info.txt` (Store certification tips, brand checklist, 40 extra items) | `docs/history/notes/store-certification-and-launch-gap-notes.md` | Content absorbed into `27-microsoft-store.md` §12 and register Appendix F. |
+| `All required docs.txt` (documentation stack guidance) | `docs/history/notes/documentation-stack-guidance.md` | Absorbed into `docs/README.md` documentation map. |
 
 ### Phase crosswalk
 

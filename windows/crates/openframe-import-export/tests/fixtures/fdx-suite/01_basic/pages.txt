@@ -6,15 +6,15 @@
   2  150 Action         A single lamp. ASHA (40s) watches the rails.
   4  370 Character      ASHA
   5  250 Dialogue       The last train is late again.
-  7   90 SceneNumber    2
-  7  150 Heading        EXT. PLATFORM - CONTINUOUS
-  7  760 SceneNumber    2
-  9  150 Action         Rain on the tin roof.
- 11  370 Character      RAVI
- 12  250 Dialogue       It always is.
- 14  680 Transition     CUT TO:
- 16   90 SceneNumber    3
- 16  150 Heading        INT. WAITING ROOM - NIGHT
- 16  760 SceneNumber    3
- 18  150 Action         Empty benches. A clock ticks.
-pdf-sha256 454ed47c6c06cf0ef81eaed4fa7b9df93a35431672c16081ca5dd7fe078a2a4c
+  8   90 SceneNumber    2
+  8  150 Heading        EXT. PLATFORM - CONTINUOUS
+  8  760 SceneNumber    2
+ 10  150 Action         Rain on the tin roof.
+ 12  370 Character      RAVI
+ 13  250 Dialogue       It always is.
+ 15  680 Transition     CUT TO:
+ 18   90 SceneNumber    3
+ 18  150 Heading        INT. WAITING ROOM - NIGHT
+ 18  760 SceneNumber    3
+ 20  150 Action         Empty benches. A clock ticks.
+pdf-sha256 de07715d45bd8b50f0a0bcc5f415d40d85088fc50b55a7b2e48e52daced2ab23

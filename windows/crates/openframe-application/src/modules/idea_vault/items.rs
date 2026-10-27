@@ -604,9 +604,8 @@ pub(crate) fn add_files(
             let mut ids = Vec::new();
             let mut failed = Vec::new();
             for p in &args.paths {
-                // Each file is isolated: a failure rolls back only that file.
-                tx.conn().execute_batch("SAVEPOINT vault_add_one")?;
-                let one = (|| -> AppResult<String> {
+                // Each file is isolated: a failure rolls back only that file, copy included.
+                let one = tx.savepoint(|| -> AppResult<String> {
                     let path = PathBuf::from(p);
                     if !path.is_absolute() {
                         return Err(AppError::invalid_input(
@@ -629,12 +628,9 @@ pub(crate) fn add_files(
                         ..Default::default()
                     };
                     insert_item(tx, &item, args.collection_id.as_deref(), &[])
-                })();
+                });
                 match one {
-                    Ok(id) => {
-                        tx.conn().execute_batch("RELEASE vault_add_one")?;
-                        ids.push(id);
-                    }
+                    Ok(id) => ids.push(id),
                     Err(e)
                         if matches!(
                             e.code_str(),
@@ -645,8 +641,6 @@ pub(crate) fn add_files(
                         return Err(e);
                     }
                     Err(e) => {
-                        tx.conn()
-                            .execute_batch("ROLLBACK TO vault_add_one; RELEASE vault_add_one")?;
                         failed.push(VaultFailedFile {
                             path: p.clone(),
                             name: name_of(p),

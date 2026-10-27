@@ -51,6 +51,26 @@ pub fn insert_request(tx: &Tx<'_>, r: &NewRequest<'_>) -> AppResult<()> {
     Ok(())
 }
 
+/// Add one key to the `scope_json` of a request: the stage log of its turn (spec 14). Numbers, codes and
+/// the exact offenders of the checks; never the answer or the facts.
+pub fn add_to_scope(tx: &Tx<'_>, id: &str, key: &str, value: &Value) -> AppResult<()> {
+    let user = tx.actor().user_id.clone();
+    let current: String = tx.conn().query_row(
+        "SELECT scope_json FROM ai_request WHERE id=?1 AND user_id=?2",
+        params![id, user],
+        |r| r.get(0),
+    )?;
+    let mut scope: Value = serde_json::from_str(&current).unwrap_or_else(|_| serde_json::json!({}));
+    if let Value::Object(m) = &mut scope {
+        m.insert(key.to_string(), value.clone());
+    }
+    tx.conn().execute(
+        "UPDATE ai_request SET scope_json=?1 WHERE id=?2 AND user_id=?3",
+        params![scope.to_string(), id, user],
+    )?;
+    Ok(())
+}
+
 pub struct RequestOutcome<'a> {
     pub intent: Option<&'a str>,
     pub class: Option<OperationClass>,
@@ -342,9 +362,15 @@ fn load_result(c: &Connection, actor: &Actor, request_id: &str) -> AppResult<Opt
         .get("taskId")
         .and_then(|v| v.as_str())
         .map(str::to_string);
+    let data = structured.get("data");
+    let lane = data
+        .and_then(|d| d.get("lane"))
+        .and_then(Value::as_str)
+        .map(str::to_string);
     Ok(Some(AiResultDto {
         steps: load_steps(c, request_id)?,
         task_id,
+        lane,
         id,
         kind: AiResultKind::parse(&kind),
         status: AiResultStatus::parse(&status),

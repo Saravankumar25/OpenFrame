@@ -10,13 +10,13 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use openframe_domain::{Actor, AppError, AppResult, Capability};
-use rusqlite::{Connection, OptionalExtension, params};
+use rusqlite::{Connection, params};
 use serde::Deserialize;
 use serde::de::DeserializeOwned;
 use serde_json::{Value, json};
 
 use super::queries::{self, DraftRef, SceneRow, join_and};
-use super::scope::{AiScopeKind, ContextItem, ResolvedScope};
+use super::scope::ResolvedScope;
 use super::types::*;
 
 /// Tool specification offered to the model (name, class, description, argument schema).
@@ -68,7 +68,13 @@ fn open_scene_args() -> Value {
 }
 fn workspace_args() -> Value {
     let names: Vec<&str> = WORKSPACES.iter().map(|(id, _)| *id).collect();
-    sc::obj(&[("workspace", sc::en(&names))], &["workspace"])
+    sc::obj(
+        &[
+            ("workspace", sc::en(&names)),
+            ("sub", sc::en(PRODUCTION_TABS)),
+        ],
+        &["workspace"],
+    )
 }
 fn scene_fact_args() -> Value {
     sc::obj(
@@ -77,7 +83,6 @@ fn scene_fact_args() -> Value {
             (
                 "fact",
                 sc::en(&[
-                    "summary",
                     "speakers",
                     "speaker_count",
                     "setting",
@@ -114,12 +119,6 @@ fn dialogue_fact_args() -> Value {
         ],
         &["fact"],
     )
-}
-fn character_args() -> Value {
-    sc::obj(&[("name", sc::s(80)), ("draft", sc::s(120))], &["name"])
-}
-fn question_args() -> Value {
-    sc::obj(&[("question", sc::s(1000))], &["question"])
 }
 fn private_args() -> Value {
     sc::obj(&[("whose", sc::en(&["mine", "someone_else"]))], &["whose"])
@@ -227,12 +226,6 @@ pub const TOOLS: &[ToolSpec] = &[
         schema: dialogue_fact_args,
     },
     ToolSpec {
-        name: "character_profile",
-        class: OperationClass::Compute,
-        description: "Describe one screenplay character from what they do and say across their scenes.",
-        schema: character_args,
-    },
-    ToolSpec {
         name: "search_project",
         class: OperationClass::Read,
         description: "Find every place in the project that mentions some words.",
@@ -257,34 +250,16 @@ pub const TOOLS: &[ToolSpec] = &[
         schema: text_args,
     },
     ToolSpec {
-        name: "summarize_scope",
-        class: OperationClass::Suggest,
-        description: "Summarize the content in scope (a scene, the selection, the story).",
-        schema: no_args,
-    },
-    ToolSpec {
         name: "suggest_breakdown",
         class: OperationClass::Suggest,
         description: "Suggest likely breakdown elements (props, wardrobe, vehicles…) for a scene.",
         schema: scene_opt_args,
     },
     ToolSpec {
-        name: "answer_product_question",
-        class: OperationClass::Read,
-        description: "Explain how OpenFrame works (workflows, terms, rules).",
-        schema: question_args,
-    },
-    ToolSpec {
         name: "private_information",
         class: OperationClass::Read,
         description: "The user asks for private notes (their own, or someone else's).",
         schema: private_args,
-    },
-    ToolSpec {
-        name: "clarify",
-        class: OperationClass::Read,
-        description: "Ask ONE focused question when the request is ambiguous.",
-        schema: question_args,
     },
 ];
 
@@ -301,6 +276,21 @@ pub const WORKSPACES: &[(&str, &str)] = &[
     ("activity", "Activity"),
     ("trash", "Recently Deleted"),
     ("settings", "Project settings"),
+];
+
+/// The tabs of the Production workspace `open_workspace` may open (the ids the screen uses).
+pub const PRODUCTION_TABS: &[&str] = &[
+    "catalog",
+    "locations",
+    "cast-crew",
+    "moodboards",
+    "storyboards",
+    "shots",
+    "schedule",
+    "dood",
+    "sides",
+    "budget",
+    "reports",
 ];
 
 pub fn spec(name: &str) -> Option<&'static ToolSpec> {
@@ -359,14 +349,6 @@ struct DialogueFactArgs {
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-struct CharacterArgs {
-    name: String,
-    #[serde(default)]
-    draft: Option<String>,
-}
-
-#[derive(Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
 struct CharactersArgs {
     characters: Vec<String>,
     #[serde(default)]
@@ -412,12 +394,8 @@ struct OpenSceneArgs {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 struct WorkspaceArgs {
     workspace: String,
-}
-
-#[derive(Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct QuestionArgs {
-    pub question: String,
+    /// A tab of Production ("budget", "schedule").
+    sub: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -433,23 +411,10 @@ pub struct SceneOptArgs {
     pub scene_number: Option<u32>,
 }
 
-/// Work the orchestrator must finish with the model (text generation over minimal context).
+/// Work the action path must finish with the model: the breakdown suggestions of one scene (a JSON list
+/// the person confirms in Breakdown; nothing is added to the project).
 #[derive(Debug, Clone)]
 pub enum Generation {
-    Summary {
-        items: Vec<ContextItem>,
-    },
-    ProductAnswer {
-        question: String,
-    },
-    /// A character described from screenplay evidence (OpenFrameAI.docx sections 3.4 and 9 C, G).
-    CharacterProfile {
-        name: String,
-        items: Vec<ContextItem>,
-        /// Scenes whose evidence the model sees, and the scenes the character is in.
-        examined: usize,
-        total: usize,
-    },
     Breakdown {
         scene: Box<SceneRow>,
         draft: DraftRef,
@@ -508,6 +473,8 @@ impl ToolOutput {
 }
 
 pub struct ToolCtx<'a> {
+    /// The application core, for the few reads that answer from app-level data (appearance, shortcuts).
+    pub core: &'a crate::core::AppCore,
     pub conn: &'a Connection,
     pub actor: &'a Actor,
     pub scope: &'a ResolvedScope,
@@ -646,10 +613,6 @@ pub fn execute(ctx: &ToolCtx<'_>, name: &str, args: &Value) -> AppResult<ToolOut
             let a: DialogueFactArgs = parse_args(name, args)?;
             dialogue_fact(ctx, &a)
         }
-        "character_profile" => {
-            let a: CharacterArgs = parse_args(name, args)?;
-            character_profile(ctx, &a.name, a.draft.as_deref())
-        }
         "search_project" => {
             let a: TextArgs = parse_args(name, args)?;
             search_project(ctx, &a.text)
@@ -660,44 +623,19 @@ pub fn execute(ctx: &ToolCtx<'_>, name: &str, args: &Value) -> AppResult<ToolOut
         }
         "open_workspace" => {
             let a: WorkspaceArgs = parse_args(name, args)?;
-            open_workspace(&a.workspace)
+            open_workspace(&a.workspace, a.sub.as_deref())
         }
         "open_object" => {
             let a: TextArgs = parse_args(name, args)?;
             open_object(ctx, &a.text)
         }
-        "summarize_scope" => {
-            let _: NoArgs = parse_args(name, args)?;
-            summarize_scope(ctx)
-        }
         "suggest_breakdown" => {
             let a: SceneOptArgs = parse_args(name, args)?;
             suggest_breakdown(ctx, a.scene_number)
         }
-        "answer_product_question" => {
-            let a: QuestionArgs = parse_args(name, args)?;
-            let mut o = ToolOutput::of_kind(AiResultKind::Answer, String::new());
-            o.generation = Some(Generation::ProductAnswer {
-                question: a.question,
-            });
-            Ok(o)
-        }
         "private_information" => {
             let a: PrivateArgs = parse_args(name, args)?;
             private_information(ctx, &a.whose)
-        }
-        "clarify" => {
-            let a: QuestionArgs = parse_args(name, args)?;
-            let q = a.question.trim();
-            let q = if q.is_empty() {
-                "Could you say a little more about what you need?"
-            } else {
-                q
-            };
-            Ok(ToolOutput::of_kind(
-                AiResultKind::Clarify,
-                queries::truncate_chars(q, 400),
-            ))
         }
         other => Err(AppError::ai(
             "unknown_tool",
@@ -863,10 +801,6 @@ fn list_characters(ctx: &ToolCtx<'_>, draft: Option<&str>) -> AppResult<ToolOutp
         .prov("Basis", "screenplay Character elements"))
 }
 
-/// Evidence budget for one character description: the 1B model reads about this much.
-const PROFILE_CHARS: usize = 5_200;
-const PROFILE_SCENE_CHARS: usize = 420;
-
 /// The cue that names `wanted`: the exact name, else the one cue that starts with it ("KARTHIK"
 /// for "Karthik"), never a guess between several.
 fn match_cue<'a>(cues: &'a BTreeMap<String, Vec<String>>, wanted: &str) -> Option<&'a str> {
@@ -894,7 +828,6 @@ fn match_cue<'a>(cues: &'a BTreeMap<String, Vec<String>>, wanted: &str) -> Optio
     }
 }
 
-/// One scene's evidence for a character: what they say and the action lines that name them.
 /// A screenplay line in quotes that ends the sentence: “Here.” keeps its own full stop and gets
 /// no second one; “Wait” gets one after the closing quote.
 fn quoted_end(t: &str) -> String {
@@ -904,151 +837,6 @@ fn quoted_end(t: &str) -> String {
     } else {
         format!("\u{201c}{t}\u{201d}.")
     }
-}
-
-fn scene_evidence(c: &Connection, scene_id: &str, cue: &str) -> AppResult<String> {
-    let mut stmt = c.prepare(
-        "SELECT element_type, text FROM screenplay_element WHERE scene_id=?1 ORDER BY position, id",
-    )?;
-    let rows: Vec<(String, String)> = stmt
-        .query_map([scene_id], |r| Ok((r.get(0)?, r.get(1)?)))?
-        .collect::<Result<_, _>>()?;
-    let first = cue.split_whitespace().next().unwrap_or(cue).to_lowercase();
-    let mut out = String::new();
-    let mut speaking = false;
-    for (t, text) in rows {
-        let text = text.trim();
-        match t.as_str() {
-            "character" => speaking = queries::normalize_cue(text) == cue,
-            "dialogue" if speaking => out.push_str(&format!("{cue}: \"{text}\"\n")),
-            "parenthetical" if speaking => {
-                out.push_str(&format!("({})\n", text.trim_matches(['(', ')'])))
-            }
-            "action" if text.to_lowercase().contains(&first) => {
-                speaking = false;
-                out.push_str(text);
-                out.push('\n');
-            }
-            "action" | "transition" | "scene_heading" | "shot" => speaking = false,
-            _ => {}
-        }
-        if out.len() > PROFILE_SCENE_CHARS {
-            break;
-        }
-    }
-    Ok(queries::truncate_chars(out.trim(), PROFILE_SCENE_CHARS))
-}
-
-/// "Describe Karthik": every scene the character speaks in or is named in, read from the canonical
-/// screenplay rows, sampled evenly across the story when there are more than the budget holds. The
-/// model then writes the description from that evidence only.
-fn character_profile(ctx: &ToolCtx<'_>, name: &str, draft: Option<&str>) -> AppResult<ToolOutput> {
-    let d = ctx.draft(draft)?;
-    let cues = queries::character_cues(ctx.conn, &d.id)?;
-    let cue = match match_cue(&cues, name) {
-        Some(c) => c.to_string(),
-        None => {
-            return Err(AppError::ai(
-                "not_found",
-                format!(
-                    "I couldn't find a character called {} in {}.",
-                    name.trim(),
-                    d.label()
-                ),
-            ));
-        }
-    };
-    let scenes = queries::scenes(ctx.conn, &d.id)?;
-    let speaks: BTreeSet<&str> = cues
-        .get(&cue)
-        .map(|v| v.iter().map(String::as_str).collect())
-        .unwrap_or_default();
-    let first = cue.split_whitespace().next().unwrap_or(&cue).to_lowercase();
-    let mut relevant: Vec<(&SceneRow, String)> = Vec::new();
-    for s in &scenes {
-        let mentioned = !speaks.contains(s.id.as_str())
-            && {
-                let n: i64 = ctx.conn.query_row(
-                "SELECT count(*) FROM screenplay_element WHERE scene_id=?1 AND element_type='action' AND lower(text) LIKE ?2",
-                params![s.id, format!("%{first}%")],
-                |r| r.get(0),
-            )?;
-                n > 0
-            };
-        if speaks.contains(s.id.as_str()) || mentioned {
-            let ev = scene_evidence(ctx.conn, &s.id, &cue)?;
-            if !ev.is_empty() {
-                relevant.push((s, ev));
-            }
-        }
-    }
-    let total = relevant.len();
-    // Even sample across the story, always keeping the first and the last scene.
-    let fit = (PROFILE_CHARS / (PROFILE_SCENE_CHARS / 2)).max(4);
-    let picked: Vec<usize> = if total <= fit {
-        (0..total).collect()
-    } else {
-        (0..fit)
-            .map(|i| i * (total - 1) / (fit - 1))
-            .collect::<BTreeSet<_>>()
-            .into_iter()
-            .collect()
-    };
-    let mut items = Vec::new();
-    let mut used = 0usize;
-    for i in picked {
-        let (s, ev) = &relevant[i];
-        let text = queries::truncate_chars(
-            ev,
-            (PROFILE_CHARS - used.min(PROFILE_CHARS)).min(PROFILE_SCENE_CHARS),
-        );
-        if text.is_empty() {
-            break;
-        }
-        used += text.len();
-        items.push(ContextItem {
-            source: s.label(),
-            text,
-        });
-    }
-    // A Character record's own words come first when the writer made one.
-    if let Ok(Some((role, desc))) = ctx
-        .conn
-        .query_row(
-            "SELECT coalesce(role_label,''), coalesce(description,'') FROM story_character WHERE deleted_at IS NULL AND upper(trim(name))=?1 LIMIT 1",
-            [&cue],
-            |r| Ok((r.get::<_, String>(0)?, r.get::<_, String>(1)?)),
-        )
-        .optional()
-    {
-        let t = [role, desc].into_iter().filter(|x| !x.trim().is_empty()).collect::<Vec<_>>().join(". ");
-        if !t.is_empty() {
-            items.insert(0, ContextItem { source: format!("Character directory: {cue}"), text: queries::truncate_chars(&t, 400) });
-        }
-    }
-    if items.is_empty() {
-        return Ok(ToolOutput::exact(format!(
-            "{cue} appears in {} but has no dialogue or action there that I could read.",
-            d.label()
-        )));
-    }
-    let examined = items
-        .iter()
-        .filter(|i| i.source.starts_with("Scene"))
-        .count();
-    let mut o = ToolOutput::of_kind(AiResultKind::Answer, String::new());
-    o.confidence = Some(Confidence::Inferred);
-    o.provenance.push(Provenance::new("Draft", d.label()));
-    o.provenance.push(Provenance::new("Character", cue.clone()));
-    o.structured =
-        Some(json!({"character": cue, "scenesWithCharacter": total, "scenesExamined": examined}));
-    o.generation = Some(Generation::CharacterProfile {
-        name: cue,
-        items,
-        examined,
-        total,
-    });
-    Ok(o)
 }
 
 /// The live, ordered elements of one scene: (element type, text). Notes are the writer's own and
@@ -1068,7 +856,7 @@ fn scene_elements(c: &Connection, scene_id: &str) -> AppResult<Vec<(String, Stri
 
 /// Dialogue blocks in order: (speaker cue, dialogue text). A block is one character cue followed by
 /// its dialogue; parentheticals belong to the block and are not counted as dialogue.
-fn dialogue_blocks(rows: &[(String, String)]) -> Vec<(String, String)> {
+pub(super) fn dialogue_blocks(rows: &[(String, String)]) -> Vec<(String, String)> {
     let mut out: Vec<(String, String)> = Vec::new();
     let mut speaker: Option<String> = None;
     let mut open = false;
@@ -1113,10 +901,6 @@ fn scene_by_number(
         .ok_or_else(|| AppError::ai("not_found", format!("{} has no Scene {n}.", d.label())))?;
     Ok((d, s))
 }
-
-/// How much of a scene the summary model reads. Longer scenes keep their beginning and their end,
-/// and the answer says so, rather than summarising only the opening (AI context brief, item 11).
-const SCENE_READ_CHARS: usize = 6_000;
 
 /// One fact about a numbered scene, always read from that scene's own rows in the draft in scope.
 fn scene_fact(ctx: &ToolCtx<'_>, a: &SceneFactArgs) -> AppResult<ToolOutput> {
@@ -1210,44 +994,6 @@ fn scene_fact(ctx: &ToolCtx<'_>, a: &SceneFactArgs) -> AppResult<ToolOutput> {
                 ),
                 None => format!("No, {name} does not mention {what}."),
             }
-        }
-        "summary" => {
-            let mut text = String::new();
-            for (t, line) in &rows {
-                let l = match t.as_str() {
-                    "character" => format!("\n{}", line.trim().to_uppercase()),
-                    "parenthetical" => format!("({})", line.trim().trim_matches(['(', ')'])),
-                    _ => line.trim().to_string(),
-                };
-                text.push_str(&l);
-                text.push('\n');
-            }
-            let full = text.chars().count() <= SCENE_READ_CHARS;
-            let evidence = if full {
-                text
-            } else {
-                let chars: Vec<char> = text.chars().collect();
-                let head: String = chars[..SCENE_READ_CHARS * 2 / 3].iter().collect();
-                let tail: String = chars[chars.len() - SCENE_READ_CHARS / 3..].iter().collect();
-                format!("{head}\n[... middle of the scene not shown ...]\n{tail}")
-            };
-            let mut o = ToolOutput::of_kind(AiResultKind::Answer, String::new());
-            o.confidence = Some(Confidence::Inferred);
-            o.provenance.push(Provenance::new("Draft", d.label()));
-            o.provenance.push(Provenance::new("Scene", s.label()));
-            o.nav = Some(scene_nav(&d, &s));
-            if !full {
-                o.details.push(format!(
-                    "{name} is long; the summary is written from its beginning and its end."
-                ));
-            }
-            o.generation = Some(Generation::Summary {
-                items: vec![ContextItem {
-                    source: s.label(),
-                    text: evidence,
-                }],
-            });
-            return Ok(o);
         }
         other => {
             return Err(AppError::ai(
@@ -2314,15 +2060,31 @@ fn open_scene(ctx: &ToolCtx<'_>, number: u32, draft: Option<&str>) -> AppResult<
     Ok(o.prov("Draft", d.label()))
 }
 
-fn open_workspace(ws: &str) -> AppResult<ToolOutput> {
+fn open_workspace(ws: &str, sub: Option<&str>) -> AppResult<ToolOutput> {
     let (id, label) = WORKSPACES
         .iter()
         .find(|(id, label)| *id == ws || label.eq_ignore_ascii_case(ws))
         .ok_or_else(|| AppError::ai("not_found", "I don't know that part of OpenFrame."))?;
-    let mut o = ToolOutput::of_kind(AiResultKind::Navigate, format!("Opening {label}."));
+    let mut nav = NavTarget::to(id);
+    let mut said = format!("Opening {label}.");
+    if let Some(sub) = sub {
+        if *id != "production" || !PRODUCTION_TABS.contains(&sub) {
+            return Err(AppError::ai(
+                "not_found",
+                "I don't know that part of OpenFrame.",
+            ));
+        }
+        nav = nav.with_sub(sub);
+        let tab = match sub {
+            "dood" => "day out of days".to_string(),
+            other => other.replace('-', " and "),
+        };
+        said = format!("Opening the {tab} tab of {label}.");
+    }
+    let mut o = ToolOutput::of_kind(AiResultKind::Navigate, said);
     o.details
         .push("Navigation commands run directly; nothing is changed.".into());
-    o.nav = Some(NavTarget::to(id));
+    o.nav = Some(nav);
     Ok(o)
 }
 
@@ -2363,70 +2125,6 @@ fn open_object(ctx: &ToolCtx<'_>, text: &str) -> AppResult<ToolOutput> {
             .collect();
     }
     o.nav = Some(target);
-    Ok(o)
-}
-
-fn summarize_scope(ctx: &ToolCtx<'_>) -> AppResult<ToolOutput> {
-    let mut items = ctx.scope.context.clone();
-    if items.is_empty() {
-        // Whole project / production: a compact deterministic outline is the context.
-        let outline = super::scope::story_outline(ctx.conn)?;
-        if !outline.trim().is_empty() {
-            items.push(ContextItem {
-                source: "Beat Board outline".into(),
-                text: queries::truncate_chars(&outline, super::scope::CONTEXT_BUDGET),
-            });
-        }
-    }
-    let whole = matches!(
-        ctx.scope.kind,
-        AiScopeKind::WholeProject | AiScopeKind::CurrentScreenplay | AiScopeKind::SpecificDraft
-    );
-    if items.is_empty() && whole {
-        // No Beat Board yet (an imported screenplay): the opening of every scene, in order.
-        let draft = match &ctx.scope.draft {
-            Some(d) => Some(d.clone()),
-            None => queries::current_draft(ctx.conn)?,
-        };
-        if let Some(d) = draft {
-            let scenes: Vec<_> = queries::scenes(ctx.conn, &d.id)?
-                .into_iter()
-                .filter(|s| !s.omitted)
-                .collect();
-            let each = (super::scope::CONTEXT_BUDGET / scenes.len().max(1)).clamp(80, 400);
-            let mut outline = String::new();
-            for s in &scenes {
-                let text = queries::scene_text(ctx.conn, &s.id, each)?;
-                let flat = text.split_whitespace().collect::<Vec<_>>().join(" ");
-                outline.push_str(&format!(
-                    "{}: {}\n",
-                    s.label(),
-                    queries::truncate_chars(&flat, each)
-                ));
-                if outline.len() >= super::scope::CONTEXT_BUDGET {
-                    break;
-                }
-            }
-            if !outline.trim().is_empty() {
-                items.push(ContextItem {
-                    source: format!("{} outline", d.label()),
-                    text: queries::truncate_chars(&outline, super::scope::CONTEXT_BUDGET),
-                });
-            }
-        }
-    }
-    if items.is_empty() {
-        return Ok(ToolOutput::exact(
-            "There's nothing in this scope to summarize yet.",
-        ));
-    }
-    let mut o = ToolOutput::of_kind(AiResultKind::Answer, String::new());
-    o.confidence = Some(Confidence::Inferred);
-    o.provenance.push(Provenance::new(
-        "Scope",
-        ctx.scope.label.trim_start_matches("Using: ").to_string(),
-    ));
-    o.generation = Some(Generation::Summary { items });
     Ok(o)
 }
 

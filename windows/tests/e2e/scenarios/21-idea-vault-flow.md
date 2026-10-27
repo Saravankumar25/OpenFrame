@@ -60,7 +60,7 @@ Before: an empty data folder of its own. The app starts for the first time, with
 3. Check: the screen shows "Send to Beat Board".
 4. Click Create Copy in Beat Board in the dialog.
 5. Check: the Vault still has a card starting with "Meera finds her own".
-6. Click Story in the Workspaces navigation.
+6. Click Story in the Workspaces navigation, then click the Board tab.
 7. If the Parking Lot button is not pressed, click it.
 8. Check: a scene card named "Scene Card: Meera finds her own handwriting on an old envelope." shows.
 9. Check: the screen is quiet.

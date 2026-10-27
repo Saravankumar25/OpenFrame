@@ -8,17 +8,21 @@ import { useShortcutSync } from "./shortcuts";
 import { BrandLogo } from "../theme/BrandLogo";
 import { useAppearance } from "../theme/useAppearance";
 import { TeamGate } from "../features/team-gate/TeamGate";
+import { LibrarySetupGate } from "../features/library-setup/LibrarySetup";
 import { useCloseRequest } from "./closeRequest";
 import { LeaveGuardDialog } from "./shell/SaveStatus";
 
-/** Application root. Internal builds ask the team password first (ADR-0024). */
+/** Application root. Internal builds ask the team password first (ADR-0024), then the library
+ * folder is set up when it is not yet (doc 40 section 1). */
 export function App() {
   useAppearance();
   useCloseRequest();
   return (
     <>
       <TeamGate>
-        <AppContent />
+        <LibrarySetupGate>
+          <AppContent />
+        </LibrarySetupGate>
       </TeamGate>
       {/* On Home too: closing the window can ask about text that could not be stored. */}
       <LeaveGuardDialog />

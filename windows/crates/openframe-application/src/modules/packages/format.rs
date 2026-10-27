@@ -300,6 +300,11 @@ impl Staging {
         fs::create_dir_all(&s.path)?;
         Ok(s)
     }
+    /// Own a folder at a path the caller chose (a vault restore names its staging folder beside
+    /// the vault, doc 40 section 5). Nothing is created; the folder is removed on drop.
+    pub fn at(path: PathBuf) -> Staging {
+        Staging { path, keep: false }
+    }
     pub fn path(&self) -> &Path {
         &self.path
     }
@@ -347,6 +352,11 @@ pub fn to_json_bytes<T: Serialize>(v: &T) -> AppResult<Vec<u8>> {
 /// Destination for a package the user chose in a save dialog: absolute, a
 /// file (not a folder), in an existing folder, with the package extension.
 pub fn package_destination(path: &str, ty: PackageType) -> AppResult<PathBuf> {
+    output_destination(path, ty.extension())
+}
+
+/// [`package_destination`] for any container extension (`.ofvault` uses it too).
+pub fn output_destination(path: &str, extension: &str) -> AppResult<PathBuf> {
     let raw = path.trim();
     if raw.is_empty() {
         return Err(AppError::required("Save to"));
@@ -370,12 +380,12 @@ pub fn package_destination(path: &str, ty: PackageType) -> AppResult<PathBuf> {
     let ext_ok = p
         .extension()
         .and_then(|e| e.to_str())
-        .map(|e| e.eq_ignore_ascii_case(ty.extension()))
+        .map(|e| e.eq_ignore_ascii_case(extension))
         .unwrap_or(false);
     let name = if ext_ok {
         name
     } else {
-        format!("{name}.{}", ty.extension())
+        format!("{name}.{extension}")
     };
     p.set_file_name(name);
     let parent = p
@@ -407,11 +417,28 @@ pub fn write_package(
     progress: &dyn Fn(f64, &str),
     cancelled: &dyn Fn() -> bool,
 ) -> AppResult<WriteOutcome> {
-    let manifest_bytes = to_json_bytes(manifest)?;
+    write_container(
+        dest,
+        &to_json_bytes(manifest)?,
+        entries,
+        progress,
+        cancelled,
+    )
+}
+
+/// [`write_package`] for any manifest: the `.ofvault` container has its own manifest and shares
+/// everything else (hashing, the uniquely named staging file, the atomic move into place).
+pub fn write_container(
+    dest: &Path,
+    manifest_bytes: &[u8],
+    entries: Vec<(String, EntryData)>,
+    progress: &dyn Fn(f64, &str),
+    cancelled: &dyn Fn() -> bool,
+) -> AppResult<WriteOutcome> {
     let mut files = BTreeMap::new();
     files.insert(
         MANIFEST_ENTRY.to_string(),
-        openframe_security::sha256_bytes(&manifest_bytes),
+        openframe_security::sha256_bytes(manifest_bytes),
     );
     let total: u64 = entries.iter().map(|(_, d)| d.len()).sum::<u64>().max(1);
     for (i, (name, data)) in entries.iter().enumerate() {
@@ -441,7 +468,7 @@ pub fn write_package(
         let head = vec![
             (
                 MANIFEST_ENTRY.to_string(),
-                EntrySource::Bytes(&manifest_bytes),
+                EntrySource::Bytes(manifest_bytes),
             ),
             (
                 CHECKSUMS_ENTRY.to_string(),

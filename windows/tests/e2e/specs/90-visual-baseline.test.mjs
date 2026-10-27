@@ -39,7 +39,7 @@ import { after, before, describe, test } from "node:test";
 import assert from "node:assert/strict";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { isAbsolute, join, resolve } from "node:path";
-import { click, launchApp, openWorkspace, sleep, stepper, waitForText } from "../lib/app.mjs";
+import { click, launchApp, openBeatBoard, openWorkspace, sleep, stepper, waitForText } from "../lib/app.mjs";
 import { comparePixels, decodePng, encodePng } from "../lib/png.mjs";
 
 const REPO = resolve(import.meta.dirname, "..", "..", "..");
@@ -170,6 +170,15 @@ async function shot(name) {
     await browser.execute(() => document.querySelectorAll('.toast button[aria-label="Dismiss"]').forEach((b) => b.click()));
     await sleep(400);
   }
+  if (name === "15-project-settings" && MODE === "compare") {
+    // The run folder name grows with the run stamp (it now ends in the process id), which re-wraps the path
+    // and moves everything below it. Show the folder name the baseline was captured with so the wrap is fixed.
+    await browser.execute(() => {
+      const el = document.querySelector('aside[aria-label="Where this project is stored"] .selectable-text');
+      if (el) el.textContent = (el.textContent ?? "").replace(/\.run\\[^\\]+\\/, ".run\\2026-10-19T23-39-49-455Z\\");
+    });
+    await sleep(200);
+  }
   if (MODE !== "compare" || UPDATE_ONLY.has(name)) {
     await browser.saveScreenshot(join(outDir, `${name}.png`));
     if (MODE === "compare") updated.push(name);
@@ -289,7 +298,9 @@ describe(`visual ${MODE === "compare" ? "regression against the visual baseline 
         ["12-files", "Files"],
       ];
       for (const [name, ws] of screens) {
-        await openWorkspace(browser, ws);
+        // Story opens on the Story page since 2026-10-27; this screen is the Beat Board.
+        if (ws === "Story") await openBeatBoard(browser);
+        else await openWorkspace(browser, ws);
         await shot(name);
         if (ws === "Story") {
           await (await browser.$('//*[@role="tablist"]//*[@role="tab"][normalize-space(.)="Outline"]')).click();

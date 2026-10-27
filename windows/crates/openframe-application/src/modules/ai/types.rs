@@ -389,6 +389,10 @@ pub struct AiResultDto {
     pub steps: Vec<AiStepDto>,
     /// Background task started for this request (long-running tools, agentic spec §29).
     pub task_id: Option<String>,
+    /// The path that answered: write, navigate, change or fixed (harness spec, section 5).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[ts(optional)]
+    pub lane: Option<String>,
     #[ts(type = "number")]
     pub created_at: i64,
 }

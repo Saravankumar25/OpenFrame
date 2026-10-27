@@ -1,36 +1,39 @@
 # Handoff: where we are right now
 
-> Rewritten (not appended) at the end of every session. One page. Last rewritten: 2026-10-21 (WindowsHTML session).
+> Rewritten (not appended) at the end of every session. One page. Last rewritten: 2026-10-27 (afternoon: owner fixes
+> after testing OpenFrame-5; merged to `main` and pushed to GitHub `main` `windows/` on the owner's word).
 
 ## State
 
-1. **WindowsHTML done** (branch `docs/windows-html`, merged to `main` locally, not pushed): 809 screens and states
-   of the Windows app, each in Light and Dark (1,618 pages), captured from the running app. All 1,618 pages match
-   their screenshots in the same WebView2 at 1600x1000 (largest difference 0.460 percent, limit 0.5). 61 states that
-   need Windows dialogs, devices or forced failures are listed in `WindowsHTML/README.md`. The old `HTML_Mockups/` is
-   removed (owner request).
-2. **How to regenerate:** build the debug app once, then `node scripts/windows-html/parallel.mjs` (eight parts side by
-   side, merge, four-shard page check, about 50 minutes). Tour code: `tests/e2e/capture/` (kit, seed, ten sections),
-   `tests/e2e/lib/capture.mjs`, `tests/e2e/specs/zz-capture.test.mjs` (skipped unless `E2E_CAPTURE=1`).
-3. **App fix (owner asked, same session):** Application Home now refreshes at once after Pin, Unpin, Archive,
-   Restore, Duplicate, Remove from List and Delete (the core emitted no list-change event for them). Rust test and
-   the home E2E spec cover it; the spec no longer leaves Home to refresh.
-4. **Installers:** `release-out/OpenFrame-3.exe` predates the last two sessions; the next build is `OpenFrame-4.exe`
-   (only on the owner's word).
-5. **GitHub:** not pushed. `windows/` on GitHub main matches local 6e28b33. Sync only on the owner's word, by the
-   subtree method in memory; never `git pull` into `C:\OpenFrame`.
+1. **`main`** holds the conversational assistant (ADR-0037, slices S0 to S8 and fixes), the overnight work of
+   2026-10-27 and the afternoon fixes the owner asked for after testing OpenFrame-5:
+   - Call sheet screen in the exact heading and field order of the exported PDF.
+   - Story page: Dark page switch; highlight and underline in a choice of colours (PDF and Word keep them).
+   - Beat Board: Vertical and Horizontal layouts.
+   - Global Idea Vault: no stray file after a failed add, Add Them Back for files already stranded, Locate shows what
+     it found with real counts.
+   - Library: first-start setup screen (default `<home>\OpenFrame` suggested only, choose, or locate existing data),
+     Move Library and Locate Existing Library in Settings > Storage, recovery screen when the library is missing
+     ([40-storage-locations-and-recovery.md](../engineering/40-storage-locations-and-recovery.md), ADR-0038).
+2. **Checks run on the final tree:** Rust test binaries ai, platform and writing green; clippy `-D warnings` clean;
+   Vitest 740 green; typecheck and lint clean; governance 90 of 90; targeted end-to-end specs (30, 31, 62, 71, 00, 10)
+   green on the debug build. Not run: the full end-to-end suite (the owner said targeted tests are enough).
+3. No installer was built for these changes (owner: do not build OpenFrame-6 yet).
 
 ## Next items, in order
 
-1. MacHTML on the Mac: prompt in [next-session-mac-html-prompt.md](next-session-mac-html-prompt.md) (owner time box 1.5 h).
-2. Build and install `OpenFrame-4.exe` when the owner asks; owner hand test.
-3. Writing grounding (67 percent) and the user manual refresh.
+1. Owner hand test of the new screens; the cofounder's log `%LOCALAPPDATA%\OpenFrame\logs\openframe.2026-10-27.log`
+   to confirm the vault cause.
+2. The next internal installer on the owner's word.
+3. Reinstall drill for the storage box in `masterplan.md`, then tick it.
 
 ## Open blockers
 
-- None.
+- Mac: no setup screen and no security-scoped bookmarks yet (Mac track 1b). MSIX and Store installs not tested.
 
 ## Do not
 
-- Do not push without the owner's word. Do not `git pull` origin/main here. Do not edit `OpenFrameMac/`. Do not commit
-  `changes/`, `OpenFrameAI.docx` or `OpenFrameMac/`. Do not run two capture runs on the same `E2E_PORT_BASE`.
+- Do not push without the owner's word. Never `git pull` origin/main here: GitHub `main` has `mac/`, `website/` and
+  `windows/`; sync `windows/` by the subtree commit method only.
+- Do not build an installer without the owner's word. Do not edit `OpenFrameMac/`.
+- Tool gates in this workspace ask for a short statement of facts before the first write or edit of a file.

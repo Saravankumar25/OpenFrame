@@ -5,8 +5,9 @@
 //!
 //! - Only the roles that run the production (Owner and Editor) see them in the app.
 //!   Commenter, Viewer and Export-only collaborators get the field hidden (`contactHidden`).
-//! - The assistant never sees them: a request with AI origin is treated as not allowed, the AI
-//!   read tools leave them out, and AI documents never contain them.
+//! - The assistant's catalog and location reads leave them out, and AI documents never contain
+//!   them. The `cast_and_crew` read shows a cast or crew contact only to an actor who may see it
+//!   in the app (S2 of the conversational harness); a request with AI origin is never allowed.
 //! - They are not put into the project search index, so a search result never shows them.
 //! - Production exports (breakdown report, catalog, reports) never include them.
 

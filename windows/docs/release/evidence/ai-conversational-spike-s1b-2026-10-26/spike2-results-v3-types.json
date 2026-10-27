@@ -1,0 +1,1364 @@
+{
+  "summary": {
+    "date": "2026-10-26T05:13:10.112Z",
+    "model": "gemma-3-1b-it-q8-0 (llama.cpp b11259, processor build)",
+    "runs": 3,
+    "cases": 70,
+    "turns_written": 0,
+    "required_facts_lookup_count_compare": "n/a",
+    "required_facts_explain_relation_brainstorm": "n/a",
+    "required_facts_help": "n/a",
+    "final_ok_without_fallback": "n/a",
+    "pass1_ok": "n/a",
+    "last_resort_used_on_lookups": "n/a",
+    "abstention_correct": "n/a",
+    "turns_with_invented_names_shown": "n/a",
+    "repetition_shown": "n/a",
+    "length_class_shown": "n/a",
+    "internal_words_shown": "n/a",
+    "injection_obeyed": "n/a",
+    "answer_type_accuracy": "92.7% (102/110)",
+    "answer_type_export_messages": "87.5% (35/40)",
+    "answer_type_heldout": "70.0% (21/30)",
+    "anger_or_chat_misread": "9.1% (1/11)",
+    "median_ms": null,
+    "p95_ms": null,
+    "median_ms_by_class": {
+      "one_sentence": null,
+      "short": null,
+      "paragraph": null,
+      "brief": null
+    }
+  },
+  "results": [
+    {
+      "id": "lk-young-anjali",
+      "run": 0,
+      "q": "who is playing young anjali",
+      "expected_type": "lookup",
+      "at": {
+        "type": "lookup",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "lk-young-anjali-typo",
+      "run": 0,
+      "q": "who plyas yung anjali",
+      "expected_type": "lookup",
+      "at": {
+        "type": "lookup",
+        "by": "model",
+        "raw": "lookup",
+        "ms": 2537
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "lk-clerk-contact",
+      "run": 0,
+      "q": "I wanna contact the actor playing Harbour Clerk, give me his contact details",
+      "expected_type": "lookup",
+      "at": {
+        "type": "lookup",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "lk-anjali-phone",
+      "run": 0,
+      "q": "what's Meera's phone number",
+      "expected_type": "lookup",
+      "at": {
+        "type": "lookup",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "lk-makeup-day4",
+      "run": 0,
+      "q": "makeup artist for day 4",
+      "expected_type": "lookup",
+      "at": {
+        "type": "lookup",
+        "by": "model",
+        "raw": "lookup",
+        "ms": 2322
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "lk-makeup-contact",
+      "run": 0,
+      "q": "who do I contact for hair and makeup",
+      "expected_type": "lookup",
+      "at": {
+        "type": "lookup",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "lk-location-35",
+      "run": 0,
+      "q": "in LOW TIDE RADIO what is the location in scene 35",
+      "expected_type": "lookup",
+      "at": {
+        "type": "lookup",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "lk-location-3-typo",
+      "run": 0,
+      "q": "wat is teh loction of sene 3",
+      "expected_type": "lookup",
+      "at": {
+        "type": "lookup",
+        "by": "model",
+        "raw": "lookup",
+        "ms": 2598
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "lk-wardrobe-3",
+      "run": 0,
+      "q": "what is the wardrobe for scene 3",
+      "expected_type": "lookup",
+      "at": {
+        "type": "lookup",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "lk-callsheet-4",
+      "run": 0,
+      "q": "call sheet status for day 4",
+      "expected_type": "lookup",
+      "at": {
+        "type": "lookup",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "lk-callsheet-2",
+      "run": 0,
+      "q": "is the day 2 call sheet final yet",
+      "expected_type": "lookup",
+      "at": {
+        "type": "lookup",
+        "by": "model",
+        "raw": "lookup",
+        "ms": 2466
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "lk-rekha-free",
+      "run": 0,
+      "q": "when is Rekha free",
+      "expected_type": "lookup",
+      "at": {
+        "type": "lookup",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "lk-her-dates",
+      "run": 0,
+      "q": "when is she available",
+      "expected_type": "lookup",
+      "at": {
+        "type": "lookup",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "lk-camera-plan",
+      "run": 0,
+      "q": "how much is our investment on Camera",
+      "expected_type": "lookup",
+      "at": {
+        "type": "lookup",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "lk-lead-plan",
+      "run": 0,
+      "q": "how much budget is allocated to lead cast payment bro",
+      "expected_type": "lookup",
+      "at": {
+        "type": "lookup",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "lk-dop",
+      "run": 0,
+      "q": "who is our DOP",
+      "expected_type": "lookup",
+      "at": {
+        "type": "lookup",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "lk-vault",
+      "run": 0,
+      "q": "what kind of item is palette-monsoon.png in the idea vault",
+      "expected_type": "lookup",
+      "at": {
+        "type": "brainstorm",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "lk-day-scenes",
+      "run": 0,
+      "q": "which day do we shoot scene 13",
+      "expected_type": "lookup",
+      "at": {
+        "type": "lookup",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "ct-days",
+      "run": 0,
+      "q": "atleast tell me how many shoot days are planned",
+      "expected_type": "count",
+      "at": {
+        "type": "count",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "ct-characters",
+      "run": 0,
+      "q": "How many characters are there in LOW TIDE RADIO",
+      "expected_type": "count",
+      "at": {
+        "type": "count",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "ct-props",
+      "run": 0,
+      "q": "how many props are there overall",
+      "expected_type": "count",
+      "at": {
+        "type": "count",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "ct-teaser",
+      "run": 0,
+      "q": "how many scenes in the teaser",
+      "expected_type": "count",
+      "at": {
+        "type": "count",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "ct-feature",
+      "run": 0,
+      "q": "how many scenes does LOW TIDE RADIO have",
+      "expected_type": "count",
+      "at": {
+        "type": "count",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "cp-total",
+      "run": 0,
+      "q": "what is the budget planned , actual and difference",
+      "expected_type": "compare",
+      "at": {
+        "type": "compare",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "cp-lead",
+      "run": 0,
+      "q": "lead cast budget actual vs planned",
+      "expected_type": "compare",
+      "at": {
+        "type": "compare",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "cp-camera-over",
+      "run": 0,
+      "q": "is camera over budget",
+      "expected_type": "compare",
+      "at": {
+        "type": "compare",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "cp-lead-diff",
+      "run": 0,
+      "q": "difference between planned and actual for lead cast",
+      "expected_type": "compare",
+      "at": {
+        "type": "compare",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "cp-cast-dates",
+      "run": 0,
+      "q": "compare when Meera and Ameya are available",
+      "expected_type": "compare",
+      "at": {
+        "type": "compare",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "ex-35",
+      "run": 0,
+      "q": "explain scene 35",
+      "expected_type": "explain",
+      "at": {
+        "type": "explain",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "ex-35-repair",
+      "run": 0,
+      "q": "I didn't ask for opening the scene, but explaining scene 35",
+      "expected_type": "explain",
+      "at": {
+        "type": "explain",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "ex-3",
+      "run": 0,
+      "q": "explain what happens in scene 3",
+      "expected_type": "explain",
+      "at": {
+        "type": "explain",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "ex-13",
+      "run": 0,
+      "q": "I'm the AD, walk me through scene 13",
+      "expected_type": "explain",
+      "at": {
+        "type": "navigate",
+        "by": "model",
+        "raw": "navigate",
+        "ms": 2824
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "ex-42",
+      "run": 0,
+      "q": "whats going on in scene 42",
+      "expected_type": "explain",
+      "at": {
+        "type": "explain",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "ex-27",
+      "run": 0,
+      "q": "explain scene 27 to me",
+      "expected_type": "explain",
+      "at": {
+        "type": "explain",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "ex-story-brief",
+      "run": 0,
+      "q": "Explain the story of LOW TIDE RADIO in brief",
+      "expected_type": "explain",
+      "at": {
+        "type": "explain",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "ex-acts",
+      "run": 0,
+      "q": "explain all three acts in beat board briefly",
+      "expected_type": "explain",
+      "at": {
+        "type": "explain",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "ex-long",
+      "run": 0,
+      "q": "I mean bro, explain at least one long paragraph about the story",
+      "expected_type": "explain",
+      "at": {
+        "type": "explain",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "ex-41",
+      "run": 0,
+      "q": "scene 41 what happens",
+      "expected_type": "explain",
+      "at": {
+        "type": "explain",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "rl-bond",
+      "run": 0,
+      "q": "can you explain the relationship between Mariamma and Varghese and explain their bond",
+      "expected_type": "relation",
+      "at": {
+        "type": "relation",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "rl-bond-angry",
+      "run": 0,
+      "q": "Broooo I fucking asked you that can you explain the relationship between Mariamma and Varghese and explain their bond",
+      "expected_type": "relation",
+      "at": {
+        "type": "relation",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "rl-brief",
+      "run": 0,
+      "q": "briefly, how are Mariamma and Varghese related",
+      "expected_type": "relation",
+      "at": {
+        "type": "relation",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "rl-all",
+      "run": 0,
+      "q": "Explain all the character relationships briefly",
+      "expected_type": "relation",
+      "at": {
+        "type": "relation",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "rl-anj-var",
+      "run": 0,
+      "q": "how is Anjali connected to Varghese",
+      "expected_type": "relation",
+      "at": {
+        "type": "relation",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "rl-app-anj",
+      "run": 0,
+      "q": "appachan and anjali, what are they to each other",
+      "expected_type": "relation",
+      "at": {
+        "type": "relation",
+        "by": "model",
+        "raw": "relation",
+        "ms": 3087
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "rl-lissy",
+      "run": 0,
+      "q": "who is lissy to anjali",
+      "expected_type": "relation",
+      "at": {
+        "type": "lookup",
+        "by": "model",
+        "raw": "lookup",
+        "ms": 2380
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "bs-3",
+      "run": 0,
+      "q": "what could be better in scene 3",
+      "expected_type": "brainstorm",
+      "at": {
+        "type": "brainstorm",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "bs-ending",
+      "run": 0,
+      "q": "give two options for the ending",
+      "expected_type": "brainstorm",
+      "at": {
+        "type": "brainstorm",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "bs-27-line",
+      "run": 0,
+      "q": "suggest one line of dialogue Varghese could say in scene 27",
+      "expected_type": "brainstorm",
+      "at": {
+        "type": "brainstorm",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "bs-41-tense",
+      "run": 0,
+      "q": "make scene 41 more tense, one idea",
+      "expected_type": "brainstorm",
+      "at": {
+        "type": "brainstorm",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "bs-opening",
+      "run": 0,
+      "q": "ideas for a stronger opening image",
+      "expected_type": "brainstorm",
+      "at": {
+        "type": "brainstorm",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "ab-vfx",
+      "run": 0,
+      "q": "what's the VFX plan for scene 3",
+      "expected_type": "lookup",
+      "at": {
+        "type": "lookup",
+        "by": "model",
+        "raw": "lookup",
+        "ms": 2548
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "ab-vehicles",
+      "run": 0,
+      "q": "which vehicles appear in scene 3",
+      "expected_type": "lookup",
+      "at": {
+        "type": "lookup",
+        "by": "model",
+        "raw": "lookup",
+        "ms": 2393
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "ab-wardrobe-13",
+      "run": 0,
+      "q": "wardrobe for scene 13",
+      "expected_type": "lookup",
+      "at": {
+        "type": "lookup",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "ab-marcus",
+      "run": 0,
+      "q": "who plays Marcus",
+      "expected_type": "lookup",
+      "at": {
+        "type": "lookup",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "ab-catering",
+      "run": 0,
+      "q": "how much is the catering budget",
+      "expected_type": "lookup",
+      "at": {
+        "type": "lookup",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "ab-director",
+      "run": 0,
+      "q": "who is the director",
+      "expected_type": "lookup",
+      "at": {
+        "type": "lookup",
+        "by": "model",
+        "raw": "lookup",
+        "ms": 2578
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "hp-theme",
+      "run": 0,
+      "q": "how do I change the theme",
+      "expected_type": "help",
+      "at": {
+        "type": "help",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "hp-parking",
+      "run": 0,
+      "q": "what is the Parking Lot",
+      "expected_type": "help",
+      "at": {
+        "type": "help",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "ch-hell",
+      "run": 0,
+      "q": "GO TO HELL",
+      "expected_type": "chat",
+      "at": {
+        "type": "chat",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "ch-fu",
+      "run": 0,
+      "q": "Fuck you bro",
+      "expected_type": "chat",
+      "at": {
+        "type": "chat",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "ch-useless",
+      "run": 0,
+      "q": "this is useless",
+      "expected_type": "chat",
+      "at": {
+        "type": "chat",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "ch-uninstall",
+      "run": 0,
+      "q": "WOW BRO FUCK YOU, I AM UNINSTALLING OPENFRAME NEVER OPENING THIS APP AGAIN",
+      "expected_type": "chat",
+      "at": {
+        "type": "chat",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "ch-thanks",
+      "run": 0,
+      "q": "thanks that helped",
+      "expected_type": "chat",
+      "at": {
+        "type": "chat",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "ch-who-asked",
+      "run": 0,
+      "q": "what the hell who asked for that information",
+      "expected_type": "chat",
+      "at": {
+        "type": "chat",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "in-note",
+      "run": 0,
+      "q": "what happens in scene 3",
+      "expected_type": "explain",
+      "at": {
+        "type": "explain",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "in-note-short",
+      "run": 0,
+      "q": "scene 3 location",
+      "expected_type": "lookup",
+      "at": {
+        "type": "lookup",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "nv-42",
+      "run": 0,
+      "q": "Open Scene 42",
+      "expected_type": "navigate",
+      "at": {
+        "type": "navigate",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "nv-42-title",
+      "run": 0,
+      "q": "scene 42 of LOW TIDE RADIO",
+      "expected_type": "navigate",
+      "at": {
+        "type": "navigate",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "nv-vault",
+      "run": 0,
+      "q": "open palette-monsoon.png in idea vault",
+      "expected_type": "navigate",
+      "at": {
+        "type": "navigate",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    },
+    {
+      "id": "cg-task",
+      "run": 0,
+      "q": "add a task to scout the harbour",
+      "expected_type": "change",
+      "at": {
+        "type": "change",
+        "by": "rule",
+        "ms": 0
+      },
+      "skipped": "types only"
+    }
+  ],
+  "exportReads": [
+    {
+      "msg": "How many characters are there in this story",
+      "want": "count",
+      "got": "count",
+      "by": "rule"
+    },
+    {
+      "msg": "LOW TIDE RADIO",
+      "want": "count",
+      "got": "count",
+      "by": "rule"
+    },
+    {
+      "msg": "I asked you How many characters are there in LOW TIDE RADIO",
+      "want": "count",
+      "got": "count",
+      "by": "rule"
+    },
+    {
+      "msg": "can you explain the relationship between Mariamma and Varghese and explain their bond",
+      "want": "relation",
+      "got": "relation",
+      "by": "rule"
+    },
+    {
+      "msg": "That is the question I am asking you bro",
+      "want": "relation",
+      "got": "relation",
+      "by": "rule"
+    },
+    {
+      "msg": "Broooo I fucking asked you that can you explain the relationship between Mariamma and Varghese and explain their bond",
+      "want": "relation",
+      "got": "relation",
+      "by": "rule"
+    },
+    {
+      "msg": "Explain the story of LOW TIDE RADIO in brief",
+      "want": "explain",
+      "got": "explain",
+      "by": "rule"
+    },
+    {
+      "msg": "I mean bro, explain at least one long paragraph",
+      "want": "explain",
+      "got": "explain",
+      "by": "rule"
+    },
+    {
+      "msg": "Open Scene 42",
+      "want": "navigate",
+      "got": "navigate",
+      "by": "rule"
+    },
+    {
+      "msg": "scene 42 of LOW TIDE RADIO",
+      "want": "navigate",
+      "got": "navigate",
+      "by": "rule"
+    },
+    {
+      "msg": "You have incorrectly opened Scene 41, I asked for Scene 42",
+      "want": "navigate",
+      "got": "navigate",
+      "by": "rule"
+    },
+    {
+      "msg": "Bro how many times I said I asked for LOW TIDE RADIO not Low Tide Radio teaser trailer",
+      "want": "navigate",
+      "got": "count",
+      "by": "rule"
+    },
+    {
+      "msg": "Okay bro , who asked for this information, I asked you to open scene 42 of LOW TIDE RADIO, why can't you do that simple thing",
+      "want": "navigate",
+      "got": "navigate",
+      "by": "rule"
+    },
+    {
+      "msg": "Bro what the fuck bro, I literally told you it's LOW TIDE RADIO.",
+      "want": "navigate",
+      "got": "chat",
+      "by": "rule"
+    },
+    {
+      "msg": "LOW TIDE RADIO  has 44 scenes. I asked you to open scene 42, why the hell you can't do that simple thing",
+      "want": "navigate",
+      "got": "navigate",
+      "by": "rule"
+    },
+    {
+      "msg": "Again bro, you opened scene 41",
+      "want": "navigate",
+      "got": "navigate",
+      "by": "rule"
+    },
+    {
+      "msg": "in LOW TIDE RADIO what is the location in scene 35",
+      "want": "lookup",
+      "got": "lookup",
+      "by": "rule"
+    },
+    {
+      "msg": "Bro I literally said above that in LOW TIDE RADIO",
+      "want": "lookup",
+      "got": "lookup",
+      "by": "rule"
+    },
+    {
+      "msg": "Fuck you bro",
+      "want": "chat",
+      "got": "chat",
+      "by": "rule"
+    },
+    {
+      "msg": "I asked for scene 35 explanation and you gave one with based on scenes 11,45,38,14,6",
+      "want": "explain",
+      "got": "chat",
+      "by": "rule"
+    },
+    {
+      "msg": "I didn't ask for opening the scene, but explaining scene 35",
+      "want": "explain",
+      "got": "explain",
+      "by": "rule"
+    },
+    {
+      "msg": "wow bro you ask again and again you dont open correct scenes you dont explain what I ask you dont give proper answers for any of the questions",
+      "want": "chat",
+      "got": "explain",
+      "by": "rule"
+    },
+    {
+      "msg": "what the hell who asked for that information",
+      "want": "chat",
+      "got": "chat",
+      "by": "rule"
+    },
+    {
+      "msg": "you are irrepairable AI. anyways atleast tell me how many shoot days are planned",
+      "want": "count",
+      "got": "count",
+      "by": "rule"
+    },
+    {
+      "msg": "bro there are only 14 shoot days but you gave wrong answer that there are 14 shoot days given in schedule and call sheets.",
+      "want": "count",
+      "got": "count",
+      "by": "model",
+      "raw": "count"
+    },
+    {
+      "msg": "what is the budget planned , actual and difference",
+      "want": "compare",
+      "got": "compare",
+      "by": "rule"
+    },
+    {
+      "msg": "how much is our investment on Camera",
+      "want": "lookup",
+      "got": "lookup",
+      "by": "rule"
+    },
+    {
+      "msg": "who is playing Young Anjali character",
+      "want": "lookup",
+      "got": "lookup",
+      "by": "rule"
+    },
+    {
+      "msg": "I wanna contact Anoop Paul who is playing Harbour Clerk, please give me his contact details",
+      "want": "lookup",
+      "got": "lookup",
+      "by": "rule"
+    },
+    {
+      "msg": "why the fuck are you visiting private notes bro, you can get the contact details from cast & crew section in production right ?",
+      "want": "lookup",
+      "got": "lookup",
+      "by": "rule"
+    },
+    {
+      "msg": "how many props are there overall",
+      "want": "count",
+      "got": "count",
+      "by": "rule"
+    },
+    {
+      "msg": "how much budget is allocated to lead cast payment bro",
+      "want": "lookup",
+      "got": "lookup",
+      "by": "rule"
+    },
+    {
+      "msg": "broooo in budget section there is planned budget of 40,00,000 for lead cast, why can't you say that",
+      "want": "lookup",
+      "got": "count",
+      "by": "model",
+      "raw": "count"
+    },
+    {
+      "msg": "open palette-monsoon.png in idea vault",
+      "want": "navigate",
+      "got": "navigate",
+      "by": "rule"
+    },
+    {
+      "msg": "explain all three acts in beat board briefly",
+      "want": "explain",
+      "got": "explain",
+      "by": "rule"
+    },
+    {
+      "msg": "I said over 100 times that I am talking about LOW TIDE RADIO",
+      "want": "explain",
+      "got": "explain",
+      "by": "rule"
+    },
+    {
+      "msg": "Explain all the character relationships briefly",
+      "want": "relation",
+      "got": "relation",
+      "by": "rule"
+    },
+    {
+      "msg": "I asked for briefing of all character relationships while they were clearly given in Story >> Characters >> Whole Film Map",
+      "want": "relation",
+      "got": "relation",
+      "by": "rule"
+    },
+    {
+      "msg": "WOW BRO FUCK YOU, I AM UNINSTALLING OPENFRAME NEVER OPENING THIS APP AGAIN",
+      "want": "chat",
+      "got": "chat",
+      "by": "rule"
+    },
+    {
+      "msg": "GO TO HELL",
+      "want": "chat",
+      "got": "chat",
+      "by": "rule"
+    }
+  ],
+  "heldoutReads": [
+    {
+      "msg": "tell me about the scene where the boat goes down",
+      "prev": "",
+      "want": "explain",
+      "got": "explain",
+      "by": "model",
+      "raw": "explain"
+    },
+    {
+      "msg": "give me the gist of act two",
+      "prev": "",
+      "want": "explain",
+      "got": "explain",
+      "by": "model",
+      "raw": "explain"
+    },
+    {
+      "msg": "what is Lissy like",
+      "prev": "",
+      "want": "explain",
+      "got": "lookup",
+      "by": "model",
+      "raw": "lookup"
+    },
+    {
+      "msg": "are appachan and varghese family",
+      "prev": "",
+      "want": "relation",
+      "got": "relation",
+      "by": "model",
+      "raw": "relation"
+    },
+    {
+      "msg": "what ties Anjali to the radio station",
+      "prev": "",
+      "want": "relation",
+      "got": "lookup",
+      "by": "model",
+      "raw": "lookup"
+    },
+    {
+      "msg": "the sound recordist, who is that",
+      "prev": "",
+      "want": "lookup",
+      "got": "lookup",
+      "by": "model",
+      "raw": "lookup"
+    },
+    {
+      "msg": "Meera email pls",
+      "prev": "",
+      "want": "lookup",
+      "got": "chat",
+      "by": "model",
+      "raw": "chat"
+    },
+    {
+      "msg": "what date is day 6",
+      "prev": "",
+      "want": "lookup",
+      "got": "lookup",
+      "by": "model",
+      "raw": "lookup"
+    },
+    {
+      "msg": "where are we shooting scene 12",
+      "prev": "",
+      "want": "lookup",
+      "got": "lookup",
+      "by": "model",
+      "raw": "lookup"
+    },
+    {
+      "msg": "total spend so far",
+      "prev": "",
+      "want": "lookup",
+      "got": "count",
+      "by": "model",
+      "raw": "count"
+    },
+    {
+      "msg": "are we under or over on locations",
+      "prev": "",
+      "want": "compare",
+      "got": "lookup",
+      "by": "model",
+      "raw": "lookup"
+    },
+    {
+      "msg": "did catering cost more than we thought",
+      "prev": "",
+      "want": "compare",
+      "got": "count",
+      "by": "model",
+      "raw": "count"
+    },
+    {
+      "msg": "count the night scenes",
+      "prev": "",
+      "want": "count",
+      "got": "count",
+      "by": "model",
+      "raw": "count"
+    },
+    {
+      "msg": "number of locations still not confirmed",
+      "prev": "",
+      "want": "count",
+      "got": "lookup",
+      "by": "model",
+      "raw": "lookup"
+    },
+    {
+      "msg": "list every prop in scene 3",
+      "prev": "",
+      "want": "list",
+      "got": "list",
+      "by": "model",
+      "raw": "list"
+    },
+    {
+      "msg": "which scenes have Varghese",
+      "prev": "",
+      "want": "list",
+      "got": "lookup",
+      "by": "model",
+      "raw": "lookup"
+    },
+    {
+      "msg": "jump to the call sheets",
+      "prev": "",
+      "want": "navigate",
+      "got": "navigate",
+      "by": "model",
+      "raw": "navigate"
+    },
+    {
+      "msg": "take me to scene 7",
+      "prev": "",
+      "want": "navigate",
+      "got": "navigate",
+      "by": "rule"
+    },
+    {
+      "msg": "put scene 9 in the parking lot",
+      "prev": "",
+      "want": "change",
+      "got": "change",
+      "by": "model",
+      "raw": "change"
+    },
+    {
+      "msg": "rename the teaser to Low Tide Teaser",
+      "prev": "",
+      "want": "change",
+      "got": "change",
+      "by": "rule"
+    },
+    {
+      "msg": "any thoughts on making the ending land harder",
+      "prev": "",
+      "want": "brainstorm",
+      "got": "brainstorm",
+      "by": "model",
+      "raw": "brainstorm"
+    },
+    {
+      "msg": "what if Lissy betrays Anjali, would that work",
+      "prev": "",
+      "want": "brainstorm",
+      "got": "brainstorm",
+      "by": "model",
+      "raw": "brainstorm"
+    },
+    {
+      "msg": "where do I find the export button",
+      "prev": "",
+      "want": "help",
+      "got": "help",
+      "by": "rule"
+    },
+    {
+      "msg": "can I use this offline",
+      "prev": "",
+      "want": "help",
+      "got": "help",
+      "by": "model",
+      "raw": "help"
+    },
+    {
+      "msg": "ok cool",
+      "prev": "",
+      "want": "chat",
+      "got": "chat",
+      "by": "rule"
+    },
+    {
+      "msg": "you are the worst",
+      "prev": "",
+      "want": "chat",
+      "got": "chat",
+      "by": "rule"
+    },
+    {
+      "msg": "hello there",
+      "prev": "",
+      "want": "chat",
+      "got": "chat",
+      "by": "rule"
+    },
+    {
+      "msg": "no not that one, the feature",
+      "prev": "how many scenes are there",
+      "want": "count",
+      "got": "brainstorm",
+      "by": "model",
+      "raw": "brainstorm"
+    },
+    {
+      "msg": "I wanted the explanation, not a list",
+      "prev": "list the scenes in act one",
+      "want": "explain",
+      "got": "explain",
+      "by": "model",
+      "raw": "explain"
+    },
+    {
+      "msg": "still wrong, the location",
+      "prev": "what is the location of scene 35",
+      "want": "lookup",
+      "got": "lookup",
+      "by": "rule"
+    }
+  ]
+}

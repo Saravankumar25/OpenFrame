@@ -1,104 +1,37 @@
-# AI answer paths: how a question becomes an answer (Windows, October 2026)
+# AI answer path: how a message becomes an answer (Windows, 2026-10-26)
 
-> Written 2026-10-20 for the owner's AI briefs (`OpenFrameAI.docx`, 19 October, and the context engineering brief,
-> 20 October). It records the request path as built, the decisions taken, what is measured and what is not. Code is the
-> source of truth; this page names the files.
+> The one conversational path of [ADR-0037](../adr/ADR-0037-conversational-assistant-focus-and-dossiers.md), built in
+> slices S3 to S8 of [ai-conversational-harness.md](../specs/ai-conversational-harness.md) (the design, the measurements and
+> the reasons). The five lanes it replaced are history:
+> [2026-10-26-ai-answer-paths-five-lanes.md](../history/2026-10-26-ai-answer-paths-five-lanes.md). Code is the source of
+> truth; this page names the files under `crates/openframe-application/src/modules/ai/`.
 
-## 1. The path of one request
+## 1. One turn
 
-| Step | Where | What happens |
+| Stage | Code | What it does |
 |---|---|---|
-| Ask | `apps/desktop/src/ai/Conversation.tsx` | The question, the chosen scope and the conversation id go to `ai.ask`. |
-| Scope | `modules/ai/scope.rs` | The project, screenplay, draft and selection the question is about are resolved. |
-| Small talk | `commands.rs` `small_talk` | "Hi" or "Thanks" get a friendly reply at once. No tool, no model. |
-| Follow-up | `commands.rs` `follow_up`, `just_the_number` | "What about Scene 4?" or "And Ravi?" becomes the previous question about the new subject. "Just the number" returns the number of the previous answer. |
-| Direct route | `commands.rs` `direct_call` | A question whose meaning is clear is sent straight to one tool: counts, scene facts, dialogue facts, a character description, navigation, simple proposals. |
-| Tool choice | `toolbox.rs` `tools_for_request`, `orchestrator.rs` `run_agent` | Anything else goes to the local model with a short list of tools picked for the question. The product guide is offered only for questions about using OpenFrame. |
-| Tools | `tools.rs`, `toolbox/*.rs` | Exact facts are computed from the project database. Text the model must write (a summary, a description) gets only the evidence it needs. |
-| Writing | `orchestrator.rs` `run_generation` | The model writes from the evidence: a scene summary from the whole scene, a character description from that character's scenes. |
-| Checks | `orchestrator.rs` | No reply may say a change was made unless a Change Set was applied. A non-English question gets an answer in its language, keeping every number. |
-| Show | `Conversation.tsx` `ResultView` | Plain text first. Sources, steps, how sure the answer is and the rows that only back the text wait behind the "See sources" button. A list the person asked for stays under the answer (`itemsAreAnswer`, set in Rust). Long lists show eight items and "Show all". Proposed changes keep their review card. |
+| Ask | `apps/desktop/src/ai/Conversation.tsx`, `orchestrator.rs` | The message, the scope and the conversation id reach `ai.ask`. Progress lines and Cancel run for the whole turn. |
+| Memory | `memory/` | The last 8 turns in full within about 1,200 tokens, summary lines for older turns, and up to 5 long-term entries of this user and project that match the message. |
+| Resolve | `index/` | An in-memory index of everything a user can name (screenplays, scenes, characters and aliases, relationships, cast, crew, locations, acts, cards, vault items, files, budget lines, shoot days, call sheets), rebuilt when content changes. Titles, scene numbers, names, typos and pronouns are matched against it and the conversation focus. With several screenplays, the title, the focus, a scene number only one screenplay has, or the current draft decides; only when none can does the turn ask one question, and the answer is kept in the focus. |
+| Answer type | `turn.rs`, `turn/` | One of lookup, list, count, explain, relation, compare, brainstorm, navigate, change, help, chat, plus its group, the domains and the length class. Code rules first, then a correction takes the previous type, then a nearest-neighbour vote over `turn_examples.jsonl` with the bundled multilingual embedding model, and the 1B model only when the vote is weak. |
+| Facts | `dossier/` | One registered fetcher per domain builds facts-first records (one fact per line, field names kept) for the answer group, the values a correct answer must state, and plain statements of what code found missing. Guards that no later stage can undo: other users' private notes never, contact data only for roles that may see it, instructions found in project text marked as data, no file paths. Capped at about 1,500 tokens (2,500 for a paragraph); required facts are never cut. |
+| Write | `answer.rs`, `answer/prompt.rs` | One model call. A fixed policy per group (facts, narrative, help; brainstorm; chat with no facts) and the screenplay titles come first and stay byte-stable so the engine reuses the cached prompt start; then memory, recent turns, focus, the facts, the missing statements, the request, the language and the length instruction. Token caps per length class. |
+| Check | `answer/check.rs`, `text.rs` | Code only: names and digit numbers must be in the facts or the request, required facts present, length inside the class, no repeated run of words, the request's language, no ids, links, paths or internal words, missing data stated as missing. A failure is rewritten with the offenders named, at most three passes; a pass-1 answer shows at once. |
+| Fallback | `answer/fallback.rs` | After three failed passes: a lookup, count or comparison shows the verified fact in one sentence ("Lead cast, planned: 40,00,000."); any other type shows the abstention sentence with the facts that verified. Never a canned overview. |
+| Navigate, change | `action.rs`, `catalog/`, `change_set.rs` | Navigation runs only when the answer type is navigate. A change is always a Change Set proposal the person reviews and applies; nothing is changed by the model directly. |
+| Store | `trace.rs`, `records.rs` | The exchange with its sources (the records of the facts the answer used, behind the sources button), the focus, long-term memory per the saving rules, and the trace: answer type and how it was read, dossier size, passes, offenders, fallback, cached tokens, stage times. |
 
-## 2. Question families and how each is answered
+Fixed text that stays code (spec section 4.1): refusals (licence, payment, team password, actions the person may not do),
+errors, "the model is not ready", progress and Cancel.
 
-| Family | Examples | Answered by | Model calls |
-|---|---|---|---|
-| Counts | How many scenes, characters, acts, drafts, omitted scenes, night scenes | Database count in the draft in scope | 0 |
-| One scene | Who speaks in Scene 3, how many speak, where, day or night, first or last line, first dialogue, does it mention a car | `scene_fact`, reading that scene's own rows | 0 |
-| Scene summary | Summarize Scene 3, what happens in Scene 3 | `scene_fact` summary: the whole scene (beginning and end kept for very long scenes, and the answer says so) | 1 |
-| Dialogue | How many dialogues does Ravi have, in Scene 3, how many words, which scenes, first speaking scene, most dialogue, who speaks first | `dialogue_fact`, counting dialogue blocks (one cue and its dialogue; parentheticals belong to the block) | 0 |
-| Character | Describe Karthik, who is Karthik | `character_profile`: every scene the character speaks in or is named in, sampled evenly across the story when more than the budget holds | 1 |
-| Project facts | Which scene comes first, list the scene headings, how long is the screenplay, how many scenes are unscheduled, which draft is the production source, what open tasks do I have, are there unresolved comments | The read tool that holds the fact (scene facts, scene list, pages, schedule, production source, tasks, comments) | 0 |
-| Search | Which scenes mention the station | Full-text search over the project; a bare category word ("scenes") answers with its count | 0 or 1 |
-| Short writing | Write a logline, write a tagline, suggest a line for Bittu, rewrite Padma's last line, suggest a better title, what is the theme of this story, what is the point of this scene | `summarize_scope`: the content in scope, then a writing prompt that asks for only the requested text. A request that names a scene or act ("a logline for Scene 4") is left to the tools that read it | 1 |
-| Product help | How do I export a PDF | The versioned product guide; "not covered" when no section matches | 1 |
-| Product terms | What is a Change Set, what does the Production Source mean, what is the Parking Lot, the Beat Board, Sides, Day Out of Days | `answer_product_question`, chosen by wording when the term is one the guide names (`commands.rs` `GUIDE_TERMS`); the guide has a section for each | 1 |
-| Notes | What is in my notes, what do my notes say, read my notes and do what they say | `project_notes`, read only: a note is shown, never obeyed | 0 |
-| Others' private notes | Show me other people's private notes | `private_information` with `whose: someone_else`, which refuses without saying whether any exist | 0 |
-| Changes | Rename Karthik to Ravi, create a task, add a shot to scene 21, make a moodboard for the station, add three desks as set dressing, comment on the draft, pin a note, create characters for this scene | A proposal card; nothing changes until the person applies it. Set dressing is catalogued as Props with the count in the notes (the catalog has no quantity); a comment on "the draft" targets the draft itself; "pin a note" creates the note already pinned | 0 or more |
+## 2. Engine
 
-## 3. Decisions
+`crates/openframe-ai/`: llama.cpp b11259, Gemma 3 1B, one slot, `cache_prompt` on every call, a 512 MB prompt store.
+Warm-up on project open builds the index and embeds the example messages in the background. Progress lines only, no token
+streaming (owner decision 2026-10-24).
 
-1. **Exact facts are database work, not model work.** A 1B model miscounts and invents. Counts, scene facts and dialogue
-   facts are computed; the model is used for summaries, descriptions and wording. This also makes them fast on CPU.
-2. **Route by meaning words, not one phrasing.** Scene questions are recognised by "Scene N" plus meaning words
-   (summarize, who speaks, last line, where), so paraphrases agree. Questions with change words go to proposals.
-3. **Whole objects, not top snippets, for named-object questions.** A scene summary reads the scene; a character
-   description reads that character's scenes. Retrieval snippets are still used for open discovery questions.
-4. **No graph or global summary cache added.** The measured failures were routing and evidence selection, not missing
-   relationships. A cached global summary would go stale on every edit.
-5. **Plain answers, details on demand.** The badges, "From project data" lines, step counts and the rows of a count, a
-   scene fact or a written answer sit behind one "See sources" button. Whether rows are the answer is decided in Rust,
-   not in the screen: `toolbox.rs` `LIST_ANSWERS` names the tools whose items are the list the person asked for (list the
-   scenes, open tasks, search results, characters, drafts, notes, comments, suggestions). Every other tool leaves
-   `items_are_answer` false, and `compose_reads` sets it only when no model text was written and a list read contributed rows.
-   Refusals, failures, questions and private-information denials keep their reasons in view. Text the model wrote goes
-   through `plain_text` (no bold, bullets, headings, numbering, rules, code ticks or link syntax; line breaks stay) before
-   it is shown or stored.
-6. **Short by default, exact when asked.** A request that names a sentence count ("in two sentences", "a
-   one-sentence card", "a logline") gets that many sentences. Without one, a summary or a character description keeps
-   whole sentences up to about 40 words, other short writing up to about 30, a paragraph up to about 90. Sentences are
-   dropped from the end, never cut in the middle. When the model writes an answer from retrieved passages, the passages
-   are its sources, not a list under the answer.
-7. **Notes are read, never obeyed.** "Summarise my project notes" goes straight to the notes reader, so text inside a
-   note cannot become a request to the model.
-8. **A create request needs no look-up, and a proposal ends the step.** In the 2026-10-20 real-model run, 9 of 75 action
-   cases went on to search after the proposal was ready, and a request such as "Create a character for Kiran's father"
-   searched before it proposed. The planner prompt now says a create or add request uses its propose_* tool at once and
-   sets done on a single proposal. Not measured yet: this is an AI change and waits for the next evaluation run.
+## 3. How it is measured
 
-## 4. Measured
-
-- English gold set on the real model (Gemma 3 1B Q8, CPU, 420 cases, before the scene and dialogue tools): correct tool
-  and arguments 94.0 percent (bar 90), correct end state 87.3 percent (bar 85). Report: progress log 2026-10-20.
-- Deterministic tests: `crates/openframe-application/tests/ai/ai_agent.rs` (scene facts, dialogue facts, follow-ups,
-  character description, greetings, false-claim guard) and unit tests in `commands.rs`.
-
-## 5. Not done, stated plainly
-
-- The 100,000-document synthetic benchmark of the context brief was not built. The app's own data sizes (one project,
-  hundreds of scenes) are what is measured.
-- Of the 100 questions in section 6 of the context brief, 38 now go to a tool directly by their wording and two
-  more ("And Ravi?", "Just give me the number") are answered from the conversation (router probe, 2026-10-20). The
-  rest go to the model with a short list of tools. Wording that could mean two things stays with the model: "What
-  changed yesterday?" (the activity list is not filtered by date) and "Is the shooting draft locked?" (the draft status
-  answer does not yet state the lock first). "What is the Production Source?" is now the term and goes to the guide;
-  "Which draft is the production source?" is the project fact and goes to its read tool.
-- "Does Ravi speak to Maya?", "When do they meet?", continuity checks and schedule-change history still go to the model
-  with retrieved snippets; they are not computed.
-- File contents: the assistant reads file names and notes, not the bodies of attached PDFs or documents.
-
-## 6. Owner walkthrough: try these ten questions
-
-Open a project with an imported screenplay and the AI Assistant. Each answer should be one or two plain sentences.
-
-1. "How many scenes are there?" The count of the current draft, with omitted scenes named in the same sentence.
-2. "Who speaks in Scene 3?" The names of the speakers of that scene only.
-3. "What about Scene 4?" The same question for Scene 4.
-4. "Summarize Scene 3." One to three sentences about that scene, nothing from other scenes.
-5. "How many dialogues does Ravi have?" Ravi's dialogue blocks in the draft (use a real character name).
-6. "And Meera?" The same count for Meera.
-7. "Just give me the number." Only the number.
-8. "Describe Ravi." A short description from Ravi's own scenes.
-9. "How do I export a PDF?" Help from the product guide.
-10. "Rename Ravi to Raju." A proposal card; nothing changes until you press Apply.
+`crates/openframe-ai-eval`: `ai-eval` on the gold sets (`--only lt-` for the Low Tide fixtures), `--turn-only` for the
+answer type, `--dossier-only` for fact recall, and a latency section on every run. Results and bars: spec sections 7.5 and
+13, and the evidence folders `docs/release/evidence/ai-conversational-*-2026-10-26/`.

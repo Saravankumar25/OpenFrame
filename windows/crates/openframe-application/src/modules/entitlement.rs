@@ -824,7 +824,7 @@ fn notice_view(core: &AppCore, today: Option<&CalendarDay>) -> EntitlementNotice
     EntitlementNotice {
         status: core.entitlement.status(),
         notice: core.entitlement.notice(today),
-        data_root: core.config.data_root().to_string_lossy().into_owned(),
+        data_root: core.data_root().to_string_lossy().into_owned(),
     }
 }
 

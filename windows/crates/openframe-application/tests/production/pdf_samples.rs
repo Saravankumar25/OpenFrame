@@ -115,7 +115,7 @@ fn png(w: u32, h: u32, px: impl Fn(u32, u32) -> [u8; 3]) -> Vec<u8> {
 }
 
 /// A simple cinematic still: sky gradient, a low sun or moon, a dark ground band and a figure.
-fn still(theme: usize, w: u32, h: u32) -> Vec<u8> {
+pub(crate) fn still(theme: usize, w: u32, h: u32) -> Vec<u8> {
     const SKY: [([u8; 3], [u8; 3]); 6] = [
         ([24, 38, 66], [226, 140, 76]),
         ([40, 64, 92], [168, 196, 206]),

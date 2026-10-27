@@ -15,7 +15,9 @@ import type { VaultUpdateArgs } from "../../ipc/generated/VaultUpdateArgs";
 import type { VaultCollectionDto } from "../../ipc/generated/VaultCollectionDto";
 import type { VaultFolderDto } from "../../ipc/generated/VaultFolderDto";
 import type { VaultItemDto } from "../../ipc/generated/VaultItemDto";
+import type { VaultOrphanFiles } from "../../ipc/generated/VaultOrphanFiles";
 import type { VaultOverview } from "../../ipc/generated/VaultOverview";
+import type { VaultRecoverResult } from "../../ipc/generated/VaultRecoverResult";
 import type { VaultResearchFlag } from "../../ipc/generated/VaultResearchFlag";
 import type { VaultRestoreResult } from "../../ipc/generated/VaultRestoreResult";
 import type { VaultTrashRow } from "../../ipc/generated/VaultTrashRow";
@@ -44,6 +46,11 @@ export function useVaultItem(scope: Scope, id: string | null) {
 
 export function useVaultTrash(scope: Scope) {
   return useOp<VaultTrashRow[]>("vault.trash_list", { store: scope }, ["deleted_item", ...VAULT_TABLES], { store: scope });
+}
+
+/** Files in the vault folder that no item uses (copies left by an add that failed). */
+export function useVaultOrphans(scope: Scope) {
+  return useOp<VaultOrphanFiles>("vault.orphan_files", { store: scope }, VAULT_TABLES, { store: scope });
 }
 
 export function useStoryTargets(enabled: boolean) {
@@ -76,4 +83,5 @@ export const vault = {
   sendToStory: (a: Args<VaultSendToStoryArgs, "store" | "id" | "target">) => call<VaultSendToStoryResult>("vault.send_to_story", a),
   restore: (store: Scope, id: string) => call<VaultRestoreResult>("vault.restore", { store, id }),
   purge: (store: Scope, id: string) => call<void>("vault.purge", { store, id }),
+  recoverFiles: (store: Scope) => call<VaultRecoverResult>("vault.recover_files", { store }),
 };

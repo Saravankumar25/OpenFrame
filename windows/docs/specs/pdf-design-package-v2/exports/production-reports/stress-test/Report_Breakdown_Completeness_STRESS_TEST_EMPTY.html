@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Breakdown Completeness — Production Report (stress test: empty result)</title>
+<meta name="of-doc" content="Breakdown Completeness (reports.export_report)">
+<meta name="of-logo" content="../../../00_SYSTEM/assets/openframe-logo.png">
+<link rel="stylesheet" href="../../../00_SYSTEM/assets/openframe-print.css">
+<style>
+  /* Breakdown Completeness — page setup. Portrait US Letter (5 columns: reports.rs sets landscape when columns > 5).
+     Running header: none (a one-page report needs no page identification). */
+  @page { size: 8.5in 11in; }
+
+  /* ============ PRODUCTION REPORT SHELL (shared by all six reports; defined in Report_Scene.md) ============ */
+  .rpt-mast { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 14pt; align-items: start; margin-bottom: 7pt; break-inside: avoid; break-after: avoid; }
+  .rpt-mast .eyebrow { display: flex; align-items: center; gap: 5pt; font-size: 7pt; }
+  .rpt-mast .eyebrow i { display: inline-block; width: 14pt; height: 2pt; background: var(--of-orange); }
+  .rpt-mast h1 { font-size: 20pt; line-height: 1.1; font-weight: 700; color: var(--of-navy); letter-spacing: -0.01em; margin: 3pt 0 3.5pt; }
+  .rpt-mast .meta-line { font-size: 8pt; color: var(--of-slate); margin: 0; line-height: 1.3; }
+  .rpt-side { border: var(--hair) solid var(--of-line); border-radius: var(--radius-lg); background: var(--of-panel); padding: 6pt 11pt 7pt; text-align: right; min-width: 104pt; max-width: 150pt; }
+  .rpt-side .lbl { font-size: var(--fs-label); font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--of-slate); }
+  .rpt-side .date { font-size: 10.5pt; font-weight: 700; color: var(--of-navy); margin-top: 1.5pt; line-height: 1.15; }
+  .rpt-side .scope { font-size: 8pt; color: var(--of-slate); margin-top: 1.5pt; line-height: 1.25; }
+  .rpt-metrics { display: flex; width: fit-content; max-width: 100%; border: var(--hair) solid var(--of-line); border-radius: var(--radius); background: var(--of-panel); margin: 0 0 9pt; break-inside: avoid; break-after: avoid; }
+  .rpt-metrics .m { flex: 0 1 auto; min-width: 0; padding: 5.5pt 10pt 6pt; display: flex; align-items: baseline; gap: 6pt; border-left: var(--hair) solid var(--of-line); }
+  .rpt-metrics .m:first-child { border-left: 0; }
+  .rpt-metrics .v { font-size: 13pt; font-weight: 700; color: var(--of-navy); line-height: 1; font-variant-numeric: tabular-nums; }
+  .rpt-metrics .l { font-size: var(--fs-label); font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--of-slate); line-height: 1.25; }
+  .rpt-metrics .m.warn .v { color: var(--of-amber-text); }
+  .rpt-metrics .m.danger .v { color: var(--of-red-text); }
+  .rpt-ctx { margin: 0 0 6pt; }
+  .rpt-att { margin: -3pt 0 8pt; }
+  .rpt-ctx .banner { margin: 0 0 4pt; }
+  .rpt-ctx .banner .q { font-weight: 700; color: var(--of-navy); }
+  .rpt-ctx .banner .rest { color: var(--of-slate); }
+  .banner.info b { color: var(--of-blue-text); }
+  .rpt-ctx .banner b, .rpt-att .banner b { flex: none; white-space: nowrap; }
+  /* table */
+  table.rpt { table-layout: fixed; font-size: var(--fs-cell); }
+  table.rpt thead th { padding: 5pt 6pt; }
+  table.rpt tbody td { padding: 3.6pt 6pt; }
+  table.rpt.dense tbody td { padding: 2.5pt 6pt; }
+  table.rpt .tile { min-width: 18pt; font-size: 8.2pt; padding: 1.6pt 3.6pt; }
+  table.rpt tbody tr.alt td { background: var(--of-panel); }
+  table.rpt tbody tr.attn td:first-child { box-shadow: inset 3pt 0 0 var(--of-orange); }
+  table.rpt tbody tr.attn-red td:first-child { box-shadow: inset 3pt 0 0 var(--of-red-text); }
+  table.rpt tbody tr.quiet td { background: var(--of-panel); color: var(--of-slate); }
+  table.rpt .hd { font-weight: 700; color: var(--of-navy); }
+  table.rpt .nm { font-weight: 700; color: var(--of-navy); text-align: right; }
+  table.rpt .nm.sug { color: var(--of-amber-text); }
+  table.rpt .nm.zero { font-weight: 400; color: var(--of-muted); }
+  table.rpt th.r, table.rpt td.r { text-align: right; }
+  table.rpt .d1 { display: block; font-weight: 700; color: var(--of-navy); white-space: nowrap; }
+  table.rpt .d2 { display: block; color: var(--of-slate); white-space: nowrap; }
+  table.rpt .days > div { margin: 0 0 1.4pt; line-height: 1.25; }
+  table.rpt .days > div:last-child { margin-bottom: 0; }
+  table.rpt .days b { color: var(--of-navy); font-weight: 700; }
+  table.rpt .none { color: var(--of-muted); }
+  table.rpt tr.group td { padding: 2pt 6pt 2.2pt; font-size: 6.8pt; letter-spacing: .12em; }
+  table.rpt td .chips { gap: 2pt; }
+  .rpt-note { font-size: 8.4pt; color: var(--of-slate); margin-top: 5pt; line-height: 1.35; }
+  .rpt-empty { margin: 4pt 0; }
+  .rpt-empty p { font-size: 9pt; line-height: 1.4; }
+  /* status chip: tone + SHAPE + WORD so it survives grayscale (ok = solid disc, info = ring + dot,
+     warn = hollow ring, danger = solid square, neutral = no mark) */
+  .st { display: inline-flex; align-items: center; gap: 3.2pt; font-size: var(--fs-chip); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; line-height: 1; padding: 2.4pt 4.6pt 2.6pt 3.8pt; border-radius: 3pt; border: var(--hair) solid var(--of-line); background: var(--of-panel); color: var(--of-neutral-text); white-space: nowrap; vertical-align: middle; }
+  .st i { flex: none; width: 5pt; height: 5pt; box-sizing: border-box; border: 1pt solid currentColor; border-radius: 50%; }
+  .st.none-mark i { display: none; }
+  .st.ok { background: var(--of-green-fill); border-color: var(--of-green-line); color: var(--of-green-text); }
+  .st.ok i { background: currentColor; }
+  .st.info { background: var(--of-blue-fill); border-color: var(--of-blue-line); color: var(--of-blue-text); }
+  .st.info i { background: currentColor; box-shadow: inset 0 0 0 .9pt #fff; }
+  .st.warn { background: var(--of-amber-fill); border-color: var(--of-amber-line); color: var(--of-amber-text); }
+  .st.warn i { background: transparent; }
+  .st.danger { background: var(--of-red-fill); border-color: var(--of-red-line); color: var(--of-red-text); }
+  .st.danger i { background: currentColor; border-radius: 0.6pt; }
+  .illustrative { font-size: 6.6pt; color: var(--of-muted); font-style: italic; }
+
+</style>
+</head>
+<body>
+<div class="doc">
+
+  <header class="masthead rpt-mast">
+    <div>
+      <div class="eyebrow"><i></i>Production report</div>
+      <h1>Breakdown Completeness</h1>
+      <p class="meta-line">Project: Low Tide Radio · Source: LOW TIDE RADIO: Blue Revision (Locked)</p>
+    </div>
+    <div class="rpt-side" aria-label="Report details">
+      <div class="lbl">Generated</div>
+      <div class="date">22 Oct 2026</div>
+      <div class="scope">Filtered rows</div>
+    </div>
+  </header>
+  <div class="rpt-ctx"><div class="banner info"><b>Filter</b><span><span class="q">“zzz no row contains this”</span> <span class="rest">· rows with this text in any cell (not case-sensitive)</span></span></div></div>
+  <div class="rpt-metrics" role="group" aria-label="Report totals"><div class="m "><span class="v" data-m="t">0</span><span class="l">Scenes</span></div><div class="m "><span class="v" data-m="r">0</span><span class="l">Reviewed</span></div><div class="m "><span class="v" data-m="p">0</span><span class="l">In progress or needs review</span></div><div class="m "><span class="v" data-m="n">0</span><span class="l">Not started</span></div></div>
+  
+  
+  
+  <div class="callout info block rpt-empty" data-empty><p>No matching data.</p></div>
+</div>
+
+<script src="../../../00_SYSTEM/assets/of-preview.js"></script>
+</body>
+</html>

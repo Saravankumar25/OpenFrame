@@ -67,6 +67,16 @@ pub trait Launcher: Send + Sync {
     }
 }
 
+/// Memory the chat engine may use to keep its work on earlier prompts, in MiB.
+///
+/// The model alternates between prompts that share a long start (the fixed instructions, the
+/// conversation so far) and short calls in between. This engine build keeps the work on a prompt only
+/// in this store: with it off (`0`), or with two engine slots, a repeated start is read again in full
+/// (measured for spec slice S8: 1,531 prompt tokens, 1,322 reused with the store, 1 without, and 0 with
+/// two slots). Its default is 8,192 MiB, which a long session could fill; 512 MiB holds about a dozen
+/// prompts, the latest of each conversation, and the oldest are dropped first.
+pub const PROMPT_STORE_MB: u32 = 512;
+
 /// The bundled llama.cpp `llama-server`: on the processor (`-ngl 0`), or with every layer on one
 /// graphics card device of the Vulkan build (ADR-0029; the launch plan in the manager is the only
 /// place that chooses).
@@ -109,6 +119,8 @@ impl Launcher for LlamaServerLauncher {
             self.threads.max(1).to_string(),
             "--parallel".into(),
             "1".into(),
+            "--cache-ram".into(),
+            PROMPT_STORE_MB.to_string(),
             "--no-webui".into(),
             "--no-slots".into(),
             "--offline".into(),
@@ -449,6 +461,22 @@ impl Supervisor {
     pub fn ensure_ready(&self, timeout: Duration) -> AppResult<Endpoint> {
         self.start()?;
         self.wait_ready(timeout)
+    }
+
+    /// Requests in flight now.
+    pub fn in_flight(&self) -> u32 {
+        self.shared.inner.lock().busy
+    }
+
+    /// The engine is up or on its way up (no new process would be started to serve a request).
+    pub fn is_running(&self) -> bool {
+        matches!(
+            self.state(),
+            RuntimeState::Starting
+                | RuntimeState::LoadingModel
+                | RuntimeState::Ready
+                | RuntimeState::Busy
+        )
     }
 
     /// Mark a request in flight (Ready → Busy); dropping the guard returns to Ready.

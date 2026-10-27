@@ -3,7 +3,7 @@
 //
 //   node scripts/check-links.mjs     exit 1 when a relative link in a living document points at a missing file
 //
-// Scans every .md file except records: docs/audits, docs/archive, docs/release/evidence and the earlier-entries part of the
+// Scans every .md file except records: docs/audits, docs/history, docs/release/evidence and the earlier-entries part of the
 // logs are history and may point at files that were renamed since. Web links and anchors are not checked.
 
 import fs from "node:fs";
@@ -15,7 +15,7 @@ const ROOT = process.env.OPENFRAME_CHECK_ROOT
   : path.resolve(path.dirname(url.fileURLToPath(import.meta.url)), "..");
 // OpenFrameMac and changes are local, uncommitted reference folders the owner supplies (listed in .git/info/exclude).
 const SKIP_DIRS = new Set(["node_modules", "target", ".git", "graphify-out", ".claude", ".build-cache", "dist", "gen", "OpenFrameMac", "changes"]);
-const RECORD_PREFIXES = ["docs/audits/", "docs/archive/", "docs/release/evidence/"];
+const RECORD_PREFIXES = ["docs/audits/", "docs/history/", "docs/release/evidence/"];
 // Documents whose older sections are kept as written; links after the marker line are not checked.
 const HISTORY_MARKERS = {
   "docs/implementation/progress-log.md": "## Earlier entries",

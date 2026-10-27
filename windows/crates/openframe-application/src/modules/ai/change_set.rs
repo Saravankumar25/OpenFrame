@@ -968,6 +968,7 @@ pub fn recheck(core: &AppCore, actor: &Actor, id: &str) -> AppResult<ChangeSetDt
             },
         )?;
         let ctx = ToolCtx {
+            core,
             conn: c,
             actor,
             scope: &scope,

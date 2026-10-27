@@ -20,6 +20,9 @@ export type DialogState =
 
 export const ZOOM_LEVELS = [50, 70, 85, 100, 125, 150] as const;
 
+/** Beat Board layout: acts as side-by-side columns (vertical) or as stacked rows (horizontal). */
+export type BoardLayout = "vertical" | "horizontal";
+
 function readLocal<T>(key: string, fallback: T): T {
   try {
     const v = window.localStorage.getItem(key);
@@ -50,6 +53,7 @@ interface StoryUi {
   dialog: DialogState;
   zoom: number;
   parkingOpen: boolean;
+  boardLayout: BoardLayout;
   filter: string;
   select: (keys: string[]) => void;
   toggle: (key: string) => void;
@@ -62,6 +66,7 @@ interface StoryUi {
   openDialog: (d: DialogState) => void;
   setZoom: (z: number) => void;
   setParkingOpen: (v: boolean) => void;
+  setBoardLayout: (v: BoardLayout) => void;
   setFilter: (q: string) => void;
 }
 
@@ -75,6 +80,8 @@ export const useStoryUi = create<StoryUi>((set) => ({
   dialog: null,
   zoom: readLocal("of.story.zoom", 100),
   parkingOpen: readLocal("of.story.parkingOpen", true),
+  // Any stored value other than "horizontal" (old or hand-edited) falls back to today's columns.
+  boardLayout: readLocal<string>("of.story.boardLayout", "vertical") === "horizontal" ? "horizontal" : "vertical",
   filter: "",
   select: (keys) => set({ selected: keys }),
   toggle: (key) => set((s) => ({ selected: s.selected.includes(key) ? s.selected.filter((k) => k !== key) : [...s.selected, key] })),
@@ -92,6 +99,10 @@ export const useStoryUi = create<StoryUi>((set) => ({
   setParkingOpen: (v) => {
     writeLocal("of.story.parkingOpen", v);
     set({ parkingOpen: v });
+  },
+  setBoardLayout: (v) => {
+    writeLocal("of.story.boardLayout", v);
+    set({ boardLayout: v });
   },
   setFilter: (q) => set({ filter: q }),
 }));

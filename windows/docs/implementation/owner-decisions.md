@@ -3,7 +3,7 @@
 > Rewritten 2026-10-15 so that every row is a decision still in force. Decisions here belong to the product owner. Engineers
 > and agents must not decide them silently. Mark a decision **Decided** only when its ADR is Accepted or the owner has
 > answered in chat and the answer is written here. The earlier table, with its replaced rows and old wording, is kept in
-> [the archive](../archive/2026-10-15-owner-decisions-before-restructure.md). The build plan is [masterplan.md](masterplan.md);
+> [history](../history/2026-10-15-owner-decisions-before-restructure.md). The build plan is [masterplan.md](masterplan.md);
 > the phases are in [../roadmap/](../roadmap/README.md).
 
 ## 1. Decided
@@ -68,6 +68,16 @@
 | AI files for CI | CI tests the download against a test manifest and host; local builds use `.ai-assets` | 2026-10-15 | ADR-0026 |
 | Crash-safe AI changes | An AI change that a crash interrupts is undone on the next open | 2026-10-05 | [ADR-0019](../adr/ADR-0019-crash-safe-change-set-apply.md) |
 | AI Assistant panel placement | The panel docks beside the page and narrows it; never covers a control; open or closed is remembered | 2026-10-08 | UX specification section 71 |
+| Assistant answer shape | Explain, deep and ideas answers may show line breaks, simple "- " lists and "1. " numbered lists in the conversation view. Quick answers and the Agent lane stay flat | 2026-10-24 | [ADR-0035](../adr/ADR-0035-ai-lanes-briefings-and-code-verifiers.md), [ai-answer-paths.md](../engineering/ai-answer-paths.md) decision 5 |
+| Assistant progress and Cancel | While the assistant works the panel shows progress lines only (no token streaming, no text that is later replaced) and a Cancel button | 2026-10-24 | ADR-0035 |
+| Saving a conversation for review | A tester may save a conversation to a file for review, only by pressing Save in the AI panel; nothing is saved or sent on its own | 2026-10-24 | [ADR-0028](../adr/ADR-0028-ai-quality-program-and-harness.md) decision 8, amended |
+| Where the AI harness plan lives | `docs/specs/ai-harness-rebuild.md` stays the plan and the evidence; the decisions it led to are in ADR-0035 (owner decision 10 of that plan) | 2026-10-24 | [ai-harness-rebuild.md](../history/2026-10-24-ai-harness-rebuild-plan.md), ADR-0035 |
+| Assistant is a conversational chat assistant | One conversational path for questions on the whole platform: a project index over every object type, focus, short-term and long-term memory, per-turn context fetched from the project, and answers shaped by the question (one sentence for a fact, a paragraph for an explanation or a relationship), with sources behind the sources button. The model stays Gemma 3 1B, offline. This replaces the five answer lanes for questions; exact commands and proposals keep their code routes | 2026-10-26 | Owner, in chat; [ADR-0037](../adr/ADR-0037-conversational-assistant-focus-and-dossiers.md), [ai-conversational-harness.md](../specs/ai-conversational-harness.md) |
+| Deterministic answers are cut to the few that need exactness or safety | Code fetches, counts, checks and refuses; the model writes the answers. The deterministic pieces are listed with their reasons in section 4 of the spec; a new one needs an entry there | 2026-10-26 | Owner, in chat; spec section 4 |
+| Laya model not used | The Laya classifier was considered and dropped; no new classifier model | 2026-10-26 | Owner, in chat; ADR-0037 decision 5 |
+| Order of work for the conversational assistant | Document everything first, then build in a new session, slice by slice, each slice measured on the eval before the next | 2026-10-26 | Owner, in chat; spec section 8 |
+| Long-term memory of the assistant | On. An entry is saved only when the person states a fact or a preference outright or confirms an answer; entries are per user and per project, stay on this computer, are listed in Settings and each can be deleted | 2026-10-26 | Owner, in chat; spec section 5.7, slice S6 |
+| DeepSeek Harness | Not installed and not shipped. It is an MIT-licensed coding-agent app (Node, local web UI, file and command access, built for large models); OpenFrame keeps its Rust harness of ADR-0037 and borrows its design ideas (a staged turn pipeline with hooks, guards that cannot be undone by a later stage, an event log per turn, domain fetchers registered like plugins) | 2026-10-26 | Owner, in chat; spec section 14 |
 
 ### Product behaviour
 
@@ -84,6 +94,8 @@
 | Private notes in a restored backup | The person restoring becomes the owner of its private notes | 2026-10-08 | ADR-0012 amendment |
 | Enter after a character name | One Enter creates the character and moves to Dialogue | 2026-10-08 | Revision 1 specification section 7 |
 | Dashes in on-screen text | No em dash, and no en dash used as a dash, in any text OpenFrame shows or writes itself | 2026-10-08 | [Writing standard](../engineering/35-writing-standard.md) |
+| Screenplay formatting standard | Version 5 replaces version 4 as the layout standard; version 4 is in `docs/history/specs/` | 2026-10-24 | [screenplay-formatting-standard-v5.md](../specs/screenplay-formatting-standard-v5.md), [ADR-0008](../adr/ADR-0008-deterministic-pdf.md) amendment |
+| Production PDF design | The PDF design package v2 is the design source for every production PDF (footer with the lossless logo, 66 pt bottom margin, orientation per export as in the package) | 2026-10-24 | [ADR-0036](../adr/ADR-0036-production-pdf-design-system-v2.md), [package](../specs/pdf-design-package-v2/README.md) |
 
 ### How the work is done
 
@@ -93,7 +105,7 @@
 | No build without the word | An installer, a release executable or a disk image is built only when the owner says so in that conversation | 2026-10-08 | CLAUDE.md, ADR-0030 |
 | Repository visibility | Private. Classic branch protection needs a paid plan; a free ruleset is an owner choice | 2026-10-06 | masterplan area 1 |
 | Verification before ticking | A box is ticked only with `(ev: ...)` evidence, at the proof level it names | 2026-10-08 | CLAUDE.md, ADR-0030 |
-| Documentation | Organised by chapter; history moves to the archive and is not rewritten; no two current documents give different rules; one pass, not several | 2026-10-15 | [docs/README.md](../README.md) |
+| Documentation | Organised by chapter; history moves to docs/history (merged from docs/archive on 2026-10-24) and is not rewritten; no two current documents give different rules; one pass, not several | 2026-10-15 | [docs/README.md](../README.md) |
 | Build folders and storage | One build folder per checkout under `.build-cache`; budgets in the storage policy | 2026-10-08 | [development-storage-policy.md](../development-storage-policy.md) |
 | Unmaintained font crates | Dated exception for `rustybuzz` and `ttf-parser` until 2027-01-06 | 2026-10-08 | `deny.toml`, masterplan area 6 |
 | Release-build tests and real data | The release build honours the test data folder for file locations only; every other test switch stays debug-only | 2026-10-16 | [ADR-0031](../adr/ADR-0031-release-build-test-data-folder.md) |
@@ -102,6 +114,10 @@
 | W1 to W3 on `main` | Merged locally (no push) before W4 started | 2026-10-16 | progress log |
 | W6 accepted on the bar; W4 to W8 on `main` | W6 accepted at English correct tool 96.7 percent and end state 88.8 percent; the remaining W6 items wait for a later request. `windows/w8-download` merged into `main` locally, no push | 2026-10-17 | [w6 evidence](../release/evidence/w6/README.md) |
 | W9 on `main` | `windows/w9-endgame` merged into `main` locally (fast-forward to d4acb83) after the W9 gate closed; no push | 2026-10-18 | Owner, in chat; [release gate](../release/windows-internal-release-gate.md) |
+| One history folder | Older decisions, deprecated documents and material that no longer fits the current version move to `docs/history/`; `docs/archive/` was merged into it | 2026-10-24 | [docs/README.md](../README.md), [history index](../history/README.md) |
+| Mac work for the 2026-10-24 upgrade | Windows first. The Mac track gets a port list, not a parallel Mac build | 2026-10-24 | [mac-port-list-2026-10-24.md](../roadmap/mac-port-list-2026-10-24.md) |
+| Parallel work for this upgrade | Three tracks may run side by side for this upgrade only, each with a file-ownership map; the "agents never run in parallel" rule of `CLAUDE.md` is otherwise unchanged | 2026-10-24 | Owner, in chat |
+| End-to-end runs for this upgrade | The full end-to-end suite runs once, at the end of the whole upgrade, not after each slice | 2026-10-24 | Owner, in chat; [testing strategy](../testing/README.md) |
 
 ## 2. Still open
 

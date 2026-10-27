@@ -12,6 +12,7 @@ import assert from "node:assert/strict";
 import {
   click,
   launchApp,
+  openBeatBoard,
   openWorkspace,
   pageText,
   sleep,
@@ -132,7 +133,7 @@ describe("desktop journey", () => {
 
   test("Story: act, sequence, two cards (one with Ctrl+N), keyboard reorder, undo/redo", async () => {
     await step("story", async () => {
-      await openWorkspace(browser, "Story");
+      await openBeatBoard(browser);
       await click(browser, "Add Act");
       await (await $('//input[@aria-label="Act title"]')).setValue("Act 1");
       await browser.keys("Enter");
@@ -341,7 +342,7 @@ describe("desktop journey", () => {
 
   test("Recently Deleted: delete a Scene Card and restore it", async () => {
     await step("trash", async () => {
-      await openWorkspace(browser, "Story");
+      await openBeatBoard(browser);
       await (await $('//*[@aria-label="Scene Card: Bus stop reunion in the rain"]')).click();
       await browser.keys("Delete");
       // Deleting a card that already built a screenplay scene asks first.
@@ -354,7 +355,7 @@ describe("desktop journey", () => {
       await click(browser, "Project: Night Bus. Switch or manage projects");
       await menuItem("Recently Deleted");
       await click(browser, "Restore Bus stop reunion in the rain");
-      await openWorkspace(browser, "Story");
+      await openBeatBoard(browser);
       await browser.waitUntil(async () => (await cards()).includes("Bus stop reunion in the rain"), { timeout: 10_000, timeoutMsg: "card not restored" });
       await assertQuietConsole("recently deleted");
     });
@@ -400,7 +401,7 @@ describe("desktop journey", () => {
         await visit(`Production › ${t}`);
       }
       for (const t of ["Outline", "Characters", "Timeline"]) {
-        await openWorkspace(browser, "Story");
+        await openBeatBoard(browser);
         await (await $(`//*[@role="tablist"]//*[@role="tab"][normalize-space(.)="${t}"]`)).click();
         await visit(`Story › ${t}`);
       }

@@ -601,11 +601,8 @@ struct ScriptedModel {
 }
 
 impl ScriptedModel {
-    fn call(&self, tool: &str, args: Value) {
-        self.replies
-            .lock()
-            .unwrap()
-            .push_back(json!({ "tool": tool, "arguments": args }).to_string());
+    fn reply(&self, text: &str) {
+        self.replies.lock().unwrap().push_back(text.to_string());
     }
 }
 
@@ -711,33 +708,42 @@ fn e2e_import_fountain_and_fdx_then_breakdown_and_ai_counts() {
     );
     assert!(pu["unchanged"].is_number());
 
-    // Offline AI: deterministic count tools answer from the project data.
+    // Offline AI: the model writes the answer, code holds it to the project's own numbers.
     let model = Arc::new(ScriptedModel::default());
     ai::service(&env.core).attach_model(Some(model.clone() as Arc<dyn InferenceProvider>));
-    // Plain counts are W6 recipes: answered from project data without the model.
+    model.reply(&format!("The script has {} scenes.", sc.len()));
     let a = env.ok(
         "ai.ask",
         json!({ "text": "How many scenes are in the script?", "scope": { "kind": "CurrentScreenplay" } }),
     );
     assert_eq!(a["result"]["kind"], "Answer", "{a}");
-    assert_eq!(a["result"]["confidence"], "Exact");
+    assert_eq!(a["result"]["confidence"], "Inferred");
     let content = a["result"]["content"].as_str().unwrap();
     assert!(content.contains(&sc.len().to_string()), "{content}");
+    // A number the project does not hold is refused three times; code then states the project's own.
+    for _ in 0..3 {
+        model.reply("There are 999 scenes.");
+    }
     let a = env.ok(
         "ai.ask",
-        json!({ "text": "How many characters speak?", "scope": { "kind": "CurrentScreenplay" } }),
+        json!({ "text": "How many scenes are in the script?", "scope": { "kind": "CurrentScreenplay" } }),
     );
-    assert_eq!(a["result"]["kind"], "Answer", "{a}");
-    // Unscheduled scenes: every scene is unscheduled once a schedule exists.
+    assert_eq!(a["result"]["confidence"], "Exact", "{a}");
+    let content = a["result"]["content"].as_str().unwrap();
+    assert!(
+        content.contains(&sc.len().to_string()) && !content.contains("999"),
+        "{content}"
+    );
+    // Unscheduled scenes: every scene is unscheduled once a schedule exists. The writer is given them.
     env.ok("schedule.create", json!({}));
-    model.call("unscheduled_scenes", json!({}));
+    for _ in 0..3 {
+        model.reply("Scene 999 is not scheduled.");
+    }
     let a = env.ok(
         "ai.ask",
         json!({ "text": "Which scenes are not scheduled?", "scope": { "kind": "WholeProject" } }),
     );
     assert_eq!(a["result"]["kind"], "Answer", "{a}");
-    let items = arr(&a["result"]["items"]);
-    assert_eq!(items.len(), sc.len(), "{a}");
     // AI never mutated anything.
     assert_eq!(count(&env, "SELECT count(*) FROM screenplay_draft"), 2);
 }

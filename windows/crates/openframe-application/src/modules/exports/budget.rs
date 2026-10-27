@@ -7,8 +7,9 @@
 
 use openframe_domain::{Actor, AppError, AppResult};
 use openframe_import_export::report::{
-    Align, Block, Callout, CalloutCol, Cell, CellItem, Col, Column, Document, HeaderStyle,
+    Align, Block, Callout, CalloutCol, Cell, CellItem, Chip, Col, Column, Document, HeaderStyle,
     Masthead, Metric, Metrics, Rgb, Row, Section, Side, StyledTable, Table, Tone, Txt, pal,
+    text_width,
 };
 use rusqlite::{Connection, OptionalExtension};
 use serde::Deserialize;
@@ -16,7 +17,7 @@ use ts_rs::TS;
 
 use super::style::nb;
 use super::{
-    Fmt, HINT_TABLES, Job, Output, amount_text, date_from_ms, deliver, destination, footer, money,
+    Fmt, HINT_TABLES, Job, Output, amount_text, date_from_ms, deliver, destination, money,
     nonblank, plural, require_export,
 };
 use crate::core::AppCore;
@@ -174,6 +175,86 @@ fn budget_color(name: &str) -> Rgb {
     })
 }
 
+/// Secondary text that passes 4.5:1 on white (the palette's FAINT is decoration only).
+const MUTED: Rgb = Rgb::hex(0x66728a);
+/// What prints where a line has no Actual amount (an en dash: the writing standard has no em dash).
+const NONE: &str = "\u{2013}";
+
+/// "LOW TIDE RADIO · BUDGET · INR": names the production and the currency on every page.
+fn running_header(project: &str, b: &Budget) -> String {
+    let mut parts: Vec<String> = Vec::new();
+    if let Some(p) = nb(project) {
+        parts.push(p.to_uppercase());
+    }
+    parts.push(if b.is_current {
+        "BUDGET".into()
+    } else {
+        "BUDGET SNAPSHOT".into()
+    });
+    parts.push(b.currency.to_uppercase());
+    parts.join(" \u{b7} ")
+}
+
+/// Amount cells of one document. Amounts are right aligned; when any amount of the document
+/// prints decimals, whole amounts keep the room of ".00" so the digits line up.
+struct Amounts<'a> {
+    cur: &'a str,
+    decimals: bool,
+}
+
+impl Amounts<'_> {
+    fn text(&self, v: i64) -> String {
+        amount_text(v, self.cur, true)
+    }
+    fn txt(&self, v: i64, size: f32, bold: bool, color: Rgb) -> Txt {
+        let t = Txt::new(self.text(v))
+            .size(size)
+            .color(color)
+            .align(Align::Right);
+        if bold { t.bold() } else { t }
+    }
+    fn inset(&self, v: i64, size: f32, bold: bool) -> f32 {
+        if self.decimals && !self.text(v).contains('.') {
+            text_width(".00", size, bold)
+        } else {
+            0.0
+        }
+    }
+    fn cell(&self, v: i64, size: f32, bold: bool, color: Rgb) -> Cell {
+        Cell::text(self.txt(v, size, bold, color)).inset_right(self.inset(v, size, bold))
+    }
+    /// A difference: a minus sign marks over plan, and a line also gets a shaded cell and the
+    /// words OVER PLAN (the sign alone would not survive a grayscale print).
+    fn diff(&self, v: i64, size: f32, bold: bool, flag: bool) -> Cell {
+        if v >= 0 {
+            return self.cell(v, size, bold, pal::INK);
+        }
+        let mut c = Cell::text(self.txt(v, size, true, pal::RED_TEXT))
+            .inset_right(self.inset(v, size, true));
+        if flag {
+            c = c.item(CellItem::Text(
+                Txt::new("OVER PLAN")
+                    .size(6.6)
+                    .bold()
+                    .track(0.5)
+                    .color(pal::RED_TEXT)
+                    .align(Align::Right),
+            ));
+            c = c.fill(pal::RED_FILL);
+        }
+        c
+    }
+    /// No Actual amount entered.
+    fn none(&self, size: f32) -> Cell {
+        let inset = if self.decimals {
+            text_width(".00", size, false)
+        } else {
+            0.0
+        };
+        Cell::text(Txt::new(NONE).size(size).color(MUTED).align(Align::Right)).inset_right(inset)
+    }
+}
+
 fn render(project: &str, b: &Budget, notes: bool) -> (Output, Job) {
     let cur = b.currency.as_str();
     let all = sum(b.lines.iter());
@@ -197,29 +278,32 @@ fn render(project: &str, b: &Budget, notes: bool) -> (Output, Job) {
     let plain = |v: i64| amount_text(v, cur, false);
     let opt_plain = |v: Option<i64>| v.map(plain).unwrap_or_default();
 
-    let mut doc = Document::new(&document).footer(footer(project, &document));
-    let mut mast = Masthead::new(document.clone()).eyebrow("Production · Budget", pal::ORANGE);
+    let mut doc = Document::new(&document).running_header(Some(running_header(project, b)));
+    let mut mast = Masthead::new(document.clone()).eyebrow("Production \u{b7} Budget", pal::ORANGE);
+    mast.title_size = 26.0;
     if let Some(p) = nb(project) {
         mast.subtitle = Some(p.to_string());
     }
     mast.lines
         .push("A simple estimate for planning. Formal accounting is outside OpenFrame.".into());
-    let mut side = vec![
-        (format!("Currency {cur}"), true),
-        (
-            if b.is_current {
-                "Current budget".to_string()
-            } else {
-                "Saved snapshot".to_string()
-            },
-            false,
-        ),
-    ];
-    if let Some(t) = b.frozen_at.filter(|_| !b.is_current) {
-        side.push((format!("Saved {}", date_from_ms(t)), false));
+    let mut side = vec![(format!("Currency {cur}"), true)];
+    if b.is_current {
+        side.push(("Current budget".to_string(), false));
+    } else {
+        side.push(("Saved snapshot".to_string(), false));
+        if let Some(t) = b.frozen_at {
+            side.push((format!("Saved {}", date_from_ms(t)), false));
+        }
     }
     side.push((format!("Exported {}", super::today_label()), false));
-    mast.side = Some(Side::Panel { lines: side });
+    mast.side = Some(if b.is_current {
+        Side::Panel { lines: side }
+    } else {
+        Side::Badge {
+            chip: Chip::label("Snapshot", Tone::Accent),
+            lines: side,
+        }
+    });
     mast.rule = true;
     doc.push(Block::Masthead(mast));
     let under = all.difference >= 0;
@@ -232,16 +316,12 @@ fn render(project: &str, b: &Budget, notes: bool) -> (Output, Job) {
                 "Planned total",
             ),
             Metric::new(
+                money(contingency, cur),
                 if b.mode == "percent" {
-                    format!(
-                        "{}% · {}",
-                        amount_text(b.value, "PCT", true),
-                        money(contingency, cur)
-                    )
+                    format!("Contingency, {}%", amount_text(b.value, "PCT", true))
                 } else {
-                    money(contingency, cur)
+                    "Contingency".to_string()
                 },
-                "Contingency",
             ),
             Metric::new(
                 money(all.actual, cur),
@@ -349,40 +429,11 @@ fn render(project: &str, b: &Budget, notes: bool) -> (Output, Job) {
         }
         lines.push(r);
     }
-    // PDF tables show grouped amounts; spreadsheets keep plain numbers.
-    let grouped = |v: i64| amount_text(v, cur, true);
-    let signed = |v: i64| -> Cell {
-        let (color, bold) = if v < 0 {
-            (pal::RED_TEXT, true)
-        } else {
-            (pal::INK, false)
-        };
-        let mut t = Txt::new(grouped(v))
-            .size(8.8)
-            .color(color)
-            .align(Align::Right);
-        if bold {
-            t = t.bold();
-        }
-        Cell::text(t)
-    };
-    let amount = |v: i64, bold: bool| -> Cell {
-        let mut t = Txt::new(grouped(v))
-            .size(8.8)
-            .color(pal::INK)
-            .align(Align::Right);
-        if bold {
-            t = t.bold().color(pal::NAVY);
-        }
-        Cell::text(t)
-    };
+
     doc.push(Block::Section(Section::new("By category", None)));
     if cats.rows.is_empty() {
         doc.push(Block::Text(
-            Txt::new("No lines yet.")
-                .size(8.8)
-                .color(pal::FAINT)
-                .after(6.0),
+            Txt::new("No lines yet.").size(8.8).color(MUTED).after(6.0),
         ));
     } else {
         let mut names: Vec<String> = BUDGET_CATEGORIES.iter().map(|c| c.to_string()).collect();
@@ -404,56 +455,92 @@ fn render(project: &str, b: &Budget, notes: bool) -> (Output, Job) {
                 b.lines.iter().filter(|l| l.category == name).collect()
             }
         };
+        let names: Vec<String> = names
+            .into_iter()
+            .filter(|n| !in_cat(n).is_empty())
+            .collect();
+        // One decimal convention for the whole document: any amount with decimals lines up
+        // the whole ones in every table.
+        let every_amount = names
+            .iter()
+            .flat_map(|n| {
+                let s = sum(in_cat(n).into_iter());
+                [s.planned, s.actual, s.difference]
+            })
+            .chain(b.lines.iter().flat_map(|l| {
+                [Some(l.planned), l.actual, l.actual.map(|a| l.planned - a)]
+                    .into_iter()
+                    .flatten()
+            }))
+            .chain([all.planned, all.actual, all.difference]);
+        let decimals = every_amount
+            .into_iter()
+            .any(|v| amount_text(v, cur, true).contains('.'));
+        let m = Amounts { cur, decimals };
+
+        // ---- By category
         let mut t = StyledTable::new(vec![
-            Col::weight("Category", 2.0),
-            Col::pt("Lines", 40.0).align(Align::Right),
-            Col::pt(format!("Planned ({cur})"), 86.0).align(Align::Right),
-            Col::pt(format!("Actual ({cur})"), 86.0).align(Align::Right),
+            Col::weight("Category", 1.0),
+            Col::pt("Lines", 46.0).align(Align::Right),
+            Col::pt("Share of planned", 84.0),
+            Col::pt(format!("Planned ({cur})"), 84.0).align(Align::Right),
+            Col::pt(format!("Actual ({cur})"), 84.0).align(Align::Right),
             Col::pt(format!("Difference ({cur})"), 92.0).align(Align::Right),
-            Col::weight("Share of planned", 1.0),
         ]);
         t.boxed = true;
         t.header = HeaderStyle::Tint;
-        t.continued = Some("By category".into());
+        t.pad_x = 6.0;
         let planned_total = all.planned.max(1);
         for name in &names {
             let ls = in_cat(name);
-            if ls.is_empty() {
-                continue;
-            }
             let s = sum(ls.iter().copied());
             let has_actual = s.actual_count > 0;
-            t.rows.push(Row::new(vec![
-                Cell::new().item(CellItem::Heading {
-                    dot: Some(budget_color(name)),
-                    text: name.clone(),
-                    right: None,
-                }),
-                Cell::text(
-                    Txt::new(ls.len().to_string())
-                        .size(8.8)
-                        .color(pal::SLATE)
+            let mut lines_cell = Cell::text(
+                Txt::new(ls.len().to_string())
+                    .size(8.8)
+                    .color(pal::SLATE)
+                    .align(Align::Right),
+            );
+            if has_actual {
+                lines_cell = lines_cell.item(CellItem::Text(
+                    Txt::new(format!("{} actual", s.actual_count))
+                        .size(6.8)
+                        .color(MUTED)
                         .align(Align::Right),
-                ),
-                amount(s.planned, true),
-                if has_actual {
-                    amount(s.actual, false)
-                } else {
-                    Cell::empty()
-                },
-                if has_actual {
-                    signed(s.difference)
-                } else {
-                    Cell::empty()
-                },
+                ));
+            }
+            t.rows.push(Row::new(vec![
+                Cell::new().item(CellItem::Name {
+                    dot: Some(budget_color(name)),
+                    text: Txt::new(name.clone())
+                        .size(9.2)
+                        .bold()
+                        .color(pal::INK)
+                        .leading(1.3),
+                    small: None,
+                }),
+                lines_cell,
                 Cell::new()
                     .item(CellItem::Bar {
-                        share: s.planned as f32 / planned_total as f32,
-                        color: budget_color(name),
+                        share: (s.planned as f32 / planned_total as f32).clamp(0.0, 1.0),
+                        color: pal::SLATE,
                     })
                     .middle(),
+                m.cell(s.planned, 8.4, true, pal::NAVY),
+                if has_actual {
+                    m.cell(s.actual, 8.4, false, pal::INK)
+                } else {
+                    m.none(8.4)
+                },
+                if has_actual {
+                    m.diff(s.difference, 8.4, false, true)
+                } else {
+                    m.none(8.4)
+                },
             ]));
         }
+        let white =
+            |v: i64| Cell::text(m.txt(v, 8.8, true, pal::WHITE)).inset_right(m.inset(v, 8.8, true));
         let mut total = Row::new(vec![
             Cell::text(
                 Txt::new("Total in lines")
@@ -468,95 +555,182 @@ fn render(project: &str, b: &Budget, notes: bool) -> (Output, Job) {
                     .color(pal::WHITE)
                     .align(Align::Right),
             ),
-            Cell::text(
-                Txt::new(grouped(all.planned))
-                    .size(8.8)
-                    .bold()
-                    .color(pal::WHITE)
-                    .align(Align::Right),
-            ),
-            if all.actual_count > 0 {
-                Cell::text(
-                    Txt::new(grouped(all.actual))
-                        .size(8.8)
-                        .bold()
-                        .color(pal::WHITE)
-                        .align(Align::Right),
-                )
-            } else {
-                Cell::empty()
-            },
-            if all.actual_count > 0 {
-                Cell::text(
-                    Txt::new(grouped(all.difference))
-                        .size(8.8)
-                        .bold()
-                        .color(pal::WHITE)
-                        .align(Align::Right),
-                )
-            } else {
-                Cell::empty()
-            },
             Cell::empty(),
+            white(all.planned),
+            if all.actual_count > 0 {
+                white(all.actual)
+            } else {
+                Cell::text(
+                    Txt::new(NONE)
+                        .size(8.8)
+                        .color(pal::WHITE)
+                        .align(Align::Right),
+                )
+            },
+            if all.actual_count > 0 {
+                white(all.difference)
+            } else {
+                Cell::text(
+                    Txt::new(NONE)
+                        .size(8.8)
+                        .color(pal::WHITE)
+                        .align(Align::Right),
+                )
+            },
         ]);
         total.fill = Some(pal::NAVY);
+        total.keep_prev = 2;
         t.rows.push(total);
         doc.push(Block::Styled(t));
+        doc.push(Block::Text(
+            Txt::new(
+                "How to read the amounts. Planned adds every line. Actual and Difference add only \
+                 the lines that have an Actual amount, so they are not comparable with the whole \
+                 Planned column. Difference is Planned minus Actual: a positive amount is under \
+                 plan, a minus sign (shaded, with the words OVER PLAN) is over plan. A dash means \
+                 no Actual amount has been entered.",
+            )
+            .size(7.4)
+            .color(MUTED)
+            .leading(1.35)
+            .after(4.0),
+        ));
 
+        // ---- Line items: one table per category, its band and column labels in the header
         doc.push(Block::Section(Section::new(
             "Line items",
             Some(plural(b.lines.len(), "line", "lines")),
         )));
-        let mut li = StyledTable::new(vec![
-            Col::weight("Line item", 2.6),
-            Col::pt(format!("Planned ({cur})"), 90.0).align(Align::Right),
-            Col::pt(format!("Actual ({cur})"), 90.0).align(Align::Right),
-            Col::pt(format!("Difference ({cur})"), 96.0).align(Align::Right),
-        ]);
-        li.boxed = true;
-        li.header = HeaderStyle::Tint;
-        li.continued = Some("Line items".into());
+        let label = |text: String| {
+            Cell::text(
+                Txt::new(text.to_uppercase())
+                    .size(7.0)
+                    .bold()
+                    .track(0.8)
+                    .color(pal::SLATE),
+            )
+        };
+        let header = |name: &str, count: String| -> Vec<Cell> {
+            vec![
+                Cell::new().item(CellItem::Name {
+                    dot: Some(budget_color(name)),
+                    text: Txt::new(name.to_string())
+                        .size(10.0)
+                        .bold()
+                        .color(pal::NAVY)
+                        .leading(1.3),
+                    small: Some(Txt::new(count).size(7.4).color(pal::SLATE)),
+                }),
+                label(format!("Planned ({cur})")),
+                label(format!("Actual ({cur})")),
+                label(format!("Difference ({cur})")),
+            ]
+        };
+        let last_name = names.last().cloned();
         for name in &names {
             let ls = in_cat(name);
-            if ls.is_empty() {
-                continue;
-            }
-            let mut band = Row::spanning(Cell::new().item(CellItem::Heading {
-                dot: Some(budget_color(name)),
-                text: name.clone(),
-                right: Some(plural(ls.len(), "line", "lines")),
-            }));
-            band.fill = Some(pal::PANEL);
-            band.keep_next = true;
-            li.rows.push(band);
-            for l in ls {
+            let count = plural(ls.len(), "line", "lines");
+            let mut li = StyledTable::new(vec![
+                Col::weight("Line item", 1.0),
+                Col::pt(format!("Planned ({cur})"), 84.0).align(Align::Right),
+                Col::pt(format!("Actual ({cur})"), 84.0).align(Align::Right),
+                Col::pt(format!("Difference ({cur})"), 92.0).align(Align::Right),
+            ]);
+            li.boxed = true;
+            li.header = HeaderStyle::Tint;
+            li.pad_x = 6.0;
+            li.header_cells = Some(header(name, count.clone()));
+            li.header_continued = Some(header(name, format!("{count} \u{b7} continued")));
+            for l in &ls {
                 let mut desc = Cell::text(
                     Txt::new(l.description.clone())
-                        .size(9.0)
+                        .size(8.8)
                         .bold()
                         .color(pal::NAVY)
                         .leading(1.25),
                 );
                 if notes && let Some(n) = nonblank(l.notes.as_deref()) {
                     desc = desc.item(CellItem::Text(
-                        Txt::new(n).size(8.2).color(pal::SLATE).leading(1.3),
+                        Txt::new(n).size(7.8).color(pal::SLATE).leading(1.3),
                     ));
                 }
                 li.rows.push(Row::new(vec![
                     desc,
-                    amount(l.planned, false),
+                    m.cell(l.planned, 8.4, false, pal::INK),
                     match l.actual {
-                        Some(a) => amount(a, false),
-                        None => Cell::empty(),
+                        Some(a) => m.cell(a, 8.4, false, pal::INK),
+                        None => m.none(8.4),
                     },
                     match l.actual {
-                        Some(a) => signed(l.planned - a),
-                        None => Cell::empty(),
+                        Some(a) => m.diff(l.planned - a, 8.4, false, true),
+                        None => m.none(8.4),
                     },
                 ]));
             }
+            // The subtotal travels with the last two lines it adds up.
+            let s = sum(ls.iter().copied());
+            let bold_num = |v: i64| m.cell(v, 8.4, true, pal::NAVY);
+            let mut sub = Row::new(vec![
+                Cell::text(
+                    Txt::new(format!("SUBTOTAL \u{b7} {}", name.to_uppercase()))
+                        .size(7.4)
+                        .bold()
+                        .track(0.6)
+                        .color(pal::SLATE),
+                ),
+                bold_num(s.planned),
+                if s.actual_count > 0 {
+                    bold_num(s.actual)
+                } else {
+                    m.none(8.4)
+                },
+                if s.actual_count > 0 {
+                    m.diff(s.difference, 8.4, true, true)
+                } else {
+                    m.none(8.4)
+                },
+            ]);
+            sub.fill = Some(pal::PANEL);
+            sub.keep_prev = 2;
+            li.rows.push(sub);
+            if Some(name) == last_name.as_ref() {
+                // The grand total closes the last table and stays with its subtotal.
+                let tot = |v: i64| {
+                    Cell::text(m.txt(v, 8.8, true, pal::WHITE)).inset_right(m.inset(v, 8.8, true))
+                };
+                let dash = || {
+                    Cell::text(
+                        Txt::new(NONE)
+                            .size(8.8)
+                            .color(pal::WHITE)
+                            .align(Align::Right),
+                    )
+                };
+                let mut total = Row::new(vec![
+                    Cell::text(
+                        Txt::new("Total in lines")
+                            .size(9.0)
+                            .bold()
+                            .color(pal::WHITE),
+                    ),
+                    tot(all.planned),
+                    if all.actual_count > 0 {
+                        tot(all.actual)
+                    } else {
+                        dash()
+                    },
+                    if all.actual_count > 0 {
+                        tot(all.difference)
+                    } else {
+                        dash()
+                    },
+                ]);
+                total.fill = Some(pal::NAVY);
+                total.keep_prev = 3;
+                li.rows.push(total);
+            }
+            doc.push(Block::Styled(li));
         }
-        doc.push(Block::Styled(li));
     }
     if let Some(n) = nonblank(b.notes.as_deref()) {
         doc.push(Block::Section(Section::new("Notes", None)));

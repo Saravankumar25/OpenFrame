@@ -26,9 +26,9 @@ How the toolbox (`modules/ai/toolbox.rs`, contract C3) enforces this:
   budget, so a small local model's prompt stays short. `retrieve_context` uses the hybrid retrieval
   service when called through `run_tool_unlocked`, and keyword retrieval (FTS5, same privacy rule) otherwise.
 
-- Registered operations: **496** (156 queries, 340 commands)
-- Exposed to the assistant through tools: **305**; not AI-accessible: **191**
-- Tools: **256** (63 read/compute/navigate, 193 proposal)
+- Registered operations: **523** (165 queries, 358 commands)
+- Exposed to the assistant through tools: **308**; not AI-accessible: **215**
+- Tools: **254** (61 read/compute/navigate, 193 proposal)
 
 Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation · **L** long-running (task id) · file effect: R = reads a user-picked file, W = writes to a user-picked location, P = project storage on disk.
 
@@ -41,7 +41,7 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 | `appearance.check_theme`: Read and check a theme file or pasted theme text and show its preview, without saving anything. | query | Compute | app level | R | `ThemeSourceArgs` → `ThemeCheck` | hidden | none |
 | `appearance.delete_theme`: Delete a theme from My Themes. If it is active, OpenFrame Default is applied. | command | Mutate | app level | DIC | `DeleteThemeArgs` → `AppearanceState` | hidden | none |
 | `appearance.export_theme`: Save a theme from My Themes as a theme file at a location the user picked. | command | Mutate | app level | W | `ExportThemeArgs` → `ExportThemeResult` | hidden | none |
-| `appearance.get`: The appearance mode, the active theme and the themes the user can choose. | query | Read | app level |  | `AppearanceGetArgs` → `AppearanceState` | hidden | none |
+| `appearance.get`: The appearance mode, the active theme and the themes the user can choose. | query | Read | app level |  | `AppearanceGetArgs` → `AppearanceState` | tool | `app_appearance` |
 | `appearance.import_theme`: Save a checked theme file or pasted theme text to My Themes, and apply it if asked. | command | Mutate | app level | R | `ImportThemeArgs` → `AppearanceState` | hidden | none |
 | `appearance.rename_theme`: Rename a theme in My Themes. | command | Mutate | app level |  | `RenameThemeArgs` → `AppearanceState` | hidden | none |
 | `appearance.set_mode`: Switch between Light, Dark and System appearance. | command | Mutate | app level |  | `SetModeArgs` → `AppearanceState` | hidden | none |
@@ -227,8 +227,10 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 | `vault.ingest_bytes`: Store a recording, sketch or pasted image in the Idea Vault. | command | Mutate | Edit |  | `VaultIngestBytesArgs` → `VaultItemDto` | hidden | none |
 | `vault.list`: Idea Vault items in a view (all, folder, collection, tag, type, pinned) with optional search. | query | Search | View |  | `VaultListArgs` → `Vec<VaultItemDto>` | tool | `idea_vault` |
 | `vault.move_to_folder`: Move Idea Vault items to a folder (or the top level). | command | Mutate | Edit |  | `VaultMoveArgs` → `()` | tool | `propose_organize_vault_items` |
+| `vault.orphan_files`: Files in the vault folder that no Idea Vault item uses. | query | Read | View | P | `VaultOverviewArgs` → `VaultOrphanFiles` | hidden | none |
 | `vault.overview`: Idea Vault overview: item counts, folders, collections and tags (project or Global Idea Vault). | query | Compute | View |  | `VaultOverviewArgs` → `VaultOverview` | tool | `idea_vault` |
 | `vault.purge`: Delete an Idea Vault item forever. | command | Mutate | PermanentDelete | DIC | `VaultTrashItemArgs` → `DeletedItemRow` | hidden | none |
+| `vault.recover_files`: Add files found in the vault folder back to the Idea Vault as new items. | command | Mutate | Edit | P | `VaultOverviewArgs` → `VaultRecoverResult` | hidden | none |
 | `vault.relink`: Relink a missing linked Idea Vault file. | command | Mutate | Edit | R | `VaultRelinkArgs` → `VaultItemDto` | hidden | none |
 | `vault.remove_from_collection`: Remove Idea Vault items from a collection. | command | Mutate | Edit |  | `VaultMembershipArgs` → `()` | tool | `propose_organize_vault_items` |
 | `vault.remove_tag`: Remove a tag from Idea Vault items. | command | Mutate | Edit |  | `VaultRemoveTagArgs` → `()` | tool | `propose_organize_vault_items` |
@@ -272,6 +274,7 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 | Operation | Kind | Class | Capability | Flags | Args → Result | AI | Covered by |
 |---|---|---|---|---|---|---|---|
 | `ai.ask`: Ask the assistant (one request, one AI Result). | command | Mutate | UseAi |  | `AskArgs` → `AiExchange` | hidden | none |
+| `ai.cancel`: Stop the assistant request that is running in a conversation (nothing is changed). | command | Mutate | UseAi |  | `AiCancelArgs` → `AiCancelDto` | hidden | none |
 | `ai.change_set.accept`: Apply a proposal after explicit human approval. | command | Mutate | ApplyChangeSet |  | `AcceptArgs` → `ChangeSetDto` | hidden | none |
 | `ai.change_set.get`: One prepared Change Set (proposal) of the requesting user. | query | Read | View |  | `AiChangeSetArgs` → `ChangeSetDto` | hidden | none |
 | `ai.change_set.recheck`: Re-check a stale proposal against the current project. | command | Mutate | UseAi |  | `AiChangeSetArgs` → `ChangeSetDto` | hidden | none |
@@ -282,12 +285,15 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 | `ai.download.remove`: Remove the downloaded OpenFrame AI models; projects are not touched. | command | Mutate | app level |  | `AiEmptyArgs` → `()` | hidden | none |
 | `ai.download.start`: Start or resume the OpenFrame AI download (the person's click; the app's only network use). | command | Mutate | app level |  | `AiEmptyArgs` → `()` | hidden | none |
 | `ai.download.status`: The Download OpenFrame AI screen: size, free space, progress. | query | Read | app level |  | `AiEmptyArgs` → `AiDownloadDto` | hidden | none |
+| `ai.export_conversation`: Write one of the person's own conversations (their questions, the answers and the sources) to a file they chose. | command | Mutate | UseAi |  | `AiConversationExportArgs` → `AiReportResult` | hidden | none |
 | `ai.export_report`: Write the local AI trace (numbers and ids only) and the health figures to a file the person chose. | command | Mutate | app level |  | `AiReportArgs` → `AiReportResult` | hidden | none |
 | `ai.graphics.set`: Settings, Offline AI, Graphics card: Automatic or Off. | command | Mutate | app level |  | `AiGraphicsArgs` → `()` | hidden | none |
 | `ai.health`: The AI health card: medians, apply rate, passes and the weakest tool, from the local numbers-only trace. | query | Read | app level |  | `AiHealthArgs` → `AiHealthDto` | hidden | none |
 | `ai.history`: The user's own assistant conversation history. | query | Read | UseAi |  | `AiHistoryArgs` → `AiHistoryDto` | hidden | none |
 | `ai.index_rebuild`: Rebuild the derived project-context index in the background. | command | Mutate | UseAi | L | `AiIndexArgs` → `IndexRebuildStarted` | hidden | none |
 | `ai.index_status`: State of the derived project-context index (current, updating, rebuilding…). | query | Read | View |  | `AiIndexArgs` → `IndexStatusDto` | hidden | none |
+| `ai.memory_delete`: Make the assistant forget one of the user's remembered entries; the words are erased. | command | Mutate | UseAi | DI | `AiMemoryDeleteArgs` → `AiMemoryDeleteDto` | hidden | none |
+| `ai.memory_list`: What the assistant remembers about the user in this project (their own entries only). | query | Read | UseAi |  | `AiEmptyArgs` → `AiMemoryListDto` | hidden | none |
 | `ai.status`: Offline AI status: available, downloaded models check, engine state. | query | Read | app level |  | `AiEmptyArgs` → `AiStatusDto` | hidden | none |
 | `ai.stop_runtime`: Stop the local AI engine. | command | Mutate | app level |  | `AiEmptyArgs` → `()` | hidden | none |
 
@@ -367,6 +373,7 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 | `app.info`: Application version, folders and the local profile. | query | Read | app level |  | `Empty` → `AppInfo` | hidden | none |
 | `app.save_state`: Save indicator state for the status bar. | query | Read | app level |  | `Empty` → `SaveState` | hidden | none |
 | `app.set_display_name`: Change the local user's display name. | command | Mutate | app level |  | `DisplayNameArgs` → `LocalProfile` | hidden | none |
+| `project.clear_cover`: Remove a project's cover photo so Home shows the generated cover. | command | Mutate | app level |  | `ClearCoverArgs` → `RecentProject` | hidden | none |
 | `project.close`: Close the open project. | command | Mutate | app level |  | `Empty` → `()` | hidden | none |
 | `project.create`: Create a new project folder and open it. | command | Mutate | app level | P | `CreateProjectArgs` → `OpenProjectResult` | hidden | none |
 | `project.current`: Summary of the open project, if any. | query | Read | app level |  | `Empty` → `Option<ProjectSummary>` | hidden | none |
@@ -386,6 +393,7 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 | `project.resolve_recovery`: Keep or discard recovered changes after a crash. | command | Mutate | Edit | DC P | `RecoveryArgs` → `OpenProjectResult` | hidden | none |
 | `project.save`: Save a checkpoint of the open project now. | command | Mutate | Edit |  | `Empty` → `i64` | hidden | none |
 | `project.set_archived`: Archive or unarchive a project in the project list. | command | Mutate | ManageProject |  | `SetArchivedArgs` → `()` | hidden | none |
+| `project.set_cover`: Choose a cover photo for a project card on Home. | command | Mutate | app level | R | `SetCoverArgs` → `RecentProject` | hidden | none |
 | `project.set_last_location`: Remember where the user was (Continue). | command | Mutate | View |  | `SetLocationArgs` → `()` | hidden | none |
 | `project.set_pinned`: Pin a project in the recent-projects list. | command | Mutate | app level |  | `SetPinnedArgs` → `RecentProject` | hidden | none |
 | `project.set_status`: Change the project status (Idea, Development, …). | command | Mutate | ManageProject |  | `SetStatusArgs` → `ProjectSummary` | tool | `propose_project_status` |
@@ -513,6 +521,30 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 | `sides.list`: Saved sides. | query | Read | View |  | `ScheduleDocListArgs` → `Vec<ScheduleSideRow>` | tool | `sides_and_reports` |
 | `sides.preview`: Preview sides (script pages) for a shooting day. | query | Compute | View |  | `ScheduleSidesArgs` → `ScheduleSidesContent` | tool | `schedule_day` |
 
+### Storage
+
+| Operation | Kind | Class | Capability | Flags | Args → Result | AI | Covered by |
+|---|---|---|---|---|---|---|---|
+| `library.connect`: Connect an OpenFrame library that already exists. | command | Mutate | app level | P | `LibraryDirArgs` → `LibraryStatus` | hidden | none |
+| `library.create_at`: Set up a new OpenFrame library in a folder the person picked. | command | Mutate | app level | P | `LibraryCreateArgs` → `LibraryStatus` | hidden | none |
+| `library.inspect`: What a folder holds: an OpenFrame library, a project, a vault, or nothing. | query | Read | app level | P | `LibraryDirArgs` → `LibraryInspection` | hidden | none |
+| `library.move`: Move the whole OpenFrame library to another folder. | command | Mutate | app level | DCL P | `MoveToFolderArgs` → `StorageTaskStarted` | hidden | none |
+| `library.status`: Whether the OpenFrame library is set up, and libraries found on this computer. | query | Read | app level | P | `Empty` → `LibraryStatus` | hidden | none |
+| `library.use_default`: Set up the OpenFrame library in the suggested folder. | command | Mutate | app level | P | `Empty` → `LibraryStatus` | hidden | none |
+| `project.adopt_orphan_notes`: The Owner takes over the private notes of one person who is no longer on the project. | command | Mutate | ManageProject |  | `AdoptOrphanNotesArgs` → `AdoptedNotes` | hidden | none |
+| `project.discover`: Projects in the projects folder that Recent Projects does not list. | query | Read | app level | P | `Empty` → `Vec<DiscoveredProject>` | hidden | none |
+| `project.move`: Move the open project to another folder, keeping everything in it. | command | Mutate | ManageProject | DCL P | `MoveToFolderArgs` → `StorageTaskStarted` | hidden | none |
+| `project.orphan_notes`: People who left private notes in this project and are no longer on it. | query | Read | ManageProject |  | `Empty` → `Vec<OrphanNoteOwner>` | hidden | none |
+| `storage.info`: Where the library, the projects folder, the vault and the app data are. | query | Read | app level | P | `Empty` → `StorageInfo` | hidden | none |
+| `storage.set_projects_dir`: Choose the default folder for new projects. Existing projects stay where they are. | command | Mutate | app level | P | `SetProjectsDirArgs` → `StorageInfo` | hidden | none |
+| `vault.backup`: Save a backup of the Global Idea Vault to a file the user picked. | command | Mutate | app level | L W | `VaultFileArgs` → `StorageTaskStarted` | hidden | none |
+| `vault.export_package`: Save the Global Idea Vault for another computer, without Recently Deleted items. | command | Mutate | app level | L W | `VaultFileArgs` → `StorageTaskStarted` | hidden | none |
+| `vault.inspect`: What a vault backup file holds, before it is restored. | query | Read | app level | R | `VaultFileArgs` → `VaultInspection` | hidden | none |
+| `vault.inspect_folder`: What a folder holds before it is connected as the Global Idea Vault. | query | Read | app level | R | `LocateVaultArgs` → `VaultFolderInspection` | hidden | none |
+| `vault.locate`: Connect a folder that already holds a Global Idea Vault. | command | Mutate | app level | P | `LocateVaultArgs` → `StorageInfo` | hidden | none |
+| `vault.move`: Move the Global Idea Vault to another folder. | command | Mutate | app level | DCL P | `MoveToFolderArgs` → `StorageTaskStarted` | hidden | none |
+| `vault.restore_backup`: Replace the Global Idea Vault with a backup file; the current vault is kept beside it. | command | Mutate | app level | DCL P | `VaultFileArgs` → `StorageTaskStarted` | hidden | none |
+
 ### Story
 
 | Operation | Kind | Class | Capability | Flags | Args → Result | AI | Covered by |
@@ -639,13 +671,13 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 |---|---|---|---|---|---|---|---|
 | `app.reset_shortcuts`: Restore every keyboard shortcut to its default. | command | Mutate | app level | DIC | `ShortcutsArgs` → `ShortcutOverrides` | hidden | none |
 | `app.set_shortcuts`: Change, remove or restore keyboard shortcuts. | command | Mutate | app level |  | `SetShortcutsArgs` → `ShortcutOverrides` | hidden | none |
-| `app.shortcuts`: Keyboard shortcuts the person at this computer has changed. | query | Read | app level |  | `ShortcutsArgs` → `ShortcutOverrides` | hidden | none |
+| `app.shortcuts`: Keyboard shortcuts the person at this computer has changed. | query | Read | app level |  | `ShortcutsArgs` → `ShortcutOverrides` | tool | `app_settings` |
 | `writing.check_spelling`: Words the spelling dictionaries do not know in the given editor text. | query | Compute | View |  | `WritingCheckSpellingArgs` → `WritingSpellingCheck` | hidden | none |
 | `writing.dictionary`: Words in the personal dictionary of the person at this computer. | query | Read | app level |  | `WritingDictionaryArgs` → `WritingDictionary` | hidden | none |
 | `writing.dictionary_add`: Add a word to the personal dictionary. | command | Mutate | app level |  | `WritingWordArgs` → `WritingDictionary` | hidden | none |
 | `writing.dictionary_remove`: Remove a word from the personal dictionary. | command | Mutate | app level |  | `WritingWordArgs` → `WritingDictionary` | hidden | none |
 | `writing.navigator_columns`: Scene navigator columns: start page, notes, revision status and production number per scene. | query | Read | View |  | `WritingNavigatorArgs` → `WritingNavigatorColumns` | hidden | none |
-| `writing.proofing`: Proofing settings of the project and the spelling languages installed on this computer. | query | Read | View |  | `WritingProofingArgs` → `WritingProofingState` | hidden | none |
+| `writing.proofing`: Proofing settings of the project and the spelling languages installed on this computer. | query | Read | View |  | `WritingProofingArgs` → `WritingProofingState` | tool | `app_settings` |
 | `writing.set_proofing`: Turn spell checking on or off and choose the project's main and second spelling language. | command | Mutate | Edit |  | `WritingSetProofingArgs` → `ProofingSettings` | hidden | none |
 | `writing.spelling_suggestions`: Spelling suggestions for one word. | query | Compute | View |  | `WritingWordArgs` → `WritingSpellingSuggestions` | hidden | none |
 | `writing.suggestion_sources`: Character names and locations from the Beat Board, cast and production locations, for the editor's suggestion list. | query | Read | View |  | `WritingSuggestionSourcesArgs` → `WritingSuggestionSources` | hidden | none |
@@ -660,14 +692,14 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
   `cast.set_photo`, `catalog.set_image`, `locations.add_photos`, `moodboard.add_image_data`, `moodboard.add_images`, `shot.set_reference_image`, `story.set_character_image`, `storyboard.set_panel_visual`, `vault.ingest_bytes`
 - **Alternative UI entry point for a change the assistant already prepares through an equivalent operation.**
   `breakdown.accept`, `breakdown.reuse`, `shot.attach_panel`, `shot.detach_panel`, `templates.apply`, `vault.restore`, `vault.trash_list`
-- **Appearance (mode, theme and My Themes) is a personal preference of the person at this computer, not project content; the assistant never reads or changes how the app looks.**
-  `appearance.check_theme`, `appearance.delete_theme`, `appearance.export_theme`, `appearance.get`, `appearance.import_theme`, `appearance.rename_theme`, `appearance.set_mode`, `appearance.set_theme`
 - **Application-level project lifecycle (create, open, close, locate, duplicate, archive or delete projects on disk, recent-project list); the assistant works inside the one open project.**
-  `project.close`, `project.create`, `project.current`, `project.duplicate`, `project.list_recent`, `project.open`, `project.recovery_state`, `project.remove_recent`, `project.rename`, `project.resolve_recovery`, `project.set_archived`, `project.set_pinned`
+  `project.clear_cover`, `project.close`, `project.create`, `project.current`, `project.discover`, `project.duplicate`, `project.list_recent`, `project.move`, `project.open`, `project.recovery_state`, `project.remove_recent`, `project.rename`, `project.resolve_recovery`, `project.set_archived`, `project.set_pinned`
+- **Changing appearance (mode, theme and My Themes) is a personal preference of the person at this computer, not project content; the assistant reads how the app looks but never changes it.**
+  `appearance.check_theme`, `appearance.delete_theme`, `appearance.export_theme`, `appearance.import_theme`, `appearance.rename_theme`, `appearance.set_mode`, `appearance.set_theme`
 - **Crosses the project boundary (Global Idea Vault or another project); the assistant is scoped to the open project.**
   `templates.copy`, `vault.copy_to_store`
 - **Data for an interactive dialog or editor preview; the assistant reads the same facts through its own bounded tools.**
-  `app.save_state`, `breakdown.quick_reuse`, `breakdown.source_anchor`, `history.info`, `interchange.draft_scenes`, `interchange.export_preview`, `interchange.sources`, `moodboard.suggestions`, `packages.backup_preview`, `packages.exchange_preview`, `packages.exchange_scenes`, `packages.exchange_sources`, `production.references`, `screenplay.page_view`, `screenplay.samples`, `screenplay.title_page_preview`, `tasks.relatable_types`, `vault.story_targets`, `visual.vault_images`, `writing.check_spelling`, `writing.navigator_columns`, `writing.proofing`, `writing.spelling_suggestions`, `writing.suggestion_sources`
+  `app.save_state`, `breakdown.quick_reuse`, `breakdown.source_anchor`, `history.info`, `interchange.draft_scenes`, `interchange.export_preview`, `interchange.sources`, `moodboard.suggestions`, `packages.backup_preview`, `packages.exchange_preview`, `packages.exchange_scenes`, `packages.exchange_sources`, `production.references`, `screenplay.page_view`, `screenplay.samples`, `screenplay.title_page_preview`, `tasks.relatable_types`, `vault.story_targets`, `visual.vault_images`, `writing.check_spelling`, `writing.navigator_columns`, `writing.spelling_suggestions`, `writing.suggestion_sources`
 - **Deleting a whole screenplay (every draft, locked draft and production number in it) stays a deliberate human action (owner decision 2026-10-08); the assistant can propose deleting one draft or restoring a screenplay from Recently Deleted.**
   `screenplay.delete`
 - **Display appearance (category colours and icons) with no content meaning; the user customises it in Settings.**
@@ -681,7 +713,7 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 - **Immediate session control (undo/redo, save, cancel a running task, display name) stays a direct user action; an applied Change Set is itself one undo step.**
   `app.cancel_task`, `app.set_display_name`, `history.redo`, `history.undo`, `project.save`
 - **Internal maintenance with no user-visible project change.**
-  `ai.index_rebuild`, `ai.index_status`, `search.rebuild`
+  `ai.index_rebuild`, `ai.index_status`, `search.rebuild`, `vault.orphan_files`, `vault.recover_files`
 - **Keeping or dismissing a schedule warning is the user's own judgement in the warning dialog ("Keep Anyway"); proposals never pre-accept warnings.**
   `schedule.decide_warning`
 - **Keystroke-level screenplay editor primitive (batched typing, element moves/splits); the assistant proposes scene-level changes instead.**
@@ -699,23 +731,25 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 - **Permanent deletion ('Delete forever') is never offered to the assistant (spec §28); items stay in Recently Deleted.**
   `packages.record_delete`, `project.delete`, `trash.purge`, `vault.purge`
 - **Personal writing preference (keyboard shortcuts, personal dictionary, spell checking switch and languages); a direct user choice in Settings or the editor, not project content the assistant changes.**
-  `app.reset_shortcuts`, `app.set_shortcuts`, `app.shortcuts`, `writing.dictionary`, `writing.dictionary_add`, `writing.dictionary_remove`, `writing.set_proofing`
+  `app.reset_shortcuts`, `app.set_shortcuts`, `writing.dictionary`, `writing.dictionary_add`, `writing.dictionary_remove`, `writing.set_proofing`
 - **Production scene number overrides and renumbering stay a human decision (ADR-0015, contract doc 32 §2.5); the assistant reads the numbers.**
   `screenplay.renumber_scenes`, `screenplay.restore_omitted_scene`, `screenplay.set_scene_number`
 - **Reads or writes a file-system location the user picks in a file dialog; the assistant never chooses or touches file-system paths (spec §3).**
-  `breakdown.export_report`, `budget.export_summary`, `callsheets.attach`, `callsheets.export_pdf`, `files.add`, `files.export_copy`, `files.relink`, `moodboard.export_pdf`, `packages.create_backup`, `packages.export_exchange`, `packages.export_project`, `packages.import_project`, `packages.inspect_package`, `packages.review_export_response`, `packages.review_open`, `project.locate`, `project.location_check`, `reports.export_report`, `schedule.export_daily_view`, `schedule.export_dood`, `schedule.export_schedule`, `screenplay.export`, `screenplay.import_apply`, `screenplay.import_preview`, `shot.export_list`, `sides.export_pdf`, `story.add_attachment`, `story.export_board`, `story.page.export`, `storyboard.export_sheet`, `vault.add_files`, `vault.relink`
+  `ai.export_conversation`, `breakdown.export_report`, `budget.export_summary`, `callsheets.attach`, `callsheets.export_pdf`, `files.add`, `files.export_copy`, `files.relink`, `library.connect`, `library.create_at`, `library.inspect`, `library.move`, `library.status`, `library.use_default`, `moodboard.export_pdf`, `packages.create_backup`, `packages.export_exchange`, `packages.export_project`, `packages.import_project`, `packages.inspect_package`, `packages.review_export_response`, `packages.review_open`, `project.locate`, `project.location_check`, `project.set_cover`, `reports.export_report`, `schedule.export_daily_view`, `schedule.export_dood`, `schedule.export_schedule`, `screenplay.export`, `screenplay.import_apply`, `screenplay.import_preview`, `shot.export_list`, `sides.export_pdf`, `storage.set_projects_dir`, `story.add_attachment`, `story.export_board`, `story.page.export`, `storyboard.export_sheet`, `vault.add_files`, `vault.backup`, `vault.export_package`, `vault.inspect`, `vault.inspect_folder`, `vault.locate`, `vault.move`, `vault.relink`, `vault.restore_backup`
 - **Returns local file paths of managed media; the assistant never receives file-system paths.**
-  `app.info`, `files.asset`
+  `app.info`, `files.asset`, `storage.info`
 - **Screenplay page layout settings (paper, font, spacing, header and footer, page breaks, custom element looks) stay a human decision (screenplay engine contract doc 32 §2.5); the assistant reads the resulting page facts.**
   `screenplay.create_custom_element`, `screenplay.delete_custom_element`, `screenplay.delete_page_preset`, `screenplay.save_page_preset`, `screenplay.update_custom_element`, `screenplay.update_page_setup`
 - **Support diagnostics are user-initiated only (ADR-0021): the user reviews the bundle and saves it to a location they pick; the assistant never gathers, exports or sends diagnostics.**
   `diagnostics.export_bundle`, `diagnostics.preview`
 - **The assistant's own entry point and conversation history; a tool calling it would recurse.**
-  `ai.ask`, `ai.history`
+  `ai.ask`, `ai.cancel`, `ai.history`, `ai.memory_delete`, `ai.memory_list`
 - **The team password of an internal build belongs to the person at this computer; the assistant never reads or types it.**
   `team_gate.status`, `team_gate.unlock`
 - **The writer's own free-writing Story page; it is kept apart from every other page and tool on purpose (owner request 2026-10-20), so the assistant neither reads nor changes it.**
   `story.page.get`, `story.page.save`
+- **Would move content across the private/shared boundary; the assistant only reads private notes of their owner.**
+  `project.adopt_orphan_notes`, `project.orphan_notes`
 
 ## Tools
 
@@ -737,17 +771,15 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 | `production_statistics` | read | `production.overview` |
 | `scene_fact` | read | none (deterministic computation, navigation or clarification) |
 | `dialogue_fact` | read | none (deterministic computation, navigation or clarification) |
-| `character_profile` | read | none (deterministic computation, navigation or clarification) |
 | `search_project` | read | `search.query` |
 | `open_scene` | read | `screenplay.locate` |
 | `open_workspace` | read | none (deterministic computation, navigation or clarification) |
 | `open_object` | read | none (deterministic computation, navigation or clarification) |
-| `summarize_scope` | read | none (deterministic computation, navigation or clarification) |
 | `suggest_breakdown` | read | none (deterministic computation, navigation or clarification) |
-| `answer_product_question` | read | none (deterministic computation, navigation or clarification) |
 | `private_information` | read | `private_note.list` |
-| `clarify` | read | none (deterministic computation, navigation or clarification) |
 | `project_settings` | read | `project.get_settings`, `project.members` |
+| `app_appearance` | read | `appearance.get` |
+| `app_settings` | read | `writing.proofing`, `app.shortcuts` |
 | `recently_deleted` | read | `project.deleted_items`, `trash.list` |
 | `recent_activity` | read | `history.activity` |
 | `project_files` | read | `files.list` |

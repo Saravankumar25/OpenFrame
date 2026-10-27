@@ -5,7 +5,7 @@
 > specifications ([specs/](../specs)); decisions stay in the [decision register](../adr/README.md); open owner questions
 > stay in [owner-decisions.md](../implementation/owner-decisions.md). Where this page and an older document disagree on
 > audience, chapters or order of work, this page wins and the older text is history. The earlier version is in
-> [the archive](../archive/2026-10-15-vision-and-scope-before-restructure.md).
+> [history](../history/2026-10-15-vision-and-scope-before-restructure.md).
 
 ## 1. What OpenFrame is
 
@@ -43,7 +43,7 @@ Tamil, Kannada, Malayalam, Spanish, French, German, Chinese, Japanese and Korean
 application screens are English only.
 
 How these fit together is explained in [architecture/README.md](../architecture/README.md) and, in full detail, in the
-[retrospection and audit report](../reports/2026-10-09-project-retrospection-and-audit.md) (a snapshot of 2026-10-09).
+[retrospection and audit report](../history/2026-10-09-project-retrospection-and-audit.md) (history, a snapshot of 2026-10-09).
 
 ## 3. The chapters
 

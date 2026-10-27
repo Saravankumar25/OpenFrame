@@ -205,7 +205,10 @@ export function StoryboardExportButton({ current, boards, ...t }: Trigger & { cu
         op="storyboard.export_sheet"
         formats={PDF_ONLY}
         scopes={scopes}
-        options={[{ kind: "checkbox", key: "includeNotes", label: "Include shot notes", default: false }]}
+        options={[
+          { kind: "choice", key: "columns", label: "Panels per row", default: "2", numeric: true, options: [{ value: "2", label: "2 (recommended)" }, { value: "3", label: "3" }] },
+          { kind: "checkbox", key: "includeNotes", label: "Include shot notes", default: false },
+        ]}
       />
     </>
   );
