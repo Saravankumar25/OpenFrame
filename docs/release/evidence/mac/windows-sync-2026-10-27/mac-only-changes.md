@@ -89,6 +89,7 @@ a change to repeat on Windows.
 | `crates/openframe-persistence/src/lib.rs` | A writable database gets the owner's write permission back on its own `-wal` and `-shm` files before it opens (macOS copies the database's permissions to them, so a reader of a read-only file left them read-only) | Unix only; repeat for one core |
 | `crates/openframe-ffi` | Reveal kinds follow the moved vault, `dataRoot` waits for the library setup, new `appData`; test switches `test_library_setup` and `test_ai_deterministic` (debug build on a test folder only) | Mac only |
 | `tests/ai/ai.rs` | The `\\server\share` network path check runs on Windows only | Repeat |
+| `crates/openframe-ai-eval/src/main.rs` | The Mac fix lost in the merge is back: the engine and model folders are made absolute before the engine starts in its own folder (with relative folders every case measured "AI unavailable"), and the run says at once whether the search model is ready | Repeat: the Windows eval has the same fault when given relative folders |
 | Three test files | `cfg_attr(not(windows), allow(...))` for helpers only Windows tests use | Repeat |
 
 Windows names kept everywhere: the Mac Daily View now calls `schedule.export_daily_view` and the Story page calls

@@ -153,11 +153,17 @@ fn run() -> Result<(), String> {
             bundle.display()
         ));
     }
+    // The engine starts inside its own folder, so a relative folder given here would no longer
+    // point at it (the engines then failed to start and every case measured "AI unavailable").
+    let bundle = bundle.canonicalize().map_err(|e| e.to_string())?;
     // The models the compiled lock pins, installed in this run's app data as a finished download
     // leaves them (from OPENFRAME_AI_ASSETS_DIR or the checkout's .ai-assets).
     let assets = std::env::var_os("OPENFRAME_AI_ASSETS_DIR")
         .map(PathBuf::from)
         .unwrap_or_else(|| PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../.ai-assets"));
+    let assets = assets
+        .canonicalize()
+        .map_err(|e| format!("{}: {e}", assets.display()))?;
     std::fs::create_dir_all(&args.out).map_err(|e| e.to_string())?;
     let data = tempfile::tempdir().map_err(|e| e.to_string())?;
     let app_data = AppConfig::isolated(data.path()).app_data_dir;
@@ -210,6 +216,18 @@ fn run() -> Result<(), String> {
         chat_ms: Mutex::new(0),
     });
     svc.attach_model(Some(recorder.clone()));
+    // Say at once whether the search model runs (with the engine's reason), instead of reporting
+    // word matching or "AI unavailable" as results.
+    if let Ok(m) = svc.manager() {
+        match m.embed(&["preflight".to_string()]) {
+            Ok(_) => eprintln!("ai-eval: search model ready"),
+            Err(e) => eprintln!(
+                "ai-eval: search model NOT ready: {} ({})",
+                e.message,
+                e.detail.as_deref().unwrap_or("no detail")
+            ),
+        }
+    }
     let warmup_on = match args.warmup.as_deref() {
         None | Some("on") => true,
         Some("off") => false,
