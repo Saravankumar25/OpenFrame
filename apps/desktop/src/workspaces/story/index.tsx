@@ -5,7 +5,7 @@
 // never changes data.
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Columns3, FileText, Info, LayoutList, Minus, MoreHorizontal, ParkingSquare, Plus, Search, X } from "lucide-react";
+import { Columns3, FileText, Info, LayoutList, Minus, MoreHorizontal, ParkingSquare, Plus, Rows3, Search, X } from "lucide-react";
 import { Button, Chip, EmptyState, Menu, PageHeader, Segmented, Select, Skeleton, cx } from "../../design-system";
 import { useIntent, useNav, type Route } from "../../app/stores";
 import { useShortcutLabel } from "../../app/shortcuts";
@@ -359,6 +359,17 @@ function BoardPage({
               <Plus size={14} />
             </button>
           </div>
+        )}
+        {tab === "board" && (
+          <Segmented
+            ariaLabel="Beat Board layout"
+            value={ui.boardLayout}
+            onChange={(v) => ui.setBoardLayout(v)}
+            options={[
+              { value: "vertical", label: <><Columns3 size={13} aria-hidden /> Vertical</> },
+              { value: "horizontal", label: <><Rows3 size={13} aria-hidden /> Horizontal</> },
+            ]}
+          />
         )}
         <div className="sp" />
         <Button variant={ui.parkingOpen ? "on" : "default"} icon={<ParkingSquare size={14} />} aria-pressed={ui.parkingOpen} onClick={() => ui.setParkingOpen(!ui.parkingOpen)}>

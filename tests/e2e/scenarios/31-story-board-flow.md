@@ -110,6 +110,22 @@ The cards used below:
 11. Check: the cards in Act One are C, A, B, then "A second letter arrives".
 12. Check: the screen is quiet.
 
+## Horizontal layout: acts become rows, a card moves to another act, then back to Vertical
+
+1. In the Beat Board layout toggle, click Horizontal.
+2. Check: the board shows the Horizontal layout.
+3. Click Add Act. Type 'Act Two' in the Act title field and press Enter.
+4. Check: Act One, Act Two and the Parking Lot share the same left edge and sit one below the other, top to bottom, and an act row is wider than two columns.
+5. Check: in Act One, card A sits to the right of card C on the same line (cards flow left to right).
+6. Press the mouse on the card "A second letter arrives", move it up past 6 pixels, drag it into the body of Act Two and release.
+7. Check: the cards in Act Two are "A second letter arrives", and the cards in Act One are C, A, B.
+8. Save a screenshot of the Horizontal board as `beatboard-horizontal.png` in the test artifacts.
+9. Press Ctrl+Z.
+10. Check: the cards in Act One are C, A, B, then "A second letter arrives".
+11. In the Beat Board layout toggle, click Vertical.
+12. Check: the board shows the Vertical layout, and Act Two sits to the right of Act One, level with it.
+13. Check: the screen is quiet.
+
 ## After a relaunch, the order, the long description and the Card Display setting are kept
 
 1. Open the project menu and choose Close project.

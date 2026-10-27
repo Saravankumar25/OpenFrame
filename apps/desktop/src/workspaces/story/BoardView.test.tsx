@@ -1,13 +1,27 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { describe, expect, it, beforeEach } from "vitest";
+import { describe, expect, it, beforeEach, vi } from "vitest";
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import type { StoryBoardState } from "../../ipc/generated/StoryBoardState";
 import { BoardView } from "./BoardView";
 import { OutlineView } from "./OutlineView";
 import { useStoryUi } from "./ui";
 import { MINIMAL } from "./CardDisplay";
+import { inFirstHalf } from "./dnd";
+import StoryWorkspace from "./index";
+import { useNav } from "../../app/stores";
 import type { StoryCardToggles } from "../../ipc/generated/StoryCardToggles";
+
+// Only the Beat Board page header test mounts the whole Story workspace; it reads the board from here.
+let mockBoard: StoryBoardState | undefined;
+vi.mock("../../api/story", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../../api/story")>()),
+  useSeries: () => ({ data: undefined }),
+  useViewState: () => ({ data: undefined }),
+  useCardDisplay: () => ({ data: undefined }),
+  useStoryBoard: () => ({ data: mockBoard, isLoading: false, error: null }),
+}));
+vi.mock("../../features/export/buttons", () => ({ StoryExportButton: () => null }));
 
 const board: StoryBoardState = {
   episodeId: null,
@@ -115,7 +129,7 @@ const board: StoryBoardState = {
 
 describe("Beat Board views", () => {
   beforeEach(() => {
-    useStoryUi.setState({ selected: [], drawer: null, dialog: null, editingKey: null, filter: "", parkingOpen: true, zoom: 100 });
+    useStoryUi.setState({ selected: [], drawer: null, dialog: null, editingKey: null, filter: "", parkingOpen: true, zoom: 100, boardLayout: "vertical" });
   });
 
   it("shows acts, sequences, compact cards without scene numbers, and the Parking Lot", () => {
@@ -213,5 +227,100 @@ describe("Beat Board views", () => {
     expect(rule).toContain("overflow-x: hidden");
     // It must come after the board rule, or the board rule would still win.
     expect(at).toBeGreaterThan(css.indexOf(".story-canvas { overflow-x: auto; overflow-y: hidden; }"));
+  });
+});
+
+describe("Beat Board layout: Vertical columns or Horizontal rows", () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+    Element.prototype.scrollIntoView ??= () => undefined;
+    useStoryUi.setState({ selected: [], drawer: null, dialog: null, editingKey: null, filter: "", parkingOpen: true, zoom: 100, boardLayout: "vertical" });
+  });
+  const canvas = () => screen.getByRole("region", { name: "Beat Board" });
+
+  it("a fresh store starts Vertical, and an unknown stored value falls back to Vertical", async () => {
+    vi.resetModules();
+    expect((await import("./ui")).useStoryUi.getState().boardLayout).toBe("vertical");
+    window.localStorage.setItem("of.story.boardLayout", JSON.stringify("diagonal"));
+    vi.resetModules();
+    expect((await import("./ui")).useStoryUi.getState().boardLayout).toBe("vertical");
+  });
+
+  it("the header toggle switches to Horizontal rows and the choice is remembered after a remount", async () => {
+    mockBoard = board;
+    useNav.setState({ route: { workspace: "story", sub: "board" } });
+    const { unmount } = render(<StoryWorkspace />);
+    const group = screen.getByRole("radiogroup", { name: "Beat Board layout" });
+    const vertical = within(group).getByRole("radio", { name: "Vertical" });
+    const horizontal = within(group).getByRole("radio", { name: "Horizontal" });
+    expect(vertical).toHaveAttribute("aria-checked", "true");
+    expect(canvas()).toHaveAttribute("data-layout", "vertical");
+
+    fireEvent.click(horizontal);
+    expect(horizontal).toHaveAttribute("aria-checked", "true");
+    expect(canvas()).toHaveAttribute("data-layout", "horizontal");
+    // A view preference in this browser profile only, never project data.
+    expect(window.localStorage.getItem("of.story.boardLayout")).toBe(JSON.stringify("horizontal"));
+    unmount();
+
+    // A new store (the app restarted) reads the stored choice back.
+    vi.resetModules();
+    expect((await import("./ui")).useStoryUi.getState().boardLayout).toBe("horizontal");
+    render(<StoryWorkspace />);
+    expect(canvas()).toHaveAttribute("data-layout", "horizontal");
+    fireEvent.click(screen.getByRole("radio", { name: "Vertical" }));
+    expect(canvas()).toHaveAttribute("data-layout", "vertical");
+    expect(window.localStorage.getItem("of.story.boardLayout")).toBe(JSON.stringify("vertical"));
+  });
+
+  it("arrow keys follow the layout: across an act in rows, down an act in columns", () => {
+    const focused = () => document.activeElement?.getAttribute("data-story-key");
+    const press = (key: string, k: string) => fireEvent.keyDown(document.querySelector(`[data-story-key="${key}"]`)!, { key: k });
+    const { unmount } = render(<BoardView board={board} episodeId={null} readOnly={false} />);
+    // Columns (today): Down is the next card in the act, Right jumps to the next column (the Parking Lot).
+    press("card:c1", "ArrowDown");
+    expect(focused()).toBe("card:c2");
+    press("card:c1", "ArrowRight");
+    expect(focused()).toBe("beat:b1");
+    unmount();
+
+    useStoryUi.setState({ boardLayout: "horizontal" });
+    render(<BoardView board={board} episodeId={null} readOnly={false} />);
+    expect(canvas()).toHaveAttribute("data-layout", "horizontal");
+    // Rows: Right is the next card in the same act, Down jumps to the next row (the Parking Lot).
+    press("card:c1", "ArrowRight");
+    expect(focused()).toBe("card:c2");
+    press("card:c2", "ArrowLeft");
+    expect(focused()).toBe("card:c1");
+    press("card:c1", "ArrowDown");
+    expect(focused()).toBe("beat:b1");
+    // Up from the Parking Lot row lands on the first item of the act row above.
+    press("beat:b1", "ArrowUp");
+    expect(focused()).toBe("sequence:s1");
+  });
+
+  it("drop position math follows the layout (before or after a card, before or after an act)", () => {
+    const over = { left: 100, top: 100, width: 200, height: 80 }; // centre (200, 140)
+    // The dragged card's centre is left of the target's centre but lower than it.
+    const leftAndLow = { left: 80, top: 150, width: 200, height: 80 }; // centre (180, 190)
+    // Columns: cards stack top to bottom, so a lower centre means after.
+    expect(inFirstHalf("y", leftAndLow, over)).toBe(false);
+    // Rows: cards flow left to right, so a centre to the left means before.
+    expect(inFirstHalf("x", leftAndLow, over)).toBe(true);
+    const rightAndHigh = { left: 130, top: 20, width: 200, height: 80 }; // centre (230, 60)
+    expect(inFirstHalf("x", rightAndHigh, over)).toBe(false);
+    expect(inFirstHalf("y", rightAndHigh, over)).toBe(true);
+    // Acts: columns compare along x, rows along y (the same helper, the other axis).
+    const actRow = { left: 0, top: 0, width: 900, height: 160 }; // centre y 80
+    const draggedAct = { left: 600, top: 10, width: 220, height: 40 }; // centre (710, 30)
+    expect(inFirstHalf("y", draggedAct, actRow)).toBe(true);
+    expect(inFirstHalf("x", draggedAct, actRow)).toBe(false);
+  });
+
+  it("the horizontal rules stack the bands as rows that wrap their cards", () => {
+    const css = readFileSync(join(__dirname, "story.css"), "utf8");
+    expect(css).toMatch(/\.story-canvas\[data-layout="horizontal"\] \.board \{ flex-direction: column;/);
+    expect(css).toMatch(/\.story-canvas\[data-layout="horizontal"\] \{ overflow-x: hidden; overflow-y: auto;/);
+    expect(css).toMatch(/\.story-canvas\[data-layout="horizontal"\] \.unassigned-col \{ display: flex; flex-direction: row; flex-wrap: wrap;/);
   });
 });

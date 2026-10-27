@@ -5,12 +5,13 @@
 // the Parking Lot and restore it; convert a beat to a Scene Card; write a long scene description
 // and switch Card Display presets (the board shows the preview, the data stays the same); build
 // the screenplay with one card left out because it has no heading (owner decision 2026-10-07);
-// delete two cards together and restore them in reverse order; scope cards to an episode in an
-// episodic project; quit, relaunch and find everything again.
+// delete two cards together and restore them in reverse order; switch the board to Horizontal rows,
+// drag a card into another act and switch back; scope cards to an episode in an episodic project;
+// quit, relaunch and find everything again.
 
 import { after, before, describe, test } from "node:test";
 import assert from "node:assert/strict";
-import { click, launchApp, openBeatBoard, sleep, stepper, waitForText } from "../lib/app.mjs";
+import { click, launchApp, openBeatBoard, screenshot, sleep, stepper, waitForText } from "../lib/app.mjs";
 import { assertQuiet, closeProject, createProject, firstLaunchProject, inDialog, menuItem, openProject, projectMenu, redo, relaunch, undo } from "../lib/flows.mjs";
 
 const A = "Rain finds the letter box";
@@ -229,6 +230,50 @@ describe("story board flow", () => {
         timeoutMsg: `restored cards are out of order: ${(await cardsIn("Act Act One")).join(" | ")}`,
       });
       await assertQuiet(browser, "batch restore");
+    });
+  });
+
+  test("Horizontal layout: acts become rows, a card moves to another act, then back to Vertical", async () => {
+    await step("horizontal", async () => {
+      const layout = () => browser.execute(() => document.querySelector('[role="region"][aria-label="Beat Board"]')?.getAttribute("data-layout"));
+      const box = (label) =>
+        browser.execute((l) => {
+          const r = document.querySelector(`section[aria-label="${l}"]`)?.getBoundingClientRect();
+          return r ? { left: r.left, top: r.top, right: r.right, bottom: r.bottom, width: r.width } : null;
+        }, label);
+      await click(browser, "Horizontal");
+      await browser.waitUntil(async () => (await layout()) === "horizontal", { timeout: 10_000, timeoutMsg: "the board did not switch to Horizontal" });
+      await click(browser, "Add Act");
+      await (await browser.$('//input[@aria-label="Act title"]')).setValue("Act Two");
+      await browser.keys("Enter");
+      await browser.$('//section[@aria-label="Act Act Two"]').waitForExist({ timeout: 10_000 });
+      // Rows: Act One, Act Two and the Parking Lot share a left edge and stack top to bottom.
+      const one = await box("Act Act One");
+      const two = await box("Act Act Two");
+      const lot = await box("Parking Lot");
+      assert.ok(one && two && lot, "an act row or the Parking Lot is missing");
+      assert.ok(Math.abs(one.left - two.left) < 2 && Math.abs(two.left - lot.left) < 2, `rows do not share a left edge: ${one.left}, ${two.left}, ${lot.left}`);
+      assert.ok(two.top >= one.bottom - 1 && lot.top >= two.bottom - 1, `rows are not stacked: ${JSON.stringify({ one, two, lot })}`);
+      assert.ok(one.width > 2 * 256, `an act row is no wider than a column: ${one.width}`);
+      // Inside a row the cards flow left to right.
+      const [c, a] = [await (await card(C)).getLocation(), await (await card(A)).getLocation()];
+      assert.ok(a.x > c.x && Math.abs(a.y - c.y) < 2, `cards do not flow left to right: C ${JSON.stringify(c)}, A ${JSON.stringify(a)}`);
+      // A real mouse drag into the other row.
+      await dragAbove(await card(BEAT), await browser.$('//section[@aria-label="Act Act Two"]//*[contains(@class,"act-body")]'));
+      await browser.waitUntil(async () => (await cardsIn("Act Act Two")).join() === BEAT, {
+        timeout: 10_000,
+        timeoutMsg: `the card did not move to Act Two: ${(await cardsIn("Act Act Two")).join(" | ")}`,
+      });
+      assert.deepEqual(await cardsIn("Act Act One"), [C, A, B]);
+      await screenshot(browser, "beatboard-horizontal");
+      await undo(browser);
+      await browser.waitUntil(async () => (await cardsIn("Act Act One")).join() === [C, A, B, BEAT].join(), { timeout: 10_000, timeoutMsg: "undo did not bring the card back" });
+      await click(browser, "Vertical");
+      await browser.waitUntil(async () => (await layout()) === "vertical", { timeout: 10_000, timeoutMsg: "the board did not switch back to Vertical" });
+      // Columns again: Act Two sits to the right of Act One, level with it.
+      const [v1, v2] = [await box("Act Act One"), await box("Act Act Two")];
+      assert.ok(v2.left >= v1.right - 1 && Math.abs(v1.top - v2.top) < 2, `acts are not columns again: ${JSON.stringify({ v1, v2 })}`);
+      await assertQuiet(browser, "horizontal layout");
     });
   });
 

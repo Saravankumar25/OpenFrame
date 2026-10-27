@@ -154,6 +154,32 @@
 .story-canvas.zoom-low .sc { display: -webkit-box; -webkit-line-clamp: 3; overflow: hidden; }
 .story-canvas .story-add-act { align-self: flex-start; }
 
+/* Horizontal layout (owner request 2026-10-27): the same bands become full-width rows stacked top to
+   bottom and the board scrolls down. Inside a row the header sits on top and sequences, beats and cards
+   flow left to right, wrapping onto the next line instead of scrolling sideways. A sequence is one group
+   in the row whose cards wrap inside it. Data and order are the same in both layouts. */
+.story-canvas[data-layout="horizontal"] { overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; }
+.story-canvas[data-layout="horizontal"] .board { flex-direction: column; height: auto; min-height: 0; align-items: stretch; }
+.story-canvas[data-layout="horizontal"] .actband,
+.story-canvas[data-layout="horizontal"] .parking,
+.story-canvas[data-layout="horizontal"] .unassigned-col { width: auto; max-height: none; min-height: 0; overflow: visible; }
+.story-canvas[data-layout="horizontal"] .act-body,
+.story-canvas[data-layout="horizontal"] .seq-body,
+.story-canvas[data-layout="horizontal"] .parking,
+.story-canvas[data-layout="horizontal"] .unassigned-col { display: flex; flex-direction: row; flex-wrap: wrap; align-items: flex-start; gap: 8px; overflow: visible; padding-right: 0; }
+.story-canvas[data-layout="horizontal"] .parking > .ah,
+.story-canvas[data-layout="horizontal"] .unassigned-col > .ah,
+.story-canvas[data-layout="horizontal"] .parking > .story-empty-hint,
+.story-canvas[data-layout="horizontal"] .unassigned-col > .story-empty-hint { flex: 0 0 100%; padding-bottom: 0; }
+.story-canvas[data-layout="horizontal"] .seq { flex: 0 1 auto; min-width: calc(200px * var(--z, 1)); max-width: 100%; margin-bottom: 0; }
+.story-canvas[data-layout="horizontal"] .sc,
+.story-canvas[data-layout="horizontal"] .beat { flex: none; width: calc(220px * var(--z, 1)); margin-bottom: 0; }
+.story-canvas[data-layout="horizontal"] .seq-body > .story-empty-hint { flex: 0 0 100%; }
+.story-canvas[data-layout="horizontal"] .story-add-row { flex-direction: column; align-items: flex-start; margin-top: 0; }
+/* Insertion markers turn with the layout: a vertical bar between cards, a horizontal line between rows. */
+.story-canvas[data-layout="horizontal"] .ins { width: 3px; height: auto; align-self: stretch; min-height: calc(40px * var(--z, 1)); margin: 0; flex: none; }
+.story-canvas[data-layout="horizontal"] .ins-v { width: auto; height: 3px; min-height: 0; align-self: stretch; }
+
 /* Outline view (owner change list 2026-10-20, item 2): the Beat Board rule above holds the page still and lets each
    column scroll, which left the outline list with no scroll owner at all. The outline area scrolls down by itself. */
 .story-canvas.story-canvas-outline { overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; padding: 4px 2px 12px; }
