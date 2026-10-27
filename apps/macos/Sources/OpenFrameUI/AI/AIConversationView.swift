@@ -114,9 +114,9 @@ struct AIConversationView: View {
                                 .accessibilityIdentifier("ai-progress-line")
                             Spacer()
                             Button("Cancel") { Task { await model.cancel() } }
-                                .keyboardShortcut(.cancelAction)
                                 .disabled(model.stopping)
-                                .help("Stop this request (Esc)")
+                                .help("Stop this request")
+                                .accessibilityLabel("Cancel request")
                                 .accessibilityIdentifier("ai-cancel")
                         }
                         .accessibilityElement(children: .contain)

@@ -252,7 +252,7 @@ struct AILogicTests {
     @Test func storyAndSettingsLinksOpenTheirTabs() {
         #expect(AIRoute(AiNavTarget(workspace: "story", sub: "characters", params: ["characterId": "c1"]))?.target == .story(.characters))
         #expect(AIRoute(AiNavTarget(workspace: "story", sub: "episodes", params: [:]))?.target == .story(.episodes))
-        #expect(AIRoute(AiNavTarget(workspace: "story", params: [:]))?.target == .place(ProjectPlace(.story)))
+        #expect(AIRoute(AiNavTarget(workspace: "story", params: [:]))?.target == .story(.page))
         #expect(AIRoute.storyIntent(.characters) == "story.show_characters")
         #expect(AIRoute(AiNavTarget(workspace: "settings", params: [:]))?.target == .projectSettings(.general))
         #expect(AIRoute(AiNavTarget(workspace: "settings", sub: "templates", params: [:]))?.target == .projectSettings(.templates))
@@ -260,6 +260,18 @@ struct AILogicTests {
         #expect(AIRoute(AiNavTarget(workspace: "settings", sub: "storage", params: [:]))?.target == .projectSettings(.storage))
         #expect(AIRoute(AiNavTarget(workspace: "settings", sub: "unknown", params: [:]))?.target == .projectSettings(.general))
         #expect(AIRoute(AiNavTarget(workspace: "settings", params: [:]))?.workspace == nil)
+    }
+
+    @Test func aStoryLinkWithNoTabOpensTheTabItsIdsPointTo() {
+        // Story search hits come as a link with a card id and no tab: Windows opens the Beat Board.
+        #expect(AIRoute(AiNavTarget(workspace: "story", params: ["cardId": "c1"]))?.target == .story(.board))
+        #expect(AIRoute(AiNavTarget(workspace: "story", params: ["beatId": "b1"]))?.target == .story(.board))
+        #expect(AIRoute(AiNavTarget(workspace: "story", params: ["characterId": "k1"]))?.target == .story(.characters))
+        #expect(AIRoute(AiNavTarget(workspace: "story", sub: "unknown", params: ["actId": "a1"]))?.target == .story(.board))
+        #expect(AIRoute(AiNavTarget(workspace: "story", params: ["episodeId": "e1"]))?.target == .story(.page))
+        // A named tab still wins over the ids.
+        #expect(AIRoute(AiNavTarget(workspace: "story", sub: "outline", params: ["cardId": "c1"]))?.target == .story(.outline))
+        #expect(AIRoute(AiNavTarget(workspace: "story", params: ["cardId": "c1"]))?.params["cardId"] == "c1")
     }
 
     @MainActor
@@ -280,6 +292,9 @@ struct AILogicTests {
         #expect(seen.shown == ["production/budget", "callSheets", "story"])
         #expect(seen.settings == ["templates"])
         #expect(ProjectIntents.shared.consume("story.show_characters"))
+        // A story card link with no tab asks Story for the Beat Board.
+        AIRoute(AiNavTarget(workspace: "story", params: ["cardId": "c1"]))?.perform()
+        #expect(ProjectIntents.shared.consume("story.show_board"))
     }
 
     // MARK: Progress of the running conversation

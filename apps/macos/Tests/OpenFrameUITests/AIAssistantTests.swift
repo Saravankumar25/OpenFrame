@@ -428,6 +428,72 @@ struct AIConversationTests {
         #expect(r.model.text == "Summarise act two")
     }
 
+    // MARK: The end of a request (Windows clears pending and running together)
+
+    @Test func theQuestionStaysPendingUntilTheAnswerIsOnScreen() async throws {
+        let stub = AIStubCore()
+        let r = try Rig.stubbed(stub)
+        defer { r.close() }
+        answered(stub, AIFixtures.exchange("How many scenes?", conversation: "conv"))
+        stub.hold("ai.history")
+        r.model.text = "How many scenes?"
+        r.model.send()
+        await eventually { stub.count("ai.history") == 1 }
+        // The answer is in but not yet shown: the request still runs, so no second one can start.
+        #expect(r.model.pending == "How many scenes?")
+        #expect(r.model.running != nil)
+        r.model.text = "And the drafts?"
+        r.model.send()
+        #expect(stub.count("ai.ask") == 1)
+        #expect(r.model.text == "And the drafts?")
+        stub.release("ai.history")
+        await r.model.waitForAnswer()
+        #expect(r.model.pending == nil && r.model.running == nil)
+        #expect(r.model.exchanges.map(\.requestText) == ["How many scenes?"])
+    }
+
+    @Test func anEarlierRequestEndingLateLeavesTheNewOneRunning() async throws {
+        let stub = AIStubCore()
+        let r = try Rig.stubbed(stub)
+        defer { r.close() }
+        answered(stub, AIFixtures.exchange("How many scenes?", conversation: "conv"))
+        // The first request finishes, then waits for the status it reads last.
+        stub.hold("ai.status")
+        r.model.text = "How many scenes?"
+        r.model.send()
+        await eventually { stub.count("ai.status") == 1 && r.model.pending == nil }
+        // A second question in the same conversation starts and is held by the core.
+        stub.hold("ai.ask")
+        r.model.text = "And the drafts?"
+        r.model.send()
+        await eventually { stub.count("ai.ask") == 2 }
+        let second = try #require(r.model.running)
+        // The first request now ends: the second keeps its Working line, its progress and its Cancel.
+        stub.release("ai.status")
+        try await Task.sleep(for: .milliseconds(50))
+        #expect(r.model.pending == "And the drafts?")
+        #expect(r.model.running == second)
+        r.model.receive(AIFixtures.progress(second, "Reading Scenes 5 and 6"))
+        #expect(r.model.workingLine == "Reading Scenes 5 and 6")
+        stub.reply("ai.cancel", AiCancelDto(stopping: true))
+        await r.model.cancel()
+        #expect(stub.args("ai.cancel").first?["conversationId"] as? String == second)
+        stub.release("ai.ask")
+        await r.model.waitForAnswer()
+        #expect(r.model.pending == nil && r.model.running == nil && !r.model.stopping)
+    }
+
+    @Test func escapeElsewhereInTheWindowDoesNotCancelTheRequest() throws {
+        // Windows binds no key to this Cancel. A window-wide Escape would stop the request from the
+        // screenplay or the Story board, which use Escape for their own work.
+        let view = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
+            .deletingLastPathComponent().appendingPathComponent("Sources/OpenFrameUI/AI/AIConversationView.swift")
+        let source = try String(contentsOf: view, encoding: .utf8)
+        #expect(source.contains("\"ai-cancel\""))
+        #expect(!source.contains(".cancelAction"))
+        #expect(!source.contains("(Esc)"))
+    }
+
     // MARK: Save conversation for review
 
     @Test func saveIsOffWhileThereIsNoConversation() async throws {

@@ -383,7 +383,7 @@ struct AIRoute: Equatable {
     var params: [String: String]
 
     init?(_ nav: AiNavTarget?) {
-        guard let nav, let target = Self.target(workspace: nav.workspace, sub: nav.sub) else { return nil }
+        guard let nav, let target = Self.target(workspace: nav.workspace, sub: nav.sub, params: nav.params) else { return nil }
         self.target = target
         params = nav.params
     }
@@ -403,8 +403,10 @@ struct AIRoute: Equatable {
         return nil
     }
 
-    /// The Windows route to the Mac place. Unknown workspaces are ignored, never guessed.
-    static func target(workspace id: String, sub: String?) -> Target? {
+    /// The Windows route to the Mac place. Unknown workspaces are ignored, never guessed. A Story
+    /// link with no tab opens the tab its ids point to, as Windows does (a card id opens the Beat
+    /// Board, a character id Characters, anything else the Story page).
+    static func target(workspace id: String, sub: String?, params: [String: String] = [:]) -> Target? {
         if id == "settings" {
             switch sub {
             case "offline-ai": return .projectSettings(.offlineAI)
@@ -415,7 +417,7 @@ struct AIRoute: Equatable {
         guard let ws = workspace(for: id) else { return nil }
         switch ws {
         case .production: return .place(ProjectPlace(.production, tab: sub.flatMap(ProductionTab.init(windowsId:)) ?? .overview))
-        case .story: return sub.flatMap(StoryTab.init(rawValue:)).map(Target.story) ?? .place(ProjectPlace(.story))
+        case .story: return .story(sub.flatMap(StoryTab.init(rawValue:)) ?? StoryTab.initial(params: params))
         default: return .place(ProjectPlace(ws))
         }
     }

@@ -27,6 +27,9 @@ final class AIAssistantModel {
     var pending: String?
     /// The conversation the running request belongs to.
     private(set) var running: String?
+    /// The running request itself. Two questions in one conversation share `running`; this tells
+    /// them apart, so an earlier request that ends late never ends the newer one.
+    @ObservationIgnored private var runningRequest: UUID?
     /// Cancel was pressed for the running request and the core is stopping it.
     private(set) var stopping = false
     /// What the running request is doing now (its latest progress line).
@@ -148,15 +151,17 @@ final class AIAssistantModel {
         let question = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !question.isEmpty, pending == nil else { return }
         let id = conversationForAsk
+        let request = UUID()
         pending = question
         running = id
+        runningRequest = request
         stopping = false
         progress = nil
         text = ""
         error = nil
         listenForProgress()
         askTask = Task { [weak self] in
-            await self?.ask(question, conversationId: id)
+            await self?.ask(question, conversationId: id, request: request)
         }
     }
 
@@ -169,8 +174,8 @@ final class AIAssistantModel {
     /// Wait for the running request (tests).
     func waitForAnswer() async { await askTask?.value }
 
-    private func ask(_ question: String, conversationId: String) async {
-        defer { finishRunning() }
+    private func ask(_ question: String, conversationId: String, request: UUID) async {
+        defer { finishRunning(request) }
         guard let core else {
             finishFailed(question, message: AIText.unavailable)
             return
@@ -179,8 +184,9 @@ final class AIAssistantModel {
         do {
             let exchange = try await core.aiAsk(AiAskArgs(text: question, scope: scope, conversationId: conversationId))
             conversation = .some(exchange.conversationId)
-            pending = nil
             await loadHistory()
+            // The answer is on screen: the question and its Working line go in the same update.
+            finishRunning(request)
             // Navigation is application control, not a project change: it runs directly (AI spec 5.3).
             if exchange.result.kind == .navigate, let route = AIRoute(exchange.result.nav) { route.perform() }
             await refreshStatus()
@@ -193,13 +199,17 @@ final class AIAssistantModel {
         // The question goes back into the box, unless the person already started typing another.
         if text.isEmpty { text = question }
         error = message
-        pending = nil
         Task { await refreshStatus() }
     }
 
-    private func finishRunning() {
+    /// End `request`: the question, its Working line, its progress and its Cancel go together (as
+    /// on Windows). A request that already ended, or was followed by a newer one, changes nothing.
+    private func finishRunning(_ request: UUID) {
+        guard runningRequest == request else { return }
+        runningRequest = nil
         progressTask?.cancel()
         progressTask = nil
+        pending = nil
         running = nil
         stopping = false
         progress = nil
