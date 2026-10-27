@@ -64,7 +64,8 @@ Progress numbers come from `npm run plan:status` and `node scripts/check-feature
 - The repository root holds only README, CONTRIBUTING, DEVELOPMENT, CLAUDE, LICENSE-PENDING and THIRD_PARTY_LICENSES
   (plus code and tool folders). Specifications live in `docs/specs/`, decisions in `docs/adr/`, the manual in `docs/manual/`.
 - Newer decisions win and older ones are deprecated, not deleted: mark the old text superseded in place, add the new ADR,
-  add a row to `docs/adr/README.md`. Sections marked SUPERSEDED are history; never implement them.
+  add a row to `docs/adr/README.md`. Sections marked SUPERSEDED are history; never implement them. A document or ADR
+  superseded as a whole moves to `docs/history/` (owner decision 2026-10-27; index `docs/history/README.md`).
 - Moving or renaming a document means updating links (run `node scripts/check-links.mjs`), `docs/README.md`, and `docs/implementation/reconciliation-log.md`.
 
 ### Security standard (permanent, Windows and Mac)
@@ -107,7 +108,7 @@ The repository stays private. **Never build an installer or a release executable
   built, reachable, verified and release-ready are different states.
 - If code behaviour, a decision, a schema, an operation or a release setting changes, update the documents listed in
   `docs/README.md` section 8 in the same change.
-- Do not edit `docs/audits/` (evidence). Record corrections in the
+- Do not edit `docs/history/` (records, including the audits). Record corrections in the
   reconciliation log.
 - Check edge cases, crash cases and failure cases for every feature, including the AI path: the user must never lose data
   and the app must never hang.

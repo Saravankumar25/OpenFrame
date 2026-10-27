@@ -5,7 +5,7 @@
 //
 // Modes
 //   default                    COMPARE each screen with the committed baseline PNG in
-//                              docs/release/evidence/M0/M0.20-visual-baseline/ (tolerance below).
+//                              tests/e2e/visual-baseline/ (tolerance below).
 //                              On failure the screenshot and a diff PNG go to tests/e2e/artifacts/visual/.
 //   E2E_UPDATE_BASELINE=1      deliberately REGENERATE the committed baseline (review the new PNGs
 //                              before committing; a changed baseline needs a reason in the progress log).
@@ -43,7 +43,7 @@ import { click, launchApp, openWorkspace, sleep, stepper, waitForText } from "..
 import { comparePixels, decodePng, encodePng } from "../lib/png.mjs";
 
 const REPO = resolve(import.meta.dirname, "..", "..", "..");
-const BASELINE_DIR = join(REPO, "docs", "release", "evidence", "M0", "M0.20-visual-baseline");
+const BASELINE_DIR = join(REPO, "tests", "e2e", "visual-baseline");
 const DIFF_DIR = join(import.meta.dirname, "..", "artifacts", "visual");
 
 export const PIXEL_THRESHOLD = 24;

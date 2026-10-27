@@ -2,7 +2,7 @@
 
 > Rewritten 2026-10-15 around the three chapters and the owner's 25 decisions. Start here. It says where every document
 > lives, which one wins when two disagree, what is current and what is history, and what must be updated when the code
-> changes. The earlier map is in the archive.
+> changes. Records of the past are in [history/](history/README.md).
 
 ## 0. Start here
 
@@ -13,7 +13,7 @@
 | The Windows plan, ten phases | [roadmap/chapter-1a-windows-phases.md](roadmap/chapter-1a-windows-phases.md) |
 | The Mac plan, ten phases | [roadmap/chapter-1b-mac-phases.md](roadmap/chapter-1b-mac-phases.md) |
 | Mac and Windows structure parity, owner change lists on the Mac | [roadmap/mac-windows-structure-parity.md](roadmap/mac-windows-structure-parity.md) |
-| How it is built, in simple words | [architecture/README.md](architecture/README.md), then the [report](reports/2026-10-09-project-retrospection-and-audit.md) (a snapshot) |
+| How it is built, in simple words | [architecture/README.md](architecture/README.md), then the [report](history/reports/2026-10-09-project-retrospection-and-audit.md) (a snapshot) |
 | What works and how well it is proved | [implementation/feature-status.md](implementation/feature-status.md) |
 | How we test and how the pilot runs | [testing/README.md](testing/README.md), [testing/internal-test-plan.md](testing/internal-test-plan.md) |
 | How to keep the machine and the repository tidy | [development-storage-policy.md](development-storage-policy.md) |
@@ -30,7 +30,6 @@ docs/
   roadmap/                   chapter plans: overview, Windows phases, Mac phases, website, stores; area-to-phase map
   architecture/              architecture in one page
   testing/                   strategy, internal pilot plan, bug report template
-  reports/                   dated reports (the 2026-10-09 retrospection and audit)
   specs/                     product and engineering specifications (+ README with the status of each)
   adr/                       decisions; README is the decision register
   engineering/               implementation documents 11 to 39, AI tool coverage (generated)
@@ -40,9 +39,7 @@ docs/
   store/                     Microsoft Store listing and privacy policy drafts (Chapter 3)
   website/                   website source notes and supplied prompts (Chapter 2)
   manual/                    user manual (.docx, .pdf), manual testing guide (.docx, .csv), test-data/ sample files
-  audits/                    dated evidence snapshots (do not edit)
-  archive/                   history; README is the archive index (do not edit the files)
-  (spec-digest/ moved to archive/2026-09-spec-digest/ in phase W1)
+  history/                   records of the past: old evidence, audits, reports, superseded ADRs, old log sections (do not edit)
   development-storage-policy.md
 HTML_Mockups/                design reference mock-ups (some show removed features)
 ```
@@ -67,7 +64,7 @@ Chapters 2 and 3 have no implementation plan yet by decision; each is written wh
 | Architecture reference | [architecture/README.md](architecture/README.md), [engineering/](engineering) | Engineering documents implement behaviour and never redefine it |
 | Plans | [roadmap/](roadmap), [masterplan.md](implementation/masterplan.md) | The roadmap says what to do and in what order; the build plan keeps the checklist and its evidence |
 | Implementation status | [feature-status.md](implementation/feature-status.md), [progress-log.md](implementation/progress-log.md) | A status moves up only with evidence at a named proof level |
-| Test evidence | [release/evidence/](release/evidence), [audits/](audits) | What was true on a date, not what must be |
+| Test evidence | [release/evidence/](release/evidence), [history/](history/README.md) | What was true on a date, not what must be |
 | Operating procedures | [development-storage-policy.md](development-storage-policy.md), [testing/](testing), [engineering/39-packages-restore-drill.md](engineering/39-packages-restore-drill.md) | Rules for people and agents |
 | History | git history (the archive folder was removed on 2026-10-19 at the owner's request), [implementation/reconciliation-log.md](implementation/reconciliation-log.md) | Never implement from history |
 
@@ -87,7 +84,7 @@ Highest first. A lower item never silently overrides a higher one.
 5. **Engineering documents** in [engineering/](engineering).
 6. **Execution control**: [roadmap/](roadmap), [masterplan.md](implementation/masterplan.md),
    [feature-status.md](implementation/feature-status.md), [launch readiness register](release/launch-readiness-register.md).
-7. **Evidence**: [audits/](audits) and [release/evidence/](release/evidence).
+7. **Evidence**: [history/](history/README.md) and [release/evidence/](release/evidence).
 8. **History**: git history, [website/prompts/](website/prompts), `HTML_Mockups/`.
 
 [README.md](../README.md) is the release-state declaration (what is usable today), written from the feature status file.
@@ -166,7 +163,7 @@ When a change alters behaviour it must also update, in the same change:
 | README status claims | The feature status file first; README follows it |
 | A feature's screen or tests | The "How a user reaches it" and "Tests" columns of the feature status file (checked by `scripts/check-feature-status.mjs`) |
 | An architecture exception (raw SQLite write, `unsafe`, listener, process, IPC command, asset scope) | The reviewed allow-list and reason in `scripts/architecture-lint.mjs`; a security review |
-| A moved or renamed document | Links (run the link check), this map, archive/README.md if it is history, [implementation/reconciliation-log.md](implementation/reconciliation-log.md) |
+| A moved or renamed document | Links (run the link check), this map, history/README.md if it is history, [implementation/reconciliation-log.md](implementation/reconciliation-log.md) |
 | User-visible text or a new document | [engineering/35-writing-standard.md](engineering/35-writing-standard.md); `npm run check:writing` |
 | A finished feature | Delete the dead code and mark replaced documents superseded in the same change |
 

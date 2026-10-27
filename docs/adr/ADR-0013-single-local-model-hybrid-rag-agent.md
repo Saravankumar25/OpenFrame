@@ -7,7 +7,7 @@
   extended here.
 - **Amended 2026-10-05:** the Change Set apply step is amended by
   [ADR-0019](ADR-0019-crash-safe-change-set-apply.md) (durable apply journal, compensation on project open).
-- **Decision 2 superseded 2026-10-08** by [ADR-0025](ADR-0025-offline-ai-bundled-in-every-package.md): the runtime,
+- **Decision 2 superseded 2026-10-08** by [ADR-0025](../history/adr/ADR-0025-offline-ai-bundled-in-every-package.md): the runtime,
   both models and the tokenizer ship inside every package; there is no Offline AI download.
 - **Date:** 2026-09-30
 - **Related:** `openframe_ai_agentic_rag_spec_prompt.md` (the agentic AI + hybrid RAG spec);

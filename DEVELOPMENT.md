@@ -162,7 +162,7 @@ Commit the regenerated files with the Rust change. CI fails if `cargo test` leav
 ├─ docs/
 │  ├─ adr/                    Architecture Decision Records
 │  ├─ engineering/            implementation specs and contracts (11 to 39)
-│  └─ archive/                history, including the old spec digests (index: docs/archive/README.md)
+│  └─ history/                records of the past (index: docs/history/README.md)
 ├─ scripts/                   setup.mjs, license-inventory.mjs, release-validate.mjs
 ├─ .github/workflows/         ci.yml, release.yml
 ├─ deny.toml                  cargo-deny policy (licenses, advisories, sources, bans)

@@ -12,7 +12,7 @@ Before: `01-journey` and `02-restart` have run on the shared journey data. The a
 2. Wait about 1.2 seconds.
 3. Check: no visible text says "Saving…" within 15 seconds.
 4. Click Dismiss on every toast, and wait about 0.4 seconds.
-5. Take a screenshot and compare it with the committed baseline image S in `docs/release/evidence/M0/M0.20-visual-baseline/`.
+5. Take a screenshot and compare it with the committed baseline image S in `tests/e2e/visual-baseline/`.
 6. Check: the screenshot has the same size as the baseline.
 7. Check: at most 0.1 percent of the compared pixels differ. A pixel differs when its red, green or blue value differs by more than 24 out of 255. The parts that change from run to run by design are left out of the comparison (see Notes).
 

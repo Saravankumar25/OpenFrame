@@ -49,10 +49,9 @@ const GROUPS = [
 ];
 const SKIP_DIRS = new Set(["node_modules", "target", ".git", "graphify-out", "dist", "gen", "artifacts", "build", ".drivers", ".run", ".build", ".swiftpm", "Frameworks"]);
 const SKIP_PREFIXES = [
-  "docs/audits/",
   // Written by UniFFI's generator at build time and never committed (apps/macos/.gitignore).
   "apps/macos/Sources/OpenFrameCore/Generated/openframe_ffi.swift",
-  "docs/archive/",
+  "docs/history/",
   "docs/release/evidence/",
   "docs/specs/",
 
