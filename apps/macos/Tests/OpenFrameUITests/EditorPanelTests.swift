@@ -561,6 +561,27 @@ struct EditorPanelTests {
         #expect(snapshot(PageSetupSheet(workspace: rig.model, state: rig.state), app: rig.app, name: "panel-page-setup", size: CGSize(width: 560, height: 640)) != nil)
     }
 
+    /// Windows pagesetup.tsx: "Print the page number on the first page" is on by default and is
+    /// saved with the screenplay like the other switches.
+    @Test func theFirstPageNumberSwitchIsOnByDefaultAndIsSaved() async throws {
+        let rig = try await PanelRig.start()
+        defer { rig.close(); try? FileManager.default.removeItem(at: rig.editor.root) }
+        try await rig.seedNightBus()
+        let page = PageSetupModel()
+        page.attach(rig.app, rig.model, say: { rig.state.say($0) })
+        await page.load()
+        #expect(page.setup?.numberFirstPage == true)
+        page.setup?.numberFirstPage = false
+        #expect(await page.save())
+        await page.load()
+        #expect(page.setup?.numberFirstPage == false)
+        #expect(rig.model.overview?.screenplay?.pageSetup.numberFirstPage == false)
+        page.setup?.numberFirstPage = true
+        #expect(await page.save())
+        await page.load()
+        #expect(page.setup?.numberFirstPage == true)
+    }
+
     // MARK: Snapshots
 
     @Test func inspectorAndDraftsDrawTheirContent() async throws {

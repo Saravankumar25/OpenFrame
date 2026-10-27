@@ -74,6 +74,9 @@ final class ScreenplayWorkspaceModel {
     /// core reports for them. The data loads once a column is shown.
     var navColumns: [NavigatorColumn] = []
     var navData: NavigatorColumnData?
+    /// The page is drawn as dark paper on screen (View preference, key "darkPaper" of the layout
+    /// record; print and PDF never change). White paper by default, also in the Dark theme.
+    var darkPaper = false
     // Replace All (Command+Option+F).
     var showReplace = false
     /// Counts requests to put the caret in the Find field (the bar is already open when it rises).
@@ -115,11 +118,12 @@ final class ScreenplayWorkspaceModel {
         if !live.contains(where: { $0.model === model }) { live.append(Weak(model)) }
     }
 
-    /// Send what every open Screenplay workspace holds to the core. Call it before the project
-    /// closes (`AppModel.closeProject`) and before the app quits (`applicationShouldTerminate`
-    /// answers `.terminateLater`, awaits this, then replies).
+    /// Send what every open Screenplay workspace and Story page holds to the core. Call it before
+    /// the project closes (`AppModel.closeProject`) and before the app quits
+    /// (`applicationShouldTerminate` answers `.terminateLater`, awaits this, then replies).
     static func flushAll() async {
         for entry in live { await entry.model?.flush() }
+        await StoryPageModel.flushAll()
     }
 
     /// Connect the text view: what it shows besides the text, and what it asks of the app.
@@ -156,6 +160,7 @@ final class ScreenplayWorkspaceModel {
         if let state = try? await core.screenplayViewState(ScreenplayViewStateArgs()) {
             mode = ScreenplayMode.from(state)
             navColumns = NavigatorColumn.from(state)
+            darkPaper = ScreenplayPageColors.isDark(state)
         }
         await loadNavigatorColumns()
     }
@@ -169,6 +174,12 @@ final class ScreenplayWorkspaceModel {
         saveLayout(columns: true, mode: false)
     }
 
+    /// Dark page or Light page (Screenplay Tools). Screen only; the choice is kept.
+    func toggleDarkPaper() {
+        darkPaper.toggle()
+        saveLayout(columns: false, mode: false, paper: true)
+    }
+
     /// The last save of the layout record. Saves run one after the other: two quick changes
     /// each read the record, change their own key and write it back, and run in parallel the
     /// later read could miss the earlier write and undo it.
@@ -176,7 +187,7 @@ final class ScreenplayWorkspaceModel {
 
     /// Save the chosen keys as they are when the save runs (the newest values win); the other
     /// keys of the record stay.
-    private func saveLayout(columns: Bool, mode saveMode: Bool) {
+    private func saveLayout(columns: Bool, mode saveMode: Bool, paper: Bool = false) {
         guard let core = app?.core else { return }
         let before = layoutSave
         layoutSave = Task { [weak self] in
@@ -185,6 +196,7 @@ final class ScreenplayWorkspaceModel {
             var state = try? await core.screenplayViewState(ScreenplayViewStateArgs())
             if saveMode { state = ScreenplayMode.merged(state, mode: self.mode) }
             if columns { state = NavigatorColumn.merged(state, columns: self.navColumns) }
+            if paper { state = ScreenplayPageColors.merged(state, dark: self.darkPaper) }
             _ = try? await core.screenplaySetViewState(ScreenplaySetViewStateArgs(state: state ?? .object([:])))
         }
     }
@@ -542,7 +554,7 @@ struct ScreenplayWorkspace: View {
                 if model.showReplace && !focus { ScreenplayReplaceBar(model: model) }
                 ZStack {
                     theme["well"]
-                    ScreenplayEditorHost(model: model, zoom: zoom, zoomChanged: { zoom = $0 }, onMove: { p, i in
+                    ScreenplayEditorHost(model: model, zoom: zoom, darkPaper: model.darkPaper, zoomChanged: { zoom = $0 }, onMove: { p, i in
                         currentKind = p.kind
                         currentIndex = i
                         model.currentCustomId = p.kind == .custom ? p.customElementId : nil
@@ -907,9 +919,10 @@ enum ScreenplayZoom {
 struct ScreenplayEditorHost: NSViewRepresentable {
     let model: ScreenplayWorkspaceModel
     var zoom: Double = 1
+    /// Dark page (a view preference); white paper otherwise, whatever the app theme.
+    var darkPaper = false
     var zoomChanged: (Double) -> Void = { _ in }
     let onMove: (EditorParagraph, Int) -> Void
-    @Environment(\.ofTheme) private var theme
 
     func makeCoordinator() -> Coordinator { Coordinator(model: model, onMove: onMove) }
 
@@ -976,8 +989,7 @@ struct ScreenplayEditorHost: NSViewRepresentable {
 
     func updateNSView(_ scroll: NSScrollView, context: Context) {
         guard let view = scroll.documentView as? ScreenplayTextView else { return }
-        view.backgroundColor = NSColor(theme["panel"])
-        view.insertionPointColor = NSColor(theme["ink"])
+        view.showPaper(dark: darkPaper)
         context.coordinator.onMove = onMove
         context.coordinator.zoomChanged = zoomChanged
         let wanted = ScreenplayZoom.clamp(zoom)

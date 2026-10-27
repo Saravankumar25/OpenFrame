@@ -241,7 +241,7 @@ public final class ScreenplayTextView: NSTextView, @preconcurrency NSTextContent
         var attrs: [NSAttributedString.Key: Any] = [
             .font: font(for: look),
             .paragraphStyle: paragraphStyle(for: look),
-            .foregroundColor: NSColor.textColor,
+            .foregroundColor: ScreenplayPageColors.ink,
             .ofKind: kind.rawValue,
         ]
         if let elementId { attrs[.ofElementId] = elementId }

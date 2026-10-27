@@ -1,5 +1,7 @@
-// The Story workspace: Board, Outline, Characters, Timeline and (for series) Episodes. Board and
-// Outline show the same structure from the core; switching views never changes data. Mirrors
+// The Story workspace: the Story page, Board, Outline, Characters, Timeline and (for series)
+// Episodes. It opens on the Story page; a Mac entry point that means another tab fires
+// `story.show_<tab>` with it ("story.show_board", "story.show_characters"). Board and Outline
+// show the same structure from the core; switching views never changes data. Mirrors
 // apps/desktop/src/workspaces/story/index.tsx with Mac conventions (a tab strip, an inspector
 // on the right, context menus, sheets, Command shortcuts).
 
@@ -51,7 +53,12 @@ struct StoryContent: View {
         .onExitCommand {
             if model.drawer != nil { model.openDrawer(nil) } else { model.clearSelection() }
         }
-        .onProjectIntents(["story.new_act", "story.new_sequence", "story.new_beat", "story.new_scene", "story.new_character"]) { intent in
+        .onProjectIntents(["story.new_act", "story.new_sequence", "story.new_beat", "story.new_scene", "story.new_character"]
+                          + StoryTab.allCases.map(\.showIntent)) { intent in
+            if let tab = StoryTab.allCases.first(where: { $0.showIntent == intent }) {
+                model.tab = tab == .episodes && !model.showEpisodes ? .board : tab
+                return
+            }
             switch intent {
             case "story.new_character":
                 model.tab = .characters
@@ -231,6 +238,16 @@ struct BoardPage: View {
                 .buttonStyle(.borderless)
                 .accessibilityElement(children: .contain)
                 .accessibilityLabel("Zoom")
+
+                Picker("Beat Board layout", selection: Binding(get: { model.boardLayout }, set: { model.setBoardLayout($0) })) {
+                    ForEach(StoryBoardLayout.allCases) { Label($0.title, systemImage: $0.symbol).tag($0) }
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                .fixedSize()
+                .help("Acts as columns side by side (Vertical) or as rows with cards left to right (Horizontal)")
+                .accessibilityLabel("Beat Board layout")
+                .accessibilityIdentifier("story-board-layout")
             }
     }
 

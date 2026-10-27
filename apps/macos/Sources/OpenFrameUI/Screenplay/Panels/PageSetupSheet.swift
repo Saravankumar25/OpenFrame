@@ -249,7 +249,9 @@ struct PageSetupSheet: View {
                 }
                 headerFooter("Header", isHeader: true)
                 headerFooter("Footer", isHeader: false)
-                Toggle("Show the page number, header and footer on the first page", isOn: bind(\.headerOnFirstPage))
+                Toggle("Print the page number on the first page", isOn: bind(\.numberFirstPage))
+                    .accessibilityIdentifier("page-setup-number-first-page")
+                Toggle("Show the header and footer on the first page", isOn: bind(\.headerOnFirstPage))
                 Toggle("Include the title page when exporting and printing", isOn: bind(\.includeTitlePage))
                 Toggle("Print scene numbers", isOn: bind(\.sceneNumbers))
                 Toggle("Mark revised lines with an asterisk", isOn: bind(\.revisionMarks))

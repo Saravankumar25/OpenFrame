@@ -21,6 +21,22 @@ enum StoryTab: String, CaseIterable, Identifiable {
         case .episodes: "Episodes"
         }
     }
+
+    /// Story opens on the Story page (owner, 2026-10-27, Windows defaultTab in index.tsx). A link
+    /// to a board item (search, Continue, the assistant) opens the Board and a link to a character
+    /// opens Characters.
+    static let boardParams = ["cardId", "sceneCardId", "screenplaySceneId", "beatId", "sequenceId", "actId"]
+    static func initial(params: [String: String]?) -> StoryTab {
+        if let p = params, !(p["characterId"] ?? "").isEmpty { return .characters }
+        if let p = params, boardParams.contains(where: { !(p[$0] ?? "").isEmpty }) { return .board }
+        return .page
+    }
+
+    /// The request a Mac entry point fires with the Story workspace when it means a tab other than
+    /// the Story page ("Beat Board" on Project Home, "Open Beat Board", a search hit or an
+    /// assistant link to a card): "story.show_board", "story.show_characters" and so on.
+    /// The same name the assistant's links use (`AIRoute.storyIntent`).
+    var showIntent: String { AIRoute.storyIntent(self) }
 }
 
 /// A sheet the workspace asks for.
@@ -112,7 +128,9 @@ final class StoryModel {
     private(set) var episodeId: String?
 
     // The person's view.
-    var tab: StoryTab = .board
+    var tab: StoryTab = .page
+    /// Vertical columns or Horizontal rows (a view preference kept per person on this Mac).
+    private(set) var boardLayout: StoryBoardLayout = .load()
     var selected: [String] = []
     var editingKey: String?
     var renamingId: String?
@@ -165,6 +183,14 @@ final class StoryModel {
     }
 
     var toggles: StoryCardToggles { display?.current.toggles ?? StoryCardDisplayRules.minimal }
+
+    /// The Board shows acts as rows (the Outline never changes with the layout).
+    var horizontalBoard: Bool { tab == .board && boardLayout == .horizontal }
+
+    func setBoardLayout(_ layout: StoryBoardLayout) {
+        boardLayout = layout
+        layout.save()
+    }
 
     // MARK: Loading
 
@@ -785,6 +811,19 @@ enum StoryCardDisplayRules {
 // MARK: Keyboard navigation
 
 extension StoryModel {
+    /// An arrow key on a focused item. On the Board in Horizontal rows the keys are turned a quarter
+    /// first. Option with Up or Down moves the item (returns the move to await); Shift extends the
+    /// selection.
+    @discardableResult
+    func arrow(_ key: StoryNavigation, option: Bool, shift: Bool, from ref: StoryItemRef) -> Task<Void, Never>? {
+        let d = tab == .board ? boardLayout.arrow(key) : key
+        if option, d == .up || d == .down {
+            return Task { await step(ref, direction: d == .down ? 1 : -1) }
+        }
+        navigate(from: ref.key, direction: d, extend: shift)
+        return nil
+    }
+
     /// Arrow-key focus movement over the visible items. Up and Down walk the reading order; Left
     /// and Right jump to the neighbouring act column. Shift extends the selection.
     func navigate(from key: String, direction: StoryNavigation, extend: Bool) {

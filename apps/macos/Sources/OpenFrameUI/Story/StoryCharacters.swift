@@ -29,7 +29,9 @@ final class CharactersModel {
     let story: StoryModel
     var showArchived = false
     var selectedId: String?
-    var mapOpen = false
+    /// nil: the character list. A focus of nil: the whole-film map. A character id: that
+    /// character's own map (Windows Characters.tsx).
+    var map: RelationshipMapFocus?
     var sheet: CharacterSheet?
     private(set) var list: [StoryCharacterDto] = []
     private(set) var loaded = false
@@ -197,8 +199,8 @@ struct CharactersView: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 14) {
-            if m.mapOpen {
-                RelationshipMapView(m: m)
+            if let focus = m.map {
+                RelationshipMapView(m: m, focus: focus.id)
             } else {
                 list
                 detailPane
@@ -226,6 +228,12 @@ struct CharactersView: View {
                 Text("Characters").fontWeight(.semibold)
                 Text("\(m.activeCount)").font(.caption).padding(.horizontal, 6).background(.quaternary, in: Capsule())
                 Spacer()
+                if m.list.count > 1 {
+                    Button { m.map = RelationshipMapFocus(id: nil) } label: { Label("Whole film map", systemImage: "point.3.connected.trianglepath.dotted") }
+                        .controlSize(.small)
+                        .help("Every character with a relationship, the most connected first")
+                        .accessibilityIdentifier("story-whole-film-map")
+                }
                 Button { m.sheet = .new } label: { Label("Add Character", systemImage: "plus") }
                     .buttonStyle(.ofProminent).controlSize(.small)
                     .accessibilityIdentifier("story-add-character")
@@ -336,7 +344,9 @@ private struct CharacterDetailView: View {
                     }
                     Spacer()
                     Button("Edit") { m.sheet = .edit(c) }.accessibilityIdentifier("story-character-edit")
-                    Button { m.mapOpen = true } label: { Label("Open Relationship Map", systemImage: "point.3.connected.trianglepath.dotted") }
+                    Button { m.map = RelationshipMapFocus(id: c.id) } label: { Label("Relationship Map", systemImage: "point.3.connected.trianglepath.dotted") }
+                        .help("Only this character\u{2019}s direct relationships")
+                        .accessibilityIdentifier("story-character-map")
                     Menu {
                         Button(c.image == nil ? "Add image\u{2026}" : "Change image\u{2026}") { picking = true }
                         Button("Remove image") { Task { await m.clearImage(c.id) } }.disabled(c.image == nil)
@@ -707,68 +717,86 @@ private struct DeleteCharacterSheet: View {
 
 // MARK: Relationship map
 
-/// An optional visual helper (not an analysis tool): characters on a circle, a line per relationship.
+/// Which relationship map is open: one character's (`id`) or the whole film's (nil).
+struct RelationshipMapFocus: Equatable { var id: String? }
+
+/// Relationship maps (Windows Characters.tsx, mock 069): an optional visual helper, not an
+/// analysis system. With a focus character it shows only that character's direct relationships;
+/// without one, the whole film. Names open that character's map. The list under the picture says
+/// the same in words, so the map is also readable without sight.
 struct RelationshipMapView: View {
     @Bindable var m: CharactersModel
+    let focus: String?
     @Environment(\.ofTheme) private var theme
 
+    /// What one map shows: the focus character (if any), its relationships, the layout and the
+    /// words the screen and VoiceOver use.
+    struct Content {
+        var person: StoryCharacterDto?
+        var list: [StoryRelationshipDto]
+        var layout: RelationshipMapLayout.Result
+        var title: String
+        var pictureLabel: String
+        /// The characters whose name opens their own map (every box but the centre).
+        var links: [String]
+
+        init(chars: [StoryCharacterDto], relationships all: [StoryRelationshipDto], focus: String?) {
+            let person = focus.flatMap { id in chars.first { $0.id == id } }
+            let list = person.map { p in all.filter { $0.fromCharacterId == p.id || $0.toCharacterId == p.id } } ?? all
+            let live = chars.filter { !$0.archived || $0.id == focus }
+            self.person = person
+            self.list = list
+            layout = RelationshipMapLayout.layout(
+                live.map { .init(id: $0.id, name: $0.name) },
+                list.map { .init(id: $0.id, from: $0.fromCharacterId, to: $0.toCharacterId, label: $0.relationshipType) },
+                focus: person?.id)
+            title = person.map { "\($0.name.uppercased()): relationships" } ?? "Character relationships"
+            let n = list.count
+            pictureLabel = "\(title). \(n) relationship\(n == 1 ? "" : "s"), listed below."
+            links = layout.boxes.keys.filter { $0 != person?.id }.sorted()
+        }
+    }
+
     var body: some View {
-        let chars = m.list.filter { !$0.archived }
-        let rels = m.relationships
-        let nodes = chars.filter { c in rels.contains { $0.fromCharacterId == c.id || $0.toCharacterId == c.id } }
+        let chars = m.list
+        let content = Content(chars: chars, relationships: m.relationships, focus: focus)
+        let person = content.person
+        let list = content.list
+        let map = content.layout
+        let title = content.title
+        let addFrom = person ?? chars.first
         VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Button { m.mapOpen = false } label: { Label("Back to Characters", systemImage: "chevron.left") }.buttonStyle(.borderless)
-                Text("Character relationships").font(.headline)
+                Button { m.map = nil } label: { Label("Back to Characters", systemImage: "chevron.left") }
+                    .buttonStyle(.borderless)
+                    .accessibilityIdentifier("story-map-back")
+                Text(title).font(.headline).accessibilityAddTraits(.isHeader)
+                    .accessibilityIdentifier("story-map-title")
                 Spacer()
-                if chars.count >= 2 {
-                    Button { m.sheet = .addRelationship(from: chars[0].id) } label: { Label("Add Relationship", systemImage: "plus") }
+                if person != nil {
+                    Button { m.map = RelationshipMapFocus(id: nil) } label: { Label("Whole film map", systemImage: "point.3.connected.trianglepath.dotted") }
+                        .controlSize(.small)
+                        .accessibilityIdentifier("story-whole-film-map")
+                }
+                if chars.count >= 2, let from = addFrom {
+                    Button { m.sheet = .addRelationship(from: from.id) } label: { Label("Add Relationship", systemImage: "plus") }
                         .buttonStyle(.ofProminent).controlSize(.small)
+                        .accessibilityIdentifier("story-map-add-relationship")
                 }
             }
-            Text("Optional visual helper, not a character-analysis system.").font(.caption).foregroundStyle(theme["muted"])
-            if rels.isEmpty {
-                ContentUnavailableView("No relationships yet.", systemImage: "point.3.connected.trianglepath.dotted",
+            Text(person != nil
+                 ? "Only this character\u{2019}s direct relationships. Choose a name to see theirs."
+                 : "Every character with a relationship, the most connected first. Choose a name to see just their relationships.")
+                .font(.caption).foregroundStyle(theme["muted"])
+            if list.isEmpty {
+                ContentUnavailableView(person.map { "\($0.name.uppercased()) has no relationships yet." } ?? "No relationships yet.",
+                                       systemImage: "point.3.connected.trianglepath.dotted",
                                        description: Text("Add a relationship such as \u{201C}father of\u{201D} or \u{201C}colleague of\u{201D}."))
             } else {
-                ScrollView {
+                ScrollView([.horizontal, .vertical]) {
                     VStack(alignment: .leading, spacing: 12) {
-                        Canvas { ctx, size in
-                            let layout = RelationshipMapLayout.layout(
-                                ids: nodes.map(\.id),
-                                rels: rels.map { .init(id: $0.id, from: $0.fromCharacterId, to: $0.toCharacterId) },
-                                size: size)
-                            for rel in rels {
-                                guard let a = layout.positions[rel.fromCharacterId], let b = layout.positions[rel.toCharacterId],
-                                      let e = layout.edges[rel.id] else { continue }
-                                var p = Path(); p.move(to: a); p.addQuadCurve(to: b, control: e.control)
-                                ctx.stroke(p, with: .color(theme["line2"]), lineWidth: 2)
-                            }
-                            // Labels after every line, on a pill, so no line runs through a word.
-                            for rel in rels {
-                                guard let e = layout.edges[rel.id] else { continue }
-                                let label = ctx.resolve(Text(rel.relationshipType).font(.system(size: 11)).foregroundColor(theme["ink2"]))
-                                let sz = label.measure(in: CGSize(width: 160, height: 40))
-                                let pill = Path(roundedRect: CGRect(x: e.label.x - sz.width / 2 - 5, y: e.label.y - sz.height / 2 - 2,
-                                                                    width: sz.width + 10, height: sz.height + 4), cornerRadius: 6)
-                                ctx.fill(pill, with: .color(theme["panel"]))
-                                ctx.draw(label, at: e.label)
-                            }
-                            for n in nodes {
-                                guard let p = layout.positions[n.id] else { continue }
-                                let circle = Path(ellipseIn: CGRect(x: p.x - 22, y: p.y - 22, width: 44, height: 44))
-                                ctx.fill(circle, with: .color(theme["accent-soft"]))
-                                ctx.stroke(circle, with: .color(theme["accent"]), lineWidth: 1)
-                                ctx.draw(Text(RelationshipMapLayout.initials(n.name)).font(.system(size: 12, weight: .bold)).foregroundColor(theme["ink"]), at: p)
-                                ctx.draw(Text(n.name).font(.system(size: 11, weight: .semibold)).foregroundColor(theme["ink"]),
-                                         at: CGPoint(x: p.x, y: p.y + 34))
-                            }
-                        }
-                        .frame(height: RelationshipMapLayout.height(for: nodes.count))
-                        .accessibilityElement()
-                        .accessibilityLabel("Relationship map")
-                        .accessibilityValue(rels.map { "\($0.fromName) \($0.relationshipType) \($0.toName)" }.joined(separator: ", "))
-                        RelationshipList(m: m, rels: rels)
+                        picture(map, list: list, label: content.pictureLabel, centre: person?.id)
+                        RelationshipList(m: m, rels: list)
                     }
                 }
             }
@@ -777,110 +805,79 @@ struct RelationshipMapView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .background(theme["panel"], in: RoundedRectangle(cornerRadius: 12, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(theme["line"]))
-        .accessibilityLabel("Character relationships")
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(person.map { "Relationships of \($0.name)" } ?? "Character relationships")
+        .accessibilityIdentifier("story-relationship-map")
+    }
+
+    private func picture(_ map: RelationshipMapLayout.Result, list: [StoryRelationshipDto], label: String, centre: String?) -> some View {
+        ZStack(alignment: .topLeading) {
+            Canvas { ctx, _ in
+                let line = theme["muted"]
+                for r in list {
+                    guard let e = map.edges[r.id] else { continue }
+                    var p = Path()
+                    p.move(to: e.path.start)
+                    p.addQuadCurve(to: e.path.end, control: e.path.control)
+                    ctx.stroke(p, with: .color(line), lineWidth: 1.6)
+                    ctx.fill(Self.arrow(e.path), with: .color(line))
+                }
+                // Labels after every line, on the panel colour, so no line runs through a word.
+                for r in list {
+                    guard let e = map.edges[r.id] else { continue }
+                    let box = CGRect(x: e.label.x - e.label.w / 2, y: e.label.y - e.label.h / 2, width: e.label.w, height: e.label.h)
+                    ctx.fill(Path(roundedRect: box, cornerRadius: 4), with: .color(theme["panel"]))
+                    ctx.draw(Text(e.label.text).font(.system(size: 11)).foregroundColor(theme["ink"]), at: CGPoint(x: e.label.x, y: e.label.y))
+                }
+            }
+            .frame(width: map.W, height: map.H)
+            .accessibilityElement()
+            .accessibilityLabel(label)
+            .accessibilityIdentifier("story-relationship-picture")
+            ForEach(map.boxes.keys.sorted(), id: \.self) { id in
+                if let b = map.boxes[id], let c = m.list.first(where: { $0.id == id }) {
+                    nameBox(b, character: c, isCentre: id == centre)
+                }
+            }
+        }
+        .frame(width: map.W, height: map.H, alignment: .topLeading)
+    }
+
+    @ViewBuilder private func nameBox(_ b: RelationshipMapLayout.Box, character c: StoryCharacterDto, isCentre: Bool) -> some View {
+        let shape = Capsule()
+        let label = Text(b.text).font(.system(size: 12, weight: .bold))
+            .foregroundStyle(isCentre ? theme["accent-ink"] : theme["ink"])
+            .frame(width: b.w, height: b.h)
+            .background(isCentre ? theme["accent"] : theme["accent-soft"], in: shape)
+            .overlay(shape.strokeBorder(theme["accent"], lineWidth: 1.5))
+            .help(c.name.uppercased())
+        if isCentre {
+            label.position(x: b.x, y: b.y).accessibilityLabel(c.name)
+        } else {
+            Button { m.map = RelationshipMapFocus(id: c.id) } label: { label }
+                .buttonStyle(.plain)
+                .position(x: b.x, y: b.y)
+                .accessibilityLabel("Show relationships of \(c.name)")
+                .accessibilityIdentifier("story-map-name-\(c.id)")
+        }
+    }
+
+    /// An arrow head at the end of the curve, pointing along it.
+    static func arrow(_ c: RelationshipMapLayout.Curve) -> Path {
+        let dx = c.end.x - c.control.x, dy = c.end.y - c.control.y
+        let len = max(hypot(dx, dy), 0.001)
+        let ux = dx / len, uy = dy / len
+        let size: CGFloat = 8
+        let base = CGPoint(x: c.end.x - ux * size, y: c.end.y - uy * size)
+        var p = Path()
+        p.move(to: c.end)
+        p.addLine(to: CGPoint(x: base.x - uy * size / 2, y: base.y + ux * size / 2))
+        p.addLine(to: CGPoint(x: base.x + uy * size / 2, y: base.y - ux * size / 2))
+        p.closeSubpath()
+        return p
     }
 }
 
 fileprivate extension String {
     var nilIfEmpty: String? { isEmpty ? nil : self }
-}
-
-/// Where the relationship map puts characters, lines and labels (Windows: layoutRelationshipMap
-/// in Characters.tsx, owner change list item 3). Characters sit on a circle in the order with the
-/// fewest crossing lines; several relationships between one pair bend apart; each label is moved
-/// along its line until it no longer sits on a name or another label.
-enum RelationshipMapLayout {
-    struct Rel { let id: String; let from: String; let to: String }
-    struct Edge { let control: CGPoint; let label: CGPoint }
-    struct Result { let positions: [String: CGPoint]; let edges: [String: Edge] }
-
-    static func height(for count: Int) -> CGFloat { CGFloat(max(380, min(560, 260 + count * 34))) }
-
-    static func initials(_ name: String) -> String {
-        let parts = name.split(separator: " ")
-        let s = (parts.first.map { String($0.prefix(1)) } ?? "") + (parts.count > 1 ? String(parts.last!.prefix(1)) : "")
-        return s.uppercased()
-    }
-
-    static func layout(ids: [String], rels: [Rel], size: CGSize) -> Result {
-        let n = ids.count
-        let r = max(40, min(size.width, size.height) / 2 - 62)
-        let order = n <= 8 ? fewestCrossings(ids, rels) : ids
-        let step = 2 * Double.pi / Double(max(n, 1))
-        var positions: [String: CGPoint] = [:]
-        for (i, id) in order.enumerated() {
-            let a = step * Double(i) - Double.pi / 2
-            positions[id] = CGPoint(x: size.width / 2 + r * cos(a), y: size.height / 2 + r * sin(a))
-        }
-        // Names sit under each circle; labels keep clear of them.
-        var placed: [CGPoint] = positions.values.map { CGPoint(x: $0.x, y: $0.y + 34) } + Array(positions.values)
-        var pairCount: [String: Int] = [:]
-        var edges: [String: Edge] = [:]
-        for rel in rels {
-            guard let a = positions[rel.from], let b = positions[rel.to] else { continue }
-            let key = [rel.from, rel.to].sorted().joined(separator: "|")
-            let k = pairCount[key, default: 0]
-            pairCount[key] = k + 1
-            let dir: Double = rel.from < rel.to ? 1 : -1
-            let bend: Double = k == 0 ? 0 : Double((k + 1) / 2) * 46 * (k % 2 == 1 ? 1 : -1) * dir
-            let dx = b.x - a.x, dy = b.y - a.y
-            let len = max(hypot(dx, dy), 1)
-            let control = CGPoint(x: (a.x + b.x) / 2 + (-dy / len) * bend, y: (a.y + b.y) / 2 + (dx / len) * bend)
-            func at(_ t: Double) -> CGPoint {
-                CGPoint(x: (1 - t) * (1 - t) * a.x + 2 * (1 - t) * t * control.x + t * t * b.x,
-                        y: (1 - t) * (1 - t) * a.y + 2 * (1 - t) * t * control.y + t * t * b.y)
-            }
-            var label = at(0.5)
-            for t in [0.5, 0.38, 0.62, 0.28, 0.72, 0.44, 0.56] {
-                let p = at(t)
-                if placed.allSatisfy({ abs($0.x - p.x) > 70 || abs($0.y - p.y) > 18 }) { label = p; break }
-            }
-            placed.append(label)
-            edges[rel.id] = Edge(control: control, label: label)
-        }
-        return Result(positions: positions, edges: edges)
-    }
-
-    /// The order of characters round the circle with the fewest crossing lines (up to 8, every
-    /// order tried; the first character stays in place because rotations are the same picture).
-    static func fewestCrossings(_ ids: [String], _ rels: [Rel]) -> [String] {
-        guard ids.count >= 4 else { return ids }
-        let index = Dictionary(uniqueKeysWithValues: ids.enumerated().map { ($1, $0) })
-        let pairs = rels.compactMap { r -> (Int, Int)? in
-            guard let a = index[r.from], let b = index[r.to], a != b else { return nil }
-            return (a, b)
-        }
-        var perm = Array(ids.indices)
-        var slot = Array(repeating: 0, count: ids.count)
-        var best = perm
-        var bestScore = Int.max
-        func crossings() -> Int {
-            for (i, p) in perm.enumerated() { slot[p] = i }
-            var c = 0
-            for i in pairs.indices {
-                let lo = min(slot[pairs[i].0], slot[pairs[i].1]), hi = max(slot[pairs[i].0], slot[pairs[i].1])
-                for j in (i + 1)..<pairs.count {
-                    let p = slot[pairs[j].0], q = slot[pairs[j].1]
-                    if p == lo || p == hi || q == lo || q == hi { continue }
-                    if (p > lo && p < hi) != (q > lo && q < hi) { c += 1 }
-                }
-            }
-            return c
-        }
-        func visit(_ k: Int) {
-            if bestScore == 0 { return }
-            if k == perm.count {
-                let c = crossings()
-                if c < bestScore { bestScore = c; best = perm }
-                return
-            }
-            for i in k..<perm.count {
-                perm.swapAt(k, i)
-                visit(k + 1)
-                perm.swapAt(k, i)
-            }
-        }
-        visit(1)
-        return best.map { ids[$0] }
-    }
 }
