@@ -30,14 +30,13 @@
 ## Next three items
 
 1. Owner at the Mac with the screen unlocked: rerun `72-ai-assistant/conversation-is-still-there-after-a-relaunch`
-   and `72-ai-assistant/stop-offline-ai-frees-the-engines` (`.build-cache/run-ai-e2e-aifix.sh 72-ai-assistant`), the
-   full Swift suite on a quiet machine, and look at the new screens in the dev app
+   and `72-ai-assistant/stop-offline-ai-frees-the-engines` (`.build-cache/run-ai-e2e-aifix.sh 72-ai-assistant`), and
+   look at the new screens in the dev app
    (`apps/macos/scripts/bundle-dev-app.sh`).
 2. Owner decision: the AI tool bar (90%) is not met after the conversational rebuild on either platform (Windows
    69.6%, Mac 73.9% on Low Tide; read questions are answered from facts, not read tools). Keep, change or split the bar.
 3. Repeat on Windows the Mac fixes listed under "Made during the merge" in the change list (ADR-0034), then merge
    `mac/windows-sync` into `mac/m1-toolchain` on the owner's word.
-
 4. The early engine start test fails on the Mac: the free memory reading leaves out reclaimable memory. Fix the
    reading in the shared core (both platforms), then measure the early start (port orders phase 6).
 
