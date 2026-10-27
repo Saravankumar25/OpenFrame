@@ -45,6 +45,36 @@ describe("Story page document", () => {
     expect(JSON.parse(format!)).toEqual([[{ t: "Abcd", b: true }, { t: "ef", s: 18 }]]);
   });
 
+  it("round-trips highlight and underline colours and reads old runs as yellow and ink", () => {
+    const coloured = JSON.stringify([
+      [
+        { t: "Green", h: true, hc: "green" },
+        { t: " red", u: true, uc: "red" },
+        { t: " old", u: true, h: true },
+        { t: " both", u: true, uc: "purple", h: true, hc: "pink" },
+      ],
+    ]);
+    const text = "Green red old both";
+    const doc = docFrom(text, coloured);
+    expect(JSON.parse(contentOf(doc).format!)).toEqual(JSON.parse(coloured));
+    const marks = doc.firstChild!.child(2).marks;
+    expect(marks.map((m) => [m.type.name, m.attrs.color])).toEqual([
+      ["underline", "ink"],
+      ["highlight", "yellow"],
+    ]);
+    // Neighbouring text with different colours stays in separate runs.
+    const s = storySchema;
+    const para = s.nodes.paragraph.create(null, [
+      s.text("ab", [s.marks.highlight.create({ color: "blue" })]),
+      s.text("cd", [s.marks.highlight.create({ color: "orange" })]),
+    ]);
+    expect(JSON.parse(contentOf(s.nodes.doc.create(null, [para])).format!)).toEqual([
+      [{ t: "ab", h: true, hc: "blue" }, { t: "cd", h: true, hc: "orange" }],
+    ]);
+    // A name outside the palette (never saved by the app) falls back to the default.
+    expect(docFrom("x", JSON.stringify([[{ t: "x", h: true, hc: "teal" }]])).firstChild!.firstChild!.marks[0].attrs.color).toBe("yellow");
+  });
+
   it("counts words", () => {
     expect(wordCount("  one two\n\nthree ")).toBe(3);
     expect(wordCount("")).toBe(0);

@@ -416,3 +416,57 @@ fn story_page_exports_its_formatting_to_word_and_pdf() {
     let got = String::from_utf8(std::fs::read(&txt).unwrap()).unwrap();
     assert_eq!(got.trim_start_matches(BOM), FORMATTED.replace('\n', "\r\n"));
 }
+
+#[test]
+fn story_page_keeps_highlight_and_underline_colours_and_exports_them() {
+    let env = TestEnv::with_project("Night Bus", "Feature Film");
+    let coloured = json!([
+        [
+            { "t": "Hero", "h": true, "hc": "green" },
+            { "t": " walks ", "u": true, "uc": "red" },
+            { "t": "away", "u": true, "h": true }
+        ],
+        [],
+        [{ "t": "The end", "h": true, "hc": "blue", "u": true, "uc": "ink" }]
+    ])
+    .to_string();
+    save_formatted(&env, FORMATTED, &coloured, 0);
+    let stored: Value = serde_json::from_str(page(&env)["format"].as_str().unwrap()).unwrap();
+    assert_eq!(stored[0][0]["hc"], "green");
+    assert_eq!(stored[0][1]["uc"], "red");
+    // A run saved without colour names (pages from before colours) stays that way.
+    assert!(stored[0][2].get("hc").is_none() && stored[0][2].get("uc").is_none());
+    assert_eq!(stored[2][0]["hc"], "blue");
+
+    let (_, docx) = export(&env, "docx", "colours.docx");
+    let xml = docx_part(&docx, "word/document.xml");
+    for tag in [
+        "<w:highlight w:val=\"green\"/>",
+        "<w:u w:val=\"single\" w:color=\"D32F2F\"/>",
+        "<w:highlight w:val=\"yellow\"/>",
+        "<w:highlight w:val=\"cyan\"/>",
+        "<w:u w:val=\"single\"/>",
+    ] {
+        assert!(xml.contains(tag), "{tag} missing: {xml}");
+    }
+    let (r, pdf) = export(&env, "pdf", "colours.pdf");
+    assert_eq!(r["pages"], 1);
+    lopdf::Document::load(&pdf).expect("PDF parses");
+
+    // A colour outside the palette is refused with a plain message and nothing is overwritten.
+    let bad = json!([
+        [{ "t": "Hero walks away", "h": true, "hc": "#00ff00" }],
+        [],
+        [{ "t": "The end" }]
+    ])
+    .to_string();
+    let e = env
+        .call(
+            "story.page.save",
+            json!({ "text": FORMATTED, "format": bad, "expectedRev": 1 }),
+        )
+        .unwrap_err();
+    assert!(e.code.0.starts_with("validation"), "{}", e.code.0);
+    let kept: Value = serde_json::from_str(page(&env)["format"].as_str().unwrap()).unwrap();
+    assert_eq!(kept, stored, "nothing was overwritten");
+}

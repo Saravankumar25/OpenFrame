@@ -28,11 +28,31 @@
 @container (max-width: 520px) { .story-a4 { --fit: .5; } }
 .story-a4-text { position: relative; outline: none; min-height: calc(var(--page-h) - 92pt); white-space: pre-wrap; overflow-wrap: break-word; caret-color: var(--paper-ink); }
 .story-a4-text p { margin: 0; min-height: 1.35em; }
-.story-a4-text mark { background: #ffe27a; color: inherit; } /* document colour: the PDF highlight */
-.story-a4-text[data-empty="true"]::before { content: attr(data-placeholder); position: absolute; color: #8a867c; pointer-events: none; } /* document colour */
+/* Highlight and underline palettes (prose.rs HIGHLIGHTS and UNDERLINES hold the same values for the
+   PDF). The marks name their colour in style="...var(--story-hl-green)"; the toolbar swatches use the
+   light page values, the Dark page redefines them below. */
+.story-write {
+  /* document colour: pastel marker shades that read with black text */
+  --story-hl-yellow: #ffe27a; --story-hl-green: #b8f0a8; --story-hl-blue: #b3dcff; --story-hl-pink: #ffc4e1; --story-hl-orange: #ffcc99; --story-hl-purple: #dcc8ff;
+  /* document colour: underline colours on a white page */
+  --story-ul-red: #d32f2f; --story-ul-blue: #1e63d6; --story-ul-green: #2e8b3e; --story-ul-orange: #e67e22; --story-ul-purple: #8e44ad;
+  --story-ul-ink: var(--ink);
+}
+.story-a4-text mark { background-color: var(--story-hl-yellow); color: inherit; }
+.story-tool { position: relative; }
+.story-tool-bar { position: absolute; left: 7px; right: 7px; bottom: 3px; height: 3px; border-radius: 2px; pointer-events: none; }
+.story-split { display: inline-flex; align-items: center; }
+.story-tool-more { width: 16px; padding: 0; }
+.story-swatch { display: inline-block; width: 14px; height: 14px; border-radius: 3px; border: 1px solid var(--line2); flex: none; }
+.story-a4-text[data-empty="true"]::before { content: attr(data-placeholder); position: absolute; color: #8a867c; pointer-events: none; } /* document colour: placeholder on the sheet */
 /* Dark page (screen only, same colours as the screenplay's Dark page); exports stay white. */
 .story-a4[data-paper="dark"] { --paper: #1e1e22; --paper-ink: #ece9e2; --page-rule: #3a3a40; box-shadow: 0 2px 12px #000a; color-scheme: dark; } /* document colour: dark page */
-.story-a4[data-paper="dark"] .story-a4-text mark { background: #6b5a12; } /* document colour: highlight on the dark page */
+.story-a4[data-paper="dark"] {
+  /* document colour: darker marker shades that read with the light text of the dark page */
+  --story-hl-yellow: #6b5a12; --story-hl-green: #2f5a2a; --story-hl-blue: #1f4a6e; --story-hl-pink: #6e2a4f; --story-hl-orange: #70421a; --story-hl-purple: #4a3478;
+  /* document colour: lighter underline colours that show on the dark page */
+  --story-ul-red: #ff6b6b; --story-ul-blue: #6aa8ff; --story-ul-green: #6fcf7f; --story-ul-orange: #ffa552; --story-ul-purple: #c58af0;
+}
 .story-write-foot { display: flex; justify-content: space-between; padding: 6px 4px 0; }
 .story-canvas { flex: 1; min-height: 0; overflow: auto; position: relative; padding-bottom: 12px; }
 .story-canvas .board { height: auto; min-height: 100%; overflow: visible; align-items: flex-start; padding: 2px 2px 16px; }

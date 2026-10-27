@@ -5,6 +5,7 @@
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { TextSelection } from "prosemirror-state";
@@ -157,6 +158,43 @@ describe("Story page", () => {
     // A second click takes the style off again.
     fireEvent.click(screen.getByRole("button", { name: "Bold" }));
     expect(screen.getByRole("button", { name: "Bold" })).toHaveAttribute("aria-pressed", "false");
+  });
+
+  it("picks a highlight and an underline colour from the lists and saves them", async () => {
+    const user = userEvent.setup();
+    wrap(<StoryPage />);
+    const v = await editor();
+    const bar = (name: string) => screen.getByRole("button", { name }).querySelector(".story-tool-bar");
+    await select(v, 1, 7);
+    await user.click(screen.getByRole("button", { name: "Highlight colour" }));
+    await user.click(await screen.findByRole("menuitem", { name: "Highlight green" }));
+    await user.click(screen.getByRole("button", { name: "Underline colour" }));
+    await user.click(await screen.findByRole("menuitem", { name: "Underline red" }));
+    expect(screen.getByRole("button", { name: "Highlight" })).toHaveAttribute("aria-pressed", "true");
+    expect(bar("Highlight")).toHaveAttribute("data-color", "green");
+    expect(bar("Underline")).toHaveAttribute("data-color", "red");
+    expect(v.dom.querySelector("mark")).toHaveAttribute("data-color", "green");
+    expect(v.dom.querySelector("u")).toHaveAttribute("data-color", "red");
+    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("Saved"));
+    expect(JSON.parse(saves().at(-1)!.args.format as string)).toEqual([[{ t: "In the", u: true, uc: "red", h: true, hc: "green" }, { t: " beginning." }]]);
+
+    // The main button now puts on the last colour picked; a selection of two colours shows none.
+    await select(v, 8, 17);
+    expect(bar("Highlight")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Highlight" }));
+    expect(JSON.parse(contentOf(v.state.doc).format!)).toEqual([[{ t: "In the", u: true, uc: "red", h: true, hc: "green" }, { t: " " }, { t: "beginning", h: true, hc: "green" }, { t: "." }]]);
+    await user.click(screen.getByRole("button", { name: "Highlight colour" }));
+    await user.click(await screen.findByRole("menuitem", { name: "Highlight blue" }));
+    await select(v, 1, 17);
+    expect(screen.getByRole("button", { name: "Highlight" })).toHaveAttribute("aria-pressed", "true");
+    expect(bar("Highlight")).toBeNull();
+
+    // None takes the highlight off the whole selection.
+    await user.click(screen.getByRole("button", { name: "Highlight colour" }));
+    await user.click(await screen.findByRole("menuitem", { name: "No highlight" }));
+    expect(v.dom.querySelector("mark")).toBeNull();
+    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("Saved"));
+    await waitFor(() => expect(JSON.parse(saves().at(-1)!.args.format as string)).toEqual([[{ t: "In the", u: true, uc: "red" }, { t: " beginning." }]]));
   });
 
   it("shows a saved formatting and a mixed size as Mixed", async () => {

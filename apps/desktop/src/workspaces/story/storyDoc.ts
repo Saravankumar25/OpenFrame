@@ -1,5 +1,6 @@
 // The Story page document: a ProseMirror schema with one paragraph per line of text and five
-// marks (bold, italic, underline, highlight, size), and the mapping to what the project stores:
+// marks (bold, italic, underline, highlight, size; underline and highlight carry a colour from a
+// small palette), and the mapping to what the project stores:
 // the plain text plus a formatting that lists the runs of each line (Rust:
 // crates/openframe-import-export/src/prose.rs). The runs of a line joined together are exactly that
 // line, so the plain text never depends on the formatting.
@@ -12,6 +13,17 @@ export const SIZE_MIN = 6;
 export const SIZE_MAX = 96;
 /** The sizes offered in the toolbar. */
 export const SIZES = [8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48, 60, 72];
+
+/** Highlight colours (the first is the default). Rust: HIGHLIGHTS in prose.rs. */
+export const HIGHLIGHT_COLORS = ["yellow", "green", "blue", "pink", "orange", "purple"] as const;
+/** Underline colours; "ink" is the colour of the text. Rust: UNDERLINES in prose.rs. */
+export const UNDERLINE_COLORS = ["ink", "red", "blue", "green", "orange", "purple"] as const;
+export type HighlightColor = (typeof HIGHLIGHT_COLORS)[number];
+export type UnderlineColor = (typeof UNDERLINE_COLORS)[number];
+
+/** `key` when it is in the palette, else the palette's default. */
+const inPalette = <T extends string>(list: readonly T[], key: unknown): T =>
+  list.includes(key as T) ? (key as T) : list[0];
 
 const clampSize = (pt: number) => Math.round(Math.min(SIZE_MAX, Math.max(SIZE_MIN, pt)) * 2) / 2;
 
@@ -34,8 +46,23 @@ export const storySchema = new Schema({
       toDOM: () => ["strong", 0],
     },
     italic: { parseDOM: [{ tag: "em" }, { tag: "i" }, { style: "font-style=italic" }], toDOM: () => ["em", 0] },
-    underline: { parseDOM: [{ tag: "u" }, { style: "text-decoration=underline" }], toDOM: () => ["u", 0] },
-    highlight: { parseDOM: [{ tag: "mark" }], toDOM: () => ["mark", 0] },
+    underline: {
+      attrs: { color: { default: UNDERLINE_COLORS[0] } },
+      parseDOM: [
+        { tag: "u", getAttrs: (el) => ({ color: inPalette(UNDERLINE_COLORS, el.getAttribute("data-color")) }) },
+        { style: "text-decoration=underline" },
+      ],
+      toDOM: (m) => {
+        const c = m.attrs.color as string;
+        // An ink underline takes the colour of the text.
+        return ["u", c === UNDERLINE_COLORS[0] ? { "data-color": c } : { "data-color": c, style: `text-decoration-color: var(--story-ul-${c})` }, 0];
+      },
+    },
+    highlight: {
+      attrs: { color: { default: HIGHLIGHT_COLORS[0] } },
+      parseDOM: [{ tag: "mark", getAttrs: (el) => ({ color: inPalette(HIGHLIGHT_COLORS, el.getAttribute("data-color")) }) }],
+      toDOM: (m) => ["mark", { "data-color": m.attrs.color as string, style: `background-color: var(--story-hl-${m.attrs.color as string})` }, 0],
+    },
     size: {
       attrs: { pt: { default: BODY_SIZE } },
       parseDOM: [
@@ -52,8 +79,9 @@ export const storySchema = new Schema({
   },
 });
 
-/** One stretch of a line in one style, as stored. */
-export type Run = { t: string; b?: boolean; i?: boolean; u?: boolean; h?: boolean; s?: number };
+/** One stretch of a line in one style, as stored. `hc` and `uc` name the highlight and underline
+ *  colour; they are left out for the defaults (yellow, ink), so older pages read the same. */
+export type Run = { t: string; b?: boolean; i?: boolean; u?: boolean; h?: boolean; s?: number; hc?: string; uc?: string };
 
 const styled = (r: Run) => !!(r.b || r.i || r.u || r.h || r.s !== undefined);
 
@@ -82,8 +110,8 @@ function marksOf(r: Run): Mark[] {
   const s = storySchema.marks;
   if (r.b) m.push(s.bold.create());
   if (r.i) m.push(s.italic.create());
-  if (r.u) m.push(s.underline.create());
-  if (r.h) m.push(s.highlight.create());
+  if (r.u) m.push(s.underline.create({ color: inPalette(UNDERLINE_COLORS, r.uc) }));
+  if (r.h) m.push(s.highlight.create({ color: inPalette(HIGHLIGHT_COLORS, r.hc) }));
   if (r.s !== undefined && r.s !== BODY_SIZE) m.push(s.size.create({ pt: clampSize(r.s) }));
   return m;
 }
@@ -105,14 +133,20 @@ function runOf(node: PMNode): Run {
   for (const m of node.marks) {
     if (m.type.name === "bold") r.b = true;
     else if (m.type.name === "italic") r.i = true;
-    else if (m.type.name === "underline") r.u = true;
-    else if (m.type.name === "highlight") r.h = true;
+    else if (m.type.name === "underline") {
+      r.u = true;
+      if (m.attrs.color !== UNDERLINE_COLORS[0]) r.uc = m.attrs.color as string;
+    } else if (m.type.name === "highlight") {
+      r.h = true;
+      if (m.attrs.color !== HIGHLIGHT_COLORS[0]) r.hc = m.attrs.color as string;
+    }
     else if (m.type.name === "size" && m.attrs.pt !== BODY_SIZE) r.s = m.attrs.pt as number;
   }
   return r;
 }
 
-const sameStyle = (a: Run, b: Run) => !!a.b === !!b.b && !!a.i === !!b.i && !!a.u === !!b.u && !!a.h === !!b.h && a.s === b.s;
+const sameStyle = (a: Run, b: Run) =>
+  !!a.b === !!b.b && !!a.i === !!b.i && !!a.u === !!b.u && !!a.h === !!b.h && a.s === b.s && a.hc === b.hc && a.uc === b.uc;
 
 /** What the project stores for an editor document: the plain text and the formatting (null when
  *  nothing is formatted). */

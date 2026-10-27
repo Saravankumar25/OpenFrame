@@ -874,9 +874,25 @@ fn zip_package(parts: &[(String, Vec<u8>)]) -> AppResult<Vec<u8>> {
 
 // ------------------------------------------------------------------ formatted prose
 
+/// The Word highlight for a highlight colour of [`crate::prose::HIGHLIGHTS`]. Word only knows a
+/// fixed list of highlight colours, so each maps to the nearest one that still reads with black
+/// text: yellow to yellow, green to green ("Bright Green" in Word), blue to cyan ("Turquoise";
+/// Word's blue is too dark), pink to magenta ("Pink"), orange to red (Word has no orange) and
+/// purple to magenta (Word's "Violet" is too dark), so pink and purple look alike in Word.
+fn word_highlight(name: &str) -> &'static str {
+    match name {
+        "green" => "green",
+        "blue" => "cyan",
+        "pink" | "purple" => "magenta",
+        "orange" => "red",
+        _ => "yellow",
+    }
+}
+
 /// One Word paragraph per line of the text, so the page the writer sees is the page that is
 /// exported: an empty line is an empty paragraph and paragraphs have no space between them.
-/// Runs keep their bold, italic, underline, highlight and size ([`crate::prose`]).
+/// Runs keep their bold, italic, underline (with its colour), highlight and size
+/// ([`crate::prose`]).
 fn prose_line(w: &mut XmlWriter, style: &str, line: &[crate::prose::ProseRun]) {
     w.open("w:p", &[]);
     w.open("w:pPr", &[]);
@@ -886,10 +902,10 @@ fn prose_line(w: &mut XmlWriter, style: &str, line: &[crate::prose::ProseRun]) {
         w.open("w:r", &[]);
         let script = crate::fonts::first_indic_script(&run.t);
         if run.styled() || script.is_some() {
+            // Children in the order the Word schema asks for (rFonts, b, i, sz, highlight, u, lang).
             w.open("w:rPr", &[]);
-            if let Some(script) = script {
+            if script.is_some() {
                 w.empty("w:rFonts", &[("w:cs", INDIC_DOCX_FONT)]);
-                w.empty("w:lang", &[("w:bidi", script.language_tag())]);
             }
             if run.b {
                 w.empty("w:b", &[]);
@@ -899,17 +915,25 @@ fn prose_line(w: &mut XmlWriter, style: &str, line: &[crate::prose::ProseRun]) {
                 w.empty("w:i", &[]);
                 w.empty("w:iCs", &[]);
             }
-            if run.u {
-                w.empty("w:u", &[("w:val", "single")]);
-            }
-            if run.h {
-                w.empty("w:highlight", &[("w:val", "yellow")]);
-            }
             if let Some(size) = run.s {
                 // Word sizes are half points.
                 let half = format!("{}", (size * 2.0).round() as u32);
                 w.empty("w:sz", &[("w:val", &half)]);
                 w.empty("w:szCs", &[("w:val", &half)]);
+            }
+            if let Some((name, _)) = run.highlight() {
+                w.empty("w:highlight", &[("w:val", word_highlight(name))]);
+            }
+            match run.underline() {
+                Some(("ink", _)) => w.empty("w:u", &[("w:val", "single")]),
+                Some((_, rgb)) => {
+                    let hex = format!("{rgb:06X}");
+                    w.empty("w:u", &[("w:val", "single"), ("w:color", &hex)]);
+                }
+                None => {}
+            }
+            if let Some(script) = script {
+                w.empty("w:lang", &[("w:bidi", script.language_tag())]);
             }
             w.close("w:rPr");
         }
@@ -1011,8 +1035,17 @@ mod tests {
                 u: true,
                 h: true,
                 s: Some(18.0),
+                ..ProseRun::default()
             },
             ProseRun::plain(" walks"),
+            ProseRun {
+                t: " away".into(),
+                u: true,
+                uc: Some("blue".into()),
+                h: true,
+                hc: Some("blue".into()),
+                ..ProseRun::default()
+            },
         ]];
         let bytes = prose_lines_to_bytes("Story", &lines).unwrap();
         let mut zip = zip::ZipArchive::new(std::io::Cursor::new(bytes)).unwrap();
@@ -1022,13 +1055,27 @@ mod tests {
         for tag in [
             "<w:b/>",
             "<w:i/>",
+            // Old runs without colour names: an ink underline and a yellow highlight.
             "<w:u w:val=\"single\"/>",
             "<w:highlight w:val=\"yellow\"/>",
             "<w:sz w:val=\"36\"/>",
+            "<w:highlight w:val=\"cyan\"/>",
+            "<w:u w:val=\"single\" w:color=\"1E63D6\"/>",
         ] {
             assert!(doc.contains(tag), "{tag} missing: {doc}");
         }
         assert!(doc.contains(">Hero<") && doc.contains("> walks<"), "{doc}");
+    }
+
+    #[test]
+    fn every_highlight_colour_has_a_word_highlight() {
+        for (name, _) in crate::prose::HIGHLIGHTS {
+            let w = word_highlight(name);
+            assert!(
+                name == "yellow" || w != "yellow",
+                "{name} falls back to yellow"
+            );
+        }
     }
 
     #[test]

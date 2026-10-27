@@ -2,6 +2,7 @@
 // sheet like the screenplay page. It is not linked to cards, scenes, the screenplay or the
 // assistant. The text lives in the project (story.page.get / story.page.save) with its formatting:
 // font size, bold, italic, underline and highlight for any stretch of text (owner, 2026-10-27).
+// Underline and highlight come in a few colours the writer picks from a list beside each button.
 // Export writes TXT (words only), PDF and Word (with the formatting, on A4).
 //
 // Nothing typed is lost: the page is saved 400 ms after the last change (like the screenplay), on
@@ -14,14 +15,14 @@ import { EditorView } from "prosemirror-view";
 import { history, redo, undo } from "prosemirror-history";
 import { keymap } from "prosemirror-keymap";
 import { baseKeymap, toggleMark } from "prosemirror-commands";
-import type { MarkType, Node as PMNode } from "prosemirror-model";
-import { Bold, Highlighter, Italic, Moon, Underline, ZoomIn, ZoomOut } from "lucide-react";
-import { EmptyState, PageHeader, Skeleton } from "../../design-system";
+import type { Mark, MarkType, Node as PMNode } from "prosemirror-model";
+import { Bold, ChevronDown, Highlighter, Italic, Moon, Underline, ZoomIn, ZoomOut } from "lucide-react";
+import { EmptyState, Menu, PageHeader, Skeleton } from "../../design-system";
 import { story } from "../../api/story";
 import { OpError } from "../../ipc/client";
 import { StoryPageExportButton } from "../../features/export/buttons";
 import { useDebouncedSave } from "../notes/useDebouncedSave";
-import { BODY_SIZE, SIZES, contentOf, docFrom, storySchema, wordCount } from "./storyDoc";
+import { BODY_SIZE, HIGHLIGHT_COLORS, SIZES, UNDERLINE_COLORS, contentOf, docFrom, storySchema, wordCount } from "./storyDoc";
 
 const SAVE_DELAY_MS = 400;
 
@@ -77,8 +78,24 @@ function writeZoom(z: number): number {
 
 // ------------------------------------------------------------------ formatting
 
-type Tools = { bold: boolean; italic: boolean; underline: boolean; highlight: boolean; size: number | null };
-const NO_TOOLS: Tools = { bold: false, italic: false, underline: false, highlight: false, size: BODY_SIZE };
+/** The two marks that carry a colour. */
+type Colored = "underline" | "highlight";
+const PALETTE: Record<Colored, readonly string[]> = { underline: UNDERLINE_COLORS, highlight: HIGHLIGHT_COLORS };
+/** The CSS variable of a colour (story.css). */
+const colorVar = (kind: Colored, c: string) => `var(--story-${kind === "highlight" ? "hl" : "ul"}-${c})`;
+/** The colour as the list names it ("Underline text colour", "Highlight green"). */
+const colorName = (c: string) => (c === "ink" ? "text colour" : c);
+
+type Tools = {
+  bold: boolean;
+  italic: boolean;
+  underline: boolean;
+  highlight: boolean;
+  /** The one underline or highlight colour in the selection, or null when there is none or several. */
+  color: Record<Colored, string | null>;
+  size: number | null;
+};
+const NO_TOOLS: Tools = { bold: false, italic: false, underline: false, highlight: false, color: { underline: null, highlight: null }, size: BODY_SIZE };
 
 function sizeOfMarks(marks: readonly { type: MarkType; attrs: Record<string, unknown> }[]): number {
   const m = marks.find((x) => x.type === storySchema.marks.size);
@@ -90,21 +107,35 @@ function sizeOfMarks(marks: readonly { type: MarkType; attrs: Record<string, unk
 function toolsOf(state: EditorState): Tools {
   const { from, to, empty, $from } = state.selection;
   const m = storySchema.marks;
+  const colorIn = (marks: readonly Mark[], t: MarkType) => (t.isInSet(marks)?.attrs.color as string | undefined) ?? null;
   if (empty) {
     const marks = state.storedMarks ?? $from.marks();
     const has = (t: MarkType) => !!t.isInSet(marks);
-    return { bold: has(m.bold), italic: has(m.italic), underline: has(m.underline), highlight: has(m.highlight), size: sizeOfMarks(marks) };
+    return {
+      bold: has(m.bold),
+      italic: has(m.italic),
+      underline: has(m.underline),
+      highlight: has(m.highlight),
+      color: { underline: colorIn(marks, m.underline), highlight: colorIn(marks, m.highlight) },
+      size: sizeOfMarks(marks),
+    };
   }
   const sizes = new Set<number>();
+  const colors = { underline: new Set<string | null>(), highlight: new Set<string | null>() };
   state.doc.nodesBetween(from, to, (n) => {
-    if (n.isText) sizes.add(sizeOfMarks(n.marks));
+    if (!n.isText) return;
+    sizes.add(sizeOfMarks(n.marks));
+    colors.underline.add(colorIn(n.marks, m.underline));
+    colors.highlight.add(colorIn(n.marks, m.highlight));
   });
   const has = (t: MarkType) => state.doc.rangeHasMark(from, to, t);
+  const one = (set: Set<string | null>) => (set.size === 1 ? [...set][0] : null);
   return {
     bold: has(m.bold),
     italic: has(m.italic),
     underline: has(m.underline),
     highlight: has(m.highlight),
+    color: { underline: one(colors.underline), highlight: one(colors.highlight) },
     size: sizes.size === 1 ? [...sizes][0] : sizes.size === 0 ? BODY_SIZE : null,
   };
 }
@@ -120,6 +151,22 @@ function setSize(state: EditorState, dispatch: (tr: Transaction) => void, pt: nu
   } else {
     tr.removeMark(from, to, t);
     if (pt !== BODY_SIZE) tr.addMark(from, to, t.create({ pt }));
+  }
+  dispatch(tr.scrollIntoView());
+  return true;
+}
+
+/** Give the selection (or what is typed next) the underline or highlight `color`, or take it off
+ *  when `color` is null. */
+function setColor(state: EditorState, dispatch: (tr: Transaction) => void, t: MarkType, color: string | null): boolean {
+  const { from, to, empty } = state.selection;
+  const tr = state.tr;
+  if (empty) {
+    tr.removeStoredMark(t);
+    if (color) tr.addStoredMark(t.create({ color }));
+  } else {
+    tr.removeMark(from, to, t);
+    if (color) tr.addMark(from, to, t.create({ color }));
   }
   dispatch(tr.scrollIntoView());
   return true;
@@ -142,6 +189,11 @@ export function StoryPage() {
   const [status, setStatus] = useState<Status>("saved");
   const [words, setWords] = useState(0);
   const [tools, setTools] = useState<Tools>(NO_TOOLS);
+  // The colour the main Underline and Highlight buttons (and Ctrl+U, Ctrl+Shift+H) put on: the last
+  // one picked from the list, for this visit to the page.
+  const lastColor = useRef<Record<Colored, string>>({ underline: UNDERLINE_COLORS[0], highlight: HIGHLIGHT_COLORS[0] });
+  const toggleColored = (kind: Colored) => (s: EditorState, d?: (tr: Transaction) => void) =>
+    toggleMark(storySchema.marks[kind], { color: lastColor.current[kind] })(s, d);
   const rev = useRef(0);
   const latest = useRef<PMNode | null>(null);
   const viewRef = useRef<EditorView | null>(null);
@@ -211,8 +263,8 @@ export function StoryPage() {
             "Mod-Shift-z": redo,
             "Mod-b": toggleMark(mark.bold),
             "Mod-i": toggleMark(mark.italic),
-            "Mod-u": toggleMark(mark.underline),
-            "Mod-Shift-h": toggleMark(mark.highlight),
+            "Mod-u": toggleColored("underline"),
+            "Mod-Shift-h": toggleColored("highlight"),
             "Mod-]": (s, d) => !!d && stepSize(s, d, 1),
             "Mod-[": (s, d) => !!d && stepSize(s, d, -1),
             "Shift-Enter": baseKeymap.Enter,
@@ -349,21 +401,51 @@ export function StoryPage() {
                 ["underline", "Underline", "Ctrl+U", <Underline key="u" size={15} />],
                 ["highlight", "Highlight", "Ctrl+Shift+H", <Highlighter key="h" size={15} />],
               ] as const
-            ).map(([key, label, keys, icon]) => (
-              <button
-                key={key}
-                type="button"
-                className="iconbtn story-tool"
-                aria-label={label}
-                aria-pressed={tools[key]}
-                title={`${label} (${keys})`}
-                // Keep the selection in the editor while the button is pressed.
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => run(toggleMark(mark[key]))}
-              >
-                {icon}
-              </button>
-            ))}
+            ).map(([key, label, keys, icon]) => {
+              const kind = key === "underline" || key === "highlight" ? key : null;
+              const color = kind && tools.color[kind];
+              const button = (
+                <button
+                  key={key}
+                  type="button"
+                  className="iconbtn story-tool"
+                  aria-label={label}
+                  aria-pressed={tools[key]}
+                  title={`${label} (${keys})`}
+                  // Keep the selection in the editor while the button is pressed.
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => run(kind ? toggleColored(kind) : toggleMark(mark[key]))}
+                >
+                  {icon}
+                  {kind && color && <span className="story-tool-bar" data-color={color} style={{ background: colorVar(kind, color) }} aria-hidden />}
+                </button>
+              );
+              if (!kind) return button;
+              // Split button: the main part puts on the last colour, the arrow opens the list.
+              return (
+                <span key={key} className="story-split">
+                  {button}
+                  <Menu
+                    trigger={
+                      <button type="button" className="iconbtn story-tool story-tool-more" aria-label={`${label} colour`} title={`${label} colour`}>
+                        <ChevronDown size={12} />
+                      </button>
+                    }
+                    items={[
+                      ...PALETTE[kind].map((c) => ({
+                        label: `${label} ${colorName(c)}`,
+                        icon: <span className="story-swatch" style={{ background: colorVar(kind, c) }} aria-hidden />,
+                        onSelect: () => {
+                          lastColor.current[kind] = c;
+                          run((st, d) => setColor(st, d, mark[kind], c));
+                        },
+                      })),
+                      { label: `No ${label.toLowerCase()}`, separatorBefore: true, onSelect: () => run((st, d) => setColor(st, d, mark[kind], null)) },
+                    ]}
+                  />
+                </span>
+              );
+            })}
             <span className="grow" />
             <button
               type="button"

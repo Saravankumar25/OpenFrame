@@ -1,12 +1,11 @@
 //! The Story page in a PDF: lines of formatted runs ([`crate::prose`]) wrapped to the text width.
-//! Bold, italic, underline, a yellow highlight and a point size per run. Every line of the text is
+//! Bold, italic, a coloured underline, a coloured highlight and a point size per run (the colours
+//! of [`crate::prose::HIGHLIGHTS`] and [`crate::prose::UNDERLINES`]). Every line of the text is
 //! one paragraph line, so blank lines keep their height and the page reads as it was written.
 
 use super::*;
 use crate::prose::{BODY_SIZE, ProseLine, ProseRun};
 
-/// The marker colour behind highlighted text.
-const HIGHLIGHT: Rgb = Rgb::hex(0xffe27a);
 /// Line height as a multiple of the largest size on the row.
 const LEADING: f32 = 1.35;
 
@@ -14,8 +13,10 @@ const LEADING: f32 = 1.35;
 pub(super) struct Style {
     pub bold: bool,
     pub italic: bool,
-    pub underline: bool,
-    pub highlight: bool,
+    /// Underline colour, when underlined.
+    pub underline: Option<Rgb>,
+    /// Marker colour behind the text, when highlighted.
+    pub highlight: Option<Rgb>,
     pub size: f32,
 }
 
@@ -24,8 +25,8 @@ impl Style {
         Style {
             bold: r.b,
             italic: r.i,
-            underline: r.u,
-            highlight: r.h,
+            underline: r.underline().map(|(_, c)| Rgb::hex(c)),
+            highlight: r.highlight().map(|(_, c)| Rgb::hex(c)),
             size: r.size(),
         }
     }
@@ -203,7 +204,7 @@ pub(super) fn render(p: &mut Pager, lines: &[ProseLine]) {
             for s in &row.segs {
                 let x = MARGIN + s.x;
                 let size = s.st.size;
-                if s.st.highlight {
+                if let Some(fill) = s.st.highlight {
                     p.ops().push(Op::Shape {
                         x,
                         y: base - size * 0.24,
@@ -212,7 +213,7 @@ pub(super) fn render(p: &mut Pager, lines: &[ProseLine]) {
                         r: 0.0,
                         round_top: false,
                         round_bottom: false,
-                        fill: Some(HIGHLIGHT),
+                        fill: Some(fill),
                         stroke: None,
                     });
                 }
@@ -226,14 +227,14 @@ pub(super) fn render(p: &mut Pager, lines: &[ProseLine]) {
                         text: s.text.clone(),
                     });
                 }
-                if s.st.underline {
+                if let Some(color) = s.st.underline {
                     let y = base - size * 0.11;
                     p.ops().push(Op::LineC {
                         x1: x,
                         y1: y,
                         x2: x + s.w,
                         y2: y,
-                        color: pal::INK,
+                        color,
                         width: (size * 0.055).max(0.5),
                     });
                 }
@@ -307,6 +308,42 @@ mod tests {
         let rows = lay_out(&vec![run(&long, false, None)], 100.0);
         assert!(rows.len() > 2);
         assert_eq!(joined(&rows).replace('|', ""), long);
+    }
+
+    #[test]
+    fn highlight_and_underline_print_in_their_chosen_colours() {
+        let coloured = |hc: Option<&str>, uc: Option<&str>| ProseRun {
+            t: "word".into(),
+            h: true,
+            hc: hc.map(String::from),
+            u: true,
+            uc: uc.map(String::from),
+            ..ProseRun::default()
+        };
+        let lines = vec![
+            vec![coloured(Some("green"), Some("red"))],
+            vec![coloured(None, None)],
+        ];
+        let mut p = Pager::new(595.0, 842.0, MARGIN, MARGIN);
+        render(&mut p, &lines);
+        let fills: Vec<Rgb> = p.pages[0]
+            .iter()
+            .filter_map(|op| match op {
+                Op::Shape { fill: Some(f), .. } => Some(*f),
+                _ => None,
+            })
+            .collect();
+        let lines_c: Vec<Rgb> = p.pages[0]
+            .iter()
+            .filter_map(|op| match op {
+                Op::LineC { color, .. } => Some(*color),
+                _ => None,
+            })
+            .collect();
+        assert_eq!(fills, [Rgb::hex(0xb8f0a8), Rgb::hex(0xffe27a)]);
+        assert_eq!(lines_c, [Rgb::hex(0xd32f2f), pal::INK]);
+        let pdf = Document::new("Story").with(Block::Prose(lines)).to_pdf();
+        assert!(pdf.bytes.starts_with(b"%PDF"));
     }
 
     #[test]
