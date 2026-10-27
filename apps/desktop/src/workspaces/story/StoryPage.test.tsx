@@ -256,6 +256,24 @@ describe("Story page", () => {
     expect(await screen.findByText(/Night Bus - Story - \d{4}-\d{2}-\d{2}\.txt/)).toBeInTheDocument();
   });
 
+  it("turns the sheet dark and back, and remembers the choice", async () => {
+    window.localStorage.removeItem("openframe.story.darkPage");
+    const first = wrap(<StoryPage />);
+    const v = await editor();
+    const sheet = v.dom.closest(".story-a4") as HTMLElement;
+    const toggle = screen.getByRole("button", { name: "Dark page" });
+    expect(toggle).toHaveAttribute("aria-pressed", "false");
+    expect(sheet).not.toHaveAttribute("data-paper");
+    fireEvent.click(toggle);
+    expect(toggle).toHaveAttribute("aria-pressed", "true");
+    expect(sheet).toHaveAttribute("data-paper", "dark");
+    first.unmount();
+    wrap(<StoryPage />);
+    expect((await editor()).dom.closest(".story-a4")).toHaveAttribute("data-paper", "dark");
+    fireEvent.click(screen.getByRole("button", { name: "Dark page" }));
+    expect(window.localStorage.getItem("openframe.story.darkPage")).toBe("0");
+  });
+
   it("does not open the page for writing when it cannot be read", async () => {
     readFails = true;
     wrap(<StoryPage />);

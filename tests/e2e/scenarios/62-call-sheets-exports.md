@@ -40,7 +40,7 @@ Many steps here ask the core directly to set up a plan or write an export with a
 1. Click Call Sheets in the Workspaces navigation.
 2. Click Create Call Sheet, then click Create Call Sheet in the dialog.
 3. Check: the call sheet shows.
-4. Check: the call sheet has the sections "DAY AND TIMES", "PRODUCTION", "LOCATIONS", "SCENE SCHEDULE", "TALENT / CAST" and "PRACTICAL / SAFETY INFORMATION".
+4. Check: the call sheet shows "CALL SHEET · REVISION 1", "SHOOT DAY", "CREW CALL" and the sections "PRODUCTION", "LOCATIONS", "SCENE SCHEDULE", "TALENT / CAST" and "PRACTICAL / SAFETY INFORMATION", and it has a "Day and times" section (the time callout, with no heading of its own).
 5. Check: the call sheet has no "WEATHER" section yet.
 6. Check: at least one empty value in the call sheet shows "Needs input".
 7. Check: the Crew call field reads "07:00" (it comes from the day).
@@ -48,7 +48,11 @@ Many steps here ask the core directly to set up a plan or write an export with a
 9. Check: the call sheet shows "WEATHER".
 10. Select all text in the Forecast field and type 'Light rain after 18:00'. Move focus off the field.
 11. Through the core: check the project lists one call sheet.
-12. Check: the screen is quiet.
+12. Through the core: wait until the call sheet holds the forecast 'Light rain after 18:00', then add the sections extras, departments, advance, crew, communication, specialNotes, attachments and referenceImages to that call sheet.
+13. Check: the call sheet shows "ATTACHMENTS & REFERENCE IMAGES".
+14. Check: the group titles and section headings of the call sheet read, in this order, as in the exported PDF: Production, Locations, Scene schedule, Cast & Crew, Talent / Cast, Extras, Crew, Department notes, Production notes, Practical / Safety information, Weather, Advance schedule, Walkie channels and contacts, Special notes, Attachments & reference images.
+15. Save a picture of the whole call sheet to tests/e2e/artifacts/callsheet-order.png.
+16. Check: the screen is quiet.
 
 ## A schedule change marks the sheet Needs refresh, and the preview lists what changed
 

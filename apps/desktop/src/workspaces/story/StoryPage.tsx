@@ -15,7 +15,7 @@ import { history, redo, undo } from "prosemirror-history";
 import { keymap } from "prosemirror-keymap";
 import { baseKeymap, toggleMark } from "prosemirror-commands";
 import type { MarkType, Node as PMNode } from "prosemirror-model";
-import { Bold, Highlighter, Italic, Underline, ZoomIn, ZoomOut } from "lucide-react";
+import { Bold, Highlighter, Italic, Moon, Underline, ZoomIn, ZoomOut } from "lucide-react";
 import { EmptyState, PageHeader, Skeleton } from "../../design-system";
 import { story } from "../../api/story";
 import { OpError } from "../../ipc/client";
@@ -54,6 +54,8 @@ const ZOOM_MIN = 0.5;
 const ZOOM_MAX = 2;
 
 /** The page zoom is a per-user view preference, never project data. */
+const DARK_KEY = "openframe.story.darkPage";
+
 function readZoom(): number {
   try {
     const z = Number(window.localStorage.getItem(ZOOM_KEY));
@@ -269,6 +271,22 @@ export function StoryPage() {
   // The writer's page zoom: Ctrl+wheel and touchpad pinch (which arrives as Ctrl+wheel) zoom the
   // page only, not the whole window; the buttons do the same.
   const [zoom, setZoomState] = useState(readZoom);
+  // Dark page is a view preference for the screen only, like the screenplay's; exports stay white.
+  const [darkPage, setDarkPageState] = useState(() => {
+    try {
+      return window.localStorage.getItem(DARK_KEY) === "1";
+    } catch {
+      return false;
+    }
+  });
+  const setDarkPage = (on: boolean) => {
+    setDarkPageState(on);
+    try {
+      window.localStorage.setItem(DARK_KEY, on ? "1" : "0");
+    } catch {
+      // Still applies for this session.
+    }
+  };
   const setZoom = useCallback((z: number) => setZoomState(writeZoom(z)), []);
   const deskRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -347,6 +365,16 @@ export function StoryPage() {
               </button>
             ))}
             <span className="grow" />
+            <button
+              type="button"
+              className="iconbtn story-tool"
+              aria-label="Dark page"
+              aria-pressed={darkPage}
+              title={darkPage ? "Light page" : "Dark page"}
+              onClick={() => setDarkPage(!darkPage)}
+            >
+              <Moon size={15} />
+            </button>
             <div className="sp-zoom" role="group" aria-label="Page zoom">
               <button type="button" className="iconbtn" aria-label="Zoom out" title="Zoom out (Ctrl+wheel)" disabled={zoom <= ZOOM_MIN} onClick={() => setZoom(zoom - 0.1)}>
                 <ZoomOut size={14} />
@@ -360,7 +388,7 @@ export function StoryPage() {
             </div>
           </div>
           <div className="story-desk" ref={deskRef}>
-            <div className="story-a4" style={{ "--story-zoom": zoom } as React.CSSProperties} ref={hostRef} />
+            <div className="story-a4" data-paper={darkPage ? "dark" : undefined} style={{ "--story-zoom": zoom } as React.CSSProperties} ref={hostRef} />
           </div>
           <div className="story-write-foot xs muted">
             <span>{words === 1 ? "1 word" : `${words.toLocaleString()} words`}</span>

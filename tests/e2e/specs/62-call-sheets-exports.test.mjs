@@ -10,7 +10,7 @@
 
 import { after, before, describe, test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, readFileSync, existsSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, existsSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { click, launchApp, openWorkspace, sleep, stepper, waitForText } from "../lib/app.mjs";
@@ -53,6 +53,53 @@ async function op(name, args) {
   );
   if (r.err) throw new Error(`${name}: ${r.err}`);
   return r.ok;
+}
+
+/**
+ * The whole call sheet as one picture in tests/e2e/artifacts/, to compare with the exported PDF.
+ * The sheet scrolls inside its panel and WebDriver only captures the window, so the panel is
+ * scrolled a screen at a time and the shots are joined on a canvas in the page.
+ */
+async function sheetScreenshot(name) {
+  const box = await browser.execute(() => {
+    const wrap = document.querySelector(".of-paper-wrap");
+    wrap.scrollTop = 0;
+    const r = wrap.getBoundingClientRect();
+    return { left: r.left, top: r.top, width: wrap.clientWidth, height: wrap.clientHeight, total: wrap.scrollHeight, dpr: window.devicePixelRatio };
+  });
+  const shots = [];
+  for (let y = 0; ; y += box.height) {
+    const at = await browser.execute((to) => {
+      const wrap = document.querySelector(".of-paper-wrap");
+      wrap.scrollTop = to;
+      return wrap.scrollTop;
+    }, y);
+    await sleep(200);
+    shots.push({ at, png: await browser.takeScreenshot() });
+    if (at + box.height >= box.total) break;
+  }
+  const joined = await browser.execute(
+    async (b, list) => {
+      const d = b.dpr;
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.round(b.width * d);
+      canvas.height = Math.round(b.total * d);
+      const g = canvas.getContext("2d");
+      for (const s of list) {
+        // A bitmap from the bytes, not a data: URL, so the page's content policy is not involved.
+        const bytes = Uint8Array.from(atob(s.png), (ch) => ch.charCodeAt(0));
+        const img = await createImageBitmap(new Blob([bytes], { type: "image/png" }));
+        g.drawImage(img, b.left * d, b.top * d, b.width * d, b.height * d, 0, s.at * d, b.width * d, b.height * d);
+      }
+      document.querySelector(".of-paper-wrap").scrollTop = 0;
+      return canvas.toDataURL("image/png").split(",")[1];
+    },
+    box,
+    shots,
+  );
+  const dir = join(import.meta.dirname, "..", "artifacts");
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(join(dir, name), Buffer.from(joined, "base64"));
 }
 
 /** A PDF's raw bytes as Latin-1 text (the brand line is plain WinAnsi text in the content). */
@@ -139,9 +186,11 @@ describe("call sheets, budget, templates, samples and exports", () => {
       await browser.$('//*[@aria-label="Call sheet document"]').waitForDisplayed({ timeout: 15_000 });
       const paper = async () => browser.execute(() => document.querySelector('[aria-label="Call sheet document"]')?.innerText ?? "");
       const text = await paper();
-      for (const s of ["DAY AND TIMES", "PRODUCTION", "LOCATIONS", "SCENE SCHEDULE", "TALENT / CAST", "PRACTICAL / SAFETY INFORMATION"]) {
-        assert.ok(text.toUpperCase().includes(s), `default section ${s} is missing`);
+      // The masthead and the time callout carry no heading, as in the PDF; the sections do.
+      for (const s of ["CALL SHEET · REVISION 1", "SHOOT DAY", "CREW CALL", "PRODUCTION", "LOCATIONS", "SCENE SCHEDULE", "TALENT / CAST", "PRACTICAL / SAFETY INFORMATION"]) {
+        assert.ok(text.toUpperCase().includes(s), `${s} is missing from the call sheet`);
       }
+      assert.ok(await browser.$('//section[@aria-label="Day and times"]').isExisting(), "the day and times callout is missing");
       assert.ok(!text.toUpperCase().includes("WEATHER"), "an optional section shows before it is added");
       const need = await browser.$$('//*[@aria-label="Call sheet document"]//*[@placeholder="Needs input"]');
       assert.ok(need.length > 0, "values nobody entered do not read Needs input");
@@ -158,6 +207,44 @@ describe("call sheets, budget, templates, samples and exports", () => {
       const url = await browser.execute(() => window.location.hash);
       callSheetId = (await op("callsheets.list", {}))[0].id;
       assert.ok(callSheetId, `no call sheet listed (${url})`);
+      // With every section on the sheet, the headings read in the order of the exported PDF.
+      // The screen's own save of the forecast must land first, or it would write over the added sections.
+      await browser.waitUntil(async () => (await op("callsheets.get", { id: callSheetId })).document.optional.weather === "Light rain after 18:00", {
+        timeout: 10_000,
+        timeoutMsg: "the forecast was not saved",
+      });
+      for (const section of ["extras", "departments", "advance", "crew", "communication", "specialNotes", "attachments", "referenceImages"]) {
+        await op("callsheets.add_section", { id: callSheetId, section });
+      }
+      const headings = () =>
+        browser.execute(() =>
+          [...document.querySelectorAll('[aria-label="Call sheet document"] *')]
+            .filter((el) => el.matches(".st > span:first-child, [role=heading]"))
+            .map((h) => (h.getAttribute("role") ? h.lastChild?.textContent : h.textContent)),
+        );
+      const pdfOrder = [
+        "Production",
+        "Locations",
+        "Scene schedule",
+        "Cast & Crew",
+        "Talent / Cast",
+        "Extras",
+        "Crew",
+        "Department notes",
+        "Production notes",
+        "Practical / Safety information",
+        "Weather",
+        "Advance schedule",
+        "Walkie channels and contacts",
+        "Special notes",
+        "Attachments & reference images",
+      ];
+      // The sheet shows each added section once the screen has read the document again.
+      await browser
+        .waitUntil(async () => JSON.stringify(await headings()) === JSON.stringify(pdfOrder), { timeout: 10_000 })
+        .catch(() => undefined);
+      assert.deepEqual(await headings(), pdfOrder);
+      await sheetScreenshot("callsheet-order.png");
       await assertQuiet(browser, "call sheet created");
     });
   });

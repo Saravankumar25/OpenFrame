@@ -30,6 +30,9 @@
 .story-a4-text p { margin: 0; min-height: 1.35em; }
 .story-a4-text mark { background: #ffe27a; color: inherit; } /* document colour: the PDF highlight */
 .story-a4-text[data-empty="true"]::before { content: attr(data-placeholder); position: absolute; color: #8a867c; pointer-events: none; } /* document colour */
+/* Dark page (screen only, same colours as the screenplay's Dark page); exports stay white. */
+.story-a4[data-paper="dark"] { --paper: #1e1e22; --paper-ink: #ece9e2; --page-rule: #3a3a40; box-shadow: 0 2px 12px #000a; color-scheme: dark; } /* document colour: dark page */
+.story-a4[data-paper="dark"] .story-a4-text mark { background: #6b5a12; } /* document colour: highlight on the dark page */
 .story-write-foot { display: flex; justify-content: space-between; padding: 6px 4px 0; }
 .story-canvas { flex: 1; min-height: 0; overflow: auto; position: relative; padding-bottom: 12px; }
 .story-canvas .board { height: auto; min-height: 100%; overflow: visible; align-items: flex-start; padding: 2px 2px 16px; }
