@@ -191,7 +191,10 @@ fn a_project_wide_question_needs_no_screenplay_and_a_scene_question_asks_which()
     assert!(r.screenplays.is_empty() && r.ambiguous.is_none());
 
     let r = say(&ix, &Focus::default(), "how many scenes are there");
-    assert!(r.ambiguous.is_none(), "a count across screenplays asks nothing");
+    assert!(
+        r.ambiguous.is_none(),
+        "a count across screenplays asks nothing"
+    );
 
     let r = say(&ix, &Focus::default(), "describe the scenes");
     let q = r.ambiguous.expect("a question");
