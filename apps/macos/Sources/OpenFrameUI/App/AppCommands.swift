@@ -14,11 +14,18 @@ struct AppCommands: Commands {
         CommandGroup(replacing: .appInfo) {
             Button("About OpenFrame Studio") { openWindow(id: "about") }
         }
-        CommandGroup(after: .appSettings) {
-            // Settings\u{2026} (Command+Comma) comes from the Settings window; the project's own settings follow it.
-            Button("Project Settings\u{2026}") { ProjectSettingsRouter.open() }
-                .keyboardShortcut(keys.shortcut("app.project_settings"))
-                .disabled(!isProject)
+        Group {
+            CommandGroup(after: .appSettings) {
+                // Settings\u{2026} (Command+Comma) comes from the Settings window; the project's own settings follow it.
+                Button("Project Settings\u{2026}") { ProjectSettingsRouter.open() }
+                    .keyboardShortcut(keys.shortcut("app.project_settings"))
+                    .disabled(!isProject)
+            }
+            CommandGroup(replacing: .appTermination) {
+                // AppKit's own Quit does nothing while a sheet is open; this one closes the sheets first.
+                Button("Quit OpenFrame Studio") { QuitGate.quit() }
+                    .keyboardShortcut("q", modifiers: .command)
+            }
         }
         CommandGroup(after: .help) {
             Divider()

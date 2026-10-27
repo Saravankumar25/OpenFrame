@@ -51,13 +51,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         observers.append(center.addObserver(forName: NSWorkspace.didWakeNotification, object: nil, queue: .main) { _ in
             MainActor.assumeIsolated { AppDelegate.model?.core?.powerEvent(sleeping: false) }
         })
+        // Quit from the Dock, logout and restart close the sheets first, like Command+Q.
+        MainActor.assumeIsolated { QuitGate.installQuitEventHandler() }
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { true }
 
     /// Command+Q, the Dock and logout: store what the editors still hold, then quit (the Mac
     /// counterpart of the Windows close gate). A store that does not answer in 5 seconds does not
-    /// keep the app open forever; the core closes the project either way.
+    /// keep the app open forever; the core closes the project either way. AppKit asks this only
+    /// once no sheet is open, which `QuitGate` sees to.
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
         // Whichever comes first answers: the editors finished storing, or 5 seconds passed. A
         // task group cannot do this, because it waits for the slower child even after
