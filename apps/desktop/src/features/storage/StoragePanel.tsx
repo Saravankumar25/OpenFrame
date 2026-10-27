@@ -14,6 +14,7 @@ import { Button, Skeleton } from "../../design-system";
 import { toast } from "../../app/toast";
 import { VaultActions } from "./VaultActions";
 import { ProjectStorage } from "./ProjectStorage";
+import { LibraryActions } from "../library-setup/LibraryActions";
 
 
 
@@ -53,6 +54,7 @@ export function StoragePanel() {
         note="Back up this folder. It holds library.json, which remembers who you are on this computer and where your work is, so a reinstall finds everything again. By default it also holds your projects and the Global Idea Vault."
       >
         <Button size="sm" icon={<FolderOpen size={14} />} onClick={() => void revealLocation("dataRoot").catch(reportError)}>Open Folder</Button>
+        <LibraryActions info={s} />
       </Place>
       <Place
         title="Folder for new projects"

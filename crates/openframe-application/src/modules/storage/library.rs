@@ -93,12 +93,18 @@ pub fn read(path: &Path, app_data_dir: &Path) -> Read {
 /// copy that already holds the same bytes is reused, so a file that stays unusable does not add
 /// a copy at every start.
 pub fn preserve_unusable(path: &Path) -> Option<PathBuf> {
+    preserve_copy(path, UNREADABLE_MARKER)
+}
+
+/// Copy the library file to `library.json<marker><ms>` beside it (see [`preserve_unusable`]).
+/// Also used when the library of another person is connected, so their id stays on disk.
+pub fn preserve_copy(path: &Path, marker: &str) -> Option<PathBuf> {
     let bytes = match std::fs::metadata(path) {
         Ok(m) if m.len() <= 1 << 20 => std::fs::read(path).ok()?,
         _ => return None,
     };
     let dir = path.parent()?;
-    let prefix = format!("{}{UNREADABLE_MARKER}", path.file_name()?.to_string_lossy());
+    let prefix = format!("{}{marker}", path.file_name()?.to_string_lossy());
     for entry in std::fs::read_dir(dir).ok()?.flatten() {
         if entry.file_name().to_string_lossy().starts_with(&prefix)
             && std::fs::read(entry.path()).is_ok_and(|b| b == bytes)
@@ -183,6 +189,17 @@ pub fn same_place(a: &Path, b: &Path) -> bool {
 pub fn is_inside(root: &Path, path: &Path) -> bool {
     let (root, path) = (place_key(root), place_key(path));
     path == root || path.starts_with(&format!("{root}/"))
+}
+
+/// `path` moved from under `from` to under `to`, when it lies inside `from` (case and slash
+/// direction ignored). `None` when it does not.
+pub fn rebase(path: &Path, from: &Path, to: &Path) -> Option<PathBuf> {
+    if !is_inside(from, path) {
+        return None;
+    }
+    let mut out = to.to_path_buf();
+    out.extend(path.components().skip(from.components().count()));
+    Some(out)
 }
 
 pub fn place_key(p: &Path) -> String {
@@ -291,6 +308,28 @@ mod tests {
         ));
         assert!(is_inside(Path::new("C:/a"), Path::new("c:\\A\\b")));
         assert!(!is_inside(Path::new("C:/a"), Path::new("C:/ab")));
+    }
+
+    #[test]
+    fn a_path_inside_a_folder_follows_it_to_its_new_place() {
+        let moved = rebase(
+            Path::new("C:/Users/m/OpenFrame/Projects/Film.openframe"),
+            Path::new("c:/users/m/openframe/"),
+            Path::new("D:/Lib/OpenFrame"),
+        )
+        .unwrap();
+        assert!(same_place(
+            &moved,
+            Path::new("D:/Lib/OpenFrame/Projects/Film.openframe")
+        ));
+        assert_eq!(
+            rebase(
+                Path::new("C:/Other"),
+                Path::new("C:/Users"),
+                Path::new("D:/")
+            ),
+            None
+        );
     }
 
     #[test]

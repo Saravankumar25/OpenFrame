@@ -104,11 +104,13 @@ describe("OpenFrame Default stays today's look", () => {
     const used = new Map<string, string>();
     // Layout variables, not colours: the Beat Board zoom factor and the screenplay, Breakdown and Story page zoom.
     const layout = new Set(["z", "sp-zoom", "bd-zoom", "story-zoom"]);
+    // Story page palette names built in code from a colour key (var(--story-hl-${key})); each is defined in story.css.
+    const dynamic = new Set(["story-hl-", "story-ul-", "story-"]);
     for (const file of walk(SRC)) {
       if (file.endsWith(join("theme", "engine.ts"))) continue; // documents var(--token) in prose
       const text = readFileSync(file, "utf8").replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
       for (const m of text.matchAll(/var\(--([a-z0-9-]+)/g)) {
-        if (layout.has(m[1]) || m[1].startsWith("radix-") || m[1].startsWith("tw-") || m[1].startsWith("color-") || m[1].startsWith("spacing")) continue;
+        if (layout.has(m[1]) || dynamic.has(m[1]) || m[1].startsWith("radix-") || m[1].startsWith("tw-") || m[1].startsWith("color-") || m[1].startsWith("spacing")) continue;
         used.set(m[1], relative(SRC, file));
       }
     }

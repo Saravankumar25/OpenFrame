@@ -26,8 +26,8 @@ How the toolbox (`modules/ai/toolbox.rs`, contract C3) enforces this:
   budget, so a small local model's prompt stays short. `retrieve_context` uses the hybrid retrieval
   service when called through `run_tool_unlocked`, and keyword retrieval (FTS5, same privacy rule) otherwise.
 
-- Registered operations: **514** (161 queries, 353 commands)
-- Exposed to the assistant through tools: **308**; not AI-accessible: **206**
+- Registered operations: **523** (165 queries, 358 commands)
+- Exposed to the assistant through tools: **308**; not AI-accessible: **215**
 - Tools: **254** (61 read/compute/navigate, 193 proposal)
 
 Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation · **L** long-running (task id) · file effect: R = reads a user-picked file, W = writes to a user-picked location, P = project storage on disk.
@@ -227,8 +227,10 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 | `vault.ingest_bytes`: Store a recording, sketch or pasted image in the Idea Vault. | command | Mutate | Edit |  | `VaultIngestBytesArgs` → `VaultItemDto` | hidden | none |
 | `vault.list`: Idea Vault items in a view (all, folder, collection, tag, type, pinned) with optional search. | query | Search | View |  | `VaultListArgs` → `Vec<VaultItemDto>` | tool | `idea_vault` |
 | `vault.move_to_folder`: Move Idea Vault items to a folder (or the top level). | command | Mutate | Edit |  | `VaultMoveArgs` → `()` | tool | `propose_organize_vault_items` |
+| `vault.orphan_files`: Files in the vault folder that no Idea Vault item uses. | query | Read | View | P | `VaultOverviewArgs` → `VaultOrphanFiles` | hidden | none |
 | `vault.overview`: Idea Vault overview: item counts, folders, collections and tags (project or Global Idea Vault). | query | Compute | View |  | `VaultOverviewArgs` → `VaultOverview` | tool | `idea_vault` |
 | `vault.purge`: Delete an Idea Vault item forever. | command | Mutate | PermanentDelete | DIC | `VaultTrashItemArgs` → `DeletedItemRow` | hidden | none |
+| `vault.recover_files`: Add files found in the vault folder back to the Idea Vault as new items. | command | Mutate | Edit | P | `VaultOverviewArgs` → `VaultRecoverResult` | hidden | none |
 | `vault.relink`: Relink a missing linked Idea Vault file. | command | Mutate | Edit | R | `VaultRelinkArgs` → `VaultItemDto` | hidden | none |
 | `vault.remove_from_collection`: Remove Idea Vault items from a collection. | command | Mutate | Edit |  | `VaultMembershipArgs` → `()` | tool | `propose_organize_vault_items` |
 | `vault.remove_tag`: Remove a tag from Idea Vault items. | command | Mutate | Edit |  | `VaultRemoveTagArgs` → `()` | tool | `propose_organize_vault_items` |
@@ -523,6 +525,12 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 
 | Operation | Kind | Class | Capability | Flags | Args → Result | AI | Covered by |
 |---|---|---|---|---|---|---|---|
+| `library.connect`: Connect an OpenFrame library that already exists. | command | Mutate | app level | P | `LibraryDirArgs` → `LibraryStatus` | hidden | none |
+| `library.create_at`: Set up a new OpenFrame library in a folder the person picked. | command | Mutate | app level | P | `LibraryCreateArgs` → `LibraryStatus` | hidden | none |
+| `library.inspect`: What a folder holds: an OpenFrame library, a project, a vault, or nothing. | query | Read | app level | P | `LibraryDirArgs` → `LibraryInspection` | hidden | none |
+| `library.move`: Move the whole OpenFrame library to another folder. | command | Mutate | app level | DCL P | `MoveToFolderArgs` → `StorageTaskStarted` | hidden | none |
+| `library.status`: Whether the OpenFrame library is set up, and libraries found on this computer. | query | Read | app level | P | `Empty` → `LibraryStatus` | hidden | none |
+| `library.use_default`: Set up the OpenFrame library in the suggested folder. | command | Mutate | app level | P | `Empty` → `LibraryStatus` | hidden | none |
 | `project.adopt_orphan_notes`: The Owner takes over the private notes of one person who is no longer on the project. | command | Mutate | ManageProject |  | `AdoptOrphanNotesArgs` → `AdoptedNotes` | hidden | none |
 | `project.discover`: Projects in the projects folder that Recent Projects does not list. | query | Read | app level | P | `Empty` → `Vec<DiscoveredProject>` | hidden | none |
 | `project.move`: Move the open project to another folder, keeping everything in it. | command | Mutate | ManageProject | DCL P | `MoveToFolderArgs` → `StorageTaskStarted` | hidden | none |
@@ -532,6 +540,7 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 | `vault.backup`: Save a backup of the Global Idea Vault to a file the user picked. | command | Mutate | app level | L W | `VaultFileArgs` → `StorageTaskStarted` | hidden | none |
 | `vault.export_package`: Save the Global Idea Vault for another computer, without Recently Deleted items. | command | Mutate | app level | L W | `VaultFileArgs` → `StorageTaskStarted` | hidden | none |
 | `vault.inspect`: What a vault backup file holds, before it is restored. | query | Read | app level | R | `VaultFileArgs` → `VaultInspection` | hidden | none |
+| `vault.inspect_folder`: What a folder holds before it is connected as the Global Idea Vault. | query | Read | app level | R | `LocateVaultArgs` → `VaultFolderInspection` | hidden | none |
 | `vault.locate`: Connect a folder that already holds a Global Idea Vault. | command | Mutate | app level | P | `LocateVaultArgs` → `StorageInfo` | hidden | none |
 | `vault.move`: Move the Global Idea Vault to another folder. | command | Mutate | app level | DCL P | `MoveToFolderArgs` → `StorageTaskStarted` | hidden | none |
 | `vault.restore_backup`: Replace the Global Idea Vault with a backup file; the current vault is kept beside it. | command | Mutate | app level | DCL P | `VaultFileArgs` → `StorageTaskStarted` | hidden | none |
@@ -704,7 +713,7 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 - **Immediate session control (undo/redo, save, cancel a running task, display name) stays a direct user action; an applied Change Set is itself one undo step.**
   `app.cancel_task`, `app.set_display_name`, `history.redo`, `history.undo`, `project.save`
 - **Internal maintenance with no user-visible project change.**
-  `ai.index_rebuild`, `ai.index_status`, `search.rebuild`
+  `ai.index_rebuild`, `ai.index_status`, `search.rebuild`, `vault.orphan_files`, `vault.recover_files`
 - **Keeping or dismissing a schedule warning is the user's own judgement in the warning dialog ("Keep Anyway"); proposals never pre-accept warnings.**
   `schedule.decide_warning`
 - **Keystroke-level screenplay editor primitive (batched typing, element moves/splits); the assistant proposes scene-level changes instead.**
@@ -726,7 +735,7 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 - **Production scene number overrides and renumbering stay a human decision (ADR-0015, contract doc 32 §2.5); the assistant reads the numbers.**
   `screenplay.renumber_scenes`, `screenplay.restore_omitted_scene`, `screenplay.set_scene_number`
 - **Reads or writes a file-system location the user picks in a file dialog; the assistant never chooses or touches file-system paths (spec §3).**
-  `ai.export_conversation`, `breakdown.export_report`, `budget.export_summary`, `callsheets.attach`, `callsheets.export_pdf`, `files.add`, `files.export_copy`, `files.relink`, `moodboard.export_pdf`, `packages.create_backup`, `packages.export_exchange`, `packages.export_project`, `packages.import_project`, `packages.inspect_package`, `packages.review_export_response`, `packages.review_open`, `project.locate`, `project.location_check`, `project.set_cover`, `reports.export_report`, `schedule.export_daily_view`, `schedule.export_dood`, `schedule.export_schedule`, `screenplay.export`, `screenplay.import_apply`, `screenplay.import_preview`, `shot.export_list`, `sides.export_pdf`, `storage.set_projects_dir`, `story.add_attachment`, `story.export_board`, `story.page.export`, `storyboard.export_sheet`, `vault.add_files`, `vault.backup`, `vault.export_package`, `vault.inspect`, `vault.locate`, `vault.move`, `vault.relink`, `vault.restore_backup`
+  `ai.export_conversation`, `breakdown.export_report`, `budget.export_summary`, `callsheets.attach`, `callsheets.export_pdf`, `files.add`, `files.export_copy`, `files.relink`, `library.connect`, `library.create_at`, `library.inspect`, `library.move`, `library.status`, `library.use_default`, `moodboard.export_pdf`, `packages.create_backup`, `packages.export_exchange`, `packages.export_project`, `packages.import_project`, `packages.inspect_package`, `packages.review_export_response`, `packages.review_open`, `project.locate`, `project.location_check`, `project.set_cover`, `reports.export_report`, `schedule.export_daily_view`, `schedule.export_dood`, `schedule.export_schedule`, `screenplay.export`, `screenplay.import_apply`, `screenplay.import_preview`, `shot.export_list`, `sides.export_pdf`, `storage.set_projects_dir`, `story.add_attachment`, `story.export_board`, `story.page.export`, `storyboard.export_sheet`, `vault.add_files`, `vault.backup`, `vault.export_package`, `vault.inspect`, `vault.inspect_folder`, `vault.locate`, `vault.move`, `vault.relink`, `vault.restore_backup`
 - **Returns local file paths of managed media; the assistant never receives file-system paths.**
   `app.info`, `files.asset`, `storage.info`
 - **Screenplay page layout settings (paper, font, spacing, header and footer, page breaks, custom element looks) stay a human decision (screenplay engine contract doc 32 §2.5); the assistant reads the resulting page facts.**

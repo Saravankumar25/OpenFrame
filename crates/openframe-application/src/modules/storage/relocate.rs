@@ -28,7 +28,7 @@ use crate::modules::project;
 
 /// Folders of a project that a move leaves behind: the lock belongs to this location and the
 /// cache is rebuilt on demand.
-const PROJECT_SKIP: &[&str] = &["cache", ".lock"];
+pub(super) const PROJECT_SKIP: &[&str] = &["cache", ".lock"];
 
 /// The vault's safety copies (made before an upgrade) are not copied and not removed by a move.
 const VAULT_SKIP: &[&str] = &["backups"];
@@ -69,7 +69,7 @@ pub struct ProjectMoveReport {
     pub source_left_at: Option<String>,
 }
 
-fn same_place_error(what: &str) -> AppError {
+pub(super) fn same_place_error(what: &str) -> AppError {
     AppError::new(
         "conflict.same_place",
         format!("{what} is already in that folder."),
@@ -77,7 +77,7 @@ fn same_place_error(what: &str) -> AppError {
 }
 
 /// The destination must not exist, or be an empty folder (which the move then replaces).
-fn check_destination_free(dest: &Path, allow_empty_folder: bool) -> AppResult<()> {
+pub(super) fn check_destination_free(dest: &Path, allow_empty_folder: bool) -> AppResult<()> {
     if !dest.exists() {
         return Ok(());
     }
@@ -94,7 +94,7 @@ fn check_destination_free(dest: &Path, allow_empty_folder: bool) -> AppResult<()
     ))
 }
 
-fn staging_path(parent: &Path, name: &OsString) -> PathBuf {
+pub(super) fn staging_path(parent: &Path, name: &OsString) -> PathBuf {
     parent.join(format!(
         "{}{STAGING_MARKER}{}",
         name.to_string_lossy(),
@@ -137,7 +137,7 @@ pub(crate) fn start_move_vault(
 }
 
 /// The undo of a move or a connect did not work. Says where the data is.
-fn rollback_failed(message: String, detail: impl Into<String>) -> AppError {
+pub(super) fn rollback_failed(message: String, detail: impl Into<String>) -> AppError {
     AppError::new(ROLLBACK_FAILED, message).with_detail(detail)
 }
 
@@ -179,7 +179,7 @@ fn move_vault(
             fs::remove_dir(dest)?;
         }
         fs::rename(staging.path(), dest)?;
-        let default = library::same_place(dest, &core.config.global_vault_dir);
+        let default = library::same_place(dest, &core.default_vault_dir());
         let changed = core.change_locations(|l| {
             previous = l.vault_dir.clone();
             l.vault_dir = (!default).then(|| dest.to_path_buf());
@@ -265,7 +265,7 @@ pub(crate) fn locate_vault(core: &AppCore, args: LocateVaultArgs) -> AppResult<S
     }
     check_vault_database(&dir.join("vault.sqlite"))?;
     if !same {
-        let default = library::same_place(&dir, &core.config.global_vault_dir);
+        let default = library::same_place(&dir, &core.default_vault_dir());
         let mut previous = None;
         core.with_vault_closed(|| {
             core.change_locations(|l| {
@@ -462,7 +462,7 @@ fn move_project(
 
 /// The open project is the one at the new place. Opening a project whose id is already open does
 /// nothing, so a session that stayed on the old folder would look like a success.
-fn confirm_open_at(core: &AppCore, dest: &Path) -> AppResult<()> {
+pub(super) fn confirm_open_at(core: &AppCore, dest: &Path) -> AppResult<()> {
     match core.project_opt() {
         Some(s) if library::same_place(s.layout.root(), dest) => Ok(()),
         _ => Err(storage_busy(
@@ -473,7 +473,7 @@ fn confirm_open_at(core: &AppCore, dest: &Path) -> AppResult<()> {
 
 /// The copy is a project: its manifest and its database both carry the same identity, and the
 /// database passes the full integrity check.
-fn check_project_copy(root: &Path, id: &str) -> AppResult<()> {
+pub(super) fn check_project_copy(root: &Path, id: &str) -> AppResult<()> {
     let wrong = |what: &str| {
         AppError::new(
             "storage.copy_mismatch",

@@ -31,7 +31,8 @@ const ROLES: [Role; 5] = [
 /// data folder, and `packages.inspect_package` reads a file the user picked, not the open project.
 /// Reviewed 2026-10-27: `storage.info` and `project.discover` read the places OpenFrame keeps things and the
 /// project folders found there, never project content. `vault.inspect` reads a vault file the
-/// user picked, not the open project.
+/// user picked, not the open project. `library.status` and `library.inspect` read where the library is and
+/// count what a folder the user picked holds, never project content.
 const APPLICATION_READS: &[&str] = &[
     "ai.diagnostics",
     "ai.download.status",
@@ -44,6 +45,8 @@ const APPLICATION_READS: &[&str] = &[
     "appearance.get",
     "entitlement.notice",
     "entitlement.status",
+    "library.inspect",
+    "library.status",
     "packages.inspect_package",
     "packages.review_get",
     "packages.review_list",
@@ -54,6 +57,7 @@ const APPLICATION_READS: &[&str] = &[
     "storage.info",
     "team_gate.status",
     "vault.inspect",
+    "vault.inspect_folder",
     "writing.dictionary",
 ];
 

@@ -25,6 +25,19 @@ pub fn user_content_dir() -> Option<PathBuf> {
     documents_dir().map(|d| d.join(APP_FOLDER))
 }
 
+/// The person's home folder (`C:\Users\<name>`, `~`). The suggested library is `<home>/OpenFrame`:
+/// outside Documents, so Windows does not sync it to OneDrive (doc 40 section 1).
+pub fn home_dir() -> Option<PathBuf> {
+    directories::BaseDirs::new().map(|b| b.home_dir().to_path_buf())
+}
+
+/// `%APPDATA%\OpenFrame` (Roaming; `~/Library/Application Support/OpenFrame` on macOS): where the
+/// pointer to the library lives. The uninstaller's "delete app data" box only removes listed items
+/// under `%LOCALAPPDATA%\OpenFrame`, so the pointer outlives a reinstall.
+pub fn roaming_data_dir() -> Option<PathBuf> {
+    directories::BaseDirs::new().map(|b| b.data_dir().join(APP_FOLDER))
+}
+
 /// The operating system's per-user local data folder without the OpenFrame suffix
 /// (`%LOCALAPPDATA%` on Windows, `~/Library/Application Support` on macOS). The desktop shell uses
 /// it to find the package-private data folder of an MSIX install.

@@ -72,6 +72,8 @@ const SQL_WRITE_ALLOW = {
     "Vault file: scrubs a private staging copy of the vault database for a package, and read-only integrity checks of a vault before it is restored or connected.",
   "crates/openframe-application/src/modules/storage/relocate.rs":
     "Read-only integrity and identity check of the copy of a project made by Move Project, before it replaces the original.",
+  "crates/openframe-application/src/modules/storage/library_ops.rs":
+    "Read-only (immutable) counts of a library's vault for the setup preview, and one transaction on app.sqlite (Recent Projects paths, no project content) when a library moves.",
 };
 
 const AI_BOUNDARY_EXEMPT = new Set([

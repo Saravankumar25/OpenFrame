@@ -10,15 +10,77 @@ design and the contract the code follows; the code is the ground truth.
 |---|---|---|
 | Application binaries | `%LOCALAPPDATA%\Programs\OpenFrame Studio` | Yes |
 | Technical app data (settings, recents, AI records, logs, models) | `%LOCALAPPDATA%\OpenFrame` (MSIX: the package `LocalState\OpenFrame`) | Only with the "delete app data" box (direct installer); always for MSIX |
-| Library folder (the one folder to back up) | `Documents\OpenFrame` | Never |
-| Library file (identity and chosen places) | `Documents\OpenFrame\library.json` | Never |
-| Default folder for new projects | `Documents\OpenFrame\Projects` (changeable) | Never |
-| Global Idea Vault | `Documents\OpenFrame\Global Idea Vault` (movable) | Never |
+| Library folder (the one folder to back up) | chosen on the first start; suggested `C:\Users\<name>\OpenFrame` | Never |
+| Library pointer (where the library is) | `%APPDATA%\OpenFrame\library-pointer.json` (Roaming) | Never (the uninstaller only removes listed items under `%LOCALAPPDATA%\OpenFrame`) |
+| Library file (identity and chosen places) | `<library>\library.json` | Never |
+| Default folder for new projects | `<library>\Projects` (changeable) | Never |
+| Global Idea Vault | `<library>\Global Idea Vault` (movable) | Never |
 | Each project | wherever it was created or moved (`<Title>.openframe` folder) | Never |
 | Backups and packages | wherever the person saves them | Never |
 
-On the Mac the library folder is `~/Documents/OpenFrame` (inside the app container under the App Sandbox of the
-store build, so it follows the container's lifecycle there; see section 7).
+Earlier versions kept the library in `Documents\OpenFrame`. On the Mac the suggested library folder is `~/OpenFrame`
+(inside the app container under the App Sandbox of the store build, so it follows the container's lifecycle there;
+see section 7).
+
+### The library and the first start
+
+The library is one folder that holds `library.json`, `Projects\` and `Global Idea Vault\`. A projects folder or a
+vault elsewhere stays supported (the library file names them). **Nothing is created before the person confirms a
+choice**: no folder, no vault, no projects folder, no library file, and no saved profile. Until then the core runs
+only `library.*`, `team_gate.*`, `entitlement.*`, `appearance.*`, `app.info` and `app.save_state`; every other
+operation answers `library.setup_required`, the vault does not open, start maintenance does nothing, and the shell
+refuses to reveal the data folder.
+
+The chosen folder is remembered in `app.sqlite` (`sys_settings` key `storage.library_root`) and in the pointer file,
+both written only after the choice worked. At start the app uses `app.sqlite`, else the pointer (a reinstall); when
+one of the two is missing it is written again. The library is:
+
+- **Ready** when the remembered folder exists. Normal starts never ask again.
+- **NeedsSetup** when nothing is remembered. `found` lists existing libraries at the suggested folder and at
+  `Documents\OpenFrame` (the Known Folder, which may be redirected to OneDrive, plus `<home>\Documents\OpenFrame` and
+  `<home>\OneDrive\Documents\OpenFrame`), each with real counts. An install from before this change that already has
+  `Documents\OpenFrame` lands here once, with that library listed first.
+- **Missing** when the remembered folder is not there (a drive that is not connected, a moved folder). It is never
+  recreated empty; the screen says where it was expected and offers Try Again, Locate, Choose new and Use default.
+
+The screen "Set up your OpenFrame library" shows after the team password and before Home whenever the state is not
+Ready. It cannot be dismissed; closing the window closes the app. Three choices: **Use the default location** (shows
+`<home>\OpenFrame` and why it is outside OneDrive; Create Library Here makes it), **Choose a new location** (a folder
+picker; the library is `<picked>\OpenFrame`, shown before Create Library, with a warning when the folder is synced),
+**Locate existing OpenFrame data** (a folder picker, then a preview of what was found; a wrong level, a single project
+or a lone vault is explained; Connect Library only when a library was identified; a failure stays on the screen).
+
+| Operation | What it does | Safety |
+|---|---|---|
+| `library.status` → `LibraryStatus` | `state` (`ready`, `needsSetup`, `missing`), `root` (in use, or expected), `suggested`, `cloudService` of the library in use, `found: LibraryInspection[]` | Read only; works before setup |
+| `library.inspect {dir}` → `LibraryInspection` | `kind` (`libraryRoot`, `libraryParent`, `insideLibrary`, `project`, `vault`, `empty`, `other`), `libraryRoot` when it can be identified safely, `hasLibraryFile`, `ownerName`, `projectCount`, `vaultFound`, `ideaCount`, `cloudService`, `message` | Never writes: the vault is opened read-only and immutable, so no `-wal` or `-shm` appears (changes still in a crashed vault's `-wal` are not counted) |
+| `library.use_default` | Sets up `<home>\OpenFrame`: connects it when it already is a library, else creates it | Refuses when a library is set up (Settings moves or locates instead), and a folder that already holds something |
+| `library.create_at {parent}` | New library at `<parent>\OpenFrame` | Parent must be absolute, local, writable, outside the app data and outside any project or library. Refuses a destination that holds a library (`conflict.exists`, use Locate) or anything else. A synced folder is allowed; `cloudService` in the answer and the inspect preview warn. What it created is removed again if setup fails |
+| `library.connect {dir}` | Connects the library `library.inspect` identifies for `dir` (any level) | Never creates or replaces anything but `library.json`; a folder with no library is `not_found.library` with the inspect message; a vault in it must pass the vault check; takes the storage slot |
+| `library.move {destParent}` → task `storage.library_move`, `LibraryMoveReport` | Moves the whole library to `<destParent>\<name>` | See below |
+
+**Identity when a library is set up or connected.** `app.sqlite` keeps a saved profile (ADR-0038). A person with no
+saved profile yet (a new computer, or a reset app data: before setup the id lives in memory only) takes over the id
+and name in the connected library's file, so their private notes stay theirs. When a saved profile meets the file of
+another person, that file is first copied to `library.json.other-person-<ms>`, so their id is not lost, and the file
+is rewritten with the profile in use. Nothing in a project is reassigned.
+
+**Moving the library.** Refuses the same place, a destination inside the library or the library inside it, a
+non-empty destination, the app data, a project, a folder that is not writable and not enough space. While it runs no
+project can be opened, created or closed. It closes the open project when that lives in the library, keeps the vault
+closed, copies the whole tree (every project inside, the vault with its safety backups, anything else; a project's
+`.lock` and `cache\` are left out as in a project move) into a staging folder, checks every file (size and SHA-256),
+every project database and identity and the vault database, renames it into place, then switches: the pointer and
+`app.sqlite`, then `library.json` and the places, then Recent Projects for projects that were inside. The folder for
+new projects becomes the moved library's `Projects` (always, owner decision 2026-10-27, also when another folder had
+been chosen); a vault inside the library follows it, a vault or project outside stays where it is, and a folder picked
+in New Project is still used for that project. The open project is reopened from its new place and the vault opened;
+if either fails every record is switched back and the copy deleted. Only then is the old folder removed (only what
+was copied; `sourceLeftAt` names it when something else was in it). Any failure before the switch keeps the old
+library live and removes the staging folder.
+
+Settings > Storage, "Your OpenFrame library": Open Folder, Move Library… (the task dialog of the vault move, with
+both paths and what moves) and Locate Existing Library… (the inspect preview, then Connect).
 
 ## 2. The library file and the durable identity
 
@@ -31,10 +93,12 @@ Now the library file holds the identity and the chosen places:
 { "format": 1, "userId": "0192...", "displayName": "Meera", "projectsDir": "D:\\Films", "vaultDir": "D:\\Films\\Global Idea Vault", "updatedAt": 1793000000000 }
 ```
 
-- Written atomically (`openframe_platform::atomic`) at start, after a name change and after every location change.
-- Read at start before the profile is created. When `app.sqlite` has no profile, the user id and name of a valid
-  library file are reused (the same person after a reinstall or an app-data reset), so their private notes stay
-  theirs. When `app.sqlite` already has a profile, it wins and the file is rewritten.
+- Written atomically (`openframe_platform::atomic`) at start (once the library is set up), after a name change, after
+  every location change and when a library is set up, connected or moved.
+- Read at start before the profile is created, and again when a library is set up or connected (section 1). When
+  `app.sqlite` has no profile, the user id and name of a valid library file are reused (the same person after a
+  reinstall or an app-data reset), so their private notes stay theirs. When `app.sqlite` already has a profile, it
+  wins and the file is rewritten.
 - Reading has three outcomes: absent (the file is created), valid, and unusable. A file that does not parse (a
   half-written file), has a newer `format`, a user id that is not a UUID, is too large or cannot be read (a read
   error that may pass) is unusable. An unusable file is never trusted and never fatal, and it is never overwritten
@@ -44,13 +108,16 @@ Now the library file holds the identity and the chosen places:
   after which it is the normal file. A folder inside a valid file that is relative or protected is dropped on its own.
   `projectsDir` and `vaultDir` are optional; missing means the default.
 - The id is never derived from a display name, an e-mail address or the operating system account.
-- Tests and the end-to-end data root (`OPENFRAME_DATA_ROOT`) use their own library file inside their own root.
+- Tests and the end-to-end data root (`OPENFRAME_DATA_ROOT`) count as set up from the start, with the library at
+  their own root (`AppConfig::isolated`). `AppConfig::isolated_needing_setup` and, for a debug build on a test data
+  root, `OPENFRAME_LIBRARY_SETUP=1` start like a new computer, with every folder inside the test root.
 
 ## 3. Locations at run time
 
-`AppCore` keeps the projects folder and the vault folder behind a lock, starting from the library file (else the
-defaults). Every caller reads them through `core.projects_dir()`, `core.vault_dir()` and `core.data_root()`, so a
-change applies at once without a restart. `AppConfig` keeps only the defaults.
+`AppCore` keeps the library in use, the projects folder and the vault folder behind one lock, starting from the
+remembered library and its file (else the defaults). Every caller reads them through `core.projects_dir()`, `core.vault_dir()` and `core.data_root()`, so a
+change applies at once without a restart. The library's own `Projects` and vault folders are
+`core.default_projects_dir()` and `core.default_vault_dir()`; `AppConfig` keeps only the suggestion.
 
 ### Lazy vault
 
@@ -75,7 +142,7 @@ Locate and Change. Only the default vault folder is created on first use.
 | `vault.move` | Moves the vault to another folder (the folder keeps its name). A background task (`storage.vault_move`) | The vault is closed and kept closed for the whole copy, so nothing can be written to the old files meanwhile. Copies everything except `backups/` to staging, checks every file and the database, renames it into place, writes the library file, opens the vault there, then removes the old files (only what was copied). The safety backups in `backups/` are never copied and never deleted by a move: they stay in the old folder, which is reported as `sourceLeftAt` (so is a folder that still holds anything else). If the vault will not open in its new place, the places are switched back first and the copy is deleted only after that worked (otherwise both folders are kept and the error names them). Refuses the same place, a non-empty destination (`conflict.exists`), a folder inside the vault, the app data or the open project, a folder that is not writable and not enough free space. On failure before the switch the old vault stays live |
 | `vault.locate` | Connects a folder that already holds a vault. Immediate, not a task | Needs `vault.sqlite` that passes the integrity check, has the vault tables, is not newer than this version and carries no code OpenFrame does not create. Refuses a project folder. Nothing is moved, copied or created; only the library file changes. If the vault does not open there, the old place comes back |
 
-**One storage task at a time.** `vault.backup`, `vault.export_package`, `vault.restore_backup`, `vault.move`, `vault.locate` and `project.move` take one slot in the application core when they start (a guard that is released when the task ends, on success, error or panic). A second one is refused at once with `storage.busy` and a plain message, so a restore can never run against a vault path a move has just left. A move or a restore reads the vault folder again inside the closed-vault section and stops (`storage.busy`) if it is not the one it planned for.
+**One storage task at a time.** `vault.backup`, `vault.export_package`, `vault.restore_backup`, `vault.move`, `vault.locate`, `project.move`, `library.connect` and `library.move` take one slot in the application core when they start (a guard that is released when the task ends, on success, error or panic). A second one is refused at once with `storage.busy` and a plain message, so a restore can never run against a vault path a move has just left. A move or a restore reads the vault folder again inside the closed-vault section and stops (`storage.busy`) if it is not the one it planned for.
 
 **While the vault is closed for a move or a restore,** the vault lock is held for the whole copy. A call that needs the vault (a screen query) waits at most two seconds and then fails with `storage.busy` ("The Global Idea Vault is being moved or restored. Try again in a moment.", retryable) instead of freezing. Nothing reopens the vault while it is closed.
 
@@ -113,7 +180,9 @@ any point leaves the app pointing at a complete vault or project: the old one un
 
 ## 6. Settings and screens
 
-- Settings > Storage (global): library folder, default folder for new projects (Change), Global Idea Vault folder with
+- First start: "Set up your OpenFrame library" (section 1).
+- Settings > Storage (global): library folder (Open, Move Library, Locate Existing Library), default folder for new
+  projects (Change), Global Idea Vault folder with
   Open, Back Up, Export Package, Restore, Move, Locate, and the app data folder. Plain words say that changing the
   default folder does not move existing projects.
 - Project Settings: the project folder with Open and Move Project, and the private notes of former owners when there
@@ -123,10 +192,14 @@ any point leaves the app pointing at a complete vault or project: the old one un
 ## 7. Platforms
 
 - Direct installer (NSIS): the uninstall box deletes only listed items under `%LOCALAPPDATA%\OpenFrame`; the library
-  folder, projects, vault and backups are never touched (`installer-hooks.nsh`).
-- Microsoft Store (MSIX): Windows removes the package app data on uninstall; the library file in Documents survives,
+  folder, projects, vault and backups are never touched (`installer-hooks.nsh`), and neither is the library pointer
+  in `%APPDATA%\OpenFrame` (Roaming), so a reinstall opens the same library without asking.
+- Microsoft Store (MSIX): Windows removes the package app data on uninstall, and `%APPDATA%` writes are redirected
+  into the package, so the pointer goes too; the library file in the library folder survives, and the first start
+  finds a library at the suggested folder or in Documents,
   so identity and places come back after a reinstall. Not tested on a real Store install yet (Chapter 3).
-- Mac App Store: Documents resolves inside the app container; the library file lives with the vault there and is
+- Mac App Store: the home folder resolves inside the app container; the library and its pointer live there and are
   removed with the container. Folders outside the container need security-scoped bookmarks, which the Mac shell does
-  not have yet: moving the vault or a project outside the container is not offered on the Mac until it does. Not
-  built or tested in this slice (Mac track 1b).
+  not have yet: moving the library, the vault or a project outside the container must not be offered on the Mac until
+  it does (the Settings screen does not hide these buttons yet; Mac track 1b). The Mac shell has no library setup
+  screen yet. Not built or tested in this slice (Mac track 1b).

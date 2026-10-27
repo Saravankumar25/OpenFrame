@@ -98,7 +98,7 @@ async fn of_invoke(
     let result = tauri::async_runtime::spawn_blocking(move || {
         let actor = core.local_actor();
         let r = core.dispatch(&actor, &op, args);
-        if op.starts_with("project.") || op == "vault.locate" {
+        if op.starts_with("project.") || op.starts_with("library.") || op == "vault.locate" {
             sync_asset_scope(&app.state::<Arc<asset_scope::AssetScope>>(), &core);
         }
         r
@@ -179,6 +179,13 @@ async fn of_reveal_path(
         // The one folder to back up (the data note and the file safety tutorial show it).
         // Created when it does not exist yet, so there is something to show.
         "dataRoot" => {
+            // Nothing is created before the person chose where their library is.
+            if !core.library_ready() {
+                return Err(AppError::new(
+                    "library.setup_required",
+                    "Choose where OpenFrame keeps your work first.",
+                ));
+            }
             let dir = core.data_root();
             std::fs::create_dir_all(&dir).map_err(|e| {
                 AppError::new(
@@ -402,6 +409,12 @@ fn isolated_data_root() -> Option<PathBuf> {
     std::process::exit(2);
 }
 
+/// The end-to-end suite starts an isolated debug build like a new computer, with the library not
+/// set up yet, when `OPENFRAME_LIBRARY_SETUP=1`. Every folder stays inside the test data root.
+fn library_setup_test(release: bool) -> bool {
+    !release && std::env::var_os("OPENFRAME_LIBRARY_SETUP").is_some_and(|v| v == "1")
+}
+
 /// Deterministic Offline AI answers (temperature 0, fixed seed) for the end-to-end suite: only a
 /// debug build on an isolated test data root with `OPENFRAME_AI_DETERMINISTIC=1`.
 fn ai_deterministic(release: bool, isolated: bool) -> bool {
@@ -461,7 +474,11 @@ pub fn run() {
     let mut config = match &isolated_root {
         Some(root) => AppConfig {
             app_version: env!("CARGO_PKG_VERSION").to_string(),
-            ..AppConfig::isolated(root)
+            ..if library_setup_test(!cfg!(debug_assertions)) {
+                AppConfig::isolated_needing_setup(root)
+            } else {
+                AppConfig::isolated(root)
+            }
         },
         None => match AppConfig::for_current_user(env!("CARGO_PKG_VERSION")) {
             Ok(config) => config,

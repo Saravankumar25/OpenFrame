@@ -6,9 +6,11 @@
 //! offered to the assistant, which never chooses or touches file system locations.
 
 pub mod library;
+pub mod library_ops;
 pub mod relocate;
 mod tree;
 pub mod vault_archive;
+mod vault_recover;
 
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};
@@ -127,6 +129,8 @@ pub fn register(r: &mut Registry) {
         )
         .hidden(h::PRIVATE_BOUNDARY),
     );
+    library_ops::register(r);
+    vault_recover::register(r);
 }
 
 // ------------------------------------------------------------------ DTOs
@@ -215,16 +219,14 @@ fn storage_info(core: &AppCore) -> StorageInfo {
     StorageInfo {
         app_data_dir: text(&core.config.app_data_dir),
         library_dir: text(
-            core.config
-                .library_file
-                .as_deref()
-                .and_then(Path::parent)
-                .unwrap_or(&core.data_root()),
+            &core
+                .library_place()
+                .map_or_else(|| core.data_root(), |p| p.root),
         ),
-        library_file: core.config.library_file.as_deref().map(text),
-        projects_dir_is_default: library::same_place(&projects, &core.config.projects_dir),
+        library_file: core.library_file().as_deref().map(text),
+        projects_dir_is_default: library::same_place(&projects, &core.default_projects_dir()),
         projects_dir: text(&projects),
-        vault_dir_is_default: library::same_place(&vault, &core.config.global_vault_dir),
+        vault_dir_is_default: library::same_place(&vault, &core.default_vault_dir()),
         vault_exists: vault.join("vault.sqlite").is_file(),
         vault_dir: text(&vault),
         project_dir: core.project_opt().map(|s| text(s.layout.root())),
@@ -239,7 +241,7 @@ fn set_projects_dir(
     args: SetProjectsDirArgs,
 ) -> AppResult<StorageInfo> {
     let dir = checked_folder(core, &args.path)?;
-    let default = library::same_place(&dir, &core.config.projects_dir);
+    let default = library::same_place(&dir, &core.default_projects_dir());
     core.change_locations(|l| l.projects_dir = (!default).then_some(dir))?;
     Ok(storage_info(core))
 }
@@ -275,7 +277,7 @@ fn existing_vault(core: &AppCore, what: &str) -> AppResult<PathBuf> {
     if dir.join("vault.sqlite").is_file() {
         return Ok(dir);
     }
-    if library::same_place(&dir, &core.config.global_vault_dir) {
+    if library::same_place(&dir, &core.default_vault_dir()) {
         return Err(AppError::new(
             "not_found.vault",
             format!(

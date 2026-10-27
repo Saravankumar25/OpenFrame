@@ -24,6 +24,7 @@ vi.mock("../ipc/client", async (orig) => {
   };
 });
 vi.mock("../features/team-gate/TeamGate", () => ({ TeamGate: ({ children }: { children: React.ReactNode }) => <>{children}</> }));
+vi.mock("../features/library-setup/LibrarySetup", () => ({ LibrarySetupGate: ({ children }: { children: React.ReactNode }) => <>{children}</> }));
 vi.mock("../theme/useAppearance", () => ({ useAppearance: () => undefined }));
 vi.mock("./shortcuts", () => ({ useShortcutSync: () => undefined }));
 vi.mock("../features/licensing/LicenceScreens", () => ({ LicenceScreens: () => <div role="dialog" aria-label="Your free trial has ended" /> }));
