@@ -8,7 +8,7 @@
 
 ## Dashboard (update every session from `npm run plan:status`)
 
-**Overall: 132 of 306 boxes (43.1%).** **Current goal** (boxes without the "Later: store publishing" tag): **131 of 223 (58.7%)**. Updated 2026-10-25 after the AI harness and exports upgrade (no plan boxes moved: the work added feature rows, see the first entry).
+**Overall: 132 of 307 boxes (43%).** **Current goal** (boxes without the "Later: store publishing" tag): **131 of 224 (58.5%)**. Updated 2026-10-27 after the overnight session (one new box for storage, not ticked yet; see the first entry).
 
 | # | Area | Done |
 |---|---|---|
@@ -57,6 +57,48 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 ```
 
 ## Entries
+
+### 2026-10-27, overnight: Story page formatting and A4, sides unbranded, call sheet in PDF order, storage and recovery, OpenFrame-5
+- **Areas and items worked:** Writing comfort (Story page); Call sheets, budget, templates, samples and exports (sides
+  brand, call sheet screen order); Packages and backup (the owner's "Storage, Relocation, Backup, and Identity"
+  specification); AI assistant quality and hardening (the fix round after the Low Tide run, and the assistant
+  end-to-end specs run on the conversational path for the first time). Branch `ui/story-page-callsheet-sides` on top of
+  `ai/conversational-s0`, local, not merged, not pushed.
+- **Done:**
+  - Story page: a ProseMirror editor on an A4 sheet with font size, bold, italic, underline and highlight for selected
+    text, Ctrl+wheel and button zoom; the plain text stays the source of truth and the formatting is stored beside it
+    (migration 0019); PDF (now A4) and Word keep the formatting. The Story workspace opens on the Story page.
+  - Sides PDFs carry no OpenFrame mark or brand line (the sides-only brand path in the screenplay renderer is removed).
+  - The call sheet screen follows the PDF order and names (masthead, Day and times, Production, Locations, Scene
+    schedule, People on the day, Day-of logistics).
+  - Storage (ADR-0038, `docs/engineering/40-storage-locations-and-recovery.md`): a library file in Documents\OpenFrame
+    keeps the local user id and the chosen places, so deleting the app data no longer hides private notes; lazy vault;
+    folder for new projects; Global Idea Vault backup, package, restore, move and locate; project move; projects found
+    on this PC; private notes of a former owner taken over only by the Owner; Settings > Storage; the uninstaller names
+    the library file it keeps. An independent review found eight defects (a vault move deleted the safety backups,
+    an unreadable library file could be overwritten, rollbacks ignored failures, a project could be reopened mid-move,
+    no exclusion between storage tasks, a vault lock held through the copy, unlisted staged files, orphan staging
+    folders); all fixed with tests. A security review finding (a vault package carried linked files' local paths) fixed.
+  - AI: the fix round committed with its tests; four assistant answer gaps found by specs 72 and 73 fixed (search when
+    only the title is known, passages as sources, speakers, script places).
+- **Evidence:** `cargo test --workspace` green (storage.rs 30 integration tests; story_page.rs; report::prose and
+  docx unit tests); clippy `-D warnings` clean; Vitest 715 of 715; `check:governance` 90 of 90; end-to-end: full suite
+  (`.build-cache/e2e-overnight-full.log`) 38 of 45 files green, the seven others fixed and green in reruns
+  (`e2e-overnight-2.log`: 01, 02, 62, 71, 90, 95; `e2e-72-73-fix.log`: 72, 73). Installer
+  `release-out/OpenFrame-5.exe`: commit b0b57081, clean tree, 28,052,265 bytes, SHA-256
+  `fd0968293227b20e0364b00e2933d3751bb6feab1a5ab639373ebe179442c90a`, binary check and installer scan OK.
+- **Features moved:** Story page row rewritten (formatting, A4, zoom; still Built). New row "Storage locations, moving
+  and recovery": Reachable, proof 1.
+- **Docs updated:** ADR-0038 (new) and the register, engineering 40 (new), 33 (sides), 11 and 23 (migrations 0018 and
+  0019), the depth specification section 30 (call sheet order), feature status, masterplan (new storage box), the
+  installer hook text, e2e scenarios.
+- **Decisions made or needed:** made by the owner in chat: the five UI changes and the storage specification. Needed:
+  merge `ui/story-page-callsheet-sides` (with the conversational assistant) into `main`.
+- **Blocked / risks:** the reinstall drill with the delete-app-data box on the packaged app is not done; Mac half not
+  started (security-scoped bookmarks); the user manual (.docx) does not describe the new screens yet.
+- **Next:** the owner's hand test of OpenFrame-5; the reinstall drill; merge to `main`.
+- **Checks run:** see Evidence. Not run: `npm run verify` as one command (its parts were run separately), the AI
+  gold-set evaluation on a release build.
 
 ### 2026-10-26, conversational assistant: diagnosis, ADR-0037, spec, first spike (documents only)
 - **Areas and items worked:** AI assistant quality and hardening (design only; no code changed, nothing built).
