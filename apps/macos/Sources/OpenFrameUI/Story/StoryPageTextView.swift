@@ -152,16 +152,50 @@ final class StoryPageTextView: NSTextView {
     /// Shift+Return starts a new line like Return (the stored text has one kind of line break).
     override func insertLineBreak(_ sender: Any?) { insertNewline(sender) }
 
-    // MARK: Paste and drop: words only, in the style at the caret
+    // MARK: Copy, paste and drop (the Windows paste rules: StoryPagePaste)
 
-    override var readablePasteboardTypes: [NSPasteboard.PasteboardType] { [.string] }
+    override var readablePasteboardTypes: [NSPasteboard.PasteboardType] {
+        [StoryPagePaste.runsType, .html, .rtf, .string]
+    }
 
-    override func paste(_ sender: Any?) { pasteAsPlainText(sender) }
+    override var writablePasteboardTypes: [NSPasteboard.PasteboardType] {
+        [StoryPagePaste.runsType] + super.writablePasteboardTypes
+    }
 
-    override func readSelection(from pboard: NSPasteboard, type: NSPasteboard.PasteboardType) -> Bool {
-        guard let s = pboard.string(forType: .string) else { return false }
-        let clean = s.replacingOccurrences(of: "\r\n", with: "\n").replacingOccurrences(of: "\r", with: "\n")
-        insertText(clean, replacementRange: rangeForUserTextChange)
+    /// A copy carries the page's own runs too, so it pastes back with every colour.
+    override func writeSelection(to pboard: NSPasteboard, types: [NSPasteboard.PasteboardType]) -> Bool {
+        let ok = super.writeSelection(to: pboard, types: types.filter { $0 != StoryPagePaste.runsType })
+        let range = selectedRange()
+        if range.length > 0, let storage = textStorage, let json = StoryPagePaste.runs(of: storage.attributedSubstring(from: range)) {
+            pboard.addTypes([StoryPagePaste.runsType], owner: nil)
+            pboard.setString(json, forType: StoryPagePaste.runsType)
+            return true
+        }
+        return ok
+    }
+
+    override func paste(_ sender: Any?) { _ = readSelection(from: .general) }
+
+    override func readSelection(from pboard: NSPasteboard) -> Bool { insertPasted(from: pboard) }
+
+    override func readSelection(from pboard: NSPasteboard, type: NSPasteboard.PasteboardType) -> Bool { insertPasted(from: pboard) }
+
+    /// Puts the pasted text in place of the selection as one step Undo takes back. Plain text
+    /// takes the style at the caret; rich text keeps what the Windows rules keep.
+    @discardableResult
+    func insertPasted(from pboard: NSPasteboard) -> Bool {
+        guard let pasted = StoryPagePaste.read(pboard), pasted.length > 0 else { return false }
+        let range = rangeForUserTextChange
+        guard range.location != NSNotFound else { return false }
+        // Plain text comes back without a font of its own.
+        if pasted.attribute(.font, at: 0, effectiveRange: nil) == nil {
+            insertText(pasted.string, replacementRange: range)
+            return true
+        }
+        guard let storage = textStorage, shouldChangeText(in: range, replacementString: pasted.string) else { return false }
+        storage.replaceCharacters(in: range, with: pasted)
+        didChangeText()
+        setSelectedRange(NSRange(location: range.location + pasted.length, length: 0))
         return true
     }
 
