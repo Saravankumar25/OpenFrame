@@ -284,3 +284,8 @@ export function insertFor(ctx: Pick<SuggestContext, "kind" | "from">, label: str
       return label;
   }
 }
+
+/** Apply an accepted item to the element text: only [from, to) changes. */
+export function applySuggestion(text: string, ctx: SuggestContext, item: SuggestItem): string {
+  return text.slice(0, ctx.from) + item.insert + text.slice(ctx.to);
+}

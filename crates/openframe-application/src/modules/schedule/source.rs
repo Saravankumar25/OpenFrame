@@ -84,6 +84,8 @@ pub struct ScheduleItemRef {
 pub struct ElementText {
     pub element_type: String,
     pub text: String,
+    /// Part of a dual-dialogue block (Sides keep it).
+    pub dual: bool,
 }
 
 /// Everything the schedule derives from one Production Source.
@@ -204,7 +206,7 @@ pub fn load_source(c: &Connection, source_id: &str) -> AppResult<Option<SourceDa
     let mut elements: HashMap<String, Vec<ElementText>> = HashMap::new();
     {
         let mut st = c.prepare(
-            "SELECT e.scene_id, e.element_type, e.text FROM screenplay_element e
+            "SELECT e.scene_id, e.element_type, e.text, e.dual FROM screenplay_element e
              JOIN screenplay_scene s ON s.id = e.scene_id
              WHERE s.draft_id = ?1 AND s.deleted_at IS NULL ORDER BY e.scene_id, e.position, e.id",
         )?;
@@ -214,6 +216,7 @@ pub fn load_source(c: &Connection, source_id: &str) -> AppResult<Option<SourceDa
                 ElementText {
                     element_type: r.get(1)?,
                     text: r.get(2)?,
+                    dual: r.get(3)?,
                 },
             ))
         })?;
@@ -442,12 +445,13 @@ pub fn load_source(c: &Connection, source_id: &str) -> AppResult<Option<SourceDa
 /// Screenplay text of a set of scenes (for Sides).
 pub fn scene_elements(c: &Connection, scene_id: &str) -> AppResult<Vec<ElementText>> {
     let mut st = c.prepare(
-        "SELECT element_type, text FROM screenplay_element WHERE scene_id = ?1 ORDER BY position, id",
+        "SELECT element_type, text, dual FROM screenplay_element WHERE scene_id = ?1 ORDER BY position, id",
     )?;
     let rows = st.query_map(params![scene_id], |r| {
         Ok(ElementText {
             element_type: r.get(0)?,
             text: r.get(1)?,
+            dual: r.get(2)?,
         })
     })?;
     Ok(rows.collect::<Result<Vec<_>, _>>()?)
@@ -677,12 +681,14 @@ mod tests {
         let one = vec![ElementText {
             element_type: "action".into(),
             text: "x".repeat(60),
+            dual: false,
         }];
         assert_eq!(page_eighths("INT. A - DAY", &one), 1);
         let long: Vec<ElementText> = (0..27)
             .map(|_| ElementText {
                 element_type: "action".into(),
                 text: "word ".repeat(12),
+                dual: false,
             })
             .collect();
         // 27 × (1 line + 1 spacing) = 54 lines + 2 heading lines = 56 → 1 page (8/8), rounded up.

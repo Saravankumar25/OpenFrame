@@ -26,6 +26,7 @@ pub mod documents;
 pub mod indexer;
 pub mod retriever;
 pub mod router;
+pub mod warm;
 
 /// Adapter from the `openframe-ai` embedding runtime (contract C1:
 /// `AiManager::{embedding_info, embed}`) to [`openframe_search::Embedder`]. When
@@ -222,6 +223,7 @@ pub fn session_changed(
         *svc.current.lock() = Some(ix.clone());
         if ai_available(core) {
             ix.activate(core);
+            warm::start(core, &ix);
         }
     }
 }

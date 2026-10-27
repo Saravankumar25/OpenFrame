@@ -9,7 +9,15 @@ import type { TaskProgress } from "../../ipc/generated/TaskProgress";
 import { Banner, Button, Chip, type ChipTone } from "../../design-system";
 
 /** Progress of a background package task with a real Cancel (cancels the task). */
-export function TaskProgressBar({ task, onCancel }: { task: TaskProgress | undefined; onCancel: () => void }) {
+export function TaskProgressBar({
+  task,
+  onCancel,
+  note = "Your project stays open and saved while this runs.",
+}: {
+  task: TaskProgress | undefined;
+  onCancel: () => void;
+  note?: string;
+}) {
   const pct = Math.round((task?.progress ?? 0) * 100);
   return (
     <div className="card pad" role="status" aria-live="polite">
@@ -22,7 +30,7 @@ export function TaskProgressBar({ task, onCancel }: { task: TaskProgress | undef
         <div style={{ width: `${pct}%`, height: "100%", background: "var(--accent)", transition: "width .2s" }} />
       </div>
       <div className="row" style={{ marginTop: 8 }}>
-        <span className="xs muted">Your project stays open and saved while this runs.</span>
+        <span className="xs muted">{note}</span>
         <span className="grow" />
         <Button size="sm" onClick={onCancel}>
           Cancel

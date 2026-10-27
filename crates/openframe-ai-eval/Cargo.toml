@@ -17,5 +17,6 @@ openframe-ai = { workspace = true, features = ["test-support"] }
 openframe-ai-checks = { path = "../openframe-ai-checks" }
 serde.workspace = true
 serde_json.workspace = true
+rusqlite.workspace = true
 sysinfo.workspace = true
 tempfile.workspace = true

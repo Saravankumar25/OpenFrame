@@ -2,7 +2,7 @@
 //!
 //! The application layer is synchronous (Tauri calls it from blocking worker
 //! threads). `run` executes a future on this runtime and waits through a std
-//! channel, which is safe from any thread — including threads that are inside
+//! channel, which is safe from any thread, including threads that are inside
 //! another tokio runtime, where `block_on` would panic.
 
 use std::future::Future;

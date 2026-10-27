@@ -19,7 +19,7 @@ Production exports (schedule, Day Out of Days, call sheet, sides, reports, shot 
 
 ## The Beat Board exports as PDF
 
-1. Click Story. Click Add Act, type 'Act One' and press Enter.
+1. Click Story in the Workspaces navigation, then click the Board tab. Click Add Act, type 'Act One' and press Enter.
 2. Click Add, choose Scene Card, type 'Meera waits at the bus stop' and press Enter.
 3. Through the core: export the Beat Board as PDF.
 4. Check: the file holds at least 500 bytes and starts with "%PDF-".

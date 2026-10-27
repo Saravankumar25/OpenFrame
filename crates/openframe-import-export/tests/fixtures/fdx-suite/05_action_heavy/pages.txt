@@ -43,24 +43,24 @@
  48  150 Action         through the crowd, a sack of rice on his shoulder, counting
  49  150 Action         the stalls under his breath while the monsoon clouds gather
  50  150 Action         overhead.
+ 52  150 Action         Beat 11. Vendors shout over each other as RAVI pushes
+ 53  150 Action         through the crowd, a sack of rice on his shoulder, counting
 === page 2
  -3  730 PageNumber     2.
-  0  150 Action         Beat 11. Vendors shout over each other as RAVI pushes
-  1  150 Action         through the crowd, a sack of rice on his shoulder, counting
-  2  150 Action         the stalls under his breath while the monsoon clouds gather
-  3  150 Action         overhead.
-  5  150 Action         Beat 12. Vendors shout over each other as RAVI pushes
-  6  150 Action         through the crowd, a sack of rice on his shoulder, counting
-  7  150 Action         the stalls under his breath while the monsoon clouds gather
-  8  150 Action         overhead.
- 10  150 Action         Beat 13. Vendors shout over each other as RAVI pushes
- 11  150 Action         through the crowd, a sack of rice on his shoulder, counting
- 12  150 Action         the stalls under his breath while the monsoon clouds gather
- 13  150 Action         overhead.
- 15  150 Action         Beat 14. Vendors shout over each other as RAVI pushes
- 16  150 Action         through the crowd, a sack of rice on his shoulder, counting
- 17  150 Action         the stalls under his breath while the monsoon clouds gather
- 18  150 Action         overhead.
- 20  150 Shot           CLOSE ON RAVI'S HANDS
- 22  150 Action         They are shaking.
-pdf-sha256 68cbe6c0f9f94af5b1051dc6ba14d02a0b8b78537cdec1094074a95a11e6e0a1
+  0  150 Action         the stalls under his breath while the monsoon clouds gather
+  1  150 Action         overhead.
+  3  150 Action         Beat 12. Vendors shout over each other as RAVI pushes
+  4  150 Action         through the crowd, a sack of rice on his shoulder, counting
+  5  150 Action         the stalls under his breath while the monsoon clouds gather
+  6  150 Action         overhead.
+  8  150 Action         Beat 13. Vendors shout over each other as RAVI pushes
+  9  150 Action         through the crowd, a sack of rice on his shoulder, counting
+ 10  150 Action         the stalls under his breath while the monsoon clouds gather
+ 11  150 Action         overhead.
+ 13  150 Action         Beat 14. Vendors shout over each other as RAVI pushes
+ 14  150 Action         through the crowd, a sack of rice on his shoulder, counting
+ 15  150 Action         the stalls under his breath while the monsoon clouds gather
+ 16  150 Action         overhead.
+ 18  150 Shot           CLOSE ON RAVI'S HANDS
+ 20  150 Action         They are shaking.
+pdf-sha256 2a718ea5da99ba735226b683c3ad22bcbba8b3ebfe527bd21543b7fc936081fc

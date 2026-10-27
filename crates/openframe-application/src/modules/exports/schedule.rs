@@ -12,20 +12,21 @@ use std::collections::HashSet;
 
 use openframe_domain::{Actor, AppError, AppResult};
 use openframe_import_export::report::{
-    Align, Banner, Block, Cell, CellItem, Chip, Col, Column, Document, Legend, LegendItem,
-    Masthead, Metric, Metrics, Rgb, Row, Section, Side, StyledTable, Table, Tone, Txt, pal,
+    Align, Block, Cell, CellItem, Chip, Col, Column, Document, FactLine, FactRun, HeaderStyle,
+    Legend, LegendItem, Masthead, Metric, Metrics, Rgb, Row, Side, StyledTable, Table, TableBand,
+    Tone, Txt, pal,
 };
 use serde::Deserialize;
 use ts_rs::TS;
 
 use super::style::{long_date, nb};
 use super::{
-    Fmt, HINT_TABLES, Job, Output, date_from_ms, deliver, destination, footer, nonblank, plural,
+    Fmt, HINT_TABLES, Job, Output, date_from_ms, deliver, destination, nonblank, plural,
     require_export,
 };
 use crate::core::AppCore;
 use crate::modules::schedule::board::{
-    Board, DayRow, Item, StripRow, current_schedule, revised_at,
+    Board, DayRow, Item, MarkerRow, StripRow, current_schedule, revised_at,
 };
 use crate::modules::schedule::fmt::{date_short, minutes, pages};
 use crate::modules::schedule::timeline::ScheduleDayTimeline;
@@ -73,17 +74,17 @@ struct StripText {
     cast_list: Vec<String>,
 }
 
-pub(super) struct StripPalette {
-    pub(super) fill: Rgb,
-    pub(super) stripe: Rgb,
-    pub(super) text: Rgb,
-    pub(super) muted: Rgb,
+struct StripPalette {
+    fill: Rgb,
+    stripe: Rgb,
+    text: Rgb,
+    muted: Rgb,
 }
 
 /// Classic stripboard colours (owner decision 2026-10-20): EXT + Day yellow, EXT + Night green,
 /// INT + Day white, INT + Night light blue (INT/EXT counts as EXT). The ink stays dark on every
 /// fill so the print is readable; labels carry the meaning, colour reinforces it.
-pub(super) fn strip_palette(class: &str) -> StripPalette {
+fn strip_palette(class: &str) -> StripPalette {
     let (fill, stripe, text, muted) = match class {
         "xd" => (0xfbe98f, 0xd9a400, 0x1a2640, 0x5a4a1f),
         "xn" => (0xc9e7b8, 0x4c9a3a, 0x1a2640, 0x2f5a25),
@@ -191,6 +192,290 @@ fn full_synopses(c: &rusqlite::Connection) -> AppResult<std::collections::HashMa
     Ok(out)
 }
 
+/// Secondary text that passes 4.5:1 on white (the palette's FAINT is decoration only).
+const MUTED: Rgb = Rgb::hex(0x66728a);
+/// Cell padding of the strip tables: the portrait columns are narrow.
+const CELL_PAD: f32 = 3.5;
+/// Padding of the one-sentence blocks (an off day, an empty day).
+const SENTENCE_PAD: f32 = 8.0;
+const LEGEND_NOTE: &str = "INT/EXT counts as exterior. The INT/EXT and DAY/NIGHT labels on every strip carry the same meaning as the colour.";
+
+/// "LOW TIDE RADIO · SHOOTING SCHEDULE · REVISED 19 OCT 2026": names the production and the
+/// revision on every page, so a stale copy is easy to spot.
+fn running_header(project: &str, revised: &str) -> String {
+    let mut parts: Vec<String> = Vec::new();
+    if let Some(p) = nb(project) {
+        parts.push(p.to_uppercase());
+    }
+    parts.push("SHOOTING SCHEDULE".into());
+    parts.push(format!("REVISED {}", revised.to_uppercase()));
+    parts.join(" \u{b7} ")
+}
+
+/// The key to the strip colours, with the text codes that carry the same meaning in black and white.
+fn strip_legend() -> Legend {
+    Legend {
+        title: Some("Strip legend".into()),
+        columns: 0,
+        items: [
+            ("xd", "Exterior / Day", "EXT \u{b7} DAY"),
+            ("xn", "Exterior / Night", "EXT \u{b7} NIGHT"),
+            ("id", "Interior / Day", "INT \u{b7} DAY"),
+            ("in", "Interior / Night", "INT \u{b7} NIGHT"),
+        ]
+        .into_iter()
+        .map(|(class, label, code)| {
+            let p = strip_palette(class);
+            LegendItem {
+                swatch: p.fill,
+                border: Some(p.stripe),
+                code: None,
+                label: format!("{label} ({code})"),
+            }
+        })
+        .collect(),
+    }
+}
+
+/// "07:00 crew call · wrap about 14:00 (target 18:00)" with the values that matter in bold.
+fn summary_runs(summary: &str) -> Vec<FactRun> {
+    let mut out = Vec::new();
+    for (i, part) in summary.split(" \u{b7} ").enumerate() {
+        if i > 0 {
+            out.push(FactRun::plain(" \u{b7} "));
+        }
+        if part.ends_with(" crew call") {
+            out.push(FactRun::bold(part));
+        } else if let Some(rest) = part.strip_prefix("wrap about ") {
+            let (time, tail) = rest.split_once(' ').unwrap_or((rest, ""));
+            out.push(FactRun::plain("wrap about "));
+            out.push(FactRun::bold(time));
+            if !tail.is_empty() {
+                out.push(FactRun::plain(format!(" {tail}")));
+            }
+        } else {
+            out.push(FactRun::plain(part));
+        }
+    }
+    out
+}
+
+/// The day's notes as the first row of its table: orange stripe and a "DAY NOTES" label.
+fn day_notes_row(note: &str) -> Row {
+    let mut row = Row::spanning(
+        Cell::new().item(CellItem::Labelled {
+            label: Txt::new("DAY NOTES")
+                .size(6.6)
+                .bold()
+                .track(0.5)
+                .color(pal::ORANGE_DEEP),
+            text: Txt::new(note).size(8.2).color(pal::INK).leading(1.3),
+        }),
+    );
+    row.stripe = Some(pal::ORANGE);
+    row.keep_next = true;
+    row
+}
+
+/// The seven columns at the portrait widths; Start and Est. only when some item has a value.
+fn strip_columns(any_start: bool, any_est: bool) -> Vec<Col> {
+    let mut cols = vec![Col::pt("Scene", 38.0), Col::pt("Type", 48.0)];
+    if any_start {
+        cols.push(Col::pt("Start", 38.0));
+    }
+    cols.push(Col::weight("Heading & synopsis", 1.0));
+    cols.push(Col::pt("Cast", 124.0));
+    cols.push(Col::pt("Pages", 36.0).align(Align::Right));
+    if any_est {
+        cols.push(Col::pt("Est.", 40.0).align(Align::Right));
+    }
+    cols
+}
+
+fn strip_header(any_start: bool, any_est: bool) -> Vec<Cell> {
+    let mut names = vec!["Scene", "Type"];
+    if any_start {
+        names.push("Start");
+    }
+    names.extend(["Heading & synopsis", "Cast", "Pages"]);
+    if any_est {
+        names.push("Est.");
+    }
+    names
+        .into_iter()
+        .map(|n| {
+            Cell::text(
+                Txt::new(n.to_uppercase())
+                    .size(6.8)
+                    .bold()
+                    .track(0.4)
+                    .color(pal::SLATE),
+            )
+        })
+        .collect()
+}
+
+/// A start time; "05:50 (+1)" prints the next-day mark small on a second line.
+fn start_cell(label: &str, color: Rgb) -> Cell {
+    match label.strip_suffix(" (+1)") {
+        Some(time) => Cell::text(Txt::new(time).size(8.6).bold().color(color))
+            .item(CellItem::Text(Txt::new("(+1)").size(6.6).color(color))),
+        None => Cell::text(Txt::new(label).size(8.6).bold().color(color)),
+    }
+}
+
+/// One scene strip: fill and stripe by class, navy ink, the INT/EXT and DAY/NIGHT chips.
+fn strip_row(t: &StripText, any_start: bool, any_est: bool) -> Row {
+    let pal_ = strip_palette(&t.class);
+    let mut cells: Vec<Cell> = Vec::new();
+    cells.push(Cell::new().item(CellItem::Tile(t.number.clone())));
+    let mut chips = Vec::new();
+    if !t.ie.trim().is_empty() {
+        chips.push(Chip::label(t.ie.clone(), Tone::Neutral));
+    }
+    if !t.dn.trim().is_empty() {
+        chips.push(Chip::label(t.dn.clone(), Tone::Neutral));
+    }
+    let mut type_cell = Cell::new();
+    if !chips.is_empty() {
+        type_cell = type_cell.item(CellItem::Chips(chips));
+    }
+    cells.push(type_cell);
+    if any_start {
+        let start = if t.start.is_empty() {
+            "\u{2013}"
+        } else {
+            t.start.as_str()
+        };
+        cells.push(start_cell(start, pal_.text));
+    }
+    let mut body = Cell::text(
+        Txt::new(t.heading.to_uppercase())
+            .size(8.8)
+            .bold()
+            .color(pal_.text)
+            .leading(1.25),
+    );
+    if let Some(l) = nb(&t.location)
+        && !t.heading.to_uppercase().contains(&l.to_uppercase())
+    {
+        body = body.item(CellItem::Text(
+            Txt::new(l).size(8.0).bold().color(pal_.muted),
+        ));
+    }
+    if let Some(s) = nb(&t.synopsis) {
+        body = body.item(CellItem::Text(
+            Txt::new(s).size(8.2).color(pal_.muted).leading(1.3),
+        ));
+    }
+    if let Some(n) = nb(&t.notes) {
+        body = body.item(CellItem::Text(
+            Txt::new(format!("Note: {n}"))
+                .size(8.0)
+                .bold()
+                .color(pal_.muted),
+        ));
+    }
+    let mut flags = Vec::new();
+    match t.state.as_str() {
+        "Changed" => flags.push(Chip::label("Changed in the script", Tone::Warn)),
+        "New" => flags.push(Chip::label("New in the script", Tone::Info)),
+        "Removed" => flags.push(Chip::label("Removed from the script", Tone::Danger)),
+        _ => {}
+    }
+    if !flags.is_empty() {
+        body = body.item(CellItem::Chips(flags));
+    }
+    cells.push(body);
+    let mut cast = Cell::new();
+    for c in &t.cast_list {
+        cast = cast.item(CellItem::Text(
+            Txt::new(c.clone()).size(8.2).color(pal_.text).leading(1.25),
+        ));
+    }
+    cells.push(cast);
+    let mut pg = Cell::text(
+        Txt::new(t.pages.clone())
+            .size(8.8)
+            .color(pal_.text)
+            .align(Align::Right),
+    );
+    if t.overridden {
+        pg = pg.item(CellItem::Text(
+            Txt::new("MANUAL")
+                .size(6.4)
+                .bold()
+                .track(0.5)
+                .color(pal_.muted)
+                .align(Align::Right),
+        ));
+    }
+    cells.push(pg);
+    if any_est {
+        cells.push(Cell::text(
+            Txt::new(if t.est.is_empty() {
+                "\u{2013}".to_string()
+            } else {
+                t.est.clone()
+            })
+            .size(8.2)
+            .color(pal_.text)
+            .align(Align::Right),
+        ));
+    }
+    let mut row = Row::new(cells);
+    row.fill = Some(pal_.fill);
+    row.stripe = Some(pal_.stripe);
+    row
+}
+
+/// A break (meal, move, travel) on the same grid as the scenes, in a neutral row. The type chip
+/// spans the Scene and Type columns, so "COMPANY MOVE" stays on one line.
+fn break_row(m: &MarkerRow, start: &str, any_start: bool, any_est: bool) -> Row {
+    let dur = m.duration_minutes.filter(|d| *d > 0).map(minutes);
+    let mut label = m.label.to_uppercase();
+    if !any_start && let Some(t) = &m.at_time {
+        label.push_str(&format!(" at {t}"));
+    }
+    if !any_est && let Some(d) = &dur {
+        label.push_str(&format!(" ({d})"));
+    }
+    let mut body = Cell::text(Txt::new(label).size(8.8).bold().color(pal::SLATE));
+    if let Some(n) = nonblank(m.notes.as_deref()) {
+        body = body.item(CellItem::Text(
+            Txt::new(n).size(8.2).color(pal::SLATE).leading(1.3),
+        ));
+    }
+    let mut cells = vec![Cell::new().item(CellItem::Chips(vec![Chip::label(
+        m.marker_type.clone(),
+        Tone::Neutral,
+    )]))];
+    if any_start {
+        let shown = match (start.is_empty(), &m.at_time) {
+            (false, _) => start,
+            (true, Some(t)) => t.as_str(),
+            (true, None) => "\u{2013}",
+        };
+        cells.push(start_cell(shown, pal::SLATE));
+    }
+    cells.push(body);
+    cells.push(Cell::empty());
+    cells.push(Cell::empty());
+    if any_est {
+        cells.push(Cell::text(
+            Txt::new(dur.unwrap_or_else(|| "\u{2013}".into()))
+                .size(8.2)
+                .color(pal::SLATE)
+                .align(Align::Right),
+        ));
+    }
+    let mut row = Row::new(cells);
+    row.lead_span = 2;
+    row.fill = Some(Rgb::hex(0xf1f3f6));
+    row.stripe = Some(pal::FAINT);
+    row
+}
+
 pub(super) fn export(
     core: &AppCore,
     actor: &Actor,
@@ -255,10 +540,9 @@ pub(super) fn export(
     let project = board.project_title.clone();
     let scheduled: usize = days.iter().map(|d| board.day_strips(&d.id).len()).sum();
 
-    // ---- PDF (landscape stripboard)
+    // ---- PDF (portrait stripboard, PDF design package v2)
     let mut doc = Document::new(document)
-        .landscape(true)
-        .footer(footer(&project, document));
+        .running_header(Some(running_header(&project, &date_from_ms(revised))));
     let shoot_days = days.iter().filter(|d| !d.off).count();
     let total_eighths: i64 = days
         .iter()
@@ -316,6 +600,11 @@ pub(super) fn export(
         items: metrics,
         compact: false,
     }));
+    // The key comes before the first strip, with the text codes the colours stand for.
+    doc.push(Block::Legend(strip_legend()));
+    doc.push(Block::Text(
+        Txt::new(LEGEND_NOTE).size(7.4).color(MUTED).after(8.0),
+    ));
 
     // Strip text for the PDF: the same fields as the spreadsheet, with the full synopsis.
     let pdf_strip = |s: &StripRow, tl: Option<&ScheduleDayTimeline>| {
@@ -338,147 +627,33 @@ pub(super) fn export(
         }
         s
     };
-    let strip_row = |t: &StripText, any_start: bool, any_est: bool| -> Row {
-        let pal_ = strip_palette(&t.class);
-        let ink = Txt::new("").color(pal_.text);
-        let mut cells: Vec<Cell> = Vec::new();
-        cells.push(Cell::new().item(CellItem::Tile(t.number.clone())));
-        let mut chips = Vec::new();
-        if !t.ie.trim().is_empty() {
-            chips.push(Chip::label(t.ie.clone(), Tone::Neutral));
-        }
-        if !t.dn.trim().is_empty() {
-            chips.push(Chip::label(t.dn.clone(), Tone::Neutral));
-        }
-        let mut type_cell = Cell::new();
-        if !chips.is_empty() {
-            type_cell = type_cell.item(CellItem::Chips(chips));
-        }
-        cells.push(type_cell);
-        if any_start {
-            cells.push(Cell::text(
-                Txt::new(if t.start.is_empty() {
-                    "\u{2013}".to_string()
-                } else {
-                    t.start.clone()
-                })
-                .size(9.0)
-                .bold()
-                .color(pal_.text),
-            ));
-        }
-        let mut body = Cell::text(
-            Txt::new(t.heading.to_uppercase())
-                .size(9.6)
-                .bold()
-                .color(pal_.text)
-                .leading(1.25),
-        );
-        if let Some(l) = nb(&t.location)
-            && !t.heading.to_uppercase().contains(&l.to_uppercase())
-        {
-            body = body.item(CellItem::Text(
-                Txt::new(l).size(8.0).bold().color(pal_.muted),
-            ));
-        }
-        if let Some(s) = nb(&t.synopsis) {
-            body = body.item(CellItem::Text(
-                Txt::new(s).size(8.8).color(pal_.muted).leading(1.3),
-            ));
-        }
-        if let Some(n) = nb(&t.notes) {
-            body = body.item(CellItem::Text(
-                Txt::new(format!("Note: {n}"))
-                    .size(8.2)
-                    .bold()
-                    .color(pal_.muted),
-            ));
-        }
-        let mut flags = Vec::new();
-        match t.state.as_str() {
-            "Changed" => flags.push(Chip::label("Changed in the script", Tone::Warn).small()),
-            "New" => flags.push(Chip::label("New in the script", Tone::Info).small()),
-            "Removed" => flags.push(Chip::label("Removed from the script", Tone::Danger).small()),
-            _ => {}
-        }
-        if !flags.is_empty() {
-            body = body.item(CellItem::Chips(flags));
-        }
-        cells.push(body);
-        let mut cast = Cell::new();
-        for c in &t.cast_list {
-            cast = cast.item(CellItem::Text(
-                Txt::new(c.clone()).size(8.8).color(pal_.text).leading(1.25),
-            ));
-        }
-        cells.push(cast);
-        let mut pg = Cell::text(
-            Txt::new(t.pages.clone())
-                .size(11.0)
-                .color(pal_.text)
-                .align(Align::Right),
-        );
-        if t.overridden {
-            pg = pg.item(CellItem::Text(
-                Txt::new("MANUAL")
-                    .size(5.8)
-                    .bold()
-                    .track(0.5)
-                    .color(pal_.muted)
-                    .align(Align::Right),
-            ));
-        }
-        cells.push(pg);
-        if any_est {
-            cells.push(Cell::text(
-                Txt::new(if t.est.is_empty() {
-                    "\u{2013}".to_string()
-                } else {
-                    t.est.clone()
-                })
-                .size(9.0)
-                .color(pal_.text)
-                .align(Align::Right),
-            ));
-        }
-        let _ = ink;
-        let mut row = Row::new(cells);
-        row.fill = Some(pal_.fill);
-        row.stripe = Some(pal_.stripe);
-        row
-    };
 
+    let mut blocks: Vec<Block> = Vec::new();
     for d in &days {
-        let (number, date_right) = (
-            d.number,
-            d.date
-                .as_deref()
-                .and_then(long_date)
-                .map(|(wd, rest)| format!("{} · {}", wd.to_uppercase(), rest.to_uppercase())),
-        );
-        let mut b = Banner::new(if d.off {
+        let number = d.number;
+        let date_right = d
+            .date
+            .as_deref()
+            .and_then(long_date)
+            .map(|(wd, rest)| format!("{} · {}", wd.to_uppercase(), rest.to_uppercase()));
+        let mut band = TableBand::new(if d.off {
             "Off day".to_string()
         } else {
-            format!("Day {}", number.unwrap_or(0))
+            format!("Shoot Day {}", number.unwrap_or(0))
         });
-        b.eyebrow = Some(if d.off {
-            "Off day".to_string()
-        } else {
-            format!("Shoot day {:02}", number.unwrap_or(0))
-        });
-        b.right = date_right.clone();
+        band.right = date_right;
+        let notes_row = nonblank(d.notes.as_deref()).map(|n| day_notes_row(&n));
         if d.off {
-            b.fill = Rgb::hex(0x56627a);
-            b.sub_left = vec![("No shooting".into(), true)];
-            doc.push(Block::Banner(b));
-            if let Some(n) = nonblank(d.notes.as_deref()) {
-                doc.push(Block::Text(
-                    Txt::new(format!("Day notes: {n}"))
-                        .size(8.8)
-                        .color(pal::SLATE)
-                        .after(6.0),
-                ));
-            }
+            band.fill = Rgb::hex(0x56627a);
+            band.facts = vec![FactLine::Runs(vec![FactRun::bold("No shooting")])];
+            let mut tbl = StyledTable::new(vec![Col::weight("Day notes", 1.0)]);
+            tbl.band = Some(band);
+            tbl.header = HeaderStyle::None;
+            tbl.boxed = true;
+            tbl.keep_whole = true;
+            tbl.pad_x = SENTENCE_PAD;
+            tbl.rows.extend(notes_row);
+            blocks.push(Block::Styled(tbl));
             continue;
         }
         let sum = board.day_summary(d);
@@ -492,57 +667,65 @@ pub(super) fn export(
                 plural(others, "other item", "other items")
             ));
         }
-        b.sub_left = vec![
-            (counts, true),
-            (" · arranged in production order".into(), false),
-        ];
         let page_label = pages(sum.page_eighths);
-        let mut right = vec![
-            (page_label.clone(), true),
-            (
-                if page_label == "1" {
-                    " page total".to_string()
-                } else {
-                    " pages total".to_string()
-                },
-                false,
-            ),
+        let mut totals = vec![
+            FactRun::bold(page_label.clone()),
+            FactRun::plain(if page_label == "1" {
+                " page total"
+            } else {
+                " pages total"
+            }),
         ];
         if !tl.summary.is_empty() && tl.anchored {
-            right.push((format!(" · {}", tl.summary), false));
+            totals.push(FactRun::plain(" · "));
+            totals.extend(summary_runs(&tl.summary));
         }
         if sum.over_target {
-            right.push((
+            totals.push(FactRun::plain(" · "));
+            totals.push(FactRun::pill(
                 if tl.over_target_wrap {
-                    " · past the target wrap".to_string()
+                    "past the target wrap".to_string()
                 } else {
-                    format!(" · over the {} target", minutes(sum.target_minutes))
+                    format!("over the {} target", minutes(sum.target_minutes))
                 },
-                true,
+                Tone::Warn,
             ));
         }
         if let Some(cs) = board.call_sheet_brief(d) {
-            right.push((format!(" · Call sheet: {}", cs.status), false));
+            totals.push(FactRun::plain(format!(" · Call sheet: {}", cs.status)));
         }
-        b.sub_right = right;
-        b.keep_next = 110.0;
-        doc.push(Block::Banner(b));
-        if let Some(n) = nonblank(d.notes.as_deref()) {
-            doc.push(Block::Text(
-                Txt::new(format!("Day notes: {n}"))
-                    .size(8.8)
-                    .color(pal::SLATE)
-                    .after(6.0),
-            ));
+        band.facts = vec![
+            FactLine::Runs(vec![
+                FactRun::bold(counts),
+                FactRun::plain(" · arranged in production order"),
+            ]),
+            FactLine::Runs(totals),
+        ];
+        let places: Vec<&str> = sum
+            .locations
+            .iter()
+            .map(|l| l.name.as_str())
+            .filter(|n| !n.trim().is_empty())
+            .collect();
+        if !places.is_empty() {
+            band.facts.push(FactLine::Labelled {
+                label: "Locations".into(),
+                text: places.join(" · "),
+            });
         }
         let items = board.day_items(&d.id);
         if items.is_empty() {
-            doc.push(Block::Text(
-                Txt::new("No scenes scheduled.")
-                    .size(8.8)
-                    .color(pal::FAINT)
-                    .after(6.0),
-            ));
+            let mut tbl = StyledTable::new(vec![Col::weight("Scene", 1.0)]);
+            tbl.band = Some(band);
+            tbl.header = HeaderStyle::None;
+            tbl.boxed = true;
+            tbl.keep_whole = true;
+            tbl.pad_x = SENTENCE_PAD;
+            tbl.rows.extend(notes_row);
+            tbl.rows.push(Row::spanning(Cell::text(
+                Txt::new("No scenes scheduled.").size(8.8).color(MUTED),
+            )));
+            blocks.push(Block::Styled(tbl));
             continue;
         }
         let texts: Vec<Option<StripText>> = items
@@ -560,136 +743,68 @@ pub(super) fn export(
             || items.iter().any(
                 |it| matches!(it, Item::Marker(m) if m.duration_minutes.is_some_and(|d| d > 0)),
             );
-        let mut cols = vec![Col::pt("Scene", 48.0), Col::pt("Type", 64.0)];
-        if any_start {
-            cols.push(Col::pt("Start", 50.0));
-        }
-        cols.push(Col::weight("Heading & synopsis", 1.0));
-        cols.push(Col::pt("Cast", 150.0));
-        cols.push(Col::pt("Pages", 56.0).align(Align::Right));
-        if any_est {
-            cols.push(Col::pt("Est.", 52.0).align(Align::Right));
-        }
-        let mut tbl = StyledTable::new(cols);
-        tbl.continued = Some(format!(
-            "Shoot day {:02}{}",
-            number.unwrap_or(0),
-            date_right.map(|r| format!(" · {r}")).unwrap_or_default()
-        ));
+        let mut tbl = StyledTable::new(strip_columns(any_start, any_est));
+        tbl.header_cells = Some(strip_header(any_start, any_est));
+        tbl.band = Some(band);
         tbl.boxed = true;
+        tbl.keep_whole = true;
+        tbl.pad_x = CELL_PAD;
+        tbl.rows.extend(notes_row);
         for (it, text) in items.iter().zip(&texts) {
             match (it, text) {
                 (Item::Strip(_), Some(t)) => tbl.rows.push(strip_row(t, any_start, any_est)),
                 (Item::Marker(m), _) => {
-                    // A break sits on the same grid as the scenes, in a neutral row.
                     let start = start_of(Some(&tl), &m.id);
-                    let dur = m.duration_minutes.filter(|d| *d > 0).map(minutes);
-                    let mut label = m.label.to_uppercase();
-                    if !any_start && let Some(t) = &m.at_time {
-                        label.push_str(&format!(" at {t}"));
-                    }
-                    if !any_est && let Some(d) = &dur {
-                        label.push_str(&format!(" ({d})"));
-                    }
-                    let mut body = Cell::text(Txt::new(label).size(9.2).bold().color(pal::SLATE));
-                    if let Some(n) = nonblank(m.notes.as_deref()) {
-                        body = body.item(CellItem::Text(
-                            Txt::new(n).size(8.4).color(pal::SLATE).leading(1.3),
-                        ));
-                    }
-                    let mut cells = vec![
-                        Cell::empty(),
-                        Cell::new().item(CellItem::Chips(vec![
-                            Chip::label(m.marker_type.clone(), Tone::Neutral).small(),
-                        ])),
-                    ];
-                    if any_start {
-                        cells.push(Cell::text(
-                            Txt::new(if start.is_empty() {
-                                m.at_time.clone().unwrap_or_else(|| "–".into())
-                            } else {
-                                start
-                            })
-                            .size(9.0)
-                            .bold()
-                            .color(pal::SLATE),
-                        ));
-                    }
-                    cells.push(body);
-                    cells.push(Cell::empty());
-                    cells.push(Cell::empty());
-                    if any_est {
-                        cells.push(Cell::text(
-                            Txt::new(dur.unwrap_or_else(|| "–".into()))
-                                .size(9.0)
-                                .color(pal::SLATE)
-                                .align(Align::Right),
-                        ));
-                    }
-                    let mut row = Row::new(cells);
-                    row.fill = Some(Rgb::hex(0xf1f3f6));
-                    row.stripe = Some(pal::FAINT);
-                    tbl.rows.push(row);
+                    tbl.rows.push(break_row(m, &start, any_start, any_est));
                 }
                 _ => {}
             }
         }
-        doc.push(Block::Styled(tbl));
+        blocks.push(Block::Styled(tbl));
     }
-    doc.push(Block::Legend(Legend {
-        title: Some("Strip legend".into()),
-        columns: 0,
-        items: vec![
-            ("xd", "Exterior / Day"),
-            ("xn", "Exterior / Night"),
-            ("id", "Interior / Day"),
-            ("in", "Interior / Night"),
-        ]
-        .into_iter()
-        .map(|(class, label)| {
-            let p = strip_palette(class);
-            LegendItem {
-                swatch: p.fill,
-                border: Some(p.stripe),
-                code: None,
-                label: label.into(),
-            }
-        })
-        .collect(),
-    }));
+    // The unscheduled pool. An empty pool is one sentence that stays with the last day: it never
+    // gets a page of its own.
+    let mut tail: Vec<Block> = Vec::new();
     if unscheduled {
-        doc.push(Block::Section(Section::new(
-            format!("Unscheduled · {}", pool.len()),
-            None,
-        )));
         if pool.is_empty() {
-            doc.push(Block::Text(
+            let mut tbl = StyledTable::new(vec![Col::weight("Scene", 1.0)]);
+            tbl.title = Some("Unscheduled · 0".into());
+            tbl.title_hint = Some("Scenes not on a shooting day".into());
+            tbl.header = HeaderStyle::None;
+            tbl.pad_x = 0.0;
+            tbl.rows.push(Row::spanning(Cell::text(
                 Txt::new("All source scenes are scheduled.")
                     .size(8.8)
-                    .color(pal::SLATE)
-                    .after(6.0),
-            ));
+                    .color(MUTED),
+            )));
+            tail.push(Block::Styled(tbl));
         } else {
             let texts: Vec<StripText> = pool.iter().map(|s| pdf_strip(s, None)).collect();
             let any_est = texts.iter().any(|t| !t.est.is_empty());
-            let mut cols = vec![
-                Col::pt("Scene", 48.0),
-                Col::pt("Type", 64.0),
-                Col::weight("Heading & synopsis", 1.0),
-                Col::pt("Cast", 150.0),
-                Col::pt("Pages", 56.0).align(Align::Right),
-            ];
-            if any_est {
-                cols.push(Col::pt("Est.", 52.0).align(Align::Right));
-            }
-            let mut tbl = StyledTable::new(cols);
-            tbl.continued = Some("Unscheduled".into());
+            let mut tbl = StyledTable::new(strip_columns(false, any_est));
+            tbl.header_cells = Some(strip_header(false, any_est));
+            tbl.title = Some(format!("Unscheduled · {}", pool.len()));
+            tbl.title_hint = Some("Scenes not on a shooting day".into());
             tbl.boxed = true;
+            tbl.pad_x = CELL_PAD;
             for t in &texts {
                 tbl.rows.push(strip_row(t, false, any_est));
             }
-            doc.push(Block::Styled(tbl));
+            tail.push(Block::Styled(tbl));
         }
+    }
+    if pool.is_empty()
+        && unscheduled
+        && let Some(last) = blocks.pop()
+    {
+        let mut group = vec![last];
+        group.extend(tail);
+        blocks.push(Block::Together(group));
+    } else {
+        blocks.extend(tail);
+    }
+    for b in blocks {
+        doc.push(b);
     }
 
     // ---- spreadsheet

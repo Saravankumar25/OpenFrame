@@ -75,7 +75,7 @@ export async function openAsset(assetId: string, opts: { reveal?: boolean; globa
 }
 
 export async function revealLocation(
-  kind: "project" | "globalVault" | "dataRoot" | "logs" | "exported" | "assetFolder" | "globalAssetFolder",
+  kind: "project" | "globalVault" | "dataRoot" | "appData" | "logs" | "exported" | "assetFolder" | "globalAssetFolder",
   id?: string,
   path?: string,
 ): Promise<void> {

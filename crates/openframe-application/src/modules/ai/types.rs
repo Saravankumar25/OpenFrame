@@ -379,6 +379,9 @@ pub struct AiResultDto {
     pub confidence: Option<Confidence>,
     pub provenance: Vec<Provenance>,
     pub items: Vec<ResultItem>,
+    /// True when `items` are the answer itself (a list the person asked for). Otherwise they are
+    /// supporting evidence and the screen keeps them under "See sources".
+    pub items_are_answer: bool,
     pub nav: Option<NavTarget>,
     pub change_set: Option<ChangeSetDto>,
     pub error_code: Option<String>,
@@ -386,6 +389,10 @@ pub struct AiResultDto {
     pub steps: Vec<AiStepDto>,
     /// Background task started for this request (long-running tools, agentic spec §29).
     pub task_id: Option<String>,
+    /// The path that answered: write, navigate, change or fixed (harness spec, section 5).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[ts(optional)]
+    pub lane: Option<String>,
     #[ts(type = "number")]
     pub created_at: i64,
 }

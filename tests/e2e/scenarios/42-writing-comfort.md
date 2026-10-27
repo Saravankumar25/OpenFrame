@@ -104,6 +104,24 @@ Before: an empty data folder of its own. The app starts for the first time.
 12. Check: the elements include "action: The bus is late." again.
 13. Check: the screen is quiet.
 
+## Find scrolls the page to every match; Replace, Replace All, Match case and Whole word work
+
+1. Click the second Action line, press End, then press Enter and type sixty short lines, each after an Enter. Lines 3 and 58 read "Walk 3, a torch burns." and "Walk 58, a torch burns."; the others read "Walk N goes on.".
+2. Check: within 15 seconds the editor says "Saved", and the last line reads "Walk 60 goes on.".
+3. Press Ctrl+F and type "torch" in the Find box.
+4. Check: the count reads "1 of 2", and the highlighted match (line 3, far above the caret) is inside the visible part of the page.
+5. Press Enter in the Find box.
+6. Check: the count reads "2 of 2", and the highlighted match (line 58) is inside the visible part of the page.
+7. Press Shift+Enter.
+8. Check: the count reads "1 of 2" and the first match is on screen again.
+9. Tick Match case and type "Torch": the count reads "No matches found". Untick Match case: the count reads "1 of 2".
+10. Tick Whole word and type "torc": the count reads "No matches found". Untick Whole word and type "torch": the count reads "1 of 2".
+11. Type "lamp" in Replace with and click Replace.
+12. Check: line 3 reads "Walk 3, a lamp burns.", line 58 still reads "torch", the count reads "1 of 1", and the match on line 58 is on screen.
+13. Click Replace All.
+14. Check: the screen shows "Replaced 1 match", line 58 reads "lamp", and the count reads "No matches found".
+15. Click Close find, check that the editor says "Saved" and that the screen is quiet.
+
 ## Navigator columns can be shown and are remembered
 
 1. Click Navigator columns, then choose Page.

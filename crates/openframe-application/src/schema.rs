@@ -85,6 +85,16 @@ pub const PROJECT_MIGRATIONS: &[Migration] = &[
         "story_page",
         "../../../migrations/project/0017_story_page.sql"
     ),
+    m!(
+        18,
+        "ai_memory",
+        "../../../migrations/project/0018_ai_memory.sql"
+    ),
+    m!(
+        19,
+        "story_page_format",
+        "../../../migrations/project/0019_story_page_format.sql"
+    ),
 ];
 
 pub const GLOBAL_MIGRATIONS: &[Migration] = &[
@@ -114,6 +124,36 @@ pub const APP_MIGRATIONS: &[Migration] = &[
         "../../../migrations/app/0002_appearance.sql"
     ),
     m!(3, "ai_trace", "../../../migrations/app/0003_ai_trace.sql"),
+    m!(
+        4,
+        "ai_trace_cache",
+        "../../../migrations/app/0004_ai_trace_cache.sql"
+    ),
+    m!(
+        5,
+        "ai_trace_lane",
+        "../../../migrations/app/0005_ai_trace_lane.sql"
+    ),
+    m!(
+        6,
+        "ai_trace_intent",
+        "../../../migrations/app/0006_ai_trace_intent.sql"
+    ),
+    m!(
+        7,
+        "project_cover",
+        "../../../migrations/app/0007_project_cover.sql"
+    ),
+    m!(
+        8,
+        "ai_trace_turn",
+        "../../../migrations/app/0008_ai_trace_turn.sql"
+    ),
+    m!(
+        9,
+        "ai_trace_dossier",
+        "../../../migrations/app/0009_ai_trace_dossier.sql"
+    ),
 ];
 
 pub fn project_schema_version() -> u32 {

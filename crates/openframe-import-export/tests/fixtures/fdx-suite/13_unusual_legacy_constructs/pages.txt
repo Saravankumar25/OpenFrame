@@ -16,8 +16,8 @@
  14  150 Dialogue       Then who?
  14  460 Dialogue       Ask the keeper.
  16  150 Custom         ASHA, RAVI
- 18   90 SceneNumber    2
- 18  150 Heading        INT. ARCHIVE - LATER
- 18  760 SceneNumber    2
- 20  150 Action         The lights go out.
-pdf-sha256 2f06ac63d4c2dd9a0c73cfd3c3b4796e5b2094ee2a578eb9f4d407b10ed58443
+ 19   90 SceneNumber    2
+ 19  150 Heading        INT. ARCHIVE - LATER
+ 19  760 SceneNumber    2
+ 21  150 Action         The lights go out.
+pdf-sha256 a9e6393da62f2ae2f7819fc50deafb4d3f6e98a3c1da72435b011206339d59ce

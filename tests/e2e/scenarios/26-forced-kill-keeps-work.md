@@ -11,7 +11,7 @@ Before: an empty data folder of its own. The app starts for the first time.
 1. Do the first launch: name 'E2E Tester', project title 'Hard Stop'.
 2. Click Idea Vault in the Workspaces navigation. Click Quick Capture. Type 'A ferry that only sails when nobody is waiting.' in the Idea field. Click Save in the dialog.
 3. Check: the screen shows "Saved to the Project Idea Vault".
-4. Click Story. Click Add Act, type 'Act One' in the act title field and press Enter.
+4. Click Story in the Workspaces navigation, then click the Board tab. Click Add Act, type 'Act One' in the act title field and press Enter.
 5. Click Add, choose Scene Card, type 'The ferry leaves without its captain' in the short description field and press Enter.
 6. Check: a Scene Card named "The ferry leaves without its captain" is on the board.
 7. Click the Characters tab. Click Add Character, type 'Ilse' in the name field, click Create Character.
@@ -29,7 +29,7 @@ Before: an empty data folder of its own. The app starts for the first time.
 4. Click the project row "Open Hard Stop". Check: the Workspaces navigation shows.
 5. If the recovery question shows within 5 seconds, click Open Recovery and check the question closes.
 6. Click Idea Vault. Check: the page shows "A ferry that only sails".
-7. Click Story. Check: the Scene Card "The ferry leaves without its captain" is on the board.
+7. Click Story in the Workspaces navigation, then click the Board tab. Check: the Scene Card "The ferry leaves without its captain" is on the board.
 8. Click the Characters tab. Check: the page shows "Ilse". Click the Board tab.
 9. Open the project menu and choose Notes & Tasks. Check: a note starts with "Ferry timetable".
 10. Click Screenplay. Check: an editor line ends with "The engine coughs twice and dies."

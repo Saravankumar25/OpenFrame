@@ -214,6 +214,198 @@ impl Embedder for ConceptEmbedder {
     }
 }
 
+/// Everyday synonyms: words of one group mean about the same to a search model.
+const BAND_CONCEPTS: &[&[&str]] = &[
+    &[
+        "speak",
+        "talk",
+        "say",
+        "dialogue",
+        "line",
+        "voice",
+        "talkative",
+        "spoken",
+        "utter",
+    ],
+    &["character", "people", "person", "role", "figure", "cast"],
+    &["place", "location", "setting", "site", "locations"],
+    &[
+        "task",
+        "todo",
+        "job",
+        "remain",
+        "pending",
+        "outstanding",
+        "unfinished",
+        "open",
+    ],
+    &["draft", "version", "revision"],
+    &[
+        "theme",
+        "motif",
+        "message",
+        "meaning",
+        "symbol",
+        "symbolise",
+        "underlying",
+    ],
+    &[
+        "idea",
+        "suggest",
+        "brainstorm",
+        "pitch",
+        "twist",
+        "alternative",
+        "option",
+    ],
+    &[
+        "story",
+        "plot",
+        "storyline",
+        "film",
+        "movie",
+        "screenplay",
+        "script",
+    ],
+    &["crew", "team", "staff"],
+    &[
+        "schedule", "calendar", "plan", "shoot", "shooting", "booked",
+    ],
+    &[
+        "feedback", "critique", "critical", "weak", "improve", "works",
+    ],
+    &[
+        "relationship",
+        "dynamic",
+        "bond",
+        "relate",
+        "connect",
+        "tension",
+    ],
+    &[
+        "describe",
+        "portrait",
+        "sketch",
+        "characterise",
+        "personality",
+    ],
+    &[
+        "summary",
+        "summarise",
+        "recap",
+        "overview",
+        "outline",
+        "gist",
+        "whole",
+        "entire",
+    ],
+    &[
+        "explain",
+        "walk",
+        "understand",
+        "retell",
+        "happen",
+        "happening",
+        "unfold",
+    ],
+    &["many", "count", "total", "number", "tally"],
+];
+
+const BAND_STOP: &[&str] = &[
+    "the", "a", "an", "of", "to", "in", "is", "are", "do", "does", "it", "this", "that", "me",
+    "my", "i", "you", "please", "and", "or", "on", "at", "be", "all", "have", "has", "what", "who",
+    "which", "how", "give", "tell", "show",
+];
+
+/// A stand-in for an E5 search model, for tests of the intent step. Words, stems, shared meanings
+/// and letter triples go into a hashed vector, and the result is put into the band E5 models use:
+/// every pair of texts starts at cosine 0.70 and the overlap adds up to 0.30. It checks gates and
+/// plumbing against that scale. It does not measure how good the examples are; the bench with the
+/// real model does.
+pub struct BandEmbedder {
+    id: String,
+    texts: AtomicUsize,
+    delay: Mutex<Option<Duration>>,
+    failing: AtomicBool,
+}
+
+const BAND_DIM: usize = 512;
+
+impl BandEmbedder {
+    pub fn new(id: &str) -> Self {
+        Self {
+            id: format!("test-band-embedder-{id}"),
+            texts: AtomicUsize::new(0),
+            delay: Mutex::new(None),
+            failing: AtomicBool::new(false),
+        }
+    }
+
+    pub fn set_failing(&self, on: bool) {
+        self.failing.store(on, Ordering::SeqCst);
+    }
+
+    pub fn set_delay(&self, d: Option<Duration>) {
+        *self.delay.lock().unwrap() = d;
+    }
+
+    /// Number of texts embedded so far.
+    pub fn texts(&self) -> usize {
+        self.texts.load(Ordering::SeqCst)
+    }
+
+    pub fn vector(text: &str) -> Vec<f32> {
+        let mut v = vec![0f32; BAND_DIM + 1];
+        for raw in text
+            .to_lowercase()
+            .split(|c: char| !c.is_alphanumeric())
+            .filter(|w| !w.is_empty() && !BAND_STOP.contains(w))
+        {
+            let w = raw
+                .strip_suffix("ing")
+                .or_else(|| raw.strip_suffix('s'))
+                .filter(|s| s.len() > 2)
+                .unwrap_or(raw);
+            let slot = |s: &str| (fnv(s) % BAND_DIM as u64) as usize;
+            v[slot(w)] += 1.0;
+            for (i, g) in BAND_CONCEPTS.iter().enumerate() {
+                if g.iter().any(|x| *x == raw || *x == w) {
+                    v[slot(&format!("concept:{i}"))] += 1.5;
+                }
+            }
+            let padded: Vec<char> = format!("^{w}$").chars().collect();
+            for t in padded.windows(3) {
+                v[slot(&t.iter().collect::<String>())] += 0.2;
+            }
+        }
+        let n = v.iter().map(|x| x * x).sum::<f32>().sqrt().max(1e-6);
+        for x in &mut v[..BAND_DIM] {
+            *x = *x / n * 0.3f32.sqrt();
+        }
+        v[BAND_DIM] = 0.7f32.sqrt();
+        v
+    }
+}
+
+impl Embedder for BandEmbedder {
+    fn model_id(&self) -> String {
+        self.id.clone()
+    }
+    fn dim(&self) -> usize {
+        BAND_DIM + 1
+    }
+    fn embed(&self, inputs: &[String]) -> Result<Vec<Vec<f32>>, SearchError> {
+        if let Some(d) = *self.delay.lock().unwrap() {
+            std::thread::sleep(d);
+        }
+        if self.failing.load(Ordering::SeqCst) {
+            return Err(SearchError::Embedding("test embedder is failing".into()));
+        }
+        self.texts.fetch_add(inputs.len(), Ordering::SeqCst);
+        Ok(inputs.iter().map(|t| Self::vector(t)).collect())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

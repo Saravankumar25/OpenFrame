@@ -36,10 +36,13 @@ fn unavailable() -> AppError {
     )
 }
 
-/// The managed folders previews may read: the open project's `assets/` and the Global Idea
-/// Vault's `assets/`. Databases, `cache/` and recovery data are never answered.
+/// The managed folders previews may read: the open project's `assets/`, the Global Idea
+/// Vault's `assets/` (wherever the vault was moved) and the project cover photos on Home. Databases, `cache/` and recovery data are never answered.
 fn allowed_asset_roots(core: &AppCore) -> Vec<PathBuf> {
-    let mut roots = vec![core.config.global_vault_dir.join("assets")];
+    let mut roots = vec![
+        core.vault_dir().join("assets"),
+        core.config.app_data_dir.join("covers").join("assets"),
+    ];
     if let Some(p) = core.project_opt() {
         roots.push(p.layout.assets());
     }
@@ -104,9 +107,17 @@ pub fn reveal_location(
             })?,
             None => core.project()?.layout.root().to_path_buf(),
         },
-        "globalVault" => core.config.global_vault_dir.clone(),
+        "globalVault" => core.vault_dir(),
+        // The one folder to back up. Nothing is created before the person chose where their
+        // library is (doc 40 section 1).
         "dataRoot" => {
-            let dir = core.config.data_root();
+            if !core.library_ready() {
+                return Err(AppError::new(
+                    "library.setup_required",
+                    "Choose where OpenFrame keeps your work first.",
+                ));
+            }
+            let dir = core.data_root();
             std::fs::create_dir_all(&dir).map_err(|e| {
                 AppError::new(
                     "internal.open_failed",
@@ -116,6 +127,8 @@ pub fn reveal_location(
             })?;
             dir
         }
+        // Settings, recents, AI records and models: what resetting the app removes.
+        "appData" => core.config.app_data_dir.clone(),
         "assetFolder" | "globalAssetFolder" => {
             let asset_id = id.unwrap_or_default();
             let file = resolve_asset(core, &asset_id, kind == "globalAssetFolder")?;

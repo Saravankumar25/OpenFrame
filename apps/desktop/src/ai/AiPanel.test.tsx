@@ -29,7 +29,7 @@ function exchange(id: string, text: string, result: Partial<AiExchange["result"]
     requestId: id, conversationId: "conv1", requestText: text, scopeLabel: "Using: Whole Project", operationClass: "Read", modelReference: "p",
     createdAt: 1,
     result: {
-      id: `r${id}`, kind: "Answer", status: "Informational", content: "", details: [], confidence: null, provenance: [], items: [], nav: null,
+      id: `r${id}`, kind: "Answer", status: "Informational", content: "", details: [], confidence: null, provenance: [], items: [], itemsAreAnswer: false, nav: null,
       changeSet: null, errorCode: null, steps: [], taskId: null, createdAt: 1, ...result,
     },
   };
@@ -159,8 +159,7 @@ describe("AI Assistant panel", () => {
     ];
     renderPanel();
     expect(await screen.findByText("Draft 1 contains 3 scenes.")).toBeTruthy();
-    expect(screen.queryByText("Exact · from project data")).toBeNull();
-    expect(document.querySelector('.msg.a[data-confidence="Exact"]')).toBeTruthy();
+    expect(screen.getByText("Exact · from project data")).toBeTruthy();
     expect(screen.getByText("Draft: Draft 1")).toBeTruthy();
     // Proposed Changes: summary, affected areas, exact preview, then an explicit choice.
     const card = screen.getByRole("region", { name: "Proposed Changes" });
@@ -225,8 +224,7 @@ describe("AI Assistant panel", () => {
     expect(screen.getByText("Change 2 of 2")).toBeTruthy();
     expect(screen.getByText("Notes & Tasks, Story")).toBeTruthy();
     expect(screen.getByText(/2 changes in 2 parts, applied together as one step you can undo/)).toBeTruthy();
-    // The steps behind the proposal are not listed in the conversation; the card shows the parts.
-    expect(screen.queryByText(/2 steps:/)).toBeNull();
+    expect(screen.getByText("2 steps: Propose task · Propose scene card")).toBeTruthy();
   });
 
   it("opens a source from its provenance chip", async () => {

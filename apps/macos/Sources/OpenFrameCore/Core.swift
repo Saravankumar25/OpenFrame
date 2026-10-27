@@ -56,6 +56,12 @@ public struct CoreStartOptions: Sendable {
     /// The store screen tests: run as the store channel with this licence response public key
     /// (64 hex characters). Honoured by the core only in a debug build on a test folder.
     public var testStoreResponseKeyHex: String?
+    /// The first-start library setup tests: the test folder starts like a new computer. Honoured
+    /// by the core only in a debug build on a test folder.
+    public var testLibrarySetup = false
+    /// Temperature 0 and a fixed seed for the Offline AI in the automated tests. Honoured by the
+    /// core only in a debug build on a test folder.
+    public var testAIDeterministic = false
 
     public init(appVersion: String, isolatedDataRoot: URL? = nil, aiBundleDir: URL? = nil, writeLogs: Bool = true) {
         self.appVersion = appVersion
@@ -129,7 +135,9 @@ public final class Core: CoreInvoking, @unchecked Sendable {
             aiBundleDir: options.aiBundleDir?.path,
             writeLogs: options.writeLogs,
             testTeamPasswordHash: options.testTeamPasswordHash,
-            testStoreResponseKeyHex: options.testStoreResponseKeyHex
+            testStoreResponseKeyHex: options.testStoreResponseKeyHex,
+            testLibrarySetup: options.testLibrarySetup,
+            testAiDeterministic: options.testAIDeterministic
         )
         return try await withCheckedThrowingContinuation { continuation in
             DispatchQueue.global(qos: .userInitiated).async {

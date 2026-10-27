@@ -12,7 +12,9 @@ public enum AppVersion {
 }
 
 /// Start options from the process environment. `OPENFRAME_DATA_ROOT` keeps every file of a test
-/// run in one absolute folder (ADR-0031), as on Windows; nothing else can be changed from outside.
+/// run in one absolute folder (ADR-0031), as on Windows. `OPENFRAME_LIBRARY_SETUP=1` and
+/// `OPENFRAME_AI_DETERMINISTIC=1` are the Windows test switches; the core honours them only in a
+/// debug build on such a test folder.
 enum LaunchOptions {
     static func make() -> CoreStartOptions {
         let env = ProcessInfo.processInfo.environment
@@ -25,7 +27,10 @@ enum LaunchOptions {
             exit(2)
         }
         let ai = Bundle.main.resourceURL?.appendingPathComponent("ai", isDirectory: true)
-        return CoreStartOptions(appVersion: AppVersion.current, isolatedDataRoot: root, aiBundleDir: ai, writeLogs: true)
+        var options = CoreStartOptions(appVersion: AppVersion.current, isolatedDataRoot: root, aiBundleDir: ai, writeLogs: true)
+        options.testLibrarySetup = env["OPENFRAME_LIBRARY_SETUP"] == "1"
+        options.testAIDeterministic = env["OPENFRAME_AI_DETERMINISTIC"] == "1"
+        return options
     }
 }
 

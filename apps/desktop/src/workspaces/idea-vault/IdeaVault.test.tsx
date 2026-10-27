@@ -10,6 +10,7 @@ import { useIntent, useUi } from "../../app/stores";
 const calls: { op: string; args: Record<string, unknown> }[] = [];
 let items: VaultItemDto[] = [];
 let tauri = false;
+let orphanCount = 0;
 type DropEvent = { payload: { type: "enter" | "over" | "drop" | "leave"; paths: string[] } };
 let dropHandler: ((ev: DropEvent) => void) | null = null;
 
@@ -61,6 +62,13 @@ vi.mock("../../ipc/client", async () => {
           return overview();
         case "vault.list":
           return items;
+        case "vault.orphan_files":
+          return { count: orphanCount, bytes: orphanCount * 1000, samples: [] };
+        case "vault.recover_files": {
+          const added = orphanCount;
+          orphanCount = 0;
+          return { added, failed: 0 };
+        }
         case "vault.get":
           return items.find((i) => i.id === args.id);
         case "vault.add_files": {
@@ -126,6 +134,7 @@ beforeEach(() => {
   calls.length = 0;
   items = [];
   tauri = false;
+  orphanCount = 0;
   dropHandler = null;
   localStorage.clear();
 });
@@ -214,5 +223,20 @@ describe("Idea Vault workspace", { timeout: 30_000 }, () => {
     expect(await screen.findByRole("heading", { name: "Quick Capture" })).toBeInTheDocument();
     expect(screen.getByText("Saving to BLACK RAIN · Project Idea Vault")).toBeInTheDocument();
     expect(useIntent.getState().intent).toBeNull();
+  });
+
+  it("offers to add back files that are in the vault folder but not in the vault", async () => {
+    orphanCount = 3;
+    await renderVault();
+    expect(await screen.findByText("3 files in the vault folder are not in the vault.")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Add Them Back" }));
+    await waitFor(() => expect(calls.find((c) => c.op === "vault.recover_files")?.args).toEqual({ store: "project" }));
+    await waitFor(() => expect(screen.queryByText("3 files in the vault folder are not in the vault.")).not.toBeInTheDocument());
+  });
+
+  it("shows no recovery banner when every file is in the vault", async () => {
+    await renderVault();
+    await waitFor(() => expect(calls.some((c) => c.op === "vault.orphan_files")).toBe(true));
+    expect(screen.queryByRole("button", { name: "Add Them Back" })).not.toBeInTheDocument();
   });
 });

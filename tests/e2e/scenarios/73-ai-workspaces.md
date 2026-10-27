@@ -31,7 +31,7 @@ Before: an empty data folder of its own. The app carries the real bundled model 
 
 ## A question asked in the Beat Board uses the Beat Board
 
-1. Click Story in the Workspaces navigation. Click Assistant.
+1. Click Story in the Workspaces navigation, then click the Board tab. Click Assistant.
 2. Ask 'What is on the Beat Board?'
 3. Check: the question was answered.
 4. Check: the scope line reads "Using: Beat Board".

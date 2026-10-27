@@ -7,7 +7,7 @@
 
 import { after, before, describe, test } from "node:test";
 import assert from "node:assert/strict";
-import { click, launchApp, openWorkspace, sleep, stepper, waitForText } from "../lib/app.mjs";
+import { click, launchApp, openBeatBoard, sleep, stepper, waitForText } from "../lib/app.mjs";
 import { assertQuiet, closeProject, firstLaunchProject, inDialog, menuItem, openProject, projectMenu, redo, relaunch, retype, undo } from "../lib/flows.mjs";
 
 const CARD_A = "Boats fold themselves at dawn";
@@ -38,7 +38,7 @@ describe("story", () => {
   test("act, sequence and two Scene Cards", async () => {
     await step("build", async () => {
       await firstLaunchProject(browser, "Paper Boats");
-      await openWorkspace(browser, "Story");
+      await openBeatBoard(browser);
       await waitForText(browser, "Your Beat Board is empty.");
       await click(browser, "Add Act");
       await (await browser.$('//input[@aria-label="Act title"]')).setValue("Act One");
@@ -113,7 +113,7 @@ describe("story", () => {
       await projectMenu(browser, "Recently Deleted");
       await click(browser, `Restore ${CARD_B}`);
       await waitForText(browser, `Restored “${CARD_B}”`);
-      await openWorkspace(browser, "Story");
+      await openBeatBoard(browser);
       await browser.waitUntil(async () => (await cards()).includes(CARD_B), { timeout: 10_000, timeoutMsg: "card not restored" });
       assert.deepEqual(await cards(), [CARD_A2, CARD_B], "the restored card returns to its place");
       await assertQuiet(browser, "card restore");
@@ -140,7 +140,7 @@ describe("story", () => {
       await waitForText(browser, "Deleted character Mira");
       await projectMenu(browser, "Recently Deleted");
       await click(browser, "Restore Mira");
-      await openWorkspace(browser, "Story");
+      await openBeatBoard(browser);
       await storyTab("Characters");
       await browser.waitUntil(async () => (await characters()).includes("Paper boat maker"), { timeout: 10_000, timeoutMsg: "character not restored" });
       await assertQuiet(browser, "characters");
@@ -162,7 +162,7 @@ describe("story", () => {
       await closeProject(browser);
       browser = await relaunch(browser);
       await openProject(browser, "Paper Boats");
-      await openWorkspace(browser, "Story");
+      await openBeatBoard(browser);
       await browser.waitUntil(async () => (await cards()).length === 2, { timeout: 15_000, timeoutMsg: "cards missing after relaunch" });
       assert.deepEqual(await cards(), [CARD_A2, CARD_B]);
       assert.ok((await acts()).includes("Act One — Launch"), "act title lost after relaunch");

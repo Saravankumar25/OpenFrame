@@ -10,6 +10,7 @@ use std::cell::RefCell;
 use std::collections::BTreeSet;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicU64, Ordering};
 
 use openframe_domain::{Actor, AppError, AppResult, Capability, new_id, now_ms};
 use openframe_persistence::migrate::{self, Migration, MigrationPlan};
@@ -230,6 +231,27 @@ impl<'a> Tx<'a> {
     pub fn created_file(&self, path: PathBuf) {
         self.rollback_files.borrow_mut().push(path);
     }
+    /// Run one part of a mutation inside a savepoint. When `f` fails, that part's rows are rolled
+    /// back and the files it created are removed, so one failed file never leaves a copy behind
+    /// while the rest of the mutation goes on. The error is returned to the caller.
+    pub fn savepoint<R>(&self, f: impl FnOnce() -> AppResult<R>) -> AppResult<R> {
+        let mark = self.rollback_files.borrow().len();
+        self.conn.execute_batch("SAVEPOINT tx_part")?;
+        match f() {
+            Ok(v) => {
+                self.conn.execute_batch("RELEASE tx_part")?;
+                Ok(v)
+            }
+            Err(e) => {
+                // If even this fails, the whole transaction rolls back and removes every file.
+                self.conn
+                    .execute_batch("ROLLBACK TO tx_part; RELEASE tx_part")?;
+                let part = self.rollback_files.borrow_mut().split_off(mark);
+                cleanup(&part);
+                Err(e)
+            }
+        }
+    }
     /// A file to delete only after the transaction commits (permanent purge).
     pub fn delete_file_after_commit(&self, path: PathBuf) {
         self.commit_deletes.borrow_mut().push(path);
@@ -296,6 +318,9 @@ pub struct Store {
     events: Arc<dyn EventSink>,
     save: Arc<SaveTracker>,
     observer: RwLock<Option<Arc<dyn CommitObserver>>>,
+    /// Counts commits that changed project content, so a cache built from the database can tell it
+    /// is stale (the AI entity index). AI history and system tables do not count.
+    generation: AtomicU64,
 }
 
 impl Store {
@@ -390,6 +415,7 @@ impl Store {
                 events,
                 save,
                 observer: RwLock::new(None),
+                generation: AtomicU64::new(0),
             },
             report,
         ))
@@ -409,6 +435,12 @@ impl Store {
     }
     pub fn registry(&self) -> &Registry {
         &self.registry
+    }
+
+    /// Changes whenever a commit touched project content (see the field). Read before a build of a
+    /// derived cache and compare after, to know whether the cache is still current.
+    pub fn generation(&self) -> u64 {
+        self.generation.load(Ordering::Acquire)
     }
 
     /// Install (or remove) the post-commit observer.
@@ -518,6 +550,13 @@ impl Store {
     }
 
     fn emit_changed(&self, changes: &[RowChange], extra: &[(String, String)], origin: &str) {
+        if !extra.is_empty()
+            || changes
+                .iter()
+                .any(|c| !c.tbl.starts_with("ai_") && !c.tbl.starts_with("sys_"))
+        {
+            self.generation.fetch_add(1, Ordering::Release);
+        }
         let observer = self.observer.read().clone();
         if let Some(o) = observer
             && (!changes.is_empty() || !extra.is_empty())
@@ -725,9 +764,22 @@ impl Store {
     }
 }
 
+/// Remove files made by a change that did not go through. A file that cannot be removed (another
+/// program holds it) is logged and left in place; Idea Vault recovery can find it later.
 fn cleanup(paths: &[PathBuf]) {
     for p in paths {
-        let _ = remove_path(p);
+        if let Err(e) = remove_path(p) {
+            // Only the file name: it is the asset id, while the folders name the project or user.
+            let file = p
+                .file_name()
+                .map(|n| n.to_string_lossy().into_owned())
+                .unwrap_or_default();
+            tracing::warn!(
+                file = %file,
+                kind = ?e.kind(),
+                "could not remove a file copied by a change that did not go through; it was left in place"
+            );
+        }
     }
 }
 

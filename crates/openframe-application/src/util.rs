@@ -190,10 +190,7 @@ pub fn load_assets_bulk<'a>(
 /// Folders OpenFrame owns. User-chosen outputs are never written inside them
 /// (Security review 2026-09-30, PATH-02/PATH-04).
 pub fn protected_roots(core: &AppCore) -> Vec<PathBuf> {
-    let mut v = vec![
-        core.config.app_data_dir.clone(),
-        core.config.global_vault_dir.clone(),
-    ];
+    let mut v = vec![core.config.app_data_dir.clone(), core.vault_dir()];
     if let Some(p) = core.project_opt() {
         v.push(p.layout.root().to_path_buf());
     }
@@ -462,6 +459,31 @@ pub fn ingest_file(tx: &Tx<'_>, source: &Path) -> AppResult<AssetInfo> {
         Some(&rel),
         None,
         &original_name,
+        media_type,
+        Some(size as i64),
+        Some(&sha),
+        dims,
+    )?;
+    load_asset(tx.conn(), tx.root(), &id)
+}
+
+/// Record a file that is already in the store's managed assets folder but has no asset row (a
+/// copy left behind by an add that failed). The file stays where it is and is not tracked for
+/// removal: if this change rolls back, the file is still there to recover later.
+pub fn adopt_managed_file(tx: &Tx<'_>, rel: &str, original_name: &str) -> AppResult<AssetInfo> {
+    let path = openframe_security::confine(tx.root(), rel)?;
+    let size = openframe_security::validate_input_file(&path, MAX_MANAGED_FILE_BYTES)?;
+    let media_type = media_type_for(original_name);
+    let sha = openframe_security::sha256_file(&path)?;
+    let dims = image_dimensions(&path, media_type);
+    let id = new_id();
+    insert_asset(
+        tx,
+        &id,
+        "managed",
+        Some(rel),
+        None,
+        original_name,
         media_type,
         Some(size as i64),
         Some(&sha),

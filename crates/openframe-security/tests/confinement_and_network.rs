@@ -2,6 +2,9 @@
 //! E3 / link and junction safety (write destinations resolve the nearest existing ancestor through junctions and
 //! symlinks) and E4 / network drive refusal (mapped network drives and paths that resolve to a share are refused).
 
+// Some helpers and imports serve only the Windows-only tests below.
+#![cfg_attr(not(windows), allow(unused_imports, dead_code))]
+
 use std::path::{Path, PathBuf};
 
 use openframe_security::{

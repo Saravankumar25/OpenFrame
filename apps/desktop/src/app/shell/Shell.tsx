@@ -144,7 +144,7 @@ export function Shell() {
         if (!isEditable(e.target) && !document.querySelector(".scrim")) {
           useIntent.getState().fire("story.new_scene");
           // The Story workspace places the card (switching to the Board if needed).
-          if (useNav.getState().route.workspace !== "story") useNav.getState().go({ workspace: "story" });
+          if (useNav.getState().route.workspace !== "story") useNav.getState().go({ workspace: "story", sub: "board" });
         }
       } else if (matches(e, "app.save")) {
         e.preventDefault();
@@ -258,10 +258,10 @@ function TopBar({ project, undoScope }: { project: ProjectSummary | null; undoSc
   const quick: MenuItemSpec[] = [
     { label: "Create", header: true },
     { label: "New Idea", shortcut: keys.capture || undefined, onSelect: () => { fire("vault.new_note"); go({ workspace: "vault" }); } },
-    { label: "New Act", onSelect: () => { fire("story.new_act"); go({ workspace: "story" }); } },
-    { label: "New Sequence", onSelect: () => { fire("story.new_sequence"); go({ workspace: "story" }); } },
-    { label: "New Beat", onSelect: () => { fire("story.new_beat"); go({ workspace: "story" }); } },
-    { label: "New Scene Card", shortcut: keys.newCard || undefined, onSelect: () => { fire("story.new_scene"); go({ workspace: "story" }); } },
+    { label: "New Act", onSelect: () => { fire("story.new_act"); go({ workspace: "story", sub: "board" }); } },
+    { label: "New Sequence", onSelect: () => { fire("story.new_sequence"); go({ workspace: "story", sub: "board" }); } },
+    { label: "New Beat", onSelect: () => { fire("story.new_beat"); go({ workspace: "story", sub: "board" }); } },
+    { label: "New Scene Card", shortcut: keys.newCard || undefined, onSelect: () => { fire("story.new_scene"); go({ workspace: "story", sub: "board" }); } },
     { label: "New Character", onSelect: () => { fire("story.new_character"); go({ workspace: "story", sub: "characters" }); } },
     { label: "New Location", onSelect: () => { fire("production.new_location"); go({ workspace: "production", sub: "locations" }); } },
     { label: "New Shot List", onSelect: () => { fire("production.new_shot"); go({ workspace: "production", sub: "shots" }); } },

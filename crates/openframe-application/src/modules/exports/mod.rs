@@ -5,12 +5,14 @@
 //! | op                         | document                                  | formats         |
 //! |----------------------------|-------------------------------------------|-----------------|
 //! | `story.export_board`       | Beat Board outline / board               | PDF · TXT · CSV |
+//! | `story.page.export`        | Story page (free writing)                 | TXT · PDF · DOCX|
 //! | `breakdown.export_report`  | Breakdown by scene + Catalog with usage   | PDF · CSV · XLSX|
 //! | `moodboard.export_pdf`     | Moodboard presentation                    | PDF             |
 //! | `storyboard.export_sheet`  | Storyboard sheet (panel grid)             | PDF             |
 //! | `shot.export_list`         | Shot List (scene / scenes / project)      | PDF · CSV · XLSX|
 //! | `schedule.export_schedule` | Shooting Schedule / stripboard            | PDF · CSV · XLSX|
 //! | `schedule.export_dood`     | Day Out of Days                           | PDF · CSV · XLSX|
+//! | `schedule.export_daily_view` | Daily View of one shooting day          | PDF · TXT       |
 //! | `callsheets.export_pdf`    | Call Sheet (paper layout)                 | PDF             |
 //! | `sides.export_pdf`         | Sides (screenplay-formatted excerpt)      | PDF             |
 //! | `reports.export_report`    | Production reports (live or saved)        | PDF · CSV · XLSX|
@@ -39,17 +41,19 @@
 //!   files (`screenplay.export`, interchange module) never use this path and
 //!   carry no branding. Branding is only ever added to the new file; the
 //!   project and the user's own files (images, attachments, imported scripts)
-//!   are only read.
+//!   are only read. The Story page is the writer's own manuscript and is the one
+//!   exception here: its exports carry no branding (`Output::unbranded`).
 
 mod breakdown;
 mod budget;
 mod callsheet;
-mod daily;
+mod daily_view;
 mod dood;
 mod reports;
 mod schedule;
 mod sides;
 mod story;
+mod story_page;
 mod style;
 mod visual;
 
@@ -71,11 +75,13 @@ use crate::util::AssetInfo;
 pub use breakdown::ExportBreakdownArgs;
 pub use budget::ExportBudgetArgs;
 pub use callsheet::ExportCallSheetArgs;
+pub use daily_view::ExportDailyViewArgs;
 pub use dood::ExportDoodArgs;
 pub use reports::ExportReportArgs;
 pub use schedule::ExportScheduleArgs;
 pub use sides::ExportSidesArgs;
 pub use story::ExportStoryOutlineArgs;
+pub use story_page::ExportStoryPageArgs;
 pub use visual::{ExportMoodboardArgs, ExportShotListArgs, ExportStoryboardSheetArgs};
 
 pub fn register(r: &mut Registry) {
@@ -86,6 +92,14 @@ pub fn register(r: &mut Registry) {
         M::query(
             Cap::Export,
             "Export the Beat Board outline (PDF/DOCX/…) to a location the user picked.",
+        )
+        .fs(Fs::WritesUserFile)
+        .hidden(h::USER_PATH),
+    );
+    r.query("story.page.export", story_page::export).meta(
+        M::query(
+            Cap::Export,
+            "Export the Story page as plain text, PDF or Word to a location the user picked.",
         )
         .fs(Fs::WritesUserFile)
         .hidden(h::USER_PATH),
@@ -132,14 +146,6 @@ pub fn register(r: &mut Registry) {
         .fs(Fs::WritesUserFile)
         .hidden(h::USER_PATH),
     );
-    r.query("schedule.export_daily", daily::export).meta(
-        M::query(
-            Cap::Export,
-            "Export one shooting day as shown on the Daily View to a location the user picked.",
-        )
-        .fs(Fs::WritesUserFile)
-        .hidden(h::USER_PATH),
-    );
     r.query("schedule.export_dood", dood::export).meta(
         M::query(
             Cap::Export,
@@ -148,6 +154,15 @@ pub fn register(r: &mut Registry) {
         .fs(Fs::WritesUserFile)
         .hidden(h::USER_PATH),
     );
+    r.query("schedule.export_daily_view", daily_view::export)
+        .meta(
+            M::query(
+                Cap::Export,
+                "Export one shooting day's Daily View to a location the user picked.",
+            )
+            .fs(Fs::WritesUserFile)
+            .hidden(h::USER_PATH),
+        );
     r.query("callsheets.export_pdf", callsheet::export).meta(
         M::query(
             Cap::Export,
@@ -266,16 +281,16 @@ pub(crate) struct Output {
     pub tables: Vec<Table>,
     /// Plain-text rendering, when the export offers TXT.
     pub text: Option<String>,
-    /// Word document bytes, when the export offers DOCX.
-    pub docx: Option<Vec<u8>>,
-    /// Add the "Created using OpenFrame" line to a TXT export (not for the writer's own prose).
-    pub brand_text: bool,
     /// What to suggest when the PDF font can't print some characters.
     pub pdf_hint: &'static str,
     /// A PDF rendered by another engine (Sides use the screenplay layout):
     /// bytes and page count. Takes precedence over `doc`.
     pub pdf: Option<(Vec<u8>, u32)>,
     pub warnings: Vec<String>,
+    /// A Word document built by the module, for exports that offer DOCX.
+    pub docx: Option<Vec<u8>>,
+    /// The writer's own document: no brand mark, no brand line, and plain text exactly as written.
+    pub unbranded: bool,
     /// Last change of the exported data (milliseconds). When set, the spreadsheet
     /// carries this date instead of the clock, so the same data gives the same
     /// bytes (reproducible exports).
@@ -288,11 +303,11 @@ impl Output {
             doc,
             tables: Vec::new(),
             text: None,
-            docx: None,
-            brand_text: true,
             pdf_hint,
             pdf: None,
             warnings: Vec::new(),
+            docx: None,
+            unbranded: false,
             revised_at: None,
         }
     }
@@ -403,7 +418,9 @@ pub(crate) fn deliver(
     job: Job,
     mut out: Output,
 ) -> AppResult<ExportResult> {
-    out.doc.brand = Some(BRAND_LINE.to_string());
+    if !out.unbranded {
+        out.doc.brand = Some(BRAND_LINE.to_string());
+    }
     let (bytes, pages) = match fmt {
         Fmt::Pdf => match out.pdf {
             Some((bytes, pages)) => (bytes, Some(pages)),
@@ -434,14 +451,14 @@ pub(crate) fn deliver(
             let t = out.text.as_ref().ok_or_else(|| {
                 AppError::invalid_input("This document can't be exported as plain text.")
             })?;
-            let branded = if out.brand_text {
-                format!("{}\n\n{BRAND_LINE}\n", t.trim_end())
+            let body = if out.unbranded {
+                t.replace("\r\n", "\n")
             } else {
-                format!("{}\n", t.trim_end())
+                format!("{}\n\n{BRAND_LINE}\n", t.trim_end())
             };
-            let mut b = Vec::with_capacity(branded.len() + 3);
+            let mut b = Vec::with_capacity(body.len() + 3);
             b.extend_from_slice(b"\xEF\xBB\xBF");
-            b.extend_from_slice(branded.replace('\n', "\r\n").as_bytes());
+            b.extend_from_slice(body.replace('\n', "\r\n").as_bytes());
             (b, None)
         }
         Fmt::Docx => {
@@ -707,6 +724,9 @@ mod tests {
         assert_eq!(money(120_000_000, "INR"), "INR 12,00,000");
         assert_eq!(money(150_050, "USD"), "USD 1,500.50");
         assert_eq!(money(1500, "JPY"), "JPY 1,500");
+        assert_eq!(money(400_000_000, "INR"), "INR 40,00,000");
+        assert_eq!(money(1_646_000_000, "INR"), "INR 1,64,60,000");
+        assert_eq!(money(123_456_700, "USD"), "USD 1,234,567");
         assert_eq!(amount_text(150_050, "USD", false), "1500.50");
         assert_eq!(amount_text(-5, "EUR", true), "-0.05");
     }

@@ -28,6 +28,24 @@
   padding: 1in 1in 1in 1.5in; min-height: 11in; box-sizing: border-box;
   font-family: "Courier Prime", "Courier New", Courier, monospace; font-size: 12pt; line-height: 1.15; color: var(--paper-ink);
 }
+/* Page colours (document colours). The light values are the paper the page has always had. "Dark page" (a view
+   preference, View menu) swaps only these for the screen: the PDF and print output never read them. Every pair
+   below keeps at least 4.5:1 contrast on the dark page; paperColors.test.ts checks it. */
+.spx-page {
+  --paper-muted: #555555; --paper-faint: #6b665c; --paper-rule: #9a9488; --paper-hint: #b3ada1; /* document colour: screenplay page */
+  --paper-note-ink: #4c33a0; --paper-note-bg: #eee8fb; --paper-note-cur-bg: #efe6ff; --paper-note-edge: #7a5ac8; /* document colour: screenplay page */
+  --paper-cur-bg: #fff6e6; --paper-cmt-bg: #fff1c2; --paper-cmt-edge: #e0b54a; /* document colour: screenplay page */
+  --paper-hl-bg: #ffe27a; --paper-hlc-bg: #ffc94a; --paper-hlc-edge: #d9a520; --paper-hl-ink: #111111; /* document colour: screenplay page */
+}
+.spx-page[data-paper="dark"] {
+  --paper: #1e1e22; --paper-ink: #ece9e2; /* document colour: screenplay page */
+  --paper-muted: #a9a59b; --paper-faint: #a9a59b; --paper-rule: #6f6b62; --paper-hint: #8a867c; /* document colour: screenplay page */
+  --paper-note-ink: #d4c8fa; --paper-note-bg: #2d2646; --paper-note-cur-bg: #382f59; --paper-note-edge: #8f74dc; /* document colour: screenplay page */
+  --paper-cur-bg: #2b281d; --paper-cmt-bg: #4d4220; --paper-cmt-edge: #d4a93c; /* document colour: screenplay page */
+  --paper-sel-bg: #3f6ac4; --paper-sel-ink: #ffffff; /* document colour: screenplay page */
+  box-shadow: 0 2px 12px #000a; color-scheme: dark;
+}
+.spx-page[data-paper="dark"] ::selection { background: var(--paper-sel-bg); color: var(--paper-sel-ink); }
 /* The page zoom is the fit to the column times the writer's own zoom (Ctrl+wheel, pinch, or the zoom buttons). */
 .spx-page { zoom: calc(var(--fit, 1) * var(--sp-zoom, 1)); }
 @container (max-width: 880px) { .spx-page { --fit: .88; } }
@@ -42,11 +60,11 @@
 .spx-doc > .sp-el:first-child { margin-top: 0; }
 .spx-doc > .sp-h { font-weight: 700; text-transform: uppercase; margin-top: 24pt; counter-increment: scene; }
 /* Scene numbers are the draft's labels (12, 12A …); a scene not saved yet shows its position. */
-.spx-doc > .sp-h::before, .spx-doc > .sp-h::after { content: counter(scene); position: absolute; top: 0; font-weight: 400; color: #555; } /* document colour: screenplay page */
+.spx-doc > .sp-h::before, .spx-doc > .sp-h::after { content: counter(scene); position: absolute; top: 0; font-weight: 400; color: var(--paper-muted); }
 .spx-doc > .sp-h[data-number]::before, .spx-doc > .sp-h[data-number]::after { content: attr(data-number); }
 /* Explicit page break (Ctrl+Enter). */
-.spx-doc > .sp-pb { margin: 16pt 0 4pt; border-top: 1px dashed #9a9488; text-align: center; height: 0; cursor: default; } /* document colour: screenplay page */
-.spx-doc > .sp-pb .sp-pb-label { position: relative; top: -0.7em; padding: 0 8px; background: var(--paper); font: 9pt "Segoe UI", system-ui, sans-serif; color: #6b665c; } /* document colour: screenplay page */
+.spx-doc > .sp-pb { margin: 16pt 0 4pt; border-top: 1px dashed var(--paper-rule); text-align: center; height: 0; cursor: default; }
+.spx-doc > .sp-pb .sp-pb-label { position: relative; top: -0.7em; padding: 0 8px; background: var(--paper); font: 9pt "Segoe UI", system-ui, sans-serif; color: var(--paper-faint); }
 .spx-doc > .sp-pb.ProseMirror-selectednode { border-top-color: var(--accent); }
 /* Custom elements take the position of their look. */
 .spx-doc > .sp-cu.look-centered { text-align: center; }
@@ -69,16 +87,16 @@
 .spx-doc > .sp-t { text-align: right; text-transform: uppercase; }
 .spx-doc > .sp-sh { text-transform: uppercase; }
 .spx-doc > .sp-note {
-  font-family: "Segoe UI", system-ui, sans-serif; font-size: 10.5pt; font-style: italic; color: #4c33a0; /* document colour: screenplay page */
-  background: #eee8fb; border-left: 3px solid #7a5ac8; padding: 3px 8px; border-radius: 4px; /* document colour: screenplay page */
+  font-family: "Segoe UI", system-ui, sans-serif; font-size: 10.5pt; font-style: italic; color: var(--paper-note-ink);
+  background: var(--paper-note-bg); border-left: 3px solid var(--paper-note-edge); padding: 3px 8px; border-radius: 4px;
 }
 .spx-host.hide-notes .spx-doc > .sp-note { display: none; }
-.spx-doc > .cur { background: #fff6e6; box-shadow: -4px 0 0 var(--accent); } /* document colour: screenplay page */
-.spx-doc > .sp-note.cur { background: #efe6ff; } /* document colour: screenplay page */
-.sp-ph { color: #b3ada1; pointer-events: none; user-select: none; font-weight: 400; } /* document colour: screenplay page */
-.sp-cmt { background: #fff1c2; border-bottom: 2px solid #e0b54a; } /* document colour: screenplay page */
-.spx-doc .hl { background: #ffe27a; } /* document colour: screenplay page */
-.spx-doc .hlc { background: #ffc94a; outline: 1px solid #d9a520; } /* document colour: screenplay page */
+.spx-doc > .cur { background: var(--paper-cur-bg); box-shadow: -4px 0 0 var(--accent); }
+.spx-doc > .sp-note.cur { background: var(--paper-note-cur-bg); }
+.sp-ph { color: var(--paper-hint, #b3ada1); pointer-events: none; user-select: none; font-weight: 400; } /* document colour: screenplay page */
+.sp-cmt { background: var(--paper-cmt-bg, #fff1c2); border-bottom: 2px solid var(--paper-cmt-edge, #e0b54a); } /* document colour: screenplay page */
+.spx-doc .hl { background: var(--paper-hl-bg); color: var(--paper-hl-ink); }
+.spx-doc .hlc { background: var(--paper-hlc-bg); color: var(--paper-hl-ink); outline: 1px solid var(--paper-hlc-edge); }
 
 .spx-lockbar {
   max-width: 8.5in; margin: 0 auto 8px; font-size: 12px; color: var(--green-t); background: var(--green-soft);
@@ -125,8 +143,16 @@
 .spx-lineage { line-height: 1.7; }
 
 /* ------------------------------------------------------------ compare / review */
-.spx-compare { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+.spx-compare, .spx-review { display: flex; flex-direction: column; height: 100%; min-height: 0; }
 .spx-compare .sp-nav { overflow: auto; width: 270px; }
+/* The compare bar sits outside .spx, so it never got the toolbar rule below: its 46 px height stayed fixed while the
+   two draft pickers (select.select is full width by default) wrapped to a row of their own and ran over the changes
+   list and the summary (owner change list 2026-10-20, item 3). The bar grows with its rows, the pickers keep a
+   sensible width, and the two groups (drafts, view controls) wrap as whole groups. */
+.spx-compare .sp-top { flex-wrap: wrap; justify-content: space-between; row-gap: 6px; column-gap: 12px; height: auto; min-height: 46px; padding-block: 6px; overflow: visible; }
+/* Each group stays one row; when the bar is too narrow the view controls move below as a whole. */
+.spx-cmp-group { display: flex; align-items: center; gap: 8px; min-width: 0; flex-wrap: nowrap; }
+.spx-cmp-group select.select { width: auto; flex: 0 1 220px; min-width: 140px; max-width: 260px; }
 .spx-compare .sni { width: 100%; background: none; border: 0; text-align: left; font: inherit; color: inherit; cursor: pointer; align-items: center; }
 .spx-diff { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
 .spx-diff-h, .spx-diff-r { display: grid; grid-template-columns: 1fr 1fr; }
@@ -142,6 +168,8 @@
 .spx-dl.sp-t { text-align: right; text-transform: uppercase; }
 .spx-dl.sp-note { font-style: italic; color: var(--purple-t); }
 .spx-dl.empty { background: repeating-linear-gradient(135deg, var(--surface2) 0 6px, var(--stripe-a) 6px 12px); min-height: 1.3em; }
+.spx-review .spx-tools { width: 360px; }
+
 /* Writing comfort: navigator columns, suggestion list, spelling (SCRIPT-017, 018, 020). */
 .spx-nav.wide { width: 300px; }
 .spx-nav-head { display: flex; gap: 8px; padding: 0 8px 4px; border-bottom: 1px solid var(--line); margin-bottom: 4px; }

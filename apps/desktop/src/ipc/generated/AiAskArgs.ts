@@ -3,6 +3,6 @@ import type { AiScopeArgs } from "./AiScopeArgs";
 
 export type AiAskArgs = { text: string, scope: AiScopeArgs, conversationId: string | null, 
 /**
- * Step budget for this request (default 8; never more than 12).
+ * Step budget for a change request (default 4; never more than 12).
  */
 maxSteps?: number, };

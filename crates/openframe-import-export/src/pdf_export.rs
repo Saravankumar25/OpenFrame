@@ -11,7 +11,7 @@
 //!
 //! Screenplay files carry no OpenFrame branding (Screenplay and Production
 //! Depth Specification §43): the document information names only the title
-//! and the author. Sides set [`Layout::brand`], which prints a small lockup in the bottom margin.
+//! and the author. Sides are pages of the same script and carry none either (owner, 2026-10-27).
 
 use pdf_writer::Content;
 
@@ -29,8 +29,14 @@ pub struct PdfOutput {
     pub replaced_chars: usize,
 }
 
-/// Point size of the sides attribution line.
-const BRAND_SIZE_PT: f32 = 8.0;
+/// Does this layout print any character outside Windows-1252? (Informational: every PDF now
+/// embeds its fonts, so this no longer selects a different drawing path.)
+pub fn needs_embedded_fonts(lay: &Layout) -> bool {
+    lay.pages
+        .iter()
+        .flat_map(|p| p.lines.iter())
+        .any(|l| crate::fonts::needs_embedding(&l.text))
+}
 
 /// Render the laid-out pages with embedded, shaped fonts (see the module notes).
 pub fn render_layout(lay: &Layout, title: &str, author: Option<&str>) -> PdfOutput {
@@ -46,9 +52,7 @@ pub fn render_layout(lay: &Layout, title: &str, author: Option<&str>) -> PdfOutp
                 .collect()
         })
         .collect();
-    let brand = lay.brand.as_ref().map(|t| ShapedText::new(t, false, false));
-    let mut all: Vec<&ShapedText> = shaped.iter().flatten().collect();
-    all.extend(brand.iter());
+    let all: Vec<&ShapedText> = shaped.iter().flatten().collect();
     let pack = FontPack::build(&all);
     // Pass 2: draw.
     let mut b = PdfBuilder::new(g.page_width_in * 72.0, g.page_height_in * 72.0);
@@ -67,17 +71,6 @@ pub fn render_layout(lay: &Layout, title: &str, author: Option<&str>) -> PdfOutp
                 c.line_to(x + w, y - 2.0);
                 c.stroke();
             }
-        }
-        if let Some(st) = &brand {
-            // Sides: the OpenFrame mark and attribution, small and quiet, inside the bottom
-            // margin and clear of the last script line.
-            let x = layout::LEFT_MARGIN_IN * 72.0 - 36.0;
-            let y = 26.0;
-            crate::report::draw_mark(&mut c, x, y - 2.5, 11.0, crate::report::pal::ORANGE);
-            c.set_fill_gray(0.35);
-            pack.draw(&mut c, st, x + 16.0, y, BRAND_SIZE_PT);
-            c.set_fill_gray(0.0);
-            c.set_stroke_gray(0.0);
         }
         b.add_page(c);
     }

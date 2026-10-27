@@ -54,7 +54,7 @@ impl Fixture {
     fn new() -> Fixture {
         assert_eq!(
             latest(),
-            16,
+            19,
             "update `downgrade_to_previous` when a project migration is added"
         );
         let env = TestEnv::with_project("Night Bus", "Feature Film");
@@ -95,12 +95,14 @@ impl Fixture {
         self.project.to_string_lossy().into_owned()
     }
 
-    /// Undo migrations 17 to 11 exactly (same SQL the forced-kill worker uses).
+    /// Undo migrations 19 to 11 exactly (same SQL the forced-kill worker uses).
     fn downgrade_to_previous(&self) {
         let mut c = Connection::open(self.db()).unwrap();
         let tx = c.transaction().unwrap();
         tx.execute_batch(
-            "DROP TABLE story_page;
+            "DROP INDEX idx_ai_memory_user;
+             DROP TABLE ai_memory;
+             DROP TABLE story_page;
              ALTER TABLE budget_line DROP COLUMN actual;
              DROP INDEX idx_dood_override_key;
              DROP TABLE dood_override;
@@ -144,7 +146,7 @@ impl Fixture {
              ALTER TABLE story_scene_card DROP COLUMN long_description;
              DROP INDEX IF EXISTS sys_ai_apply_journal_open;
              DROP TABLE IF EXISTS sys_ai_apply_journal;
-             DELETE FROM _schema_migrations WHERE version IN (11, 12, 13, 14, 15, 16, 17);
+             DELETE FROM _schema_migrations WHERE version IN (11, 12, 13, 14, 15, 16, 17, 18, 19);
              PRAGMA user_version = 10;",
         )
         .unwrap();
@@ -315,17 +317,6 @@ impl ReadOnlyGuard {
 impl Drop for ReadOnlyGuard {
     fn drop(&mut self) {
         set_readonly(&self.0, false);
-        // On macOS and Linux SQLite creates the -wal and -shm files with the permissions of the
-        // database file, so a look at the read-only database leaves them read-only too. Clearing
-        // the setting means clearing it on all three, as a person would for the project folder.
-        for suffix in ["-wal", "-shm"] {
-            let mut side = self.0.clone().into_os_string();
-            side.push(suffix);
-            let side = PathBuf::from(side);
-            if side.exists() {
-                set_readonly(&side, false);
-            }
-        }
     }
 }
 

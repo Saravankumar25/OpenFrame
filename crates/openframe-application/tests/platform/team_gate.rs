@@ -67,7 +67,12 @@ fn nothing_opens_before_the_right_password_and_everything_opens_after() {
     // The theme still loads so the password screen looks like the app.
     assert!(TEAM_GATE_ALLOWED.contains(&"appearance.get"));
     call(&core, "appearance.get", json!({})).unwrap();
-    // Nothing was created on disk for the Global Idea Vault before the password.
+    // Nothing was created on disk for the Global Idea Vault before the password, and the start
+    // work (here: removing what an interrupted move left) does not run either.
+    let leftover = dir
+        .path()
+        .join("global-vault.openframe-staging-1793000000000");
+    std::fs::create_dir_all(&leftover).unwrap();
     core.startup_maintenance();
     assert!(
         !dir.path()
@@ -75,6 +80,7 @@ fn nothing_opens_before_the_right_password_and_everything_opens_after() {
             .join("vault.sqlite")
             .exists()
     );
+    assert!(leftover.exists(), "start work waits for the password");
 
     let wrong = unlock(&core, "not the team password");
     assert_eq!(wrong["status"]["unlocked"], false);
@@ -85,9 +91,11 @@ fn nothing_opens_before_the_right_password_and_everything_opens_after() {
     let right = unlock(&core, TEST_PASSWORD);
     assert_eq!(right["status"]["unlocked"], true);
     assert!(right["message"].is_null());
-    // The app start work ran once the gate opened.
+    // The app start work ran once the gate opened. The vault is still not created: it is made on
+    // first use (the gated `vault.list` below does that).
+    assert!(!leftover.exists(), "start work ran after the unlock");
     assert!(
-        dir.path()
+        !dir.path()
             .join("global-vault")
             .join("vault.sqlite")
             .exists()

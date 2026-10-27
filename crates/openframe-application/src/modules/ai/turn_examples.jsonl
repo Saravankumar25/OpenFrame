@@ -1,0 +1,275 @@
+{"t":"lookup","l":"en","m":"who plays the detective"}
+{"t":"lookup","l":"en","m":"what is the phone number of the sound recordist"}
+{"t":"lookup","l":"en","m":"which location is scene 8 set in"}
+{"t":"lookup","l":"en","m":"what time is the call on day 3"}
+{"t":"lookup","l":"en","m":"what is Marta's email"}
+{"t":"lookup","l":"en","m":"when does the lead actor become available"}
+{"t":"lookup","l":"en","m":"what is the status of the rooftop location"}
+{"t":"lookup","l":"en","m":"how much is allocated to wardrobe"}
+{"t":"lookup","l":"en","m":"who is the line producer"}
+{"t":"lookup","l":"en","m":"what did we spend on catering so far"}
+{"t":"lookup","l":"en","m":"which actor is booked for Rohan"}
+{"t":"lookup","l":"en","m":"what is the title of act two"}
+{"t":"lookup","l":"en","m":"where is the shoot on day 5"}
+{"t":"lookup","l":"en","m":"how old is the grandmother character"}
+{"t":"lookup","l":"hi","m":"जासूस का किरदार कौन निभा रहा है"}
+{"t":"lookup","l":"te","m":"డిటెక్టివ్ పాత్రను ఎవరు పోషిస్తున్నారు"}
+{"t":"lookup","l":"ta","m":"துப்பறிவாளர் வேடத்தில் யார் நடிக்கிறார்"}
+{"t":"lookup","l":"kn","m":"ಡಿಟೆಕ್ಟಿವ್ ಪಾತ್ರವನ್ನು ಯಾರು ನಿರ್ವಹಿಸುತ್ತಿದ್ದಾರೆ"}
+{"t":"lookup","l":"ml","m":"ഡിറ്റക്ടീവിന്റെ വേഷം ആരാണ് ചെയ്യുന്നത്"}
+{"t":"lookup","l":"es","m":"cuál es el teléfono del sonidista"}
+{"t":"lookup","l":"fr","m":"quel est l'email de la maquilleuse"}
+{"t":"lookup","l":"de","m":"wie hoch ist das Budget für die Kostüme"}
+{"t":"lookup","l":"zh","m":"第八场戏的拍摄地点在哪里"}
+{"t":"lookup","l":"ja","m":"探偵役は誰が演じていますか"}
+{"t":"lookup","l":"ko","m":"형사 역할은 누가 맡고 있나요"}
+{"t":"list","l":"en","m":"list all the props in scene 6"}
+{"t":"list","l":"en","m":"which scenes take place at night"}
+{"t":"list","l":"en","m":"show me every character who appears in act one"}
+{"t":"list","l":"en","m":"give me the names of the crew in the camera department"}
+{"t":"list","l":"en","m":"what are the locations we still have to confirm"}
+{"t":"list","l":"en","m":"list the shoot days for next week"}
+{"t":"list","l":"en","m":"which scenes have Kavya in them"}
+{"t":"list","l":"en","m":"name all the cast members"}
+{"t":"list","l":"en","m":"what files are attached to the budget"}
+{"t":"list","l":"en","m":"show the open tasks"}
+{"t":"list","l":"en","m":"which props are needed on day 4"}
+{"t":"list","l":"en","m":"list the scenes in act three"}
+{"t":"list","l":"en","m":"who is on the call sheet for day 2"}
+{"t":"list","l":"en","m":"all vehicles used in the film"}
+{"t":"list","l":"hi","m":"पहले अंक के सभी दृश्यों की सूची दिखाओ"}
+{"t":"list","l":"te","m":"రాత్రి సమయంలో జరిగే సన్నివేశాలన్నీ చెప్పండి"}
+{"t":"list","l":"ta","m":"படத்தில் வரும் எல்லா இடங்களையும் பட்டியலிடு"}
+{"t":"list","l":"kn","m":"ಎಲ್ಲಾ ಪಾತ್ರಧಾರಿಗಳ ಹೆಸರುಗಳನ್ನು ಪಟ್ಟಿ ಮಾಡಿ"}
+{"t":"list","l":"ml","m":"ഈ സിനിമയിലെ എല്ലാ ലൊക്കേഷനുകളും പട്ടികപ്പെടുത്തുക"}
+{"t":"list","l":"es","m":"enumera todos los accesorios de la escena 6"}
+{"t":"list","l":"fr","m":"liste toutes les scènes de nuit"}
+{"t":"list","l":"de","m":"nenne alle Drehorte, die noch nicht bestätigt sind"}
+{"t":"list","l":"zh","m":"列出第二幕的所有场景"}
+{"t":"list","l":"ja","m":"夜のシーンをすべて挙げてください"}
+{"t":"list","l":"ko","m":"1막에 나오는 모든 인물을 목록으로 보여줘"}
+{"t":"count","l":"en","m":"how many scenes are in act two"}
+{"t":"count","l":"en","m":"number of shoot days left"}
+{"t":"count","l":"en","m":"how many characters does the film have"}
+{"t":"count","l":"en","m":"count the interior scenes"}
+{"t":"count","l":"en","m":"how many crew members are on the project"}
+{"t":"count","l":"en","m":"how many pages is the script"}
+{"t":"count","l":"en","m":"how many props do we need overall"}
+{"t":"count","l":"en","m":"what is the total number of locations"}
+{"t":"count","l":"en","m":"how many cast members are still unconfirmed"}
+{"t":"count","l":"en","m":"how many night shoots are planned"}
+{"t":"count","l":"en","m":"count the scenes where the mother speaks"}
+{"t":"count","l":"en","m":"how many files are in the vault"}
+{"t":"count","l":"en","m":"how many days until the first shoot"}
+{"t":"count","l":"en","m":"total scenes in the second screenplay"}
+{"t":"count","l":"hi","m":"फिल्म में कुल कितने दृश्य हैं"}
+{"t":"count","l":"te","m":"ఈ సినిమాలో మొత్తం ఎన్ని సన్నివేశాలు ఉన్నాయి"}
+{"t":"count","l":"ta","m":"மொத்தம் எத்தனை படப்பிடிப்பு நாட்கள் உள்ளன"}
+{"t":"count","l":"kn","m":"ಒಟ್ಟು ಎಷ್ಟು ಪಾತ್ರಗಳಿವೆ"}
+{"t":"count","l":"ml","m":"ആകെ എത്ര ലൊക്കേഷനുകൾ ഉണ്ട്"}
+{"t":"count","l":"es","m":"cuántas escenas hay en el segundo acto"}
+{"t":"count","l":"fr","m":"combien de personnages y a-t-il dans le film"}
+{"t":"count","l":"de","m":"wie viele Drehtage sind geplant"}
+{"t":"count","l":"zh","m":"一共有多少个角色"}
+{"t":"count","l":"ja","m":"撮影日は全部で何日ありますか"}
+{"t":"count","l":"ko","m":"전체 장면이 몇 개인가요"}
+{"t":"explain","l":"en","m":"explain scene 14"}
+{"t":"explain","l":"en","m":"walk me through the second act"}
+{"t":"explain","l":"en","m":"summarise what happens in the opening scene"}
+{"t":"explain","l":"en","m":"describe the character of the grandmother"}
+{"t":"explain","l":"en","m":"tell me about the ending"}
+{"t":"explain","l":"en","m":"what is the story of this film about"}
+{"t":"explain","l":"en","m":"what is going on in scene 22"}
+{"t":"explain","l":"en","m":"give me the gist of the first act"}
+{"t":"explain","l":"en","m":"explain why the lead leaves the village"}
+{"t":"explain","l":"en","m":"what does the rooftop scene show"}
+{"t":"explain","l":"en","m":"describe the mood of the night market sequence"}
+{"t":"explain","l":"en","m":"help me understand the final scene"}
+{"t":"explain","l":"en","m":"summarize the screenplay in a few lines"}
+{"t":"explain","l":"en","m":"what is Rohan like"}
+{"t":"explain","l":"hi","m":"दृश्य 5 में क्या हो रहा है समझाओ"}
+{"t":"explain","l":"te","m":"ఐదవ సన్నివేశంలో ఏం జరుగుతుందో వివరించండి"}
+{"t":"explain","l":"ta","m":"ஐந்தாவது காட்சியில் என்ன நடக்கிறது என்று விளக்கு"}
+{"t":"explain","l":"kn","m":"ಐದನೇ ದೃಶ್ಯದಲ್ಲಿ ಏನು ನಡೆಯುತ್ತದೆ ಎಂದು ವಿವರಿಸಿ"}
+{"t":"explain","l":"ml","m":"അഞ്ചാം രംഗത്തിൽ എന്താണ് സംഭവിക്കുന്നതെന്ന് വിശദീകരിക്കുക"}
+{"t":"explain","l":"es","m":"resume la historia de la película"}
+{"t":"explain","l":"fr","m":"explique ce qui se passe dans la scène 9"}
+{"t":"explain","l":"de","m":"erkläre mir die Handlung des zweiten Akts"}
+{"t":"explain","l":"zh","m":"解释一下第十场戏讲了什么"}
+{"t":"explain","l":"ja","m":"このシーンで何が起きているのか説明して"}
+{"t":"explain","l":"ko","m":"3막의 줄거리를 설명해줘"}
+{"t":"relation","l":"en","m":"how are Kavya and Rohan related"}
+{"t":"relation","l":"en","m":"what is the bond between the two sisters"}
+{"t":"relation","l":"en","m":"describe the relationship of the detective with the widow"}
+{"t":"relation","l":"en","m":"are Marta and the mayor connected"}
+{"t":"relation","l":"en","m":"what connects the baker to the missing child"}
+{"t":"relation","l":"en","m":"how do the father and the son get along"}
+{"t":"relation","l":"en","m":"explain the rivalry between the two brothers"}
+{"t":"relation","l":"en","m":"which characters are related to the baker"}
+{"t":"relation","l":"en","m":"what ties the doctor to the fire"}
+{"t":"relation","l":"en","m":"how does the teacher relate to the other villagers"}
+{"t":"relation","l":"en","m":"tell me the relationship between the lead and her uncle"}
+{"t":"relation","l":"en","m":"are the twins friends or enemies"}
+{"t":"relation","l":"en","m":"how are the main characters linked"}
+{"t":"relation","l":"en","m":"what is the history between the captain and the pilot"}
+{"t":"relation","l":"hi","m":"राहुल और उसके पिता के बीच क्या रिश्ता है"}
+{"t":"relation","l":"te","m":"రాహుల్ మరియు అతని తండ్రి మధ్య సంబంధం ఏమిటి"}
+{"t":"relation","l":"ta","m":"இரண்டு சகோதரிகளுக்கு இடையிலான உறவு என்ன"}
+{"t":"relation","l":"kn","m":"ಅಣ್ಣ ತಮ್ಮಂದಿರ ನಡುವಿನ ಸಂಬಂಧ ಹೇಗಿದೆ"}
+{"t":"relation","l":"ml","m":"നായകനും അമ്മാവനും തമ്മിലുള്ള ബന്ധം എന്താണ്"}
+{"t":"relation","l":"es","m":"cuál es la relación entre la detective y la viuda"}
+{"t":"relation","l":"fr","m":"quel lien unit le père et le fils"}
+{"t":"relation","l":"de","m":"wie stehen die beiden Schwestern zueinander"}
+{"t":"relation","l":"zh","m":"男主角和他叔叔是什么关系"}
+{"t":"relation","l":"ja","m":"二人の姉妹の関係を教えて"}
+{"t":"relation","l":"ko","m":"형사와 미망인은 어떤 관계인가요"}
+{"t":"compare","l":"en","m":"planned versus actual budget for locations"}
+{"t":"compare","l":"en","m":"are we over or under on the camera line"}
+{"t":"compare","l":"en","m":"what is the difference between the first and second draft"}
+{"t":"compare","l":"en","m":"compare scene 3 and scene 18"}
+{"t":"compare","l":"en","m":"did wardrobe cost more than planned"}
+{"t":"compare","l":"en","m":"which is longer, act one or act three"}
+{"t":"compare","l":"en","m":"planned and actual spend side by side"}
+{"t":"compare","l":"en","m":"is the schedule ahead or behind the estimate"}
+{"t":"compare","l":"en","m":"how does the teaser differ from the feature"}
+{"t":"compare","l":"en","m":"which location is cheaper, the farm or the studio"}
+{"t":"compare","l":"en","m":"compare the two leads"}
+{"t":"compare","l":"en","m":"the gap between estimate and actual for catering"}
+{"t":"compare","l":"en","m":"did we shoot more days than we planned"}
+{"t":"compare","l":"en","m":"how much over budget are we on transport"}
+{"t":"compare","l":"hi","m":"योजना और असली खर्च में कितना अंतर है"}
+{"t":"compare","l":"te","m":"అంచనా మరియు అసలు ఖర్చు మధ్య తేడా ఎంత"}
+{"t":"compare","l":"ta","m":"திட்டமிட்ட செலவுக்கும் உண்மையான செலவுக்கும் என்ன வித்தியாசம்"}
+{"t":"compare","l":"kn","m":"ಯೋಜಿತ ಮತ್ತು ನಿಜವಾದ ವೆಚ್ಚದ ವ್ಯತ್ಯಾಸವೇನು"}
+{"t":"compare","l":"ml","m":"ആസൂത്രിത ചെലവും യഥാർത്ഥ ചെലവും തമ്മിലുള്ള വ്യത്യാസം എത്ര"}
+{"t":"compare","l":"es","m":"compara el presupuesto previsto con el gasto real"}
+{"t":"compare","l":"fr","m":"compare la scène 4 et la scène 12"}
+{"t":"compare","l":"de","m":"vergleiche geplante und tatsächliche Kosten für Kostüme"}
+{"t":"compare","l":"zh","m":"比较一下预算和实际花费"}
+{"t":"compare","l":"ja","m":"予定と実際の費用の差を教えて"}
+{"t":"compare","l":"ko","m":"계획된 예산과 실제 지출을 비교해줘"}
+{"t":"brainstorm","l":"en","m":"give me three ideas for a stronger ending"}
+{"t":"brainstorm","l":"en","m":"how could I make scene 7 more tense"}
+{"t":"brainstorm","l":"en","m":"suggest a better opening line for the film"}
+{"t":"brainstorm","l":"en","m":"what if the detective is the culprit"}
+{"t":"brainstorm","l":"en","m":"any thoughts on improving the dialogue in scene 12"}
+{"t":"brainstorm","l":"en","m":"brainstorm names for the village"}
+{"t":"brainstorm","l":"en","m":"help me come up with a twist for act two"}
+{"t":"brainstorm","l":"en","m":"how can the villain feel more threatening"}
+{"t":"brainstorm","l":"en","m":"options for cutting the second act shorter"}
+{"t":"brainstorm","l":"en","m":"what could go wrong for the hero in the middle"}
+{"t":"brainstorm","l":"en","m":"I need a fresh idea for the final chase"}
+{"t":"brainstorm","l":"en","m":"how would you rewrite the opening"}
+{"t":"brainstorm","l":"en","m":"could the mother be a more interesting character"}
+{"t":"brainstorm","l":"en","m":"suggest a different location for the confrontation"}
+{"t":"brainstorm","l":"hi","m":"अंत को और प्रभावशाली बनाने के लिए कुछ सुझाव दो"}
+{"t":"brainstorm","l":"te","m":"ముగింపును మరింత బలంగా చేయడానికి కొన్ని ఆలోచనలు ఇవ్వండి"}
+{"t":"brainstorm","l":"ta","m":"கிளைமாக்ஸை இன்னும் வலிமையாக்க சில யோசனைகள் கொடு"}
+{"t":"brainstorm","l":"kn","m":"ಅಂತ್ಯವನ್ನು ಇನ್ನಷ್ಟು ಬಲಪಡಿಸಲು ಕೆಲವು ಐಡಿಯಾಗಳನ್ನು ಕೊಡಿ"}
+{"t":"brainstorm","l":"ml","m":"ക്ലൈമാക്സ് കൂടുതൽ ശക്തമാക്കാൻ ചില ആശയങ്ങൾ തരൂ"}
+{"t":"brainstorm","l":"es","m":"dame ideas para que la escena 5 sea más emocionante"}
+{"t":"brainstorm","l":"fr","m":"propose-moi une meilleure fin pour l'histoire"}
+{"t":"brainstorm","l":"de","m":"was wäre, wenn die Hauptfigur am Ende verliert"}
+{"t":"brainstorm","l":"zh","m":"给我一些让结局更有力的想法"}
+{"t":"brainstorm","l":"ja","m":"この場面をもっと緊張感のあるものにするアイデアをください"}
+{"t":"brainstorm","l":"ko","m":"결말을 더 강하게 만들 아이디어를 제안해줘"}
+{"t":"navigate","l":"en","m":"open scene 31"}
+{"t":"navigate","l":"en","m":"go to the budget screen"}
+{"t":"navigate","l":"en","m":"take me to the call sheets"}
+{"t":"navigate","l":"en","m":"show me the Beat Board"}
+{"t":"navigate","l":"en","m":"open the file poster dot png"}
+{"t":"navigate","l":"en","m":"jump to act two on the beat board"}
+{"t":"navigate","l":"en","m":"switch to the schedule"}
+{"t":"navigate","l":"en","m":"bring up the cast and crew page"}
+{"t":"navigate","l":"en","m":"go to scene 9 of the short"}
+{"t":"navigate","l":"en","m":"open the settings"}
+{"t":"navigate","l":"en","m":"take me to the character map"}
+{"t":"navigate","l":"en","m":"open the latest draft"}
+{"t":"navigate","l":"en","m":"navigate to the location list"}
+{"t":"navigate","l":"en","m":"open day 4 in the shoot schedule"}
+{"t":"navigate","l":"hi","m":"दृश्य 12 खोलो"}
+{"t":"navigate","l":"te","m":"బడ్జెట్ పేజీకి వెళ్ళండి"}
+{"t":"navigate","l":"ta","m":"காட்சி 8 ஐ திற"}
+{"t":"navigate","l":"kn","m":"ಕಾಲ್ ಶೀಟ್ ಪುಟಕ್ಕೆ ಹೋಗಿ"}
+{"t":"navigate","l":"ml","m":"രംഗം 20 തുറക്കൂ"}
+{"t":"navigate","l":"es","m":"abre la escena 15"}
+{"t":"navigate","l":"fr","m":"ouvre l'écran du budget"}
+{"t":"navigate","l":"de","m":"öffne Szene 3"}
+{"t":"navigate","l":"zh","m":"打开第二十场戏"}
+{"t":"navigate","l":"ja","m":"予算の画面を開いて"}
+{"t":"navigate","l":"ko","m":"스케줄 화면으로 이동해줘"}
+{"t":"change","l":"en","m":"add a task to scout the farm"}
+{"t":"change","l":"en","m":"rename the short to Dawn Patrol"}
+{"t":"change","l":"en","m":"delete the second draft"}
+{"t":"change","l":"en","m":"create a new character called Imran"}
+{"t":"change","l":"en","m":"move scene 20 after scene 25"}
+{"t":"change","l":"en","m":"set the shoot date for day 3 to Friday"}
+{"t":"change","l":"en","m":"change the location of scene 11 to the harbour"}
+{"t":"change","l":"en","m":"mark the rooftop scene as done"}
+{"t":"change","l":"en","m":"add a note to scene 4 about the lighting"}
+{"t":"change","l":"en","m":"remove Marta from the call sheet"}
+{"t":"change","l":"en","m":"update the budget for wardrobe to 50,000"}
+{"t":"change","l":"en","m":"create a card in act two for the chase"}
+{"t":"change","l":"en","m":"assign the sound recordist to day 6"}
+{"t":"change","l":"en","m":"make scene 13 a night scene"}
+{"t":"change","l":"hi","m":"नया पात्र जोड़ो जिसका नाम समीर है"}
+{"t":"change","l":"te","m":"కొత్త పని జోడించండి"}
+{"t":"change","l":"ta","m":"புதிய கதாபாத்திரத்தைச் சேர்"}
+{"t":"change","l":"kn","m":"ಹೊಸ ಕಾರ್ಯವನ್ನು ಸೇರಿಸಿ"}
+{"t":"change","l":"ml","m":"പുതിയ ഒരു കുറിപ്പ് ചേർക്കൂ"}
+{"t":"change","l":"es","m":"añade una tarea para visitar el almacén"}
+{"t":"change","l":"fr","m":"supprime la deuxième version du scénario"}
+{"t":"change","l":"de","m":"benenne die Szene 5 um"}
+{"t":"change","l":"zh","m":"把第十场戏移到第十五场之后"}
+{"t":"change","l":"ja","m":"新しいキャラクターを追加して"}
+{"t":"change","l":"ko","m":"3일차 촬영 날짜를 금요일로 바꿔줘"}
+{"t":"help","l":"en","m":"how do I export the screenplay as a PDF"}
+{"t":"help","l":"en","m":"where do I find the call sheet button"}
+{"t":"help","l":"en","m":"can I use the app without internet"}
+{"t":"help","l":"en","m":"how can I invite a teammate"}
+{"t":"help","l":"en","m":"where are the backups kept"}
+{"t":"help","l":"en","m":"what does the Beat Board do"}
+{"t":"help","l":"en","m":"how do I change the language"}
+{"t":"help","l":"en","m":"can I import a Final Draft file"}
+{"t":"help","l":"en","m":"where do I change the theme"}
+{"t":"help","l":"en","m":"how does the Idea Vault work"}
+{"t":"help","l":"en","m":"is there a way to print the schedule"}
+{"t":"help","l":"en","m":"how do I undo a change"}
+{"t":"help","l":"en","m":"what is the difference between a draft and a revision in this app"}
+{"t":"help","l":"en","m":"how do I set a password"}
+{"t":"help","l":"hi","m":"मैं स्क्रीनप्ले को पीडीएफ में कैसे निर्यात करूँ"}
+{"t":"help","l":"te","m":"నేను స్క్రిప్ట్‌ను పీడీఎఫ్‌గా ఎలా ఎగుమతి చేయాలి"}
+{"t":"help","l":"ta","m":"நான் எப்படி திரைக்கதையை பிடிஎஃப் ஆக ஏற்றுமதி செய்வது"}
+{"t":"help","l":"kn","m":"ನಾನು ಸ್ಕ್ರಿಪ್ಟ್ ಅನ್ನು ಪಿಡಿಎಫ್ ಆಗಿ ಹೇಗೆ ರಫ್ತು ಮಾಡಬೇಕು"}
+{"t":"help","l":"ml","m":"ഞാൻ തിരക്കഥ പിഡിഎഫ് ആയി എങ്ങനെ എക്സ്പോർട്ട് ചെയ്യും"}
+{"t":"help","l":"es","m":"dónde encuentro el botón para exportar"}
+{"t":"help","l":"fr","m":"comment puis-je ajouter un membre à l'équipe"}
+{"t":"help","l":"de","m":"kann ich die App ohne Internet benutzen"}
+{"t":"help","l":"zh","m":"我在哪里可以找到备份文件"}
+{"t":"help","l":"ja","m":"パスワードはどこで変更できますか"}
+{"t":"help","l":"ko","m":"시나리오를 PDF로 내보내려면 어떻게 하나요"}
+{"t":"chat","l":"en","m":"hello"}
+{"t":"chat","l":"en","m":"thanks a lot"}
+{"t":"chat","l":"en","m":"good morning"}
+{"t":"chat","l":"en","m":"that was helpful"}
+{"t":"chat","l":"en","m":"you are useless"}
+{"t":"chat","l":"en","m":"this is so annoying"}
+{"t":"chat","l":"en","m":"ok great"}
+{"t":"chat","l":"en","m":"never mind"}
+{"t":"chat","l":"en","m":"bye for now"}
+{"t":"chat","l":"en","m":"what a waste of time"}
+{"t":"chat","l":"en","m":"fine, whatever"}
+{"t":"chat","l":"en","m":"wow nice"}
+{"t":"chat","l":"en","m":"you are hopeless"}
+{"t":"chat","l":"en","m":"I give up"}
+{"t":"chat","l":"hi","m":"नमस्ते"}
+{"t":"chat","l":"te","m":"ధన్యవాదాలు"}
+{"t":"chat","l":"ta","m":"நன்றி"}
+{"t":"chat","l":"kn","m":"ಧನ್ಯವಾದಗಳು"}
+{"t":"chat","l":"ml","m":"നന്ദി"}
+{"t":"chat","l":"es","m":"gracias, eso es todo"}
+{"t":"chat","l":"fr","m":"bonjour, ça va"}
+{"t":"chat","l":"de","m":"danke dir"}
+{"t":"chat","l":"zh","m":"谢谢你"}
+{"t":"chat","l":"ja","m":"ありがとうございます"}
+{"t":"chat","l":"ko","m":"고마워요"}

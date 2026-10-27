@@ -88,6 +88,15 @@ pub struct CoreConfig {
     /// own data ignore it, so the channel always comes from the build.
     #[uniffi(default = None)]
     pub test_store_response_key_hex: Option<String>,
+    /// The automated tests of the first-start library setup: the test folder starts like a new
+    /// computer whose library is not chosen yet (`AppConfig::isolated_needing_setup`). Honoured
+    /// only by a debug build on a test folder, like `OPENFRAME_LIBRARY_SETUP=1` on Windows.
+    #[uniffi(default = false)]
+    pub test_library_setup: bool,
+    /// Temperature 0 and a fixed seed for the Offline AI in the automated tests. Honoured only by
+    /// a debug build on a test folder, like `OPENFRAME_AI_DETERMINISTIC=1` on Windows.
+    #[uniffi(default = false)]
+    pub test_ai_deterministic: bool,
 }
 
 /// The running core. One per app process.
@@ -142,9 +151,14 @@ fn build_config(config: &CoreConfig) -> Result<(AppConfig, bool), CoreError> {
         Some(root) => {
             // Deleted projects of a test run stay in its own folder, never the Trash.
             openframe_application::modules::project::fault::trash_into(root.join("recycle-bin"));
+            let base = if test_switch(config.test_library_setup, cfg!(debug_assertions), true) {
+                AppConfig::isolated_needing_setup(root)
+            } else {
+                AppConfig::isolated(root)
+            };
             AppConfig {
                 app_version: config.app_version.clone(),
-                ..AppConfig::isolated(root)
+                ..base
             }
         }
         None => AppConfig::for_current_user(&config.app_version)?,
@@ -160,6 +174,11 @@ fn build_config(config: &CoreConfig) -> Result<(AppConfig, bool), CoreError> {
         .filter(|p| p.is_absolute());
     app.ai_model_source =
         openframe_application::ModelSource::from_build(option_env!("OPENFRAME_TEST_MODEL_SOURCE"));
+    app.ai_deterministic = test_switch(
+        config.test_ai_deterministic,
+        cfg!(debug_assertions),
+        isolated.is_some(),
+    );
     // Hand-set licence states exist only in a debug build on a test folder (as on Windows).
     app.entitlement_debug_controls = cfg!(debug_assertions) && isolated.is_some();
     app.team_password_hash = TEAM_PASSWORD_HASH.map(str::to_string);
@@ -174,6 +193,11 @@ fn build_config(config: &CoreConfig) -> Result<(AppConfig, bool), CoreError> {
 fn test_gate(config: &CoreConfig, debug: bool, isolated: bool) -> Option<String> {
     let hash = config.test_team_password_hash.as_deref()?;
     (debug && isolated && hash.starts_with("$argon2id$")).then(|| hash.to_string())
+}
+
+/// A test-only switch: on only in a debug build on a test folder.
+fn test_switch(asked: bool, debug: bool, isolated: bool) -> bool {
+    asked && debug && isolated
 }
 
 /// The test response key of the store screen tests: only a debug build on a test folder.
@@ -406,6 +430,8 @@ mod tests {
             write_logs: false,
             test_team_password_hash: None,
             test_store_response_key_hex: None,
+            test_library_setup: false,
+            test_ai_deterministic: false,
         };
         let err = build_config(&config).expect_err("refused");
         let CoreError::Failed { code, .. } = err;
@@ -422,11 +448,46 @@ mod tests {
             write_logs: false,
             test_team_password_hash: None,
             test_store_response_key_hex: None,
+            test_library_setup: false,
+            test_ai_deterministic: false,
         };
         let (app, isolated) = build_config(&config).unwrap();
         assert!(isolated);
         assert!(app.ai_bundle_dir.is_none());
         assert!(app.projects_dir.starts_with(dir.path()));
+    }
+
+    #[test]
+    fn a_test_folder_can_start_like_a_new_computer_and_with_a_deterministic_ai() {
+        let dir = tempfile::tempdir().unwrap();
+        let config = CoreConfig {
+            app_version: "0.1.0".into(),
+            isolated_data_root: Some(dir.path().to_string_lossy().into_owned()),
+            ai_bundle_dir: None,
+            write_logs: false,
+            test_team_password_hash: None,
+            test_store_response_key_hex: None,
+            test_library_setup: true,
+            test_ai_deterministic: true,
+        };
+        let (app, _) = build_config(&config).unwrap();
+        // Debug test builds honour both; every folder stays inside the test root.
+        assert_eq!(app.library_setup.is_some(), cfg!(debug_assertions));
+        assert_eq!(app.ai_deterministic, cfg!(debug_assertions));
+        if let Some(setup) = &app.library_setup {
+            assert!(setup.suggested_root.starts_with(dir.path()));
+            assert!(setup.pointer_file.starts_with(dir.path()));
+        }
+        let plain = CoreConfig {
+            test_library_setup: false,
+            test_ai_deterministic: false,
+            ..config
+        };
+        let (app, _) = build_config(&plain).unwrap();
+        assert!(app.library_setup.is_none());
+        assert!(!app.ai_deterministic);
+        assert!(!test_switch(true, false, true), "release build");
+        assert!(!test_switch(true, true, false), "the person's own data");
     }
 
     #[test]
@@ -438,6 +499,8 @@ mod tests {
             write_logs: false,
             test_team_password_hash: Some("$argon2id$v=19$m=65536,t=3,p=1$abc$def".into()),
             test_store_response_key_hex: None,
+            test_library_setup: false,
+            test_ai_deterministic: false,
         };
         assert!(test_gate(&config, true, true).is_some());
         assert!(test_gate(&config, false, true).is_none(), "release build");

@@ -43,6 +43,8 @@ use crate::core::AppCore;
 use crate::registry::OpKind;
 use crate::store::{MutationMeta, Store, Tx};
 
+pub const STALE_MESSAGE: &str = "The project changed after this suggestion was prepared. Review is required before applying it.";
+
 /// Most parts one composite Change Set may combine.
 pub const MAX_PARTS: usize = 6;
 
@@ -966,6 +968,7 @@ pub fn recheck(core: &AppCore, actor: &Actor, id: &str) -> AppResult<ChangeSetDt
             },
         )?;
         let ctx = ToolCtx {
+            core,
             conn: c,
             actor,
             scope: &scope,

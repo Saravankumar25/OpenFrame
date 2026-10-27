@@ -25,6 +25,34 @@ pub fn user_content_dir() -> Option<PathBuf> {
     documents_dir().map(|d| d.join(APP_FOLDER))
 }
 
+/// The person's home folder (`C:\Users\<name>`, `~`). The suggested library is `<home>/OpenFrame`:
+/// outside Documents, so Windows does not sync it to OneDrive (doc 40 section 1).
+pub fn home_dir() -> Option<PathBuf> {
+    directories::BaseDirs::new().map(|b| b.home_dir().to_path_buf())
+}
+
+/// `%APPDATA%\OpenFrame` (Roaming; `~/Library/Application Support/OpenFrame` on macOS): where the
+/// pointer to the library lives. The uninstaller's "delete app data" box only removes listed items
+/// under `%LOCALAPPDATA%\OpenFrame`, so the pointer outlives a reinstall.
+pub fn roaming_data_dir() -> Option<PathBuf> {
+    directories::BaseDirs::new().map(|b| b.data_dir().join(APP_FOLDER))
+}
+
+/// Where the pointer to the library lives, apart from the app data. Windows: the Roaming folder
+/// above. macOS: `~/Library/Application Support/OpenFrame Library`, a folder of its own, because
+/// the Roaming and local data folders are the same place there, and a person who clears
+/// `~/Library/Application Support/OpenFrame` to reset the app must not lose the pointer with it.
+/// Inside the Mac App Store sandbox this lands in the app container (doc 40 section 7).
+pub fn library_pointer_dir() -> Option<PathBuf> {
+    if cfg!(target_os = "macos") {
+        directories::BaseDirs::new().map(|b| b.data_dir().join(MAC_POINTER_FOLDER))
+    } else {
+        roaming_data_dir()
+    }
+}
+
+const MAC_POINTER_FOLDER: &str = "OpenFrame Library";
+
 /// The operating system's per-user local data folder without the OpenFrame suffix
 /// (`%LOCALAPPDATA%` on Windows, `~/Library/Application Support` on macOS). The desktop shell uses
 /// it to find the package-private data folder of an MSIX install.
@@ -102,6 +130,21 @@ mod tests {
     fn windows_data_folder_is_under_local_app_data() {
         let local = std::env::var("LOCALAPPDATA").expect("LOCALAPPDATA is set on Windows");
         assert!(app_data_dir().unwrap().starts_with(local));
+    }
+
+    #[cfg(target_os = "macos")]
+    #[test]
+    fn mac_library_pointer_is_outside_the_app_data_folder() {
+        let pointer = library_pointer_dir().unwrap();
+        let data = app_data_dir().unwrap();
+        assert!(
+            pointer.ends_with("Library/Application Support/OpenFrame Library"),
+            "{pointer:?}"
+        );
+        assert!(
+            !pointer.starts_with(&data),
+            "{pointer:?} is inside {data:?}"
+        );
     }
 
     #[cfg(target_os = "macos")]

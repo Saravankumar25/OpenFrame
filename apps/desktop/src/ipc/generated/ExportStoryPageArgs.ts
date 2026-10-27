@@ -4,4 +4,8 @@ export type ExportStoryPageArgs = {
 /**
  * "txt" | "pdf" | "docx"
  */
-format: string, path: string, };
+format: string, 
+/**
+ * Absolute destination chosen in the Save dialog.
+ */
+path: string, };

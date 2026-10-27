@@ -2513,12 +2513,14 @@ pub(crate) fn today() -> String {
 }
 
 /// FSD §57: a derived, mostly read-only view of one shooting day.
-pub(crate) fn daily(
-    core: &AppCore,
-    actor: &Actor,
-    a: ScheduleDailyArgs,
-) -> AppResult<ScheduleDailyView> {
-    read(core, actor, |c| {
+fn daily(core: &AppCore, actor: &Actor, a: ScheduleDailyArgs) -> AppResult<ScheduleDailyView> {
+    read(core, actor, |c| daily_view(c, a.day_id.as_deref()))
+}
+
+/// The Daily View read. The screen and the Daily View export both call it, so the printed
+/// document always shows what the screen shows.
+pub(crate) fn daily_view(c: &Connection, day_id: Option<&str>) -> AppResult<ScheduleDailyView> {
+    {
         let Some(sched) = current_schedule(c)? else {
             return Ok(ScheduleDailyView {
                 has_schedule: false,
@@ -2539,9 +2541,7 @@ pub(crate) fn daily(
                 is_off_day: d.off,
             })
             .collect();
-        let pick = a
-            .day_id
-            .as_deref()
+        let pick = day_id
             .and_then(|id| board.day(id))
             .or_else(|| {
                 board
@@ -2628,7 +2628,7 @@ pub(crate) fn daily(
             }),
             days,
         })
-    })
+    }
 }
 
 // ------------------------------------------------------------------ search

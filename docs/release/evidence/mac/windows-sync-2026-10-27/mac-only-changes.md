@@ -77,3 +77,19 @@ Web app and end-to-end specs (23): Windows version, then the dead code cleanup r
 only Windows tests use (`openframe-security/tests/security_paths.rs`, `confinement_and_network.rs`,
 `openframe-application/tests/platform/failure_injection.rs`). They get a `cfg_attr(not(windows), allow(...))` line,
 a change to repeat on Windows.
+
+## Made during the merge (all to repeat on Windows where they apply, ADR-0034)
+
+| File | Change | Windows |
+|---|---|---|
+| `crates/openframe-platform/src/dirs.rs` | `library_pointer_dir()`: on macOS `~/Library/Application Support/OpenFrame Library`, a folder of its own outside the app data (on Windows it is the Roaming folder, as before) | No change needed |
+| `modules/storage/library_ops.rs` | The pointer uses `library_pointer_dir()`; the OneDrive earlier-library folder is looked at on Windows only | Same behaviour |
+| `modules/storage/tree.rs`, `relocate.rs`, `library_ops.rs` | Finder files (`.DS_Store`, `._*`) are not copied, checked or counted, and do not stop an empty folder from being removed | Harmless on Windows; repeat for one core |
+| `modules/story/page.rs` | A Story page saved by a Mac build of 2026-10-20 (random row id) is read as an unsaved page, so the first save keeps its text | Repeat for one core (no effect on Windows data) |
+| `crates/openframe-persistence/src/lib.rs` | A writable database gets the owner's write permission back on its own `-wal` and `-shm` files before it opens (macOS copies the database's permissions to them, so a reader of a read-only file left them read-only) | Unix only; repeat for one core |
+| `crates/openframe-ffi` | Reveal kinds follow the moved vault, `dataRoot` waits for the library setup, new `appData`; test switches `test_library_setup` and `test_ai_deterministic` (debug build on a test folder only) | Mac only |
+| `tests/ai/ai.rs` | The `\\server\share` network path check runs on Windows only | Repeat |
+| Three test files | `cfg_attr(not(windows), allow(...))` for helpers only Windows tests use | Repeat |
+
+Windows names kept everywhere: the Mac Daily View now calls `schedule.export_daily_view` and the Story page calls
+`story.page.get`, `story.page.save` and `story.page.export`.

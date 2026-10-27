@@ -105,7 +105,6 @@ textarea.textarea { resize: vertical; }
 /* Segmented controls never wrap a label or squeeze an option out of view (owner item 8). */
 .seg { flex: none; flex-wrap: nowrap; }
 .seg button { white-space: nowrap; flex: none; }
-.spx-compare .sp-top { flex-wrap: wrap; row-gap: 6px; }
 /* Shot Lists grid view (owner change list item 21): reference picture on top, shot details below. */
 .shot-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
 .shot-card { display: flex; flex-direction: column; gap: 6px; padding: 10px; text-align: left; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow-s); font: inherit; color: var(--ink); cursor: pointer; min-width: 0; }

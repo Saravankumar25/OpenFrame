@@ -2,7 +2,7 @@
 // the Board view shown as an indented hierarchy. Reorder by drag (grip) or
 // keyboard (Alt+↑/↓); nothing here adds metadata or touches the screenplay.
 
-import { Fragment } from "react";
+import { Fragment, type ReactNode } from "react";
 import { DndContext, DragOverlay } from "@dnd-kit/core";
 import { ChevronDown, ChevronRight, GripVertical, MoreHorizontal, ParkingSquare } from "lucide-react";
 import { ContextMenu, Menu, cx } from "../../design-system";
@@ -30,44 +30,50 @@ interface Ctx {
 
 const INDENT = [0, 22, 46];
 
-export function OutlineView({ board, episodeId, readOnly }: { board: StoryBoardState; episodeId: string | null; readOnly: boolean }) {
+/** The outline is its own scroll area (layout contract section 2): the toolbar above stays put, the list scrolls
+ * inside the page with the wheel and, because the area takes focus, with the arrow, Page and Home/End keys.
+ * `children` (Add Act) sit at the end of the scrolled content. */
+export function OutlineView({ board, episodeId, readOnly, children }: { board: StoryBoardState; episodeId: string | null; readOnly: boolean; children?: ReactNode }) {
   const dnd = useStoryDnd(board, episodeId, "y");
   const keys = useItemKeys(board, episodeId, readOnly);
   const ctx: Ctx = { board, episodeId, readOnly, dnd, collapsed: new Set(board.collapsedIds), keys };
   return (
-    <DndContext
-      sensors={dnd.sensors}
-      collisionDetection={dnd.collision}
-      onDragStart={dnd.onDragStart}
-      onDragMove={dnd.onDragMove}
-      onDragOver={dnd.onDragOver}
-      onDragEnd={dnd.onDragEnd}
-      onDragCancel={dnd.onDragCancel}
-    >
-      <div className="outline story-outline" role="tree" aria-label="Story outline" onClick={() => useStoryUi.getState().clearSelection()}>
-        {board.acts.map((a) => (
-          <Fragment key={a.id}>
-            {dnd.actHint && dnd.actHint.before === a.id && <div className="ins" aria-hidden />}
-            <ActRows act={a} ctx={ctx} />
-          </Fragment>
-        ))}
-        {dnd.actHint && dnd.actHint.before === null && <div className="ins" aria-hidden />}
-        {board.unassigned.length > 0 && (
-          <>
-            <HeaderRow container={UNASSIGNED} label={`Unassigned (${board.unassigned.length})`} ctx={ctx} droppable={false} />
-            <div className="story-empty-hint" style={{ marginLeft: 22 }}>
-              Restored items whose Act or Sequence no longer exists. Drag them back into the story.
-            </div>
-            <Rows container={UNASSIGNED} items={board.unassigned} depth={1} ctx={ctx} />
-          </>
-        )}
-        <HeaderRow container={PARKING} label={`Parking Lot (${board.parking.length})`} ctx={ctx} droppable={!readOnly} />
-        <Rows container={PARKING} items={board.parking} depth={1} ctx={ctx} />
-      </div>
-      <DragOverlay dropAnimation={null}>
-        {dnd.dragging && <div className="ol story-row-overlay">{dnd.dragging.label}</div>}
-      </DragOverlay>
-    </DndContext>
+    <div className="story-canvas story-canvas-outline" tabIndex={0} role="region" aria-label="Story outline, scrollable">
+      <DndContext
+        sensors={dnd.sensors}
+        collisionDetection={dnd.collision}
+        onDragStart={dnd.onDragStart}
+        onDragMove={dnd.onDragMove}
+        onDragOver={dnd.onDragOver}
+        onDragEnd={dnd.onDragEnd}
+        onDragCancel={dnd.onDragCancel}
+      >
+        <div className="outline story-outline" role="tree" aria-label="Story outline" onClick={() => useStoryUi.getState().clearSelection()}>
+          {board.acts.map((a) => (
+            <Fragment key={a.id}>
+              {dnd.actHint && dnd.actHint.before === a.id && <div className="ins" aria-hidden />}
+              <ActRows act={a} ctx={ctx} />
+            </Fragment>
+          ))}
+          {dnd.actHint && dnd.actHint.before === null && <div className="ins" aria-hidden />}
+          {board.unassigned.length > 0 && (
+            <>
+              <HeaderRow container={UNASSIGNED} label={`Unassigned (${board.unassigned.length})`} ctx={ctx} droppable={false} />
+              <div className="story-empty-hint" style={{ marginLeft: 22 }}>
+                Restored items whose Act or Sequence no longer exists. Drag them back into the story.
+              </div>
+              <Rows container={UNASSIGNED} items={board.unassigned} depth={1} ctx={ctx} />
+            </>
+          )}
+          <HeaderRow container={PARKING} label={`Parking Lot (${board.parking.length})`} ctx={ctx} droppable={!readOnly} />
+          <Rows container={PARKING} items={board.parking} depth={1} ctx={ctx} />
+        </div>
+        <DragOverlay dropAnimation={null}>
+          {dnd.dragging && <div className="ol story-row-overlay">{dnd.dragging.label}</div>}
+        </DragOverlay>
+      </DndContext>
+      {children}
+    </div>
   );
 }
 

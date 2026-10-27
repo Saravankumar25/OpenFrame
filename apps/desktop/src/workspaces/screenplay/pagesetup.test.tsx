@@ -30,6 +30,7 @@ const STANDARD: ScreenplayPageSetup = {
   firstPageNumber: 1,
   header: "",
   footer: "",
+  numberFirstPage: true,
   headerOnFirstPage: false,
   includeTitlePage: true,
   sceneNumbers: false,
@@ -77,13 +78,14 @@ describe("Page setup dialog", () => {
     await user.click(screen.getByRole("button", { name: "Insert {title} into the header" }));
     await user.click(screen.getByRole("button", { name: "Insert {page} into the header" }));
     await user.type(screen.getByLabelText("Footer"), "Blue revision");
-    await user.click(screen.getByRole("checkbox", { name: /first page/ }));
+    await user.click(screen.getByRole("checkbox", { name: /header and footer on the first page/ }));
+    await user.click(screen.getByRole("checkbox", { name: /page number on the first page/ }));
     await user.click(screen.getByRole("button", { name: "Save" }));
     await waitFor(() => expect(onClose).toHaveBeenCalled());
     expect(sent).toEqual([
       {
         screenplayId: "sp1",
-        setup: { ...STANDARD, paper: "A4", header: "{title} {page}", footer: "Blue revision", headerOnFirstPage: true },
+        setup: { ...STANDARD, paper: "A4", header: "{title} {page}", footer: "Blue revision", numberFirstPage: false, headerOnFirstPage: true },
       },
     ]);
   });

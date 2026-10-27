@@ -17,7 +17,7 @@ Before: `01-journey` has run on the shared journey data, ending with "Night Bus"
 7. Check: a result containing "INT. POLICE STATION" shows.
 8. Click that result.
 9. Check: the screenplay contains the line "I was there that night."
-10. Click Story in the Workspaces navigation.
+10. Click Story in the Workspaces navigation, then click the Board tab.
 11. Check: the board shows exactly two scene cards.
 12. Click Call Sheets in the Workspaces navigation.
 13. Check: the screen shows "Day 1".

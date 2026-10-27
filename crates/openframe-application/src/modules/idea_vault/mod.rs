@@ -25,6 +25,7 @@ use crate::util::{StoreSel, with_store};
 mod items;
 mod model;
 mod organize;
+mod recover;
 mod search;
 mod transfer;
 mod trash;
@@ -43,6 +44,7 @@ pub use organize::{
     VaultCreateCollectionArgs, VaultCreateFolderArgs, VaultRenameCollectionArgs,
     VaultRenameFolderArgs, VaultStoreIdArgs,
 };
+pub use recover::{VaultOrphanFiles, VaultRecoverResult};
 pub use transfer::{
     VaultCopyArgs, VaultCopyResult, VaultSendToStoryArgs, VaultSendToStoryResult, VaultStoryAct,
     VaultStorySequence, VaultStoryTarget, VaultStoryTargets, VaultStoryTargetsArgs,
@@ -125,6 +127,17 @@ pub fn register(r: &mut Registry) {
         .meta(
             M::edit("Copy items between the project Idea Vault and the Global Idea Vault.")
                 .hidden(h::CROSS_PROJECT),
+        );
+    r.query("vault.orphan_files", recover::orphan_files).meta(
+        M::read("Files in the vault folder that no Idea Vault item uses.")
+            .fs(Fs::ProjectStorage)
+            .hidden(h::MAINTENANCE),
+    );
+    r.command("vault.recover_files", recover::recover_files)
+        .meta(
+            M::edit("Add files found in the vault folder back to the Idea Vault as new items.")
+                .fs(Fs::ProjectStorage)
+                .hidden(h::MAINTENANCE),
         );
     r.query("vault.story_targets", transfer::story_targets)
         .meta(

@@ -185,7 +185,8 @@ fn worker() {
     }
 }
 
-/// Turn a schema-16 project database back into a genuine schema-10 one (0016 only adds
+/// Turn a schema-19 project database back into a genuine schema-10 one (0019 only adds
+/// `story_page.format`; 0018 only adds `ai_memory`; 0017 only adds the `story_page` table; 0016 only adds
 /// `budget_line.actual` and maps call sheet status words, which the older schema also allows; 0015 only adds the
 /// schedule day times, strip start, Day Out of Days code style and corrections table; 0014 only adds the
 /// breakdown category styles, availability windows and three location and crew columns; 0011 only adds the
@@ -198,6 +199,29 @@ fn downgrade_to_v10(project: &str) {
     let mut v: i64 = c
         .query_row("PRAGMA user_version", [], |r| r.get(0))
         .unwrap();
+    if v == 19 {
+        let tx = c.transaction().unwrap();
+        tx.execute_batch(
+            "ALTER TABLE story_page DROP COLUMN format;
+             DELETE FROM _schema_migrations WHERE version = 19;
+             PRAGMA user_version = 18;",
+        )
+        .unwrap();
+        tx.commit().unwrap();
+        v = 18;
+    }
+    if v == 18 {
+        let tx = c.transaction().unwrap();
+        tx.execute_batch(
+            "DROP INDEX idx_ai_memory_user;
+             DROP TABLE ai_memory;
+             DELETE FROM _schema_migrations WHERE version = 18;
+             PRAGMA user_version = 17;",
+        )
+        .unwrap();
+        tx.commit().unwrap();
+        v = 17;
+    }
     if v == 17 {
         let tx = c.transaction().unwrap();
         tx.execute_batch(
@@ -528,7 +552,7 @@ fn m1_03_forced_kill_during_migration_leaves_a_consistent_database() {
                 "the migration worker completed no cycle before the kill"
             );
         }
-        // Before the app touches it: a complete schema 10 to 16 (each migration commits whole).
+        // Before the app touches it: a complete schema 10 to 19 (each migration commits whole).
         let raw = rusqlite::Connection::open(Path::new(&h.project).join("project.sqlite")).unwrap();
         let version: i64 = raw
             .query_row("PRAGMA user_version", [], |r| r.get(0))
@@ -541,7 +565,7 @@ fn m1_03_forced_kill_during_migration_leaves_a_consistent_database() {
             )
             .unwrap();
         assert!(
-            matches!((version, journal), (10, false) | (11..=16, true)),
+            matches!((version, journal), (10, false) | (11..=19, true)),
             "half-migrated: v{version}, journal {journal}"
         );
         drop(raw);
@@ -553,7 +577,7 @@ fn m1_03_forced_kill_during_migration_leaves_a_consistent_database() {
             .store
             .read(|c| Ok(c.query_row("PRAGMA user_version", [], |r| r.get(0))?))
             .unwrap();
-        assert_eq!(schema, 16, "{opened}");
+        assert_eq!(schema, 19, "{opened}");
         let cards = card_texts(&core);
         assert!(
             cards.contains(&"Baseline one".to_string())

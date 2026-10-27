@@ -72,9 +72,11 @@ export interface Layout {
   navColumns: NavColumn[];
   /** The scene list is hidden so the page gets the room (owner request 2026-10-19). */
   navHidden: boolean;
+  /** The page is drawn as dark paper on screen (view preference; print and PDF are never affected). */
+  darkPaper: boolean;
 }
 
-export const DEFAULT_LAYOUT: Layout = { mode: "standard", panels: [], showNotes: true, draftId: null, screenplayId: null, navColumns: [], navHidden: false };
+export const DEFAULT_LAYOUT: Layout = { mode: "standard", panels: [], showNotes: true, draftId: null, screenplayId: null, navColumns: [], navHidden: false, darkPaper: false };
 
 const PANELS: PanelId[] = ["story", "notes", "characters", "comments", "draft"];
 
@@ -91,6 +93,7 @@ export function normalizeLayout(v: unknown): Layout {
     screenplayId: typeof o.screenplayId === "string" ? o.screenplayId : null,
     navColumns: normalizeColumns(o.navColumns),
     navHidden: o.navHidden === true,
+    darkPaper: o.darkPaper === true,
   };
 }
 

@@ -721,13 +721,21 @@ pub const COVERAGE: &[TableCoverage] = &[
             "Day Out of Days corrections are the sender's own edits to a derived report; they travel in Backup and Full Project Packages",
         ),
     ),
-    // 0017 the Story page
+    // 0017 story page
     t(
         "story_page",
         kept(),
         not_carried(
-            "the Story page is the writer's own free text; it travels in Backup and Full Project Packages",
+            "the Story page is the writer's own free writing, not part of any exchange package in this format; it travels in Backup and Full Project Packages",
         ),
+    ),
+    // 0018 assistant memory
+    t(
+        "ai_memory",
+        Transfer::Emptied {
+            why: "the assistant's memory of a person stays on the computer that made it",
+        },
+        not_carried(AI_HISTORY),
     ),
 ];
 

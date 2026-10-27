@@ -27,6 +27,7 @@ pub mod pdf_export;
 pub mod pdf_fonts;
 pub mod pdf_import;
 pub mod pdfgen;
+pub mod prose;
 pub mod report;
 pub mod rules;
 pub mod samples;

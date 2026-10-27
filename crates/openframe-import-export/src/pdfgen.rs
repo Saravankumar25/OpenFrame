@@ -4,7 +4,7 @@
 //! writer then draws every line with them, reports draw only those runs.
 //! Shared by the screenplay PDF writer and the report writer.
 //! Pictures (storyboard panels, moodboard images) are embedded as baseline
-//! JPEG image XObjects (`DCTDecode`).
+//! JPEG image XObjects (`DCTDecode`); the brand logo is a lossless Flate image with a soft mask.
 
 use pdf_writer::{Content, Filter, Finish, Name, Pdf, Rect, Ref, Str, TextStr};
 
@@ -14,13 +14,17 @@ pub const COURIER_OBLIQUE: &[u8] = b"F2";
 pub const COURIER_BOLD: &[u8] = b"F3";
 pub const HELVETICA: &[u8] = b"F4";
 pub const HELVETICA_BOLD: &[u8] = b"F5";
+pub const HELVETICA_OBLIQUE: &[u8] = b"F6";
+pub const HELVETICA_BOLD_OBLIQUE: &[u8] = b"F7";
 
-const FONTS: [(&[u8], &[u8]); 5] = [
+const FONTS: [(&[u8], &[u8]); 7] = [
     (COURIER, b"Courier"),
     (COURIER_OBLIQUE, b"Courier-Oblique"),
     (COURIER_BOLD, b"Courier-Bold"),
     (HELVETICA, b"Helvetica"),
     (HELVETICA_BOLD, b"Helvetica-Bold"),
+    (HELVETICA_OBLIQUE, b"Helvetica-Oblique"),
+    (HELVETICA_BOLD_OBLIQUE, b"Helvetica-BoldOblique"),
 ];
 
 /// A JPEG picture ready to embed (see [`crate::report::ReportImage`]).
@@ -32,11 +36,27 @@ pub struct PdfImage {
     pub jpeg: Vec<u8>,
 }
 
+/// A picture embedded without loss (the brand logo): zlib-compressed 8-bit RGB samples and, when
+/// the artwork has transparency, zlib-compressed 8-bit alpha written as a soft mask.
+#[derive(Debug, Clone)]
+pub struct LosslessImage {
+    pub width: u32,
+    pub height: u32,
+    pub rgb_flate: Vec<u8>,
+    pub alpha_flate: Option<Vec<u8>>,
+}
+
+#[derive(Debug, Clone)]
+enum StoredImage {
+    Jpeg(PdfImage),
+    Lossless(LosslessImage),
+}
+
 pub struct PdfBuilder {
     pub width_pt: f32,
     pub height_pt: f32,
     pages: Vec<(Vec<u8>, Vec<usize>)>,
-    images: Vec<PdfImage>,
+    images: Vec<StoredImage>,
     /// Characters replaced with '?' because WinAnsi cannot represent them.
     pub replaced_chars: usize,
     /// Embedded subset fonts for text outside Windows-1252 (ADR-0016).
@@ -86,7 +106,13 @@ impl PdfBuilder {
     /// Register a picture; draw it with [`PdfBuilder::draw_image`] and list its
     /// index in [`PdfBuilder::add_page_with_images`].
     pub fn add_image(&mut self, img: PdfImage) -> usize {
-        self.images.push(img);
+        self.images.push(StoredImage::Jpeg(img));
+        self.images.len() - 1
+    }
+
+    /// Register a lossless picture; it is drawn and listed like any other registered image.
+    pub fn add_lossless_image(&mut self, img: LosslessImage) -> usize {
+        self.images.push(StoredImage::Lossless(img));
         self.images.len() - 1
     }
 
@@ -167,7 +193,9 @@ impl PdfBuilder {
         let font_base = 10;
         let page_base = 100;
         let image_base = page_base + (self.pages.len() as i32) * 2 + 10;
-        let embedded_base = image_base + self.images.len() as i32 + 10;
+        // Soft masks sit right after the images; the embedded fonts come after both.
+        let mask_base = image_base + self.images.len() as i32;
+        let embedded_base = mask_base + self.images.len() as i32 + 10;
         let embedded = self
             .embedded
             .as_ref()
@@ -190,18 +218,45 @@ impl PdfBuilder {
                     .encoding_predefined(Name(b"WinAnsiEncoding"));
             }
         }
-        for (i, img) in self.images.iter().enumerate() {
-            let mut x = pdf.image_xobject(Ref::new(image_base + i as i32), &img.jpeg);
-            x.filter(Filter::DctDecode);
-            x.width(img.width as i32);
-            x.height(img.height as i32);
-            if img.gray {
-                x.color_space().device_gray();
-            } else {
-                x.color_space().device_rgb();
+        for (i, stored) in self.images.iter().enumerate() {
+            let id = Ref::new(image_base + i as i32);
+            match stored {
+                StoredImage::Jpeg(img) => {
+                    let mut x = pdf.image_xobject(id, &img.jpeg);
+                    x.filter(Filter::DctDecode);
+                    x.width(img.width as i32);
+                    x.height(img.height as i32);
+                    if img.gray {
+                        x.color_space().device_gray();
+                    } else {
+                        x.color_space().device_rgb();
+                    }
+                    x.bits_per_component(8);
+                    x.finish();
+                }
+                StoredImage::Lossless(img) => {
+                    let mask = Ref::new(mask_base + i as i32);
+                    let mut x = pdf.image_xobject(id, &img.rgb_flate);
+                    x.filter(Filter::FlateDecode);
+                    x.width(img.width as i32);
+                    x.height(img.height as i32);
+                    x.color_space().device_rgb();
+                    x.bits_per_component(8);
+                    if img.alpha_flate.is_some() {
+                        x.s_mask(mask);
+                    }
+                    x.finish();
+                    if let Some(alpha) = &img.alpha_flate {
+                        let mut m = pdf.image_xobject(mask, alpha);
+                        m.filter(Filter::FlateDecode);
+                        m.width(img.width as i32);
+                        m.height(img.height as i32);
+                        m.color_space().device_gray();
+                        m.bits_per_component(8);
+                        m.finish();
+                    }
+                }
             }
-            x.bits_per_component(8);
-            x.finish();
         }
         for (i, (bytes, used)) in self.pages.iter().enumerate() {
             let page_id = page_ids[i];

@@ -1006,6 +1006,34 @@ fn ai_works_once_the_models_are_downloaded() {
     assert!(d.bundle_dir.ends_with("ai"));
 }
 
+fn the_engine_is_prepared_early_without_counting_and_obeys_stop() {
+    let warm = || [ChatRequest::new(vec![ChatMessage::user("hi")]).max_tokens(1)];
+    // No models: nothing starts and nothing fails.
+    let off = Fixture::without_models();
+    let m = off.manager();
+    m.prime(&warm(), &|| false).unwrap();
+    assert_eq!(
+        m.diagnostics().chat_runtime.state,
+        RuntimeState::Unavailable
+    );
+
+    let f = Fixture::new();
+    let m = f.manager();
+    let usage = |m: &Arc<AiManager>| m.chat_model().unwrap().take_usage().unwrap().calls;
+    // Stopped before it began (the project closed): the engine stays down.
+    m.prime(&warm(), &|| true).unwrap();
+    assert_eq!(m.diagnostics().chat_runtime.state, RuntimeState::Installed);
+    // Prepared: the engine is up, and the warm-up call is not in the numbers of the next request.
+    m.prime(&warm(), &|| false).unwrap();
+    assert!(matches!(
+        m.diagnostics().chat_runtime.state,
+        RuntimeState::Ready | RuntimeState::Busy
+    ));
+    assert_eq!(usage(&m), 0);
+    ask(&m).unwrap();
+    assert_eq!(usage(&m), 1);
+}
+
 fn deterministic_runs_use_temperature_zero_and_a_fixed_seed() {
     let f = Fixture::new();
     let mut cfg = f.config();
@@ -1304,6 +1332,10 @@ fn main() {
         (
             "ai_works_once_the_models_are_downloaded",
             ai_works_once_the_models_are_downloaded,
+        ),
+        (
+            "the_engine_is_prepared_early_without_counting_and_obeys_stop",
+            the_engine_is_prepared_early_without_counting_and_obeys_stop,
         ),
         (
             "deterministic_runs_use_temperature_zero_and_a_fixed_seed",

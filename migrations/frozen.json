@@ -5,6 +5,12 @@
     "app/0001_app.sql": "fd3799b9f366a82ac79528f5bd576f7953d06eff9b9801ff399e35fb517fb24d",
     "app/0002_appearance.sql": "149a096edab8b03013e9d1c564069ba0feefad9a6abb9d37ce5d6250e594af7f",
     "app/0003_ai_trace.sql": "b09b39d0f35dbcf3d582d062d0a636663b273fd464ef0e9d9543e84fc412a39d",
+    "app/0004_ai_trace_cache.sql": "650a2b772baca3612b56c333fe49ae4f8eb0270f8c6c362e4ebb04f5df07d463",
+    "app/0005_ai_trace_lane.sql": "9a0388700bb5f0edec262da8c90bcbe1be3214ce391baf81d4440b706a35e5d5",
+    "app/0006_ai_trace_intent.sql": "9c50580c8b1197f7565435ebc6b636e8c125ff7229e4b91986f1aba52303ae38",
+    "app/0007_project_cover.sql": "35a3ffa6b888618516d06219f0d2599a1fc743abdf3795c13f50b5834ec9b2a5",
+    "app/0008_ai_trace_turn.sql": "85a25a0cb90cb656eb735680a8d8bd46a849420fe51d028aaefe1ff14e28829f",
+    "app/0009_ai_trace_dossier.sql": "066cc3a33165b5ed9eba61da9df51a1eec1addf84260d0d1a8805b3900e8d706",
     "global/0001_core.sql": "709e840386976c263df6cbe73f63b000ed7b689f38f3e0c5e1c23f7706e81b7a",
     "global/0002_idea_vault.sql": "a112a6a1607084a24e61d0cb8aff0e58f672cb5e11376fcd52c5f6c74b88d7be",
     "global/0003_performance.sql": "20991335c0382f385a6cb227709826c0d4bc4379503929dd3bbd96adaa226caf",
@@ -25,6 +31,8 @@
     "project/0014_production_depth.sql": "7ab7d70f287ca1c8a1500f0fd0f342335e19f81475de5347a81c4524af52f176",
     "project/0015_schedule_timeline.sql": "0db7b25096d1182490edd7ed79a96ac60b1f4e128157563af251845ebc58d3ac",
     "project/0016_callsheets_budget.sql": "0ef47380c614c5f72e7c38702487aaa0dbcd887937dc4cfae2a3c68eb9c63008",
-    "project/0017_story_page.sql": "a6934c728cb95b5634da87af9447ef5d6d2cd6fd9afadcfea5ccae0520e508d8"
+    "project/0017_story_page.sql": "71177c40cf415acbb7818a5b45c8db8ac533284c3db935ad5c71e30d1d315b3e",
+    "project/0018_ai_memory.sql": "c72d3a8c8a8e20dca42a49dcfeb19e33c029682b0ac5b2e2c922786c1cf0952f",
+    "project/0019_story_page_format.sql": "7388aae3181554f749cfa4a4d88bdfb7c51132f535f3f15eb50c89c4ba9c5a8f"
   }
 }

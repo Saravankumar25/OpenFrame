@@ -40,7 +40,7 @@ import {
   setType,
   tabCommand,
 } from "./commands";
-import { computeMatches, type FindOptions } from "./find";
+import { computeMatches, matchIndexFrom, scrollMatchIntoView, type FindOptions } from "./find";
 import { SyncController, type SyncStatus } from "./sync";
 import { usePendingSave } from "../../../app/pendingSaves";
 import { SUGGEST_LIST_ID, acceptSuggestion, createSuggestPlugin, refreshSuggestions, type SuggestView } from "./suggestPlugin";
@@ -241,6 +241,12 @@ export const ScreenplayEditor = forwardRef<EditorHandle, Props>(function Screenp
   propsRef.current = props;
   const findOpts = useRef<FindOptions | null>(null);
   const findIndex = useRef(0);
+  /** The last "index/count" the Find bar was told, so typing with Find open re-renders the page only when it changes. */
+  const findReported = useRef("");
+  const tellFind = (r: { index: number; count: number }) => {
+    findReported.current = `${r.index}/${r.count}`;
+    propsRef.current.onFindResult?.(r);
+  };
   const draftId = props.doc.draft.id;
   const [suggestView, setSuggestView] = useState<SuggestView | null>(null);
   const [spellMenu, setSpellMenu] = useState<SpellMenuState | null>(null);
@@ -263,6 +269,12 @@ export const ScreenplayEditor = forwardRef<EditorHandle, Props>(function Screenp
         });
         propsRef.current.onOutline(out);
       }, 120);
+    };
+
+    // The count in the Find bar follows the document: typing, undo, Replace All and edits from elsewhere change it.
+    const reportFind = (state: EditorState) => {
+      const st = findOpts.current ? findKey.getState(state) : undefined;
+      if (st && findReported.current !== `${st.index}/${st.matches.length}`) tellFind({ index: st.index, count: st.matches.length });
     };
 
     const emitCursor = (state: EditorState) => {
@@ -569,6 +581,7 @@ export const ScreenplayEditor = forwardRef<EditorHandle, Props>(function Screenp
           syncRef.current?.markDirty();
           emitOutline(next.doc);
         }
+        if (tr.docChanged) reportFind(next);
       },
       handleDOMEvents: {
         blur: (v) => {
@@ -617,6 +630,7 @@ export const ScreenplayEditor = forwardRef<EditorHandle, Props>(function Screenp
       if (scroller) scroller.scrollTop = top;
       emitOutline(doc);
       emitCursor(nextState);
+      reportFind(nextState);
     };
 
     const sync = new SyncController(initial, p.doc.seq, {
@@ -720,7 +734,7 @@ export const ScreenplayEditor = forwardRef<EditorHandle, Props>(function Screenp
     const findResult = () => {
       const st = view() ? findKey.getState(view()!.state) : undefined;
       const r = { index: st?.index ?? 0, count: st?.matches.length ?? 0 };
-      propsRef.current.onFindResult?.(r);
+      tellFind(r);
       return r;
     };
     const revealMatch = () => {
@@ -728,7 +742,8 @@ export const ScreenplayEditor = forwardRef<EditorHandle, Props>(function Screenp
       const st = v ? findKey.getState(v.state) : undefined;
       if (!v || !st || st.matches.length === 0) return;
       const m = st.matches[st.index];
-      v.dispatch(v.state.tr.setSelection(TextSelection.create(v.state.doc, m.from, m.to)).scrollIntoView().setMeta("remote", true));
+      v.dispatch(v.state.tr.setSelection(TextSelection.create(v.state.doc, m.from, m.to)).setMeta("remote", true));
+      scrollMatchIntoView(v, m.from);
     };
     const scrollToPos = (pos: number) => {
       const v = view();
@@ -799,8 +814,7 @@ export const ScreenplayEditor = forwardRef<EditorHandle, Props>(function Screenp
         // Start from the match at/after the cursor.
         const matches = computeMatches(v.state.doc, o, propsRef.current.showNotes);
         const from = v.state.selection.from;
-        const idx = Math.max(0, matches.findIndex((m) => m.from >= from));
-        v.dispatch(v.state.tr.setMeta(findKey, { opts: o, index: idx }).setMeta("remote", true));
+        v.dispatch(v.state.tr.setMeta(findKey, { opts: o, index: matchIndexFrom(matches, from) }).setMeta("remote", true));
         revealMatch();
         return findResult();
       },
@@ -825,6 +839,12 @@ export const ScreenplayEditor = forwardRef<EditorHandle, Props>(function Screenp
         if (replacement) tr.replaceWith(m.from, m.to, schema.text(replacement));
         else tr.delete(m.from, m.to);
         v.dispatch(tr);
+        // Move on to the first match after the replaced text (a replacement that contains the search text must not
+        // be found again), or back to the first one when the replaced match was the last.
+        const after = findKey.getState(v.state);
+        if (after && after.matches.length > 0) {
+          v.dispatch(v.state.tr.setMeta(findKey, { index: matchIndexFrom(after.matches, m.from + replacement.length) }).setMeta("remote", true));
+        }
         revealMatch();
         return findResult();
       },

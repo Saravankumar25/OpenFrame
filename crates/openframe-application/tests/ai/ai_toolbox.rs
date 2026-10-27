@@ -1913,90 +1913,60 @@ fn filled(schema: &Value) -> Value {
     Value::Object(out)
 }
 
-fn production_scope(env: &TestEnv, actor: &Actor) -> ResolvedScope {
-    let s = env.core.project().unwrap();
-    s.store
-        .read(|c| {
-            scope::resolve(
-                c,
-                actor,
-                &AiScopeArgs {
-                    kind: AiScopeKind::Production,
-                    draft_id: None,
-                    scene_id: None,
-                    selection: Vec::new(),
-                    shooting_day_id: None,
-                    call_sheet_id: None,
-                },
-            )
-        })
+#[test]
+fn budget_summary_groups_money_and_states_planned_actual_and_difference() {
+    let env = TestEnv::with_project("Railway", "Feature Film");
+    let created = env.ok("budget.create", json!({ "currency": "INR" }));
+    let id = created["id"]
+        .as_str()
+        .or_else(|| created.as_str())
         .unwrap()
+        .to_string();
+    env.ok(
+        "budget.update",
+        json!({ "id": id, "currency": "INR", "plannedTotal": 400_000_000, "contingencyMode": "percent", "contingencyValue": 0 }),
+    );
+    // Minor units: 20,00,000 planned and 18,00,000 actual; 20,00,000 planned and no actual yet.
+    for (planned, actual) in [(200_000_000, Some(180_000_000)), (200_000_000, None)] {
+        env.ok(
+            "budget.add_line",
+            json!({ "budgetId": id, "category": "Cast", "description": "Lead", "planned": planned, "actual": actual }),
+        );
+    }
+    let out = read(&env, "budget_summary", json!({}));
+    assert!(out.contains("Planned total: INR 40,00,000"), "{out}");
+    assert!(
+        out.contains("Actual total: INR 18,00,000 (1 of 2 lines have an actual amount)"),
+        "{out}"
+    );
+    assert!(
+        out.contains("Difference (planned minus actual, lines with an actual only): INR 2,00,000 (under plan)"),
+        "{out}"
+    );
+    assert!(out.contains("Cast: planned INR 40,00,000, actual INR 18,00,000, difference INR 2,00,000 (under plan)"), "{out}");
+    assert!(!out.contains("000.00"), "{out}");
 }
 
 #[test]
-fn a_production_question_about_locations_reaches_the_script_locations() {
-    let env = TestEnv::new();
+fn app_appearance_and_app_settings_answer_from_app_level_data() {
+    let env = TestEnv::with_project("Railway", "Feature Film");
+    let out = read(&env, "app_appearance", json!({}));
+    assert!(out.contains("Appearance mode: System"), "{out}");
+    assert!(out.contains("Theme: OpenFrame Default"), "{out}");
+    assert!(out.contains("Built-in themes: OpenFrame Default"), "{out}");
+    env.ok("appearance.set_mode", json!({ "mode": "dark" }));
+    assert!(read(&env, "app_appearance", json!({})).contains("Appearance mode: Dark"));
+
+    let out = read(&env, "app_settings", json!({}));
+    assert!(out.contains("Spell checking is on"), "{out}");
+    assert!(out.contains("none changed"), "{out}");
     env.ok(
-        "project.create",
-        json!({ "title": "Night Bus", "projectType": "Feature Film" }),
+        "app.set_shortcuts",
+        json!({ "changes": [{ "commandId": "app.quick_capture", "keys": ["Mod+Shift+K"] }] }),
     );
-    let _ = fixture(&env);
-    let owner = env.actor();
-    let scope = production_scope(&env, &owner);
-    let question = "Which locations are used in the script?";
-
-    // The picker offers the locations tool for this wording in the Production scope.
-    let picked = toolbox::tools_for_request(&env.core, &owner, &scope, question, 6_000);
-    let names: Vec<&str> = picked.iter().map(|t| t.name.as_str()).collect();
-    assert!(names.contains(&"location_statistics"), "{names:?}");
-
-    // It names the places in the scene headings.
-    let out = match toolbox::run_tool_unlocked(
-        &env.core,
-        &owner,
-        &scope,
-        question,
-        "location_statistics",
-        &json!({}),
-    ) {
-        Ok(ToolStep::Output(o)) => o,
-        _ => panic!("location_statistics must answer"),
-    };
-    let text = format!(
-        "{} {}",
-        out.content,
-        out.items
-            .iter()
-            .map(|i| i.label.clone())
-            .collect::<Vec<_>>()
-            .join(" ")
-    );
-    assert!(text.to_uppercase().contains("RAILWAY STATION"), "{text}");
-
-    // A plain search for the category word finds the places too, instead of "Nothing ...".
-    let found = match toolbox::run_tool_unlocked(
-        &env.core,
-        &owner,
-        &scope,
-        question,
-        "search_project",
-        &json!({ "text": "locations" }),
-    ) {
-        Ok(ToolStep::Output(o)) => o,
-        _ => panic!("search_project must answer"),
-    };
-    let all = format!(
-        "{} {}",
-        found.content,
-        found
-            .items
-            .iter()
-            .map(|i| i.label.clone())
-            .collect::<Vec<_>>()
-            .join(" ")
-    );
+    let out = read(&env, "app_settings", json!({}));
     assert!(
-        !all.contains("Nothing in this project mentions"),
-        "searching the word locations found nothing: {all}"
+        out.contains("app.quick_capture") && out.contains("Mod+Shift+K"),
+        "{out}"
     );
 }

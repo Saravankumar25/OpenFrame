@@ -27,6 +27,24 @@ struct TauriSink {
 
 impl EventSink for TauriSink {
     fn emit(&self, event: &AppEvent) {
+        // The folders the web view may read follow the open project and the vault. A project or
+        // vault move changes them from a background task, so the scope is brought up to date
+        // before the page hears that the project opened or the task ended.
+        let places_changed = match event {
+            AppEvent::ProjectOpened { .. } | AppEvent::ProjectClosed { .. } => true,
+            AppEvent::Task(t) => {
+                t.kind.starts_with("storage.") && !matches!(t.state.as_str(), "queued" | "running")
+            }
+            _ => false,
+        };
+        if places_changed
+            && let (Some(scope), Some(core)) = (
+                self.app.try_state::<Arc<asset_scope::AssetScope>>(),
+                self.app.try_state::<CoreState>(),
+            )
+        {
+            sync_asset_scope(&scope, &core.0);
+        }
         if let Err(e) = self.app.emit(EVENT_CHANNEL, event) {
             tracing::warn!(error = %e, "failed to deliver event to UI");
         }
@@ -41,7 +59,8 @@ struct PowerState(
 );
 
 /// The folders the `ofasset` protocol may read: only managed media, the open project's
-/// `assets/` folder and the Global Idea Vault's `assets/` (images, audio and video previews).
+/// `assets/` folder, the Global Idea Vault's `assets/` (images, audio and video previews) and the
+/// `assets/` folder of project cover photos on Home (`<app data>/covers/assets`).
 /// The databases (`project.sqlite` and `vault.sqlite`, which hold every user's private notes),
 /// `cache/` (the intelligence index of every member's notes and package staging copies of the
 /// database), recovery data and safety backups are never readable by the webview, even if it
@@ -49,7 +68,10 @@ struct PowerState(
 /// `scripts/architecture-lint.mjs` rule C5 keeps it that way.
 fn asset_roots(core: &AppCore) -> asset_scope::AssetRoots {
     let mut scope = asset_scope::AssetRoots::default();
-    scope.allow_directory(core.config.global_vault_dir.join("assets"), true);
+    let vault = core.vault_dir();
+    scope.allow_directory(vault.join("assets"), true);
+    let covers = core.config.app_data_dir.join("covers");
+    scope.allow_directory(covers.join("assets"), true);
     if let Some(p) = core.project_opt() {
         scope.allow_directory(p.layout.assets(), true);
     }
@@ -76,7 +98,7 @@ async fn of_invoke(
     let result = tauri::async_runtime::spawn_blocking(move || {
         let actor = core.local_actor();
         let r = core.dispatch(&actor, &op, args);
-        if op.starts_with("project.") {
+        if op.starts_with("project.") || op.starts_with("library.") || op == "vault.locate" {
             sync_asset_scope(&app.state::<Arc<asset_scope::AssetScope>>(), &core);
         }
         r
@@ -137,7 +159,9 @@ async fn of_reveal_path(
     // The store lock (ADR-0022, ADR-0023): only the data folder and the logs, which the lock
     // screen and support need, stay reachable; project locations are refused like operations.
     // Before the team password of an internal build (ADR-0024) nothing is reachable at all.
-    if core.entitlement.team_gate_locked() || !matches!(kind.as_str(), "dataRoot" | "logs") {
+    if core.entitlement.team_gate_locked()
+        || !matches!(kind.as_str(), "dataRoot" | "appData" | "logs")
+    {
         core.entitlement.check_operation("shell.reveal_path")?;
     }
     let target: PathBuf = match kind.as_str() {
@@ -151,11 +175,18 @@ async fn of_reveal_path(
             })?,
             None => core.project()?.layout.root().to_path_buf(),
         },
-        "globalVault" => core.config.global_vault_dir.clone(),
+        "globalVault" => core.vault_dir(),
         // The one folder to back up (the data note and the file safety tutorial show it).
         // Created when it does not exist yet, so there is something to show.
         "dataRoot" => {
-            let dir = core.config.data_root();
+            // Nothing is created before the person chose where their library is.
+            if !core.library_ready() {
+                return Err(AppError::new(
+                    "library.setup_required",
+                    "Choose where OpenFrame keeps your work first.",
+                ));
+            }
+            let dir = core.data_root();
             std::fs::create_dir_all(&dir).map_err(|e| {
                 AppError::new(
                     "internal.open_failed",
@@ -165,6 +196,8 @@ async fn of_reveal_path(
             })?;
             dir
         }
+        // Settings, recents, AI records and models: what the uninstall box removes.
+        "appData" => core.config.app_data_dir.clone(),
         // The folder that should contain a linked file (shown when the file itself is
         // missing). Resolved from the asset id on the Rust side; local drives only.
         "assetFolder" | "globalAssetFolder" => {
@@ -376,6 +409,12 @@ fn isolated_data_root() -> Option<PathBuf> {
     std::process::exit(2);
 }
 
+/// The end-to-end suite starts an isolated debug build like a new computer, with the library not
+/// set up yet, when `OPENFRAME_LIBRARY_SETUP=1`. Every folder stays inside the test data root.
+fn library_setup_test(release: bool) -> bool {
+    !release && std::env::var_os("OPENFRAME_LIBRARY_SETUP").is_some_and(|v| v == "1")
+}
+
 /// Deterministic Offline AI answers (temperature 0, fixed seed) for the end-to-end suite: only a
 /// debug build on an isolated test data root with `OPENFRAME_AI_DETERMINISTIC=1`.
 fn ai_deterministic(release: bool, isolated: bool) -> bool {
@@ -435,7 +474,11 @@ pub fn run() {
     let mut config = match &isolated_root {
         Some(root) => AppConfig {
             app_version: env!("CARGO_PKG_VERSION").to_string(),
-            ..AppConfig::isolated(root)
+            ..if library_setup_test(!cfg!(debug_assertions)) {
+                AppConfig::isolated_needing_setup(root)
+            } else {
+                AppConfig::isolated(root)
+            }
         },
         None => match AppConfig::for_current_user(env!("CARGO_PKG_VERSION")) {
             Ok(config) => config,
@@ -783,7 +826,7 @@ mod tests {
             "switched-away project refused"
         );
         assert!(scope.resolve(&url(&still_b)).is_some());
-        // Closing revokes the open one; only the Global Idea Vault stays.
+        // Closing revokes the open one; only the Global Idea Vault and the Home covers stay.
         core.dispatch(&actor, "project.close", json!({})).unwrap();
         sync_asset_scope(&scope, &core);
         assert!(
@@ -792,7 +835,10 @@ mod tests {
         );
         assert_eq!(
             scope.roots().dirs(),
-            [core.config.global_vault_dir.join("assets")]
+            [
+                core.vault_dir().join("assets"),
+                core.config.app_data_dir.join("covers").join("assets")
+            ]
         );
         // Reopening the first project makes it readable again.
         core.dispatch(
