@@ -22,6 +22,10 @@
 
 ## 1. The Rust core (copy, then test on the Mac)
 
+> **Superseded for the AI on 2026-10-27** by [mac-ai-harness-port-orders.md](mac-ai-harness-port-orders.md): the AI lanes,
+> chat, recipe, verifier and intent rows below were retired on Windows (slice S7) and must not be ported. The non-AI rows
+> stay.
+
 | Item | Windows files | Mac action |
 |---|---|---|
 | AI lanes and routing | `crates/openframe-application/src/modules/ai/lanes.rs`, `typo.rs`, `intent.rs`, `intents.json`, `understand.rs` | Add the files; wire in `mod.rs` and `orchestrator.rs` as on Windows |
