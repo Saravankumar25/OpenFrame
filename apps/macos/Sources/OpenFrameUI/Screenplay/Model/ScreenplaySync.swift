@@ -81,8 +81,6 @@ public final class ScreenplaySync {
 
     public var isDirty: Bool { dirty || inflight != nil }
     public var currentStatus: ScreenplaySyncStatus { status }
-    /// What the core is known to hold.
-    public var baselineSnapshot: ScreenplaySnapshot { baseline }
 
     private func setStatus(_ s: ScreenplaySyncStatus) {
         if s != status {

@@ -428,15 +428,6 @@ fileprivate extension UI {
         return info
     }
 
-    func makeProjectPackage(to url: URL) async throws {
-        try await menu(["File", "Export Full Project…"])
-        try await waitText("Private project transfer.", timeout: 20)
-        try await choosing(url) { try await tap(id: "export-project-confirm") }
-        try await waitText("Project package exported.", timeout: 60)
-        try await tap(id: "export-project-close")
-        try await waitGone(id: "export-project-sheet")
-    }
-
     func makeReviewPackage(to url: URL) async throws {
         try await menu(["File", "Share for Review", "Export Review Package (script)…"])
         try await waitText("Script Review Package", timeout: 20)
@@ -445,21 +436,6 @@ fileprivate extension UI {
         try await waitText("Package exported.", timeout: 30)
         try await tap(id: "exchange-export-close")
         try await waitGone(id: "exchange-export-sheet")
-    }
-
-    /// File > Open Review Package, comment as the reviewer, export the response, close the review.
-    func reviewAndRespond(review: URL, response: URL, comment: String) async throws {
-        try await choosing(review) { try await menu(["File", "Open Review Package…"]) }
-        try await waitText("Review package. Comments are separate from the original project.", timeout: 20)
-        try await type(comment, into: "review-comment-field")
-        try await idle(0.6)
-        try await keyToSheet("\r", code: 36, [.command])
-        try await waitText("Yours", timeout: 10)
-        try await choosing(response) { try await tap(label: "Export Response Package", role: "AXButton") }
-        try await waitText("Response package exported.", timeout: 30)
-        try await waitFile(response)
-        try await tap(id: "review-close")
-        try await waitGone(id: "review-viewer")
     }
 
     func closeToHome() async throws {
@@ -643,63 +619,6 @@ extension Scenarios {
 import ApplicationServices
 
 fileprivate extension UI {
-    /// The position and size of the first element whose identifier starts with `prefix`, read through
-    /// the system accessibility interface (as an assistive app reads it). Top-left origin screen points.
-    func axFrame(prefix: String) async -> CGRect? {
-        await withCheckedContinuation { cont in
-            Thread.detachNewThread {
-                let app = AXUIElementCreateApplication(getpid())
-                func attr(_ e: AXUIElement, _ name: String) -> AnyObject? {
-                    var v: AnyObject?
-                    return AXUIElementCopyAttributeValue(e, name as CFString, &v) == .success ? v : nil
-                }
-                func walk(_ e: AXUIElement, _ depth: Int) -> CGRect? {
-                    if let id = attr(e, "AXIdentifier") as? String, id.hasPrefix(prefix) {
-                        var p = CGPoint.zero, sz = CGSize.zero
-                        if let pv = attr(e, kAXPositionAttribute), let sv = attr(e, kAXSizeAttribute) {
-                            AXValueGetValue(pv as! AXValue, .cgPoint, &p)
-                            AXValueGetValue(sv as! AXValue, .cgSize, &sz)
-                            return CGRect(origin: p, size: sz)
-                        }
-                    }
-                    guard depth < 40, let kids = attr(e, kAXChildrenAttribute) as? [AXUIElement] else { return nil }
-                    for k in kids { if let r = walk(k, depth + 1) { return r } }
-                    return nil
-                }
-                cont.resume(returning: walk(app, 0))
-            }
-        }
-    }
-
-    /// Where an element with this identifier prefix really is on screen, found the way a pointer
-    /// finds it: the system accessibility hit test at points of a grid over `region` (top-left
-    /// screen points). Returns the bounding box of the hits. The frame an element reports can be
-    /// that of its scroll content, but the hit test follows what is drawn.
-    func hitBounds(prefix: String, in region: CGRect, step: CGFloat = 8) async -> CGRect? {
-        await withCheckedContinuation { cont in
-            Thread.detachNewThread {
-                let system = AXUIElementCreateSystemWide()
-                var box: CGRect?
-                var y = region.minY
-                while y < region.maxY {
-                    var x = region.minX
-                    while x < region.maxX {
-                        var el: AXUIElement?
-                        if AXUIElementCopyElementAtPosition(system, Float(x), Float(y), &el) == .success, let el {
-                            var v: AnyObject?
-                            if AXUIElementCopyAttributeValue(el, "AXIdentifier" as CFString, &v) == .success, let id = v as? String, id.hasPrefix(prefix) {
-                                let r = CGRect(x: x, y: y, width: 0, height: 0)
-                                box = box.map { $0.union(r) } ?? r
-                            }
-                        }
-                        x += step
-                    }
-                    y += step
-                }
-                cont.resume(returning: box)
-            }
-        }
-    }
 
     /// A real mouse drag in screen coordinates (Cocoa, origin bottom left): press, a few small
     /// moves, the move to the target, release. The events go straight to the window, one after the
@@ -738,10 +657,6 @@ fileprivate extension UI {
             .map { $0.label.contains("picture") ? "picture" : $0.label.contains("empty") ? "empty" : $0.label }
     }
 
-    func moodboardNote(_ text: String) -> Element? {
-        all().first { $0.identifier.hasPrefix("moodboard-tile-") && $0.label == "Note: \(text)" }
-    }
-
     func prepareMoodboard() async throws {
         try await openVisual("Moodboards")
         try await tap(id: "moodboard-new")
@@ -754,13 +669,6 @@ fileprivate extension UI {
         try await idle(0.3)
         try await tap(id: "moodboard-note-sheet-primary")
         _ = try await wait(label: "Note: Cold blue light, warm windows", timeout: 15)
-    }
-
-    /// Top-left screen region of the main window's content, for hit tests.
-    func mainRegion() -> CGRect {
-        guard let w = NSApp.windows.first(where: { $0.isVisible && $0.canBecomeMain }), let screen = w.screen ?? NSScreen.main else { return .zero }
-        let f = w.frame
-        return CGRect(x: f.minX, y: screen.frame.maxY - f.maxY, width: f.width, height: f.height)
     }
 
     /// Where the note tile is drawn, in top-left screen points. The accessibility frame of a canvas

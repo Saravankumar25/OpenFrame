@@ -210,5 +210,4 @@ final class ShortcutsSettingsModel {
         ToastCenter.shared.show(text)
     }
 
-    func focusHandled() { focusId = nil }
 }

@@ -9,12 +9,13 @@ import { schema } from "./schema";
 import {
   HEADING_PREFIXES,
   TIMES,
-  applySuggestion,
   contextAt,
   cueName,
   headingParts,
   scriptValues,
   suggestions,
+  type SuggestContext,
+  type SuggestItem,
 } from "./suggest";
 import { acceptSuggestion, createSuggestPlugin, suggestKey } from "./suggestPlugin";
 
@@ -107,15 +108,17 @@ describe("the list", () => {
     expect(loc.at(-1)).toMatchObject({ create: "location" });
     expect(suggestions({ kind: "location", from: 5, to: 9, query: "ROOF" }, values(), project, false).some((i) => i.create)).toBe(false);
   });
+  // What suggestPlugin does on accept (`tr.insertText(item.insert, from, to)`): only [from, to) changes.
+  const accept = (text: string, ctx: SuggestContext, item: SuggestItem) => text.slice(0, ctx.from) + item.insert + text.slice(ctx.to);
   it("accepting replaces only the typed part", () => {
     const ctx = contextAt("scene_heading", "INT. BU", 7)!;
     const item = suggestions(ctx, values(), project, true)[0];
     expect(item.label).toBe("BUS DEPOT");
-    expect(applySuggestion("INT. BU", ctx, item)).toBe("INT. BUS DEPOT - ");
+    expect(accept("INT. BU", ctx, item)).toBe("INT. BUS DEPOT - ");
     const p = contextAt("parenthetical", "wh", 2)!;
-    expect(applySuggestion("wh", p, suggestions(p, values(), null, true)[0])).toBe("(whispering)");
+    expect(accept("wh", p, suggestions(p, values(), null, true)[0])).toBe("(whispering)");
     const create = suggestions({ kind: "character", from: 0, to: 3, query: "Zar" }, values(), project, true).at(-1)!;
-    expect(applySuggestion("Zar", { kind: "character", from: 0, to: 3, query: "Zar" }, create)).toBe("Zar");
+    expect(accept("Zar", { kind: "character", from: 0, to: 3, query: "Zar" }, create)).toBe("Zar");
   });
 });
 

@@ -15,7 +15,6 @@
 .ai .ai-sources .ai-src{cursor:pointer;border:0;font:inherit}
 .ai .ai-sources .ai-src:hover{text-decoration:underline}
 .ai .ai-sources .ai-src:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
-.ai .ai-steps{margin-top:4px}
 .ai .ai-notice{font-size:12px;padding:6px 8px;border-radius:6px;background:var(--yellow-soft)}
 .ai .cs .csr.ai-block{display:block}
 .ai .cs .csr.ai-section{background:var(--surface2)}

@@ -33,8 +33,6 @@ public struct ResolvedTheme: Sendable {
         self.unresolved = unresolved
     }
 
-    public var tokenNames: [String] { colors.keys.sorted() }
-
     public func has(_ token: String) -> Bool { colors[token] != nil }
 
     public func tokenColor(_ token: String) -> TokenColor? { colors[token] }

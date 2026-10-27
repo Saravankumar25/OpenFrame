@@ -29,15 +29,6 @@ pub struct PdfOutput {
     pub replaced_chars: usize,
 }
 
-/// Does this layout print any character outside Windows-1252? (Informational: every PDF now
-/// embeds its fonts, so this no longer selects a different drawing path.)
-pub fn needs_embedded_fonts(lay: &Layout) -> bool {
-    lay.pages
-        .iter()
-        .flat_map(|p| p.lines.iter())
-        .any(|l| crate::fonts::needs_embedding(&l.text))
-}
-
 /// Point size of the sides attribution line.
 const BRAND_SIZE_PT: f32 = 8.0;
 

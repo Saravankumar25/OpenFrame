@@ -608,8 +608,4 @@ extension Element {
         return out
     }
 
-    @MainActor func fitInToolbar(_ w: NSWindow) -> Bool {
-        let f = frame
-        return f.minY >= w.convertToScreen(w.contentLayoutRect).maxY - 1
-    }
 }

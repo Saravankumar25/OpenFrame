@@ -202,7 +202,6 @@ public final class Core: CoreInvoking, @unchecked Sendable {
     }
 
     public static var version: String { coreVersion() }
-    public static var isTeamGateBuiltIn: Bool { teamGateBuiltIn() }
 
     private func run<T: Sendable>(_ body: @escaping @Sendable (CoreHandle) throws -> T) async throws -> T {
         let handle = self.handle

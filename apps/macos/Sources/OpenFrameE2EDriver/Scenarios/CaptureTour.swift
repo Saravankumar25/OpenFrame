@@ -401,18 +401,6 @@ extension UI {
         await idle(0.2)
     }
 
-    func capNavByRow(_ workspace: String) async throws {
-        let order = ["Home", "Idea Vault", "Story", "Screenplay", "Breakdown", "Production", "Call Sheets", "Files"]
-        guard let outline = try? await wait(label: "Sidebar", timeout: 10, "the sidebar"), let view = outline.obj as? NSOutlineView else {
-            throw DriverError("no sidebar to click \(workspace)")
-        }
-        guard let idx = order.firstIndex(of: workspace) else { throw DriverError("unknown workspace \(workspace)") }
-        view.window?.makeFirstResponder(view)
-        view.scrollRowToVisible(idx)
-        view.selectRowIndexes(IndexSet(integer: idx), byExtendingSelection: false)
-        await idle(0.7)
-    }
-
     func capTypeIn(_ text: String, into id: String? = nil, label: String? = nil, timeout: Double = 15) async throws {
         var e = try await wait(id: id, label: label, timeout: timeout)
         func window(of e: Element) -> NSWindow? {
@@ -736,13 +724,6 @@ extension UI {
         return out
     }
 
-    func vaultRow(_ i: Int) async throws {
-        let titles = ["All items", "Pinned", "Recently added", "Recently modified"]
-        guard i < titles.count, let e = query(id: "vault-nav-\(titles[i])").first(where: { $0.frame.width > 0 }) else { throw DriverError("no vault row \(i)") }
-        try await tap(e)
-        await idle(0.9)
-    }
-
     var hasOverlay: Bool { NSApp.windows.contains { $0.isVisible && $0.sheetParent != nil } }
 
     /// Captures a menu open, then every safe item of it in turn (what it opens), closing each again.
@@ -829,33 +810,6 @@ extension Scenarios {
         outline.window?.makeFirstResponder(nil)
     }
 
-    /// The schedule: created from the production source, two days, scenes in day 1, a meal break.
-    @MainActor static func capScheduleBase(_ ui: UI) async throws {
-        try await capBreakdownBase(ui)
-        try await ui.capNav("Schedule")
-        try await ui.capAct(id: "create-shooting-schedule")
-        try await ui.capAct(id: "create-schedule-confirm")
-        try await ui.waitText("unscheduled")
-        for iso in ["2027-06-14", "2027-06-15"] {
-            var done = false
-            for _ in 0..<3 where !done {
-                do {
-                    try await ui.capAct(id: "create-shooting-day")
-                    _ = try await ui.wait(id: "day-date", timeout: 8)
-                    await ui.idle(1.2)
-                    try await ui.capTypeIn(iso, into: "day-date")
-                    try await ui.capAct(id: "day-sheet-confirm")
-                    try await ui.waitGone(id: "day-date")
-                    done = true
-                } catch { await ui.capRecover(); await ui.idle(0.8) }
-            }
-            if !done { throw DriverError("could not add the shooting day \(iso)") }
-        }
-        try await ui.capMenuButton(id: "strip-actions-1", item: "Shoot Day 1")
-        await ui.idle(0.5)
-        try await ui.capMenuButton(id: "strip-actions-2", item: "Shoot Day 1")
-        await ui.idle(0.5)
-    }
 }
 
 extension Scenarios {

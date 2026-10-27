@@ -39,7 +39,6 @@ use crate::rules::{self, Align, ElementRule};
 // Standard preset (US Letter, 12 pt Courier, single spacing). Kept for callers that draw
 // their own pages on the standard geometry (sides cover pages).
 pub const PAGE_WIDTH_IN: f32 = 8.5;
-pub const PAGE_HEIGHT_IN: f32 = 11.0;
 pub const LEFT_MARGIN_IN: f32 = 1.5;
 pub const RIGHT_EDGE_IN: f32 = 7.5;
 pub const TOP_MARGIN_IN: f32 = 1.0;

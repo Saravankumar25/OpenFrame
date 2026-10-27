@@ -1,5 +1,5 @@
-// The exchange export sheet (mockup 159): Script Review, Beat Board, Breakdown, Shot List,
-// Schedule and Call Sheet review packages.
+// The exchange export sheet (mockup 159): Script Review and Beat Board packages, the two
+// exchange types still offered (owner change list item 9, 2026-10-19).
 
 import SwiftUI
 import OpenFrameCore

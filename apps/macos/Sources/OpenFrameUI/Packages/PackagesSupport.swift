@@ -34,7 +34,6 @@ enum PKInfo {
 
     static func extensions(_ types: [PackageType]) -> [String] { types.map { entry($0).fileExtension } }
 
-    static func isExchange(_ t: PackageType) -> Bool { t != .backup && t != .project }
 }
 
 enum PKText {

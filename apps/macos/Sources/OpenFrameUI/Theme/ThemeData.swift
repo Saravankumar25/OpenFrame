@@ -164,8 +164,3 @@ private struct PlatformPalette: Codable {
     var light: [String: String]
     var dark: [String: String]
 }
-
-/// Parse an imported theme (the ThemeDto JSON).
-public func decodeImportedTheme(_ data: Data) -> ThemeData? {
-    try? JSONDecoder().decode(ThemeData.self, from: data)
-}

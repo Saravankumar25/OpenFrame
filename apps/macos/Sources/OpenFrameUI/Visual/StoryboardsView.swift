@@ -314,7 +314,6 @@ private struct PanelInspector: View {
     let board: StoryboardSummary
     @Environment(VisualHub.self) private var hub
     @Environment(\.ofTheme) private var theme
-    @State private var durText = ""
     @State private var durError: String?
     @State private var shotScene = ""
 

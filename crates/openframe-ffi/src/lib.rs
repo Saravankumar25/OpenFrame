@@ -350,12 +350,6 @@ impl CoreHandle {
     }
 }
 
-/// Whether this library was built with the internal team password gate (diagnostics and tests).
-#[uniffi::export]
-pub fn team_gate_built_in() -> bool {
-    TEAM_PASSWORD_HASH.is_some()
-}
-
 /// Every registered operation with its kind and argument and result type names, as JSON. The
 /// Swift type generator (`scripts/gen-swift-types.mjs`) reads it so the Swift operation list
 /// comes from the same registry as the TypeScript bindings (ADR-0027 decision 4).

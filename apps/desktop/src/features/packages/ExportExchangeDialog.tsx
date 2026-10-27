@@ -77,7 +77,6 @@ export function ExportExchangeDialog({ packageType, onClose }: { packageType: Pa
       scope: scopeOptions(packageType).length ? scope : null,
       sceneIds: scope === "scenes" ? sceneIds : [],
       actId: scope === "act" ? actId || null : null,
-      callSheetId: null,
       includeComments: includeComments || scope === "comments",
       includeAttachments,
       includePrivateNotes: false,

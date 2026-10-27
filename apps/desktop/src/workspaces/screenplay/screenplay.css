@@ -125,7 +125,7 @@
 .spx-lineage { line-height: 1.7; }
 
 /* ------------------------------------------------------------ compare / review */
-.spx-compare, .spx-review { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+.spx-compare { display: flex; flex-direction: column; height: 100%; min-height: 0; }
 .spx-compare .sp-nav { overflow: auto; width: 270px; }
 .spx-compare .sni { width: 100%; background: none; border: 0; text-align: left; font: inherit; color: inherit; cursor: pointer; align-items: center; }
 .spx-diff { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
@@ -142,8 +142,6 @@
 .spx-dl.sp-t { text-align: right; text-transform: uppercase; }
 .spx-dl.sp-note { font-style: italic; color: var(--purple-t); }
 .spx-dl.empty { background: repeating-linear-gradient(135deg, var(--surface2) 0 6px, var(--stripe-a) 6px 12px); min-height: 1.3em; }
-.spx-review .spx-tools { width: 360px; }
-
 /* Writing comfort: navigator columns, suggestion list, spelling (SCRIPT-017, 018, 020). */
 .spx-nav.wide { width: 300px; }
 .spx-nav-head { display: flex; gap: 8px; padding: 0 8px 4px; border-bottom: 1px solid var(--line); margin-bottom: 4px; }

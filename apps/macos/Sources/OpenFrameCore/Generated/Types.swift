@@ -5373,7 +5373,6 @@ public struct PackageExchangeArgs: Codable, Sendable, Hashable {
     public var scope: String?
     public var sceneIds: [String]
     public var actId: String?
-    public var callSheetId: String?
     public var includeComments: Bool
     public var includeAttachments: Bool
     /// Always refused: private notes are not allowed in exchange packages.
@@ -5381,13 +5380,12 @@ public struct PackageExchangeArgs: Codable, Sendable, Hashable {
     /// Destination (export only).
     public var path: String?
 
-    public init(packageType: PackageType, draftId: String? = nil, scope: String? = nil, sceneIds: [String], actId: String? = nil, callSheetId: String? = nil, includeComments: Bool, includeAttachments: Bool, includePrivateNotes: Bool, path: String? = nil) {
+    public init(packageType: PackageType, draftId: String? = nil, scope: String? = nil, sceneIds: [String], actId: String? = nil, includeComments: Bool, includeAttachments: Bool, includePrivateNotes: Bool, path: String? = nil) {
         self.packageType = packageType
         self.draftId = draftId
         self.scope = scope
         self.sceneIds = sceneIds
         self.actId = actId
-        self.callSheetId = callSheetId
         self.includeComments = includeComments
         self.includeAttachments = includeAttachments
         self.includePrivateNotes = includePrivateNotes
@@ -5398,16 +5396,10 @@ public struct PackageExchangeArgs: Codable, Sendable, Hashable {
 public struct PackageExchangeSources: Codable, Sendable, Hashable {
     public var drafts: [PackageDraftOption]
     public var acts: [PackageOption]
-    public var productionSource: PackageOption?
-    public var schedule: PackageOption?
-    public var callSheets: [PackageOption]
 
-    public init(drafts: [PackageDraftOption], acts: [PackageOption], productionSource: PackageOption? = nil, schedule: PackageOption? = nil, callSheets: [PackageOption]) {
+    public init(drafts: [PackageDraftOption], acts: [PackageOption]) {
         self.drafts = drafts
         self.acts = acts
-        self.productionSource = productionSource
-        self.schedule = schedule
-        self.callSheets = callSheets
     }
 }
 

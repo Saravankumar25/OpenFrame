@@ -47,8 +47,6 @@ final class InterchangePresenter {
         if let themes { self.themes = themes }
     }
 
-    var isPresenting: Bool { sheetWindow != nil }
-
     func present(_ dialog: InterchangeDialog) {
         guard let app else { return }
         Task { @MainActor in

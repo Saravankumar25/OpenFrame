@@ -1,7 +1,6 @@
 //! Shared support for the hostile-input corpus and the seeded mutation fuzzer (hostile file collection).
 //!
-//! Used by `openframe-import-export` (parsers), `openframe-security` (archives) and
-//! `openframe-application` (packages) through `#[path]`, so it depends only on `std`.
+//! Included by `tests/hostile_corpus.rs` through `#[path]`, so it depends only on `std`.
 //! No fuzzing crate is used (adding one needs owner approval): the fuzzer is a
 //! deterministic xorshift mutator over the committed corpus.
 //!
@@ -49,12 +48,6 @@ pub fn corpus(format: &str) -> Vec<(String, Vec<u8>)> {
     out.sort();
     assert!(!out.is_empty(), "corpus folder {} is empty", dir.display());
     out
-}
-
-pub fn corpus_file(format: &str, name: &str) -> PathBuf {
-    let p = corpus_root().join(format).join(name);
-    assert!(p.is_file(), "corpus file {} missing", p.display());
-    p
 }
 
 /// File name a hostile archive tries to write outside its destination. Tests check that

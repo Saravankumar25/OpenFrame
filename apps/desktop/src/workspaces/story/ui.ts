@@ -2,7 +2,6 @@
 // Story data always comes from Rust queries; nothing here is project truth.
 
 import { create } from "zustand";
-import type { StoryContainerRef } from "../../ipc/generated/StoryContainerRef";
 import type { Ref } from "./model";
 
 export type DrawerState = { kind: "card" | "beat" | "sequence"; id: string } | null;
@@ -101,6 +100,3 @@ export function keyToRef(key: string): Ref {
   const i = key.indexOf(":");
   return { kind: key.slice(0, i) as Ref["kind"], id: key.slice(i + 1) };
 }
-
-/** Container a new card should go into when nothing more specific is chosen. */
-export type CreateTarget = { container: StoryContainerRef | null; index?: number };

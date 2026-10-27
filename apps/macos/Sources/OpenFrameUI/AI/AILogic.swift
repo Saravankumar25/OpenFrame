@@ -32,7 +32,6 @@ enum AIText {
     }
 
     static let emptyConversation = "Ask about your project, for example \u{201C}How many scenes are in the script?\u{201D}, \u{201C}Open Scene 12.\u{201D} or \u{201C}Create a task to scout the railway station.\u{201D} The assistant can look things up in several steps; changes are only ever prepared for you to review."
-    static let noProject = "The assistant answers from the project that is open, on this computer."
 }
 
 extension AiScopeKind {

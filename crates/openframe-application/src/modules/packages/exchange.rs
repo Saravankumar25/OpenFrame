@@ -424,8 +424,6 @@ pub struct PackageExchangeArgs {
     #[serde(default)]
     pub act_id: Option<String>,
     #[serde(default)]
-    pub call_sheet_id: Option<String>,
-    #[serde(default)]
     pub include_comments: bool,
     #[serde(default)]
     pub include_attachments: bool,
@@ -474,9 +472,6 @@ pub struct PackageSceneOption {
 pub struct PackageExchangeSources {
     pub drafts: Vec<PackageDraftOption>,
     pub acts: Vec<PackageOption>,
-    pub production_source: Option<PackageOption>,
-    pub schedule: Option<PackageOption>,
-    pub call_sheets: Vec<PackageOption>,
 }
 
 #[derive(Debug, Clone, Serialize, TS)]
@@ -750,15 +745,6 @@ pub(crate) fn active_source(c: &Connection) -> AppResult<Option<(String, String,
          WHERE p.active = 1 ORDER BY p.selected_at DESC LIMIT 1",
         [],
         |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)),
-    )
-    .optional()?)
-}
-
-pub(crate) fn current_schedule(c: &Connection) -> AppResult<Option<(String, String)>> {
-    Ok(c.query_row(
-        "SELECT id, name FROM shooting_schedule WHERE deleted_at IS NULL ORDER BY created_at DESC, id DESC LIMIT 1",
-        [],
-        |r| Ok((r.get(0)?, r.get(1)?)),
     )
     .optional()?)
 }
@@ -1241,20 +1227,7 @@ pub(crate) fn sources(core: &AppCore, actor: &Actor) -> AppResult<PackageExchang
         let acts = stmt
             .query_map([], |r| Ok(PackageOption { id: r.get(0)?, label: r.get(1)? }))?
             .collect::<Result<Vec<_>, _>>()?;
-        let mut stmt = c.prepare(
-            "SELECT id, title || ' (revision ' || revision || ', ' || status || ')' FROM call_sheet
-             WHERE deleted_at IS NULL ORDER BY updated_at DESC, id",
-        )?;
-        let call_sheets = stmt
-            .query_map([], |r| Ok(PackageOption { id: r.get(0)?, label: r.get(1)? }))?
-            .collect::<Result<Vec<_>, _>>()?;
-        Ok(PackageExchangeSources {
-            drafts,
-            acts,
-            production_source: active_source(c)?.map(|(_, id, name)| PackageOption { id, label: name }),
-            schedule: current_schedule(c)?.map(|(id, name)| PackageOption { id, label: name }),
-            call_sheets,
-        })
+        Ok(PackageExchangeSources { drafts, acts })
     })
 }
 

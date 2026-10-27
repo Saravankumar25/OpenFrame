@@ -245,5 +245,4 @@ public final class LicenceModel {
         }
     }
 
-    public func clearMessage() { message = nil }
 }

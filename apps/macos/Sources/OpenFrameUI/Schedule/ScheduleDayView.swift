@@ -192,7 +192,6 @@ struct SchedDayTimesView: View {
     @State private var crew = ""
     @State private var start = ""
     @State private var wrap = ""
-    @State private var syncKey = ""
     @FocusState private var focus: Field?
     private enum Field { case crew, start, wrap }
 

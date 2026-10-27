@@ -65,7 +65,6 @@ struct VisualSupportTests {
     // MARK: Text
 
     @Test func textHelpersMatchWindows() {
-        #expect(VisualText.shotLetters(0) == "A" && VisualText.shotLetters(25) == "Z" && VisualText.shotLetters(26) == "AA" && VisualText.shotLetters(27) == "AB")
         #expect(VisualText.move(["a", "b", "c"], from: 2, to: 0) == ["c", "a", "b"])
         #expect(VisualText.move(["a", "b", "c"], from: 0, to: 9) == ["b", "c", "a"])
         #expect(VisualText.move(["a"], from: 4, to: 0) == ["a"])

@@ -2121,20 +2121,6 @@ fileprivate extension UI {
         try await go(workspace)
     }
 
-    /// The sidebar row of a workspace, clicked through the outline (when the Go menu is not there).
-    func navByRow(_ workspace: String) async throws {
-        let order = ["Home", "Idea Vault", "Story", "Screenplay", "Breakdown", "Production", "Call Sheets", "Files"]
-        guard let outline = try? await wait(label: "Sidebar", timeout: 10, "the sidebar"), let view = outline.obj as? NSOutlineView else {
-            throw DriverError("no sidebar to click \(workspace)")
-        }
-        guard let idx = order.firstIndex(of: workspace) else { throw DriverError("unknown workspace \(workspace)") }
-        // Rows: the workspaces in order, no section headers.
-        let row = idx
-        view.window?.makeFirstResponder(view)
-        view.scrollRowToVisible(row)
-        view.selectRowIndexes(IndexSet(integer: row), byExtendingSelection: false)
-        await idle(0.6)
-    }
 }
 
 fileprivate extension UI {
@@ -2269,19 +2255,6 @@ fileprivate extension UI {
 }
 
 fileprivate extension UI {
-    /// Reports every scroll view that is not at its top (a layout that scrolled itself shows here).
-    func scrollState() -> String {
-        var out: [String] = []
-        func walk(_ v: NSView) {
-            if let sv = v as? NSScrollView, let doc = sv.documentView {
-                out.append("scroll \(sv.frame.size) doc \(doc.frame.size) origin \(sv.contentView.bounds.origin) flipped \(doc.isFlipped)")
-            }
-            if let t = v as? NSTableView { out.append("table rows \(t.numberOfRows) rowHeight \(t.rowHeight) frame \(t.frame) rect0 \(t.numberOfRows > 0 ? t.rect(ofRow: 0) : .zero)") }
-            for c in v.subviews { walk(c) }
-        }
-        for w in NSApp.windows where w.isVisible { out.append("window \(w.frame) content \(w.contentView?.frame ?? .zero) minSize \(w.minSize) contentMin \(w.contentMinSize) hosting \(String(describing: w.contentView?.subviews.map { "\(Swift.type(of: $0)) \($0.frame)" }))"); if let v = w.contentView { walk(v) } }
-        return out.joined(separator: "\n")
-    }
 }
 
 fileprivate extension UI {
@@ -2293,16 +2266,6 @@ fileprivate extension UI {
 }
 
 fileprivate extension UI {
-    /// Whether the text field with this accessible name accepts typing (nil when no such field is on screen).
-    func fieldTakesInput(label: String) -> Bool? {
-        func scan(_ v: NSView) -> Bool? {
-            if let f = v as? NSTextField, Element(obj: f).label == label { return f.isEnabled && f.isEditable }
-            for sv in v.subviews { if let r = scan(sv) { return r } }
-            return nil
-        }
-        for w in NSApp.windows where w.isVisible { if let v = w.contentView?.superview, let r = scan(v) { return r } }
-        return nil
-    }
 
     /// Scrolls the scroll view that holds an element until the element is inside the window (the call sheet page, for one).
     func reveal(_ e: Element) async {

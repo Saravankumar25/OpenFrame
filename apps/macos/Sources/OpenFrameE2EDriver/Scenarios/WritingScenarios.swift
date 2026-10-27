@@ -279,11 +279,6 @@ fileprivate extension UI {
         await idle(0.4)
     }
 
-    func contextMenuTitles(on e: Element) -> [String] {
-        let f = e.frame
-        return contextMenuItems(at: NSPoint(x: f.midX, y: f.midY))?.items.map(\.title) ?? []
-    }
-
     /// A real mouse drag: press, move in steps past the drag threshold, release. Events go through
     /// the event queue so the drag session reads them as it would from the mouse.
     func drag(from a: NSPoint, to b: NSPoint, steps: Int = 12) async throws {
@@ -786,11 +781,6 @@ fileprivate extension UI {
         return contextMenuItems(at: NSPoint(x: rect.midX + 2, y: rect.midY))
     }
 
-    func typeSlowly(_ text: String) async throws {
-        try await typeHere(text)
-        await idle(0.15)
-    }
-
     func cmdKey(_ chars: String, code: UInt16, _ extra: NSEvent.ModifierFlags = []) async throws {
         var m: NSEvent.ModifierFlags = [.command]; m.formUnion(extra); try await shortcutKey(chars, code: code, modifiers: m)
     }
@@ -824,15 +814,6 @@ fileprivate extension UI {
     func shows(_ text: String) -> Bool { all().contains { $0.text.contains(text) } }
 
     func expectShows(_ text: String, timeout: Double = 10) async throws { try await waitText(text, timeout: timeout) }
-
-    func expectNotShown(_ text: String, within seconds: Double = 1.0) async throws {
-        let deadline = Date().addingTimeInterval(seconds)
-        while Date() < deadline {
-            if !shows(text) { return }
-            await idle(0.1)
-        }
-        throw DriverError("still shown: \(text)")
-    }
 
     func waitUntil(_ what: String, timeout: Double = 10, _ cond: @MainActor () -> Bool) async throws {
         let deadline = Date().addingTimeInterval(timeout)
@@ -1040,12 +1021,6 @@ fileprivate extension UI {
         await idle(0.3)
     }
 
-    /// Chooses a button by label inside the current sheet or screen.
-    func closeAndReopen(_ title: String) async throws {
-        try await closeProject()
-    }
-
-    func dialogGone(_ id: String, timeout: Double = 10) async throws { try await waitGone(id: id, timeout: timeout) }
 }
 
 extension Scenarios {

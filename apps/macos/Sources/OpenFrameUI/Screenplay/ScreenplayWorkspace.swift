@@ -59,7 +59,6 @@ final class ScreenplayWorkspaceModel {
     var failure: CoreFailure?
     var syncStatus: String = "saved"
     var currentScene: String?
-    var showNewDraft = false
     /// Standard, Writing Room or Focus. Kept per project and user in the layout record.
     var mode: ScreenplayMode = .standard
     /// Characters and locations for the suggestion list.
