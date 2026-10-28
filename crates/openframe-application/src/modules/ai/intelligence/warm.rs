@@ -9,8 +9,9 @@
 //!    (`AiManager::prime`).
 //!
 //! It runs only where the indexer already runs: AI is available and in use this session. It never
-//! blocks the screen, stops at once when the project closes or changes, does nothing when AI is
-//! off, and sends nothing a person wrote. A deterministic run (tests, the end-to-end suite) does
+//! blocks the screen, stops at once when the project closes or changes or the computer goes to
+//! sleep (it runs again after the wake, `intelligence::set_asleep`), does nothing when AI is off,
+//! and sends nothing a person wrote. A deterministic run (tests, the end-to-end suite) does
 //! not warm up, so call counts and cache state stay as the test set them; the evaluation turns it
 //! on with [`set_forced`] to measure what people meet.
 
@@ -69,10 +70,14 @@ pub fn set_forced(on: bool) {
     FORCED.store(on, Ordering::SeqCst);
 }
 
-/// Start the warm-up for the project `ix` belongs to. Returns at once.
-pub fn start(core: &AppCore, ix: &Arc<ProjectIndex>) {
+/// Start the warm-up for the project `ix` belongs to. Returns at once: true when a warm-up
+/// started, false in a deterministic run or while the computer sleeps.
+pub fn start(core: &AppCore, ix: &Arc<ProjectIndex>) -> bool {
     if core.config.ai_deterministic && !FORCED.load(Ordering::SeqCst) {
-        return;
+        return false;
+    }
+    if ix.is_paused() {
+        return false;
     }
     let ix = ix.clone();
     let core = Arc::downgrade(&core.arc());
@@ -84,13 +89,17 @@ pub fn start(core: &AppCore, ix: &Arc<ProjectIndex>) {
             let _running = running;
             run(&ix, &core);
         });
-    if let Err(e) = spawned {
-        tracing::warn!(error = %e, "the AI warm-up could not start");
+    match spawned {
+        Ok(_) => true,
+        Err(e) => {
+            tracing::warn!(error = %e, "the AI warm-up could not start");
+            false
+        }
     }
 }
 
 fn run(ix: &ProjectIndex, core: &std::sync::Weak<AppCore>) {
-    let stop = || ix.is_stopped();
+    let stop = || ix.is_stopped() || ix.is_paused();
     let started = Instant::now();
     // Each step takes the core only for its own time, so a warm-up never keeps the app alive.
     let Some(c) = core.upgrade() else { return };
@@ -164,6 +173,40 @@ mod tests {
         let t = Instant::now();
         run(&ix, &weak);
         assert!(t.elapsed().as_millis() < 500);
+        core.shutdown();
+    }
+
+    /// While the computer sleeps no warm-up starts, and one already running ends at its next
+    /// step; after the wake it starts again. Forced on, as the evaluation does, so only the sleep
+    /// keeps it from starting.
+    #[test]
+    fn no_warm_up_starts_while_the_computer_sleeps_and_one_starts_after_the_wake() {
+        let dir = tempfile::tempdir().unwrap();
+        let core = AppCore::new(
+            AppConfig::isolated(dir.path()),
+            Arc::new(RecordingSink::default()),
+        )
+        .unwrap();
+        core.dispatch(
+            &core.local_actor(),
+            "project.create",
+            json!({ "title": "Asleep", "projectType": "Feature Film" }),
+        )
+        .unwrap();
+        let ix = service(&core).current().unwrap();
+        set_forced(true);
+        core.on_power_event(openframe_platform::power::PowerEvent::Suspending);
+        let asleep = start(&core, &ix);
+        let t = Instant::now();
+        run(&ix, &Arc::downgrade(&core));
+        let ended_in = t.elapsed();
+        core.on_power_event(openframe_platform::power::PowerEvent::Resumed);
+        let awake = start(&core, &ix);
+        set_forced(false);
+        assert!(!asleep, "a warm-up started while asleep");
+        assert!(ended_in.as_millis() < 500, "a warm-up kept running asleep");
+        assert!(awake, "the warm-up starts again after the wake");
+        assert!(wait_idle(Duration::from_secs(30)));
         core.shutdown();
     }
 }

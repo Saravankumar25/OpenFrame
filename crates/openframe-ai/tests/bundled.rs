@@ -1034,6 +1034,33 @@ fn the_engine_is_prepared_early_without_counting_and_obeys_stop() {
     assert_eq!(usage(&m), 1);
 }
 
+/// Sleep stops the engines only background work uses: the chat engine the warm-up started, and an
+/// idle search engine. Once a person's request used the chat engine, sleep leaves it running.
+fn sleep_stops_the_engines_only_background_work_started() {
+    let warm = || [ChatRequest::new(vec![ChatMessage::user("hi")]).max_tokens(1)];
+    let f = Fixture::new();
+    let m = f.manager();
+    let up = |s: RuntimeState| matches!(s, RuntimeState::Ready | RuntimeState::Busy);
+    // Nothing running: nothing to do, and asking twice is harmless.
+    assert!(m.stop_background_engines());
+    assert!(m.stop_background_engines());
+    m.prime(&warm(), &|| false).unwrap();
+    m.embed(&["Ravi waits at the station".into()]).unwrap();
+    assert!(up(m.diagnostics().chat_runtime.state));
+    assert!(m.stop_background_engines());
+    assert_eq!(m.diagnostics().chat_runtime.state, RuntimeState::Installed);
+    assert_eq!(m.embedding_status().state, RuntimeState::Installed);
+    // Started again early, then used by a person: it is theirs and stays up through the sleep.
+    m.prime(&warm(), &|| false).unwrap();
+    ask(&m).unwrap();
+    assert!(m.stop_background_engines());
+    assert!(up(m.diagnostics().chat_runtime.state));
+    // A request after the wake starts what it needs as usual.
+    assert!(m.embed(&["Kiran at the gate".into()]).is_ok());
+    assert!(ask(&m).is_ok());
+    m.stop_runtime();
+}
+
 fn deterministic_runs_use_temperature_zero_and_a_fixed_seed() {
     let f = Fixture::new();
     let mut cfg = f.config();
@@ -1336,6 +1363,10 @@ fn main() {
         (
             "the_engine_is_prepared_early_without_counting_and_obeys_stop",
             the_engine_is_prepared_early_without_counting_and_obeys_stop,
+        ),
+        (
+            "sleep_stops_the_engines_only_background_work_started",
+            sleep_stops_the_engines_only_background_work_started,
         ),
         (
             "deterministic_runs_use_temperature_zero_and_a_fixed_seed",

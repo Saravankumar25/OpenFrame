@@ -387,6 +387,10 @@ impl Drop for StorageGuard {
 /// How long a call that needs the vault waits while it is closed for a move or a restore.
 const VAULT_WAIT: std::time::Duration = std::time::Duration::from_secs(2);
 
+/// How long the stop on sleep waits for an engine busy with background work: the longest one
+/// embedding call may take (`EMBED_TIMEOUT` in openframe-ai) and a little more.
+const SLEEP_STOP_WAIT: std::time::Duration = std::time::Duration::from_secs(130);
+
 pub struct AppCore {
     pub config: AppConfig,
     locations: RwLock<Locations>,
@@ -983,15 +987,24 @@ impl AppCore {
         self.events.emit(&event);
     }
 
-    /// Sleep and wake from the platform boundary (`openframe_platform::power`). Before the
-    /// computer sleeps, the write-ahead logs of the open project and of the Global Idea Vault are
-    /// folded into their database files, so a laptop that runs out of battery while asleep
-    /// reopens with every committed change in the main file. Errors are logged, never raised:
-    /// the system is going to sleep either way.
+    /// Sleep and wake from the platform boundary (`openframe_platform::power`).
+    ///
+    /// Before the computer sleeps, background work stops: the semantic index of the open project
+    /// holds its pass and starts no new one, the AI warm-up ends, and an AI engine only background
+    /// work uses is stopped (`AiManager::stop_background_engines`). A request a person is waiting
+    /// for (an `ai.ask` in flight) is left to finish on its engine. Then the write-ahead logs of
+    /// the open project and of the Global Idea Vault are folded into their database files, so a
+    /// laptop that runs out of battery while asleep reopens with every committed change in the
+    /// main file. After the wake the index goes on by itself and the warm-up runs again.
+    ///
+    /// Repeating an event is harmless (two sleeps, a wake without a sleep). Nothing here waits on
+    /// background work. Errors are logged, never raised: the system sleeps either way.
     pub fn on_power_event(&self, event: openframe_platform::power::PowerEvent) {
+        use crate::modules::ai::intelligence;
         use openframe_platform::power::PowerEvent;
         match event {
             PowerEvent::Suspending => {
+                intelligence::set_asleep(self, true);
                 let project = self.project_opt();
                 let global = self.global.lock().clone();
                 let stores = project
@@ -1004,9 +1017,48 @@ impl AppCore {
                         tracing::warn!(code = e.code_str(), "checkpoint before sleep failed");
                     }
                 }
-                tracing::info!("data folded into the database files before sleep");
+                self.stop_background_engines();
+                tracing::info!(
+                    "background work held and data folded into the database files before sleep"
+                );
             }
-            PowerEvent::Resumed => tracing::info!("computer woke from sleep"),
+            PowerEvent::Resumed => {
+                intelligence::set_asleep(self, false);
+                tracing::info!("computer woke from sleep; background work goes on");
+            }
+        }
+    }
+
+    /// Stop the AI engines only background work uses. An engine still busy with the last call of
+    /// a stopped pass is stopped by a helper thread once that call ends, unless the computer woke
+    /// first; the helper gives up after [`SLEEP_STOP_WAIT`]. Nothing starts the AI service here.
+    fn stop_background_engines(&self) {
+        let Some(ai) = self.existing_service::<crate::modules::ai::service::AiService>() else {
+            return;
+        };
+        let Ok(manager) = ai.manager().cloned() else {
+            return;
+        };
+        if manager.stop_background_engines() {
+            return;
+        }
+        let core = Arc::downgrade(&self.arc());
+        let spawned = std::thread::Builder::new()
+            .name("of-sleep-stop".into())
+            .spawn(move || {
+                let deadline = std::time::Instant::now() + SLEEP_STOP_WAIT;
+                while std::time::Instant::now() < deadline {
+                    std::thread::sleep(std::time::Duration::from_millis(50));
+                    let Some(core) = core.upgrade() else { return };
+                    if !crate::modules::ai::intelligence::service(&core).is_asleep()
+                        || manager.stop_background_engines()
+                    {
+                        return;
+                    }
+                }
+            });
+        if let Err(e) = spawned {
+            tracing::warn!(error = %e, "the AI engines could not be stopped for sleep");
         }
     }
 

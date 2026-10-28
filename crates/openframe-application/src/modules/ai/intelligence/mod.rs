@@ -78,6 +78,8 @@ mod ai_embedder {
 use std::sync::Arc;
 use std::time::Duration;
 
+use std::sync::atomic::{AtomicBool, Ordering};
+
 use openframe_search::{Embedder, QueryEmbeddingCache};
 use parking_lot::{Mutex, RwLock};
 
@@ -105,6 +107,9 @@ pub struct IntelligenceService {
     embedder: RwLock<Option<Arc<dyn Embedder>>>,
     settings: RwLock<IndexSettings>,
     query_cache: QueryEmbeddingCache,
+    /// The computer is asleep ([`set_asleep`]): the index of the open project and of any project
+    /// opened meanwhile holds its work, and no warm-up starts.
+    asleep: AtomicBool,
 }
 
 impl IntelligenceService {
@@ -115,6 +120,7 @@ impl IntelligenceService {
             embedder: RwLock::new(None),
             settings: RwLock::new(IndexSettings::default()),
             query_cache: QueryEmbeddingCache::new(64),
+            asleep: AtomicBool::new(false),
         }
     }
 
@@ -159,6 +165,10 @@ impl IntelligenceService {
 
     pub fn current(&self) -> Option<Arc<ProjectIndex>> {
         self.current.lock().clone()
+    }
+
+    pub fn is_asleep(&self) -> bool {
+        self.asleep.load(Ordering::SeqCst)
     }
 
     pub fn query_cache(&self) -> &QueryEmbeddingCache {
@@ -220,11 +230,34 @@ pub fn session_changed(
         ));
         next.store
             .set_commit_observer(Some(Arc::new(indexer::Observer(Arc::downgrade(&ix)))));
-        *svc.current.lock() = Some(ix.clone());
+        {
+            // Under the same lock as `set_asleep`, so an index never misses a sleep.
+            let mut current = svc.current.lock();
+            ix.set_paused(svc.is_asleep());
+            *current = Some(ix.clone());
+        }
         if ai_available(core) {
             ix.activate(core);
             warm::start(core, &ix);
         }
+    }
+}
+
+/// Sleep and wake (`AppCore::on_power_event`). Asleep: the open project's index stops its pass
+/// at the next batch and starts no new one, and a running warm-up ends at its next step. Awake:
+/// the index goes on with what is waiting (edits made meanwhile included) and the warm-up runs
+/// again when AI is in use. Repeating a state does nothing, so two sleeps or a wake without a
+/// sleep are harmless. Returns at once; nothing a person asked for is touched.
+pub fn set_asleep(core: &AppCore, asleep: bool) {
+    let svc = service(core);
+    let (was, ix) = {
+        let current = svc.current.lock();
+        (svc.asleep.swap(asleep, Ordering::SeqCst), current.clone())
+    };
+    let Some(ix) = ix else { return };
+    ix.set_paused(asleep);
+    if !asleep && was && ix.is_activated() && ai_available(core) {
+        warm::start(core, &ix);
     }
 }
 

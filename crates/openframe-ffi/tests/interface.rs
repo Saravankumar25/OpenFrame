@@ -277,6 +277,38 @@ fn the_team_password_gate_refuses_a_wrong_password_and_opens_with_the_right_one(
     core.stop();
 }
 
+/// Sleep and wake from the shell (`power_event`): repeated or unpaired events are harmless, the
+/// project keeps working while asleep, and nothing is lost across the wake.
+#[test]
+fn sleep_and_wake_cross_the_interface_in_any_order() {
+    let dir = tempfile::tempdir().unwrap();
+    let rec = Recorder::default();
+    let core = start(dir.path(), &rec);
+    // Before any project and a wake without a sleep.
+    core.power_event(true);
+    core.power_event(false);
+    core.power_event(false);
+    call(
+        &core,
+        "project.create",
+        json!({ "title": "Night Journey", "projectType": "Feature Film" }),
+    );
+    let sp = call(&core, "screenplay.create", json!({}));
+    let draft = sp["draft"]["id"].as_str().expect("draft id").to_string();
+    core.power_event(true);
+    core.power_event(true);
+    // A save while asleep (a person can still type during the seconds before sleep).
+    call(
+        &core,
+        "screenplay.create_scene",
+        json!({ "draftId": draft, "heading": "EXT. HARBOUR - NIGHT" }),
+    );
+    core.power_event(false);
+    let doc = call(&core, "screenplay.document", json!({ "draftId": draft })).to_string();
+    assert!(doc.contains("HARBOUR"), "{doc}");
+    core.stop();
+}
+
 #[test]
 #[ignore = "prints a fixed test hash for the Swift gate tests"]
 fn print_swift_test_hash() {

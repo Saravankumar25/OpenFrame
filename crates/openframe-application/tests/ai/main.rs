@@ -13,6 +13,7 @@ mod ai_dossier;
 mod ai_focus;
 mod ai_index_stress;
 mod ai_memory;
+mod ai_power;
 mod ai_real_model;
 mod ai_retrieval;
 mod ai_retrieval_perf;

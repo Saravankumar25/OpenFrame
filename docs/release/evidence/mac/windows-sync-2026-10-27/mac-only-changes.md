@@ -107,3 +107,5 @@ Windows names kept everywhere: the Mac Daily View now calls `schedule.export_dai
 | `ai/memory/rules.rs` | An answer that looks like an instruction is never saved to memory |
 | `openframe-persistence/src/lib.rs` | Side files are changed through a descriptor opened with `O_NOFOLLOW` (regular files only) |
 | `storage/library_ops.rs`, `storage/vault_archive.rs`, `openframe-security/src/archive.rs` | A remembered library inside the app data is ignored; a vault restore checks free space against the declared unpacked size first |
+| `core.rs`, `ai/intelligence/{mod,indexer,warm}.rs`, `openframe-ai/src/manager.rs` | Sleep stops background AI work (indexer, warm-up, background-only engines) without cutting off a running question; wake resumes. The Windows shell already sends the events |
+| `openframe-ai/src/hardware.rs` | macOS available memory from `host_statistics64` (Mac only) |

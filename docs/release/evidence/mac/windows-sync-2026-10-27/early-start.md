@@ -135,3 +135,11 @@ One "on" run sampled every second (`footprint` and `ps`):
 - `cargo clippy -p openframe-ai --all-targets -- -D warnings`: clean. `cargo fmt -p openframe-ai`: applied.
 - Not run: the Windows and Linux builds of `hardware.rs` (the macOS code is behind `cfg(target_os = "macos")`); five
   pairs on a quiet Mac.
+
+## After the sleep fix (2026-10-27, later)
+
+`power_event(sleeping)` now stops background AI work: the indexer pauses at its next batch and starts nothing new, the
+warm-up stops and does not start, the search engine and a chat engine started only by the warm-up are stopped once no
+call runs on them, and an `ai.ask` in flight finishes. Wake resumes on its own. Tests: `tests/ai/ai_power.rs` (4), a
+`warm.rs` unit test, an FFI interface test and a `bundled.rs` case. The blocker for turning the early start on is
+gone; what remains is five pairs on a quiet machine before `START_ENGINE` is changed (for the Mac only or both).

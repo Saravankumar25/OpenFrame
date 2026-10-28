@@ -308,8 +308,11 @@ impl CoreHandle {
         self.core.tasks.cancel(&task_id)
     }
 
-    /// Sleep and wake from `NSWorkspace` notifications: before sleep the open project's data is
-    /// folded into its database file.
+    /// Sleep and wake from `NSWorkspace` notifications (`AppCore::on_power_event`, the same as the
+    /// Windows power broadcast). Before sleep, background AI work stops (the project index, the
+    /// warm-up, an engine only background work uses) and the open project's data is folded into
+    /// its database file; a request a person is waiting for finishes. After the wake background
+    /// work goes on by itself. Repeating an event is harmless.
     pub fn power_event(&self, sleeping: bool) {
         use openframe_platform::power::PowerEvent;
         self.core.on_power_event(if sleeping {
