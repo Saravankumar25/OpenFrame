@@ -124,7 +124,7 @@ struct ScheduleDayView: View {
                     .accessibilityIdentifier("day-export")
                 if !day.isOffDay {
                     Button(day.callSheet != nil ? "Open Call Sheet" : "Create Call Sheet") { Task { await model.openCallSheet(day) } }
-                        .buttonStyle(.borderedProminent)
+                        .buttonStyle(.ofProminent)
                         .accessibilityIdentifier("day-call-sheet")
                 }
             }
@@ -192,7 +192,6 @@ struct SchedDayTimesView: View {
     @State private var crew = ""
     @State private var start = ""
     @State private var wrap = ""
-    @State private var syncKey = ""
     @FocusState private var focus: Field?
     private enum Field { case crew, start, wrap }
 

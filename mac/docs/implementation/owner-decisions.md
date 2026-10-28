@@ -34,12 +34,13 @@
 | Release files | Four: Microsoft Store package, Mac App Store package, internal `.exe`, internal `.dmg` | 2026-10-07 | [ADR-0024](../adr/ADR-0024-internal-team-builds.md) |
 | Windows installer (`.exe`) | Internal build for the team only, never sold: no trial, licence, payment or lock | 2026-10-07 | ADR-0023 |
 | Signing of internal builds | Unsigned; signing and notarization move to Chapter 3 | 2026-10-08 | ADR-0024 |
-| Team password gate | On the internal builds. Asked on every launch; wrong tries wait 1 minute, doubling to 30. Minimum length 8 characters (was 12). Only a hash from a build-computer environment variable is embedded; nobody else sees the password and agents never ask for it. A door lock, not encryption | 2026-10-15 | ADR-0024, [ADR-0030](../adr/ADR-0030-verification-ladder-and-release-flow.md) |
+| Team password gate | ~~On the internal builds. Asked on every launch; wrong tries wait 1 minute, doubling to 30. Minimum length 8 characters (was 12). Only a hash from a build-computer environment variable is embedded; nobody else sees the password and agents never ask for it. A door lock, not encryption~~ Superseded 2026-10-27 by the row "Team password removed" | 2026-10-15 | ADR-0024, [ADR-0030](../adr/ADR-0030-verification-ladder-and-release-flow.md) |
+| Team password removed | Internal builds open without a password; the team gate and its logic are removed from both apps (Windows and Mac). No build needs a password variable | 2026-10-27 | Owner, in chat; ADR-0024 decisions 3 to 6 and ADR-0030 decision 5 superseded in part |
 | Proof levels | Five levels of proof; "Verified" means level 3 or higher on the release build once W9 is reached | 2026-10-15 | ADR-0030 |
 | Clean-machine testing | ~~A virtual machine on the owner's computer plus borrowed laptops; the owner tests on several laptops with different graphics cards~~ Superseded 2026-10-17 by the row "Clean-machine testing, no second laptop" | 2026-10-15 | ADR-0030, [ADR-0029](../adr/ADR-0029-gpu-acceleration.md) |
 | Clean-machine testing, no second laptop | ~~A VirtualBox virtual machine on the owner's laptop plus a second Windows user account on that laptop. No second laptop is available~~ Superseded 2026-10-18 by the row "Clean-machine proof by the W10 pilot" | 2026-10-17 | [vm-blocked.md](../release/evidence/w9/vm-blocked.md) |
 | Clean-machine proof by the W10 pilot | The clean-machine proof (ADR-0030 level 4) for the Windows internal build is covered by the W10 team pilot on the team's own laptops. The VirtualBox VM is not used, because Windows' hypervisor (Memory Integrity) holds VT-x on the build laptop | 2026-10-18 | [vm-blocked.md](../release/evidence/w9/vm-blocked.md) |
-| Team password for internal builds | Shared with the team in person. The owner set it as the `OPENFRAME_TEAM_PASSWORD` user variable on the build laptop. Sessions never ask for it again | 2026-10-17 | ADR-0024 |
+| Team password for internal builds | ~~Shared with the team in person. The owner set it as the `OPENFRAME_TEAM_PASSWORD` user variable on the build laptop. Sessions never ask for it again~~ Superseded 2026-10-27 by the row "Team password removed": the variable is no longer read by any build | 2026-10-17 | ADR-0024 |
 | Scope of the endgame session | W1 to W8 are closed as accepted. No re-work of them: no AI language tuning, no full 679-case rerun, no re-fuzzing, no gap-list spec additions. WACK moves to Chapter 3 | 2026-10-18 | [windows-internal-release-gate.md](../release/windows-internal-release-gate.md) |
 | Four release gate exceptions approved | The owner wrote "APPROVING EVERYTHING, GO AND FINISH EVERYTHING." after reading the explanations. Approved as exceptions: S7 (style-src keeps unsafe-inline for Radix UI and the theme engine), S11 (webdriverio 9 dev-only chain, review by 2027-01-18), S12 (engine binary hardening; fix by building llama.cpp with Control Flow Guard before the store release in Chapter 3), S13 (owner's name in 2 old commits; no history rewrite, clean only if the code ever becomes public) | 2026-10-18 | [windows-internal-release-gate.md](../release/windows-internal-release-gate.md) |
 | Who writes code | Sonnet subagents write code one at a time; the main session plans and reviews | 2026-10-18 | none |
@@ -68,6 +69,16 @@
 | AI files for CI | CI tests the download against a test manifest and host; local builds use `.ai-assets` | 2026-10-15 | ADR-0026 |
 | Crash-safe AI changes | An AI change that a crash interrupts is undone on the next open | 2026-10-05 | [ADR-0019](../adr/ADR-0019-crash-safe-change-set-apply.md) |
 | AI Assistant panel placement | The panel docks beside the page and narrows it; never covers a control; open or closed is remembered | 2026-10-08 | UX specification section 71 |
+| Assistant answer shape | Explain, deep and ideas answers may show line breaks, simple "- " lists and "1. " numbered lists in the conversation view. Quick answers and the Agent lane stay flat | 2026-10-24 | [ADR-0035](../adr/ADR-0035-ai-lanes-briefings-and-code-verifiers.md), [ai-answer-paths.md](../engineering/ai-answer-paths.md) decision 5 |
+| Assistant progress and Cancel | While the assistant works the panel shows progress lines only (no token streaming, no text that is later replaced) and a Cancel button | 2026-10-24 | ADR-0035 |
+| Saving a conversation for review | A tester may save a conversation to a file for review, only by pressing Save in the AI panel; nothing is saved or sent on its own | 2026-10-24 | [ADR-0028](../adr/ADR-0028-ai-quality-program-and-harness.md) decision 8, amended |
+| Where the AI harness plan lives | `docs/specs/ai-harness-rebuild.md` stays the plan and the evidence; the decisions it led to are in ADR-0035 (owner decision 10 of that plan) | 2026-10-24 | [ai-harness-rebuild.md](../history/2026-10-24-ai-harness-rebuild-plan.md), ADR-0035 |
+| Assistant is a conversational chat assistant | One conversational path for questions on the whole platform: a project index over every object type, focus, short-term and long-term memory, per-turn context fetched from the project, and answers shaped by the question (one sentence for a fact, a paragraph for an explanation or a relationship), with sources behind the sources button. The model stays Gemma 3 1B, offline. This replaces the five answer lanes for questions; exact commands and proposals keep their code routes | 2026-10-26 | Owner, in chat; [ADR-0037](../adr/ADR-0037-conversational-assistant-focus-and-dossiers.md), [ai-conversational-harness.md](../specs/ai-conversational-harness.md) |
+| Deterministic answers are cut to the few that need exactness or safety | Code fetches, counts, checks and refuses; the model writes the answers. The deterministic pieces are listed with their reasons in section 4 of the spec; a new one needs an entry there | 2026-10-26 | Owner, in chat; spec section 4 |
+| Laya model not used | The Laya classifier was considered and dropped; no new classifier model | 2026-10-26 | Owner, in chat; ADR-0037 decision 5 |
+| Order of work for the conversational assistant | Document everything first, then build in a new session, slice by slice, each slice measured on the eval before the next | 2026-10-26 | Owner, in chat; spec section 8 |
+| Long-term memory of the assistant | On. An entry is saved only when the person states a fact or a preference outright or confirms an answer; entries are per user and per project, stay on this computer, are listed in Settings and each can be deleted | 2026-10-26 | Owner, in chat; spec section 5.7, slice S6 |
+| DeepSeek Harness | Not installed and not shipped. It is an MIT-licensed coding-agent app (Node, local web UI, file and command access, built for large models); OpenFrame keeps its Rust harness of ADR-0037 and borrows its design ideas (a staged turn pipeline with hooks, guards that cannot be undone by a later stage, an event log per turn, domain fetchers registered like plugins) | 2026-10-26 | Owner, in chat; spec section 14 |
 
 ### Product behaviour
 
@@ -89,6 +100,9 @@
 | Daily View export | Its own document, "Shoot Day N - Daily view", with what the page shows; the schedule export is not used there | 2026-10-20 | [Parity page](../roadmap/mac-windows-structure-parity.md) |
 | Name of the planning board | "Beat Board" (was "Story Board", confused with the production Storyboards) | 2026-10-20 | [Parity page](../roadmap/mac-windows-structure-parity.md) |
 | Story page | A free page left of Board to write the story, linked to nothing; export as TXT, PDF and DOCX | 2026-10-20 | [Parity page](../roadmap/mac-windows-structure-parity.md) |
+| Story page schema on the Mac | The Mac copy of `migrations/project/0017_story_page.sql` (with a length check) is replaced by the Windows bytes, so both platforms ship one schema; a Mac test project made with the old file still opens | 2026-10-27 | [Mac-only changes](../release/evidence/mac/windows-sync-2026-10-27/mac-only-changes.md) |
+| Screenplay formatting standard | Version 5 replaces version 4 as the layout standard; version 4 is in `docs/history/specs/` | 2026-10-24 | [screenplay-formatting-standard-v5.md](../specs/screenplay-formatting-standard-v5.md), [ADR-0008](../adr/ADR-0008-deterministic-pdf.md) amendment |
+| Production PDF design | The PDF design package v2 is the design source for every production PDF (footer with the lossless logo, 66 pt bottom margin, orientation per export as in the package) | 2026-10-24 | [ADR-0036](../adr/ADR-0036-production-pdf-design-system-v2.md), [package](../specs/pdf-design-package-v2/README.md) |
 
 ### How the work is done
 
@@ -98,7 +112,7 @@
 | No build without the word | An installer, a release executable or a disk image is built only when the owner says so in that conversation | 2026-10-08 | CLAUDE.md, ADR-0030 |
 | Repository visibility | Private. Classic branch protection needs a paid plan; a free ruleset is an owner choice | 2026-10-06 | masterplan area 1 |
 | Verification before ticking | A box is ticked only with `(ev: ...)` evidence, at the proof level it names | 2026-10-08 | CLAUDE.md, ADR-0030 |
-| Documentation | Organised by chapter; history moves to the archive and is not rewritten; no two current documents give different rules; one pass, not several | 2026-10-15 | [docs/README.md](../README.md) |
+| Documentation | Organised by chapter; history moves to docs/history and is not rewritten (Windows merged docs/archive into it on 2026-10-24; the Mac had removed docs/archive on 2026-10-19 and moved its other history there on 2026-10-27); no two current documents give different rules; one pass, not several | 2026-10-15 | [docs/README.md](../README.md) |
 | Build folders and storage | One build folder per checkout under `.build-cache`; budgets in the storage policy | 2026-10-08 | [development-storage-policy.md](../development-storage-policy.md) |
 | Unmaintained font crates | Dated exception for `rustybuzz` and `ttf-parser` until 2027-01-06 | 2026-10-08 | `deny.toml`, masterplan area 6 |
 | Release-build tests and real data | The release build honours the test data folder for file locations only; every other test switch stays debug-only | 2026-10-16 | [ADR-0031](../adr/ADR-0031-release-build-test-data-folder.md) |
@@ -107,6 +121,10 @@
 | W1 to W3 on `main` | Merged locally (no push) before W4 started | 2026-10-16 | progress log |
 | W6 accepted on the bar; W4 to W8 on `main` | W6 accepted at English correct tool 96.7 percent and end state 88.8 percent; the remaining W6 items wait for a later request. `windows/w8-download` merged into `main` locally, no push | 2026-10-17 | [w6 evidence](../release/evidence/w6/README.md) |
 | W9 on `main` | `windows/w9-endgame` merged into `main` locally (fast-forward to d4acb83) after the W9 gate closed; no push | 2026-10-18 | Owner, in chat; [release gate](../release/windows-internal-release-gate.md) |
+| One history folder | Older decisions, deprecated documents and material that no longer fits the current version move to `docs/history/`; on Windows `docs/archive/` was merged into it, on the Mac it had been removed on 2026-10-19 | 2026-10-24 | [docs/README.md](../README.md), [history index](../history/README.md) |
+| Mac work for the 2026-10-24 upgrade | Windows first. The Mac track gets a port list, not a parallel Mac build | 2026-10-24 | [mac-port-list-2026-10-24.md](../history/mac-port-list-2026-10-24.md) (history) |
+| Parallel work for this upgrade | Three tracks may run side by side for this upgrade only, each with a file-ownership map; the "agents never run in parallel" rule of `CLAUDE.md` is otherwise unchanged | 2026-10-24 | Owner, in chat |
+| End-to-end runs for this upgrade | The full end-to-end suite runs once, at the end of the whole upgrade, not after each slice | 2026-10-24 | Owner, in chat; [testing strategy](../testing/README.md) |
 
 ## 2. Still open
 
@@ -123,7 +141,7 @@ The "Recommendation" column is advice, not a decision. "Blocks" names the phase 
 | Launch date and capacity | Schedule only | Say how many people build in parallel | none |
 | Beta programme | Chapter 3 | 8 to 15 real users for 3 to 4 weeks on a release candidate | none |
 | Store payment route on Windows | Chapter 3 | Store trial and purchase, or an own system; read the current policy first | Chapter 3 plan |
-| Stronger team-gate protection and encryption at rest | Chapter 3 | Decide with the store builds; options in [ADR-0030](../adr/ADR-0030-verification-ladder-and-release-flow.md) | ADR-0030 |
+| ~~Stronger team-gate protection and~~ Encryption at rest (the team-gate part ended when the gate was removed on 2026-10-27) | Chapter 3 | Decide with the store builds; options in [ADR-0030](../adr/ADR-0030-verification-ladder-and-release-flow.md) | ADR-0030 |
 | Product wording "filmmakers" | W1 | **Decided 2026-10-16 (owner, in chat):** the long description uses the README sentence "a local-first desktop studio for writers, screenwriters and production teams, covering ..."; done in `tauri.conf.json`, package descriptions, CONTRIBUTING, privacy policy draft and code comments. The AI instructions keep their wording until the W5 measurement exists (ADR-0028) | [vision](../product/vision-and-scope.md) |
 | Documents folder unknown | W2 | Refuse to start with a plain message (the Windows plan assumes this; confirm) | [37-platform-boundary.md](../engineering/37-platform-boundary.md) |
 | Where new projects are saved by default | W2 | Warn when Documents is synced and offer a local folder; never move existing projects | W2 |
@@ -148,7 +166,7 @@ Lead times are typical, not guaranteed. Start the long ones early.
 | Obtain an Apple silicon Mac | M8, M9 | procurement | Needed for Metal, Apple's model and the `.dmg` |
 | ~~Choose the model host and generate the production manifest key~~ | Closed 2026-10-16 | none | Superseded by the owner's decision to download straight from Hugging Face ([ADR-0032](../adr/ADR-0032-models-from-hugging-face.md)): no host, no key |
 | Licence check of every model before release: the Gemma Terms of Use allow the app to fetch the pinned Gemma file from Hugging Face for each person and require the Gemma notice in the app and the notices file (both ship); the embedding model (MIT) and the runtime (MIT). Record the confirmation | W8 (before the team build) | hours | ADR-0026 decision 9, ADR-0032; [23-release-migration.md](../engineering/23-release-migration.md) |
-| Set `OPENFRAME_TEAM_PASSWORD` on the build computer before building an internal `.exe` or `.dmg` | W9, M9 | minutes | Only the owner and the team know it; never written to a file, chat, log or the repository |
+| ~~Set `OPENFRAME_TEAM_PASSWORD` on the build computer before building an internal `.exe` or `.dmg`~~ | Closed 2026-10-27 | none | Superseded by the owner's decision to remove the team password (decided table): internal builds open without one |
 | ~~Approve the bake-off result~~ | Closed 2026-10-16 | none | No bake-off: the owner chose the model set (decided table) |
 | Recruit the team for both pilots | W10, M10 | days | |
 | Buy the domain; company email with SPF, DKIM, DMARC; HTTPS hosting | Chapter 2 | days | Needed for the privacy and support links |

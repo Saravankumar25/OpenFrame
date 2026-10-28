@@ -55,7 +55,7 @@ export function TimelineView({ episodeId, readOnly }: { episodeId: string | null
           actions={
             !readOnly ? (
               <Button variant="primary" onClick={() => {
-                go({ workspace: "story" });
+                go({ workspace: "story", sub: "board" });
                 useStoryUi.getState().openDialog({ type: "build" });
               }}>
                 Build Screenplay

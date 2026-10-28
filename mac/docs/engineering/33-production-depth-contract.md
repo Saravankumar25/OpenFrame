@@ -1,10 +1,10 @@
 # 33: Production depth contract (proposed)
 
-> Status: **proposed**. Approval comes first (Project controls and baseline), then the build (Story Board and Idea Vault; Breakdown, catalog, locations, cast and crew; Shooting schedule and Day Out of Days; Call sheets, budget, templates, samples and exports). Product behaviour: Revision 1 §§21 to 35, 43, 52 to 57.
+> Status: **proposed**. Approval comes first (Project controls and baseline), then the build (Beat Board and Idea Vault; Breakdown, catalog, locations, cast and crew; Shooting schedule and Day Out of Days; Call sheets, budget, templates, samples and exports). Product behaviour: Revision 1 §§21 to 35, 43, 52 to 57.
 > Features in the feature status file: STORY-CARD-*, BRK-*, PROD-*, SCHED-*, DOOD-*, CALL-*, BUDGET-*, TEMP-*, BRAND-*.
 > Principle: **extend what exists.** Each section lists what the schema already has and the smallest additive change.
 
-## 1. Story Board card (Story Board and Idea Vault area)
+## 1. Beat Board card (Beat Board and Idea Vault area)
 
 Status: **built** (2026-10-07, branch `area/09-story-board`). Tests: `crates/openframe-application/tests/story_cards.rs`.
 
@@ -87,8 +87,9 @@ Built (same area and migration):
   Available window). Windows are removed with their owner when it is purged from Recently Deleted.
 - Contact privacy rule (`modules/production/privacy.rs`): `catalog_item.contact`, `location.contact`,
   `location.emergency_contact`, `cast_member.contact` and `crew_member.contact` are shown only to Owner and Editor
-  (other roles get `contactHidden: true` and no value). The assistant never receives them: AI-origin requests are
-  treated as not allowed, the AI read tools leave them out and AI documents never include them. They are not put
+  (other roles get `contactHidden: true` and no value). The assistant's catalog and location reads leave them out and AI documents never
+  include them. Its cast and crew read (`cast_and_crew`, slice S2) prints a cast or crew contact only to an actor who
+  may see it in the app (Owner and Editor), and AI-origin requests are treated as not allowed. They are not put
   in the project search index, and production exports never contain them. A Full Project Package or backup still
   carries them because it is a copy of the whole project for its owner.
 - Stable identity: renames keep links (catalog rename keeps the old name as an alias; a Location / Set item and its
@@ -128,6 +129,8 @@ Built (migration `0015_schedule_timeline.sql`, 2026-10-07):
 - DOOD: `shooting_schedule.dood_code_style` ('industry' or 'simple') and `dood_override(schedule_id, cast_key, day_id,
   code, note)`. Codes: SW, W, WF, SWF, H derived; T, R, F, D and "-" by hand. Operations `schedule.dood`,
   `schedule.set_dood_override`, export `schedule.export_dood`.
+- Daily View export `schedule.export_daily_view` (PDF or plain text): one shooting day, built from the same read as the
+  screen (`schedule::ops::daily_view`), named "Shoot Day N - Daily View", with the schedule's last-change date.
 - Schedule and DOOD exports carry the date of the schedule's last change (never the export clock), and the XLSX
   creation date is set from it, so the same data gives byte-identical PDF, CSV and XLSX files.
 - Filters are view state in the desktop app (`scheduleFilter.ts`); they never call an operation.
@@ -176,11 +179,11 @@ lines that have an Actual) are derived at read time (`modules/schedule/budget.rs
 ## 7. Templates and samples (Call sheets, budget, templates, samples and exports area)
 
 Has: template engine with scopes and 7 built-ins. Add per the owner decision "Template list": three screenplay templates, indie call sheet, simple
-story board, shot list, moodboard, lightweight budget. Use creates an independent copy. Samples: four
+Beat Board, shot list, moodboard, lightweight budget. Use creates an independent copy. Samples: four
 OpenFrame-authored scripts used as onboarding assets and fixtures; no third-party text.
 
 **Built (area 15, 2026-10-08).** The eight built-ins live in `modules/notes/templates.rs` (Feature Film Screenplay,
-Short Film Screenplay, Episodic / Series, Simple Story Board, Indie Call Sheet, Shot List, Moodboard, Lightweight
+Short Film Screenplay, Episodic / Series, Simple Beat Board, Indie Call Sheet, Shot List, Moodboard, Lightweight
 Budget). `templates.copy` copies a template; `templates.apply` creates the document a template describes through the
 owning module's operations, all or nothing, as one undo step. Nothing refers back to the template. The four samples
 are compiled into the app (`openframe-import-export/src/samples.rs`), listed by `screenplay.samples` and opened through
@@ -193,10 +196,10 @@ use workbook metadata or first-sheet footer. User-owned source files are never m
 and backups carry a branded manifest or README, not edited user files.
 
 **Built (area 15, 2026-10-08).** `modules/exports/mod.rs::deliver` brands every production export in one place: PDFs
-print the OpenFrame mark and the brand line at the bottom of each page (Sides print the line in each page's bottom
-margin), workbooks name OpenFrame Studio in their document properties and the first sheet's footer, plain text ends
+print the OpenFrame mark and the brand line at the bottom of each page, workbooks name OpenFrame Studio in their document properties and the first sheet's footer, plain text ends
 with the line. CSV stays pure data (no added row) so it imports cleanly elsewhere. Screenplay exports
-(`screenplay.export`) never pass through `deliver` and stay unbranded. Package and backup manifests belong to the
+(`screenplay.export`) never pass through `deliver` and stay unbranded. Sides are pages of the script and carry no
+mark and no line either (owner, 2026-10-27). Package and backup manifests belong to the
 packages area.
 
 ## 9. Cross-cutting rules for every item above

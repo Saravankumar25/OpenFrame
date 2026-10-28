@@ -25,10 +25,14 @@ const ROLES: [Role; 5] = [
 ];
 
 /// Reads that need no open project and return no project content (settings, the app itself,
-/// recent projects, the AI runtime state, the team gate and the licence screens).
+/// recent projects, the AI runtime state and the licence screens).
 /// Reviewed 2026-10-16: `ai.health` reads the numbers-only AI trace in app data and
 /// `ai.download.status` the download state and free space, never the open project; the reviewer workspace (`packages.review_*`) reads packages kept in the app
 /// data folder, and `packages.inspect_package` reads a file the user picked, not the open project.
+/// Reviewed 2026-10-27: `storage.info` and `project.discover` read the places OpenFrame keeps things and the
+/// project folders found there, never project content. `vault.inspect` reads a vault file the
+/// user picked, not the open project. `library.status` and `library.inspect` read where the library is and
+/// count what a folder the user picked holds, never project content.
 const APPLICATION_READS: &[&str] = &[
     "ai.diagnostics",
     "ai.download.status",
@@ -41,13 +45,18 @@ const APPLICATION_READS: &[&str] = &[
     "appearance.get",
     "entitlement.notice",
     "entitlement.status",
+    "library.inspect",
+    "library.status",
     "packages.inspect_package",
     "packages.review_get",
     "packages.review_list",
     "project.current",
+    "project.discover",
     "project.list_recent",
     "project.location_check",
-    "team_gate.status",
+    "storage.info",
+    "vault.inspect",
+    "vault.inspect_folder",
     "writing.dictionary",
 ];
 

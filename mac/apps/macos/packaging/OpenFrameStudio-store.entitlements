@@ -1,13 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <!-- Mac App Store build (Chapter 3): App Sandbox with the least the app needs. Not used by the
-     internal disk image. Each key, and why:
+     internal disk image. Readiness review: docs/release/mac-app-store-readiness.md. Each key, and why:
      - app-sandbox: required for the store.
      - files.user-selected.read-write: projects, imports and exports are files the person picks.
-     - files.bookmarks.app-scope: reopen the projects and linked files the person picked before.
-     - network.client: the offline AI model download the person starts (ADR-0026); nothing else.
+     - files.bookmarks.app-scope: reopen the linked files the person picked before (Files page,
+       LinkedFileBookmarks). Library and project folders outside the container are not offered.
+     - network.client: the offline AI model download the person starts (ADR-0026), the trial check
+       with OpenFrame's licence server (doc 38), and the app's calls to its own engine on 127.0.0.1.
      - network.server: the AI engine helper listens on 127.0.0.1 only; it inherits this sandbox.
-     - device.audio-input: voice notes in the Idea Vault, only while the person records. -->
+     - device.audio-input: voice notes in the Idea Vault, only while the person records.
+     - print: Print in the export and print preview sheets (a sandboxed app cannot print without it).
+     The application-identifier and team-identifier keys come from the owner's provisioning profile
+     at signing time; they are not written here. -->
 <plist version="1.0">
 <dict>
 	<key>com.apple.security.app-sandbox</key><true/>
@@ -16,5 +21,6 @@
 	<key>com.apple.security.network.client</key><true/>
 	<key>com.apple.security.network.server</key><true/>
 	<key>com.apple.security.device.audio-input</key><true/>
+	<key>com.apple.security.print</key><true/>
 </dict>
 </plist>

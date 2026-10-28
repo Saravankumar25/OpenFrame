@@ -18,6 +18,7 @@ import type { StoryCharacterDto } from "../../ipc/generated/StoryCharacterDto";
 import type { StoryCharacterUsage } from "../../ipc/generated/StoryCharacterUsage";
 import type { StoryItem } from "../../ipc/generated/StoryItem";
 import type { StoryRelationshipDto } from "../../ipc/generated/StoryRelationshipDto";
+import { layoutRelationshipMap } from "./relationshipLayout";
 
 const RELATION_SUGGESTIONS = ["father of", "mother of", "son of", "daughter of", "sibling of", "partner of", "friend of", "colleague of", "mentor of", "rival of", "enemy of"];
 
@@ -56,7 +57,8 @@ export function CharactersView({
   const list = useCharacters(episodeId, showArchived);
   const [selected, setSelected] = useState<string | null>(focusId ?? null);
   const [dialog, setDialog] = useState<"new" | null>(null);
-  const [map, setMap] = useState(false);
+  // null: the character list. focus null: the whole-film map. A character id: that character's own map.
+  const [map, setMap] = useState<{ focus: string | null } | null>(null);
   const chars = useMemo(() => list.data ?? [], [list.data]);
   const current = selected && chars.some((c) => c.id === selected) ? selected : (chars[0]?.id ?? null);
 
@@ -75,7 +77,7 @@ export function CharactersView({
   return (
     <div className="story-chars">
       {map ? (
-        <RelationshipMap chars={chars} onBack={() => setMap(false)} readOnly={readOnly} />
+        <RelationshipMap chars={chars} focus={map.focus} onFocus={(focus) => setMap({ focus })} onBack={() => setMap(null)} readOnly={readOnly} />
       ) : (
         <>
           <section className="card story-char-list" aria-label="Characters">
@@ -83,6 +85,11 @@ export function CharactersView({
               <b>Characters</b>
               <span className="chip">{chars.filter((c) => !c.archived).length}</span>
               <span className="grow" />
+              {chars.length > 1 && (
+                <Button size="sm" icon={<Network size={14} />} onClick={() => setMap({ focus: null })}>
+                  Whole film map
+                </Button>
+              )}
               {!readOnly && (
                 <Button size="sm" variant="primary" icon={<Plus size={14} />} onClick={() => setDialog("new")}>
                   Add Character
@@ -122,7 +129,7 @@ export function CharactersView({
           </section>
           <section className="card story-char-detail" aria-label="Character details">
             {current ? (
-              <CharacterDetail id={current} episodeId={episodeId} readOnly={readOnly} chars={chars} onOpenMap={() => setMap(true)} onDeleted={() => setSelected(null)} />
+              <CharacterDetail id={current} episodeId={episodeId} readOnly={readOnly} chars={chars} onOpenMap={() => setMap({ focus: current })} onDeleted={() => setSelected(null)} />
             ) : (
               <EmptyState title="Create your first character.">Name is all you need. Role, image and notes are optional.</EmptyState>
             )}
@@ -203,7 +210,7 @@ function CharacterDetail({
         </div>
         {!readOnly && <Button size="sm" onClick={() => setEdit(true)}>Edit</Button>}
         <Button size="sm" icon={<Network size={14} />} onClick={onOpenMap}>
-          Open Relationship Map
+          Relationship Map
         </Button>
         {!readOnly && (
           <Menu
@@ -613,173 +620,133 @@ function DeleteCharacterDialog({
   );
 }
 
-const NODE_R = 20;
-const initialOf = (name: string) => (name.trim()[0] ?? "?").toUpperCase();
-
-interface MapEdge {
-  path: string;
-  label: { x: number; y: number };
-}
 
 /**
- * Lays out the relationship map so nothing overlaps (owner change list item 3): characters sit on a
- * circle in the order with the fewest crossing lines, two relationships between the same pair bend
- * apart, and each label takes the first spot along its line that is clear of other labels and of
- * the characters.
+ * Relationship maps (mock 069): an optional visual helper, not an analysis system. With a focus
+ * character it shows only that character's direct relationships; without one, the whole film.
+ * The list under the picture says the same in words, so the map is also readable without sight.
  */
-export function layoutRelationshipMap(ids: string[], rels: { id: string; from: string; to: string }[]) {
-  const n = ids.length;
-  const W = 720;
-  const H = Math.max(380, Math.min(560, 260 + n * 34));
-  const R = Math.min(W, H) / 2 - 62;
-  const order = n <= 8 ? fewestCrossings(ids, rels) : ids;
-  const step = (2 * Math.PI) / Math.max(n, 1);
-  const pos = new Map(order.map((id, i) => [id, { x: W / 2 + R * Math.cos(step * i - Math.PI / 2), y: H / 2 + R * Math.sin(step * i - Math.PI / 2) }]));
-  const placed: { x: number; y: number }[] = [...pos.values()].map((p) => ({ x: p.x, y: p.y + 6 }));
-  const pairCount = new Map<string, number>();
-  const edges = new Map<string, MapEdge>();
-  for (const r of rels) {
-    const a = pos.get(r.from);
-    const b = pos.get(r.to);
-    if (!a || !b) continue;
-    const key = [r.from, r.to].sort().join("|");
-    const k = pairCount.get(key) ?? 0;
-    pairCount.set(key, k + 1);
-    // Parallel relationships between one pair alternate sides with a growing bend.
-    const dir = r.from < r.to ? 1 : -1;
-    const bend = k === 0 ? 0 : Math.ceil(k / 2) * 46 * (k % 2 ? 1 : -1) * dir;
-    const dx = b.x - a.x;
-    const dy = b.y - a.y;
-    const len = Math.hypot(dx, dy) || 1;
-    const cx = (a.x + b.x) / 2 + (-dy / len) * bend;
-    const cy = (a.y + b.y) / 2 + (dx / len) * bend;
-    const at = (t: number) => ({
-      x: (1 - t) * (1 - t) * a.x + 2 * (1 - t) * t * cx + t * t * b.x,
-      y: (1 - t) * (1 - t) * a.y + 2 * (1 - t) * t * cy + t * t * b.y,
-    });
-    let label = at(0.5);
-    for (const t of [0.5, 0.38, 0.62, 0.28, 0.72, 0.44, 0.56]) {
-      const p = at(t);
-      if (placed.every((q) => Math.abs(q.x - p.x) > 70 || Math.abs(q.y - p.y) > 18)) {
-        label = p;
-        break;
-      }
-    }
-    placed.push(label);
-    edges.set(r.id, { path: "M " + a.x + " " + a.y + " Q " + cx + " " + cy + " " + b.x + " " + b.y, label });
-  }
-  return { W, H, pos, edges };
-}
-
-/** The circle order with the fewest crossing lines (two chords cross when their ends interleave). */
-function fewestCrossings(ids: string[], rels: { from: string; to: string }[]): string[] {
-  if (ids.length < 4) return ids;
-  const pairs = rels.map((r) => [ids.indexOf(r.from), ids.indexOf(r.to)]).filter(([a, b]) => a >= 0 && b >= 0 && a !== b);
-  const perm = ids.map((_, i) => i);
-  const slot = new Array<number>(ids.length);
-  let best = perm.slice();
-  let bestScore = Infinity;
-  const crossings = () => {
-    for (let i = 0; i < perm.length; i++) slot[perm[i]] = i;
-    let c = 0;
-    for (let i = 0; i < pairs.length; i++) {
-      const lo = Math.min(slot[pairs[i][0]], slot[pairs[i][1]]);
-      const hi = Math.max(slot[pairs[i][0]], slot[pairs[i][1]]);
-      for (let j = i + 1; j < pairs.length; j++) {
-        const p = slot[pairs[j][0]];
-        const q = slot[pairs[j][1]];
-        if (p === lo || p === hi || q === lo || q === hi) continue;
-        if (p > lo && p < hi ? !(q > lo && q < hi) : q > lo && q < hi) c++;
-      }
-    }
-    return c;
-  };
-  // The first character stays in place (rotations are the same picture); every order of the rest is tried.
-  const visit = (k: number) => {
-    if (bestScore === 0) return;
-    if (k === perm.length) {
-      const c = crossings();
-      if (c < bestScore) {
-        bestScore = c;
-        best = perm.slice();
-      }
-      return;
-    }
-    for (let i = k; i < perm.length; i++) {
-      [perm[k], perm[i]] = [perm[i], perm[k]];
-      visit(k + 1);
-      [perm[k], perm[i]] = [perm[i], perm[k]];
-    }
-  };
-  visit(1);
-  return best.map((i) => ids[i]);
-}
-
-/** Relationship map (mock 069): an optional visual helper, not an analysis system. */
-function RelationshipMap({ chars, onBack, readOnly }: { chars: StoryCharacterDto[]; onBack: () => void; readOnly: boolean }) {
+function RelationshipMap({
+  chars,
+  focus,
+  onFocus,
+  onBack,
+  readOnly,
+}: {
+  chars: StoryCharacterDto[];
+  focus: string | null;
+  onFocus: (id: string | null) => void;
+  onBack: () => void;
+  readOnly: boolean;
+}) {
   const rels = useRelationships();
   const [add, setAdd] = useState(false);
-  const list = rels.data ?? [];
-  const nodes = chars.filter((c) => !c.archived && list.some((r) => r.fromCharacterId === c.id || r.toCharacterId === c.id));
+  const all = rels.data ?? [];
+  const person = focus ? chars.find((c) => c.id === focus) : undefined;
+  const list = person ? all.filter((r) => r.fromCharacterId === person.id || r.toCharacterId === person.id) : all;
+  const live = chars.filter((c) => !c.archived || c.id === focus);
   const map = layoutRelationshipMap(
-    nodes.map((n) => n.id),
-    list.map((r) => ({ id: r.id, from: r.fromCharacterId, to: r.toCharacterId })),
+    live.map((c) => ({ id: c.id, name: c.name })),
+    list.map((r) => ({ id: r.id, from: r.fromCharacterId, to: r.toCharacterId, label: r.relationshipType })),
+    person?.id,
   );
-  const { W, H, pos } = map;
+  const title = person ? `${person.name.toUpperCase()}: relationships` : "Character relationships";
+  const addFrom = person ?? chars[0];
   return (
-    <section className="card" style={{ flex: 1, padding: 16, overflow: "auto" }} aria-label="Character relationships">
+    <section className="card" style={{ flex: 1, padding: 16, overflow: "auto" }} aria-label={person ? `Relationships of ${person.name}` : "Character relationships"}>
       <div className="row">
         <Button size="sm" variant="ghost" icon={<ArrowLeft size={14} />} onClick={onBack}>
           Back to Characters
         </Button>
-        <h2 style={{ margin: 0, fontSize: 16 }}>Character relationships</h2>
+        <h2 style={{ margin: 0, fontSize: 16 }}>{title}</h2>
         <span className="grow" />
-        {!readOnly && chars.length >= 2 && (
+        {person && (
+          <Button size="sm" icon={<Network size={14} />} onClick={() => onFocus(null)}>
+            Whole film map
+          </Button>
+        )}
+        {!readOnly && chars.length >= 2 && addFrom && (
           <Button size="sm" variant="primary" icon={<Plus size={14} />} onClick={() => setAdd(true)}>
             Add Relationship
           </Button>
         )}
       </div>
-      <p className="muted" style={{ fontSize: 12.5 }}>Optional visual helper, not a character-analysis system.</p>
+      <p className="muted" style={{ fontSize: 12.5 }}>
+        {person ? "Only this character’s direct relationships. Choose a name to see theirs." : "Every character with a relationship, the most connected first. Choose a name to see just their relationships."}
+      </p>
       {list.length === 0 ? (
-        <EmptyState title="No relationships yet.">Add a relationship such as “father of” or “colleague of”.</EmptyState>
+        <EmptyState title={person ? `${person.name.toUpperCase()} has no relationships yet.` : "No relationships yet."}>
+          Add a relationship such as “father of” or “colleague of”.
+        </EmptyState>
       ) : (
         <>
-          <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{ maxHeight: 520 }} role="img" aria-label="Relationship map">
+          <svg viewBox={`0 0 ${map.W} ${map.H}`} width="100%" style={{ maxWidth: map.W * 1.4 }} role="img" aria-label={`${title}. ${list.length} relationship${list.length === 1 ? "" : "s"}, listed below.`}>
+            <defs>
+              <marker id="rel-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" style={{ fill: "var(--muted)" }} />
+              </marker>
+            </defs>
             {list.map((r) => {
               const e = map.edges.get(r.id);
               if (!e) return null;
               return (
                 <g key={r.id}>
-                  <path d={e.path} fill="none" stroke="var(--line2)" strokeWidth={2} />
+                  <path d={e.path} fill="none" stroke="var(--muted)" strokeWidth={1.6} markerEnd="url(#rel-arrow)" />
                   <text
                     x={e.label.x}
                     y={e.label.y}
                     textAnchor="middle"
-                    dominantBaseline="middle"
+                    dominantBaseline="central"
                     fontSize={11}
-                    fill="var(--ink2)"
+                    fill="var(--ink)"
                     stroke="var(--panel)"
                     strokeWidth={5}
                     strokeLinejoin="round"
                     paintOrder="stroke"
                   >
-                    {r.relationshipType}
+                    {e.label.text}
+                    <title>{`${r.fromName} ${r.relationshipType} ${r.toName}`}</title>
                   </text>
                 </g>
               );
             })}
-            {nodes.map((n) => {
-              const p = pos.get(n.id)!;
+            {[...map.boxes.entries()].map(([id, b]) => {
+              const c = chars.find((x) => x.id === id);
+              if (!c) return null;
+              const centre = id === person?.id;
+              const open = () => onFocus(id);
               return (
-                <g key={n.id}>
-                  <circle cx={p.x} cy={p.y} r={NODE_R} fill="var(--accent-soft)" stroke="var(--accent)" strokeWidth={1.5} />
-                  <text x={p.x} y={p.y + 1} textAnchor="middle" dominantBaseline="middle" fontSize={13} fontWeight={700} fill="var(--accent-d)">
-                    {initialOf(n.name)}
+                <g
+                  key={id}
+                  className={cx("rel-node", !centre && "rel-node-link")}
+                  {...(centre
+                    ? {}
+                    : {
+                        tabIndex: 0,
+                        role: "button",
+                        "aria-label": `Show relationships of ${c.name}`,
+                        onClick: open,
+                        onKeyDown: (ev: React.KeyboardEvent) => {
+                          if (ev.key === "Enter" || ev.key === " ") {
+                            ev.preventDefault();
+                            open();
+                          }
+                        },
+                      })}
+                >
+                  <rect
+                    x={b.x - b.w / 2}
+                    y={b.y - b.h / 2}
+                    width={b.w}
+                    height={b.h}
+                    rx={b.h / 2}
+                    style={{ fill: centre ? "var(--accent)" : "var(--accent-soft)", stroke: "var(--accent)" }}
+                    strokeWidth={1.5}
+                  />
+                  <text x={b.x} y={b.y} textAnchor="middle" dominantBaseline="central" fontSize={12} fontWeight={700} style={{ fill: centre ? "var(--accent-ink)" : "var(--ink)" }}>
+                    {b.text}
                   </text>
-                  <text x={p.x} y={p.y + NODE_R + 14} textAnchor="middle" fontSize={11.5} fontWeight={700} fill="var(--ink)" stroke="var(--panel)" strokeWidth={4} strokeLinejoin="round" paintOrder="stroke">
-                    {n.name.toUpperCase()}
-                  </text>
+                  <title>{c.name.toUpperCase()}</title>
                 </g>
               );
             })}
@@ -787,7 +754,7 @@ function RelationshipMap({ chars, onBack, readOnly }: { chars: StoryCharacterDto
           <RelationshipList rels={list} readOnly={readOnly} />
         </>
       )}
-      {add && chars[0] && <AddRelationshipDialog from={chars[0]} chars={chars.filter((c) => !c.archived)} onClose={() => setAdd(false)} />}
+      {add && addFrom && <AddRelationshipDialog from={addFrom} chars={chars.filter((c) => !c.archived)} onClose={() => setAdd(false)} />}
     </section>
   );
 }

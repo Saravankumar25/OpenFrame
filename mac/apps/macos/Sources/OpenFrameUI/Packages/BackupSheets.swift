@@ -23,13 +23,13 @@ struct BackupSheet: View {
             }
         } footer: {
             if finished {
-                Button("Close") { model.finish(); close() }.keyboardShortcut(.defaultAction).buttonStyle(.borderedProminent)
+                Button("Close") { model.finish(); close() }.keyboardShortcut(.defaultAction).buttonStyle(.ofProminent)
                     .accessibilityIdentifier("backup-close")
             } else {
                 Button("Cancel") { model.finish(); close() }.keyboardShortcut(.cancelAction).disabled(t.running)
                     .accessibilityIdentifier("backup-cancel")
                 Button("Create Backup") { Task { await model.start() } }
-                    .keyboardShortcut(.defaultAction).buttonStyle(.borderedProminent)
+                    .keyboardShortcut(.defaultAction).buttonStyle(.ofProminent)
                     .disabled(!model.canStart)
                     .accessibilityIdentifier("backup-create")
             }
@@ -123,7 +123,7 @@ struct ExportProjectSheet: View {
             }
         } footer: {
             if finished {
-                Button("Close") { model.finish(); close() }.keyboardShortcut(.defaultAction).buttonStyle(.borderedProminent)
+                Button("Close") { model.finish(); close() }.keyboardShortcut(.defaultAction).buttonStyle(.ofProminent)
                     .accessibilityIdentifier("export-project-close")
             } else {
                 Button("Cancel") { model.finish(); close() }.keyboardShortcut(.cancelAction).disabled(t.running)
@@ -132,7 +132,7 @@ struct ExportProjectSheet: View {
                     guard let url = picker.saveFile(title: "Export Project Package", suggestedName: model.suggestedName, directory: model.defaultDirectory, message: nil) else { return }
                     Task { await model.export(to: url) }
                 }
-                .keyboardShortcut(.defaultAction).buttonStyle(.borderedProminent)
+                .keyboardShortcut(.defaultAction).buttonStyle(.ofProminent)
                 .disabled(t.running || model.preview == nil)
                 .accessibilityIdentifier("export-project-confirm")
             }

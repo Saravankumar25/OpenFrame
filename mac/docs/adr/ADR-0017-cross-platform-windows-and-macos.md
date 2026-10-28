@@ -3,7 +3,7 @@
 - **Amended 2026-10-15 by [ADR-0027](ADR-0027-rust-core-two-ui-shells.md):** "one codebase, two platform adapters" becomes one Rust core with two shells (Tauri on Windows, SwiftUI on the Mac). Decisions 2 (Windows 11 only) and 3 (Apple silicon only) stand; the Intel MacBook is a development machine. Decision 3's "AI engine built with Metal" is read together with [ADR-0028](ADR-0028-ai-quality-program-and-harness.md) (Apple's model as an opt-in provider).
 - **Status:** Accepted 2026-10-06 by the owner. Amends the Engineering Package Index locked decision "Initial OS" and supersedes the earlier proposal in this file (Windows now, macOS later).
 - **Date:** 2026-10-05, accepted 2026-10-06
-- **Related:** [ADR-0018](ADR-0018-distribution-licensing-commerce.md), `docs/archive/2026-10-05-cross-platform-compatibility-security-plan.md` (history), `docs/engineering/29-desktop-hld-lld.md`, `docs/implementation/masterplan.md` (areas "Platform adapter layer for Windows and Mac", "Microsoft Store package", "Windows installer", "Mac App Store package")
+- **Related:** [ADR-0018](ADR-0018-distribution-licensing-commerce.md), `docs/history/2026-10-05-cross-platform-compatibility-security-plan.md` (history), `docs/engineering/29-desktop-hld-lld.md`, `docs/implementation/masterplan.md` (areas "Platform adapter layer for Windows and Mac", "Microsoft Store package", "Windows installer", "Mac App Store package")
 
 ## Context
 
@@ -31,7 +31,7 @@ deliver three separate files: a Microsoft Store package, a Windows installer and
    so the AI engine ships inside the package and only model weights are downloaded. It has no self-updater. Project folders
    are reached through security-scoped bookmarks. The AI engine needs the Mac equivalent of the Windows Job Object before the
    assistant ships there.
-6. **Security properties are identical across systems** (see `docs/archive/2026-10-05-cross-platform-compatibility-security-plan.md` (history)).
+6. **Security properties are identical across systems** (see `docs/history/2026-10-05-cross-platform-compatibility-security-plan.md` (history)).
 7. **Each package passes its own lifecycle tests:** install, upgrade, uninstall and reinstall, offline use, crash recovery and an
    end-to-end run on a clean Windows 11 machine or an Apple silicon Mac.
 

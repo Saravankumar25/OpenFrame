@@ -3,7 +3,7 @@
 - **Status:** Accepted 2026-10-05 (owner decision: crash-safe AI changes; the owner delegated the choice to the recorded recommendation in the first governance session). Amends ADR-0013 (Change Set apply).
 - **Date:** 2026-10-05
 - **Related:** ADR-0005, ADR-0013; `crates/openframe-application/src/modules/ai/change_set.rs`;
-  `docs/audits/2026-10-02-production-and-store-readiness-audit.md` §10
+  `docs/history/audits/2026-10-02-production-and-store-readiness-audit.md` §10
 
 ## Context
 

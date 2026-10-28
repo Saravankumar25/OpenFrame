@@ -6,8 +6,7 @@
 # Step 1 runs the capture tour (the zz-capture scenarios of the end-to-end driver) twice against the app, once per
 # appearance, with run.sh, or with run-parallel.sh when OPENFRAME_E2E_PARALLEL is set (that many runners side by side;
 # the run folder then holds shard-k folders). Each scenario starts by setting Settings, Appearance, Mode, then writes a
-# picture and an accessibility list per screen. A build with the team gate shows the gate first and the tour types
-# OPENFRAME_E2E_TEAM_PASSWORD (or OPENFRAME_TEAM_PASSWORD) to get past it.
+# picture and an accessibility list per screen.
 # Step 2 builds MacHTML/light, MacHTML/dark, index.html and README.md (scripts/mac-html/build-mac-html.mjs).
 # Step 3 renders every page in WebKit, compares it with its picture and looks for every label and value of the tree in
 # the page (scripts/mac-html/check-pages.swift); the tables go at the end of README.md.

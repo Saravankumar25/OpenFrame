@@ -144,6 +144,15 @@ struct AIDownloadTests {
         #expect(await s.exportReport() == nil)
         #expect(s.error?.isEmpty == false)
         #expect(!s.busy)
+        // The page reads the state every two seconds; a good read must not wipe an action's message
+        // (a failed Remove used to show nothing at all).
+        let message = s.error
+        await s.load()
+        #expect(s.status != nil)
+        #expect(s.error == message)
+        // The next action clears it.
+        await s.setGraphics(off: false)
+        #expect(s.error == nil)
     }
 
     @Test func removeFromSettingsReloadsTheState() async throws {

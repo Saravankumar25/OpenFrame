@@ -94,4 +94,13 @@ struct SettingsTests {
             try? png.write(to: folder.appendingPathComponent("settings-appearance.png"))
         }
     }
+
+    /// Settings has a Storage tab (Windows: Home settings > Storage); General no longer lists folders.
+    @Test func storageIsASettingsTab() {
+        #expect(SettingsTab.allCases.contains(.storage))
+        #expect(SettingsTab(rawValue: "storage") == .storage)
+        let order = SettingsTab.allCases
+        #expect(order.firstIndex(of: .storage)! == order.firstIndex(of: .shortcuts)! + 1)
+    }
+
 }

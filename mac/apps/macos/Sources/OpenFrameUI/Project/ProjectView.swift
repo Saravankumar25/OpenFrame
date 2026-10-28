@@ -14,7 +14,10 @@ struct ProjectView: View {
     /// project; another project (a new one, or one opened from Home) starts on Project Home.
     @SceneStorage("workspace") private var stored: String = ""
     /// The AI Assistant panel docks beside the page; it stays as the person left it.
-    @SceneStorage("assistantOpen") private var assistantOpen = false
+    /// Open or closed is remembered for the person across quits (Windows spec 72: the docked panel
+    /// remembers whether it was open when the window loads again); scene storage came back only
+    /// when macOS restored the window.
+    @AppStorage("openframe.ai.open") private var assistantOpen = false
     /// The width the person dragged the AI panel to (kept for this Mac).
     @AppStorage("openframe.ai.width") private var assistantPreferred: Double = Double(ProjectView.assistantDefaultWidth)
     /// The width at the start of a drag.
@@ -138,13 +141,11 @@ struct ProjectView: View {
 
     private func withSheets(_ content: some View) -> some View {
         content
-        .task(id: app.changes.any) {
-            if let now = try? await app.core?.projectCurrent(), now.id == project.id { live = now }
-        }
-        .sheet(isPresented: Binding(get: { renaming != nil }, set: { if !$0 { renaming = nil } })) {
+        .background(ProjectRefresher(projectId: project.id, live: $live))
+        .themedSheet(isPresented: Binding(get: { renaming != nil }, set: { if !$0 { renaming = nil } })) {
             if let recent = renaming { RenameProjectSheet(project: recent, actions: ProjectActions(app: app)) {} }
         }
-        .sheet(item: Binding(get: { settingsTab.map(SettingsSheetTarget.init) }, set: { settingsTab = $0?.tab })) { target in
+        .themedSheet(item: Binding(get: { settingsTab.map(SettingsSheetTarget.init) }, set: { settingsTab = $0?.tab })) { target in
             ProjectSettingsView(initialTab: target.tab)
         }
         .onReceive(NotificationCenter.default.publisher(for: .openFrameShowProjectSettings)) { note in
@@ -535,5 +536,23 @@ private struct ToolbarWithoutTitle: ViewModifier {
         } else {
             content
         }
+    }
+}
+
+/// Reads the open project again after any change (rename, undo and redo change its title and
+/// status). Only this empty view watches every change: when the whole project window did, each
+/// change anywhere drew the window and its page again.
+private struct ProjectRefresher: View {
+    let projectId: String
+    @Binding var live: ProjectSummary?
+    @Environment(AppModel.self) private var app
+
+    var body: some View {
+        Color.clear
+            .frame(width: 0, height: 0)
+            .accessibilityHidden(true)
+            .task(id: app.changes.any) {
+                if let now = try? await app.core?.projectCurrent(), now.id == projectId, now != live { live = now }
+            }
     }
 }

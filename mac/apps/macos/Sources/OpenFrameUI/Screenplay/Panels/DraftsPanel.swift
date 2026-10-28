@@ -237,7 +237,7 @@ struct DraftsSheet: View {
             model.attach(app, workspace, say: { state.say($0) })
             await model.reloadHistory()
         }
-        .sheet(item: $dialog) { d in
+        .themedSheet(item: $dialog) { d in
             switch d {
             case let .rename(draft): RenameDraftSheet(model: model, draft: draft)
             case let .delete(draft): DeleteDraftSheet(model: model, draft: draft)

@@ -18,6 +18,7 @@
 
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
 
 use openframe_domain::{AppError, AppResult};
@@ -37,14 +38,17 @@ use crate::rt::AiRuntime;
 use crate::selection::{self, Fitness};
 use crate::store::AiPaths;
 use crate::supervisor::{
-    EmbeddingServerLauncher, Launcher, LlamaServerLauncher, RuntimeStatus, StateListener,
-    Supervisor, SupervisorConfig,
+    BusyGuard, EmbeddingServerLauncher, Launcher, LlamaServerLauncher, RuntimeStatus,
+    StateListener, Supervisor, SupervisorConfig,
 };
 
 /// Characters of one input sent to the embedding model (≈ 300–400 English tokens; the model
 /// window is 512). Retrieval chunks should be shorter; longer inputs are cut, and an input the
 /// runtime still refuses (dense text) is retried shorter.
 pub const MAX_EMBED_INPUT_CHARS: usize = 1_500;
+/// Memory left free, beyond the chat model and its cache, for the engine to be started before the
+/// first question (the app, the embedding engine and the person's other programs).
+const EARLY_START_HEADROOM_MB: u64 = 1536;
 /// Per-request timeout for one embedding batch.
 const EMBED_TIMEOUT: Duration = Duration::from_secs(120);
 /// Sampling seed of deterministic runs (the end-to-end suite).
@@ -227,6 +231,12 @@ pub struct AiManager {
     search_model: Mutex<ModelRole>,
     /// Engine numbers of the chat calls since the last `take_usage` (the AI trace).
     usage: Mutex<client::Usage>,
+    /// The warm-up (`prime`) started the chat engine and no person's request has used it since:
+    /// sleep may stop it ([`AiManager::stop_background_engines`]).
+    chat_started_early: AtomicBool,
+    /// A request holds it (shared) from asking for an engine until it is counted in flight, and
+    /// the stop on sleep holds it alone, so the stop never takes an engine a request just got.
+    engine_gate: RwLock<()>,
 }
 
 /// Cut an embedding input to `max_chars` on a character boundary; an empty input becomes a
@@ -281,6 +291,8 @@ impl AiManager {
             placement_lock: Mutex::new(()),
             search_model: Mutex::new(ModelRole::Embedding),
             usage: Mutex::new(client::Usage::default()),
+            chat_started_early: AtomicBool::new(false),
+            engine_gate: RwLock::new(()),
         };
         m.configure();
         Ok(m)
@@ -374,6 +386,43 @@ impl AiManager {
     pub fn stop_runtime(&self) {
         self.supervisor.stop();
         self.embed_supervisor.stop();
+    }
+
+    /// Before the computer sleeps: stop the engines that only background work uses, so nothing
+    /// keeps working or holds memory for it. The embedding engine is stopped when no call is in
+    /// flight on it (it serves the project index and short search questions; the next one starts
+    /// it again). The chat engine is stopped only when the warm-up started it, no person's request
+    /// has used it since and none is in flight. A request in flight is never cut: its engine is
+    /// left alone. Returns true when no such engine is left running (false: one was still busy;
+    /// call again once it is done). Calling it again does nothing more.
+    pub fn stop_background_engines(&self) -> bool {
+        let _gate = self.engine_gate.write();
+        let mut done = true;
+        if self.embed_supervisor.is_running() {
+            if self.embed_supervisor.in_flight() == 0 {
+                self.embed_supervisor.stop();
+                tracing::info!("the search engine was stopped for sleep");
+            } else {
+                done = false;
+            }
+        }
+        if self.chat_started_early.load(Ordering::SeqCst) && self.supervisor.is_running() {
+            if self.supervisor.in_flight() == 0 {
+                self.supervisor.stop();
+                self.chat_started_early.store(false, Ordering::SeqCst);
+                tracing::info!("the AI engine started early was stopped for sleep");
+            } else {
+                done = false;
+            }
+        }
+        done
+    }
+
+    /// Wait until `sup` is ready and count one request in flight on it, under the engine gate.
+    fn acquire(&self, sup: &Supervisor) -> AppResult<(client::Endpoint, BusyGuard)> {
+        let _gate = self.engine_gate.read();
+        let ep = self.guard(sup.ensure_ready(self.cfg.ready_timeout))?;
+        Ok((ep, sup.begin_request()))
     }
 
     pub fn hardware(&self) -> HardwareInfo {
@@ -509,9 +558,11 @@ impl AiManager {
     /// One chat completion on the chat engine (after the bundle check). Deterministic runs use
     /// temperature 0; the engine was started with a fixed seed.
     pub(crate) fn chat(&self, req: &client::ChatRequest) -> AppResult<String> {
+        // A person's request: from now on the engine is theirs, sleep leaves it running.
+        self.chat_started_early.store(false, Ordering::SeqCst);
         self.ensure_verified()?;
         self.ensure_placement();
-        match self.chat_once(req) {
+        match self.chat_once(req, true) {
             // The engine on the graphics card stopped: remember it and go on on the processor
             // (ADR-0029 decision 5).
             Err(e) if self.on_card() && e.is("ai.unavailable") => {
@@ -520,15 +571,52 @@ impl AiManager {
                     "the AI engine on the graphics card stopped; going on on the processor"
                 );
                 self.card_failed();
-                self.chat_once(req)
+                self.chat_once(req, true)
             }
             r => r,
         }
     }
 
-    fn chat_once(&self, req: &client::ChatRequest) -> AppResult<String> {
-        let ep = self.guard(self.supervisor.ensure_ready(self.cfg.ready_timeout))?;
-        let _busy = self.supervisor.begin_request();
+    /// Get the chat engine ready before the first question: start it if memory allows, then read
+    /// each fixed prompt start once, so the engine keeps its work and the first question reads
+    /// only what differs. Blocking: call from a background thread. Answers are thrown away and the
+    /// calls are not counted in the trace numbers. Does nothing when AI is off, when starting the
+    /// engine would leave too little memory, once `stop` says so, or once a real request is in
+    /// flight (it then finds the engine as the warm-up left it).
+    pub fn prime(&self, prompts: &[client::ChatRequest], stop: &dyn Fn() -> bool) -> AppResult<()> {
+        if !self.available() || stop() {
+            return Ok(());
+        }
+        self.ensure_verified()?;
+        self.ensure_placement();
+        if !self.supervisor.is_running() {
+            if !self.room_to_start() {
+                tracing::info!("the AI engine was not started early: little memory is free");
+                return Ok(());
+            }
+            self.chat_started_early.store(true, Ordering::SeqCst);
+        }
+        for req in prompts {
+            if stop() || self.supervisor.in_flight() > 0 {
+                break;
+            }
+            self.chat_once(req, false)?;
+        }
+        Ok(())
+    }
+
+    /// Free memory covers the chat model, its cache and the headroom the rest of the app needs.
+    fn room_to_start(&self) -> bool {
+        let need = self.loaded.read().bundle.as_ref().and_then(|b| {
+            b.models()
+                .map(|m| placement::model_mb(m.chat.bytes, self.chat_context_tokens()))
+        });
+        let free = hardware::inspect().available_ram_bytes / (1024 * 1024);
+        need.is_some_and(|n| free >= n + EARLY_START_HEADROOM_MB)
+    }
+
+    fn chat_once(&self, req: &client::ChatRequest, count: bool) -> AppResult<String> {
+        let (ep, _busy) = self.acquire(&self.supervisor)?;
         let http = self.supervisor.http().clone();
         let mut req = req.clone();
         if self.cfg.deterministic {
@@ -537,7 +625,9 @@ impl AiManager {
         let (text, usage) = self
             .rt
             .run(async move { client::chat(&http, &ep, &req).await })?;
-        self.usage.lock().add(usage);
+        if count {
+            self.usage.lock().add(usage);
+        }
         Ok(text)
     }
 
@@ -644,8 +734,7 @@ impl AiManager {
             .ok_or_else(|| self.unavailable_reason())?;
         self.ensure_verified()?;
         let dim = info.dim as usize;
-        let ep = self.guard(self.embed_supervisor.ensure_ready(self.cfg.ready_timeout))?;
-        let _busy = self.embed_supervisor.begin_request();
+        let (ep, _busy) = self.acquire(&self.embed_supervisor)?;
         let mut out = Vec::with_capacity(inputs.len());
         for chunk in inputs.chunks(EMBED_BATCH) {
             let batch: Vec<String> = chunk

@@ -3,8 +3,8 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { ExportDialog } from "./ExportDialog";
-import { ScheduleExportButton } from "./buttons";
-import { buildExportArgs, exportFileName, initialOptions, plainFileName, type ExportOptionField } from "./model";
+import { DailyViewExportButton, ScheduleExportButton } from "./buttons";
+import { buildExportArgs, exportFileName, initialOptions, type ExportOptionField } from "./model";
 
 // Test fixtures only: the IPC boundary and the system Save dialog are replaced.
 const calls: { op: string; args: Record<string, unknown> }[] = [];
@@ -73,9 +73,6 @@ describe("export file names", () => {
   it("follows <Project> - <Document> - <date>.<ext> and is safe for Windows", () => {
     const d = new Date(2026, 8, 30);
     expect(exportFileName("Black Rain", "Shooting Schedule", "pdf", d)).toBe("Black Rain - Shooting Schedule - 2026-09-30.pdf");
-    // A document with a name of its own keeps only that name (the Daily View export).
-    expect(plainFileName("Shoot Day 4 - Daily view", "pdf")).toBe("Shoot Day 4 - Daily view.pdf");
-    expect(plainFileName("Story", "docx")).toBe("Story.docx");
     expect(exportFileName("A/B: “C”?", "Moodboard — Overall Look", "pdf", d)).toBe("A B “C” - Moodboard - Overall Look - 2026-09-30.pdf");
     expect(exportFileName(null, "Budget", "xlsx", d)).toBe("Budget - 2026-09-30.xlsx");
     expect(exportFileName("x".repeat(300), "Doc", "csv", d).length).toBeLessThanOrEqual(154);
@@ -161,6 +158,20 @@ describe("ExportDialog", () => {
     fireEvent.click(screen.getByRole("button", { name: /Export/ }));
     fireEvent.click(screen.getByRole("button", { name: "Export…" }));
     await waitFor(() => expect(saveMock).toHaveBeenCalled());
+    expect(calls.some((c) => c.op === "schedule.export_schedule")).toBe(false);
+  });
+
+  it("exports the Daily View as its own document named \"Shoot Day N - Daily View\"", async () => {
+    wrap(<DailyViewExportButton dayId="d3" dayLabel="Shoot Day 3" />);
+    fireEvent.click(screen.getByRole("button", { name: /Export/ }));
+    expect(screen.getByText("Export Daily View")).toBeTruthy();
+    // No schedule scopes: the document is the day on the screen.
+    expect(screen.queryByText(/Entire schedule/)).toBeNull();
+    expect(await screen.findByText(/^Shoot Day 3 - Daily View\.pdf$/)).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Export…" }));
+    await waitFor(() => expect(screen.getByText("Export complete")).toBeTruthy());
+    expect(saveMock.mock.calls[0][0].defaultPath).toMatch(/^Shoot Day 3 - Daily View\.pdf$/);
+    expect(calls.find((c) => c.op === "schedule.export_daily_view")?.args).toMatchObject({ format: "pdf", dayId: "d3" });
     expect(calls.some((c) => c.op === "schedule.export_schedule")).toBe(false);
   });
 });

@@ -1,0 +1,368 @@
+/* =====================================================================
+   OpenFrame Studio — shared print design system  (v1.0, design reference)
+   ---------------------------------------------------------------------
+   Used by every HTML reference in this package. Units are POINTS so that
+   every value maps 1:1 to the Rust production-document renderer
+   (openframe-import-export/src/report*). Paper is US Letter, like the
+   current exports (612 x 792 pt portrait, 792 x 612 pt landscape).
+
+   A document links this file, then adds ONE inline <style> that sets
+     @page { size: letter [landscape]; @top-right { content: "..." } }
+   and any document-specific rules. See 00_SYSTEM/PDF_Design_System.md.
+   ===================================================================== */
+
+/* ---------- 1. Design tokens --------------------------------------- */
+:root {
+  /* ink + structure (from report/design.rs `pal`) */
+  --of-white: #ffffff;
+  --of-ink: #1a2438;
+  --of-navy: #1a2640;
+  --of-slate: #566277;      /* secondary text, 6.2:1 on white            */
+  --of-muted: #66728a;      /* smallest readable metadata, 4.8:1 on white */
+  --of-faint: #8792a5;      /* DECORATIVE ONLY (3.1:1) — never for text   */
+  --of-line: #d8dee8;
+  --of-line-strong: #b9c2d1;
+  --of-panel: #f5f7fa;
+  --of-tint: #e9eff5;
+  --of-teal: #2a6a8c;
+  /* brand accent */
+  --of-orange: #e07b1f;     /* fills, rules, bullets — never small text (3.0:1) */
+  --of-orange-deep: #8a4f00;/* orange text, 5.9:1 on --of-orange-soft    */
+  --of-orange-soft: #fff1e0;
+  --of-orange-line: #f2c28a;
+  /* semantic status (fill / line / text) */
+  --of-amber-fill: #fdf0d9; --of-amber-line: #efc57e; --of-amber-text: #8a4f00;
+  --of-red-fill: #fde9e4;   --of-red-line: #f0b3a4;   --of-red-text: #9a3822;
+  --of-green-fill: #e2f4e9; --of-green-line: #a6d9b8; --of-green-text: #1c6a3b;
+  --of-blue-fill: #e5f0f8;  --of-blue-line: #b3cfe2;  --of-blue-text: #245a7d;
+  --of-dark-muted: #a9b6cb; /* muted text on navy, 7.3:1 */
+  --of-neutral-text: #3b4659;
+
+  /* breakdown category accents (design.rs `pal::category`) */
+  --cat-cast: #7a4cc2; --cat-extras: #4f9a3d; --cat-location: #1b84be; --cat-props: #c0623a;
+  --cat-wardrobe: #1f9a8a; --cat-vehicles: #6b7a8f; --cat-hairmakeup: #d6527a;
+  --cat-sfx: #d99a1a; --cat-vfx: #4b63d1; --cat-sound: #c23a96; --cat-animals: #8a6a3b;
+
+  /* typography — the production renderer uses the PDF base-14 Helvetica family */
+  --of-font: Helvetica, Arial, "Liberation Sans", "Nimbus Sans", sans-serif;
+  --of-mono: "Courier New", Courier, "Liberation Mono", monospace;
+
+  /* type scale (pt) */
+  --fs-display: 28pt;   /* document title                         */
+  --fs-title: 20pt;     /* compact title (landscape sheets)       */
+  --fs-sec: 10pt;       /* section heading                        */
+  --fs-lead: 9.6pt;     /* lead line inside a card                */
+  --fs-body: 8.8pt;     /* running text                           */
+  --fs-cell: 8.4pt;     /* table cell                             */
+  --fs-small: 8pt;      /* secondary lines                        */
+  --fs-label: 6.8pt;    /* UPPERCASE labels (tracked)             */
+  --fs-chip: 6.6pt;     /* status chips (the floor: never smaller) */
+  --fs-footer: 6.8pt;
+
+  /* spacing scale (pt) — 2 / 4 / 6 / 8 / 12 / 16 / 24 */
+  --sp-1: 2pt; --sp-2: 4pt; --sp-3: 6pt; --sp-4: 8pt; --sp-5: 12pt; --sp-6: 16pt; --sp-7: 24pt;
+  --radius: 4pt;
+  --radius-lg: 6pt;
+  --hair: 0.5pt;
+  --rule: 1.2pt;
+
+  /* page geometry (pt) */
+  --page-margin: 46pt;      /* = report.rs MARGIN                       */
+  --page-bottom: 66pt;      /* content bottom margin = footer zone       */
+  --page-top: 46pt;
+}
+
+/* ---------- 2. Page + running footer ------------------------------- */
+/* The footer is page furniture drawn in the bottom margin box, so it can
+   never collide with flowing content, and "Page X of Y" is computed from
+   the real page count (never hard-coded).                              */
+@page {
+  margin: 46pt 46pt 66pt 46pt;
+
+  @bottom-left {
+    /* logo lockup (official artwork, 4.29 : 1) 17pt high, with the
+       brand line directly below it                                   */
+    content: "Created using OpenFrame";
+    font: 400 6.8pt/8pt Helvetica, Arial, sans-serif;
+    color: #566277;
+    vertical-align: bottom;
+    text-align: left;
+    padding-bottom: 22pt;
+    background: url("openframe-logo.png") no-repeat left bottom 33pt / auto 17pt;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    width: 60%;
+  }
+  @bottom-right {
+    content: "Page " counter(page) " of " counter(pages);
+    font: 400 7.4pt/8pt Helvetica, Arial, sans-serif;
+    color: #1a2438;
+    vertical-align: bottom;
+    text-align: right;
+    padding-bottom: 22pt;
+  }
+  @top-right {
+    font: 400 6.8pt/8pt Helvetica, Arial, sans-serif;
+    color: #566277;
+    letter-spacing: 0.04em;
+    vertical-align: top;
+    text-align: right;
+    padding-top: 24pt;
+  }
+}
+
+/* ---------- 3. Base ------------------------------------------------- */
+* { box-sizing: border-box; }
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body {
+  margin: 0;
+  font-family: var(--of-font);
+  font-size: var(--fs-body);
+  line-height: 1.3;
+  color: var(--of-ink);
+  background: #fff;
+  font-variant-numeric: tabular-nums;
+  hyphens: manual;
+  overflow-wrap: anywhere;      /* a long word/URL wraps, it never overflows */
+  orphans: 2; widows: 2;
+}
+h1, h2, h3, h4, p, ul, ol, dl, dd, figure { margin: 0; padding: 0; }
+ul, ol { list-style: none; }
+img { display: block; max-width: 100%; }
+table { border-collapse: separate; border-spacing: 0; width: 100%; }
+.num, .tnum { font-variant-numeric: tabular-nums; }
+.nowrap { white-space: nowrap; }
+.right { text-align: right; } .center { text-align: center; }
+.muted { color: var(--of-muted); } .slate { color: var(--of-slate); }
+.bold { font-weight: 700; }
+.caps { text-transform: uppercase; letter-spacing: 0.08em; }
+
+/* ---------- 4. Screen preview shell (never printed) ----------------- */
+@media screen {
+  body { background: #cfd5df; padding: 0 0 48px; }
+  .doc {
+    width: 612pt; margin: 28px auto; background: #fff;
+    padding: 46pt 46pt 66pt; box-shadow: 0 2px 14px rgba(26, 38, 64, .25);
+    min-height: 792pt;
+  }
+  .doc.landscape { width: 792pt; min-height: 612pt; }
+  .doc.a4 { width: 595.3pt; }
+}
+@media print {
+  .doc { width: auto; margin: 0; padding: 0; box-shadow: none; }
+  .no-print, .preview-bar { display: none !important; }
+}
+.preview-bar {
+  position: sticky; top: 0; z-index: 10; display: flex; flex-wrap: wrap; gap: 6px 16px;
+  align-items: center; padding: 8px 14px; background: var(--of-navy); color: #fff;
+  font: 12px/1.3 var(--of-font);
+}
+.preview-bar strong { font-weight: 700; letter-spacing: .02em; }
+.preview-bar label { display: inline-flex; gap: 5px; align-items: center; cursor: pointer; color: #dbe3f0; }
+.preview-bar button {
+  margin-left: auto; font: inherit; font-weight: 700; background: var(--of-orange); color: #1a1208;
+  border: 0; border-radius: 4px; padding: 5px 12px; cursor: pointer;
+}
+.screen-footer-sample {
+  margin-top: 24pt; padding-top: 8pt; border-top: 1px dashed var(--of-line-strong);
+  display: flex; justify-content: space-between; align-items: flex-end; color: var(--of-slate);
+  font-size: 7pt;
+}
+.screen-footer-sample img { height: 17pt; width: auto; margin-bottom: 3pt; }
+@media print { .screen-footer-sample { display: none; } }
+[hidden] { display: none !important; }
+
+/* ---------- 5. Masthead -------------------------------------------- */
+.masthead {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 18pt; align-items: start;
+  margin-bottom: var(--sp-5); break-inside: avoid; break-after: avoid;
+}
+.eyebrow {
+  font-size: 7.6pt; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--of-slate);
+}
+.masthead h1 {
+  font-size: var(--fs-display); line-height: 1.05; font-weight: 700; color: var(--of-navy);
+  letter-spacing: -0.01em; margin: var(--sp-2) 0 var(--sp-3);
+}
+.masthead.compact h1 { font-size: var(--fs-title); }
+.masthead .meta-line { font-size: var(--fs-small); color: var(--of-slate); margin-top: var(--sp-2); }
+.masthead .badges { display: flex; flex-wrap: wrap; gap: var(--sp-2) var(--sp-3); align-items: center; }
+.daybox {
+  background: var(--of-navy); color: #fff; border-radius: var(--radius-lg);
+  padding: 9pt 14pt 10pt; min-width: 118pt; max-width: 150pt;
+}
+.daybox .lbl { font-size: 6.8pt; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--of-dark-muted); }
+.daybox .big { font-size: 30pt; line-height: 1; font-weight: 700; margin: 3pt 0 3pt; }
+.daybox .l1 { font-size: 9pt; font-weight: 700; }
+.daybox .l2 { font-size: 8.4pt; }
+.daybox .foot { font-size: 7.6pt; color: var(--of-dark-muted); margin-top: 3pt; }
+
+/* ---------- 6. Section heading ------------------------------------- */
+.sec {
+  display: flex; justify-content: space-between; align-items: baseline; gap: var(--sp-5);
+  margin: var(--sp-6) 0 var(--sp-3); padding-bottom: 3pt;
+  border-bottom: var(--rule) solid var(--of-navy);
+  break-after: avoid; break-inside: avoid;
+}
+.sec h2, .sec .t {
+  font-size: var(--fs-sec); line-height: 1.2; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--of-navy);
+}
+.sec .hint { font-size: 7.4pt; color: var(--of-slate); text-align: right; font-weight: 400; letter-spacing: 0; text-transform: none; }
+.sec.first, .masthead + .sec { margin-top: var(--sp-5); }
+section { break-inside: auto; }
+.keep { break-inside: avoid; }
+.page-break-before { break-before: page; }
+
+/* ---------- 7. Chips / tiles / badges ------------------------------ */
+.chip {
+  display: inline-block; font-size: var(--fs-chip); font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  line-height: 1; padding: 2.4pt 4.4pt 2.6pt; border-radius: 3pt; border: var(--hair) solid var(--of-line);
+  background: var(--of-panel); color: var(--of-neutral-text); white-space: nowrap; vertical-align: middle;
+}
+.chip.pill { font-size: 8pt; font-weight: 400; letter-spacing: 0; text-transform: none; padding: 1.8pt 5pt 2pt; }
+.chip.info { background: var(--of-blue-fill); border-color: var(--of-blue-line); color: var(--of-blue-text); }
+.chip.warn { background: var(--of-amber-fill); border-color: var(--of-amber-line); color: var(--of-amber-text); }
+.chip.danger { background: var(--of-red-fill); border-color: var(--of-red-line); color: var(--of-red-text); }
+.chip.ok { background: var(--of-green-fill); border-color: var(--of-green-line); color: var(--of-green-text); }
+.chip.accent { background: var(--of-orange-soft); border-color: var(--of-orange-line); color: var(--of-orange-deep); }
+.chip.navy { background: var(--of-navy); border-color: var(--of-navy); color: #fff; }
+.chips { display: flex; flex-wrap: wrap; gap: 2.5pt; }
+.tile {
+  display: inline-block; min-width: 18pt; text-align: center; font-size: 8.6pt; font-weight: 700;
+  padding: 2.4pt 4pt; border-radius: 3.5pt; background: var(--of-tint); color: var(--of-navy);
+  border: var(--hair) solid var(--of-line-strong);
+}
+.tile.teal { background: var(--of-teal); color: #fff; border-color: var(--of-teal); }
+.needs { /* the "Needs input" marker: text + colour, readable in grayscale */
+  display: inline-block; font-size: var(--fs-chip); font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--of-red-text); background: var(--of-red-fill); border: var(--hair) solid var(--of-red-line);
+  border-radius: 3pt; padding: 2.4pt 4.4pt 2.6pt; line-height: 1;
+}
+
+/* ---------- 8. Callouts / banners ---------------------------------- */
+.callout {
+  display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 0;
+  border: var(--hair) solid var(--of-line); border-radius: var(--radius-lg); background: var(--of-panel);
+  break-inside: avoid; margin: var(--sp-4) 0;
+}
+.callout > * { padding: 8pt 10pt; }
+.callout > * + * { border-left: var(--hair) solid var(--of-line); }
+.callout .lbl { font-size: var(--fs-label); font-weight: 700; letter-spacing: .11em; text-transform: uppercase; color: var(--of-slate); }
+.callout .big { font-size: 13pt; font-weight: 700; color: var(--of-navy); line-height: 1.2; margin-top: 2pt; }
+.callout.accent { background: var(--of-orange-soft); border-color: var(--of-orange-line); }
+.callout.accent > * + * { border-color: var(--of-orange-line); }
+.callout.accent .lbl { color: var(--of-orange-deep); }
+.callout.warn { background: var(--of-amber-fill); border-color: var(--of-amber-line); color: var(--of-amber-text); }
+.callout.info { background: var(--of-blue-fill); border-color: var(--of-blue-line); color: var(--of-blue-text); }
+.callout.danger { background: var(--of-red-fill); border-color: var(--of-red-line); color: var(--of-red-text); }
+.callout.ok { background: var(--of-green-fill); border-color: var(--of-green-line); color: var(--of-green-text); }
+.callout.block { display: block; padding: 8pt 10pt; }
+.callout.block > * { padding: 0; }
+.banner { /* single-line status banner, left stripe + text label so it reads in grayscale */
+  display: flex; gap: 8pt; align-items: baseline; padding: 5pt 9pt; margin: var(--sp-3) 0;
+  border: var(--hair) solid var(--of-line); border-left: 3pt solid var(--of-slate); background: var(--of-panel);
+  border-radius: 3pt; break-inside: avoid; font-size: var(--fs-small);
+}
+.banner b { letter-spacing: .06em; text-transform: uppercase; font-size: 7pt; }
+.banner.warn { background: var(--of-amber-fill); border-color: var(--of-amber-line); border-left-color: var(--of-orange); color: var(--of-amber-text); }
+.banner.danger { background: var(--of-red-fill); border-color: var(--of-red-line); border-left-color: var(--of-red-text); color: var(--of-red-text); }
+.banner.info { background: var(--of-blue-fill); border-color: var(--of-blue-line); border-left-color: var(--of-teal); color: var(--of-blue-text); }
+.banner.ok { background: var(--of-green-fill); border-color: var(--of-green-line); border-left-color: var(--of-green-text); color: var(--of-green-text); }
+
+/* ---------- 9. Metrics --------------------------------------------- */
+.metrics { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: var(--sp-3); margin: var(--sp-4) 0; break-inside: avoid; }
+.metric { border: var(--hair) solid var(--of-line); border-radius: var(--radius); padding: 6pt 8pt; background: var(--of-panel); }
+.metric .lbl { font-size: var(--fs-label); font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--of-slate); }
+.metric .val { font-size: 15pt; font-weight: 700; color: var(--of-navy); line-height: 1.15; margin-top: 2pt; }
+.metric .sub { font-size: 7.4pt; color: var(--of-slate); margin-top: 1pt; }
+.metric.accent { background: var(--of-orange-soft); border-color: var(--of-orange-line); }
+.metric.navy { background: var(--of-navy); border-color: var(--of-navy); }
+.metric.navy .lbl, .metric.navy .sub { color: var(--of-dark-muted); } .metric.navy .val { color: #fff; }
+
+/* ---------- 10. Cards + label/value fields -------------------------- */
+.cards { display: grid; gap: var(--sp-4); grid-template-columns: repeat(var(--cols, 2), minmax(0, 1fr)); align-items: start; }
+.cards.c1 { --cols: 1; } .cards.c2 { --cols: 2; } .cards.c3 { --cols: 3; } .cards.c4 { --cols: 4; }
+.card {
+  border: var(--hair) solid var(--of-line-strong); border-radius: var(--radius-lg); background: #fff;
+  overflow: hidden; break-inside: avoid;
+}
+.card > .head {
+  display: flex; align-items: center; gap: 8pt; padding: 6pt 9pt; background: var(--of-tint);
+  border-bottom: var(--hair) solid var(--of-line-strong);
+  font-size: 8.6pt; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; color: var(--of-navy);
+}
+.card > .head.dark { background: var(--of-navy); color: #fff; border-bottom: 0; }
+.card > .body { padding: 6pt 9pt 7pt; }
+.card .lead { font-size: var(--fs-lead); font-weight: 700; color: var(--of-ink); line-height: 1.3; margin-bottom: 4pt; }
+.fields { display: block; }
+.fields .row { display: grid; grid-template-columns: 34% minmax(0, 1fr); gap: 8pt; padding: 3.2pt 0; border-top: var(--hair) solid var(--of-line); break-inside: avoid; }
+.fields .row:first-child { border-top: 0; }
+.fields dt { font-size: 7.6pt; color: var(--of-slate); }
+.fields dd { font-size: var(--fs-small); font-weight: 700; color: var(--of-ink); text-align: right; }
+.fields.stack .row { grid-template-columns: 1fr; gap: 1pt; }
+.fields.stack dd { text-align: left; }
+.fields .row.long { grid-template-columns: 1fr; gap: 1pt; }   /* long values: label above, value left-aligned */
+.fields .row.long dd { text-align: left; font-weight: 700; }
+.fields .row.missing dd { font-weight: 400; }
+.bullets li { position: relative; padding: 2.6pt 0 2.6pt 11pt; border-bottom: var(--hair) solid var(--of-line); font-size: var(--fs-small); }
+.bullets li:last-child { border-bottom: 0; }
+.bullets li::before { content: ""; position: absolute; left: 2pt; top: 6.4pt; width: 3pt; height: 3pt; border-radius: 50%; background: var(--of-orange); }
+
+/* ---------- 11. Tables --------------------------------------------- */
+.tbl { font-size: var(--fs-cell); line-height: 1.28; }
+.tbl th, .tbl td { padding: 4.2pt 6pt; text-align: left; vertical-align: top; }
+.tbl thead { display: table-header-group; }          /* header repeats on every page */
+.tbl tfoot { display: table-footer-group; }
+.tbl thead th {
+  background: var(--of-navy); color: #fff; font-size: 6.9pt; font-weight: 700; letter-spacing: .09em;
+  text-transform: uppercase; vertical-align: middle; padding: 5pt 6pt;
+}
+.tbl thead tr.title th { /* a table title row inside the repeating header: the table keeps its name on every page */
+  background: #fff; color: var(--of-navy); font-size: var(--fs-sec); letter-spacing: .1em; padding: 0 0 3pt;
+  border-bottom: var(--rule) solid var(--of-navy);
+}
+.tbl thead tr.title th .hint { float: right; font-weight: 400; font-size: 7.4pt; letter-spacing: 0; text-transform: none; color: var(--of-slate); }
+.tbl thead tr.gap th { background: #fff; height: 3pt; padding: 0; }
+.tbl tbody tr { break-inside: avoid; }
+.tbl tbody td { border-bottom: var(--hair) solid var(--of-line); }
+.tbl tbody tr:last-child td { border-bottom: var(--hair) solid var(--of-line-strong); }
+.tbl.zebra tbody tr:nth-child(even) td { background: var(--of-panel); }
+.tbl.boxed tbody td:first-child { border-left: var(--hair) solid var(--of-line-strong); }
+.tbl.boxed tbody td:last-child { border-right: var(--hair) solid var(--of-line-strong); }
+.tbl.compact th, .tbl.compact td { padding: 2.6pt 4pt; }
+.tbl td.r, .tbl th.r { text-align: right; }
+.tbl td.c, .tbl th.c { text-align: center; }
+.tbl td.strong { font-weight: 700; color: var(--of-navy); }
+.tbl .sub { display: block; font-size: 7.8pt; color: var(--of-slate); margin-top: 1.5pt; }
+.tbl.tbl tbody tr.group td { background: var(--of-tint); color: var(--of-navy); font-weight: 700; font-size: 8pt; letter-spacing: .04em; text-transform: uppercase; border-bottom: var(--hair) solid var(--of-line-strong); break-after: avoid; }
+.tbl.tbl tbody tr.total td { background: var(--of-navy); color: #fff; font-weight: 700; border-bottom: 0; }
+.tbl.tbl tbody tr.subtotal td { background: var(--of-tint); font-weight: 700; color: var(--of-navy); }
+.tbl.tbl tbody tr.tint-meal td { background: #fff6e3; } .tbl.tbl tbody tr.tint-travel td { background: #eaf3fa; } .tbl.tbl tbody tr.tint-other td { background: var(--of-panel); }
+.tbl tr.stripe-orange td:first-child { box-shadow: inset 3pt 0 0 var(--of-orange); }
+.tbl tr.stripe-teal td:first-child { box-shadow: inset 3pt 0 0 var(--of-teal); }
+.tbl tr.stripe-slate td:first-child { box-shadow: inset 3pt 0 0 var(--of-faint); }
+.table-wrap { break-inside: auto; }
+.empty-state {
+  font-size: 8.8pt; color: var(--of-muted); padding: 8pt 0; border-bottom: var(--hair) solid var(--of-line);
+}
+
+/* ---------- 12. Images --------------------------------------------- */
+.frame { position: relative; background: var(--of-panel); border: var(--hair) solid var(--of-line); border-radius: 3pt; overflow: hidden; }
+.frame.r169 { aspect-ratio: 16 / 9; } .frame.r43 { aspect-ratio: 4 / 3; } .frame.r11 { aspect-ratio: 1 / 1; } .frame.r66 { aspect-ratio: 100 / 66; }
+.frame img { width: 100%; height: 100%; object-fit: contain; background: var(--of-panel); }      /* contain: never crop a reference */
+.frame.cover img { object-fit: cover; }
+.frame.missing { display: flex; align-items: center; justify-content: center; color: var(--of-muted); font-size: 7.6pt; text-align: center; padding: 6pt;
+  background: var(--of-panel); border: var(--hair) dashed var(--of-line-strong); }   /* flat fill + dashed hairline: no gradients in the renderer */
+.caption { font-size: 8pt; color: var(--of-slate); margin-top: 3pt; }
+.caption b { color: var(--of-ink); }
+
+/* ---------- 13. Legend / notes / misc ------------------------------- */
+.legend { display: flex; flex-wrap: wrap; gap: 4pt 12pt; font-size: 7.6pt; color: var(--of-slate); margin: var(--sp-3) 0; break-inside: avoid; }
+.legend .it { display: inline-flex; align-items: center; gap: 4pt; }
+.note { font-size: 7.8pt; color: var(--of-slate); line-height: 1.35; }
+.note-box { border-left: 2pt solid var(--of-orange); padding: 3pt 0 3pt 8pt; margin: var(--sp-4) 0; break-inside: avoid; }
+.dot { display: inline-block; width: 6pt; height: 6pt; border-radius: 50%; background: var(--of-faint); vertical-align: baseline; margin-right: 3pt; }
+.two-col { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--sp-4); align-items: start; }
+.three-col { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-4); align-items: start; }
+.mb-2 { margin-bottom: var(--sp-2); } .mb-4 { margin-bottom: var(--sp-4); } .mt-4 { margin-top: var(--sp-4); }

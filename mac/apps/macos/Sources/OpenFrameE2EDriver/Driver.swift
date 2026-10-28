@@ -230,7 +230,9 @@ final class UI {
         try await click(e)
     }
 
-    /// A real left click in the middle of the element: mouse down and up sent to its window.
+    /// A real left click in the middle of the element: mouse down and up queued for its window, as
+    /// the mouse sends them. Sending the mouse down straight to the window deadlocked: a table
+    /// tracks the mouse until the button comes up, and the mouse up was only sent after it returned.
     func click(_ e: Element, count: Int = 1) async throws {
         let frame = e.frame
         guard frame.width > 0, frame.height > 0 else { throw DriverError("element has no frame: \(e)") }
@@ -245,10 +247,10 @@ final class UI {
                 guard let ev = NSEvent.mouseEvent(with: type, location: local, modifierFlags: [],
                                                   timestamp: ProcessInfo.processInfo.systemUptime, windowNumber: w.windowNumber,
                                                   context: nil, eventNumber: 0, clickCount: i, pressure: type == .leftMouseDown ? 1 : 0) else { continue }
-                NSApp.sendEvent(ev)
+                NSApp.postEvent(ev, atStart: false)
             }
         }
-        await idle()
+        await idle(0.3)
     }
 
     /// Focuses a text field or text view and replaces its text the way typing does, so bindings,

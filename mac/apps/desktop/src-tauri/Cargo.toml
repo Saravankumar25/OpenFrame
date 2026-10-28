@@ -16,9 +16,6 @@ tauri-build = { version = "2", features = [] }
 # Reads `swift -print-target-info` on macOS to find the Swift runtime for the StoreKit bridge.
 # Already in the build tree through tauri-build.
 serde_json.workspace = true
-# Internal builds only (ADR-0024): Argon2id hash of OPENFRAME_TEAM_PASSWORD with a random salt.
-argon2.workspace = true
-getrandom.workspace = true
 
 [dependencies]
 openframe-domain.workspace = true

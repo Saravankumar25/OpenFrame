@@ -323,6 +323,16 @@ pub fn ambiguous(question: impl Into<String>) -> AppError {
     AppError::ai("ambiguous", question)
 }
 
+/// Where a search of the whole project looked.
+pub const EVERYWHERE: &str =
+    "the screenplays, the Story, Production, the Schedule, the Budget, notes and files";
+
+/// The fixed sentence for something the project does not hold (spec 4.1): "I could not find a
+/// makeup artist for this project. I looked in Cast and Crew." `what` is a noun phrase.
+pub fn could_not_find(what: &str, looked_in: &str) -> String {
+    format!("I could not find {what}. I looked in {looked_in}.")
+}
+
 pub fn join_or(items: &[String]) -> String {
     match items.len() {
         0 => String::new(),

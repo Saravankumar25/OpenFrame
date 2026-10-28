@@ -913,43 +913,35 @@ fn contact_data_is_hidden_by_role_from_the_assistant_and_from_exports() {
         );
     }
 
-    // The assistant's read tools never return contact fields, even for the Owner.
-    let actor = env.actor();
-    let scope = env
-        .core
-        .project()
-        .unwrap()
-        .store
-        .read(|c| {
-            scope::resolve(
-                c,
-                &actor,
-                &AiScopeArgs {
-                    kind: AiScopeKind::WholeProject,
-                    draft_id: None,
-                    scene_id: None,
-                    selection: Vec::new(),
-                    shooting_day_id: None,
-                    call_sheet_id: None,
-                },
-            )
-        })
-        .unwrap();
-    for (tool, args) in [
-        ("production_catalog", json!({ "item": "Red Motorcycle" })),
-        (
-            "production_locations",
-            json!({ "location": "Police Station" }),
-        ),
-        ("cast_and_crew", json!({})),
-    ] {
-        let step =
-            toolbox::run_tool_unlocked(&env.core, &actor, &scope, "who to call", tool, &args)
-                .unwrap();
+    // The assistant asks as the person: catalog and location contacts are never returned, and
+    // cast and crew contacts only to the roles that see them in the app (Owner and Editor).
+    let ask = |actor: &openframe_domain::Actor, tool: &str, args: &Value| -> String {
+        let scope = env
+            .core
+            .project()
+            .unwrap()
+            .store
+            .read(|c| {
+                scope::resolve(
+                    c,
+                    actor,
+                    &AiScopeArgs {
+                        kind: AiScopeKind::WholeProject,
+                        draft_id: None,
+                        scene_id: None,
+                        selection: Vec::new(),
+                        shooting_day_id: None,
+                        call_sheet_id: None,
+                    },
+                )
+            })
+            .unwrap();
+        let step = toolbox::run_tool_unlocked(&env.core, actor, &scope, "who to call", tool, args)
+            .unwrap();
         let ToolStep::Output(o) = step else {
             panic!("{tool} returned a proposal")
         };
-        let text = format!(
+        format!(
             "{} {:?} {:?}",
             o.content,
             o.details,
@@ -957,9 +949,39 @@ fn contact_data_is_hidden_by_role_from_the_assistant_and_from_exports() {
                 .iter()
                 .map(|i| (&i.label, &i.detail))
                 .collect::<Vec<_>>()
-        );
+        )
+    };
+    let actor = env.actor();
+    for (tool, args) in [
+        ("production_catalog", json!({ "item": "Red Motorcycle" })),
+        (
+            "production_locations",
+            json!({ "location": "Police Station" }),
+        ),
+    ] {
+        let text = ask(&actor, tool, &args);
         for s in secrets {
             assert!(!text.contains(s), "{tool} gave the assistant {s}");
+        }
+    }
+    for role in [Role::Owner, Role::Editor] {
+        let text = ask(&env.actor_with_role(role), "cast_and_crew", &json!({}));
+        assert!(
+            text.contains("contact: 98xxx 10004") && text.contains("contact: rohan@example.com"),
+            "{role:?}: {text}"
+        );
+        for s in ["98111", "98222", "9999"] {
+            assert!(!text.contains(s), "cast_and_crew gave the assistant {s}");
+        }
+    }
+    for role in [Role::Commenter, Role::Viewer, Role::ExportOnly] {
+        let text = ask(&env.actor_with_role(role), "cast_and_crew", &json!({}));
+        assert!(
+            text.contains("contact: hidden for your role"),
+            "{role:?}: {text}"
+        );
+        for s in secrets {
+            assert!(!text.contains(s), "{role:?} sees {s} through the assistant");
         }
     }
 

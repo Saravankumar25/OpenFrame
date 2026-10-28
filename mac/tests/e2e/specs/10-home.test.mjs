@@ -18,12 +18,6 @@ let browser;
 const step = stepper(() => browser, "home");
 const cards = () =>
   browser.execute(() => [...document.querySelectorAll('main button[aria-label^="Open "]')].map((b) => b.getAttribute("aria-label")));
-/** Leave Application Home and come back (the page reloads its list when it mounts). */
-async function refreshHome() {
-  await click(browser, "Global Idea Vault");
-  await click(browser, "Your projects");
-  await waitForText(browser, "Pick up where you left off");
-}
 const statusChip = async () => (await browser.$('//main//button[starts-with(@aria-label,"Status: ")]')).getAttribute("aria-label");
 
 describe("home", () => {
@@ -74,13 +68,11 @@ describe("home", () => {
 
   test("Application Home: rename, duplicate, archive and restore", async () => {
     await step("app-home", async () => {
-      await refreshHome();
       await browser.waitUntil(async () => (await cards()).includes("Open Harbour Lights Redux, Feature Film, Writing"), { timeout: 10_000, timeoutMsg: "card not renamed" });
 
       await click(browser, "More actions for Harbour Lights Redux");
       await menuItem(browser, "Duplicate Project");
       await waitForText(browser, "It is a separate project with its own identity.");
-      await refreshHome();
       await browser.waitUntil(async () => (await cards()).length === 2, { timeout: 10_000, timeoutMsg: "the duplicate is not listed" });
       const copy = (await cards()).find((c) => c !== "Open Harbour Lights Redux, Feature Film, Writing");
       const copyTitle = /^Open (.+), Feature Film, /.exec(copy)?.[1];
@@ -96,16 +88,24 @@ describe("home", () => {
       await click(browser, `More actions for ${copyTitle}`);
       await menuItem(browser, "Archive");
       await waitForText(browser, `“${copyTitle}” was archived.`);
-      await refreshHome();
       await browser.waitUntil(async () => (await cards()).length === 1, { timeout: 10_000, timeoutMsg: "archived project still listed" });
       await click(browser, "Open Archived (1)");
       await waitForText(browser, "Archived projects");
       assert.ok((await mainText(browser)).includes(copyTitle), "the archived project is not on the Archived list");
       await click(browser, "Restore");
       await waitForText(browser, `“${copyTitle}” is back in your projects.`);
+      await browser.waitUntil(async () => !(await mainText(browser)).includes(copyTitle), { timeout: 10_000, timeoutMsg: "the restored project stayed on the Archived list" });
       await click(browser, "Back to projects");
-      await refreshHome();
       await browser.waitUntil(async () => (await cards()).length === 2, { timeout: 10_000, timeoutMsg: "restored project not listed" });
+
+      // Pin and Unpin move the card at once, without leaving the page.
+      const pinnedSection = () => browser.execute(() => !!document.querySelector('main section[aria-label="Pinned"]'));
+      await click(browser, `More actions for ${copyTitle}`);
+      await menuItem(browser, "Pin");
+      await browser.waitUntil(pinnedSection, { timeout: 10_000, timeoutMsg: "Pin did not show the Pinned section" });
+      await click(browser, `More actions for ${copyTitle}`);
+      await menuItem(browser, "Unpin");
+      await browser.waitUntil(async () => !(await pinnedSection()), { timeout: 10_000, timeoutMsg: "Unpin left the Pinned section" });
       await assertQuiet(browser, "application home");
     });
   });
@@ -141,7 +141,6 @@ describe("home", () => {
       await remove.waitForEnabled({ timeout: 5_000 });
       await remove.click();
       await waitForText(browser, `“${title}” was moved to the Windows Recycle Bin.`);
-      await refreshHome();
       await browser.waitUntil(async () => (await cards()).length === 1, { timeout: 10_000, timeoutMsg: "the deleted project is still listed" });
       assert.equal(readdirSync(bin).length, before + 1, "the project folder did not reach the bin");
 

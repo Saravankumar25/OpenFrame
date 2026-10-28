@@ -74,7 +74,7 @@ struct AIDownloadCard: View {
                         .accessibilityIdentifier("ai-download-pause")
                 } else if !running {
                     Button(startLabel(d, damaged: isDamaged)) { Task { await model.start(damaged: isDamaged) } }
-                        .buttonStyle(.borderedProminent)
+                        .buttonStyle(.ofProminent)
                         .disabled(model.busy || noSpace)
                         .accessibilityIdentifier("ai-download-start")
                 }

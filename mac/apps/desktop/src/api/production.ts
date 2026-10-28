@@ -8,7 +8,6 @@ import type { BreakdownCategory } from "../ipc/generated/BreakdownCategory";
 import type { CatalogStatus } from "../ipc/generated/CatalogStatus";
 import type { ProductionLocationStatus } from "../ipc/generated/ProductionLocationStatus";
 import type { Member } from "../ipc/generated/Member";
-import type { ProductionSourceInfo } from "../ipc/generated/ProductionSourceInfo";
 import type { ChipTone } from "../design-system";
 
 /** Breakdown categories, exactly in FSD §26.3 order. */
@@ -91,10 +90,6 @@ export const PROD_TABLES = [
   "story_character",
   "asset",
 ];
-
-export function useProductionSource() {
-  return useOp<ProductionSourceInfo | null>("production.source", {}, PROD_TABLES);
-}
 
 /** Whether the local user may edit (UI hint only; Rust enforces permissions). */
 export function useCanEdit(): boolean {

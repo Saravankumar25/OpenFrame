@@ -61,10 +61,20 @@ struct CSSidesView: View {
                     Text("Scenes").fontWeight(.semibold)
                     if model.strips.isEmpty { Text("No scenes scheduled on this day.").font(.callout).foregroundStyle(theme["muted"]) }
                     ForEach(model.strips, id: \.id) { s in
-                        Toggle("\(CSFormat.number(s.number)): \(s.heading)", isOn: Binding(
-                            get: { model.chosen.contains(s.id) },
-                            set: { model.setScene(s.id, on: $0) }))
-                            .accessibilityIdentifier("sides-scene-\(s.id)")
+                        let left = !model.included(s)
+                        Toggle(isOn: Binding(get: { model.ticked(s) }, set: { model.setScene(s.id, on: $0) })) {
+                            Text("\(CSFormat.number(s.number)): \(s.heading)")
+                                + Text(left ? " \u{00B7} Left out: no selected cast in this scene" : "")
+                                .font(.caption).foregroundColor(theme["muted"])
+                        }
+                        .disabled(left)
+                        .accessibilityIdentifier("sides-scene-\(s.id)")
+                    }
+                    if let line = model.filterLine {
+                        Text(line).font(.callout).foregroundStyle(theme["muted"])
+                            .fixedSize(horizontal: false, vertical: true)
+                            .accessibilityAddTraits(.updatesFrequently)
+                            .accessibilityIdentifier("sides-filter-status")
                     }
                     Text("For").fontWeight(.semibold).padding(.top, 6)
                     Picker("Sides for", selection: $model.forMode) {
@@ -76,7 +86,7 @@ struct CSSidesView: View {
                     if model.forMode == .selected {
                         if model.dayCast.isEmpty { Text("No confirmed cast on this day.").font(.callout).foregroundStyle(theme["muted"]) }
                         ForEach(model.dayCast, id: \.key) { c in
-                            Toggle(c.actor.map { "\($0) (\(c.character))" } ?? c.character, isOn: Binding(
+                            Toggle(model.castLabel(c), isOn: Binding(
                                 get: { model.castKeys.contains(c.key) },
                                 set: { model.setCast(c.key, on: $0) }))
                                 .accessibilityIdentifier("sides-cast-\(csSlug(c.key))")
@@ -94,7 +104,7 @@ struct CSSidesView: View {
                         .disabled(!model.ready)
                         .accessibilityIdentifier("sides-preview")
                         Button("Save Sides") { Task { await model.save() } }
-                            .buttonStyle(.borderedProminent)
+                            .buttonStyle(.ofProminent)
                             .disabled(!model.ready || !hub.canEdit)
                             .accessibilityIdentifier("sides-save")
                         Button { model.exportPDF() } label: { Label("Export PDF", systemImage: "square.and.arrow.down") }
@@ -162,7 +172,7 @@ struct CSSidesView: View {
                 ProgressView()
             }
         } else if !model.ready {
-            Text("Choose a shooting day and at least one scene\(model.forMode == .selected ? " and cast member" : "") to preview the sides.")
+            Text(model.notReadyMessage)
                 .foregroundStyle(theme["muted"]).padding(PageSpacing.large)
                 .multilineTextAlignment(.center).frame(maxWidth: .infinity)
                 .accessibilityIdentifier("sides-choose-hint")

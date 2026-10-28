@@ -32,10 +32,9 @@ const MAX_CHANGES: usize = 50;
 
 pub fn register(r: &mut Registry) {
     use crate::registry::{OperationMetadata as M, hidden as h};
-    r.query("app.shortcuts", list).meta(
-        M::app_query("Keyboard shortcuts the person at this computer has changed.")
-            .hidden(h::PREFERENCE),
-    );
+    r.query("app.shortcuts", list).meta(M::app_query(
+        "Keyboard shortcuts the person at this computer has changed.",
+    ));
     r.command("app.set_shortcuts", set).meta(
         M::app_command("Change, remove or restore keyboard shortcuts.").hidden(h::PREFERENCE),
     );
@@ -246,7 +245,7 @@ fn save(core: &AppCore, map: &BTreeMap<String, Vec<String>>) -> AppResult<()> {
     Ok(())
 }
 
-fn list(core: &AppCore, _a: &Actor, _: ShortcutsArgs) -> AppResult<ShortcutOverrides> {
+pub(crate) fn list(core: &AppCore, _a: &Actor, _: ShortcutsArgs) -> AppResult<ShortcutOverrides> {
     Ok(to_dto(load(core)?))
 }
 

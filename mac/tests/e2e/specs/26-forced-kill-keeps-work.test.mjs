@@ -9,7 +9,7 @@
 
 import { after, before, describe, test } from "node:test";
 import assert from "node:assert/strict";
-import { click, launchApp, openWorkspace, pageText, sleep, stepper, waitForText } from "../lib/app.mjs";
+import { click, launchApp, openBeatBoard, openWorkspace, pageText, sleep, stepper, waitForText } from "../lib/app.mjs";
 import { editorElements, firstLaunchProject, inDialog, menuItem, projectMenu, xq } from "../lib/flows.mjs";
 import { killApp } from "../lib/ai.mjs";
 
@@ -53,7 +53,7 @@ describe("work survives a forced kill", () => {
       await inDialog(browser, "Save");
       await waitForText(browser, "Saved to the Project Idea Vault");
 
-      await openWorkspace(browser, "Story");
+      await openBeatBoard(browser);
       await click(browser, "Add Act");
       await (await browser.$('//input[@aria-label="Act title"]')).setValue("Act One");
       await browser.keys("Enter");
@@ -108,7 +108,7 @@ describe("work survives a forced kill", () => {
 
       await openWorkspace(browser, "Idea Vault");
       await browser.waitUntil(async () => (await vaultItems()).includes("A ferry that only sails"), { timeout: 10_000, timeoutMsg: "the idea was lost" });
-      await openWorkspace(browser, "Story");
+      await openBeatBoard(browser);
       await browser.waitUntil(async () => (await cards()).includes(CARD), { timeout: 10_000, timeoutMsg: "the Scene Card was lost" });
       await storyTab("Characters");
       await browser.waitUntil(async () => (await pageText(browser)).includes(CHARACTER), { timeout: 10_000, timeoutMsg: "the character was lost" });

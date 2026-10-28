@@ -10,7 +10,7 @@ draftId: string | null,
  * Script review: "full" | "comments" (Script + comments) | "scenes";
  * Beat Board: "full" | "act"; others: "full" | "scenes".
  */
-scope: string | null, sceneIds: Array<string>, actId: string | null, callSheetId: string | null, includeComments: boolean, includeAttachments: boolean, 
+scope: string | null, sceneIds: Array<string>, actId: string | null, includeComments: boolean, includeAttachments: boolean, 
 /**
  * Always refused: private notes are not allowed in exchange packages.
  */

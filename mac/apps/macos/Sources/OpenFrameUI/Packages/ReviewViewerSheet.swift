@@ -130,7 +130,7 @@ struct ReviewViewerSheet: View {
                             Task { await model.exportResponse(to: url) }
                         }
                     }
-                    .controlSize(.small).buttonStyle(.borderedProminent)
+                    .controlSize(.small).buttonStyle(.ofProminent)
                     .disabled(model.myCount == 0)
                     .help(model.myCount == 0 ? "Add a comment first" : "")
                     .accessibilityIdentifier("review-export-response")
@@ -259,7 +259,7 @@ struct ReviewViewerSheet: View {
                 Spacer()
                 Button("Comment") { Task { await model.addComment() } }
                     .keyboardShortcut(.return, modifiers: .command)
-                    .buttonStyle(.borderedProminent).controlSize(.small)
+                    .buttonStyle(.ofProminent).controlSize(.small)
                     .disabled(!model.canAdd)
                     .accessibilityIdentifier("review-add-comment")
             }

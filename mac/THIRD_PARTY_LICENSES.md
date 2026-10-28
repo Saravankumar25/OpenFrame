@@ -8,7 +8,7 @@ OpenFrame Studio's own license has **not been selected yet**. See `LICENSE-PENDI
 
 ## Summary
 
-- Rust crates: **405**
+- Rust crates: **399**
 - npm packages: **72**
 - Copyleft or unknown (blocking until resolved): **0**
 - Weak copyleft / needs review: **5**
@@ -56,9 +56,9 @@ None.
 
 | License expression | Packages |
 |---|---:|
-| MIT OR Apache-2.0 | 199 |
+| MIT OR Apache-2.0 | 196 |
 | MIT | 140 |
-| Apache-2.0 OR MIT | 40 |
+| Apache-2.0 OR MIT | 37 |
 | MIT/Apache-2.0 | 18 |
 | Unicode-3.0 | 18 |
 | Unlicense OR MIT | 10 |
@@ -99,7 +99,6 @@ None.
 | alloc-stdlib | 0.2.4 | BSD-3-Clause | permissive | https://github.com/dropbox/rust-alloc-no-stdlib |
 | alloc-stdlib | 0.3.0 | BSD-3-Clause | permissive | https://github.com/dropbox/rust-alloc-no-stdlib |
 | anyhow | 1.0.104 | MIT OR Apache-2.0 | permissive | https://github.com/dtolnay/anyhow |
-| argon2 | 0.6.0 | MIT OR Apache-2.0 | permissive | https://github.com/RustCrypto/password-hashes |
 | atomic-waker | 1.1.2 | Apache-2.0 OR MIT | permissive | https://github.com/smol-rs/atomic-waker |
 | base64 | 0.22.1 | MIT OR Apache-2.0 | permissive | https://github.com/marshallpierce/rust-base64 |
 | base64 | 0.23.1 | MIT OR Apache-2.0 | permissive | https://github.com/marshallpierce/rust-base64 |
@@ -108,7 +107,6 @@ None.
 | bit-vec | 0.8.0 | Apache-2.0 OR MIT | permissive | https://github.com/contain-rs/bit-vec |
 | bitflags | 1.3.2 | MIT/Apache-2.0 | permissive | https://github.com/bitflags/bitflags |
 | bitflags | 2.13.2 | MIT OR Apache-2.0 | permissive | https://github.com/bitflags/bitflags |
-| blake2 | 0.11.0 | MIT OR Apache-2.0 | permissive | https://github.com/RustCrypto/hashes |
 | block-buffer | 0.10.4 | MIT OR Apache-2.0 | permissive | https://github.com/RustCrypto/utils |
 | block-buffer | 0.12.1 | MIT OR Apache-2.0 | permissive | https://github.com/RustCrypto/utils |
 | block-padding | 0.4.2 | MIT OR Apache-2.0 | permissive | https://github.com/RustCrypto/utils |
@@ -130,7 +128,6 @@ None.
 | chacha20 | 0.10.2 | MIT OR Apache-2.0 | permissive | https://github.com/RustCrypto/stream-ciphers |
 | chrono | 0.4.45 | MIT OR Apache-2.0 | permissive | https://github.com/chronotope/chrono |
 | cipher | 0.5.2 | MIT OR Apache-2.0 | permissive | https://github.com/RustCrypto/traits |
-| cmov | 0.5.4 | Apache-2.0 OR MIT | permissive | https://github.com/RustCrypto/utils |
 | color_quant | 1.1.0 | MIT | permissive | https://github.com/image-rs/color_quant |
 | const-oid | 0.10.2 | Apache-2.0 OR MIT | permissive | https://github.com/RustCrypto/formats |
 | const-oid | 0.9.6 | Apache-2.0 OR MIT | permissive | https://github.com/RustCrypto/formats/tree/master/const-oid |
@@ -152,7 +149,6 @@ None.
 | csv | 1.4.0 | Unlicense/MIT | permissive | https://github.com/BurntSushi/rust-csv |
 | csv-core | 0.1.13 | Unlicense/MIT | permissive | https://github.com/BurntSushi/rust-csv |
 | ctor | 1.0.13 | Apache-2.0 OR MIT | permissive | https://github.com/mmastrac/linktime |
-| ctutils | 0.4.3 | Apache-2.0 OR MIT | permissive | https://github.com/RustCrypto/utils |
 | curve25519-dalek | 4.1.3 | BSD-3-Clause | permissive | https://github.com/dalek-cryptography/curve25519-dalek/tree/main/curve25519-dalek |
 | curve25519-dalek-derive | 0.1.1 | MIT/Apache-2.0 | permissive | https://github.com/dalek-cryptography/curve25519-dalek |
 | darling | 0.24.1 | MIT | permissive | https://github.com/TedDriggs/darling |
@@ -278,10 +274,8 @@ None.
 | option-ext | 0.2.0 | MPL-2.0 | weak copyleft / review | https://github.com/soc/option-ext |
 | parking_lot | 0.12.5 | MIT OR Apache-2.0 | permissive | https://github.com/Amanieu/parking_lot |
 | parking_lot_core | 0.9.12 | MIT OR Apache-2.0 | permissive | https://github.com/Amanieu/parking_lot |
-| password-hash | 0.6.1 | MIT OR Apache-2.0 | permissive | https://github.com/RustCrypto/traits |
 | pdf-writer | 0.13.0 | MIT OR Apache-2.0 | permissive | https://github.com/typst/pdf-writer |
 | percent-encoding | 2.3.2 | MIT OR Apache-2.0 | permissive | https://github.com/servo/rust-url/ |
-| phc | 0.6.1 | Apache-2.0 OR MIT | permissive | https://github.com/RustCrypto/formats |
 | phf | 0.13.1 | MIT | permissive | https://github.com/rust-phf/rust-phf |
 | phf_generator | 0.13.1 | MIT | permissive | https://github.com/rust-phf/rust-phf |
 | phf_macros | 0.13.1 | MIT | permissive | https://github.com/rust-phf/rust-phf |

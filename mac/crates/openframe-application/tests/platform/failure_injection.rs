@@ -22,6 +22,9 @@
 //! Expected outcome everywhere: a human error code and message, no partial file where the user
 //! would find it, no data loss, and the project still opens with every acknowledged change.
 
+// Some helpers and imports serve only the Windows-only tests below.
+#![cfg_attr(not(windows), allow(dead_code))]
+
 use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant};
 

@@ -47,7 +47,7 @@ Labels that OpenFrame puts together itself never join their parts with a dash:
 
 ## What is exempt
 
-- Quoted text from other people's documents, audits and archived material. Do not edit `docs/audits/` or `docs/archive/`.
+- Quoted text from other people's documents, audits and archived material. Do not edit `docs/history/`.
 - User content. OpenFrame never rewrites what a person writes in their own screenplay, notes or imports. The rule applies to text
   that OpenFrame itself produces. When OpenFrame writes an export, any em dash in the export comes only from user content.
 - Standards that require the character, for example a test fixture that checks dash handling. Put such fixtures in

@@ -2,7 +2,7 @@
 // are a one-time download the person starts here or in the AI panel. This page shows the status,
 // the download while OpenFrame AI is not installed, a way to free memory, Remove, the graphics
 // card choice, the technical details ordinary screens never show, the AI health card with Export
-// AI report, and the learned-memory screen.
+// AI report, and the Assistant memory card.
 
 import AppKit
 import OpenFrameCore
@@ -24,7 +24,7 @@ struct AISettingsView: View {
                         AIDownloadCard(model: download, damaged: model.status.flatMap(AILogic.damagedModels))
                     }
                     AIHealthCard(model: model)
-                    AILearnedMemoryCard()
+                    AssistantMemoryCard()
                     AITechnicalDetails(model: model)
                 }
                 .padding(20)
@@ -220,31 +220,5 @@ struct AIHealthCard: View {
         .accessibilityElement(children: .contain)
         .accessibilityLabel("AI health")
         .accessibilityIdentifier("ai-health-card")
-    }
-}
-
-// MARK: - Learned memory
-
-/// Learned memory is visible, editable and deletable (ADR-0028). This build of the core keeps no
-/// learned memory and has no operation to list or change it, so this screen says that plainly and
-/// lists nothing. It lists entries as soon as the core offers them; it never invents any.
-struct AILearnedMemoryCard: View {
-    @Environment(\.ofTheme) private var theme
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Learned memory").font(.headline).accessibilityAddTraits(.isHeader)
-            Text("OpenFrame AI has not learned anything from your writing, and nothing is stored to tune it. If that changes, everything it keeps will be listed here, and you will be able to edit or delete each entry.")
-                .fixedSize(horizontal: false, vertical: true)
-                .accessibilityIdentifier("ai-memory-empty")
-            Text("Your questions, answers and project text are never kept in the AI log. It holds numbers only.")
-                .font(.caption).foregroundStyle(theme["muted"])
-        }
-        .padding(14)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(theme["surface2"], in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-        .accessibilityElement(children: .contain)
-        .accessibilityLabel("Learned memory")
-        .accessibilityIdentifier("ai-memory-card")
     }
 }

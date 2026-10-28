@@ -199,7 +199,7 @@ kbd{font-family:"Segoe UI",sans-serif;font-size:11px;border:1px solid var(--line
 .fic.pdf{background:var(--red-soft);color:var(--file-pdf-ink)}.fic.doc{background:var(--blue-soft);color:var(--blue-t)}.fic.aud{background:var(--purple-soft);color:var(--purple-t)}.fic.vid{background:var(--green-soft);color:var(--green-t)}.fic.url{background:var(--teal-soft);color:var(--teal-t)}
 .wave{display:flex;align-items:center;gap:2px;height:26px}
 .wave i{display:block;width:3px;background:var(--purple);border-radius:2px}
-/* beat board */
+/* Beat Board */
 .board{display:flex;gap:14px;height:100%;align-items:flex-start;overflow:hidden}
 .actband{flex:none;background:var(--surface3);border:1px solid var(--line2);border-radius:12px;padding:8px 8px 10px;min-width:220px}
 .actband .ah{display:flex;align-items:center;gap:6px;padding:2px 4px 8px;font-weight:800;font-size:12.5px;text-transform:uppercase;letter-spacing:.4px}
@@ -283,7 +283,35 @@ kbd{font-family:"Segoe UI",sans-serif;font-size:11px;border:1px solid var(--line
 /* call sheet doc */
 .paper{background:#fff;border:1px solid var(--line2);box-shadow:0 2px 12px #0002;padding:20px 26px;font-size:12px;line-height:1.4;color:#111} /* document colour: printed call-sheet paper */
 .paper h1{margin:0;font-size:22px;letter-spacing:1px;text-align:center}
-.paper .st{background:#1e2330;color:#fff;padding:3px 8px;font-weight:700;font-size:11px;letter-spacing:.6px;text-transform:uppercase;margin:10px 0 4px} /* document colour: printed call-sheet paper */
+.paper .cs-group{margin:20px 0 2px;font-weight:700;font-size:15px;color:#1e2330} /* document colour: printed call-sheet paper */
+.paper .cs-group span{display:block;font-size:9px;letter-spacing:1.1px;text-transform:uppercase;color:#5b6475} /* document colour */
+.paper .cs-eyebrow{font-size:9px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:#5b6475;margin-bottom:3px} /* document colour: printed call-sheet paper */
+.paper .cs-mast{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start;margin-bottom:12px}
+.paper .cs-mast-main{flex:1;min-width:0}
+.paper .cs-mast h1{text-align:left;letter-spacing:0;font-size:30px;line-height:1.15;color:#1e2330;margin:2px 0 6px} /* document colour: printed call-sheet paper */
+.paper .cs-mast h1 .edt{font-weight:800;text-transform:uppercase}
+.paper .cs-counts{font-size:11px;color:#5b6475} /* document colour: printed call-sheet paper */
+.paper .cs-day{flex:none;min-width:150px;background:#1e2a44;color:#fff;border-radius:8px;padding:12px 16px} /* document colour: printed call-sheet paper */
+.paper .cs-day .cs-eyebrow{color:#b9c1d1} /* document colour: printed call-sheet paper */
+.paper .cs-day-big{font-size:28px;font-weight:800;line-height:1.1;margin:2px 0 4px}
+.paper .cs-day-date{font-weight:700}
+.paper .cs-day-of{font-size:10.5px;color:#c9d0dd;margin-top:6px} /* document colour: printed call-sheet paper */
+.paper .cs-callout{display:flex;flex-wrap:wrap;row-gap:8px;background:#fdf0e1;border:1px solid #f1c591;border-radius:8px;padding:12px 14px;margin:0 0 6px} /* document colour: printed call-sheet paper */
+.paper .cs-callout > div{flex:1;min-width:90px;padding:0 10px;border-left:1px solid #f1c591} /* document colour: printed call-sheet paper */
+.paper .cs-callout > .cs-crew{flex:1.5;border-left:0;padding-left:0}
+.paper .cs-callout > .cs-crew .cs-eyebrow{color:#a8550e} /* document colour: printed call-sheet paper */
+.paper .cs-callout .edt{font-size:14px;font-weight:700;color:#1e2330} /* document colour: printed call-sheet paper */
+.paper .cs-callout > .cs-crew .edt{font-size:26px;font-weight:800}
+.paper .cs-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:0 10px}
+.paper .cs-card{border:1px solid #d6dbe4;border-radius:7px;padding:6px 12px;margin-bottom:8px;overflow:hidden} /* document colour: printed call-sheet paper */
+.paper .cs-card-head{display:flex;align-items:center;gap:10px;background:#e8edf4;margin:-6px -12px 6px;padding:10px 12px;font-weight:700;text-transform:uppercase;color:#1e2330} /* document colour: printed call-sheet paper */
+.paper .cs-tile{background:#2a6a8a;color:#fff;border-radius:5px;padding:4px 8px} /* document colour: printed call-sheet paper */
+.paper .cs-sub{margin-bottom:8px}
+.paper .cs-sub-head{display:flex;align-items:center;font-weight:700;margin-bottom:4px}
+/* Section headings as in the PDF: tracked capitals over a navy rule, the note on the right. */
+.paper .st{display:flex;align-items:center;gap:8px;color:#1e2330;border-bottom:2px solid #1e2330;padding:0 0 3px;font-weight:700;font-size:12.5px;letter-spacing:1.4px;text-transform:uppercase;margin:16px 0 8px} /* document colour: printed call-sheet paper */
+.paper .st .cs-note{font-size:9.5px;font-weight:600;letter-spacing:0;text-transform:none;color:#5b6475} /* document colour: printed call-sheet paper */
+.paper .cs-remove{background:none;border:0;color:inherit;cursor:pointer;padding:0}
 .paper table{width:100%;border-collapse:collapse}
 .paper td,.paper th{border:1px solid #bbb;padding:3px 7px;font-size:11.5px;text-align:left} /* document colour: printed call-sheet paper */
 .paper th{background:#eee} /* document colour: printed call-sheet paper */

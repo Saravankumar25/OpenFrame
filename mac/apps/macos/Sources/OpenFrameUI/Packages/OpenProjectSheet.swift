@@ -20,7 +20,7 @@ struct OpenProjectSheet: View {
             content
         } footer: {
             if ended {
-                Button("Close") { model.finish(); close() }.keyboardShortcut(.defaultAction).buttonStyle(.borderedProminent)
+                Button("Close") { model.finish(); close() }.keyboardShortcut(.defaultAction).buttonStyle(.ofProminent)
                     .accessibilityIdentifier("open-project-close")
             } else {
                 Button("Cancel") { model.finish(); close() }.keyboardShortcut(.cancelAction).disabled(t.running)
@@ -29,7 +29,7 @@ struct OpenProjectSheet: View {
                     Button(model.primaryLabel) {
                         if model.mode == .replace { model.confirmReplace = true } else { Task { await model.start() } }
                     }
-                    .keyboardShortcut(.defaultAction).buttonStyle(.borderedProminent)
+                    .keyboardShortcut(.defaultAction).buttonStyle(.ofProminent)
                     .accessibilityIdentifier("open-project-confirm")
                 }
             }
@@ -74,7 +74,7 @@ struct OpenProjectSheet: View {
                         Task { await model.choose(file: url) }
                     }
                 }
-                .buttonStyle(.borderedProminent).disabled(model.checking)
+                .buttonStyle(.ofProminent).disabled(model.checking)
                 .accessibilityIdentifier("open-project-choose")
             }
             .frame(maxWidth: .infinity).padding(.vertical, 12)

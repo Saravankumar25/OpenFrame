@@ -16,7 +16,7 @@ struct TrialCorner: View {
     var body: some View {
         if licence.showsCheckPurchase {
             Button { licence.reopenCheck() } label: { Label("Check purchase", systemImage: "arrow.clockwise") }
-                .buttonStyle(.borderedProminent).controlSize(.small)
+                .buttonStyle(.ofProminent).controlSize(.small)
                 .accessibilityIdentifier("check-purchase")
         } else if let chip = licence.chip {
             HStack(spacing: 6) {
@@ -30,7 +30,7 @@ struct TrialCorner: View {
                     .accessibilityLabel(chip.spoken)
                     .accessibilityIdentifier("trial-chip")
                 Button { Task { await licence.buy() } } label: { Label("Buy full version", systemImage: "bolt.fill") }
-                    .buttonStyle(.borderedProminent).controlSize(.small).disabled(licence.busy)
+                    .buttonStyle(.ofProminent).controlSize(.small).disabled(licence.busy)
                     .accessibilityIdentifier("trial-buy")
             }
             .accessibilityElement(children: .contain)

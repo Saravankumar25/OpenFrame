@@ -47,9 +47,8 @@ Settings > Privacy & Security > Open Anyway do not help for an app that macOS ca
 
 ## 5. First start
 
-1. The app asks for the team password. The owner gives it to you in person. It is the same for the whole team.
-2. A wrong password is refused, and after several wrong tries the app makes you wait a little.
-3. Create a project and start writing. Everything is saved on this Mac as you type.
+1. The app opens without a password.
+2. Create a project and start writing. Everything is saved on this Mac as you type.
 
 ## 6. The offline AI
 

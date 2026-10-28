@@ -17,6 +17,8 @@ struct SearchTarget: Equatable {
     var screenplay: [String: String] = [:]
     /// The result lives where the Mac has no screen yet (Settings, or a Windows-only area).
     var opensSettings = false
+    /// The Story tab, for a Story result: the Beat Board for a card, beat, sequence or act, Characters for a character.
+    var storyTab: StoryTab?
 }
 
 enum SearchRouting {
@@ -27,7 +29,9 @@ enum SearchRouting {
         switch ws {
         case "home": return SearchTarget(workspace: .home)
         case "vault": return SearchTarget(workspace: .ideaVault)
-        case "story": return SearchTarget(workspace: .story)
+        case "story":
+            let params = (hit.nav.objectValue ?? [:]).compactMapValues(\.stringValue)
+            return SearchTarget(workspace: .story, storyTab: StoryTab.initial(params: params))
         case "breakdown": return SearchTarget(workspace: .breakdown)
         case "screenplay":
             var info: [String: String] = [:]
@@ -55,6 +59,7 @@ enum SearchRouting {
             return
         }
         guard let ws = target.workspace else { return }
+        if let tab = target.storyTab { ProjectIntents.shared.fire(tab.showIntent) }
         if ws == .screenplay {
             NotificationCenter.default.post(name: .openFrameShowScreenplayTarget, object: nil, userInfo: target.screenplay)
         }

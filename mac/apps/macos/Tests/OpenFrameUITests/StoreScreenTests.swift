@@ -94,24 +94,16 @@ struct StoreScreenTests {
         app.shutdown()
     }
 
-    @Test func theAppModelOfTheInternalBuildHasNoLicenceScreenAndKeepsTheTeamGate() async throws {
+    @Test func theAppModelOfTheInternalBuildHasNoLicenceScreen() async throws {
         let root = try Fixture.root()
         defer { try? FileManager.default.removeItem(at: root) }
         let source = FakeStoreKitSource()
         let runtime = StoreRuntime(source: source, server: FakeLicenceServer())
         var options = CoreStartOptions(appVersion: "0.1.0-test", isolatedDataRoot: root, writeLogs: false)
         runtime.install(into: &options)
-        options.testTeamPasswordHash = Fixture.gateHash
         let app = AppModel(options: options)
         app.storeRuntime = runtime
         await app.start()
-        guard case .teamGate = app.phase else {
-            Issue.record("expected the team password screen, got \(app.phase)")
-            return
-        }
-        #expect(app.licence.screen == nil)
-        let answer = await app.unlock(password: Fixture.gatePassword)
-        #expect(answer == nil)
         #expect(app.phase == .home)
         #expect(app.licence.screen == nil)
         #expect(!app.licence.isStore)

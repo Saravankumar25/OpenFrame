@@ -7,8 +7,7 @@
 //   - a secret pattern from scripts/lib/secret-rules.mjs;
 //   - a personal path (C:\Users\<name>, /Users/<name>, /home/<name>), which leaks the builder's name and folders;
 //     the CI build accounts of third-party binaries (runneradmin on Windows, runner on macOS) are not personal;
-//   - the build computer's user name anywhere;
-//   - the team password in plain text, when OPENFRAME_TEAM_PASSWORD is set (only its hash may be embedded).
+//   - the build computer's user name anywhere.
 // A compressed installer hides its payload, so run it on the unpacked release folder as well as on the installer.
 // Findings name the file, the rule and the byte offset, never the matched text.
 
@@ -22,7 +21,6 @@ const MAX_BYTES = 400 * 1024 * 1024;
 const MIN_RUN = 6;
 const PERSONAL_PATH = /[A-Za-z]:[\\/]{1,2}Users[\\/]{1,2}(?!(?:Public|Default|All Users|runneradmin)[\\/])[^\\/\s"]+|\/Users\/(?!Shared\/|runner\/)[^/\s"]+|\/home\/[^/\s"]+/i;
 const user = (process.env.OPENFRAME_SCAN_USER ?? os.userInfo().username ?? "").trim();
-const password = process.env.OPENFRAME_TEAM_PASSWORD ?? "";
 
 const targets = process.argv.slice(2);
 if (targets.length === 0) {
@@ -60,8 +58,6 @@ for (const target of targets) {
     }
     files++;
     const buf = fs.readFileSync(file);
-    if (password && buf.includes(password)) findings.push(`${file}  holds the team password in plain text`);
-    if (password && buf.includes(Buffer.from(password, "utf16le"))) findings.push(`${file}  holds the team password in plain UTF-16 text`);
     const lowerUser = user.length >= 3 ? user.toLowerCase() : "";
     for (const [offset, text] of textRuns(buf)) {
       for (const id of lineHits(text)) findings.push(`${file} @${offset}  ${id}`);
@@ -78,4 +74,4 @@ if (findings.length) {
   if (findings.length > shown.length) console.error(`  ... and ${findings.length - shown.length} more`);
   process.exit(1);
 }
-console.log(`scan-installer: OK (${files} file(s), no secret, personal path, user name or plain team password)`);
+console.log(`scan-installer: OK (${files} file(s), no secret, personal path or user name)`);

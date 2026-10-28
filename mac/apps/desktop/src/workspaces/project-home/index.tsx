@@ -49,9 +49,9 @@ const CONTINUE_LABEL: Record<string, [string, Icon]> = {
   notes: ["Continue notes", ListTodo],
 };
 
-const QUICK: { label: string; workspace: WorkspaceId; icon: Icon }[] = [
+const QUICK: { label: string; workspace: WorkspaceId; sub?: string; icon: Icon }[] = [
   { label: "Idea Vault", workspace: "vault", icon: Lightbulb },
-  { label: "Beat Board", workspace: "story", icon: Columns3 },
+  { label: "Beat Board", workspace: "story", sub: "board", icon: Columns3 },
   { label: "Screenplay", workspace: "screenplay", icon: FileText },
   { label: "Breakdown", workspace: "breakdown", icon: ListChecks },
   { label: "Production", workspace: "production", icon: Clapperboard },
@@ -111,7 +111,7 @@ function NewProjectHome({ home, onSettings }: { home: ProjectHome; onSettings: (
   const go = useNav((s) => s.go);
   const actions: { label: string; text: string; icon: Icon; run: () => void; primary?: boolean }[] = [
     { label: "Open Idea Vault", text: "Collect thoughts, images, links and notes about the film. Nothing needs to be organised yet.", icon: Lightbulb, run: () => go({ workspace: "vault" }), primary: true },
-    { label: "Build Story", text: "Arrange acts, beats and scene cards on the Beat Board until the story works.", icon: Columns3, run: () => go({ workspace: "story" }) },
+    { label: "Build Story", text: "Arrange acts, beats and scene cards on the Beat Board until the story works.", icon: Columns3, run: () => go({ workspace: "story", sub: "board" }) },
     { label: "Write/Import Screenplay", text: "Start writing, or import a screenplay you already have.", icon: FileText, run: () => go({ workspace: "screenplay" }) },
   ];
   return (
@@ -188,7 +188,7 @@ function ActiveProjectHome({ home, onSettings }: { home: ProjectHome; onSettings
             <div className="h4">Quick Access</div>
             <div className="row wrap">
               {QUICK.map((q) => (
-                <Button key={q.workspace} icon={<q.icon size={15} aria-hidden />} onClick={() => go({ workspace: q.workspace })}>{q.label}</Button>
+                <Button key={q.workspace} icon={<q.icon size={15} aria-hidden />} onClick={() => go({ workspace: q.workspace, sub: q.sub })}>{q.label}</Button>
               ))}
             </div>
             <div className="row wrap" style={{ marginTop: 6 }}>

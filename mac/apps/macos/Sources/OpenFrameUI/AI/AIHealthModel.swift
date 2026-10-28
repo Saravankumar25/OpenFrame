@@ -12,7 +12,11 @@ final class AISettingsModel {
     var status: AiStatusDto?
     var diagnostics: AiDiagnosticsDto?
     var health: AiHealthDto?
+    /// The last failure: of reading the state, or of an action (Remove, Stop, graphics, export).
     var error: String?
+    /// The error came from reading the state, so the next good read clears it. An action's failure
+    /// stays until the next action: the page reads the state every two seconds and must not wipe it.
+    private var errorFromLoad = false
     var busy = false
     var removing = false
     /// Asks the person where to save the report. Tests set a fixed answer.
@@ -33,19 +37,35 @@ final class AISettingsModel {
             status = try await core.aiStatus()
             diagnostics = try await core.aiDiagnostics()
             health = try await core.aiHealth()
-            error = nil
+            if errorFromLoad { self.error = nil; errorFromLoad = false }
         } catch {
-            self.error = CoreFailure(asCore: error).message
+            if self.error == nil || errorFromLoad {
+                self.error = CoreFailure(asCore: error).message
+                errorFromLoad = true
+            }
         }
+    }
+
+    /// An action failed: its message stays on the page.
+    private func failed(_ error: Error) {
+        self.error = CoreFailure(asCore: error).message
+        errorFromLoad = false
+    }
+
+    /// An action starts: the message of the one before goes.
+    private func clearError() {
+        error = nil
+        errorFromLoad = false
     }
 
     func stopRuntime() async {
         guard let core else { return }
+        clearError()
         do {
             _ = try await core.aiStopRuntime()
             ToastCenter.shared.show("Offline AI stopped. It starts again when you ask something.")
         } catch {
-            self.error = CoreFailure(asCore: error).message
+            failed(error)
         }
         await load()
     }
@@ -53,11 +73,12 @@ final class AISettingsModel {
     /// Graphics card: Automatic or Off (ADR-0029 decision 6).
     func setGraphics(off: Bool) async {
         guard let core else { return }
+        clearError()
         do {
             _ = try await core.aiGraphicsSet(AiGraphicsArgs(off: off))
             ToastCenter.shared.show(off ? "OpenFrame AI will run on the processor." : "OpenFrame AI will use a checked graphics card when there is one.")
         } catch {
-            self.error = CoreFailure(asCore: error).message
+            failed(error)
         }
         await load()
     }
@@ -67,11 +88,12 @@ final class AISettingsModel {
         guard let core, !busy else { return }
         busy = true
         defer { busy = false; removing = false }
+        clearError()
         do {
             _ = try await core.aiDownloadRemove()
             ToastCenter.shared.show("OpenFrame AI was removed. You can download it again here.")
         } catch {
-            self.error = CoreFailure(asCore: error).message
+            failed(error)
         }
         await load()
     }
@@ -87,12 +109,11 @@ final class AISettingsModel {
             let r = try await core.aiExportReport(AiReportArgs(path: url.path))
             lastExport = "Saved \(r.fileName) (\(Int(r.rows)) requests)."
             ToastCenter.shared.show(lastExport!)
-            error = nil
+            clearError()
             return r
         } catch {
-            let message = CoreFailure(asCore: error).message
-            self.error = message
-            ToastCenter.shared.show(message, kind: .error)
+            failed(error)
+            ToastCenter.shared.show(self.error ?? "", kind: .error)
             return nil
         }
     }

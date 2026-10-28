@@ -80,7 +80,7 @@ function fixture(over: Partial<CallSheetDetail> = {}): CallSheetDetail {
     },
     missing: ["crewCall", "locations.0.address"],
     estimatedStarts: ["19:00", "20:30"],
-    defaultSections: ["Production header", "Day and times", "Locations", "Scene schedule", "Talent", "Practical notes"],
+    defaultSections: ["Day and times", "Production", "Locations", "Scene schedule", "Talent / Cast", "Practical / Safety information"],
     optionalSections: [
       { key: "weather", label: "Weather" },
       { key: "extras", label: "Extras" },
@@ -104,12 +104,86 @@ describe("call sheet editor", () => {
 
   it("shows the six default sections and hides optional ones that were not added", () => {
     render(<CallSheetEditor id="cs1" />);
-    for (const name of ["Production header", "Day and times", "Locations", "Scene schedule", "Talent", "Practical notes"]) {
+    for (const name of ["Masthead", "Day and times", "Production", "Locations", "Scene schedule", "Talent / Cast", "Practical / Safety information"]) {
       expect(screen.getByRole("region", { name })).toBeInTheDocument();
     }
+    // Same order as the exported PDF, with its two group titles.
+    const order = screen.getAllByRole("region").map((r) => r.getAttribute("aria-label"));
+    expect(order).toEqual(["Masthead", "Day and times", "Production", "Locations", "Scene schedule", "Talent / Cast", "Practical / Safety information"]);
+    expect(screen.getAllByRole("heading", { level: 2 }).map((h) => h.textContent)).toEqual(["People on the dayCast & Crew", "Day-of logisticsProduction notes"]);
     expect(screen.queryByRole("region", { name: "Weather" })).toBeNull();
+    // The masthead and the time callout carry no section heading, as in the PDF.
+    expect(screen.getByRole("region", { name: "Masthead" })).toHaveTextContent("Call sheet · Revision 1");
+    expect(screen.getByRole("region", { name: "Masthead" })).toHaveTextContent("1 scene · 1 cast member · 1 location");
+    expect(screen.getByRole("region", { name: "Masthead" })).toHaveTextContent("Shoot day04MONDAY 14 JUNE 2027Day 4 of 12");
+    expect(screen.getByRole("region", { name: "Day and times" })).toHaveTextContent(/^Crew callGeneral callShooting callBreakfastLunchEst\. wrap$/);
     expect(screen.getByRole("button", { name: "Add Section" })).toBeInTheDocument();
     expect(screen.getByText(/2 values read Needs input/)).toBeInTheDocument();
+  });
+
+  it("with every section added, reads heading by heading like the exported PDF", () => {
+    detail = fixture();
+    detail.document.optional = {
+      ...detail.document.optional,
+      weather: "",
+      specialNotes: "",
+      attachments: [],
+      referenceImages: [],
+      extras: [],
+      departments: [{ department: "Props", notes: "" }],
+      advance: { day: "", location: "", cast: "", props: "", wardrobe: "", preparation: "" },
+      crew: [],
+      communication: { walkieChannels: "", productionContact: "", emergencyContact: "", note: "" },
+    };
+    render(<CallSheetEditor id="cs1" />);
+    const paper = screen.getByLabelText("Call sheet document");
+    // Walk every element so the group titles and section headings come out in document order.
+    const headings = [...paper.querySelectorAll("*")]
+      .filter((el) => el.matches(".st > span:first-child, [role=heading]"))
+      .map((h) => (h.getAttribute("role") ? h.lastChild?.textContent : h.textContent));
+    expect(headings).toEqual([
+      "Production",
+      "Locations",
+      "Scene schedule",
+      "Cast & Crew",
+      "Talent / Cast",
+      "Extras",
+      "Crew",
+      "Department notes",
+      "Production notes",
+      "Practical / Safety information",
+      "Weather",
+      "Advance schedule",
+      "Walkie channels and contacts",
+      "Special notes",
+      "Attachments & reference images",
+    ]);
+    // Inside the PDF's sections, the fields keep the PDF's order.
+    const labels = (region: string) =>
+      [...screen.getByRole("region", { name: region }).querySelectorAll("*")].filter((el) => el.matches(".of-field > span:first-child, .cs-eyebrow")).map((s) => s.textContent);
+    expect(labels("Production")).toEqual(["Production company", "Production address", "Producer", "Director", "1st AD", "Production contact"]);
+    expect(labels("Locations")).toEqual(["Address", "Meeting point", "Access", "Parking", "Nearest hospital", "Emergency contact", "Notes"]);
+    expect(labels("Practical / Safety information")).toEqual([
+      "Production emergency contact",
+      "Police Station · Nearest hospital",
+      "Parking",
+      "Meeting point",
+      "Transport",
+      "Meals",
+      "Toilets",
+      "Access",
+      "Safety",
+      "Special instructions",
+      "Production notes",
+      "Day notes",
+    ]);
+    expect(labels("Advance schedule")[0]).toBe("Day");
+    expect(labels("Walkie channels and contacts")).toEqual(["Walkie channels", "Emergency contact", "Production contact", "Note"]);
+    // Attachments and reference images share one heading and keep their own remove buttons.
+    const attach = screen.getByRole("region", { name: "Attachments & reference images" });
+    expect([...attach.querySelectorAll("section")].map((s) => s.getAttribute("aria-label"))).toEqual(["Attachments", "Reference images"]);
+    expect(screen.getByRole("button", { name: "Remove Attachments" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Remove Reference images" })).toBeInTheDocument();
   });
 
   it("marks values nobody entered as Needs input and never fills them in", () => {

@@ -2,7 +2,7 @@
 //
 // Performance with the Offline AI running (Windows phase W4; docs/engineering/21-performance-budgets.md).
 // Measured on whatever build the run drives; the numbers that count are the release run's
-// (`--release=open`). With the shipped 36-scene "Example Feature" script:
+// (`--release=store`). With the shipped 36-scene "Example Feature" script:
 //   P1  start again, process launch to Application Home shown (WebDriver start-up included, so an upper bound);
 //   P2  open the project from Application Home until the workspaces show;
 //   P3  typing latency in the screenplay, keydown to next paint, from the page's own Event Timing entries;

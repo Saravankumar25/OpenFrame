@@ -5,13 +5,17 @@ import Foundation
 import OpenFrameCore
 
 extension ThemeStore {
-    /// A store with the bundled built-in themes (the same themes.json the Windows app reads).
+    /// A store with the bundled built-in themes (the same themes.json the Windows app reads), with
+    /// the Mac palette of OpenFrame Default laid over it.
     public convenience init() {
         let catalog: ThemeCatalog
         if let url = PackagedResources.url("themes", "json"),
            let data = try? Data(contentsOf: url),
-           let loaded = try? ThemeCatalog(json: data) {
-            catalog = loaded
+           let loaded = try? ThemeCatalog(json: data),
+           let macURL = PackagedResources.url("macDefaultTheme", "json"),
+           let macData = try? Data(contentsOf: macURL),
+           let mac = try? loaded.withMacDefault(json: macData) {
+            catalog = mac
         } else {
             // Unreachable in a correct build (the file is a package resource); fail visibly in
             // development instead of showing a broken palette.

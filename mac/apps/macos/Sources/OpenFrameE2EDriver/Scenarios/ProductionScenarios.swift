@@ -123,7 +123,7 @@ fileprivate extension UI {
 }
 
 extension Scenarios {
-    static let productionGroup: [Scenario] = recentlyDeletedPurge + forcedKillFull + notesTasks + breakdownBasics + breakdownDepth + scheduleScenarios + projectPages + callSheetScenarios + keyboardScenarios
+    static let productionGroup: [Scenario] = recentlyDeletedPurge + forcedKillFull + notesTasks + breakdownBasics + breakdownDepth + scheduleScenarios + projectPages + callSheetScenarios + keyboardScenarios + productionPortScenarios
 }
 
 // MARK: 25-recently-deleted-purge
@@ -338,6 +338,7 @@ extension Scenarios {
         try await ui.press(label: "Save", role: "AXButton")
         try await ui.waitText("Saved to the Project Idea Vault")
         try await ui.nav("Story")
+        try await segment(ui, group: "story-tabs", "Beat Board")
         try await ui.press(label: "Add Act", role: "AXButton")
         try await ui.typeIn("Act One", into: "inline-Act title")
         try await ui.enter()
@@ -365,6 +366,7 @@ extension Scenarios {
         try await ui.nav("Idea Vault")
         try await ui.waitText("A ferry that only sails")
         try await ui.nav("Story")
+        try await segment(ui, group: "story-tabs", "Beat Board")
         try await ui.waitText("The ferry leaves without its captain")
         try await segment(ui, group: "story-tabs", "Characters")
         try await ui.waitText("Ilse")
@@ -1581,7 +1583,7 @@ extension Scenarios {
             try await createCallSheet(ui)
             let doc = try await ui.wait(id: "callsheet-document", timeout: 15, "the call sheet")
             let text = descendants(doc).map(\.text).joined(separator: "\n") + doc.text
-            for section in ["PRODUCTION HEADER", "DAY AND TIMES", "LOCATIONS", "SCENE SCHEDULE", "TALENT", "PRACTICAL NOTES"] {
+            for section in ["PRODUCTION", "LOCATIONS", "SCENE SCHEDULE", "TALENT / CAST", "PRACTICAL / SAFETY INFORMATION"] {
                 try ui.expect(text.contains(section), "the call sheet has the section \(section)")
             }
             try ui.expect(!text.contains("WEATHER"), "the call sheet has no WEATHER section yet")
@@ -1682,7 +1684,7 @@ extension Scenarios {
             try await ui.pressAndSave(id: "export-run", to: dir.appendingPathComponent("sides.pdf"))
             try await ui.waitText("Export complete")
             try await ui.press(id: "export-close")
-            try checkPdf(ui, dir.appendingPathComponent("sides.pdf"))
+            try checkPdf(ui, dir.appendingPathComponent("sides.pdf"), brand: false)
             try await segment(ui, group: "callsheets-tabs", "Reports")
             try await ui.press(id: "reports-type-scene")
             try await ui.press(id: "reports-export")
@@ -2057,57 +2059,8 @@ fileprivate extension UI {
 
     /// Opens a menu button, chooses the item whose title starts with the text (searching sub-menus), and closes it.
     func menuButton(id: String? = nil, label: String? = nil, item: String, timeout: Double = 15) async throws {
-        let e = try await wait(id: id, label: label, timeout: timeout, "the menu button \(id ?? label ?? "?")")
-        guard let cell = e.obj as? NSPopUpButtonCell else { throw DriverError("not a menu button: \(e)") }
         log("menu \(id ?? label ?? "?") > \(item)")
-        func find(_ m: NSMenu) -> (NSMenu, Int)? {
-            for (i, it) in m.items.enumerated() where !it.isSeparatorItem && it.title.hasPrefix(item) { return (m, i) }
-            for it in m.items { if let sub = it.submenu, let r = find(sub) { return r } }
-            return nil
-        }
-        var target: (NSMenu, Int)?
-        let menusBefore = NSApp.windows.filter { $0.isVisible && String(describing: Swift.type(of: $0)).contains("PopupMenu") }.count
-        // The menu is chosen from only after it began tracking. A menu whose click arrives after the
-        // choice was made would open by itself and keep the app from quitting.
-        let tracking = TrackingFlag()
-        let begin = NotificationCenter.default.addObserver(forName: NSMenu.didBeginTrackingNotification, object: nil, queue: .main) { _ in
-            MainActor.assumeIsolated { tracking.began = true }
-        }
-        defer { NotificationCenter.default.removeObserver(begin) }
-        for _ in 0..<3 where target == nil {
-            let frame = e.frame
-            tracking.began = false
-            postClick(atScreen: NSPoint(x: frame.midX, y: frame.midY))
-            let deadline = Date().addingTimeInterval(3)
-            while Date() < deadline {
-                if tracking.began, let m = cell.menu, let t = find(m) { target = t; break }
-                await idle(0.1)
-            }
-            if target == nil { cell.menu?.cancelTracking(); await idle(0.5) }
-        }
-        guard let (menu, index) = target else {
-            let titles = cell.menu?.items.map(\.title) ?? []
-            cell.menu?.cancelTracking()
-            throw DriverError("no menu item starting with \(item) in \(titles)")
-        }
-        guard menu.items[index].isEnabled else { cell.menu?.cancelTracking(); throw DriverError("menu item is disabled: \(menu.items[index].title)") }
-        menu.performActionForItem(at: index)
-        cell.menu?.cancelTracking()
-        await idle(0.3)
-        // The menu window must be gone, or the next key press and the quit command go to it.
-        func openMenus() -> Int { NSApp.windows.filter { $0.isVisible && String(describing: Swift.type(of: $0)).contains("PopupMenu") }.count }
-        let inToolbar = NSApp.windows.contains { $0.isVisible && e.frame.midY > $0.frame.maxY - 60 && $0.frame.contains(NSPoint(x: e.frame.midX, y: e.frame.midY)) }
-        for w in NSApp.windows where w.isVisible && String(describing: Swift.type(of: w)).contains("PopupMenu") && openMenus() > menusBefore { w.orderOut(nil) }
-        for _ in 0..<10 where inToolbar && openMenus() > menusBefore {
-            for t in [NSEvent.EventType.keyDown, .keyUp] {
-                if let ev = NSEvent.keyEvent(with: t, location: .zero, modifierFlags: [], timestamp: ProcessInfo.processInfo.systemUptime,
-                                             windowNumber: 0, context: nil, characters: "\u{1b}", charactersIgnoringModifiers: "\u{1b}", isARepeat: false, keyCode: 53) {
-                    NSApp.postEvent(ev, atStart: true)
-                }
-            }
-            cell.menu?.cancelTracking()
-            await idle(0.3)
-        }
+        try await capMenuButton(id: id, label: label, item: item, timeout: timeout)
     }
 
     /// Chooses an item of a pop-up button (a Picker).
@@ -2121,20 +2074,6 @@ fileprivate extension UI {
         try await go(workspace)
     }
 
-    /// The sidebar row of a workspace, clicked through the outline (when the Go menu is not there).
-    func navByRow(_ workspace: String) async throws {
-        let order = ["Home", "Idea Vault", "Story", "Screenplay", "Breakdown", "Production", "Call Sheets", "Files"]
-        guard let outline = try? await wait(label: "Sidebar", timeout: 10, "the sidebar"), let view = outline.obj as? NSOutlineView else {
-            throw DriverError("no sidebar to click \(workspace)")
-        }
-        guard let idx = order.firstIndex(of: workspace) else { throw DriverError("unknown workspace \(workspace)") }
-        // Rows: the workspaces in order, no section headers.
-        let row = idx
-        view.window?.makeFirstResponder(view)
-        view.scrollRowToVisible(row)
-        view.selectRowIndexes(IndexSet(integer: row), byExtendingSelection: false)
-        await idle(0.6)
-    }
 }
 
 fileprivate extension UI {
@@ -2269,19 +2208,6 @@ fileprivate extension UI {
 }
 
 fileprivate extension UI {
-    /// Reports every scroll view that is not at its top (a layout that scrolled itself shows here).
-    func scrollState() -> String {
-        var out: [String] = []
-        func walk(_ v: NSView) {
-            if let sv = v as? NSScrollView, let doc = sv.documentView {
-                out.append("scroll \(sv.frame.size) doc \(doc.frame.size) origin \(sv.contentView.bounds.origin) flipped \(doc.isFlipped)")
-            }
-            if let t = v as? NSTableView { out.append("table rows \(t.numberOfRows) rowHeight \(t.rowHeight) frame \(t.frame) rect0 \(t.numberOfRows > 0 ? t.rect(ofRow: 0) : .zero)") }
-            for c in v.subviews { walk(c) }
-        }
-        for w in NSApp.windows where w.isVisible { out.append("window \(w.frame) content \(w.contentView?.frame ?? .zero) minSize \(w.minSize) contentMin \(w.contentMinSize) hosting \(String(describing: w.contentView?.subviews.map { "\(Swift.type(of: $0)) \($0.frame)" }))"); if let v = w.contentView { walk(v) } }
-        return out.joined(separator: "\n")
-    }
 }
 
 fileprivate extension UI {
@@ -2293,16 +2219,6 @@ fileprivate extension UI {
 }
 
 fileprivate extension UI {
-    /// Whether the text field with this accessible name accepts typing (nil when no such field is on screen).
-    func fieldTakesInput(label: String) -> Bool? {
-        func scan(_ v: NSView) -> Bool? {
-            if let f = v as? NSTextField, Element(obj: f).label == label { return f.isEnabled && f.isEditable }
-            for sv in v.subviews { if let r = scan(sv) { return r } }
-            return nil
-        }
-        for w in NSApp.windows where w.isVisible { if let v = w.contentView?.superview, let r = scan(v) { return r } }
-        return nil
-    }
 
     /// Scrolls the scroll view that holds an element until the element is inside the window (the call sheet page, for one).
     func reveal(_ e: Element) async {

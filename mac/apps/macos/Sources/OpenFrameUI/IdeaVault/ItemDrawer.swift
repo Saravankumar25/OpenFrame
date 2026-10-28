@@ -481,7 +481,7 @@ struct VaultPreview: View {
             Button { player.toggle() } label: {
                 Label(player.isPlaying ? "Pause" : "Play", systemImage: player.isPlaying ? "pause.fill" : "play.fill")
             }
-            .buttonStyle(.borderedProminent)
+            .buttonStyle(.ofProminent)
             .disabled(!player.loaded || player.failed)
             .accessibilityLabel(player.isPlaying ? "Pause \(item.displayName)" : "Play \(item.displayName)")
             .accessibilityIdentifier("audio-play")
@@ -498,6 +498,9 @@ struct VaultPreview: View {
         }
         .padding(10)
         .background(theme["surface2"], in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+        // A container keeps the play button's and the time's own identifiers; without it SwiftUI copies
+        // "audio-player" over every child.
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("audio-player")
     }
 

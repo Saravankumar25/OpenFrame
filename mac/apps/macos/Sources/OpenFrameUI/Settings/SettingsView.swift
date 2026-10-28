@@ -1,4 +1,4 @@
-// Settings (Command+Comma): General, Appearance, Offline AI and Diagnostics. Every value and every
+// Settings (Command+Comma): General, Appearance, Keyboard Shortcuts, Storage, Offline AI and Diagnostics. Every value and every
 // rule comes from the core; these screens only show it and forward the user's choice.
 
 import AppKit
@@ -6,7 +6,7 @@ import OpenFrameCore
 import SwiftUI
 
 public enum SettingsTab: String, Hashable, CaseIterable {
-    case general, appearance, shortcuts, ai, diagnostics
+    case general, appearance, shortcuts, storage, ai, diagnostics
 }
 
 /// Opens the Settings window (Command+Comma), on a tab when one is asked for. Every Settings
@@ -65,6 +65,9 @@ public struct SettingsView: View {
             ShortcutsSettingsTab()
                 .tabItem { Label("Keyboard Shortcuts", systemImage: "keyboard") }
                 .tag(SettingsTab.shortcuts)
+            StoragePanel()
+                .tabItem { Label("Storage", systemImage: "externaldrive") }
+                .tag(SettingsTab.storage)
             AISettingsView()
                 .tabItem { Label("Offline AI", systemImage: "sparkles") }
                 .tag(SettingsTab.ai)

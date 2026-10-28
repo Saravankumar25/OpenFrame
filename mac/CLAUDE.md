@@ -11,7 +11,8 @@ The work has three chapters (owner decision 2026-10-09; `docs/product/vision-and
 1. **Complete, test and validate**, in two tracks of ten phases each (`docs/roadmap/chapter-1a-windows-phases.md`,
    `docs/roadmap/chapter-1b-mac-phases.md`). Windows first: finish and prove the Windows app, build the internal `.exe`,
    the team tests it by hand. Then the Mac: a SwiftUI shell over the same Rust core, the internal `.dmg`, team testing.
-   Builds are unsigned, ask the team password (minimum 8 characters, ADR-0030) and download the AI after install
+   Builds are unsigned, open without a password (team password removed, owner decision 2026-10-27) and download the AI
+   after install
    (ADR-0026). **This is the only chapter in progress.**
 2. **Website.** Purchased domain and company email, faithful recreations of the real screens. Its implementation plan is
    written when Chapter 1 closes.
@@ -64,7 +65,8 @@ Progress numbers come from `npm run plan:status` and `node scripts/check-feature
 - The repository root holds only README, CONTRIBUTING, DEVELOPMENT, CLAUDE, LICENSE-PENDING and THIRD_PARTY_LICENSES
   (plus code and tool folders). Specifications live in `docs/specs/`, decisions in `docs/adr/`, the manual in `docs/manual/`.
 - Newer decisions win and older ones are deprecated, not deleted: mark the old text superseded in place, add the new ADR,
-  add a row to `docs/adr/README.md`. Sections marked SUPERSEDED are history; never implement them.
+  add a row to `docs/adr/README.md`. Sections marked SUPERSEDED are history; never implement them. A document or ADR
+  superseded as a whole moves to `docs/history/` (owner decision 2026-10-27; index `docs/history/README.md`).
 - Moving or renaming a document means updating links (run `node scripts/check-links.mjs`), `docs/README.md`, and `docs/implementation/reconciliation-log.md`.
 
 ### Security standard (permanent, Windows and Mac)
@@ -107,7 +109,7 @@ The repository stays private. **Never build an installer or a release executable
   built, reachable, verified and release-ready are different states.
 - If code behaviour, a decision, a schema, an operation or a release setting changes, update the documents listed in
   `docs/README.md` section 8 in the same change.
-- Do not edit `docs/audits/` (evidence). Record corrections in the
+- Do not edit `docs/history/` (records, including the audits). Record corrections in the
   reconciliation log.
 - Check edge cases, crash cases and failure cases for every feature, including the AI path: the user must never lose data
   and the app must never hang.

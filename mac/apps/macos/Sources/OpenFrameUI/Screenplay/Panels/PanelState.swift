@@ -135,7 +135,7 @@ struct ScreenplayPanelsHost: ViewModifier {
                 ScreenplayInspector(model: model, state: state, caretIndex: caretIndex)
                     .inspectorColumnWidth(min: 280, ideal: 340, max: 480)
             }
-            .sheet(item: $state.sheet) { sheet in
+            .themedSheet(item: $state.sheet) { sheet in
                 switch sheet {
                 case .drafts: DraftsSheet(workspace: model, state: state)
                 case .newDraft: NewDraftHost(workspace: model, state: state)
@@ -286,6 +286,10 @@ struct ScreenplayToolsMenu: View {
                 .accessibilityIdentifier("custom-elements-menu-item")
             Button("Page View\u{2026}") { state.sheet = .pageView }
                 .accessibilityIdentifier("page-view-menu-item")
+            // Screen only: print and PDF stay on white paper.
+            Button(ScreenplayPageColors.menuTitle(dark: model.darkPaper)) { model.toggleDarkPaper() }
+                .help("Show the page as dark or light paper on screen. Print and PDF are not changed.")
+                .accessibilityIdentifier("screenplay-dark-page")
             Divider()
             Menu("Layout") {
                 ForEach(ScreenplayMode.allCases, id: \.self) { m in

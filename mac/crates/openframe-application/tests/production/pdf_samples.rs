@@ -115,7 +115,7 @@ fn png(w: u32, h: u32, px: impl Fn(u32, u32) -> [u8; 3]) -> Vec<u8> {
 }
 
 /// A simple cinematic still: sky gradient, a low sun or moon, a dark ground band and a figure.
-fn still(theme: usize, w: u32, h: u32) -> Vec<u8> {
+pub(crate) fn still(theme: usize, w: u32, h: u32) -> Vec<u8> {
     const SKY: [([u8; 3], [u8; 3]); 6] = [
         ([24, 38, 66], [226, 140, 76]),
         ([40, 64, 92], [168, 196, 206]),
@@ -916,53 +916,6 @@ fn write_schedule_samples() {
         json!({ "dayIds": [film.days[0]] }),
         "04-shooting-schedule-one-day.pdf",
     );
-}
-
-#[test]
-#[ignore = "writes the sample PDFs to release-out/pdf-samples"]
-fn write_daily_view_samples() {
-    let film = build_film();
-    let env = &film.env;
-    export(
-        env,
-        "schedule.export_daily",
-        json!({ "dayId": film.days[0] }),
-        "04b-shoot-day-1-daily-view.pdf",
-    );
-}
-
-/// The Daily View exports the day it shows as a document of its own, named after the day, not
-/// the Shooting Schedule (owner request 2026-10-20).
-#[test]
-fn daily_view_export_is_a_document_of_its_own() {
-    let film = build_film();
-    let env = &film.env;
-    let dir = std::env::temp_dir().join(format!("of-daily-{}", std::process::id()));
-    std::fs::create_dir_all(&dir).expect("temp folder");
-    let path = dir.join("day.pdf");
-    let r = env.ok(
-        "schedule.export_daily",
-        json!({ "format": "pdf", "path": path.to_string_lossy(), "dayId": film.days[0] }),
-    );
-    assert_eq!(r["document"], json!("Shoot Day 1 - Daily view"));
-    assert!(r["pages"].as_u64().unwrap_or(0) >= 1);
-    let bytes = std::fs::read(&path).expect("pdf written");
-    assert!(bytes.starts_with(b"%PDF"));
-    // The spreadsheet form holds the same scenes.
-    let csv = dir.join("day.csv");
-    let r = env.ok(
-        "schedule.export_daily",
-        json!({ "format": "csv", "path": csv.to_string_lossy(), "dayId": film.days[0] }),
-    );
-    assert_eq!(r["format"], json!("csv"));
-    // An unknown day is refused, and nothing is written for it.
-    let missing = dir.join("missing.pdf");
-    let e = env.err(
-        "schedule.export_daily",
-        json!({ "format": "pdf", "path": missing.to_string_lossy(), "dayId": "no-such-day" }),
-    );
-    assert!(!missing.exists(), "{e:?}");
-    let _ = std::fs::remove_dir_all(&dir);
 }
 
 #[test]

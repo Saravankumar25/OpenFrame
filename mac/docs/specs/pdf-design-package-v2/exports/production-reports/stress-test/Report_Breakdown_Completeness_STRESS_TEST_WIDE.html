@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Breakdown Completeness — Production Report (stress test: wide column set)</title>
+<meta name="of-doc" content="Breakdown Completeness (reports.export_report)">
+<meta name="of-logo" content="../../../00_SYSTEM/assets/openframe-logo.png">
+<link rel="stylesheet" href="../../../00_SYSTEM/assets/openframe-print.css">
+<style>
+  /* Breakdown Completeness — page setup. Landscape US Letter (8 columns: reports.rs sets landscape when columns > 5).
+     Running header: one compact line (project + report), top-right, because the report runs over several pages and the footer no longer carries the document name. */
+  @page { size: 11in 8.5in; @top-right { content: "LOW TIDE RADIO · BREAKDOWN COMPLETENESS"; } }
+
+  /* ============ PRODUCTION REPORT SHELL (shared by all six reports; defined in Report_Scene.md) ============ */
+  .rpt-mast { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 14pt; align-items: start; margin-bottom: 7pt; break-inside: avoid; break-after: avoid; }
+  .rpt-mast .eyebrow { display: flex; align-items: center; gap: 5pt; font-size: 7pt; }
+  .rpt-mast .eyebrow i { display: inline-block; width: 14pt; height: 2pt; background: var(--of-orange); }
+  .rpt-mast h1 { font-size: 20pt; line-height: 1.1; font-weight: 700; color: var(--of-navy); letter-spacing: -0.01em; margin: 3pt 0 3.5pt; }
+  .rpt-mast .meta-line { font-size: 8pt; color: var(--of-slate); margin: 0; line-height: 1.3; }
+  .rpt-side { border: var(--hair) solid var(--of-line); border-radius: var(--radius-lg); background: var(--of-panel); padding: 6pt 11pt 7pt; text-align: right; min-width: 104pt; max-width: 150pt; }
+  .rpt-side .lbl { font-size: var(--fs-label); font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--of-slate); }
+  .rpt-side .date { font-size: 10.5pt; font-weight: 700; color: var(--of-navy); margin-top: 1.5pt; line-height: 1.15; }
+  .rpt-side .scope { font-size: 8pt; color: var(--of-slate); margin-top: 1.5pt; line-height: 1.25; }
+  .rpt-metrics { display: flex; width: fit-content; max-width: 100%; border: var(--hair) solid var(--of-line); border-radius: var(--radius); background: var(--of-panel); margin: 0 0 9pt; break-inside: avoid; break-after: avoid; }
+  .rpt-metrics .m { flex: 0 1 auto; min-width: 0; padding: 5.5pt 10pt 6pt; display: flex; align-items: baseline; gap: 6pt; border-left: var(--hair) solid var(--of-line); }
+  .rpt-metrics .m:first-child { border-left: 0; }
+  .rpt-metrics .v { font-size: 13pt; font-weight: 700; color: var(--of-navy); line-height: 1; font-variant-numeric: tabular-nums; }
+  .rpt-metrics .l { font-size: var(--fs-label); font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--of-slate); line-height: 1.25; }
+  .rpt-metrics .m.warn .v { color: var(--of-amber-text); }
+  .rpt-metrics .m.danger .v { color: var(--of-red-text); }
+  .rpt-ctx { margin: 0 0 6pt; }
+  .rpt-att { margin: -3pt 0 8pt; }
+  .rpt-ctx .banner { margin: 0 0 4pt; }
+  .rpt-ctx .banner .q { font-weight: 700; color: var(--of-navy); }
+  .rpt-ctx .banner .rest { color: var(--of-slate); }
+  .banner.info b { color: var(--of-blue-text); }
+  .rpt-ctx .banner b, .rpt-att .banner b { flex: none; white-space: nowrap; }
+  /* table */
+  table.rpt { table-layout: fixed; font-size: var(--fs-cell); }
+  table.rpt thead th { padding: 5pt 6pt; }
+  table.rpt tbody td { padding: 3.6pt 6pt; }
+  table.rpt.dense tbody td { padding: 2.5pt 6pt; }
+  table.rpt .tile { min-width: 18pt; font-size: 8.2pt; padding: 1.6pt 3.6pt; }
+  table.rpt tbody tr.alt td { background: var(--of-panel); }
+  table.rpt tbody tr.attn td:first-child { box-shadow: inset 3pt 0 0 var(--of-orange); }
+  table.rpt tbody tr.attn-red td:first-child { box-shadow: inset 3pt 0 0 var(--of-red-text); }
+  table.rpt tbody tr.quiet td { background: var(--of-panel); color: var(--of-slate); }
+  table.rpt .hd { font-weight: 700; color: var(--of-navy); }
+  table.rpt .nm { font-weight: 700; color: var(--of-navy); text-align: right; }
+  table.rpt .nm.sug { color: var(--of-amber-text); }
+  table.rpt .nm.zero { font-weight: 400; color: var(--of-muted); }
+  table.rpt th.r, table.rpt td.r { text-align: right; }
+  table.rpt .d1 { display: block; font-weight: 700; color: var(--of-navy); white-space: nowrap; }
+  table.rpt .d2 { display: block; color: var(--of-slate); white-space: nowrap; }
+  table.rpt .days > div { margin: 0 0 1.4pt; line-height: 1.25; }
+  table.rpt .days > div:last-child { margin-bottom: 0; }
+  table.rpt .days b { color: var(--of-navy); font-weight: 700; }
+  table.rpt .none { color: var(--of-muted); }
+  table.rpt tr.group td { padding: 2pt 6pt 2.2pt; font-size: 6.8pt; letter-spacing: .12em; }
+  table.rpt td .chips { gap: 2pt; }
+  .rpt-note { font-size: 8.4pt; color: var(--of-slate); margin-top: 5pt; line-height: 1.35; }
+  .rpt-empty { margin: 4pt 0; }
+  .rpt-empty p { font-size: 9pt; line-height: 1.4; }
+  /* status chip: tone + SHAPE + WORD so it survives grayscale (ok = solid disc, info = ring + dot,
+     warn = hollow ring, danger = solid square, neutral = no mark) */
+  .st { display: inline-flex; align-items: center; gap: 3.2pt; font-size: var(--fs-chip); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; line-height: 1; padding: 2.4pt 4.6pt 2.6pt 3.8pt; border-radius: 3pt; border: var(--hair) solid var(--of-line); background: var(--of-panel); color: var(--of-neutral-text); white-space: nowrap; vertical-align: middle; }
+  .st i { flex: none; width: 5pt; height: 5pt; box-sizing: border-box; border: 1pt solid currentColor; border-radius: 50%; }
+  .st.none-mark i { display: none; }
+  .st.ok { background: var(--of-green-fill); border-color: var(--of-green-line); color: var(--of-green-text); }
+  .st.ok i { background: currentColor; }
+  .st.info { background: var(--of-blue-fill); border-color: var(--of-blue-line); color: var(--of-blue-text); }
+  .st.info i { background: currentColor; box-shadow: inset 0 0 0 .9pt #fff; }
+  .st.warn { background: var(--of-amber-fill); border-color: var(--of-amber-line); color: var(--of-amber-text); }
+  .st.warn i { background: transparent; }
+  .st.danger { background: var(--of-red-fill); border-color: var(--of-red-line); color: var(--of-red-text); }
+  .st.danger i { background: currentColor; border-radius: 0.6pt; }
+  .illustrative { font-size: 6.6pt; color: var(--of-muted); font-style: italic; }
+
+</style>
+</head>
+<body>
+<div class="doc landscape">
+
+  <header class="masthead rpt-mast">
+    <div>
+      <div class="eyebrow"><i></i>Production report</div>
+      <h1>Breakdown Completeness</h1>
+      <p class="meta-line">Project: Low Tide Radio · Source: LOW TIDE RADIO: Blue Revision (Locked)</p>
+    </div>
+    <div class="rpt-side" aria-label="Report details">
+      <div class="lbl">Generated</div>
+      <div class="date">22 Oct 2026</div>
+      <div class="scope">All rows</div>
+    </div>
+  </header>
+  
+  <div class="rpt-metrics" role="group" aria-label="Report totals"><div class="m "><span class="v" data-m="t">12</span><span class="l">Scenes</span></div><div class="m "><span class="v" data-m="r">12</span><span class="l">Reviewed</span></div><div class="m "><span class="v" data-m="p">0</span><span class="l">In progress or needs review</span></div><div class="m "><span class="v" data-m="n">0</span><span class="l">Not started</span></div></div>
+  
+  <table class="tbl boxed rpt" aria-label="Breakdown Completeness"><colgroup><col style="width:36.0pt"><col style="width:174.0pt"><col style="width:60.0pt"><col style="width:90.0pt"><col style="width:112.0pt"><col style="width:76.0pt"><col style="width:76.0pt"><col style="width:76.0pt"></colgroup><thead><tr><th class="" scope="col">Sc</th><th class="" scope="col">Heading</th><th class="r" scope="col">Confirmed</th><th class="r" scope="col">Suggested (unreviewed)</th><th class="" scope="col">Status</th><th class="" scope="col">Cast</th><th class="" scope="col">Props</th><th class="" scope="col">Notes</th></tr></thead><tbody><tr class="" data-cells="[&quot;1&quot;, &quot;EXT. OPEN SEA - NIGHT (1999)&quot;, &quot;21&quot;, &quot;0&quot;, &quot;Reviewed&quot;, &quot;MARIAMMA, ANJALI&quot;, &quot;Nagra tape recorder&quot;, &quot;Confirm tide table before 06:00 call&quot;]" data-k="r"><td class=""><span class="tile">1</span></td><td class=""><span class="hd">EXT. OPEN SEA - NIGHT (1999)</span></td><td class="r"><span class="nm">21</span></td><td class="r"><span class="nm zero">0</span></td><td class=""><span class="st ok"><i></i>Reviewed</span></td><td class="">MARIAMMA, ANJALI</td><td class="">Nagra tape recorder</td><td class="">Confirm tide table before 06:00 call</td></tr>
+<tr class="alt" data-cells="[&quot;2&quot;, &quot;INT. COAST RADIO STATION - OPERATIONS ROOM - NIGHT (1999)&quot;, &quot;24&quot;, &quot;0&quot;, &quot;Reviewed&quot;, &quot;RAHUL&quot;, &quot;Torch&quot;, &quot;Second unit may pick up inserts; keep the practical lamps on a dimmer&quot;]" data-k="r"><td class=""><span class="tile">2</span></td><td class=""><span class="hd">INT. COAST RADIO STATION - OPERATIONS ROOM - NIGHT (1999)</span></td><td class="r"><span class="nm">24</span></td><td class="r"><span class="nm zero">0</span></td><td class=""><span class="st ok"><i></i>Reviewed</span></td><td class="">RAHUL</td><td class="">Torch</td><td class="">Second unit may pick up inserts; keep the practical lamps on a dimmer</td></tr>
+<tr class="" data-cells="[&quot;3&quot;, &quot;INT. SOUNDWAVE STUDIO - BENGALURU - DAY&quot;, &quot;15&quot;, &quot;0&quot;, &quot;Reviewed&quot;, &quot;JOE, LATHA&quot;, &quot;Lantern&quot;, &quot;&quot;]" data-k="r"><td class=""><span class="tile">3</span></td><td class=""><span class="hd">INT. SOUNDWAVE STUDIO - BENGALURU - DAY</span></td><td class="r"><span class="nm">15</span></td><td class="r"><span class="nm zero">0</span></td><td class=""><span class="st ok"><i></i>Reviewed</span></td><td class="">JOE, LATHA</td><td class="">Lantern</td><td class=""></td></tr>
+<tr class="alt" data-cells="[&quot;4&quot;, &quot;INT. KSRTC BUS - MOVING - NIGHT&quot;, &quot;16&quot;, &quot;0&quot;, &quot;Reviewed&quot;, &quot;SURESH&quot;, &quot;Flask&quot;, &quot;Weather cover: Thomas House kitchen&quot;]" data-k="r"><td class=""><span class="tile">4</span></td><td class=""><span class="hd">INT. KSRTC BUS - MOVING - NIGHT</span></td><td class="r"><span class="nm">16</span></td><td class="r"><span class="nm zero">0</span></td><td class=""><span class="st ok"><i></i>Reviewed</span></td><td class="">SURESH</td><td class="">Flask</td><td class="">Weather cover: Thomas House kitchen</td></tr>
+<tr class="" data-cells="[&quot;5&quot;, &quot;EXT. COAST RADIO STATION - DAWN&quot;, &quot;20&quot;, &quot;0&quot;, &quot;Reviewed&quot;, &quot;MARIAMMA, ANJALI&quot;, &quot;Nagra tape recorder&quot;, &quot;Confirm tide table before 06:00 call&quot;]" data-k="r"><td class=""><span class="tile">5</span></td><td class=""><span class="hd">EXT. COAST RADIO STATION - DAWN</span></td><td class="r"><span class="nm">20</span></td><td class="r"><span class="nm zero">0</span></td><td class=""><span class="st ok"><i></i>Reviewed</span></td><td class="">MARIAMMA, ANJALI</td><td class="">Nagra tape recorder</td><td class="">Confirm tide table before 06:00 call</td></tr>
+<tr class="alt" data-cells="[&quot;6&quot;, &quot;INT. THOMAS HOUSE - KITCHEN - DAY&quot;, &quot;14&quot;, &quot;0&quot;, &quot;Reviewed&quot;, &quot;RAHUL&quot;, &quot;Torch&quot;, &quot;Second unit may pick up inserts; keep the practical lamps on a dimmer&quot;]" data-k="r"><td class=""><span class="tile">6</span></td><td class=""><span class="hd">INT. THOMAS HOUSE - KITCHEN - DAY</span></td><td class="r"><span class="nm">14</span></td><td class="r"><span class="nm zero">0</span></td><td class=""><span class="st ok"><i></i>Reviewed</span></td><td class="">RAHUL</td><td class="">Torch</td><td class="">Second unit may pick up inserts; keep the practical lamps on a dimmer</td></tr>
+<tr class="" data-cells="[&quot;7&quot;, &quot;EXT. KADALKKARA HARBOUR - DAY&quot;, &quot;22&quot;, &quot;0&quot;, &quot;Reviewed&quot;, &quot;JOE, LATHA&quot;, &quot;Lantern&quot;, &quot;&quot;]" data-k="r"><td class=""><span class="tile">7</span></td><td class=""><span class="hd">EXT. KADALKKARA HARBOUR - DAY</span></td><td class="r"><span class="nm">22</span></td><td class="r"><span class="nm zero">0</span></td><td class=""><span class="st ok"><i></i>Reviewed</span></td><td class="">JOE, LATHA</td><td class="">Lantern</td><td class=""></td></tr>
+<tr class="alt" data-cells="[&quot;8&quot;, &quot;INT. PORT TRUST OFFICE - DAY&quot;, &quot;14&quot;, &quot;0&quot;, &quot;Reviewed&quot;, &quot;SURESH&quot;, &quot;Flask&quot;, &quot;Weather cover: Thomas House kitchen&quot;]" data-k="r"><td class=""><span class="tile">8</span></td><td class=""><span class="hd">INT. PORT TRUST OFFICE - DAY</span></td><td class="r"><span class="nm">14</span></td><td class="r"><span class="nm zero">0</span></td><td class=""><span class="st ok"><i></i>Reviewed</span></td><td class="">SURESH</td><td class="">Flask</td><td class="">Weather cover: Thomas House kitchen</td></tr>
+<tr class="" data-cells="[&quot;9&quot;, &quot;INT. FATHIMA&#x27;S TEA SHOP - NIGHT&quot;, &quot;21&quot;, &quot;0&quot;, &quot;Reviewed&quot;, &quot;MARIAMMA, ANJALI&quot;, &quot;Nagra tape recorder&quot;, &quot;Confirm tide table before 06:00 call&quot;]" data-k="r"><td class=""><span class="tile">9</span></td><td class=""><span class="hd">INT. FATHIMA&#x27;S TEA SHOP - NIGHT</span></td><td class="r"><span class="nm">21</span></td><td class="r"><span class="nm zero">0</span></td><td class=""><span class="st ok"><i></i>Reviewed</span></td><td class="">MARIAMMA, ANJALI</td><td class="">Nagra tape recorder</td><td class="">Confirm tide table before 06:00 call</td></tr>
+<tr class="alt" data-cells="[&quot;10&quot;, &quot;INT. THOMAS HOUSE - APPACHAN&#x27;S ROOM - NIGHT&quot;, &quot;14&quot;, &quot;0&quot;, &quot;Reviewed&quot;, &quot;RAHUL&quot;, &quot;Torch&quot;, &quot;Second unit may pick up inserts; keep the practical lamps on a dimmer&quot;]" data-k="r"><td class=""><span class="tile">10</span></td><td class=""><span class="hd">INT. THOMAS HOUSE - APPACHAN&#x27;S ROOM - NIGHT</span></td><td class="r"><span class="nm">14</span></td><td class="r"><span class="nm zero">0</span></td><td class=""><span class="st ok"><i></i>Reviewed</span></td><td class="">RAHUL</td><td class="">Torch</td><td class="">Second unit may pick up inserts; keep the practical lamps on a dimmer</td></tr>
+<tr class="" data-cells="[&quot;11&quot;, &quot;INT. COAST RADIO STATION - OPERATIONS ROOM - NIGHT&quot;, &quot;17&quot;, &quot;0&quot;, &quot;Reviewed&quot;, &quot;JOE, LATHA&quot;, &quot;Lantern&quot;, &quot;&quot;]" data-k="r"><td class=""><span class="tile">11</span></td><td class=""><span class="hd">INT. COAST RADIO STATION - OPERATIONS ROOM - NIGHT</span></td><td class="r"><span class="nm">17</span></td><td class="r"><span class="nm zero">0</span></td><td class=""><span class="st ok"><i></i>Reviewed</span></td><td class="">JOE, LATHA</td><td class="">Lantern</td><td class=""></td></tr>
+<tr class="alt" data-cells="[&quot;12&quot;, &quot;EXT. COAST RADIO STATION - NIGHT&quot;, &quot;13&quot;, &quot;0&quot;, &quot;Reviewed&quot;, &quot;SURESH&quot;, &quot;Flask&quot;, &quot;Weather cover: Thomas House kitchen&quot;]" data-k="r"><td class=""><span class="tile">12</span></td><td class=""><span class="hd">EXT. COAST RADIO STATION - NIGHT</span></td><td class="r"><span class="nm">13</span></td><td class="r"><span class="nm zero">0</span></td><td class=""><span class="st ok"><i></i>Reviewed</span></td><td class="">SURESH</td><td class="">Flask</td><td class="">Weather cover: Thomas House kitchen</td></tr></tbody></table>
+  <p class="rpt-note">Illustrative (fictional): the current Breakdown Completeness builder emits only its 5 columns (Sc, Heading, Confirmed, Suggested (unreviewed), Status). The extra columns Cast, Props, Notes are invented to show what the renderer does when a live report or an older saved snapshot carries more than 5 columns: the whole document turns landscape.</p>
+  
+</div>
+
+<script src="../../../00_SYSTEM/assets/of-preview.js"></script>
+</body>
+</html>

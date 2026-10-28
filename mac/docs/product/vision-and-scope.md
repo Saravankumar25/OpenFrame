@@ -15,7 +15,7 @@ application. There are no separate editions for different kinds of user.
 A person can go from a first idea to a shoot day inside one project folder on their own computer:
 
 - Idea Vault: notes, images, links, files and voice notes.
-- Story Board: acts, sequences, beats and scene cards.
+- Beat Board: acts, sequences, beats and scene cards.
 - Screenplay: a professional screenplay editor with drafts, comparison, review rounds, locking and revisions.
 - Breakdown: tagging the elements of every scene, plus the catalog, locations, cast and crew.
 - Visual planning: moodboards, storyboards and shot lists.
@@ -43,7 +43,7 @@ Tamil, Kannada, Malayalam, Spanish, French, German, Chinese, Japanese and Korean
 application screens are English only.
 
 How these fit together is explained in [architecture/README.md](../architecture/README.md) and, in full detail, in the
-[retrospection and audit report](../reports/2026-10-09-project-retrospection-and-audit.md) (a snapshot of 2026-10-09).
+[retrospection and audit report](../history/reports/2026-10-09-project-retrospection-and-audit.md) (history, a snapshot of 2026-10-09).
 
 ## 3. The chapters
 
@@ -69,9 +69,9 @@ The internal `.exe` and `.dmg` are for evaluation by the owner and the invited t
 - They contain the app and the AI runtime. The AI models download once, after installation, when the user clicks the
   download button ([ADR-0026](../adr/ADR-0026-offline-ai-download-after-install.md)).
 - They carry no trial, no purchase, no price and no store lock ([ADR-0023](../adr/ADR-0023-store-trial-and-internal-installer.md)).
-- They ask the team password on every launch ([ADR-0024](../adr/ADR-0024-internal-team-builds.md), minimum length 8 by
-  [ADR-0030](../adr/ADR-0030-verification-ladder-and-release-flow.md)). The gate is a door lock for the pilot, not
-  encryption.
+- They open without a password. The team password gate of [ADR-0024](../adr/ADR-0024-internal-team-builds.md) and
+  [ADR-0030](../adr/ADR-0030-verification-ladder-and-release-flow.md) was removed on 2026-10-27 (owner decision); the
+  files are shared only inside the team.
 
 ## 5. Business model (target, not final)
 

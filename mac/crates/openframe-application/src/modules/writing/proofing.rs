@@ -45,10 +45,9 @@ const CHECK_DEADLINE: Duration = Duration::from_secs(8);
 
 pub fn register(r: &mut Registry) {
     use crate::registry::{OperationMetadata as M, hidden as h};
-    r.query("writing.proofing", proofing).meta(
-        M::read("Proofing settings of the project and the spelling languages installed on this computer.")
-            .hidden(h::UI_FLOW),
-    );
+    r.query("writing.proofing", proofing).meta(M::read(
+        "Proofing settings of the project and the spelling languages installed on this computer.",
+    ));
     r.command("writing.set_proofing", set_proofing).meta(
         M::edit("Turn spell checking on or off and choose the project's main and second spelling language.")
             .hidden(h::PREFERENCE),

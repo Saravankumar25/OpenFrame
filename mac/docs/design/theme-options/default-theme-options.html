@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Default Theme Options</title>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: #e9e9ec; color: #1d1d1f;
+    font: 14px/1.45 -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  header.top {
+    position: sticky; top: 0; z-index: 10; padding: 14px 24px;
+    background: rgba(233,233,236,.82); backdrop-filter: blur(20px) saturate(180%);
+    border-bottom: 1px solid rgba(0,0,0,.08);
+    display: flex; gap: 18px; align-items: center; flex-wrap: wrap;
+  }
+  header.top h1 { font-size: 17px; margin: 0 8px 0 0; letter-spacing: -.01em; }
+  .tabs, .modes { display: flex; gap: 4px; background: rgba(0,0,0,.06); padding: 3px; border-radius: 9px; }
+  .tabs button, .modes button {
+    border: 0; background: transparent; font: inherit; font-size: 13px; padding: 5px 12px; border-radius: 7px;
+    color: #3a3a3c; cursor: pointer;
+  }
+  .tabs button.on, .modes button.on { background: #fff; color: #000; box-shadow: 0 1px 2px rgba(0,0,0,.12); font-weight: 600; }
+  main { max-width: 1320px; margin: 0 auto; padding: 22px 24px 60px; }
+  .intro { max-width: 820px; margin: 0 0 18px; color: #3a3a3c; }
+  .intro h2 { font-size: 26px; letter-spacing: -.02em; margin: 0 0 4px; color: #1d1d1f; }
+  .intro p { margin: 4px 0; }
+  .pair { display: grid; gap: 26px; }
+  .pair.both { grid-template-columns: 1fr; }
+  .modelabel { font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: #6e6e73; margin: 0 0 8px; }
+
+  /* ---------------- theme tokens ---------------- */
+  .t { --green:#1f8a4c; --green-soft:#e3f4ea; --red:#c93a32; --red-soft:#fbe8e6; --blue:#2f6fd6; --blue-soft:#e7effc; --hl:#ffe58a; }
+  .t.dark { --green:#4cc287; --green-soft:#4cc2871f; --red:#ff6b61; --red-soft:#ff6b611f; --blue:#6aa1ff; --blue-soft:#6aa1ff1f; --hl:#8a6d1a; }
+
+  /* A. Native */
+  .A.light { --win:#ffffff; --chrome:#f6f6f7; --side:#eeeef0; --side-sel:#dcdce1; --side-ink:#1d1d1f; --side-mut:#6e6e73;
+    --ink:#1d1d1f; --ink2:#3a3a3c; --muted:#86868b; --line:#e3e3e6; --hover:#f0f0f2; --list:#ffffff;
+    --accent:#0a66d6; --accent-soft:#e5efff; --accent-text:#0a5bc0; --primary:#0a66d6; --primary-ink:#fff;
+    --desk:#f2f2f4; --page:#ffffff; --page-ink:#1d1d1f; --page-edge:rgba(0,0,0,.08); --toast:#1d1d1f; --toast-ink:#fff; --toast-link:#6fb0ff; }
+  .A.dark { --win:#1e1e20; --chrome:#262628; --side:#28282b; --side-sel:#3b3b3f; --side-ink:#f5f5f7; --side-mut:#98989d;
+    --ink:#f5f5f7; --ink2:#d1d1d6; --muted:#98989d; --line:#38383b; --hover:#2c2c2f; --list:#1e1e20;
+    --accent:#0a84ff; --accent-soft:#0a84ff2b; --accent-text:#4da3ff; --primary:#0a84ff; --primary-ink:#fff;
+    --desk:#161618; --page:#252527; --page-ink:#e9e9ec; --page-edge:rgba(255,255,255,.06); --toast:#3a3a3d; --toast-ink:#fff; --toast-link:#6fb0ff; }
+
+  /* B. Paper */
+  .B.light { --win:#fbfaf7; --chrome:#f4f2ec; --side:#efebe3; --side-sel:#e2dccf; --side-ink:#2a2620; --side-mut:#7a7266;
+    --ink:#22201c; --ink2:#45403a; --muted:#857d72; --line:#e6e0d5; --hover:#f2eee7; --list:#fbfaf7;
+    --accent:#b4461c; --accent-soft:#f6e4d9; --accent-text:#a33e17; --primary:#b4461c; --primary-ink:#fff;
+    --desk:#eeebe4; --page:#fffefa; --page-ink:#1f1d1a; --page-edge:rgba(60,40,10,.10); --toast:#2a2620; --toast-ink:#fbfaf7; --toast-link:#f3a77f; }
+  .B.dark { --win:#1b1a18; --chrome:#22211f; --side:#24221f; --side-sel:#39352f; --side-ink:#ece7df; --side-mut:#9a9287;
+    --ink:#eee9e1; --ink2:#cfc8bd; --muted:#9a9287; --line:#35322d; --hover:#2a2825; --list:#1b1a18;
+    --accent:#e8875a; --accent-soft:#e8875a24; --accent-text:#f09a70; --primary:#e8875a; --primary-ink:#1b1a18;
+    --desk:#141312; --page:#23211f; --page-ink:#e9e3d9; --page-edge:rgba(255,240,220,.06); --toast:#3a3631; --toast-ink:#eee9e1; --toast-link:#f3a77f; }
+
+  /* C. Screening Room */
+  .C.light { --win:#f9fafb; --chrome:#f1f3f6; --side:#eaedf2; --side-sel:#dbe0e8; --side-ink:#151a23; --side-mut:#667085;
+    --ink:#141922; --ink2:#3a4252; --muted:#6b7487; --line:#e0e4ea; --hover:#eef1f5; --list:#f9fafb;
+    --accent:#e08a1e; --accent-soft:#fcefdc; --accent-text:#9c5a0a; --primary:#e08a1e; --primary-ink:#1a1206;
+    --desk:#edf0f4; --page:#ffffff; --page-ink:#141922; --page-edge:rgba(10,20,40,.08); --toast:#141922; --toast-ink:#fff; --toast-link:#ffc173; }
+  .C.dark { --win:#12151b; --chrome:#171b22; --side:#181c24; --side-sel:#283040; --side-ink:#e6e9ef; --side-mut:#8a93a5;
+    --ink:#e9ecf2; --ink2:#c0c7d3; --muted:#8b94a6; --line:#252b36; --hover:#1d222b; --list:#12151b;
+    --accent:#f0a040; --accent-soft:#f0a04021; --accent-text:#f5b362; --primary:#f0a040; --primary-ink:#1a1206;
+    --desk:#0c0f13; --page:#1a1e26; --page-ink:#dfe3ea; --page-edge:rgba(255,255,255,.05); --toast:#2a313d; --toast-ink:#fff; --toast-link:#ffc173; }
+
+  /* D. Ink */
+  .D.light { --win:#ffffff; --chrome:#fafafa; --side:#f5f5f5; --side-sel:#e6e6e6; --side-ink:#0a0a0a; --side-mut:#737373;
+    --ink:#0a0a0a; --ink2:#404040; --muted:#737373; --line:#e7e7e7; --hover:#f4f4f4; --list:#ffffff;
+    --accent:#d92d20; --accent-soft:#fdecea; --accent-text:#b42318; --primary:#111111; --primary-ink:#ffffff;
+    --desk:#f4f4f4; --page:#ffffff; --page-ink:#0a0a0a; --page-edge:rgba(0,0,0,.09); --toast:#111; --toast-ink:#fff; --toast-link:#ff8a80; }
+  .D.dark { --win:#0f0f0f; --chrome:#141414; --side:#171717; --side-sel:#2a2a2a; --side-ink:#fafafa; --side-mut:#8f8f8f;
+    --ink:#fafafa; --ink2:#d4d4d4; --muted:#8f8f8f; --line:#262626; --hover:#1c1c1c; --list:#0f0f0f;
+    --accent:#ff5a5f; --accent-soft:#ff5a5f22; --accent-text:#ff7b7f; --primary:#fafafa; --primary-ink:#0a0a0a;
+    --desk:#0a0a0a; --page:#171717; --page-ink:#ededed; --page-edge:rgba(255,255,255,.06); --toast:#2a2a2a; --toast-ink:#fff; --toast-link:#ff8a80; }
+
+  /* Paper page option: white paper in Dark */
+  .t.dark.whitepage { --page:#f7f6f2; --page-ink:#1d1d1f; --hl:#ffe58a; }
+
+  /* ---------------- window ---------------- */
+  .win {
+    background: var(--win); color: var(--ink); border-radius: 12px; overflow: hidden;
+    box-shadow: 0 0 0 .5px rgba(0,0,0,.25), 0 20px 50px rgba(0,0,0,.18);
+    display: grid; grid-template-columns: 210px 1fr; height: 560px; font-size: 13px;
+  }
+  .t.dark .win { box-shadow: 0 0 0 .5px rgba(255,255,255,.12), 0 20px 50px rgba(0,0,0,.45); }
+  .side { background: var(--side); color: var(--side-ink); padding: 12px 10px; display: flex; flex-direction: column; border-right: 1px solid var(--line); }
+  .lights { display: flex; gap: 8px; padding: 2px 4px 18px; }
+  .lights i { width: 12px; height: 12px; border-radius: 50%; display: block; }
+  .lights i:nth-child(1){background:#ff5f57} .lights i:nth-child(2){background:#febc2e} .lights i:nth-child(3){background:#28c840}
+  .proj { font-weight: 600; font-size: 13px; padding: 0 8px 10px; letter-spacing: -.005em; }
+  .side-h { font-size: 11px; font-weight: 600; color: var(--side-mut); padding: 10px 8px 4px; }
+  .nav { display: flex; align-items: center; gap: 9px; padding: 5px 8px; border-radius: 7px; color: var(--side-ink); }
+  .nav svg { width: 16px; height: 16px; stroke: var(--accent); fill: none; stroke-width: 1.6; flex: none; }
+  .nav.sel { background: var(--side-sel); font-weight: 600; }
+  .side .foot { margin-top: auto; font-size: 11.5px; color: var(--side-mut); padding: 0 8px; display: flex; align-items: center; gap: 6px; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); display: inline-block; }
+
+  .main { display: grid; grid-template-rows: auto auto 1fr; min-width: 0; }
+  .tool { background: var(--chrome); border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 4px; padding: 9px 12px; }
+  .tb { display: inline-flex; align-items: center; gap: 6px; padding: 4px 8px; border-radius: 6px; color: var(--ink2); white-space: nowrap; }
+  .tb svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 1.6; }
+  .tb:hover { background: var(--hover); }
+  .tb.dim { color: var(--muted); opacity: .6; }
+  .sp { flex: 1; }
+  .sep { width: 1px; height: 18px; background: var(--line); margin: 0 4px; }
+  .search { display: inline-flex; align-items: center; gap: 6px; background: var(--win); border: 1px solid var(--line); border-radius: 7px; padding: 4px 10px; color: var(--muted); width: 180px; }
+  .search svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 1.8; }
+  .btn-p { background: var(--primary); color: var(--primary-ink); border-radius: 6px; padding: 4px 11px; font-weight: 600; }
+
+  .sub { display: flex; align-items: center; gap: 6px; padding: 7px 12px; border-bottom: 1px solid var(--line); background: var(--win); }
+  .pick { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); border-radius: 6px; padding: 3px 9px; color: var(--ink); font-weight: 600; font-size: 12px; letter-spacing: .02em; }
+  .seg { display: inline-flex; background: var(--hover); border-radius: 7px; padding: 2px; }
+  .seg span { padding: 2px 10px; border-radius: 5px; color: var(--ink2); font-size: 12px; }
+  .seg span.on { background: var(--win); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.12); font-weight: 600; }
+  .t.dark .seg span.on { background: var(--side-sel); }
+  .meta { color: var(--muted); font-size: 12px; }
+
+  .work { display: grid; grid-template-columns: 250px 1fr; min-height: 0; }
+  .list { background: var(--list); border-right: 1px solid var(--line); overflow: hidden; }
+  .list h4 { margin: 0; padding: 10px 14px 6px; font-size: 12px; color: var(--muted); font-weight: 600; display: flex; justify-content: space-between; }
+  .list h4 b { color: var(--accent-text); font-weight: 600; }
+  .row { display: grid; grid-template-columns: 20px 1fr; gap: 6px; padding: 6px 14px; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-left: 2px solid transparent; }
+  .row span:last-child { overflow: hidden; text-overflow: ellipsis; font-size: 12px; }
+  .row .n { color: var(--muted); font-variant-numeric: tabular-nums; font-size: 12px; text-align: right; }
+  .row.sel { background: var(--accent-soft); border-left-color: var(--accent); }
+  .row.sel span:last-child { font-weight: 600; }
+
+  .desk { background: var(--desk); position: relative; overflow: hidden; padding: 18px 0 0; }
+  .find { position: absolute; top: 10px; right: 14px; display: flex; gap: 6px; align-items: center; background: var(--win); border: 1px solid var(--line); border-radius: 8px; padding: 4px 6px 4px 10px; box-shadow: 0 4px 14px rgba(0,0,0,.10); font-size: 12px; z-index: 2; }
+  .find .q { border: 2px solid var(--accent); border-radius: 6px; padding: 1px 8px; min-width: 120px; color: var(--ink); }
+  .find .c { color: var(--muted); }
+  .page {
+    width: 470px; margin: 26px auto 0; background: var(--page); color: var(--page-ink);
+    box-shadow: 0 0 0 1px var(--page-edge), 0 6px 22px rgba(0,0,0,.08);
+    padding: 34px 44px 40px; font: 11.5px/1.35 "Courier Prime", "Courier New", Courier, monospace; min-height: 520px;
+  }
+  .page p { margin: 0 0 11px; }
+  .page .sh { font-weight: 700; }
+  .page .ch { margin: 0 0 0 150px; }
+  .page .dl { margin: 0 70px 11px 90px; }
+  .page mark { background: var(--hl); color: inherit; border-radius: 2px; padding: 0 1px; }
+  .toast { position: absolute; left: 50%; bottom: 16px; transform: translateX(-50%); background: var(--toast); color: var(--toast-ink); border-radius: 10px; padding: 8px 14px; display: flex; gap: 14px; align-items: center; box-shadow: 0 8px 24px rgba(0,0,0,.25); white-space: nowrap; font-size: 12.5px; }
+  .toast b { color: var(--toast-link); }
+  .toast span.x { opacity: .7; }
+
+  /* ---------------- components strip ---------------- */
+  .strip { background: var(--win); color: var(--ink); border-radius: 12px; padding: 18px; margin-top: 14px; display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 18px;
+    box-shadow: 0 0 0 .5px rgba(0,0,0,.18); }
+  .t.dark .strip { box-shadow: 0 0 0 .5px rgba(255,255,255,.12); }
+  .strip h5 { margin: 0 0 10px; font-size: 11px; color: var(--muted); font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
+  .card { background: var(--chrome); border: 1px solid var(--line); border-radius: 10px; padding: 12px; display: grid; grid-template-columns: 54px 1fr; gap: 12px; align-items: center; }
+  .poster { height: 72px; border-radius: 6px; background: linear-gradient(160deg, var(--accent) 0%, var(--side-sel) 120%); }
+  .card .tt { font-weight: 600; font-size: 14px; letter-spacing: -.01em; }
+  .card .mm { color: var(--muted); font-size: 12px; }
+  .bts { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .b { border-radius: 7px; padding: 5px 13px; font-size: 13px; border: 1px solid var(--line); background: var(--win); color: var(--ink); }
+  .b.p { background: var(--primary); color: var(--primary-ink); border-color: transparent; font-weight: 600; }
+  .b.d { color: var(--red); }
+  .link { color: var(--accent-text); }
+  .field { margin-top: 10px; border: 1px solid var(--line); border-radius: 7px; padding: 5px 10px; background: var(--win); color: var(--ink); box-shadow: 0 0 0 3px var(--accent-soft); border-color: var(--accent); }
+  .tags { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tag { font-size: 11.5px; font-weight: 600; border-radius: 99px; padding: 2px 9px; }
+  .tag.g { background: var(--green-soft); color: var(--green); }
+  .tag.r { background: var(--red-soft); color: var(--red); }
+  .tag.bl { background: var(--blue-soft); color: var(--blue); }
+  .tag.a { background: var(--accent-soft); color: var(--accent-text); }
+  .toggle { display: inline-flex; align-items: center; gap: 8px; margin-top: 12px; color: var(--ink2); }
+  .sw { width: 34px; height: 20px; border-radius: 99px; background: var(--primary); position: relative; }
+  .sw::after { content: ""; position: absolute; right: 2px; top: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.3); }
+  .D.dark .sw::after { background: #0a0a0a; }
+  .sw.off { background: var(--side-sel); }
+  .sw.off::after { right: auto; left: 2px; background: #fff; }
+  .chips { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin-top: 12px; }
+  .chip { height: 26px; border-radius: 6px; box-shadow: inset 0 0 0 1px rgba(127,127,127,.25); }
+  .chipl { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; font-size: 10px; color: var(--muted); margin-top: 3px; text-align: center; }
+
+  .opt { display: none; }
+  .opt.on { display: block; }
+  .why { background: #fff; border-radius: 12px; padding: 16px 20px; margin: 0 0 20px; box-shadow: 0 0 0 .5px rgba(0,0,0,.12); display: grid; grid-template-columns: 1fr 1fr; gap: 10px 28px; }
+  .why h3 { grid-column: 1 / -1; margin: 0; font-size: 20px; letter-spacing: -.015em; }
+  .why p { margin: 0; color: #3a3a3c; }
+  .why ul { margin: 0; padding-left: 18px; color: #3a3a3c; }
+  .current { background: #fff; border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; box-shadow: 0 0 0 .5px rgba(0,0,0,.12); }
+  .current ul { margin: 6px 0 0; padding-left: 18px; color: #3a3a3c; }
+  @media (max-width: 900px) {
+    .win { grid-template-columns: 1fr; height: auto; }
+    .side, .list { display: none; }
+    .work { grid-template-columns: 1fr; }
+    .page { width: auto; margin: 26px 16px 0; }
+    .strip, .why { grid-template-columns: 1fr; }
+    main { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+<header class="top">
+  <h1>OpenFrame Mac: default theme</h1>
+  <div class="tabs" id="tabs">
+    <button data-o="A" class="on">A. Native</button>
+    <button data-o="B">B. Paper</button>
+    <button data-o="C">C. Screening Room</button>
+    <button data-o="D">D. Ink</button>
+  </div>
+  <div class="modes" id="modes">
+    <button data-m="both" class="on">Light and Dark</button>
+    <button data-m="light">Light</button>
+    <button data-m="dark">Dark</button>
+  </div>
+  <div class="modes" id="paper">
+    <button data-p="tinted" class="on">Dark page tinted</button>
+    <button data-p="white">Dark page white</button>
+  </div>
+</header>
+
+<main>
+  <div class="current">
+    <strong>What is wrong with the current default</strong>
+    <ul>
+      <li>Sidebar, scene list and page area are the same flat grey, so nothing tells you where you are.</li>
+      <li>Orange is on almost every toolbar button in Dark, so the one thing that matters never stands out.</li>
+      <li>The scene list sits on a grey block that reads as disabled.</li>
+      <li>Light and Dark feel like two different apps (warm beige light, blue-black dark).</li>
+    </ul>
+    <p style="margin:10px 0 0;color:#3a3a3c">Every option below fixes these the same way: one quiet neutral family per mode, the accent only on
+    the selection, the primary button, focus and links, and three clear layers (sidebar, list, page).</p>
+  </div>
+
+  <section class="opt on" data-o="A">
+    <div class="why"><h3>A. Native</h3>
+      <p>Looks like a first-party Mac app: Finder and Notes greys, system blue accent. The safest choice; nothing will feel out of place next to other Mac apps.</p>
+      <ul><li>Best for: people who want the app to disappear.</li><li>Risk: little OpenFrame identity.</li></ul></div>
+    <div class="pair"></div>
+  </section>
+  <section class="opt" data-o="B">
+    <div class="why"><h3>B. Paper</h3>
+      <p>Warm ivory and warm charcoal, a terracotta accent. Built for long writing sessions: softer than pure white, reads like good paper.</p>
+      <ul><li>Best for: writers spending hours in the screenplay.</li><li>Risk: warm tint can look dated if overdone.</li></ul></div>
+    <div class="pair"></div>
+  </section>
+  <section class="opt" data-o="C">
+    <div class="why"><h3>C. Screening Room</h3>
+      <p>Cool slate neutrals with the OpenFrame amber kept as the accent, used sparingly. Closest to today's brand, without the noise.</p>
+      <ul><li>Best for: keeping the brand colour, film-tool feel.</li><li>Risk: amber buttons need dark text, a little unusual on Mac.</li></ul></div>
+    <div class="pair"></div>
+  </section>
+  <section class="opt" data-o="D">
+    <div class="why"><h3>D. Ink</h3>
+      <p>Black and white with a single record-light red for the selection marker and links. Primary buttons are black in Light and white in Dark.</p>
+      <ul><li>Best for: a sharp, editorial, modern look.</li><li>Risk: stark; status colours carry more weight.</li></ul></div>
+    <div class="pair"></div>
+  </section>
+</main>
+
+<template id="win">
+  <div>
+    <p class="modelabel"></p>
+    <div class="win">
+      <aside class="side">
+        <div class="lights"><i></i><i></i><i></i></div>
+        <div class="proj">Night Bus</div>
+        <div class="nav"><svg viewBox="0 0 16 16"><path d="M2 7.5 8 2.5l6 5V14H2z"/></svg>Home</div>
+        <div class="nav"><svg viewBox="0 0 16 16"><path d="M8 1.8a4.2 4.2 0 0 0-2.4 7.6V11h4.8V9.4A4.2 4.2 0 0 0 8 1.8zM6 13.5h4"/></svg>Idea Vault</div>
+        <div class="nav"><svg viewBox="0 0 16 16"><rect x="2" y="3" width="12" height="10" rx="1.5"/><path d="M6 3v10M10 3v10"/></svg>Story</div>
+        <div class="nav sel"><svg viewBox="0 0 16 16"><path d="M4 1.8h5.5L12.5 5v9.2H4z"/><path d="M6 8h4.5M6 10.5h4.5"/></svg>Screenplay</div>
+        <div class="nav"><svg viewBox="0 0 16 16"><circle cx="4" cy="4.5" r="1.8"/><circle cx="4" cy="11.5" r="1.8"/><path d="M8 4.5h6M8 11.5h6"/></svg>Breakdown</div>
+        <div class="nav"><svg viewBox="0 0 16 16"><rect x="2" y="3" width="12" height="10" rx="1"/><path d="M5 3v10M11 3v10M2 8h12"/></svg>Production</div>
+        <div class="nav"><svg viewBox="0 0 16 16"><rect x="3" y="2.5" width="10" height="12" rx="1.5"/><path d="M6 2.5V1.5h4v1M5.5 7h5M5.5 10h5"/></svg>Call Sheets</div>
+        <div class="nav"><svg viewBox="0 0 16 16"><path d="M1.8 4.2h4.5l1.5 1.6h6.4v7.4H1.8z"/></svg>Files</div>
+        <div class="foot"><span class="dot"></span>Saved on this Mac</div>
+      </aside>
+      <div class="main">
+        <div class="tool">
+          <span class="tb"><svg viewBox="0 0 16 16"><rect x="1.8" y="2.8" width="12.4" height="10.4" rx="2"/><path d="M6 2.8v10.4"/></svg></span>
+          <span class="tb"><svg viewBox="0 0 16 16"><path d="M10 3 5 8l5 5"/></svg></span>
+          <span class="tb dim"><svg viewBox="0 0 16 16"><path d="m6 3 5 5-5 5"/></svg></span>
+          <span class="sep"></span>
+          <span class="tb">All Projects</span>
+          <span class="sp"></span>
+          <span class="search"><svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3.5 3.5"/></svg>Search</span>
+          <span class="tb"><svg viewBox="0 0 16 16"><path d="M8 3v10M3 8h10"/></svg>New</span>
+          <span class="tb"><svg viewBox="0 0 16 16"><path d="M8 2v3M8 11v3M2 8h3M11 8h3M4 4l1.5 1.5M10.5 10.5 12 12M12 4l-1.5 1.5M5.5 10.5 4 12"/></svg>Assistant</span>
+          <span class="tb"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="2.2"/><path d="M8 1.8v2M8 12.2v2M1.8 8h2M12.2 8h2M3.6 3.6 5 5M11 11l1.4 1.4M12.4 3.6 11 5M5 11l-1.4 1.4"/></svg></span>
+        </div>
+        <div class="sub">
+          <span class="pick">LOST PROPERTY &#8964;</span>
+          <span class="seg"><span class="on">Write</span><span>Compare</span><span>Comments</span></span>
+          <span class="sp"></span>
+          <span class="meta">Page 1 of 4</span>
+          <span class="sep"></span>
+          <span class="tb">Scenes</span><span class="tb">Find</span><span class="tb">100%</span>
+          <span class="btn-p">Export</span>
+        </div>
+        <div class="work">
+          <div class="list">
+            <h4>Scenes (10) <b>Columns</b></h4>
+            <div class="row"><span class="n">1</span><span>INT. KESARGANJ JUNCTION - LOST PROPERTY OFFICE</span></div>
+            <div class="row"><span class="n">2</span><span>EXT. KESARGANJ JUNCTION - PLATFORM 3</span></div>
+            <div class="row sel"><span class="n">3</span><span>INT. KESARGANJ JUNCTION - LOST PROPERTY OFFICE</span></div>
+            <div class="row"><span class="n">4</span><span>INT. KESARGANJ JUNCTION - STORE ROOM</span></div>
+            <div class="row"><span class="n">5</span><span>EXT. KESARGANJ JUNCTION - FOOTBRIDGE</span></div>
+            <div class="row"><span class="n">6</span><span>INT. NIGHT TRAIN - SECOND CLASS</span></div>
+            <div class="row"><span class="n">7</span><span>EXT. KESARGANJ JUNCTION - FOOTBRIDGE</span></div>
+            <div class="row"><span class="n">8</span><span>INT. KESARGANJ JUNCTION - LOST PROPERTY OFFICE</span></div>
+            <div class="row"><span class="n">9</span><span>EXT. ROOFTOP - DAWN</span></div>
+            <div class="row"><span class="n">10</span><span>EXT. KESARGANJ JUNCTION - FOOTBRIDGE</span></div>
+          </div>
+          <div class="desk">
+            <div class="find"><span class="q">kite</span><span class="c">3 of 15</span><span class="tb">Done</span></div>
+            <div class="page">
+              <p class="sh">INT. KESARGANJ JUNCTION - LOST PROPERTY OFFICE - NIGHT</p>
+              <p>A small office behind a barred window. Shelves of forgotten things: umbrellas, a single shoe, a birdcage with no bird.</p>
+              <p>DEVI (60s, cardigan over a railway uniform) fills in a REGISTER in slow, neat capitals.</p>
+              <p class="ch">KIRAN</p>
+              <p class="dl">Did anyone hand in a <mark>kite</mark>?</p>
+              <p class="ch">DEVI</p>
+              <p class="dl">What kind of <mark>kite</mark>?</p>
+              <p class="ch">KIRAN</p>
+              <p class="dl">Red. A long tail made of newspaper.</p>
+            </div>
+            <div class="toast">Imported screenplay "LOST PROPERTY" <b>Undo</b><span class="x">Dismiss</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="strip">
+      <div>
+        <h5>Home card</h5>
+        <div class="card"><div class="poster"></div><div><div class="tt">Night Bus</div><div class="mm">Feature film, 10 scenes. Edited today</div>
+          <div class="tags" style="margin-top:8px"><span class="tag a">Screenplay</span><span class="tag g">Saved</span></div></div></div>
+        <div class="chips"></div><div class="chipl"><span>Window</span><span>Sidebar</span><span>Selection</span><span>Text</span><span>Lines</span><span>Accent</span></div>
+      </div>
+      <div>
+        <h5>Buttons and fields</h5>
+        <div class="bts"><span class="b p">Create Project</span><span class="b">Cancel</span><span class="b d">Delete</span></div>
+        <div class="field">Kesarganj Junction</div>
+        <div class="toggle"><span class="sw"></span>Autosave <span class="sw off" style="margin-left:14px"></span>Spell check</div>
+      </div>
+      <div>
+        <h5>Status and links</h5>
+        <div class="tags"><span class="tag g">Scheduled</span><span class="tag r">Conflict</span><span class="tag bl">Draft 2</span><span class="tag a">Day 3</span></div>
+        <p style="margin:14px 0 0;color:var(--ink2)">Body text uses the second ink. <span class="link">See sources</span></p>
+        <p style="margin:6px 0 0;color:var(--muted);font-size:12px">Muted text for hints and counts.</p>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+  const tpl = document.getElementById('win');
+  const tokens = ['--win', '--side', '--side-sel', '--ink', '--line', '--accent'];
+  let mode = 'both', paper = 'tinted';
+
+  function render() {
+    document.querySelectorAll('.opt').forEach(sec => {
+      const o = sec.dataset.o, pair = sec.querySelector('.pair');
+      pair.innerHTML = '';
+      const modes = mode === 'both' ? ['light', 'dark'] : [mode];
+      modes.forEach(m => {
+        const node = tpl.content.firstElementChild.cloneNode(true);
+        node.className = 't ' + o + ' ' + m + (m === 'dark' && paper === 'white' ? ' whitepage' : '');
+        node.querySelector('.modelabel').textContent = m === 'light' ? 'Light' : 'Dark';
+        pair.appendChild(node);
+        const cs = getComputedStyle(node);
+        const chips = node.querySelector('.chips');
+        tokens.forEach(t => {
+          const c = document.createElement('div');
+          c.className = 'chip';
+          c.style.background = cs.getPropertyValue(t);
+          c.title = t + ' ' + cs.getPropertyValue(t).trim();
+          chips.appendChild(c);
+        });
+      });
+    });
+  }
+
+  function bind(groupId, attr, apply) {
+    document.querySelectorAll('#' + groupId + ' button').forEach(b => b.addEventListener('click', () => {
+      document.querySelectorAll('#' + groupId + ' button').forEach(x => x.classList.toggle('on', x === b));
+      apply(b.dataset[attr]);
+    }));
+  }
+  bind('tabs', 'o', o => document.querySelectorAll('.opt').forEach(s => s.classList.toggle('on', s.dataset.o === o)));
+  bind('modes', 'm', m => { mode = m; render(); });
+  bind('paper', 'p', p => { paper = p; render(); });
+  render();
+</script>
+</body>
+</html>

@@ -2,7 +2,7 @@
 
 - **Amended 2026-10-15 by [ADR-0029](ADR-0029-gpu-acceleration.md):** the runtime that ships in each package now includes a Vulkan build next to the processor build. The Mac engine launch method (helper process or linked library) is an open item of [ADR-0027](ADR-0027-rust-core-two-ui-shells.md).
 - **Status:** Accepted 2026-10-08 (owner, in chat: "AI engine inside each package"). Amends ADR-0006 for every
-  release file. **Partly superseded 2026-10-08 by [ADR-0025](ADR-0025-offline-ai-bundled-in-every-package.md):** the
+  release file. **Partly superseded 2026-10-08 by [ADR-0025](../history/adr/ADR-0025-offline-ai-bundled-in-every-package.md):** the
   weights, tokenizer and every runtime asset are bundled too, and nothing downloads. Decisions 1 (runtime part) and 4
   stay in force.
 - **Date:** 2026-10-05, accepted 2026-10-08

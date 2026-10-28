@@ -30,7 +30,7 @@ const HOSTILE = [
 function result(kind: AiResultDto["kind"], texts: string[]): AiResultDto {
   return {
     id: "r1", kind, status: "Informational", content: texts.join(" "), details: texts,
-    confidence: null, provenance: [], items: texts.map((label) => ({ label, detail: label, nav: null })),
+    confidence: null, provenance: [], items: texts.map((label) => ({ label, detail: label, nav: null })), itemsAreAnswer: false,
     nav: null, changeSet: null, errorCode: null, steps: [], taskId: null, createdAt: 1,
   } as AiResultDto;
 }

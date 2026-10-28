@@ -132,7 +132,8 @@ export function PageSetupDialog({ screenplayId, canEdit, onClose }: { screenplay
               </div>
             </Field>
           ))}
-          <Checkbox checked={setup.headerOnFirstPage} onChange={(v) => set("headerOnFirstPage", v)} label="Show the page number, header and footer on the first page" />
+          <Checkbox checked={setup.numberFirstPage} onChange={(v) => set("numberFirstPage", v)} label="Print the page number on the first page" />
+          <Checkbox checked={setup.headerOnFirstPage} onChange={(v) => set("headerOnFirstPage", v)} label="Show the header and footer on the first page" />
           <Checkbox checked={setup.includeTitlePage} onChange={(v) => set("includeTitlePage", v)} label="Include the title page when exporting and printing" />
           <Checkbox checked={setup.sceneNumbers} onChange={(v) => set("sceneNumbers", v)} label="Print scene numbers" />
           <Checkbox checked={setup.revisionMarks} onChange={(v) => set("revisionMarks", v)} label="Mark revised lines with an asterisk" />

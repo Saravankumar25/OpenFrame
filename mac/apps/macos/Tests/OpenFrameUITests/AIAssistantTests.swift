@@ -1,9 +1,10 @@
-// AI assistant: the model driven exactly as the view drives it, with a real core on a temporary
-// folder. These tests have no engine and no model files, so they cover every state the core can
-// report without a model (engine missing, nothing downloaded), that a failed request never loses
-// the typed question, cancel, the scope line of each workspace (scenario 73), the change set
-// review calls (scenario 74) and the report of an AI output. Questions that need a real model
-// (scenarios 72, 74, 75 and 78 with an answer) are listed in the agent report.
+// AI assistant: the model driven exactly as the view drives it. Most tests use a real core on a
+// temporary folder with no engine and no model files: every state the core reports without a model
+// (engine missing, nothing downloaded), that a failed request never loses the typed question, the
+// scope line of each workspace (scenario 73) and the change set review calls (scenario 74). The
+// conversation tests (one id per conversation, progress, Cancel, Save conversation for review)
+// answer the core calls with a stand-in (AITestSupport.swift), as the Windows Vitest files do.
+// Questions that need a real model run in the Mac end-to-end scenarios (AIConversationScenarios).
 
 import AppKit
 import Foundation
@@ -26,6 +27,17 @@ private struct Rig {
         return Rig(root: root, app: app, model: AIAssistantModel(app: app))
     }
 
+    /// The model with its core calls answered by `stub`, on an app with no core (no project needed).
+    static func stubbed(_ stub: AIStubCore) throws -> Rig {
+        let root = try Fixture.root()
+        let app = Fixture.model(root)
+        let model = AIAssistantModel(app: app)
+        model.invoker = stub
+        stub.reply("ai.history", AiHistoryDto(conversationId: nil, exchanges: []))
+        stub.reply("ai.status", AiStatusDto(available: true, mode: "AI Ready", bundleState: "Verified", problem: nil, runtimeState: "Ready", runtimeMessage: nil, localOnly: true))
+        return Rig(root: root, app: app, model: model)
+    }
+
     func close() {
         app.shutdown()
         try? FileManager.default.removeItem(at: root)
@@ -33,12 +45,7 @@ private struct Rig {
 }
 
 private func exchange(_ text: String, set: AiChangeSetDto?) -> AiExchange {
-    AiExchange(
-        requestId: UUID().uuidString, conversationId: "c", requestText: text, scopeLabel: "Using: Whole Project",
-        result: AiResultDto(
-            id: UUID().uuidString, kind: set == nil ? .answer : .proposal, status: .informational, content: "ok", details: [], provenance: [],
-            items: [], changeSet: set, steps: [], createdAt: 0),
-        createdAt: 0)
+    AIFixtures.exchange(text, conversation: "c", result: AIFixtures.result(kind: set == nil ? .answer : .proposal, content: "ok", changeSet: set))
 }
 
 private func set(_ id: String, state: String) -> AiChangeSetDto {
@@ -124,25 +131,6 @@ struct AIAssistantTests {
             r.model.send()
             #expect(r.model.pending == nil)
         }
-    }
-
-    @Test func cancelStopsWaitingAndKeepsTheQuestion() async throws {
-        let r = try await Rig.make()
-        defer { r.close() }
-        r.model.text = "Which scene happens at the railway station?"
-        r.model.send()
-        #expect(r.model.pending != nil)
-        await r.model.cancel()
-        #expect(r.model.pending == nil)
-        #expect(r.model.text == "Which scene happens at the railway station?")
-        #expect(r.model.error?.hasPrefix("Stopped.") == true)
-        // The late failure of the stopped request does not overwrite the message or the box.
-        try await Task.sleep(for: .milliseconds(400))
-        #expect(r.model.error?.hasPrefix("Stopped.") == true)
-        #expect(r.model.text == "Which scene happens at the railway station?")
-        // Cancel with nothing running does nothing.
-        await r.model.cancel()
-        #expect(r.model.pending == nil)
     }
 
     // MARK: Conversation
@@ -267,37 +255,6 @@ struct AIAssistantTests {
         #expect(r.model.latestAppliedChangeSetId == nil)
     }
 
-    // MARK: Report AI output
-
-    @Test func reportingAnOutputWritesAFileTheChosenPlaceAndSendsNothing() async throws {
-        let r = try await Rig.make()
-        defer { r.close() }
-        let file = r.root.appendingPathComponent("output.json")
-        r.model.chooseSaveLocation = { _, _ in file }
-        let x = exchange("How many scenes are in the script?", set: nil)
-        let written = await r.model.reportOutput(x)
-        #expect(written == file)
-        let json = try JSONSerialization.jsonObject(with: Data(contentsOf: file)) as? [String: Any]
-        #expect(json?["question"] as? String == "How many scenes are in the script?")
-        #expect(r.model.error == nil)
-    }
-
-    @Test func cancellingTheSavePanelWritesNothing() async throws {
-        let r = try await Rig.make()
-        defer { r.close() }
-        r.model.chooseSaveLocation = { _, _ in nil }
-        #expect(await r.model.reportOutput(exchange("q", set: nil)) == nil)
-        #expect(r.model.error == nil)
-    }
-
-    @Test func aFileThatCannotBeSavedGivesAPlainMessage() async throws {
-        let r = try await Rig.make()
-        defer { r.close() }
-        r.model.chooseSaveLocation = { _, _ in URL(fileURLWithPath: "/nonexistent-folder/out.json") }
-        #expect(await r.model.reportOutput(exchange("q", set: nil)) == nil)
-        #expect(r.model.error?.contains("could not be saved") == true)
-    }
-
     // MARK: The views draw
 
     @Test func thePanelDrawsInLightAndDarkWhenAIIsOff() async throws {
@@ -328,5 +285,293 @@ struct AIAssistantTests {
             .environment(themes)
             .environment(\.ofTheme, themes.resolvedFor(colorScheme: .light))
         #expect(Fixture.render(view, name: "ai-conversation", size: CGSize(width: 380, height: 760)) != nil)
+    }
+}
+
+// MARK: - The conversation (Windows: AiProgress.test.tsx, SaveConversation.test.tsx)
+
+@Suite("AI conversation", .serialized)
+@MainActor
+struct AIConversationTests {
+    private func answered(_ stub: AIStubCore, _ x: AiExchange) {
+        stub.reply("ai.ask", x)
+        stub.reply("ai.history", AiHistoryDto(conversationId: x.conversationId, exchanges: [x]))
+    }
+
+    // MARK: One id per conversation
+
+    @Test func theConversationIsNamedBeforeTheFirstAnswerAndKeptAfterIt() async throws {
+        let stub = AIStubCore()
+        let r = try Rig.stubbed(stub)
+        defer { r.close() }
+        await r.model.loadHistory()
+        answered(stub, AIFixtures.exchange("How many scenes?", conversation: "core-conv"))
+        r.model.text = "How many scenes?"
+        await r.model.sendAndWait()
+        let first = try #require(stub.args("ai.ask").first?["conversationId"] as? String)
+        #expect(first.count >= 8 && first.allSatisfy { $0.isLetter || $0.isNumber || $0 == "-" })
+        // The next question reuses the id the core returned, not a new one.
+        r.model.text = "And the drafts?"
+        await r.model.sendAndWait()
+        #expect(stub.args("ai.ask").last?["conversationId"] as? String == "core-conv")
+        #expect(stub.args("ai.history").last?["conversationId"] as? String == "core-conv")
+    }
+
+    @Test func openingThePanelContinuesTheLatestConversation() async throws {
+        let stub = AIStubCore()
+        let r = try Rig.stubbed(stub)
+        defer { r.close() }
+        let earlier = AIFixtures.exchange("How many scenes?", conversation: "latest")
+        stub.reply("ai.history", AiHistoryDto(conversationId: "latest", exchanges: [earlier]))
+        await r.model.loadHistory()
+        // The earlier turns are loaded on open, and a question goes on in that conversation.
+        #expect(r.model.exchanges.map(\.requestText) == ["How many scenes?"])
+        #expect(r.model.conversationForAsk == "latest")
+        // New starts another one, with its own id.
+        r.model.newConversation()
+        #expect(r.model.exchanges.isEmpty)
+        let fresh = r.model.conversationForAsk
+        #expect(fresh != "latest")
+    }
+
+    // MARK: Progress
+
+    @Test func showsTheWaitingLineThenOnlyThisConversationsLatestLabel() async throws {
+        let stub = AIStubCore()
+        stub.hold("ai.ask")
+        let r = try Rig.stubbed(stub)
+        defer { r.close() }
+        var heard: [String] = []
+        r.model.announce = { heard.append($0) }
+        r.model.text = "Walk me through the story"
+        r.model.send()
+        await eventually { stub.count("ai.ask") == 1 }
+        let id = try #require(r.model.running)
+        #expect(stub.args("ai.ask").first?["conversationId"] as? String == id)
+        #expect(r.model.workingLine == "Working on it on this computer\u{2026}")
+        r.model.receive(AIFixtures.progress(id, "Reading Scenes 5 and 6", step: 1, total: 3))
+        #expect(r.model.workingLine == "Reading Scenes 5 and 6")
+        // Another conversation and other events change nothing.
+        r.model.receive(AIFixtures.progress("someone-else", "Reading Scene 99"))
+        r.model.receive(AIFixtures.progress(id, "Not mine", module: "other"))
+        #expect(r.model.workingLine == "Reading Scenes 5 and 6")
+        r.model.receive(AIFixtures.progress(id, "Writing the answer", step: 2, total: 3))
+        r.model.receive(AIFixtures.progress(id, "Writing the answer", step: 2, total: 3))
+        #expect(r.model.workingLine == "Writing the answer")
+        // Each new line is read out once.
+        #expect(heard == ["Reading Scenes 5 and 6", "Writing the answer"])
+        answered(stub, AIFixtures.exchange("Walk me through the story", conversation: id))
+        stub.release("ai.ask")
+        await r.model.waitForAnswer()
+        #expect(r.model.pending == nil && r.model.running == nil && r.model.progress == nil)
+        // A late line after the answer is ignored.
+        r.model.receive(AIFixtures.progress(id, "Late"))
+        #expect(r.model.progress == nil)
+    }
+
+    // MARK: Cancel
+
+    @Test func cancelAsksTheCoreOnceSaysStoppingAndTheAnswerThenArrives() async throws {
+        let stub = AIStubCore()
+        stub.hold("ai.ask")
+        stub.reply("ai.cancel", AiCancelDto(stopping: true))
+        let r = try Rig.stubbed(stub)
+        defer { r.close() }
+        r.model.text = "Walk me through the story"
+        r.model.send()
+        await eventually { stub.count("ai.ask") == 1 }
+        let id = try #require(r.model.running)
+        await r.model.cancel()
+        #expect(stub.args("ai.cancel").count == 1)
+        #expect(stub.args("ai.cancel").first?["conversationId"] as? String == id)
+        #expect(r.model.stopping)
+        #expect(r.model.workingLine == "Stopping\u{2026}")
+        // A second press while stopping does not ask again.
+        await r.model.cancel()
+        #expect(stub.count("ai.cancel") == 1)
+        let stopped = AIFixtures.exchange("Walk me through the story", conversation: id, result: AIFixtures.result(content: "Stopped. Nothing was changed."))
+        answered(stub, stopped)
+        stub.release("ai.ask")
+        await r.model.waitForAnswer()
+        #expect(r.model.pending == nil)
+        #expect(!r.model.stopping)
+        #expect(r.model.exchanges.last?.result.content == "Stopped. Nothing was changed.")
+        // The answer arrived as an ordinary answer; the box is free and empty.
+        #expect(r.model.text.isEmpty && r.model.error == nil)
+        // Cancel with nothing running does nothing.
+        await r.model.cancel()
+        #expect(stub.count("ai.cancel") == 1)
+    }
+
+    @Test func cancelCanBePressedAgainWhenNothingCouldBeStoppedYet() async throws {
+        let stub = AIStubCore()
+        stub.hold("ai.ask")
+        stub.reply("ai.cancel", AiCancelDto(stopping: false))
+        let r = try Rig.stubbed(stub)
+        defer { r.close() }
+        r.model.text = "Summarise act two"
+        r.model.send()
+        await eventually { stub.count("ai.ask") == 1 }
+        await r.model.cancel()
+        #expect(!r.model.stopping)
+        await r.model.cancel()
+        #expect(stub.count("ai.cancel") == 2)
+        // A failed stop says why and leaves Cancel usable.
+        stub.fail("ai.cancel", CoreFailure(code: "ai.x", message: "The assistant could not be reached."))
+        await r.model.cancel()
+        #expect(!r.model.stopping)
+        #expect(r.model.error == "The assistant could not be reached.")
+        stub.fail("ai.ask", CoreFailure(code: "ai.x", message: "Stopped"))
+        stub.release("ai.ask")
+        await r.model.waitForAnswer()
+        // A request that fails puts the question back.
+        #expect(r.model.text == "Summarise act two")
+    }
+
+    // MARK: The end of a request (Windows clears pending and running together)
+
+    @Test func theQuestionStaysPendingUntilTheAnswerIsOnScreen() async throws {
+        let stub = AIStubCore()
+        let r = try Rig.stubbed(stub)
+        defer { r.close() }
+        answered(stub, AIFixtures.exchange("How many scenes?", conversation: "conv"))
+        stub.hold("ai.history")
+        r.model.text = "How many scenes?"
+        r.model.send()
+        await eventually { stub.count("ai.history") == 1 }
+        // The answer is in but not yet shown: the request still runs, so no second one can start.
+        #expect(r.model.pending == "How many scenes?")
+        #expect(r.model.running != nil)
+        r.model.text = "And the drafts?"
+        r.model.send()
+        #expect(stub.count("ai.ask") == 1)
+        #expect(r.model.text == "And the drafts?")
+        stub.release("ai.history")
+        await r.model.waitForAnswer()
+        #expect(r.model.pending == nil && r.model.running == nil)
+        #expect(r.model.exchanges.map(\.requestText) == ["How many scenes?"])
+    }
+
+    @Test func anEarlierRequestEndingLateLeavesTheNewOneRunning() async throws {
+        let stub = AIStubCore()
+        let r = try Rig.stubbed(stub)
+        defer { r.close() }
+        answered(stub, AIFixtures.exchange("How many scenes?", conversation: "conv"))
+        // The first request finishes, then waits for the status it reads last.
+        stub.hold("ai.status")
+        r.model.text = "How many scenes?"
+        r.model.send()
+        await eventually { stub.count("ai.status") == 1 && r.model.pending == nil }
+        // A second question in the same conversation starts and is held by the core.
+        stub.hold("ai.ask")
+        r.model.text = "And the drafts?"
+        r.model.send()
+        await eventually { stub.count("ai.ask") == 2 }
+        let second = try #require(r.model.running)
+        // The first request now ends: the second keeps its Working line, its progress and its Cancel.
+        stub.release("ai.status")
+        try await Task.sleep(for: .milliseconds(50))
+        #expect(r.model.pending == "And the drafts?")
+        #expect(r.model.running == second)
+        r.model.receive(AIFixtures.progress(second, "Reading Scenes 5 and 6"))
+        #expect(r.model.workingLine == "Reading Scenes 5 and 6")
+        stub.reply("ai.cancel", AiCancelDto(stopping: true))
+        await r.model.cancel()
+        #expect(stub.args("ai.cancel").first?["conversationId"] as? String == second)
+        stub.release("ai.ask")
+        await r.model.waitForAnswer()
+        #expect(r.model.pending == nil && r.model.running == nil && !r.model.stopping)
+    }
+
+    @Test func escapeElsewhereInTheWindowDoesNotCancelTheRequest() throws {
+        // Windows binds no key to this Cancel. A window-wide Escape would stop the request from the
+        // screenplay or the Story board, which use Escape for their own work.
+        let view = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
+            .deletingLastPathComponent().appendingPathComponent("Sources/OpenFrameUI/AI/AIConversationView.swift")
+        let source = try String(contentsOf: view, encoding: .utf8)
+        #expect(source.contains("\"ai-cancel\""))
+        #expect(!source.contains(".cancelAction"))
+        #expect(!source.contains("(Esc)"))
+    }
+
+    // MARK: Save conversation for review
+
+    @Test func saveIsOffWhileThereIsNoConversation() async throws {
+        let stub = AIStubCore()
+        let r = try Rig.stubbed(stub)
+        defer { r.close() }
+        var asked = 0
+        r.model.chooseSaveLocation = { _, _ in asked += 1; return nil }
+        await r.model.loadHistory()
+        #expect(r.model.conversationId == nil)
+        #expect(await r.model.saveForReview() == nil)
+        #expect(asked == 0)
+        #expect(stub.count("ai.export_conversation") == 0)
+    }
+
+    @Test func saveAsksWhereAndWritesOnlyAfterThePersonChooses() async throws {
+        let stub = AIStubCore()
+        let r = try Rig.stubbed(stub)
+        defer { r.close() }
+        let xs = [AIFixtures.exchange("How many scenes?"), AIFixtures.exchange("And the drafts?")]
+        stub.reply("ai.history", AiHistoryDto(conversationId: "conv1", exchanges: xs))
+        stub.reply("ai.export_conversation", AiReportResult(fileName: "openframe-ai-conversation.json", rows: 2))
+        await r.model.loadHistory()
+        // Showing the conversation writes nothing.
+        #expect(stub.count("ai.export_conversation") == 0)
+        var titles: [String] = []
+        let file = r.root.appendingPathComponent("openframe-ai-conversation.json")
+        r.model.chooseSaveLocation = { title, name in
+            titles.append(title)
+            #expect(name == "openframe-ai-conversation.json")
+            return file
+        }
+        let saved = await r.model.saveForReview()
+        #expect(saved?.rows == 2)
+        #expect(titles == ["Save conversation for review"])
+        let args = try #require(stub.args("ai.export_conversation").first)
+        #expect(args["conversationId"] as? String == "conv1")
+        #expect(args["path"] as? String == file.path)
+        #expect(ToastCenter.shared.items.last?.text == "Saved openframe-ai-conversation.json (2 questions).")
+        // Cancelling the Save panel writes nothing.
+        r.model.chooseSaveLocation = { _, _ in nil }
+        #expect(await r.model.saveForReview() == nil)
+        #expect(stub.count("ai.export_conversation") == 1)
+        // A file that cannot be written says why, from the core.
+        stub.fail("ai.export_conversation", CoreFailure(code: "storage.write", message: "The file could not be saved."))
+        r.model.chooseSaveLocation = { _, _ in file }
+        #expect(await r.model.saveForReview() == nil)
+        #expect(ToastCenter.shared.items.last?.text == "The file could not be saved.")
+        #expect(ToastCenter.shared.items.last?.kind == .error)
+    }
+
+    @Test func theConversationWithSourcesAndProgressDraws() async throws {
+        let stub = AIStubCore()
+        stub.hold("ai.ask")
+        let r = try Rig.stubbed(stub)
+        defer { r.close() }
+        r.model.exchanges = [
+            AIFixtures.exchange("Who plays Anna?", result: AIFixtures.result(
+                content: "Maya Rao plays Anna.\n\n- Scene 4\n- Scene 9\n\nIdea: open on her hands.", confidence: .inferred,
+                provenance: [AiProvenance(kind: "Cast", label: "Maya Rao", nav: AiNavTarget(workspace: "production", sub: "cast-crew", params: [:]))])),
+            AIFixtures.exchange("List the scenes", result: AIFixtures.result(
+                content: "Two scenes.", items: [AiResultItem(label: "Scene 1"), AiResultItem(label: "Scene 2")], itemsAreAnswer: true)),
+        ]
+        r.model.text = "Walk me through the story"
+        r.model.send()
+        await eventually { stub.count("ai.ask") == 1 }
+        r.model.receive(AIFixtures.progress(try #require(r.model.running), "Reading Scenes 5 and 6"))
+        for scheme in [ColorScheme.light, .dark] {
+            let themes = ThemeStore()
+            let view = AIConversationView(model: r.model)
+                .environment(r.app)
+                .environment(themes)
+                .environment(\.ofTheme, themes.resolvedFor(colorScheme: scheme))
+                .environment(\.colorScheme, scheme)
+            #expect(Fixture.render(view, name: "ai-conversation-progress-\(scheme)", size: CGSize(width: 380, height: 760)) != nil)
+        }
+        stub.fail("ai.ask", CoreFailure(code: "ai.x", message: "x"))
+        stub.release("ai.ask")
+        await r.model.waitForAnswer()
     }
 }

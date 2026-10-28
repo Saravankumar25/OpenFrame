@@ -77,17 +77,21 @@ pub struct CoreConfig {
     pub ai_bundle_dir: Option<String>,
     /// Write the JSON log files under the app data folder.
     pub write_logs: bool,
-    /// A team password hash for the automated tests of the password screen. Honoured only by a
-    /// debug build on a test folder, like the other test switches (ADR-0031); a release build and
-    /// a run on the person's own data always use the hash embedded at build time.
-    #[uniffi(default = None)]
-    pub test_team_password_hash: Option<String>,
     /// The automated tests of the Mac App Store screens: run as the store channel with this
     /// licence response public key (64 hex characters). Honoured only by a debug build on a test
     /// folder, like the other test switches (ADR-0031); a release build and a run on the person's
     /// own data ignore it, so the channel always comes from the build.
     #[uniffi(default = None)]
     pub test_store_response_key_hex: Option<String>,
+    /// The automated tests of the first-start library setup: the test folder starts like a new
+    /// computer whose library is not chosen yet (`AppConfig::isolated_needing_setup`). Honoured
+    /// only by a debug build on a test folder, like `OPENFRAME_LIBRARY_SETUP=1` on Windows.
+    #[uniffi(default = false)]
+    pub test_library_setup: bool,
+    /// Temperature 0 and a fixed seed for the Offline AI in the automated tests. Honoured only by
+    /// a debug build on a test folder, like `OPENFRAME_AI_DETERMINISTIC=1` on Windows.
+    #[uniffi(default = false)]
+    pub test_ai_deterministic: bool,
 }
 
 /// The running core. One per app process.
@@ -113,15 +117,6 @@ impl EventSink for FfiSink {
     }
 }
 
-/// The team password hash of an internal build (ADR-0024), embedded by `build.rs`.
-#[cfg(openframe_team_gate)]
-const TEAM_PASSWORD_HASH: Option<&str> = Some(include_str!(concat!(
-    env!("OUT_DIR"),
-    "/team_gate_hash.txt"
-)));
-#[cfg(not(openframe_team_gate))]
-const TEAM_PASSWORD_HASH: Option<&str> = None;
-
 fn build_config(config: &CoreConfig) -> Result<(AppConfig, bool), CoreError> {
     let isolated = match config.isolated_data_root.as_deref() {
         Some(raw) => {
@@ -142,9 +137,14 @@ fn build_config(config: &CoreConfig) -> Result<(AppConfig, bool), CoreError> {
         Some(root) => {
             // Deleted projects of a test run stay in its own folder, never the Trash.
             openframe_application::modules::project::fault::trash_into(root.join("recycle-bin"));
+            let base = if test_switch(config.test_library_setup, cfg!(debug_assertions), true) {
+                AppConfig::isolated_needing_setup(root)
+            } else {
+                AppConfig::isolated(root)
+            };
             AppConfig {
                 app_version: config.app_version.clone(),
-                ..AppConfig::isolated(root)
+                ..base
             }
         }
         None => AppConfig::for_current_user(&config.app_version)?,
@@ -160,20 +160,19 @@ fn build_config(config: &CoreConfig) -> Result<(AppConfig, bool), CoreError> {
         .filter(|p| p.is_absolute());
     app.ai_model_source =
         openframe_application::ModelSource::from_build(option_env!("OPENFRAME_TEST_MODEL_SOURCE"));
+    app.ai_deterministic = test_switch(
+        config.test_ai_deterministic,
+        cfg!(debug_assertions),
+        isolated.is_some(),
+    );
     // Hand-set licence states exist only in a debug build on a test folder (as on Windows).
     app.entitlement_debug_controls = cfg!(debug_assertions) && isolated.is_some();
-    app.team_password_hash = TEAM_PASSWORD_HASH.map(str::to_string);
-    if let Some(hash) = test_gate(config, cfg!(debug_assertions), isolated.is_some()) {
-        app.team_password_hash = Some(hash);
-    }
     Ok((app, isolated.is_some()))
 }
 
-/// The test hash of the password screen tests: only a debug build on a test folder, and only a
-/// well-formed Argon2id string (the gate check refuses anything else anyway).
-fn test_gate(config: &CoreConfig, debug: bool, isolated: bool) -> Option<String> {
-    let hash = config.test_team_password_hash.as_deref()?;
-    (debug && isolated && hash.starts_with("$argon2id$")).then(|| hash.to_string())
+/// A test-only switch: on only in a debug build on a test folder.
+fn test_switch(asked: bool, debug: bool, isolated: bool) -> bool {
+    asked && debug && isolated
 }
 
 /// The test response key of the store screen tests: only a debug build on a test folder.
@@ -284,8 +283,11 @@ impl CoreHandle {
         self.core.tasks.cancel(&task_id)
     }
 
-    /// Sleep and wake from `NSWorkspace` notifications: before sleep the open project's data is
-    /// folded into its database file.
+    /// Sleep and wake from `NSWorkspace` notifications (`AppCore::on_power_event`, the same as the
+    /// Windows power broadcast). Before sleep, background AI work stops (the project index, the
+    /// warm-up, an engine only background work uses) and the open project's data is folded into
+    /// its database file; a request a person is waiting for finishes. After the wake background
+    /// work goes on by itself. Repeating an event is harmless.
     pub fn power_event(&self, sleeping: bool) {
         use openframe_platform::power::PowerEvent;
         self.core.on_power_event(if sleeping {
@@ -350,12 +352,6 @@ impl CoreHandle {
     }
 }
 
-/// Whether this library was built with the internal team password gate (diagnostics and tests).
-#[uniffi::export]
-pub fn team_gate_built_in() -> bool {
-    TEAM_PASSWORD_HASH.is_some()
-}
-
 /// Every registered operation with its kind and argument and result type names, as JSON. The
 /// Swift type generator (`scripts/gen-swift-types.mjs`) reads it so the Swift operation list
 /// comes from the same registry as the TypeScript bindings (ADR-0027 decision 4).
@@ -410,8 +406,9 @@ mod tests {
             isolated_data_root: Some("relative/folder".into()),
             ai_bundle_dir: None,
             write_logs: false,
-            test_team_password_hash: None,
             test_store_response_key_hex: None,
+            test_library_setup: false,
+            test_ai_deterministic: false,
         };
         let err = build_config(&config).expect_err("refused");
         let CoreError::Failed { code, .. } = err;
@@ -426,8 +423,9 @@ mod tests {
             isolated_data_root: Some(dir.path().to_string_lossy().into_owned()),
             ai_bundle_dir: Some("Resources/ai".into()),
             write_logs: false,
-            test_team_password_hash: None,
             test_store_response_key_hex: None,
+            test_library_setup: false,
+            test_ai_deterministic: false,
         };
         let (app, isolated) = build_config(&config).unwrap();
         assert!(isolated);
@@ -436,38 +434,34 @@ mod tests {
     }
 
     #[test]
-    fn the_test_gate_hash_is_honoured_only_by_a_debug_build_on_a_test_folder() {
+    fn a_test_folder_can_start_like_a_new_computer_and_with_a_deterministic_ai() {
+        let dir = tempfile::tempdir().unwrap();
         let config = CoreConfig {
             app_version: "0.1.0".into(),
-            isolated_data_root: None,
+            isolated_data_root: Some(dir.path().to_string_lossy().into_owned()),
             ai_bundle_dir: None,
             write_logs: false,
-            test_team_password_hash: Some("$argon2id$v=19$m=65536,t=3,p=1$abc$def".into()),
             test_store_response_key_hex: None,
+            test_library_setup: true,
+            test_ai_deterministic: true,
         };
-        assert!(test_gate(&config, true, true).is_some());
-        assert!(test_gate(&config, false, true).is_none(), "release build");
-        assert!(
-            test_gate(&config, true, false).is_none(),
-            "the person's own data"
-        );
-        let junk = CoreConfig {
-            test_team_password_hash: Some("plain".into()),
+        let (app, _) = build_config(&config).unwrap();
+        // Debug test builds honour both; every folder stays inside the test root.
+        assert_eq!(app.library_setup.is_some(), cfg!(debug_assertions));
+        assert_eq!(app.ai_deterministic, cfg!(debug_assertions));
+        if let Some(setup) = &app.library_setup {
+            assert!(setup.suggested_root.starts_with(dir.path()));
+            assert!(setup.pointer_file.starts_with(dir.path()));
+        }
+        let plain = CoreConfig {
+            test_library_setup: false,
+            test_ai_deterministic: false,
             ..config
         };
-        assert!(test_gate(&junk, true, true).is_none());
-    }
-
-    #[test]
-    fn a_store_build_embeds_no_team_password_hash() {
-        if cfg!(openframe_store) {
-            assert!(TEAM_PASSWORD_HASH.is_none());
-        }
-        if let Some(hash) = TEAM_PASSWORD_HASH {
-            assert!(
-                hash.starts_with("$argon2id$v=19$m=65536,t=3,p=1$"),
-                "{hash}"
-            );
-        }
+        let (app, _) = build_config(&plain).unwrap();
+        assert!(app.library_setup.is_none());
+        assert!(!app.ai_deterministic);
+        assert!(!test_switch(true, false, true), "release build");
+        assert!(!test_switch(true, true, false), "the person's own data");
     }
 }

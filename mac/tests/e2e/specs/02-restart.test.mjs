@@ -4,7 +4,7 @@
 
 import { after, before, describe, test } from "node:test";
 import assert from "node:assert/strict";
-import { launchApp, openWorkspace, stepper, takeConsoleProblems, waitForText } from "../lib/app.mjs";
+import { launchApp, openBeatBoard, openWorkspace, stepper, takeConsoleProblems, waitForText } from "../lib/app.mjs";
 
 let browser;
 const step = stepper(() => browser, "restart");
@@ -40,7 +40,7 @@ describe("relaunch", () => {
         { timeout: 15_000, timeoutMsg: "the typed dialogue did not persist" },
       );
 
-      await openWorkspace(browser, "Story");
+      await openBeatBoard(browser);
       await browser.waitUntil(
         async () => (await browser.execute(() => document.querySelectorAll('[aria-label^="Scene Card:"]').length)) === 2,
         { timeout: 15_000, timeoutMsg: "the two Scene Cards are not on the board after relaunch" },

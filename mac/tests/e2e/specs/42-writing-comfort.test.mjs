@@ -18,6 +18,8 @@ const typeKeys = (text) => browser.keys(text.split(""));
 const options = () => browser.execute(() => [...document.querySelectorAll("#sp-suggest-list [role=option]")].map((o) => o.querySelector("span")?.textContent ?? ""));
 const listOpen = () => browser.execute(() => !!document.querySelector("#sp-suggest-list"));
 const saved = () => browser.execute(() => document.querySelector(".sp-top [aria-live=polite]")?.textContent?.trim() ?? "");
+/** Find options are checkboxes with a visible label, not buttons. */
+const toggle = async (label) => (await browser.$(`//label[contains(@class,"check")][.//span[normalize-space()="${label}"]]`)).click();
 async function waitSaved() {
   await browser.waitUntil(async () => (await saved()) === "Saved", { timeout: 15_000, timeoutMsg: "the editor did not report Saved" });
 }
@@ -36,6 +38,16 @@ const characterNames = () =>
   );
 async function waitElements(pred, msg) {
   await browser.waitUntil(async () => pred(await editorElements(browser)), { timeout: 10_000, timeoutMsg: msg });
+}
+
+/** Runs in the page: the current Find match sits inside the visible part of the page's scroll area. */
+function currentMatchVisible() {
+  const m = document.querySelector(".spx-doc .hlc");
+  const sc = document.querySelector(".spx-wrap > .spx-scroll");
+  if (!m || !sc) return { ok: false, why: "no current match or no scroll area" };
+  const r = m.getBoundingClientRect();
+  const b = sc.getBoundingClientRect();
+  return { ok: r.top >= b.top && r.bottom <= b.bottom, top: Math.round(r.top), bottom: Math.round(r.bottom), boxTop: Math.round(b.top), boxBottom: Math.round(b.bottom), scrollTop: Math.round(sc.scrollTop) };
 }
 
 describe("writing comfort", () => {
@@ -213,6 +225,71 @@ describe("writing comfort", () => {
       await browser.keys(["Control", "z"]);
       await waitElements((els) => els.includes("action: The bus is late."), "one undo did not restore the scene");
       await assertQuiet(browser, "find scope");
+    });
+  });
+
+  test("Find scrolls the page to every match, and Replace, Replace All, Match case and Whole word work", async () => {
+    await step("find scrolls", async () => {
+      // A script long enough to scroll: sixty action lines after "The bus is late.", with "torch" near the top and near the end.
+      const road = await browser.$("(//div[contains(@class,'spx-doc')]//div[@data-type='action'])[2]");
+      await road.click();
+      await browser.keys("End");
+      const lines = Array.from({ length: 60 }, (_, i) => (i === 2 || i === 57 ? `Walk ${i + 1}, a torch burns.` : `Walk ${i + 1} goes on.`));
+      // Ctrl+2 keeps every new line an Action line, so no Character line (and no new character) is made on the way.
+      for (const l of lines) {
+        await browser.keys("Enter");
+        await browser.keys(["Control", "2"]);
+        await browser.keys(l.split(""));
+      }
+      await waitSaved();
+      await waitElements((els) => els.includes("action: Walk 60 goes on."), "the sixty lines did not land");
+      const view = () => browser.execute(currentMatchVisible);
+      const count = () => browser.execute(() => document.querySelector(".spx-find .spx-count")?.textContent?.trim() ?? "");
+      const countIs = (text) => browser.waitUntil(async () => (await count()) === text, { timeout: 10_000, timeoutMsg: `the Find count never read "${text}"` });
+      // The caret is at the end, far below the first match: Find must scroll up to it.
+      await browser.keys(["Control", "f"]);
+      const find = await browser.$('//input[@aria-label="Find"]');
+      await find.setValue("torch");
+      await countIs("1 of 2");
+      let v = await view();
+      assert.ok(v.ok, `first match is not on screen: ${JSON.stringify(v)}`);
+      // Next goes down to the second match and scrolls there; Shift+Enter comes back.
+      await browser.keys("Enter");
+      await countIs("2 of 2");
+      v = await view();
+      assert.ok(v.ok, `second match is not on screen: ${JSON.stringify(v)}`);
+      await browser.keys(["Shift", "Enter"]);
+      await countIs("1 of 2");
+      v = await view();
+      assert.ok(v.ok, `stepping back did not bring the first match on screen: ${JSON.stringify(v)}`);
+      // Match case and Whole word narrow the matches and the count follows.
+      await toggle("Match case");
+      await find.setValue("Torch");
+      await countIs("No matches found");
+      await toggle("Match case");
+      await countIs("1 of 2");
+      await toggle("Whole word");
+      await find.setValue("torc");
+      await countIs("No matches found");
+      await toggle("Whole word");
+      await find.setValue("torch");
+      await countIs("1 of 2");
+      // Replace changes the current match and moves on to the next one, on screen.
+      const replace = await browser.$('//input[@aria-label="Replace with"]');
+      await replace.setValue("lamp");
+      await click(browser, "Replace");
+      await waitElements((els) => els.includes("action: Walk 3, a lamp burns.") && els.includes("action: Walk 58, a torch burns."), "Replace did not change just the current match");
+      await countIs("1 of 1");
+      v = await view();
+      assert.ok(v.ok, `after Replace the next match is not on screen: ${JSON.stringify(v)}`);
+      // Replace All takes the rest in one step and the count drops to none.
+      await click(browser, "Replace All");
+      await waitForText(browser, "Replaced 1 match");
+      await waitElements((els) => els.includes("action: Walk 58, a lamp burns."), "Replace All did not change the last match");
+      await countIs("No matches found");
+      await click(browser, "Close find (Esc)");
+      await waitSaved();
+      await assertQuiet(browser, "find scroll and replace");
     });
   });
 

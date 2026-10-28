@@ -194,6 +194,28 @@ private enum Fixtures {
             #expect(r.contrast("accent", "accent-ink") >= 4.5, "\(mode) accent-ink on accent")
         }
     }
+
+    @MainActor @Test func macPaletteChangesOnlyOpenFrameDefaultAndStaysReadable() throws {
+        let shared = try Fixtures.catalog()
+        let store = ThemeStore()
+        let mac = store.catalog
+        #expect(mac.builtIn.map(\.id) == shared.builtIn.map(\.id))
+        for theme in shared.builtIn where theme.id != ThemeCatalog.defaultThemeId {
+            #expect(mac.theme(id: theme.id) == theme, "\(theme.id) is untouched")
+        }
+        for mode in ColorMode.allCases {
+            let r = ThemeEngine.resolve(themeId: "openframe-default", mode: mode, themes: mac)
+            #expect(r.unresolved.isEmpty)
+            #expect(r.tokenColor("bg")?.hex == (mode == .light ? "#f4f6f9" : "#12151b"))
+            #expect(r.contrast("ink", "bg") >= 7, "\(mode) ink on bg")
+            #expect(r.contrast("ink2", "panel") >= 7, "\(mode) ink2 on panel")
+            #expect(r.contrast("muted", "panel") >= 4.5, "\(mode) muted on panel")
+            #expect(r.contrast("muted", "bg") >= 4.5, "\(mode) muted on bg")
+            #expect(r.contrast("accent", "accent-ink") >= 4.5, "\(mode) accent-ink on accent")
+            #expect(r.contrast("accent-d", "panel") >= 4.5, "\(mode) strong accent text on panel")
+            #expect(r.has("control-tint"), "\(mode) control tint for white-text controls")
+        }
+    }
 }
 
 extension ResolvedTheme {

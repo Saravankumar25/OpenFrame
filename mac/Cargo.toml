@@ -67,8 +67,6 @@ reqwest = { version = "0.12", default-features = false, features = ["rustls-tls"
 ed25519-dalek = { version = "2", features = ["rand_core"] }
 base64 = "0.22"
 rand = "0.8"
-# Team password gate of the internal builds (ADR-0024): Argon2id hash at build time, check at launch.
-argon2 = { version = "0.6", default-features = false, features = ["alloc", "password-hash"] }
 # Random salt for that hash, read in the desktop build script only.
 getrandom = "0.3"
 sysinfo = "0.37"
@@ -100,14 +98,6 @@ codegen-units = 1
 lto = "thin"
 opt-level = 3
 strip = "symbols"
-
-# The internal build script hashes the team password with Argon2id (64 MiB, 3 passes). Build
-# scripts compile without optimisation in release; these keep that one hash fast.
-[profile.release.package.argon2]
-opt-level = 3
-
-[profile.release.package.blake2]
-opt-level = 3
 
 # `npm run perf`: optimised like release (same opt-level), but without LTO and
 # with parallel codegen so the performance suite builds in minutes.

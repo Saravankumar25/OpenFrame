@@ -23,7 +23,7 @@ struct CastCrewView: View {
                     Button {
                         model.sheet = model.view == .cast ? .assign(member: nil, character: nil) : .addCrew
                     } label: { Label("Add Person", systemImage: "plus") }
-                        .buttonStyle(.borderedProminent)
+                        .buttonStyle(.ofProminent)
                         .accessibilityIdentifier("add-person")
                 }
             }
@@ -64,7 +64,7 @@ struct CastCrewView: View {
                 CrewInspector(model: model, member: c).inspectorColumnWidth(min: 340, ideal: 400, max: 540)
             }
         }
-        .sheet(item: $model.sheet) { PeopleSheetHost(model: model, sheet: $0) }
+        .themedSheet(item: $model.sheet) { PeopleSheetHost(model: model, sheet: $0) }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("cast-crew-tab")
     }

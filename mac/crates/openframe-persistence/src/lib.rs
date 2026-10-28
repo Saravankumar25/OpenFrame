@@ -29,6 +29,7 @@ pub fn open_connection(path: &Path, create: bool) -> AppResult<Connection> {
     if create {
         flags |= OpenFlags::SQLITE_OPEN_CREATE;
     }
+    writable_side_files(path);
     let conn = open_sqlite(path, flags)?;
     // On Windows SQLite quietly falls back to a read-only handle when the file can't be
     // opened for writing (read-only attribute, or another program holding it without write
@@ -51,6 +52,23 @@ pub fn open_connection(path: &Path, create: bool) -> AppResult<Connection> {
     }
     apply_pragmas(&conn)?;
     Ok(conn)
+}
+
+/// On macOS and Linux SQLite creates `-wal` and `-shm` with the database file's permissions, so a
+/// reader that opened the database while it was read-only leaves read-only side files behind. Once
+/// the database itself is writable again they would still refuse every write ("attempt to write a
+/// readonly database"). Give them back the owner's write permission, and nothing else; a database
+/// that is itself read-only is left alone and refused below with its own message.
+fn writable_side_files(path: &Path) {
+    use openframe_platform::files;
+    if !files::is_owner_writable_file(path) {
+        return;
+    }
+    for suffix in ["-wal", "-shm"] {
+        let mut side = path.as_os_str().to_os_string();
+        side.push(suffix);
+        let _ = files::add_owner_write_no_follow(Path::new(&side));
+    }
 }
 
 /// `Connection::open_with_flags` that also works for paths longer than `MAX_PATH` on Windows.
@@ -257,6 +275,50 @@ mod tests {
             })
             .collect();
         assert!(left.is_empty(), "staging files left behind: {left:?}");
+    }
+
+    /// macOS: a reader that opened the database while it was read-only left a read-only `-shm`
+    /// (SQLite copies the database's permissions). Once the database is writable it opens for
+    /// writing again; a database that is still read-only is refused as before.
+    #[cfg(unix)]
+    #[test]
+    fn read_only_side_files_of_a_writable_database_do_not_block_writes() {
+        use std::os::unix::fs::PermissionsExt;
+        let dir = tempfile::tempdir().unwrap();
+        let db = dir.path().join("project.sqlite");
+        {
+            let c = open_connection(&db, true).unwrap();
+            c.execute_batch("CREATE TABLE t(x); INSERT INTO t VALUES (1);")
+                .unwrap();
+        }
+        let mode = |p: &Path, m: u32| {
+            std::fs::set_permissions(p, std::fs::Permissions::from_mode(m)).unwrap()
+        };
+        mode(&db, 0o444);
+        assert_eq!(
+            open_connection(&db, false).unwrap_err().code_str(),
+            "storage.access_denied"
+        );
+        {
+            let reader =
+                Connection::open_with_flags(&db, OpenFlags::SQLITE_OPEN_READ_ONLY).unwrap();
+            let _: i64 = reader
+                .query_row("SELECT x FROM t", [], |r| r.get(0))
+                .unwrap();
+            let mut shm = db.as_os_str().to_os_string();
+            shm.push("-shm");
+            let shm = std::path::PathBuf::from(shm);
+            if shm.exists() {
+                mode(&shm, 0o444);
+            }
+        }
+        mode(&db, 0o644);
+        let c = open_connection(&db, false).unwrap();
+        c.execute("INSERT INTO t VALUES (2)", []).unwrap();
+        let n: i64 = c
+            .query_row("SELECT count(*) FROM t", [], |r| r.get(0))
+            .unwrap();
+        assert_eq!(n, 2);
     }
 
     #[test]

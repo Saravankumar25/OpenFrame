@@ -73,7 +73,6 @@ final class ExchangeExportModel {
             scope: scopeChoices.isEmpty ? nil : scope.rawValue,
             sceneIds: scope == .scenes ? sceneIds : [],
             actId: scope == .act ? actId.ixNonEmpty : nil,
-            callSheetId: nil,
             includeComments: includeComments || scope == .comments,
             includeAttachments: includeAttachments,
             includePrivateNotes: false,
@@ -109,7 +108,7 @@ final class ExchangeExportModel {
         guard let core = app.core else { return }
         scenesLoading = true
         defer { scenesLoading = false }
-        let draft: String? = packageType == .scriptReview ? draftId.ixNonEmpty : packageType == .breakdown ? sources?.productionSource?.id : nil
+        let draft: String? = packageType == .scriptReview ? draftId.ixNonEmpty : nil
         scenes = (try? await core.packagesExchangeScenes(PackageScenesArgs(draftId: draft))) ?? []
     }
 

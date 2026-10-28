@@ -375,4 +375,52 @@ struct ShellLifecycleTests {
             #expect(Fixture.render(delete, name: "m3-delete-\(name)", size: CGSize(width: 500, height: 420)) != nil)
         }
     }
+
+    // MARK: Project and library moves
+
+    /// A move closes the project in the core and opens it again from the new folder. The close
+    /// must not leave the window on Home for good, and the reopen must show the project again.
+    @Test func aProjectTheCoreOpensAgainShowsAgain() async throws {
+        let s = try await start(close: false)
+        defer { finish(s) }
+        guard case let .project(p) = s.app.phase else { Issue.record("no project open"); return }
+
+        // During a move the close keeps the window on the project.
+        s.app.beginRelocation()
+        s.app.handle(.projectClosed(projectId: p.id))
+        #expect(s.app.phase == .project(p))
+        await s.app.endRelocation()
+        #expect(s.app.relocations == 0)
+        #expect(s.app.phase == .project(p))
+
+        // Without one, the close goes Home and the core's reopen brings the project back.
+        s.app.handle(.projectClosed(projectId: p.id))
+        #expect(s.app.phase == .home)
+        s.app.handle(.projectOpened(projectId: p.id))
+        let deadline = Date().addingTimeInterval(5)
+        while s.app.phase == .home && Date() < deadline { try await Task.sleep(for: .milliseconds(20)) }
+        guard case let .project(again) = s.app.phase else { Issue.record("the reopened project did not show"); return }
+        #expect(again.id == p.id)
+    }
+
+    @Test func aMoveThatEndsWithNothingOpenGoesHome() async throws {
+        let s = try await start(close: false)
+        defer { finish(s) }
+        s.app.beginRelocation()
+        _ = try await s.core.projectClose()
+        if case .project = s.app.phase {} else { Issue.record("the close during a move left the project") }
+        await s.app.endRelocation()
+        #expect(s.app.phase == .home)
+    }
+
+    @Test func aCloseAfterAnOpenIsNeverUndoneByALateAnswer() async throws {
+        let s = try await start(close: false)
+        defer { finish(s) }
+        guard case let .project(p) = s.app.phase else { return }
+        s.app.handle(.projectOpened(projectId: p.id))
+        await s.app.closeProject()
+        try await Task.sleep(for: .milliseconds(300))
+        #expect(s.app.phase == .home)
+    }
+
 }

@@ -18,7 +18,7 @@ struct CallSheetListView: View {
                 VStack(spacing: PageSpacing.medium) {
                     CSPageHeader(title: "Call Sheets", sub: "Which shooting day document do I need?") {
                         Button { model.beginCreate() } label: { Label("Create Call Sheet", systemImage: "plus") }
-                            .buttonStyle(.borderedProminent)
+                            .buttonStyle(.ofProminent)
                             .keyboardShortcut("n", modifiers: [.command, .option])
                             .disabled(!hub.canEdit)
                             .accessibilityIdentifier("callsheet-create")
@@ -34,7 +34,7 @@ struct CallSheetListView: View {
             }
         }
         .task(id: app.changes.key(CSTables.callSheet)) { await model.reload() }
-        .sheet(item: $model.create) { c in
+        .themedSheet(item: $model.create) { c in
             CSCreateSheet(model: c) { model.create = nil }
         }
         .accessibilityElement(children: .contain)
@@ -48,7 +48,7 @@ struct CallSheetListView: View {
             Text("Scenes, cast and locations are filled in from the schedule. You add call times and practical notes.")
         } actions: {
             Button("Create Call Sheet") { model.beginCreate() }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(.ofProminent)
                 .disabled(!hub.canEdit)
                 .accessibilityIdentifier("callsheet-empty-create")
         }

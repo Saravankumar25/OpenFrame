@@ -2,7 +2,7 @@
 //!
 //! The same rules as the Windows adapter (`apps/desktop/src-tauri/src/lib.rs`, commands
 //! `of_open_asset`, `of_reveal_path`, `of_open_url`): paths are resolved by the core from ids, the
-//! shell never passes an arbitrary path, the store lock and the team gate are checked first, and
+//! shell never passes an arbitrary path, the store lock is checked first, and
 //! files that would run as programs are shown in Finder instead of opened.
 //!
 //! The Windows adapter is frozen with the proved Windows build (handoff, W10), so these rules
@@ -36,10 +36,13 @@ fn unavailable() -> AppError {
     )
 }
 
-/// The managed folders previews may read: the open project's `assets/` and the Global Idea
-/// Vault's `assets/`. Databases, `cache/` and recovery data are never answered.
+/// The managed folders previews may read: the open project's `assets/`, the Global Idea
+/// Vault's `assets/` (wherever the vault was moved) and the project cover photos on Home. Databases, `cache/` and recovery data are never answered.
 fn allowed_asset_roots(core: &AppCore) -> Vec<PathBuf> {
-    let mut roots = vec![core.config.global_vault_dir.join("assets")];
+    let mut roots = vec![
+        core.vault_dir().join("assets"),
+        core.config.app_data_dir.join("covers").join("assets"),
+    ];
     if let Some(p) = core.project_opt() {
         roots.push(p.layout.assets());
     }
@@ -88,9 +91,9 @@ pub fn reveal_location(
     id: Option<String>,
     path: Option<String>,
 ) -> AppResult<()> {
-    // Before the team password nothing is reachable; under the store lock only the data folder
-    // and the logs, which support needs (as on Windows).
-    if core.entitlement.team_gate_locked() || !matches!(kind, "dataRoot" | "logs") {
+    // Under the store lock only the data folder and the logs are reachable, which support needs
+    // (as on Windows).
+    if !matches!(kind, "dataRoot" | "logs") {
         core.entitlement.check_operation("shell.reveal_path")?;
     }
     let target: PathBuf = match kind {
@@ -104,9 +107,17 @@ pub fn reveal_location(
             })?,
             None => core.project()?.layout.root().to_path_buf(),
         },
-        "globalVault" => core.config.global_vault_dir.clone(),
+        "globalVault" => core.vault_dir(),
+        // The one folder to back up. Nothing is created before the person chose where their
+        // library is (doc 40 section 1).
         "dataRoot" => {
-            let dir = core.config.data_root();
+            if !core.library_ready() {
+                return Err(AppError::new(
+                    "library.setup_required",
+                    "Choose where OpenFrame keeps your work first.",
+                ));
+            }
+            let dir = core.data_root();
             std::fs::create_dir_all(&dir).map_err(|e| {
                 AppError::new(
                     "internal.open_failed",
@@ -116,6 +127,8 @@ pub fn reveal_location(
             })?;
             dir
         }
+        // Settings, recents, AI records and models: what resetting the app removes.
+        "appData" => core.config.app_data_dir.clone(),
         "assetFolder" | "globalAssetFolder" => {
             let asset_id = id.unwrap_or_default();
             let file = resolve_asset(core, &asset_id, kind == "globalAssetFolder")?;

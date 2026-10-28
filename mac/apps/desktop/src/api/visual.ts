@@ -61,17 +61,6 @@ export function moveItem<T>(list: readonly T[], from: number, to: number): T[] {
   return out;
 }
 
-/** Shot letter for a zero-based order index (mirrors Rust; display only): A…Z, AA, AB… */
-export function shotLetters(index: number): string {
-  let n = index + 1;
-  let out = "";
-  while (n > 0) {
-    const r = (n - 1) % 26;
-    out = String.fromCharCode(65 + r) + out;
-    n = Math.floor((n - 1) / 26);
-  }
-  return out;
-}
 
 /** Common values offered as suggestions (free text is always allowed; FSD §103 no taxonomy). */
 export const SHOT_SIZES = ["Wide", "Full", "Medium", "Medium close", "Close", "Extreme close", "Two-shot", "OTS", "Insert", "POV", "Establishing"];

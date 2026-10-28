@@ -3,8 +3,10 @@
 
 import { useOpenDraft, type Route, type WorkspaceId } from "../app/stores";
 import type { AiChangeSetDto } from "../ipc/generated/AiChangeSetDto";
+import type { AiConfidence } from "../ipc/generated/AiConfidence";
 import type { AiNavTarget } from "../ipc/generated/AiNavTarget";
 import type { AiProvenance } from "../ipc/generated/AiProvenance";
+import type { AiStepDto } from "../ipc/generated/AiStepDto";
 import type { AiScopeArgs } from "../ipc/generated/AiScopeArgs";
 import type { AiScopeKind } from "../ipc/generated/AiScopeKind";
 import type { AiStatusDto } from "../ipc/generated/AiStatusDto";
@@ -147,6 +149,19 @@ export function runtimeLabel(state: string): string | null {
   }
 }
 
+export function confidenceLabel(c: AiConfidence | null | undefined): { text: string; tone: "g" | "b" | "y" } | null {
+  switch (c) {
+    case "Exact":
+      return { text: "Exact · from project data", tone: "g" };
+    case "Inferred":
+      return { text: "Inferred · written by Offline AI", tone: "b" };
+    case "Unavailable":
+      return { text: "Not available in project data", tone: "y" };
+    default:
+      return null;
+  }
+}
+
 /** What the user can do with a Change Set in its current state. */
 export function changeSetActions(cs: AiChangeSetDto): { apply: boolean; reject: boolean; recheck: boolean } {
   switch (cs.state) {
@@ -210,20 +225,17 @@ export interface SourceChip {
   route: Route | null;
 }
 
-/**
- * The places an answer was read from, listed under "See sources" (owner decision 2026-10-20, the
- * same on the Mac). The scope and the basis ("Whole Project") are settings of the question, not
- * sources, so they are left out; a repeat is listed once. A source opens when it can be opened.
- */
-export function answerSources(provenance: AiProvenance[]): SourceChip[] {
-  const seen = new Set<string>();
-  const out: SourceChip[] = [];
-  provenance.forEach((p, i) => {
-    if (p.kind === "Scope" || p.kind === "Basis") return;
-    const text = `${p.kind}: ${p.label}`;
-    if (seen.has(text)) return;
-    seen.add(text);
-    out.push({ key: `${i}:${text}`, text, route: toRoute(p.nav ?? null) });
-  });
-  return out;
+/** Provenance as chips; a chip navigates when its source can be opened. */
+export function sourceChips(provenance: AiProvenance[]): SourceChip[] {
+  return provenance.map((p, i) => ({
+    key: `${i}:${p.kind}:${p.label}`,
+    text: p.kind === "Scope" || p.kind === "Basis" ? p.label : `${p.kind}: ${p.label}`,
+    route: toRoute(p.nav ?? null),
+  }));
+}
+
+/** Short line describing the tool steps behind an answer (null for single-step answers). */
+export function stepsSummary(steps: AiStepDto[]): string | null {
+  if (steps.length < 2) return null;
+  return `${steps.length} steps: ${steps.map((s) => s.label).join(" · ")}`;
 }

@@ -92,16 +92,14 @@ extension StoryModel {
         case .escape:
             clearSelection()
             return .handled
-        case .upArrow, .downArrow:
-            let down = press.key == .downArrow
-            if mod.contains(.option) {
-                Task { await step(ref, direction: down ? 1 : -1) }
-            } else {
-                navigate(from: ref.key, direction: down ? .down : .up, extend: mod.contains(.shift))
+        case .upArrow, .downArrow, .leftArrow, .rightArrow:
+            let key: StoryNavigation = switch press.key {
+            case .upArrow: .up
+            case .downArrow: .down
+            case .leftArrow: .left
+            default: .right
             }
-            return .handled
-        case .leftArrow, .rightArrow:
-            navigate(from: ref.key, direction: press.key == .rightArrow ? .right : .left, extend: mod.contains(.shift))
+            arrow(key, option: mod.contains(.option), shift: mod.contains(.shift), from: ref)
             return .handled
         default:
             if mod.contains(.command), press.characters.lowercased() == "d", item.kind != .sequence {
@@ -169,7 +167,7 @@ struct StoryCardView: View {
             } preview: {
                 dragPreview
             }
-            .storyDrop(model, size: size) { .beside(ref) }
+            .storyDrop(model, size: size, vertical: !model.horizontalBoard) { .beside(ref) }
             .accessibilityElement(children: editing ? .contain : .combine)
             .accessibilityLabel(a11yLabel)
             .accessibilityValue(rich ? richFacts() : "")
@@ -381,7 +379,7 @@ struct StorySequenceBlock: View {
             } preview: {
                 Text(seq.title).padding(8).background(theme["panel"], in: shape)
             }
-            .storyDrop(model, size: headerSize) { .beside(ref) }
+            .storyDrop(model, size: headerSize, vertical: !model.horizontalBoard) { .beside(ref) }
             .accessibilityElement(children: .combine)
             .accessibilityLabel("Sequence \(seq.title), \(Int(seq.cardCount)) scenes")
             .accessibilityAddTraits(.isButton)
@@ -392,7 +390,7 @@ struct StorySequenceBlock: View {
 
             if !collapsed {
                 VStack(alignment: .leading, spacing: 6) {
-                    StoryItemList(model: model, container: .sequence(seq.id), items: seq.items, zoom: zoom, focus: focus)
+                    StoryBandItems(model: model, container: .sequence(seq.id), items: seq.items, zoom: zoom, rows: model.horizontalBoard, focus: focus)
                     if seq.items.isEmpty {
                         Text("Drop scenes here.").font(.caption).foregroundStyle(theme["muted"])
                     }
@@ -404,6 +402,7 @@ struct StorySequenceBlock: View {
                 .storyDrop(model, size: bodySize) { .into(.sequence(seq.id), atStart: false) }
             }
         }
+        .frame(minWidth: model.horizontalBoard ? 200 * zoom : nil, alignment: .leading)
         .background(selected ? theme["accent-soft"] : theme["surface2"], in: shape)
         .overlay(shape.strokeBorder(selected ? theme["accent"] : theme["line"], lineWidth: selected ? 2 : 1))
         .overlay {
@@ -416,11 +415,18 @@ struct StorySequenceBlock: View {
 
 // MARK: List
 
-/// The marker that shows where a drop will land.
+/// The marker that shows where a drop will land: a line between stacked cards, or a bar between
+/// cards that flow left to right (Horizontal layout).
 struct StoryInsertionMarker: View {
+    var rows = false
+    var zoom: Double = 1
     @Environment(\.ofTheme) private var theme
     var body: some View {
-        Capsule().fill(theme["accent"]).frame(height: 3).accessibilityHidden(true)
+        if rows {
+            Capsule().fill(theme["accent"]).frame(width: 3, height: 40 * zoom).accessibilityHidden(true)
+        } else {
+            Capsule().fill(theme["accent"]).frame(height: 3).accessibilityHidden(true)
+        }
     }
 }
 
@@ -435,16 +441,18 @@ struct StoryItemList: View {
     var body: some View {
         let hint = model.hint
         let here = hint?.target == container
+        let rows = model.horizontalBoard
         ForEach(items, id: \.ref) { item in
-            if here, let b = hint?.before, b == item.ref { StoryInsertionMarker() }
+            if here, let b = hint?.before, b == item.ref { StoryInsertionMarker(rows: rows, zoom: zoom) }
             if StoryLogic.matchesFilter(item, model.filter) {
                 switch item {
                 case let .sequence(s): StorySequenceBlock(model: model, seq: s, zoom: zoom, focus: focus)
                 default: StoryCardView(model: model, item: item, zoom: zoom, focus: focus)
+                    .frame(width: rows ? 220 * zoom : nil)
                 }
             }
         }
-        if here, hint?.before == nil { StoryInsertionMarker() }
+        if here, hint?.before == nil { StoryInsertionMarker(rows: rows, zoom: zoom) }
     }
 }
 

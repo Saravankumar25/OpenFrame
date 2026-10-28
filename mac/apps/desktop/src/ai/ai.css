@@ -27,10 +27,31 @@
 .ai-tech{font-size:12px}
 .ai-tech td,.ai-tech th{vertical-align:top}
 .ai-tech .hash{font-family:ui-monospace,Consolas,monospace;font-size:11px;word-break:break-all}
+/* Technical details sits on a row of its own at the full width (owner change list 2026-10-20, item 4): in a 420 px card
+   the table was squeezed to a sliver and ran under the AI health card. Long hashes and addresses wrap inside their cell. */
+.ai-tech-card{flex:1 1 100%;min-width:320px}
+.ai-tech-scroll{overflow-x:auto;max-width:100%}
+.ai-tech .tbl{table-layout:auto}
+.ai-tech .ai-col-name{width:52%}
+.ai-tech .ai-col-licence{width:36%}
+.ai-tech .ai-col-size{width:12%;white-space:nowrap}
+.ai-tech td:nth-child(3){white-space:nowrap}
+.ai-tech td{overflow-wrap:anywhere}
 /* Plain answers (OpenFrameAI.docx section 4.1): normal weight, paragraphs kept. */
-.ai .ai-text{white-space:pre-wrap;line-height:1.5;overflow-wrap:anywhere}
+.ai .ai-text{line-height:1.5;overflow-wrap:anywhere}
+.ai .ai-p{margin:0 0 6px}
+.ai .ai-list{margin:0 0 6px;padding-left:20px}
+.ai .ai-list li{margin:0 0 2px}
+.ai .ai-text>:last-child{margin-bottom:0}
+/* The line shown while a request runs, with its Cancel button. */
+.ai .ai-progress{display:flex;align-items:center;gap:8px}
+.ai .ai-progress .grow{flex:1;min-width:0;overflow-wrap:anywhere}
 .ai .ai-details{margin-top:6px}
-.ai .ai-details summary{cursor:pointer;width:max-content}
+/* "See sources" is a small ghost button (class btn ghost xs on the summary); the native marker is hidden. */
+.ai .ai-details summary{cursor:pointer;width:max-content;list-style:none}
+.ai .ai-details summary::-webkit-details-marker{display:none}
+.ai .ai-details summary::after{content:"\25BE";font-size:10px;margin-left:2px}
+.ai .ai-details[open] summary::after{content:"\25B4"}
 .ai .ai-details[open] summary{margin-bottom:4px}
 /* Resize handle on the panel's left edge (UX brief 4.2). */
 .ai{position:relative}

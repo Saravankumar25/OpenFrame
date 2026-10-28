@@ -14,7 +14,7 @@ export const FORMAT_LABELS: Record<ExportFormatValue, string> = {
   csv: "CSV",
   xlsx: "Excel (XLSX)",
   txt: "Plain text",
-  docx: "Word (DOCX)",
+  docx: "Word (.docx)",
 };
 
 /** Commonly offered format sets. */
@@ -28,11 +28,11 @@ export const TABLE_FORMATS: ExportFormatOption[] = [
 /**
  * Extra option shown in the dialog; its value is sent as `args[arg ?? key]`.
  * `formats` limits the option to some formats (two fields may share an `arg`
- * when their formats differ, e.g. a CSV-only choice).
+ * when their formats differ, e.g. a CSV-only choice). `numeric` sends a choice's value as a number.
  */
 export type ExportOptionField =
   | { kind: "checkbox"; key: string; arg?: string; label: string; default: boolean; formats?: ExportFormatValue[] }
-  | { kind: "choice"; key: string; arg?: string; label: string; default: string; options: { value: string; label: string }[]; formats?: ExportFormatValue[] };
+  | { kind: "choice"; key: string; arg?: string; label: string; default: string; options: { value: string; label: string }[]; formats?: ExportFormatValue[]; numeric?: boolean };
 
 /** A scope choice ("Entire schedule", "Current day only", "Selected days"…). */
 export interface ExportScope {
@@ -69,7 +69,9 @@ export function buildExportArgs(
   const args: Record<string, unknown> = { ...(base ?? {}), ...(scope?.args ?? {}), format };
   if (scope?.picker) args[scope.picker.argKey] = [...picked];
   for (const f of fields) {
-    if (fieldApplies(f, format) && values[f.key] !== undefined) args[f.arg ?? f.key] = values[f.key];
+    if (!fieldApplies(f, format) || values[f.key] === undefined) continue;
+    // A numeric choice (panels per row) reaches the operation as a number.
+    args[f.arg ?? f.key] = f.kind === "choice" && f.numeric ? Number(values[f.key]) : values[f.key];
   }
   return args;
 }
@@ -95,17 +97,10 @@ export function isoDate(d: Date): string {
 }
 
 /** Default file name: "<Project> - <Document> - <date>.<ext>", safe for Windows. */
-export function exportFileName(project: string | null | undefined, document: string, format: ExportFormatValue, date: Date = new Date()): string {
-  const parts = [clean(project ?? ""), clean(document), isoDate(date)].filter(Boolean);
+/** `date: null` leaves the date out. */
+export function exportFileName(project: string | null | undefined, document: string, format: ExportFormatValue, date: Date | null = new Date()): string {
+  const parts = [clean(project ?? ""), clean(document), date ? isoDate(date) : ""].filter(Boolean);
   let base = parts.join(" - ").replace(/[. ]+$/, "");
-  if (base.length > 150) base = base.slice(0, 150).trim();
-  if (!base || RESERVED.test(base)) base = `Export ${base}`.trim();
-  return `${base}.${format}`;
-}
-
-/** A document with a name of its own ("Shoot Day 4 - Daily view") is saved under that name only. */
-export function plainFileName(name: string, format: ExportFormatValue): string {
-  let base = clean(name).replace(/[. ]+$/, "");
   if (base.length > 150) base = base.slice(0, 150).trim();
   if (!base || RESERVED.test(base)) base = `Export ${base}`.trim();
   return `${base}.${format}`;

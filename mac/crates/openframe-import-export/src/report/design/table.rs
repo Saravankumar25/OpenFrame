@@ -70,11 +70,37 @@ pub enum CellItem {
         color: Rgb,
     },
     Gap(f32),
+    /// Paragraphs of mixed bold and regular runs ("Sound: wind"), each wrapped as one paragraph.
+    Rich(Rich),
     /// A band heading: coloured dot, bold text, optional right text.
     Heading {
         dot: Option<Rgb>,
         text: String,
         right: Option<String>,
+    },
+    /// A small label with a text that wraps beside it under a hanging indent ("DAY NOTES  ...").
+    Labelled {
+        label: Txt,
+        text: Txt,
+    },
+    /// Entries flowing top to bottom in `cols` even columns, each with its note and state tag.
+    Entries {
+        cols: u8,
+        gap: f32,
+        entries: Vec<Entry>,
+    },
+    /// A name that wraps under a hanging indent after an optional dot, with a small text after it.
+    Name {
+        dot: Option<Rgb>,
+        text: Txt,
+        small: Option<Txt>,
+    },
+    /// A number at the right edge with a short proportion bar before it.
+    Meter {
+        share: f32,
+        bar_w: f32,
+        color: Rgb,
+        value: Txt,
     },
 }
 
@@ -85,6 +111,8 @@ pub struct Cell {
     pub align: Option<Align>,
     /// Centre the content vertically.
     pub middle: bool,
+    /// Room kept free at the right edge (aligns whole amounts with amounts that print decimals).
+    pub inset_right: f32,
 }
 
 impl Cell {
@@ -116,6 +144,10 @@ impl Cell {
         self.middle = true;
         self
     }
+    pub fn inset_right(mut self, w: f32) -> Cell {
+        self.inset_right = w;
+        self
+    }
 }
 
 #[derive(Debug, Clone, Default)]
@@ -126,8 +158,14 @@ pub struct Row {
     pub stripe: Option<Rgb>,
     /// The first cell spans every column.
     pub span: bool,
-    /// Keep this row on the same page as the row after it (band headings).
+    /// Keep this row on the same page as the row after it (band headings, group header rows).
     pub keep_next: bool,
+    /// Keep this row on the same page as the `n` rows before it (subtotals and totals travel with
+    /// the last rows they sum up).
+    pub keep_prev: u8,
+    /// The first cell spans this many columns (2 or more; 0 and 1 mean one column). The other
+    /// cells then belong to the columns after the span.
+    pub lead_span: u8,
 }
 
 impl Row {
@@ -152,15 +190,27 @@ pub enum HeaderStyle {
     Tint,
     Plain,
     None,
+    /// A light panel with a navy rule under it (under a table head).
+    Panel,
 }
 
 #[derive(Debug, Clone)]
 pub struct StyledTable {
+    /// The table's name, printed inside its repeating header so a page never shows the column
+    /// labels without it; continuation pages add " · continued".
+    pub title: Option<String>,
+    /// Small text at the right end of the title row.
+    pub title_hint: Option<String>,
+    /// A group band printed in place of the title (its count on the first page, "Continued" on
+    /// later ones). It repeats with the column header. Not combined with `band`.
+    pub group: Option<GroupBand>,
     pub columns: Vec<Col>,
     pub header: HeaderStyle,
     /// Header cells with their own content (multi-line day headers); default is the column
     /// header texts.
     pub header_cells: Option<Vec<Cell>>,
+    /// The header cells of the pages after the first, when they differ ("continued" after a name).
+    pub header_continued: Option<Vec<Cell>>,
     pub rows: Vec<Row>,
     pub zebra: bool,
     /// Vertical lines between columns.
@@ -168,18 +218,30 @@ pub struct StyledTable {
     /// A rounded outline around the table (per page).
     pub boxed: bool,
     pub empty: Option<String>,
-    /// Printed in a small bar when the table continues on a new page.
+    /// Printed in a small bar when an untitled table continues on a new page (a titled table
+    /// repeats its title with " · continued" instead).
     pub continued: Option<String>,
     pub pad_x: f32,
     pub pad_y: f32,
+    /// A band (day title and facts) printed on top of the header on every page, in place of the
+    /// plain title.
+    pub band: Option<TableBand>,
+    /// Start on a new page when the whole table fits one page but not the space left.
+    pub keep_whole: bool,
+    /// A tinted head (tile, caption, title, count) on top of the header, repeated on every page.
+    pub head: Option<Box<TableHead>>,
 }
 
 impl StyledTable {
     pub fn new(columns: Vec<Col>) -> StyledTable {
         StyledTable {
+            title: None,
+            title_hint: None,
+            group: None,
             columns,
             header: HeaderStyle::Tint,
             header_cells: None,
+            header_continued: None,
             rows: Vec::new(),
             zebra: false,
             grid: false,
@@ -188,6 +250,9 @@ impl StyledTable {
             continued: None,
             pad_x: 7.0,
             pad_y: 6.0,
+            band: None,
+            keep_whole: false,
+            head: None,
         }
     }
 }
@@ -340,25 +405,32 @@ fn cell_content<'a>(p: &mut Pager<'a>, cell: &'a Cell, w: f32, default_align: Al
                     Align::Center => (w - fw) / 2.0,
                     Align::Right => w - fw,
                 };
+                // The label wraps inside the frame; the frame grows in height, never in width.
+                let lines = wrap_pt(label, (fw - 8.0).max(8.0), 7.0, false);
+                let lh = 7.0 * 1.25;
+                let ph = ph.max(lines.len() as f32 * lh + 10.0);
                 f.shape(
                     x,
                     y,
                     fw,
-                    *ph,
+                    ph,
                     2.0,
                     Some(Rgb::hex(0xf1f3f6)),
                     Some((pal::LINE, 0.6)),
                 );
-                let lw = tw(label, 7.0, false, 0.0);
-                f.text(
-                    x + (fw - lw) / 2.0,
-                    y + ph / 2.0 + 2.5,
-                    label,
-                    7.0,
-                    false,
-                    pal::FAINT,
-                    0.0,
-                );
+                let top = y + (ph - lines.len() as f32 * lh) / 2.0;
+                for (k, l) in lines.iter().enumerate() {
+                    let lw = tw(l, 7.0, false, 0.0);
+                    f.text(
+                        x + (fw - lw) / 2.0,
+                        top + 7.0 + k as f32 * lh - 0.8,
+                        l,
+                        7.0,
+                        false,
+                        Rgb::hex(0x66728a),
+                        0.0,
+                    );
+                }
                 y += ph;
             }
             CellItem::Bar { share, color } => {
@@ -370,6 +442,40 @@ fn cell_content<'a>(p: &mut Pager<'a>, cell: &'a Cell, w: f32, default_align: Al
                 y += 6.0;
             }
             CellItem::Gap(g) => y += g,
+            CellItem::Rich(r) => y += put_rich(&mut f, 0.0, y, w, r),
+            CellItem::Labelled { label, text } => {
+                let lw = tw(&label.text, label.size, label.bold, label.track) + 8.0;
+                let mut tmp = Frag::new();
+                let th = put_txt(&mut tmp, 0.0, 0.0, (w - lw).max(20.0), text);
+                f.text(
+                    0.0,
+                    y + text.size,
+                    &label.text,
+                    label.size,
+                    label.bold,
+                    label.color,
+                    label.track,
+                );
+                f.put(tmp, lw, y);
+                y += th;
+            }
+            CellItem::Entries { cols, gap, entries } => {
+                let e = entries_frag(w, *cols as usize, *gap, entries);
+                let top = y;
+                y += e.h;
+                f.put(e, 0.0, top);
+            }
+            CellItem::Name { dot, text, small } => {
+                y += put_name(&mut f, y, w, *dot, text, small.as_ref());
+            }
+            CellItem::Meter {
+                share,
+                bar_w,
+                color,
+                value,
+            } => {
+                y += put_meter(&mut f, y, w, *share, *bar_w, *color, value);
+            }
             CellItem::Heading { dot, text, right } => {
                 let mut tx = 0.0;
                 if let Some(d) = dot {
@@ -417,12 +523,37 @@ fn row_frag<'a>(
             h = h.max(c.h + 2.0 * t.pad_y);
             contents.push((0.0, total_w, c, cell));
         }
+    } else if row.lead_span > 1 {
+        // The first cell spans several columns; the rest follow the span one to one.
+        let span = (row.lead_span as usize).min(widths.len());
+        let mut col = 0usize;
+        for (k, cell) in row.cells.iter().enumerate() {
+            let n = if k == 0 { span } else { 1 };
+            if col + n > widths.len() {
+                break;
+            }
+            let w: f32 = widths[col..col + n].iter().sum();
+            let c = cell_content(
+                p,
+                cell,
+                w - 2.0 * t.pad_x - cell.inset_right,
+                t.columns[col].align,
+            );
+            h = h.max(c.h + 2.0 * t.pad_y);
+            contents.push((xs[col], w, c, cell));
+            col += n;
+        }
     } else {
         for (i, w) in widths.iter().enumerate() {
             let Some(cell) = row.cells.get(i) else {
                 continue;
             };
-            let c = cell_content(p, cell, w - 2.0 * t.pad_x, t.columns[i].align);
+            let c = cell_content(
+                p,
+                cell,
+                w - 2.0 * t.pad_x - cell.inset_right,
+                t.columns[i].align,
+            );
             h = h.max(c.h + 2.0 * t.pad_y);
             contents.push((xs[i], *w, c, cell));
         }
@@ -454,8 +585,11 @@ fn row_frag<'a>(
         let _ = w;
     }
     if t.grid && !row.span {
-        for x in xs.iter().skip(1) {
-            f.line(*x, 0.0, *x, h, pal::LINE, 0.6);
+        let inside = |i: usize| row.lead_span > 1 && i < row.lead_span as usize;
+        for (i, x) in xs.iter().enumerate().skip(1) {
+            if !inside(i) {
+                f.line(*x, 0.0, *x, h, pal::LINE, 0.6);
+            }
         }
     }
     f.line(0.0, h, total_w, h, pal::LINE, 0.6);
@@ -469,6 +603,7 @@ fn header_frag<'a>(
     widths: &[f32],
     xs: &[f32],
     total_w: f32,
+    continued: bool,
 ) -> Option<Frag> {
     if t.header == HeaderStyle::None {
         return None;
@@ -476,10 +611,16 @@ fn header_frag<'a>(
     let (fill, color) = match t.header {
         HeaderStyle::Navy => (Some(pal::NAVY), pal::WHITE),
         HeaderStyle::Tint => (Some(pal::TINT), pal::SLATE),
+        HeaderStyle::Panel => (Some(pal::PANEL), pal::SLATE),
         _ => (None, pal::SLATE),
     };
     let mut cells: Vec<Cell> = Vec::new();
-    let owned: &[Cell] = match &t.header_cells {
+    let custom = if continued {
+        t.header_continued.as_ref().or(t.header_cells.as_ref())
+    } else {
+        t.header_cells.as_ref()
+    };
+    let owned: &[Cell] = match custom {
         Some(c) => c,
         None => {
             for col in &t.columns {
@@ -523,6 +664,9 @@ fn header_frag<'a>(
     if t.header == HeaderStyle::Plain {
         f.line(0.0, h, total_w, h, pal::LINE, 1.0);
     }
+    if t.header == HeaderStyle::Panel {
+        f.line(0.0, h, total_w, h, pal::NAVY, 1.2);
+    }
     if t.grid {
         for x in xs.iter().skip(1) {
             f.line(*x, 0.0, *x, h, pal::LINE, 0.6);
@@ -551,12 +695,157 @@ fn header_cell_content(cell: &Cell, w: f32, default_align: Align) -> Frag {
                 y += put_txt(&mut f, 0.0, y, w, &t);
             }
             CellItem::Chips(c) => y += put_chips(&mut f, 0.0, y, w, c, align),
+            CellItem::Name { dot, text, small } => {
+                y += put_name(&mut f, y, w, *dot, text, small.as_ref());
+            }
             CellItem::Gap(g) => y += g,
             _ => {}
         }
     }
     f.h = y;
     f
+}
+
+/// The title row of a table's repeating header: its name in section style, a navy rule under it,
+/// and " · continued" after the name on continuation pages. `None` for an untitled table.
+fn title_frag(t: &StyledTable, total_w: f32, continued: bool) -> Option<Frag> {
+    if let Some(h) = &t.head {
+        return Some(head_frag(h, total_w, continued));
+    }
+    if let Some(b) = &t.band {
+        return Some(band_frag(b, total_w, continued));
+    }
+    title_block(t.title.as_ref()?, t.title_hint.as_ref(), total_w, continued)
+}
+
+/// A title in section style with its hint at the right, over a navy rule.
+pub(super) fn title_block(
+    title: &str,
+    hint: Option<&String>,
+    total_w: f32,
+    continued: bool,
+) -> Option<Frag> {
+    const SIZE: f32 = 10.0;
+    const TRACK: f32 = 1.0;
+    const LEAD: f32 = SIZE * 1.2;
+    const SUFFIX: &str = " · continued";
+    let hint_w = hint
+        .map(|h| tw(h, 7.4, false, 0.0).min(total_w * 0.4))
+        .unwrap_or(0.0);
+    let avail = (total_w - hint_w - 12.0).max(60.0);
+    let name = Txt::new(title.to_uppercase())
+        .size(SIZE)
+        .bold()
+        .track(TRACK);
+    let lines = txt_lines(&name, avail);
+    let mut f = Frag::new();
+    for (k, l) in lines.iter().enumerate() {
+        f.text(0.0, SIZE + k as f32 * LEAD, l, SIZE, true, pal::NAVY, TRACK);
+    }
+    let mut h = lines.len() as f32 * LEAD;
+    if continued {
+        let last = lines.last().map(String::as_str).unwrap_or("");
+        let lw = tw(last, SIZE, true, TRACK);
+        let sw = tw(SUFFIX, 7.4, false, 0.0);
+        let base = (lines.len() as f32 - 1.0) * LEAD + SIZE;
+        if lw + sw <= avail {
+            f.text(lw, base, SUFFIX, 7.4, false, pal::SLATE, 0.0);
+        } else {
+            f.text(0.0, base + 9.5, "· continued", 7.4, false, pal::SLATE, 0.0);
+            h += 9.5;
+        }
+    }
+    if let Some(hint) = hint {
+        let w = tw(hint, 7.4, false, 0.0).min(total_w * 0.4);
+        f.text(total_w - w, SIZE, hint, 7.4, false, pal::SLATE, 0.0);
+    }
+    f.line(0.0, h + 3.0, total_w, h + 3.0, pal::NAVY, 1.2);
+    f.h = h + 3.0 + 1.2 + 4.0;
+    Some(f)
+}
+
+/// What leads the repeating header: the group band when there is one, else the day band or the
+/// title row.
+fn lead_frag(t: &StyledTable, total_w: f32, continued: bool) -> Option<Frag> {
+    match &t.group {
+        Some(g) => Some(group_frag(g, total_w, continued)),
+        None => title_frag(t, total_w, continued),
+    }
+}
+
+/// Where the rows of a table start new pages.
+///
+/// `heights` are the row heights; `forbid[i]` means a page may not start at row `i` (the row
+/// belongs with the one before it). `first_room` is the space for rows on the table's first page,
+/// `full_room` on every later page; `fresh` says the table starts at the top of a page. The result
+/// lists the rows that start a page. It holds 0 when the table must start on a new page because
+/// its first rows (title, header and at least two rows) do not fit the space left, and it never
+/// leaves a single row alone on the last page when moving the row before it avoids that.
+pub(super) fn plan_breaks(
+    heights: &[f32],
+    forbid: &[bool],
+    first_room: f32,
+    full_room: f32,
+    fresh: bool,
+) -> Vec<usize> {
+    let n = heights.len();
+    let mut breaks: Vec<usize> = Vec::new();
+    let (mut start, mut room, mut used, mut i) = (0usize, first_room, 0.0f32, 0usize);
+    let mut on_first = true;
+    while i < n {
+        if used + heights[i] <= room + 0.01 {
+            used += heights[i];
+            i += 1;
+            continue;
+        }
+        // The row at `i` does not fit: break at the nearest earlier place that keeps groups whole.
+        let mut b = i;
+        while b > start && forbid[b] {
+            b -= 1;
+        }
+        if b == start {
+            if on_first && !fresh && start == 0 {
+                // Title, header and the rows that must travel together do not fit: new page.
+                breaks.push(0);
+                on_first = false;
+                (room, used, i) = (full_room, 0.0, 0);
+                continue;
+            }
+            if i == start {
+                // A row taller than a page: nothing better to do than place it.
+                used += heights[i];
+                i += 1;
+                continue;
+            }
+            b = i;
+        }
+        breaks.push(b);
+        (start, on_first, room, used, i) = (b, false, full_room, 0.0, b);
+    }
+    // No lone last row: let the row before it move along when the rules and the page allow.
+    if let Some(&last) = breaks.last()
+        && last > 0
+        && n - last == 1
+    {
+        let starts = if breaks.first() == Some(&0) {
+            breaks.len()
+        } else {
+            breaks.len() + 1
+        };
+        let prev = if breaks.len() >= 2 {
+            breaks[breaks.len() - 2]
+        } else {
+            0
+        };
+        // The table's first page keeps at least two rows with the title; later pages one.
+        let keep = if starts == 2 { 2 } else { 1 };
+        if last > prev + keep && !forbid[last - 1] && heights[last - 1] + heights[last] <= full_room
+        {
+            let at = breaks.len() - 1;
+            breaks[at] = last - 1;
+        }
+    }
+    breaks
 }
 
 pub(in crate::report) fn styled_table<'a>(p: &mut Pager<'a>, t: &'a StyledTable) {
@@ -568,52 +857,114 @@ pub(in crate::report) fn styled_table<'a>(p: &mut Pager<'a>, t: &'a StyledTable)
         xs.push(x);
         x += w;
     }
-    let header = header_frag(p, t, &ws, &xs, total_w);
+    let header = header_frag(p, t, &ws, &xs, total_w, false);
     let header_h = header.as_ref().map(|h| h.h).unwrap_or(0.0);
+    // Pages after the first may carry their own header cells ("continued" after a name).
+    let header_next = t
+        .header_continued
+        .as_ref()
+        .and_then(|_| header_frag(p, t, &ws, &xs, total_w, true));
+    let next_h = header_next.as_ref().map_or(header_h, |h| h.h);
     if t.rows.is_empty() {
+        if let Some(tf) = lead_frag(t, total_w, false) {
+            p.ensure(tf.h + 20.0);
+            let top = p.y;
+            let h = tf.h;
+            p.emit(tf, MARGIN, top);
+            p.y -= h;
+        }
         if let Some(e) = &t.empty {
             text(
                 p,
                 &Txt::new(e.clone()).size(8.6).color(pal::FAINT).after(6.0),
             );
         }
+        if t.band.is_some() {
+            p.y -= 10.0;
+        }
         return;
     }
-    // Rows are built once, in order, as the pages need them.
-    let mut seg_top: Option<f32> = None;
-    let mut first_on_page = true;
     let draw_box = |p: &mut Pager, seg_top: f32| {
         if t.boxed {
             let h = seg_top - p.y;
             let mut f = Frag::new();
-            f.shape(0.0, 0.0, total_w, h, 0.0, None, Some((pal::LINE, 0.9)));
+            if t.head.is_some() {
+                // The head's rounded top is part of the outline.
+                f.shape_c(
+                    0.0,
+                    0.0,
+                    total_w,
+                    h,
+                    6.0,
+                    true,
+                    false,
+                    None,
+                    Some((band::LINE_STRONG, 0.7)),
+                );
+            } else {
+                f.shape(0.0, 0.0, total_w, h, 0.0, None, Some((pal::LINE, 0.9)));
+            }
             p.emit(f, MARGIN, seg_top);
         }
     };
-    let mut frags: Vec<Option<RowFrag>> = t
+    // Rows are built once, in order; their heights decide where the pages break.
+    let frags: Vec<RowFrag> = t
         .rows
         .iter()
         .enumerate()
-        .map(|(i, row)| Some(row_frag(p, t, row, &ws, &xs, total_w, i, 0.0)))
+        .map(|(i, row)| row_frag(p, t, row, &ws, &xs, total_w, i, 0.0))
         .collect();
-    for (i, row) in t.rows.iter().enumerate() {
-        let next_h = frags
-            .get(i + 1)
-            .and_then(|f| f.as_ref())
-            .map(|f| f.h)
-            .unwrap_or(0.0);
-        let rf = frags[i].take().expect("row laid out once");
-        let need = rf.h
-            + if first_on_page { header_h } else { 0.0 }
-            + if row.keep_next { next_h } else { 0.0 };
-        // The very first row keeps company with the header and one more row where it can.
-        if p.room() < need + if i == 0 { 8.0 } else { 0.0 } {
+    let n = frags.len();
+    let heights: Vec<f32> = frags.iter().map(|f| f.h).collect();
+    let mut forbid = vec![false; n + 1];
+    if n >= 2 {
+        // A title or heading always travels with at least two rows.
+        forbid[1] = true;
+    }
+    for (j, row) in t.rows.iter().enumerate() {
+        if row.keep_next && j + 1 < n {
+            forbid[j + 1] = true;
+        }
+        if row.keep_prev > 0 {
+            // A subtotal travels with the rows it sums up.
+            let lo = (j + 1).saturating_sub(row.keep_prev as usize).max(1);
+            forbid[lo..=j].fill(true);
+        }
+    }
+    let title_h = |continued: bool| lead_frag(t, total_w, continued).map_or(0.0, |f| f.h);
+    let legacy_band =
+        t.title.is_none() && t.continued.is_some() && t.band.is_none() && t.group.is_none();
+    let first_head = title_h(false) + header_h;
+    let cont_head = title_h(true) + next_h + if legacy_band { 21.0 } else { 0.0 };
+    let page_rows = p.body_h();
+    if t.keep_whole && !p.fresh() {
+        let whole = first_head + heights.iter().sum::<f32>();
+        if whole > p.room() && whole <= page_rows {
+            p.new_page();
+        }
+    }
+    let breaks = plan_breaks(
+        &heights,
+        &forbid,
+        p.room() - first_head,
+        page_rows - cont_head,
+        p.fresh(),
+    );
+    let mut seg_top: Option<f32> = None;
+    for (i, rf) in frags.into_iter().enumerate() {
+        let new_page = breaks.contains(&i);
+        if i == 0 || new_page {
             if let Some(st) = seg_top.take() {
                 draw_box(p, st);
             }
-            p.new_page();
-            first_on_page = true;
-            if let Some(label) = &t.continued {
+            if new_page {
+                p.new_page();
+            }
+            let continued = i > 0;
+            if continued
+                && legacy_band
+                && let Some(label) = &t.continued
+            {
                 let mut f = Frag::new();
                 f.shape(
                     0.0,
@@ -630,10 +981,25 @@ pub(in crate::report) fn styled_table<'a>(p: &mut Pager<'a>, t: &'a StyledTable)
                 p.emit(f, MARGIN, top);
                 p.y -= 21.0;
             }
-        }
-        if first_on_page {
-            seg_top = Some(p.y);
-            if let Some(h) = &header {
+            let head_in_box = t.head.is_some();
+            if head_in_box {
+                seg_top = Some(p.y);
+            }
+            if let Some(tf) = lead_frag(t, total_w, continued) {
+                let top = p.y;
+                let h = tf.h;
+                p.emit(tf, MARGIN, top);
+                p.y -= h;
+            }
+            if !head_in_box {
+                seg_top = Some(p.y);
+            }
+            let header = if continued {
+                header_next.as_ref().or(header.as_ref())
+            } else {
+                header.as_ref()
+            };
+            if let Some(h) = header {
                 let top = p.y;
                 let hf = Frag {
                     h: h.h,
@@ -642,7 +1008,6 @@ pub(in crate::report) fn styled_table<'a>(p: &mut Pager<'a>, t: &'a StyledTable)
                 p.emit(hf, MARGIN, top);
                 p.y -= h.h;
             }
-            first_on_page = false;
         }
         let top = p.y;
         p.emit(rf.f, MARGIN, top);
@@ -655,6 +1020,18 @@ pub(in crate::report) fn styled_table<'a>(p: &mut Pager<'a>, t: &'a StyledTable)
 }
 
 pub(in crate::report) fn table_scan(t: &StyledTable, scan: &mut dyn FnMut(&str)) {
+    for s in t.title.iter().chain(&t.title_hint) {
+        scan(s);
+    }
+    if let Some(b) = &t.band {
+        band_scan(b, scan);
+    }
+    if let Some(g) = &t.group {
+        group_scan(g, scan);
+    }
+    if let Some(h) = &t.head {
+        head_scan(h, scan);
+    }
     for c in &t.columns {
         scan(&c.header);
     }
@@ -670,20 +1047,61 @@ pub(in crate::report) fn table_scan(t: &StyledTable, scan: &mut dyn FnMut(&str))
                 CellItem::Text(x) => scan(&x.text),
                 CellItem::Chips(cs) => cs.iter().for_each(|c| scan(&c.text)),
                 CellItem::Tile(s) | CellItem::Missing(s) => scan(s),
+                CellItem::Rich(r) => rich_scan(r, scan),
                 CellItem::Heading { text, right, .. } => {
                     scan(text);
                     if let Some(r) = right {
                         scan(r);
                     }
                 }
+                CellItem::Labelled { label, text } => {
+                    scan(&label.text);
+                    scan(&text.text);
+                }
+                CellItem::Entries { entries, .. } => entries_scan(entries, scan),
+                CellItem::Name { text, small, .. } => {
+                    scan(&text.text);
+                    if let Some(s) = small {
+                        scan(&s.text);
+                    }
+                }
+                CellItem::Meter { value, .. } => scan(&value.text),
                 _ => {}
             }
         }
     };
-    if let Some(hc) = &t.header_cells {
+    for hc in t.header_cells.iter().chain(&t.header_continued) {
         hc.iter().for_each(|c| cell_scan(c, scan));
     }
     for r in &t.rows {
         r.cells.iter().for_each(|c| cell_scan(c, scan));
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::plan_breaks;
+
+    #[test]
+    fn plan_breaks_follows_the_rules() {
+        let h = vec![10.0; 10];
+        let mut forbid = vec![false; 11];
+        forbid[1] = true;
+        // Everything fits: no breaks.
+        assert!(plan_breaks(&h, &forbid, 100.0, 100.0, false).is_empty());
+        // Not even two rows fit the first page: the table starts on a new page.
+        assert_eq!(plan_breaks(&h, &forbid, 15.0, 100.0, false), vec![0]);
+        // On a fresh page the same input just breaks where it must.
+        assert_eq!(plan_breaks(&h, &forbid, 55.0, 55.0, true), vec![5]);
+        // Rows 4..=5 are tied: the break backs up to row 4 (and the last page is not a lone row).
+        forbid[5] = true;
+        assert_eq!(plan_breaks(&h, &forbid, 55.0, 55.0, true), vec![4, 8]);
+        // 11 rows of 10 on pages of 50: the last page would hold one row, so the row before joins it.
+        let h = vec![10.0; 11];
+        let forbid = vec![false; 12];
+        assert_eq!(plan_breaks(&h, &forbid, 50.0, 50.0, true), vec![5, 9]);
+        // A row taller than the page is placed, not looped on.
+        let h = vec![10.0, 900.0, 10.0];
+        assert_eq!(plan_breaks(&h, &[false; 4], 50.0, 50.0, true), vec![1, 2]);
     }
 }

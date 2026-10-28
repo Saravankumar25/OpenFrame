@@ -1,0 +1,50 @@
+{
+  "cases": 274,
+  "all": {
+    "n": 274,
+    "median_ms": 2496,
+    "p95_ms": 20401
+  },
+  "model": {
+    "n": 246,
+    "median_ms": 2831,
+    "p95_ms": 21164
+  },
+  "by_length_class": {
+    "brief": {
+      "n": 16,
+      "median_ms": 1557,
+      "p95_ms": 4992
+    },
+    "one_sentence": {
+      "n": 149,
+      "median_ms": 1215,
+      "p95_ms": 5576
+    },
+    "paragraph": {
+      "n": 54,
+      "median_ms": 14185,
+      "p95_ms": 31410
+    },
+    "short": {
+      "n": 55,
+      "median_ms": 4301,
+      "p95_ms": 15891
+    }
+  },
+  "first_question_ms": 19752,
+  "first_model_question_ms": 19752,
+  "prompt_tokens": 690690,
+  "cached_tokens": 464955,
+  "completion_tokens": 64605,
+  "calls": 891,
+  "cached_share": 0.673174651435521,
+  "stage_mean_ms": {
+    "dossier": 1,
+    "engine_generation": 9240,
+    "engine_prompt": 1290,
+    "turn": 287
+  },
+  "median_bar_met": true,
+  "p95_bar_met": true
+}

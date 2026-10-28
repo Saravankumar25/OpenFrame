@@ -144,9 +144,23 @@ public struct ThemeCatalog: Sendable {
     public func theme(id: String) -> ThemeData? {
         all.first { $0.id == id }
     }
+
+    /// The catalog with the Mac palette (macDefaultTheme.json) laid over OpenFrame Default's own
+    /// overrides. Other themes and the shared file stay as they are, so Windows is not affected.
+    public func withMacDefault(json: Data) throws -> ThemeCatalog {
+        let palette = try JSONDecoder().decode(PlatformPalette.self, from: json)
+        let merged = builtIn.map { theme -> ThemeData in
+            guard theme.id == Self.defaultThemeId else { return theme }
+            var t = theme
+            t.light.merge(palette.light) { _, mac in mac }
+            t.dark.merge(palette.dark) { _, mac in mac }
+            return t
+        }
+        return ThemeCatalog(engine: engine, builtIn: merged, imported: imported)
+    }
 }
 
-/// Parse an imported theme (the ThemeDto JSON).
-public func decodeImportedTheme(_ data: Data) -> ThemeData? {
-    try? JSONDecoder().decode(ThemeData.self, from: data)
+private struct PlatformPalette: Codable {
+    var light: [String: String]
+    var dark: [String: String]
 }

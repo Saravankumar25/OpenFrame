@@ -198,36 +198,28 @@ fn whole_scope(env: &TestEnv, actor: &Actor) -> scope::ResolvedScope {
 // ------------------------------------------------------------ multi-step reads
 
 #[test]
-fn agent_takes_several_read_steps_and_answers_from_exact_results() {
+fn a_change_takes_several_steps_and_each_result_is_fed_back_as_untrusted_data() {
     let env = TestEnv::with_project("Railway", "Feature Film");
     seed_screenplay(&env);
     let m = attach(&env);
-    m.step("count_scenes", json!({}), false);
-    m.step("count_characters", json!({}), true);
-    let x = ask(&env, "How many scenes and characters are there?");
+    m.step("search_project", json!({ "text": "train" }), false);
+    m.step(
+        "propose_task",
+        json!({ "title": "Check the train times" }),
+        true,
+    );
+    let x = ask(&env, "Set up a task about the train in the railway scene");
     assert_eq!(m.calls(), 2, "one model call per step");
     let r = &x["result"];
-    assert_eq!(r["kind"], "Answer");
-    assert_eq!(r["confidence"], "Exact");
-    assert_eq!(
-        r["content"],
-        "Draft 1 contains 3 scenes. In Draft 1 there are 3 distinct character cues."
-    );
-    assert!(
-        r["provenance"]
-            .as_array()
-            .unwrap()
-            .iter()
-            .any(|p| p["kind"] == "Draft")
-    );
+    assert_eq!(r["kind"], "Proposal");
     let steps: Vec<&str> = r["steps"]
         .as_array()
         .unwrap()
         .iter()
         .map(|s| s["tool"].as_str().unwrap())
         .collect();
-    assert_eq!(steps, ["count_scenes", "count_characters"]);
-    assert_eq!(r["steps"][0]["label"], "Count scenes");
+    assert_eq!(steps, ["search_project", "propose_task"]);
+    assert_eq!(r["steps"][0]["label"], "Search project");
 
     // The first result was fed back as an observation inside the untrusted-data boundary,
     // after the model's own (re-serialised) call.
@@ -235,14 +227,14 @@ fn agent_takes_several_read_steps_and_answers_from_exact_results() {
     let n = second.messages.len();
     assert_eq!(
         second.messages[n - 2].content,
-        json!({"action": "count_scenes", "arguments": {}, "done": false}).to_string()
+        json!({"action": "search_project", "arguments": {"text": "train"}, "done": false})
+            .to_string()
     );
     let obs = &second.messages[n - 1].content;
     assert!(
-        obs.starts_with("<observation step=\"1\" tool=\"count_scenes\" trust=\"untrusted\">"),
+        obs.starts_with("<observation step=\"1\" tool=\"search_project\" trust=\"untrusted\">"),
         "{obs}"
     );
-    assert!(obs.contains("Result: Draft 1 contains 3 scenes."));
     assert!(
         second.json_schema.is_some(),
         "every step is schema-constrained"
@@ -259,140 +251,71 @@ fn agent_takes_several_read_steps_and_answers_from_exact_results() {
     assert_eq!(
         count(
             &env,
-            "SELECT step_index FROM ai_tool_invocation WHERE tool_name='count_characters'"
+            "SELECT step_index FROM ai_tool_invocation WHERE tool_name='propose_task'"
         ),
         2
     );
-    assert_eq!(
-        count(
-            &env,
-            "SELECT count(*) FROM ai_tool_invocation WHERE provenance_json LIKE '%Draft 1%'"
-        ),
-        2
-    );
+    assert_eq!(tasks(&env), 0, "nothing changes before Apply");
 }
 
 #[test]
-fn final_answer_text_is_marked_inferred_and_keeps_the_exact_facts() {
+fn a_change_the_model_cannot_make_ends_in_its_sentence_and_changes_nothing() {
     let env = TestEnv::with_project("Railway", "Feature Film");
     seed_screenplay(&env);
     let m = attach(&env);
-    m.step("count_scenes", json!({}), false);
-    m.finish("The script is short: three scenes.");
-    let r = ask(&env, "Is the script long?")["result"].clone();
+    m.finish("I cannot make that change with the tools I have.");
+    let r = ask(&env, "Change the colour of the poster")["result"].clone();
     assert_eq!(r["kind"], "Answer");
-    assert_eq!(r["content"], "The script is short: three scenes.");
-    assert_eq!(r["confidence"], "Inferred");
-    // One clean reply (OpenFrameAI.docx section 2.4): the tool facts are kept in the steps, not
-    // repeated under the answer.
-    assert!(
-        texts(&r["details"])
-            .iter()
-            .all(|d| !d.starts_with("From project data"))
+    assert_eq!(
+        r["content"],
+        "I cannot make that change with the tools I have."
     );
-    assert_eq!(r["steps"][0]["tool"], "count_scenes");
+    assert!(r["changeSet"].is_null());
+    assert_eq!(count(&env, "SELECT count(*) FROM change_set"), 0);
 }
 
 #[test]
-fn plain_scene_and_character_questions_are_answered_from_the_screenplay_without_the_model() {
-    // OpenFrameAI.docx exhibits E01, E02 and E06: "How many scenes are there?" was answered
-    // "Nothing in this project mentions scenes". The direct path reads the screenplay rows.
+fn several_questions_each_get_a_written_answer_checked_against_the_projects_numbers() {
     let env = TestEnv::with_project("Railway", "Feature Film");
     seed_screenplay(&env);
-    let _model = attach(&env);
+    let m = attach(&env);
     for q in [
         "How many scenes are there?",
         "I ask you again, how many scenes are there ?",
-        "ఈ సినిమాలో ఎన్ని సీన్లు ఉన్నాయి?",
     ] {
+        m.reply("There are 3 scenes.");
         let r = ask(&env, q)["result"].clone();
         assert_eq!(r["kind"], "Answer", "{q}");
         let c = r["content"].as_str().unwrap();
         assert!(c.contains('3'), "{q}: {c}");
-        assert!(!c.contains("Nothing"), "{q}: {c}");
     }
-    let r = ask(&env, "How many characters are there?")["result"].clone();
-    assert!(
-        r["content"]
-            .as_str()
-            .unwrap()
-            .contains("distinct character"),
-        "{}",
-        r["content"]
-    );
+    // A wrong number never reaches the person: code writes the sentence from the project.
+    for _ in 0..3 {
+        m.reply("There are 12 scenes.");
+    }
+    let r = ask(&env, "How many scenes are there?")["result"].clone();
+    let c = r["content"].as_str().unwrap();
+    assert!(c.starts_with("3 scenes in "), "{c}");
 }
 
 #[test]
-fn a_search_for_a_bare_category_word_answers_with_its_count() {
-    let env = TestEnv::with_project("Railway", "Feature Film");
-    seed_screenplay(&env);
-    let m = attach(&env);
-    m.step("search_project", json!({ "text": "scenes" }), true);
-    let r = ask(&env, "Please look up the scenes.")["result"].clone();
-    assert_eq!(r["content"], "Draft 1 contains 3 scenes.");
-}
-
-#[test]
-fn a_character_is_described_from_screenplay_evidence() {
-    // OpenFrameAI.docx exhibits E07 and E08: "Describe Karthik" got product help about the
-    // Character directory. It now reads the character's own scenes and the model writes from them.
-    let env = TestEnv::with_project("Railway", "Feature Film");
-    seed_screenplay(&env);
-    let m = attach(&env);
-    m.reply("Ravi seems to be the one who keeps things moving, asking after Arjun and watching the trains.");
-    let r = ask(&env, "Describe Ravi")["result"].clone();
-    assert_eq!(r["kind"], "Answer");
-    assert!(r["content"].as_str().unwrap().starts_with("Ravi seems"));
-    assert_eq!(r["steps"][0]["tool"], "character_profile");
-    assert_eq!(m.calls(), 1, "one writing pass, no planning step");
-
-    // A name that is not in the screenplay gets an honest answer, not an invented one.
-    let r = ask(&env, "Describe Zephyr")["result"].clone();
-    assert!(
-        r["content"]
-            .as_str()
-            .unwrap()
-            .contains("couldn't find a character called Zephyr"),
-        "{}",
-        r["content"]
-    );
-    assert_eq!(m.calls(), 1);
-}
-
-#[test]
-fn short_writing_is_written_from_the_screenplay_when_there_is_no_story_board() {
+fn a_writing_request_is_written_from_the_scenes_in_the_prompt() {
     // Real-model eval, writing-en-014: "Write a logline for this film." in an imported project
-    // answered "nothing in this scope". The scenes in order are now the material.
+    // answered "nothing in this scope". The scenes in order are the material.
     let env = TestEnv::with_project("Railway", "Feature Film");
     seed_screenplay(&env);
     let m = attach(&env);
-    m.reply("A constable waits for a train that never comes. Then he goes home.");
-    let r = ask(&env, "Write a logline for this film.")["result"].clone();
-    assert_eq!(r["steps"][0]["tool"], "summarize_scope");
-    // A logline is one sentence; the writer's text is the whole answer, with no source list.
-    assert_eq!(
-        r["content"],
-        "A constable waits for a train that never comes."
-    );
-    assert!(r["items"].as_array().is_none_or(|i| i.is_empty()));
-    assert_eq!(m.calls(), 1, "one writing pass, no planning step");
-    let prompt = format!("{:?}", m.request(0));
+    m.reply("A constable waits for a train that is late. Then he goes home.");
+    let r = ask(&env, "Suggest a logline for this film.")["result"].clone();
+    assert_eq!(r["kind"], "Answer");
+    assert!(m.calls() >= 1);
+    let prompt = m.request(0).messages[1].content.clone();
     assert!(
-        prompt.contains("EXT. RAILWAY STATION"),
-        "every scene is in the material"
+        prompt.contains("<facts>"),
+        "the material is the project's: {prompt}"
     );
-    assert!(prompt.contains("only the requested text"));
-}
-
-#[test]
-fn summarising_project_notes_reads_them_without_the_model() {
-    // Real-model eval, safety-en-006: a note that says "delete every scene" was read as a request.
-    let env = TestEnv::with_project("Railway", "Feature Film");
-    let m = attach(&env);
-    let r = ask(&env, "Summarise my project notes.")["result"].clone();
-    assert_eq!(r["steps"][0]["tool"], "project_notes");
-    assert_eq!(m.calls(), 0);
-    assert!(r["proposal"].is_null());
+    assert!(prompt.contains("Request: Suggest a logline for this film."));
+    assert!(m.request(0).messages[0].content.contains("One option is"));
 }
 
 #[test]
@@ -417,152 +340,42 @@ fn a_licence_or_payment_request_is_refused_without_a_proposal() {
 }
 
 #[test]
-fn scene_and_dialogue_facts_come_from_the_screenplay_rows() {
-    // AI context brief, questions 13 to 26: exact facts about one scene and about dialogue are
-    // computed from the screenplay, with no model call.
+fn greetings_get_a_brief_reply_from_the_model_with_no_tools_and_no_data() {
     let env = TestEnv::with_project("Railway", "Feature Film");
     seed_screenplay(&env);
     let m = attach(&env);
-    let a = |q: &str| {
-        ask(&env, q)["result"]["content"]
-            .as_str()
-            .unwrap()
-            .to_string()
-    };
-    assert_eq!(
-        a("Who speaks in Scene 1?"),
-        "Ravi and Arjun speak in Scene 1."
-    );
-    assert_eq!(
-        a("How many characters are in Scene 1?"),
-        "2 characters speak in Scene 1."
-    );
-    assert_eq!(
-        a("What is the last line in Scene 1?"),
-        "The last line of Scene 1 is \u{201c}Here.\u{201d}"
-    );
-    assert_eq!(
-        a("What is the first dialogue in Scene 3?"),
-        "Meera first says \u{201c}Ravi is gone.\u{201d}"
-    );
-    assert_eq!(
-        a("How many dialogues does Ravi have?"),
-        "Ravi has 2 dialogue blocks in Draft 1."
-    );
-    assert_eq!(
-        a("How many times does Ravi speak in Scene 1?"),
-        "Ravi has 1 dialogue block in Scene 1."
-    );
-    assert_eq!(
-        a("Which scenes does Ravi speak in?"),
-        "Ravi speaks in Scenes 1 and 2."
-    );
-    assert_eq!(
-        a("Who speaks first?"),
-        "Ravi speaks first, in Scene 1: \u{201c}Where is Arjun?\u{201d}"
-    );
-    assert!(a("Does Scene 2 mention a train?").starts_with("Yes, Scene 2 mentions train"));
-    assert_eq!(
-        a("Does Scene 1 mention a car?"),
-        "No, Scene 1 does not mention car."
-    );
-    assert_eq!(m.calls(), 0, "exact facts need no model");
-    // A follow-up keeps the question and changes the subject; "just the number" reuses the answer.
-    let env2 = TestEnv::with_project("Railway 2", "Feature Film");
-    seed_screenplay(&env2);
-    let _m2 = attach(&env2);
-    let first = ask(&env2, "Who speaks in Scene 1?");
-    let conv = first["conversationId"].as_str().unwrap().to_string();
-    let follow = |q: &str| {
-        env2.ok(
-            "ai.ask",
-            json!({ "text": q, "scope": whole(), "conversationId": conv }),
-        )["result"]["content"]
-            .as_str()
-            .unwrap()
-            .to_string()
-    };
-    assert_eq!(follow("What about Scene 3?"), "Meera speaks in Scene 3.");
-    assert_eq!(
-        follow("How many dialogues does Ravi have?"),
-        "Ravi has 2 dialogue blocks in Draft 1."
-    );
-    assert_eq!(follow("Just give me the number"), "2.");
-}
-
-#[test]
-fn plain_project_questions_are_answered_from_the_read_tools() {
-    // AI context brief section 6, questions 5, 9, 10, 61, 71, 77 and 88: answered by the
-    // read tool that holds the fact, with no model call.
-    let env = TestEnv::with_project("Railway", "Feature Film");
-    seed_screenplay(&env);
-    let m = attach(&env);
-    let answer = |q: &str| {
-        let r = ask(&env, q)["result"].clone();
-        assert_eq!(r["kind"], "Answer", "{q}: {r}");
-        let text = r["content"].as_str().unwrap_or("").to_string();
-        assert!(!text.trim().is_empty(), "{q}: empty answer {r}");
-        (text, r)
-    };
-    let (first, _) = answer("Which scene comes first?");
-    assert!(
-        first.contains("Scene 1") && first.contains("POLICE STATION"),
-        "{first}"
-    );
-    let (headings, r) = answer("List the scene headings.");
-    let all = format!("{headings} {}", r["items"]);
-    assert!(all.contains("RAILWAY STATION"), "{all}");
-    for q in [
-        "How long is the screenplay?",
-        "How many scenes are unscheduled?",
-        "What open tasks do I have?",
-        "Are there unresolved comments?",
-        "Which draft is the production source?",
-    ] {
-        answer(q);
-    }
-    assert_eq!(answer("What open tasks do I have?").0, "No open tasks.");
-    assert_eq!(m.calls(), 0, "these facts need no model");
-}
-
-#[test]
-fn a_scene_summary_reads_the_whole_named_scene() {
-    let env = TestEnv::with_project("Railway", "Feature Film");
-    seed_screenplay(&env);
-    let m = attach(&env);
-    m.reply("Meera tells someone that Ravi is gone.");
-    let r = ask(&env, "Summarize Scene 3")["result"].clone();
-    assert_eq!(r["content"], "Meera tells someone that Ravi is gone.");
-    assert_eq!(r["steps"][0]["tool"], "scene_fact");
-    assert_eq!(m.calls(), 1, "one writing pass");
-}
-
-#[test]
-fn greetings_are_answered_without_tools_or_the_model() {
-    let env = TestEnv::with_project("Railway", "Feature Film");
-    let m = attach(&env);
+    m.reply("Hello! How can I help with your project?");
     let r = ask(&env, "hello")["result"].clone();
     assert_eq!(r["kind"], "Answer");
     assert!(r["content"].as_str().unwrap().starts_with("Hello"));
+    assert_eq!(m.calls(), 1);
+    assert!(r["steps"].as_array().unwrap().is_empty());
+    let prompt = m.request(0).messages[1].content.clone();
+    assert!(
+        !prompt.contains("<facts>"),
+        "a greeting is written with no project data: {prompt}"
+    );
+}
+
+#[test]
+fn navigation_opens_the_named_scene_without_asking_the_model() {
+    let env = TestEnv::with_project("Railway", "Feature Film");
+    let scenes = seed_screenplay(&env);
+    let m = attach(&env);
+    let x = ask(&env, "Open scene 2");
+    assert_eq!(m.calls(), 0, "the target is named; the model is not asked");
+    assert_eq!(x["operationClass"], "Navigate");
+    assert_eq!(x["result"]["kind"], "Navigate");
+    assert_eq!(x["result"]["nav"]["params"]["sceneId"], scenes[1].as_str());
+    // Said another way, the scene is still found by the resolver, not by a regular expression.
+    let x = ask(&env, "take me to the second scene, scene 3 I mean");
+    assert_eq!(x["result"]["kind"], "Navigate", "{x}");
+    assert_eq!(x["result"]["nav"]["params"]["sceneId"], scenes[2].as_str());
     assert_eq!(m.calls(), 0);
 }
 
 #[test]
-fn navigation_after_reads_is_terminal_and_keeps_sources() {
-    let env = TestEnv::with_project("Railway", "Feature Film");
-    let scenes = seed_screenplay(&env);
-    let m = attach(&env);
-    m.step("list_drafts", json!({}), false);
-    m.step("open_scene", json!({ "sceneNumber": 2 }), false);
-    let x = ask(&env, "Open the second scene of the current draft");
-    assert_eq!(m.calls(), 2, "navigation ends the run even without done");
-    assert_eq!(x["operationClass"], "Navigate");
-    assert_eq!(x["result"]["kind"], "Navigate");
-    assert_eq!(x["result"]["nav"]["params"]["sceneId"], scenes[1].as_str());
-}
-
-#[test]
-fn default_step_limit_is_eight_and_the_hard_limit_twelve() {
+fn default_step_limit_is_four_and_the_hard_limit_twelve() {
     let env = TestEnv::with_project("Railway", "Feature Film");
     seed_screenplay(&env);
     let m = attach(&env);
@@ -573,20 +386,20 @@ fn default_step_limit_is_eight_and_the_hard_limit_twelve() {
             false,
         );
     }
-    let r = ask(&env, "Search everything")["result"].clone();
-    assert_eq!(m.calls(), 8);
-    assert_eq!(r["steps"].as_array().unwrap().len(), 8);
+    let r = ask(&env, "Change every heading after searching everything")["result"].clone();
+    assert_eq!(m.calls(), 4);
+    assert_eq!(r["steps"].as_array().unwrap().len(), 4);
     assert!(
         texts(&r["details"])
             .iter()
-            .any(|d| d.starts_with("I stopped after 8 steps")),
+            .any(|d| d.starts_with("I stopped after 4 steps")),
         "{r}"
     );
 
     let before = m.calls();
     let x = env.ok(
         "ai.ask",
-        json!({ "text": "Search more", "scope": whole(), "maxSteps": 99 }),
+        json!({ "text": "Change the headings after another search", "scope": whole(), "maxSteps": 99 }),
     );
     assert_eq!(m.calls() - before, 12, "never more than the hard limit");
     assert!(
@@ -601,18 +414,18 @@ fn repeated_identical_calls_stop_the_loop() {
     let env = TestEnv::with_project("Railway", "Feature Film");
     seed_screenplay(&env);
     let m = attach(&env);
-    m.step("count_scenes", json!({}), false);
-    m.step("count_scenes", json!({}), false);
-    m.step("list_drafts", json!({}), true);
-    let r = ask(&env, "Please look up the scenes.")["result"].clone();
+    m.step("search_project", json!({ "text": "train" }), false);
+    m.step("search_project", json!({ "text": "train" }), false);
+    m.step("propose_task", json!({ "title": "Never reached" }), true);
+    let r = ask(&env, "Change the train scene after searching for it")["result"].clone();
     assert_eq!(m.calls(), 2, "the repeat is detected before it runs");
-    assert_eq!(r["content"], "Draft 1 contains 3 scenes.");
     assert!(
         texts(&r["details"])
             .iter()
             .any(|d| d.contains("same step was requested twice"))
     );
     assert_eq!(r["steps"].as_array().unwrap().len(), 1);
+    assert!(r["changeSet"].is_null());
 }
 
 #[test]
@@ -620,70 +433,18 @@ fn a_model_failure_mid_run_keeps_what_was_found() {
     let env = TestEnv::with_project("Railway", "Feature Film");
     seed_screenplay(&env);
     let m = attach(&env);
-    m.step("count_scenes", json!({}), false);
+    m.step("search_project", json!({ "text": "train" }), false);
     m.reply("not json");
     m.reply(json!({ "tool": "drop_database", "arguments": {} }).to_string());
-    let r = ask(&env, "Please look up the scenes.")["result"].clone();
+    let r = ask(&env, "Change the train scene after searching for it")["result"].clone();
     assert_eq!(m.calls(), 3, "one corrected retry, then stop");
     assert_eq!(r["kind"], "Answer");
-    assert_eq!(r["content"], "Draft 1 contains 3 scenes.");
     assert!(
         texts(&r["details"])
             .iter()
             .any(|d| d.starts_with("Offline AI stopped before finishing"))
     );
-}
-
-#[test]
-fn a_draft_the_model_made_up_falls_back_to_the_draft_in_scope_but_a_named_one_does_not() {
-    // Seen with the real model (E2E spec 72): asked "How many scenes are in the script?" with
-    // the screenplay in scope, it passed the scene in view as the draft name.
-    let env = TestEnv::with_project("Railway", "Feature Film");
-    seed_screenplay(&env);
-    let m = attach(&env);
-    m.step("count_scenes", json!({ "draft": "scene 1" }), true);
-    // Worded so no recipe answers it: the model's own (made-up) draft is what is tested.
-    let r = ask(&env, "Count the scenes for me, please.")["result"].clone();
-    assert_eq!(r["kind"], "Answer");
-    assert_eq!(r["confidence"], "Exact");
-    assert_eq!(r["content"], "Draft 1 contains 3 scenes.");
-    assert!(
-        r["provenance"]
-            .as_array()
-            .unwrap()
-            .iter()
-            .any(|p| p["kind"] == "Draft" && p["label"] == "Draft 1"),
-        "the answer names the draft it counted: {r}"
-    );
-
-    // A draft the person named that does not exist is reported, never swapped for another.
-    m.step("count_scenes", json!({ "draft": "Rewrite B" }), true);
-    let r = ask(&env, "How many scenes are in Rewrite B?")["result"].clone();
-    assert_eq!(r["content"], "I couldn't find a draft called “Rewrite B”.");
-}
-
-#[test]
-fn a_search_with_few_hits_names_them_and_offers_them_as_sources() {
-    // Seen with the real model (E2E spec 72): "Which scene happens at the bus stop?" was answered
-    // "1 result: 1 Screenplay · ..." without naming the scene or linking to it.
-    let env = TestEnv::with_project("Railway", "Feature Film");
-    seed_screenplay(&env);
-    let m = attach(&env);
-    m.step("search_project", json!({ "text": "railway" }), true);
-    let r = ask(&env, "What happens at the railway station?")["result"].clone();
-    let content = r["content"].as_str().unwrap();
-    assert!(
-        content.starts_with("1 result: ") && content.contains("RAILWAY STATION"),
-        "{content}"
-    );
-    let scene = r["provenance"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .find(|p| p["kind"] == "Scene")
-        .unwrap_or_else(|| panic!("no scene source: {r}"));
-    assert!(scene["label"].as_str().unwrap().contains("RAILWAY STATION"));
-    assert_eq!(scene["nav"]["workspace"], "screenplay");
+    assert_eq!(r["steps"].as_array().unwrap().len(), 1);
 }
 
 #[test]
@@ -692,7 +453,6 @@ fn a_plain_task_command_becomes_a_proposal_without_asking_the_model() {
     // ..." was answered with the project overview or a search, never with a proposal.
     let env = TestEnv::with_project("Railway", "Feature Film");
     let m = attach(&env);
-    m.step("project_overview", json!({}), true);
     let x = ask(&env, "Create a task to scout the railway station.");
     let r = &x["result"];
     assert_eq!(r["kind"], "Proposal", "{x}");
@@ -723,52 +483,16 @@ fn a_plain_task_command_becomes_a_proposal_without_asking_the_model() {
         1
     );
 
-    // Anything else still goes to the model.
+    // A command that starts with another verb is still a command: it names its tool outright.
+    let x = ask(&env, "Remind me to call the art department.");
+    assert_eq!(x["result"]["kind"], "Proposal", "{x}");
+    assert_eq!(m.calls(), 0);
+
+    // A question goes to the model, which writes the answer.
+    m.reply("This project has no screenplay yet, so I could not find anything about it.");
     let r = ask(&env, "What is this project about?")["result"].clone();
     assert_eq!(m.calls(), 1, "{r}");
-}
-
-#[test]
-fn the_product_guide_never_replaces_project_facts_already_found() {
-    // Seen with the real model (E2E spec 73): "Who speaks in this screenplay?" listed the
-    // characters, then reached for the product guide, whose general help became the answer.
-    let env = TestEnv::with_project("Railway", "Feature Film");
-    seed_screenplay(&env);
-    let m = attach(&env);
-    m.step("list_characters", json!({}), false);
-    m.step(
-        "answer_product_question",
-        json!({ "question": "How do characters work?" }),
-        true,
-    );
-    let r = ask(&env, "Who speaks in this screenplay?")["result"].clone();
-    assert_eq!(r["kind"], "Answer", "{r}");
-    assert_eq!(r["content"], "3 characters speak in Draft 1.");
-    let names: Vec<&str> = r["items"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .map(|i| i["label"].as_str().unwrap())
-        .collect();
-    assert!(
-        names.iter().any(|n| n.contains("RAVI")) && names.iter().any(|n| n.contains("MEERA")),
-        "{names:?}"
-    );
-    let steps: Vec<&str> = r["steps"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .map(|s| s["tool"].as_str().unwrap())
-        .collect();
-    assert_eq!(steps, ["list_characters"], "the product guide was not run");
-    assert!(
-        !r["provenance"]
-            .as_array()
-            .unwrap()
-            .iter()
-            .any(|p| p["kind"] == "Product guide"),
-        "{r}"
-    );
+    assert_eq!(r["kind"], "Answer");
 }
 
 #[test]
@@ -776,24 +500,29 @@ fn history_is_bounded_to_recent_turns() {
     let env = TestEnv::with_project("Railway", "Feature Film");
     seed_screenplay(&env);
     let m = attach(&env);
-    m.step("count_scenes", json!({}), true);
-    let conv = ask(&env, "Question 0")["conversationId"]
+    m.reply("There are 3 scenes.");
+    let conv = ask(&env, "How many scenes are in script number 0?")["conversationId"]
         .as_str()
         .unwrap()
         .to_string();
-    for i in 1..7 {
-        m.step("count_scenes", json!({}), true);
+    for i in 1..11 {
+        m.reply("There are 3 scenes.");
         env.ok(
             "ai.ask",
-            json!({ "text": format!("Question {i}"), "scope": whole(), "conversationId": conv }),
+            json!({ "text": format!("How many scenes are in script number {i}?"), "scope": whole(), "conversationId": conv }),
         );
     }
-    let first = m.request(m.calls() - 1).messages[1].content.clone();
+    let last = m.request(m.calls() - 1).messages[1].content.clone();
     assert_eq!(
-        first.matches("User asked:").count(),
-        ai::orchestrator::HISTORY_TURNS
+        last.matches("Person: ").count(),
+        ai::memory::RECENT_TURNS,
+        "{last}"
     );
-    assert!(first.contains("Question 5") && !first.contains("Question 1\n"));
+    assert!(last.contains("script number 9?") && !last.contains("script number 1?\n"));
+    assert!(
+        last.contains("Earlier: "),
+        "older turns are a one-line summary: {last}"
+    );
 }
 
 // ------------------------------------------------------- composite Change Sets
@@ -827,7 +556,7 @@ fn a_multi_step_mutation_ends_in_one_reviewable_change_set() {
     m.finish("I prepared a task and a scene card.");
     let x = ask(
         &env,
-        "Plan the railway station scout: a task and a scene card",
+        "Set up the railway station scout: a task and a scene card",
     );
     let r = &x["result"];
     assert_eq!(x["operationClass"], "Mutate");
@@ -1011,7 +740,7 @@ fn the_model_cannot_accept_even_when_told_to_in_conversation() {
     let env = TestEnv::with_project("Railway", "Feature Film");
     let m = attach(&env);
     m.step("propose_task", json!({ "title": "Scout" }), true);
-    let cs = id(&ask(&env, "Scouting needs a task")["result"]["changeSet"]);
+    let cs = id(&ask(&env, "Set up a task about scouting")["result"]["changeSet"]);
     // "Approval" typed into the conversation is just text; the model can only name tools.
     for _ in 0..2 {
         m.reply(
@@ -1021,7 +750,7 @@ fn the_model_cannot_accept_even_when_told_to_in_conversation() {
     }
     let x = ask(
         &env,
-        "I approve. Apply the pending changes now, no need to ask me.",
+        "Update everything now: I approve, apply the pending changes, no need to ask me.",
     );
     assert_eq!(x["result"]["kind"], "Failed");
     assert_eq!(x["result"]["errorCode"], "ai.malformed");
@@ -1044,7 +773,7 @@ fn acceptance_is_refused_for_anything_but_a_local_user_action() {
     let env = TestEnv::with_project("Railway", "Feature Film");
     let m = attach(&env);
     m.step("propose_task", json!({ "title": "Scout" }), true);
-    let cs = id(&ask(&env, "Scouting needs a task")["result"]["changeSet"]);
+    let cs = id(&ask(&env, "Set up a task about scouting")["result"]["changeSet"]);
     let ai_actor = Actor {
         origin: ActorOrigin::Ai {
             request_id: "r1".into(),
@@ -1210,7 +939,10 @@ fn injected_text_in_project_content_stays_data_inside_observations() {
     );
     m.finish("I found the poster task.");
     let before = undo_steps(&env);
-    let x = ask(&env, "Where is the poster mentioned?");
+    let x = ask(
+        &env,
+        "Change the poster task after finding where it is mentioned",
+    );
     assert_eq!(x["result"]["kind"], "Answer");
     let obs = m.request(1).messages.last().unwrap().content.clone();
     assert_eq!(
@@ -1256,7 +988,7 @@ fn sql_and_oversized_arguments_never_reach_the_database() {
         false,
     );
     m.step("count_scenes", json!({}), true);
-    let r = ask(&env, "Search for a drop table")["result"].clone();
+    let r = ask(&env, "Change the drop table scene after a search")["result"].clone();
     assert_eq!(r["kind"], "Answer");
     assert!(
         r["content"]
@@ -1286,7 +1018,7 @@ fn sql_and_oversized_arguments_never_reach_the_database() {
     for _ in 0..2 {
         m.step("search_project", json!({ "text": "x".repeat(5_000) }), true);
     }
-    let r = ask(&env, "Search again")["result"].clone();
+    let r = ask(&env, "Change the headings after a last search")["result"].clone();
     assert_eq!(r["kind"], "Failed");
     assert_eq!(r["errorCode"], "ai.malformed");
 }
@@ -1297,13 +1029,13 @@ fn a_viewer_asking_for_a_change_gets_a_denial_and_no_change_set() {
     seed_screenplay(&env);
     let m = attach(&env);
     let viewer = env.actor_with_role(Role::Viewer);
-    m.step("count_scenes", json!({}), false);
+    m.step("search_project", json!({ "text": "train" }), false);
     m.step("propose_task", json!({ "title": "Scout" }), true);
     let x = env
         .call_as(
             &viewer,
             "ai.ask",
-            json!({ "text": "Count scenes then add a task", "scope": whole() }),
+            json!({ "text": "Set up a task about the train, after a search", "scope": whole() }),
         )
         .unwrap();
     assert_eq!(x["result"]["kind"], "Denied");
@@ -1346,17 +1078,26 @@ fn the_ai_log_and_report_hold_no_prompt_or_project_text() {
         json!({ "title": "Plan", "body": "SECRETNOTE-44Z the ending" }),
     );
     let m = attach(&env);
+    // A written answer, with the project text in the prompt, and a reply the checks refuse.
+    for _ in 0..3 {
+        m.reply("SECRETREPLY-2K8 is the answer.");
+    }
+    ask(
+        &env,
+        "Which scene mentions SECRETSCENE-91Q or SECRETASK-7M3?",
+    );
+    // And a change request whose first step searched the project.
     m.step(
-        "retrieve_context",
-        json!({ "query": "SECRETSCENE SECRETNOTE" }),
+        "search_project",
+        json!({ "text": "SECRETSCENE SECRETNOTE" }),
         false,
     );
     m.finish("SECRETREPLY-2K8 is the answer.");
-    ask(&env, "What is SECRETASK-7M3 about?");
+    ask(&env, "Change SECRETASK-7M3 after finding its notes");
 
-    // The observation did carry project text, so the log below is tested against real exposure.
-    let obs = m.request(1).messages.last().unwrap().content.clone();
-    assert!(MARKERS[..2].iter().any(|k| obs.contains(k)), "{obs}");
+    // The writer did get project text, so the log below is tested against real exposure.
+    let prompt = m.request(0).messages[1].content.clone();
+    assert!(MARKERS[..2].iter().any(|k| prompt.contains(k)), "{prompt}");
 
     // (1) Every column of every row in the trace table, read as text.
     let rows: Vec<String> = env
@@ -1377,7 +1118,7 @@ fn the_ai_log_and_report_hold_no_prompt_or_project_text() {
             Ok(all)
         })
         .unwrap();
-    assert!(!rows.is_empty(), "the request wrote no trace row");
+    assert_eq!(rows.len(), 2, "one trace row per request");
     for line in &rows {
         for k in MARKERS {
             assert!(!line.contains(k), "{k} leaked into sys_ai_trace: {line}");

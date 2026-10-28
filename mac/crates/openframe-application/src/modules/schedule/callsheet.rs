@@ -41,14 +41,15 @@ use crate::util::ingest_file;
 /// Version of the call sheet document schema written by this build.
 pub const DOC_VERSION: u32 = 2;
 
-/// The six sections every call sheet shows (production depth spec §30).
+/// The six sections every call sheet shows (production depth spec §30), named and ordered as in
+/// the exported PDF (owner, 2026-10-27).
 pub const DEFAULT_SECTIONS: [&str; 6] = [
-    "Production header",
     "Day and times",
+    "Production",
     "Locations",
     "Scene schedule",
-    "Talent",
-    "Practical notes",
+    "Talent / Cast",
+    "Practical / Safety information",
 ];
 
 /// Sections added with "Add Section" (key, label).

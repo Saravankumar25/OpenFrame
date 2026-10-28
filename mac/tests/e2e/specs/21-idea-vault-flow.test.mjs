@@ -13,7 +13,7 @@
 
 import { after, before, describe, test } from "node:test";
 import assert from "node:assert/strict";
-import { click, launchApp, openWorkspace, sleep, stepper, waitForText } from "../lib/app.mjs";
+import { click, launchApp, openBeatBoard, openWorkspace, sleep, stepper, waitForText } from "../lib/app.mjs";
 import { assertQuiet, closeProject, firstLaunchProject, inDialog, menuItem, openProject, redo, relaunch, undo } from "../lib/flows.mjs";
 
 const SOURCE = "Police procedure: order of evidence handling at a small station.";
@@ -118,7 +118,7 @@ describe("idea vault flow", () => {
       await inDialog(browser, "Create Copy in Beat Board");
       await sleep(600);
       assert.ok((await items()).some((i) => i.startsWith("Meera finds her own")), "the Vault original must stay");
-      await openWorkspace(browser, "Story");
+      await openBeatBoard(browser);
       // Open the Parking Lot unless it is open already: the toggle says so at once, while the
       // column itself appears only when the board has loaded.
       const toggle = await browser.$('//button[@aria-pressed][normalize-space(.)="Parking Lot"]');

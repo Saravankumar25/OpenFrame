@@ -10,7 +10,7 @@
 //   storyboards 50 · shots 60 · schedule 70 · daily 80 · sides 90 ·
 //   reports 100 · budget 110 · notes 120
 // The active tab id is `route.sub`; focus targets arrive in `route.params`.
-// This index provides the scrolling `.content` layout; tabs must not add their own.
+// This index provides the scrolling layout (an inner scroll box inside `.content`); tabs must not add their own.
 
 import type { ComponentType } from "react";
 import { useNav } from "../../app/stores";
@@ -56,10 +56,15 @@ export default function ProductionWorkspace() {
         ))}
       </nav>
       {/* Layout is provided here; tabs render their content without a .content wrapper. */}
-      <div className="content" style={{ overflow: "auto" }}>
-        <ErrorBoundary key={active.tab.id}>
-          <Active />
-        </ErrorBoundary>
+      {/* The scroll area is an inner, unpositioned box. A side panel (Drawer) is absolutely positioned, so
+          its containing block is this outer .content, which does not scroll: the panel stays in view
+          however far down the list the selected row is. */}
+      <div className="content flush fill" style={{ position: "relative", overflow: "clip" }}>
+        <div data-testid="production-scroll" style={{ flex: 1, minHeight: 0, overflow: "auto", padding: "16px 20px" }}>
+          <ErrorBoundary key={active.tab.id}>
+            <Active />
+          </ErrorBoundary>
+        </div>
       </div>
     </>
   );

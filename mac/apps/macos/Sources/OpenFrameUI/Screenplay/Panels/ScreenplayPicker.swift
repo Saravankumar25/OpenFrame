@@ -26,8 +26,6 @@ final class ScreenplayPickerModel {
     var open: ScreenplayDto? { workspace?.overview?.screenplay }
     var permissions: ScreenplayPermissions? { workspace?.overview?.permissions }
 
-    static let maxTitle = 200
-
     /// Another screenplay of the list already uses this title (case and outer spaces ignored).
     static func titleTaken(_ screenplays: [ScreenplaySummary], _ title: String, except id: String? = nil) -> Bool {
         let t = title.trimmingCharacters(in: .whitespaces).lowercased()

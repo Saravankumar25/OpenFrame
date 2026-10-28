@@ -6,6 +6,8 @@
 > It replaces stream 5 of the earlier Chapter 1 plan, which assumed a Tauri Mac app (see the
 > archive). Release target: Apple silicon Macs only. Sizes as
 > in the Windows plan.
+>
+> **Port list of 2026-10-24.** What this track must take over from the Windows harness, export and screenplay upgrade, file by file: [mac-port-list-2026-10-24.md](../history/mac-port-list-2026-10-24.md); for the AI, [mac-ai-harness-port-orders.md](../history/mac-ai-harness-port-orders.md) replaces its AI section. Both were carried out in the sync of 2026-10-27 and moved to history on 2026-10-28.
 
 ## 1. What can be proved where
 
@@ -52,7 +54,7 @@ the AI harness is already finished and measured on Windows.
   Note for `DEVELOPMENT.md`: `.cargo/config.toml` forces `sccache`; a Mac without it must set `RUSTC_WRAPPER` to an empty
   value, as CI does.
 - **Retire the Tauri Mac shell** ([ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md) decision 3): remove the macOS
-  compile-only CI job that builds it, and move its notes into the archive. Keep the Swift StoreKit bridge source; it moves to
+  compile-only CI job that builds it, and move its notes into docs/history. Keep the Swift StoreKit bridge source; it moves to
   the SwiftUI app in Chapter 3 and is not used by the internal build.
 - Create the Mac parity matrix: every Windows Must-ship row and every Windows end-to-end scenario, with a column for the Mac
   status. This file is the Mac track's checklist.
@@ -80,7 +82,7 @@ the AI harness is already finished and measured on Windows.
   data-location note, the cloud-synced folder warning shared with Windows.
 - Settings, the 15 themes with Light, Dark and System, the logo colour following the theme, the Offline AI settings
   placeholder, the diagnostics export.
-- The internal team password screen (the Mac gate follows [ADR-0024](../adr/ADR-0024-internal-team-builds.md) and the
+- *(Superseded 2026-10-27: the team password gate was removed; see [owner-decisions.md](../implementation/owner-decisions.md).)* The internal team password screen (the Mac gate follows [ADR-0024](../adr/ADR-0024-internal-team-builds.md) and the
   8-character minimum of ADR-0030); a wrong-password test.
 - The Mac platform adapter behaviours run for the first time here: paths, atomic replace, process cleanup, spelling.
 
@@ -103,7 +105,7 @@ The editor is the costliest and riskiest screen, so it comes first inside the sc
 
 ## 7. Phase M5: Story, Idea Vault and Breakdown
 
-- Story Board: acts, sequences, beats, cards, characters, timeline, episodes, Build Screenplay.
+- Beat Board: acts, sequences, beats, cards, characters, timeline, episodes, Build Screenplay.
 - Idea Vault: project and global, five item types, voice notes, drag in.
 - Breakdown: suggestions, categories, catalog, locations, cast and crew.
 - Each workspace passes its shared scenarios.

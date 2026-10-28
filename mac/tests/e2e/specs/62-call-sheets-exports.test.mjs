@@ -5,12 +5,12 @@
 // shooting day, create a call sheet with its six default sections, add a section, see "Needs
 // input", change the schedule and review the update, finalize (a frozen snapshot), start a new
 // revision; budget Planned and Actual; a call sheet made from the Indie Call Sheet template;
-// sides, a production report, the moodboard, storyboard sheet and shot list exports with the
-// OpenFrame brand line; notes and tasks; then quit, relaunch and find everything again.
+// sides (pages of the script, no brand), a production report, the moodboard, storyboard sheet and
+// shot list exports with the OpenFrame brand line; notes and tasks; then quit, relaunch and find everything again.
 
 import { after, before, describe, test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, readFileSync, existsSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, existsSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { click, launchApp, openWorkspace, sleep, stepper, waitForText } from "../lib/app.mjs";
@@ -55,18 +55,65 @@ async function op(name, args) {
   return r.ok;
 }
 
+/**
+ * The whole call sheet as one picture in tests/e2e/artifacts/, to compare with the exported PDF.
+ * The sheet scrolls inside its panel and WebDriver only captures the window, so the panel is
+ * scrolled a screen at a time and the shots are joined on a canvas in the page.
+ */
+async function sheetScreenshot(name) {
+  const box = await browser.execute(() => {
+    const wrap = document.querySelector(".of-paper-wrap");
+    wrap.scrollTop = 0;
+    const r = wrap.getBoundingClientRect();
+    return { left: r.left, top: r.top, width: wrap.clientWidth, height: wrap.clientHeight, total: wrap.scrollHeight, dpr: window.devicePixelRatio };
+  });
+  const shots = [];
+  for (let y = 0; ; y += box.height) {
+    const at = await browser.execute((to) => {
+      const wrap = document.querySelector(".of-paper-wrap");
+      wrap.scrollTop = to;
+      return wrap.scrollTop;
+    }, y);
+    await sleep(200);
+    shots.push({ at, png: await browser.takeScreenshot() });
+    if (at + box.height >= box.total) break;
+  }
+  const joined = await browser.execute(
+    async (b, list) => {
+      const d = b.dpr;
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.round(b.width * d);
+      canvas.height = Math.round(b.total * d);
+      const g = canvas.getContext("2d");
+      for (const s of list) {
+        // A bitmap from the bytes, not a data: URL, so the page's content policy is not involved.
+        const bytes = Uint8Array.from(atob(s.png), (ch) => ch.charCodeAt(0));
+        const img = await createImageBitmap(new Blob([bytes], { type: "image/png" }));
+        g.drawImage(img, b.left * d, b.top * d, b.width * d, b.height * d, 0, s.at * d, b.width * d, b.height * d);
+      }
+      document.querySelector(".of-paper-wrap").scrollTop = 0;
+      return canvas.toDataURL("image/png").split(",")[1];
+    },
+    box,
+    shots,
+  );
+  const dir = join(import.meta.dirname, "..", "artifacts");
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(join(dir, name), Buffer.from(joined, "base64"));
+}
+
 /** A PDF's raw bytes as Latin-1 text (the brand line is plain WinAnsi text in the content). */
 function pdfText(path) {
   return readFileSync(path).toString("latin1");
 }
 
-async function exportAndCheck(name, args, file) {
+async function exportAndCheck(name, args, file, branded = true) {
   const path = join(OUT, file);
   await op(name, { ...args, path });
   assert.ok(existsSync(path), `${name} wrote no file`);
   const head = readFileSync(path).subarray(0, 5).toString("latin1");
   assert.equal(head, "%PDF-", `${name} did not write a PDF`);
-  assert.ok(pdfText(path).includes(BRAND), `${name} PDF has no OpenFrame brand line`);
+  assert.equal(pdfText(path).includes(BRAND), branded, `${name} PDF: brand line expected ${branded}`);
   return path;
 }
 
@@ -139,9 +186,11 @@ describe("call sheets, budget, templates, samples and exports", () => {
       await browser.$('//*[@aria-label="Call sheet document"]').waitForDisplayed({ timeout: 15_000 });
       const paper = async () => browser.execute(() => document.querySelector('[aria-label="Call sheet document"]')?.innerText ?? "");
       const text = await paper();
-      for (const s of ["PRODUCTION HEADER", "DAY AND TIMES", "LOCATIONS", "SCENE SCHEDULE", "TALENT", "PRACTICAL NOTES"]) {
-        assert.ok(text.toUpperCase().includes(s), `default section ${s} is missing`);
+      // The masthead and the time callout carry no heading, as in the PDF; the sections do.
+      for (const s of ["CALL SHEET · REVISION 1", "SHOOT DAY", "CREW CALL", "PRODUCTION", "LOCATIONS", "SCENE SCHEDULE", "TALENT / CAST", "PRACTICAL / SAFETY INFORMATION"]) {
+        assert.ok(text.toUpperCase().includes(s), `${s} is missing from the call sheet`);
       }
+      assert.ok(await browser.$('//section[@aria-label="Day and times"]').isExisting(), "the day and times callout is missing");
       assert.ok(!text.toUpperCase().includes("WEATHER"), "an optional section shows before it is added");
       const need = await browser.$$('//*[@aria-label="Call sheet document"]//*[@placeholder="Needs input"]');
       assert.ok(need.length > 0, "values nobody entered do not read Needs input");
@@ -158,6 +207,44 @@ describe("call sheets, budget, templates, samples and exports", () => {
       const url = await browser.execute(() => window.location.hash);
       callSheetId = (await op("callsheets.list", {}))[0].id;
       assert.ok(callSheetId, `no call sheet listed (${url})`);
+      // With every section on the sheet, the headings read in the order of the exported PDF.
+      // The screen's own save of the forecast must land first, or it would write over the added sections.
+      await browser.waitUntil(async () => (await op("callsheets.get", { id: callSheetId })).document.optional.weather === "Light rain after 18:00", {
+        timeout: 10_000,
+        timeoutMsg: "the forecast was not saved",
+      });
+      for (const section of ["extras", "departments", "advance", "crew", "communication", "specialNotes", "attachments", "referenceImages"]) {
+        await op("callsheets.add_section", { id: callSheetId, section });
+      }
+      const headings = () =>
+        browser.execute(() =>
+          [...document.querySelectorAll('[aria-label="Call sheet document"] *')]
+            .filter((el) => el.matches(".st > span:first-child, [role=heading]"))
+            .map((h) => (h.getAttribute("role") ? h.lastChild?.textContent : h.textContent)),
+        );
+      const pdfOrder = [
+        "Production",
+        "Locations",
+        "Scene schedule",
+        "Cast & Crew",
+        "Talent / Cast",
+        "Extras",
+        "Crew",
+        "Department notes",
+        "Production notes",
+        "Practical / Safety information",
+        "Weather",
+        "Advance schedule",
+        "Walkie channels and contacts",
+        "Special notes",
+        "Attachments & reference images",
+      ];
+      // The sheet shows each added section once the screen has read the document again.
+      await browser
+        .waitUntil(async () => JSON.stringify(await headings()) === JSON.stringify(pdfOrder), { timeout: 10_000 })
+        .catch(() => undefined);
+      assert.deepEqual(await headings(), pdfOrder);
+      await sheetScreenshot("callsheet-order.png");
       await assertQuiet(browser, "call sheet created");
     });
   });
@@ -170,8 +257,11 @@ describe("call sheets, budget, templates, samples and exports", () => {
       await browser.waitUntil(async () => (await mainText(browser)).includes("Needs refresh"), { timeout: 15_000, timeoutMsg: "the sheet was not flagged" });
       await click(browser, "Review Update");
       await waitForText(browser, "Update call sheet: review changes");
-      const dialog = await browser.execute(() => document.querySelector('[role="dialog"]')?.innerText ?? "");
-      assert.ok(/scene/i.test(dialog), "the preview does not list the changed scenes");
+      // The preview is computed after the dialog opens: wait for it instead of reading at once.
+      await browser.waitUntil(
+        async () => /scene/i.test(await browser.execute(() => document.querySelector('[role="dialog"]')?.innerText ?? "")),
+        { timeout: 10_000, timeoutMsg: "the preview does not list the changed scenes" },
+      );
       await inDialog(browser, "Apply Update");
       await browser.waitUntil(async () => !(await mainText(browser)).includes("Needs refresh."), { timeout: 10_000, timeoutMsg: "refresh did not clear the flag" });
       const forecast = await browser.$('//input[@aria-label="Forecast"]');
@@ -234,9 +324,10 @@ describe("call sheets, budget, templates, samples and exports", () => {
     });
   });
 
-  test("sides, a report and the visual planning exports carry the brand line", async () => {
+  test("a report and the visual planning exports carry the brand line, sides do not", async () => {
     await step("exports", async () => {
-      await exportAndCheck("sides.export_pdf", { format: "pdf", dayId, includeCover: true }, "sides.pdf");
+      // Sides are pages of the writer's script: no mark and no brand line (owner, 2026-10-27).
+      await exportAndCheck("sides.export_pdf", { format: "pdf", dayId, includeCover: true }, "sides.pdf", false);
       await exportAndCheck("reports.export_report", { format: "pdf", reportType: "scene" }, "scene-report.pdf");
       await exportAndCheck("schedule.export_schedule", { format: "pdf" }, "schedule.pdf");
       await exportAndCheck("schedule.export_dood", { format: "pdf" }, "dood.pdf");

@@ -10,7 +10,7 @@ format: string,
  */
 path: string, 
 /**
- * "outline" (default) or "board" (landscape card grid; PDF only).
+ * "outline" (default) or "board" (portrait card board; PDF only).
  */
 layout?: string, 
 /**

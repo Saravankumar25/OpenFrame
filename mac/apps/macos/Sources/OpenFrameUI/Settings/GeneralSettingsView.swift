@@ -1,4 +1,4 @@
-// General: display name, where the data lives, and the versions.
+// General: display name and the versions. Where the data lives is on the Storage tab.
 
 import AppKit
 import OpenFrameCore
@@ -29,18 +29,6 @@ struct GeneralSettingsView: View {
                 Text("This name appears on your notes, comments and history in the projects you open.")
                     .font(.callout).foregroundStyle(.secondary)
             }
-            Section("Data folder") {
-                if let info {
-                    LabeledContent("Projects") { pathText(info.projectsDir) }
-                    LabeledContent("Shared library") { pathText(info.globalVaultDir) }
-                } else {
-                    Text("Loading").foregroundStyle(.secondary)
-                }
-                Button("Show in Finder") {
-                    Task { try? await app.core?.revealLocation("dataRoot") }
-                }
-                .accessibilityIdentifier("settings-show-data")
-            }
             Section("Version") {
                 LabeledContent("OpenFrame Studio", value: info?.appVersion ?? AppVersion.current)
                 LabeledContent("Core", value: Core.version)
@@ -48,14 +36,6 @@ struct GeneralSettingsView: View {
         }
         .formStyle(.grouped)
         .task(id: app.isRunning) { await load() }
-    }
-
-    private func pathText(_ path: String) -> some View {
-        Text(path)
-            .textSelection(.enabled)
-            .multilineTextAlignment(.trailing)
-            .lineLimit(2)
-            .truncationMode(.middle)
     }
 
     private func load() async {

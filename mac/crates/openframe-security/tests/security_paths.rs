@@ -2,6 +2,9 @@
 //! user-chosen path validation (PATH-01..04), shell-open safety (PKG-01), web links (WEB-01),
 //! log redaction (LOG-01) and archive directory limits (PARSE-03).
 
+// Some helpers and imports serve only the Windows-only tests below.
+#![cfg_attr(not(windows), allow(unused_imports))]
+
 use std::path::{Path, PathBuf};
 
 use openframe_security::{

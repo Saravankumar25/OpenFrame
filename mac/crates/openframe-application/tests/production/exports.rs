@@ -198,14 +198,17 @@ fn pdf_page_width(path: &str) -> f32 {
     mb[2].as_float().unwrap()
 }
 
+/// Pictures in the PDF (JPEG). The footer logo is a lossless Flate image with its mask, so it is
+/// not counted.
 fn pdf_images(path: &str) -> usize {
     let doc = lopdf::Document::load(path).unwrap();
     doc.objects
         .values()
         .filter(|o| match o {
             lopdf::Object::Stream(s) => {
-                s.dict.get(b"Subtype").ok().and_then(|v| v.as_name().ok())
-                    == Some(b"Image".as_slice())
+                let name = |key: &[u8]| s.dict.get(key).ok().and_then(|v| v.as_name().ok());
+                name(b"Subtype") == Some(b"Image".as_slice())
+                    && name(b"Filter") == Some(b"DCTDecode".as_slice())
             }
             _ => false,
         })
@@ -339,9 +342,9 @@ fn story_board_outline_exports_in_board_order_with_optional_notes() {
     for want in [
         "Beat Board Outline",
         "Act One",
-        "Sequence: The Arrival",
+        "The Arrival",
         "Arjun steps off the night bus",
-        "Beat: Meera sees him",
+        "Meera sees him",
         "Act Two",
         "BLACK RAIN",
     ] {
@@ -375,7 +378,7 @@ fn story_board_outline_exports_in_board_order_with_optional_notes() {
     );
     let text = pdf_text(&pdf2);
     for want in [
-        "Parking Lot",
+        "PARKING LOT",
         "Unused dream sequence",
         "CARD-NOTE-VISIBLE-WHEN-ASKED",
         "ACT-NOTE-ONE",
@@ -385,15 +388,15 @@ fn story_board_outline_exports_in_board_order_with_optional_notes() {
     }
     assert!(!text.contains("PRIVATE-SECRET"));
 
-    // Board layout is a landscape card grid.
+    // Board layout is a portrait card board (PDF design package v2).
     let board = dest(&env, "board.pdf");
     let r = env.ok(
         "story.export_board",
         json!({ "format": "pdf", "path": board, "layout": "board" }),
     );
     assert_eq!(r["document"], "Beat Board");
-    assert!(pdf_page_width(&board) > 700.0, "landscape");
-    assert!(pdf_text(&board).contains("Scene Card 1"));
+    assert!(pdf_page_width(&board) < 700.0, "portrait");
+    assert!(pdf_text(&board).contains("SCENE CARD"));
 
     // TXT and CSV carry the same outline.
     let txt = dest(&env, "outline.txt");
@@ -664,17 +667,16 @@ fn storyboard_sheet_has_panels_shot_numbers_framing_and_optional_notes() {
         json!({ "storyboardIds": [bid], "format": "pdf", "path": pdf }),
     );
     assert_eq!(r["contentsLabel"], "2 panels");
-    assert!(pdf_page_width(&pdf) > 700.0, "landscape sheet");
+    assert!(pdf_page_width(&pdf) < 700.0, "portrait sheet");
     assert_eq!(pdf_images(&pdf), 1);
     let text = pdf_text(&pdf);
     for want in [
-        "STORYBOARD: INT. POLICE STATION - NIGHT",
+        "PRE-PRODUCTION · STORYBOARD",
         "Scene 1: INT. POLICE STATION - NIGHT",
-        "Panel 1 · Shot 1A",
+        "Panel · Shot 1A",
         "Blank panel",
         "Wide — Arjun enters",
-        "Panel 2",
-        "Medium · Static · Low",
+        "Medium Static Low",
         "Sound: Phone rings",
         "Duration: 3.5s",
     ] {
@@ -729,7 +731,7 @@ fn shot_list_exports_by_scene_selection_or_whole_project() {
     let text = pdf_text(&pdf);
     for want in [
         "Shot List",
-        "Scene 1: INT. POLICE STATION - NIGHT",
+        "SCENE 1 INT. POLICE STATION - NIGHT",
         "1A",
         "1B",
         "2A",
@@ -775,11 +777,11 @@ fn schedule_export_has_days_markers_summaries_and_unscheduled() {
         json!({ "format": "pdf", "path": pdf }),
     );
     assert_eq!(r["scopeLabel"], "Entire schedule");
-    assert!(pdf_page_width(&pdf) > 700.0, "stripboard is landscape");
+    assert!(pdf_page_width(&pdf) < 700.0, "stripboard is portrait");
     let text = pdf_text(&pdf);
     for want in [
         "Shooting Schedule",
-        "SHOOT DAY 01 Day 1 MONDAY · 14 JUNE 2027",
+        "Shoot Day 1 MONDAY · 14 JUNE 2027",
         "INT. POLICE STATION - NIGHT",
         "MEAL",
         "20:30",
@@ -813,13 +815,139 @@ fn schedule_export_has_days_markers_summaries_and_unscheduled() {
     );
     assert_eq!(r["scopeLabel"], "Current day only");
     let t = pdf_text(&one);
-    assert!(t.contains("SHOOT DAY 01") && !t.contains("UNSCHEDULED ·") && !t.contains("MORGUE"));
+    assert!(t.contains("Shoot Day 1") && !t.contains("UNSCHEDULED ·") && !t.contains("MORGUE"));
     assert_eq!(
         env.err(
             "schedule.export_schedule",
             json!({ "format": "pdf", "path": one, "dayIds": [] })
         ),
         "validation.dayIds"
+    );
+}
+
+/// Daily View export: one day, the same facts the screen shows, named "Shoot Day N - Daily View".
+#[test]
+fn daily_view_export_prints_what_the_daily_view_screen_shows() {
+    let env = production_env();
+    let day = seed_schedule(&env);
+    env.ok(
+        "schedule.set_day_notes",
+        json!({ "dayId": day, "notes": "Basement water pumped from 05:00." }),
+    );
+    let screen = env.ok("schedule.daily", json!({ "dayId": day }));
+    let pdf = dest(&env, "daily.pdf");
+    let r = env.ok(
+        "schedule.export_daily_view",
+        json!({ "format": "pdf", "path": pdf, "dayId": day }),
+    );
+    assert_eq!(r["document"], "Shoot Day 1 - Daily View");
+    assert_eq!(r["format"], "pdf");
+    let text = pdf_text(&pdf);
+    for want in [
+        "Shoot Day 1",
+        "Mon 14 Jun 2027",
+        "SCENES",
+        "LOCATION",
+        "CAST",
+        "CALL SHEET",
+        "IMPORTANT NOTES",
+        "IMPORTANT BREAKDOWN ITEMS",
+        "SCENE ORDER",
+        "Basement water pumped from 05:00.",
+        "MEAL BREAK at 20:30 (45m)",
+        "Created using OpenFrame",
+    ] {
+        assert!(text.contains(want), "missing {want}: {text}");
+    }
+    // Every scene heading, location and breakdown item of the screen read is on the page.
+    let d = &screen["day"];
+    for sc in d["scenes"].as_array().unwrap() {
+        let heading = sc["heading"].as_str().unwrap();
+        assert!(text.contains(heading), "scene {heading} missing: {text}");
+    }
+    for l in d["locations"].as_array().unwrap() {
+        assert!(text.contains(l["name"].as_str().unwrap()), "{text}");
+    }
+    for it in d["breakdownItems"].as_array().unwrap() {
+        assert!(text.contains(it["name"].as_str().unwrap()), "{text}");
+    }
+    // Plain text carries the same sections, numbered scene order included.
+    let txt = dest(&env, "daily.txt");
+    env.ok(
+        "schedule.export_daily_view",
+        json!({ "format": "txt", "path": txt, "dayId": day }),
+    );
+    let body = std::fs::read_to_string(&txt).unwrap();
+    assert!(body.contains("Shoot Day 1\r\nMon 14 Jun 2027"), "{body}");
+    assert!(body.contains("1. 1: INT. POLICE STATION - NIGHT"), "{body}");
+    assert!(body.contains("2 scenes"), "{body}");
+}
+
+#[test]
+fn daily_view_export_of_an_empty_or_off_day_still_exports() {
+    let env = production_env();
+    let sched = id(&env.ok("schedule.create", json!({})));
+    let day = env
+        .ok("schedule.create_day", json!({ "scheduleId": sched }))
+        .as_str()
+        .unwrap()
+        .to_string();
+    let txt = dest(&env, "empty.txt");
+    let r = env.ok(
+        "schedule.export_daily_view",
+        json!({ "format": "txt", "path": txt, "dayId": day }),
+    );
+    assert_eq!(r["document"], "Shoot Day 1 - Daily View");
+    let body = std::fs::read_to_string(&txt).unwrap();
+    for want in [
+        "No date yet",
+        "No scenes scheduled.",
+        "Location missing.",
+        "No cast confirmed for these scenes.",
+        "No call sheet yet for this day.",
+        "No day notes.",
+        "No confirmed props, wardrobe or other items for these scenes.",
+        "Nothing scheduled yet.",
+    ] {
+        assert!(body.contains(want), "missing {want}: {body}");
+    }
+    let pdf = dest(&env, "empty.pdf");
+    env.ok(
+        "schedule.export_daily_view",
+        json!({ "format": "pdf", "path": pdf, "dayId": day }),
+    );
+    assert!(pdf_text(&pdf).contains("No day notes."));
+    // An off day names itself and has no call sheet.
+    env.ok(
+        "schedule.set_off_day",
+        json!({ "dayId": day, "offDay": true }),
+    );
+    let off = dest(&env, "off.txt");
+    let r = env.ok(
+        "schedule.export_daily_view",
+        json!({ "format": "txt", "path": off, "dayId": day }),
+    );
+    assert_eq!(r["document"], "Off Day - Daily View");
+    assert!(
+        std::fs::read_to_string(&off)
+            .unwrap()
+            .contains("Off days have no call sheet.")
+    );
+    // An unknown day is an error, never another day's document.
+    assert_eq!(
+        env.err(
+            "schedule.export_daily_view",
+            json!({ "format": "txt", "path": dest(&env, "nope.txt"), "dayId": "missing" })
+        ),
+        "not_found.shooting_day"
+    );
+    // Only PDF and plain text are offered.
+    assert!(
+        env.err(
+            "schedule.export_daily_view",
+            json!({ "format": "csv", "path": dest(&env, "x.csv"), "dayId": day })
+        )
+        .starts_with("validation")
     );
 }
 
@@ -916,7 +1044,7 @@ fn call_sheet_pdf_has_paper_layout_and_final_sheet_uses_its_snapshot() {
         "SCENE SCHEDULE",
         "INT. POLICE STATION - NIGHT",
         "MEAL",
-        "PRACTICAL NOTES",
+        "PRACTICAL / SAFETY INFORMATION",
         "Behind the station",
         "WEATHER",
         "Rain expected",
@@ -926,6 +1054,8 @@ fn call_sheet_pdf_has_paper_layout_and_final_sheet_uses_its_snapshot() {
     ] {
         assert!(text.contains(want), "missing {want}: {text}");
     }
+    // The practical notes card sits inside the safety section; it has no heading of its own.
+    assert!(!text.contains("PRACTICAL NOTES"), "{text}");
     let no_optional = dest(&env, "call-plain.pdf");
     env.ok(
         "callsheets.export_pdf",
@@ -1108,7 +1238,7 @@ fn budget_report_exports_planned_actual_and_difference() {
     for want in [
         "Budget Report",
         "INR 12,00,000",
-        "10% · INR 1,20,000",
+        "INR 1,20,000 CONTINGENCY, 10%",
         "Planned in lines",
         "INR 62,000",
         "INR 55,000 ACTUAL SO FAR, 1 LINE OF 2",
@@ -1177,6 +1307,7 @@ fn only_roles_with_export_capability_can_export() {
         ("story.export_board", json!({ "format": "pdf" })),
         ("breakdown.export_report", json!({ "format": "pdf" })),
         ("schedule.export_schedule", json!({ "format": "csv" })),
+        ("schedule.export_daily_view", json!({ "format": "txt" })),
         (
             "reports.export_report",
             json!({ "format": "csv", "reportType": "scene" }),
@@ -1346,7 +1477,7 @@ fn telugu_and_hindi_print_in_every_pdf_export() {
     // Report documents (Helvetica with Noto Sans for Indian scripts).
     let p = pdf("story.pdf");
     env.ok("story.export_board", json!({ "format": "pdf", "path": p }));
-    assert_telugu_and_hindi(&p, "beat board");
+    assert_telugu_and_hindi(&p, "Beat Board");
     let p = pdf("breakdown.pdf");
     env.ok(
         "breakdown.export_report",
@@ -1611,6 +1742,7 @@ fn every_export_op_is_registered_as_a_read_only_query() {
         "storyboard.export_sheet",
         "shot.export_list",
         "schedule.export_schedule",
+        "schedule.export_daily_view",
         "callsheets.export_pdf",
         "sides.export_pdf",
         "reports.export_report",
@@ -1730,7 +1862,7 @@ fn tree_bytes(dir: &Path) -> Vec<(String, Vec<u8>)> {
 /// Production depth spec §43 (masterplan box "Subtle OpenFrame branding"): every non-screenplay
 /// export carries "Created using OpenFrame" (PDF on every page, XLSX in the document
 /// properties and the first sheet's footer, plain text as its last line; CSV stays pure data),
-/// screenplay files carry none, and the user's own files (the picked image, the managed assets)
+/// screenplay files and sides (pages of the script, owner 2026-10-27) carry none, and the user's own files (the picked image, the managed assets)
 /// are only read. One assertion per export, named in the failure message.
 #[test]
 fn every_production_export_is_branded_and_user_files_are_never_modified() {
@@ -1796,8 +1928,9 @@ fn every_production_export_is_branded_and_user_files_are_never_modified() {
         ("schedule.export_schedule", json!({}), "xlsx"),
         ("schedule.export_dood", json!({}), "pdf"),
         ("schedule.export_dood", json!({}), "xlsx"),
+        ("schedule.export_daily_view", json!({}), "pdf"),
+        ("schedule.export_daily_view", json!({}), "txt"),
         ("callsheets.export_pdf", json!({ "id": cs }), "pdf"),
-        ("sides.export_pdf", json!({ "dayId": day }), "pdf"),
         (
             "reports.export_report",
             json!({ "reportType": "scene" }),
@@ -1853,6 +1986,17 @@ fn every_production_export_is_branded_and_user_files_are_never_modified() {
             _ => unreachable!(),
         }
     }
+    // Sides are pages of the writer's script: no brand line and no mark on any page.
+    let sides = dest(&env, "brand-sides.pdf");
+    env.ok(
+        "sides.export_pdf",
+        json!({ "dayId": day, "format": "pdf", "path": sides }),
+    );
+    let text = pdf_text(&sides);
+    assert!(
+        !text.contains(BRAND),
+        "sides PDF carries the brand line: {text}"
+    );
     // CSV stays pure data.
     let csv = dest(&env, "brand.csv");
     env.ok(

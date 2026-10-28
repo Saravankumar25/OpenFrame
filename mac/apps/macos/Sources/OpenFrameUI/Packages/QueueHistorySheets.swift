@@ -40,7 +40,7 @@ struct ReviewQueueSheet: View {
             }
             .frame(minHeight: 200, maxHeight: 420)
         } footer: {
-            Button("Close", action: close).keyboardShortcut(.defaultAction).buttonStyle(.borderedProminent)
+            Button("Close", action: close).keyboardShortcut(.defaultAction).buttonStyle(.ofProminent)
                 .accessibilityIdentifier("review-queue-close")
         }
         .task { await model.load() }
@@ -86,7 +86,7 @@ private struct QueueRow: View {
                         .labelsHidden().fixedSize().accessibilityLabel("Scene")
                         .accessibilityIdentifier("queue-scene-\(item.id)")
                         Button("Attach") { Task { await model.attach(item, to: target) } }
-                            .controlSize(.small).buttonStyle(.borderedProminent).disabled(target.isEmpty || model.busyItem == item.id)
+                            .controlSize(.small).buttonStyle(.ofProminent).disabled(target.isEmpty || model.busyItem == item.id)
                             .accessibilityIdentifier("queue-attach-chosen-\(item.id)")
                         Button("Cancel") { choosing = false }.controlSize(.small).buttonStyle(.borderless)
                     }
@@ -141,7 +141,7 @@ struct PackageHistorySheet: View {
                 if let e = model.errorText { IXBanner(.err, e).accessibilityIdentifier("history-error") }
             }
         } footer: {
-            Button("Close", action: close).keyboardShortcut(.defaultAction).buttonStyle(.borderedProminent)
+            Button("Close", action: close).keyboardShortcut(.defaultAction).buttonStyle(.ofProminent)
                 .accessibilityIdentifier("history-close")
         }
         .background {

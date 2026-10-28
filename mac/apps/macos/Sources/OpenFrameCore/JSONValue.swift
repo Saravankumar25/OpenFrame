@@ -51,8 +51,6 @@ public enum JSONValue: Codable, Sendable, Hashable {
         return nil
     }
 
-    public var isNull: Bool { if case .null = self { return true } else { return false } }
-    public var boolValue: Bool? { if case .bool(let v) = self { return v } else { return nil } }
     public var doubleValue: Double? { if case .number(let v) = self { return v } else { return nil } }
     public var intValue: Int? {
         guard case .number(let v) = self, v.rounded() == v, abs(v) < 9.0e15 else { return nil }

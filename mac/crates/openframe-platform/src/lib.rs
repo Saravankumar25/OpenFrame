@@ -28,7 +28,7 @@ pub mod exists;
 pub mod files;
 pub mod graphics;
 pub mod identity;
-pub mod keys;
+pub mod memory;
 pub mod paths;
 pub mod power;
 pub mod process;

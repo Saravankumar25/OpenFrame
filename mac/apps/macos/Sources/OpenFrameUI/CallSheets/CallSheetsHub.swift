@@ -184,20 +184,24 @@ final class CallSheetsHub {
 
     /// The day shown on the Daily View, as a document of its own named after the day (owner
     /// request 2026-10-20): "Shoot Day 4 - Daily view".
+    /// The Daily View of the day on the screen (Windows DailyViewExportButton): it prints what the
+    /// page shows, so it has no scope choices. The document name is "Shoot Day N - Daily View".
     func exportDaily(dayId: String, label: String) {
-        let name = "\(label) - Daily view"
+        let name = "\(label) - Daily View"
         exportModel = CSExportModel(
             title: "Export Daily View",
-            sub: "Everything this page shows for the day: scenes in order, location, cast and call times, notes, breakdown items.",
-            source: "Source: \(label)",
+            source: "Source: \(name)",
             documentName: name,
-            note: "Private notes excluded. Export creates a snapshot and does not change the schedule.",
-            formats: CSExportFormat.tables,
+            note: "Private notes excluded. The document shows what the Daily View shows; the schedule is not changed.",
+            formats: [
+                CSExportFormat(value: "pdf", label: "PDF", hint: "printable"),
+                CSExportFormat(value: "txt", label: "Plain text", hint: ""),
+            ],
             projectTitle: projectTitle,
             plainName: true
         ) { [weak self] format, path, _ in
             guard let core = self?.core else { throw CoreFailure(code: "no_project", message: "No project is open.") }
-            return try await core.scheduleExportDaily(ExportDailyArgs(format: format, path: path, dayId: dayId))
+            return try await core.scheduleExportDailyView(ExportDailyViewArgs(format: format, path: path, dayId: dayId))
         }
     }
 

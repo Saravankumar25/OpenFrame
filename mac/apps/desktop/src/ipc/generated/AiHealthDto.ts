@@ -8,7 +8,11 @@ export type AiHealthDto = {
 /**
  * Requests counted (the most recent, at most `HEALTH_WINDOW`).
  */
-requests: number, medianTotalMs: number | null, medianTokensIn: number | null, medianContextFillPct: number | null, proposals: number, applied: number, rejected: number, undone: number, 
+requests: number, medianTotalMs: number | null, medianTokensIn: number | null, 
+/**
+ * Share of all prompt tokens the engine served from stored work, in percent.
+ */
+cacheHitPct: number | null, medianContextFillPct: number | null, proposals: number, applied: number, rejected: number, undone: number, 
 /**
  * Applied out of the proposals the person acted on, in percent.
  */

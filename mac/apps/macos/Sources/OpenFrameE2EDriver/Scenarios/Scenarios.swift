@@ -3,7 +3,7 @@
 
 enum Scenarios {
     static var all: [Scenario] {
-        releaseSmoke + storyPage + teamGate + forcedKill + writingGroup + productionGroup + interchangeGroup + captureGroup + windowFitGroup + goldGroup
+        releaseSmoke + storyPage + forcedKill + writingGroup + productionGroup + interchangeGroup + captureGroup + windowFitGroup + goldGroup + aiConversationGroup + storageGroup + quitGroup + interchangeFixGroup + accessibilityGroup
     }
 }
 
@@ -67,24 +67,6 @@ extension Scenarios {
                 let tv = try await ui.editor()
                 try ui.expect(tv.string.contains(smokeLine), "the typed line is there after a restart: \(tv.string.suffix(200))")
             }
-        },
-    ]
-}
-
-// MARK: team gate (17-internal-build-release)
-
-extension Scenarios {
-    static let teamGate: [Scenario] = [
-        Scenario("17-internal-build-release/team-gate-wrong-then-right") { ui, _, ctx in
-            try await ui.wait(id: "team-password", timeout: 30, "the team gate (this must be an internal build)")
-            try await ui.type("wrong-password", into: "team-password")
-            try await ui.press(id: "team-gate-continue", role: "AXButton")
-            try await ui.wait(id: "team-gate-message", timeout: 20, "the wrong-password message")
-            try ui.expect(!ui.exists(id: "home-new-project"), "a wrong password does not open the app")
-            try await ui.type(ctx.teamPassword, into: "team-password")
-            try await ui.press(id: "team-gate-continue", role: "AXButton")
-            try await ui.answerWelcome()
-            try await ui.waitHome()
         },
     ]
 }

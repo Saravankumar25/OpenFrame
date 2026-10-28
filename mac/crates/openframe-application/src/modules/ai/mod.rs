@@ -9,27 +9,41 @@
 //!   (answer / navigation / suggestion / one composite proposal / denial /
 //!   clarification), persisted with per-step audit records and provenance;
 //! - `ai.change_set.get|accept|reject|recheck`: explicit, human-only review of proposals;
-//! - `ai.history`: the user's own conversation history.
+//! - `ai.history`: the user's own conversation history;
+//! - `ai.memory_list`, `ai.memory_delete`: what the assistant remembers about the user (see `memory`).
 //!
 //! OpenFrame stays fully usable when the AI is not downloaded, missing or damaged: nothing else
 //! depends on this module.
 
+mod action;
+mod answer;
+mod cancel;
 pub mod catalog;
 pub mod change_set;
 mod commands;
+mod conversation_export;
+pub mod dossier;
+pub mod index;
 pub mod intelligence;
 pub mod knowledge;
+pub mod memory;
 pub mod offline;
 pub mod orchestrator;
 pub mod queries;
 pub mod records;
 pub mod retrieval;
+mod sanitize;
 pub mod scope;
 pub mod service;
+#[cfg(test)]
+mod test_script;
+mod text;
 pub mod toolbox;
 pub mod tools;
 pub mod trace;
+pub mod turn;
 pub mod types;
+mod typo;
 
 use openframe_domain::{Actor, AppResult, Capability};
 use serde::{Deserialize, Serialize};
@@ -89,6 +103,14 @@ pub fn register(r: &mut Registry) {
         M::app_command("Write the local AI trace (numbers and ids only) and the health figures to a file the person chose.")
             .hidden(h::AI_RUNTIME),
     );
+    r.command("ai.export_conversation", conversation_export::export_conversation)
+        .meta(
+            M::command(
+                Capability::UseAi,
+                "Write one of the person's own conversations (their questions, the answers and the sources) to a file they chose.",
+            )
+            .hidden(h::USER_PATH),
+        );
     r.query("ai.diagnostics", diagnostics).meta(
         M::app_query(
             "Offline AI technical details for Settings (versions, licences, hashes, paths).",
@@ -99,6 +121,13 @@ pub fn register(r: &mut Registry) {
         M::command(
             Capability::UseAi,
             "Ask the assistant (one request, one AI Result).",
+        )
+        .hidden(h::AI_SELF),
+    );
+    r.command("ai.cancel", cancel_request).meta(
+        M::command(
+            Capability::UseAi,
+            "Stop the assistant request that is running in a conversation (nothing is changed).",
         )
         .hidden(h::AI_SELF),
     );
@@ -131,6 +160,7 @@ pub fn register(r: &mut Registry) {
         )
         .hidden(h::HUMAN_APPROVAL),
     );
+    memory::register(r);
     retrieval::register(r);
 }
 
@@ -159,6 +189,21 @@ pub struct AiChangeSetArgs {
     pub id: String,
 }
 
+#[derive(Debug, Deserialize, TS)]
+#[ts(export)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct AiCancelArgs {
+    pub conversation_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, TS)]
+#[ts(export)]
+#[serde(rename_all = "camelCase")]
+pub struct AiCancelDto {
+    /// A request of this conversation was running and has been asked to stop.
+    pub stopping: bool,
+}
+
 #[derive(Debug, Clone, Serialize, TS)]
 #[ts(export)]
 #[serde(rename_all = "camelCase")]
@@ -171,6 +216,13 @@ pub struct AiHistoryDto {
 
 fn ask(core: &AppCore, actor: &Actor, args: AskArgs) -> AppResult<AiExchange> {
     orchestrator::ask(core, actor, args)
+}
+
+fn cancel_request(_core: &AppCore, actor: &Actor, args: AiCancelArgs) -> AppResult<AiCancelDto> {
+    actor.require(Capability::UseAi, "use the assistant")?;
+    Ok(AiCancelDto {
+        stopping: cancel::stop(&actor.user_id, &args.conversation_id),
+    })
 }
 
 fn history(core: &AppCore, actor: &Actor, args: AiHistoryArgs) -> AppResult<AiHistoryDto> {

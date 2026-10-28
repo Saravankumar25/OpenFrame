@@ -9,12 +9,14 @@ import { ShortcutsSettings } from "../../workspaces/settings/Shortcuts";
 import { AboutSection } from "../../workspaces/settings/About";
 import { LicenceSection } from "../../workspaces/settings/Licence";
 import { SupportSection } from "../../workspaces/settings/SupportDiagnostics";
+import { StoragePanel } from "../../features/storage/StoragePanel";
 
-export type GlobalSettingsTab = "appearance" | "shortcuts" | "about";
+export type GlobalSettingsTab = "appearance" | "shortcuts" | "storage" | "about";
 
 const TABS: { id: GlobalSettingsTab; label: string }[] = [
   { id: "appearance", label: "Appearance" },
   { id: "shortcuts", label: "Keyboard shortcuts" },
+  { id: "storage", label: "Storage" },
   { id: "about", label: "About and support" },
 ];
 
@@ -42,6 +44,8 @@ export function GlobalSettingsDialog({ open, onClose }: { open: boolean; onClose
         <AppearancePanel />
       ) : tab === "shortcuts" ? (
         <ShortcutsSettings embedded onRecordingChange={setRecording} />
+      ) : tab === "storage" ? (
+        <StoragePanel />
       ) : (
         <div className="col">
           <LicenceSection />

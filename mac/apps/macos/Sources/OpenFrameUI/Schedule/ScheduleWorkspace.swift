@@ -62,8 +62,8 @@ struct ScheduleContent: View {
         .followsHubTab(model.section, fixed: fixed, set: { model.section = $0 }, place: { $0.place })
         .task(id: dataKey) { await model.reload() }
         .task(id: doodKey) { if model.section == .dood { await model.reloadDood() } }
-        .sheet(item: $model.sheet) { ScheduleSheetHost(model: model, sheet: $0) }
-        .sheet(item: $model.pendingKeep) { SchedKeepAnywaySheet(model: model, pending: $0) }
+        .themedSheet(item: $model.sheet) { ScheduleSheetHost(model: model, sheet: $0) }
+        .themedSheet(item: $model.pendingKeep) { SchedKeepAnywaySheet(model: model, pending: $0) }
         .hubContainer("schedule-workspace", standalone: fixed == nil)
     }
 
@@ -109,7 +109,7 @@ struct ScheduleContent: View {
                     Text("Break down your script first, then move scenes into shooting days. Production source: \(src.label) \u{00B7} \(Int(src.sceneCount)) scenes.")
                 } actions: {
                     Button("Create Shooting Schedule") { model.sheet = .createSchedule }
-                        .buttonStyle(.borderedProminent)
+                        .buttonStyle(.ofProminent)
                         .accessibilityIdentifier("create-shooting-schedule")
                 }
             } else {
@@ -163,7 +163,7 @@ struct ScheduleContent: View {
                     Text("\(model.changesTitle). Your schedule has not been changed.")
                 }, actions: {
                     Button("Review changes") { model.sheet = .scriptChanges }
-                        .controlSize(.small).buttonStyle(.borderedProminent)
+                        .controlSize(.small).buttonStyle(.ofProminent)
                         .accessibilityIdentifier("review-script-changes")
                 })
                 .accessibilityIdentifier("script-changes-banner")
@@ -187,7 +187,7 @@ struct ScheduleContent: View {
                 items: SchedMode.allCases.map { .init(value: $0, title: $0.title, symbol: $0.symbol, id: "schedule-mode-\($0.rawValue)") },
                 selection: $model.mode, label: "Schedule view", identifier: "schedule-modes")
             Button { model.sheet = .day(.create(offDay: false, afterDayId: nil)) } label: { Label("Create Shooting Day", systemImage: "plus") }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(.ofProminent)
                 .disabled(model.isFinalized)
                 .keyboardShortcut("n", modifiers: [.command, .shift])
                 .accessibilityIdentifier("create-shooting-day")

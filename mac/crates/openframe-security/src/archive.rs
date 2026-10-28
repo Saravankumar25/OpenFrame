@@ -184,6 +184,12 @@ fn check_name_collisions<'a>(names: impl IntoIterator<Item = &'a str>) -> AppRes
 
 /// Pre-flight every entry against the limits without extracting anything.
 pub fn inspect(path: &Path, limits: ArchiveLimits) -> AppResult<Vec<String>> {
+    inspect_sized(path, limits).map(|(names, _)| names)
+}
+
+/// [`inspect`], plus the total size the entries declare once unpacked (within `limits`), so a
+/// caller can check the free space before it extracts anything.
+pub fn inspect_sized(path: &Path, limits: ArchiveLimits) -> AppResult<(Vec<String>, u64)> {
     let mut zip = open(path)?;
     if zip.len() > limits.max_entries {
         return Err(rejected(format!("{} entries exceeds limit", zip.len())));
@@ -221,7 +227,7 @@ pub fn inspect(path: &Path, limits: ArchiveLimits) -> AppResult<Vec<String>> {
         names.push(name);
     }
     check_name_collisions(names.iter().map(String::as_str))?;
-    Ok(names)
+    Ok((names, total))
 }
 
 /// Read one entry fully, enforcing `max_bytes` on the *actual* stream (headers may lie).
@@ -543,6 +549,16 @@ mod tests {
         let err = extract_all(&zp, &out, ArchiveLimits::PACKAGE).unwrap_err();
         assert_eq!(err.code_str(), "import.unsafe_archive");
         assert!(!out.exists(), "the partial extraction is removed");
+    }
+
+    #[test]
+    fn inspect_sized_reports_the_unpacked_total() {
+        let dir = tempfile::tempdir().unwrap();
+        let zp = dir.path().join("two.zip");
+        raw_zip(&zp, &[("a.bin", &[1u8; 3_000]), ("b/c.bin", &[2u8; 500])]);
+        let (names, total) = inspect_sized(&zp, ArchiveLimits::PACKAGE).unwrap();
+        assert_eq!(names.len(), 2);
+        assert_eq!(total, 3_500);
     }
 
     #[test]

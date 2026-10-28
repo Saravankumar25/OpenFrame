@@ -38,7 +38,7 @@ struct ShotsView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .task(id: "\(dataKey)|\(hub.scenesLoaded)|\(model.sceneKey ?? "")|\(model.showRemoved)") { await model.reload() }
-        .sheet(item: $model.sheet) { ShotSheetHost(model: model, sheet: $0) }
+        .themedSheet(item: $model.sheet) { ShotSheetHost(model: model, sheet: $0) }
         .inspector(isPresented: Binding(get: { model.selected != nil }, set: { if !$0 { model.selectedId = nil } })) {
             if let s = model.selected {
                 ShotInspector(model: model, shot: s).id(s.id)
@@ -61,7 +61,7 @@ struct ShotsView: View {
                 composerFocused = true
                 if !composer.trimmingCharacters(in: .whitespaces).isEmpty { addShot() }
             } label: { Label("Add Shot", systemImage: "plus") }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(.ofProminent)
                 .disabled(!model.canAdd)
                 .help(model.canAdd ? "" : "Choose a scene first")
                 .keyboardShortcut("n", modifiers: [.command, .option])

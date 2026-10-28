@@ -126,6 +126,9 @@ pub struct ProjectIndex {
     cond: Condvar,
     reader: Mutex<Option<Connection>>,
     stop: AtomicBool,
+    /// The computer is asleep: no pass starts and an embedding pass stops at its next batch
+    /// (`AppCore::on_power_event`). Unlike `stop`, waking resumes the work.
+    paused: AtomicBool,
     /// The worker is inside an embedding runtime call (which may never return).
     in_embed: AtomicBool,
     worker: Mutex<Option<JoinHandle<()>>>,
@@ -156,6 +159,7 @@ impl ProjectIndex {
             cond: Condvar::new(),
             reader: Mutex::new(None),
             stop: AtomicBool::new(false),
+            paused: AtomicBool::new(false),
             in_embed: AtomicBool::new(false),
             worker: Mutex::new(None),
         }
@@ -235,6 +239,25 @@ impl ProjectIndex {
     /// True once `shutdown` ran: the project closed or switched and this index is retired.
     pub fn is_stopped(&self) -> bool {
         self.stop.load(Ordering::SeqCst)
+    }
+
+    /// Hold background work while the computer sleeps, or resume it after a wake. Returns at
+    /// once: a pass in progress stops at its next batch and keeps what it did; the rest waits.
+    /// Edits made meanwhile are queued as usual. Calling it twice with the same value is harmless.
+    pub fn set_paused(&self, paused: bool) {
+        self.paused.store(paused, Ordering::SeqCst);
+        // As in `shutdown`: the lock orders the flag before a waiter's next check.
+        drop(self.shared.lock());
+        self.cond.notify_all();
+    }
+
+    pub fn is_paused(&self) -> bool {
+        self.paused.load(Ordering::SeqCst)
+    }
+
+    /// The worker is inside an embedding runtime call now.
+    pub fn is_embedding(&self) -> bool {
+        self.in_embed.load(Ordering::SeqCst)
     }
 
     /// Stop the worker and wait (bounded) until it released every file handle.
@@ -373,6 +396,14 @@ impl ProjectIndex {
                 return None;
             }
             let now = Instant::now();
+            if self.is_paused() {
+                // Asleep: nothing starts. `set_paused(false)` wakes this wait.
+                self.cond.wait_until(&mut s, now + Duration::from_secs(1));
+                if !alive() {
+                    return None;
+                }
+                continue;
+            }
             if s.clear || s.full {
                 let job = Job {
                     clear: std::mem::take(&mut s.clear),
@@ -423,6 +454,20 @@ impl ProjectIndex {
             if !alive() {
                 return None;
             }
+        }
+    }
+
+    /// Put back the part of a pass that sleep interrupted: a full pass is checked again from the
+    /// start (hash-guarded, so finished items cost little), an incremental one keeps its keys.
+    fn requeue(&self, full: bool, rest: &[DocKey]) {
+        let mut s = self.shared.lock();
+        if full {
+            s.full = true;
+        } else {
+            s.pending.keys.extend(rest.iter().cloned());
+            let now = Instant::now();
+            s.first_change.get_or_insert(now);
+            s.last_change = Some(now);
         }
     }
 
@@ -624,8 +669,16 @@ fn process(
         let conn = open_project_reader(&ix.project_db)?;
         let total = keys.len() as u64;
         let mut done = 0u64;
-        for batch in keys.chunks(settings.build_batch.max(1)) {
+        for (n, batch) in keys.chunks(settings.build_batch.max(1)).enumerate() {
             if ix.stop.load(Ordering::SeqCst) {
+                return Ok(Outcome {
+                    key_errors,
+                    embed_error: None,
+                });
+            }
+            if ix.is_paused() {
+                // Asleep: hand the rest back so the pass goes on after the wake.
+                ix.requeue(job.full, &keys[n * settings.build_batch.max(1)..]);
                 return Ok(Outcome {
                     key_errors,
                     embed_error: None,
@@ -753,7 +806,7 @@ fn embed_pending(
     let total = docs::pending_count(db.conn(), Some(model)).map_err(index_error)?;
     let mut done = 0u64;
     loop {
-        if ix.stop.load(Ordering::SeqCst) || ix.pending_due(settings) {
+        if ix.stop.load(Ordering::SeqCst) || ix.is_paused() || ix.pending_due(settings) {
             return Ok(None);
         }
         let batch = docs::pending_chunks(db.conn(), model, settings.embed_batch.max(1))

@@ -14,8 +14,8 @@ Result: **every copy matches the original**.
 
 ## Original
 
-- Project id `01a153a2-d1f1-773c-a01f-fcfc80bd1cb5`, title Low Tide Radio
-- 86 tables, 16135 rows; 61 project files hashed
+- Project id `01a17e74-04cb-72f3-9b69-126b20f68aa4`, title Low Tide Radio
+- 88 tables, 16084 rows; 61 project files hashed
 - Draft Blue Revision: 44 scenes, 1389 elements, text `0a8f182228f39f4e`
 - Draft First Draft: 44 scenes, 1392 elements, text `f918ee8bab10bb23`
 - Draft Second Draft: 44 scenes, 1392 elements, text `db34f993b2486c83`
@@ -37,7 +37,7 @@ Result: **every copy matches the original**.
 - shots: 36
 - sides: 3
 - storyboards: 4
-- tasks: 8
+- tasks: 7
 - vault: 17
 - breakdown elements with catalog item: 710
 - card character links: 123
@@ -51,59 +51,59 @@ Result: **every copy matches the original**.
 
 | File | Bytes | SHA-256 |
 |---|---|---|
-| outputs/packages/Low Tide Radio.ofproject | 2376505 | `537f1dbf807a588f` |
-| outputs/packages/Low Tide Radio (final).ofbackup | 4168278 | `e4e13e2872951d01` |
-| outputs/packages/Low Tide Radio.ofbackup | 3858740 | `cf22c3624e12d2e0` |
+| outputs/packages/Low Tide Radio.ofproject | 2433100 | `c1d06ac0f461390b` |
+| outputs/packages/Low Tide Radio (final).ofbackup | 4261369 | `1bde328208dc0417` |
+| outputs/packages/Low Tide Radio.ofbackup | 4046261 | `079bb51f39f036b6` |
 
 ## Copies
 
 ### Full project package (.ofproject), imported on a fresh data root
 
 - How: packages.import_project mode open
-- Compared 86 tables (16135 rows) and 61 files.
+- Compared 88 tables (16084 rows) and 61 files.
 - Differences: none.
 - Expected and explained:
   - table project_member: 1 rows in the original, 2 in the copy: the person who opens the copy on another installation is added as its Owner (project.rs, "Ensure the local user is a member")
-  - table search_fts_data: 208 rows in the original, 85 in the copy (installation history or derived search index, not project content)
-  - table search_fts_idx: 206 rows in the original, 83 in the copy (installation history or derived search index, not project content)
-  - table sys_activity: 2248 rows in the original, 2247 in the copy (installation history or derived search index, not project content)
-  - table sys_package_log: 16 rows in the original, 15 in the copy (installation history or derived search index, not project content)
+  - table search_fts_data: 207 rows in the original, 85 in the copy (installation history or derived search index, not project content)
+  - table search_fts_idx: 205 rows in the original, 83 in the copy (installation history or derived search index, not project content)
+  - table sys_activity: 2239 rows in the original, 2238 in the copy (installation history or derived search index, not project content)
+  - table sys_package_log: 12 rows in the original, 11 in the copy (installation history or derived search index, not project content)
   - table sys_undo: 305 rows in the original, 0 in the copy (installation history or derived search index, not project content)
   - table sys_view_state: 6 rows in the original, 5 in the copy (installation history or derived search index, not project content)
-  - file assets/6b/01a153a2-fd33-7432-8fb2-910a70b092b6.pdf exists only in the copy: a linked file outside the original project folder, copied into the portable package
-  - file assets/c6/01a153a2-d28e-7299-9415-5c87a986ac6c.png exists only in the copy: a linked file outside the original project folder, copied into the portable package
+  - file assets/7f/01a17e74-07f1-7049-913d-10f91aa68ff7.png exists only in the copy: a linked file outside the original project folder, copied into the portable package
+  - file assets/97/01a17e75-b6be-750e-b54a-71d4f1feeb79.pdf exists only in the copy: a linked file outside the original project folder, copied into the portable package
 
 ### Final backup (.ofbackup), restored on a fresh data root
 
 - How: packages.import_project mode open
-- Compared 86 tables (16135 rows) and 61 files.
+- Compared 88 tables (16084 rows) and 61 files.
 - Differences: none.
 - Expected and explained:
   - table project_member: 1 rows in the original, 2 in the copy: the person who opens the copy on another installation is added as its Owner (project.rs, "Ensure the local user is a member")
-  - table search_fts_data: 208 rows in the original, 209 in the copy (installation history or derived search index, not project content)
-  - table search_fts_idx: 206 rows in the original, 207 in the copy (installation history or derived search index, not project content)
+  - table search_fts_data: 207 rows in the original, 208 in the copy (installation history or derived search index, not project content)
+  - table search_fts_idx: 205 rows in the original, 206 in the copy (installation history or derived search index, not project content)
   - table sys_view_state: 6 rows in the original, 5 in the copy (installation history or derived search index, not project content)
-  - file assets/6b/01a153a2-fd33-7432-8fb2-910a70b092b6.pdf exists only in the copy: a linked file outside the original project folder, copied into the portable package
-  - file assets/c6/01a153a2-d28e-7299-9415-5c87a986ac6c.png exists only in the copy: a linked file outside the original project folder, copied into the portable package
+  - file assets/7f/01a17e74-07f1-7049-913d-10f91aa68ff7.png exists only in the copy: a linked file outside the original project folder, copied into the portable package
+  - file assets/97/01a17e75-b6be-750e-b54a-71d4f1feeb79.pdf exists only in the copy: a linked file outside the original project folder, copied into the portable package
 
 ### Restored backup after a simulated crash (latest autosave kept)
 
 - How: project.recovery_state, project.resolve_recovery latest
-- Compared 86 tables (16135 rows) and 61 files.
+- Compared 88 tables (16084 rows) and 61 files.
 - Differences: none.
 - Expected and explained:
   - table project_member: 1 rows in the original, 2 in the copy: the person who opens the copy on another installation is added as its Owner (project.rs, "Ensure the local user is a member")
-  - table search_doc: 673 rows in the original, 674 in the copy (installation history or derived search index, not project content)
-  - table search_fts: 673 rows in the original, 674 in the copy (installation history or derived search index, not project content)
-  - table search_fts_data: 208 rows in the original, 210 in the copy (installation history or derived search index, not project content)
-  - table search_fts_docsize: 673 rows in the original, 674 in the copy (installation history or derived search index, not project content)
-  - table search_fts_idx: 206 rows in the original, 208 in the copy (installation history or derived search index, not project content)
-  - table sys_activity: 2248 rows in the original, 2249 in the copy (installation history or derived search index, not project content)
+  - table search_doc: 672 rows in the original, 673 in the copy (installation history or derived search index, not project content)
+  - table search_fts: 672 rows in the original, 673 in the copy (installation history or derived search index, not project content)
+  - table search_fts_data: 207 rows in the original, 209 in the copy (installation history or derived search index, not project content)
+  - table search_fts_docsize: 672 rows in the original, 673 in the copy (installation history or derived search index, not project content)
+  - table search_fts_idx: 205 rows in the original, 207 in the copy (installation history or derived search index, not project content)
+  - table sys_activity: 2239 rows in the original, 2240 in the copy (installation history or derived search index, not project content)
   - table sys_undo: 305 rows in the original, 306 in the copy (installation history or derived search index, not project content)
   - table sys_view_state: 6 rows in the original, 5 in the copy (installation history or derived search index, not project content)
-  - file assets/6b/01a153a2-fd33-7432-8fb2-910a70b092b6.pdf exists only in the copy: a linked file outside the original project folder, copied into the portable package
-  - file assets/c6/01a153a2-d28e-7299-9415-5c87a986ac6c.png exists only in the copy: a linked file outside the original project folder, copied into the portable package
-  - recovery offer: {"changesSinceCheckpoint":null,"checkpointAt":null,"hasCheckpoint":false,"lastChangeAt":1792404651305,"offer":{"checkpointAt":null,"hasCheckpoint":false,"lastAutosaveAt":1792404651305,"previousSessionStartedAt":1792404651063}}
+  - file assets/7f/01a17e74-07f1-7049-913d-10f91aa68ff7.png exists only in the copy: a linked file outside the original project folder, copied into the portable package
+  - file assets/97/01a17e75-b6be-750e-b54a-71d4f1feeb79.pdf exists only in the copy: a linked file outside the original project folder, copied into the portable package
+  - recovery offer: {"changesSinceCheckpoint":null,"checkpointAt":null,"hasCheckpoint":false,"lastChangeAt":1793123103628,"offer":{"checkpointAt":null,"hasCheckpoint":false,"lastAutosaveAt":1793123103628,"previousSessionStartedAt":1793123097792}}
   - one extra note (written before the crash, on purpose)
 
 ### Pre-shoot backup opened as a copy beside the imported project
@@ -117,7 +117,7 @@ Result: **every copy matches the original**.
 ### Original reopened in a fresh core after a clean quit
 
 - How: AppCore::new on the same data root, project.open
-- Compared 86 tables (16135 rows) and 61 files.
+- Compared 88 tables (16084 rows) and 61 files.
 - Differences: none.
 
 ## Facts recorded during the build
@@ -125,169 +125,7 @@ Result: **every copy matches the original**.
 ```json
 {
   "activityEntries": 200,
-  "aiApplyKeep": {
-    "state": "Applied",
-    "tasksAfter": 8,
-    "tasksBefore": 7
-  },
-  "aiApplyUndo": {
-    "afterApply": 8,
-    "afterUndo": 7,
-    "state": "Applied",
-    "tasksBefore": 7
-  },
-  "aiHistoryTurns": 1,
-  "aiLog": [
-    {
-      "answer": "Blue Revision contains 45 scenes.",
-      "changeSet": null,
-      "confidence": "Exact",
-      "kind": "Answer",
-      "label": "count",
-      "operations": null,
-      "question": "How many scenes are in the script?",
-      "scope": "SpecificDraft",
-      "seconds": 3.0,
-      "sources": 2
-    },
-    {
-      "answer": "Blue Revision contains 45 scenes.",
-      "changeSet": null,
-      "confidence": "Exact",
-      "kind": "Answer",
-      "label": "count-current",
-      "operations": null,
-      "question": "How many scenes does this screenplay have?",
-      "scope": "CurrentScreenplay",
-      "seconds": 3.0999999046325684,
-      "sources": 2
-    },
-    {
-      "answer": "4 scenes mention “breakwater”: Scenes 23, 24, 25 and 44.",
-      "changeSet": null,
-      "confidence": "Exact",
-      "kind": "Answer",
-      "label": "grounded",
-      "operations": null,
-      "question": "Which scenes take place at the breakwater?",
-      "scope": "WholeProject",
-      "seconds": 4.199999809265137,
-      "sources": 2
-    },
-    {
-      "answer": "The shooting day with the most scenes is Shoot Day 1, which has 8 passages of information.",
-      "changeSet": null,
-      "confidence": "Inferred",
-      "kind": "Answer",
-      "label": "production",
-      "operations": null,
-      "question": "Which shooting day has the most scenes?",
-      "scope": "Production",
-      "seconds": 9.199999809265137,
-      "sources": 8
-    },
-    {
-      "answer": "The scene details focus on Appachan's condition, his dementia, and his role as a storyteller. The presence of the torch, his condition, and his interactions with Suresh suggest a significant emotional weight to his character. The mention of ‘Hospital pallor’ indicates a possible connection to his health and perhaps a narrative element related to his illness.",
-      "changeSet": null,
-      "confidence": "Inferred",
-      "kind": "Answer",
-      "label": "scene",
-      "operations": null,
-      "question": "Who is in this scene?",
-      "scope": "CurrentScene",
-      "seconds": 10.100000381469727,
-      "sources": 14
-    },
-    {
-      "answer": "According to the product guide, the primary conflict in Act One is centered around the production of the screenplay, as it’s the foundation for production planning. The central plot point is the need to ensure the screenplay is accurately and completely realized for production, which involves reviewing and confirming all elements. Production Source is used to show changes and updates to the screenplay, allowing for review and adjustments.  Deleted items are stored in Recently Deleted and can be restored, while permanent deletions are a separate process.",
-      "changeSet": null,
-      "confidence": "Inferred",
-      "kind": "Answer",
-      "label": "story",
-      "operations": null,
-      "question": "Summarise Act One in two sentences.",
-      "scope": "StoryBoard",
-      "seconds": 9.5,
-      "sources": 4
-    },
-    {
-      "answer": "According to the product guide, you can export screenplays, call sheets, and other documents from their workspaces, and create project packages or backups to move a project to another computer. To export the call sheet as a PDF, select the call sheet you want to export and then choose “Export” from the menu. This will generate a PDF file containing the call sheet.",
-      "changeSet": null,
-      "confidence": "Inferred",
-      "kind": "Answer",
-      "label": "product",
-      "operations": null,
-      "question": "How do I export the call sheet as a PDF?",
-      "scope": "WholeProject",
-      "seconds": 3.0,
-      "sources": 4
-    },
-    {
-      "answer": "I prepared a task. Nothing has been added yet.",
-      "changeSet": "01a153a4-5c60-72a6-b885-c2b006408c75",
-      "confidence": null,
-      "kind": "Proposal",
-      "label": "propose-apply-undo",
-      "operations": 1,
-      "question": "Create a task to confirm the rain tower water tanker for shooting day 9.",
-      "scope": "WholeProject",
-      "seconds": 0.10000000149011612,
-      "sources": 1
-    },
-    {
-      "answer": "I prepared a task. Nothing has been added yet.",
-      "changeSet": "01a153a4-5c9f-716b-869f-ebe24478834c",
-      "confidence": null,
-      "kind": "Proposal",
-      "label": "propose-reject",
-      "operations": 1,
-      "question": "Create a task to book a second Nagra recorder as a backup.",
-      "scope": "WholeProject",
-      "seconds": 0.10000000149011612,
-      "sources": 1
-    },
-    {
-      "answer": "I prepared a task. Nothing has been added yet.",
-      "changeSet": "01a153a4-5cd5-74cd-9d57-ca08bb3a0115",
-      "confidence": null,
-      "kind": "Proposal",
-      "label": "propose-apply-keep",
-      "operations": 1,
-      "question": "Create a task to print the breakwater safety plan for every department head.",
-      "scope": "WholeProject",
-      "seconds": 0.10000000149011612,
-      "sources": 1
-    }
-  ],
-  "aiModelsImported": 3,
-  "aiPauseWithoutDownload": null,
-  "aiReject": {
-    "state": "Rejected",
-    "tasksAfter": 7,
-    "tasksBefore": 7
-  },
-  "aiStatus": {
-    "available": true,
-    "bundleState": "Verified",
-    "localOnly": true,
-    "mode": "AI Ready",
-    "problem": null,
-    "runtimeMessage": null,
-    "runtimeState": "Installed"
-  },
-  "aiStatusAfterRemove": {
-    "available": false,
-    "bundleState": "NotInstalled",
-    "localOnly": true,
-    "mode": "Off",
-    "problem": {
-      "code": "ai.not_installed",
-      "message": "OpenFrame AI is not downloaded yet. Download it in Settings, Offline AI. Everything else in OpenFrame works without it.",
-      "retryable": false
-    },
-    "runtimeMessage": null,
-    "runtimeState": "Unavailable"
-  },
+  "aiSkipped": "run with the AI build inputs present to include the Offline AI",
   "blueOmitted": 2,
   "boardCounts": {
     "beats": 8,
@@ -361,10 +199,10 @@ Result: **every copy matches the original**.
     "pdf": {
       "characters": 17,
       "confidence": "medium",
-      "elements": 1489,
+      "elements": 1499,
       "pages": 61,
       "scenes": 44,
-      "warnings": 1
+      "warnings": 3
     },
     "txt": {
       "characters": 18,
@@ -447,13 +285,13 @@ Result: **every copy matches the original**.
       }
     ],
     "isEmpty": false,
-    "openedAt": 1792404544533,
+    "openedAt": 1793122918573,
     "project": {
       "archived": false,
-      "createdAt": 1792404541968,
+      "createdAt": 1793122895381,
       "creator": "Meenakshi Varma",
       "genre": "Drama",
-      "id": "01a153a2-d1f1-773c-a01f-fcfc80bd1cb5",
+      "id": "01a17e74-04cb-72f3-9b69-126b20f68aa4",
       "language": "English, Malayalam",
       "logline": "When the coast radio station where her mother vanished is scheduled for demolition, a burned-out sound engineer returns to her Kerala fishing village with seven days to restore a water-damaged reel that may prove her mother's last broadcast saved the fleet instead of dooming it.",
       "path": "/Users/m.udarshreddy/Desktop/OpenFrame/tests/gold-project/.work/studio/projects/Low Tide.openframe",
@@ -461,14 +299,14 @@ Result: **every copy matches the original**.
       "rev": 6,
       "status": "Shooting",
       "title": "Low Tide Radio",
-      "updatedAt": 1792404648397
+      "updatedAt": 1793123073400
     },
     "recentActivity": [
       {
         "action": "project.set_status",
         "actorName": "Meenakshi Varma",
-        "at": 1792404648397,
-        "id": "01a153a4-71cd-7338-84d5-b6579594e98d",
+        "at": 1793123073401,
+        "id": "01a17e76-bd79-7013-b839-bad5e9ac2974",
         "nav": null,
         "origin": "local",
         "summary": "Changed project status to Shooting",
@@ -478,8 +316,8 @@ Result: **every copy matches the original**.
       {
         "action": "packages.export",
         "actorName": "Meenakshi Varma",
-        "at": 1792404648374,
-        "id": "01a153a4-71b6-712a-b450-8e6c59b2205b",
+        "at": 1793123073386,
+        "id": "01a17e76-bd6a-70bd-bc67-4366683be39b",
         "nav": null,
         "origin": "local",
         "summary": "Created backup “Low Tide Radio (final).ofbackup” (60 files stored in the project included · 2 linked files copied)",
@@ -489,8 +327,8 @@ Result: **every copy matches the original**.
       {
         "action": "packages.export",
         "actorName": "Meenakshi Varma",
-        "at": 1792404647970,
-        "id": "01a153a4-7022-717f-bbb8-c93700ab157e",
+        "at": 1793123071261,
+        "id": "01a17e76-b51d-704a-af82-756cf6fd8bfb",
         "nav": null,
         "origin": "local",
         "summary": "Exported project package “Low Tide Radio.ofproject” (60 files stored in the project included · 2 linked files copied)",
@@ -500,19 +338,19 @@ Result: **every copy matches the original**.
       {
         "action": "packages.record_delete",
         "actorName": "Meenakshi Varma",
-        "at": 1792404647472,
-        "id": "01a153a4-6e30-72ca-a5ff-f28779f4d696",
+        "at": 1793123068656,
+        "id": "01a17e76-aaf0-7566-b44c-8b6ac3df10ca",
         "nav": null,
         "origin": "local",
         "summary": "Deleted review record “Response package: Shooting Draft”",
-        "targetId": "01a153a4-6e11-7638-8b00-41c09785f5a2",
+        "targetId": "01a17e76-aa27-731f-b144-4cbe0cc385b2",
         "targetType": "exchange_review_record"
       },
       {
         "action": "packages.import",
         "actorName": "Meenakshi Varma",
-        "at": 1792404647452,
-        "id": "01a153a4-6e1c-7654-82e2-37781e968634",
+        "at": 1793123068552,
+        "id": "01a17e76-aa88-7403-9616-ae7fb1f172e9",
         "nav": null,
         "origin": "local",
         "summary": "Nothing was applied to your project content. 3 scene text changes remain in Review. The package was kept as a separate review record; your working content was not changed.",
@@ -522,79 +360,79 @@ Result: **every copy matches the original**.
       {
         "action": "packages.create_record",
         "actorName": "Meenakshi Varma",
-        "at": 1792404647442,
-        "id": "01a153a4-6e12-7165-82cb-26de82119457",
+        "at": 1793123068459,
+        "id": "01a17e76-aa2b-77b0-834a-556acd8ac303",
         "nav": null,
         "origin": "exchange",
         "summary": "Kept “Low Tide Radio - producer response.ofresponse” as a separate review record",
-        "targetId": "01a153a4-6e11-7638-8b00-41c09785f5a2",
+        "targetId": "01a17e76-aa27-731f-b144-4cbe0cc385b2",
         "targetType": "exchange_review_record"
-      },
-      {
-        "action": "comment.create",
-        "actorName": "Arun Joseph",
-        "at": 1792404647381,
-        "id": "01a153a4-6dd5-75a8-bcff-750c427ce315",
-        "nav": {
-          "draftId": "01a153a2-fd46-74ba-957c-efb20d0faaaf",
-          "sceneId": "01a153a2-fd4d-7225-b02e-4576df6a3500",
-          "screenplayId": "01a153a2-d396-73a6-97f7-3e865243df2d",
-          "workspace": "screenplay"
-        },
-        "origin": "exchange",
-        "summary": "Commented: ““Kannan”: Make sure we always hear the dog when …”",
-        "targetId": "01a153a2-fd4d-7225-b02e-4576df6a3500",
-        "targetType": "screenplay_scene"
       },
       {
         "action": "packages.queue_attach",
         "actorName": "Meenakshi Varma",
-        "at": 1792404647381,
-        "id": "01a153a4-6dd5-75a8-bcff-750d255a2096",
+        "at": 1793123068129,
+        "id": "01a17e76-a8e1-748a-84bc-4320abe23852",
         "nav": {
-          "reviewQueueItemId": "01a153a4-6dc8-75f8-a874-403bc1b172e9",
+          "reviewQueueItemId": "01a17e76-a886-74bb-995b-682d3b99cd9c",
           "workspace": "home"
         },
         "origin": "local",
         "summary": "Attached a review note to Scene 24 · EXT. HARBOUR BREAKWATER - NIGHT",
-        "targetId": "01a153a4-6dc8-75f8-a874-403bc1b172e9",
+        "targetId": "01a17e76-a886-74bb-995b-682d3b99cd9c",
         "targetType": "review_queue_item"
       },
       {
         "action": "comment.create",
         "actorName": "Arun Joseph",
-        "at": 1792404647377,
-        "id": "01a153a4-6dd1-73f0-ba03-f4a6cf6efa04",
+        "at": 1793123068125,
+        "id": "01a17e76-a8dd-7730-b694-3e4e81c30695",
         "nav": {
-          "draftId": "01a153a2-fd46-74ba-957c-efb20d0faaaf",
-          "sceneId": "01a153a2-fd4f-7187-9385-4a06a00acd98",
-          "screenplayId": "01a153a2-d396-73a6-97f7-3e865243df2d",
+          "draftId": "01a17e75-b6fc-73a7-b63b-a5c5602a0b97",
+          "sceneId": "01a17e75-b84c-747f-8453-2a33d8c3fb0d",
+          "screenplayId": "01a17e74-0dba-716a-a776-ec998f0654b3",
           "workspace": "screenplay"
         },
         "origin": "exchange",
-        "summary": "Commented: ““MAIN POWER CUT BY ORDER”: Read this line slower…”",
-        "targetId": "01a153a2-fd4f-7187-9385-4a06a00acd98",
+        "summary": "Commented: ““Kannan”: Make sure we always hear the dog when …”",
+        "targetId": "01a17e75-b84c-747f-8453-2a33d8c3fb0d",
         "targetType": "screenplay_scene"
       },
       {
         "action": "packages.queue_attach",
         "actorName": "Meenakshi Varma",
-        "at": 1792404647377,
-        "id": "01a153a4-6dd1-73f0-ba03-f4a7d08a6018",
+        "at": 1793123068108,
+        "id": "01a17e76-a8cc-7369-a517-5c44e0d9f6fd",
         "nav": {
-          "reviewQueueItemId": "01a153a4-6dc8-75f8-a874-403a3c63688b",
+          "reviewQueueItemId": "01a17e76-a885-76f3-bfe0-799c22be3c2d",
           "workspace": "home"
         },
         "origin": "local",
         "summary": "Attached a review note to Scene 28 · INT. COAST RADIO STATION - OPERATIONS ROOM - DAY",
-        "targetId": "01a153a4-6dc8-75f8-a874-403a3c63688b",
+        "targetId": "01a17e76-a885-76f3-bfe0-799c22be3c2d",
         "targetType": "review_queue_item"
+      },
+      {
+        "action": "comment.create",
+        "actorName": "Arun Joseph",
+        "at": 1793123068104,
+        "id": "01a17e76-a8c9-7731-aea9-c4a29a88f675",
+        "nav": {
+          "draftId": "01a17e75-b6fc-73a7-b63b-a5c5602a0b97",
+          "sceneId": "01a17e75-b852-73a4-b3b5-dc36dd096e34",
+          "screenplayId": "01a17e74-0dba-716a-a776-ec998f0654b3",
+          "workspace": "screenplay"
+        },
+        "origin": "exchange",
+        "summary": "Commented: ““MAIN POWER CUT BY ORDER”: Read this line slower…”",
+        "targetId": "01a17e75-b852-73a4-b3b5-dc36dd096e34",
+        "targetType": "screenplay_scene"
       },
       {
         "action": "packages.import",
         "actorName": "Meenakshi Varma",
-        "at": 1792404647371,
-        "id": "01a153a4-6dcb-7419-a1a7-a81323d5df44",
+        "at": 1793123068074,
+        "id": "01a17e76-a8aa-75d3-97bf-b225cbef7c56",
         "nav": null,
         "origin": "local",
         "summary": "Nothing was applied to your project content. 44 scene text changes remain in Review. 2 notes are waiting in the Review Queue; nothing was discarded.",
@@ -604,8 +442,8 @@ Result: **every copy matches the original**.
       {
         "action": "packages.queue",
         "actorName": "Meenakshi Varma",
-        "at": 1792404647369,
-        "id": "01a153a4-6dc9-72e4-883f-596c674d54f9",
+        "at": 1793123068047,
+        "id": "01a17e76-a88f-761d-8ed0-76d0b8e623a6",
         "nav": null,
         "origin": "exchange",
         "summary": "Kept 2 imported note(s) in the Review Queue",
@@ -776,7 +614,7 @@ Result: **every copy matches the original**.
     }
   },
   "timeline": {
-    "draftId": "01a153a2-d396-73a6-97f7-3e8784251b79",
+    "draftId": "01a17e74-0dba-716a-a776-ec9ab23b2bd0",
     "draftName": "First Draft",
     "groups": [
       {
@@ -784,7 +622,7 @@ Result: **every copy matches the original**.
           {
             "heading": "INT. SOUNDWAVE STUDIO - BENGALURU - DAY",
             "number": 3,
-            "sceneId": "01a153a2-d397-719f-be22-c9c81d1bf7e4",
+            "sceneId": "01a17e74-0dbb-762a-9ded-61a5c01c37af",
             "storyDay": "Day 1",
             "timeNote": null
           }
@@ -796,7 +634,7 @@ Result: **every copy matches the original**.
           {
             "heading": "INT. KSRTC BUS - MOVING - NIGHT",
             "number": 4,
-            "sceneId": "01a153a2-d397-719f-be22-c9ccf412dff3",
+            "sceneId": "01a17e74-0dbb-762a-9ded-61a9a4a79401",
             "storyDay": "Night 1",
             "timeNote": null
           }
@@ -808,21 +646,21 @@ Result: **every copy matches the original**.
           {
             "heading": "EXT. COAST RADIO STATION - DAWN",
             "number": 5,
-            "sceneId": "01a153a2-d397-719f-be22-c9d00aec794e",
+            "sceneId": "01a17e74-0dbc-744e-befc-304ba96bd737",
             "storyDay": "Day 2",
             "timeNote": "06:10"
           },
           {
             "heading": "INT. THOMAS HOUSE - KITCHEN - DAY",
             "number": 6,
-            "sceneId": "01a153a2-d397-719f-be22-c9d44aa1fed7",
+            "sceneId": "01a17e74-0dbc-744e-befc-304f137d4ce7",
             "storyDay": "Day 2",
             "timeNote": null
           },
           {
             "heading": "EXT. KADALKKARA HARBOUR - DAY",
             "number": 7,
-            "sceneId": "01a153a2-d397-719f-be22-c9d8ef3c02a6",
+            "sceneId": "01a17e74-0dbc-744e-befc-305308801c0c",
             "storyDay": "Day 2",
             "timeNote": null
           }
@@ -834,35 +672,35 @@ Result: **every copy matches the original**.
           {
             "heading": "INT. PORT TRUST OFFICE - DAY",
             "number": 8,
-            "sceneId": "01a153a2-d397-719f-be22-c9dc8b74d48a",
+            "sceneId": "01a17e74-0dbc-744e-befc-3057b619efbf",
             "storyDay": "Day 3",
             "timeNote": null
           },
           {
             "heading": "INT. FATHIMA'S TEA SHOP - NIGHT",
             "number": 9,
-            "sceneId": "01a153a2-d397-719f-be22-c9e0d3621d63",
+            "sceneId": "01a17e74-0dbc-744e-befc-305bfa210a72",
             "storyDay": "Day 3",
             "timeNote": null
           },
           {
             "heading": "INT. THOMAS HOUSE - APPACHAN'S ROOM - NIGHT",
             "number": 10,
-            "sceneId": "01a153a2-d397-719f-be22-c9e4aadcd962",
+            "sceneId": "01a17e74-0dbc-744e-befc-305f6a125ef0",
             "storyDay": "Day 3",
             "timeNote": null
           },
           {
             "heading": "INT. COAST RADIO STATION - OPERATIONS ROOM - NIGHT",
             "number": 11,
-            "sceneId": "01a153a2-d397-719f-be22-c9e81b04a638",
+            "sceneId": "01a17e74-0dbc-744e-befc-30636b780738",
             "storyDay": "Day 3",
             "timeNote": null
           },
           {
             "heading": "EXT. COAST RADIO STATION - NIGHT",
             "number": 12,
-            "sceneId": "01a153a2-d397-719f-be22-c9ecded17676",
+            "sceneId": "01a17e74-0dbc-744e-befc-3067da97dc0b",
             "storyDay": "Day 3",
             "timeNote": null
           }
@@ -874,28 +712,28 @@ Result: **every copy matches the original**.
           {
             "heading": "INT. FISHERIES SCHOOL - RADIO CLUB ROOM - DAY",
             "number": 13,
-            "sceneId": "01a153a2-d397-719f-be22-c9f0acbcda81",
+            "sceneId": "01a17e74-0dbc-744e-befc-306bb1009ec7",
             "storyDay": "Day 4",
             "timeNote": null
           },
           {
             "heading": "INT. FATHIMA'S TEA SHOP - KITCHEN - DAY",
             "number": 14,
-            "sceneId": "01a153a2-d397-719f-be22-c9f4918b6d29",
+            "sceneId": "01a17e74-0dbc-744e-befc-306fbbbee6a9",
             "storyDay": "Day 4",
             "timeNote": null
           },
           {
             "heading": "INT. THOMAS HOUSE - VERANDA - DAY",
             "number": 15,
-            "sceneId": "01a153a2-d397-719f-be22-c9f80c8c3eb2",
+            "sceneId": "01a17e74-0dbc-744e-befc-307309c6ce1b",
             "storyDay": "Day 4",
             "timeNote": null
           },
           {
             "heading": "INT. FISHERIES SCHOOL - RADIO CLUB ROOM - NIGHT",
             "number": 16,
-            "sceneId": "01a153a2-d397-719f-be22-c9fc7205d2f5",
+            "sceneId": "01a17e74-0dbd-71dc-acf5-33b6afeb3ef4",
             "storyDay": "Day 4",
             "timeNote": null
           }
@@ -907,28 +745,28 @@ Result: **every copy matches the original**.
           {
             "heading": "INT. JOE'S ROOM ABOVE THE TODDY SHOP - DAY",
             "number": 17,
-            "sceneId": "01a153a2-d397-719f-be22-ca002c3a5066",
+            "sceneId": "01a17e74-0dbd-71dc-acf5-33ba5e3e6eff",
             "storyDay": "Day 5",
             "timeNote": null
           },
           {
             "heading": "EXT. ST. ANTONY'S CHURCH - DAY",
             "number": 18,
-            "sceneId": "01a153a2-d397-719f-be22-ca04e6287265",
+            "sceneId": "01a17e74-0dbd-71dc-acf5-33bea9fd7fab",
             "storyDay": "Day 5",
             "timeNote": null
           },
           {
             "heading": "INT. POLICE OUTPOST - DAY",
             "number": 19,
-            "sceneId": "01a153a2-d397-719f-be22-ca082bf67057",
+            "sceneId": "01a17e74-0dbd-71dc-acf5-33c2a1017693",
             "storyDay": "Day 5",
             "timeNote": null
           },
           {
             "heading": "INT. THOMAS HOUSE - KITCHEN - NIGHT",
             "number": 20,
-            "sceneId": "01a153a2-d397-719f-be22-ca0c47ae7046",
+            "sceneId": "01a17e74-0dbd-71dc-acf5-33c63b456516",
             "storyDay": "Day 5",
             "timeNote": null
           }
@@ -940,28 +778,28 @@ Result: **every copy matches the original**.
           {
             "heading": "EXT. KADALKKARA BEACH - DAY",
             "number": 21,
-            "sceneId": "01a153a2-d397-719f-be22-ca10b095ff71",
+            "sceneId": "01a17e74-0dbd-71dc-acf5-33cac2a9e28d",
             "storyDay": "Day 6",
             "timeNote": null
           },
           {
             "heading": "INT. THOMAS HOUSE - APPACHAN'S ROOM - NIGHT",
             "number": 22,
-            "sceneId": "01a153a2-d397-719f-be22-ca14ab9a6dca",
+            "sceneId": "01a17e74-0dbd-71dc-acf5-33ce45c0abf0",
             "storyDay": "Day 6",
             "timeNote": null
           },
           {
             "heading": "EXT. KADALKKARA HARBOUR - NIGHT",
             "number": 23,
-            "sceneId": "01a153a2-d397-719f-be22-ca1875c5ee96",
+            "sceneId": "01a17e74-0dbd-71dc-acf5-33d2883f01b6",
             "storyDay": "Day 6",
             "timeNote": null
           },
           {
             "heading": "EXT. HARBOUR BREAKWATER - NIGHT",
             "number": 24,
-            "sceneId": "01a153a2-d397-719f-be22-ca1c92241375",
+            "sceneId": "01a17e74-0dbd-71dc-acf5-33d6e919218f",
             "storyDay": "Day 6",
             "timeNote": null
           }
@@ -973,7 +811,7 @@ Result: **every copy matches the original**.
           {
             "heading": "INT. TALUK HOSPITAL - WARD - NIGHT",
             "number": 25,
-            "sceneId": "01a153a2-d397-719f-be22-ca2041f580ba",
+            "sceneId": "01a17e74-0dbe-70be-b32c-44c7ba6eb635",
             "storyDay": "Night 6",
             "timeNote": null
           }
@@ -985,35 +823,35 @@ Result: **every copy matches the original**.
           {
             "heading": "INT. TALUK HOSPITAL - CORRIDOR - DAWN",
             "number": 26,
-            "sceneId": "01a153a2-d397-719f-be22-ca24a9c6c671",
+            "sceneId": "01a17e74-0dbe-70be-b32c-44cb01c139bb",
             "storyDay": "Day 7",
             "timeNote": null
           },
           {
             "heading": "INT. COAST RADIO STATION - TAPE ROOM - DAY",
             "number": 27,
-            "sceneId": "01a153a2-d398-70da-8b41-90995f1d7dbb",
+            "sceneId": "01a17e74-0dbe-70be-b32c-44cff09094b4",
             "storyDay": "Day 7",
             "timeNote": null
           },
           {
             "heading": "INT. COAST RADIO STATION - OPERATIONS ROOM - DAY",
             "number": 28,
-            "sceneId": "01a153a2-d398-70da-8b41-909d455ad614",
+            "sceneId": "01a17e74-0dbe-70be-b32c-44d3d8a5197f",
             "storyDay": "Day 7",
             "timeNote": null
           },
           {
             "heading": "EXT. TODDY SHOP - NIGHT",
             "number": 29,
-            "sceneId": "01a153a2-d398-70da-8b41-90a1042a25c0",
+            "sceneId": "01a17e74-0dbe-70be-b32c-44d7a9bcfa08",
             "storyDay": "Day 7",
             "timeNote": null
           },
           {
             "heading": "EXT. LIGHTHOUSE ROAD - NIGHT",
             "number": 30,
-            "sceneId": "01a153a2-d398-70da-8b41-90a5db68bf44",
+            "sceneId": "01a17e74-0dbe-70be-b32c-44db3e69d73e",
             "storyDay": "Day 7",
             "timeNote": null
           }
@@ -1025,7 +863,7 @@ Result: **every copy matches the original**.
           {
             "heading": "INT. POLICE OUTPOST - CELL - NIGHT",
             "number": 31,
-            "sceneId": "01a153a2-d398-70da-8b41-90a9c9e27de2",
+            "sceneId": "01a17e74-0dbe-70be-b32c-44dfd1000a28",
             "storyDay": "Night 7",
             "timeNote": null
           }
@@ -1037,49 +875,49 @@ Result: **every copy matches the original**.
           {
             "heading": "INT. FISHERIES SCHOOL - RADIO CLUB ROOM - NIGHT",
             "number": 33,
-            "sceneId": "01a153a2-d398-70da-8b41-90ad6c8bd97e",
+            "sceneId": "01a17e74-0dbe-70be-b32c-44e33fd917f9",
             "storyDay": "Day 8",
             "timeNote": null
           },
           {
             "heading": "INT. SURESH'S HOUSE - DAY",
             "number": 35,
-            "sceneId": "01a153a2-d398-70da-8b41-90b551b80797",
+            "sceneId": "01a17e74-0dbe-70be-b32c-44eb73490b40",
             "storyDay": "Day 8",
             "timeNote": null
           },
           {
             "heading": "INT. PORT TRUST OFFICE - DAY",
             "number": 36,
-            "sceneId": "01a153a2-d398-70da-8b41-90b9e384e670",
+            "sceneId": "01a17e74-0dbe-70be-b32c-44ef22a29c86",
             "storyDay": "Day 8",
             "timeNote": null
           },
           {
             "heading": "EXT. KADALKKARA BEACH - DUSK",
             "number": 37,
-            "sceneId": "01a153a2-d398-70da-8b41-90bd2eac2852",
+            "sceneId": "01a17e74-0dbf-7450-b650-f170e5377d78",
             "storyDay": "Day 8",
             "timeNote": null
           },
           {
             "heading": "INT. THOMAS HOUSE - APPACHAN'S ROOM - DUSK",
             "number": 38,
-            "sceneId": "01a153a2-d398-70da-8b41-90c1dbca94bf",
+            "sceneId": "01a17e74-0dbf-7450-b650-f1747135692a",
             "storyDay": "Day 8",
             "timeNote": null
           },
           {
             "heading": "EXT. KADALKKARA BEACH - NIGHT",
             "number": 39,
-            "sceneId": "01a153a2-d398-70da-8b41-90c57a9a59da",
+            "sceneId": "01a17e74-0dbf-7450-b650-f178e65f9b41",
             "storyDay": "Day 8",
             "timeNote": null
           },
           {
             "heading": "EXT. COAST RADIO STATION - ROOF - NIGHT",
             "number": 40,
-            "sceneId": "01a153a2-d398-70da-8b41-90c937ffaac4",
+            "sceneId": "01a17e74-0dbf-7450-b650-f17c7ba036ba",
             "storyDay": "Day 8",
             "timeNote": null
           }
@@ -1091,14 +929,14 @@ Result: **every copy matches the original**.
           {
             "heading": "EXT. COAST RADIO STATION - DAY",
             "number": 41,
-            "sceneId": "01a153a2-d398-70da-8b41-90cd1d6c5f20",
+            "sceneId": "01a17e74-0dbf-7450-b650-f18059e2214a",
             "storyDay": "Day 9",
             "timeNote": null
           },
           {
             "heading": "INT. FATHIMA'S TEA SHOP - DAY",
             "number": 42,
-            "sceneId": "01a153a2-d399-7371-a0ec-4717272d16ff",
+            "sceneId": "01a17e74-0dbf-7450-b650-f1848f81a3a4",
             "storyDay": "Day 9",
             "timeNote": null
           }
@@ -1110,14 +948,14 @@ Result: **every copy matches the original**.
           {
             "heading": "EXT. KADALKKARA HARBOUR - DAWN",
             "number": 43,
-            "sceneId": "01a153a2-d399-7371-a0ec-471baf258fd1",
+            "sceneId": "01a17e74-0dbf-7450-b650-f1884746a3c9",
             "storyDay": "Day 10",
             "timeNote": "05:30"
           },
           {
             "heading": "EXT. KADALKKARA BEACH - DAY",
             "number": 44,
-            "sceneId": "01a153a2-d399-7371-a0ec-471fe98f9927",
+            "sceneId": "01a17e74-0dbf-7450-b650-f18c42c1d417",
             "storyDay": "Day 10",
             "timeNote": null
           }
@@ -1129,28 +967,28 @@ Result: **every copy matches the original**.
           {
             "heading": "EXT. OPEN SEA - NIGHT (1999)",
             "number": 1,
-            "sceneId": "01a153a2-d396-73a6-97f7-3e8811a0beed",
+            "sceneId": "01a17e74-0dbb-762a-9ded-6199228d476f",
             "storyDay": "Night of 14 November 1999",
             "timeNote": "23:10, the storm peaks"
           },
           {
             "heading": "INT. COAST RADIO STATION - OPERATIONS ROOM - NIGHT (1999)",
             "number": 2,
-            "sceneId": "01a153a2-d396-73a6-97f7-3e8c81e2f3a1",
+            "sceneId": "01a17e74-0dbb-762a-9ded-619d2d175654",
             "storyDay": "Night of 14 November 1999",
             "timeNote": "23:40, power cut"
           },
           {
             "heading": "INT. COAST RADIO STATION - OPERATIONS ROOM - NIGHT (1999)",
             "number": 32,
-            "sceneId": "01a153a2-d397-719f-be22-c9c42534d91e",
+            "sceneId": "01a17e74-0dbb-762a-9ded-61a1dca80b46",
             "storyDay": "Night of 14 November 1999",
             "timeNote": "23:45 to 00:30"
           },
           {
             "heading": "EXT. OPEN SEA - LITTLE FLOWER - NIGHT (1999)",
             "number": 34,
-            "sceneId": "01a153a2-d398-70da-8b41-90b1430d6413",
+            "sceneId": "01a17e74-0dbe-70be-b32c-44e7f68418be",
             "storyDay": "Night of 14 November 1999",
             "timeNote": "about 00:20"
           }
@@ -1159,10 +997,10 @@ Result: **every copy matches the original**.
       }
     ],
     "sceneCount": 44,
-    "screenplayId": "01a153a2-d396-73a6-97f7-3e865243df2d",
+    "screenplayId": "01a17e74-0dba-716a-a776-ec998f0654b3",
     "screenplays": [
       {
-        "id": "01a153a2-d396-73a6-97f7-3e865243df2d",
+        "id": "01a17e74-0dba-716a-a776-ec998f0654b3",
         "title": "LOW TIDE RADIO"
       }
     ]
@@ -1210,12 +1048,12 @@ Result: **every copy matches the original**.
     {
       "daysLeft": 30,
       "deleted": {
-        "deletedAt": 1792404542137,
-        "deletedBy": "01a153a2-d1bd-76b5-b9ef-f7e2984cf548",
-        "id": "01a153a2-d2b9-76da-857e-d1295fa54c87",
-        "objectId": "01a153a2-d272-7719-ba2c-62dcc2cabafb",
+        "deletedAt": 1793122895992,
+        "deletedBy": "01a17e74-03a2-730d-830b-227a89711d5b",
+        "id": "01a17e74-0878-7386-858f-3cecf38af4a5",
+        "objectId": "01a17e74-0792-73be-9050-705da069600b",
         "objectType": "vault_item",
-        "parentId": "01a153a2-d26a-75aa-b1ca-360cb8720737",
+        "parentId": "01a17e74-076c-765d-b20c-107cd119b417",
         "parentType": "vault_folder",
         "position": null,
         "tableName": "vault_item",
@@ -1227,12 +1065,12 @@ Result: **every copy matches the original**.
     {
       "daysLeft": 30,
       "deleted": {
-        "deletedAt": 1792404542137,
-        "deletedBy": "01a153a2-d1bd-76b5-b9ef-f7e2984cf548",
-        "id": "01a153a2-d2b9-76da-857e-d12acd28c32e",
-        "objectId": "01a153a2-d273-7772-ba4c-aa4bb9681389",
+        "deletedAt": 1793122895992,
+        "deletedBy": "01a17e74-03a2-730d-830b-227a89711d5b",
+        "id": "01a17e74-0878-7386-858f-3ced31b040a6",
+        "objectId": "01a17e74-0795-76a3-a3c6-1320105c86c0",
         "objectType": "vault_item",
-        "parentId": "01a153a2-d26a-75aa-b1ca-360cb8720737",
+        "parentId": "01a17e74-076c-765d-b20c-107cd119b417",
         "parentType": "vault_folder",
         "position": null,
         "tableName": "vault_item",
@@ -1244,10 +1082,10 @@ Result: **every copy matches the original**.
     {
       "daysLeft": 30,
       "deleted": {
-        "deletedAt": 1792404542124,
-        "deletedBy": "01a153a2-d1bd-76b5-b9ef-f7e2984cf548",
-        "id": "01a153a2-d2ac-7650-a78b-d87660a6d678",
-        "objectId": "01a153a2-d2ac-7650-a78b-d8744f53f19f",
+        "deletedAt": 1793122895939,
+        "deletedBy": "01a17e74-03a2-730d-830b-227a89711d5b",
+        "id": "01a17e74-0843-7729-a07c-b6b695641849",
+        "objectId": "01a17e74-0841-72e7-8635-8573133f6032",
         "objectType": "vault_folder",
         "parentId": null,
         "parentType": "vault_folder",
@@ -1261,10 +1099,10 @@ Result: **every copy matches the original**.
     {
       "daysLeft": 30,
       "deleted": {
-        "deletedAt": 1792404542122,
-        "deletedBy": "01a153a2-d1bd-76b5-b9ef-f7e2984cf548",
-        "id": "01a153a2-d2aa-7643-8bb0-12edd89d85a8",
-        "objectId": "01a153a2-d26b-727d-bed6-64a950dce08c",
+        "deletedAt": 1793122895930,
+        "deletedBy": "01a17e74-03a2-730d-830b-227a89711d5b",
+        "id": "01a17e74-083a-75c2-8c3f-01b5c234d573",
+        "objectId": "01a17e74-0773-71dd-85dd-0ccfb4afc0b4",
         "objectType": "vault_collection",
         "parentId": null,
         "parentType": null,

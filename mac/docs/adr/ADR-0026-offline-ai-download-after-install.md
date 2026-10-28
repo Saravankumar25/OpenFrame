@@ -2,7 +2,7 @@
 
 - **Status:** Accepted 2026-10-15 (owner, in chat: "revert back to download after install"). Permanent and cross-platform.
 - **Date:** 2026-10-15
-- **Supersedes:** [ADR-0025](ADR-0025-offline-ai-bundled-in-every-package.md) in full.
+- **Supersedes:** [ADR-0025](../history/adr/ADR-0025-offline-ai-bundled-in-every-package.md) in full.
 - **Reinstates** the download clauses that ADR-0025 superseded: [ADR-0006](ADR-0006-local-ai-sidecar.md) decision 2
   (delivery by **Download Offline AI** with a signed manifest), [ADR-0013](ADR-0013-single-local-model-hybrid-rag-agent.md)
   decision 2 ("One download"), and [ADR-0020](ADR-0020-ai-runtime-packaging-per-channel.md) decisions 1 (weights download

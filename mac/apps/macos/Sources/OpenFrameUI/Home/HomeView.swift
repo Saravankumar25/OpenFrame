@@ -1,8 +1,9 @@
 // Application Home (Windows: app/home/AppHome.tsx), in Mac styling: "Your projects" with Open
 // Project, Restore Backup or Package and New Project; Pinned and Recent projects as cards with
-// their type and status; Open Archived for a page of archived projects with Restore and Open;
-// the Global Idea Vault, Settings and your name in the toolbar; a status line at the bottom.
-// The project list always comes from the core (project.list_recent).
+// their type, status and cover photo; Open Archived for a page of archived projects with Restore
+// and Open; "Found on this Mac" for projects in the projects folder that are not in the list; the
+// Global Idea Vault, Settings and your name in the toolbar; a status line at the bottom. The
+// project list always comes from the core (project.list_recent, project.discover).
 
 import AppKit
 import SwiftUI
@@ -18,6 +19,8 @@ final class HomeModel {
     var query = ""
     var loading = true
     var failure: CoreFailure?
+    /// Projects in the projects folder that are not in the list (Windows FoundProjects).
+    var found: [DiscoveredProject] = []
 
     func load(_ core: Core?) async {
         guard let core else { return }
@@ -35,6 +38,40 @@ final class HomeModel {
             }
         }
         loading = false
+        await loadFound(core)
+    }
+
+    /// "Found on this Mac": nothing is added or opened until the person chooses Open. A failed read
+    /// shows no section, as on Windows; the project list above is unaffected.
+    func loadFound(_ core: Core?) async {
+        guard let core else { return }
+        found = (try? await core.projectDiscover()) ?? []
+    }
+
+    /// Puts the row the core returned in place of the old one, so the card changes at once.
+    private func replace(_ row: RecentProject) {
+        if let i = recents.firstIndex(where: { $0.projectId == row.projectId }) { recents[i] = row }
+    }
+
+    /// Sets the picked picture as the project's cover photo. The core checks the file.
+    func setCover(_ app: AppModel, _ project: RecentProject, path: String) async {
+        guard let core = app.core else { return }
+        do {
+            replace(try await core.projectSetCover(SetCoverArgs(projectId: project.projectId, path: path)))
+            ToastCenter.shared.show("Cover photo changed")
+        } catch {
+            app.show("Could not change the cover photo", error)
+        }
+    }
+
+    func clearCover(_ app: AppModel, _ project: RecentProject) async {
+        guard let core = app.core else { return }
+        do {
+            replace(try await core.projectClearCover(ClearCoverArgs(projectId: project.projectId)))
+            ToastCenter.shared.show("Cover photo removed")
+        } catch {
+            app.show("Could not remove the cover photo", error)
+        }
     }
 
     private var shown: [RecentProject] {
@@ -99,6 +136,9 @@ struct HomeView: View {
                     } else {
                         projectsPage
                     }
+                    if !home.loading, home.failure == nil, !home.showArchived, !home.found.isEmpty {
+                        FoundProjectsSection(found: home.found) { p in Task { await app.openProject(path: p.path) } }
+                    }
                     DataLocationNote()
                 }
                 .padding(.vertical, PageSpacing.page)
@@ -135,18 +175,17 @@ struct HomeView: View {
             .navigationTitle("")
         }
         .interchangeAnchor()
-        .sheet(isPresented: $showNewProject) { NewProjectSheet() }
-        .sheet(item: $sheet) { sheet in
+        .themedSheet(isPresented: $showNewProject) { NewProjectSheet() }
+        .themedSheet(item: $sheet) { sheet in
             switch sheet {
             case let .rename(p): RenameProjectSheet(project: p, actions: actions) { reload() }
             case let .delete(p): DeleteProjectSheet(project: p, actions: actions) { reload() }
             case let .unavailable(p): UnavailableProjectSheet(project: p, actions: actions) { reload() }
             }
         }
-        .sheet(isPresented: $showVault) {
+        .themedSheet(isPresented: $showVault) {
             NavigationStack {
-                GlobalIdeaVaultView()
-                    .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Done") { showVault = false } } }
+                GlobalIdeaVaultView { showVault = false }
             }
             .sheetFrame(minWidth: 900, minHeight: 620)
         }
@@ -191,7 +230,7 @@ struct HomeView: View {
             .help("Restore a backup or open a project package")
             .accessibilityIdentifier("home-restore-package")
         Button { showNewProject = true } label: { Label("New Project", systemImage: "plus").labelStyle(.titleAndIcon) }
-            .buttonStyle(.borderedProminent)
+            .buttonStyle(.ofProminent)
             .keyboardShortcut("n", modifiers: .command)
             .help(ShortcutStore.shared.tooltipWords("New Project", "home.new_project"))
             .accessibilityIdentifier("home-new-project")
@@ -293,7 +332,7 @@ struct HomeView: View {
                 Button { showNewProject = true } label: { Label("Create Project", systemImage: "plus").labelStyle(.titleAndIcon) }
                     .keyboardShortcut("n", modifiers: .command)
                     .controlSize(.large)
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(.ofProminent)
                     .accessibilityIdentifier("home-new-project")
                 Button { openExisting() } label: { Label("Open Existing Project", systemImage: "folder").labelStyle(.titleAndIcon) }
                     .controlSize(.large)
@@ -359,8 +398,28 @@ struct HomeView: View {
             setArchived: { value in Task { await actions.setArchived(project, value); reload() } },
             delete: { sheet = .delete(project) },
             locate: { sheet = .unavailable(project) },
-            remove: { Task { await actions.forget(project); reload() } }
+            remove: { Task { await actions.forget(project); reload() } },
+            chooseCover: { chooseCover(project) },
+            clearCover: { Task { await home.clearCover(app, project) } }
         )
+    }
+
+    /// The picker for a cover photo: one PNG, JPEG or WebP picture. Cancel changes nothing.
+    static func coverPanel() -> NSOpenPanel {
+        let panel = NSOpenPanel()
+        panel.title = "Choose a cover photo"
+        panel.prompt = "Choose"
+        panel.canChooseDirectories = false
+        panel.canChooseFiles = true
+        panel.allowsMultipleSelection = false
+        panel.allowedContentTypes = [.png, .jpeg, .webP]
+        return panel
+    }
+
+    private func chooseCover(_ project: RecentProject) {
+        let panel = Self.coverPanel()
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        Task { await home.setCover(app, project, path: url.path) }
     }
 
     private func openExisting() {
@@ -387,6 +446,8 @@ struct ProjectCard: View {
         var delete: () -> Void
         var locate: () -> Void
         var remove: () -> Void
+        var chooseCover: () -> Void
+        var clearCover: () -> Void
     }
 
     let project: RecentProject
@@ -399,7 +460,7 @@ struct ProjectCard: View {
         ZStack(alignment: .topTrailing) {
             Button(action: handlers.open) {
                 VStack(alignment: .leading, spacing: 0) {
-                    ProjectPreview(projectId: project.projectId)
+                    ProjectCoverView(project: project)
                         .frame(height: 78)
                         .frame(maxWidth: .infinity)
                         .accessibilityHidden(true)
@@ -504,6 +565,53 @@ struct ProjectPreview: View {
     }
 }
 
+/// The card's picture: the chosen cover photo, or the generated cover when there is none or the
+/// file cannot be read. The title sits beside it, so the picture is decorative.
+struct ProjectCoverView: View {
+    enum Source: Equatable {
+        case photo(path: String, rev: Double)
+        case generated(projectId: String)
+    }
+
+    let project: RecentProject
+    @State private var image: NSImage?
+
+    static func source(_ project: RecentProject) -> Source {
+        if let c = project.cover, !c.path.isEmpty { return .photo(path: c.path, rev: c.rev) }
+        return .generated(projectId: project.projectId)
+    }
+
+    /// Reads the picture off the main thread. The file is read again for every new `rev`, so a
+    /// replaced picture never shows from a cache.
+    static func loadImage(path: String) async -> NSImage? {
+        let data = await Task.detached(priority: .utility) { try? Data(contentsOf: URL(fileURLWithPath: path)) }.value
+        return data.flatMap { NSImage(data: $0) }
+    }
+
+    var body: some View {
+        let source = Self.source(project)
+        ZStack {
+            if case .photo = source, let image {
+                Image(nsImage: image).resizable().scaledToFill()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity).clipped()
+            } else {
+                ProjectPreview(projectId: project.projectId)
+            }
+        }
+        .task(id: source) {
+            if case let .photo(path, _) = source { image = await Self.loadImage(path: path) } else { image = nil }
+        }
+    }
+}
+
+/// The cover photo items of a project's menu (Windows: Change cover photo, Remove cover photo).
+enum CoverMenuItem: Equatable {
+    case change, remove
+    var title: String { self == .change ? "Change Cover Photo\u{2026}" : "Remove Cover Photo" }
+    /// Remove shows only when a cover photo is set.
+    static func items(_ project: RecentProject) -> [CoverMenuItem] { project.cover == nil ? [.change] : [.change, .remove] }
+}
+
 /// The actions of a project, in the card's menu and its context menu.
 struct ProjectCardMenu: View {
     let project: RecentProject
@@ -514,6 +622,10 @@ struct ProjectCardMenu: View {
         Button("Rename\u{2026}") { handlers.rename() }.disabled(!project.available)
         Button("Duplicate Project") { handlers.duplicate() }.disabled(!project.available)
         Button(project.pinned ? "Unpin" : "Pin") { handlers.pin(!project.pinned) }
+        ForEach(CoverMenuItem.items(project), id: \.title) { item in
+            Button(item.title) { item == .change ? handlers.chooseCover() : handlers.clearCover() }
+                .accessibilityIdentifier(item == .change ? "project-change-cover" : "project-remove-cover")
+        }
         Button("Show in Finder") { handlers.reveal() }.disabled(!project.available)
         if !project.available { Button("Locate Project\u{2026}") { handlers.locate() } }
         Divider()
@@ -525,6 +637,50 @@ struct ProjectCardMenu: View {
         Button("Remove from Recent") { handlers.remove() }
         Divider()
         Button("Delete Project\u{2026}", role: .destructive) { handlers.delete() }
+    }
+}
+
+/// "Found on this Mac" (Windows FoundProjects, "Found on this PC"): projects in the projects folder
+/// that are not in the list, after a reinstall, a data reset or a project copied in by hand.
+struct FoundProjectsSection: View {
+    static let title = "Found on this Mac"
+    static let note = "These projects are in your projects folder but not in your list. Open one to add it back."
+
+    let found: [DiscoveredProject]
+    let open: (DiscoveredProject) -> Void
+    @Environment(\.ofTheme) private var theme
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: PageSpacing.small) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(Self.title).font(.headline).accessibilityAddTraits(.isHeader)
+                Text(Self.note).font(.caption).foregroundStyle(theme["muted"])
+            }
+            ForEach(found, id: \.path) { p in
+                HStack(spacing: 12) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(p.title).fontWeight(.semibold).foregroundStyle(theme["ink"])
+                        Text(p.path + (p.modifiedAt.map { " \u{00B7} changed \(Formatting.relative(ms: $0))" } ?? ""))
+                            .font(.caption).foregroundStyle(theme["muted"])
+                            .lineLimit(1).truncationMode(.middle)
+                            .textSelection(.enabled)
+                            .help(p.path)
+                    }
+                    Spacer(minLength: 8)
+                    Button { open(p) } label: { Label("Open", systemImage: "folder").labelStyle(.titleAndIcon) }
+                        .buttonStyle(.ofStandard)
+                        .accessibilityLabel("Open \(p.title)")
+                        .accessibilityIdentifier("home-found-open-\(p.title)")
+                }
+                .padding(.horizontal, 12).padding(.vertical, 8)
+                .background(theme["panel"], in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(theme["line"]))
+                .accessibilityElement(children: .contain)
+            }
+        }
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(Self.title)
+        .accessibilityIdentifier("home-found")
     }
 }
 

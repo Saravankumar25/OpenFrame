@@ -594,7 +594,7 @@ struct ScreenplayModelTestsRules {
         #expect(h.label == "Scene Heading")
         #expect(h.shortcut == "Ctrl+1")
         #expect(h.leftIn == 1.5 && h.widthIn == 6.0)
-        #expect(h.uppercase && h.keepWithNext && h.spaceBefore == 1)
+        #expect(h.uppercase && h.keepWithNext && h.spaceBefore == 2)
         let c = try #require(rules.rule(for: .character))
         #expect(c.leftIn == 3.7 && c.widthIn == 3.8)
         #expect(rules.rule(for: "transition")?.align == "right")

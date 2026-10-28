@@ -28,9 +28,8 @@ public struct RootView: View {
                 if showsHomeOrProject { showShortcuts = true }
             }
             .task(id: model.isRunning) { await ShortcutStore.shared.reload(core: model.core) }
-            .sheet(isPresented: $showShortcuts) { ShortcutsSheet(app: model) }
+            .themedSheet(isPresented: $showShortcuts) { ShortcutsSheet(app: model) }
             .task(id: welcomeKey) { updateWelcome() }
-            .tint(theme["accent"])
             .animation(reduceMotion ? .easeInOut(duration: 0.15) : .spring(response: 0.35, dampingFraction: 1), value: phaseKey)
             .alert(item: $model.alert) { alert in
                 switch alert {
@@ -56,7 +55,7 @@ public struct RootView: View {
         }
     }
 
-    /// First launch: after the team gate, on Application Home, until a name is stored.
+    /// First launch: on Application Home, until a name is stored.
     private var welcomeKey: String {
         "\(model.needsWelcomeName)-\(showsHome)-\(model.licence.blocksApp)"
     }
@@ -106,7 +105,7 @@ public struct RootView: View {
         switch model.phase {
         case .starting: "starting"
         case .failed: "failed"
-        case .teamGate: "gate"
+        case .librarySetup: "library"
         case .home: "home"
         case let .project(p): "project-\(p.id)"
         }
@@ -121,10 +120,10 @@ public struct RootView: View {
                 .accessibilityIdentifier("starting")
         case let .failed(failure):
             StartupFailureView(failure: failure)
-        case let .teamGate(status):
-            TeamGateView(status: status)
+        case let .librarySetup(status):
+            LibrarySetupView(model: LibrarySetupModel(app: model, status: status, storeBuild: model.isStoreBuild))
         case .home:
-            // The first-launch welcome fills the window, like the team gate, instead of being a
+            // The first-launch welcome fills the window, like the library setup, instead of being a
             // sheet: a sheet that needs a name before it closes would keep macOS from quitting.
             if let welcome {
                 WelcomeNameView(model: welcome)

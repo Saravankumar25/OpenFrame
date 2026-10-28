@@ -2,63 +2,76 @@
 
 > Rewritten (not appended) at the end of every session. One page. It exists so the next session starts from the facts
 > instead of from a long history, which is how context rot is avoided. If this page is older than the newest progress log
-> entry, trust the log and fix this page first. Last rewritten: 2026-10-20, late night, end of the MacHTML rebuild.
+> entry, trust the log and fix this page first. Last rewritten: 2026-10-28, end of the MacHTML recapture session.
 
 ## State
 
-1. **Windows track:** closed at W9; the final polish, the AI repair and the PDF redesign are on GitHub `windows/`
-   (commit `324cd963`). W10 is the team hand test of `OpenFrame-3.exe`.
-2. **Mac track, branch `mac/windows-parity`** (from `mac/m1-toolchain`, not merged, not pushed):
-   - The Windows code is merged in (`af5e41f`), so the shared Rust core is one core again: the AI repair (exact counts,
-     project questions never answered with product help), the PDF redesign, the 17 themes with Black and White and
-     OpenFrame Default's own dark palette, and the removed exchange packages.
-   - The Mac has the Windows structure in Mac styling: flat sidebar (Home, Idea Vault, Story, Screenplay, Breakdown,
-     Production, Call Sheets, Files), Production with the 13 Windows tabs and a new Overview, Back and Forward,
-     Settings with the seven Windows pages (new Writing page), plain AI answers with a closed "See sources", Tab round
-     every element, screenplay zoom, resizable AI panel, shot list Grid, whole Beat Board cards, the relationship map
-     layout, Breakdown Export, Compare named Scene-only and Text-only.
-   - Owner requests of the afternoon, both apps: "Story Board" is "Beat Board" everywhere; a free Story page left of
-     Board (table `story_page`, migration 0017; TXT, PDF and DOCX export). Windows TypeScript type check, lint and the
-     611 web unit tests pass on the Mac (`npm ci`, `tsc`, `eslint`, `vitest`); the Tauri E2E needs the Windows machine.
-   - New in the shared core: `schedule.export_daily` ("Shoot Day N - Daily view", PDF, CSV, XLSX), used by the Daily
-     View on both apps. The AI disclosure is "See sources" on both apps (owner decision 2026-10-20).
-   - Requirement inventory and status: [mac-windows-structure-parity.md](../roadmap/mac-windows-structure-parity.md).
+1. **Branch `mac/windows-sync`** (local, not pushed) holds all Mac work: the sync with Windows `114dff50`, the Swift
+   ports, the security review fixes, the team password removal (ADR-0039), the E2E fixes, three Mac UI fixes and the
+   recapture driver fixes, all committed locally. Every other Mac branch and local `main` are already
+   ancestors of it (fast-forward possible). Unmerged and old: `claude/website-html-mockups-9ecfa7` (superseded by
+   MacHTML; delete only on the owner's word).
+2. **Installed app:** `/Applications/OpenFrame Studio.app`, from `release-out/mac/OpenFrame-5.dmg` (no team password).
+   Unchanged this session. Rebuild and reinstall with `apps/macos/scripts/install-internal-build.sh`.
+3. **Tests:** Swift 784 pass; Rust 2664 pass; web 735 pass; lint, links, writing, migrations clean (Swift rerun on 2026-10-28 after the UI fixes, 784 pass; the rest from the
+   previous session). Full E2E on the release app (before the last fixes):
+   194 pass, 30 fail.
 
-   - Evening round: every Mac button named; Home cards and every page header as on Windows; the screenplay's controls
-     in a page bar (they no longer fit the window toolbar); Breakdown Hide scenes and Hide panel; Settings buttons
-     fixed (`openSettings`); eight deterministic AI routes (Mac evaluation 98.1 percent tool, 89.9 percent end state).
-   - The E2E runner tests a copy with its own bundle identifier and clears its preferences per scenario: the owner's
-     own use of the dev app otherwise leaks into the scenarios.
+## Done this session (MacHTML recapture)
 
-3. **MacHTML rebuilt, branch `mac/machtml-rebuild`** (from `mac/windows-parity`, not merged, not pushed): 692 states of
-   the Mac app, each in Light and Dark, as standalone HTML pages in `MacHTML/` (committed on the owner's word, 583 MB; regenerate with
-   `apps/macos/E2E/capture.sh "apps/macos/build/OpenFrame Studio.app"`, `OPENFRAME_E2E_PARALLEL=4` for speed). Each page
-   is the 2x window picture cut into its containers plus real HTML for every accessibility element. 692 of 692 pages
-   pass the WebKit check (0.5 percent pixels, channel over 24) in both modes with 0 HTML misses. The old 179-screen
-   `release-out/MacHTML/` is deleted. Limits are in `MacHTML/README.md` (window heights vary by a few points, some
-   windows drawn inactive, no AI answers, no images).
+- **Three Mac UI fixes** from the owner screenshots of 2026-10-28, each confirmed in real captures: budget row Edit and
+  Delete are icon buttons (pencil, trash) with tooltips and accessibility labels (`BudgetWorkspace.swift`); the Global
+  Idea Vault sheet opened from Home has a Done button in its header and Escape closes it (`IdeaVaultWorkspace.swift`,
+  `HomeView.swift`); the Story page placeholder disappears as soon as the first character is typed
+  (`StoryPageTextView.swift`).
+- **MacHTML rebuilt** from the real development build: window at the full visible screen (1280 x 628 points on this
+  Mac), frontmost and active for every picture, Screening Room theme in Light and Dark, 760 screens (1520 pages), every page passing the pixel and text check in both modes.
+  README: `MacHTML/README.md`. The tour also covers the screens added on 2026-10-27 (library setup on a new Mac,
+  Settings > Storage with a project move, Story page typing, dark sheet and zoom, Beat Board rows, screenplay dark
+  page, cover photo, Found on this Mac). Capture folders are in `release-out/capture/` (git-ignored); the final run is
+  `release-out/capture/full-20261028-030147` with the reruns merged in.
+- **Driver fixes found during the capture:** pop-up menus are opened and closed with AppKit's menu tracking
+  notifications (an open menu blocked quitting and 9 scenarios failed at quit); `UI.click` posts mouse events to the
+  queue instead of sending them straight to the window (a table tracking the mouse deadlocked the vault scenario); the
+  project sidebar is hidden with a checked helper (`capHideSidebar`) because a press on the toolbar button did not
+  always take; `ProductionScenarios.menuButton` reuses the capture helper.
 
-## Next three items
+## Next items
 
-1. Merge `mac/windows-parity` (and `mac/machtml-rebuild` on top of it) into `mac/m1-toolchain` after the owner looks at
-   the Mac app (dev build: `apps/macos/scripts/bundle-dev-app.sh`). Then the internal disk image only on the owner's
-   word.
-2. Windows machine: `npm run verify` (needs `cargo-deny` and `cargo-audit`, not installed on the Mac) and the Tauri
-   E2E suite for the Story page, Beat Board, See sources and the Daily View export.
-3. Remaining AI misses (comment on the current draft, pin a note, sequence without an act): measure, then route.
+1. **Rerun the full regular E2E** (one runner) on the dev or release app. Not verified: the regular suite was not rerun
+   after the driver changes to `click`, `menuButton` and the pop-up helpers, so do not trust E2E results until it is.
+2. **App bug found by the capture:** right after Save Snapshot, a reports or sides snapshot sometimes stays on its
+   spinner (2 of 3 runs; `SidesModel.save` calls `openSnapshot(id)` the same way). The tour works around it for reports
+   by opening the saved row again; the MacHTML page `schedule-sides-snapshot` still shows the spinner. Fix in the app,
+   then recapture `06-production-days`.
+3. **A new disk image** with this session's three UI fixes, on the owner's word (`mac/release/OpenFrame-5.dmg` on GitHub
+   is build 183, made before them).
+4. **Cleanup left:** `HTML_Mockups/` and the old mockups branch only after asking; remove finished builds and caches
+   (`target/`, `.build-cache` app copies, `release-out/e2e`, the release staging folder in
+   `$(getconf DARWIN_USER_TEMP_DIR)openframe-release-stage`). Dead code pass on the Swift app and the core; the two Word
+   manuals still describe the team password. Never captured by design in MacHTML: real AI answers and Assistant memory
+   (the dev build has no AI engine), system Open and Save panels, drag and drop, microphone, print panel.
 
-## Open blockers
+## Open E2E items (from the release run; check which the rebuild fixed)
 
-- Owner: install full Xcode for XCUITest and StoreKit testing; licence server address and response key (Chapter 3).
-- The AI end-to-end scenarios need the model download fixture; they were not run this session.
+- 14 keyboard scenarios (96-*) need System Settings > Keyboard > Keyboard navigation on (owner setting, off here).
+- 42 custom shortcut survives relaunch: hangs at the second launch on release builds only.
+- 86 moodboard drag: tile bounds measured wrong; the three sketch Undo ones should pass with the driver's sheet fix.
+- 91 sixteen themes: 322 screens reported hard to read; may be the Settings window behind being read, to settle.
+- 01-journey 13 (search palette still open at the AI step), 75 (Cmd+J: now a menu command), 78 download (low disk
+  at the time) and 78 remove: rerun.
+- 95 window fit at the minimum size: rerun after the pane fixes.
+
+## Owner decisions open
+
+- AI tool bar (90%) missed on both platforms after the conversational rebuild (Mac 73.9%, Windows 69.6%).
+- Identity in `library.json` is not authentication (doc 40 section 2): keep or change.
+- Store items needing Xcode and the developer account: `docs/release/mac-app-store-readiness.md`.
 
 ## Do not
 
-- Do not run the capture tour with more runners than the display can show frontmost if inactive-looking windows matter;
-  app bugs the tour found are listed in the progress log entry of 2026-10-20 (late night).
-
-- Do not push or merge without the owner's word. A core change goes into both `windows/` and `mac/` on GitHub
-  (ADR-0034); the Daily View export is such a change.
-- Do not let a SwiftUI view feed a measured size back into its own layout (the Scene Hub crash of 2026-10-19).
-- Do not put a hub page inside another accessibility container when it is shown as one place: SwiftUI folds the page's
-  own identifier away (`hubContainer` in ProjectNavigation.swift).
+- Do not push, merge to a remote or build a store package without the owner's word.
+- Do not run two E2E runners or two SwiftPM builds at once; build outside the E2E lock.
+- Do not leave build caches behind: clear `target/` after each finished build step (owner decision 2026-10-27).
+- Repeat on Windows every shared-core change listed in
+  `docs/release/evidence/mac/windows-sync-2026-10-27/mac-only-changes.md` and the password removal (ADR-0034).

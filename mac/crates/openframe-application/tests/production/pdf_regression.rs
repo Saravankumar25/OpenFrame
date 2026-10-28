@@ -171,7 +171,7 @@ fn mask_dates(text: &str) -> (String, bool) {
         if i + 2 < words.len()
             && words[i].len() <= 2
             && words[i].chars().all(|c| c.is_ascii_digit())
-            && MONTHS.contains(&words[i + 1])
+            && MONTHS.iter().any(|m| m.eq_ignore_ascii_case(words[i + 1]))
             && words[i + 2]
                 .trim_end_matches(|c: char| !c.is_ascii_digit())
                 .len()
@@ -287,8 +287,10 @@ fn check(env: &TestEnv, name: &str, op: &str, args: Value) {
         "{name}: the same data must give a byte-identical PDF"
     );
     let actual = layout_of(&first);
-    assert!(
+    // Sides are pages of the writer's script and carry no brand (owner, 2026-10-27).
+    assert_eq!(
         actual.contains(BRAND),
+        name != "sides",
         "{name}: production PDFs carry \"{BRAND}\"\n{actual}"
     );
     let golden = golden_dir().join(format!("{name}.txt"));

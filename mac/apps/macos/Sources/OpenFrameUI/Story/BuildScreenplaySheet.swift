@@ -56,7 +56,7 @@ struct BuildScreenplaySheet: View {
                 Button("Cancel") { model.sheet = nil }.keyboardShortcut(.cancelAction)
                 Button("Build Screenplay") { Task { await b.build() } }
                     .keyboardShortcut(.defaultAction)
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(.ofProminent)
                     .disabled(!b.canBuild)
                     .accessibilityIdentifier("build-confirm")
             }
