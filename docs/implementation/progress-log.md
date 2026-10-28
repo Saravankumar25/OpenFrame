@@ -7,7 +7,7 @@
 
 ## Dashboard (update every session from `npm run plan:status`)
 
-**Overall: 133 of 307 boxes (43.3%).** **Current goal** (boxes without the "Later: store publishing" tag): **132 of 224 (58.9%)**. Updated 2026-10-27 after the Mac sync with Windows (the box and area changes came with the Windows documents; no Mac box ticked).
+**Overall: 133 of 307 boxes (43.3%).** **Current goal** (boxes without the "Later: store publishing" tag): **132 of 224 (58.9%)**. Numbers unchanged on 2026-10-28 (MacHTML recapture and three Mac UI fixes; no box ticked). Last changed 2026-10-27 after the Mac sync with Windows.
 
 | # | Area | Done |
 |---|---|---|
@@ -56,6 +56,17 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 ```
 
 ## Entries
+
+### 2026-10-28, MacHTML recaptured from the real app, three Mac UI fixes
+- **Areas and items worked:** Appearance and themes (Screening Room capture in Light and Dark); Beat Board and Idea Vault; Call sheets, budget, templates, samples and exports; Test infrastructure (capture driver)
+- **Done:** Three Mac fixes from owner screenshots of 2026-10-28: budget row Edit and Delete are icon buttons with tooltips and accessibility labels (`BudgetWorkspace.swift`); the Global Idea Vault sheet from Home has a Done button and closes on Escape (`IdeaVaultWorkspace.swift`, `HomeView.swift`); the Story page placeholder disappears on the first typed character (`StoryPageTextView.swift`). MacHTML rebuilt from the development build at the full visible screen (1280 x 628 points), window frontmost and active, Screening Room in Light and Dark, 733 screens (1466 pages), every page passing the pixel and text check in both modes, including the screens added on 2026-10-27. Driver fixes: pop-up menus opened and closed with AppKit menu tracking notifications; `UI.click` posts to the event queue (fixes a vault deadlock); checked `capHideSidebar` helper; `menuButton` reuses the capture helper. `MacHTML/README.md` documents the result.
+- **Evidence:** `release-out/capture/full-20261028-030147` (git-ignored) with reruns merged in; `MacHTML/README.md` verification tables; the three UI fixes confirmed in real captures.
+- **Features moved:** none
+- **Docs updated:** `docs/implementation/handoff.md`, this log, `MacHTML/README.md`
+- **Decisions made or needed:** none new. Cleanup order (merge to `main`, delete merged branches, `HTML_Mockups/`) still waits for the owner.
+- **Blocked / risks:** 17 tour steps are still skipped in both modes: screenplay private note actions and editing, Characters relationship map and character steps, reports snapshot view, call sheet finalize (stays Draft after confirm, possibly an app bug, check by hand), Templates steps in Settings. Not capturable in the dev build: real AI answers, Assistant memory, system Open and Save panels, drag and drop, microphone, print panel. The regular E2E suite was not rerun after the driver changes to `click` and `menuButton`.
+- **Next:** fix the 17 skipped steps and recapture in both modes; rerun the full regular E2E with one runner; cleanup in the owner order.
+- **Checks run:** capture tour full run in Light and Dark: 31 of 40 scenarios passed first; the 9 failures were quit hangs caused by the driver, and all 14 affected or changed scenarios then passed in both modes. MacHTML page check: see `MacHTML/README.md` verification tables. Swift unit tests 784 pass (`apps/macos/scripts/test.sh`). Regular E2E not rerun. `npm run check:writing` OK.
 
 ### 2026-10-28, Mac release round: security, store readiness, password removal, OpenFrame-5.dmg installed
 
