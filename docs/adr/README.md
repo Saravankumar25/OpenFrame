@@ -47,6 +47,7 @@
 | [0036](ADR-0036-production-pdf-design-system-v2.md) | Production PDF design system v2: lossless logo footer, 66 pt bottom margin, running header on the Call Sheet, titles inside repeating table headers, keep rules, orientation per export as in the design package | **Accepted 2026-10-24** (design; renderer slice follows) | Amends ADR-0008 for production documents |
 | [0037](ADR-0037-conversational-assistant-focus-and-dossiers.md) | Conversational assistant: one answer path for questions, a project index over every object type, focus, short-term and long-term memory, per-turn dossiers with progressive fetch, intent-based answer length, sources behind a button; model unchanged (Gemma 3 1B) | **Accepted 2026-10-26** (design; build follows in slices S0 to S9) | Amends ADR-0035 decision 1, ADR-0013 decision 6, ADR-0028 decision 8 |
 | [0038](ADR-0038-library-file-and-durable-identity.md) | Library file in the user's folder keeps the local user id and the chosen projects and vault folders; lazy vault; explicit re-owning of former owners' private notes | **Accepted 2026-10-27** | Amends ADR-0011 (where the id lives) and ADR-0003 (projects can be moved by the app) |
+| [0039](ADR-0039-internal-builds-open-without-a-team-password.md) | Internal builds open without a team password; the team gate and all its code are removed from both apps | **Accepted 2026-10-27** | Supersedes the gate decisions of ADR-0024 and ADR-0030 decision 5 |
 
 ## 2. Older decisions that are no longer in force (surface the newer one)
 

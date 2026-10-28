@@ -98,6 +98,13 @@ struct AppCommands: Commands {
             }
             .keyboardShortcut("s", modifiers: [.command, .control])
             .disabled(!isProject)
+            // A menu command, not only the toolbar button's shortcut: a toolbar button's key
+            // equivalent is unreliable once a sheet or the Settings window has had focus.
+            Button("Open or Close AI Assistant") {
+                NotificationCenter.default.post(name: .openFrameToggleAssistant, object: nil)
+            }
+            .keyboardShortcut("j", modifiers: .command)
+            .disabled(!isProject)
         }
         CommandMenu("Go") {
             // Back and Forward through the pages visited (Windows: the top-bar arrows).

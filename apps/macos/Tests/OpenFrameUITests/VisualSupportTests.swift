@@ -127,6 +127,17 @@ struct VisualSupportTests {
         #expect(VisualText.sceneLabel(scene("4", "L4")) == "Scene 4: INT. ROOM 4")
     }
 
+    // MARK: Storyboard grid
+
+    @Test func theStoryboardGridFitsThePaneAtTheSmallestWindow() {
+        // Three columns, as on Windows (repeat(3, 1fr)).
+        #expect(StoryboardLayout.columns.count == 3)
+        // At the smallest window with the sidebar and the AI Assistant open the storyboard pane is
+        // 370 points wide (the E2E window fit check measured it); the page column keeps
+        // PageSpacing.large on each side.
+        #expect(StoryboardLayout.gridMinimumWidth + 2 * PageSpacing.large <= 370)
+    }
+
     // MARK: Sketch
 
     @Test func theSketchToolKeepsStrokesUndoesAndClears() {

@@ -24,27 +24,28 @@ struct ScrollingPage<Content: View>: View {
 /// Gives its content the given width, or the content's own minimum width when that is larger.
 /// Inside a scroll view that scrolls sideways the proposal has no width, so without this every
 /// line of text would ask for its full length on one line.
+///
+/// The content is measured at the given width only. A view offered less than its minimum answers
+/// with its minimum, so that one measurement also tells when the page must scroll sideways. An
+/// extra measurement at a width of zero (asking for the minimum directly) made an empty page,
+/// whose ContentUnavailableView sits in a ViewThatFits, take tens of seconds to lay out.
 struct AtLeastWidth: Layout {
     var width: CGFloat
 
-    private func target(_ sub: LayoutSubview, height: CGFloat?) -> CGFloat {
-        let minimum = sub.sizeThatFits(ProposedViewSize(width: 0, height: height)).width
-        return max(width, minimum.isFinite ? minimum.rounded(.up) : width)
+    private func measure(_ sub: LayoutSubview, height: CGFloat?) -> CGSize {
+        let size = sub.sizeThatFits(ProposedViewSize(width: width, height: height))
+        guard size.width.isFinite, size.width.rounded(.up) > width else { return CGSize(width: width, height: size.height) }
+        let wider = size.width.rounded(.up)
+        return CGSize(width: wider, height: sub.sizeThatFits(ProposedViewSize(width: wider, height: height)).height)
     }
 
     func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
         guard let sub = subviews.first else { return .zero }
-        let w = target(sub, height: proposal.height)
-        let size = sub.sizeThatFits(ProposedViewSize(width: w, height: proposal.height))
-        FIX2DEBUG.n += 1
-        if FIX2DEBUG.n < 3000 { FileHandle.standardError.write("FIX2 fit width=\(width) prop=\(String(describing: proposal.width))x\(String(describing: proposal.height)) w=\(w) h=\(size.height)\n".data(using: .utf8)!) }
-        return CGSize(width: w, height: size.height)
+        return measure(sub, height: proposal.height)
     }
 
     func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
         guard let sub = subviews.first else { return }
-        FIX2DEBUG.n += 1
-        if FIX2DEBUG.n < 3000 { FileHandle.standardError.write("FIX2 place width=\(width) bounds=\(bounds) prop=\(String(describing: proposal.width))x\(String(describing: proposal.height))\n".data(using: .utf8)!) }
         sub.place(at: bounds.origin, anchor: .topLeading, proposal: ProposedViewSize(width: bounds.width, height: bounds.height))
     }
 }
@@ -134,6 +135,3 @@ extension View {
         }
     }
 }
-
-// FIX2 TEMPORARY DEBUG, remove before handing back.
-enum FIX2DEBUG { nonisolated(unsafe) static var n = 0 }

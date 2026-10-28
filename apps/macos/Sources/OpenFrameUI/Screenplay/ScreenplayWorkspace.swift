@@ -548,7 +548,8 @@ struct ScreenplayWorkspace: View {
         HSplitView {
             if !focus && scenesShown {
                 SceneNavigator(model: model, panels: panels, currentIndex: currentIndex)
-                    .frame(minWidth: 120, idealWidth: 240, maxWidth: 340)
+                    // Never wider than the page leaves room for, so the page pane keeps its minimum.
+                    .frame(minWidth: 120, idealWidth: 240, maxWidth: max(120, min(340, pageWidth - 1 - 340)))
             }
             VStack(spacing: 0) {
                 if model.showReplace && !focus { ScreenplayReplaceBar(model: model) }
@@ -926,6 +927,12 @@ struct ScreenplayEditorHost: NSViewRepresentable {
     let onMove: (EditorParagraph, Int) -> Void
 
     func makeCoordinator() -> Coordinator { Coordinator(model: model, onMove: onMove) }
+
+    /// The scroll view takes the room it is offered. Without this its size followed the page inside
+    /// it (wider than a narrow pane), and the pane ran past the window.
+    func sizeThatFits(_ proposal: ProposedViewSize, nsView: NSScrollView, context: Context) -> CGSize? {
+        CGSize(width: proposal.width ?? 340, height: proposal.height ?? 400)
+    }
 
     func makeNSView(context: Context) -> NSScrollView {
         let scroll = NSScrollView()

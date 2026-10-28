@@ -477,7 +477,9 @@ fileprivate extension UI {
         func walk(_ e: Element, _ depth: Int) {
             if depth > 60 { return }
             if interactive.contains(e.role) {
-                let sub = e.obj.perform(NSSelectorFromString("accessibilitySubrole"))?.takeUnretainedValue() as? String ?? ""
+                // Asked only when the element answers it: an unanswered selector raises an exception that
+                // AppKit swallows, and the scenario never finishes.
+                let sub = e.subrole
                 let named = !e.label.isEmpty || !e.title.isEmpty || !(e.help).isEmpty
                     || e.children.contains { !$0.text.isEmpty }
                     || (e.role == "AXTextField" && !e.value.isEmpty)
@@ -555,6 +557,20 @@ fileprivate extension UI {
         return (Int((c.redComponent * 255).rounded()), Int((c.greenComponent * 255).rounded()), Int((c.blueComponent * 255).rounded()))
     }
 
+    /// The Light "bg" of OpenFrame Default on the Mac, read from the palette file the app ships.
+    func macDefaultLightBackground() throws -> (r: Int, g: Int, b: Int) {
+        let bases = [Bundle.main.resourceURL, Bundle.main.bundleURL].compactMap { $0 }
+        for base in bases {
+            let url = base.appendingPathComponent("OpenFrameStudio_OpenFrameUI.bundle").appendingPathComponent("macDefaultTheme.json")
+            guard let data = try? Data(contentsOf: url),
+                  let root = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  let light = root["light"] as? [String: String], let hex = light["bg"],
+                  hex.hasPrefix("#"), hex.count == 7, let v = Int(hex.dropFirst(), radix: 16) else { continue }
+            return ((v >> 16) & 255, (v >> 8) & 255, v & 255)
+        }
+        throw DriverError("macDefaultTheme.json not found in the app bundle")
+    }
+
     /// Shows one of the 15 screens of the theme walk.
     func showThemeScreen(_ screen: String) async throws {
         if screen == "Application Home" {
@@ -579,11 +595,24 @@ fileprivate extension UI {
     }
 
     /// Text on the main window whose contrast against the colour behind it is under 4.5 to 1 (3 to 1 for large text).
+    nonisolated(unsafe) static var problemShots = 0
+
     func readabilityProblems(screen: String) -> [String] {
         guard let w = windows.first(where: { !$0.title.contains("Settings") && !$0.title.hasPrefix("Appearance") && $0.frame.width > 400 }),
               let view = w.contentView?.superview ?? w.contentView,
               let rep = view.bitmapImageRepForCachingDisplay(in: view.bounds) else { return ["no window to read"] }
         view.cacheDisplay(in: view.bounds, to: rep)
+        // One sRGB copy of the bitmap as plain bytes: reading each pixel through NSColor was the slow part of this walk.
+        let pw = rep.pixelsWide, ph = rep.pixelsHigh
+        var bytes = [UInt8](repeating: 0, count: pw * ph * 4)
+        guard let cg = rep.cgImage, let space = CGColorSpace(name: CGColorSpace.sRGB),
+              let cx = CGContext(data: &bytes, width: pw, height: ph, bitsPerComponent: 8, bytesPerRow: pw * 4, space: space,
+                                 bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return ["no window to read"] }
+        cx.draw(cg, in: CGRect(x: 0, y: 0, width: pw, height: ph))
+        func pixel(_ x: Int, _ y: Int) -> (Double, Double, Double) {
+            let i = (y * pw + x) * 4
+            return (Double(bytes[i]) / 255, Double(bytes[i + 1]) / 255, Double(bytes[i + 2]) / 255)
+        }
         let scale = Double(rep.pixelsWide) / Double(view.bounds.width)
         func lum(_ c: (Double, Double, Double)) -> Double {
             func f(_ v: Double) -> Double { v <= 0.03928 ? v / 12.92 : pow((v + 0.055) / 1.055, 2.4) }
@@ -592,7 +621,16 @@ fileprivate extension UI {
         var out: [String] = []
         var seen = Set<String>()
         let roles: Set<String> = ["AXStaticText", "AXButton", "AXMenuButton", "AXRadioButton", "AXCheckBox", "AXTextField", "AXHeading"]
-        for e in all() where roles.contains(e.role) && !e.text.isEmpty && !e.identifier.hasPrefix("screenplay-editor") && !e.identifier.hasPrefix("theme-card") {
+        // Only the elements of this window: the Settings window beneath it has its own tree.
+        var own: [Element] = []
+        func walkOwn(_ e: Element, _ depth: Int) {
+            own.append(e)
+            guard depth < 60 else { return }
+            for c in e.children { walkOwn(c, depth + 1) }
+        }
+        let rootEl = Element(obj: w)
+        if rootEl.children.isEmpty, let cv = w.contentView { walkOwn(Element(obj: cv), 0) } else { walkOwn(rootEl, 0) }
+        for e in own where roles.contains(e.role) && !e.text.isEmpty && !e.identifier.hasPrefix("screenplay-editor") && !e.identifier.hasPrefix("theme-card") {
             let f = e.frame
             guard f.width > 6, f.height > 6, f.width < 900, f.minX.isFinite, f.minY.isFinite, f.maxX.isFinite, f.maxY.isFinite else { continue }
             // Only text the person can see on this window: the Settings window and sheets lie over it.
@@ -612,8 +650,7 @@ fileprivate extension UI {
             var px: [(Double, Double, Double)] = []
             for y in stride(from: y0, through: y1, by: 1) {
                 for x in stride(from: x0, through: x1, by: 1) {
-                    guard let c = rep.colorAt(x: x, y: y)?.usingColorSpace(.sRGB) else { continue }
-                    let t = (Double(c.redComponent), Double(c.greenComponent), Double(c.blueComponent))
+                    let t = pixel(x, y)
                     px.append(t)
                     let k = "\(Int(t.0 * 31)),\(Int(t.1 * 31)),\(Int(t.2 * 31))"
                     counts[k] = ((counts[k]?.n ?? 0) + 1, t)
@@ -632,6 +669,10 @@ fileprivate extension UI {
             guard ink >= 6 else { continue }   // an icon or an empty box: no text to read
             let large = f.height >= 24
             if best < (large ? 3.0 : 4.5) { out.append("\"\(e.text.prefix(30))\" \(String(format: "%.2f", best))") }
+        }
+        if !out.isEmpty, UI.problemShots < 6, let png = rep.representation(using: .png, properties: [:]) {
+            UI.problemShots += 1
+            try? png.write(to: artifacts.appendingPathComponent("hard-to-read-\(screen.replacingOccurrences(of: " ", with: "-"))-\(Int(Date().timeIntervalSince1970) % 100000).png"))
         }
         return out
     }
@@ -2473,10 +2514,12 @@ extension Scenarios {
                     return c.r < 80 && c.g < 80 && c.b < 80
                 }
                 try await ui.chooseMode("Light")
-                try await ui.waitUntil("the background is 243, 241, 236") {
+                // The expected colour is the Light background of OpenFrame Default on the Mac (macDefaultTheme.json).
+                let want = try ui.macDefaultLightBackground()
+                try await ui.waitUntil("the background is \(want.r), \(want.g), \(want.b)") {
                     guard let c = ui.backgroundRGB() else { return false }
                     ui.log("background \(c)")
-                    return abs(c.r - 243) <= 2 && abs(c.g - 241) <= 2 && abs(c.b - 236) <= 2
+                    return abs(c.r - want.r) <= 2 && abs(c.g - want.g) <= 2 && abs(c.b - want.b) <= 2
                 }
                 try await ui.quiet()
                 try await ui.act(id: "theme-card-midnight-reel", role: "AXButton")

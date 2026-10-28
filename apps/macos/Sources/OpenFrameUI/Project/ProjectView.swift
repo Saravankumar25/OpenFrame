@@ -141,9 +141,7 @@ struct ProjectView: View {
 
     private func withSheets(_ content: some View) -> some View {
         content
-        .task(id: app.changes.any) {
-            if let now = try? await app.core?.projectCurrent(), now.id == project.id { live = now }
-        }
+        .background(ProjectRefresher(projectId: project.id, live: $live))
         .themedSheet(isPresented: Binding(get: { renaming != nil }, set: { if !$0 { renaming = nil } })) {
             if let recent = renaming { RenameProjectSheet(project: recent, actions: ProjectActions(app: app)) {} }
         }
@@ -405,7 +403,6 @@ struct ProjectView: View {
         } label: {
             Label("Assistant", systemImage: "sparkles").labelStyle(.titleAndIcon)
         }
-        .keyboardShortcut("j", modifiers: .command)
         .help(assistantOpen ? "Close AI Assistant (Command+J)" : "Open AI Assistant (Command+J)")
         .accessibilityLabel(assistantOpen ? "Close AI Assistant" : "Open AI Assistant")
         .accessibilityIdentifier("ai-toggle")
@@ -538,5 +535,23 @@ private struct ToolbarWithoutTitle: ViewModifier {
         } else {
             content
         }
+    }
+}
+
+/// Reads the open project again after any change (rename, undo and redo change its title and
+/// status). Only this empty view watches every change: when the whole project window did, each
+/// change anywhere drew the window and its page again.
+private struct ProjectRefresher: View {
+    let projectId: String
+    @Binding var live: ProjectSummary?
+    @Environment(AppModel.self) private var app
+
+    var body: some View {
+        Color.clear
+            .frame(width: 0, height: 0)
+            .accessibilityHidden(true)
+            .task(id: app.changes.any) {
+                if let now = try? await app.core?.projectCurrent(), now.id == projectId, now != live { live = now }
+            }
     }
 }

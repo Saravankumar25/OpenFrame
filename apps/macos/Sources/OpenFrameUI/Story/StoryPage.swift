@@ -538,6 +538,12 @@ struct StoryPageEditor: NSViewRepresentable {
 
     func makeCoordinator() -> Coordinator { Coordinator() }
 
+    /// The scroll view takes the room it is offered; the sheet inside scrolls. Its size must not
+    /// follow the sheet, which would push the pane past a narrow window.
+    func sizeThatFits(_ proposal: ProposedViewSize, nsView: StoryPageScrollView, context: Context) -> CGSize? {
+        CGSize(width: proposal.width ?? 300, height: proposal.height ?? 300)
+    }
+
     func makeNSView(context: Context) -> StoryPageScrollView {
         let scroll = StoryPageScrollView()
         scroll.contentView = StoryCenteringClipView()

@@ -158,7 +158,8 @@ struct StoryboardsView: View {
             Text("A panel needs only a visual area and a short description. Link panels to shots whenever you like. Neither is required.")
         } actions: {
             if model.canAdd {
-                HStack {
+                // The buttons wrap on a narrow pane instead of widening it past the window.
+                CenteredWrap(spacing: 8, lineSpacing: 8) {
                     Button { Task { await model.importImagePanel() } } label: { Label("Import Image", systemImage: "photo.badge.plus") }
                         .accessibilityIdentifier("storyboard-empty-image")
                     Button { model.sheet = .sketch(panelId: nil) } label: { Label("Draw / Sketch", systemImage: "pencil.tip") }
@@ -166,7 +167,6 @@ struct StoryboardsView: View {
                     Button { Task { await model.addPanel(.placeholder) } } label: { Label("Empty Panel", systemImage: "square.dashed") }
                         .accessibilityIdentifier("storyboard-empty-panel")
                 }
-                .fixedSize()
             }
         }
         .frame(minHeight: 260)
@@ -177,13 +177,22 @@ struct StoryboardsView: View {
 
 // MARK: Panel grid
 
+enum StoryboardLayout {
+    /// The narrowest a panel column gets: three columns and their gaps fit the storyboard pane at
+    /// the smallest window with the sidebar and the AI Assistant open.
+    static let columnMinimum: CGFloat = 90
+    static let columns = Array(repeating: GridItem(.flexible(minimum: columnMinimum), spacing: 12), count: 3)
+    static var gridMinimumWidth: CGFloat { columnMinimum * 3 + 12 * 2 }
+}
+
 private struct PanelGrid: View {
     @Bindable var model: StoryboardsModel
     @Environment(\.ofTheme) private var theme
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(minimum: 160), spacing: 12), count: 3), spacing: 12) {
+            // Three columns as on Windows (repeat(3, 1fr)); a small minimum keeps the grid inside a narrow pane.
+            LazyVGrid(columns: StoryboardLayout.columns, spacing: 12) {
                 ForEach(Array(model.panels.enumerated()), id: \.element.id) { i, p in
                     PanelCard(model: model, panel: p, number: i + 1, count: model.panels.count)
                 }

@@ -626,7 +626,9 @@ fileprivate extension UI {
     /// moves, the move to the target, release. The events go straight to the window, one after the
     /// other, with the time between them a hand takes.
     func dragAlong(from a: NSPoint, to b: NSPoint, steps: Int = 14) async throws {
-        guard let w = NSApp.orderedWindows.first(where: { $0.isVisible && $0.frame.contains(a) }) else { throw DriverError("no window under the drag start \(a)") }
+        guard var w = NSApp.orderedWindows.first(where: { $0.isVisible && $0.frame.contains(a) }) else { throw DriverError("no window under the drag start \(a)") }
+        // A sheet covering the point gets the drag, not the window it hangs from.
+        while let sheet = w.attachedSheet, sheet.isVisible, sheet.frame.contains(a) { w = sheet }
         w.makeKeyAndOrderFront(nil)
         func send(_ type: NSEvent.EventType, _ p: NSPoint) {
             guard let ev = NSEvent.mouseEvent(with: type, location: w.convertPoint(fromScreen: p), modifierFlags: [], timestamp: ProcessInfo.processInfo.systemUptime,
