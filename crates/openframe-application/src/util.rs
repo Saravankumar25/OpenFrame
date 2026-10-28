@@ -188,13 +188,38 @@ pub fn load_assets_bulk<'a>(
 // ------------------------------------------------------------------ user-chosen paths
 
 /// Folders OpenFrame owns. User-chosen outputs are never written inside them
-/// (Security review 2026-09-30, PATH-02/PATH-04).
+/// (Security review 2026-09-30, PATH-02/PATH-04). The folder of the library pointer is one of
+/// them: on macOS it is a folder of its own, on Windows the Roaming `OpenFrame` folder.
 pub fn protected_roots(core: &AppCore) -> Vec<PathBuf> {
     let mut v = vec![core.config.app_data_dir.clone(), core.vault_dir()];
     if let Some(p) = core.project_opt() {
         v.push(p.layout.root().to_path_buf());
     }
+    if let Some(dir) = core
+        .config
+        .library_setup
+        .as_ref()
+        .and_then(|s| s.pointer_file.parent())
+    {
+        v.push(dir.to_path_buf());
+    }
     v
+}
+
+/// Files OpenFrame owns in folders that also hold the person's own files: the library file
+/// (`library.json` in the library folder) and the library pointer.
+fn protected_files(core: &AppCore) -> Vec<PathBuf> {
+    let mut v: Vec<PathBuf> = core.library_file().into_iter().collect();
+    if let Some(s) = &core.config.library_setup {
+        v.push(s.pointer_file.clone());
+    }
+    v
+}
+
+/// `path` with its folder resolved through links, so two spellings of one file compare equal.
+fn resolved_file(path: &Path) -> Option<PathBuf> {
+    let dir = path.parent()?.canonicalize().ok()?;
+    Some(dir.join(path.file_name()?))
 }
 
 /// Final check for a user-chosen output file (export, package, file copy) after the caller
@@ -205,6 +230,15 @@ pub fn check_output_file(core: &AppCore, path: &Path) -> AppResult<()> {
     let roots = protected_roots(core);
     let refs: Vec<&Path> = roots.iter().map(PathBuf::as_path).collect();
     openframe_security::validate_output_file(path, &refs)?;
+    let dest = resolved_file(path);
+    if protected_files(core).iter().any(|f| {
+        crate::modules::storage::library::same_place(f, path)
+            || (dest.is_some() && resolved_file(f) == dest)
+    }) {
+        return Err(AppError::invalid_input(
+            "OpenFrame keeps its own files in that folder. Choose a different file name.",
+        ));
+    }
     remember_output(core, path);
     Ok(())
 }

@@ -329,6 +329,7 @@ pub struct AiReportResult {
 /// Every trace row (numbers and ids only) and the health figures, to a file the person chose.
 pub fn export_report(core: &AppCore, _actor: &Actor, a: AiReportArgs) -> AppResult<AiReportResult> {
     let dest = destination(&a.path)?;
+    crate::util::check_output_file(core, &dest)?;
     let (rows, health) =
         core.with_app_db(|c| Ok((trace_json(c, None)?, health_from(&rows(c, HEALTH_WINDOW)?))))?;
     let doc = json!({

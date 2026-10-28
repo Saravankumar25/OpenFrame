@@ -36,19 +36,44 @@ pub(super) struct Copied {
     pub sha256: String,
 }
 
+/// Finder files are small; anything larger is the person's own file.
+const FINDER_FILE_MAX_BYTES: u64 = 1 << 20;
+/// The first bytes of an AppleDouble file (`._name`).
+const APPLE_DOUBLE_MAGIC: &[u8] = &[0x00, 0x05, 0x16, 0x07];
+/// The first bytes of a `.DS_Store` file ("Bud1" after a 4-byte alignment field).
+const DS_STORE_MAGIC: &[u8] = b"\0\0\0\x01Bud1";
+
 /// Files Finder writes into any folder it shows (`.DS_Store`, and `._name` AppleDouble files on
 /// drives without extended attributes). They are not OpenFrame data: a move neither copies nor
-/// checks them, and they never make a folder count as holding something.
-pub(crate) fn is_finder_metadata(name: &str) -> bool {
-    name == ".DS_Store" || name.starts_with("._")
+/// checks them, and they never make a folder count as holding something. The name alone is not
+/// enough, because a person may name a file `._notes`: only a regular file of at most 1 MB that
+/// starts with the format's own bytes counts. Anything else is user data, copied and never
+/// deleted as clutter.
+pub(crate) fn is_finder_metadata(path: &Path) -> bool {
+    let name = path.file_name().unwrap_or_default().to_string_lossy();
+    let magic = if name == ".DS_Store" {
+        DS_STORE_MAGIC
+    } else if name.starts_with("._") {
+        APPLE_DOUBLE_MAGIC
+    } else {
+        return false;
+    };
+    let Ok(meta) = fs::symlink_metadata(path) else {
+        return false;
+    };
+    if !meta.is_file() || meta.len() > FINDER_FILE_MAX_BYTES {
+        return false;
+    }
+    let mut head = [0u8; 8];
+    let head = &mut head[..magic.len()];
+    fs::File::open(path).is_ok_and(|mut f| f.read_exact(head).is_ok()) && head == magic
 }
 
 /// True when `dir` holds nothing, or only Finder metadata files.
 pub(super) fn is_empty_but_for_finder_files(dir: &Path) -> std::io::Result<bool> {
     for entry in fs::read_dir(dir)? {
         let entry = entry?;
-        let name = entry.file_name();
-        if !(entry.file_type()?.is_file() && is_finder_metadata(&name.to_string_lossy())) {
+        if !(entry.file_type()?.is_file() && is_finder_metadata(&entry.path())) {
             return Ok(false);
         }
     }
@@ -62,12 +87,26 @@ pub(super) fn clear_finder_files(dir: &Path) {
         return;
     };
     for entry in entries.flatten() {
-        if entry.file_type().is_ok_and(|t| t.is_file())
-            && is_finder_metadata(&entry.file_name().to_string_lossy())
-        {
+        if entry.file_type().is_ok_and(|t| t.is_file()) && is_finder_metadata(&entry.path()) {
             let _ = fs::remove_file(entry.path());
         }
     }
+}
+
+/// A path from [`walk`] of the person's own folder, checked like any relative path, except that a
+/// name may start with a dot (`.hidden`, `._notes`): such a file is the person's and is copied
+/// like any other. Device and reserved names and names Windows cannot hold are still refused.
+fn walked_relative(rel: &str) -> AppResult<PathBuf> {
+    let masked: Vec<String> = rel
+        .split('/')
+        .map(|part| match part {
+            "." | ".." => part.to_string(),
+            p if p.starts_with('.') => format!("_{p}"),
+            p => p.to_string(),
+        })
+        .collect();
+    openframe_security::validate_relative(&masked.join("/"))?;
+    Ok(rel.split('/').collect())
 }
 
 /// Everything under `root` except the top-level names in `skip_top` (matched without case) and
@@ -91,7 +130,7 @@ pub(super) fn walk(root: &Path, skip_top: &[&str]) -> AppResult<Tree> {
             if kind.is_dir() {
                 tree.dirs.push(rel.clone());
                 pending.push((entry.path(), rel));
-            } else if kind.is_file() && !is_finder_metadata(&rel_name(&rel)) {
+            } else if kind.is_file() && !is_finder_metadata(&entry.path()) {
                 let size = entry.metadata()?.len();
                 tree.bytes += size;
                 tree.files.push(FileEntry {
@@ -120,14 +159,14 @@ pub(super) fn copy(
     cancelled: &dyn Fn() -> bool,
 ) -> AppResult<Vec<Copied>> {
     for dir in &tree.dirs {
-        fs::create_dir_all(dest.join(openframe_security::validate_relative(dir)?))?;
+        fs::create_dir_all(dest.join(walked_relative(dir)?))?;
     }
     let total = tree.bytes.max(1);
     let mut done = 0u64;
     let mut copied = Vec::with_capacity(tree.files.len());
     let mut buf = vec![0u8; CHUNK];
     for file in &tree.files {
-        let target = dest.join(openframe_security::validate_relative(&file.rel)?);
+        let target = dest.join(walked_relative(&file.rel)?);
         let mut input = fs::File::open(&file.path)?;
         let mut output = fs::OpenOptions::new()
             .write(true)
@@ -175,7 +214,7 @@ pub(super) fn verify(
         if cancelled() {
             return Err(AppError::cancelled());
         }
-        let path = dest.join(openframe_security::validate_relative(&file.rel)?);
+        let path = dest.join(walked_relative(&file.rel)?);
         if fs::metadata(&path)?.len() != file.size {
             return Err(wrong(&file.rel));
         }
@@ -223,10 +262,6 @@ pub(super) fn remove_source(root: &Path, tree: &Tree, discard: &[&str], kept: &[
     fs::remove_dir(root).is_ok()
 }
 
-fn rel_name(rel: &str) -> String {
-    rel.rsplit('/').next().unwrap_or(rel).to_string()
-}
-
 /// `<folder name>.openframe-staging-<ms>` beside `dir`, a name that does not exist yet. Start
 /// removes folders with this name (doc 40 section 5).
 pub(super) fn aside_name(dir: &Path) -> PathBuf {
@@ -255,7 +290,7 @@ pub(super) fn discard(dir: &Path) {
     let _ = fs::remove_dir_all(target);
 }
 
-/// Refuse a move that would run the destination drive out of space half way.
+/// Refuse a move or a vault restore that would run the destination drive out of space half way.
 pub(super) fn ensure_space(dest_parent: &Path, needed: u64) -> AppResult<()> {
     let margin = 64 << 20;
     let Some(free) = openframe_platform::drives::free_bytes(dest_parent) else {
@@ -268,7 +303,7 @@ pub(super) fn ensure_space(dest_parent: &Path, needed: u64) -> AppResult<()> {
     Err(AppError::new(
         "storage.not_enough_space",
         format!(
-            "There isn't enough free space on that drive. The move needs about {} MB and {} MB is free. Free some space or choose another drive.",
+            "There isn't enough free space on that drive. This needs about {} MB and {} MB is free. Free some space or choose another drive.",
             mb(needed),
             mb(free)
         ),
@@ -279,13 +314,31 @@ pub(super) fn ensure_space(dest_parent: &Path, needed: u64) -> AppResult<()> {
 mod tests {
     use super::*;
 
+    /// What Finder really writes: a `.DS_Store` and an AppleDouble header.
+    const DS_STORE: &[u8] = b"\0\0\0\x01Bud1\0\0\x10\0";
+    const APPLE_DOUBLE: &[u8] = &[0x00, 0x05, 0x16, 0x07, 0x00, 0x02, 0x00, 0x00];
+
     #[test]
-    fn finder_metadata_names_are_recognised() {
-        assert!(is_finder_metadata(".DS_Store"));
-        assert!(is_finder_metadata("._vault.sqlite"));
-        assert!(!is_finder_metadata("vault.sqlite"));
-        assert!(!is_finder_metadata(".hidden"));
-        assert!(!is_finder_metadata("DS_Store"));
+    fn finder_metadata_is_recognised_by_name_and_content() {
+        let dir = tempfile::tempdir().unwrap();
+        let file = |name: &str, bytes: &[u8]| {
+            let p = dir.path().join(name);
+            fs::write(&p, bytes).unwrap();
+            p
+        };
+        assert!(is_finder_metadata(&file(".DS_Store", DS_STORE)));
+        assert!(is_finder_metadata(&file("._vault.sqlite", APPLE_DOUBLE)));
+        assert!(!is_finder_metadata(&file("vault.sqlite", APPLE_DOUBLE)));
+        assert!(!is_finder_metadata(&file(".hidden", DS_STORE)));
+        assert!(!is_finder_metadata(&file("DS_Store", DS_STORE)));
+        // The right name with the person's own content is user data.
+        assert!(!is_finder_metadata(&file("._notes", b"my notes")));
+        assert!(!is_finder_metadata(&file("._short", &[0x00, 0x05])));
+        let mut big = APPLE_DOUBLE.to_vec();
+        big.resize((FINDER_FILE_MAX_BYTES + 1) as usize, 0);
+        assert!(!is_finder_metadata(&file("._big", &big)));
+        fs::create_dir(dir.path().join("._folder")).unwrap();
+        assert!(!is_finder_metadata(&dir.path().join("._folder")));
     }
 
     #[test]
@@ -300,9 +353,9 @@ mod tests {
         )
         .unwrap();
         for dir in ["", "Projects", "Projects/Night Bus.openframe"] {
-            fs::write(root.join(dir).join(".DS_Store"), b"finder").unwrap();
+            fs::write(root.join(dir).join(".DS_Store"), DS_STORE).unwrap();
         }
-        fs::write(root.join("Projects/._Night Bus.openframe"), b"apple double").unwrap();
+        fs::write(root.join("Projects/._Night Bus.openframe"), APPLE_DOUBLE).unwrap();
 
         let tree = walk(&root, &[]).unwrap();
         let rels: Vec<&str> = tree.files.iter().map(|f| f.rel.as_str()).collect();
@@ -321,10 +374,51 @@ mod tests {
     }
 
     #[test]
+    fn a_file_of_the_person_named_like_finder_metadata_is_copied_and_survives() {
+        let src = tempfile::tempdir().unwrap();
+        let root = src.path().join("Vault");
+        fs::create_dir_all(root.join("assets")).unwrap();
+        fs::write(root.join("._notes"), b"lines for scene 4").unwrap();
+        fs::write(root.join("assets/.DS_Store"), b"not a Finder file").unwrap();
+
+        let tree = walk(&root, &[]).unwrap();
+        let rels: Vec<&str> = tree.files.iter().map(|f| f.rel.as_str()).collect();
+        assert_eq!(rels, ["._notes", "assets/.DS_Store"]);
+        assert!(walked_relative("a/../b").is_err());
+        assert!(walked_relative("assets/NUL").is_err());
+        let dest = src.path().join("Copy");
+        fs::create_dir(&dest).unwrap();
+        let copied = copy(&tree, &dest, &|_, _| {}, &|| false).unwrap();
+        verify(&dest, &copied, &|_, _| {}, &|| false).unwrap();
+        assert_eq!(
+            fs::read(dest.join("._notes")).unwrap(),
+            b"lines for scene 4"
+        );
+
+        // A folder holding only such a file is not empty, and clearing Finder files keeps it.
+        let lone = src.path().join("Lone");
+        fs::create_dir(&lone).unwrap();
+        fs::write(lone.join("._notes"), b"mine").unwrap();
+        assert!(!is_empty_but_for_finder_files(&lone).unwrap());
+        clear_finder_files(&lone);
+        assert!(lone.join("._notes").exists());
+    }
+
+    #[test]
+    fn more_than_the_free_space_is_refused_before_anything_is_written() {
+        let dir = tempfile::tempdir().unwrap();
+        ensure_space(dir.path(), 1).unwrap();
+        if openframe_platform::drives::free_bytes(dir.path()).is_some() {
+            let e = ensure_space(dir.path(), u64::MAX / 2).unwrap_err();
+            assert_eq!(e.code_str(), "storage.not_enough_space");
+        }
+    }
+
+    #[test]
     fn a_folder_with_only_finder_files_counts_as_empty() {
         let dir = tempfile::tempdir().unwrap();
         assert!(is_empty_but_for_finder_files(dir.path()).unwrap());
-        fs::write(dir.path().join(".DS_Store"), b"finder").unwrap();
+        fs::write(dir.path().join(".DS_Store"), DS_STORE).unwrap();
         assert!(is_empty_but_for_finder_files(dir.path()).unwrap());
         fs::create_dir(dir.path().join("._sub")).unwrap();
         assert!(!is_empty_but_for_finder_files(dir.path()).unwrap());

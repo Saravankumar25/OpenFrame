@@ -225,6 +225,71 @@ fn a_file_system_path_never_reaches_the_facts() {
 }
 
 #[test]
+fn mac_paths_and_home_paths_never_reach_the_facts() {
+    let mut facts = vec![Fact::new("File", "f1").f(
+        "note",
+        "from /Volumes/Shoot SSD/day1.mov, ~/Desktop/call.pdf, /Applications/Final.app/x and /Library/Fonts/Courier.ttf",
+    )];
+    let mut missing = Vec::new();
+    guard::apply(&owner(), &mut facts, &mut missing);
+    let line = facts[0].render();
+    for gone in ["/Volumes/", "~/", "/Applications/", "/Library/"] {
+        assert!(!line.contains(gone), "{gone} in {line}");
+    }
+    assert!(line.contains("Courier.ttf"), "{line}");
+
+    // A phrase with slashes is not a path.
+    let mut facts = vec![Fact::new("Location", "l1").f("note", "school/library/hall")];
+    guard::apply(&owner(), &mut facts, &mut missing);
+    assert_eq!(facts[0].field("note"), Some("school/library/hall"));
+}
+
+#[test]
+fn contact_details_typed_into_free_text_are_hidden_from_a_role_that_may_not_see_them() {
+    let make = || {
+        vec![
+            Fact::new("Location", "l1")
+                .f("name", "Fort Kochi beach")
+                .f(
+                    "note",
+                    "Ask Rafi on +91 98470 12345 or rafi.k@example.test before 2026-10-27 08:30.",
+                )
+                .f("budget", "Permit fee 12,500 for scenes 12-45")
+                .require("Fort Kochi beach")
+                .require("+91 98470 12345"),
+            Fact::new("Relationship", "r1").said("Meera calls 0484 2668 221 every night."),
+        ]
+    };
+    let mut facts = make();
+    let mut missing = Vec::new();
+    guard::apply(&owner(), &mut facts, &mut missing);
+    assert!(facts[0].render().contains("rafi.k@example.test"));
+    assert!(missing.is_empty());
+
+    let mut facts = make();
+    let mut missing = Vec::new();
+    guard::apply(&viewer(), &mut facts, &mut missing);
+    let text: String = facts.iter().map(Fact::render).collect();
+    for gone in ["rafi.k@example.test", "98470", "2668"] {
+        assert!(!text.contains(gone), "{gone} in {text}");
+    }
+    for kept in [
+        "2026-10-27",
+        "12,500",
+        "12-45",
+        "Fort Kochi beach",
+        "Ask Rafi",
+    ] {
+        assert!(text.contains(kept), "{kept} lost from {text}");
+    }
+    assert_eq!(facts[0].requires, vec!["Fort Kochi beach"]);
+    assert_eq!(
+        missing,
+        vec!["Contact details are not shown for your role."]
+    );
+}
+
+#[test]
 fn the_table_has_one_fetcher_for_every_domain() {
     let all = [
         Domain::Story,

@@ -94,3 +94,16 @@ a change to repeat on Windows.
 
 Windows names kept everywhere: the Mac Daily View now calls `schedule.export_daily_view` and the Story page calls
 `story.page.get`, `story.page.save` and `story.page.export`.
+
+## Security review fixes of 2026-10-27 (shared core: repeat on Windows, ADR-0034)
+
+| File | Change |
+|---|---|
+| `openframe-platform/src/drives.rs`, `openframe-security/src/lib.rs` | macOS network volumes (`statfs` without `MNT_LOCAL`) are refused where network folders are refused |
+| `storage/tree.rs` | A `._*` or `.DS_Store` file is Finder metadata only when it is a regular file of at most 1 MB with the AppleDouble or `Bud1` magic; any other such file is user data and moves with the rest; names from the app's own walk may start with a dot |
+| `ai/conversation_export.rs`, `ai/trace.rs`, `util.rs` | AI exports go through `check_output_file`; the pointer folder is protected; `library.json` and the pointer are never overwritten by a save |
+| `ai/answer/prompt.rs` | Screenplay titles in the system message are escaped, one line, at most 120 characters |
+| `ai/dossier/guard.rs` | Path stripping covers `/Volumes/`, `~/`, `/Applications/`, `/Library/`; without contact rights e-mails and phone numbers are hidden in every field |
+| `ai/memory/rules.rs` | An answer that looks like an instruction is never saved to memory |
+| `openframe-persistence/src/lib.rs` | Side files are changed through a descriptor opened with `O_NOFOLLOW` (regular files only) |
+| `storage/library_ops.rs`, `storage/vault_archive.rs`, `openframe-security/src/archive.rs` | A remembered library inside the app data is ignored; a vault restore checks free space against the declared unpacked size first |

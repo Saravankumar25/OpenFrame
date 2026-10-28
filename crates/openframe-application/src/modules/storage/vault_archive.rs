@@ -187,7 +187,8 @@ fn parse_manifest(bytes: &[u8]) -> AppResult<VaultManifest> {
 }
 
 /// Structure, format version, manifest and the list of entries, without extracting anything.
-fn read_header(path: &Path) -> AppResult<(VaultManifest, Vec<String>)> {
+/// The manifest, the entry names and the total size the entries declare once unpacked.
+fn read_header(path: &Path) -> AppResult<(VaultManifest, Vec<String>, u64)> {
     // The file is one the person picked: absolute, no device or reserved names, a real file.
     openframe_security::validate_input_file(path, u64::MAX).map_err(|e| {
         if e.is("security") {
@@ -199,7 +200,7 @@ fn read_header(path: &Path) -> AppResult<(VaultManifest, Vec<String>)> {
             )
         }
     })?;
-    let names = archive::inspect(path, ArchiveLimits::PACKAGE)?;
+    let (names, unpacked) = archive::inspect_sized(path, ArchiveLimits::PACKAGE)?;
     if let Some(stray) = names.iter().find(|n| !is_allowed(n)) {
         return Err(damaged(format!("unexpected entry: {stray}")));
     }
@@ -231,7 +232,7 @@ fn read_header(path: &Path) -> AppResult<(VaultManifest, Vec<String>)> {
     if !present.contains(VAULT_DB) {
         return Err(damaged("vault.sqlite missing"));
     }
-    Ok((manifest, names))
+    Ok((manifest, names, unpacked))
 }
 
 pub(crate) fn inspect(
@@ -240,7 +241,7 @@ pub(crate) fn inspect(
     args: VaultFileArgs,
 ) -> AppResult<VaultInspection> {
     let path = PathBuf::from(args.path.trim());
-    let (manifest, names) = read_header(&path)?;
+    let (manifest, names, _) = read_header(&path)?;
     Ok(VaultInspection {
         file_name: path
             .file_name()
@@ -454,7 +455,7 @@ fn restore(
     progress: &dyn Fn(f64, &str),
     cancelled: &dyn Fn() -> bool,
 ) -> AppResult<Option<VaultRestoreReport>> {
-    let (manifest, _) = read_header(path)?;
+    let (manifest, _, unpacked) = read_header(path)?;
     let live = core.vault_dir();
     let (Some(parent), Some(name)) = (
         live.parent().filter(|p| !p.as_os_str().is_empty()),
@@ -474,6 +475,8 @@ fn restore(
             ));
         }
     }
+    // The vault it replaces stays until the restored one opens, so all of it must fit beside.
+    tree::ensure_space(parent, unpacked)?;
     let staging_path = parent.join(format!(
         "{}{STAGING_MARKER}{}",
         name.to_string_lossy(),

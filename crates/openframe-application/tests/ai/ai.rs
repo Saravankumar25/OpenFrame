@@ -1309,6 +1309,17 @@ fn a_conversation_is_saved_for_review_only_on_the_persons_call_and_only_their_ow
         let bad = json!({ "conversationId": conv, "path": path });
         assert!(env.call("ai.export_conversation", bad).is_err(), "{path}");
     }
+    // Never into the app data, the open project or the vault.
+    let project = std::path::PathBuf::from(env.project_path());
+    let manifest = project.join("openframe.json");
+    let manifest_before = std::fs::read(&manifest).unwrap();
+    let appdata = env.core.config.app_data_dir.join("review.json");
+    for dest in [&manifest, &appdata] {
+        let bad = json!({ "conversationId": conv, "path": dest.to_string_lossy() });
+        assert!(env.call("ai.export_conversation", bad).is_err(), "{dest:?}");
+    }
+    assert_eq!(std::fs::read(&manifest).unwrap(), manifest_before);
+    assert!(!appdata.exists());
 }
 
 #[test]

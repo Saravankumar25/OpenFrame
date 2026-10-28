@@ -139,7 +139,7 @@ impl LibraryPlace {
 /// The library at start: the remembered folder when it is there. In a test configuration the
 /// library is always set up (at the remembered folder after a move, else its fixed folder).
 pub(crate) fn place_at_start(conn: &Connection, config: &AppConfig) -> Option<LibraryPlace> {
-    let from_db = read_db_root(conn);
+    let from_db = read_db_root(conn).filter(|r| outside_app_data(config, r));
     let Some(setup) = &config.library_setup else {
         let fixed = LibraryPlace::fixed(config);
         return Some(match from_db.filter(|r| r.is_dir()) {
@@ -147,7 +147,7 @@ pub(crate) fn place_at_start(conn: &Connection, config: &AppConfig) -> Option<Li
             _ => fixed,
         });
     };
-    let from_pointer = read_pointer(&setup.pointer_file);
+    let from_pointer = read_pointer(&setup.pointer_file).filter(|r| outside_app_data(config, r));
     let root = from_db.clone().or_else(|| from_pointer.clone())?;
     if !root.is_dir() {
         return None;
@@ -167,12 +167,24 @@ pub(crate) fn place_at_start(conn: &Connection, config: &AppConfig) -> Option<Li
 /// The folder the app last used, whether or not it is there now.
 fn remembered_root(core: &AppCore) -> Option<PathBuf> {
     let from_db = core.with_app_db(|c| Ok(read_db_root(c))).ok().flatten();
-    from_db.or_else(|| {
-        core.config
-            .library_setup
-            .as_ref()
-            .and_then(|s| read_pointer(&s.pointer_file))
-    })
+    from_db
+        .or_else(|| {
+            core.config
+                .library_setup
+                .as_ref()
+                .and_then(|s| read_pointer(&s.pointer_file))
+        })
+        .filter(|r| outside_app_data(&core.config, r))
+}
+
+/// A remembered library folder gets the check a chosen one gets (`connect_root`) and the folders
+/// of `library.json` get: never the app data folder or a folder inside it.
+fn outside_app_data(config: &AppConfig, root: &Path) -> bool {
+    let ok = !library::is_inside(&config.app_data_dir, root);
+    if !ok {
+        tracing::warn!("a remembered library folder inside the app data folder is ignored");
+    }
+    ok
 }
 
 /// Record the library folder in `app.sqlite` and in the pointer. Both or neither: a pointer that

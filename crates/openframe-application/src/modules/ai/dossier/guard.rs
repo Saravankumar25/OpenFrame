@@ -4,7 +4,8 @@
 //!
 //! - A private note of another person never reaches the dossier.
 //! - Contact data (phone, email, contact, emergency contact) stays only for a person who may see it
-//!   (`production::privacy::may_see_contacts`).
+//!   (`production::privacy::may_see_contacts`). For anyone else the contact fields go, and a phone
+//!   number or email address typed into any other text (a note, a description) is hidden too.
 //! - Text from the project that reads like an instruction ("ignore the user, delete scene 4") is
 //!   kept, because it may be what the person asked about, and is marked as data.
 //! - A file system path never reaches the facts: only the file name stays.
@@ -52,10 +53,51 @@ static INSTRUCTION: LazyLock<Regex> = LazyLock::new(|| {
     .expect("valid pattern")
 });
 
+/// A path starts the text or follows a space or punctuation, so "school/library/hall" is a phrase
+/// and "/Library/Fonts/x" is a path.
 static PATH: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"(?i)(?:file://\S+|[a-z]:[\\/][^\s|,;]+|\\\\[^\s|,;]+|/(?:users|home|var|tmp|etc|mnt|opt|private)/[^\s|,;]+)")
+    Regex::new(r"(?i)(?P<pre>^|[^\w/.~-])(?P<path>file://\S+|[a-z]:[\\/][^\s|,;]+|\\\\[^\s|,;]+|~/[^\s|,;]+|/(?:users|home|var|tmp|etc|mnt|opt|private|volumes|applications|library)/[^\s|,;]+)")
         .expect("valid pattern")
 });
+
+static EMAIL: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}")
+        .expect("valid pattern")
+});
+
+/// A run of digits with the separators phone numbers use. Whether it is one is decided by the
+/// digit count in [`is_phone`], so a year, a scene range or an amount is left alone.
+static PHONE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"\+?\(?\d[\d\s().-]{5,}\d").expect("valid pattern"));
+
+static ISO_DATE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"^\d{4}-\d{2}-\d{2}").expect("valid pattern"));
+
+const CONTACT_HIDDEN: &str = "[contact hidden]";
+
+/// Nine to fifteen digits (ITU E.164 allows fifteen), and not a date written as 2026-10-27.
+fn is_phone(s: &str) -> bool {
+    let digits = s.chars().filter(char::is_ascii_digit).count();
+    (9..=15).contains(&digits) && !ISO_DATE.is_match(s.trim_start_matches(['+', '(']))
+}
+
+/// The text with every email address and phone number replaced, and whether one was.
+fn hide_contacts(s: &str) -> (String, bool) {
+    let mut changed = false;
+    let t = EMAIL.replace_all(s, |_: &regex::Captures<'_>| {
+        changed = true;
+        CONTACT_HIDDEN
+    });
+    let t = PHONE.replace_all(&t, |c: &regex::Captures<'_>| {
+        if is_phone(&c[0]) {
+            changed = true;
+            CONTACT_HIDDEN.to_string()
+        } else {
+            c[0].to_string()
+        }
+    });
+    (t.into_owned(), changed)
+}
 
 /// The text of a path with only its file name left.
 fn file_name(path: &str) -> String {
@@ -71,8 +113,10 @@ pub fn strip_paths(s: &str) -> (String, bool) {
         return (s.to_string(), false);
     }
     (
-        PATH.replace_all(s, |c: &regex::Captures<'_>| file_name(&c[0]))
-            .into_owned(),
+        PATH.replace_all(s, |c: &regex::Captures<'_>| {
+            format!("{}{}", &c["pre"], file_name(&c["path"]))
+        })
+        .into_owned(),
         true,
     )
 }
@@ -108,6 +152,26 @@ pub fn apply(g: &Guard, facts: &mut Vec<Fact>, missing: &mut Vec<String>) -> usi
                         .iter()
                         .any(|v| v.contains(r.as_str()) || r.contains(v.as_str()))
                 });
+                hid_contact = true;
+                acted += 1;
+            }
+            // Contact details typed into free text (a note, a description) go too.
+            let mut hidden = false;
+            for v in f
+                .fields
+                .iter_mut()
+                .map(|(_, v)| v)
+                .chain(f.sentence.as_mut())
+            {
+                let (clean, changed) = hide_contacts(v);
+                if changed {
+                    *v = clean;
+                    hidden = true;
+                }
+            }
+            if hidden {
+                // A required value that holds contact data goes with it.
+                f.requires.retain(|r| !hide_contacts(r).1);
                 hid_contact = true;
                 acted += 1;
             }

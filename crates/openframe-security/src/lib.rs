@@ -169,7 +169,6 @@ fn path_rejected(detail: impl Into<String>) -> AppError {
 /// Error code for a refused network location (UNC share or mapped network drive).
 pub const NETWORK_LOCATION_CODE: &str = "project_format.network_location";
 
-#[cfg_attr(not(windows), allow(dead_code))]
 fn network_location_refused(detail: &str) -> AppError {
     AppError::new(
         NETWORK_LOCATION_CODE,
@@ -182,8 +181,9 @@ fn network_location_refused(detail: &str) -> AppError {
 pub use openframe_platform::drives::{DriveKind, drive_kind};
 
 /// Syntactic validation of an absolute, user-chosen path. The path itself is never opened;
-/// with [`NetworkPaths::Refuse`] the drive letter's type is queried, so a mapped network
-/// drive is refused like a UNC path (network drive refusal).
+/// with [`NetworkPaths::Refuse`] the drive letter's type is queried (Windows), or the volume
+/// that holds the path's nearest existing folder (macOS), so a mapped network drive or a
+/// mounted share is refused like a UNC path (network drive refusal).
 pub fn check_user_path(path: &Path, network: NetworkPaths) -> AppResult<()> {
     check_user_path_with(path, network, drive_kind)
 }
@@ -239,6 +239,13 @@ fn check_user_path_with(
                 return Err(path_rejected("relative component"));
             }
         }
+    }
+    // Without drive letters a share is a mount anywhere in the tree (`/Volumes/<share>`).
+    if network == NetworkPaths::Refuse
+        && !openframe_platform::drives::DRIVE_LETTERS
+        && openframe_platform::drives::is_network_volume(path)
+    {
+        return Err(network_location_refused("network volume refused"));
     }
     Ok(())
 }

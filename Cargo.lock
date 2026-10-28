@@ -3133,6 +3133,7 @@ name = "openframe-ai"
 version = "0.1.0"
 dependencies = [
  "hex",
+ "libc",
  "openframe-ai",
  "openframe-domain",
  "openframe-platform",
@@ -3337,6 +3338,7 @@ name = "openframe-persistence"
 version = "0.1.0"
 dependencies = [
  "hex",
+ "libc",
  "openframe-domain",
  "openframe-platform",
  "rusqlite",

@@ -336,7 +336,9 @@ pub fn is_confirmation(message: &str) -> bool {
 }
 
 /// The answer text that may be kept when the person confirms it: a short, plain statement with no
-/// question, no doubt and no contact data. `None` for anything else.
+/// question, no doubt, no contact data and nothing that reads like an instruction (an answer can
+/// repeat text planted in a note, and a confirmation must not carry it into memory). `None` for
+/// anything else.
 pub fn usable_answer(answer: &str) -> Option<String> {
     let one_line = answer.split_whitespace().collect::<Vec<_>>().join(" ");
     let lower = one_line.to_lowercase();
@@ -356,6 +358,7 @@ pub fn usable_answer(answer: &str) -> Option<String> {
     if one_line.is_empty()
         || one_line.chars().count() > CONFIRMABLE_CHARS
         || unsafe_text(&one_line)
+        || crate::modules::ai::dossier::guard::looks_like_instruction(&one_line)
         || doubtful.iter().any(|d| lower.contains(d))
     {
         return None;

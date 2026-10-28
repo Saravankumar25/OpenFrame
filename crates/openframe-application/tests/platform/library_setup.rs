@@ -441,6 +441,65 @@ fn the_pointer_finds_the_library_after_the_app_data_is_deleted() {
 }
 
 #[test]
+fn a_pointer_into_the_app_data_folder_is_ignored() {
+    let env = new_computer();
+    env.ok("library.use_default", json!({}));
+    let dir = quit(env);
+    for suffix in ["", "-wal", "-shm"] {
+        let _ = fs::remove_file(
+            dir.path()
+                .join("appdata")
+                .join(format!("app.sqlite{suffix}")),
+        );
+    }
+    // A library layout planted inside the app data folder, named by the pointer.
+    let planted = dir.path().join("appdata").join("Planted");
+    fs::create_dir_all(planted.join("Projects")).unwrap();
+    fs::create_dir_all(planted.join("Global Idea Vault")).unwrap();
+    let pointer = dir
+        .path()
+        .join("roaming")
+        .join("OpenFrame")
+        .join(library_ops::POINTER_FILE);
+    fs::write(
+        &pointer,
+        json!({ "format": 1, "libraryRoot": text(&planted), "updatedAt": 0 }).to_string(),
+    )
+    .unwrap();
+    let env = fresh(dir);
+    assert_eq!(status(&env)["state"], "needsSetup");
+    assert!(!env.core.library_ready());
+}
+
+#[test]
+fn a_save_never_replaces_the_library_file_or_the_pointer() {
+    let env = new_computer();
+    env.ok("library.use_default", json!({}));
+    let file = home_library(&env).join("library.json");
+    let before = fs::read(&file).unwrap();
+    let pointer = pointer(&env);
+    let pointer_before = fs::read(&pointer).unwrap();
+    for (dest, kept) in [(&file, &before), (&pointer, &pointer_before)] {
+        let e = env
+            .call("ai.export_report", json!({ "path": text(dest) }))
+            .unwrap_err();
+        assert!(e.code_str().starts_with("validation"), "{e:?}");
+        assert_eq!(&fs::read(dest).unwrap(), kept);
+    }
+    // Nothing else is written into the pointer's own folder either.
+    let beside = pointer.with_file_name("report.json");
+    assert!(
+        env.call("ai.export_report", json!({ "path": text(&beside) }))
+            .is_err()
+    );
+    assert!(!beside.exists());
+    // A file of the person's own beside the library file is fine.
+    let ok = home_library(&env).join("report.json");
+    env.ok("ai.export_report", json!({ "path": text(&ok) }));
+    assert!(ok.is_file());
+}
+
+#[test]
 fn connecting_the_library_of_someone_else_keeps_the_saved_identity_and_their_file() {
     let dir = tempfile::tempdir().unwrap();
     let theirs = dir.path().join("theirs").join("OpenFrame");

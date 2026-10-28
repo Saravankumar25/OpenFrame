@@ -108,6 +108,10 @@ Now the library file holds the identity and the chosen places:
   after which it is the normal file. A folder inside a valid file that is relative or protected is dropped on its own.
   `projectsDir` and `vaultDir` are optional; missing means the default.
 - The id is never derived from a display name, an e-mail address or the operating system account.
+- The id is not authentication. Anyone who can write to the library folder can edit `library.json` and take on
+  another person's id, and with it their private notes and role in projects on this computer. The only access control
+  is the team password and the folder permissions of the operating system (security review 2026-10-27; the owner
+  decides whether this limit stays).
 - Tests and the end-to-end data root (`OPENFRAME_DATA_ROOT`) count as set up from the start, with the library at
   their own root (`AppConfig::isolated`). `AppConfig::isolated_needing_setup` and, for a debug build on a test data
   root, `OPENFRAME_LIBRARY_SETUP=1` start like a new computer, with every folder inside the test root.

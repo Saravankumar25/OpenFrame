@@ -45,6 +45,7 @@ pub fn export_conversation(
         return Err(nothing_to_save());
     }
     let dest = trace::destination(&a.path)?;
+    crate::util::check_output_file(core, &dest)?;
     let s = core.project()?;
     let exchanges = s
         .store

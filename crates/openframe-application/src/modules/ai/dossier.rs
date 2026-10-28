@@ -27,7 +27,7 @@
 
 mod ctx;
 mod fetch;
-mod guard;
+pub(crate) mod guard;
 mod names;
 mod registry;
 #[cfg(test)]
