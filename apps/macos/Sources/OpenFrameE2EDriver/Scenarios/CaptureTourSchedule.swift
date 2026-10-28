@@ -275,9 +275,15 @@ extension Scenarios {
             await ui.step("report snapshot") {
                 try await ui.capAct(id: "reports-save")
                 try await ui.capWaitUntil("a saved report row") { !ui.capQueryPrefix("reports-saved-").isEmpty }
+                // Save snapshot opens the new snapshot at once, but in some runs it stays on a spinner (seen
+                // 2026-10-28; Sides does the same). Back to the live report and opening the saved row loads it.
+                _ = try? await ui.wait(id: "reports-back-to-live", timeout: 4)
+                if !ui.exists(id: "reports-back-to-live") {
+                    try await ui.capAct(id: "reports-type-scene")
+                    await ui.idle(1.0)
+                }
                 guard let row = ui.scheduleFirst("reports-saved-") else { throw DriverError("no saved report") }
-                try await ui.press(row)
-                if (try? await ui.wait(id: "reports-back-to-live", timeout: 3)) == nil { try await ui.tap(row) }
+                if !ui.exists(id: "reports-back-to-live") { try await ui.press(row) }
                 _ = try await ui.wait(id: "reports-back-to-live", timeout: 8)
                 await ui.idle(0.8)
                 await ui.capture("schedule-reports-snapshot", title: "Saved report snapshot open", area: "Reports", from: "schedule-reports-scene", via: row.identifier)
@@ -364,6 +370,9 @@ extension Scenarios {
                 _ = try await ui.wait(id: "callsheet-document", timeout: 25)
                 await ui.idle(1.0)
                 await ui.capture("callsheet-open", title: "Call sheet opened from the list", area: "Call Sheets", from: "callsheets-list", via: b.identifier)
+                // Finalize refuses a call sheet without a crew call (validation.crew_call): fill it in first.
+                try await ui.capTypeIn("07:00", into: "callsheet-field-crew-call")
+                await ui.idle(0.8)
                 try await ui.capAct(id: "callsheet-finalize")
                 _ = try await ui.wait(id: "callsheet-finalize-sheet", timeout: 8)
                 await ui.capture("callsheet-finalize-sheet", title: "Finalize the call sheet", area: "Call Sheets", from: "callsheet-open", via: "callsheet-finalize")

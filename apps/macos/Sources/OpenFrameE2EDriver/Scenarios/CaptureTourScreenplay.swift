@@ -429,6 +429,8 @@ extension Scenarios {
                 await ui.idle(0.8)
                 await ui.screenplayShot("screenplay-private-note-saved", "Scene Hub with a private note", from: "screenplay-private-note-new", via: "private-note-save")
             }
+            // The note sits below the visible part of the inspector: scroll down to it first.
+            await ui.step("private note in sight") { try await ui.capScrollTo(id: "private-note-actions") }
             await ui.capMenu(id: "private-note-actions", name: "screenplay-private-note-actions", title: "Private note actions menu", area: "Screenplay", from: "screenplay-private-note-saved")
             await ui.step("private note editing") {
                 try await ui.capMenuButton(id: "private-note-actions", item: "Edit")

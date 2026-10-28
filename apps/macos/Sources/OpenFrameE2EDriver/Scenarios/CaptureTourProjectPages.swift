@@ -554,17 +554,31 @@ extension Scenarios {
         }
         await ui.step("template create") {
             try await ui.capAct(id: "template-create")
-            let name = try await ui.pagesSheetElement("template-edit-sheet", role: "AXTextField")
+            _ = try await ui.pagesSheetElement("template-edit-sheet", role: "AXTextField", label: "Template name")
             await ui.pagesCap("pages-templates-new", title: "Templates, create a template", area: tarea, from: "pages-templates", via: "template-create")
+            // The Type pop-up carries the sheet's identifier and no label of its own (the label is a text beside it).
             await ui.pagesEnsure("pages-templates-type-menu") {
-                await ui.capMenu(label: "Type", name: "pages-templates-type-menu", title: "Templates, the template type menu", area: tarea, from: "pages-templates-new")
+                await ui.step("menu pages-templates-type-menu") {
+                    var e = try await ui.pagesSheetElement("template-edit-sheet", role: "AXPopUpButton")
+                    if let pb = e.obj as? NSPopUpButton, let cell = pb.cell { e = Element(obj: cell) }
+                    guard let r = ui.relFrame(e) else { throw DriverError("no frame: \(e)") }
+                    let menu = try await ui.peekMenu(e)
+                    await ui.capture("pages-templates-type-menu", title: "Templates, the template type menu", area: tarea, from: "pages-templates-new", via: "Type",
+                                     menu: menu, anchor: CGPoint(x: r.minX, y: r.maxY + 4))
+                }
             }
+            // Found again after the menu: the element found before it can go stale.
+            let name = try await ui.pagesSheetElement("template-edit-sheet", role: "AXTextField", label: "Template name")
             try await ui.pagesTypeInto(name, "Short night shoot call sheet")
             await ui.idle(0.5)
             await ui.pagesCap("pages-templates-new-filled", title: "Templates, a new template filled in", area: tarea, from: "pages-templates-new", via: "template-name")
             try await ui.pagesSheetPress("template-edit-sheet", "Create")
             try await ui.waitGone(id: "template-edit-sheet", timeout: 8)
             await ui.idle(1.0)
+            // The new template sits under This project, below the built-in ones: scroll down to it.
+            @MainActor func own() -> Element? { ui.all().first { $0.identifier.hasPrefix("template-actions-") && !$0.identifier.hasPrefix("template-actions-builtin-") && $0.frame.width > 0 } }
+            try await ui.capWaitUntil("the new template is listed", timeout: 8) { own() != nil }
+            if let m = own() { try await ui.capScrollTo(id: m.identifier) }
             await ui.pagesCap("pages-templates-saved", title: "Templates, a template of your own", area: tarea, from: "pages-templates-new-filled", via: "template-save")
         }
         await ui.step("own template") {
@@ -575,9 +589,17 @@ extension Scenarios {
             await ui.pagesCap("pages-templates-edit", title: "Templates, edit a template", area: tarea, from: "pages-templates-own-menu", via: "template-menu-edit")
             try await ui.pagesSheetPress("template-edit-sheet", "Cancel")
             try await ui.waitGone(id: "template-edit-sheet", timeout: 8)
-            try await ui.capMenuButton(id: menu.identifier, item: "Delete")
-            await ui.idle(0.8)
-            await ui.pagesCap("pages-templates-delete-confirm", title: "Templates, delete a template asks first", area: tarea, from: "pages-templates-own-menu", via: "template-menu-delete")
+            // Delete removes a project template at once (with Undo); only a template under Yours asks first.
+            // Save a copy to My Templates and ask to delete that one.
+            try await ui.capMenuButton(id: menu.identifier, item: "Save to My Templates")
+            @MainActor func mine() -> Element? { ui.all().first { $0.identifier.hasPrefix("template-actions-global-") && $0.frame.width > 0 } }
+            try await ui.capWaitUntil("a template under Yours", timeout: 8) { mine() != nil }
+            guard let g = mine() else { throw DriverError("no template under Yours") }
+            try await ui.capScrollTo(id: g.identifier)
+            try await ui.capMenuButton(id: g.identifier, item: "Delete")
+            _ = try await ui.wait(id: "template-delete-confirm", timeout: 6)
+            await ui.idle(0.6)
+            await ui.pagesCap("pages-templates-delete-confirm", title: "Templates, deleting one of your templates asks first", area: tarea, from: "pages-templates-own-menu", via: "template-menu-delete")
             if await ui.tryPress(id: "template-delete-cancel", wait: 2) {} else { _ = await ui.tryPress(label: "Cancel", wait: 2) }
             await ui.idle(0.5)
         }
@@ -596,11 +618,14 @@ extension Scenarios {
         }
         await ui.capRecover()
         await ui.step("templates from project home") {
+            // Project Home has no Templates button any more: its Project settings button opens the sheet, then the Templates tab.
             try await ui.capNav("Home")
-            try await ui.capAct(label: "Templates")
+            try await ui.capAct(id: "project-home-settings")
+            _ = try await ui.wait(id: "project-settings-sheet", timeout: 10)
+            try await ui.pagesSegment("project-settings-tabs", "Templates")
             _ = try await ui.wait(id: "project-settings-templates", timeout: 8)
             await ui.idle(0.8)
-            await ui.pagesCap("pages-templates-from-home", title: "Templates opened from Project Home", area: tarea, from: "project-home", via: "Templates")
+            await ui.pagesCap("pages-templates-from-home", title: "Templates opened from Project Home, through Project settings", area: tarea, from: "project-home", via: "project-home-settings")
         }
     }
 

@@ -59,13 +59,20 @@ fileprivate extension UI {
         var seen = Set<ObjectIdentifier>()
         let cells = windowElements(sheet).filter { $0.obj is NSPopUpButtonCell && seen.insert(ObjectIdentifier($0.obj)).inserted }
             .sorted { $0.frame.minX < $1.frame.minX }
-        guard index < cells.count, let cell = cells[index].obj as? NSPopUpButtonCell, let pb = cell.controlView as? NSPopUpButton else {
+        guard index < cells.count, let cell = cells[index].obj as? NSPopUpButtonCell else {
             throw DriverError("no pop-up \(index) in the sheet (\(cells.count) found)")
         }
-        guard let i = pb.itemTitles.firstIndex(where: { $0.hasPrefix(item) }) else { throw DriverError("no item \(item) in \(pb.itemTitles)") }
-        pb.selectItem(at: i)
-        _ = pb.sendAction(pb.action, to: pb.target)
+        // Choose from the opened menu, as a person does: a SwiftUI Picker ignores a selection set on
+        // the pop-up button directly.
+        if cell.titleOfSelectedItem?.hasPrefix(item) == true { return }
+        let before = MenuTracking.shared.open.count
+        guard let menu = await openPopUp(cells[index]) else { throw DriverError("pop-up \(index) did not open") }
+        let i = menu.items.firstIndex { !$0.isSeparatorItem && $0.title.hasPrefix(item) }
+        if let i { menu.performActionForItem(at: i) }
+        await closeMenus(downTo: before)
+        guard i != nil else { throw DriverError("no item \(item) in \(menu.items.map(\.title))") }
         await idle(0.4)
+        guard cell.titleOfSelectedItem?.hasPrefix(item) == true else { throw DriverError("pop-up \(index) still shows \(cell.titleOfSelectedItem ?? "-")") }
     }
 
     /// Captures the menu of the n-th pop-up button (left to right) of the open sheet, drawn open.
@@ -83,10 +90,9 @@ fileprivate extension UI {
 
     /// The More menu of the open character (its label is hidden by the detail pane's own label).
     func storyMorePopup() throws -> Element {
-        guard let w = capturePrimary() else { throw DriverError("no window") }
-        let mid = w.frame.minX + w.frame.width * 0.45
-        guard let e = all().filter({ $0.obj is NSPopUpButtonCell && $0.frame.minX > mid }).max(by: { $0.frame.maxY < $1.frame.maxY }) else { throw DriverError("no More menu") }
-        return e
+        let c = all().filter { $0.identifier == "story-character-more" && $0.frame.width > 0 }
+        if let e = c.first(where: { $0.obj is NSPopUpButtonCell }) ?? c.first { return e }
+        throw DriverError("no More menu (story-character-more)")
     }
 
     func storyMoreChoose(_ item: String) async throws {
@@ -99,17 +105,17 @@ fileprivate extension UI {
         if i == nil { throw DriverError("no item \(item) in the More menu") }
     }
 
-    /// The map's two buttons (Back, Add Relationship), left to right; the map's own label hides theirs.
+    /// The map's buttons (Back, Add Relationship), left to right.
     func storyMapButtons() -> [Element] {
         var seen = Set<ObjectIdentifier>()
-        return all().filter { $0.role == "AXButton" && ($0.label == "Character relationships" || $0.title == "Back to Characters" || $0.title == "Add Relationship") && seen.insert(ObjectIdentifier($0.obj)).inserted }
+        return all().filter { ($0.identifier == "story-map-back" || $0.identifier == "story-map-add-relationship") && $0.frame.width > 0 && seen.insert(ObjectIdentifier($0.obj)).inserted }
             .sorted { $0.frame.minX < $1.frame.minX }
     }
 
     func storyMapBack() async throws {
-        guard let b = storyMapButtons().first else { throw DriverError("no Back to Characters") }
-        try await press(b)
-        await idle(0.6)
+        try await capAct(id: "story-map-back")
+        try await capWaitUntil("the map is closed", timeout: 4) { !all().contains { $0.identifier == "story-map-back" } }
+        await idle(0.4)
     }
 
     func storyAssignDay() async throws {
@@ -587,6 +593,8 @@ extension Scenarios {
                     try await ui.storyRelationship(from: f, to: t, type: r)
                     await ui.capRecover()
                 }
+                // The relationships above do not all touch Kiran: show the whole film.
+                try await ui.capAct(id: "story-whole-film-map")
                 await ui.idle(0.8)
                 await ui.capture("story-relationship-map", title: "Relationship map with four characters", area: A, from: "story-character-relationships", via: "Relationship Map")
                 try await ui.storyMapBack()

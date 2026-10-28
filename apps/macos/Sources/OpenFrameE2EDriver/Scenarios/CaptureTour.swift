@@ -636,6 +636,44 @@ extension UI {
         await idle(0.4)
     }
 
+    /// Scrolls the scroll view that holds an element (an inspector, a settings page) until the element
+    /// is in sight, the way a person scrolls down to a control below the visible part of a panel. A
+    /// click posted at a point outside the visible part lands on whatever covers that point instead.
+    func capScrollTo(id: String) async throws {
+        let e = try await wait(id: id, timeout: 8)
+        func scrollViews(_ v: NSView, _ out: inout [NSScrollView]) {
+            if let sv = v as? NSScrollView { out.append(sv) }
+            for c in v.subviews { scrollViews(c, &out) }
+        }
+        let x = e.frame.midX
+        var picked: NSScrollView?
+        // Front window first (a sheet before its parent), then the tallest scrollable view in its column.
+        for w in NSApp.orderedWindows where w.isVisible && w.frame.minX <= x && x <= w.frame.maxX {
+            var found: [NSScrollView] = []
+            if let root = w.contentView?.superview ?? w.contentView { scrollViews(root, &found) }
+            let holders = found.filter { sv in
+                guard let doc = sv.documentView, sv.window != nil else { return false }
+                let vis = w.convertToScreen(sv.convert(sv.bounds, to: nil))
+                return x >= vis.minX && x <= vis.maxX && doc.frame.height > sv.contentView.bounds.height + 4
+            }
+            if let sv = holders.max(by: { $0.frame.height < $1.frame.height }) { picked = sv; break }
+        }
+        guard let sv = picked, let doc = sv.documentView, let w = sv.window else { throw DriverError("no scroll view holds \(id)") }
+        func visible() -> CGRect { w.convertToScreen(sv.contentView.convert(sv.contentView.bounds, to: nil)) }
+        for _ in 0..<15 {
+            let vis = visible()
+            if vis.contains(e.frame) { break }
+            let clip = sv.contentView
+            let delta: CGFloat = e.frame.midY < vis.midY ? 160 : -160
+            let y = max(0, min(clip.bounds.origin.y + (doc.isFlipped ? delta : -delta), doc.frame.height - clip.bounds.height))
+            clip.scroll(to: NSPoint(x: clip.bounds.origin.x, y: y))
+            sv.reflectScrolledClipView(clip)
+            await idle(0.25)
+        }
+        guard visible().contains(e.frame) else { throw DriverError("\(id) is still out of sight: \(e.frame) in \(visible())") }
+        await idle(0.3)
+    }
+
     /// Closes the menus that opened after `count` were tracking, and waits until AppKit says they closed.
     func closeMenus(downTo count: Int) async {
         let tracking = MenuTracking.shared
