@@ -1,6 +1,6 @@
 # Entitlement and trial
 
-> **Current decisions (2026-10-15).** Chapter 3 material. The Mac StoreKit bridge moves into the SwiftUI application when Chapter 3 starts ([ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md)). The team gate minimum is 8 characters ([ADR-0030](../adr/ADR-0030-verification-ladder-and-release-flow.md)).
+> **Current decisions (2026-10-15).** Chapter 3 material. The Mac StoreKit bridge moves into the SwiftUI application when Chapter 3 starts ([ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md)). The team password gate of the internal builds was removed on 2026-10-27 (owner decision); section 11 is history only.
 
 > Written 2026-10-06 from the code in `crates/openframe-entitlement/src/` (then `lib.rs`, `trial.rs`, `licence.rs`, `adapters.rs`).
 > Decisions behind it: [ADR-0018](../adr/ADR-0018-distribution-licensing-commerce.md). Plan area: "Payment and free trial in all
@@ -14,7 +14,7 @@
 > SUPERSEDED and kept as history.
 > Updated 2026-10-07 a third time: `trial.rs`, `combine`, `licence.rs`, `DirectInstallerAdapter` and the `issuer` feature are
 > removed from the crate with their tests (clean as you go, ADR-0023). The internal builds are now the Windows installer and the
-> Mac disk image, behind a team password on every launch (ADR-0024, section 11). An About card in Settings shows the version and
+> Mac disk image (ADR-0024). They opened behind a team password until 2026-10-27, when the gate was removed (section 11). An About card in Settings shows the version and
 > "Internal build, not for sale." on the internal builds.
 
 ## 1. Purpose
@@ -65,8 +65,7 @@ single function that decides; `EntitlementState::locks_the_app(channel)` says wh
 operation takes (the interface, the assistant's change sets and package imports). While `locks_the_app` holds, every operation is
 refused with `permission.licence_required` ("Buy OpenFrame Studio or restore your purchase to open your projects again. Nothing
 is deleted.") except `entitlement.*` and `ALLOWED_WHILE_LOCKED` (`app.info` and `appearance.get`, which the lock screen needs to
-draw, and `team_gate.status`, the first question the window asks on every launch; a store package answers that no
-team password is needed, so the lock screen shows; all three touch no project). Editing alone is not yet gated per operation in NeedsOnlineCheck and TrialNotStarted: that is
+draw; both touch no project). Editing alone is not yet gated per operation in NeedsOnlineCheck and TrialNotStarted: that is
 the open plan item "Enforce Permission::Edit in the Rust operation path" (section 8).
 
 ### 2.1 How the adapter answer and the trial record combine (SUPERSEDED by ADR-0023)
@@ -153,7 +152,7 @@ An internal build for the owner's team, never sold: no trial, no payment, no Buy
 InternalBuild, Settings > Licence and Settings > About say "Internal build, not for sale." and nothing can be restored. The
 internal Mac disk image (ADR-0024) is the same channel (`Channel::DirectInstaller`, "Internal build" on screen): a Mac build made
 without `OPENFRAME_DISTRIBUTION=store` is an internal build, a Mac build with it is the Mac App Store build. Both internal builds
-ask the team password on every launch (section 11). The installer licence file code was removed on 2026-10-07.
+open without a password (the team gate was removed on 2026-10-27, section 11). The installer licence file code was removed on 2026-10-07.
 
 ### Not decided (owner decisions)
 
@@ -259,7 +258,7 @@ Limits that follow from the code:
 |---|---|---|
 | Microsoft Store (`.msix`) | `MicrosoftStoreAdapter` over `StoreLicenceSource` | **Mapping, lock and purchase path built and tested with a fake source; not connected to the Store.** `channel_state` and `restore_channel_state` read the Store licence and map it with `store_licence_state` (section 3). `buy_full_version` runs the Store's purchase dialog. Without a source (`MicrosoftStoreAdapter::unavailable`, every build today) the state is NeedsOnlineCheck with the limitation "The Microsoft Store connection is not available in this build." and Buy returns that message. The real `GetAppLicenseAsync`, `RequestPurchaseAsync` and `OfflineLicensesChanged` calls in the Windows shell need the Partner Center product identity (owner task). |
 | Mac App Store (`.pkg`) | `mac::MacAppStoreAdapter` | **Built and tested with fakes; not connected to Apple.** The policy and the adapter are in `crates/openframe-entitlement/src/mac/`, tested against a fake StoreKit bridge and a fake licensing server; design and test list in [38-mac-app-store-trial.md](38-mac-app-store-trial.md). Without the shell's `MacInputs` (every build today) `for_channel` builds it over `UnavailableBridge` and `UnavailableServer`: NeedsOnlineCheck with "The App Store connection is not available in this build.", nothing granted, nothing cached. That is a gap in the build, not a user state. |
-| Internal builds (`.exe`, `.dmg`) | none | **Internal build** (ADR-0023, ADR-0024). `for_channel` returns no adapter and the core sets InternalBuild without asking anything. The team password gate is section 11. |
+| Internal builds (`.exe`, `.dmg`) | none | **Internal build** (ADR-0023, ADR-0024). `for_channel` returns no adapter and the core sets InternalBuild without asking anything. There is no team password gate (removed 2026-10-27, section 11). |
 
 `for_channel` builds the adapter from the channel, the app data folder, optional `MacInputs` and an optional
 `StoreLicenceSource`, and returns `None` for the internal builds. Every adapter implements `channel`, `purchase_status`,
@@ -287,9 +286,9 @@ and the screen operations (section 10), and refuses every operation during the s
 ## 9. Tests in the crate
 
 All 76 pass on Windows 11 with `cargo test -p openframe-entitlement` (run 2026-10-07 after the clean-up): the tests below, 11 in
-`notices.rs` (section 10), 8 in `team_gate` (section 11) and the Mac module's, listed in
+`notices.rs` (section 10), 8 in `team_gate` (section 11; removed with the gate on 2026-10-27, so the count is now lower) and the Mac module's, listed in
 [38-mac-app-store-trial.md](38-mac-app-store-trial.md). The app's behaviour is tested in
-`crates/openframe-application/tests/entitlement.rs`, `tests/trial_first_run.rs` and `tests/team_gate.rs`.
+`crates/openframe-application/tests/entitlement.rs`, `tests/trial_first_run.rs` (and `tests/team_gate.rs` until 2026-10-27).
 
 | File | Test |
 |---|---|
@@ -433,6 +432,10 @@ store behind it: Buy then says the store connection is not available. A hand-set
   yet; Settings > Licence shows it.
 
 ## 11. Team password gate of the internal builds (ADR-0024)
+
+> **Superseded 2026-10-27 (owner decision).** The team password gate is removed from both apps: internal builds open
+> without a password, no build reads a password variable, and the `team_gate` module, its operations, its screens and its
+> tests are deleted. The rest of this section describes the removed gate and is history only; never implement it.
 
 The internal Windows installer and the internal Mac disk image ask the team password on every launch, before anything opens.
 Store packages carry neither the check nor a hash.

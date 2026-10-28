@@ -39,7 +39,7 @@ pub mod supervisor;
 pub mod test_support;
 
 pub use bundle::{AssetLock, BUNDLE_ID, BundledAi, InstalledModels, RESOURCE_FOLDER};
-pub use client::{ChatMessage, ChatRequest, Usage};
+pub use client::{ChatMessage, ChatRequest, SLOT_ANSWER, Usage};
 pub use fetch::ModelSource;
 pub use manager::{
     AiError, AiManager, BundleState, ComponentKind, Diagnostics, EmbeddingInfo, ManagerConfig,

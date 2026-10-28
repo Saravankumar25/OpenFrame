@@ -13,17 +13,50 @@
 
 use super::*;
 
+mod band;
 mod blocks;
+mod board;
 mod cards;
+mod entries;
+mod group_band;
+mod head;
+mod matrix;
+mod panel;
+mod rich;
+mod shell;
 mod table;
 
+pub use band::{FactLine, FactRun, TableBand};
 pub use blocks::{
     Banner, Callout, CalloutCol, Legend, LegendItem, Masthead, Metric, Metrics, Section, Side,
 };
+pub use board::{
+    Board, BoardComment, BoardCount, BoardExtra, BoardItem, BoardItems, BoardKey, BoardLayout,
+};
 pub use cards::{Card, CardHead, CardPart, Cards, Field, Group, GroupItem, Tile};
+pub use entries::Entry;
+pub use group_band::GroupBand;
+pub use head::TableHead;
+pub use matrix::{Matrix, MatrixCode, MatrixCount, MatrixDay, MatrixKey, MatrixRow, MatrixTotals};
+pub use panel::{CompactHeader, Panel, SceneBanner};
+pub use rich::{Rich, Run};
+pub use shell::{MetricStrip, NoteBand, ReportHead};
 pub use table::{Cell, CellItem, Col, HeaderStyle, Row, StyledTable, Width};
 
+use band::{band_frag, band_scan};
+use entries::{entries_frag, entries_scan, put_meter, put_name};
+use group_band::{group_frag, group_scan};
+use head::{head_frag, head_scan};
+pub(super) use matrix::{matrix, matrix_scan};
+pub(super) use panel::{compact_header, compact_header_scan, scene_banner, scene_banner_scan};
+use panel::{panel_frag, panel_scan};
+use rich::{put_rich, rich_scan};
+pub(super) use shell::{
+    metric_strip, metric_strip_scan, note_band, note_band_scan, report_head, report_head_scan,
+};
+
 pub(super) use blocks::{banner, callout, legend, masthead, metrics, scan_block, section, text};
+pub(super) use board::{board, board_scan};
 pub(super) use cards::cards;
 use cards::cards_scan;
 pub(super) use table::styled_table;
@@ -222,6 +255,36 @@ fn txt_lines(t: &Txt, width: f32) -> Vec<String> {
     wrap_pt(&t.text, w.max(8.0), t.size, t.bold)
 }
 
+/// Lines of tracked capitals that fit `width` with their tracking counted (the 94 percent rule of
+/// [`txt_lines`] is only an estimate, and a long name can run past a card's edge by it).
+fn tracked_lines(t: &Txt, width: f32) -> Vec<String> {
+    let mut share = 0.94_f32;
+    loop {
+        let lines = wrap_pt(&t.text, (width * share).max(8.0), t.size, t.bold);
+        let fits = lines
+            .iter()
+            .all(|l| tw(l, t.size, t.bold, t.track) <= width + 0.01);
+        if fits || share <= 0.5 {
+            return lines;
+        }
+        share -= 0.02;
+    }
+}
+
+/// The shape before a status word. With the word it carries the state without colour: a solid
+/// disc, a ring with a centre dot, a hollow ring or a solid square.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Mark {
+    Disc,
+    RingDot,
+    Ring,
+    Square,
+}
+
+/// Width of a mark and the gap after it, in points.
+const MARK_W: f32 = 5.0;
+const MARK_GAP: f32 = 3.8;
+
 /// A pill: a short label or value with a tone.
 #[derive(Debug, Clone)]
 pub struct Chip {
@@ -230,6 +293,8 @@ pub struct Chip {
     pub size: f32,
     pub bold: bool,
     pub track: f32,
+    /// A shape printed before the word (status chips); none by default.
+    pub mark: Option<Mark>,
 }
 
 impl Chip {
@@ -241,6 +306,7 @@ impl Chip {
             size: 6.6,
             bold: true,
             track: 0.5,
+            mark: None,
         }
     }
     /// Regular pill that keeps its case (cast ids, element names, scene numbers).
@@ -251,6 +317,7 @@ impl Chip {
             size: 8.0,
             bold: false,
             track: 0.0,
+            mark: None,
         }
     }
     pub fn small(mut self) -> Chip {
@@ -261,11 +328,24 @@ impl Chip {
         self.bold = true;
         self
     }
+    /// Print this shape before the word.
+    pub fn mark(mut self, m: Mark) -> Chip {
+        self.mark = Some(m);
+        self
+    }
+    /// Room the mark takes inside the pill.
+    fn mark_room(&self) -> f32 {
+        if self.mark.is_some() {
+            MARK_W + MARK_GAP
+        } else {
+            0.0
+        }
+    }
     fn height(&self) -> f32 {
         self.size * 1.45 + 3.5
     }
     fn width(&self) -> f32 {
-        tw(&self.text, self.size, self.bold, self.track) + 10.0
+        tw(&self.text, self.size, self.bold, self.track) + 10.0 + self.mark_room()
     }
 }
 
@@ -381,9 +461,9 @@ impl Frag {
     }
 }
 
-fn shift(op: &mut Op, dx: f32, dy: f32) {
+pub(super) fn shift(op: &mut Op, dx: f32, dy: f32) {
     match op {
-        Op::Text { x, y, .. } | Op::TextC { x, y, .. } => {
+        Op::Text { x, y, .. } | Op::TextC { x, y, .. } | Op::Styled { x, y, .. } => {
             *x += dx;
             *y += dy;
         }
@@ -391,8 +471,7 @@ fn shift(op: &mut Op, dx: f32, dy: f32) {
         | Op::Frame { x, y, .. }
         | Op::Image { x, y, .. }
         | Op::Shape { x, y, .. }
-        | Op::Circle { x, y, .. }
-        | Op::Mark { x, y, .. } => {
+        | Op::Circle { x, y, .. } => {
             *x += dx;
             *y += dy;
         }
@@ -418,7 +497,7 @@ impl Pager<'_> {
     }
     /// Height of the page body (what a fresh page offers).
     pub(super) fn body_h(&self) -> f32 {
-        self.h - 2.0 * MARGIN - FOOTER_SPACE
+        self.h - self.inset - self.bottom
     }
 }
 
@@ -452,10 +531,16 @@ fn txt_height(t: &Txt, width: f32) -> f32 {
 
 /// Lines, width and height of a chip no wider than `maxw`: long text wraps inside the pill.
 fn chip_dims(c: &Chip, maxw: f32) -> (Vec<String>, f32, f32) {
-    if c.width() <= maxw {
+    // A status chip with a shape is one line: its word is never broken to fit a narrow cell.
+    if c.width() <= maxw || c.mark.is_some() {
         return (vec![c.text.clone()], c.width(), c.height());
     }
-    let lines = wrap_pt(&c.text, (maxw - 10.0).max(20.0), c.size, c.bold);
+    let lines = wrap_pt(
+        &c.text,
+        (maxw - 10.0 - c.mark_room()).max(20.0),
+        c.size,
+        c.bold,
+    );
     let h = lines.len() as f32 * c.size * 1.25 + 7.0;
     (lines, maxw, h)
 }
@@ -472,21 +557,22 @@ fn put_chip_max(f: &mut Frag, x: f32, dy: f32, maxw: f32, c: &Chip) -> f32 {
         Some(c.tone.fill()),
         Some((c.tone.line(), 0.6)),
     );
+    if let Some(m) = c.mark {
+        let cy = if lines.len() == 1 {
+            dy + h / 2.0
+        } else {
+            dy + 3.5 + c.size * 0.5
+        };
+        put_mark(f, x + 4.6, cy, m, c.tone.text());
+    }
+    let tx = x + 5.0 + c.mark_room();
     if lines.len() == 1 {
         let base = dy + (h + 0.72 * c.size) / 2.0;
-        f.text(
-            x + 5.0,
-            base,
-            &lines[0],
-            c.size,
-            c.bold,
-            c.tone.text(),
-            c.track,
-        );
+        f.text(tx, base, &lines[0], c.size, c.bold, c.tone.text(), c.track);
     } else {
         for (k, l) in lines.iter().enumerate() {
             f.text(
-                x + 5.0,
+                tx,
                 dy + 3.5 + c.size + k as f32 * c.size * 1.25,
                 l,
                 c.size,
@@ -497,6 +583,29 @@ fn put_chip_max(f: &mut Frag, x: f32, dy: f32, maxw: f32, c: &Chip) -> f32 {
         }
     }
     w
+}
+
+/// The shape of a status mark with its left edge at `x` and centre line at `cy`.
+fn put_mark(f: &mut Frag, x: f32, cy: f32, m: Mark, color: Rgb) {
+    let r = MARK_W / 2.0;
+    let cx = x + r;
+    match m {
+        Mark::Disc => f.circle(cx, cy, r, Some(color), None),
+        Mark::Ring => f.circle(cx, cy, r - 0.45, None, Some((color, 0.9))),
+        Mark::RingDot => {
+            f.circle(cx, cy, r - 0.45, None, Some((color, 0.9)));
+            f.circle(cx, cy, 0.95, Some(color), None);
+        }
+        Mark::Square => f.shape(
+            x + 0.2,
+            cy - r + 0.2,
+            MARK_W - 0.4,
+            MARK_W - 0.4,
+            0.0,
+            Some(color),
+            None,
+        ),
+    }
 }
 
 /// A chip drawn at (x, dy); returns its width.
@@ -657,78 +766,4 @@ pub(super) fn draw_text_tracked(
     } else {
         draw_text(b, c, shaped, pack, bold, size, x, y, text);
     }
-}
-
-/// The OpenFrame lockup: film-frame mark, "OpenFrame STUDIO" wordmark and the attribution.
-/// Drawn directly (not through fragments) so the footer of every page is identical.
-fn lockup(c: &mut Content, b: &mut PdfBuilder, x: f32, y: f32, attribution: &str) -> f32 {
-    draw_mark(c, x, y, 19.0, pal::ORANGE);
-    let tx = x + 23.0;
-    c.set_fill_rgb(pal::NAVY.0, pal::NAVY.1, pal::NAVY.2);
-    b.text(c, pdfgen::HELVETICA, 11.0, tx, y + 8.2, "Open");
-    let ow = text_width_pt("Open", 11.0, false);
-    b.text(c, pdfgen::HELVETICA_BOLD, 11.0, tx + ow, y + 8.2, "Frame");
-    let fw = text_width_pt("Frame", 11.0, true);
-    c.set_fill_rgb(pal::ORANGE.0, pal::ORANGE.1, pal::ORANGE.2);
-    b.text_tracked(
-        c,
-        pdfgen::HELVETICA_BOLD,
-        4.2,
-        2.6,
-        tx + 0.5,
-        y + 1.0,
-        "STUDIO",
-    );
-    let sep = tx + ow + fw + 9.0;
-    c.set_stroke_rgb(pal::LINE.0, pal::LINE.1, pal::LINE.2);
-    c.set_line_width(0.7);
-    c.move_to(sep, y + 1.0);
-    c.line_to(sep, y + 17.0);
-    c.stroke();
-    c.set_fill_rgb(pal::SLATE.0, pal::SLATE.1, pal::SLATE.2);
-    b.text(c, pdfgen::HELVETICA, 8.0, sep + 8.0, y + 6.0, attribution);
-    c.set_fill_gray(0.0);
-    c.set_stroke_gray(0.0);
-    sep + 8.0 + text_width_pt(attribution, 8.0, false)
-}
-
-/// Footer of every page of a branded document: a rule, the lockup on the left, the document
-/// identity and page count on the right.
-pub(super) fn draw_footer(
-    b: &mut PdfBuilder,
-    c: &mut Content,
-    shaped: &Shaped,
-    pack: &Option<FontPack>,
-    page_w: f32,
-    right_text: &str,
-    attribution: Option<&str>,
-) {
-    let rule_y = MARGIN + FOOTER_SPACE - 12.0;
-    c.set_stroke_rgb(pal::LINE.0, pal::LINE.1, pal::LINE.2);
-    c.set_line_width(0.8);
-    c.move_to(MARGIN, rule_y);
-    c.line_to(page_w - MARGIN, rule_y);
-    c.stroke();
-    c.set_stroke_gray(0.0);
-    let y = MARGIN - 8.0;
-    lockup(c, b, MARGIN, y, attribution.unwrap_or(BRAND_LINE));
-    let size = 7.2;
-    let track = if needs_fonts(right_text) { 0.0 } else { 0.4 };
-    let w = tw(right_text, size, true, track);
-    c.set_fill_rgb(pal::SLATE.0, pal::SLATE.1, pal::SLATE.2);
-    c.set_stroke_rgb(pal::SLATE.0, pal::SLATE.1, pal::SLATE.2);
-    draw_text_tracked(
-        b,
-        c,
-        shaped,
-        pack,
-        true,
-        size,
-        page_w - MARGIN - w,
-        y + 6.0,
-        right_text,
-        track,
-    );
-    c.set_fill_gray(0.0);
-    c.set_stroke_gray(0.0);
 }

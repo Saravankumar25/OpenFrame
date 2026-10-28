@@ -48,20 +48,9 @@ const guestPw = () => {
   if (!m) throw new Error(`No "password: <value>" line in ${PW_FILE}`);
   return (_guestPw = m[1]);
 };
-let _teamPw;
-const teamPw = () => {
-  if (_teamPw) return _teamPw;
-  let v = process.env.OPENFRAME_TEAM_PASSWORD;
-  if (!v) {
-    const r = spawnSync("powershell", ["-NoProfile", "-Command", "[Environment]::GetEnvironmentVariable('OPENFRAME_TEAM_PASSWORD','User')"], { encoding: "utf8" });
-    v = (r.stdout ?? "").trim();
-  }
-  if (!v) throw new Error("The team password is not set (env OPENFRAME_TEAM_PASSWORD or the Windows User variable).");
-  return (_teamPw = v);
-};
 const redact = (s) => {
   let t = String(s ?? "");
-  for (const secret of [_guestPw, _teamPw]) if (secret) t = t.split(secret).join("***");
+  if (_guestPw) t = t.split(_guestPw).join("***");
   return t;
 };
 
@@ -274,7 +263,6 @@ async function withApp(fn) {
   }
 }
 const lib = async () => ({ app: await import("../lib/app.mjs"), flows: await import("../lib/flows.mjs"), ai: await import("../lib/ai.mjs") });
-const unlock = async (browser) => (await lib()).app.unlockTeamGate(browser, teamPw());
 const assert = (cond, msg) => {
   if (!cond) throw new Error(msg);
 };
@@ -410,30 +398,14 @@ step("install-previous", [
   shot("install-previous");
 });
 
-step("gate-and-journey", [
-  "launch; 5 wrong passwords: assert the 'not right' message each time, then the wait ('Next try in'); wait it out",
-  "right password; first-launch name, create project, import a 2-scene screenplay, type an action line, a character name and dialogue",
-  "close the project, quit, relaunch, right password, assert the typed text is there and no recovery was offered",
+step("journey", [
+  "launch; first-launch name, create project, import a 2-scene screenplay, type an action line, a character name and dialogue",
+  "close the project, quit, relaunch, assert the typed text is there and no recovery was offered",
 ], async (notes) => {
   const unique = `Cold start in the clean room ${Date.now().toString(36)}.`;
   writeState({ lastLine: unique });
   await withApp(async (b) => {
-    const { app, flows } = await lib();
-    await b.$("#team-password").waitForDisplayed({ timeout: 60_000, timeoutMsg: "the team password screen did not show on a clean machine" });
-    shot("gate-shown");
-    const alertText = () => b.execute(() => document.querySelector("#team-password-message")?.innerText ?? "");
-    for (let i = 1; i <= 5; i++) {
-      await b.$("#team-password").setValue(`not-the-password-${i}`);
-      await app.click(b, "Open OpenFrame Studio");
-      await b.waitUntil(async () => /not right/i.test(await alertText()), { timeout: 30_000, timeoutMsg: `try ${i}: no refusal message` });
-      notes[`wrong${i}`] = (await alertText()).trim();
-      if (i < 5) await b.waitUntil(async () => b.$("#team-password").isEnabled(), { timeout: 30_000 });
-    }
-    await b.waitUntil(async () => /Next try in/i.test(await app.pageText(b)), { timeout: 20_000, timeoutMsg: "no wait after 5 wrong tries" });
-    notes.waitText = (await app.pageText(b)).match(/Next try in[^\n]*/i)?.[0];
-    shot("gate-wait");
-    await b.waitUntil(async () => !/Next try in/i.test(await app.pageText(b)), { timeout: 150_000, interval: 2000, timeoutMsg: "the wait never ended" });
-    await app.unlockTeamGate(b, teamPw());
+    const { flows } = await lib();
     await flows.firstLaunchProject(b, PROJECT);
     await flows.importFountain(b, flows.TWO_SCENES);
     await (await b.$('(//div[contains(@class,"spx-doc")]//div[@data-type="action"])[1]')).click();
@@ -449,7 +421,6 @@ step("gate-and-journey", [
     await flows.closeProject(b);
   });
   await withApp(async (b) => {
-    await unlock(b);
     notes.recoveryOffered = await openFromHome(b, PROJECT);
     assert(!notes.recoveryOffered, "a recovery offer after a clean close");
     await assertLine(b, unique);
@@ -459,93 +430,28 @@ step("gate-and-journey", [
 
 step("upgrade", [
   "silent install of 995bfac over the previous build",
-  "launch, password, assert the project and the typed line survived",
+  "launch, assert the project and the typed line survived",
   "record the new app hash (both builds are 0.1.0, so the hash tells them apart)",
 ], async (notes) => {
   const unique = readState().lastLine;
-  assert(unique, "no saved line: run gate-and-journey first");
+  assert(unique, "no saved line: run journey first");
   await installerRun(FINAL, notes);
   notes.versionInfo = ps(`(Get-Item '${APP_EXE}').VersionInfo.ProductVersion`).stdout.trim();
   await withApp(async (b) => {
-    await unlock(b);
     notes.recoveryOffered = await openFromHome(b, PROJECT);
     await assertLine(b, unique);
     shot("upgrade-project-survived");
   });
 });
 
-const TAMPER_PS = String.raw`
-param([string]$Mode)
-$root = Join-Path $env:LOCALAPPDATA 'OpenFrame'
-$bak = 'C:\w9tools\bypass-backup'
-$rx = 'gate|team|lock|password|unlock|verified|entitle|licen|trial'
-$script:count = 0
-function Walk($o, [bool]$val) {
-  if ($null -eq $o) { return }
-  if ($o -is [System.Collections.IEnumerable] -and $o -isnot [string]) { foreach ($i in $o) { Walk $i $val }; return }
-  if ($o -is [pscustomobject]) {
-    foreach ($p in $o.PSObject.Properties) {
-      if ($p.Name -match $rx -and $p.Value -is [bool]) { $p.Value = $val; $script:count++ }
-      else { Walk $p.Value $val }
-    }
-  }
-}
-function Files { Get-ChildItem $root -Recurse -File -ErrorAction SilentlyContinue | Where-Object { $_.FullName -notmatch '\\(models|logs)\\' } }
-switch ($Mode) {
-  'list' { Files | ForEach-Object { $_.FullName.Substring($root.Length) + '  ' + $_.Length } }
-  'backup' { robocopy $root $bak /MIR /XD models | Out-Null; 'backup done' }
-  'restore' { robocopy $bak $root /MIR /XD models | Out-Null; foreach ($k in 'HKCU:\Software\studio.openframe.desktop','HKCU:\Software\OpenFrame Studio') { Remove-Item $k -Recurse -Force -ErrorAction SilentlyContinue }; 'restored' }
-  { $_ -in 'flipTrue','flipFalse' } {
-    foreach ($f in (Files | Where-Object { $_.Extension -eq '.json' -and $_.Length -lt 1MB })) {
-      $before = $script:count
-      try { $j = Get-Content $f.FullName -Raw | ConvertFrom-Json; Walk $j ($Mode -eq 'flipTrue'); if ($script:count -gt $before) { $j | ConvertTo-Json -Depth 30 | Set-Content $f.FullName -Encoding UTF8; 'edited ' + $f.FullName } } catch { }
-    }
-    'flags changed: ' + $script:count
-  }
-  'deleteMatching' { Files | Where-Object { $_.Name -match $rx } | ForEach-Object { 'deleted ' + $_.FullName; Remove-Item $_.FullName -Force } }
-  'regSet' { foreach ($k in 'HKCU:\Software\studio.openframe.desktop','HKCU:\Software\OpenFrame Studio') { New-Item $k -Force | Out-Null; foreach ($n in 'unlocked','teamGateUnlocked','gateOk','passwordOk') { New-ItemProperty $k -Name $n -Value 1 -PropertyType DWord -Force | Out-Null } }; 'registry keys written' }
-}
-`;
-
-step("gate-bypass", [
-  "app closed: list %LOCALAPPDATA%\\OpenFrame, back it up (without models) to C:\\w9tools\\bypass-backup",
-  "variants: gate/team/lock/password booleans flipped to true; to false; files named like gate/team/lock deleted (incl. the wrong-try record); HKCU keys named like the app; all three together",
-  "after each variant launch and assert the password screen still shows and Home is not reachable; restore after each variant and at the end",
-], async (notes) => {
-  const file = join(mkdtempSync(join(tmpdir(), "w9ps-")), "tamper.ps1");
-  writeFileSync(file, TAMPER_PS);
-  copyTo(file, T);
-  const tamper = (mode) => ps(`& '${T}\\tamper.ps1' -Mode ${mode}`).stdout.trim();
-  killApp();
-  notes.files = tamper("list").split(/\r?\n/).slice(0, 80);
-  tamper("backup");
-  const variants = [["flipTrue", ["flipTrue"]], ["flipFalse", ["flipFalse"]], ["deleteMatching", ["deleteMatching"]], ["registry", ["regSet"]], ["everything", ["flipTrue", "deleteMatching", "regSet"]]];
-  notes.variants = {};
-  try {
-    for (const [name, modes] of variants) {
-      notes.variants[name] = { did: modes.map(tamper).join(" / ").slice(0, 400) };
-      await withApp(async (b) => {
-        await b.$("#team-password").waitForDisplayed({ timeout: 60_000, timeoutMsg: `variant ${name}: the password screen is GONE, the gate was bypassed` });
-        assert(!(await b.$('//main[@aria-label="Your projects"]').isExisting()), `variant ${name}: Application Home is reachable without the password`);
-        notes.variants[name].result = "password screen still shown";
-        shot(`gate-bypass-${name}`);
-      });
-      tamper("restore");
-    }
-  } finally {
-    tamper("restore");
-  }
-});
-
 step("ai-download", [
-  "launch, password, open the project, open the AI Assistant, click Download OpenFrame AI",
+  "launch, open the project, open the AI Assistant, click Download OpenFrame AI",
   "poll the card every 20 s until the question box appears (up to 90 min); record the time and the size of %LOCALAPPDATA%\\OpenFrame\\models",
   "setNetwork(false): controlvm setlinkstate1 off (guest firewall block if the driver stops answering); assert huggingface.co is unreachable",
   "ask 'Summarise this project in one sentence.' (CPU only, up to 10 min); record the time to the first answer; network stays off",
 ], async (notes) => {
   await withApp(async (b) => {
     const { app, ai, flows } = await lib();
-    await unlock(b);
     await openFromHome(b, PROJECT);
     await ai.openAssistant(b);
     const card = () => b.execute(() => document.querySelector('section[aria-label="Download OpenFrame AI"]')?.textContent?.replace(/\s+/g, " ").trim() ?? "");
@@ -608,10 +514,9 @@ step("offline-export-backup", [
   const pdf = `${OUT_DIR}\\w9-screenplay.pdf`;
   const backup = `${OUT_DIR}\\w9-backup.ofbackup`;
   const unique = readState().lastLine;
-  assert(unique, "no saved line: run gate-and-journey first");
+  assert(unique, "no saved line: run journey first");
   await withApp(async (b) => {
     const { app, flows } = await lib();
-    await unlock(b);
     await openFromHome(b, PROJECT);
     await assertLine(b, unique); // opens the screenplay
     await app.click(b, "Export");
@@ -657,17 +562,16 @@ step("offline-export-backup", [
 
 step("power-loss", [
   "open the project, type a new unique line, wait 3 s (autosave), VBoxManage controlvm poweroff (hard)",
-  "startvm --type headless, wait ready, network off again, relaunch, password",
+  "startvm --type headless, wait ready, network off again, relaunch",
   "assert the project opens and the line is present; record any recovery message or dialog",
 ], async (notes) => {
   const line = `Power cut line ${Date.now().toString(36)}.`;
   writeState({ powerLine: line });
   const old = readState().lastLine;
-  assert(old, "no saved line: run gate-and-journey first");
+  assert(old, "no saved line: run journey first");
   await startDriver();
   const b = await connect();
   const { flows } = await lib();
-  await unlock(b);
   await openFromHome(b, PROJECT);
   await assertLine(b, old);
   const el = await b.$(`//div[contains(@class,"spx-doc")]//div[contains(@class,"sp-el")][contains(normalize-space(.),${flows.xq(old.slice(0, 20))})]`);
@@ -686,7 +590,6 @@ step("power-loss", [
   await waitGuestReady();
   await setNetwork(false);
   await withApp(async (b2) => {
-    await unlock(b2);
     notes.recoveryMessage = (await openFromHome(b2, PROJECT)) || "none shown";
     shot("after-power-cut");
     assert(!/error|could not|damaged|corrupt/i.test(notes.recoveryMessage), `a recovery error after the power cut: ${notes.recoveryMessage}`);
@@ -732,13 +635,12 @@ step("uninstall-keeps-projects", [
 
 step("reinstall-offline-start", [
   "network off; silent install of 995bfac",
-  "launch, password, assert the project is listed on Home and opens with the typed line",
+  "launch, assert the project is listed on Home and opens with the typed line",
   "assert the AI models are still present, or record why not (the delete-app-data box)",
 ], async (notes) => {
   await setNetwork(false);
   await installerRun(FINAL, notes);
   await withApp(async (b) => {
-    await unlock(b);
     notes.recoveryOffered = await openFromHome(b, PROJECT);
     await assertLine(b, readState().powerLine ?? readState().lastLine);
     shot("reinstall-project-open");

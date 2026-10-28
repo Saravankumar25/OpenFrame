@@ -99,6 +99,7 @@ struct ShortcutsSettingsView: View {
             }
         }
         .listStyle(.inset)
+        .accessibilityLabel("Keyboard shortcuts")
         .accessibilityIdentifier("shortcuts-list")
     }
 

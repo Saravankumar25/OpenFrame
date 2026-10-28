@@ -316,33 +316,7 @@ pub fn all_doc_ids(conn: &Connection) -> SearchResult<Vec<String>> {
     Ok(out)
 }
 
-fn map_doc(r: &rusqlite::Row<'_>) -> rusqlite::Result<StoredDocument> {
-    let meta: String = r.get(9)?;
-    Ok(StoredDocument {
-        doc_id: r.get(0)?,
-        entity_type: r.get(1)?,
-        entity_id: r.get(2)?,
-        source_table: r.get(3)?,
-        module: r.get(4)?,
-        title: r.get(5)?,
-        owner_user_id: r.get(6)?,
-        source_rev: r.get(7)?,
-        scope_key: r.get(8)?,
-        metadata: serde_json::from_str(&meta).unwrap_or(Value::Null),
-    })
-}
-
 const DOC_COLS: &str = "doc_id, entity_type, entity_id, source_table, module, title, owner_user_id, source_rev, scope_key, metadata_json";
-
-pub fn get_document(conn: &Connection, doc_id: &str) -> SearchResult<Option<StoredDocument>> {
-    Ok(conn
-        .query_row(
-            &format!("SELECT {DOC_COLS} FROM semantic_document WHERE doc_id=?1"),
-            [doc_id],
-            map_doc,
-        )
-        .optional()?)
-}
 
 /// Chunks (with their documents) for vector hits, in the order given.
 pub fn chunks_by_vec_rowids(
@@ -622,7 +596,6 @@ mod tests {
         // The embedding computed for "old" arrives after the edit: dropped.
         assert!(!store_embedding(c, &SqliteVecIndex, rowid, "old", "m", &[1.0, 0.0], 3).unwrap());
         assert_eq!(pending_count(c, Some("m")).unwrap(), 1);
-        assert!(get_document(c, "t:1").unwrap().is_some());
         assert_eq!(doc_ids_of_type(c, "t").unwrap(), vec!["t:1".to_string()]);
         assert_eq!(all_doc_ids(c).unwrap().len(), 1);
     }

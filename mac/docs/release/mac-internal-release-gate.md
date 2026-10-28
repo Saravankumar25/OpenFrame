@@ -5,10 +5,14 @@
 > when every check below says **Pass** with saved evidence, or **Exception** with the owner's approval and date. A code
 > change after the final build re-opens the build checks (G1 to G4). Evidence lives in `evidence/mac/`.
 
+> **Update 2026-10-27.** The team password gate was removed from both apps (owner decision). The rows below record the
+> 5355dc7 build, which still had the gate. For the next build, S2 is Not applicable, the review in S1 and the scan in S4
+> no longer cover a gate or a password, and Q3 runs without the gate cases.
+
 Status words: Open, Pass, Fail, Exception (owner approved), Exception (waiting for the owner).
 
 The owner's word for this build: "build the next phases M6 to M10, properly test them end to end and then give me the
-.dmg app", with the team password given in that conversation and full autonomy (2026-10-18). Building the internal disk
+.dmg app", with full autonomy (2026-10-18). Building the internal disk
 image is therefore authorised; signing, notarisation and the stores are Chapter 3 and out of scope.
 
 ## The build
@@ -25,7 +29,7 @@ image is therefore authorised; signing, notarisation and the stores are Chapter 
 | Id | Check | Pass means | Status | Evidence |
 |---|---|---|---|---|
 | S1 | Mac security review | FFI boundary, team gate, the end-to-end driver, file paths and panels, the AI engine process, packaging, links and AI answers reviewed; every Critical and High finding fixed | Pass | [m9-security-review.md](evidence/mac/m9-security-review.md): no Critical; 2 High and 2 Medium fixed (commit d0bc17e) |
-| S2 | Team gate | Wrong password refused, right password opens; the gate holds against environment variables, launch arguments, defaults, data files and the driver | Pass | Scenario 17 on the image: a wrong password is refused, the right one opens; security review S1 shows no bypass |
+| S2 | Team gate (removed 2026-10-27; Not applicable from the next build) | Wrong password refused, right password opens; the gate holds against environment variables, launch arguments, defaults, data files and the driver | Pass | Scenario 17 on the image: a wrong password is refused, the right one opens; security review S1 shows no bypass |
 | S3 | Hardened runtime | The app is signed with the hardened runtime and only the microphone entitlement; no DYLD or library-validation exception | Pass | `codesign -d`: flags adhoc,runtime; entitlement only device.audio-input |
 | S4 | Secrets and personal paths | The image, the app and its files hold no key, token, plain team password, personal path or user name | Pass | `scripts/scan-installer.mjs` on the app, the mounted image and the image: no secret, personal path, user name or plain team password |
 | S5 | AI engine | The pinned llama.cpp b11259 Metal build, every file matching the lock's SHA-256; listens on 127.0.0.1 only; ends with the app, also after a crash | Pass | All 12 engine files match the lock SHA-256; engines listen on 127.0.0.1 only; a watcher ends them within a second of the app (test `the_watcher_ends_the_child_when_the_parent_is_gone`) |

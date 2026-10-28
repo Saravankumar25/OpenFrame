@@ -110,6 +110,9 @@ extension UI {
             await idle(0.4)
         }
         guard CaptureState.names.insert(name).inserted else { log("capture \(name): already taken"); return }
+        // An app in the background draws its windows dimmed. Bring it forward without changing the key window,
+        // which would close an open popover.
+        if !NSApp.isActive { NSApp.activate(ignoringOtherApps: true); await idle(0.4) }
         guard let primary = capturePrimary() else { log("capture \(name): no window"); return }
         let overlays = captureOverlays(primary)
         // Runners share one screen: a window covered by another app's window stops drawing its content and the
@@ -318,12 +321,12 @@ extension UI {
         throw DriverError("not true within \(Int(timeout)) s: \(what)")
     }
 
-    /// Makes the main window a fixed, roomy size so every page is the same shape.
-    /// The one window size of the tour (points). It fits the visible part of a 1280 by 720 point display, the
-    /// smallest the tour runs on, so the window server never trims it and every page has the same size.
-    nonisolated static let captureSize = CGSize(width: 1280, height: 620)
+    /// The one window size of the tour (points): the whole visible part of the screen (below the menu bar, beside
+    /// the Dock), as when the owner zooms the window to fill the screen. Every page has this size.
+    static var captureSize: CGSize { NSScreen.main?.visibleFrame.size ?? CGSize(width: 1280, height: 628) }
 
-    func capBigWindow(width: CGFloat = UI.captureSize.width, height: CGFloat = UI.captureSize.height) {
+    func capBigWindow(width: CGFloat? = nil, height: CGFloat? = nil) {
+        let width = width ?? UI.captureSize.width, height = height ?? UI.captureSize.height
         guard let w = NSApp.windows.filter({ $0.isVisible && $0.canBecomeMain && $0.sheetParent == nil && $0.frame.width > 900 }).max(by: { $0.frame.width < $1.frame.width }) else { return }
         let screen = w.screen ?? NSScreen.main
         let vf = screen?.visibleFrame ?? NSRect(x: 0, y: 0, width: 1728, height: 1080)
@@ -352,46 +355,25 @@ extension UI {
 
     func capMenuButton(id: String? = nil, label: String? = nil, item: String, timeout: Double = 15) async throws {
         let e = try await wait(id: id, label: label, timeout: timeout, "the menu button \(id ?? label ?? "?")")
-        guard let cell = e.obj as? NSPopUpButtonCell else { throw DriverError("not a menu button: \(e)") }
+        guard e.obj is NSPopUpButtonCell else { throw DriverError("not a menu button: \(e)") }
         func find(_ m: NSMenu) -> (NSMenu, Int)? {
             for (i, it) in m.items.enumerated() where !it.isSeparatorItem && it.title.hasPrefix(item) { return (m, i) }
             for it in m.items { if let sub = it.submenu, let r = find(sub) { return r } }
             return nil
         }
-        var target: (NSMenu, Int)?
-        let menusBefore = NSApp.windows.filter { $0.isVisible && String(describing: Swift.type(of: $0)).contains("PopupMenu") }.count
-        for _ in 0..<3 where target == nil {
-            let frame = e.frame
-            capPostClick(atScreen: NSPoint(x: frame.midX, y: frame.midY))
-            let deadline = Date().addingTimeInterval(2)
-            while Date() < deadline {
-                if let m = cell.menu, let t = find(m) { target = t; break }
-                await idle(0.1)
-            }
-            if target == nil { cell.menu?.cancelTracking(); await idle(0.3) }
-        }
-        guard let (menu, index) = target else {
-            let titles = cell.menu?.items.map(\.title) ?? []
-            cell.menu?.cancelTracking()
+        let before = MenuTracking.shared.open.count
+        guard let open = await openPopUp(e) else { throw DriverError("the menu did not open: \(e)") }
+        guard let (menu, index) = find(open) else {
+            let titles = open.items.map(\.title)
+            await closeMenus(downTo: before)
             throw DriverError("no menu item starting with \(item) in \(titles)")
         }
-        guard menu.items[index].isEnabled else { cell.menu?.cancelTracking(); throw DriverError("menu item is disabled: \(menu.items[index].title)") }
-        menu.performActionForItem(at: index)
-        cell.menu?.cancelTracking()
-        await idle(0.3)
-        func openMenus() -> Int { NSApp.windows.filter { $0.isVisible && String(describing: Swift.type(of: $0)).contains("PopupMenu") }.count }
-        let inToolbar = NSApp.windows.contains { $0.isVisible && e.frame.midY > $0.frame.maxY - 60 && $0.frame.contains(NSPoint(x: e.frame.midX, y: e.frame.midY)) }
-        for w in NSApp.windows where w.isVisible && String(describing: Swift.type(of: w)).contains("PopupMenu") && openMenus() > menusBefore { w.orderOut(nil) }
-        for _ in 0..<10 where inToolbar && openMenus() > menusBefore {
-            for t in [NSEvent.EventType.keyDown, .keyUp] {
-                if let ev = NSEvent.keyEvent(with: t, location: .zero, modifierFlags: [], timestamp: ProcessInfo.processInfo.systemUptime,
-                                             windowNumber: 0, context: nil, characters: "\u{1b}", charactersIgnoringModifiers: "\u{1b}", isARepeat: false, keyCode: 53) {
-                    NSApp.postEvent(ev, atStart: true)
-                }
-            }
-            cell.menu?.cancelTracking()
-            await idle(0.3)
+        guard menu.items[index].isEnabled else {
+            await closeMenus(downTo: before)
+            throw DriverError("menu item is disabled: \(menu.items[index].title)")
         }
+        menu.performActionForItem(at: index)
+        await closeMenus(downTo: before)
     }
 
     /// Opens a workspace with the Go menu, else by selecting the sidebar row.
@@ -401,20 +383,15 @@ extension UI {
         await idle(0.2)
     }
 
-    func capNavByRow(_ workspace: String) async throws {
-        let order = ["Home", "Idea Vault", "Story", "Screenplay", "Breakdown", "Production", "Call Sheets", "Files"]
-        guard let outline = try? await wait(label: "Sidebar", timeout: 10, "the sidebar"), let view = outline.obj as? NSOutlineView else {
-            throw DriverError("no sidebar to click \(workspace)")
-        }
-        guard let idx = order.firstIndex(of: workspace) else { throw DriverError("unknown workspace \(workspace)") }
-        view.window?.makeFirstResponder(view)
-        view.scrollRowToVisible(idx)
-        view.selectRowIndexes(IndexSet(integer: idx), byExtendingSelection: false)
-        await idle(0.7)
+    func capTypeIn(_ text: String, into id: String? = nil, label: String? = nil, timeout: Double = 15) async throws {
+        try await capTypeIn(text, strict: false) { try await self.wait(id: id, label: label, timeout: timeout) }
     }
 
-    func capTypeIn(_ text: String, into id: String? = nil, label: String? = nil, timeout: Double = 15) async throws {
-        var e = try await wait(id: id, label: label, timeout: timeout)
+    /// Types into the text input `find` returns. Use it for fields that share an identifier and
+    /// have no label of their own (their container's identifier covers them); focus then must be on
+    /// that very input.
+    func capTypeIn(_ text: String, strict: Bool, find: () async throws -> Element) async throws {
+        var e = try await find()
         func window(of e: Element) -> NSWindow? {
             let c = NSPoint(x: e.frame.midX, y: e.frame.midY)
             return NSApp.orderedWindows.first { $0.isVisible && $0.frame.contains(c) }
@@ -423,19 +400,21 @@ extension UI {
             guard let w = window(of: e), let tv = w.firstResponder as? NSTextView else { return nil }
             let owner: NSObject = (tv.isFieldEditor ? (tv.delegate as? NSObject) : tv) ?? tv
             let o = Element(obj: owner)
-            if owner === e.obj || (!e.label.isEmpty && o.label == e.label) || (!e.identifier.isEmpty && o.identifier == e.identifier) { return tv }
+            if owner === e.obj || (strict && e.frame.insetBy(dx: -4, dy: -4).contains(NSPoint(x: o.frame.midX, y: o.frame.midY))) { return tv }
+            if !strict && ((!e.label.isEmpty && o.label == e.label) || (!e.identifier.isEmpty && o.identifier == e.identifier)) { return tv }
             return nil
         }
         var target: NSTextView?
         for attempt in 0..<5 {
+            await capReveal(e)
             window(of: e)?.makeKeyAndOrderFront(nil)
             if attempt >= 2 { try await focus(e) } else if e.frame.width > 0 { capPostClick(atScreen: NSPoint(x: e.frame.midX, y: e.frame.midY)) }
             await idle(0.3)
             if let tv = hasFocus(e) { target = tv; break }
             if e.frame.width > 0 { capPostClick(atScreen: NSPoint(x: e.frame.midX, y: e.frame.midY)); await idle(0.4) }
             if let tv = hasFocus(e) { target = tv; break }
-            if attempt >= 3, let w = window(of: e), let tv = w.firstResponder as? NSTextView { target = tv; break }
-            e = try await wait(id: id, label: label, timeout: timeout)
+            if !strict, attempt >= 3, let w = window(of: e), let tv = w.firstResponder as? NSTextView { target = tv; break }
+            e = try await find()
         }
         guard let tv = target else { throw DriverError("no text input took focus: \(e)") }
         tv.selectAll(nil)
@@ -488,6 +467,17 @@ extension UI {
             else { try? line.write(to: url, atomically: true, encoding: .utf8) }
             await capRecover()
         }
+    }
+
+    /// Hides the project sidebar and checks that it went: the toolbar button then reads Show Sidebar.
+    /// A press on the button did not always take, so View > Hide Sidebar is the second way.
+    func capHideSidebar() async {
+        for attempt in 0..<3 {
+            if exists(label: "Show Sidebar") { return }
+            if attempt == 0 { _ = await tryPress(id: "sidebar-toggle", wait: 3) } else { try? await menu(["View", "Hide Sidebar"]) }
+            await idle(0.8)
+        }
+        if !exists(label: "Show Sidebar") { log("the sidebar is still shown") }
     }
 
     /// Presses a control if it is on screen. Returns false when it is not there.
@@ -585,35 +575,123 @@ extension UI {
 
     /// Opens a pop-up menu button the way a click does, copies its items, and closes it again.
     func peekMenu(_ e: Element) async throws -> NSMenu {
-        guard let cell = e.obj as? NSPopUpButtonCell else { throw DriverError("not a menu button: \(e)") }
-        var copy: NSMenu?
-        func openMenus() -> Int { NSApp.windows.filter { $0.isVisible && String(describing: Swift.type(of: $0)).contains("PopupMenu") }.count }
-        let before = openMenus()
-        for _ in 0..<3 where copy == nil {
+        let before = MenuTracking.shared.open.count
+        let menu = await openPopUp(e)
+        let copy = menu?.copy() as? NSMenu
+        await closeMenus(downTo: before)
+        guard let copy else { throw DriverError("the menu did not open: \(e)") }
+        return copy
+    }
+
+    /// Clicks a pop-up button and waits until AppKit says its menu is tracking. A pop-up button's
+    /// menu holds its items before it opens, so the items alone do not tell that the click landed:
+    /// a menu closed before its click arrives would open afterwards and never close.
+    func openPopUp(_ e: Element) async -> NSMenu? {
+        guard let cell = e.obj as? NSPopUpButtonCell else { return nil }
+        let tracking = MenuTracking.shared
+        let before = tracking.open.count
+        for _ in 0..<3 {
             capPostClick(atScreen: NSPoint(x: e.frame.midX, y: e.frame.midY))
             let deadline = Date().addingTimeInterval(2)
             while Date() < deadline {
-                if let m = cell.menu, m.items.contains(where: { !$0.title.isEmpty || $0.isSeparatorItem }) { copy = m.copy() as? NSMenu; break }
+                if tracking.open.count > before { return tracking.open.last ?? cell.menu }
                 await idle(0.1)
             }
-            if copy == nil { cell.menu?.cancelTracking(); await idle(0.3) }
         }
-        // The open menu is a window: take the picture of the real thing too when we can.
-        cell.menu?.cancelTracking()
-        await idle(0.3)
-        for w in NSApp.windows where w.isVisible && String(describing: Swift.type(of: w)).contains("PopupMenu") && openMenus() > before { w.orderOut(nil) }
-        for _ in 0..<10 where openMenus() > before {
-            for t in [NSEvent.EventType.keyDown, .keyUp] {
-                if let ev = NSEvent.keyEvent(with: t, location: .zero, modifierFlags: [], timestamp: ProcessInfo.processInfo.systemUptime,
-                                             windowNumber: 0, context: nil, characters: "\u{1b}", charactersIgnoringModifiers: "\u{1b}", isARepeat: false, keyCode: 53) {
-                    NSApp.postEvent(ev, atStart: true)
-                }
+        // A click that never reaches the button (one below the visible part of an inspector) opens
+        // nothing. Close a menu that opens late, then read the items the button holds unopened.
+        await idle(0.5)
+        await closeMenus(downTo: before)
+        guard let menu = cell.menu, menu.items.contains(where: { !$0.title.isEmpty }) else { return nil }
+        log("the menu did not open on a click; reading its items unopened")
+        return menu
+    }
+
+    /// Scrolls the scroll view that holds an element until the whole element is in sight, the way a
+    /// person scrolls to it before clicking. A click posted at a frame outside the visible part of a
+    /// scroll view lands on whatever covers that point instead.
+    func capReveal(_ e: Element) async {
+        let f = e.frame
+        guard f.width > 0, f.height > 0 else { return }
+        let center = NSPoint(x: f.midX, y: f.midY)
+        func scrollViews(_ v: NSView, _ out: inout [NSScrollView]) {
+            if let sv = v as? NSScrollView { out.append(sv) }
+            for c in v.subviews { scrollViews(c, &out) }
+        }
+        var found: [NSScrollView] = []
+        for w in NSApp.windows where w.isVisible { if let root = w.contentView?.superview ?? w.contentView { scrollViews(root, &found) } }
+        // The innermost scroll view whose content holds the element.
+        let holders = found.filter { sv in
+            guard let doc = sv.documentView, let w = sv.window else { return false }
+            let frame = w.convertToScreen(sv.convert(sv.bounds, to: nil))
+            return center.x >= frame.minX && center.x <= frame.maxX && w.convertToScreen(doc.convert(doc.bounds, to: nil)).contains(center)
+        }
+        guard let sv = holders.min(by: { ($0.documentView?.frame.height ?? 0) < ($1.documentView?.frame.height ?? 0) }),
+              let doc = sv.documentView, let w = sv.window else { return }
+        let visible = w.convertToScreen(sv.contentView.convert(sv.contentView.bounds, to: nil))
+        if visible.contains(f) { return }
+        let local = doc.convert(w.convertFromScreen(f), from: nil)
+        doc.scrollToVisible(local.insetBy(dx: 0, dy: -12))
+        sv.reflectScrolledClipView(sv.contentView)
+        await idle(0.4)
+    }
+
+    /// Scrolls the scroll view that holds an element (an inspector, a settings page) until the element
+    /// is in sight, the way a person scrolls down to a control below the visible part of a panel. A
+    /// click posted at a point outside the visible part lands on whatever covers that point instead.
+    func capScrollTo(id: String) async throws {
+        let e = try await wait(id: id, timeout: 8)
+        func scrollViews(_ v: NSView, _ out: inout [NSScrollView]) {
+            if let sv = v as? NSScrollView { out.append(sv) }
+            for c in v.subviews { scrollViews(c, &out) }
+        }
+        let x = e.frame.midX
+        var picked: NSScrollView?
+        // Front window first (a sheet before its parent), then the tallest scrollable view in its column.
+        for w in NSApp.orderedWindows where w.isVisible && w.frame.minX <= x && x <= w.frame.maxX {
+            var found: [NSScrollView] = []
+            if let root = w.contentView?.superview ?? w.contentView { scrollViews(root, &found) }
+            let holders = found.filter { sv in
+                guard let doc = sv.documentView, sv.window != nil else { return false }
+                let vis = w.convertToScreen(sv.convert(sv.bounds, to: nil))
+                return x >= vis.minX && x <= vis.maxX && doc.frame.height > sv.contentView.bounds.height + 4
             }
-            cell.menu?.cancelTracking()
-            await idle(0.3)
+            if let sv = holders.max(by: { $0.frame.height < $1.frame.height }) { picked = sv; break }
         }
-        guard let copy else { throw DriverError("the menu did not open: \(e)") }
-        return copy
+        guard let sv = picked, let doc = sv.documentView, let w = sv.window else { throw DriverError("no scroll view holds \(id)") }
+        func visible() -> CGRect { w.convertToScreen(sv.contentView.convert(sv.contentView.bounds, to: nil)) }
+        for _ in 0..<15 {
+            let vis = visible()
+            if vis.contains(e.frame) { break }
+            let clip = sv.contentView
+            let delta: CGFloat = e.frame.midY < vis.midY ? 160 : -160
+            let y = max(0, min(clip.bounds.origin.y + (doc.isFlipped ? delta : -delta), doc.frame.height - clip.bounds.height))
+            clip.scroll(to: NSPoint(x: clip.bounds.origin.x, y: y))
+            sv.reflectScrolledClipView(clip)
+            await idle(0.25)
+        }
+        guard visible().contains(e.frame) else { throw DriverError("\(id) is still out of sight: \(e.frame) in \(visible())") }
+        await idle(0.3)
+    }
+
+    /// Closes the menus that opened after `count` were tracking, and waits until AppKit says they closed.
+    func closeMenus(downTo count: Int) async {
+        let tracking = MenuTracking.shared
+        for attempt in 0..<20 where tracking.open.count > count {
+            tracking.open.last?.cancelTrackingWithoutAnimation()
+            await idle(0.15)
+            if tracking.open.count > count && attempt >= 2 {
+                for t in [NSEvent.EventType.keyDown, .keyUp] {
+                    if let ev = NSEvent.keyEvent(with: t, location: .zero, modifierFlags: [], timestamp: ProcessInfo.processInfo.systemUptime,
+                                                 windowNumber: 0, context: nil, characters: "\u{1b}", charactersIgnoringModifiers: "\u{1b}", isARepeat: false, keyCode: 53) {
+                        NSApp.postEvent(ev, atStart: true)
+                    }
+                }
+                await idle(0.15)
+            }
+        }
+        if tracking.open.count > count { log("a menu is still open after closing it: \(tracking.open.map(\.title))") }
+        await idle(0.2)
     }
 
     /// Shows a pop-up menu button's menu open, drawn from its real items.
@@ -736,13 +814,6 @@ extension UI {
         return out
     }
 
-    func vaultRow(_ i: Int) async throws {
-        let titles = ["All items", "Pinned", "Recently added", "Recently modified"]
-        guard i < titles.count, let e = query(id: "vault-nav-\(titles[i])").first(where: { $0.frame.width > 0 }) else { throw DriverError("no vault row \(i)") }
-        try await tap(e)
-        await idle(0.9)
-    }
-
     var hasOverlay: Bool { NSApp.windows.contains { $0.isVisible && $0.sheetParent != nil } }
 
     /// Captures a menu open, then every safe item of it in turn (what it opens), closing each again.
@@ -829,33 +900,6 @@ extension Scenarios {
         outline.window?.makeFirstResponder(nil)
     }
 
-    /// The schedule: created from the production source, two days, scenes in day 1, a meal break.
-    @MainActor static func capScheduleBase(_ ui: UI) async throws {
-        try await capBreakdownBase(ui)
-        try await ui.capNav("Schedule")
-        try await ui.capAct(id: "create-shooting-schedule")
-        try await ui.capAct(id: "create-schedule-confirm")
-        try await ui.waitText("unscheduled")
-        for iso in ["2027-06-14", "2027-06-15"] {
-            var done = false
-            for _ in 0..<3 where !done {
-                do {
-                    try await ui.capAct(id: "create-shooting-day")
-                    _ = try await ui.wait(id: "day-date", timeout: 8)
-                    await ui.idle(1.2)
-                    try await ui.capTypeIn(iso, into: "day-date")
-                    try await ui.capAct(id: "day-sheet-confirm")
-                    try await ui.waitGone(id: "day-date")
-                    done = true
-                } catch { await ui.capRecover(); await ui.idle(0.8) }
-            }
-            if !done { throw DriverError("could not add the shooting day \(iso)") }
-        }
-        try await ui.capMenuButton(id: "strip-actions-1", item: "Shoot Day 1")
-        await ui.idle(0.5)
-        try await ui.capMenuButton(id: "strip-actions-2", item: "Shoot Day 1")
-        await ui.idle(0.5)
-    }
 }
 
 extension Scenarios {
@@ -878,5 +922,24 @@ extension Scenarios {
 // MARK: the tour
 
 extension Scenarios {
-    static let captureGroup: [Scenario] = captureStart + captureHome + captureScreenplay + captureStory + captureVault + captureBreakdown + captureSchedule + captureCallSheets + captureBudget + captureVisual + captureProjectPages + captureAI + capturePackages + captureLifecycle
+    static let captureGroup: [Scenario] = captureStart + captureHome + captureScreenplay + captureStory + captureVault + captureBreakdown + captureSchedule + captureCallSheets + captureBudget + captureVisual + captureProjectPages + captureAI + capturePackages + captureLifecycle + captureAdded
+}
+
+/// The menus AppKit is tracking now, from its begin and end notifications.
+@MainActor
+final class MenuTracking {
+    static let shared = MenuTracking()
+    private(set) var open: [NSMenu] = []
+
+    private init() {
+        let nc = NotificationCenter.default
+        nc.addObserver(forName: NSMenu.didBeginTrackingNotification, object: nil, queue: nil) { n in
+            guard let m = n.object as? NSMenu else { return }
+            MainActor.assumeIsolated { MenuTracking.shared.open.append(m) }
+        }
+        nc.addObserver(forName: NSMenu.didEndTrackingNotification, object: nil, queue: nil) { n in
+            guard let m = n.object as? NSMenu else { return }
+            MainActor.assumeIsolated { MenuTracking.shared.open.removeAll { $0 === m } }
+        }
+    }
 }

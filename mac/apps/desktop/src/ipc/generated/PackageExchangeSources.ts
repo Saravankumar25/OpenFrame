@@ -2,4 +2,4 @@
 import type { PackageDraftOption } from "./PackageDraftOption";
 import type { PackageOption } from "./PackageOption";
 
-export type PackageExchangeSources = { drafts: Array<PackageDraftOption>, acts: Array<PackageOption>, productionSource: PackageOption | null, schedule: PackageOption | null, callSheets: Array<PackageOption>, };
+export type PackageExchangeSources = { drafts: Array<PackageDraftOption>, acts: Array<PackageOption>, };

@@ -22,14 +22,14 @@ struct MoodboardsView: View {
                         .accessibilityIdentifier("moodboard-export")
                 }
                 Button { model.sheet = .newBoard } label: { Label("New Moodboard", systemImage: "plus") }
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(.ofProminent)
                     .keyboardShortcut("n", modifiers: [.command, .option])
                     .accessibilityIdentifier("moodboard-new")
             }
             content.frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .task(id: app.changes.key(VisualTables.moodboard)) { await model.reload() }
-        .sheet(item: $model.sheet) { MoodSheetHost(model: model, sheet: $0) }
+        .themedSheet(item: $model.sheet) { MoodSheetHost(model: model, sheet: $0) }
         .inspector(isPresented: Binding(get: { model.inspectId != nil }, set: { if !$0 { model.inspectId = nil } })) {
             if let id = model.inspectId, let item = model.items.first(where: { $0.id == id }) {
                 MoodItemInspector(model: model, item: item)
@@ -58,7 +58,7 @@ struct MoodboardsView: View {
                 Text("Collect images, notes and links that show how the film should look and feel. Name a board anything, for example Overall Look, Cinematography or Costume.")
             } actions: {
                 Button("New Moodboard") { model.sheet = .newBoard }
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(.ofProminent)
                     .accessibilityIdentifier("moodboard-empty-new")
             }
             .accessibilityElement(children: .contain)

@@ -57,3 +57,33 @@ export function computeMatches(doc: PMNode, opts: FindOptions | null, showNotes:
   });
   return out;
 }
+
+/** How far to scroll a box so a line at `rect` is comfortably visible: 0 when it already is. The line is centred
+ * when it is outside the middle of the box. */
+export function revealDelta(rect: { top: number; bottom: number }, box: { top: number; bottom: number }, margin = 56): number {
+  const m = Math.min(margin, (box.bottom - box.top) / 4);
+  if (rect.top >= box.top + m && rect.bottom <= box.bottom - m) return 0;
+  return (rect.top + rect.bottom) / 2 - (box.top + box.bottom) / 2;
+}
+
+export interface RevealableView {
+  dom: HTMLElement;
+  coordsAtPos(pos: number): { top: number; bottom: number };
+}
+
+/** Scroll the page's own scroll area (`.spx-scroll`) so the match at `pos` is on screen. ProseMirror's built-in
+ * scrollIntoView follows the browser selection, which sits in the Find box while that box has focus, so it
+ * scrolled the wrong area and left the match off screen. Returns false when the editor has no scroll area. */
+export function scrollMatchIntoView(view: RevealableView, pos: number): boolean {
+  const scroller = view.dom.closest(".spx-scroll") as HTMLElement | null;
+  if (!scroller) return false;
+  const delta = revealDelta(view.coordsAtPos(pos), scroller.getBoundingClientRect());
+  if (delta !== 0) scroller.scrollTop += delta;
+  return true;
+}
+
+/** Index of the first match that starts at or after `pos`; the first match when none does (wraps round). */
+export function matchIndexFrom(matches: { from: number }[], pos: number): number {
+  const i = matches.findIndex((m) => m.from >= pos);
+  return i < 0 ? 0 : i;
+}

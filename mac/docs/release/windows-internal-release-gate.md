@@ -1,9 +1,12 @@
 # Windows internal release gate
 
-> Written 2026-10-17 (endgame session, [plan](../implementation/endgame-plan.md)). The owner receives the internal
+> Written 2026-10-17 (endgame session, [plan](../history/endgame-plan.md)). The owner receives the internal
 > installer only when every check below says **Pass** with saved evidence, or **Exception** with the owner's approval and
 > date. Nothing else counts: "should work", "passed on debug" and "passed on an earlier build" are not passes. Evidence
 > lives in `evidence/w9/`. A code change after the final build re-opens the build checks (G1 to G4).
+
+> **Update 2026-10-27.** The team password gate was removed from both apps (owner decision). The rows below record the
+> 028d8b6 build, which still had the gate. For the next build, C4 is Not applicable and G1 no longer mentions the gate.
 
 Status words: Open, Pass, Fail, Exception (owner approved), Exception (waiting for the owner).
 
@@ -43,7 +46,7 @@ Status words: Open, Pass, Fail, Exception (owner approved), Exception (waiting f
 | C1 | Setups | VirtualBox Windows 11 guest from a clean snapshot, versions recorded; second Windows account on this laptop | Exception (owner approved 2026-10-18) | Covered by the W10 pilot on team laptops; [vm-blocked.md](evidence/w9/vm-blocked.md) |
 | C2 | Install and first start | Per-user install with no administrator prompt; first start; WebView2 present; Visual C++ runtime next to the engine | Exception (owner approved 2026-10-18) | Covered by the W10 pilot on team laptops; [vm-blocked.md](evidence/w9/vm-blocked.md) |
 | C3 | Core journey | Create a project, type, close, reopen: text kept | Exception (owner approved 2026-10-18) | Covered by the W10 pilot on team laptops; [vm-blocked.md](evidence/w9/vm-blocked.md) |
-| C4 | Team gate | Wrong password refused and delayed, right password opens; the gate cannot be bypassed through settings, files or the registry | Exception (owner approved 2026-10-18) | Covered by the W10 pilot on team laptops; [vm-blocked.md](evidence/w9/vm-blocked.md) |
+| C4 | Team gate (removed 2026-10-27; Not applicable from the next build) | Wrong password refused and delayed, right password opens; the gate cannot be bypassed through settings, files or the registry | Exception (owner approved 2026-10-18) | Covered by the W10 pilot on team laptops; [vm-blocked.md](evidence/w9/vm-blocked.md) |
 | C5 | AI download and offline use | Download started by the person, then answers with the network adapter off; processor-only speed recorded separately | Exception (owner approved 2026-10-18) | Covered by the W10 pilot on team laptops; [vm-blocked.md](evidence/w9/vm-blocked.md) |
 | C6 | Export, backup, restore | PDF export; backup and restore (also on the second Windows account) | Exception (owner approved 2026-10-18) | Covered by the W10 pilot on team laptops; [vm-blocked.md](evidence/w9/vm-blocked.md) |
 | C7 | Upgrade | Install over the previous internal build: data kept | Exception (owner approved 2026-10-18) | Covered by the W10 pilot on team laptops; [vm-blocked.md](evidence/w9/vm-blocked.md) |

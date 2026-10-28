@@ -6,8 +6,6 @@
 import Foundation
 import OpenFrameCore
 
-typealias StoryRef = StoryItemRef
-
 extension StoryItemRef {
     /// The selection key used on both platforms: "card:<id>".
     var key: String { "\(kind.rawValue):\(id)" }

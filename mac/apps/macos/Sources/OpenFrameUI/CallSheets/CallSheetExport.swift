@@ -140,6 +140,13 @@ struct CSExportSheet: View {
                     ))
                     .accessibilityIdentifier("export-option-\(o.key)")
                 }
+                // As Windows: the name the Save panel will suggest, for the chosen format.
+                HStack(spacing: 4) {
+                    Text("Suggested file name:").foregroundStyle(theme["muted"])
+                    Text(model.suggestedName).textSelection(.enabled)
+                        .accessibilityIdentifier("export-file-name")
+                }
+                .font(.footnote)
                 Text(model.note).font(.footnote).foregroundStyle(theme["muted"])
                     .fixedSize(horizontal: false, vertical: true)
                 if let e = model.error {

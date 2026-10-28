@@ -6,7 +6,7 @@ Tags: `@e2e-data-root: own`
 
 Before: an empty data folder of its own. The app carries the real bundled model and runs with fixed AI sampling (temperature 0, fixed seed), so the checks are about the kind of result and its effects, never the wording. The app starts for the first time.
 
-"Import the Night Bus screenplay" and "Ask Q" are shared steps in the README of this folder. A result has a kind (Answer, Navigate, Clarify, Proposal, Suggestion). "Exact" means it is marked "Exact · from project data". "Its sources" are the source chips under it. "The engines" are the Offline AI engine processes the app started. "The chat engine" is the engine that is not the embedding engine.
+"Import the Night Bus screenplay" and "Ask Q" are shared steps in the README of this folder. A result has a kind (Answer, Navigate, Clarify, Proposal, Suggestion). "Its sources" are the source chips under it. "The engines" are the Offline AI engine processes the app started. "The chat engine" is the engine that is not the embedding engine.
 
 ## AI is ready on first launch: no download, no setup, no model names
 
@@ -35,20 +35,22 @@ Before: an empty data folder of its own. The app carries the real bundled model 
 1. Click Screenplay in the Workspaces navigation. Open the AI Assistant if it is closed.
 2. Choose Current Screenplay in the scope list.
 3. Ask 'How many scenes are in the script?'
-4. Check: the result is an Answer, marked exact.
-5. Check: the answer contains the number 3.
+4. Check: the result is an Answer.
+5. Check: the answer states the number 3, as "3" or "three". (Code counts the scenes and checks that the written
+   answer states the count; the "Exact · from project data" mark is kept for the fact sentence code shows when the
+   model fails three times, so it is not checked here.)
 6. Check: the answer has at least one source.
-7. Check: the chat engine is now running.
 
 ## A meaning question is answered from project context it looked up
 
 1. Choose Whole Project in the scope list.
-2. Ask 'Which scene happens at the bus stop?'
+2. Ask 'What happens at the bus stop?'
 3. Check: the result is an Answer or a Navigate.
 4. Check: one of its sources names "BUS STOP".
-5. Click Home in the Workspaces navigation.
-6. Click the newest source chip that names "BUS STOP".
-7. Check: the Screenplay workspace opens.
+5. Check: the chat engine is now running.
+6. Click Home in the Workspaces navigation.
+7. Open "See sources" under the newest answer and click the source chip that names "BUS STOP".
+8. Check: the Screenplay workspace opens.
 
 ## A navigation command opens the place it names
 

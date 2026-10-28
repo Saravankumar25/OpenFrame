@@ -249,7 +249,7 @@ struct SchedSuggestionsDrawer: View {
                     if let l = s.suggestedDayLabel { Text("Most of them are already on \(l).").font(.caption).foregroundStyle(theme["muted"]) }
                     HStack {
                         Button("Apply manually") { model.sheet = .group(s) }
-                            .buttonStyle(.borderedProminent).controlSize(.small)
+                            .buttonStyle(.ofProminent).controlSize(.small)
                             .disabled(model.shootingDays.isEmpty || model.isFinalized)
                             .accessibilityIdentifier("suggestion-apply-\(s.key)")
                         Button("Dismiss") { model.dismissedSuggestions.insert(s.key) }

@@ -42,17 +42,7 @@ export async function launchApp() {
   browser.setTimeout({ implicit: 0 });
   await browser.waitUntil(async () => (await browser.execute(() => document.readyState)) === "complete", { timeout: 30_000 });
   await installConsoleProbe(browser);
-  if (process.env.E2E_TEAM_PASSWORD) await unlockTeamGate(browser, process.env.E2E_TEAM_PASSWORD);
   return browser;
-}
-
-/** A gated release run (run.mjs `--release=gated`): pass the team password screen the way a tester does. */
-export async function unlockTeamGate(browser, password) {
-  const input = await browser.$("#team-password");
-  await input.waitForDisplayed({ timeout: 30_000, timeoutMsg: "The team password screen did not show on the gated build" });
-  await input.setValue(password);
-  await click(browser, "Open OpenFrame Studio");
-  await input.waitForExist({ reverse: true, timeout: 30_000, timeoutMsg: "The team password screen did not close" });
 }
 
 /** Record console errors/warnings and uncaught errors inside the webview. */
@@ -210,6 +200,15 @@ export async function openWorkspace(browser, label) {
   await el.waitForClickable({ timeout: 10_000 });
   await el.click();
   await browser.$(`//main[@aria-label=${xq(label)}]`).waitForExist({ timeout: 10_000 });
+}
+
+/** Open the Story workspace on its Board tab (Story opens on the Story page since 2026-10-27). */
+export async function openBeatBoard(browser) {
+  await openWorkspace(browser, "Story");
+  const tab = await browser.$('//*[@role="tablist"][@aria-label="Story views"]//*[@role="tab"][normalize-space(.)="Board"]');
+  await tab.waitForClickable({ timeout: 10_000 });
+  await tab.click();
+  await browser.$('//*[@role="tab"][@aria-selected="true"][normalize-space(.)="Board"]').waitForExist({ timeout: 10_000 });
 }
 
 export async function sleep(ms) {

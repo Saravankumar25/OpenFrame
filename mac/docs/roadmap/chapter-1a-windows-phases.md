@@ -36,7 +36,7 @@ only the existing AI code. W7 and W8 may run side by side after W6.
   in the 2026-10-15 documentation restructure.
 - **Proof level column.** Add the five proof levels of ADR-0030 to the feature status file and extend
   `scripts/check-feature-status.mjs` to require a level and its evidence. Relabel today's "Verified" rows as level 2.
-- **Team password minimum.** Change the build rule in `crates/openframe-entitlement/src/team_gate/build_hash.rs` from 12 to
+- **Team password minimum.** *(Superseded 2026-10-27: the team password gate was removed; see [owner-decisions.md](../implementation/owner-decisions.md).)* Change the build rule in `crates/openframe-entitlement/src/team_gate/build_hash.rs` from 12 to
   8 characters, update its tests and ADR-0024's text. The password itself is set only in the build computer's environment.
 - **Gates.** Add a secret scan of the working tree and history, a link checker for documents and for every address the
   application can open (with an allow-list), and a scan of a built installer for secrets and personal paths (used in W9).
@@ -105,7 +105,7 @@ only the existing AI code. W7 and W8 may run side by side after W6.
 - **Supply chain.** `cargo deny` and `cargo audit` are required gates; review the largest dependencies; keep the dated
   exception for the two font crates and plan their replacement (due 2027-01-06).
 - **Threat model.** Update `docs/engineering/20-security-threat-model.md` for the changes of this chapter, trace the web view
-  processes for network use (threat T33), and record the known limit of the team gate (ADR-0030).
+  processes for network use (threat T33), and record the known limit of the team gate (ADR-0030; the gate was removed on 2026-10-27 and threat T37 is retired).
 
 **Exit.** New gates green; fuzz and property results recorded; the threat model has no open item without a decision.
 
@@ -116,13 +116,13 @@ only the existing AI code. W7 and W8 may run side by side after W6.
 **Goal.** Move features from "proved on development" to "proved on the artifact". Build plan areas 5, 9 to 17.
 
 - **Owner's word needed** to build the release executable that the suite drives. It is not an installer.
-- **Release-build suite.** The end-to-end suite runs against the release executable, with and without the team gate. A short
+- **Release-build suite.** The end-to-end suite runs against the release executable, with and without the team gate (removed on 2026-10-27; later runs have no gate). A short
   release smoke spec runs first: start, create, type, close, reopen, AI answers, and no network sockets except the engine on
   `127.0.0.1`.
 - **Shared scenario list.** Every end-to-end scenario is written as a numbered, plain list of steps in
   `tests/e2e/scenarios/`, the file the Mac track implements again ([ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md)).
 - **Prove the rows writers use every day** (Large): project create, open, close, duplicate, archive; autosave and recovery;
-  Idea Vault; Story Board characters and episodes; Scene hub; comments; drafts and compare; every export format. Each row
+  Idea Vault; Beat Board characters and episodes; Scene hub; comments; drafts and compare; every export format. Each row
   saves, undoes, survives restart and a forced kill, exports and imports where it applies, enforces permissions, and has an
   end-to-end step.
 - **Visual planning** gets end-to-end steps for the canvas, the sketch dialog and drag reorder (Medium).
@@ -220,12 +220,13 @@ A card without a measurement is documented as "designed, unit tested".
 **Goal.** Prove the installer ([ADR-0030](../adr/ADR-0030-verification-ladder-and-release-flow.md) levels 3 and 4).
 Needs the owner's word to build. Build plan area 20.
 
-1. Set the team password in the build computer's environment (never in a file), build the internal `.exe`, check its size
+1. ~~Set the team password in the build computer's environment (never in a file).~~ *(Superseded 2026-10-27: the team password gate was removed; see [owner-decisions.md](../implementation/owner-decisions.md).)* Build the internal `.exe`, check its size
    (about 20 to 30 MB is the estimate) and the secret and personal-path scan of the installer.
 2. ~~Install on a virtual machine and on a borrowed laptop~~ *(Superseded 2026-10-17: a virtual machine plus a second Windows user account on the owner's laptop, no borrowed laptop; see [owner-decisions.md](../implementation/owner-decisions.md).)* Install on a clean setup with no developer tools. Start, create a project, type, close,
    reopen, download the AI, use it with the network off, export a PDF, back up and restore on a second Windows account,
    upgrade over the previous build, uninstall, reinstall.
 3. Run the gated build through the release end-to-end suite and a wrong-password test (the gate has had unit tests only).
+   *(Superseded 2026-10-27: the gate was removed, so later builds run the suite without it and need no password test.)*
 4. Check antivirus behaviour on two setups, WebView2 present, the Visual C++ runtime next to the engine, memory and start
    time. Write down the SmartScreen steps as an installation restriction.
 5. Repeat the AI benchmark on each laptop.

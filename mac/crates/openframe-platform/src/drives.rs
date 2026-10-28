@@ -4,8 +4,10 @@
 //! Windows adapter: drive letters exist, and `GetDriveTypeW` reports a mapped network drive as
 //! `DRIVE_REMOTE`. The call reads the local drive-letter mapping only; it does not open the path
 //! or connect to a share. macOS adapter: there are no drive letters; every path starts at `/`.
-//! Network mounts under `/Volumes` are not classified yet (unverified without Mac hardware; see
-//! `docs/engineering/37-platform-boundary.md` section 6).
+//! A share is mounted somewhere in the tree (usually under `/Volumes`), so [`is_network_volume`]
+//! asks `statfs` for the volume that holds the path's nearest existing folder and counts it as a
+//! network volume unless the system marks it local (`MNT_LOCAL`). SMB, AFP, NFS and WebDAV mounts
+//! do not carry that flag.
 
 /// What the operating system reports for the volume behind a drive letter.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -23,6 +25,43 @@ pub const DRIVE_LETTERS: bool = cfg!(windows);
 /// Classify a drive letter. Always [`DriveKind::Other`] where drive letters do not exist.
 pub fn drive_kind(letter: u8) -> DriveKind {
     imp::drive_kind(letter)
+}
+
+/// True when `path` lies on a network volume. macOS only: the nearest existing folder of `path`
+/// (the path itself when it exists) is looked up with `statfs`, which follows links, so a local
+/// link into a share counts as the share. Nothing is opened. `false` where drive letters decide
+/// instead (Windows) and when the system cannot say.
+pub fn is_network_volume(path: &std::path::Path) -> bool {
+    #[cfg(target_os = "macos")]
+    {
+        let Some(existing) = path
+            .ancestors()
+            .find(|a| std::fs::symlink_metadata(a).is_ok())
+        else {
+            return false;
+        };
+        mount_flags(existing).is_some_and(mount_flags_are_remote)
+    }
+    #[cfg(not(target_os = "macos"))]
+    {
+        let _ = path;
+        false
+    }
+}
+
+/// A volume is remote unless its mount flags carry `MNT_LOCAL`.
+#[cfg(target_os = "macos")]
+pub fn mount_flags_are_remote(flags: u32) -> bool {
+    flags & libc::MNT_LOCAL as u32 == 0
+}
+
+#[cfg(target_os = "macos")]
+fn mount_flags(path: &std::path::Path) -> Option<u32> {
+    use std::os::unix::ffi::OsStrExt;
+    let c = std::ffi::CString::new(path.as_os_str().as_bytes()).ok()?;
+    let mut st: libc::statfs = unsafe { std::mem::zeroed() };
+    // SAFETY: `c` is a valid NUL-terminated path and `st` a valid out structure for the call.
+    (unsafe { libc::statfs(c.as_ptr(), &mut st) } == 0).then_some(st.f_flags)
 }
 
 #[cfg(windows)]
@@ -111,6 +150,31 @@ pub fn free_bytes(path: &std::path::Path) -> Option<u64> {
     {
         let _ = path;
         None
+    }
+}
+
+#[cfg(all(test, target_os = "macos"))]
+mod network_volume_tests {
+    use super::*;
+
+    #[test]
+    fn a_local_temp_folder_and_a_missing_folder_inside_it_are_not_network_volumes() {
+        let dir = tempfile::tempdir().unwrap();
+        assert!(!is_network_volume(dir.path()));
+        assert!(!is_network_volume(&dir.path().join("not yet").join("made")));
+        assert!(!is_network_volume(std::path::Path::new("/")));
+    }
+
+    #[test]
+    fn a_volume_without_the_local_flag_is_remote() {
+        let local = libc::MNT_LOCAL as u32;
+        assert!(!mount_flags_are_remote(local));
+        assert!(!mount_flags_are_remote(local | libc::MNT_NOSUID as u32));
+        // An SMB, AFP or NFS mount: no MNT_LOCAL, whatever else is set.
+        assert!(mount_flags_are_remote(0));
+        assert!(mount_flags_are_remote(
+            libc::MNT_NOSUID as u32 | libc::MNT_NODEV as u32
+        ));
     }
 }
 

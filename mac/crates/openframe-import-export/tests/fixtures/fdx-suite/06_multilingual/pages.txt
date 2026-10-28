@@ -13,10 +13,10 @@
   7  370 Character      अर्जुन
   8  310 Parenthetical  (धीरे से)
   9  250 Dialogue       मीरा ने कहा, “क्षमा करें।”
- 11   90 SceneNumber    2
- 11  150 Heading        EXT. சென்னை சாலை - DAY
- 11  760 SceneNumber    2
- 13  150 Action         நீ எங்கே போகிறாய்? അവന്‍ വന്നു.
- 15  370 Character      ರವಿ
- 16  250 Dialogue       ನಾನು ಬರುತ್ತೇನೆ.
-pdf-sha256 882b3ae5555424d212b87834164e2bfee5601629c1eb1c28796efdb2e7179659
+ 12   90 SceneNumber    2
+ 12  150 Heading        EXT. சென்னை சாலை - DAY
+ 12  760 SceneNumber    2
+ 14  150 Action         நீ எங்கே போகிறாய்? അവന്‍ വന്നു.
+ 16  370 Character      ರವಿ
+ 17  250 Dialogue       ನಾನು ಬರುತ್ತೇನೆ.
+pdf-sha256 ffd9ea5c6b8f820a81a6762d0cfd9a56743a9df257756ab3bf1de5fdfab99c47

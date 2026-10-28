@@ -53,6 +53,22 @@ pub const READS: &[ReadSpec] = &[
         project_settings
     ),
     read!(
+        "app_appearance",
+        Read,
+        "How the app looks on this computer: Light, Dark or System mode, the active theme, the built-in themes and My Themes.",
+        sc::none,
+        ["appearance.get"],
+        app_appearance
+    ),
+    read!(
+        "app_settings",
+        Read,
+        "App settings of the person at this computer: spell checking on or off with its languages, and the keyboard shortcuts they changed.",
+        sc::none,
+        ["writing.proofing", "app.shortcuts"],
+        app_settings
+    ),
+    read!(
         "recently_deleted",
         Read,
         "Items in Recently Deleted that can still be restored.",
@@ -514,7 +530,7 @@ pub fn retrieve_lexical(ctx: &ToolCtx<'_>, args: &Value) -> AppResult<ToolOutput
             clip(&q, 80)
         )
     });
-    for (etype, title, context, body, nav) in &hits {
+    for (etype, title, context, body, nav, _) in &hits {
         o.items.push(item(
             if title.is_empty() {
                 etype.clone()
@@ -541,13 +557,13 @@ pub fn retrieve_lexical(ctx: &ToolCtx<'_>, args: &Value) -> AppResult<ToolOutput
     Ok(o.detail("Keyword retrieval (project context is still being prepared)."))
 }
 
-/// (entity type, title, context, body, nav) of the best keyword matches visible to `actor`.
-fn lexical_hits(
+/// (entity type, title, context, body, nav, entity id) of the best keyword matches visible to `actor`.
+pub(crate) fn lexical_hits(
     c: &Connection,
     actor: &Actor,
     text: &str,
     limit: usize,
-) -> AppResult<Vec<(String, String, String, String, Value)>> {
+) -> AppResult<Vec<(String, String, String, String, Value, String)>> {
     let terms: Vec<String> = text
         .split(|ch: char| !ch.is_alphanumeric())
         .filter(|t| t.chars().count() >= 3)
@@ -560,7 +576,7 @@ fn lexical_hits(
     // OR-matching ranked by BM25: a question's words rarely all appear together.
     let q = terms.join(" OR ");
     let mut stmt = c.prepare(
-        "SELECT d.entity_type, d.title, d.context, d.body, d.nav_json FROM search_fts f JOIN search_doc d ON d.rowid=f.rowid
+        "SELECT d.entity_type, d.title, d.context, d.body, d.nav_json, d.entity_id FROM search_fts f JOIN search_doc d ON d.rowid=f.rowid
          WHERE search_fts MATCH ?1 AND (d.owner_user_id IS NULL OR d.owner_user_id=?2)
          ORDER BY bm25(search_fts) LIMIT ?3",
     )?;
@@ -573,6 +589,7 @@ fn lexical_hits(
                 r.get(2)?,
                 r.get(3)?,
                 serde_json::from_str(&nav).unwrap_or(Value::Null),
+                r.get(5)?,
             ))
         })?
         .collect::<Result<_, _>>()?;
@@ -666,6 +683,81 @@ fn project_settings(ctx: &ToolCtx<'_>, _: &Value) -> AppResult<ToolOutput> {
     }
     o.nav = Some(NavTarget::to("settings"));
     Ok(o.prov("Scope", "Project settings"))
+}
+
+fn app_appearance(ctx: &ToolCtx<'_>, _: &Value) -> AppResult<ToolOutput> {
+    use crate::modules::appearance::{AppearanceMode, state, theme};
+    let s = state(ctx.core)?;
+    let mode = match s.mode {
+        AppearanceMode::Light => "Light",
+        AppearanceMode::Dark => "Dark",
+        AppearanceMode::System => "System (follows Windows or macOS)",
+    };
+    let name = theme::builtin(&s.theme_id)
+        .map(|t| t.name.clone())
+        .or_else(|| {
+            s.my_themes
+                .iter()
+                .find(|m| m.id == s.theme_id)
+                .map(|m| m.name.clone())
+        })
+        .unwrap_or_else(|| s.theme_id.clone());
+    let mut o = ToolOutput::exact(format!("Appearance mode: {mode}. Theme: {name}."));
+    if let Some(n) = &s.fallback_notice {
+        o = o.detail(n.clone());
+    }
+    let built_in: Vec<&str> = theme::builtin_themes()
+        .iter()
+        .map(|t| t.name.as_str())
+        .collect();
+    o = o.detail(format!("Built-in themes: {}", built_in.join(", ")));
+    if !s.my_themes.is_empty() {
+        let mine: Vec<&str> = s
+            .my_themes
+            .iter()
+            .take(50)
+            .map(|m| m.name.as_str())
+            .collect();
+        o = o.detail(format!("My Themes: {}", mine.join(", ")));
+    }
+    Ok(o.prov("Scope", "Appearance"))
+}
+
+/// App settings a person asks about. Never licence, trial, diagnostics or file paths.
+fn app_settings(ctx: &ToolCtx<'_>, _: &Value) -> AppResult<ToolOutput> {
+    use crate::modules::writing::proofing::read_settings;
+    use crate::modules::writing::shortcuts::{ShortcutsArgs, list};
+    let p = read_settings(ctx.conn)?;
+    let mut o = ToolOutput::exact(format!(
+        "Spell checking is {}; main language {}{}.",
+        if p.enabled { "on" } else { "off" },
+        p.main_language,
+        p.second_language
+            .as_deref()
+            .map(|l| format!(", second language {l}"))
+            .unwrap_or_default()
+    ));
+    let changed = list(ctx.core, ctx.actor, ShortcutsArgs {})?.overrides;
+    o = o.detail(if changed.is_empty() {
+        "Keyboard shortcuts: none changed, every command uses its default keys.".to_string()
+    } else {
+        format!(
+            "Keyboard shortcuts changed: {}.",
+            plural(changed.len(), "command", "commands")
+        )
+    });
+    for c in changed.iter().take(50) {
+        o.items.push(item(
+            c.command_id.clone(),
+            Some(if c.keys.is_empty() {
+                "no shortcut".to_string()
+            } else {
+                c.keys.join(", ")
+            }),
+            None,
+        ));
+    }
+    Ok(o.prov("Scope", "App settings"))
 }
 
 fn recently_deleted(ctx: &ToolCtx<'_>, a: &Value) -> AppResult<ToolOutput> {

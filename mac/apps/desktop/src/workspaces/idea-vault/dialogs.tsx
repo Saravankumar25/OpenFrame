@@ -458,7 +458,7 @@ export function SendToStoryDialog({ scope, item, onClose }: { scope: Scope; item
     const parentType = target === "character" ? null : kind === "act" ? "act" : kind === "seq" ? "sequence" : "parking";
     try {
       const r = await vault.sendToStory({ store: scope, id: item.id, target, parentType, parentId: id ?? null });
-      toast.info(r.message, { label: "Open Beat Board", run: () => go({ workspace: "story" }) });
+      toast.info(r.message, { label: "Open Beat Board", run: () => go({ workspace: "story", sub: "board" }) });
       onClose();
     } catch (e) {
       setError(errText(e));

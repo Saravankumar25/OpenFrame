@@ -104,7 +104,7 @@ struct VisualNoScriptState: View {
             Button("Open Screenplay") {
                 NotificationCenter.default.post(name: .openFrameShowWorkspace, object: Workspace.screenplay.rawValue)
             }
-            .buttonStyle(.borderedProminent)
+            .buttonStyle(.ofProminent)
             .accessibilityIdentifier("visual-open-screenplay")
         }
         .accessibilityIdentifier("visual-no-script")
@@ -283,7 +283,7 @@ struct VisualFormSheet<Content: View>: View {
                     .keyboardShortcut(.cancelAction)
                     .accessibilityIdentifier("\(identifier)-cancel")
                 Button(primary, action: onPrimary)
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(.ofProminent)
                     .keyboardShortcut(.defaultAction)
                     .disabled(!primaryEnabled || busy)
                     .accessibilityIdentifier("\(identifier)-primary")
@@ -443,7 +443,7 @@ struct VisualExportSheet: View {
                     .keyboardShortcut(.cancelAction)
                     .accessibilityIdentifier("\(identifier)-cancel")
                 Button("Export\u{2026}") { Task { await run() } }
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(.ofProminent)
                     .keyboardShortcut(.defaultAction)
                     .disabled(!canExport)
                     .accessibilityIdentifier("\(identifier)-primary")
@@ -462,7 +462,7 @@ struct VisualExportSheet: View {
                 Button("Show in Finder") { NSWorkspace.shared.activateFileViewerSelecting([URL(fileURLWithPath: r.path)]) }
                     .accessibilityIdentifier("\(identifier)-reveal")
                 Button("Done", action: onCancel)
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(.ofProminent)
                     .keyboardShortcut(.defaultAction)
                     .accessibilityIdentifier("\(identifier)-close")
             }

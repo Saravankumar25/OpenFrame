@@ -128,7 +128,7 @@ OPENFRAME_SOAK_SECS=1800 cargo test -p openframe-application --test platform -- 
 OPENFRAME_SOAK_SECS=1800 cargo test -p openframe-ai --test soak_sidecar -- --ignored --nocapture m1_08_sidecar_soak_long
 ```
 
-Evidence: `docs/release/evidence/M1/M1.08-soak.txt` (evidence folders and file names keep their old item codes on purpose; see the evidence README).
+Evidence: `docs/history/evidence/M1/M1.08-soak.txt` (evidence folders and file names keep their old item codes on purpose; see the evidence README).
 
 ### Failure injection
 
@@ -149,7 +149,7 @@ project that still opens with every acknowledged change.
 | Very long paths | Project, export and backup more than 260 characters deep |
 | Non-ASCII project paths | `Résumé/Café/日本` folders, a non-ASCII title and a crash recovered in that folder |
 
-Evidence: `docs/release/evidence/M1/M1.11-failure-injection.txt` (same naming note as above).
+Evidence: `docs/history/evidence/M1/M1.11-failure-injection.txt` (same naming note as above).
 
 ## 8. Defect policy
 

@@ -156,7 +156,7 @@ enum AIFilePicker {
         return panel.runModal() == .OK ? panel.url : nil
     }
 
-    /// The Save panel for a JSON file (AI report, reported output).
+    /// The Save panel for a JSON file (AI report, conversation for review).
     @MainActor static func chooseSaveLocation(title: String, name: String) -> URL? {
         let panel = NSSavePanel()
         panel.title = title

@@ -5,7 +5,7 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { canvasExtent, changedMoves, dragBoxes, resizeBox, type Box } from "./canvas";
-import { looksLikeUrl, moveItem, parseSeconds, sceneLabel, shotLetters } from "../../../api/visual";
+import { looksLikeUrl, moveItem, parseSeconds, sceneLabel } from "../../../api/visual";
 import type { VisualScenes } from "../../../ipc/generated/VisualScenes";
 import type { ShotDto } from "../../../ipc/generated/ShotDto";
 import type { StoryboardSummary } from "../../../ipc/generated/StoryboardSummary";
@@ -67,9 +67,6 @@ describe("moodboard canvas geometry", () => {
 });
 
 describe("visual helpers", () => {
-  it("derives shot letters like Rust (A…Z, AA…)", () => {
-    expect([0, 1, 25, 26, 27].map(shotLetters)).toEqual(["A", "B", "Z", "AA", "AB"]);
-  });
   it("moves list items for drag previews", () => {
     expect(moveItem(["a", "b", "c"], 2, 0)).toEqual(["c", "a", "b"]);
   });

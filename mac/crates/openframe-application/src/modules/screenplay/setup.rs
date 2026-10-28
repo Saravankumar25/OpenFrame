@@ -116,10 +116,13 @@ pub struct ScreenplayPageSetup {
     pub line_spacing: ScreenplayLineSpacing,
     /// Number printed on the first script page.
     pub first_page_number: u32,
+    /// Print the page number on the first script page (off: the first page is unnumbered and
+    /// the next one prints "2."). The title page is never numbered.
+    pub number_first_page: bool,
     /// Header text (placeholders: {title} {draft} {revision} {date} {page}).
     pub header: String,
     pub footer: String,
-    /// Page number, header and footer also on the first script page.
+    /// Header and footer also on the first script page.
     pub header_on_first_page: bool,
     /// The title page is included when exporting and printing (the export switch).
     pub include_title_page: bool,
@@ -137,6 +140,7 @@ impl Default for ScreenplayPageSetup {
             font_size: 12,
             line_spacing: ScreenplayLineSpacing::Single,
             first_page_number: 1,
+            number_first_page: true,
             header: String::new(),
             footer: String::new(),
             header_on_first_page: false,
@@ -163,6 +167,7 @@ impl ScreenplayPageSetup {
                 ScreenplayLineSpacing::Double => LineSpacing::Double,
             },
             first_page_number: self.first_page_number,
+            number_first_page: self.number_first_page,
             header: self.header.clone(),
             footer: self.footer.clone(),
             header_on_first_page: self.header_on_first_page,

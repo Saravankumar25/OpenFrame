@@ -122,36 +122,6 @@ private func drag(_ story: StoryModel, _ ref: StoryItemRef, onto zone: StoryDrop
 @Suite("StoryTests", .serialized)
 @MainActor
 struct StoryTests {
-    /// The Story page is a free page of prose left of the Beat Board (owner request 2026-10-20):
-    /// it saves what is typed, survives a reload, and refuses a save from a stale window.
-    @Test func theStoryPageSavesWhatIsTypedAndRefusesAStaleSave() async throws {
-        let r = try await Rig.make(title: "Low Tide Radio")
-        defer { r.close() }
-        #expect(StoryTab.allCases.first == .page)
-        #expect(StoryTab.page.title == "Story")
-        let m = StoryPageModel(app: r.app)
-        await m.load()
-        #expect(m.loaded && m.text.isEmpty && m.words == 0)
-        m.text = "A storm. Fishing boats in the swell."
-        m.edited()
-        #expect(m.state == .unsaved)
-        await m.save()
-        #expect(m.state == .saved)
-        #expect(m.words == 7)
-        let other = StoryPageModel(app: r.app)
-        await other.load()
-        #expect(other.text == "A storm. Fishing boats in the swell.")
-        other.text += "\n\nAnjali hears her mother."
-        await other.save()
-        // The first window is now behind: its save is refused, nothing is lost.
-        m.text += " The lights die."
-        await m.save()
-        #expect(m.conflict)
-        #expect(try await r.app.core!.storyPage().body.hasSuffix("Anjali hears her mother."))
-        await m.reloadAfterConflict()
-        #expect(!m.conflict && m.text.hasSuffix("Anjali hears her mother."))
-    }
-
     @Test func actSequenceAndTwoCards() async throws {
         let r = try await Rig.make(title: "Paper Boats")
         defer { r.close() }

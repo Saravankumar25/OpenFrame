@@ -841,7 +841,13 @@ fn appearance_operations_are_hidden_from_the_assistant() {
         let m = cat
             .metadata(op)
             .unwrap_or_else(|| panic!("{op} has metadata"));
-        assert!(matches!(m.ai_exposure, AiExposure::Hidden(_)), "{op}");
+        // Reading the mode and the theme is exposed (`app_appearance`, slice S2); every command that
+        // changes them stays hidden.
+        if op == "appearance.get" {
+            assert!(!matches!(m.ai_exposure, AiExposure::Hidden(_)), "{op}");
+        } else {
+            assert!(matches!(m.ai_exposure, AiExposure::Hidden(_)), "{op}");
+        }
         assert!(m.required_capability.is_none(), "{op} is application level");
     }
     let del = cat.metadata("appearance.delete_theme").unwrap();

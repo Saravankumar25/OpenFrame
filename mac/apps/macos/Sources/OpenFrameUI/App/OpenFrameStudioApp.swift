@@ -12,7 +12,9 @@ public enum AppVersion {
 }
 
 /// Start options from the process environment. `OPENFRAME_DATA_ROOT` keeps every file of a test
-/// run in one absolute folder (ADR-0031), as on Windows; nothing else can be changed from outside.
+/// run in one absolute folder (ADR-0031), as on Windows. `OPENFRAME_LIBRARY_SETUP=1` and
+/// `OPENFRAME_AI_DETERMINISTIC=1` are the Windows test switches; the core honours them only in a
+/// debug build on such a test folder.
 enum LaunchOptions {
     static func make() -> CoreStartOptions {
         let env = ProcessInfo.processInfo.environment
@@ -25,7 +27,10 @@ enum LaunchOptions {
             exit(2)
         }
         let ai = Bundle.main.resourceURL?.appendingPathComponent("ai", isDirectory: true)
-        return CoreStartOptions(appVersion: AppVersion.current, isolatedDataRoot: root, aiBundleDir: ai, writeLogs: true)
+        var options = CoreStartOptions(appVersion: AppVersion.current, isolatedDataRoot: root, aiBundleDir: ai, writeLogs: true)
+        options.testLibrarySetup = env["OPENFRAME_LIBRARY_SETUP"] == "1"
+        options.testAIDeterministic = env["OPENFRAME_AI_DETERMINISTIC"] == "1"
+        return options
     }
 }
 
@@ -46,13 +51,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         observers.append(center.addObserver(forName: NSWorkspace.didWakeNotification, object: nil, queue: .main) { _ in
             MainActor.assumeIsolated { AppDelegate.model?.core?.powerEvent(sleeping: false) }
         })
+        // Quit from the Dock, logout and restart close the sheets first, like Command+Q.
+        MainActor.assumeIsolated { QuitGate.installQuitEventHandler() }
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { true }
 
     /// Command+Q, the Dock and logout: store what the editors still hold, then quit (the Mac
     /// counterpart of the Windows close gate). A store that does not answer in 5 seconds does not
-    /// keep the app open forever; the core closes the project either way.
+    /// keep the app open forever; the core closes the project either way. AppKit asks this only
+    /// once no sheet is open, which `QuitGate` sees to.
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
         // Whichever comes first answers: the editors finished storing, or 5 seconds passed. A
         // task group cannot do this, because it waits for the slower child even after

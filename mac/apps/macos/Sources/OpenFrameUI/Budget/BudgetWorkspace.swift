@@ -73,7 +73,7 @@ struct BudgetContent: View {
         }
         .background(theme["bg"])
         .task(id: app.changes.key(BudgetTables.all)) { await model.reload() }
-        .sheet(item: $model.sheet) { BudgetSheetHost(model: model, sheet: $0) }
+        .themedSheet(item: $model.sheet) { BudgetSheetHost(model: model, sheet: $0) }
         .accessibilityIdentifier("budget-workspace")
     }
 
@@ -88,7 +88,7 @@ struct BudgetContent: View {
                     Button("Save Snapshot") { model.sheet = .snapshotName }
                         .accessibilityIdentifier("budget-save-snapshot")
                     Button { model.sheet = .line(nil) } label: { Label("Add Line", systemImage: "plus") }
-                        .buttonStyle(.borderedProminent)
+                        .buttonStyle(.ofProminent)
                         .keyboardShortcut("n", modifiers: [.command, .option])
                         .accessibilityIdentifier("budget-add-line")
                 }
@@ -109,7 +109,7 @@ struct BudgetContent: View {
                 .accessibilityIdentifier("budget-start-currency")
             }
             Button("Start Budget") { Task { _ = await model.start(currency: model.startCurrency) } }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(.ofProminent)
                 .disabled(model.busy)
                 .accessibilityIdentifier("budget-start")
             Text("Optional. You can ignore the budget entirely.").font(.caption).foregroundStyle(theme["muted"])
@@ -118,6 +118,7 @@ struct BudgetContent: View {
         .frame(maxWidth: 440)
         .background(theme["panel"], in: RoundedRectangle(cornerRadius: 8))
         .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(theme["line"]))
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("budget-empty")
     }
 
@@ -290,13 +291,17 @@ struct BudgetTable: View {
                 .frame(width: 100, alignment: .trailing)
                 BudgetDifference(value: l.difference, currency: budget.currency).frame(width: 150, alignment: .trailing)
                 if !readOnly {
-                    HStack(spacing: 4) {
+                    // Icons only: the column is too narrow for two titled buttons, which wrapped one
+                    // letter per line. The tooltip and the accessibility label carry the words.
+                    HStack(spacing: 12) {
                         Button { onEdit?(l) } label: { Label("Edit", systemImage: "pencil") }
-                            .buttonStyle(.borderless)
+                            .buttonStyle(.borderless).labelStyle(.iconOnly)
+                            .help("Edit")
                             .accessibilityLabel("Edit \(l.description)")
                             .accessibilityIdentifier("budget-edit-\(l.id)")
                         Button { onDelete?(l) } label: { Label("Delete", systemImage: "trash") }
-                            .buttonStyle(.borderless)
+                            .buttonStyle(.borderless).labelStyle(.iconOnly)
+                            .help("Delete")
                             .accessibilityLabel("Delete \(l.description)")
                             .accessibilityIdentifier("budget-delete-\(l.id)")
                     }

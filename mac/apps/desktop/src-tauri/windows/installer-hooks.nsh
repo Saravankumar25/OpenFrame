@@ -1,6 +1,8 @@
 ; Uninstaller behaviour for the internal Windows installer (Tauri NSIS hooks).
 ;
-; Uninstalling removes the program. It never touches projects or the Global Idea Vault.
+; Uninstalling removes the program. It never touches projects, the Global Idea Vault or the library
+; file (Documents\OpenFrame\library.json, ADR-0038), which keeps the person's identity, so a
+; reinstall finds their work and their private notes again even when the app data was deleted.
 ; The "delete app data" checkbox (Tauri's $DeleteAppDataCheckboxState) removes only the items the
 ; app itself creates inside %LOCALAPPDATA%\OpenFrame, then the folder itself if it is empty:
 ;   folders: models, ai, logs, entitlement, tmp, reviews
@@ -17,7 +19,7 @@
   ; An update runs the old uninstaller silently; only a person who chose to uninstall sees this.
   ${If} $UpdateMode <> 1
   ${AndIfNot} ${Silent}
-    MessageBox MB_OK|MB_ICONINFORMATION "Your projects and your Global Idea Vault are not removed. They stay where you keep them, usually in Documents\OpenFrame."
+    MessageBox MB_OK|MB_ICONINFORMATION "Your projects, your Global Idea Vault and your OpenFrame library file are not removed. They stay where you keep them, usually in Documents\OpenFrame, and installing OpenFrame again finds them."
   ${EndIf}
 !macroend
 

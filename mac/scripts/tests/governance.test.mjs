@@ -437,7 +437,6 @@ test("plan status --check catches a checked box without evidence, tagged or not"
 
 // Fake secrets are joined at run time so the literal never sits in this file.
 const FAKE_AWS = ["AKIA", "Q7ZTESTONLY12345"].join("");
-const FAKE_PASSWORD_LINE = ["OPENFRAME_TEAM_PASSWORD", "=", "pilot-door-1"].join("");
 
 function gitRepo(files) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "of-secrets-"));
@@ -468,15 +467,13 @@ test("secret scan finds a key that was committed and later deleted, without prin
   assert.ok(!r.out.includes(FAKE_AWS), "the finding must not repeat the secret");
 });
 
-test("secret scan finds an untracked .env file and a team password assignment in the working tree", () => {
+test("secret scan finds an untracked .env file in the working tree", () => {
   const { root } = gitRepo({ "README.md": "ok\n" });
   write(root, ".env", "X=1\n");
-  write(root, "build.ps1", `$env:${FAKE_PASSWORD_LINE}\n`);
   write(root, ".env.example", "X=\n");
   const r = run("check-secrets.mjs", root);
   assert.equal(r.status, 1, r.out);
   assert.match(r.out, /^ {2}\.env {2}secret file/m);
-  assert.match(r.out, /build\.ps1:1 {2}team-password-value/);
   assert.doesNotMatch(r.out, /\.env\.example/);
 });
 
@@ -535,7 +532,7 @@ test("link check accepts listed app addresses and prefix entries", () => {
 
 // ---------------------------------------------------------------------------- installer string scan
 
-function scan(files, env = {}) {
+function scan(files) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "of-scan-"));
   for (const [rel, buf] of Object.entries(files)) {
     fs.mkdirSync(path.dirname(path.join(dir, rel)), { recursive: true });
@@ -543,7 +540,7 @@ function scan(files, env = {}) {
   }
   const r = spawnSync(process.execPath, [script("scan-installer.mjs"), dir], {
     encoding: "utf8",
-    env: { ...process.env, OPENFRAME_SCAN_USER: "builderperson", OPENFRAME_TEAM_PASSWORD: "", ...env },
+    env: { ...process.env, OPENFRAME_SCAN_USER: "builderperson" },
   });
   return { status: r.status, out: `${r.stdout}${r.stderr}` };
 }
@@ -564,14 +561,6 @@ test("installer scan finds a personal path in UTF-16, a secret and the user name
   assert.match(r.out, /app\.exe @\d+ {2}aws-access-key/);
   assert.match(r.out, /readme\.txt @\d+ {2}build computer user name/);
   assert.ok(!r.out.includes("alice") && !r.out.includes(FAKE_AWS), r.out);
-});
-
-test("installer scan finds the team password in plain text", () => {
-  const secret = ["door", "lock", "42"].join("-");
-  const r = scan({ "app.exe": binary(Buffer.from(secret, "utf16le")) }, { OPENFRAME_TEAM_PASSWORD: secret }); // secret-scan: allow (a variable, not a value)
-  assert.equal(r.status, 1, r.out);
-  assert.match(r.out, /team password in plain UTF-16 text/);
-  assert.ok(!r.out.includes(secret), r.out);
 });
 
 // ---------------------------------------------------------------------------- release hardening

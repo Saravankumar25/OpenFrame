@@ -40,7 +40,7 @@ struct ExchangeImportSheet: View {
                         Task { await model.open(file: url) }
                     }
                 }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(.ofProminent)
                 .disabled(model.busy)
                 .accessibilityIdentifier("exchange-import-choose")
             }
@@ -88,7 +88,7 @@ struct ExchangeImportSheet: View {
             Button("Continue") {
                 Task { if await model.continueStale() == .view, let s = model.session { viewPackage(s) } }
             }
-            .keyboardShortcut(.defaultAction).buttonStyle(.borderedProminent).disabled(model.busy)
+            .keyboardShortcut(.defaultAction).buttonStyle(.ofProminent).disabled(model.busy)
             .accessibilityIdentifier("exchange-stale-continue")
         }
     }
@@ -267,7 +267,7 @@ struct ExchangeImportSheet: View {
             if (result?.queued ?? 0) > 0 {
                 Button("Open Review Queue", action: openQueue).accessibilityIdentifier("exchange-open-queue")
             }
-            Button("Close") { Task { await model.cancel(); close() } }.keyboardShortcut(.defaultAction).buttonStyle(.borderedProminent)
+            Button("Close") { Task { await model.cancel(); close() } }.keyboardShortcut(.defaultAction).buttonStyle(.ofProminent)
                 .accessibilityIdentifier("exchange-import-close")
         } else {
             Button("Cancel", action: leave).keyboardShortcut(.cancelAction).accessibilityIdentifier("exchange-import-cancel")
@@ -286,7 +286,7 @@ struct ExchangeImportSheet: View {
                 Button("Accept All Safe") { Task { await model.apply(.allSafe) } }.disabled(model.busy)
                     .accessibilityIdentifier("exchange-accept-safe")
                 Button("Import Selected") { Task { await model.apply(.selected) } }
-                    .keyboardShortcut(.defaultAction).buttonStyle(.borderedProminent)
+                    .keyboardShortcut(.defaultAction).buttonStyle(.ofProminent)
                     .disabled(model.busy || model.selected.isEmpty)
                     .accessibilityIdentifier("exchange-import-selected")
             }

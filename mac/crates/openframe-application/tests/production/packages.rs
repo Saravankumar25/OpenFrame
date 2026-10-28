@@ -428,6 +428,36 @@ fn fsd_44_backup_round_trip_restores_as_copy_with_new_identity() {
 }
 
 #[test]
+fn story_page_text_travels_in_backup_and_project_packages() {
+    let a = TestEnv::with_project("Night Bus", "Feature Film");
+    let text = "The last bus leaves at midnight.\n\nनमस्ते";
+    a.ok("story.page.save", json!({ "text": text, "expectedRev": 0 }));
+    let backup = out_path(&a, "Night Bus.ofbackup");
+    task_ok(
+        &a,
+        &a.ok("packages.create_backup", json!({ "path": backup })),
+    );
+    let started = a.ok(
+        "packages.import_project",
+        json!({ "path": backup, "mode": "copy" }),
+    );
+    task_ok(&a, &started);
+    let restored = a.ok("story.page.get", json!({}));
+    assert_eq!(restored["text"], text, "the restored copy holds the page");
+    assert_eq!(restored["rev"], 1);
+
+    let pkg = out_path(&a, "Night Bus.ofproject");
+    task_ok(&a, &a.ok("packages.export_project", json!({ "path": pkg })));
+    let b = TestEnv::new();
+    let started = b.ok(
+        "packages.import_project",
+        json!({ "path": pkg, "mode": "open" }),
+    );
+    task_ok(&b, &started);
+    assert_eq!(b.ok("story.page.get", json!({}))["text"], text);
+}
+
+#[test]
 fn fsd_44_7_portable_backup_copies_linked_files_into_the_project() {
     let env = TestEnv::with_project("Portable", "Short Film");
     let seed = seed(&env);

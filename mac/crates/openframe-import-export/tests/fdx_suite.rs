@@ -115,8 +115,15 @@ fn expect(dir: &Path, name: &str, actual: &[u8], failures: &mut Vec<String>, cla
         std::fs::write(&path, actual).unwrap();
         return;
     }
+    // Every expected file is text; a Windows checkout with core.autocrlf stores it with CRLF.
+    let lf = |b: &[u8]| {
+        b.iter()
+            .copied()
+            .filter(|&c| c != b'\r')
+            .collect::<Vec<u8>>()
+    };
     match std::fs::read(&path) {
-        Ok(want) if want == actual => {}
+        Ok(want) if lf(&want) == lf(actual) => {}
         Ok(_) => {
             let got = path.with_extension(format!(
                 "{}.actual",

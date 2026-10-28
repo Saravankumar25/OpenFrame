@@ -60,7 +60,20 @@ const sameHint = (a: DropHint | null, b: DropHint | null) =>
     containerKey(a.target) === containerKey(b.target) &&
     (a.before ? refKey(a.before) : "") === (b.before ? refKey(b.before) : ""));
 
-export function useStoryDnd(board: StoryBoardState | undefined, episodeId: string | null, actAxis: "x" | "y") {
+type Box = { left: number; top: number; width: number; height: number };
+
+/** True when the dragged box's centre is in the first half of `over` along `axis` (left half for "x", top half for "y"). */
+export function inFirstHalf(axis: "x" | "y", dragged: Box, over: Box): boolean {
+  return axis === "x"
+    ? dragged.left + dragged.width / 2 < over.left + over.width / 2
+    : dragged.top + dragged.height / 2 < over.top + over.height / 2;
+}
+
+/**
+ * `actAxis`: the direction acts are laid out in (the board's columns run along "x", its rows along "y").
+ * `itemAxis`: the direction cards flow inside an act, which decides before or after a card.
+ */
+export function useStoryDnd(board: StoryBoardState | undefined, episodeId: string | null, actAxis: "x" | "y", itemAxis: "x" | "y" = "y") {
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
   const [dragging, setDragging] = useState<Dragging | null>(null);
   const [hint, setHint] = useState<DropHint | null>(null);
@@ -110,11 +123,9 @@ export function useStoryDnd(board: StoryBoardState | undefined, episodeId: strin
       const d = over.data.current as DropData | undefined;
       const r = active.rect.current.translated ?? active.rect.current.initial;
       if (!d || !r) return;
-      const cx = r.left + r.width / 2;
-      const cy = r.top + r.height / 2;
       if (d.type === "act") {
         const acts = board.acts.map((a) => a.id).filter((id) => id !== dragging?.actId);
-        const firstHalf = actAxis === "x" ? cx < over.rect.left + over.rect.width / 2 : cy < over.rect.top + over.rect.height / 2;
+        const firstHalf = inFirstHalf(actAxis, r, over.rect);
         const idx = acts.indexOf(d.actId);
         const before = firstHalf ? d.actId : (acts[idx + 1] ?? null);
         setActHint((prev) => (prev && prev.before === before ? prev : { before }));
@@ -123,10 +134,10 @@ export function useStoryDnd(board: StoryBoardState | undefined, episodeId: strin
       let next: DropHint | null;
       if (d.type === "container") next = dropInto(board, d.container, !!d.atStart, moving.current);
       else if (d.ref.kind === "sequence" && !kinds.current.includes("sequence")) next = dropInto(board, SEQ(d.ref.id), true, moving.current);
-      else next = dropBeside(board, d.ref, cy < over.rect.top + over.rect.height / 2 ? "before" : "after", moving.current);
+      else next = dropBeside(board, d.ref, inFirstHalf(itemAxis, r, over.rect) ? "before" : "after", moving.current);
       setHint((prev) => (sameHint(prev, next) ? prev : next));
     },
-    [board, actAxis, dragging?.actId],
+    [board, actAxis, itemAxis, dragging?.actId],
   );
 
   const reset = () => {

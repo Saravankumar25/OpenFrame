@@ -131,21 +131,73 @@ struct AILogicTests {
 
     // MARK: Answers
 
-    @Test func answersListOnlyRealSourcesUnderSeeSources() {
-        let chips = AILogic.answerSources([
+    @Test func sourcesAreTheProvenanceAsWindowsShowsIt() {
+        let chips = AILogic.sourceChips([
             AiProvenance(kind: "Scope", label: "Using: Whole Project"),
-            AiProvenance(kind: "Basis", label: "Exact"),
             AiProvenance(kind: "Scene", label: "BUS STOP", nav: AiNavTarget(workspace: "screenplay", params: ["sceneId": "s1"])),
-            AiProvenance(kind: "Scene", label: "BUS STOP", nav: AiNavTarget(workspace: "screenplay", params: ["sceneId": "s1"])),
+            AiProvenance(kind: "Cast", label: "Maya Rao", nav: AiNavTarget(workspace: "production", sub: "cast-crew", params: [:])),
             AiProvenance(kind: "Draft", label: "Draft 1", nav: AiNavTarget(workspace: "elsewhere", params: [:])),
         ])
-        // The scope is a setting of the question, not a source; a repeat is listed once.
-        #expect(chips.map(\.text) == ["Scene: BUS STOP", "Draft: Draft 1"])
-        #expect(chips[0].route?.workspace == .screenplay)
-        #expect(chips[0].route?.params["sceneId"] == "s1")
+        // A scope or basis shows its label alone; any other source names its kind.
+        #expect(chips.map(\.text) == ["Using: Whole Project", "Scene: BUS STOP", "Cast: Maya Rao", "Draft: Draft 1"])
+        #expect(Set(chips.map(\.id)).count == 4)
+        #expect(chips[1].route?.workspace == .screenplay)
+        #expect(chips[1].route?.params["sceneId"] == "s1")
+        #expect(chips[2].route?.tab == .castCrew)
         // An unknown workspace is ignored, never guessed.
-        #expect(chips[1].route == nil)
-        #expect(AILogic.answerSources([AiProvenance(kind: "Scope", label: "Using: Current Screenplay")]).isEmpty)
+        #expect(chips[3].route == nil)
+    }
+
+    @Test func confidenceAndStepsWordsMatchWindows() {
+        #expect(AILogic.confidenceLabel(.exact) == "Exact \u{00B7} from project data")
+        #expect(AILogic.confidenceLabel(.inferred) == "Inferred \u{00B7} written by Offline AI")
+        #expect(AILogic.confidenceLabel(.unavailable) == "Not available in project data")
+        #expect(AILogic.confidenceLabel(nil) == nil)
+        func step(_ label: String) -> AiStepDto { AiStepDto(index: 0, tool: "t", label: label, status: "Succeeded") }
+        #expect(AILogic.stepsSummary([]) == nil)
+        #expect(AILogic.stepsSummary([step("Count scenes")]) == nil)
+        #expect(AILogic.stepsSummary([step("Find the scene"), step("Read it")]) == "2 steps: Find the scene \u{00B7} Read it")
+    }
+
+    // Windows ResultView.test.tsx: what sits under the answer and what waits behind See sources.
+
+    @Test func anAnswerShowsItsTextWithTheMetadataBehindSeeSources() {
+        let r = AIFixtures.result(
+            content: "There are 130 scenes in the current screenplay.", details: ["From the screenplay rows."], confidence: .exact,
+            provenance: [AiProvenance(kind: "Draft", label: "ENE")])
+        let l = AILogic.layout(r)
+        #expect(!l.reasonsVisible)
+        #expect(l.hasSources)
+        #expect(!l.itemsInline && !l.itemsAsSources)
+    }
+
+    @Test func theRowsOfACountStayUnderSeeSources() {
+        let r = AIFixtures.result(items: [AiResultItem(label: "Scene 1: INT. KITCHEN - DAY")], itemsAreAnswer: false)
+        let l = AILogic.layout(r)
+        #expect(l.itemsAsSources && !l.itemsInline && l.hasSources)
+    }
+
+    @Test func aRequestedListStaysUnderTheAnswerWithNoEmptySeeSources() {
+        let r = AIFixtures.result(items: [AiResultItem(label: "Scene 1: INT. KITCHEN - DAY")], itemsAreAnswer: true)
+        let l = AILogic.layout(r)
+        #expect(l.itemsInline && !l.itemsAsSources)
+        #expect(!l.hasSources)
+    }
+
+    @Test func theReasonsOfARefusalStayInView() {
+        let r = AIFixtures.result(kind: .denied, content: "I can't do that.", details: ["You are a Viewer on this project."])
+        let l = AILogic.layout(r)
+        #expect(l.reasonsVisible)
+        // The reasons are in view, so they are not repeated behind See sources.
+        #expect(!l.hasSources)
+        #expect(AILogic.layout(AIFixtures.result(kind: .answer, details: ["How it was worked out."])).hasSources)
+    }
+
+    @Test func anAnswerNeverShowsACoverageLine() {
+        // The "Used N of N scenes" line is gone on Windows; nothing here writes one.
+        let r = AIFixtures.result(content: "Lead cast, planned: 40,00,000.", confidence: .exact)
+        #expect(AIAnswerText.parse(r.content) == [.paragraph(["Lead cast, planned: 40,00,000."])])
+        #expect(!AILogic.copyText(r).contains("Used "))
     }
 
     @Test func longListsShowAPreviewAndTheWholeListOnRequest() {
@@ -160,19 +212,114 @@ struct AILogicTests {
         for kind in [AiResultKind.answer, .navigate, .suggestion, .proposal] { #expect(!AILogic.reasonsVisible(kind), "\(kind)") }
     }
 
-    @Test func navigationTargetsMapToMacWorkspaces() {
+    // MARK: Navigation: every target the core sends
+
+    @Test func everyWorkspaceTheCoreNamesOpensItsMacWorkspace() {
         let expected: [(String, Workspace)] = [
             ("home", .home), ("vault", .ideaVault), ("story", .story), ("screenplay", .screenplay), ("breakdown", .breakdown),
             ("production", .production), ("callsheets", .callSheets), ("files", .files), ("trash", .recentlyDeleted),
             ("activity", .activity), ("notes", .notes),
         ]
-        for (id, ws) in expected { #expect(AIRoute.workspace(for: id) == ws, "\(id)") }
-        #expect(AIRoute.workspace(for: "settings") == nil)
+        for (id, ws) in expected {
+            #expect(AIRoute.workspace(for: id) == ws, "\(id)")
+            #expect(AIRoute(AiNavTarget(workspace: id, params: [:]))?.workspace == ws, "\(id)")
+        }
         #expect(AIRoute(nil) == nil)
-        // A Production link opens its tab, Overview when it names none.
-        #expect(AIRoute(AiNavTarget(workspace: "production", params: ["sub": "cast-crew"]))?.tab == .castCrew)
+        // The product guide ("help") and anything unknown have no Mac place: ignored.
+        #expect(AIRoute(AiNavTarget(workspace: "help", params: [:])) == nil)
+        #expect(AIRoute(AiNavTarget(workspace: "elsewhere", params: [:])) == nil)
+    }
+
+    @Test func aProductionLinkOpensTheTabItsSubNames() {
+        // The core sends the tab as `sub`, beside the parameters (never inside them).
+        let tabs: [(String, ProductionTab)] = [
+            ("budget", .budget), ("schedule", .schedule), ("cast-crew", .castCrew), ("locations", .locations), ("catalog", .catalog),
+            ("shots", .shotLists), ("moodboards", .moodboards), ("storyboards", .storyboards), ("dood", .dayOutOfDays),
+            ("sides", .sides), ("reports", .reports), ("daily", .daily), ("overview", .overview),
+        ]
+        for (sub, tab) in tabs {
+            let r = AIRoute(AiNavTarget(workspace: "production", sub: sub, params: ["shotId": "x"]))
+            #expect(r?.target == .place(ProjectPlace(.production, tab: tab)), "\(sub)")
+            #expect(r?.params["shotId"] == "x")
+        }
         #expect(AIRoute(AiNavTarget(workspace: "production", params: [:]))?.tab == .overview)
+        #expect(AIRoute(AiNavTarget(workspace: "production", sub: "unknown", params: [:]))?.tab == .overview)
         #expect(AIRoute(AiNavTarget(workspace: "screenplay", params: [:]))?.tab == nil)
+        // A parameter named "sub" is not the tab.
+        #expect(AIRoute(AiNavTarget(workspace: "production", params: ["sub": "budget"]))?.tab == .overview)
+    }
+
+    @Test func storyAndSettingsLinksOpenTheirTabs() {
+        #expect(AIRoute(AiNavTarget(workspace: "story", sub: "characters", params: ["characterId": "c1"]))?.target == .story(.characters))
+        #expect(AIRoute(AiNavTarget(workspace: "story", sub: "episodes", params: [:]))?.target == .story(.episodes))
+        #expect(AIRoute(AiNavTarget(workspace: "story", params: [:]))?.target == .story(.page))
+        #expect(AIRoute.storyIntent(.characters) == "story.show_characters")
+        #expect(AIRoute(AiNavTarget(workspace: "settings", params: [:]))?.target == .projectSettings(.general))
+        #expect(AIRoute(AiNavTarget(workspace: "settings", sub: "templates", params: [:]))?.target == .projectSettings(.templates))
+        #expect(AIRoute(AiNavTarget(workspace: "settings", sub: "offline-ai", params: [:]))?.target == .projectSettings(.offlineAI))
+        #expect(AIRoute(AiNavTarget(workspace: "settings", sub: "storage", params: [:]))?.target == .projectSettings(.storage))
+        #expect(AIRoute(AiNavTarget(workspace: "settings", sub: "unknown", params: [:]))?.target == .projectSettings(.general))
+        #expect(AIRoute(AiNavTarget(workspace: "settings", params: [:]))?.workspace == nil)
+    }
+
+    @Test func aStoryLinkWithNoTabOpensTheTabItsIdsPointTo() {
+        // Story search hits come as a link with a card id and no tab: Windows opens the Beat Board.
+        #expect(AIRoute(AiNavTarget(workspace: "story", params: ["cardId": "c1"]))?.target == .story(.board))
+        #expect(AIRoute(AiNavTarget(workspace: "story", params: ["beatId": "b1"]))?.target == .story(.board))
+        #expect(AIRoute(AiNavTarget(workspace: "story", params: ["characterId": "k1"]))?.target == .story(.characters))
+        #expect(AIRoute(AiNavTarget(workspace: "story", sub: "unknown", params: ["actId": "a1"]))?.target == .story(.board))
+        #expect(AIRoute(AiNavTarget(workspace: "story", params: ["episodeId": "e1"]))?.target == .story(.page))
+        // A named tab still wins over the ids.
+        #expect(AIRoute(AiNavTarget(workspace: "story", sub: "outline", params: ["cardId": "c1"]))?.target == .story(.outline))
+        #expect(AIRoute(AiNavTarget(workspace: "story", params: ["cardId": "c1"]))?.params["cardId"] == "c1")
+    }
+
+    @MainActor
+    @Test func performingALinkMovesTheWindow() {
+        final class Seen: @unchecked Sendable { var shown: [String] = []; var settings: [String?] = [] }
+        let seen = Seen()
+        let o = NotificationCenter.default.addObserver(forName: .openFrameShowWorkspace, object: nil, queue: nil) { n in
+            if let s = n.object as? String { seen.shown.append(s) }
+        }
+        let p = NotificationCenter.default.addObserver(forName: .openFrameShowProjectSettings, object: nil, queue: nil) { n in
+            seen.settings.append(n.object as? String)
+        }
+        defer { NotificationCenter.default.removeObserver(o); NotificationCenter.default.removeObserver(p) }
+        AIRoute(AiNavTarget(workspace: "production", sub: "budget", params: [:]))?.perform()
+        AIRoute(AiNavTarget(workspace: "callsheets", params: [:]))?.perform()
+        AIRoute(AiNavTarget(workspace: "story", sub: "characters", params: [:]))?.perform()
+        AIRoute(AiNavTarget(workspace: "settings", sub: "templates", params: [:]))?.perform()
+        #expect(seen.shown == ["production/budget", "callSheets", "story"])
+        #expect(seen.settings == ["templates"])
+        #expect(ProjectIntents.shared.consume("story.show_characters"))
+        // A story card link with no tab asks Story for the Beat Board.
+        AIRoute(AiNavTarget(workspace: "story", params: ["cardId": "c1"]))?.perform()
+        #expect(ProjectIntents.shared.consume("story.show_board"))
+    }
+
+    // MARK: Progress of the running conversation
+
+    @Test func progressLinesOfOnlyTheRunningConversationCount() {
+        let mine = AILogic.progress(AIFixtures.progress("c1", "Reading Scenes 5 and 6", step: 1, total: 3), conversation: "c1")
+        #expect(mine == AIProgress(label: "Reading Scenes 5 and 6", step: 1, total: 3))
+        #expect(AILogic.progress(AIFixtures.progress("someone-else", "Reading Scene 99"), conversation: "c1") == nil)
+        #expect(AILogic.progress(AIFixtures.progress("c1", "Not mine", module: "other"), conversation: "c1") == nil)
+        #expect(AILogic.progress(AIFixtures.progress("c1", "Not mine", name: "changed"), conversation: "c1") == nil)
+        #expect(AILogic.progress(AIFixtures.progress("c1", ""), conversation: "c1") == nil)
+        #expect(AILogic.progress(AIFixtures.progress("c1", "Reading"), conversation: nil) == nil)
+        #expect(AILogic.progress(.dataChanged(store: .project, tables: ["ai_request"], ids: [], origin: "c1"), conversation: "c1") == nil)
+    }
+
+    @Test func aNewConversationIdIsAShortPlainToken() {
+        let id = AILogic.newConversationId()
+        #expect(id.count >= 8 && id.count <= 64)
+        #expect(id.allSatisfy { $0.isLetter || $0.isNumber || $0 == "-" })
+        #expect(AILogic.newConversationId() != id)
+    }
+
+    @Test func theSaveMessageCountsTheQuestions() {
+        #expect(AILogic.savedMessage(AiReportResult(fileName: "a.json", rows: 2)) == "Saved a.json (2 questions).")
+        #expect(AILogic.savedMessage(AiReportResult(fileName: "a.json", rows: 1)) == "Saved a.json (1 question).")
     }
 
     @Test func indexNoticeShowsOnlyWhileContextIsRebuilt() {
@@ -245,21 +392,6 @@ struct AILogicTests {
         #expect(e[1].value == "none yet" && e[5].value == "not known yet" && e[6].value == "none stands out")
         #expect(e[2].value == "0 of 0")
     }
-
-    // MARK: Report AI output
-
-    @Test func reportedOutputHoldsWhatThePersonSawAndNothingElse() throws {
-        let result = AiResultDto(
-            id: "r", kind: .answer, status: .informational, content: "There are 3 scenes.", details: ["from the draft"], confidence: .exact,
-            provenance: [AiProvenance(kind: "Draft", label: "Draft 1")], items: [], steps: [], createdAt: 1_700_000_000_000)
-        let x = AiExchange(requestId: "q", conversationId: "c", requestText: "How many scenes?", scopeLabel: "Using: Whole Project", result: result, createdAt: 1)
-        let json = try JSONSerialization.jsonObject(with: AIOutputReport.make(x)) as? [String: Any]
-        #expect(json?["question"] as? String == "How many scenes?")
-        #expect(json?["answer"] as? String == "There are 3 scenes.")
-        #expect(json?["resultKind"] as? String == "Answer")
-        #expect(json?["sources"] as? [String] == ["Draft: Draft 1"])
-        #expect((json?["note"] as? String)?.contains("Nothing was sent") == true)
-    }
 }
 
 @MainActor
@@ -275,9 +407,7 @@ struct AIStarterTests {
     }
 
     @Test func copyTextHoldsTheAnswerAndItsList() {
-        let r = AiResultDto(id: "r", kind: .answer, status: .informational, content: "Two characters speak.", details: [],
-                            provenance: [], items: [AiResultItem(label: "ARJUN"), AiResultItem(label: "MEERA", detail: "3 scenes")],
-                            steps: [], createdAt: 0)
+        let r = AIFixtures.result(content: "Two characters speak.", items: [AiResultItem(label: "ARJUN"), AiResultItem(label: "MEERA", detail: "3 scenes")])
         #expect(AILogic.copyText(r) == "Two characters speak.\n- ARJUN\n- MEERA (3 scenes)")
     }
 }

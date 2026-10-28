@@ -8,6 +8,14 @@
     "resultType": "AiExchange"
   },
   {
+    "argType": "AiCancelArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Offline AI",
+    "name": "ai.cancel",
+    "resultType": "AiCancelDto"
+  },
+  {
     "argType": "AcceptArgs",
     "kind": "command",
     "longRunning": false,
@@ -88,6 +96,14 @@
     "resultType": "AiDownloadDto"
   },
   {
+    "argType": "AiConversationExportArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Offline AI",
+    "name": "ai.export_conversation",
+    "resultType": "AiReportResult"
+  },
+  {
     "argType": "AiReportArgs",
     "kind": "command",
     "longRunning": false,
@@ -134,6 +150,22 @@
     "module": "Offline AI",
     "name": "ai.index_status",
     "resultType": "IndexStatusDto"
+  },
+  {
+    "argType": "AiMemoryDeleteArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Offline AI",
+    "name": "ai.memory_delete",
+    "resultType": "AiMemoryDeleteDto"
+  },
+  {
+    "argType": "AiEmptyArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Offline AI",
+    "name": "ai.memory_list",
+    "resultType": "AiMemoryListDto"
   },
   {
     "argType": "AiEmptyArgs",
@@ -1088,6 +1120,54 @@
     "resultType": "InterchangeSources"
   },
   {
+    "argType": "LibraryDirArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Storage",
+    "name": "library.connect",
+    "resultType": "LibraryStatus"
+  },
+  {
+    "argType": "LibraryCreateArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Storage",
+    "name": "library.create_at",
+    "resultType": "LibraryStatus"
+  },
+  {
+    "argType": "LibraryDirArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Storage",
+    "name": "library.inspect",
+    "resultType": "LibraryInspection"
+  },
+  {
+    "argType": "MoveToFolderArgs",
+    "kind": "command",
+    "longRunning": true,
+    "module": "Storage",
+    "name": "library.move",
+    "resultType": "StorageTaskStarted"
+  },
+  {
+    "argType": "Empty",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Storage",
+    "name": "library.status",
+    "resultType": "LibraryStatus"
+  },
+  {
+    "argType": "Empty",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Storage",
+    "name": "library.use_default",
+    "resultType": "LibraryStatus"
+  },
+  {
     "argType": "ProductionLocationPhotosArgs",
     "kind": "command",
     "longRunning": false,
@@ -1688,6 +1768,22 @@
     "resultType": "Option<ProductionSourceInfo>"
   },
   {
+    "argType": "AdoptOrphanNotesArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Storage",
+    "name": "project.adopt_orphan_notes",
+    "resultType": "AdoptedNotes"
+  },
+  {
+    "argType": "ClearCoverArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Project",
+    "name": "project.clear_cover",
+    "resultType": "RecentProject"
+  },
+  {
     "argType": "Empty",
     "kind": "command",
     "longRunning": false,
@@ -1726,6 +1822,14 @@
     "module": "Project",
     "name": "project.deleted_items",
     "resultType": "Vec<DeletedItemView>"
+  },
+  {
+    "argType": "Empty",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Storage",
+    "name": "project.discover",
+    "resultType": "Vec<DiscoveredProject>"
   },
   {
     "argType": "ProjectIdArgs",
@@ -1784,12 +1888,28 @@
     "resultType": "Vec<Member>"
   },
   {
+    "argType": "MoveToFolderArgs",
+    "kind": "command",
+    "longRunning": true,
+    "module": "Storage",
+    "name": "project.move",
+    "resultType": "StorageTaskStarted"
+  },
+  {
     "argType": "OpenProjectArgs",
     "kind": "command",
     "longRunning": false,
     "module": "Project",
     "name": "project.open",
     "resultType": "OpenProjectResult"
+  },
+  {
+    "argType": "Empty",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Storage",
+    "name": "project.orphan_notes",
+    "resultType": "Vec<OrphanNoteOwner>"
   },
   {
     "argType": "Empty",
@@ -1838,6 +1958,14 @@
     "module": "Project",
     "name": "project.set_archived",
     "resultType": "()"
+  },
+  {
+    "argType": "SetCoverArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Project",
+    "name": "project.set_cover",
+    "resultType": "RecentProject"
   },
   {
     "argType": "SetLocationArgs",
@@ -2016,11 +2144,11 @@
     "resultType": "String"
   },
   {
-    "argType": "ExportDailyArgs",
+    "argType": "ExportDailyViewArgs",
     "kind": "query",
     "longRunning": false,
     "module": "Exports",
-    "name": "schedule.export_daily",
+    "name": "schedule.export_daily_view",
     "resultType": "ExportResult"
   },
   {
@@ -2872,6 +3000,22 @@
     "resultType": "ScheduleSidesContent"
   },
   {
+    "argType": "Empty",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Storage",
+    "name": "storage.info",
+    "resultType": "StorageInfo"
+  },
+  {
+    "argType": "SetProjectsDirArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Storage",
+    "name": "storage.set_projects_dir",
+    "resultType": "StorageInfo"
+  },
+  {
     "argType": "StoryAttachArgs",
     "kind": "command",
     "longRunning": false,
@@ -3128,14 +3272,6 @@
     "resultType": "ExportResult"
   },
   {
-    "argType": "ExportStoryPageArgs",
-    "kind": "query",
-    "longRunning": false,
-    "module": "Story",
-    "name": "story.export_page",
-    "resultType": "ExportResult"
-  },
-  {
     "argType": "StoryCardLinkArgs",
     "kind": "command",
     "longRunning": false,
@@ -3184,12 +3320,28 @@
     "resultType": "StoryOrderPreview"
   },
   {
-    "argType": "StoryPageArgs",
+    "argType": "ExportStoryPageArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Exports",
+    "name": "story.page.export",
+    "resultType": "ExportResult"
+  },
+  {
+    "argType": "StoryPageGetArgs",
     "kind": "query",
     "longRunning": false,
     "module": "Story",
-    "name": "story.page",
+    "name": "story.page.get",
     "resultType": "StoryPageDto"
+  },
+  {
+    "argType": "StoryPageSaveArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Story",
+    "name": "story.page.save",
+    "resultType": "StoryPageSaved"
   },
   {
     "argType": "StoryItemsArgs",
@@ -3222,14 +3374,6 @@
     "module": "Story",
     "name": "story.restore_from_parking",
     "resultType": "Vec<StoryPlacement>"
-  },
-  {
-    "argType": "StorySavePageArgs",
-    "kind": "command",
-    "longRunning": false,
-    "module": "Story",
-    "name": "story.save_page",
-    "resultType": "StoryPageDto"
   },
   {
     "argType": "StorySeriesArgs",
@@ -3544,22 +3688,6 @@
     "resultType": "TaskDto"
   },
   {
-    "argType": "TeamGateStatusArgs",
-    "kind": "query",
-    "longRunning": false,
-    "module": "Licence and trial",
-    "name": "team_gate.status",
-    "resultType": "TeamGateStatus"
-  },
-  {
-    "argType": "TeamGateUnlockArgs",
-    "kind": "command",
-    "longRunning": false,
-    "module": "Licence and trial",
-    "name": "team_gate.unlock",
-    "resultType": "TeamGateAnswer"
-  },
-  {
     "argType": "ApplyTemplateArgs",
     "kind": "command",
     "longRunning": false,
@@ -3664,6 +3792,14 @@
     "resultType": "()"
   },
   {
+    "argType": "VaultFileArgs",
+    "kind": "command",
+    "longRunning": true,
+    "module": "Storage",
+    "name": "vault.backup",
+    "resultType": "StorageTaskStarted"
+  },
+  {
     "argType": "VaultCopyArgs",
     "kind": "command",
     "longRunning": false,
@@ -3720,6 +3856,14 @@
     "resultType": "()"
   },
   {
+    "argType": "VaultFileArgs",
+    "kind": "command",
+    "longRunning": true,
+    "module": "Storage",
+    "name": "vault.export_package",
+    "resultType": "StorageTaskStarted"
+  },
+  {
     "argType": "VaultGetArgs",
     "kind": "query",
     "longRunning": false,
@@ -3736,6 +3880,22 @@
     "resultType": "VaultItemDto"
   },
   {
+    "argType": "VaultFileArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Storage",
+    "name": "vault.inspect",
+    "resultType": "VaultInspection"
+  },
+  {
+    "argType": "LocateVaultArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Storage",
+    "name": "vault.inspect_folder",
+    "resultType": "VaultFolderInspection"
+  },
+  {
     "argType": "VaultListArgs",
     "kind": "query",
     "longRunning": false,
@@ -3744,12 +3904,36 @@
     "resultType": "Vec<VaultItemDto>"
   },
   {
+    "argType": "LocateVaultArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Storage",
+    "name": "vault.locate",
+    "resultType": "StorageInfo"
+  },
+  {
+    "argType": "MoveToFolderArgs",
+    "kind": "command",
+    "longRunning": true,
+    "module": "Storage",
+    "name": "vault.move",
+    "resultType": "StorageTaskStarted"
+  },
+  {
     "argType": "VaultMoveArgs",
     "kind": "command",
     "longRunning": false,
     "module": "Idea Vault",
     "name": "vault.move_to_folder",
     "resultType": "()"
+  },
+  {
+    "argType": "VaultOverviewArgs",
+    "kind": "query",
+    "longRunning": false,
+    "module": "Idea Vault",
+    "name": "vault.orphan_files",
+    "resultType": "VaultOrphanFiles"
   },
   {
     "argType": "VaultOverviewArgs",
@@ -3766,6 +3950,14 @@
     "module": "Idea Vault",
     "name": "vault.purge",
     "resultType": "DeletedItemRow"
+  },
+  {
+    "argType": "VaultOverviewArgs",
+    "kind": "command",
+    "longRunning": false,
+    "module": "Idea Vault",
+    "name": "vault.recover_files",
+    "resultType": "VaultRecoverResult"
   },
   {
     "argType": "VaultRelinkArgs",
@@ -3814,6 +4006,14 @@
     "module": "Idea Vault",
     "name": "vault.restore",
     "resultType": "VaultRestoreResult"
+  },
+  {
+    "argType": "VaultFileArgs",
+    "kind": "command",
+    "longRunning": true,
+    "module": "Storage",
+    "name": "vault.restore_backup",
+    "resultType": "StorageTaskStarted"
   },
   {
     "argType": "VaultSendToStoryArgs",

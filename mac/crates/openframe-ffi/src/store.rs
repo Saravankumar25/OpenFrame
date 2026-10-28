@@ -548,8 +548,9 @@ mod tests {
             isolated_data_root: Some(dir.to_string_lossy().into_owned()),
             ai_bundle_dir: None,
             write_logs: false,
-            test_team_password_hash: None,
             test_store_response_key_hex: key_hex,
+            test_library_setup: false,
+            test_ai_deterministic: false,
         };
         CoreHandle::start(
             config,
@@ -833,8 +834,9 @@ mod tests {
             isolated_data_root: None,
             ai_bundle_dir: None,
             write_logs: false,
-            test_team_password_hash: None,
             test_store_response_key_hex: Some("ab".repeat(32)),
+            test_library_setup: false,
+            test_ai_deterministic: false,
         };
         assert!(crate::test_store_key(&config, true, true).is_some());
         assert!(

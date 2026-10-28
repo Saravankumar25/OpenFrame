@@ -27,8 +27,9 @@ cat > "$APP/Contents/Info.plist" <<PLIST
 	<key>CFBundleExecutable</key><string>OpenFrameStudio</string>
 	<key>CFBundlePackageType</key><string>APPL</string>
 	<key>CFBundleShortVersionString</key><string>${VERSION}</string>
-	<key>CFBundleVersion</key><string>${VERSION}</string>
+	<key>CFBundleVersion</key><string>$(git -C "$MACOS" rev-list --count HEAD)</string>
 	<key>LSMinimumSystemVersion</key><string>14.0</string>
+	<key>OpenFrameDevelopmentBuild</key><true/>
 	<key>LSApplicationCategoryType</key><string>public.app-category.productivity</string>
 	<key>NSHighResolutionCapable</key><true/>
 	<key>NSMicrophoneUsageDescription</key><string>OpenFrame Studio records voice notes into your Idea Vault only when you press Record.</string>

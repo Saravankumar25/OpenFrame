@@ -195,7 +195,7 @@ export default function ScreenplayWorkspace() {
                   <Button
                     onClick={() => {
                       fire("story.build_screenplay");
-                      go({ workspace: "story" });
+                      go({ workspace: "story", sub: "board" });
                     }}
                   >
                     Build from Beat Board

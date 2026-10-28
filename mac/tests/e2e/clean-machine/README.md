@@ -12,17 +12,14 @@ Monitor in, opens a port from the host to the guest's driver, and scans both ins
 Microsoft Defender. Then the steps run in this order:
 
 1. `install-previous`: silent install of the earlier internal build (d271894), with no admin rights.
-2. `gate-and-journey`: wrong passwords first (the refusal and the wait), the right one, a project,
-   some typing, close, relaunch, check the text is there.
+2. `journey`: a project, some typing, close, relaunch, check the text is there.
 3. `upgrade`: install the final build (995bfac) over it; the project must survive.
-4. `gate-bypass`: edit settings files and registry keys to try to skip the password screen. It must
-   still show. Everything is restored afterwards.
-5. `ai-download`: download OpenFrame AI, then cut the network and ask a question.
-6. `offline-export-backup`: with no network, export a PDF, make a backup, restore it as a copy.
-7. `power-loss`: type a line, pull the virtual power cord, start again, check the line.
-8. `uninstall-keeps-projects`: run the real uninstaller; projects must stay.
-9. `reinstall-offline-start`: reinstall with no network; the project must open.
-10. `finish`: stop Process Monitor, save its log outside the repo, write the summary.
+4. `ai-download`: download OpenFrame AI, then cut the network and ask a question.
+5. `offline-export-backup`: with no network, export a PDF, make a backup, restore it as a copy.
+6. `power-loss`: type a line, pull the virtual power cord, start again, check the line.
+7. `uninstall-keeps-projects`: run the real uninstaller; projects must stay.
+8. `reinstall-offline-start`: reinstall with no network; the project must open.
+9. `finish`: stop Process Monitor, save its log outside the repo, write the summary.
 
 ## How to run
 
@@ -37,9 +34,7 @@ and the download step can take up to 90 minutes.
 Options: `--offline link|firewall|auto`. The default `auto` takes the virtual network cable out; if the
 test connection then stops answering, it blocks outgoing traffic with a guest firewall rule instead.
 
-Secrets are read when needed and never printed: the guest account password from
-`C:\w9-vm\guest-account.txt`, the team password from `OPENFRAME_TEAM_PASSWORD` (or the Windows User
-variable of the same name).
+The guest account password is read from `C:\w9-vm\guest-account.txt` when needed and never printed.
 
 ## Where the evidence goes
 

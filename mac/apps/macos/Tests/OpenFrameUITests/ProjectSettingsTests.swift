@@ -156,6 +156,16 @@ struct ProjectSettingsTests {
         #expect(shown(ProjectSettingsView(initialTab: .templates), "project-settings-templates") != nil)
         #expect(shown(ProjectSettingsView(initialTab: .advanced), "project-settings-advanced") != nil)
         #expect(shown(ProjectSettingsView(initialTab: .shortcuts), "project-settings-shortcuts") != nil)
+        #expect(shown(ProjectSettingsView(initialTab: .storage), "project-settings-storage") != nil)
         #expect(shown(ShortcutsSheet(app: app), "shortcuts-sheet") != nil)
     }
+
+    /// Project Settings has a Storage page (Windows: Settings > Storage inside a project), and the
+    /// General page links to it.
+    @Test func storageIsAProjectSettingsPage() {
+        #expect(ProjectSettingsTab.allCases.last == .storage)
+        #expect(ProjectSettingsTab.storage.title == "Storage")
+        #expect(ProjectSettingsTab(rawValue: "storage") == .storage)
+    }
+
 }

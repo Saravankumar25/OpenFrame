@@ -1,8 +1,10 @@
 // Beat Board, Board view (FSD §7.4, §89; UX §3.6; mocks 049 to 058, 066):
 // act bands side by side (horizontal scroll), sequence groups, compact scene
 // cards, dashed beats, the hatched Parking Lot and an Unassigned area.
+// The Horizontal layout (a view preference) stacks the same bands as rows with
+// cards flowing left to right; arrow keys and drop positions follow the layout.
 
-import { Fragment, type CSSProperties } from "react";
+import { Fragment, type CSSProperties, type KeyboardEvent } from "react";
 import { DndContext, DragOverlay } from "@dnd-kit/core";
 import { ChevronDown, ChevronRight, FileText, GripVertical, MessageSquare, MoreHorizontal, ParkingSquare, Plus } from "lucide-react";
 import { ContextMenu, Menu, cx } from "../../design-system";
@@ -37,6 +39,21 @@ interface Ctx {
   collapsed: Set<string>;
   keys: ReturnType<typeof useItemKeys>;
   display: StoryCardToggles;
+  horizontal: boolean;
+}
+
+// In rows the reading order runs left to right, so Left/Right step through an act and Up/Down jump
+// between acts: the reverse of the column layout that useItemKeys is written for.
+const ROW_KEYS: Record<string, string> = { ArrowLeft: "ArrowUp", ArrowRight: "ArrowDown", ArrowUp: "ArrowLeft", ArrowDown: "ArrowRight" };
+
+/** Keyboard handler for the current layout: in rows, the arrow keys are turned a quarter before useItemKeys sees them. */
+export function layoutKeys(keys: ReturnType<typeof useItemKeys>, horizontal: boolean): ReturnType<typeof useItemKeys> {
+  if (!horizontal) return keys;
+  return (e, item) => {
+    const mapped = ROW_KEYS[e.key];
+    // The prototype keeps target, currentTarget, modifiers and preventDefault of the real event.
+    keys(mapped ? (Object.create(e, { key: { value: mapped } }) as KeyboardEvent<HTMLElement>) : e, item);
+  };
 }
 
 export function BoardView({
@@ -51,12 +68,14 @@ export function BoardView({
   /** What minimized cards show (the user's Card Display Settings; a view setting, not story data). */
   display?: StoryCardToggles;
 }) {
-  const dnd = useStoryDnd(board, episodeId, "x");
+  const horizontal = useStoryUi((s) => s.boardLayout === "horizontal");
+  // Columns: acts run along x and cards stack along y. Rows: the other way round.
+  const dnd = useStoryDnd(board, episodeId, horizontal ? "y" : "x", horizontal ? "x" : "y");
   const zoom = useStoryUi((s) => s.zoom);
   const parkingOpen = useStoryUi((s) => s.parkingOpen);
   const addingAct = useStoryUi((s) => s.addingAct);
-  const keys = useItemKeys(board, episodeId, readOnly);
-  const ctx: Ctx = { board, episodeId, readOnly, dnd, collapsed: new Set(board.collapsedIds), keys, display };
+  const keys = layoutKeys(useItemKeys(board, episodeId, readOnly), horizontal);
+  const ctx: Ctx = { board, episodeId, readOnly, dnd, collapsed: new Set(board.collapsedIds), keys, display, horizontal };
   const style = { "--z": zoom / 100 } as CSSProperties;
 
   return (
@@ -72,6 +91,7 @@ export function BoardView({
       <div
         className={cx("story-canvas", zoom <= 70 && "zoom-low")}
         style={style}
+        data-layout={horizontal ? "horizontal" : "vertical"}
         onClick={() => useStoryUi.getState().clearSelection()}
         role="region"
         aria-label="Beat Board"
@@ -243,8 +263,8 @@ function moveActItems(ctx: Ctx, actId: string) {
   const i = ids.indexOf(actId);
   const move = (before: string | null) => void story.moveAct(actId, before).catch(reportError);
   return [
-    { label: "Move Left", disabled: ctx.readOnly || i <= 0, onSelect: () => move(ids[i - 1]) },
-    { label: "Move Right", disabled: ctx.readOnly || i >= ids.length - 1, onSelect: () => move(ids[i + 2] ?? null) },
+    { label: ctx.horizontal ? "Move Up" : "Move Left", disabled: ctx.readOnly || i <= 0, onSelect: () => move(ids[i - 1]) },
+    { label: ctx.horizontal ? "Move Down" : "Move Right", disabled: ctx.readOnly || i >= ids.length - 1, onSelect: () => move(ids[i + 2] ?? null) },
   ];
 }
 

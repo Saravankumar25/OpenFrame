@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Daily View - STRESS TEST</title>
+<meta name="of-doc" content="Daily View STRESS TEST (schedule.export_daily_view) - ILLUSTRATIVE">
+<meta name="of-logo" content="../../../00_SYSTEM/assets/openframe-logo.png">
+<link rel="stylesheet" href="../../../00_SYSTEM/assets/openframe-print.css">
+<style>
+  /* Portrait US Letter. Running header: only because this file is multi-page; a single-page Daily View prints none. */
+  @page { size: 8.5in 11in; @top-right { content: "LOW TIDE RADIO · DAILY VIEW · STRESS TEST"; } }
+
+  /* ===== Daily View: portrait, one shooting day. NOT validated against a real export (no baseline PDF supplied). ===== */
+  .masthead.dv { margin-bottom: 6pt; padding-bottom: 8pt; border-bottom: var(--rule) solid var(--of-navy); }
+  .masthead.dv h1 { font-size: 26pt; margin: 3pt 0 2pt; }
+  .masthead.dv .sub { font-size: 11pt; color: var(--of-slate); font-weight: 700; }
+  .masthead.dv .meta-line { margin-top: 3pt; }
+  .masthead .side { text-align: right; }
+  .masthead .side .rev { font-size: 9.4pt; font-weight: 700; color: var(--of-navy); margin-top: 4pt; }
+  .masthead .side .s2 { font-size: 7.8pt; color: var(--of-slate); margin-top: 1pt; }
+  .metrics.slim { margin: 6pt 0 2pt; gap: 6pt; grid-auto-columns: minmax(0, 150pt); }
+  .metrics.slim .metric { padding: 4pt 9pt 5pt; display: flex; align-items: baseline; gap: 7pt; }
+  .metrics.slim .metric .val { font-size: 14pt; margin: 0; }
+  .metrics.slim .metric .lbl { font-size: 6.6pt; }
+  .sample-note { margin: 0 0 6pt; }
+  .sample-note b { white-space: nowrap; }
+  .dv .sec { margin: 11pt 0 5pt; }
+  .dv .two-col { gap: 0 14pt; align-items: start; }
+  .tiles { display: flex; flex-wrap: wrap; gap: 3pt; }
+  .tiles .tile { font-size: 9pt; padding: 3pt 6pt; }
+  .total { font-size: var(--fs-small); color: var(--of-slate); margin-top: 5pt; }
+  .loc-item { padding: 3pt 0 4pt; border-top: var(--hair) solid var(--of-line); }
+  .loc-item:first-child { border-top: 0; padding-top: 0; }
+  .loc-item .nm { font-size: 9.6pt; font-weight: 700; color: var(--of-navy); line-height: 1.25; }
+  .loc-item .det { font-size: var(--fs-small); color: var(--of-slate); margin-top: 1pt; }
+  .dv p.line { font-size: var(--fs-body); line-height: 1.35; margin-bottom: 2pt; }
+  .dv p.empty { font-size: var(--fs-body); color: var(--of-muted); }
+  .dv .tbl { font-size: var(--fs-cell); }
+  .dv .tbl td, .dv .tbl th { padding: 3.6pt 6pt; vertical-align: middle; }
+  .dv .tbl thead th { padding: 4.4pt 6pt; }
+  .dv .tbl td.id { font-weight: 700; color: var(--of-navy); }
+  .dv .tbl td.nm { font-weight: 700; color: var(--of-navy); }
+  .dv .tbl .tile { font-size: 8.4pt; white-space: nowrap; }
+  .dv .hint-line { font-size: var(--fs-small); color: var(--of-slate); margin-top: 5pt; }
+  .dv .hint-line b { color: var(--of-ink); }
+  .status { display: flex; align-items: center; gap: 8pt; }
+  .status .chip { font-size: 7.4pt; padding: 3pt 6pt; }
+  .markers { display: flex; flex-wrap: wrap; gap: 3pt; margin-top: 4pt; }
+  .markers .chip { text-transform: none; letter-spacing: 0; font-size: 8pt; font-weight: 700; padding: 2.4pt 6pt; }
+  .items { display: flex; flex-wrap: wrap; gap: 3pt; }
+  .items .chip { text-transform: none; letter-spacing: 0; font-size: 8pt; font-weight: 400; padding: 2.2pt 6pt; white-space: normal; }
+  .dv .tbl td.est { text-align: right; white-space: nowrap; color: var(--of-slate); }
+  .dv .tbl td.ord { text-align: right; color: var(--of-muted); font-weight: 700; }
+  .variant-break { break-before: page; }
+  .ill { font-size: 6.6pt; letter-spacing: .06em; text-transform: uppercase; font-weight: 700; color: var(--of-orange-deep);
+         background: var(--of-orange-soft); border: var(--hair) solid var(--of-orange-line); border-radius: 3pt; padding: 1pt 4pt; margin-left: 6pt; vertical-align: middle; white-space: nowrap; }
+</style>
+</head>
+<body>
+<div class="doc dv">
+<div class="banner info sample-note"><b>Stress test</b><span>Variant 1 of 4: heavy day (16 scenes, long headings, unnumbered scene, missing estimates, 4 locations, 16 cast, 6 breaks, 35 items). Fictional data.</span></div>
+<header class="masthead dv">
+    <div>
+      <div class="eyebrow">Production planning / Daily View</div>
+      <h1>Shoot Day 9</h1>
+      <div class="sub">Wed 20 Jan 2027</div>
+      <div class="meta-line">Project: Low Tide Radio</div>
+      
+    </div>
+    <div class="side"><span class="chip accent">Daily View snapshot</span>
+      <div class="rev">Revised 19 Oct 2026</div><div class="s2">Shooting schedule · PDF export</div></div>
+  </header>
+<div class="metrics slim"><div class="metric"><div class="val">16</div><div class="lbl">Scenes</div></div><div class="metric"><div class="val">38h 45m</div><div class="lbl">Estimated</div></div></div>
+<div class="two-col"><section><div class="sec"><h2>Scenes</h2></div><div class="tiles"><span class="tile">101</span><span class="tile">102</span><span class="tile">103</span><span class="tile">104</span><span class="tile">105</span><span class="tile">106</span><span class="tile">Not numbered</span><span class="tile">108</span><span class="tile">109</span><span class="tile">110</span><span class="tile">111</span><span class="tile">112</span><span class="tile">113</span><span class="tile">114</span><span class="tile">115</span><span class="tile">116</span></div><div class="total"><b>Total</b> · 16 scenes · 38h 45m estimated · 3 without estimate</div></section><section><div class="sec"><h2>Location</h2></div><div class="loc-item"><div class="nm">Coast Radio Station (Old Signal Station, Vypin)</div><div class="det">Confirmed · Beach Road, Vypin, Kochi, Kerala 682508</div></div><div class="loc-item"><div class="nm">Munambam Breakwater (stunt section)</div><div class="det">Shortlisted · <span class="needs">Address missing</span></div></div><div class="loc-item"><div class="nm">Coast Radio Relay Station, Far Causeway Annex (private estate land; access by the single-lane road beyond the church ground gate, Vypin Island, Kochi)</div><div class="det">Estate road, beyond the church ground gate, Vypin Island, Kochi, Kerala 682508 (gate key with the estate manager; call 24 hours ahead)</div></div><div class="loc-item"><div class="nm">KSRTC Bus (process trailer, NH 66)</div><div class="det">Idea · <span class="needs">Address missing</span></div></div></section></div>
+<section><div class="sec"><h2>Cast</h2></div><table class="tbl zebra boxed compact"><colgroup><col><col style="width:200pt"><col style="width:64pt"></colgroup><thead><tr><th>Cast</th><th>Character</th><th class="r">Call</th></tr></thead><tbody><tr><td class="nm">Sajan Kuriakose</td><td>SURESH</td><td class="r">06:00</td></tr><tr><td class="nm">Aditya Nair</td><td>RAHUL</td><td class="r">06:15</td></tr><tr><td class="nm">Nimisha Raghavan</td><td>ANJALI</td><td class="r">06:30</td></tr><tr><td class="nm">Lal Fernandez</td><td>JOE</td><td class="r"><span class="muted">—</span></td></tr><tr><td class="nm">Divya Mathew</td><td>MARIAMMA</td><td class="r">07:00</td></tr><tr><td class="nm">Ameya Suresh</td><td>YOUNG ANJALI</td><td class="r">07:15</td></tr><tr><td class="nm">Reshmi Pillai</td><td>LATHA</td><td class="r">08:30</td></tr><tr><td class="nm">K. P. Gopinathan</td><td>APPACHAN</td><td class="r">08:45</td></tr><tr><td class="nm">Sabitha Rasheed</td><td>FATHIMA</td><td class="r">08:00</td></tr><tr><td class="nm">Gauri Krishna</td><td>MEENU</td><td class="r"><span class="muted">—</span></td></tr><tr><td class="nm">Thampi Cherian</td><td>VARGHESE</td><td class="r">09:30</td></tr><tr><td class="nm">Ramesh Kaimal</td><td>PORT OFFICER</td><td class="r">09:45</td></tr><tr><td class="nm">Karan Shetty</td><td>STUDIO PRODUCER</td><td class="r">10:00</td></tr><tr><td class="nm">Veeranalloor Ramachandran Subramanian Iyer</td><td>THE EXCEPTIONALLY LONG CHARACTER NAME THAT KEEPS GOING</td><td class="r">10:15</td></tr><tr><td class="nm">Old Fisherman</td><td></td><td class="r"><span class="muted">—</span></td></tr><tr><td class="nm">Nurse</td><td></td><td class="r">14:00</td></tr></tbody></table><div class="hint-line"><b>Crew call:</b> 06:00</div></section>
+<div class="two-col"><section><div class="sec"><h2>Call Sheet</h2></div><div class="status"><span class="chip ">Draft</span><span style="font-size:8.8pt">Available. The schedule changed after it was created.</span></div></section><section><div class="sec"><h2>Important Notes</h2></div><p class="line">Illustrative (fictional) day note, line one: unit travels by boat from the hotel jetty at 05:15.</p><p class="line">Line two: the causeway is only passable for about three hours around low tide, and the 1st AD wants every vehicle movement agreed in the 05:30 huddle.</p><p class="line">Line three: keep the generator off until the sound department confirms; child performer to be released by 16:00.</p><div class="markers"><span class="chip">BREAKFAST at 05:30 (30m)</span><span class="chip">LUNCH at 13:00 (45m)</span><span class="chip">COMPANY MOVE at 15:00 (40m)</span><span class="chip">TRAVEL at 16:00 (20m)</span><span class="chip">DINNER (EXTRAS FED FIRST) at 18:30 (45m)</span><span class="chip">SOUND WILD TRACKS at 20:00 (30m)</span></div></section></div>
+<section><div class="sec"><h2>Important Breakdown Items</h2></div><div class="items"><span class="chip pill">Army surplus ammunition box</span><span class="chip pill">Station logbook 1999</span><span class="chip pill">Floating tape boxes</span><span class="chip pill">Coir string of station keys</span><span class="chip pill">Torches and head torch</span><span class="chip pill">Hard hats</span><span class="chip pill">Rahul's shorts</span><span class="chip pill">Anjali's rubber boots</span><span class="chip pill">Suresh's hard hat and site boots</span><span class="chip pill">Rahul's school clothes</span><span class="chip pill">Anjali's everyday clothes</span><span class="chip pill">Water tank and dirty water dressing</span><span class="chip pill">Playback speaker and cables (production sound, hired from the Kochi studio)</span><span class="chip pill">Nagra recorder and spare reels</span><span class="chip pill">Antenna kite, 6 m, with spare line</span><span class="chip pill">Vintage radio set, valve type, working</span><span class="chip pill">Battery set, 12 V, marine</span><span class="chip pill">Convection oven (bakery) for the reel</span><span class="chip pill">Dog (Kannan) and handler</span><span class="chip pill">Jeep (Latha)</span><span class="chip pill">Fishing boat with name board</span><span class="chip pill">Rain tower</span><span class="chip pill">Wave machine</span><span class="chip pill">Wind machines (2)</span><span class="chip pill">Safety divers' boat</span><span class="chip pill">Ambulance (standby)</span><span class="chip pill">Lanterns (12)</span><span class="chip pill">Speakers for listening night</span><span class="chip pill">Generator truck</span><span class="chip pill">Site floodlights</span><span class="chip pill">Survey tripod and level</span><span class="chip pill">School uniforms (3 sets)</span><span class="chip pill">Cassette player with the 1999 tape</span><span class="chip pill">Torch with failing battery</span><span class="chip pill">Station keys on coir string</span></div></section>
+<section style="margin-top:11pt"><table class="tbl zebra boxed compact"><colgroup><col style="width:30pt"><col style="width:84pt"><col><col style="width:56pt"></colgroup><thead><tr class="title"><th colspan="4"><span class="hint">Production order · numbers are scene numbers</span>Scene Order</th></tr><tr class="gap"><th colspan="4"></th></tr><tr><th class="r">#</th><th>Scene</th><th>Heading</th><th class="r">Est.</th></tr></thead><tbody><tr><td class="ord">1</td><td><span class="tile">101</span></td><td class="strong">INT. COAST RADIO STATION - TAPE ROOM - DAY</td><td class="est">1h 30m</td></tr><tr><td class="ord">2</td><td><span class="tile">102</span></td><td class="strong">INT. COAST RADIO STATION - OPERATIONS ROOM - NIGHT (1999)</td><td class="est">45m</td></tr><tr><td class="ord">3</td><td><span class="tile">103</span></td><td class="strong">EXT. COAST RADIO STATION - ROOF - DAY</td><td class="est"><span class="muted">–</span></td></tr><tr><td class="ord">4</td><td><span class="tile">104</span></td><td class="strong">EXT. HARBOUR BREAKWATER - NIGHT</td><td class="est">3h 15m</td></tr><tr><td class="ord">5</td><td><span class="tile">105</span></td><td class="strong">INT./EXT. STUDIO OUTPOST - STAIRWELL, LOADING DOCK AND THE LONG CORRIDOR TO THE OLD TRANSMITTER HALL - DAY</td><td class="est">1h 30m</td></tr><tr><td class="ord">6</td><td><span class="tile">106</span></td><td class="strong">INT. KSRTC BUS - MOVING - NIGHT</td><td class="est">45m</td></tr><tr><td class="ord">7</td><td><span class="tile">Not numbered</span></td><td class="strong">EXT. THE ABANDONED COASTAL RADIO RELAY STATION ON THE FAR SIDE OF THE TIDAL CAUSEWAY - CAR PARK, LOADING BAY AND CATWALK - BLUE HOUR</td><td class="est">2h</td></tr><tr><td class="ord">8</td><td><span class="tile">108</span></td><td class="strong">INT. COAST RADIO STATION - TAPE ROOM - DAY</td><td class="est"><span class="muted">–</span></td></tr><tr><td class="ord">9</td><td><span class="tile">109</span></td><td class="strong">INT. COAST RADIO STATION - OPERATIONS ROOM - NIGHT (1999)</td><td class="est">1h 30m</td></tr><tr><td class="ord">10</td><td><span class="tile">110</span></td><td class="strong">EXT. COAST RADIO STATION - ROOF - DAY</td><td class="est">45m</td></tr><tr><td class="ord">11</td><td><span class="tile">111</span></td><td class="strong">EXT. HARBOUR BREAKWATER - NIGHT</td><td class="est">2h</td></tr><tr><td class="ord">12</td><td><span class="tile">112</span></td><td class="strong">INT./EXT. STUDIO OUTPOST - STAIRWELL, LOADING DOCK AND THE LONG CORRIDOR TO THE OLD TRANSMITTER HALL - DAY</td><td class="est">3h 15m</td></tr><tr><td class="ord">13</td><td><span class="tile">113</span></td><td class="strong">INT. KSRTC BUS - MOVING - NIGHT</td><td class="est"><span class="muted">–</span></td></tr><tr><td class="ord">14</td><td><span class="tile">114</span></td><td class="strong">EXT. THE ABANDONED COASTAL RADIO RELAY STATION ON THE FAR SIDE OF THE TIDAL CAUSEWAY - CAR PARK, LOADING BAY AND CATWALK - BLUE HOUR</td><td class="est">45m</td></tr><tr><td class="ord">15</td><td><span class="tile">115</span></td><td class="strong">INT. COAST RADIO STATION - TAPE ROOM - DAY</td><td class="est">2h</td></tr><tr><td class="ord">16</td><td><span class="tile">116</span></td><td class="strong">INT. COAST RADIO STATION - OPERATIONS ROOM - NIGHT (1999)</td><td class="est">3h 15m</td></tr></tbody></table></section>
+<div class="variant-break"></div>
+<div class="banner info sample-note"><b>Stress test</b><span>Variant 2 of 4: off day. Empty-state sentences are the exact builder strings (including those that read oddly on an off day).</span></div>
+<header class="masthead dv">
+    <div>
+      <div class="eyebrow">Production planning / Daily View</div>
+      <h1>Off Day</h1>
+      <div class="sub">Sun 17 Jan 2027</div>
+      <div class="meta-line">Project: Low Tide Radio</div>
+      <div class="badges" style="margin-top:4pt"><span class="chip">Off day</span></div>
+    </div>
+    <div class="side"><span class="chip accent">Daily View snapshot</span>
+      <div class="rev">Revised 19 Oct 2026</div><div class="s2">Shooting schedule · PDF export</div></div>
+  </header>
+<div class="metrics slim"><div class="metric"><div class="val">0</div><div class="lbl">Scenes</div></div><div class="metric"><div class="val">0m</div><div class="lbl">Estimated</div></div></div>
+<div class="two-col"><section><div class="sec"><h2>Scenes</h2></div><p class="empty">No scenes scheduled.</p></section><section><div class="sec"><h2>Location</h2></div><p class="empty"><span class="needs">Location missing.</span></p></section></div>
+<section><div class="sec"><h2>Cast</h2></div><p class="empty">No cast confirmed for these scenes.</p></section>
+<div class="two-col"><section><div class="sec"><h2>Call Sheet</h2></div><p class="empty">Off days have no call sheet.</p></section><section><div class="sec"><h2>Important Notes</h2></div><p class="line">Rest day. Art department dresses the harbour; marine safety drill at 10:00.</p></section></div>
+<section><div class="sec"><h2>Important Breakdown Items</h2></div><p class="empty">No confirmed props, wardrobe or other items for these scenes.</p></section>
+<section><div class="sec"><h2>Scene Order</h2></div><p class="empty">Nothing scheduled yet.</p></section>
+<div class="variant-break"></div>
+<div class="banner info sample-note"><b>Stress test</b><span>Variant 3 of 4: shoot day with nothing entered: no date, scenes, location, cast, call sheet, notes or items.</span></div>
+<header class="masthead dv">
+    <div>
+      <div class="eyebrow">Production planning / Daily View</div>
+      <h1>Shoot Day 3</h1>
+      <div class="sub">No date yet</div>
+      <div class="meta-line">Project: Low Tide Radio</div>
+      
+    </div>
+    <div class="side"><span class="chip accent">Daily View snapshot</span>
+      <div class="rev">Revised 19 Oct 2026</div><div class="s2">Shooting schedule · PDF export</div></div>
+  </header>
+<div class="metrics slim"><div class="metric"><div class="val">0</div><div class="lbl">Scenes</div></div><div class="metric"><div class="val">0m</div><div class="lbl">Estimated</div></div></div>
+<div class="two-col"><section><div class="sec"><h2>Scenes</h2></div><p class="empty">No scenes scheduled.</p></section><section><div class="sec"><h2>Location</h2></div><p class="empty"><span class="needs">Location missing.</span></p></section></div>
+<section><div class="sec"><h2>Cast</h2></div><p class="empty">No cast confirmed for these scenes.</p></section>
+<div class="two-col"><section><div class="sec"><h2>Call Sheet</h2></div><p class="empty">No call sheet yet for this day.</p></section><section><div class="sec"><h2>Important Notes</h2></div><p class="empty">No day notes.</p></section></div>
+<section><div class="sec"><h2>Important Breakdown Items</h2></div><p class="empty">No confirmed props, wardrobe or other items for these scenes.</p></section>
+<section><div class="sec"><h2>Scene Order</h2></div><p class="empty">Nothing scheduled yet.</p></section>
+<div class="variant-break"></div>
+<div class="banner info sample-note"><b>Stress test</b><span>Variant 4 of 4: cast with no call times entered, scenes without estimates, location without status or address, Draft call sheet.</span></div>
+<header class="masthead dv">
+    <div>
+      <div class="eyebrow">Production planning / Daily View</div>
+      <h1>Shoot Day 1</h1>
+      <div class="sub">Mon 11 Jan 2027</div>
+      <div class="meta-line">Project: Low Tide Radio</div>
+      
+    </div>
+    <div class="side"><span class="chip accent">Daily View snapshot</span>
+      <div class="rev">Revised 19 Oct 2026</div><div class="s2">Shooting schedule · PDF export</div></div>
+  </header>
+<div class="metrics slim"><div class="metric"><div class="val">2</div><div class="lbl">Scenes</div></div><div class="metric"><div class="val">1h</div><div class="lbl">Estimated</div></div></div>
+<div class="two-col"><section><div class="sec"><h2>Scenes</h2></div><div class="tiles"><span class="tile">28</span><span class="tile">29</span></div><div class="total"><b>Total</b> · 2 scenes · 1h estimated · 2 without estimate</div></section><section><div class="sec"><h2>Location</h2></div><div class="loc-item"><div class="nm">Coast Radio Station (Old Signal Station, Vypin)</div><div class="det"><span class="needs">Address missing</span></div></div></section></div>
+<section><div class="sec"><h2>Cast</h2></div><table class="tbl zebra boxed compact"><colgroup><col><col style="width:200pt"></colgroup><thead><tr><th>Cast</th><th>Character</th></tr></thead><tbody><tr><td class="nm">Sajan Kuriakose</td><td>SURESH</td></tr><tr><td class="nm">Aditya Nair</td><td>RAHUL</td></tr><tr><td class="nm">Nimisha Raghavan</td><td>ANJALI</td></tr><tr><td class="nm">Lal Fernandez</td><td>JOE</td></tr></tbody></table><div class="hint-line"><b>Call times:</b> Not entered yet · <b>Crew call:</b> 07:00</div></section>
+<div class="two-col"><section><div class="sec"><h2>Call Sheet</h2></div><div class="status"><span class="chip ">Draft</span><span style="font-size:8.8pt">Available and up to date with the schedule.</span></div></section><section><div class="sec"><h2>Important Notes</h2></div><p class="line">Coast Radio Station interiors, day. Basement water pumped from 05:00.</p><div class="markers"><span class="chip">LUNCH at 13:00 (1h)</span></div></section></div>
+<section><div class="sec"><h2>Important Breakdown Items</h2></div><div class="items"><span class="chip pill">Army surplus ammunition box</span><span class="chip pill">Station logbook 1999</span><span class="chip pill">Floating tape boxes</span><span class="chip pill">Coir string of station keys</span><span class="chip pill">Torches and head torch</span><span class="chip pill">Hard hats</span><span class="chip pill">Rahul's shorts</span><span class="chip pill">Anjali's rubber boots</span><span class="chip pill">Suresh's hard hat and site boots</span><span class="chip pill">Rahul's school clothes</span><span class="chip pill">Anjali's everyday clothes</span><span class="chip pill">Water tank and dirty water dressing</span></div></section>
+<section style="margin-top:11pt"><table class="tbl zebra boxed compact"><colgroup><col style="width:30pt"><col style="width:84pt"><col><col style="width:56pt"></colgroup><thead><tr class="title"><th colspan="4"><span class="hint">Production order · numbers are scene numbers</span>Scene Order</th></tr><tr class="gap"><th colspan="4"></th></tr><tr><th class="r">#</th><th>Scene</th><th>Heading</th><th class="r">Est.</th></tr></thead><tbody><tr><td class="ord">1</td><td><span class="tile">28</span></td><td class="strong">INT. COAST RADIO STATION - TAPE ROOM - DAY</td><td class="est"><span class="muted">–</span></td></tr><tr><td class="ord">2</td><td><span class="tile">29</span></td><td class="strong">INT. COAST RADIO STATION - OPERATIONS ROOM - DAY</td><td class="est"><span class="muted">–</span></td></tr></tbody></table></section>
+</div>
+<script src="../../../00_SYSTEM/assets/of-preview.js"></script>
+</body>
+</html>

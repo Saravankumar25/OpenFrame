@@ -1,7 +1,7 @@
 // Fakes for the Mac App Store tests: a fake Apple (StoreKit), a fake licensing server that signs
 // its answers with a real Ed25519 key, and a rig that starts the real core as the store channel
-// (the debug test switch, like the team password tests). Real StoreKit purchases cannot run in
-// this package: they need Xcode's StoreKit testing with packaging/OpenFrameStudio.storekit.
+// (the debug test switch). Real StoreKit purchases cannot run in this package: they need Xcode's
+// StoreKit testing with packaging/OpenFrameStudio.storekit.
 
 import CryptoKit
 import Foundation

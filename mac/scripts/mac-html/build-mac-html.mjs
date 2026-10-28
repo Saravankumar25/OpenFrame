@@ -374,6 +374,8 @@ function makeRenderer(p, mode) {
           const role = e.label && e.role === 'AXGroup' ? ' role="group"' : '';
           open = `<div${role} ${a.join(' ')} style="${style}">`; close = '</div>';
           if (e.value && !node.kids.length) inner = `<span class="v">${esc(e.value)}</span>`;
+          // A container with children (the Beat Board says "Vertical layout") keeps its value as a tooltip.
+          else if (e.value && e.value !== e.label && !e.title) open = open.replace('<div', `<div title="${esc(e.value)}"`);
         }
       }
     }
@@ -621,7 +623,10 @@ ${groups.map((g) => `<h2 id="${mode}-${slug(g.area)}">${esc(g.area)} <small>(${g
 fs.writeFileSync(path.join(root, 'index.html'), index);
 
 // 7. README.
-const skipped = [...new Set([...light.skipped.map((s) => 'Light: ' + s), ...dark.skipped.map((s) => 'Dark: ' + s)])];
+// A step skipped in both modes is listed once.
+const skipped = [...new Set([...light.skipped, ...dark.skipped])]
+  .map((s) => (light.skipped.includes(s) && dark.skipped.includes(s) ? s : (light.skipped.includes(s) ? 'Light only: ' : 'Dark only: ') + s));
+const captured = new Date().toISOString().slice(0, 10);
 const sizeList = [...sizes.entries()].sort((a, b) => b[1] - a[1]);
 const [mainSize] = sizeList[0];
 const readme = `# MacHTML: every screen of OpenFrame Studio for the Mac
@@ -658,7 +663,9 @@ is no DOM to save. MacHTML is built from two things captured at the same moment 
   other mode and to the index.
 - No page holds a script, and nothing is loaded from the network. The Light and Dark switch on the index and the HTML only
   switch are plain CSS.
-- Commit of the app these came from: \`${commit || 'unknown'}\`.
+- Commit of the app these came from: \`${commit || 'unknown'}\`, captured on ${captured} from the development build.
+- Theme: Screening Room, the default Mac theme, in Light and in Dark. The window is the full visible screen, frontmost
+  and active for every picture.
 
 ## Window size
 
@@ -681,7 +688,11 @@ without running the app:
 - Voice recording (needs the microphone and its permission dialog).
 - The print panel.
 - Forced crashes and disk failures.
-${onlyOne.length ? `- Screens captured in one mode only: ${onlyOne.join(', ')}.\n` : ''}${skipped.length ? '- Steps the tour skipped:\n' + skipped.map((s) => '  - ' + s.slice(0, 220)).join('\n') + '\n' : ''}
+- Real AI answers and an Assistant memory with entries: the development build has no AI engine, so the Assistant screens
+  show the state without one.
+- In Dark mode a sheet's rounded top corners show small white wedges: the capture lays the sheet window's transparent
+  corners on white. The app draws them correctly.
+${onlyOne.length ? `- Screens captured in one mode only: ${onlyOne.join(', ')}.\n` : ''}${skipped.length ? '- Steps the tour skipped (in both modes unless marked):\n' + skipped.map((s) => '  - ' + s.slice(0, 220)).join('\n') + '\n' : ''}
 ## Count
 
 ${meta.length} screens, ${meta.length * 2} pages (Light and Dark).

@@ -61,7 +61,7 @@ struct ImportScreenplaySheet: View {
                 .accessibilityIdentifier("import-cancel")
             Button(model.busy ? "Reading\u{2026}" : "Preview") { Task { await model.runPreview() } }
                 .keyboardShortcut(.defaultAction)
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(.ofProminent)
                 .disabled(!model.canPreview)
                 .accessibilityIdentifier("import-preview")
         }
@@ -207,7 +207,7 @@ struct ImportScreenplaySheet: View {
                     .accessibilityIdentifier("import-cancel")
                 Button(model.busy ? "Importing\u{2026}" : "Import") { Task { await model.runImport() } }
                     .keyboardShortcut(.defaultAction)
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(.ofProminent)
                     .disabled(!model.canImport)
                     .accessibilityIdentifier("import-confirm")
             }
@@ -314,7 +314,7 @@ struct ImportScreenplaySheet: View {
                 }
                 Button("Open Screenplay") { model.openScreenplay(); closeSheet() }
                     .keyboardShortcut(.defaultAction)
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(.ofProminent)
                     .accessibilityIdentifier("import-open-screenplay")
                 Button("Close", action: closeSheet).keyboardShortcut(.cancelAction)
                     .accessibilityIdentifier("import-close")
@@ -366,7 +366,7 @@ struct ImportScreenplaySheet: View {
                     .disabled(model.busy)
                     .accessibilityIdentifier("import-add-to-files")
                 }
-                Button("Close", action: closeSheet).keyboardShortcut(.defaultAction).buttonStyle(.borderedProminent)
+                Button("Close", action: closeSheet).keyboardShortcut(.defaultAction).buttonStyle(.ofProminent)
                     .accessibilityIdentifier("import-close")
             }
         }

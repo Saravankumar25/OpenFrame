@@ -59,7 +59,6 @@ final class ScreenplayWorkspaceModel {
     var failure: CoreFailure?
     var syncStatus: String = "saved"
     var currentScene: String?
-    var showNewDraft = false
     /// Standard, Writing Room or Focus. Kept per project and user in the layout record.
     var mode: ScreenplayMode = .standard
     /// Characters and locations for the suggestion list.
@@ -75,6 +74,9 @@ final class ScreenplayWorkspaceModel {
     /// core reports for them. The data loads once a column is shown.
     var navColumns: [NavigatorColumn] = []
     var navData: NavigatorColumnData?
+    /// The page is drawn as dark paper on screen (View preference, key "darkPaper" of the layout
+    /// record; print and PDF never change). White paper by default, also in the Dark theme.
+    var darkPaper = false
     // Replace All (Command+Option+F).
     var showReplace = false
     /// Counts requests to put the caret in the Find field (the bar is already open when it rises).
@@ -116,11 +118,12 @@ final class ScreenplayWorkspaceModel {
         if !live.contains(where: { $0.model === model }) { live.append(Weak(model)) }
     }
 
-    /// Send what every open Screenplay workspace holds to the core. Call it before the project
-    /// closes (`AppModel.closeProject`) and before the app quits (`applicationShouldTerminate`
-    /// answers `.terminateLater`, awaits this, then replies).
+    /// Send what every open Screenplay workspace and Story page holds to the core. Call it before
+    /// the project closes (`AppModel.closeProject`) and before the app quits
+    /// (`applicationShouldTerminate` answers `.terminateLater`, awaits this, then replies).
     static func flushAll() async {
         for entry in live { await entry.model?.flush() }
+        await StoryPageModel.flushAll()
     }
 
     /// Connect the text view: what it shows besides the text, and what it asks of the app.
@@ -157,6 +160,7 @@ final class ScreenplayWorkspaceModel {
         if let state = try? await core.screenplayViewState(ScreenplayViewStateArgs()) {
             mode = ScreenplayMode.from(state)
             navColumns = NavigatorColumn.from(state)
+            darkPaper = ScreenplayPageColors.isDark(state)
         }
         await loadNavigatorColumns()
     }
@@ -170,6 +174,12 @@ final class ScreenplayWorkspaceModel {
         saveLayout(columns: true, mode: false)
     }
 
+    /// Dark page or Light page (Screenplay Tools). Screen only; the choice is kept.
+    func toggleDarkPaper() {
+        darkPaper.toggle()
+        saveLayout(columns: false, mode: false, paper: true)
+    }
+
     /// The last save of the layout record. Saves run one after the other: two quick changes
     /// each read the record, change their own key and write it back, and run in parallel the
     /// later read could miss the earlier write and undo it.
@@ -177,7 +187,7 @@ final class ScreenplayWorkspaceModel {
 
     /// Save the chosen keys as they are when the save runs (the newest values win); the other
     /// keys of the record stay.
-    private func saveLayout(columns: Bool, mode saveMode: Bool) {
+    private func saveLayout(columns: Bool, mode saveMode: Bool, paper: Bool = false) {
         guard let core = app?.core else { return }
         let before = layoutSave
         layoutSave = Task { [weak self] in
@@ -186,6 +196,7 @@ final class ScreenplayWorkspaceModel {
             var state = try? await core.screenplayViewState(ScreenplayViewStateArgs())
             if saveMode { state = ScreenplayMode.merged(state, mode: self.mode) }
             if columns { state = NavigatorColumn.merged(state, columns: self.navColumns) }
+            if paper { state = ScreenplayPageColors.merged(state, dark: self.darkPaper) }
             _ = try? await core.screenplaySetViewState(ScreenplaySetViewStateArgs(state: state ?? .object([:])))
         }
     }
@@ -537,13 +548,14 @@ struct ScreenplayWorkspace: View {
         HSplitView {
             if !focus && scenesShown {
                 SceneNavigator(model: model, panels: panels, currentIndex: currentIndex)
-                    .frame(minWidth: 120, idealWidth: 240, maxWidth: 340)
+                    // Never wider than the page leaves room for, so the page pane keeps its minimum.
+                    .frame(minWidth: 120, idealWidth: 240, maxWidth: max(120, min(340, pageWidth - 1 - 340)))
             }
             VStack(spacing: 0) {
                 if model.showReplace && !focus { ScreenplayReplaceBar(model: model) }
                 ZStack {
                     theme["well"]
-                    ScreenplayEditorHost(model: model, zoom: zoom, zoomChanged: { zoom = $0 }, onMove: { p, i in
+                    ScreenplayEditorHost(model: model, zoom: zoom, darkPaper: model.darkPaper, zoomChanged: { zoom = $0 }, onMove: { p, i in
                         currentKind = p.kind
                         currentIndex = i
                         model.currentCustomId = p.kind == .custom ? p.customElementId : nil
@@ -783,6 +795,7 @@ struct SceneNavigator: View {
     var body: some View {
         let scenes = model.document?.scenes ?? []
         let shown = NavigatorColumnData.shown(model.navColumns, model.navData)
+        let current = Self.sceneIndex(containing: currentIndex, in: scenes)
         VStack(spacing: 0) {
             HStack {
                 Text("Scenes (\(scenes.count))").font(.headline).accessibilityAddTraits(.isHeader)
@@ -849,12 +862,36 @@ struct SceneNavigator: View {
                         Button("Scene Hub") { panels.showSceneHub(sceneId: scene.id) }
                         Button("Add Comment") { panels.addComment(sceneId: scene.id) }
                     }
+                    .fontWeight(i == current ? .semibold : nil)
+                    .listRowBackground(i == current ? currentRow : nil)
                 }
             }
         }
-        .listStyle(.sidebar)
+        // A plain list on the theme surface: the sidebar material made the middle pane read as a
+        // grey, disabled block.
+        .listStyle(.plain)
+        .scrollContentBackground(.hidden)
+        .accessibilityLabel("Scenes")
         .accessibilityIdentifier("scene-navigator")
         }
+        .background(theme["surface2"])
+    }
+
+    /// The scene the caret is in: accent wash with an accent bar on the leading edge.
+    private var currentRow: some View {
+        theme["accent-soft"].overlay(alignment: .leading) { theme["accent"].frame(width: 2) }
+    }
+
+    /// Index of the scene whose paragraphs hold `paragraph` (a heading plus its elements each).
+    static func sceneIndex(containing paragraph: Int, in scenes: [ScreenplaySceneDto]) -> Int? {
+        var start = 0
+        var found: Int?
+        for (i, scene) in scenes.enumerated() {
+            if start > paragraph { break }
+            found = i
+            start += 1 + scene.elements.count
+        }
+        return found
     }
 
     private func columnWidth(_ c: NavigatorColumn) -> CGFloat {
@@ -884,11 +921,18 @@ enum ScreenplayZoom {
 struct ScreenplayEditorHost: NSViewRepresentable {
     let model: ScreenplayWorkspaceModel
     var zoom: Double = 1
+    /// Dark page (a view preference); white paper otherwise, whatever the app theme.
+    var darkPaper = false
     var zoomChanged: (Double) -> Void = { _ in }
     let onMove: (EditorParagraph, Int) -> Void
-    @Environment(\.ofTheme) private var theme
 
     func makeCoordinator() -> Coordinator { Coordinator(model: model, onMove: onMove) }
+
+    /// The scroll view takes the room it is offered. Without this its size followed the page inside
+    /// it (wider than a narrow pane), and the pane ran past the window.
+    func sizeThatFits(_ proposal: ProposedViewSize, nsView: NSScrollView, context: Context) -> CGSize? {
+        CGSize(width: proposal.width ?? 340, height: proposal.height ?? 400)
+    }
 
     func makeNSView(context: Context) -> NSScrollView {
         let scroll = NSScrollView()
@@ -953,8 +997,7 @@ struct ScreenplayEditorHost: NSViewRepresentable {
 
     func updateNSView(_ scroll: NSScrollView, context: Context) {
         guard let view = scroll.documentView as? ScreenplayTextView else { return }
-        view.backgroundColor = NSColor(theme["panel"])
-        view.insertionPointColor = NSColor(theme["ink"])
+        view.showPaper(dark: darkPaper)
         context.coordinator.onMove = onMove
         context.coordinator.zoomChanged = zoomChanged
         let wanted = ScreenplayZoom.clamp(zoom)

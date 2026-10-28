@@ -12,9 +12,7 @@ download finished, and roughly how long it took.
 
 - [ ] The installer ran with no administrator prompt.
 - [ ] I got past the "Windows protected your PC" window with the steps in the [install note](install-note.md).
-- [ ] The first start showed the password screen.
-- [ ] A wrong password was refused and made me wait.
-- [ ] The right password opened the app.
+- [ ] The app opened straight to Home, with no password.
 - [ ] The AI download finished.
 - [ ] With Wi-Fi off, the assistant still answered.
 - [ ] I exported a PDF.
@@ -30,8 +28,8 @@ On day 3, also do this:
 
 Work (30 to 60 minutes):
 - Create a project. Close it. Reopen it from Home.
-- Idea Vault: add a note, an image, a link. Send one item to the Story Board.
-- Story Board: make acts and scene cards. Reorder them.
+- Idea Vault: add a note, an image, a link. Send one item to the Beat Board.
+- Beat Board: make acts and scene cards. Reorder them.
 - Screenplay: type scenes with headings, action, dialogue, parentheticals and transitions. Use Undo and Redo.
 - Close the window right after typing. Reopen. Check every word is there.
 - Import a Final Draft (FDX) or Fountain file you already have, as a copy.

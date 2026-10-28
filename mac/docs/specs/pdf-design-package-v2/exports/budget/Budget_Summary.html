@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Low Tide Radio — Budget Report</title>
+<meta name="of-doc" content="Budget Summary (budget.export_summary) — current budget / saved snapshot">
+<meta name="of-logo" content="../../00_SYSTEM/assets/openframe-logo.png">
+<link rel="stylesheet" href="../../00_SYSTEM/assets/openframe-print.css">
+<style>
+  @page { size: 8.5in 11in; @top-right { content: "LOW TIDE RADIO · BUDGET · INR"; } }
+
+  /* ===== Budget Summary (budget.export_summary) -- document-specific rules ===== */
+  .masthead { grid-template-columns: minmax(0, 1fr) auto; margin-bottom: 8pt; padding-bottom: 8pt; border-bottom: var(--rule) solid var(--of-navy); }
+  .masthead h1 { font-size: 26pt; }
+  .masthead .disc { font-size: 8.4pt; color: var(--of-slate); margin-top: 3pt; }
+  .masthead .proj { font-size: 11pt; color: var(--of-slate); }
+  .idpanel { min-width: 128pt; max-width: 170pt; border: var(--hair) solid var(--of-line-strong); border-radius: var(--radius-lg); background: var(--of-panel); padding: 7pt 10pt; text-align: right; }
+  .idpanel .l1 { font-size: 10pt; font-weight: 700; color: var(--of-navy); }
+  .idpanel .l { font-size: 8pt; color: var(--of-slate); margin-top: 1pt; }
+  .idpanel .tagline { display:inline-block; font-size: 6.6pt; font-weight: 700; letter-spacing:.08em; text-transform: uppercase; color: var(--of-navy); border: .75pt solid var(--of-navy); border-radius:2pt; padding: 1.2pt 3.5pt; margin-bottom: 3pt; }
+  .metrics { margin: 6pt 0 5pt; }
+  .metric .val { font-size: 14pt; white-space: nowrap; }
+  .metric .val .cur { font-size: 7.8pt; font-weight: 700; letter-spacing: .06em; color: var(--of-slate); margin-right: 2pt; }
+  .metric .val.pct { white-space: normal; }
+  .metric .val .pctv { font-size: 14pt; }
+  .metric.ok { background: var(--of-green-fill); border-color: var(--of-green-line); } .metric.ok .val { color: var(--of-green-text); } .metric.ok .val .cur { color: var(--of-green-text); }
+  .metric.danger { background: var(--of-red-fill); border-color: var(--of-red-line); } .metric.danger .val { color: var(--of-red-text); } .metric.danger .val .cur { color: var(--of-red-text); }
+  .metric .lbl { line-height: 1.25; }
+  .metric .sub2 { font-size: 7pt; font-weight: 700; letter-spacing:.08em; text-transform: uppercase; margin-top: 2pt; }
+  .recon { font-size: 8.4pt; color: var(--of-slate); margin: 2pt 0 0; line-height: 1.4; }
+  .recon b { color: var(--of-navy); font-weight: 700; }
+  .sec { margin-top: 14pt; }
+
+  /* money tables */
+  table.cat, table.li, table.gt { table-layout: fixed; width: 520pt; font-size: 8.4pt; line-height: 1.25; }
+  table.cat th, table.cat td, table.li th, table.li td, table.gt td { padding: 3.6pt 6pt; vertical-align: middle; }
+  .n { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .dp { visibility: hidden; }
+  .nil { color: var(--of-muted); }
+  td.b { font-weight: 700; color: var(--of-navy); }
+  td.over { background: var(--of-red-fill); color: var(--of-red-text); font-weight: 700; }
+  .ovr { display: block; font-size: 6.6pt; font-weight: 700; letter-spacing: .06em; line-height: 1.1; margin-top: 1pt; }
+
+  table.cat { margin-top: 0; }
+  table.cat thead th { background: var(--of-tint); color: var(--of-slate); font-size: 6.9pt; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; padding: 5pt 6pt; border-top: .5pt solid var(--of-line-strong); border-bottom: .75pt solid var(--of-line-strong); vertical-align: bottom; }
+  table.cat thead th { text-align: left; } table.cat thead th.n { text-align: right; }
+  table.cat tbody td { border-bottom: var(--hair) solid var(--of-line); }
+  table.cat tbody td.cn { font-size: 9.2pt; font-weight: 700; color: var(--of-navy); }
+  table.cat tbody td.ln { text-align: right; color: var(--of-slate); }
+  table.cat tbody td.ln small { display: block; font-size: 6.8pt; color: var(--of-muted); }
+  table.cat tr.total td { background: var(--of-navy); color: #fff; font-weight: 700; border-bottom: 0; }
+  table.cat tr.total td.n { color: #fff; }
+  .bar { display: block; height: 5pt; width: 100%; background: var(--of-tint); border: .5pt solid var(--of-line-strong); border-radius: 2pt; position: relative; overflow: hidden; }
+  .bar i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--of-slate); }
+  table.cat tr.total td .bar { visibility: hidden; }
+  .fn { font-size: 7.4pt; color: var(--of-slate); line-height: 1.4; margin-top: 5pt; break-inside: avoid; }
+  .fn b { color: var(--of-ink); }
+
+  .lit { margin-top: 8pt; }
+  .lit:first-of-type { margin-top: 0; }
+  table.li thead th { background: var(--of-tint); color: var(--of-navy); padding: 4pt 6pt; border-top: 1pt solid var(--of-navy); border-bottom: .75pt solid var(--of-line-strong); vertical-align: bottom; font-weight: 400; }
+  table.li thead th.catname { font-size: 10pt; font-weight: 700; text-align: left; }
+  table.li thead th.catname .ct { font-size: 7.4pt; font-weight: 400; color: var(--of-slate); margin-left: 6pt; }
+  table.li thead th.lab { font-size: 6.9pt; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: var(--of-slate); text-align: right; }
+  table.li tbody tr { break-inside: avoid; }
+  table.li tbody td { vertical-align: top; }
+  table.li tr.sub td { vertical-align: middle; }
+  table.li tbody td { border-bottom: var(--hair) solid var(--of-line); }
+  table.li td.d { font-size: 8.8pt; font-weight: 700; color: var(--of-navy); line-height: 1.25; }
+  table.li td.d .note { display: block; font-size: 7.8pt; font-weight: 400; color: var(--of-slate); margin-top: 1.6pt; line-height: 1.3; }
+  table.li tr.sub td { background: var(--of-panel); border-top: .75pt solid var(--of-line-strong); border-bottom: .75pt solid var(--of-line-strong); font-weight: 700; color: var(--of-navy); font-size: 8.4pt; }
+  table.li tr.sub td.d { font-size: 7.4pt; letter-spacing: .06em; text-transform: uppercase; color: var(--of-slate); }
+  table.li tr.sub td.nil { font-weight: 400; }
+  tbody.k { break-inside: avoid; }
+  table.gt { margin-top: 10pt; break-inside: avoid; }
+  table.gt td { background: var(--of-navy); color: #fff; font-weight: 700; font-size: 9pt; }
+  table.gt td.n { font-size: 8.8pt; }
+  table.gt td.lbl small { font-size: 7.4pt; font-weight: 400; color: var(--of-dark-muted); margin-left: 6pt; }
+  .fx-ref td, .fx-ref th { font-size: 8pt; }
+  .illustrative { font-size: 6.8pt; color: var(--of-muted); }
+
+</style>
+</head>
+<body>
+<div class="doc">
+  <header class="masthead">
+    <div>
+      <div class="eyebrow">Production · Budget</div>
+      <h1 data-toggle="Current budget identity">Budget Report</h1>
+      <h1 data-toggle="Saved snapshot identity" hidden>Budget Snapshot: Pre-shoot lock</h1>
+      <div class="proj">Low Tide Radio</div>
+      <div class="disc">A simple estimate for planning. Formal accounting is outside OpenFrame.</div>
+    </div>
+    <div class="idpanel" data-toggle="Current budget identity"><div class="l1">Currency INR</div><div class="l">Current budget</div><div class="l">Exported 22 Oct 2026</div></div>
+    <div class="idpanel" data-toggle="Saved snapshot identity" hidden><span class="tagline">Snapshot</span><div class="l1">Currency INR</div><div class="l">Saved snapshot</div><div class="l">Saved 12 Oct 2026</div><div class="l">Exported 22 Oct 2026</div></div>
+  </header>
+
+  <div class="metrics" role="group" aria-label="Budget totals"><div class="metric"><div class="val"><span class="cur">INR</span>4,60,00,000</div><div class="lbl" style="margin-top:2pt">Planned total</div></div><div class="metric"><div class="val"><span class="cur">INR</span>46,00,000</div><div class="lbl" style="margin-top:2pt">Contingency<span class="chip navy" style="float:right;margin-top:-1pt">10%</span></div></div><div class="metric"><div class="val"><span class="cur">INR</span>60,15,000</div><div class="lbl" style="margin-top:2pt">Actual so far, 10 lines of 36</div></div><div class="metric ok"><div class="val"><span class="cur">INR</span>36,85,000</div><div class="lbl" style="margin-top:2pt;color:inherit">Under plan, lines with an actual</div></div></div>
+  <p class="recon">Planned in lines: <b>INR 3,78,75,000</b>. Planned total not yet in lines: <b>INR 81,25,000</b>.</p>
+  <section>
+    <div class="sec"><h2>By category</h2></div>
+    <table class="cat" aria-label="Budget by category">
+      <colgroup><col><col style="width:46pt"><col style="width:84pt"><col style="width:84pt"><col style="width:84pt"><col style="width:92pt"></colgroup>
+      <thead><tr><th>Category</th><th class="n">Lines</th><th>Share of planned</th><th class="n">Planned (INR)</th><th class="n">Actual (INR)</th><th class="n">Difference (INR)</th></tr></thead>
+      <tbody>
+        <tr><td class="cn"><span class="dot" style="background:#7a4cc2"></span>Cast</td><td class="ln">6</td><td><span class="bar"><i style="width:21.57%"></i></span></td><td class="n  b">81,70,000</td><td class="n nil">—</td><td class="n nil">—</td></tr>
+        <tr><td class="cn"><span class="dot" style="background:#1f9a8a"></span>Crew</td><td class="ln">5<small>1 actual</small></td><td><span class="bar"><i style="width:18.69%"></i></span></td><td class="n  b">70,80,000</td><td class="n ">3,50,000</td><td class="n ">10,50,000</td></tr>
+        <tr><td class="cn"><span class="dot" style="background:#1b84be"></span>Locations</td><td class="ln">2<small>2 actual</small></td><td><span class="bar"><i style="width:3.64%"></i></span></td><td class="n  b">13,80,000</td><td class="n ">4,95,000</td><td class="n ">8,85,000</td></tr>
+        <tr><td class="cn"><span class="dot" style="background:#6b7a8f"></span>Equipment</td><td class="ln">7<small>1 actual</small></td><td><span class="bar"><i style="width:15.25%"></i></span></td><td class="n  b">57,75,000</td><td class="n ">6,00,000</td><td class="n ">13,20,000</td></tr>
+        <tr><td class="cn"><span class="dot" style="background:#c0623a"></span>Art/Props</td><td class="ln">5<small>3 actual</small></td><td><span class="bar"><i style="width:8.82%"></i></span></td><td class="n  b">33,40,000</td><td class="n ">22,70,000</td><td class="n ">4,30,000</td></tr>
+        <tr><td class="cn"><span class="dot" style="background:#d99a1a"></span>Travel/Transport</td><td class="ln">2</td><td><span class="bar"><i style="width:2.27%"></i></span></td><td class="n  b">8,58,000</td><td class="n nil">—</td><td class="n nil">—</td></tr>
+        <tr><td class="cn"><span class="dot" style="background:#4f9a3d"></span>Food</td><td class="ln">1</td><td><span class="bar"><i style="width:1.77%"></i></span></td><td class="n  b">6,72,000</td><td class="n nil">—</td><td class="n nil">—</td></tr>
+        <tr><td class="cn"><span class="dot" style="background:#c23a96"></span>Post/Other</td><td class="ln">8<small>3 actual</small></td><td><span class="bar"><i style="width:27.99%"></i></span></td><td class="n  b">1,06,00,000</td><td class="n ">23,00,000</td><td class="n ">0</td></tr>
+        <tr class="total"><td class="cn" style="color:#fff">Total in lines</td><td class="ln" style="color:#fff">36</td><td><span class="bar"></span></td><td class="n">3,78,75,000</td><td class="n">60,15,000</td><td class="n">36,85,000</td></tr>
+      </tbody>
+    </table>
+    <p class="fn"><b>How to read the amounts.</b> Planned adds every line. Actual and Difference add only the lines that have an Actual amount, so they are not comparable with the whole Planned column. Difference is Planned minus Actual: a positive amount is under plan, a minus sign (shaded, with the words OVER PLAN) is over plan. A dash means no Actual amount has been entered.</p>
+  </section>
+  <section>
+    <div class="sec"><h2>Line items</h2><span class="hint">36 lines</span></div>
+    <div class="lit"><table class="li" aria-label="Cast line items"><colgroup><col><col style="width:84pt"><col style="width:84pt"><col style="width:92pt"></colgroup><thead><tr><th class="catname"><span class="dot" style="background:#7a4cc2"></span>Cast<span class="ct">6 lines</span></th><th class="lab">Planned (INR)</th><th class="lab">Actual (INR)</th><th class="lab">Difference (INR)</th></tr></thead><tbody class="k"><tr><td class="d">Lead cast (Nimisha Raghavan, K. P. Gopinathan)</td><td class="n ">40,00,000</td><td class="n nil">—</td><td class="n nil">—</td></tr><tr><td class="d">Supporting cast (six)</td><td class="n ">28,00,000</td><td class="n nil">—</td><td class="n nil">—</td></tr></tbody><tbody><tr><td class="d">Day players and voices</td><td class="n ">4,50,000</td><td class="n nil">—</td><td class="n nil">—</td></tr><tr><td class="d">Child performers, tutor and chaperone<span class="note" data-toggle="Line notes">Includes the child performer permits.</span></td><td class="n ">1,60,000</td><td class="n nil">—</td><td class="n nil">—</td></tr><tr><td class="d">Extras and background (300 on the listening night)</td><td class="n ">6,40,000</td><td class="n nil">—</td><td class="n nil">—</td></tr></tbody><tbody class="k"><tr><td class="d">Animals: Kannan (two trained dogs) and wrangler</td><td class="n ">1,20,000</td><td class="n nil">—</td><td class="n nil">—</td></tr><tr class="sub"><td class="d">Subtotal · Cast</td><td class="n  b">81,70,000</td><td class="n nil">—</td><td class="n nil">—</td></tr></tbody></table></div>
+    <div class="lit"><table class="li" aria-label="Crew line items"><colgroup><col><col style="width:84pt"><col style="width:84pt"><col style="width:92pt"></colgroup><thead><tr><th class="catname"><span class="dot" style="background:#1f9a8a"></span>Crew<span class="ct">5 lines</span></th><th class="lab">Planned (INR)</th><th class="lab">Actual (INR)</th><th class="lab">Difference (INR)</th></tr></thead><tbody class="k"><tr><td class="d">Producers and Director: Director fee<span class="note" data-toggle="Line notes">Thirty percent on the first shooting day.</span></td><td class="n ">25,00,000</td><td class="n nil">—</td><td class="n nil">—</td></tr><tr><td class="d">Producers and Director: Producer fees</td><td class="n ">15,00,000</td><td class="n nil">—</td><td class="n nil">—</td></tr></tbody><tbody><tr><td class="d">Production Staff: Line producer, UPM, ADs, production office<span class="note" data-toggle="Line notes">Prep weeks paid.</span></td><td class="n ">14,00,000</td><td class="n ">3,50,000</td><td class="n ">10,50,000</td></tr><tr><td class="d">Camera: Camera crew</td><td class="n ">9,60,000</td><td class="n nil">—</td><td class="n nil">—</td></tr></tbody><tbody class="k"><tr><td class="d">Grip and Electric: Grip and electric crew</td><td class="n ">7,20,000</td><td class="n nil">—</td><td class="n nil">—</td></tr><tr class="sub"><td class="d">Subtotal · Crew</td><td class="n  b">70,80,000</td><td class="n  b">3,50,000</td><td class="n  b">10,50,000</td></tr></tbody></table></div>
+    <div class="lit"><table class="li" aria-label="Locations line items"><colgroup><col><col style="width:84pt"><col style="width:84pt"><col style="width:92pt"></colgroup><thead><tr><th class="catname"><span class="dot" style="background:#1b84be"></span>Locations<span class="ct">2 lines</span></th><th class="lab">Planned (INR)</th><th class="lab">Actual (INR)</th><th class="lab">Difference (INR)</th></tr></thead><tbody class="k"><tr><td class="d">Location fees<span class="note" data-toggle="Line notes">Deposits paid.</span></td><td class="n ">12,00,000</td><td class="n ">3,00,000</td><td class="n ">9,00,000</td></tr><tr><td class="d">Permits and police<span class="note" data-toggle="Line notes">Over: extra police for the beach night.</span></td><td class="n ">1,80,000</td><td class="n ">1,95,000</td><td class="n over ">-15,000<span class="ovr">OVER PLAN</span></td></tr><tr class="sub"><td class="d">Subtotal · Locations</td><td class="n  b">13,80,000</td><td class="n  b">4,95,000</td><td class="n  b">8,85,000</td></tr></tbody></table></div>
+    <div class="lit"><table class="li" aria-label="Equipment line items"><colgroup><col><col style="width:84pt"><col style="width:84pt"><col style="width:92pt"></colgroup><thead><tr><th class="catname"><span class="dot" style="background:#6b7a8f"></span>Equipment<span class="ct">7 lines</span></th><th class="lab">Planned (INR)</th><th class="lab">Actual (INR)</th><th class="lab">Difference (INR)</th></tr></thead><tbody class="k"><tr><td class="d">Camera: Alexa 35 package with anamorphic lenses, 16 days<span class="note" data-toggle="Line notes">Deposit paid 2027-01-04.</span></td><td class="n ">19,20,000</td><td class="n ">6,00,000</td><td class="n ">13,20,000</td></tr><tr><td class="d">Grip and Electric: Lighting package and balloon lights</td><td class="n ">14,00,000</td><td class="n nil">—</td><td class="n nil">—</td></tr></tbody><tbody><tr><td class="d">Grip and Electric: Generators (125 kVA and silent unit)</td><td class="n ">3,20,000</td><td class="n nil">—</td><td class="n nil">—</td></tr><tr><td class="d">Sound: Production sound package and crew</td><td class="n ">5,60,000</td><td class="n nil">—</td><td class="n nil">—</td></tr><tr><td class="d">Special Effects: Rain towers, wind machines, wave machine, smoke</td><td class="n ">9,00,000</td><td class="n nil">—</td><td class="n nil">—</td></tr><tr><td class="d">Marine: Boats, crews, safety divers and rescue boat</td><td class="n ">6,50,000</td><td class="n nil">—</td><td class="n nil">—</td></tr></tbody><tbody class="k"><tr><td class="d">Marine: Coast Guard liaison officer (sea day)</td><td class="n ">25,000</td><td class="n nil">—</td><td class="n nil">—</td></tr><tr class="sub"><td class="d">Subtotal · Equipment</td><td class="n  b">57,75,000</td><td class="n  b">6,00,000</td><td class="n  b">13,20,000</td></tr></tbody></table></div>
+    <div class="lit"><table class="li" aria-label="Art/Props line items"><colgroup><col><col style="width:84pt"><col style="width:84pt"><col style="width:92pt"></colgroup><thead><tr><th class="catname"><span class="dot" style="background:#c0623a"></span>Art/Props<span class="ct">5 lines</span></th><th class="lab">Planned (INR)</th><th class="lab">Actual (INR)</th><th class="lab">Difference (INR)</th></tr></thead><tbody class="k"><tr><td class="d">Art Department: Operations room set build and dressing<span class="note" data-toggle="Line notes">Over: period radio racks rebuilt after the first test.</span></td><td class="n ">18,00,000</td><td class="n ">19,40,000</td><td class="n over ">-1,40,000<span class="ovr">OVER PLAN</span></td></tr><tr><td class="d">Art Department: Props (reel, Nagra, biscuit-tin transmitter, logbook)</td><td class="n ">4,80,000</td><td class="n ">2,10,000</td><td class="n ">2,70,000</td></tr></tbody><tbody><tr><td class="d">Art Department: Picture vehicles (Ambassador, KSRTC bus, police jeep, excavator)</td><td class="n ">3,60,000</td><td class="n nil">—</td><td class="n nil">—</td></tr><tr><td class="d">Wardrobe: Costumes, 1999 period and present day</td><td class="n ">4,20,000</td><td class="n ">1,20,000</td><td class="n ">3,00,000</td></tr></tbody><tbody class="k"><tr><td class="d">Hair and Makeup: Makeup, hair, aging and wet-downs</td><td class="n ">2,80,000</td><td class="n nil">—</td><td class="n nil">—</td></tr><tr class="sub"><td class="d">Subtotal · Art/Props</td><td class="n  b">33,40,000</td><td class="n  b">22,70,000</td><td class="n  b">4,30,000</td></tr></tbody></table></div>
+    <div class="lit"><table class="li" aria-label="Travel/Transport line items"><colgroup><col><col style="width:84pt"><col style="width:84pt"><col style="width:92pt"></colgroup><thead><tr><th class="catname"><span class="dot" style="background:#d99a1a"></span>Travel/Transport<span class="ct">2 lines</span></th><th class="lab">Planned (INR)</th><th class="lab">Actual (INR)</th><th class="lab">Difference (INR)</th></tr></thead><tbody class="k"><tr><td class="d">Transport: Unit vehicles and drivers</td><td class="n ">8,40,000</td><td class="n nil">—</td><td class="n nil">—</td></tr><tr><td class="d">Marine: fuel for the camera and support boats</td><td class="n ">18,000</td><td class="n nil">—</td><td class="n nil">—</td></tr><tr class="sub"><td class="d">Subtotal · Travel/Transport</td><td class="n  b">8,58,000</td><td class="n nil">—</td><td class="n nil">—</td></tr></tbody></table></div>
+    <div class="lit"><table class="li" aria-label="Food line items"><colgroup><col><col style="width:84pt"><col style="width:84pt"><col style="width:92pt"></colgroup><thead><tr><th class="catname"><span class="dot" style="background:#4f9a3d"></span>Food<span class="ct">1 line</span></th><th class="lab">Planned (INR)</th><th class="lab">Actual (INR)</th><th class="lab">Difference (INR)</th></tr></thead><tbody class="k"><tr><td class="d">Catering: Meals for 16 days, crew of 85</td><td class="n ">6,72,000</td><td class="n nil">—</td><td class="n nil">—</td></tr><tr class="sub"><td class="d">Subtotal · Food</td><td class="n  b">6,72,000</td><td class="n nil">—</td><td class="n nil">—</td></tr></tbody></table></div>
+    <div class="lit"><table class="li" aria-label="Post/Other line items"><colgroup><col><col style="width:84pt"><col style="width:84pt"><col style="width:92pt"></colgroup><thead><tr><th class="catname"><span class="dot" style="background:#c23a96"></span>Post/Other<span class="ct">8 lines</span></th><th class="lab">Planned (INR)</th><th class="lab">Actual (INR)</th><th class="lab">Difference (INR)</th></tr></thead><tbody class="k"><tr><td class="d">Story and Screenplay: Story rights (Meenakshi Varma and Arun Joseph)<span class="note" data-toggle="Line notes">Paid on signing.</span></td><td class="n ">5,00,000</td><td class="n ">5,00,000</td><td class="n ">0</td></tr><tr><td class="d">Story and Screenplay: Screenplay fee and two rewrites</td><td class="n ">12,00,000</td><td class="n ">12,00,000</td><td class="n ">0</td></tr></tbody><tbody><tr><td class="d">VFX: Storm sea extension, mast fall, period clean-up (64 shots)</td><td class="n ">38,00,000</td><td class="n nil">—</td><td class="n nil">—</td></tr><tr><td class="d">Post-production: Editing (12 weeks)</td><td class="n ">10,00,000</td><td class="n nil">—</td><td class="n nil">—</td></tr><tr><td class="d">Post-production: Colour grade</td><td class="n ">8,00,000</td><td class="n nil">—</td><td class="n nil">—</td></tr><tr><td class="d">Post-production: Sound design and mix</td><td class="n ">12,00,000</td><td class="n nil">—</td><td class="n nil">—</td></tr><tr><td class="d">Music: Score, choir session and licences</td><td class="n ">15,00,000</td><td class="n nil">—</td><td class="n nil">—</td></tr></tbody><tbody class="k"><tr><td class="d">Insurance and Legal: Production insurance, legal and clearances<span class="note" data-toggle="Line notes">Policy KP-INS-2027-11.</span></td><td class="n ">6,00,000</td><td class="n ">6,00,000</td><td class="n ">0</td></tr><tr class="sub"><td class="d">Subtotal · Post/Other</td><td class="n  b">1,06,00,000</td><td class="n  b">23,00,000</td><td class="n  b">0</td></tr></tbody></table></div>
+    <table class="gt" aria-label="Total in lines"><colgroup><col><col style="width:84pt"><col style="width:84pt"><col style="width:92pt"></colgroup><tr><td class="lbl">Total in lines<small>36 lines</small></td><td class="n">3,78,75,000</td><td class="n">60,15,000</td><td class="n">36,85,000</td></tr></table>
+  </section>
+  <section class="keep">
+    <div class="sec"><h2>Notes</h2></div>
+    <div class="callout info block"><p style="font-size:9pt;line-height:1.4">Approved by Kayal Pictures and the co-producer on 2026-12-18. The department is named at the start of each line because the app has nine fixed budget categories. Amounts in rupees in this file; the app stores paise.</p></div>
+  </section>
+
+</div>
+<script src="../../00_SYSTEM/assets/of-preview.js"></script>
+<script>
+  /* Preview-only: current budget and saved snapshot are alternatives (budgetId), so keep the two toggles mutually exclusive. */
+  (function () {
+    var pair = ["Current budget identity", "Saved snapshot identity"], boxes = [], busy = false;
+    Array.prototype.forEach.call(document.querySelectorAll('.preview-bar label'), function (l) {
+      var i = pair.indexOf(l.textContent.trim()); if (i >= 0) boxes[i] = l.querySelector('input');
+    });
+    if (boxes.length !== 2) return;
+    boxes.forEach(function (b, i) {
+      b.addEventListener('change', function () {
+        if (busy) return; busy = true;
+        boxes[1 - i].checked = !b.checked;
+        boxes[1 - i].dispatchEvent(new Event('change')); busy = false;
+      });
+    });
+  })();
+</script>
+</body>
+</html>

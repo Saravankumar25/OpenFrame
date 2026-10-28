@@ -4,23 +4,23 @@
   0  150 Heading        INT. HOUSE - DAY
   0  760 SceneNumber    1
   2  150 Action         Scene 1 happens here.
-  4   90 SceneNumber    2
-  4  150 Heading        EXT. ROAD - DAY
-  4  760 SceneNumber    2
-  6  150 Action         Scene 2 happens here.
-  8   80 SceneNumber    2A
-  8  150 Heading        INT. CAR - DAY
-  8  760 SceneNumber    2A
- 10  150 Action         Scene 2A happens here.
- 12   90 SceneNumber    3
- 12  150 Heading        EXT. TEMPLE - NIGHT
- 12  760 SceneNumber    3
- 14  150 Action         Scene 3 happens here.
- 16   90 SceneNumber    4
- 16  150 Heading        INT. HOUSE - NIGHT
- 16  760 SceneNumber    4
- 18  150 Action         Scene 4 happens here.
- 20   90 SceneNumber    5
- 20  150 Heading        OMITTED
- 20  760 SceneNumber    5
-pdf-sha256 37bea39ce9fc676d3b9274b5394ff08904e1031ae1474f9e585952e605e6f6da
+  5   90 SceneNumber    2
+  5  150 Heading        EXT. ROAD - DAY
+  5  760 SceneNumber    2
+  7  150 Action         Scene 2 happens here.
+ 10   80 SceneNumber    2A
+ 10  150 Heading        INT. CAR - DAY
+ 10  760 SceneNumber    2A
+ 12  150 Action         Scene 2A happens here.
+ 15   90 SceneNumber    3
+ 15  150 Heading        EXT. TEMPLE - NIGHT
+ 15  760 SceneNumber    3
+ 17  150 Action         Scene 3 happens here.
+ 20   90 SceneNumber    4
+ 20  150 Heading        INT. HOUSE - NIGHT
+ 20  760 SceneNumber    4
+ 22  150 Action         Scene 4 happens here.
+ 25   90 SceneNumber    5
+ 25  150 Heading        OMITTED
+ 25  760 SceneNumber    5
+pdf-sha256 933c439bf7d363cdd23549d3493b419ffd463474c39310d36a0b3f80af9039b8

@@ -5,8 +5,6 @@
 //
 // Output goes to release-out/ (git-ignored): OpenFrame-<n>.exe (the next number; the highest is the latest), a .sha256,
 // a .json record with the version and commit, and two SBOMs.
-// The team password comes from OPENFRAME_TEAM_PASSWORD or the Windows user variable of the same name.
-// It is passed only to the child builds and scans, and is never printed or written.
 
 import { spawnSync, execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -36,22 +34,11 @@ function run(command, env, what) {
 const dirty = out("git", ["status", "--porcelain"]) !== "";
 if (dirty && !allowDirty) fail("the working tree has changes. Commit them, or pass --allow-dirty (the record is marked dirty).");
 
-// 2. Team password, never printed.
-let password = process.env.OPENFRAME_TEAM_PASSWORD ?? "";
-if (!password) {
-  try {
-    password = out("powershell", ["-NoProfile", "-Command", "[Environment]::GetEnvironmentVariable('OPENFRAME_TEAM_PASSWORD','User')"]);
-  } catch {
-    password = "";
-  }
-}
-if (password.length < 8) fail("the team password is missing or shorter than 8 characters. Set OPENFRAME_TEAM_PASSWORD (ADR-0030).");
-
-// 3. Build environment: the shipped build uses Hugging Face and the real folders.
-const env = { ...process.env, OPENFRAME_TEAM_PASSWORD: password }; // secret-scan: allow (a variable, not a literal)
+// 2. Build environment: the shipped build uses Hugging Face and the real folders.
+const env = { ...process.env };
 for (const k of ["OPENFRAME_TEST_MODEL_SOURCE", "OPENFRAME_TEST_BUILD", "OPENFRAME_DISTRIBUTION", "OPENFRAME_DATA_ROOT"]) delete env[k];
 
-// 4. Build.
+// 3. Build.
 prepare();
 const runner = join(ROOT, "scripts", "cargo-queued.cmd");
 run(
@@ -60,7 +47,7 @@ run(
   "the Tauri build",
 );
 
-// 5. Find and copy the installer.
+// 4. Find and copy the installer.
 const nsisDir = join(RELEASE_DIR, "bundle", "nsis");
 const found = existsSync(nsisDir)
   ? readdirSync(nsisDir).filter((f) => f.endsWith(".exe")).map((f) => join(nsisDir, f)).sort((a, b) => statSync(b).mtimeMs - statSync(a).mtimeMs)
@@ -75,7 +62,7 @@ const name = `OpenFrame-${Math.max(0, ...built) + 1}`;
 const installer = join(OUT_DIR, `${name}.exe`);
 copyFileSync(found[0], installer);
 
-// 6. Hash and record.
+// 5. Hash and record.
 const hash = sha256(installer);
 writeFileSync(`${installer}.sha256`, `${hash}  ${name}.exe\n`);
 const appExe = join(RELEASE_DIR, "openframe-desktop.exe");
@@ -94,7 +81,7 @@ const record = {
 };
 writeFileSync(join(OUT_DIR, `${name}.json`), `${JSON.stringify(record, null, 2)}\n`);
 
-// 7. SBOMs.
+// 6. SBOMs.
 const manifestDir = join(ROOT, "apps", "desktop", "src-tauri");
 run(
   `cargo cyclonedx --manifest-path "${join(manifestDir, "Cargo.toml")}" --format json --all-features --target x86_64-pc-windows-msvc --override-filename openframe-desktop.rust`,
@@ -111,7 +98,7 @@ const npmSbom = spawnSync("npm sbom --sbom-format cyclonedx --omit dev --workspa
 if (npmSbom.status !== 0) fail("the npm SBOM failed.");
 writeFileSync(join(OUT_DIR, `${name}.npm.cdx.json`), npmSbom.stdout);
 
-// 8. Scans. scan-installer reads the password from its own environment.
+// 7. Scans.
 run(`node scripts/check-binary.mjs "${appExe}"`, env, "the binary hardening check");
 run(`node scripts/scan-installer.mjs "${installer}" "${appExe}" "${join(RELEASE_DIR, "ai")}"`, env, "the installer scan");
 

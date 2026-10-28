@@ -2,7 +2,7 @@
 
 - **Status:** Accepted 2026-10-15 (owner, in chat).
 - **Date:** 2026-10-15
-- **Amends:** [ADR-0025](ADR-0025-offline-ai-bundled-in-every-package.md) and the owner decision "AI engine build: CPU
+- **Amends:** [ADR-0025](../history/adr/ADR-0025-offline-ai-bundled-in-every-package.md) and the owner decision "AI engine build: CPU
   build only for the first release" (both already historical). The processor build stays as the fallback.
 - **Related:** [ADR-0026](ADR-0026-offline-ai-download-after-install.md) (the runtime ships in the package),
   [ADR-0028](ADR-0028-ai-quality-program-and-harness.md), `docs/specs/OpenFrame_Local_AI_Runtime_Model_Management_Specification.md`

@@ -373,6 +373,18 @@ extension ProjectNav {
             for key in ["screenplayId", "draftId", "sceneId"] { if let v = params[key]?.stringValue { info[key] = v } }
             if !info.isEmpty { NotificationCenter.default.post(name: .openFrameShowScreenplayTarget, object: nil, userInfo: info) }
         }
+        if ws == .story {
+            let story = storyTab(loc)
+            if story != .page { ProjectIntents.shared.fire(story.showIntent) }
+        }
         show(ws, tab: tab)
+    }
+
+    /// The Story tab a place names, as Windows reads it: its `sub` when that is a tab, else the
+    /// tab its ids point to (a card or act opens the Beat Board, a character the Characters tab).
+    static func storyTab(_ loc: [String: JSONValue]) -> StoryTab {
+        if let sub = loc["sub"]?.stringValue, let named = StoryTab(rawValue: sub) { return named }
+        let params: [String: JSONValue] = { if case .object(let o) = loc["params"] ?? .null { return o } else { return loc } }()
+        return StoryTab.initial(params: params.compactMapValues { $0.stringValue })
     }
 }

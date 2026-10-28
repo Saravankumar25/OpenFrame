@@ -8,15 +8,19 @@ from inside `mac/`.
 
 | Path | What it is |
 |---|---|
-| `OpenFrame-Studio-<version>-internal-<commit>.dmg` | The internal disk image: Apple silicon, macOS 14 or later, team password gate, ad hoc signed with the hardened runtime, not notarised. |
-| `*.sha256`, `*-sbom.json`, `*-manifest.txt` | SHA-256 of the image, the software bill of materials (CycloneDX), and the file list with hashes. |
-| [`../MacHTML/index.html`](../MacHTML/index.html) | Every screen of the Mac app as an HTML page, in the default theme in Light and Dark (a switch on every page). |
+| `OpenFrame-5.dmg` | The internal disk image, build 183 (version 0.1.0), built on 2026-10-28: Apple silicon, macOS 14 or later, opens without a password (ADR-0039), ad hoc signed with the hardened runtime, not notarised. The offline AI models download after install (ADR-0026). |
+| `OpenFrame-5.dmg.sha256` | SHA-256 of the image. |
+| `OpenFrame-5-sbom.json` | Software bill of materials (CycloneDX 1.5) of the app inside the image. |
+| [`../MacHTML/index.html`](../MacHTML/index.html) | Every screen of the Mac app as an HTML page, in the Screening Room theme in Light and Dark. |
+
+The image was built before three later fixes on the same day (budget row icons, the Global Idea Vault Done button, the
+Story page placeholder). They are in the code of `mac/` and come with the next image.
 
 ## Install it (team)
 
-Read [the Mac install note](../docs/testing/pilot-kit/mac-install.md). In short: check the SHA-256, open the disk image, drag the app to
-Applications, open it once with Control-click > Open (or System Settings > Privacy & Security > Open Anyway), and enter
-the team password.
+Read [the Mac install note](../docs/testing/pilot-kit/mac-install.md). In short: check the SHA-256
+(`shasum -a 256 OpenFrame-5.dmg`), open the disk image, drag the app to Applications, and open it once with
+Control-click > Open (or System Settings > Privacy & Security > Open Anyway).
 
 ## Where the code is
 
@@ -37,7 +41,7 @@ the team password.
 ```bash
 apps/macos/scripts/build-core.sh debug
 apps/macos/scripts/test.sh
-OPENFRAME_TEAM_PASSWORD=<team password> apps/macos/scripts/build-release-app.sh
+apps/macos/scripts/build-release-app.sh
 apps/macos/scripts/build-dmg.sh
 ```
 

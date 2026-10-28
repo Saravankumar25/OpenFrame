@@ -109,13 +109,14 @@ struct CSRig {
         return e
     }
 
-    func checkPDF(_ file: String) throws {
+    /// The file is a PDF, with the brand line or (Sides, owner decision 2026-10-27) without it.
+    func checkPDF(_ file: String, brand: Bool = true) throws {
         let p = path(file)
         #expect(FileManager.default.fileExists(atPath: p), "\(file) was not written")
         let data = try Data(contentsOf: URL(fileURLWithPath: p))
         #expect(String(decoding: data.prefix(5), as: UTF8.self) == "%PDF-", "\(file) is not a PDF")
-        #expect(String(decoding: data, as: UTF8.self).contains(Self.brand) || String(data: data, encoding: .isoLatin1)?.contains(Self.brand) == true,
-                "\(file) has no OpenFrame brand line")
+        let has = String(decoding: data, as: UTF8.self).contains(Self.brand) || String(data: data, encoding: .isoLatin1)?.contains(Self.brand) == true
+        #expect(has == brand, "\(file) \(brand ? "has no" : "carries the") OpenFrame brand line")
     }
 
     /// Drives an export sheet the way the Save panel does: the path is given, the core writes.
@@ -166,7 +167,7 @@ struct CallSheetScenarioTests {
         let editor = try await r.createSheet()
         let d = try #require(editor.detail)
         let sections = d.defaultSections.map { $0.uppercased() }
-        for s in ["PRODUCTION HEADER", "DAY AND TIMES", "LOCATIONS", "SCENE SCHEDULE", "TALENT", "PRACTICAL NOTES"] {
+        for s in ["DAY AND TIMES", "PRODUCTION", "LOCATIONS", "SCENE SCHEDULE", "TALENT / CAST", "PRACTICAL / SAFETY INFORMATION"] {
             #expect(sections.contains(s), "default section \(s) is missing")
         }
         #expect(!editor.isShown("weather"), "an optional section shows before it is added")
@@ -257,14 +258,14 @@ struct CallSheetScenarioTests {
         #expect(made.document.optional.crew != nil, "the template's Crew section is missing")
         #expect(r.quiet)
 
-        // Sides, a report and the visual planning exports carry the brand line.
+        // Sides are unbranded; a report and the visual planning exports carry the brand line.
         await r.hub.sides.reload()
         r.hub.sides.pickDay(r.dayId)
         r.hub.sides.cover = true
         #expect(r.hub.sides.ready)
         r.hub.sides.exportPDF()
         try await r.runExport(r.hub.exportModel, to: "sides.pdf")
-        try r.checkPDF("sides.pdf")
+        try r.checkPDF("sides.pdf", brand: false)
         r.hub.reports.choose("scene")
         r.hub.reports.exportReport()
         let rep = try await r.runExport(r.hub.exportModel, to: "scene-report.pdf")
@@ -928,7 +929,8 @@ struct SidesReportsDailyTests {
         #expect(r.quiet)
     }
 
-    /// Export on the Daily View writes that day as its own document (owner request 2026-10-20).
+    /// Export on the Daily View writes that day as its own document named "Shoot Day N - Daily View"
+    /// (Windows export.test.tsx), as PDF or plain text, with no schedule scopes.
     @Test func theDailyViewExportsTheShownDayAsItsOwnDocument() async throws {
         let r = try await planned()
         defer { r.close() }
@@ -939,14 +941,21 @@ struct SidesReportsDailyTests {
         r.hub.exportDaily(dayId: d.id, label: d.label)
         let e = try #require(r.hub.exportModel)
         #expect(e.title == "Export Daily View")
-        #expect(e.suggestedName == "\(d.label) - Daily view.pdf")
-        #expect(e.formats.map(\.value) == ["pdf", "csv", "xlsx"])
-        #expect(await e.export(to: r.path("daily.pdf")))
-        #expect(e.result?.document == "\(d.label) - Daily view")
+        #expect(e.documentName == "\(d.label) - Daily View")
+        #expect(e.source == "Source: \(d.label) - Daily View")
+        #expect(e.suggestedName == "\(d.label) - Daily View.pdf")
+        #expect(e.formats.map(\.value) == ["pdf", "txt"])
+        #expect(e.formats.map(\.label) == ["PDF", "Plain text"])
+        #expect(e.options.isEmpty, "the Daily View has no scope choices")
+        #expect(e.note == "Private notes excluded. The document shows what the Daily View shows; the schedule is not changed.")
+        #expect(await e.export(to: r.path("daily.pdf")), "export failed: \(e.error ?? "")")
+        #expect(e.result?.document == "\(d.label) - Daily View")
         try r.checkPDF("daily.pdf")
-        e.format = "csv"
-        #expect(await e.export(to: r.path("daily.csv")))
-        #expect(FileManager.default.fileExists(atPath: r.path("daily.csv")))
+        e.format = "txt"
+        #expect(e.suggestedName == "\(d.label) - Daily View.txt")
+        #expect(await e.export(to: r.path("daily.txt")), "export failed: \(e.error ?? "")")
+        let text = try String(contentsOfFile: r.path("daily.txt"), encoding: .utf8)
+        #expect(text.contains(d.label), "the text file does not name the day")
     }
 
     @Test func statusWordsFormattingAndMarkers() {

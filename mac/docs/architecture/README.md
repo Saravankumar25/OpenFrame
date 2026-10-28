@@ -1,7 +1,7 @@
 # Architecture in one page
 
-> Written 2026-10-09 from reading the code; updated 2026-10-15 for the two-shell decision ([ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md)). For the full explanation in simple language, with examples, see Part D of the
-> [retrospection and audit report](../reports/2026-10-09-project-retrospection-and-audit.md). The detailed contracts are the
+> Written 2026-10-09 from reading the code; updated 2026-10-15 for the two-shell decision ([ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md)). The long explanation in simple language, as it stood on 2026-10-09 (history, not kept current), is Part D of the
+> [retrospection and audit report](../history/reports/2026-10-09-project-retrospection-and-audit.md). The detailed contracts are the
 > engineering documents listed at the bottom. This page is the short map to keep current when the structure changes.
 
 ## 1. The layers
@@ -45,8 +45,8 @@
 The diagram shows the Windows shell. On the Mac the top two boxes are replaced by a SwiftUI application ([ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md)); everything below the single door is shared.
 
 Other crates: `openframe-domain` (shared types, errors, roles), `openframe-security` (path confinement, archive limits,
-redaction), `openframe-platform` (everything that differs between Windows and macOS), `openframe-entitlement` (trial,
-licence and team password), `openframe-project-format` (folder layout and the single-writer lock),
+redaction), `openframe-platform` (everything that differs between Windows and macOS), `openframe-entitlement` (trial
+and licence; the team password gate was removed on 2026-10-27), `openframe-project-format` (folder layout and the single-writer lock),
 `openframe-test-support` (test helpers). `services/licence-server` is a separate small server for the Mac store channel.
 
 ## 2. What happens when a person types a letter

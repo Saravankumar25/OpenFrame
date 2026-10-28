@@ -220,6 +220,10 @@ fn assert_locked(core: &AppCore, path: &str) {
             "schedule.export_dood",
             json!({ "format": "pdf", "path": "C:/never.pdf" }),
         ),
+        (
+            "schedule.export_daily_view",
+            json!({ "format": "pdf", "path": "C:/never.pdf" }),
+        ),
         // Call sheets, budget, templates, samples and exports (area 15).
         (
             "callsheets.add_section",
@@ -368,11 +372,6 @@ fn plat_009_the_microsoft_store_trial_over_locks_every_project_operation_until_b
         json!({ "kind": "locked" })
     );
     assert_locked(&core, &path);
-    // The window asks about the team password before anything else on every launch: a store
-    // package answers "not needed" under the lock too, so the lock screen is what shows.
-    let gate = call(&core, "team_gate.status", json!({}));
-    assert_eq!(gate["required"], false, "{gate}");
-    assert_eq!(gate["unlocked"], true, "{gate}");
 
     // The Store dialog is closed without buying: still locked, no failure shown.
     let r = call(&core, "entitlement.buy", json!({}));
@@ -685,11 +684,6 @@ fn plat_014_a_mac_trial_that_ended_locks_open_edit_and_export_and_a_restore_unlo
             json!({ "channel": "macAppStore", "state": { "state": state } }),
         );
         assert_locked(&core, &path);
-        // The first question of every launch still has an answer, so the lock screen shows.
-        assert_eq!(
-            call(&core, "team_gate.status", json!({}))["required"],
-            false
-        );
         // The Microsoft Store locks the same way (ADR-0023); the internal build never does.
         call(
             &core,

@@ -45,9 +45,6 @@ public struct CoreStartOptions: Sendable {
     /// `Contents/Resources/ai` inside the app bundle.
     public var aiBundleDir: URL?
     public var writeLogs: Bool
-    /// The password screen tests' hash. Honoured by the core only in a debug build on a test
-    /// folder (ADR-0031); ignored everywhere else.
-    public var testTeamPasswordHash: String?
     /// The Mac App Store build's StoreKit 2 object. The core uses it in the store channel only;
     /// the internal disk image build ignores it.
     public var storeKit: (any StoreKitCallbacks)?
@@ -56,6 +53,12 @@ public struct CoreStartOptions: Sendable {
     /// The store screen tests: run as the store channel with this licence response public key
     /// (64 hex characters). Honoured by the core only in a debug build on a test folder.
     public var testStoreResponseKeyHex: String?
+    /// The first-start library setup tests: the test folder starts like a new computer. Honoured
+    /// by the core only in a debug build on a test folder.
+    public var testLibrarySetup = false
+    /// Temperature 0 and a fixed seed for the Offline AI in the automated tests. Honoured by the
+    /// core only in a debug build on a test folder.
+    public var testAIDeterministic = false
 
     public init(appVersion: String, isolatedDataRoot: URL? = nil, aiBundleDir: URL? = nil, writeLogs: Bool = true) {
         self.appVersion = appVersion
@@ -128,8 +131,9 @@ public final class Core: CoreInvoking, @unchecked Sendable {
             isolatedDataRoot: options.isolatedDataRoot?.path,
             aiBundleDir: options.aiBundleDir?.path,
             writeLogs: options.writeLogs,
-            testTeamPasswordHash: options.testTeamPasswordHash,
-            testStoreResponseKeyHex: options.testStoreResponseKeyHex
+            testStoreResponseKeyHex: options.testStoreResponseKeyHex,
+            testLibrarySetup: options.testLibrarySetup,
+            testAiDeterministic: options.testAIDeterministic
         )
         return try await withCheckedThrowingContinuation { continuation in
             DispatchQueue.global(qos: .userInitiated).async {
@@ -202,7 +206,6 @@ public final class Core: CoreInvoking, @unchecked Sendable {
     }
 
     public static var version: String { coreVersion() }
-    public static var isTeamGateBuiltIn: Bool { teamGateBuiltIn() }
 
     private func run<T: Sendable>(_ body: @escaping @Sendable (CoreHandle) throws -> T) async throws -> T {
         let handle = self.handle

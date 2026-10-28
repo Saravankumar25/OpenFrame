@@ -72,54 +72,34 @@ export function StoryExportButton({ episodeId, selectedIds, ...t }: Trigger & { 
   );
 }
 
-// ------------------------------------------------------------------ Daily View
+// ------------------------------------------------------------------ Story page (free writing)
 
-/** The day shown on the Daily View, as a document of its own named after the day (owner request
- * 2026-10-20): "Shoot Day 4 - Daily view", with what the page shows. */
-export function DailyViewExportButton({ dayId, dayLabel, ...t }: Trigger & { dayId: string; dayLabel: string }) {
+const STORY_PAGE_FORMATS: ExportFormatOption[] = [
+  { value: "txt", label: "Plain text (.txt)" },
+  { value: "pdf", label: "PDF" },
+  { value: "docx", label: "Word (.docx)" },
+];
+
+/** Exports the Story page. `beforeOpen` stores the text typed so far; the file must hold it. */
+export function StoryPageExportButton({ beforeOpen, ...t }: Trigger & { beforeOpen?: () => Promise<boolean> }) {
   const d = useOpen();
-  const name = `${dayLabel} - Daily view`;
   return (
     <>
-      <TriggerButton {...t} onClick={d.show} />
-      <ExportDialog
-        open={d.open}
-        onClose={d.hide}
-        title="Export Daily View"
-        sub="Everything this page shows for the day: scenes in order, location, cast and call times, notes, breakdown items."
-        source={<>Source: <b>{dayLabel}</b></>}
-        documentName={name}
-        plainName
-        op="schedule.export_daily"
-        baseArgs={{ dayId }}
-        formats={[TABLE_FORMATS[0], { value: "xlsx", label: "Spreadsheet (XLSX)" }, { value: "csv", label: "CSV" }]}
-        note="Private notes excluded. Export creates a snapshot and does not change the schedule."
+      <TriggerButton
+        {...t}
+        onClick={() => {
+          void (beforeOpen ? beforeOpen() : Promise.resolve(true)).then((stored) => stored && d.show());
+        }}
       />
-    </>
-  );
-}
-
-// ------------------------------------------------------------------ Story page
-
-/** The free Story page (owner request 2026-10-20): the text as written, as TXT, PDF or DOCX. */
-export function StoryPageExportButton({ onBeforeOpen, ...t }: Trigger & { onBeforeOpen?: () => Promise<unknown> | void }) {
-  const d = useOpen();
-  return (
-    <>
-      <TriggerButton {...t} onClick={() => void Promise.resolve(onBeforeOpen?.()).then(d.show)} />
       <ExportDialog
         open={d.open}
         onClose={d.hide}
         title="Export Story"
         source={<>Source: <b>the Story page</b></>}
         documentName="Story"
-        op="story.export_page"
-        formats={[
-          { value: "txt", label: "Plain text (TXT)" },
-          { value: "pdf", label: "PDF" },
-          { value: "docx", label: "Word (DOCX)" },
-        ]}
-        note="Export creates a copy of the page; the page does not change."
+        op="story.page.export"
+        formats={STORY_PAGE_FORMATS}
+        note="Export creates a snapshot and does not change your project."
       />
     </>
   );
@@ -225,7 +205,10 @@ export function StoryboardExportButton({ current, boards, ...t }: Trigger & { cu
         op="storyboard.export_sheet"
         formats={PDF_ONLY}
         scopes={scopes}
-        options={[{ kind: "checkbox", key: "includeNotes", label: "Include shot notes", default: false }]}
+        options={[
+          { kind: "choice", key: "columns", label: "Panels per row", default: "2", numeric: true, options: [{ value: "2", label: "2 (recommended)" }, { value: "3", label: "3" }] },
+          { kind: "checkbox", key: "includeNotes", label: "Include shot notes", default: false },
+        ]}
       />
     </>
   );
@@ -284,6 +267,32 @@ export function ScheduleExportButton({ days, currentDayId, sourceLabel, ...t }: 
           { kind: "checkbox", key: "includeNotes", label: "Include scene notes", default: false },
         ]}
         note="Private notes excluded. Export is a snapshot of the schedule; the schedule is not changed."
+      />
+    </>
+  );
+}
+
+// ------------------------------------------------------------------ Daily View
+
+/** The Daily View document of the day on the screen: it prints what the page shows, so it has no
+ * scope choices. The document name is "Shoot Day N - Daily View". */
+export function DailyViewExportButton({ dayId, dayLabel, ...t }: Trigger & { dayId: string; dayLabel: string }) {
+  const d = useOpen();
+  const documentName = `${dayLabel} - Daily View`;
+  return (
+    <>
+      <TriggerButton {...t} onClick={d.show} />
+      <ExportDialog
+        open={d.open}
+        onClose={d.hide}
+        title="Export Daily View"
+        source={<>Source: <b>{documentName}</b></>}
+        documentName={documentName}
+        bare
+        op="schedule.export_daily_view"
+        baseArgs={{ dayId }}
+        formats={[{ value: "pdf", label: "PDF", hint: "printable" }, { value: "txt", label: "Plain text" }]}
+        note="Private notes excluded. The document shows what the Daily View shows; the schedule is not changed."
       />
     </>
   );

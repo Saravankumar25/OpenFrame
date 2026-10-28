@@ -103,7 +103,8 @@ fileprivate extension UI {
     func screenplayPopUp(_ label: String) async throws -> (Element, NSPopUpButtonCell) {
         let deadline = Date().addingTimeInterval(8)
         while Date() < deadline {
-            if let e = query(label: label).first(where: { $0.obj is NSPopUpButtonCell }), let c = e.obj as? NSPopUpButtonCell { return (e, c) }
+            // A Picker with a hidden label reads its label twice ("Paper, Paper").
+            if let e = (query(label: label) + query(label: "\(label), \(label)")).first(where: { $0.obj is NSPopUpButtonCell }), let c = e.obj as? NSPopUpButtonCell { return (e, c) }
             await idle(0.2)
         }
         throw DriverError("no pop-up button \(label)")
@@ -407,7 +408,7 @@ extension Scenarios {
         // The inspector: Scene Hub with a private note, comments with a reply, a resolved one, the Draft tab.
         tour("02-screenplay-panels", order: 2300) { ui, _ in
             // The inspector needs the room of the project sidebar on a 1280-point screen.
-            await ui.tryPress(id: "sidebar-toggle", wait: 3)
+            await ui.capHideSidebar()
             await ui.idle(0.8)
             await ui.step("scene hub details") {
                 try await ui.screenplayCaret("Did anyone hand in a kite?")
@@ -428,6 +429,8 @@ extension Scenarios {
                 await ui.idle(0.8)
                 await ui.screenplayShot("screenplay-private-note-saved", "Scene Hub with a private note", from: "screenplay-private-note-new", via: "private-note-save")
             }
+            // The note sits below the visible part of the inspector: scroll down to it first.
+            await ui.step("private note in sight") { try await ui.capScrollTo(id: "private-note-actions") }
             await ui.capMenu(id: "private-note-actions", name: "screenplay-private-note-actions", title: "Private note actions menu", area: "Screenplay", from: "screenplay-private-note-saved")
             await ui.step("private note editing") {
                 try await ui.capMenuButton(id: "private-note-actions", item: "Edit")
@@ -682,18 +685,19 @@ extension Scenarios {
             await ui.step("custom element form") {
                 try await ui.screenplayTools("Custom Elements")
                 _ = try await ui.wait(id: "custom-elements-sheet", timeout: 8)
-                try await ui.capAct(id: "custom-element-add")
-                _ = try await ui.wait(id: "custom-element-form", timeout: 8)
+                // The sheet's identifier covers the ids of its controls: find them by their labels.
+                try await ui.screenplayButton("Add custom element")
+                _ = try await ui.wait(label: "Name in Final Draft files", timeout: 8)
                 await ui.screenplayShot("screenplay-custom-element-form", "Custom Elements: a new element", from: "screenplay-tools-custom-elements", via: "custom-element-add")
                 try await ui.fill("Name", "Telephone")
                 await ui.screenplayPopUpShot("Looks", name: "screenplay-custom-element-looks", title: "Custom element: Looks menu", from: "screenplay-custom-element-form")
                 try await ui.screenplayPick("Looks", "Like Dialogue")
                 await ui.screenplayPopUpShot("Shortcut", name: "screenplay-custom-element-shortcut", title: "Custom element: Shortcut menu", from: "screenplay-custom-element-form")
                 try await ui.screenplayPick("Shortcut", "Command+Option+1")
-                try await ui.capAct(id: "custom-element-save")
+                try await ui.screenplayButton("Add")
                 try await ui.waitText("Added the custom element", timeout: 10)
                 await ui.screenplayShot("screenplay-custom-elements-one", "Custom Elements with one element", from: "screenplay-custom-element-form", via: "custom-element-save")
-                try await ui.capAct(id: "custom-elements-done")
+                try await ui.screenplayButton("Done")
                 await ui.idle(0.6)
             }
             await ui.step("element picker with custom") {

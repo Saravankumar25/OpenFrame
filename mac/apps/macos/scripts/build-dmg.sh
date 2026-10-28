@@ -40,7 +40,7 @@ OpenFrame Studio, internal team build
    damaged: the line above only removes the download mark from this one app. Check the SHA-256
    your owner sent first (shasum -a 256 <the .dmg file>) so you know the file is the right one.
 
-3. Open OpenFrame Studio from Applications and enter the team password.
+3. Open OpenFrame Studio from Applications.
 
 4. The offline AI is downloaded inside the app when you ask for it (Settings > Offline AI).
    Nothing else leaves this Mac.

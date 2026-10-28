@@ -1,6 +1,7 @@
 // The Board view: act columns side by side (scroll sideways), sequence groups, compact scene
 // cards, dashed beats, the hatched Parking Lot and the Unassigned area. Drag a card to move it;
-// every move calls the same `story.move_items` the Windows board calls.
+// every move calls the same `story.move_items` the Windows board calls. The Horizontal layout (a
+// view preference) stacks the same bands as full-width rows with cards flowing left to right.
 
 import SwiftUI
 import OpenFrameCore
@@ -16,25 +17,16 @@ struct StoryBoardView: View {
     private var zoom: Double { Double(zoomPercent) / 100 }
 
     var body: some View {
-        ScrollView(.horizontal) {
-            HStack(alignment: .top, spacing: 14) {
-                ForEach(board.acts, id: \.id) { act in
-                    if model.actHint == .some(act.id) { ActInsertionBar() }
-                    StoryActColumn(model: model, act: act, zoom: zoom, focus: $focus)
+        Group {
+            if model.boardLayout == .horizontal {
+                ScrollView(.vertical) {
+                    VStack(alignment: .leading, spacing: 14) { bands(rows: true) }.padding(16)
                 }
-                if model.actHint == .some(nil) { ActInsertionBar() }
-                if model.addingAct {
-                    NewActColumn(model: model, zoom: zoom)
-                } else {
-                    Button { model.addingAct = true } label: { Label("Add Act", systemImage: "plus") }
-                        .buttonStyle(.bordered)
-                        .controlSize(.large)
-                        .accessibilityIdentifier("story-add-act")
+            } else {
+                ScrollView(.horizontal) {
+                    HStack(alignment: .top, spacing: 14) { bands(rows: false) }.padding(16)
                 }
-                if !board.unassigned.isEmpty { StoryUnassignedColumn(model: model, board: board, zoom: zoom, focus: $focus) }
-                if parkingOpen { StoryParkingColumn(model: model, board: board, zoom: zoom, focus: $focus) }
             }
-            .padding(16)
         }
         .scrollIndicators(.automatic)
         .contentShape(Rectangle())
@@ -44,14 +36,79 @@ struct StoryBoardView: View {
         }
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Beat Board")
+        .accessibilityValue(model.boardLayout == .horizontal ? "Horizontal layout" : "Vertical layout")
         .accessibilityIdentifier("story-board")
+    }
+
+    @ViewBuilder private func bands(rows: Bool) -> some View {
+        ForEach(board.acts, id: \.id) { act in
+            if model.actHint == .some(act.id) { ActInsertionBar(rows: rows) }
+            StoryActColumn(model: model, act: act, zoom: zoom, rows: rows, focus: $focus)
+        }
+        if model.actHint == .some(nil) { ActInsertionBar(rows: rows) }
+        if model.addingAct {
+            NewActColumn(model: model, zoom: zoom)
+        } else {
+            Button { model.addingAct = true } label: { Label("Add Act", systemImage: "plus") }
+                .buttonStyle(.bordered)
+                .controlSize(.large)
+                .accessibilityIdentifier("story-add-act")
+        }
+        if !board.unassigned.isEmpty { StoryUnassignedColumn(model: model, board: board, zoom: zoom, rows: rows, focus: $focus) }
+        if parkingOpen { StoryParkingColumn(model: model, board: board, zoom: zoom, rows: rows, focus: $focus) }
     }
 }
 
+/// Where a dragged act will land: a bar between columns, or a line between rows.
 struct ActInsertionBar: View {
+    var rows = false
     @Environment(\.ofTheme) private var theme
     var body: some View {
-        Capsule().fill(theme["accent"]).frame(width: 3).frame(maxHeight: .infinity).accessibilityHidden(true)
+        if rows {
+            Capsule().fill(theme["accent"]).frame(height: 3).frame(maxWidth: .infinity).accessibilityHidden(true)
+        } else {
+            Capsule().fill(theme["accent"]).frame(width: 3).frame(maxHeight: .infinity).accessibilityHidden(true)
+        }
+    }
+}
+
+/// The items of a band in the Horizontal layout: left to right, wrapping onto the next line
+/// instead of scrolling sideways. A child wider than the line (a sequence group) is offered the
+/// whole line and wraps its own cards inside it.
+struct StoryRowFlow: Layout {
+    var spacing: CGFloat = 8
+
+    private func sizes(_ subviews: Subviews, width: CGFloat) -> [CGSize] {
+        subviews.map { v in
+            let ideal = v.sizeThatFits(.unspecified)
+            return ideal.width <= width ? ideal : v.sizeThatFits(ProposedViewSize(width: width, height: nil))
+        }
+    }
+
+    private func rows(_ sizes: [CGSize], width: CGFloat) -> (frames: [CGRect], size: CGSize) {
+        var x: CGFloat = 0, y: CGFloat = 0, rowH: CGFloat = 0, maxX: CGFloat = 0
+        var frames: [CGRect] = []
+        for s in sizes {
+            if x > 0, x + s.width > width { x = 0; y += rowH + spacing; rowH = 0 }
+            frames.append(CGRect(origin: CGPoint(x: x, y: y), size: s))
+            x += s.width + spacing
+            rowH = max(rowH, s.height)
+            maxX = max(maxX, x - spacing)
+        }
+        return (frames, CGSize(width: maxX, height: y + rowH))
+    }
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let width = proposal.width ?? .infinity
+        let r = rows(sizes(subviews, width: width), width: width)
+        return CGSize(width: min(width, r.size.width), height: r.size.height)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        let r = rows(sizes(subviews, width: bounds.width), width: bounds.width)
+        for (v, f) in zip(subviews, r.frames) {
+            v.place(at: CGPoint(x: bounds.minX + f.minX, y: bounds.minY + f.minY), proposal: ProposedViewSize(f.size))
+        }
     }
 }
 
@@ -80,6 +137,8 @@ struct StoryActColumn: View {
     @Bindable var model: StoryModel
     let act: StoryActDto
     let zoom: Double
+    /// A full-width row (Horizontal layout) instead of a column.
+    var rows = false
     var focus: StoryFocus
     @Environment(\.ofTheme) private var theme
     @State private var size = CGSize(width: 270, height: 400)
@@ -129,51 +188,75 @@ struct StoryActColumn: View {
                 Text(act.title).fontWeight(.semibold).padding(10).background(theme["surface2"], in: shape)
             }
             .contextMenu { StoryActMenu(model: model, act: act) }
-            .accessibilityAction(named: "Move Left") { Task { await model.stepAct(act.id, direction: -1) } }
-            .accessibilityAction(named: "Move Right") { Task { await model.stepAct(act.id, direction: 1) } }
+            .accessibilityAction(named: model.boardLayout.moveEarlier) { Task { await model.stepAct(act.id, direction: -1) } }
+            .accessibilityAction(named: model.boardLayout.moveLater) { Task { await model.stepAct(act.id, direction: 1) } }
 
             if !collapsed {
                 Divider()
-                ScrollView(.vertical) {
-                    LazyVStack(alignment: .leading, spacing: 6) {
-                        StoryItemList(model: model, container: .act(act.id), items: act.items, zoom: zoom, focus: focus)
-                        if model.addingSequenceIn == act.id {
-                            InlineField(initial: "", label: "Sequence name", placeholder: "Sequence name, e.g. Hero Introduction",
-                                        onCommit: { v in Task { await model.createSequence(in: act.id, title: v) } },
-                                        onCancel: { model.addingSequenceIn = nil })
-                                .padding(8)
-                                .background(theme["surface2"], in: RoundedRectangle(cornerRadius: 8, style: .continuous))
-                        }
-                        if act.items.isEmpty && model.addingSequenceIn != act.id {
-                            Text("Add a sequence or scene.").font(.caption).foregroundStyle(theme["muted"]).padding(.vertical, 4)
-                        }
-                        // The add row wraps inside a narrow column instead of spilling out (owner item 15).
-                        BDFlowLayout(spacing: 6) {
-                            Button { Task { await model.newCard(in: .act(act.id)) } } label: { Label("Scene", systemImage: "plus") }
-                                .accessibilityLabel("Add Scene")
-                            Button { model.addingSequenceIn = act.id } label: { Label("Sequence", systemImage: "plus") }
-                                .accessibilityLabel("Add Sequence")
-                            Button { Task { await model.newBeat(in: .act(act.id)) } } label: { Label("Beat", systemImage: "plus") }
-                                .accessibilityLabel("Add Beat")
-                        }
-                        .buttonStyle(.borderless).font(.caption).padding(.top, 2)
+                if rows {
+                    VStack(alignment: .leading, spacing: 6) { contents }.padding(10)
+                } else {
+                    ScrollView(.vertical) {
+                        LazyVStack(alignment: .leading, spacing: 6) { contents }.padding(10)
                     }
-                    .padding(10)
+                    .frame(maxHeight: .infinity)
                 }
-                .frame(maxHeight: .infinity)
             }
         }
-        .frame(width: 270 * zoom)
-        .frame(maxHeight: collapsed ? nil : .infinity, alignment: .top)
+        .frame(width: rows ? nil : 270 * zoom)
+        .frame(maxWidth: rows ? .infinity : nil, maxHeight: collapsed || rows ? nil : .infinity, alignment: .topLeading)
         .background(theme["surface2"].opacity(0.55), in: shape)
         .overlay(shape.strokeBorder(hinted ? theme["accent"] : theme["line"], style: StrokeStyle(lineWidth: hinted ? 2 : 1, dash: hinted ? [6, 3] : [])))
         .reading(size: $size)
-        .storyDrop(model, size: size, vertical: false) {
+        .storyDrop(model, size: size, vertical: model.boardLayout.actsAlongY) {
             model.dragging?.actId != nil ? .act(act.id) : .into(.act(act.id), atStart: false)
         }
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Act \(act.title)")
         .accessibilityIdentifier("story-act-\(act.id)")
+    }
+
+    @ViewBuilder private var contents: some View {
+        StoryBandItems(model: model, container: .act(act.id), items: act.items, zoom: zoom, rows: rows, focus: focus)
+        if model.addingSequenceIn == act.id {
+            InlineField(initial: "", label: "Sequence name", placeholder: "Sequence name, e.g. Hero Introduction",
+                        onCommit: { v in Task { await model.createSequence(in: act.id, title: v) } },
+                        onCancel: { model.addingSequenceIn = nil })
+                .padding(8)
+                .background(theme["surface2"], in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+        }
+        if act.items.isEmpty && model.addingSequenceIn != act.id {
+            Text("Add a sequence or scene.").font(.caption).foregroundStyle(theme["muted"]).padding(.vertical, 4)
+        }
+        // The add row wraps inside a narrow column instead of spilling out (owner item 15).
+        BDFlowLayout(spacing: 6) {
+            Button { Task { await model.newCard(in: .act(act.id)) } } label: { Label("Scene", systemImage: "plus") }
+                .accessibilityLabel("Add Scene")
+            Button { model.addingSequenceIn = act.id } label: { Label("Sequence", systemImage: "plus") }
+                .accessibilityLabel("Add Sequence")
+            Button { Task { await model.newBeat(in: .act(act.id)) } } label: { Label("Beat", systemImage: "plus") }
+                .accessibilityLabel("Add Beat")
+        }
+        .buttonStyle(.borderless).font(.caption).padding(.top, 2)
+    }
+}
+
+/// The items of an act, the Parking Lot or the Unassigned area: stacked in a column, or flowing
+/// left to right in a row.
+struct StoryBandItems: View {
+    @Bindable var model: StoryModel
+    let container: StoryContainerRef
+    let items: [StoryItem]
+    let zoom: Double
+    let rows: Bool
+    var focus: StoryFocus
+
+    var body: some View {
+        if rows {
+            StoryRowFlow(spacing: 8) { StoryItemList(model: model, container: container, items: items, zoom: zoom, focus: focus) }
+        } else {
+            StoryItemList(model: model, container: container, items: items, zoom: zoom, focus: focus)
+        }
     }
 }
 
@@ -190,8 +273,8 @@ struct StoryActMenu: View {
         Button("Add Sequence") { model.addingSequenceIn = act.id }
         Button("Add Scene") { Task { await model.newCard(in: .act(act.id)) } }
         Button("Add Beat") { Task { await model.newBeat(in: .act(act.id)) } }
-        Button("Move Left") { Task { await model.stepAct(act.id, direction: -1) } }.disabled(i <= 0)
-        Button("Move Right") { Task { await model.stepAct(act.id, direction: 1) } }.disabled(i >= ids.count - 1)
+        Button(model.boardLayout.moveEarlier) { Task { await model.stepAct(act.id, direction: -1) } }.disabled(i <= 0)
+        Button(model.boardLayout.moveLater) { Task { await model.stepAct(act.id, direction: 1) } }.disabled(i >= ids.count - 1)
         Divider()
         Button("Delete", role: .destructive) { Task { await model.requestDeleteAct(act.id) } }
     }
@@ -201,6 +284,7 @@ struct StoryParkingColumn: View {
     @Bindable var model: StoryModel
     let board: StoryBoardState
     let zoom: Double
+    var rows = false
     var focus: StoryFocus
     @Environment(\.ofTheme) private var theme
     @State private var size = CGSize(width: 270, height: 400)
@@ -218,27 +302,16 @@ struct StoryParkingColumn: View {
             .font(.system(size: 14 * zoom))
             .padding(.horizontal, 12).padding(.vertical, 10)
             Divider()
-            ScrollView(.vertical) {
-                LazyVStack(alignment: .leading, spacing: 6) {
-                    StoryItemList(model: model, container: .parking, items: board.parking, zoom: zoom, focus: focus)
-                    if board.parking.isEmpty {
-                        Text("Drag cards and beats here to keep them out of the story without deleting them.")
-                            .font(.caption).foregroundStyle(theme["muted"]).padding(.vertical, 4)
-                    }
-                    // The add row wraps inside a narrow column instead of spilling out (owner item 15).
-                    BDFlowLayout(spacing: 6) {
-                        Button { Task { await model.newBeat(in: .parking) } } label: { Label("Beat", systemImage: "plus") }
-                            .accessibilityLabel("Add Beat to the Parking Lot")
-                        Button { Task { await model.newCard(in: .parking) } } label: { Label("Scene", systemImage: "plus") }
-                            .accessibilityLabel("Add Scene to the Parking Lot")
-                    }
-                    .buttonStyle(.borderless).font(.caption)
+            if rows {
+                VStack(alignment: .leading, spacing: 6) { parkingContents }.padding(10)
+            } else {
+                ScrollView(.vertical) {
+                    LazyVStack(alignment: .leading, spacing: 6) { parkingContents }.padding(10)
                 }
-                .padding(10)
             }
         }
-        .frame(width: 270 * zoom)
-        .frame(maxHeight: .infinity, alignment: .top)
+        .frame(width: rows ? nil : 270 * zoom)
+        .frame(maxWidth: rows ? .infinity : nil, maxHeight: rows ? nil : .infinity, alignment: .topLeading)
         .background(theme["note-bg"].opacity(0.5), in: shape)
         .overlay(shape.strokeBorder(hinted ? theme["accent"] : theme["line2"], style: StrokeStyle(lineWidth: hinted ? 2 : 1, dash: [6, 4])))
         .reading(size: $size)
@@ -247,12 +320,29 @@ struct StoryParkingColumn: View {
         .accessibilityLabel("Parking Lot")
         .accessibilityIdentifier("story-parking")
     }
+
+    @ViewBuilder private var parkingContents: some View {
+        StoryBandItems(model: model, container: .parking, items: board.parking, zoom: zoom, rows: rows, focus: focus)
+        if board.parking.isEmpty {
+            Text("Drag cards and beats here to keep them out of the story without deleting them.")
+                .font(.caption).foregroundStyle(theme["muted"]).padding(.vertical, 4)
+        }
+        // The add row wraps inside a narrow column instead of spilling out (owner item 15).
+        BDFlowLayout(spacing: 6) {
+            Button { Task { await model.newBeat(in: .parking) } } label: { Label("Beat", systemImage: "plus") }
+                .accessibilityLabel("Add Beat to the Parking Lot")
+            Button { Task { await model.newCard(in: .parking) } } label: { Label("Scene", systemImage: "plus") }
+                .accessibilityLabel("Add Scene to the Parking Lot")
+        }
+        .buttonStyle(.borderless).font(.caption)
+    }
 }
 
 struct StoryUnassignedColumn: View {
     @Bindable var model: StoryModel
     let board: StoryBoardState
     let zoom: Double
+    var rows = false
     var focus: StoryFocus
     @Environment(\.ofTheme) private var theme
 
@@ -269,15 +359,20 @@ struct StoryUnassignedColumn: View {
             Text("Restored items whose Act or Sequence no longer exists. Drag them back into the story.")
                 .font(.caption).foregroundStyle(theme["muted"]).padding(.horizontal, 12).padding(.bottom, 6)
             Divider()
-            ScrollView(.vertical) {
-                LazyVStack(alignment: .leading, spacing: 6) {
-                    StoryItemList(model: model, container: .unassigned, items: board.unassigned, zoom: zoom, focus: focus)
+            if rows {
+                StoryBandItems(model: model, container: .unassigned, items: board.unassigned, zoom: zoom, rows: true, focus: focus)
+                    .padding(10)
+            } else {
+                ScrollView(.vertical) {
+                    LazyVStack(alignment: .leading, spacing: 6) {
+                        StoryItemList(model: model, container: .unassigned, items: board.unassigned, zoom: zoom, focus: focus)
+                    }
+                    .padding(10)
                 }
-                .padding(10)
             }
         }
-        .frame(width: 270 * zoom)
-        .frame(maxHeight: .infinity, alignment: .top)
+        .frame(width: rows ? nil : 270 * zoom)
+        .frame(maxWidth: rows ? .infinity : nil, maxHeight: rows ? nil : .infinity, alignment: .topLeading)
         .background(theme["yellow-soft"].opacity(0.5), in: shape)
         .overlay(shape.strokeBorder(theme["yellow-line"]))
         .accessibilityElement(children: .contain)

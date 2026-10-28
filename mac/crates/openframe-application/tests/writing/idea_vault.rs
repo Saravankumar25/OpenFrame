@@ -1374,3 +1374,96 @@ fn undo_redo_of_create_and_pin_restore_same_identity() {
     assert_eq!(all(&env, "project")[0]["id"], n["id"]);
     assert_eq!(search(&env, "project", "jacket")[0]["id"], n["id"]);
 }
+
+// ------------------------------------------------- copies left behind by failed adds
+
+/// Every file under the Global Idea Vault's assets folder.
+fn vault_asset_files(env: &TestEnv) -> Vec<std::path::PathBuf> {
+    let assets = env.core.vault_dir().join("assets");
+    let mut out = Vec::new();
+    for shard in std::fs::read_dir(&assets).into_iter().flatten().flatten() {
+        for f in std::fs::read_dir(shard.path())
+            .into_iter()
+            .flatten()
+            .flatten()
+        {
+            out.push(f.path());
+        }
+    }
+    out
+}
+
+#[test]
+fn a_file_that_fails_after_its_copy_leaves_no_copy_behind() {
+    let env = TestEnv::new();
+    note(&env, "global", "Opens the vault.");
+    // Make the item insert fail for one file only, after its copy was made.
+    env.core
+        .global_store()
+        .unwrap()
+        .with_writer(|c| {
+            c.execute_batch(
+                "CREATE TEMP TRIGGER test_refuse_bad BEFORE INSERT ON vault_item
+                 WHEN (SELECT original_name FROM asset WHERE id = NEW.asset_id) = 'bad.png'
+                 BEGIN SELECT RAISE(ABORT, 'refused for the test'); END;",
+            )?;
+            Ok(())
+        })
+        .unwrap();
+    let good = env.write_file("good.png", &png_bytes());
+    let bad = env.write_file("bad.png", &png_bytes());
+    let r = env.ok(
+        "vault.add_files",
+        json!({ "store": "global", "paths": [good, bad] }),
+    );
+    assert_eq!(r["added"].as_array().unwrap().len(), 1);
+    assert_eq!(r["failed"][0]["name"], "bad.png");
+    assert_eq!(
+        vault_asset_files(&env).len(),
+        1,
+        "only the added file's copy is in the vault folder"
+    );
+    assert_eq!(
+        env.ok("vault.orphan_files", json!({ "store": "global" }))["count"],
+        0
+    );
+}
+
+#[cfg(debug_assertions)]
+#[test]
+fn an_add_that_fails_at_commit_removes_its_copies() {
+    use openframe_application::store::fault::{self, CommitFault};
+    let env = TestEnv::new();
+    note(&env, "global", "Opens the vault.");
+    let a = env.write_file("a.png", &png_bytes());
+    let b = env.write_file("b.pdf", b"%PDF");
+    fault::fail_commits(Some(CommitFault::DiskFull));
+    let e = env
+        .call(
+            "vault.add_files",
+            json!({ "store": "global", "paths": [a, b] }),
+        )
+        .unwrap_err();
+    fault::fail_commits(None);
+    assert_eq!(e.code_str(), "storage.disk_full");
+    assert!(vault_asset_files(&env).is_empty(), "no copy is left behind");
+    assert_eq!(all(&env, "global").len(), 1);
+}
+
+#[test]
+fn an_undone_add_is_not_reported_as_a_lost_file() {
+    let env = TestEnv::new();
+    let p = env.write_file("a.png", &png_bytes());
+    env.ok(
+        "vault.add_files",
+        json!({ "store": "global", "paths": [p] }),
+    );
+    env.ok("history.undo", json!({ "store": "global" }));
+    assert_eq!(vault_asset_files(&env).len(), 1, "kept for redo");
+    assert_eq!(
+        env.ok("vault.orphan_files", json!({ "store": "global" }))["count"],
+        0
+    );
+    env.ok("history.redo", json!({ "store": "global" }));
+    assert_eq!(all(&env, "global").len(), 1);
+}

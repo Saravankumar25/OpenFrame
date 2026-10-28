@@ -397,9 +397,18 @@ pub fn cast_and_crew(ctx: &ToolCtx<'_>, a: &Value) -> AppResult<ToolOutput> {
             format!(" · {}", clip(&av::summary(&w), 160))
         })
     };
+    // Same rule as cast.list and crew.list: Owner and Editor see the contact, other roles are told it is hidden.
+    let may_see = crate::modules::production::privacy::may_see_contacts(ctx.actor);
+    let contact_text = |contact: &str| -> String {
+        match (contact.trim(), may_see) {
+            ("", _) => String::new(),
+            (v, true) => format!(" · contact: {}", clip(v, 120)),
+            (_, false) => " · contact: hidden for your role".to_string(),
+        }
+    };
     if which != "crew" {
         let mut st = c.prepare(
-            "SELECT m.person_name, COALESCE(ch.name, m.character_name, ''), m.is_primary, COALESCE(m.availability_notes,''), m.archived, m.id
+            "SELECT m.person_name, COALESCE(ch.name, m.character_name, ''), m.is_primary, COALESCE(m.availability_notes,''), m.archived, m.id, COALESCE(m.contact,'')
              FROM cast_member m LEFT JOIN story_character ch ON ch.id = m.character_id AND ch.deleted_at IS NULL
              WHERE m.deleted_at IS NULL AND (?1 = 1 OR m.archived = 0) ORDER BY 2, m.person_name LIMIT 150",
         )?;
@@ -411,15 +420,16 @@ pub fn cast_and_crew(ctx: &ToolCtx<'_>, a: &Value) -> AppResult<ToolOutput> {
                 r.get::<_, String>(3)?,
                 r.get::<_, bool>(4)?,
                 r.get::<_, String>(5)?,
+                r.get::<_, String>(6)?,
             ))
         })? {
-            let (p, ch, primary, avail, arch, id) = row?;
+            let (p, ch, primary, avail, arch, id, contact) = row?;
             cast_n += 1;
             let windows = windows_text(AvailabilityOwner::Cast, &id)?;
             o.items.push(item(
                 format!("Cast: {p}"),
                 Some(format!(
-                    "{}{}{}{windows}{}",
+                    "{}{}{}{windows}{}{}",
                     if ch.is_empty() {
                         "no character".to_string()
                     } else {
@@ -431,6 +441,7 @@ pub fn cast_and_crew(ctx: &ToolCtx<'_>, a: &Value) -> AppResult<ToolOutput> {
                     } else {
                         format!(" · {}", clip(&avail, 100))
                     },
+                    contact_text(&contact),
                     if arch { " · archived" } else { "" }
                 )),
                 Some(NavTarget::to("production").with_sub("cast-crew")),
@@ -439,7 +450,7 @@ pub fn cast_and_crew(ctx: &ToolCtx<'_>, a: &Value) -> AppResult<ToolOutput> {
     }
     if which != "cast" {
         let mut st = c.prepare(
-            "SELECT person_name, role, COALESCE(department,''), archived, id, COALESCE(availability_notes,'') FROM crew_member
+            "SELECT person_name, role, COALESCE(department,''), archived, id, COALESCE(availability_notes,''), COALESCE(contact,'') FROM crew_member
              WHERE deleted_at IS NULL AND (?1 = 1 OR archived = 0) ORDER BY department, role, person_name LIMIT 150",
         )?;
         for row in st.query_map([archived], |r| {
@@ -450,15 +461,16 @@ pub fn cast_and_crew(ctx: &ToolCtx<'_>, a: &Value) -> AppResult<ToolOutput> {
                 r.get::<_, bool>(3)?,
                 r.get::<_, String>(4)?,
                 r.get::<_, String>(5)?,
+                r.get::<_, String>(6)?,
             ))
         })? {
-            let (p, role, dept, arch, id, avail) = row?;
+            let (p, role, dept, arch, id, avail, contact) = row?;
             crew_n += 1;
             let windows = windows_text(AvailabilityOwner::Crew, &id)?;
             o.items.push(item(
                 format!("Crew: {p}"),
                 Some(format!(
-                    "{role}{}{}{windows}{}",
+                    "{role}{}{}{windows}{}{}",
                     if dept.is_empty() {
                         String::new()
                     } else {
@@ -469,6 +481,7 @@ pub fn cast_and_crew(ctx: &ToolCtx<'_>, a: &Value) -> AppResult<ToolOutput> {
                     } else {
                         format!(" · {}", clip(&avail, 100))
                     },
+                    contact_text(&contact),
                     if arch { " · archived" } else { "" }
                 )),
                 Some(NavTarget::to("production").with_sub("cast-crew")),
@@ -1399,7 +1412,8 @@ pub fn budget_summary(ctx: &ToolCtx<'_>, _: &Value) -> AppResult<ToolOutput> {
         [&b.id],
         |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?, r.get(3)?)),
     )?;
-    let money = |minor: i64| format!("{} {}.{:02}", b.label, minor / 100, minor % 100);
+    // The grouping the Budget view and the budget PDF use (Indian grouping for INR).
+    let money = |minor: i64| crate::modules::exports::money(minor, &b.label);
     // `amount` holds the Planned amount of a line; `actual` is NULL until entered (migration 0016).
     let lines: Vec<(String, String, i64, Option<i64>)> = c
         .prepare("SELECT category, description, amount, actual FROM budget_line WHERE budget_id=?1 AND deleted_at IS NULL ORDER BY category, position")?
@@ -1408,22 +1422,57 @@ pub fn budget_summary(ctx: &ToolCtx<'_>, _: &Value) -> AppResult<ToolOutput> {
     let total: i64 = lines.iter().map(|l| l.2).sum();
     let actual_total: i64 = lines.iter().filter_map(|l| l.3).sum();
     let with_actual = lines.iter().filter(|l| l.3.is_some()).count();
-    let mut by_cat: BTreeMap<String, (i64, i64)> = BTreeMap::new();
+    // Difference = planned minus actual over the lines that have an actual (same rule as the PDF).
+    let difference: i64 = lines.iter().filter_map(|l| l.3.map(|a| l.2 - a)).sum();
+    let difference_text = |d: i64| match d {
+        0 => format!("{} (on plan)", money(0)),
+        d if d > 0 => format!("{} (under plan)", money(d)),
+        d => format!("{} (over plan)", money(-d)),
+    };
+    // (planned, actual, difference, lines with an actual)
+    let mut by_cat: BTreeMap<String, (i64, i64, i64, usize)> = BTreeMap::new();
     for (cat, _, amt, actual) in &lines {
         let e = by_cat.entry(cat.clone()).or_default();
         e.0 += amt;
-        e.1 += actual.unwrap_or(0);
+        if let Some(a) = actual {
+            e.1 += a;
+            e.2 += amt - a;
+            e.3 += 1;
+        }
     }
-    let mut o = ToolOutput::exact(format!(
-        "Budget ({}): {} planned and {} actual ({} with an actual amount) across {}{}.",
-        b.label,
+    let mut o = ToolOutput::exact(if with_actual == 0 {
+        format!(
+            "Budget ({}): planned total {}; no line has an actual amount yet.",
+            b.label,
+            money(planned.unwrap_or(total))
+        )
+    } else {
+        format!(
+            "Budget ({}): planned total {}; actual total {}; difference {}.",
+            b.label,
+            money(planned.unwrap_or(total)),
+            money(actual_total),
+            difference_text(difference)
+        )
+    });
+    o = o.detail(format!(
+        "Planned total: {}",
+        money(planned.unwrap_or(total))
+    ));
+    o = o.detail(format!(
+        "Planned in lines: {} across {}",
         money(total),
+        plural(lines.len(), "line", "lines")
+    ));
+    o = o.detail(format!(
+        "Actual total: {} ({} of {} lines have an actual amount)",
         money(actual_total),
         with_actual,
-        plural(lines.len(), "line", "lines"),
-        planned
-            .map(|p| format!("; planned total {}", money(p)))
-            .unwrap_or_default()
+        lines.len()
+    ));
+    o = o.detail(format!(
+        "Difference (planned minus actual, lines with an actual only): {}",
+        difference_text(difference)
     ));
     o = o.detail(if mode == "percent" {
         format!(
@@ -1437,12 +1486,17 @@ pub fn budget_summary(ctx: &ToolCtx<'_>, _: &Value) -> AppResult<ToolOutput> {
     if let Some(n) = notes.filter(|n| !n.trim().is_empty()) {
         o = o.detail(format!("Notes: {}", clip(&n, 300)));
     }
-    for (cat, (amt, actual)) in &by_cat {
-        o = o.detail(format!(
-            "{cat}: planned {}, actual {}",
-            money(*amt),
-            money(*actual)
-        ));
+    for (cat, (amt, actual, diff, n)) in &by_cat {
+        o = o.detail(if *n == 0 {
+            format!("{cat}: planned {}, no actual yet", money(*amt))
+        } else {
+            format!(
+                "{cat}: planned {}, actual {}, difference {}",
+                money(*amt),
+                money(*actual),
+                difference_text(*diff)
+            )
+        });
     }
     for (cat, desc, amt, actual) in lines.iter().take(80) {
         let actual = actual

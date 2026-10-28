@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Storyboards</title>
+<meta name="of-doc" content="Storyboard Sheet (storyboard.export_sheet), portrait">
+<link rel="stylesheet" href="../../00_SYSTEM/assets/openframe-print.css">
+<style>
+  /* Storyboard sheet v2 - PORTRAIT US Letter (612 x 792). Running header (one compact line, top-right): project + document +
+     the CURRENT storyboard name, set per storyboard with CSS named pages, so a continuation page still says which scene it
+     belongs to. A name over 44 characters is shortened with an ellipsis here only (page furniture); the banner has the full name. */
+  @page { size: 8.5in 11in; @top-right { content: "LOW TIDE RADIO · STORYBOARDS"; } }
+  @page a2s1 { size: 8.5in 11in; @top-right { content: "LOW TIDE RADIO · STORYBOARDS · SCENE 1: TITLE SEQUENCE OVER THE STORM"; } }
+  @page a2s2 { size: 8.5in 11in; @top-right { content: "LOW TIDE RADIO · STORYBOARDS · EXT. HARBOUR BREAKWATER - NIGHT"; } }
+  @page a2s3 { size: 8.5in 11in; @top-right { content: "LOW TIDE RADIO · STORYBOARDS · SCENE 33: THE SECOND HALF OF THE REEL"; } }
+  @page a2s4 { size: 8.5in 11in; @top-right { content: "LOW TIDE RADIO · STORYBOARDS · EXT. KADALKKARA BEACH - NIGHT"; } }
+  @page a3s1 { size: 8.5in 11in; @top-right { content: "LOW TIDE RADIO · STORYBOARDS · SCENE 1: TITLE SEQUENCE OVER THE STORM"; } }
+  @page a3s2 { size: 8.5in 11in; @top-right { content: "LOW TIDE RADIO · STORYBOARDS · EXT. HARBOUR BREAKWATER - NIGHT"; } }
+  @page a3s3 { size: 8.5in 11in; @top-right { content: "LOW TIDE RADIO · STORYBOARDS · SCENE 33: THE SECOND HALF OF THE REEL"; } }
+  @page a3s4 { size: 8.5in 11in; @top-right { content: "LOW TIDE RADIO · STORYBOARDS · EXT. KADALKKARA BEACH - NIGHT"; } }
+  @page o2s1 { size: 8.5in 11in; @top-right { content: "LOW TIDE RADIO · STORYBOARD · EXT. HARBOUR BREAKWATER - NIGHT"; } }
+  @page o3s1 { size: 8.5in 11in; @top-right { content: "LOW TIDE RADIO · STORYBOARD · EXT. HARBOUR BREAKWATER - NIGHT"; } }
+
+  /* ---- Storyboard sheet v2 (portrait): document-specific components. Only flat fills, hairlines, rounded rects, text, images. ---- */
+  /* compact one-block header: identity left, "N panels · exported date" right */
+  .mast { display: flex; justify-content: space-between; align-items: flex-end; gap: 14pt; padding-bottom: 6pt;
+    border-bottom: var(--rule) solid var(--of-navy); margin-bottom: 8pt; break-after: avoid; break-inside: avoid; }
+  .mast .eyebrow { font-size: 7pt; }
+  .mast h1 { font-size: 17pt; line-height: 1.1; font-weight: 700; color: var(--of-navy); letter-spacing: -0.005em; margin-top: 2pt; }
+  .mast h1 .proj { font-size: 9pt; font-weight: 400; color: var(--of-slate); letter-spacing: 0; margin-left: 8pt; }
+  .mast .ref { font-size: 8.4pt; font-weight: 700; color: var(--of-slate); margin-top: 2pt; }
+  .mast .cnt { text-align: right; font-size: 8.2pt; color: var(--of-slate); white-space: nowrap; padding-bottom: 1pt; }
+  .mast .cnt b { color: var(--of-navy); font-size: 9.6pt; }
+  .facts { font-size: 8.4pt; color: var(--of-slate); margin: -2pt 0 6pt; }
+
+  /* scene banner: one navy band, orange accent bar, scene line merged into it, status pill right */
+  .sbanner { display: flex; align-items: center; gap: 12pt; background: var(--of-navy); color: #fff;
+    border-radius: 6pt; border-left: 5pt solid var(--of-orange); padding: 6pt 12pt 7pt 10pt; margin: 0 0 8pt; break-inside: avoid; }
+  .sbanner .bl { flex: 1; min-width: 0; }
+  .sbanner .eb { font-size: 6.8pt; font-weight: 700; letter-spacing: .17em; text-transform: uppercase; color: #f5c27a; }
+  .sbanner .nm { font-size: 12.5pt; font-weight: 700; line-height: 1.15; margin-top: 1pt; }
+  .sbanner .sl { font-size: 8.2pt; font-weight: 700; color: #dbe3f0; margin-top: 2pt; line-height: 1.25; }
+  .sbanner .br { text-align: right; flex: none; max-width: 42%; }
+  .sbanner .ct { font-size: 8.2pt; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; }
+  .status { display: inline-block; font-size: 7.2pt; font-weight: 700; padding: 1.4pt 5pt 1.6pt; border-radius: 3pt; margin-top: 3pt; text-align: left;
+    border: var(--hair) solid var(--of-amber-line); background: var(--of-amber-fill); color: var(--of-amber-text); }
+  .status.removed { border-color: var(--of-red-line); background: var(--of-red-fill); color: var(--of-red-text); }
+  .sbempty { font-size: 8.8pt; color: var(--of-muted); margin: 0 0 6pt; }
+
+  /* panel rows: whole rows only; cards in a row share one height */
+  .prow { display: grid; grid-template-columns: repeat(var(--cols, 2), minmax(0, 1fr)); gap: var(--gap, 10pt); margin-bottom: var(--gap, 10pt);
+    break-inside: avoid; align-items: stretch; }
+  .prow.pb { break-before: page; }
+  .prow.k, .sbanner.k, .mast.k, .facts.k { break-after: avoid; }
+  .cols2 { --cols: 2; --gap: 10pt; } .cols3 { --cols: 3; --gap: 8pt; }
+
+  .pcard { display: flex; flex-direction: column; gap: 4pt; padding: 6pt; background: #fff; min-width: 0;
+    border: var(--hair) solid var(--of-line-strong); border-radius: var(--radius-lg); }
+  /* head: navy number tile + "Panel · Shot X" */
+  .ph { display: flex; align-items: center; gap: 5pt; min-height: 15pt; line-height: 1.15; }
+  .ph .pn { flex: none; min-width: 15pt; height: 15pt; padding: 0 3pt; border-radius: 3.5pt; background: var(--of-navy); color: #fff;
+    font-size: 9pt; font-weight: 700; text-align: center; line-height: 15pt; }
+  .ph .pw { font-size: 7.6pt; color: var(--of-slate); }
+  .ph .shot { margin-left: -2pt; font-size: 8.6pt; font-weight: 700; color: var(--of-teal); min-width: 0; }
+  .cols2 .ph .shot { font-size: 9pt; }
+  /* film-frame: navy border, neutral tint, image CONTAIN (never cropped) */
+  .frame.r169 { background: #e6ebf2; border: 1.4pt solid var(--of-navy); border-radius: 2.5pt; }
+  .frame img { background: #e6ebf2; }
+  .frame.missing { background: #e6ebf2; }
+  .frame.missing span { font-size: 8.2pt; color: var(--of-neutral-text); text-align: center; line-height: 1.25; }
+  /* shot size / movement / angle: same words, as chips */
+  .specs { display: flex; flex-wrap: wrap; gap: 2.5pt; }
+  .spec { font-size: 7.2pt; font-weight: 700; line-height: 1; padding: 2.6pt 4.6pt 2.8pt; border-radius: 3pt; white-space: nowrap;
+    background: var(--of-tint); border: var(--hair) solid var(--of-line-strong); color: var(--of-navy); }
+  .cols2 .spec { font-size: 7.6pt; }
+  /* caption band: tinted, labelled lines (labels exactly as in the source: Sound / Duration / Note) */
+  .band { flex: 1; background: var(--of-panel); border: var(--hair) solid var(--of-line); border-radius: 4pt; padding: 4.5pt 6pt 5pt; }
+  .band .ds { font-size: 8.6pt; line-height: 1.28; color: var(--of-ink); }
+  .band .mt { font-size: 7.8pt; line-height: 1.3; color: var(--of-slate); margin-top: 1.5pt; }
+  .band .mt b { color: var(--of-navy); font-weight: 700; }
+  .band .nt { font-size: 7.8pt; line-height: 1.3; color: var(--of-neutral-text); margin-top: 1.5pt; padding-top: 1.5pt; border-top: var(--hair) solid var(--of-line); }
+  .band .nt b { color: var(--of-navy); }
+  .cols2 .band .ds { font-size: 9pt; }
+  .cols2 .band .mt, .cols2 .band .nt { font-size: 8.2pt; }
+  .sbscene[data-break] { break-before: page; }
+
+</style>
+</head>
+<body>
+<div class="doc">
+<div class="view" data-toggle="All storyboards · 2 panels per row (recommended, default)" data-xgroup="view" data-cols="2" data-scope="all">
+<section class="sbscene" style="page: a2s1">
+<header class="mast">
+    <div>
+      <div class="eyebrow">Pre-production · Storyboard</div>
+      <h1>Storyboards<span class="proj">Low Tide Radio</span></h1>
+    </div>
+    <div class="cnt"><b>12 panels</b> · Exported 22 Oct 2026</div>
+  </header>
+<div class="sbanner"><div class="bl"><div class="eb">Storyboard</div><div class="nm">Scene 1: title sequence over the storm</div><div class="sl">Scene 1: EXT. OPEN SEA - NIGHT (1999)</div></div><div class="br"><div class="ct">4 panels</div></div></div>
+<div class="prow cols2"><article class="pcard"><div class="ph"><span class="pn">1</span><span class="pw">Panel</span><span class="shot"> · Shot 1A</span></div><div class="frame r169"><img src="../../00_SYSTEM/sample-assets/storyboard-sample-01.png" alt="Title over the black sea."></div><div class="band"><div class="ds">Title over the black sea.</div></div></article><article class="pcard"><div class="ph"><span class="pn">2</span><span class="pw">Panel</span></div><div class="frame r169"><img src="../../00_SYSTEM/sample-assets/storyboard-sample-02.png" alt="hero walks"></div><div class="specs"><span class="spec">Wide</span><span class="spec">Static</span><span class="spec">Eye level</span></div><div class="band"><div class="ds">hero walks</div><div class="mt"><b>Sound:</b> hello</div><div class="mt"><b>Duration:</b> 15s</div></div></article></div>
+<div class="prow cols2"><article class="pcard"><div class="ph"><span class="pn">3</span><span class="pw">Panel</span></div><div class="frame r169"><img src="../../00_SYSTEM/sample-assets/storyboard-sample-03.png" alt="hero smokes"></div><div class="specs"><span class="spec">Full</span><span class="spec">Handheld</span><span class="spec">Low</span></div><div class="band"><div class="ds">hero smokes</div><div class="mt"><b>Sound:</b> bye</div><div class="mt"><b>Duration:</b> 12s</div></div></article><article class="pcard"><div class="ph"><span class="pn">4</span><span class="pw">Panel</span></div><div class="frame r169"><img src="../../00_SYSTEM/sample-assets/storyboard-sample-04.png" alt="heros house"></div><div class="specs"><span class="spec">Full</span><span class="spec">Static</span><span class="spec">Eye level</span></div><div class="band"><div class="ds">heros house</div><div class="mt"><b>Sound:</b> welcome</div><div class="mt"><b>Duration:</b> 15s</div></div></article></div>
+</section>
+<section class="sbscene" style="page: a2s2" data-break>
+<div class="sbanner"><div class="bl"><div class="eb">Storyboard</div><div class="nm">EXT. HARBOUR BREAKWATER - NIGHT</div><div class="sl">Scene 25: EXT. HARBOUR BREAKWATER - NIGHT</div></div><div class="br"><div class="ct">5 panels</div></div></div>
+<div class="prow cols2"><article class="pcard"><div class="ph"><span class="pn">1</span><span class="pw">Panel</span><span class="shot"> · Shot 25A</span></div><div class="frame r169"><img src="../../00_SYSTEM/sample-assets/shot-sample-02.png" alt="Wide: the breakwater, the torch at the far end."></div><div class="specs"><span class="spec">Extreme wide</span><span class="spec">Crane down</span><span class="spec">High</span></div><div class="band"><div class="ds">Wide: the breakwater, the torch at the far end.</div><div class="mt"><b>Sound:</b> Wind and surf</div><div class="mt"><b>Duration:</b> 6s</div><div class="nt" data-toggle="Include shot notes"><b>Note:</b> Establish the yellow safety line out of frame.</div></div></article><article class="pcard"><div class="ph"><span class="pn">2</span><span class="pw">Panel</span></div><div class="frame r169"><img src="../../00_SYSTEM/sample-assets/shot-sample-03.png" alt="Appachan at the edge, signalling to boats that are not there."></div><div class="specs"><span class="spec">Medium</span><span class="spec">Handheld</span><span class="spec">Low</span></div><div class="band"><div class="ds">Appachan at the edge, signalling to boats that are not there.</div><div class="mt"><b>Sound:</b> Kannan barking</div><div class="mt"><b>Duration:</b> 4s</div></div></article></div>
+<div class="prow cols2"><article class="pcard"><div class="ph"><span class="pn">3</span><span class="pw">Panel</span></div><div class="frame r169"><img src="../../00_SYSTEM/sample-assets/storyboard-sample-05.png" alt="The wave: VFX reference frame."></div><div class="specs"><span class="spec">Wide</span><span class="spec">Static</span><span class="spec">Eye level</span></div><div class="band"><div class="ds">The wave: VFX reference frame.</div><div class="mt"><b>Sound:</b> Wave hit</div><div class="mt"><b>Duration:</b> 2.5s</div><div class="nt" data-toggle="Include shot notes"><b>Note:</b> Composite of the dump tank and a plate.</div></div></article><article class="pcard"><div class="ph"><span class="pn">4</span><span class="pw">Panel</span><span class="shot"> · Shot 25G</span></div><div class="frame r169"><img src="../../00_SYSTEM/sample-assets/shot-sample-03.png" alt="Suresh carries him back. To draw."></div><div class="specs"><span class="spec">Two-shot</span><span class="spec">Handheld follow</span><span class="spec">Eye level</span></div><div class="band"><div class="ds">Suresh carries him back. To draw.</div><div class="mt"><b>Sound:</b> Breath, rain</div><div class="mt"><b>Duration:</b> 8s</div></div></article></div>
+<div class="prow cols2"><article class="pcard"><div class="ph"><span class="pn">5</span><span class="pw">Panel</span><span class="shot"> · Shot 25F</span></div><div class="frame r169 missing"><span>Blank panel</span></div><div class="specs"><span class="spec">Two-shot</span><span class="spec">Handheld</span><span class="spec">Eye level</span></div><div class="band"><div class="ds">Suresh wraps Appachan in his jacket</div></div></article></div>
+</section>
+<section class="sbscene" style="page: a2s3" data-break>
+<div class="sbanner"><div class="bl"><div class="eb">Storyboard</div><div class="nm">Scene 33: the second half of the reel</div><div class="sl">Scene 34: INT. FISHERIES SCHOOL - RADIO CLUB ROOM - NIGHT</div></div><div class="br"><div class="ct">1 panel</div></div></div>
+<div class="prow cols2"><article class="pcard"><div class="ph"><span class="pn">1</span><span class="pw">Panel</span></div><div class="frame r169"><img src="../../00_SYSTEM/sample-assets/storyboard-sample-06.png" alt="Hands on the reel."></div><div class="band"><div class="ds">Hands on the reel.</div></div></article></div>
+</section>
+<section class="sbscene" style="page: a2s4" data-break>
+<div class="sbanner"><div class="bl"><div class="eb">Storyboard</div><div class="nm">EXT. KADALKKARA BEACH - NIGHT</div><div class="sl">Scene 40: EXT. KADALKKARA BEACH - NIGHT</div></div><div class="br"><div class="ct">2 panels</div><span class="status">Scene changed since planning</span></div></div>
+<div class="prow cols2"><article class="pcard"><div class="ph"><span class="pn">1</span><span class="pw">Panel</span></div><div class="frame r169"><img src="../../00_SYSTEM/sample-assets/storyboard-sample-07.png" alt="Lanterns: belongs to scene 39."></div><div class="band"><div class="ds">Lanterns: belongs to scene 39.</div></div></article><article class="pcard"><div class="ph"><span class="pn">2</span><span class="pw">Panel</span></div><div class="frame r169"><img src="../../00_SYSTEM/sample-assets/storyboard-sample-08.png" alt="The crowd faces the speakers."></div><div class="band"><div class="ds">The crowd faces the speakers.</div></div></article></div>
+</section>
+</div>
+<div class="view" data-toggle="All storyboards · 3 panels per row" data-xgroup="view" data-cols="3" data-scope="all" hidden>
+<section class="sbscene" style="page: a3s1">
+<header class="mast">
+    <div>
+      <div class="eyebrow">Pre-production · Storyboard</div>
+      <h1>Storyboards<span class="proj">Low Tide Radio</span></h1>
+    </div>
+    <div class="cnt"><b>12 panels</b> · Exported 22 Oct 2026</div>
+  </header>
+<div class="sbanner"><div class="bl"><div class="eb">Storyboard</div><div class="nm">Scene 1: title sequence over the storm</div><div class="sl">Scene 1: EXT. OPEN SEA - NIGHT (1999)</div></div><div class="br"><div class="ct">4 panels</div></div></div>
+<div class="prow cols3"><article class="pcard"><div class="ph"><span class="pn">1</span><span class="pw">Panel</span><span class="shot"> · Shot 1A</span></div><div class="frame r169"><img src="../../00_SYSTEM/sample-assets/storyboard-sample-01.png" alt="Title over the black sea."></div><div class="band"><div class="ds">Title over the black sea.</div></div></article><article class="pcard"><div class="ph"><span class="pn">2</span><span class="pw">Panel</span></div><div class="frame r169"><img src="../../00_SYSTEM/sample-assets/storyboard-sample-02.png" alt="hero walks"></div><div class="specs"><span class="spec">Wide</span><span class="spec">Static</span><span class="spec">Eye level</span></div><div class="band"><div class="ds">hero walks</div><div class="mt"><b>Sound:</b> hello</div><div class="mt"><b>Duration:</b> 15s</div></div></article><article class="pcard"><div class="ph"><span class="pn">3</span><span class="pw">Panel</span></div><div class="frame r169"><img src="../../00_SYSTEM/sample-assets/storyboard-sample-03.png" alt="hero smokes"></div><div class="specs"><span class="spec">Full</span><span class="spec">Handheld</span><span class="spec">Low</span></div><div class="band"><div class="ds">hero smokes</div><div class="mt"><b>Sound:</b> bye</div><div class="mt"><b>Duration:</b> 12s</div></div></article></div>
+<div class="prow cols3"><article class="pcard"><div class="ph"><span class="pn">4</span><span class="pw">Panel</span></div><div class="frame r169"><img src="../../00_SYSTEM/sample-assets/storyboard-sample-04.png" alt="heros house"></div><div class="specs"><span class="spec">Full</span><span class="spec">Static</span><span class="spec">Eye level</span></div><div class="band"><div class="ds">heros house</div><div class="mt"><b>Sound:</b> welcome</div><div class="mt"><b>Duration:</b> 15s</div></div></article></div>
+</section>
+<section class="sbscene" style="page: a3s2" data-break>
+<div class="sbanner"><div class="bl"><div class="eb">Storyboard</div><div class="nm">EXT. HARBOUR BREAKWATER - NIGHT</div><div class="sl">Scene 25: EXT. HARBOUR BREAKWATER - NIGHT</div></div><div class="br"><div class="ct">5 panels</div></div></div>
+<div class="prow cols3"><article class="pcard"><div class="ph"><span class="pn">1</span><span class="pw">Panel</span><span class="shot"> · Shot 25A</span></div><div class="frame r169"><img src="../../00_SYSTEM/sample-assets/shot-sample-02.png" alt="Wide: the breakwater, the torch at the far end."></div><div class="specs"><span class="spec">Extreme wide</span><span class="spec">Crane down</span><span class="spec">High</span></div><div class="band"><div class="ds">Wide: the breakwater, the torch at the far end.</div><div class="mt"><b>Sound:</b> Wind and surf</div><div class="mt"><b>Duration:</b> 6s</div><div class="nt" data-toggle="Include shot notes"><b>Note:</b> Establish the yellow safety line out of frame.</div></div></article><article class="pcard"><div class="ph"><span class="pn">2</span><span class="pw">Panel</span></div><div class="frame r169"><img src="../../00_SYSTEM/sample-assets/shot-sample-03.png" alt="Appachan at the edge, signalling to boats that are not there."></div><div class="specs"><span class="spec">Medium</span><span class="spec">Handheld</span><span class="spec">Low</span></div><div class="band"><div class="ds">Appachan at the edge, signalling to boats that are not there.</div><div class="mt"><b>Sound:</b> Kannan barking</div><div class="mt"><b>Duration:</b> 4s</div></div></article><article class="pcard"><div class="ph"><span class="pn">3</span><span class="pw">Panel</span></div><div class="frame r169"><img src="../../00_SYSTEM/sample-assets/storyboard-sample-05.png" alt="The wave: VFX reference frame."></div><div class="specs"><span class="spec">Wide</span><span class="spec">Static</span><span class="spec">Eye level</span></div><div class="band"><div class="ds">The wave: VFX reference frame.</div><div class="mt"><b>Sound:</b> Wave hit</div><div class="mt"><b>Duration:</b> 2.5s</div><div class="nt" data-toggle="Include shot notes"><b>Note:</b> Composite of the dump tank and a plate.</div></div></article></div>
+<div class="prow cols3"><article class="pcard"><div class="ph"><span class="pn">4</span><span class="pw">Panel</span><span class="shot"> · Shot 25G</span></div><div class="frame r169"><img src="../../00_SYSTEM/sample-assets/shot-sample-03.png" alt="Suresh carries him back. To draw."></div><div class="specs"><span class="spec">Two-shot</span><span class="spec">Handheld follow</span><span class="spec">Eye level</span></div><div class="band"><div class="ds">Suresh carries him back. To draw.</div><div class="mt"><b>Sound:</b> Breath, rain</div><div class="mt"><b>Duration:</b> 8s</div></div></article><article class="pcard"><div class="ph"><span class="pn">5</span><span class="pw">Panel</span><span class="shot"> · Shot 25F</span></div><div class="frame r169 missing"><span>Blank panel</span></div><div class="specs"><span class="spec">Two-shot</span><span class="spec">Handheld</span><span class="spec">Eye level</span></div><div class="band"><div class="ds">Suresh wraps Appachan in his jacket</div></div></article></div>
+</section>
+<section class="sbscene" style="page: a3s3" data-break>
+<div class="sbanner"><div class="bl"><div class="eb">Storyboard</div><div class="nm">Scene 33: the second half of the reel</div><div class="sl">Scene 34: INT. FISHERIES SCHOOL - RADIO CLUB ROOM - NIGHT</div></div><div class="br"><div class="ct">1 panel</div></div></div>
+<div class="prow cols3"><article class="pcard"><div class="ph"><span class="pn">1</span><span class="pw">Panel</span></div><div class="frame r169"><img src="../../00_SYSTEM/sample-assets/storyboard-sample-06.png" alt="Hands on the reel."></div><div class="band"><div class="ds">Hands on the reel.</div></div></article></div>
+</section>
+<section class="sbscene" style="page: a3s4" data-break>
+<div class="sbanner"><div class="bl"><div class="eb">Storyboard</div><div class="nm">EXT. KADALKKARA BEACH - NIGHT</div><div class="sl">Scene 40: EXT. KADALKKARA BEACH - NIGHT</div></div><div class="br"><div class="ct">2 panels</div><span class="status">Scene changed since planning</span></div></div>
+<div class="prow cols3"><article class="pcard"><div class="ph"><span class="pn">1</span><span class="pw">Panel</span></div><div class="frame r169"><img src="../../00_SYSTEM/sample-assets/storyboard-sample-07.png" alt="Lanterns: belongs to scene 39."></div><div class="band"><div class="ds">Lanterns: belongs to scene 39.</div></div></article><article class="pcard"><div class="ph"><span class="pn">2</span><span class="pw">Panel</span></div><div class="frame r169"><img src="../../00_SYSTEM/sample-assets/storyboard-sample-08.png" alt="The crowd faces the speakers."></div><div class="band"><div class="ds">The crowd faces the speakers.</div></div></article></div>
+</section>
+</div>
+<div class="view" data-toggle="Current storyboard only · 2 panels per row" data-xgroup="view" data-cols="2" data-scope="one" hidden>
+<section class="sbscene" style="page: o2s1">
+<header class="mast">
+    <div>
+      <div class="eyebrow">Pre-production · Storyboard</div>
+      <h1>EXT. HARBOUR BREAKWATER - NIGHT<span class="proj">Low Tide Radio</span></h1><div class="ref">Scene 25: EXT. HARBOUR BREAKWATER - NIGHT</div>
+    </div>
+    <div class="cnt"><b>5 panels</b> · Exported 22 Oct 2026</div>
+  </header>
+<div class="prow cols2"><article class="pcard"><div class="ph"><span class="pn">1</span><span class="pw">Panel</span><span class="shot"> · Shot 25A</span></div><div class="frame r169"><img src="../../00_SYSTEM/sample-assets/shot-sample-02.png" alt="Wide: the breakwater, the torch at the far end."></div><div class="specs"><span class="spec">Extreme wide</span><span class="spec">Crane down</span><span class="spec">High</span></div><div class="band"><div class="ds">Wide: the breakwater, the torch at the far end.</div><div class="mt"><b>Sound:</b> Wind and surf</div><div class="mt"><b>Duration:</b> 6s</div><div class="nt" data-toggle="Include shot notes"><b>Note:</b> Establish the yellow safety line out of frame.</div></div></article><article class="pcard"><div class="ph"><span class="pn">2</span><span class="pw">Panel</span></div><div class="frame r169"><img src="../../00_SYSTEM/sample-assets/shot-sample-03.png" alt="Appachan at the edge, signalling to boats that are not there."></div><div class="specs"><span class="spec">Medium</span><span class="spec">Handheld</span><span class="spec">Low</span></div><div class="band"><div class="ds">Appachan at the edge, signalling to boats that are not there.</div><div class="mt"><b>Sound:</b> Kannan barking</div><div class="mt"><b>Duration:</b> 4s</div></div></article></div>
+<div class="prow cols2"><article class="pcard"><div class="ph"><span class="pn">3</span><span class="pw">Panel</span></div><div class="frame r169"><img src="../../00_SYSTEM/sample-assets/storyboard-sample-05.png" alt="The wave: VFX reference frame."></div><div class="specs"><span class="spec">Wide</span><span class="spec">Static</span><span class="spec">Eye level</span></div><div class="band"><div class="ds">The wave: VFX reference frame.</div><div class="mt"><b>Sound:</b> Wave hit</div><div class="mt"><b>Duration:</b> 2.5s</div><div class="nt" data-toggle="Include shot notes"><b>Note:</b> Composite of the dump tank and a plate.</div></div></article><article class="pcard"><div class="ph"><span class="pn">4</span><span class="pw">Panel</span><span class="shot"> · Shot 25G</span></div><div class="frame r169"><img src="../../00_SYSTEM/sample-assets/shot-sample-03.png" alt="Suresh carries him back. To draw."></div><div class="specs"><span class="spec">Two-shot</span><span class="spec">Handheld follow</span><span class="spec">Eye level</span></div><div class="band"><div class="ds">Suresh carries him back. To draw.</div><div class="mt"><b>Sound:</b> Breath, rain</div><div class="mt"><b>Duration:</b> 8s</div></div></article></div>
+<div class="prow cols2"><article class="pcard"><div class="ph"><span class="pn">5</span><span class="pw">Panel</span><span class="shot"> · Shot 25F</span></div><div class="frame r169 missing"><span>Blank panel</span></div><div class="specs"><span class="spec">Two-shot</span><span class="spec">Handheld</span><span class="spec">Eye level</span></div><div class="band"><div class="ds">Suresh wraps Appachan in his jacket</div></div></article></div>
+</section>
+</div>
+<div class="view" data-toggle="Current storyboard only · 3 panels per row" data-xgroup="view" data-cols="3" data-scope="one" hidden>
+<section class="sbscene" style="page: o3s1">
+<header class="mast">
+    <div>
+      <div class="eyebrow">Pre-production · Storyboard</div>
+      <h1>EXT. HARBOUR BREAKWATER - NIGHT<span class="proj">Low Tide Radio</span></h1><div class="ref">Scene 25: EXT. HARBOUR BREAKWATER - NIGHT</div>
+    </div>
+    <div class="cnt"><b>5 panels</b> · Exported 22 Oct 2026</div>
+  </header>
+<div class="prow cols3"><article class="pcard"><div class="ph"><span class="pn">1</span><span class="pw">Panel</span><span class="shot"> · Shot 25A</span></div><div class="frame r169"><img src="../../00_SYSTEM/sample-assets/shot-sample-02.png" alt="Wide: the breakwater, the torch at the far end."></div><div class="specs"><span class="spec">Extreme wide</span><span class="spec">Crane down</span><span class="spec">High</span></div><div class="band"><div class="ds">Wide: the breakwater, the torch at the far end.</div><div class="mt"><b>Sound:</b> Wind and surf</div><div class="mt"><b>Duration:</b> 6s</div><div class="nt" data-toggle="Include shot notes"><b>Note:</b> Establish the yellow safety line out of frame.</div></div></article><article class="pcard"><div class="ph"><span class="pn">2</span><span class="pw">Panel</span></div><div class="frame r169"><img src="../../00_SYSTEM/sample-assets/shot-sample-03.png" alt="Appachan at the edge, signalling to boats that are not there."></div><div class="specs"><span class="spec">Medium</span><span class="spec">Handheld</span><span class="spec">Low</span></div><div class="band"><div class="ds">Appachan at the edge, signalling to boats that are not there.</div><div class="mt"><b>Sound:</b> Kannan barking</div><div class="mt"><b>Duration:</b> 4s</div></div></article><article class="pcard"><div class="ph"><span class="pn">3</span><span class="pw">Panel</span></div><div class="frame r169"><img src="../../00_SYSTEM/sample-assets/storyboard-sample-05.png" alt="The wave: VFX reference frame."></div><div class="specs"><span class="spec">Wide</span><span class="spec">Static</span><span class="spec">Eye level</span></div><div class="band"><div class="ds">The wave: VFX reference frame.</div><div class="mt"><b>Sound:</b> Wave hit</div><div class="mt"><b>Duration:</b> 2.5s</div><div class="nt" data-toggle="Include shot notes"><b>Note:</b> Composite of the dump tank and a plate.</div></div></article></div>
+<div class="prow cols3"><article class="pcard"><div class="ph"><span class="pn">4</span><span class="pw">Panel</span><span class="shot"> · Shot 25G</span></div><div class="frame r169"><img src="../../00_SYSTEM/sample-assets/shot-sample-03.png" alt="Suresh carries him back. To draw."></div><div class="specs"><span class="spec">Two-shot</span><span class="spec">Handheld follow</span><span class="spec">Eye level</span></div><div class="band"><div class="ds">Suresh carries him back. To draw.</div><div class="mt"><b>Sound:</b> Breath, rain</div><div class="mt"><b>Duration:</b> 8s</div></div></article><article class="pcard"><div class="ph"><span class="pn">5</span><span class="pw">Panel</span><span class="shot"> · Shot 25F</span></div><div class="frame r169 missing"><span>Blank panel</span></div><div class="specs"><span class="spec">Two-shot</span><span class="spec">Handheld</span><span class="spec">Eye level</span></div><div class="band"><div class="ds">Suresh wraps Appachan in his jacket</div></div></article></div>
+</section>
+</div>
+</div>
+<script src="../../00_SYSTEM/assets/of-preview.js"></script>
+<script>
+/* Preview + print helper (document-specific, not part of the design system).
+   0) VIEW from the URL hash:  #cols=2 (default) | #cols=3  and optionally &scope=one  (current storyboard only).
+      render_storyboard.py uses this so each PDF matches a toolbar state.
+   1) KEEP RULES (measured, like the production renderer): a scene starts on a fresh page; if the whole scene
+      (header + banner + all rows) fits one page it is kept together; otherwise the banner stays with its first row and
+      the rows are paginated by measured height with widow repair (no page other than the first carries a lone row
+      when the previous page can spare one).
+   2) data-xgroup: variants of one group behave as radio buttons in the preview toolbar. */
+(function () {
+  var BODY = 680 * 96 / 72 - 6;               /* page body height 792 - 46 - 66 pt, minus a small safety margin */
+  function oh(e) { var c = getComputedStyle(e); return e.getBoundingClientRect().height + parseFloat(c.marginTop) + parseFloat(c.marginBottom); }
+  function apply() {
+    Array.prototype.forEach.call(document.querySelectorAll(".sbscene"), function (sc) {
+      if (!sc.getClientRects().length) return;
+      var kids = Array.prototype.slice.call(sc.children);
+      kids.forEach(function (k) { k.classList.remove("k"); k.classList.remove("pb"); });
+      var rows = kids.filter(function (k) { return k.classList.contains("prow"); });
+      if (!rows.length) return;
+      var lead = kids.filter(function (k) { return !k.classList.contains("prow"); });
+      var leadH = lead.reduce(function (a, e) { return a + oh(e); }, 0);
+      var hs = rows.map(oh);
+      var last = parseFloat(getComputedStyle(rows[rows.length - 1]).marginBottom);
+      var total = leadH + hs.reduce(function (a, x) { return a + x; }, 0) - last;
+      if (total <= BODY) { kids.slice(0, -1).forEach(function (e) { e.classList.add("k"); }); return; }
+      lead.forEach(function (e) { e.classList.add("k"); });         /* header/banner stay with the first row */
+      var pages = [[]], used = leadH;
+      rows.forEach(function (r, i) {
+        var cur = pages[pages.length - 1];
+        if (cur.length && used + hs[i] - last > BODY) { pages.push([]); used = 0; cur = pages[pages.length - 1]; }
+        cur.push(i); used += hs[i];
+      });
+      for (var p = pages.length - 1; p >= 1; p--) {
+        var prev = pages[p - 1], cur2 = pages[p];
+        var spare = prev.length > 1;                       /* cascades: a page left with one row is repaired next */
+        if (cur2.length === 1 && spare) {
+          var mv = prev[prev.length - 1], sum = hs[mv] + hs[cur2[0]] - last;
+          if (sum <= BODY) { prev.pop(); cur2.unshift(mv); }
+        }
+      }
+      pages.forEach(function (pg, pi) { if (pi > 0) rows[pg[0]].classList.add("pb"); });
+    });
+  }
+  var bar = document.querySelector(".preview-bar");
+  if (bar) {
+    var boxes = {};
+    Array.prototype.forEach.call(bar.querySelectorAll("label"), function (l) { boxes[l.textContent.trim()] = l.querySelector("input"); });
+    var groups = {};
+    Array.prototype.forEach.call(document.querySelectorAll("[data-xgroup]"), function (el) {
+      var g = el.getAttribute("data-xgroup"), t = el.getAttribute("data-toggle");
+      (groups[g] = groups[g] || {})[t] = 1;
+    });
+    Object.keys(groups).forEach(function (g) {
+      var labels = Object.keys(groups[g]);
+      labels.forEach(function (t) {
+        var cb = boxes[t]; if (!cb) return;
+        cb.addEventListener("change", function () {
+          if (!cb.checked) return;
+          labels.forEach(function (o) { if (o !== t && boxes[o] && boxes[o].checked) { boxes[o].checked = false; boxes[o].dispatchEvent(new Event("change")); } });
+        });
+      });
+    });
+    bar.addEventListener("change", function () { setTimeout(apply, 0); });
+    /* hash -> view */
+    var h = location.hash.replace(/^#/, ""), q = {};
+    h.split("&").forEach(function (kv) { var a = kv.split("="); if (a[0]) q[a[0]] = a[1]; });
+    var want = document.querySelector('[data-xgroup="view"][data-cols="' + (q.cols === "3" ? "3" : "2") + '"][data-scope="' + (q.scope === "one" ? "one" : "all") + '"]');
+    if (want) {
+      var cb = boxes[want.getAttribute("data-toggle")];
+      if (cb && !cb.checked) { cb.checked = true; cb.dispatchEvent(new Event("change")); }
+    }
+  }
+  document.addEventListener("DOMContentLoaded", apply);
+  window.addEventListener("load", apply);
+  window.addEventListener("beforeprint", apply);
+  apply();
+})();
+</script>
+</body>
+</html>

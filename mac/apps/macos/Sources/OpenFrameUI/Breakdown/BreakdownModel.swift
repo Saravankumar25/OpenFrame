@@ -207,8 +207,6 @@ final class BreakdownModel {
         if collapsed.contains(c) { collapsed.remove(c) } else { collapsed.insert(c) }
     }
 
-    func clearJump() { jump = nil }
-
     // MARK: Production Source
 
     func loadSourceOptions() async {

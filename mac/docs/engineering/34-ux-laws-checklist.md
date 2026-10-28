@@ -1,7 +1,7 @@
 # 34: UX laws checklist for OpenFrame UI work
 
 > Created 2026-10-05 from the 20 "UX laws" list the owner supplied. Use it as a **review checklist** for any new or changed
-> screen, together with the UX/UI specification and `HTML_Mockups/` (which win on labels and layout) and the accessibility
+> screen, together with the UX/UI specification (which wins on labels and layout; `WindowsHTML/` on Windows and `MacHTML/` on the Mac show the shipped screens) and the accessibility
 > rules in CONTRIBUTING §3. It adds no requirements of its own: if a law conflicts with the specification, the specification wins.
 > The supplied image numbered "Postel's law" twice (16 and 17); it is listed once here, so 19 distinct entries are below plus the
 > non-law item 8.

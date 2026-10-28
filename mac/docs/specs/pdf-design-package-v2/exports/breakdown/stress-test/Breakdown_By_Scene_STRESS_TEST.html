@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>STRESS TEST — Breakdown Report · Breakdown by scene</title>
+<meta name="of-doc" content="STRESS TEST: Breakdown by scene (fictional data)">
+  <meta name="of-logo" content="../../../00_SYSTEM/assets/openframe-logo.png">
+<link rel="stylesheet" href="../../../00_SYSTEM/assets/openframe-print.css">
+<style>
+  /* Portrait US Letter. Running header (one compact line, top-right, no rule/logo): this is a long, many-page
+     document, so each page names the production + document. The footer (logo, brand line, Page X of Y) is the shared one. */
+  @page { size: 8.5in 11in; @top-right { content: "THE LONG WORKING TITLE OF A VERY LARGE PRODUCTION · BREAKDOWN REPORT"; } }
+
+  /* ===== Breakdown / Catalog family — local components (candidates to promote to shared are marked [promote]) ===== */
+  .doc { --tint-sugg: #fdf0d9; }
+  .masthead { margin-bottom: 8pt; }
+  .masthead .meta-line { font-size: 8.6pt; }
+  .expref { /* [promote] light "export reference" side panel: date, label, scope */
+    border: var(--hair) solid var(--of-line-strong); background: var(--of-panel); border-radius: var(--radius-lg);
+    padding: 7pt 12pt 8pt; min-width: 128pt; max-width: 170pt; text-align: right; }
+  .expref .lbl { font-size: 6.8pt; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--of-slate); }
+  .expref .d { font-size: 12pt; font-weight: 700; color: var(--of-navy); margin: 2pt 0 1pt; }
+  .expref .s { font-size: 8.4pt; color: var(--of-slate); }
+  .metrics { margin: 6pt 0 2pt; }
+  .metric { padding: 5pt 9pt 6pt; }
+  .metric .val { font-size: 17pt; }
+  .metric.sugg { background: var(--of-amber-fill); border-color: var(--of-amber-line); }
+  .metric.sugg .lbl { color: var(--of-amber-text); }
+  .part { font-size: 6.8pt; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--of-orange-deep); }
+  .sec { margin-top: 14pt; }
+  .sec.part-sec { margin-top: 18pt; }
+  .sec .part { margin-right: 8pt; }
+  .illus { font-size: 6.8pt; color: var(--of-muted); letter-spacing: .02em; }
+
+  /* ---- element-state key ---- */
+  .key { margin: 6pt 0 8pt; padding: 5pt 9pt;
+    border-left: 2pt solid var(--of-orange); background: var(--of-panel); border-radius: 0 3pt 3pt 0; break-inside: avoid;
+    font-size: 8pt; color: var(--of-slate); }
+  .key .txt { margin-bottom: 4pt; }
+  .key .kr { display: flex; flex-wrap: wrap; gap: 3pt 16pt; }
+  .key .sw .nm.sg { background: var(--tint-sugg); border-left: 2pt solid var(--of-orange); padding: 1pt 4pt; }
+  .key .sw { display: inline-flex; align-items: center; gap: 4pt; white-space: nowrap; color: var(--of-ink); font-size: 7.8pt; }
+  .key .sw .nm { font-weight: 700; }
+
+  /* ---- element tags + states ---- */
+  .tg { flex: none; font-size: 6.6pt; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; line-height: 1;
+    padding: 1.9pt 3.6pt 2.1pt; border-radius: 3pt; border: var(--hair) solid; white-space: nowrap; }
+  .tg.m { background: var(--of-blue-fill); border-color: var(--of-blue-line); color: var(--of-blue-text); }
+  .tg.s { background: var(--of-amber-fill); border-color: var(--of-amber-line); color: var(--of-amber-text); }
+
+  /* ---- scene card: one table per scene so the head repeats if the scene continues on a new page ---- */
+  table.scene { width: 100%; margin: 0 0 9pt; border-collapse: separate; border-spacing: 0; break-inside: auto; }
+  table.scene > tbody > tr:nth-last-child(2) { break-after: avoid; }
+  table.scene > thead { display: table-header-group; }
+  table.scene > thead > tr > th { padding: 0; font-weight: 400; text-align: left; background: var(--of-tint);
+    border: var(--hair) solid var(--of-line-strong); border-radius: 6pt 6pt 0 0; }
+  .sh { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; column-gap: 9pt; align-items: center; padding: 4.5pt 9pt 4.5pt 7pt; }
+  .sc-tile { min-width: 34pt; text-align: center; background: var(--of-navy); color: #fff; border-radius: 4pt; padding: 3pt 5pt 4pt; }
+  .sc-tile .t { font-size: 6.6pt; font-weight: 700; letter-spacing: .14em; color: var(--of-dark-muted); display: block; line-height: 1.1; }
+  .sc-tile .n { font-size: 15pt; font-weight: 700; line-height: 1.05; display: block; }
+  .sc-tile.omit { background: var(--of-panel); color: var(--of-slate); border: var(--hair) solid var(--of-line-strong); }
+  .sc-tile.omit .t { color: var(--of-slate); }
+  .sc-title .eb { font-size: 6.8pt; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--of-slate); }
+  .sc-title h3 { font-size: 9.6pt; line-height: 1.22; font-weight: 700; text-transform: uppercase; color: var(--of-navy); margin-top: 1pt; }
+  .sc-cnt { text-align: right; font-size: 7.6pt; color: var(--of-slate); display: flex; flex-direction: column; align-items: flex-end; gap: 2.5pt; white-space: nowrap; }
+  .sc-cnt b { color: var(--of-navy); font-size: 9pt; }
+  table.scene > tbody > tr { break-inside: avoid; }
+  table.scene > tbody > tr > td { vertical-align: top; border-bottom: var(--hair) solid var(--of-line);
+    border-right: var(--hair) solid var(--of-line-strong); padding: 3.4pt 9pt 3.6pt; }
+  table.scene > tbody > tr > td.cl { width: 92pt; border-left: 3.2pt solid var(--c, var(--of-faint)); border-right: 0;
+    background: #fff; border-bottom-color: var(--of-line); }
+  table.scene > tbody > tr:last-child > td { border-bottom: var(--hair) solid var(--of-line-strong); }
+  table.scene > tbody > tr:last-child > td.cl { border-bottom-left-radius: 6pt; }
+  table.scene > tbody > tr:last-child > td:last-child { border-bottom-right-radius: 6pt; }
+  .cl .cn { display: flex; align-items: baseline; gap: 4pt; font-size: 6.9pt; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--of-navy); line-height: 1.25; }
+  .cl .cn i { flex: none; display: inline-block; width: 6pt; height: 6pt; border-radius: 50%; background: var(--c); }
+  .cl .cont { display: block; font-weight: 400; letter-spacing: 0; text-transform: none; color: var(--of-muted); font-size: 7pt; }
+  .els { column-count: 2; column-gap: 14pt; }
+  .no-notes .els { column-count: 3; column-gap: 12pt; }
+  .el { break-inside: avoid; padding: 1.6pt 0 1.8pt; }
+  .el .nm { display: flex; justify-content: space-between; align-items: baseline; gap: 6pt; font-size: 8.2pt; font-weight: 700; color: var(--of-ink); line-height: 1.22; }
+  .el .nm span.t { min-width: 0; }
+  .el .nt { font-size: 7.6pt; color: var(--of-slate); line-height: 1.25; margin-top: .6pt; }
+  .el.sugg { background: var(--tint-sugg); border-left: 2pt solid var(--of-orange); padding-left: 4pt; margin-left: -6pt; padding-right: 3pt; border-radius: 0 2pt 2pt 0; }
+  .el.unnamed .nm .t { font-weight: 400; color: var(--of-muted); }
+  .no-notes .nt { display: none; }
+  .no-sugg .el.sugg, .no-sugg .legend-sugg, .no-sugg .metric.sugg, .no-sugg .sc-sugg { display: none !important; }
+  table.scene td.empty { color: var(--of-muted); font-size: 8.4pt; padding: 8pt 9pt; border-left: var(--hair) solid var(--of-line-strong); }
+
+  /* ---- catalog: one table per category; thead = category band + column header (both repeat on every page) ---- */
+  .catstrip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4pt 14pt; margin: 6pt 0 4pt; padding: 6pt 9pt;
+    border: var(--hair) solid var(--of-line); border-radius: var(--radius-lg); background: var(--of-panel); break-inside: avoid; }
+  .catstrip .ci { display: flex; align-items: baseline; gap: 5pt; font-size: 8pt; color: var(--of-ink); }
+  .catstrip .ci i { flex: none; width: 6pt; height: 6pt; border-radius: 50%; background: var(--c); }
+  .catstrip .ci .nm { flex: 1; min-width: 0; }
+  .catstrip .ci b { color: var(--of-navy); }
+  .catstrip .hd { grid-column: 1 / -1; font-size: 6.8pt; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--of-slate); }
+  table.cat { width: 100%; margin: 0 0 10pt; border-collapse: separate; border-spacing: 0; }
+  table.cat > thead { display: table-header-group; }
+  table.cat thead tr.band th { background: var(--of-tint); border: var(--hair) solid var(--of-line-strong); border-left: 3.2pt solid var(--c);
+    border-radius: 6pt 6pt 0 0; padding: 4.6pt 9pt; text-align: left; }
+  .band .bn { display: flex; align-items: baseline; gap: 8pt; }
+  .band .bn b { font-size: 9.6pt; color: var(--of-navy); letter-spacing: .06em; text-transform: uppercase; }
+  .band .bn b i { display: inline-block; width: 6.5pt; height: 6.5pt; border-radius: 50%; background: var(--c); margin-right: 5pt; }
+  .band .bn span { margin-left: auto; font-size: 7.8pt; color: var(--of-slate); font-weight: 400; letter-spacing: 0; text-transform: none; }
+  table.cat thead tr.cols th { background: var(--of-panel); color: var(--of-slate); font-size: 6.9pt; font-weight: 700; letter-spacing: .09em; text-transform: uppercase;
+    border-bottom: var(--rule) solid var(--of-navy); padding: 3.2pt 7pt; text-align: left; vertical-align: middle; }
+  table.cat thead tr.cols th.r { text-align: right; }
+  table.cat thead tr.cols th:first-child { border-left: var(--hair) solid var(--of-line-strong); }
+  table.cat thead tr.cols th:last-child { border-right: var(--hair) solid var(--of-line-strong); }
+  table.cat tbody td { padding: 3.6pt 7pt 3.8pt; vertical-align: top; border-bottom: var(--hair) solid var(--of-line); font-size: 8.4pt; line-height: 1.28; }
+  table.cat tbody td:first-child { border-left: var(--hair) solid var(--of-line-strong); }
+  table.cat tbody td:last-child { border-right: var(--hair) solid var(--of-line-strong); }
+  table.cat tbody tr { break-inside: avoid; }
+  table.cat tbody tr:last-child td { border-bottom: var(--hair) solid var(--of-line-strong); }
+  table.cat tbody tr:last-child td:first-child { border-bottom-left-radius: 6pt; }
+  table.cat tbody tr:last-child td:last-child { border-bottom-right-radius: 6pt; }
+  table.cat td.it .n { font-weight: 700; color: var(--of-navy); font-size: 8.8pt; }
+  table.cat td.it .d { font-size: 7.8pt; color: var(--of-slate); margin-top: 1pt; line-height: 1.3; }
+  table.cat td.sc { font-weight: 700; color: var(--of-ink); }
+  table.cat td.sc.none { font-weight: 400; color: var(--of-muted); }
+  table.cat td.us { text-align: right; }
+  table.cat tbody tr:nth-child(-n+2) { break-after: avoid; }
+  table.cat tbody tr:nth-last-child(2) { break-after: avoid; }
+  table.cat tbody td.us { padding-top: 4.4pt; }
+  table.cat tbody td .chip { margin-top: .6pt; }
+  .us { white-space: nowrap; }
+  .us .v { font-size: 9.6pt; font-weight: 700; color: var(--of-navy); line-height: 1.1; display: inline-block; min-width: 14pt; text-align: right; }
+  .us.zero .v { color: var(--of-muted); font-weight: 400; }
+  .us .bar { display: inline-block; height: 3pt; width: 30pt; background: var(--of-line); border-radius: 1.5pt; margin: 0 5pt 1pt 0; overflow: hidden; vertical-align: middle; }
+  .us .bar i { display: block; height: 100%; background: var(--of-navy); }
+  table.cat td .chip { font-size: 6.6pt; }
+  .empty-state { margin-top: 4pt; }
+  .stress-banner { border: var(--hair) solid var(--of-amber-line); border-left: 3pt solid var(--of-orange); background: var(--of-amber-fill);
+    color: var(--of-amber-text); padding: 5pt 9pt; font-size: 8pt; margin: 0 0 8pt; border-radius: 3pt; break-inside: avoid; }
+
+</style>
+</head>
+<body>
+<div class="doc" data-live-counts>
+<div class="stress-banner"><b>STRESS TEST — illustrative (fictional) data.</b> Rows and numbers on these pages are invented to push the layout (very large scenes, very long names and notes, empty categories, items used in dozens of scenes, a table that runs for many pages). The Props catalog table is the real Low Tide Radio data. This is not a real export.</div>
+  <header class="masthead">
+    <div>
+      <div class="eyebrow">Production / Breakdown report</div>
+      <h1>Breakdown Report</h1>
+      <div class="meta-line">Project: The Long Working Title of a Very Large Production That Keeps Going: A Story in Several Parts · Source: THE LONG WORKING TITLE OF A VERY LARGE PRODUCTION: Pink Revision (Locked Shooting Script, Second Unit Pages Included)</div>
+    </div>
+    <div class="expref" aria-label="Export reference">
+      <div class="lbl">Export reference</div>
+      <div class="d">22 OCT 2026</div>
+      <div class="s">Entire production source</div>
+    </div>
+  </header><div class="metrics" role="group" aria-label="Totals"><div class="metric "><div class="lbl">Scenes</div><div class="val">5</div></div><div class="metric "><div class="lbl">Confirmed elements</div><div class="val" data-m="confirmed">147</div></div><div class="metric sugg"><div class="lbl">Suggested</div><div class="val" data-m="suggested">9</div></div></div><div class="sec first"><h2>Breakdown by scene</h2><span class="hint">Ordered by the Production Source</span></div>
+  <div class="key legend-sugg" aria-label="How element states are marked">
+    <div class="txt">Suggested elements are not confirmed yet and carry a SUGGESTED label. Elements added by hand carry a MANUAL label.</div>
+    <div class="kr">
+      <span class="sw"><span class="nm">Name</span> = confirmed (no label)</span>
+      <span class="sw"><span class="nm">Name</span><span class="tg m">Manual</span> = added by hand</span>
+      <span class="sw"><span class="nm sg">Name</span><span class="tg s">Suggested</span> = not confirmed yet (tinted row)</span>
+    </div>
+  </div>
+  <table class="scene" aria-label="Scene 118">
+    <thead><tr><th colspan="2"><div class="sh">
+      <div class="sc-tile"><span class="t">SCENE</span><span class="n">118</span></div>
+      <div class="sc-title"><div class="eb">Breakdown scene<span class="illus"> · Illustrative (fictional)</span></div><h3>INT./EXT. COAST RADIO STATION - TAPE ROOM, OPERATIONS ROOM, ROOF AND THE FLOODED BASEMENT CORRIDOR (CONTINUOUS ACTION ACROSS FOUR LEVELS DURING THE GREAT BLACKOUT, INTERCUT WITH THE HARBOUR) - NIGHT (1999)</h3></div>
+      <div class="sc-cnt"><b class="sc-n">152 elements</b><span class="tg s sc-sugg">9 suggested</span></div>
+    </div></th></tr></thead>
+    <tbody><tr style="--c:var(--cat-cast)"><td class="cl"><div class="cn"><i></i><span>Cast</span></div></td><td><div class="els"><div class="el"><div class="nm"><span class="t">SURESH</span></div></div><div class="el"><div class="nm"><span class="t">RAHUL</span><span class="tg m">Manual</span></div></div><div class="el"><div class="nm"><span class="t">ANJALI</span><span class="tg m">Manual</span></div></div><div class="el sugg"><div class="nm"><span class="t">JOE</span><span class="tg s">Suggested</span></div></div><div class="el"><div class="nm"><span class="t">MARIAMMA</span><span class="tg m">Manual</span></div></div><div class="el"><div class="nm"><span class="t">FATHIMA</span><span class="tg m">Manual</span></div></div><div class="el"><div class="nm"><span class="t">APPACHAN</span></div></div><div class="el"><div class="nm"><span class="t">LATHA</span><span class="tg m">Manual</span></div></div><div class="el"><div class="nm"><span class="t">MEENU</span><span class="tg m">Manual</span></div></div><div class="el"><div class="nm"><span class="t">OLD FISHERMAN</span></div></div><div class="el"><div class="nm"><span class="t">PORT OFFICER</span><span class="tg m">Manual</span></div></div><div class="el"><div class="nm"><span class="t">NURSE</span><span class="tg m">Manual</span></div></div></div></td></tr><tr style="--c:var(--cat-cast)"><td class="cl"><div class="cn"><i></i><span>Cast<span class="cont">cont.</span></span></div></td><td><div class="els"><div class="el"><div class="nm"><span class="t">HARBOUR CLERK</span></div></div><div class="el"><div class="nm"><span class="t">STUDIO PRODUCER</span><span class="tg m">Manual</span></div></div><div class="el"><div class="nm"><span class="t">YOUNG ANJALI</span><span class="tg m">Manual</span></div></div><div class="el"><div class="nm"><span class="t">VARGHESE</span></div></div><div class="el"><div class="nm"><span class="t">GUARD</span><span class="tg m">Manual</span></div></div><div class="el"><div class="nm"><span class="t">BOAT CAPTAIN</span><span class="tg m">Manual</span></div></div><div class="el"><div class="nm"><span class="t">RADIO OPERATOR</span></div></div><div class="el"><div class="nm"><span class="t">SCHOOL TEACHER</span><span class="tg m">Manual</span></div></div><div class="el"><div class="nm"><span class="t">CHURCH CHOIR LEADER, speaking part, one line in dialect (to be cast locally)</span><span class="tg m">Manual</span></div></div><div class="el"><div class="nm"><span class="t">Unnamed fisherman with a stammer and a very long description that keeps going</span></div></div><div class="el"><div class="nm"><span class="t">TEA SHOP OWNER</span><span class="tg m">Manual</span></div></div><div class="el"><div class="nm"><span class="t">DOCTOR</span><span class="tg m">Manual</span></div></div></div></td></tr><tr style="--c:var(--cat-extras)"><td class="cl"><div class="cn"><i></i><span>Extras / Background</span></div></td><td><div class="els"><div class="el"><div class="nm"><span class="t">Search party fishermen</span><span class="tg m">Manual</span></div><div class="nt">30, plastic sheets, torches and lanterns</div></div><div class="el"><div class="nm"><span class="t">Kids on bicycles</span><span class="tg m">Manual</span></div><div class="nt">6</div></div><div class="el sugg"><div class="nm"><span class="t">Site crew</span><span class="tg s">Suggested</span></div></div><div class="el"><div class="nm"><span class="t">Station staff in 1999 uniform, mixed ages, some wearing the older style khaki with the metal buttons</span><span class="tg m">Manual</span></div><div class="nt">Hero item, three identical duplicates plus one stunt version that must survive being dropped from the gantry twice before lunch. Continuity photographs are in the art-department folder; the props master keeps the master copy locked in the safe between takes and signs it in and out against the call sheet. Do not substitute the rubber version for any close-up. If the water-damage version is needed for the next day the 1st AD must be told before wrap so that the dressing is not reset overnight by the night crew.</div></div><div class="el"><div class="nm"><span class="t">Harbour fishermen</span></div></div><div class="el"><div class="nm"><span class="t">Church choir</span><span class="tg m">Manual</span></div><div class="nt">12</div></div></div></td></tr><tr style="--c:var(--cat-location)"><td class="cl"><div class="cn"><i></i><span>Location / Set</span></div></td><td><div class="els"><div class="el"><div class="nm"><span class="t">Coast Radio Station (Old Signal Station, Vypin) - tape room, operations room, roof and flooded basement corridor, all dressed for 1999</span><span class="tg m">Manual</span></div><div class="nt">Whole building is the set</div></div><div class="el"><div class="nm"><span class="t">Munambam Fishing Harbour</span><span class="tg m">Manual</span></div></div><div class="el"><div class="nm"><span class="t">Kadalkkara Jetty</span></div><div class="nt">Practical, battery powered, must run for the whole take and be re-set between takes by the props assistant.</div></div></div></td></tr><tr style="--c:var(--cat-props)"><td class="cl"><div class="cn"><i></i><span>Props</span></div></td><td><div class="els"><div class="el"><div class="nm"><span class="t">Handset 01 (spare, with the long hand-written label)</span></div><div class="nt">Practical, battery powered, must run for the whole take and be re-set between takes by the props assistant.</div></div><div class="el"><div class="nm"><span class="t">Logbook 01</span><span class="tg m">Manual</span></div></div><div class="el"><div class="nm"><span class="t">Reel 01</span></div></div><div class="el"><div class="nm"><span class="t">Lantern 01</span><span class="tg m">Manual</span></div><div class="nt">Hero item, three identical duplicates plus one stunt version that must survive being dropped from the gantry twice before lunch. Continuity photographs are in the art-department folder; the props master keeps the master copy locked in the safe between takes and signs it in and out against the call sheet. Do not substitute the rubber version for any close-up. If the water-damage version is needed for the next day the 1st AD must be told before wrap so that the dressing is not reset overnight by the night crew.</div></div><div class="el"><div class="nm"><span class="t">Thermos 01</span></div></div><div class="el sugg"><div class="nm"><span class="t">Crate 01</span><span class="tg s">Suggested</span></div><div class="nt">Practical, battery powered, must run for the whole take and be re-set between takes by the props assistant.</div></div><div class="el"><div class="nm"><span class="t">Radio 01</span></div></div><div class="el"><div class="nm"><span class="t">Cable drum 01</span><span class="tg m">Manual</span></div></div><div class="el"><div class="nm"><span class="t">Rope coil 01</span></div></div><div class="el"><div class="nm"><span class="t">Torch 01 (spare, with the long hand-written label)</span><span class="tg m">Manual</span></div></div><div class="el"><div class="nm"><span class="t">Tarpaulin 01</span></div><div class="nt">Practical, battery powered, must run for the whole take and be re-set between takes by the props assistant.</div></div><div class="el"><div class="nm"><span class="t">Ledger 01</span><span class="tg m">Manual</span></div></div></div></td></tr><tr style="--c:var(--cat-props)"><td class="cl"><div class="cn"><i></i><span>Props<span class="cont">cont.</span></span></div></td><td><div class="els"><div class="el"><div class="nm"><span class="t">Ammunition box 01</span></div></div><div class="el"><div class="nm"><span class="t">Binoculars 01</span><span class="tg m">Manual</span></div></div><div class="el"><div class="nm"><span class="t">Map 01</span></div></div><div class="el"><div class="nm"><span class="t">Compass 01</span><span class="tg m">Manual</span></div><div class="nt">Practical, battery powered, must run for the whole take and be re-set between takes by the props assistant.</div></div><div class="el"><div class="nm"><span class="t">Kettle 01</span></div></div><div class="el"><div class="nm"><span class="t">Tin cup 01</span><span class="tg m">Manual</span></div></div><div class="el"><div class="nm"><span class="t">Ration bag 01 (spare, with the long hand-written label)</span></div></div><div class="el"><div class="nm"><span class="t">Wrench 01</span><span class="tg m">Manual</span></div></div><div class="el"><div class="nm"><span class="t">Handset 02</span></div><div class="nt">Practical, battery powered, must run for the whole take and be re-set between takes by the props assistant.</div></div><div class="el"><div class="nm"><span class="t">Logbook 02</span><span class="tg m">Manual</span></div></div><div class="el sugg"><div class="nm"><span class="t">Reel 02</span><span class="tg s">Suggested</span></div></div><div class="el"><div class="nm"><span class="t">Lantern 02</span><span class="tg m">Manual</span></div></div></div></td></tr><tr style="--c:var(--cat-props)"><td class="cl"><div class="cn"><i></i><span>Props<span class="cont">cont.</span></span></div></td><td><div class="els"><div class="el"><div class="nm"><span class="t">Thermos 02</span></div></div><div class="el"><div class="nm"><span class="t">Crate 02</span><span class="tg m">Manual</span></div><div class="nt">Practical, battery powered, must run for the whole take and be re-set between takes by the props assistant.</div></div><div class="el"><div class="nm"><span class="t">Radio 02</span></div></div><div class="el"><div class="nm"><span class="t">Cable drum 02 (spare, with the long hand-written label)</span><span class="tg m">Manual</span></div></div><div class="el"><div class="nm"><span class="t">Rope coil 02</span></div></div><div class="el"><div class="nm"><span class="t">Torch 02</span><span class="tg m">Manual</span></div></div><div class="el"><div class="nm"><span class="t">Tarpaulin 02</span></div><div class="nt">Practical, battery powered, must run for the whole take and be re-set between takes by the props assistant.</div></div><div class="el"><div class="nm"><span class="t">Ledger 02</span><span class="tg m">Manual</span></div></div><div class="el"><div class="nm"><span class="t">Ammunition box 02</span></div></div><div class="el"><div class="nm"><span class="t">Binoculars 02</span><span class="tg m">Manual</span></div></div><div class="el"><div class="nm"><span class="t">Map 02</span></div></div><div class="el"><div class="nm"><span class="t">Compass 02</span><span class="tg m">Manual</span></div><div class="nt">Practical, battery powered, must run for the whole take and be re-set between takes by the props assistant.</div></div></div></td></tr><tr style="--c:var(--cat-props)"><td class="cl"><div class="cn"><i></i><span>Props<span class="cont">cont.</span></span></div></td><td><div class="els"><div class="el"><div class="nm"><span class="t">Kettle 02 (spare, with the long hand-written label)</span></div></div><div class="el"><div class="nm"><span class="t">Tin cup 02</span><span class="tg m">Manual</span></div></div><div class="el"><div class="nm"><span class="t">Ration bag 02</span></div></div><div class="el sugg"><div class="nm"><span class="t">Wrench 02</span><span class="tg s">Suggested</span></div></div><div class="el"><div class="nm"><span class="t">Handset 03</span></div><div class="nt">Hero item, three identical duplicates plus one stunt version that must survive being dropped from the gantry twice before lunch. Continuity photographs are in the art-department folder; the props master keeps the master copy locked in the safe between takes and signs it in and out against the call sheet. Do not substitute the rubber version for any close-up. If the water-damage version is needed for the next day the 1st AD must be told before wrap so that the dressing is not reset overnight by the night crew.</div></div><div class="el"><div class="nm"><span class="t">Logbook 03</span><span class="tg m">Manual</span></div></div><div class="el"><div class="nm"><span class="t">Reel 03</span></div></div><div class="el"><div class="nm"><span class="t">Lantern 03</span><span class="tg m">Manual</span></div></div><div class="el"><div class="nm"><span class="t">Thermos 03</span></div></div><div class="el"><div class="nm"><span class="t">Crate 03 (spare, with the long hand-written label)</span><span class="tg m">Manual</span></div><div class="nt">Practical, battery powered, must run for the whole take and be re-set between takes by the props assistant.</div></div><div class="el"><div class="nm"><span class="t">Radio 03</span></div></div><div class="el"><div class="nm"><span class="t">Cable drum 03</span><span class="tg m">Manual</span></div></div></div></td></tr><tr style="--c:var(--cat-props)"><td class="cl"><div class="cn"><i></i><span>Props<span class="cont">cont.</span></span></div></td><td><div class="els"><div class="el"><div class="nm"><span class="t">Rope coil 03</span></div></div><div class="el"><div class="nm"><span class="t">Torch 03</span><span class="tg m">Manual</span></div></div><div class="el"><div class="nm"><span class="t">Tarpaulin 03</span></div><div class="nt">Practical, battery powered, must run for the whole take and be re-set between takes by the props assistant.</div></div><div class="el"><div class="nm"><span class="t">Ledger 03</span><span class="tg m">Manual</span></div></div><div class="el"><div class="nm"><span class="t">Ammunition box 03</span></div></div><div class="el"><div class="nm"><span class="t">Binoculars 03</span><span class="tg m">Manual</span></div></div><div class="el"><div class="nm"><span class="t">Map 03 (spare, with the long hand-written label)</span></div></div><div class="el"><div class="nm"><span class="t">Compass 03</span><span class="tg m">Manual</span></div><div class="nt">Practical, battery powered, must run for the whole take and be re-set between takes by the props assistant.</div></div><div class="el sugg"><div class="nm"><span class="t">Kettle 03</span><span class="tg s">Suggested</span></div></div><div class="el"><div class="nm"><span class="t">Tin cup 03</span><span class="tg m">Manual</span></div></div><div class="el"><div class="nm"><span class="t">Ration bag 03</span></div></div><div class="el"><div class="nm"><span class="t">Wrench 03</span><span class="tg m">Manual</span></div></div></div></td></tr><tr style="--c:var(--cat-props)"><td class="cl"><div class="cn"><i></i><span>Props<span class="cont">cont.</span></span></div></td><td><div class="els"><div class="el"><div class="nm"><span class="t">Handset 04</span></div><div class="nt">Practical, battery powered, must run for the whole take and be re-set between takes by the props assistant.</div></div><div class="el"><div class="nm"><span class="t">Logbook 04</span><span class="tg m">Manual</span></div></div><div class="el"><div class="nm"><span class="t">Reel 04</span></div></div><div class="el"><div class="nm"><span class="t">Lantern 04 (spare, with the long hand-written label)</span><span class="tg m">Manual</span></div></div></div></td></tr><tr style="--c:var(--cat-wardrobe)"><td class="cl"><div class="cn"><i></i><span>Wardrobe</span></div></td><td><div class="els"><div class="el"><div class="nm"><span class="t">Costume 00: Suresh&#x27;s hard hat and site boots</span></div><div class="nt">Practical, battery powered, must run for the whole take and be re-set between takes by the props assistant.</div></div><div class="el"><div class="nm"><span class="t">Costume 01: Rahul&#x27;s school clothes</span><span class="tg m">Manual</span></div></div><div class="el"><div class="nm"><span class="t">Costume 02: Anjali&#x27;s everyday clothes</span></div></div><div class="el"><div class="nm"><span class="t">Costume 03: Mariamma&#x27;s 1999 duty sari</span><span class="tg m">Manual</span></div></div><div class="el"><div class="nm"><span class="t">Costume 04: Joe&#x27;s 1999 khaki station shirt</span></div></div><div class="el"><div class="nm"><span class="t">Costume 05: Supercalifragilisticexpialidocious_unbroken_identifier_ABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789</span><span class="tg m">Manual</span></div></div><div class="el"><div class="nm"><span class="t">Costume 06: Appachan&#x27;s good white shirt</span></div><div class="nt">Practical, battery powered, must run for the whole take and be re-set between takes by the props assistant.</div></div><div class="el"><div class="nm"><span class="t">Costume 07: Fathima&#x27;s sari over the head</span><span class="tg m">Manual</span></div></div><div class="el"><div class="nm"><span class="t">Costume 08: Latha&#x27;s cardigan</span></div></div><div class="el"><div class="nm"><span class="t">Costume 09: Meenu&#x27;s oversized school uniform</span><span class="tg m">Manual</span></div></div><div class="el"><div class="nm"><span class="t">Costume 10: Suresh&#x27;s hard hat and site boots</span></div></div><div class="el"><div class="nm"><span class="t">Costume 11: Rahul&#x27;s school clothes</span><span class="tg m">Manual</span></div></div></div></td></tr><tr style="--c:var(--cat-wardrobe)"><td class="cl"><div class="cn"><i></i><span>Wardrobe<span class="cont">cont.</span></span></div></td><td><div class="els"><div class="el"><div class="nm"><span class="t">Costume 12: Anjali&#x27;s everyday clothes</span></div><div class="nt">Practical, battery powered, must run for the whole take and be re-set between takes by the props assistant.</div></div><div class="el"><div class="nm"><span class="t">Costume 13: Mariamma&#x27;s 1999 duty sari</span><span class="tg m">Manual</span></div></div><div class="el"><div class="nm"><span class="t">Costume 14: Joe&#x27;s 1999 khaki station shirt</span></div></div><div class="el"><div class="nm"><span class="t">Costume 15: Supercalifragilisticexpialidocious_unbroken_identifier_ABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789</span><span class="tg m">Manual</span></div></div><div class="el"><div class="nm"><span class="t">Costume 16: Appachan&#x27;s good white shirt</span></div></div><div class="el"><div class="nm"><span class="t">Costume 17: Fathima&#x27;s sari over the head</span><span class="tg m">Manual</span></div></div><div class="el"><div class="nm"><span class="t">Costume 18: Latha&#x27;s cardigan</span></div><div class="nt">Practical, battery powered, must run for the whole take and be re-set between takes by the props assistant.</div></div><div class="el"><div class="nm"><span class="t">Costume 19: Meenu&#x27;s oversized school uniform</span><span class="tg m">Manual</span></div></div></div></td></tr><tr style="--c:var(--cat-vehicles)"><td class="cl"><div class="cn"><i></i><span>Vehicles</span></div></td><td><div class="els"><div class="el"><div class="nm"><span class="t">Site generator truck</span><span class="tg m">Manual</span></div><div class="nt">Practical, battery powered, must run for the whole take and be re-set between takes by the props assistant.</div></div><div class="el"><div class="nm"><span class="t">KSRTC bus</span><span class="tg m">Manual</span></div></div><div class="el"><div class="nm"><span class="t">Fishing boat Little Flower (hero)</span><span class="tg m">Manual</span></div><div class="nt">Wooden thirty-footer</div></div><div class="el sugg"><div class="nm"><span class="t">Bicycles (background)</span><span class="tg s">Suggested</span></div></div></div></td></tr><tr style="--c:var(--cat-hairmakeup)"><td class="cl"><div class="cn"><i></i><span>Hair / Makeup</span></div></td><td><div class="els"><div class="el"><div class="nm"><span class="t">1999 period looks</span><span class="tg m">Manual</span></div><div class="nt">Mariamma at 38, Joe aged down</div></div><div class="el"><div class="nm"><span class="t">Rain wet-down (cast)</span><span class="tg m">Manual</span></div></div><div class="el unnamed"><div class="nm"><span class="t">Unnamed element</span><span class="tg m">Manual</span></div><div class="nt">Element with no name</div></div><div class="el"><div class="nm"><span class="t">Sea spray wet-down</span></div></div></div></td></tr><tr style="--c:var(--cat-sfx)"><td class="cl"><div class="cn"><i></i><span>Special Effects</span></div></td><td><div class="els"><div class="el"><div class="nm"><span class="t">Rain towers and wind machines 1</span><span class="tg m">Manual</span></div><div class="nt">Practical, battery powered, must run for the whole take and be re-set between takes by the props assistant.</div></div><div class="el"><div class="nm"><span class="t">Rain towers and wind machines 2</span><span class="tg m">Manual</span></div></div><div class="el"><div class="nm"><span class="t">Rain towers and wind machines 3</span><span class="tg m">Manual</span></div><div class="nt">Practical, battery powered, must run for the whole take and be re-set between takes by the props assistant.</div></div><div class="el"><div class="nm"><span class="t">Rain towers and wind machines 4</span><span class="tg m">Manual</span></div></div><div class="el"><div class="nm"><span class="t">Rain towers and wind machines 5</span><span class="tg m">Manual</span></div><div class="nt">Practical, battery powered, must run for the whole take and be re-set between takes by the props assistant.</div></div><div class="el"><div class="nm"><span class="t">Rain towers and wind machines 6</span><span class="tg m">Manual</span></div></div><div class="el"><div class="nm"><span class="t">Rain towers and wind machines 7</span><span class="tg m">Manual</span></div><div class="nt">Practical, battery powered, must run for the whole take and be re-set between takes by the props assistant.</div></div><div class="el"><div class="nm"><span class="t">Rain towers and wind machines 8</span><span class="tg m">Manual</span></div></div><div class="el"><div class="nm"><span class="t">Rain towers and wind machines 9</span><span class="tg m">Manual</span></div><div class="nt">Practical, battery powered, must run for the whole take and be re-set between takes by the props assistant.</div></div><div class="el"><div class="nm"><span class="t">Rain towers and wind machines 10</span><span class="tg m">Manual</span></div></div></div></td></tr><tr style="--c:var(--cat-vfx)"><td class="cl"><div class="cn"><i></i><span>VFX</span></div></td><td><div class="els"><div class="el"><div class="nm"><span class="t">Storm sea extension 1</span><span class="tg m">Manual</span></div></div><div class="el"><div class="nm"><span class="t">Storm sea extension 2</span><span class="tg m">Manual</span></div></div><div class="el"><div class="nm"><span class="t">Storm sea extension 3</span><span class="tg m">Manual</span></div></div><div class="el"><div class="nm"><span class="t">Storm sea extension 4</span><span class="tg m">Manual</span></div></div><div class="el"><div class="nm"><span class="t">Storm sea extension 5</span><span class="tg m">Manual</span></div></div><div class="el"><div class="nm"><span class="t">Storm sea extension 6</span><span class="tg m">Manual</span></div></div><div class="el"><div class="nm"><span class="t">Storm sea extension 7</span><span class="tg m">Manual</span></div></div><div class="el"><div class="nm"><span class="t">Storm sea extension 8</span><span class="tg m">Manual</span></div></div></div></td></tr><tr style="--c:var(--cat-sound)"><td class="cl"><div class="cn"><i></i><span>Sound</span></div></td><td><div class="els"><div class="el"><div class="nm"><span class="t">Radio playback (Mariamma on air)</span><span class="tg m">Manual</span></div><div class="nt">Practical, battery powered, must run for the whole take and be re-set between takes by the props assistant.</div></div><div class="el"><div class="nm"><span class="t">Period radio static</span><span class="tg m">Manual</span></div></div><div class="el"><div class="nm"><span class="t">Generator hum</span><span class="tg m">Manual</span></div><div class="nt">Coughs, catches, roars</div></div><div class="el"><div class="nm"><span class="t">Nagra running in the dark</span><span class="tg m">Manual</span></div><div class="nt">Isolated mechanism sound after blackout</div></div><div class="el"><div class="nm"><span class="t">Wave impacts and wind</span><span class="tg m">Manual</span></div></div><div class="el sugg"><div class="nm"><span class="t">Phone playback</span><span class="tg s">Suggested</span></div></div></div></td></tr><tr style="--c:var(--cat-animals)"><td class="cl"><div class="cn"><i></i><span>Animals</span></div></td><td><div class="els"><div class="el"><div class="nm"><span class="t">Kannan (dog)</span><span class="tg m">Manual</span></div><div class="nt">Wet work, trained double dog, handler in the gap between blocks</div></div><div class="el"><div class="nm"><span class="t">Gulls</span></div></div><div class="el sugg"><div class="nm"><span class="t">Crows</span><span class="tg s">Suggested</span></div></div></div></td></tr></tbody>
+  </table>
+  <table class="scene" aria-label="Scene 119">
+    <thead><tr><th colspan="2"><div class="sh">
+      <div class="sc-tile"><span class="t">SCENE</span><span class="n">119</span></div>
+      <div class="sc-title"><div class="eb">Breakdown scene<span class="illus"> · Illustrative (fictional)</span></div><h3>EXT. KADALKKARA JETTY - DUSK</h3></div>
+      <div class="sc-cnt"><b class="sc-n">3 elements</b><span class="tg s sc-sugg" hidden></span></div>
+    </div></th></tr></thead>
+    <tbody><tr style="--c:var(--cat-cast)"><td class="cl"><div class="cn"><i></i><span>Cast</span></div></td><td><div class="els"><div class="el"><div class="nm"><span class="t">Suresh</span></div></div><div class="el"><div class="nm"><span class="t">Anjali</span><span class="tg m">Manual</span></div></div></div></td></tr><tr style="--c:var(--cat-sound)"><td class="cl"><div class="cn"><i></i><span>Sound</span></div></td><td><div class="els"><div class="el"><div class="nm"><span class="t">Harbour ambience</span><span class="tg m">Manual</span></div></div></div></td></tr></tbody>
+  </table>
+  <table class="scene" aria-label="Scene 120">
+    <thead><tr><th colspan="2"><div class="sh">
+      <div class="sc-tile omit"><span class="t">SCENE</span><span class="n">120</span></div>
+      <div class="sc-title"><div class="eb">Breakdown scene<span class="illus"> · Illustrative (fictional)</span></div><h3>OMITTED</h3></div>
+      <div class="sc-cnt"></div>
+    </div></th></tr></thead>
+    <tbody><tr><td class="empty" colspan="2">No breakdown elements yet.</td></tr></tbody>
+  </table>
+  <table class="scene" aria-label="Scene 121">
+    <thead><tr><th colspan="2"><div class="sh">
+      <div class="sc-tile"><span class="t">SCENE</span><span class="n">121</span></div>
+      <div class="sc-title"><div class="eb">Breakdown scene<span class="illus"> · Illustrative (fictional)</span></div><h3>INT. SURESH&#x27;S HOUSE - DAY</h3></div>
+      <div class="sc-cnt"></div>
+    </div></th></tr></thead>
+    <tbody><tr><td class="empty" colspan="2">No breakdown elements yet.</td></tr></tbody>
+  </table>
+  <table class="scene" aria-label="Scene 122">
+    <thead><tr><th colspan="2"><div class="sh">
+      <div class="sc-tile"><span class="t">SCENE</span><span class="n">122</span></div>
+      <div class="sc-title"><div class="eb">Breakdown scene<span class="illus"> · Illustrative (fictional)</span></div><h3>INT. TAPE ROOM - NIGHT</h3></div>
+      <div class="sc-cnt"><b class="sc-n">1 element</b><span class="tg s sc-sugg" hidden></span></div>
+    </div></th></tr></thead>
+    <tbody><tr style="--c:var(--cat-props)"><td class="cl"><div class="cn"><i></i><span>Props</span></div></td><td><div class="els"><div class="el"><div class="nm"><span class="t">Station logbook 1999</span><span class="tg m">Manual</span></div><div class="nt">A very long continuous note without a break in sight,  very long continuous note without a break in sight,  very long continuous note without a break in sight,  very long continuous note without a break in sight,  very long continuous note without a break in sight,  very long continuous note without a break in sight,  very long continuous note without a break in sight,  very long continuous note without a break in sight,  very long continuous note without a break in sight,  very long continuous note without a break in sight,  very long continuous note without a break in sight,  very long continuous note without a break in sight,  very long continuous note without a break in sight,  very long continuous note without a break in sight, </div></div></div></td></tr></tbody>
+  </table>
+</div>
+
+<script src="../../../00_SYSTEM/assets/of-preview.js"></script>
+<script>
+  /* Preview-only: the two export options that change this document, plus live recount of the figures they affect. */
+  (function () {
+    var bar = document.querySelector('.preview-bar'); var doc = document.querySelector('.doc'); if (!bar || !doc) return;
+    function add(label, cls, on) {
+      var l = document.createElement('label'), cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = on;
+      cb.addEventListener('change', function () { doc.classList.toggle(cls, !cb.checked); recount(); });
+      l.appendChild(cb); l.appendChild(document.createTextNode(label)); bar.insertBefore(l, bar.querySelector('button'));
+    }
+    function recount() {
+      var noS = doc.classList.contains('no-sugg'), totalConf = 0, totalSug = 0;
+      Array.prototype.forEach.call(doc.querySelectorAll('table.scene'), function (t) {
+        var els = t.querySelectorAll('.el'), n = 0, s = 0;
+        Array.prototype.forEach.call(els, function (x) { var sg = x.classList.contains('sugg'); if (sg && noS) return; n++; if (sg) s++; });
+        var c = t.querySelector('.sc-n'); if (c) c.textContent = n === 1 ? '1 element' : n + ' elements';
+        var cs = t.querySelector('.sc-sugg'); if (cs) cs.textContent = s + ' suggested';
+        totalConf += n - s; totalSug += s;
+      });
+      var a = doc.querySelector('[data-m="confirmed"]'), b = doc.querySelector('[data-m="suggested"]');
+      if (a && doc.hasAttribute('data-live-counts')) a.textContent = totalConf;
+      if (b && doc.hasAttribute('data-live-counts')) b.textContent = totalSug;
+    }
+    add('Include element notes', 'no-notes', true);
+    add('Include suggested elements (marked as suggested)', 'no-sugg', true);
+  })();
+</script>
+
+</body>
+</html>

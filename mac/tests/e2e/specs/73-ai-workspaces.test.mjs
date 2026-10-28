@@ -12,7 +12,7 @@
 
 import { after, before, describe, test } from "node:test";
 import assert from "node:assert/strict";
-import { launchApp, openWorkspace, stepper } from "../lib/app.mjs";
+import { launchApp, openBeatBoard, openWorkspace, stepper } from "../lib/app.mjs";
 import { firstLaunchProject, importFountain, projectMenu } from "../lib/flows.mjs";
 import { NIGHT_BUS, ask, closeAssistant, openAssistant, scopeInfo } from "../lib/ai.mjs";
 
@@ -76,7 +76,7 @@ describe("AI entry points in every workspace", () => {
 
   test("a question asked in the Beat Board uses the Beat Board", async () => {
     await step("story", async () => {
-      await openWorkspace(browser, "Story");
+      await openBeatBoard(browser);
       await openAssistant(browser);
       const r = await ask(browser, "What is on the Beat Board?");
       assert.ok(answered(r), `${r.kind}: ${r.text}`);

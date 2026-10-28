@@ -17,7 +17,7 @@ struct LicenceHost: ViewModifier {
     let licence: LicenceModel
 
     func body(content: Content) -> some View {
-        content.sheet(item: Binding(
+        content.themedSheet(item: Binding(
             get: { licence.screen },
             set: { next in
                 // A sheet closing by itself (not mandatory ones) means the screen was dismissed.
@@ -151,7 +151,7 @@ struct ReminderDialog: View {
             Button { Task { if await licence.buy() { await licence.closeReminder() } } } label: {
                 Label("Buy full version", systemImage: "bolt.fill")
             }
-            .buttonStyle(.borderedProminent)
+            .buttonStyle(.ofProminent)
             .keyboardShortcut(.defaultAction)
             .disabled(licence.busy)
             .accessibilityIdentifier("licence-buy")
@@ -207,7 +207,7 @@ struct DataNoteDialog: View {
                 .font(.caption).foregroundStyle(.secondary)
             Spacer()
             Button("OK, I understand") { Task { await licence.record(.dataNote) } }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(.ofProminent)
                 .keyboardShortcut(.defaultAction)
                 .disabled(!(readToEnd && ticked))
                 .accessibilityIdentifier("licence-ok")
@@ -276,12 +276,12 @@ struct TutorialDialog: View {
             }
             if last {
                 Button("Finish") { Task { await licence.record(.tutorial) } }
-                    .buttonStyle(.borderedProminent).keyboardShortcut(.defaultAction)
+                    .buttonStyle(.ofProminent).keyboardShortcut(.defaultAction)
                     .disabled(!checks.allSatisfy { $0 })
                     .accessibilityIdentifier("licence-finish")
             } else {
                 Button("Next") { step += 1 }
-                    .buttonStyle(.borderedProminent).keyboardShortcut(.defaultAction)
+                    .buttonStyle(.ofProminent).keyboardShortcut(.defaultAction)
                     .accessibilityIdentifier("licence-next")
             }
         }
@@ -371,7 +371,7 @@ struct WelcomeDialog: View {
             }
         } footer: {
             Button("OK") { Task { await licence.record(.welcome) } }
-                .buttonStyle(.borderedProminent).keyboardShortcut(.defaultAction)
+                .buttonStyle(.ofProminent).keyboardShortcut(.defaultAction)
                 .accessibilityIdentifier("licence-ok")
         }
     }
@@ -396,7 +396,7 @@ struct MacFirstLaunchDialog: View {
                     "Buy the full version", "Through the App Store, which shows you the details before you buy.", id: "licence-buy-card"
                 ) {
                     Button { Task { await licence.buy() } } label: { Label("Buy full version", systemImage: "bolt.fill") }
-                        .buttonStyle(.borderedProminent).disabled(licence.busy).accessibilityIdentifier("licence-buy")
+                        .buttonStyle(.ofProminent).disabled(licence.busy).accessibilityIdentifier("licence-buy")
                 }
             }
             HStack {
@@ -442,7 +442,7 @@ struct LockedDialog: View {
         } footer: {
             VStack(spacing: 8) {
                 Button { Task { await licence.buy() } } label: { Label("Buy full version", systemImage: "bolt.fill") }
-                    .buttonStyle(.borderedProminent).controlSize(.large).keyboardShortcut(.defaultAction)
+                    .buttonStyle(.ofProminent).controlSize(.large).keyboardShortcut(.defaultAction)
                     .disabled(licence.busy).accessibilityIdentifier("licence-buy")
                 Button { Task { await licence.restore() } } label: { Label("Restore purchase", systemImage: "arrow.clockwise") }
                     .buttonStyle(.borderless).controlSize(.small).disabled(licence.busy)
@@ -476,7 +476,7 @@ struct CheckDialog: View {
             Button("Buy full version") { Task { await licence.buy() } }
                 .disabled(licence.busy).accessibilityIdentifier("licence-buy")
             Button("Try again") { Task { await licence.restore() } }
-                .buttonStyle(.borderedProminent).keyboardShortcut(.defaultAction)
+                .buttonStyle(.ofProminent).keyboardShortcut(.defaultAction)
                 .disabled(licence.busy).accessibilityIdentifier("licence-try-again")
         }
     }

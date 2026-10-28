@@ -1,6 +1,6 @@
 # MacHTML: every screen of OpenFrame Studio for the Mac
 
-692 screens in 26 areas, each captured from the real app in Light mode (`light/`) and in Dark mode
+760 screens in 27 areas, each captured from the real app in Light mode (`light/`) and in Dark mode
 (`dark/`). Open `index.html`. Page `NNN-name.html` is the same screen in both folders.
 
 ## What MacHTML is, and how it differs from WindowsHTML
@@ -32,11 +32,13 @@ is no DOM to save. MacHTML is built from two things captured at the same moment 
   other mode and to the index.
 - No page holds a script, and nothing is loaded from the network. The Light and Dark switch on the index and the HTML only
   switch are plain CSS.
-- Commit of the app these came from: `8d40f4e`.
+- Commit of the app these came from: `53d30d0b`, captured on 2026-10-28 from the development build.
+- Theme: Screening Room, the default Mac theme, in Light and in Dark. The window is the full visible screen, frontmost
+  and active for every picture.
 
 ## Window size
 
-The window is 1280 x 634 points (shown at one CSS pixel per point; the pictures are 2x). Some screens were captured at another size: 1280 x 627 (46 screens), 1280 x 630 (20 screens), 760 x 548 (14 screens), 1280 x 633 (13 screens), 1280 x 628 (5 screens), 1280 x 631 (4 screens), 1280 x 632 (3 screens), 340 x 326 (1 screen), 1000 x 633 (1 screen).
+The window is 1280 x 630 points (shown at one CSS pixel per point; the pictures are 2x). Some screens were captured at another size: 1280 x 628 (34 screens), 760 x 548 (15 screens), 340 x 326 (1 screen), 1000 x 630 (1 screen).
 
 ## Regenerate
 
@@ -55,66 +57,14 @@ without running the app:
 - Voice recording (needs the microphone and its permission dialog).
 - The print panel.
 - Forced crashes and disk failures.
-- Screens captured in one mode only: plan-storyboard-panel-duration-error, plan-storyboard-panel-filled, plan-storyboard-panel-open, plan-storyboard-panel-shot, plan-storyboard-panels-described.
-- Steps the tour skipped:
-  - Light: pop-up screenplay-page-setup-paper: no pop-up button Paper
-  - Light: page setup paper: no pop-up button Paper
-  - Light: custom element form: not found within 8 s: id=custom-element-add label=- role=-
-  - Light: element picker with custom: no menu item starting with Telephone in ["", "Scene Heading", "Action", "Character", "Parenthetical", "Dialogue", "Transition", "Shot", "General note (not printed)", "", "Insert Page Br
-  - Light: open and finalize: not true within 12 s: the call sheet is final
-  - Light: location notes: no text input took focus: AXTextField id=loc-note-parking label=Parking: title= value=
-  - Light: shot open: not found within 6 s: id=shot-size label=- role=-
-  - Light: menu pages-templates-type-menu: not a menu button: AXStaticText id= label= title= value=Type
-  - Light: template create: element has no frame: AXTextField id= label= title= value=
-  - Light: own template: no own template
-  - Light: template apply: no built-in template
-  - Light: templates from project home: not found within 8 s: id=- label=Templates role=-
-  - Light: menu screenplay-private-note-actions: the menu did not open: AXMenuButton id=private-note-actions label=Private note actions title=Actions value=
-  - Light: private note editing: not found within 15 s: the menu button private-note-actions
-  - Light: edit line: not found within 6 s: id=of-bl-desc label=- role=-
-  - Light: snapshot: not found within 8 s: id=budget-snapshot-close label=- role=-
-  - Light: rename sequence: not found within 4 s: id=- label=Sequence name role=-
-  - Light: collapse sequence: not found within 8 s: id=- label=Collapse Missing the bus role=AXButton
-  - Light: moodboard tile selected: not found within 5 s: id=moodboard-front label=- role=-
-  - Light: moodboard link inspector: not found within 8 s: id=moodboard-item-url label=- role=-
-  - Light: delete in use: no item Delete in the More menu
-  - Light: delete unused: no item Delete in the More menu
-  - Light: archive: not found within 8 s: id=- label=Show archived characters role=-
-  - Light: timeline: not found within 8 s: id=- label=Timeline role=AXRadioButton
-  - Light: report snapshot: not found within 8 s: id=- label=Back to live reports role=-
-  - Light: delete things: not found within 8 s: id=task-title label=- role=-
-  - Dark: pop-up screenplay-page-setup-paper: no pop-up button Paper
-  - Dark: page setup paper: no pop-up button Paper
-  - Dark: custom element form: not found within 8 s: id=custom-element-add label=- role=-
-  - Dark: element picker with custom: no menu item starting with Telephone in ["", "Scene Heading", "Action", "Character", "Parenthetical", "Dialogue", "Transition", "Shot", "General note (not printed)", "", "Insert Page Bre
-  - Dark: open and finalize: not true within 12 s: the call sheet is final
-  - Dark: location notes: no text input took focus: AXTextField id=loc-note-parking label=Parking: title= value=
-  - Dark: shot open: not found within 6 s: id=shot-size label=- role=-
-  - Dark: menu pages-templates-type-menu: not a menu button: AXStaticText id= label= title= value=Type
-  - Dark: template create: element has no frame: AXTextField id= label= title= value=
-  - Dark: own template: no own template
-  - Dark: template apply: no built-in template
-  - Dark: templates from project home: not found within 8 s: id=- label=Templates role=-
-  - Dark: menu screenplay-private-note-actions: the menu did not open: AXMenuButton id=private-note-actions label=Private note actions title=Actions value=
-  - Dark: private note editing: not found within 15 s: the menu button private-note-actions
-  - Dark: edit line: not found within 6 s: id=of-bl-desc label=- role=-
-  - Dark: snapshot: not found within 8 s: id=budget-snapshot-close label=- role=-
-  - Dark: rename sequence: not found within 4 s: id=- label=Sequence name role=-
-  - Dark: collapse sequence: not found within 8 s: id=- label=Collapse Missing the bus role=AXButton
-  - Dark: moodboard tile selected: not found within 5 s: id=moodboard-front label=- role=-
-  - Dark: moodboard link inspector: not found within 8 s: id=moodboard-item-url label=- role=-
-  - Dark: delete in use: no item Delete in the More menu
-  - Dark: delete unused: no item Delete in the More menu
-  - Dark: archive: not found within 8 s: id=- label=Show archived characters role=-
-  - Dark: timeline: not found within 8 s: id=- label=Timeline role=AXRadioButton
-  - Dark: report snapshot: not found within 8 s: id=- label=Back to live reports role=-
-  - Dark: storyboard panel open: not found within 8 s: id=panel-inspector label=- role=-
-  - Dark: storyboard panel shot: not found within 8 s: id=panel-create-shot label=- role=-
-  - Dark: delete things: not found within 8 s: id=task-title label=- role=-
+- Real AI answers and an Assistant memory with entries: the development build has no AI engine, so the Assistant screens
+  show the state without one.
+- In Dark mode a sheet's rounded top corners show small white wedges: the capture lays the sheet window's transparent
+  corners on white. The app draws them correctly.
 
 ## Count
 
-692 screens, 1384 pages (Light and Dark).
+760 screens, 1520 pages (Light and Dark).
 
 ## Verification: pages against the pictures
 
@@ -161,7 +111,7 @@ are not compared). The check also looks for every non-empty label and value of t
 | settings-shortcut-recording | 0.000% | 0 | pass |
 | settings-offline-ai | 0.000% | 0 | pass |
 | settings-diagnostics | 0.000% | 0 | pass |
-| home-import-toast | 0.479% | 0 | pass (differences between 25,61 and 1271,570 points) |
+| home-import-toast | 0.000% | 0 | pass |
 | project-home | 0.000% | 0 | pass |
 | project-menu | 0.000% | 0 | pass |
 | project-new-menu | 0.000% | 0 | pass |
@@ -182,7 +132,7 @@ are not compared). The check also looks for every non-empty label and value of t
 | search-palette-results | 0.000% | 0 | pass |
 | project-shortcuts-sheet | 0.000% | 0 | pass |
 | home-filled | 0.000% | 0 | pass |
-| home-card-menu | 0.000% | 0 | pass |
+| home-card-actions-menu | 0.000% | 0 | pass |
 | home-global-vault | 0.000% | 0 | pass |
 | home-rename-sheet | 0.000% | 0 | pass |
 | home-delete-sheet | 0.000% | 0 | pass |
@@ -205,9 +155,12 @@ are not compared). The check also looks for every non-empty label and value of t
 | screenplay-tools-title-page | 0.000% | 0 | pass |
 | screenplay-tools-custom-elements | 0.000% | 0 | pass |
 | screenplay-tools-page-view | 0.000% | 0 | pass |
+| screenplay-tools-dark-page | 0.000% | 0 | pass |
+| screenplay-tools-writing-room-mode | 0.000% | 0 | pass |
 | screenplay-tools-import-screenplay | 0.000% | 0 | pass |
 | screenplay-tools-export-screenplay | 0.000% | 0 | pass |
 | screenplay-draft-menu | 0.000% | 0 | pass |
+| screenplay-draft-example-short-imported | 0.000% | 0 | pass |
 | screenplay-draft-new-draft | 0.000% | 0 | pass |
 | screenplay-draft-manage-drafts | 0.000% | 0 | pass |
 | screenplay-element-picker | 0.000% | 0 | pass |
@@ -243,13 +196,16 @@ are not compared). The check also looks for every non-empty label and value of t
 | screenplay-empty-export | 0.000% | 0 | pass |
 | screenplay-empty-suggestions | 0.000% | 0 | pass |
 | screenplay-empty-first-scene | 0.000% | 0 | pass |
-| screenplay-find-bar | 0.015% | 0 | pass (differences between 1095,123 and 1108,136 points) |
-| screenplay-find-results | 0.014% | 0 | pass (differences between 1095,123 and 1108,134 points) |
+| screenplay-find-bar | 0.000% | 0 | pass |
+| screenplay-find-results | 0.015% | 0 | pass (differences between 1163,123 and 1176,136 points) |
+| screenplay-find-no-results | 0.015% | 0 | pass (differences between 1163,123 and 1176,136 points) |
 | screenplay-replace-filled | 0.000% | 0 | pass |
 | screenplay-replace-whole-script | 0.000% | 0 | pass |
 | screenplay-replace-done | 0.000% | 0 | pass |
 | screenplay-replace-no-match | 0.000% | 0 | pass |
 | screenplay-scene-hub-details-edited | 0.000% | 0 | pass |
+| screenplay-private-note-actions | 0.000% | 0 | pass |
+| screenplay-private-note-editing | 0.000% | 0 | pass |
 | screenplay-scene-hub-from-list | 0.000% | 0 | pass |
 | screenplay-comment-composer-quote | 0.000% | 0 | pass |
 | screenplay-comment-posted | 0.000% | 0 | pass |
@@ -261,6 +217,7 @@ are not compared). The check also looks for every non-empty label and value of t
 | screenplay-comments-resolved-tab | 0.000% | 0 | pass |
 | screenplay-comment-actions | 0.000% | 0 | pass |
 | screenplay-comment-in-discussion | 0.000% | 0 | pass |
+| screenplay-inspector-draft | 0.000% | 0 | pass |
 | screenplay-comment-composer-scene | 0.000% | 0 | pass |
 | screenplay-new-draft-named | 0.000% | 0 | pass |
 | screenplay-second-draft-created | 0.000% | 0 | pass |
@@ -290,8 +247,18 @@ are not compared). The check also looks for every non-empty label and value of t
 | screenplay-drafts-locked-and-revision | 0.000% | 0 | pass |
 | screenplay-revision-label-colour | 0.000% | 0 | pass |
 | screenplay-inspector-draft-revision | 0.000% | 0 | pass |
+| screenplay-page-setup-paper | 0.000% | 0 | pass |
+| screenplay-page-setup-a4-header | 0.000% | 0 | pass |
+| screenplay-page-setup-line-spacing | 0.000% | 0 | pass |
+| screenplay-page-setup-saved | 0.000% | 0 | pass |
 | screenplay-title-page-filled | 0.000% | 0 | pass |
 | screenplay-title-page-saved | 0.000% | 0 | pass |
+| screenplay-custom-element-form | 0.000% | 0 | pass |
+| screenplay-custom-element-looks | 0.000% | 0 | pass |
+| screenplay-custom-element-shortcut | 0.000% | 0 | pass |
+| screenplay-custom-elements-one | 0.000% | 0 | pass |
+| screenplay-element-picker-custom | 0.000% | 0 | pass |
+| screenplay-custom-element-in-script | 0.000% | 0 | pass |
 | screenplay-page-view-a4 | 0.000% | 0 | pass |
 | screenplay-export-fdx | 0.000% | 0 | pass |
 | screenplay-export-fountain | 0.000% | 0 | pass |
@@ -333,11 +300,13 @@ are not compared). The check also looks for every non-empty label and value of t
 | story-sequence-inspector | 0.000% | 0 | pass |
 | story-parked-card-inspector | 0.000% | 0 | pass |
 | story-act-rename-inline | 0.000% | 0 | pass |
+| story-sequence-rename-inline | 0.000% | 0 | pass |
 | story-act-note-sheet | 0.000% | 0 | pass |
 | story-delete-act-sheet | 0.000% | 0 | pass |
 | story-move-destination-menu | 0.000% | 0 | pass |
 | story-build-sheet-one-card | 0.000% | 0 | pass |
 | story-deleted-notice | 0.000% | 0 | pass |
+| story-sequence-collapsed | 0.000% | 0 | pass |
 | story-act-collapsed | 0.000% | 0 | pass |
 | story-board-filtered | 0.000% | 0 | pass |
 | story-board-filter-no-match | 0.000% | 0 | pass |
@@ -363,6 +332,8 @@ are not compared). The check also looks for every non-empty label and value of t
 | story-character-one | 0.000% | 0 | pass |
 | story-add-character-match | 0.000% | 0 | pass |
 | story-characters | 0.000% | 0 | pass |
+| story-character-no-scenes | 0.000% | 0 | pass |
+| story-character-detail | 0.000% | 0 | pass |
 | story-character-edit-sheet | 0.000% | 0 | pass |
 | story-character-more-menu | 0.000% | 0 | pass |
 | story-relationship-map-empty | 0.000% | 0 | pass |
@@ -372,7 +343,14 @@ are not compared). The check also looks for every non-empty label and value of t
 | story-character-relationships | 0.000% | 0 | pass |
 | story-relationship-map | 0.000% | 0 | pass |
 | story-character-linked-card | 0.000% | 0 | pass |
+| story-delete-character-in-use | 0.000% | 0 | pass |
+| story-delete-character-sheet | 0.000% | 0 | pass |
 | story-characters-archived-hidden | 0.000% | 0 | pass |
+| story-characters-show-archived | 0.000% | 0 | pass |
+| story-timeline | 0.000% | 0 | pass |
+| story-timeline-picked | 0.000% | 0 | pass |
+| story-assign-day-sheet | 0.000% | 0 | pass |
+| story-timeline-days | 0.000% | 0 | pass |
 | vault-empty | 0.000% | 0 | pass |
 | vault-recently-deleted-empty | 0.000% | 0 | pass |
 | vault-add-menu | 0.000% | 0 | pass |
@@ -417,8 +395,8 @@ are not compared). The check also looks for every non-empty label and value of t
 | vault-folder-mode-top | 0.000% | 0 | pass |
 | vault-folder-mode-inside | 0.000% | 0 | pass |
 | vault-recently-added | 0.000% | 0 | pass |
-| vault-search-results | 0.015% | 0 | pass (differences between 1260,19 and 1272,32 points) |
-| vault-search-none | 0.015% | 0 | pass (differences between 1260,19 and 1272,32 points) |
+| vault-search-results | 0.016% | 0 | pass (differences between 1260,19 and 1272,32 points) |
+| vault-search-none | 0.016% | 0 | pass (differences between 1260,19 and 1272,32 points) |
 | vault-new-collection-sheet | 0.000% | 0 | pass |
 | vault-collection-empty | 0.000% | 0 | pass |
 | vault-collection-with-item | 0.000% | 0 | pass |
@@ -462,7 +440,6 @@ are not compared). The check also looks for every non-empty label and value of t
 | breakdown-rejected-one | 0.000% | 0 | pass |
 | breakdown-all-accepted | 0.000% | 0 | pass |
 | breakdown-category-collapsed | 0.000% | 0 | pass |
-| breakdown-element-selected | 0.000% | 0 | pass |
 | breakdown-element-actions-menu | 0.000% | 0 | pass |
 | breakdown-notes-sheet | 0.000% | 0 | pass |
 | breakdown-notes-filled | 0.000% | 0 | pass |
@@ -543,6 +520,7 @@ are not compared). The check also looks for every non-empty label and value of t
 | schedule-reports-breakdown-completeness | 0.000% | 0 | pass |
 | schedule-reports-filtered | 0.000% | 0 | pass |
 | schedule-reports-export | 0.000% | 0 | pass |
+| schedule-reports-snapshot | 0.000% | 0 | pass |
 | callsheets-empty | 0.000% | 0 | pass |
 | callsheet-create-sheet | 0.000% | 0 | pass |
 | callsheet-create-day-menu | 0.000% | 0 | pass |
@@ -555,6 +533,7 @@ are not compared). The check also looks for every non-empty label and value of t
 | callsheet-section-walkie-channels-and-contacts | 0.000% | 0 | pass |
 | callsheet-section-attachments | 0.000% | 0 | pass |
 | callsheet-add-crew-row | 0.000% | 0 | pass |
+| callsheet-add-extras-row | 0.000% | 0 | pass |
 | callsheet-export | 0.000% | 0 | pass |
 | callsheet-refresh-from-schedule | 0.000% | 0 | pass |
 | callsheet-delete-confirm | 0.000% | 0 | pass |
@@ -568,6 +547,9 @@ are not compared). The check also looks for every non-empty label and value of t
 | callsheets-no-match | 0.000% | 0 | pass |
 | callsheets-filter-final | 0.000% | 0 | pass |
 | callsheet-finalize-sheet | 0.000% | 0 | pass |
+| callsheet-finalized | 0.000% | 0 | pass |
+| callsheet-new-revision-sheet | 0.000% | 0 | pass |
+| callsheets-list-final | 0.000% | 0 | pass |
 | budget-start | 0.000% | 0 | pass |
 | budget-currency-menu | 0.000% | 0 | pass |
 | budget-empty-table | 0.000% | 0 | pass |
@@ -577,11 +559,13 @@ are not compared). The check also looks for every non-empty label and value of t
 | budget-one-line | 0.000% | 0 | pass |
 | budget-add-line-filled | 0.000% | 0 | pass |
 | budget-table | 0.000% | 0 | pass |
+| budget-edit-line-sheet | 0.000% | 0 | pass |
 | budget-edit-plan | 0.000% | 0 | pass |
 | budget-plan-currency-menu | 0.000% | 0 | pass |
 | budget-with-plan | 0.000% | 0 | pass |
 | budget-snapshot-name-sheet | 0.000% | 0 | pass |
 | budget-snapshots | 0.000% | 0 | pass |
+| budget-snapshot-view | 0.000% | 0 | pass |
 | budget-export | 0.000% | 0 | pass |
 | plan-overview-empty | 0.000% | 0 | pass |
 | plan-catalog-empty | 0.000% | 0 | pass |
@@ -625,6 +609,7 @@ are not compared). The check also looks for every non-empty label and value of t
 | plan-locations-filter-rejected | 0.000% | 0 | pass |
 | plan-location-card-menu | 0.000% | 0 | pass |
 | plan-location-rejected-open | 0.000% | 0 | pass |
+| plan-location-notes | 0.000% | 0 | pass |
 | plan-location-delete-sheet | 0.000% | 0 | pass |
 | plan-locations-search-none | 0.000% | 0 | pass |
 | plan-cast-needs-casting | 0.000% | 0 | pass |
@@ -654,6 +639,9 @@ are not compared). The check also looks for every non-empty label and value of t
 | plan-moodboard-link-sheet | 0.000% | 0 | pass |
 | plan-moodboard-note-private | 0.000% | 0 | pass |
 | plan-moodboard-canvas-items | 0.000% | 0 | pass |
+| plan-moodboard-tile-selected | 0.000% | 0 | pass |
+| plan-moodboard-tile-menu | 0.000% | 0 | pass |
+| plan-moodboard-inspector-link | 0.000% | 0 | pass |
 | plan-moodboard-inspector | 0.000% | 0 | pass |
 | plan-moodboard-two-boards | 0.000% | 0 | pass |
 | plan-moodboard-row-menu | 0.000% | 0 | pass |
@@ -667,6 +655,11 @@ are not compared). The check also looks for every non-empty label and value of t
 | plan-storyboard-sketch-sheet | 0.000% | 0 | pass |
 | plan-storyboard-panels | 0.000% | 0 | pass |
 | plan-storyboard-panel-menu | 0.000% | 0 | pass |
+| plan-storyboard-panel-open | 0.000% | 0 | pass |
+| plan-storyboard-panel-filled | 0.000% | 0 | pass |
+| plan-storyboard-panel-duration-error | 0.000% | 0 | pass |
+| plan-storyboard-panel-shot | 0.000% | 0 | pass |
+| plan-storyboard-panels-described | 0.000% | 0 | pass |
 | plan-storyboard-actions-menu | 0.000% | 0 | pass |
 | plan-storyboard-rename-sheet | 0.000% | 0 | pass |
 | plan-storyboard-new-sheet | 0.000% | 0 | pass |
@@ -674,7 +667,6 @@ are not compared). The check also looks for every non-empty label and value of t
 | plan-storyboard-export-sheet | 0.000% | 0 | pass |
 | plan-shots-all-empty | 0.000% | 0 | pass |
 | plan-shots-scene-menu | 0.000% | 0 | pass |
-| plan-shots-scene-empty | 0.000% | 0 | pass |
 | plan-shots-composer-error | 0.000% | 0 | pass |
 | plan-shots-list | 0.000% | 0 | pass |
 | plan-shots-grid | 0.000% | 0 | pass |
@@ -684,6 +676,8 @@ are not compared). The check also looks for every non-empty label and value of t
 | plan-shot-move-sheet | 0.000% | 0 | pass |
 | plan-shot-attach-sheet | 0.000% | 0 | pass |
 | plan-shot-open | 0.000% | 0 | pass |
+| plan-shot-technical | 0.000% | 0 | pass |
+| plan-shot-characters-menu | 0.000% | 0 | pass |
 | plan-shots-export-sheet | 0.000% | 0 | pass |
 | files-empty | 0.000% | 0 | pass |
 | pages-files-add-menu | 0.000% | 0 | pass |
@@ -695,6 +689,7 @@ are not compared). The check also looks for every non-empty label and value of t
 | pages-files-grid | 0.000% | 0 | pass |
 | pages-files-grid-selected | 0.000% | 0 | pass |
 | pages-files-context-menu | 0.000% | 0 | pass |
+| pages-files-more-menu | 0.000% | 0 | pass |
 | pages-files-selected | 0.000% | 0 | pass |
 | pages-files-details-notes | 0.000% | 0 | pass |
 | pages-files-moved | 0.000% | 0 | pass |
@@ -749,9 +744,9 @@ are not compared). The check also looks for every non-empty label and value of t
 | pages-settings-general | 0.000% | 0 | pass |
 | pages-settings-general-edited | 0.000% | 0 | pass |
 | pages-settings-title-error | 0.000% | 0 | pass |
-| pages-settings-saved | 0.000% | 0 | pass |
-| pages-settings-status-menu | 0.000% | 0 | pass |
 | pages-settings-type-menu | 0.000% | 0 | pass |
+| pages-settings-status-menu | 0.000% | 0 | pass |
+| pages-settings-saved | 0.000% | 0 | pass |
 | pages-settings-writing | 0.000% | 0 | pass |
 | pages-settings-shortcuts | 0.000% | 0 | pass |
 | pages-settings-offline-ai | 0.000% | 0 | pass |
@@ -763,9 +758,18 @@ are not compared). The check also looks for every non-empty label and value of t
 | pages-templates-preview | 0.000% | 0 | pass |
 | pages-templates-actions-menu | 0.000% | 0 | pass |
 | pages-templates-new | 0.000% | 0 | pass |
+| pages-templates-type-menu | 0.000% | 0 | pass |
+| pages-templates-new-filled | 0.000% | 0 | pass |
+| pages-templates-saved | 0.000% | 0 | pass |
+| pages-templates-own-menu | 0.000% | 0 | pass |
+| pages-templates-edit | 0.000% | 0 | pass |
+| pages-templates-delete-confirm | 0.000% | 0 | pass |
+| pages-templates-apply | 0.000% | 0 | pass |
+| pages-templates-from-home | 0.000% | 0 | pass |
 | ai-closed-home | 0.000% | 0 | pass |
 | ai-panel | 0.000% | 0 | pass |
 | ai-settings-menu | 0.000% | 0 | pass |
+| ai-offline-ai-settings | 0.000% | 0 | pass |
 | ai-panel-idea-vault | 0.000% | 0 | pass |
 | ai-panel-story | 0.000% | 0 | pass |
 | ai-panel-screenplay | 0.000% | 0 | pass |
@@ -784,7 +788,6 @@ are not compared). The check also looks for every non-empty label and value of t
 | package-import-export-history | 0.000% | 0 | pass |
 | package-review-queue | 0.000% | 0 | pass |
 | package-import-exchange-package | 0.000% | 0 | pass |
-| package-print | 0.000% | 0 | pass |
 | package-back-up-project | 0.000% | 0 | pass |
 | package-backup-ready | 0.000% | 0 | pass |
 | package-backup-portable | 0.000% | 0 | pass |
@@ -820,8 +823,23 @@ are not compared). The check also looks for every non-empty label and value of t
 | pages-recovery-kept | 0.000% | 0 | pass |
 | home-project-unavailable | 0.000% | 0 | pass |
 | project-unavailable | 0.000% | 0 | pass |
+| library-setup-default | 0.000% | 0 | pass |
+| library-setup-new-location | 0.000% | 0 | pass |
+| library-setup-new-location-chosen | 0.000% | 0 | pass |
+| library-setup-locate | 0.000% | 0 | pass |
+| story-page-first-words | 0.000% | 0 | pass |
+| story-page-dark-sheet | 0.000% | 0 | pass |
+| story-page-zoomed | 0.000% | 0 | pass |
+| story-board-horizontal | 0.000% | 0 | pass |
+| story-board-vertical | 0.000% | 0 | pass |
+| project-settings-storage | 0.000% | 0 | pass |
+| storage-move-project-confirm | 0.000% | 0 | pass |
+| storage-move-project-done | 0.000% | 0 | pass |
+| home-card-menu | 0.000% | 0 | pass |
+| home-cover-photo | 0.000% | 0 | pass |
+| home-found-on-this-mac | 0.000% | 0 | pass |
 
-692 of 692 pages pass (a page fails above 0.50% differing pixels, channel difference over 24, or with any HTML miss); 0 HTML misses in all.
+760 of 760 pages pass (a page fails above 0.50% differing pixels, channel difference over 24, or with any HTML miss); 0 HTML misses in all.
 
 ### dark: every page passed
 
@@ -881,7 +899,7 @@ are not compared). The check also looks for every non-empty label and value of t
 | search-palette-results | 0.000% | 0 | pass |
 | project-shortcuts-sheet | 0.000% | 0 | pass |
 | home-filled | 0.000% | 0 | pass |
-| home-card-menu | 0.000% | 0 | pass |
+| home-card-actions-menu | 0.000% | 0 | pass |
 | home-global-vault | 0.000% | 0 | pass |
 | home-rename-sheet | 0.000% | 0 | pass |
 | home-delete-sheet | 0.000% | 0 | pass |
@@ -904,9 +922,12 @@ are not compared). The check also looks for every non-empty label and value of t
 | screenplay-tools-title-page | 0.000% | 0 | pass |
 | screenplay-tools-custom-elements | 0.000% | 0 | pass |
 | screenplay-tools-page-view | 0.000% | 0 | pass |
+| screenplay-tools-dark-page | 0.000% | 0 | pass |
+| screenplay-tools-writing-room-mode | 0.000% | 0 | pass |
 | screenplay-tools-import-screenplay | 0.000% | 0 | pass |
 | screenplay-tools-export-screenplay | 0.000% | 0 | pass |
 | screenplay-draft-menu | 0.000% | 0 | pass |
+| screenplay-draft-example-short-imported | 0.000% | 0 | pass |
 | screenplay-draft-new-draft | 0.000% | 0 | pass |
 | screenplay-draft-manage-drafts | 0.000% | 0 | pass |
 | screenplay-element-picker | 0.000% | 0 | pass |
@@ -942,13 +963,16 @@ are not compared). The check also looks for every non-empty label and value of t
 | screenplay-empty-export | 0.000% | 0 | pass |
 | screenplay-empty-suggestions | 0.000% | 0 | pass |
 | screenplay-empty-first-scene | 0.000% | 0 | pass |
-| screenplay-find-bar | 0.011% | 0 | pass (differences between 1095,123 and 1108,134 points) |
-| screenplay-find-results | 0.011% | 0 | pass (differences between 1095,123 and 1108,134 points) |
+| screenplay-find-bar | 0.012% | 0 | pass (differences between 1163,123 and 1176,136 points) |
+| screenplay-find-results | 0.011% | 0 | pass (differences between 1163,123 and 1176,136 points) |
+| screenplay-find-no-results | 0.011% | 0 | pass (differences between 1163,123 and 1176,136 points) |
 | screenplay-replace-filled | 0.000% | 0 | pass |
 | screenplay-replace-whole-script | 0.000% | 0 | pass |
 | screenplay-replace-done | 0.000% | 0 | pass |
 | screenplay-replace-no-match | 0.000% | 0 | pass |
 | screenplay-scene-hub-details-edited | 0.000% | 0 | pass |
+| screenplay-private-note-actions | 0.000% | 0 | pass |
+| screenplay-private-note-editing | 0.000% | 0 | pass |
 | screenplay-scene-hub-from-list | 0.000% | 0 | pass |
 | screenplay-comment-composer-quote | 0.000% | 0 | pass |
 | screenplay-comment-posted | 0.000% | 0 | pass |
@@ -960,6 +984,7 @@ are not compared). The check also looks for every non-empty label and value of t
 | screenplay-comments-resolved-tab | 0.000% | 0 | pass |
 | screenplay-comment-actions | 0.000% | 0 | pass |
 | screenplay-comment-in-discussion | 0.000% | 0 | pass |
+| screenplay-inspector-draft | 0.000% | 0 | pass |
 | screenplay-comment-composer-scene | 0.000% | 0 | pass |
 | screenplay-new-draft-named | 0.000% | 0 | pass |
 | screenplay-second-draft-created | 0.000% | 0 | pass |
@@ -989,8 +1014,18 @@ are not compared). The check also looks for every non-empty label and value of t
 | screenplay-drafts-locked-and-revision | 0.000% | 0 | pass |
 | screenplay-revision-label-colour | 0.000% | 0 | pass |
 | screenplay-inspector-draft-revision | 0.000% | 0 | pass |
+| screenplay-page-setup-paper | 0.000% | 0 | pass |
+| screenplay-page-setup-a4-header | 0.000% | 0 | pass |
+| screenplay-page-setup-line-spacing | 0.000% | 0 | pass |
+| screenplay-page-setup-saved | 0.000% | 0 | pass |
 | screenplay-title-page-filled | 0.000% | 0 | pass |
 | screenplay-title-page-saved | 0.000% | 0 | pass |
+| screenplay-custom-element-form | 0.000% | 0 | pass |
+| screenplay-custom-element-looks | 0.000% | 0 | pass |
+| screenplay-custom-element-shortcut | 0.000% | 0 | pass |
+| screenplay-custom-elements-one | 0.000% | 0 | pass |
+| screenplay-element-picker-custom | 0.000% | 0 | pass |
+| screenplay-custom-element-in-script | 0.000% | 0 | pass |
 | screenplay-page-view-a4 | 0.000% | 0 | pass |
 | screenplay-export-fdx | 0.000% | 0 | pass |
 | screenplay-export-fountain | 0.000% | 0 | pass |
@@ -1032,11 +1067,13 @@ are not compared). The check also looks for every non-empty label and value of t
 | story-sequence-inspector | 0.000% | 0 | pass |
 | story-parked-card-inspector | 0.000% | 0 | pass |
 | story-act-rename-inline | 0.000% | 0 | pass |
+| story-sequence-rename-inline | 0.000% | 0 | pass |
 | story-act-note-sheet | 0.000% | 0 | pass |
 | story-delete-act-sheet | 0.000% | 0 | pass |
 | story-move-destination-menu | 0.000% | 0 | pass |
 | story-build-sheet-one-card | 0.000% | 0 | pass |
 | story-deleted-notice | 0.000% | 0 | pass |
+| story-sequence-collapsed | 0.000% | 0 | pass |
 | story-act-collapsed | 0.000% | 0 | pass |
 | story-board-filtered | 0.000% | 0 | pass |
 | story-board-filter-no-match | 0.000% | 0 | pass |
@@ -1062,6 +1099,8 @@ are not compared). The check also looks for every non-empty label and value of t
 | story-character-one | 0.000% | 0 | pass |
 | story-add-character-match | 0.000% | 0 | pass |
 | story-characters | 0.000% | 0 | pass |
+| story-character-no-scenes | 0.000% | 0 | pass |
+| story-character-detail | 0.000% | 0 | pass |
 | story-character-edit-sheet | 0.000% | 0 | pass |
 | story-character-more-menu | 0.000% | 0 | pass |
 | story-relationship-map-empty | 0.000% | 0 | pass |
@@ -1071,7 +1110,14 @@ are not compared). The check also looks for every non-empty label and value of t
 | story-character-relationships | 0.000% | 0 | pass |
 | story-relationship-map | 0.000% | 0 | pass |
 | story-character-linked-card | 0.000% | 0 | pass |
+| story-delete-character-in-use | 0.000% | 0 | pass |
+| story-delete-character-sheet | 0.000% | 0 | pass |
 | story-characters-archived-hidden | 0.000% | 0 | pass |
+| story-characters-show-archived | 0.000% | 0 | pass |
+| story-timeline | 0.000% | 0 | pass |
+| story-timeline-picked | 0.000% | 0 | pass |
+| story-assign-day-sheet | 0.000% | 0 | pass |
+| story-timeline-days | 0.000% | 0 | pass |
 | vault-empty | 0.000% | 0 | pass |
 | vault-recently-deleted-empty | 0.000% | 0 | pass |
 | vault-add-menu | 0.000% | 0 | pass |
@@ -1161,7 +1207,6 @@ are not compared). The check also looks for every non-empty label and value of t
 | breakdown-rejected-one | 0.000% | 0 | pass |
 | breakdown-all-accepted | 0.000% | 0 | pass |
 | breakdown-category-collapsed | 0.000% | 0 | pass |
-| breakdown-element-selected | 0.000% | 0 | pass |
 | breakdown-element-actions-menu | 0.000% | 0 | pass |
 | breakdown-notes-sheet | 0.000% | 0 | pass |
 | breakdown-notes-filled | 0.000% | 0 | pass |
@@ -1242,6 +1287,7 @@ are not compared). The check also looks for every non-empty label and value of t
 | schedule-reports-breakdown-completeness | 0.000% | 0 | pass |
 | schedule-reports-filtered | 0.000% | 0 | pass |
 | schedule-reports-export | 0.000% | 0 | pass |
+| schedule-reports-snapshot | 0.000% | 0 | pass |
 | callsheets-empty | 0.000% | 0 | pass |
 | callsheet-create-sheet | 0.000% | 0 | pass |
 | callsheet-create-day-menu | 0.000% | 0 | pass |
@@ -1254,6 +1300,7 @@ are not compared). The check also looks for every non-empty label and value of t
 | callsheet-section-walkie-channels-and-contacts | 0.000% | 0 | pass |
 | callsheet-section-attachments | 0.000% | 0 | pass |
 | callsheet-add-crew-row | 0.000% | 0 | pass |
+| callsheet-add-extras-row | 0.000% | 0 | pass |
 | callsheet-export | 0.000% | 0 | pass |
 | callsheet-refresh-from-schedule | 0.000% | 0 | pass |
 | callsheet-delete-confirm | 0.000% | 0 | pass |
@@ -1267,6 +1314,9 @@ are not compared). The check also looks for every non-empty label and value of t
 | callsheets-no-match | 0.000% | 0 | pass |
 | callsheets-filter-final | 0.000% | 0 | pass |
 | callsheet-finalize-sheet | 0.000% | 0 | pass |
+| callsheet-finalized | 0.000% | 0 | pass |
+| callsheet-new-revision-sheet | 0.000% | 0 | pass |
+| callsheets-list-final | 0.000% | 0 | pass |
 | budget-start | 0.000% | 0 | pass |
 | budget-currency-menu | 0.000% | 0 | pass |
 | budget-empty-table | 0.000% | 0 | pass |
@@ -1276,11 +1326,13 @@ are not compared). The check also looks for every non-empty label and value of t
 | budget-one-line | 0.000% | 0 | pass |
 | budget-add-line-filled | 0.000% | 0 | pass |
 | budget-table | 0.000% | 0 | pass |
+| budget-edit-line-sheet | 0.000% | 0 | pass |
 | budget-edit-plan | 0.000% | 0 | pass |
 | budget-plan-currency-menu | 0.000% | 0 | pass |
 | budget-with-plan | 0.000% | 0 | pass |
 | budget-snapshot-name-sheet | 0.000% | 0 | pass |
 | budget-snapshots | 0.000% | 0 | pass |
+| budget-snapshot-view | 0.000% | 0 | pass |
 | budget-export | 0.000% | 0 | pass |
 | plan-overview-empty | 0.000% | 0 | pass |
 | plan-catalog-empty | 0.000% | 0 | pass |
@@ -1301,7 +1353,7 @@ are not compared). The check also looks for every non-empty label and value of t
 | plan-catalog-filter-wardrobe | 0.000% | 0 | pass |
 | plan-catalog-filter-cast | 0.000% | 0 | pass |
 | plan-catalog-filter-locations | 0.000% | 0 | pass |
-| plan-catalog-more-menu | 0.320% | 0 | pass (differences between 29,64 and 1242,533 points) |
+| plan-catalog-more-menu | 0.000% | 0 | pass |
 | plan-catalog-search-none | 0.000% | 0 | pass |
 | plan-catalog-row-menu | 0.000% | 0 | pass |
 | plan-catalog-item-open | 0.000% | 0 | pass |
@@ -1324,6 +1376,7 @@ are not compared). The check also looks for every non-empty label and value of t
 | plan-locations-filter-rejected | 0.000% | 0 | pass |
 | plan-location-card-menu | 0.000% | 0 | pass |
 | plan-location-rejected-open | 0.000% | 0 | pass |
+| plan-location-notes | 0.000% | 0 | pass |
 | plan-location-delete-sheet | 0.000% | 0 | pass |
 | plan-locations-search-none | 0.000% | 0 | pass |
 | plan-cast-needs-casting | 0.000% | 0 | pass |
@@ -1353,6 +1406,9 @@ are not compared). The check also looks for every non-empty label and value of t
 | plan-moodboard-link-sheet | 0.000% | 0 | pass |
 | plan-moodboard-note-private | 0.000% | 0 | pass |
 | plan-moodboard-canvas-items | 0.000% | 0 | pass |
+| plan-moodboard-tile-selected | 0.000% | 0 | pass |
+| plan-moodboard-tile-menu | 0.000% | 0 | pass |
+| plan-moodboard-inspector-link | 0.000% | 0 | pass |
 | plan-moodboard-inspector | 0.000% | 0 | pass |
 | plan-moodboard-two-boards | 0.000% | 0 | pass |
 | plan-moodboard-row-menu | 0.000% | 0 | pass |
@@ -1366,6 +1422,11 @@ are not compared). The check also looks for every non-empty label and value of t
 | plan-storyboard-sketch-sheet | 0.000% | 0 | pass |
 | plan-storyboard-panels | 0.000% | 0 | pass |
 | plan-storyboard-panel-menu | 0.000% | 0 | pass |
+| plan-storyboard-panel-open | 0.000% | 0 | pass |
+| plan-storyboard-panel-filled | 0.000% | 0 | pass |
+| plan-storyboard-panel-duration-error | 0.000% | 0 | pass |
+| plan-storyboard-panel-shot | 0.000% | 0 | pass |
+| plan-storyboard-panels-described | 0.000% | 0 | pass |
 | plan-storyboard-actions-menu | 0.000% | 0 | pass |
 | plan-storyboard-rename-sheet | 0.000% | 0 | pass |
 | plan-storyboard-new-sheet | 0.000% | 0 | pass |
@@ -1373,7 +1434,6 @@ are not compared). The check also looks for every non-empty label and value of t
 | plan-storyboard-export-sheet | 0.000% | 0 | pass |
 | plan-shots-all-empty | 0.000% | 0 | pass |
 | plan-shots-scene-menu | 0.000% | 0 | pass |
-| plan-shots-scene-empty | 0.000% | 0 | pass |
 | plan-shots-composer-error | 0.000% | 0 | pass |
 | plan-shots-list | 0.000% | 0 | pass |
 | plan-shots-grid | 0.000% | 0 | pass |
@@ -1383,6 +1443,8 @@ are not compared). The check also looks for every non-empty label and value of t
 | plan-shot-move-sheet | 0.000% | 0 | pass |
 | plan-shot-attach-sheet | 0.000% | 0 | pass |
 | plan-shot-open | 0.000% | 0 | pass |
+| plan-shot-technical | 0.000% | 0 | pass |
+| plan-shot-characters-menu | 0.000% | 0 | pass |
 | plan-shots-export-sheet | 0.000% | 0 | pass |
 | files-empty | 0.000% | 0 | pass |
 | pages-files-add-menu | 0.000% | 0 | pass |
@@ -1394,6 +1456,7 @@ are not compared). The check also looks for every non-empty label and value of t
 | pages-files-grid | 0.000% | 0 | pass |
 | pages-files-grid-selected | 0.000% | 0 | pass |
 | pages-files-context-menu | 0.000% | 0 | pass |
+| pages-files-more-menu | 0.000% | 0 | pass |
 | pages-files-selected | 0.000% | 0 | pass |
 | pages-files-details-notes | 0.000% | 0 | pass |
 | pages-files-moved | 0.000% | 0 | pass |
@@ -1448,9 +1511,9 @@ are not compared). The check also looks for every non-empty label and value of t
 | pages-settings-general | 0.000% | 0 | pass |
 | pages-settings-general-edited | 0.000% | 0 | pass |
 | pages-settings-title-error | 0.000% | 0 | pass |
-| pages-settings-saved | 0.000% | 0 | pass |
-| pages-settings-status-menu | 0.000% | 0 | pass |
 | pages-settings-type-menu | 0.000% | 0 | pass |
+| pages-settings-status-menu | 0.000% | 0 | pass |
+| pages-settings-saved | 0.000% | 0 | pass |
 | pages-settings-writing | 0.000% | 0 | pass |
 | pages-settings-shortcuts | 0.000% | 0 | pass |
 | pages-settings-offline-ai | 0.000% | 0 | pass |
@@ -1462,9 +1525,18 @@ are not compared). The check also looks for every non-empty label and value of t
 | pages-templates-preview | 0.000% | 0 | pass |
 | pages-templates-actions-menu | 0.000% | 0 | pass |
 | pages-templates-new | 0.000% | 0 | pass |
+| pages-templates-type-menu | 0.000% | 0 | pass |
+| pages-templates-new-filled | 0.000% | 0 | pass |
+| pages-templates-saved | 0.000% | 0 | pass |
+| pages-templates-own-menu | 0.000% | 0 | pass |
+| pages-templates-edit | 0.000% | 0 | pass |
+| pages-templates-delete-confirm | 0.000% | 0 | pass |
+| pages-templates-apply | 0.000% | 0 | pass |
+| pages-templates-from-home | 0.000% | 0 | pass |
 | ai-closed-home | 0.000% | 0 | pass |
 | ai-panel | 0.000% | 0 | pass |
 | ai-settings-menu | 0.000% | 0 | pass |
+| ai-offline-ai-settings | 0.000% | 0 | pass |
 | ai-panel-idea-vault | 0.000% | 0 | pass |
 | ai-panel-story | 0.000% | 0 | pass |
 | ai-panel-screenplay | 0.000% | 0 | pass |
@@ -1483,7 +1555,6 @@ are not compared). The check also looks for every non-empty label and value of t
 | package-import-export-history | 0.000% | 0 | pass |
 | package-review-queue | 0.000% | 0 | pass |
 | package-import-exchange-package | 0.000% | 0 | pass |
-| package-print | 0.000% | 0 | pass |
 | package-back-up-project | 0.000% | 0 | pass |
 | package-backup-ready | 0.000% | 0 | pass |
 | package-backup-portable | 0.000% | 0 | pass |
@@ -1510,7 +1581,7 @@ are not compared). The check also looks for every non-empty label and value of t
 | package-history-review-records | 0.000% | 0 | pass |
 | package-history-my-reviews | 0.000% | 0 | pass |
 | package-history-package-log | 0.000% | 0 | pass |
-| package-restore | 0.087% | 0 | pass (differences between 30,136 and 1191,488 points) |
+| package-restore | 0.000% | 0 | pass |
 | package-restore-damaged | 0.000% | 0 | pass |
 | package-restore-collision | 0.000% | 0 | pass |
 | package-restore-opened-copy | 0.000% | 0 | pass |
@@ -1519,18 +1590,20 @@ are not compared). The check also looks for every non-empty label and value of t
 | pages-recovery-kept | 0.000% | 0 | pass |
 | home-project-unavailable | 0.000% | 0 | pass |
 | project-unavailable | 0.000% | 0 | pass |
+| library-setup-default | 0.000% | 0 | pass |
+| library-setup-new-location | 0.000% | 0 | pass |
+| library-setup-new-location-chosen | 0.000% | 0 | pass |
+| library-setup-locate | 0.000% | 0 | pass |
+| story-page-first-words | 0.000% | 0 | pass |
+| story-page-dark-sheet | 0.000% | 0 | pass |
+| story-page-zoomed | 0.000% | 0 | pass |
+| story-board-horizontal | 0.000% | 0 | pass |
+| story-board-vertical | 0.000% | 0 | pass |
+| project-settings-storage | 0.000% | 0 | pass |
+| storage-move-project-confirm | 0.000% | 0 | pass |
+| storage-move-project-done | 0.000% | 0 | pass |
+| home-card-menu | 0.000% | 0 | pass |
+| home-cover-photo | 0.000% | 0 | pass |
+| home-found-on-this-mac | 0.000% | 0 | pass |
 
-692 of 692 pages pass (a page fails above 0.50% differing pixels, channel difference over 24, or with any HTML miss); 0 HTML misses in all.
-
-## Known limits of this capture (2026-10-20)
-
-- The tour asks for a 1280 x 620 point window; the app's own minimum height makes most windows 1280 x 634, and about
-  110 screens kept a few points more or less (listed under Window size). A narrow-window state is narrow on purpose.
-- Eight runners shared one 1280 x 720 point display. A window that was not frontmost when its picture was taken looks
-  inactive (dimmed sidebar and toolbar), as macOS draws it. Run fewer runners (OPENFRAME_E2E_PARALLEL=1) for frontmost
-  windows everywhere.
-- A sheet is composited over the window with a drawn shadow; where the sheet picture has transparent corners the shadow
-  shows as a light rim, most visible in Dark.
-- The dev app has no Offline AI engine, so no AI answer, download card or See sources state is captured.
-- Images, audio and video reach the app only through the system Open panel or drag and drop, so no image item,
-  moodboard picture, storyboard image or character portrait is captured.
+760 of 760 pages pass (a page fails above 0.50% differing pixels, channel difference over 24, or with any HTML miss); 0 HTML misses in all.

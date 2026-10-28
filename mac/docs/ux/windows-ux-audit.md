@@ -24,9 +24,9 @@
 | 1 | High | All workspaces | Top bar stuck off screen with a white strip below after typing (owner item 5) | Editor scrolled an `overflow: hidden` frame | Fixed: `overflow: clip` |
 | 2 | High | Screenplay, 1280 by 720 | Compare, Export, Lock and View and more covered by the scene list; with the AI panel open also Find, Notes, Comments and Drafts | Toolbar wrapped to a second row inside a fixed 46 px height | Fixed: toolbar grows |
 | 3 | High | Production, 1280 by 720, AI open | Moodboards or Sides tab scrolled out of sight on 9 of 14 tabs | Tab strip scrolled sideways | Fixed: strip wraps |
-| 4 | Medium | Story Board | Act columns did not fill the height; long cards cut off (owner document item 2) | Columns sized to content; card text clamped | Fixed |
+| 4 | Medium | Beat Board | Act columns did not fill the height; long cards cut off (owner document item 2) | Columns sized to content; card text clamped | Fixed |
 | 5 | Medium | Story Outline | Long card titles and unbroken text ended in an ellipsis with no way to read them | `.truncate` on the reading view | Fixed: outline lines wrap |
-| 6 | Medium | Project Home, Screenplay suggestions and scene list, Files, Notes, Tasks, Idea Vault, stripboard, Story Board and cards, Characters, Timeline, Moodboards, Shot Lists, Search, top bar | Shortened names and lines with no tooltip (28 places) | Ellipsis without `title` | Fixed: full text in tooltip |
+| 6 | Medium | Project Home, Screenplay suggestions and scene list, Files, Notes, Tasks, Idea Vault, stripboard, Beat Board and cards, Characters, Timeline, Moodboards, Shot Lists, Search, top bar | Shortened names and lines with no tooltip (28 places) | Ellipsis without `title` | Fixed: full text in tooltip |
 | 7 | Medium | Breakdown | Side panel overflow and no way to hide panels (owner items) | Fixed widths | Fixed |
 | 8 | Low | AI answers | Long list items ended in an ellipsis on unbroken text | `text-overflow` on list items | Fixed: items wrap |
 | 9 | High | Navigation rail, every theme | Workspace buttons drawn as grey browser buttons with unreadable text (contrast 1.44 to 1, theme spec 91) | The rail button rules were lost from app.css in the first polish checkpoint | Fixed: rules restored |

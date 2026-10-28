@@ -18,11 +18,6 @@ export const RULES = [
   { id: "stripe-live-key", re: /\b(?:sk|rk)_live_[0-9A-Za-z]{20,}/ },
   { id: "hugging-face-token", re: /\bhf_[A-Za-z0-9]{34,}\b/ },
   { id: "npm-token", re: /\bnpm_[A-Za-z0-9]{36}\b/ },
-  // The internal team password is only ever an environment variable on the build computer (ADR-0030).
-  // `NAME=value` (shell, .env), `$env:NAME = "value"` (PowerShell) or `NAME: value` (YAML, JSON). A reference
-  // such as `${{ secrets.X }}`, `$X` or `%X%` is not a value. A line that names the variable on purpose (a test)
-  // carries the allow marker.
-  { id: "team-password-value", re: /OPENFRAME_TEAM_PASSWORD["']?\s*[=:]\s*["']?(?![$%{(<])[^\s"']{4,}/ },
 ];
 
 /** Files that must never be committed, whatever they contain. */

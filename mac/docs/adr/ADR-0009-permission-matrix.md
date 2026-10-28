@@ -2,14 +2,14 @@
 
 - **Status:** Accepted (implemented in `crates/openframe-domain/src/auth.rs`, `Role::allows`)
 - **Date:** 2026-09-30
-- **Related:** Security spec §5–§8, §16.4, SEC-004..009 (digest `docs/archive/2026-09-spec-digest/security.md` §6.3, §26 item 9);
+- **Related:** Security spec §5–§8, §16.4, SEC-004..009 (digest `docs/history/2026-09-spec-digest/security.md` §6.3, §26 item 9);
   FSD §46; ADR-0007 (LAN removed)
 
 ## Context
 
 The Security spec fixes **five roles** (Owner, Editor, Commenter, Viewer, Export-only) as the entire security model.
 Professional labels such as Writer, Director or Reviewer are not roles. The spec defines role *boundaries*, but many
-cells of the per-action matrix are "not stated" (digest §6.3 "—"). The spec asks engineering to decide them
+cells of the per-action matrix are "not stated" (digest §6.3, an empty cell). The spec asks engineering to decide them
 explicitly rather than invent silently.
 
 ## Decision
@@ -46,12 +46,12 @@ explicitly rather than invent silently.
 | `CreatePackage` | Exchange/review/full-project/backup packages | ✔ | ✔ ² | | | ✔ |
 | `Import` | Import that mutates the project (always via preview/Change Set) | ✔ | ✔ | | | |
 | `ApplyChangeSet` | Accept/apply AI, import or review Change Sets | ✔ | ✔ | | | |
-| ~~`HostSession`~~ | *Obsolete: LAN removed (ADR-0007). Granted by nothing that is used; remove from `Capability`.* | — | — | — | — | — |
-| ~~`JoinSession`~~ | *Obsolete: LAN removed (ADR-0007). Remove from `Capability`.* | — | — | — | — | — |
+| ~~`HostSession`~~ | *Obsolete: LAN removed (ADR-0007). Granted by nothing that is used; remove from `Capability`.* | n/a | n/a | n/a | n/a | n/a |
+| ~~`JoinSession`~~ | *Obsolete: LAN removed (ADR-0007). Remove from `Capability`.* | n/a | n/a | n/a | n/a | n/a |
 | `UseAi` | Ask read/compute/navigate questions (reads use the asker's permissions) | ✔ | ✔ | ✔ | ✔ | ² |
 
 ¹ Implied by the spec. Export-only must see content to produce permitted snapshots.
-² **Decided here** (the spec cell was "—"). Rationale below.
+² **Decided here** (the spec cell was empty). Rationale below.
 ³ Private Notes are per user (`owner_user_id = actor.user_id` in every query, including search). Nobody, including
 the Owner, can read another user's Private Notes (Security §8). Reading your own existing notes needs only `View`.
 Creating or editing them needs `Comment`, so a Viewer stays strictly read-only (Security §6.6).

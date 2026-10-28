@@ -19,11 +19,16 @@ fontSize: number, lineSpacing: ScreenplayLineSpacing,
  */
 firstPageNumber: number, 
 /**
+ * Print the page number on the first script page (off: the first page is unnumbered and
+ * the next one prints "2."). The title page is never numbered.
+ */
+numberFirstPage: boolean, 
+/**
  * Header text (placeholders: {title} {draft} {revision} {date} {page}).
  */
 header: string, footer: string, 
 /**
- * Page number, header and footer also on the first script page.
+ * Header and footer also on the first script page.
  */
 headerOnFirstPage: boolean, 
 /**

@@ -18,7 +18,7 @@ The cards used below:
 ## Create an act, a sequence and three cards
 
 1. Do the first launch: type 'E2E Tester' as the name, click Continue, click Create Project, type 'Monsoon Letters' as the title, click Create.
-2. Click Story in the Workspaces navigation.
+2. Click Story in the Workspaces navigation, then click the Board tab.
 3. Check: the screen shows "Your Beat Board is empty."
 4. Click Add Act. Type 'Act One' in the Act title field and press Enter.
 5. Click Add, then choose Sequence. Type 'The Letters' in the Sequence name field and press Enter.
@@ -93,7 +93,7 @@ The cards used below:
 11. Check: the Screenplay workspace opens and the screen shows "Draft 1 from Beat Board".
 12. Check: the scene headings of the draft are exactly "EXT. POST OFFICE - NIGHT", "EXT. FLOODED STREET - NIGHT", "INT. MEERA'S ROOM - NIGHT", in that order.
 13. Check: the screen is quiet.
-14. Click Story in the Workspaces navigation.
+14. Click Story in the Workspaces navigation, then click the Board tab.
 
 ## Delete two cards together and restore them in reverse order
 
@@ -106,16 +106,32 @@ The cards used below:
 7. Open the project menu and choose Recently Deleted.
 8. Click Restore Meera reads the first letter. Check: the screen shows "Restored “Meera reads the first letter”".
 9. Click Restore Rain finds the letter box. Check: the screen shows "Restored “Rain finds the letter box”".
-10. Click Story in the Workspaces navigation.
+10. Click Story in the Workspaces navigation, then click the Board tab.
 11. Check: the cards in Act One are C, A, B, then "A second letter arrives".
 12. Check: the screen is quiet.
+
+## Horizontal layout: acts become rows, a card moves to another act, then back to Vertical
+
+1. In the Beat Board layout toggle, click Horizontal.
+2. Check: the board shows the Horizontal layout.
+3. Click Add Act. Type 'Act Two' in the Act title field and press Enter.
+4. Check: Act One, Act Two and the Parking Lot share the same left edge and sit one below the other, top to bottom, and an act row is wider than two columns.
+5. Check: in Act One, card A sits to the right of card C on the same line (cards flow left to right).
+6. Press the mouse on the card "A second letter arrives", move it up past 6 pixels, drag it into the body of Act Two and release.
+7. Check: the cards in Act Two are "A second letter arrives", and the cards in Act One are C, A, B.
+8. Save a screenshot of the Horizontal board as `beatboard-horizontal.png` in the test artifacts.
+9. Press Ctrl+Z.
+10. Check: the cards in Act One are C, A, B, then "A second letter arrives".
+11. In the Beat Board layout toggle, click Vertical.
+12. Check: the board shows the Vertical layout, and Act Two sits to the right of Act One, level with it.
+13. Check: the screen is quiet.
 
 ## After a relaunch, the order, the long description and the Card Display setting are kept
 
 1. Open the project menu and choose Close project.
 2. Quit the app and start it again on the same data.
 3. Click the project row "Open Monsoon Letters". Check: no recovery question shows.
-4. Click Story in the Workspaces navigation.
+4. Click Story in the Workspaces navigation, then click the Board tab.
 5. Check: the cards in Act One are C, A, B, then "A second letter arrives".
 6. Check: a card shows a long description preview starting with "The street is flooded".
 7. Double-click card A.
@@ -123,25 +139,6 @@ The cards used below:
 9. Click Close in the Scene Card drawer.
 10. Check: the screen is quiet.
 11. Open the project menu and choose Close project.
-
-## Episodes scope the Beat Board in an episodic project
-
-1. On Application Home, click New Project.
-2. Type 'Monsoon Series' in the project title field.
-3. Click Episodic / Series in the dialog, then click Create.
-4. Check: the window title is "Monsoon Series - OpenFrame Studio".
-5. Click Story in the Workspaces navigation, then the Episodes tab.
-6. Click Add Episode. Type 'Pilot' in the episode title field. Click Create Episode in the dialog.
-7. Check: the screen shows "Added episode “Pilot”".
-8. Click Options for Pilot, then choose Open Beat Board.
-9. Click Add Scene. Type 'Pilot cold open at the dam' in the Short description field and press Enter.
-10. Check: the cards include "Pilot cold open at the dam".
-11. In the Episode list, choose "Series level (no episode)".
-12. Check: the card "Pilot cold open at the dam" is not shown.
-13. In the Episode list, choose the first option.
-14. Check: the card "Pilot cold open at the dam" shows again.
-15. Check: the screen is quiet.
-16. Open the project menu and choose Close project.
 
 ## Notes
 

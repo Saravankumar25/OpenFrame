@@ -136,7 +136,7 @@ extension ScreenplayTextView {
         let ppi = pointsPerInch
         let start = tlm.textViewportLayoutController.viewportRange?.location ?? tlm.documentRange.location
         let labelFont = NSFont(descriptor: Self.screenplayFont.fontDescriptor, size: 12 * ppi / 72) ?? Self.screenplayFont
-        let labelAttrs: [NSAttributedString.Key: Any] = [.font: labelFont, .foregroundColor: NSColor.secondaryLabelColor]
+        let labelAttrs: [NSAttributedString.Key: Any] = [.font: labelFont, .foregroundColor: ScreenplayPageColors.muted]
         tlm.enumerateTextLayoutFragments(from: start, options: []) { fragment in
             let frame = fragment.layoutFragmentFrame.offsetBy(dx: origin.x, dy: origin.y)
             if frame.minY > visible.maxY { return false }
@@ -168,10 +168,10 @@ extension ScreenplayTextView {
         path.line(to: NSPoint(x: x1, y: line.midY))
         path.setLineDash([5, 4], count: 2, phase: 0)
         path.lineWidth = 1
-        NSColor.tertiaryLabelColor.setStroke()
+        ScreenplayPageColors.rule.setStroke()
         path.stroke()
         let caption = NSAttributedString(string: "PAGE BREAK", attributes: [
-            .font: NSFont.systemFont(ofSize: 9 * ppi / 72, weight: .medium), .foregroundColor: NSColor.secondaryLabelColor,
+            .font: NSFont.systemFont(ofSize: 9 * ppi / 72, weight: .medium), .foregroundColor: ScreenplayPageColors.faint,
         ])
         let size = caption.size()
         let box = NSRect(x: (x0 + x1) / 2 - size.width / 2 - 6, y: line.midY - size.height / 2, width: size.width + 12, height: size.height)
@@ -290,5 +290,26 @@ extension ScreenplayTextView {
             item.action = #selector(learnSpellingFromMenu(_:))
             item.representedObject = word
         }
+    }
+}
+
+// MARK: Page colours
+
+extension ScreenplayTextView {
+    /// White paper, or dark paper when the writer chose Dark page (screen only). The view's
+    /// appearance is pinned to the page, so the page colours and the system's caret, selection and
+    /// spelling marks read on it whatever the app theme is.
+    func showPaper(dark: Bool) {
+        let wanted = ScreenplayPageColors.appearance(dark: dark)
+        if appearance?.name != wanted?.name { appearance = wanted }
+        let palette = ScreenplayPageColors.palette(dark: dark)
+        backgroundColor = ScreenplayPageColors.color(palette.paper)
+        insertionPointColor = ScreenplayPageColors.color(palette.ink)
+        if let bg = palette.selBg, let ink = palette.selInk {
+            selectedTextAttributes = [.backgroundColor: ScreenplayPageColors.color(bg), .foregroundColor: ScreenplayPageColors.color(ink)]
+        } else {
+            selectedTextAttributes = [.backgroundColor: NSColor.selectedTextBackgroundColor]
+        }
+        needsDisplay = true
     }
 }

@@ -20,6 +20,8 @@ use ts_rs::TS;
 
 use crate::events::{AppEvent, EventSink, StoreKind, TaskProgress};
 use crate::modules::entitlement::EntitlementService;
+use crate::modules::storage::library_ops::{self, LibraryPlace, LibrarySetup};
+use crate::modules::storage::{self, library, library::Library};
 use crate::registry::Registry;
 use crate::store::{SaveTracker, Store};
 
@@ -43,6 +45,16 @@ pub struct AppConfig {
     pub projects_dir: PathBuf,
     /// Global Idea Vault folder (user content).
     pub global_vault_dir: PathBuf,
+    /// The library file (`library.json`): the person's identity and chosen folders, kept in the
+    /// library folder so it outlives the app data (doc 40, ADR-0038). `None` keeps neither.
+    /// `projects_dir` and `global_vault_dir` above are only the defaults; the places the person
+    /// chose are read through [`AppCore::projects_dir`] and [`AppCore::vault_dir`].
+    pub library_file: Option<PathBuf>,
+    /// How the library folder is chosen (doc 40 section 1). `None` (tests, the end-to-end data
+    /// root): the library is set up from the start in the folder that holds `projects_dir`.
+    /// `Some`: the person chooses it on the first start; nothing is created before they confirm,
+    /// and the choice is remembered in `app.sqlite` and in a pointer file outside the app data.
+    pub library_setup: Option<LibrarySetup>,
     pub app_version: String,
     /// Release channel for the licence and trial check. The desktop shell sets it; anything that
     /// is not a store package is an internal team build (ADR-0023, ADR-0024).
@@ -61,11 +73,6 @@ pub struct AppConfig {
     /// licence state and channel by hand. The desktop shell turns it on only in a debug build with
     /// an isolated test data root; release builds never do (tested in the shell).
     pub entitlement_debug_controls: bool,
-    /// The internal builds' team password hash (Argon2id PHC string, ADR-0024), embedded by the
-    /// desktop build script from `OPENFRAME_TEAM_PASSWORD` on the build machine. When set, nothing
-    /// but the password screen runs until the password is right. `None` in store packages, which
-    /// carry no gate and no hash, and in tests.
-    pub team_password_hash: Option<String>,
 }
 
 impl std::fmt::Debug for AppConfig {
@@ -77,6 +84,8 @@ impl std::fmt::Debug for AppConfig {
             .field("ai_deterministic", &self.ai_deterministic)
             .field("projects_dir", &self.projects_dir)
             .field("global_vault_dir", &self.global_vault_dir)
+            .field("library_file", &self.library_file)
+            .field("library_setup", &self.library_setup)
             .field("app_version", &self.app_version)
             .field("channel", &self.channel)
             .field("mac_inputs", &self.mac_inputs.is_some())
@@ -85,22 +94,33 @@ impl std::fmt::Debug for AppConfig {
                 "entitlement_debug_controls",
                 &self.entitlement_debug_controls,
             )
-            .field("team_password_hash", &self.team_password_hash.is_some())
             .finish()
     }
 }
 
 impl AppConfig {
     /// The configuration for the person signed in to this computer. Refuses (Windows phase W2)
-    /// when the system cannot name Documents or the app data folder, instead of keeping projects
-    /// and settings in a temp folder the system cleans up.
+    /// when the system cannot name the home folder or the app data folder, instead of keeping
+    /// projects and settings in a temp folder the system cleans up. The library is not chosen
+    /// here: the first start asks (doc 40 section 1). The folders below are the suggestion only.
     pub fn for_current_user(app_version: &str) -> AppResult<Self> {
-        Self::from_system_folders(
-            openframe_project_format::app_data_dir(),
-            openframe_project_format::default_projects_dir(),
-            openframe_project_format::default_global_vault_dir(),
+        let app_data_dir = openframe_project_format::app_data_dir();
+        let setup = app_data_dir
+            .as_deref()
+            .and_then(LibrarySetup::for_current_user);
+        let suggested = setup.as_ref().map(|s| s.suggested_root.clone());
+        let mut config = Self::from_system_folders(
+            app_data_dir,
+            suggested
+                .as_ref()
+                .map(|r| r.join(library_ops::PROJECTS_FOLDER)),
+            suggested
+                .as_ref()
+                .map(|r| r.join(library_ops::VAULT_FOLDER)),
             app_version,
-        )
+        )?;
+        config.library_setup = setup;
+        Ok(config)
     }
 
     /// [`AppConfig::for_current_user`] with the folders given (tests).
@@ -124,6 +144,10 @@ impl AppConfig {
                  Restart the computer, then start OpenFrame Studio again.",
             ));
         };
+        // The library folder is the one that holds the default projects folder.
+        let library_file = projects_dir
+            .parent()
+            .map(|d| d.join(crate::modules::storage::library::LIBRARY_FILE_NAME));
         Ok(Self {
             app_data_dir,
             ai_bundle_dir: Self::installed_ai_bundle_dir(),
@@ -131,12 +155,13 @@ impl AppConfig {
             ai_deterministic: false,
             projects_dir,
             global_vault_dir,
+            library_file,
+            library_setup: None,
             app_version: app_version.to_string(),
             channel: Channel::DirectInstaller,
             mac_inputs: None,
             microsoft_store: None,
             entitlement_debug_controls: false,
-            team_password_hash: None,
         })
     }
 
@@ -145,16 +170,6 @@ impl AppConfig {
     /// MSIX; `Contents/Resources` in a Mac app bundle).
     pub fn installed_ai_bundle_dir() -> Option<PathBuf> {
         openframe_platform::dirs::app_resources_dir().map(|d| d.join(openframe_ai::RESOURCE_FOLDER))
-    }
-
-    /// The one folder to back up, shown on the data note and in the file safety tutorial: the
-    /// folder that holds both the projects folder and the Global Idea Vault
-    /// (`Documents/OpenFrame` by default), or the projects folder when they live apart.
-    pub fn data_root(&self) -> PathBuf {
-        match (self.projects_dir.parent(), self.global_vault_dir.parent()) {
-            (Some(a), Some(b)) if a == b && !a.as_os_str().is_empty() => a.to_path_buf(),
-            _ => self.projects_dir.clone(),
-        }
     }
 
     /// Fully isolated configuration rooted in `root` (tests, fixtures).
@@ -166,12 +181,28 @@ impl AppConfig {
             ai_deterministic: false,
             projects_dir: root.join("projects"),
             global_vault_dir: root.join("global-vault"),
+            library_file: Some(root.join(crate::modules::storage::library::LIBRARY_FILE_NAME)),
+            library_setup: None,
             app_version: "0.1.0-test".to_string(),
             channel: Channel::DirectInstaller,
             mac_inputs: None,
             microsoft_store: None,
             entitlement_debug_controls: false,
-            team_password_hash: None,
+        }
+    }
+
+    /// [`AppConfig::isolated`] that starts like a new computer: the library is not set up, the
+    /// suggested place is `<root>/home/OpenFrame`, an earlier library would be in
+    /// `<root>/Documents/OpenFrame` and the pointer in `<root>/roaming` (tests and the end-to-end
+    /// switch `OPENFRAME_LIBRARY_SETUP=1`).
+    pub fn isolated_needing_setup(root: &std::path::Path) -> Self {
+        let setup = LibrarySetup::under(root);
+        Self {
+            projects_dir: setup.suggested_root.join(library_ops::PROJECTS_FOLDER),
+            global_vault_dir: setup.suggested_root.join(library_ops::VAULT_FOLDER),
+            library_file: None,
+            library_setup: Some(setup),
+            ..Self::isolated(root)
         }
     }
 }
@@ -196,6 +227,8 @@ pub struct ProjectSession {
     pub manifest: Mutex<ProjectManifest>,
     pub recovery: Mutex<Option<RecoveryOffer>>,
     pub opened_at: i64,
+    /// The assistant's list of things a user can name, built on first use (AI harness S3).
+    pub ai_index: crate::modules::ai::index::IndexCache,
     _lock: ProjectLock,
 }
 
@@ -213,6 +246,7 @@ impl ProjectSession {
             manifest: Mutex::new(manifest),
             recovery: Mutex::new(recovery),
             opened_at: now_ms(),
+            ai_index: Default::default(),
             _lock: lock,
         }
     }
@@ -311,8 +345,55 @@ impl TaskManager {
     }
 }
 
+/// The library in use and the places the person chose on top of its defaults. `None` is the
+/// default; a `library` of `None` means the library is not set up yet (doc 40 section 1).
+#[derive(Debug, Clone, Default)]
+pub(crate) struct Locations {
+    pub(crate) projects_dir: Option<PathBuf>,
+    pub(crate) vault_dir: Option<PathBuf>,
+    pub(crate) library: Option<LibraryPlace>,
+}
+
+/// What the one running storage task is doing (doc 40 section 5).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum StorageOp {
+    /// A task on the Global Idea Vault: backup, package, restore, move, or connecting a folder.
+    Vault,
+    /// Moving the open project. While it runs, no project can be opened, created or closed.
+    ProjectMove,
+    /// Moving the whole library. Blocks projects like a project move.
+    LibraryMove,
+}
+
+/// Holds the storage-task slot until dropped, on success, error or panic alike.
+pub(crate) struct StorageGuard {
+    slot: Arc<Mutex<Option<StorageOp>>>,
+}
+
+impl Drop for StorageGuard {
+    fn drop(&mut self) {
+        *self.slot.lock() = None;
+    }
+}
+
+/// How long a call that needs the vault waits while it is closed for a move or a restore.
+const VAULT_WAIT: std::time::Duration = std::time::Duration::from_secs(2);
+
+/// How long the stop on sleep waits for an engine busy with background work: the longest one
+/// embedding call may take (`EMBED_TIMEOUT` in openframe-ai) and a little more.
+const SLEEP_STOP_WAIT: std::time::Duration = std::time::Duration::from_secs(130);
+
 pub struct AppCore {
     pub config: AppConfig,
+    locations: RwLock<Locations>,
+    /// The library file was there at start but could not be trusted. It is not rewritten until
+    /// the person changes a place on purpose (doc 40 section 2).
+    library_unusable: AtomicBool,
+    /// The profile is in `app.sqlite`. Before the library is set up a new person's id is kept in
+    /// memory only, so connecting an existing library can still take over its identity.
+    profile_saved: AtomicBool,
+    /// The one storage task that runs at a time (a second one is refused with `storage.busy`).
+    storage_op: Arc<Mutex<Option<StorageOp>>>,
     app_db: Mutex<Connection>,
     project: RwLock<Option<Arc<ProjectSession>>>,
     global: Mutex<Option<Arc<Store>>>,
@@ -347,7 +428,19 @@ impl AppCore {
         let mut conn =
             openframe_persistence::open_connection(&config.app_data_dir.join("app.sqlite"), true)?;
         openframe_persistence::migrate::apply(&mut conn, crate::schema::APP_MIGRATIONS)?;
-        let profile = ensure_profile(&conn)?;
+        // Cover photos no project row names (a crash between the file and the row) are removed.
+        crate::modules::project_cover::sweep(&conn, &config.app_data_dir);
+        // The library in use: the remembered one when its folder is there, else none yet (the
+        // first start asks; a missing folder is never recreated empty).
+        let place = library_ops::place_at_start(&conn, &config);
+        // A person who comes back after an app data reset keeps their identity and chosen folders.
+        let (library, library_unusable) = read_library_file(place.as_ref(), &config.app_data_dir);
+        let (profile, profile_saved) = ensure_profile(&conn, library.as_ref(), place.is_some())?;
+        let locations = Locations {
+            projects_dir: library.as_ref().and_then(|l| l.projects_dir.clone()),
+            vault_dir: library.and_then(|l| l.vault_dir),
+            library: place,
+        };
         // Never fails and never blocks startup: problems are logged and the state is Unknown.
         let mac_inputs = config.mac_inputs.take();
         let microsoft_store = config.microsoft_store.take();
@@ -361,6 +454,10 @@ impl AppCore {
             save: Arc::new(SaveTracker::new(events.clone())),
             global_save: Arc::new(SaveTracker::new(Arc::new(crate::events::NullSink))),
             config,
+            locations: RwLock::new(locations),
+            library_unusable: AtomicBool::new(library_unusable),
+            profile_saved: AtomicBool::new(profile_saved),
+            storage_op: Arc::new(Mutex::new(None)),
             app_db: Mutex::new(conn),
             project: RwLock::new(None),
             global: Mutex::new(None),
@@ -374,7 +471,162 @@ impl AppCore {
             closing: Mutex::new(()),
         });
         let _ = core.me.set(Arc::downgrade(&core));
+        core.write_library_best_effort();
         Ok(core)
+    }
+
+    // ----------------------------------------------------------- places and identity
+
+    /// Where new projects go: the folder the person chose, else the library's `Projects`.
+    pub fn projects_dir(&self) -> PathBuf {
+        let chosen = self.locations.read().projects_dir.clone();
+        chosen.unwrap_or_else(|| self.default_projects_dir())
+    }
+
+    /// The Global Idea Vault folder: the one the person chose or moved to, else the default.
+    pub fn vault_dir(&self) -> PathBuf {
+        let chosen = self.locations.read().vault_dir.clone();
+        chosen.unwrap_or_else(|| self.default_vault_dir())
+    }
+
+    /// The library's own folder for new projects (`<library>/Projects`).
+    pub fn default_projects_dir(&self) -> PathBuf {
+        let place = self.locations.read().library.clone();
+        place.map_or_else(|| self.config.projects_dir.clone(), |p| p.projects_dir)
+    }
+
+    /// The library's own vault folder (`<library>/Global Idea Vault`).
+    pub fn default_vault_dir(&self) -> PathBuf {
+        let place = self.locations.read().library.clone();
+        place.map_or_else(|| self.config.global_vault_dir.clone(), |p| p.vault_dir)
+    }
+
+    /// The library in use; `None` until it is set up (doc 40 section 1).
+    pub fn library_place(&self) -> Option<LibraryPlace> {
+        self.locations.read().library.clone()
+    }
+
+    /// True once the person chose a library (always in tests and on the end-to-end data root).
+    pub fn library_ready(&self) -> bool {
+        self.locations.read().library.is_some()
+    }
+
+    /// The library file in use, when there is one.
+    pub fn library_file(&self) -> Option<PathBuf> {
+        self.locations.read().library.as_ref()?.file.clone()
+    }
+
+    /// The one folder to back up, shown on the data note and in the file safety tutorial: the
+    /// folder that holds both the projects folder and the Global Idea Vault (the library folder
+    /// by default), or the projects folder when they live apart.
+    pub fn data_root(&self) -> PathBuf {
+        let (projects, vault) = (self.projects_dir(), self.vault_dir());
+        match (projects.parent(), vault.parent()) {
+            (Some(a), Some(b)) if a == b && !a.as_os_str().is_empty() => a.to_path_buf(),
+            _ => projects,
+        }
+    }
+
+    /// Start using the library at `place` (first setup, or connecting another library). The
+    /// identity: `app.sqlite` keeps its saved profile (ADR-0038); a person with no saved profile
+    /// yet (a new computer, or a reset app data) takes over the identity in the library file, so
+    /// their private notes stay theirs. When a saved profile meets the file of another person,
+    /// that file is copied aside first, so their id is not lost. The library file is written and
+    /// the choice remembered (`app.sqlite`, pointer) before anything in memory changes.
+    pub(crate) fn use_library(&self, place: LibraryPlace) -> AppResult<()> {
+        let (library, unusable) = read_library_file(Some(&place), &self.config.app_data_dir);
+        {
+            let mut profile = self.profile.write();
+            if !self.profile_saved.load(Ordering::SeqCst) {
+                if let Some(l) = &library {
+                    profile.user_id = l.user_id.clone();
+                    profile.display_name = l.display_name.clone();
+                }
+                self.with_app_db(|c| insert_profile(c, &profile))?;
+                self.profile_saved.store(true, Ordering::SeqCst);
+            } else if let (Some(l), Some(file)) = (&library, &place.file)
+                && l.user_id != profile.user_id
+                && library::preserve_copy(file, ".other-person-").is_none()
+            {
+                return Err(AppError::new(
+                    "storage.not_writable",
+                    "OpenFrame can't save files in that library folder, so it was not connected.",
+                ));
+            }
+        }
+        let next = Locations {
+            projects_dir: library.as_ref().and_then(|l| l.projects_dir.clone()),
+            vault_dir: library.and_then(|l| l.vault_dir),
+            library: Some(place),
+        };
+        self.with_vault_closed(|| {
+            let mut locations = self.locations.write();
+            if !unusable {
+                self.write_library(&next)?;
+            }
+            library_ops::remember_root(self, next.library.as_ref().map(|p| p.root.as_path()))?;
+            *locations = next;
+            self.library_unusable.store(unusable, Ordering::SeqCst);
+            Ok(())
+        })
+    }
+
+    /// A snapshot of the places, to put back after a failed library move.
+    pub(crate) fn locations_snapshot(&self) -> Locations {
+        self.locations.read().clone()
+    }
+
+    /// Put a snapshot back (library file and remembered root included). Used to undo a move.
+    pub(crate) fn restore_locations(&self, previous: Locations) -> AppResult<()> {
+        let root = previous.library.as_ref().map(|p| p.root.clone());
+        library_ops::remember_root(self, root.as_deref())?;
+        self.change_locations(|l| *l = previous)
+    }
+
+    /// Change the chosen places and record them in the library file. The running values change
+    /// only after the file is written, so a failed write leaves everything as it was and the
+    /// person hears about it. `change` may set a place to `None` to go back to its default.
+    pub(crate) fn change_locations(&self, change: impl FnOnce(&mut Locations)) -> AppResult<()> {
+        let mut locations = self.locations.write();
+        let mut next = locations.clone();
+        change(&mut next);
+        let unusable = self.library_unusable.load(Ordering::SeqCst);
+        if unusable && let Some(file) = locations.library.as_ref().and_then(|p| p.file.as_ref()) {
+            // A copy was made at start; make sure one exists before the file is replaced.
+            let _ = library::preserve_unusable(file);
+        }
+        self.write_library(&next)?;
+        if unusable {
+            self.library_unusable.store(false, Ordering::SeqCst);
+        }
+        *locations = next;
+        Ok(())
+    }
+
+    fn write_library(&self, locations: &Locations) -> AppResult<()> {
+        let Some(file) = locations.library.as_ref().and_then(|p| p.file.as_ref()) else {
+            return Ok(());
+        };
+        let p = self.profile();
+        library::write(
+            file,
+            &p.user_id,
+            &p.display_name,
+            locations.projects_dir.as_deref(),
+            locations.vault_dir.as_deref(),
+        )
+    }
+
+    /// Keep the library file current (start, name change). A failure is logged and never stops
+    /// the app: the file is a safety net, not the source of truth while `app.sqlite` is there.
+    fn write_library_best_effort(&self) {
+        if self.library_unusable.load(Ordering::SeqCst) {
+            return;
+        }
+        let locations = self.locations.read().clone();
+        if let Err(e) = self.write_library(&locations) {
+            tracing::warn!(code = e.code_str(), "the library file could not be written");
+        }
     }
 
     /// Owned handle for background threads.
@@ -403,7 +655,10 @@ impl AppCore {
             Ok(())
         })?;
         p.display_name = name.to_string();
-        Ok(p.clone())
+        let updated = p.clone();
+        drop(p);
+        self.write_library_best_effort();
+        Ok(updated)
     }
 
     /// The local user. Ordinary local use needs no account (Security §5.3);
@@ -460,16 +715,30 @@ impl AppCore {
 
     /// The Global Idea Vault store, opened lazily.
     pub fn global_store(&self) -> AppResult<Arc<Store>> {
-        let mut g = self.global.lock();
+        // A move or a restore keeps the vault closed (and this lock held) for the whole copy. A
+        // query that arrives then gets a plain answer after a moment, instead of a frozen screen.
+        let mut g = self.global.try_lock_for(VAULT_WAIT).ok_or_else(|| {
+            storage_busy("The Global Idea Vault is being moved or restored. Try again in a moment.")
+        })?;
         if let Some(s) = g.as_ref() {
             return Ok(s.clone());
         }
-        let dir = &self.config.global_vault_dir;
-        std::fs::create_dir_all(dir.join("assets"))?;
+        // Nothing is created before the person chose where their library is (doc 40 section 1).
+        if !self.library_ready() {
+            return Err(library_ops::setup_required());
+        }
+        let dir = self.vault_dir();
         let db = dir.join("vault.sqlite");
+        // Only the default folder is created on first use. A folder the person chose that has no
+        // vault in it is a drive that is not connected or a folder that was moved: it is never
+        // replaced by a new empty vault (doc 40 section 3).
+        if !db.is_file() && !library::same_place(&dir, &self.default_vault_dir()) {
+            return Err(vault_missing_error(&dir));
+        }
+        std::fs::create_dir_all(dir.join("assets"))?;
         let (store, _) = Store::open(
             StoreKind::Global,
-            dir,
+            &dir,
             &db,
             crate::schema::GLOBAL_MIGRATIONS,
             true,
@@ -488,13 +757,102 @@ impl AppCore {
         Ok(store)
     }
 
-    /// App start: open the Global Idea Vault so its Recently Deleted drops items older than 30
-    /// days. The desktop shell calls this once after setup, off the main thread. Never fails:
-    /// a vault that cannot open now is opened (and cleaned) on first use instead.
+    /// Let go of the cached Global Idea Vault store (moving, restoring or reconnecting the vault),
+    /// after folding its write-ahead log into the database file. The next use opens whatever is
+    /// at `vault_dir()` then. Holders of an earlier handle keep working on the old files until
+    /// they drop it.
+    pub fn close_global_store(&self) {
+        if let Some(store) = self.global.lock().take()
+            && let Err(e) = store.with_writer(openframe_persistence::checkpoint)
+        {
+            tracing::warn!(
+                code = e.code_str(),
+                "checkpoint of the vault before closing failed"
+            );
+        }
+    }
+
+    /// Take the slot for a storage task (vault backup, restore, move, locate, or a project move).
+    /// Only one runs at a time: a second start is refused with `storage.busy` and nothing changes.
+    /// The slot is freed when the guard drops, so an error or a panic in the task frees it too.
+    pub(crate) fn begin_storage_op(&self, op: StorageOp) -> AppResult<StorageGuard> {
+        let mut slot = self.storage_op.lock();
+        if slot.is_some() {
+            return Err(storage_busy(
+                "Another storage task is still running. Wait for it to finish, then try again. Nothing was changed.",
+            ));
+        }
+        *slot = Some(op);
+        Ok(StorageGuard {
+            slot: self.storage_op.clone(),
+        })
+    }
+
+    /// Opening, creating or closing a project is refused while the open project is being moved:
+    /// the move closes it, copies it and reopens it, and another open in between could leave the
+    /// session on the old folder just before it is deleted.
+    pub(crate) fn refuse_during_project_move(&self) -> AppResult<()> {
+        match *self.storage_op.lock() {
+            Some(StorageOp::ProjectMove) => Err(storage_busy(
+                "The project is being moved. Wait for the move to finish, then try again.",
+            )),
+            Some(StorageOp::LibraryMove) => Err(storage_busy(
+                "Your OpenFrame library is being moved. Wait for the move to finish, then try again.",
+            )),
+            _ => Ok(()),
+        }?;
+        Ok(())
+    }
+
+    /// Close the Global Idea Vault and keep it closed while `f` runs. Whatever needs the vault
+    /// meanwhile waits for `f` to finish, so a move or a restore never loses a change made during
+    /// the copy. `f` must not use the vault store; open it again after this returns. Fails with
+    /// `storage.busy` (vault left open) when something still holds the store after a few seconds.
+    pub(crate) fn with_vault_closed<R>(&self, f: impl FnOnce() -> AppResult<R>) -> AppResult<R> {
+        let mut g = self.global.lock();
+        if let Some(store) = g.take() {
+            if let Err(e) = store.with_writer(openframe_persistence::checkpoint) {
+                tracing::warn!(
+                    code = e.code_str(),
+                    "checkpoint of the vault before closing failed"
+                );
+            }
+            // An operation that started before we took the lock may still hold the store. The
+            // files are complete only when the last holder lets go (that closes the connections).
+            let give_up = std::time::Instant::now() + std::time::Duration::from_secs(10);
+            while Arc::strong_count(&store) > 1 {
+                if std::time::Instant::now() >= give_up {
+                    *g = Some(store);
+                    return Err(AppError::new(
+                        "storage.busy",
+                        "Your Global Idea Vault is in use right now. Wait a moment and try again. Nothing was changed.",
+                    )
+                    .retryable());
+                }
+                std::thread::sleep(std::time::Duration::from_millis(50));
+            }
+        }
+        f()
+    }
+
+    /// App start: remove what an interrupted move or restore left behind, then open the Global
+    /// Idea Vault so its Recently Deleted drops items older than 30 days. A vault that does not
+    /// exist yet is not created here (doc 40 section 3). The desktop shell calls this once after
+    /// setup, off the main thread. Never fails: a vault that cannot open now is opened (and
+    /// cleaned) on first use instead.
     pub fn startup_maintenance(&self) {
-        // Internal builds: nothing opens before the team password is right. The unlock runs this
-        // again once the gate opens.
-        if self.entitlement.team_gate_locked() {
+        // Before the library is set up there is nothing to clean, and nothing may be created.
+        // Setting it up runs this again.
+        if !self.library_ready() {
+            return;
+        }
+        let vault = self.vault_dir();
+        storage::remove_noted_staging(&self.config.app_data_dir);
+        storage::remove_staging_leftovers(&[
+            &self.projects_dir(),
+            vault.parent().unwrap_or(&vault),
+        ]);
+        if !vault.join("vault.sqlite").is_file() {
             return;
         }
         if let Err(e) = self.global_store() {
@@ -529,6 +887,10 @@ impl AppCore {
         op: &str,
         args: serde_json::Value,
     ) -> AppResult<serde_json::Value> {
+        // Until the library is set up only the setup screen and what draws the window run.
+        if !self.library_ready() && !library_ops::allowed_before_setup(op) {
+            return Err(library_ops::setup_required().with_detail(format!("{op} before setup")));
+        }
         self.registry.dispatch(self, actor, op, args)
     }
 
@@ -612,15 +974,24 @@ impl AppCore {
         self.events.emit(&event);
     }
 
-    /// Sleep and wake from the platform boundary (`openframe_platform::power`). Before the
-    /// computer sleeps, the write-ahead logs of the open project and of the Global Idea Vault are
-    /// folded into their database files, so a laptop that runs out of battery while asleep
-    /// reopens with every committed change in the main file. Errors are logged, never raised:
-    /// the system is going to sleep either way.
+    /// Sleep and wake from the platform boundary (`openframe_platform::power`).
+    ///
+    /// Before the computer sleeps, background work stops: the semantic index of the open project
+    /// holds its pass and starts no new one, the AI warm-up ends, and an AI engine only background
+    /// work uses is stopped (`AiManager::stop_background_engines`). A request a person is waiting
+    /// for (an `ai.ask` in flight) is left to finish on its engine. Then the write-ahead logs of
+    /// the open project and of the Global Idea Vault are folded into their database files, so a
+    /// laptop that runs out of battery while asleep reopens with every committed change in the
+    /// main file. After the wake the index goes on by itself and the warm-up runs again.
+    ///
+    /// Repeating an event is harmless (two sleeps, a wake without a sleep). Nothing here waits on
+    /// background work. Errors are logged, never raised: the system sleeps either way.
     pub fn on_power_event(&self, event: openframe_platform::power::PowerEvent) {
+        use crate::modules::ai::intelligence;
         use openframe_platform::power::PowerEvent;
         match event {
             PowerEvent::Suspending => {
+                intelligence::set_asleep(self, true);
                 let project = self.project_opt();
                 let global = self.global.lock().clone();
                 let stores = project
@@ -633,9 +1004,48 @@ impl AppCore {
                         tracing::warn!(code = e.code_str(), "checkpoint before sleep failed");
                     }
                 }
-                tracing::info!("data folded into the database files before sleep");
+                self.stop_background_engines();
+                tracing::info!(
+                    "background work held and data folded into the database files before sleep"
+                );
             }
-            PowerEvent::Resumed => tracing::info!("computer woke from sleep"),
+            PowerEvent::Resumed => {
+                intelligence::set_asleep(self, false);
+                tracing::info!("computer woke from sleep; background work goes on");
+            }
+        }
+    }
+
+    /// Stop the AI engines only background work uses. An engine still busy with the last call of
+    /// a stopped pass is stopped by a helper thread once that call ends, unless the computer woke
+    /// first; the helper gives up after [`SLEEP_STOP_WAIT`]. Nothing starts the AI service here.
+    fn stop_background_engines(&self) {
+        let Some(ai) = self.existing_service::<crate::modules::ai::service::AiService>() else {
+            return;
+        };
+        let Ok(manager) = ai.manager().cloned() else {
+            return;
+        };
+        if manager.stop_background_engines() {
+            return;
+        }
+        let core = Arc::downgrade(&self.arc());
+        let spawned = std::thread::Builder::new()
+            .name("of-sleep-stop".into())
+            .spawn(move || {
+                let deadline = std::time::Instant::now() + SLEEP_STOP_WAIT;
+                while std::time::Instant::now() < deadline {
+                    std::thread::sleep(std::time::Duration::from_millis(50));
+                    let Some(core) = core.upgrade() else { return };
+                    if !crate::modules::ai::intelligence::service(&core).is_asleep()
+                        || manager.stop_background_engines()
+                    {
+                        return;
+                    }
+                }
+            });
+        if let Err(e) = spawned {
+            tracing::warn!(error = %e, "the AI engines could not be stopped for sleep");
         }
     }
 
@@ -660,7 +1070,63 @@ impl AppCore {
     }
 }
 
-fn ensure_profile(conn: &Connection) -> AppResult<LocalProfile> {
+/// A storage task cannot start or a call cannot be served right now. Retryable; nothing changed.
+pub(crate) fn storage_busy(message: &str) -> AppError {
+    AppError::new("storage.busy", message).retryable()
+}
+
+/// The vault folder the library file names has no vault in it: a drive that is not connected or
+/// a folder that was moved. Settings > Storage offers Locate and Change.
+pub(crate) fn vault_missing_error(dir: &std::path::Path) -> AppError {
+    AppError::new(
+        "storage.vault_missing",
+        "Your Global Idea Vault can't be found where it was last used. If it is on an \
+         external drive, reconnect the drive. Otherwise go to Settings > Storage and choose \
+         the vault folder.",
+    )
+    .with_detail(dir.to_string_lossy().into_owned())
+}
+
+/// The library file of `place`: valid, or `None` with whether it is there but unusable. An
+/// unusable file is never trusted and never overwritten; a copy is kept beside it.
+fn read_library_file(
+    place: Option<&LibraryPlace>,
+    app_data_dir: &std::path::Path,
+) -> (Option<Library>, bool) {
+    let Some(file) = place.and_then(|p| p.file.as_deref()) else {
+        return (None, false);
+    };
+    match library::read(file, app_data_dir) {
+        library::Read::Valid(l) => (Some(l), false),
+        library::Read::Unusable => {
+            if library::preserve_unusable(file).is_some() {
+                tracing::warn!("the unusable library file was copied aside");
+            }
+            (None, true)
+        }
+        library::Read::Absent => (None, false),
+    }
+}
+
+fn insert_profile(conn: &Connection, p: &LocalProfile) -> AppResult<()> {
+    let now = now_ms();
+    conn.execute(
+        "INSERT INTO sys_local_profile(user_id, display_name, created_at, updated_at) VALUES (?1, ?2, ?3, ?3)",
+        params![p.user_id, p.display_name, now],
+    )?;
+    Ok(())
+}
+
+/// The local profile and whether it is saved. `app.sqlite` wins when it has one; without one
+/// (first start, or the app data was deleted) the identity in a valid library file is taken
+/// over, so private notes that belong to it stay theirs. Only a person with neither gets a new
+/// id, saved only when `save` (the library is set up): before that it lives in memory, so
+/// connecting an existing library can still take over that library's identity.
+fn ensure_profile(
+    conn: &Connection,
+    library: Option<&Library>,
+    save: bool,
+) -> AppResult<(LocalProfile, bool)> {
     let existing: Option<(String, String)> = conn
         .query_row(
             "SELECT user_id, display_name FROM sys_local_profile LIMIT 1",
@@ -669,22 +1135,28 @@ fn ensure_profile(conn: &Connection) -> AppResult<LocalProfile> {
         )
         .optional()?;
     if let Some((user_id, display_name)) = existing {
-        return Ok(LocalProfile {
-            user_id,
-            display_name,
-        });
+        return Ok((
+            LocalProfile {
+                user_id,
+                display_name,
+            },
+            true,
+        ));
     }
-    let name = std::env::var("USERNAME")
-        .or_else(|_| std::env::var("USER"))
-        .unwrap_or_else(|_| "You".to_string());
-    let profile = LocalProfile {
-        user_id: new_id(),
-        display_name: name,
+    let profile = match library {
+        Some(l) => LocalProfile {
+            user_id: l.user_id.clone(),
+            display_name: l.display_name.clone(),
+        },
+        None => LocalProfile {
+            user_id: new_id(),
+            display_name: std::env::var("USERNAME")
+                .or_else(|_| std::env::var("USER"))
+                .unwrap_or_else(|_| "You".to_string()),
+        },
     };
-    let now = now_ms();
-    conn.execute(
-        "INSERT INTO sys_local_profile(user_id, display_name, created_at, updated_at) VALUES (?1, ?2, ?3, ?3)",
-        params![profile.user_id, profile.display_name, now],
-    )?;
-    Ok(profile)
+    if save {
+        insert_profile(conn, &profile)?;
+    }
+    Ok((profile, save))
 }

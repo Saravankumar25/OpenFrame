@@ -47,8 +47,6 @@ final class InterchangePresenter {
         if let themes { self.themes = themes }
     }
 
-    var isPresenting: Bool { sheetWindow != nil }
-
     func present(_ dialog: InterchangeDialog) {
         guard let app else { return }
         Task { @MainActor in
@@ -149,9 +147,10 @@ final class InterchangePresenter {
     private func present<V: View>(view: V, app: AppModel, openAfter: (@MainActor () async -> Void)? = nil) {
         guard sheetWindow == nil else { return }
         let store = themes ?? ThemeStore()
-        let parentWindow = NSApp.keyWindow ?? NSApp.mainWindow ?? NSApp.windows.first(where: { $0.isVisible })
-        // The sheet frame keeps its middle part short enough for the window it belongs to.
-        let room = parentWindow?.contentLayoutRect.size ?? CGSize(width: 1360, height: 800)
+        let start = NSApp.keyWindow ?? NSApp.mainWindow ?? NSApp.windows.first(where: { $0.isVisible && !$0.isSheet })
+        let parentWindow = Self.sheetParent(from: start)
+        // The sheet frame keeps its middle part short enough for the project window under it.
+        let room = Self.rootWindow(of: start)?.contentLayoutRect.size ?? CGSize(width: 1360, height: 800)
         let root = view
             .environment(\.windowContentSize, room)
             .environment(app)
@@ -172,6 +171,23 @@ final class InterchangePresenter {
         // Keyboard focus starts in the sheet's content, so Escape and the arrow keys reach it.
         window.makeFirstResponder(host.view)
         if let openAfter { Task { await openAfter() } }
+    }
+
+    /// The window a new sheet attaches to: the frontmost sheet over `start`, else `start` itself.
+    /// A window that already carries a sheet would queue a second one until the first closes, so a
+    /// File menu command over Project Settings showed nothing. On the Mac a sheet may carry its
+    /// own sheet, so the new one goes on top of the open one and Cancel returns to it.
+    static func sheetParent(from start: NSWindow?) -> NSWindow? {
+        var window = start
+        while let sheet = window?.attachedSheet { window = sheet }
+        return window
+    }
+
+    /// The ordinary window under a chain of sheets.
+    static func rootWindow(of window: NSWindow?) -> NSWindow? {
+        var window = window
+        while let parent = window?.sheetParent { window = parent }
+        return window
     }
 
     /// Close the sheet that is showing and show another after it is gone.

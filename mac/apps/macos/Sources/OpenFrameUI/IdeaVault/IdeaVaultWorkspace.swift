@@ -26,12 +26,28 @@ struct IdeaVaultWorkspace: View {
     }
 }
 
-/// The Global Idea Vault with no project open (shown from Home).
+/// The Global Idea Vault with no project open (shown from Home as a sheet). `onClose` puts a
+/// Done button in the vault's own title row, where it is always in sight; Escape does the same.
 public struct GlobalIdeaVaultView: View {
-    public init() {}
+    var onClose: (() -> Void)?
+    public init(onClose: (() -> Void)? = nil) { self.onClose = onClose }
     public var body: some View {
         IdeaVaultWorkspace(store: .global)
+            .environment(\.vaultClose, onClose.map(VaultClose.init))
             .accessibilityIdentifier("global-idea-vault")
+    }
+}
+
+struct VaultClose { let action: () -> Void }
+
+private struct VaultCloseKey: EnvironmentKey {
+    static var defaultValue: VaultClose? { nil }
+}
+
+extension EnvironmentValues {
+    var vaultClose: VaultClose? {
+        get { self[VaultCloseKey.self] }
+        set { self[VaultCloseKey.self] = newValue }
     }
 }
 
@@ -68,6 +84,7 @@ struct IdeaVaultScreen: View {
     @Bindable var model: IdeaVaultModel
     @Environment(\.ofTheme) private var theme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.vaultClose) private var close
     @AppStorage("vault.mode") private var storedMode = VaultDisplayMode.grid.rawValue
     @State private var importKind: ImportKind?
     @State private var importing = false
@@ -88,7 +105,7 @@ struct IdeaVaultScreen: View {
             }
         }
         .background(theme["bg"])
-        .sheet(item: $model.dialog) { dialogView($0) }
+        .themedSheet(item: $model.dialog) { dialogView($0) }
         .task(id: reloadKey) { await model.reload() }
         .task(id: model.searchText) {
             try? await Task.sleep(for: .milliseconds(200))
@@ -131,6 +148,7 @@ struct IdeaVaultScreen: View {
         VStack(alignment: .leading, spacing: 0) {
             header
             actionBar
+            orphanBanner
             if model.mode == .folder && !model.searching {
                 VaultCrumbs(path: VaultFolders.path(model.folders, to: model.folderCursor)) { model.openFolder($0) }
                     .padding(.horizontal, 24)
@@ -178,6 +196,29 @@ struct IdeaVaultScreen: View {
         .padding(.horizontal, 24)
         .padding(.top, 20)
         .padding(.bottom, 12)
+        .overlay(alignment: .topTrailing) {
+            if let close {
+                Button("Done", action: close.action)
+                    .keyboardShortcut(.cancelAction)
+                    .padding(.top, 16).padding(.trailing, 16)
+                    .accessibilityIdentifier("global-vault-done")
+            }
+        }
+    }
+
+    /// Files in the vault folder that are in no item: offer to add them back.
+    @ViewBuilder private var orphanBanner: some View {
+        if let o = model.orphans, o.count > 0 {
+            IXBanner(tone: .info, text: Text(StorageRules.orphanBanner(o.count))) {
+                Button("Add Them Back") { Task { await model.recoverFiles() } }
+                    .buttonStyle(.ofProminent)
+                    .disabled(model.recovering)
+                    .accessibilityIdentifier("vault-add-back")
+            }
+            .padding(.horizontal, 24)
+            .padding(.bottom, 8)
+            .accessibilityIdentifier("vault-orphans")
+        }
     }
 
     // MARK: Toolbar
@@ -375,6 +416,7 @@ struct IdeaVaultScreen: View {
                 Button("Add Note") { Task { await model.createText(.note) } }
                 Button("Record Note") { model.dialog = .record }
             }
+            .accessibilityElement(children: .contain)
             .accessibilityIdentifier("vault-empty")
         } else {
             let text: String = {
@@ -445,6 +487,7 @@ struct IdeaVaultScreen: View {
                 if notice.action == .openStory {
                     Button("Open Beat Board") {
                         model.dismissNotice()
+                        ProjectIntents.shared.fire(StoryTab.board.showIntent)
                         NotificationCenter.default.post(name: .openFrameShowWorkspace, object: Workspace.story.rawValue)
                     }
                     .buttonStyle(.link)

@@ -11,7 +11,7 @@ Before: an empty data folder of its own. The app starts for the first time.
 ## An act, a sequence and two scene cards
 
 1. Do the first launch: type 'E2E Tester' as the name, click Continue, click Create Project, type 'Paper Boats' as the title, click Create.
-2. Click Story in the Workspaces navigation.
+2. Click Story in the Workspaces navigation, then click the Board tab.
 3. Check: the screen shows "Your Beat Board is empty."
 4. Click Add Act. Type 'Act One' in the Act title field and press Enter.
 5. Check: the acts include "Act One".
@@ -59,7 +59,7 @@ Before: an empty data folder of its own. The app starts for the first time.
 7. Open the project menu and choose Recently Deleted.
 8. Click Restore The river carries the boats away.
 9. Check: the screen shows "Restored “The river carries the boats away”".
-10. Click Story in the Workspaces navigation.
+10. Click Story in the Workspaces navigation, then click the Board tab.
 11. Check: the cards are, in order, "Boats fold themselves at first light", "The river carries the boats away" (the restored card returns to its place).
 12. Check: the screen is quiet.
 
@@ -79,7 +79,7 @@ Before: an empty data folder of its own. The app starts for the first time.
 12. Check: the screen shows "Deleted character Mira".
 13. Open the project menu and choose Recently Deleted.
 14. Click Restore Mira.
-15. Click Story in the Workspaces navigation, then the Characters tab.
+15. Click Story in the Workspaces navigation, then click the Board tab. Then click the Characters tab.
 16. Check: the workspace shows "Paper boat maker".
 17. Check: the screen is quiet.
 
@@ -95,7 +95,7 @@ Before: an empty data folder of its own. The app starts for the first time.
 1. Open the project menu and choose Close project.
 2. Quit the app and start it again on the same data.
 3. Click the project row "Open Paper Boats". Check: no recovery question shows.
-4. Click Story in the Workspaces navigation.
+4. Click Story in the Workspaces navigation, then click the Board tab.
 5. Check: the cards are, in order, "Boats fold themselves at first light", "The river carries the boats away".
 6. Check: the acts include "Act One [em dash] Launch".
 7. Click the Characters tab.

@@ -1,5 +1,5 @@
 // Memory soak for release gate P1: `node tests/e2e/soak/memory-soak.mjs --app=<exe> --minutes=120 [--dry-run] [--bounded] [--window=<minutes>]`.
-// Drives an installed (gated) openframe-desktop.exe through tauri-driver: writes in the screenplay, switches
+// Drives an installed (internal) openframe-desktop.exe through tauri-driver: writes in the screenplay, switches
 // workspaces every 10 loops, closes and reopens the project every 50 loops, and samples the working set and
 // private bytes of the app and of its msedgewebview2.exe descendants every 60 s. Output goes to
 // tests/e2e/artifacts/soak-<stamp>.csv and soak-<stamp>.json. PASS: over the last 90 minutes (the whole run if
@@ -10,7 +10,6 @@ import net from "node:net";
 import { existsSync, mkdirSync, readFileSync, writeFileSync, appendFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { DRIVERS, E2E_ROOT, EDGE_DRIVER, TAURI_DRIVER, setupDrivers } from "../scripts/setup-drivers.mjs";
-import { teamPassword } from "../lib/team-password.mjs";
 import { click, launchApp, openWorkspace, sleep } from "../lib/app.mjs";
 import { closeProject, editorElements, firstLaunchProject, openProject } from "../lib/flows.mjs";
 
@@ -83,7 +82,7 @@ function plan() {
   return [
     `app: ${APP || "(missing --app)"}  minutes: ${MINUTES}  sample every ${SAMPLE_MS / 1000} s`,
     "start tauri-driver + msedgedriver (WebView2 version check as run.mjs), fresh data root tests/e2e/.run/soak-<stamp> (OPENFRAME_DATA_ROOT)",
-    "unlock the team gate (OPENFRAME_TEAM_PASSWORD env or Windows User scope), create project, open Screenplay, New Screenplay",
+    "create project, open Screenplay, New Screenplay",
     "loop: scene heading, action, character, dialogue; every 10 loops Story, Idea Vault, Breakdown, Screenplay; every 50 loops close and reopen the project",
     "sample app + msedgewebview2.exe descendants (working set, private bytes) -> artifacts/soak-<stamp>.csv, summary -> soak-<stamp>.json",
     `PASS if, over the last ${WINDOW_MIN} min, app private slope < ${LIMIT.appMbPerHour} MB/h and webview total private slope < ${LIMIT.webMbPerHour} MB/h and no crash`,
@@ -107,8 +106,7 @@ async function main() {
   const csv = join(art, `soak-${stamp}.csv`);
   writeFileSync(csv, "minute,loops,appN,appWsMB,appPrivateMB,webN,webWsMB,webPrivateMB\n");
 
-  Object.assign(process.env, { OPENFRAME_DATA_ROOT: root, E2E_APP: APP, E2E_DATA_ROOT: root, E2E_PORT: String(PORT), E2E_RELEASE: "gated", E2E_TEAM_PASSWORD: teamPassword() });
-  delete process.env.OPENFRAME_TEAM_PASSWORD;
+  Object.assign(process.env, { OPENFRAME_DATA_ROOT: root, E2E_APP: APP, E2E_DATA_ROOT: root, E2E_PORT: String(PORT), E2E_RELEASE: "internal" });
   if ((await listening(PORT)) || (await listening(NATIVE_PORT))) throw new Error(`Ports ${PORT}/${NATIVE_PORT} are in use.`);
   const driver = spawn(TAURI_DRIVER, ["--port", String(PORT), "--native-port", String(NATIVE_PORT), "--native-driver", EDGE_DRIVER], {
     env: process.env,

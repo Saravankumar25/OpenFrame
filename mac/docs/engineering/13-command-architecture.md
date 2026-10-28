@@ -1,8 +1,8 @@
-# 13 — Rust Domain & Command Architecture
+# 13: Rust Domain & Command Architecture
 
 > **Status legend:** ✅ implemented · 🚧 in development · 📋 planned.
 > Source: `crates/openframe-domain`, `crates/openframe-application/src/{core,registry,store,util,events}.rs`,
-> `modules/*`. Module conventions for implementers: `docs/archive/2026-09-30-agent-brief.md`.
+> `modules/*`. Module conventions for implementers: `docs/history/2026-09-30-agent-brief.md`.
 
 ## 1. Layers ✅
 
@@ -82,7 +82,7 @@ Store::mutate(actor, MutationMeta{action, summary, cap, coalesce_key?, target?, 
   7. search re-index of every touched row (+ extra) via registered indexers
   8. if changes non-empty: activity entry (merge window 60 s for coalesced edits) and undo entry
      (coalesce window 4 s; redo stack cleared; cap 300)
-  9. COMMIT  — failure → rollback, created files removed
+  9. COMMIT: failure → rollback, created files removed
  10. purge deletions; release writer
  11. DataChanged{store, tables, ids, origin:"local"}; SaveTracker: Saved (or Error for storage.* failures)
 ```

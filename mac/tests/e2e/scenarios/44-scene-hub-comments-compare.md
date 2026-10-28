@@ -34,6 +34,7 @@ Before: an empty data folder of its own. The app starts for the first time.
 5. Check: a dialogue line reads "You came back. Every night.", and within 15 seconds the editor says "Saved".
 6. Click Compare in the Screenplay toolbar.
 7. Check: the side-by-side comparison shows, and it contains "Every night.".
+8. At window sizes 1280 by 720, 1600 by 900 and 1920 by 1080, and again with the AI Assistant open, check: the bar with Back to script, the two draft pickers, the view switch and Previous and Next change sits above the Changes list and the Summary line; nothing in it overlaps them, each draft picker is no wider than 300 pixels, and the page does not scroll sideways.
 
 ## Notes
 

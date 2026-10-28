@@ -14,11 +14,11 @@ import type { VaultCollectionDto } from "../../ipc/generated/VaultCollectionDto"
 import type { VaultFolderDto } from "../../ipc/generated/VaultFolderDto";
 import type { VaultItemDto } from "../../ipc/generated/VaultItemDto";
 import type { VaultView } from "../../ipc/generated/VaultView";
-import { Button, Chip, EmptyState, Menu, PageHeader, Segmented, Skeleton, type MenuItemSpec } from "../../design-system";
+import { Banner, Button, Chip, EmptyState, Menu, PageHeader, Segmented, Skeleton, type MenuItemSpec } from "../../design-system";
 import { useIntent, useNav, useUi } from "../../app/stores";
 import { toast } from "../../app/toast";
 import { matches as matchesShortcut, useShortcutLabel } from "../../app/shortcuts";
-import { useVaultList, useVaultOverview, vault } from "./api";
+import { useVaultList, useVaultOrphans, useVaultOverview, vault } from "./api";
 import { DeletedView } from "./DeletedView";
 import {
   AddResultDialog,
@@ -150,6 +150,21 @@ export default function IdeaVaultWorkspace() {
   }, [searchText]);
 
   const overview = useVaultOverview(effectiveScope);
+  const orphans = useVaultOrphans(effectiveScope);
+  const [recovering, setRecovering] = useState(false);
+  const recoverFiles = async () => {
+    setRecovering(true);
+    try {
+      const r = await vault.recoverFiles(effectiveScope);
+      if (r.added > 0) toast.undoable(r.added === 1 ? "Added 1 file back to the vault" : `Added ${r.added} files back to the vault`, effectiveScope);
+      if (r.failed > 0) toast.error(r.failed === 1 ? "1 file could not be read. It may be in use by another program. Try again later." : `${r.failed} files could not be read. They may be in use by another program. Try again later.`);
+      void orphans.refetch();
+    } catch (e) {
+      reportError(e);
+    } finally {
+      setRecovering(false);
+    }
+  };
   const listView: VaultView = useMemo(
     () => (mode === "folder" ? { kind: "folder", folderId: folderCursor } : view),
     [mode, folderCursor, view],
@@ -522,6 +537,19 @@ export default function IdeaVaultWorkspace() {
           </>
         }
       />
+
+      {!!orphans.data && orphans.data.count > 0 && (
+        <Banner
+          tone="info"
+          actions={
+            <Button size="sm" variant="primary" disabled={recovering} onClick={() => void recoverFiles()}>
+              Add Them Back
+            </Button>
+          }
+        >
+          {orphans.data.count === 1 ? "1 file in the vault folder is not in the vault." : `${orphans.data.count} files in the vault folder are not in the vault.`}
+        </Banner>
+      )}
 
       <div className="toolbar">
         {hasProject && (

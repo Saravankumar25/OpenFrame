@@ -35,7 +35,7 @@ const SUB_LABEL = {
   story: { board: "Board", outline: "Outline", characters: "Characters", timeline: "Timeline", episodes: "Episodes" },
   screenplay: { compare: "Compare" },
   vault: { deleted: "Recently Deleted" },
-  settings: { templates: "Templates", "offline-ai": "Offline AI", writing: "Writing", shortcuts: "Keyboard shortcuts", advanced: "Advanced", appearance: "Appearance" },
+  settings: { templates: "Templates", "offline-ai": "Offline AI", writing: "Writing", shortcuts: "Keyboard shortcuts", advanced: "Advanced", appearance: "Appearance", storage: "Storage" },
 };
 /** Sub-routes that replace the page rather than select a tab: the button that opens them goes
  * away, and the page shows this button instead. */

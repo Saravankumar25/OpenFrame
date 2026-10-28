@@ -9,7 +9,7 @@ import SwiftUI
 /// The pages of Settings inside a project, in the Windows order (workspaces/settings/index.tsx,
 /// owner change list item 6): the project's own settings and the ones for this Mac together.
 enum ProjectSettingsTab: String, CaseIterable, Identifiable, Hashable {
-    case general, writing, shortcuts, templates, offlineAI, advanced, appearance
+    case general, writing, shortcuts, templates, offlineAI, advanced, appearance, storage
     var id: String { rawValue }
     var title: String {
         switch self {
@@ -20,6 +20,7 @@ enum ProjectSettingsTab: String, CaseIterable, Identifiable, Hashable {
         case .offlineAI: "Offline AI"
         case .advanced: "Advanced"
         case .appearance: "Appearance"
+        case .storage: "Storage"
         }
     }
     var symbol: String {
@@ -31,6 +32,7 @@ enum ProjectSettingsTab: String, CaseIterable, Identifiable, Hashable {
         case .offlineAI: "sparkles"
         case .advanced: "slider.horizontal.3"
         case .appearance: "paintpalette"
+        case .storage: "externaldrive"
         }
     }
 }

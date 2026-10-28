@@ -21,6 +21,8 @@ fileprivate extension UI {
     /// Opens a workspace, checks that one of the facts shows, and takes a picture.
     func checkWorkspace(_ name: String, _ facts: [String], _ f: Findings, timeout: Double = 20) async throws {
         try await go(name)
+        // Story opens on the Story page; the facts checked here are on the Beat Board.
+        if name == "Story" { try await Scenarios.segment(self, group: "story-tabs", "Beat Board") }
         let hit = await seeAny(facts, timeout: timeout)
         f.check(hit != nil, "\(name): none of \(facts) is on screen; it shows \(screenText().prefix(300))")
         log("\(name): saw \(hit ?? "nothing")")

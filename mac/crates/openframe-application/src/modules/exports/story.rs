@@ -1,14 +1,16 @@
 //! Beat Board export (FSD §60.2 "Outline/Beat Board: PDF"; Import/Export
 //! §6 Beat Board PDF / Outline PDF; UX §3.x mock 072): acts, sequences,
 //! beats and scene cards in board order, with optional notes, comments and
-//! Parking Lot. "Outline" is a readable hierarchy; "Board" is a landscape
-//! card grid per act. TXT and CSV carry the same outline.
+//! Parking Lot. "Outline" is a readable hierarchy; "Board" is a portrait
+//! card board with three cards to a row (PDF design package v2). TXT and CSV
+//! carry the same outline.
 
 use std::collections::{HashMap, HashSet};
 
 use openframe_domain::{Actor, AppError, AppResult};
 use openframe_import_export::report::{
-    Block, Column, Document, Grid, GridCell, Masthead, Side, Table, pal,
+    Block, Board, BoardComment, BoardCount, BoardExtra, BoardItem, BoardItems, BoardKey,
+    BoardLayout, Column, Document, Masthead, Rgb, Side, Table, Txt, pal,
 };
 use rusqlite::Connection;
 use serde::Deserialize;
@@ -16,8 +18,8 @@ use ts_rs::TS;
 
 use super::style::nb;
 use super::{
-    Fmt, HINT_TEXT, Job, Output, deliver, destination, footer, nonblank, plural, require_export,
-    subtitle, today_label,
+    Fmt, HINT_TEXT, Job, Output, deliver, destination, nonblank, plural, require_export, subtitle,
+    today_label,
 };
 use crate::core::AppCore;
 use crate::modules::schedule::board::project_title;
@@ -30,7 +32,7 @@ pub struct ExportStoryOutlineArgs {
     pub format: String,
     /// Absolute destination chosen in the Save dialog.
     pub path: String,
-    /// "outline" (default) or "board" (landscape card grid; PDF only).
+    /// "outline" (default) or "board" (portrait card board; PDF only).
     #[serde(default)]
     #[ts(optional)]
     pub layout: Option<String>,
@@ -76,18 +78,27 @@ struct Node {
     /// Card short description.
     text: String,
     note: Option<String>,
-    comments: Vec<String>,
+    comments: Vec<Thread>,
     children: Vec<Node>,
     /// Scene card number in board order (cards outside the Parking Lot).
     number: Option<usize>,
 }
 
-struct Board {
+struct Tray {
     /// None for the film's board; the episode title otherwise.
     episode: Option<String>,
     acts: Vec<Node>,
     unassigned: Vec<Node>,
     parking: Vec<Node>,
+}
+
+/// A comment thread on a board item, with its replies.
+#[derive(Debug, Clone)]
+struct Thread {
+    status: String,
+    author: String,
+    body: String,
+    replies: Vec<(String, String)>,
 }
 
 type Key = (String, Option<String>);
@@ -98,7 +109,7 @@ fn take(map: &mut HashMap<Key, Vec<(i64, String, Node)>>, key: &Key) -> Vec<Node
     v.into_iter().map(|t| t.2).collect()
 }
 
-fn load_comments(c: &Connection) -> AppResult<HashMap<String, Vec<String>>> {
+fn load_comments(c: &Connection) -> AppResult<HashMap<String, Vec<Thread>>> {
     let mut st = c.prepare(
         "SELECT id, parent_id, target_id, author_name, status, body FROM comment
          WHERE deleted_at IS NULL AND target_type IN ('story_act','story_sequence','story_beat','story_scene_card')
@@ -117,14 +128,18 @@ fn load_comments(c: &Connection) -> AppResult<HashMap<String, Vec<String>>> {
         })?
         .collect::<Result<_, _>>()?;
     // Threads in order: each root followed by its replies.
-    let mut out: HashMap<String, Vec<String>> = HashMap::new();
-    for (id, parent, target, author, status, body) in rows.iter().filter(|r| r.1.is_none()) {
-        let _ = parent;
-        let list = out.entry(target.clone()).or_default();
-        list.push(format!("Comment ({status}) from {author}: {}", body.trim()));
-        for (_, _, _, ra, _, rb) in rows.iter().filter(|r| r.1.as_deref() == Some(id.as_str())) {
-            list.push(format!("Reply from {ra}: {}", rb.trim()));
-        }
+    let mut out: HashMap<String, Vec<Thread>> = HashMap::new();
+    for (id, _, target, author, status, body) in rows.iter().filter(|r| r.1.is_none()) {
+        out.entry(target.clone()).or_default().push(Thread {
+            status: status.clone(),
+            author: author.clone(),
+            body: body.trim().to_string(),
+            replies: rows
+                .iter()
+                .filter(|r| r.1.as_deref() == Some(id.as_str()))
+                .map(|(_, _, _, ra, _, rb)| (ra.clone(), rb.trim().to_string()))
+                .collect(),
+        });
     }
     Ok(out)
 }
@@ -132,8 +147,8 @@ fn load_comments(c: &Connection) -> AppResult<HashMap<String, Vec<String>>> {
 fn load_board(
     c: &Connection,
     episode: Option<&str>,
-    comments: &HashMap<String, Vec<String>>,
-) -> AppResult<Board> {
+    comments: &HashMap<String, Vec<Thread>>,
+) -> AppResult<Tray> {
     let mut map: HashMap<Key, Vec<(i64, String, Node)>> = HashMap::new();
     let node = |kind, id: String, title: String, text: String, note: Option<String>| Node {
         comments: comments.get(&id).cloned().unwrap_or_default(),
@@ -258,7 +273,7 @@ fn load_board(
             n
         })
         .collect();
-    let mut board = Board {
+    let mut board = Tray {
         episode: None,
         acts,
         unassigned: take(&mut map, &("unassigned".into(), None)),
@@ -332,6 +347,18 @@ fn card_title(n: &Node) -> String {
     }
 }
 
+/// The lines of a thread as plain text (TXT and CSV).
+fn thread_lines(t: &Thread) -> Vec<String> {
+    let mut v = vec![format!(
+        "Comment ({}) from {}: {}",
+        t.status, t.author, t.body
+    )];
+    for (a, b) in &t.replies {
+        v.push(format!("Reply from {a}: {b}"));
+    }
+    v
+}
+
 fn extras(n: &Node, o: &Opts) -> Vec<String> {
     let mut v = Vec::new();
     if o.notes
@@ -340,126 +367,238 @@ fn extras(n: &Node, o: &Opts) -> Vec<String> {
         v.push(format!("Note: {note}"));
     }
     if o.comments {
-        v.extend(n.comments.iter().cloned());
+        v.extend(n.comments.iter().flat_map(thread_lines));
     }
     v
 }
 
-// ------------------------------------------------------------------ outline PDF
+// ------------------------------------------------------------------ PDF (outline and board)
 
-/// Acts and sequences are headings; beats and cards are indented under their
-/// container so an act-level card after a sequence doesn't read as part of it.
-fn outline_blocks(nodes: &[Node], depth: u8, o: &Opts, out: &mut Vec<Block>) {
-    for n in nodes {
-        let (level, child_depth) = match n.kind {
-            Kind::Act => {
-                out.push(Block::Heading {
-                    text: n.title.clone(),
-                    level: 1,
-                });
-                (0, 0)
-            }
-            Kind::Sequence => {
-                out.push(Block::Heading {
-                    text: format!("Sequence: {}", n.title),
-                    level: 2,
-                });
-                (depth, depth + 1)
-            }
-            Kind::Card => {
-                let mut line = card_title(n);
-                if !n.text.is_empty() {
-                    line.push_str(&format!(": {}", n.text));
-                }
-                out.push(Block::Indented {
-                    text: line,
-                    level: depth,
-                    muted: false,
-                });
-                (depth, depth + 1)
-            }
-            Kind::Beat => {
-                out.push(Block::Indented {
-                    text: format!("Beat: {}", n.title),
-                    level: depth,
-                    muted: false,
-                });
-                (depth, depth + 1)
-            }
-        };
-        for e in extras(n, o) {
-            out.push(Block::Indented {
-                text: e,
-                level: level + 1,
-                muted: true,
-            });
-        }
-        outline_blocks(&n.children, child_depth, o, out);
+/// Secondary text that passes 4.5:1 on white.
+const MUTED: Rgb = Rgb::hex(0x66728a);
+/// Cards to a row on the card board.
+const BOARD_COLUMNS: usize = 3;
+
+/// "LOW TIDE RADIO · BEAT BOARD": names the production on every page of a printed board.
+fn running_header(project: &str, document: &str) -> String {
+    match nb(project) {
+        Some(p) => format!("{} · {}", p.to_uppercase(), document.to_uppercase()),
+        None => document.to_uppercase(),
     }
 }
 
-// ------------------------------------------------------------------ board PDF
-
-fn cell(n: &Node, o: &Opts) -> GridCell {
-    match n.kind {
-        Kind::Card => GridCell {
-            title: Some(
-                n.number
-                    .map(|x| format!("Scene Card {x}"))
-                    .unwrap_or_else(|| "Scene Card".into()),
-            ),
-            lines: [n.title.clone(), n.text.clone()]
-                .into_iter()
-                .filter(|s| !s.is_empty())
-                .collect(),
-            notes: extras(n, o),
-            ..Default::default()
+fn pdf_item(n: &Node, o: &Opts) -> BoardItem {
+    let beat = n.kind == Kind::Beat;
+    BoardItem {
+        number: n.number,
+        beat,
+        heading: if beat { String::new() } else { n.title.clone() },
+        text: if beat {
+            n.title.clone()
+        } else {
+            n.text.clone()
         },
-        _ => GridCell {
-            title: Some("Beat".into()),
-            lines: vec![n.title.clone()],
-            notes: extras(n, o),
-            ..Default::default()
-        },
+        extras: pdf_extras(n, o),
     }
 }
 
-fn board_blocks(items: &[Node], o: &Opts, out: &mut Vec<Block>) {
-    let mut run: Vec<GridCell> = Vec::new();
-    let flush = |run: &mut Vec<GridCell>, out: &mut Vec<Block>| {
-        if !run.is_empty() {
-            out.push(Block::Grid(Grid {
-                columns: 4,
-                frame_ratio: 0.5,
-                cells: std::mem::take(run),
-            }));
-        }
-    };
-    for n in items {
-        if n.kind == Kind::Sequence {
-            flush(&mut run, out);
-            out.push(Block::Heading {
-                text: format!("Sequence: {}", n.title),
-                level: 2,
-            });
-            for e in extras(n, o) {
-                out.push(Block::Note(e));
-            }
-            let cells: Vec<GridCell> = n.children.iter().map(|c| cell(c, o)).collect();
-            if cells.is_empty() {
-                out.push(Block::Note("No beats or scene cards yet.".into()));
-            } else {
-                out.push(Block::Grid(Grid {
-                    columns: 4,
-                    frame_ratio: 0.5,
-                    cells,
-                }));
+/// The note, then the comment threads, as the renderer wants them.
+fn pdf_extras(n: &Node, o: &Opts) -> Vec<BoardExtra> {
+    let mut v = Vec::new();
+    if o.notes
+        && let Some(note) = &n.note
+    {
+        v.push(BoardExtra::Note(note.clone()));
+    }
+    if o.comments {
+        v.extend(n.comments.iter().map(|t| {
+            BoardExtra::Comment(BoardComment {
+                status: t.status.clone(),
+                author: t.author.clone(),
+                body: t.body.clone(),
+                replies: t.replies.clone(),
+            })
+        }));
+    }
+    v
+}
+
+/// "2 sequences · 12 scene cards · 3 beats": what is inside a container, zero parts left out.
+fn inside(children: &[Node], with_sequences: bool) -> Option<String> {
+    let mut c = Counts::default();
+    count(children, &mut c);
+    let parts: Vec<String> = [
+        (
+            c.sequences * usize::from(with_sequences),
+            "sequence",
+            "sequences",
+        ),
+        (c.cards, "scene card", "scene cards"),
+        (c.beats, "beat", "beats"),
+    ]
+    .iter()
+    .filter(|(n, _, _)| *n > 0)
+    .map(|(n, one, many)| plural(*n, one, many))
+    .collect();
+    (!parts.is_empty()).then(|| parts.join(" · "))
+}
+
+/// The ancestors of a page that starts inside a container, as the "continued" strip names them.
+fn join_strip(parts: &[Option<&str>]) -> Option<String> {
+    let v: Vec<&str> = parts.iter().flatten().copied().collect();
+    (!v.is_empty()).then(|| v.join(" \u{203a} "))
+}
+
+fn empty_line(text: &str) -> Block {
+    Block::Text(Txt::new(text).size(8.4).color(MUTED).after(4.0))
+}
+
+/// What the pieces of one board need to know while they are built.
+struct Build<'a> {
+    o: &'a Opts,
+    cards: bool,
+}
+
+impl Build<'_> {
+    /// Items of one run: the first row travels with the heading before it, the rest follow.
+    fn items(
+        &self,
+        nodes: &[&Node],
+        nested: bool,
+        parked: bool,
+        strip: Option<String>,
+    ) -> (Vec<Block>, Vec<Block>) {
+        let layout = if self.cards {
+            BoardLayout::Cards {
+                columns: BOARD_COLUMNS,
             }
         } else {
-            run.push(cell(n, o));
+            BoardLayout::List { nested }
+        };
+        let take = if self.cards { BOARD_COLUMNS } else { 1 };
+        let make = |part: &[&Node]| -> Vec<Block> {
+            if part.is_empty() {
+                return Vec::new();
+            }
+            vec![Block::Board(Board::Items(BoardItems {
+                items: part.iter().map(|n| pdf_item(n, self.o)).collect(),
+                layout: layout.clone(),
+                parked,
+                strip: strip.clone(),
+            }))]
+        };
+        let at = nodes.len().min(take);
+        (make(&nodes[..at]), make(&nodes[at..]))
+    }
+
+    /// The children of an act or an area, in data order: sequences with their bands, and runs of
+    /// loose beats and cards. `head` is the bar (and episode bar) that opens the container; it
+    /// stays with the first thing under it.
+    fn container(
+        &self,
+        head: Vec<Block>,
+        children: &[Node],
+        strip: Option<String>,
+        parked: bool,
+        out: &mut Vec<Block>,
+    ) {
+        let has_sequences = children.iter().any(|c| c.kind == Kind::Sequence);
+        let mut lead = head;
+        let mut i = 0;
+        if children.is_empty() {
+            lead.push(empty_line("No sequences, beats or scene cards yet."));
+        }
+        while i < children.len() {
+            let n = &children[i];
+            let mut tail: Vec<Block> = Vec::new();
+            if n.kind == Kind::Sequence {
+                i += 1;
+                let seq_strip =
+                    join_strip(&[strip.as_deref(), Some(&format!("Sequence: {}", n.title))]);
+                lead.push(Block::Board(Board::Sequence {
+                    title: n.title.clone(),
+                    hint: inside(&n.children, false),
+                    extras: pdf_extras(n, self.o),
+                    strip: strip.clone(),
+                }));
+                if n.children.is_empty() {
+                    lead.push(empty_line("No beats or scene cards yet."));
+                } else {
+                    let refs: Vec<&Node> = n.children.iter().collect();
+                    let (first, rest) = self.items(&refs, true, parked, seq_strip);
+                    lead.extend(first);
+                    tail = rest;
+                }
+            } else {
+                let start = i;
+                while i < children.len() && children[i].kind != Kind::Sequence {
+                    i += 1;
+                }
+                if has_sequences {
+                    lead.push(Block::Board(Board::Label {
+                        text: "Not in a sequence".into(),
+                        strip: strip.clone(),
+                    }));
+                }
+                let refs: Vec<&Node> = children[start..i].iter().collect();
+                let (first, rest) = self.items(&refs, false, parked, strip.clone());
+                lead.extend(first);
+                tail = rest;
+            }
+            out.push(Block::Together(std::mem::take(&mut lead)));
+            out.extend(tail);
+        }
+        if !lead.is_empty() {
+            out.push(Block::Together(lead));
         }
     }
-    flush(&mut run, out);
+
+    fn board(&self, b: &Tray, multi: bool, out: &mut Vec<Block>) {
+        let episode = multi.then(|| {
+            b.episode
+                .clone()
+                .unwrap_or_else(|| "Film Beat Board".into())
+        });
+        let mut episode_bar = episode.as_ref().map(|title| {
+            vec![Block::Board(Board::Episode {
+                eyebrow: b.episode.as_ref().map(|_| "Episode".to_string()),
+                title: title.clone(),
+            })]
+        });
+        for act in &b.acts {
+            let mut head = episode_bar.take().unwrap_or_default();
+            head.push(Block::Board(Board::Act {
+                title: act.title.clone(),
+                hint: inside(&act.children, true),
+                extras: pdf_extras(act, self.o),
+            }));
+            let strip = join_strip(&[episode.as_deref(), Some(&act.title)]);
+            self.container(head, &act.children, strip, false, out);
+        }
+        let areas: [(&str, &str, &Vec<Node>, bool); 2] = [
+            ("Unassigned", "Not placed in an act", &b.unassigned, false),
+            (
+                "Parking Lot",
+                "Held outside the board order \u{b7} not numbered",
+                &b.parking,
+                true,
+            ),
+        ];
+        for (title, hint, items, parked) in areas {
+            if items.is_empty() {
+                continue;
+            }
+            let mut head = episode_bar.take().unwrap_or_default();
+            head.push(Block::Board(Board::Area {
+                title: title.into(),
+                hint: Some(hint.into()),
+                parking: parked,
+                strip: join_strip(&[episode.as_deref()]),
+            }));
+            let strip = join_strip(&[episode.as_deref(), Some(title)]);
+            self.container(head, items, strip, parked, out);
+        }
+    }
 }
 
 // ------------------------------------------------------------------ text / csv
@@ -521,7 +660,13 @@ fn csv_rows(nodes: &[Node], ctx: &Ctx<'_>, o: &Opts, t: &mut Table) {
             row.push(n.note.clone().unwrap_or_default());
         }
         if o.comments {
-            row.push(n.comments.join("\n"));
+            row.push(
+                n.comments
+                    .iter()
+                    .flat_map(thread_lines)
+                    .collect::<Vec<_>>()
+                    .join("\n"),
+            );
         }
         t.push(row);
         let child = Ctx {
@@ -613,7 +758,7 @@ pub(super) fn export(
     })?;
 
     // Scope filtering.
-    let boards: Vec<Board> = boards
+    let boards: Vec<Tray> = boards
         .into_iter()
         .map(|mut b| {
             if scope == "selected" {
@@ -640,11 +785,13 @@ pub(super) fn export(
     }
     let multi = boards.len() > 1;
 
+    // On the board (acts and Unassigned) and in the Parking Lot, counted apart.
     let mut counts = Counts::default();
+    let mut parked_counts = Counts::default();
     for b in &boards {
         count(&b.acts, &mut counts);
         count(&b.unassigned, &mut counts);
-        count(&b.parking, &mut counts);
+        count(&b.parking, &mut parked_counts);
     }
     let document = if board_layout {
         "Beat Board"
@@ -661,80 +808,78 @@ pub(super) fn export(
         _ => "Current Beat Board".to_string(),
     };
 
-    // ---- PDF
-    let mut doc = Document::new(document)
-        .footer(footer(&project, document))
-        .landscape(board_layout);
+    // ---- PDF (PDF design package v2: act bars, sequence bands, number tiles, boxed cards)
+    let mut doc = Document::new(document).running_header(Some(running_header(&project, document)));
     {
         let mut mast = Masthead::new(document).eyebrow(
             if board_layout {
-                "Story · Beat board"
+                "Story · Beat Board"
             } else {
                 "Story · Outline"
             },
-            pal::ORANGE,
+            pal::SLATE,
         );
+        mast.title_size = 28.0;
         if let Some(p) = nb(&project) {
             mast.subtitle = Some(p.to_string());
         }
         mast.lines.push(source_label.clone());
-        mast.side = Some(Side::Panel {
-            lines: vec![
-                (scope_label.clone(), true),
-                (format!("Exported {}", today_label()), false),
-            ],
-        });
-        mast.rule = true;
+        let mut lines = vec![
+            (scope_label.clone(), true),
+            (format!("Exported {}", today_label()), false),
+        ];
+        if scope == "selected" {
+            lines.push(("Acts and sequences shown for context".to_string(), false));
+        }
+        mast.side = Some(Side::Panel { lines });
         doc.push(Block::Masthead(mast));
     }
+    let tile = |label: &str, on: usize, parked: usize| {
+        (on + parked > 0).then(|| BoardCount {
+            label: label.to_string(),
+            value: on.to_string(),
+            sub: (parked > 0).then(|| format!("+ {parked} in Parking Lot")),
+        })
+    };
+    let tiles: Vec<BoardCount> = [
+        tile("Acts", counts.acts, 0),
+        tile("Sequences", counts.sequences, 0),
+        tile("Scene cards", counts.cards, parked_counts.cards),
+        tile("Beats", counts.beats, parked_counts.beats),
+    ]
+    .into_iter()
+    .flatten()
+    .collect();
+    doc.push(Block::Board(Board::Counts(tiles)));
+    let parked_any = boards.iter().any(|b| !b.parking.is_empty());
+    doc.push(Block::Board(Board::Key(BoardKey {
+        notes: o.notes,
+        comments: o.comments,
+        includes: [
+            o.notes.then(|| "Notes".to_string()),
+            o.comments.then(|| "Comments".to_string()),
+            parking.then(|| {
+                if parked_any {
+                    "Parking Lot".to_string()
+                } else {
+                    "Parking Lot (none)".to_string()
+                }
+            }),
+        ]
+        .into_iter()
+        .flatten()
+        .collect(),
+        foot: Some("Private notes excluded.".into()),
+    })));
+    let build = Build {
+        o: &o,
+        cards: board_layout,
+    };
     for (i, b) in boards.iter().enumerate() {
         if board_layout && i > 0 {
             doc.push(Block::PageBreak);
         }
-        if multi {
-            doc.push(Block::Heading {
-                text: b
-                    .episode
-                    .clone()
-                    .unwrap_or_else(|| "Film Beat Board".into()),
-                level: 1,
-            });
-        }
-        let sections: [(&str, &Vec<Node>); 2] =
-            [("Unassigned", &b.unassigned), ("Parking Lot", &b.parking)];
-        if board_layout {
-            for act in &b.acts {
-                doc.push(Block::SectionBar(act.title.clone()));
-                for e in extras(act, &o) {
-                    doc.push(Block::Note(e));
-                }
-                let mut blocks = Vec::new();
-                board_blocks(&act.children, &o, &mut blocks);
-                if blocks.is_empty() {
-                    doc.push(Block::Note(
-                        "No sequences, beats or scene cards yet.".into(),
-                    ));
-                }
-                doc.blocks.extend(blocks);
-            }
-            for (label, items) in sections {
-                if !items.is_empty() {
-                    doc.push(Block::SectionBar(label.into()));
-                    board_blocks(items, &o, &mut doc.blocks);
-                }
-            }
-        } else {
-            outline_blocks(&b.acts, 0, &o, &mut doc.blocks);
-            for (label, items) in sections {
-                if !items.is_empty() {
-                    doc.push(Block::Heading {
-                        text: label.into(),
-                        level: 1,
-                    });
-                    outline_blocks(items, 0, &o, &mut doc.blocks);
-                }
-            }
-        }
+        build.board(b, multi, &mut doc.blocks);
     }
     // ---- TXT
     let mut text = format!(
@@ -808,8 +953,12 @@ pub(super) fn export(
     let contents = [
         (counts.acts, "act", "acts"),
         (counts.sequences, "sequence", "sequences"),
-        (counts.cards, "scene card", "scene cards"),
-        (counts.beats, "beat", "beats"),
+        (
+            counts.cards + parked_counts.cards,
+            "scene card",
+            "scene cards",
+        ),
+        (counts.beats + parked_counts.beats, "beat", "beats"),
     ]
     .iter()
     .filter(|(n, _, _)| *n > 0)

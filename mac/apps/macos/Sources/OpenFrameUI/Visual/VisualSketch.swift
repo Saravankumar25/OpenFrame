@@ -268,7 +268,7 @@ struct SketchSheet: View {
                 Button("Save Panel") {
                     if let png = model.png() { onSave(png) }
                 }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(.ofProminent)
                 .keyboardShortcut(.defaultAction)
                 .disabled(!model.canSave || saving)
                 .accessibilityIdentifier("sketch-save")

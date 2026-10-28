@@ -342,14 +342,14 @@ struct CSDailyView: View {
                 CSChip(text: CSStatus.word(b.status), tone: CSStatus.tone(b.status))
                 Text(model.callSheetNote(b)).font(.callout)
                 Button("Open Call Sheet") { Task { await model.openCallSheet() } }
-                    .buttonStyle(.borderedProminent).controlSize(.small)
+                    .buttonStyle(.ofProminent).controlSize(.small)
                     .accessibilityIdentifier("daily-open-call-sheet")
             } else if d.isOffDay {
                 Text("Off days have no call sheet.").foregroundStyle(theme["muted"])
             } else {
                 Text("No call sheet yet for this day.").font(.callout)
                 Button("Create Call Sheet") { Task { await model.openCallSheet() } }
-                    .buttonStyle(.borderedProminent).controlSize(.small)
+                    .buttonStyle(.ofProminent).controlSize(.small)
                     .disabled(!hub.canEdit)
                     .accessibilityIdentifier("daily-create-call-sheet")
             }

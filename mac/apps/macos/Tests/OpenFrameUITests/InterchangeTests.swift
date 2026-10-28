@@ -502,4 +502,42 @@ struct InterchangeTests {
         }
         #expect(imp.preview != nil)
     }
+
+    // MARK: Sheet parent
+
+    private func window(sheetOn parent: NSWindow? = nil) -> NSWindow {
+        _ = NSApplication.shared
+        let w = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 600, height: 400), styleMask: [.titled], backing: .buffered, defer: false)
+        w.isReleasedWhenClosed = false
+        if let parent { parent.beginSheet(w) } else { w.orderFront(nil) }
+        return w
+    }
+
+    /// File > Export Screenplay over Project Settings: the export sheet goes on top of the settings
+    /// sheet. Attached to the project window it would wait in AppKit's queue and never show.
+    @Test func aMenuSheetOverAnOpenSheetAttachesToThatSheet() {
+        let main = window()
+        defer { main.orderOut(nil) }
+        let settings = window(sheetOn: main)
+        defer { main.endSheet(settings); settings.orderOut(nil) }
+        #expect(InterchangePresenter.sheetParent(from: main) === settings)
+        #expect(InterchangePresenter.sheetParent(from: settings) === settings)
+        #expect(InterchangePresenter.rootWindow(of: settings) === main)
+
+        let export = window(sheetOn: InterchangePresenter.sheetParent(from: main))
+        #expect(settings.attachedSheet === export)
+        #expect(export.isSheet)
+        settings.endSheet(export)
+        export.orderOut(nil)
+        #expect(settings.attachedSheet == nil)
+        #expect(main.attachedSheet === settings)
+    }
+
+    @Test func aMenuSheetWithNoSheetOpenAttachesToTheWindow() {
+        let main = window()
+        defer { main.orderOut(nil) }
+        #expect(InterchangePresenter.sheetParent(from: main) === main)
+        #expect(InterchangePresenter.rootWindow(of: main) === main)
+        #expect(InterchangePresenter.sheetParent(from: nil) == nil)
+    }
 }

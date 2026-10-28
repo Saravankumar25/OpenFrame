@@ -85,7 +85,7 @@ struct StoryTimelineView: View {
                 Button { m.assigning = true } label: {
                     Label("Assign Story Day\(m.picked.isEmpty ? "" : " (\(m.picked.count))")", systemImage: "calendar")
                 }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(.ofProminent)
                 .disabled(m.picked.isEmpty)
                 .accessibilityIdentifier("story-assign-day")
                 }
@@ -102,7 +102,7 @@ struct StoryTimelineView: View {
                             story.tab = .board
                             story.sheet = .build(preselect: [])
                         }
-                        .buttonStyle(.borderedProminent)
+                        .buttonStyle(.ofProminent)
                     }
                 } else {
                     Text("\(d.draftName ?? "") \u{00B7} \(StoryLogic.plural(Int(d.sceneCount), "scene")). Scene numbers come from the screenplay order.")
@@ -126,7 +126,7 @@ struct StoryTimelineView: View {
         .task(id: app.changes.key(StoryTables.timeline) &+ story.viewRevision &+ (story.episodeId?.hashValue ?? 0) &+ (m.screenplayId?.hashValue ?? 0)) {
             await m.reload()
         }
-        .sheet(isPresented: $m.assigning) { AssignDaySheet(m: m) }
+        .themedSheet(isPresented: $m.assigning) { AssignDaySheet(m: m) }
         .accessibilityIdentifier("story-timeline")
     }
 

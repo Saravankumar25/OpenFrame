@@ -268,6 +268,15 @@ fn llama_server_launch_is_loopback_only_and_key_is_not_on_the_command_line() {
             .iter()
             .any(|(k, v)| k == "LLAMA_API_KEY" && v == "secret-key")
     );
+    // One slot, and a bounded store for the work on earlier prompts (the engine default is 8 GiB).
+    assert!(joined.contains("--parallel 1"), "{joined}");
+    assert!(
+        joined.contains(&format!(
+            "--cache-ram {}",
+            openframe_ai::supervisor::PROMPT_STORE_MB
+        )),
+        "{joined}"
+    );
     // On the processor unless the launch plan names a card; no seed unless a deterministic run asks.
     assert!(joined.contains("-ngl 0"));
     assert!(!joined.contains("--device"));

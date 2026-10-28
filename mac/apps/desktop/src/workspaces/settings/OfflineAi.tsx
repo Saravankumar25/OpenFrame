@@ -16,6 +16,7 @@ import { damagedModels, formatBytes, offReason, panelMode, runtimeLabel } from "
 import DownloadAi from "../../ai/DownloadAi";
 import "../../ai/ai.css";
 import { AiHealthCard } from "./AiHealth";
+import { AssistantMemoryCard } from "./AssistantMemory";
 
 /** The privacy promise shown wherever Offline AI is described (spec §1). */
 export const OFFLINE_AI_PROMISE =
@@ -121,8 +122,11 @@ export default function OfflineAiSettings() {
             <DownloadAi damaged={damagedModels(s)} />
           </div>
         )}
-        <TechnicalDetails />
         <AiHealthCard />
+        <AssistantMemoryCard />
+        {/* Last and on a row of its own: the component table needs the full width (measured: in a 420 px card the
+            table ran under the AI health card and the hashes broke the layout). */}
+        <TechnicalDetails />
       </div>
     </div>
   );
@@ -165,11 +169,11 @@ export function GraphicsChoice() {
 }
 
 /** Diagnostics / About: the only place model and runtime names appear (spec §1, §36). */
-function TechnicalDetails() {
+export function TechnicalDetails() {
   const d = useOp<AiDiagnosticsDto>("ai.diagnostics", {}, [], { staleTime: 10_000 });
   const x = d.data;
   return (
-    <section className="card pad" style={{ flex: "1 1 320px", minWidth: 320, maxWidth: 420 }} aria-label="Technical details">
+    <section className="card pad ai-tech-card" aria-label="Technical details">
       <details>
         <summary className="h4" style={{ cursor: "pointer" }}>
           Technical details
@@ -180,12 +184,13 @@ function TechnicalDetails() {
           <div className="xs muted">{d.error?.message ?? "Not available."}</div>
         ) : (
           <div className="ai-tech">
+            <div className="ai-tech-scroll">
             <table className="tbl" aria-label="Offline AI components">
               <thead>
                 <tr>
-                  <th>Component</th>
-                  <th>Licence</th>
-                  <th>Size</th>
+                  <th className="ai-col-name">Component</th>
+                  <th className="ai-col-licence">Licence</th>
+                  <th className="ai-col-size">Size</th>
                 </tr>
               </thead>
               <tbody>
@@ -196,19 +201,24 @@ function TechnicalDetails() {
                         <b>{c.role}</b>: {c.name}
                       </div>
                       <div className="muted">Version {c.version}</div>
-                      <div className="hash selectable-text" title="SHA-256">
+                      <div className="hash selectable-text" title={`SHA-256 ${c.sha256}`}>
                         {c.sha256}
                       </div>
                     </td>
                     <td>
                       <div>{c.licenseId}</div>
-                      {c.licenseUrl && <div className="muted selectable-text">{c.licenseUrl}</div>}
+                      {c.licenseUrl && (
+                        <div className="muted selectable-text" title={c.licenseUrl}>
+                          {c.licenseUrl}
+                        </div>
+                      )}
                     </td>
                     <td>{formatBytes(c.bytes)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
+            </div>
             {x.components.some((c) => c.licenseId === "Gemma-Terms-of-Use") && <p className="xs muted">{GEMMA_NOTICE}</p>}
             <div className="hr" />
             <div className="csr">

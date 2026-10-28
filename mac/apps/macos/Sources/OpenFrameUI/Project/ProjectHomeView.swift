@@ -118,7 +118,7 @@ struct ProjectHomeView: View {
     }
 
     private func begin(_ title: String, _ text: String, _ symbol: String, _ ws: Workspace, primary: Bool = false) -> some View {
-        Button { go(ws) } label: {
+        Button { open(ws) } label: {
             VStack(alignment: .leading, spacing: 8) {
                 Image(systemName: symbol).font(.title3).foregroundStyle(theme["accent"]).accessibilityHidden(true)
                 Text(title).font(.headline)
@@ -264,8 +264,15 @@ struct ProjectHomeView: View {
     }
 
     private func quick(_ title: String, _ symbol: String, _ ws: Workspace) -> some View {
-        Button { go(ws) } label: { Label(title, systemImage: symbol) }
+        Button { open(ws) } label: { Label(title, systemImage: symbol) }
             .accessibilityIdentifier("project-home-quick-\(ws.rawValue)")
+    }
+
+    /// "Build Story" and "Beat Board" mean the board, not the Story page Story opens on
+    /// (Windows: go({ workspace: "story", sub: "board" })). The request waits until Story takes it.
+    private func open(_ ws: Workspace) {
+        if ws == .story { ProjectIntents.shared.fire(StoryTab.board.showIntent) }
+        go(ws)
     }
 
     private func small(_ title: String, _ symbol: String, _ action: @escaping () -> Void) -> some View {

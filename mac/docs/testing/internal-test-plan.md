@@ -2,8 +2,8 @@
 
 > **Current decisions (2026-10-15).** The pilot runs twice, not once: the Windows `.exe` pilot at the end of the Windows track
 > (phase W10), then the Mac `.dmg` pilot at the end of the Mac track (phase M10) ([ADR-0030](../adr/ADR-0030-verification-ladder-and-release-flow.md)).
-> Read each section for the platform being tested. The team password question is decided: the gate stays, the password has
-> at least 8 characters and is sent separately from the installer. The AI is downloaded once after install
+> Read each section for the platform being tested. The team password question is decided: there is no password. The gate
+> was removed on 2026-10-27 (owner decision) and the app opens straight away. The AI is downloaded once after install
 > ([ADR-0026](../adr/ADR-0026-offline-ai-download-after-install.md)); the pilot also records wrong-language or poor AI answers in
 > the non-English languages ([ADR-0028](../adr/ADR-0028-ai-quality-program-and-harness.md)).
 
@@ -35,10 +35,9 @@ warn on first run. Testers are told this in advance and given the steps below.
 
 1. Build the installers with the owner's word; record the version, the build date and the SHA-256 of each file.
 2. Install on two clean computers (one Windows, one Mac) and run the checklist in section 7. Fix blockers first.
-3. Decide the team password question. If the gate stays, send the password separately from the installer.
-4. Prepare a small set of safe sample projects (the four sample scripts) so a tester can try things without risking their
+3. Prepare a small set of safe sample projects (the four sample scripts) so a tester can try things without risking their
    own work on day one.
-5. Send each tester: the installer, its checksum, the one-page install guide (section 5), this plan's daily tasks, the bug
+4. Send each tester: the installer, its checksum, the one-page install guide (section 5), this plan's daily tasks, the bug
    report template, and the support contact.
 
 ## 4. Rules for testers
@@ -58,7 +57,7 @@ warn on first run. Testers are told this in advance and given the steps below.
 2. Double-click the installer. If a blue "Windows protected your PC" window appears, click **More info**, then **Run
    anyway**. This appears because the build is not signed yet.
 3. Finish the installation. It installs for your user only and needs no administrator rights.
-4. Start OpenFrame Studio. If asked, type the team password.
+4. Start OpenFrame Studio.
 5. Allow the first start a moment: the AI engine starts when you first use the assistant.
 
 ### Apple silicon Mac
@@ -69,7 +68,7 @@ warn on first run. Testers are told this in advance and given the steps below.
    Security**, scroll down and click **Open Anyway** next to OpenFrame Studio (older macOS versions: Control-click the app,
    choose **Open**, then **Open**). The exact steps depend on your macOS version; the owner confirms them on the Mac before
    the pilot.
-4. Start the app. If asked, type the team password.
+4. Start the app.
 
 ### Uninstall
 
@@ -95,8 +94,8 @@ Each day takes about 90 minutes of focused testing plus normal use of the app fo
 
 ### Day 2: plan and organise
 
-1. In the Story Board make acts and scene cards. Build a screenplay from the cards. Change the order and check the warning.
-2. Use the Idea Vault: add a note, an image, a web link, a voice note. Send one item to the Story Board.
+1. In the Beat Board make acts and scene cards. Build a screenplay from the cards. Change the order and check the warning.
+2. Use the Idea Vault: add a note, an image, a web link, a voice note. Send one item to the Beat Board.
 3. Open Breakdown for a script. Tag props, wardrobe and locations in a few scenes. Accept and reject suggestions.
 4. Make a shooting schedule with two days. Move scenes between days. Add a meal break.
 5. Create a call sheet from a day. Change something in the schedule and see that the call sheet says it needs a refresh.

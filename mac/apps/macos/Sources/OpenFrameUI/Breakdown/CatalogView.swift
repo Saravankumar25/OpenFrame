@@ -80,7 +80,7 @@ struct CatalogView: View {
             BDPageHeader(title: "Catalog", sub: "What things does this film need? Reusable items, not one huge spreadsheet.") {
                 if model.canEdit {
                     Button { model.sheet = .add(model.filter ?? .props) } label: { Label("Add Item", systemImage: "plus") }
-                        .buttonStyle(.borderedProminent)
+                        .buttonStyle(.ofProminent)
                         .accessibilityIdentifier("add-item")
                 }
             }
@@ -100,7 +100,7 @@ struct CatalogView: View {
                 CatalogInspector(model: model, item: item).inspectorColumnWidth(min: 320, ideal: 380, max: 520)
             }
         }
-        .sheet(item: $model.sheet) { CatalogSheetHost(model: model, sheet: $0) }
+        .themedSheet(item: $model.sheet) { CatalogSheetHost(model: model, sheet: $0) }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("catalog-tab")
     }

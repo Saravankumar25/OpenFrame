@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Location Report — Production Report (stress test: wide column set)</title>
+<meta name="of-doc" content="Location Report (reports.export_report)">
+<meta name="of-logo" content="../../../00_SYSTEM/assets/openframe-logo.png">
+<link rel="stylesheet" href="../../../00_SYSTEM/assets/openframe-print.css">
+<style>
+  /* Location Report — page setup. Landscape US Letter (9 columns: reports.rs sets landscape when columns > 5).
+     Running header: one compact line (project + report), top-right, because the report runs over several pages and the footer no longer carries the document name. */
+  @page { size: 11in 8.5in; @top-right { content: "LOW TIDE RADIO · LOCATION REPORT"; } }
+
+  /* ============ PRODUCTION REPORT SHELL (shared by all six reports; defined in Report_Scene.md) ============ */
+  .rpt-mast { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 14pt; align-items: start; margin-bottom: 7pt; break-inside: avoid; break-after: avoid; }
+  .rpt-mast .eyebrow { display: flex; align-items: center; gap: 5pt; font-size: 7pt; }
+  .rpt-mast .eyebrow i { display: inline-block; width: 14pt; height: 2pt; background: var(--of-orange); }
+  .rpt-mast h1 { font-size: 20pt; line-height: 1.1; font-weight: 700; color: var(--of-navy); letter-spacing: -0.01em; margin: 3pt 0 3.5pt; }
+  .rpt-mast .meta-line { font-size: 8pt; color: var(--of-slate); margin: 0; line-height: 1.3; }
+  .rpt-side { border: var(--hair) solid var(--of-line); border-radius: var(--radius-lg); background: var(--of-panel); padding: 6pt 11pt 7pt; text-align: right; min-width: 104pt; max-width: 150pt; }
+  .rpt-side .lbl { font-size: var(--fs-label); font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--of-slate); }
+  .rpt-side .date { font-size: 10.5pt; font-weight: 700; color: var(--of-navy); margin-top: 1.5pt; line-height: 1.15; }
+  .rpt-side .scope { font-size: 8pt; color: var(--of-slate); margin-top: 1.5pt; line-height: 1.25; }
+  .rpt-metrics { display: flex; width: fit-content; max-width: 100%; border: var(--hair) solid var(--of-line); border-radius: var(--radius); background: var(--of-panel); margin: 0 0 9pt; break-inside: avoid; break-after: avoid; }
+  .rpt-metrics .m { flex: 0 1 auto; min-width: 0; padding: 5.5pt 10pt 6pt; display: flex; align-items: baseline; gap: 6pt; border-left: var(--hair) solid var(--of-line); }
+  .rpt-metrics .m:first-child { border-left: 0; }
+  .rpt-metrics .v { font-size: 13pt; font-weight: 700; color: var(--of-navy); line-height: 1; font-variant-numeric: tabular-nums; }
+  .rpt-metrics .l { font-size: var(--fs-label); font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--of-slate); line-height: 1.25; }
+  .rpt-metrics .m.warn .v { color: var(--of-amber-text); }
+  .rpt-metrics .m.danger .v { color: var(--of-red-text); }
+  .rpt-ctx { margin: 0 0 6pt; }
+  .rpt-att { margin: -3pt 0 8pt; }
+  .rpt-ctx .banner { margin: 0 0 4pt; }
+  .rpt-ctx .banner .q { font-weight: 700; color: var(--of-navy); }
+  .rpt-ctx .banner .rest { color: var(--of-slate); }
+  .banner.info b { color: var(--of-blue-text); }
+  .rpt-ctx .banner b, .rpt-att .banner b { flex: none; white-space: nowrap; }
+  /* table */
+  table.rpt { table-layout: fixed; font-size: var(--fs-cell); }
+  table.rpt thead th { padding: 5pt 6pt; }
+  table.rpt tbody td { padding: 3.6pt 6pt; }
+  table.rpt.dense tbody td { padding: 2.5pt 6pt; }
+  table.rpt .tile { min-width: 18pt; font-size: 8.2pt; padding: 1.6pt 3.6pt; }
+  table.rpt tbody tr.alt td { background: var(--of-panel); }
+  table.rpt tbody tr.attn td:first-child { box-shadow: inset 3pt 0 0 var(--of-orange); }
+  table.rpt tbody tr.attn-red td:first-child { box-shadow: inset 3pt 0 0 var(--of-red-text); }
+  table.rpt tbody tr.quiet td { background: var(--of-panel); color: var(--of-slate); }
+  table.rpt .hd { font-weight: 700; color: var(--of-navy); }
+  table.rpt .nm { font-weight: 700; color: var(--of-navy); text-align: right; }
+  table.rpt .nm.sug { color: var(--of-amber-text); }
+  table.rpt .nm.zero { font-weight: 400; color: var(--of-muted); }
+  table.rpt th.r, table.rpt td.r { text-align: right; }
+  table.rpt .d1 { display: block; font-weight: 700; color: var(--of-navy); white-space: nowrap; }
+  table.rpt .d2 { display: block; color: var(--of-slate); white-space: nowrap; }
+  table.rpt .days > div { margin: 0 0 1.4pt; line-height: 1.25; }
+  table.rpt .days > div:last-child { margin-bottom: 0; }
+  table.rpt .days b { color: var(--of-navy); font-weight: 700; }
+  table.rpt .none { color: var(--of-muted); }
+  table.rpt tr.group td { padding: 2pt 6pt 2.2pt; font-size: 6.8pt; letter-spacing: .12em; }
+  table.rpt td .chips { gap: 2pt; }
+  .rpt-note { font-size: 8.4pt; color: var(--of-slate); margin-top: 5pt; line-height: 1.35; }
+  .rpt-empty { margin: 4pt 0; }
+  .rpt-empty p { font-size: 9pt; line-height: 1.4; }
+  /* status chip: tone + SHAPE + WORD so it survives grayscale (ok = solid disc, info = ring + dot,
+     warn = hollow ring, danger = solid square, neutral = no mark) */
+  .st { display: inline-flex; align-items: center; gap: 3.2pt; font-size: var(--fs-chip); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; line-height: 1; padding: 2.4pt 4.6pt 2.6pt 3.8pt; border-radius: 3pt; border: var(--hair) solid var(--of-line); background: var(--of-panel); color: var(--of-neutral-text); white-space: nowrap; vertical-align: middle; }
+  .st i { flex: none; width: 5pt; height: 5pt; box-sizing: border-box; border: 1pt solid currentColor; border-radius: 50%; }
+  .st.none-mark i { display: none; }
+  .st.ok { background: var(--of-green-fill); border-color: var(--of-green-line); color: var(--of-green-text); }
+  .st.ok i { background: currentColor; }
+  .st.info { background: var(--of-blue-fill); border-color: var(--of-blue-line); color: var(--of-blue-text); }
+  .st.info i { background: currentColor; box-shadow: inset 0 0 0 .9pt #fff; }
+  .st.warn { background: var(--of-amber-fill); border-color: var(--of-amber-line); color: var(--of-amber-text); }
+  .st.warn i { background: transparent; }
+  .st.danger { background: var(--of-red-fill); border-color: var(--of-red-line); color: var(--of-red-text); }
+  .st.danger i { background: currentColor; border-radius: 0.6pt; }
+  .illustrative { font-size: 6.6pt; color: var(--of-muted); font-style: italic; }
+
+</style>
+</head>
+<body>
+<div class="doc landscape">
+
+  <header class="masthead rpt-mast">
+    <div>
+      <div class="eyebrow"><i></i>Production report</div>
+      <h1>Location Report</h1>
+      <p class="meta-line">Project: Low Tide Radio · Source: LOW TIDE RADIO: Blue Revision (Locked)</p>
+    </div>
+    <div class="rpt-side" aria-label="Report details">
+      <div class="lbl">Generated</div>
+      <div class="date">22 Oct 2026</div>
+      <div class="scope">All rows</div>
+    </div>
+  </header>
+  
+  <div class="rpt-metrics" role="group" aria-label="Report totals"><div class="m "><span class="v" data-m="t">12</span><span class="l">Locations</span></div></div>
+  
+  <table class="tbl boxed rpt" aria-label="Location Report"><colgroup><col style="width:85.1pt"><col style="width:84.0pt"><col style="width:76.6pt"><col style="width:44.0pt"><col style="width:106.3pt"><col style="width:76.0pt"><col style="width:76.0pt"><col style="width:76.0pt"><col style="width:76.0pt"></colgroup><thead><tr><th class="" scope="col">Location</th><th class="" scope="col">Status</th><th class="" scope="col">Address</th><th class="" scope="col">Scenes</th><th class="" scope="col">Shooting days</th><th class="" scope="col">Contact</th><th class="" scope="col">Parking</th><th class="" scope="col">Permit</th><th class="" scope="col">Notes</th></tr></thead><tbody><tr class="" data-cells="[&quot;Cherai Beach (north end)&quot;, &quot;Confirmed&quot;, &quot;Cherai, Vypin, Kerala 683514&quot;, &quot;21, 38, 40, 45&quot;, &quot;Shoot Day 7 · Mon 18 Jan 2027; Shoot Day 9 · Wed 20 Jan 2027&quot;, &quot;Hamid Kutty +91 484 266 6400&quot;, &quot;12 cars at the gate&quot;, &quot;Granted 04 Jan&quot;, &quot;Confirm tide table before 06:00 call&quot;]" data-k=""><td class=""><span class="hd">Cherai Beach (north end)</span></td><td class=""><span class="st ok"><i></i>Confirmed</span></td><td class="">Cherai, Vypin, Kerala 683514</td><td class="">21, 38, 40, 45</td><td class=""><div class="days"><div><b>Shoot Day 7</b> · Mon 18 Jan 2027</div><div><b>Shoot Day 9</b> · Wed 20 Jan 2027</div></div></td><td class="">Hamid Kutty +91 484 266 6400</td><td class="">12 cars at the gate</td><td class="">Granted 04 Jan</td><td class="">Confirm tide table before 06:00 call</td></tr>
+<tr class="alt" data-cells="[&quot;Coast Radio Station (Old Signal Station, Vypin)&quot;, &quot;Confirmed&quot;, &quot;Beach Road, Vypin, Kochi, Kerala 682508&quot;, &quot;2, 5, 11, 12, 28, 29, 33, 41, 42&quot;, &quot;Shoot Day 1 · Mon 11 Jan 2027; Shoot Day 2 · Tue 12 Jan 2027; Shoot Day 3 · Wed 13 Jan 2027; Shoot Day 14 · Tue 26 Jan 2027&quot;, &quot;Estate Office +91 484 266 6401&quot;, &quot;Church ground, 600 m south&quot;, &quot;Pending&quot;, &quot;Second unit may pick up inserts; keep the practical lamps on a dimmer&quot;]" data-k=""><td class=""><span class="hd">Coast Radio Station (Old Signal Station, Vypin)</span></td><td class=""><span class="st ok"><i></i>Confirmed</span></td><td class="">Beach Road, Vypin, Kochi, Kerala 682508</td><td class="">2, 5, 11, 12, 28, 29, 33, 41, 42</td><td class=""><div class="days"><div><b>Shoot Day 1</b> · Mon 11 Jan 2027</div><div><b>Shoot Day 2</b> · Tue 12 Jan 2027</div><div><b>Shoot Day 3</b> · Wed 13 Jan 2027</div><div><b>Shoot Day 14</b> · Tue 26 Jan 2027</div></div></td><td class="">Estate Office +91 484 266 6401</td><td class="">Church ground, 600 m south</td><td class="">Pending</td><td class="">Second unit may pick up inserts; keep the practical lamps on a dimmer</td></tr>
+<tr class="" data-cells="[&quot;Government Fisheries School Laboratory (Kalamassery)&quot;, &quot;Confirmed&quot;, &quot;Fisheries School Road, Kalamassery, Kochi 683104&quot;, &quot;13, 16, 34&quot;, &quot;Shoot Day 6 · Sat 16 Jan 2027&quot;, &quot;&quot;, &quot;None&quot;, &quot;Not required&quot;, &quot;&quot;]" data-k=""><td class=""><span class="hd">Government Fisheries School Laboratory (Kalamassery)</span></td><td class=""><span class="st ok"><i></i>Confirmed</span></td><td class="">Fisheries School Road, Kalamassery, Kochi 683104</td><td class="">13, 16, 34</td><td class=""><div class="days"><div><b>Shoot Day 6</b> · Sat 16 Jan 2027</div></div></td><td class=""></td><td class="">None</td><td class="">Not required</td><td class=""></td></tr>
+<tr class="alt" data-cells="[&quot;KSRTC Bus (process trailer, NH 66)&quot;, &quot;Confirmed&quot;, &quot;Unit base: Aroor bypass lay-by, NH 66&quot;, &quot;4&quot;, &quot;Shoot Day 12 · Sat 23 Jan 2027&quot;, &quot;Caretaker +91 98470 20114&quot;, &quot;Roadside only&quot;, &quot;Applied 08 Jan&quot;, &quot;Weather cover: Thomas House kitchen&quot;]" data-k=""><td class=""><span class="hd">KSRTC Bus (process trailer, NH 66)</span></td><td class=""><span class="st ok"><i></i>Confirmed</span></td><td class="">Unit base: Aroor bypass lay-by, NH 66</td><td class="">4</td><td class=""><div class="days"><div><b>Shoot Day 12</b> · Sat 23 Jan 2027</div></div></td><td class="">Caretaker +91 98470 20114</td><td class="">Roadside only</td><td class="">Applied 08 Jan</td><td class="">Weather cover: Thomas House kitchen</td></tr>
+<tr class="" data-cells="[&quot;Lighthouse Road (Puthuvype coast road)&quot;, &quot;Confirmed&quot;, &quot;Puthuvype, Vypin, Kochi 682508&quot;, &quot;31&quot;, &quot;Shoot Day 11 · Fri 22 Jan 2027&quot;, &quot;Hamid Kutty +91 484 266 6400&quot;, &quot;12 cars at the gate&quot;, &quot;Granted 04 Jan&quot;, &quot;Confirm tide table before 06:00 call&quot;]" data-k=""><td class=""><span class="hd">Lighthouse Road (Puthuvype coast road)</span></td><td class=""><span class="st ok"><i></i>Confirmed</span></td><td class="">Puthuvype, Vypin, Kochi 682508</td><td class="">31</td><td class=""><div class="days"><div><b>Shoot Day 11</b> · Fri 22 Jan 2027</div></div></td><td class="">Hamid Kutty +91 484 266 6400</td><td class="">12 cars at the gate</td><td class="">Granted 04 Jan</td><td class="">Confirm tide table before 06:00 call</td></tr>
+<tr class="alt" data-cells="[&quot;Munambam Breakwater (stunt section)&quot;, &quot;Confirmed&quot;, &quot;North breakwater, Munambam Harbour&quot;, &quot;25&quot;, &quot;Shoot Day 8 · Tue 19 Jan 2027&quot;, &quot;Estate Office +91 484 266 6401&quot;, &quot;Church ground, 600 m south&quot;, &quot;Pending&quot;, &quot;Second unit may pick up inserts; keep the practical lamps on a dimmer&quot;]" data-k=""><td class=""><span class="hd">Munambam Breakwater (stunt section)</span></td><td class=""><span class="st ok"><i></i>Confirmed</span></td><td class="">North breakwater, Munambam Harbour</td><td class="">25</td><td class=""><div class="days"><div><b>Shoot Day 8</b> · Tue 19 Jan 2027</div></div></td><td class="">Estate Office +91 484 266 6401</td><td class="">Church ground, 600 m south</td><td class="">Pending</td><td class="">Second unit may pick up inserts; keep the practical lamps on a dimmer</td></tr>
+<tr class="" data-cells="[&quot;Munambam Fishing Harbour&quot;, &quot;Confirmed&quot;, &quot;Munambam, Ernakulam district, Kerala 683515&quot;, &quot;7, 23, 24, 44&quot;, &quot;Shoot Day 7 · Mon 18 Jan 2027; Shoot Day 8 · Tue 19 Jan 2027&quot;, &quot;&quot;, &quot;None&quot;, &quot;Not required&quot;, &quot;&quot;]" data-k=""><td class=""><span class="hd">Munambam Fishing Harbour</span></td><td class=""><span class="st ok"><i></i>Confirmed</span></td><td class="">Munambam, Ernakulam district, Kerala 683515</td><td class="">7, 23, 24, 44</td><td class=""><div class="days"><div><b>Shoot Day 7</b> · Mon 18 Jan 2027</div><div><b>Shoot Day 8</b> · Tue 19 Jan 2027</div></div></td><td class=""></td><td class="">None</td><td class="">Not required</td><td class=""></td></tr>
+<tr class="alt" data-cells="[&quot;Open Sea off Vypin (2 nautical miles out)&quot;, &quot;Confirmed&quot;, &quot;Departure: Kalamukku fishing jetty, Vypin&quot;, &quot;1, 35&quot;, &quot;Shoot Day 13 · Mon 25 Jan 2027&quot;, &quot;Caretaker +91 98470 20114&quot;, &quot;Roadside only&quot;, &quot;Applied 08 Jan&quot;, &quot;Weather cover: Thomas House kitchen&quot;]" data-k=""><td class=""><span class="hd">Open Sea off Vypin (2 nautical miles out)</span></td><td class=""><span class="st ok"><i></i>Confirmed</span></td><td class="">Departure: Kalamukku fishing jetty, Vypin</td><td class="">1, 35</td><td class=""><div class="days"><div><b>Shoot Day 13</b> · Mon 25 Jan 2027</div></div></td><td class="">Caretaker +91 98470 20114</td><td class="">Roadside only</td><td class="">Applied 08 Jan</td><td class="">Weather cover: Thomas House kitchen</td></tr>
+<tr class="" data-cells="[&quot;Police Outpost (set, Navodaya Studio Floor 2)&quot;, &quot;Confirmed&quot;, &quot;Navodaya Studio, Kakkanad, Kochi 682030&quot;, &quot;19, 32&quot;, &quot;Shoot Day 11 · Fri 22 Jan 2027&quot;, &quot;Hamid Kutty +91 484 266 6400&quot;, &quot;12 cars at the gate&quot;, &quot;Granted 04 Jan&quot;, &quot;Confirm tide table before 06:00 call&quot;]" data-k=""><td class=""><span class="hd">Police Outpost (set, Navodaya Studio Floor 2)</span></td><td class=""><span class="st ok"><i></i>Confirmed</span></td><td class="">Navodaya Studio, Kakkanad, Kochi 682030</td><td class="">19, 32</td><td class=""><div class="days"><div><b>Shoot Day 11</b> · Fri 22 Jan 2027</div></div></td><td class="">Hamid Kutty +91 484 266 6400</td><td class="">12 cars at the gate</td><td class="">Granted 04 Jan</td><td class="">Confirm tide table before 06:00 call</td></tr>
+<tr class="alt" data-cells="[&quot;Port Trust Office (heritage building, Willingdon Island)&quot;, &quot;Confirmed&quot;, &quot;Willingdon Island, Kochi 682003&quot;, &quot;8, 37&quot;, &quot;Shoot Day 10 · Thu 21 Jan 2027&quot;, &quot;Estate Office +91 484 266 6401&quot;, &quot;Church ground, 600 m south&quot;, &quot;Pending&quot;, &quot;Second unit may pick up inserts; keep the practical lamps on a dimmer&quot;]" data-k=""><td class=""><span class="hd">Port Trust Office (heritage building, Willingdon Island)</span></td><td class=""><span class="st ok"><i></i>Confirmed</span></td><td class="">Willingdon Island, Kochi 682003</td><td class="">8, 37</td><td class=""><div class="days"><div><b>Shoot Day 10</b> · Thu 21 Jan 2027</div></div></td><td class="">Estate Office +91 484 266 6401</td><td class="">Church ground, 600 m south</td><td class="">Pending</td><td class="">Second unit may pick up inserts; keep the practical lamps on a dimmer</td></tr>
+<tr class="" data-cells="[&quot;Soundwave Studio (Kochi stand-in for Bengaluru)&quot;, &quot;Confirmed&quot;, &quot;Panampilly Nagar, Kochi 682036&quot;, &quot;3&quot;, &quot;Shoot Day 12 · Sat 23 Jan 2027&quot;, &quot;&quot;, &quot;None&quot;, &quot;Not required&quot;, &quot;&quot;]" data-k=""><td class=""><span class="hd">Soundwave Studio (Kochi stand-in for Bengaluru)</span></td><td class=""><span class="st ok"><i></i>Confirmed</span></td><td class="">Panampilly Nagar, Kochi 682036</td><td class="">3</td><td class=""><div class="days"><div><b>Shoot Day 12</b> · Sat 23 Jan 2027</div></div></td><td class=""></td><td class="">None</td><td class="">Not required</td><td class=""></td></tr>
+<tr class="alt" data-cells="[&quot;St. Antony&#x27;s Church (Kadalkkara set dressing)&quot;, &quot;Confirmed&quot;, &quot;Chellanam, Kochi 682008&quot;, &quot;18&quot;, &quot;Shoot Day 10 · Thu 21 Jan 2027&quot;, &quot;Caretaker +91 98470 20114&quot;, &quot;Roadside only&quot;, &quot;Applied 08 Jan&quot;, &quot;Weather cover: Thomas House kitchen&quot;]" data-k=""><td class=""><span class="hd">St. Antony&#x27;s Church (Kadalkkara set dressing)</span></td><td class=""><span class="st ok"><i></i>Confirmed</span></td><td class="">Chellanam, Kochi 682008</td><td class="">18</td><td class=""><div class="days"><div><b>Shoot Day 10</b> · Thu 21 Jan 2027</div></div></td><td class="">Caretaker +91 98470 20114</td><td class="">Roadside only</td><td class="">Applied 08 Jan</td><td class="">Weather cover: Thomas House kitchen</td></tr></tbody></table>
+  <p class="rpt-note">Illustrative (fictional): the current Location Report builder emits only its 5 columns (Location, Status, Address, Scenes, Shooting days). The extra columns Contact, Parking, Permit, Notes are invented to show what the renderer does when a live report or an older saved snapshot carries more than 5 columns: the whole document turns landscape.</p>
+  
+</div>
+
+<script src="../../../00_SYSTEM/assets/of-preview.js"></script>
+</body>
+</html>

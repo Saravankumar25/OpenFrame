@@ -133,18 +133,6 @@ enum VisualText {
         imageExtensions.contains((path as NSString).pathExtension.lowercased())
     }
 
-    /// Shot letter for a zero-based order index (display only; the core makes the real labels): A to Z, AA, AB.
-    static func shotLetters(_ index: Int) -> String {
-        var n = index + 1
-        var out = ""
-        while n > 0 {
-            let r = (n - 1) % 26
-            out = String(UnicodeScalar(UInt8(65 + r))) + out
-            n = (n - 1) / 26
-        }
-        return out
-    }
-
     /// Move an element within a list (the drag preview of a reorder).
     static func move<T>(_ list: [T], from: Int, to: Int) -> [T] {
         var out = list

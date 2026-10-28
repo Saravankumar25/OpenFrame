@@ -9,7 +9,7 @@ use crate::gold::{Gold, arr, s};
 
 fn exchange(g: &Gold, ctx: &mut Ctx, ty: &str, file: &str, extra: Value) -> String {
     let path = ctx.outp(&format!("packages/{file}"));
-    let mut args = json!({ "packageType": ty, "draftId": null, "scope": "full", "sceneIds": [], "actId": null, "callSheetId": null,
+    let mut args = json!({ "packageType": ty, "draftId": null, "scope": "full", "sceneIds": [], "actId": null,
                            "includeComments": true, "includeAttachments": true, "includePrivateNotes": false, "path": null });
     for (k, v) in extra.as_object().cloned().unwrap_or_default() {
         args[k] = v;
@@ -57,7 +57,7 @@ pub fn run(g: &Gold, ctx: &mut Ctx) {
     // Private notes never travel in an exchange package.
     g.refused(
         "packages.exchange_preview",
-        json!({ "packageType": "scriptReview", "draftId": null, "scope": "full", "sceneIds": [], "actId": null, "callSheetId": null,
+        json!({ "packageType": "scriptReview", "draftId": null, "scope": "full", "sceneIds": [], "actId": null,
                 "includeComments": true, "includeAttachments": false, "includePrivateNotes": true, "path": null }),
     );
     exchange(
@@ -67,37 +67,16 @@ pub fn run(g: &Gold, ctx: &mut Ctx) {
         "Low Tide Radio - script review (blue pages).ofscriptreview",
         json!({ "draftId": ctx.id("draftBlue"), "scope": "comments" }),
     );
-    exchange(g, ctx, "story", "Low Tide Radio - story.ofstory", json!({}));
-    exchange(
-        g,
-        ctx,
-        "breakdown",
-        "Low Tide Radio - breakdown.ofbreakdown",
-        json!({}),
-    );
     let s24 = ctx.scenes.get(&24).cloned().unwrap_or_default();
-    exchange(
-        g,
-        ctx,
-        "shots",
-        "Low Tide Radio - shots scene 24.ofshots",
-        json!({ "scope": "scenes", "sceneIds": [s24] }),
-    );
-    let schedule = exchange(
-        g,
-        ctx,
-        "schedule",
-        "Low Tide Radio - schedule.ofschedule",
-        json!({}),
-    );
-    let cs = ctx.call_sheets.get(&9).cloned().unwrap_or_default();
-    exchange(
-        g,
-        ctx,
-        "callReview",
-        "Low Tide Radio - call sheet day 9.ofcallreview",
-        json!({ "callSheetId": cs }),
-    );
+    let story = exchange(g, ctx, "story", "Low Tide Radio - story.ofstory", json!({}));
+    // The other exchange types were removed (owner change list item 9, 2026-10-19): the core refuses them.
+    for ty in ["breakdown", "shots", "schedule", "callReview"] {
+        g.refused(
+            "packages.exchange_preview",
+            json!({ "packageType": ty, "draftId": null, "scope": "full", "sceneIds": [], "actId": null,
+                    "includeComments": true, "includeAttachments": true, "includePrivateNotes": false, "path": null }),
+        );
+    }
 
     let response = ctx.id("producerResponse");
     g.phase("Packages: the response comes back");
@@ -174,8 +153,8 @@ pub fn run(g: &Gold, ctx: &mut Ctx) {
         g.ok("packages.record_view", json!({ "recordId": r["id"] }));
         g.ok("packages.record_delete", json!({ "recordId": r["id"] }));
     }
-    // The schedule package opened by mistake is cancelled without importing.
-    let wrong = g.ok("packages.open_exchange", json!({ "path": schedule }));
+    // A package opened by mistake is cancelled without importing.
+    let wrong = g.ok("packages.open_exchange", json!({ "path": story }));
     if !wrong.is_null() {
         g.ok(
             "packages.cancel_import",

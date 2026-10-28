@@ -84,7 +84,7 @@ struct FilesScreen: View {
                     .inspectorColumnWidth(min: 320, ideal: 380, max: 520)
             }
         }
-        .sheet(item: $model.dialog) { dialogView($0) }
+        .themedSheet(item: $model.dialog) { dialogView($0) }
         .task(id: model.app.changes.key(["project_file", "project_file_folder", "asset", "deleted_item"])) { await model.reload() }
         .onAppear { model.apply(PageNav.take()) }
         .onReceive(NotificationCenter.default.publisher(for: .openFrameShowWorkspace)) { _ in model.apply(PageNav.take()) }
@@ -145,7 +145,7 @@ struct FilesScreen: View {
                 Text("Contracts, permits, research, pitch decks: anything that belongs with this film. Drag files in, or add them.")
             } actions: {
                 Button { startAdd(copy: true) } label: { Label("Add File", systemImage: "plus") }
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(.ofProminent)
                     .accessibilityIdentifier("files-empty-add")
             }
             .frame(maxWidth: .infinity, minHeight: 260)
@@ -533,7 +533,7 @@ private struct FolderNameSheet: View {
                     .keyboardShortcut(.cancelAction)
                     .accessibilityIdentifier("folder-cancel")
                 Button(confirm) { submit() }
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(.ofProminent)
                     .keyboardShortcut(.defaultAction)
                     .disabled(invalid || busy)
                     .accessibilityIdentifier("folder-confirm")
@@ -575,7 +575,7 @@ private struct DeleteFolderSheet: View {
                     close()
                     Task { await confirm() }
                 }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(.ofProminent)
                 .tint(theme["red"])
                 .accessibilityIdentifier("folder-delete-confirm")
             }
@@ -771,11 +771,11 @@ struct FileDetailsView: View {
             Spacer()
             if files.isUnavailableLink(f) {
                 Button { relink(f) } label: { Label("Relink\u{2026}", systemImage: "link") }
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(.ofProminent)
                     .accessibilityIdentifier("file-relink-primary")
             } else {
                 Button { Task { await files.open(f) } } label: { Label("Open", systemImage: "arrow.up.forward.square") }
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(.ofProminent)
                     .disabled(FilesModel.whereOf(f) == .unavailable)
                     .accessibilityIdentifier("file-open")
             }

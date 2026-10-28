@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Moodboard STRESS TEST</title>
+<meta name="of-doc" content="Moodboard STRESS TEST (moodboard.export_pdf)">
+<meta name="of-logo" content="../../../00_SYSTEM/assets/openframe-logo.png">
+<link rel="stylesheet" href="../../../00_SYSTEM/assets/openframe-print.css">
+<style>
+  /* Moodboard — landscape US Letter. Running header: one compact line (project + document type; the board
+     name is in the masthead). It never carries the project name when "Project title and board name" is off. */
+  @page { size: 11in 8.5in; @top-right { content: "LOW TIDE RADIO · MOODBOARD"; } }
+  @page notitle { size: 11in 8.5in; @top-right { content: "MOODBOARD"; } }
+
+
+  /* ---- Moodboard: document-specific components (flat fills, hairlines, rounded rects only) ---- */
+  .masthead.compact { margin-bottom: 8pt; }
+  .masthead.ruled { padding-bottom: 8pt; border-bottom: var(--rule) solid var(--of-navy); margin-bottom: 10pt; }
+  .masthead .ctx { font-size: 9.6pt; color: var(--of-slate); margin-top: 1pt; }
+  .masthead .ref { font-size: 8.6pt; color: var(--of-slate); margin-top: 2pt; }
+  .masthead.plain h1 { margin: 0; }
+  .sidebox { text-align: right; border: var(--hair) solid var(--of-line); background: var(--of-panel);
+    border-radius: var(--radius-lg); padding: 7pt 14pt 8pt; min-width: 118pt; }
+  .sidebox b { display: block; font-size: 9.6pt; color: var(--of-navy); }
+  .sidebox span { display: block; font-size: 8.2pt; color: var(--of-slate); margin-top: 1pt; }
+
+  /* grid rows: whole rows move to the next page, cards in a row share one height */
+  .mrow { display: grid; grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr)); gap: 10pt; margin-bottom: 10pt;
+    break-inside: avoid; align-items: stretch; }
+  .mrow.c2 { --cols: 2; } .mrow.c3 { --cols: 3; }
+  .mcard { display: flex; flex-direction: column; gap: 6pt; padding: 8pt; background: #fff;
+    border: var(--hair) solid var(--of-line-strong); border-radius: var(--radius-lg); min-width: 0; }
+  /* IMAGE POLICY: contain (never crop) inside a uniform frame, ratio 0.72 (= 100 : 72, from visual.rs) */
+  .frame.r72 { aspect-ratio: 100 / 72; background: #eef1f5; border-color: var(--of-line-strong); }
+  .frame img { background: #eef1f5; }
+  .frame.missing { background: #eef1f5; }          /* flat fill: no hatching in the production renderer */
+  .frame.missing span { font-size: 8.5pt; color: var(--of-muted); text-align: center; line-height: 1.25; }
+  .mcard .cap { text-align: center; font-size: 9pt; line-height: 1.3; color: var(--of-ink); }
+  .mcard .intl { text-align: center; line-height: 1; }
+  .mcard .intl .chip { font-size: 6.6pt; }
+
+  /* note / link cards (sentence-case head, user text is never upper-cased) */
+  .ncard { background: #fff; border: var(--hair) solid var(--of-line-strong); border-radius: var(--radius-lg); overflow: hidden; min-width: 0; }
+  .ncard .nh { display: flex; align-items: center; gap: 8pt; padding: 6pt 10pt; background: var(--of-panel); border-bottom: var(--hair) solid var(--of-line); }
+  .ncard .nh .tt { flex: 1; min-width: 0; }
+  .ncard .nh .eb { display: block; font-size: 6.6pt; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--of-slate); margin-bottom: 1pt; }
+  .ncard .nh .t { display: block; font-size: 10pt; font-weight: 700; color: var(--of-navy); line-height: 1.2; }
+  .ncard .nb { padding: 6pt 10pt 8pt; font-size: 8.8pt; line-height: 1.35; color: var(--of-ink); }
+  .sec .hint { font-weight: 700; }
+  .callout.block.internal { font-size: 9pt; line-height: 1.4; margin: 0 0 6pt; }
+  .illus { font-size: 6.6pt; color: var(--of-muted); }
+  .stress-note { display: none; }
+  .board[data-break] { break-before: page; }
+
+</style>
+</head>
+<body>
+<div class="doc landscape">
+<section class="board">
+<header class="masthead compact ruled">
+    <div>
+      <div class="eyebrow">Visual development · Moodboard</div>
+      <h1>Stress 1: twelve images, mixed shapes and states</h1>
+      <div class="ctx">Low Tide Radio</div>
+    </div>
+    <div class="sidebox"><b>12 images</b><span>Exported 22 Oct 2026</span></div>
+  </header>
+<div class="mrow c3"><article class="mcard"><div class="frame r72"><img src="../../../00_SYSTEM/sample-assets/moodboard-sample-01.png" alt="Landscape 16:9, the common case"></div><div class="cap">Landscape 16:9, the common case</div></article><article class="mcard"><div class="frame r72"><img src="assets/derived-portrait-2x3.png" alt="Tall portrait 2:3 (derived crop): pillarboxed, never cropped"></div><div class="cap">Tall portrait 2:3 (derived crop): pillarboxed, never cropped</div></article><article class="mcard"><div class="frame r72"><img src="assets/derived-square-1x1.png" alt="Square 1:1 (derived crop)"></div><div class="cap">Square 1:1 (derived crop)</div></article></div>
+<div class="mrow c3"><article class="mcard"><div class="frame r72"><img src="assets/derived-panorama-4x1.png" alt="Panorama 4:1 (derived crop): letterboxed"></div><div class="cap">Panorama 4:1 (derived crop): letterboxed</div></article><article class="mcard"><div class="frame r72 missing"><span>Image unavailable: harbour_plate_07.png</span></div><div class="cap">File moved after it was added</div></article><article class="mcard"><div class="frame r72 missing"><span>Image can&#x27;t be printed</span></div><div class="cap">Corrupt or oversized file</div></article></div>
+<div class="mrow c3"><article class="mcard"><div class="frame r72 missing"><span>Image unavailable</span></div></article><article class="mcard"><div class="frame r72"><img src="../../../00_SYSTEM/sample-assets/moodboard-sample-02.png" alt="Moodboard image"></div></article><article class="mcard"><div class="frame r72"><img src="../../../00_SYSTEM/sample-assets/moodboard-sample-04.png" alt="Marked internal"></div><div class="cap">Marked internal</div><div class="intl"><span class="chip warn">Internal</span></div></article></div>
+<div class="mrow c3"><article class="mcard"><div class="frame r72"><img src="../../../00_SYSTEM/sample-assets/moodboard-sample-03.png" alt="Reference for the whole second act: the harbour at blue hour with the sodium lamps just coming on, wet concrete reflecting orange, a single trawler silhouetted against the last of the sky, and a lot of empty foreground so the title card can sit low in frame. Ask Lakshmi whether the art department can match the lamp colour on the real breakwater before we commit to the 1999 look, and keep a second version without the haze for the VFX plate. Supplier: Kochi Port Trust archive, scan 07-B, 4000 px."></div><div class="cap">Reference for the whole second act: the harbour at blue hour with the sodium lamps just coming on, wet concrete reflecting orange, a single trawler silhouetted against the last of the sky, and a lot of empty foreground so the title card can sit low in frame. Ask Lakshmi whether the art department can match the lamp colour on the real breakwater before we commit to the 1999 look, and keep a second version without the haze for the VFX plate. Supplier: Kochi Port Trust archive, scan 07-B, 4000 px.</div></article><article class="mcard"><div class="frame r72"><img src="../../../00_SYSTEM/sample-assets/storyboard-sample-01.png" alt="Rain on the sea: storyboard frame reused as a reference"></div><div class="cap">Rain on the sea: storyboard frame reused as a reference</div></article><article class="mcard"><div class="frame r72"><img src="../../../00_SYSTEM/sample-assets/storyboard-sample-07.png" alt="Moodboard image"></div></article></div>
+<div class="sec"><h2>Notes and links</h2></div>
+<div class="mrow c2"><article class="ncard"><div class="nh"><div class="tt"><span class="t">Link</span></div></div><div class="nb">Kodak Vision3 grain study (https://www.example.com/reference/cinematography/night-exteriors/sodium-vapour-against-sea-blue/kodak-vision3-500t-5219-push-process-1999-grade-notes?utm_source=openframe&amp;utm_medium=moodboard&amp;ref=2026-10-22)</div></article><article class="ncard"><div class="nh"><div class="tt"><span class="eb">Note</span><span class="t">Grade</span></div></div><div class="nb">Night exteriors: sodium orange against sea blue. Never pure black; keep detail in the water and in faces. Night exteriors: sodium orange against sea blue. Never pure black; keep detail in the water and in faces. Night exteriors: sodium orange against sea blue. Never pure black; keep detail in the water and in faces. </div></article></div>
+<div class="mrow c2"><article class="ncard"><div class="nh"><div class="tt"><span class="eb">Note</span><span class="t">A very long caption used as the card title because notes and links print their caption as the title and the kind as an eyebrow</span></div></div><div class="nb">Short body.</div></article><article class="ncard"><div class="nh"><div class="tt"><span class="eb">Link</span><span class="t">Link with a title only</span></div></div></article></div>
+<div class="mrow c2"><article class="ncard"><div class="nh"><div class="tt"><span class="t">Note</span></div><span class="chip warn">Internal</span></div><div class="nb">Budget note for Vivek: balloon lights only on the beach night.</div></article></div>
+<div class="sec"><h2>Internal notes</h2><span class="hint">Not for distribution</span></div>
+<div class="callout warn block internal">Shared with the whole unit. Do not forward outside the production.</div>
+</section>
+<section class="board" data-break>
+<header class="masthead compact ruled">
+    <div>
+      <div class="eyebrow">Visual development · Moodboard</div>
+      <h1>Stress 2: a board with a single image</h1>
+      <div class="ctx">Low Tide Radio</div>
+    </div>
+    <div class="sidebox"><b>1 image</b><span>Exported 22 Oct 2026</span></div>
+  </header>
+<div class="mrow c2"><article class="mcard"><div class="frame r72"><img src="../../../00_SYSTEM/sample-assets/moodboard-sample-03.png" alt="The only reference so far"></div><div class="cap">The only reference so far</div></article></div>
+</section>
+<section class="board" data-break>
+<header class="masthead compact ruled">
+    <div>
+      <div class="eyebrow">Visual development · Moodboard</div>
+      <h1>Stress 3: no images, notes and links only</h1>
+      <div class="ctx">Low Tide Radio</div>
+    </div>
+    <div class="sidebox"><b>0 images</b><span>Exported 22 Oct 2026</span></div>
+  </header>
+<div class="sec"><h2>Notes and links</h2></div>
+<div class="mrow c2"><article class="ncard"><div class="nh"><div class="tt"><span class="t">Link</span></div></div><div class="nb">Kodak Vision3: reference for the 1999 grain (https://en.wikipedia.org/wiki/Kodak_Vision3)</div></article><article class="ncard"><div class="nh"><div class="tt"><span class="t">Note</span></div></div><div class="nb">Night exteriors: sodium orange against sea blue. Never pure black; keep detail in the water and in faces.</div></article></div>
+<div class="mrow c2"><article class="ncard"><div class="nh"><div class="tt"><span class="t">Note</span></div><span class="chip warn">Internal</span></div><div class="nb">Budget note for Vivek: balloon lights only on the beach night.</div></article></div>
+<div class="sec"><h2>Internal notes</h2><span class="hint">Not for distribution</span></div>
+<div class="callout warn block internal">Shared with Vivek Anand (DOP) and Lakshmi Iyer (design). Grade reference for the DI.</div>
+</section>
+<section class="board" data-break>
+<header class="masthead compact ruled">
+    <div>
+      <div class="eyebrow">Visual development · Moodboard</div>
+      <h1>Stress 4: one very long caption</h1>
+      <div class="ctx">Low Tide Radio</div>
+    </div>
+    <div class="sidebox"><b>4 images</b><span>Exported 22 Oct 2026</span></div>
+  </header>
+<div class="mrow c3"><article class="mcard"><div class="frame r72"><img src="../../../00_SYSTEM/sample-assets/moodboard-sample-01.png" alt="Short caption"></div><div class="cap">Short caption</div></article><article class="mcard"><div class="frame r72"><img src="../../../00_SYSTEM/sample-assets/moodboard-sample-02.png" alt="Reference for the whole second act: the harbour at blue hour with the sodium lamps just coming on, wet concrete reflecting orange, a single trawler silhouetted against the last of the sky, and a lot of empty foreground so the title card can sit low in frame. Ask Lakshmi whether the art department can match the lamp colour on the real breakwater before we commit to the 1999 look, and keep a second version without the haze for the VFX plate. Supplier: Kochi Port Trust archive, scan 07-B, 4000 px. Reference for the whole second act: the harbour at blue hour with the sodium lamps just coming on, wet concrete reflecting orange, a single trawler silhouetted against the last of the sky, and a lot of empty foreground so the title card can sit low in frame. Ask Lakshmi whether the art department can match the lamp colour on the real breakwater before we commit to the 1999 look, and keep a second version without the haze for the VFX plate. Supplier: Kochi Port Trust archive, scan 07-B, 4000 px."></div><div class="cap">Reference for the whole second act: the harbour at blue hour with the sodium lamps just coming on, wet concrete reflecting orange, a single trawler silhouetted against the last of the sky, and a lot of empty foreground so the title card can sit low in frame. Ask Lakshmi whether the art department can match the lamp colour on the real breakwater before we commit to the 1999 look, and keep a second version without the haze for the VFX plate. Supplier: Kochi Port Trust archive, scan 07-B, 4000 px. Reference for the whole second act: the harbour at blue hour with the sodium lamps just coming on, wet concrete reflecting orange, a single trawler silhouetted against the last of the sky, and a lot of empty foreground so the title card can sit low in frame. Ask Lakshmi whether the art department can match the lamp colour on the real breakwater before we commit to the 1999 look, and keep a second version without the haze for the VFX plate. Supplier: Kochi Port Trust archive, scan 07-B, 4000 px.</div></article><article class="mcard"><div class="frame r72"><img src="../../../00_SYSTEM/sample-assets/moodboard-sample-04.png" alt="Moodboard image"></div></article></div>
+<div class="mrow c3"><article class="mcard"><div class="frame r72"><img src="assets/derived-portrait-2x3.png" alt="Portrait neighbour"></div><div class="cap">Portrait neighbour</div></article></div>
+</section>
+<section class="board" data-break>
+<header class="masthead compact ruled">
+    <div>
+      <div class="eyebrow">Visual development · Moodboard</div>
+      <h1>Stress 5: Images option off (captions only)</h1>
+      <div class="ctx">Low Tide Radio</div>
+    </div>
+    <div class="sidebox"><b>4 images</b><span>Exported 22 Oct 2026</span></div>
+  </header>
+<div class="mrow c3"><article class="mcard"><div class="cap">Monsoon palette from the art department share</div></article><article class="mcard"><div class="cap">Station at dusk: the hour we shoot scene 37</div></article></div>
+<div class="sec"><h2>Notes and links</h2></div>
+<div class="mrow c2"><article class="ncard"><div class="nh"><div class="tt"><span class="t">Note</span></div></div><div class="nb">Night exteriors: sodium orange against sea blue.</div></article></div>
+</section>
+<section class="board" data-break style="page: notitle">
+<header class="masthead compact ruled plain"><div><h1>Moodboard</h1></div></header>
+<div class="mrow c2"><article class="mcard"><div class="frame r72"><img src="../../../00_SYSTEM/sample-assets/moodboard-sample-01.png" alt="Project title and board name unticked: plain masthead, no project name anywhere"></div><div class="cap">Project title and board name unticked: plain masthead, no project name anywhere</div></article><article class="mcard"><div class="frame r72"><img src="../../../00_SYSTEM/sample-assets/moodboard-sample-02.png" alt="Moodboard image"></div></article></div>
+</section>
+</div>
+<script src="../../../00_SYSTEM/assets/of-preview.js"></script>
+
+</body>
+</html>

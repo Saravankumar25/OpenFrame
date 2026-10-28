@@ -2,10 +2,9 @@
   "note": "Counts of writing standard hits per group. Only ever lower these.",
   "counts": {
     "app": 16,
-    "crates": 202,
+    "crates": 201,
     "scripts-and-ci": 26,
     "root-documents": 0,
-    "mockups": 0,
-    "living-docs": 29
+    "living-docs": 13
   }
 }

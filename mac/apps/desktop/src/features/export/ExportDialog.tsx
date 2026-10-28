@@ -19,7 +19,6 @@ import {
   exportFileName,
   fieldApplies,
   initialOptions,
-  plainFileName,
   saveFilters,
   type ExportFormatOption,
   type ExportFormatValue,
@@ -39,8 +38,8 @@ export interface ExportDialogProps {
   source?: ReactNode;
   /** Document name used in the suggested file name. */
   documentName: string;
-  /** Save under the document name alone, without the project and the date ("Shoot Day 4 - Daily view"). */
-  plainName?: boolean;
+  /** The suggested file name is the document name alone, without project title or date. */
+  bare?: boolean;
   /** Rust operation, e.g. `schedule.export_schedule`. */
   op: string;
   /** Arguments every request carries (ids of the current item…). */
@@ -60,9 +59,8 @@ export function ExportDialog(props: ExportDialogProps) {
 
 const DEFAULT_NOTE = "Private notes excluded. Export creates a snapshot and does not change your project.";
 
-function ExportFlow({ onClose, title, sub, source, documentName, plainName = false, op, baseArgs, formats, scopes = [], options = [], note, unavailable }: ExportDialogProps) {
+function ExportFlow({ onClose, title, sub, source, documentName, bare, op, baseArgs, formats, scopes = [], options = [], note, unavailable }: ExportDialogProps) {
   const project = useOp<ProjectSummary | null>("project.current", {}, ["project"]);
-  const fileName = (f: ExportFormatValue) => (plainName ? plainFileName(documentName, f) : exportFileName(project.data?.title, documentName, f));
   const [format, setFormat] = useState<ExportFormatValue>(formats[0]?.value ?? "pdf");
   const firstScope = scopes.find((s) => !s.disabled) ?? scopes[0];
   const [scopeValue, setScopeValue] = useState<string | undefined>(firstScope?.value);
@@ -82,7 +80,7 @@ function ExportFlow({ onClose, title, sub, source, documentName, plainName = fal
     try {
       path = await saveDialog({
         title,
-        defaultPath: fileName(format),
+        defaultPath: exportFileName(bare ? null : project.data?.title, documentName, format, bare ? null : undefined),
         filters: saveFilters(format),
       });
     } catch (e) {
@@ -231,7 +229,7 @@ function ExportFlow({ onClose, title, sub, source, documentName, plainName = fal
         </div>
       </fieldset>
       <div className="xs muted exp-name">
-        Suggested file name: <span>{fileName(format)}</span>
+        Suggested file name: <span>{exportFileName(bare ? null : project.data?.title, documentName, format, bare ? null : undefined)}</span>
       </div>
       {shownFields.length > 0 && (
         <fieldset className="exp-fieldset">

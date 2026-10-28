@@ -28,7 +28,7 @@ Before: `01-journey` and `02-restart` have run on the shared journey data. The a
 8. Wait about 3 seconds, then check no visible text says "Saving…" (so the remembered place is saved the same way on every run).
 9. Click Home. Capture 02-project-home.
 10. Click Idea Vault. Capture 03-idea-vault.
-11. Click Story. Capture 04-story-board.
+11. Click Story in the Workspaces navigation, then click the Board tab. Capture 04-story-board.
 12. Click the Outline tab. Capture 05-story-outline.
 13. Click Screenplay. Capture 06-screenplay-editor.
 14. Click Breakdown. Capture 07-breakdown.

@@ -65,7 +65,6 @@ struct VisualSupportTests {
     // MARK: Text
 
     @Test func textHelpersMatchWindows() {
-        #expect(VisualText.shotLetters(0) == "A" && VisualText.shotLetters(25) == "Z" && VisualText.shotLetters(26) == "AA" && VisualText.shotLetters(27) == "AB")
         #expect(VisualText.move(["a", "b", "c"], from: 2, to: 0) == ["c", "a", "b"])
         #expect(VisualText.move(["a", "b", "c"], from: 0, to: 9) == ["b", "c", "a"])
         #expect(VisualText.move(["a"], from: 4, to: 0) == ["a"])
@@ -126,6 +125,17 @@ struct VisualSupportTests {
         #expect(resolveShotSceneKey(wanted: nil, scenes: onlyRemoved, showRemoved: false) == "all")
         #expect(resolveShotSceneKey(wanted: "R", scenes: onlyRemoved, showRemoved: true) == "R")
         #expect(VisualText.sceneLabel(scene("4", "L4")) == "Scene 4: INT. ROOM 4")
+    }
+
+    // MARK: Storyboard grid
+
+    @Test func theStoryboardGridFitsThePaneAtTheSmallestWindow() {
+        // Three columns, as on Windows (repeat(3, 1fr)).
+        #expect(StoryboardLayout.columns.count == 3)
+        // At the smallest window with the sidebar and the AI Assistant open the storyboard pane is
+        // 370 points wide (the E2E window fit check measured it); the page column keeps
+        // PageSpacing.large on each side.
+        #expect(StoryboardLayout.gridMinimumWidth + 2 * PageSpacing.large <= 370)
     }
 
     // MARK: Sketch

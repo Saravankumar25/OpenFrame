@@ -2,13 +2,11 @@
 //
 //   * debug (default): `tauri build --debug --no-bundle`, the build every spec can drive, with the
 //     debug-only test switches (deterministic AI, own AI folder, hand-set licence state);
-//   * release (`--release=gated` or `--release=open`, Windows phase W4, ADR-0030 proof level 3):
+//   * release (`--release=internal` or `--release=store`, Windows phase W4, ADR-0030 proof level 3):
 //     `tauri build --no-bundle`, the hardened executable that goes into the installer, built through
-//     scripts/with-msvc-linker.mjs. Never an installer or bundle. "gated" is the internal team build
-//     with the team password screen, made with a throwaway password that exists only in this run's
-//     memory (never the real team password); "open" is the same executable built as the store
-//     channel, which has no team password screen. Both honour OPENFRAME_DATA_ROOT for file
-//     locations only (ADR-0031).
+//     scripts/with-msvc-linker.mjs. Never an installer or bundle. "internal" is the internal team
+//     build; "store" is the same executable built as the store channel. Both honour
+//     OPENFRAME_DATA_ROOT for file locations only (ADR-0031).
 //
 // Every build goes through the machine-wide build queue (scripts/cargo-queued.cmd as Tauri's cargo
 // runner). The build carries the Offline AI engine exactly like the package does:
@@ -42,24 +40,14 @@ export function appAiDir(release = false) {
 export const APP_BINARY = appBinary(false);
 export const APP_AI_DIR = appAiDir(false);
 
-/**
- * Build the app. `release` is false (debug), "gated" or "open"; `gatePassword` is the throwaway
- * password of a gated build.
- */
-export function buildApp({ release = false, gatePassword } = {}) {
+/** Build the app. `release` is false (debug), "internal" or "store". */
+export function buildApp({ release = false } = {}) {
   prepare();
   console.log(`Building OpenFrame Studio (${release ? `release, ${release}` : "debug"}, embedded UI, Offline AI engine, test model host)…`);
   // OPENFRAME_TEST_BUILD lets the release profile accept the loopback test host (build.rs).
   const env = { ...process.env, OPENFRAME_TEST_MODEL_SOURCE: MODEL_HOST_URL, OPENFRAME_TEST_BUILD: "1" };
-  // The debug and open builds never see the build machine's team password, even when it is set.
-  delete env.OPENFRAME_TEAM_PASSWORD;
   delete env.OPENFRAME_DISTRIBUTION;
-  if (release === "gated") {
-    if (!gatePassword) throw new Error("A gated release build needs its throwaway test password.");
-    env.OPENFRAME_TEAM_PASSWORD = gatePassword; // secret-scan: allow (a random value made in run.mjs for this run only)
-  } else if (release === "open") {
-    env.OPENFRAME_DISTRIBUTION = "store";
-  }
+  if (release === "store") env.OPENFRAME_DISTRIBUTION = "store";
   // Models from builds before ADR-0026 would linger next to the executable; the package has none.
   rmSync(join(appAiDir(Boolean(release)), "models"), { recursive: true, force: true });
   const tauri = `npm --workspace apps/desktop run tauri -- build ${release ? "" : "--debug "}--no-bundle --runner "${QUEUE_RUNNER}" --config src-tauri/tauri.bundled-ai.conf.json`;

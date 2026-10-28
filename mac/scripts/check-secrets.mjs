@@ -21,9 +21,7 @@ const MAX_BYTES = 5 * 1024 * 1024;
 const hits = [];
 
 // Lines already in history that are not secrets, reviewed one by one. History is never rewritten for them.
-const REVIEWED_HISTORY = [
-  { commit: "eeacccb", file: "scripts/tests/governance.test.mjs", rule: "team-password-value", why: "a test passes the variable name with a test value it builds at run time" },
-];
+const REVIEWED_HISTORY = [];
 const reviewed = (commit, file, rule) => REVIEWED_HISTORY.some((r) => commit.startsWith(r.commit) && r.file === file && r.rule === rule);
 
 // ---------------------------------------------------------------------------- working tree

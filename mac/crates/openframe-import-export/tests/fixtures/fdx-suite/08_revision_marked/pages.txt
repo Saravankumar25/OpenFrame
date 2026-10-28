@@ -10,9 +10,9 @@
   6  770 RevisionMark   *
   7  250 Dialogue       Not today.
   7  770 RevisionMark   *
-  9   90 SceneNumber    2
-  9  150 Heading        EXT. STREET - DAY
-  9  760 SceneNumber    2
- 11  150 Action         The bus leaves without her.
- 11  770 RevisionMark   *
-pdf-sha256 1f0b842d33d13993921f1a59eb372ba43869d3ebe2d3951a037a820fa2daf8b3
+ 10   90 SceneNumber    2
+ 10  150 Heading        EXT. STREET - DAY
+ 10  760 SceneNumber    2
+ 12  150 Action         The bus leaves without her.
+ 12  770 RevisionMark   *
+pdf-sha256 c5fdf90880ef1a51ef5157b1857fba2a9fdcc95c34d630e2880f7e67c7b64e62

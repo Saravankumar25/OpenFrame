@@ -94,7 +94,6 @@ public enum LicenceRules {
     }
 
     public static let buyFailed = "OpenFrame could not start the purchase right now. Everything keeps working."
-    public static let saveFailed = "OpenFrame could not save this step. Try again."
 
     public static let dataPoints: [(title: String, body: String)] = [
         ("Your projects live only on this computer.",
