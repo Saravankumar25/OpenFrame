@@ -291,13 +291,17 @@ struct BudgetTable: View {
                 .frame(width: 100, alignment: .trailing)
                 BudgetDifference(value: l.difference, currency: budget.currency).frame(width: 150, alignment: .trailing)
                 if !readOnly {
-                    HStack(spacing: 4) {
+                    // Icons only: the column is too narrow for two titled buttons, which wrapped one
+                    // letter per line. The tooltip and the accessibility label carry the words.
+                    HStack(spacing: 12) {
                         Button { onEdit?(l) } label: { Label("Edit", systemImage: "pencil") }
-                            .buttonStyle(.borderless)
+                            .buttonStyle(.borderless).labelStyle(.iconOnly)
+                            .help("Edit")
                             .accessibilityLabel("Edit \(l.description)")
                             .accessibilityIdentifier("budget-edit-\(l.id)")
                         Button { onDelete?(l) } label: { Label("Delete", systemImage: "trash") }
-                            .buttonStyle(.borderless)
+                            .buttonStyle(.borderless).labelStyle(.iconOnly)
+                            .help("Delete")
                             .accessibilityLabel("Delete \(l.description)")
                             .accessibilityIdentifier("budget-delete-\(l.id)")
                     }

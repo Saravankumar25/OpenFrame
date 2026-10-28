@@ -26,12 +26,28 @@ struct IdeaVaultWorkspace: View {
     }
 }
 
-/// The Global Idea Vault with no project open (shown from Home).
+/// The Global Idea Vault with no project open (shown from Home as a sheet). `onClose` puts a
+/// Done button in the vault's own title row, where it is always in sight; Escape does the same.
 public struct GlobalIdeaVaultView: View {
-    public init() {}
+    var onClose: (() -> Void)?
+    public init(onClose: (() -> Void)? = nil) { self.onClose = onClose }
     public var body: some View {
         IdeaVaultWorkspace(store: .global)
+            .environment(\.vaultClose, onClose.map(VaultClose.init))
             .accessibilityIdentifier("global-idea-vault")
+    }
+}
+
+struct VaultClose { let action: () -> Void }
+
+private struct VaultCloseKey: EnvironmentKey {
+    static var defaultValue: VaultClose? { nil }
+}
+
+extension EnvironmentValues {
+    var vaultClose: VaultClose? {
+        get { self[VaultCloseKey.self] }
+        set { self[VaultCloseKey.self] = newValue }
     }
 }
 
@@ -68,6 +84,7 @@ struct IdeaVaultScreen: View {
     @Bindable var model: IdeaVaultModel
     @Environment(\.ofTheme) private var theme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.vaultClose) private var close
     @AppStorage("vault.mode") private var storedMode = VaultDisplayMode.grid.rawValue
     @State private var importKind: ImportKind?
     @State private var importing = false
@@ -179,6 +196,14 @@ struct IdeaVaultScreen: View {
         .padding(.horizontal, 24)
         .padding(.top, 20)
         .padding(.bottom, 12)
+        .overlay(alignment: .topTrailing) {
+            if let close {
+                Button("Done", action: close.action)
+                    .keyboardShortcut(.cancelAction)
+                    .padding(.top, 16).padding(.trailing, 16)
+                    .accessibilityIdentifier("global-vault-done")
+            }
+        }
     }
 
     /// Files in the vault folder that are in no item: offer to add them back.

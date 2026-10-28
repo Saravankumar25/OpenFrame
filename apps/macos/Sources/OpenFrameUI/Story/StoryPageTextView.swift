@@ -92,6 +92,7 @@ final class StoryPageTextView: NSTextView {
         undoManager?.removeAllActions(withTarget: self)
         setSelectedRange(NSRange(location: 0, length: 0))
         typingAttributes = s.length > 0 ? StoryPageDocument.Style(s.attributes(at: 0, effectiveRange: nil)).attributes() : StoryPageDocument.Style().attributes()
+        refreshPlaceholder()
         refreshTools()
     }
 
@@ -201,8 +202,21 @@ final class StoryPageTextView: NSTextView {
 
     override func didChangeText() {
         super.didChangeText()
+        refreshPlaceholder()
         if let s = textStorage { onChange?(s) }
         refreshTools()
+    }
+
+    /// Typing only redraws the rect of the new glyphs, which left the rest of the placeholder
+    /// painted under the first words. When the page turns empty or stops being empty, the whole
+    /// placeholder line is drawn again.
+    private var placeholderShown = true
+
+    private func refreshPlaceholder() {
+        guard placeholderShown != string.isEmpty else { return }
+        placeholderShown = string.isEmpty
+        let line = StoryPageDocument.font(size: StoryPageDocument.bodySize, bold: false, italic: false).boundingRectForFont.height
+        setNeedsDisplay(NSRect(x: bounds.minX, y: textContainerOrigin.y, width: bounds.width, height: ceil(line) + 4))
     }
 
     override func setSelectedRanges(_ ranges: [NSValue], affinity: NSSelectionAffinity, stillSelecting: Bool) {

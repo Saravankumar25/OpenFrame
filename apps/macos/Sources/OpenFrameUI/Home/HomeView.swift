@@ -185,8 +185,7 @@ struct HomeView: View {
         }
         .themedSheet(isPresented: $showVault) {
             NavigationStack {
-                GlobalIdeaVaultView()
-                    .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Done") { showVault = false } } }
+                GlobalIdeaVaultView { showVault = false }
             }
             .sheetFrame(minWidth: 900, minHeight: 620)
         }
