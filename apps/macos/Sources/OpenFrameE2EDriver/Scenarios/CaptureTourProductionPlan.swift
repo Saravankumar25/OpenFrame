@@ -641,7 +641,8 @@ extension Scenarios {
             }
             await ui.step("storyboard panel open") {
                 guard let p = panels().first else { throw DriverError("no panel") }
-                try await ui.planPress(p)
+                // A panel opens on a click (a tap gesture), which its accessibility press does not run; its menu has Open.
+                try await ui.planContextPick(p, "Open")
                 _ = try await ui.wait(id: "panel-inspector", timeout: 8)
                 await ui.planShot("plan-storyboard-panel-open", "Storyboards, a panel open in the inspector", from: "plan-storyboard-panels", via: "panel")
                 try await ui.capTypeIn("Arjun waits under the shelter, rain on the roof", into: "panel-desc")
@@ -749,15 +750,20 @@ extension Scenarios {
                 try await ui.planContextPick(r, "Open")
                 _ = try await ui.wait(id: "shot-inspector", timeout: 8)
                 await ui.planShot("plan-shot-open", "Shot Lists, a shot open in the inspector", from: "plan-shot-row-menu", via: "Open")
-                try await ui.capAct(id: "shot-technical")
-                _ = try await ui.wait(id: "shot-size", timeout: 6)
-                try await ui.capTypeIn("Wide", into: "shot-size")
-                try await ui.capTypeIn("Static", into: "shot-movement")
-                try await ui.capTypeIn("24mm", into: "shot-lens")
-                try await ui.capTypeIn("Eye level", into: "shot-angle")
+                // The Technical details group's identifier covers its fields, which have no labels of their
+                // own: open the group if it is closed, then find the fields in order (size, movement, angle, lens).
+                if let t = ui.query(id: "shot-technical", role: "AXDisclosureTriangle").first, t.value == "0" { try await ui.press(t); await ui.idle(0.6) }
+                @MainActor func field(_ n: Int) async throws -> Element {
+                    try await ui.capWaitUntil("the technical fields", timeout: 6) { ui.query(id: "shot-technical", role: "AXTextField").count > n }
+                    return ui.query(id: "shot-technical", role: "AXTextField")[n]
+                }
+                try await ui.capTypeIn("Wide", strict: true) { try await field(0) }
+                try await ui.capTypeIn("Static", strict: true) { try await field(1) }
+                try await ui.capTypeIn("Eye level", strict: true) { try await field(2) }
+                try await ui.capTypeIn("24mm", strict: true) { try await field(3) }
                 await ui.idle(0.6)
                 await ui.planShot("plan-shot-technical", "Shot, camera details filled in", from: "plan-shot-open", via: "shot-size")
-                await ui.planMenu(id: "shot-character-suggestions", "plan-shot-characters-menu", "Shot, characters in this scene", from: "plan-shot-open")
+                await ui.planMenu(label: "Characters in this scene", "plan-shot-characters-menu", "Shot, characters in this scene", from: "plan-shot-open")
                 await ui.planCloseInspector()
                 await ui.planShot("plan-shots-list-details", "Shot Lists, a shot with camera details", from: "plan-shot-technical", via: "shot-inspector-close")
             }

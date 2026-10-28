@@ -91,18 +91,12 @@ fileprivate extension UI {
 
     func storyMoreChoose(_ item: String) async throws {
         let e = try storyMorePopup()
-        guard let cell = e.obj as? NSPopUpButtonCell else { throw DriverError("not a menu") }
-        capPostClick(atScreen: NSPoint(x: e.frame.midX, y: e.frame.midY))
-        var done = false
-        let deadline = Date().addingTimeInterval(3)
-        while Date() < deadline, !done {
-            if let m = cell.menu, let i = m.items.firstIndex(where: { $0.title.hasPrefix(item) }) { m.performActionForItem(at: i); done = true }
-            await idle(0.1)
-        }
-        cell.menu?.cancelTracking()
-        await idle(0.5)
-        for w in NSApp.windows where w.isVisible && String(describing: Swift.type(of: w)).contains("PopupMenu") { w.orderOut(nil) }
-        if !done { throw DriverError("no item \(item) in the More menu") }
+        let before = MenuTracking.shared.open.count
+        guard let m = await openPopUp(e) else { throw DriverError("the More menu did not open") }
+        let i = m.items.firstIndex { $0.title.hasPrefix(item) }
+        if let i { m.performActionForItem(at: i) }
+        await closeMenus(downTo: before)
+        if i == nil { throw DriverError("no item \(item) in the More menu") }
     }
 
     /// The map's two buttons (Back, Add Relationship), left to right; the map's own label hides theirs.
@@ -202,7 +196,7 @@ extension Scenarios {
                 try await ui.capAct(id: "story-page-export")
                 try await ui.wait(id: "export-sheet", timeout: 6)
                 await ui.capture("story-page-export-sheet", title: "Export the Story page", area: A, from: "story-page-written", via: "story-page-export")
-                try await ui.capAct(label: "Word (DOCX)", role: "AXRadioButton")
+                try await ui.capAct(label: "Word (.docx)", role: "AXRadioButton")
                 await ui.capture("story-page-export-docx", title: "Export the Story page as a Word document", area: A, from: "story-page-export-sheet", via: "export-format")
                 _ = await ui.tryPress(id: "export-cancel", wait: 1.5)
                 await ui.capRecover()
@@ -264,14 +258,14 @@ extension Scenarios {
                 guard let c = ui.capCard(cards[1]) else { throw DriverError("no card") }
                 try await ui.tap(c)
                 await ui.capture("story-card-selected", title: "Beat Board, a scene card selected", area: A, from: "story-board-filled", via: "story-card")
-                try await ui.key("\u{F701}", code: 125, modifiers: [.shift])
-                await ui.idle(0.6)
-                if !ui.exists(label: "Selection actions") {
-                    try await ui.key("\u{F701}", code: 125, modifiers: [.shift])
-                    await ui.idle(0.6)
-                }
+                // A Command click adds a card to the selection (the card reads the modifier keys when tapped).
+                guard let c2 = ui.capCard(cards[2]) else { throw DriverError("no second card") }
+                ui.holdModifiers([.command])
+                try await ui.tap(c2)
+                await ui.idle(0.4)
+                ui.holdModifiers([])
                 try await ui.wait(label: "Selection actions", timeout: 3)
-                await ui.capture("story-multi-select", title: "Beat Board, two cards selected with the selection bar", area: A, from: "story-card-selected", via: "Shift Down Arrow")
+                await ui.capture("story-multi-select", title: "Beat Board, two cards selected with the selection bar", area: A, from: "story-card-selected", via: "Command click")
                 try await ui.capAct(label: "Move\u{2026}", role: "AXButton")
                 try await ui.capWaitUntil("move sheet") { ui.hasOverlay }
                 await ui.capture("story-move-sheet", title: "Move the selected cards", area: A, from: "story-multi-select", via: "Move")
@@ -329,7 +323,10 @@ extension Scenarios {
             await ui.step("rename sequence") {
                 guard let s = ui.storyEl("story-sequence-") else { throw DriverError("no sequence") }
                 try await ui.storyContextChoose(s, "Rename")
-                try await ui.wait(label: "Sequence name", timeout: 4)
+                // The name field sits inside the sequence header, which reads as one element: wait for its focus.
+                try await ui.capWaitUntil("the sequence name field has focus", timeout: 4) {
+                    (ui.capturePrimary()?.firstResponder as? NSTextView)?.isFieldEditor == true
+                }
                 await ui.capture("story-sequence-rename-inline", title: "Beat Board, renaming a sequence", area: A, from: "story-sequence-context-menu", via: "Rename")
                 try await ui.escape()
                 await ui.idle(0.4)
@@ -375,9 +372,31 @@ extension Scenarios {
 
             // Collapsing, filtering, zoom and the Parking Lot.
             await ui.step("collapse sequence") {
-                try await ui.capAct(label: "Collapse Missing the bus", role: "AXButton")
+                // The chevron sits inside the sequence header, which reads as one element: click where it is drawn.
+                @MainActor func chevron() throws -> NSPoint {
+                    guard let s = ui.storyEl("story-sequence-") else { throw DriverError("no sequence") }
+                    return NSPoint(x: s.frame.minX + 34, y: s.frame.midY)
+                }
+                ui.capPostClick(atScreen: try chevron())
+                try await ui.capWaitUntil("the sequence is collapsed", timeout: 4) { ui.capCard(cards[0]) == nil }
                 await ui.capture("story-sequence-collapsed", title: "Beat Board, a sequence collapsed", area: A, from: "story-board-filled", via: "Collapse")
-                try await ui.capAct(label: "Expand Missing the bus", role: "AXButton")
+                ui.capPostClick(atScreen: try chevron())
+                try? await ui.capWaitUntil("the sequence is open again", timeout: 2) { ui.capCard(cards[0]) != nil }
+                if ui.capCard(cards[0]) == nil {
+                    // A second click on the chevron is not always taken; the Outline shares the collapsed
+                    // state and shows the sequence's Expand button on its own.
+                    // Its row reads as one element too: click along the row's start until the chevron takes it.
+                    try await ui.capTab("Outline")
+                    for dx in stride(from: CGFloat(8), through: 72, by: 8) {
+                        guard let row = ui.all().first(where: { $0.identifier.hasPrefix("story-outline-") && $0.label == "Sequence: Missing the bus" }) else { break }
+                        let before = ui.all().filter { $0.identifier.hasPrefix("story-outline-") }.count
+                        ui.capPostClick(atScreen: NSPoint(x: row.frame.minX + dx, y: row.frame.midY))
+                        await ui.idle(0.8)
+                        if ui.all().filter({ $0.identifier.hasPrefix("story-outline-") }).count > before { break }
+                    }
+                    try await ui.capTab("Beat Board")
+                }
+                try await ui.capWaitUntil("the sequence is open again", timeout: 4) { ui.capCard(cards[0]) != nil }
             }
             await ui.step("collapse act") {
                 try await ui.capAct(label: "Collapse Act Two: The depot", role: "AXButton")

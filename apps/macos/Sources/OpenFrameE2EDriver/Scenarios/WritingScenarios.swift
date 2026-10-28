@@ -1097,7 +1097,7 @@ extension Scenarios {
 nonisolated(unsafe) var heldModifiers: NSEvent.ModifierFlags = []
 nonisolated(unsafe) var modifierSwizzled = false
 
-fileprivate extension UI {
+extension UI {
     func holdModifiers(_ m: NSEvent.ModifierFlags) {
         if !modifierSwizzled, let meta = object_getClass(NSEvent.self), let method = class_getClassMethod(NSEvent.self, #selector(getter: NSEvent.modifierFlags)) {
             let original = method_getImplementation(method)

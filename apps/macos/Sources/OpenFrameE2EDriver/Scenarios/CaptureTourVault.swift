@@ -221,9 +221,15 @@ extension Scenarios {
                 await ui.vaultCloseDrawer()
             }
             await ui.step("select one") {
-                let c = try await ui.vaultCardOrThrow(vaultIdeas[1])
-                try await ui.tap(c)
-                try await ui.capWaitUntil("the selection bar") { ui.exists(label: "Selected items") }
+                // A card waits out the double-click time before a single click selects it; scroll it into
+                // sight first, and click again if the first click was taken as part of a double click.
+                for _ in 0..<3 where !ui.exists(label: "Selected items") {
+                    let c = try await ui.vaultCardOrThrow(vaultIdeas[1])
+                    await ui.capReveal(c)
+                    try await ui.tap(try await ui.vaultCardOrThrow(vaultIdeas[1]))
+                    try? await ui.capWaitUntil("the selection bar", timeout: 3) { ui.exists(label: "Selected items") }
+                }
+                try await ui.capWaitUntil("the selection bar", timeout: 2) { ui.exists(label: "Selected items") }
                 await ui.capture("vault-item-selected", title: "Idea Vault, one item selected", area: vaultArea, from: "vault-filled", via: "vault-card")
             }
             await ui.vaultSheet("vault-tag-sheet", "Tag items", from: "vault-item-selected", via: "Tag") {

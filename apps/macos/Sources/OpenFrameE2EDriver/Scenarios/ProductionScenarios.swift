@@ -2059,57 +2059,8 @@ fileprivate extension UI {
 
     /// Opens a menu button, chooses the item whose title starts with the text (searching sub-menus), and closes it.
     func menuButton(id: String? = nil, label: String? = nil, item: String, timeout: Double = 15) async throws {
-        let e = try await wait(id: id, label: label, timeout: timeout, "the menu button \(id ?? label ?? "?")")
-        guard let cell = e.obj as? NSPopUpButtonCell else { throw DriverError("not a menu button: \(e)") }
         log("menu \(id ?? label ?? "?") > \(item)")
-        func find(_ m: NSMenu) -> (NSMenu, Int)? {
-            for (i, it) in m.items.enumerated() where !it.isSeparatorItem && it.title.hasPrefix(item) { return (m, i) }
-            for it in m.items { if let sub = it.submenu, let r = find(sub) { return r } }
-            return nil
-        }
-        var target: (NSMenu, Int)?
-        let menusBefore = NSApp.windows.filter { $0.isVisible && String(describing: Swift.type(of: $0)).contains("PopupMenu") }.count
-        // The menu is chosen from only after it began tracking. A menu whose click arrives after the
-        // choice was made would open by itself and keep the app from quitting.
-        let tracking = TrackingFlag()
-        let begin = NotificationCenter.default.addObserver(forName: NSMenu.didBeginTrackingNotification, object: nil, queue: .main) { _ in
-            MainActor.assumeIsolated { tracking.began = true }
-        }
-        defer { NotificationCenter.default.removeObserver(begin) }
-        for _ in 0..<3 where target == nil {
-            let frame = e.frame
-            tracking.began = false
-            postClick(atScreen: NSPoint(x: frame.midX, y: frame.midY))
-            let deadline = Date().addingTimeInterval(3)
-            while Date() < deadline {
-                if tracking.began, let m = cell.menu, let t = find(m) { target = t; break }
-                await idle(0.1)
-            }
-            if target == nil { cell.menu?.cancelTracking(); await idle(0.5) }
-        }
-        guard let (menu, index) = target else {
-            let titles = cell.menu?.items.map(\.title) ?? []
-            cell.menu?.cancelTracking()
-            throw DriverError("no menu item starting with \(item) in \(titles)")
-        }
-        guard menu.items[index].isEnabled else { cell.menu?.cancelTracking(); throw DriverError("menu item is disabled: \(menu.items[index].title)") }
-        menu.performActionForItem(at: index)
-        cell.menu?.cancelTracking()
-        await idle(0.3)
-        // The menu window must be gone, or the next key press and the quit command go to it.
-        func openMenus() -> Int { NSApp.windows.filter { $0.isVisible && String(describing: Swift.type(of: $0)).contains("PopupMenu") }.count }
-        let inToolbar = NSApp.windows.contains { $0.isVisible && e.frame.midY > $0.frame.maxY - 60 && $0.frame.contains(NSPoint(x: e.frame.midX, y: e.frame.midY)) }
-        for w in NSApp.windows where w.isVisible && String(describing: Swift.type(of: w)).contains("PopupMenu") && openMenus() > menusBefore { w.orderOut(nil) }
-        for _ in 0..<10 where inToolbar && openMenus() > menusBefore {
-            for t in [NSEvent.EventType.keyDown, .keyUp] {
-                if let ev = NSEvent.keyEvent(with: t, location: .zero, modifierFlags: [], timestamp: ProcessInfo.processInfo.systemUptime,
-                                             windowNumber: 0, context: nil, characters: "\u{1b}", charactersIgnoringModifiers: "\u{1b}", isARepeat: false, keyCode: 53) {
-                    NSApp.postEvent(ev, atStart: true)
-                }
-            }
-            cell.menu?.cancelTracking()
-            await idle(0.3)
-        }
+        try await capMenuButton(id: id, label: label, item: item, timeout: timeout)
     }
 
     /// Chooses an item of a pop-up button (a Picker).

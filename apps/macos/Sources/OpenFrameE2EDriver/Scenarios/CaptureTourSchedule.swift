@@ -277,10 +277,11 @@ extension Scenarios {
                 try await ui.capWaitUntil("a saved report row") { !ui.capQueryPrefix("reports-saved-").isEmpty }
                 guard let row = ui.scheduleFirst("reports-saved-") else { throw DriverError("no saved report") }
                 try await ui.press(row)
-                _ = try await ui.wait(label: "Back to live reports", timeout: 8)
+                if (try? await ui.wait(id: "reports-back-to-live", timeout: 3)) == nil { try await ui.tap(row) }
+                _ = try await ui.wait(id: "reports-back-to-live", timeout: 8)
                 await ui.idle(0.8)
                 await ui.capture("schedule-reports-snapshot", title: "Saved report snapshot open", area: "Reports", from: "schedule-reports-scene", via: row.identifier)
-                _ = await ui.tryPress(label: "Back to live reports", wait: 2)
+                _ = await ui.tryPress(id: "reports-back-to-live", wait: 2)
             }
         },
     ]
@@ -367,7 +368,16 @@ extension Scenarios {
                 _ = try await ui.wait(id: "callsheet-finalize-sheet", timeout: 8)
                 await ui.capture("callsheet-finalize-sheet", title: "Finalize the call sheet", area: "Call Sheets", from: "callsheet-open", via: "callsheet-finalize")
                 if ui.exists(id: "callsheet-finalize-confirm") { try await ui.capAct(id: "callsheet-finalize-confirm") } else { try await ui.capAct(id: "callsheet-finalize-anyway") }
-                try await ui.capWaitUntil("the call sheet is final", timeout: 12) { ui.exists(id: "callsheet-finalized-at") || ui.capShows("Start New Revision") }
+                @MainActor func isFinal() -> Bool { ui.exists(id: "callsheet-finalized-at") || ui.capShows("Start New Revision") || ui.capShows("Finalized ") }
+                // A schedule change after the sheet was prepared turns the confirm button into "Finalize this version anyway".
+                try? await ui.capWaitUntil("the call sheet is final", timeout: 6) { isFinal() || ui.exists(id: "callsheet-finalize-anyway") }
+                if !isFinal(), ui.exists(id: "callsheet-finalize-anyway") { try await ui.capAct(id: "callsheet-finalize-anyway") }
+                if !isFinal(), !ui.hasOverlay {
+                    try await ui.capAct(id: "callsheet-finalize")
+                    _ = try await ui.wait(id: "callsheet-finalize-sheet", timeout: 8)
+                    if ui.exists(id: "callsheet-finalize-confirm") { try await ui.capAct(id: "callsheet-finalize-confirm") } else { try await ui.capAct(id: "callsheet-finalize-anyway") }
+                }
+                try await ui.capWaitUntil("the call sheet is final", timeout: 12) { isFinal() }
                 await ui.idle(0.8)
                 await ui.capture("callsheet-finalized", title: "Call sheet finalized", area: "Call Sheets", from: "callsheet-finalize-sheet", via: "callsheet-finalize-confirm")
                 try await ui.capAct(id: "callsheet-refresh")
@@ -431,7 +441,9 @@ extension Scenarios {
             }
             await ui.capture("budget-table", title: "Budget with lines in four categories and totals", area: "Budget", from: "budget-add-line-sheet")
             await ui.step("edit line") {
-                guard let b = ui.scheduleFirst("budget-edit-") else { throw DriverError("no edit button") }
+                // A row's pencil button, not Edit Plan (budget-edit-plan shares the prefix).
+                guard let b = ui.capQueryPrefix("budget-edit-").first(where: { $0.role == "AXButton" && $0.frame.width > 0 && $0.identifier != "budget-edit-plan" })
+                else { throw DriverError("no edit button") }
                 try await ui.press(b)
                 _ = try await ui.wait(id: "of-bl-desc", timeout: 6)
                 await ui.capture("budget-edit-line-sheet", title: "Edit a budget line", area: "Budget", from: "budget-table", via: b.identifier)
@@ -462,7 +474,8 @@ extension Scenarios {
                 await ui.capture("budget-snapshots", title: "Budget with a saved snapshot", area: "Budget", from: "budget-snapshot-name-sheet", via: "budget-snapshot-sheet-primary")
                 guard let v = ui.scheduleFirst("budget-snapshot-view-") else { throw DriverError("no snapshot view button") }
                 try await ui.press(v)
-                _ = try await ui.wait(id: "budget-snapshot-close", timeout: 8)
+                // The sheet's identifier covers its controls; its Close button reads budget-snapshot-view too.
+                _ = try await ui.wait(id: "budget-snapshot-view", label: "Close", timeout: 8)
                 await ui.capture("budget-snapshot-view", title: "Budget snapshot open", area: "Budget", from: "budget-snapshots", via: v.identifier)
                 await ui.capRecover()
             }
