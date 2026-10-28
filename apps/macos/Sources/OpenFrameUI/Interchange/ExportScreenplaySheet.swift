@@ -241,9 +241,14 @@ struct PrintPreviewSheet: View {
             ZStack {
                 theme["surface2"]
                 if model.document != nil {
-                    IXPDFView(document: model.document, pageIndex: Binding(get: { model.pageIndex }, set: { model.pageIndex = $0 }), zoom: model.zoom)
-                        .accessibilityLabel("Print preview. \(model.pageLabel)")
-                        .accessibilityIdentifier("print-preview-pdf")
+                    // PDFView puts its own document element in the tree, which hides any label or
+                    // identifier set on it, so a container carries them and VoiceOver reads the PDF inside.
+                    ZStack {
+                        IXPDFView(document: model.document, pageIndex: Binding(get: { model.pageIndex }, set: { model.pageIndex = $0 }), zoom: model.zoom)
+                    }
+                    .accessibilityElement(children: .contain)
+                    .accessibilityLabel("Print preview. \(model.pageLabel)")
+                    .accessibilityIdentifier("print-preview-pdf")
                 } else if let e = model.error {
                     IXBanner(.err, e).padding(20)
                 } else if model.blocking {
@@ -253,8 +258,6 @@ struct PrintPreviewSheet: View {
                 }
             }
             .frame(minWidth: 480, maxWidth: .infinity, minHeight: 300, maxHeight: .infinity)
-            .accessibilityElement(children: .contain)
-            .accessibilityLabel("Preview")
             Divider()
             side.frame(width: 240)
         }
