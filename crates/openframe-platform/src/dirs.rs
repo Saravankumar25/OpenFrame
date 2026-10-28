@@ -60,6 +60,12 @@ pub fn base_data_dir() -> Option<PathBuf> {
     directories::BaseDirs::new().map(|b| b.data_local_dir().to_path_buf())
 }
 
+/// Where Windows puts Documents when it is redirected to OneDrive (`<home>\OneDrive\Documents`).
+/// `None` off Windows.
+pub fn onedrive_documents_dir(home: &std::path::Path) -> Option<PathBuf> {
+    cfg!(windows).then(|| home.join("OneDrive").join("Documents"))
+}
+
 /// The read-only folder holding the files installed with the app (the Tauri bundle resources),
 /// for example the bundled Offline AI (ADR-0025).
 ///

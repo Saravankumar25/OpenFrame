@@ -100,6 +100,10 @@ const UNSAFE_ALLOW = {
     "PowerRegisterSuspendResumeNotification callback for sleep and wake (platform boundary); the handler box outlives the registration; SAFETY comments in place.",
   "crates/openframe-platform/src/shell.rs":
     "ShellExecuteW and SHOpenFolderAndSelectItems for open and reveal (platform boundary); NUL-terminated buffers, balanced COM init, item id list freed; SAFETY comments in place.",
+  "crates/openframe-platform/src/memory.rs":
+    "macOS kernel memory statistics (host_statistics64, mach_host_self, sysconf) for the available-memory reading (platform boundary); SAFETY comments in place.",
+  "crates/openframe-platform/src/files.rs":
+    "macOS and Linux O_NOFOLLOW open and fchmod for side-file permissions (platform boundary); a test-only mkfifo call; SAFETY comment in place.",
   "crates/openframe-search/src/vector.rs": "Registers the sqlite-vec extension entry point with SQLite.",
   "crates/openframe-platform/src/spelling.rs":
     "Windows Spell Checking API (COM) for proofing (platform boundary): one worker thread owns its apartment and every COM object, input is bounded before any call, each returned string is read once and freed once with CoTaskMemFree; SAFETY comments in place.",
@@ -125,8 +129,6 @@ const OS_ALLOW = {
   "crates/openframe-platform/": "The platform boundary crate: Windows adapter and macOS adapter live here.",
   "apps/desktop/src-tauri/src/distribution.rs":
     "Desktop shell: MSIX package data folder redirection and the WebView2 missing-runtime dialog (Windows installer channel).",
-  "crates/openframe-ai/src/hardware.rs":
-    "DXGI adapter enumeration for the hardware check; to move behind openframe-platform when the Mac (Metal) check is written.",
   "apps/desktop/src-tauri/src/platform/":
     "Desktop shell macOS adapter: the StoreKit 2 bridge over a C ABI, compiled only for target_os = macos; Windows builds get the no-op.",
 };

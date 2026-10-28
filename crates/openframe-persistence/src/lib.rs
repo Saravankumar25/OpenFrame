@@ -60,46 +60,14 @@ pub fn open_connection(path: &Path, create: bool) -> AppResult<Connection> {
 /// readonly database"). Give them back the owner's write permission, and nothing else; a database
 /// that is itself read-only is left alone and refused below with its own message.
 fn writable_side_files(path: &Path) {
-    #[cfg(unix)]
-    {
-        use std::os::unix::fs::PermissionsExt;
-        let writable = |p: &Path| {
-            std::fs::symlink_metadata(p)
-                .is_ok_and(|m| m.is_file() && m.permissions().mode() & 0o200 != 0)
-        };
-        if !writable(path) {
-            return;
-        }
-        for suffix in ["-wal", "-shm"] {
-            let mut side = path.as_os_str().to_os_string();
-            side.push(suffix);
-            owner_writable(Path::new(&side));
-        }
+    use openframe_platform::files;
+    if !files::is_owner_writable_file(path) {
+        return;
     }
-    #[cfg(not(unix))]
-    let _ = path;
-}
-
-/// Add the owner's write permission to the regular file at `path`. The file is opened without
-/// following a link (`O_NOFOLLOW`) and changed through that descriptor (`fchmod`), so a link put
-/// in its place between a check and the change can never redirect the change to another file.
-/// Anything that is not a regular file is left alone.
-#[cfg(unix)]
-fn owner_writable(path: &Path) {
-    use std::os::unix::fs::{OpenOptionsExt, PermissionsExt};
-    let Ok(file) = std::fs::OpenOptions::new()
-        .read(true)
-        .custom_flags(libc::O_NOFOLLOW | libc::O_NONBLOCK)
-        .open(path)
-    else {
-        return;
-    };
-    let Ok(meta) = file.metadata() else {
-        return;
-    };
-    let mode = meta.permissions().mode();
-    if meta.is_file() && mode & 0o200 == 0 {
-        let _ = file.set_permissions(std::fs::Permissions::from_mode(mode | 0o200));
+    for suffix in ["-wal", "-shm"] {
+        let mut side = path.as_os_str().to_os_string();
+        side.push(suffix);
+        let _ = files::add_owner_write_no_follow(Path::new(&side));
     }
 }
 
@@ -351,36 +319,6 @@ mod tests {
             .query_row("SELECT count(*) FROM t", [], |r| r.get(0))
             .unwrap();
         assert_eq!(n, 2);
-    }
-
-    /// A side file that is a link is never followed: the file it points to keeps its permissions.
-    /// Only a regular file gains the owner's write permission.
-    #[cfg(unix)]
-    #[test]
-    fn side_file_permissions_change_only_on_the_regular_file_itself() {
-        use std::os::unix::fs::PermissionsExt;
-        let dir = tempfile::tempdir().unwrap();
-        let mode = |p: &Path| std::fs::metadata(p).unwrap().permissions().mode() & 0o777;
-        let target = dir.path().join("elsewhere.txt");
-        std::fs::write(&target, b"not ours").unwrap();
-        std::fs::set_permissions(&target, std::fs::Permissions::from_mode(0o444)).unwrap();
-        let link = dir.path().join("project.sqlite-wal");
-        std::os::unix::fs::symlink(&target, &link).unwrap();
-        owner_writable(&link);
-        assert_eq!(mode(&target), 0o444, "the link was followed");
-
-        let shm = dir.path().join("project.sqlite-shm");
-        std::fs::write(&shm, b"").unwrap();
-        std::fs::set_permissions(&shm, std::fs::Permissions::from_mode(0o444)).unwrap();
-        owner_writable(&shm);
-        assert_eq!(mode(&shm), 0o644);
-
-        let fifo = dir.path().join("fifo-wal");
-        let c = std::ffi::CString::new(fifo.as_os_str().to_str().unwrap()).unwrap();
-        // SAFETY: a valid path for mkfifo.
-        assert_eq!(unsafe { libc::mkfifo(c.as_ptr(), 0o444) }, 0);
-        owner_writable(&fifo);
-        assert_eq!(mode(&fifo), 0o444, "a FIFO is not a regular file");
     }
 
     #[test]

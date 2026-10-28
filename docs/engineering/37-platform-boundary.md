@@ -26,7 +26,6 @@ its reason.
 |---|---|
 | `crates/openframe-platform/` (the whole crate) | It is the boundary. The Windows adapter and the macOS adapter live here. |
 | `apps/desktop/src-tauri/src/distribution.rs` | Desktop shell: MSIX package data folder redirection and the WebView2 missing-runtime dialog (Windows installer channel). |
-| `crates/openframe-ai/src/hardware.rs` | DXGI adapter enumeration and the Vulkan library check for the hardware check. To move behind `openframe-platform` when the Mac (Metal) check is written. |
 | `crates/openframe-security/src/lib.rs` | Drive-letter and UNC classification for network drive refusal. Windows path prefixes exist only on Windows. |
 | `crates/openframe-ai/src/manifest.rs` | Picks the runtime manifest entry for this machine by reading `std::env::consts::OS`. Data only, no OS branch. To call `current_os()` instead. |
 | `crates/openframe-application/src/modules/diagnostics.rs` | Fallback OS label in the diagnostics report. Data only, no OS branch. To call `current_os()` instead. |
@@ -34,7 +33,7 @@ its reason.
 | `crates/openframe-persistence/src/lib.rs` | Opens SQLite through the `win32-longpath` VFS with a `\\?\` path so projects in deep folders work. The VFS name is Windows-only. |
 | `apps/desktop/src-tauri/src/platform/` | Desktop shell macOS adapter: the StoreKit 2 bridge and the licence server client (section 8). `lib.rs` calls it without any `cfg`; Windows builds get no-op twins. |
 
-The hardware, security, persistence and the three label entries are exceptions. Each one is listed in section 6 as work that still has to move.
+The security, persistence and the three label entries are exceptions. Each one is listed in section 6 as work that still has to move.
 
 ## 2. Modules
 
@@ -44,6 +43,7 @@ The hardware, security, persistence and the three label entries are exceptions. 
 | `atomic` | The one shared atomic file replace: write to a temp file in the destination folder, sync, rename over the destination, clean up on failure. |
 | `dirs` | App data folder, Documents folder, `Documents/OpenFrame`, and the base local data folder. |
 | `exists` | `file_exists`: `Path::is_file`, answered with one attribute query on Windows where that is safe. |
+| `memory` | `available_ram_bytes`: the macOS kernel reading of memory available without pressure; `None` elsewhere. |
 | `identity` | The MSIX package family name of this process, and a validator for it. |
 | `keys` | Keyboard labels: `Ctrl` and `Alt` on Windows, Command and Option symbols on macOS. |
 | `process` | Managed child processes: a guard that ties a child to the app, and a command setup that hides the console window. |
@@ -124,7 +124,6 @@ The 10 tests are `replaces_content_and_leaves_no_temp_file`, `creates_a_missing_
 | Open a file and reveal it in the file manager | The desktop shell calls `tauri_plugin_opener` in `apps/desktop/src-tauri/src/lib.rs` (`open_path`, `of_open_url`). The plugin handles both systems. | Decide whether the shell stays the only caller (the plugin is already cross-platform) or the call goes behind a `platform` function. Either way, record the decision. On macOS, check reveal and open inside the App Sandbox. |
 | Power events | No power-event code found in the crates or the desktop shell. | A platform function for sleep and wake, so a running export, backup or AI job pauses and recovers on both systems. |
 | Window integration | Not in the crate. | Menu bar on macOS, window chrome and title bar rules on both systems. |
-| DXGI hardware check | `crates/openframe-ai/src/hardware.rs` (allow-listed). Also the Vulkan library check there. | A `platform` hardware query with a Windows adapter (DXGI) and a macOS adapter (Metal). |
 | Drive classification | `crates/openframe-security/src/lib.rs` (allow-listed), `drive_kind` and drive-letter checks; on macOS `openframe_platform::drives::is_network_volume` (`statfs` on the nearest existing folder, remote unless `MNT_LOCAL`), so the network-folder refusal also covers macOS mounts (2026-10-27). | One `platform` path classification for network and removable locations on both systems. |
 | Long-path SQLite VFS | `crates/openframe-persistence/src/lib.rs` (allow-listed). | A `platform` function that returns how to open a database path. macOS needs no long-path VFS, and the function must say so. |
 | Operating-system label reads | The three `std::env::consts::OS` entries in the allow-list (section 1). | Call `openframe_platform::current_os()` and delete the three entries. |

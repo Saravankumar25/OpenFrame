@@ -64,8 +64,8 @@ impl LibrarySetup {
             .into_iter()
             .collect();
         earlier.push(home.join("Documents").join(LIBRARY_FOLDER));
-        if cfg!(windows) {
-            earlier.push(home.join("OneDrive").join("Documents").join(LIBRARY_FOLDER));
+        if let Some(onedrive) = dirs::onedrive_documents_dir(&home) {
+            earlier.push(onedrive.join(LIBRARY_FOLDER));
         }
         Some(Self {
             pointer_file,

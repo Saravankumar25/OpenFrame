@@ -22,9 +22,6 @@ parking_lot.workspace = true
 tracing.workspace = true
 
 # Available memory from the kernel's own statistics on the Mac (hardware.rs).
-[target.'cfg(target_os = "macos")'.dependencies]
-libc = "0.2"
-
 [features]
 # Development tools and tests only: install the pinned models from the build inputs as a finished
 # download would (test_support.rs). Never enabled by the desktop app.
