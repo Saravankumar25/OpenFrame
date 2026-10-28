@@ -7,7 +7,7 @@
 > archive). Release target: Apple silicon Macs only. Sizes as
 > in the Windows plan.
 >
-> **Port list of 2026-10-24.** What this track must take over from the Windows harness, export and screenplay upgrade, file by file: [mac-port-list-2026-10-24.md](mac-port-list-2026-10-24.md); for the AI, [mac-ai-harness-port-orders.md](mac-ai-harness-port-orders.md) replaces its AI section.
+> **Port list of 2026-10-24.** What this track must take over from the Windows harness, export and screenplay upgrade, file by file: [mac-port-list-2026-10-24.md](../history/mac-port-list-2026-10-24.md); for the AI, [mac-ai-harness-port-orders.md](../history/mac-ai-harness-port-orders.md) replaces its AI section. Both were carried out in the sync of 2026-10-27 and moved to history on 2026-10-28.
 
 ## 1. What can be proved where
 

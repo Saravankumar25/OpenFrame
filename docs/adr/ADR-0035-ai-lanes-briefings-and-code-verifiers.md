@@ -100,7 +100,7 @@ first, only deterministic code judges answers while people use the app, three pa
 - The speed of the first token is unchanged on a processor. The gain claimed is that fewer wrong routes reach the model.
   It is measured by the baseline benches, not stated here.
 - Mac: the same Rust core carries all of this; the SwiftUI side needs the progress line, Cancel, the Save conversation
-  button and the answer text style ([mac port list](../roadmap/mac-port-list-2026-10-24.md)).
+  button and the answer text style ([mac port list](../history/mac-port-list-2026-10-24.md), history since 2026-10-28).
 
 ## Not adopted, and why
 

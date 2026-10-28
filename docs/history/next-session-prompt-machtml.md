@@ -1,3 +1,5 @@
+> **Moved to history on 2026-10-28.** Finished: the MacHTML recapture ran on 2026-10-28 (see `MacHTML/README.md` and the progress log entry of that date). Not a current instruction.
+
 # Next session prompt: MacHTML from the real app, then cleanup
 
 > Written 2026-10-28 at the end of the Mac sync and release session, on the owner's order. Paste everything below the

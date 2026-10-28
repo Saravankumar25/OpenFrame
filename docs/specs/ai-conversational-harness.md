@@ -22,7 +22,7 @@
 ## 2. What the measurements say today
 
 All numbers are from the runs of 2026-10-24 and 2026-10-25 (`.build-cache/ai-after-s7/`; the saved evidence copy is under
-`docs/release/evidence/ai-harness-2026-10-24/`). The real Gemma 3 1B model, deterministic sampling, routes on.
+`docs/history/evidence/ai-harness-2026-10-24/`, moved to history on 2026-10-28). The real Gemma 3 1B model, deterministic sampling, routes on.
 
 | Bench | Cases | Result | What it really measures |
 |---|---|---|---|

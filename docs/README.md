@@ -11,7 +11,7 @@
 | What OpenFrame is, who it is for, the chapters | [product/vision-and-scope.md](product/vision-and-scope.md) |
 | What to do next | [implementation/handoff.md](implementation/handoff.md), then [roadmap/README.md](roadmap/README.md) |
 | The Windows plan, ten phases | [roadmap/chapter-1a-windows-phases.md](roadmap/chapter-1a-windows-phases.md) |
-| The Mac plan, ten phases | [roadmap/chapter-1b-mac-phases.md](roadmap/chapter-1b-mac-phases.md); what to port from the 2026-10-24 upgrade: [roadmap/mac-port-list-2026-10-24.md](roadmap/mac-port-list-2026-10-24.md) and, for the AI, [roadmap/mac-ai-harness-port-orders.md](roadmap/mac-ai-harness-port-orders.md) |
+| The Mac plan, ten phases | [roadmap/chapter-1b-mac-phases.md](roadmap/chapter-1b-mac-phases.md); the port of the 2026-10-24 upgrade and of the conversational AI finished on 2026-10-27 (its port list and orders are in [history/](history/README.md)) |
 | Mac and Windows structure parity, owner change lists on the Mac | [roadmap/mac-windows-structure-parity.md](roadmap/mac-windows-structure-parity.md) |
 | How it is built, in simple words | [architecture/README.md](architecture/README.md), then, for the long plain-words explanation as it stood on 2026-10-09, the [report](history/reports/2026-10-09-project-retrospection-and-audit.md) (history) |
 | What works and how well it is proved | [implementation/feature-status.md](implementation/feature-status.md) |
@@ -39,7 +39,8 @@ docs/
   store/                     Microsoft Store listing and privacy policy drafts (Chapter 3)
   website/                   website source notes and supplied prompts (Chapter 2)
   manual/                    user manual (.docx, .pdf), manual testing guide (.docx, .csv), test-data/ sample files
-  history/                   records of the past: old evidence, audits, reports, superseded ADRs, old log sections (do not edit)
+  history/                   records of the past: old evidence, audits, reports, superseded ADRs, finished plans and
+                             session prompts, old log sections (do not edit)
   development-storage-policy.md
 HTML_Mockups/                design reference mock-ups (some show removed features); removed from the Windows tree on 2026-10-21
 MacHTML/                     every Mac screen as an HTML page (see its README); the Windows tree has WindowsHTML/ instead

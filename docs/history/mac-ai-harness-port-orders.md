@@ -1,3 +1,5 @@
+> **Moved to history on 2026-10-28.** Finished: the conversational AI was ported to the Mac in the sync of 2026-10-27 (evidence `docs/release/evidence/mac/windows-sync-2026-10-27/`). Current pages: [ai-answer-paths.md](../engineering/ai-answer-paths.md), [ai-conversational-harness.md](../specs/ai-conversational-harness.md). Not a current instruction.
+
 # Orders: port the conversational AI harness to the Mac app
 
 > Written 2026-10-27 on Windows from the code on `main` (commit `73640725`) and a read-only look at the Mac tree. Paste

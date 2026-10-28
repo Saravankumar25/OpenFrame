@@ -23,12 +23,23 @@ Single files, moved on 2026-10-27 in the documentation sync with Windows `114dff
 | [2026-10-24-ai-harness-rebuild-plan.md](2026-10-24-ai-harness-rebuild-plan.md) | The AI harness rebuild plan of 2026-10-24 (five lanes, briefings, code verifiers); ADR-0035 cites it | Windows `docs/specs/ai-harness-rebuild.md` (never in the Mac tree) | [ai-conversational-harness.md](../specs/ai-conversational-harness.md), ADR-0037 |
 | [specs/screenplay-formatting-standard-v4.md](specs/screenplay-formatting-standard-v4.md) | The screenplay formatting standard, version 4; the register and the specifications index cite it | Windows `docs/history/specs/` (never in the Mac tree) | [screenplay-formatting-standard-v5.md](../specs/screenplay-formatting-standard-v5.md) |
 
+Moved on 2026-10-28 (owner order: older decisions and finished documents go to history; the current folders hold only
+documents about the current app). Each Markdown file starts with one added "Moved to history" line; the evidence folder
+was moved unchanged:
+
+| File or folder | What it is | Moved from | Why |
+|---|---|---|---|
+| [next-session-prompt-machtml.md](next-session-prompt-machtml.md) | The session prompt for the MacHTML recapture | `docs/implementation/` | Finished: MacHTML was recaptured on 2026-10-28 |
+| [mac-port-list-2026-10-24.md](mac-port-list-2026-10-24.md) | The list of Windows changes of 2026-10-24 to port to the Mac | `docs/roadmap/` | Finished: ported in the Mac sync of 2026-10-27 |
+| [mac-ai-harness-port-orders.md](mac-ai-harness-port-orders.md) | The session orders to port the conversational AI to the Mac | `docs/roadmap/` | Finished: ported in the Mac sync of 2026-10-27 |
+| [evidence/ai-harness-2026-10-24/](evidence/ai-harness-2026-10-24) | Baseline and final runs of the five-lane AI harness (ADR-0035), measured on Windows | `docs/release/evidence/` | Superseded: the five lanes were retired for the conversational path of ADR-0037, measured in `release/evidence/ai-conversational-after-s8-2026-10-26/` |
+
 The Windows tree also keeps the old `docs/archive/` files in its `docs/history/`. The Mac removed that folder on
 2026-10-19 (git history keeps it), so those files are not copied here.
 
 Evidence of the current Windows and Mac tracks (`w2` to `w9`, `mac`, `release`) stays in
 [release/evidence](../release/evidence): the feature status check requires proof files there and each phase adds new
-ones. Files were moved, not edited, so links inside them may point at the old places; the link check skips this folder.
+ones (the one exception is the five-lane harness folder above). Files were moved, not edited, so links inside them may point at the old places; the link check skips this folder.
 
 What goes here from now on: a document or ADR that is superseded as a whole. A document that is superseded only in part
 keeps its place, with the old part marked SUPERSEDED in place.

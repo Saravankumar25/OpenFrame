@@ -53,8 +53,8 @@ specification per export. Version 2 changed the orientation of four exports and 
   header, multi-row repeating headers with keep-first and keep-last rules, keep-whole groups and measured pagination.
   Until each lands, the export stays on the old layout and its feature status says so.
 - All golden PDFs of production exports change at once with the footer geometry (14 pt more content per page).
-- The Mac tree has its own renderer files and was not compared when the package was made. Porting is in the
-  [mac port list](../roadmap/mac-port-list-2026-10-24.md).
+- The Mac tree has its own renderer files and was not compared when the package was made. Porting was in the
+  [mac port list](../history/mac-port-list-2026-10-24.md) (history since 2026-10-28; the port landed on 2026-10-27).
 
 ## Still open
 

@@ -122,7 +122,7 @@
 | W6 accepted on the bar; W4 to W8 on `main` | W6 accepted at English correct tool 96.7 percent and end state 88.8 percent; the remaining W6 items wait for a later request. `windows/w8-download` merged into `main` locally, no push | 2026-10-17 | [w6 evidence](../release/evidence/w6/README.md) |
 | W9 on `main` | `windows/w9-endgame` merged into `main` locally (fast-forward to d4acb83) after the W9 gate closed; no push | 2026-10-18 | Owner, in chat; [release gate](../release/windows-internal-release-gate.md) |
 | One history folder | Older decisions, deprecated documents and material that no longer fits the current version move to `docs/history/`; on Windows `docs/archive/` was merged into it, on the Mac it had been removed on 2026-10-19 | 2026-10-24 | [docs/README.md](../README.md), [history index](../history/README.md) |
-| Mac work for the 2026-10-24 upgrade | Windows first. The Mac track gets a port list, not a parallel Mac build | 2026-10-24 | [mac-port-list-2026-10-24.md](../roadmap/mac-port-list-2026-10-24.md) |
+| Mac work for the 2026-10-24 upgrade | Windows first. The Mac track gets a port list, not a parallel Mac build | 2026-10-24 | [mac-port-list-2026-10-24.md](../history/mac-port-list-2026-10-24.md) (history) |
 | Parallel work for this upgrade | Three tracks may run side by side for this upgrade only, each with a file-ownership map; the "agents never run in parallel" rule of `CLAUDE.md` is otherwise unchanged | 2026-10-24 | Owner, in chat |
 | End-to-end runs for this upgrade | The full end-to-end suite runs once, at the end of the whole upgrade, not after each slice | 2026-10-24 | Owner, in chat; [testing strategy](../testing/README.md) |
 

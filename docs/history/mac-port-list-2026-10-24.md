@@ -1,3 +1,5 @@
+> **Moved to history on 2026-10-28.** Finished: the 2026-10-24 upgrade was ported to the Mac in the sync of 2026-10-27 (evidence `docs/release/evidence/mac/windows-sync-2026-10-27/`). Current Mac plan: [chapter-1b-mac-phases.md](../roadmap/chapter-1b-mac-phases.md). Not a current instruction.
+
 # Mac port list: the 2026-10-24 upgrade
 
 > Written 2026-10-24. Owner decision: Windows first; the Mac work for this upgrade is a list, not a parallel Mac build

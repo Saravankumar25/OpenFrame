@@ -6,6 +6,25 @@
 > Renamed on 2026-10-06 from `03-reconciliation-log.md`. Extended on 2026-10-09 (chapter restructure). Checks written "(checked)" were verified in the repository on the
 > date given. Checks written "(stated)" come from a supplied document and were not verified independently.
 
+## 2026-10-28: Finished and superseded documents moved to history (owner order)
+
+Owner order: older decisions and finished documents go to `docs/history/`; the current folders hold only documents about
+the current app. Moderate scope: only documents finished or superseded as a whole moved (plain moves, nothing deleted).
+No ADR is superseded as a whole (ADR-0006, 0020, 0024, 0030 and 0031 keep decisions in force), so no ADR moved. The
+team password text was already marked superseded in place on 2026-10-27; nothing new to mark.
+
+| What | From | To | Why |
+|---|---|---|---|
+| MacHTML session prompt | `implementation/next-session-prompt-machtml.md` | `history/next-session-prompt-machtml.md` | Finished on 2026-10-28 |
+| Mac port list of the 2026-10-24 upgrade | `roadmap/mac-port-list-2026-10-24.md` | `history/mac-port-list-2026-10-24.md` | Finished in the Mac sync of 2026-10-27 |
+| Orders to port the conversational AI to the Mac | `roadmap/mac-ai-harness-port-orders.md` | `history/mac-ai-harness-port-orders.md` | Finished in the Mac sync of 2026-10-27 |
+| Five-lane AI harness runs | `release/evidence/ai-harness-2026-10-24/` | `history/evidence/ai-harness-2026-10-24/` | Superseded by the conversational path (ADR-0037) and its runs in `release/evidence/ai-conversational-after-s8-2026-10-26/` |
+
+Links fixed in `docs/README.md`, ADR-0035, ADR-0036, `owner-decisions.md`, `feature-status.md` (AI-015 evidence path),
+`chapter-1b-mac-phases.md`, `mac-windows-structure-parity.md`, the harness spec section 2 and an earlier row of this
+log. Records left as written: the progress log entry of 2026-10-28 and `release/evidence/mac/windows-sync-2026-10-27/early-start.md`
+name the old paths. Index: [history/README.md](../history/README.md).
+
 ## 2026-10-27: Team password gate removed (owner decision)
 
 The owner removed the team password of the internal builds; the code is removed in the same change. No document moved to
@@ -118,7 +137,7 @@ Links, rules and scripts changed together: `CLAUDE.md` (three rules), `DEVELOPME
 
 **Noted, not changed (outside documentation):** two Rust test comments still name `docs/archive/2026-09-30-security-review.md` (`crates/openframe-application/tests/platform/security_review.rs`, `crates/openframe-security/tests/security_paths.rs`). The file is now `docs/history/2026-09-30-security-review.md`. They are comments only; fix them in the next code change. A copy of the v5 screenplay standard sits untracked at the repository root (`OpenFrame_Screenplay_Formatting_Standard_v5_Combined.md`, byte-identical to `docs/specs/screenplay-formatting-standard-v5.md`); the layout rule keeps the root clear, so it can be deleted by whoever owns it.
 
-**Decisions recorded:** owner-decisions rows dated 2026-10-24 (answer shape, progress and Cancel, Save conversation, harness plan location, screenplay v5, PDF design v2, history folder, Mac port list, parallel tracks, end-to-end once). New: [ADR-0035](../adr/ADR-0035-ai-lanes-briefings-and-code-verifiers.md), [ADR-0036](../adr/ADR-0036-production-pdf-design-system-v2.md), [mac-port-list-2026-10-24.md](../roadmap/mac-port-list-2026-10-24.md). Numbers 0033 and 0034 belong to the Mac tree, so the register jumps to 0035.
+**Decisions recorded:** owner-decisions rows dated 2026-10-24 (answer shape, progress and Cancel, Save conversation, harness plan location, screenplay v5, PDF design v2, history folder, Mac port list, parallel tracks, end-to-end once). New: [ADR-0035](../adr/ADR-0035-ai-lanes-briefings-and-code-verifiers.md), [ADR-0036](../adr/ADR-0036-production-pdf-design-system-v2.md), [mac-port-list-2026-10-24.md](../history/mac-port-list-2026-10-24.md). Numbers 0033 and 0034 belong to the Mac tree, so the register jumps to 0035.
 
 ## 2026-10-21: HTML_Mockups removed, WindowsHTML added (Windows tree)
 
