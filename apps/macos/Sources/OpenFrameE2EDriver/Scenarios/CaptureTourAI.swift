@@ -72,7 +72,7 @@ extension Scenarios {
             }
             await ui.step("ai narrow window") {
                 try await ui.aiClose()
-                ui.capBigWindow(width: 1000, height: 760)
+                ui.capBigWindow(width: 1000)
                 await ui.idle(0.8)
                 try await ui.aiOpen()
                 await ui.capture("ai-panel-narrow-window", title: "AI Assistant in a narrow window, sidebar folded away", area: area, from: "ai-closed-breakdown", via: "ai-toggle")

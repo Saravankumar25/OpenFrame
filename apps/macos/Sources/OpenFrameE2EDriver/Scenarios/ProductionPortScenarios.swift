@@ -5,9 +5,9 @@
 import AppKit
 import Foundation
 
-// MARK: helpers (only for this file)
+// MARK: helpers (also used by the capture tour)
 
-fileprivate extension UI {
+extension UI {
     /// Chooses an item of a menu button by the start of its title. A SwiftUI menu fills its
     /// items only while it is open, so the menu is opened first (the shared production helper).
     func chooseMenuItem(id: String, item: String) async throws {

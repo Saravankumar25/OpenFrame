@@ -110,6 +110,9 @@ extension UI {
             await idle(0.4)
         }
         guard CaptureState.names.insert(name).inserted else { log("capture \(name): already taken"); return }
+        // An app in the background draws its windows dimmed. Bring it forward without changing the key window,
+        // which would close an open popover.
+        if !NSApp.isActive { NSApp.activate(ignoringOtherApps: true); await idle(0.4) }
         guard let primary = capturePrimary() else { log("capture \(name): no window"); return }
         let overlays = captureOverlays(primary)
         // Runners share one screen: a window covered by another app's window stops drawing its content and the
@@ -318,12 +321,12 @@ extension UI {
         throw DriverError("not true within \(Int(timeout)) s: \(what)")
     }
 
-    /// Makes the main window a fixed, roomy size so every page is the same shape.
-    /// The one window size of the tour (points). It fits the visible part of a 1280 by 720 point display, the
-    /// smallest the tour runs on, so the window server never trims it and every page has the same size.
-    nonisolated static let captureSize = CGSize(width: 1280, height: 620)
+    /// The one window size of the tour (points): the whole visible part of the screen (below the menu bar, beside
+    /// the Dock), as when the owner zooms the window to fill the screen. Every page has this size.
+    static var captureSize: CGSize { NSScreen.main?.visibleFrame.size ?? CGSize(width: 1280, height: 628) }
 
-    func capBigWindow(width: CGFloat = UI.captureSize.width, height: CGFloat = UI.captureSize.height) {
+    func capBigWindow(width: CGFloat? = nil, height: CGFloat? = nil) {
+        let width = width ?? UI.captureSize.width, height = height ?? UI.captureSize.height
         guard let w = NSApp.windows.filter({ $0.isVisible && $0.canBecomeMain && $0.sheetParent == nil && $0.frame.width > 900 }).max(by: { $0.frame.width < $1.frame.width }) else { return }
         let screen = w.screen ?? NSScreen.main
         let vf = screen?.visibleFrame ?? NSRect(x: 0, y: 0, width: 1728, height: 1080)
@@ -832,5 +835,5 @@ extension Scenarios {
 // MARK: the tour
 
 extension Scenarios {
-    static let captureGroup: [Scenario] = captureStart + captureHome + captureScreenplay + captureStory + captureVault + captureBreakdown + captureSchedule + captureCallSheets + captureBudget + captureVisual + captureProjectPages + captureAI + capturePackages + captureLifecycle
+    static let captureGroup: [Scenario] = captureStart + captureHome + captureScreenplay + captureStory + captureVault + captureBreakdown + captureSchedule + captureCallSheets + captureBudget + captureVisual + captureProjectPages + captureAI + capturePackages + captureLifecycle + captureAdded
 }

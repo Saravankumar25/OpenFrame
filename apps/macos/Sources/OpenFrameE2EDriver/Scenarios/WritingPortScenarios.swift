@@ -6,9 +6,9 @@ import AppKit
 import Foundation
 import PDFKit
 
-// MARK: helpers (only for this file)
+// MARK: helpers (also used by the capture tour)
 
-fileprivate extension UI {
+extension UI {
     /// The Story page's text view.
     func storyText(timeout: Double = 15) async throws -> NSTextView {
         let e = try await wait(id: "story-page-text", timeout: timeout, "the Story page")

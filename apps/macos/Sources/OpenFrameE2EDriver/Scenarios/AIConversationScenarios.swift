@@ -9,7 +9,7 @@
 import AppKit
 import Foundation
 
-fileprivate extension UI {
+extension UI {
     /// A real click that puts the keyboard focus in the Ask box (mouse down and up queued together,
     /// because a text field tracks the mouse until the button comes up).
     func convFocus(_ e: Element) async throws {

@@ -913,7 +913,7 @@ fileprivate extension UI {
 
 // MARK: AI (72, 73, 74, 75, 76, 78)
 
-fileprivate extension UI {
+extension UI {
     /// Presses a button of an alert or confirmation dialog on screen, by its title, as a click does.
     func pressAlertButton(_ title: String) async throws {
         func buttons(_ v: NSView) -> [NSButton] { (v as? NSButton).map { [$0] } ?? [] + v.subviews.flatMap(buttons) }
