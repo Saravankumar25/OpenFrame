@@ -50,11 +50,10 @@ use std::sync::OnceLock;
 use std::time::Duration;
 
 use openframe_domain::auth::ActorOrigin;
-use openframe_domain::{Actor, AppError, AppResult, now_ms};
+use openframe_domain::{Actor, AppError, AppResult};
 use openframe_entitlement::adapters::{self, StoreLicenceSource};
 use openframe_entitlement::mac::{MacInputs, RevalidateReason};
 use openframe_entitlement::notices::{self, CalendarDay, Notice, NoticeRecord, NoticeStore};
-use openframe_entitlement::team_gate::{TeamGate, UnlockAnswer};
 use openframe_entitlement::{
     Channel, ChannelAdapter, EntitlementState, Permission, PurchaseFailure, TRIAL_DAYS,
 };
@@ -114,24 +113,7 @@ pub fn register(r: &mut Registry) {
         .fs(Fs::ProjectStorage)
         .hidden(HIDDEN_REASON),
     );
-    r.query("team_gate.status", team_gate_status).meta(
-        M::app_query(
-            "Internal builds: whether the team password must still be entered, and how long the next try waits.",
-        )
-        .hidden(TEAM_GATE_HIDDEN_REASON),
-    );
-    // Writes only `entitlement/team-gate.json` (the count of wrong tries) in the app data folder.
-    r.command("team_gate.unlock", team_gate_unlock).meta(
-        M::app_command(
-            "Internal builds: check the team password typed at launch and open the app when it is right.",
-        )
-        .fs(Fs::ProjectStorage)
-        .hidden(TEAM_GATE_HIDDEN_REASON),
-    );
 }
-
-/// Why the assistant never sees the team password operations.
-pub const TEAM_GATE_HIDDEN_REASON: &str = "The team password of an internal build belongs to the person at this computer; the assistant never reads or types it.";
 
 /// Development and end-to-end builds only (see `AppConfig::entitlement_debug_controls`): set the
 /// licence state and channel by hand so the trial and first-run screens can be driven end to end.
@@ -223,50 +205,6 @@ pub struct StartTrialArgs {}
 #[derive(Debug, Deserialize, TS)]
 #[ts(export)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct TeamGateStatusArgs {}
-
-/// The typed team password. Its `Debug` never prints the password.
-#[derive(Deserialize, TS)]
-#[ts(export)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct TeamGateUnlockArgs {
-    pub password: String,
-}
-
-impl std::fmt::Debug for TeamGateUnlockArgs {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("TeamGateUnlockArgs").finish_non_exhaustive()
-    }
-}
-
-/// What the team password screen shows (ADR-0024).
-#[derive(Debug, Clone, Serialize, TS)]
-#[ts(export)]
-#[serde(rename_all = "camelCase")]
-pub struct TeamGateStatus {
-    /// True in an internal build with an embedded team password hash.
-    pub required: bool,
-    /// True once the password was right in this launch (always true when not required).
-    pub unlocked: bool,
-    /// Seconds until the next try is allowed; 0 when a try is allowed now.
-    pub wait_seconds: u32,
-    /// Wrong tries left before the next wait.
-    pub tries_before_wait: u32,
-}
-
-/// The answer to one team password try.
-#[derive(Debug, Clone, Serialize, TS)]
-#[ts(export)]
-#[serde(rename_all = "camelCase")]
-pub struct TeamGateAnswer {
-    pub status: TeamGateStatus,
-    /// Plain words when the try did not open the app.
-    pub message: Option<String>,
-}
-
-#[derive(Debug, Deserialize, TS)]
-#[ts(export)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct DebugSetArgs {
     pub channel: Channel,
     pub state: EntitlementState,
@@ -350,8 +288,6 @@ pub struct EntitlementService {
     /// `entitlement.debug_set` only (never set in a release build): the channel and state to
     /// report instead of the real ones.
     forced: Mutex<Option<(Channel, EntitlementState)>>,
-    /// The internal builds' team password gate (ADR-0024). `None` in store packages.
-    team_gate: Option<TeamGate>,
 }
 
 /// Plain words when a store build cannot reach its store from this build (no store connection
@@ -397,10 +333,6 @@ impl EntitlementService {
             notices: Mutex::new(notices),
             notice_store,
             forced: Mutex::new(None),
-            team_gate: config
-                .team_password_hash
-                .as_ref()
-                .map(|hash| TeamGate::new(hash.clone(), &config.app_data_dir, now_ms())),
         };
         if deferred {
             tracing::info!("the App Store check runs in the background after startup");
@@ -538,18 +470,9 @@ impl EntitlementService {
 }
 
 /// Operations outside `entitlement.*` that still run while the Mac lock holds: what the lock
-/// screen itself needs to draw (the platform name for "Show in Finder" and the user's theme), and
-/// the team password check the window asks first on every launch (a store package answers that
-/// no password is needed; refusing it left a locked store user on a "could not start the
-/// password check" screen instead of the lock). None of them reads or writes a project.
-pub const ALLOWED_WHILE_LOCKED: &[&str] = &["app.info", "appearance.get", "team_gate.status"];
-
-/// Operations that run before the team password is right: the password screen's own, and the
-/// user's theme so the screen looks like the rest of the app. Nothing else opens (ADR-0024).
-pub const TEAM_GATE_ALLOWED: &[&str] = &["team_gate.status", "team_gate.unlock", "appearance.get"];
-
-/// Plain words for an operation refused before the team password.
-pub const TEAM_GATE_LOCKED_MESSAGE: &str = "Enter the team password to open OpenFrame Studio.";
+/// screen itself needs to draw (the platform name for "Show in Finder" and the user's theme).
+/// None of them reads or writes a project.
+pub const ALLOWED_WHILE_LOCKED: &[&str] = &["app.info", "appearance.get"];
 
 /// Plain words for an operation refused by the Mac lock.
 pub const LOCKED_MESSAGE: &str = "Buy OpenFrame Studio or restore your purchase to open your projects again. Nothing is deleted.";
@@ -564,13 +487,6 @@ impl EntitlementService {
     /// unless it is an `entitlement.*` operation or in [`ALLOWED_WHILE_LOCKED`]. Called for every
     /// operation before its handler runs.
     pub fn check_operation(&self, op: &str) -> AppResult<()> {
-        if self.team_gate_locked() && !TEAM_GATE_ALLOWED.contains(&op) {
-            return Err(AppError::new(
-                "permission.team_password_required",
-                TEAM_GATE_LOCKED_MESSAGE,
-            )
-            .with_detail(format!("{op} refused before the team password")));
-        }
         if !self.locks_the_app()
             || op.starts_with("entitlement.")
             || ALLOWED_WHILE_LOCKED.contains(&op)
@@ -583,65 +499,6 @@ impl EntitlementService {
 }
 
 impl EntitlementService {
-    /// True while an internal build waits for the team password. Always false in store packages.
-    pub fn team_gate_locked(&self) -> bool {
-        self.team_gate.as_ref().is_some_and(|g| !g.is_unlocked())
-    }
-
-    /// The team password screen's view.
-    pub fn team_gate_status(&self) -> TeamGateStatus {
-        match &self.team_gate {
-            None => TeamGateStatus {
-                required: false,
-                unlocked: true,
-                wait_seconds: 0,
-                tries_before_wait: 0,
-            },
-            Some(gate) => {
-                let view = gate.view(now_ms());
-                TeamGateStatus {
-                    required: true,
-                    unlocked: view.unlocked,
-                    wait_seconds: seconds(view.wait_ms),
-                    tries_before_wait: view.tries_before_wait,
-                }
-            }
-        }
-    }
-
-    /// One try of the team password at `now`. Returns the plain words to show when it fails, or
-    /// `None` when the app opens (or has no gate).
-    pub fn team_gate_unlock(&self, password: &str, now: i64) -> Option<String> {
-        let gate = self.team_gate.as_ref()?;
-        match gate.try_unlock(password, now) {
-            UnlockAnswer::Unlocked => {
-                tracing::info!("team password accepted");
-                None
-            }
-            UnlockAnswer::Wrong {
-                wait_ms: 0,
-                tries_before_wait,
-            } => {
-                tracing::info!("team password refused");
-                Some(format!(
-                    "That password is not right. {} left before a wait.",
-                    count(tries_before_wait, "try", "tries")
-                ))
-            }
-            UnlockAnswer::Wrong { wait_ms, .. } => {
-                tracing::info!("team password refused; the next try waits");
-                Some(format!(
-                    "That password is not right. Too many wrong tries: wait {} before you try again.",
-                    duration_words(wait_ms)
-                ))
-            }
-            UnlockAnswer::Waiting { wait_ms } => Some(format!(
-                "Too many wrong tries. Try again in {}.",
-                duration_words(wait_ms)
-            )),
-        }
-    }
-
     /// The screen due now for the user's local calendar day (see [`notices::due`]).
     pub fn notice(&self, today: Option<&CalendarDay>) -> Notice {
         let record = self.notices.lock().clone();
@@ -883,55 +740,6 @@ fn debug_set(core: &AppCore, actor: &Actor, args: DebugSetArgs) -> AppResult<Ent
     core.entitlement
         .force(args.channel, args.state, args.reset_notices);
     Ok(core.entitlement.status())
-}
-
-/// Whole seconds, rounded up, for a wait in milliseconds.
-fn seconds(ms: i64) -> u32 {
-    u32::try_from((ms.max(0) + 999) / 1000).unwrap_or(u32::MAX)
-}
-
-fn count(n: u32, one: &str, many: &str) -> String {
-    format!("{n} {}", if n == 1 { one } else { many })
-}
-
-/// "1 minute", "30 minutes", "45 seconds".
-fn duration_words(ms: i64) -> String {
-    let secs = seconds(ms);
-    if secs >= 60 {
-        count(secs.div_ceil(60), "minute", "minutes")
-    } else {
-        count(secs.max(1), "second", "seconds")
-    }
-}
-
-fn team_gate_status(
-    core: &AppCore,
-    _actor: &Actor,
-    _args: TeamGateStatusArgs,
-) -> AppResult<TeamGateStatus> {
-    Ok(core.entitlement.team_gate_status())
-}
-
-fn team_gate_unlock(
-    core: &AppCore,
-    actor: &Actor,
-    args: TeamGateUnlockArgs,
-) -> AppResult<TeamGateAnswer> {
-    require_local(
-        actor,
-        "Only the person using this computer can enter the team password.",
-    )?;
-    let was_locked = core.entitlement.team_gate_locked();
-    let message = core.entitlement.team_gate_unlock(&args.password, now_ms());
-    drop(args);
-    if was_locked && !core.entitlement.team_gate_locked() {
-        // What app start does once the gate opens (the Global Idea Vault's Recently Deleted).
-        core.startup_maintenance();
-    }
-    Ok(TeamGateAnswer {
-        status: core.entitlement.team_gate_status(),
-        message,
-    })
 }
 
 fn restore_purchase(

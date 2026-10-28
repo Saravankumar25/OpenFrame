@@ -82,7 +82,7 @@ the AI harness is already finished and measured on Windows.
   data-location note, the cloud-synced folder warning shared with Windows.
 - Settings, the 15 themes with Light, Dark and System, the logo colour following the theme, the Offline AI settings
   placeholder, the diagnostics export.
-- The internal team password screen (the Mac gate follows [ADR-0024](../adr/ADR-0024-internal-team-builds.md) and the
+- *(Superseded 2026-10-27: the team password gate was removed; see [owner-decisions.md](../implementation/owner-decisions.md).)* The internal team password screen (the Mac gate follows [ADR-0024](../adr/ADR-0024-internal-team-builds.md) and the
   8-character minimum of ADR-0030); a wrong-password test.
 - The Mac platform adapter behaviours run for the first time here: paths, atomic replace, process cleanup, spelling.
 

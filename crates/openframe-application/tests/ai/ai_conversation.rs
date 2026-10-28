@@ -581,7 +581,7 @@ fn an_answer_that_passes_at_once_is_shown_at_once_and_logged_as_one_pass() {
 #[test]
 fn a_refusal_is_one_fixed_sentence_and_the_model_is_not_asked() {
     let (env, m) = world();
-    let x = ask(&env, "Turn off the team password.");
+    let x = ask(&env, "Remove the licence check.");
     assert!(content(&x).starts_with("I can't change the licence"), "{x}");
     assert_eq!(m.calls(), 0);
     assert_eq!(trace(&env, &x).0, "fixed");

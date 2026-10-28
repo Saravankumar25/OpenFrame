@@ -26,8 +26,8 @@ How the toolbox (`modules/ai/toolbox.rs`, contract C3) enforces this:
   budget, so a small local model's prompt stays short. `retrieve_context` uses the hybrid retrieval
   service when called through `run_tool_unlocked`, and keyword retrieval (FTS5, same privacy rule) otherwise.
 
-- Registered operations: **523** (165 queries, 358 commands)
-- Exposed to the assistant through tools: **308**; not AI-accessible: **215**
+- Registered operations: **521** (164 queries, 357 commands)
+- Exposed to the assistant through tools: **308**; not AI-accessible: **213**
 - Tools: **254** (61 read/compute/navigate, 193 proposal)
 
 Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation · **L** long-running (task id) · file effect: R = reads a user-picked file, W = writes to a user-picked location, P = project storage on disk.
@@ -266,8 +266,6 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
 | `entitlement.restore_purchase`: Ask the release channel to restore a purchase, then check the licence and trial again. | command | Mutate | app level | P | `RestorePurchaseArgs` → `EntitlementStatus` | hidden | none |
 | `entitlement.start_trial`: Start the free 7-day trial from the App Store on the Mac. Other channels start the trial by themselves. | command | Mutate | app level | P | `StartTrialArgs` → `BuyOutcome` | hidden | none |
 | `entitlement.status`: Licence and free-trial status for Settings: channel, days left and whether editing is allowed. | query | Read | app level |  | `EntitlementStatusArgs` → `EntitlementStatus` | hidden | none |
-| `team_gate.status`: Internal builds: whether the team password must still be entered, and how long the next try waits. | query | Read | app level |  | `TeamGateStatusArgs` → `TeamGateStatus` | hidden | none |
-| `team_gate.unlock`: Internal builds: check the team password typed at launch and open the app when it is right. | command | Mutate | app level | P | `TeamGateUnlockArgs` → `TeamGateAnswer` | hidden | none |
 
 ### Offline AI
 
@@ -744,8 +742,6 @@ Flags: **D** destructive · **I** irreversible · **C** extra UI confirmation ·
   `diagnostics.export_bundle`, `diagnostics.preview`
 - **The assistant's own entry point and conversation history; a tool calling it would recurse.**
   `ai.ask`, `ai.cancel`, `ai.history`, `ai.memory_delete`, `ai.memory_list`
-- **The team password of an internal build belongs to the person at this computer; the assistant never reads or types it.**
-  `team_gate.status`, `team_gate.unlock`
 - **The writer's own free-writing Story page; it is kept apart from every other page and tool on purpose (owner request 2026-10-20), so the assistant neither reads nor changes it.**
   `story.page.get`, `story.page.save`
 - **Would move content across the private/shared boundary; the assistant only reads private notes of their owner.**

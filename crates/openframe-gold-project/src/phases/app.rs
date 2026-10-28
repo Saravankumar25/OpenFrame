@@ -9,9 +9,6 @@ use crate::gold::{Gold, s};
 pub fn settings(g: &Gold, ctx: &mut Ctx) {
     g.phase("Application settings");
     g.ok("app.info", json!({}));
-    g.ok("team_gate.status", json!({}));
-    // This build carries no team password, so the gate answers "unlocked" at once.
-    g.ok("team_gate.unlock", json!({ "password": "any" }));
     g.ok(
         "app.set_display_name",
         json!({ "displayName": "Meenakshi Varma" }),

@@ -287,10 +287,10 @@ fn write_pointer(file: &Path, root: &Path) -> AppResult<()> {
 
 // ------------------------------------------------------------------ the gate
 
-/// Until the library is set up only these run: the setup screen, the team password and licence
-/// screens, and what draws the window.
+/// Until the library is set up only these run: the setup screen, the licence screens, and what
+/// draws the window.
 pub(crate) fn allowed_before_setup(op: &str) -> bool {
-    ["library.", "team_gate.", "entitlement.", "appearance."]
+    ["library.", "entitlement.", "appearance."]
         .iter()
         .any(|p| op.starts_with(p))
         || matches!(op, "app.info" | "app.save_state")

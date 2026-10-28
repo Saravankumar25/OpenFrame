@@ -47,7 +47,8 @@ Counted and read on 2026-10-09:
   binaries per crate keeps the coverage and removes most of the cost (build plan item already open).
 - **Weak:** several rows are "Verified" by tests that run on the development machine only. The visual baseline compares the
   app with its own earlier screenshots, so it detects change, not correctness. Accessibility has almost no automated test.
-- **Missing:** a release-build smoke test, a gated-build (team password) test, a window-close test, a test on a folder
+- **Missing:** a release-build smoke test, a gated-build (team password) test (no longer needed: the gate was removed on
+  2026-10-27), a window-close test, a test on a folder
   that OneDrive syncs, project delete and locate tests, a retrieval quality measurement, any Mac test.
 - **Ignored on purpose:** ten Rust tests are marked ignored (real model, soak, performance, hostile corpus extras). They
   are run by name, not by default.

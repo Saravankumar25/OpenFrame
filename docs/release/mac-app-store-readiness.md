@@ -80,7 +80,7 @@ what a store script must do differently.
 | No downloaded code (2.4.5, 2.5.2) | The engine and its libraries ship inside the app. The download fetches only `<model id>.gguf` weights from a pinned Hugging Face commit, checked by size and SHA-256 (`download.rs`, `install.rs`). Importing a model copies it into app storage | Ready; explain in the review notes |
 | Child processes do not outlive the app (2.4.5) | Kill-on-close guard and a `/bin/sh` watcher that ends the engine group within a second of the app ending (`openframe-platform/src/process.rs`) | Ready; confirm the watcher and its signal work inside the sandbox |
 | Opening links and revealing files | Rust runs `/usr/bin/open` (`openframe-platform/src/shell.rs`); Swift already uses `NSWorkspace` in other screens | Not built: route open and reveal through `NSWorkspace` on the store build, or prove `/usr/bin/open` works in the sandbox |
-| Team password gate absent from the store build | `OPENFRAME_DISTRIBUTION=store` embeds no hash and sets `cfg(openframe_store)` (`openframe-ffi/build.rs`) | Ready (code); store build script Not built |
+| Team password gate absent from the store build | Not applicable since 2026-10-27: the team password gate was removed from every build (owner decision). `OPENFRAME_DISTRIBUTION=store` still selects the store channel | Ready (code); store build script Not built |
 | Trial and purchase through StoreKit only (3.1.1) | StoreKit 2 bridge and runtime in `OpenFrameUI/Store/`; products `7-day Trial` (zero price, follows Apple's naming) and `Lifetime Access` in `OpenFrameStudio.storekit` | Ready |
 | Trial sheet says length, what stops and the price before it starts (3.1.1) | Mock 187 shows no price and no Not now; doc 38 section 10 leaves this open | Owner task (decision already open) |
 | No external payment links | No purchase or website link in the app; only fixed social links on the licence screens | Ready |
@@ -102,8 +102,7 @@ what a store script must do differently.
 ## 6. Export compliance
 
 The app uses: TLS through `rustls` (in `reqwest`, for the model download), TLS through `URLSession` (licence check), SHA-256
-for file integrity, Ed25519 signature checks on licence answers, and Argon2id for the team password, which only internal
-builds have. No algorithm is proprietary. No user data is encrypted by OpenFrame.
+for file integrity, Ed25519 signature checks on licence answers. No algorithm is proprietary. No user data is encrypted by OpenFrame.
 
 - Signatures, hashes and password checks are authentication and integrity, which are exempt.
 - `rustls` is standard encryption shipped in the app, not the operating system's. The cautious App Store Connect answer is

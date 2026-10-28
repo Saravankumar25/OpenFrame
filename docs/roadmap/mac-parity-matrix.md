@@ -140,7 +140,7 @@ Counts: 119 feature rows (10 not applicable) and 41 scenario files holding 247 s
 | Mac App Store package (.pkg) from the macOS adapter | Mac App Store package | Specified, proof none | M9 | Not started |  |
 | Windows 11 package manifest, listing text and tests agree on Windows 11 only | Microsoft Store package | Designed, proof none | - | Not applicable on the Mac: Windows packaging; the Mac minimum version is set in M9 |  |
 | Shared entitlement interface and trial rules | Payment and free trial in all three channels | Built, proof 1 | M9 | Not started |  |
-| Team password gate of the internal builds (.exe, .dmg) | Windows installer | Built, proof 1 | M3 | Built; model-level tests pass on Apple silicon | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
+| Team password gate of the internal builds (.exe, .dmg) | Windows installer | Removed | M3 | Removed 2026-10-27 from both apps (owner decision); internal builds open without a password | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md (history) |
 | Microsoft Store and Mac App Store entitlement adapters | Payment and free trial in all three channels | Built, proof 1 | M9 | Not started |  |
 | First-run safety screens after a purchase: data note, 4-step file safety tutorial, welcome | Payment and free trial in all three channels | Reachable, proof 1 | M9 | Not started |  |
 
@@ -156,9 +156,9 @@ The scenario count is the number of second-level headings in the file, one per s
 | `04-close-keeps-typing.md` | Closing the window keeps the last typed text (3 scenarios) | M3 | Built; model-level tests pass on Apple silicon | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
 | `05-webview-network.md` | The web view stays off the network (3 scenarios) | - | Not applicable on the Mac: tests the Windows WebView2 process; the Mac shell has no web view (the Mac equivalent is the network check in M9) |  |
 | `10-home.md` | Application Home and Project Home (8 scenarios) | M3 | Built; model-level tests pass on Apple silicon | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
-| `15-trial-first-run.md` | Trial, purchase and first-run safety screens (9 scenarios) | M3 | Not applicable: internal build has the team gate, not the trial |  |
+| `15-trial-first-run.md` | Trial, purchase and first-run safety screens (9 scenarios) | M3 | Not applicable: the internal build has no trial |  |
 | `16-about.md` | About card (3 scenarios) | M3 | Built; model-level tests pass on Apple silicon |  |
-| `17-internal-build-release.md` | The internal build as it ships (2 scenarios) | - | Not applicable on the Mac: checks the Windows NSIS and MSI installers; the Mac disk image has its own checks in M9. The Mac team gate (wrong then right password) passed as a real-app scenario on the rehearsal build, 2026-10-18 | docs/release/evidence/mac/m6-m8-workspaces-formats-ai.md |
+| `17-internal-build-release.md` | The internal build as it ships (2 scenarios) | - | Not applicable on the Mac: checks the Windows NSIS and MSI installers; the Mac disk image has its own checks in M9. The Mac team gate (wrong then right password) passed as a real-app scenario on the rehearsal build, 2026-10-18; the gate was removed on 2026-10-27 | docs/release/evidence/mac/m6-m8-workspaces-formats-ai.md |
 | `20-idea-vault.md` | Idea Vault basics (5 scenarios) | M5 | Built; model-level tests pass on Apple silicon | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
 | `21-idea-vault-flow.md` | Idea Vault full flow (7 scenarios) | M5 | Built; model-level tests pass on Apple silicon | docs/release/evidence/mac/m3-m5-shell-editor-workspaces.md |
 | `25-recently-deleted-purge.md` | Recently Deleted 30-day purge (5 scenarios) | M5 | Partly: the Recently Deleted screen and its model tests are built; the 30-day purge is proved by the Rust core tests | docs/release/evidence/mac/m6-m8-workspaces-formats-ai.md |

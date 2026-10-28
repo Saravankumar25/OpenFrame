@@ -41,7 +41,8 @@ Chapter 1 is finished when all of these are true, each with evidence:
 - The evaluation harness comes before any AI change; a change stays only if a number improves.
 - Installers and release executables are built only when the owner says so in that conversation. Nothing is pushed without
   the owner's word. Work is committed locally on a branch and merged to `main` only after its checks pass.
-- Internal builds are unsigned, carry no trial or licence, ask the team password, and need the AI download after install.
+- Internal builds are unsigned, carry no trial or licence, open without a password (the team password was removed on
+  2026-10-27), and need the AI download after install.
 - Owner decisions are recorded in [owner-decisions.md](../implementation/owner-decisions.md) before they are built.
 
 ## 4. Hardware the owner provides
@@ -66,5 +67,5 @@ word to build (W4, W9, W10, M9, M10); the borrowed laptops (W7, W9); the team fo
 
 - **Chapter 2:** the website, its domain and mailboxes, support pages, the Privacy Policy and Terms pages.
 - **Chapter 3:** store packaging, accounts, payment and trial, the licence server, signing and notarization, the updater,
-  the end-user licence agreement, counsel review, "Report AI output", stronger protection for the team gate and encryption of
+  the end-user licence agreement, counsel review, "Report AI output", encryption of
   projects at rest, and the first 90 days after launch. The 83 build plan boxes tagged "Later: store publishing" belong here.

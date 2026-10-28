@@ -10,8 +10,6 @@ public enum AppPhase: Equatable {
     case starting
     /// The core could not start. The message is safe to show.
     case failed(CoreFailure)
-    /// An internal build before the team password (ADR-0024).
-    case teamGate(TeamGateStatus)
     /// "Set up your OpenFrame library": a new Mac, or a remembered library that is missing. The
     /// core refuses everything else until a choice worked (doc 40 section 1).
     case librarySetup(LibraryStatus)
@@ -80,20 +78,10 @@ public final class AppModel {
                 self.core = core
             }
             listen(to: core)
-            try await afterStart()
+            try await enterApp()
         } catch {
             phase = .failed(CoreFailure(asCore: error))
         }
-    }
-
-    private func afterStart() async throws {
-        guard let core else { return }
-        let gate = try await core.teamGateStatus()
-        if gate.required && !gate.unlocked {
-            phase = .teamGate(gate)
-            return
-        }
-        try await enterApp()
     }
 
     private func enterApp() async throws {
@@ -134,29 +122,6 @@ public final class AppModel {
     public func refreshInfo() async {
         guard let core else { return }
         if let fresh = try? await core.appInfo() { info = fresh }
-    }
-
-    /// One team password try. Returns the plain message to show when the try did not open.
-    public func unlock(password: String) async -> String? {
-        guard let core else { return nil }
-        do {
-            let answer = try await core.teamGateUnlock(TeamGateUnlockArgs(password: password))
-            if answer.status.unlocked {
-                try await enterApp()
-                return nil
-            }
-            phase = .teamGate(answer.status)
-            return answer.message ?? "That password is not right."
-        } catch {
-            return CoreFailure(asCore: error).message
-        }
-    }
-
-    public func refreshGate() async {
-        guard let core, case .teamGate = phase else { return }
-        if let gate = try? await core.teamGateStatus() {
-            phase = .teamGate(gate)
-        }
     }
 
     /// Called from `applicationShouldTerminate`: close the project cleanly.
@@ -235,7 +200,7 @@ public final class AppModel {
     }
 
     /// Shows the project the core has open: after a move it is the same project in a new folder.
-    /// Only on Home or in a project; never over the team gate or the setup screen.
+    /// Only on Home or in a project; never over the setup screen.
     func showCurrentProject() async {
         guard let core else { return }
         switch phase {

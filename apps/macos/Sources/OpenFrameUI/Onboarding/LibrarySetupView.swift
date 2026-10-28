@@ -1,4 +1,4 @@
-// The library setup screen fills the window, like the team gate: it cannot be dismissed, and
+// The library setup screen fills the window: it cannot be dismissed, and
 // Quit (or closing the window) closes the app without entering it.
 
 import AppKit

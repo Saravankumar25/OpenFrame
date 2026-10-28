@@ -158,10 +158,7 @@ async fn of_reveal_path(
     let core = state.0.clone();
     // The store lock (ADR-0022, ADR-0023): only the data folder and the logs, which the lock
     // screen and support need, stay reachable; project locations are refused like operations.
-    // Before the team password of an internal build (ADR-0024) nothing is reachable at all.
-    if core.entitlement.team_gate_locked()
-        || !matches!(kind.as_str(), "dataRoot" | "appData" | "logs")
-    {
+    if !matches!(kind.as_str(), "dataRoot" | "appData" | "logs") {
         core.entitlement.check_operation("shell.reveal_path")?;
     }
     let target: PathBuf = match kind.as_str() {
@@ -451,17 +448,6 @@ fn channel_for(packaged: bool, mac: bool, store_build: bool) -> openframe_entitl
     }
 }
 
-/// The team password hash of an internal build (ADR-0024), embedded by `build.rs` from
-/// `OPENFRAME_TEAM_PASSWORD` on the build machine. Store packages, and development builds made
-/// without the variable, carry none.
-#[cfg(openframe_team_gate)]
-const TEAM_PASSWORD_HASH: Option<&str> = Some(include_str!(concat!(
-    env!("OUT_DIR"),
-    "/team_gate_hash.txt"
-)));
-#[cfg(not(openframe_team_gate))]
-const TEAM_PASSWORD_HASH: Option<&str> = None;
-
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let distribution = distribution::Distribution::detect();
@@ -510,8 +496,6 @@ pub fn run() {
     // user state.
     config.entitlement_debug_controls =
         entitlement_debug_controls(!cfg!(debug_assertions), isolated_root.is_some());
-    // Internal builds ask the team password before anything opens; the core enforces it.
-    config.team_password_hash = TEAM_PASSWORD_HASH.map(str::to_string);
     let log_guard = init_logging(&config);
     if config.ai_model_source.is_none() {
         // The value is a loopback test address, never a secret: it says what was wrong.
@@ -579,7 +563,7 @@ pub fn run() {
             app.manage(PowerState(parking_lot::Mutex::new(power)));
             platform::start_entitlement_checks(&core);
             // App start: Recently Deleted in the Global Idea Vault drops items older than 30 days.
-            // Off the main thread; an internal build does it after the team password instead.
+            // Off the main thread.
             let start_core = core.clone();
             std::thread::spawn(move || start_core.startup_maintenance());
             app.manage(CoreState(core));
@@ -677,20 +661,6 @@ mod tests {
         // The internal Mac disk image and the internal Windows installer.
         assert_eq!(channel_for(false, true, false), Channel::DirectInstaller);
         assert_eq!(channel_for(false, false, false), Channel::DirectInstaller);
-    }
-
-    /// A store package never carries the team password hash (ADR-0024 decision 6).
-    #[test]
-    fn a_store_build_embeds_no_team_password_hash() {
-        if cfg!(openframe_store) {
-            assert!(TEAM_PASSWORD_HASH.is_none());
-        }
-        if let Some(hash) = TEAM_PASSWORD_HASH {
-            assert!(
-                hash.starts_with("$argon2id$v=19$m=65536,t=3,p=1$"),
-                "{hash}"
-            );
-        }
     }
 
     #[test]

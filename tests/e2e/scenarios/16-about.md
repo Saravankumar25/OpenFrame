@@ -4,7 +4,7 @@ Spec: `tests/e2e/specs/16-about.test.mjs`
 
 Tags: `@e2e-data-root: own`, `@e2e-debug-only: sets the licence state by hand through entitlement.debug_set, which a release build never registers`
 
-Before: an empty data folder of its own. The app is the internal test build, made without the team password, so no password screen shows.
+Before: an empty data folder of its own. The app is the internal test build.
 
 "Set the licence to X" means: set the store channel and licence state by hand with the test-only switch of the debug build, then reload the page.
 
@@ -37,5 +37,4 @@ Before: an empty data folder of its own. The app is the internal test build, mad
 ## Notes
 
 - The About card heading is drawn in capitals by the stylesheet; the checks read the text as written.
-- The team password screen is not part of this file. Rust and component tests cover it.
 - This file is skipped on the release build.

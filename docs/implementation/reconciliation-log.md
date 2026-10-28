@@ -6,6 +6,21 @@
 > Renamed on 2026-10-06 from `03-reconciliation-log.md`. Extended on 2026-10-09 (chapter restructure). Checks written "(checked)" were verified in the repository on the
 > date given. Checks written "(stated)" come from a supplied document and were not verified independently.
 
+## 2026-10-27: Team password gate removed (owner decision)
+
+The owner removed the team password of the internal builds; the code is removed in the same change. No document moved to
+`docs/history/`: ADR-0024 and ADR-0030 keep decisions still in force, so both are marked superseded in part, in place.
+
+| Stale statement | Where | Resolution |
+|---|---|---|
+| Internal builds ask a team password on every launch | ADR-0024 decisions 3 to 6, ADR-0030 decision 5, ADR-0031 decision 3, ADR-0023 status line | Marked superseded in place; register row and a section 2 row in `adr/README.md` |
+| Password rows and the manual task to set the build variable | `owner-decisions.md` | Struck through with a pointer to the new row "Team password removed" |
+| Team gate built and reachable | `feature-status.md` PLAT-016, `mac-parity-matrix.md` | Row set to Removed; the parity row edited by hand (a full `npm run mac:parity` run also pulls in unrelated drift and drops Mac evidence cells, so it was not kept) |
+| Typing or setting the password | `CLAUDE.md`, `docs/README.md`, vision, chapter 1, 1a, 1b and 3 pages, internal test plan, pilot kit, release gates, store readiness, launch register, engineering 17, 20 (T37 retired), 23, 36 (section 11 marked superseded), 40, `ai-answer-paths.md`, the security and harness specifications, the manual test case list (71 rows) | Rewritten to "opens without a password" or marked superseded |
+| `team_gate.*` operations listed | Generated `ai-tool-coverage.md` | Rows and counts edited to match the registry without the two operations; regenerate with the coverage test once the code change builds |
+| Password steps in the Word manuals | `manual/OpenFrame_Studio_Manual_Testing_Guide.docx`, `manual/OpenFrame_Studio_User_Manual_Windows_Build.docx` | Not changed yet (binary files with figures of the password screen); still to do |
+| Records of the 2026-10-17 and 2026-10-18 builds that had the gate | `release/evidence/`, progress log | Left as written: they record what happened |
+
 ## 2026-10-27: Mac documents brought level with Windows `114dff50` (core sync)
 
 Compared: the Windows `docs/` at the last Mac sync (tree `11081707`) with Windows `114dff50`, file by file against the

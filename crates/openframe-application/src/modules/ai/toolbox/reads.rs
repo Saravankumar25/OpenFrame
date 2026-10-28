@@ -723,7 +723,7 @@ fn app_appearance(ctx: &ToolCtx<'_>, _: &Value) -> AppResult<ToolOutput> {
     Ok(o.prov("Scope", "Appearance"))
 }
 
-/// App settings a person asks about. Never licence, trial, team password, diagnostics or file paths.
+/// App settings a person asks about. Never licence, trial, diagnostics or file paths.
 fn app_settings(ctx: &ToolCtx<'_>, _: &Value) -> AppResult<ToolOutput> {
     use crate::modules::writing::proofing::read_settings;
     use crate::modules::writing::shortcuts::{ShortcutsArgs, list};

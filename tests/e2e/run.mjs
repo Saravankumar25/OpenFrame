@@ -30,11 +30,11 @@
 // (E2E_MODEL_HOST_CTL, E2E_MODEL_HOST_LOG).
 //
 // Options: --no-build (reuse the last build), --only=<substring>[,<substring>...] (filter specs),
-// --release=gated | --release=open (drive the release executable, with or without the team password
-// screen; see scripts/build-app.mjs. Specs marked `// @e2e-debug-only: <reason>` are listed and skipped).
-// --app=<installed openframe-desktop.exe> (needs --release=gated): drive an installed build, never
-// build, take the team password from OPENFRAME_TEAM_PASSWORD or the Windows User scope, still
-// preinstall the models in each data root, and skip specs marked `// @e2e-needs-test-host: <reason>`.
+// --release=internal | --release=store (drive the release executable of the internal team build or
+// of the store channel; see scripts/build-app.mjs. Specs marked `// @e2e-debug-only: <reason>` are
+// listed and skipped). --app=<installed openframe-desktop.exe> (needs --release=internal): drive an
+// installed build, never build, still preinstall the models in each data root, and skip specs marked
+// `// @e2e-needs-test-host: <reason>`.
 // Failure screenshots and visual diffs go to tests/e2e/artifacts/ (gitignored).
 
 import { spawn, spawnSync } from "node:child_process";
@@ -42,23 +42,18 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 
 import { join, resolve } from "node:path";
 import net from "node:net";
 import { DRIVERS, E2E_ROOT, EDGE_DRIVER, TAURI_DRIVER, setupDrivers } from "./scripts/setup-drivers.mjs";
-import { randomBytes } from "node:crypto";
 import { appBinary, buildApp } from "./scripts/build-app.mjs";
-import { teamPassword } from "./lib/team-password.mjs";
 import { preinstallModels, startModelHost, testHost } from "./lib/model-host.mjs";
 
 const args = new Set(process.argv.slice(2));
-// --release=gated | --release=open: drive the release executable (build-app.mjs explains both).
+// --release=internal | --release=store: drive the release executable (build-app.mjs explains both).
 const RELEASE = [...args].find((a) => a.startsWith("--release="))?.slice("--release=".length) ?? false;
-if (RELEASE && !["gated", "open"].includes(RELEASE)) throw new Error(`Unknown --release=${RELEASE}; use gated or open.`);
+if (RELEASE && !["internal", "store"].includes(RELEASE)) throw new Error(`Unknown --release=${RELEASE}; use internal or store.`);
 // --app=<path to an installed openframe-desktop.exe>: gate G2, "tested as shipped". Never builds.
 const APP_ARG = [...args].find((a) => a.startsWith("--app="))?.slice("--app=".length);
-if (APP_ARG && RELEASE !== "gated") throw new Error("--app needs --release=gated (the installed build asks the team password).");
+if (APP_ARG && RELEASE !== "internal") throw new Error("--app needs --release=internal (the installed build is the internal team build).");
 if (APP_ARG && !existsSync(APP_ARG)) throw new Error(`--app: ${APP_ARG} does not exist.`);
 const APP_BINARY = APP_ARG ? resolve(APP_ARG) : appBinary(Boolean(RELEASE));
-// A gated run builds with a throwaway password made here; it lives only in this run's memory and
-// in the environment of its own spec processes, so a gated build is never reused.
-const GATE_PASSWORD = APP_ARG ? teamPassword() : RELEASE === "gated" ? randomBytes(18).toString("base64url") : undefined;
 // Specs whose header has `// @e2e-debug-only: <reason>` need a switch the release build refuses
 // (ADR-0031); a release run lists them with the reason and skips them.
 const DEBUG_ONLY = /^\/\/ @e2e-debug-only: (.+)$/m;
@@ -142,10 +137,7 @@ async function runGroup(files, dataRoot, fakeMedia = false, noModels = false, ne
     E2E_MODEL_HOST_LOG: HOST.log,
   };
   delete env.E2E_WEBVIEW_ARGS;
-  delete env.E2E_TEAM_PASSWORD;
-  delete env.OPENFRAME_TEAM_PASSWORD;
   if (RELEASE) env.E2E_RELEASE = RELEASE;
-  if (GATE_PASSWORD) env.E2E_TEAM_PASSWORD = GATE_PASSWORD;
   delete env.E2E_NET_LOG;
   if (fakeMedia) env.E2E_WEBVIEW_ARGS = FAKE_MEDIA_ARGS;
   if (netLog) {
@@ -184,16 +176,11 @@ async function runGroup(files, dataRoot, fakeMedia = false, noModels = false, ne
 
 async function main() {
   await setupDrivers();
-  if (RELEASE === "gated" && args.has("--no-build") && !APP_ARG) throw new Error("A gated release run always builds: its password exists only for that run.");
-  if (!APP_ARG && (!args.has("--no-build") || !existsSync(APP_BINARY))) buildApp({ release: RELEASE, gatePassword: GATE_PASSWORD });
-  if (RELEASE === "gated" && !APP_ARG) {
-    // The gated executable must embed only the hash of its password, never the password itself
-    // (ADR-0030 decision 6). The scan gets this run's throwaway password through its environment.
-    const scan = spawnSync(process.execPath, [join(E2E_ROOT, "..", "..", "scripts", "scan-installer.mjs"), APP_BINARY], {
-      stdio: "inherit",
-      env: { ...process.env, OPENFRAME_TEAM_PASSWORD: GATE_PASSWORD }, // secret-scan: allow (this run's random test password)
-    });
-    if (scan.status !== 0) throw new Error("The gated release executable failed the string scan.");
+  if (!APP_ARG && (!args.has("--no-build") || !existsSync(APP_BINARY))) buildApp({ release: RELEASE });
+  if (RELEASE === "internal" && !APP_ARG) {
+    // The internal release executable carries no secret, personal path or user name (ADR-0030 decision 6).
+    const scan = spawnSync(process.execPath, [join(E2E_ROOT, "..", "..", "scripts", "scan-installer.mjs"), APP_BINARY], { stdio: "inherit" });
+    if (scan.status !== 0) throw new Error("The internal release executable failed the string scan.");
   }
 
   // The local model host for the whole run; each group points it at its own control file and log.

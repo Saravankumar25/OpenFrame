@@ -67,7 +67,7 @@ public final class LicenceModel {
 
     // MARK: Lifecycle
 
-    /// Start asking the core. Called once the team password (internal build) is behind us.
+    /// Start asking the core. Called once the library is ready and the app opens.
     public func attach(core: Core, runtime: StoreRuntime? = nil, observeSystem: Bool = true) async {
         self.core = core
         self.runtime = runtime

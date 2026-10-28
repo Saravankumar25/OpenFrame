@@ -70,7 +70,7 @@ extension Scenarios {
             ui.captureBegin(order: 0)
             // First run: the welcome page asks for a name before Application Home.
             let deadline = Date().addingTimeInterval(30)
-            while Date() < deadline, !ui.exists(id: "welcome-name"), !ui.exists(id: "home-empty"), !ui.exists(id: "team-password") { await ui.idle(0.2) }
+            while Date() < deadline, !ui.exists(id: "welcome-name"), !ui.exists(id: "home-empty") { await ui.idle(0.2) }
             ui.capBigWindow()
             if ui.exists(id: "welcome-name") {
                 await ui.capSetMode()

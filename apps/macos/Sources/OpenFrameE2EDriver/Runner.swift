@@ -4,7 +4,6 @@
 //   OPENFRAME_E2E_SCENARIO  scenario name, e.g. "01-journey/create-and-type"
 //   OPENFRAME_E2E_PHASE     1-based launch number for scenarios that restart the app
 //   OPENFRAME_E2E_OUT       folder for result.json, the step log and window pictures
-//   OPENFRAME_E2E_TEAM_PASSWORD  the team password a tester types at the team gate
 //   OPENFRAME_E2E_FIXTURES  folder with the shared test files (tests/fixtures)
 
 import AppKit
@@ -38,7 +37,6 @@ struct Scenario {
 /// Facts a scenario needs from outside the app.
 struct Context {
     let env: [String: String]
-    var teamPassword: String { env["OPENFRAME_E2E_TEAM_PASSWORD"] ?? "" }
     var fixtures: URL { URL(fileURLWithPath: env["OPENFRAME_E2E_FIXTURES"] ?? "/nonexistent") }
     var dataRoot: URL { URL(fileURLWithPath: env["OPENFRAME_DATA_ROOT"] ?? "/nonexistent") }
     var work: URL { URL(fileURLWithPath: env["OPENFRAME_E2E_WORK"] ?? NSTemporaryDirectory()) }

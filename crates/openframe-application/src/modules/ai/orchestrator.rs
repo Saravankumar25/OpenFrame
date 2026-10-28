@@ -6,7 +6,7 @@
 //! ```text
 //! request ─► permission (UseAi) ─► scope ─► S3 resolve + focus ─► S4 answer type ─► S5 dossier
 //!         ─► S6 memory ─► AI Request (Running)
-//!   refusal (licence, payment, team password)            ─► one fixed sentence
+//!   refusal (licence, payment, activation)               ─► one fixed sentence
 //!   one question left unsettled by the names             ─► that question (Clarify)
 //!   navigate  ─► `action::navigate`: the navigation tool, a sentence built by code
 //!   change    ─► `action::change`: a Change Set proposal, exactly as before
@@ -491,7 +491,7 @@ fn run_turn(t: &Turn<'_>) -> Outcome {
         });
     };
     let stopped = || t.ids.running.stopped();
-    // A request to change or get around the licence, payment or team password gets a plain
+    // A request to change or get around the licence, payment or activation gets a plain
     // refusal: no tool can do it, and left to the model it proposed unrelated project settings.
     if let Some(reply) = commands::not_the_assistants(t.text) {
         return fixed(AiResultKind::Answer, reply);

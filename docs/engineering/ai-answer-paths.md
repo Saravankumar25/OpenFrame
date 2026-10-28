@@ -21,7 +21,7 @@
 | Navigate, change | `action.rs`, `catalog/`, `change_set.rs` | Navigation runs only when the answer type is navigate. A change is always a Change Set proposal the person reviews and applies; nothing is changed by the model directly. |
 | Store | `trace.rs`, `records.rs` | The exchange with its sources (the records of the facts the answer used, behind the sources button), the focus, long-term memory per the saving rules, and the trace: answer type and how it was read, dossier size, passes, offenders, fallback, cached tokens, stage times. |
 
-Fixed text that stays code (spec section 4.1): refusals (licence, payment, team password, actions the person may not do),
+Fixed text that stays code (spec section 4.1): refusals (licence, payment, actions the person may not do),
 errors, "the model is not ready", progress and Cancel.
 
 ## 2. Engine

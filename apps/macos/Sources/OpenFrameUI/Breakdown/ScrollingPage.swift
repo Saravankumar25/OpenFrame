@@ -5,6 +5,7 @@
 // narrow window instead of being cut at both edges; text still wraps to the window's width.
 
 import SwiftUI
+import Foundation
 
 struct ScrollingPage<Content: View>: View {
     @ViewBuilder var content: () -> Content
@@ -35,11 +36,15 @@ struct AtLeastWidth: Layout {
         guard let sub = subviews.first else { return .zero }
         let w = target(sub, height: proposal.height)
         let size = sub.sizeThatFits(ProposedViewSize(width: w, height: proposal.height))
+        FIX2DEBUG.n += 1
+        if FIX2DEBUG.n < 3000 { FileHandle.standardError.write("FIX2 fit width=\(width) prop=\(String(describing: proposal.width))x\(String(describing: proposal.height)) w=\(w) h=\(size.height)\n".data(using: .utf8)!) }
         return CGSize(width: w, height: size.height)
     }
 
     func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
         guard let sub = subviews.first else { return }
+        FIX2DEBUG.n += 1
+        if FIX2DEBUG.n < 3000 { FileHandle.standardError.write("FIX2 place width=\(width) bounds=\(bounds) prop=\(String(describing: proposal.width))x\(String(describing: proposal.height))\n".data(using: .utf8)!) }
         sub.place(at: bounds.origin, anchor: .topLeading, proposal: ProposedViewSize(width: bounds.width, height: bounds.height))
     }
 }
@@ -129,3 +134,6 @@ extension View {
         }
     }
 }
+
+// FIX2 TEMPORARY DEBUG, remove before handing back.
+enum FIX2DEBUG { nonisolated(unsafe) static var n = 0 }

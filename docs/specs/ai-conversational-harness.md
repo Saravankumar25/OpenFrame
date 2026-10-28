@@ -67,7 +67,7 @@ cost the user data or privacy?* If neither, the model writes it.
 | Piece | Why it stays |
 |---|---|
 | Permission and visibility filters, private notes, role checks | Privacy and safety. Applied inside every fetch |
-| Refusals: change or bypass the licence, payment or team password; actions the user may not do | Safety. One fixed refusal sentence |
+| Refusals: change or bypass the licence or payment; actions the user may not do | Safety. One fixed refusal sentence |
 | Counts, sums, differences, date arithmetic, availability overlaps, budget variance | Exact. Code computes them and puts them in the dossier as facts. The model must not count or add |
 | Reading a record by id, or by a name that resolved to exactly one record | Exact lookup |
 | Entity and alias resolution against the index, with fuzzy match only above a high threshold | Exact. The answer states a fuzzy match ("I took Engvergis to mean Varghese") |
@@ -117,7 +117,7 @@ writes, code checks); the old question paths are gone, with their tests and stri
   (the old rewrite loop and the language-only verifier of the Agent lane), and each one's `tests.rs`.
 - **Trimmed**: `typo.rs` keeps only the edit distance and the list of ordinary words that entity resolution uses; the
   routing copy (`correct`) is gone. `commands.rs` keeps only the exact commands that start a change or open something
-  ("Create a task to ...", "Open scene 42") and the refusal for the licence, payment and team password; every route that
+  ("Create a task to ...", "Open scene 42") and the refusal for the licence and payment; every route that
   answered a question (counts, facts, descriptions, product help), `follow_up`, `just_the_number` and the greeting
   replies are gone. `sanitize.rs` keeps only the wash of our own tags and of sentences about the reply. `tools.rs` loses
   the tools `clarify`, `summarize_scope`, `character_profile` and `answer_product_question`, and `Generation` keeps only
@@ -974,7 +974,7 @@ number N, and ask when the project has no such scene.
 | `diagnostics.preview` | kept (S) | Support diagnostics are user-started only (ADR-0021) |
 | `entitlement.notice` | kept (S) | Licence and trial notices |
 | `entitlement.status` | kept (S) | Licence and trial status |
-| `team_gate.status` | kept (S) | Team password gate of an internal build |
+| `team_gate.status` | removed 2026-10-27 | The team password gate was removed with its operations (owner decision) |
 | `app.info` | kept (P) | Returns local folders and file paths |
 | `app.save_state` | kept (N) | Save indicator of the status bar |
 | `files.asset` | kept (P) | Returns the path of a managed media file |

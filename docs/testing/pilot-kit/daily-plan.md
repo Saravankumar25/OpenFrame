@@ -12,9 +12,7 @@ download finished, and roughly how long it took.
 
 - [ ] The installer ran with no administrator prompt.
 - [ ] I got past the "Windows protected your PC" window with the steps in the [install note](install-note.md).
-- [ ] The first start showed the password screen.
-- [ ] A wrong password was refused and made me wait.
-- [ ] The right password opened the app.
+- [ ] The app opened straight to Home, with no password.
 - [ ] The AI download finished.
 - [ ] With Wi-Fi off, the assistant still answered.
 - [ ] I exported a PDF.

@@ -23,7 +23,6 @@ vi.mock("../ipc/client", async (orig) => {
     onAppEvent: vi.fn(() => Promise.resolve(() => undefined)),
   };
 });
-vi.mock("../features/team-gate/TeamGate", () => ({ TeamGate: ({ children }: { children: React.ReactNode }) => <>{children}</> }));
 vi.mock("../features/library-setup/LibrarySetup", () => ({ LibrarySetupGate: ({ children }: { children: React.ReactNode }) => <>{children}</> }));
 vi.mock("../theme/useAppearance", () => ({ useAppearance: () => undefined }));
 vi.mock("./shortcuts", () => ({ useShortcutSync: () => undefined }));

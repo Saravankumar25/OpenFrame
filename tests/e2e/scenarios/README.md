@@ -42,8 +42,6 @@ These short forms appear in many files.
 
 **Do the first launch** (with a name and a title): check the screen shows "Welcome to OpenFrame Studio"; select all text in the name field and type the name; click Continue in the dialog; click Create Project; type the title in the project title field; click Create in the dialog; check the Workspaces navigation shows and the window title is "<title> - OpenFrame Studio".
 
-**Team password** (gated release run only): every start of the app first shows the team password screen. Type the run's password in the team password field and click Open OpenFrame Studio; check the screen closes.
-
 **Check: the screen is quiet**: no console error or warning was recorded since the last check, every visible control has an accessible name (a label, a title or visible text), and neither the window nor the workspace scrolls sideways.
 
 **Check: the AI Assistant docks cleanly**: the panel is open, covers no part of the page, does not run past the window, and no control of the page is cut off beside it.

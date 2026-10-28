@@ -73,11 +73,6 @@ pub struct AppConfig {
     /// licence state and channel by hand. The desktop shell turns it on only in a debug build with
     /// an isolated test data root; release builds never do (tested in the shell).
     pub entitlement_debug_controls: bool,
-    /// The internal builds' team password hash (Argon2id PHC string, ADR-0024), embedded by the
-    /// desktop build script from `OPENFRAME_TEAM_PASSWORD` on the build machine. When set, nothing
-    /// but the password screen runs until the password is right. `None` in store packages, which
-    /// carry no gate and no hash, and in tests.
-    pub team_password_hash: Option<String>,
 }
 
 impl std::fmt::Debug for AppConfig {
@@ -99,7 +94,6 @@ impl std::fmt::Debug for AppConfig {
                 "entitlement_debug_controls",
                 &self.entitlement_debug_controls,
             )
-            .field("team_password_hash", &self.team_password_hash.is_some())
             .finish()
     }
 }
@@ -168,7 +162,6 @@ impl AppConfig {
             mac_inputs: None,
             microsoft_store: None,
             entitlement_debug_controls: false,
-            team_password_hash: None,
         })
     }
 
@@ -195,7 +188,6 @@ impl AppConfig {
             mac_inputs: None,
             microsoft_store: None,
             entitlement_debug_controls: false,
-            team_password_hash: None,
         }
     }
 
@@ -849,11 +841,6 @@ impl AppCore {
     /// setup, off the main thread. Never fails: a vault that cannot open now is opened (and
     /// cleaned) on first use instead.
     pub fn startup_maintenance(&self) {
-        // Internal builds: nothing opens before the team password is right. The unlock runs this
-        // again once the gate opens.
-        if self.entitlement.team_gate_locked() {
-            return;
-        }
         // Before the library is set up there is nothing to clean, and nothing may be created.
         // Setting it up runs this again.
         if !self.library_ready() {

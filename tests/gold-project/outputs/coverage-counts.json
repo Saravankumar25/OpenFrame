@@ -2104,16 +2104,6 @@
     "ok": 1,
     "refusedOnPurpose": 0
   },
-  "team_gate.status": {
-    "failed": 0,
-    "ok": 1,
-    "refusedOnPurpose": 0
-  },
-  "team_gate.unlock": {
-    "failed": 0,
-    "ok": 1,
-    "refusedOnPurpose": 0
-  },
   "templates.apply": {
     "failed": 0,
     "ok": 4,

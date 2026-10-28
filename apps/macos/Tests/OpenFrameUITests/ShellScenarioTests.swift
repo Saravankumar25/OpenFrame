@@ -1,7 +1,7 @@
 // Mac phase M3 scenarios, driven through the app model against the real core on a temporary
-// folder: Home to an empty project and back, the team password screen, and rendered snapshots of
-// the main screens in light and dark. (The UI testing framework that clicks the real window needs
-// full Xcode and arrives in phase M9; these tests drive the same model the window uses.)
+// folder: Home to an empty project and back, and rendered snapshots of the main screens in light
+// and dark. (The UI testing framework that clicks the real window needs full Xcode and arrives in
+// phase M9; these tests drive the same model the window uses.)
 
 import AppKit
 import Foundation
@@ -23,16 +23,9 @@ enum Fixture {
         "/private/tmp/claude-501/-Users-m-udarshreddy-Desktop-OpenFrame/78b64903-9d1c-4e08-a663-f47a7233f6c5/scratchpad/snapshots",
         isDirectory: true)
 
-    /// The password of the gate tests and its Argon2id hash (fixed salt), made by the Rust test
-    /// `print_swift_test_hash` in crates/openframe-ffi/tests/interface.rs.
-    static let gatePassword = "pilot-password-1"
-    static let gateHash = "$argon2id$v=19$m=65536,t=3,p=1$BwcHBwcHBwcHBwcHBwcHBw$i0J7kuhGGKE3iBxfYocg3maj7MJNuc0Y67XIOvs9OXE"
-
     @MainActor
-    static func model(_ root: URL, gate: Bool = false) -> AppModel {
-        var options = CoreStartOptions(appVersion: "0.1.0-test", isolatedDataRoot: root, writeLogs: false)
-        if gate { options.testTeamPasswordHash = gateHash }
-        return AppModel(options: options)
+    static func model(_ root: URL) -> AppModel {
+        AppModel(options: CoreStartOptions(appVersion: "0.1.0-test", isolatedDataRoot: root, writeLogs: false))
     }
 
     /// Draws the view in an off-screen window through AppKit (so scroll views, text fields and
@@ -119,25 +112,6 @@ struct ShellScenarioTests {
         model.shutdown()
     }
 
-    @Test func teamGateRefusesAWrongPasswordAndOpensWithTheRightOne() async throws {
-        let root = try Fixture.root()
-        defer { try? FileManager.default.removeItem(at: root) }
-        let model = Fixture.model(root, gate: true)
-        await model.start()
-        guard case let .teamGate(status) = model.phase else {
-            Issue.record("expected the team password screen, got \(model.phase)")
-            return
-        }
-        #expect(status.required && !status.unlocked)
-        let wrong = await model.unlock(password: "not-the-password")
-        #expect(wrong != nil && !(wrong ?? "").isEmpty)
-        #expect({ if case .teamGate = model.phase { true } else { false } }())
-        let right = await model.unlock(password: Fixture.gatePassword)
-        #expect(right == nil)
-        #expect(model.phase == .home)
-        model.shutdown()
-    }
-
     @Test func screensRenderInLightAndDarkWithEveryTheme() async throws {
         let root = try Fixture.root()
         defer { try? FileManager.default.removeItem(at: root) }
@@ -156,10 +130,6 @@ struct ShellScenarioTests {
             let image = Fixture.render(home, name: "home-\(themeId)-\(scheme == .dark ? "dark" : "light")")
             #expect(image != nil)
         }
-        let gate = TeamGateView(status: TeamGateStatus(required: true, unlocked: false, waitSeconds: 0, triesBeforeWait: 3))
-            .environment(model)
-            .environment(\.ofTheme, themes.resolvedFor(colorScheme: .light))
-        #expect(Fixture.render(gate, name: "team-gate", size: CGSize(width: 800, height: 560)) != nil)
         model.shutdown()
     }
 }

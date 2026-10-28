@@ -45,8 +45,8 @@
 The diagram shows the Windows shell. On the Mac the top two boxes are replaced by a SwiftUI application ([ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md)); everything below the single door is shared.
 
 Other crates: `openframe-domain` (shared types, errors, roles), `openframe-security` (path confinement, archive limits,
-redaction), `openframe-platform` (everything that differs between Windows and macOS), `openframe-entitlement` (trial,
-licence and team password), `openframe-project-format` (folder layout and the single-writer lock),
+redaction), `openframe-platform` (everything that differs between Windows and macOS), `openframe-entitlement` (trial
+and licence; the team password gate was removed on 2026-10-27), `openframe-project-format` (folder layout and the single-writer lock),
 `openframe-test-support` (test helpers). `services/licence-server` is a separate small server for the Mac store channel.
 
 ## 2. What happens when a person types a letter

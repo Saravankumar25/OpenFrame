@@ -1,6 +1,6 @@
 # OpenFrame Studio launch readiness register
 
-> **Current decisions (2026-10-15).** Chapter 3 material; read it when the Chapter 3 plan is written. Rows that assume bundled AI models, a processor-only engine, a Tauri Mac shell or a team password of 12 characters are replaced by [ADR-0026](../adr/ADR-0026-offline-ai-download-after-install.md), [ADR-0029](../adr/ADR-0029-gpu-acceleration.md), [ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md) and [ADR-0030](../adr/ADR-0030-verification-ladder-and-release-flow.md).
+> **Current decisions (2026-10-15).** Chapter 3 material; read it when the Chapter 3 plan is written. Rows that assume bundled AI models, a processor-only engine, a Tauri Mac shell or a team password are replaced by [ADR-0026](../adr/ADR-0026-offline-ai-download-after-install.md), [ADR-0029](../adr/ADR-0029-gpu-acceleration.md), [ADR-0027](../adr/ADR-0027-rust-core-two-ui-shells.md) and [ADR-0030](../adr/ADR-0030-verification-ladder-and-release-flow.md); the team password gate itself was removed on 2026-10-27 (owner decision).
 
 > **What this is.** The register of operations, legal, commerce, security, support and release requirements for taking
 > OpenFrame Studio from codebase to a launched, supportable product. Product feature state lives in the

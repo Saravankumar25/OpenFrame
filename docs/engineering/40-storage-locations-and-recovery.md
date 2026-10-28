@@ -43,7 +43,7 @@ one of the two is missing it is written again. The library is:
 - **Missing** when the remembered folder is not there (a drive that is not connected, a moved folder). It is never
   recreated empty; the screen says where it was expected and offers Try Again, Locate, Choose new and Use default.
 
-The screen "Set up your OpenFrame library" shows after the team password and before Home whenever the state is not
+The screen "Set up your OpenFrame library" shows at app start, before Home, whenever the state is not
 Ready. It cannot be dismissed; closing the window closes the app. Three choices: **Use the default location** (shows
 `<home>\OpenFrame` and why it is outside OneDrive; Create Library Here makes it), **Choose a new location** (a folder
 picker; the library is `<picked>\OpenFrame`, shown before Create Library, with a warning when the folder is synced),
@@ -110,8 +110,8 @@ Now the library file holds the identity and the chosen places:
 - The id is never derived from a display name, an e-mail address or the operating system account.
 - The id is not authentication. Anyone who can write to the library folder can edit `library.json` and take on
   another person's id, and with it their private notes and role in projects on this computer. The only access control
-  is the team password and the folder permissions of the operating system (security review 2026-10-27; the owner
-  decides whether this limit stays).
+  is the folder permissions of the operating system (security review 2026-10-27; the owner decides whether this limit
+  stays). The team password, once a second lock on the internal builds, was removed on 2026-10-27.
 - Tests and the end-to-end data root (`OPENFRAME_DATA_ROOT`) count as set up from the start, with the library at
   their own root (`AppConfig::isolated`). `AppConfig::isolated_needing_setup` and, for a debug build on a test data
   root, `OPENFRAME_LIBRARY_SETUP=1` start like a new computer, with every folder inside the test root.

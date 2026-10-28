@@ -19,7 +19,7 @@ prices (not final): 3,000 rupees in India, 89 US dollars in the USA and the rest
 | Price in the app | Never shown; the store's purchase window shows it | [ADR-0023](../adr/ADR-0023-store-trial-and-internal-installer.md) |
 | Microsoft Store trial | The Store runs the trial; the app reads the Store licence; an ended trial blocks everything except Buy and Restore | ADR-0023 |
 | Mac App Store trial | A zero-price "7-day Trial" non-consumable and a paid "Lifetime Access" non-consumable; expiry computed by a licence server from Apple's purchase time; full block at expiry | [ADR-0022](../adr/ADR-0022-mac-trial-end-lock.md), [38-mac-app-store-trial.md](../engineering/38-mac-app-store-trial.md) |
-| Internal builds | No trial, no purchase, no price, no lock; team password gate | ADR-0023, [ADR-0024](../adr/ADR-0024-internal-team-builds.md), [ADR-0030](../adr/ADR-0030-verification-ladder-and-release-flow.md) |
+| Internal builds | No trial, no purchase, no price, no lock; no password (the team password gate was removed on 2026-10-27) | ADR-0023, [ADR-0024](../adr/ADR-0024-internal-team-builds.md), [ADR-0030](../adr/ADR-0030-verification-ladder-and-release-flow.md) |
 | Platforms | Windows 11 and Apple silicon only | [ADR-0017](../adr/ADR-0017-cross-platform-windows-and-macos.md) |
 | AI in the packages | The runtime ships in the package; the models download after install on the user's click | [ADR-0026](../adr/ADR-0026-offline-ai-download-after-install.md) |
 
@@ -72,7 +72,7 @@ could not reach every official page, so each row is read again from the store's 
 
 ## 7. Decisions moved here from Chapter 1
 
-- Stronger protection for the internal team gate and encryption of project files at rest ([ADR-0030](../adr/ADR-0030-verification-ladder-and-release-flow.md) decision 5).
+- Encryption of project files at rest ([ADR-0030](../adr/ADR-0030-verification-ladder-and-release-flow.md) decision 5; its team gate part was removed on 2026-10-27).
 - "Report AI output" (ADR-0020 decision 4).
 - The in-app updater question for the direct builds, and signing and notarization of every shipped file.
 

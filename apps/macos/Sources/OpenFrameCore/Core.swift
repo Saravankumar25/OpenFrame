@@ -45,9 +45,6 @@ public struct CoreStartOptions: Sendable {
     /// `Contents/Resources/ai` inside the app bundle.
     public var aiBundleDir: URL?
     public var writeLogs: Bool
-    /// The password screen tests' hash. Honoured by the core only in a debug build on a test
-    /// folder (ADR-0031); ignored everywhere else.
-    public var testTeamPasswordHash: String?
     /// The Mac App Store build's StoreKit 2 object. The core uses it in the store channel only;
     /// the internal disk image build ignores it.
     public var storeKit: (any StoreKitCallbacks)?
@@ -134,7 +131,6 @@ public final class Core: CoreInvoking, @unchecked Sendable {
             isolatedDataRoot: options.isolatedDataRoot?.path,
             aiBundleDir: options.aiBundleDir?.path,
             writeLogs: options.writeLogs,
-            testTeamPasswordHash: options.testTeamPasswordHash,
             testStoreResponseKeyHex: options.testStoreResponseKeyHex,
             testLibrarySetup: options.testLibrarySetup,
             testAiDeterministic: options.testAIDeterministic

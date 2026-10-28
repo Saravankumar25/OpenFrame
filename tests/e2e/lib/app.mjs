@@ -42,17 +42,7 @@ export async function launchApp() {
   browser.setTimeout({ implicit: 0 });
   await browser.waitUntil(async () => (await browser.execute(() => document.readyState)) === "complete", { timeout: 30_000 });
   await installConsoleProbe(browser);
-  if (process.env.E2E_TEAM_PASSWORD) await unlockTeamGate(browser, process.env.E2E_TEAM_PASSWORD);
   return browser;
-}
-
-/** A gated release run (run.mjs `--release=gated`): pass the team password screen the way a tester does. */
-export async function unlockTeamGate(browser, password) {
-  const input = await browser.$("#team-password");
-  await input.waitForDisplayed({ timeout: 30_000, timeoutMsg: "The team password screen did not show on the gated build" });
-  await input.setValue(password);
-  await click(browser, "Open OpenFrame Studio");
-  await input.waitForExist({ reverse: true, timeout: 30_000, timeoutMsg: "The team password screen did not close" });
 }
 
 /** Record console errors/warnings and uncaught errors inside the webview. */

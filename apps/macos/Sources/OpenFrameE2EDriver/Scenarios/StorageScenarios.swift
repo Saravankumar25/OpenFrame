@@ -13,7 +13,6 @@ extension Scenarios {
     static let storageGroup: [Scenario] = [
         Scenario("71-storage/first-start-setup-then-straight-home", phases: 2) { ui, phase, ctx in
             if phase == 1 {
-                try await ui.passTeamGate(ctx)
                 try await ui.wait(id: "library-setup", timeout: 30, "the library setup screen (run with OPENFRAME_LIBRARY_SETUP=1)")
                 try ui.expect(!ui.exists(id: "home-new-project"), "Home does not show before a library is chosen")
                 try await ui.waitText("Set up your OpenFrame library")
@@ -28,7 +27,6 @@ extension Scenarios {
                 try ui.expect(FileManager.default.fileExists(atPath: suggested.text), "Create Library Here made the library")
             } else {
                 // The library is remembered: no setup screen on the next start.
-                try await ui.passTeamGate(ctx)
                 let deadline = Date().addingTimeInterval(30)
                 while Date() < deadline && !ui.exists(id: "home-new-project") && !ui.exists(id: "home-empty") {
                     try ui.expect(!ui.exists(id: "library-setup"), "the setup screen showed again after the library was set up")
@@ -40,7 +38,6 @@ extension Scenarios {
         },
 
         Scenario("71-storage/first-start-locate-refuses-an-empty-folder") { ui, _, ctx in
-            try await ui.passTeamGate(ctx)
             try await ui.wait(id: "library-setup", timeout: 30, "the library setup screen (run with OPENFRAME_LIBRARY_SETUP=1)")
             let empty = ctx.work.appendingPathComponent("empty-\(UUID().uuidString)", isDirectory: true)
             try FileManager.default.createDirectory(at: empty, withIntermediateDirectories: true)
@@ -108,23 +105,5 @@ extension UI {
     func closeStorageSettings() async throws {
         try await press(id: "project-settings-done", role: "AXButton")
         try await waitGone(id: "project-settings-sheet", timeout: 10)
-    }
-
-    /// The team password of an internal build, without waiting for Home (the library setup
-    /// screen comes after it).
-    func passTeamGate(_ ctx: Context) async throws {
-        let deadline = Date().addingTimeInterval(30)
-        while Date() < deadline {
-            if exists(id: "team-password") {
-                try expect(!ctx.teamPassword.isEmpty, "the team gate shows but OPENFRAME_E2E_TEAM_PASSWORD is empty")
-                try await type(ctx.teamPassword, into: "team-password")
-                try await press(id: "team-gate-continue", role: "AXButton")
-                try await waitGone(id: "team-password", timeout: 30)
-                return
-            }
-            if exists(id: "library-setup") || exists(id: "home-new-project") || exists(id: "home-empty") || exists(id: "welcome-name") { return }
-            if exists(id: "startup-failure") { throw DriverError("the app could not start: \(screenText())") }
-            await idle(0.2)
-        }
     }
 }

@@ -11,7 +11,8 @@ The work has three chapters (owner decision 2026-10-09; `docs/product/vision-and
 1. **Complete, test and validate**, in two tracks of ten phases each (`docs/roadmap/chapter-1a-windows-phases.md`,
    `docs/roadmap/chapter-1b-mac-phases.md`). Windows first: finish and prove the Windows app, build the internal `.exe`,
    the team tests it by hand. Then the Mac: a SwiftUI shell over the same Rust core, the internal `.dmg`, team testing.
-   Builds are unsigned, ask the team password (minimum 8 characters, ADR-0030) and download the AI after install
+   Builds are unsigned, open without a password (team password removed, owner decision 2026-10-27) and download the AI
+   after install
    (ADR-0026). **This is the only chapter in progress.**
 2. **Website.** Purchased domain and company email, faithful recreations of the real screens. Its implementation plan is
    written when Chapter 1 closes.

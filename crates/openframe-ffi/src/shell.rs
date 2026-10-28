@@ -2,7 +2,7 @@
 //!
 //! The same rules as the Windows adapter (`apps/desktop/src-tauri/src/lib.rs`, commands
 //! `of_open_asset`, `of_reveal_path`, `of_open_url`): paths are resolved by the core from ids, the
-//! shell never passes an arbitrary path, the store lock and the team gate are checked first, and
+//! shell never passes an arbitrary path, the store lock is checked first, and
 //! files that would run as programs are shown in Finder instead of opened.
 //!
 //! The Windows adapter is frozen with the proved Windows build (handoff, W10), so these rules
@@ -91,9 +91,9 @@ pub fn reveal_location(
     id: Option<String>,
     path: Option<String>,
 ) -> AppResult<()> {
-    // Before the team password nothing is reachable; under the store lock only the data folder
-    // and the logs, which support needs (as on Windows).
-    if core.entitlement.team_gate_locked() || !matches!(kind, "dataRoot" | "logs") {
+    // Under the store lock only the data folder and the logs are reachable, which support needs
+    // (as on Windows).
+    if !matches!(kind, "dataRoot" | "logs") {
         core.entitlement.check_operation("shell.reveal_path")?;
     }
     let target: PathBuf = match kind {

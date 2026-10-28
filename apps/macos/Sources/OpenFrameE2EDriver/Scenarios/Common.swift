@@ -1,21 +1,13 @@
-// Steps that many scenarios share: the team gate, creating and opening a project, moving between
-// workspaces and typing in the screenplay. Each is written the way a person does it.
+// Steps that many scenarios share: starting the app, creating and opening a project, moving
+// between workspaces and typing in the screenplay. Each is written the way a person does it.
 
 import AppKit
 
 extension UI {
-    /// Waits for the first screen. On an internal build that is the team gate: type the team
-    /// password and continue. Ends on Application Home.
+    /// Waits for the first screen. Ends on Application Home.
     func startApp(_ ctx: Context) async throws {
         let deadline = Date().addingTimeInterval(30)
         while Date() < deadline {
-            if exists(id: "team-password") {
-                try expect(!ctx.teamPassword.isEmpty, "the team gate shows but OPENFRAME_E2E_TEAM_PASSWORD is empty")
-                try await type(ctx.teamPassword, into: "team-password")
-                try await press(id: "team-gate-continue", role: "AXButton")
-                try await waitGone(id: "team-password", timeout: 30)
-                break
-            }
             if exists(id: "home-new-project") || exists(id: "home-empty") || exists(id: "project-home") || exists(id: "welcome-name") { break }
             if exists(id: "startup-failure") { throw DriverError("the app could not start: \(screenText())") }
             if exists(id: "library-setup") { break }

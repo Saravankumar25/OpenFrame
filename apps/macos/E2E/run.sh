@@ -8,8 +8,7 @@
 # can share one machine; each scenario still has its own data folder and its own app process.
 # OPENFRAME_E2E_FRESH_HOME=1 runs each scenario as a brand-new Mac user would: an empty home folder
 # (HOME and CFFIXED_USER_HOME) and the app's real data locations, with no test data folder.
-# Needs: OPENFRAME_E2E_TEAM_PASSWORD (or OPENFRAME_TEAM_PASSWORD) for an internal build with the
-# team gate; the driver library (swift build --product OpenFrameE2EDriver -c release).
+# Needs: the driver library (swift build --product OpenFrameE2EDriver -c release).
 # Output: release-out/e2e/<timestamp>/ with one folder per scenario, results.tsv and summary.md.
 set -uo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -49,7 +48,6 @@ if [[ -z "$DRIVER" ]]; then
   done
 fi
 [[ -f "$DRIVER" ]] || { echo "build the driver first: swift build --product OpenFrameE2EDriver -c release" >&2; exit 2; }
-export OPENFRAME_E2E_TEAM_PASSWORD="${OPENFRAME_E2E_TEAM_PASSWORD:-${OPENFRAME_TEAM_PASSWORD:-}}"
 export OPENFRAME_E2E_FIXTURES="$ROOT/tests/fixtures"
 
 RUN="${OPENFRAME_E2E_RUN_DIR:-$ROOT/release-out/e2e/$(date +%Y%m%d-%H%M%S)}"

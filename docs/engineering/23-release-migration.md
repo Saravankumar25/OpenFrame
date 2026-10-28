@@ -1,6 +1,6 @@
 # 23: Release, Migration & Compatibility
 
-> **Current decisions (2026-10-15).** The release flow is Windows track, internal `.exe`, team pilot, then Mac track, internal `.dmg`, team pilot, then website, then stores ([ADR-0030](../adr/ADR-0030-verification-ladder-and-release-flow.md)). The team password minimum is 8 characters. Models download after install ([ADR-0026](../adr/ADR-0026-offline-ai-download-after-install.md)); a changed model is a manifest version change ([ADR-0028](../adr/ADR-0028-ai-quality-program-and-harness.md)).
+> **Current decisions (2026-10-15).** The release flow is Windows track, internal `.exe`, team pilot, then Mac track, internal `.dmg`, team pilot, then website, then stores ([ADR-0030](../adr/ADR-0030-verification-ladder-and-release-flow.md)). The team password gate was removed on 2026-10-27; internal builds open without a password. Models download after install ([ADR-0026](../adr/ADR-0026-offline-ai-download-after-install.md)); a changed model is a manifest version change ([ADR-0028](../adr/ADR-0028-ai-quality-program-and-harness.md)).
 
 > **Status legend:** ✅ implemented · 🚧 in development · 📋 planned.
 > Source: `persistence/src/migrate.rs`, `application/src/{schema.rs,store.rs}`, `project-format`,

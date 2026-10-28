@@ -9,8 +9,6 @@
 #   WINDOWS_CERTIFICATE_PASSWORD        password for the .pfx
 #   TAURI_SIGNING_PRIVATE_KEY           Tauri updater signing key (minisign), content or path
 #   TAURI_SIGNING_PRIVATE_KEY_PASSWORD  password for the updater key
-#   OPENFRAME_TEAM_PASSWORD             team password of the internal build (ADR-0024); build.rs embeds
-#                                       only its Argon2id hash, and the build fails without it
 # Required repository variables:
 #   WINDOWS_TIMESTAMP_URL               RFC 3161 timestamp server of the chosen CA
 #   OPENFRAME_AI_ASSETS_DIR             folder on the runner holding the pinned Offline AI build inputs
@@ -220,7 +218,6 @@ jobs:
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-          OPENFRAME_TEAM_PASSWORD: ${{ secrets.OPENFRAME_TEAM_PASSWORD }}
           OPENFRAME_AI_ASSETS_DIR: ${{ vars.OPENFRAME_AI_ASSETS_DIR }}
           # Never the test host in a build for people (ADR-0032; build.rs refuses it).
           OPENFRAME_TEST_MODEL_SOURCE: ""

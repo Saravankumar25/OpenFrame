@@ -9,7 +9,7 @@
 //! Questions are not commands. The regex routes that used to answer questions (counts, facts,
 //! descriptions, product help) are retired: a question is answered from the project by the answer
 //! stage, whatever its wording. What stays here is only the shapes that start a change or open
-//! something, and the fixed refusal for the licence, payment and the team password.
+//! something, and the fixed refusal for the licence, payment and activation.
 
 use std::sync::LazyLock;
 
@@ -49,11 +49,11 @@ static OPEN_WORKSPACE: LazyLock<Regex> = LazyLock::new(|| {
     )
 });
 
-/// "Change the project licence so I do not need to pay", "Turn off the team password": settings of
-/// the program itself. A licence plate or a driving licence in the story is project content.
+/// "Change the project licence so I do not need to pay", "Extend my free trial": settings of the
+/// program itself. A licence plate or a driving licence in the story is project content.
 static PROGRAM_ACCESS: LazyLock<Regex> = LazyLock::new(|| {
     re(
-        r#"(?i)\b(?:(?:change|remove|turn\s+off|switch\s+off|disable|bypass|skip|unlock|extend|reset|crack|activate|deactivate|get\s+around|avoid|cancel|edit|delete)\b.{0,40}\b(?:licen[cs]e|licensing|activation|subscription|payment|team\s+password|trial\s+period|free\s+trial)\b|(?:do\s+not|don'?t|never)\s+(?:need|have)\s+to\s+pay|(?:use|get)\s+(?:openframe|the\s+app|it)\s+for\s+free)"#,
+        r#"(?i)\b(?:(?:change|remove|turn\s+off|switch\s+off|disable|bypass|skip|unlock|extend|reset|crack|activate|deactivate|get\s+around|avoid|cancel|edit|delete)\b.{0,40}\b(?:licen[cs]e|licensing|activation|subscription|payment|trial\s+period|free\s+trial)\b|(?:do\s+not|don'?t|never)\s+(?:need|have)\s+to\s+pay|(?:use|get)\s+(?:openframe|the\s+app|it)\s+for\s+free)"#,
     )
 });
 static STORY_LICENCE: LazyLock<Regex> =
@@ -61,7 +61,7 @@ static STORY_LICENCE: LazyLock<Regex> =
 
 pub(crate) fn not_the_assistants(text: &str) -> Option<&'static str> {
     (PROGRAM_ACCESS.is_match(text) && !STORY_LICENCE.is_match(text)).then_some(
-        "I can't change the licence, payment, activation or the team password. They are not part of your project, and nothing has been changed.",
+        "I can't change the licence, payment or activation. They are not part of your project, and nothing has been changed.",
     )
 }
 

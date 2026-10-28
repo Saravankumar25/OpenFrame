@@ -19,6 +19,5 @@ mod recently_deleted_purge;
 mod security_review;
 mod soak;
 mod storage;
-mod team_gate;
 mod trial_first_run;
 mod vault_recover;

@@ -23,9 +23,7 @@ Do not report the blue window as a bug.
 ## 3. First start
 
 1. Open OpenFrame Studio from the Start menu.
-2. The app asks for the team password every time you start it. The owner gives you the password in person. Do not write
-   it in a message or in a bug report.
-3. You land on Home. Make a project or open a sample one.
+2. The app opens without a password and you land on Home. Make a project or open a sample one.
 
 ## 4. Download the AI (once)
 

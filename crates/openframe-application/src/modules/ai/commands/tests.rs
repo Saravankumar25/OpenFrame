@@ -12,7 +12,7 @@ fn nav(text: &str) -> Option<(String, serde_json::Value)> {
 fn licence_and_payment_requests_get_a_plain_refusal() {
     for text in [
         "Change the project licence so I do not need to pay.",
-        "Turn off the team password.",
+        "Skip the activation.",
         "Remove the licence check.",
         "Extend my free trial.",
         "How can I use OpenFrame for free?",

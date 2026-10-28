@@ -24,7 +24,7 @@ ways out: let the release build honour the test folder, use a separate Windows t
    unit test in `lib.rs` holds this. (Amended 2026-10-16: the switch for another AI folder, `OPENFRAME_AI_BUNDLE_DIR`, was
    removed. The models live in the test folder's app data since ADR-0026, and the engine-damage spec runs its own copy
    of the release build, so no test needs it.)
-3. The team password gate is not affected: a release build made with a team password asks for it on a test folder too.
+3. *(Superseded 2026-10-27: the team password gate was removed, so there is nothing to ask.)* The team password gate is not affected: a release build made with a team password asks for it on a test folder too.
 
 ## Consequences
 

@@ -3688,22 +3688,6 @@
     "resultType": "TaskDto"
   },
   {
-    "argType": "TeamGateStatusArgs",
-    "kind": "query",
-    "longRunning": false,
-    "module": "Licence and trial",
-    "name": "team_gate.status",
-    "resultType": "TeamGateStatus"
-  },
-  {
-    "argType": "TeamGateUnlockArgs",
-    "kind": "command",
-    "longRunning": false,
-    "module": "Licence and trial",
-    "name": "team_gate.unlock",
-    "resultType": "TeamGateAnswer"
-  },
-  {
     "argType": "ApplyTemplateArgs",
     "kind": "command",
     "longRunning": false,

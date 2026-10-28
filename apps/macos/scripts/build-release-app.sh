@@ -1,15 +1,14 @@
 #!/usr/bin/env bash
 # Builds the internal release app bundle of OpenFrame Studio for Apple silicon (Mac phase M9).
 #
-#   1. the Rust core in the release profile, with the team password hashed in (ADR-0024, ADR-0030);
+#   1. the Rust core in the release profile;
 #   2. the Swift app in the release configuration, in a staging copy of apps/macos so a release
 #      build never replaces the debug core that development and tests link;
 #   3. OpenFrame Studio.app: executable, resources, the AI engine (when fetched), Info.plist,
 #      privacy manifest and icon, signed ad hoc (internal build: no Developer ID, not notarised).
 #
-# Usage: OPENFRAME_TEAM_PASSWORD=... apps/macos/scripts/build-release-app.sh
+# Usage: apps/macos/scripts/build-release-app.sh
 # Output: release-out/mac/OpenFrame Studio.app
-# The password is read from the environment only; it is never written to a file or a log.
 set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MACOS="$(cd "$HERE/.." && pwd)"
@@ -20,10 +19,6 @@ command -v sccache >/dev/null 2>&1 || export RUSTC_WRAPPER=""
 export MACOSX_DEPLOYMENT_TARGET=14.0
 export CARGO_INCREMENTAL=0
 
-if [[ -z "${OPENFRAME_TEAM_PASSWORD:-}" ]]; then
-  echo "set OPENFRAME_TEAM_PASSWORD (at least 8 characters) for the internal build" >&2
-  exit 2
-fi
 [[ "$(uname -m)" == "arm64" ]] || { echo "the release app is built on an Apple silicon Mac" >&2; exit 2; }
 
 # Outside the home folder: build paths end up in the binary and must not name the builder.
@@ -37,7 +32,7 @@ COMMIT="$(git -C "$ROOT" rev-parse --short HEAD)"
 # The store accepts at most three numbers in CFBundleVersion: the build number is the commit count.
 BUILD="$(git -C "$ROOT" rev-list --count HEAD)"
 
-echo "== 1. Rust core (release, team gate on)"
+echo "== 1. Rust core (release)"
 cd "$ROOT"
 # Source paths in panic messages are remapped to neutral names, as in the Windows release build
 # (scripts/with-msvc-linker.mjs), so the binary does not carry the builder's folders.
@@ -47,8 +42,6 @@ export RUSTFLAGS="--remap-path-prefix=$ROOT=openframe --remap-path-prefix=$CARGO
 cargo build -p openframe-ffi --lib --release
 LIB="$ROOT/target/release/libopenframe_ffi.a"
 [[ -f "$LIB" ]] || { echo "missing $LIB" >&2; exit 1; }
-# The internal build must carry the gate: the hash file exists only when the gate was embedded.
-grep -aqF '$argon2id$' "$LIB" || { echo "the release core has no team gate hash" >&2; exit 1; }
 
 echo "== 2. Swift app (release) in $STAGE"
 mkdir -p "$STAGE"
@@ -126,7 +119,7 @@ codesign --force --sign - --timestamp=none --options runtime --entitlements "$EN
 codesign --verify --deep --strict "$APP"
 
 echo "== 4. Secret and personal-path scan of the bundle"
-OPENFRAME_TEAM_PASSWORD="$OPENFRAME_TEAM_PASSWORD" node "$ROOT/scripts/scan-installer.mjs" "$APP"
+node "$ROOT/scripts/scan-installer.mjs" "$APP"
 
 echo "== Done"
 echo "$APP"

@@ -3,14 +3,9 @@
 //
 // Settings > Project settings > About (ADR-0023, ADR-0024; build plan area 18 box "Internal
 // installer build"): the app's name and version, and "Internal build, not for sale." on the
-// internal team builds. The test build is an internal build (a debug build made without the team
-// password, so no password screen). A store channel is then set by hand through
-// `entitlement.debug_set`, which exists only in a debug build on an isolated test data root, and
-// the About card shows the version only. No screen here names a price.
-//
-// The team password screen itself shows only in internal builds made with OPENFRAME_TEAM_PASSWORD;
-// the end-to-end build never sees that variable (scripts/build-app.mjs). It is covered by the Rust
-// tests (team_gate/tests.rs, tests/team_gate.rs) and by TeamGate.test.tsx.
+// internal team builds. The test build is an internal build. A store channel is then set by hand
+// through `entitlement.debug_set`, which exists only in a debug build on an isolated test data root,
+// and the About card shows the version only. No screen here names a price.
 
 import { after, before, describe, test } from "node:test";
 import assert from "node:assert/strict";
