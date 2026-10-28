@@ -118,6 +118,7 @@ struct BudgetContent: View {
         .frame(maxWidth: 440)
         .background(theme["panel"], in: RoundedRectangle(cornerRadius: 8))
         .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(theme["line"]))
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("budget-empty")
     }
 

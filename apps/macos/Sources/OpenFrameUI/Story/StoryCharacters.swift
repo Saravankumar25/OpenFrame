@@ -219,6 +219,7 @@ struct CharactersView: View {
             }
         }
         .onProjectIntent("story.characters.new") { m.sheet = .new }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("story-characters")
     }
 

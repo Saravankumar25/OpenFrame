@@ -326,6 +326,7 @@ struct BoardPage: View {
                         .accessibilityIdentifier("story-add-act")
                 }
             }
+            .accessibilityElement(children: .contain)
             .accessibilityIdentifier("story-empty")
         }
     }

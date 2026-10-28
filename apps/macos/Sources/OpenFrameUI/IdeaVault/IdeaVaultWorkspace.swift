@@ -391,6 +391,7 @@ struct IdeaVaultScreen: View {
                 Button("Add Note") { Task { await model.createText(.note) } }
                 Button("Record Note") { model.dialog = .record }
             }
+            .accessibilityElement(children: .contain)
             .accessibilityIdentifier("vault-empty")
         } else {
             let text: String = {

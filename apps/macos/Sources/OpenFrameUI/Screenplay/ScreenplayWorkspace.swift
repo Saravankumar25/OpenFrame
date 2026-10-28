@@ -870,6 +870,7 @@ struct SceneNavigator: View {
         // grey, disabled block.
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
+        .accessibilityLabel("Scenes")
         .accessibilityIdentifier("scene-navigator")
         }
         .background(theme["surface2"])
