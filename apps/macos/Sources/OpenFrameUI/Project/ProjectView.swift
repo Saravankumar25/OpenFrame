@@ -403,6 +403,7 @@ struct ProjectView: View {
         } label: {
             Label("Assistant", systemImage: "sparkles").labelStyle(.titleAndIcon)
         }
+        .keyboardShortcut("j", modifiers: .command)
         .help(assistantOpen ? "Close AI Assistant (Command+J)" : "Open AI Assistant (Command+J)")
         .accessibilityLabel(assistantOpen ? "Close AI Assistant" : "Open AI Assistant")
         .accessibilityIdentifier("ai-toggle")

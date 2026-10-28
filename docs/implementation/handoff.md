@@ -2,55 +2,59 @@
 
 > Rewritten (not appended) at the end of every session. One page. It exists so the next session starts from the facts
 > instead of from a long history, which is how context rot is avoided. If this page is older than the newest progress log
-> entry, trust the log and fix this page first. Last rewritten: 2026-10-27, Mac sync with Windows main `114dff50`.
+> entry, trust the log and fix this page first. Last rewritten: 2026-10-28, end of the Mac sync and release session.
 
 ## State
 
-1. **Windows track:** source of truth on GitHub `main` `windows/` (local Windows `114dff50`): conversational assistant
-   (ADR-0037), production PDF v2 (ADR-0036), screenplay v5, storage and library setup (ADR-0038), owner fixes.
-2. **Mac track, branch `mac/windows-sync`** (from `mac/screening-room-theme`, local only, not pushed, not merged; 20
-   commits). The Mac is level with Windows `114dff50`:
-   - Shared Rust core merged three ways (change list and reasons:
-     `docs/release/evidence/mac/windows-sync-2026-10-27/mac-only-changes.md`). Migrations byte for byte as Windows,
-     0017 replaced by the Windows file (owner decision 2026-10-27). Mac keeps Metal placement, FFI, gold project.
-   - Mac storage specifics: library suggested at `~/OpenFrame`; pointer at
-     `~/Library/Application Support/OpenFrame Library/library-pointer.json`; Finder files skipped in moves; App Store
-     build hides every Move, Locate and Change Folder (bookmarks not built).
-   - Swift screens ported: assistant panel (progress, Cancel, Save, memory, See sources, navigation), Story page (A4,
-     formatting, colours, zoom, Dark page, rich paste), Beat Board Vertical/Horizontal, screenplay Dark page, relationship
-     maps, page setup first-page number, call sheet in PDF order, Sides selected cast, Daily View export, Home cover and
-     Found on this Mac, first-start library setup, Settings > Storage, Make Them Mine, Add Them Back, Command+Q with a
-     sheet open.
-   - Bugs found and fixed beyond Windows: read-only `-wal`/`-shm` blocked a writable project on macOS (core,
-     regression test); Story page saves refused after a move; older text could overwrite newer; a late AI answer broke
-     the next question's Cancel; Project Settings hid its buttons' ids; quit ignored with a sheet open.
-3. **Measured:** see the progress log entry of 2026-10-27 (sync) and
-   `docs/release/evidence/mac/windows-sync-2026-10-27/` (baseline, after-port runs, PDF check, screens).
+1. **Branch `mac/windows-sync`** (local, not pushed) holds all Mac work: the sync with Windows `114dff50`, the Swift
+   ports, the security review fixes, the team password removal (ADR-0039) and the E2E fixes. Every other Mac branch and
+   local `main` are already ancestors of it (fast-forward possible). Unmerged and old: `claude/website-html-mockups-9ecfa7`
+   (superseded by MacHTML; delete only on the owner's word).
+2. **Installed app:** `/Applications/OpenFrame Studio.app`, from `release-out/mac/OpenFrame-5.dmg` (no team password).
+   Rebuild and reinstall with `apps/macos/scripts/install-internal-build.sh`.
+3. **Tests:** Swift 784 pass; Rust 2664 pass; web 735 pass; lint, links, writing, migrations clean. Full E2E on the
+   release app (before the last fixes): 194 pass, 30 fail. The rerun after the fixes is in the progress log entry.
 
-## Next three items
+## Next session: MacHTML recapture (2 to 3 hours, owner order of 2026-10-27)
 
-1. Owner at the Mac with the screen unlocked: rerun `72-ai-assistant/conversation-is-still-there-after-a-relaunch`
-   and `72-ai-assistant/stop-offline-ai-frees-the-engines` (`.build-cache/run-ai-e2e-aifix.sh 72-ai-assistant`), and
-   look at the new screens in the dev app
-   (`apps/macos/scripts/bundle-dev-app.sh`).
-2. Owner decision: the AI tool bar (90%) is not met after the conversational rebuild on either platform (Windows
-   69.6%, Mac 73.9% on Low Tide; read questions are answered from facts, not read tools). Keep, change or split the bar.
-3. Repeat on Windows the Mac fixes listed under "Made during the merge" in the change list (ADR-0034), then merge
-   `mac/windows-sync` into `mac/m1-toolchain` on the owner's word.
-4. The early engine start test fails on the Mac: the free memory reading leaves out reclaimable memory. Fix the
-   reading in the shared core (both platforms), then measure the early start (port orders phase 6).
+The last MacHTML was vague: windows not at full size, some screens not captured properly, the old theme. Recapture all
+of it with the Screening Room theme (Light and Dark), consistently, with no mistakes:
+1. Build the dev app (`apps/macos/scripts/bundle-dev-app.sh`) and the driver; run
+   `apps/macos/E2E/capture.sh "apps/macos/build/OpenFrame Studio.app"` with ONE runner (no `OPENFRAME_E2E_PARALLEL`),
+   the screen unlocked and nothing else on screen.
+2. Before capturing, make the capture tour open the window at the full visible screen size (not minimised, not the
+   default size) and keep it key and frontmost for every state; check `CaptureTour*.swift` and the window-fit helpers.
+3. After the run, open every page and compare it with the real app: the whole window, the right screen, the active
+   (not dimmed) look, the new theme in both modes. Recapture any state that is wrong; never leave a known-bad page.
+4. Keep `MacHTML/README.md` honest (what each page is, the limits that remain).
 
-## Open blockers
+## Next session: cleanup (owner order)
 
-- Owner: full Xcode for XCUITest and StoreKit testing; security-scoped bookmarks for the store build (Chapter 3).
-- Not tested here: App Store sandbox, bookmarks, a real reinstall, the store build.
+- Merge `mac/windows-sync` into `main` (fast-forward) and delete the merged branches; `HTML_Mockups/` and the old
+  mockups branch only with the owner's word; remove finished builds and caches (`target/`, `.build-cache` app copies,
+  `release-out/e2e`, the release staging folder in `$(getconf DARWIN_USER_TEMP_DIR)openframe-release-stage`).
+- Dead code pass on the Swift app and the core; the two Word manuals still describe the team password.
+
+## Open E2E items (from the release run; check which the rebuild fixed)
+
+- 14 keyboard scenarios (96-*) need System Settings > Keyboard > Keyboard navigation on (owner setting, off here).
+- 42 custom shortcut survives relaunch: hangs at the second launch on release builds only.
+- 86 moodboard drag: tile bounds measured wrong; the three sketch Undo ones should pass with the driver's sheet fix.
+- 91 sixteen themes: 322 screens reported hard to read; may be the Settings window behind being read, to settle.
+- 01-journey 13 (search palette still open at the AI step), 75 (Cmd+J: now a menu command), 78 download (low disk
+  at the time) and 78 remove: rerun.
+- 95 window fit at the minimum size: rerun after the pane fixes.
+
+## Owner decisions open
+
+- AI tool bar (90%) missed on both platforms after the conversational rebuild (Mac 73.9%, Windows 69.6%).
+- Identity in `library.json` is not authentication (doc 40 section 2): keep or change.
+- Store items needing Xcode and the developer account: `docs/release/mac-app-store-readiness.md`.
 
 ## Do not
 
-- Do not push, merge or build a `.dmg` or release app without the owner's word.
-- Do not run E2E with the screen locked: keys and screenshots go nowhere (the 2026-10-27 screenshots of some states
-  show inactive drawing or the opening screen; they prove the flow ran, not the look).
-- Do not run two E2E runners at once: use the lock in `.build-cache/lanes/e2e-rules.md`.
-- Do not let a SwiftUI view feed a measured size back into its own layout (the Scene Hub crash of 2026-10-19).
-- Do not run the eval with relative engine or model folders on Windows: it measured "AI unavailable" on the Mac until
-  fixed (`c54ecedd`).
+- Do not push, merge to a remote or build a store package without the owner's word.
+- Do not run two E2E runners or two SwiftPM builds at once; build outside the E2E lock.
+- Do not leave build caches behind: clear `target/` after each finished build step (owner decision 2026-10-27).
+- Repeat on Windows every shared-core change listed in
+  `docs/release/evidence/mac/windows-sync-2026-10-27/mac-only-changes.md` and the password removal (ADR-0034).
