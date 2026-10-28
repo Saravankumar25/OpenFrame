@@ -59,6 +59,14 @@ mkdir -p "$XCF/macos-arm64/Headers"
 cp "$LIB" "$XCF/macos-arm64/libopenframe_ffi.a"
 cp "$MACOS/Frameworks/OpenFrameFFI.xcframework/macos-arm64/Headers/"* "$XCF/macos-arm64/Headers/"
 cp "$MACOS/Frameworks/OpenFrameFFI.xcframework/Info.plist" "$XCF/Info.plist"
+# The Swift interface is generated from this very library: one generated earlier from another
+# build of the core fails its checksum check and the app stops at start (2026-10-27).
+GEN_DIR="$(mktemp -d)"
+(cd "$ROOT" && RUSTFLAGS= cargo run -q -p openframe-ffi --features bindgen --bin uniffi-bindgen -- \
+  generate --library "$LIB" --language swift --out-dir "$GEN_DIR" >/dev/null)
+cp "$GEN_DIR/openframe_ffi.swift" "$STAGE/Sources/OpenFrameCore/Generated/openframe_ffi.swift"
+cp "$GEN_DIR/openframe_ffiFFI.h" "$XCF/macos-arm64/Headers/openframe_ffiFFI.h"
+rm -rf "$GEN_DIR"
 cd "$STAGE"
 SWIFT_FLAGS=(-c release -Xswiftc -file-prefix-map -Xswiftc "$STAGE=openframe")
 swift build "${SWIFT_FLAGS[@]}" --product OpenFrameStudio
