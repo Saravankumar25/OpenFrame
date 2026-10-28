@@ -63,7 +63,11 @@ LIST="$WORK/list/scenarios.json"
 [[ -f "$LIST" ]] || { echo "the driver did not load into the app (hardened runtime or a wrong driver path?)" >&2; exit 3; }
 
 printf "scenario\tresult\tseconds\tmessage\n" > "$RUN/results.tsv"
-pass=0; fail=0
+pass=0; fail=0; skip=0
+# A development build (bundle-dev-app.sh) honours the debug-only test switches; a release build
+# ignores them on purpose, so the scenarios that need one are skipped there, never failed.
+DEV_BUILD=false
+[[ -n "${PLIST:-}" ]] && [[ "$(/usr/libexec/PlistBuddy -c 'Print :OpenFrameDevelopmentBuild' "$PLIST" 2>/dev/null)" == true ]] && DEV_BUILD=true
 SHARD_K=1; SHARD_N=1
 if [[ -n "${OPENFRAME_E2E_SHARD:-}" ]]; then SHARD_K="${OPENFRAME_E2E_SHARD%/*}"; SHARD_N="${OPENFRAME_E2E_SHARD#*/}"; fi
 INDEX=0
@@ -73,6 +77,10 @@ while IFS=$'\t' read -r name phases timeout ends; do
   [[ "$name" == zz-capture/* && "$FILTER" != zz-capture* ]] && continue
   INDEX=$((INDEX + 1))
   (( (INDEX - SHARD_K) % SHARD_N == 0 )) || continue
+  if [[ "$name" == 71-storage/first-start* && "$DEV_BUILD" != true ]]; then
+    printf "%s\tskip\t0\tneeds a development build (OPENFRAME_LIBRARY_SETUP is debug only)\n" "$name" >> "$RUN/results.tsv"
+    skip=$((skip + 1)); echo "SKIP  $name (needs a development build)"; continue
+  fi
   safe="${name//\//__}"
   OUT="$RUN/$safe"; DATA="$WORK/data-$safe"; mkdir -p "$OUT" "$DATA"
   # Each scenario starts with no preferences (its own phases keep theirs).
@@ -133,5 +141,5 @@ for s in json.load(open(sys.argv[1])): print("\t".join([s["name"], str(s["phases
   echo "|---|---|---|---|"
   tail -n +2 "$RUN/results.tsv" | awk -F'\t' '{printf "| %s | %s | %s | %s |\n", $1, $2, $3, $4}'
 } > "$RUN/summary.md"
-echo "$pass passed, $fail failed. Results: $RUN"
+echo "$pass passed, $fail failed, $skip skipped. Results: $RUN"
 [[ $fail -eq 0 ]]
