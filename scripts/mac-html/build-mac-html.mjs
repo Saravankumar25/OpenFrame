@@ -690,6 +690,8 @@ without running the app:
 - Forced crashes and disk failures.
 - Real AI answers and an Assistant memory with entries: the development build has no AI engine, so the Assistant screens
   show the state without one.
+- In Dark mode a sheet's rounded top corners show small white wedges: the capture lays the sheet window's transparent
+  corners on white. The app draws them correctly.
 ${onlyOne.length ? `- Screens captured in one mode only: ${onlyOne.join(', ')}.\n` : ''}${skipped.length ? '- Steps the tour skipped (in both modes unless marked):\n' + skipped.map((s) => '  - ' + s.slice(0, 220)).join('\n') + '\n' : ''}
 ## Count
 
