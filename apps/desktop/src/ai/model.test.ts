@@ -7,6 +7,7 @@ import {
   changeCount,
   changeSetActions,
   changeSetStateText,
+  confidenceLabel,
   defaultScope,
   formatBytes,
   indexNotice,
@@ -16,7 +17,8 @@ import {
   panelMode,
   scopeArgs,
   scopeOptions,
-  answerSources,
+  sourceChips,
+  stepsSummary,
   toRoute,
 } from "./model";
 
@@ -109,6 +111,12 @@ describe("change set review", () => {
     expect(changeSetStateText(cs("Pending"))).toBeNull();
   });
 
+  it("labels exact facts distinctly from inferred text", () => {
+    expect(confidenceLabel("Exact")?.text).toBe("Exact · from project data");
+    expect(confidenceLabel("Inferred")?.tone).toBe("b");
+    expect(confidenceLabel(null)).toBeNull();
+  });
+
   it("counts changes plainly", () => {
     expect(changeCount(1)).toBe("1 change");
     expect(changeCount(4)).toBe("4 changes");
@@ -116,17 +124,26 @@ describe("change set review", () => {
 });
 
 describe("agent answers", () => {
-  it("lists only the places an answer was read from under See sources", () => {
-    const chips = answerSources([
+  it("turns provenance into chips that open their source when they can", () => {
+    const chips = sourceChips([
       { kind: "Scope", label: "Whole Project" },
-      { kind: "Basis", label: "Exact" },
-      { kind: "Character", label: "Ravi", nav: { workspace: "story", params: { characterId: "c1" } } },
       { kind: "Character", label: "Ravi", nav: { workspace: "story", params: { characterId: "c1" } } },
       { kind: "Scene", label: "Scene 3", nav: { workspace: "not-a-workspace", params: {} } },
     ]);
-    expect(chips.map((c) => c.text)).toEqual(["Character: Ravi", "Scene: Scene 3"]);
-    expect(chips[0].route).toEqual({ workspace: "story", params: { characterId: "c1" } });
-    expect(chips[1].route).toBeNull();
+    expect(chips.map((c) => c.text)).toEqual(["Whole Project", "Character: Ravi", "Scene: Scene 3"]);
+    expect(chips[0].route).toBeNull();
+    expect(chips[1].route).toEqual({ workspace: "story", params: { characterId: "c1" } });
+    expect(chips[2].route).toBeNull();
+  });
+
+  it("summarises multi-step answers without exposing reasoning", () => {
+    expect(stepsSummary([{ index: 1, tool: "count_scenes", label: "Count scenes", status: "Succeeded" }])).toBeNull();
+    expect(
+      stepsSummary([
+        { index: 1, tool: "search_project", label: "Search project", status: "Succeeded" },
+        { index: 2, tool: "open_scene", label: "Open scene", status: "Succeeded" },
+      ]),
+    ).toBe("2 steps: Search project · Open scene");
   });
 
   it("shows the project-context notice only while it is being rebuilt", () => {
