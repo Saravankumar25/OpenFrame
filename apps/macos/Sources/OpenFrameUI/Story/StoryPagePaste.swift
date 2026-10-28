@@ -23,11 +23,20 @@ enum StoryPagePaste {
     /// The pasteboard's content as Story page text, or nil when it holds no text.
     static func read(_ pb: NSPasteboard) -> NSAttributedString? {
         if let json = pb.string(forType: runsType), let s = fromRuns(json) { return s }
-        if let html = pb.data(forType: .html), let s = fromHTML(html) { return s }
-        if let rtf = pb.data(forType: .rtf), let s = fromRTF(rtf) { return s }
+        // Rich text over the size limit pastes as plain text, which the text view handles.
+        if let html = pb.data(forType: .html), html.count <= maxRichBytes, let s = fromHTML(html) { return s }
+        if let rtf = pb.data(forType: .rtf), rtf.count <= maxRichBytes, let s = fromRTF(rtf) { return s }
         guard let text = pb.string(forType: .string) else { return nil }
         return NSAttributedString(string: clean(text))
     }
+
+    /// The largest HTML or RTF a paste reads as rich text (2 MB). Parsing runs on the main
+    /// thread, so anything larger pastes as plain text instead of stalling the page.
+    static let maxRichBytes = 2 * 1024 * 1024
+
+    /// The deepest tag nesting a paste reads as rich text. The HTML cleaner slows down sharply
+    /// with depth, so deeper markup pastes as plain text.
+    static let maxNesting = 512
 
     static func clean(_ s: String) -> String {
         s.replacingOccurrences(of: "\r\n", with: "\n").replacingOccurrences(of: "\r", with: "\n")
@@ -54,25 +63,29 @@ enum StoryPagePaste {
 
     /// RTF as HTML (AppKit writes bold, italic and underline as tags), then the HTML rules.
     static func fromRTF(_ data: Data) -> NSAttributedString? {
-        guard let s = NSAttributedString(rtf: data, documentAttributes: nil),
+        guard data.count <= maxRichBytes, let s = NSAttributedString(rtf: data, documentAttributes: nil),
               let html = try? s.data(from: NSRange(location: 0, length: s.length), documentAttributes: [.documentType: NSAttributedString.DocumentType.html])
         else { return nil }
         return fromHTML(html)
     }
 
     static func fromHTML(_ data: Data) -> NSAttributedString? {
-        guard let html = String(data: data, encoding: .utf8) ?? String(data: data, encoding: .isoLatin1) else { return nil }
+        guard data.count <= maxRichBytes, let html = String(data: data, encoding: .utf8) ?? String(data: data, encoding: .isoLatin1) else { return nil }
         return fromHTML(html)
     }
 
     static func fromHTML(_ html: String) -> NSAttributedString? {
+        // Pasted HTML can come from any web page's copy handler. Declarations go first, so no
+        // entity can read a local file or expand without limit, and no external DTD is loaded.
+        guard html.utf8.count <= maxRichBytes, let safe = withoutDeclarations(html),
+              !nestsDeeper(than: maxNesting, safe) else { return nil }
         // The HTML cleaner predates <mark> and would drop it: it travels as a marked <span>.
-        let marked = html
+        let marked = safe
             .replacingOccurrences(of: "<mark(?=[\\s>])", with: "<span data-of-mark=\"1\"", options: [.regularExpression, .caseInsensitive])
             .replacingOccurrences(of: "</mark\\s*>", with: "</span>", options: [.regularExpression, .caseInsensitive])
         let wrapped = marked.range(of: "<html", options: .caseInsensitive) == nil
             ? "<html><head><meta charset=\"utf-8\"></head><body>\(marked)</body></html>" : marked
-        guard let doc = try? XMLDocument(xmlString: wrapped, options: [.documentTidyHTML]),
+        guard let doc = try? XMLDocument(xmlString: wrapped, options: [.documentTidyHTML, .nodeLoadExternalEntitiesNever]),
               let root = doc.rootElement() else { return nil }
         let body = (try? root.nodes(forXPath: "//body").first) ?? root
         var w = Walker()
@@ -80,6 +93,48 @@ enum StoryPagePaste {
         let out = w.finish()
         return out.length == 0 ? nil : out
     }
+
+    /// The HTML without its DOCTYPE (internal subset included), ENTITY, ELEMENT, ATTLIST and
+    /// NOTATION declarations and processing instructions such as <?xml ...?>, or nil when a
+    /// declaration is still there after that (malformed or rebuilt from pieces).
+    static func withoutDeclarations(_ html: String) -> String? {
+        let stripped = html
+            .replacingOccurrences(of: "<![A-Za-z][^\\[>]*(?:\\[[\\s\\S]*?\\]\\s*)?>", with: "", options: .regularExpression)
+            .replacingOccurrences(of: "<\\?[^>]*>", with: "", options: .regularExpression)
+        return stripped.range(of: "<!\\s*[A-Za-z]", options: .regularExpression) == nil ? stripped : nil
+    }
+
+    /// Whether the open tags nest deeper than the limit (void and self-closing tags do not count).
+    static func nestsDeeper(than limit: Int, _ html: String) -> Bool {
+        let b = Array(html.utf8)
+        let lt = UInt8(ascii: "<"), gt = UInt8(ascii: ">"), slash = UInt8(ascii: "/")
+        func isNameByte(_ c: UInt8) -> Bool { (c >= 0x30 && c <= 0x39) || ((c | 0x20) >= 0x61 && (c | 0x20) <= 0x7A) }
+        var depth = 0, i = 0
+        while i < b.count {
+            guard b[i] == lt, i + 1 < b.count else { i += 1; continue }
+            let closing = b[i + 1] == slash
+            let start = closing ? i + 2 : i + 1
+            var j = start
+            while j < b.count, isNameByte(b[j]) { j += 1 }
+            // Not a tag: a comment, a declaration or a lone "<" in text.
+            guard j > start else { i += 1; continue }
+            let name = String(decoding: b[start..<j], as: UTF8.self).lowercased()
+            var k = j
+            while k < b.count, b[k] != gt { k += 1 }
+            if closing {
+                depth = max(0, depth - 1)
+            } else if !(k < b.count && b[k - 1] == slash), !voidTags.contains(name) {
+                depth += 1
+                if depth > limit { return true }
+            }
+            i = k + 1
+        }
+        return false
+    }
+
+    static let voidTags: Set<String> = [
+        "area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr",
+    ]
 
     /// A size from pasted CSS ("14pt", "18.67px"), or nil (Windows cssSize).
     static func cssSize(_ v: String) -> Double? {
@@ -145,20 +200,37 @@ enum StoryPagePaste {
             if !t.isEmpty { lines[lines.count - 1].append((t, style)) }
         }
 
+        /// One element being walked: its children, the next one to visit, its style, and
+        /// whether it is a block (a block ends its line when it closes).
+        private struct Frame {
+            let children: [XMLNode]
+            var next = 0
+            let style: StoryPageDocument.Style
+            let block: Bool
+        }
+
+        /// Walks with a stack of its own rather than by recursion, so deep nesting cannot
+        /// overflow the main thread's stack.
         mutating func walk(_ node: XMLNode, _ style: StoryPageDocument.Style) {
-            for child in node.children ?? [] {
+            var stack = [Frame(children: node.children ?? [], style: style, block: false)]
+            while let top = stack.last {
+                guard top.next < top.children.count else {
+                    if stack.removeLast().block { breakLine() }
+                    continue
+                }
+                let child = top.children[top.next]
+                stack[stack.count - 1].next += 1
                 switch child.kind {
                 case .text:
-                    text(child.stringValue ?? "", style)
+                    text(child.stringValue ?? "", top.style)
                 case .element:
                     guard let e = child as? XMLElement else { continue }
                     let name = (e.name ?? "").lowercased()
                     if StoryPagePaste.ignoredTags.contains(name) { continue }
-                    if name == "br" { text(" ", style); continue }
+                    if name == "br" { text(" ", top.style); continue }
                     let block = StoryPagePaste.blockTags.contains(name)
                     if block { breakLine() }
-                    walk(e, StoryPagePaste.style(of: e, in: style))
-                    if block { breakLine() }
+                    stack.append(Frame(children: e.children ?? [], style: StoryPagePaste.style(of: e, in: top.style), block: block))
                 default:
                     continue
                 }
