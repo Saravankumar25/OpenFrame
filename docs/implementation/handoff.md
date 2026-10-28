@@ -25,7 +25,7 @@
   `HomeView.swift`); the Story page placeholder disappears as soon as the first character is typed
   (`StoryPageTextView.swift`).
 - **MacHTML rebuilt** from the real development build: window at the full visible screen (1280 x 628 points on this
-  Mac), frontmost and active for every picture, Screening Room theme in Light and Dark, 733 screens (1466 pages), every page passing the pixel and text check in both modes.
+  Mac), frontmost and active for every picture, Screening Room theme in Light and Dark, 760 screens (1520 pages), every page passing the pixel and text check in both modes.
   README: `MacHTML/README.md`. The tour also covers the screens added on 2026-10-27 (library setup on a new Mac,
   Settings > Storage with a project move, Story page typing, dark sheet and zoom, Beat Board rows, screenplay dark
   page, cover photo, Found on this Mac). Capture folders are in `release-out/capture/` (git-ignored); the final run is
@@ -38,20 +38,19 @@
 
 ## Next items
 
-1. **Fix the 17 skipped tour steps** (skipped in both modes) and recapture those scenarios in Light and Dark: screenplay
-   private note actions and editing (the menu is below the visible part of the inspector); the Characters relationship
-   map and character steps in 03-story-people (map empty, add relationship, more relationships, link card, delete in
-   use, delete unused, archive, timeline); reports snapshot view; call sheet finalize (stays Draft after confirm, may be
-   an app bug, check by hand); Templates steps in 10-settings (type menu, create, own template, apply, from project
-   home). Never captured by design: real AI answers and Assistant memory (the dev build has no AI engine), system
-   Open and Save panels, drag and drop, microphone, print panel.
-2. **Rerun the full regular E2E** (one runner) on the dev or release app. Not verified: the regular suite was not rerun
-   after the driver changes to `click` and `menuButton`, so do not trust E2E results until it is.
-3. **Cleanup (owner order):** merge `mac/windows-sync` into `main` (fast-forward, local only, on the owner's word) and
-   delete the merged branches; `HTML_Mockups/` and the old mockups branch only after asking; remove finished builds
-   and caches (`target/`, `.build-cache` app copies, `release-out/e2e`, the release staging folder in
-   `$(getconf DARWIN_USER_TEMP_DIR)openframe-release-stage`). Dead code pass on the Swift app and the core; the two
-   Word manuals still describe the team password.
+1. **Rerun the full regular E2E** (one runner) on the dev or release app. Not verified: the regular suite was not rerun
+   after the driver changes to `click`, `menuButton` and the pop-up helpers, so do not trust E2E results until it is.
+2. **App bug found by the capture:** right after Save Snapshot, a reports or sides snapshot sometimes stays on its
+   spinner (2 of 3 runs; `SidesModel.save` calls `openSnapshot(id)` the same way). The tour works around it for reports
+   by opening the saved row again; the MacHTML page `schedule-sides-snapshot` still shows the spinner. Fix in the app,
+   then recapture `06-production-days`.
+3. **A new disk image** with this session's three UI fixes, on the owner's word (`mac/release/OpenFrame-5.dmg` on GitHub
+   is build 183, made before them).
+4. **Cleanup left:** `HTML_Mockups/` and the old mockups branch only after asking; remove finished builds and caches
+   (`target/`, `.build-cache` app copies, `release-out/e2e`, the release staging folder in
+   `$(getconf DARWIN_USER_TEMP_DIR)openframe-release-stage`). Dead code pass on the Swift app and the core; the two Word
+   manuals still describe the team password. Never captured by design in MacHTML: real AI answers and Assistant memory
+   (the dev build has no AI engine), system Open and Save panels, drag and drop, microphone, print panel.
 
 ## Open E2E items (from the release run; check which the rebuild fixed)
 
