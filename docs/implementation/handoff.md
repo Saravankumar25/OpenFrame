@@ -17,6 +17,8 @@
 
 ## Next session: MacHTML recapture (2 to 3 hours, owner order of 2026-10-27)
 
+The prompt to paste is [next-session-prompt-machtml.md](next-session-prompt-machtml.md). Summary:
+
 The last MacHTML was vague: windows not at full size, some screens not captured properly, the old theme. Recapture all
 of it with the Screening Room theme (Light and Dark), consistently, with no mistakes:
 1. Build the dev app (`apps/macos/scripts/bundle-dev-app.sh`) and the driver; run

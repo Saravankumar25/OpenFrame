@@ -57,6 +57,34 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
 
 ## Entries
 
+### 2026-10-28, Mac release round: security, store readiness, password removal, OpenFrame-5.dmg installed
+
+- **Areas and items worked:** owner requests: store-quality Mac app, finish the end-to-end run and fix it, remove the
+  team password (owner decision 2026-10-27, ADR-0039), build `OpenFrame-5.dmg` and install it on this Mac.
+- **Done:** security review of the port and its fixes (Story page paste could read local files: fixed; macOS
+  network volumes refused; Finder-file rule cannot delete user files; AI export, prompt, guard and memory hardening);
+  Mac App Store readiness report with entitlements and privacy manifest fixed; Mac free-memory reading fixed and the
+  early start measured; sleep stops background AI work; export over Project Settings; accessibility pass of every
+  workspace; release app now generates its Swift interface from the library it links (a checksum mismatch stopped
+  the first release build at start); team password and all its logic removed from both apps; architecture lint
+  clean again; E2E fixes (Notes page layout loop on release, voice note player ids, drags into sheets, theme colours).
+- **Evidence:** full E2E on the release app: 194 pass, 30 fail; after the fixes and reruns on builds 182 and 183, 24
+  still fail and 2 are skipped by design (they need a development build): 14 keyboard scenarios need Keyboard
+  navigation on (owner setting, off on this Mac), 91 sixteen themes (readability findings to settle), 86 moodboard
+  drag and two panel-order scenarios, 75 one crash scenario (Cmd+J after relaunch), 78 remove, 01-journey 13 and 15,
+  95 window fit at the minimum size (Screenplay with the sidebar, Search palette). Swift 784, Rust 2664, web 735
+  tests pass. `OpenFrame-5.dmg` (build 183, commit `be2431eb`) installed as `/Applications/OpenFrame Studio.app`.
+- **Features moved:** none.
+- **Docs updated:** ADR-0039, owner decisions, CLAUDE.md, doc 37 and 40, store readiness report, handoff, the
+  next-session prompt `docs/implementation/next-session-prompt-machtml.md`.
+- **Decisions made or needed:** made: team password removed; release app built and installed; Apple model later.
+  Needed: AI tool bar; library.json identity limit; store items that need Xcode and the developer account.
+- **Blocked / risks:** a View menu Cmd+J command broke opening the AI panel and was reverted; the open Cmd+J item
+  stays. Mac App Store build needs full Xcode (not installed; about 40 GB free disk needed).
+- **Next:** MacHTML recapture from the real app (prompt above), then cleanup and the open E2E items.
+- **Checks run:** cargo fmt, clippy, cargo test, Swift tests, web tsc and vitest, architecture lint, check-links,
+  check:writing, check-migrations; E2E as above.
+
 ### 2026-10-27, Mac sync with Windows main 114dff50 (core, screens, AI, storage)
 
 - **Areas and items worked:** owner request: port every Windows change since GitHub `324cd963` to the Mac (the
