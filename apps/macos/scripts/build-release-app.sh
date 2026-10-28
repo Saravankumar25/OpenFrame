@@ -34,6 +34,8 @@ OUT="$ROOT/release-out/mac"
 APP="$OUT/OpenFrame Studio.app"
 VERSION="$(sed -n 's/^version = "\(.*\)"/\1/p' "$ROOT/Cargo.toml" | head -1)"
 COMMIT="$(git -C "$ROOT" rev-parse --short HEAD)"
+# The store accepts at most three numbers in CFBundleVersion: the build number is the commit count.
+BUILD="$(git -C "$ROOT" rev-list --count HEAD)"
 
 echo "== 1. Rust core (release, team gate on)"
 cd "$ROOT"
@@ -88,7 +90,7 @@ cat > "$APP/Contents/Info.plist" <<PLIST
 	<key>CFBundleIconFile</key><string>AppIcon</string>
 	<key>CFBundlePackageType</key><string>APPL</string>
 	<key>CFBundleShortVersionString</key><string>${VERSION}</string>
-	<key>CFBundleVersion</key><string>${VERSION}.${COMMIT}</string>
+	<key>CFBundleVersion</key><string>${BUILD}</string>
 	<key>LSMinimumSystemVersion</key><string>14.0</string>
 	<key>LSArchitecturePriority</key><array><string>arm64</string></array>
 	<key>LSRequiresNativeExecution</key><true/>
@@ -120,5 +122,5 @@ OPENFRAME_TEAM_PASSWORD="$OPENFRAME_TEAM_PASSWORD" node "$ROOT/scripts/scan-inst
 
 echo "== Done"
 echo "$APP"
-echo "version $VERSION, commit $COMMIT"
+echo "version $VERSION, build $BUILD, commit $COMMIT"
 shasum -a 256 "$APP/Contents/MacOS/OpenFrameStudio"
