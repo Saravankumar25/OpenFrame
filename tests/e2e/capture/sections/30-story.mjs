@@ -107,6 +107,13 @@ export default async function (t) {
     // -------------------------------------------------------------- Story page
 
     await shot("story-page-filled", () => t.storyTab("Story"));
+    await shot("story-page-highlight-colours", () => t.go('//button[@aria-label="Highlight colour"]'));
+    await t.closeOverlays();
+    await shot("story-page-underline-colours", () => t.go('//button[@aria-label="Underline colour"]'));
+    await t.closeOverlays();
+    // Dark page is a view preference: switch it back off for the other states.
+    await shot("story-page-dark", () => t.go('//button[@aria-label="Dark page"]'), { wait: 600 });
+    await t.go('//button[@aria-label="Dark page"]');
     await shot("story-page-export-dialog", () => t.press("Export"));
     await t.closeOverlays();
 
@@ -115,6 +122,11 @@ export default async function (t) {
     // -------------------------------------------------------------- Beat Board
 
     await shot("story-board-filled", () => t.storyTab("Board"), { home: "Story" });
+    // Horizontal layout is a view preference: back to Vertical for the other states.
+    const layout = (name) => `//*[@aria-label="Beat Board layout"]//*[@role="radio"][normalize-space(.)="${name}"]`;
+    await shot("story-board-horizontal", () => t.go(layout("Horizontal")), { wait: 800 });
+    await t.go(layout("Vertical"));
+    await t.sleep(500);
     await shot("story-board-add-menu", () => t.press("Add"));
     await t.closeOverlays();
     await shot("story-board-more-actions-menu", () => t.go('//button[@aria-label="More Beat Board actions"]'));
@@ -383,7 +395,8 @@ export default async function (t) {
       await t.type("#rel-note", "Met on the coast road");
     });
     await cancel();
-    await shot("story-relationship-map", () => t.press("Open Relationship Map"), { wait: 900 });
+    await shot("story-relationship-map", () => t.press("Relationship Map", '//section[@aria-label="Character details"]'), { wait: 900 });
+    await shot("story-relationship-map-whole-film", () => t.press("Whole film map"), { wait: 900 });
     await t.press("Back to Characters");
 
     for (const name of ["LAKSHMI", "PADMA"]) {

@@ -48,9 +48,10 @@ function run(label, env, logFile) {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-// 1. Parts, started a few seconds apart.
+// 1. Parts, started a few seconds apart. WH_MERGE_ONLY=1 skips this and merges the part folders
+// already on disk (after one part was captured again on its own).
 const partDirs = PARTS.map((_, i) => join(CACHE, `wh-part-${i + 1}`));
-const codes = await Promise.all(
+const codes = process.env.WH_MERGE_ONLY === "1" ? [] : await Promise.all(
   PARTS.map(async (sections, i) => {
     await sleep(i * 15_000);
     return run(
@@ -60,6 +61,8 @@ const codes = await Promise.all(
         E2E_PORT_BASE: String(4600 + i * 10),
         E2E_CAPTURE_OUT: partDirs[i],
         E2E_CAPTURE_NO_SEED_SHOTS: i === 0 ? "0" : "1",
+        // Start like a new computer so the seed passes (and part 1 records) the library setup screen.
+        OPENFRAME_LIBRARY_SETUP: "1",
       },
       join(CACHE, `wh-part-${i + 1}.log`),
     );

@@ -247,6 +247,10 @@ export default async function (t) {
 
   // ---------------------------------------------------- view menu and its dialogs
   await phase("dialogs", async () => {
+    // Dark page is a view preference: back to Light page for the other states.
+    await t.state("sp-dark-page", () => viewItem("Dark page"), { wait: 600 });
+    await viewItem("Light page");
+    await t.sleep(300);
     await t.state("sp-view-menu", () => t.go(VIEW));
     await t.state("sp-title-page-dialog", async () => {
       await t.menuItem("Title page…");

@@ -1,7 +1,10 @@
 // @e2e-data-root: own
 // WindowsHTML capture tour. Skipped unless E2E_CAPTURE=1:
 //
-//   E2E_CAPTURE=1 node tests/e2e/run.mjs --only=zz-capture --no-build
+//   E2E_CAPTURE=1 OPENFRAME_LIBRARY_SETUP=1 node tests/e2e/run.mjs --only=zz-capture --no-build
+//
+// OPENFRAME_LIBRARY_SETUP=1 starts the app like a new computer, so the seed records the library
+// setup screen before the first-launch name dialog; without it the seed starts at that dialog.
 //
 // Seeds the invented demo project "Night Bus" in its own data root (tests/e2e/capture/seed.mjs),
 // runs every section in tests/e2e/capture/sections/ in file-name order at a fixed 1600x1000 window,
