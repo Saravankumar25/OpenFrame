@@ -19,6 +19,16 @@
    Vitest 740 green; typecheck and lint clean; governance 90 of 90; targeted end-to-end specs (30, 31, 62, 71, 00, 10)
    green on the debug build. Not run: the full end-to-end suite (the owner said targeted tests are enough).
 3. No installer was built for these changes (owner: do not build OpenFrame-6 yet).
+4. **WindowsHTML refreshed on 2026-10-31** from commit 114dff50: 816 screens in Light and Dark, 1632 of 1632
+   pages pass the pixel check. New: library setup (3), Settings > Storage, Story page colour menus and Dark page,
+   Beat Board Horizontal, whole-film relationship map, Screenplay Dark page. Pushed to GitHub `main` `windows/` on
+   the owner's word. Two app defects found by the capture, not fixed (owner to decide):
+   - Under the licence lock (trial ended, purchase revoked) the core refuses `library.status`
+     (`ALLOWED_WHILE_LOCKED` in `entitlement.rs`), so `LibrarySetupGate` shows "could not check where your work is
+     kept" and the lock dialogs never show. Store and Mac channels only; licence code, needs a security review.
+     The three licence-locked screens are missing from WindowsHTML until this is fixed.
+   - The Story page Highlight and Underline colour menus show empty boxes instead of colour swatches (the menu
+     opens outside the Story page, where the colour variables live).
 
 ## Next items, in order
 

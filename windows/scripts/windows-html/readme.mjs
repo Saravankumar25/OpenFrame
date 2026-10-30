@@ -30,6 +30,9 @@ export function writeReadme({ manifest, results, commit, threshold, maxRatio, wi
   const passed = results.filter((r) => r.ok).length;
   const max = results.length ? Math.max(...results.map((r) => r.ratio)) : 0;
   const unreachable = manifest.unreachable.map((u) => `- **${u.name}** (${u.section}): ${u.why}`).join("\n") || "- None recorded.";
+  const failed = manifest.failed.length
+    ? `\nStates the tour tried and could not capture in this run (no page is written for them):\n\n${manifest.failed.map((f) => `- **${f.name}** (${f.section}): ${f.error}`).join("\n")}\n`
+    : "";
   const sections = [...bySection].map(([k, v]) => `| ${k} | ${v} |`).join("\n");
   const text = `# WindowsHTML
 
@@ -69,7 +72,7 @@ node scripts/windows-html/parallel.mjs
 The whole tour in one data root, one section after another (about 2.5 hours), gives the same pages:
 
 \`\`\`bash
-E2E_CAPTURE=1 node tests/e2e/run.mjs --only=zz-capture --no-build
+E2E_CAPTURE=1 OPENFRAME_LIBRARY_SETUP=1 node tests/e2e/run.mjs --only=zz-capture --no-build
 \`\`\`
 
 The run replaces \`light/\`, \`dark/\`, \`assets/\`, \`index.html\` and this file. Raw screenshots stay in
@@ -99,6 +102,6 @@ ${OUTSIDE.map(([a, b]) => `- **${a}**: ${b}`).join("\n")}
 States the tour recorded as unreachable:
 
 ${unreachable}
-`;
+${failed}`;
   writeFileSync(join(OUT, "README.md"), text);
 }

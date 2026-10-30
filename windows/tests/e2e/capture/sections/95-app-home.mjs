@@ -186,6 +186,7 @@ export default async function (t) {
     await t.state("apphome-settings-shortcuts-recording", () => t.go('(//button[starts-with(@aria-label,"Add a shortcut for")])[1]'), { blur: false });
     await t.keys("Escape");
     await t.sleep(300);
+    await t.state("apphome-settings-storage", () => openSettingsTab("Storage"), { wait: 1500 });
     await t.state("apphome-settings-about", () => openSettingsTab("About and support"));
     await t.state("apphome-settings-about-support", async () => {
       await t.browser.execute(() => {

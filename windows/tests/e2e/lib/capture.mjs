@@ -160,7 +160,8 @@ export function captureSession(getBrowser) {
   let section = "";
   let muted = false;
   const names = new Set();
-  let current = "light";
+  // Unknown until the first capture sets it: the app starts in System mode, which follows Windows.
+  let current = null;
   let clicks = [];
 
   async function freeze(browser, on) {
