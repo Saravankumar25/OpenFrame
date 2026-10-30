@@ -8,7 +8,7 @@ import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { open as openDialog } from "@tauri-apps/plugin-dialog";
 import { FolderOpen } from "lucide-react";
 import { Banner, Button, Segmented } from "../../design-system";
-import { call } from "../../ipc/client";
+import { call, OpError } from "../../ipc/client";
 import { queryClient } from "../../ipc/query";
 import type { LibraryInspection } from "../../ipc/generated/LibraryInspection";
 import type { LibraryStatus } from "../../ipc/generated/LibraryStatus";
@@ -26,15 +26,18 @@ export const messageOf = (e: unknown): string =>
 export function LibrarySetupGate({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<LibraryStatus | null>(null);
   const [failed, setFailed] = useState(false);
+  const [licenceLocked, setLicenceLocked] = useState(false);
   const load = useCallback(() => {
     setFailed(false);
     call<LibraryStatus>("library.status", {})
       .then(setStatus)
-      .catch(() => setFailed(true));
+      .catch((e) => (e instanceof OpError && e.is("permission.licence_required") ? setLicenceLocked(true) : setFailed(true)));
   }, []);
   useEffect(load, [load]);
 
-  if (status?.state === "ready") return <>{children}</>;
+  // The licence lock refuses every operation but its own; the app behind this gate shows the lock
+  // dialog (buy or restore), which a library question cannot answer.
+  if (status?.state === "ready" || licenceLocked) return <>{children}</>;
   if (!status) {
     return (
       <div className="app-root splash" role={failed ? undefined : "status"}>

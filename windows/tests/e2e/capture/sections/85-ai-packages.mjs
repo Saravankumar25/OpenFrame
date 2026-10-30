@@ -66,7 +66,8 @@ export default async function (t) {
       if (typedName) await t.state(typedName, () => typeQuestion(q));
       else await typeQuestion(q);
       await t.press("Send", PANEL);
-      if (workingName && (await panelHas("Working on it"))) await t.state(workingName, null);
+      // The progress row, whatever its label: "Working on it" gives way to the first progress line.
+      if (workingName && (await b.$('aside[aria-label="AI Assistant"] .ai-progress').isExisting())) await t.state(workingName, null);
       const r = await waitAnswer(q, before);
       await t.state(doneName, null, { wait: 800 });
       if (after) await after(r);

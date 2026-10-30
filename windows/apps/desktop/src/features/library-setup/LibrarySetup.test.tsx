@@ -4,7 +4,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { open as openDialog } from "@tauri-apps/plugin-dialog";
-import { call } from "../../ipc/client";
+import { call, OpError } from "../../ipc/client";
 import { answerFrom, renderWithClient, type OpTable } from "../../app/home/testUtils";
 import type { LibraryInspection } from "../../ipc/generated/LibraryInspection";
 import type { LibraryStatus } from "../../ipc/generated/LibraryStatus";
@@ -55,6 +55,16 @@ describe("Set up your OpenFrame library", () => {
     answer({ "library.status": READY });
     show();
     expect(await screen.findByText("Home screen")).toBeInTheDocument();
+  });
+
+  it("lets the licence lock dialog show when the lock refuses the library question", async () => {
+    callMock.mockImplementation((async (op: string) => {
+      calls.push({ op, args: {} });
+      throw new OpError(op, { code: "permission.licence_required", message: "Buy OpenFrame Studio or restore your purchase.", retryable: false });
+    }) as typeof call);
+    show();
+    expect(await screen.findByText("Home screen")).toBeInTheDocument();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
 
   it("offers three choices and creates the default only on confirm", async () => {

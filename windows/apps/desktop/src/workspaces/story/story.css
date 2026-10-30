@@ -30,8 +30,9 @@
 .story-a4-text p { margin: 0; min-height: 1.35em; }
 /* Highlight and underline palettes (prose.rs HIGHLIGHTS and UNDERLINES hold the same values for the
    PDF). The marks name their colour in style="...var(--story-hl-green)"; the toolbar swatches use the
-   light page values, the Dark page redefines them below. */
-.story-write {
+   light page values, the Dark page redefines them below. On :root because the colour menus open in a
+   portal outside the Story page. */
+:root {
   /* document colour: pastel marker shades that read with black text */
   --story-hl-yellow: #ffe27a; --story-hl-green: #b8f0a8; --story-hl-blue: #b3dcff; --story-hl-pink: #ffc4e1; --story-hl-orange: #ffcc99; --story-hl-purple: #dcc8ff;
   /* document colour: underline colours on a white page */
