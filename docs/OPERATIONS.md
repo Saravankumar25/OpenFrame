@@ -26,38 +26,29 @@
 ## When the app changes
 
 - New or changed screens: recapture WindowsHTML (`windows/`) or MacHTML (`mac/`), copy them to
-  `research/WindowsHTML-src` and `research/MacHTML-src` (or point `OF_WIN_HTML` / `OF_MAC_HTML` at them), run
-  `npm run screens`. The capture script masks personal names, local paths and machine details before each screenshot
-  and refuses to write a screen that still contains them.
-- Which tutorials use a screen: `docs/tutorial-screen-map.json` (`screens["win/<screen>"]` lists `win:<tutorial id>`).
-- A tutorial step: edit `src/content/tutorials/<win|mac>/<id>.mjs`. Check a target with
-  `node research/probe.mjs <win|mac> <screen>.html '<selector>'` (it must match one element). `npm run screens` records
-  the click target; `npm test` fails if a target has no rectangle.
-- Copy rules: `docs/CONTRACT.md` (truth rules, no em dashes, no invented claims). Facts with source lines:
-  `research/facts.json` and `research/capability-matrix.md`.
+  `research/WindowsHTML-src` and `research/MacHTML-src`, then run `npm run screens` (screen catalogs and Windows
+  thumbnails). A screen name that disappears makes `npm run build` and `npm run check:content` fail and name it.
+- Tutorials: edit the workflow in `src/content/manual/<win|mac>/<area>.mjs` (schema in `docs/CONTENT-BRIEF.md`), run
+  `npm run check:content`. Which tutorials use a screen: `docs/tutorial-screen-map.json`.
+- Features: `src/content/catalog.mjs` (every capability with its screens) and `src/content/features.mjs` (page copy).
+- User manuals: `npm run manuals` writes the two PDFs to `manuals/` (git-ignored). They are internal reference for
+  writing tutorials and are never published on the website (owner decision 2026-10-31).
+- Store links: set `OF_STORE_WIN` and `OF_STORE_MAC` (or `STORE` in `site.config.mjs`); the store buttons then
+  become links. Until then they look normal and do nothing when clicked.
 
-## Validation (2026-10-21)
+## Validation (2026-10-31)
 
-- `npm test`: 81 of 81 pass. Static checks on all 96 pages (one h1, unique titles and descriptions, canonical and Open
-  Graph tags, alt text and image sizes, no inline styles or scripts, JSON-LD parses, no em or en dashes, every internal
-  link and asset resolves, sitemap complete). 62 tutorial modules (fields, 3 to 9 steps, every screen captured, every
-  click target measured, related and next ids exist). Browser tests: platform switch and persistence, switching from a
-  Windows-only tutorial to macOS shows the explanation, player next, previous, play, pause, keyboard and full screen, no
-  horizontal scroll at 375, 768 and 1280 pixels, back and forward, 404 status, axe with no serious or critical issues.
-- Live smoke test on https://openframe-studio.pages.dev: key pages 200, unknown page 404, old `.html` URL 301, CSP and
-  HSTS headers served, no console errors on 7 pages including tutorials, platform switch works live.
-- Lighthouse (live, desktop run): home page performance 100, accessibility 100, best practices 100, SEO 92 before the
-  link-text fix (now fixed); Windows tutorial page 100, 100, 100, 100. LCP 1.6 to 1.9 s, CLS 0.
+- `npm test`: 28 of 28 pass. Static: titles, descriptions, canonicals, one h1 per page, no em or en dashes, no internal
+  release wording, every internal link, image and app screen resolves, company and founders, store buttons, prices,
+  sitemap and screen framing headers. Content: every Windows (819) and Mac (760) screen described in a manual area,
+  feature catalog screens exist, no manual page or PDF on the site. Browser: website theme and app screen theme are
+  independent and remembered, platform switch in place and across platform pages, screens scale, India and US prices by
+  time zone and by the region control, store buttons clickable without going anywhere, no sideways scroll at 375 px,
+  axe with no serious or critical issues.
 
-## Open business inputs (owner decisions, not blockers for the site)
+## Open business inputs
 
-- Domain and company email (Chapter 2). The contact page says no public address is decided yet.
-- Final prices, trial start and store listings (Chapter 3). The site shows target prices marked as targets and says no
-  trial is running.
-- Final legal terms and privacy policy for the product. The site carries an interim website notice only.
-- Minimum RAM and disk for the app are not published; the platform pages say so.
-- Public download: none until release. The Mac internal `.dmg` is not built yet.
-- Social accounts: none listed until they exist.
-- Mac AI tutorials: the Mac screens of the offline assistant were not captured (the capture build had no AI runtime).
-  Recapture MacHTML with the assistant installed, then add steps to `mac/ai-assistant-setup.mjs` and
-  `mac/ai-assistant-ask.mjs`.
+- Microsoft Store and Mac App Store listing links (the buttons do nothing until they exist).
+- Custom domain and company email; a public contact address.
+- Mac screens of the offline assistant at work (the Mac capture had no AI engine); the catalog marks those capabilities
+  as Mac without a Mac screen.

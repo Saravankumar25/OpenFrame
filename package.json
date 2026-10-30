@@ -6,8 +6,10 @@
     "doc": "docs"
   },
   "scripts": {
-    "screens": "node scripts/capture-screens.mjs",
+    "screens": "node scripts/extract-screens.mjs && node scripts/render-screens.mjs",
     "build": "node scripts/build.mjs",
+    "manuals": "node scripts/build-manuals.mjs",
+    "check:content": "node scripts/check-content.mjs",
     "serve": "node scripts/serve.mjs",
     "test": "node --test \"tests/*.test.mjs\"",
     "deploy": "node scripts/deploy.mjs"

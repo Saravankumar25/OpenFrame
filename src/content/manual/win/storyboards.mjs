@@ -1,0 +1,445 @@
+export default {
+  area: `Storyboards`,
+  slug: `storyboards`,
+  order: 14,
+  part: `Plan`,
+  intro: [
+    `A storyboard is a row of panels that shows, frame by frame, what the audience will see in a scene. The page is called Storyboards and asks: What will the audience see? Each panel can hold a picture you import, a quick sketch you draw inside OpenFrame, or nothing yet, plus a short description and optional camera details.`,
+    `Storyboards is one of the tabs inside Production. A storyboard usually belongs to a screenplay scene, so its heading comes from the script and you never type it twice. You can also make a standalone storyboard that is not tied to any scene, for example for a title sequence. A scene can have more than one storyboard.`,
+    `Panels are numbered by their order. Drag a panel and the numbers follow. A panel can be linked to a shot from the Shot Lists tab, and then it shows that shot's number, for example 1A. Export makes a printable panel sheet as a PDF.`,
+  ],
+  layout: [
+    { name: `Page header`, text: `The title Storyboards and the line What will the audience see? On the right: Export, New Storyboard and Add Panel. Add Panel opens a menu with Import Image, Draw / Sketch and Empty Panel. It is greyed out until a scene or storyboard is chosen.` },
+    { name: `Scene or storyboard picker`, text: `A list under the header, labelled Scene or storyboard. It holds the scenes of your screenplay, then storyboards whose scene was removed from the script, then Other storyboards. When a scene has more than one storyboard, a second list appears next to it to choose between them.` },
+    { name: `Panel count and board menu`, text: `A tag shows how many panels the open storyboard has, for example 3 panels. At the right end, the ... button, called Storyboard actions, opens the menu for the whole storyboard.` },
+    { name: `Panel grid`, text: `The panels, three to a row. Each panel shows its number in the top left corner, its picture, and a short description under it. A panel linked to a shot shows the shot number at the top right. The last tile, Add Panel, opens the same menu as the header button. A line under the grid explains dragging and pasting.` },
+    { name: `Panel drawer`, text: `A panel that slides in from the right when you open a panel. It is headed Storyboard panel and then the panel number, with the shot number when the panel is linked.` },
+  ],
+  workflows: [
+    {
+      id: `storyboards-create-first`,
+      title: `Start a storyboard when the project has no scenes`,
+      purpose: `Make a standalone storyboard in a project that has no screenplay scenes yet.`,
+      level: `Beginner`,
+      prerequisites: [`A project is open that has no storyboards and no screenplay scenes.`],
+      steps: [
+        {
+          screen: `prod-storyboards-empty`,
+          do: `In Production, click the Storyboards tab, then click New Storyboard.`,
+          explain: `The page says No storyboards yet. It explains that storyboards usually belong to a screenplay scene, so the heading comes from the script, and that you can also start a standalone storyboard now. The screenplay never needs shot directions.`,
+        },
+        {
+          screen: `prod-storyboard-new-error`,
+          do: `In the New Storyboard dialog, type a Name *, for example Title sequence, and click Create Storyboard.`,
+          explain: `With no scene chosen, Name * is required. If it is empty you see Give the storyboard a name, or choose a scene. The Scene list only appears when your project has scenes, and it starts on No scene (standalone storyboard) when the dialog is opened from a board that is not tied to a scene.`,
+        },
+        {
+          screen: `prod-storyboard-no-panels`,
+          do: `Look at the new storyboard.`,
+          explain: `The picker shows the new storyboard, the tag says 0 panels, and the page says Create panels for this scene. A panel needs only a visual area and a short description. It offers Import Image, Draw / Sketch and Empty Panel.`,
+        },
+      ],
+      result: `A standalone storyboard is open with no panels, ready for you to add some.`,
+      cautions: [
+        `A standalone storyboard has no scene heading and no shot numbers. Link it to a scene later from the Storyboard actions menu.`,
+      ],
+      related: [`storyboards-add-panel`, `storyboards-link-scene`],
+    },
+    {
+      id: `storyboards-choose-scene`,
+      title: `Open the storyboard of a scene`,
+      purpose: `Switch between scenes and other storyboards, and start a scene's storyboard by adding its first panel.`,
+      level: `Beginner`,
+      prerequisites: [`The project has a screenplay with scenes.`],
+      steps: [
+        {
+          screen: `prod-storyboard-panels`,
+          do: `Click the Scene or storyboard list under the header and pick a scene.`,
+          explain: `The picker shows scene numbers and headings, for example Scene 1: EXT. RAYAPURAM BUS STAND - DAY. A scene marked review has changed in the script since you planned it. The panels of that scene's storyboard appear below, and the tag shows how many there are.`,
+        },
+        {
+          screen: `prod-storyboard-scene-no-board`,
+          do: `Pick a scene that has no storyboard yet, such as Scene 3.`,
+          explain: `The tag says 0 panels and the page says Create panels for this scene. You do not need to make a storyboard first. Adding the first panel creates the scene's storyboard for you.`,
+        },
+        {
+          screen: `prod-storyboard-scene-no-board`,
+          do: `Click Import Image, Draw / Sketch or Empty Panel, or use Add Panel at the top right.`,
+          explain: `Each choice adds a first panel and the storyboard is created with it. Adding panels is explained in Add panels to a storyboard.`,
+        },
+      ],
+      result: `You are looking at the storyboard of the scene you chose.`,
+      cautions: [
+        `If a scene was removed from the script, its storyboards move to a Removed from script group in the picker. A banner says the scene was removed and its panels are kept for reference. They are hidden from active planning.`,
+        `When a scene changed after you planned it, a banner says Scene N changed since planning. Your panels are kept. Check them against the script, then click Mark reviewed.`,
+      ],
+      related: [`storyboards-add-panel`, `storyboards-new-for-scene`],
+    },
+    {
+      id: `storyboards-new-for-scene`,
+      title: `Make another storyboard for a scene`,
+      purpose: `Keep a second set of panels for the same scene, for example an alternative way to shoot it.`,
+      level: `Intermediate`,
+      prerequisites: [`A scene is chosen and it already has a storyboard.`],
+      steps: [
+        {
+          screen: `prod-storyboard-actions-menu`,
+          do: `Click the ... button called Storyboard actions, then click Another storyboard for this scene….`,
+          explain: `The menu for a storyboard that belongs to a scene has Rename…, Change scene…, Make standalone, Another storyboard for this scene… and, after a divider, Delete storyboard. The Another storyboard entry is only there for scene storyboards.`,
+        },
+        {
+          screen: `prod-storyboard-new-for-scene-dialog`,
+          do: `In the New Storyboard dialog, check the Scene and type a Name if you want one.`,
+          explain: `The scene is already chosen. Name is optional here and, if you leave it empty, defaults to the scene heading. A hint under the Scene list says the scene heading and identity come from the screenplay.`,
+        },
+        {
+          screen: `prod-storyboard-new-dialog`,
+          do: `Click Create Storyboard.`,
+          explain: `The same dialog also opens from New Storyboard at the top of the page. Its Scene list offers No scene (standalone storyboard) and every scene of the script. Cancel closes it with nothing made.`,
+        },
+      ],
+      result: `The scene now has two storyboards, and a second list next to the picker lets you switch between them.`,
+      cautions: [
+        `The second storyboard of a scene is separate. Its panels do not change the first one.`,
+      ],
+      related: [`storyboards-rename`, `storyboards-delete`],
+    },
+    {
+      id: `storyboards-add-panel`,
+      title: `Add panels to a storyboard`,
+      purpose: `Add a panel from a picture file, a sketch, a pasted picture, or an empty frame.`,
+      level: `Beginner`,
+      prerequisites: [`A scene or storyboard is chosen in the picker.`],
+      steps: [
+        {
+          screen: `prod-storyboard-no-panels`,
+          do: `Click Add Panel at the top right.`,
+          explain: `Add Panel is greyed out until a scene or storyboard is chosen. It opens a menu with three choices.`,
+        },
+        {
+          screen: `prod-storyboard-add-panel-menu`,
+          do: `Click Import Image, Draw / Sketch or Empty Panel.`,
+          explain: `Import Image opens the Windows window for choosing a picture and adds it as a panel. Draw / Sketch opens the sketch tool, described in the next workflow. Empty Panel adds a panel with no picture yet, shown as Empty panel, so you can fill it later from its drawer. A message says Added panel followed by its number.`,
+        },
+        {
+          screen: `prod-storyboard-panels`,
+          do: `To add a picture from the clipboard, click the storyboard page and press Ctrl+V.`,
+          explain: `The pasted picture becomes the next panel. The grid shows the panels in order, here three panels under Scene 1, and the Add Panel tile at the end offers the same menu.`,
+        },
+      ],
+      result: `A new panel is at the end of the storyboard, numbered by its place.`,
+      cautions: [
+        `A panel needs only a visual area and a short description. You can leave the picture empty and add it later.`,
+        `If a picture cannot be read, the panel says Image unavailable. Open the panel and import the picture again.`,
+      ],
+      related: [`storyboards-sketch-panel`, `storyboards-edit-panel`],
+    },
+    {
+      id: `storyboards-sketch-panel`,
+      title: `Draw a sketch as a panel`,
+      purpose: `Draw a simple frame with the built-in pen and save it as a panel.`,
+      level: `Beginner`,
+      prerequisites: [`A scene or storyboard is chosen in the picker.`],
+      steps: [
+        {
+          screen: `prod-storyboard-sketch-dialog`,
+          do: `Click Add Panel, then Draw / Sketch. The Draw / Sketch panel dialog opens.`,
+          explain: `The tools are Pen and Eraser, three ink colours (Black, Red and Blue), Undo and Clear. Pen and Black are selected when it opens. Undo, Clear and Save Panel are greyed out until you draw something. A note says: Basic sketching only. For polished art, import an image made elsewhere.`,
+        },
+        {
+          screen: `prod-storyboard-sketch-drawn`,
+          do: `Drag with the mouse inside the white sketch area to draw. Click a colour to change ink, or click Eraser to rub out.`,
+          explain: `Choosing a colour switches back to the Pen. Undo takes back the last stroke. Clear wipes the whole sketch, so use Undo when you only want to take back one line.`,
+        },
+        {
+          screen: `prod-storyboard-sketch-drawn`,
+          do: `Click Save Panel.`,
+          explain: `The sketch is added as a new panel. Cancel closes the dialog and keeps nothing.`,
+        },
+      ],
+      result: `Your sketch is a panel at the end of the storyboard.`,
+      cautions: [
+        `Clear removes everything you drew. Use Undo to take back one stroke.`,
+        `The sketch tool is basic. For finished artwork, use Import Image.`,
+      ],
+      related: [`storyboards-add-panel`, `storyboards-edit-panel`],
+    },
+    {
+      id: `storyboards-edit-panel`,
+      title: `Describe a panel and set its camera details`,
+      purpose: `Add a description, framing, movement, angle, duration and notes to a panel, or change its picture.`,
+      level: `Intermediate`,
+      prerequisites: [`The storyboard has at least one panel.`],
+      steps: [
+        {
+          screen: `prod-storyboard-panel-drawer`,
+          do: `Click a panel, or select it and press Enter, to open its drawer.`,
+          explain: `The drawer is headed Storyboard panel and the panel number. Changes in a box are saved when you click out of it. Close shuts the drawer. Delete at the bottom removes the panel.`,
+        },
+        {
+          screen: `prod-storyboard-panel-drawer`,
+          do: `Type in Description, then fill in whichever of Framing, Camera movement, Angle, Dialogue / sound note and Storyboard note you need.`,
+          explain: `Description is a short line about what we see. Framing, Camera movement and Angle are free text that also suggest common choices as you type. Dialogue / sound note records what is heard, for example a phone ringing off screen. Storyboard note is for anything else about the panel.`,
+        },
+        {
+          screen: `prod-storyboard-panel-drawer`,
+          do: `Use Import Image…, Draw / Sketch… or Clear next to Visual to change the picture.`,
+          explain: `Import Image… and Draw / Sketch… replace the panel's picture. Clear turns the panel back into an empty panel. Clear only shows when the panel has a picture. A message tells you what changed.`,
+        },
+        {
+          screen: `prod-storyboard-panel-duration-error`,
+          do: `Type the length of the panel in Duration (seconds), for example 3.5, and click out of the box.`,
+          explain: `The box takes a number of seconds. If you type something else, such as abc, the message Enter seconds between 0 and 3600. shows and the old duration is kept. Type a number to clear it.`,
+        },
+      ],
+      result: `The panel carries its description and camera details, and shows its description under its picture.`,
+      cautions: [
+        `Duration must be a number between 0 and 3600 seconds.`,
+        `A panel with no description shows Add a short description under its picture.`,
+      ],
+      related: [`storyboards-link-shot`, `storyboards-reorder-panels`],
+    },
+    {
+      id: `storyboards-reorder-panels`,
+      title: `Change the order of panels`,
+      purpose: `Drag panels into a new order and let the numbers follow.`,
+      level: `Beginner`,
+      prerequisites: [`The storyboard has at least two panels.`],
+      steps: [
+        {
+          screen: `prod-storyboard-panels`,
+          do: `Drag a panel to a new place in the grid.`,
+          explain: `The panel numbers follow the order, and for a scene storyboard the numbers of linked shots follow too. A message says Moved panel, and adds that shot numbers follow the new order when the storyboard belongs to a scene.`,
+        },
+        {
+          screen: `prod-storyboard-panels`,
+          do: `To move a panel with the keyboard, focus it, press Space, use the arrow keys, and press Space again.`,
+          explain: `Each panel is described as Panel number, its description, then Press Enter to open, Space to move. Esc cancels a keyboard move.`,
+        },
+      ],
+      result: `The panels are in your new order and numbered 1, 2, 3 from the top left.`,
+      cautions: [
+        `Linked shots are renumbered for you. Do not renumber anything by hand.`,
+      ],
+      related: [`storyboards-edit-panel`],
+    },
+    {
+      id: `storyboards-move-panel`,
+      title: `Move a panel to another storyboard`,
+      purpose: `Send a panel to the end of a different storyboard.`,
+      level: `Intermediate`,
+      prerequisites: [`The project has at least two storyboards.`],
+      steps: [
+        {
+          screen: `prod-storyboard-panel-menu`,
+          do: `Right-click a panel.`,
+          explain: `The menu has Open, Move to storyboard…, Link Shot… and, below a divider, Delete. Move to storyboard… is greyed out when there is only one storyboard. Link Shot… opens the panel drawer where the shot is chosen. Open opens the drawer too.`,
+        },
+        {
+          screen: `prod-storyboard-move-panel-dialog`,
+          do: `Click Move to storyboard…. In the dialog Move panel followed by its number, choose a Storyboard and click Move Panel.`,
+          explain: `A hint says the panel is added at the end and that its shot link is kept. Scene storyboards are labelled with their scene number. Cancel closes the dialog. A message says Moved panel to another storyboard.`,
+        },
+      ],
+      result: `The panel is gone from this storyboard and is the last panel of the one you chose.`,
+      cautions: [],
+      related: [`storyboards-reorder-panels`],
+    },
+    {
+      id: `storyboards-link-shot`,
+      title: `Link a panel to a shot, or make a shot from it`,
+      purpose: `Connect a storyboard panel to a shot of the same scene so the two stay together.`,
+      level: `Intermediate`,
+      prerequisites: [`A scene storyboard has a panel, and the Shot Lists tab has shots for that scene if you want to link one.`],
+      steps: [
+        {
+          screen: `prod-storyboard-panel-drawer`,
+          do: `Open a panel and look at the Shot section at the bottom of the drawer.`,
+          explain: `For a scene storyboard, the section has a list called Link Shot… and a Create Shot button. The list holds the shots of the scene, each with its number and description.`,
+        },
+        {
+          screen: `prod-storyboard-panel-drawer`,
+          do: `Pick a shot in the Link Shot… list.`,
+          explain: `The panel is linked at once and a message says Linked panel to shot. The section now shows a Shot 1A button and Unlink. Click the Shot button to jump to that shot in Shot Lists. The shot number also shows on the panel's top right corner.`,
+        },
+        {
+          screen: `prod-storyboard-panel-drawer`,
+          do: `Or click Create Shot to make a new shot from this panel.`,
+          explain: `The new shot is added to the scene and linked to the panel. A message says Created shot with its number. On a standalone storyboard, the section shows a list of scenes instead, so you choose which scene the new shot goes into.`,
+        },
+      ],
+      result: `The panel shows its shot number, and the shot lists the panel under Storyboard.`,
+      cautions: [
+        `Shots belong to screenplay scenes. If the project has no screenplay, the drawer says to add a screenplay to plan shots.`,
+        `Click Unlink to remove the link. The panel and the shot both stay.`,
+      ],
+      related: [`storyboards-edit-panel`, `storyboards-link-scene`],
+    },
+    {
+      id: `storyboards-rename`,
+      title: `Rename a storyboard`,
+      purpose: `Change the name of the storyboard you have open.`,
+      level: `Beginner`,
+      prerequisites: [`A storyboard is open.`],
+      steps: [
+        {
+          screen: `prod-storyboard-actions-menu`,
+          do: `Click the ... button called Storyboard actions, then click Rename….`,
+          explain: `The menu is for the whole storyboard, not for a panel.`,
+        },
+        {
+          screen: `prod-storyboard-rename-dialog`,
+          do: `In the Rename storyboard dialog, change the Name * and click Rename.`,
+          explain: `Rename stays greyed out while the name is empty. Cancel closes the dialog. A message says Renamed storyboard.`,
+        },
+      ],
+      result: `The storyboard shows its new name in the picker and in exports.`,
+      cautions: [],
+      related: [`storyboards-new-for-scene`],
+    },
+    {
+      id: `storyboards-link-scene`,
+      title: `Link a storyboard to a scene, or make it standalone`,
+      purpose: `Tie a standalone storyboard to a screenplay scene, move it to another scene, or cut the tie.`,
+      level: `Intermediate`,
+      prerequisites: [`A storyboard is open and the project has screenplay scenes.`],
+      steps: [
+        {
+          screen: `prod-storyboard-actions-menu`,
+          do: `Click Storyboard actions and choose Link to a scene… for a standalone storyboard, or Change scene… for one that belongs to a scene.`,
+          explain: `Link to a scene… and Change scene… are greyed out when the project has no scenes. A scene storyboard also has Make standalone, which cuts the tie to the scene.`,
+        },
+        {
+          screen: `prod-storyboard-link-scene-dialog`,
+          do: `In the Link storyboard to a scene dialog, choose a Scene and click Link Scene.`,
+          explain: `The list holds every scene of the script. Cancel closes the dialog. A message says Linked storyboard to Scene followed by its number.`,
+        },
+        {
+          screen: `prod-storyboard-actions-menu`,
+          do: `To cut the tie, choose Make standalone.`,
+          explain: `A message says Storyboard is now standalone. The panels stay.`,
+        },
+      ],
+      result: `The storyboard is listed under its scene, or under Other storyboards when it is standalone.`,
+      cautions: [],
+      related: [`storyboards-rename`, `storyboards-link-shot`],
+    },
+    {
+      id: `storyboards-delete`,
+      title: `Delete a panel or a storyboard`,
+      purpose: `Remove one panel, or a whole storyboard, with a way back.`,
+      level: `Beginner`,
+      prerequisites: [`A storyboard with panels is open.`],
+      steps: [
+        {
+          screen: `prod-storyboard-panel-menu`,
+          do: `To delete one panel, right-click it and click Delete, or open its drawer and click Delete.`,
+          explain: `A message says Deleted panel with an Undo link. The remaining panels are renumbered.`,
+        },
+        {
+          screen: `prod-storyboard-actions-menu`,
+          do: `To delete the whole storyboard, click Storyboard actions and then Delete storyboard.`,
+          explain: `Delete storyboard is the red item at the bottom of the menu. Nothing is removed yet.`,
+        },
+        {
+          screen: `prod-storyboard-delete-confirm`,
+          do: `Read the dialog Delete storyboard followed by its name, then click Delete Storyboard.`,
+          explain: `The dialog says how many panels go with it, that they go to Recently Deleted and can be restored, and that shots are not affected. Cancel keeps the storyboard.`,
+        },
+      ],
+      result: `The panel or storyboard is gone from the page and waits in Recently Deleted.`,
+      cautions: [
+        `Deleting a storyboard does not delete the shots linked to its panels.`,
+        `Click Undo in the message, or restore from Recently Deleted, if you delete something by mistake.`,
+      ],
+      related: [`storyboards-export`],
+    },
+    {
+      id: `storyboards-export`,
+      title: `Export storyboards as a PDF`,
+      purpose: `Make a printable sheet of the panels of one, several or all storyboards.`,
+      level: `Beginner`,
+      prerequisites: [`The project has at least one storyboard.`],
+      steps: [
+        {
+          screen: `prod-storyboard-panels`,
+          do: `Click Export at the top right.`,
+          explain: `Export is greyed out when the project has no storyboards.`,
+        },
+        {
+          screen: `prod-storyboard-export-dialog`,
+          do: `In the Export Storyboard dialog, choose what to include.`,
+          explain: `The dialog says it makes a clean storyboard sheet with panels, shot numbers, descriptions and framing. Choose Current storyboard (with the open one's name), All storyboards or Selected storyboards. Selected storyboards lets you tick which ones. The format is PDF printable snapshot. Panels per row offers 2 (recommended) or 3. Include shot notes is unticked and adds each shot's notes to the sheet. A note says private notes are excluded and that Export creates a snapshot and does not change your project.`,
+        },
+        {
+          screen: `prod-storyboard-export-dialog`,
+          do: `Click Export… and choose where to save the file in the Windows window that opens.`,
+          explain: `Cancel closes the dialog with no file made.`,
+        },
+      ],
+      result: `A PDF with your panels is saved where you chose.`,
+      cautions: [
+        `Private notes never go into the sheet.`,
+      ],
+      related: [`storyboards-delete`],
+    },
+  ],
+  screens: {
+    'prod-storyboards-empty': `The Storyboards tab for a project with no storyboards and no scenes. It says No storyboards yet and offers New Storyboard. Used in storyboards-create-first.`,
+    'prod-storyboard-panels': `A storyboard for Scene 1 with three panels (Headlights sweep the stand, Lakshmi on the step, Insert: route board), the 3 panels tag, the Storyboard actions button and the Add Panel tile. Used in storyboards-choose-scene, storyboards-add-panel, storyboards-reorder-panels and storyboards-export.`,
+    'prod-storyboard-new-dialog': `The New Storyboard dialog with Scene set to Scene 1 and an empty Name, with Cancel and Create Storyboard. Used in storyboards-new-for-scene.`,
+    'prod-storyboard-new-error': `The New Storyboard dialog with No scene (standalone storyboard) chosen and an empty Name *. The message Give the storyboard a name, or choose a scene. shows. Used in storyboards-create-first.`,
+    'prod-storyboard-no-panels': `A storyboard called Title sequence with 0 panels. The page says Create panels for this scene. and offers Import Image, Draw / Sketch and Empty Panel. Used in storyboards-create-first and storyboards-add-panel.`,
+    'prod-storyboard-panel-menu': `The right-click menu of a panel: Open, Move to storyboard…, Link Shot… and Delete. Used in storyboards-move-panel and storyboards-delete.`,
+    'prod-storyboard-move-panel-dialog': `The Move panel 1 dialog with a Storyboard list, Cancel and Move Panel. Used in storyboards-move-panel.`,
+    'prod-storyboard-panel-drawer': `The drawer of Panel 2: Description, Visual (Import Image…, Draw / Sketch…, Clear), Framing, Camera movement, Angle, Duration (seconds), Dialogue / sound note, Storyboard note, and the Shot section with the Link Shot… list and Create Shot. Delete is at the bottom. Used in storyboards-edit-panel and storyboards-link-shot.`,
+    'prod-storyboard-panel-duration-error': `The panel drawer with abc typed in Duration (seconds). The message Enter seconds between 0 and 3600. shows. Variant, part of storyboards-edit-panel.`,
+    'prod-storyboard-add-panel-menu': `The Add Panel menu: Import Image, Draw / Sketch and Empty Panel. Used in storyboards-add-panel.`,
+    'prod-storyboard-sketch-dialog': `The Draw / Sketch panel dialog before drawing: Pen, Eraser, Black, Red, Blue, Undo, Clear, Cancel and Save Panel. Used in storyboards-sketch-panel.`,
+    'prod-storyboard-sketch-drawn': `The sketch dialog after drawing, so Undo, Clear and Save Panel are ready. Used in storyboards-sketch-panel.`,
+    'prod-storyboard-actions-menu': `The Storyboard actions menu: Rename…, Change scene…, Make standalone, Another storyboard for this scene… and Delete storyboard. A standalone storyboard shows Link to a scene… in place of Change scene…. Used in storyboards-new-for-scene, storyboards-rename, storyboards-link-scene and storyboards-delete.`,
+    'prod-storyboard-rename-dialog': `The Rename storyboard dialog with the current name, Arrival, in Name *, and Cancel and Rename. Used in storyboards-rename.`,
+    'prod-storyboard-link-scene-dialog': `The Link storyboard to a scene dialog with a Scene list, Cancel and Link Scene. Used in storyboards-link-scene.`,
+    'prod-storyboard-new-for-scene-dialog': `The New Storyboard dialog opened from Another storyboard for this scene…, with the scene already chosen and an optional Name. Used in storyboards-new-for-scene.`,
+    'prod-storyboard-delete-confirm': `The confirmation Delete storyboard “Arrival”? with Cancel and Delete Storyboard. Used in storyboards-delete.`,
+    'prod-storyboard-export-dialog': `The Export Storyboard dialog: Current storyboard (Arrival), All storyboards, Selected storyboards, PDF printable snapshot, Panels per row (2 recommended), Include shot notes, and Cancel and Export…. Used in storyboards-export.`,
+    'prod-storyboard-scene-no-board': `Scene 3 chosen in the picker. It has no storyboard yet, so the page says Create panels for this scene. with the three add buttons. Used in storyboards-choose-scene.`,
+  },
+  shortcuts: [
+    [`Ctrl+V`, `Paste a picture from the clipboard as a new panel`],
+    [`Enter`, `Open the focused panel`],
+    [`Space`, `Start and finish moving the focused panel with the arrow keys`],
+  ],
+  limits: [
+    `A panel holds one picture or sketch. The sketch tool is basic: a pen, an eraser and three ink colours.`,
+    `Export makes a PDF only, and it does not change your project.`,
+    `Shots are linked to panels of scene storyboards. A standalone storyboard can still create shots by choosing a scene for each.`,
+    `Storyboard panels do not play as a video. They are a printable sheet.`,
+  ],
+  troubleshooting: [
+    {
+      problem: `Add Panel is greyed out.`,
+      fix: `Choose a scene or a storyboard in the Scene or storyboard list first. If the project has neither, click New Storyboard.`,
+    },
+    {
+      problem: `I cannot create a storyboard.`,
+      fix: `A standalone storyboard needs a Name *. Type one, or choose a scene so the name defaults to the scene heading.`,
+    },
+    {
+      problem: `Move to storyboard… is greyed out.`,
+      fix: `The project has only one storyboard. Make another with New Storyboard, then try again.`,
+    },
+    {
+      problem: `The page says a scene changed since planning.`,
+      fix: `The scene was edited in the script. Your panels are kept. Check them against the script, then click Mark reviewed.`,
+    },
+    {
+      problem: `The duration box shows Enter seconds between 0 and 3600.`,
+      fix: `Type a plain number, for example 3.5, and click out of the box.`,
+    },
+    {
+      problem: `The storyboard of a scene I removed has disappeared.`,
+      fix: `Look in the Removed from script group of the Scene or storyboard list. Its panels are kept there for reference.`,
+    },
+  ],
+};

@@ -1,0 +1,495 @@
+export default {
+  area: `Files`,
+  slug: `files`,
+  order: 24,
+  part: `Project and data`,
+  intro: [
+    `Files is the file cabinet of your project. Keep contracts, permits, research, pitch decks and anything else that belongs with the film in one place, next to your screenplay and plans. The page is titled Project Files and asks: What files belong with this film?`,
+    `A file can live in the project in two ways. Copy into project stores a copy inside the project folder, so it travels with the project when you back it up or move it. Link to file keeps the original where it is and stores only a reference. Each row says which one it is: Stored in project, Linked (external) or Unavailable.`,
+    `You can sort files into folders, search them, add a note to each one, open them in the program Windows uses for that kind of file, and save a copy to another place. Deleting a file or a folder never destroys it at once: it goes to Recently Deleted for 30 days, and a message with Undo appears.`,
+    `Files is the last item in the left rail. Everything on this page is stored on this computer.`,
+  ],
+  layout: [
+    { name: `Header`, text: `The title Project Files, the line What files belong with this film? and, at the right, New Folder and Add File.` },
+    { name: `Search and view switch`, text: `A Search files box, and the List and Grid switch beside it. A line at the right says: Drag files here from Explorer to add them.` },
+    { name: `Folder panel`, text: `On the left. All files shows every file and its count. Top level shows the files that are not in any folder. Each folder you create is listed below with its count. When a folder is selected, Rename and Delete buttons appear at the bottom of the panel.` },
+    { name: `File list`, text: `In List view, a table with NAME, TYPE, WHERE, MODIFIED and ACTIONS. The WHERE column shows Stored in project, Linked (external) or Unavailable. The ACTIONS column has Open and a ... button for the row menu. A file inside a folder shows the folder name under its name.` },
+    { name: `File tiles`, text: `In Grid view, one tile per file with a short type label, the name and the storage state. Click a tile to select it.` },
+    { name: `Details drawer`, text: `Opens on the right when you select a file. It shows the name, the folder, where the file is stored, your notes, the original file name and the dates, with Reveal in File Manager, Export Copy…, Delete and Open.` },
+  ],
+  workflows: [
+    {
+      id: `files-start-empty`,
+      title: `Start with an empty Files page`,
+      purpose: `Know what an empty project looks like and where to begin.`,
+      level: `Beginner`,
+      prerequisites: [`A project is open and no file has been added to it yet.`],
+      steps: [
+        {
+          screen: `files-empty`,
+          do: `Click Files in the left rail.`,
+          explain: `The page says Keep project documents and attachments here. Underneath: Contracts, permits, research, pitch decks: anything that belongs with this film. Drag files in, or add them. The folder panel shows All files 0 and Top level 0.`,
+        },
+        {
+          screen: `files-empty`,
+          do: `Click Add File in the middle of the page, or Add File at the top right.`,
+          explain: `Both open the same Add File menu. The next two workflows show its two choices. New Folder at the top right makes a folder first, if you prefer to sort as you go.`,
+        },
+      ],
+      result: `You know where to add the first file.`,
+      cautions: [
+        `Nothing is lost if the page is empty. Files you delete are in Recently Deleted for 30 days.`,
+      ],
+      related: [`files-add-copy`, `files-create-folder`],
+    },
+    {
+      id: `files-add-copy`,
+      title: `Add a file by copying it into the project`,
+      purpose: `Keep a copy of a document inside the project so it travels with it.`,
+      level: `Beginner`,
+      prerequisites: [`A project is open. The file is on this computer.`],
+      steps: [
+        {
+          screen: `files-list`,
+          do: `Click Add File at the top right.`,
+          explain: `The page lists your files. If a folder is selected in the panel, new files are added to that folder. Select All files or Top level to add to the top level.`,
+        },
+        {
+          screen: `files-add-menu`,
+          do: `Choose Copy into project….`,
+          explain: `The Add File menu has two choices: Copy into project… and Link to file…. Copy into project… stores a copy inside the project folder. The original is left untouched.`,
+        },
+        {
+          screen: `files-list`,
+          do: `In the Windows window that opens, pick one or more files and confirm.`,
+          explain: `The files join the list with Stored in project in the WHERE column. A message says Added followed by the file name, or Added and the number of files, with Undo. The file keeps its original name as its display name.`,
+        },
+      ],
+      result: `The files are in your project, stored inside the project folder.`,
+      cautions: [
+        `The copy does not follow later changes to the original. If you edit the original, add it again or use Export Copy… on the copy to compare.`,
+        `Click Undo in the message straight away if you added the wrong file. Later you can delete it from the row menu.`,
+      ],
+      related: [`files-link-external`, `files-drag-in`],
+    },
+    {
+      id: `files-link-external`,
+      title: `Link a file that stays where it is`,
+      purpose: `Refer to a file on a drive or in a folder without copying it into the project.`,
+      level: `Intermediate`,
+      prerequisites: [`A project is open. The file is on this computer or on a connected drive.`],
+      steps: [
+        {
+          screen: `files-add-menu`,
+          do: `Click Add File, then choose Link to file….`,
+          explain: `A link stores only a reference. Use it for very large files or files another program keeps up to date.`,
+        },
+        {
+          screen: `files-linked-file`,
+          do: `Pick the file in the Windows window that opens.`,
+          explain: `The file joins the list. The WHERE column shows a Linked (external) label and the folder where the original lives. The row has Open as usual.`,
+        },
+      ],
+      result: `The file is listed as Linked (external) and opens from where it is.`,
+      cautions: [
+        `A linked file stays where it is and does not travel with the project. Only a file stored in the project does.`,
+        `If you move or rename the original, or the drive is not connected, the row turns to Unavailable. See Relink a file that has gone missing.`,
+      ],
+      related: [`files-relink`, `files-add-copy`],
+    },
+    {
+      id: `files-drag-in`,
+      title: `Drag files in from Windows File Explorer`,
+      purpose: `Add files quickly by dropping them onto the Files page.`,
+      level: `Beginner`,
+      prerequisites: [`A project is open on the Files page and a File Explorer window is visible.`],
+      steps: [
+        {
+          screen: `files-list`,
+          do: `Select the folder you want in the folder panel, or All files for the top level.`,
+          explain: `Dropped files go into the folder that is selected. The line at the top right says: Drag files here from Explorer to add them.`,
+        },
+        {
+          screen: `files-list`,
+          do: `Drag one or more files from File Explorer onto the page and let go.`,
+          explain: `While you drag, a panel covers the page and says Drop to add to this project, or to the folder name, with A copy is stored inside the project. Dropped files are always copied in. To link a file instead, use Add File and Link to file….`,
+        },
+      ],
+      result: `The dropped files appear in the list as Stored in project.`,
+      cautions: [
+        `Dropping copies the file. The original in File Explorer stays where it was.`,
+      ],
+      related: [`files-add-copy`, `files-link-external`],
+    },
+    {
+      id: `files-switch-view-and-search`,
+      title: `Switch between List and Grid and search your files`,
+      purpose: `See the files as a table or as tiles, and narrow them with a word.`,
+      level: `Beginner`,
+      prerequisites: [`At least one file is in the project.`],
+      steps: [
+        {
+          screen: `files-list`,
+          do: `Look at the List view. Click List or Grid beside the Search files box to switch.`,
+          explain: `List is a table with NAME, TYPE, WHERE, MODIFIED and ACTIONS, and an Open button on every row. The files here are Example-Feature.fountain, Location release - bus stand.txt, Crew contacts.csv and Tower survey notes.md. The type column reads Screenplay, Text or Spreadsheet.`,
+        },
+        {
+          screen: `files-grid`,
+          do: `Click Grid.`,
+          explain: `Each file is a tile with a short type label (FOUN, TXT, CSV, MD), the file name and Stored in project. Click a tile to select the file and open its details. The row menu and Open button are in the list only, so use the details drawer or switch back to List for those.`,
+        },
+        {
+          screen: `files-search-results`,
+          do: `Type a word in Search files, for example crew.`,
+          explain: `The list narrows as you type. The search looks at the file name, the original file name, your notes and the type. Only Crew contacts.csv remains. The folder counts on the left do not change.`,
+        },
+        {
+          screen: `files-search-no-match`,
+          do: `If nothing matches, the page says No files match followed by what you typed.`,
+          explain: `Here zzzz matches nothing. Clear the box to see all files again.`,
+        },
+      ],
+      result: `You can find a file by name or note and see it in the view you prefer.`,
+      cautions: [
+        `Search on this page looks only at the files of the folder that is selected. Select All files to look in every folder.`,
+        `To search across the whole project, use the search box at the top of the window.`,
+      ],
+      related: [`files-use-folders`],
+    },
+    {
+      id: `files-create-folder`,
+      title: `Create a folder`,
+      purpose: `Make a folder to keep related files together.`,
+      level: `Beginner`,
+      prerequisites: [`The Files page is open.`],
+      steps: [
+        {
+          screen: `files-list`,
+          do: `Click New Folder at the top right.`,
+          explain: `If a folder is already selected, the new folder is made inside it. Otherwise it is made at the top level.`,
+        },
+        {
+          screen: `files-new-folder-dialog`,
+          do: `In the New Folder dialog, click the Folder name * box.`,
+          explain: `The name is required. Cancel closes the dialog and creates nothing. The Create button is at the bottom right.`,
+        },
+        {
+          screen: `files-new-folder-filled`,
+          do: `Type a name, for example Tour Folder, and click Create.`,
+          explain: `Press Enter instead of clicking if you like.`,
+        },
+        {
+          screen: `files-folder-created`,
+          do: `Look at the new folder in the panel.`,
+          explain: `The panel lists it with a count of 0 and it is selected. A message says Created folder “Tour Folder” with Undo. The page says: This folder is empty. Drag files onto it, or use Move to… on a file.`,
+        },
+      ],
+      result: `A new empty folder is selected, ready for files.`,
+      cautions: [
+        `Click Undo in the message if you made the folder by mistake.`,
+      ],
+      related: [`files-move-file`, `files-rename-delete-folder`],
+    },
+    {
+      id: `files-use-folders`,
+      title: `Open a folder and see only its files`,
+      purpose: `Look at one folder at a time.`,
+      level: `Beginner`,
+      prerequisites: [`At least one folder exists.`],
+      steps: [
+        {
+          screen: `files-folder-contracts`,
+          do: `Click Contracts in the folder panel.`,
+          explain: `The list shows only the files in that folder, here Location release - bus stand.txt. The count beside each name is the number of files inside. Rename and Delete appear at the bottom of the panel while a folder is selected.`,
+        },
+        {
+          screen: `files-folder-top-level`,
+          do: `Click Top level.`,
+          explain: `Top level lists the files that are in no folder. Click All files to see every file at once. The counts on All files and Top level add up.`,
+        },
+      ],
+      result: `The list matches the folder you chose.`,
+      cautions: [
+        `A file shown under All files carries its folder name under its own name. Use that to see where it is.`,
+      ],
+      related: [`files-create-folder`, `files-move-file`],
+    },
+    {
+      id: `files-rename-delete-folder`,
+      title: `Rename or delete a folder`,
+      purpose: `Change a folder name, or remove a folder without losing the files inside.`,
+      level: `Intermediate`,
+      prerequisites: [`A folder exists and is selected in the folder panel.`],
+      steps: [
+        {
+          screen: `files-folder-created`,
+          do: `With the folder selected, click Rename at the bottom of the folder panel.`,
+          explain: `You can also open the folder's ... menu in the panel and choose Rename Folder.`,
+        },
+        {
+          screen: `files-rename-folder-dialog`,
+          do: `In the Rename Folder dialog, change the Folder name * and click Rename.`,
+          explain: `The name is required. Cancel closes the dialog without a change. A message says Renamed folder to followed by the new name, with Undo.`,
+        },
+        {
+          screen: `files-delete-folder-confirm`,
+          do: `To delete the folder, click Delete at the bottom of the panel.`,
+          explain: `The dialog asks Delete folder “Tour Folder”? It says: Files and folders inside it move to the top level. No files are deleted. The folder goes to Recently Deleted. Cancel keeps the folder.`,
+        },
+        {
+          screen: `files-folder-deleted-toast`,
+          do: `Click Delete Folder.`,
+          explain: `A message says Deleted folder “Tour Folder” with Undo. The folder leaves the panel and its files are at the top level.`,
+        },
+      ],
+      result: `The folder has its new name, or it is gone and its files are at the top level.`,
+      cautions: [
+        `Deleting a folder never deletes the files inside it. They move to the top level.`,
+        `A deleted folder can be brought back from Recently Deleted for 30 days.`,
+      ],
+      related: [`files-restore-deleted`],
+    },
+    {
+      id: `files-move-file`,
+      title: `Move a file into a folder`,
+      purpose: `Put a file in the folder where it belongs.`,
+      level: `Beginner`,
+      prerequisites: [`At least one file and one folder exist.`],
+      steps: [
+        {
+          screen: `files-row-menu`,
+          do: `Click the ... button on the file's row.`,
+          explain: `The row menu lists Open, Details, Rename (F2), then MOVE TO with Top level and each folder, then Reveal in File Manager, Export Copy… and Delete (Del). Delete is in red at the bottom.`,
+        },
+        {
+          screen: `files-row-menu`,
+          do: `Under MOVE TO, click the folder, or Top level to take it out of a folder.`,
+          explain: `The file moves at once and a message says Moved followed by the file name and the folder, with Undo. You can also drag a row onto a folder in the panel.`,
+        },
+        {
+          screen: `files-row-context-menu`,
+          do: `You can also right-click the row to open the same menu.`,
+          explain: `The right-click menu has the same items as the ... button.`,
+        },
+      ],
+      result: `The file is in the folder you chose. Its folder name shows under its name when you look at All files.`,
+      cautions: [
+        `Moving a file only changes where OpenFrame lists it. A linked file is not moved on disk.`,
+      ],
+      related: [`files-use-folders`, `files-rename-delete-folder`],
+    },
+    {
+      id: `files-details-notes-rename`,
+      title: `Add a note to a file and rename how it is shown`,
+      purpose: `Say why a file matters, and give it a clearer name inside OpenFrame.`,
+      level: `Beginner`,
+      prerequisites: [`At least one file is in the project.`],
+      steps: [
+        {
+          screen: `files-details-drawer`,
+          do: `Click a file in the list, or choose Details from its row menu.`,
+          explain: `The details drawer opens on the right, headed FILE and the name. It shows Name, Folder, Where (Stored in project, the type and size, and a note that a copy is stored inside the project folder and travels with the project), Notes, the original file name and when it was added and changed. At the bottom: Delete and Open. Close with the x at the top.`,
+        },
+        {
+          screen: `files-details-notes`,
+          do: `Click the Notes box and type a note, for example who needs a signed copy.`,
+          explain: `The box asks: What is this file, and why does it matter? Notes are saved as you type and the search box also looks in them.`,
+        },
+        {
+          screen: `files-details-renamed`,
+          do: `Edit the Name box, for example add v2 at the end, and click away.`,
+          explain: `Under the box: The name shown in OpenFrame. The file itself is not renamed. A message says Renamed file to followed by the new name, with Undo. The row shows the new name and the details keep Original file name. You can also press F2 on a selected row to edit the name.`,
+        },
+        {
+          screen: `files-details-drawer`,
+          do: `Use the Folder box to move the file to another folder, or leave it.`,
+          explain: `The Folder list has Top level and every folder you made.`,
+        },
+      ],
+      result: `The file shows your name and note. The file on disk is unchanged.`,
+      cautions: [
+        `The Name box changes only the name OpenFrame shows. It does not rename the file in File Explorer or in a project package.`,
+      ],
+      related: [`files-open-export-reveal`, `files-delete-file`],
+    },
+    {
+      id: `files-open-export-reveal`,
+      title: `Open a file, show it in File Explorer or save a copy`,
+      purpose: `Use a file outside OpenFrame, or hand a copy to someone.`,
+      level: `Beginner`,
+      prerequisites: [`A file in the project that is Stored in project or Linked (external).`],
+      steps: [
+        {
+          screen: `files-list`,
+          do: `Click Open on the file's row.`,
+          explain: `The file opens in the program Windows uses for that type, such as a text editor for a .txt file. In the details drawer, Open is the orange button at the bottom right.`,
+        },
+        {
+          screen: `files-details-drawer`,
+          do: `Click Reveal in File Manager in the details drawer.`,
+          explain: `Windows File Explorer opens with the file selected. A copy in the project sits inside the project folder. Do not rename or delete it there. Use OpenFrame for that.`,
+        },
+        {
+          screen: `files-details-drawer`,
+          do: `Click Export Copy… and choose where to save the copy.`,
+          explain: `This saves a copy of the file in a place you pick, for example to send to someone. A message says Saved a copy of the file name and offers a button to show it. The file in the project stays as it is.`,
+        },
+      ],
+      result: `You opened the file, found it on disk, or saved a copy elsewhere.`,
+      cautions: [
+        `Open and Export Copy… are greyed out for a file that is Unavailable. Relink it first.`,
+      ],
+      related: [`files-relink`],
+    },
+    {
+      id: `files-relink`,
+      title: `Relink a file that has gone missing`,
+      purpose: `Point a linked file at its new place after the original moved or a drive was disconnected.`,
+      level: `Intermediate`,
+      prerequisites: [`A linked file shows Unavailable.`],
+      steps: [
+        {
+          screen: `files-linked-file`,
+          do: `Notice a linked file. Its WHERE column says Linked (external).`,
+          explain: `This is a link to a file that is outside the project. It works while the original stays where it was.`,
+        },
+        {
+          screen: `files-unavailable-linked-file`,
+          do: `Find a row marked Unavailable. Click Relink at the right of the row.`,
+          explain: `The row shows Unavailable and a Relink button in place of Open. You can also find Relink… in the row menu and the details drawer.`,
+        },
+        {
+          screen: `files-unavailable-details`,
+          do: `Read the details drawer, then click Relink… at the bottom.`,
+          explain: `It says: This linked file can't be found. It may be on a drive that isn't connected, or it was moved. Relink it. The reference is never deleted. Under Where it adds: Linked files stay where they are. Moving or renaming the original breaks the link until you relink it. Pick the file in the Windows window that opens.`,
+        },
+      ],
+      result: `The row shows Linked (external) again and Open works.`,
+      cautions: [
+        `A message says Relinked followed by the file name, with Undo.`,
+        `If the drive is only disconnected, reconnect it. The link may work again without relinking.`,
+      ],
+      related: [`files-link-external`],
+    },
+    {
+      id: `files-delete-file`,
+      title: `Delete a file`,
+      purpose: `Remove a file from the project list and keep it recoverable for 30 days.`,
+      level: `Beginner`,
+      prerequisites: [`At least one file is in the project.`],
+      steps: [
+        {
+          screen: `files-row-menu`,
+          do: `Click the ... button on the row and choose Delete, or select the row and press Del.`,
+          explain: `Delete is the red item at the bottom of the menu, with the Del shortcut. The details drawer has a Delete button too. There is no confirmation dialog because the file is recoverable.`,
+        },
+        {
+          screen: `files-file-deleted-toast`,
+          do: `Read the message at the bottom: Moved “Tour permit letter v2” to Recently Deleted.`,
+          explain: `Click Undo to bring it back at once. Dismiss, or the x, closes the message.`,
+        },
+        {
+          screen: `files-linked-file-deleted-toast`,
+          do: `Deleting a linked file works the same way.`,
+          explain: `The message reads Moved followed by the file name and to Recently Deleted. Only the reference in the project is removed. The original file on disk is never touched.`,
+        },
+      ],
+      result: `The file leaves the list and waits in Recently Deleted for 30 days.`,
+      cautions: [
+        `After 30 days, or after Delete Permanently, a stored copy is gone for good. Export a copy first if you need to keep it.`,
+      ],
+      related: [`files-restore-deleted`],
+    },
+    {
+      id: `files-restore-deleted`,
+      title: `Bring back a deleted file or folder`,
+      purpose: `Restore something you removed from Files.`,
+      level: `Beginner`,
+      prerequisites: [`A file or folder was deleted less than 30 days ago.`],
+      steps: [
+        {
+          screen: `files-file-deleted-toast`,
+          do: `Right after deleting, click Undo in the message.`,
+          explain: `The file returns to its folder at once.`,
+        },
+        {
+          screen: `files-folder-deleted-toast`,
+          do: `If the message has gone, open Recently Deleted from the project menu. Find the file or folder, whose Was in column says Files, and click Restore.`,
+          explain: `The Recently Deleted chapter explains the page. The item returns to its place, or to the top level if its folder no longer exists, and a message tells you where.`,
+        },
+      ],
+      result: `The file or folder is back in the Files list.`,
+      cautions: [
+        `After a folder is restored, its files are not moved back into it. They stay where they were put when the folder was deleted.`,
+      ],
+      related: [`files-delete-file`, `files-rename-delete-folder`],
+    },
+  ],
+  screens: {
+    'files-empty': `Files in a project with no files. It says Keep project documents and attachments here, with an Add File button in the middle. The panel shows All files 0 and Top level 0. Used in files-start-empty.`,
+    'files-list': `Files in List view with four files and a Contracts folder. Search files, the List and Grid switch, New Folder and Add File are at the top. Used in files-add-copy, files-drag-in and files-switch-view-and-search, and as a starting point for several workflows.`,
+    'files-grid': `Files in Grid view. Each file is a tile with a type label, name and Stored in project. Used in files-switch-view-and-search.`,
+    'files-folder-contracts': `The Contracts folder selected. The list shows only the file inside it, and Rename and Delete appear at the bottom of the folder panel. Used in files-use-folders.`,
+    'files-folder-top-level': `Top level selected. The list shows only files that are in no folder. Used in files-use-folders.`,
+    'files-search-results': `Search files with crew typed. Only Crew contacts.csv is left. Used in files-switch-view-and-search.`,
+    'files-search-no-match': `Search files with text that matches nothing. The page says No files match followed by the text. Used in files-switch-view-and-search.`,
+    'files-add-menu': `The Add File menu with Copy into project… and Link to file…. Used in files-add-copy and files-link-external.`,
+    'files-row-menu': `The ... menu on a file row: Open, Details, Rename (F2), MOVE TO with Top level and each folder, Reveal in File Manager, Export Copy… and Delete (Del). Used in files-move-file and files-delete-file.`,
+    'files-row-context-menu': `The same menu opened by right-clicking a row. Variant, part of files-move-file.`,
+    'files-details-drawer': `The details drawer for Crew contacts.csv: Name, Folder, Where, Notes, the original name and dates, with Reveal in File Manager, Export Copy…, Delete and Open. Used in files-details-notes-rename and files-open-export-reveal.`,
+    'files-details-notes': `The details drawer with a note typed in Notes. Used in files-details-notes-rename.`,
+    'files-details-renamed': `The details drawer after the name was changed to Tour permit letter v2. A message says Renamed file to “Tour permit letter v2” with Undo. Used in files-details-notes-rename.`,
+    'files-file-deleted-toast': `Files after a delete. A message says Moved “Tour permit letter v2” to Recently Deleted with Undo. Used in files-delete-file and files-restore-deleted.`,
+    'files-linked-file': `A linked file in the list. Its WHERE column says Linked (external) and shows the folder of the original. Used in files-link-external and files-relink.`,
+    'files-unavailable-linked-file': `A linked file whose original cannot be found. The row says Unavailable and has Relink in place of Open. Used in files-relink.`,
+    'files-unavailable-details': `The details drawer of an unavailable linked file. A note says the file can't be found and the reference is never deleted. Relink… is at the bottom. Used in files-relink.`,
+    'files-linked-file-deleted-toast': `Files after a linked file was deleted. A message says it was moved to Recently Deleted, with Undo. Used in files-delete-file.`,
+    'files-new-folder-dialog': `The New Folder dialog with an empty Folder name * box, Cancel and Create. Used in files-create-folder.`,
+    'files-new-folder-filled': `The New Folder dialog with the name Tour Folder typed. Used in files-create-folder.`,
+    'files-folder-created': `Files after a folder is created. Tour Folder is selected with a count of 0, a message says Created folder “Tour Folder” with Undo, and the page says This folder is empty. Used in files-create-folder and files-rename-delete-folder.`,
+    'files-rename-folder-dialog': `The Rename Folder dialog with the current name in Folder name *, Cancel and Rename. Used in files-rename-delete-folder.`,
+    'files-delete-folder-confirm': `The dialog Delete folder “Tour Folder”? It says files inside move to the top level, no files are deleted and the folder goes to Recently Deleted. Cancel and Delete Folder. Used in files-rename-delete-folder.`,
+    'files-folder-deleted-toast': `Files after a folder was deleted. A message says Deleted folder “Tour Folder” with Undo. Used in files-rename-delete-folder and files-restore-deleted.`,
+  },
+  shortcuts: [
+    [`F2`, `Rename the selected file`],
+    [`Del`, `Delete the selected file`],
+    [`Enter`, `Select the focused file and open its details`],
+    [`Ctrl+K`, `Search the whole project from the top bar`],
+    [`Ctrl+Z`, `Undo the last change, also offered as Undo in the message`],
+  ],
+  limits: [
+    `Files holds documents and attachments. Pictures and sounds for ideas belong in the Idea Vault.`,
+    `Dropping files from File Explorer always copies them into the project. Use Add File and Link to file… to link.`,
+    `A linked file stays where it is and does not travel with the project. Only files stored in the project do.`,
+    `Search on this page looks at the folder that is selected, in file names, original names, notes and type.`,
+    `Rename changes the name shown in OpenFrame only. It does not rename the file on disk.`,
+    `Deleted files and folders stay in Recently Deleted for 30 days.`,
+  ],
+  troubleshooting: [
+    {
+      problem: `A file shows Unavailable.`,
+      fix: `It is a linked file and the original moved, was renamed, or is on a drive that is not connected. Reconnect the drive, or click Relink and pick the file again.`,
+    },
+    {
+      problem: `Open is greyed out.`,
+      fix: `The file is Unavailable. Relink it first.`,
+    },
+    {
+      problem: `I cannot find a file I know I added.`,
+      fix: `Click All files in the folder panel and clear the search box. The list only shows the selected folder and what matches the search. If it is still missing, look in Recently Deleted.`,
+    },
+    {
+      problem: `I deleted a folder and its files disappeared from the list.`,
+      fix: `The files moved to the top level. Click Top level to see them. The folder itself can be restored from Recently Deleted.`,
+    },
+    {
+      problem: `I renamed a file but File Explorer still shows the old name.`,
+      fix: `That is expected. The Name box changes only the name OpenFrame shows. The original file name is shown at the bottom of the details drawer.`,
+    },
+    {
+      problem: `The row menu and Open button are missing in Grid view.`,
+      fix: `Click a tile to open the details drawer, which has Open, Delete, Reveal in File Manager and Export Copy…. Or switch to List.`,
+    },
+  ],
+};

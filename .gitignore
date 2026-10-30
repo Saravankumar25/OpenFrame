@@ -6,3 +6,9 @@ dist/
 .wrangler/
 test-results/
 .tmp/
+research/WindowsHTML-old-809/
+research/MacHTML-old-694/
+.cache/
+.build-removed/
+research/MacHTML-new/
+manuals/

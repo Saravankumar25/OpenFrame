@@ -1,0 +1,265 @@
+/* Dark theme tokens, the three site controls (platform, website theme, screen theme), app screen frames, and the
+   components added for the feature catalog, tutorials, manuals and pricing. Loaded after site.css and pages-base.css. */
+@font-face{font-family:Inter;font-style:normal;font-weight:100 900;font-display:swap;src:url(/assets/fonts/inter-latin-wght-normal.woff2) format("woff2")}
+
+:root[data-theme=dark]{
+  color-scheme:dark;
+  --bg:#000; --surface:#0f0e14; --cream:#0b0a10; --cream2:#121118; --tint:#1c1a24; --frame:#16151c;
+  --line:#26232f; --line2:#3a3645; --ink:#f4f2f8; --ink2:#cdc8da; --muted:#a29cb3;
+  --accent:#d2441c; --accent-d:#e2532a; --accent-soft:#2b140c; --accent-ink:#ff8a62; --ok:#2fb489;
+  --dark:#121019; --dark2:#1c1928; --solid:#f4f2f8; --on-solid:#0b0a10; --solid-h:#fff;
+  --header-bg:rgba(0,0,0,.86);
+  --shadow:0 30px 60px -24px rgba(0,0,0,.8),0 8px 20px -10px rgba(0,0,0,.6);
+}
+:root[data-theme=dark] body{background:var(--bg)}
+:root[data-theme=dark] .dark,:root[data-theme=dark] .cta-band,:root[data-theme=dark] footer.site-f{border-block:1px solid var(--line)}
+:root[data-theme=dark] .btn-primary{color:#fff}
+:root[data-theme=dark] .final{background:linear-gradient(180deg,var(--bg),var(--cream))}
+:root[data-theme=dark] .one-card,:root[data-theme=dark] .step .n{border:1px solid var(--line2)}
+:root[data-theme=dark] .ticks li::before{color:#000}
+
+/* the three independent controls (platform, website theme, app screen theme) */
+.ctls{display:flex;gap:8px 16px;flex-wrap:wrap;align-items:center;justify-content:center}
+.ctl{display:inline-flex;align-items:center;gap:8px;font-size:13px}
+.ctl>span{color:#cfc9e2;font-weight:600}
+.seg{display:inline-flex;border:1px solid #ffffff33;border-radius:999px;padding:2px;background:#ffffff0d}
+.seg button{background:none;border:0;color:#e9e6f4;font:inherit;font-size:13px;font-weight:600;padding:4px 11px;border-radius:999px;cursor:pointer;display:inline-flex;gap:6px;align-items:center;line-height:1.2}
+.seg button[aria-pressed=true]{background:#fff;color:#1d1a2e}
+.seg button:focus-visible{outline:2px solid #ff9d7d;outline-offset:1px}
+
+/* platform-specific blocks */
+[data-os-show]{display:none}
+:root[data-os=win] [data-os-show=win],:root[data-os=mac] [data-os-show=mac]{display:revert}
+:root[data-os=win] span[data-os-show=win],:root[data-os=mac] span[data-os-show=mac]{display:inline}
+
+/* app screen frame: a real captured screen (HTML page) scaled to the frame width */
+.mock{position:relative;overflow:hidden;border-radius:14px;background:var(--frame);box-shadow:var(--shadow),0 0 0 1px rgba(29,26,46,.12);aspect-ratio:16/10;width:100%}
+.mock.mac{aspect-ratio:1280/630;border-radius:12px}
+.mock iframe{position:absolute;left:0;top:0;width:1600px;height:1000px;max-width:none;border:0;transform-origin:0 0;transform:scale(var(--s,.5));pointer-events:none;background:transparent}
+.mock.mac iframe{width:1280px;height:630px}
+.mock-cap{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:10px;font-size:14px;color:var(--muted)}
+.mock-cap a{color:var(--accent-ink);font-weight:700;text-decoration:none}
+.mock-cap a:hover{text-decoration:underline}
+figure.screen{margin:0}
+
+/* hero screen switcher (real screens, no animation) */
+.stages button[aria-selected=true]::after{transition:none}
+.tour-real{margin:46px auto 0;width:min(1120px,100% - 24px)}
+
+/* store buttons: visible, disabled until a store listing link exists */
+.btn[disabled]{cursor:not-allowed;opacity:.55;box-shadow:none}
+.btn[disabled]:hover{transform:none}
+.store-row{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.btn svg.apple{fill:currentColor;stroke:none}
+
+/* pricing */
+.region{display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;margin-top:26px;font-size:15px;color:var(--ink2)}
+.region select{font:inherit;padding:9px 12px;border-radius:10px;border:2px solid var(--line2);background:var(--surface);color:var(--ink)}
+.price-one{max-width:640px;margin:0 auto}
+.price small{color:var(--ink2);font-size:16px}
+.price-note{color:var(--muted);font-size:14px;margin-top:14px}
+
+/* feature catalog */
+.cat-nav{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:26px}
+.cat-nav a{text-decoration:none}
+.cat-group{padding:56px 0 8px}
+.cat-group>h2{font-size:clamp(26px,3vw,36px)}
+.cat-group>p{color:var(--ink2);margin-top:8px;max-width:760px}
+.feat-list{display:grid;gap:18px;margin-top:28px}
+.feat{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:26px 28px;display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start}
+.feat h3{font-size:22px}
+.feat .what{color:var(--ink2);margin-top:8px}
+.feat dl{margin:14px 0 0;display:grid;gap:10px}
+.feat dt{font-size:12.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-ink)}
+.feat dd{margin:2px 0 0;color:var(--ink2);font-size:16px}
+.avail{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.avail span{font-size:13px;font-weight:700;border-radius:999px;padding:4px 11px;border:1px solid var(--line2);color:var(--ink2)}
+.avail span.yes{background:var(--accent-soft);border-color:transparent;color:var(--accent-ink)}
+.feat .shots{display:grid;gap:10px}
+.feat .more-shots{font-size:14px;color:var(--muted)}
+.feat .more-shots a{color:var(--accent-ink)}
+@media (max-width:1020px){.feat{grid-template-columns:1fr}}
+
+/* tutorials */
+.tut-part{margin-top:46px}
+.tut-part>h2{font-size:28px}
+.tut-part>p{color:var(--ink2);margin-top:6px}
+.tut .thumb .mock{border-radius:0;box-shadow:none;aspect-ratio:auto;height:100%}
+a.tut{text-decoration:none}
+.tsteps{list-style:none;margin:40px 0 0;padding:0;display:grid;gap:44px;counter-reset:s}
+.tstep{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:36px;align-items:start}
+.tstep .tx h3{font-size:21px;display:flex;gap:12px;align-items:flex-start}
+.tstep .tx h3::before{counter-increment:s;content:counter(s);flex:none;width:34px;height:34px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:15px;font-weight:800;margin-top:-3px}
+.tstep .tx p{color:var(--ink2);margin-top:10px}
+.tbox{background:var(--cream);border:1px solid var(--line);border-radius:18px;padding:24px 28px;margin-top:28px}
+.tbox h2,.tbox h3{font-size:20px;margin-bottom:8px}
+.tbox ul{margin:8px 0 0;padding-left:20px;color:var(--ink2);display:grid;gap:6px}
+.tbox.warn{border-color:#e9c27a}
+.tmeta{display:flex;gap:8px 18px;flex-wrap:wrap;justify-content:center;margin-top:18px;color:var(--muted);font-size:15px}
+.crumbs{font-size:14px;color:var(--muted);margin-bottom:14px}
+.crumbs a{color:inherit}
+@media (max-width:1020px){.tstep{grid-template-columns:1fr;gap:16px}}
+
+/* manuals */
+.man-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;max-width:1000px;margin:0 auto}
+.man{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:32px}
+.man h3{font-size:24px}
+.man p{color:var(--ink2);margin-top:8px}
+.man .btn{margin-top:20px}
+.man ul{color:var(--ink2);padding-left:20px;margin:14px 0 0;display:grid;gap:4px;font-size:15.5px}
+@media (max-width:1020px){.man-grid{grid-template-columns:1fr}}
+
+/* screen library */
+.lib-area{margin-top:40px}
+.lib-area h2{font-size:24px}
+.lib{list-style:none;margin:14px 0 0;padding:0;display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.lib li{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:15px;color:var(--ink2)}
+.lib li b{color:var(--ink);display:block;font-size:15.5px}
+.lib li a{color:var(--accent-ink);font-weight:700;font-size:14px;margin-right:12px}
+@media (max-width:760px){.lib{grid-template-columns:1fr}}
+
+/* founders and company */
+.founders{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:34px}
+.founder{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:28px}
+.founder .role{font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-ink)}
+.founder h3{font-size:24px;margin-top:6px}
+.founder p{color:var(--ink2);margin-top:10px}
+.company-logo{display:block;width:min(300px,80%);height:auto;margin:0 auto;background:#fff;border-radius:14px;padding:14px}
+.f-company{display:flex;align-items:center;gap:12px;margin-top:18px}
+.f-company img{width:96px;height:auto;background:#fff;border-radius:8px;padding:5px}
+.f-company span{font-size:13.5px;line-height:1.4}
+@media (max-width:760px){.founders{grid-template-columns:1fr}}
+
+.skip{position:absolute;left:-999px;top:8px;z-index:200;background:var(--surface);color:var(--ink);padding:10px 14px;border-radius:10px}
+.skip:focus{left:8px}
+.prose p+p{margin-top:14px}
+.prose p{color:var(--ink2)}
+.small-print{color:var(--muted);font-size:14px;margin-top:16px}
+@media (max-width:640px){
+  .ctl{font-size:12px;gap:5px}
+  .seg button{padding:4px 8px;font-size:12px}
+}
+
+/* utilities that replace the design package's inline styles (the CSP allows no inline style) */
+.mt18{margin-top:18px}.mt26{margin-top:26px}.mt84{margin-top:84px}
+.lead-mid{max-width:720px;margin:22px auto 0}
+.ac{color:var(--accent-ink)}
+.d1{--rd:.08s}.d2{--rd:.15s}.d3{--rd:.21s}
+section.bt{border-top:1px solid var(--line)}
+.merge.static .one{position:static;opacity:1;transform:none;pointer-events:auto;margin-top:22px}
+.hero{padding-bottom:40px}
+.dg-card{fill:var(--surface);stroke:var(--line2)}
+.dg-stand{fill:var(--line2)}
+.dg-cloud{fill:var(--tint);stroke:var(--line2)}
+.dg-ink{fill:var(--ink)}
+.dg-mut{fill:var(--muted)}
+.stage-panel[hidden]{display:none}
+.card.big .screen{margin-bottom:24px}
+.chart text{fill:#cfc9e2}
+/* header fixes: the menu stays on one line; the chevron is the design's small one; the gradient defs take no space */
+svg.defs{position:absolute;width:0;height:0;overflow:hidden}
+.menu>li>a,.menu>li>button{white-space:nowrap;padding:10px 12px}
+.menu .i{width:12px;height:12px;transition:transform .2s}
+.menu li.open>button .i{transform:rotate(180deg)}
+@media (max-width:1180px) and (min-width:1021px){.nav{gap:14px}.menu>li>a,.menu>li>button{padding:10px 8px;font-size:15px}.nav-cta .btn-ghost{display:none}}
+.tut .thumb img{display:block;width:100%;height:100%;object-fit:cover;object-position:top center}
+@media (max-width:640px){.store-row .btn,.store-col .btn,.panel .btn{white-space:normal;width:100%;text-align:center;line-height:1.25}.store-row{flex-direction:column}}
+.store-col{display:grid;gap:12px}.store-col .btn{width:100%;margin-top:0}
+.app small{color:#b53713}
+:root[data-theme=dark] .app small{color:var(--accent-ink)}
+:root{--accent-link:#b53713}
+:root[data-theme=dark]{--accent-link:var(--accent-ink)}
+.mock-cap a,.more,.feat .more-shots a,.lib li a,.mega-foot a{color:var(--accent-link)}
+.one-card{background:#1d1a2e;color:#fff}
+:root[data-theme=dark] .one-card{background:#1c1928}
+/* "5 apps to 1" block: stats stay a row of cards down to phone width; dark theme gets lifted cards */
+@media (max-width:1020px) and (min-width:641px){.merge-stats{grid-template-columns:repeat(3,1fr)}}
+.stat{border-radius:18px}
+:root[data-theme=dark] .stat{background:linear-gradient(180deg,#17151f,#0f0e14);border-color:var(--line2);box-shadow:0 18px 40px -28px rgba(0,0,0,.9)}
+:root[data-theme=dark] .stat b{color:#fff}
+:root[data-theme=dark] .one-card{background:linear-gradient(180deg,#221f31,#16141f);border:1px solid #ffffff1f;box-shadow:0 30px 70px -30px rgba(210,68,28,.45)}
+:root[data-theme=dark] .one-card .wm{color:#fff}
+:root[data-theme=dark] .one-card p{color:#cfc9e2}
+:root[data-theme=dark] .app{background:var(--surface);border-color:var(--line2)}
+:root[data-theme=dark] .app small{background:#2b140c}
+@media (max-width:1020px) and (min-width:761px){.apps{grid-template-columns:repeat(5,1fr);gap:10px}.app{padding:16px 10px}}
+@media (max-width:760px){.apps .app:last-child{grid-column:1/-1}}
+/* icon controls */
+.ctl{gap:6px}
+.ctl-ic{display:inline-grid;place-items:center;color:#a39dbb}
+.ctl-ic svg{width:16px;height:16px}
+.seg button{padding:5px 10px}
+.seg button svg{width:15px;height:15px;display:block}
+.ctls{gap:8px 18px;flex-wrap:nowrap}
+@media (max-width:640px){.ctls{gap:10px}.seg button{padding:5px 8px}}
+/* breathing room between a list and the store buttons that follow it */
+.store-col{margin-top:30px}
+.pcard .ticks+.btn,.panel p+.btn{margin-top:26px}
+.price-note{margin-top:18px}
+/* breathing room between a list and the store buttons that follow it */
+.store-col{margin-top:30px}
+.pcard .ticks+.btn,.panel p+.btn{margin-top:26px}
+.price-note{margin-top:18px}
+
+/* ===== glass header: one floating bar with the site sections and the three controls (owner request 2026-10-31) */
+.site-h{position:sticky;top:12px;z-index:50;margin:12px auto 0;width:min(1280px,100% - 24px);border-radius:20px;
+  background:rgba(255,255,255,.58);-webkit-backdrop-filter:blur(20px) saturate(1.7);backdrop-filter:blur(20px) saturate(1.7);
+  border:1px solid rgba(255,255,255,.75);box-shadow:0 1px 0 rgba(255,255,255,.6) inset,0 18px 44px -24px rgba(29,26,46,.38),0 0 0 1px rgba(29,26,46,.06)}
+:root[data-theme=dark] .site-h{background:rgba(20,18,28,.55);border-color:rgba(255,255,255,.09);box-shadow:0 1px 0 rgba(255,255,255,.06) inset,0 18px 44px -20px rgba(0,0,0,.85)}
+.site-h .wrap.nav{width:100%;padding:0 14px 0 20px;height:66px;gap:16px}
+.hero,.phero{margin-top:-78px;padding-top:150px}
+.mega{padding-top:16px}
+.mega-in{background:rgba(255,255,255,.92);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+:root[data-theme=dark] .mega-in{background:rgba(20,18,28,.94)}
+.menu>li>a,.menu>li>button{font-size:15px}
+/* controls inside the glass bar */
+.ctls.nav-ctls{display:flex;gap:6px;flex:none}
+.ctl{gap:4px}
+.ctl-ic{color:var(--muted)}
+.ctl-ic svg{width:14px;height:14px}
+.seg{border:1px solid var(--line2);background:rgba(127,120,150,.08);padding:2px}
+.seg button{color:var(--ink2);padding:5px 8px}
+.seg button:hover{color:var(--ink)}
+.seg button[aria-pressed=true]{background:var(--solid);color:var(--on-solid)}
+.seg button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.menu-ctls{display:none}
+@media (max-width:1240px){.nav-cta .btn-ghost{display:none}.ctl-ic{display:none}}
+@media (max-width:1020px){
+  .ctls.nav-ctls{display:none}
+  .menu.open-m{top:calc(100% + 8px);left:0;right:0;border-radius:18px;height:auto;max-height:calc(100dvh - 110px);background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow)}
+  .menu.open-m .menu-ctls{display:flex;flex-wrap:wrap;gap:10px;padding:16px 8px 6px}
+  .menu-ctls .ctl-ic{display:inline-grid}
+}
+@media (max-width:640px){.site-h{top:8px;margin-top:8px;width:calc(100% - 16px);border-radius:16px}.site-h .wrap.nav{height:60px;padding:0 10px 0 14px}.hero,.phero{margin-top:-68px;padding-top:120px}}
+@media (max-width:1020px){.menu.open-m{padding:8px 20px 16px}}
+/* glass header polish: a little more body so text behind it never competes; clearer group icons; tidy phone menu */
+.site-h{background:rgba(255,255,255,.74)}
+:root[data-theme=dark] .site-h{background:rgba(18,16,26,.72)}
+.ctl-ic{color:var(--ink2);opacity:.75}
+.ctl-name{display:none}
+@media (max-width:1020px){
+  .menu.open-m{padding:10px 18px 18px}
+  .menu.open-m .menu-ctls{flex-direction:column;align-items:stretch;gap:12px;padding:16px 4px 4px}
+  .menu-ctls .ctl{justify-content:space-between}
+  .menu-ctls .ctl-name{display:block;flex:1;font-size:15px;font-weight:600;color:var(--ink);margin-left:8px}
+  .menu-ctls .seg button{padding:7px 14px}
+}
+/* nav: sections on the left, the three toggles on the right (owner spec 2026-10-31: no buttons in the bar) */
+.site-h .menu{flex:1}
+.ctls.nav-ctls{margin-left:auto;gap:12px}
+@media (max-width:1240px){.ctl-ic{display:inline-grid}}
+@media (max-width:1120px) and (min-width:1021px){.ctl-ic{display:none}.ctls.nav-ctls{gap:6px}}
+@media (max-width:1020px){.menu-tg{margin-left:auto}}
+/* nav: one primary action, current section marked, bar tightens on scroll */
+.nav-get{flex:none;margin-left:4px}
+.menu>li>button.is-current,.menu>li>a[aria-current]{background:var(--tint);color:var(--ink)}
+.site-h,.site-h .wrap.nav{transition:height .25s var(--ease),box-shadow .25s,background .25s,top .25s}
+.site-h.scrolled{top:8px;box-shadow:0 1px 0 rgba(255,255,255,.6) inset,0 22px 50px -26px rgba(29,26,46,.5),0 0 0 1px rgba(29,26,46,.07)}
+.site-h.scrolled .wrap.nav{height:58px}
+@media (max-width:1180px){.nav-get{padding:10px 14px}}
+@media (max-width:640px){.nav-get{display:none}}
+@media (prefers-reduced-motion:reduce){.site-h,.site-h .wrap.nav{transition:none}}
+/* store buttons: both marks the same size and colour as the label */
+.btn svg.logo{width:20px;height:20px;flex:none;fill:currentColor}
+.btn-sm svg.logo{width:17px;height:17px}
+@media (max-width:1020px){.nav-get{margin-left:auto}.menu-tg{margin-left:8px}}

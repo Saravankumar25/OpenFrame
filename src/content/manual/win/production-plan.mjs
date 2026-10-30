@@ -1,0 +1,480 @@
+export default {
+  area: `Production Plan: overview and catalog`,
+  slug: `production-plan`,
+  order: 10,
+  part: `Plan`,
+  intro: [
+    `Production is the planning workspace of a project. It turns your screenplay into a shoot you can prepare: what the script needs, which places and people you have, and what is still open. It has thirteen tabs along the top: Overview, Catalog, Locations, Cast & Crew, Moodboards, Storyboards, Shot Lists, Schedule, Day Out of Days, Daily View, Sides, Reports and Budget. This chapter covers the first two, Overview and Catalog. Locations and Cast & Crew have their own chapters.`,
+    `Production always starts from one named screenplay draft, called the Production Source. You choose it once on the Overview tab. Your screenplay is never changed by this step, and you never recreate a scene by hand: OpenFrame makes a breakdown scene for every scene in the draft. If the script changes later, you choose to update the Production Source and review the changes before anything happens.`,
+    `Overview answers one question: what do I need to do next to prepare the shoot? It shows five tiles (script status, breakdown progress, unresolved locations, unresolved cast and the catalog) and a Needs attention list. Every tile and every item opens the place where you fix it. Nothing on the page is a step you must finish first.`,
+    `Catalog answers a different question: what things does this film need? It is one list of reusable production items, such as props, wardrobe, vehicles and sound, instead of one huge spreadsheet. An item is created once and then linked to every scene that needs it from the Breakdown. The catalog has no money or purchasing fields. It is a directory of what the film needs, not a budget.`,
+  ],
+  layout: [
+    { name: `Production tab strip`, text: `The row of thirteen tabs under the project bar. The tab you are on is underlined in orange. The status bar at the bottom left names where you are, for example Production Overview or Production Catalog.` },
+    { name: `Overview header`, text: `The title Production, the line What do I need to do next to prepare the shoot?, and a button at the top right. The button reads Start Production Setup until a source is chosen, and Change Production Source after that.` },
+    { name: `Overview tiles`, text: `Five tiles: SCRIPT STATUS, BREAKDOWN PROGRESS, UNRESOLVED LOCATIONS, UNRESOLVED CAST and CATALOG. Each tile is a button that opens the place behind the number. Breakdown progress also has a thin progress bar.` },
+    { name: `Needs attention`, text: `A list under the tiles. Each line says what needs a look and has a small button, Open or Review. When there is nothing to do it reads Nothing needs attention right now.` },
+    { name: `Production Source dialog`, text: `The dialog titled Handing the script over to production. It lists the screenplay drafts. Each row shows the draft name, Not locked or the lock date, the number of scenes, a Locked label for a locked draft and a Current source label for the draft production uses now.` },
+    { name: `Catalog header`, text: `The title Catalog and the line What things does this film need? Reusable items, not one huge spreadsheet. At the top right are Export and Add Item.` },
+    { name: `Catalog toolbar`, text: `A Search catalog box, then the category buttons All, Props, Wardrobe, Vehicles, Cast and Locations, then a More menu for the other categories. At the far right is a Show archived check box.` },
+    { name: `Catalog table`, text: `One row per item with NAME, CATEGORY, STATUS and USED IN. Category shows a coloured dot and an icon. Status is a small label such as Required. Used in says Not used yet or the scenes that use the item, for example Scene 1. Click a row to open its drawer, or right-click for the row menu.` },
+    { name: `Catalog item drawer`, text: `A panel that slides in from the right, headed CATALOG ITEM and the item name. It holds Name, Category, Status, Description, Notes, Contact / reference, Image, Also known as and Used in scenes. The footer has Delete, Archive and Open Scenes.` },
+  ],
+  workflows: [
+    {
+      id: `production-plan-read-overview`,
+      title: `Read the Production Overview`,
+      purpose: `See how far preparation has come and jump to the thing that needs work.`,
+      level: `Beginner`,
+      prerequisites: [`A project is open and has a Production Source. If it has none, follow Choose the production source first.`],
+      steps: [
+        {
+          screen: `prod-overview`,
+          do: `Click Production in the left rail. The Overview tab is the first tab and opens by default.`,
+          explain: `The page is titled Production and asks: What do I need to do next to prepare the shoot? The tab strip shows all thirteen Production tabs, with Overview underlined.`,
+        },
+        {
+          screen: `prod-overview`,
+          do: `Read the SCRIPT STATUS tile.`,
+          explain: `It shows the name of the draft production is based on, for example Second Draft, and under it the screenplay title, whether the draft is locked and the words used as Production Source. A locked draft also shows a Locked label. Click the tile to open the Breakdown.`,
+        },
+        {
+          screen: `prod-overview`,
+          do: `Read the BREAKDOWN PROGRESS tile.`,
+          explain: `The big number is scenes marked complete out of all scenes, for example 1 / 36. Under it you see how many scenes have confirmed elements and how many suggestions are waiting for you to review. The bar below fills as scenes are marked complete. Click the tile to open the Breakdown.`,
+        },
+        {
+          screen: `prod-overview`,
+          do: `Read UNRESOLVED LOCATIONS, UNRESOLVED CAST and CATALOG.`,
+          explain: `Unresolved locations counts places still at Idea or Shortlisted, out of all locations. Unresolved cast counts characters who have no actor yet, out of all characters. Catalog counts the reusable production items. Click a tile to open Locations, Cast & Crew or Catalog.`,
+        },
+        {
+          screen: `prod-overview`,
+          do: `Look at the NEEDS ATTENTION list and click Open or Review on a line.`,
+          explain: `In the picture one line reads Needs casting and names the characters without an actor, with an Open button that goes to Cast & Crew. Other lines can appear: Newer revision available, scenes that need breakdown review after the script changed, new scenes that need breakdown, and breakdown elements kept from scenes that are no longer in the Production Source. Each has a button that opens the place to deal with it.`,
+        },
+      ],
+      result: `You know the state of the script, breakdown, locations, cast and catalog, and you have opened the first thing to fix.`,
+      cautions: [
+        `Overview only reads the project. Nothing you see on it is a required step, and you can work in any order.`,
+        `When the project has no source, every number is 0 and the page asks you to choose a draft. See Choose the production source.`,
+      ],
+      related: [`production-plan-start-setup`, `production-plan-change-source`],
+    },
+    {
+      id: `production-plan-start-setup`,
+      title: `Choose the production source`,
+      purpose: `Tell production which screenplay draft it is based on, so the breakdown, catalog and schedule can be built from it.`,
+      level: `Beginner`,
+      prerequisites: [`A screenplay exists in the project. Write or import one first.`],
+      steps: [
+        {
+          screen: `prod-overview-no-source`,
+          do: `Open Production, then the Overview tab. Click Start Production Setup at the top right.`,
+          explain: `With no source the tiles read No source yet and show zeros, and a blue note says: Production starts from a named screenplay draft. Choose it with Start Production Setup. Your screenplay is not changed, and you will not recreate any scene by hand. Clicking the SCRIPT STATUS tile opens the same dialog.`,
+        },
+        {
+          screen: `prod-overview-start-setup-dialog`,
+          do: `If the dialog says There are no screenplay drafts yet, close it, write or import a screenplay, and come back.`,
+          explain: `The dialog is titled Handing the script over to production. and asks Which screenplay draft should become the production source? With no drafts it only shows the note, and Set as Production Source stays greyed out. Production is always based on a named draft. Close, or Cancel, leaves without a change.`,
+        },
+        {
+          screen: `prod-overview-source-dialog`,
+          do: `When drafts exist, click the draft you want in the list.`,
+          explain: `Each draft is a row with its name, Not locked or the lock date, and its scene count. A locked draft shows a Locked label. If the project has more than one screenplay, the screenplay title is shown beside the draft name. The selected row has an orange outline and a tick. The picture shows the same dialog opened later from Change Production Source, so it also marks Second Draft as Current source.`,
+        },
+        {
+          screen: `prod-overview-source-dialog`,
+          do: `Read the lines under the list, then click Set as Production Source.`,
+          explain: `For a first setup the dialog lists what OpenFrame will create or initialise: breakdown scenes, one per screenplay scene and numbered automatically; the production catalog; and the scene list used by shot lists, storyboards and the schedule. A box, Why this draft? (optional), takes a short reason such as Locked shooting draft. The dialog repeats that you will not recreate any scene by hand and your screenplay is not changed.`,
+        },
+        {
+          screen: `prod-overview`,
+          do: `Look at the Overview again.`,
+          explain: `A message at the bottom says Production Source set to the draft name and that your screenplay is not changed, with an Undo link. The SCRIPT STATUS tile now shows the draft, the scene count appears in BREAKDOWN PROGRESS, and the button at the top right reads Change Production Source.`,
+        },
+      ],
+      result: `The chosen draft is the Production Source. The breakdown has a scene for every scene in it, and the Overview shows real numbers.`,
+      cautions: [
+        `Your screenplay is not changed by choosing a source.`,
+        `Set as Production Source is greyed out until a draft is selected. If the list is empty, there is no screenplay draft yet.`,
+        `If your role cannot edit the project, Start Production Setup and Change Production Source do not show.`,
+      ],
+      related: [`production-plan-change-source`, `production-plan-read-overview`],
+    },
+    {
+      id: `production-plan-change-source`,
+      title: `Move production to a newer draft`,
+      purpose: `Switch the Production Source to another draft after reviewing what would change.`,
+      level: `Intermediate`,
+      prerequisites: [`The project already has a Production Source and at least one other screenplay draft.`],
+      steps: [
+        {
+          screen: `prod-overview`,
+          do: `On the Overview tab, click Change Production Source. If a newer revision exists, you can instead click Review on the Newer revision available line in NEEDS ATTENTION.`,
+          explain: `That line says the newer draft is newer and that Production stays on the current draft until you review the update. Nothing moves by itself.`,
+        },
+        {
+          screen: `prod-overview-source-dialog`,
+          do: `In the dialog, click a draft other than the current one.`,
+          explain: `The current source shows a Current source label and a tick. The button at the bottom right reads Review Production Update and is greyed out while the current draft is selected. It turns on when you pick a different draft. Cancel closes the dialog.`,
+        },
+        {
+          screen: `prod-overview-source-dialog`,
+          do: `Click Review Production Update.`,
+          explain: `A review window opens, titled Update Production from the draft name. It says Production is currently based on the old draft and that nothing changes until you confirm. It shows four counts: Scenes added, Scenes removed, Text changed and Heading changed, then a line saying how many scenes moved, need a manual match or are unchanged. Below is a list of changed scenes, each with a label: Needs Breakdown for a new scene, Review for a changed scene and Historical for a removed scene. The list shows eight rows and then says how many more there are.`,
+        },
+        {
+          screen: `prod-overview-source-dialog`,
+          do: `Decide: click Update Production Baseline to apply the change, Keep Production on the old draft name to stay, or Dismiss to close the window. If the list has more than eight changes, click Review Changes First to show them all.`,
+          explain: `A note at the bottom says nothing is deleted: every breakdown element is kept, removed scenes keep their breakdown as history, and changed scenes are flagged for review. After you apply the update a message says Production now uses the new draft and how many new scenes need breakdown.`,
+        },
+        {
+          screen: `prod-overview`,
+          do: `Back on the Overview, read NEEDS ATTENTION.`,
+          explain: `New scenes appear as a line saying they need breakdown, and changed scenes as a line saying they need breakdown review. Click Open or Review to go to the Breakdown and deal with them.`,
+        },
+      ],
+      result: `Production uses the new draft. Old breakdown work is kept, and the scenes that changed are marked for review.`,
+      cautions: [
+        `Nothing is deleted when you update. Removed scenes keep their breakdown as history, and you can archive those leftovers later.`,
+        `The review window is not shown in a captured picture. The text above is what it contains.`,
+        `Your screenplay itself is never edited by this update.`,
+      ],
+      related: [`production-plan-start-setup`, `production-plan-read-overview`],
+    },
+    {
+      id: `production-plan-open-catalog`,
+      title: `Open the Catalog and read the list`,
+      purpose: `Find your way around the Catalog tab and understand each column.`,
+      level: `Beginner`,
+      prerequisites: [`A project is open.`],
+      steps: [
+        {
+          screen: `prod-catalog`,
+          do: `Click Production in the left rail, then click Catalog in the tab strip.`,
+          explain: `The page asks: What things does this film need? Reusable items, not one huge spreadsheet. The orange Add Item button and the Export button are at the top right.`,
+        },
+        {
+          screen: `prod-catalog`,
+          do: `Read the table. Click a row to look at an item.`,
+          explain: `NAME is the item. CATEGORY has a coloured dot and icon, for example Prop, Wardrobe or Vehicle. STATUS is Required, Searching, Shortlisted, Confirmed or Not Required. USED IN lists the scenes that use it, or says Not used yet. The table holds the items of your project, such as Marine radio receiver, Soldering iron, Lakshmi's travel kurta and Night bus in the example.`,
+        },
+        {
+          screen: `prod-catalog-empty`,
+          do: `If a project has no items, you see an empty page instead.`,
+          explain: `It says The catalog is empty. and adds: Confirmed breakdown items will appear here, or add one manually. The Add Item button is under the message. Items you confirm in the Breakdown appear in the Catalog on their own.`,
+        },
+      ],
+      result: `You can read the Catalog and know where each item comes from.`,
+      cautions: [
+        `The Catalog has no cost, supplier or purchasing fields. The drawer says so: No financial or procurement fields. This is a production directory.`,
+      ],
+      related: [`production-plan-filter-catalog`, `production-plan-add-catalog-item`],
+    },
+    {
+      id: `production-plan-filter-catalog`,
+      title: `Search and filter the Catalog`,
+      purpose: `Narrow the list to one category, a name you type, or archived items.`,
+      level: `Beginner`,
+      prerequisites: [`The Catalog has items.`],
+      steps: [
+        {
+          screen: `prod-catalog`,
+          do: `Type in the Search catalog box.`,
+          explain: `The list updates as you type and matches names. Clear the box to see everything again.`,
+        },
+        {
+          screen: `prod-catalog-category-props`,
+          do: `Click a category button: All, Props, Wardrobe, Vehicles, Cast or Locations.`,
+          explain: `The selected button turns dark. In the picture Props is selected, so only the two props are listed. All shows every category.`,
+        },
+        {
+          screen: `prod-catalog-more-menu`,
+          do: `Click More to open the menu of other categories.`,
+          explain: `The menu lists Extras / Background, Hair / Makeup, Special Effects, VFX, Sound and Animals. Click one to filter by it.`,
+        },
+        {
+          screen: `prod-catalog-no-match`,
+          do: `If nothing fits, the page says No catalog items match.`,
+          explain: `In the picture the category from More is Sound, and there is no sound item. The More button now shows the chosen category name, here Sound. Click All or clear the search to go back.`,
+        },
+        {
+          screen: `prod-catalog`,
+          do: `To include items you have archived, tick Show archived at the top right.`,
+          explain: `Archived items are hidden by default. When you tick the box they join the list, drawn paler and marked Archived.`,
+        },
+      ],
+      result: `The table shows only the items you asked for.`,
+      cautions: [
+        `If a filter hides items you expect to see, check which category button is selected and whether the search box has text.`,
+      ],
+      related: [`production-plan-open-catalog`, `production-plan-archive-catalog-item`],
+    },
+    {
+      id: `production-plan-add-catalog-item`,
+      title: `Add a catalog item`,
+      purpose: `Create a reusable item, such as a prop or a vehicle, by hand.`,
+      level: `Beginner`,
+      prerequisites: [`A project is open and your role can edit it.`],
+      steps: [
+        {
+          screen: `prod-catalog-empty`,
+          do: `On the Catalog tab, click Add Item at the top right. On an empty Catalog you can also click the Add Item button under the message.`,
+          explain: `Adding by hand is for items you want before they appear in a breakdown. Items you confirm in the Breakdown are added by themselves.`,
+        },
+        {
+          screen: `prod-catalog-add-dialog`,
+          do: `In the Add Item dialog, choose a Category *, type a Name *, and set a Status.`,
+          explain: `The dialog says: A reusable production item. Scenes that need it are linked from the Breakdown. Category * starts on the category you were filtering by, or Props. Status starts on Required. Description (optional) holds a short note. Add Item stays greyed out until the name is filled in. Cancel closes the dialog without adding.`,
+        },
+        {
+          screen: `prod-catalog-add-duplicate-warning`,
+          do: `If a yellow note appears under Name *, read it before you continue.`,
+          explain: `It says: The catalog already has “Marine radio receiver”. Adding creates a separate item; to reuse it, link it from the Breakdown instead. It is a warning, not a block. Change the name, or cancel and reuse the item that exists.`,
+        },
+        {
+          screen: `prod-catalog-add-dialog`,
+          do: `Click Add Item.`,
+          explain: `The dialog closes, a message at the bottom says Added the item to the catalog with an Undo link, and the new item opens in its drawer.`,
+        },
+      ],
+      result: `The item is in the Catalog with the status you chose. It shows Not used yet until the Breakdown links it to a scene.`,
+      cautions: [
+        `Two items with the same name are allowed but usually a mistake. Heed the yellow note and reuse the existing item from the Breakdown.`,
+        `Adding an item does not put it in a scene. Scenes are linked from the Breakdown.`,
+      ],
+      related: [`production-plan-edit-catalog-item`, `production-plan-open-catalog`],
+    },
+    {
+      id: `production-plan-edit-catalog-item`,
+      title: `Open and edit a catalog item`,
+      purpose: `Change an item's name, status, notes, image and other names, and see which scenes use it.`,
+      level: `Beginner`,
+      prerequisites: [`The Catalog has at least one item.`],
+      steps: [
+        {
+          screen: `prod-catalog-row-menu`,
+          do: `Click a row, or right-click it and choose Open.`,
+          explain: `The row menu has Open, Open Scenes, Archive… and a red Delete… under a divider. Open Scenes is greyed out when the item is not used in a scene.`,
+        },
+        {
+          screen: `prod-catalog-drawer`,
+          do: `In the drawer, edit Name *, change Status, and type a Description and Notes.`,
+          explain: `The drawer is headed CATALOG ITEM and the name. Category is shown for reference and cannot be changed here. Status is a menu: Required, Searching, Shortlisted, Confirmed or Not Required. Text fields save when you click out of them or press Enter. A name cannot be left empty, because the old name comes back.`,
+        },
+        {
+          screen: `prod-catalog-drawer`,
+          do: `Type a reference in Contact / reference, and click Add Image to pick a picture.`,
+          explain: `Contact / reference is private: only Owners and Editors see it, and it is never shared with the assistant or put in exports. Add Image opens the Windows file window. Once there is a picture, it shows in the drawer with a small x to remove it.`,
+        },
+        {
+          screen: `prod-catalog-drawer`,
+          do: `Under Also known as, type another name in Add another name and click Add.`,
+          explain: `Other names used in the script help match this item in new scenes. Each name shows as a small label with an x to remove it. Add stays greyed out until you type something.`,
+        },
+        {
+          screen: `prod-catalog-drawer`,
+          do: `Look at Used in scenes, then click Open Scenes in the footer.`,
+          explain: `Each scene shows as a small label, for example Scene 1. Clicking a label opens that scene in the Breakdown. Open Scenes is greyed out when no scene uses the item.`,
+        },
+        {
+          screen: `bd-catalog-scenes-banner`,
+          do: `The Breakdown opens with a blue bar that names the item.`,
+          explain: `In the picture it reads Showing the 1 scene that use Soldering iron (Props), and a Show all scenes button on the right brings the full scene list back. Click the x at the top right of the drawer to close it.`,
+        },
+      ],
+      result: `The item has the name, status and notes you set, and you know which scenes use it.`,
+      cautions: [
+        `The Category of an existing item cannot be changed in the drawer. Add a new item in the right category if you picked wrongly.`,
+        `Changes save as you leave each field. There is no Save button.`,
+      ],
+      related: [`production-plan-replace-catalog-item`, `production-plan-archive-catalog-item`],
+    },
+    {
+      id: `production-plan-replace-catalog-item`,
+      title: `Replace an item in some scenes`,
+      purpose: `Swap one catalog item for another in chosen scenes without deleting the old item or touching the screenplay.`,
+      level: `Intermediate`,
+      prerequisites: [`The item is used in at least one scene and another item of the same category exists.`],
+      steps: [
+        {
+          screen: `prod-catalog-drawer`,
+          do: `Open the item and click Archive in the drawer footer.`,
+          explain: `Replace in Scenes… is offered inside the archive question, so you start there.`,
+        },
+        {
+          screen: `prod-catalog-archive-confirm`,
+          do: `In the Archive “Soldering iron”? dialog, read the text, then click Replace in Scenes… in the INSTEAD box.`,
+          explain: `The dialog says the item is still used in a number of scenes and that archiving keeps those associations readable but stops offering the item for new selections. The INSTEAD box says you can replace it in selected scenes with another catalog item without deleting it.`,
+        },
+        {
+          screen: `prod-catalog-replace-dialog`,
+          do: `In the Replace dialog, choose the Replacement item and tick the scenes under Apply to scenes.`,
+          explain: `The dialog says: This changes production associations only. The screenplay is not changed and the item is not deleted. Replacement lists the other items of the same category with their status, for example Marine radio receiver (Required). Every scene that uses the item starts ticked. If there is no other item in that category, a blue note says to add one in the Catalog first.`,
+        },
+        {
+          screen: `prod-catalog-replace-dialog`,
+          do: `Click Replace in 1 Scene. The button shows the number of ticked scenes.`,
+          explain: `It is greyed out when no scene is ticked. Cancel closes the dialog. A message says the item was replaced in that many scenes and that the old item is kept in the catalog, with an Undo link.`,
+        },
+      ],
+      result: `The chosen scenes now use the replacement item. The old item is still in the Catalog.`,
+      cautions: [
+        `The screenplay text is not changed. Only the production links change.`,
+        `You can undo with the Undo link in the message at the bottom.`,
+      ],
+      related: [`production-plan-archive-catalog-item`, `production-plan-edit-catalog-item`],
+    },
+    {
+      id: `production-plan-archive-catalog-item`,
+      title: `Archive or restore a catalog item`,
+      purpose: `Hide an item you no longer offer without losing it, and bring it back when you need it.`,
+      level: `Beginner`,
+      prerequisites: [`The Catalog has an item.`],
+      steps: [
+        {
+          screen: `prod-catalog-row-menu`,
+          do: `Right-click the item and choose Archive…. You can also open the item and click Archive in the drawer footer.`,
+          explain: `Archive is the safe alternative to Delete. The item stays on record.`,
+        },
+        {
+          screen: `prod-catalog-archive-confirm`,
+          do: `Read the dialog and click Archive Item.`,
+          explain: `If the item is used in scenes, the dialog says how many and which. Archiving keeps those scenes readable but the item is no longer offered for new selections. If it is not used, the dialog says the item will no longer be offered and you can restore it at any time. Cancel keeps it as it is.`,
+        },
+        {
+          screen: `prod-catalog`,
+          do: `Tick Show archived to see archived items. Open the item and click Restore in the drawer footer, or choose Restore from Archive in its row menu.`,
+          explain: `An archived item is drawn paler and carries an Archived label. Its drawer opens with a blue note: Archived: kept readable in its scenes, not offered for new selections. A message says it was restored from the archive, with an Undo link.`,
+        },
+      ],
+      result: `The item is hidden from the normal list but kept, and Show archived brings it back.`,
+      cautions: [
+        `Archiving never removes the item from scenes that already use it.`,
+        `An archived item is not offered when you choose items for new selections, so restore it first if you need it again.`,
+      ],
+      related: [`production-plan-delete-catalog-item`, `production-plan-replace-catalog-item`],
+    },
+    {
+      id: `production-plan-delete-catalog-item`,
+      title: `Delete a catalog item`,
+      purpose: `Remove an item and know exactly what happens to the scenes that used it.`,
+      level: `Intermediate`,
+      prerequisites: [`You have thought about Archive first.`],
+      steps: [
+        {
+          screen: `prod-catalog-row-menu`,
+          do: `Right-click the item and choose the red Delete…. You can also click Delete in the drawer footer.`,
+          explain: `Nothing is deleted until you confirm in the next dialog.`,
+        },
+        {
+          screen: `prod-catalog-delete-confirm`,
+          do: `Read the Delete “Soldering iron”? dialog, then click Delete.`,
+          explain: `It says the item moves to Recently Deleted for 30 days. The breakdown of each scene that used it keeps its entry, marked Catalog item removed, until you restore the item. Used in lists those scenes. For an item in use it adds: Archiving is usually the better choice. Cancel keeps the item.`,
+        },
+      ],
+      result: `The item leaves the Catalog. A message says it was deleted and can be restored from Recently Deleted, with an Undo link.`,
+      cautions: [
+        `Delete is not permanent for 30 days. Restore the item from Recently Deleted if you change your mind.`,
+        `Archive is the better choice for an item that scenes still use.`,
+      ],
+      related: [`production-plan-archive-catalog-item`],
+    },
+    {
+      id: `production-plan-export-catalog`,
+      title: `Export the Catalog`,
+      purpose: `Save a snapshot of the Catalog as a spreadsheet or a printable file.`,
+      level: `Beginner`,
+      prerequisites: [`The Catalog has items.`],
+      steps: [
+        {
+          screen: `prod-catalog`,
+          do: `Click Export at the top right of the Catalog.`,
+          explain: `Export sits beside Add Item. It does not change your project.`,
+        },
+        {
+          screen: `prod-catalog-export-dialog`,
+          do: `In the Export Catalog dialog, choose Excel (XLSX), CSV or PDF.`,
+          explain: `The dialog says the export is a snapshot, not a live connection to the Catalog, and names its source: Catalog and the active Production Source. Excel (XLSX) gives one sheet per table, CSV is spreadsheet-friendly text and PDF is printable. A line shows the suggested file name, with the project name, Catalog and today's date.`,
+        },
+        {
+          screen: `prod-catalog-export-dialog`,
+          do: `Click Export… and choose where to save the file in the Windows window that opens.`,
+          explain: `A purple note says Private notes excluded. Export creates a snapshot and does not change your project. Cancel closes the dialog.`,
+        },
+      ],
+      result: `You have a file with the Catalog as it was at that moment.`,
+      cautions: [
+        `Private notes are left out of the export.`,
+        `The file does not update when the Catalog changes. Export again for a new snapshot.`,
+      ],
+      related: [`production-plan-open-catalog`],
+    },
+  ],
+  screens: {
+    'prod-overview': `The Production Overview of a project with a source (Night Bus): five tiles for script status, breakdown progress, unresolved locations, unresolved cast and the catalog, and a NEEDS ATTENTION list with a Needs casting line and an Open button. Change Production Source is at the top right. Used in production-plan-read-overview, production-plan-start-setup and production-plan-change-source.`,
+    'prod-overview-source-dialog': `The Handing the script over to production. dialog opened from Change Production Source. It lists two drafts, Second Draft (marked Current source, with a tick) and Example-Feature (imported), each with Not locked and 36 scenes. Cancel and Review Production Update are at the bottom, and the second is greyed out while the current draft is selected. Used in production-plan-start-setup and production-plan-change-source.`,
+    'prod-overview-no-source': `The Overview of a project with no Production Source (Empty Short). A blue note explains that production starts from a named screenplay draft. The tiles read No source yet and 0, and Start Production Setup is the orange button at the top right. Used in production-plan-start-setup.`,
+    'prod-overview-start-setup-dialog': `The same dialog opened from Start Production Setup in a project with no screenplay drafts. A blue note says there are no screenplay drafts yet and to write or import a screenplay first. Set as Production Source is greyed out. Used in production-plan-start-setup.`,
+    'prod-catalog-empty': `The Catalog of a project with no items. It says The catalog is empty. and Confirmed breakdown items will appear here, or add one manually, with an Add Item button. Search, the category buttons and Show archived are above. Used in production-plan-open-catalog and production-plan-add-catalog-item.`,
+    'prod-catalog': `The Catalog with four items: Marine radio receiver, Soldering iron, Lakshmi's travel kurta and Night bus. The table has NAME, CATEGORY, STATUS and USED IN. Export and Add Item are at the top right. Used in production-plan-open-catalog, production-plan-filter-catalog, production-plan-archive-catalog-item and production-plan-export-catalog.`,
+    'prod-catalog-category-props': `The Catalog filtered to Props. The Props button is selected and only Marine radio receiver and Soldering iron are listed. Used in production-plan-filter-catalog.`,
+    'prod-catalog-more-menu': `The More menu of the Catalog category buttons: Extras / Background, Hair / Makeup, Special Effects, VFX, Sound and Animals. Used in production-plan-filter-catalog.`,
+    'prod-catalog-no-match': `The Catalog filtered to the Sound category with no matching item. The More button reads Sound and the page says No catalog items match. Used in production-plan-filter-catalog.`,
+    'prod-catalog-row-menu': `The menu of a catalog row, opened by right-click: Open, Open Scenes, Archive… and a red Delete…. Used in production-plan-edit-catalog-item, production-plan-archive-catalog-item and production-plan-delete-catalog-item.`,
+    'prod-catalog-drawer': `The CATALOG ITEM drawer for Soldering iron: Name *, Category (Props), Status (Required), Description, Notes, Contact / reference with its privacy note, Add Image, Also known as with Add another name and Add, and Used in scenes with Scene 1. Delete, Archive and Open Scenes are in the footer. Used in production-plan-edit-catalog-item and production-plan-replace-catalog-item.`,
+    'prod-catalog-archive-confirm': `The Archive “Soldering iron”? dialog. It says the item is still used in 1 scene, explains what archiving does and offers Replace in Scenes… in an INSTEAD box. Cancel and Archive Item are at the bottom. Used in production-plan-replace-catalog-item and production-plan-archive-catalog-item.`,
+    'prod-catalog-replace-dialog': `The Replace “Soldering iron” in scenes dialog. It has a Replacement menu (Marine radio receiver (Required)), a ticked scene line under Apply to scenes, and Cancel and Replace in 1 Scene. Used in production-plan-replace-catalog-item.`,
+    'prod-catalog-delete-confirm': `The Delete “Soldering iron”? dialog. It says the item moves to Recently Deleted for 30 days, lists the scene that uses it and adds that archiving is usually the better choice. Cancel and a red Delete are at the bottom. Used in production-plan-delete-catalog-item.`,
+    'prod-catalog-add-dialog': `The Add Item dialog: Category * (Props), Name * (empty), Status (Required) and Description (optional). Add Item is greyed out until a name is typed. Used in production-plan-add-catalog-item.`,
+    'prod-catalog-add-duplicate-warning': `The Add Item dialog with the name Marine radio receiver typed. A yellow note says the catalog already has that item and that adding creates a separate one. Variant, part of production-plan-add-catalog-item.`,
+    'prod-catalog-export-dialog': `The Export Catalog dialog. It offers Excel (XLSX), CSV and PDF, shows the suggested file name and a note that private notes are excluded and the export does not change the project. Cancel and Export… are at the bottom. Used in production-plan-export-catalog.`,
+    'bd-catalog-scenes-banner': `The Breakdown opened from Open Scenes on a catalog item. A blue bar says Showing the 1 scene that use Soldering iron (Props), with a Show all scenes button. This screen belongs to the Breakdown chapter. Used in production-plan-edit-catalog-item.`,
+  },
+  shortcuts: [
+    [`Ctrl+K`, `Search this project (shown in the search box at the top of the window)`],
+  ],
+  limits: [
+    `Production works from one screenplay draft at a time, the Production Source. Moving to another draft always goes through a review first.`,
+    `Choosing or changing the Production Source never edits your screenplay.`,
+    `The Catalog has no cost, supplier or purchasing fields. Money is handled in Budget.`,
+    `The category of an existing catalog item cannot be changed. Add a new item in the right category instead.`,
+    `Exports are snapshots. They do not update when the Catalog changes, and private notes are left out.`,
+    `Contact / reference on a catalog item is private to Owners and Editors and is never shared with the assistant or put in exports.`,
+  ],
+  troubleshooting: [
+    {
+      problem: `The Overview shows zeros and says No source yet.`,
+      fix: `Click Start Production Setup and choose a screenplay draft. If the dialog says there are no drafts, write or import a screenplay first.`,
+    },
+    {
+      problem: `Start Production Setup or Add Item is not on my screen.`,
+      fix: `These buttons show only when your role can edit the project. Ask an Owner or Editor to make the change.`,
+    },
+    {
+      problem: `Set as Production Source or Review Production Update is greyed out.`,
+      fix: `Pick a draft in the list. Review Production Update also needs a draft other than the current source.`,
+    },
+    {
+      problem: `The catalog is empty but my breakdown has items.`,
+      fix: `Only items you confirm in the Breakdown appear in the Catalog. Confirm them there, or use Add Item.`,
+    },
+    {
+      problem: `An item I archived has disappeared from the list.`,
+      fix: `Tick Show archived above the table. Open the item and click Restore.`,
+    },
+    {
+      problem: `Open Scenes is greyed out.`,
+      fix: `No scene uses that item yet. Link it to a scene from the Breakdown first.`,
+    },
+    {
+      problem: `Add Item is greyed out in the dialog.`,
+      fix: `The name is empty. Type a name. A yellow note about a duplicate name does not block the button.`,
+    },
+    {
+      problem: `I deleted an item by mistake.`,
+      fix: `Click Undo in the message at the bottom, or restore it from Recently Deleted within 30 days.`,
+    },
+  ],
+};

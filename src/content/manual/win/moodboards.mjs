@@ -1,0 +1,412 @@
+export default {
+  area: `Moodboards`,
+  slug: `moodboards`,
+  order: 13,
+  part: `Plan`,
+  intro: [
+    `A moodboard is a free canvas where you collect pictures, short notes and web links that show how your film should look and feel. You can keep one board for the overall look and others for cinematography, production design, costume, lighting, characters or locations. The page is called Moodboards and asks: What should this film feel like?`,
+    `Moodboards is one of the tabs inside Production. You open it from Production in the left rail, then click the Moodboards tab. Each board is its own canvas. On the canvas you drag items where you want them, resize them and change which item sits on top of another.`,
+    `Everything is stored in your project on this computer. A picture you add from a file or from the Idea Vault is copied into the project, so the board keeps working if the original file moves. Export turns one board into a PDF you can print or share.`,
+  ],
+  layout: [
+    { name: `Page header`, text: `The title Moodboards and the line What should this film feel like? On the right: Export, which exports the board you have open, and New Moodboard. Before you have a board, only New Moodboard is shown.` },
+    { name: `Board list`, text: `A list down the left side with one row per board. Each row shows the board name and, at the right, how many items it holds. A board made for a scene also says Scene N reference under its name. The board you have open is shown in bold. Right-click a board for Rename…, Board notes…, Move up, Move down and Delete.` },
+    { name: `Canvas toolbar`, text: `Add image, Add note and Add link sit above the canvas. Add image opens a small menu with From file… and From Idea Vault…. On the right the toolbar changes with what you have selected. With nothing selected it shows a hint: Drag to move, Shift-click to select several, paste images or links with Ctrl+V. With one item selected it shows a Caption box and the buttons Bring to front, Send to back, Edit item and Delete item. With several items selected it shows how many are selected and a Delete button.` },
+    { name: `Canvas`, text: `A dotted page that scrolls when items go past its edge. Items are tiles: images, yellow notes, blue internal notes and link cards. A new board with nothing on it says Drop images, notes and references here.` },
+    { name: `Item drawer`, text: `A panel that slides in from the right when you edit an item. It is headed Moodboard item and then Image, Note or Link. Close shuts it.` },
+  ],
+  workflows: [
+    {
+      id: `moodboards-create-board`,
+      title: `Create a moodboard`,
+      purpose: `Make a named board that opens as an empty canvas, ready for references.`,
+      level: `Beginner`,
+      prerequisites: [`A project is open and you are in Production.`],
+      steps: [
+        {
+          screen: `prod-moodboards-empty`,
+          do: `In Production, click the Moodboards tab, then click New Moodboard.`,
+          explain: `A project with no boards shows only the heading and the New Moodboard button at the top right. Once a board exists, the page also shows Export and the board list.`,
+        },
+        {
+          screen: `prod-moodboard-new-dialog`,
+          do: `In the New Moodboard dialog, click in the Board name * box.`,
+          explain: `Board name * is required. Under it, seven suggestion buttons offer common names: Overall Look, Cinematography, Production Design, Costume, Lighting, Character and Location. Click one to fill the name box, or type your own name. Reference for a scene lets you tie the board to one scene of your screenplay and starts on No particular scene. That choice is optional, and the box only appears when your project has scenes.`,
+        },
+        {
+          screen: `prod-moodboard-new-error`,
+          do: `If you click Create Moodboard with the name empty, read the message Give the board a name.`,
+          explain: `Nothing is created until the board has a name. Type a name or click a suggestion, then try again. Cancel and the x at the top close the dialog without creating anything.`,
+        },
+        {
+          screen: `prod-moodboard-new-filled`,
+          do: `Click a suggestion such as Overall Look, or type a name, then click Create Moodboard.`,
+          explain: `The picture shows Overall Look chosen. You can also press Enter in the name box to create the board.`,
+        },
+        {
+          screen: `prod-moodboard-empty-canvas`,
+          do: `Look at the new board.`,
+          explain: `The new board is added to the board list with 0 items and opens as an empty canvas. The canvas says Drop images, notes and references here. Add image, Add note and Add link are above it.`,
+        },
+      ],
+      result: `A new, named moodboard is open on an empty canvas.`,
+      cautions: [
+        `The board name is required. Without it you see Give the board a name. and no board is made.`,
+        `A name is only a label. You can rename the board later from the board list.`,
+      ],
+      related: [`moodboards-add-image`, `moodboards-rename-board`],
+    },
+    {
+      id: `moodboards-add-image`,
+      title: `Add pictures to a board`,
+      purpose: `Put images on the canvas from a file on your computer, from the Idea Vault, by pasting, or by dragging them in.`,
+      level: `Beginner`,
+      prerequisites: [`A moodboard is open.`],
+      steps: [
+        {
+          screen: `prod-moodboard-empty-canvas`,
+          do: `Click Add image above the canvas.`,
+          explain: `Add image does not add anything by itself. It opens a menu so you choose where the picture comes from.`,
+        },
+        {
+          screen: `prod-moodboard-add-image-menu`,
+          do: `Click From file… to pick pictures on this computer, or From Idea Vault… to use a picture you saved in the vault.`,
+          explain: `From file… opens the Windows window for choosing files, and you can pick more than one picture. The pictures are copied into your project. A message at the bottom says Added image, or Added 3 images for several.`,
+        },
+        {
+          screen: `prod-moodboard-vault-dialog`,
+          do: `In the Add image from the Idea Vault dialog, choose Project Idea Vault or Global Idea Vault, then click a picture.`,
+          explain: `The two buttons at the top switch between the vault of this project and your Global Idea Vault. A note says the image is copied onto the board and the vault item is not changed. Click a picture to add it. If a vault has no pictures, the dialog says There are no images in this Idea Vault yet. Cancel and the x close the dialog.`,
+        },
+        {
+          screen: `prod-moodboard`,
+          do: `To add pictures another way, click the canvas and press Ctrl+V to paste a picture from the clipboard, or drag picture files from Windows File Explorer onto the canvas.`,
+          explain: `A pasted picture lands near the top left of the visible part of the canvas, and a message says Pasted image. A dragged picture lands where you drop it. Only picture files can be dropped. If you drop other files too, a message says Only images can be dropped on a moodboard. Other files were skipped.`,
+        },
+      ],
+      result: `The pictures appear as tiles on the board, and the item count next to the board name goes up.`,
+      cautions: [
+        `Adding a picture from the Idea Vault copies it. Changing the tile later does not change the vault item.`,
+        `If a picture file can no longer be found, its tile says Image unavailable and shows the file name.`,
+      ],
+      related: [`moodboards-arrange-items`, `moodboards-add-note`],
+    },
+    {
+      id: `moodboards-add-note`,
+      title: `Add a note to a board`,
+      purpose: `Write a short text note that sits on the canvas, with the option to keep it out of exports.`,
+      level: `Beginner`,
+      prerequisites: [`A moodboard is open.`],
+      steps: [
+        {
+          screen: `prod-moodboard-add-note-dialog`,
+          do: `Click Add note above the canvas. In the Add note dialog, type your text in the Note * box.`,
+          explain: `Note * is required. The box suggests the kind of thing to write, for example cold, wet, blue-grey light. Below it, the check box Internal note, left out of exports unless selected keeps this note for the team: it shows in blue on the board and is left out of the PDF unless you choose to include internal notes when you export.`,
+        },
+        {
+          screen: `prod-moodboard-add-note-error`,
+          do: `If you click Add Note with the box empty, read the message Write the note first.`,
+          explain: `Type some text and click Add Note again. Cancel closes the dialog without adding a note.`,
+        },
+        {
+          screen: `prod-moodboard`,
+          do: `Click Add Note to put the note on the board.`,
+          explain: `A message says Added note. In the picture, the pale yellow tile reads Sodium orange at night, cyan before dawn. An internal note looks different: it is blue and starts with a small lock and the words Internal, left out of exports.`,
+        },
+      ],
+      result: `A note tile is on the board with your text.`,
+      cautions: [
+        `A note needs text. An empty note is never saved.`,
+        `Internal notes are left out of an exported PDF unless you tick Internal notes in the export dialog.`,
+      ],
+      related: [`moodboards-edit-item`, `moodboards-export`],
+    },
+    {
+      id: `moodboards-add-link`,
+      title: `Add a web link to a board`,
+      purpose: `Keep a web address with a title on the canvas as a reference.`,
+      level: `Beginner`,
+      prerequisites: [`A moodboard is open.`],
+      steps: [
+        {
+          screen: `prod-moodboard-add-link-dialog`,
+          do: `Click Add link above the canvas. In the Add link dialog, type the address in the Web address * box.`,
+          explain: `Web address * is required and the box shows https://… as a hint. Title is optional. A hint under it gives an example name. Add Link stays greyed out until the web address box has something in it.`,
+        },
+        {
+          screen: `prod-moodboard-add-link-filled`,
+          do: `Type a Title, for example Blue hour reference, and click Add Link.`,
+          explain: `The card shows the title in bold, with the site name under it. If you leave Title empty, the card shows the web address instead.`,
+        },
+        {
+          screen: `prod-moodboard`,
+          do: `Look for the new link card, and double-click it to open the page.`,
+          explain: `In the picture, the card Monsoon palette reads link and example.com under its title. Double-clicking a link card opens its address outside OpenFrame. OpenFrame itself never loads the page, it only keeps the address and title. You can also copy a web address and paste it onto the canvas with Ctrl+V, which adds a link card, and pasted plain text becomes a note.`,
+        },
+      ],
+      result: `A link card is on the board.`,
+      cautions: [
+        `A link card is only a reference. The page is not saved in your project.`,
+      ],
+      related: [`moodboards-edit-item`],
+    },
+    {
+      id: `moodboards-arrange-items`,
+      title: `Move, resize, layer and delete items`,
+      purpose: `Lay out the board by dragging items, changing their size and order, and removing what you do not need.`,
+      level: `Beginner`,
+      prerequisites: [`A moodboard with at least two items is open.`],
+      steps: [
+        {
+          screen: `prod-moodboard`,
+          do: `Click an item to select it, then drag it to a new place on the canvas.`,
+          explain: `A board with nothing selected shows the hint Drag to move, Shift-click to select several, paste images or links with Ctrl+V. The new position is saved when you let go. Click empty canvas, or press Esc, to clear the selection.`,
+        },
+        {
+          screen: `prod-moodboard-note-selected`,
+          do: `Look at the toolbar above the canvas now that one item is selected.`,
+          explain: `The toolbar shows a Caption box for the item, then Bring to front and Send to back, Edit item and Delete item. A small square handle appears at the bottom right corner of the selected item. Drag it to resize. Images keep their proportions unless you hold Shift while you drag.`,
+        },
+        {
+          screen: `prod-moodboard-note-selected`,
+          do: `Click Bring to front to put the item above the others, or Send to back to put it underneath.`,
+          explain: `Use this when items overlap. With an item selected you can also nudge it with the arrow keys, and hold Shift for a bigger step.`,
+        },
+        {
+          screen: `prod-moodboard-multi-selection`,
+          do: `Hold Shift or Ctrl and click more items to select several.`,
+          explain: `The toolbar then says how many items are selected and offers one button, Delete. Dragging any selected item moves all of them together.`,
+        },
+        {
+          screen: `prod-moodboard-item-menu`,
+          do: `Right-click an item to open its menu.`,
+          explain: `The menu has Edit…, Bring to front, Send to back and, for a link, Open link. Delete is at the bottom in red. With several items selected the last entry reads Delete 2 items, or the number you selected.`,
+        },
+      ],
+      result: `The board is laid out the way you want, and the changes are saved.`,
+      cautions: [
+        `Deleting an item can be undone. A message appears after you delete, with an Undo link.`,
+        `Delete and Backspace also delete the selected items when the canvas has focus.`,
+      ],
+      related: [`moodboards-edit-item`],
+    },
+    {
+      id: `moodboards-edit-item`,
+      title: `Edit an item's text, caption or link`,
+      purpose: `Change the words on a note, the address or title of a link, and the caption of any item.`,
+      level: `Intermediate`,
+      prerequisites: [`A moodboard with a note, a link or a picture is open.`],
+      steps: [
+        {
+          screen: `prod-moodboard-note-selected`,
+          do: `Select an item and type in the Caption box in the toolbar, then press Enter or click away.`,
+          explain: `The caption is a short line about why the item matters. It shows under the item and is limited to 300 characters. A note shows its caption in small grey text under the note.`,
+        },
+        {
+          screen: `prod-moodboard-note-drawer`,
+          do: `To change more, double-click a note, or click Edit item. The drawer opens headed Note.`,
+          explain: `The drawer has the Note * box with the text, the check box Internal note, left out of exports unless selected, and a Caption box. Changes save when you click out of a box. Close shuts the drawer. Ticking the internal check box turns the note blue on the board.`,
+        },
+        {
+          screen: `prod-moodboard-note-error`,
+          do: `If you clear the whole note and click out of the box, read the message A note needs some text.`,
+          explain: `The old text stays saved until you type new text. Type something so the note is not empty.`,
+        },
+        {
+          screen: `prod-moodboard-link-drawer`,
+          do: `Open a link card with Edit item. The drawer is headed Link.`,
+          explain: `It has Web address *, Title and Caption, and an Open link button that opens the page outside OpenFrame. Edit a box and click out of it to save.`,
+        },
+        {
+          screen: `prod-moodboard-image-drawer`,
+          do: `Open a picture the same way. The drawer is headed Image.`,
+          explain: `For a picture, the drawer shows the original file name and a Caption box only. If the picture came from the Idea Vault, a line says it was copied from there and that changes here do not affect the vault. In this capture the drawer of a link card is still showing.`,
+        },
+      ],
+      result: `The item shows its new text, caption or address.`,
+      cautions: [
+        `A note cannot be saved empty. A link needs a web address.`,
+        `Double-clicking a link card opens the page. To edit it, click Edit item or use Edit… from its right-click menu.`,
+      ],
+      related: [`moodboards-add-note`, `moodboards-add-link`],
+    },
+    {
+      id: `moodboards-rename-board`,
+      title: `Rename a moodboard`,
+      purpose: `Change the name of a board in the list.`,
+      level: `Beginner`,
+      prerequisites: [`At least one moodboard exists.`],
+      steps: [
+        {
+          screen: `prod-moodboard-list-menu`,
+          do: `Right-click the board in the list at the left, then click Rename….`,
+          explain: `The board menu has Rename…, Board notes…, Move up, Move down and, after a divider, Delete. Move up is greyed out on the first board and Move down on the last.`,
+        },
+        {
+          screen: `prod-moodboard-rename-dialog`,
+          do: `In the Rename moodboard dialog, change the Board name * and click Rename.`,
+          explain: `The box starts with the current name. Rename stays greyed out while the name is empty. Cancel closes the dialog and keeps the old name. A message says Renamed moodboard, with an Undo link.`,
+        },
+      ],
+      result: `The board shows its new name in the list and in the title of the export dialog.`,
+      cautions: [
+        `The board name cannot be empty.`,
+      ],
+      related: [`moodboards-board-notes`, `moodboards-reorder-boards`],
+    },
+    {
+      id: `moodboards-board-notes`,
+      title: `Write internal notes for a board`,
+      purpose: `Keep team-only comments about a whole board that stay out of standard exports.`,
+      level: `Beginner`,
+      prerequisites: [`At least one moodboard exists.`],
+      steps: [
+        {
+          screen: `prod-moodboard-list-menu`,
+          do: `Right-click the board in the list, then click Board notes….`,
+          explain: `Board notes belong to the whole board. They are not shown on the canvas.`,
+        },
+        {
+          screen: `prod-moodboard-board-notes-dialog`,
+          do: `In the dialog Board notes: followed by the board name, type in the Internal notes box and click Save Notes.`,
+          explain: `A hint says: For the team only. Left out of standard exports. A small Internal tag sits under the box. Save Notes stays greyed out until you type something. Cancel closes the dialog without saving. A message says Saved board notes.`,
+        },
+      ],
+      result: `The notes are saved with the board and are left out of standard exports.`,
+      cautions: [],
+      related: [`moodboards-rename-board`],
+    },
+    {
+      id: `moodboards-reorder-boards`,
+      title: `Change the order of your boards`,
+      purpose: `Move a board up or down in the board list.`,
+      level: `Beginner`,
+      prerequisites: [`Two or more moodboards exist.`],
+      steps: [
+        {
+          screen: `prod-moodboard-list-menu`,
+          do: `Right-click a board in the list and click Move up or Move down.`,
+          explain: `The board moves one place. A message says Reordered moodboards, with an Undo link. Move up is greyed out for the first board and Move down for the last.`,
+        },
+      ],
+      result: `The list shows the boards in your new order.`,
+      cautions: [],
+      related: [`moodboards-rename-board`],
+    },
+    {
+      id: `moodboards-delete-board`,
+      title: `Delete a moodboard`,
+      purpose: `Remove a board and its items, with a way back.`,
+      level: `Beginner`,
+      prerequisites: [`At least one moodboard exists.`],
+      steps: [
+        {
+          screen: `prod-moodboard-list-menu`,
+          do: `Right-click the board in the list and click Delete.`,
+          explain: `Delete is the red item at the bottom of the menu. Nothing is removed yet.`,
+        },
+        {
+          screen: `prod-moodboard-delete-confirm`,
+          do: `Read the dialog Delete moodboard followed by the board name, then click Delete Moodboard.`,
+          explain: `The dialog says the board and its items go to Recently Deleted and can be restored. Cancel keeps the board. After you delete, a message says Deleted moodboard with the name and an Undo link.`,
+        },
+      ],
+      result: `The board is gone from the list. It waits in Recently Deleted until you restore it or it is removed for good.`,
+      cautions: [
+        `Deleting a board removes all of its items from the board. Restore it from Recently Deleted if you change your mind.`,
+      ],
+      related: [`moodboards-create-board`],
+    },
+    {
+      id: `moodboards-export`,
+      title: `Export a moodboard as a PDF`,
+      purpose: `Make a printable snapshot of one board.`,
+      level: `Beginner`,
+      prerequisites: [`A moodboard with some items is open.`],
+      steps: [
+        {
+          screen: `prod-moodboard`,
+          do: `With the board open, click Export at the top right.`,
+          explain: `Export always works on the board you have open. It does not appear until a board exists.`,
+        },
+        {
+          screen: `prod-moodboard-export-dialog`,
+          do: `In the dialog Export moodboard followed by the board name, choose what goes into the PDF.`,
+          explain: `The only format is PDF printable snapshot. The check boxes are Project title and board name, Images and Captions, which start ticked, and Internal notes, which starts unticked. A note under them says private and internal notes are left out unless you tick Internal notes, and that Export creates a snapshot and does not change your project.`,
+        },
+        {
+          screen: `prod-moodboard-export-dialog`,
+          do: `Click Export… and choose where to save the file in the Windows window that opens.`,
+          explain: `Cancel closes the dialog with no file made. The PDF carries a small Created using OpenFrame line.`,
+        },
+      ],
+      result: `A PDF of the board is saved where you chose.`,
+      cautions: [
+        `Tick Internal notes only when the PDF is for people inside your team.`,
+      ],
+      related: [`moodboards-add-note`],
+    },
+  ],
+  screens: {
+    'prod-moodboards-empty': `The Moodboards tab for a project with no boards yet. Only the heading and the New Moodboard button show. Used in moodboards-create-board.`,
+    'prod-moodboard': `A moodboard named Coastal light with three items: a picture, a link card called Monsoon palette and a yellow note. The toolbar shows Add image, Add note and Add link and the hint about dragging. Used in moodboards-add-note, moodboards-add-link, moodboards-add-image, moodboards-arrange-items and moodboards-export.`,
+    'prod-moodboard-note-selected': `The same board with the note selected. The toolbar now shows a Caption box and the buttons Bring to front, Send to back, Edit item and Delete item. Used in moodboards-arrange-items and moodboards-edit-item.`,
+    'prod-moodboard-multi-selection': `Several items selected. The toolbar shows a single Delete button. Used in moodboards-arrange-items.`,
+    'prod-moodboard-item-menu': `The right-click menu of an item: Edit…, Bring to front, Send to back and a red Delete entry that names how many items are selected. Used in moodboards-arrange-items.`,
+    'prod-moodboard-note-drawer': `The item drawer for a note, with the Note * box, the Internal note check box, Caption and Close. Used in moodboards-edit-item.`,
+    'prod-moodboard-note-error': `The note drawer with the note text cleared. The message A note needs some text. shows under the box. Variant, part of moodboards-edit-item.`,
+    'prod-moodboard-link-drawer': `The item drawer for a link, with Web address *, Title, Caption and an Open link button. Used in moodboards-edit-item.`,
+    'prod-moodboard-image-drawer': `The item drawer opened from a moodboard item. This capture still shows the link card's fields (Web address *, Title, Caption and Open link). A picture's own drawer shows only its file name and Caption. Used in moodboards-edit-item.`,
+    'prod-moodboard-add-image-menu': `The menu under Add image with From file… and From Idea Vault…. Used in moodboards-add-image.`,
+    'prod-moodboard-vault-dialog': `The Add image from the Idea Vault dialog. It has Project Idea Vault and Global Idea Vault buttons, two pictures to pick (Tower silhouette and Harbour at dusk) and Cancel. Used in moodboards-add-image.`,
+    'prod-moodboard-add-note-dialog': `The Add note dialog with an empty Note * box, the Internal note check box, Cancel and Add Note. Used in moodboards-add-note.`,
+    'prod-moodboard-add-note-error': `The Add note dialog after Add Note was clicked with no text. The message Write the note first. shows. Variant, part of moodboards-add-note.`,
+    'prod-moodboard-add-link-dialog': `The Add link dialog with empty Web address * and Title boxes, Cancel and Add Link. Used in moodboards-add-link.`,
+    'prod-moodboard-add-link-filled': `The Add link dialog filled in with a web address and the title Blue hour reference. Used in moodboards-add-link.`,
+    'prod-moodboard-list-menu': `The right-click menu of a board in the list: Rename…, Board notes…, Move up, Move down and Delete. Used in moodboards-rename-board, moodboards-board-notes, moodboards-reorder-boards and moodboards-delete-board.`,
+    'prod-moodboard-rename-dialog': `The Rename moodboard dialog with the current name in Board name *, Cancel and Rename. Used in moodboards-rename-board.`,
+    'prod-moodboard-board-notes-dialog': `The Board notes dialog for Coastal light, with an empty Internal notes box, Cancel and Save Notes. Used in moodboards-board-notes.`,
+    'prod-moodboard-delete-confirm': `The confirmation Delete moodboard “Coastal light”? with Cancel and Delete Moodboard. Used in moodboards-delete-board.`,
+    'prod-moodboard-export-dialog': `The Export moodboard dialog for Coastal light: PDF printable snapshot, check boxes for Project title and board name, Images, Captions and Internal notes, and Cancel and Export…. Used in moodboards-export.`,
+    'prod-moodboard-new-dialog': `The New Moodboard dialog with an empty Board name *, seven suggestion buttons and Reference for a scene set to No particular scene. Used in moodboards-create-board.`,
+    'prod-moodboard-new-error': `The New Moodboard dialog after Create Moodboard was clicked with no name. The message Give the board a name. shows. Variant, part of moodboards-create-board.`,
+    'prod-moodboard-new-filled': `The New Moodboard dialog with the name Overall Look filled in from a suggestion. Used in moodboards-create-board.`,
+    'prod-moodboard-empty-canvas': `A new board, Overall Look, open with 0 items. The board list shows Coastal light and Overall Look with their item counts. Add image, Add note and Add link are above the empty canvas. Used in moodboards-create-board and moodboards-add-image.`,
+  },
+  shortcuts: [
+    [`Ctrl+V`, `Paste a picture, a web address or text onto the canvas as an image, a link or a note`],
+    [`Shift+click or Ctrl+click`, `Select several items on the canvas`],
+  ],
+  limits: [
+    `A board holds images, notes and links. There is no video or audio on a moodboard.`,
+    `Export makes a PDF of one board at a time. There is no other format.`,
+    `A link card keeps the web address and title. OpenFrame does not show a preview of the page.`,
+    `Moodboards are not tied to scenes unless you pick a scene when you create the board.`,
+  ],
+  troubleshooting: [
+    {
+      problem: `I cannot create a board.`,
+      fix: `The Board name * box is empty. The dialog shows Give the board a name. Type a name or click one of the suggestions.`,
+    },
+    {
+      problem: `Add Link is greyed out.`,
+      fix: `Type a web address in Web address *. The Title box is optional.`,
+    },
+    {
+      problem: `A picture tile says Image unavailable.`,
+      fix: `The stored copy of the picture could not be read. Delete the tile and add the picture again.`,
+    },
+    {
+      problem: `I dropped files onto the board and only some appeared.`,
+      fix: `Only picture files can be dropped. OpenFrame says Only images can be dropped on a moodboard. Other files were skipped.`,
+    },
+    {
+      problem: `My internal note is missing from the PDF.`,
+      fix: `Internal notes are left out unless you tick Internal notes in the Export moodboard dialog.`,
+    },
+    {
+      problem: `I deleted a board by mistake.`,
+      fix: `Click Undo in the message that appears, or restore the board from Recently Deleted.`,
+    },
+  ],
+};

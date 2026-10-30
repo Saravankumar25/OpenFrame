@@ -1,6 +1,6 @@
 // Feature page content, one entry per FEATURES slug in nav.mjs. Claims follow research/capability-matrix.md.
 // Shots: win = research/WindowsHTML-src/light/<name>.html, mac = research/MacHTML-src/light/<name>.html.
-// mac: null means no truthful Mac screen exists for that row; the page then shows the Windows screen, labelled.
+// mac: null means no truthful Mac screen exists for that row; Mac visitors then see the text without a screen.
 
 export const FEATURE_PAGES = {
   'idea-vault': {
@@ -187,12 +187,12 @@ export const FEATURE_PAGES = {
     description: 'An optional assistant that runs on your own computer after one 1.2 GB download. It answers with sources and proposes changes you apply yourself, or reject.',
     h1: 'An assistant that stays on your computer.',
     lead: 'The assistant is optional. After a one-time download of about 1.2 GB it runs on your computer, answers questions about your project, and suggests changes. Nothing changes until you press Apply.',
-    hero: { win: '384-ai-answer-characters-sources', mac: null },
+    hero: { win: '384-ai-answer-characters-sources', mac: 'ai-panel-screenplay' },
     rows: [
       { heading: 'Ask about your project in plain words',
         text: 'Open the assistant with Ctrl+J, or Cmd+J on the Mac, and ask. It searches the project and answers with the sources behind See sources, so you can check every claim.',
         bullets: ['Works in Idea Vault, Story, Screenplay, Breakdown and Production', 'Answers in the language of your question; English is the best tested'],
-        shots: { win: '387-ai-answer-locations-sources-open', mac: null } },
+        shots: { win: '387-ai-answer-locations-sources-open', mac: 'ai-panel' } },
       { heading: 'It proposes. You decide.',
         text: 'When you ask for a change, the assistant shows one set of Proposed Changes. Read it, then apply it or reject it. Applied changes can be undone like any other.',
         bullets: ['Never changes a project without your Apply', 'Never reads other people\'s private notes or the Story page'],
@@ -200,18 +200,18 @@ export const FEATURE_PAGES = {
       { heading: 'Download once, then work offline',
         text: 'Settings, Offline AI downloads three model files from public Hugging Face files and checks each one by size and SHA-256. You can also import the files by hand, and remove them any time.',
         bullets: ['No account, no API key, no cloud AI', 'Project data is never sent anywhere', 'The app works fully without it'],
-        shots: { win: '789-settings-offline-ai-ready', mac: null } },
+        shots: { win: '789-settings-offline-ai-ready', mac: 'ai-offline-ai-settings' } },
     ],
     flow: 'The assistant can read across the project and propose scenes, cards, characters, catalog items, notes, tasks, schedule changes and shots. Every proposal goes through you.',
     good: [
       'Models: Gemma 3 1B Instruct with two small search models, 1.2 GB in total.',
       'The chat model needs 4 GB of memory at minimum; 8 GB is recommended.',
       'Quality is measured against a fixed test set in English. Other languages work but are weaker today.',
-      'It refuses licence, payment and team password requests.',
+      'It does not handle licences or payments.',
     ],
     platform: [
       'Windows runs the model on the processor, or on the graphics card through Vulkan when a first-run check passes.',
-      'The Mac runs it through Metal on Apple silicon. Mac screens of the assistant at work are not ready yet, so the Windows app is shown here.',
+      'The Mac runs it through Metal on Apple silicon.',
     ],
     related: ['screenplay', 'breakdown', 'scheduling'],
     tutorials: ['ai-assistant-setup', 'ai-assistant-ask'],
@@ -431,5 +431,5 @@ export const FEATURE_PAGES = {
 };
 
 const all = (plat) => [...new Set(Object.values(FEATURE_PAGES).flatMap((f) => [f.hero, ...f.rows.map((r) => r.shots)].map((s) => s[plat]).filter(Boolean)))];
-// Rows with mac: null show the Windows screen to Mac visitors too, so 'win' already covers them.
+// Rows with mac: null show no screen to Mac visitors.
 export const SCREENS = { win: all('win'), mac: all('mac') };
