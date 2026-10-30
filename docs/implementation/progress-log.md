@@ -65,14 +65,16 @@ Open owner decisions and tasks: see [owner-decisions.md](owner-decisions.md). Pr
   records ten new states (library setup default, new location and locate; Settings > Storage; Story page highlight
   and underline colour menus and Dark page; Beat Board Horizontal; whole-film relationship map; Screenplay Dark
   page). Fixed in the tour: the first capture of a run assumed Light mode, so with Windows in dark mode the first
-  "light" page of every part was dark; the relationship map button is now "Relationship Map". `parallel.mjs` has
+  "light" page of every part was dark; the relationship map button is now "Relationship Map"; the AI working state is found by its progress row, not its first label. `parallel.mjs` has
   `WH_MERGE_ONLY=1` to merge parts again after one part is captured on its own; the README lists states that could
   not be captured.
-- **Evidence:** 816 screens from commit 114dff50, 1632 of 1632 pages within 0.5 % of their screenshots (largest
+- **Evidence:** 819 screens from commit 269f68ab, 1638 of 1638 pages within 0.5 % of their screenshots (largest
   0.461 %), every page in its own mode at 1600x1000 (`.build-cache/windows-html-capture/verify.json`, not committed).
-- **Found, not fixed (owner):** under the licence lock `library.status` is refused, so the lock dialogs never show
-  (three licence-locked screens missing); Story page colour menus show empty swatches. See the handoff.
-- **Not run:** unit tests, end-to-end suite (no app code changed).
+- **Found and fixed (owner's word):** under the licence lock `library.status` was refused, so the library gate showed
+  an error instead of the lock dialog (the gate now lets the app through on `permission.licence_required`, new
+  Vitest case); the Story page colour menus showed empty swatches (palette variables moved to `:root`). The Story
+  and licence parts were captured again after the fix.
+- **Checks:** typecheck and lint clean, Vitest 741 of 741. Not run: Rust tests (no Rust change), the end-to-end suite.
 
 ### 2026-10-27, overnight: Story page formatting and A4, sides unbranded, call sheet in PDF order, storage and recovery, OpenFrame-5
 - **Areas and items worked:** Writing comfort (Story page); Call sheets, budget, templates, samples and exports (sides
