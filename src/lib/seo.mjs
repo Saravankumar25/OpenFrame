@@ -14,10 +14,11 @@ export const ORG = (ctx = { SITE_URL }) => ({ '@context': 'https://schema.org', 
   logo: { '@type': 'ImageObject', url: ctx.SITE_URL + '/icon-512.png', width: 512, height: 512 },
   slogan: 'From film lovers, to film lovers across the world.',
   founder: FOUNDERS.map((f) => ({ '@type': 'Person', name: f.name, jobTitle: f.role, description: f.text[0], ...(f.link ? { url: f.link, sameAs: [f.link] } : {}) })) });
-// India pays in rupees, everyone else in US dollars; both are one-time. No priceValidUntil: the price has no end date.
+// India pays in rupees, Europe in euros, other countries in US dollars; all one-time. No priceValidUntil: the price has no end date.
 const OFFERS = (url) => [
   { '@type': 'Offer', price: '2999', priceCurrency: 'INR', eligibleRegion: { '@type': 'Country', name: 'IN' }, url, availability: 'https://schema.org/InStock', description: 'One-time purchase after a 7-day free trial. India.' },
-  { '@type': 'Offer', price: '89', priceCurrency: 'USD', ineligibleRegion: { '@type': 'Country', name: 'IN' }, url, availability: 'https://schema.org/InStock', description: 'One-time purchase after a 7-day free trial. Outside India.' }];
+  { '@type': 'Offer', price: '89', priceCurrency: 'EUR', eligibleRegion: { '@type': 'Place', name: 'Europe' }, url, availability: 'https://schema.org/InStock', description: 'One-time purchase after a 7-day free trial. Europe.' },
+  { '@type': 'Offer', price: '89', priceCurrency: 'USD', ineligibleRegion: [{ '@type': 'Country', name: 'IN' }, { '@type': 'Place', name: 'Europe' }], url, availability: 'https://schema.org/InStock', description: 'One-time purchase after a 7-day free trial. Other countries.' }];
 export const APP = (ctx = { SITE_URL }, os, p = '/') => ({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', '@id': ID.app, name: SITE_NAME, url: ctx.SITE_URL + p,
   applicationCategory: 'MultimediaApplication', applicationSubCategory: 'Screenwriting and film production planning', operatingSystem: os,
   description: DESC, image: ctx.SITE_URL + OG.path, inLanguage: 'en',

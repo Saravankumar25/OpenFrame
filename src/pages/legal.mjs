@@ -199,7 +199,7 @@ ${ph('discontinuation', 'What happens if the product is withdrawn, counsel to wo
     ['of_os', 'localStorage', 'Windows or Mac, so the site shows the right screens and download button.', 'Until you clear it'],
     ['of_theme', 'localStorage', 'Light or dark for the website.', 'Until you clear it'],
     ['of_mock', 'localStorage', 'Light or dark for the app screens shown on the site.', 'Until you clear it'],
-    ['of_region', 'localStorage', 'India or outside India, so the price shows in the right currency.', 'Until you clear it'],
+    ['of_region', 'localStorage', 'India, Europe or other countries, so the price shows in the right currency.', 'Until you clear it'],
     ['of_recent_search', 'localStorage', 'Your last searches on this site, to show them again.', 'Until you clear it'],
     ['of_seen', 'sessionStorage', 'That the opening animation has already played in this tab.', 'Until you close the tab'],
   ];

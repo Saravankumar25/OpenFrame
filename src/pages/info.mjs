@@ -109,13 +109,13 @@ ${phero('Download', 'Get OpenFrame Studio.', 'From the Microsoft Store on Window
   const pricing = page({
     path: '/pricing/', nav: 'pricing',
     title: 'Pricing: pay once, own forever | OpenFrame Studio',
-    description: 'OpenFrame Studio is a one-time lifetime purchase: ₹2,999 in India and US$89 everywhere else, after a 7-day free trial. No subscription and no renewal.',
+    description: 'OpenFrame Studio is a one-time lifetime purchase: ₹2,999 in India, €89 in Europe and US$89 elsewhere, after a 7-day free trial. No subscription and no renewal.',
     breadcrumbs: [['Pricing', '/pricing/']],
     body: html`
 ${phero('Pricing', 'Pay once. Own forever.', 'No subscription, no renewal, no rented software. One payment for the whole app, after a 7-day free trial.')}
 <section class="sec-s pt30"><div class="wrap"><div class="price-one">
 <div class="pcard win rv"><span class="badge">Lifetime purchase</span>
-<div class="region-tg" role="group" aria-label="Price region"><button type="button" data-region-set="in" aria-pressed="false">India</button><button type="button" data-region-set="world" aria-pressed="false">Outside India</button></div>
+<div class="region-tg" role="group" aria-label="Price region"><button type="button" data-region-set="in" aria-pressed="false">India</button><button type="button" data-region-set="eu" aria-pressed="false">Europe</button><button type="button" data-region-set="world" aria-pressed="false">Other countries</button></div>
 <h2>OpenFrame Studio</h2>
 <div class="price"><b>${price()}</b></div>
 <p class="price-sub">One payment for <span data-region-name>your region</span>. Bought separately for Windows and for Mac, each in its own store. 7-day free trial first.</p>

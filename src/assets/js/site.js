@@ -135,22 +135,26 @@
   }
 
   /* ---------- price for the visitor's region, with a manual choice ---------- */
-  function guessIndia() {
+  // A first guess from the time zone only (nothing is sent anywhere); the visitor can change it.
+  function guessRegion() {
     var tz = ''; try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (e) {}
-    return /^Asia\/(Kolkata|Calcutta)$/.test(tz);
+    if (/^Asia\/(Kolkata|Calcutta)$/.test(tz)) return 'in';
+    if (/^(Europe\/|Atlantic\/(Reykjavik|Canary|Madeira|Azores|Faroe))/.test(tz)) return 'eu';
+    return 'world';
   }
   function region(r) {
     document.querySelectorAll('[data-price]').forEach(function (p) {
       p.querySelectorAll('[data-price-both]').forEach(function (s) { s.hidden = true; });
       p.querySelector('[data-price-in]').hidden = r !== 'in';
-      p.querySelector('[data-price-us]').hidden = r === 'in';
+      p.querySelector('[data-price-eu]').hidden = r !== 'eu';
+      p.querySelector('[data-price-us]').hidden = r !== 'world';
     });
-    document.querySelectorAll('[data-region-name]').forEach(function (s) { s.textContent = r === 'in' ? 'India' : 'outside India'; });
+    document.querySelectorAll('[data-region-name]').forEach(function (s) { s.textContent = r === 'in' ? 'India' : r === 'eu' ? 'Europe' : 'your country'; });
     document.querySelectorAll('[data-region-set]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-region-set') === r)); });
   }
   function pricing() {
     if (!document.querySelector('[data-price]')) return;
-    var saved = store('of_region'), r = saved === 'in' || saved === 'world' ? saved : guessIndia() ? 'in' : 'world';
+    var saved = store('of_region'), r = saved === 'in' || saved === 'eu' || saved === 'world' ? saved : guessRegion();
     region(r);
     document.addEventListener('click', function (e) {
       var b = e.target.closest('[data-region-set]'); if (!b) return;

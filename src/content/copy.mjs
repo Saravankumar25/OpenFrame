@@ -2,7 +2,7 @@
 // research/capability-matrix.md (audited 2026-10-21). Nothing here may claim more than those files show.
 
 // Confirmed prices (owner, 2026-10-31): one-time purchase. India sees rupees, every other region US dollars.
-export const PRICES = { in: '₹2,999', us: 'US$89' };
+export const PRICES = { in: '₹2,999', eu: '€89', us: 'US$89' };
 
 // [action, Windows, Mac]. null means the platform has no shortcut for it.
 export const SHORTCUTS = [
@@ -114,7 +114,7 @@ export const FAQ = [
   ]],
   ['Pricing and trial', [
     ['How much does it cost?',
-      'One payment of ₹2,999 in India, or US$89 everywhere else. It is a lifetime purchase, not a subscription, and Windows and Mac are bought separately. The store shows the final checkout amount, which can include taxes that apply where you live. See [Pricing](/pricing/).'],
+      'One payment of ₹2,999 in India, €89 in Europe, or US$89 in other countries. It is a lifetime purchase, not a subscription, and Windows and Mac are bought separately. The store shows the final checkout amount, which can include taxes that apply where you live. See [Pricing](/pricing/).'],
     ['Is there a free trial?',
       'Yes. Every new install starts a 7-day free trial with the whole app. After the trial, buy OpenFrame Studio in the store to keep using its full functionality.'],
     ['Is there a subscription?',

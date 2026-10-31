@@ -61,13 +61,14 @@ test('store buttons show the approved labels and are not links until listings ex
   for (const v of html.values()) assert.doesNotMatch(v, /apps\.microsoft\.com|apps\.apple\.com|ms-windows-store:/);
 });
 
-test('prices: rupees for India, US dollars elsewhere, no euro price', { skip: SKIP }, () => {
+test('prices: rupees for India, euros for Europe, US dollars for other countries', { skip: SKIP }, () => {
   const s = read(path.join(DIST, 'pricing', 'index.html'));
   assert.match(s, /data-price-in>₹2,999</);
+  assert.match(s, /data-price-eu>€89</);
   assert.match(s, /data-price-us>US\$89</);
-  assert.match(s, /<div class="region-tg"[^>]*>[\s\S]*data-region-set="in"[^>]*>India<[\s\S]*data-region-set="world"[^>]*>Outside India</);
+  assert.match(s, /<div class="region-tg"[^>]*>[\s\S]*data-region-set="in"[^>]*>India<[\s\S]*data-region-set="eu"[^>]*>Europe<[\s\S]*data-region-set="world"[^>]*>Other countries</);
   assert.doesNotMatch(s, /<select/);
-  for (const v of html.values()) assert.doesNotMatch(v, /€|89 euros|3,000 rupees/);
+  for (const v of html.values()) assert.doesNotMatch(v, /89 euros|3,000 rupees|Outside India/);
 });
 
 test('sitemap lists every indexable page; the live screen pages are gone and /mockups/ redirects to the tutorials', { skip: SKIP }, () => {

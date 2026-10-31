@@ -135,9 +135,10 @@ test('structured data matches the page: FAQ answers, prices, founders and the si
     const shown = /₹2,999/.test(p.s) && /US\$89/.test(p.s);
     assert.equal(!!app.offers, shown, `offers only where the price is shown (${p.path})`);
     if (!app.offers) continue;
-    const [inr, usd] = app.offers;
+    const [inr, eur, usd] = app.offers;
     assert.equal(inr.price + inr.priceCurrency, '2999INR'); assert.equal(inr.eligibleRegion.name, 'IN');
-    assert.equal(usd.price + usd.priceCurrency, '89USD'); assert.equal(usd.ineligibleRegion.name, 'IN');
+    assert.equal(eur.price + eur.priceCurrency, '89EUR'); assert.equal(eur.eligibleRegion.name, 'Europe');
+    assert.equal(usd.price + usd.priceCurrency, '89USD'); assert.deepEqual(usd.ineligibleRegion.map((r) => r.name), ['IN', 'Europe']);
     for (const o of app.offers) assert.equal(o.priceValidUntil, undefined, 'the price has no end date, so none is stated');
   }
   assert.ok(ldOf(pages.find((p) => p.path === '/pricing/').s).some((o) => o.offers), 'pricing declares the offers');
@@ -156,7 +157,7 @@ test('llms.txt and llms-full.txt are accurate, plain, and free of company and te
   const short = read(path.join(DIST, 'llms.txt')), full = read(path.join(DIST, 'llms-full.txt'));
   for (const s of [short, full]) { assert.doesNotMatch(s, stack); assert.match(s, /₹2,999/); assert.match(s, /US\$89/); assert.match(s, /7-day free trial/); }
   assert.match(short, /^# OpenFrame Studio\n\n> /);
-  assert.doesNotMatch(short, /€|euro/i);
+  assert.match(short, /€89 in Europe/, 'Europe has its own price (owner, 2026-10-31)');
   for (const m of (short + full).matchAll(/\]\((https?:\/\/[^)]+)\)/g)) {
     assert.ok(m[1].startsWith(SITE_URL), m[1]);
     assert.ok(resolvesInDist(new URL(m[1]).pathname), `llms link does not exist: ${m[1]}`);

@@ -86,7 +86,16 @@ test('price follows the region: India shows rupees, elsewhere dollars, and the c
     await page.goto(base + '/pricing/');
     assert.ok(await page.isVisible('.price [data-price-us]'));
     assert.ok(!(await page.isVisible('.price [data-price-in]')));
+    assert.ok(!(await page.isVisible('.price [data-price-eu]')));
   }, { timezoneId: 'America/New_York' });
+  await withPage(async (page) => {
+    await page.goto(base + '/pricing/');
+    assert.ok(await page.isVisible('.price [data-price-eu]'), 'a European time zone shows euros');
+    assert.ok(!(await page.isVisible('.price [data-price-us]')));
+    await page.click('[data-region-set="world"]');
+    assert.ok(await page.isVisible('.price [data-price-us]'));
+    assert.ok(!(await page.isVisible('.price [data-price-eu]')));
+  }, { timezoneId: 'Europe/Berlin' });
 });
 
 test('store buttons are enabled and clicking them goes nowhere yet', { skip: SKIP }, () => withPage(async (page) => {

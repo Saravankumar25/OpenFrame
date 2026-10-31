@@ -55,8 +55,8 @@ export function makeHelpers(cat, missing, shots = { win: {}, mac: {} }, noShot =
       : html`<button type="button" class="btn ${kind} ${cls}" data-store="${plat}">${icon}${label}</button>`;
   };
   const storeRow = (cls = 'btn-lg') => html`<div class="store-row">${storeBtn('win', cls)}${storeBtn('mac', cls)}</div>`;
-  // Price for the visitor's region (India: rupees, elsewhere: US dollars). Without script both are listed.
-  const price = () => html`<span class="pr" data-price><span data-price-in>₹2,999</span><span data-price-both> in India, </span><span data-price-us>US$89</span><span data-price-both> elsewhere</span></span>`;
+  // Price for the visitor's region (India: rupees, Europe: euros, other countries: US dollars). Without script all three are listed.
+  const price = () => html`<span class="pr" data-price><span data-price-in>₹2,999</span><span data-price-both> in India, </span><span data-price-eu>€89</span><span data-price-both> in Europe, </span><span data-price-us>US$89</span><span data-price-both> in other countries</span></span>`;
   const cta = () => html`<section class="cta-band"><div class="wrap">
 <span class="eyebrow">Ready when you are</span>
 <h2>Try it free for 7 days. Pay once if you keep it.</h2>
