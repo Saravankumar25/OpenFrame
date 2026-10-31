@@ -66,8 +66,8 @@
     if (!menu || !tg) return;
     function setOpen(li, on) { li.classList.toggle('open', on); li.firstElementChild.setAttribute('aria-expanded', String(on)); }
     menu.querySelectorAll('.has-mega').forEach(function (li) {
-      li.addEventListener('mouseenter', function () { if (innerWidth <= 1020) return; clearTimeout(timers.get(li)); menu.querySelectorAll('.has-mega.open').forEach(function (o) { if (o !== li) setOpen(o, false); }); timers.set(li, setTimeout(function () { setOpen(li, true); }, 90)); });
-      li.addEventListener('mouseleave', function () { if (innerWidth <= 1020) return; clearTimeout(timers.get(li)); timers.set(li, setTimeout(function () { setOpen(li, false); }, 170)); });
+      li.addEventListener('mouseenter', function () { if (innerWidth <= 1099) return; clearTimeout(timers.get(li)); menu.querySelectorAll('.has-mega.open').forEach(function (o) { if (o !== li) setOpen(o, false); }); timers.set(li, setTimeout(function () { setOpen(li, true); }, 90)); });
+      li.addEventListener('mouseleave', function () { if (innerWidth <= 1099) return; clearTimeout(timers.get(li)); timers.set(li, setTimeout(function () { setOpen(li, false); }, 170)); });
       li.firstElementChild.addEventListener('click', function () { setOpen(li, !li.classList.contains('open')); });
       li.addEventListener('focusout', function (e) { if (!li.contains(e.relatedTarget)) setOpen(li, false); });
     });
@@ -107,14 +107,15 @@
       p.querySelector('[data-price-us]').hidden = r === 'in';
     });
     document.querySelectorAll('[data-region-name]').forEach(function (s) { s.textContent = r === 'in' ? 'India' : 'outside India'; });
-    document.querySelectorAll('select[data-region]').forEach(function (s) { s.value = r; });
+    document.querySelectorAll('[data-region-set]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-region-set') === r)); });
   }
   function pricing() {
     if (!document.querySelector('[data-price]')) return;
     var saved = store('of_region'), r = saved === 'in' || saved === 'world' ? saved : guessIndia() ? 'in' : 'world';
     region(r);
-    document.querySelectorAll('select[data-region]').forEach(function (s) {
-      s.addEventListener('change', function () { store('of_region', s.value); region(s.value); });
+    document.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-region-set]'); if (!b) return;
+      var v = b.getAttribute('data-region-set'); store('of_region', v); region(v);
     });
   }
 
@@ -135,7 +136,25 @@
     upd();
   }
 
-  function init() { controls(); frames(); menus(); stages(); pricing(); reveal(); headerState(); }
+  /* ---------- loading: the page splash (the OpenFrame icon) lifts once the page has loaded; first visit of a session ---------- */
+  function splash() {
+    var done = false;
+    function lift() { if (done) return; done = true; doc.classList.add('ready'); try { sessionStorage.setItem('of_seen', '1'); } catch (e) {} }
+    if (doc.classList.contains('ready')) return;
+    function onload() { setTimeout(lift, Math.max(0, 1100 - (window.performance ? performance.now() : 0))); }
+    if (document.readyState === 'complete') onload(); else addEventListener('load', onload);
+    setTimeout(lift, 4000);
+    addEventListener('pageshow', function (e) { if (e.persisted) lift(); });
+  }
+  /* each app screen waits behind the same icon until its page has loaded */
+  function frameLoads() {
+    document.addEventListener('load', function (e) { var f = e.target; if (f && f.tagName === 'IFRAME') { var b = f.closest('.mock'); if (b) b.classList.add('loaded'); } }, true);
+    document.querySelectorAll('.mock iframe').forEach(function (f) { try { if (f.contentDocument && f.contentDocument.readyState === 'complete' && f.contentDocument.body && f.contentDocument.body.childNodes.length) f.closest('.mock').classList.add('loaded'); } catch (e) {} });
+  }
+  /* error pages: Try again */
+  function reloads() { document.addEventListener('click', function (e) { if (e.target.closest('[data-reload]')) location.reload(); }); }
+
+  function init() { splash(); frameLoads(); reloads(); controls(); frames(); menus(); stages(); pricing(); reveal(); headerState(); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
   addEventListener('pageshow', function () { mark(); });
 })();

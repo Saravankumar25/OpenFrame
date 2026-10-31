@@ -155,7 +155,7 @@ export default {
     {
       id: `call-sheets-tour-editor`,
       title: `Find your way around the call sheet editor`,
-      purpose: `Learn where each part of the sheet is and how editing and saving work.`,
+      purpose: `See where each part of the sheet is and how editing and saving work.`,
       level: `Beginner`,
       prerequisites: [`A call sheet exists. Open it from the list with Open, or double-click its row.`],
       steps: [

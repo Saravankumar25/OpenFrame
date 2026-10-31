@@ -43,7 +43,7 @@ export default {
         },
         {
           screen: `settings-offline-ai`,
-          do: `Click Offline AI for the assistant's engine, health figures and memory, and Diagnostics for the support bundle.`,
+          do: `Click Offline AI for OpenFrame AI's engine, health figures and memory, and Diagnostics for the support bundle.`,
           explain: `Storage, the tab between them, shows where your library and projects are kept. Each has its own workflow below.`,
         },
       ],
@@ -275,7 +275,7 @@ export default {
     {
       id: `settings-storage-library`,
       title: `See where your library and projects are kept`,
-      purpose: `Find the library folder, open it, and learn what each Storage card does.`,
+      purpose: `Find the library folder, open it, and see what each Storage card does.`,
       level: `Intermediate`,
       prerequisites: [`The Settings window is open, or Project Settings is open on its Storage tab.`],
       steps: [
@@ -357,7 +357,7 @@ export default {
     {
       id: `settings-offline-ai`,
       title: `Check the offline AI and its health figures`,
-      purpose: `See whether the offline AI is ready, export its health figures and review what the assistant remembers.`,
+      purpose: `See whether the offline AI is ready, export its health figures and review what OpenFrame AI remembers.`,
       level: `Intermediate`,
       prerequisites: [`The Settings window is open.`],
       steps: [
@@ -369,7 +369,7 @@ export default {
         {
           screen: `settings-offline-ai`,
           do: `Look at AI health.`,
-          explain: `Before you use the AI Assistant it says: No requests yet. The figures appear after you use the AI Assistant. Only numbers are kept on this computer: no questions, answers or project text. Nothing is sent.`,
+          explain: `Before you use OpenFrame AI it says: No requests yet. The figures appear after you use OpenFrame AI. Only numbers are kept on this computer: no questions, answers or project text. Nothing is sent.`,
         },
         {
           screen: `settings-offline-ai`,
@@ -379,12 +379,12 @@ export default {
         {
           screen: `settings-offline-ai`,
           do: `Look at Assistant memory.`,
-          explain: `With no project open it says: Open a project to see what the assistant remembers in it. Memory is saved on this Mac, in the project, for you only, and only when you state a fact or confirm an answer. Delete an entry and the assistant forgets it.`,
+          explain: `With no project open it says: Open a project to see what OpenFrame AI remembers in it. Memory is saved on this Mac, in the project, for you only, and only when you state a fact or confirm an answer. Delete an entry and OpenFrame AI forgets it.`,
         },
       ],
       result: `You know the state of the offline AI and can export the figures.`,
       cautions: [
-        `The assistant is optional. Every other part of the app works without it.`,
+        `OpenFrame AI is optional. Every other part of the app works without it.`,
         `If it says Needs a reinstall, reinstall OpenFrame Studio. Your projects are not changed.`,
       ],
       related: [`settings-diagnostics-bundle`],
@@ -404,7 +404,7 @@ export default {
         {
           screen: `settings-diagnostics`,
           do: `Read the list under What the bundle includes.`,
-          explain: `manifest.json lists every file in the bundle with its SHA-256 checksum. summary.json holds the OpenFrame version, system version, architecture, distribution channel and database schema versions. errors.json holds error codes from recent logs, with how often and when they occurred. timings.json holds how long slow or failed operations took, by operation name. log-tail.txt holds the most recent log entries, rebuilt from fixed messages, operation names, error codes and numbers only. ai-status.json holds the offline AI status, with no folders or file paths. Each entry shows its size.`,
+          explain: `The bundle holds a list of its files, the app and system versions, recent error codes with how often they occurred, how long slow operations took, and the most recent log lines. ai-status.json holds the offline AI status, with no folders or file paths. Each entry shows its size.`,
         },
       ],
       result: `You know what a bundle would contain.`,
@@ -424,7 +424,7 @@ export default {
     'settings-appearance-theme-chosen': `Appearance after another theme card has been clicked, with the new theme applied. Used in Choose Light, Dark or System, and a theme.`,
     'settings-theme-paste-sheet': `The Import theme sheet, empty, with the Theme text box and the 0.0 KB of 10 KB counter. Used in Import a theme.`,
     'settings-theme-paste-error': `The Import theme sheet after pasting text that is not a theme: This theme cannot be used. Nothing was changed, the reasons and Edit the text. Used in Import a theme.`,
-    'settings-keyboard-shortcuts': `Keyboard Shortcuts with the command list at the top, showing Search, Open or close the assistant, Open Project Settings, New Scene Card and Quick Capture (new idea). Used in the shortcut workflows.`,
+    'settings-keyboard-shortcuts': `Keyboard Shortcuts with the command list at the top, showing Search, Open or close OpenFrame AI, Open Project Settings, New Scene Card and Quick Capture (new idea). Used in the shortcut workflows.`,
     'settings-keyboard-shortcuts-scrolled': `Keyboard Shortcuts scrolled to Screenplay elements, from Parenthetical to General note (not printed). Used in Find a command and see its keys.`,
     'settings-shortcuts-filtered': `Keyboard Shortcuts filtered by the word project, 5 commands, with Search projects showing two keys. Used in Find a command and Change, add or remove keys.`,
     'settings-shortcuts-none': `Keyboard Shortcuts when no command matches the filter, with a message and 0 commands. Used in Find a command and see its keys.`,
@@ -440,7 +440,7 @@ export default {
     [`Command+,`, `Open the Settings window`],
     [`Shift+Command+,`, `Open Project Settings`],
     [`Command+K`, `Search (default, changeable)`],
-    [`Command+J`, `Open or close the assistant (default, changeable)`],
+    [`Command+J`, `Open or close OpenFrame AI (default, changeable)`],
     [`Command+N`, `New Scene Card in a project, New Project on Application Home (defaults, changeable)`],
     [`Command+O`, `Open Project (default, changeable)`],
     [`Command+F and Command+K`, `Search projects on Application Home (defaults, changeable)`],

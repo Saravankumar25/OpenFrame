@@ -1,0 +1,14 @@
+{
+  "formatVersion": 1,
+  "id": "forest-hour",
+  "name": "Forest Hour",
+  "description": "Deep green-tinted surfaces with a fresh moss accent.",
+  "author": "OpenFrame Studio",
+  "seeds": {
+    "neutralHue": 150,
+    "neutralTint": 0.03,
+    "accentHue": 140,
+    "accentChroma": 0.13,
+    "accentLightnessNudge": 0
+  }
+}

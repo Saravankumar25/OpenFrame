@@ -95,7 +95,7 @@ export default {
       result: `Your story text is written, formatted and saved.`,
       cautions: [
         `The Story page is separate from the Beat Board and the screenplay. Text you write here does not change them.`,
-        `The Assistant cannot read or change the Story page.`,
+        `OpenFrame AI cannot read or change the Story page.`,
       ],
       related: [`story-export-page`],
     },
@@ -874,7 +874,7 @@ export default {
     [`Ctrl+wheel`, `Zoom the Story page`],
   ],
   limits: [
-    `The Story page is separate from the Beat Board and the screenplay. The Assistant cannot read or change it.`,
+    `The Story page is separate from the Beat Board and the screenplay. OpenFrame AI cannot read or change it.`,
     `The Beat Board has no scene numbers. Scene numbers come from the screenplay.`,
     `Build Screenplay never overwrites a screenplay and never makes up a scene heading.`,
     `Apply Board Order to Screenplay does not reorder production planning, and cannot change a draft locked as the shooting draft.`,

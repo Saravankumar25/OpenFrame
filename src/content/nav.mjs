@@ -9,7 +9,7 @@ export const FEATURE_GROUPS = [
     ['screenplay', 'Screenplay Editor', 'Proper formatting that just happens.'],
     ['drafts-revisions', 'Drafts and Revisions', 'Compare drafts. Lock the shooting script.'],
     ['import-export', 'Import and Export', 'Final Draft, Fountain, PDF, DOCX and text.'],
-    ['ai-assistant', 'Assistant (optional)', 'Answers and prepares. You decide.'],
+    ['openframe-ai', 'OpenFrame AI', 'Answers and prepares. You decide.'],
   ]],
   ['Plan', [
     ['breakdown', 'Script Breakdown', 'Tag every prop, cast member and location.'],
@@ -42,7 +42,7 @@ export const PARTS = [
   ['Write', 'Writing', 'The screenplay editor, drafts, review and import.'],
   ['Plan', 'Production planning', 'Breakdown, catalog, people, places, shots and the schedule.'],
   ['Shoot', 'Shooting days', 'Call sheets, sides, Daily View, reports and the budget.'],
-  ['Assistant', 'Offline assistant', 'Set up the optional assistant and use it safely.'],
+  ['Assistant', 'OpenFrame AI', 'Set up OpenFrame AI and use it safely.'],
   ['Project and data', 'Projects and data', 'Files, notes, backups, packages, templates and settings.'],
 ];
 

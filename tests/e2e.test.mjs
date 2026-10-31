@@ -33,7 +33,7 @@ test('website theme and app screen theme are independent and remembered', { skip
   assert.equal(await attr(page, 'data-theme'), 'dark');
   assert.equal(await attr(page, 'data-mock'), 'light');
   assert.ok((await frameSrc(page)).every((s) => s.includes('/light/')));
-  await page.waitForFunction(() => getComputedStyle(document.body).backgroundColor === 'rgb(0, 0, 0)');
+  await page.waitForFunction(() => getComputedStyle(document.body).backgroundColor === 'rgb(14, 13, 21)');
   await page.click('.nav-ctls [data-set="mock"][data-val="dark"]');
   assert.equal(await attr(page, 'data-theme'), 'dark');
   assert.ok((await frameSrc(page)).every((s) => s.includes('/dark/')));
@@ -79,7 +79,7 @@ test('price follows the region: India shows rupees, elsewhere dollars, and the c
     await page.goto(base + '/pricing/');
     assert.ok(await page.isVisible('.price [data-price-in]'));
     assert.ok(!(await page.isVisible('.price [data-price-us]')));
-    await page.selectOption('#region', 'world');
+    await page.click('[data-region-set="world"]');
     assert.ok(await page.isVisible('.price [data-price-us]'));
     await page.reload();
     assert.ok(await page.isVisible('.price [data-price-us]'));
@@ -117,3 +117,25 @@ for (const p of ['/', '/pricing/', '/download/', '/about/', '/faq/']) {
     assert.deepEqual(bad, []);
   }));
 }
+
+test('the loading icon lifts after the first load and stays away for the rest of the session', { skip: SKIP }, () => withPage(async (page) => {
+  await page.goto(base + '/');
+  await page.waitForFunction(() => document.documentElement.classList.contains('ready'), null, { timeout: 6000 });
+  await page.waitForSelector('#loader', { state: 'hidden', timeout: 4000 });
+  await page.goto(base + '/pricing/');
+  assert.ok(await page.evaluate(() => document.documentElement.classList.contains('ready')), 'no splash on later pages');
+}, { reducedMotion: 'no-preference' }));
+
+test('each app screen shows the icon until its page has loaded', { skip: SKIP }, () => withPage(async (page) => {
+  await page.goto(base + '/windows/');
+  await page.waitForSelector('.tour-real .mock.loaded', { timeout: 8000 });
+  assert.ok(!(await page.isVisible('.tour-real .mock-load')));
+}));
+
+test('error page: the code, the icon and Try again on a 500', { skip: SKIP }, () => withPage(async (page) => {
+  await page.goto(base + '/500.html');
+  assert.equal(await page.textContent('.err-code'), '500');
+  assert.ok(await page.isVisible('.err-mark svg'));
+  await Promise.all([page.waitForNavigation(), page.click('[data-reload]')]);
+  assert.equal(new URL(page.url()).pathname, '/500.html');
+}));

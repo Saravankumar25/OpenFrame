@@ -256,7 +256,7 @@ export default {
         {
           screen: `pages-settings-offline-ai`,
           do: `Click Offline AI.`,
-          explain: `The state of the offline AI, AI health and Assistant memory. Here Assistant memory shows what the assistant remembers in this project. At the bottom, Technical details can be opened for more.`,
+          explain: `The state of the offline AI, AI health and Assistant memory. Here Assistant memory shows what OpenFrame AI remembers in this project. At the bottom, Technical details can be opened for more.`,
         },
       ],
       result: `You changed or checked an app setting without leaving the project.`,

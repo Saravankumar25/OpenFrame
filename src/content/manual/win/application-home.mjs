@@ -572,7 +572,7 @@ export default {
         {
           screen: `apphome-settings-storage`,
           do: `Read APP DATA, then click Done.`,
-          explain: `App data holds settings, the recent project list, the assistant's files and logs. It is not your work: uninstalling may remove it, and your library stays.`,
+          explain: `App data holds settings, the recent project list, OpenFrame AI's files and logs. It is not your work: uninstalling may remove it, and your library stays.`,
         },
       ],
       result: `You know where your work is stored and which folder to back up.`,

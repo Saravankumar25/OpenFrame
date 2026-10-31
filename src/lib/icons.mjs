@@ -35,5 +35,5 @@ export const ICON = {
 };
 
 // The OpenFrame frame mark, drawn with the brand gradient (#ofg defined once per page).
-export const MARK = raw('<svg class="mk" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect class="s" x="2" y="2" width="20" height="20" rx="2.2"/><path class="s" d="M7 2v20M17 2v20M2 12h20M2 7h5M2 17h5M22 7h-5M22 17h-5"/></svg>');
+export const MARK = raw('<svg class="mk" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect class="s" pathLength="1" x="2" y="2" width="20" height="20" rx="2.2"/><line class="s" pathLength="1" x1="7" y1="2" x2="7" y2="22"/><line class="s" pathLength="1" x1="17" y1="2" x2="17" y2="22"/><line class="s" pathLength="1" x1="2" y1="12" x2="22" y2="12"/><line class="s" pathLength="1" x1="2" y1="7" x2="7" y2="7"/><line class="s" pathLength="1" x1="2" y1="17" x2="7" y2="17"/><line class="s" pathLength="1" x1="22" y1="7" x2="17" y2="7"/><line class="s" pathLength="1" x1="22" y1="17" x2="17" y2="17"/></svg>');
 export const GRADIENT_DEFS = raw('<svg width="0" height="0" class="defs" aria-hidden="true" focusable="false"><defs><linearGradient id="ofg" gradientUnits="userSpaceOnUse" x1="2" y1="2" x2="22" y2="22"><stop offset="0" stop-color="#ff5d6c"/><stop offset=".55" stop-color="#ff9a3d"/><stop offset="1" stop-color="#ffc23d"/></linearGradient></defs></svg>');

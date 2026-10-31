@@ -5,7 +5,7 @@ export default {
   part: `Start`,
   intro: [
     `When you open a project, the window gives you the same frame on every page: a bar across the top, a rail down the left, the page itself in the middle and a status bar at the bottom. The page you land on first is the project's Home.`,
-    `The top bar holds the OpenFrame logo, the project name, a search box, the Create button, Back and Forward arrows, the assistant, settings and your avatar. The left rail lists the sections of a project: Home, Idea Vault, Story, Screenplay, Breakdown, Production, Call Sheets and Files. The rest, Notes & Tasks, Activity, Recently Deleted and Templates, are one click away on Home and in the project menu.`,
+    `The top bar holds the OpenFrame logo, the project name, a search box, the Create button, Back and Forward arrows, OpenFrame AI, settings and your avatar. The left rail lists the sections of a project: Home, Idea Vault, Story, Screenplay, Breakdown, Production, Call Sheets and Files. The rest, Notes & Tasks, Activity, Recently Deleted and Templates, are one click away on Home and in the project menu.`,
     `Everything you do is saved as you go. The status bar tells you when the project is saved, and one click on it opens a panel where you can save now, go back to a saved version or open the project's folder. Undo and Redo apply to the whole project, not just the page you are on.`,
   ],
   layout: [
@@ -14,7 +14,7 @@ export default {
     { name: `Search box`, text: `Search this project… with the shortcut Ctrl+K. Searches scenes, ideas, characters, locations and files.` },
     { name: `Create (+)`, text: `Opens the CREATE menu for new ideas, acts, beats, scene cards, characters, locations, shot lists, moodboards, notes and tasks, and for Import Screenplay… and New Project….` },
     { name: `Back and Forward`, text: `Two arrows that move through the pages you have visited. Their tooltips are Back (Alt+Left) and Forward (Alt+Right). An arrow is greyed out when there is nowhere to go.` },
-    { name: `Assistant`, text: `The sparkle button that opens or closes the assistant. Its tooltip is Assistant (Ctrl+J).` },
+    { name: `Assistant`, text: `The sparkle button that opens or closes OpenFrame AI. Its tooltip is Assistant (Ctrl+J).` },
     { name: `Settings and avatar`, text: `The gear opens settings. The round avatar with your initials opens the Your name dialog.` },
     { name: `Left rail`, text: `Home, Idea Vault, Story, Screenplay, Breakdown, Production, Call Sheets and Files. The current section is orange. At the bottom, Project stored locally on this PC and the Collapse button.` },
     { name: `Project Home`, text: `The project title, its type and when you last opened it; the status chip and Project settings at the top right; CONTINUE with Continue screenplay; QUICK ACCESS buttons; RECENT activity; and on the right PRODUCTION STATUS, PROJECT FILES and TASKS.` },
@@ -24,14 +24,14 @@ export default {
     {
       id: `tour-project-home`,
       title: `Find your way around a project`,
-      purpose: `Learn what each part of the project window is for, and what is on the project's Home page.`,
+      purpose: `See what each part of the project window is for, and what is on the project's Home page.`,
       level: `Beginner`,
       prerequisites: [`A project is open.`],
       steps: [
         {
           screen: `shell-project-home`,
           do: `Look across the top bar, from left to right.`,
-          explain: `You see the OpenFrame logo, the project name with its type, the search box, then the + Create button, the Back and Forward arrows, the assistant, the settings gear and your avatar. The logo takes you back to all your projects.`,
+          explain: `You see the OpenFrame logo, the project name with its type, the search box, then the + Create button, the Back and Forward arrows, OpenFrame AI, the settings gear and your avatar. The logo takes you back to all your projects.`,
         },
         {
           screen: `shell-project-home`,
@@ -486,7 +486,7 @@ export default {
     [`Esc`, `Close search`],
     [`Alt+Left`, `Back`],
     [`Alt+Right`, `Forward`],
-    [`Ctrl+J`, `Open or close the assistant`],
+    [`Ctrl+J`, `Open or close OpenFrame AI`],
     [`Ctrl+S`, `Save now`],
     [`Ctrl+Z`, `Undo`],
     [`Ctrl+Y or Ctrl+Shift+Z`, `Redo`],

@@ -114,7 +114,7 @@ export default {
     {
       id: `file-safety-tutorial`,
       title: `Complete the File safety tutorial`,
-      purpose: `Learn where your data lives, how to back it up and how to move it to a new laptop, then confirm each point.`,
+      purpose: `See where your data lives, how to back it up and how to move it to a new laptop, then confirm each point.`,
       level: `Beginner`,
       prerequisites: [`You have confirmed the data note.`],
       steps: [

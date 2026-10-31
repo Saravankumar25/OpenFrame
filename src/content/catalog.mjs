@@ -168,7 +168,7 @@ export const CATALOG = {
       ['sp-focus-mode'], ['screenplay-layout-focus']),
     e('sp-scene-notes', 'Scene notes', 'Write notes that stay with a scene.', 'Add notes to a scene in a side panel, or in the script as in-script notes that you can hide. Notes are not printed and are left out of exports.', 'To keep thoughts about a scene next to it without cluttering the page.',
       ['sp-panel-scene-notes', 'sp-panel-scene-note-editing'], ['screenplay-private-note-editing']),
-    e('sp-private-notes', 'Private notes', 'Notes only you can see.', 'A private note is marked Only you. It is never exported, never shared in a review package and never read by the assistant.', 'To keep honest thoughts about a draft to yourself.',
+    e('sp-private-notes', 'Private notes', 'Notes only you can see.', 'A private note is marked Only you. It is never exported, never shared in a review package and never read by OpenFrame AI.', 'To keep honest thoughts about a draft to yourself.',
       ['sp-panel-private-note-composer', 'sp-panel-private-note-menu'], ['screenplay-private-note-editing', 'screenplay-private-note-actions']),
     e('sp-comments', 'Comments', 'Comment on words, scenes or the whole draft.', 'Select text and add a comment that quotes it, or comment on a whole scene or the whole draft. Comments are listed in a panel with a count in the toolbar.', 'To record feedback exactly where it applies.',
       ['sp-comment-float-button', 'sp-comment-composer-text', 'sp-panel-comments-composer-scene', 'sp-standard-comments-panel'], ['screenplay-comment-composer-quote', 'screenplay-comment-composer-scene', 'screenplay-comment-posted', 'screenplay-comments']),
@@ -251,24 +251,24 @@ export const CATALOG = {
     e('ie-history', 'Import and Export History', 'A record of every package.', 'The history lists imports, review records, your own reviews and a log of packages.', 'To see what came in and went out, and when.',
       ['pkg-history-imports', 'pkg-history-review-records', 'pkg-history-my-reviews', 'pkg-history-package-log'], ['package-history-imports', 'package-history-review-records', 'package-history-my-reviews', 'package-history-package-log', 'package-import-export-history']),
   ],
-  'ai-assistant': [
-    e('ai-ask', 'Ask about your project', 'Questions in plain words.', 'Open the assistant, type a question such as how many scenes are in the script or who speaks in the second draft, and it looks through the project to answer. A New button starts a fresh conversation.', 'To get an answer without hunting through pages.',
+  'openframe-ai': [
+    e('ai-ask', 'Ask about your project', 'Questions in plain words.', 'Open OpenFrame AI, type a question such as how many scenes are in the script or who speaks in the second draft, and it looks through the project to answer. A New button starts a fresh conversation.', 'To get an answer without hunting through pages.',
       ['ai-panel-ready', 'ai-question-typed', 'ai-answer-characters', 'ai-answer-scene-count'], []),
     e('ai-sources', 'Answers with sources', 'See what an answer is based on.', 'Each answer can show its sources, such as the draft and the screenplay elements it used, and how many steps it took.', 'To check any claim before you rely on it.',
       ['ai-answer-characters-sources', 'ai-answer-locations-sources-open', 'ai-answer-locations'], []),
-    e('ai-working', 'Works in steps on your computer', 'A visible Working state while it thinks.', 'While it works the panel says it is working on this computer, and the answer lists the steps it took.', 'To know the assistant is busy and not stuck.',
+    e('ai-working', 'Works in steps on your computer', 'A visible Working state while it thinks.', 'While it works the panel says it is working on this computer, and the answer lists the steps it took.', 'To know OpenFrame AI is busy and not stuck.',
       ['ai-working', 'ai-answer-characters-sources'], []),
-    e('ai-scope', 'Choose what it looks at', 'Current screenplay, Beat Board, Production or the whole project.', 'A scope control limits what the assistant reads to the current screenplay, the Beat Board, the Production workspace or the whole project.', 'To keep an answer focused on the part of the project you mean.',
+    e('ai-scope', 'Choose what it looks at', 'Current screenplay, Beat Board, Production or the whole project.', 'A scope control limits what OpenFrame AI reads to the current screenplay, the Beat Board, the Production workspace or the whole project.', 'To keep an answer focused on the part of the project you mean.',
       ['ai-scope-current-screenplay', 'ai-scope-beat-board'], []),
-    e('ai-everywhere', 'Beside every workspace', 'Open it from the Idea Vault, Story, Screenplay, Breakdown or Production.', 'The assistant opens in a side panel next to whichever workspace you are in and closes again when you are done.', 'To ask a question without leaving your work.',
+    e('ai-everywhere', 'Beside every workspace', 'Open it from the Idea Vault, Story, Screenplay, Breakdown or Production.', 'OpenFrame AI opens in a side panel next to whichever workspace you are in and closes again when you are done.', 'To ask a question without leaving your work.',
       ['ai-panel-vault', 'ai-panel-story', 'ai-panel-screenplay', 'ai-panel-breakdown', 'ai-panel-production'], ['ai-panel-idea-vault', 'ai-panel-story', 'ai-panel-screenplay', 'ai-panel-breakdown', 'ai-panel-production']),
-    e('ai-propose', 'Proposed changes', 'It proposes. You decide.', 'When you ask for a change, such as creating a task, the assistant prepares a Proposed Changes card that lists what is affected and what would be added. Nothing changes yet.', 'To get help with project work while staying in control of the project.',
+    e('ai-propose', 'Proposed changes', 'It proposes. You decide.', 'When you ask for a change, such as creating a task, OpenFrame AI prepares a Proposed Changes card that lists what is affected and what would be added. Nothing changes yet.', 'To get help with project work while staying in control of the project.',
       ['ai-proposed-changes', 'ai-proposed-changes-second', 'ai-answer-delete-request'], []),
     e('ai-apply', 'Apply as one undoable step', 'Accept a proposal in a single step.', 'Apply Changes makes all the proposed changes together as one step. If any part fails nothing is changed, and Undo reverses the whole step.', 'To accept a proposal safely.',
       ['ai-proposal-applied', 'ai-proposed-changes'], []),
     e('ai-reject', 'Reject a proposal', 'Say no and nothing happens.', 'Reject closes the proposal and the project stays exactly as it was.', 'To try again with a different request.',
       ['ai-proposal-rejected'], []),
-    e('ai-download', 'One-time download', 'Get the assistant once, then use it offline.', 'Offline AI downloads its model files once, checks them, and then runs on your computer. You can also import the files by hand. The app works normally without it.', 'To use an assistant without an account or a cloud service.',
+    e('ai-download', 'One-time download', 'Get OpenFrame AI once, then use it offline.', 'Offline AI downloads its model files once, checks them, and then runs on your computer. You can also import the files by hand. The app works normally without it.', 'To use OpenFrame AI without an account or a cloud service.',
       ['ai-offline-settings', 'settings-offline-ai-ready'], ['settings-offline-ai', 'ai-offline-ai-settings']),
     e('ai-technical-details', 'Technical details', 'See exactly what runs on your computer.', 'A details view lists the engine and the three model files by name and size, and states that prompts, project text and answers are never sent anywhere.', 'To know what is installed and what it can touch.',
       ['ai-offline-technical-details', 'settings-offline-ai-technical-details'], []),
@@ -276,9 +276,9 @@ export const CATALOG = {
       ['settings-offline-ai-graphics-off', 'ai-offline-health-filled'], []),
     e('ai-stop-remove', 'Stop or remove it', 'Free memory or delete the files.', 'Stop Offline AI frees memory while you keep working, and Remove deletes the model files after a confirmation.', 'To get memory back or free disk space whenever you want.',
       ['settings-offline-ai-stopped-toast', 'ai-offline-remove-confirm', 'settings-offline-ai-remove-confirm', 'ai-settings-menu'], []),
-    e('ai-health', 'AI health report', 'Numbers about how it is running.', 'AI health shows simple figures on how the assistant has run and can save them to a file you choose. No questions, answers or project text are kept in it.', 'To share how it performs on your computer if you want to.',
+    e('ai-health', 'AI health report', 'Numbers about how it is running.', 'AI health shows simple figures on how OpenFrame AI has run and can save them to a file you choose. No questions, answers or project text are kept in it.', 'To share how it performs on your computer if you want to.',
       ['ai-offline-health-filled', 'settings-offline-ai-ready'], ['settings-offline-ai', 'ai-offline-ai-settings']),
-    e('ai-boundaries', 'What it never does', 'Clear limits you can rely on.', 'The assistant never changes a project without your Apply, never sends project data anywhere, never reads other people\'s private notes or the Story page, and refuses licence and payment requests.', 'To use it with confidence on private work.',
+    e('ai-boundaries', 'What it never does', 'Clear limits you can rely on.', 'OpenFrame AI never changes a project without your Apply, never sends project data anywhere, never reads other people\'s private notes or the Story page, and refuses licence and payment requests.', 'To use it with confidence on private work.',
       ['ai-offline-technical-details', 'ai-offline-settings'], []),
   ],
   breakdown: [
@@ -346,7 +346,7 @@ export const CATALOG = {
       ['prod-crew', 'prod-crew-add-dialog', 'prod-crew-empty'], ['plan-crew-list', 'plan-crew-add-filled', 'plan-crew-add-empty', 'plan-crew-empty']),
     e('cc-crew-details', 'Crew member details', 'Role, department, contact and dates.', 'Open a crew member to edit their role, department, contact, availability and notes.', 'To keep crew details current.',
       ['prod-crew-drawer'], ['plan-crew-open']),
-    e('cc-private-contacts', 'Private contact details', 'Contacts stay out of exports and the assistant.', 'Contact details are marked private and are never put in exports or shown to the assistant.', 'To protect people\'s phone numbers and addresses.',
+    e('cc-private-contacts', 'Private contact details', 'Contacts stay out of exports and OpenFrame AI.', 'Contact details are marked private and are never put in exports or shown to OpenFrame AI.', 'To protect people\'s phone numbers and addresses.',
       ['prod-cast-drawer', 'prod-crew-drawer'], ['plan-cast-open', 'plan-crew-open']),
     e('cc-availability', 'Availability dates', 'Tell the schedule when someone is free.', 'Add availability dates for people and locations. Dates are advisory: the schedule warns you about them and never moves a scene on its own.', 'To avoid booking someone on a day they cannot work.',
       ['prod-cast-drawer', 'prod-crew-drawer', 'prod-location-drawer'], ['plan-cast-open', 'plan-crew-open', 'plan-location-open']),
@@ -685,4 +685,4 @@ export const CATALOG = {
 
 // The Mac assistant is built (research/capability-matrix.md), but the Mac screens were captured without the AI
 // engine, so these entries have no Mac screen. They are still Mac features.
-for (const it of CATALOG['ai-assistant']) if (!it.mac?.length) it.onMac = true;
+for (const it of CATALOG['openframe-ai']) if (!it.mac?.length) it.onMac = true;

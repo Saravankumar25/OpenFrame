@@ -56,7 +56,11 @@ const clean = (h) => h
   .replace(/C%3A%5COpenFrame%5Ctests%5Ce2e%5C\.run%5C[^"<%]+%5Czz-capture/g, 'C%3A%5CUsers%5CYou%5CDocuments')
   .replace(/(?:\/private)?\/var\/folders\/[^/<"]+\/[^/<"]+\/T\/\/?openframe-e2e\.[^/<"]+/g, '/Users/you')
   .replace(/\/Users\/you\/data-zz-capture[^/<"]*/g, '/Users/you/OpenFrame')
-  .replace(/Saravan Kumar/g, 'Your Name').replace(/E2E Tester/g, 'Your Name');
+  .replace(/Saravan Kumar/g, 'Your Name').replace(/E2E Tester/g, 'Your Name')
+  // No build notes in published pages: the Windows generator comment (commit, capture size, script) and the Mac
+  // viewer bar (page numbers, capture size) go; the screens themselves are unchanged.
+  .replace(/<!--[\s\S]*?-->\n?/g, '')
+  .replace(/<div class="band">[\s\S]*?<\/header>\s*(?:<div class="leads">[\s\S]*?<\/div>\s*)?<\/div>/, '');
 const MAC_EMBED = '<style>.band{display:none}.wrap{padding:0;overflow:hidden}.win{box-shadow:none;border-radius:0}html,body{background:var(--winbg,transparent)}</style>';
 if (!SKIP_MOCKUPS) {
   const W = rel('research', 'WindowsHTML-src'), M = rel('research', 'MacHTML-src');
@@ -88,16 +92,10 @@ for (const f of fs.readdirSync(path.join(SRC, 'pages')).filter((f) => f.endsWith
   const mod = await import(pathToFileURL(path.join(SRC, 'pages', f)).href);
   for (const p of mod.default(ctx)) pages.push({ ...p, _from: f });
 }
-pages.push({
-  path: '/404.html', title: 'Page not found | OpenFrame Studio', description: 'This page does not exist. Find OpenFrame Studio features, step-by-step tutorials for Windows and Mac, and answers to common questions.',
-  noindex: true, nav: null,
-  body: html`<section class="notfound"><div class="wrap"><p class="big">4<span>0</span>4</p><h1>This page is not here.</h1><p class="lead mt18">The link may be old, or the address may have a typo.</p>
-<div class="hero-cta mt26"><a class="btn btn-primary btn-lg" href="/">Go to the home page</a><a class="btn btn-ghost btn-lg" href="/tutorials/">Browse tutorials</a><a class="btn btn-ghost btn-lg" href="/features/">See all features</a></div></div></section>`,
-});
 
 const paths = new Set();
 for (const p of pages) {
-  if (!/^\/([a-z0-9-]+\/)*$|^\/404\.html$/.test(p.path)) throw new Error(`bad path ${p.path} from ${p._from}`);
+  if (!/^\/([a-z0-9-]+\/)*$|^\/(403|404|500|503)\.html$/.test(p.path)) throw new Error(`bad path ${p.path} from ${p._from}`);
   if (paths.has(p.path)) throw new Error(`duplicate path ${p.path} from ${p._from}`);
   paths.add(p.path);
 }
@@ -119,7 +117,7 @@ for (const p of pages) {
   const out = renderPage({ ...p, body: String(p.body) }, { css: cssName, js: jsName, switchHref: switchHref(p) });
   const text = out.replace(/<script[\s\S]*?<\/script>/g, '');
   if (DASH.test(text)) throw new Error(`em or en dash in ${p.path} (${p._from})`);
-  const file = p.path === '/404.html' ? path.join(DIST, '404.html') : path.join(DIST, p.path, 'index.html');
+  const file = p.path.endsWith('.html') ? path.join(DIST, p.path) : path.join(DIST, p.path, 'index.html');
   fs.mkdirSync(path.dirname(file), { recursive: true });
   fs.writeFileSync(file, out);
 }
@@ -141,32 +139,55 @@ fs.writeFileSync(path.join(DIST, 'tutorial-screen-map.json'), JSON.stringify(map
 fs.writeFileSync(rel('docs', 'tutorial-screen-map.json'), JSON.stringify(map, null, 1));
 
 // ---------- SEO and hosting files
-const indexable = pages.filter((p) => !p.noindex && p.path !== '/404.html');
+const indexable = pages.filter((p) => !p.noindex);
 const today = new Date().toISOString().slice(0, 10);
 fs.writeFileSync(path.join(DIST, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${indexable.map((p) => `<url><loc>${esc(SITE_URL + p.path)}</loc><lastmod>${today}</lastmod></url>`).join('\n')}\n</urlset>\n`);
 fs.writeFileSync(path.join(DIST, 'robots.txt'), `User-agent: *\nAllow: /\nDisallow: /mockups/\n\nSitemap: ${SITE_URL}/sitemap.xml\n`);
+// ---------- standard site files
+const webmanifest = { name: SITE_NAME, short_name: 'OpenFrame', description: 'Film production software for ideas, scripts, schedules and call sheets.', start_url: '/', scope: '/', display: 'browser',
+  background_color: '#0e0d15', theme_color: '#1d1a2e', lang: 'en',
+  icons: [{ src: '/icon-192.png', sizes: '192x192', type: 'image/png' }, { src: '/icon-512.png', sizes: '512x512', type: 'image/png' }, { src: '/icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' }] };
+fs.writeFileSync(path.join(DIST, 'site.webmanifest'), JSON.stringify(webmanifest, null, 2));
+fs.mkdirSync(path.join(DIST, '.well-known'), { recursive: true });
+const nextYear = new Date(Date.now() + 365 * 864e5).toISOString().replace(/\.\d+Z$/, 'Z');
+fs.writeFileSync(path.join(DIST, '.well-known', 'security.txt'), `Contact: ${SITE_URL}/contact/
+Expires: ${nextYear}
+Preferred-Languages: en
+Canonical: ${SITE_URL}/.well-known/security.txt
+Policy: ${SITE_URL}/legal/privacy/
+`);
+fs.writeFileSync(path.join(DIST, 'humans.txt'), `/* TEAM */
+Technical Founding Engineer: Saravan Kumar M K
+Product Founding Engineer: Badrinath Reddy Avuku
+
+/* SITE */
+Last update: ${today}
+Standards: HTML5, CSS3
+Language: English
+Store: ${SITE_URL}/
+`);
 const n = (plat) => manual[plat].reduce((k, a) => k + a.workflows.length, 0);
 fs.writeFileSync(path.join(DIST, 'llms.txt'), `# ${SITE_NAME}
 
-> ${SITE_NAME} is a local-first desktop app for writers, screenwriters and film production teams, a product of ${COMPANY}. One app covers ideas (Idea Vault), story (Story page, Beat Board, characters), the screenplay editor, script breakdown, cast, crew and locations, shot lists, storyboards, moodboards, the shooting schedule, call sheets, sides, reports and a light budget. Projects are stored on the user's computer.
+> ${SITE_NAME} is a local-first desktop app for writers, screenwriters and film production teams. One app covers ideas (Idea Vault), story (Story page, Beat Board, characters), the screenplay editor, script breakdown, cast, crew and locations, shot lists, storyboards, moodboards, the shooting schedule, call sheets, sides, reports and a light budget. Projects are stored on the user's computer.
 
 Facts:
 - Platforms: Windows 11 (x64) and macOS 14 or later on Apple silicon Macs. Distributed through the Microsoft Store and the Mac App Store.
 - Price: one-time lifetime purchase, ₹2,999 in India and US$89 elsewhere, after a 7-day free trial. The store sets the final checkout amount.
 - Privacy: no OpenFrame account, no telemetry, no cloud service. Works offline. Projects are not encrypted by the app.
-- Offline assistant: optional. One-time download of about 1.2 GB that the person starts; runs on the computer; suggests changes that apply only when the person clicks Apply.
+- OpenFrame AI: optional. One-time download of about 1.2 GB that the person starts; runs on the computer; suggests changes that apply only when the person clicks Apply.
 - Import: Final Draft (.fdx), Fountain, Word (.docx), PDF (best effort), plain text. Screenplay export: PDF, FDX, Fountain, DOCX, TXT.
 
 ## Pages
 - [Features](${SITE_URL}/features/)
-- [Windows tutorials](${SITE_URL}/windows/tutorials/): ${n('win')} step-by-step tutorials on real Windows screens.
-- [Mac tutorials](${SITE_URL}/mac/tutorials/): ${n('mac')} step-by-step tutorials on real Mac screens.
+- [Windows tutorials](${SITE_URL}/windows/tutorials/): step-by-step tutorials on the real Windows screens.
+- [Mac tutorials](${SITE_URL}/mac/tutorials/): step-by-step tutorials on the real Mac screens.
 - [Complete feature catalog and tutorial list](${SITE_URL}/llms-full.txt)
 - [Pricing](${SITE_URL}/pricing/), [FAQ](${SITE_URL}/faq/), [About](${SITE_URL}/about/).
 `);
 
 // llms-full.txt: the whole feature catalog and every tutorial, as plain text for answer engines.
-const full = [`# ${SITE_NAME}: complete feature catalog and tutorials`, '', `${SITE_NAME} is a product of ${COMPANY}. Platforms: Windows 11 and macOS 14 or later on Apple silicon. Price: one-time purchase, ₹2,999 in India and US$89 elsewhere, after a 7-day free trial.`, ''];
+const full = [`# ${SITE_NAME}: complete feature catalog and tutorials`, '', `Platforms: Windows 11 and macOS 14 or later on Apple silicon. Price: one-time purchase, ₹2,999 in India and US$89 elsewhere, after a 7-day free trial.`, ''];
 for (const [, items] of FEATURE_GROUPS) for (const [slug, title] of items) {
   full.push(`## ${title} (${SITE_URL}/features/${slug}/)`, '');
   for (const f of CATALOG[slug] || []) full.push(`- ${f.name} [${[f.win?.length && 'Windows', (f.mac?.length || f.onMac) && 'Mac'].filter(Boolean).join(', ')}]: ${f.does} ${f.purpose}`);
@@ -201,6 +222,25 @@ fs.writeFileSync(path.join(DIST, '_headers'), `/*
   Cache-Control: public, max-age=604800
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
+/403.html
+  X-Robots-Tag: noindex
+/404.html
+  X-Robots-Tag: noindex
+/500.html
+  X-Robots-Tag: noindex
+/503.html
+  X-Robots-Tag: noindex
+  Retry-After: 300
+/site.webmanifest
+  Content-Type: application/manifest+json; charset=utf-8
+  Cache-Control: public, max-age=86400
+/.well-known/security.txt
+  Content-Type: text/plain; charset=utf-8
+  Cache-Control: public, max-age=86400
+/favicon.ico
+  Cache-Control: public, max-age=604800
+/*.png
+  Cache-Control: public, max-age=604800
 /tutorial-screen-map.json
   X-Robots-Tag: noindex
 `);
@@ -209,7 +249,7 @@ const OLD = { 'index.html': '/', 'pricing.html': '/pricing/', 'download.html': '
   'compare.html': '/compare/', 'why-local.html': '/local-and-private/', 'themes.html': '/themes/', 'about.html': '/about/', 'contact.html': '/contact/',
   'privacy.html': '/legal/privacy/', 'terms.html': '/legal/terms/', 'features/index.html': '/features/' };
 const OLD_TUTORIALS = ['ai-assistant-ask', 'ai-assistant-setup', 'backup-restore', 'breakdown', 'budget', 'call-sheet', 'cast-crew', 'characters', 'create-project', 'drafts-revisions', 'export-script', 'files', 'first-launch', 'idea-vault', 'import-script', 'locations', 'manage-projects', 'moodboard', 'pages-templates', 'project-tour', 'recently-deleted', 'reports', 'schedule', 'screenplay-notes', 'settings', 'shot-list', 'sides', 'story-board', 'storyboard', 'tasks', 'themes-appearance', 'write-screenplay'];
-const redirects = Object.entries(OLD).map(([a, b]) => `/${a} ${b} 301`).concat(FEATURES.map((f) => `/features/${f.slug}.html /features/${f.slug}/ 301`));
+const redirects = ['/features/ai-assistant/ /features/openframe-ai/ 301', '/features/ai-assistant.html /features/openframe-ai/ 301'].concat(Object.entries(OLD).map(([a, b]) => `/${a} ${b} 301`)).concat(FEATURES.map((f) => `/features/${f.slug}.html /features/${f.slug}/ 301`));
 for (const plat of ['win', 'mac']) for (const id of OLD_TUTORIALS) {
   const p = `/${OS[plat].slug}/tutorials/${id}/`;
   if (!paths.has(p)) redirects.push(`${p} /${OS[plat].slug}/tutorials/ 302`);

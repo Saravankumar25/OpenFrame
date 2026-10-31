@@ -1069,7 +1069,7 @@ export default {
     `Build Screenplay never makes up a scene heading. Every card you include needs one.`,
     `A character's scene list comes from dialogue cues in the current draft. Names in action text do not count.`,
     `Relationships and linked scene cards are notes for you. They do not change the screenplay.`,
-    `The AI Assistant cannot read or change the Story page.`,
+    `OpenFrame AI cannot read or change the Story page.`,
     `Story days on the Timeline belong to screenplay scenes. Beat Board cards have none.`,
   ],
   troubleshooting: [

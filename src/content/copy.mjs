@@ -7,7 +7,7 @@ export const PRICES = { in: '₹2,999', us: 'US$89' };
 // [action, Windows, Mac]. null means the platform has no shortcut for it.
 export const SHORTCUTS = [
   ['Search the project', 'Ctrl+K', 'Cmd+K'],
-  ['Open or close the assistant', 'Ctrl+J', 'Cmd+J'],
+  ['Open or close OpenFrame AI', 'Ctrl+J', 'Cmd+J'],
   ['Save a checkpoint now', 'Ctrl+S', null],
   ['Undo a project change', 'Ctrl+Z', 'Cmd+Opt+Z (Cmd+Z undoes text)'],
   ['Redo a project change', 'Ctrl+Y or Ctrl+Shift+Z', 'Cmd+Opt+Shift+Z'],
@@ -71,8 +71,6 @@ export const FAQ = [
       'A desktop app for writers, screenwriters and production teams. One project holds your ideas, story, screenplay and production plan, from breakdown and schedule to call sheets. Everything is stored on your own computer.'],
     ['Who is it for?',
       'Writers, screenwriters and production teams. There is one app for everyone and no separate editions. You can use only the parts you need, for example the Idea Vault and the screenplay editor.'],
-    ['Who makes it?',
-      'OpenFrame Studio is a product of Vighnajith Advisories Private Limited. See [About](/about/).'],
     ['Can several people edit one project at the same time?',
       'No. There is no live collaboration and no cloud sharing. People take turns by sending files: review packages, Beat Board packages and full project packages. The sender sees the replies in the Review Queue and previews every change before applying it.'],
   ]],
@@ -84,13 +82,13 @@ export const FAQ = [
     ['Is the Mac app different from the Windows app?',
       'It does the same work on the same kind of project, in a native Mac app: the Mac menu bar, sheets instead of dialog windows, and Command shortcuts. The [Mac tutorials](/mac/tutorials/) use the real Mac screens.'],
     ['What does it need?',
-      'Windows 11 x64 or macOS 14 on Apple silicon. The optional assistant downloads about 1.2 GB, and its chat model needs at least 4 GB of memory (8 GB recommended).'],
+      'Windows 11 x64 or macOS 14 on Apple silicon. OpenFrame AI downloads about 1.2 GB, and its chat model needs at least 4 GB of memory (8 GB recommended).'],
   ]],
   ['Privacy and data', [
     ['Where are my files stored?',
       'In a project folder on your computer, by default in Documents, under OpenFrame. Nothing is stored on an OpenFrame server, because there is none.'],
     ['Do I need an account or the internet?',
-      'No OpenFrame account and no internet connection to work. The app works fully offline. The optional assistant download, which you start yourself, needs the internet. The store handles the trial and the purchase.'],
+      'No OpenFrame account and no internet connection to work. The app works fully offline. OpenFrame AI download, which you start yourself, needs the internet. The store handles the trial and the purchase.'],
     ['Does the app send usage data?',
       'No. There is no telemetry, no analytics and no crash upload. A diagnostics bundle exists, but only you can create it, and you can open and read it before sending it to anyone.'],
     ['Are my projects encrypted?',
@@ -98,10 +96,10 @@ export const FAQ = [
     ['What happens if the computer crashes or I delete something by mistake?',
       'The app saves as you work and offers to recover after a crash. Deleted items wait in Recently Deleted, and project-wide undo and redo are available.'],
   ]],
-  ['The assistant', [
+  ['OpenFrame AI', [
     ['Is there AI, and is it required?',
-      'There is an optional offline assistant. Nothing in the app needs it, and the app works fully before you download it and after you remove it.'],
-    ['Does the assistant send my project anywhere?',
+      'There is OpenFrame AI. Nothing in the app needs it, and the app works fully before you download it and after you remove it.'],
+    ['Does OpenFrame AI send my project anywhere?',
       'No. After a one-time download of about 1.2 GB, it runs on your computer. It talks only to your own machine, and no cloud AI service is used.'],
     ['Will it change my screenplay by itself?',
       'Never. It answers questions about the open project and shows sources, or it proposes changes in a Proposed Changes card. Nothing changes until you read the proposal and choose Apply, and you can undo it afterwards.'],

@@ -14,7 +14,7 @@ export default {
     { name: `Project settings tab`, text: `A form with Title *, Type *, Language, Genre, Creator, Status, Logline and Project notes, and a Save button at the top right. To its right, a Stored on this computer card with Open project location and Move or back up…. Below the form are three sections: LICENCE, ABOUT OPENFRAME STUDIO and SUPPORT, with Export Diagnostics….` },
     { name: `Writing tab`, text: `A SPELLING card with the Check spelling as I write checkbox, Main language and Second language, and a PERSONAL DICTIONARY card with an Add a word box, an Add button, a Filter words box and a list of your words.` },
     { name: `Keyboard shortcuts tab`, text: `A Filter commands or keys box with a count of commands, Restore all defaults at the top right, and a table with the columns COMMAND, DEFAULT, CURRENT and CONFLICT. Commands are grouped under General, Project list, Idea Vault, Screenplay and Screenplay elements. Each row ends with Add and Restore default.` },
-    { name: `Offline AI tab`, text: `Three cards side by side: OFFLINE AI (status, Stop Offline AI (free memory), Remove OpenFrame AI… and the Graphics card choice), AI HEALTH (figures and Export AI report) and ASSISTANT MEMORY (what the assistant remembers). Below them a TECHNICAL DETAILS section that opens and closes.` },
+    { name: `Offline AI tab`, text: `Three cards side by side: OFFLINE AI (status, Stop Offline AI (free memory), Remove OpenFrame AI… and the Graphics card choice), AI HEALTH (figures and Export AI report) and ASSISTANT MEMORY (what OpenFrame AI remembers). Below them a TECHNICAL DETAILS section that opens and closes.` },
     { name: `Advanced tab`, text: `The Breakdown category colours and icons, one row per category, with twelve colour dots and sixteen icons on each row, and Restore Defaults at the top right.` },
     { name: `Appearance tab`, text: `MODE (Light, Dark, System), THEME (seventeen theme cards) and My Themes, with Import Theme File… and Paste Theme….` },
     { name: `Storage tab`, text: `Where OpenFrame keeps your work on this computer: your library, the folder for new projects, the Global Idea Vault, the open project and app data, each with its folder and buttons.` },
@@ -45,7 +45,7 @@ export default {
         {
           screen: `settings-offline-ai-ready`,
           do: `Click Offline AI.`,
-          explain: `This tab shows whether the offline assistant is ready, lets you stop or remove it, and shows how it is doing. The AI is optional. OpenFrame works normally without it.`,
+          explain: `This tab shows whether OpenFrame AI is ready, lets you stop or remove it, and shows how it is doing. The AI is optional. OpenFrame works normally without it.`,
         },
         {
           screen: `settings-advanced`,
@@ -138,7 +138,7 @@ export default {
         {
           screen: `settings-export-diagnostics-dialog`,
           do: `In the Export Diagnostics dialog, read FILES IN THE BUNDLE and NEVER INCLUDED.`,
-          explain: `The purple note says: Nothing is sent automatically. The bundle is saved on this computer, and you decide whether to share it. Six files are listed with their sizes: manifest.json, summary.json, errors.json, timings.json, log-tail.txt and ai-status.json. Each has a one-line description. NEVER INCLUDED lists screenplay text, notes, comments and other project content, project titles, file names and folder paths, names, contacts and e-mail addresses, assistant questions and answers, and passwords, keys and tokens.`,
+          explain: `The purple note says: Nothing is sent automatically. The bundle is saved on this computer, and you decide whether to share it. Six files are listed with their sizes: manifest.json, summary.json, errors.json, timings.json, log-tail.txt and ai-status.json. Each has a one-line description. NEVER INCLUDED lists screenplay text, notes, comments and other project content, project titles, file names and folder paths, names, contacts and e-mail addresses, OpenFrame AI questions and answers, and passwords, keys and tokens.`,
         },
         {
           screen: `settings-export-diagnostics-contents`,
@@ -173,7 +173,7 @@ export default {
         {
           screen: `apphome-settings-storage`,
           do: `On the Storage tab, read each section. The picture shows the same panel from the Settings dialog on Application Home.`,
-          explain: `YOUR OPENFRAME LIBRARY is the folder to back up. FOLDER FOR NEW PROJECTS has Change Folder…. GLOBAL IDEA VAULT has its own back up, export, restore and move buttons. APP DATA holds settings, the recent project list, the assistant's files and logs, and is not your work. Inside a project the tab also shows a This project section with Open Folder and Move Project…. Open Folder shows the project folder in File Explorer.`,
+          explain: `YOUR OPENFRAME LIBRARY is the folder to back up. FOLDER FOR NEW PROJECTS has Change Folder…. GLOBAL IDEA VAULT has its own back up, export, restore and move buttons. APP DATA holds settings, the recent project list, OpenFrame AI's files and logs, and is not your work. Inside a project the tab also shows a This project section with Open Folder and Move Project…. Open Folder shows the project folder in File Explorer.`,
         },
         {
           screen: `apphome-settings-storage`,
@@ -318,7 +318,7 @@ export default {
         {
           screen: `settings-shortcut-recording`,
           do: `Press the keys you want. The row shows Press the new keys… (Esc cancels).`,
-          explain: `The picture shows the recorder for Open or close the assistant. Press Esc to stop without a change. Pressing Tab or clicking elsewhere also stops it. Pressing a lone Ctrl, Alt or Shift keeps it listening until you press a real key with it.`,
+          explain: `The picture shows the recorder for Open or close OpenFrame AI. Press Esc to stop without a change. Pressing Tab or clicking elsewhere also stops it. Pressing a lone Ctrl, Alt or Shift keeps it listening until you press a real key with it.`,
         },
         {
           screen: `settings-shortcut-invalid-plain-key`,
@@ -333,7 +333,7 @@ export default {
         {
           screen: `settings-shortcut-changed`,
           do: `Press a free key, for example F9. The key joins the command.`,
-          explain: `A message says Open or close the assistant: F9. The new key sits beside the old ones and the row shows (changed). Restore default is now available on that row.`,
+          explain: `A message says Open or close OpenFrame AI: F9. The new key sits beside the old ones and the row shows (changed). Restore default is now available on that row.`,
         },
         {
           screen: `settings-shortcut-changed`,
@@ -418,38 +418,38 @@ export default {
     {
       id: `settings-offline-ai-status`,
       title: `Check that the offline AI is ready`,
-      purpose: `Read the status of the offline assistant and open its technical details.`,
+      purpose: `Read the status of OpenFrame AI and open its technical details.`,
       level: `Beginner`,
       prerequisites: [`A project is open and you are on the Offline AI tab.`],
       steps: [
         {
           screen: `settings-offline-ai-ready`,
           do: `Read the OFFLINE AI card.`,
-          explain: `A green chip says AI Ready when the assistant can answer. The text says: OpenFrame AI runs on this computer after a one-time download. Your project data is not sent to OpenFrame or to an AI cloud service. The card ends with: OpenFrame works normally without OpenFrame AI. Other states you may see are Not downloaded, Checking its files…, Needs a new download, Needs a reinstall and Not available on this computer. When it is not downloaded the page offers the download. The AI Assistant chapter walks through it.`,
+          explain: `A green chip says AI Ready when OpenFrame AI can answer. The text says: OpenFrame AI runs on this computer after a one-time download. Your project data is not sent to OpenFrame or to an AI cloud service. The card ends with: OpenFrame works normally without OpenFrame AI. Other states you may see are Not downloaded, Checking its files…, Needs a new download, Needs a reinstall and Not available on this computer. When it is not downloaded the page offers the download. OpenFrame AI chapter walks through it.`,
         },
         {
           screen: `settings-offline-ai-technical-details`,
           do: `Click TECHNICAL DETAILS to open it. Click it again to close it.`,
-          explain: `A table lists each component with its Licence and Size: the AI engine, the language model and two search models, each with its version. A note says Gemma is provided under the Gemma Terms of Use. Below the table are lines showing the package, whether the files are checked, how much memory and which processor this computer has, where the engine is installed and the log file. The last line says: Everything runs on this computer. Prompts, project text and answers are never sent anywhere. The only network use is the model download you start.`,
+          explain: `A table lists each component with its Licence and Size: the AI engine, the language model and two search models, each with its version. A note names the licence of the language model. Below the table are lines showing the package, whether the files are checked, how much memory and which processor this computer has, where the engine is installed and the log file. The last line says: Everything runs on this computer. Prompts, project text and answers are never sent anywhere. The only network use is the model download you start.`,
         },
       ],
-      result: `You know whether the assistant is ready and what it is made of.`,
+      result: `You know whether OpenFrame AI is ready and what it is made of.`,
       cautions: [
-        `The assistant is optional. If it is not ready, every other part of OpenFrame still works.`,
+        `OpenFrame AI is optional. If it is not ready, every other part of OpenFrame still works.`,
       ],
       related: [`settings-offline-ai-stop-graphics`, `settings-offline-ai-health`],
     },
     {
       id: `settings-offline-ai-stop-graphics`,
       title: `Free memory or choose how the AI runs`,
-      purpose: `Stop the assistant to free memory, and choose whether it may use the graphics card.`,
+      purpose: `Stop OpenFrame AI to free memory, and choose whether it may use the graphics card.`,
       level: `Intermediate`,
-      prerequisites: [`The assistant is downloaded and shows AI Ready.`],
+      prerequisites: [`OpenFrame AI is downloaded and shows AI Ready.`],
       steps: [
         {
           screen: `settings-offline-ai-ready`,
           do: `Click Stop Offline AI (free memory).`,
-          explain: `The assistant keeps its models in memory so answers start fast. Stopping releases that memory.`,
+          explain: `OpenFrame AI keeps its models in memory so answers start fast. Stopping releases that memory.`,
         },
         {
           screen: `settings-offline-ai-stopped-toast`,
@@ -467,9 +467,9 @@ export default {
           explain: `Off is now the selected button. Choosing Automatic again says OpenFrame AI will use a checked graphics card when there is one.`,
         },
       ],
-      result: `Memory is free again, and the assistant runs where you chose.`,
+      result: `Memory is free again, and OpenFrame AI runs where you chose.`,
       cautions: [
-        `Choose Off if answers stall or the screen stutters while the assistant works.`,
+        `Choose Off if answers stall or the screen stutters while OpenFrame AI works.`,
       ],
       related: [`settings-offline-ai-status`, `settings-offline-ai-remove`],
     },
@@ -478,7 +478,7 @@ export default {
       title: `Remove the offline AI to free disk space`,
       purpose: `Delete the downloaded AI models from this computer.`,
       level: `Intermediate`,
-      prerequisites: [`The assistant is downloaded and shows AI Ready.`],
+      prerequisites: [`OpenFrame AI is downloaded and shows AI Ready.`],
       steps: [
         {
           screen: `settings-offline-ai-ready`,
@@ -500,14 +500,14 @@ export default {
     {
       id: `settings-offline-ai-health`,
       title: `Read AI health and export an AI report`,
-      purpose: `See how the assistant has been doing, and save the figures to a file.`,
+      purpose: `See how OpenFrame AI has been doing, and save the figures to a file.`,
       level: `Intermediate`,
       prerequisites: [`The Offline AI tab is open.`],
       steps: [
         {
           screen: `settings-offline-ai-ready`,
           do: `Read the AI HEALTH card.`,
-          explain: `Before you use the assistant it says: No requests yet. The figures appear after you use the AI Assistant. Afterwards it lists Requests counted, Typical answer time, Proposals applied, Checks per answer, Errors, Runs on and Weakest tool. Only numbers are kept: no questions, answers or project text, and nothing is sent.`,
+          explain: `Before you use OpenFrame AI it says: No requests yet. The figures appear after you use OpenFrame AI. Afterwards it lists Requests counted, Typical answer time, Proposals applied, Checks per answer, Errors, Runs on and Weakest tool. Only numbers are kept: no questions, answers or project text, and nothing is sent.`,
         },
         {
           screen: `settings-offline-ai-ready`,
@@ -515,7 +515,7 @@ export default {
           explain: `The Windows save window suggests openframe-ai-report.json. When it is saved, a message says Saved with the file name and the number of requests. Share the file only if you want to.`,
         },
       ],
-      result: `You have a numbers-only file describing how the assistant performed.`,
+      result: `You have a numbers-only file describing how OpenFrame AI performed.`,
       cautions: [
         `The report contains no questions, answers or project text.`,
       ],
@@ -523,20 +523,20 @@ export default {
     },
     {
       id: `settings-assistant-memory`,
-      title: `See and delete what the assistant remembers`,
-      purpose: `Review the facts and preferences the assistant has kept about you in this project and delete any of them.`,
+      title: `See and delete what OpenFrame AI remembers`,
+      purpose: `Review the facts and preferences OpenFrame AI has kept about you in this project and delete any of them.`,
       level: `Intermediate`,
       prerequisites: [`The Offline AI tab is open.`],
       steps: [
         {
           screen: `settings-offline-ai-ready`,
           do: `Read the ASSISTANT MEMORY card.`,
-          explain: `When nothing is kept it says: Nothing is remembered yet. The assistant keeps a fact or preference only when you state it outright, or confirm one of its answers. Entries it has kept are listed with the words Fact or Preference and the date they were saved. Click Delete beside an entry and a message says Forgotten. The card ends with: Saved on this computer, in this project, for you only. Delete an entry and the assistant forgets it.`,
+          explain: `When nothing is kept it says: Nothing is remembered yet. OpenFrame AI keeps a fact or preference only when you state it outright, or confirm one of its answers. Entries it has kept are listed with the words Fact or Preference and the date they were saved. Click Delete beside an entry and a message says Forgotten. The card ends with: Saved on this computer, in this project, for you only. Delete an entry and OpenFrame AI forgets it.`,
         },
       ],
-      result: `The assistant keeps only what you want it to keep.`,
+      result: `OpenFrame AI keeps only what you want it to keep.`,
       cautions: [
-        `Deleting an entry cannot be undone from the message. If the assistant should know it again, tell it again.`,
+        `Deleting an entry cannot be undone from the message. If OpenFrame AI should know it again, tell it again.`,
       ],
       related: [`settings-offline-ai-health`],
     },
@@ -741,20 +741,20 @@ export default {
     'settings-shortcuts': `The Keyboard shortcuts tab: Filter commands or keys, 25 commands, Restore all defaults and the table with COMMAND, DEFAULT, CURRENT and CONFLICT, grouped under General, Project list, Idea Vault and Screenplay. Used in settings-open-and-tour, settings-find-shortcut and settings-add-shortcut.`,
     'settings-shortcuts-filtered': `The shortcuts table filtered by undo, leaving the Undo command with Ctrl+Z. Used in settings-find-shortcut.`,
     'settings-shortcuts-no-match': `The shortcuts table filtered by text that matches nothing. The page says No command matches “zzzz” and the count is 0 commands. Variant, part of settings-find-shortcut.`,
-    'settings-shortcut-recording': `The shortcuts table while a key is being recorded for Open or close the assistant. A pill says Press the new keys… (Esc cancels). Used in settings-add-shortcut.`,
+    'settings-shortcut-recording': `The shortcuts table while a key is being recorded for Open or close OpenFrame AI. A pill says Press the new keys… (Esc cancels). Used in settings-add-shortcut.`,
     'settings-shortcut-invalid-plain-key': `The recording state after a plain letter A was pressed. A red message says to add Ctrl or Alt to that key. Used in settings-add-shortcut.`,
     'settings-shortcut-invalid-reserved': `The recording state after Ctrl+C was pressed. A red message says that shortcut is kept for copy, cut, paste and select all. Used in settings-add-shortcut.`,
     'settings-shortcut-duplicate-error': `The Search row after Ctrl+K was pressed again. A message says Ctrl+K is already a shortcut for Search. Used in settings-shortcut-conflicts.`,
-    'settings-shortcut-changed': `The table after F9 was added to Open or close the assistant. The row shows Ctrl+J, F9 and (changed), a message reads Open or close the assistant: F9, and Restore default is active. Used in settings-add-shortcut and settings-restore-shortcuts.`,
+    'settings-shortcut-changed': `The table after F9 was added to Open or close OpenFrame AI. The row shows Ctrl+J, F9 and (changed), a message reads Open or close OpenFrame AI: F9, and Restore default is active. Used in settings-add-shortcut and settings-restore-shortcuts.`,
     'settings-shortcut-conflict-dialog': `The Ctrl+K is already used dialog. It asks whether to move Ctrl+K from Search to Save now, with Cancel and Move it here. Used in settings-shortcut-conflicts.`,
     'settings-shortcut-moved': `The table after Move it here. A message reads Shortcuts updated, Save now has Ctrl+S and Ctrl+K, and Search has no key. Used in settings-shortcut-conflicts.`,
     'settings-shortcut-restore-conflict-dialog': `The Restore the default? dialog. It says Ctrl+K is now used by Save now and that restoring gives it back to Search, with Cancel and Restore and move. Used in settings-shortcut-conflicts.`,
     'settings-shortcut-restore-all-confirm': `The Restore all keyboard shortcuts? dialog with a red Restore all defaults and Cancel. Used in settings-restore-shortcuts.`,
     'settings-shortcuts-restored-toast': `The table after Restore all defaults. A message reads All shortcuts are back to their defaults. Used in settings-restore-shortcuts.`,
     'settings-shortcuts-conflict-banner': `The table with a yellow banner: Some shortcuts are used by two commands. Search and Save now both show Ctrl+K and each says Also used by the other in CONFLICT. Used in settings-shortcut-conflicts.`,
-    'settings-offline-ai-ready': `The Offline AI tab with the assistant ready: the OFFLINE AI card with an AI Ready chip, Stop Offline AI (free memory), Remove OpenFrame AI… and Graphics card (Automatic, Off), the AI HEALTH card, the ASSISTANT MEMORY card and a closed TECHNICAL DETAILS section. Used in settings-open-and-tour, settings-offline-ai-status, settings-offline-ai-stop-graphics, settings-offline-ai-remove, settings-offline-ai-health and settings-assistant-memory.`,
+    'settings-offline-ai-ready': `The Offline AI tab with OpenFrame AI ready: the OFFLINE AI card with an AI Ready chip, Stop Offline AI (free memory), Remove OpenFrame AI… and Graphics card (Automatic, Off), the AI HEALTH card, the ASSISTANT MEMORY card and a closed TECHNICAL DETAILS section. Used in settings-open-and-tour, settings-offline-ai-status, settings-offline-ai-stop-graphics, settings-offline-ai-remove, settings-offline-ai-health and settings-assistant-memory.`,
     'settings-offline-ai-remove-confirm': `The Remove OpenFrame AI? dialog with Cancel and a red Remove. Used in settings-offline-ai-remove.`,
-    'settings-offline-ai-technical-details': `The Offline AI tab with TECHNICAL DETAILS open: the component table (Component, Licence, Size), the Gemma notice and the lines about the package, this computer, the engine and the log. Used in settings-offline-ai-status.`,
+    'settings-offline-ai-technical-details': `The Offline AI tab with TECHNICAL DETAILS open: the component table (Component, Licence, Size), the model licence note and the lines about the package, this computer, the engine and the log. Used in settings-offline-ai-status.`,
     'settings-offline-ai-stopped-toast': `The Offline AI tab after Stop Offline AI. A message reads Offline AI stopped. It starts again when you ask something. Used in settings-offline-ai-stop-graphics.`,
     'settings-offline-ai-graphics-off': `The Offline AI tab with Graphics card set to Off. A message reads OpenFrame AI will run on the processor. Used in settings-offline-ai-stop-graphics.`,
     'settings-advanced': `The Advanced tab: one row for each Breakdown category with twelve colour dots and sixteen icons, and Restore Defaults at the top right. Used in settings-open-and-tour and settings-category-look.`,
@@ -776,7 +776,7 @@ export default {
   },
   shortcuts: [
     [`Ctrl+K`, `Search the project`],
-    [`Ctrl+J`, `Open or close the assistant`],
+    [`Ctrl+J`, `Open or close OpenFrame AI`],
     [`Ctrl+S`, `Save now`],
     [`Ctrl+Z`, `Undo`],
     [`Ctrl+Y or Ctrl+Shift+Z`, `Redo`],
@@ -829,12 +829,12 @@ export default {
       fix: `The command already has four shortcuts, or a key is being recorded on it. Remove a key with the x, or press Esc to stop recording.`,
     },
     {
-      problem: `The assistant does not show AI Ready.`,
+      problem: `OpenFrame AI does not show AI Ready.`,
       fix: `Read the chip on the OFFLINE AI card. Not downloaded means the models have not been downloaded yet, and the page offers the download. Needs a new download means the files were damaged. Open TECHNICAL DETAILS for the line that explains the state.`,
     },
     {
-      problem: `The assistant is slow or my screen stutters while it works.`,
-      fix: `Under Graphics card click Off so the assistant runs on the processor, or click Stop Offline AI (free memory) to release memory. It starts again when you ask something.`,
+      problem: `OpenFrame AI is slow or my screen stutters while it works.`,
+      fix: `Under Graphics card click Off so OpenFrame AI runs on the processor, or click Stop Offline AI (free memory) to release memory. It starts again when you ask something.`,
     },
     {
       problem: `My imported theme was refused.`,

@@ -95,7 +95,6 @@ li.open>.mega{visibility:visible;opacity:1;transform:none}
 .caption{font-size:clamp(17px,1.9vw,21px);font-style:italic;color:var(--ink2);margin:6px 0 34px}
 .hero-cta{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
 .micro{display:flex;gap:8px 24px;justify-content:center;flex-wrap:wrap;margin-top:20px;font-size:15px;color:var(--ink2);list-style:none;padding:0}
-.micro li::before{content:"✓";color:var(--ok);font-weight:800;margin-right:7px}
 .tour{margin:56px auto 0;width:min(1120px,100% - 24px)}
 .tour-frame{position:relative;aspect-ratio:1200/720;border-radius:16px;overflow:hidden;background:var(--frame);box-shadow:var(--shadow),0 0 0 1px rgba(29,26,46,.1)}
 .slide{position:absolute;inset:0;opacity:0;transition:opacity .7s var(--ease);pointer-events:none}
@@ -175,7 +174,6 @@ li.open>.mega{visibility:visible;opacity:1;transform:none}
 .split{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
 .ticks{list-style:none;margin:26px 0 0;padding:0;display:grid;gap:14px}
 .ticks li{display:flex;gap:12px;color:var(--ink2)}
-.ticks li::before{content:"✓";flex:none;width:24px;height:24px;border-radius:50%;background:var(--ok);color:#fff;font-size:14px;font-weight:800;display:grid;place-items:center;margin-top:2px}
 .ticks li b{color:var(--ink)}
 .diagram{background:var(--cream);border:1px solid var(--line);border-radius:22px;padding:18px}
 .diagram svg{width:100%;height:auto;display:block}
@@ -244,8 +242,8 @@ footer.site-f p.about{margin:16px 0 18px;max-width:300px;line-height:1.5}
 .f-bot b{color:#fff}
 
 /* reveal */
-.rv{opacity:0;transform:translateY(24px);transition:opacity .8s var(--ease),transform .8s var(--ease);transition-delay:var(--rd,0s)}
-.rv.in{opacity:1;transform:none}
+:root.js .rv{opacity:0;transform:translateY(24px);transition:opacity .8s var(--ease),transform .8s var(--ease);transition-delay:var(--rd,0s)}
+:root.js .rv.in{opacity:1;transform:none}
 
 /* responsive */
 @media (max-width:1020px){
@@ -281,5 +279,5 @@ footer.site-f p.about{margin:16px 0 18px;max-width:300px;line-height:1.5}
 }
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01s!important;animation-delay:0s!important;transition-duration:.01s!important;scroll-behavior:auto!important}
-  .rv{opacity:1;transform:none}
+  :root.js .rv{opacity:1;transform:none}
 }

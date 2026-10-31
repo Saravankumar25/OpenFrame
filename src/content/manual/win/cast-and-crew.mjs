@@ -7,7 +7,7 @@ export default {
     `Cast & Crew is the small directory of the people on your film. It answers: who is involved, and what role do they have? It has no payroll and no contracts. For each person you keep a contact, availability notes, dates and notes. For each actor you also keep the character they play.`,
     `The page has two lists, chosen with the Cast and Crew buttons under the title. Cast links real people to characters. The characters come from your Production Source, so every character in the script appears in the Cast list on its own, marked Needs casting until you assign an actor. Crew lists the people working on the film, with a role and an optional department.`,
     `A character is part of the story. A cast member is the real person who plays it. One character has one primary actor, and you can add alternates or doubles for the same character. A person is added in one dialog titled Add Person, which links them to a character.`,
-    `Contact details are private. They are visible to Owners and Editors only, and they are never shared with the assistant or put in exports. Dates are advisory: the schedule warns about them and never moves a scene by itself.`,
+    `Contact details are private. They are visible to Owners and Editors only, and they are never shared with OpenFrame AI or put in exports. Dates are advisory: the schedule warns about them and never moves a scene by itself.`,
   ],
   layout: [
     { name: `Header`, text: `The title Cast & Crew, the line Who is involved and what role do they have? A small-team directory with no payroll and no contracts., and the orange Add Person button at the top right.` },
@@ -185,7 +185,7 @@ export default {
         {
           screen: `prod-cast-drawer`,
           do: `Edit Person name *, Contact, Availability notes and Notes.`,
-          explain: `Fields save when you click out of them or press Enter. Contact is private: visible to Owners and Editors only, and never shared with the assistant or put in exports. Availability notes is for anything the dates cannot say, for example Free Jun 9 to 20, weekends only. Notes is free text for you.`,
+          explain: `Fields save when you click out of them or press Enter. Contact is private: visible to Owners and Editors only, and never shared with OpenFrame AI or put in exports. Availability notes is for anything the dates cannot say, for example Free Jun 9 to 20, weekends only. Notes is free text for you.`,
         },
         {
           screen: `prod-cast-drawer`,
@@ -370,7 +370,7 @@ export default {
     `Cast & Crew is a directory. It has no payroll, contracts or invoices.`,
     `Characters come from the Production Source. A new character created in the Add Person dialog is a production record and does not appear in the screenplay.`,
     `One character has one primary actor. Others are alternates or doubles.`,
-    `Contact is private to Owners and Editors and is never shared with the assistant or put in exports.`,
+    `Contact is private to Owners and Editors and is never shared with OpenFrame AI or put in exports.`,
     `Availability dates are advisory. The schedule warns about them and never moves a scene.`,
     `Crew departments are fixed to Direction, Camera, Sound, Art, Costume, Makeup, Production and Editing, or none.`,
   ],

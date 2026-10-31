@@ -39,7 +39,7 @@ export default function home(ctx) {
 <ul class="micro"><li>7-day free trial</li><li>No OpenFrame account</li><li>Works offline</li></ul>
 </div>
 <div class="tour tour-real" data-stages>
-<ul class="stages" role="tablist" aria-label="From idea to shoot">${STAGES.map(([n], i) => html`<li role="presentation"><button type="button" role="tab" id="stage-tab-${i}" aria-controls="stage-${i}" aria-selected="${String(i === 0)}" tabindex="${i ? -1 : 0}"><b>${n}</b>.</button></li>`)}</ul>
+<ul class="stages" role="tablist" aria-label="From idea to shoot">${STAGES.map(([n], i) => html`<li role="presentation"><button type="button" role="tab" id="stage-tab-${i}" aria-controls="stage-${i}" aria-selected="${String(i === 0)}" tabindex="${i ? -1 : 0}"><b>${n}</b></button></li>`)}</ul>
 ${STAGES.map(stage)}
 <p class="tour-note">Real screens from OpenFrame Studio. Use the controls at the top of the page to switch between Windows and Mac, and between light and dark app screens.</p>
 </div></section>
@@ -64,7 +64,7 @@ ${[['bulb', 'Notes and idea app'], ['board', 'Story outlining tool'], ['page', '
 <div class="pills"><span>Idea Vault</span><span>Beat Board</span><span>Screenplay</span><span>Breakdown and Schedule</span><span>Call Sheets</span></div></div></div>
 </div>
 <div class="merge-stats rv">
-<div class="stat"><b><s>5</s><i>&rarr;</i>1</b><span>app to learn, install and update</span></div>
+<div class="stat"><b><s>5</s><i>&rarr;</i>1</b><span>app to use, install and update</span></div>
 <div class="stat"><b><s>5</s><i>&rarr;</i>0</b><span>monthly subscriptions</span></div>
 <div class="stat"><b><s>5</s><i>&rarr;</i>1</b><span>place your film lives: a folder on your computer</span></div>
 </div></div></section>
@@ -134,10 +134,10 @@ ${[['bulb', 'Notes and idea app'], ['board', 'Story outlining tool'], ['page', '
 <div class="grid2">
 <article class="card big rv">
 <div data-os-show="win">${mock('win', 'ai-proposed-changes', { link: false })}</div><div data-os-show="mac">${mock('mac', 'ai-panel-screenplay', { link: false })}</div>
-<span class="eyebrow">Optional assistant</span>
-<h3>An assistant that helps. You stay in charge.</h3>
+<span class="eyebrow">OpenFrame AI</span>
+<h3>OpenFrame AI that helps. You stay in charge.</h3>
 <p>Ask in plain language and get answers from your own project, with the sources shown. It changes nothing until you press Apply. It runs on your computer after a one-time download that you start, and if you do not want it, leave it off. OpenFrame works completely without it.</p>
-<a class="more" href="/features/ai-assistant/">Meet the assistant &rarr;</a></article>
+<a class="more" href="/features/openframe-ai/">Meet OpenFrame AI &rarr;</a></article>
 <article class="card big rv d2">
 <div data-os-show="win">${mock('win', 'settings-appearance', { link: false })}</div><div data-os-show="mac">${mock('mac', 'settings-appearance', { link: false })}</div>
 <span class="eyebrow">Themes</span>

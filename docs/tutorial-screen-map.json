@@ -3675,11 +3675,11 @@
    ]
   },
   {
-   "id": "ai-assistant-open-panel",
+   "id": "openframe-ai-open-panel",
    "platform": "win",
-   "area": "AI Assistant",
-   "title": "Open, close and resize the AI Assistant",
-   "url": "/windows/tutorials/ai-assistant-open-panel/",
+   "area": "OpenFrame AI",
+   "title": "Open, close and resize OpenFrame AI",
+   "url": "/windows/tutorials/openframe-ai-open-panel/",
    "screens": [
     "ai-panel-ready",
     "ai-panel-empty-project",
@@ -3689,11 +3689,11 @@
    ]
   },
   {
-   "id": "ai-assistant-ask-question",
+   "id": "openframe-ai-ask-question",
    "platform": "win",
-   "area": "AI Assistant",
+   "area": "OpenFrame AI",
    "title": "Ask a question about your project",
-   "url": "/windows/tutorials/ai-assistant-ask-question/",
+   "url": "/windows/tutorials/openframe-ai-ask-question/",
    "screens": [
     "ai-panel-ready",
     "ai-question-typed",
@@ -3703,11 +3703,11 @@
    ]
   },
   {
-   "id": "ai-assistant-check-sources",
+   "id": "openframe-ai-check-sources",
    "platform": "win",
-   "area": "AI Assistant",
+   "area": "OpenFrame AI",
    "title": "Check what an answer is based on",
-   "url": "/windows/tutorials/ai-assistant-check-sources/",
+   "url": "/windows/tutorials/openframe-ai-check-sources/",
    "screens": [
     "ai-answer-characters",
     "ai-answer-characters-sources",
@@ -3716,11 +3716,11 @@
    ]
   },
   {
-   "id": "ai-assistant-choose-scope",
+   "id": "openframe-ai-choose-scope",
    "platform": "win",
-   "area": "AI Assistant",
-   "title": "Choose what the assistant looks at",
-   "url": "/windows/tutorials/ai-assistant-choose-scope/",
+   "area": "OpenFrame AI",
+   "title": "Choose what OpenFrame AI looks at",
+   "url": "/windows/tutorials/openframe-ai-choose-scope/",
    "screens": [
     "ai-panel-ready",
     "ai-scope-current-screenplay",
@@ -3733,22 +3733,22 @@
    ]
   },
   {
-   "id": "ai-assistant-open-pages",
+   "id": "openframe-ai-open-pages",
    "platform": "win",
-   "area": "AI Assistant",
-   "title": "Ask the assistant to take you somewhere",
-   "url": "/windows/tutorials/ai-assistant-open-pages/",
+   "area": "OpenFrame AI",
+   "title": "Ask OpenFrame AI to take you somewhere",
+   "url": "/windows/tutorials/openframe-ai-open-pages/",
    "screens": [
     "ai-panel-ready",
     "ai-panel-screenplay"
    ]
   },
   {
-   "id": "ai-assistant-ask-for-a-change",
+   "id": "openframe-ai-ask-for-a-change",
    "platform": "win",
-   "area": "AI Assistant",
+   "area": "OpenFrame AI",
    "title": "Ask for a change and read the Proposed Changes card",
-   "url": "/windows/tutorials/ai-assistant-ask-for-a-change/",
+   "url": "/windows/tutorials/openframe-ai-ask-for-a-change/",
    "screens": [
     "ai-proposed-changes",
     "ai-proposed-changes",
@@ -3756,11 +3756,11 @@
    ]
   },
   {
-   "id": "ai-assistant-apply-and-undo",
+   "id": "openframe-ai-apply-and-undo",
    "platform": "win",
-   "area": "AI Assistant",
+   "area": "OpenFrame AI",
    "title": "Apply a proposed change and undo it",
-   "url": "/windows/tutorials/ai-assistant-apply-and-undo/",
+   "url": "/windows/tutorials/openframe-ai-apply-and-undo/",
    "screens": [
     "ai-proposed-changes-second",
     "ai-proposal-applied",
@@ -3768,11 +3768,11 @@
    ]
   },
   {
-   "id": "ai-assistant-review-deletion",
+   "id": "openframe-ai-review-deletion",
    "platform": "win",
-   "area": "AI Assistant",
+   "area": "OpenFrame AI",
    "title": "Review a proposal that deletes something",
-   "url": "/windows/tutorials/ai-assistant-review-deletion/",
+   "url": "/windows/tutorials/openframe-ai-review-deletion/",
    "screens": [
     "ai-answer-delete-request",
     "ai-answer-delete-request",
@@ -3780,21 +3780,21 @@
    ]
   },
   {
-   "id": "ai-assistant-stop-request",
+   "id": "openframe-ai-stop-request",
    "platform": "win",
-   "area": "AI Assistant",
+   "area": "OpenFrame AI",
    "title": "Stop a request that is taking too long",
-   "url": "/windows/tutorials/ai-assistant-stop-request/",
+   "url": "/windows/tutorials/openframe-ai-stop-request/",
    "screens": [
     "ai-working"
    ]
   },
   {
-   "id": "ai-assistant-save-conversation",
+   "id": "openframe-ai-save-conversation",
    "platform": "win",
-   "area": "AI Assistant",
+   "area": "OpenFrame AI",
    "title": "Save a conversation or start a new one",
-   "url": "/windows/tutorials/ai-assistant-save-conversation/",
+   "url": "/windows/tutorials/openframe-ai-save-conversation/",
    "screens": [
     "ai-panel-ready",
     "ai-answer-characters",
@@ -3803,11 +3803,11 @@
    ]
   },
   {
-   "id": "ai-assistant-panel-menu",
+   "id": "openframe-ai-panel-menu",
    "platform": "win",
-   "area": "AI Assistant",
+   "area": "OpenFrame AI",
    "title": "Use the panel's ... menu",
-   "url": "/windows/tutorials/ai-assistant-panel-menu/",
+   "url": "/windows/tutorials/openframe-ai-panel-menu/",
    "screens": [
     "ai-settings-menu",
     "ai-offline-settings",
@@ -3815,11 +3815,11 @@
    ]
   },
   {
-   "id": "ai-assistant-offline-settings-page",
+   "id": "openframe-ai-offline-settings-page",
    "platform": "win",
-   "area": "AI Assistant",
+   "area": "OpenFrame AI",
    "title": "Read the Offline AI settings",
-   "url": "/windows/tutorials/ai-assistant-offline-settings-page/",
+   "url": "/windows/tutorials/openframe-ai-offline-settings-page/",
    "screens": [
     "ai-offline-settings",
     "ai-offline-settings",
@@ -3828,11 +3828,11 @@
    ]
   },
   {
-   "id": "ai-assistant-graphics-card",
+   "id": "openframe-ai-graphics-card",
    "platform": "win",
-   "area": "AI Assistant",
-   "title": "Choose whether the assistant may use the graphics card",
-   "url": "/windows/tutorials/ai-assistant-graphics-card/",
+   "area": "OpenFrame AI",
+   "title": "Choose whether OpenFrame AI may use the graphics card",
+   "url": "/windows/tutorials/openframe-ai-graphics-card/",
    "screens": [
     "ai-offline-settings",
     "ai-offline-health-filled",
@@ -3840,11 +3840,11 @@
    ]
   },
   {
-   "id": "ai-assistant-ai-health-report",
+   "id": "openframe-ai-ai-health-report",
    "platform": "win",
-   "area": "AI Assistant",
+   "area": "OpenFrame AI",
    "title": "Read AI health and export a report",
-   "url": "/windows/tutorials/ai-assistant-ai-health-report/",
+   "url": "/windows/tutorials/openframe-ai-ai-health-report/",
    "screens": [
     "ai-offline-settings",
     "ai-offline-health-filled",
@@ -3852,22 +3852,22 @@
    ]
   },
   {
-   "id": "ai-assistant-memory",
+   "id": "openframe-ai-memory",
    "platform": "win",
-   "area": "AI Assistant",
-   "title": "See and delete what the assistant remembers",
-   "url": "/windows/tutorials/ai-assistant-memory/",
+   "area": "OpenFrame AI",
+   "title": "See and delete what OpenFrame AI remembers",
+   "url": "/windows/tutorials/openframe-ai-memory/",
    "screens": [
     "ai-offline-settings",
     "ai-offline-settings"
    ]
   },
   {
-   "id": "ai-assistant-stop-or-remove",
+   "id": "openframe-ai-stop-or-remove",
    "platform": "win",
-   "area": "AI Assistant",
-   "title": "Stop the assistant or remove OpenFrame AI",
-   "url": "/windows/tutorials/ai-assistant-stop-or-remove/",
+   "area": "OpenFrame AI",
+   "title": "Stop OpenFrame AI or remove OpenFrame AI",
+   "url": "/windows/tutorials/openframe-ai-stop-or-remove/",
    "screens": [
     "ai-offline-settings",
     "ai-offline-settings",
@@ -3875,11 +3875,11 @@
    ]
   },
   {
-   "id": "ai-assistant-download-models",
+   "id": "openframe-ai-download-models",
    "platform": "win",
-   "area": "AI Assistant",
+   "area": "OpenFrame AI",
    "title": "Download OpenFrame AI, or import model files",
-   "url": "/windows/tutorials/ai-assistant-download-models/",
+   "url": "/windows/tutorials/openframe-ai-download-models/",
    "screens": [
     "ai-offline-settings",
     "ai-offline-settings",
@@ -4768,7 +4768,7 @@
    "id": "settings-assistant-memory",
    "platform": "win",
    "area": "Settings",
-   "title": "See and delete what the assistant remembers",
+   "title": "See and delete what OpenFrame AI remembers",
    "url": "/windows/tutorials/settings-assistant-memory/",
    "screens": [
     "settings-offline-ai-ready"
@@ -7793,11 +7793,11 @@
    ]
   },
   {
-   "id": "ai-assistant-open-close",
+   "id": "openframe-ai-open-close",
    "platform": "mac",
-   "area": "AI Assistant",
-   "title": "Open and close the AI Assistant",
-   "url": "/mac/tutorials/ai-assistant-open-close/",
+   "area": "OpenFrame AI",
+   "title": "Open and close OpenFrame AI",
+   "url": "/mac/tutorials/openframe-ai-open-close/",
    "screens": [
     "ai-closed-home",
     "project-home-ai-panel",
@@ -7806,11 +7806,11 @@
    ]
   },
   {
-   "id": "ai-assistant-read-unavailable",
+   "id": "openframe-ai-read-unavailable",
    "platform": "mac",
-   "area": "AI Assistant",
+   "area": "OpenFrame AI",
    "title": "Read the message when AI is not available",
-   "url": "/mac/tutorials/ai-assistant-read-unavailable/",
+   "url": "/mac/tutorials/openframe-ai-read-unavailable/",
    "screens": [
     "ai-panel",
     "ai-panel",
@@ -7818,11 +7818,11 @@
    ]
   },
   {
-   "id": "ai-assistant-offline-settings",
+   "id": "openframe-ai-offline-settings",
    "platform": "mac",
-   "area": "AI Assistant",
-   "title": "Open Offline AI settings from the assistant",
-   "url": "/mac/tutorials/ai-assistant-offline-settings/",
+   "area": "OpenFrame AI",
+   "title": "Open Offline AI settings from OpenFrame AI",
+   "url": "/mac/tutorials/openframe-ai-offline-settings/",
    "screens": [
     "ai-panel",
     "ai-settings-menu",
@@ -7830,11 +7830,11 @@
    ]
   },
   {
-   "id": "ai-assistant-ai-health",
+   "id": "openframe-ai-ai-health",
    "platform": "mac",
-   "area": "AI Assistant",
+   "area": "OpenFrame AI",
    "title": "Read AI health and export an AI report",
-   "url": "/mac/tutorials/ai-assistant-ai-health/",
+   "url": "/mac/tutorials/openframe-ai-ai-health/",
    "screens": [
     "ai-offline-ai-settings",
     "ai-offline-ai-settings",
@@ -7842,11 +7842,11 @@
    ]
   },
   {
-   "id": "ai-assistant-memory",
+   "id": "openframe-ai-memory",
    "platform": "mac",
-   "area": "AI Assistant",
-   "title": "Check what the assistant remembers",
-   "url": "/mac/tutorials/ai-assistant-memory/",
+   "area": "OpenFrame AI",
+   "title": "Check what OpenFrame AI remembers",
+   "url": "/mac/tutorials/openframe-ai-memory/",
    "screens": [
     "ai-offline-ai-settings",
     "ai-offline-ai-settings",
@@ -7854,11 +7854,11 @@
    ]
   },
   {
-   "id": "ai-assistant-beside-workspaces",
+   "id": "openframe-ai-beside-workspaces",
    "platform": "mac",
-   "area": "AI Assistant",
-   "title": "Keep the assistant open beside each workspace",
-   "url": "/mac/tutorials/ai-assistant-beside-workspaces/",
+   "area": "OpenFrame AI",
+   "title": "Keep OpenFrame AI open beside each workspace",
+   "url": "/mac/tutorials/openframe-ai-beside-workspaces/",
    "screens": [
     "ai-panel-idea-vault",
     "ai-panel-story",
@@ -7873,11 +7873,11 @@
    ]
   },
   {
-   "id": "ai-assistant-small-window",
+   "id": "openframe-ai-small-window",
    "platform": "mac",
-   "area": "AI Assistant",
-   "title": "Use the assistant in a small window",
-   "url": "/mac/tutorials/ai-assistant-small-window/",
+   "area": "OpenFrame AI",
+   "title": "Use OpenFrame AI in a small window",
+   "url": "/mac/tutorials/openframe-ai-small-window/",
    "screens": [
     "ai-panel-sidebar-hidden",
     "ai-panel-narrow-window",
@@ -7885,11 +7885,11 @@
    ]
   },
   {
-   "id": "ai-assistant-find-via-search",
+   "id": "openframe-ai-find-via-search",
    "platform": "mac",
-   "area": "AI Assistant",
-   "title": "Why Search does not find the assistant",
-   "url": "/mac/tutorials/ai-assistant-find-via-search/",
+   "area": "OpenFrame AI",
+   "title": "Why Search does not find OpenFrame AI",
+   "url": "/mac/tutorials/openframe-ai-find-via-search/",
    "screens": [
     "ai-search-palette",
     "ai-search-palette"
@@ -10923,99 +10923,99 @@
    "budget-export"
   ],
   "win/ai-panel-ready": [
-   "ai-assistant-open-panel",
-   "ai-assistant-ask-question",
-   "ai-assistant-choose-scope",
-   "ai-assistant-open-pages",
-   "ai-assistant-save-conversation",
-   "ai-assistant-download-models"
+   "openframe-ai-open-panel",
+   "openframe-ai-ask-question",
+   "openframe-ai-choose-scope",
+   "openframe-ai-open-pages",
+   "openframe-ai-save-conversation",
+   "openframe-ai-download-models"
   ],
   "win/ai-panel-empty-project": [
-   "ai-assistant-open-panel"
+   "openframe-ai-open-panel"
   ],
   "win/ai-panel-screenplay": [
-   "ai-assistant-open-panel",
-   "ai-assistant-choose-scope",
-   "ai-assistant-open-pages"
+   "openframe-ai-open-panel",
+   "openframe-ai-choose-scope",
+   "openframe-ai-open-pages"
   ],
   "win/ai-question-typed": [
-   "ai-assistant-ask-question"
+   "openframe-ai-ask-question"
   ],
   "win/ai-working": [
-   "ai-assistant-ask-question",
-   "ai-assistant-stop-request"
+   "openframe-ai-ask-question",
+   "openframe-ai-stop-request"
   ],
   "win/ai-answer-characters": [
-   "ai-assistant-ask-question",
-   "ai-assistant-check-sources",
-   "ai-assistant-save-conversation"
+   "openframe-ai-ask-question",
+   "openframe-ai-check-sources",
+   "openframe-ai-save-conversation"
   ],
   "win/ai-answer-scene-count": [
-   "ai-assistant-ask-question"
+   "openframe-ai-ask-question"
   ],
   "win/ai-answer-characters-sources": [
-   "ai-assistant-check-sources"
+   "openframe-ai-check-sources"
   ],
   "win/ai-answer-locations": [
-   "ai-assistant-check-sources"
+   "openframe-ai-check-sources"
   ],
   "win/ai-answer-locations-sources-open": [
-   "ai-assistant-check-sources"
+   "openframe-ai-check-sources"
   ],
   "win/ai-scope-current-screenplay": [
-   "ai-assistant-choose-scope"
+   "openframe-ai-choose-scope"
   ],
   "win/ai-scope-beat-board": [
-   "ai-assistant-choose-scope"
+   "openframe-ai-choose-scope"
   ],
   "win/ai-panel-story": [
-   "ai-assistant-choose-scope"
+   "openframe-ai-choose-scope"
   ],
   "win/ai-panel-breakdown": [
-   "ai-assistant-choose-scope"
+   "openframe-ai-choose-scope"
   ],
   "win/ai-panel-production": [
-   "ai-assistant-choose-scope"
+   "openframe-ai-choose-scope"
   ],
   "win/ai-panel-vault": [
-   "ai-assistant-choose-scope"
+   "openframe-ai-choose-scope"
   ],
   "win/ai-proposed-changes": [
-   "ai-assistant-ask-for-a-change"
+   "openframe-ai-ask-for-a-change"
   ],
   "win/ai-proposal-rejected": [
-   "ai-assistant-ask-for-a-change"
+   "openframe-ai-ask-for-a-change"
   ],
   "win/ai-proposed-changes-second": [
-   "ai-assistant-apply-and-undo"
+   "openframe-ai-apply-and-undo"
   ],
   "win/ai-proposal-applied": [
-   "ai-assistant-apply-and-undo"
+   "openframe-ai-apply-and-undo"
   ],
   "win/ai-answer-delete-request": [
-   "ai-assistant-review-deletion"
+   "openframe-ai-review-deletion"
   ],
   "win/ai-settings-menu": [
-   "ai-assistant-panel-menu"
+   "openframe-ai-panel-menu"
   ],
   "win/ai-offline-settings": [
-   "ai-assistant-panel-menu",
-   "ai-assistant-offline-settings-page",
-   "ai-assistant-graphics-card",
-   "ai-assistant-ai-health-report",
-   "ai-assistant-memory",
-   "ai-assistant-stop-or-remove",
-   "ai-assistant-download-models"
+   "openframe-ai-panel-menu",
+   "openframe-ai-offline-settings-page",
+   "openframe-ai-graphics-card",
+   "openframe-ai-ai-health-report",
+   "openframe-ai-memory",
+   "openframe-ai-stop-or-remove",
+   "openframe-ai-download-models"
   ],
   "win/ai-offline-technical-details": [
-   "ai-assistant-offline-settings-page"
+   "openframe-ai-offline-settings-page"
   ],
   "win/ai-offline-health-filled": [
-   "ai-assistant-graphics-card",
-   "ai-assistant-ai-health-report"
+   "openframe-ai-graphics-card",
+   "openframe-ai-ai-health-report"
   ],
   "win/ai-offline-remove-confirm": [
-   "ai-assistant-stop-or-remove"
+   "openframe-ai-stop-or-remove"
   ],
   "win/files-empty": [
    "files-start-empty"
@@ -13441,62 +13441,62 @@
    "budget-export"
   ],
   "mac/ai-closed-home": [
-   "ai-assistant-open-close"
+   "openframe-ai-open-close"
   ],
   "mac/project-home-ai-panel": [
-   "ai-assistant-open-close"
+   "openframe-ai-open-close"
   ],
   "mac/ai-panel": [
-   "ai-assistant-open-close",
-   "ai-assistant-read-unavailable",
-   "ai-assistant-offline-settings"
+   "openframe-ai-open-close",
+   "openframe-ai-read-unavailable",
+   "openframe-ai-offline-settings"
   ],
   "mac/ai-settings-menu": [
-   "ai-assistant-offline-settings"
+   "openframe-ai-offline-settings"
   ],
   "mac/ai-offline-ai-settings": [
-   "ai-assistant-offline-settings",
-   "ai-assistant-ai-health",
-   "ai-assistant-memory"
+   "openframe-ai-offline-settings",
+   "openframe-ai-ai-health",
+   "openframe-ai-memory"
   ],
   "mac/ai-panel-idea-vault": [
-   "ai-assistant-beside-workspaces"
+   "openframe-ai-beside-workspaces"
   ],
   "mac/ai-panel-story": [
-   "ai-assistant-beside-workspaces"
+   "openframe-ai-beside-workspaces"
   ],
   "mac/ai-panel-screenplay": [
-   "ai-assistant-beside-workspaces"
+   "openframe-ai-beside-workspaces"
   ],
   "mac/ai-closed-screenplay": [
-   "ai-assistant-beside-workspaces"
+   "openframe-ai-beside-workspaces"
   ],
   "mac/ai-panel-breakdown": [
-   "ai-assistant-beside-workspaces"
+   "openframe-ai-beside-workspaces"
   ],
   "mac/ai-closed-breakdown": [
-   "ai-assistant-beside-workspaces"
+   "openframe-ai-beside-workspaces"
   ],
   "mac/ai-panel-production": [
-   "ai-assistant-beside-workspaces"
+   "openframe-ai-beside-workspaces"
   ],
   "mac/ai-panel-schedule": [
-   "ai-assistant-beside-workspaces"
+   "openframe-ai-beside-workspaces"
   ],
   "mac/ai-panel-call-sheets": [
-   "ai-assistant-beside-workspaces"
+   "openframe-ai-beside-workspaces"
   ],
   "mac/ai-panel-files": [
-   "ai-assistant-beside-workspaces"
+   "openframe-ai-beside-workspaces"
   ],
   "mac/ai-panel-sidebar-hidden": [
-   "ai-assistant-small-window"
+   "openframe-ai-small-window"
   ],
   "mac/ai-panel-narrow-window": [
-   "ai-assistant-small-window"
+   "openframe-ai-small-window"
   ],
   "mac/ai-search-palette": [
-   "ai-assistant-find-via-search"
+   "openframe-ai-find-via-search"
   ],
   "mac/files-empty": [
    "files-start",

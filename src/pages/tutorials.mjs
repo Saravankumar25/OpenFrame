@@ -12,7 +12,7 @@ function thumb(ctx, plat, name) {
 }
 
 // The content is written once for the internal manuals; on the website a "chapter" is the area's tutorials.
-const web = (t) => String(t ?? '').replace(/this chapter/gi, 'these tutorials').replace(/the ([A-Z][w ,&]*?) chapter/g, 'the $1 tutorials').replace(/chapters?/gi, 'tutorials').replace(/(this|the) manual/gi, 'the tutorials');
+const web = (t) => String(t ?? '').replace(/\bthis chapter\b/gi, 'these tutorials').replace(/\bthe ([A-Z][\w ,&]*?) chapter\b/g, 'the $1 tutorials').replace(/\bchapters?\b/gi, 'tutorials').replace(/\b(this|the) manual\b/gi, 'the tutorials');
 
 export default function tutorials(ctx) {
   const { html, mock, PARTS, manual, cat } = ctx;
@@ -27,9 +27,9 @@ export default function tutorials(ctx) {
     title: 'Tutorials for Windows and Mac | OpenFrame Studio',
     description: 'Step-by-step written tutorials for OpenFrame Studio on Windows and on the Mac, on the real app screens of each platform, from the first start to backups.',
     breadcrumbs: [['Tutorials', '/tutorials/']],
-    body: html`<section class="phero"><div class="wrap"><span class="eyebrow">Tutorials</span><h1>Learn OpenFrame by making a film.</h1>
+    body: html`<section class="phero"><div class="wrap"><span class="eyebrow">Tutorials</span><h1>Everything you can do, step by step.</h1>
 <p class="lead">Written, step-by-step tutorials on the real screens. Pick your platform.</p>
-<div class="hero-cta"><a class="btn btn-primary btn-lg" href="/windows/tutorials/">Windows tutorials (${all.win.length})</a><a class="btn btn-dark btn-lg" href="/mac/tutorials/">Mac tutorials (${all.mac.length})</a></div></div></section>
+<div class="hero-cta"><a class="btn btn-primary btn-lg" href="/windows/tutorials/">Windows tutorials</a><a class="btn btn-dark btn-lg" href="/mac/tutorials/">Mac tutorials</a></div></div></section>
 <section class="sec-s pt30"><div class="wrap narrow"><div class="facts"><h3>How the tutorials work</h3><ul class="ticks">
 <li><span>Each tutorial lists what you need first, then the steps in order, each with the screen you see at that moment.</span></li>
 <li><span>Use the controls at the top of the page to show the app screens in light or dark. The website theme does not change them.</span></li>
@@ -45,10 +45,10 @@ export default function tutorials(ctx) {
     pages.push({
       path: base, os: plat, nav: 'tutorials', alternates: { [plat]: base, [other]: `/${SLUG[other]}/tutorials/` },
       title: `${NAME[plat]} tutorials | OpenFrame Studio`,
-      description: `${all[plat].length} step-by-step tutorials for OpenFrame Studio on ${NAME[plat]}, from the first start to backups, each on the real ${NAME[plat]} app screens.`,
+      description: `Explore OpenFrame Studio on ${NAME[plat]} with step-by-step tutorials, from the first start to backups, each on the real ${NAME[plat]} app screens.`,
       breadcrumbs: [['Tutorials', '/tutorials/'], [NAME[plat], base]],
-      body: html`<section class="phero"><div class="wrap"><span class="eyebrow">${NAME[plat]} tutorials</span><h1>Learn OpenFrame by making a film.</h1>
-<p class="lead">${all[plat].length} written tutorials on the real ${NAME[plat]} screens. Each one teaches one task, step by step.</p>
+      body: html`<section class="phero"><div class="wrap"><span class="eyebrow">${NAME[plat]} tutorials</span><h1>Everything you can do, step by step.</h1>
+<p class="lead">Written, step-by-step tutorials on the real ${NAME[plat]} screens. Pick a task and follow it.</p>
 <div class="fchips">${PARTS.filter(([k]) => manual[plat].some((a) => a.part === k)).map(([k, t]) => html`<a class="fchip" href="#${partId(k)}">${t}</a>`)}</div>
 <p class="tmeta"><a href="/${SLUG[plat]}/screens/">Every ${NAME[plat]} screen</a></p></div></section>
 <section class="sec-s pt30"><div class="wrap">
@@ -102,11 +102,11 @@ ${related.length ? html`<div class="tbox"><h2>Related tutorials</h2><ul>${relate
     pages.push({
       path: `/${SLUG[plat]}/screens/`, os: plat, nav: 'tutorials', alternates: { [plat]: `/${SLUG[plat]}/screens/`, [other]: `/${SLUG[other]}/screens/` },
       title: `Every ${NAME[plat]} screen | OpenFrame Studio`,
-      description: `All ${cat[plat].size} captured screens of OpenFrame Studio for ${NAME[plat]}, by area, in light and dark, with what each one shows and the tutorials that use it.`,
+      description: `Every screen of OpenFrame Studio for ${NAME[plat]}, by area, in light and dark, with what each one shows and the step-by-step tutorials that use it.`,
       breadcrumbs: [['Tutorials', '/tutorials/'], [NAME[plat], base], ['Screens', `/${SLUG[plat]}/screens/`]],
       body: html`<section class="phero"><div class="wrap"><span class="eyebrow">${NAME[plat]} screens</span><h1>Every screen of the ${NAME[plat]} app.</h1>
-<p class="lead">${cat[plat].size} screens and states in ${byArea.size} areas. Each opens in light or dark, following the App screens control at the top of the page.</p></div></section>
-<section class="sec-s pt30"><div class="wrap">${order.map((area) => html`<div class="lib-area" id="${area.toLowerCase().replace(/\W+/g, '-')}"><h2>${area} <span class="small-print">${byArea.get(area).length} screens</span></h2><ul class="lib">
+<p class="lead">Every screen and state, area by area. Each opens in light or dark, following the app screen control at the top of the page.</p></div></section>
+<section class="sec-s pt30"><div class="wrap">${order.map((area) => html`<div class="lib-area" id="${area.toLowerCase().replace(/\W+/g, '-')}"><h2>${area}</h2><ul class="lib">
 ${byArea.get(area).map((s) => html`<li><b>${s.title}</b>${web(desc.get(s.name))}<br><a data-mock href="/mockups/${plat}/light/${s.file}" target="_blank" rel="noopener">Open screen</a>${(used.get(s.name) || []).slice(0, 3).map((w) => html`<a href="${base}${w.id}/">${w.title}</a>`)}</li>`)}</ul></div>`)}</div></section>`,
     });
   }

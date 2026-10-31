@@ -16,7 +16,7 @@ const WIN_AREAS = [
   [/^app-library-setup/, 'Library setup'], [/^app-first-launch/, 'First launch'], [/^(app-new-project|app-home|home-new-project)/, 'Application Home'],
   [/^apphome-/, 'Application Home'], [/^sp-import/, 'Import a screenplay'], [/^shell-/, 'Project window and navigation'],
   [/^vault-/, 'Idea Vault'], [/^story-/, 'Story and Beat Board'], [/^sp-/, 'Screenplay'], [/^bd-/, 'Breakdown'],
-  [/^ai-/, 'AI Assistant'], [/^pkg-/, 'Backups, packages and exchange'], [/^licence-/, 'Trial and purchase'],
+  [/^ai-/, 'OpenFrame AI'], [/^pkg-/, 'Backups, packages and exchange'], [/^licence-/, 'Trial and purchase'],
   [/^prod-(overview|catalog)/, 'Production Plan: overview and catalog'], [/^prod-location/, 'Locations'],
   [/^prod-(cast|crew)/, 'Cast and crew'], [/^prod-moodboard/, 'Moodboards'], [/^prod-storyboard/, 'Storyboards'],
   [/^prod-shot/, 'Shot lists'], [/^prod-schedule/, 'Shooting schedule'], [/^prod-dood/, 'Day Out of Days'],
@@ -88,7 +88,9 @@ async function extractWin() {
 
 function extractMac() {
   const pages = JSON.parse(fs.readFileSync(path.join(SRC.mac, 'light', 'pages.json'), 'utf8'));
-  return pages.map((p) => ({ n: p.n, name: p.name, file: p.file, title: p.title, area: p.area, picture: p.picture, width: p.width, height: p.height, texts: clean(p.expect || []) }));
+  // The assistant is called OpenFrame AI on the website (owner decision 2026-10-31).
+  const ai = (t) => t.replace(/\bAI Assistant\b|\bthe assistant\b/g, 'OpenFrame AI');
+  return pages.map((p) => ({ n: p.n, name: p.name, file: p.file, title: ai(p.title), area: ai(p.area), picture: p.picture, width: p.width, height: p.height, texts: clean(p.expect || []) }));
 }
 
 for (const plat of only ? [only] : ['win', 'mac']) {

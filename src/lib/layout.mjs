@@ -7,7 +7,7 @@ import { SITE_URL, SITE_NAME, STORE } from '../../site.config.mjs';
 
 // Runs before first paint (its hash is allowed in the CSP). Platform: the page's own platform, then the saved
 // choice, then a guess. Website theme: saved choice, then the system setting. Screen theme: saved choice, else light.
-export const BOOT = "(function(){var d=document.documentElement,g=function(k){try{return localStorage.getItem(k)}catch(e){return null}},p=d.getAttribute('data-page-os'),s=g('of_os');if(p){d.setAttribute('data-os',p);try{localStorage.setItem('of_os',p)}catch(e){}}else if(s==='win'||s==='mac'){d.setAttribute('data-os',s)}else{var u=(navigator.userAgentData&&navigator.userAgentData.platform)||navigator.platform||navigator.userAgent||'';d.setAttribute('data-os',/mac|iphone|ipad/i.test(u)?'mac':'win')}var t=g('of_theme');if(t!=='light'&&t!=='dark'){t=window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}d.setAttribute('data-theme',t);d.setAttribute('data-mock',g('of_mock')==='dark'?'dark':'light')})();";
+export const BOOT = "(function(){var d=document.documentElement;d.classList.add('js');var g=function(k){try{return localStorage.getItem(k)}catch(e){return null}},p=d.getAttribute('data-page-os'),s=g('of_os');if(p){d.setAttribute('data-os',p);try{localStorage.setItem('of_os',p)}catch(e){}}else if(s==='win'||s==='mac'){d.setAttribute('data-os',s)}else{var u=(navigator.userAgentData&&navigator.userAgentData.platform)||navigator.platform||navigator.userAgent||'';d.setAttribute('data-os',/mac|iphone|ipad/i.test(u)?'mac':'win')}var t=g('of_theme');if(t!=='light'&&t!=='dark'){t=window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}d.setAttribute('data-theme',t);d.setAttribute('data-mock',g('of_mock')==='dark'?'dark':'light');try{if(sessionStorage.getItem('of_seen'))d.classList.add('ready')}catch(e){}})();";
 
 // Store marks are single-colour and take the button's text colour, so they sit cleanly on any button fill.
 const MSICON = raw('<svg class="i logo" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="currentColor"><path d="M3 3h8.5v8.5H3zM12.5 3H21v8.5h-8.5zM3 12.5h8.5V21H3zM12.5 12.5H21V21h-8.5z"/></svg>');
@@ -22,7 +22,7 @@ export function makeHelpers(cat, missing) {
     if (!s) { missing.add(`${plat}/${name}`); return html`<span class="shot-missing">${plat}/${name}</span>`; }
     const src = `/mockups/${plat}/light/${s.file}`;
     const label = alt || s.title;
-    return html`<figure class="screen"><div class="mock ${plat}" data-w="${s.width}" data-h="${s.height}"><iframe data-mock src="${src}" title="${OS[plat].name} screen: ${label}"${raw(eager ? '' : ' loading="lazy"')} tabindex="-1" aria-hidden="true"></iframe></div>${caption || link ? html`<figcaption class="mock-cap"><span>${caption || label}</span>${link ? html`<a data-mock href="${src}" target="_blank" rel="noopener">Open this screen<span class="sr"> in a new tab</span></a>` : ''}</figcaption>` : ''}</figure>`;
+    return html`<figure class="screen"><div class="mock ${plat}" data-w="${s.width}" data-h="${s.height}"><span class="mock-load" aria-hidden="true">${MARK}</span><iframe data-mock src="${src}" title="${OS[plat].name} screen: ${label}"${raw(eager ? '' : ' loading="lazy"')} tabindex="-1" aria-hidden="true"></iframe></div>${caption || link ? html`<figcaption class="mock-cap"><span>${caption || label}</span>${link ? html`<a data-mock href="${src}" target="_blank" rel="noopener">Open this screen<span class="sr"> in a new tab</span></a>` : ''}</figcaption>` : ''}</figure>`;
   };
   const osBlocks = ({ win, mac }) => html`<div data-os-show="win">${win}</div><div data-os-show="mac">${mac}</div>`;
   const osText = (win, mac) => html`<span data-os-show="win">${win}</span><span data-os-show="mac">${mac}</span>`;
@@ -49,7 +49,7 @@ export function makeHelpers(cat, missing) {
 }
 
 // The three controls are icon buttons; each has a spoken name and a tooltip, and its group has a small icon label.
-const I = (d, fill = false) => raw(`<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"${fill ? ' fill="currentColor"' : ' fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"'}>${d}</svg>`);
+const I = (d, fill = false) => raw(`<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"${fill ? ' fill="currentColor"' : ' fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"'}>${d}</svg>`);
 const CTL_ICON = {
   os: I('<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>'),
   theme: I('<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>'),
@@ -77,6 +77,7 @@ function header(page, switchHref) {
 <li><a href="/pricing/"${cur('pricing')}>Pricing</a></li>
 <li><a href="/tutorials/" data-os-href-win="/windows/tutorials/" data-os-href-mac="/mac/tutorials/"${cur('tutorials')}>Tutorials</a></li>
 <li><a href="/faq/"${cur('faq')}>FAQ</a></li>
+<li><a href="/about/"${cur('about')}>About Us</a></li>
 <li class="menu-ctls">${ctls}</li>
 </ul>
 <div class="ctls nav-ctls">${ctls}</div>
@@ -121,15 +122,31 @@ ${page.noindex ? '<meta name="robots" content="noindex">\n' : ''}<meta property=
 <meta property="og:description" content="${esc(page.description)}">
 <meta property="og:url" content="${esc(url)}">
 <meta property="og:image" content="${esc(og)}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="OpenFrame Studio: a film production software for all your needs, with a real app screen.">
+<meta property="og:locale" content="en_US">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="theme-color" content="#1d1a2e">
+<meta name="twitter:image:alt" content="OpenFrame Studio: a film production software for all your needs, with a real app screen.">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0e0d15" media="(prefers-color-scheme: dark)">
+<meta name="application-name" content="OpenFrame Studio">
+<meta name="apple-mobile-web-app-title" content="OpenFrame">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" href="/favicon-32x32.png" type="image/png" sizes="32x32">
+<link rel="icon" href="/favicon-16x16.png" type="image/png" sizes="16x16">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
 <link rel="preload" href="/assets/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/newsreader-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/sora-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="${css}">
 <script id="boot">${BOOT}</script>
 ${ld.map((o) => `<script type="application/ld+json">${JSON.stringify(o).replace(/</g, '\\u003c')}</script>`).join('\n')}
 </head>
 <body data-nav="${esc(page.nav || '')}">
+<div class="loader" id="loader" aria-hidden="true"><div class="loader-in">${MARK}</div></div>
 ${header(page, switchHref)}
 <main id="main">
 ${page.body}

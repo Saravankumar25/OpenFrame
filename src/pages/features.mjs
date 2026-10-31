@@ -9,10 +9,10 @@ const nameOf = (s) => (s ? s.replace(/^\d+-/, '') : s);
 // Tutorials (manual workflows) that teach each feature group: matched on the area slug or the workflow title.
 // Tutorials (manual workflows) that teach each feature group: [area slugs, workflow title words].
 const LEARN = {
-  'idea-vault': [/^idea-vault$/, null], 'story-board': [/^story$/, null], moodboards: [/^moodboards$/, /moodboards?/i],
-  screenplay: [/^screenplay$/, null], 'drafts-revisions': [/^$/, /(drafts?|revisions?|compare|lock|review|comments?)/i],
-  'import-export': [/^import-screenplay$/, /(import|export)/i], 'ai-assistant': [/^ai-assistant$/, null], breakdown: [/^breakdown$/, null],
-  'cast-crew-locations': [/^(locations|cast-and-crew)$/, /(cast|crew|locations?)/i], 'shot-lists-storyboards': [/^(storyboards|shot-lists)$/, /(shots?|storyboards?)/i],
+  'idea-vault': [/^idea-vault$/, null], 'story-board': [/^story$/, null], moodboards: [/^moodboards$/, /\bmoodboards?\b/i],
+  screenplay: [/^screenplay$/, null], 'drafts-revisions': [/^$/, /\b(drafts?|revisions?|compare|lock|review|comments?)\b/i],
+  'import-export': [/^import-screenplay$/, /\b(import|export)/i], 'openframe-ai': [/^openframe-ai$/, null], breakdown: [/^breakdown$/, null],
+  'cast-crew-locations': [/^(locations|cast-and-crew)$/, /\b(cast|crew|locations?)\b/i], 'shot-lists-storyboards': [/^(storyboards|shot-lists)$/, /\b(shots?|storyboards?)\b/i],
   scheduling: [/^(shooting-schedule|schedule|day-out-of-days)$/, null], 'call-sheets': [/^call-sheets$/, null],
   'sides-daily-view': [/^(sides|daily-view)$/, null], 'reports-budget': [/^(reports|budget)$/, null],
   'backups-recovery': [/^(backups-and-packages|packages|recovery|recently-deleted)$/, null],
@@ -42,7 +42,7 @@ function catalogSection(ctx, slug, title) {
     return html`${ctx.mock(plat, list[0], { caption: f.name })}${list.length > 1 ? html`<p class="more-shots">More screens: ${list.slice(1).map((n, i) => html`${i ? ', ' : ''}<a data-mock href="/mockups/${plat}/light/${ctx.cat[plat].get(n)?.file}" target="_blank" rel="noopener">${ctx.cat[plat].get(n)?.title || n}</a>`)}</p>` : ''}`;
   };
   return html`<section class="sec-s" id="catalog"><div class="wrap"><div class="sec-head"><span class="eyebrow">Complete list</span><h2>Everything in ${title}.</h2>
-<p class="lead">${items.length} capabilities, each with what it does, what it is for, and where it is available.</p></div>
+<p class="lead">Each one with what it does, what it is for, and where it is available.</p></div>
 <div class="feat-list">${items.map((f) => html`<article class="feat" id="${f.id}"><div><h3>${f.name}</h3><p class="what">${f.summary}</p>
 <dl><dt>What it does</dt><dd>${f.does}</dd><dt>What it is for</dt><dd>${f.purpose}</dd></dl>${avail(f)}</div>
 <div class="shots"><div data-os-show="win">${shots(f, 'win')}</div><div data-os-show="mac">${shots(f, 'mac')}</div></div></article>`)}</div></div></section>`;
@@ -56,7 +56,7 @@ function learnSection(ctx, slug) {
     if (!ws.length) return html`<p class="center"><a class="more" href="${base}">All ${plat === 'win' ? 'Windows' : 'Mac'} tutorials &rarr;</a></p>`;
     return html`<div class="grid3">${ws.map((w) => html`<a class="card linkcard" href="${base}${w.id}/"><h3>${w.title}</h3><p>${w.purpose}</p></a>`)}</div>`;
   };
-  return html`<section class="tint sec-s"><div class="wrap"><div class="sec-head"><span class="eyebrow">Learn it</span><h2>Step-by-step tutorials.</h2><p class="lead">Written guides on the real screens of your platform.</p></div>
+  return html`<section class="tint sec-s"><div class="wrap"><div class="sec-head"><span class="eyebrow">Explore it</span><h2>Step-by-step tutorials.</h2><p class="lead">Written guides on the real screens of your platform.</p></div>
 ${ctx.osBlocks({ win: list('win'), mac: list('mac') })}</div></section>`;
 }
 
@@ -92,10 +92,10 @@ function indexPage(ctx) {
   const body = html`
 <section class="phero"><div class="wrap"><span class="eyebrow">All features</span><h1>One film, moving forward.</h1>
 <p class="lead">From the first scrap of an idea to the final call sheet. Every part of OpenFrame talks to every other part, so you never retype anything.</p>
-${count ? html`<p class="tmeta">${count} capabilities in ${ctx.FEATURES.length} groups, each marked for Windows and Mac.</p>` : ''}</div></section>
+<p class="tmeta">Each feature is marked for Windows and Mac.</p></div></section>
 <section class="sec-s pt30"><div class="wrap">
 ${ctx.FEATURE_GROUPS.map(([group, items]) => html`<div class="cat-group"><h2>${group}</h2><div class="grid3 mt18">
-${items.map(([slug, title]) => html`<a class="card linkcard" href="/features/${slug}/"><h3>${title}</h3><p>${FEATURE_PAGES[slug].lead}</p>${(CATALOG[slug] || []).length ? html`<p class="small-print">${CATALOG[slug].length} capabilities</p>` : ''}</a>`)}
+${items.map(([slug, title]) => html`<a class="card linkcard" href="/features/${slug}/"><h3>${title}</h3><p>${FEATURE_PAGES[slug].lead}</p></a>`)}
 </div></div>`)}
 </div></section>
 ${count ? html`<section class="tint sec-s"><div class="wrap"><div class="sec-head"><span class="eyebrow">Complete catalog</span><h2>Every capability at a glance.</h2></div>

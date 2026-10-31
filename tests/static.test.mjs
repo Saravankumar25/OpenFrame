@@ -3,6 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readdirSync } from 'node:fs';
 import path from 'node:path';
+import { FOUNDERS } from '../src/content/founders.mjs';
 import { DIST, SKIP, htmlFiles, pagePath, read, resolvesInDist } from './_helpers.mjs';
 
 const pages = htmlFiles().filter((f) => !f.includes(`${path.sep}mockups${path.sep}`));
@@ -40,10 +41,16 @@ test('every internal link, image and app screen resolves', { skip: SKIP }, () =>
 test('company name in every footer, founders on About, supplied logo present', { skip: SKIP }, () => {
   for (const [f, s] of html) assert.ok(s.includes(`&copy; 2026 ${COMPANY}`), pagePath(f));
   const about = read(path.join(DIST, 'about', 'index.html'));
-  assert.match(about, /Badrinath Reddy A<\/h3><p>Responsible for the product idea/);
-  assert.match(about, /Saravan Kumar MK<\/h3><p>Responsible for the end-to-end technical implementation/);
+  // Exact names, Saravan Kumar M K first, each credited with their own work (owner, 2026-10-31).
+  const a = about.indexOf('>Saravan Kumar M K</a></h3>'), b = about.indexOf('<h3>Badrinath Reddy Avuku</h3>');
+  assert.match(about, /<h3><a class="name-link" href="https:\/\/saravankumar25\.github\.io" target="_blank" rel="noopener noreferrer">Saravan Kumar M K<\/a><\/h3>/);
+  assert.ok(a > 0 && b > a, 'founder order');
+  assert.match(about, /Saravan Kumar M K is responsible for the end-to-end technical implementation/);
+  FOUNDERS[0].text.forEach((p, i) => assert.equal(p.length, FOUNDERS[1].text[i].length, `founder paragraph ${i + 1}: same number of characters`));
+  assert.doesNotMatch(about.slice(about.indexOf('<div class="founders">'), about.indexOf('</section>', about.indexOf('<div class="founders">'))), /<h4>|<ul class="ticks">/, 'founder profiles are prose');
+  assert.match(about, /Badrinath Reddy Avuku is responsible for the product idea, the ideation, the product design/);
   assert.ok(existsSync(path.join(DIST, 'company', 'vighnajith-advisories-logo.webp')));
-  for (const s of html.values()) assert.doesNotMatch(s, /Vignajith|Advisorys|Sarvan Kumar/);
+  for (const s of html.values()) assert.doesNotMatch(s, /Vignajith|Advisorys|Sarvan Kumar|Kumar MK|Reddy A</);
 });
 
 test('store buttons show the approved labels and are not links until listings exist', { skip: SKIP }, () => {
@@ -58,7 +65,8 @@ test('prices: rupees for India, US dollars elsewhere, no euro price', { skip: SK
   const s = read(path.join(DIST, 'pricing', 'index.html'));
   assert.match(s, /data-price-in>₹2,999</);
   assert.match(s, /data-price-us>US\$89</);
-  assert.match(s, /<select id="region" data-region>/);
+  assert.match(s, /<div class="region-tg"[^>]*>[\s\S]*data-region-set="in"[^>]*>India<[\s\S]*data-region-set="world"[^>]*>Outside India</);
+  assert.doesNotMatch(s, /<select/);
   for (const v of html.values()) assert.doesNotMatch(v, /€|89 euros|3,000 rupees/);
 });
 
@@ -77,6 +85,21 @@ test('published app screens show no test-machine paths or the capture account na
   for (const plat of ['win', 'mac']) for (const t of ['light', 'dark']) {
     const dir = path.join(DIST, 'mockups', plat, t);
     for (const f of readdirSync(dir).filter((x) => x.endsWith('.html'))) if (bad.test(read(path.join(dir, f)))) hits.push(`${plat}/${t}/${f}`);
+  }
+  assert.deepEqual(hits.slice(0, 10), []);
+});
+
+test('public pages reveal nothing about how the product is built', { skip: SKIP }, () => {
+  const stack = /\b(Rust|SQLite|Tauri|React|TypeScript|SwiftUI|UniFFI|llama\.cpp|Gemma|Vulkan|Metal|Hugging Face|SHA-256|fuzz[\w-]*)\b|captured from commit|\d+ (Windows|Mac) screens/;
+  for (const [f, s] of html) {
+    const text = s.replace(/<script[\s\S]*?<\/script>/g, '').replace(/<[^>]+>/g, ' ');
+    assert.doesNotMatch(text, stack, pagePath(f));
+  }
+  for (const f of ['llms.txt', 'llms-full.txt']) assert.doesNotMatch(read(path.join(DIST, f)), stack, f);
+  const hits = [];
+  for (const plat of ['win', 'mac']) for (const t of ['light', 'dark']) {
+    const dir = path.join(DIST, 'mockups', plat, t);
+    for (const f of readdirSync(dir).filter((x) => x.endsWith('.html'))) if (/<!--|class="band"|page \d+ of \d+/.test(read(path.join(dir, f)))) hits.push(`${plat}/${t}/${f}`);
   }
   assert.deepEqual(hits.slice(0, 10), []);
 });

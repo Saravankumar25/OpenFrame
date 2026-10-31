@@ -1,26 +1,25 @@
 // Information pages in the approved website design: platform pages, download, pricing, FAQ, switching, compare,
 // privacy, themes, about, contact and legal. Truth source: research/facts.json and
 // research/capability-matrix.md. Do not add claims they do not show.
+import { FOUNDERS } from '../content/founders.mjs';
 import { SHORTCUTS, SHORTCUT_NOTE, IMPORT_OK, IMPORT_REFUSED, EXPORTS, THEMES, FAQ } from '../content/copy.mjs';
 
 const UPDATED = '31 October 2026';
 
 // Structured data for search and answer engines: the company with its founders, and the app with its prices.
-export const ORG = (ctx) => ({ '@context': 'https://schema.org', '@type': 'Organization', name: ctx.COMPANY, url: ctx.SITE_URL + '/',
-  logo: ctx.SITE_URL + '/company/vighnajith-advisories-logo.webp', brand: { '@type': 'Brand', name: 'OpenFrame Studio' },
-  founder: [
-    { '@type': 'Person', name: 'Badrinath Reddy A', jobTitle: 'Product Founding Engineer', description: 'Product idea, ideation, product design and product direction of OpenFrame Studio.' },
-    { '@type': 'Person', name: 'Saravan Kumar MK', jobTitle: 'Technical Founding Engineer', description: 'End-to-end technical implementation and software development of OpenFrame Studio.' },
-  ] });
+export const ORG = (ctx) => ({ '@context': 'https://schema.org', '@type': 'Organization', name: 'OpenFrame Studio', url: ctx.SITE_URL + '/',
+  logo: ctx.SITE_URL + '/favicon.svg',
+  founder: FOUNDERS.map((f) => ({ '@type': 'Person', name: f.name, jobTitle: f.role, description: f.text[0], ...(f.link ? { url: f.link, sameAs: [f.link] } : {}) })),
+ });
 export const APP = (ctx, os, p = '/') => ({ '@context': 'https://schema.org', '@type': 'SoftwareApplication', name: 'OpenFrame Studio', url: ctx.SITE_URL + p,
   applicationCategory: 'MultimediaApplication', applicationSubCategory: 'Screenwriting and film production planning', operatingSystem: os,
   description: 'A local-first desktop app for writers, screenwriters and film production teams: ideas, story, screenplay, breakdown, schedule, call sheets and reports in one project.',
-  publisher: { '@type': 'Organization', name: ctx.COMPANY },
+  publisher: { '@type': 'Organization', name: 'OpenFrame Studio' },
   offers: [{ '@type': 'Offer', price: '2999', priceCurrency: 'INR', eligibleRegion: { '@type': 'Country', name: 'IN' } }, { '@type': 'Offer', price: '89', priceCurrency: 'USD' }] });
 const slug = (s) => s.toLowerCase().replace(/\W+/g, '-');
 
 export default function (ctx) {
-  const { html, md, mock, osBlocks, storeBtn, price, cta, COMPANY } = ctx;
+  const { html, md, mock, osBlocks, storeBtn, price, cta } = ctx;
 
   // Build-time guard: a page that breaks the title or description rules fails the build.
   const page = (p) => {
@@ -60,8 +59,8 @@ ${phero(win ? 'Windows 11' : 'macOS on Apple silicon', `OpenFrame Studio for ${n
 <div class="tbl-wrap"><table class="tbl"><tbody>
 <tr><td><b>System</b></td><td>${win ? 'Windows 11 on a 64-bit (x64) computer. Windows 10 is not supported.' : 'A Mac with Apple silicon, running macOS 14 or later. Intel Macs are not supported.'}</td></tr>
 ${win ? html`<tr><td><b>Window size</b></td><td>At least 1200 by 720 pixels.</td></tr>` : ''}
-<tr><td><b>Account and internet</b></td><td>No OpenFrame account. The app works offline. The internet is used for the store and for the optional assistant download that you start.</td></tr>
-<tr><td><b>Optional assistant</b></td><td>A one-time download of about 1.2 GB. Its chat model needs at least 4 GB of memory, 8 GB recommended.</td></tr>
+<tr><td><b>Account and internet</b></td><td>No OpenFrame account. The app works offline. The internet is used for the store and for OpenFrame AI download that you start.</td></tr>
+<tr><td><b>OpenFrame AI</b></td><td>A one-time download of about 1.2 GB. Its chat model needs at least 4 GB of memory, 8 GB recommended.</td></tr>
 <tr><td><b>Price</b></td><td>7-day free trial, then one payment of ${price()}.</td></tr>
 </tbody></table></div></div></section>
 <section class="sec-s" id="install"><div class="wrap"><div class="sec-head"><h2>Get started in four steps</h2></div>
@@ -121,7 +120,9 @@ ${phero('Download', 'Get OpenFrame Studio.', 'From the Microsoft Store on Window
     body: html`
 ${phero('Pricing', 'Pay once. Own forever.', 'No subscription, no renewal, no rented software. One payment for the whole app, after a 7-day free trial.')}
 <section class="sec-s pt30"><div class="wrap"><div class="price-one">
-<div class="pcard win rv"><span class="badge">Lifetime purchase</span><h3>OpenFrame Studio</h3>
+<div class="pcard win rv"><span class="badge">Lifetime purchase</span>
+<div class="region-tg" role="group" aria-label="Price region"><button type="button" data-region-set="in" aria-pressed="false">India</button><button type="button" data-region-set="world" aria-pressed="false">Outside India</button></div>
+<h3>OpenFrame Studio</h3>
 <div class="price"><b>${price()}</b></div>
 <p class="price-sub">One payment for <span data-region-name>your region</span>. Windows and Mac. 7-day free trial first.</p>
 <ul class="ticks">
@@ -132,11 +133,10 @@ ${phero('Pricing', 'Pay once. Own forever.', 'No subscription, no renewal, no re
 <li><span>Shot lists, storyboards and the shooting schedule</span></li>
 <li><span>Call sheets, sides, Daily View, reports and a light budget</span></li>
 <li><span>Backups and project packages</span></li>
-<li><span>The optional offline assistant, with no running cost</span></li>
+<li><span>OpenFrame AI, with no running cost</span></li>
 </ul>
 <div class="store-col">${storeBtn('win')}${storeBtn('mac')}</div>
 <p class="price-note">The Microsoft Store and the Mac App Store set the final checkout amount under their own rules, which can include taxes where you live. The website does not convert currencies.</p></div>
-<div class="region"><label for="region">Show the price for</label><select id="region" data-region><option value="in">India</option><option value="world">Outside India</option></select></div>
 </div></div></section>
 <section class="dark"><div class="wrap manifesto">
 <div class="rv"><span class="eyebrow">Rent vs own</span><h2>Renting looks cheap in month one.</h2>
@@ -159,11 +159,11 @@ ${cta()}`,
   const faq = page({
     path: '/faq/', nav: 'faq',
     title: 'Questions and answers | OpenFrame Studio',
-    description: 'Answers about OpenFrame Studio: platforms, privacy and data, the offline assistant, files and formats, the price and the 7-day free trial.',
+    description: 'Answers about OpenFrame Studio: platforms, privacy and data, OpenFrame AI, files and formats, the price and the 7-day free trial.',
     breadcrumbs: [['Questions', '/faq/']],
     jsonld: [{ '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: FAQ.flatMap(([, items]) => items.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') } }))) }],
     body: html`
-${phero('FAQ', 'Questions and answers.', 'Short, plain answers about the app, your data, the assistant, files, the price and the trial.', html`<div class="fchips">${FAQ.map(([g]) => html`<a class="fchip" href="#g-${slug(g)}">${g}</a>`)}</div>`)}
+${phero('FAQ', 'Questions and answers.', 'Short, plain answers about the app, your data, OpenFrame AI, files, the price and the trial.', html`<div class="fchips">${FAQ.map(([g]) => html`<a class="fchip" href="#g-${slug(g)}">${g}</a>`)}</div>`)}
 <section class="sec-s pt30"><div class="wrap narrow">
 ${FAQ.map(([g, items]) => html`<div class="faq-group" id="g-${slug(g)}"><h2>${g}</h2>${items.map(faqItem)}</div>`)}
 <p class="small-print">Not answered here? See <a href="/contact/">Contact</a> or the <a href="/tutorials/">tutorials</a>.</p>
@@ -247,7 +247,7 @@ ${phero('Completely local', 'Your privacy stays on your computer.', 'Your script
 <ul class="ticks"><li><span><b>No OpenFrame account</b> and no sign-in.</span></li><li><span><b>No telemetry</b>, no analytics and no crash upload.</span></li><li><span><b>No network service</b> that other computers can reach.</span></li><li><span><b>Not encrypted by the app.</b> Use your operating system's disk encryption if you need that protection.</span></li></ul></div>
 <div class="facts"><h3>The only times the app uses the network</h3><ul class="ticks">
 <li><span><b>The store</b> installs and updates the app and handles the trial and the purchase.</span></li>
-<li><span><b>The assistant download you start.</b> About 1.2 GB of model files, each checked against a fixed size and checksum. You can also import the files by hand.</span></li>
+<li><span><b>OpenFrame AI download you start.</b> About 1.2 GB, checked before use. You can also import the files by hand.</span></li>
 <li><span><b>A saved link in the Idea Vault.</b> When you click it, it opens in your normal browser.</span></li></ul></div>
 </div></section>
 <section class="tint sec-s"><div class="wrap narrow"><h2>Backups, packages and diagnostics</h2><ul class="ticks">
@@ -278,26 +278,24 @@ ${cta()}`,
 
   // ---------- About ----------
   const about = page({
-    path: '/about/',
+    path: '/about/', nav: 'about',
     title: 'About OpenFrame Studio and its founders',
-    description: `OpenFrame Studio is a desktop app for film writers and production teams, developed under ${COMPANY}. Meet its two founders.`,
+    description: 'Why OpenFrame Studio exists, who it is for, the promises it keeps about your work, and the two founding engineers who build it.',
     breadcrumbs: [['About', '/about/']],
     jsonld: [ORG(ctx)],
     body: html`
-${phero('About OpenFrame', 'From film lovers, to film lovers across the world.', `OpenFrame Studio is a software product developed under ${COMPANY}.`)}
-<section class="sec-s pt30"><div class="wrap narrow center"><img class="company-logo" src="/company/vighnajith-advisories-logo.webp" width="1774" height="887" alt="${COMPANY} logo"><p class="lead mt18">${COMPANY}</p></div></section>
+${phero('About OpenFrame', 'From film lovers, to film lovers across the world.', 'OpenFrame Studio is one app for the whole film, made for people who make films with limited resources.')}
 <section class="tint sec-s"><div class="wrap"><div class="two">
 <div class="rv"><h2>What it is for</h2><p class="lead mt18">A film often starts as scattered notes and ends as a pile of separate files. OpenFrame Studio keeps the whole path in one project: first idea, story, screenplay, breakdown, schedule, call sheets and a light budget.</p></div>
 <div class="rv d1"><h2>Who it is for</h2><p class="lead mt18">Writers, screenwriters and production teams, especially people who make films with limited resources. There is one app for everyone and no separate editions.</p></div>
 </div></div></section>
-<section class="sec-s"><div class="wrap"><div class="sec-head"><span class="eyebrow">The founders</span><h2>Two founding engineers.</h2></div>
-<div class="founders">
-<div class="founder rv"><span class="role">Product Founding Engineer</span><h3>Badrinath Reddy A</h3><p>Responsible for the product idea, the ideation, the product design and the product direction of OpenFrame Studio.</p></div>
-<div class="founder rv d1"><span class="role">Technical Founding Engineer</span><h3>Saravan Kumar MK</h3><p>Responsible for the end-to-end technical implementation and software development of OpenFrame Studio.</p></div>
+<section class="sec-s"><div class="wrap"><div class="sec-head"><span class="eyebrow">The founders</span><h2>Two founding engineers.</h2>
+<p class="lead">One turns the film-making journey into a product. The other turns that product into software you can trust with your work.</p></div>
+<div class="founders">${FOUNDERS.map((f, i) => html`<article class="founder rv${i ? ' d1' : ''}"><span class="role">${f.role}</span><h3>${f.link ? html`<a class="name-link" href="${f.link}" target="_blank" rel="noopener noreferrer">${f.name}</a>` : f.name}</h3>${f.text.map((p) => html`<p>${p}</p>`)}</article>`)}
 </div></div></section>
 <section class="tint sec-s"><div class="wrap"><div class="sec-head"><h2>Your idea. Your film. Our promise.</h2></div><div class="grid3">
 <div class="card rv"><h3>Your work is yours</h3><p>It lives on your computer. No OpenFrame account, no cloud service, no telemetry.</p></div>
-<div class="card rv d1"><h3>You stay in charge</h3><p>The optional assistant only suggests. Nothing changes until you choose Apply.</p></div>
+<div class="card rv d1"><h3>You stay in charge</h3><p>OpenFrame AI only suggests. Nothing changes until you choose Apply.</p></div>
 <div class="card rv d2"><h3>No lock-in</h3><p>Standard formats in, standard formats out. Back up and move your whole project any time.</p></div>
 </div></div></section>
 ${cta()}`,
@@ -307,7 +305,7 @@ ${cta()}`,
   const contact = page({
     path: '/contact/',
     title: 'Contact | OpenFrame Studio',
-    description: `How to reach the team behind OpenFrame Studio at ${COMPANY}, and where to find answers first in the step-by-step tutorials and the FAQ.`,
+    description: 'How to reach the team behind OpenFrame Studio, and where to find answers first: the step-by-step tutorials, the features and the FAQ.',
     breadcrumbs: [['Contact', '/contact/']],
     body: html`
 ${phero('Contact us', 'Questions? Start here.', 'Most answers are already in the tutorials and the questions and answers.')}
@@ -318,12 +316,12 @@ ${phero('Contact us', 'Questions? Start here.', 'Most answers are already in the
 <a class="card linkcard" href="/faq/"><h3>Questions and answers</h3><p>Platforms, privacy, files and the trial.</p></a>
 <a class="card linkcard" href="/pricing/"><h3>Pricing</h3><p>One payment after a 7-day trial.</p></a>
 </div></div>
-<aside class="cinfo"><h3>Company</h3><p>${COMPANY}</p><h3>Store purchases</h3><p>Purchases, refunds and receipts are handled by the Microsoft Store and the Mac App Store.</p><h3>This website</h3><p>The site has no contact form and collects nothing.</p></aside>
+<aside class="cinfo"><h3>Store purchases</h3><p>Purchases, refunds and receipts are handled by the Microsoft Store and the Mac App Store.</p><h3>This website</h3><p>The site has no contact form and collects nothing.</p></aside>
 </div></div></section>`,
   });
 
   // ---------- Legal ----------
-  const legalHead = () => html`<p class="upd">Published by ${COMPANY}. Last updated ${UPDATED}.</p>`;
+  const legalHead = () => html`<p class="upd">Last updated ${UPDATED}.</p>`;
   const privacy = page({
     path: '/legal/privacy/',
     title: 'Website privacy notice | OpenFrame Studio',
@@ -341,7 +339,7 @@ ${phero('Privacy Policy', 'Website privacy notice.', 'This notice covers this we
   const terms = page({
     path: '/legal/terms/',
     title: 'Website terms of use | OpenFrame Studio',
-    description: `Terms for using the OpenFrame Studio website, published by ${COMPANY}. Buying and using the app follows the store terms.`,
+    description: 'Terms for using the OpenFrame Studio website. Buying the app, its price, refunds and its licence follow the Microsoft Store and Mac App Store terms.',
     breadcrumbs: [['Terms', '/legal/terms/']],
     body: html`
 ${phero('Terms of Use', 'Website terms of use.', 'These terms cover this website. Buying and using the app follows the terms shown in the store.')}

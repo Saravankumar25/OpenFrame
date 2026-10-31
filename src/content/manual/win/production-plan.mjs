@@ -266,7 +266,7 @@ export default {
         {
           screen: `prod-catalog-drawer`,
           do: `Type a reference in Contact / reference, and click Add Image to pick a picture.`,
-          explain: `Contact / reference is private: only Owners and Editors see it, and it is never shared with the assistant or put in exports. Add Image opens the Windows file window. Once there is a picture, it shows in the drawer with a small x to remove it.`,
+          explain: `Contact / reference is private: only Owners and Editors see it, and it is never shared with OpenFrame AI or put in exports. Add Image opens the Windows file window. Once there is a picture, it shows in the drawer with a small x to remove it.`,
         },
         {
           screen: `prod-catalog-drawer`,
@@ -441,7 +441,7 @@ export default {
     `The Catalog has no cost, supplier or purchasing fields. Money is handled in Budget.`,
     `The category of an existing catalog item cannot be changed. Add a new item in the right category instead.`,
     `Exports are snapshots. They do not update when the Catalog changes, and private notes are left out.`,
-    `Contact / reference on a catalog item is private to Owners and Editors and is never shared with the assistant or put in exports.`,
+    `Contact / reference on a catalog item is private to Owners and Editors and is never shared with OpenFrame AI or put in exports.`,
   ],
   troubleshooting: [
     {

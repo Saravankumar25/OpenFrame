@@ -197,7 +197,7 @@ export default {
         {
           screen: `plan-catalog-item-open`,
           do: `Choose Open, or just click the row.`,
-          explain: `The inspector opens, headed CATALOG ITEM with the item's name. It has Name, Category, Status, Description, Notes and Contact / reference. A note under Contact / reference says it is private: visible to Owners and Editors only, never shared with the assistant or put in exports. At the bottom are Delete, Archive and Open Scenes.`,
+          explain: `The inspector opens, headed CATALOG ITEM with the item's name. It has Name, Category, Status, Description, Notes and Contact / reference. A note under Contact / reference says it is private: visible to Owners and Editors only, never shared with OpenFrame AI or put in exports. At the bottom are Delete, Archive and Open Scenes.`,
         },
         {
           screen: `plan-catalog-item-status-menu`,
@@ -385,7 +385,7 @@ export default {
         {
           screen: `plan-location-open`,
           do: `Fill in Contact and, under Safety, Nearest hospital and Emergency contact.`,
-          explain: `Contact and Emergency contact are private: visible to Owners and Editors only. They are never shared with the assistant or put in exports. Nearest hospital asks for the name, address and phone of the nearest emergency room.`,
+          explain: `Contact and Emergency contact are private: visible to Owners and Editors only. They are never shared with OpenFrame AI or put in exports. Nearest hospital asks for the name, address and phone of the nearest emergency room.`,
         },
         {
           screen: `plan-location-notes`,
@@ -522,7 +522,7 @@ export default {
         {
           screen: `plan-cast-open`,
           do: `Choose Open, or click the row.`,
-          explain: `The inspector is headed CAST MEMBER with the person's name. It has Add Photo, the Character with a Primary label and Assign Character…, Person name, Contact, Availability notes, Availability and an Archive button. Contact is private: visible to Owners and Editors only, never shared with the assistant or put in exports.`,
+          explain: `The inspector is headed CAST MEMBER with the person's name. It has Add Photo, the Character with a Primary label and Assign Character…, Person name, Contact, Availability notes, Availability and an Archive button. Contact is private: visible to Owners and Editors only, never shared with OpenFrame AI or put in exports.`,
         },
         {
           screen: `plan-cast-open`,
@@ -1313,7 +1313,7 @@ export default {
     `Cast & Crew is a directory. It has no payroll and no contracts.`,
     `Availability dates on locations, cast and crew are advice. The schedule warns about them and never moves a scene by itself.`,
     `The storyboard sketch tool is for basic drawings. Import an image for finished art.`,
-    `Contact details, emergency contacts and catalog contacts are private to Owners and Editors. They are never shared with the assistant or put in exports.`,
+    `Contact details, emergency contacts and catalog contacts are private to Owners and Editors. They are never shared with OpenFrame AI or put in exports.`,
     `Moodboards and storyboards export as PDF. The shot list exports as PDF, CSV or Excel (XLSX).`,
   ],
   troubleshooting: [
