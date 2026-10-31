@@ -1,0 +1,10 @@
+/* Legal pages: marked placeholders, licence text, footer legal links. */
+.legal .ph{background:var(--accent-soft);border:1px dashed var(--accent);border-radius:6px;padding:0 6px;color:var(--ink);font-size:.95em}
+.legal code{font-size:.92em}
+.legal-upd{margin:0 0 20px;color:var(--muted);font-size:15px}
+.legal .lic{margin:12px 0;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.legal .lic summary{cursor:pointer;padding:14px 18px;font-weight:600;color:var(--ink)}
+.legal .lic-text{margin:0;padding:0 18px 18px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:13.5px;line-height:1.55;color:var(--ink2);font-family:ui-monospace,Consolas,monospace}
+nav.f-legal{display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:40px;padding-top:22px;border-top:1px solid #ffffff1f;font-size:14px}
+nav.f-legal a{color:#cfc9e2}
+nav.f-legal+.f-bot{margin-top:18px;border-top:0;padding-top:0}

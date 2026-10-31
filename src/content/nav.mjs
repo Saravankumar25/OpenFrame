@@ -32,7 +32,7 @@ export const WHY = [
   ['/pricing/', 'Pay once, own forever', 'No subscription. No rental.'],
   ['/compare/', 'One app vs five', 'What you stop paying for.'],
   ['/switch/', 'Switch from other software', 'Bring your scripts. Keep your work.'],
-  ['/themes/', 'Themes', 'Light, dark and seventeen app themes.'],
+  ['/themes/', 'Themes', 'Light, dark, built-in and your own app themes.'],
 ];
 
 // Manual parts, in reading order. Manual areas (src/content/manual) name one of these.

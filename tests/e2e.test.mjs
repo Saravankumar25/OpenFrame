@@ -25,7 +25,7 @@ async function withPage(fn, opts = {}) {
   assert.deepEqual(errors, []);
 }
 const attr = (page, a) => page.evaluate((x) => document.documentElement.getAttribute(x), a);
-const frameSrc = (page) => page.$$eval('iframe[data-mock]', (fs) => fs.map((f) => f.getAttribute('src')));
+const frameSrc = (page) => page.$$eval('img[data-mock]', (is) => is.map((i) => i.getAttribute('src')));
 
 test('website theme and app screen theme are independent and remembered', { skip: SKIP }, () => withPage(async (page) => {
   await page.goto(base + '/');
@@ -48,11 +48,11 @@ test('website theme and app screen theme are independent and remembered', { skip
 test('platform control swaps Windows and Mac screens in place and is kept across pages', { skip: SKIP }, () => withPage(async (page) => {
   await page.goto(base + '/');
   await page.click('.nav-ctls [data-set="os"][data-val="win"]');
-  assert.ok(await page.isVisible('[data-os-show="win"] .mock.win'));
-  assert.ok(!(await page.isVisible('[data-os-show="mac"] .mock.mac')));
+  assert.ok(await page.isVisible('[data-os-show="win"] .shot.win'));
+  assert.ok(!(await page.isVisible('[data-os-show="mac"] .shot.mac')));
   await page.click('.nav-ctls [data-set="os"][data-val="mac"]');
-  assert.ok(await page.isVisible('[data-os-show="mac"] .mock.mac'));
-  assert.ok(!(await page.isVisible('[data-os-show="win"] .mock.win')));
+  assert.ok(await page.isVisible('[data-os-show="mac"] .shot.mac'));
+  assert.ok(!(await page.isVisible('[data-os-show="win"] .shot.win')));
   assert.equal(await page.getAttribute('a[data-os-href-mac]', 'href'), '/mac/tutorials/');
   await page.goto(base + '/features/call-sheets/');
   assert.equal(await attr(page, 'data-os'), 'mac');
@@ -62,16 +62,14 @@ test('on a platform page the platform control goes to the other platform', { ski
   await page.goto(base + '/windows/tutorials/');
   await Promise.all([page.waitForURL('**/mac/tutorials/'), page.click('.nav-ctls [data-set="os"][data-val="mac"]')]);
   assert.equal(await attr(page, 'data-os'), 'mac');
-  assert.ok((await frameSrc(page)).every((s) => s.startsWith('/mockups/mac/')));
+  assert.ok((await frameSrc(page)).every((s) => s.startsWith('/shots/mac/')));
 }));
 
-test('embedded app screens load the real pages and scale to the frame', { skip: SKIP }, () => withPage(async (page) => {
+test('app screens are pictures that fill one frame and keep their shape', { skip: SKIP }, () => withPage(async (page) => {
   await page.goto(base + '/windows/');
-  const f = page.frameLocator('.tour-real iframe');
-  await f.locator('body').waitFor();
-  const box = await page.$eval('.tour-real .mock', (b) => ({ w: b.clientWidth, h: b.clientHeight, t: b.querySelector('iframe').style.transform }));
-  assert.match(box.t, /^scale\(0\.\d+\)$/);
-  assert.ok(Math.abs(box.w / box.h - 1.6) < 0.02);
+  assert.equal(await page.locator('iframe').count(), 0);
+  const box = await page.$eval('.tour-real .shot-open', (b) => { const i = b.querySelector('img'), r = b.getBoundingClientRect(); return { w: r.width, h: r.height, ar: i.width / i.height }; });
+  assert.ok(Math.abs(box.w / box.h - box.ar) < 0.05, JSON.stringify(box));
 }));
 
 test('price follows the region: India shows rupees, elsewhere dollars, and the choice can be changed', { skip: SKIP }, async () => {
@@ -112,7 +110,7 @@ for (const p of ['/', '/pricing/', '/features/screenplay/', '/windows/tutorials/
 for (const p of ['/', '/pricing/', '/download/', '/about/', '/faq/']) {
   test(`axe finds no serious problems: ${p}`, { skip: SKIP }, () => withPage(async (page) => {
     await page.goto(base + p);
-    const r = await new AxeBuilder({ page }).exclude('iframe').withTags(['wcag2a', 'wcag2aa']).analyze();
+    const r = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
     const bad = r.violations.filter((v) => ['serious', 'critical'].includes(v.impact)).map((v) => `${v.id}: ${v.nodes.length}`);
     assert.deepEqual(bad, []);
   }));
@@ -126,9 +124,9 @@ test('the loading icon lifts after the first load and stays away for the rest of
   assert.ok(await page.evaluate(() => document.documentElement.classList.contains('ready')), 'no splash on later pages');
 }, { reducedMotion: 'no-preference' }));
 
-test('each app screen shows the icon until its page has loaded', { skip: SKIP }, () => withPage(async (page) => {
+test('each app screen shows the icon until its picture has loaded', { skip: SKIP }, () => withPage(async (page) => {
   await page.goto(base + '/windows/');
-  await page.waitForSelector('.tour-real .mock.loaded', { timeout: 8000 });
+  await page.waitForSelector('.tour-real .shot-open.loaded', { timeout: 8000 });
   assert.ok(!(await page.isVisible('.tour-real .mock-load')));
 }));
 

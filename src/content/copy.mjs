@@ -76,13 +76,13 @@ export const FAQ = [
   ]],
   ['Platforms', [
     ['Which systems does it run on?',
-      'Windows 11 on 64-bit (x64) computers, and macOS 14 or later on Apple silicon Macs. Windows 10 and Intel Macs are not supported.'],
+      'Windows 11 on 64-bit computers, and macOS 14 or later on Apple silicon Macs. Windows 10 and Intel Macs are not supported.'],
     ['Where do I get it?',
       'From the Microsoft Store on Windows and the Mac App Store on the Mac. See [Download](/download/).'],
     ['Is the Mac app different from the Windows app?',
       'It does the same work on the same kind of project, in a native Mac app: the Mac menu bar, sheets instead of dialog windows, and Command shortcuts. The [Mac tutorials](/mac/tutorials/) use the real Mac screens.'],
     ['What does it need?',
-      'Windows 11 x64 or macOS 14 on Apple silicon. OpenFrame AI downloads about 1.2 GB, and its chat model needs at least 4 GB of memory (8 GB recommended).'],
+      'Windows 11 on a 64-bit computer, or macOS 14 on Apple silicon. OpenFrame AI downloads about 1.2 GB, and its chat model needs at least 4 GB of memory (8 GB recommended).'],
   ]],
   ['Privacy and data', [
     ['Where are my files stored?',

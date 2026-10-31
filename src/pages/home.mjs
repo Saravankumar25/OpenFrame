@@ -1,6 +1,6 @@
 // Home page (/), laid out as the approved website design's home page. Screens are the real captured app screens of
 // the selected platform; claims follow research/capability-matrix.md.
-import { APP, ORG } from './info.mjs';
+import { APP, ORG, WEBSITE } from './info.mjs';
 
 const STAGES = [
   ['Ideate', 'Idea Vault', 'Drop anything in: notes, images, links, voice notes and files.', { win: 'vault-grid-all-items', mac: 'vault-filled' }],
@@ -32,7 +32,7 @@ export default function home(ctx) {
 <div data-os-show="mac">${mock('mac', scr.mac, { caption: `${label}. ${line}`, eager: i === 0 })}</div></div>`;
   const body = html`
 <section class="hero center"><div class="wrap">
-<a class="chip" href="/download/">One app for Windows 11 and Mac &middot; 7-day free trial</a>
+<a class="chip" href="/download/">One app for Windows 11 and Mac &middot; 7-day free trial &rarr;</a>
 <h1>A film production software for all your needs.</h1>
 <p class="caption">From film lovers, to film lovers across the world.</p>
 <div class="hero-cta">${storeRow()}</div>
@@ -156,7 +156,6 @@ ${[['bulb', 'Notes and idea app'], ['board', 'Story outlining tool'], ['page', '
 <div class="card rv"><div class="n">01</div><h3>We never silently change your work</h3><p>OpenFrame suggests. You decide. Nothing rewrites your story, script or schedule on its own.</p></div>
 <div class="card rv d1"><div class="n">02</div><h3>Nothing is lost by accident</h3><p>Deleted items wait in Recently Deleted. Undo is offered after changes. Your work saves as you go.</p></div>
 <div class="card rv d2"><div class="n">03</div><h3>Leave any time, taking everything</h3><p>Every document exports. Your project is yours to back up, move and keep.</p></div>
-<div class="card rv d3"><div class="n">04</div><h3>Works when the internet doesn’t</h3><p>Remote location, power cut, no signal: your film keeps moving forward.</p></div>
 </div></div></section>
 
 <section class="tint"><div class="wrap split">
@@ -179,9 +178,9 @@ ${[['bulb', 'Notes and idea app'], ['board', 'Story outlining tool'], ['page', '
 <p class="small-print center">The store sets the final checkout amount, including any taxes that apply where you live.</p>
 </div></section>`;
   return [{
-    path: '/', nav: 'home', title: 'OpenFrame Studio: film production software for ideas, scripts, schedules and call sheets',
-    description: 'One local-first app for screenwriters and film production teams: Idea Vault, Beat Board, screenplay editor, breakdown, schedule, call sheets and reports. 7-day free trial, then pay once.',
+    path: '/', nav: 'home', title: 'OpenFrame Studio: film production software',
+    description: 'One app for screenwriters and film teams: Idea Vault, Beat Board, screenplay editor, breakdown, schedule and call sheets. 7-day free trial, then pay once.',
     body,
-    jsonld: [APP(ctx, 'Windows 11, macOS 14 or later'), ORG(ctx), { '@context': 'https://schema.org', '@type': 'WebSite', name: 'OpenFrame Studio', url: ctx.SITE_URL + '/' }],
+    jsonld: [APP(ctx, 'Windows 11, macOS 14 or later'), ORG(ctx), WEBSITE(ctx)],
   }];
 }

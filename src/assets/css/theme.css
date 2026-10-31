@@ -34,15 +34,6 @@
 :root[data-os=win] [data-os-show=win],:root[data-os=mac] [data-os-show=mac]{display:revert}
 :root[data-os=win] span[data-os-show=win],:root[data-os=mac] span[data-os-show=mac]{display:inline}
 
-/* app screen frame: a real captured screen (HTML page) scaled to the frame width */
-.mock{position:relative;overflow:hidden;border-radius:14px;background:var(--frame);box-shadow:var(--shadow),0 0 0 1px rgba(29,26,46,.12);aspect-ratio:16/10;width:100%}
-.mock.mac{aspect-ratio:1280/630;border-radius:12px}
-.mock iframe{position:absolute;left:0;top:0;width:1600px;height:1000px;max-width:none;border:0;transform-origin:0 0;transform:scale(var(--s,.5));pointer-events:none;background:transparent}
-.mock.mac iframe{width:1280px;height:630px}
-.mock-cap{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:10px;font-size:14px;color:var(--muted)}
-.mock-cap a{color:var(--accent-ink);font-weight:700;text-decoration:none}
-.mock-cap a:hover{text-decoration:underline}
-figure.screen{margin:0}
 
 /* hero screen switcher (real screens, no animation) */
 .stages button[aria-selected=true]::after{transition:none}
@@ -73,24 +64,23 @@ figure.screen{margin:0}
 .feat dt{font-size:12.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-ink)}
 .feat dd{margin:2px 0 0;color:var(--ink2);font-size:16px}
 .avail{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
-.avail span{font-size:13px;font-weight:700;border-radius:999px;padding:4px 11px;border:1px solid var(--line2);color:var(--ink2)}
-.avail span.yes{background:var(--accent-soft);border-color:transparent;color:var(--accent-ink)}
+.avail span{font-size:13.5px;font-weight:700;border-radius:999px;padding:4px 11px;border:1px solid var(--line2);color:var(--ink2)}
+.avail span.yes{background:var(--accent-soft);border-color:transparent;color:var(--accent-link)}
 .feat .shots{display:grid;gap:10px}
 .feat .more-shots{font-size:14px;color:var(--muted)}
-.feat .more-shots a{color:var(--accent-ink)}
+.feat .more-shots a{color:var(--accent-ink);display:inline-block;padding-block:4px}
 @media (max-width:1020px){.feat{grid-template-columns:1fr}}
 
 /* tutorials */
 .tut-part{margin-top:46px}
 .tut-part>h2{font-size:28px}
 .tut-part>p{color:var(--ink2);margin-top:6px}
-.tut .thumb .mock{border-radius:0;box-shadow:none;aspect-ratio:auto;height:100%}
 a.tut{text-decoration:none}
 .tsteps{list-style:none;margin:40px 0 0;padding:0;display:grid;gap:44px;counter-reset:s}
 .tstep{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:36px;align-items:start}
-.tstep .tx h3{font-size:21px;display:flex;gap:12px;align-items:flex-start}
-.tstep .tx h3::before{counter-increment:s;content:counter(s);flex:none;width:34px;height:34px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:15px;font-weight:800;margin-top:-3px}
-.tstep .tx p{color:var(--ink2);margin-top:10px}
+.tstep .tx .do{font:560 21px/1.25 var(--font-head);letter-spacing:-.015em;display:flex;gap:12px;align-items:flex-start;margin:0}
+.tstep .tx .do::before{counter-increment:s;content:counter(s);flex:none;width:34px;height:34px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:15px;font-weight:800;margin-top:-3px}
+.tstep .tx p:not(.do){color:var(--ink2);margin-top:10px}
 .tbox{background:var(--cream);border:1px solid var(--line);border-radius:18px;padding:24px 28px;margin-top:28px}
 .tbox h2,.tbox h3{font-size:20px;margin-bottom:8px}
 .tbox ul{margin:8px 0 0;padding-left:20px;color:var(--ink2);display:grid;gap:6px}
@@ -153,7 +143,7 @@ section.bt{border-top:1px solid var(--line)}
 .dg-ink{fill:var(--ink)}
 .dg-mut{fill:var(--muted)}
 .stage-panel[hidden]{display:none}
-.card.big .screen{margin-bottom:24px}
+.card.big .shot{margin-bottom:24px}
 .chart text{fill:#cfc9e2}
 /* header fixes: the menu stays on one line; the chevron is the design's small one; the gradient defs take no space */
 svg.defs{position:absolute;width:0;height:0;overflow:hidden}
@@ -162,13 +152,18 @@ svg.defs{position:absolute;width:0;height:0;overflow:hidden}
 .menu li.open>button .i{transform:rotate(180deg)}
 @media (max-width:1180px) and (min-width:1021px){.nav{gap:14px}.menu>li>a,.menu>li>button{padding:10px 8px;font-size:15px}.nav-cta .btn-ghost{display:none}}
 .tut .thumb img{display:block;width:100%;height:100%;object-fit:cover;object-position:top center}
-@media (max-width:640px){.store-row .btn,.store-col .btn,.panel .btn{white-space:normal;width:100%;text-align:center;line-height:1.25}.store-row{flex-direction:column}}
+/* long button labels (the store buttons) wrap inside their card instead of pushing the page wider */
+.pcard .btn,.panel .btn,.store-row .btn,.store-col .btn{white-space:normal;text-align:center;line-height:1.25}
+@media (max-width:640px){
+  .hero-cta .btn,.cta-band .btn,.pcard .btn,.panel .btn,.store-row .btn,.store-col .btn{white-space:normal;width:100%;text-align:center;line-height:1.25}
+  .store-row{flex-direction:column}
+}
 .store-col{display:grid;gap:12px}.store-col .btn{width:100%;margin-top:0}
 .app small{color:#b53713}
 :root[data-theme=dark] .app small{color:var(--accent-ink)}
 :root{--accent-link:#b53713}
 :root[data-theme=dark]{--accent-link:var(--accent-ink)}
-.mock-cap a,.more,.feat .more-shots a,.lib li a,.mega-foot a{color:var(--accent-link)}
+.more,.feat .more-shots a,.lib li a,.mega-foot a{color:var(--accent-link)}
 .one-card{background:#1d1a2e;color:#fff}
 :root[data-theme=dark] .one-card{background:#1c1928}
 /* "5 apps to 1" block: stats stay a row of cards down to phone width; dark theme gets lifted cards */
@@ -254,7 +249,6 @@ svg.defs{position:absolute;width:0;height:0;overflow:hidden}
 .menu>li>button.is-current,.menu>li>a[aria-current]{background:var(--tint);color:var(--ink)}
 .site-h,.site-h .wrap.nav{transition:height .25s var(--ease),box-shadow .25s,background .25s,top .25s}
 .site-h.scrolled{top:8px;box-shadow:0 1px 0 rgba(255,255,255,.6) inset,0 22px 50px -26px rgba(29,26,46,.5),0 0 0 1px rgba(29,26,46,.07)}
-.site-h.scrolled .wrap.nav{height:58px}
 @media (max-width:1180px){.nav-get{padding:10px 14px}}
 @media (max-width:640px){.nav-get{display:none}}
 @media (prefers-reduced-motion:reduce){.site-h,.site-h .wrap.nav{transition:none}}
@@ -331,7 +325,6 @@ h3{font-weight:560;letter-spacing:-.018em}
 /* an app screen waits behind the same icon until its page has loaded */
 .mock-load{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none}
 .mock-load .mk{width:56px;height:56px}
-.mock.loaded .mock-load{display:none}
 @media (prefers-reduced-motion:reduce){
   :is(.loader,.mock-load,.err-mark) .mk .s{animation:none;stroke-dasharray:none;stroke-dashoffset:0}
   .loader{transition:none}
@@ -360,11 +353,11 @@ h3{font-weight:560;letter-spacing:-.018em}
 .region-tg button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 @media (max-width:520px){.region-tg{top:18px;right:14px}.region-tg button{padding:0 10px;font-size:12.5px}}
 /* the card title leaves room for the toggle */
-.pcard.win h3{padding-right:0;margin-top:34px}
+.pcard.win :is(h2,h3){padding-right:0;margin-top:34px}
 /* control icons: solid ink and a heavier stroke so they read on white, the glass bar and dark alike */
 .ctl-ic{color:var(--ink);opacity:1}
 .ctl-ic svg{width:17px;height:17px}
-.seg button{color:var(--ink)}
+.seg button{color:var(--ink);min-width:32px;min-height:32px;justify-content:center}
 .seg button svg{width:16px;height:16px}
 .seg button[aria-pressed=true]{color:var(--on-solid)}
 .seg{border-color:var(--ink2);border-width:1.5px}
@@ -400,10 +393,80 @@ h3{font-weight:560;letter-spacing:-.018em}
   .menu-ctls .ctl-name{display:block;flex:1;font-size:15px;font-weight:600;color:var(--ink);margin-left:8px}
   .menu-ctls .seg button{padding:7px 14px}
 }
-@media (max-width:1099px) and (min-width:641px){.nav-get{display:inline-flex;margin-left:auto}}
+@media (max-width:1099px) and (min-width:480px){.nav-get{display:inline-flex}}
 /* the Features dropdown opens under the whole bar, so even hidden it never reaches past the screen edge */
 @media (min-width:1100px){
   .menu>li.has-mega:first-child{position:static}
   .menu>li.has-mega:first-child>.mega{left:0;right:0;padding-top:14px}
   .menu>li.has-mega:first-child .mega-in{width:auto}
+}
+
+/* Themes page: starter theme cards, numbered steps, code boxes */
+.tnav{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px}
+.tnav a{background:var(--surface);border:1px solid var(--line2);border-radius:999px;padding:8px 16px;font-weight:600;font-size:15px;color:var(--ink);text-decoration:none}
+.tnav a:hover{border-color:var(--solid)}
+.tcards{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.tcard{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:10px}
+.tcard .tsw svg{display:block;width:100%;height:auto;border-radius:10px;border:1px solid var(--line)}
+.tcard h3{margin-top:6px}
+.tcard p{color:var(--ink2);font-size:16px;flex:1}
+.tcard .btn{align-self:flex-start;padding:12px 18px;font-size:15px;overflow-wrap:anywhere;text-align:center}
+.tsteps{list-style:none;counter-reset:ts;margin:0;padding:0;display:grid;gap:14px}
+.tsteps li{counter-increment:ts;position:relative;padding:4px 0 4px 52px;min-height:38px;color:var(--ink2)}
+.tsteps li::before{content:counter(ts);position:absolute;left:0;top:0;width:36px;height:36px;border-radius:50%;background:var(--solid);color:var(--on-solid);display:grid;place-items:center;font-weight:800}
+.tsteps b{color:var(--ink)}
+.tshot{margin-top:28px}
+.codebox{margin:20px 0}
+.codebox pre{margin:0;padding:20px 22px;background:var(--surface);border:1px solid var(--line2);border-radius:14px;overflow-x:auto;font:14.5px/1.6 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--ink)}
+code{font:.92em ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:var(--tint);border-radius:6px;padding:1px 6px}
+.codebox code{background:none;padding:0;font-size:inherit}
+@media (max-width:980px){.tcards{grid-template-columns:1fr 1fr}}
+@media (max-width:640px){.tcards{grid-template-columns:1fr}}
+
+/* ===== menu drawer: close glyph, page behind it locked and dimmed, primary action inside it on small phones ===== */
+.menu-tg>span{display:grid;place-items:center}
+.menu-tg svg{width:22px;height:22px}
+.menu-tg .tg-close,.menu-tg[aria-expanded=true] .tg-open{display:none}
+.menu-tg[aria-expanded=true] .tg-close{display:grid}
+.menu-get{display:none}
+html.menu-lock{overflow:hidden}
+@media (max-width:1099px){
+  html.menu-lock body::after{content:"";position:fixed;inset:0;z-index:40;background:rgba(20,17,36,.5)}
+}
+@media (max-width:479px){
+  .menu.open-m .menu-get{display:block;order:-1;padding:6px 0 10px}
+  .menu.open-m>li.menu-get>a{justify-content:center;border:2px solid transparent;border-radius:12px;padding:16px 26px;font-size:17px;width:100%}
+}
+
+/* ===== store button message: a small bubble beside the button, placed by script, no layout shift ===== */
+.store-msg{position:absolute;z-index:120;left:0;top:0;max-width:min(300px,calc(100vw - 16px));padding:10px 14px;border-radius:10px;background:var(--solid);color:var(--on-solid);font:600 14.5px/1.35 var(--font);box-shadow:var(--shadow);text-align:center;visibility:hidden;opacity:0;pointer-events:none;transition:opacity .15s}
+.store-msg.show{visibility:visible;opacity:1}
+.store-msg::before{content:"";position:absolute;left:var(--ax,50%);top:-6px;margin-left:-6px;border:6px solid transparent;border-top:0;border-bottom-color:var(--solid)}
+.store-msg.up::before{top:auto;bottom:-6px;border-top:6px solid var(--solid);border-bottom:0}
+
+/* previous and next tutorial, at the foot of each tutorial */
+.tnext{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:34px}
+.tnext a{display:block;text-decoration:none;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px 20px;min-height:44px}
+.tnext a:hover{border-color:var(--line2);transform:translateY(-2px)}
+.tnext span{display:block;font-size:13.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.tnext b{display:block;margin-top:4px;font-family:var(--font-head);font-weight:560;font-size:17px;line-height:1.3}
+.tnext small{display:block;margin-top:4px;font-size:13.5px;color:var(--muted)}
+.tn-next{grid-column:2;text-align:right}
+.tn-prev{grid-column:1}
+.tnext a::before{content:none}
+@media (max-width:640px){.tnext{grid-template-columns:1fr}.tn-next,.tn-prev{grid-column:auto;text-align:left}}
+
+/* three promises (the offline claim already has its own card above) */
+.promise-row{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media (max-width:760px){.promise-row{grid-template-columns:minmax(0,1fr)}}
+/* the primary action stays in the bar from 1240px; below that the bar is full (the pricing link and every page's call to action band lead on) */
+@media (min-width:1240px) and (max-width:1319px){.nav-get{display:inline-flex;padding:9px 14px}}
+/* the drawer's primary action keeps the primary button look (the drawer's own link rules would flatten it) */
+.menu.open-m .menu-get a.btn-primary{background:var(--accent);color:#fff}
+.menu.open-m .menu-get a.btn-primary:hover{background:var(--accent-d)}
+/* phone widths: cards and large buttons give the long store labels more room */
+@media (max-width:640px){
+  .btn-lg{padding:16px 20px;font-size:16px}
+  .pcard{padding:30px 22px}
+  .panel{padding:26px 22px}
 }

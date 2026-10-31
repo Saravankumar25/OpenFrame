@@ -39,7 +39,7 @@ function catalogSection(ctx, slug, title) {
     const list = f[plat] || [];
     if (!list.length && plat === 'mac' && f.onMac) return html`<p class="more-shots">Available in the Mac app. This page shows no Mac screen for it.</p>`;
     if (!list.length) return html`<p class="more-shots">This capability is not part of the ${plat === 'win' ? 'Windows' : 'Mac'} app.</p>`;
-    return html`${ctx.mock(plat, list[0], { caption: f.name })}${list.length > 1 ? html`<p class="more-shots">More screens: ${list.slice(1).map((n, i) => html`${i ? ', ' : ''}<a data-mock href="/mockups/${plat}/light/${ctx.cat[plat].get(n)?.file}" target="_blank" rel="noopener">${ctx.cat[plat].get(n)?.title || n}</a>`)}</p>` : ''}`;
+    return html`${ctx.mock(plat, list[0], { caption: f.name })}${list.length > 1 ? html`<p class="more-shots">More screens: ${list.slice(1).map((n, i) => html`${i ? ', ' : ''}${ctx.shotLink(plat, n, ctx.cat[plat].get(n)?.title || n)}`)}</p>` : ''}`;
   };
   return html`<section class="sec-s" id="catalog"><div class="wrap"><div class="sec-head"><span class="eyebrow">Complete list</span><h2>Everything in ${title}.</h2>
 <p class="lead">Each one with what it does, what it is for, and where it is available.</p></div>

@@ -4,6 +4,7 @@ import { html, raw, esc } from './html.mjs';
 import { ICON, MARK, GRADIENT_DEFS } from './icons.mjs';
 import { FEATURE_GROUPS, WHY, OS, COMPANY } from '../content/nav.mjs';
 import { SITE_URL, SITE_NAME, STORE } from '../../site.config.mjs';
+import { headMeta, jsonLd } from './seo.mjs';
 
 // Runs before first paint (its hash is allowed in the CSP). Platform: the page's own platform, then the saved
 // choice, then a guess. Website theme: saved choice, then the system setting. Screen theme: saved choice, else light.
@@ -14,15 +15,33 @@ const MSICON = raw('<svg class="i logo" viewBox="0 0 24 24" aria-hidden="true" f
 const STUDIO = raw('<small aria-hidden="true"><i>S</i><i>T</i><i>U</i><i>D</i><i>I</i><i>O</i></small>');
 export const WORDMARK = html`<span class="wm"><b><i>Open</i>Frame</b>${STUDIO}</span>`;
 
-export function makeHelpers(cat, missing) {
-  // A real captured app screen, embedded as its HTML page and scaled to the frame. The screen theme control swaps
-  // /light/ and /dark/ in the src; the page is the same screen in both folders.
+export function makeHelpers(cat, missing, shots = { win: {}, mac: {} }, noShot = new Set()) {
+  // The picture set of one screen (made by scripts/shots.mjs into .cache/shots, copied to /shots/). Links name the
+  // light folder; the screen theme control swaps /light/ and /dark/ in every [data-mock] attribute.
+  const pic = (plat, name) => {
+    const m = shots[plat]?.[name];
+    if (!m) { noShot.add(`${plat}/${name}`); return null; }
+    const b = `/shots/${plat}/light/${name}`;
+    return { c720: `${b}.card-720.webp`, c1280: `${b}.card-1280.webp`, full: `${b}.full.webp`, w: m.card[0], h: m.card[1] };
+  };
+  // A real captured app screen as a picture. Clicking it opens the lightbox (lightbox.js); without script the link
+  // opens the full picture. link:false makes it a plain picture.
   const mock = (plat, name, { caption = '', alt = '', link = true, eager = false } = {}) => {
     const s = cat[plat]?.get(name);
     if (!s) { missing.add(`${plat}/${name}`); return html`<span class="shot-missing">${plat}/${name}</span>`; }
-    const src = `/mockups/${plat}/light/${s.file}`;
-    const label = alt || s.title;
-    return html`<figure class="screen"><div class="mock ${plat}" data-w="${s.width}" data-h="${s.height}"><span class="mock-load" aria-hidden="true">${MARK}</span><iframe data-mock src="${src}" title="${OS[plat].name} screen: ${label}"${raw(eager ? '' : ' loading="lazy"')} tabindex="-1" aria-hidden="true"></iframe></div>${caption || link ? html`<figcaption class="mock-cap"><span>${caption || label}</span>${link ? html`<a data-mock href="${src}" target="_blank" rel="noopener">Open this screen<span class="sr"> in a new tab</span></a>` : ''}</figcaption>` : ''}</figure>`;
+    const p = pic(plat, name);
+    if (!p) return html`<span class="shot-missing">${plat}/${name}</span>`;
+    const label = alt || `${OS[plat].name} screen: ${s.title}`;
+    const sizes = eager ? '(min-width: 1200px) 1120px, 100vw' : '(min-width: 900px) 640px, 100vw';
+    const img = html`<img data-mock src="${p.c720}" srcset="${p.c720} 720w, ${p.c1280} 1280w" sizes="${sizes}" width="${p.w}" height="${p.h}" alt="${label}" ${raw(eager ? 'loading="eager" fetchpriority="high"' : 'loading="lazy"')} decoding="async">`;
+    const inner = html`<span class="mock-load" aria-hidden="true">${MARK}</span>${img}`;
+    const frame = link ? html`<a class="shot-open" href="${p.full}" data-mock>${inner}</a>` : html`<span class="shot-open shot-static">${inner}</span>`;
+    return html`<figure class="shot ${plat}">${frame}${caption ? html`<figcaption>${caption}</figcaption>` : ''}</figure>`;
+  };
+  // A text link that opens one screen in the lightbox (the "More screens" lists).
+  const shotLink = (plat, name, text) => {
+    const p = pic(plat, name);
+    return p ? html`<a class="shot-open shot-link" href="${p.full}" data-mock data-caption="${text}">${text}</a>` : html`<span class="shot-missing">${plat}/${name}</span>`;
   };
   const osBlocks = ({ win, mac }) => html`<div data-os-show="win">${win}</div><div data-os-show="mac">${mac}</div>`;
   const osText = (win, mac) => html`<span data-os-show="win">${win}</span><span data-os-show="mac">${mac}</span>`;
@@ -45,7 +64,7 @@ export function makeHelpers(cat, missing) {
 <div class="hero-cta">${storeRow()}</div>
 <div class="hero-cta"><a class="btn btn-ghost" href="/tutorials/" data-os-href-win="/windows/tutorials/" data-os-href-mac="/mac/tutorials/">Read the tutorials</a></div>
 </div></section>`;
-  return { mock, osBlocks, osText, storeBtn, storeRow, price, cta };
+  return { mock, shotLink, pic, osBlocks, osText, storeBtn, storeRow, price, cta };
 }
 
 // The three controls are icon buttons; each has a spoken name and a tooltip, and its group has a small icon label.
@@ -58,15 +77,18 @@ const CTL_ICON = {
   mac: I('<path d="M16.4 12.7c0-2.4 2-3.6 2.1-3.7-1.1-1.7-2.9-1.9-3.5-1.9-1.5-.2-2.9.9-3.7.9-.8 0-1.9-.9-3.2-.8-1.6 0-3.2 1-4 2.4-1.7 3-.4 7.4 1.2 9.8.8 1.2 1.8 2.5 3 2.4 1.2 0 1.7-.8 3.1-.8s1.9.8 3.2.8c1.3 0 2.2-1.2 3-2.4.9-1.4 1.3-2.7 1.3-2.8-.1 0-2.5-1-2.5-3.9zM14 5.4c.7-.8 1.1-1.9 1-3-1 0-2.1.7-2.8 1.5-.6.7-1.2 1.8-1 2.9 1.1.1 2.1-.6 2.8-1.4z"/>', true),
   light: I('<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>'),
   dark: I('<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>'),
+  // the app screen theme shows a small app window, so it reads differently from the website theme's sun and moon
+  mlight: I('<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/>'),
+  mdark: I('<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="currentColor"/>'),
 };
-const seg = (name, key, opts) => html`<div class="ctl" role="group" aria-label="${name}"><span class="ctl-ic" title="${name}">${CTL_ICON[key]}</span><span class="ctl-name" aria-hidden="true">${name}</span><span class="seg">${opts.map(([v, t]) => html`<button type="button" data-set="${key}" data-val="${v}" aria-pressed="false" aria-label="${name}: ${t}" title="${name}: ${t}">${CTL_ICON[v]}</button>`)}</span></div>`;
+const seg = (name, key, opts) => html`<div class="ctl" role="group" aria-label="${name}"><span class="ctl-ic" title="${name}">${CTL_ICON[key]}</span><span class="ctl-name" aria-hidden="true">${name}</span><span class="seg">${opts.map(([v, t, ic = v]) => html`<button type="button" data-set="${key}" data-val="${v}" aria-pressed="false" aria-label="${name}: ${t}" title="${name}: ${t}">${CTL_ICON[ic]}</button>`)}</span></div>`;
 
 function header(page, switchHref) {
   const cur = (k) => (page.nav === k ? raw(' aria-current="page"') : '');
-  const feat = FEATURE_GROUPS.map(([g, items]) => html`<div class="mg"><h4>${g}</h4>${items.map(([slug, t, b]) => html`<a href="/features/${slug}/"><b>${t}</b><span>${b}</span></a>`)}</div>`);
+  const feat = FEATURE_GROUPS.map(([g, items]) => html`<div class="mg"><p class="mg-h">${g}</p>${items.map(([slug, t, b]) => html`<a href="/features/${slug}/"><b>${t}</b><span>${b}</span></a>`)}</div>`);
   const why = WHY.map(([href, t, b]) => html`<div class="mg"><a href="${href}"><b>${t}</b><span>${b}</span></a></div>`);
   // The three controls sit in the header on wide screens and inside the menu drawer on narrow ones.
-  const ctls = html`${seg('Platform', 'os', [['win', 'Windows'], ['mac', 'Mac']])}${seg('Website theme', 'theme', [['light', 'Light'], ['dark', 'Dark']])}${seg('App screen theme', 'mock', [['light', 'Light'], ['dark', 'Dark']])}`;
+  const ctls = html`${seg('Platform', 'os', [['win', 'Windows'], ['mac', 'Mac']])}${seg('Website theme', 'theme', [['light', 'Light'], ['dark', 'Dark']])}${seg('App screen theme', 'mock', [['light', 'Light', 'mlight'], ['dark', 'Dark', 'mdark']])}`;
   return html`<a class="skip" href="#main">Skip to content</a>${GRADIENT_DEFS}
 <header class="site-h"><div class="wrap nav">
 <a class="brand draw" href="/" >${MARK}${WORDMARK}<span class="sr"> Studio, home</span></a>
@@ -78,56 +100,42 @@ function header(page, switchHref) {
 <li><a href="/tutorials/" data-os-href-win="/windows/tutorials/" data-os-href-mac="/mac/tutorials/"${cur('tutorials')}>Tutorials</a></li>
 <li><a href="/faq/"${cur('faq')}>FAQ</a></li>
 <li><a href="/about/"${cur('about')}>About Us</a></li>
+<li class="menu-get"><a class="btn btn-primary" href="/download/">Get OpenFrame</a></li>
 <li class="menu-ctls">${ctls}</li>
 </ul>
 <div class="ctls nav-ctls">${ctls}</div>
+<a class="srch-btn" href="/search/" data-search-open aria-haspopup="dialog" aria-keyshortcuts="Control+K Meta+K /"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><span class="sr">Search</span><kbd class="srch-k" aria-hidden="true"><span data-os-show="win">Ctrl K</span><span data-os-show="mac">Cmd K</span></kbd></a>
 <a class="btn btn-primary btn-sm nav-get" href="/download/"${cur('download')}>Get OpenFrame</a>
-<button type="button" class="menu-tg" id="menutg" aria-label="Menu" aria-controls="menu" aria-expanded="false">${ICON.menu}</button>
+<button type="button" class="menu-tg" id="menutg" aria-label="Menu" aria-controls="menu" aria-expanded="false"><span class="tg-open">${ICON.menu}</span><span class="tg-close">${ICON.cross}</span></button>
 </div></header>
 <script type="application/json" id="os-switch">${raw(JSON.stringify(switchHref))}</script>`;
 }
 
+const LEGAL_LINKS = [['Privacy', '/legal/privacy/'], ['Terms', '/legal/terms/'], ['Refunds', '/legal/refunds/'], ['Cookies', '/legal/cookies/'], ['Notices', '/legal/notices/']];
 function footer() {
-  const col = (t, items) => html`<div><h4>${t}</h4><ul>${items.map(([a, h]) => html`<li><a href="${h}">${a}</a></li>`)}</ul></div>`;
+  const col = (t, items) => html`<div><p class="f-h">${t}</p><ul>${items.map(([a, h]) => html`<li><a href="${h}">${a}</a></li>`)}</ul></div>`;
   const all = FEATURE_GROUPS.flatMap(([, items]) => items);
   return html`<footer class="site-f"><div class="wrap"><div class="f-grid">
 <div><a class="brand" href="/" >${MARK}${WORDMARK}<span class="sr"> Studio, home</span></a>
 <p class="about">A film production software for all your needs. From film lovers, to film lovers across the world.</p>
-<div class="f-company"><img src="/company/vighnajith-advisories-logo.webp" width="1774" height="887" alt="${COMPANY} logo" loading="lazy"><span>${SITE_NAME} is a product of ${COMPANY}.</span></div></div>
+<div class="f-company"><img src="/company/vighnajith-advisories-logo-192.webp" srcset="/company/vighnajith-advisories-logo-96.webp 96w, /company/vighnajith-advisories-logo-192.webp 192w, /company/vighnajith-advisories-logo-288.webp 288w" sizes="96px" width="96" height="48" alt="${COMPANY} logo" loading="lazy"><span>${SITE_NAME} is a product of ${COMPANY}.</span></div></div>
 ${col('Ideate & Write', all.slice(0, 7).map(([s, t]) => [t, `/features/${s}/`]))}
 ${col('Plan & Shoot', all.slice(7).map(([s, t]) => [t, `/features/${s}/`]).concat([['All features', '/features/']]))}
 ${col('Why OpenFrame', WHY.map(([h, t]) => [t, h]).concat([['Windows', '/windows/'], ['Mac', '/mac/']]))}
-${col('Support', [['Windows tutorials', '/windows/tutorials/'], ['Mac tutorials', '/mac/tutorials/'], ['FAQ', '/faq/'], ['Contact us', '/contact/'], ['Download', '/download/'], ['Privacy Policy', '/legal/privacy/'], ['Terms of Use', '/legal/terms/'], ['About us', '/about/']])}
-</div><div class="f-bot"><span>&copy; 2026 ${COMPANY}. <b>Your privacy stays on your computer.</b></span>
+${col('Support', [['Windows tutorials', '/windows/tutorials/'], ['Mac tutorials', '/mac/tutorials/'], ['FAQ', '/faq/'], ['Contact us', '/contact/'], ['Download', '/download/'], ['About us', '/about/']])}
+</div><nav class="f-legal" aria-label="Legal">${LEGAL_LINKS.map(([a, h]) => html`<a href="${h}">${a}</a>`)}</nav><div class="f-bot"><span>&copy; ${new Date().getFullYear()} ${COMPANY}. <b>Your privacy stays on your computer.</b></span>
 <span>Microsoft and Microsoft Store are trademarks of the Microsoft group of companies. Apple, Mac, macOS and Mac App Store are trademarks of Apple Inc.</span></div></div></footer>`;
 }
 
 export function renderPage(page, { css, js, switchHref }) {
-  const url = SITE_URL + page.path;
-  const crumbs = page.breadcrumbs?.length ? [['Home', '/'], ...page.breadcrumbs] : null;
-  const ld = [...(page.jsonld || [])];
-  if (crumbs) ld.push({ '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: crumbs.map(([name, p], i) => ({ '@type': 'ListItem', position: i + 1, name, item: SITE_URL + p })) });
-  const og = page.ogImage ? (page.ogImage.startsWith('http') ? page.ogImage : SITE_URL + page.ogImage) : SITE_URL + '/og.png';
+  const ld = jsonLd(page);
+  // No font preloads on purpose: on a slow phone they share the line with the stylesheet and delay first paint by about 1 s (docs/SEO.md).
   return `<!doctype html>
 <html lang="en" data-os="${page.os || 'win'}"${page.os ? ` data-page-os="${page.os}"` : ''} data-theme="light" data-mock="light">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${esc(page.title)}</title>
-<meta name="description" content="${esc(page.description)}">
-<link rel="canonical" href="${esc(url)}">
-${page.noindex ? '<meta name="robots" content="noindex">\n' : ''}<meta property="og:type" content="website">
-<meta property="og:site_name" content="${SITE_NAME}">
-<meta property="og:title" content="${esc(page.ogTitle || page.title)}">
-<meta property="og:description" content="${esc(page.description)}">
-<meta property="og:url" content="${esc(url)}">
-<meta property="og:image" content="${esc(og)}">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="OpenFrame Studio: a film production software for all your needs, with a real app screen.">
-<meta property="og:locale" content="en_US">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image:alt" content="OpenFrame Studio: a film production software for all your needs, with a real app screen.">
+${headMeta(page)}
 <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0e0d15" media="(prefers-color-scheme: dark)">
 <meta name="application-name" content="OpenFrame Studio">
@@ -138,9 +146,6 @@ ${page.noindex ? '<meta name="robots" content="noindex">\n' : ''}<meta property=
 <link rel="icon" href="/favicon-16x16.png" type="image/png" sizes="16x16">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="manifest" href="/site.webmanifest">
-<link rel="preload" href="/assets/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="/assets/fonts/newsreader-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="/assets/fonts/sora-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="${css}">
 <script id="boot">${BOOT}</script>
 ${ld.map((o) => `<script type="application/ld+json">${JSON.stringify(o).replace(/</g, '\\u003c')}</script>`).join('\n')}

@@ -1,12 +1,12 @@
 // Static checks over dist/: page basics, links, app screens, store buttons, company, prices, no internal wording.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync, readdirSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { FOUNDERS } from '../src/content/founders.mjs';
 import { DIST, SKIP, htmlFiles, pagePath, read, resolvesInDist } from './_helpers.mjs';
 
-const pages = htmlFiles().filter((f) => !f.includes(`${path.sep}mockups${path.sep}`));
+const pages = htmlFiles();
 const html = new Map(pages.map((f) => [f, read(f)]));
 const COMPANY = 'Vighnajith Advisories Private Limited';
 
@@ -70,23 +70,16 @@ test('prices: rupees for India, US dollars elsewhere, no euro price', { skip: SK
   for (const v of html.values()) assert.doesNotMatch(v, /€|89 euros|3,000 rupees/);
 });
 
-test('sitemap lists every indexable page and no mockup; headers let only this site frame the screens', { skip: SKIP }, () => {
+test('sitemap lists every indexable page; the live screen pages are gone and /mockups/ redirects to the tutorials', { skip: SKIP }, () => {
   const sm = read(path.join(DIST, 'sitemap.xml'));
   for (const [f, s] of html) if (!/noindex/.test(s) && !f.endsWith('404.html')) assert.ok(sm.includes(`${pagePath(f)}</loc>`), pagePath(f));
   assert.doesNotMatch(sm, /mockups/);
+  assert.ok(!existsSync(path.join(DIST, 'mockups')));
+  assert.doesNotMatch(read(path.join(DIST, 'robots.txt')), /mockups/);
   const h = read(path.join(DIST, '_headers'));
-  assert.match(h, /\/mockups\/\*\n  ! Content-Security-Policy\n  ! X-Frame-Options/);
-  assert.match(h, /frame-ancestors 'self'/);
-});
-
-test('published app screens show no test-machine paths or the capture account name', { skip: SKIP }, () => {
-  const bad = /zz-capture|tests\e2e\\.run|\/var\/folders|openframe-e2e\.|Saravan Kumar|E2E Tester/;
-  const hits = [];
-  for (const plat of ['win', 'mac']) for (const t of ['light', 'dark']) {
-    const dir = path.join(DIST, 'mockups', plat, t);
-    for (const f of readdirSync(dir).filter((x) => x.endsWith('.html'))) if (bad.test(read(path.join(dir, f)))) hits.push(`${plat}/${t}/${f}`);
-  }
-  assert.deepEqual(hits.slice(0, 10), []);
+  assert.doesNotMatch(h, /mockups/);
+  assert.match(h, /frame-ancestors 'none'/);
+  assert.match(read(path.join(DIST, '_redirects')), /^\/mockups\/\* \/tutorials\/ 301$/m);
 });
 
 test('public pages reveal nothing about how the product is built', { skip: SKIP }, () => {
@@ -96,10 +89,4 @@ test('public pages reveal nothing about how the product is built', { skip: SKIP 
     assert.doesNotMatch(text, stack, pagePath(f));
   }
   for (const f of ['llms.txt', 'llms-full.txt']) assert.doesNotMatch(read(path.join(DIST, f)), stack, f);
-  const hits = [];
-  for (const plat of ['win', 'mac']) for (const t of ['light', 'dark']) {
-    const dir = path.join(DIST, 'mockups', plat, t);
-    for (const f of readdirSync(dir).filter((x) => x.endsWith('.html'))) if (/<!--|class="band"|page \d+ of \d+/.test(read(path.join(dir, f)))) hits.push(`${plat}/${t}/${f}`);
-  }
-  assert.deepEqual(hits.slice(0, 10), []);
 });

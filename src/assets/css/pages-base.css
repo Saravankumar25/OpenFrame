@@ -22,7 +22,7 @@
 .phero .hero-cta{margin-top:30px}
 .phero .tour-wrap{margin-top:46px}
 .sec-s{padding:76px 0}
-.frow{display:grid;grid-template-columns:1fr 1.15fr;gap:60px;align-items:center;padding:40px 0}
+.frow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:60px;align-items:center;padding:40px 0}
 .frow.rev .ftxt{order:2}
 .ftxt h2{font-size:clamp(26px,3.2vw,40px)}
 .ftxt p{margin-top:14px;color:var(--ink2);font-size:18px}
@@ -32,7 +32,7 @@
 .step .n{width:42px;height:42px;border-radius:50%;background:var(--solid);color:var(--on-solid);display:grid;place-items:center;font-weight:800;margin-bottom:16px}
 .step p{color:var(--ink2);margin-top:8px;font-size:16px}
 .facts{background:var(--cream);border:1px solid var(--line);border-radius:22px;padding:36px 40px;max-width:900px;margin:0 auto}
-.facts h3{margin-bottom:6px;font-size:24px}
+.facts :is(h2,h3){margin-bottom:6px;font-size:24px}
 .facts .ticks{margin-top:18px}
 .cta-band{background:var(--dark);color:#fff;text-align:center;padding:84px 0}
 .cta-band h2{max-width:820px;margin:0 auto}
@@ -58,6 +58,8 @@
 .tbl .no{color:var(--muted)}
 .tbl-wrap{overflow-x:auto}
 .tbl-wrap .tbl{min-width:640px}
+/* two-column tables have no need for that width: they wrap instead of scrolling */
+.tbl-wrap.fit .tbl{min-width:0}
 
 .fchips{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:26px 0 8px}
 .fchip{background:var(--surface);border:1.5px solid var(--line2);border-radius:999px;padding:9px 18px;font-weight:600;cursor:pointer;font-size:15px}
@@ -84,7 +86,7 @@
 .tut .play{position:absolute;right:14px;bottom:14px;z-index:2;width:44px;height:44px;border-radius:50%;background:var(--accent);display:grid;place-items:center}
 .tut .play::before{content:"";border-left:14px solid #fff;border-top:8px solid transparent;border-bottom:8px solid transparent;margin-left:4px}
 .tut .tb{padding:20px 22px 24px}
-.tut .meta{font-size:12.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-ink)}
+.tut .meta{font-size:13.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-ink)}
 .tut h3{margin-top:8px;font-size:20px}
 .tut p{color:var(--ink2);font-size:15.5px;margin-top:8px}
 .tview{position:fixed;inset:0;z-index:110;background:rgba(20,17,36,.62);backdrop-filter:blur(5px);display:none;align-items:flex-start;justify-content:center;padding:28px 16px;overflow:auto}
@@ -96,12 +98,12 @@
 .tview .tbody ol{margin:26px 0 0;padding-left:22px;display:grid;gap:10px;color:var(--ink2)}
 .tview .tour-frame{box-shadow:0 0 0 1px rgba(29,26,46,.12)}
 
-.price-grid{display:grid;grid-template-columns:1.15fr 1fr;gap:22px;max-width:1000px;margin:0 auto}
+.price-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:22px;max-width:1000px;margin:0 auto}
 .pcard{background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:36px;position:relative}
 .pcard.win{border:2px solid var(--accent);box-shadow:0 30px 60px -34px rgba(210,68,28,.5)}
 .pcard .badge{position:absolute;top:-14px;left:28px;background:var(--accent);color:#fff;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:6px 14px;border-radius:999px}
 .pcard.mac .badge{background:var(--solid);color:var(--on-solid)}
-.pcard h3{font-size:26px}
+.pcard :is(h2,h3){font-size:26px}
 .price{display:flex;align-items:baseline;gap:12px;margin:18px 0 4px}
 .price b{font-size:clamp(46px,6vw,68px);letter-spacing:-.04em;line-height:1}
 .price s{color:var(--muted);font-size:22px}
@@ -114,7 +116,7 @@
 .legal ul{padding-left:22px;display:grid;gap:8px;margin:12px 0}
 .legal .tbl{margin:16px 0}
 .legal .upd{color:var(--muted);font-size:15px}
-.contact{display:grid;grid-template-columns:1.1fr .9fr;gap:52px;align-items:start}
+.contact{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:52px;align-items:start}
 .field{display:grid;gap:7px;margin-bottom:18px}
 .field label{font-weight:700;font-size:15px}
 .field input,.field select,.field textarea{font:inherit;padding:14px 16px;border-radius:12px;border:2px solid var(--line2);background:var(--surface);width:100%}
@@ -126,13 +128,15 @@
 .notfound{text-align:center;padding:120px 0}
 .notfound .big{font-size:clamp(90px,16vw,200px);font-weight:800;letter-spacing:-.06em;line-height:1;color:var(--ink)}
 .notfound .big span{color:var(--accent-ink)}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:56px;align-items:center}
 .pill-list{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
 .pill-list span{background:var(--surface);border:1px solid var(--line2);border-radius:999px;padding:8px 16px;font-weight:600;font-size:15px}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}
+/* a grid track never grows to its widest child (a table, a long button label); the child scrolls or wraps instead */
+.frow>*,.two>*,.contact>*,.price-grid>*,.grid2>*{min-width:0}
 
 @media (max-width:1020px){
-  .frow,.two,.contact,.price-grid,.grid2{grid-template-columns:1fr;gap:30px}
+  .frow,.two,.contact,.price-grid,.grid2{grid-template-columns:minmax(0,1fr);gap:30px}
   .frow.rev .ftxt{order:0}
   .steps3,.tgrid{grid-template-columns:1fr 1fr}
 }
@@ -148,7 +152,7 @@
 .card.big .crop{margin-bottom:24px}
 .card.big .eyebrow{margin-bottom:8px}
 .card.big h3{font-size:24px}
-.more{display:inline-block;margin-top:16px;font-weight:700;color:var(--accent-ink);text-decoration:none}
+.more{display:inline-block;margin-top:10px;padding-block:6px;font-weight:700;color:var(--accent-ink);text-decoration:none}
 .more:hover{text-decoration:underline;text-underline-offset:4px}
 .swgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px}
 .sw{display:block;height:58px;border-radius:12px;background:linear-gradient(90deg,var(--s) 0 30%,var(--b) 30% 100%);position:relative;border:1px solid var(--line2);flex:none}
