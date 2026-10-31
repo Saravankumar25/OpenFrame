@@ -13,7 +13,7 @@ git-ignored `.cache/shots/`); clicking a screen opens the viewer. `/mockups/` is
 - Tests: `npm test` (112 at this point). Docs: `docs/OPERATIONS.md` (deploy, Cloudflare checklist), `docs/SEO.md`,
   `docs/SECURITY.md`, `docs/ROADMAP.md`, `docs/decisions/hero-animation-style.md`.
 - Waiting on the owner: contact email, Cloudflare dashboard items, custom domain, legal facts, AI model terms wording,
-  euro pricing decision, GitHub repository visibility (public as of 2026-10-31).
+  euro pricing decision, GitHub repository stays public (owner decision 2026-10-31).
 - Store buttons look normal and do nothing until listing links exist.
 
 Next:
