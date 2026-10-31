@@ -36,7 +36,7 @@ test('icon set, manifest, security.txt and humans.txt are published and consiste
   assert.match(sec, /^Contact: https:\/\/.+\nExpires: \d{4}-\d\d-\d\dT[\d:]+Z\n/);
   assert.match(sec, /Canonical: https:\/\/.+\/\.well-known\/security\.txt/);
   const h = read(file('humans.txt'));
-  assert.ok(h.indexOf('Saravan Kumar M K') < h.indexOf('Badrinath Reddy Avuku'));
+  assert.ok(h.indexOf('Saravan Kumar M K') < h.indexOf('Badrinath Reddy A'));
   const home = read(file('index.html'));
   for (const l of ['rel="manifest" href="/site.webmanifest"', 'rel="apple-touch-icon" href="/apple-touch-icon.png"', 'href="/favicon.ico"', 'property="og:image:width"', 'media="(prefers-color-scheme: dark)"']) assert.ok(home.includes(l), l);
 });

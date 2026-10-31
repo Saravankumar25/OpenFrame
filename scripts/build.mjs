@@ -15,7 +15,7 @@ import { loadManual } from './check-content.mjs';
 import { CATALOG } from '../src/content/catalog.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
-const SRC = path.join(ROOT, 'src'), DIST = path.join(ROOT, 'dist');
+const SRC = path.join(ROOT, 'src'), DIST = process.env.OF_DIST ? path.resolve(process.env.OF_DIST) : path.join(ROOT, 'dist'); // OF_DIST: a private output folder for parallel work
 const rel = (...p) => path.join(ROOT, ...p);
 const t0 = Date.now();
 const SKIP_MOCKUPS = !!process.env.OF_SKIP_MOCKUPS; // faster local page builds; never for a deploy
@@ -33,9 +33,11 @@ const manual = { win: await loadManual('win'), mac: await loadManual('mac') };
 
 // ---------- assets (content-hashed names)
 const hash = (buf) => crypto.createHash('sha256').update(buf).digest('hex').slice(0, 10);
-const cssFiles = ['site.css', 'pages-base.css', 'theme.css'].map((f) => path.join(SRC, 'assets', 'css', f));
+const cssFiles = ['site.css', 'pages-base.css', 'theme.css', 'shots.css', 'search.css', 'legal.css'].map((f) => path.join(SRC, 'assets', 'css', f));
 const cssOut = (await esbuild.transform(cssFiles.map((f) => fs.readFileSync(f, 'utf8')).join('\n'), { loader: 'css', minify: true })).code;
-const jsOut = (await esbuild.transform(fs.readFileSync(path.join(SRC, 'assets', 'js', 'site.js'), 'utf8'), { loader: 'js', minify: true, target: 'es2019' })).code;
+// Each script is its own scope, so the files cannot clash on names.
+const jsSrc = ['site.js', 'lightbox.js', 'search.js'].map((f) => `;(function(){\n${fs.readFileSync(path.join(SRC, 'assets', 'js', f), 'utf8')}\n})();`).join('\n');
+const jsOut = (await esbuild.transform(jsSrc, { loader: 'js', minify: true, target: 'es2019' })).code;
 fs.mkdirSync(path.join(DIST, 'assets', 'fonts'), { recursive: true });
 const cssName = `/assets/site.${hash(cssOut)}.css`, jsName = `/assets/site.${hash(jsOut)}.js`;
 fs.writeFileSync(path.join(DIST, cssName), cssOut);
@@ -158,7 +160,7 @@ Policy: ${SITE_URL}/legal/privacy/
 `);
 fs.writeFileSync(path.join(DIST, 'humans.txt'), `/* TEAM */
 Technical Founding Engineer: Saravan Kumar M K
-Product Founding Engineer: Badrinath Reddy Avuku
+Product Founding Engineer: Badrinath Reddy A
 
 /* SITE */
 Last update: ${today}
@@ -254,6 +256,8 @@ for (const plat of ['win', 'mac']) for (const id of OLD_TUTORIALS) {
   const p = `/${OS[plat].slug}/tutorials/${id}/`;
   if (!paths.has(p)) redirects.push(`${p} /${OS[plat].slug}/tutorials/ 302`);
 }
+// The per-platform screen lists were folded into the tutorials (owner, 2026-10-31).
+redirects.push('/windows/screens/ /windows/tutorials/ 301', '/mac/screens/ /mac/tutorials/ 301');
 fs.writeFileSync(path.join(DIST, '_redirects'), redirects.join('\n') + '\n');
 
 const files = fs.readdirSync(DIST, { recursive: true }).length;

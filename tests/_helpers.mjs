@@ -3,7 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-export const DIST = path.join(ROOT, 'dist');
+export const DIST = process.env.OF_DIST ? path.resolve(process.env.OF_DIST) : path.join(ROOT, 'dist');
 export const HAS_DIST = existsSync(path.join(DIST, 'index.html'));
 export const SKIP = HAS_DIST ? false : 'dist/ is missing: run "npm run build" first';
 

@@ -1,6 +1,5 @@
 // Tutorials: /tutorials/ (choose a platform), /<platform>/tutorials/ (every tutorial by manual part and area),
-// /<platform>/tutorials/<id>/ (one written, step-by-step tutorial on the real screens), and /<platform>/screens/
-// (every captured screen of that platform with its description). Source: the manual areas in src/content/manual.
+// and /<platform>/tutorials/<id>/ (one written, step-by-step tutorial on the real screens). Source: the manual areas in src/content/manual.
 const SLUG = { win: 'windows', mac: 'mac' };
 const NAME = { win: 'Windows', mac: 'Mac' };
 
@@ -32,8 +31,7 @@ export default function tutorials(ctx) {
 <div class="hero-cta"><a class="btn btn-primary btn-lg" href="/windows/tutorials/">Windows tutorials</a><a class="btn btn-dark btn-lg" href="/mac/tutorials/">Mac tutorials</a></div></div></section>
 <section class="sec-s pt30"><div class="wrap narrow"><div class="facts"><h3>How the tutorials work</h3><ul class="ticks">
 <li><span>Each tutorial lists what you need first, then the steps in order, each with the screen you see at that moment.</span></li>
-<li><span>Use the controls at the top of the page to show the app screens in light or dark. The website theme does not change them.</span></li>
-<li><span><a href="/windows/screens/">Every Windows screen</a> and <a href="/mac/screens/">every Mac screen</a> is listed with what it shows.</span></li></ul></div></div></section>`,
+<li><span>Use the controls at the top of the page to show the app screens in light or dark. The website theme does not change them.</span></li></ul></div></div></section>`,
   });
 
   for (const plat of ['win', 'mac']) {
@@ -49,8 +47,7 @@ export default function tutorials(ctx) {
       breadcrumbs: [['Tutorials', '/tutorials/'], [NAME[plat], base]],
       body: html`<section class="phero"><div class="wrap"><span class="eyebrow">${NAME[plat]} tutorials</span><h1>Everything you can do, step by step.</h1>
 <p class="lead">Written, step-by-step tutorials on the real ${NAME[plat]} screens. Pick a task and follow it.</p>
-<div class="fchips">${PARTS.filter(([k]) => manual[plat].some((a) => a.part === k)).map(([k, t]) => html`<a class="fchip" href="#${partId(k)}">${t}</a>`)}</div>
-<p class="tmeta"><a href="/${SLUG[plat]}/screens/">Every ${NAME[plat]} screen</a></p></div></section>
+<div class="fchips">${PARTS.filter(([k]) => manual[plat].some((a) => a.part === k)).map(([k, t]) => html`<a class="fchip" href="#${partId(k)}">${t}</a>`)}</div></div></section>
 <section class="sec-s pt30"><div class="wrap">
 ${PARTS.map(([k, t, d]) => {
         const areas = manual[plat].filter((a) => a.part === k);
@@ -91,24 +88,6 @@ ${related.length ? html`<div class="tbox"><h2>Related tutorials</h2><ul>${relate
       });
     }
 
-    // ---------- every screen of the platform ----------
-    const used = new Map();
-    for (const w of all[plat]) for (const s of w.steps) { if (!used.has(s.screen)) used.set(s.screen, []); if (!used.get(s.screen).includes(w)) used.get(s.screen).push(w); }
-    const desc = new Map(manual[plat].flatMap((a) => Object.entries(a.screens || {})));
-    const byArea = new Map();
-    for (const s of cat[plat].values()) { if (!byArea.has(s.area)) byArea.set(s.area, []); byArea.get(s.area).push(s); }
-    const rank = (x) => manual[plat].find((a) => a.area === x)?.order ?? 99;
-    const order = [...byArea.keys()].sort((x, y) => rank(x) - rank(y));
-    pages.push({
-      path: `/${SLUG[plat]}/screens/`, os: plat, nav: 'tutorials', alternates: { [plat]: `/${SLUG[plat]}/screens/`, [other]: `/${SLUG[other]}/screens/` },
-      title: `Every ${NAME[plat]} screen | OpenFrame Studio`,
-      description: `Every screen of OpenFrame Studio for ${NAME[plat]}, by area, in light and dark, with what each one shows and the step-by-step tutorials that use it.`,
-      breadcrumbs: [['Tutorials', '/tutorials/'], [NAME[plat], base], ['Screens', `/${SLUG[plat]}/screens/`]],
-      body: html`<section class="phero"><div class="wrap"><span class="eyebrow">${NAME[plat]} screens</span><h1>Every screen of the ${NAME[plat]} app.</h1>
-<p class="lead">Every screen and state, area by area. Each opens in light or dark, following the app screen control at the top of the page.</p></div></section>
-<section class="sec-s pt30"><div class="wrap">${order.map((area) => html`<div class="lib-area" id="${area.toLowerCase().replace(/\W+/g, '-')}"><h2>${area}</h2><ul class="lib">
-${byArea.get(area).map((s) => html`<li><b>${s.title}</b>${web(desc.get(s.name))}<br><a data-mock href="/mockups/${plat}/light/${s.file}" target="_blank" rel="noopener">Open screen</a>${(used.get(s.name) || []).slice(0, 3).map((w) => html`<a href="${base}${w.id}/">${w.title}</a>`)}</li>`)}</ul></div>`)}</div></section>`,
-    });
   }
   return pages;
 }

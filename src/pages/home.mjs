@@ -149,7 +149,7 @@ ${[['bulb', 'Notes and idea app'], ['board', 'Story outlining tool'], ['page', '
 <section><div class="wrap center">
 <span class="eyebrow rv">Why we built it</span>
 <p class="quote rv">From <b>film lovers</b>, to <b>film lovers</b> across the world.</p>
-<p class="lead rv lead-mid">OpenFrame is made for people who make films with limited resources: writer-directors, student filmmakers, short-film makers, regional-language filmmakers and small web-series teams.</p>
+<p class="lead rv lead-mid">OpenFrame is made for people who make films with limited resources: writer-directors, student filmmakers, short-film makers and regional-language filmmakers.</p>
 <div class="langs rv" aria-label="Scripts you can write and export in"><span>English</span><span lang="te">తెలుగు</span><span lang="hi">हिन्दी</span><span lang="ta">தமிழ்</span><span lang="ml">മലയാളം</span><span lang="kn">ಕನ್ನಡ</span></div>
 <h2 class="rv mt84">Your idea. Your film. <span class="ac">Our promise.</span></h2>
 <div class="promise-row">
