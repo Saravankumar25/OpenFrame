@@ -79,8 +79,9 @@ async function writeSet(plat, theme, name, srcBuf, srcScale, crop, fullRect) {
   const px = (r) => { const l = Math.round(r[0] * srcScale), t = Math.round(r[1] * srcScale); return { left: l, top: t, width: Math.round(r[2] * srcScale), height: Math.round(r[3] * srcScale) }; };
   const dir = path.join(OUT, plat, theme); fs.mkdirSync(dir, { recursive: true });
   const info = {};
-  const cardRect = px(crop), fullR = px(fullRect);
   const dec = await sharp(srcBuf).raw().toBuffer({ resolveWithObject: true });
+  const fit = (r) => { const left = Math.min(Math.max(0, r.left), dec.info.width - 2), top = Math.min(Math.max(0, r.top), dec.info.height - 2); return { left, top, width: Math.max(2, Math.min(r.width, dec.info.width - left)), height: Math.max(2, Math.min(r.height, dec.info.height - top)) }; };
+  const cardRect = fit(px(crop)), fullR = fit(px(fullRect));
   const src = () => sharp(dec.data, { raw: dec.info });
   const cardBuf = await src().extract(cardRect).raw().toBuffer({ resolveWithObject: true });
   for (const [kind, wmax] of [['card-1280', 1280], ['card-720', 720]]) {
@@ -99,6 +100,7 @@ async function writeSet(plat, theme, name, srcBuf, srcScale, crop, fullRect) {
 // capture strips on the edges, blank sidebars (not drawn while a sheet is up), OS rounded corners, and layouts wider than 16:9.
 const MAC_SRC = path.join(RES, 'MacHTML-src');
 const MAC_NAV = /sidebar|^project-home(-empty|-after-back)?$/;
+const MAC_BAR = /toolbar|sidebar|assistant|search|menu/;
 const PANEL_NAME = /comment|panel|inspector|assistant|^ai-|drawer/;
 
 async function loadRaw(file) {
@@ -161,7 +163,7 @@ function clearRuns(p, s, axis, c0, c1) {
 function normalize(x0, y0, x1, y1, B) {
   let w = x1 - x0, h = y1 - y0;
   if (w / h > A_MAX) { const nh = w / A_MAX; if (nh > B[3] - B[1] + 0.5) return null; y0 -= (nh - h) / 2; y1 = y0 + nh; if (y0 < B[1]) { y1 += B[1] - y0; y0 = B[1]; } if (y1 > B[3]) { y0 -= y1 - B[3]; y1 = B[3]; } }
-  else if (w / h < A_MIN) { const nw = h * A_MIN; if (nw > B[2] - B[0] + 0.5) return null; x0 -= (nw - w) / 2; x1 = x0 + nw; if (x0 < B[0]) { x1 += B[0] - x0; x0 = B[0]; } if (x1 > B[2]) { x0 -= x1 - B[2]; x1 = B[2]; } }
+  else if (w / h < A_MIN) { let nw = h * A_MIN; if (nw > B[2] - B[0] + 4) return null; nw = Math.min(nw, B[2] - B[0]); x0 -= (nw - w) / 2; x1 = x0 + nw; if (x0 < B[0]) { x1 += B[0] - x0; x0 = B[0]; } if (x1 > B[2]) { x0 -= x1 - B[2]; x1 = B[2]; } }
   return [x0, y0, x1, y1];
 }
 // Share of sampled pixels in the 6 CSS px right of x that differ from their surroundings: text touching the edge.
@@ -255,21 +257,23 @@ async function macOne(page, rec) {
     if (blank) minX = Math.max(e.l, S.x - 12); else { keep = true; minX = e.l; }
   }
   const B = [minX, Math.max(e.t, topCut), g.W - e.r, g.H - e.b];
-  if (process.env.DEBUG) console.log(name, JSON.stringify({ e, sideW, blank, keep, minX, B, S }));
   const sidebar = !hasSide ? 'collapsed' : keep ? 'kept' : 'cropped';
   // 3. card crop
   let crop, focus;
   if (S) {
     crop = fitCrop(S, B, { w: g.W, h: g.H });
     focus = subj.some((r) => r.k === 'sheet') ? 'sheet' : subj.some((r) => r.k === 'menu') ? 'menu' : 'panel';
+    crop = snapCrop(lp, s, crop, B, S, { w: g.W, h: g.H });
   } else {
-    crop = [B[0], B[1], B[2] - B[0], B[3] - B[1]];
-    focus = toast ? 'panel' : hasSide && !keep ? 'content' : 'window';
-    const ink = !keep && !toast ? inkBox(lp, s, B) : null; // a sparse window (welcome, empty home): crop to what is on screen
-    if (ink) { crop = fitCrop(ink, B, { w: g.W, h: g.H }); focus = 'content'; }
-    else crop = trimAspect(lp, s, crop, { noLeft: keep, noRight: narrowPanel });
+    // project windows: the 52 px app toolbar adds nothing, so the card starts below it (navigation screens keep the whole window)
+    let dropBar = !keep && g.W >= 1200 && !MAC_BAR.test(name);
+    let Bc = dropBar ? [B[0], Math.max(B[1], 54), B[2], B[3]] : B;
+    const win = { w: g.W, h: g.H };
+    crop = paneCrop(lp, s, Bc, win, { noLeft: keep, noRight: narrowPanel, bar: !dropBar, inset: dropBar ? 0 : 56 });
+    // without the toolbar the pane can be wider than 16:9; when that costs a real column, keep the toolbar and the whole width instead
+    if (dropBar && (crop[2] < 0.85 * (Bc[2] - Bc[0]) || crop[2] / crop[3] > A_MAX + 0.01) && (B[2] - B[0]) / (B[3] - B[1]) <= A_MAX) { dropBar = false; Bc = B; crop = paneCrop(lp, s, Bc, win, { noLeft: keep, noRight: narrowPanel, bar: true, inset: 56 }); }
+    focus = toast ? 'panel' : keep ? 'window' : 'content';
   }
-  crop = snapCrop(lp, s, crop, B, S, { w: g.W, h: g.H });
   if (ov.crop) crop = ov.crop; if (ov.focus) focus = ov.focus;
   const full = [B[0], B[1], B[2] - B[0], B[3] - B[1]];
   crop = round(crop);
@@ -283,36 +287,54 @@ async function macOne(page, rec) {
 }
 
 // Bounding box of everything that is not background in the body of the window; null unless it covers under 40 percent.
-function inkBox(p, s, B) {
-  const { L, W } = p; const y0 = Math.round((B[1] + 56) * s), y1 = Math.round((B[3] - 30) * s), x0 = Math.round(B[0] * s), x1 = Math.round(B[2] * s);
+function inkBox(p, s, B, { top = 56, bottom = 30, limit = true } = {}) {
+  const { L, W } = p; const y0 = Math.round((B[1] + top) * s), y1 = Math.round((B[3] - bottom) * s), x0 = Math.round(B[0] * s), x1 = Math.round(B[2] * s);
   const hist = new Map(); for (let y = y0; y < y1; y += 6) for (let x = x0; x < x1; x += 6) { const k = Math.round(L[y * W + x]); hist.set(k, (hist.get(k) || 0) + 1); }
   let bg = 0, bn = 0; for (const [k, n] of hist) if (n > bn) { bn = n; bg = k; }
   const cols = new Uint16Array(x1 - x0), rows = new Uint16Array(y1 - y0);
-  for (let y = y0; y < y1; y += 2) for (let x = x0; x < x1; x += 2) if (Math.abs(L[y * W + x] - bg) > 12) { cols[x - x0]++; rows[y - y0]++; }
-  const first = (a) => a.findIndex((v) => v >= 2), last = (a) => { for (let i = a.length - 1; i >= 0; i--) if (a[i] >= 2) return i; return -1; };
+  for (let y = y0; y < y1; y += 2) for (let x = x0; x < x1; x += 2) if (Math.abs(L[y * W + x] - bg) > 7) { cols[x - x0]++; rows[y - y0]++; }
+  const first = (a) => a.findIndex((v) => v >= 3), last = (a) => { for (let i = a.length - 1; i >= 0; i--) if (a[i] >= 3) return i; return -1; };
   const [cx0, cx1, cy0, cy1] = [first(cols), last(cols), first(rows), last(rows)];
   if (cx0 < 0 || cy0 < 0) return null;
   const box = { x: (x0 + cx0) / s, y: (y0 + cy0) / s, w: (cx1 - cx0) / s, h: (cy1 - cy0) / s };
+  if (!limit) return box;
   return box.w < 0.75 * (B[2] - B[0]) && box.w * box.h < 0.4 * (B[2] - B[0]) * (B[3] - B[1] - 86) ? box : null;
+}
+
+// Card for a screen with no pop-up: the pane Bc (app bar, status bar and navigation already dropped by the caller) trimmed to its
+// content. A sparse pane is cropped to what is on screen; a full one is cut at a panel divider or blank gutter to fit 16:9.
+function paneCrop(p, s, Bc, win, opt) {
+  const ink = inkBox(p, s, Bc, { top: opt.inset || 0, bottom: opt.inset ? 30 : 0, limit: false });
+  const sparse = !!ink && ink.w * ink.h < 0.45 * (Bc[2] - Bc[0]) * (Bc[3] - Bc[1]);
+  let crop = [Bc[0], Bc[1], Bc[2] - Bc[0], Bc[3] - Bc[1]];
+  if (sparse) crop = fitCrop(ink, Bc, win);
+  else {
+    if (ink) { const x0 = Math.max(Bc[0], ink.x - 6), x1 = Math.min(Bc[2], ink.x + ink.w + 6); crop = [x0, Bc[1], x1 - x0, Bc[3] - Bc[1]]; } // empty side margins go first
+    crop = trimAspect(p, s, crop, opt);
+    const n = normalize(crop[0], crop[1], crop[0] + crop[2], crop[1] + crop[3], Bc); // a narrow page: widen back into the pane
+    if (n) crop = [n[0], n[1], n[2] - n[0], n[3] - n[1]];
+  }
+  return snapCrop(p, s, crop, Bc, sparse ? ink : null, win);
 }
 
 // Bring a wide crop (no subject) into 4:3..16:9 by cutting at a panel divider or blank gutter, never mid-text.
 // noLeft: the sidebar is the subject, keep it. noRight: a narrow right-hand panel is the subject, keep it.
-function trimAspect(p, s, crop, { noLeft, noRight }) {
+function trimAspect(p, s, crop, { noLeft, noRight, bar: hasBar = true }) {
   const [x, y, w, h] = crop;
   if (w / h <= A_MAX + 0.001) return crop;
-  const top = y + 52, bot = y + h - 30;
+  const top = y + (hasBar ? 52 : 4), bot = y + h - (hasBar ? 30 : 4);
   const need = w - h * A_MAX; // CSS px to remove
   const maxCut = w - h * A_MIN;
   const cands = [];
   const add = (list, rank) => { for (const c of list) { const cutL = c - x, cutR = x + w - c; if (!noLeft && cutL >= need && cutL <= maxCut) cands.push({ side: 'l', at: c, cut: cutL, rank }); if (!noRight && cutR >= need && cutR <= maxCut) cands.push({ side: 'r', at: c, cut: cutR, rank }); } };
   // prefer cuts that are also clear in the toolbar band, so no toolbar button is sliced
-  const bar = clearRuns(p, s, 'x', y + 4, y + 46);
-  const barOk = (c) => bar.some(([a, b]) => c >= a + 1 && c <= b - 1);
+  const bar = hasBar ? clearRuns(p, s, 'x', y + 4, y + 46) : null;
+  const barOk = (c) => !bar || bar.some(([a, b]) => c >= a + 1 && c <= b - 1);
   const divs = dividers(p, s, top, bot), runs = clearRuns(p, s, 'x', top, bot).map(([a, b]) => (a + b) / 2);
   add(divs.filter(barOk), 0); add(runs.filter(barOk), 1); add(divs, 2); add(runs, 3);
-  cands.sort((a, b) => a.rank - b.rank || a.cut - b.cut || (a.side === 'l' ? -1 : 1));
+  cands.sort((a, b) => a.cut + a.rank * 40 - (b.cut + b.rank * 40) || (a.side === 'l' ? -1 : 1)); // the smallest cut wins; a clean toolbar earns 40 px
   const c = cands[0];
+  if (!c && need <= 0.08 * w) return crop; // a few px too wide and no clean cut: the caller decides (never slice a button)
   if (c) return c.side === 'l' ? [c.at, y, x + w - c.at, h] : [x, y, c.at - x, h];
   return noLeft || !noRight && false ? [x, y, h * A_MAX, h] : noRight ? [x + w - h * A_MAX, y, h * A_MAX, h] : [x, y, h * A_MAX, h]; // no clean cut: straight cut on the free side
 }
@@ -321,6 +343,7 @@ function trimAspect(p, s, crop, { noLeft, noRight }) {
 // The Windows pages are the app's own DOM. Spotlight screens (dialog, menu, toast) are rendered at the captured 1600x1000
 // and cropped. Other screens are rendered at 1200x720, the app's smallest window, where the layout reflows and stays legible.
 const WIN_SRC = path.join(RES, 'WindowsHTML-src');
+const WIN_BAR = /^shell-(project-menu|status|create-menu|search|toast|back|forward|display-name|open-recovery)|^app-|^apphome-|^licence-/;
 const WIN_NAV = /^shell-(project-home|nav-|empty-project-home)/;
 
 async function winPrepare(page, collapse) {
@@ -351,6 +374,8 @@ async function winGeometry(page) {
       menus: [...document.querySelectorAll('.menu-pop,[role=menu]')].map(R).filter(vis),
       lists: [...document.querySelectorAll('[role=listbox]')].filter((e) => !e.closest('[role=dialog]') && /pop|menu|drop|select/.test(e.className)).map(R).filter(vis), // drop-downs only, not lists that are part of the page
       toasts: [...document.querySelectorAll('.toast')].map(R).filter(vis),
+      layout: (() => { const l = document.querySelector('.layout'); return l ? R(l) : null; })(),
+      panels: [...document.querySelectorAll('aside.drawer,aside.ai,aside.sp-tools,aside.spx-tools')].map(R).filter((r) => r.w >= 250 && r.h > 200),
       overflow: document.documentElement.scrollWidth - window.innerWidth,
     };
   });
@@ -397,11 +422,21 @@ async function winOne(ctx, rec) {
       await page.waitForTimeout(80);
       const g2 = await winGeometry(page);
       if (g2.overflow > 8) { mode = 'overflow'; crop = [0, 0, 1150, 736]; await big(); }
-      else if (!geo.toasts.length && !(navOpen && keepWanted)) { // a sparse window (library setup, empty home): crop to what is on screen
+      else {
+        // the main pane: right of the navigation, below the app bar, above the status bar; with a right-hand panel open, the panel plus the
+        // pane next to it (about 1050 px). Navigation screens, and the library and home screens that have no pane, keep the whole window.
         const lum = await sharp(await page.screenshot({ type: 'png', scale: 'css' })).greyscale().raw().toBuffer();
-        const p = { L: Float32Array.from(lum), W: 1200, H: 720 }, Bw = [0, 0, 1200, 720], win = { w: 1200, h: 720 };
-        const ink = inkBox(p, 1, Bw);
-        if (ink) { crop = snapCrop(p, 1, fitCrop(ink, Bw, win), Bw, ink, win); focus = 'content'; }
+        const p = { L: Float32Array.from(lum), W: 1200, H: 720 }, win = { w: 1200, h: 720 };
+        const lay = g2.layout, wholeWin = (navOpen && keepWanted) || !lay || WIN_BAR.test(name);
+        const Bc = wholeWin ? [0, 0, 1200, 720] : [g2.nav ? g2.nav.w : 0, lay.y, 1200, lay.y + lay.h];
+        const panel = wholeWin ? null : g2.panels.find((r) => r.x > Bc[0] + 300);
+        if (panel && Bc[2] - Bc[0] > 1100) { // start the pane at a blank gutter about 1050 px left of the panel's right edge, or keep the whole pane
+          const right = panel.x + panel.w;
+          const cs = clearRuns(p, 1, 'x', Bc[1], Bc[3]).map(([a, b]) => (a + b) / 2).filter((c) => c >= Bc[0] && c >= right - 1150 && c <= right - 950);
+          if (cs.length) Bc[0] = cs.sort((a, b) => Math.abs(right - a - 1050) - Math.abs(right - b - 1050))[0];
+        }
+        crop = paneCrop(p, 1, Bc, win, { noRight: !!panel, bar: wholeWin, inset: wholeWin ? 56 : 0 });
+        if (!geo.toasts.length) focus = wholeWin ? 'window' : 'content';
       }
     }
     if (ov.crop) { crop = ov.crop; mode = 'subject'; }

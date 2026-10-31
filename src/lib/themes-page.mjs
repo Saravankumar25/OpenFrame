@@ -140,7 +140,7 @@ const NOTES = [
 
 export function themesBody(ctx) {
   const { html, osBlocks, mock, cta, THEMES } = ctx;
-  const win = html`<ol class="tsteps">
+  const win = html`<ol class="isteps">
 <li><b>Put the file on your computer.</b> Save it in Downloads or another normal folder. A file in a network folder is refused.</li>
 <li><b>Open Settings.</b> On Home, press the gear. Choose <b>Appearance</b>.</li>
 <li><b>Scroll to My Themes.</b> Press <b>Import Theme File…</b> and pick the .json file. The app checks it as soon as you pick it. If you have the text instead of a file, press <b>Paste Theme…</b>, paste the whole text, and press <b>Check Theme</b>.</li>
@@ -148,7 +148,7 @@ export function themesBody(ctx) {
 <li><b>Choose what to do.</b> <b>Save and Apply</b> saves it and uses it now. <b>Save to My Themes</b> keeps it for later. In the red case both buttons stay off: fix the file and import it again. After pasting, <b>Edit the text</b> takes you back to the text.</li>
 <li><b>Use it later.</b> Under My Themes each theme has <b>Apply</b>, <b>Rename</b>, <b>Export</b> and <b>Delete</b>. Deleting the theme in use switches you back to OpenFrame Default.</li></ol>
 <div class="tshot">${mock('win', 'settings-theme-check-ok', { caption: 'The result of the check on Windows' })}</div>`;
-  const mac = html`<ol class="tsteps">
+  const mac = html`<ol class="isteps">
 <li><b>Put the file on your Mac.</b> Save it in Downloads or another normal folder.</li>
 <li><b>Open Settings.</b> Press Command and comma, then choose <b>Appearance</b>.</li>
 <li><b>Scroll to My Themes.</b> Press <b>Import Theme File…</b> and pick the .json file. The sheet checks it at once. If you have the text instead of a file, press <b>Paste Theme…</b>, paste the whole text, and press <b>Check Theme</b>.</li>
@@ -156,11 +156,11 @@ export function themesBody(ctx) {
 <li><b>Choose what to do.</b> <b>Save and Apply</b> saves it and uses it now. <b>Save to My Themes</b> keeps it for later. If the theme cannot be used, both stay off: fix the file and import it again.</li>
 <li><b>Use it later.</b> Under My Themes each theme has <b>Apply</b>, <b>Rename</b>, <b>Export</b> and <b>Delete</b>. Deleting the theme in use switches you back to OpenFrame Default.</li></ol>
 <div class="tshot">${mock('mac', 'settings-theme-paste-sheet', { caption: 'The Paste Theme sheet on the Mac' })}</div>`;
-  const shareWin = html`<ol class="tsteps">
+  const shareWin = html`<ol class="isteps">
 <li>Open <b>Settings</b>, <b>Appearance</b>, and find the theme under <b>My Themes</b>.</li>
 <li>Press <b>Export</b> on its row. The suggested file name is the theme name.</li>
 <li>Choose a folder and save. You get a small .json file.</li></ol>`;
-  const shareMac = html`<ol class="tsteps">
+  const shareMac = html`<ol class="isteps">
 <li>Open <b>Settings</b>, <b>Appearance</b>, and find the theme under <b>My Themes</b>.</li>
 <li>Press <b>Export</b> on its row, or choose the theme and press <b>Export Selected Theme…</b> at the bottom of the page.</li>
 <li>Choose a folder and save. You get a small .json file.</li></ol>`;
@@ -188,7 +188,7 @@ ${osBlocks({ win, mac })}</div></section>
 
 <section class="tint sec-s" id="make"><div class="wrap narrow"><div class="sec-head"><h2>Make your own</h2><p class="lead">Start from a starter, or copy the example below. Open it in a plain text editor such as Notepad or TextEdit (in plain text mode), change it, and save it with the ending .json.</p></div>
 <div class="codebox"><pre><code>${EXAMPLE}</code></pre></div>
-<ol class="tsteps">
+<ol class="isteps">
 <li><b>Give it its own id and name.</b> <code>id</code> is for the app, <code>name</code> is what you see in My Themes. If you started from a starter, change both, or the app refuses the theme as a copy.</li>
 <li><b>Change the numbers.</b> Move <code>accentHue</code> to change the colour of buttons, then <code>accentChroma</code> to make it calmer or livelier. Move <code>neutralHue</code> and <code>neutralTint</code> to colour the greys.</li>
 <li><b>Keep the shape.</b> Every name and every piece of text sits in double quotes. Numbers have no quotes. Each line ends with a comma except the last line in a group. The file cannot hold notes, so do not add any.</li>

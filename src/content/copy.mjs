@@ -114,7 +114,7 @@ export const FAQ = [
   ]],
   ['Pricing and trial', [
     ['How much does it cost?',
-      'One payment of ₹2,999 in India, or US$89 everywhere else. It is a lifetime purchase, not a subscription. The store shows the final checkout amount, which can include taxes that apply where you live. See [Pricing](/pricing/).'],
+      'One payment of ₹2,999 in India, or US$89 everywhere else. It is a lifetime purchase, not a subscription, and Windows and Mac are bought separately. The store shows the final checkout amount, which can include taxes that apply where you live. See [Pricing](/pricing/).'],
     ['Is there a free trial?',
       'Yes. Every new install starts a 7-day free trial with the whole app. After the trial, buy OpenFrame Studio in the store to keep using its full functionality.'],
     ['Is there a subscription?',

@@ -26,13 +26,13 @@ export function makeHelpers(cat, missing, shots = { win: {}, mac: {} }, noShot =
   };
   // A real captured app screen as a picture. Clicking it opens the lightbox (lightbox.js); without script the link
   // opens the full picture. link:false makes it a plain picture.
-  const mock = (plat, name, { caption = '', alt = '', link = true, eager = false } = {}) => {
+  const mock = (plat, name, { caption = '', alt = '', link = true, eager = false, wide = false } = {}) => {
     const s = cat[plat]?.get(name);
     if (!s) { missing.add(`${plat}/${name}`); return html`<span class="shot-missing">${plat}/${name}</span>`; }
     const p = pic(plat, name);
     if (!p) return html`<span class="shot-missing">${plat}/${name}</span>`;
     const label = alt || `${OS[plat].name} screen: ${s.title}`;
-    const sizes = eager ? '(min-width: 1200px) 1120px, 100vw' : '(min-width: 900px) 640px, 100vw';
+    const sizes = eager ? '(min-width: 1200px) 1120px, 100vw' : wide ? '(min-width: 1100px) 1040px, 100vw' : '(min-width: 900px) 640px, 100vw';
     const img = html`<img data-mock src="${p.c720}" srcset="${p.c720} 720w, ${p.c1280} 1280w" sizes="${sizes}" width="${p.w}" height="${p.h}" alt="${label}" ${raw(eager ? 'loading="eager" fetchpriority="high"' : 'loading="lazy"')} decoding="async">`;
     const inner = html`<span class="mock-load" aria-hidden="true">${MARK}</span>${img}`;
     const frame = link ? html`<a class="shot-open" href="${p.full}" data-mock>${inner}</a>` : html`<span class="shot-open shot-static">${inner}</span>`;

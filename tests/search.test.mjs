@@ -26,7 +26,7 @@ test('index: tutorials of both platforms, feature pages and answers, no dashes',
   assert.ok(by('tutorial', 'win') > 100 && by('tutorial', 'mac') > 100, 'both platforms');
   assert.ok(by('feature') >= 10 && by('answer') >= 10);
   for (const e of ix.E) {
-    assert.match(e.url, /^\/(windows|mac)\/tutorials\/[a-z0-9-]+\/$|^\/features\/[a-z0-9-]+\/$|^\/faq\/#g-[a-z0-9-]+$/);
+    assert.match(e.url, /^\/(windows|mac)\/tutorials\/[a-z0-9-]+\/$|^\/features\/[a-z0-9-]+\/$|^\/faq\/#q-[a-z0-9-]+$/);
     assert.ok(e.title && e.summary, e.url);
   }
   assert.ok(!/[–—]/.test(JSON.stringify(data)));
@@ -167,6 +167,7 @@ test('Ctrl K and "/" open the palette, the hint follows the platform, the index 
   assert.equal(await page.getAttribute('#srch-q', 'role'), 'combobox');
   await page.keyboard.press('Escape');
   assert.equal(await dialogOpen(page), false);
+  await page.waitForFunction(() => !document.querySelector('dialog.srch-dlg').open && document.activeElement && !/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName));
   await page.keyboard.press('/');
   await page.waitForSelector('dialog.srch-dlg[open]');
   await page.fill('#srch-q', 'budget');
@@ -212,7 +213,8 @@ test('palette: keyboard (arrows wrap, Home, End), Enter navigates and is remembe
   await page.keyboard.press('Home'); assert.equal(await act(), o[0].id);
   assert.equal(await page.getAttribute(`#${o[0].id}`, 'aria-selected'), 'true');
   assert.equal(await page.getAttribute('#srch-q', 'aria-expanded'), 'true');
-  assert.equal(await page.textContent('#srch-live'), 'Results updated');
+  // the live region is cleared and then set 40 ms later, so screen readers hear every update
+  await page.waitForFunction(() => document.getElementById('srch-live').textContent === 'Results updated', null, { timeout: 3000 });
   assert.ok(!/\d/.test(await page.textContent('#srch-live')), 'no totals');
   await page.keyboard.press('Escape');
   assert.equal(await dialogOpen(page), false);

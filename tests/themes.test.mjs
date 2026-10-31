@@ -81,8 +81,8 @@ test('the example file on the page is a valid theme', { skip: SKIP }, () => {
 
 test('the page has the Windows and the Mac steps, the field table and the error list', { skip: SKIP }, () => {
   const page = read(path.join(DIST, 'themes', 'index.html'));
-  const win = page.match(/<div data-os-show="win">(<ol class="tsteps">[\s\S]*?)<\/div><div data-os-show="mac">/);
-  const mac = page.match(/<div data-os-show="mac">(<ol class="tsteps">[\s\S]*?)<\/div>/);
+  const win = page.match(/<div data-os-show="win">(<ol class="isteps">[\s\S]*?)<\/div><div data-os-show="mac">/);
+  const mac = page.match(/<div data-os-show="mac">(<ol class="isteps">[\s\S]*?)<\/div>/);
   assert.ok(win && mac, 'platform blocks');
   for (const [name, block] of [['Windows', win[1]], ['Mac', mac[1]]]) {
     for (const label of ['Import Theme File…', 'Paste Theme…', 'Check Theme', 'Save and Apply', 'Save to My Themes', 'My Themes', 'Appearance'])

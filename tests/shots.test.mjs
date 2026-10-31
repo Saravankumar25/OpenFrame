@@ -117,6 +117,8 @@ test('clicking the picture toggles actual size and the close button works', { sk
   const fit = await page.$eval('dialog.lb .lb-img', (i) => i.getBoundingClientRect().width);
   await page.click('dialog.lb .lb-zoom');
   await page.waitForSelector('dialog.lb.is-actual');
+  // the zoom animates (about 260 ms), so wait for it to settle before measuring
+  await page.waitForFunction((f) => { const i = document.querySelector('dialog.lb .lb-img'); return Math.abs(i.getBoundingClientRect().width - i.naturalWidth) < 2 && i.getBoundingClientRect().width > f; }, fit, { timeout: 3000 });
   const nat = await page.$eval('dialog.lb .lb-img', (i) => ({ w: i.getBoundingClientRect().width, n: i.naturalWidth }));
   assert.ok(nat.w > fit && Math.abs(nat.w - nat.n) < 2, `actual ${nat.w} vs natural ${nat.n} (fit ${fit})`);
   assert.equal(await page.getAttribute('dialog.lb .lb-zoom', 'aria-label'), 'Fit to window');

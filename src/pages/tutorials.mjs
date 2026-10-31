@@ -85,7 +85,7 @@ ${areas.map((a) => html`<h3 class="mt26">${a.area}</h3><div class="tgrid">${a.wo
 <section class="sec-s pt30"><div class="wrap">
 ${w.prerequisites?.length ? html`<div class="tbox"><h2>Before you start</h2><ul>${w.prerequisites.map((p) => html`<li>${md(p)}</li>`)}</ul></div>` : ''}
 <h2 class="sr">Steps</h2>
-<ol class="tsteps">${w.steps.map((s) => html`<li class="tstep"><div class="tx"><p class="do">${md(s.do)}</p>${s.explain ? html`<p>${md(s.explain)}</p>` : ''}</div><div>${mock(plat, s.screen)}</div></li>`)}</ol>
+<ol class="tsteps">${w.steps.map((s) => html`<li class="tstep"><div class="tx"><p class="do">${md(s.do)}</p>${s.explain ? html`<p>${md(s.explain)}</p>` : ''}</div><div>${mock(plat, s.screen, { wide: true })}</div></li>`)}</ol>
 <div class="tbox"><h2>What you get</h2><p>${md(w.result)}</p></div>
 ${w.cautions?.length ? html`<div class="tbox warn"><h2>Watch out for</h2><ul>${w.cautions.map((c) => html`<li>${md(c)}</li>`)}</ul></div>` : ''}
 ${related.length ? html`<div class="tbox"><h2>Related tutorials</h2><ul>${related.map((r) => html`<li><a href="${base}${r.id}/">${r.title}</a></li>`)}</ul></div>` : ''}
